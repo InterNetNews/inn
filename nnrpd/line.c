@@ -23,6 +23,7 @@
 
 #ifdef HAVE_SSL
 #include <openssl/ssl.h>
+#include <signal.h>
 extern SSL *tls_conn;
 #endif
 
@@ -40,6 +41,19 @@ line_free(struct line *line)
     }
 }
 
+#ifdef HAVE_SSL
+/*
+**  Alarm signal handler for client timeout.
+*/
+static void
+alarmHandler(int s)
+{
+    SSL_shutdown(tls_conn);
+    tls_conn = NULL;
+    errno = ECONNRESET;
+}
+#endif
+  
 /*
 **  initialise a new line structure
 */
@@ -53,15 +67,21 @@ line_init(struct line *line)
 }
 
 static ssize_t
-line_doread(void *p, size_t len)
+line_doread(void *p, size_t len, int timeout)
 {
     ssize_t n;
 
 #ifdef HAVE_SSL
     if (tls_conn) {
 	int err;
+        xsignal(SIGALRM, alarmHandler);
 	do {
-	    n = SSL_read(tls_conn, p, len);
+            alarm(timeout);
+            n = SSL_read(tls_conn, p, len);
+            alarm(0);
+            if (tls_conn == NULL) {
+                break;
+        }
 	    err = SSL_get_error(tls_conn, n);
 	    switch (err) {
 	    case SSL_ERROR_SYSCALL:
@@ -74,6 +94,7 @@ line_doread(void *p, size_t len)
 		break;
 	    }
 	} while (err == SSL_ERROR_WANT_READ);
+        xsignal(SIGALRM, SIG_DFL);
     } else {
 #endif
 	do {
@@ -185,8 +206,9 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 #ifdef HAVE_SSL
             }
 #endif
-	    count = line_doread(where,
-				line->allocated - (where - line->start));
+            count = line_doread(where,
+                                line->allocated - (where - line->start), 
+                                timeout);
 
 	    /* give timeout for read errors */
 	    if (count < 0) {

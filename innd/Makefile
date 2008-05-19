@@ -198,11 +198,11 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/config.h \
   ../include/portable/socket.h ../include/config.h \
-  ../include/inn/innconf.h ../include/inn/defines.h innd.h \
-  ../include/portable/time.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/libinn.h ../include/nntp.h \
-  ../include/paths.h ../include/storage.h
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/vector.h innd.h ../include/portable/time.h \
+  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/libinn.h \
+  ../include/nntp.h ../include/paths.h ../include/storage.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/clibrary.h ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h innd.h \
