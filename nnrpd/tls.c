@@ -611,6 +611,7 @@ static long bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi,
 int tls_start_servertls(int readfd, int writefd)
 {
     int     sts;
+    int     keepalive;
     SSL_SESSION *session;
     SSL_CIPHER *cipher;
 
@@ -633,6 +634,14 @@ int tls_start_servertls(int readfd, int writefd)
     }
     SSL_clear(tls_conn);
 
+#if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
+    /* Set KEEPALIVE to catch broken socket connections. */
+    keepalive = 1;
+    if (setsockopt(readfd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive)) < 0)
+        syslog(L_ERROR, "fd %d can't setsockopt(KEEPALIVE) %m", readfd);
+    if (setsockopt(writefd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive)) < 0)
+        syslog(L_ERROR, "fd %d can't setsockopt(KEEPALIVE) %m", writefd);
+#endif /* SOL_SOCKET && SO_KEEPALIVE */
     
     /* set the file descriptors for SSL to use */
     if (SSL_set_rfd(tls_conn, readfd)==0)
