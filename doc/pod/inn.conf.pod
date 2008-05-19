@@ -551,8 +551,8 @@ When setting this parameter, be aware that some newsreaders use the same
 connection for reading and posting and don't deal well with the connection
 timing out while a post is being composed.  If the system isn't having a
 problem with too many long-lived connections, it may be a good idea to
-increase this value to C<3600> (an hour).  The default value is C<600>
-(ten minutes).
+increase this value to C<3600> (an hour).  The default value is C<1800>
+(thirty minutes).
 
 =item I<initialtimeout>
 
