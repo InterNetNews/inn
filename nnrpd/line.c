@@ -66,8 +66,11 @@ line_init(struct line *line)
     line->remaining = 0;
 }
 
+/*
+** timeout is used only if HAVE_SSL is defined.
+*/
 static ssize_t
-line_doread(void *p, size_t len, int timeout)
+line_doread(void *p, size_t len, int timeout UNUSED)
 {
     ssize_t n;
 
