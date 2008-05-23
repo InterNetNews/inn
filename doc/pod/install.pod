@@ -18,8 +18,10 @@ the binaries, scripts, and man pages by running:
 
 after building INN and then comparing the new sample configuration files
 with your current ones to see if anything has changed.  If you take this
-route, the old binaries, scripts, and man pages will be saved with an
-extension of C<.OLD> so that you can easily back out.  Be sure to
+route, the old binaries and scripts will be saved with an extension of
+C<.OLD> so that you can easily back out.  Note that if you do not want
+to have such backup copies, you can deactivate this behaviour with
+C<make BACKUP_OPTION='' update> instead of a mere C<make update>.  Be sure to
 configure INN with the same options that you used previously if you take
 this approach (in particular, INN compiled with B<--enable-largefiles>
 can't read the data structures written by INN compiled without that flag,
@@ -376,7 +378,7 @@ should use INN's shared libraries, and you should only use the shared
 libraries corresponding to the version of INN that you're installing.
 
 Also, when updating an existing version of INN, INN tries to save backup
-copies of all files so that you can revert to the previous installed
+copies of all files but man pages so that you can revert to the previous installed
 version.  Unfortunately, when using shared libraries, this confuses
 B<ldconfig> on some systems (such as Linux) and the symbolic links for the
 libraries may point to the C<.OLD> versions.  If this happens, you can either
