@@ -52,9 +52,9 @@ install-man5:
 	for M in $(SEC5) ; do \
 	    $(CP_MAN) $$M $D$(MAN5)/$$M ; \
 	done
-	rm -f $(MAN5)/localgroups.5 $(MAN5)/nocem.ctl.5
-	$(LN_S) $(MAN8)/docheckgroups.8 $(MAN5)/localgroups.5
-	$(LN_S) $(MAN8)/perl-nocem.8 $(MAN5)/nocem.ctl.5
+	rm -f $D$(MAN5)/localgroups.5 $D$(MAN5)/nocem.ctl.5
+	$(LN_S) $(MAN8)/docheckgroups.8 $D$(MAN5)/localgroups.5
+	$(LN_S) $(MAN8)/perl-nocem.8 $D$(MAN5)/nocem.ctl.5
 
 # auth_krb5 is conditionally compiled, so handle it specially.  actsync(8)
 # also covers actsyncd.
@@ -62,8 +62,8 @@ install-man8:
 	for M in $(SEC8) ; do \
 	    $(CP_MAN) $$M $D$(MAN8)/$$M ; \
 	done
-	rm -f $(MAN8)/actsyncd.8
-	cd $(MAN8) && $(LN_S) actsync.8 actsyncd.8
+	rm -f $D$(MAN8)/actsyncd.8
+	$(LN_S) $(MAN8)/actsync.8 $D$(MAN8)/actsyncd.8
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(CP_MAN) auth_krb5.8 $D$(MAN8)/auth_krb5.8 ; \
 	fi

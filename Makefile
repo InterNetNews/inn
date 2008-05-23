@@ -109,7 +109,7 @@ update:
 	    echo '' ; \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
-	$(PATHBIN)/innupgrade $(PATHETC)
+	test -z "$D" && $(PATHBIN)/innupgrade $(PATHETC)
 
 install-root:
 	@chmod +x support/install-sh
@@ -119,14 +119,14 @@ install-root:
 ##  Install a certificate for TLS/SSL support.
 cert:
 	$(SSLBIN) req -new -x509 -nodes \
-	    -out $(PATHLIB)/cert.pem -days 366 \
-	    -keyout $(PATHLIB)/key.pem
-	chown $(RUNASUSER) $(PATHLIB)/cert.pem
-	chgrp $(RUNASGROUP) $(PATHLIB)/cert.pem
-	chmod 640 $(PATHLIB)/cert.pem
-	chown $(RUNASUSER) $(PATHLIB)/key.pem
-	chgrp $(RUNASGROUP) $(PATHLIB)/key.pem
-	chmod 600 $(PATHLIB)/key.pem
+	    -out $(D)$(PATHLIB)/cert.pem -days 366 \
+	    -keyout $(D)$(PATHLIB)/key.pem
+	chown $(RUNASUSER) $(D)$(PATHLIB)/cert.pem
+	chgrp $(RUNASGROUP) $(D)$(PATHLIB)/cert.pem
+	chmod 640 $(D)$(PATHLIB)/cert.pem
+	chown $(RUNASUSER) $(D)$(PATHLIB)/key.pem
+	chgrp $(RUNASGROUP) $(D)$(PATHLIB)/key.pem
+	chmod 600 $(D)$(PATHLIB)/key.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the

@@ -140,7 +140,7 @@ $D$(PATH_HISTORY):
 	chown $(RUNASUSER) $@
 	chgrp $(RUNASGROUP) $@
 	chmod $(FILEMODE) $@
-	$(PATHBIN)/makedbz -i -o
+	test -z "$D" && $(PATHBIN)/makedbz -i -o
 
 bootstrap:
 
