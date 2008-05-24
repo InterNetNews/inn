@@ -32,37 +32,6 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-/* taken from lib/parsedate.c */
-#ifndef WRITEV_USE_ALLOCA
-#ifdef alloca
-#define WRITEV_USE_ALLOCA
-#else /* alloca not defined */
-#ifdef __GNUC__
-#define WRITEV_USE_ALLOCA
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
-#define WRITEV_USE_ALLOCA
-#include <alloca.h>
-#else /* not sparc */
-#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
- #pragma alloca
-#define WRITEV_USE_ALLOCA
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc */
-#endif /* not GNU C */
-#endif /* alloca not defined */
-#endif /* WRITEV_USE_ALLOCA not defined */
-#ifdef WRITEV_USE_ALLOCA
-#define WRITEV_ALLOC alloca
-#else
-#define WRITEV_ALLOC malloc
-#endif
-
-
 #endif
 
 /* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
@@ -707,7 +676,8 @@ SSL_writev (ssl, vector, count)
      const struct iovec *vector;
      int count;
 {
-  char *buffer;
+  static char *buffer = NULL;
+  static size_t allocsize = 0;
   char *bp;
   size_t bytes, to_copy;
   int i;
@@ -715,8 +685,14 @@ SSL_writev (ssl, vector, count)
   bytes = 0;
   for (i = 0; i < count; ++i)
     bytes += vector[i].iov_len;
-  /* Allocate a temporary buffer to hold the data.  */
-  buffer = (char *) WRITEV_ALLOC (bytes);
+  /* Allocate a buffer to hold the data.  */
+  if (NULL == buffer) {
+    buffer = (char *) xmalloc(bytes);
+    allocsize = bytes;
+  } else if (bytes > allocsize) {
+    buffer = (char *) xrealloc (buffer, bytes);
+    allocsize = bytes;
+  }
   /* Copy the data into BUFFER.  */
   to_copy = bytes;
   bp = buffer;
