@@ -903,7 +903,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	}
 
 	/* look for only a bad top level element if the proper -t was given */
-	if (!TOP_CHECK(hostid)) {
+	if (TOP_CHECK(hostid)) {
 
 	    /* look for a '.' in the name */
 	    if (strcmp(cur->name, "junk") != 0 && 
