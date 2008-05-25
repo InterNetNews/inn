@@ -306,7 +306,7 @@ int quiet_host1 = 0; 		/* 1 => -q 1 or -q 12 or -q 21 given */
 int quiet_host2 = 0;	 	/* 1 => -q 2 or -q 12 or -q 21 given */
 int s_flag = 0;			/* max group size (length), 0 => do not check */
 int t_host1_flag = 0;		/* 1 => -t 1 or -t 12 or -t 21 given */
-int t_host2_flag = 1;		/* 1 => -t 2 or -d 12 or -t 21 given */
+int t_host2_flag = 1;		/* 1 => -t 2 or -t 12 or -t 21 given */
 int no_new_hier = 0;		/* 1 => -T; no new hierarchies */
 int host2_hilow_newgrp = 0;	/* 1 => use host2 hi/low on new groups */
 int host2_hilow_all = 0;	/* 1 => use host2 hi/low on all groups */
@@ -903,7 +903,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	}
 
 	/* look for only a bad top level element if the proper -t was given */
-	if (TOP_CHECK(hostid)) {
+	if (!TOP_CHECK(hostid)) {
 
 	    /* look for a '.' in the name */
 	    if (strcmp(cur->name, "junk") != 0 && 
