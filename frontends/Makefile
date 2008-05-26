@@ -48,8 +48,10 @@ clean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
-clobber distclean maintclean: clean
+clobber distclean: clean
 	rm -f tags
+
+maintclean: distclean
 	rm -f $(MAN)
 
 tags ctags: $(SOURCES)
