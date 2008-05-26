@@ -149,9 +149,6 @@ $Id$
 
 =head1 SEE ALSO
 
-expireover(8),
-inn.conf(5),
-inndf(8),
-makehistory(8).
+expireover(8), inn.conf(5), inndf(8), makehistory(8).
 
 =cut

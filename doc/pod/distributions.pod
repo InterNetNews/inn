@@ -46,4 +46,3 @@ $Id$
 distrib.pats(5), newsfeeds(5), nnrpd(8).
 
 =cut
-

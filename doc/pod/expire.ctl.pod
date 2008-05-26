@@ -167,6 +167,6 @@ $Id$
 =head1 SEE ALSO
 
 expire(8), expireover(8), inn.conf(5), innd(8), news.daily(8),
-storage.conf(5), uwildmat(3)
+storage.conf(5), uwildmat(3).
 
 =cut

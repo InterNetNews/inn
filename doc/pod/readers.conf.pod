@@ -452,8 +452,8 @@ display the reason to the user.
 
 =item B<max_rate:>
 
-If this parameter is present (and nonzero) it is used for nnrpd's 
-rate-limiting code.  The client will only be able to download at this 
+If this parameter is present (and nonzero), it is used for B<nnrpd>'s
+rate-limiting code.  The client will only be able to download at this
 speed (in bytes/second).  Note that if SSL is being used, limiting
 is applied to the pre-encryption datastream.
 

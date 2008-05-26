@@ -23,6 +23,8 @@ down the three children and wait for their exit before exiting itself.
 
 Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
 
+$Id$
+
 =head1 SEE ALSO
 
 ovdb(5), ovdb_init(8)

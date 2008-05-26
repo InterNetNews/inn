@@ -81,3 +81,5 @@ I<pred> is B<NULL> then I<node> is added to the head of I<list>.
 Written by Alex Kiernan <alex.kiernan@thus.net> for S<InterNetNews 2.4.0>.
 
 $Id$
+
+=cut

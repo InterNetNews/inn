@@ -193,7 +193,7 @@ compact.  This feature requires that INN be built with zlib. Only records
 larger than 600 bytes get compressed, because that is the point at which
 compression starts to become significant.
 
-If compression is not enabled (either from the C<compress> option in 
+If compression is not enabled (either from the C<compress> option in
 F<ovdb.conf> or INN was not built from zlib), the database will be backward
 compatible with older versions of OVDB.  However, if compression is enabled,
 the database is marked with a newer version that will prevent older versions
@@ -346,6 +346,8 @@ ov3.c
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews
 
+$Id$
+
 =head1 SEE ALSO
 
 inn.conf(5), innd(8), nnrpd(8), ovdb_init(8), ovdb_monitor(8),
@@ -356,4 +358,3 @@ source distribution, or on the Sleepycat web page:
 L<http://www.sleepycat.com/>.
 
 =cut
-

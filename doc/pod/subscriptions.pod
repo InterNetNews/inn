@@ -42,6 +42,8 @@ users group, one might want to list it first.
 
 Written by Bettina Fink <laura@hydrophil.de> for InterNetNews.
 
+$Id$
+
 =head1 SEE ALSO
 
 nnrpd(8).

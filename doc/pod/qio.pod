@@ -109,3 +109,5 @@ Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Updated by
 Russ Allbery <rra@stanford.edu>.
 
 $Id$
+
+=cut

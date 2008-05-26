@@ -90,6 +90,8 @@ because it may leave stale locks in the DB environment.
 
 Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
 
+$Id$
+
 =head1 SEE ALSO
 
 ovdb(5)

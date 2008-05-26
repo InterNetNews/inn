@@ -185,6 +185,6 @@ $Id$
 
 =head1 SEE ALSO
 
-expirerm(8)
+expirerm(8).
 
 =cut

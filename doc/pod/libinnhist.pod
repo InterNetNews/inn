@@ -300,3 +300,5 @@ type B<time_t> and will not be modified by the call.
 Written by Alex Kiernan <alexk@demon.net> for S<InterNetNews 2.4.0>.
 
 $Id$
+
+=cut

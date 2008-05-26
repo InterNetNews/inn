@@ -113,6 +113,8 @@ Katsuhiro Kondou added the B<-n> and B<-o> options.  Russ Allbery added
 reporting of percentage free disk space.  Support for B<-f> and B<-F> was
 added by Fabien Tassin <fta@sofaraway.org>.
 
+$Id$
+
 =head1 SEE ALSO
 
 df(1), innwatch.ctl(5), innstat(8).

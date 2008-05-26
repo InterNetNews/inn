@@ -32,12 +32,14 @@ delete old dump files.
 
 =back
 
-=head1 SEE ALSO
-
-ninpaths(8)
-
 =head1 HISTORY
 
 B<sendinpaths> was written by Olaf Titz <olaf@bigred.inka.de>.
+
+$Id$
+
+=head1 SEE ALSO
+
+ninpaths(8).
 
 =cut

@@ -133,6 +133,8 @@ them.  (Neither can the rest of INN at present.)
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
 POD by Russ Allbery <rra@stanford.edu>.
 
+$Id$
+
 =head1 SEE ALSO
 
 bzip2(1), compress(1), gzip(1), inn.conf(5), innd(8), nnrpd(8).

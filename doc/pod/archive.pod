@@ -126,7 +126,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5),
-newsfeeds(5).
+inn.conf(5), newsfeeds(5).
 
 =cut

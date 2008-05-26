@@ -1,7 +1,5 @@
 =head1 NNRPD External Authentication Support
 
-This is $Revision$ dated $Date$.
-
 A fundamental part of the readers.conf(5)-based authorization mechanism
 is the interface to external authenticator and resolver programs.  This
 interface is documented below.
@@ -108,5 +106,7 @@ you write, and ident.c as an example for any resolvers.
 
 Written by Aidan Cully for InterNetNews.  This documentation rewritten
 in POD by Jeffrey M. Vinocur <jeff@litech.org>.
+
+$Id$
 
 =cut

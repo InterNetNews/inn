@@ -1,7 +1,5 @@
 =head1 INN Perl Filtering and Authentication Support
 
-This is $Revision$ dated $Date$.
-
 This file documents INN's built-in support for Perl filtering and reader
 authentication.  The code is based very heavily on work by Christophe
 Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the
@@ -98,7 +96,7 @@ article.
 The contents of the %hdr hash for a typical article may therefore look
 something like this:
 
-        %hdr = (Subject      => 'MAKE MONEY FAST!!', 
+        %hdr = (Subject      => 'MAKE MONEY FAST!!',
                 From         => 'Joe Spamer <him@example.com>',
                 Date         => '10 Sep 1996 15:32:28 UTC',
                 Newsgroups   => 'alt.test',
@@ -597,3 +595,7 @@ which make use of this filter mechanism.
         A posting filter for helping a site enforce Usenet-II soundness,
         and for quotaing the number of messages any user can post to
         Usenet daily.
+
+$Id$
+
+=cut

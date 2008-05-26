@@ -255,7 +255,7 @@ that will show up in the logs S<-- anything> will do).
 
 To get your outgoing feeds working, decide whether to use B<innfeed> or
 B<nntpsend>.  Edit F<newsfeeds> and either F<innfeed.conf> or
-F<nntpsend.ctl>.  
+F<nntpsend.ctl>.
 
 In F<newsfeeds>, if using B<innfeed>, use the option which doesn't require
 you to do a separate B<innfeed> configuration unless you know more than I do.

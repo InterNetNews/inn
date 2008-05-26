@@ -76,6 +76,8 @@ not be created.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
 POD by Russ Allbery <rra@stanford.edu>.
 
+$Id$
+
 =head1 SEE ALSO
 
 inn.conf(5), nnrpd(8), uwildmat(3)

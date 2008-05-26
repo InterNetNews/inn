@@ -121,4 +121,6 @@ The idea and some implementation details for ninpaths come from the
 original inpaths program, but most of the code has been rewritten for
 clarity.  This program is in the public domain.
 
+$Id$
+
 =cut

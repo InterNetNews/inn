@@ -786,11 +786,6 @@ remains.  Use at your own risk.  No warranty is implied.
 
 =head1 SEE ALSO
 
-active(5),
-ctlinnd(8),
-getlist(8),
-inn.conf(5),
-mod-active(8),
-simpleftp(1).
+active(5), ctlinnd(8), getlist(8), inn.conf(5), mod-active(8), simpleftp(1).
 
 =cut

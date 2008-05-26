@@ -39,8 +39,7 @@ This file should not be world-readable.
 
 =head1 HISTORY
 
-Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  This is
-revision $Revision$, dated $Date$.
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 
 $Id$
 

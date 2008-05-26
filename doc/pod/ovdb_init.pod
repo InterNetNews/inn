@@ -135,6 +135,8 @@ It is OK to specify C<-u> even if no upgrades are needed.
 
 Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
 
+$Id$
+
 =head1 SEE ALSO
 
 ovdb(5), makehistory(8)

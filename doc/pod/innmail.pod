@@ -61,6 +61,8 @@ B<innmail> was written by James Brister <brister@vix.com> for
 InterNetNews.  This manual page was originally written by Jeffrey
 M. Vinocur.
 
+$Id$
+
 =head1 SEE ALSO
 
 inn.conf(5), mail(1).

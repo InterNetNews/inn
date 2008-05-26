@@ -1119,7 +1119,7 @@ buffer or extend the buffer.  The buffer described here is used for reading
 NNTP data.  Increasing this value may improve performance, but it should
 not be increased on Systems with insufficient memory.  Permitted values
 are between C<0> and C<1048576> (out of range values are treated as
-C<1048576>) and the default value is C<8192>.  
+C<1048576>) and the default value is C<8192>.
 
 =item I<icdsynccount>
 
@@ -1335,3 +1335,5 @@ inews(1), innd(8), innwatch(8), nnrpd(8), rnews(1).
 
 Nearly every program in INN uses this file to one degree or another.  The
 above are just the major and most frequently mentioned ones.
+
+=cut

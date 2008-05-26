@@ -105,4 +105,3 @@ moderators(5), motd.news(5), newsgroups(5), nnrpd(8), overview.fmt(5),
 passwd.nntp(5), subscriptions(5), uwildmat(3).
 
 =cut
-

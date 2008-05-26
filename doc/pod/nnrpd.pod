@@ -299,3 +299,5 @@ $Id$
 =head1 SEE ALSO
 
 ctlinnd(8), innd(8), inn.conf(5), signal(2), uwildmat(3).
+
+=cut

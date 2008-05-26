@@ -188,10 +188,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8),
-filechan(8),
-inn.conf(5),
-innd(8),
-newsfeeds(5).
+ctlinnd(8), filechan(8), inn.conf(5), innd(8), newsfeeds(5).
 
 =cut

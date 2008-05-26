@@ -91,11 +91,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8),
-cnfsstat(8),
-inn.conf(5),
-innwatch(8),
-ovdb(5).
+ctlinnd(8), cnfsstat(8), inn.conf(5), innwatch(8), ovdb(5).
 
 =cut
-

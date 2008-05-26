@@ -1,7 +1,5 @@
 =head1 INN Python Filtering and Authentication Support
 
-This is $Revision$, dated $Date$.
-
 This file documents INN's built-in optional support for Python article
 filtering.  It is patterned after the TCL and Perl hooks previously added
 by Bob Heiney and Christophe Wolfhugel.
@@ -579,5 +577,7 @@ authorization class to nnrpd
 intended to be a replacement for a Python native syslog
 
 =back
+
+$Id$
 
 =cut
