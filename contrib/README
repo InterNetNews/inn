@@ -45,11 +45,6 @@ backlogstat
     Prints informations about the current state of innfeed's backlog, if
     any.
 
-backupfeed
-
-    Another version of suck or pullnews that downloads posts from a remote
-    news server and offers them to the local news server.
-
 cleannewsgroups
 
     Performs various cleanups on the newsgroups file.

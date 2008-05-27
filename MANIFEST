@@ -84,7 +84,6 @@ contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
 contrib/authmysql                     Authenticator using MySQL table
 contrib/authmysql.config              Configuration for authmysql
 contrib/backlogstat.in                Analyze innfeed's backlog status
-contrib/backupfeed.in                 Suck down news via a reading connection
 contrib/cleannewsgroups.in            Script to clean newsgroups file
 contrib/count_overview.pl             Count overview entries
 contrib/delayer.in                    Delay data in a pipe, for innfeed

@@ -114,7 +114,6 @@ backends/shlock
 backends/shrinkfile
 contrib/archivegz
 contrib/backlogstat
-contrib/backupfeed
 contrib/cleannewsgroups
 contrib/delayer
 contrib/findreadgroups
