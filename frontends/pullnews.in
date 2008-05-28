@@ -56,7 +56,7 @@ use Net::NNTP 2.18; # With libnet 1.0606 (10-Dec-1998) because older versions
                     # issued MODE READER with Net::NNTP::new().
 use Getopt::Std;
 use IO::Handle;
-use POSIX qw(ceil);
+use POSIX qw(ceil floor);
 use Fcntl;
 use Fcntl qw(:flock);
 use strict;
@@ -219,7 +219,7 @@ if (defined $pathSteps) {
         die "``-P'' value not a signed integer: $opt_P\n" if $pathSteps !~ /^[-+](\d+)$/;
         $path_limit = $1;
 }
-die "option ``-r -'' needs ``-l'' option\n" if defined $opt_t and $opt_r eq '-' and not $opt_l;
+die "option ``-r -'' needs ``-l'' option\n" if defined $opt_r and $opt_r eq '-' and not $opt_l;
 die "``-S'' value not an integer: $opt_S\n" if defined $opt_S and $opt_S !~ /^\d+$/;
 die "``-t'' value not an integer: $opt_t\n" if $retries !~ m!^\d+$!;
 die "``-w'' value not an integer: $opt_w\n" if defined $watermark and $watermark !~ /^-?\d+$/;
@@ -574,8 +574,8 @@ sub crossFeedGroup {
         # We connected OK but there's nothing there, or we just want
         # to reset our highwater mark.
         $shash->{$group} = [ time, $high ];
-        print LOG " (noting to get)\n" unless $quiet;
-        return 1 ;
+        print LOG " (nothing to get)\n" unless $quiet;
+        return 1;
     }
     print LOG " ($toget to get)\n" unless $quiet;
 
@@ -697,7 +697,7 @@ sub crossFeedGroup {
             }
 
             if (!$msgid) {
-                warn "No Message-ID found in article\n";
+                warn "No Message-ID: header found in article\n";
                 next;
             } else {
                 print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n" if $debug >= 2;
