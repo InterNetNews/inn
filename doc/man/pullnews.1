@@ -129,16 +129,21 @@
 .\" ========================================================================
 .\"
 .IX Title "PULLNEWS 1"
-.TH PULLNEWS 1 "2008-04-26" "INN 2.4.4" "InterNetNews Documentation"
+.TH PULLNEWS 1 "2008-06-05" "INN 2.4.5" "InterNetNews Documentation"
 .SH "NAME"
-pullnews \- Pull news from one news server and feed it to another
+pullnews \- Pull news from multiple news servers and feed it to another
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-\&\fBpullnews\fR [\fB\-hqx\fR] [\fB\-c\fR \fIconfig\fR] [\fB\-g\fR \fIgroups\fR] [\fB\-p\fR \fIport\fR]
-[\fB\-r\fR \fIfile\fR] [\fB\-s\fR \fIto-server\fR] [<from\-server> ...]
+\&\fBpullnews\fR [\fB\-hnqRx\fR] [\fB\-b\fR \fIfraction\fR] [\fB\-c\fR \fIconfig\fR] [\fB\-C\fR \fIwidth\fR]
+[\fB\-d\fR \fIlevel\fR] [\fB\-f\fR \fIfraction\fR] [\fB\-F\fR \fIfakehop\fR] [\fB\-g\fR \fIgroups\fR]
+[\fB\-G\fR \fInewsgroups\fR] [\fB\-H\fR \fIheaders\fR] [\fB\-k\fR \fIcheckpt\fR] [\fB\-l\fR \fIlogfile\fR]
+[\fB\-m\fR \fIheader_pats\fR] [\fB\-M\fR \fInum\fR] [\fB\-N\fR \fItimeout\fR] [\fB\-p\fR \fIport\fR]
+[\fB\-P\fR \fIhop_limit\fR] [\fB\-Q\fR \fIlevel\fR] [\fB\-r\fR \fIfile\fR] [\fB\-s\fR \fIto-server\fR[:\fIport\fR]]
+[\fB\-S\fR \fImax-run\fR] [\fB\-t\fR \fIretries\fR] [\fB\-T\fR \fIconnect-pause\fR] [\fB\-w\fR \fInum\fR]
+[\fB\-z\fR \fIarticle-pause\fR] [\fB\-Z\fR \fIgroup-pause\fR] [\fIfrom-server\fR ...]
 .SH "REQUIREMENTS"
 .IX Header "REQUIREMENTS"
-The Net::NNTP module must be installed.  This module is available as part
+The \f(CW\*(C`Net::NNTP\*(C'\fR module must be installed.  This module is available as part
 of the libnet distribution and comes with recent versions of Perl.  For
 older versions of Perl, you can download it from <http://www.cpan.org/>.
 .SH "DESCRIPTION"
@@ -147,62 +152,167 @@ older versions of Perl, you can download it from <http://www.cpan.org/>.
 (normally called \fI~/.pullnews\fR) and connects to the upstream servers
 given there as a reader client.  By default, it connects to all servers
 listed in the configuration file, but you can limit \fBpullnews\fR to
-specific servers by listing them on the command line.  For each server it
-connects to, it pulls over articles and feeds them to the destination
-server via the \s-1IHAVE\s0 command.  This means that the system \fBpullnews\fR is
-run on must have feeding access to the destination news server.
+specific servers by listing them on the command line:  a whitespace-separated
+list of server names can be specified, like \fIfrom-server\fR for one of them.
+For each server it connects to, it pulls over articles and feeds them to the
+destination server via the \s-1IHAVE\s0 or \s-1POST\s0 commands.  This means that the system
+\&\fBpullnews\fR is run on must have feeding access to the destination news server.
 .PP
-\&\fBpullnews\fR is designed for very small sites that don't want to bother
+\&\fBpullnews\fR is designed for very small sites that do not want to bother
 setting up traditional peering and is not meant for handling large feeds.
 .SH "OPTIONS"
 .IX Header "OPTIONS"
+.IP "\fB\-b\fR \fIfraction\fR" 4
+.IX Item "-b fraction"
+Backtrack on server numbering reset.  Specify the proportion (\f(CW0.0\fR to \f(CW1.0\fR)
+of a group's articles to pull when the server's article number is less than
+our high for that group.  When \fIfraction\fR is \f(CW1.0\fR, pull all the articles on
+a renumbered server.  The default is to do nothing.
 .IP "\fB\-c\fR \fIconfig\fR" 4
 .IX Item "-c config"
 Normally, the config file is stored in \fI~/.pullnews\fR for the user running
 \&\fBpullnews\fR.  If \fB\-c\fR is given, \fIconfig\fR will be used as the config file
 instead.  This is useful if you're running \fBpullnews\fR as a system user on
 an automated basis out of cron rather than as an individual user.
+.Sp
+See \*(L"\s-1CONFIG\s0 \s-1FILE\s0\*(R" below for the format of this file.
+.IP "\fB\-C\fR \fIwidth\fR" 4
+.IX Item "-C width"
+Use \fIwidth\fR characters per line for the progress table.  The default value
+is \f(CW50\fR.
+.IP "\fB\-d\fR \fIlevel\fR" 4
+.IX Item "-d level"
+Set the debugging level to the integer \fIlevel\fR; more debugging output
+will be logged as this increases.  The default value is \f(CW0\fR.
+.IP "\fB\-f\fR \fIfraction\fR" 4
+.IX Item "-f fraction"
+This changes the proportion of articles to get from each group to
+\&\fIfraction\fR and should be in the range \f(CW0.0\fR to \f(CW1.0\fR (\f(CW1.0\fR being
+the default).
+.IP "\fB\-F\fR \fIfakehop\fR" 4
+.IX Item "-F fakehop"
+Prepend \fIfakehop\fR as a host to the Path: header of articles fed.
 .IP "\fB\-g\fR \fIgroups\fR" 4
 .IX Item "-g groups"
-Specifies a collection of groups to get.  \fIgroups\fR is a list of
+Specify a collection of groups to get.  \fIgroups\fR is a list of
 newsgroups separated by commas (only commas, no spaces).  Each group must
 be defined in the config file, and only the remote hosts that carry those
 groups will be contacted.  Note that this is a simple list of groups, not
 a wildmat expression, and wildcards are not supported.
+.IP "\fB\-G\fR \fInewsgroups\fR" 4
+.IX Item "-G newsgroups"
+Add the comma-separated list of groups \fInewsgroups\fR to each server in the
+configuration file (see also \fB\-g\fR and \fB\-w\fR).
 .IP "\fB\-h\fR" 4
 .IX Item "-h"
 Print a usage message and exit.
+.IP "\fB\-H\fR \fIheaders\fR" 4
+.IX Item "-H headers"
+Remove these named headers (colon\-separated list) from fed articles.
+.IP "\fB\-k\fR \fIcheckpt\fR" 4
+.IX Item "-k checkpt"
+Checkpoint (save) the config file every \fIcheckpt\fR articles
+(default is \f(CW0\fR, that is to say at the end of the session).
+.IP "\fB\-l\fR \fIlogfile\fR" 4
+.IX Item "-l logfile"
+Log progress/stats to \fIlogfile\fR (default is \f(CW\*(C`stdout\*(C'\fR).
+.IP "\fB\-m\fR \fIheader_pats\fR" 4
+.IX Item "-m header_pats"
+Feed an article based on header matching.  The argument is a number of
+whitespace-separated tuples (each tuple being a colon-separated header and
+regular expression).  For instance:
+.Sp
+.Vb 1
+\&    Hdr1:regexp1 !Hdr2:regexp2
+.Ve
+.Sp
+specifies that the article will be passed only if the \f(CW\*(C`Hdr1:\*(C'\fR header
+matches \f(CW\*(C`regexp1\*(C'\fR and the \f(CW\*(C`Hdr2:\*(C'\fR header does not match \f(CW\*(C`regexp2\*(C'\fR.
+.IP "\fB\-M\fR \fInum\fR" 4
+.IX Item "-M num"
+Specify the maximum number of articles (per group) to process.
+The default is to process all new articles.  See also \fB\-f\fR.
+.IP "\fB\-n\fR" 4
+.IX Item "-n"
+Do nothing but read articles \-\-\ does not feed articles downstream,
+writes no \fBrnews\fR file, does not update the config file.
+.IP "\fB\-N\fR \fItimeout\fR" 4
+.IX Item "-N timeout"
+Specify the timeout length, as \fItimeout\fR seconds,
+when establishing an \s-1NNTP\s0 connection.
 .IP "\fB\-p\fR \fIport\fR" 4
 .IX Item "-p port"
 Connect to the destination news server on a port other than the default of
-119.  This option does not change the port used to connect to the remote
+\&\f(CW119\fR.  This option does not change the port used to connect to the source
 news servers.
+.IP "\fB\-P\fR \fIhop_limit\fR" 4
+.IX Item "-P hop_limit"
+Restrict feeding an article based on the number of hops it has already made.
+Count the hops in the Path: header (\fIhop_count\fR), feeding the article only
+when \fIhop_limit\fR is \f(CW\*(C`+num\*(C'\fR and \fIhop_count\fR is more than \fInum\fR;
+or \fIhop_limit\fR is \f(CW\*(C`\-num\*(C'\fR and \fIhop_count\fR is less than \fInum\fR.
 .IP "\fB\-q\fR" 4
 .IX Item "-q"
 Print out less status information while running.
+.IP "\fB\-Q\fR \fIlevel\fR" 4
+.IX Item "-Q level"
+Set the quietness level (\f(CW\*(C`\-Q 2\*(C'\fR is equivalent to \f(CW\*(C`\-q\*(C'\fR).  The higher this
+value, the less gets logged.  The default is \f(CW0\fR.
 .IP "\fB\-r\fR \fIfile\fR" 4
 .IX Item "-r file"
-Rather than feeding the downloaded articles to a local server, instead
+Rather than feeding the downloaded articles to a destination server, instead
 create a batch file that can later be fed to a server using \fBrnews\fR.  See
 \&\fIrnews\fR\|(1) for more information about the batch file format.
-.IP "\fB\-s\fR \fIto-server\fR" 4
-.IX Item "-s to-server"
+.IP "\fB\-R\fR" 4
+.IX Item "-R"
+Be a reader (use \s-1MODE\s0 \s-1READER\s0 and \s-1POST\s0 commands) to the downstream
+server.  The default is to use the \s-1IHAVE\s0 command.
+.IP "\fB\-s\fR \fIto-server\fR[:\fIport\fR]" 4
+.IX Item "-s to-server[:port]"
 Normally, \fBpullnews\fR will feed the articles it retrieves to the news
 server running on localhost.  To connect to a different host, specify a
-server with the \fB\-s\fR flag.
+server with the \fB\-s\fR flag.  You can also specify the port with this same
+flag or use \fB\-p\fR.
+.IP "\fB\-S\fR \fImax-run\fR" 4
+.IX Item "-S max-run"
+Specify the maximum time \fImax-run\fR in seconds for \fBpullnews\fR to run.
+.IP "\fB\-t\fR \fIretries\fR" 4
+.IX Item "-t retries"
+The maximum number (\fIretries\fR) of attempts to connect to a server
+(see also \fB\-T\fR).  The default is \f(CW0\fR.
+.IP "\fB\-T\fR \fIconnect-pause\fR" 4
+.IX Item "-T connect-pause"
+Pause \fIconnect-pause\fR seconds between connection retries (see also \fB\-t\fR).
+The default is \f(CW1\fR.
+.IP "\fB\-w\fR \fInum\fR" 4
+.IX Item "-w num"
+Set each group's high watermark (last received article number) to \fInum\fR.
+If \fInum\fR is negative, calculate \fICurrent\fR+\fInum\fR instead (i.e. get the last
+\&\fInum\fR articles).  Therefore, a \fInum\fR of \f(CW0\fR will re-get all articles on the
+server; whereas a \fInum\fR of \f(CW\*(C`\-0\*(C'\fR will get no old articles, setting the
+watermark to \fICurrent\fR (the most recent article on the server).
 .IP "\fB\-x\fR" 4
 .IX Item "-x"
 If the \fB\-x\fR flag is used, an Xref: header is added to any article
 that lacks one.  It can be useful for instance if articles are fed
 to a news server which has \fIxrefslave\fR set in \fIinn.conf\fR.
+.IP "\fB\-z\fR \fIarticle-pause\fR" 4
+.IX Item "-z article-pause"
+Sleep \fIarticle-pause\fR seconds between articles.  The default is \f(CW0\fR.
+.IP "\fB\-Z\fR \fIgroup-pause\fR" 4
+.IX Item "-Z group-pause"
+Sleep \fIgroup-pause\fR seconds between groups.  The default is \f(CW0\fR.
 .SH "CONFIG FILE"
 .IX Header "CONFIG FILE"
 The config file for \fBpullnews\fR is divided into blocks, one block for each
 remote server to connect to.  A block begins with the host line, which
 must have no leading whitespace and contains just the hostname of the
-remote server.  Following this line should be one or more newsgroup lines
-which start with whitespace followed by the name of a newsgroup to
-retrieve.  Only one newsgroup should be listed on each line.
+remote server, optionally followed by authentication details (username
+and password for that server).
+.PP
+Following the host line should be one or more newsgroup lines which start
+with whitespace followed by the name of a newsgroup to retrieve.  Only one
+newsgroup should be listed on each line.
 .PP
 \&\fBpullnews\fR will update the config file to include the time the group was
 last checked and the highest numbered article successfully retrieved and
@@ -218,8 +328,7 @@ The full syntax is:
 .Ve
 .PP
 where the <host> line must not have leading whitespace and the <group>
-lines must.  Note that you may optionally specify a username and password
-for basic authentication to the remote server if necessary.
+lines must.
 .PP
 A typical configuration file would be:
 .PP
@@ -239,16 +348,26 @@ were just added by the user and have not yet been checked.
 .PP
 The nnrp.vix.com server requires authentication, and \fBpullnews\fR will use
 the username \f(CW\*(C`pull\*(C'\fR and the password \f(CW\*(C`sekret\*(C'\fR.
-.SH "BUGS"
-.IX Header "BUGS"
-\&\fBpullnews\fR is very simple and is lacking in more sophisticated features
-(like killing articles based on user-defined conditions) that better pull
-feeders most certainly have. It also doesn't keep or log much detail on
-articles transferred.
+.SH "FILES"
+.IX Header "FILES"
+.IP "\fIpathbin\fR/pullnews" 4
+.IX Item "pathbin/pullnews"
+The Perl script itself used to pull news from upstream servers and feed
+it to another news server.
+.IP "\fI$HOME\fR/.pullnews" 4
+.IX Item "$HOME/.pullnews"
+The default config file.  It is in the running user's home directory
+(normally called \fI~/.pullnews\fR).
 .SH "HISTORY"
 .IX Header "HISTORY"
-pullnews was written by James Brister for \s-1INN\s0.  The documentation was
+\&\fBpullnews\fR was written by James Brister for \s-1INN\s0.  The documentation was
 rewritten in \s-1POD\s0 by Russ Allbery <rra@stanford.edu>.
+.PP
+Geraint A. Edwards greatly improved \fBpullnews\fR, adding no more than 16\ new
+recognized flags, fixing some bugs and integrating the \fBbackupfeed\fR
+contrib script by Kai Henningsen, adding again 6\ other flags.
+.PP
+$Id: pullnews.pod 7853 2008\-05\-27 19:07:45Z iulius $
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIincoming.conf\fR\|(5)
+\&\fIincoming.conf\fR\|(5), \fIrnews\fR\|(1).

@@ -1,15 +1,20 @@
 =head1 NAME
 
-pullnews - Pull news from one news server and feed it to another
+pullnews - Pull news from multiple news servers and feed it to another
 
 =head1 SYNOPSIS
 
-B<pullnews> [B<-hqx>] [B<-c> I<config>] [B<-g> I<groups>] [B<-p> I<port>]
-[B<-r> I<file>] [B<-s> I<to-server>] [<from-server> ...]
+B<pullnews> [B<-hnqRx>] [B<-b> I<fraction>] [B<-c> I<config>] [B<-C> I<width>]
+[B<-d> I<level>] [B<-f> I<fraction>] [B<-F> I<fakehop>] [B<-g> I<groups>]
+[B<-G> I<newsgroups>] [B<-H> I<headers>] [B<-k> I<checkpt>] [B<-l> I<logfile>]
+[B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-p> I<port>]
+[B<-P> I<hop_limit>] [B<-Q> I<level>] [B<-r> I<file>] [B<-s> I<to-server>[:I<port>]]
+[B<-S> I<max-run>] [B<-t> I<retries>] [B<-T> I<connect-pause>] [B<-w> I<num>]
+[B<-z> I<article-pause>] [B<-Z> I<group-pause>] [I<from-server> ...]
 
 =head1 REQUIREMENTS
 
-The Net::NNTP module must be installed.  This module is available as part
+The C<Net::NNTP> module must be installed.  This module is available as part
 of the libnet distribution and comes with recent versions of Perl.  For
 older versions of Perl, you can download it from L<http://www.cpan.org/>.
 
@@ -19,17 +24,25 @@ B<pullnews> reads a config file in the running user's home directory
 (normally called F<~/.pullnews>) and connects to the upstream servers
 given there as a reader client.  By default, it connects to all servers
 listed in the configuration file, but you can limit B<pullnews> to
-specific servers by listing them on the command line.  For each server it
-connects to, it pulls over articles and feeds them to the destination
-server via the IHAVE command.  This means that the system B<pullnews> is
-run on must have feeding access to the destination news server.
+specific servers by listing them on the command line:  a whitespace-separated
+list of server names can be specified, like I<from-server> for one of them.
+For each server it connects to, it pulls over articles and feeds them to the
+destination server via the IHAVE or POST commands.  This means that the system
+B<pullnews> is run on must have feeding access to the destination news server.
 
-B<pullnews> is designed for very small sites that don't want to bother
+B<pullnews> is designed for very small sites that do not want to bother
 setting up traditional peering and is not meant for handling large feeds.
 
 =head1 OPTIONS
 
 =over 4
+
+=item B<-b> I<fraction>
+
+Backtrack on server numbering reset.  Specify the proportion (C<0.0> to C<1.0>)
+of a group's articles to pull when the server's article number is less than
+our high for that group.  When I<fraction> is C<1.0>, pull all the articles on
+a renumbered server.  The default is to do nothing.
 
 =item B<-c> I<config>
 
@@ -38,45 +51,159 @@ B<pullnews>.  If B<-c> is given, I<config> will be used as the config file
 instead.  This is useful if you're running B<pullnews> as a system user on
 an automated basis out of cron rather than as an individual user.
 
+See L<CONFIG FILE> below for the format of this file.
+
+=item B<-C> I<width>
+
+Use I<width> characters per line for the progress table.  The default value
+is C<50>.
+
+=item B<-d> I<level>
+
+Set the debugging level to the integer I<level>; more debugging output
+will be logged as this increases.  The default value is C<0>.
+
+=item B<-f> I<fraction>
+
+This changes the proportion of articles to get from each group to
+I<fraction> and should be in the range C<0.0> to C<1.0> (C<1.0> being
+the default).
+
+=item B<-F> I<fakehop>
+
+Prepend I<fakehop> as a host to the Path: header of articles fed.
+
 =item B<-g> I<groups>
 
-Specifies a collection of groups to get.  I<groups> is a list of
+Specify a collection of groups to get.  I<groups> is a list of
 newsgroups separated by commas (only commas, no spaces).  Each group must
 be defined in the config file, and only the remote hosts that carry those
 groups will be contacted.  Note that this is a simple list of groups, not
 a wildmat expression, and wildcards are not supported.
 
+=item B<-G> I<newsgroups>
+
+Add the comma-separated list of groups I<newsgroups> to each server in the
+configuration file (see also B<-g> and B<-w>).
+
 =item B<-h>
 
 Print a usage message and exit.
 
+=item B<-H> I<headers>
+
+Remove these named headers (colon-separated list) from fed articles.
+
+=item B<-k> I<checkpt>
+
+Checkpoint (save) the config file every I<checkpt> articles
+(default is C<0>, that is to say at the end of the session).
+
+=item B<-l> I<logfile>
+
+Log progress/stats to I<logfile> (default is C<stdout>).
+
+=item B<-m> I<header_pats>
+
+Feed an article based on header matching.  The argument is a number of
+whitespace-separated tuples (each tuple being a colon-separated header and
+regular expression).  For instance:
+
+    Hdr1:regexp1 !Hdr2:regexp2
+
+specifies that the article will be passed only if the C<Hdr1:> header
+matches C<regexp1> and the C<Hdr2:> header does not match C<regexp2>.
+
+=item B<-M> I<num>
+
+Specify the maximum number of articles (per group) to process.
+The default is to process all new articles.  See also B<-f>.
+
+=item B<-n>
+
+Do nothing but read articles S<-- does> not feed articles downstream,
+writes no B<rnews> file, does not update the config file.
+
+=item B<-N> I<timeout>
+
+Specify the timeout length, as I<timeout> seconds,
+when establishing an NNTP connection.
+
 =item B<-p> I<port>
 
 Connect to the destination news server on a port other than the default of
-119.  This option does not change the port used to connect to the remote
+C<119>.  This option does not change the port used to connect to the source
 news servers.
+
+=item B<-P> I<hop_limit>
+
+Restrict feeding an article based on the number of hops it has already made.
+Count the hops in the Path: header (I<hop_count>), feeding the article only
+when I<hop_limit> is C<+num> and I<hop_count> is more than I<num>;
+or I<hop_limit> is C<-num> and I<hop_count> is less than I<num>.
 
 =item B<-q>
 
 Print out less status information while running.
 
+=item B<-Q> I<level>
+
+Set the quietness level (C<-Q 2> is equivalent to C<-q>).  The higher this
+value, the less gets logged.  The default is C<0>.
+
 =item B<-r> I<file>
 
-Rather than feeding the downloaded articles to a local server, instead
+Rather than feeding the downloaded articles to a destination server, instead
 create a batch file that can later be fed to a server using B<rnews>.  See
 rnews(1) for more information about the batch file format.
 
-=item B<-s> I<to-server>
+=item B<-R>
+
+Be a reader (use MODE READER and POST commands) to the downstream
+server.  The default is to use the IHAVE command.
+
+=item B<-s> I<to-server>[:I<port>]
 
 Normally, B<pullnews> will feed the articles it retrieves to the news
 server running on localhost.  To connect to a different host, specify a
-server with the B<-s> flag.
+server with the B<-s> flag.  You can also specify the port with this same
+flag or use B<-p>.
+
+=item B<-S> I<max-run>
+
+Specify the maximum time I<max-run> in seconds for B<pullnews> to run.
+
+=item B<-t> I<retries>
+
+The maximum number (I<retries>) of attempts to connect to a server
+(see also B<-T>).  The default is C<0>.
+
+=item B<-T> I<connect-pause>
+
+Pause I<connect-pause> seconds between connection retries (see also B<-t>).
+The default is C<1>.
+
+=item B<-w> I<num>
+
+Set each group's high watermark (last received article number) to I<num>.
+If I<num> is negative, calculate S<I<Current>+I<num>> instead (i.e. get the last
+I<num> articles).  Therefore, a I<num> of C<0> will re-get all articles on the
+server; whereas a I<num> of C<-0> will get no old articles, setting the
+watermark to I<Current> (the most recent article on the server).
 
 =item B<-x>
 
 If the B<-x> flag is used, an Xref: header is added to any article
 that lacks one.  It can be useful for instance if articles are fed
 to a news server which has I<xrefslave> set in F<inn.conf>.
+
+=item B<-z> I<article-pause>
+
+Sleep I<article-pause> seconds between articles.  The default is C<0>.
+
+=item B<-Z> I<group-pause>
+
+Sleep I<group-pause> seconds between groups.  The default is C<0>.
 
 =back
 
@@ -85,9 +212,12 @@ to a news server which has I<xrefslave> set in F<inn.conf>.
 The config file for B<pullnews> is divided into blocks, one block for each
 remote server to connect to.  A block begins with the host line, which
 must have no leading whitespace and contains just the hostname of the
-remote server.  Following this line should be one or more newsgroup lines
-which start with whitespace followed by the name of a newsgroup to
-retrieve.  Only one newsgroup should be listed on each line.
+remote server, optionally followed by authentication details (username
+and password for that server).
+
+Following the host line should be one or more newsgroup lines which start
+with whitespace followed by the name of a newsgroup to retrieve.  Only one
+newsgroup should be listed on each line.
 
 B<pullnews> will update the config file to include the time the group was
 last checked and the highest numbered article successfully retrieved and
@@ -101,8 +231,7 @@ The full syntax is:
             <group> [<time> <high>]
 
 where the <host> line must not have leading whitespace and the <group>
-lines must.  Note that you may optionally specify a username and password
-for basic authentication to the remote server if necessary.
+lines must.
 
 A typical configuration file would be:
 
@@ -121,20 +250,35 @@ were just added by the user and have not yet been checked.
 The nnrp.vix.com server requires authentication, and B<pullnews> will use
 the username C<pull> and the password C<sekret>.
 
-=head1 BUGS
+=head1 FILES
 
-B<pullnews> is very simple and is lacking in more sophisticated features
-(like killing articles based on user-defined conditions) that better pull
-feeders most certainly have. It also doesn't keep or log much detail on
-articles transferred.
+=over 4
+
+=item I<pathbin>/pullnews
+
+The Perl script itself used to pull news from upstream servers and feed
+it to another news server.
+
+=item I<$HOME>/.pullnews
+
+The default config file.  It is in the running user's home directory
+(normally called F<~/.pullnews>).
+
+=back
 
 =head1 HISTORY
 
-pullnews was written by James Brister for INN.  The documentation was
+B<pullnews> was written by James Brister for INN.  The documentation was
 rewritten in POD by Russ Allbery <rra@stanford.edu>.
+
+Geraint A. Edwards greatly improved B<pullnews>, adding no more than S<16 new>
+recognized flags, fixing some bugs and integrating the B<backupfeed>
+contrib script by Kai Henningsen, adding again S<6 other> flags.
+
+$Id: pullnews.pod 7853 2008-05-27 19:07:45Z iulius $
 
 =head1 SEE ALSO
 
-incoming.conf(5)
+incoming.conf(5), rnews(1).
 
 =cut

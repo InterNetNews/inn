@@ -1,59 +1,44 @@
-#! /usr/bin/perl
-# 
+#! /usr/bin/perl -w
+#
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
 # Project:      INN
 # File:         pullnews.pl
 # RCSId:        $Id$
-# Time-stamp:	<Friday, 7 April 2000 15:17:12 by brister@nominum.com>
-# Description:  A very simple pull feeder. Connects to multiple remote 
-#		machines (in the guise of a reader), and pulls over articles 
-#		and feeds them to the local server (in the guise of a feeder).
-# 		
-# 		Uses a simple configuration file: $HOME/.pullnews to define
-# 		which machines to pull articles from and which groups at each
-# 		machine to pull over. There is no support yet for more specific
-# 		configurations like cross-posted newsgroups to kill etc.
-# 		
-# 		A configuration file looks like:
-# 		
-# 			data.pa.vix.com 
-# 				news.software.nntp 0 0
-# 				comp.lang.c 0 0
-#			news.uu.net username passwd
-#				uunet.announce 0 0
-# 				uunet.help 0 0
-# 		
-#		hostname line has no leading space on it and an optional
-#		username and password after the hostname.and all the
-#		subsequent group lines for that host must have leading
-#		spaces. The two integers on the group line will be updated by
-#		the program when it runs. They are the unix time the group was
-#		accessed, and the highest numbered article that was pulled
-#		over.
-
 #
+# History:      May 2008:  Geraint A. Edwards greatly improved pullnews, adding
+#               -b, -C, -d, -G, -H, -k, -l, -m, -M, -n, -P, -Q, -R, -t, -T, -w and
+#               improving -s as well as fixing some bugs.
+#               He also integrated the backupfeed contrib script by Kai Henningsen,
+#               adding -f, -F, -N, -S, -z and -Z to pullnews.
 #
-# NOTE NOTE NOTE NOTE:
+# Description:  A simple pull feeder.  Connects to multiple upstream 
+#               machines (in the guise of a reader), and pulls over articles 
+#               and feeds them to a downstream server (in the guise of a feeder).
 #
-# The Packages Net::NNTP is required *AND* the function Net::NNTP::new is 
-# redefined in this file. If you're using a new release of Net::NTTP *AND* 
-# if the Net::NNTP::new function supplied there does NOT call the 
-# $obj->reader() function, then you can remove the redefinition in here.
+#               Uses a simple configuration file:  $HOME/.pullnews to define
+#               which machines to pull articles from and which groups at each
+#               machine to pull over.  There is also support for more specific
+#               configurations like cross-posted newsgroups to kill, thanks to
+#               the -m flag which allows articles with headers matching regexp
+#               to be dropped.
 #
-# Net::NNTP is part of the libnet bundle by Graham Barr and is available
-# from CPAN or his site:
+#               A configuration file looks like:
 #
-# 		http://www.connect.net/gbarr/
-# 		
-
-# TODO
-#	- Have option to reset the highwater marks to match whatever 
-#	  is on the remote server.
-#	- Have an option to reset the highwater marks to zero.
-# 	- Have an option to add a group to the config.
-#	- Be able to specify articles to drop if they match a crossposted 
-#	  group or regexp.
+#                       data.pa.vix.com 
+#                               news.software.nntp 0 0
+#                               comp.lang.c 0 0
+#                       news.uu.net username password
+#                               uunet.announce 0 0
+#                               uunet.help 0 0
+#
+#               Hostname lines have no leading space and may have an optional
+#               username and password after the hostname; all the
+#               subsequent group lines for that host must have leading
+#               spaces.  The two integers on the group line will be updated by
+#               the program when it runs.  They are the Unix time the group was
+#               accessed, and the highest numbered article that was pulled
+#               over.
 #
 
 require 5.004;
@@ -64,12 +49,14 @@ my $rcsID =<<'EOM';
 $Id$
 EOM
 
-$SIG{INT} = \&outtaHere ;
-$SIG{QUIT} = \&bail ;
+$SIG{INT} = \&outtaHere;
+$SIG{QUIT} = \&bail;
 
-use Net::NNTP;
-use Getopt::Std ;
+use Net::NNTP 2.18; # With libnet 1.0606 (10-Dec-1998) because older versions
+                    # issued MODE READER with Net::NNTP::new().
+use Getopt::Std;
 use IO::Handle;
+use POSIX qw(ceil floor);
 use Fcntl;
 use Fcntl qw(:flock);
 use strict;
@@ -78,85 +65,207 @@ my $usage = $0;
 my $defaultConfig = "$ENV{HOME}/.pullnews";
 my $defaultPort = 119;
 my $defaultHost = "localhost";
+my $defaultCheckPoint = 0;
+my $defaultRetries = 0;
+my $defaultDebug = 0;
+my $defaultRetryTime = 1;
+my $defaultProgressWidth = 50;
+my $defaultMaxArts;
 
 $usage =~ s!.*/!!;
-$usage .= " [ -h -q -x -r file -g groups -c config -s host -p port ]
+$usage .= " [ -hnqRx -b fraction -c config -C width -d level
+        -f fraction -F fakehop -g groups -G newsgroups -H headers
+        -k checkpt -l logfile -m header_pats -M num -N num
+        -p port -P hop_limit -Q level -r file -s host[:port] -S num
+        -t retries -T seconds -w num -z num -Z num ]
+        [ upstream_host ... ]
 
-  -g groups	specifies a collection of groups to get. The value must be 
-		a single argument with commas between group names:
-		
-			-g comp.lang.c,comp.lang.lisp,comp.lang.python
-		
-		the groups must be defined in the config file somewhere. 
-		Only the hosts that carry those groups will be contacted.
+  -b fraction   backtrack on server numbering reset.  The proportion
+                (0.0 to 1.0) of a group's articles to pull when the
+                server's article number is less than our high for that
+                group.  When fraction is 1.0, pull all the articles on
+                the server.  The default is to do nothing.
 
-  -c config	specifies the configuration file instead of the 
-		default of $ENV{HOME}/.pullnews
+  -c config     specify the configuration file instead of the 
+                default of $ENV{HOME}/.pullnews (also called ~/.pullnews).
 
-  -s host	specifies the hostname to feed articles to (default 
-		is $defaultHost)
+  -C width      use width characters for progress (default is $defaultProgressWidth).
 
-  -p port	specifies the port to connect to to feed articles (default 
-		is: $defaultPort).
+  -d level      set debugging level to this integer (default is $defaultDebug).
 
-  -r file	instead of feeding to a server $0 will instead
-		create an rnews-compatible file.
+  -f fraction   proportion of articles to get in each group (0.0 to 1.0).
 
-  -x 		insert an Xref header in any article that lacks one.
+  -F fakehop    prepend fakehop as a host to the Path: header.
 
-  -q 		$0 will normally be verbose about what it's doing. This 
-		option will make it quiet.
+  -g groups     specify a collection of groups to get.  The value must be 
+                a single argument with commas between group names:
 
-  -h		prints this message.
+                        -g comp.lang.c,comp.lang.lisp,comp.lang.python
+
+                The groups must be defined in the config file somewhere. 
+                Only the hosts that carry those groups will be contacted.
+
+  -G newsgroups add these groups to the configuration (see -g and -w).
+
+  -h            print this message.
+
+  -H headers    remove these named headers (colon-separated list).
+
+  -k checkpt    checkpoint the config file every checkpt articles
+                (default is $defaultCheckPoint).  A value of 0 means
+                normally (at end).
+
+  -l logfile    log progress/stats to logfile (default is stdout).
+
+  -m 'Hdr1:regexp1 !Hdr2:regexp2 ...'
+                feed article only if:
+                the Hdr1: header matches regexp1
+                and the Hdr2: header does not match regexp2.
+
+  -M num        maximum number of articles (per group) to process before
+                bailing out.
+
+  -n            do nothing -- just fake it.
+
+  -N num        timeout length when establishing NNTP connection.
+
+  -p port       specify the port to connect to in order to feed articles
+                (default is $defaultPort).
+
+  -P hop_limit  count hops ('!') in the Path: header, feed article only if: 
+                hop_limit is '+num' and hop_count is more than num;
+                or hop_limit is '-num' and hop_count is less than num.
+
+  -q            $0 will normally be verbose about what it is doing.  This 
+                option will make it quiet.
+
+  -Q level      set the quietness level (-Q 2 is equivalent to -q).
+
+  -r file       rather than feeding to a server, $0 will instead
+                create an rnews-compatible file.
+
+  -R            be a reader (use MODE READER and POST)
+
+  -s host[:port]
+                specify the downstream hostname (and optional port)
+                (default is $defaultHost).
+
+  -S num        specify the maximum time (in seconds) to run.
+
+  -t retries    number of attempts to connect to a server
+                (default is $defaultRetries, see also -T).
+
+  -T secs       time (in seconds) to pause between retries
+                (default is $defaultRetryTime, see also -t).
+
+  -w num        set highwater mark to num (if num is negative, use Current+num
+                instead); a num of 0 will re-get all articles on the server;
+                but a num of -0 will get no old articles, set mark to Current.
+
+  -x            insert an Xref: header in any article that lacks one.
+
+  -z num        time (in seconds) to sleep between articles.
+
+  -Z num        time (in seconds) to sleep between groups.
 ";
 
 
-use vars qw($opt_q $opt_r $opt_x $opt_s $opt_c $opt_g $opt_p $opt_h);
-getopts("r:c:s:qxg:p:h") || die $usage;
+use vars qw($opt_b $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
+            $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
+            $opt_N $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
+            $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
+getopts("b:c:C:d:f:F:g:G:hH:k:l:m:M:nN:p:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
 
 die $usage if $opt_h;
 
-my @groupsToGet = ();		# empty list means all groups in config file.
-my $rnews = $opt_r;
-my $groupFile = $opt_c || $defaultConfig;
-my $localServer = $opt_s || $defaultHost ;
-my $localPort = $opt_p || $defaultPort;
-my $quiet = $opt_q;
+my @groupsToGet         = ();        # Empty list means all groups in config file.
+my @groupsToAdd         = ();
+my $rnews               = $opt_r;
+my $groupFile           = $opt_c || $defaultConfig;
+my $localServer         = $opt_s || $defaultHost;
+my $localPort           = $opt_p || $defaultPort;
+my $quiet               = $opt_q;
+my $watermark           = $opt_w;
+my $retries             = $opt_t || $defaultRetries;
+my $retryTime           = $opt_T || $defaultRetryTime;
+my $checkPoint          = $opt_k || $defaultCheckPoint;
+my $debug               = $opt_d || $defaultDebug;
+my $progressWidth       = $opt_C || $defaultProgressWidth;
+my $maxArts             = $opt_M || $defaultMaxArts;
+my $no_op               = $opt_n || 0;
+my $reader              = $opt_R || 0;
+my $quietness           = $opt_Q || 0;
+my $skip_headers        = lc($opt_H) || '';
+my $logFile             = '>&STDOUT';
+$logFile                = ">>$opt_l" if $opt_l;
+my @hdr_to_match        = split(/\s+/, $opt_m) if defined $opt_m;
+my $pathSteps           = $opt_P if defined $opt_P;
+my $path_limit;
 
-die "can\'t have both ``-s'' and ``-r''\n" if $opt_s && $opt_r;
+$localPort = $1 if not defined $opt_p and $localServer =~ s/:(\d+)$//;
+
+die "can\'t have both ``-s'' and ``-r''\n"  if $opt_s && $opt_r;
+
+die "``-b'' value not 0.0-1.0: $opt_b\n"    if defined $opt_b and $opt_b !~ /^([01](\.0*)?|0?\.\d+)$/;
+die "``-C'' value not an integer: $opt_C\n" if $progressWidth !~ m!^\d+$!;
+die "``-d'' value not an integer: $opt_d\n" if $debug !~ m!^\d+$!;
+die "``-f'' value not 0.0-1.0: $opt_f\n"    if defined $opt_f and $opt_f !~ /^([01](\.0*)?|0?\.\d+)$/;
+die "``-F'' value not a hostname: $opt_F\n" if defined $opt_f and $opt_f !~ m!^[\w\-\.]+$!;
+die "``-k'' value not an integer: $opt_k\n" if $checkPoint !~ m!^\d+$!;
+die "``-M'' value not an integer: $opt_M\n" if defined $maxArts and $maxArts !~ m!^\d+$!;
+die "``-N'' value not an integer: $opt_N\n" if defined $opt_N and $opt_N !~ /^\d+$/;
 die "``-p'' value not an integer: $opt_p\n" if $localPort !~ m!^\d+$!;
+if (defined $pathSteps) {
+        die "``-P'' value not a signed integer: $opt_P\n" if $pathSteps !~ /^[-+](\d+)$/;
+        $path_limit = $1;
+}
+die "option ``-r -'' needs ``-l'' option\n" if defined $opt_r and $opt_r eq '-' and not $opt_l;
+die "``-S'' value not an integer: $opt_S\n" if defined $opt_S and $opt_S !~ /^\d+$/;
+die "``-t'' value not an integer: $opt_t\n" if $retries !~ m!^\d+$!;
+die "``-w'' value not an integer: $opt_w\n" if defined $watermark and $watermark !~ /^-?\d+$/;
+die "``-z'' value not an integer: $opt_z\n" if defined $opt_z and $opt_z !~ /^\d+$/;
+die "``-Z'' value not an integer: $opt_Z\n" if defined $opt_Z and $opt_Z !~ /^\d+$/;
 
-@groupsToGet = map { s!^\s*(\S+)s*!$1!; $_ } split (",", $opt_g) if $opt_g;
+$quiet = 1 if $quietness > 1;
+my %NNTP_Args = ();
+$NNTP_Args{'Timeout'} = $opt_N if defined $opt_N;
 
-$| = 1 ;
+@groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split (",", $opt_g) if $opt_g;
+@groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split (",", $opt_G) if $opt_G;
 
-my $servers = {} ;
-my $sname = undef ;
-my %fed = () ;
+$| = 1;
+
+my $servers = {};
+my $sname = undef;
+my %fed = ();
 my %refused = ();
 my %rejected = ();
-my $pulled = {} ;
+my $pulled = {};
 my %passwd = ();
+my %info        = (
+        fed      => 0,
+        refused  => 0,
+        rejected => 0,
+        bytes    => 0,
+);
 
 if ($rnews) {
-    open(RNEWS, ">$rnews") || 
-	die "cant open rnews-format ouptut: $rnews: $!\n";
-    if ($rnews eq "-") {
-	open(LOG, ">/dev/null") || die "can\'t open /dev/null!: $!\n";
+    if ($no_op) {
+        print "Would write to rnews file $rnews\n";
     } else {
-	open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
+        open(RNEWS, ">$rnews") ||
+            die "can't open rnews-format output: $rnews: $!\n";
     }
-}  else {
-    open(LOG, ">&STDOUT") || die "can't dup stdout!: $!\n";
 }
+open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 
-my $oldfh = select ;
-$| = 1; select LOG ; $| = 1; select $oldfh;
+my $oldfh = select;
+$| = 1; select LOG; $| = 1; select $oldfh;
 
 my $lockfile = $ENV{HOME} . "/.pullnews.pid";
 sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700) ||
-    die "cant create lock file ($lockfile): $!\n";
-$oldfh = select ; select LOCK ; $| = 1; select $oldfh;
+    die "can't create lock file ($lockfile): $!\n";
+$oldfh = select; select LOCK; $| = 1; select $oldfh;
 
 if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
     seek LOCK, 0, 0;
@@ -167,400 +276,546 @@ if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
 
 print LOCK "$$\n";
 
-print LOG "Starting: ", scalar(localtime(time)), "\n\n" unless $quiet;
+print LOG scalar(localtime(time)), " start\n\n" unless $quiet;
 
 if (@groupsToGet && ! $quiet) {
     print LOG "Checking for specific groups:\n";
-    map { printf LOG "\t%s\n", $_ } @groupsToGet ;
+    map { printf LOG "\t%s\n", $_ } @groupsToGet;
     print LOG "\n";
 }
 
-open(FILE, "<$groupFile") || die "can't open group file $groupFile\n" ;
+open(FILE, "<$groupFile") || die "can't open group file $groupFile\n";
 while (<FILE>) {
-    next if m!^\s*\#! || m!^\s*$! ;
+    next if m!^\s*\#! || m!^\s*$!;
 
-    if (m!^(\S+)\s*((\S+)\s+(\S+))?$!) {
-	$sname = $1 ;
-	$servers->{$sname} = {} ;
-	$passwd{$sname} = [ $3, $4 ] if ($3 ne "");
+    if (m!^(\S+)(\s+(\S+)\s+(\S+))?\s*$!) {
+        $sname = $1;
+        $servers->{$sname} = {};
+        $passwd{$sname} = [ $3, $4 ] if defined $3 and $3 ne "";
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
-	my ($group,$date,$high) = ($1,$2,$3) ;
-	$servers->{$sname}->{$group} = [ $date, $high ];
+        my ($group,$date,$high) = ($1,$2,$3);
+        $servers->{$sname}->{$group} = [ $date, $high ];
     } elsif (m!^\s+(\S+)\s*$!) {
-	# assume this is a new group
-	my ($group,$date,$high) = ($1,0,0) ;
-	print LOG "Looking for new group $group on $sname\n" unless $quiet ;
-	$servers->{$sname}->{$group} = [ $date, $high ]; 
+        # Assume this is a new group.
+        my ($group,$date,$high) = ($1,0,0);
+        print LOG "Looking for new group $group on $sname\n" unless $quiet;
+        $servers->{$sname}->{$group} = [ $date, $high ]; 
     } else { 
-	die "Fatal error in $groupFile: $.: $_\n" ;
+        die "Fatal error in $groupFile: $.: $_\n";
     }
 }
-close FILE ;
+close FILE;
 
-my @servers = (@ARGV || sort keys %$servers) ;
+my @servers = (@ARGV || sort keys %$servers);
 
-die "No servers!\n" if ! @servers ;
+die "No servers!\n" if ! @servers;
 
 my $localcxn;
 
-if ( ! $rnews ) {
+if ( not $rnews ) {
     print LOG "Connecting to downstream host: $localServer " .
-	"port: $localPort ..."
-	unless $quiet;
+        "port: $localPort ..."
+        unless $quiet;
 
-    my %localopts = ("Port" => "$localPort");
+    my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
     $localcxn = Net::NNTP->new($localServer, %localopts) ||
-	die "Cant connect to server $localServer\n" ;
+        die "Can't connect to server $localServer\n";
 }
 
-if ( !$quiet ) {
+if ( not $quiet and not $quietness ) {
     print LOG "done.\n\n";
     print LOG "Legend: ``.'' is an article the downstream server refused\n";
     print LOG "        ``*'' is an article the downstream server rejected\n";
     print LOG "        ``+'' is an article the downstream server accepted\n";
     print LOG "        ``x'' is an article the upstream server couldn't ";
-    print LOG "give out.\n";
+    print LOG "give out\n";
+    print LOG "        ``m'' is an article skipped due to headers (-m)\n";
     print LOG "\n";
+    print LOG "Writing to rnews-format output: $rnews\n\n" if $rnews;
 }
 
 foreach my $server (@servers) {
     my ($username, $passwd);
 
-    if (@groupsToGet > 0) {
-	my $ok;
-	foreach my $sgroup (keys %{$servers->{$server}}) {
-	    $ok = 1 if grep($_ eq $sgroup, @groupsToGet);
-	}
+    foreach my $addGroup (@groupsToAdd) {
+        next if defined $servers->{$server}->{$addGroup};
+        $servers->{$server}->{$addGroup} = [ 0, 0 ];
+    }
 
-	if (! $ok) {
-	    # user gave -g and the server doesn't have those groups 
-	    warn "Skipping server $server. Doesn't have specified groups\n";
-	    next;
-	}
+    if (@groupsToGet > 0) {
+        my $ok;
+        foreach my $sgroup (keys %{$servers->{$server}}) {
+            $ok = 1 if grep($_ eq $sgroup, @groupsToGet);
+        }
+
+        if (! $ok) {
+            # User gave -g and the server doesn't have those groups.
+            warn "Skipping server $server.  Doesn't have specified groups.\n";
+            next;
+        }
     }
 
     if (exists $passwd{$server}) {
-	($username, $passwd) = @{$passwd{$server}} ;
+        ($username, $passwd) = @{$passwd{$server}};
     }
 
     if (!exists($servers->{$server})) {
-	warn "No such upstream host $server configured.\n" ;
-	next ;
+        warn "No such upstream host $server configured.\n";
+        next;
     }
 
-    my $shash = $servers->{$server} ;
+    my $shash = $servers->{$server};
 
-    print LOG "connecting to upstream server $server..." unless $quiet ;
-    my $upstream = Net::NNTP->new($server) ;
+    my $connectionAttempts = 0;
+    my $upstream;
+    {{
+        print LOG "connecting to upstream server $server..." unless $quiet;
+        $upstream = Net::NNTP->new($server, %NNTP_Args);
+        $connectionAttempts++;
+        if (!$upstream && $connectionAttempts <= $retries) {
+            sleep $retryTime;
+            next;
+        }
+    }}
 
     if (!$upstream) {
-	print LOG "failed." unless $quiet;
-	warn "cant connect to upstream server $server: $!\n" ;
-	next ;
+        print LOG "failed.\n" unless $quiet;
+        warn "can't connect to upstream server $server: $!\n";
+        next;
     } else {
-	print LOG "done.\n" unless $quiet ;
-    }
-
-    if (!$upstream->reader()) {
-	warn sprintf ("Cant issue MODE READER command: %s %s\n",
-		      $upstream->code(), $upstream->message());
-	warn "We\'ll try anyway\n" ;
+        print LOG "done.\n" unless $quiet;
     }
 
     if ($username && !$upstream->authinfo($username, $passwd)) {
-	warn sprintf ("failed to authorize: %s %s\n",
-		      $upstream->code(), $upstream->message());
-	next;
+        warn sprintf ("failed to authorize: %s %s\n",
+                      $upstream->code(), $upstream->message());
+        next;
     }
+
+    $info{server}->{$server}->{bytes} = 0;
+    $info{server}->{$server}->{fed} = 0;
+    $info{server}->{$server}->{refused} = 0;
+    $info{server}->{$server}->{rejected} = 0;
 
     foreach my $group (sort keys %{$servers->{$server}}) {
-	next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
+        next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
 
-	last if !crossFeedGroup ($upstream,$localcxn,$server,$group,$shash) ;
+        last if !crossFeedGroup ($upstream,$localcxn,$server,$group,$shash);
+        last if defined $opt_S and time >= $^T+$opt_S;
+        sleep $opt_Z if defined $opt_Z;
     }
 
-    $upstream->quit() ;
+    $upstream->quit();
+    last if defined $opt_S and time >= $^T+$opt_S;
 }
 
-saveConfig () ;
-stats() unless $quiet ;
+saveConfig ();
+stats() unless $quiet;
+
+if ($rnews) {
+    if (not $no_op and not close RNEWS) {
+        print LOG "\nRNEWS close failure: $!";
+    }
+    unlink $rnews if -f $rnews and not -s $rnews;
+}
 
 print LOG "\nDone ", scalar(localtime(time)), "\n" unless $quiet;
 
-exit (0) ;
+cleanLock();
+exit (0);
 
-#########################
+###############################################################################
 
 sub stats {
-    my $ltotal ;
-    my $reftotal ;
-    my $rejtotal ;
+    my $ltotal = 0;
+    my $reftotal = 0;
+    my $rejtotal = 0;
     my $sum;
 
     map { $reftotal += $refused{$_} } keys %refused;
     map { $rejtotal += $rejected{$_} } keys %rejected;
-    map { $ltotal += $fed{$_} } keys %fed ;
-    
+    map { $ltotal += $fed{$_} } keys %fed;
+
     $sum = $reftotal + $rejtotal + $ltotal;
 
-    printf LOG "\n%d article%s were offered to server on $localServer\n",
-        $sum, ($sum != 1 ? "s" : "") ;
+    if ($quiet) {
+        printf LOG localtime() . " [$$] %d article%s to $localServer\n",
+            $sum, ($sum != 1 ? "s" : "");
+    } else {
+        printf LOG "\n%d article%s offered to server on $localServer\n",
+            $sum, ($sum != 1 ? "s were" : " was");
+    }
 
     return if ($sum == 0);
 
-    printf LOG "%d article%s accepted\n",
-        $ltotal, ($ltotal != 1 ? "s were" : " was") 
-	    if ($ltotal != 0);
-    printf LOG "%d article%s refused\n",
-        $reftotal, ($reftotal != 1 ? "s were" : " was") 
-	    if ($reftotal != 0);
-    printf LOG "%d article%s rejected\n",
-        $rejtotal, ($rejtotal != 1 ? "s were" : " was") 
-	    if ($rejtotal != 0);
+    if ($quiet) {
+        print LOG localtime() . " [$$] $ltotal ok, $reftotal ref, $rejtotal rej\n";
+    } else {
+        printf LOG "%d article%s accepted\n",
+            $ltotal, ($ltotal != 1 ? "s were" : " was") 
+                if ($ltotal != 0);
+        printf LOG "%d article%s refused\n",
+            $reftotal, ($reftotal != 1 ? "s were" : " was") 
+                if ($reftotal != 0);
+        printf LOG "%d article%s rejected\n",
+            $rejtotal, ($rejtotal != 1 ? "s were" : " was") 
+                if ($rejtotal != 0);
+    }
 
     map { 
-	print LOG "\nUpstream server $_:\n" ; 
-	my $server = $_;
-	my $width = 0;
+        print LOG "\nUpstream server $_:\n" if not $quiet; 
+        my $server = $_;
+        my $width = 0;
 
-	map {
-	    $width = length if length > $width;
-	} sort keys %{$pulled->{$server}};
+        map {
+            $width = length if length > $width;
+        } sort keys %{$pulled->{$server}} if not $quiet;
 
-	map { 
-	    printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}->{$_};
-	} sort keys %{$pulled->{$server}};
-    } sort keys %{$pulled} ;
+        map { 
+            if ($quiet) {
+                printf LOG "%s [$$] from $server $_ %s\n", localtime(), $pulled->{$server}->{$_};
+            } else {
+                printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}->{$_};
+            }
+        } sort keys %{$pulled->{$server}};
+    } sort keys %{$pulled};
 }
 
 sub saveConfig {
+    return if $no_op;
+
     $SIG{INT} = $SIG{QUIT} = 'IGNORE';
 
-    open(FILE,">$groupFile") || die "can't open $groupFile: $!\n" ;
-    my $server ;
-    my $group ;
+    open(FILE,">$groupFile") || die "can't open $groupFile: $!\n";
+    my $server;
+    my $group;
 
-    print LOG "\nSaving config\n" unless $quiet ;
-    print FILE "# Format: (date is epoch seconds)\n" ;
-    print FILE "# hostname [username passwd]\n" ;
-    print FILE "# 	group date high\n" ;
+    print LOG "\nSaving config\n" unless $quiet;
+    print FILE "# Format: (date is epoch seconds)\n";
+    print FILE "# hostname [username password]\n";
+    print FILE "#         group date high\n";
     foreach $server (sort keys %$servers) {
-	print FILE "$server" ;
-	if (defined $passwd{$server}) {
-	    printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
-	}
-	print FILE "\n";
-	foreach $group (sort keys %{$servers->{$server}}) {
-	    my ($date,$high) = @{$servers->{$server}->{$group}} ;
-	    printf FILE "\t%s %d %d\n",$group,$date,$high ;
-	}
+        print FILE "$server";
+        if (defined $passwd{$server}) {
+            printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
+        }
+        print FILE "\n";
+        foreach $group (sort keys %{$servers->{$server}}) {
+            my ($date,$high) = @{$servers->{$server}->{$group}};
+            printf FILE "\t%s %d %d\n",$group,$date,$high;
+        }
     }
-    close FILE ;
+    close FILE;
 }
 
 
 sub outtaHere {
-    saveConfig() ;
-    exit (0) ;
+    saveConfig();
+    cleanLock();
+    exit (0);
+}
+
+sub cleanLock {
+    flock (LOCK, LOCK_UN);
+    unlink $lockfile if defined $lockfile;
 }
 
 sub bail {
-    warn "received QUIT signal. Not saving config.\n";
+    warn "received QUIT signal.  Not saving config.\n";
+    cleanLock();
     exit (0);
 }
 
 sub crossFeedGroup {
-    my ($fromServer,$toServer,$server,$group,$shash) = @_ ;
-    my ($date,$high) = @{$shash->{$group}} ;
-    my ($prevDate,$prevHigh) = @{$shash->{$group}} ;
+    my ($fromServer,$toServer,$server,$group,$shash) = @_;
+    my ($date,$high) = @{$shash->{$group}};
+    my ($prevDate,$prevHigh) = @{$shash->{$group}};
     my ($narticles,$first,$last,$name) = $fromServer->group($group);
-    my $count ;
-    my $code ;
+    my $count = 0;
+    my $code;
     my $startTime = time;
+    my ($prevRefused, $prevRejected) = ($info{refused}, $info{rejected});
 
-    if (!defined($narticles)) { # group command failed.
-	warn sprintf ("Group command failed: %s %s\n",
-		      $fromServer->code(), $fromServer->message());
-	return undef;
+    if (!defined($narticles)) { # Group command failed.
+        warn sprintf ("Group command failed: %s %s\n",
+                      $fromServer->code(), $fromServer->message());
+        return undef;
     }
 
-    printf LOG "\n%s:\n", $name;
-    printf LOG "\tlast checked: %s\n", scalar(localtime($prevDate));
-    printf LOG "\t%d articles available. First %d Last %d\n",
-           $narticles, $first, $last ;
-    printf LOG "\tOur current highest: %d", $prevHigh, ;
-    
-    return 0 if ! $name ;
-    if ($narticles  == 0) {
-	print LOG " (nothing to get)\n";
-	return 1 ;
+    if (not $quiet) {
+        printf LOG "\n%s:\n", $name;
+        printf LOG "\tlast checked: %s\n", scalar(localtime($prevDate));
+        printf LOG "\t%d articles available.  First %d Last %d\n",
+               $narticles, $first, $last;
+    }
+    if (defined $watermark) {
+        printf LOG "\tOur previous highest: %d\n", $prevHigh if not $quiet;
+        $high = $watermark;
+        $high = $last+$watermark if substr($watermark, 0, 1) eq '-';
+        $high = 0 if $high < 0;
+        $shash->{$group} = [ time, $high ];
+    }
+    printf LOG "\tOur current highest: %d", $high if not $quiet;
+
+    return 0 if ! $name;
+    if ($narticles == 0) {
+        print LOG " (nothing to get)\n" unless $quiet;
+        return 1;
     }
 
-    if ($prevHigh == -1 || $last <= $prevHigh) {
-	# we connected OK but there's nothing there, or we just want 
-	# to reset our highwater mark.
-	$shash->{$group} = [ time, $high ];
-	print LOG " (nothing to get)\n";
-	return 1 ;
-    } else {
-	my $toget = (($last - $prevHigh) < $narticles ?
-		     $last - $prevHigh : $narticles);
-
-	printf LOG " (%d to get)\n", $toget;
+    my $toget = (($last - $high) < $narticles ?
+                     $last - $high : $narticles);
+    $toget = ceil($toget * $opt_f) if defined $opt_f;
+    if ($last < $high and $opt_b) {
+        $high = $first+floor(($last-$first+1)*(1-$opt_b));
+        $toget = $last - $high;
+        print LOG " (reset highwater mark to $high)" unless $quiet;
+    } elsif ($prevHigh == -1 || $last <= $prevHigh) {
+        # We connected OK but there's nothing there, or we just want
+        # to reset our highwater mark.
+        $shash->{$group} = [ time, $high ];
+        print LOG " (nothing to get)\n" unless $quiet;
+        return 1;
     }
-    
+    print LOG " ($toget to get)\n" unless $quiet;
+
     my $i;
+    my @warns;
     for ($i = ($first > $high ? $first : $high + 1) ; $i <= $last ; $i++) {
-	$count++ ;
-	my $article = $fromServer->article($i) ;
-	if ($article) {
-	    my $msgid ;
-	    my $xref = 0;
-	    my $headers = 1;
-	    my $idx;
+        $count++;
+        last if defined $maxArts and $count > $maxArts;
+        last if defined $opt_f and $count > $toget;
+        sleep $opt_z if defined $opt_z and $count > 1;
+        my $article = $fromServer->article($i);
+        if ($article) {
+            my $msgid;
+            my $xref = 0;
+            my $headers = 1;
+            my $idx;
+            my $len = 0;                 # Received article length (bytes) (for stats).
+            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews).
+            my @header_nums_to_go = ();
+            my $match_all_hdrs = 1;      # Assume no headers to match.
+            my $skip_due_to_hdrs = 0;
+            my %m_found_hdrs = ();
+            my $curr_hdr = '';
 
-	    for ($idx = 0 ; $idx < @{$article} ; $idx++) {
-		if ($article->[$idx] =~ m!^message-id:\s*(\S+)!i) {
-		    $msgid = $1 ;
-		}
+            for ($idx = 0 ; $idx < @{$article} ; $idx++) {
+                $len += length($article->[$idx]);
+                $tx_len += length($article->[$idx]);
+                next if not $headers;
 
-		if ($opt_x && $article->[$idx] =~ m!^xref:!i) {
-		    $xref = 1;
-		}
+                $curr_hdr = lc($1) if $article->[$idx] =~ /^([^:[:blank:]]+):/;
+                $curr_hdr = '    ' if $article->[$idx] eq "\n";
 
-		# catch some of the more common problems with articles.
-		if ($article->[$idx] =~ m!^\s+\n$!) {
-		    $article->[$idx] = "\n";
-		    warn "Fixing bad header line: $article->[$idx]\n";
-		}
+                if ($match_all_hdrs and @hdr_to_match and $article->[$idx] =~ /^[^[:blank:]]/) {
+                    # Check header matches -m flag if new header.
 
-		last if ($article->[$idx] eq "\n");
-	    }
+                    # Unfold this header (with following lines).
+                    my $unfolded_art_hdr = $article->[$idx];
+                    for (my $idx_step = $idx+1;  $article->[$idx_step] =~ /^[[:space:]](.+)/; $idx_step++) {
+                        # While next line is continuation...
+                        my $more_line = $1;
+                        chomp $unfolded_art_hdr;
+                        $unfolded_art_hdr .= $more_line;
+                    }
 
-	    if (!$msgid) {
-		warn "No message-id found in article\n" ;
-		next ;
-	    }
-	    
-	    # some old servers lack Xref: which bothers a downstream INN if
-	    # it has xrefslave set, so add one just before the blank line.
-	    if ($opt_x && !$xref) {
-		warn "No xref found in article, adding\n";
-		splice(@{$article}, $idx, 0, "Xref: $server $group: $i\n");
-	    }
+                    my ($hdr_un, $val_un) = split(':', $unfolded_art_hdr, 2);
+                    $val_un = '' if not defined $val_un;
+                    $val_un =~ s/^\s*//;
+                    for my $tuple_match (@hdr_to_match) {
+                        my ($hdr_m, $val_m) = split(':', $tuple_match, 2);
+                        my $negate_h = ($hdr_m =~ s/^!//);
+                        next if lc($hdr_un) ne lc($hdr_m);
+                        $m_found_hdrs{lc($hdr_m)} = 1;
+                        if ($negate_h) {
+                            if ($val_un =~ /$val_m/i) {
+                                print LOG "\tDEBUGGING $i\t-- $hdr_un [$1]\n" if $debug >= 2;
+                                $match_all_hdrs = 0;
+                            }
+                        } elsif (not $val_un =~ /$val_m/i) {
+                            print LOG "\tDEBUGGING $i\t++ $hdr_un [$1]\n" if $debug >= 2;
+                            $match_all_hdrs = 0;
+                        }
+                        last if not $match_all_hdrs;
+                    }
+                }
 
-	    $pulled->{$server}->{$group}++;
-	    
-	    if ($rnews) {
-		my $len = 0;
-		map { $len += length($_) } @{$article};
-		printf RNEWS "#! rnews %d\n", $len;
-		map { print RNEWS $_ } @{$article};
-		print LOG "+" unless $quiet;
-	    } else {
-		if (!$toServer->ihave($msgid,$article)) {
-			my $code = $toServer->code() ;
-			if ($code == 435) {
-			    print LOG "." unless $quiet;
-			    $refused{$group}++;
-			} elsif ($code == 437) {
-			    print LOG "*" unless $quiet;
-			    $rejected{$group}++;
-			} else {
-			    warn "Transfer to local server failed: ",
-			        $toServer->message,"\n" ;
-			        $toServer->quit() ;
-	
-		    		saveConfig() ;
-		    		exit (1);
-			}
-	    	} else {
-			print LOG "+" unless $quiet;
-			$fed{$group}++ ;
-	    	}
-	    }
-	    
-	    $shash->{$group} = [ time, $i ];
-	} else {
-	    print LOG "x" unless $quiet;
-##	    printf LOG ("\nDEBUGGING %d %d\n", $fromServer->code(),
-##			$fromServer->message());
-	}
-	print LOG "\n" if (!$quiet && (($count % 50) == 0)) ;
+                if (grep { $curr_hdr eq $_ } split(':', $skip_headers)) {
+                    print LOG "\tDEBUGGING $i\tskip_hdr $idx\t$curr_hdr\n" if $debug >= 2;
+                    push @header_nums_to_go, $idx;
+                }
+                if ($article->[$idx] =~ m!^message-id:\s*(\S+)!i) {
+                    $msgid = $1;
+                }
+                if (not $skip_due_to_hdrs and defined $pathSteps and $article->[$idx] =~ m!^Path:\s*!i) {
+                    my $path_count = $article->[$idx];
+                    $path_count = ($path_count =~ s@!@@g) || 0;
+                    if (substr($pathSteps, 0, 1) eq '-') {
+                        $skip_due_to_hdrs = 1 if $path_count >= $path_limit;
+                    } elsif (substr($pathSteps, 0, 1) eq '+') {
+                        $skip_due_to_hdrs = 1 if $path_count <= $path_limit;
+                    }
+                    if ($skip_due_to_hdrs) {
+                        print LOG "\tDEBUGGING $i\tNpath_skip_art $i\n" if $debug >= 2;
+                    } elsif (defined $opt_F) {
+                        $tx_len += length($opt_F)+1;
+                        $article->[$idx] =~ s/^Path:\s*/$&$opt_F!/i;
+                    }
+                }
+
+                if ($opt_x && $article->[$idx] =~ m!^xref:!i) {
+                    $xref = 1;
+                }
+
+                # Catch some of the more common problems with articles.
+                if ($article->[$idx] =~ m!^\s+\n$! and $curr_hdr ne 'subject') {
+                    print STDERR "Fixing bad header line[$idx]-1: $article->[$idx-1]" if $idx > 0;
+                    print STDERR "Fixing bad header line[$idx]::: $article->[$idx]";
+                    print STDERR "Fixing bad header line[$idx]+1: $article->[$idx+1]";
+                    $tx_len -= length($article->[$idx])-1;
+                    $article->[$idx] = "\n";
+                }
+
+                $headers = 0 if $article->[$idx] eq "\n";
+            }
+            if (@hdr_to_match and (not $match_all_hdrs or @hdr_to_match != scalar(keys %m_found_hdrs))) {
+                print LOG "\tDEBUGGING $i\thdr_skip_art $i\n" if $debug >= 2;
+                $skip_due_to_hdrs = 1;
+            }
+            while (@header_nums_to_go) {
+                my $idx = pop @header_nums_to_go;  # Start from last.
+                my $cut = join("\n\t", splice(@{$article}, $idx, 1));
+                $tx_len -= length($cut);
+                print LOG "\tDEBUGGING $i\tcut1 $cut" if $debug >= 2;
+                while ($article->[$idx] =~ /^[[:space:]](.+)/) {
+                    # Folded lines.
+                    my $cut = join("\n\t", splice(@{$article}, $idx, 1));
+                    $tx_len -= length($cut);
+                    print LOG "\tDEBUGGING $i\tcut_ $cut" if $debug >= 2;
+                }
+            }
+
+            if (!$msgid) {
+                warn "No Message-ID: header found in article\n";
+                next;
+            } else {
+                print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n" if $debug >= 2;
+            }
+
+            # Some old servers lack Xref:, which bothers a downstream INN if
+            # it has xrefslave set, so add one just before the blank line.
+            if ($opt_x && !$xref) {
+                warn "No Xref: header found in article, adding\n";
+                my $xref_h = "Xref: $server $group: $i\n";
+                splice(@{$article}, $idx, 0, $xref_h);
+                $tx_len += length($xref_h);
+            }
+
+            $pulled->{$server}->{$group}++;
+            $info{server}->{$server}->{bytes} += $len;
+            $info{bytes} += $len;
+
+            if ($skip_due_to_hdrs) {
+                print LOG "m" unless $quiet;
+            } elsif ($rnews) {
+                printf RNEWS "#! rnews %d\n", $tx_len;
+                map { print RNEWS $_ } @{$article};
+                print LOG "+" unless $quiet;
+            } else {
+                if ($no_op) {
+                    print "Would offer $msgid\n";
+
+                } elsif ($reader and not $toServer->post($article)) {
+                    #   240 article posted ok
+                    #   340 send article to be posted.  End with <CR-LF>.<CR-LF>
+                    #   440 posting not allowed
+                    #   441 posting failed
+                    my $code = $toServer->code();
+                    my $msg = $toServer->message();
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    $msg =~ s/^340 .*?\n(?=.)//o;
+                    if ($msg =~ /^240 /) {
+                        print LOG "+" unless $quiet;
+                        push @warns, "Post $i ok ($code): $msg";
+                        $fed{$group}++;
+                        $info{server}->{$server}->{fed}++;
+                        $info{fed}++;
+                    } elsif ($msg =~ /^435 / or $msg =~ /duplicate message-id/io) {
+                        print LOG "." unless $quiet;
+                        push @warns, "Post $i to server declined ($code): $msg"
+                                            if $msg !~ /^435 $msgid$/
+                                            and $msg !~ /duplicate message-id/io;
+                        $refused{$group}++;
+                        $info{server}->{$server}->{refused}++;
+                        $info{refused}++;
+                    } else {
+                        warn "Post $i to server failed ($code): $msg\n";
+                        $toServer->quit();
+                    }
+
+                } elsif (not $reader and not $toServer->ihave($msgid,$article)) {
+                    #   235 article transferred ok
+                    #   335 send article to be transferred.  End with <CR-LF>.<CR-LF>
+                    #   435 article not wanted -- do not send it
+                    #   436 transfer failed -- try again later
+                    #   437 article rejected -- do not try again
+                    my $code = $toServer->code();
+                    my $msg = $toServer->message();
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    if ($code == 435) {
+                        print LOG "." unless $quiet;
+                        $refused{$group}++;
+                        $info{server}->{$server}->{refused}++;
+                        $info{refused}++;
+                    } elsif ($code == 437) {
+                        print LOG "*" unless $quiet;
+                        $rejected{$group}++;
+                        $info{server}->{$server}->{rejected}++;
+                        $info{rejected}++;
+                    } else {
+                        warn "Transfer to server failed ($code): $msg\n";
+                        $toServer->quit();
+                        saveConfig();
+                        exit (1);
+                    }
+
+                    } else {
+                    my $code = $toServer->code();
+                    my $msg = $toServer->message();
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    print LOG "+" unless $quiet;
+                    $fed{$group}++;
+                    $info{server}->{$server}->{fed}++;
+                    $info{fed}++;
+                    }
+            }
+
+            $shash->{$group} = [ time, $high = $i ];
+        } else {
+            print LOG "x" unless $quiet;
+            printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
+                        $fromServer->message()) if $debug >= 2;
+        }
+        saveConfig() if $checkPoint and ($count % $checkPoint) == 0;
+        print LOG "\n" if (!$quiet && (($count % $progressWidth) == 0));
+        last if defined $opt_S and time >= $^T+$opt_S;
     }
     print LOG "\n" unless $quiet;
-    printf LOG "%s article%s retrieved in %d seconds\n",
-                  $count, ($count == 1 ? "" : "s"), (time - $startTime + 1);
-
+    print LOG join("\n\t", '', @warns) . "\n\n" if @warns;
+    my $elapsed_time = time - $startTime + 1;
+    if ($quiet) {
+        my $rejectedDiff = $info{rejected}-$prevRejected;
+        my $refusedDiff = $info{refused}-$prevRefused;
+        my $destServer = ($localServer ne $defaultHost ? " to $localServer" : '');
+        print LOG localtime() . "[$$] $server$destServer $name $narticles $first-$last : $count $prevHigh-" .
+                                ($high == $last ? '' : $high) . " $refusedDiff $rejectedDiff\n"
+                        unless $prevHigh == $high and $count == 0;
+    } else {
+        printf LOG "%s article%s retrieved in %d seconds (%d bytes, %d cps)\n",
+                $count, ($count == 1 ? "" : "s"), $elapsed_time,
+                $info{server}->{$server}->{bytes},
+                int($info{server}->{$server}->{bytes}*100/$elapsed_time)/100;
+    }
     return 1;
 }
-
-package Net::NNTP ;
-
-## Slightly modified implementation of the Net::NNTP::new function.  The
-## original definition automatically sent a MODE READER command over which
-## breaks when trying to feed INN via IHAVE.
-
-sub new
-{
- my $self = shift;
- my $type = ref($self) || $self;
- my $host = shift if @_ % 2;
- my %arg  = @_;
- my $obj;
-
- $host ||= $ENV{NNTPSERVER} || $ENV{NEWSHOST};
-
- my $hosts = defined $host ? [ $host ] : $NetConfig{nntp_hosts};
-
- @{$hosts} = qw(news)
-        unless @{$hosts};
-
- my $h;
- foreach $h (@{$hosts})
-  {
-   $obj = $type->SUPER::new(PeerAddr => ($host = $h), 
-                            PeerPort => $arg{Port} || 'nntp(119)',
-                            Proto    => 'tcp',
-                            Timeout  => defined $arg{Timeout}
-                                                ? $arg{Timeout}
-                                                : 120
-                           ) and last;
-  }
-
- return undef
-        unless defined $obj;
-
- ${*$obj}{'net_nntp_host'} = $host;
-
- $obj->autoflush(1);
- $obj->debug(exists $arg{Debug} ? $arg{Debug} : undef);
-
- unless ($obj->response() == CMD_OK)
-  {
-   $obj->close;
-   return undef;
-  }
-
-##++ brister removed the bit below.
-## my $c = $obj->code;
-## my @m = $obj->message;
-##
-## # if server is INN and we have transfer rights the we are currently
-## # talking to innd not nnrpd
-## if($obj->reader)
-##  {
-##   # If reader suceeds the we need to consider this code to determine postok
-##   $c = $obj->code;
-##  }
-## else
-##  {
-##   # I want to ignore this failure, so restore the previous status.
-##   $obj->set_status($c,\@m);
-##  }
-## ${*$obj}{'net_nntp_post'} = $c >= 200 && $c <= 209 ? 1 : 0;
-##--
-
- $obj;
-}
-
