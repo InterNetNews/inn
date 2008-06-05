@@ -139,10 +139,64 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__CANCELKEY			36 */
   ARTHEADERINIT("User-Agent",		HTstd),
 /* #define HDR__USER_AGENT			37 */
-  ARTHEADERINIT("X-Original-Message-ID",	HTstd)
+  ARTHEADERINIT("X-Original-Message-ID",	HTstd),
 /* #define HDR__X_ORIGINAL_MESSAGE_ID		38 */
+  ARTHEADERINIT("Cancel-Lock",		HTstd),
+/* #define HDR__CANCEL_LOCK			39 */
+  ARTHEADERINIT("Content-Transfer-Encoding",	HTstd),
+/* #define HDR__CONTENT_TRANSFER_ENCODING	40 */
+  ARTHEADERINIT("Face",			HTstd),
+/* #define HDR__FACE				41 */
+  ARTHEADERINIT("Injection-Info",	HTstd),
+/* #define HDR__INJECTION_INFO			42 */
+  ARTHEADERINIT("List-ID",		HTstd),
+/* #define HDR__LIST_ID				43 */
+  ARTHEADERINIT("MIME-Version",		HTstd),
+/* #define HDR__MIME_VERSION			44 */
+  ARTHEADERINIT("Originator",		HTstd),
+/* #define HDR__ORIGINATOR			45 */
+  ARTHEADERINIT("X-Auth",		HTstd),
+/* #define HDR__X_AUTH				46 */
+  ARTHEADERINIT("X-Complaints-To",	HTstd),
+/* #define HDR__X_COMPLAINTS_TO			47 */
+  ARTHEADERINIT("X-Face",		HTstd),
+/* #define HDR__X_FACE				48 */
+  ARTHEADERINIT("X-HTTP-UserAgent",	HTstd),
+/* #define HDR__X_HTTP_USERAGENT		49 */
+  ARTHEADERINIT("X-HTTP-Via",		HTstd),
+/* #define HDR__X_HTTP_VIA			50 */
+  ARTHEADERINIT("X-Modbot",		HTstd),
+/* #define HDR__X_MODBOT			51 */
+  ARTHEADERINIT("X-Modtrace",		HTstd),
+/* #define HDR__X_MODTRACE			52 */
+  ARTHEADERINIT("X-No-Archive",		HTstd),
+/* #define HDR__X_NO_ARCHIVE			53 */
+  ARTHEADERINIT("X-Original-Trace",	HTstd),
+/* #define HDR__X_ORIGINAL_TRACE		54 */
+  ARTHEADERINIT("X-Originating-IP",	HTstd),
+/* #define HDR__X_ORIGINATING_IP		55 */
+  ARTHEADERINIT("X-PGP-Key",		HTstd),
+/* #define HDR__X_PGP_KEY			56 */
+  ARTHEADERINIT("X-PGP-Sig",		HTstd),
+/* #define HDR__X_PGP_SIG			57 */
+  ARTHEADERINIT("X-Poster-Trace",	HTstd),
+/* #define HDR__X_POSTER_TRACE			58 */
+  ARTHEADERINIT("X-Postfilter",		HTstd),
+/* #define HDR__X_POSTFILTER			59 */
+  ARTHEADERINIT("X-Proxy-User",		HTstd),
+/* #define HDR__X_PROXY_USER			60 */
+  ARTHEADERINIT("X-Submissions-To",	HTstd),
+/* #define HDR__X_SUBMISSIONS_TO		61 */
+  ARTHEADERINIT("X-Usenet-Provider",	HTstd),
+/* #define HDR__X_USENET_PROVIDER		62 */
+  ARTHEADERINIT("In-Reply-To",		HTstd),
+/* #define HDR__IN_REPLY_TO			63 */
+  ARTHEADERINIT("Injection-Date",	HTstd),
+/* #define HDR__INJECTION_DATE			64 */
+  ARTHEADERINIT("NNTP-Posting-Date",	HTstd)
+/* #define HDR__NNTP_POSTING_DATE		65 */
 };
-/* #define MAX_ARTHEADER			39 */
+/* #define MAX_ARTHEADER			66 */
 
 
 /*

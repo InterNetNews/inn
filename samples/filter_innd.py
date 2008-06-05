@@ -12,25 +12,74 @@ from string import *
 # This looks weird, but creating and interning these strings should
 # let us get faster access to header keys (which innd also interns) by
 # losing some strcmps under the covers.
-Approved = intern("Approved");           Control = intern("Control")
-Date = intern("Date");                   Distribution = intern("Distribution")
-Expires = intern("Expires");             From = intern("From")
-Lines = intern("Lines");                 Message_ID = intern("Message-ID")
-Newsgroups = intern("Newsgroups");       Path = intern("Path")
-Reply_To = intern("Reply-To");           Sender = intern("Sender")
-Subject = intern("Subject");             Supersedes = intern("Supersedes")
-Bytes = intern("Bytes");                 Also_Control = intern("Also-Control")
-References = intern("References");       Xref = intern("Xref")
-Keywords = intern("Keywords");           X_Trace = intern("X-Trace")
-NNTP_Posting_Host = intern("NNTP-Posting-Host")
-Followup_To = intern("Followup-To");     Organization = intern("Organization")
-Content_Type = intern("Content-Type");   Content_Base = intern("Content-Base")
+Also_Control = intern("Also-Control")
+Approved = intern("Approved")
+Bytes = intern("Bytes")
+Cancel_Key = intern("Cancel-Key")
+Cancel_Lock = intern("Cancel-Lock")
+Content_Base = intern("Content-Base")
 Content_Disposition = intern("Content-Disposition")
-X_Newsreader = intern("X-Newsreader");   X_Mailer = intern("X-Mailer")
-X_Newsposter = intern("X-Newsposter")
+Content_Transfer_Encoding = intern("Content-Transfer-Encoding")
+Content_Type = intern("Content-Type")
+Control = intern("Control")
+Date = intern("Date")
+Date_Received = intern("Date-Received")
+Distribution = intern("Distribution")
+Expires = intern("Expires")
+Face = intern("Face")
+Followup_To = intern("Followup-To")
+From = intern("From")
+In_Reply_To = intern("In-Reply-To")
+Injection_Date = intern("Injection-Date")
+Injection_Info = intern("Injection-Info";
+Keywords = intern("Keywords")
+Lines = intern("Lines")
+List_ID = intern("List-ID")
+Message_ID = intern("Message-ID")
+MIME_Version = intern("MIME-Version")
+Newsgroups = intern("Newsgroups")
+NNTP_Posting_Date = intern("NNTP-Posting-Date")
+NNTP_Posting_Host = intern("NNTP-Posting-Host")
+Organization = intern("Organization")
+Originator = intern("Originator")
+Path = intern("Path")
+Posted = intern("Posted")
+Posting_Version = intern("Posting-Version")
+Received = intern("Received")
+References = intern("References")
+Relay_Version = intern("Relay-Version")
+Reply_To = intern("Reply-To")
+Sender = intern("Sender")
+Subject = intern("Subject")
+Supersedes = intern("Supersedes")
+User_Agent = intern("User-Agent")
+X_Auth = intern("X-Auth")
+X_Canceled_By = intern("X-Canceled-By")
 X_Cancelled_By = intern("X-Cancelled-By")
-X_Canceled_By = intern("X-Canceled-By"); Cancel_Key = intern("Cancel-Key")
-__BODY__ = intern("__BODY__");           __LINES__ = intern("__LINES__")
+X_Complaints_To = intern("X-Complaints-To")
+X_Face = intern("X-Face")
+X_HTTP_UserAgent = intern("X-HTTP-UserAgent")
+X_HTTP_Via = intern("X-HTTP-Via")
+X_Mailer = intern("X-Mailer")
+X_Modbot = intern("X-Modbot")
+X_Modtrace = intern("X-Modtrace")
+X_Newsposter = intern("X-Newsposter")
+X_Newsreader = intern("X-Newsreader")
+X_No_Archive = intern("X-No-Archive")
+X_Original_Message_ID = intern("X-Original-Message-ID")
+X_Original_Trace = intern("X-Original-Trace")
+X_Originating_IP = intern("X-Originating-IP")
+X_PGP_Key = intern("X-PGP-Key")
+X_PGP_Sig = intern("X-PGP-Sig")
+X_Poster_Trace = intern("X-Poster-Trace")
+X_Postfilter = intern("X-Postfilter")
+X_Proxy_User = intern("X-Proxy-User")
+X_Submissions_To = intern("X-Submissions-To")
+X_Trace = intern("X-Trace")
+X_Usenet_Provider = intern("X-Usenet-Provider")
+Xref = intern("Xref")
+__BODY__ = intern("__BODY__")
+_LINES__ = intern("__LINES__")
 
 
 class InndFilter:
@@ -89,19 +138,26 @@ class InndFilter:
         """Decide whether to keep offered articles.
 
         art is a dictionary with a bunch of headers, the article's
-        body, and innd's reckoning of the line count.  Itens not
+        body, and innd's reckoning of the line count.  Items not
         in the article will have a value of None.
 
         The available headers are the ones listed near the top of
         innd/art.c.  At this writing, they are:
 
-            Approved, Control, Date, Distribution, Expires, From,
-            Lines, Message-ID, Newsgroups, Path, Reply-To, Sender,
-            Subject, Supersedes, Bytes, Also-Control, References,
-            Xref, Keywords, X-Trace, NNTP-Posting-Host, Folowup-To,
-            Organization, Content-Type, Content-Base,
-            Content-Disposition, X-Newsreader, X-Mailer, X-Newsposter,
-            X-Cancelled-By, X-Canceled-By and Cancel-Key.
+            Also-Control, Approved, Bytes, Cancel-Key, Cancel-Lock,
+            Content-Base, Content-Disposition, Content-Transfer-Encoding,
+            Content-Type, Control, Date, Date-Received, Distribution, Expires,
+            Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
+            Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
+            NNTP-Posting-Date, NNTP-Posting-Host, Organization, Originator,
+            Path, Posted, Posting-Version, Received, References, Relay-Version,
+            Reply-To, Sender, Subject, Supersedes, User-Agent,
+            X-Auth, X-Canceled-By, X-Cancelled-By, X-Complaints-To, X-Face,
+            X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
+            X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
+            X-Original-Trace, X-Originating-IP, X-PGP-Key, X-PGP-Sig,
+            X-Poster-Trace, X-Postfilter, X-Proxy-User, X-Submissions-To,
+            X-Trace, X-Usenet-Provider, Xref.
 
         The body is the buffer in art['__BODY__'] and the INN-reckoned
         line count is held as an integer in art['__LINES__'].  (The
