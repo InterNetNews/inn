@@ -1,6 +1,7 @@
 INN Perl Filtering and Authentication Support
 
-    This is $Revision$ dated $Date$.
+    This is $Revision$ dated $Date: 2003-02-10 04:21:27 +0100 (lun,
+    10 fév 2003) $.
 
     This file documents INN's built-in support for Perl filtering and reader
     authentication.  The code is based very heavily on work by Christophe
@@ -83,34 +84,45 @@ The innd Perl Filter
     of the standard headers present in the article and their values.  The
     standard headers are:
 
-            Approved, Control, Date, Distribution, Expires, From, Lines,
-            Message-ID, Newsgroups, Path, Reply-To, Sender, Subject,
-            Supersedes, Bytes, Also-Control, References, Keywords, X-Trace,
-            NNTP-Posting-Host, Followup-To, Organization, Content-Type,
-            Content-Base, Content-Disposition, X-Newsreader, X-Mailer,
-            X-Cancelled-By, X-Canceled-By, Cancel-Key
+        Also-Control, Approved, Bytes, Cancel-Key, Cancel-Lock,
+        Content-Base, Content-Disposition, Content-Transfer-Encoding,
+        Content-Type, Control, Date, Date-Received, Distribution, Expires,
+        Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
+        Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
+        NNTP-Posting-Date, NNTP-Posting-Host, Organization, Originator,
+        Path, Posted, Posting-Version, Received, References, Relay-Version,
+        Reply-To, Sender, Subject, Supersedes, User-Agent,
+        X-Auth, X-Canceled-By, X-Cancelled-By, X-Complaints-To, X-Face,
+        X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
+        X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
+        X-Original-Trace, X-Originating-IP, X-PGP-Key, X-PGP-Sig,
+        X-Poster-Trace, X-Postfilter, X-Proxy-User, X-Submissions-To,
+        X-Trace, X-Usenet-Provider, Xref.
 
-    (so, for example, the Newsgroups header of the article is accessible
-    inside the Perl filter as $hdr{Newsgroups}).  In addition,
-    $hdr{__BODY__} will contain the full body of the article and
-    $hdr{__LINES__} will contain the number of lines in the body of the
-    article.
+    Note that all the above headers are as they arrived, not modified by
+    your INN (especially, the Xref: header, if present, is the one of the
+    remote site which sent you the article, and not yours).
+
+    For example, the Newsgroups: header of the article is accessible inside
+    the Perl filter as $hdr{'Newsgroups'}.  In addition, $hdr{'__BODY__'}
+    will contain the full body of the article and $hdr{'__LINES__'} will
+    contain the number of lines in the body of the article.
 
     The contents of the %hdr hash for a typical article may therefore look
     something like this:
 
-            %hdr = (Subject      => 'MAKE MONEY FAST!!', 
-                    From         => 'Joe Spamer <him@example.com>',
-                    Date         => '10 Sep 1996 15:32:28 UTC',
-                    Newsgroups   => 'alt.test',
-                    Path         => 'news.example.com!not-for-mail',
-                    Organization => 'Spammers Anonymous',
-                    Lines        => '5',
-                    Distribution => 'usa',
-                    'Message-ID' => '<6.20232.842369548@example.com>',
-                    __BODY__     => 'Send five dollars to the ISC, c/o ...',
-                    __LINES__    => 5
-            );
+        %hdr = (Subject      => 'MAKE MONEY FAST!!', 
+            From         => 'Joe Spamer <him@example.com>',
+            Date         => '10 Sep 1996 15:32:28 UTC',
+            Newsgroups   => 'alt.test',
+            Path         => 'news.example.com!not-for-mail',
+            Organization => 'Spammers Anonymous',
+            Lines        => '5',
+            Distribution => 'usa',
+            'Message-ID' => '<6.20232.842369548@example.com>',
+            __BODY__     => 'Send five dollars to the ISC, c/o ...',
+            __LINES__    => 5
+        );
 
     Note that the value of $hdr{Lines} is the contents of the Lines: header
     of the article and may bear no resemblence to the actual length of the
@@ -164,9 +176,9 @@ The innd Perl Filter
     arguments and returns no value, but it has access to a global hash %mode
     that contains three values:
 
-            Mode       The current server mode (throttled, paused, or running)
-            NewMode    The new mode the server is going to
-            reason     The reason that was given to ctlinnd
+        Mode       The current server mode (throttled, paused, or running)
+        NewMode    The new mode the server is going to
+        reason     The reason that was given to ctlinnd
 
     One possible use for this function is to save filter state across a
     restart of innd.  There isn't any Perl function which is called when INN
@@ -346,7 +358,7 @@ Changes to Perl Authentication Support for nnrpd
     Scripts (like those from the old mechanism) are listed in readers.conf
     using perl_auth in the same manner other authenticators are using auth:
 
-            perl_auth: "/path/to/script/auth1.pl"
+        perl_auth: "/path/to/script/auth1.pl"
 
     The file given as argument to perl_auth should contain the same
     procedures as before. The global hash %attributes remains the same,

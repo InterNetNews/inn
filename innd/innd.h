@@ -177,9 +177,36 @@ typedef struct _HDRCONTENT {
 #define HDR__XCANCELEDBY	35
 #define HDR__CANCELKEY		36
 #define HDR__USER_AGENT		37
-#define HDR__X_ORIGINAL_MESSAGE_ID		38
+#define HDR__X_ORIGINAL_MESSAGE_ID	38
+#define HDR__CANCEL_LOCK	39
+#define HDR__CONTENT_TRANSFER_ENCODING	40
+#define HDR__FACE		41
+#define HDR__INJECTION_INFO	42
+#define HDR__LIST_ID		43
+#define HDR__MIME_VERSION	44
+#define HDR__ORIGINATOR		45
+#define HDR__X_AUTH		46
+#define HDR__X_COMPLAINTS_TO	47
+#define HDR__X_FACE		48
+#define HDR__X_HTTP_USERAGENT	49
+#define HDR__X_HTTP_VIA		50
+#define HDR__X_MODBOT		51
+#define HDR__X_MODTRACE		52
+#define HDR__X_NO_ARCHIVE	53
+#define HDR__X_ORIGINAL_TRACE	54
+#define HDR__X_ORIGINATING_IP	55
+#define HDR__X_PGP_KEY		56
+#define HDR__X_PGP_SIG		57
+#define HDR__X_POSTER_TRACE	58
+#define HDR__X_POSTFILTER	59
+#define HDR__X_PROXY_USER	60
+#define HDR__X_SUBMISSIONS_TO	61
+#define HDR__X_USENET_PROVIDER	62
+#define HDR__IN_REPLY_TO	63
+#define HDR__INJECTION_DATE	64
+#define HDR__NNTP_POSTING_DATE	65
 
-#define MAX_ARTHEADER		39
+#define MAX_ARTHEADER           66
 
 /*
 **  Miscellaneous data we want to keep on an article.  All the fields
