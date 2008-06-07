@@ -99,7 +99,7 @@ metacycbuff line.
 
 B<innd> only reads F<cycbuff.conf> on startup, so if you change anything
 in this file and want B<innd> to pick up the changes, you have to use
-C<ctlinnd xexec innd>; C<ctlinnd reload ''> is not sufficient.
+C<ctlinnd xexec innd>; C<ctlinnd reload all ''> is not sufficient.
 
 When articles are stored, the cycbuff into which they're stored is saved
 as part of the article token.  In order for INN to retrieve articles from
