@@ -32,7 +32,7 @@ adding the C<--with-python> switch to your configure command.
 
 See the ctlinnd(8) manual page to learn how to enable, disable and reload
 Python filters on a running server (C<ctlinnd mode>, C<ctlinnd python
-y|n>, C<ctlinnd reload filter.python>).
+y|n>, C<ctlinnd reload filter.python 'reason'>).
 
 Also, see the example F<filter_innd.py> script in your filters directory
 for a demonstration of how to get all this working.
@@ -58,8 +58,8 @@ filter_before_reload or filter_close left off.
 
 =item filter_before_reload(self)
 
-This will execute any time a C<ctlinnd reload all> or C<ctlinnd reload
-filter.python> command is issued.  You can use it to save statistics or
+This will execute any time a C<ctlinnd reload all 'reason'> or C<ctlinnd reload
+filter.python 'reason'> command is issued.  You can use it to save statistics or
 reports for use after reloading.
 
 =item filter_close(self)

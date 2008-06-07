@@ -599,7 +599,7 @@ PYdefmethods(void)
 
 
 /*
-**  Used by `ctlinnd reload filter.python'
+**  Used by "ctlinnd reload filter.python 'reason'".
 */
 int
 PYreadfilter(void)

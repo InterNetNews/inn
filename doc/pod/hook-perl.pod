@@ -46,7 +46,7 @@ won't be noticed by innd; only stopping and restarting innd can cause it
 to be reloaded.
 
 F<filter_innd.pl>, on the other hand, can be reloaded on command (with
-C<ctlinnd reload filter.perl>).  Whenever F<filter_innd.pl> is loaded,
+C<ctlinnd reload filter.perl 'reason'>).  Whenever F<filter_innd.pl> is loaded,
 including the first time at innd startup, the Perl function
 filter_before_reload() is called before it's reloaded and the function
 filter_after_reload() is called after it's reloaded (if the functions
@@ -64,8 +64,8 @@ initialization code that should only run once, or code to load data that
 was preserved on disk across a stop and restart of innd (perhaps using
 filter_mode() -- see below).
 
-As mentioned above, C<ctlinnd reload filter.perl> (or C<ctlinnd reload
-all>) will cause F<filter_innd.pl> to be reloaded.  If the function
+As mentioned above, C<ctlinnd reload filter.perl 'reason'> (or C<ctlinnd reload
+all 'reason'>) will cause F<filter_innd.pl> to be reloaded.  If the function
 filter_art() is defined after the file has been reloaded, filtering is
 turned on.  Otherwise, filtering is turned off.  (Note that due to the way
 Perl stores functions, once you've defined filter_art(), you can't

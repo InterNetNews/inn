@@ -4,8 +4,9 @@
 # Sample Perl filtering file for the innd hooks.
 # 
 
-# This file gets loaded at innd process startup, and everytime a 'reload
-# perl xxx' or a 'reload all xxx' is done.
+# This file gets loaded at innd process startup, and everytime a
+# "ctlinnd reload filter.perl 'reason'" or a
+# "ctlinnd reload all 'reason'" is done.
 #
 # Before this file is loaded, the perl routine `filter_before_reload' is
 # called, and after it's finished loading, the perl routine
@@ -71,7 +72,7 @@ sub filter_art {
 	my $rval = "" ; # Assume we'll accept. Cannot be `0'
 
 ### Remove two leading '##' from the following section (and then
-### 'ctlinnd reload filter.perl' and the filter will reject articles that
+### "ctlinnd reload filter.perl 'reason'" and the filter will reject articles that
 ### have "make money" in the subject, or are posted to more than 10
 ### newsgroups. 
 
