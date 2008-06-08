@@ -582,9 +582,9 @@ sub crossFeedGroup {
     my $i;
     my @warns;
     for ($i = ($first > $high ? $first : $high + 1) ; $i <= $last ; $i++) {
+        last if defined $maxArts and $count >= $maxArts;
+        last if defined $opt_f and $count >= $toget;
         $count++;
-        last if defined $maxArts and $count > $maxArts;
-        last if defined $opt_f and $count > $toget;
         sleep $opt_z if defined $opt_z and $count > 1;
         my $article = $fromServer->article($i);
         if ($article) {
@@ -793,6 +793,7 @@ sub crossFeedGroup {
 
             $shash->{$group} = [ time, $high = $i ];
         } else {
+            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430;    # no such article, do not retry
             print LOG "x" unless $quiet;
             printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
                         $fromServer->message()) if $debug >= 2;
