@@ -32,6 +32,15 @@ section default {
       # html_body	"BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\"";
       # html_header_file "header.html";  # ${html_dir}/${html_header_file}
       # html_footer_file "footer.html";  # ${html_dir}/${html_footer_file}
+      # html_xhtml11_icon "http://www.w3.org/Icons/valid-xhtml11";
+      # html_vcss_icon	"http://jigsaw.w3.org/css-validator/images/vcss";
+
+      # Character set used in XML and Content-Type declaration.
+      # html_encoding	"ISO-8859-1";
+
+      # URL to CSS file.  If undefined a style sheet is embedded in HTML instead.
+      # html_css_url	"/innreport.css";
+
         graph_width	550;         # graph width (in pixels)
         transparent	true;        # graph background transparent ?
         graph_fg        "#000000";   # graph foreground color.

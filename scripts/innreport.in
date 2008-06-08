@@ -16,9 +16,9 @@
 #   where options are:
 #     -h (or -help)      : this help page
 #     -html              : HTML output
-#     -v                 : display the version number of INNreport
+#     -v                 : display the version number of innreport
 #     -f config_file     : name of the configuration file
-#     -config            : print INNreport configuration information
+#     -config            : print innreport configuration information
 #     -g                 : want graphs [default]
 #     -graph             : an alias for option -g
 #     -d directory       : directory for Web pages
@@ -711,6 +711,178 @@ sub ComputeTotalDouble {
   $total;
 }
 
+sub GetHTMLHeader($) {
+  my $title = shift;
+
+  my $encoding = $output{'default'}{'encoding'};
+  $encoding = defined($encoding) ? &GetValue($encoding) : 'ISO-8859-1';
+
+  my $style_sheet = '';
+  my $css_url = $output{'default'}{'html_css_url'};
+  if (defined($css_url)) {
+printf STDERR "css_url [%s]\n", $css_url;
+    $css_url = &GetValue($css_url);
+    $style_sheet = <<EOF;
+<link rel="stylesheet" type="text/css" media="all" href="$css_url"/>
+EOF
+  }
+  else {
+    $style_sheet = <<EOF;
+<style type="text/css"><!--
+  div.ir-pageTitle {
+    border-bottom:4px double black;
+    border-top:4px double black;
+    margin-bottom:2ex;
+    margin-top:2ex;
+    text-align:center;
+  }
+  div.ir-feedTotals {
+    margin-bottom:1ex;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+  }
+  table.ir-archives,
+  table.ir-report {
+    border-collapse:collapse;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:1ex;
+    margin-bottom:1ex;
+  }
+  table.ir-archives td,
+  table.ir-archives th,
+  table.ir-report td,
+  table.ir-report th {
+    border:1px solid black;
+    empty-cells:show;
+    padding:0.3ex 0.3em 0.3ex 0.3em;
+  }
+  table.ir-archives th,
+  table.ir-report th {
+    font-weight:bold;
+    background-color:#D3D3D3;
+  }
+  table.ir-archives th,
+  table.ir-report th,
+  tr.ir-totalRow td,
+  tr.ir-headerRow th {
+    border-bottom:2px solid black;
+    border-top:2px solid black;
+  }
+  div.ir-pageFooter {
+    border-top:4px double black;
+    padding-top:1ex;
+    margin-top:1ex;
+    vertical-align:top;
+  }
+  div.ir-pageFooter img {
+    border:0;
+    float:left;
+    margin-right:1em;
+  }
+  div.ir-versionNotice {
+    font-size:small;
+  }
+  div.ir-section {
+    border-top:1px solid black;
+  }
+  p.ir-sectionTitle {
+    font-weight:bold;
+  }
+  div.ir-logFileLines {
+    font-family:monospace;
+  }
+  div.ir-reportGraph {
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:1ex;
+    margin-bottom:1ex;
+    text-align:center;
+  }
+  td.ir-totalColumn {
+    text-align:left;
+    font-weight:bold;
+  }
+  tr.ir-oddRow td,
+  td.ir-primaryKey {
+    background-color:#F8E0E0;
+  }
+--></style>
+EOF
+  }
+
+  my $body = '';
+  my $v = $output{'default'}{'html_body'};
+  if (defined($v)) {
+    $v = &GetValue($v);
+    $v =~ s/\\\"/\"/go;
+    $body = ' ' . $v;
+  }
+
+  return <<EOF;
+<?xml version="1.0" encoding="$encoding"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=$encoding"/>
+<title>$title</title>
+<!-- innreport $version -->
+$style_sheet
+</head><body$body>
+$HTML_header
+EOF
+}
+
+sub GetHTMLFooter() {
+
+  my $footer = '';
+  my $v = $output{'default'}{'footer'};
+  if (defined($v)) {
+    $v = &GetValue($v);
+    $v =~ s/\\\"/\"/go;
+    $footer = '<br/>' . $v;
+  }
+
+  my $xhtml11_icon = 'http://www.w3.org/Icons/valid-xhtml11';
+  $v = $output{'default'}{'html_xhtml11_icon'};
+  if (defined($v)) {
+    $xhtml11_icon = &GetValue($v);
+  }
+
+  my $vcss_icon = 'http://jigsaw.w3.org/css-validator/images/vcss';
+  $v = $output{'default'}{'html_vcss_icon'};
+  if (defined($v)) {
+    $vcss_icon = &GetValue($v);
+  }
+
+  my $time = second2time(time - $start_time);
+
+  return <<EOF;
+<div class="ir-pageFooter">
+  <a href="http://validator.w3.org/check?uri=referer"><img
+    src="$xhtml11_icon"
+    alt="Valid XHTML 1.1 Strict" height="31" width="88"
+  /></a>
+  <a href="http://jigsaw.w3.org/css-validator/check/referer"><img
+    style="border:0;width:88px;height:31px"
+    src="$vcss_icon"
+    alt="CSS is valid!"
+  /></a>
+  <div class="ir-versionNotice">innreport $version (c) 1996-1999
+  by Fabien Tassin &lt;<a href="mailto:fta\@sofaraway.org"
+  >fta\@sofaraway.org</a>&gt;$footer
+  </div>
+</div>
+$HTML_footer
+<!-- Running time: $time -->
+</body>
+</html>
+EOF
+
+}
+
 # make an index for archive pages
 sub Make_Index {
   my ($rep, $index, $filename, $data) = @_;
@@ -758,27 +930,13 @@ sub Make_Index {
   $title =~ s/\\\"/\"/g;
   my $Title = $title;
   $Title =~ s/<.*?>//g;
-  my $body = '';
-  $body = &GetValue ($output{'default'}{'html_body'})
-    if defined $output{'default'}{'html_body'};
-  $body =~ s/\\\"/\"/go;
-  my $result = sprintf <<EOF;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML><HEAD>
-<TITLE>$Title: index</TITLE>
-</HEAD><BODY $body>
-$HTML_header
-<HR ALIGN=CENTER SIZE=\"4\" WIDTH=\"100%%\">
-<BR><CENTER><FONT SIZE=\"+2\">
-<B>$title - archives</B>
-</FONT></CENTER>
-<BR CLEAR=ALL>
-<HR ALIGN=CENTER SIZE=4 WIDTH=\"100%%\"><P>
-<CENTER>
-EOF
+  my $result =
+    GetHTMLHeader($Title . ': index') .
+    "<div class=\"ir-pageTitle\"><h1>$title - archives</h1></div>\n";
 
   if ($GRAPH) {
     my $i = 0;
+    $result .= "<div class=\"ir-feedTotals\">\n";
     while (defined ${${$output{'index'}{'graph'}}[$i]}{'title'}) {
       my $title =  &GetValue (${${$output{'index'}{'graph'}}[$i]}{'title'});
       my $filename = "index$i.$GD_FORMAT";
@@ -825,14 +983,15 @@ EOF
       &Chrono ("$IMG_dir/$filename", $title, $color_bg, $xmax, $ymax,
 	       \%in, \%out, \%dates, $label_in, $label_out,
 	       $color_in, $color_out, $unit);
-      $result .= "<IMG WIDTH=\"$xmax\" HEIGHT=\"$ymax\" ";
-      $result .= "SRC=\"$IMG_pth$filename\" ALT=\"Graph\">\n";
+      $result .= "<img width=\"$xmax\" height=\"$ymax\" ";
+      $result .= "src=\"$IMG_pth$filename\" alt=\"Graph\"/>\n";
       $i++;
     }
-    $result .= "<P>\n";
+    $result .= "</div>\n";
   }
   $i = 0;
-  $result .= "<TABLE BORDER=\"1\"><TR>";
+  $result .= "<table class=\"ir-archives\" summary=\"archives\">\n";
+  $result .= "<tr class=\"ir-headerRow\">";
   my $temp = '';
   while (defined ${${$output{'index'}{'column'}}[$i]}{'title'}) {
     my $title = &GetValue (${${$output{'index'}{'column'}}[$i]}{'title'});
@@ -841,48 +1000,43 @@ EOF
       if defined ${${$output{'index'}{'column'}}[$i]}{'name'};
     my @list = split /\|/, $name;
     if ($name) {
-      $result .= sprintf "<TH COLSPAN=%d>$title</TH>", $#list + 1;
+      $result .= sprintf "<th colspan=\"%d\">$title</th>", $#list + 1;
     }
     else {
-      $result .= "<TH ROWSPAN=\"2\">$title</TH>";
+      $result .= "<th rowspan=\"2\">$title</th>";
     }
     foreach (@list) {
-      $temp .= "<TH>$_</TH>";
+      $temp .= "<th>$_</th>";
     }
     $i++;
   }
-  $result .= "</TR>\n<TR>$temp</TR>\n";
+  $result .= "</tr>\n<tr>$temp</tr>\n";
 
   $i = 0;
   foreach (sort {$b cmp $a} (keys %data)) {
     if ($CYCLE == 0 || $i < $CYCLE) {
       my @list = split /\|/, $data{$_};
-      my $str = "<TR><TD ALIGN=LEFT>";
-      $str .= "<A HREF=\"$_\">" if -e "$rep/$_";
+      my $class = $i % 2 ? 'ir-oddRow' : 'ir-evenRow';
+      my $str = "<tr class=\"$class\"><td align=\"left\">";
+      $str .= "<a href=\"$_\">" if -e "$rep/$_";
       $str .= shift @list;
-      $str .= "</A>" if -e "$rep/$_";;
-      $str .= "</TD>";
+      $str .= "</a>" if -e "$rep/$_";;
+      $str .= "</td>";
       while (@list) {
-	$str .= "<TD ALIGN=RIGHT>";
+	$str .= "<td align=\"right\">";
 	my $t = shift @list;
 	$t =~ s/^\0+//o; # remove garbage, if any.
-	$str .= "$t</TD>";
+	$str .= "$t</td>";
       }
-      $str .= "</TR>\n";
+      $str .= "</tr>\n";
       $result .= "$str";
     }
     $i++;
   }
-  $result .= "</TABLE>\n</CENTER>\n<P><HR>";
-  $result .= "innreport $version (c) 1996-1999 ";
-  $result .= "by Fabien Tassin &lt;<A HREF=\"mailto:fta\@sofaraway.org\">";
-  $result .= "fta\@sofaraway.org</A>&gt;.\n";
-  if (defined ($output{'default'}{'footer'})) {
-    my ($t) = $output{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
-    $t =~ s/\\\"/\"/go;
-    $result .= "<BR>" . $t;
-  }
-  $result .= "$HTML_footer\n</BODY>\n</HTML>\n";
+
+  $result .= "</table>\n";
+  $result .= GetHTMLFooter();
+
   my $name = $rep . "/" . $index;
   while ($name =~ m/\/\.\.\//o) {
     $name =~ s|^\./||o;                 # ^./xxx        =>      ^xxx
@@ -1747,20 +1901,17 @@ sub Write_all_results {
   }
 
   if ($HTML) {
-    my $body = defined $output{'default'}{'html_body'} ?
-      $output{'default'}{'html_body'} : '';
-    $body =~ s/^\"\s*(.*?)\s*\"$/ $1/o;
-    $body =~ s/\\\"/\"/go;
     open (HTML, "> $HTML_output") || die "Error: cant open $HTML_output\n";
 
-    print HTML "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n" .
-      "<HTML>\n<HEAD>\n<TITLE>$Title: $first_date</TITLE>\n" .
-      "<!-- innreport $version -->\n</HEAD>\n<BODY $body>\n" .
-      "$HTML_header\n<CENTER><H1>$title</H1>\n" .
-      "<H3>$first_date -- $last_date</H3>\n</CENTER>\n<P><HR><P>\n";
+    print HTML GetHTMLHeader("$Title: $first_date");
+    print HTML
+      "<div class=\"ir-pageTitle\">\n" .
+      "<h1>$title</h1>\n" .
+      "<h3>$first_date -- $last_date</h3>\n" .
+      "</div>\n";
 
     # Index
-    print HTML "<UL>\n";
+    print HTML "<ul>\n";
     foreach $k (@{$$h{'_order_'}}) {
       next if $k =~ m/^(default|index)$/;
       my ($data) = $$h{$k}{'data'} =~ m/^\"\s*(.*?)\s*\"$/o;
@@ -1774,38 +1925,45 @@ sub Write_all_results {
       ($want) = $$h{$k}{'skip'} =~ m/^\"?\s*(.*?)\s*\"?$/o
 	if defined $$h{$k}{'skip'};
       $want = $want eq 'true' ? 0 : 1;
-      print HTML "<LI><A HREF=\"#$k\">$string</A>\n" if %data && $want;
+      print HTML "<li><a href=\"#$k\">$string</a></li>\n" if %data && $want;
     }
-    print HTML "</UL><P><HR><P>\n";
+    print HTML "</ul>\n";
   }
   if (@unrecognize && $WANT_UNKNOWN) {
     my $mm = $#unrecognize;
-    print HTML "<A NAME=\"unrecognize\">" if $HTML && $WANT_HTML_UNKNOWN;
     print "Unknown entries from news log file:\n";
-    print HTML "<STRONG>Unknown entries from news log file:</STRONG></A><P>\n"
-      if $HTML && $WANT_HTML_UNKNOWN;
+    if ($HTML && $WANT_HTML_UNKNOWN) {
+      print HTML
+        "<div id=\"unrecognize\" class=\"ir-section\">",
+        "<p class=\"ir-sectionTitle\">",
+        "Unknown entries from news log file:</p>\n";
+    }
     $mm = $MAX_UNRECOGNIZED - 1
       if $MAX_UNRECOGNIZED > 0 && $mm > $MAX_UNRECOGNIZED - 1;
     if ($mm < $unrecognize_max && $unrecognize_max > 0) {
-      printf HTML "First %d / $unrecognize_max lines (%3.1f%%)<BR>\n", $mm + 1,
+      printf HTML "<p>First %d / $unrecognize_max lines (%3.1f%%)</p>\n", $mm + 1,
         ($mm + 1) / $unrecognize_max * 100 if $HTML && $WANT_HTML_UNKNOWN;
       printf "First %d / $unrecognize_max lines (%3.1f%%)\n", $mm + 1,
         ($mm + 1) / $unrecognize_max * 100;
     }
 
-    my $l;
-    for $l (0 .. $mm) {
+    print HTML '<div class="ir-logFileLines">' if ($HTML);
+    for my $l (0 .. $mm) {
       chomp $unrecognize[$l];     # sometimes, the last line need a CR
       print "$unrecognize[$l]\n"; # so, we always add one
       if ($HTML && $WANT_HTML_UNKNOWN) {
 	$unrecognize[$l] =~ s/&/\&amp;/g;
 	$unrecognize[$l] =~ s/</\&lt;/g;
 	$unrecognize[$l] =~ s/>/\&gt;/g;
-	print HTML "$unrecognize[$l]<BR>\n";
+	print HTML $unrecognize[$l], "<br/>\n";
       }
     }
     print "\n";
-    print HTML "<P><HR><P>\n" if $HTML && $WANT_HTML_UNKNOWN;
+    if ($HTML) {
+      print HTML
+        "</div>\n",
+        "</div><!-- id=\"unrecognize\" class=\"ir-section\"-->\n";
+    }
   }
 
   close HTML if $HTML;
@@ -1815,18 +1973,7 @@ sub Write_all_results {
   }
   if ($HTML) {
     open (HTML, ">> $HTML_output") || die "Error: cant open $HTML_output\n";
-    print HTML <<EOT;
-innreport $version (c) 1996-1999 by Fabien Tassin
-&lt;<A HREF="mailto:fta\@sofaraway.org">fta\@sofaraway.org</A>&gt;.
-EOT
-    if (defined $$h{'default'}{'footer'}) {
-      my ($t) = $$h{'default'}{'footer'} =~ m/^\"\s*(.*?)\s*\"$/o;
-      $t =~ s/\\\"/\"/go;
-      print HTML "<BR>" . $t;
-    }
-    print HTML "\n$HTML_footer";
-    printf HTML "\n<!-- Running time: %s -->", second2time(time - $start_time);
-    print HTML "\n</BODY>\n</HTML>\n";
+    print HTML GetHTMLFooter();
     close HTML;
   }
 }
@@ -1897,14 +2044,16 @@ sub Write_Results {
     my $t = $output{$report}{'title'};
     $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
     if ($HTML) {
-      print HTML "<A NAME=\"$report\">";
       my $html = $t;
       $html =~ s/(:?)$/ [Top $TOP_HTML]$1/o if $TOP_HTML > 0;
-      $html =~ s|^(.*)$|<STRONG>$1</STRONG>|;
-      print HTML "$html</A>\n<P>\n<CENTER>\n<TABLE BORDER=\"1\">\n";
+      print HTML
+        "<div id=\"$report\" class=\"ir-section\">\n",
+	"<p class=\"ir-sectionTitle\">",
+        $html,
+	"</p>\n<table class=\"ir-report\" summary=\"$report\">\n";
     }
     $t =~ s/(:?)$/ [Top $TOP_TEXT]$1/o if $TOP_TEXT > 0;
-    print "$t\n" if $TEXT;
+    print $t, "\n" if $TEXT;
   }
   my $numbering = 0;
   $numbering = 1 if defined $output{$report}{'numbering'} &&
@@ -1931,9 +2080,9 @@ sub Write_Results {
     if ($HTML && $whtml) {
       my $v1 = $v1;
       $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?(\w)/\%$1/g;
-      my $temp = $first ? "CENTER" : "LEFT";
-      $temp .= "\" COLSPAN=\"2" if $numbering && !$first;
-      $html .= sprintf "<TH ALIGN=\"$temp\">$v1</TH>", $v2;
+      my $temp = $first ? "center" : "left";
+      $temp .= "\" colspan=\"2" if $numbering && !$first;
+      $html .= sprintf "<th align=\"$temp\">$v1</th>", $v2;
     }
     $first++;
   }
@@ -1941,7 +2090,7 @@ sub Write_Results {
   print "$s\n" if $TEXT;
   $s = '';
   if ($HTML) {
-    print HTML "<TR>$html</TR>\n<TR><TD></TD></TR>\n";
+    print HTML "<tr class=\"ir-headerRow\">$html</tr>\n";
     $html = '';
   }
   my $num = 0;
@@ -1989,14 +2138,16 @@ sub Write_Results {
 	    $s .= sprintf $v1. "\n", $r unless $done || !$wtext;
 	    if ($HTML && $whtml) {
 	      if ($done) {
-		$html .= "<TD></TD>";
+		$html .= "<td></td>";
 	      }
 	      else {
 		$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-		$html .= $numbering ? "<TH ALIGN=\"CENTER\">$num_d</TH>" : '';
-		#  unless $first;
-		$html .= sprintf "<TD ALIGN=\"LEFT\">$v1</TD></TR>\n", $r;
-		$html .= "<TR><TD></TD>";
+		$html .= $numbering ? "<th align=\"center\">$num_d</th>" : '';
+
+		# Hardcoded colspan=3 works for "Miscellaneous innd statistics:".
+		$html .= "<td class=\"ir-primaryKey\" align=\"left\" colspan=\"3\">";
+		$html .= sprintf($v1, $r);
+		$html .= "</td></tr>\n<tr><td></td>";
 	      }
 	    }
 	  }
@@ -2006,10 +2157,10 @@ sub Write_Results {
 	      $s .= sprintf $v1 . " ", $r;
 	    }
 	    if ($HTML && $whtml) {
-	      $html .= $numbering ? "<TD></TD>" : '' if $first == 1;
+	      $html .= $numbering ? "<td></td>" : '' if $first == 1;
 	      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	      my $temp = $first > 1 ? "RIGHT" : "LEFT";
-	      $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	      my $temp = $first > 1 ? "right" : "left";
+	      $html .= sprintf "<td align=\"$temp\">$v1</td>", $r;
 	    }
 	  }
 	  $done = 1 if $p;
@@ -2020,7 +2171,7 @@ sub Write_Results {
 	print "$s\n" if $TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
 	if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
 	  $html =~ s/\\n//g;
-	  print HTML "<TR>$html</TR>\n";
+	  print HTML "<tr>$html</tr>\n";
 	}
 	$s = '';
 	$html = '';
@@ -2033,8 +2184,8 @@ sub Write_Results {
 	  if (defined $$i{'primary'} && $$i{'primary'} =~ m/true/o) {
 	    $first++;
 	    $s .= '  ';
-	    $html .= "<TD></TD>" if $HTML;
-	    $html .= "<TD></TD>" if $HTML && $numbering;
+	    $html .= "<td></td>" if $HTML;
+	    $html .= "<td></td>" if $HTML && $numbering;
 	    next;
 	  }
 	  my ($v1, $v2);
@@ -2044,21 +2195,19 @@ sub Write_Results {
 	  my $r = $first == 1 ? $num : $res[$first];
 	  $s .= sprintf $v1 . " ", $r;
 	  if ($HTML) {
-	    my $temp = $first > 1 ? "RIGHT" : "LEFT";
+	    my $temp = $first > 1 ? 'align="right"' : 'class="ir-totalColumn"';
 	    $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	    $v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first > 1;
-	    $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	    $html .= sprintf "<td $temp>$v1</td>", $r;
 	  }
 	  $first++;
 	}
 	$s =~ s/\s*$//;
 	$s =~ s/\\n//g;
 	print "$s\n" if $TEXT;
-	print HTML "<TR>$html</TR>\n" if $HTML;
+	print HTML "<tr>$html</tr>\n" if $HTML;
       }
     }
     print "\n" if $TEXT;
-    print HTML "<TR><TD></TD></TR>\n" if $HTML;
     $first = 0;
     $num = $num_d;
     $s = '';
@@ -2085,19 +2234,23 @@ sub Write_Results {
       }
       $s .= sprintf $v1 . " ", $r if $wtext && $first != 1;
       if ($HTML && $whtml) {
-	my $temp = $first ? "RIGHT" : "LEFT";
-	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
+	my $temp = $first ? 'align="right"' : 'class="ir-totalColumn"';
+	$temp .= ' colspan="2"' if $numbering && !$first;
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
-	$html .= $first == 1 ? "<TD></TD>" :
-	         sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	$html .= $first == 1 ? "<td></td>" :
+	         sprintf "<td $temp>$v1</td>", $r;
       }
       $first++;
     }
     $s =~ s/\s*$//;
     $s =~ s/\\n//g;
     print "$s\n" if $TEXT;
-    print HTML "<TR>$html</TR>\n</TABLE>\n</CENTER>\n<P>\n<HR>\n" if $HTML;
+    if ($HTML) {
+      print HTML
+	"<tr class=\"ir-totalRow\">$html</tr>\n",
+	"</table>\n",
+	"</div><!-- id=\"$report\" class=\"ir-section\"-->\n";
+    }
   }
   else {
     # foreach $key (sort { local $^W = 0; no strict; eval $h } (keys (%d)))
@@ -2129,9 +2282,9 @@ sub Write_Results {
 	  if $wtext && (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
 	if ($HTML && $whtml && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
 	  $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	  $html .= "<TH ALIGN=\"CENTER\">$num</TH>" if $numbering && !$first;
-	  my $temp = $first ? "RIGHT" : "LEFT";
-	  $html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	  $html .= "<th align=\"center\">$num</th>" if $numbering && !$first;
+	  my $temp = $first ? "right" : "left";
+	  $html .= sprintf "<td align=\"$temp\">$v1</td>", $r;
 	}
 	$first++;
       }
@@ -2139,12 +2292,12 @@ sub Write_Results {
       print "$s\n" if $TEXT && ($num <= $TOP_TEXT || $TOP_TEXT == -1);
       $s = '';
       if ($HTML && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
-	print HTML "<TR>$html</TR>\n";
+	my $class = $num % 2 ? 'ir-oddRow' : 'ir-evenRow';
+	print HTML "<tr class=\"$class\">$html</tr>\n";
 	$html = '';
       }
     }
     print "\n" if $TEXT;
-    print HTML "<TR><TD></TD></TR>\n" if $HTML;
     $first = 0;
     foreach $i (@{$output{$report}{'column'}}) {
       my $wtext = defined $$i{'text'} ? $$i{'text'} : 1;
@@ -2169,18 +2322,19 @@ sub Write_Results {
       $s .= sprintf $v1 . " ", $r if $wtext;
       if ($HTML && $whtml) {
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	my $temp = $first ? "RIGHT" : "LEFT";
-	$temp .= "\" COLSPAN=\"2" if $numbering && !$first;
-	$v1 =~ s|(.*)|<STRONG>$1</STRONG>|o unless $first;
-	$html .= sprintf "<TD ALIGN=\"$temp\">$v1</TD>", $r;
+	my $temp = $first ? 'align="right"' : 'class="ir-totalColumn"';
+	$temp .= ' colspan="2"' if $numbering && !$first;
+	$html .= sprintf "<td $temp>$v1</td>", $r;
       }
       $first++;
     }
     $s =~ s/\s*$//;
     print "$s\n" if $TEXT;
     if ($HTML) {
-      print HTML "<TR>$html</TR>\n";
-      print HTML "</TABLE>\n</CENTER><P>\n";
+      print HTML
+	"<tr class=\"ir-totalRow\">$html</tr>\n",
+	"</table>\n",
+	"</div><!-- id=\"$report\" class=\"ir-section\"-->\n";
 
       my $i = 0;
       while ($GRAPH && defined ${${$output{$report}{'graph'}}[$i]}{'type'}) {
@@ -2212,14 +2366,14 @@ sub Write_Results {
 	  }
 	  $suffix = '' unless defined $suffix;
 	  my $s = ($i ? $i : '') . $suffix;
-	  print HTML "<CENTER><IMG ALT=\"$title\" ";
+	  print HTML "<div class=\"ir-reportGraph\"><img alt=\"$title\" ";
 	  close HTML;
 	  my $y = &Graph3d ("$IMG_dir/$report$s.$GD_FORMAT",
 		    $title, $xmax, $num, @values, \@colors, \@labels);
 	  open (HTML, ">> $HTML_output") ||
 	    die "Error: cant open $HTML_output\n";
-	  print HTML "WIDTH=\"$xmax\" HEIGHT=\"$y\" ";
-	  print HTML "SRC=\"$IMG_pth$report$s.$GD_FORMAT\"></CENTER>\n";
+	  print HTML "width=\"$xmax\" height=\"$y\" ";
+	  print HTML "src=\"$IMG_pth$report$s.$GD_FORMAT\"/></div>\n";
 	}
         elsif ($type eq 'histo') {
 	  my (%values, %labels);
@@ -2265,8 +2419,12 @@ sub Write_Results {
 			 $factor, $labelx, $labely, \%values, \%labels);
 	    open (HTML, ">> $HTML_output") ||
 	      die "Error: cant open $HTML_output\n";
-	    print HTML "<CENTER><IMG ALT=\"$title\" WIDTH=\"$xmax\" " .
-	      "SRC=\"$IMG_pth$report$s.$GD_FORMAT\"></CENTER>\n" if $r;
+	    if ($r) {
+	      print HTML
+		"<div class=\"ir-reportGraph\">",
+		"<img alt=\"$title\" width=\"$xmax\" ",
+		"src=\"$IMG_pth$report$s.$GD_FORMAT\"/></div>\n";
+            }
 	  }
 	}
         elsif ($type eq 'piechart') {
@@ -2277,9 +2435,8 @@ sub Write_Results {
 	    "Invalid 'type' value.\n"
 	}
 	$i++;
-	print HTML "<P>\n";
+	print HTML "<p/>\n";
       }
-      print HTML "\n<HR>\n";
     }
   }
   close HTML if $HTML;
@@ -2485,8 +2642,8 @@ sub Usage {
   print "Usage: $base -f innreport.conf [-[no]options]\n";
   print "  where options are:\n";
   print "    -h (or -help)       this help page\n";
-  print "    -v                  display the version number of INNreport\n";
-  print "    -config             print INNreport configuration information\n";
+  print "    -v                  display the version number of innreport\n";
+  print "    -config             print innreport configuration information\n";
   print "    -html               HTML output";
   print " [default]" if ($HTML);
   print "\n";
@@ -2549,7 +2706,7 @@ sub Usage {
 }
 
 sub Version {
-  print "\nThis is INNreport version $version\n\n";
+  print "\nThis is innreport version $version\n\n";
   print "Copyright 1996-1999, Fabien Tassin <fta\@sofaraway.org>\n";
   exit 0;
 }
@@ -2565,7 +2722,7 @@ sub Summary {
   }
 
   # Display the summary
-  print "\nSummary of my INNreport (version $version) configuration:\n";
+  print "\nSummary of my innreport (version $version) configuration:\n";
   print "  General options:\n";
   print "    command line='@old_argv' (please, check this value)\n";
   print "    html=" . ($HTML?"yes":"no") . ", graph=" .
