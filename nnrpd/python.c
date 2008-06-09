@@ -318,7 +318,6 @@ PY_access(char* file, struct vector *access_vec, char *Username)
         strlcat(buffer, "\"\n", BIG_BUFFER);
 
         vector_add(access_vec, xstrdup(buffer));
-        syslog(L_ERROR, "buffer %s", xstrdup(buffer));
     }
 
     free(buffer);
