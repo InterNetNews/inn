@@ -48,13 +48,21 @@ install-man3:
 	done
 
 # We also create symbolic links between config files and programs.
+# We try to use relative symbolic links, when possible.  As '-ef' is
+# not required by POSIX, we make absolute symbolic links before this
+# test, in case it fails.
 install-man5:
 	for M in $(SEC5) ; do \
 	    $(CP_MAN) $$M $D$(MAN5)/$$M ; \
 	done
 	rm -f $D$(MAN5)/localgroups.5 $D$(MAN5)/nocem.ctl.5
-	$(LN_S) ../man8/docheckgroups.8 $D$(MAN5)/localgroups.5
-	$(LN_S) ../man8/perl-nocem.8 $D$(MAN5)/nocem.ctl.5
+	$(LN_S) $(MAN8)/docheckgroups.8 $D$(MAN5)/localgroups.5
+	$(LN_S) $(MAN8)/perl-nocem.8 $D$(MAN5)/nocem.ctl.5
+	if [ $D$(MAN5)/../man8 -ef $D$(MAN8) ] ; then \
+	    rm -f $D$(MAN5)/localgroups.5 $D$(MAN5)/nocem.ctl.5 ; \
+	    $(LN_S) ../man8/docheckgroups.8 $D$(MAN5)/localgroups.5 ; \
+	    $(LN_S) ../man8/perl-nocem.8 $D$(MAN5)/nocem.ctl.5 ; \
+	fi
 
 # auth_krb5 is conditionally compiled, so handle it specially.  actsync(8)
 # also covers actsyncd.
