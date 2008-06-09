@@ -1,16 +1,19 @@
 ##########################################################################
 # INN module for innreport (3.*).
 #
-# Sample file tested with INN 2.3, 2.2, 1.7.2 and 1.5.1
+# Sample file tested with INN 2.5, 2.4, 2.3, 2.2, 1.7.2 and 1.5.1.
 #
-# (c) 1997-1999 by Fabien Tassin <fta@sofaraway.org>
-# version 3.0.5
+# (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.
+# See innreport for more information.
+#
+# Version 3.1.0.
 #
 ##########################################################################
 
 # TODO: add the map file.
 
 package innreport_inn;
+use strict;
 
 my $MIN = 1E10;
 my $MAX = -1;
@@ -67,6 +70,220 @@ my %nnrpd_timer_names = (
                    'idle'    => 'idle',
                    'newnews' => 'newnews',
 );
+
+our %batcher_articles;
+our %batcher_bytes;
+our %batcher_elapsed;
+our %batcher_offered;
+our %cnfsstat;
+our %cnfsstat_cycles;
+our %cnfsstat_rate;
+our %cnfsstat_samples;
+our %cnfsstat_size;
+our %cnfsstat_time;
+our %cnfsstat_used;
+our %controlchan_doit;
+our %controlchan_ihave_site;
+our %controlchan_new;
+our %controlchan_ok;
+our %controlchan_other;
+our %controlchan_rm;
+our %controlchan_sendme_site;
+our %controlchan_skippgp;
+our %controlchan_who;
+our %crosspost;
+our $crosspost_time;
+our %crosspost_times;
+our %inn_badart;
+our %innd_accepted;
+our %innd_accepted_sum;
+our %innd_bad_command;
+our %innd_bad_ihave;
+our %innd_bad_msgid;
+our %innd_bad_newsgroup;
+our %innd_bad_sendme;
+our %innd_blocked;
+our %innd_cache;
+our %innd_changegroup;
+our %innd_connect;
+our %innd_connect_sum;
+our %innd_control;
+our %innd_duplicated_size;
+our %innd_duplicated_size_sum;
+our %innd_filter_perl;
+our %innd_filter_python;
+our %innd_his;
+our %innd_huge;
+our %innd_max_conn;
+our %innd_misc;
+our %innd_misc_stat;
+our %innd_newgroup;
+our %innd_no_colon_space;
+our %innd_no_permission;
+our %innd_offered;
+our %innd_offered_size;
+our %innd_offered_size_sum;
+our %innd_offered_sum;
+our %innd_others;
+our %innd_posted_future;
+our %innd_refused;
+our %innd_refused_sum;
+our %innd_rejected;
+our %innd_rejected_size;
+our %innd_rejected_size_sum;
+our %innd_rejected_sum;
+our %innd_rmgroup;
+our %innd_seconds;
+our %innd_seconds_sum;
+our %innd_stored_size;
+our %innd_stored_size_sum;
+our %innd_strange_strings;
+our %innd_time_max;
+our %innd_time_min;
+our %innd_time_num;
+our %innd_time_time;
+our $innd_time_times;
+our %innd_too_many_connects_per_minute;
+our %inn_duplicate;
+our %innfeed_accepted;
+our %innfeed_accepted_size;
+our %innfeed_connect;
+our %innfeed_missing;
+our %innfeed_offered;
+our %innfeed_refused;
+our %innfeed_rejected;
+our %innfeed_rejected_size;
+our %innfeed_seconds;
+our %innfeed_shrunk;
+our %innfeed_spooled;
+our %innfeed_time_max;
+our %innfeed_time_min;
+our %innfeed_time_num;
+our %innfeed_time_time;
+our $innfeed_time_times;
+our %inn_flow;
+our %inn_flow_labels;
+our %inn_flow_size;
+our $inn_flow_size_total;
+our %inn_flow_time;
+our $inn_flow_total;
+our %inn_linecount;
+our %inn_site_path;
+our %inn_tooold;
+our %inn_unapproved;
+our %inn_unapproved_g;
+our %inn_uw_dist;
+our %inn_uw_dist_s;
+our %inn_uw_ng;
+our %inn_uw_ng_s;
+our %inn_uw_site;
+our %innxmit_accepted;
+our %innxmit_accepted_size;
+our %innxmit_afail_host;
+our %innxmit_badart;
+our %innxmit_cfail_host;
+our %innxmit_crefused;
+our %innxmit_duplicate;
+our %innxmit_expire;
+our %innxmit_hiload;
+our %innxmit_ihfail;
+our %innxmit_linecount;
+our %innxmit_missing;
+our %innxmit_nospace;
+our %innxmit_offered;
+our %innxmit_others;
+our %innxmit_refused;
+our %innxmit_rejected;
+our %innxmit_rejected_size;
+our %innxmit_site;
+our %innxmit_times;
+our %innxmit_tooold;
+our %innxmit_unapproved;
+our %innxmit_unapproved_g;
+our %innxmit_uw_dist;
+our %innxmit_uw_dist_s;
+our %innxmit_uw_ng;
+our %innxmit_uw_ng_s;
+our %innxmit_uw_site;
+our %nnrpd_articles;
+our %nnrpd_auth;
+our %nnrpd_bytes;
+our %nnrpd_connect;
+our %nnrpd_curious;
+our %nnrpd_dom_articles;
+our %nnrpd_dom_bytes;
+our %nnrpd_dom_connect;
+our %nnrpd_dom_groups;
+our %nnrpd_dom_no_permission;
+our %nnrpd_dom_post_ok;
+our %nnrpd_dom_post_rej;
+our %nnrpd_dom_reset_peer;
+our %nnrpd_dom_timeout;
+our %nnrpd_dom_times;
+our %nnrpd_dom_unrecognized;
+our %nnrpd_gethostbyaddr;
+our %nnrpd_group;
+our %nnrpd_groups;
+our %nnrpd_hierarchy;
+our %nnrpd_no_permission;
+our %nnrpd_post_error;
+our %nnrpd_post_ok;
+our %nnrpd_post_rej;
+our %nnrpd_reset_peer;
+our %nnrpd_resource_elapsed;
+our %nnrpd_resource_idle;
+our %nnrpd_resource_system;
+our %nnrpd_resource_user;
+our %nnrpd_sys_times;
+our %nnrpd_time_max;
+our %nnrpd_time_min;
+our %nnrpd_time_num;
+our %nnrpd_timeout;
+our %nnrpd_times;
+our %nnrpd_time_time;
+our $nnrpd_time_times;
+our %nnrpd_unrecogn_cmd;
+our %nnrpd_unrecognized;
+our %nnrpd_usr_times;
+our %nntplink_accepted;
+our %nntplink_auth;
+our %nntplink_bpipe;
+our %nntplink_connects;
+our %nntplink_eof;
+our %nntplink_expire;
+our %nntplink_fail;
+our %nntplink_failed;
+our %nntplink_fake_connects;
+our %nntplink_hiload;
+our %nntplink_ihfail;
+our %nntplink_nospace;
+our %nntplink_offered;
+our %nntplink_rejected;
+our %nntplink_selecterr;
+our %nntplink_site;
+our %nntplink_sockerr;
+our %nntplink_times;
+our %nocem_badsigs;
+our %nocem_goodsigs;
+our $nocem_lastid;
+our $nocem_newids;
+our %nocem_newids;
+our $nocem_totalbad;
+our $nocem_totalgood;
+our $nocem_totalids;
+our %nocem_totalids;
+our %rnews_bogus_date;
+our %rnews_bogus_dist;
+our %rnews_bogus_ng;
+our $rnews_duplicate;
+our %rnews_host;
+our $rnews_linecount;
+our %rnews_misc;
+our $rnews_no_colon_space;
+our %rnews_rejected;
+our $rnews_too_old;
+our %rnews_unapproved;
+our $server;
 
 # init innd timer
 foreach (values %timer_names) {
