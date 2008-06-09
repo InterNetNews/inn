@@ -478,8 +478,12 @@ sub collect {
     }
     # Python filter
     return 1 if $left =~ /^defined python methods$/o;
+    return 1 if $left =~ /^reloading pyfilter$/o;
+    return 1 if $left =~ /^reloaded pyfilter OK$/o;
     return 1 if $left =~ /^python interpreter initialized OK$/o;
-    return 1 if $left =~ /^python: First load, so I can do initialization stuff.$/o;
+    return 1 if $left =~ /^python: First load, so I can do initialization stuff\.$/o;
+    return 1 if $left =~ /^python: filter_before_reload executing\.\.\.$/o;
+    return 1 if $left =~ /^python: I\'m just reloading, so skip the formalities\.$/o;
     return 1 if $left =~ /^python: spamfilter successfully hooked into INN$/o;
     return 1 if $left =~ /^python: filter_close running, bye!$/o;
     # rejecting[perl]
