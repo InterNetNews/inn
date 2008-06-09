@@ -601,20 +601,39 @@ PYreadfilter(void)
 	Py_XDECREF(result);
     }
 
+    /* We need to reimport the module before reloading it because otherwise,
+     * it might not be taken into account by Python.
+     * See Python API documentation:
+     *     If a module is syntactically correct but its initialization fails,
+     *     the first import statement for it does not bind its name locally,
+     *     but does store a (partially initialized) module object in
+     *     sys.modules.  To reload the module, you must first import it again
+     *     (this will bind the name to the partially initialized module object)
+     *     before you can reload() it.
+     */
+    PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
+    if (PYFilterModule == NULL) {
+        syslog(L_ERROR, "failed to reimport external python module");
+    }
+
     if ((newmodule = PyImport_ReloadModule(PYFilterModule)) == NULL) {
 	syslog(L_ERROR, "cant reload python filter module");
 	PYfilter(false);
 	return 0;
     }
+
     Py_DECREF(PYFilterModule);
     PYFilterModule = newmodule;
+
     if (PYFilterObject == NULL) {
 	syslog(L_ERROR, "python reload error, filter object not defined");
 	PYfilter(false);
 	return 0;
     }
+
     PYfilter(true);
     PYdefmethods();
+
     return 1;
 }
 
