@@ -22,12 +22,16 @@ section default {
 	graph           true;        # need 'html'
 	archive		true;  # use false to keep only the latest HTML report.
 	index		"index.html"; # name of the HTML index file.
+
+      # Change to .xhtml to let Apache server correct MIME type.
+      # html_file_extension    ".html";
+
       # html_dir     "/var/www/News/stats"; # default to pathhttp in inn.conf
 	img_dir         "pics";      # images will go to ${html_dir}/${img_dir}
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
 	title		"Daily Usenet report";
-      # title	     "Daily Usenet report for <A HREF=\"/News/stats/\">news.y.z</A>";
+      # title	        "Daily Usenet report for <A HREF=\"/News/stats/\">news.y.z</A>";
       # footer		"Local contact: <A HREF=\"mailto:x@y.z\">x@y.z</A>";
       # html_body	"BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\"";
       # html_header_file "header.html";  # ${html_dir}/${html_header_file}
@@ -38,8 +42,11 @@ section default {
       # Character set used in XML and Content-Type declaration.
       # html_encoding	"ISO-8859-1";
 
-      # URL to CSS file.  If undefined a style sheet is embedded in HTML instead.
-      # html_css_url	"/innreport.css";
+      # URL to CSS file.  If undefined, a style sheet is embedded in HTML instead.
+      # html_css_url    "";
+
+      # URL to XSL file.  See <http://www.w3.org/MarkUp/2004/xhtml-faq#ie>.
+      # html_xsl_url    "";
 
         graph_width	550;         # graph width (in pixels)
         transparent	true;        # graph background transparent ?

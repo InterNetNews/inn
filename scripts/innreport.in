@@ -275,6 +275,11 @@ $CASE_SENSITIVE = 1 if $ref{'casesensitive'};
 my $CLASS   = &GetValue ($output{'default'}{'module'});
 my $LIBPATH = &GetValue ($output{'default'}{'libpath'});
 
+my $HTML_EXTENSION = $output{'default'}{'html_file_extension'};
+$HTML_EXTENSION = defined($HTML_EXTENSION)
+? &GetValue ($HTML_EXTENSION)
+: '.html';
+
 umask 022;
 
 BEGIN {
@@ -491,7 +496,7 @@ if ($HTML) {
   else {
     $suffix = '';
   }
-  $HTML_output = "$HTML_dir" . "/news-notice" . "$suffix" . ".html";
+  $HTML_output = $HTML_dir . '/news-notice' . $suffix . $HTML_EXTENSION;
   $HTML_output =~ s|/+|/|g;
   if (defined $output{'default'}{'html_header_file'}) {
     my $file = &GetValue ($output{'default'}{'html_header_file'});
@@ -515,14 +520,17 @@ if ($HTML) {
 
 &Write_all_results ($HTML_output, \%output);
 
-&Make_Index ($HTML_dir, $index, "news-notice$suffix.html", \%output)
-  if $HTML && $index;
+if ($HTML && $index)
+{
+  &Make_Index ($HTML_dir, $index,
+    'news-notice' . $suffix . $HTML_EXTENSION, \%output);
+}
 
 #====================================================================
 
 if ($ARCHIVE) {
   # rotate html files
-  &Rotate ($CYCLE, $HTML_dir, "news-notice", ".html");
+  &Rotate ($CYCLE, $HTML_dir, 'news-notice', $HTML_EXTENSION);
 
   # rotate pictures
   my $report;
@@ -717,6 +725,15 @@ sub GetHTMLHeader($) {
   my $encoding = $output{'default'}{'encoding'};
   $encoding = defined($encoding) ? &GetValue($encoding) : 'ISO-8859-1';
 
+  my $xsl = '';
+  {
+    my $v = $output{'default'}{'html_xsl_url'};
+    if (defined($v)) {
+      $v = &GetValue($v);
+      $xsl = "\n<?xml-stylesheet type=\"text/xsl\" href=\"$v\"?>";
+    }
+  }
+
   my $style_sheet = '';
   my $css_url = $output{'default'}{'html_css_url'};
   if (defined($css_url)) {
@@ -728,7 +745,7 @@ EOF
   }
   else {
     $style_sheet = <<EOF;
-<style type="text/css"><!--
+<style type="text/css"><!--/*--><![CDATA[/*><!--*/
   div.ir-pageTitle {
     border-bottom:4px double black;
     border-top:4px double black;
@@ -808,20 +825,22 @@ EOF
   td.ir-primaryKey {
     background-color:#F8E0E0;
   }
---></style>
+/*]]>*/--></style>
 EOF
   }
 
   my $body = '';
-  my $v = $output{'default'}{'html_body'};
-  if (defined($v)) {
-    $v = &GetValue($v);
-    $v =~ s/\\\"/\"/go;
-    $body = ' ' . $v;
+  {
+    my $v = $output{'default'}{'html_body'};
+    if (defined($v)) {
+      $v = &GetValue($v);
+      $v =~ s/\\\"/\"/go;
+      $body = ' ' . $v;
+    }
   }
 
   return <<EOF;
-<?xml version="1.0" encoding="$encoding"?>
+<?xml version="1.0" encoding="$encoding"?>$xsl
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -960,7 +979,7 @@ sub Make_Index {
       my (%in, %out, %dates, $k);
       foreach $k (keys (%data)) {
 	my @res = split /\|/, $data{$k};
-	my ($year) = $k =~ m/^news-notice\.(\d+)\.\d+\.\d+-\d+.\d+.\d+\.html/;
+	my ($year) = $k =~ m/^news-notice\.(\d+)\.\d+\.\d+-\d+.\d+.\d+$HTML_EXTENSION/;
 	next unless $year; # bad filename.. strange.
 	my ($start, $end) =
 	  $res[$date_idx - 1] =~ m/^(\w+\s+\d+ \S+) -- (\w+\s+\d+ \S+)$/o;
