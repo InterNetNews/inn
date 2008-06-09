@@ -3,16 +3,19 @@
 
 ##########################################################################
 #
-#   innreport: Perl script to summarize news log files
-#              (with optional HTML output and graphs).
+#   innreport:  Perl script to summarize news log files
+#               (with optional HTML output and graphs).
 #
-# version: 3.0.5
+# Version 3.1.0.
 #
-# Copyright (c) 1996-1999, Fabien Tassin (fta@sofaraway.org).
+# Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
+#
+# Checkpoints tracking was improved by Jim Dutton in 2006.
+# XHTML 1.1 conformance added by Alexander Bartolich in 2008.
 #
 ##########################################################################
 #
-# Usage: innreport -f config_file [-[no]options] logfile [logfile2 [...]]
+# Usage:  innreport -f config_file [-[no]options] logfile [logfile2 [...]]
 #   where options are:
 #     -h (or -help)      : this help page
 #     -html              : HTML output
@@ -40,55 +43,52 @@
 #     -casesensitive     : Case sensitive
 #     -notdaily          : Never perform daily actions
 #
-# Use no in front of boolean options to unset them.
-# For example, "-html" is set by default. Use "-nohtml" to remove this
+# Use "no" in front of boolean options to unset them.
+# For example, "-html" is set by default.  Use "-nohtml" to remove this
 # feature.
 #
 ##########################################################################
 #
-# ABSOLUTELY NO WARRANTY WITH THIS PACKAGE. USE IT AT YOUR OWN RISKS.
+# ABSOLUTELY NO WARRANTY WITH THIS PACKAGE.  USE IT AT YOUR OWN RISKS.
 #
-# Note: You need the Perl graphic library GD.pm if you want the graphs.
-#       GD is available on all good CPAN ftp sites:
-#           ex: [CPAN_DIR]/authors/id/LDS/GD-1.1_.tar.gz (or greater)
-#         or directly to:
-#           <URL:http://www-genome.wi.mit.edu/pub/software/WWW/GD.html>
-#       Note : innreport will create PNG or GIF files depending upon
-#              the GD version.
+# Note:  You need the Perl graphic library GD.pm if you want the graphs.
+#        GD is available on all good CPAN ftp sites.  For instance:
+#            <http://search.cpan.org/dist/GD/GD.pm>.
+#        Note:  innreport will create PNG or GIF files depending upon
+#               the GD version.
 #
-# Documentation: for a short explaination of the different options, you
+# Documentation:  for a short explanation of the different options, you
 #        can read the usage (obtained with the -h or -help switch).
 #
 # Install: - check the Perl location (first line). Require Perl 5.002
-#            or greater.
+#            or greater
 #          - look at the parameters in the configuration file (section
 #            'default')
 #          - copy the configuration file into ${PATHETC}/innreport.conf
-#          - copy the INN module into ${PATHETC}/innreport_inn.pm
-#          - copy this script into ${PATHETC}/innreport
+#          - copy the INN module into ${PATHLIB}/innreport_inn.pm
+#          - copy this script into ${PATHBIN}/innreport
 #          - be sure that the news user can run it (chmod 755 or 750)
-#          - in "scanlog", comment the line containing innlog and add:
-#            ${PATHETC}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG}
-#            or, if you want to change some options:
-#    ${PATHETC}/innreport -f ${PATHETC}/innreport.conf options ${OLD_SYSLOG}
+#          - in "scanlogs", adjust the line containing:
+# ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
 #
-# Report: please report bugs (preferably) to the INN mailing list
-#         (see README) or directly to the author (do not forget to
-#         include the result of the "-config" switch, the parameters
-#         passed on the command line and the INN version).
-#         Please also report unknown entries.
-#         Be sure your are using the latest version of this script before
-#         any report.
+#
+# Report:  Please report bugs (preferably) to the INN mailing list
+#          (see README) or directly to the author (do not forget to
+#          include the result of the "-config" switch, the parameters
+#          passed on the command line and the INN version).
+#          Please also report unknown entries.
+#          Be sure your are using the latest version of this script before
+#          any report.
 #
 ##########################################################################
 
-# Note: References to <ftp://ftp.sofaraway.org/pub/innreport/> have been
+# Note:  References to <ftp://ftp.sofaraway.org/pub/innreport/> have been
 # removed from the output because this site appears to no longer exist.  It
 # used to be the upstream source for innreport.  If there is a new site for
 # innreport releases, please notify the INN maintainers.
 
-# remember to add '-w' on the first line and to uncomment the 'use strict'
-# below before doing any changes to this file.
+# Remember to add '-w' on the first line before doing any changes
+# to this file.
 
 use strict;
 
