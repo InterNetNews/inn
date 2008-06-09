@@ -232,7 +232,7 @@ void
 PY_access(char* file, struct vector *access_vec, char *Username)
 {
     PyObject	*result, *key, *value, *proc;
-    char	*skey, *svalue, *temp;
+    char        *buffer;
     int		authnum;
     int		i;
 
@@ -298,6 +298,8 @@ PY_access(char* file, struct vector *access_vec, char *Username)
 
     /* store dict values in proper format in access vector */
     i = 0;
+    buffer = xmalloc(BIG_BUFFER);
+
     while(PyDict_Next(result, &i, &key, &value)) {
         if (!PyString_Check(key)) {
             syslog(L_ERROR, "python access method return dictionary key %i not a string", i);
@@ -310,20 +312,16 @@ PY_access(char* file, struct vector *access_vec, char *Username)
             ExitWithStats(1, false);
         }
         
-        temp = PyString_AsString(key);
-        skey = xstrdup(temp);
-        
-        temp = PyString_AsString(value);
-        svalue = xstrdup(temp);
-        
-        skey = strcat(skey, ": \"");
-        skey = strcat(skey, svalue);
-        skey = strcat(skey, "\"\n");
-        vector_add(access_vec, skey);
-        
-        free(skey);
-        free(svalue);
+        strlcpy(buffer, PyString_AsString(key), BIG_BUFFER);
+        strlcat(buffer, ": \"", BIG_BUFFER);
+        strlcat(buffer, PyString_AsString(value), BIG_BUFFER);
+        strlcat(buffer, "\"\n", BIG_BUFFER);
+
+        vector_add(access_vec, xstrdup(buffer));
+        syslog(L_ERROR, "buffer %s", xstrdup(buffer));
     }
+
+    free(buffer);
  
     /* Clean up the dictionary object */
     PyDict_Clear(PYauthinfo);
