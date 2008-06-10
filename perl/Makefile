@@ -41,5 +41,5 @@ $(EXTRA) $(FIXSCRIPT):
 	@exit 1
 
 ../doc/man/INN__Config.3pm: INN/Config.pm
-	$(POD2MAN) -s '3pm' -n "INN::Config" $? > $@
+	$(POD2MAN) -s '$(MAN3PM_EXT)' -n "INN::Config" $? > $@
 
