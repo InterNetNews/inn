@@ -628,7 +628,7 @@ PYreadfilter(void)
      *     (this will bind the name to the partially initialized module object)
      *     before you can reload() it.
      */
-    PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
+    PYFilterModule = PyImport_ImportModule((char *) _PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL) {
         syslog(L_ERROR, "failed to reimport external python module");
     }
