@@ -253,8 +253,14 @@ PATHOUTGOING	= $(PATHSPOOL)/outgoing
 
 MAN1		= $(mandir)/man1
 MAN3		= $(mandir)/man3
+MAN3PM		= $(mandir)/man3
 MAN5		= $(mandir)/man5
 MAN8		= $(mandir)/man8
+
+##  Extension used for Perl modules man pages (for instance "INN::Config.3pm"
+##  if MAN3PM_EXT is set to "3pm").
+
+MAN3PM_EXT	= 3pm
 
 ##  Installation settings.  The file installation modes are determined by
 ##  configure; inews and rnews are special and have configure flags to

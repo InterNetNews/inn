@@ -138,6 +138,7 @@ doc/history-innfeed                   Historical notes about innfeed
 doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
 doc/man                               nroff documentation (Directory)
+doc/man/INN__Config.3pm               Manpage for INN::Config Perl module
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
 doc/man/active.times.5                Manpage for active.times file
