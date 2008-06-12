@@ -610,7 +610,8 @@ sub collect {
         $innd_cp_seconds{$server}         = $seconds;
         $innd_cp_stored_size{$server}     = $accptsize;
         $innd_cp_duplicated_size{$server} = $dupsize;
-        $innd_cp_rejected_size{$server}   = $rjctsize;
+        $innd_cp_rejected_size{$server}   = $rjctsize
+   if defined($rjctsize);
       } elsif ($status eq "closed") {
         $innd_cp_accepted{$server}        = 0;
         $innd_cp_refused{$server}         = 0;
@@ -628,7 +629,8 @@ sub collect {
         $innd_rejected{$server} += $rejected;
         $innd_stored_size{$server} += $accptsize;
         $innd_duplicated_size{$server} += $dupsize;
-        $innd_rejected_size{$server} += $rjctsize;
+        $innd_rejected_size{$server} += $rjctsize
+   if defined($rjctsize);
       }
       return 1;
     # closed (with times)
@@ -710,10 +712,14 @@ sub collect {
         my $average = $2 / ($3 || 1);
         $innd_time_time{$name} += $2;
         $innd_time_num{$name} += $3;
-        $innd_time_min{$name} = $average
-          if ($3 && $innd_time_min{$name} > $average);
-        $innd_time_max{$name} = $average
-          if ($3 && $innd_time_max{$name} < $average);
+ if ($3) {
+          my $min = $innd_time_min{$name};
+          $innd_time_min{$name} = $average
+            if (defined($min) && $min > $average);
+          my $max = $innd_time_max{$name};
+   $innd_time_max{$name} = $average
+            if (defined($max) && $max < $average);
+        }
       }
       return 1;
     }
@@ -1702,10 +1708,14 @@ sub collect {
         my $average = $2 / ($3 || 1);
         $nnrpd_time_time{$name} += $2;
         $nnrpd_time_num{$name} += $3;
-        $nnrpd_time_min{$name} = $average
-          if ($3 && $nnrpd_time_min{$name} > $average);
-        $nnrpd_time_max{$name} = $average
-          if ($3 && $nnrpd_time_max{$name} < $average);
+ if ($3) {
+   my $min = $nnrpd_time_min{$name};
+   $nnrpd_time_min{$name} = $average
+     if (defined($min) && $min > $average);
+   my $max = $nnrpd_time_max{$name};
+   $nnrpd_time_max{$name} = $average
+     if (defined($max) && $max < $average);
+        }
       }
       return 1;
     }
@@ -2015,7 +2025,7 @@ sub collect {
       $cnfsstat{$buffer} = $class;
 
       # If the size changed, invalidate all of our running fill rate stats.
-      if ($size != $cnfsstat_size{$buffer}) {
+      if (!exists($cnfsstat_size{$buffer}) ||  $size != $cnfsstat_size{$buffer}) {
         delete $cnfsstat_rate{$buffer};
         delete $cnfsstat_samples{$buffer};
         delete $cnfsstat_time{$buffer};
@@ -2073,9 +2083,9 @@ sub adjust {
 	my $dom = &host2dom($serv);
 	if ($nnrpd_no_permission{$serv}) {
 	  $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
-	    if defined $nnrpd_dom_connect{$dom};
+	    if defined $nnrpd_dom_connect{$dom} && defined $nnrpd_connect{$serv};
 	  $nnrpd_dom_groups{$dom}  -= $nnrpd_groups{$serv}
-	    if defined $nnrpd_dom_groups{$dom};
+	    if defined $nnrpd_dom_groups{$dom} && defined $nnrpd_groups{$serv};
 	  $nnrpd_dom_times{$dom}   -= $nnrpd_times{$serv}
 	    if defined $nnrpd_dom_times{$dom};
 	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
@@ -2140,16 +2150,26 @@ sub adjust {
     # Sum all incoming traffic for each full server.
     foreach $key (keys (%innd_connect)) {
       ($hostname, $channel) = split(':', $key);
-      $innd_seconds_sum{$hostname} += $innd_seconds{$key};
-      $innd_connect_sum{$hostname} += $innd_connect{$key};
-      $innd_offered_sum{$hostname} += $innd_offered{$key};
-      $innd_accepted_sum{$hostname} += $innd_accepted{$key};
-      $innd_refused_sum{$hostname} += $innd_refused{$key};
-      $innd_rejected_sum{$hostname} += $innd_rejected{$key};
-      $innd_stored_size_sum{$hostname} += $innd_stored_size{$key};
-      $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key};
-      $innd_offered_size_sum{$hostname} += $innd_offered_size{$key};
-      $innd_rejected_size_sum{$hostname} += $innd_rejected_size{$key};
+      $innd_seconds_sum{$hostname} += $innd_seconds{$key}
+        if defined($innd_seconds{$key});
+      $innd_connect_sum{$hostname} += $innd_connect{$key}
+        if defined($innd_connect{$key});
+      $innd_offered_sum{$hostname} += $innd_offered{$key}
+        if defined($innd_offered{$key});
+      $innd_accepted_sum{$hostname} += $innd_accepted{$key}
+        if defined($innd_accepted{$key});
+      $innd_refused_sum{$hostname} += $innd_refused{$key}
+        if defined($innd_refused{$key});
+      $innd_rejected_sum{$hostname} += $innd_rejected{$key}
+        if defined($innd_rejected{$key});
+      $innd_stored_size_sum{$hostname} += $innd_stored_size{$key}
+        if defined($innd_stored_size{$key});
+      $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key}
+        if defined($innd_duplicated_size{$key});
+      $innd_offered_size_sum{$hostname} += $innd_offered_size{$key}
+        if defined($innd_offered_size{$key});
+      $innd_rejected_size_sum{$hostname} += $innd_rejected_size{$key}
+        if defined($innd_rejected_size{$key});
     }
 
     # adjust min/max of innd timer stats.
