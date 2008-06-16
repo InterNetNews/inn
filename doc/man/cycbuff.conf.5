@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "CYCBUFF.CONF 5"
-.TH CYCBUFF.CONF 5 "2008-04-06" "INN 2.4.4" "InterNetNews Documentation"
+.TH CYCBUFF.CONF 5 "2008-06-07" "INN 2.4.5" "InterNetNews Documentation"
 .SH "NAME"
 cycbuff.conf \- Configuration file for INN CNFS storage method
 .SH "DESCRIPTION"
@@ -210,7 +210,7 @@ metacycbuff line.
 .PP
 \&\fBinnd\fR only reads \fIcycbuff.conf\fR on startup, so if you change anything
 in this file and want \fBinnd\fR to pick up the changes, you have to stop and
-restart it.  \f(CW\*(C`ctlinnd reload ''\*(C'\fR is not sufficient.
+restart it.  \f(CW\*(C`ctlinnd reload all ''\*(C'\fR is not sufficient.
 .PP
 When articles are stored, the cycbuff into which they're stored is saved
 as part of the article token.  In order for \s-1INN\s0 to retrieve articles from

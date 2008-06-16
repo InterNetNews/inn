@@ -1,7 +1,7 @@
 INN Python Filtering and Authentication Support
 
-    This is $Revision$, dated $Date: 2005-03-05 22:19:44 +0100 (sam,
-    05 mar 2005) $.
+    This is $Revision$, dated $Date: 2008-06-07 14:46:49 +0200 (Sat,
+    07 Jun 2008) $.
 
     This file documents INN's built-in optional support for Python article
     filtering.  It is patterned after the TCL and Perl hooks previously
@@ -35,7 +35,7 @@ INSTALLATION
 
     See the ctlinnd(8) manual page to learn how to enable, disable and
     reload Python filters on a running server ("ctlinnd mode", "ctlinnd
-    python y|n", "ctlinnd reload filter.python").
+    python y|n", "ctlinnd reload filter.python 'reason'").
 
     Also, see the example filter_innd.py script in your filters directory
     for a demonstration of how to get all this working.
@@ -57,9 +57,9 @@ WRITING AN INND FILTER
         or pick up where filter_before_reload or filter_close left off.
 
     filter_before_reload(self)
-        This will execute any time a "ctlinnd reload all" or "ctlinnd reload
-        filter.python" command is issued.  You can use it to save statistics
-        or reports for use after reloading.
+        This will execute any time a "ctlinnd reload all 'reason'" or
+        "ctlinnd reload filter.python 'reason'" command is issued.  You can
+        use it to save statistics or reports for use after reloading.
 
     filter_close(self)
         This will run when a "ctlinnd shutdown" command is received.

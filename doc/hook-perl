@@ -1,7 +1,7 @@
 INN Perl Filtering and Authentication Support
 
-    This is $Revision$ dated $Date: 2003-02-10 04:21:27 +0100 (lun,
-    10 fév 2003) $.
+    This is $Revision$ dated $Date: 2008-06-07 14:46:49 +0200 (Sat,
+    07 Jun 2008) $.
 
     This file documents INN's built-in support for Perl filtering and reader
     authentication.  The code is based very heavily on work by Christophe
@@ -47,8 +47,8 @@ The innd Perl Filter
     cause it to be reloaded.
 
     filter_innd.pl, on the other hand, can be reloaded on command (with
-    "ctlinnd reload filter.perl").  Whenever filter_innd.pl is loaded,
-    including the first time at innd startup, the Perl function
+    "ctlinnd reload filter.perl 'reason'").  Whenever filter_innd.pl is
+    loaded, including the first time at innd startup, the Perl function
     filter_before_reload() is called before it's reloaded and the function
     filter_after_reload() is called after it's reloaded (if the functions
     exist).  Additionally, any code in either startup_innd.pl or
@@ -65,13 +65,13 @@ The innd Perl Filter
     load data that was preserved on disk across a stop and restart of innd
     (perhaps using filter_mode() -- see below).
 
-    As mentioned above, "ctlinnd reload filter.perl" (or "ctlinnd reload
-    all") will cause filter_innd.pl to be reloaded.  If the function
-    filter_art() is defined after the file has been reloaded, filtering is
-    turned on.  Otherwise, filtering is turned off.  (Note that due to the
-    way Perl stores functions, once you've defined filter_art(), you can't
-    undefine it just by deleting it from the file and reloading the filter. 
-    You'll need to replace it with an empty sub.)
+    As mentioned above, "ctlinnd reload filter.perl 'reason'" (or "ctlinnd
+    reload all 'reason'") will cause filter_innd.pl to be reloaded.  If the
+    function filter_art() is defined after the file has been reloaded,
+    filtering is turned on.  Otherwise, filtering is turned off.  (Note that
+    due to the way Perl stores functions, once you've defined filter_art(),
+    you can't undefine it just by deleting it from the file and reloading
+    the filter.  You'll need to replace it with an empty sub.)
 
     The Perl function filter_art() is the heart of a Perl filter.  Whenever
     an article is received from a peer, via either IHAVE or TAKETHIS,

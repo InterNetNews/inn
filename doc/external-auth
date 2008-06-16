@@ -1,6 +1,7 @@
 NNRPD External Authentication Support
 
-    This is $Revision$ dated $Date$.
+    This is $Revision$ dated $Date: 2005-03-17 12:42:46 +0100 (Thu,
+    17 Mar 2005) $.
 
     A fundamental part of the readers.conf(5)-based authorization mechanism
     is the interface to external authenticator and resolver programs.  This
