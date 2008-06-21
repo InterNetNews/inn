@@ -489,13 +489,14 @@ default is true.
 
 =item B<virtualhost:>
 
-Set this parameter to make B<nnrpd> behave as if it's running on a server
-with a different name than it actually is.  If you set this parameter, you
-must also set either pathhost: or domain: to something different than is
-set in F<inn.conf>.  All articles displayed to clients will then have
+Set this parameter to true in order to make B<nnrpd> behave as if it is
+running on a server with a different name than it actually is.  If you
+set this parameter to true, you must also set either pathhost: or domain:
+in the relevant access group in F<readers.conf> to something different
+than is set in F<inn.conf>.  All articles displayed to clients will then have
 their Path: and Xref: headers altered to appear to be from the server
 named in pathhost: or domain: (whichever is set), and posted articles will
-use that server name in the Path:, Message-ID;, and X-Trace: headers.
+use that server name in the Path:, Message-ID:, and X-Trace: headers.
 
 Note that setting this parameter requires the server modify all posts
 before presenting them to the client and therefore may decrease
@@ -505,12 +506,14 @@ performance slightly.
 
 In addition, all of the following parameters are valid in access groups
 and override the global setting in F<inn.conf>.  See inn.conf(5) for the
-descriptions of these parameters:  addnntppostingdate, addnntppostinghost,
-backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
-backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
-fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
-nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
-pathhost, readertrack, spoolfirst, and strippostcc.
+descriptions of these parameters:
+
+    addnntppostingdate, addnntppostinghost, backoff_auth, backoff_db,
+    backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
+    checkincludedtext, clienttimeout, complaints, domain,
+    fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
+    nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
+    pathhost, readertrack, spoolfirst, strippostcc.
 
 =head1 SUMMARY
 
