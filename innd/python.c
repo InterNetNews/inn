@@ -207,7 +207,7 @@ PYmode(Mode, NewMode, reason)
 
     result = PyObject_CallFunction(mode_method, "sss",
 				   oldmode, newmode, reason);
-    Py_DECREF(result);
+    Py_XDECREF(result);
 }
 
 
@@ -639,7 +639,7 @@ PYreadfilter(void)
 	return 0;
     }
 
-    Py_DECREF(PYFilterModule);
+    Py_XDECREF(PYFilterModule);
     PYFilterModule = newmodule;
 
     if (PYFilterObject == NULL) {
