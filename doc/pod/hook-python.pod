@@ -258,9 +258,9 @@ with the previously listed functions.
     # local server; it doesn't send out a control message or anything
     # scary like that.  Returns 1 if successful, else 0.
     if INN.cancel('<meow$123.456@solvangpastries.edu>'):
-        canceled = "yup"
+        cancelled = "yup"
     else:
-        canceled = "nope"
+        cancelled = "nope"
 
     # Check if a given message is in history.  This doesn't
     # necessarily mean the article is on your spool; cancelled and
@@ -275,8 +275,8 @@ with the previously listed functions.
     # Here we are running a local spam filter, so why eat all those
     # cancels?  We can add fake entries to history so they'll get
     # refused.  Returns 1 on success, 0 on failure.
-    canceled_id = buffer('<meow$123.456@isc.org>')
-    if INN.addhist("<cancel." + canceled_id[1:]):
+    cancelled_id = buffer('<meow$123.456@isc.org>')
+    if INN.addhist("<cancel." + cancelled_id[1:]):
         thought = "Eat my dust, roadkill!"
     else:
         thought = "Darn, someone beat me to it."
