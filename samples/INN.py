@@ -1,6 +1,10 @@
-# This module supplies stub Python functions corresponding to the ones
-# provided by innd.  It is not used by the server; it is only here so
-# that you can test your filter scripts before loading.
+##  $Id$
+##
+##  This module supplies stub Python functions corresponding to the ones
+##  provided by innd.  It is not used by the server; it is only here so
+##  that you can test your filter scripts before loading.
+##  See the INN Python Filtering and Authentication Hooks documentation
+##  for more information.
 
 from types import *
 
@@ -10,20 +14,26 @@ def set_filter_hook(anObject):
     else:
         print "** <Your object is not a class instance.>"
 
+def addhist(messageid):
+    print "** addhist Message-ID: " + messageid
+
 def havehist(messageid):
-    print "** havehist message id: " + messageid
+    print "** havehist Message-ID: " + messageid
 
 def cancel(messageid):
-    print "** cancel message id: " + messageid
+    print "** cancel Message-ID: " + messageid
 
 def newsgroup(groupname):
-    print "** newsgroup: " + messageid
+    print "** newsgroup: " + groupname
 
 def head(messageid):
-    print "** head  message id: " + messageid
+    print "** head Message-ID: " + messageid
 
 def article(messageid):
-    print "** article message id: " + messageid
+    print "** article Message-ID: " + messageid
+
+def hashstring(mystring):
+    print "** hash: " + mystring
 
 def syslog(level, message):
     print "-- syslog level: %s message: %s" % (level, message)
