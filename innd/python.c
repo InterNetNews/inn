@@ -9,6 +9,14 @@
 **
 **  The astute reader may notice the commission of blatant atrocities
 **  against Python's OO model here.  Don't tell Guido.
+**
+**  A quick note regarding Python exceptions:  functions like
+**      PyObject_GetAttrString(PyObject *o, const char *attr_name)
+**  raise an exception when they fail, even though they return NULL.
+**  And as exceptions accumulate from caller to caller and so on,
+**  it generates weird issues with Python scripts afterwards.  So such
+**  uses should be checked before.  For instance with:
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name).
 */
 
 #include "config.h"
@@ -570,7 +578,17 @@ PYdefonemethod(methptr, methname)
     char	*methname;
 {
     Py_XDECREF(*methptr);
-    *methptr = PyObject_GetAttrString(PYFilterObject, methname);
+
+    /* We check with HasAttrString() the existence of the method because
+     * otherwise, in case it does not exist, an exception is raised by Python,
+     * although the result of the function is NULL. */
+    if (PyObject_HasAttrString(PYFilterObject, (char *) methname) == 1) {
+        /* Get a pointer to given method. */
+        *methptr = PyObject_GetAttrString(PYFilterObject, (char *) methname);
+    } else {
+        *methptr = NULL;
+    }
+                
     if (*methptr == NULL)
 	syslog(L_NOTICE, "python method %s not found", methname);
     else if (PyCallable_Check(*methptr) == 0) {

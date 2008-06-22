@@ -8,6 +8,14 @@
 **  This code bases on Python work for innd filtering done by
 **  G.J. Andruk <meowing@banet.net>. Also it borrows some ideas from
 **  TCL/Perl work done by Bob Heiney and Christophe Wolfhugel.
+**
+**  A quick note regarding Python exceptions:  functions like
+**      PyObject_GetAttrString(PyObject *o, const char *attr_name)
+**  raise an exception when they fail, even though they return NULL.
+**  And as exceptions accumulate from caller to caller and so on,
+**  it generates weird issues with Python scripts afterwards.  So such
+**  uses should be checked before.  For instance with:
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name). 
 */
 
 #include "config.h"
@@ -608,8 +616,17 @@ PYdefonemethod(PyFile *fp, int type, int method, char *methname) {
 
     methptr = &fp->procs[type][method];
 
-    /* Get a pointer to given method */
-    *methptr = PyObject_GetAttrString(PYAuthObject, methname);
+    /*
+    ** We check with HasAttrString() the existence of the method because
+    ** otherwise, in case it does not exist, an exception is raised by Python,
+    ** although the result of the function is NULL.
+    */
+    if (PyObject_HasAttrString(PYAuthObject, (char *) methname) == 1) {
+        /* Get a pointer to given method. */
+        *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
+    } else {
+        *methptr = NULL;
+    }
 
     /* See if such method is defined */
     if (*methptr == NULL)
