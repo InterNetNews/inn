@@ -281,7 +281,7 @@ void PY_access(char* file, struct vector *access_vec, char *Username) {
 
     /* Check the response */
     if (result == NULL || result == Py_None || !PyDict_Check(result)) {
-        syslog(L_ERROR, "python access method returned wrong result - expected a dictionary");
+        syslog(L_ERROR, "python access method returned wrong result -- expected a dictionary");
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, true);
      }
@@ -410,7 +410,7 @@ int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_messa
     /* Check the response */
     if (result == NULL || (result != Py_None && !PyString_Check(result)))
     {
-        syslog(L_ERROR, "python dyanmic method (%s access) returned wrong result: %s", PostFlag ? "post" : "read", result);
+        syslog(L_ERROR, "python dynamic method (%s access) returned wrong result: %s", PostFlag ? "post" : "read", result);
 	Reply("%d Internal Error (7).  Goodbye\r\n", NNTP_ACCESS_VAL);
 	ExitWithStats(1, false);
     }
@@ -567,7 +567,7 @@ void PY_load_python() {
         Py_Initialize();
     
         /* It makes Python sad when its stdout and stderr are closed. */
-        if (feof(stdout) || feof(stderr))
+        if ((fileno(stdout) == -1) || (fileno(stderr) == -1))
             PyRun_SimpleString("import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
    
         /* See if Python initialized OK */
