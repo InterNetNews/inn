@@ -9,6 +9,14 @@
 **  This code bases on Python work for innd filtering done by
 **  G.J. Andruk <meowing@banet.net>.  Also it borrows some ideas from
 **  TCL/Perl work done by Bob Heiney and Christophe Wolfhugel.
+**
+**  A quick note regarding Python exceptions:  functions like
+**      PyObject_GetAttrString(PyObject *o, const char *attr_name)
+**  raise an exception when they fail, even though they return NULL.
+**  And as exceptions accumulate from caller to caller and so on,
+**  it generates weird issues with Python scripts afterwards.  So such
+**  uses should be checked before.  For instance with:
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name) 
 */
 
 #include "config.h"
@@ -293,7 +301,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
 
     /*
     ** Now invoke newsgroup access method.
-    **/
+    */
     result = PyObject_CallFunction(proc, (char *) "O", PYauthinfo);
 
     /* Check the response. */
@@ -430,7 +438,7 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     /*
     ** Now invoke newsgroup dynamic access method and see if
     ** it likes this user to access this newsgroup.
-    **/
+    */
     result = PyObject_CallFunction(proc, (char *) "O", PYauthinfo);
 
     /* Check the response. */
@@ -583,7 +591,7 @@ PY_set_auth_hook(PyObject *dummy UNUSED, PyObject *args)
     PyObject    *result = NULL;
     PyObject    *temp;
 
-    /* Set_auth_hook method should return a pointer to nnrpd auth object. */
+    /* set_auth_hook method should return a pointer to nnrpd auth object. */
     if (PyArg_ParseTuple(args, (char *) "O:set_auth_hook", &temp)) {
         Py_XINCREF(temp);
         Py_XDECREF(PYAuthObject);
@@ -605,10 +613,11 @@ void
 PY_load_python(void)
 {
     if (!PythonLoaded) {
-        /* Add path for nnrpd module.  The environment variable PYTHONPATH
+        /*
+        ** Add path for nnrpd module.  The environment variable PYTHONPATH
         ** does it; one can also append innconf->pathfilter to sys.path once
         ** Python has been initialized.
-        **/
+        */
         setenv("PYTHONPATH", innconf->pathfilter, 1);
 
         /* Load up the interpreter ;-O */
@@ -630,7 +639,7 @@ PY_load_python(void)
         /*
         ** Grab space for authinfo dictionary so we aren't forever
         ** recreating them.
-        **/
+        */
         PYauthinfo = PyDict_New();
         PYauthitem = xcalloc(_PY_MAX_AUTH_ITEM, sizeof(PyObject *));
 
@@ -657,8 +666,17 @@ PYdefonemethod(PyFile *fp, int type, int method, const char *methname)
 
     methptr = &fp->procs[type][method];
 
-    /* Get a pointer to given method. */
-    *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
+    /*
+    ** We check with HasAttrString() the existence of the method because
+    ** otherwise, in case it does not exist, an exception is raised by Python,
+    ** although the result of the function is NULL.
+    */
+    if (PyObject_HasAttrString(PYAuthObject, (char *) methname) == 1) {
+        /* Get a pointer to given method. */
+        *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
+    } else {
+        *methptr = NULL;
+    }
 
     /* See if such method is defined. */
     if (*methptr == NULL)

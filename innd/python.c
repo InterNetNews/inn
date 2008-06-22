@@ -8,6 +8,14 @@
 **
 **  The astute reader may notice the commission of blatant atrocities against
 **  Python's OO model here.  Don't tell Guido.
+**
+**  A quick note regarding Python exceptions:  functions like
+**      PyObject_GetAttrString(PyObject *o, const char *attr_name)
+**  raise an exception when they fail, even though they return NULL.
+**  And as exceptions accumulate from caller to caller and so on,
+**  it generates weird issues with Python scripts afterwards.  So such
+**  uses should be checked before.  For instance with:
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name)
 */
 
 #include "config.h"
@@ -569,8 +577,15 @@ PYdefonemethod(PyObject **methptr, const char *methname)
 {
     Py_XDECREF(*methptr);
 
-    /* Get a pointer to given method. */
-    *methptr = PyObject_GetAttrString(PYFilterObject, (char *) methname);
+    /* We check with HasAttrString() the existence of the method because
+     * otherwise, in case it does not exist, an exception is raised by Python,
+     * although the result of the function is NULL. */
+    if (PyObject_HasAttrString(PYFilterObject, (char *) methname) == 1) {
+        /* Get a pointer to given method. */
+        *methptr = PyObject_GetAttrString(PYFilterObject, (char *) methname);
+    } else {
+        *methptr = NULL;
+    }
 
     /* See if such method is defined. */
     if (*methptr == NULL)
@@ -578,9 +593,9 @@ PYdefonemethod(PyObject **methptr, const char *methname)
     else {
         /* See if it is callable. */
         if (PyCallable_Check(*methptr) == 0) {
-	syslog(L_ERROR, "python object %s found but not a function", methname);
-	Py_DECREF(*methptr);
-	*methptr = NULL;
+            syslog(L_ERROR, "python object %s found but not a function", methname);
+            Py_DECREF(*methptr);
+            *methptr = NULL;
         }
     }
 }
