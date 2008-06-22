@@ -228,6 +228,7 @@ site/motd.news
 site/news2mail.cf
 site/newsfeeds
 site/newsgroups.minimal
+site/nnrpd.py
 site/nnrpd.track
 site/nnrpd_access.pl
 site/nnrpd_access.py
