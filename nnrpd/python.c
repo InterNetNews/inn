@@ -465,6 +465,7 @@ PY_close_python(void)
     if (files != NULL) {
 	hash_traverse(files, file_trav, NULL);
 	hash_free(files);
+        files = NULL;
     }
     if (dynamic_file != NULL)
 	free(dynamic_file);
