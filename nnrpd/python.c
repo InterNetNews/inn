@@ -457,7 +457,9 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
 
 
 /*
-**  This runs when nnrpd shuts down.
+**  This runs when nnrpd shuts down.  If Python is closed and reopened
+**  in the same process, files and dynamic_file are reused so they
+**  must point to NULL.
 */
 void
 PY_close_python(void)
@@ -467,8 +469,10 @@ PY_close_python(void)
 	hash_free(files);
         files = NULL;
     }
-    if (dynamic_file != NULL)
+    if (dynamic_file != NULL) {
 	free(dynamic_file);
+        dynamic_file = NULL;
+    }
 }
 
 /*
