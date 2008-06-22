@@ -60,7 +60,7 @@ extern int              SMerrno;
 extern char             *SMerrorstr;
 
 typedef enum {SELFEXPIRE, SMARTNGNUM, EXPENSIVESTAT} PROBETYPE;
-typedef enum {SM_ALL, SM_HEAD, SM_CANCELEDART} FLUSHTYPE;
+typedef enum {SM_ALL, SM_HEAD, SM_CANCELLEDART} FLUSHTYPE;
 
 struct artngnum {
     char	*groupname;

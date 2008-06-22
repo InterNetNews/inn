@@ -1250,7 +1250,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
   if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
     syslog(L_ERROR, "%s cant cancel %s (SMerrno %d)", LogName,
 	TokenToText(token), SMerrno);
-  if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELEDART))
+  if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELLEDART))
     syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(token));
   snprintf(buff, sizeof(buff), "Cancelling %s",
            MaxLength(MessageID, MessageID));

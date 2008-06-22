@@ -842,7 +842,7 @@ bool timecaf_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
 }
 
 bool timecaf_flushcacheddata(FLUSHTYPE type) {
-    if (type == SM_ALL || type == SM_CANCELEDART)
+    if (type == SM_ALL || type == SM_CANCELLEDART)
 	DoCancels();
     return true;
 }
