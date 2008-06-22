@@ -267,16 +267,17 @@ configure).  More information may be found in F<doc/hook-perl>.
 
 =item B<python_auth:>
 
-A python script for authentication.  The python_auth: parameter works
-exactly like auth:, except that it calls the named script using the
-python hook rather then an external program.  Multiple/mixed use of
-the auth, perl_auth, and python_auth parameters is permitted within any
-auth group; each line is tried in the order it appears.  python_auth:
-has more power than auth: in that it provides the authentication
-program with additional information about the client and the ability
-to return an error string and a username.  This parameter is only
-valid if INN is compiled with Python support (B<--with-python> passed
-to configure).  More information may be found in F<doc/hook-python>.
+A Python script for authentication.  The I<python_auth> parameter works
+exactly like I<auth>, except that it calls the named script (without its
+C<.py> extension) using the Python hook rather then an external program.
+Multiple/mixed use of the I<auth>, I<perl_auth>, and I<python_auth>
+parameters is permitted within any auth group; each line is tried
+in the order it appears.  I<python_auth> has more power than I<auth>
+in that it provides the authentication program with additional information
+about the client and the ability to return an error string and a username.
+This parameter is only valid if INN is compiled with Python support
+(B<--with-python> passed to B<configure>).  More information may be
+found in F<doc/hook-python>.
 
 =item B<default:>
 
@@ -323,28 +324,29 @@ found in the file F<doc/hook-perl>.
 
 =item B<python_access:>
 
-A python script for dynamically generating an access group.  If
-an auth group matches successfully and contains a python_access parameter,
-then the argument script will be used to create an access group.
-This group will then determine the access rights of the client,
-overriding any access groups in F<readers.conf>.  If and only if a
-successful auth group contains the python_access parameter, F<readers.conf>
+A Python script for dynamically generating an access group.  If
+an auth group matches successfully and contains a I<python_access> parameter,
+then the argument script (without its C<.py> extension) will be used to
+create an access group.  This group will then determine the access rights
+of the client, overriding any access groups in F<readers.conf>.  If and only
+if a successful auth group contains the I<python_access> parameter, F<readers.conf>
 access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if INN is compiled with Python
-support (B<--with-python> passed to configure).  More information may be
+support (B<--with-python> passed to B<configure>).  More information may be
 found in the file F<doc/hook-python>.
 
 =item B<python_dynamic:>
 
-A python script for applying access control dynamically on a per newsgroup
+A Python script for applying access control dynamically on a per newsgroup
 basis.  If an auth group matches successfully and contains a
-python_dynamic parameter, then the argument script will be used to
-determine the clients rights each time the user attempts to view a
-newsgroup, or read or post an article.  Access rights as determined by
-python_dynamic override the values of access group parameters such as
-newsgroups, read, and post.  This parameter is only valid if INN is
-compiled with Python support (B<--with-python> passed to configure).  More
-information may be found in the file F<doc/hook-python>.
+I<python_dynamic> parameter, then the argument script (without its
+C<.py> extension) will be used to determine the clients rights each time
+the user attempts to view a newsgroup, or read or post an article.  Access
+rights as determined by I<python_dynamic> override the values of access
+group parameters such as I<newsgroups>, I<read> and I<post>.  This parameter
+is only valid if INN is compiled with Python support (B<--with-python>
+passed to B<configure>).  More information may be found in the file
+F<doc/hook-python>.
 
 =back
 
@@ -452,8 +454,8 @@ display the reason to the user.
 
 =item B<max_rate:>
 
-If this parameter is present (and nonzero) it is used for nnrpd's 
-rate-limiting code.  The client will only be able to download at this 
+If this parameter is present (and nonzero), it is used for B<nnrpd>'s
+rate-limiting code.  The client will only be able to download at this
 speed (in bytes/second).  Note that if SSL is being used, limiting
 is applied to the pre-encryption datastream.
 
@@ -489,13 +491,14 @@ default is true.
 
 =item B<virtualhost:>
 
-Set this parameter to make B<nnrpd> behave as if it's running on a server
-with a different name than it actually is.  If you set this parameter, you
-must also set either pathhost: or domain: to something different than is
-set in F<inn.conf>.  All articles displayed to clients will then have
+Set this parameter to true in order to make B<nnrpd> behave as if it is
+running on a server with a different name than it actually is.  If you
+set this parameter to true, you must also set either pathhost: or domain:
+in the relevant access group in F<readers.conf> to something different
+than is set in F<inn.conf>.  All articles displayed to clients will then have
 their Path: and Xref: headers altered to appear to be from the server
 named in pathhost: or domain: (whichever is set), and posted articles will
-use that server name in the Path:, Message-ID;, and X-Trace: headers.
+use that server name in the Path:, Message-ID:, and X-Trace: headers.
 
 Note that setting this parameter requires the server modify all posts
 before presenting them to the client and therefore may decrease
@@ -505,12 +508,14 @@ performance slightly.
 
 In addition, all of the following parameters are valid in access groups
 and override the global setting in F<inn.conf>.  See inn.conf(5) for the
-descriptions of these parameters:  addnntppostingdate, addnntppostinghost,
-backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
-backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
-fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
-nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
-pathhost, readertrack, spoolfirst, and strippostcc.
+descriptions of these parameters:
+
+    addnntppostingdate, addnntppostinghost, backoff_auth, backoff_db,
+    backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
+    checkincludedtext, clienttimeout, complaints, domain,
+    fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
+    nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
+    pathhost, readertrack, spoolfirst, strippostcc.
 
 =head1 SUMMARY
 
@@ -615,7 +620,7 @@ username and password are first checked against an external database of
 usernames and passwords, and then against the system shadow password file:
 
     auth all {
-        auth: "ckpasswd -d /usr/local/news/db/newsusers"
+        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
         auth: "ckpasswd -s"
     }
 
@@ -665,7 +670,7 @@ staff can also post messages with Approved: headers, but other users
 cannot.
 
     auth default {
-        auth: "ckpasswd -f /usr/local/news/db/newsusers"
+        auth: "ckpasswd -f <pathdb in inn.conf>/newsusers"
         default: <FAIL>
         default-domain: example.com
     }
@@ -795,7 +800,8 @@ above, with ones having global applicability below.
 =item *
 
 Consider running a C<nnrpd -S> (with C<-D>, or out of "super-server"
-like inetd) on the nntps port (563) for clients that support SSL.  You
+like B<inetd>) on the NNTPS port (563) for clients that support SSL.  See
+nnrpd(8) for more details about how to configure that.  You
 can use the require_ssl: parameter, or C<-c> to specify an alternate
 F<readers.conf> if you want a substantially different configuration for
 this case.
@@ -817,6 +823,7 @@ $Id$
 
 =head1 SEE ALSO
 
-ckpasswd(8), inn.conf(5), innd(8), newsfeeds(5), nnrpd(8), uwildmat(3)
+auth_krb5(8), auth_smb(8), ckpasswd(8), inn.conf(5), innd(8), newsfeeds(5),
+nnrpd(8), uwildmat(3).
 
 =cut

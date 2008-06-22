@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "READERS.CONF 5"
-.TH READERS.CONF 5 "2008-04-06" "INN 2.4.5" "InterNetNews Documentation"
+.TH READERS.CONF 5 "2008-06-22" "INN 2.4.5" "InterNetNews Documentation"
 .SH "NAME"
 readers.conf \- Access control and configuration for nnrpd
 .SH "DESCRIPTION"
@@ -404,16 +404,17 @@ valid if \s-1INN\s0 is compiled with Perl support (\fB\-\-with\-perl\fR passed t
 configure).  More information may be found in \fIdoc/hook\-perl\fR.
 .IP "\fBpython_auth:\fR" 4
 .IX Item "python_auth:"
-A python script for authentication.  The python_auth: parameter works
-exactly like auth:, except that it calls the named script using the
-python hook rather then an external program.  Multiple/mixed use of
-the auth, perl_auth, and python_auth parameters is permitted within any
-auth group; each line is tried in the order it appears.  python_auth:
-has more power than auth: in that it provides the authentication
-program with additional information about the client and the ability
-to return an error string and a username.  This parameter is only
-valid if \s-1INN\s0 is compiled with Python support (\fB\-\-with\-python\fR passed
-to configure).  More information may be found in \fIdoc/hook\-python\fR.
+A Python script for authentication.  The \fIpython_auth\fR parameter works
+exactly like \fIauth\fR, except that it calls the named script (without its
+\&\f(CW\*(C`.py\*(C'\fR extension) using the Python hook rather then an external program.
+Multiple/mixed use of the \fIauth\fR, \fIperl_auth\fR, and \fIpython_auth\fR
+parameters is permitted within any auth group; each line is tried
+in the order it appears.  \fIpython_auth\fR has more power than \fIauth\fR
+in that it provides the authentication program with additional information
+about the client and the ability to return an error string and a username.
+This parameter is only valid if \s-1INN\s0 is compiled with Python support
+(\fB\-\-with\-python\fR passed to \fBconfigure\fR).  More information may be
+found in \fIdoc/hook\-python\fR.
 .IP "\fBdefault:\fR" 4
 .IX Item "default:"
 The default username for connections matching this auth group.  This is
@@ -454,27 +455,28 @@ support (\fB\-\-with\-perl\fR passed to configure).  More information may be
 found in the file \fIdoc/hook\-perl\fR.
 .IP "\fBpython_access:\fR" 4
 .IX Item "python_access:"
-A python script for dynamically generating an access group.  If
-an auth group matches successfully and contains a python_access parameter,
-then the argument script will be used to create an access group.
-This group will then determine the access rights of the client,
-overriding any access groups in \fIreaders.conf\fR.  If and only if a
-successful auth group contains the python_access parameter, \fIreaders.conf\fR
+A Python script for dynamically generating an access group.  If
+an auth group matches successfully and contains a \fIpython_access\fR parameter,
+then the argument script (without its \f(CW\*(C`.py\*(C'\fR extension) will be used to
+create an access group.  This group will then determine the access rights
+of the client, overriding any access groups in \fIreaders.conf\fR.  If and only
+if a successful auth group contains the \fIpython_access\fR parameter, \fIreaders.conf\fR
 access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if \s-1INN\s0 is compiled with Python
-support (\fB\-\-with\-python\fR passed to configure).  More information may be
+support (\fB\-\-with\-python\fR passed to \fBconfigure\fR).  More information may be
 found in the file \fIdoc/hook\-python\fR.
 .IP "\fBpython_dynamic:\fR" 4
 .IX Item "python_dynamic:"
-A python script for applying access control dynamically on a per newsgroup
+A Python script for applying access control dynamically on a per newsgroup
 basis.  If an auth group matches successfully and contains a
-python_dynamic parameter, then the argument script will be used to
-determine the clients rights each time the user attempts to view a
-newsgroup, or read or post an article.  Access rights as determined by
-python_dynamic override the values of access group parameters such as
-newsgroups, read, and post.  This parameter is only valid if \s-1INN\s0 is
-compiled with Python support (\fB\-\-with\-python\fR passed to configure).  More
-information may be found in the file \fIdoc/hook\-python\fR.
+\&\fIpython_dynamic\fR parameter, then the argument script (without its
+\&\f(CW\*(C`.py\*(C'\fR extension) will be used to determine the clients rights each time
+the user attempts to view a newsgroup, or read or post an article.  Access
+rights as determined by \fIpython_dynamic\fR override the values of access
+group parameters such as \fInewsgroups\fR, \fIread\fR and \fIpost\fR.  This parameter
+is only valid if \s-1INN\s0 is compiled with Python support (\fB\-\-with\-python\fR
+passed to \fBconfigure\fR).  More information may be found in the file
+\&\fIdoc/hook\-python\fR.
 .SH "ACCESS GROUP PARAMETERS"
 .IX Header "ACCESS GROUP PARAMETERS"
 .IP "\fBusers:\fR" 4
@@ -564,8 +566,8 @@ disconnected with a \*(L"Permission denied\*(R" message containing the contents
 display the reason to the user.
 .IP "\fBmax_rate:\fR" 4
 .IX Item "max_rate:"
-If this parameter is present (and nonzero) it is used for nnrpd's 
-rate-limiting code.  The client will only be able to download at this 
+If this parameter is present (and nonzero), it is used for \fBnnrpd\fR's
+rate-limiting code.  The client will only be able to download at this
 speed (in bytes/second).  Note that if \s-1SSL\s0 is being used, limiting
 is applied to the pre-encryption datastream.
 .IP "\fBlocaltime:\fR" 4
@@ -595,13 +597,14 @@ filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
 .IP "\fBvirtualhost:\fR" 4
 .IX Item "virtualhost:"
-Set this parameter to make \fBnnrpd\fR behave as if it's running on a server
-with a different name than it actually is.  If you set this parameter, you
-must also set either pathhost: or domain: to something different than is
-set in \fIinn.conf\fR.  All articles displayed to clients will then have
+Set this parameter to true in order to make \fBnnrpd\fR behave as if it is
+running on a server with a different name than it actually is.  If you
+set this parameter to true, you must also set either pathhost: or domain:
+in the relevant access group in \fIreaders.conf\fR to something different
+than is set in \fIinn.conf\fR.  All articles displayed to clients will then have
 their Path: and Xref: headers altered to appear to be from the server
 named in pathhost: or domain: (whichever is set), and posted articles will
-use that server name in the Path:, Message\-ID;, and X\-Trace: headers.
+use that server name in the Path:, Message\-ID:, and X\-Trace: headers.
 .Sp
 Note that setting this parameter requires the server modify all posts
 before presenting them to the client and therefore may decrease
@@ -609,12 +612,16 @@ performance slightly.
 .PP
 In addition, all of the following parameters are valid in access groups
 and override the global setting in \fIinn.conf\fR.  See \fIinn.conf\fR\|(5) for the
-descriptions of these parameters:  addnntppostingdate, addnntppostinghost,
-backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
-backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
-fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
-nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
-pathhost, readertrack, spoolfirst, and strippostcc.
+descriptions of these parameters:
+.PP
+.Vb 6
+\&    addnntppostingdate, addnntppostinghost, backoff_auth, backoff_db,
+\&    backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
+\&    checkincludedtext, clienttimeout, complaints, domain,
+\&    fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
+\&    nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
+\&    pathhost, readertrack, spoolfirst, strippostcc.
+.Ve
 .SH "SUMMARY"
 .IX Header "SUMMARY"
 Here's a basic summary of what happens when a client connects:
@@ -710,7 +717,7 @@ usernames and passwords, and then against the system shadow password file:
 .PP
 .Vb 4
 \&    auth all {
-\&        auth: "ckpasswd \-d /usr/local/news/db/newsusers"
+\&        auth: "ckpasswd \-d <pathdb in inn.conf>/newsusers"
 \&        auth: "ckpasswd \-s"
 \&    }
 .Ve
@@ -764,7 +771,7 @@ cannot.
 .PP
 .Vb 5
 \&    auth default {
-\&        auth: "ckpasswd \-f /usr/local/news/db/newsusers"
+\&        auth: "ckpasswd \-f <pathdb in inn.conf>/newsusers"
 \&        default: <FAIL>
 \&        default\-domain: example.com
 \&    }
@@ -904,7 +911,8 @@ some auth groups with a restrictive hosts: parameter; they would go
 above, with ones having global applicability below.
 .IP "\(bu" 4
 Consider running a \f(CW\*(C`nnrpd \-S\*(C'\fR (with \f(CW\*(C`\-D\*(C'\fR, or out of \*(L"super\-server\*(R"
-like inetd) on the nntps port (563) for clients that support \s-1SSL\s0.  You
+like \fBinetd\fR) on the \s-1NNTPS\s0 port (563) for clients that support \s-1SSL\s0.  See
+\&\fInnrpd\fR\|(8) for more details about how to configure that.  You
 can use the require_ssl: parameter, or \f(CW\*(C`\-c\*(C'\fR to specify an alternate
 \&\fIreaders.conf\fR if you want a substantially different configuration for
 this case.
@@ -920,4 +928,5 @@ expanded by Russ Allbery <rra@stanford.edu>.
 $Id$
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIckpasswd\fR\|(8), \fIinn.conf\fR\|(5), \fIinnd\fR\|(8), \fInewsfeeds\fR\|(5), \fInnrpd\fR\|(8), \fIuwildmat\fR\|(3)
+\&\fIauth_krb5\fR\|(8), \fIauth_smb\fR\|(8), \fIckpasswd\fR\|(8), \fIinn.conf\fR\|(5), \fIinnd\fR\|(8), \fInewsfeeds\fR\|(5),
+\&\fInnrpd\fR\|(8), \fIuwildmat\fR\|(3).
