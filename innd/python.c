@@ -15,7 +15,7 @@
 **  And as exceptions accumulate from caller to caller and so on,
 **  it generates weird issues with Python scripts afterwards.  So such
 **  uses should be checked before.  For instance with:
-**      PyObject_HasAttrString(PyObject *o, const char *attr_name)
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name).
 */
 
 #include "config.h"

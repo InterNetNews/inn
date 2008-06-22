@@ -16,7 +16,7 @@
 **  And as exceptions accumulate from caller to caller and so on,
 **  it generates weird issues with Python scripts afterwards.  So such
 **  uses should be checked before.  For instance with:
-**      PyObject_HasAttrString(PyObject *o, const char *attr_name) 
+**      PyObject_HasAttrString(PyObject *o, const char *attr_name). 
 */
 
 #include "config.h"
@@ -660,34 +660,39 @@ PY_load_python(void)
 **  the corresponding PyObject, or NULL if not found.
 */
 static void
-PYdefonemethod(PyFile *fp, int type, int method, const char *methname)
+PYdefonemethod(PyFile *fp, int type, int method, const char *methname, int realtype)
 {
     PyObject **methptr;
 
     methptr = &fp->procs[type][method];
 
-    /*
-    ** We check with HasAttrString() the existence of the method because
-    ** otherwise, in case it does not exist, an exception is raised by Python,
-    ** although the result of the function is NULL.
-    */
-    if (PyObject_HasAttrString(PYAuthObject, (char *) methname) == 1) {
-        /* Get a pointer to given method. */
-        *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
+    /* There is no need to check the existence of methods useless for our realtype. */
+    if (type == realtype) {
+        /*
+        ** We check with HasAttrString() the existence of the method because
+        ** otherwise, in case it does not exist, an exception is raised by Python,
+        ** although the result of the function is NULL.
+        */
+        if (PyObject_HasAttrString(PYAuthObject, (char *) methname) == 1) {
+            /* Get a pointer to given method. */
+            *methptr = PyObject_GetAttrString(PYAuthObject, (char *) methname);
+        } else {
+            *methptr = NULL;
+        }
+
+        /* See if such method is defined. */
+        if (*methptr == NULL)
+            syslog(L_NOTICE, "python method %s not found", methname);
+        else {
+            /* See if it is callable. */
+            if (PyCallable_Check(*methptr) == 0) {
+                syslog(L_ERROR, "python object %s found but not a function", methname);
+                Py_DECREF(*methptr);
+                *methptr = NULL;
+            }
+        }
     } else {
         *methptr = NULL;
-    }
-
-    /* See if such method is defined. */
-    if (*methptr == NULL)
-        syslog(L_NOTICE, "python method %s not found", methname);
-    else {
-        /* See if it is callable. */
-        if (PyCallable_Check(*methptr) == 0) {
-	    syslog(L_ERROR, "python object %s found but not a function", methname);
-	    Py_DECREF(*methptr);
-	    *methptr = NULL;
-	}
     }
 }
 
@@ -698,34 +703,34 @@ PYdefonemethod(PyFile *fp, int type, int method, const char *methname)
 **  pointers to them so that we could call them from nnrpd.
 */
 static void
-PYdefmethods(PyFile *fp)
+PYdefmethods(PyFile *fp, int realtype)
 {
     /* Get a reference to authenticate() method. */
-    PYdefonemethod(fp, PYTHONauthen, PYTHONmain, "authenticate");
+    PYdefonemethod(fp, PYTHONauthen, PYTHONmain, "authenticate", realtype);
 
     /* Get a reference to authen_init() method. */
-    PYdefonemethod(fp, PYTHONauthen, PYTHONinit, "authen_init");
+    PYdefonemethod(fp, PYTHONauthen, PYTHONinit, "authen_init", realtype);
     
     /* Get a reference to authen_close() method. */
-    PYdefonemethod(fp, PYTHONauthen, PYTHONclose, "authen_close");
+    PYdefonemethod(fp, PYTHONauthen, PYTHONclose, "authen_close", realtype);
 
     /* Get a reference to access() method. */
-    PYdefonemethod(fp, PYTHONaccess, PYTHONmain, "access");
+    PYdefonemethod(fp, PYTHONaccess, PYTHONmain, "access", realtype);
     
     /* Get a reference to access_init() method. */
-    PYdefonemethod(fp, PYTHONaccess, PYTHONinit, "access_init");
+    PYdefonemethod(fp, PYTHONaccess, PYTHONinit, "access_init", realtype);
     
     /* Get a reference to access_close() method. */
-    PYdefonemethod(fp, PYTHONaccess, PYTHONclose, "access_close");
+    PYdefonemethod(fp, PYTHONaccess, PYTHONclose, "access_close", realtype);
     
     /* Get a reference to dynamic() method. */
-    PYdefonemethod(fp, PYTHONdynamic, PYTHONmain, "dynamic");
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONmain, "dynamic", realtype);
     
     /* Get a reference to dynamic_init() method. */
-    PYdefonemethod(fp, PYTHONdynamic, PYTHONinit, "dynamic_init");
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONinit, "dynamic_init", realtype);
     
     /* Get a reference to dynamic_close() method. */
-    PYdefonemethod(fp, PYTHONdynamic, PYTHONclose, "dynamic_close");
+    PYdefonemethod(fp, PYTHONdynamic, PYTHONclose, "dynamic_close", realtype);
 }
 
 
@@ -760,7 +765,7 @@ PY_setup(int type, int method, char *file)
             ExitWithStats(1, false);
         } else {
             /* Set up pointers to known Python methods. */
-            PYdefmethods(fp);
+            PYdefmethods(fp, type);
         }
         hash_insert(files, file, fp);
 
