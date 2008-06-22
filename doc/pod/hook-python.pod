@@ -1,73 +1,73 @@
 =head1 INN Python Filtering and Authentication Support
 
 This file documents INN's built-in optional support for Python article
-filtering.  It is patterned after the TCL and Perl hooks previously added
-by Bob Heiney and Christophe Wolfhugel.
+filtering.  It is patterned after the Perl and (now obsolete) TCL hooks
+previously added by Bob Heiney and Christophe Wolfhugel.
 
-For this filter to work successfully, you will need to have S<Python 1.5.2>
-(the latest at this writing) installed.  You can obtain it from
-<http://www.python.org>.
+For this filter to work successfully, you will need to have at least
+S<Python 1.5.2> installed.  You can obtain it from L<http://www.python.org/>.
 
-The innd Python interface and the original Python filtering documentation
-was written by Greg Andruk (nee Fluffy) <gerglery@usa.net>.  The Python
-authentication and authorization support for nnrpd and the original
-documentation for it was written by Ilya Etingof <ilya@glas.net>, 12/1999.
+The B<innd> Python interface and the original Python filtering documentation
+were written by Greg Andruk (nee Fluffy) <gerglery@usa.net>.  The Python
+authentication and authorization support for B<nnrpd> as well as the original
+documentation for it were written by Ilya Etingof <ilya@glas.net> in
+December 1999.
 
-=head1 NOTE TO RED HAT LINUX USERS
-
-Python will be preinstalled, but it may not include all the headers and
-libraries required for embedding into INN.  You will need to add the
-development package.  Better yet, get the source kit from the above URL
-and build it yourself.  Be sure when installing Python on Red Hat, to run
-configure with B<--prefix=/usr> so that there are no version conflicts
-with the "factory" installation.  You can also find a selection of well
-made RPMs at <ftp://starship.python.net/pub/crew/andrich/>.
-
-=head1 INSTALLATION
+=head1 Installation
 
 Once you have built and installed Python, you can cause INN to use it by
-adding the B<--with-python> switch to your configure command.
+adding the B<--with-python> switch to your C<configure> command.  You will
+need to have all the headers and libraries required for embedding Python
+into INN; they can be found in Python development packages, which include
+header files and static libraries.
+
+You will then be able to use Python authentication, dynamic access group
+generation and dynamic access control support in B<nnrpd> along with
+filtering support in B<innd>.
 
 See the ctlinnd(8) manual page to learn how to enable, disable and reload
-Python filters on a running server (C<ctlinnd mode>, C<ctlinnd python
-y|n>, C<ctlinnd reload filter.python 'reason'>).
+Python filters on a running server (especially C<ctlinnd mode>,
+C<ctlinnd python y|n> and C<ctlinnd reload filter.python 'reason'>).
 
-Also, see the example F<filter_innd.py> script in your filters directory
-for a demonstration of how to get all this working.
+Also, see the F<filter_innd.py>, F<nnrpd_auth.py>, F<nnrpd_access.py>
+and F<nnrpd_dynamic.py> samples in your filters directory for
+a demonstration of how to get all this working.
 
-=head1 WRITING AN INND FILTER
+=head1 Writing an B<innd> filter
+
+=head2 Introduction
 
 You need to create a F<filter_innd.py> module in INN's filter directory
-(see the pathfilter setting in F<inn.conf>).  A heavily-commented sample
-is provided that you can use as a template for your own filter.  There is
+(see the I<pathfilter> setting in F<inn.conf>).  A heavily-commented sample
+is provided; you can use it as a template for your own filter.  There is
 also an F<INN.py> module there which is not actually used by INN; it is
 there so you can test your module interactively.
 
-First, define a class containing the methods you want to provide to innd.
-Methods innd will use if present are:
+First, define a class containing the methods you want to provide to B<innd>.
+Methods B<innd> will use if present are:
 
 =over 4
 
-=item __init__(self)
+=item __init__(I<self>)
 
-Not explicitly called by innd, but will run whenever the filter module is
+Not explicitly called by B<innd>, but will run whenever the filter module is
 (re)loaded.  This is a good place to initialize constants or pick up where
-filter_before_reload or filter_close left off.
+C<filter_before_reload> or C<filter_close> left off.
 
-=item filter_before_reload(self)
+=item filter_before_reload(I<self>)
 
 This will execute any time a C<ctlinnd reload all 'reason'> or C<ctlinnd reload
 filter.python 'reason'> command is issued.  You can use it to save statistics or
 reports for use after reloading.
 
-=item filter_close(self)
+=item filter_close(I<self>)
 
-This will run when a C<ctlinnd shutdown> command is received.
+This will run when a C<ctlinnd shutdown 'reason'> command is received.
 
-=item filter_art(self, art)
+=item filter_art(I<self>, I<art>)
 
-art is a dictionary containing an article's headers and body.  This method
-is called every time innd receives an article.  The following can be
+I<art> is a dictionary containing an article's headers and body.  This method
+is called every time B<innd> receives an article.  The following can be
 defined:
 
     Also-Control, Approved, Bytes, Cancel-Key, Cancel-Lock,
@@ -101,36 +101,38 @@ of the same-named article headers.
 The Newsgroups: header of the article is accessible inside the Python
 filter as C<art['Newsgroups']>.
 
-If you want to accept an article, return None or an empty string.  To
+If you want to accept an article, return C<None> or an empty string.  To
 reject, return a non-empty string.  The rejection strings will be shown to
 local clients and your peers, so keep that in mind when phrasing your
 rejection responses.
 
-=item filter_messageid(self, msgid)
+=item filter_messageid(I<self>, I<msgid>)
 
-msgid is a buffer object containing the ID of an article being offered by
-IHAVE or CHECK.  Like with filter_art(), the message will be refused if
+I<msgid> is a buffer object containing the ID of an article being offered by
+IHAVE or CHECK.  Like with C<filter_art>, the message will be refused if
 you return a non-empty string.  If you use this feature, keep it light
-because it is called at a rather busy place in innd's main loop.  Also, do
+because it is called at a rather busy place in B<innd>'s main loop.  Also, do
 not rely on this function alone to reject by ID; you should repeat the
-tests in filter_art() to catch articles sent with TAKETHIS but no CHECK.
+tests in C<filter_art> to catch articles sent with TAKETHIS but no CHECK.
 
-=item filter_mode(self, oldmode, newmode, reason)
+=item filter_mode(I<self>, I<oldmode>, I<newmode>, I<reason>)
 
-When the operator issues a ctlinnd pause, throttle, go, shutdown, or xexec
-command, this function can be used to do something sensible in accordance
+When the operator issues a B<ctlinnd> C<pause>, C<throttle>, C<go>, C<shutdown>
+or C<xexec> command, this function can be used to do something sensible in accordance
 with the state change.  Stamp a log file, save your state on throttle,
-etc.  oldmode and newmode will be strings containing one of the values in
-('running', 'throttled', 'paused', 'shutdown', 'unknown') S<-- oldmode> is
-the state innd was in before ctlinnd was run, newmode is the state innd
-will be in after the command finishes.  reason is the comment string
-provided on the ctlinnd command line.
+etc.  I<oldmode> and I<newmode> will be strings containing one of the values in
+(C<running>, C<throttled>, C<paused>, C<shutdown>, C<unknown>).  I<oldmode> is
+the state B<innd> was in before B<ctlinnd> was run, I<newmode> is the state B<innd>
+will be in after the command finishes.  I<reason> is the comment string
+provided on the B<ctlinnd> command line.
 
 =back
 
-To register your methods with innd, you need to create an instance of your
+=head2 How to use these methods with B<innd>
+
+To register your methods with B<innd>, you need to create an instance of your
 class, import the built-in INN module, and pass the instance to
-INN.set_filter_hook().  For example:
+C<INN.set_filter_hook>.  For example:
 
     class Filter:
         def filter_art(self, art):
@@ -148,39 +150,38 @@ INN.set_filter_hook().  For example:
     INN.set_filter_hook(myfilter)
 
 When writing and testing your Python filter, don't be afraid to make use
-of try:/except: and the provided INN.syslog() function.  stdout and stderr
+of C<try:>/C<except:> and the provided C<INN.syslog> function.  stdout and stderr
 will be disabled, so your filter will die silently otherwise.
 
 Also, remember to try importing your module interactively before loading
 it, to ensure there are no obvious errors.  One typo can ruin your whole
-filter.  A dummy INND.py module is provided to facilitate testing outside
+filter.  A dummy F<INN.py> module is provided to facilitate testing outside
 the server.  To test, change into your filter directory and use a command
 like:
 
     python -ic 'import INN, filter_innd'
 
 You can define as many or few of the methods listed above as you want in
-your filter class (it's fine to define more methods for your own use; innd
-won't use them but your filter can).  If you I<do> define the above
-methods, GET THE PARAMETER COUNTS RIGHT.  There are checks in innd to see
-if the methods exist and are callable, but if you define one and get the
-parameter counts wrong, INND WILL DIE.  You have been warned.  Be careful
-with your return values, too.  The filter_art() and filter_messageid()
-methods have to return strings, or None.  If you return something like an
-int, innd will B<not> be happy.
+your filter class (it is fine to define more methods for your own use; B<innd>
+will not be using them but your filter can).  If you I<do> define the above
+methods, GET THE PARAMETER COUNTS RIGHT.  There are checks in B<innd> to see
+whether the methods exist and are callable, but if you define one and get the
+parameter counts wrong, B<innd> WILL DIE.  You have been warned.  Be careful
+with your return values, too.  The C<filter_art> and C<filter_messageid>
+methods have to return strings, or C<None>.  If you return something like an
+int, B<innd> will I<not> be happy.
 
-=head1 WHAT'S THE DEAL WITH THESE BUFFER OBJECTS?
+=head2 A note regarding buffer objects
 
-Buffer objects are cousins of strings, new in S<Python 1.5.2>.  They are
-supported, but at this writing you won't yet find much about them in the
-Python documentation.  Using buffer objects may take some getting used to,
-but we can create buffers much faster and with less memory than strings.
+Buffer objects are cousins of strings, new in S<Python 1.5.2>.  Using buffer
+objects may take some getting used to, but we can create buffers much faster
+and with less memory than strings.
 
-For most of the operations you will perform in filters (like re.search,
-string.find, md5.digest) you can treat buffers just like strings, but
+For most of the operations you will perform in filters (like C<re.search>,
+C<string.find>, C<md5.digest>) you can treat buffers just like strings, but
 there are a few important differences you should know about:
 
-    # Make a string and a two buffers.
+    # Make a string and two buffers.
     s = "abc"
     b = buffer("def")
     bs = buffer("abc")
@@ -190,23 +191,51 @@ there are a few important differences you should know about:
     s == str(bs)     # - This is also true, but buffer() is faster.
     s[:2] == bs[:2]  # - True.  Buffer slices are strings.
 
-    # While most string methods will take either a buffer or string,
-    # string.join insists on using only strings.
-    string.join([str(b), s], '.')   # returns 'def.abc'
+    # While most string methods will take either a buffer or a string,
+    # string.join (in the string module) insists on using only strings.
+    import string
+    string.join([str(b), s], '.')  # Returns 'def.abc'.
+    '.'.join([str(b), s])          # Returns 'def.abc' too.
+    '.'.join([b, s])               # This raises a TypeError.
 
-    e = s + b        # This raises a TypeError, but...
+    e = s + b                      # This raises a TypeError, but...
 
-    # ...these two both return the string 'abcdef'. The first one
+    # ...these two both return the string 'abcdef'.  The first one
     # is faster -- choose buffer() over str() whenever you can.
     e = buffer(s) + b
     f = s + str(b)
 
-    g = b + '>'      # This is legal, returns the string 'def>'.
+    g = b + '>'                    # This is legal, returns the string 'def>'.
 
-=head1 FUNCTIONS SUPPLIED BY THE BUILT-IN INND MODULE
+=head2 Functions supplied by the built-in B<innd> module
 
-Not only can innd use Python, but your filter can use some of innd's
-features too.  Here is some sample Python code to show what you get:
+Besides C<INN.set_filter_hook> which is used to register your methods
+with B<innd> as it has already been explained above, the following functions
+are available from Python scripts:
+
+=over 4
+
+=item addhist(I<message-id>)
+
+=item article(I<message-id>)
+
+=item cancel(I<message-id>)
+
+=item havehist(I<message-id>)
+
+=item hashstring(I<string>)
+
+=item head(I<message-id>)
+
+=item newsgroup(I<groupname>)
+
+=item syslog(I<level>, I<message>)
+
+=back
+
+Therefore, not only can B<innd> use Python, but your filter can use some of
+B<innd>'s features too.  Here is some sample Python code to show what you get
+with the previously listed functions.
 
     import INN
 
@@ -215,7 +244,7 @@ features too.  Here is some sample Python code to show what you get:
     # tells the Unix syslogger what severity to use; you can
     # abbreviate down to one letter and it's case insensitive.
     # Available levels are (in increasing levels of seriousness)
-    # Debug, Info, Notice, Warning, Err, Crit, and Alert. (If you
+    # Debug, Info, Notice, Warning, Err, Crit, and Alert.  (If you
     # provide any other string, it will be defaulted to Notice.)  The
     # second parameter is the message text.  The syslog entries will
     # go to the same log files innd itself uses, with a 'python:'
@@ -233,11 +262,11 @@ features too.  Here is some sample Python code to show what you get:
     else:
         canceled = "nope"
 
-    # Check if a given message is in history. This doesn't
-    # necessarily mean the article is on your spool; canceled and
+    # Check if a given message is in history.  This doesn't
+    # necessarily mean the article is on your spool; cancelled and
     # expired articles hang around in history for a while, and
     # rejected articles will be in there if you have enabled
-    # remember_trash in inn.conf. Returns 1 if found, else 0.
+    # remembertrash in inn.conf.  Returns 1 if found, else 0.
     if INN.havehist('<z456$789.abc@isc.org>'):
         comment = "*yawn* I've already seen this article."
     else:
@@ -259,6 +288,10 @@ features too.  Here is some sample Python code to show what you get:
     artbody = INN.article('<foo$bar.baz@bungmunch.edu>')
     artheader = INN.head('<foo$bar.baz@bungmunch.edu>')
 
+    # As we can compute a hash digest for a string, we can obtain one
+    # for artbody.  It might be of help to detect spam.
+    digest = INN.hashstring(artbody)
+
     # Finally, do you want to see if a given newsgroup is moderated or
     # whatever?  INN.newsgroup returns the last field of a group's
     # entry in active as a string.
@@ -272,323 +305,350 @@ features too.  Here is some sample Python code to show what you get:
     else:
         moderated = "something else"
 
-=head1 CHANGES TO PYTHON AUTHENTICATION AND ACCESS CONTROL SUPPORT FOR
-NNRPD
+=head1 Writing an B<nnrpd> filter
+
+=head2 Changes to Python authentication and access control support for B<nnrpd>
 
 The old authentication and access control functionality has been
-combined with the new readers.conf mechanism by Erik Klavon
+combined with the new F<readers.conf> mechanism by Erik Klavon
 <erik@eriq.org>; bug reports should however go to <inn-bugs@isc.org>,
 not Erik.
 
 The remainder of this section is an introduction to the new mechanism
-(which uses the python_auth, python_access, and python_dynamic
+(which uses the I<python_auth>, I<python_access>, and I<python_dynamic>
 F<readers.conf> parameters) with porting/migration suggestions for
 people familiar with the old mechanism (identifiable by the now
-deprecated nnrpperlauth: parameter in F<inn.conf>).
+deprecated I<nnrpperlauth> parameter in F<inn.conf>).
 
 Other people should skip this section.
 
-The python_auth parameter allows the use of Python to authenticate a
-user. Authentication scripts (like those from the old mechanism) are
-listed in F<readers.conf> using python_auth in the same manner other
-authenticators are using auth:
+The I<python_auth> parameter allows the use of Python to authenticate a
+user.  Authentication scripts (like those from the old mechanism) are
+listed in F<readers.conf> using I<python_auth> in the same manner other
+authenticators are using I<auth>:
 
-    python_auth: "auth1.py"
+    python_auth: "nnrpd_auth"
+
+It uses the script named F<nnrpd_auth.py> (note that C<.py> is not present
+in the I<python_auth> value).
 
 Scripts should be placed as before in the filter directory (see the
-I<pathfilter> setting in F<inn.conf>). The new hook method authen_init
+I<pathfilter> setting in F<inn.conf>).  The new hook method C<authen_init>
 takes no arguments and its return value is ignored; its purpose is to
-provide a means for authentication specific initialization. The hook
-method authen_close is the more specific analogue to the old close
-method. These method hooks are not required.
+provide a means for authentication specific initialization.  The hook
+method C<authen_close> is the more specific analogue to the old C<close>
+method.  These two method hooks are not required, contrary to
+C<authenticate>, the main method.
 
-The argument dictionary passed to authenticate remains the same,
-except for the removal of the C<type> entry which is no longer needed
-in this modification and the addition of several new entries (port,
-intipaddr, intport) described below. The return tuple now only
+The argument dictionary passed to C<authenticate> remains the same,
+except for the removal of the I<type> entry which is no longer needed
+in this modification and the addition of several new entries (I<port>,
+I<intipaddr>, I<intport>) described below.  The return tuple now only
 contains either two or three elements, the first of which is the NNTP
-response code. The second is an error string which is passed to the
+response code.  The second is an error string which is passed to the
 client if the response code indicates that the authentication attempt
-has failed. This allows a specific error message to be generated by
-the Python script in place of the generic message "Authentication
-failed". An optional third return element, if present, will be used to
-match the connection with the user: parameter in access groups and
-will also be the username logged. If this element is absent, the
+has failed.  This allows a specific error message to be generated by
+the Python script in place of the generic message C<Authentication
+failed>.  An optional third return element, if present, will be used to
+match the connection with the I<user> parameter in access groups and
+will also be the username logged.  If this element is absent, the
 username supplied by the client during authentication will be used, as
-was the previous behavior.
+was the previous behaviour.
 
-The python_access parameter (described below) is new; it allows the
+The I<python_access> parameter (described below) is new; it allows the
 dynamic generation of an access group of an incoming connection using
-a Python script. If a connection matches an auth group which has a
-python_access parameter, all access groups in readers.conf are
+a Python script.  If a connection matches an auth group which has a
+I<python_access> parameter, all access groups in F<readers.conf> are
 ignored; instead the procedure described below is used to generate an
-access group. This concept is due to Jeffrey M. Vinocur.
+access group.  This concept is due to Jeffrey S<M. Vinocur> and you can
+add this line to F<readers.conf> in order to use the F<nnrpd_access.py>
+Python script in I<pathfilter>:
+
+    python_access: "nnrpd_access"
 
 In the old implementation, the authorization method allowed for access
-control on a per-group basis. That functionality is preserved in the
-new implementation by the inclusion of the python_dynamic parameter in
-F<readers.conf>. The only change is the corresponding method name of
-C<dynamic> as opposed to C<authorize>; C<domain> and C<range> are the
-same as before except for the addition of several new entries to the
-argument dictionary (port, intipaddr, intport) described
-below. Additionally, the associated optional housekeeping methods
-dynamic_init and dynamic_close may be implemented if needed.
+control on a per-group basis.  That functionality is preserved in the
+new implementation by the inclusion of the I<python_dynamic> parameter in
+F<readers.conf>.  The only change is the corresponding method name of
+C<dynamic> as opposed to C<authorize>.  Additionally, the associated
+optional housekeeping methods C<dynamic_init> and C<dynamic_close>
+may be implemented if needed.  In order to use F<nnrpd_dynamic.py> in
+I<pathfilter>, you can add this line to F<readers.conf>:
+
+    python_dynamic: "nnrpd_dynamic"
 
 This new implementation should provide all of the previous
 capabilities of the Python hooks, in combination with the flexibility
-of readers.conf and the use of other authentication and resolving
-programs (including the Perl hooks!). To use Python code that predates
+of F<readers.conf> and the use of other authentication and resolving
+programs (including the Perl hooks!).  To use Python code that predates
 the new mechanism, you would need to modify the code slightly (see
-below for the new specification) and supply a simple readers.conf
-file. If you don't want to modify your code, the sample directory has
-F<nnrpd_auth_wrapper.py>, F<nnrpd_access_wrapper.py>, and
+below for the new specification) and supply a simple F<readers.conf>
+file.  If you do not want to modify your code, the sample directory has
+F<nnrpd_auth_wrapper.py>, F<nnrpd_access_wrapper.py> and
 F<nnrpd_dynamic_wrapper.py> which should allow you to use your old
 code without needing to change it.
 
 However, before trying to use your old Python code, you may want to
-consider replacing it entirely with non-Python authentication. (With
-readers.conf and the regular authenticator and resolver programs, much
+consider replacing it entirely with non-Python authentication.  (With
+F<readers.conf> and the regular authenticator and resolver programs, much
 of what once required Python can be done directly.)  Even if the
 functionality is not available directly, you may wish to write a new
 authenticator or resolver (which can be done in whatever language you
 prefer).
 
-=head1 PYTHON AUTHENTICATION SUPPORT FOR NNRPD
+=head2 Python authentication support for B<nnrpd>
 
-Python authentication, dynamic access group generation and dynamic
-access control support in nnrpd along with filtering support in innd
-may be compiled in by passing B<--with-python> C<configure>.
-
-Support for authentication via Python is provided in nnrpd by the
-inclusion of a python_auth: parameter in a F<readers.conf> auth
-group. python_auth: works exactly like the auth: parameter in
+Support for authentication via Python is provided in B<nnrpd> by the
+inclusion of a I<python_auth> parameter in a F<readers.conf> auth
+group.  I<python_auth> works exactly like the I<auth> parameter in
 F<readers.conf>, except that it calls the script given as argument
 using the Python hook rather then treating it as an external
-program. Multiple, mixed use of python_auth: with other auth:
-statements including perl_auth: is permitted. Each auth: statement
+program.  Multiple, mixed use of I<python_auth> with other I<auth>
+statements including I<perl_auth> is permitted.  Each I<auth> statement
 will be tried in the order they appear in the auth group until either
 one succeeds or all are exhausted.
 
-If the processing of readers.conf requires that a python_auth:
+If the processing of F<readers.conf> requires that a I<python_auth>
 statement be used for authentication, Python is loaded (if it has yet
-to be) and the file given as argument to the python_auth: parameter is
-loaded as well. If a Python object with a method authen_init is hooked in
-during the loading of that file, then that method is called
-immediately after the file is loaded. If no errors have occurred, the
-method authenticate is called. Depending on the NNTP response code
-returned by authenticate, the authentication hook either succeeds or
-fails, after which the processing of the auth group continues as
-usual. When the connection with the client is closed, the method
-authen_close is called if it exists.
+to be) and the file given as argument to the I<python_auth> parameter is
+loaded as well (do not include the C<.py> extension of this file in
+the value of I<python_auth>).  If a Python object with a method
+C<authen_init> is hooked in during the loading of that file, then
+that method is called immediately after the file is loaded.  If no
+errors have occurred, the method C<authenticate> is called.  Depending
+on the NNTP response code returned by C<authenticate>, the authentication
+hook either succeeds or fails, after which the processing of the
+auth group continues as usual.  When the connection with the client
+is closed, the method C<authen_close> is called if it exists.
 
-=head1 DYNAMIC GENERATION OF ACCESS GROUPS
+=head2 Dynamic generation of access groups
 
 A Python script may be used to dynamically generate an access group
-which is then used to determine the access rights of the client. This
-occurs whenever the python_access: parameter is specified in an auth group
-which has successfully matched the client. Only one python_access:
-statement is allowed in an auth group. This parameter should not be
-mixed with a perl_access: statement in the same auth group.
+which is then used to determine the access rights of the client.  This
+occurs whenever the I<python_access> parameter is specified in an auth group
+which has successfully matched the client.  Only one I<python_access>
+statement is allowed in an auth group.  This parameter should not be
+mixed with a I<perl_access> statement in the same auth group.
 
-When a python_access: parameter is encountered, Python is loaded (if
-it has yet to be) and the file given as argument is loaded as well. If
-a Python object with a method C<access_init> is hooked in during the
+When a I<python_access> parameter is encountered, Python is loaded (if
+it has yet to be) and the file given as argument is loaded as well (do not
+include the C<.py> extension of this file in the value of I<python_access>).
+If a Python object with a method C<access_init> is hooked in during the
 loading of that file, then that method is called immediately after the
-file is loaded. If no errors have occurred, the method C<access> is
-called. The dictionary returned by C<access> is used to generate an
+file is loaded.  If no errors have occurred, the method C<access> is
+called.  The dictionary returned by C<access> is used to generate an
 access group that is then used to determine the access rights of the
-client. When the connection with the client is closed, the method
+client.  When the connection with the client is closed, the method
 C<access_close> is called, if it exists.
 
-While you may include the users: parameter in a dynamically generated
+While you may include the I<users> parameter in a dynamically generated
 access group, some care should be taken (unless your pattern is just
-* which is equivalent to leaving the parameter out). The group created
+C<*> which is equivalent to leaving the parameter out).  The group created
 with the values returned from the Python script is the only one
-considered when nnrpd attempts to find an access group matching the
-connection. If a users: parameter is included and it doesn't match the
+considered when B<nnrpd> attempts to find an access group matching the
+connection.  If a I<users> parameter is included and it does not match the
 connection, then the client will be denied access since there are no
 other access groups which could match the connection.
 
-=head1 DYNAMIC ACCESS CONTROL
+=head2 Dynamic access control
 
 If you need to have access control rules applied immediately without
-having to restart all the nnrpd processes, you may apply access
+having to restart all the B<nnrpd> processes, you may apply access
 control on a per newsgroup basis using the Python dynamic hooks (as
 opposed to F<readers.conf>, which does the same on per user
-basis). These hooks are activated through the inclusion of the
-python_dynamic: parameter in a F<readers.conf> auth group. Only one
-python_dynamic: statement is allowed in an auth group.
+basis).  These hooks are activated through the inclusion of the
+I<python_dynamic> parameter in a F<readers.conf> auth group.  Only one
+I<python_dynamic> statement is allowed in an auth group.
 
-When a python_dynamic: parameter is encountered, Python is loaded (if
-it has yet to be) and the file given as argument is loaded as well. If
-a Python object with a method C<dynamic_init> is hooked in during the
+When a I<python_dynamic> parameter is encountered, Python is loaded (if
+it has yet to be) and the file given as argument is loaded as well (do not
+include the C<.py> extension of this file in the value of I<python_dynamic>).
+If a Python object with a method C<dynamic_init> is hooked in during the
 loading of that file, then that method is called immediately after the
-file is loaded. Every time a reader asks nnrpd to read or post an
+file is loaded.  Every time a reader asks B<nnrpd> to read or post an
 article, the Python method C<dynamic> is invoked before proceeding with
-the requested operation. Based on the value returned by C<dynamic>, the
-operation is either permitted or denied. When the connection with the
+the requested operation.  Based on the value returned by C<dynamic>, the
+operation is either permitted or denied.  When the connection with the
 client is closed, the method C<access_close> is called if it exists.
 
-=head1 WRITING A PYTHON NNRPD AUTHENTICATION MODULE
+=head2 Writing a Python B<nnrpd> authentication module
 
 You need to create a F<nnrpd_auth.py> module in INN's filter directory
 (see the I<pathfilter> setting in F<inn.conf>) where you should define a
 class holding certain methods depending on which hooks you want to use.
 
-The following methods are known to nnrpd:
+Note that you will have to use different Python scripts for authentication
+and access:  the values of I<python_auth>, I<python_access> and I<python_dynamic>
+have to be distinct for your scripts to work.
+
+The following methods are known to B<nnrpd>:
 
 =over 4
 
-=item __init__(self)
+=item __init__(I<self>)
 
-Not explicitly called by nnrpd, but will run whenever the auth module is
-loaded. Use this method to initialize any general variables or open
-a common database connection. This method may be omitted.
+Not explicitly called by B<nnrpd>, but will run whenever the auth module is
+loaded.  Use this method to initialize any general variables or open
+a common database connection.  This method may be omitted.
 
-=item authen_init(self)
+=item authen_init(I<self>)
 
-Initialization function specific to authentication. This method may be
+Initialization function specific to authentication.  This method may be
 omitted.
 
-=item authenticate(self, attributes)
+=item authenticate(I<self>, I<attributes>)
 
-Called when a python_auth statement is reached in the processing of
-readers.conf. Connection attributes are passed in the C<attributes>
-dictionary. Returns a response code, an error string, and an optional
+Called when a I<python_auth> statement is reached in the processing of
+F<readers.conf>.  Connection attributes are passed in the I<attributes>
+dictionary.  Returns a response code, an error string, and an optional
 string to be used in place of the client-supplied username (both for
 logging and for matching the connection with an access group).
 
-=item authen_close(self)
+=item authen_close(I<self>)
 
-This method is invoked on nnrpd termination.  You can use it to save
-state information or close a database connection.
+This method is invoked on B<nnrpd> termination.  You can use it to save
+state information or close a database connection.  This method may be omitted.
 
-=item access_init(self)
+=item access_init(I<self>)
 
-Initialization function specific to generation of an access group. This
+Initialization function specific to generation of an access group.  This
 method may be omitted.
 
-=item access(self, attributes)
+=item access(I<self>, I<attributes>)
 
-Called when a python_access statement is reached in the processing of
-readers.conf. Connection attributes are passed in the C<attributes>
-dictionary. Returns a dictionary of values representing statements to
+Called when a I<python_access> statement is reached in the processing of
+F<readers.conf>.  Connection attributes are passed in the I<attributes>
+dictionary.  Returns a dictionary of values representing statements to
 be included in an access group.
 
-=item access_close(self)
+=item access_close(I<self>)
 
-This method is invoked on nnrpd termination. You can use it to save
-state information or close a database connection.
+This method is invoked on B<nnrpd> termination.  You can use it to save
+state information or close a database connection.  This method may be omitted.
 
-=item dynamic_init(self)
+=item dynamic_init(I<self>)
 
-Initialization function specific to dynamic access control. This
+Initialization function specific to dynamic access control.  This
 method may be omitted.
 
-=item dynamic(self, attributes)
+=item dynamic(I<self>, I<attributes>)
 
 Called when a client requests a newsgroup, an article or attempts to
-post. Connection attributes are passed in the C<attributes> dictionary.
+post.  Connection attributes are passed in the I<attributes> dictionary.
 Returns C<None> to grant access, or a non-empty string (which will be
 reported back to the client) otherwise.
 
-=item dynamic_close(self)
+=item dynamic_close(I<self>)
 
-This method is invoked on nnrpd termination.  You can use it to save
-state information or close a database connection.
+This method is invoked on B<nnrpd> termination.  You can use it to save
+state information or close a database connection.  This method may be omitted.
 
-=item attributes dictionary
+=back
 
-The keys and associated values of the C<attributes> dictionary are
+=head2 The I<attributes> dictionary
+
+The keys and associated values of the I<attributes> dictionary are
 described below.
 
 =over 4
 
-=item type
+=item I<type>
 
-C<read> or C<post> values specify the authentication
-type; only valid for the C<dynamic> method
+C<read> or C<post> values specify the authentication type; only valid
+for the C<dynamic> method.
 
-=item hostname
+=item I<hostname>
 
-resolved hostname (or IP address if resolution fails) of connected
-reader
+It is the resolved hostname (or IP address if resolution fails) of
+the connected reader.
 
-=item ipaddress
+=item I<ipaddress>
 
-IP address of connected reader
+The IP address of the connected reader.
 
-=item port
+=item I<port>
 
-port of connected reader
+The port of the connected reader.
 
-=item interface
+=item I<interface>
 
-hostname of the local endpoint of the NNTP connection
+The hostname of the local endpoint of the NNTP connection.
 
-=item intipaddr
+=item I<intipaddr>
 
-IP address of the local endpoint of the NNTP connection
+The IP address of the local endpoint of the NNTP connection.
 
-=item intport
+=item I<intport>
 
-port of the local endpoint of the NNTP connection
+The port of the local endpoint of the NNTP connection.
 
-=item user
+=item I<user>
 
-username as reader passed with AUTHINFO command, or None if not
-applicable
+The username as passed with AUTHINFO command, or C<None> if not
+applicable.
 
-=item pass
+=item I<pass>
 
-password as reader passed with AUTHINFO command, or None if not
-applicible
+The password as passed with AUTHINFO command, or C<None> if not
+applicable.
 
-=item newsgroup
+=item I<newsgroup>
 
-name of the newsgroup reader requests read or post access to; only
-valid for the C<dynamic> method
+The name of the newsgroup to which the reader requests read or post access;
+only valid for the C<dynamic> method.
 
 =back
 
 All the above values are buffer objects (see the notes above on what
 buffer objects are).
 
-=back
+=head2 How to use these methods with B<nnrpd>
 
-To register your methods with nnrpd, you need to create an instance of
-your class, import the built-in nnrpd module, and pass the instance to
-nnrpd.set_auth_hook().  For example:
+To register your methods with B<nnrpd>, you need to create an instance of
+your class, import the built-in B<nnrpd> module, and pass the instance to
+C<nnrpd.set_auth_hook>.  For example:
 
     class AUTH:
-        def authenticate(self, attributes):
+        def authen_init(self):
+            ...
+            blah blah
             ...
 
-        def authorize(self, attributes):
+        def authenticate(self, attributes):
+            ...
+            yadda yadda
             ...
 
     import nnrpd
     myauth = AUTH()
     nnrpd.set_auth_hook(myauth)
 
-There is also an F<nnrpd.py> module there that is not actually used by
-nnrpd but provides the same set of functions as built-in nnrpd module.
-This stub module may be used when debugging your own module.
+When writing and testing your Python filter, don't be afraid to make use
+of C<try:>/C<except:> and the provided C<nnrpd.syslog> function.  stdout and stderr
+will be disabled, so your filter will die silently otherwise.
 
-=head1 FUNCTIONS SUPPLIED BY THE BUILT-IN NNRPD MODULE
+Also, remember to try importing your module interactively before loading
+it, to ensure there are no obvious errors.  One typo can ruin your whole
+filter.  A dummy F<nnrpd.py> module is provided to facilitate testing outside
+the server.  It is not actually used by B<nnrpd> but provides the same set
+of functions as built-in B<nnrpd> module. This stub module may be used
+when debugging your own module.  To test, change into your filter directory
+and use a command like:
 
-As of this writing, nnrpd built-in module exports the following functions:
+    python -ic 'import nnrpd, nnrpd_auth'
+
+=head2 Functions supplied by the built-in B<nnrpd> module
+
+Besides C<nnrpd.set_auth_hook> used to pass a reference to the instance
+of authentication and authorization class to B<nnrpd>, the B<nnrpd> built-in
+module exports the following function:
 
 =over 4
 
-=item set_auth_hook()
+=item syslog(I<level>, I<message>)
 
-used to pass a reference to the instance of authentication and
-authorization class to nnrpd
-
-=item syslog()
-
-intended to be a replacement for a Python native syslog
+It is intended to be a replacement for a Python native syslog.  It works
+like C<INN.syslog>, seen above.
 
 =back
 

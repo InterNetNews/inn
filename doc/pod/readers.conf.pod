@@ -267,16 +267,17 @@ configure).  More information may be found in F<doc/hook-perl>.
 
 =item B<python_auth:>
 
-A python script for authentication.  The python_auth: parameter works
-exactly like auth:, except that it calls the named script using the
-python hook rather then an external program.  Multiple/mixed use of
-the auth, perl_auth, and python_auth parameters is permitted within any
-auth group; each line is tried in the order it appears.  python_auth:
-has more power than auth: in that it provides the authentication
-program with additional information about the client and the ability
-to return an error string and a username.  This parameter is only
-valid if INN is compiled with Python support (B<--with-python> passed
-to configure).  More information may be found in F<doc/hook-python>.
+A Python script for authentication.  The I<python_auth> parameter works
+exactly like I<auth>, except that it calls the named script (without its
+C<.py> extension) using the Python hook rather then an external program.
+Multiple/mixed use of the I<auth>, I<perl_auth>, and I<python_auth>
+parameters is permitted within any auth group; each line is tried
+in the order it appears.  I<python_auth> has more power than I<auth>
+in that it provides the authentication program with additional information
+about the client and the ability to return an error string and a username.
+This parameter is only valid if INN is compiled with Python support
+(B<--with-python> passed to B<configure>).  More information may be
+found in F<doc/hook-python>.
 
 =item B<default:>
 
@@ -323,28 +324,29 @@ found in the file F<doc/hook-perl>.
 
 =item B<python_access:>
 
-A python script for dynamically generating an access group.  If
-an auth group matches successfully and contains a python_access parameter,
-then the argument script will be used to create an access group.
-This group will then determine the access rights of the client,
-overriding any access groups in F<readers.conf>.  If and only if a
-successful auth group contains the python_access parameter, F<readers.conf>
+A Python script for dynamically generating an access group.  If
+an auth group matches successfully and contains a I<python_access> parameter,
+then the argument script (without its C<.py> extension) will be used to
+create an access group.  This group will then determine the access rights
+of the client, overriding any access groups in F<readers.conf>.  If and only
+if a successful auth group contains the I<python_access> parameter, F<readers.conf>
 access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if INN is compiled with Python
-support (B<--with-python> passed to configure).  More information may be
+support (B<--with-python> passed to B<configure>).  More information may be
 found in the file F<doc/hook-python>.
 
 =item B<python_dynamic:>
 
-A python script for applying access control dynamically on a per newsgroup
+A Python script for applying access control dynamically on a per newsgroup
 basis.  If an auth group matches successfully and contains a
-python_dynamic parameter, then the argument script will be used to
-determine the clients rights each time the user attempts to view a
-newsgroup, or read or post an article.  Access rights as determined by
-python_dynamic override the values of access group parameters such as
-newsgroups, read, and post.  This parameter is only valid if INN is
-compiled with Python support (B<--with-python> passed to configure).  More
-information may be found in the file F<doc/hook-python>.
+I<python_dynamic> parameter, then the argument script (without its
+C<.py> extension) will be used to determine the clients rights each time
+the user attempts to view a newsgroup, or read or post an article.  Access
+rights as determined by I<python_dynamic> override the values of access
+group parameters such as I<newsgroups>, I<read> and I<post>.  This parameter
+is only valid if INN is compiled with Python support (B<--with-python>
+passed to B<configure>).  More information may be found in the file
+F<doc/hook-python>.
 
 =back
 

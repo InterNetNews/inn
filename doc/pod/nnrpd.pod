@@ -153,7 +153,7 @@ title.
 
 If specified, B<nnrpd> will start a negotiation for SSL session as
 soon as connected. To use this flag, B<--with-openssl> must have been
-specified at C<configure> time.  For more information on running B<nnrpd>
+specified at configure time.  For more information on running B<nnrpd>
 with SSL support, see L<SSL SUPPORT>.
 
 =item B<-t>
