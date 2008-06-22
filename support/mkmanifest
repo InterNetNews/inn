@@ -230,8 +230,10 @@ site/newsfeeds
 site/newsgroups.minimal
 site/nnrpd.track
 site/nnrpd_access.pl
+site/nnrpd_access.py
 site/nnrpd_auth.pl
 site/nnrpd_auth.py
+site/nnrpd_dynamic.py
 site/nntpsend.ctl
 site/nocem.ctl
 site/ovdb.conf

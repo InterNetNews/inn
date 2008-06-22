@@ -21,6 +21,8 @@ PATH_PYTHON_INN_MODULE  = ${PATHFILTER}/INN.py
 PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
 PATH_NNRPYAUTH          = ${PATHFILTER}/nnrpd_auth.py
 PATH_NNRPACCESS         = ${PATHFILTER}/nnrpd_access.pl
+PATH_NNRPYACCESS        = ${PATHFILTER}/nnrpd_access.py
+PATH_NNRPYDYNAMIC       = ${PATHFILTER}/nnrpd_dynamic.py
 
 PATH_CONFIG		= ${PATHETC}/inn.conf
 PATH_CONTROLCTL		= ${PATHETC}/control.ctl
@@ -63,7 +65,8 @@ REST		= \
 	filter_innd.py INN.py \
 	nnrpd_auth.pl nnrpd_access.pl nocem.ctl \
         news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py ovdb.conf active.minimal \
+	radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
+	ovdb.conf active.minimal \
 	newsgroups.minimal send-uucp.cf subscriptions
 
 ALL		= $(MOST) $(REST)
@@ -196,8 +199,10 @@ $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_FILTER_INND): filter_innd.py ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPUB) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPUB) $? $@
-$D$(PATH_NNRPACCESS): nnrpd_access.pl     ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPACCESS): nnrpd_access.pl   ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPYAUTH): nnrpd_auth.py      ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPYACCESS): nnrpd_access.py  ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPYDYNAMIC): nnrpd_dynamic.py     ; $(COPY_RPUB) $? $@
 $D$(PATHETC)/nocem.ctl: nocem.ctl       ; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
@@ -226,6 +231,8 @@ expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
 nnrpd_access.pl:  ../samples/nnrpd_access.pl	; $(COPY) $? $@
 nnrpd_auth.py:  ../samples/nnrpd_auth.py	; $(COPY) $? $@
+nnrpd_access.py: ../samples/nnrpd_access.py     ; $(COPY) $? $@
+nnrpd_dynamic.py: ../samples/nnrpd_dynamic.py   ; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 filter_innd.py:	../samples/filter_innd.py	; $(COPY) $? $@
