@@ -1,7 +1,7 @@
 /*  $Id$
 **
-**  Embed Python in the style of innd's Tcl and Perl stuff.
-** 
+**  Embed Python in the style of innd's Perl stuff.
+**
 **  Written by G.J. Andruk <meowing@banet.net> patterned after Tcl/Perl work
 **  by Bob Heiney and Christophe Wolfhugel and a whole bunch of other people
 **  mentioned in the docs and sources for the other filters.
@@ -18,24 +18,24 @@
 #include "innd.h"
 
 
-#if defined(DO_PYTHON)
+#ifdef DO_PYTHON
 
-/* Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
+/*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
 #undef _POSIX_C_SOURCE
 #include "Python.h"
 
 bool		PythonFilterActive;
-char		*filterPath;	/* this gets set in art.c */
+char		*filterPath;	/* This gets set in art.c. */
 PyObject	*PYFilterObject = NULL;
 PyObject	*PYFilterModule = NULL;
 
-/* article filter bits and pieces */
+/*  Article filter bits and pieces. */
 PyObject	*PYheaders = NULL;
 PyObject	**PYheaditem;
 PyObject	**PYheadkey;
 PyObject	*PYpathkey, *PYlineskey, *PYbodykey;
 
-/* external functions */
+/*  External functions. */
 PyObject	*msgid_method = NULL;
 PyObject	*art_method = NULL;
 PyObject	*mode_method = NULL;
@@ -56,8 +56,9 @@ PYfilter(bool value)
 }
 
 
+
 /*
-**  Front end for PYfilter()
+**  Front end for PYfilter().
 */
 const char *
 PYcontrol(char **av)
@@ -80,6 +81,7 @@ PYcontrol(char **av)
     }
     return NULL;
 }
+
 
 
 /*
@@ -129,21 +131,22 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 	*buf = '\0';
     Py_XDECREF(result);
 
-    /* Clean up after ourselves */
+    /* Clean up after ourselves. */
     PyDict_Clear(PYheaders);
     for (i = 0; i < hdrnum; i++)
 	if (PYheaditem[i] != Py_None) {
 	    Py_DECREF(PYheaditem[i]);
         }
 
-    if (*buf != '\0') 
+    if (*buf != '\0')
 	return buf;
     return NULL;
 }
 
 
+
 /*
-**  Refuse message IDs offered thru CHECK or IHAVE that we don't like.
+**  Refuse Message-IDs offered through CHECK or IHAVE that we don't like.
 */
 char *
 PYmidfilter(char *messageID, int msglen)
@@ -162,7 +165,7 @@ PYmidfilter(char *messageID, int msglen)
 	*buf = '\0';
     Py_XDECREF(result);
 
-    if (*buf != '\0') 
+    if (*buf != '\0')
 	return buf;
     return NULL;
 }
@@ -215,6 +218,7 @@ PY_set_filter_hook(PyObject *dummy UNUSED, PyObject *args)
     PyObject	*result = NULL;
     PyObject	*temp;
 
+    /* set_filter_hook method should return a pointer to innd auth object. */
     if (PyArg_ParseTuple(args, (char *) "O:set_filter_hook", &temp)) {
 	Py_XINCREF(temp);
 	Py_XDECREF(PYFilterObject);
@@ -222,6 +226,8 @@ PY_set_filter_hook(PyObject *dummy UNUSED, PyObject *args)
 	Py_INCREF(Py_None);
 	result = Py_None;
     }
+
+    /* Return a pointer to innd auth method. */
     return result;
 }
 
@@ -299,7 +305,7 @@ PY_addhist(PyObject *self UNUSED, PyObject *args)
 
 
 /*
-**  Get a newsgroup's status flag (j, m, n, x, y, =other.group)
+**  Get a newsgroup's status flag (j, m, n, x, y, =other.group).
 */
 static PyObject *
 PY_newsgroup(PyObject *self UNUSED, PyObject *args)
@@ -334,6 +340,7 @@ PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 }
 
 
+
 /*
 **  Return an article header to the external module as a string.  We
 **  don't use a buffer object here because that would make it harder,
@@ -364,6 +371,7 @@ PY_head(PyObject *self UNUSED, PyObject *args)
 
     return header;
 }
+
 
 
 /*
@@ -411,10 +419,12 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
     int		msglen;
     int		priority;
 
+    /* Get loglevel and message. */
     if (!PyArg_ParseTuple(args, (char *) "s#s#",
 			  &loglevel, &levellen, &logmsg, &msglen))
 	return NULL;
 
+    /* Assign syslog priority by abbreviated names. */
     switch (*loglevel) {
     default:		priority = LOG_NOTICE ;
     case 'd': case 'D': priority = LOG_DEBUG ;		break;
@@ -426,11 +436,14 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
     case 'a': case 'A': priority = LOG_ALERT ;		break;
     }
 
+    /* Log the message. */
     syslog(priority, "python: %s", logmsg);
 
+    /* Return None. */
     Py_INCREF(Py_None);
     return Py_None;
 }
+
 
 
 /*
@@ -452,7 +465,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
     if (lines > 0) {
 	worksize = insize;
 
-	/* chop leading whitespace */
+	/* Chop leading whitespace. */
 	for (p=instring ; worksize>0 && isspace(*p) ; p++) {
 	    if (*p == '\n')
 		lines--;
@@ -460,15 +473,15 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	}
 	wpos = p;
 
-	/* and trailing */
+	/* And trailing. */
 	for (p=&wpos[worksize] ; worksize>0 && isspace(*p) ; p--) {
 	    if (*p == '\n')
 		lines--;
 	    worksize--;
 	}
 
-	/* chop last 3 lines if we have >= 5.  From above chop the
-	 * last line has no CR so we use 1 less here. */
+	/* Chop last 3 lines if we have >= 5.  From above chop the
+	 * last line which has no CR so we use 1 less here. */
 	if (lines >= 4) {
 	    for (i=0, p=wpos+worksize ; i<2 ; p--)
 		if (*p == '\n')
@@ -506,6 +519,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 }
 
 
+
 /*
 **  Make the internal INN module's functions visible to Python.  Python
 **  annoyingly doesn't use const where appropriate in its structure
@@ -527,6 +541,7 @@ static PyMethodDef INNPyMethods[] = {
     METHOD("hashstring",      PY_hashstring,      METH_VARARGS, ""),
     METHOD(NULL,              NULL,               0,            "")
 };
+
 
 
 /*
@@ -553,13 +568,20 @@ static void
 PYdefonemethod(PyObject **methptr, const char *methname)
 {
     Py_XDECREF(*methptr);
+
+    /* Get a pointer to given method. */
     *methptr = PyObject_GetAttrString(PYFilterObject, (char *) methname);
+
+    /* See if such method is defined. */
     if (*methptr == NULL)
 	syslog(L_NOTICE, "python method %s not found", methname);
-    else if (PyCallable_Check(*methptr) == 0) {
+    else {
+        /* See if it is callable. */
+        if (PyCallable_Check(*methptr) == 0) {
 	syslog(L_ERROR, "python object %s found but not a function", methname);
 	Py_DECREF(*methptr);
 	*methptr = NULL;
+        }
     }
 }
 
@@ -648,20 +670,26 @@ PYsetup(void)
     const ARTHEADER *hp;
     size_t hdrcount;
 
+    /* Add path for nnrpd module.  The environment variable PYTHONPATH
+     * does it; one can also append innconf->pathfilter to sys.path once
+     * Python has been initialized. */
     setenv("PYTHONPATH", innconf->pathfilter, 1);
+
+    /* Load up the interpreter ;-O */
     Py_Initialize();
 
-    /* It makes Python sad when its stdout and stderr are closed. */
+    /* It makes Python sad when its stdout or stderr are closed. */
     if ((fileno(stdout) == -1) || (fileno(stderr) == -1))
 	PyRun_SimpleString
 	    ("import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
 
+    /* See if Python initialized OK. */
     if (!Py_IsInitialized ()) {
 	syslog(L_ERROR, "python interpreter NOT initialized");
 	return;
     }
-    syslog(L_NOTICE, "python interpreter initialized OK");
 
+    /* Build a module interface to certain INN functions. */
     Py_InitModule((char *) "INN", INNPyMethods);
 
     PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
@@ -678,8 +706,8 @@ PYsetup(void)
     }
 
     /* Grab space for these so we aren't forever recreating them.  We also
-       put the body and the line count into PYheaditem, so it needs to be
-       two elements longer than the total number of headers. */
+     * cut the body and the line count into PYheaditem, so it needs to be
+     * two elements longer than the total number of headers. */
     PYheaders = PyDict_New();
     hdrcount = ARRAY_END(ARTheaders) - ARTheaders;
     PYheaditem = xmalloc((hdrcount + 2) * sizeof(PyObject *));
@@ -691,6 +719,8 @@ PYsetup(void)
     PYpathkey = PyString_InternFromString("Path");
     PYlineskey = PyString_InternFromString("__LINES__");
     PYbodykey = PyString_InternFromString("__BODY__");
+
+    syslog(L_NOTICE, "python interpreter initialized OK");
 }
 
 #endif /* defined(DO_PYTHON) */
