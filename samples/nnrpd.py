@@ -1,6 +1,10 @@
-# This module supplies stub Python functions corresponding to the ones
-# provided by nnrpd.  It is not used by the server; it is only here so
-# that you can test your auth and filter scripts before loading.
+##  $Id$
+##
+##  This module supplies stub Python functions corresponding to the ones
+##  provided by nnrpd.  It is not used by the server; it is only here so
+##  that you can test your filter scripts before loading.
+##  See the INN Python Filtering and Authentication Hooks documentation
+##  for more information.
 
 from types import *
 
