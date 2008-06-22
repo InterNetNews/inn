@@ -1,17 +1,27 @@
-#
-# $Id$
-#
-# This is a sample filter for the Python innd hook.
-#
-# For details, see the file doc/hook-python that came with INN.
-#
+##  $Id$
+##
+##  This is a sample filter for the Python innd hook.
+##
+##  See the INN Python Filtering and Authentication Hooks documentation
+##  for more information.
+##
+##  You have access to the following methods from the module INN:
+##   - addhist(message-id)
+##   - article(message-id)
+##   - cancel(message-id)
+##   - havehist(message-id)
+##   - hashstring(string)
+##   - head(message-id)
+##   - newsgroup(groupname)
+##   - set_filter_hook(instance)
+##   - syslog(level, message)
 
 import re
 from string import *
 
-# This looks weird, but creating and interning these strings should
-# let us get faster access to header keys (which innd also interns) by
-# losing some strcmps under the covers.
+##  This looks weird, but creating and interning these strings should
+##  let us get faster access to header keys (which innd also interns) by
+##  losing some strcmps under the covers.
 Also_Control = intern("Also-Control")
 Approved = intern("Approved")
 Bytes = intern("Bytes")
@@ -31,7 +41,7 @@ Followup_To = intern("Followup-To")
 From = intern("From")
 In_Reply_To = intern("In-Reply-To")
 Injection_Date = intern("Injection-Date")
-Injection_Info = intern("Injection-Info";
+Injection_Info = intern("Injection-Info")
 Keywords = intern("Keywords")
 Lines = intern("Lines")
 List_ID = intern("List-ID")
@@ -87,13 +97,12 @@ class InndFilter:
 
     def __init__(self):
         """This runs every time the filter is loaded or reloaded.
-
         This is a good place to initialize variables and precompile
         regular expressions, or maybe reload stats from disk.
         """
         self.re_newrmgroup = re.compile('(?:new|rm)group\s')
         self.re_obsctl = re.compile('(?:sendsys|version|uuname)')
-        # msgid  pattern from a once-common spambot.
+        # Message-ID pattern from a once-common spambot.
         self.re_none44 = re.compile('none\d+\.yet>')
         # There is a mad newgrouper who likes to meow.
         self.re_meow = re.compile("^Meow\!", re.M)
@@ -117,7 +126,7 @@ class InndFilter:
         syslog('notice', "filter_close running, bye!")
 
     def filter_messageid(self, msgid):
-        """Filter articles just by their message IDs.
+        """Filter articles just by their Message-IDs.
 
         This method interacts with the IHAVE and CHECK NNTP commands.
         If you return a non-empty string here, the offered article
@@ -127,7 +136,7 @@ class InndFilter:
         offer the ID for examination, and a TAKETHIS isn't always
         preceded by a CHECK.)
         """
-        return ""               # deactivate the samples.
+        return ""               # Deactivate the samples.
         
         if self.re_none44.search(msgid):
             return "But I don't like spam!"
@@ -170,9 +179,9 @@ class InndFilter:
         and local posters will see them if their messages are
         rejected.
         """
-        return ""               # deactivate the samples.
+        return ""               # Deactivate the samples.
 
-        # catch bad IDs from articles fed with TAKETHIS but no CHECK.
+        # Catch bad Message-IDs from articles fed with TAKETHIS but no CHECK.
         idcheck = self.filter_messageid(art[Message_ID])
         if idcheck:
             return idcheck
@@ -203,14 +212,13 @@ class InndFilter:
         just left, and newmode is where we are going.  reason is
         usually just a comment string.
 
-        The possible values of newmode and oldmode are the four
-        strings 'running', 'paused', 'throttled' and 'unknown'.
-        Actually 'unknown' shouldn't happen, it's there in case
-        feeping creatures invade innd.
+        The possible values of newmode and oldmode are the five
+        strings 'running', 'paused', 'throttled', 'shutdown' and
+        'unknown'.  Actually 'unknown' shouldn't happen; it's there
+        in case feeping creatures invade innd.
         """
         syslog('notice', 'state change from %s to %s - %s'
                % (oldmode, newmode, reason))
-
 
 
 """
@@ -218,24 +226,23 @@ Okay, that's the end of our class definition.  What follows is the
 stuff you need to do to get it all working inside innd.
 """
 
-# This import must succeed, or your filter won't work.  I'll repeat
-# that: You MUST import INN.
+##  This import must succeed, or your filter won't work.  I'll repeat
+##  that: You MUST import INN.
 from INN import *
 
-
-#   Some of the stuff below is gratuitous, just demonstrating how the
-#   INN.syslog call works.  That first thingy tells the Unix syslogger
-#   what severity to use; you can abbreviate down to one letter and
-#   it's case insensitive.  Available levels are (in increasing levels
-#   of seriousness) Debug, Info, Notice, Warning, Err, Crit, and
-#   Alert.  If you provide any other string, it will be defaulted to
-#   Notice.  You'll find the entries in the same log files innd itself
-#   uses, with an 'innd: python:' prefix.
-#
-#   The native Python syslog module seems to clash with INN, so use
-#   INN's.  Oh yeah -- you may notice that stdout and stderr have been
-#   redirected to /dev/null -- if you want to print stuff, open your
-#   own files.
+##  Some of the stuff below is gratuitous, just demonstrating how the
+##  INN.syslog call works.  That first thingy tells the Unix syslogger
+##  what severity to use; you can abbreviate down to one letter and
+##  it's case insensitive.  Available levels are (in increasing levels
+##  of seriousness) Debug, Info, Notice, Warning, Err, Crit, and
+##  Alert.  If you provide any other string, it will be defaulted to
+##  Notice.  You'll find the entries in the same log files innd itself
+##  uses, with an 'innd: python:' prefix.
+##
+##  The native Python syslog module seems to clash with INN, so use
+##  INN's.  Oh yeah -- you may notice that stdout and stderr have been
+##  redirected to /dev/null -- if you want to print stuff, open your
+##  own files.
 
 try:
     import sys
@@ -243,21 +250,21 @@ except Exception, errmsg:
     syslog('Error', "import boo-boo: " + errmsg[0])
 
 
-#     If you want to do something special when the server first starts
-#     up, this is how to find out when it's time.
+##  If you want to do something special when the server first starts
+##  up, this is how to find out when it's time.
 
 if 'spamfilter' not in dir():
-    syslog ('n', "First load, so I can do initialization stuff.")
-    #  You could unpickle a saved hash here, so that your hard-earned
-    #  spam scores aren't lost whenver you shut down innd.
+    syslog('n', "First load, so I can do initialization stuff.")
+    # You could unpickle a saved hash here, so that your hard-earned
+    # spam scores aren't lost whenever you shut down innd.
 else:
-    syslog ('NoTicE', "I'm just reloading, so skip the formalities.")
+    syslog('NoTicE', "I'm just reloading, so skip the formalities.")
 
 
-#  Finally, here is how we get our class on speaking terms with innd.
-#  The hook is refreshed on every reload, so that you can change the
-#  methods on a running server.  Don't forget to test your changes
-#  before reloading!
+##  Finally, here is how we get our class on speaking terms with innd.
+##  The hook is refreshed on every reload, so that you can change the
+##  methods on a running server.  Don't forget to test your changes
+##  before reloading!
 spamfilter = InndFilter()
 try:
     set_filter_hook(spamfilter)
