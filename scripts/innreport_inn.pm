@@ -1720,7 +1720,7 @@ sub collect {
       return 1;
     }
     # ME dropping articles into ...
-    return 1 if $left = ~/ME dropping articles into /o;
+    return 1 if $left =~ /ME dropping articles into /o;
     # newnews (interesting but ignored till now)
     return 1 if $left =~ /^\S+ newnews /o;
     # cant fopen (ignored too)
