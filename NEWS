@@ -30,6 +30,9 @@ Changes in 2.4.5
       previously installed in *pathfilter*.  Also fixed a bug in INN.py and
       add missing methods to it.
 
+    * Fixed a long-standing bug in innreport which prevented it from
+      correctly reporting nnrpd log messages.
+
     * Fixed a compilation problem on some platforms because of AF_INET6
       which was not inside a HAVE_INET6 block in innfeed.
 
