@@ -95,6 +95,87 @@ writing new one and proof-reading.  Samples are also more detailed.
 
 =back
 
+=head1 Changes in 2.4.5
+
+=over 2
+
+=item *
+
+Fixed the "alarm signal" around C<SSL_read> in B<nnrpd>:  it allows
+a proper disconnection of news clients which were previously hanging
+when posting an article through a SSL connection.  Moreover, the
+I<clienttimeout> parameter now works on SSL connections.  Thanks to
+Matija Nalis for the patch.
+
+=item *
+
+SO_KEEPALIVE is now implemented for SSL TCP connections on systems
+which support it, allowing system detection and closing the dead
+TCP SSL connections automatically after system-specified time.  Thanks
+to Matija Nalis for the patch.
+
+=item *
+
+Fixed a segmentation fault when an article of a size greater than remaining
+stack is retrieved via SSL.  Thanks to Chris Caputo for this patch.
+
+=item *
+
+Fixed a few segfaults and bugs which affected both Python B<innd> and B<nnrpd>
+hooks.  They no longer check the existence of methods not used by the hooked
+script.  An issue with Python exception handling was also fixed, as well as
+a segfault fixed by Russ Allbery which happened whenever one closes and then
+reopens Python in the same process.  Julien Elie also fixed a bug when reloading
+Python filters (they were not always correctly reloaded) and a segfault when
+generating access groups with embedded Python filters for B<nnrpd>.
+Many thanks to David Hlacik for its bug reports.
+
+=item *
+
+The F<nnrpd.py> stub file in order to test Python B<nnrpd> hooks, as
+mentioned in their documentation, is now installed; only F<INN.py> was
+previously installed in I<pathfilter>.  Also fixed a bug in F<INN.py>
+and add missing methods to it.
+
+=item *
+
+Fixed a compilation problem on some platforms because of AF_INET6 which
+was not inside a HAVE_INET6 block in B<innfeed>.
+
+=item *
+
+Fixed a bug in B<innfeed> which contained thrice the same IPs for each
+peer; it unnecessarily slowed the peer IP rotation for B<innfeed>.  Thanks,
+S<D. Stussy>, for having seen that.  Miquel van Smoorenburg provided the patch.
+
+=item *
+
+A new I<heavily> improved version of B<pullnews> is shipped with this
+INN release.  This new version is provided by Geraint Edwards.  He added
+no more than S<16 flags>, fixed some bugs and integrated the B<backupfeed>
+contrib script by Kai Henningsen, adding again S<6 other> flags.  A
+long-standing but very minor bug in the B<-g> option was especially fixed
+and items from the to-do list implemented.  Many thanks again to Geraint Edwards.
+
+=item *
+
+New headers are accessible through Perl and Python B<innd> filtering
+hooks.  You will find the exact list in the INN Python Filtering and
+Authentication Hooks documentation (F<doc/hook-python>) and in Python
+samples.  Thanks to Matija Nalis for this addition of new useful headers.
+
+=item *
+
+New samples for Python B<nnrpd> hooks are shipped with INN:  F<nnrpd_access.py>
+for access control and F<nnrpd_dynamic.py> for dynamic access control.  The
+F<nnrpd_auth.py> script is now only used for authorization control.  See the
+F<readers.conf> man page for more information (especially the I<python_auth>,
+I<python_access> and I<python_dynamic> parameters).  The documention about
+INN Python Filtering and Authentication Hooks has also been improved by
+Julien Elie.
+
+=back
+
 =head1 Changes in 2.4.4
 
 =over 2
