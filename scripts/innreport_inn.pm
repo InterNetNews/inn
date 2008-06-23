@@ -481,10 +481,12 @@ sub collect {
     return 1 if $left =~ /^reloading pyfilter$/o;
     return 1 if $left =~ /^reloaded pyfilter OK$/o;
     return 1 if $left =~ /^python interpreter initialized OK$/o;
+    return 1 if $left =~ /^python method \w+ not found$/o; 
     return 1 if $left =~ /^python: First load, so I can do initialization stuff\.$/o;
     return 1 if $left =~ /^python: filter_before_reload executing\.\.\.$/o;
     return 1 if $left =~ /^python: I\'m just reloading, so skip the formalities\.$/o;
     return 1 if $left =~ /^python: spamfilter successfully hooked into INN$/o;
+    return 1 if $left =~ /^python: state change from \w+ to \w+ - /o;
     return 1 if $left =~ /^python: filter_close running, bye!$/o;
     # rejecting[perl]
     if ($left =~ /^rejecting\[perl\] <[^>]+> \d+ (.*)/o) {
@@ -1512,6 +1514,23 @@ sub collect {
     return 1 if $left =~ /perl filtering enabled$/o;
     # Python filtering enabled
     return 1 if $left =~ /Python filtering enabled$/o;
+    return 1 if $left =~ /^python interpreter initialized OK$/o;
+    return 1 if $left =~ /^python method \S+ not found$/o;
+    return 1 if $left =~ /^python authenticate method succeeded, return code \d+, error string /o;
+    return 1 if $left =~ /^python access method succeeded$/o;
+    return 1 if $left =~ /^python dynamic method \(\w+ access\) succeeded, refusion string: /o;
+    return 1 if $left =~ /^python: .+ module successfully hooked into nnrpd$/o;
+    return 1 if $left =~ /^python: nnrpd .+ class instance created$/o;
+    return 1 if $left =~ /^python: n_a authenticate\(\) invoked: hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: n_a access\(\) invoked: hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: n_a dynamic\(\) invoked against type \S+, hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: authentication by username succeeded$/o;
+    return 1 if $left =~ /^python: authentication by username failed$/o;
+    return 1 if $left =~ /^python: authentication access by IP address succeeded$/o;
+    return 1 if $left =~ /^python: authentication access by IP address failed$/o;
+    return 1 if $left =~ /^python: dynamic access module successfully hooked into nnrpd$/o;
+    return 1 if $left =~ /^python: dynamic authorization access for read access granted$/o;
+    return 1 if $left =~ /^python: dynamic authorization access type is not known: /o;
     # connect
     if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect$/o) {
       my $cust = $1;
@@ -1577,6 +1596,7 @@ sub collect {
       $nnrpd_no_permission{$cust}++;
       return 1;
     }
+    return 1 if $left =~ /^\S+ auth: program error: ckpasswd: user .+ unknown$/o;
     # authinfo
     if ($left =~ /\S+ user (\S+)$/o) {
       my $user = $1;
@@ -1647,8 +1667,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Connection timed out
-    if ($left =~ /(\S+) cant read Connection timed out$/o) {
+    # can't read: Connection timed out
+    if ($left =~ /(\S+) can\'t read: Connection timed out$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1656,8 +1676,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Operation timed out
-    if ($left =~ /(\S+) cant read Operation timed out$/o) {
+    # can't read: Operation timed out
+    if ($left =~ /(\S+) can\'t read: Operation timed out$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1665,8 +1685,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Connection reset by peer
-    if ($left =~ /(\S+) cant read Connection reset by peer$/o) {
+    # can't read: Connection reset by peer
+    if ($left =~ /(\S+) can\'t read: Connection reset by peer$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1692,6 +1712,8 @@ sub collect {
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
     }
+    # reverse lookup failed
+    return 1 if $left =~ /^\? reverse lookup for \S+ failed: Name or service not known -- using IP address for access$/o;
     # profile timer
     # ME time X nnnn X(X) [...]
     # The exact timers change from various versions of INN, so try to deal
@@ -1708,13 +1730,13 @@ sub collect {
         my $average = $2 / ($3 || 1);
         $nnrpd_time_time{$name} += $2;
         $nnrpd_time_num{$name} += $3;
- if ($3) {
-   my $min = $nnrpd_time_min{$name};
-   $nnrpd_time_min{$name} = $average
-     if (defined($min) && $min > $average);
-   my $max = $nnrpd_time_max{$name};
-   $nnrpd_time_max{$name} = $average
-     if (defined($max) && $max < $average);
+        if ($3) {
+          my $min = $nnrpd_time_min{$name};
+          $nnrpd_time_min{$name} = $average
+            if (defined($min) && $min > $average);
+          my $max = $nnrpd_time_max{$name};
+          $nnrpd_time_max{$name} = $average
+            if (defined($max) && $max < $average);
         }
       }
       return 1;
@@ -1731,6 +1753,10 @@ sub collect {
     return 1 if $left =~ /cant read Broken pipe/o;
     # ioctl: ...
     return 1 if $left =~ /^ioctl: /o;
+    # other stats
+    return 1 if $left =~ /^\S+ overstats count \d+ hit \d+ miss \d+ time \d+ size \d+ dbz \d+ seek \d+ get \d+ artcheck \d+$/o;
+    # starttls
+    return 1 if $left =~ /^starttls: \S+ with cipher \S+ \(\d+\/\d+ bits\) no authentication$/o;
   }
   ########
   ## inndstart
