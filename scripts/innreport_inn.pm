@@ -1,7 +1,7 @@
 ##########################################################
 # INN module for innreport (3.*).
 #
-# Sample file tested with INN 2.3, 2.2, 1.7.2 and 1.5.1
+# Sample file tested with INN 2.4, 2.3, 2.2, 1.7.2 and 1.5.1
 #
 # (c) 1997-1999 by Fabien Tassin <fta@sofaraway.org>
 # version 3.0.2
@@ -250,9 +250,15 @@ sub collect {
     }
     # Python filter
     return 1 if $left =~ /^defined python methods$/o;
+    return 1 if $left =~ /^reloading pyfilter$/o;
+    return 1 if $left =~ /^reloaded pyfilter OK$/o;
     return 1 if $left =~ /^python interpreter initialized OK$/o;
-    return 1 if $left =~ /^python: First load, so I can do initialization stuff.$/o;
+    return 1 if $left =~ /^python method \w+ not found$/o; 
+    return 1 if $left =~ /^python: First load, so I can do initialization stuff\.$/o;
+    return 1 if $left =~ /^python: filter_before_reload executing\.\.\.$/o;
+    return 1 if $left =~ /^python: I\'m just reloading, so skip the formalities\.$/o;
     return 1 if $left =~ /^python: spamfilter successfully hooked into INN$/o;
+    return 1 if $left =~ /^python: state change from \w+ to \w+ - /o;
     return 1 if $left =~ /^python: filter_close running, bye!$/o;
     # rejecting[perl]
     if ($left =~ /^rejecting\[perl\] <[^>]+> \d+ (.*)/o) {
@@ -273,8 +279,9 @@ sub collect {
       $cmd = $command unless $cmd;
       return 1 if $cmd eq 'flush'; # to avoid a double count
       $innd_control{"$cmd"}++;
+      return 1;
     }
-    # control command (by letter)
+    # old control command (by letter)
     if ($left =~ /^(\w)$/o) {
       my $command = $1;
       my $cmd = $ctlinnd{$command};
@@ -283,7 +290,7 @@ sub collect {
       $innd_control{"$cmd"}++;
       return 1;
     }
-    # control command (letter + reason)
+    # old control command (letter + reason)
     if ($left =~ /^(\w):.*$/o) {
       my $command = $1;
       my $cmd = $ctlinnd{$command};
@@ -635,14 +642,15 @@ sub collect {
     }
     # bad_newsfeeds no feeding sites
     return 1 if $left =~ /\S+ bad_newsfeeds no feeding sites/o;
-    # CNFS-sm: cycbuff rollover - possibly interesting
-    return 1 if $left =~ /CNFS-sm: cycbuff \S+ rollover to cycle/o;
-    # CNFS-sm: CNFSflushallheads: flushing - possibly interesting
-    return 1 if $left =~ /CNFS-sm: CNFSflushallheads: flushing /o;
-    # CNFS-sm: metacycbuff rollover with SEQUENTIAL
-    return 1 if $left =~ /CNFS-sm: metacycbuff \S+ cycbuff is moved to /o;
+    # CNFS: cycbuff rollover - possibly interesting
+    return 1 if $left =~ /CNFS(?:-sm)?: cycbuff \S+ rollover to cycle/o;
+    # CNFS: CNFSflushallheads: flushing - possibly interesting
+    return 1 if $left =~ /CNFS(?:-sm)?: CNFSflushallheads: flushing /o;
+    # CNFS: metacycbuff rollover with SEQUENTIAL
+    return 1 if $left =~ /CNFS(?:-sm)?: metacycbuff \S+ cycbuff is moved to /o;
     # Cleanfeed status reports
     return 1 if $left =~ /^filter: status/o;
+    return 1 if $left =~ /^filter: Reloading bad files/o;
   }
   ########
   ## innfeed
@@ -766,7 +774,7 @@ sub collect {
     # ME source lost . Exiting
     return 1 if $left =~ m/(?:SERVER|ME) source lost . Exiting/o;
     # ME starting innfeed (+version & date)
-    return 1 if $left =~ m/(?:SERVER|ME) starting innfeed/o;
+    return 1 if $left =~ m/(?:SERVER|ME) starting (?:innfeed|at)/o;
     # ME finishing at (date)
     return 1 if $left =~ m/(?:SERVER|ME) finishing at /o;
     # mode no-CHECK entered
@@ -1239,6 +1247,23 @@ sub collect {
     return 1 if $left =~ /perl filtering enabled$/o;
     # Python filtering enabled
     return 1 if $left =~ /Python filtering enabled$/o;
+    return 1 if $left =~ /^python interpreter initialized OK$/o;
+    return 1 if $left =~ /^python method \S+ not found$/o;
+    return 1 if $left =~ /^python authenticate method succeeded, return code \d+, error string /o;
+    return 1 if $left =~ /^python access method succeeded$/o;
+    return 1 if $left =~ /^python dynamic method \(\w+ access\) succeeded, refusion string: /o;
+    return 1 if $left =~ /^python: .+ module successfully hooked into nnrpd$/o;
+    return 1 if $left =~ /^python: nnrpd .+ class instance created$/o;
+    return 1 if $left =~ /^python: n_a authenticate\(\) invoked: hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: n_a access\(\) invoked: hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: n_a dynamic\(\) invoked against type \S+, hostname \S+, ipaddress \S+, interface \S+, user /o;
+    return 1 if $left =~ /^python: authentication by username succeeded$/o;
+    return 1 if $left =~ /^python: authentication by username failed$/o;
+    return 1 if $left =~ /^python: authentication access by IP address succeeded$/o;
+    return 1 if $left =~ /^python: authentication access by IP address failed$/o;
+    return 1 if $left =~ /^python: dynamic access module successfully hooked into nnrpd$/o;
+    return 1 if $left =~ /^python: dynamic authorization access for read access granted$/o;
+    return 1 if $left =~ /^python: dynamic authorization access type is not known: /o;
     # connect
     if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect$/o) {
       my $cust = $1;
@@ -1304,6 +1329,7 @@ sub collect {
       $nnrpd_no_permission{$cust}++;
       return 1;
     }
+    return 1 if $left =~ /^\S+ auth: program error: ckpasswd: user .+ unknown$/o;
     # authinfo
     if ($left =~ /\S+ user (\S+)$/o) {
       my $user = $1;
@@ -1374,8 +1400,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Connection timed out
-    if ($left =~ /(\S+) cant read Connection timed out$/o) {
+    # can't read: Connection timed out
+    if ($left =~ /(\S+) can\'t read: Connection timed out$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1383,8 +1409,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Operation timed out
-    if ($left =~ /(\S+) cant read Operation timed out$/o) {
+    # can't read: Operation timed out
+    if ($left =~ /(\S+) can\'t read: Operation timed out$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1392,8 +1418,8 @@ sub collect {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # cant read Connection reset by peer
-    if ($left =~ /(\S+) cant read Connection reset by peer$/o) {
+    # can't read: Connection reset by peer
+    if ($left =~ /(\S+) can\'t read: Connection reset by peer$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1419,6 +1445,8 @@ sub collect {
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
     }
+    # reverse lookup failed
+    return 1 if $left =~ /^\? reverse lookup for \S+ failed: Name or service not known -- using IP address for access$/o;
     # profile timer
     # ME time X nnnn X(X) [...]
     # The exact timers change from various versions of INN, so try to deal
@@ -1435,10 +1463,14 @@ sub collect {
         my $average = $2 / ($3 || 1);
         $nnrpd_time_time{$name} += $2;
         $nnrpd_time_num{$name} += $3;
-        $nnrpd_time_min{$name} = $average
-          if ($3 && $nnrpd_time_min{$name} > $average);
-        $nnrpd_time_max{$name} = $average
-          if ($3 && $nnrpd_time_max{$name} < $average);
+        if ($3) {
+          my $min = $nnrpd_time_min{$name};
+          $nnrpd_time_min{$name} = $average
+            if (defined($min) && $min > $average);
+          my $max = $nnrpd_time_max{$name};
+          $nnrpd_time_max{$name} = $average
+            if (defined($max) && $max < $average);
+        }
       }
       return 1;
     }
@@ -1454,6 +1486,10 @@ sub collect {
     return 1 if $left =~ /cant read Broken pipe/o;
     # ioctl: ...
     return 1 if $left =~ /^ioctl: /o;
+    # other stats
+    return 1 if $left =~ /^\S+ overstats count \d+ hit \d+ miss \d+ time \d+ size \d+ dbz \d+ seek \d+ get \d+ artcheck \d+$/o;
+    # starttls
+    return 1 if $left =~ /^starttls: \S+ with cipher \S+ \(\d+\/\d+ bits\) no authentication$/o;
   }
   ########
   ## inndstart
@@ -1675,10 +1711,10 @@ sub collect {
     # unmoderated, m, etc. depending on what the control message says.  It
     # can even have multiple words, which we still don't handle.
     if ($left =~ m/^control_(\S+),    # type of msg
-		  \s(?:\S+)?          # newsgroup name
-		  (\s\S+)?            # optional
-		  \s(\S+)             # email
-                  \s\S+               # email
+                  \s(?:\S+)?          # newsgroup name
+                  (\s\S+)?            # optional
+                  \s(\S+)             # e-mail
+                  \s\S+               # e-mail
                   \s\S+,              # filename
                   \s\S+,              # server
                   \s([^=,]+(?:=\S+)?),            # action
@@ -1748,7 +1784,7 @@ sub collect {
       $cnfsstat{$buffer} = $class;
 
       # If the size changed, invalidate all of our running fill rate stats.
-      if ($size != $cnfsstat_size{$buffer}) {
+      if (!exists($cnfsstat_size{$buffer}) ||  $size != $cnfsstat_size{$buffer}) {
         delete $cnfsstat_rate{$buffer};
         delete $cnfsstat_samples{$buffer};
         delete $cnfsstat_time{$buffer};
@@ -1806,9 +1842,9 @@ sub adjust {
 	my $dom = &host2dom($serv);
 	if ($nnrpd_no_permission{$serv}) {
 	  $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
-	    if defined $nnrpd_dom_connect{$dom};
+	    if defined $nnrpd_dom_connect{$dom} && defined $nnrpd_connect{$serv};
 	  $nnrpd_dom_groups{$dom}  -= $nnrpd_groups{$serv}
-	    if defined $nnrpd_dom_groups{$dom};
+	    if defined $nnrpd_dom_groups{$dom} && defined $nnrpd_groups{$serv};
 	  $nnrpd_dom_times{$dom}   -= $nnrpd_times{$serv}
 	    if defined $nnrpd_dom_times{$dom};
 	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
