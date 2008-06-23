@@ -23,6 +23,8 @@ PATH_PYTHON_INN_MODULE  = ${PATHFILTER}/INN.py
 PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
 PATH_NNRPYAUTH          = ${PATHFILTER}/nnrpd_auth.py
 PATH_NNRPACCESS         = ${PATHFILTER}/nnrpd_access.pl
+PATH_NNRPYACCESS        = ${PATHFILTER}/nnrpd_access.py
+PATH_NNRPYDYNAMIC       = ${PATHFILTER}/nnrpd_dynamic.py
 
 PATH_CONFIG		= ${PATHETC}/inn.conf
 PATH_CONTROLCTL		= ${PATHETC}/control.ctl
@@ -63,6 +65,7 @@ REST		= \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	startup.tcl filter.tcl nnrpd_auth.pl nnrpd_access.pl \
+	nnrpd_access.py nnrpd_dynamic.py \
         news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py ovdb.conf sasl.conf active.minimal \
 	newsgroups.minimal subscriptions
@@ -85,6 +88,7 @@ REST_INSTALLED	= \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
+	$D$(PATH_NNRPYACCESS) $D$(PATH_NNRPYDYNAMIC) \
 	$D$(PATH_SASL_CONF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
 
 ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
@@ -194,8 +198,10 @@ $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPUB) $? $@
 $D$(PATH_TCL_STARTUP): startup.tcl	; $(COPY_RPUB) $? $@
 $D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPUB) $? $@
-$D$(PATH_NNRPACCESS): nnrpd_access.pl     ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPACCESS): nnrpd_access.pl   ; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPYAUTH): nnrpd_auth.py      ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPYACCESS): nnrpd_access.py  ; $(COPY_RPUB) $? $@
+$D$(PATH_NNRPYDYNAMIC): nnrpd_dynamic.py     ; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
 $D$(PATH_MOTD): motd.news		; $(COPY_RPUB) $? $@
@@ -224,6 +230,8 @@ filter.tcl:	../samples/filter.tcl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
 nnrpd_access.pl:  ../samples/nnrpd_access.pl	; $(COPY) $? $@
 nnrpd_auth.py:  ../samples/nnrpd_auth.py	; $(COPY) $? $@
+nnrpd_access.py: ../samples/nnrpd_access.py     ; $(COPY) $? $@
+nnrpd_dynamic.py: ../samples/nnrpd_dynamic.py   ; $(COPY) $? $@
 filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 filter_innd.py:	../samples/filter_innd.py	; $(COPY) $? $@

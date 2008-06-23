@@ -566,12 +566,14 @@ samples/newsgroups.minimal            Minimal starting newsgroups file
 samples/nnrpd.py                      Python hooks for nnrpd
 samples/nnrpd.track                   Reader tracking configuration
 samples/nnrpd_access.pl.in            Sample nnrpd Perl access hooks
+samples/nnrpd_access.py               Sample nnrpd Python access hooks
 samples/nnrpd_access_wrapper.pl.in    Wrapper around old Perl access hooks
 samples/nnrpd_access_wrapper.py       Wrapper around old Python access hooks
 samples/nnrpd_auth.pl.in              Sample nnrpd Perl authorization hooks
 samples/nnrpd_auth.py                 Sample nnrpd Python authorization hooks
 samples/nnrpd_auth_wrapper.pl.in      Wrapper around old Perl auth hooks
 samples/nnrpd_auth_wrapper.py         Wrapper around old Python auth hooks
+samples/nnrpd_dynamic.py              Sample nnrpd Python dynamic access hooks
 samples/nnrpd_dynamic_wrapper.py      Wrapper around old Python dynamic hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/ovdb.conf                     Berkeley DB overview configuration

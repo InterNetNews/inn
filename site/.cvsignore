@@ -24,8 +24,10 @@ newsfeeds
 newsgroups.minimal
 nnrpd.track
 nnrpd_access.pl
+nnrpd_access.py
 nnrpd_auth.pl
 nnrpd_auth.py
+nnrpd_dynamic.py
 nntpsend.ctl
 ovdb.conf
 overview.fmt
