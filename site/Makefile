@@ -20,6 +20,7 @@ PATH_TCL_STARTUP	= ${PATHFILTER}/startup.tcl
 PATH_TCL_FILTER		= ${PATHFILTER}/filter.tcl
 PATH_PYTHON_FILTER_INND = ${PATHFILTER}/filter_innd.py
 PATH_PYTHON_INN_MODULE  = ${PATHFILTER}/INN.py
+PATH_PYTHON_NNRPD_MODULE= ${PATHFILTER}/nnrpd.py
 PATH_NNRPAUTH           = ${PATHFILTER}/nnrpd_auth.pl
 PATH_NNRPYAUTH          = ${PATHFILTER}/nnrpd_auth.py
 PATH_NNRPACCESS         = ${PATHFILTER}/nnrpd_access.pl
@@ -63,7 +64,7 @@ REST		= \
 	innwatch.ctl distrib.pats actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	filter_innd.py INN.py \
+	filter_innd.py INN.py nnrpd.py \
 	startup.tcl filter.tcl nnrpd_auth.pl nnrpd_access.pl \
 	nnrpd_access.py nnrpd_dynamic.py \
         news2mail.cf readers.conf \
@@ -85,7 +86,7 @@ REST_INSTALLED	= \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
-	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) $D$(PATH_PYTHON_NNRPD_MODULE) \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_OVDB_CONF) \
 	$D$(PATH_NNRPYACCESS) $D$(PATH_NNRPYDYNAMIC) \
@@ -195,6 +196,7 @@ $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_FILTER_INND): filter_innd.py ; $(COPY_RPUB) $? $@
 $D$(PATH_PYTHON_INN_MODULE): INN.py ;	$(COPY_RPUB) $? $@
+$D$(PATH_PYTHON_NNRPD_MODULE): nnrpd.py ;   $(COPY_RPUB) $? $@
 $D$(PATH_TCL_STARTUP): startup.tcl	; $(COPY_RPUB) $? $@
 $D$(PATH_TCL_FILTER): filter.tcl	; $(COPY_RPUB) $? $@
 $D$(PATH_NNRPAUTH): nnrpd_auth.pl       ; $(COPY_RPUB) $? $@
@@ -236,6 +238,7 @@ filter_innd.pl:	../samples/filter_innd.pl	; $(COPY) $? $@
 filter_nnrpd.pl: ../samples/filter_nnrpd.pl	; $(COPY) $? $@
 filter_innd.py:	../samples/filter_innd.py	; $(COPY) $? $@
 INN.py:		../samples/INN.py		; $(COPY) $? $@
+nnrpd.py:       ../samples/nnrpd.py             ; $(COPY) $? $@
 incoming.conf:	../samples/incoming.conf	; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@

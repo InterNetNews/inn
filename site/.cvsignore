@@ -22,6 +22,7 @@ motd.news
 news2mail.cf
 newsfeeds
 newsgroups.minimal
+nnrpd.py
 nnrpd.track
 nnrpd_access.pl
 nnrpd_access.py
