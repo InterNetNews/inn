@@ -139,6 +139,11 @@ and add missing methods to it.
 
 =item *
 
+Fixed a long-standing bug in B<innreport> which prevented it from
+correctly reporting B<nnrpd> log messages.
+
+=item *
+
 Fixed a compilation problem on some platforms because of AF_INET6 which
 was not inside a HAVE_INET6 block in B<innfeed>.
 
