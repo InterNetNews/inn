@@ -1,3 +1,66 @@
+Changes in 2.4.5
+
+    * Fixed the "alarm signal" around "SSL_read" in nnrpd:  it allows a
+      proper disconnection of news clients which were previously hanging
+      when posting an article through a SSL connection.  Moreover, the
+      *clienttimeout* parameter now works on SSL connections.  Thanks to
+      Matija Nalis for the patch.
+
+    * SO_KEEPALIVE is now implemented for SSL TCP connections on systems
+      which support it, allowing system detection and closing the dead TCP
+      SSL connections automatically after system-specified time.  Thanks to
+      Matija Nalis for the patch.
+
+    * Fixed a segmentation fault when an article of a size greater than
+      remaining stack is retrieved via SSL.  Thanks to Chris Caputo for this
+      patch.
+
+    * Fixed a few segfaults and bugs which affected both Python innd and
+      nnrpd hooks.  They no longer check the existence of methods not used
+      by the hooked script.  An issue with Python exception handling was
+      also fixed, as well as a segfault fixed by Russ Allbery which happened
+      whenever one closes and then reopens Python in the same process. 
+      Julien Elie also fixed a bug when reloading Python filters (they were
+      not always correctly reloaded) and a segfault when generating access
+      groups with embedded Python filters for nnrpd.  Many thanks to David
+      Hlacik for its bug reports.
+
+    * The nnrpd.py stub file in order to test Python nnrpd hooks, as
+      mentioned in their documentation, is now installed; only INN.py was
+      previously installed in *pathfilter*.  Also fixed a bug in INN.py and
+      add missing methods to it.
+
+    * Fixed a compilation problem on some platforms because of AF_INET6
+      which was not inside a HAVE_INET6 block in innfeed.
+
+    * Fixed a bug in innfeed which contained thrice the same IPs for each
+      peer; it unnecessarily slowed the peer IP rotation for innfeed. 
+      Thanks, D. Stussy, for having seen that.  Miquel van Smoorenburg
+      provided the patch.
+
+    * A new *heavily* improved version of pullnews is shipped with this INN
+      release.  This new version is provided by Geraint Edwards.  He added
+      no more than 16 flags, fixed some bugs and integrated the backupfeed
+      contrib script by Kai Henningsen, adding again 6 other flags.  A
+      long-standing but very minor bug in the -g option was especially fixed
+      and items from the to-do list implemented.  Many thanks again to
+      Geraint Edwards.
+
+    * New headers are accessible through Perl and Python innd filtering
+      hooks.  You will find the exact list in the INN Python Filtering and
+      Authentication Hooks documentation (doc/hook-python) and in Python
+      samples.  Thanks to Matija Nalis for this addition of new useful
+      headers.
+
+    * New samples for Python nnrpd hooks are shipped with INN: 
+      nnrpd_access.py for access control and nnrpd_dynamic.py for dynamic
+      access control.  The nnrpd_auth.py script is now only used for
+      authorization control.  See the readers.conf man page for more
+      information (especially the *python_auth*, *python_access* and
+      *python_dynamic* parameters).  The documention about INN Python
+      Filtering and Authentication Hooks has also been improved by Julien
+      Elie.
+
 Changes in 2.4.4
 
     * Fixed incomplete checking of packet sizes in the ctlinnd interface in
