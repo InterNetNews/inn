@@ -140,7 +140,7 @@ and add missing methods to it.
 =item *
 
 Fixed a long-standing bug in B<innreport> which prevented it from
-correctly reporting B<nnrpd> log messages.
+correctly reporting B<nnrpd> and B<innfeed> log messages.
 
 =item *
 
