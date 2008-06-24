@@ -793,9 +793,9 @@ sub collect {
     return 1 if $left =~ m/^cannot continue/o;
     if ($left =~ /^(?:SERVER|ME)/o) {
       # ME dropping articles into ...
-      return 1 if $left = ~/ dropping articles into /o;
+      return 1 if $left =~ / dropping articles into /o;
       # ME dropped ...
-      return 1 if $left = ~/ dropped /o;
+      return 1 if $left =~ / dropped /o;
       # ME internal bad data in checkpoint file
       return 1 if $left =~ m/ internal bad data in checkpoint/o;
       # ME two filenames for same article

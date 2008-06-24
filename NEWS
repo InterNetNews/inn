@@ -31,7 +31,7 @@ Changes in 2.4.5
       add missing methods to it.
 
     * Fixed a long-standing bug in innreport which prevented it from
-      correctly reporting nnrpd log messages.
+      correctly reporting nnrpd and innfeed log messages.
 
     * Fixed a compilation problem on some platforms because of AF_INET6
       which was not inside a HAVE_INET6 block in innfeed.
