@@ -1596,7 +1596,10 @@ sub collect {
       $nnrpd_no_permission{$cust}++;
       return 1;
     }
-    return 1 if $left =~ /^\S+ auth: program error: ckpasswd: user .+ unknown$/o;
+    # Authentication failure
+    # User not known to the underlying authentication module
+    return 1 if $left =~ / ckpasswd: pam_authenticate failed: /o;
+    return 1 if $left =~ / ckpasswd: user .+ unknown$/o;
     # authinfo
     if ($left =~ /\S+ user (\S+)$/o) {
       my $user = $1;
@@ -1694,6 +1697,8 @@ sub collect {
       $nnrpd_reset_peer{$cust}++;
       return 1;
     }
+    # can't read: Network is unreachable
+    return 1 if $left =~ /(\S+) can\'t read: Network is unreachable$/o;
     # gethostbyaddr: xxx.yyy.zzz != a.b.c.d
     if ($left =~ /^gethostbyaddr: (.*)$/o) {
       my $msg = $1;
@@ -1712,8 +1717,10 @@ sub collect {
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
     }
+    # can't getsockname
+    return 1 if $left =~ /^\S+ can\'t getsockname$/o;
     # reverse lookup failed
-    return 1 if $left =~ /^\? reverse lookup for \S+ failed: Name or service not known -- using IP address for access$/o;
+    return 1 if $left =~ /^\? reverse lookup for \S+ failed: .* -- using IP address for access$/o;
     # profile timer
     # ME time X nnnn X(X) [...]
     # The exact timers change from various versions of INN, so try to deal
@@ -1747,10 +1754,12 @@ sub collect {
     return 1 if $left =~ /^\S+ newnews /o;
     # cant fopen (ignored too)
     return 1 if $left =~ /^\S+ cant fopen /o;
-    # cant read No route to host
-    return 1 if $left =~ /cant read No route to host/o;
-    # cant read Broken pipe
-    return 1 if $left =~ /cant read Broken pipe/o;
+    # can't read: No route to host
+    return 1 if $left =~ /can\'t read: No route to host/o;
+    # can't read: Broken pipe
+    return 1 if $left =~ /can\'t read: Broken pipe/o;
+    # eof in post
+    return 1 if $left =~ /^\S+ eof in post$/o;
     # ioctl: ...
     return 1 if $left =~ /^ioctl: /o;
     # other stats
@@ -2002,6 +2011,8 @@ sub collect {
       $controlchan_doit{$email}++ if $action eq 'doit';
       return 1;
     }
+    # checkgroups processed (no change or not)
+    return 1 if $left =~ /^checkgroups by \S+ processed/o;
   }
 
   ###########
