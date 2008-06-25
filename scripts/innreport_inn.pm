@@ -612,8 +612,7 @@ sub collect {
         $innd_cp_seconds{$server}         = $seconds;
         $innd_cp_stored_size{$server}     = $accptsize;
         $innd_cp_duplicated_size{$server} = $dupsize;
-        $innd_cp_rejected_size{$server}   = $rjctsize
-   if defined($rjctsize);
+        $innd_cp_rejected_size{$server}   = ($rjctsize || 0);
       } elsif ($status eq "closed") {
         $innd_cp_accepted{$server}        = 0;
         $innd_cp_refused{$server}         = 0;
@@ -631,8 +630,7 @@ sub collect {
         $innd_rejected{$server} += $rejected;
         $innd_stored_size{$server} += $accptsize;
         $innd_duplicated_size{$server} += $dupsize;
-        $innd_rejected_size{$server} += $rjctsize
-   if defined($rjctsize);
+        $innd_rejected_size{$server} += ($rjctsize || 0);
       }
       return 1;
     # closed (with times)
@@ -714,12 +712,12 @@ sub collect {
         my $average = $2 / ($3 || 1);
         $innd_time_time{$name} += $2;
         $innd_time_num{$name} += $3;
- if ($3) {
+        if ($3) {
           my $min = $innd_time_min{$name};
           $innd_time_min{$name} = $average
             if (defined($min) && $min > $average);
           my $max = $innd_time_max{$name};
-   $innd_time_max{$name} = $average
+          $innd_time_max{$name} = $average
             if (defined($max) && $max < $average);
         }
       }
@@ -2172,7 +2170,7 @@ sub adjust {
         $innd_seconds{$server}         += $innd_cp_seconds{$server};
         $innd_stored_size{$server}     += $innd_cp_stored_size{$server};
         $innd_duplicated_size{$server} += $innd_cp_duplicated_size{$server};
-        $innd_rejected_size{$server}   += $innd_cp_rejected_size{$server};
+        $innd_rejected_size{$server}   += ($innd_cp_rejected_size{$server} || 0);
       }
     }
 
@@ -2187,26 +2185,16 @@ sub adjust {
     # Sum all incoming traffic for each full server.
     foreach $key (keys (%innd_connect)) {
       ($hostname, $channel) = split(':', $key);
-      $innd_seconds_sum{$hostname} += $innd_seconds{$key}
-        if defined($innd_seconds{$key});
-      $innd_connect_sum{$hostname} += $innd_connect{$key}
-        if defined($innd_connect{$key});
-      $innd_offered_sum{$hostname} += $innd_offered{$key}
-        if defined($innd_offered{$key});
-      $innd_accepted_sum{$hostname} += $innd_accepted{$key}
-        if defined($innd_accepted{$key});
-      $innd_refused_sum{$hostname} += $innd_refused{$key}
-        if defined($innd_refused{$key});
-      $innd_rejected_sum{$hostname} += $innd_rejected{$key}
-        if defined($innd_rejected{$key});
-      $innd_stored_size_sum{$hostname} += $innd_stored_size{$key}
-        if defined($innd_stored_size{$key});
-      $innd_duplicated_size_sum{$hostname} += $innd_duplicated_size{$key}
-        if defined($innd_duplicated_size{$key});
-      $innd_offered_size_sum{$hostname} += $innd_offered_size{$key}
-        if defined($innd_offered_size{$key});
-      $innd_rejected_size_sum{$hostname} += $innd_rejected_size{$key}
-        if defined($innd_rejected_size{$key});
+      $innd_seconds_sum{$hostname} += ($innd_seconds{$key} || 0);
+      $innd_connect_sum{$hostname} += ($innd_connect{$key} || 0);
+      $innd_offered_sum{$hostname} += ($innd_offered{$key} || 0);
+      $innd_accepted_sum{$hostname} += ($innd_accepted{$key} || 0);
+      $innd_refused_sum{$hostname} += ($innd_refused{$key} || 0);
+      $innd_rejected_sum{$hostname} += ($innd_rejected{$key} || 0);
+      $innd_stored_size_sum{$hostname} += ($innd_stored_size{$key} || 0);
+      $innd_duplicated_size_sum{$hostname} += ($innd_duplicated_size{$key} || 0);
+      $innd_offered_size_sum{$hostname} += ($innd_offered_size{$key} || 0);
+      $innd_rejected_size_sum{$hostname} += ($innd_rejected_size{$key} || 0);
     }
 
     # adjust min/max of innd timer stats.
