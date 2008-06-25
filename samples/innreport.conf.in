@@ -1024,7 +1024,7 @@ section innd_python {
 section nocem {
         title   "NoCeM on Spool:";
 	data    "%nocem_goodsigs";
-	sort    "$nocem_ids{$b} <=> $nocem_ids{$a}";
+	sort    "$nocem_goodsigs{$b} <=> $nocem_goodsigs{$a}";
 	column {
 		name		"Id";
                	format		"%-47.47s";
@@ -2068,7 +2068,7 @@ section rnews_misc {
 
 section nnrpd_groups {
         title   "NNRP readership statistics:";
-	data    "%nnrpd_connect";
+	data    "%nnrpd_articles";
 	sort    "$nnrpd_articles{$b} <=> $nnrpd_articles{$a}";
 	numbering true;
         column {
