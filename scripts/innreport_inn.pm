@@ -323,7 +323,7 @@ my %innd_cp_duplicated_size;
 my %innd_cp_rejected_size;
 
 # collect: Used to collect the data.
-sub collect {
+sub collect($$$$$$) {
   my ($day, $hour, $prog, $res, $left, $CASE_SENSITIVE) = @_;
 
   return 1 if $left =~ /Reading config from (\S+)$/o;
@@ -1620,8 +1620,11 @@ sub collect {
     if ($left =~ /(\S+) exit articles (\d+) groups (\d+)$/o) {
       my ($cust, $articles, $groups) = ($1, $2, $3);
       $cust = lc $cust unless $CASE_SENSITIVE;
-      my $dom = &host2dom($cust) || '?';
-      $nnrpd_connect{$cust}++, $nnrpd_dom_connect{$dom}++ if $cust eq '?';
+      my $dom = &host2dom($cust);
+      if ($cust eq '?') {
+        $nnrpd_connect{$cust}++;
+        $nnrpd_dom_connect{$dom}++;
+      }
       $nnrpd_groups{$cust} += $groups;
       $nnrpd_dom_groups{$dom} += $groups;
       $nnrpd_articles{$cust} += $articles;
@@ -2104,7 +2107,7 @@ sub collect {
 #################################
 # Adjust some values..
 
-sub adjust {
+sub adjust($$) {
   my ($first_date, $last_date) = @_;
 
   my $nnrpd_doit = 0;
@@ -2113,20 +2116,30 @@ sub adjust {
   {
     my $serv;
     if (%nnrpd_connect) {
-      my $c = keys (%nnrpd_connect);
-      foreach $serv (keys (%nnrpd_connect)) {
-	my $dom = &host2dom($serv);
+      my @keys = keys (%nnrpd_connect);
+      my $c = @keys;
+      foreach my $serv (@keys) {
 	if ($nnrpd_no_permission{$serv}) {
+	  my $dom = &host2dom($serv);
 	  $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
-	    if defined $nnrpd_dom_connect{$dom} && defined $nnrpd_connect{$serv};
+	    if defined $nnrpd_dom_connect{$dom};
 	  $nnrpd_dom_groups{$dom}  -= $nnrpd_groups{$serv}
-	    if defined $nnrpd_dom_groups{$dom} && defined $nnrpd_groups{$serv};
+	    if defined $nnrpd_dom_groups{$dom};
 	  $nnrpd_dom_times{$dom}   -= $nnrpd_times{$serv}
 	    if defined $nnrpd_dom_times{$dom};
+
+          # The message "bad_auth" can occur more then once per session.
+          # Subtracting nnrpd_no_permission from nnrpd_connect is
+          # broken and can yield negative values for nnrpd_connect.
 	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
+
 	  $nnrpd_groups{$serv} -= $nnrpd_no_permission{$serv}
 	    if defined $nnrpd_groups{$serv};
-	  delete $nnrpd_connect{$serv} unless $nnrpd_connect{$serv};
+
+          # Perl considers negative values to be true. Previously the
+          # hash entry was deleted only if the value was exactly 0.
+          delete $nnrpd_connect{$serv} unless $nnrpd_connect{$serv} > 0;
+
 	  delete $nnrpd_groups{$serv}  unless $nnrpd_groups{$serv};
 	  delete $nnrpd_times{$serv}   unless $nnrpd_times{$serv};
 	  delete $nnrpd_usr_times{$serv}   unless $nnrpd_usr_times{$serv};
@@ -2141,7 +2154,7 @@ sub adjust {
       }
       undef %nnrpd_connect unless $c;
     }
-    foreach $serv (keys (%nnrpd_groups)) {
+    foreach my $serv (keys (%nnrpd_groups)) {
       $curious = "ok" unless $nnrpd_groups{$serv} || $nnrpd_post_ok{$serv} ||
 	$nnrpd_articles{$serv};
     }
@@ -2443,18 +2456,17 @@ sub adjust {
     if $rnews_no_colon_space;
 
   if (%nnrpd_groups) {
-    my $key;
-    foreach $key (keys (%nnrpd_connect)) {
-      unless ($nnrpd_groups{"$key"} || $nnrpd_post_ok{"$key"} ||
-	      $nnrpd_articles{"$key"}) {
+    foreach my $key (keys (%nnrpd_connect)) {
+      unless ($nnrpd_groups{$key} || $nnrpd_post_ok{$key} ||
+	      $nnrpd_articles{$key}) {
 	$nnrpd_curious{$key} = $nnrpd_connect{$key};
-	undef $nnrpd_connect{$key};
+	delete $nnrpd_connect{$key};
       }
     }
   }
 }
 
-sub report_unwanted_ng {
+sub report_unwanted_ng($) {
   my $file = shift;
   open (FILE, "$file") && do {
     while (<FILE>) {
@@ -2482,8 +2494,8 @@ sub report_unwanted_ng {
 
 ###########################################################################
 
-# Compare 2 dates (+hour)
-sub datecmp {
+# Compare 2 dates (+hour), used with sort (arguments $a and $b)
+sub datecmp() {
   # ex: "May 12 06"   for May 12, 6:00am
   local($[) = 0;
   # The 2 dates are near. The range is less than a few days that's why we
@@ -2505,7 +2517,7 @@ sub datecmp {
   $date1 - $date2;
 }
 
-sub host2dom {
+sub host2dom($) {
   my $host = shift;
 
   $host =~ m/^[^\.]+(.*)/;
