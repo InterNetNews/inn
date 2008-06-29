@@ -34,7 +34,7 @@ Installation
     nnrpd_dynamic.py samples in your filters directory for a demonstration
     of how to get all this working.
 
-Writing an innd filter
+Writing an innd Filter
 
   Introduction
 
@@ -123,7 +123,7 @@ Writing an innd filter
         innd will be in after the command finishes.  *reason* is the comment
         string provided on the ctlinnd command line.
 
-  How to use these methods with innd
+  How to Use these Methods with innd
 
     To register your methods with innd, you need to create an instance of
     your class, import the built-in INN module, and pass the instance to
@@ -166,7 +166,7 @@ Writing an innd filter
     and "filter_messageid" methods have to return strings, or "None".  If
     you return something like an int, innd will *not* be happy.
 
-  A note regarding buffer objects
+  A Note regarding Buffer Objects
 
     Buffer objects are cousins of strings, new in Python 1.5.2.  Using
     buffer objects may take some getting used to, but we can create buffers
@@ -203,7 +203,7 @@ Writing an innd filter
 
         g = b + '>'                    # This is legal, returns the string 'def>'.
 
-  Functions supplied by the built-in innd module
+  Functions Supplied by the Built-in innd Module
 
     Besides "INN.set_filter_hook" which is used to register your methods
     with innd as it has already been explained above, the following
@@ -290,9 +290,9 @@ Writing an innd filter
         else:
             moderated = "something else"
 
-Writing an nnrpd filter
+Writing an nnrpd Filter
 
-  Changes to Python authentication and access control support for nnrpd
+  Changes to Python Authentication and Access Control Support for nnrpd
 
     The old authentication and access control functionality has been
     combined with the new readers.conf mechanism by Erik Klavon
@@ -381,7 +381,7 @@ Writing an nnrpd filter
     authenticator or resolver (which can be done in whatever language you
     prefer).
 
-  Python authentication support for nnrpd
+  Python Authentication Support for nnrpd
 
     Support for authentication via Python is provided in nnrpd by the
     inclusion of a *python_auth* parameter in a readers.conf auth group. 
@@ -405,7 +405,7 @@ Writing an nnrpd filter
     When the connection with the client is closed, the method "authen_close"
     is called if it exists.
 
-  Dynamic generation of access groups
+  Dynamic Generation of Access Groups
 
     A Python script may be used to dynamically generate an access group
     which is then used to determine the access rights of the client.  This
@@ -435,7 +435,7 @@ Writing an nnrpd filter
     the connection, then the client will be denied access since there are no
     other access groups which could match the connection.
 
-  Dynamic access control
+  Dynamic Access Control
 
     If you need to have access control rules applied immediately without
     having to restart all the nnrpd processes, you may apply access control
@@ -457,7 +457,7 @@ Writing an nnrpd filter
     connection with the client is closed, the method "access_close" is
     called if it exists.
 
-  Writing a Python nnrpd authentication module
+  Writing a Python nnrpd Authentication Module
 
     You need to create a nnrpd_auth.py module in INN's filter directory (see
     the *pathfilter* setting in inn.conf) where you should define a class
@@ -522,7 +522,7 @@ Writing an nnrpd filter
         state information or close a database connection.  This method may
         be omitted.
 
-  The *attributes* dictionary
+  The *attributes* Dictionary
 
     The keys and associated values of the *attributes* dictionary are
     described below.
@@ -565,7 +565,7 @@ Writing an nnrpd filter
     All the above values are buffer objects (see the notes above on what
     buffer objects are).
 
-  How to use these methods with nnrpd
+  How to Use these Methods with nnrpd
 
     To register your methods with nnrpd, you need to create an instance of
     your class, import the built-in nnrpd module, and pass the instance to
@@ -600,7 +600,7 @@ Writing an nnrpd filter
 
         python -ic 'import nnrpd, nnrpd_auth'
 
-  Functions supplied by the built-in nnrpd module
+  Functions Supplied by the Built-in nnrpd Module
 
     Besides "nnrpd.set_auth_hook" used to pass a reference to the instance
     of authentication and authorization class to nnrpd, the nnrpd built-in

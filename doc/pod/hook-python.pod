@@ -33,7 +33,7 @@ Also, see the F<filter_innd.py>, F<nnrpd_auth.py>, F<nnrpd_access.py>
 and F<nnrpd_dynamic.py> samples in your filters directory for
 a demonstration of how to get all this working.
 
-=head1 Writing an B<innd> filter
+=head1 Writing an B<innd> Filter
 
 =head2 Introduction
 
@@ -128,7 +128,7 @@ provided on the B<ctlinnd> command line.
 
 =back
 
-=head2 How to use these methods with B<innd>
+=head2 How to Use these Methods with B<innd>
 
 To register your methods with B<innd>, you need to create an instance of your
 class, import the built-in INN module, and pass the instance to
@@ -171,7 +171,7 @@ with your return values, too.  The C<filter_art> and C<filter_messageid>
 methods have to return strings, or C<None>.  If you return something like an
 int, B<innd> will I<not> be happy.
 
-=head2 A note regarding buffer objects
+=head2 A Note regarding Buffer Objects
 
 Buffer objects are cousins of strings, new in S<Python 1.5.2>.  Using buffer
 objects may take some getting used to, but we can create buffers much faster
@@ -207,7 +207,7 @@ there are a few important differences you should know about:
 
     g = b + '>'                    # This is legal, returns the string 'def>'.
 
-=head2 Functions supplied by the built-in B<innd> module
+=head2 Functions Supplied by the Built-in B<innd> Module
 
 Besides C<INN.set_filter_hook> which is used to register your methods
 with B<innd> as it has already been explained above, the following functions
@@ -305,9 +305,9 @@ with the previously listed functions.
     else:
         moderated = "something else"
 
-=head1 Writing an B<nnrpd> filter
+=head1 Writing an B<nnrpd> Filter
 
-=head2 Changes to Python authentication and access control support for B<nnrpd>
+=head2 Changes to Python Authentication and Access Control Support for B<nnrpd>
 
 The old authentication and access control functionality has been
 combined with the new F<readers.conf> mechanism by Erik Klavon
@@ -396,7 +396,7 @@ functionality is not available directly, you may wish to write a new
 authenticator or resolver (which can be done in whatever language you
 prefer).
 
-=head2 Python authentication support for B<nnrpd>
+=head2 Python Authentication Support for B<nnrpd>
 
 Support for authentication via Python is provided in B<nnrpd> by the
 inclusion of a I<python_auth> parameter in a F<readers.conf> auth
@@ -421,7 +421,7 @@ hook either succeeds or fails, after which the processing of the
 auth group continues as usual.  When the connection with the client
 is closed, the method C<authen_close> is called if it exists.
 
-=head2 Dynamic generation of access groups
+=head2 Dynamic Generation of Access Groups
 
 A Python script may be used to dynamically generate an access group
 which is then used to determine the access rights of the client.  This
@@ -450,7 +450,7 @@ connection.  If a I<users> parameter is included and it does not match the
 connection, then the client will be denied access since there are no
 other access groups which could match the connection.
 
-=head2 Dynamic access control
+=head2 Dynamic Access Control
 
 If you need to have access control rules applied immediately without
 having to restart all the B<nnrpd> processes, you may apply access
@@ -471,7 +471,7 @@ the requested operation.  Based on the value returned by C<dynamic>, the
 operation is either permitted or denied.  When the connection with the
 client is closed, the method C<access_close> is called if it exists.
 
-=head2 Writing a Python B<nnrpd> authentication module
+=head2 Writing a Python B<nnrpd> Authentication Module
 
 You need to create a F<nnrpd_auth.py> module in INN's filter directory
 (see the I<pathfilter> setting in F<inn.conf>) where you should define a
@@ -545,7 +545,7 @@ state information or close a database connection.  This method may be omitted.
 
 =back
 
-=head2 The I<attributes> dictionary
+=head2 The I<attributes> Dictionary
 
 The keys and associated values of the I<attributes> dictionary are
 described below.
@@ -602,7 +602,7 @@ only valid for the C<dynamic> method.
 All the above values are buffer objects (see the notes above on what
 buffer objects are).
 
-=head2 How to use these methods with B<nnrpd>
+=head2 How to Use these Methods with B<nnrpd>
 
 To register your methods with B<nnrpd>, you need to create an instance of
 your class, import the built-in B<nnrpd> module, and pass the instance to
@@ -637,7 +637,7 @@ and use a command like:
 
     python -ic 'import nnrpd, nnrpd_auth'
 
-=head2 Functions supplied by the built-in B<nnrpd> module
+=head2 Functions Supplied by the Built-in B<nnrpd> Module
 
 Besides C<nnrpd.set_auth_hook> used to pass a reference to the instance
 of authentication and authorization class to B<nnrpd>, the B<nnrpd> built-in
