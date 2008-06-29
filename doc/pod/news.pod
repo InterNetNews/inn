@@ -144,6 +144,10 @@ correctly reporting B<nnrpd> and B<innfeed> log messages.
 
 =item *
 
+Fixed a hang in Perl hooks on (at least) HP/PA since S<Perl 5.10>.
+
+=item *
+
 Fixed a compilation problem on some platforms because of AF_INET6 which
 was not inside a HAVE_INET6 block in B<innfeed>.
 
