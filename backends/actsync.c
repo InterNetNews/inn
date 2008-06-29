@@ -2623,7 +2623,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
 	/* exec the ctlinnd command */
 	p = concatpath(innconf->pathbin, INN_PATH_CTLINND);
-	asprintf(&w_string, "-t %d", w_flag);
+	xasprintf(&w_string, "-t %d", w_flag);
 
 	if (type == NULL) {
 	    execl(p,

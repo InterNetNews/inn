@@ -131,7 +131,7 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
         SAVETMPS ;
 
         /* The Perl expression which will be evaluated. */   
-        asprintf(&evalfile, "do '%s'", startupfile);
+        xasprintf(&evalfile, "do '%s'", startupfile);
 
         PerlSilence();
         perl_eval_pv(evalfile, TRUE);
@@ -181,7 +181,7 @@ int PERLreadfilter(char *filterfile, const char *function)
     }
 
     /* The Perl expression which will be evaluated. */
-    asprintf(&evalfile, "do '%s'", filterfile);
+    xasprintf(&evalfile, "do '%s'", filterfile);
 
     PerlSilence();
     perl_eval_pv(evalfile, TRUE);
@@ -197,7 +197,7 @@ int PERLreadfilter(char *filterfile, const char *function)
         
         /* If the reload failed we don't want the old definition hanging
            around. */
-        asprintf(&evalfile, "undef &%s", function);
+        xasprintf(&evalfile, "undef &%s", function);
         perl_eval_pv(evalfile, TRUE);
 
         if (SvTRUE(ERRSV))     /* check $@ */ {
