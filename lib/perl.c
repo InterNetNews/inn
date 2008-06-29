@@ -122,13 +122,16 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
     
     if (startupfile != NULL && filterfile != NULL) {
         char *evalfile = NULL;
+        size_t length;
         dSP;
     
         ENTER ;
         SAVETMPS ;
 
-        /* The Perl expression which will be evaluated. */   
-        asprintf(&evalfile, "do '%s'", startupfile);
+        /* The Perl expression which will be evaluated. */
+        length = strlen("do '%s'") + strlen(startupfile);
+        evalfile = xmalloc(length);
+        snprintf(evalfile, length, "do '%s'", startupfile);
 
         PerlSilence();
         perl_eval_pv(evalfile, TRUE);
@@ -163,7 +166,8 @@ int PERLreadfilter(char *filterfile, const char *function)
     dSP ;
     char *argv[] = { NULL };
     char *evalfile = NULL;
-    
+    size_t length;
+
     ENTER ;
     SAVETMPS ;
     
@@ -178,7 +182,9 @@ int PERLreadfilter(char *filterfile, const char *function)
     }
 
     /* The Perl expression which will be evaluated. */
-    asprintf(&evalfile, "do '%s'", filterfile);
+    length = strlen("do '%s'") + strlen(filterfile);
+    evalfile = xmalloc(length);
+    snprintf(evalfile, length, "do '%s'", filterfile);
 
     PerlSilence();
     perl_eval_pv(evalfile, TRUE);
@@ -194,7 +200,9 @@ int PERLreadfilter(char *filterfile, const char *function)
         
         /* If the reload failed we don't want the old definition hanging
            around. */
-        asprintf(&evalfile, "undef &%s", function);
+        length = strlen("undef &%s") + strlen(function);
+        evalfile = xmalloc(length);
+        snprintf(evalfile, length, "undef &%s", function);
         perl_eval_pv(evalfile, TRUE);
 
         if (SvTRUE(ERRSV))     /* check $@ */ {
