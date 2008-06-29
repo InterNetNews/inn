@@ -33,6 +33,8 @@ Changes in 2.4.5
     * Fixed a long-standing bug in innreport which prevented it from
       correctly reporting nnrpd and innfeed log messages.
 
+    * Fixed a hang in Perl hooks on (at least) HP/PA since Perl 5.10.
+
     * Fixed a compilation problem on some platforms because of AF_INET6
       which was not inside a HAVE_INET6 block in innfeed.
 
