@@ -155,10 +155,15 @@ STATUSsummary(void)
     }
     if (status == NULL) {
       status = xmalloc(sizeof(STATUS));
-      peers++;                                              /* a new peer */
+      peers++;                                              /* A new peer. */
       strlcpy(status->name, TempString, sizeof(status->name));
-      network_sockaddr_sprint(status->ip_addr, sizeof(status->ip_addr),
-                              (struct sockaddr *) &cp->Address);
+      if (cp->Address.ss_family == 0) {
+          /* Connections from lc.c do not have an IP address. */
+          memset(&status->ip_addr, 0, sizeof(status->ip_addr));
+      } else {
+          network_sockaddr_sprint(status->ip_addr, sizeof(status->ip_addr),
+                                  (struct sockaddr *) &cp->Address);
+      }
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->RejectSize = 0;
