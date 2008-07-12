@@ -19,21 +19,25 @@ section default {
 	unwanted_log	"unwanted.log";   # ${logpath}/${unwanted_log}
 	text            true;
 	html            false;
-	graph           true;        # need 'html'
+	graph           true;  # need 'html'
 	archive		true;  # use false to keep only the latest HTML report.
-	index		"index.html"; # name of the HTML index file.
 
-      # Change to .xhtml to let Apache server correct MIME type.
-      # html_file_extension    ".html";
+      # Change to .xhtml to let Apache serve correct MIME type.
+	index			"index.html"; # name of the HTML index file.
+      # html_file_extension	".html";
 
       # html_dir     "/var/www/News/stats"; # default to pathhttp in inn.conf
 	img_dir         "pics";      # images will go to ${html_dir}/${img_dir}
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
 	title		"Daily Usenet report";
-      # title	        "Daily Usenet report for <A HREF=\"/News/stats/\">news.y.z</A>";
-      # footer		"Local contact: <A HREF=\"mailto:x@y.z\">x@y.z</A>";
-      # html_body	"BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\"";
+      # title	        "Daily Usenet report for <a href=\"/News/stats/\">news.y.z</a>";
+      # footer		"Local contact: <a href=\"mailto:x@y.z\">x@y.z</a>";
+
+      # Attributes inside <body> tag.  Note that this is not valid XHTML.
+      # Use the CSS file below if you want valid XHTML.
+      # html_body	"bgcolor=\"#ffffff\" text=\"#000000\"";
+
       # html_header_file "header.html";  # ${html_dir}/${html_header_file}
       # html_footer_file "footer.html";  # ${html_dir}/${html_footer_file}
       # html_xhtml11_icon "http://www.w3.org/Icons/valid-xhtml11";
@@ -43,7 +47,7 @@ section default {
       # html_encoding	"ISO-8859-1";
 
       # URL to CSS file.  If undefined, a style sheet is embedded in HTML instead.
-      # html_css_url    "";
+      # html_css_url    "innreport.css";
 
       # URL to XSL file.  See <http://www.w3.org/MarkUp/2004/xhtml-faq#ie>.
       # html_xsl_url    "";
@@ -1296,7 +1300,7 @@ section innfeed_connect {
 		data {
 		          name    "Spooled";
 			  color   "#AF00FF";
-			  value   "%innfeed_spooled,";
+			  value   "%innfeed_spooled";
                 };
 	};
 };
@@ -1375,12 +1379,6 @@ section innfeed_volume {
 			name	"Rejected";
 			color	"#FFAF00";
 			value	"%innfeed_rejected_size";
-		};
-		data {
-			name	"Total";
-			color	"#00FF00";
-			value	"%innfeed_accepted_size +
-                                 %innfeed_rejected_size";
 		};
 	};
 };
@@ -2145,8 +2143,8 @@ section nnrpd_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-		value         "$nnrpd_post_rej{$key} +
-                               $nnrpd_post_error{$key}";
+		value         "($nnrpd_post_rej{$key}||0) +
+                               ($nnrpd_post_error{$key}||0)";
 		total         "total(%nnrpd_post_rej) +
 		               total(%nnrpd_post_error)";
         };
@@ -2208,8 +2206,8 @@ section nnrpd_dom_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-                value         "$nnrpd_dom_post_rej{$key} +
-	                       $nnrpd_dom_post_error{$key}";
+                value         "($nnrpd_dom_post_rej{$key}||0) +
+	                       ($nnrpd_dom_post_error{$key}||0)";
                 total         "total(%nnrpd_dom_post_rej) +
                                total(%nnrpd_dom_post_error)";
         };

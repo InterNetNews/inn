@@ -701,24 +701,24 @@ sub collect($$$$$$) {
     # The exact timers change from various versions of INN, so try to deal
     # with this in a general fashion.
     if ($left =~ m/^\S+\s+                         # ME
-	           time\ (\d+)\s+                  # time
-                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
+                   time\s(\d+)\s+                  # time
+                   ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                    $/ox) {
       $innd_time_times += $1;
       my $timers = $2;
 
       while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
         my $name = $timer_names{$1} || $1;
-        my $average = $2 / ($3 || 1);
         $innd_time_time{$name} += $2;
-        $innd_time_num{$name} += $3;
         if ($3) {
+	  my $average = $2 / $3;
+	  $innd_time_num{$name} += $3;
           my $min = $innd_time_min{$name};
           $innd_time_min{$name} = $average
-            if (defined($min) && $min > $average);
+            if (!defined($min) || $min > $average);
           my $max = $innd_time_max{$name};
           $innd_time_max{$name} = $average
-            if (defined($max) && $max < $average);
+            if (!defined($max) || $max < $average);
         }
       }
       return 1;
@@ -992,13 +992,17 @@ sub collect($$$$$$) {
 
       while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
         my $name = $innfeed_timer_names{$1} || $1;
-        my $average = $2 / ($3 || 1);
         $innfeed_time_time{$name} += $2;
-        $innfeed_time_num{$name} += $3;
-        $innfeed_time_min{$name} = $average
-          if ($3 && $innfeed_time_min{$name} > $average);
-        $innfeed_time_max{$name} = $average
-          if ($3 && $innfeed_time_max{$name} < $average);
+	if ($3) {
+	  $innfeed_time_num{$name} += $3;
+	  my $average = $2 / $3;
+	  my $min = $innfeed_time_min{$name};
+	  $innfeed_time_min{$name} = $average
+	    if (!defined($min) || $min > $average);
+	  my $max = $innfeed_time_max{$name};
+	  $innfeed_time_max{$name} = $average
+	    if (!defined($max) || $max < $average);
+        }
       }
       return 1;
     }
@@ -1735,16 +1739,16 @@ sub collect($$$$$$) {
 
       while ($timers =~ /(\S+) (\d+)\((\d+)\)\s*/g) {
         my $name = $nnrpd_timer_names{$1} || $1;
-        my $average = $2 / ($3 || 1);
         $nnrpd_time_time{$name} += $2;
-        $nnrpd_time_num{$name} += $3;
         if ($3) {
+	  my $average = $2 / $3;
+	  $nnrpd_time_num{$name} += $3;
           my $min = $nnrpd_time_min{$name};
           $nnrpd_time_min{$name} = $average
-            if (defined($min) && $min > $average);
+            if (!defined($min) || $min > $average);
           my $max = $nnrpd_time_max{$name};
           $nnrpd_time_max{$name} = $average
-            if (defined($max) && $max < $average);
+            if (!defined($max) || $max < $average);
         }
       }
       return 1;
@@ -1951,13 +1955,28 @@ sub collect($$$$$$) {
       $nocem_totalids{$nocem_lastid} += $2;
       return 1;
     }
-    if ($left =~ /bad signature from (.*)/o) {
+    if ($left =~ /Article <[^>]*>: (.*) \(ID [[:xdigit:]]*\) not in keyring/o) {
       $nocem_badsigs{$1}++;
       $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
       $nocem_totalbad++;
       $nocem_lastid = $1;
       return 1;
     }
+    if ($left =~ /Article <[^>]*>: bad signature from (.*)/o) {
+      $nocem_badsigs{$1}++;
+      $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
+      $nocem_totalbad++;
+      $nocem_lastid = $1;
+      return 1;
+    }
+    if ($left =~ /Article <[^>]*>: malformed signature/o) {
+      $nocem_badsigs{'N/A'}++;
+      $nocem_goodsigs{'N/A'} = 0 unless ($nocem_goodsigs{'N/A'});
+      $nocem_totalbad++;
+      $nocem_lastid = 'N/A';
+      return 1;
+    }
+
     return 1;
   }
 
