@@ -113,8 +113,9 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
     if (PerlCode == NULL) {
         /* Perl waits on standard input if not called with '-e'. */
         int argc = 3;
-        const char *argv[] = { "innd", "-e", "0", NULL };
-        char *env[]  = { NULL };
+        const char *argv_innd[] = { "innd", "-e", "0", NULL };
+        char **argv = (char **)argv_innd; /* Cast required by Perl 5.10. */
+        char **env  = { NULL };
 #ifdef PERL_SYS_INIT3
         PERL_SYS_INIT3(&argc, &argv, &env);
 #endif
@@ -123,7 +124,7 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
 #ifdef PERL_EXIT_DESTRUCT_END
         PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
 #endif
-        perl_parse(PerlCode, xs_init, argc, (char **)argv, env) ;
+        perl_parse(PerlCode, xs_init, argc, argv, env) ;
     }
     
     if (startupfile != NULL && filterfile != NULL) {
