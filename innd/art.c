@@ -1725,7 +1725,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       !DISTwantany(sp->Distributions, list))
       /* Not in the site's desired list of distributions. */
       continue;
-    if (sp->DistRequired && list == NULL)
+    if (sp->DistRequired && (list == NULL || *list == NULL))
       /* Site requires Distribution header and there isn't one. */
       continue;
 
