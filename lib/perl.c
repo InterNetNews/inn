@@ -117,6 +117,9 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
 #endif
         PerlCode = perl_alloc();
         perl_construct(PerlCode);
+#ifdef PERL_EXIT_DESTRUCT_END
+        PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
+#endif
         perl_parse(PerlCode, xs_init, argc, (char **)argv, env) ;
     }
     
