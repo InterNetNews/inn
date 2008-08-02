@@ -207,8 +207,9 @@ INN will install itself as this user and group.  You can change these if
 you want, but these are the defaults and it's easier to stick with them on
 a new installation.
 
-By default, INN sends reports to the user C<usenet>.  This account isn't
-used for any other purposes.  You can change it with the
+By default, INN sends reports to the user C<usenet>.  This account is
+used for instance by B<controlchan> (notifying any changes as for newsgroups)
+or B<news.daily> (sending Usenet daily reports).  You can change it with the
 B<--with-news-master> option to configure (see below).  There is also
 the I<mailto> keyword which can be given to B<news.daily> in order to
 modify the mail address to which these reports are sent.
