@@ -295,6 +295,7 @@ doc/pod/list.pod                      Master file for list.3
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/moderators.pod                Master file for moderators.5
 doc/pod/motd.news.pod                 Master file for motd.news.5
+doc/pod/news.daily.pod                Master file for news.daily.pod.8
 doc/pod/news.pod                      Master file for NEWS
 doc/pod/newsfeeds.pod                 Master file for newsfeeds.5
 doc/pod/newsgroups.pod                Master file for newsgroups.5

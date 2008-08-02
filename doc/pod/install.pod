@@ -209,7 +209,9 @@ a new installation.
 
 By default, INN sends reports to the user C<usenet>.  This account isn't
 used for any other purposes.  You can change it with the
-B<--with-news-master> option to configure (see below).
+B<--with-news-master> option to configure (see below).  There is also
+the I<mailto> keyword which can be given to B<news.daily> in order to
+modify the mail address to which these reports are sent.
 
 WARNING:  By default, INN installs various configuration files as
 group-writeable, and in general INN is not hardened from a security

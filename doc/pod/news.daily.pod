@@ -1,0 +1,234 @@
+=head1 NAME
+
+news.daily - Perform daily Usenet maintenance tasks
+
+=head1 SYNOPSIS
+
+B<news.daily> [B<delayrm>] [B<expctl>=I<path>] [B<expdir>=I<path>]
+[B<expireover>] [B<expireoverflags>=I<args>] [B<flags>=I<args>]
+[B<lowmark>] [B<mailto>=I<address>] [B<noexpire>] [B<noexpireover>]
+[B<noexplog>] [B<nologs>] [B<nomail>] [B<norenumber>] [B<norm>]
+[B<norotate>] [B<nostat>] [B<notdaily>] [B<postexec>=I<program>]
+[B<tmpdir>=I<path>] [I</path/to/a/program>]
+
+=head1 DESCRIPTION
+
+B<news.daily> performs a number of important Usenet administrative functions.
+This includes:
+
+=over 2
+
+=item *
+
+producing a status report with B<innstat>;
+
+=item *
+
+removing old news articles (with B<expirerm> if the B<delayrm> keyword
+is specified);
+
+=item *
+
+purging the overview database with B<expireover> if the corresponding eponym
+keyword is specified;
+
+=item *
+
+processing log files and rotating the archived log files with B<scanlogs>;
+
+=item *
+
+renumbering the F<active> file with B<ctlinnd>;
+
+=item *
+
+rebuilding the F<history> file with B<expire>;
+
+=item *
+
+removing any old socket files found in the I<pathrun> directory;
+
+=item *
+
+collecting all the output and mailing it.
+
+=back
+
+Please note that this program should be run under the news administrator's
+account (usually C<news>), not as root.  By default, B<news.daily>
+performs all of its functions and mails the output to the news administrator,
+which is the user specified with B<--with-news-master> at configure time
+(it is C<usenet> by default).  You can also change this behaviour with
+the B<mailto> keyword.
+
+By specifying keywords on the command line, it is possible to modify the
+functions performed, as well as change the arguments given to expire(8) and
+expireover(8).  B<news.daily> should be run once a day, typically out of cron(8).
+Since it will slow the server down while it is running, it should be run
+during periods of low server usage, such as in the middle of the night.
+To run it at 3am, for example, add the following entry to the news user's
+crontab file:
+
+    0 3 * * * /usr/local/news/bin/news.daily expireover lowmark
+
+If you're using any non-CNFS storage methods, add the B<delayrm> keyword
+to the above option list for B<news.daily>.
+
+It may be run more often, but such invocations should at least use the
+B<norotate> keyword (or perhaps the B<notdaily> keyword) to prevent the
+log files from being processed and rotated too fast.  The shlock(1) program
+is used to prevent simultaneous executions.
+
+The program specified by the given path I</path/to/a/program> is executed
+just before any expiration is done.  A typical use is to specify an alternate
+expiration program and use the B<noexpire> keyword.  Multiple programs may
+be specified; they will be invoked in order.
+
+=head1 KEYWORDS
+
+The following keywords may be used:
+
+=over 4
+
+=item B<delayrm>
+
+This uses the B<-z> flag when invoking B<expire> and B<expireover>.  The names
+of articles to be removed are written to a temporary file, and then renamed
+after expiration by calling B<expirerm> which in turn calls B<fastrm>.
+
+=item B<expctl>=I<path>
+
+Specify the file to use as the F<expire.ctl> file for B<expire>.
+
+=item B<expdir>=I<path>
+
+By default, B<expire> builds the new F<history> file and database in the same
+directory as the current files.  Using this keyword specifies a different location
+to build the new files (by passing the B<-d> flag to B<expire>), which will then
+be moved to the right location when finished.
+
+=item B<expireover>
+
+The B<expireover> program is called after expiration to purge the overview
+database.  If no overview data is created, the B<expireover> keyword is not
+needed.  This is the case when the server runs only for feeders (no reader).
+By default, B<expireover> is not called by B<news.daily>.
+
+=item B<expireoverflags>=I<args>
+
+If the B<expireover> keyword is used, this keyword may be used to specify
+the flags to be passed to B<expireover>.  If the B<delayrm> keyword is used, then
+the default value is B<-z> and the list of deleted files; otherwise, the default
+value is B<-s>.
+
+=item B<flags>=I<args>
+
+By default, B<expire> is invoked with argument B<-v1>.  Using this keyword
+changes the arguments to those specified.  Be careful to use quotes if multiple
+arguments are needed.  This keyword has no effect if the B<noexpire> keyword
+is used.
+
+=item B<lowmark>
+
+If the B<lowmark> keyword is used, C<ctlinnd lowmark> is used for
+renumbering F<active>.  Normal C<ctlinnd renumber> operation will take long
+time.  With the B<lowmark> keyword, this will take less time.  If the B<lowmark>
+keyword is used, the B<norenumber> keyword is not needed since B<news.daily> specifies
+it implicitly.
+
+=item B<mailto>=I<address>
+
+By default, B<news.daily> mails the report to the newsmaster address specified
+with B<--with-news-master> at configure time.  The B<mailto> keyword can specify
+a different address to which to mail the report.  Note that using this keyword
+has no effect if the B<nomail> keyword is also specified.
+
+=item B<noexpire>
+
+By default, B<expire> is invoked to remove old news articles.  Using this keyword disables
+this function.
+
+=item B<noexpireover>
+
+By default, B<expireover> is invoked to remove old overview database
+if I<enableoverview> is set in F<inn.conf>.  Using this keyword
+disables this function.
+
+=item B<noexplog>
+
+B<expire> normally appends information to I<pathlog>/expire.log (see newslog(5)).
+Using this keyword causes the B<expire> output to be handled as part of
+B<news.daily>'s output.  It has no effect if the B<noexpire> keyword is used.
+
+=item B<nologs>
+
+After expiration, B<scanlogs> is invoked to process the log files.  Using this
+keyword disables all log processing functions.
+
+=item B<nomail>
+
+B<news.daily> normally sends a mail message containing the results to the
+administrator.  Using this keyword causes this message to be sent to stdout
+and stderr instead.  Normally, all utilities invoked by the script have
+their stdout and stderr redirected into a file.
+If the file is empty, no message is sent.
+
+=item B<norenumber>
+
+This keyword disables the C<ctlinnd renumber> operation.  Normally, the low-water
+marks for all newsgroups are reset in the F<active> file.
+
+=item B<norm>
+
+By default, any B<ctlinnd> socket that has not been modified for two days will
+be removed.  Using this keyword disables this function.
+
+=item B<norotate>
+
+By default, log processing includes rotating and cleaning out log files.  Using
+this keyword disables the rotating and cleaning aspect of the log processing:  the
+logs files are only scanned for information and no contents are altered.  This
+keyword has no effect if the B<nologs> keyword is used.  The B<norotate> keyword
+is passed on to B<scanlogs> if it is invoked.
+
+=item B<nostat>
+
+This keyword disables the status report generated by B<innstat>.
+Without this keyword, the status report is the first function
+performed, just prior to obtaining the B<news.daily> lock.
+
+=item B<notdaily>
+
+By default, B<news.daily> expects to be run only once a day, and it does
+various things (like rotating logs) that normally should only be done
+on daily basis.  Use this keyword any extra times B<news.daily> is run
+in the day and the normal log files processing (and rotation) will not be done.
+This keyword implies B<nologs>.
+
+=item B<postexec>=I<program>
+
+The program specified by the given path I<program> is executed just after all expiration
+is done.  Multiple programs may be specified; they will be invoked in order.
+
+=item B<tmpdir>=I<path>
+
+Overrides the I<pathtmp> setting in F<inn.conf> by setting the environment variable
+C<$TMPDIR> to the specified path.  Various parts of the expire process, such as sort,
+will then use this path as the directory for temporary files.
+
+=back
+
+=head1 HISTORY
+
+B<news.daily> and this manual page were written by Landon Curt Noll <chongo@toad.com>
+and Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  It was converted to POD by
+Julien Elie <julien@trigofacile.com>.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), ctlinnd(8), expire(8), expire.ctl(5), expireover(8), expirerm(8), fastrm(8),
+inn.conf(5), innstat(8), newslog(5), scanlogs(8), shlock(1).
+
+=cut

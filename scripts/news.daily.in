@@ -1,25 +1,30 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
+##  $Id$
 ##  Daily news maintenance.
 ##  Optional arguments:
-##	expdir=xxx	Directory in which to build new history file
-##	tmpdir=xxx	Working directory for `sort' and such
-##	expirectl=xxx	Use xxx as expire.ctl file
-##	flags=xxx	Pass xxx flags to expire
-##	lowmark		Create and use a lowmark file
-##	noexpire	Do not expire
-##	noexplog	Do not log expire output
-##	nologs		Do not scan logfiles
-##	nomail		Do not capture and mail output
-##	norenumber	Do not renumber the active file
-##	norm		Do not remove certain old files
-##	norotate	Do not rotate logfiles
-##	nostat		Do not run innstat
-##	notdaily        Not a daily run, and therefore implies nologs.
-##	delayrm		Delay unlink files, then do it quicker (expire -z)
-##	/full/path	Path to a program to run before expiring
+##      delayrm              Delay unlink files, then do it quicker (expire -z)
+##      expctl=xxx           Use xxx as expire.ctl file
+##      expdir=xxx           Directory in which to build new history file
+##      expireover           Runs expireover after expiration
+##      expireoverflags=xxx  Pass xxx flags to expireover
+##      flags=xxx            Pass xxx flags to expire
+##      lowmark              Create and use a lowmark file
+##      mailto=xxx           E-mail address to which to send the report instead of newsmaster
+##      noexpire             Do not expire
+##      noexpireover         Do not expireover
+##      noexplog             Do not log expire output
+##      nologs               Do not scan log files
+##      nomail               Do not capture and mail output
+##      norenumber           Do not renumber the active file
+##      norm                 Do not remove certain old files
+##      norotate             Do not rotate logfiles
+##      nostat               Do not run innstat
+##      notdaily             Not a daily run, and therefore implies nologs
+##      postexec=xxx         Path to a program to run after expiring
+##      tmpdir=xxx           Working directory for `sort' and such
+##      /full/path           Path to a program to run before expiring
 
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat
@@ -114,6 +119,9 @@ do
 	LOWMARKFILE=${MOST_LOGS}/expire.lowmark
 	DORENUMBER=false
 	;;
+    Xmailto=*)
+        NEWSMASTER=`expr "${I}" : 'mailto=\(.*\)'`
+        ;;
     Xnotdaily)
         DAILY=false
 	DOLOGS=false
@@ -134,9 +142,6 @@ do
     Xnomail)
 	DOMAIL=false
 	MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
-	;;
-    Xnonn)
-	# Ignore this.
 	;;
     Xnorenumber)
 	DORENUMBER=false
@@ -164,21 +169,17 @@ do
     esac
 done
 
-##
-## Setup mail subject and command
-##
+##  Setup mail subject and command.
 if ${DAILY} ; then
    MAILSUBJ="${HOSTNAME} Daily Usenet report for ${DATE}"
 else
-   MAILSUBJ="${HOSTNAME} intermediate usenet report for ${DATE}"
+   MAILSUBJ="${HOSTNAME} intermediate Usenet report for ${DATE}"
 fi
 MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
     ${MAILCMD} -s '$MAILSUBJ' ${NEWSMASTER}"
 
-#
-#	Sanity check. Shouldn't we just bail out here with an error
-#	instead of trying to patch things up?
-#
+##  Sanity check.  Shouldn't we just bail out here with an error
+##  instead of trying to patch things up?
 ${DOEXPIRE} || {
     EXPDIR=
     RMFILE=
@@ -243,7 +244,7 @@ ${DOLOGS} && {
     scanlogs ${SCANARG}
 }
 
-# group-based expiry (delete expired overview first)
+##  Group-based expiry (delete expired overview first).
 if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
@@ -280,16 +281,16 @@ fi
 ##  The heart of the matter:  prologs, expire, epilogs.
 if ${DOEXPIRE} ; then
 
-    ## Wait to be fairly certain innwatch is not in the middle of a pass
-    ## Since we're locked, innwatch will pause now till we're done
+    ##  Wait to be fairly certain innwatch is not in the middle of a pass.
+    ##  Since we're locked, innwatch will pause now till we're done.
     sleep 30
 
     ##  See if we're throttled for lack of space.
     SERVERMODE=`ctlinnd -t $TOUT mode 2>/dev/null | ${SED} 1q`
     case "${SERVERMODE}" in
     'Server paused'*'[innwatch:'*)
-	## If paused, by innwatch, then turn pause into throttle
-	## as we're going to stay that way for a while now
+	##  If paused, by innwatch, then turn pause into throttle
+	##  as we're going to stay that way for a while now.
 	ctlinnd -t $TOUT -s throttle \
 	    "`expr \"${SERVERMODE}\" : 'Server paused \(.*\)'`" || {
 	    ( echo "$0: Cannot throttle while innwatch paused";
@@ -324,10 +325,8 @@ if ${DOEXPIRE} ; then
 	}
     fi
 
-    #
-    #  Get rid of an old expire RMFILE since news.daily locks itself and
-    #  we would not get here if another instance were still running.
-    #        
+    ## Get rid of an old expire RMFILE since news.daily locks itself and
+    ## we would not get here if another instance were still running.       
     if [ -n "${RMFILE}" ] ; then
         rm -f ${RMFILE}
     fi
@@ -397,12 +396,12 @@ case "${SERVERMODE}" in
 esac
 
 ##  Release the lock now, everything below this must be able to withstand
-##  simultaneous news.daily's running.   We do this so innwatch can start
+##  simultaneous news.daily's running.  We do this so innwatch can start
 ##  monitoring again asap after the expire is done -- removing the
 ##  articles isn't critical, nor is the renumber.
 rm ${LOCK}
 
-## Remove the articles that are supposed to go
+##  Remove the articles that are supposed to go.
 if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
@@ -435,7 +434,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
 	}
     }
-    # expire overview lines for files we just removed
+    ##  Expire overview lines for files we just removed.
     if ${DOEXPIREOVER}; then
 	if ${DOEXPLOG}; then
 	    echo "${EXPIREOVER} start `date`" >>${EXPLOG}
@@ -455,7 +454,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	}
     fi
 fi
-# in case noexpire expireover
+##  In case noexpire expireover.
 if ${DOEXPIREOVER}; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`" >>${EXPLOG}
@@ -488,7 +487,7 @@ if ${DORENUMBER} ; then
     fi
 fi
 
-##  Display expire log messages
+##  Display expire log messages.
 if ${DOMAIL} ; then
     if [ -s ${EXPLOG} ] ; then
 	    echo Expire messages:
@@ -507,7 +506,7 @@ ${DOSTAT} && {
 
 ##  Mail the report.
 if ${DOMAIL} ; then
-    # Stop using the temp file, and mail captured output.
+    ##  Stop using the temp file, and mail captured output.
     exec 1>&3 2>&1 3>&-
     MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
     test -s ${TEMP} && cat ${TEMP} | ${SED} -e 's/^~/~~/' | eval ${MAIL}
