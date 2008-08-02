@@ -112,8 +112,8 @@ Don't remove articles immediately but instead write the path to the
 article or the token of the article to I<rmfile>, which is suitable input
 for fastrm(1).  This can substantially speed up deletion of expired
 articles for those storage methods where each article is a single file
-(such as tradspool and timehash).  See the description of I<delayrm> in
-news.daily(8) for more details.  This flag is ignored if
+(such as tradspool and timehash).  See the description of the I<delayrm>
+keyword in news.daily(8) for more details.  This flag is ignored if
 I<groupbaseexpiry> is false.
 
 =item B<-Z> I<lowmarkfile>

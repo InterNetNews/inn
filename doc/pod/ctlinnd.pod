@@ -210,7 +210,7 @@ For example:
 
     comp.lang.c++ 243
 
-This command is mostly used by B<news.daily> to update the I<active> file
+This command is mostly used by B<news.daily> to update the F<active> file
 after nightly expiration.
 
 =item mode

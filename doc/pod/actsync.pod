@@ -5,8 +5,8 @@ actsync, actsyncd - Synchronize newsgroups
 =head1 SYNOPSIS
 
 B<actsync> [B<-AkmT>] [B<-b> I<hostid>] [B<-d> I<hostid>] [B<-g> I<max>]
-[B<-i> I<ignore-file>] S<[B<-I> I<hostid>]> [B<-l> I<hostid>] [B<-n> I<name>]
-[B<-o> I<format>] [B<-p> I<min-unchanged>] S<[B<-q> I<hostid>]>
+[B<-i> I<ignore-file>] [B<-I> I<hostid>] [B<-l> I<hostid>] [B<-n> I<name>]
+[B<-o> I<format>] [B<-p> I<min-unchanged>] [B<-q> I<hostid>]
 [B<-s> I<size>] [B<-t> I<hostid>] [B<-v> I<verbosity>] [B<-w> I<seconds>]
 [B<-z> I<seconds>] [I<host>] I<host>
 
