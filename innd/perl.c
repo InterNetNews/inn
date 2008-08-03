@@ -14,17 +14,9 @@
 **
 **  Future work:
 **
-**   - What we're doing with Path headers right now doesn't work for folded
-**     headers.  It's also kind of gross.  There has to be a better way of
-**     handling this.
-**
 **   - The breakdown between this file, lib/perl.c, and nnrpd/perl.c should
 **     be rethought, ideally in the light of supporting multiple filters in
 **     different languages.
-**
-**   - We're still calling strlen() on artBody, which should be avoidable
-**     since we've already walked it several times.  We should just cache
-**     the length somewhere for speed.
 **
 **   - Variable and key names should be standardized between this and nnrpd.
 **
@@ -52,9 +44,6 @@
 #include "ppport.h"
 
 #include "innperl.h"
-
-/* From art.c.  Ew.  Need header parsing that doesn't use globals. */
-extern char             *filterPath;
 
 /* Prototypes for XS functions. */
 XS(XS_INN_addhist);
@@ -87,8 +76,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     filter = perl_get_cv("filter_art", 0);
     if (!filter) return NULL;
 
-    /* Create %hdr and stash a copy of every known header.  Path has to be
-       handled separately since it's been munged by article processing. */
+    /* Create %hdr and stash a copy of every known header. */
     hdr = perl_get_hv("hdr", 1);
     for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
@@ -213,22 +201,22 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     mode = perl_get_hv("mode", 1);
 
     if (Mode == OMrunning)
-        hv_store(mode, "Mode", 4, newSVpv("running", 0), 0);
+        hv_store(mode, "Mode", 4, newSVpv("running", 7), 0);
     if (Mode == OMpaused)
-        hv_store(mode, "Mode", 4, newSVpv("paused", 0), 0);
+        hv_store(mode, "Mode", 4, newSVpv("paused", 6), 0);
     if (Mode == OMthrottled)
-        hv_store(mode, "Mode", 4, newSVpv("throttled", 0), 0);
+        hv_store(mode, "Mode", 4, newSVpv("throttled", 9), 0);
     if (Mode == OMshutdown)
-        hv_store(mode, "Mode", 4, newSVpv("shutdown", 0), 0);
+        hv_store(mode, "Mode", 4, newSVpv("shutdown", 8), 0);
 
     if (NewMode == OMrunning)
-        hv_store(mode, "NewMode", 7, newSVpv("running", 0), 0);
+        hv_store(mode, "NewMode", 7, newSVpv("running", 7), 0);
     if (NewMode == OMpaused)
-        hv_store(mode, "NewMode", 7, newSVpv("paused", 0), 0);
+        hv_store(mode, "NewMode", 7, newSVpv("paused", 6), 0);
     if (NewMode == OMthrottled)
-        hv_store(mode, "NewMode", 7, newSVpv("throttled", 0), 0);
+        hv_store(mode, "NewMode", 7, newSVpv("throttled", 9), 0);
     if (NewMode == OMshutdown)
-        hv_store(mode, "NewMode", 4, newSVpv("shutdown", 0), 0);
+        hv_store(mode, "NewMode", 7, newSVpv("shutdown", 8), 0);
 
     hv_store(mode, "reason", 6, newSVpv(reason, 0), 0);
 
