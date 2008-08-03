@@ -984,8 +984,8 @@ sub collect($$$$$$) {
     # ME time X nnnn X(X) [...]
     return 1 if $left =~ m/backlogstats/;
     if ($left =~ m/^\S+\s+                         # ME
-                   time\ (\d+)\s+                  # time
-                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
+                   time\s(\d+)\s+                  # time
+                   ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                    $/ox) {
       $innfeed_time_times += $1;
       my $timers = $2;
@@ -1731,8 +1731,8 @@ sub collect($$$$$$) {
     # The exact timers change from various versions of INN, so try to deal
     # with this in a general fashion.
     if ($left =~ m/^\S+\s+                         # ME
-	           time\ (\d+)\s+                  # time
-                   ((?:\S+\ \d+\(\d+\)\s*)+)       # timer values
+	           time\s(\d+)\s+                  # time
+                   ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                    $/ox) {
       $nnrpd_time_times += $1;
       my $timers = $2;
