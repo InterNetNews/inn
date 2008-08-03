@@ -1267,7 +1267,7 @@ section innfeed_connect {
 		data {
 		          name    "Spooled";
 			  color   "#AF00FF";
-			  value   "%innfeed_spooled,";
+			  value   "%innfeed_spooled";
                 };
 	};
 };
@@ -1346,12 +1346,6 @@ section innfeed_volume {
 			name	"Rejected";
 			color	"#FFAF00";
 			value	"%innfeed_rejected_size";
-		};
-		data {
-			name	"Total";
-			color	"#00FF00";
-			value	"%innfeed_accepted_size +
-                                 %innfeed_rejected_size";
 		};
 	};
 };
@@ -2116,8 +2110,8 @@ section nnrpd_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-		value         "$nnrpd_post_rej{$key} +
-                               $nnrpd_post_error{$key}";
+		value         "($nnrpd_post_rej{$key}||0) +
+                               ($nnrpd_post_error{$key}||0)";
 		total         "total(%nnrpd_post_rej) +
 		               total(%nnrpd_post_error)";
         };
@@ -2179,8 +2173,8 @@ section nnrpd_dom_groups {
                 name          "Rej";
                 format_name   "%4s";
                 format        "%4d";
-                value         "$nnrpd_dom_post_rej{$key} +
-	                       $nnrpd_dom_post_error{$key}";
+                value         "($nnrpd_dom_post_rej{$key}||0) +
+	                       ($nnrpd_dom_post_error{$key}||0)";
                 total         "total(%nnrpd_dom_post_rej) +
                                total(%nnrpd_dom_post_error)";
         };
