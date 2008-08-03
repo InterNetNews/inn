@@ -4,9 +4,10 @@
 ##  Optional arguments:
 ##	expdir=xxx	Directory in which to build new history file
 ##	tmpdir=xxx	Working directory for `sort' and such
-##	expirectl=xxx	Use xxx as expire.ctl file
+##	expctl=xxx	Use xxx as expire.ctl file
 ##	flags=xxx	Pass xxx flags to expire
 ##	lowmark		Create and use a lowmark file
+##	mailto=xxx	E-mail address to which to send the report instead of newsmaster
 ##	noexpire	Do not expire
 ##	noexplog	Do not log expire output
 ##	nologs		Do not scan logfiles
@@ -121,6 +122,9 @@ do
 	LOWMARKFILE=${MOST_LOGS}/expire.lowmark
 	DORENUMBER=false
 	;;
+    Xmailto=*)
+        NEWSMASTER=`expr "${I}" : 'mailto=\(.*\)'`
+        ;;
     Xnotdaily)
         DAILY=false
 	DOLOGS=false

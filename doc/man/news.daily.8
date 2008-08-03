@@ -163,6 +163,17 @@ Normally, all utilities invoked by the script have their stdout and stderr
 redirected into a file.
 If the file is empty, no message is sent.
 .TP
+.IR mailto= address
+By default,
+.I news.daily
+mails the report to the newsmaster address specified at
+configure time.  The
+.I mailto
+keyword can specify a different address to which to mail the
+report.  (This option has no effect if the
+.I nomail
+keyword is also specified.)
+.TP
 .I expireover
 The
 .I expireover
