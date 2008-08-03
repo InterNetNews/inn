@@ -153,9 +153,14 @@ STATUSsummary(void)
       status = xmalloc(sizeof(STATUS));
       peers++;                                              /* a new peer */
       strlcpy(status->name, TempString, sizeof(status->name));
-      strlcpy(status->ip_addr,
-              sprint_sockaddr((struct sockaddr *)&cp->Address),
-              sizeof(status->ip_addr));
+      if (cp->Address.ss_family == 0) {
+        /* Connections from lc.c do not have an IP address. */
+        memset(&status->ip_addr, 0, sizeof(status->ip_addr));
+      } else {
+        strlcpy(status->ip_addr,
+          sprint_sockaddr((struct sockaddr *)&cp->Address),
+          sizeof(status->ip_addr));
+      }
       status->can_stream = cp->Streaming;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->Ihave = status->Ihave_Duplicate =
