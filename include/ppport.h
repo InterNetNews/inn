@@ -150,6 +150,7 @@ __DATA__
 #	endif
 #endif
 #ifndef PERL_VERSION
+#       define PERL_REVISION (5)
 #       ifdef PERL_PATCHLEVEL
 #               define PERL_VERSION    PERL_PATCHLEVEL
 #       else
@@ -162,7 +163,7 @@ __DATA__
 #	define ERRSV perl_get_sv("@",false)
 #endif
 
-#if (PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4))
+#if (PERL_REVISION == 5) && ((PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4)))
 #	define PL_sv_undef	sv_undef
 #	define PL_sv_yes	sv_yes
 #	define PL_sv_no		sv_no
@@ -174,7 +175,7 @@ __DATA__
 #	define PL_copline	copline
 #endif
 
-#if (PERL_VERSION < 5)
+#if (PERL_REVISION == 5) && (PERL_VERSION < 5)
 #	undef dTHR
 #	ifdef WIN32
 #		define dTHR extern int Perl___notused

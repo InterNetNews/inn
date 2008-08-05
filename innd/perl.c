@@ -69,7 +69,6 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     CV *        filter;
     int         i, rc;
     char *      p;
-    static SV * body = NULL;
     static char buf[256];
 
     if (!PerlFilterActive) return NULL;
@@ -87,23 +86,19 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     }
 
     /* Store the article body.  We don't want to make another copy of it,
-       since it could potentially be quite large.  Instead, stash the
-       pointer in the static SV * body.  We set LEN to 0 and inc the
-       refcount to tell Perl not to free it (either one should be enough).
-       Requires 5.004.  In testing, this produced a 17% speed improvement
-       over making a copy of the article body for a fairly heavy filter. */
+     * since it could potentially be quite large.  In testing, this produced
+     * a 17% speed improvement over making a copy of the article body
+     * for a fairly heavy filter.
+     * Available since Perl 5.7.1, newSVpvn_share allows to avoid such
+     * a copy (getting round its use for older versions of Perl leads
+     * to unreliable SV * bodies as for regexps).  And for Perl not to
+     * compute a hash for artBody, we give it "42". */
     if (artBody) {
-        if (!body) {
-            body = newSV(0);
-            (void) SvUPGRADE(body, SVt_PV);
-        }
-        SvPVX(body) = artBody;
-        SvCUR_set(body, artLen);
-        SvLEN_set(body, 0);
-        SvPOK_on(body);
-        (void) SvREADONLY_on(body);
-        (void) SvREFCNT_inc(body);
-        hv_store(hdr, "__BODY__", 8, body, 0);
+#if (PERL_REVISION == 5) && ((PERL_VERSION < 7) || ((PERL_VERSION == 7) && (PERL_SUBVERSION < 1)))
+        hv_store(hdr, "__BODY__", 8, newSVpv(artBody, artLen), 0);
+#else
+        hv_store(hdr, "__BODY__", 8, newSVpvn_share(artBody, artLen, 42), 0);
+#endif /* Perl < 5.7.1 */
     }
 
     hv_store(hdr, "__LINES__", 9, newSViv(lines), 0);
