@@ -55,7 +55,7 @@ partial)
     ;;
 partial-error)
     printf 'User:tester'
-    printf 'This is an error' >&2
+    echo 'This is an error' >&2
     exit 1
     ;;
 esac
