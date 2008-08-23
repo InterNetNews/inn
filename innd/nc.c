@@ -68,13 +68,17 @@ static NCDISPATCH NCcommands[] = {
     COMMAND("body",      NC_reader),
     COMMAND("date",      NC_reader),
     COMMAND("group",     NC_reader),
+    COMMAND("hdr",       NC_reader),
     COMMAND("last",      NC_reader),
     COMMAND("listgroup", NC_reader),
     COMMAND("newgroups", NC_reader),
     COMMAND("newnews",   NC_reader),
     COMMAND("next",      NC_reader),
+    COMMAND("over",      NC_reader),
     COMMAND("post",      NC_reader),
+#ifdef HAVE_SSL
     COMMAND("starttls",  NC_reader),
+#endif
     COMMAND("xgtitle",   NC_reader),
     COMMAND("xhdr",      NC_reader),
     COMMAND("xover",     NC_reader),
@@ -698,8 +702,17 @@ NCquit(CHANNEL *cp)
 static void
 NC_reader(CHANNEL *cp)
 {
+    char buff[SMBUF];
+
     cp->Start = cp->Next;
-    NCwritereply(cp, NNTP_ACCESS);
+    if ((innconf->noreader)
+     || (NNRPReason != NULL && !innconf->readerswhenstopped))
+        snprintf(buff, sizeof(buff), "%d Permission denied\r\n",
+                 NNTP_ERR_ACCESS);
+    else
+        snprintf(buff, sizeof(buff), "%d MODE-READER",
+                 NNTP_FAIL_WRONG_MODE);
+    NCwritereply(cp, buff);
 }
 
 
