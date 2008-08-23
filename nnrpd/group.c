@@ -43,7 +43,7 @@ CMDgroup(int ac, char *av[])
     /* Parse arguments. */
     if (ac == 1) {
 	if (GRPcur == NULL) {
-	    Printf("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
+	    Printf("%d No group specified\r\n", NNTP_FAIL_NO_GROUP);
 	    return;
 	} else {
 	    group = xstrdup(GRPcur);
