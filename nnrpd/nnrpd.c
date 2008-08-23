@@ -1134,7 +1134,14 @@ main(int argc, char *argv[])
 	for (cp = CMDtable; cp->Name; cp++)
 	    if (strcasecmp(cp->Name, av[0]) == 0)
 		break;
-	if (cp->Name == NULL) {
+
+        /* If no command is recognized or if "mode" is received.
+         * We have to handle the special "mode" command here owing to its not being
+         * a base name:  "mode reader" is the only one currently recognized.
+         * "mode something extra-arg" must not be matched further. */
+	if ( (cp->Name == NULL)
+          || ( (strcasecmp(av[0], "mode") == 0)
+            && ((ac < 2) || (strcasecmp(av[1], "reader") != 0)) ) ) {
 	    if ((int)strlen(buff) > 40)
 		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
 	    else
