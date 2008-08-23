@@ -111,7 +111,7 @@ cmd_list_extensions(LISTINFO *lp)
 {
     const char *mechlist = NULL;
 
-    Reply("%d %s.\r\n", NNTP_OK_EXTENSIONS, lp->Format);
+    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
 
 #ifdef HAVE_SSL
     if (!nnrpd_starttls_done && PERMauthorized != true)

@@ -141,6 +141,8 @@ static CMDENT	CMDtable[] = {
 	NULL },
     {	"post",		CMDpost,	true,	1,	1,
 	NULL },
+    /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
+       protocol in RFC 3977. */
     {	"slave",	CMD_unimp,	false,	1,	1,
 	NULL },
     {	"stat",		CMDfetch,	true,	1,	2,
@@ -269,11 +271,14 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
     static const char *newsmaster = NEWSMASTER;
 
     Reply("%s\r\n", NNTP_HELP_FOLLOWS);
-    for (cp = CMDtable; cp->Name; cp++)
+    for (cp = CMDtable; cp->Name; cp++) {
+        if (cp->Function == CMD_unimp)
+            continue;
 	if (cp->Help == NULL)
 	    Printf("  %s\r\n", cp->Name);
 	else
 	    Printf("  %s %s\r\n", cp->Name, cp->Help);
+    }
     if (PERMaccessconf && (VirtualPathlen > 0)) {
 	if (PERMaccessconf->newsmaster) {
 	    if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
@@ -311,16 +316,10 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 **  Unimplemented catch-all.
 */
 void
-CMD_unimp(ac, av)
-    int		ac UNUSED;
-    char	*av[];
+CMD_unimp(int ac UNUSED, char *av[])
 {
-    if (strcasecmp(av[0], "slave") == 0)
-	/* Somebody sends us this?  I don't believe it! */
-	Reply("%d Unsupported\r\n", NNTP_OK_EXTENSIONS);
-    else
-	Reply("%d %s not implemented; try help\r\n",
-	    NNTP_ERR_COMMAND, av[0]);
+    Reply("%d \"%s\" not implemented; try \"help\"\r\n",
+        NNTP_ERR_COMMAND, av[0]);
 }
 
 

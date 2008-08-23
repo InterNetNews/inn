@@ -49,7 +49,6 @@ enum nntp_code {
     NNTP_INFO_DATE              = 111,
     NNTP_OK_BANNER_POST         = 200,
     NNTP_OK_BANNER_NOPOST       = 201,
-    NNTP_OK_EXTENSIONS          = 202,
     NNTP_OK_QUIT                = 205,
     NNTP_OK_GROUP               = 211,
     NNTP_OK_LIST                = 215,
@@ -65,6 +64,7 @@ enum nntp_code {
     NNTP_CONT_IHAVE             = 335,
     NNTP_CONT_POST              = 340,
     NNTP_FAIL_TERMINATING       = 400,
+    NNTP_FAIL_WRONG_MODE        = 401, /* Wrong mode (e.g. not reader) */
     NNTP_FAIL_BAD_GROUP         = 411, /* Group unknown */
     NNTP_FAIL_NO_GROUP          = 412, /* Not in a newsgroup */
     NNTP_FAIL_NO_ARTICLE        = 420, /* No current article */

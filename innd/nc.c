@@ -66,15 +66,23 @@ static NCDISPATCH NCcommands[] = {
        READER command. */
     COMMAND("article",   NC_reader),
     COMMAND("body",      NC_reader),
+    COMMAND("date",      NC_reader),
     COMMAND("group",     NC_reader),
     COMMAND("last",      NC_reader),
+    COMMAND("listgroup", NC_reader),
     COMMAND("newgroups", NC_reader),
     COMMAND("newnews",   NC_reader),
     COMMAND("next",      NC_reader),
     COMMAND("post",      NC_reader),
+    COMMAND("starttls",  NC_reader),
+    COMMAND("xgtitle",   NC_reader),
+    COMMAND("xhdr",      NC_reader),
+    COMMAND("xover",     NC_reader),
+    COMMAND("xpat",      NC_reader),
 
-    /* Other unimplemented standard commands. */
-    COMMAND("date",      NC_unimp),
+    /* Other unimplemented standard commands.
+       SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
+       protocol in RFC 3977. */
     COMMAND("slave",     NC_unimp)
 };
 #undef COMMAND
@@ -89,7 +97,7 @@ static const char	NCbadcommand[] = NNTP_BAD_COMMAND;
 static const char       NCbadsubcommand[] = NNTP_BAD_SUBCMD;
 
 /*
-** Clear the WIP entry for the given channel
+** Clear the WIP entry for the given channel.
 */
 void
 NCclearwip(CHANNEL *cp)
@@ -696,7 +704,7 @@ NC_reader(CHANNEL *cp)
 
 
 /*
-**  The catch-all for inimplemented commands.
+**  The catch-all for unimplemented commands.
 */
 static void
 NC_unimp(CHANNEL *cp)
@@ -709,7 +717,7 @@ NC_unimp(CHANNEL *cp)
 	continue;
     cp->Start = cp->Next;
     *p = '\0';
-    snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"help\".",
+    snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"help\"",
              NNTP_ERR_COMMAND, MaxLength(q, q));
     NCwritereply(cp, buff);
 }
