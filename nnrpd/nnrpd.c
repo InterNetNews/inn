@@ -100,6 +100,8 @@ bool PY_use_dynamic = false;
 
 static char	CMDfetchhelp[] = "[MessageID|Number]";
 
+/* { command base name, function to call, need authentication,
+     min args, max args, help string } */
 static CMDENT	CMDtable[] = {
     {	"authinfo",	CMDauthinfo,	false,	3,	CMDany,
 	"user Name|pass Password"
@@ -141,6 +143,8 @@ static CMDENT	CMDtable[] = {
 	NULL },
     {	"post",		CMDpost,	true,	1,	1,
 	NULL },
+    {   "quit",         CMDquit,        false,  1,      1,
+        NULL },
     /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
        protocol in RFC 3977. */
     {	"slave",	CMD_unimp,	false,	1,	1,
@@ -320,6 +324,17 @@ CMD_unimp(int ac UNUSED, char *av[])
 {
     Reply("%d \"%s\" not implemented; try \"help\"\r\n",
         NNTP_ERR_COMMAND, av[0]);
+}
+
+
+/*
+**  The "quit" command.
+*/
+void
+CMDquit(int ac UNUSED, char *av[] UNUSED)
+{
+    Reply("%s\r\n", NNTP_GOODBYE_ACK);
+    ExitWithStats(0, false);
 }
 
 
@@ -1112,7 +1127,7 @@ main(int argc, char *argv[])
 	/* Client gone? */
 	if (r == RTeof)
 	    break;
-	if (ac == 0 || strcasecmp(av[0], "quit") == 0)
+	if (ac == 0)
 	    break;
 
 	/* Find command. */
@@ -1143,8 +1158,10 @@ main(int argc, char *argv[])
 	    continue;
 	}
 	setproctitle("%s %s", Client.host, av[0]);
-	(*cp->Function)(ac, av);
-	if (PushedBack)
+
+    (*cp->Function)(ac, av);
+
+    if (PushedBack)
 	    break;
 	if (PERMaccessconf)
 	    clienttimeout = PERMaccessconf->clienttimeout;
@@ -1152,9 +1169,8 @@ main(int argc, char *argv[])
 	    clienttimeout = innconf->clienttimeout;
     }
 
-    Reply("%s\r\n", NNTP_GOODBYE_ACK);
+    CMDquit(ac, av);
 
-    ExitWithStats(0, false);
     /* NOTREACHED */
     return 1;
 }
