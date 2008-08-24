@@ -727,7 +727,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     do {
         ARTnumber += delta;
         if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-            Reply("%d No %s to retrieve.\r\n", errcode, message);
+            Reply("%d No %s article to retrieve.\r\n", errcode, message);
             ARTnumber = save;
             return;
         }
