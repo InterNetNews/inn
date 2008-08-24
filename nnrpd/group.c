@@ -136,7 +136,9 @@ CMDgroup(int ac, char *av[])
 		    if (arrived + innconf->nfsreaderdelay > now) {
 			ARThigh = prev;
                         /* No need to update the count since it is only
-                         * an estimate. */
+                         * an estimate but make sure it is not too high. */
+                        if (count > ARThigh - ARTlow)
+                            count = ARThigh - ARTlow + 1;
 			break;
 		    }
 		    prev = i;
