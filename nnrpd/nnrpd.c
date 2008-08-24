@@ -123,7 +123,7 @@ static CMDENT	CMDtable[] = {
 	"newsgroup" },
     {	"head",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"help",		CMDhelp,	false,	1,	CMDany,
+    {	"help",		CMDhelp,	false,	1,	1,
 	NULL },
     {	"ihave",	CMDpost,	true,	2,	2,
 	"MessageID" },
