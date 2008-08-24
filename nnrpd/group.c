@@ -137,7 +137,7 @@ CMDgroup(int ac, char *av[])
 			ARThigh = prev;
                         /* No need to update the count since it is only
                          * an estimate but make sure it is not too high. */
-                        if (count > ARThigh - ARTlow)
+                        if ((unsigned int)count > ARThigh - ARTlow)
                             count = ARThigh - ARTlow + 1;
 			break;
 		    }
