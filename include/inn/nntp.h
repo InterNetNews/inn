@@ -57,6 +57,7 @@ enum nntp_code {
     NNTP_OK_BODY                = 222,
     NNTP_OK_STAT                = 223,
     NNTP_OK_OVER                = 224,
+    NNTP_OK_HDR                 = 225,
     NNTP_OK_NEWNEWS             = 230,
     NNTP_OK_NEWGROUPS           = 231,
     NNTP_OK_IHAVE               = 235,
@@ -65,6 +66,7 @@ enum nntp_code {
     NNTP_CONT_POST              = 340,
     NNTP_FAIL_TERMINATING       = 400,
     NNTP_FAIL_WRONG_MODE        = 401, /* Wrong mode (e.g. not reader) */
+    NNTP_FAIL_ACTION            = 403, /* Internal fault or temporary problem */
     NNTP_FAIL_BAD_GROUP         = 411, /* Group unknown */
     NNTP_FAIL_NO_GROUP          = 412, /* Not in a newsgroup */
     NNTP_FAIL_NO_ARTICLE        = 420, /* No current article */

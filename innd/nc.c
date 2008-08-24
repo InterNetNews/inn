@@ -411,6 +411,9 @@ NCauthinfo(CHANNEL *cp)
 
 /*
 **  The "help" command.
+**  As MODE STREAM is recognized, we still display "mode" when
+**  noreader is set to true or the server is paused or throttled
+**  with readerswhenstopped set to false.
 */
 static void
 NChelp(CHANNEL *cp)
@@ -652,33 +655,49 @@ NCmode(CHANNEL *cp)
 	continue;
     cp->Start = cp->Next;
 
-    if (strcasecmp(p, "reader") == 0 && !innconf->noreader)
-	h = HOnnrpd;
-    else if (strcasecmp(p, "stream") == 0 &&
+    if (strcasecmp(p, "reader") == 0 && !innconf->noreader) {
+        /* MODE READER */
+        if (NNRPReason != NULL && !innconf->readerswhenstopped) {
+            /* Server paused or throttled. */
+            char buff[SMBUF];
+
+            snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_ACTION, NNRPReason);
+            NCwritereply(cp, buff);
+            return;
+        } else {
+            /* We will hand off the channel to nnrpd. */
+            h = HOnnrpd;
+        }
+    } else if (strcasecmp(p, "stream") == 0 &&
              (!StreamingOff && cp->Streaming)) {
+        /* MODE STREAM */
 	char buff[16];
 
 	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM);
 	NCwritereply(cp, buff);
 	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
 		CHANname(cp));
-	return;
+        return;
     } else if (strcasecmp(p, "cancel") == 0 && cp->privileged) {
-       char buff[16];
+        /* MODE CANCEL */
+        char buff[16];
 
-       cp->State = CScancel;
-       snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_MODE_CANCEL);
-       NCwritereply(cp, buff);
-       syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
-               CHANname(cp));
-       return;
+        cp->State = CScancel;
+        snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_MODE_CANCEL);
+        NCwritereply(cp, buff);
+        syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
+                CHANname(cp));
+        return;
     } else {
-	NCwritereply(cp, NCbadsubcommand);
-	return;
+        /* Unknown MODE command or readers not allowed. */
+        NCwritereply(cp, NCbadsubcommand);
+        return;
     }
+
+    /* Hand off if reached. */
     RChandoff(cp->fd, h);
     if (NCcount > 0)
-	NCcount--;
+        NCcount--;
     CHANclose(cp, CHANname(cp));
 }
 
