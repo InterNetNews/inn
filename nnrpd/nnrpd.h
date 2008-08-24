@@ -243,7 +243,7 @@ extern void		CMDnewgroups (int ac, char** av);
 extern void		CMDnewnews   (int ac, char** av);
 extern void		CMDnextlast  (int ac, char** av);
 extern void		CMDpost      (int ac, char** av);
-extern void     CMDquit      (int ac, char** av);
+extern void             CMDquit      (int ac, char** av);
 extern void		CMDxgtitle   (int ac, char** av);
 extern void		CMDxover     (int ac, char** av);
 extern void		CMDpat       (int ac, char** av);

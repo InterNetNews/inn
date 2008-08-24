@@ -129,7 +129,6 @@ cmd_list_extensions(LISTINFO *lp)
 	       mechlist != NULL ? mechlist : "");
     }
 
-    Printf("LISTGROUP\r\n");
     Printf(".\r\n");
 }
 

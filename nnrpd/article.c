@@ -60,6 +60,8 @@ static SENDDATA		SENDhead = {
 static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
+bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
+
 static void
 PushIOvHelper(struct iovec* vec, int* countp)
 {
@@ -740,7 +742,24 @@ CMDnextlast(int ac UNUSED, char *av[])
 }
 
 
-static bool
+/*
+**  Parse a range (in av[1]) which may be any of the following:
+**    - An article number.
+**    - An article number followed by a dash to indicate all following.
+**    - An article number followed by a dash followed by another article
+**      number.
+**
+**  In the last case, if the second number is less than the first number,
+**  then the range contains no articles.
+**
+**  ac is the number of arguments in the command:
+**    LISTGROUP news.software.nntp 12-42
+**  gives ac=3 and av[1] should match "12-42" (whence the "av+1" call
+**  of CMDgetrange).
+**
+**  *DidReply will be true if this function sends an answer.
+*/
+bool
 CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
@@ -763,7 +782,9 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
         return true;
     }
 
-    /* Got just a single number? */
+    /* Got just a single number?
+     * Note that atol() returns 0 if no valid number
+     * is found at the beginning of *p. */
     if ((p = strchr(av[1], '-')) == NULL) {
 	rp->Low = rp->High = atol(av[1]);
         return true;
@@ -772,13 +793,17 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     /* Parse range. */
     *p++ = '\0';
     rp->Low = atol(av[1]);
-	if (*p == '\0' || (rp->High = atol(p)) < rp->Low)
-	    /* "XHDR 234-0 header" gives everything to the end. */
-	rp->High = ARThigh;
-    else if (rp->High > ARThigh)
-	rp->High = ARThigh;
+
+    /* Adjust the lowmark. */
     if (rp->Low < ARTlow)
-	rp->Low = ARTlow;
+        rp->Low = ARTlow;
+
+   /* Parse and adjust the highmark.
+    * "12-" gives everything from 12 to the end.
+    * We do not bother about "42-12" or "42-0" in this function. */
+    if ((*p == '\0') || ((rp->High = atol(p)) > ARThigh))
+        rp->High = ARThigh;
+
     p--;
     *p = '-';
 
