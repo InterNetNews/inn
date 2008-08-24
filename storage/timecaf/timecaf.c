@@ -521,6 +521,8 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     if (amount == RETR_HEAD) {
 	art->data = private->artdata;
 	art->len = p - private->artdata;
+        /* Headers end just before the first empty line (\r\n). */
+        art->len = art->len - 2;
 	return art;
     }
 

@@ -1409,6 +1409,8 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    art->data = private->base;
             art->len = p - private->base;
 	}
+        /* Headers end just before the first empty line (\r\n). */
+        art->len = art->len - 2;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
         return art;
     }
@@ -1719,6 +1721,8 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	    art->data = private->base;
 	    art->len = p - private->base;
 	}
+        /* Headers end just before the first empty line (\r\n). */
+        art->len = art->len - 2;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
     }

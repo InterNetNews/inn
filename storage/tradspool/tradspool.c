@@ -852,6 +852,8 @@ OpenArticle(const char *path, RETRTYPE amount) {
     if (amount == RETR_HEAD) {
 	art->data = private->artbase;
 	art->len = p - private->artbase;
+        /* Headers end just before the first empty line (\r\n). */
+        art->len = art->len - 2;
 	return art;
     }
 
