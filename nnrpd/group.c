@@ -102,9 +102,11 @@ CMDgroup(int ac, char *av[])
 
     /* Doing a "group" command? */
     if (strcasecmp(av[0], "group") == 0) {
-	if (count == 0)
-	    Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
-	else {
+	if (count == 0) {
+            if (ARTlow == 0)
+                ARTlow = 1;
+	    Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
+        } else {
 	    /* if we are an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
 	     * last nfsreaderdelay (default 60) seconds.  If they did,
@@ -158,7 +160,9 @@ CMDgroup(int ac, char *av[])
            returns the same data as GROUP does and since we have it all
            available it shouldn't hurt to return the same thing. */
         if (count == 0) {
-            Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
+            if (ARTlow == 0)
+                ARTlow = 1;
+            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
             Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
