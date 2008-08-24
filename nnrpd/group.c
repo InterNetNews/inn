@@ -166,11 +166,24 @@ CMDgroup(int ac, char *av[])
         ARTRANGE range;
         bool DidReply;
 
+        /* We already know that the group exists. */
+        GRPcount++;
+        ARTnumber = ARTlow;
+        if (GRPcur) {
+            if (strcmp(GRPcur, group) != 0) {
+                OVctl(OVCACHEFREE, &boolval);
+                free(GRPcur);
+                GRPcur = xstrdup(group);
+            }
+        } else
+                GRPcur = xstrdup(group);
+
         /* Parse the range. */
         if (ac == 3) {
             /* CMDgetrange() expects av[1] to contain the range.
              * It is av[2] for LISTGROUP. */
             if (!CMDgetrange(ac, av + 1, &range, &DidReply)) {
+                /* It cannot happen because GRPcur exists. */
                 if (DidReply) {
                     free(group);
                     return;
@@ -186,36 +199,23 @@ CMDgroup(int ac, char *av[])
                 ARTlow = 1;
             Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
             Printf(".\r\n");
-        /* If OVopensearch() is restricted to the range, it returns NULL
-         * in case there isn't any article within the range. */
-        } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
+        } else {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
                   ARThigh, group);
-
-	    while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
-                if ((i >= range.Low) && (i <= range.High)) {
+            /* If OVopensearch() is restricted to the range, it returns NULL
+             * in case there isn't any article within the range.  We already
+             * know that the group exists. */
+            if ((handle = OVopensearch(group, range.Low, range.High)) != NULL) {
+                while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
                     if (PERMaccessconf->nnrpdcheckart && !ARTinstorebytoken(token))
                         continue;
                     Printf("%lu\r\n", i);
                 }
-	    }
 
-	    OVclosesearch(handle);
-	    Printf(".\r\n");
-	    GRPcount++;
-	    ARTnumber = ARTlow;
-
-	    if (GRPcur) {
-		if (strcmp(GRPcur, group) != 0) {
-		    OVctl(OVCACHEFREE, &boolval);
-		    free(GRPcur);
-		    GRPcur = xstrdup(group);
-		}
-	    } else
-		GRPcur = xstrdup(group);
-	} else {
-	    Reply("%s %s\r\n", NOSUCHGROUP, group);
-	}
+                OVclosesearch(handle);
+            }
+            Printf(".\r\n");
+        }
     }
     free(group);
 }
