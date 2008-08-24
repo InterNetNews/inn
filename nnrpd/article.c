@@ -850,8 +850,10 @@ CMDxover(int ac, char *av[])
 	}
     }
 
-    OVERcount++;
-    gettimeofday(&stv, NULL);
+    if (PERMaccessconf->nnrpdoverstats) {
+        OVERcount++;
+        gettimeofday(&stv, NULL);
+    }
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	if (av[1] != NULL)
 	    Reply("%d %s fields follow\r\n.\r\n", NNTP_OK_OVER, av[1]);
@@ -927,14 +929,15 @@ CMDxover(int ac, char *av[])
 	    gettimeofday(&stv, NULL);
     }
 
-    if (vector)
-	cvector_free(vector);
-
     if (PERMaccessconf->nnrpdoverstats) {
         gettimeofday(&etv, NULL);
         OVERtime+=(etv.tv_sec - stv.tv_sec) * 1000;
         OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
+
+    if (vector)
+        cvector_free(vector);
+
     if(useIOb) {
 	SendIOb(".\r\n", 3);
 	PushIOb();
