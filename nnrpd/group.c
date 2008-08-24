@@ -103,7 +103,7 @@ CMDgroup(int ac, char *av[])
     /* Doing a "group" command? */
     if (strcasecmp(av[0], "group") == 0) {
 	if (count == 0)
-	    Reply("%d 0 0 0 %s\r\n", NNTP_OK_GROUP, group);
+	    Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
 	else {
 	    /* if we're an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
@@ -121,7 +121,7 @@ CMDgroup(int ac, char *av[])
 		    low = ARThigh - innconf->nfsreaderdelay;
 		handle = OVopensearch(group, low, ARThigh);
 		if (!handle) {
-		    Reply("%d group disappeared\r\n", NNTP_ERR_UNAVAILABLE);
+		    Reply("%d group disappeared\r\n", NNTP_FAIL_ACTION);
 		    free(group);
 		    return;
 		}
@@ -154,7 +154,7 @@ CMDgroup(int ac, char *av[])
            returns the same data as GROUP does and since we have it all
            available it shouldn't hurt to return the same thing. */
         if (count == 0) {
-            Reply("%d 0 0 0 %s\r\n", NNTP_OK_GROUP, group);
+            Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
             Printf(".\r\n");
         } else if ((handle = OVopensearch(group, ARTlow, ARThigh)) != NULL) {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
