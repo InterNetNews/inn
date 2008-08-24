@@ -309,7 +309,7 @@ CMDmode(int ac UNUSED, char *av[])
                PERMaccessconf->pathhost, INN_VERSION_STRING,
 	       PERMcanpost ? "posting ok" : "no posting");
     else
-	Reply("%d What?\r\n", NNTP_ERR_COMMAND);
+	Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
 }
 
 static int GroupCompare(const void *a1, const void* b1) {
