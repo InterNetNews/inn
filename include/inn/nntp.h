@@ -16,27 +16,25 @@
 #include <sys/types.h>          /* size_t, time_t */
 
 /*
-**  NNTP response codes as defined in RFC 977 and elsewhere.
+**  NNTP response codes as defined in RFC 3977 and elsewhere.
 **
 **  All NNTP response codes are three digits.  The first digit is one of:
 **
 **      1xx     Informative message.
 **      2xx     Command completed OK.
 **      3xx     Command OK so far; send the rest of it.
-**      4xx     Command was correct, but couldn't be performed for some
-**              reason.
-**      5xx     Command unimplemented, or incorrect, or a serious program
-**              error occurred.
+**      4xx     Command was syntactically correct but failed for some reason.
+**      5xx     Command unknown, unsupported, unavailable, or syntax error.
 **
 **  The second digit defines the type of command:
 **
-**      x0x     Connection, setup, and miscellaneous messages
-**      x1x     Newsgroup selection
-**      x2x     Article selection
-**      x3x     Distribution functions
-**      x4x     Posting
-**      x8x     Reserved for authentication and authorization extensions
-**      x9x     Reserved for private use (non-standard extensions)
+**      x0x     Connection, setup, and miscellaneous messages.
+**      x1x     Newsgroup selection.
+**      x2x     Article selection.
+**      x3x     Distribution functions.
+**      x4x     Posting.
+**      x8x     Reserved for authentication and privacy extensions.
+**      x9x     Reserved for private use (non-standard extensions).
 **
 **  Each response code is assigned a symbolic name starting with NNTP_.  The
 **  second component of the code is INFO, OK, CONT, FAIL, or ERR,
