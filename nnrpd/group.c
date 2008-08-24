@@ -105,16 +105,18 @@ CMDgroup(int ac, char *av[])
 	if (count == 0)
 	    Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
 	else {
-	    /* if we're an NFS reader, check the last nfsreaderdelay
+	    /* if we are an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
-	     * last nfsreaderdelay (default 60) seconds. If they did,
+	     * last nfsreaderdelay (default 60) seconds.  If they did,
 	     * don't report them as we don't want them to appear too
-	     * soon */
+	     * soon. */
 	    if (innconf->nfsreader) {
 		ARTNUM low, prev;
 		time_t now, arrived;
 
 		time(&now);
+                /* We assume that during the last nfsreaderdelay seconds,
+                 * we did not receive more than 1 article per second. */
 		if (ARTlow + innconf->nfsreaderdelay > ARThigh)
 		    low = ARTlow;
 		else
@@ -129,6 +131,8 @@ CMDgroup(int ac, char *av[])
 		while (OVsearch(handle, &i, NULL, NULL, NULL, &arrived)) {
 		    if (arrived + innconf->nfsreaderdelay > now) {
 			ARThigh = prev;
+                        /* No need to update the count since it is only
+                         * an estimate. */
 			break;
 		    }
 		    prev = i;
