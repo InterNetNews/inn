@@ -318,6 +318,7 @@ typedef struct _CHANNEL {
   bool		       NoResendId;
   bool		       privileged;
   bool		       Nolist;
+  bool                 CanAuthenticate; /* Can use AUTHINFO? */
   unsigned long	       Duplicate;
   unsigned long	       Unwanted_s;
   unsigned long	       Unwanted_f;

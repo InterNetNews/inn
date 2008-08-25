@@ -1382,6 +1382,7 @@ PERMgetaccess(char *nnrpaccess)
     access_realms   = NULL;
     success_auth    = NULL;
 
+    PERMcanauthenticate = true;
     PERMcanread	    = PERMcanpost   = false;
     PERMreadlist    = PERMpostlist  = false;
     PERMaccessconf = NULL;
@@ -1494,6 +1495,7 @@ PERMlogin(char *uname, char *pass, char *errorstr)
 	}
 	PERMneedauth = false;
 	PERMauthorized = true;
+        PERMcanauthenticate = false;
 	success_auth = auth_realms[i];
     }
 }

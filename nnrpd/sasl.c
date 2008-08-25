@@ -148,6 +148,7 @@ SASLauth(int ac, char *av[])
         PERMgetpermissions();
 	PERMneedauth = false;
 	PERMauthorized = true;
+        PERMcanauthenticate = false;
 
 	syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
 

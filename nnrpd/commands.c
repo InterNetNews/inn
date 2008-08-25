@@ -187,6 +187,7 @@ CMDauthinfo(int ac, char *av[])
 		Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
 		PERMneedauth = false;
 		PERMauthorized = true;
+                PERMcanauthenticate = false;
 		free(logrec);
 		return;
 	    case 0:
@@ -242,6 +243,7 @@ CMDauthinfo(int ac, char *av[])
             Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
             PERMneedauth = false;
             PERMauthorized = true;
+            PERMcanauthenticate = false;
             return;
         }
         
@@ -258,6 +260,7 @@ CMDauthinfo(int ac, char *av[])
             Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
             PERMneedauth = false;
             PERMauthorized = true;
+            PERMcanauthenticate = false;
             return;
         }
 

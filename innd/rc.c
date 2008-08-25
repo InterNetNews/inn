@@ -604,6 +604,7 @@ RCreader(CHANNEL *cp)
             new->Skip = rp->Skip;
             new->NoResendId = rp->NoResendId;
             new->Nolist = rp->Nolist;
+            new->CanAuthenticate = true; /* Can use AUTHINFO. */
             new->MaxCnx = rp->MaxCnx;
             new->HoldTime = rp->HoldTime;
 	    memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));

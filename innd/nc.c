@@ -378,9 +378,14 @@ NCauthinfo(CHANNEL *cp)
 
     /* Otherwise, make sure we're only getting "authinfo" commands. */
     if (strncasecmp(p, AUTHINFO, strlen(AUTHINFO)) != 0) {
-	NCwritereply(cp, NNTP_AUTH_NEEDED);
+        NCwritereply(cp, cp->CanAuthenticate ? NNTP_AUTH_NEEDED : NNTP_ACCESS);
 	return;
+    } else if (!cp->CanAuthenticate) {
+        /* Already authenticated. */
+        NCwritereply(cp, NNTP_ACCESS);
+        return;
     }
+
     for (p += strlen(AUTHINFO); ISWHITE(*p); p++)
 	continue;
 
@@ -393,7 +398,7 @@ NCauthinfo(CHANNEL *cp)
 
     /* Now make sure we're getting only "authinfo pass" commands. */
     if (strncasecmp(p, PASS, strlen(PASS)) != 0) {
-	NCwritereply(cp, NNTP_AUTH_NEEDED);
+	NCwritereply(cp, NNTP_BAD_SUBCMD);
 	return;
     }
     for (p += strlen(PASS); ISWHITE(*p); p++)
@@ -405,6 +410,7 @@ NCauthinfo(CHANNEL *cp)
 	NCwritereply(cp, NNTP_AUTH_BAD);
     } else {
 	cp->State = CSgetcmd;
+        cp->CanAuthenticate = false;
 	NCwritereply(cp, NNTP_AUTH_OK);
     }
 }

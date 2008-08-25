@@ -1143,6 +1143,12 @@ main(int argc, char *argv[])
 	    continue;
 	}
 
+        /* 502 if already successfully authenticated, according to RFC 4643. */
+        if (!PERMcanauthenticate && (strcasecmp(cp->Name, "authinfo") == 0)) {
+            Reply("%d %s\r\n", NNTP_ERR_ACCESS, "Already authenticated");
+            continue;
+        }
+
 	/* Check usage. */
 	if ((cp->Minac != CMDany && ac < cp->Minac)
 	 || (cp->Maxac != CMDany && ac > cp->Maxac)) {

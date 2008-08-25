@@ -150,6 +150,7 @@ enum timer {
 #endif	/* defined(MAINLINE) */
 
 EXTERN bool	PERMauthorized;
+EXTERN bool     PERMcanauthenticate;
 EXTERN bool	PERMcanpost;
 EXTERN bool	PERMcanread;
 EXTERN bool	PERMneedauth;
