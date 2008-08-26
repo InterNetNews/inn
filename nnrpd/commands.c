@@ -193,9 +193,9 @@ CMDauthinfo(int ac, char *av[])
 	    case 0:
 		syslog(L_NOTICE, "%s bad_auth %s (%s)", Client.host, PERMuser,
 			logrec);
-		Reply("%d Authentication failed\r\n", NNTP_ERR_ACCESS);
+		Reply("%d Authentication failed\r\n", NNTP_FAIL_AUTHINFO_BAD);
 		free(logrec);
-		ExitWithStats(1, false);
+		return;
 	    default:
 		/* lower level has issued Reply */
 		return;
@@ -261,11 +261,10 @@ CMDauthinfo(int ac, char *av[])
 	syslog(L_NOTICE, "%s bad_auth", Client.host);
         if (errorstr[0] != '\0') {
             syslog(L_NOTICE, "%s script error str: %s", Client.host, errorstr);
-            Reply("%d %s\r\n", NNTP_ERR_ACCESS, errorstr);
+            Reply("%d %s\r\n", NNTP_FAIL_AUTHINFO_BAD, errorstr);
         } else {
-            Reply("%d Authentication error\r\n", NNTP_ERR_ACCESS);
+            Reply("%d Authentication failed\r\n", NNTP_FAIL_AUTHINFO_BAD);
         }
-	ExitWithStats(1, false);
     }
 
 }

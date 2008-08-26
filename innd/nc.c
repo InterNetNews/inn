@@ -406,7 +406,6 @@ NCauthinfo(CHANNEL *cp)
 
     /* Got the password -- is it okay? */
     if (!RCauthorized(cp, p)) {
-	cp->State = CSwritegoodbye;
 	NCwritereply(cp, NNTP_AUTH_BAD);
     } else {
 	cp->State = CSgetcmd;
