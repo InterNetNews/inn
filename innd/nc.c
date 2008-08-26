@@ -663,6 +663,11 @@ NCmode(CHANNEL *cp)
 
     if (strcasecmp(p, "reader") == 0 && !innconf->noreader) {
         /* MODE READER */
+        if (!cp->CanAuthenticate) {
+            /* AUTHINFO has already been successfully used. */
+            NCwritereply(cp, NNTP_ACCESS);
+            return;
+        }
         if (NNRPReason != NULL && !innconf->readerswhenstopped) {
             /* Server paused or throttled. */
             char buff[SMBUF];
