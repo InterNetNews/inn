@@ -207,32 +207,25 @@ CMDauthinfo(int ac, char *av[])
 #endif /* HAVE_SASL */
 
     } else {
+        /* Each time AUTHINFO USER is used, the new username is cached. */
+        if (strcasecmp(av[1], "user") == 0) {
+            strlcpy(User, av[2], sizeof(User));
+            Reply("%d PASS required\r\n", NNTP_CONT_AUTHINFO);
+            return;
+        }
 
-	if (strcasecmp(av[1], "simple") == 0) {
-	    if (ac != 4) {
-		Reply("%d AUTHINFO SIMPLE <USER> <PASS>\r\n", NNTP_ERR_COMMAND);
-		return;
-	    }
-	    strlcpy(User, av[2], sizeof(User));
-	    strlcpy(Password, av[3], sizeof(Password));
-	} else {
-	    if (strcasecmp(av[1], "user") == 0) {
-		strlcpy(User, av[2], sizeof(User));
-		Reply("%d PASS required\r\n", NNTP_CONT_AUTHINFO);
-		return;
-	    }
+        /* If it is not AUTHINFO PASS, we do not support the provided subcommand. */
+        if (strcasecmp(av[1], "pass") != 0) {
+            Reply("%d bad authinfo param\r\n", NNTP_ERR_COMMAND);
+            return;
+        }
+        if (User[0] == '\0') {
+            Reply("%d USER required\r\n", NNTP_FAIL_AUTHINFO_REJECT);
+            return;
+        }
 
-	    if (strcasecmp(av[1], "pass") != 0) {
-		Reply("%d bad authinfo param\r\n", NNTP_ERR_COMMAND);
-		return;
-	    }
-	    if (User[0] == '\0') {
-		Reply("%d USER required\r\n", NNTP_FAIL_AUTHINFO_REJECT);
-		return;
-	    }
-
-	    strlcpy(Password, av[2], sizeof(Password));
-	}
+        /* There is a cached username and a password is provided. */
+        strlcpy(Password, av[2], sizeof(Password));
 
         if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
             syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
@@ -251,6 +244,7 @@ CMDauthinfo(int ac, char *av[])
         
         PERMlogin(User, Password, errorstr);
         PERMgetpermissions();
+        /* If authentication is successful. */
         if (!PERMneedauth) {
             syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
             if (LLOGenable) {

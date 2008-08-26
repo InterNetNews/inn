@@ -735,8 +735,7 @@ can, if they choose, use username and password authentication to gain
 their special privileges even if they're logged on as a different user on
 the shell machines (or if ident isn't working).  When they first connect,
 they'd have the default access for that user, but they could then send
-AUTHINFO USER and AUTHINFO PASS (or AUTHINFO SIMPLE) and get their
-extended access.
+AUTHINFO USER and AUTHINFO PASS in order to get their extended access.
 
 Also note that if the users joe and jane are using their own accounts,
 they get their special privileges regardless of how they connect, whether
