@@ -171,7 +171,6 @@ extern char	*HISTORY;
 extern char	*ACTIVE;
 extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
-EXTERN char	PERMpass[SMBUF];
 EXTERN char	PERMuser[SMBUF];
 EXTERN FILE	*locallog;
 EXTERN ARTNUM	ARTnumber;	/* Current article number */

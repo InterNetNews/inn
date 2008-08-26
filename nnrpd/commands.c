@@ -154,7 +154,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
     if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = true;
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
-    strlcpy(PERMpass, fields[3], sizeof(PERMpass));
+    /*strlcpy(PERMpass, fields[3], sizeof(PERMpass));*/
     strlcpy(accesslist, fields[4], size);
     /*strcpy(writeaccess, fields[5]); future work? */
 
@@ -227,23 +227,11 @@ CMDauthinfo(int ac, char *av[])
         /* There is a cached username and a password is provided. */
         strlcpy(Password, av[2], sizeof(Password));
 
-        if (strcmp(User, PERMuser) == 0 && strcmp(Password, PERMpass) == 0) {
-            syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
-            if (LLOGenable) {
-                fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
-                fflush(locallog);
-            }
-            Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
-            PERMneedauth = false;
-            PERMauthorized = true;
-            PERMcanauthenticate = false;
-            return;
-        }
-        
         errorstr[0] = '\0';
         
         PERMlogin(User, Password, errorstr);
         PERMgetpermissions();
+
         /* If authentication is successful. */
         if (!PERMneedauth) {
             syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
