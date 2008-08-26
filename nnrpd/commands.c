@@ -301,12 +301,17 @@ void
 CMDmode(int ac UNUSED, char *av[])
 {
     if (strcasecmp(av[1], "reader") == 0)
-	Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	       PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
-               PERMaccessconf->pathhost, INN_VERSION_STRING,
-	       PERMcanpost ? "posting ok" : "no posting");
+        if (PERMcanauthenticate) {
+            Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
+                   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
+                   PERMaccessconf->pathhost, INN_VERSION_STRING,
+                   PERMcanpost ? "posting ok" : "no posting");
+        } else {
+            /* AUTHINFO has already been successfully used. */
+            Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
+        }
     else
-	Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
 }
 
 static int GroupCompare(const void *a1, const void* b1) {
