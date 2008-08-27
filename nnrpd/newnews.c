@@ -211,7 +211,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 }
 
 /*
-**  NEWNEWS newsgroups date time ["GMT"]
+**  NEWNEWS wildmat date time ["GMT"]
 **  Return the Message-ID of any articles after the specified date
 */
 void

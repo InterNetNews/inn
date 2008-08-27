@@ -762,7 +762,7 @@ SendQuit(FILE *FromServer, FILE *ToServer)
 {
     char	buff[NNTP_MAXLEN_COMMAND];
 
-    fprintf(ToServer, "quit\r\n");
+    fprintf(ToServer, "QUIT\r\n");
     fflush(ToServer);
     fclose(ToServer);
     fgets(buff, sizeof buff, FromServer);
@@ -778,7 +778,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
 
-    fprintf(ToServer, "ihave %s\r\n", HDR(HDR__MESSAGEID));
+    fprintf(ToServer, "IHAVE %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
 	snprintf(buff, sizeof(buff), CANTSEND, "IHAVE", strerror(errno));

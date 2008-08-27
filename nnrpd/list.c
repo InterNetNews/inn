@@ -28,43 +28,43 @@ static void cmd_list_schema(LISTINFO *lp);
 static void cmd_list_extensions(LISTINFO *lp);
 
 static LISTINFO		INFOactive = {
-    "active", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
+    "ACTIVE", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
     "Newsgroups in form \"group high low flags\""
 };
 static LISTINFO		INFOactivetimes = {
-    "active.times", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
+    "ACTIVE.TIMES", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
     "Group creations in form \"name time who\""
 };
 static LISTINFO		INFOdistribs = {
-    "distributions", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
+    "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
     "Distributions in form \"area description\""
 };
 static LISTINFO               INFOsubs = {
-    "subscriptions", INN_PATH_NNRPSUBS, NULL, false,
+    "SUBSCRIPTIONS", INN_PATH_NNRPSUBS, NULL, false,
     "automatic group subscriptions", "Subscriptions in form \"group\""
 };
 static LISTINFO		INFOdistribpats = {
-    "distrib.pats", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
+    "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
 static LISTINFO		INFOextensions = {
-    "extensions", NULL, cmd_list_extensions, false, "supported extensions",
+    "EXTENSIONS", NULL, cmd_list_extensions, false, "supported extensions",
     "Supported NNTP extensions"
 };
 static LISTINFO		INFOgroups = {
-    "newsgroups", INN_PATH_NEWSGROUPS, NULL, false, "newsgroup descriptions",
+    "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, false, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 static LISTINFO		INFOmoderators = {
-    "moderators", INN_PATH_MODERATORS, NULL, false, "moderator patterns",
+    "MODERATORS", INN_PATH_MODERATORS, NULL, false, "moderator patterns",
     "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
 };
 static LISTINFO		INFOschema = {
-    "overview.fmt", NULL, cmd_list_schema, true, "overview format",
+    "OVERVIEW.FMT", NULL, cmd_list_schema, true, "overview format",
     "Order of fields in overview database"
 };
 static LISTINFO		INFOmotd = {
-    "motd", INN_PATH_MOTD, NULL, false, "motd",
+    "MOTD", INN_PATH_MOTD, NULL, false, "motd",
     "Message of the day text"
 };
 

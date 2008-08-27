@@ -102,8 +102,8 @@ CMDgroup(int ac, char *av[])
     ARTclose();
     GRPreport();
 
-    /* Doing a "group" command? */
-    if (strcasecmp(av[0], "group") == 0) {
+    /* Doing a GROUP command? */
+    if (strcasecmp(av[0], "GROUP") == 0) {
 	if (count == 0) {
             if (ARTlow == 0)
                 ARTlow = 1;
@@ -159,7 +159,7 @@ CMDgroup(int ac, char *av[])
 	} else
 	    GRPcur = xstrdup(group);
     } else {
-        /* Must be doing a "listgroup" command.  We used to just return
+        /* Must be doing a LISTGROUP command.  We used to just return
            something bland here ("Article list follows"), but reference NNTP
            returns the same data as GROUP does and since we have it all
            available it shouldn't hurt to return the same thing. */

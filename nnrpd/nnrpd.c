@@ -3,7 +3,7 @@
 **  NNTP server for readers (NNRP) for InterNetNews.
 **
 **  This server doesn't do any real load-limiting, except for what has
-**  proven empirically necesary (i.e., look at GRPscandir).
+**  proven empirically necessary (i.e. look at GRPscandir).
 */
 
 #include "config.h"
@@ -98,67 +98,68 @@ bool   PerlLoaded = false;
 bool PY_use_dynamic = false;
 #endif
 
-static char	CMDfetchhelp[] = "[MessageID|Number]";
+static char	CMDfetchhelp[] = "[messageID|number]";
 
 /* { command base name, function to call, need authentication,
      min args, max args, help string } */
 static CMDENT	CMDtable[] = {
-    {	"authinfo",	CMDauthinfo,	false,	3,	CMDany,
-	"user Name|pass Password"
+    {	"ARTICLE",	CMDfetch,	true,	1,	2,
+	CMDfetchhelp },
+    {   "AUTHINFO",     CMDauthinfo,    false,  3,      CMDany,
+        "USER name|PASS password"
 #ifdef HAVE_SASL
-	"|sasl <mech> [<init-resp>]"
+        "|SASL mech [init-resp]"
 #endif
-	"|generic <prog> <args>" },
-#ifdef HAVE_SSL
-    {	"starttls",	CMDstarttls,	false,	1,	1,
-	NULL },
-#endif
-    {	"article",	CMDfetch,	true,	1,	2,
+        "|GENERIC prog args" },
+    {	"BODY",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"body",		CMDfetch,	true,	1,	2,
-	CMDfetchhelp },
-    {	"date",		CMDdate,	false,	1,	1,
+    {	"DATE",		CMDdate,	false,	1,	1,
 	NULL },
-    {	"group",	CMDgroup,	true,	2,	2,
+    {	"GROUP",	CMDgroup,	true,	2,	2,
 	"newsgroup" },
-    {	"head",		CMDfetch,	true,	1,	2,
+    {	"HEAD",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"help",		CMDhelp,	false,	1,	1,
+    {	"HELP",		CMDhelp,	false,	1,	1,
 	NULL },
-    {	"ihave",	CMDpost,	true,	2,	2,
-	"MessageID" },
-    {	"last",		CMDnextlast,	true,	1,	1,
+    {	"IHAVE",	CMDpost,	true,	2,	2,
+	"messageID" },
+    {	"LAST",		CMDnextlast,	true,	1,	1,
 	NULL },
-    {	"list",		CMDlist,	true,	1,	3,
-	"[active [wildmat]|active.times [wildmat]|distrib.pats|distributions|extensions|moderators|motd|newsgroups [wildmat]|overview.fmt|subscriptions]" },
-    {	"listgroup",	CMDgroup,	true,	1,	3,
+    {	"LIST",		CMDlist,	true,	1,	3,
+	"[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|DISTRIB.PATS|DISTRIBUTIONS"
+        "|EXTENSIONS|MODERATORS|MOTD|NEWSGROUPS [wildmat]|OVERVIEW.FMT|SUBSCRIPTIONS]" },
+    {	"LISTGROUP",	CMDgroup,	true,	1,	3,
 	"[newsgroup [range]]" },
-    {	"mode",		CMDmode,	false,	2,	2,
-	"reader" },
-    {	"newgroups",	CMDnewgroups,	true,	3,	4,
+    {	"MODE",		CMDmode,	false,	2,	2,
+	"READER" },
+    {	"NEWSGROUPS",	CMDnewgroups,	true,	3,	4,
 	"[YY]yymmdd hhmmss [\"GMT\"]" },
-    {	"newnews",	CMDnewnews,	true,	4,	5,
-	"newsgroups [YY]yymmdd hhmmss [\"GMT\"]" },
-    {	"next",		CMDnextlast,	true,	1,	1,
+    {	"NEWNEWS",	CMDnewnews,	true,	4,	5,
+	"wildmat [YY]yymmdd hhmmss [\"GMT\"]" },
+    {	"NEXT",		CMDnextlast,	true,	1,	1,
 	NULL },
-    {	"post",		CMDpost,	true,	1,	1,
+    {	"POST",		CMDpost,	true,	1,	1,
 	NULL },
-    {   "quit",         CMDquit,        false,  1,      1,
+    {   "QUIT",         CMDquit,        false,  1,      1,
         NULL },
     /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
        protocol in RFC 3977. */
-    {	"slave",	CMD_unimp,	false,	1,	1,
+    {	"SLAVE",	CMD_unimp,	false,	1,	1,
 	NULL },
-    {	"stat",		CMDfetch,	true,	1,	2,
+#ifdef HAVE_SSL
+    {   "STARTTLS",     CMDstarttls,    false,  1,      1,
+        NULL },
+#endif
+    {	"STAT",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
-    {	"xgtitle",	CMDxgtitle,	true,	1,	2,
+    {	"XGTITLE",	CMDxgtitle,	true,	1,	2,
 	"[group_pattern]" },
-    {	"xhdr",		CMDpat,		true,	2,	3,
-	"header [range|MessageID]" },
-    {	"xover",	CMDxover,	true,	1,	2,
+    {	"XHDR",		CMDpat,		true,	2,	3,
+	"header [range|messageID]" },
+    {	"XOVER",	CMDxover,	true,	1,	2,
 	"[range]" },
-    {	"xpat",		CMDpat,		true,	4,	CMDany,
-	"header range|MessageID pat [morepat...]" },
+    {	"XPAT",		CMDpat,		true,	4,	CMDany,
+	"header range|messageID pat [morepat...]" },
     {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };
@@ -265,7 +266,7 @@ ExitWithStats(int x, bool readconf)
 
 
 /*
-**  The "help" command.
+**  The HELP command.
 */
 void
 CMDhelp(int ac UNUSED, char *av[] UNUSED)
@@ -322,13 +323,13 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 void
 CMD_unimp(int ac UNUSED, char *av[])
 {
-    Reply("%d \"%s\" not implemented; try \"help\"\r\n",
+    Reply("%d \"%s\" not implemented; try \"HELP\"\r\n",
         NNTP_ERR_COMMAND, av[0]);
 }
 
 
 /*
-**  The "quit" command.
+**  The QUIT command.
 */
 void
 CMDquit(int ac UNUSED, char *av[] UNUSED)
@@ -1170,7 +1171,7 @@ main(int argc, char *argv[])
         }
 
         /* 502 if already successfully authenticated, according to RFC 4643. */
-        if (!PERMcanauthenticate && (strcasecmp(cp->Name, "authinfo") == 0)) {
+        if (!PERMcanauthenticate && (strcasecmp(cp->Name, "AUTHINFO") == 0)) {
             Reply("%d %s\r\n", NNTP_ERR_ACCESS, "Already authenticated");
             continue;
         }

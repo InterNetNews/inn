@@ -173,7 +173,7 @@ CMDauthinfo(int ac, char *av[])
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
 
-    if (strcasecmp(av[1], "generic") == 0) {
+    if (strcasecmp(av[1], "GENERIC") == 0) {
 	char *logrec = Glom(av);
 
 	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
@@ -202,20 +202,20 @@ CMDauthinfo(int ac, char *av[])
 	}
 
 #ifdef HAVE_SASL
-    } else if (strcasecmp(av[1], "sasl") == 0) {
+    } else if (strcasecmp(av[1], "SASL") == 0) {
 	SASLauth(ac, av);
 #endif /* HAVE_SASL */
 
     } else {
         /* Each time AUTHINFO USER is used, the new username is cached. */
-        if (strcasecmp(av[1], "user") == 0) {
+        if (strcasecmp(av[1], "USER") == 0) {
             strlcpy(User, av[2], sizeof(User));
             Reply("%d PASS required\r\n", NNTP_CONT_AUTHINFO);
             return;
         }
 
         /* If it is not AUTHINFO PASS, we do not support the provided subcommand. */
-        if (strcasecmp(av[1], "pass") != 0) {
+        if (strcasecmp(av[1], "PASS") != 0) {
             Reply("%d bad authinfo param\r\n", NNTP_ERR_COMMAND);
             return;
         }
@@ -259,7 +259,7 @@ CMDauthinfo(int ac, char *av[])
 
 
 /*
-**  The "DATE" command.  Useful mainly in conjunction with NEWNEWS.
+**  The DATE command.  Useful mainly in conjunction with NEWNEWS.
 */
 void
 CMDdate(int ac UNUSED, char *av[] UNUSED)
@@ -281,13 +281,13 @@ CMDdate(int ac UNUSED, char *av[] UNUSED)
 
 
 /*
-**  Handle the "mode" command.
+**  Handle the MODE command.
 */
 /* ARGSUSED */
 void
 CMDmode(int ac UNUSED, char *av[])
 {
-    if (strcasecmp(av[1], "reader") == 0)
+    if (strcasecmp(av[1], "READER") == 0)
         if (PERMcanauthenticate) {
             Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
                    PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
@@ -419,7 +419,7 @@ CMDnewgroups(int ac, char *av[])
 
 
 /*
-**  Post an article.
+**  Handle the POST and IHAVE commands.
 */
 /* ARGSUSED */
 void
@@ -440,7 +440,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     static int	backoff_inited = false;
     bool	ihave, permanent;
 
-    ihave = (strcasecmp(av[0], "ihave") == 0);
+    ihave = (strcasecmp(av[0], "IHAVE") == 0);
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
 	syslog(L_NOTICE, "%s noperm ihave without permission", Client.host);
 	Reply("%s\r\n", NNTP_ACCESS);
