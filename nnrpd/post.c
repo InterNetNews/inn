@@ -760,7 +760,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 static void
 SendQuit(FILE *FromServer, FILE *ToServer)
 {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     fprintf(ToServer, "quit\r\n");
     fflush(ToServer);
@@ -794,7 +794,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 static const char *
 SpoolitTo(char *article, char *err, char *SpoolDir)
 {
-    static char	CANTSPOOL[NNTP_STRLEN+2];
+    static char	CANTSPOOL[NNTP_MAXLEN_COMMAND+2];
     HEADER *hp;
     FILE *F = NULL;
     int	i, fd;
@@ -933,7 +933,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     HEADER	*hp;
     FILE	*ToServer;
     FILE	*FromServer;
-    char	buff[NNTP_STRLEN + 2], frombuf[SMBUF];
+    char	buff[NNTP_MAXLEN_COMMAND + 2], frombuf[SMBUF];
     char	*modgroup = NULL;
     const char	*error;
     char	*TrackID;

@@ -14,7 +14,7 @@
 
 #include <sasl/sasl.h>
 sasl_conn_t *sasl_conn = NULL;
-int sasl_ssf = 0, sasl_maxout = NNTP_STRLEN;
+int sasl_ssf = 0, sasl_maxout = NNTP_MAXLEN_COMMAND;
 
 sasl_callback_t sasl_callbacks[] = {
     /* XXX do we want a proxy callback? */
@@ -160,7 +160,7 @@ SASLauth(int ac, char *av[])
 	/* save info about the negotiated security layer for I/O functions */
 	sasl_ssf = *ssfp;
 	sasl_maxout =
-	    (*maxoutp == 0 || *maxoutp > NNTP_STRLEN) ? NNTP_STRLEN : *maxoutp;
+	    (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ? NNTP_MAXLEN_COMMAND : *maxoutp;
     }
     else {
 	/* failure */

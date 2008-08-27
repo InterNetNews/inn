@@ -61,7 +61,7 @@ void
 line_init(struct line *line)
 {
     assert(line);
-    line->allocated = NNTP_STRLEN;
+    line->allocated = NNTP_MAXLEN_COMMAND;
     line->where = line->start = xmalloc(line->allocated);
     line->remaining = 0;
 }
@@ -164,7 +164,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
 	    
 		/* don't grow the buffer bigger than the maximum
 		 * article size we'll accept */
-                if (PERMaccessconf->localmaxartsize > NNTP_STRLEN)
+                if (PERMaccessconf->localmaxartsize > NNTP_MAXLEN_COMMAND)
                     if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
                         newsize = PERMaccessconf->localmaxartsize;
 

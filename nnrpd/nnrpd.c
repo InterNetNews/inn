@@ -229,7 +229,7 @@ ExitWithStats(int x, bool readconf)
 	sasl_dispose(&sasl_conn);
 	sasl_conn = NULL;
 	sasl_ssf = 0;
-	sasl_maxout = NNTP_STRLEN;
+	sasl_maxout = NNTP_MAXLEN_COMMAND;
     }
 #endif /* HAVE_SASL */
 
@@ -684,11 +684,12 @@ main(int argc, char *argv[])
 {
     const char *name;
     CMDENT		*cp;
-    char		buff[NNTP_STRLEN];
+    char		buff[NNTP_MAXLEN_COMMAND];
     char		**av;
     int			ac;
     READTYPE		r;
     int			i;
+    char                **v;
     char		*Reject;
     int			timeout;
     unsigned int	vid=0; 
@@ -703,6 +704,7 @@ main(int argc, char *argv[])
     int			clienttimeout;
     char		*ConfFile = NULL;
     char                *path;
+    bool                validcommandtoolong;
 
     int respawn = 0;
 
@@ -1046,7 +1048,7 @@ main(int argc, char *argv[])
 	memset(&secprops, 0, sizeof(secprops));
 	secprops.security_flags = SASL_SEC_NOPLAINTEXT;
 	secprops.max_ssf = 256;
-	secprops.maxbufsize = NNTP_STRLEN;
+	secprops.maxbufsize = NNTP_MAXLEN_COMMAND;
 	sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
     }
 #endif /* HAVE_SASL */
@@ -1117,7 +1119,16 @@ main(int argc, char *argv[])
 		}
 		/* FALLTHROUGH */		
 	    case RTlong:
-		Reply("%d Line too long\r\n", NNTP_ERR_COMMAND);
+                /* The line is too long but we have to make sure that
+                 * no recognized command has been sent. */
+                validcommandtoolong = false;
+                for (cp = CMDtable; cp->Name; cp++)
+                    if (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0) {
+                        validcommandtoolong = true;
+                        break;
+                    }
+                Reply("%d Line too long\r\n",
+                      validcommandtoolong ? NNTP_ERR_SYNTAX : NNTP_ERR_COMMAND);
 		continue;
 	    case RTeof:
 		/* Handled below. */
@@ -1134,6 +1145,8 @@ main(int argc, char *argv[])
 	for (cp = CMDtable; cp->Name; cp++)
 	    if (strcasecmp(cp->Name, av[0]) == 0)
 		break;
+
+        /* If no command has been recognized. */
 	if (cp->Name == NULL) {
 	    if ((int)strlen(buff) > 40)
 		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
@@ -1142,6 +1155,19 @@ main(int argc, char *argv[])
 	    Reply("%d What?\r\n", NNTP_ERR_COMMAND);
 	    continue;
 	}
+
+        /* Check whether all arguments do not exceed their allowed size. */
+        if (ac > 1) {
+            validcommandtoolong = false;
+            for (v = av; *v; v++)
+                if (strlen(*v) > NNTP_MAXLEN_ARG) {
+                    validcommandtoolong = true;
+                    Reply("%d Argument too long\r\n", NNTP_ERR_SYNTAX);
+                    break;
+                }
+            if (validcommandtoolong)
+                continue;
+        }
 
         /* 502 if already successfully authenticated, according to RFC 4643. */
         if (!PERMcanauthenticate && (strcasecmp(cp->Name, "authinfo") == 0)) {
@@ -1165,9 +1191,9 @@ main(int argc, char *argv[])
 	}
 	setproctitle("%s %s", Client.host, av[0]);
 
-    (*cp->Function)(ac, av);
+        (*cp->Function)(ac, av);
 
-    if (PushedBack)
+        if (PushedBack)
 	    break;
 	if (PERMaccessconf)
 	    clienttimeout = PERMaccessconf->clienttimeout;

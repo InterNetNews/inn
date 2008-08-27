@@ -120,15 +120,15 @@ enum nntp_code {
 };
 
 
-/* Per draft-ietf-nntpext-base-17.txt:
-
-       Command lines MUST NOT exceed 512 octets, which includes the
-       terminating US-ASCII CRLF pair.  The arguments MUST NOT exceed 497
-       octets.
+/*     Command lines MUST NOT exceed 512 octets, which includes the
+       terminating  CRLF pair.  The arguments MUST NOT exceed 497
+       octets.  A server MAY relax these limits for commands defined
+       in an extension.
 
    Also see below for an additional restriction on message IDs. */
 
 #define NNTP_MAXLEN_COMMAND     512
+#define NNTP_MAXLEN_ARG         497
 
 /* Consensus on the USEFOR mailing list in June of 2000 indicates that the
    next revision of the Usenet article standard will limit the length of the
