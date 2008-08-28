@@ -1123,12 +1123,14 @@ main(int argc, char *argv[])
                 /* The line is too long but we have to make sure that
                  * no recognized command has been sent. */
                 validcommandtoolong = false;
-                for (cp = CMDtable; cp->Name; cp++)
+                for (cp = CMDtable; cp->Name; cp++) {
                     if (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0) {
-                        if (p[strlen(cp->Name)] == ' ')
+                        if (p[strlen(cp->Name)] == ' ') {
                             validcommandtoolong = true;
-                        break;
+                            break;
+                        }
                     }
+                }
                 Reply("%d Line too long\r\n",
                       validcommandtoolong ? NNTP_ERR_SYNTAX : NNTP_ERR_COMMAND);
 		continue;
