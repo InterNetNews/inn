@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
 #include <time.h>
 
 #include "inn/innconf.h"
@@ -76,8 +77,8 @@ IsValidMessageID(const char *string)
             else
                 break;
         }
-        /* Contains only US-ASCII characters. */
-        if (*p < 33 || *p == 127)
+        /* Contains only printable US-ASCII characters. */
+        if (!CTYPE(isgraph, *p))
             return false;
     } 
 
