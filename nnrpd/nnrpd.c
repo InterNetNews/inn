@@ -1125,7 +1125,8 @@ main(int argc, char *argv[])
                 validcommandtoolong = false;
                 for (cp = CMDtable; cp->Name; cp++)
                     if (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0) {
-                        validcommandtoolong = true;
+                        if (p[strlen(cp->Name)] == ' ')
+                            validcommandtoolong = true;
                         break;
                     }
                 Reply("%d Line too long\r\n",
