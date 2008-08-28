@@ -8,9 +8,9 @@ CFLAGS  = $(GCFLAGS)
 # The base library files that are always compiled and included.
 SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
-		dispatch.c fdflags.c fdlimit.c genid.c getfqdn.c \
+		dispatch.c fdflags.c fdlimit.c getfqdn.c \
 		getmodaddr.c hash.c hashtab.c hex.c innconf.c inndcomm.c \
-		list.c localopen.c lockfile.c makedir.c md5.c messages.c \
+		list.c localopen.c lockfile.c makedir.c md5.c messageid.c messages.c \
 		mmap.c network.c newsuser.c nntp.c qio.c radix32.c \
 		readin.c remopen.c \
 		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
@@ -144,10 +144,6 @@ fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
-genid.o: genid.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h
 getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
@@ -197,6 +193,10 @@ makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/md5.h ../include/inn/defines.h
+messageid.o: messageid.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h
 messages.o: messages.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \

@@ -493,13 +493,12 @@ lib/fdflags.c                         Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement
-lib/genid.c                           Generate a message ID
 lib/getaddrinfo.c                     getaddrinfo replacement
 lib/getfqdn.c                         Get FQDN of local host
 lib/getmodaddr.c                      Get a moderator's address
 lib/getnameinfo.c                     getnameinfo replacement
 lib/getpagesize.c                     getpagesize replacement
-lib/hash.c                            Create hash from message ID
+lib/hash.c                            Create hash from a message-ID
 lib/hashtab.c                         Generic hash table
 lib/hex.c                             Convert to and from hex strings
 lib/hstrerror.c                       Error reporting for resolver
@@ -514,6 +513,7 @@ lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/md5.c                             MD5 checksum calculation
 lib/memcmp.c                          memcmp replacement
+lib/messageid.c                       Functions for message-IDs
 lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
 lib/mmap.c                            mmap manipulation routines
@@ -588,8 +588,8 @@ nnrpd                                 Reader server (Directory)
 nnrpd/Makefile                        Makefile for nnrpd
 nnrpd/article.c                       Article-related routines
 nnrpd/auth-ext.c                      External authentication handling
-nnrpd/cache.c                         MessageID cache routines
-nnrpd/cache.h                         MessageID cache interfaces
+nnrpd/cache.c                         Message-ID cache routines
+nnrpd/cache.h                         Message-ID cache interfaces
 nnrpd/commands.c                      Assorted server commands
 nnrpd/group.c                         Group-related routines
 nnrpd/line.c                          Long line-by-line reading routines
@@ -784,7 +784,7 @@ tests/data/articles/bad-hdr-space     News article with space before colon
 tests/data/articles/bad-hdr-trunc     News article with colon then newline
 tests/data/articles/bad-long-cont     News article with long continuation line
 tests/data/articles/bad-long-hdr      News article with long header
-tests/data/articles/bad-msgid         News article without a message ID
+tests/data/articles/bad-msgid         News article without a message-ID
 tests/data/articles/bad-no-body       News article without a body
 tests/data/articles/bad-no-header     News article without a header
 tests/data/articles/bad-nul-body      News article with a nul in the body

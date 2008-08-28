@@ -614,7 +614,7 @@ CMDfetch(int ac, char *av[])
 	break;
     case 'h': case 'H':
 	what = &SENDhead;
-	/* Poster might do a "head" command to verify the article. */
+	/* Poster might do a HEAD command to verify the article. */
 	ok = PERMcanread || PERMcanpost;
 	break;
     }
@@ -626,6 +626,10 @@ CMDfetch(int ac, char *av[])
 
     /* Requesting by Message-ID? */
     if (ac == 2 && av[1][0] == '<') {
+        if (!IsValidMessageID(av[1])) {
+            Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
 	if (!ARTopenbyid(av[1], &art, final)) {
 	    Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 	    return;
@@ -1023,6 +1027,10 @@ CMDpat(int ac, char *av[])
     do {
 	/* Message-ID specified? */
 	if (ac > 2 && av[2][0] == '<') {
+            if (!IsValidMessageID(av[2])) {
+                Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
+                return;
+            }
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
 		Printf("%d No such article.\r\n", NNTP_FAIL_NOTFOUND);
