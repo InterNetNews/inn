@@ -244,7 +244,7 @@ valid_overview_string(const char *string, bool full)
     p = (const unsigned char *) string;
     if (full) {
         for (; *p != '\0' && *p != ':'; p++)
-            if (*p < 33 || *p == 127)
+            if (!CTYPE(isgraph, *p))
                 return false;
         if (*p != ':')
             return false;
