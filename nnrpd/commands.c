@@ -164,9 +164,13 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     return 0;
 }
 
-/* ARGSUSED */
+
+/*
+** The AUTHINFO command.
+** Arguments are used (ac is used for SASL).
+*/
 void
-CMDauthinfo(int ac, char *av[])
+CMDauthinfo(int ac UNUSED, char *av[])
 {
     static char	User[SMBUF];
     static char	Password[SMBUF];
