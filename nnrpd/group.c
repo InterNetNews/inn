@@ -166,18 +166,6 @@ CMDgroup(int ac, char *av[])
         ARTRANGE range;
         bool DidReply;
 
-        /* We already know that the group exists. */
-        GRPcount++;
-        ARTnumber = ARTlow;
-        if (GRPcur) {
-            if (strcmp(GRPcur, group) != 0) {
-                OVctl(OVCACHEFREE, &boolval);
-                free(GRPcur);
-                GRPcur = xstrdup(group);
-            }
-        } else
-                GRPcur = xstrdup(group);
-
         /* Parse the range. */
         if (ac == 3) {
             /* CMDgetrange() expects av[1] to contain the range.
@@ -216,6 +204,16 @@ CMDgroup(int ac, char *av[])
             }
             Printf(".\r\n");
         }
+        GRPcount++;
+        ARTnumber = ARTlow;
+        if (GRPcur) {
+            if (strcmp(GRPcur, group) != 0) {
+                OVctl(OVCACHEFREE, &boolval);
+                free(GRPcur);
+                GRPcur = xstrdup(group);
+            }
+        } else
+            GRPcur = xstrdup(group);
     }
     free(group);
 }

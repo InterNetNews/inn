@@ -775,12 +775,6 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     bool                dashfound = false;
 
     *DidReply = false;
-    /* Check whether a newsgroup has been selected. */
-    if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
-	*DidReply = true;
-	return false;
-    }
 
     if (ac == 1) {
 	/* No argument, do only current article. */
