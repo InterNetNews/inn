@@ -84,7 +84,7 @@ SASLauth(int ac, char *av[])
 
 	/* get response from the client */
 	r = line_read(&NNTPline, PERMaccessconf->clienttimeout,
-		      &clientin, &clientinlen);
+		      &clientin, &clientinlen, NULL);
 	switch (r) {
 	case RTok:
 	    if (clientinlen <= BASE64_BUF_SIZE) break;

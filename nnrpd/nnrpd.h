@@ -287,7 +287,7 @@ void PY_dynamic_init (char* file);
 
 void line_free(struct line *);
 void line_init(struct line *);
-READTYPE line_read(struct line *, int, const char **, size_t *);
+READTYPE line_read(struct line *, int, const char **, size_t *, size_t *);
 
 #ifdef HAVE_SASL
 #include <sasl/sasl.h>

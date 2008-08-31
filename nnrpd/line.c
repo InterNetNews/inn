@@ -131,7 +131,8 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 }
 
 READTYPE
-line_read(struct line *line, int timeout, const char **p, size_t *len)
+line_read(struct line *line, int timeout, const char **p, size_t *len,
+          size_t *stripped)
 {
     char *where;
     char *lf = NULL;
@@ -258,13 +259,17 @@ line_read(struct line *line, int timeout, const char **p, size_t *len)
     line->remaining = where - line->where;
 
     if (r == RTok) {
-	/* if we see a full CRLF pair strip them both off before
-	 * returning the line to our caller, if we just get an LF
-	 * we'll accept that too */
+	/* If we see a full CRLF pair, strip them both off before
+	 * returning the line to our caller.  If we just get an LF
+	 * we'll accept that too (debugging INN can then be less annoying). */
 	if (lf > line->start && lf[-1] == '\r') {
 	    --lf;
+            if (stripped != NULL)
+                (*stripped)++;
 	}
 	*lf = '\0';
+        if (stripped != NULL)
+            (*stripped)++;
 	*len = lf - line->start;
 	*p = line->start;
     }

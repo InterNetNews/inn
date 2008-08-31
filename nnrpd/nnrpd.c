@@ -1094,9 +1094,10 @@ main(int argc, char *argv[])
 	}
 	else {
 	    size_t len;
+            size_t lenstripped = 0;
 	    const char *p;
 
-	    r = line_read(&NNTPline, timeout, &p, &len);
+	    r = line_read(&NNTPline, timeout, &p, &len, &lenstripped);
 	    switch (r) {
 	    default:
 		syslog(L_ERROR, "%s internal %d in main", Client.host, r);
@@ -1109,7 +1110,8 @@ main(int argc, char *argv[])
 		ExitWithStats(1, false);
 		break;
 	    case RTok:
-		if (len < sizeof(buff)) {
+                /* len does not count CRLF. */
+		if (len + lenstripped <= sizeof(buff)) {
 		    /* line_read guarantees null termination */
 		    memcpy(buff, p, len + 1);
 		    /* Do some input processing, check for blank line. */

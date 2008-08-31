@@ -534,7 +534,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	size_t len;
 	const char *line;
 
-	r = line_read(&NNTPline, PERMaccessconf->clienttimeout, &line, &len);
+	r = line_read(&NNTPline, PERMaccessconf->clienttimeout, &line, &len, NULL);
 	switch (r) {
 	default:
 	    warn("%s internal %d in post", Client.host, r);
