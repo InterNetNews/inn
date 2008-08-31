@@ -665,7 +665,7 @@ CMDfetch(int ac, char *av[])
     }
     else {
 	if (strspn(av[1], "0123456789") != strlen(av[1])) {
-	    Reply("%s\r\n", ARTnoartingroup);
+	    Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
 	    return;
 	}
 	strlcpy(buff, av[1], sizeof(buff));
@@ -731,7 +731,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     do {
         ARTnumber += delta;
         if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-            Reply("%d No %s article to retrieve.\r\n", errcode, message);
+            Reply("%d No %s article to retrieve\r\n", errcode, message);
             ARTnumber = save;
             return;
         }
@@ -741,7 +741,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     } while (msgid == NULL);
 
     ARTclose();
-    Reply("%d %d %s Article retrieved; request text separately.\r\n",
+    Reply("%d %d %s Article retrieved; request text separately\r\n",
 	   NNTP_OK_STAT, ARTnumber, msgid);
 }
 
