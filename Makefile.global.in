@@ -13,6 +13,10 @@
 ##  releases).	If you make extensive local modifications to INN, you can
 ##  put your own version information in $VERSION_EXTRA.  If it's set to
 ##  "prerelease", the build time will be automatically included.
+##      If you modify these two strings, you must encode them in UTF-8
+##      (using only US-ASCII characters is consequently also fine) and
+##      keep their length reasonable; otherwise, your news server will not
+##      be complying with the NNTP protocol.
 
 VERSION		= 2.5.0
 VERSION_EXTRA	= prerelease
