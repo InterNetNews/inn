@@ -756,19 +756,26 @@ CMDnextlast(int ac UNUSED, char *av[])
 **  In the last case, if the second number is less than the first number,
 **  then the range contains no articles.
 **
+**  In addition to RFC 3977, we also accept:
+**    - A dash followed by an article number to indicate all previous.
+**    - A dash for everything.
+**
 **  ac is the number of arguments in the command:
 **    LISTGROUP news.software.nntp 12-42
 **  gives ac=3 and av[1] should match "12-42" (whence the "av+1" call
 **  of CMDgetrange).
 **
+**  rp->Low and rp->High will contain the values of the range.
 **  *DidReply will be true if this function sends an answer.
 */
 bool
 CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
+    bool                dashfound = false;
 
     *DidReply = false;
+    /* Check whether a newsgroup has been selected. */
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
 	*DidReply = true;
@@ -786,25 +793,38 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
         return true;
     }
 
-    /* Got just a single number?
-     * Note that atol() returns 0 if no valid number
-     * is found at the beginning of *p. */
+    /* Check the syntax:  only allow digits and *one* "-". */
+    for (p = av[1]; *p; p++) {
+        if (*p == '-' && !dashfound) {
+            dashfound = true;
+            continue;
+        }
+        if (!CTYPE(isdigit, *p)) {
+            Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+            *DidReply = true;
+            return false;
+        }
+    }
+
+    /* Got just a single number? */
     if ((p = strchr(av[1], '-')) == NULL) {
-	rp->Low = rp->High = atol(av[1]);
+        rp->Low = rp->High = atol(av[1]);
         return true;
     }
 
-    /* Parse range. */
+    /* "-" becomes "\0" and we parse the low water mark.
+     * Note that atol() returns 0 if no valid number
+     * is found at the beginning of *p. */
     *p++ = '\0';
     rp->Low = atol(av[1]);
 
-    /* Adjust the lowmark. */
+    /* Adjust the low water mark. */
     if (rp->Low < ARTlow)
         rp->Low = ARTlow;
 
-   /* Parse and adjust the highmark.
-    * "12-" gives everything from 12 to the end.
-    * We do not bother about "42-12" or "42-0" in this function. */
+    /* Parse and adjust the high water mark.
+     * "12-" gives everything from 12 to the end.
+     * We do not bother about "42-12" or "42-0" in this function. */
     if ((*p == '\0') || ((rp->High = atol(p)) > ARThigh))
         rp->High = ARThigh;
 
