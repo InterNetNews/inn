@@ -1376,13 +1376,12 @@ PERMgetaccess(char *nnrpaccess)
 {
     int i;
     char *uname;
-    int canauthenticate;
 
     auth_realms	    = NULL;
     access_realms   = NULL;
     success_auth    = NULL;
 
-    PERMcanauthenticate = true;
+    PERMcanauthenticate = false;
     PERMcanread	    = PERMcanpost   = false;
     PERMreadlist    = PERMpostlist  = false;
     PERMaccessconf = NULL;
@@ -1407,10 +1406,9 @@ PERMgetaccess(char *nnrpaccess)
     }
 
     /* auth_realms are all expected to match the user. */
-    canauthenticate = 0;
     for (i = 0; auth_realms[i]; i++)
 	if (auth_realms[i]->auth_methods)
-	    canauthenticate = 1;
+	    PERMcanauthenticate = true;
     uname = 0;
     while (!uname && i--) {
 	if ((uname = ResolveUser(auth_realms[i])) != NULL)
@@ -1431,10 +1429,10 @@ PERMgetaccess(char *nnrpaccess)
 	PERMneedauth = false;
 	success_auth = auth_realms[i];
 	syslog(L_TRACE, "%s res %s", Client.host, PERMuser);
-    } else if (!canauthenticate) {
-	/* couldn't resolve the user. */
+    } else if (!PERMcanauthenticate) {
+	/* Couldn't resolve the user. */
 	syslog(L_NOTICE, "%s no_user", Client.host);
-	Printf("%d Could not get your access name.  Goodbye.\r\n",
+	Printf("%d Could not get your access name.  Goodbye!\r\n",
 	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     } else {
