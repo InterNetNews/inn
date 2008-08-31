@@ -292,16 +292,14 @@ void
 CMDmode(int ac UNUSED, char *av[])
 {
     if (strcasecmp(av[1], "READER") == 0)
-        if (PERMcanauthenticate) {
-            Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
-                   (PERMcanpost || PERMcanpostgreeting) ?
-                       NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
-                   PERMaccessconf->pathhost, INN_VERSION_STRING,
-                   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
-        } else {
-            /* AUTHINFO has already been successfully used. */
-            Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
-        }
+        /* In the case AUTHINFO has already been successfully used,
+         * nnrpd must answer as a no-op (it still advertises the READER
+         * capability but not MODE-READER). */
+        Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
+               (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
+                   NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
+               PERMaccessconf->pathhost, INN_VERSION_STRING,
+               (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
     else
         Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
 }

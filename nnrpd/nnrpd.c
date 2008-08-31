@@ -411,7 +411,7 @@ StartConnection(void)
     if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
 	    sysnotice("? cant getpeername");
-	    Printf("%d I can't get your name.  Goodbye.\r\n", NNTP_ERR_ACCESS);
+	    Printf("%d I can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
         strlcpy(Client.host, "stdin", sizeof(Client.host));
@@ -437,7 +437,7 @@ StartConnection(void)
         length = sizeof(sss);
 	if (getsockname(STDIN_FILENO, sas, &length) < 0) {
 	    sysnotice("%s can't getsockname", Client.host);
-	    Printf("%d Can't figure out where you connected to.  Goodbye\r\n",
+	    Printf("%d Can't figure out where you connected to.  Goodbye!\r\n",
                    NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
@@ -986,7 +986,7 @@ main(int argc, char *argv[])
     StartConnection();
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Printf("%d You have no permission to talk.  Goodbye.\r\n",
+	Printf("%d You have no permission to talk.  Goodbye!\r\n",
 	       NNTP_ERR_ACCESS);
 	ExitWithStats(1, false);
     }
