@@ -152,6 +152,7 @@ enum timer {
 EXTERN bool	PERMauthorized;
 EXTERN bool     PERMcanauthenticate;
 EXTERN bool	PERMcanpost;
+EXTERN bool     PERMcanpostgreeting;
 EXTERN bool	PERMcanread;
 EXTERN bool	PERMneedauth;
 EXTERN bool	PERMspecified;

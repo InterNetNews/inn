@@ -1382,6 +1382,7 @@ PERMgetaccess(char *nnrpaccess)
     success_auth    = NULL;
 
     PERMcanauthenticate = false;
+    PERMcanpostgreeting = false;
     PERMcanread	    = PERMcanpost   = false;
     PERMreadlist    = PERMpostlist  = false;
     PERMaccessconf = NULL;
@@ -1406,9 +1407,16 @@ PERMgetaccess(char *nnrpaccess)
     }
 
     /* auth_realms are all expected to match the user. */
-    for (i = 0; auth_realms[i]; i++)
-	if (auth_realms[i]->auth_methods)
+    for (i = 0; auth_realms[i]; i++) {
+	if (auth_realms[i]->auth_methods != NULL)
 	    PERMcanauthenticate = true;
+        /* We assume that an access or dynamic script will allow
+         * the user to post when authenticated, so that a 200 greeting
+         * code can be sent. */
+        if (auth_realms[i]->access_script != NULL
+            || auth_realms[i]->dynamic_script != NULL)
+            PERMcanpostgreeting = true;
+    }
     uname = 0;
     while (!uname && i--) {
 	if ((uname = ResolveUser(auth_realms[i])) != NULL)
@@ -1438,16 +1446,18 @@ PERMgetaccess(char *nnrpaccess)
     } else {
 	PERMneedauth = true;
     }
-    /* check maximum allowed permissions for any host that matches (for
-     * the greeting string) */
+    /* Check maximum allowed permissions for any host that matches (for
+     * the greeting string). */
     for (i = 0; access_realms[i]; i++) {
 	if (!PERMcanread)
 	    PERMcanread = (access_realms[i]->read != NULL);
 	if (!PERMcanpost)
 	    PERMcanpost = (access_realms[i]->post != NULL);
+        if (!PERMcanpostgreeting)
+            PERMcanpostgreeting = (access_realms[i]->post != NULL);
     }
     if (!i) {
-	/* no applicable access groups. Zeroing all these makes INN 
+	/* No applicable access groups.  Zeroing all these makes INN 
 	 * return permission denied to client. */
 	PERMcanread = PERMcanpost = PERMneedauth = false;
     }

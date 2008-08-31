@@ -293,10 +293,11 @@ CMDmode(int ac UNUSED, char *av[])
 {
     if (strcasecmp(av[1], "READER") == 0)
         if (PERMcanauthenticate) {
-            Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-                   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
+            Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
+                   (PERMcanpost || PERMcanpostgreeting) ?
+                       NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
                    PERMaccessconf->pathhost, INN_VERSION_STRING,
-                   PERMcanpost ? "posting ok" : "no posting");
+                   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
         } else {
             /* AUTHINFO has already been successfully used. */
             Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);

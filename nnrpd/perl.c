@@ -383,7 +383,8 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
     code = POPi;
 
     if ((code == NNTP_OK_BANNER_POST) || (code == NNTP_OK_BANNER_NOPOST))
-	code = PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST;
+	code = (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
+                   NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST;
 
     if (code == NNTP_FAIL_AUTH_NEEDED) 
 	PERMneedauth = true;

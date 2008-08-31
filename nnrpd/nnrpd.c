@@ -1055,16 +1055,18 @@ main(int argc, char *argv[])
 #endif /* HAVE_SASL */
 
     if (PERMaccessconf) {
-        Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
+        Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
+	   (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
+               NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
            PERMaccessconf->pathhost, INN_VERSION_STRING,
-	   PERMcanpost ? "posting ok" : "no posting");
+	   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
 	clienttimeout = PERMaccessconf->clienttimeout;
     } else {
-        Reply("%d %s InterNetNews NNRP server %s ready (%s).\r\n",
-	   PERMcanpost ? NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
+        Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
+	   (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
+               NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
            innconf->pathhost, INN_VERSION_STRING,
-	   PERMcanpost ? "posting ok" : "no posting");
+	   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
 	clienttimeout = innconf->clienttimeout;
     }
 
