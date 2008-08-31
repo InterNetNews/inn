@@ -11,6 +11,7 @@
 #include "inn/ov.h"
 
 extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
+extern bool CMDisrange(char *string);
 
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
@@ -54,11 +55,17 @@ CMDgroup(int ac, char *av[])
 	group = xstrdup(av[1]);
     }
 
+    /* Check whether the second argument is valid. */
+    if (ac == 3 && !CMDisrange(av[2])) {
+        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
     /* FIXME: Temporarily work around broken API. */
     if (!OVgroupstats(group, &low, &high, &count, NULL)) {
-	Reply("%s %s\r\n", NOSUCHGROUP, group);
-	free(group);
-	return;
+        Reply("%s %s\r\n", NOSUCHGROUP, group);
+        free(group);
+        return;
     }
     ARTlow = low;
     ARThigh = high;
@@ -169,9 +176,9 @@ CMDgroup(int ac, char *av[])
         /* Parse the range. */
         if (ac == 3) {
             /* CMDgetrange() expects av[1] to contain the range.
-             * It is av[2] for LISTGROUP. */
+             * It is av[2] for LISTGROUP.
+             * We already know that GRPcur exists. */
             if (!CMDgetrange(ac, av + 1, &range, &DidReply)) {
-                /* It cannot happen because GRPcur exists. */
                 if (DidReply) {
                     free(group);
                     return;

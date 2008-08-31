@@ -61,6 +61,7 @@ static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 
 bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
+bool CMDisrange(char *string);
 
 static void
 PushIOvHelper(struct iovec* vec, int* countp)
@@ -648,6 +649,12 @@ CMDfetch(int ac, char *av[])
 	return;
     }
 
+    /* Check whether the second argument (a number) is valid. */
+    if (ac == 2 && strspn(av[1], "0123456789") != strlen(av[1])) {
+        Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
     /* Trying to read. */
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
@@ -664,10 +671,7 @@ CMDfetch(int ac, char *av[])
 	tart=ARTnumber;
     }
     else {
-	if (strspn(av[1], "0123456789") != strlen(av[1])) {
-	    Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
-	    return;
-	}
+        /* We have already checked that the article number is an integer. */
 	strlcpy(buff, av[1], sizeof(buff));
 	tart=(ARTNUM)atol(buff);
     }
@@ -772,7 +776,6 @@ bool
 CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 {
     char		*p;
-    bool                dashfound = false;
 
     *DidReply = false;
 
@@ -787,17 +790,11 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
         return true;
     }
 
-    /* Check the syntax:  only allow digits and *one* "-". */
-    for (p = av[1]; *p; p++) {
-        if (*p == '-' && !dashfound) {
-            dashfound = true;
-            continue;
-        }
-        if (!CTYPE(isdigit, *p)) {
-            Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
-            *DidReply = true;
-            return false;
-        }
+    /* Check the syntax. */
+    if (!CMDisrange(av[1])) {
+        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        *DidReply = true;
+        return false;
     }
 
     /* Got just a single number? */
@@ -825,6 +822,28 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     p--;
     *p = '-';
 
+    return true;
+}
+
+
+/*
+**  Return true if the provided string is a valid range.
+*/
+bool
+CMDisrange(char *string)
+{
+    bool dashfound = false;
+
+    /* Check the syntax:  only allow digits and *one* "-". */
+    for (; *string; string++) {
+        if (*string == '-' && !dashfound) {
+            dashfound = true;
+            continue;
+        }
+        if (!CTYPE(isdigit, *string))
+            return false;
+    }
+    
     return true;
 }
 
