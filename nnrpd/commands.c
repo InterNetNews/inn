@@ -426,7 +426,7 @@ CMDnewgroups(int ac, char *av[])
 */
 /* ARGSUSED */
 void
-CMDpost(int ac UNUSED, char *av[] UNUSED)
+CMDpost(int ac, char *av[])
 {
     static char	*article;
     static int	size;
@@ -444,6 +444,13 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     bool	ihave, permanent;
 
     ihave = (strcasecmp(av[0], "IHAVE") == 0);
+
+    /* Check whether the message-ID is valid for IHAVE. */
+    if (ihave && ac == 2 && !IsValidMessageID(av[1])) {
+        Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
 	syslog(L_NOTICE, "%s noperm ihave without permission", Client.host);
 	Reply("%s\r\n", NNTP_ACCESS);
@@ -456,13 +463,13 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     }
 
     if (!backoff_inited) {
-	/* Exponential posting backoff */
+	/* Exponential posting backoff. */
 	InitBackoffConstants();
 	backoff_inited = true;
     }
 
-    /* Dave's posting limiter - Limit postings to a certain rate
-     * And now we support multiprocess rate limits. Questions?
+    /* Dave's posting limiter.  Limit postings to a certain rate
+     * And now we support multiprocess rate limits.  Questions?
      * E-mail <dave@jetcafe.org>.
      */
     if (BACKOFFenabled) {
@@ -471,20 +478,20 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
        * invoke the spaghetti factor). 
        */
       if ((path = (char *) PostRecFilename(Client.ip,PERMuser)) == NULL) {
-        Reply("%s\r\n", NNTP_CANTPOST);
+        Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         return;
       }
       
       if (LockPostRec(path) == 0) {
         syslog(L_ERROR, "%s Error write locking '%s'",
                Client.host, path);
-        Reply("%s\r\n", NNTP_CANTPOST);
+        Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         return;
       }
       
       if (!RateLimit(&sleeptime,path)) {
 	syslog(L_ERROR, "%s can't check rate limit info", Client.host);
-	Reply("%s\r\n", NNTP_CANTPOST);
+	Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         UnlockPostRec(path);
 	return;
       } else if (sleeptime != 0L) {
@@ -493,11 +500,11 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
       }
       
       /* Remove the lock here so that only one nnrpd process does the
-       * backoff sleep at once. Other procs are sleeping for the lock.
+       * backoff sleep at once.  Other procs are sleeping for the lock.
        */
       UnlockPostRec(path);
 
-    } /* end backoff code */
+    } /* End backoff code. */
 
     /* Start at beginning of buffer. */
     if (article == NULL) {
@@ -506,7 +513,24 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     }
     idbuff[0] = 0;
     if (ihave) {
-	Reply(NNTP_SENDIT "\r\n");
+        /* Check whether it is a duplicate. */
+        if (History == NULL) {
+            time_t statinterval = 30;
+            History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);
+            if (!History) {
+                syslog(L_NOTICE, "can't initialize history");
+                Reply("%d NNTP server unavailable; try later\r\n",
+                       NNTP_FAIL_TERMINATING);
+                ExitWithStats(1, true);
+            }
+            HISctl(History, HISCTLS_STATINTERVAL, &statinterval);
+        }
+        if (HIScheck(History, av[1])) {
+            Reply("%d Duplicate\r\n", NNTP_FAIL_IHAVE_REFUSE);
+            return;
+        } else {
+            Reply("%d Send it; end with <CR-LF>.<CR-LF>\r\n", NNTP_CONT_IHAVE);
+        }
     } else {
 	if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL) {
 	    if (VirtualPathlen > 0) {
@@ -553,20 +577,20 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    break;
 	}
 
-	/* if its the terminator, break out */
+	/* If it is the terminator, break out. */
 	if (strcmp(line, ".") == 0) {
 	    break;
 	}
 
-	/* if they broke our line length limit, there's little point
-	 * in processing any more of their input */
+	/* If they broke our line length limit, there's little point
+	 * in processing any more of their input. */
 	if (longline != 0) {
 	    continue;
 	}
 
 	/* +2 because of the \n\0 we append; note we don't add the 2
 	 * when increasing the size of the buffer as ART_LINE_MALLOC
-	 * will always be larger than 2 bytes */
+	 * will always be larger than 2 bytes. */
 	if ((len + 2) > (size_t)(end - p)) {
 	    i = p - article;
 	    size += len + 4096;
@@ -575,7 +599,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    p = i + article;
 	}
 
-	/* reverse any byte-stuffing */
+	/* Reverse any byte-stuffing. */
 	if (*line == '.') {
 	    ++line;
 	    --len;
@@ -587,7 +611,7 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
     }
 
     if (longline) {
-	warn("%s toolong in post", Client.host);
+	warn("%s too long in post", Client.host);
 	Printf("%d Line %d too long\r\n", 
 	       ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT, longline);
 	POSTrejected++;
@@ -608,13 +632,13 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
 	    *p = '\0';
 	notice("%s post failed %s", Client.host, response);
 	if (!ihave || permanent) {
-	    /* for permanent errors reject the message */
+	    /* For permanent errors, reject the message. */
 	    Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
 		  response);
 	} else {
-	    /* non-permanent errors only have relevance to ihave, for
+	    /* Non-permanent errors only have relevance to IHAVE, for
 	     * these we have the error status from the upstream
-	     * server to report */
+	     * server to report. */
 	    Reply("%s\r\n", response);
 	}
 	POSTrejected++;
