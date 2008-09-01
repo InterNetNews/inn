@@ -110,8 +110,8 @@ Again:
 #endif
 
     if (result == -1) {
-	/* we can't recover, since we can't resynchronise with our
-	 * peer */
+	/* We can't recover, since we can't resynchronise with our
+	 * peer. */
 	ExitWithStats(1, true);
     }
     *countp = 0;
@@ -305,14 +305,14 @@ ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
 	if (History == NULL) {
 	    time_t statinterval;
 
-	    /* Do lazy opens of the history file - lots of clients
-	     * will never ask for anything by message id, so put off
-	     * doing the work until we have to */
+	    /* Do lazy opens of the history file:  lots of clients
+	     * will never ask for anything by message-ID, so put off
+	     * doing the work until we have to. */
 	    History = HISopen(HISTORY, innconf->hismethod, HIS_RDONLY);
 	    if (!History) {
-		syslog(L_NOTICE, "cant initialize history");
-		Reply("%d NNTP server unavailable. Try later.\r\n",
-		      NNTP_ERR_UNAVAILABLE);
+		syslog(L_NOTICE, "can't initialize history");
+		Reply("%d NNTP server unavailable; try later\r\n",
+		      NNTP_FAIL_TERMINATING);
 		ExitWithStats(1, true);
 	    }
 	    statinterval = 30;
@@ -374,7 +374,7 @@ ARTsendmmap(SENDTYPE what)
 	}
     }
 
-    /* q points to the start of the article buffer, p to the end of it */
+    /* q points to the start of the article buffer, p to the end of it. */
     if (VirtualPathlen > 0 && (what != STbody)) {
         path = wire_findheader(ARThandle->data, ARThandle->len, "Path");
         if (path == NULL) {
@@ -408,7 +408,7 @@ ARTsendmmap(SENDTYPE what)
 	    ARTget++;
 	    return;
 	}
-	/* r points to the first space in the Xref header */
+	/* r points to the first space in the Xref: header. */
 	for (s = path, lastchar = '\0';
 	    s + VirtualPathlen + 1 < endofpath;
 	    lastchar = *s++) {
@@ -475,7 +475,7 @@ GetHeader(const char *header)
 {
     const char		*p, *q, *r, *s, *t;
     char		*w, prevchar;
-    /* Bogus value here to make sure that it isn't initialized to \n */
+    /* Bogus value here to make sure that it isn't initialized to \n. */
     char		lastchar = ' ';
     const char		*limit;
     const char		*cmplimit;
@@ -500,7 +500,7 @@ GetHeader(const char *header)
 		for (; (p < limit) && isspace((int)*p) ; p++);
 		for (q = p; q < limit; q++) 
 		    if ((*q == '\r') || (*q == '\n')) {
-			/* Check for continuation header lines */
+			/* Check for continuation header lines. */
 			t = q + 1;
 			if (t < limit) {
 			    if ((*q == '\r' && *t == '\n')) {
@@ -621,7 +621,7 @@ CMDfetch(int ac, char *av[])
     }
 
     if (!ok) {
-	Reply("%s\r\n", NNTP_ACCESS);
+	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -637,7 +637,7 @@ CMDfetch(int ac, char *av[])
 	}
 	if (!PERMartok()) {
 	    ARTclose();
-	    Reply("%s\r\n", NNTP_ACCESS);
+	    Reply("%d Read access denied for this article\r\n", NNTP_ERR_ACCESS);
 	    return;
 	}
 	tart=art;
@@ -687,7 +687,8 @@ CMDfetch(int ac, char *av[])
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
-    Reply("%d %s %.512s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
+    /* A message-ID does not have more than 250 octets. */
+    Reply("%d %s %.250s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
     if (what->Type != STstat)
 	ARTsendmmap(what->Type);
     ARTclose();
@@ -706,7 +707,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     const char *message;
 
     if (!PERMcanread) {
-	Reply("%s\r\n", NNTP_ACCESS);
+	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
     if (GRPcount == 0) {
@@ -792,7 +793,7 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 
     /* Check the syntax. */
     if (!CMDisrange(av[1])) {
-        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
         *DidReply = true;
         return false;
     }
@@ -849,7 +850,7 @@ CMDisrange(char *string)
 
 
 /*
-**  Apply virtual hosting to an Xref field.
+**  Apply virtual hosting to an Xref: field.
 */
 static char *
 vhost_xref(char *p)
@@ -860,13 +861,13 @@ vhost_xref(char *p)
 
     space = strchr(p, ' ');
     if (space == NULL) {
-	warn("malformed Xref `%s'", field);
+	warn("malformed Xref: `%s'", field);
 	goto fail;
     }
     offset = space + 1 - p;
     space = strchr(p + offset, ' ');
     if (space == NULL) {
-	warn("malformed Xref `%s'", field);
+	warn("malformed Xref: `%s'", field);
 	goto fail;
     }
     field = concat(PERMaccessconf->domain, space, NULL);
@@ -876,7 +877,7 @@ vhost_xref(char *p)
 }
 
 /*
-**  XOVER another extension.  Dump parts of the overview database.
+**  XOVER, another extension.  Dump parts of the overview database.
 */
 void
 CMDxover(int ac, char *av[])
@@ -893,7 +894,7 @@ CMDxover(int ac, char *av[])
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
-	Printf("%s\r\n", NNTP_ACCESS);
+	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -918,9 +919,10 @@ CMDxover(int ac, char *av[])
     }
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
 	if (av[1] != NULL)
-	    Reply("%d %s fields follow\r\n.\r\n", NNTP_OK_OVER, av[1]);
+	    Reply("%d %s fields follow\r\n", NNTP_OK_OVER, av[1]);
 	else
-	    Reply("%d %d fields follow\r\n.\r\n", NNTP_OK_OVER, ARTnumber);
+	    Reply("%d %d fields follow\r\n", NNTP_OK_OVER, ARTnumber);
+        Printf(".\r\n");
 	return;
     }
     if (PERMaccessconf->nnrpdoverstats) {
@@ -1045,7 +1047,7 @@ CMDpat(int ac, char *av[])
     struct cvector *vector = NULL;
 
     if (!PERMcanread) {
-	Printf("%s\r\n", NNTP_ACCESS);
+	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -1062,11 +1064,11 @@ CMDpat(int ac, char *av[])
 	if (ac > 2 && av[2][0] == '<') {
             if (!IsValidMessageID(av[2])) {
                 Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
-                return;
+                break;
             }
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
-		Printf("%d No such article.\r\n", NNTP_FAIL_NOTFOUND);
+		Printf("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 		break;
 	    }
 	    Printf("%d %s matches follow (ID)\r\n", NNTP_OK_HEAD,
@@ -1089,7 +1091,7 @@ CMDpat(int ac, char *av[])
 	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
 	    if (!DidReply) {
 		Reply("%d %s no matches follow (range)\r\n",
-		      NNTP_OK_HEAD, header ? header : "\"\"");
+		      NNTP_OK_HEAD, header);
 		Printf(".\r\n");
 		break;
 	    }
@@ -1098,8 +1100,8 @@ CMDpat(int ac, char *av[])
 	/* In overview? */
         Overview = overview_index(header, OVextra);
 
-	/* Not in overview, we have to fish headers out from the articles */
-	if (Overview < 0 ) {
+	/* Not in overview, we have to fish headers out from the articles. */
+	if (Overview < 0) {
 	    Reply("%d %s matches follow (art)\r\n", NNTP_OK_HEAD,
 		  header);
 	    for (i = range.Low; i <= range.High && range.High > 0; i++) {
@@ -1122,8 +1124,9 @@ CMDpat(int ac, char *av[])
 	/* Okay then, we can grab values from overview. */
 	handle = (void *)OVopensearch(GRPcur, range.Low, range.High);
 	if (handle == NULL) {
-	    Reply("%d %s no matches follow (NOV)\r\n.\r\n",
+	    Reply("%d %s no matches follow (NOV)\r\n",
 		  NNTP_OK_HEAD, header);
+            Printf(".\r\n");
 	    break;
 	}	
 	
