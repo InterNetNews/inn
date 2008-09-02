@@ -1,6 +1,6 @@
 /*  $Revision$
 **
-**  The newnews command.
+**  The NEWNEWS command.
 */
 #include "config.h"
 #include "clibrary.h"
@@ -47,7 +47,7 @@ FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
 }
 
 /*
-**  get Xref header
+**  Get Xref: header.
 */
 static char *
 GetXref(ARTHANDLE *art)
@@ -162,7 +162,8 @@ process_newnews(char *group, bool AllGroups, time_t date)
 
 	if (innconf->nfsreader) {
 	    time(&now);
-	    /* move the start time back nfsreaderdelay seconds */
+	    /* Move the start time back nfsreaderdelay seconds
+             * as we are an NFS reader. */
 	    if (date >= innconf->nfsreaderdelay)
 		date -= innconf->nfsreaderdelay;
 	}
@@ -183,7 +184,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		    !ARTinstorebytoken(token))
 		    continue;
 		/* We only care about the newsgroup list here, virtual
-		 * hosting isn't relevant */
+		 * hosting isn't relevant. */
 		p = overview_getheader(vector, overhdr_xref, OVextra);
 	    }
 	    if (p == NULL)
@@ -211,8 +212,8 @@ process_newnews(char *group, bool AllGroups, time_t date)
 }
 
 /*
-**  NEWNEWS wildmat date time ["GMT"]
-**  Return the Message-ID of any articles after the specified date
+**  NEWNEWS wildmat date time [GMT]
+**  Return the Message-ID of any articles after the specified date.
 */
 void
 CMDnewnews(int ac, char *av[])
@@ -224,7 +225,7 @@ CMDnewnews(int ac, char *av[])
   time_t	date;
   QIOSTATE	*qp;
   int		i;
-  bool          local;
+  bool          local = true;
 
   if (!PERMaccessconf->allownewnews) {
       Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ERR_ACCESS);
@@ -232,24 +233,33 @@ CMDnewnews(int ac, char *av[])
   }
 
   if (!PERMcanread) {
-      Reply("%s\r\n", NNTP_ACCESS);
+      Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
       return;
   }
 
-  /* Make other processes happier if someone uses NEWNEWS */
+  /* Make other processes happier if someone uses NEWNEWS. */
   if (innconf->nicenewnews > 0) {
       nice(innconf->nicenewnews);
       innconf->nicenewnews = 0;
   }
 
+  if (ac > 4) {
+      if (strcasecmp(av[4], "GMT") == 0)
+          local = false;
+      else {
+          Reply("%d Syntax error for \"GMT\"\r\n", NNTP_ERR_SYNTAX);
+          return;
+      }
+  }
+
   snprintf(line, sizeof(line), "%s %s %s %s", av[1], av[2], av[3],
-	   (ac >= 5 && (*av[4] == 'G' || *av[4] == 'U')) ? "GMT" : "local");
+	   local ? "local" : "GMT");
   notice("%s newnews %s", Client.host, line);
 
   TMRstart(TMR_NEWNEWS);
-  /* Optimization in case client asks for !* (no groups) */
+  /* Optimization in case client asks for !* (no groups). */
   if (strcmp(av[1], "!*") == 0) {
-      Reply("%s\r\n", NNTP_NEWNEWSOK);
+      Reply("%d No new news\r\n", NNTP_OK_NEWNEWS);
       Printf(".\r\n");
       TMRstop(TMR_NEWNEWS);
       return;
@@ -264,7 +274,6 @@ CMDnewnews(int ac, char *av[])
   }
 
   /* Parse the date. */
-  local = !(ac > 4 && strcasecmp(av[4], "GMT") == 0);
   date = parsedate_nntp(av[2], av[3], local);
   if (date == (time_t) -1) {
       Reply("%d Bad date\r\n", NNTP_ERR_SYNTAX);
@@ -273,8 +282,8 @@ CMDnewnews(int ac, char *av[])
   }
 
   if (strcspn(av[1], "\\!*[?]") == strlen(av[1])) {
-      /* optimise case - don't need to scan the active file pattern
-       * matching */
+      /* Optimise case -- don't need to scan the active file pattern
+       * matching. */
       Reply("%s\r\n", NNTP_NEWNEWSOK);
       for (i = 0; groups[i]; ++i) {
 	  process_newnews(groups[i], AllGroups, date);
@@ -286,7 +295,7 @@ CMDnewnews(int ac, char *av[])
 	  if (errno == ENOENT) {
 	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
 	  } else {
-	      syswarn("%s cant fopen %s", Client.host, path);
+	      syswarn("%s can't fopen %s", Client.host, path);
 	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
 	  }
 	  free(path);

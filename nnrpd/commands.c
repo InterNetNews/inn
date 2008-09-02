@@ -331,10 +331,18 @@ CMDnewgroups(int ac, char *av[])
     int                 numgroups = 0;
     int                 numfound = 0;
     int                 i;
-    bool                local;
+    bool                local = true;
 
     /* Parse the date. */
-    local = !(ac > 3 && strcasecmp(av[3], "GMT") == 0);
+
+    if (ac > 3) {
+        if (strcasecmp(av[3], "GMT") == 0)
+            local = false;
+        else {
+            Reply("%d Syntax error for \"GMT\"\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
+    }
     date = parsedate_nntp(av[1], av[2], local);
     if (date == (time_t) -1) {
         Reply("%d Bad date\r\n", NNTP_ERR_SYNTAX);
@@ -347,8 +355,8 @@ CMDnewgroups(int ac, char *av[])
        an error was causing needless confusion.  Just return the empty list
        of groups. */
     if ((qp = QIOopen(ACTIVETIMES)) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVETIMES);
-	Reply("%d New newsgroups follow.\r\n", NNTP_OK_NEWGROUPS);
+	syslog(L_ERROR, "%s can't fopen %s %m", Client.host, ACTIVETIMES);
+	Reply("%d No new newsgroups\r\n", NNTP_OK_NEWGROUPS);
         Printf(".\r\n");
 	return;
     }
@@ -390,19 +398,25 @@ CMDnewgroups(int ac, char *av[])
     QIOclose(qp);
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
-	syslog(L_ERROR, "%s cant fopen %s %m", Client.host, ACTIVE);
-	Reply("%d Cannot open active file.\r\n", NNTP_ERR_UNAVAILABLE);
+	syslog(L_ERROR, "%s can't fopen %s %m", Client.host, ACTIVE);
+	Reply("%d Cannot open active file\r\n", NNTP_ERR_UNAVAILABLE);
 	return;
     }
     qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
-    Reply("%d New newsgroups follow.\r\n", NNTP_OK_NEWGROUPS);
+    Reply("%d New newsgroups follow\r\n", NNTP_OK_NEWGROUPS);
     for (numfound = numgroups; (p = QIOread(qp)) && numfound;) {
+        /* p will contain the name of the newsgroup.
+         * When the syntax of the line is not correct, we continue
+         * with the following line. */
 	if ((q = strchr(p, ' ')) == NULL)
 	    continue;
 	*q++ = '\0';
+        /* Find out the end of the high water mark. */
 	if ((q = strchr(q, ' ')) == NULL)
 	    continue;
 	q++;
+        /* Find out the end of the low water mark.
+         * q will contain the flag of the newsgroup. */
 	if ((q = strchr(q, ' ')) == NULL)
 	    continue;
 	q++;
