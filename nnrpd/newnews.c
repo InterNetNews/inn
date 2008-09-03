@@ -293,10 +293,10 @@ CMDnewnews(int ac, char *av[])
       qp = QIOopen(path);
       if (qp == NULL) {
 	  if (errno == ENOENT) {
-	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
+	      Reply("%d Can't open active\r\n", NNTP_FAIL_ACTION);
 	  } else {
 	      syswarn("%s can't fopen %s", Client.host, path);
-	      Reply("%d Can't open active\r\n", NNTP_ERR_UNAVAILABLE);
+	      Reply("%d Can't open active\r\n", NNTP_FAIL_ACTION);
 	  }
 	  free(path);
 	  TMRstop(TMR_NEWNEWS);

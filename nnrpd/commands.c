@@ -89,7 +89,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
-	    Reply("%d Can't fork %s\r\n", NNTP_ERR_UNAVAILABLE,
+	    Reply("%d Can't fork %s\r\n", NNTP_FAIL_ACTION,
 		strerror(errno));
 	    syslog(L_FATAL, "cant fork %s %m", av[0]);
 	    return -1;
@@ -274,7 +274,7 @@ CMDdate(int ac UNUSED, char *av[] UNUSED)
     now = time(NULL);
     gmt = gmtime(&now);
     if (now == (time_t) -1 || gmt == NULL) {
-        Reply("%d Can't get time, %s\r\n", NNTP_ERR_UNAVAILABLE, strerror(errno));
+        Reply("%d Can't get time, %s\r\n", NNTP_FAIL_ACTION, strerror(errno));
         return;
     }
     Reply("%d %04.4d%02.2d%02.2d%02.2d%02.2d%02.2d\r\n",
@@ -399,7 +399,7 @@ CMDnewgroups(int ac, char *av[])
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
 	syslog(L_ERROR, "%s can't fopen %s %m", Client.host, ACTIVE);
-	Reply("%d Cannot open active file\r\n", NNTP_ERR_UNAVAILABLE);
+	Reply("%d Cannot open active file\r\n", NNTP_FAIL_ACTION);
 	return;
     }
     qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
