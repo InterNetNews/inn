@@ -245,6 +245,7 @@ typedef struct _ARTDATA {
   struct buffer	  Overview;		/* buffer for overview data */
   int		  CRwithoutLF;		/* counter for '\r' without '\n' */
   int		  LFwithoutCR;		/* counter for '\n' without '\r' */
+  int             DotStuffedLines;      /* counter for lines beginning with '.' */
   size_t	  CurHeader;		/* where current header starts.
 					   this is used for folded header
 					   it indicates offset from bp->Data */

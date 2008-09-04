@@ -588,14 +588,12 @@ ARTstore(CHANNEL *cp)
     }
     data->BytesValue += iov[i].iov_len;
   }
-  /* Subtract the trailing 3 octets ".\r\n".  Note that we count
-   * a CRLF pair as two octets.  We also count the empty line
-   * between headers and body.
-   * FIXME:  We should also remove for each dot-stuffed lines.
+  /* Subtract the trailing 3 octets ".\r\n" and the "." characters
+   * used for dot-stuffing.  Note that we count a CRLF pair as
+   * two octets.  We also count the empty line between headers and body.
    * It is how the count of Bytes: should be done according to
-   * RFC 3977.  However, should we parse the whole body here
-   * only for that? */
-  data->BytesValue -= 3;
+   * RFC 3977. */
+  data->BytesValue -= 3 + data->DotStuffedLines;
   /* Figure out how much space we'll need and get it. */
   snprintf(data->Bytes, sizeof(data->Bytes), "Bytes: %ld\r\n",
            data->BytesValue);
@@ -792,6 +790,7 @@ ARTprepare(CHANNEL *cp)
     hc->Length = 0;
   }
   data->Lines = data->HeaderLines = data->CRwithoutLF = data->LFwithoutCR = 0;
+  data->DotStuffedLines = 0;
   data->CurHeader = data->LastCRLF = data->Body = cp->Start;
   data->BytesHeader = NULL;
   data->Feedsite = "?";
@@ -964,6 +963,9 @@ ARTparsebody(CHANNEL *cp)
         } else if (bp->data[i + 1] == '\n') {
             i++;
             data->Lines++;
+            /* Check whether the new line begins with a dot. */
+            if (bp->data[i + 1] == '.')
+                data->DotStuffedLines++;
         } else {
             data->LFwithoutCR++;
         }
@@ -1828,6 +1830,11 @@ ARTmakeoverview(CHANNEL *cp)
 	  len = data->XrefLength - 2;
 	}
 	break;
+      case HDR__LINES:
+        p = NULL;
+        xasprintf(&p, "%d\r\n", data->Lines);
+        len = strlen(p) - 2;
+        break;
       default:
 	p = HDR(j);
 	len = HDR_LEN(j);
