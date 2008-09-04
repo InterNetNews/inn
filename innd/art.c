@@ -530,13 +530,13 @@ ARTstore(CHANNEL *cp)
 	return result;
     }
   }
-  /* in case Xref is not included in orignal article */
+  /* In case Xref: is not included in original article. */
   if (!HDR_FOUND(HDR__XREF)) {
-    /* write heading data */
+    /* Write heading data. */
     iov[iovcnt].iov_base = (char *) p;
     iov[iovcnt++].iov_len = Article->data + (data->Body - 2) - p;
     arth.len += Article->data + (data->Body - 2) - p;
-    /* Xref needs to be inserted */
+    /* Xref: needs to be inserted. */
     iov[iovcnt].iov_base = (char *) "Xref: ";
     iov[iovcnt++].iov_len = sizeof("Xref: ") - 1;
     arth.len += sizeof("Xref: ") - 1;
@@ -588,9 +588,14 @@ ARTstore(CHANNEL *cp)
     }
     data->BytesValue += iov[i].iov_len;
   }
-  /* "\r\n" is counted as 1 byte.  trailing ".\r\n" and body delimitor are also
-     substituted */
-  data->BytesValue -= (data->HeaderLines + data->Lines + 4);
+  /* Subtract the trailing 3 octets ".\r\n".  Note that we count
+   * a CRLF pair as two octets.  We also count the empty line
+   * between headers and body.
+   * FIXME:  We should also remove for each dot-stuffed lines.
+   * It is how the count of Bytes: should be done according to
+   * RFC 3977.  However, should we parse the whole body here
+   * only for that? */
+  data->BytesValue -= 3;
   /* Figure out how much space we'll need and get it. */
   snprintf(data->Bytes, sizeof(data->Bytes), "Bytes: %ld\r\n",
            data->BytesValue);
