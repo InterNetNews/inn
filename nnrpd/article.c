@@ -854,9 +854,7 @@ void CMDxover(int ac, char *av[])
 
     /* Parse range. */
     if (!CMDgetrange(ac, av, &range, &DidReply)) {
-	if (!DidReply) {
-	    Reply("%d data follows\r\n", NNTP_OVERVIEW_FOLLOWS_VAL);
-	    Printf(".\r\n");
+	if (DidReply) {
 	    return;
 	}
     }
@@ -1028,10 +1026,7 @@ void CMDpat(int ac, char *av[])
 
 	/* Range specified. */
 	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
-	    if (!DidReply) {
-		Reply("%d %s no matches follow (range)\r\n",
-		      NNTP_HEAD_FOLLOWS_VAL, header ? header : "\"\"");
-		Printf(".\r\n");
+	    if (DidReply) {
 		break;
 	    }
 	}
