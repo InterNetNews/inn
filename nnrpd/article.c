@@ -877,12 +877,13 @@ vhost_xref(char *p)
 }
 
 /*
-**  XOVER, another extension.  Dump parts of the overview database.
+**  Dump parts of the overview database with the OVER command.
+**  The legacy XOVER is also kept.
 */
 void
-CMDxover(int ac, char *av[])
+CMDover(int ac, char *av[])
 {
-    bool	        DidReply;
+    bool	        DidReply, HasNotReplied;
     ARTRANGE		range;
     struct timeval	stv, etv;
     ARTNUM		artnum;
@@ -892,7 +893,28 @@ CMDxover(int ac, char *av[])
     int			len, useIOb = 0;
     TOKEN		token;
     struct cvector *vector = NULL;
+    bool                xover, mid;
 
+    xover = (strcasecmp(av[0], "XOVER") == 0);
+    mid = (ac > 1 && IsValidMessageID(av[1]));
+
+    /* Check the syntax of the arguments first.
+     * We do not accept a message-ID for XOVER, contrary to OVER.  A range
+     * is accepted for both of them. */
+    if (ac > 1
+        && (xover || !mid)
+        && !CMDisrange(av[1])) {
+        Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
+    if (mid) {
+        /* FIXME:  We still do not support OVER MSGID, sorry! */
+        Reply("%d Overview by message-ID unsupported\r\n", NNTP_ERR_UNAVAILABLE);
+        return;
+    }
+
+    /* Check authorizations. */
     if (!PERMcanread) {
 	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
@@ -904,26 +926,25 @@ CMDxover(int ac, char *av[])
 	return;
     }
 
-    /* Parse range. */
-    if (!CMDgetrange(ac, av, &range, &DidReply)) {
-	if (!DidReply) {
-	    Reply("%d data follows\r\n", NNTP_OK_OVER);
-	    Printf(".\r\n");
-	    return;
-	}
-    }
+    /* Parse range.  CMDgetrange() correctly sets the range when
+     * there is no argument. */
+    if (!CMDgetrange(ac, av, &range, &DidReply))
+        if (DidReply)
+            return;
 
     if (PERMaccessconf->nnrpdoverstats) {
         OVERcount++;
         gettimeofday(&stv, NULL);
     }
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-	if (av[1] != NULL)
-	    Reply("%d %s fields follow\r\n", NNTP_OK_OVER, av[1]);
-	else
-	    Reply("%d %d fields follow\r\n", NNTP_OK_OVER, ARTnumber);
-        Printf(".\r\n");
-	return;
+        /* The response code is different if a range is provided.  For OVER only. */
+        if (ac > 1)
+            Reply("%d No articles in %s\r\n",
+                  xover ? NNTP_FAIL_NO_ARTICLE : NNTP_FAIL_BAD_ARTICLE, av[1]);
+        else
+            Reply("%d Current article number %d is invalid\r\n",
+                  NNTP_FAIL_NO_ARTICLE, ARTnumber);
+        return;
     }
     if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
@@ -931,11 +952,6 @@ CMDxover(int ac, char *av[])
 	OVERtime+=(etv.tv_usec - stv.tv_usec) / 1000;
     }
 
-    if (av[1] != NULL)
-	Reply("%d %s fields follow\r\n", NNTP_OK_OVER, av[1]);
-    else
-	Reply("%d %d fields follow\r\n", NNTP_OK_OVER, ARTnumber);
-    fflush(stdout);
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
 
@@ -944,6 +960,7 @@ CMDxover(int ac, char *av[])
        SendIOb because it copies the data. */
     OVctl(OVSTATICSEARCH, &useIOb);
 
+    HasNotReplied = true;
     while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	if (PERMaccessconf->nnrpdoverstats) {
 	    gettimeofday(&etv, NULL);
@@ -961,6 +978,18 @@ CMDxover(int ac, char *av[])
 	    OVERhit++;
 	    OVERsize += len;
 	}
+
+        if (HasNotReplied) {
+            if (ac > 1)
+                Reply("%d Overview information for %s follows\r\n",
+                      NNTP_OK_OVER, av[1]);
+            else
+                Reply("%d Overview information for %d follows\r\n",
+                      NNTP_OK_OVER, ARTnumber);
+            fflush(stdout);
+            HasNotReplied = false;
+        }
+
 	vector = overview_split(data, len, NULL, vector);
 	r = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
 	cache_add(HashMessageID(r), token);
@@ -1002,13 +1031,23 @@ CMDxover(int ac, char *av[])
     if (vector)
         cvector_free(vector);
 
-    if(useIOb) {
-	SendIOb(".\r\n", 3);
-	PushIOb();
+    if (HasNotReplied) {
+        if (ac > 1)
+            Reply("%d No articles in %s\r\n",
+                  xover ? NNTP_FAIL_NO_ARTICLE : NNTP_FAIL_BAD_ARTICLE, av[1]);
+        else
+            Reply("%d Current article number %d is invalid\r\n",
+                  NNTP_FAIL_NO_ARTICLE, ARTnumber);
     } else {
-	SendIOv(".\r\n", 3);
-	PushIOv();
+        if(useIOb) {
+            SendIOb(".\r\n", 3);
+            PushIOb();
+        } else {
+            SendIOv(".\r\n", 3);
+            PushIOv();
+        }
     }
+
     if (PERMaccessconf->nnrpdoverstats)
 	gettimeofday(&stv, NULL);
     OVclosesearch(handle);
@@ -1089,10 +1128,7 @@ CMDpat(int ac, char *av[])
 
 	/* Range specified. */
 	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
-	    if (!DidReply) {
-		Reply("%d %s no matches follow (range)\r\n",
-		      NNTP_OK_HEAD, header);
-		Printf(".\r\n");
+	    if (DidReply) {
 		break;
 	    }
 	}

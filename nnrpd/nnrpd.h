@@ -182,11 +182,11 @@ EXTERN long	MaxBytesPerSecond; /* maximum bytes per sec a client can use, defaul
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
-EXTERN long	OVERcount;	/* number of XOVER commands */
-EXTERN long	OVERhit;	/* number of XOVER records found in .overview */
-EXTERN long	OVERmiss;	/* number of XOVER records found in articles */
-EXTERN long	OVERtime;	/* number of ms spent sending XOVER data */
-EXTERN long	OVERsize;	/* number of bytes of XOVER data sent	*/
+EXTERN long	OVERcount;	/* number of (X)OVER commands */
+EXTERN long	OVERhit;	/* number of (X)OVER records found in .overview */
+EXTERN long	OVERmiss;	/* number of (X)OVER records found in articles */
+EXTERN long	OVERtime;	/* number of ms spent sending (X)OVER data */
+EXTERN long	OVERsize;	/* number of bytes of (X)OVER data sent	*/
 EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
 EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
 EXTERN long	OVERget;	/* number of ms spent reading history	*/
@@ -243,10 +243,10 @@ extern void		CMDmode      (int ac, char** av);
 extern void		CMDnewgroups (int ac, char** av);
 extern void		CMDnewnews   (int ac, char** av);
 extern void		CMDnextlast  (int ac, char** av);
+extern void             CMDover      (int ac, char** av);
 extern void		CMDpost      (int ac, char** av);
 extern void             CMDquit      (int ac, char** av);
 extern void		CMDxgtitle   (int ac, char** av);
-extern void		CMDxover     (int ac, char** av);
 extern void		CMDpat       (int ac, char** av);
 extern void		CMD_unimp    (int ac, char** av);
 #ifdef HAVE_SSL
