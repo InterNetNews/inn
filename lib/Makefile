@@ -9,7 +9,7 @@ CFLAGS  = $(GCFLAGS)
 SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 		dispatch.c fdflags.c fdlimit.c getfqdn.c \
-		getmodaddr.c hash.c hashtab.c hex.c innconf.c inndcomm.c \
+		getmodaddr.c hash.c hashtab.c headers.c hex.c innconf.c inndcomm.c \
 		list.c localopen.c lockfile.c makedir.c md5.c messageid.c messages.c \
 		mmap.c network.c newsuser.c nntp.c qio.c radix32.c \
 		readin.c remopen.c \
@@ -161,6 +161,9 @@ hashtab.o: hashtab.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/hashtab.h ../include/inn/defines.h \
   ../include/inn/libinn.h
+headers.o: headers.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 hex.o: hex.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/utility.h ../include/inn/defines.h

@@ -500,6 +500,7 @@ lib/getnameinfo.c                     getnameinfo replacement
 lib/getpagesize.c                     getpagesize replacement
 lib/hash.c                            Create hash from a message-ID
 lib/hashtab.c                         Generic hash table
+lib/headers.c                         Functions for headers
 lib/hex.c                             Convert to and from hex strings
 lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       inet_aton replacement

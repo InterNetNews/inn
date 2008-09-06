@@ -1091,14 +1091,8 @@ CMDpat(int ac, char *av[])
 
     /* Check the syntax of the arguments first. */
     if (ac > 2 && !mid && !CMDisrange(av[2])) {
-        Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in the second argument\r\n", NNTP_ERR_SYNTAX);
         return;
-    }
-
-    /* Check authorizations. */
-    if (!PERMcanread) {
-	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
-	return;
     }
 
     header = av[1];
@@ -1117,9 +1111,20 @@ CMDpat(int ac, char *av[])
         header = xstrdup("Lines");
 
     /* We only allow :bytes and :lines for metadata. */
-    if ((strncasecmp(header, ":", 1) == 0) && !IsMetaLines && !IsMetaBytes) {
-        Reply("%d %s metadata request unsupported\r\n",
-              NNTP_ERR_UNAVAILABLE, header);
+    if (!IsMetaLines && !IsMetaBytes) {
+        if (strncasecmp(header, ":", 1) == 0) {
+            Reply("%d Unsupported metadata request\r\n",
+                  NNTP_ERR_UNAVAILABLE, header);
+            return;
+        } else if (!IsValidHeaderName(header)) {
+            Reply("%d Syntax error in the first argument\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
+    }
+
+    /* Check authorizations. */
+    if (!PERMcanread) {
+        Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
         return;
     }
 
