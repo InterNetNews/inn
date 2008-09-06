@@ -688,6 +688,7 @@ void CMDfetch(int ac, char *av[])
     if (ac > 1)
 	ARTnumber = tart;
     if ((msgid = GetHeader("Message-ID")) == NULL) {
+        ARTclose();
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
@@ -745,9 +746,9 @@ void CMDnextlast(int ac UNUSED, char *av[])
         if (!ARTopen(ARTnumber))
             continue;
         msgid = GetHeader("Message-ID");
+        ARTclose();
     } while (msgid == NULL);
 
-    ARTclose();
     Reply("%d %d %s Article retrieved; request text separately.\r\n",
 	   NNTP_NOTHING_FOLLOWS_VAL, ARTnumber, msgid);
 }
@@ -1008,6 +1009,12 @@ void CMDpat(int ac, char *av[])
 		Printf("%d No such article.\r\n", NNTP_DONTHAVEIT_VAL);
 		break;
 	    }
+            if (!PERMartok()) {
+                ARTclose();
+                Printf("%s\r\n", NOACCESS);
+                break;
+            }
+                
 	    Printf("%d %s matches follow (ID)\r\n", NNTP_HEAD_FOLLOWS_VAL,
 		   header);
 	    if ((text = GetHeader(header)) != NULL
@@ -1047,8 +1054,8 @@ void CMDpat(int ac, char *av[])
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
-		    ARTclose();
 		}
+                ARTclose();
 	    }
 	    SendIOb(".\r\n", 3);
 	    PushIOb();
