@@ -476,20 +476,20 @@ CMDpost(int ac UNUSED, char *av[] UNUSED)
        * invoke the spaghetti factor). 
        */
       if ((path = (char *) PostRecFilename(ClientIpString,PERMuser)) == NULL) {
-        Reply("%s\r\n", NNTP_CANTPOST);
+        Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         return;
       }
       
       if (LockPostRec(path) == 0) {
         syslog(L_ERROR, "%s Error write locking '%s'",
                ClientHost, path);
-        Reply("%s\r\n", NNTP_CANTPOST);
+        Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         return;
       }
       
       if (!RateLimit(&sleeptime,path)) {
 	syslog(L_ERROR, "%s can't check rate limit info", ClientHost);
-	Reply("%s\r\n", NNTP_CANTPOST);
+	Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         UnlockPostRec(path);
 	return;
       } else if (sleeptime != 0L) {
