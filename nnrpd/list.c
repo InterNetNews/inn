@@ -18,14 +18,15 @@ extern int nnrpd_starttls_done;
 typedef struct _LISTINFO {
     const char *method;
     const char * File;
-    void (*impl)(struct _LISTINFO *);
+    void (*impl)(struct _LISTINFO *, int ac, char *av[]);
     bool         Required;
     const char * Items;
     const char * Format;
 } LISTINFO;
 
-static void cmd_list_schema(LISTINFO *lp);
-static void cmd_list_extensions(LISTINFO *lp);
+static void cmd_list_schema(LISTINFO *lp, int ac, char *av[]);
+static void cmd_list_extensions(LISTINFO *lp, int ac, char *av[]);
+static void cmd_list_headers(LISTINFO *lp, int ac, char *av[]);
 
 static LISTINFO		INFOactive = {
     "ACTIVE", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
@@ -38,6 +39,10 @@ static LISTINFO		INFOactivetimes = {
 static LISTINFO		INFOdistribs = {
     "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
     "Distributions in form \"area description\""
+};
+static LISTINFO         INFOheaders = {
+    "HEADERS", NULL, cmd_list_headers, false, "supported headers and metadata",
+    "Headers and metadata items supported"
 };
 static LISTINFO               INFOsubs = {
     "SUBSCRIPTIONS", INN_PATH_NNRPSUBS, NULL, false,
@@ -72,6 +77,7 @@ static LISTINFO *info[] = {
     &INFOactive,
     &INFOactivetimes,
     &INFOdistribs,
+    &INFOheaders,
     &INFOsubs,
     &INFOdistribpats,
     &INFOextensions,
@@ -86,7 +92,7 @@ static LISTINFO *info[] = {
 **  List the overview schema (standard and extra fields).
 */
 static void
-cmd_list_schema(LISTINFO *lp)
+cmd_list_schema(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
 {
     const struct cvector *standard;
     unsigned int i;
@@ -107,7 +113,7 @@ cmd_list_schema(LISTINFO *lp)
 **  List supported extensions.
 */
 static void
-cmd_list_extensions(LISTINFO *lp)
+cmd_list_extensions(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
 {
     const char *mechlist = NULL;
 
@@ -130,6 +136,33 @@ cmd_list_extensions(LISTINFO *lp)
     }
 
     Printf(".\r\n");
+}
+
+
+/*
+**  List supported headers and metadata information.
+*/
+static void
+cmd_list_headers(LISTINFO *lp, int ac, char *av[])
+{
+    bool range;
+
+    range = (ac > 2 && strcasecmp(av[2], "RANGE") == 0);
+    
+    if (ac > 2 && (strcasecmp(av[2], "MSGID") != 0)
+        && !range) {
+        Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+    Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
+    Reply(":\r\n");
+    if (range) {
+        /* These information are only known by the overview system,
+         * and are only accessible with a range. */
+        Reply(":bytes\r\n");
+        Reply(":lines\r\n");
+    }
+    Reply(".\r\n");
 }
 
 
@@ -204,12 +237,13 @@ CMDlist(int ac, char *av[])
             if (CMD_list_single(wildarg))
 		return;
 	}
-    } else if (lp == &INFOgroups || lp == &INFOactivetimes) {
+    } else if (lp == &INFOgroups || lp == &INFOactivetimes
+               || lp == &INFOheaders) {
 	if (ac == 3)
 	    wildarg = av[2];
     }
-    /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES
-     * or NEWSGROUPS keywords are used. */
+    /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES,
+     * HEADERS or NEWSGROUPS keywords are used. */
     if (ac > 2 && !wildarg) {
 	Reply("%s\r\n", NNTP_SYNTAX_USE);
 	return;
@@ -217,7 +251,7 @@ CMDlist(int ac, char *av[])
 
     /* If a function is provided for the given keyword, we call it. */
     if (lp->impl != NULL) {
-	lp->impl(lp);
+	lp->impl(lp, ac, av);
 	return;
     }
 

@@ -292,7 +292,7 @@ ARTopen(ARTNUM artnum)
 
 
 /*
-**  Open the article for a given Message-ID.
+**  Open the article for a given message-ID.
 */
 static bool
 ARTopenbyid(char *msg_id, ARTNUM *ap, bool final)
@@ -625,10 +625,10 @@ CMDfetch(int ac, char *av[])
 	return;
     }
 
-    /* Requesting by Message-ID? */
+    /* Requesting by message-ID? */
     if (ac == 2 && av[1][0] == '<') {
         if (!IsValidMessageID(av[1])) {
-            Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
+            Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
             return;
         }
 	if (!ARTopenbyid(av[1], &art, final)) {
@@ -684,6 +684,7 @@ CMDfetch(int ac, char *av[])
     if (ac > 1)
 	ARTnumber = tart;
     if ((msgid = GetHeader("Message-ID")) == NULL) {
+        ARTclose();
         Reply("%s\r\n", ARTnoartingroup);
 	return;
     }
@@ -743,9 +744,9 @@ CMDnextlast(int ac UNUSED, char *av[])
         if (!ARTopen(ARTnumber))
             continue;
         msgid = GetHeader("Message-ID");
+        ARTclose();
     } while (msgid == NULL);
 
-    ARTclose();
     Reply("%d %d %s Article retrieved; request text separately\r\n",
 	   NNTP_OK_STAT, ARTnumber, msgid);
 }
@@ -781,7 +782,7 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     *DidReply = false;
 
     if (ac == 1) {
-	/* No argument, do only current article. */
+	/* No arguments, do only current article. */
 	if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
 	    Reply("%s\r\n", ARTnocurrart);
 	    *DidReply = true;
@@ -878,7 +879,7 @@ vhost_xref(char *p)
 
 /*
 **  Dump parts of the overview database with the OVER command.
-**  The legacy XOVER is also kept.
+**  The legacy XOVER is also kept, with its specific behaviour.
 */
 void
 CMDover(int ac, char *av[])
@@ -927,7 +928,7 @@ CMDover(int ac, char *av[])
     }
 
     /* Parse range.  CMDgetrange() correctly sets the range when
-     * there is no argument. */
+     * there is no arguments. */
     if (!CMDgetrange(ac, av, &range, &DidReply))
         if (DidReply)
             return;
@@ -1060,19 +1061,18 @@ CMDover(int ac, char *av[])
 }
 
 /*
-**  XHDR and XPAT extensions.  Note that HDR as specified in the new NNTP
-**  draft works differently than XHDR has historically, so don't just use this
-**  function to implement it without reviewing the differences.
+**  Access specific fields from an article with HDR.
+**  The legacy XHDR and XPAT are also kept, with their specific behaviours.
 */
-/* ARGSUSED */
 void
 CMDpat(int ac, char *av[])
 {
     char	        *p;
     unsigned long      	i;
     ARTRANGE		range;
-    bool		IsLines;
-    bool		DidReply;
+    bool		IsBytes, IsLines;
+    bool                IsMetaBytes, IsMetaLines;
+    bool		DidReply, HasNotReplied;
     char		*header;
     char		*pattern;
     char		*text;
@@ -1084,102 +1084,190 @@ CMDpat(int ac, char *av[])
     int                 len;
     TOKEN               token;
     struct cvector *vector = NULL;
+    bool                hdr, mid;
 
+    hdr = (strcasecmp(av[0], "HDR") == 0);
+    mid = (ac > 2 && IsValidMessageID(av[2]));
+
+    /* Check the syntax of the arguments first. */
+    if (ac > 2 && !mid && !CMDisrange(av[2])) {
+        Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
+    /* Check authorizations. */
     if (!PERMcanread) {
 	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
 
     header = av[1];
-    IsLines = (strcasecmp(header, "lines") == 0);
 
-    if (ac > 3) /* XPAT */
+    /* If metadata is asked for, convert it to headers that
+     * the overview database knows. */
+    IsBytes = (strcasecmp(header, "Bytes") == 0);
+    IsLines = (strcasecmp(header, "Lines") == 0);
+    IsMetaBytes = (strcasecmp(header, ":bytes") == 0);
+    IsMetaLines = (strcasecmp(header, ":lines") == 0);
+    /* Make these changes because our overview database does
+     * not currently know metadata names. */
+    if (IsMetaBytes)
+        header = xstrdup("Bytes");
+    if (IsMetaLines)
+        header = xstrdup("Lines");
+
+    /* We only allow :bytes and :lines for metadata. */
+    if ((strncasecmp(header, ":", 1) == 0) && !IsMetaLines && !IsMetaBytes) {
+        Reply("%d %s metadata request unsupported\r\n",
+              NNTP_ERR_UNAVAILABLE, header);
+        return;
+    }
+
+    if (ac > 3) /* Necessarily XPAT. */
 	pattern = Glom(&av[3]);
     else
 	pattern = NULL;
 
+    /* We will only do the loop once.  It is just in order to easily break. */
     do {
 	/* Message-ID specified? */
-	if (ac > 2 && av[2][0] == '<') {
-            if (!IsValidMessageID(av[2])) {
-                Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
-                break;
-            }
+	if (mid) {
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
 		Printf("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 		break;
 	    }
-	    Printf("%d %s matches follow (ID)\r\n", NNTP_OK_HEAD,
-		   header);
-	    if ((text = GetHeader(header)) != NULL
+
+            /* FIXME:  We do not handle metadata requests by message-ID. */
+            if (hdr && (IsMetaBytes || IsMetaLines)) {
+                Reply("%d Metadata requests by message-ID unsupported\r\n",
+                      NNTP_ERR_UNAVAILABLE);
+                break;
+            }
+
+            if (!PERMartok()) {
+                ARTclose();
+                Reply("%d Read access denied for this article\r\n", NNTP_ERR_ACCESS);
+                break;
+            }
+
+	    Printf("%d Header information for %s follows (message-ID)\r\n",
+                   hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
+
+	    if ((text = GetHeader(av[1])) != NULL
 		&& (!pattern || uwildmat_simple(text, pattern)))
-		Printf("%s %s\r\n", p, text);
+		Printf("%s %s\r\n", hdr ? "0" : p, text);
+            else if (hdr) {
+                /* We always have to answer something with HDR. */
+                Printf("0 \r\n");
+            }
 
 	    ARTclose();
 	    Printf(".\r\n");
 	    break;
 	}
 
+        /* Trying to read. */
 	if (GRPcount == 0) {
 	    Reply("%s\r\n", ARTnotingroup);
 	    break;
 	}
 
-	/* Range specified. */
-	if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply)) {
-	    if (DidReply) {
-		break;
-	    }
-	}
+        /* Parse range.  CMDgetrange() correctly sets the range when
+         * there is no arguments. */
+        if (!CMDgetrange(ac - 1, av + 1, &range, &DidReply))
+            if (DidReply)
+                break;
 
 	/* In overview? */
         Overview = overview_index(header, OVextra);
 
+        HasNotReplied = true;
+
 	/* Not in overview, we have to fish headers out from the articles. */
-	if (Overview < 0) {
-	    Reply("%d %s matches follow (art)\r\n", NNTP_OK_HEAD,
-		  header);
+	if (Overview < 0 || IsBytes || IsLines) {
 	    for (i = range.Low; i <= range.High && range.High > 0; i++) {
 		if (!ARTopen(i))
 		    continue;
+                if (HasNotReplied) {
+                    Reply("%d Header information for %s follows (art)\r\n",
+                          hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
+                    HasNotReplied = false;
+                }
 		p = GetHeader(header);
 		if (p && (!pattern || uwildmat_simple(p, pattern))) {
 		    snprintf(buff, sizeof(buff), "%lu ", i);
 		    SendIOb(buff, strlen(buff));
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
-		    ARTclose();
-		}
+		} else if (hdr) {
+                    /* We always have to answer something with HDR. */
+                    snprintf(buff, sizeof(buff), "%lu \r\n", i);
+                    SendIOb(buff, strlen(buff));
+                }
+                ARTclose();
 	    }
-	    SendIOb(".\r\n", 3);
+            if (HasNotReplied) {
+                if (hdr) {
+                    if (ac > 2)
+                        Reply("%d No articles in %s\r\n",
+                              NNTP_FAIL_BAD_ARTICLE, av[2]);
+                    else
+                        Reply("%d Current article number %d is invalid\r\n",
+                              NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                } else {
+                    Reply("%d No header information for %s follows (art)\r\n",
+                          NNTP_OK_HEAD, av[1]);
+                    Reply(".\r\n");
+                }
+                break;
+            } else {
+                SendIOb(".\r\n", 3);
+            }
 	    PushIOb();
 	    break;
 	}
 
-	/* Okay then, we can grab values from overview. */
+	/* Okay then, we can grab values from the overview database. */
 	handle = (void *)OVopensearch(GRPcur, range.Low, range.High);
 	if (handle == NULL) {
-	    Reply("%d %s no matches follow (NOV)\r\n",
-		  NNTP_OK_HEAD, header);
-            Printf(".\r\n");
+            if (hdr) {
+                if (ac > 2)
+                    Reply("%d No articles in %s\r\n",
+                          NNTP_FAIL_BAD_ARTICLE, av[2]);
+                else
+                    Reply("%d Current article number %d is invalid\r\n",
+                          NNTP_FAIL_NO_ARTICLE, ARTnumber);
+            } else {
+                Reply("%d No header information for %s follows (NOV)\r\n",
+                      NNTP_OK_HEAD, av[1]);
+                Printf(".\r\n");
+            }
 	    break;
 	}	
 	
-	Printf("%d %s matches follow (NOV)\r\n", NNTP_OK_HEAD,
-	       header);
 	while (OVsearch(handle, &artnum, &data, &len, &token, NULL)) {
 	    if (len == 0 || (PERMaccessconf->nnrpdcheckart
 		&& !ARTinstorebytoken(token)))
 		continue;
+            if (HasNotReplied) {
+                Reply("%d Header or metadata information for %s follows (NOV)\r\n",
+                      hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
+                HasNotReplied = false;
+            }
 	    vector = overview_split(data, len, NULL, vector);
 	    p = overview_getheader(vector, Overview, OVextra);
 	    if (p != NULL) {
 		if (PERMaccessconf->virtualhost &&
 			   Overview == overhdr_xref) {
 		    p = vhost_xref(p);
-		    if (p == NULL)
+		    if (p == NULL) {
+                        if (hdr) {
+                            snprintf(buff, sizeof(buff), "%lu \r\n", artnum);
+                            SendIOb(buff, strlen(buff));
+                        }
 			continue;
+                    }
 		}
 		if (!pattern || uwildmat_simple(p, pattern)) {
 		    snprintf(buff, sizeof(buff), "%lu ", artnum);
@@ -1187,10 +1275,31 @@ CMDpat(int ac, char *av[])
 		    SendIOb(p, strlen(p));
 		    SendIOb("\r\n", 2);
 		}
+                /* No need to have another condition for HDR because
+                 * pattern is NULL for it, and p is not NULL here. */
 		free(p);
-	    }
+	    } else if (hdr) {
+                snprintf(buff, sizeof(buff), "%lu \r\n", artnum);
+                SendIOb(buff, strlen(buff));
+            }
 	}
-	SendIOb(".\r\n", 3);
+        if (HasNotReplied) {
+            if (hdr) {
+                if (ac > 2)
+                    Reply("%d No articles in %s\r\n",
+                          NNTP_FAIL_BAD_ARTICLE, av[2]);
+                else
+                    Reply("%d Current article number %d is invalid\r\n",
+                          NNTP_FAIL_NO_ARTICLE, ARTnumber);
+            } else {
+                Reply("%d No header or metadata information for %s follows (NOV)\r\n",
+                      NNTP_OK_HEAD, av[1]);
+                Reply(".\r\n");
+            }
+            break;
+        } else {
+            SendIOb(".\r\n", 3);
+        }
 	PushIOb();
 	OVclosesearch(handle);
     } while (0);

@@ -98,7 +98,7 @@ bool   PerlLoaded = false;
 bool PY_use_dynamic = false;
 #endif
 
-static char	CMDfetchhelp[] = "[messageID|number]";
+static char	CMDfetchhelp[] = "[message-ID|number]";
 
 /* { command base name, function to call, need authentication,
      min args, max args, help string } */
@@ -117,17 +117,20 @@ static CMDENT	CMDtable[] = {
 	NULL },
     {	"GROUP",	CMDgroup,	true,	2,	2,
 	"newsgroup" },
+    {   "HDR",          CMDpat  ,       true,   2,      3,
+        "header [range|message-ID]" },
     {	"HEAD",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
     {	"HELP",		CMDhelp,	false,	1,	1,
 	NULL },
     {	"IHAVE",	CMDpost,	true,	2,	2,
-	"messageID" },
+	"message-ID" },
     {	"LAST",		CMDnextlast,	true,	1,	1,
 	NULL },
     {	"LIST",		CMDlist,	true,	1,	3,
 	"[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|DISTRIB.PATS|DISTRIBUTIONS"
-        "|EXTENSIONS|MODERATORS|MOTD|NEWSGROUPS [wildmat]|OVERVIEW.FMT|SUBSCRIPTIONS]" },
+        "|EXTENSIONS|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
+        "|OVERVIEW.FMT|SUBSCRIPTIONS]" },
     {	"LISTGROUP",	CMDgroup,	true,	1,	3,
 	"[newsgroup [range]]" },
     {	"MODE",		CMDmode,	false,	2,	2,
@@ -155,13 +158,13 @@ static CMDENT	CMDtable[] = {
     {	"STAT",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
     {	"XGTITLE",	CMDxgtitle,	true,	1,	2,
-	"[group_pattern]" },
+	"[wildmat]" },
     {	"XHDR",		CMDpat,		true,	2,	3,
-	"header [range|messageID]" },
+	"header [range|message-ID]" },
     {	"XOVER",	CMDover,	true,	1,	2,
 	"[range]" },
     {	"XPAT",		CMDpat,		true,	4,	CMDany,
-	"header range|messageID pat [morepat...]" },
+	"header range|message-ID wildmat [wildmat ...]" },
     {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };
