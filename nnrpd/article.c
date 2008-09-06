@@ -1112,7 +1112,9 @@ CMDpat(int ac, char *av[])
 
     /* We only allow :bytes and :lines for metadata. */
     if (!IsMetaLines && !IsMetaBytes) {
-        if (strncasecmp(header, ":", 1) == 0) {
+        p = av[1];
+        p++;
+        if (strncasecmp(header, ":", 1) == 0 && IsValidHeaderName(p)) {
             Reply("%d Unsupported metadata request\r\n",
                   NNTP_ERR_UNAVAILABLE, header);
             return;
