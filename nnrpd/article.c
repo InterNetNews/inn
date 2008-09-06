@@ -56,12 +56,10 @@ static SENDDATA		SENDhead = {
     SThead,	NNTP_OK_HEAD,		"head"
 };
 
+bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
 
 static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
-
-bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
-bool CMDisrange(char *string);
 
 static void
 PushIOvHelper(struct iovec* vec, int* countp)
@@ -793,7 +791,7 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     }
 
     /* Check the syntax. */
-    if (!CMDisrange(av[1])) {
+    if (!IsValidRange(av[1])) {
         Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
         *DidReply = true;
         return false;
@@ -824,28 +822,6 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     p--;
     *p = '-';
 
-    return true;
-}
-
-
-/*
-**  Return true if the provided string is a valid range.
-*/
-bool
-CMDisrange(char *string)
-{
-    bool dashfound = false;
-
-    /* Check the syntax:  only allow digits and *one* "-". */
-    for (; *string; string++) {
-        if (*string == '-' && !dashfound) {
-            dashfound = true;
-            continue;
-        }
-        if (!CTYPE(isdigit, *string))
-            return false;
-    }
-    
     return true;
 }
 
@@ -904,7 +880,7 @@ CMDover(int ac, char *av[])
      * is accepted for both of them. */
     if (ac > 1
         && (xover || !mid)
-        && !CMDisrange(av[1])) {
+        && !IsValidRange(av[1])) {
         Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
         return;
     }
@@ -1090,7 +1066,7 @@ CMDpat(int ac, char *av[])
     mid = (ac > 2 && IsValidMessageID(av[2]));
 
     /* Check the syntax of the arguments first. */
-    if (ac > 2 && !mid && !CMDisrange(av[2])) {
+    if (ac > 2 && !mid && !IsValidRange(av[2])) {
         Reply("%d Syntax error in the second argument\r\n", NNTP_ERR_SYNTAX);
         return;
     }

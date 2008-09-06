@@ -11,7 +11,7 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
 		dispatch.c fdflags.c fdlimit.c getfqdn.c \
 		getmodaddr.c hash.c hashtab.c headers.c hex.c innconf.c inndcomm.c \
 		list.c localopen.c lockfile.c makedir.c md5.c messageid.c messages.c \
-		mmap.c network.c newsuser.c nntp.c qio.c radix32.c \
+		mmap.c network.c newsuser.c nntp.c numbers.c qio.c radix32.c \
 		readin.c remopen.c \
 		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
 		timer.c tst.c uwildmat.c vector.c wire.c xfopena.c \
@@ -229,6 +229,9 @@ nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
   ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
   ../include/inn/libinn.h
+numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/qio.h ../include/inn/defines.h \

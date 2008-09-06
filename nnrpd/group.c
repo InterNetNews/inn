@@ -11,7 +11,6 @@
 #include "inn/ov.h"
 
 extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
-extern bool CMDisrange(char *string);
 
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
@@ -56,7 +55,7 @@ CMDgroup(int ac, char *av[])
     }
 
     /* Check whether the second argument is valid. */
-    if (ac == 3 && !CMDisrange(av[2])) {
+    if (ac == 3 && !IsValidRange(av[2])) {
         Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
         return;
     }

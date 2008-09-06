@@ -11,7 +11,7 @@
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 
-/* Scale time back a bit, for shorter message-ID's. */
+/*  Scale time back a bit, for shorter message-ID's. */
 #define OFFSET	673416000L
 
 char *
@@ -41,15 +41,15 @@ GenerateMessageID(char *domain)
 
 
 /*
-** We currently only check the requirements for RFC 3977:
+**  We currently only check the requirements for RFC 3977:
 **
-**   o  A message-ID MUST begin with "<", end with ">", and MUST NOT
-**      contain the latter except at the end.
+**    o  A message-ID MUST begin with "<", end with ">", and MUST NOT
+**       contain the latter except at the end.
 **
-**   o  A message-ID MUST be between 3 and 250 octets in length.
+**    o  A message-ID MUST be between 3 and 250 octets in length.
 **
-**   o  A message-ID MUST NOT contain octets other than printable US-ASCII
-**      characters.
+**    o  A message-ID MUST NOT contain octets other than printable US-ASCII
+**       characters.
 */
 bool
 IsValidMessageID(const char *string)
@@ -80,7 +80,7 @@ IsValidMessageID(const char *string)
         /* Contains only printable US-ASCII characters. */
         if (!CTYPE(isgraph, *p))
             return false;
-    } 
+    }
 
     /* Between 3 and 250 octets in length.
      * Ends with ">". */

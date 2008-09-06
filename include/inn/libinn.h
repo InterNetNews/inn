@@ -152,6 +152,12 @@ extern struct _DDHANDLE * DDstart(FILE *FromServer, FILE *ToServer);
 extern void               DDcheck(struct _DDHANDLE *h, char *group);
 extern char *             DDend(struct _DDHANDLE *h);
 
+
+/* Various checks. */
+extern bool             IsValidArticleNumber(const char *string);
+extern bool             IsValidRange(char *string);
+
+
 /* NNTP functions. */
 extern int      NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
                               char *errbuff, size_t len);

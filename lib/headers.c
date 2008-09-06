@@ -11,10 +11,10 @@
 
 
 /*
-** We currently only check the requirements for RFC 3977:
+**  We currently only check the requirements for RFC 3977:
 **
-**   o  The name [of a header] consists of one or more printable
-**      US-ASCII characters other than colon.
+**    o  The name [of a header] consists of one or more printable
+**       US-ASCII characters other than colon.
 */
 bool
 IsValidHeaderName(const char *string)
@@ -36,7 +36,7 @@ IsValidHeaderName(const char *string)
          * than colon. */
         if (!CTYPE(isgraph, *p) || *p == ':')
             return false;
-    } 
+    }
 
     return true;
 }
