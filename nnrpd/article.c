@@ -10,6 +10,7 @@
 # include <limits.h>
 #endif
 #include <sys/uio.h>
+#include <ctype.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -50,7 +51,7 @@ static SENDDATA		SENDarticle = {
     STarticle,	NNTP_OK_ARTICLE,	"article"
 };
 static SENDDATA		SENDstat = {
-    STstat,	NNTP_OK_STAT,	"status"
+    STstat,     NNTP_OK_STAT,           "status"
 };
 static SENDDATA		SENDhead = {
     SThead,	NNTP_OK_HEAD,		"head"
@@ -597,6 +598,20 @@ CMDfetch(int ac, char *av[])
     ARTNUM		tart;
     bool final = false;
 
+    /* Check the syntax of the arguments first. */
+    if (ac > 1 && !IsValidArticleNumber(av[1])) {
+        /* It is better to check for a number before a message-ID because
+         * '<' could have been forgotten and the error message should then
+         * report a syntax error in the message-ID. */
+        if (CTYPE(isdigit, av[1][0])) {
+            Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
+            return;
+        } else if (!IsValidMessageID(av[1])) {
+            Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
+    }
+
     /* Find what to send; get permissions. */
     ok = PERMcanread;
     switch (*av[0]) {
@@ -618,6 +633,7 @@ CMDfetch(int ac, char *av[])
 	break;
     }
 
+    /* Check authorizations. */
     if (!ok) {
 	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
@@ -625,10 +641,6 @@ CMDfetch(int ac, char *av[])
 
     /* Requesting by message-ID? */
     if (ac == 2 && av[1][0] == '<') {
-        if (!IsValidMessageID(av[1])) {
-            Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
-            return;
-        }
 	if (!ARTopenbyid(av[1], &art, final)) {
 	    Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 	    return;
@@ -647,12 +659,6 @@ CMDfetch(int ac, char *av[])
 	return;
     }
 
-    /* Check whether the second argument (a number) is valid. */
-    if (ac == 2 && strspn(av[1], "0123456789") != strlen(av[1])) {
-        Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
-        return;
-    }
-
     /* Trying to read. */
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
@@ -669,7 +675,7 @@ CMDfetch(int ac, char *av[])
 	tart=ARTnumber;
     }
     else {
-        /* We have already checked that the article number is an integer. */
+        /* We have already checked that the article number is valid. */
 	strlcpy(buff, av[1], sizeof(buff));
 	tart=(ARTNUM)atol(buff);
     }
@@ -705,10 +711,13 @@ CMDnextlast(int ac UNUSED, char *av[])
     bool next;
     const char *message;
 
+    /* No syntax to check.  Only check authorizations. */
     if (!PERMcanread) {
 	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
 	return;
     }
+
+    /* Trying to read. */
     if (GRPcount == 0) {
 	Reply("%s\r\n", ARTnotingroup);
 	return;
@@ -718,6 +727,7 @@ CMDnextlast(int ac UNUSED, char *av[])
 	return;
     }
 
+    /* NEXT? */
     next = (av[0][0] == 'n' || av[0][0] == 'N');
     if (next) {
 	delta = 1;
@@ -878,11 +888,17 @@ CMDover(int ac, char *av[])
     /* Check the syntax of the arguments first.
      * We do not accept a message-ID for XOVER, contrary to OVER.  A range
      * is accepted for both of them. */
-    if (ac > 1
-        && (xover || !mid)
-        && !IsValidRange(av[1])) {
-        Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
-        return;
+    if (ac > 1 && !IsValidRange(av[1])) {
+        /* It is better to check for a range before a message-ID because
+         * '<' could have been forgotten and the error message should then
+         * report a syntax error in the message-ID. */
+        if (xover || CTYPE(isdigit, av[1][0]) || av[1][0] == '-') {
+            Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
+            return;
+        } else if (!mid) {
+            Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }   
     }
 
     if (mid) {
@@ -914,7 +930,7 @@ CMDover(int ac, char *av[])
         gettimeofday(&stv, NULL);
     }
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-        /* The response code is different if a range is provided.  For OVER only. */
+        /* The response code for OVER is different if a range is provided. */
         if (ac > 1)
             Reply("%d No articles in %s\r\n",
                   xover ? NNTP_FAIL_NO_ARTICLE : NNTP_FAIL_BAD_ARTICLE, av[1]);
@@ -1066,9 +1082,17 @@ CMDpat(int ac, char *av[])
     mid = (ac > 2 && IsValidMessageID(av[2]));
 
     /* Check the syntax of the arguments first. */
-    if (ac > 2 && !mid && !IsValidRange(av[2])) {
-        Reply("%d Syntax error in the second argument\r\n", NNTP_ERR_SYNTAX);
-        return;
+    if (ac > 2 && !IsValidRange(av[2])) {
+        /* It is better to check for a range before a message-ID because
+         * '<' could have been forgotten and the error message should then
+         * report a syntax error in the message-ID. */
+        if (CTYPE(isdigit, av[2][0]) || av[2][0] == '-') {
+            Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
+            return;
+        } else if (!mid) {
+            Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
     }
 
     header = av[1];
@@ -1095,7 +1119,7 @@ CMDpat(int ac, char *av[])
                   NNTP_ERR_UNAVAILABLE, header);
             return;
         } else if (!IsValidHeaderName(header)) {
-            Reply("%d Syntax error in the first argument\r\n", NNTP_ERR_SYNTAX);
+            Reply("%d Syntax error in header name\r\n", NNTP_ERR_SYNTAX);
             return;
         }
     }
@@ -1134,7 +1158,7 @@ CMDpat(int ac, char *av[])
                 break;
             }
 
-	    Printf("%d Header information for %s follows (message-ID)\r\n",
+	    Printf("%d Header information for %s follows (from the article)\r\n",
                    hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
 
 	    if ((text = GetHeader(av[1])) != NULL
@@ -1173,7 +1197,7 @@ CMDpat(int ac, char *av[])
 		if (!ARTopen(i))
 		    continue;
                 if (HasNotReplied) {
-                    Reply("%d Header information for %s follows (art)\r\n",
+                    Reply("%d Header information for %s follows (from articles)\r\n",
                           hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
                     HasNotReplied = false;
                 }
@@ -1199,7 +1223,7 @@ CMDpat(int ac, char *av[])
                         Reply("%d Current article number %d is invalid\r\n",
                               NNTP_FAIL_NO_ARTICLE, ARTnumber);
                 } else {
-                    Reply("%d No header information for %s follows (art)\r\n",
+                    Reply("%d No header information for %s follows (from articles)\r\n",
                           NNTP_OK_HEAD, av[1]);
                     Reply(".\r\n");
                 }
@@ -1222,7 +1246,7 @@ CMDpat(int ac, char *av[])
                     Reply("%d Current article number %d is invalid\r\n",
                           NNTP_FAIL_NO_ARTICLE, ARTnumber);
             } else {
-                Reply("%d No header information for %s follows (NOV)\r\n",
+                Reply("%d No header information for %s follows (from overview)\r\n",
                       NNTP_OK_HEAD, av[1]);
                 Printf(".\r\n");
             }
@@ -1234,7 +1258,7 @@ CMDpat(int ac, char *av[])
 		&& !ARTinstorebytoken(token)))
 		continue;
             if (HasNotReplied) {
-                Reply("%d Header or metadata information for %s follows (NOV)\r\n",
+                Reply("%d Header or metadata information for %s follows (from overview)\r\n",
                       hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
                 HasNotReplied = false;
             }
@@ -1275,7 +1299,7 @@ CMDpat(int ac, char *av[])
                     Reply("%d Current article number %d is invalid\r\n",
                           NNTP_FAIL_NO_ARTICLE, ARTnumber);
             } else {
-                Reply("%d No header or metadata information for %s follows (NOV)\r\n",
+                Reply("%d No header or metadata information for %s follows (from overview)\r\n",
                       NNTP_OK_HEAD, av[1]);
                 Reply(".\r\n");
             }
