@@ -81,6 +81,8 @@ PERMgeneric(char *av[], char *accesslist)
 
     /* Create a pipe. */
     if (pipe(pan) < 0) {
+        Reply("%d Can't pipe %s\r\n", NNTP_TEMPERR_VAL,
+              strerror(errno));
 	syslog(L_FATAL, "cant pipe for %s %m", av[0]);
 	return -1;
     }
