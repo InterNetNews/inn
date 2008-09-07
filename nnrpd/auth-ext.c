@@ -92,7 +92,7 @@ start_process(struct client *client, const char *command, const char *dir)
 
 
 /*
-**  Handle an result line from the program which has already been
+**  Handle a result line from the program which has already been
 **  nul-terminated at the end of the line.  If User:<username> is seen, point
 **  the second argument at newly allocated space for it.
 */
@@ -301,7 +301,7 @@ append_client_info(struct client *client, struct buffer *data)
 /*
 **  Execute a program to get the remote username.  Takes the client info, the
 **  command to run, the subdirectory in which to look for programs, and
-**  optional username and password information to pass tot he program.
+**  optional username and password information to pass to the program.
 **  Returns the username in newly allocated memory if successful, NULL
 **  otherwise.
 */

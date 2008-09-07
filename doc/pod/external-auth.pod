@@ -1,4 +1,4 @@
-=head1 NNRPD External Authentication Support
+=head1 B<nnrpd> External Authentication Support
 
 A fundamental part of the readers.conf(5)-based authorization mechanism
 is the interface to external authenticator and resolver programs.  This
@@ -10,38 +10,40 @@ the source tree; the authenticators are installed to
 I<pathbin>/auth/passwd, and the resolvers are installed to
 I<pathbin>/auth/resolv.
 
-=head1 Reading information from nnrpd
+=head1 Reading Information from B<nnrpd>
 
-When nnrpd spawns an external auth program, it passes information on
-standard input as a sequence of "key: value" lines.  Each line ends with
-CRLF, and a line consisting of only "." indicates the end of the input.
+When B<nnrpd> spawns an external auth program, it passes information on
+standard input as a sequence of C<key: value> lines.  Each line ends with
+CRLF, and a line consisting of only a dot followed by CRLF (C<.\r\n>)
+indicates the end of the input.
 The order of the fields is not significant.  Additional fields not
 mentioned below may be included; this should not be cause for alarm.
 
 (For robustness as well as ease of debugging, it is probably wise to
 accept line endings consisting only of LF, and to treat EOF as
-indicating the end of the input even if "." has not been received.)
+indicating the end of the input even if C<.\r\n> has not been received.)
 
 Code which reads information in the format discussed below and parses it
 into convenient structures is available authenticators and resolvers
 written in C; see libauth(3) for details.  Use of the libauth library
 will make these programs substantially easier to write and more robust.
 
-=head2 For authenticators
+=head2 For Authenticators
 
-When nnrpd calls an authenticator, the lines it passes are
+When B<nnrpd> calls an authenticator, the lines it passes are
 
     ClientAuthname: user\r\n
     ClientPassword: pass\r\n
+    .\r\n
 
 where I<user> and I<pass> are the username and password provided by the
-client (e.g. using AUTHINFO).  In addition, nnrpd generally also passes
-the fields mentioned as intended for resolvers; it rare instances this
-data may be useful for authenticators.
+client (e.g. using AUTHINFO).  In addition, B<nnrpd> generally also passes,
+if available, the fields mentioned as intended for resolvers; in rare
+instances this data may be useful for authenticators.
 
-=head2 For resolvers
+=head2 For Resolvers
 
-When nnrpd calls a resolver, the lines it passes are
+When B<nnrpd> calls a resolver, the lines it passes are
 
     ClientHost: hostname\r\n
     ClientIP: IP-address\r\n
@@ -53,17 +55,17 @@ When nnrpd calls a resolver, the lines it passes are
 where I<hostname> indicates a string representing the hostname if
 available, I<IP-address> is a numeric IP address (dotted-quad for IPv4,
 equivalent for IPv6 if appropriate), and I<port> is a numeric port
-number.  (The I<LocalIP> paramter may be useful for determining which
-interface was used for the incoming connection.)
+number.  (The I<LocalIP> and I<LocalPort> parameters may be useful
+for determining which interface was used for the incoming connection.)
 
-If information is not available, nnrpd will omit the corresponding
-fields.  In particular, this applies to the unusual situation of nnrpd
+If information is not available, B<nnrpd> will omit the corresponding
+fields.  In particular, this applies to the unusual situation of B<nnrpd>
 not being connected to a socket; TCP-related information is not
 available for standard input.
 
-=head1 Returning information to nnrpd
+=head1 Returning Information to B<nnrpd>
 
-=head2 Exit status and signals
+=head2 Exit Status and Signals
 
 The external auth program must exit with a status of C<0> to indicate
 success; any other exit status indicates failure.  (The non-zero exit
@@ -73,38 +75,42 @@ If the program dies due to catching a signal (for example, a
 segmentation fault occurs), this will be logged and treated as a
 failure.
 
-=head2 Returning a username and domain
+=head2 Returning a Username and Domain
 
 If the program succeeds, it must return a username string (optionally
 with a domain appended) by writing to standard output.  The line it
-should write is exactly:
+should write is exactly
 
-    user:username\r\n
+    User:username\r\n
 
-where I<username> is the string that nnrpd should use in matching
-readers.conf access blocks.
+where I<username> is the string that B<nnrpd> should use in matching
+F<readers.conf> access blocks.  The C<User> parameter is case-insensitive.
 
-There should be no extra spaces in lines sent from the hook to nnrpd;
-C<user:aidan> is read by nnrpd as a different username than C<user:
-aidan>.
+There should be no extra spaces in lines sent from the hook to B<nnrpd>;
+C<User:aidan> is read by B<nnrpd> as a different username than
+C<User: aidan>.  If a domain is provided, it would for instance be
+C<User:aidan@domain>.
 
-=head1 Error messages
+Note that B<nnrpd> implements a five-second timeout for the receipt
+of this line.
+
+=head1 Error Messages
 
 As mentioned above, errors can be indicated by a non-zero exit value, or
-termination due to an unhandled signal; both cases are logged by nnrpd.
+termination due to an unhandled signal; both cases are logged by B<nnrpd>.
 However, external auth programs may wish to log error messages
 separately.
 
-Although nnrpd will syslog() anything an external auth program writes to
+Although B<nnrpd> will syslog() anything an external auth program writes to
 standard error, it is generally better to use the F<messages.h>
 functions, such as warn() and die().
 
-Please use the ckpasswd.c program as an example for any authenticators
-you write, and ident.c as an example for any resolvers.
+Please use the F<ckpasswd.c> program as an example for any authenticators
+you write, and F<ident.c> as an example for any resolvers.
 
 =head1 HISTORY
 
-Written by Aidan Cully for InterNetNews.  This documentation rewritten
+Written by Aidan Cully for InterNetNews.  This documentation was rewritten
 in POD by Jeffrey M. Vinocur <jeff@litech.org>.
 
 $Id$
