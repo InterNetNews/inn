@@ -272,7 +272,6 @@ CMDauthinfo(int ac, char *av[])
             Reply("%d Authentication failed\r\n", NNTP_FAIL_AUTHINFO_BAD);
         }
     }
-
 }
 
 
@@ -349,8 +348,7 @@ CMDnewgroups(int ac, char *av[])
     int                 i;
     bool                local = true;
 
-    /* Parse the date. */
-
+    /* Check the arguments and parse the date. */
     if (ac > 3) {
         if (strcasecmp(av[3], "GMT") == 0)
             local = false;
@@ -415,7 +413,7 @@ CMDnewgroups(int ac, char *av[])
 
     if ((qp = QIOopen(ACTIVE)) == NULL) {
 	syslog(L_ERROR, "%s can't fopen %s %m", Client.host, ACTIVE);
-	Reply("%d Cannot open active file\r\n", NNTP_FAIL_ACTION);
+	Reply("%d Can't open active file\r\n", NNTP_FAIL_ACTION);
 	return;
     }
     qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
@@ -480,14 +478,15 @@ CMDpost(int ac, char *av[])
         return;
     }
 
+    /* Check authorizations. */
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
 	syslog(L_NOTICE, "%s noperm ihave without permission", Client.host);
-	Reply("%s\r\n", NNTP_ACCESS);
+        Reply("%d IHAVE command disabled by administrator\r\n", NNTP_ERR_ACCESS);
 	return;
     }
     if (!ihave && !PERMcanpost) {
 	syslog(L_NOTICE, "%s noperm post without permission", Client.host);
-	Reply("%s\r\n", NNTP_CANTPOST);
+	Reply("%d Posting not allowed\r\n", NNTP_FAIL_POST_AUTH);
 	return;
     }
 
@@ -512,7 +511,7 @@ CMDpost(int ac, char *av[])
       }
       
       if (LockPostRec(path) == 0) {
-        syslog(L_ERROR, "%s Error write locking '%s'",
+        syslog(L_ERROR, "%s error write locking '%s'",
                Client.host, path);
         Reply("%s\r\n", ihave ? NNTP_RESENDIT_LATER : NNTP_CANTPOST);
         return;
@@ -573,7 +572,7 @@ CMDpost(int ac, char *av[])
 		strlcpy(idbuff, p, sizeof(idbuff));
 	    }
 	}
-	Reply("%d Ok, recommended ID %s\r\n", NNTP_CONT_POST, idbuff);
+	Reply("%d Ok, recommended message-ID %s\r\n", NNTP_CONT_POST, idbuff);
     }
     fflush(stdout);
 
@@ -650,16 +649,16 @@ CMDpost(int ac, char *av[])
     /* Send the article to the server. */
     response = ARTpost(article, idbuff, ihave, &permanent);
     if (response == NULL) {
-	notice("%s post ok %s", Client.host, idbuff);
-	Reply("%s %s\r\n", ihave ? NNTP_TOOKIT : NNTP_POSTEDOK, idbuff);
-	POSTreceived++;
+        notice("%s %s ok %s", Client.host, ihave ? "ihave" : "post", idbuff);
+        Reply("%d Article received %s\r\n", ihave ? NNTP_OK_IHAVE : NNTP_OK_POST, idbuff);
+        POSTreceived++;
     }
     else {
 	if ((p = strchr(response, '\r')) != NULL)
 	    *p = '\0';
 	if ((p = strchr(response, '\n')) != NULL)
 	    *p = '\0';
-	notice("%s post failed %s", Client.host, response);
+	notice("%s %s failed %s", Client.host, ihave ? "ihave" : "post", response);
 	if (!ihave || permanent) {
 	    /* For permanent errors, reject the message. */
 	    Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT,
@@ -667,7 +666,7 @@ CMDpost(int ac, char *av[])
 	} else {
 	    /* Non-permanent errors only have relevance to IHAVE, for
 	     * these we have the error status from the upstream
-	     * server to report. */
+	     * server to report.  It includes the answer code. */
 	    Reply("%s\r\n", response);
 	}
 	POSTrejected++;

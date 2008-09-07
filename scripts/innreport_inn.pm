@@ -1560,6 +1560,8 @@ sub collect($$$$$$) {
     }
     # post ok
     return 1 if $left =~ /\S+ post ok/o;
+    # ihave ok
+    return 1 if $left =~ /\S+ ihave ok/o;
     # posts
     if ($left =~ /(\S+) posts received (\d+) rejected (\d+)$/o) {
       my ($cust, $received, $rejected) = ($1, $2, $3);
