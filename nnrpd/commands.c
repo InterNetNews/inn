@@ -168,10 +168,9 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
 /*
 **  The AUTHINFO command.
-**  Arguments are used (ac is used for SASL).
 */
 void
-CMDauthinfo(int ac UNUSED, char *av[])
+CMDauthinfo(int ac, char *av[])
 {
     static char	User[SMBUF];
     static char	Password[SMBUF];
@@ -183,6 +182,7 @@ CMDauthinfo(int ac UNUSED, char *av[])
 
 	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 
+        /* Arguments are checked by PERMgeneric(). */
 	switch (PERMgeneric(av, accesslist, sizeof(accesslist))) {
 	    case 1:
 		PERMspecified = NGgetlist(&PERMreadlist, accesslist);
@@ -208,14 +208,19 @@ CMDauthinfo(int ac UNUSED, char *av[])
 
 #ifdef HAVE_SASL
     } else if (strcasecmp(av[1], "SASL") == 0) {
+        /* Arguments are checked by SASLauth(). */
 	SASLauth(ac, av);
 #endif /* HAVE_SASL */
 
     } else {
         /* Each time AUTHINFO USER is used, the new username is cached. */
         if (strcasecmp(av[1], "USER") == 0) {
+            if (ac > 3) {
+                Reply("%d No whitespace allowed in username\r\n", NNTP_ERR_SYNTAX);
+                return;
+            }
             strlcpy(User, av[2], sizeof(User));
-            Reply("%d Enter passphrase\r\n", NNTP_CONT_AUTHINFO);
+            Reply("%d Enter password\r\n", NNTP_CONT_AUTHINFO);
             return;
         }
 
@@ -229,6 +234,11 @@ CMDauthinfo(int ac UNUSED, char *av[])
         if (User[0] == '\0') {
             Reply("%d Authentication commands issued out of sequence\r\n",
                   NNTP_FAIL_AUTHINFO_REJECT);
+            return;
+        }
+
+        if (ac > 3) {
+            Reply("%d No whitespace allowed in password\r\n", NNTP_ERR_SYNTAX);
             return;
         }
 
@@ -319,8 +329,7 @@ static int GroupCompare(const void *a1, const void* b1) {
 
 
 /*
-**  Display new newsgroups since a given date and time for specified
-**  <distributions>.
+**  Display new newsgroups since a given date and time.
 */
 void
 CMDnewgroups(int ac, char *av[])

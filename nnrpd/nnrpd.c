@@ -110,7 +110,7 @@ static CMDENT	CMDtable[] = {
 #ifdef HAVE_SASL
         "|SASL mech [init-resp]"
 #endif
-        "|GENERIC prog args" },
+        "|GENERIC prog [args ...]" },
     {	"BODY",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
     {	"DATE",		CMDdate,	false,	1,	1,
@@ -684,7 +684,6 @@ Usage(void)
 }
 
 
-/* ARGSUSED0 */
 int
 main(int argc, char *argv[])
 {
