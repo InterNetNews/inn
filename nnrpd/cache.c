@@ -1,12 +1,12 @@
 /*  $Id$
 **
-**  MessageID to storage token cache
+**  Message-ID to storage token cache.
 **
-**  Written by Alex Kiernan (alex.kiernan@thus.net)
+**  Written by Alex Kiernan (alex.kiernan@thus.net).
 **
-**  Implementation of a message ID to storage token cache which can be
-**  built during XOVER/XHDR/NEWNEWS.  If we hit in the cache when
-**  retrieving articles the (relatively) expensive cost of a trip
+**  Implementation of a message-ID to storage token cache which can be
+**  built during (X)OVER/(X)HDR/XPAT/NEWNEWS.  If we hit in the cache when
+**  retrieving articles, the (relatively) expensive cost of a trip
 **  through the history database is saved.
 */
 
@@ -22,14 +22,14 @@
 #include "cache.h"
 
 /*
-**  Pointer to the message ID to storage token ternary search tree
+**  Pointer to the message-ID to storage token ternary search tree.
 */
 static struct tst *msgidcache;
 
 /*
-**  Count of message IDs in the cache so that someone doing GROUP,
-**  XOVER, GROUP, XOVER etc. for example doesn't blow up with out of
-**  memory
+**  Count of message-IDs in the cache so that someone doing GROUP,
+**  (X)OVER, GROUP, (X)OVER, etc. for example doesn't blow up with
+**  out of memory.
 */
 static int msgcachecount;
 
@@ -42,8 +42,8 @@ struct cache_entry {
 static struct list unused, used;
 
 /*
-**  Add a translation from HASH, h, to TOKEN, t, to the message ID
-**  cache
+**  Add a translation from HASH, h, to TOKEN, t, to the message-ID
+**  cache.
 */
 void
 cache_add(const HASH h, const TOKEN t)
@@ -73,7 +73,7 @@ cache_add(const HASH h, const TOKEN t)
 	    ++msgcachecount;
 	}
 	if (msgcachecount >= innconf->msgidcachesize) {
-	    /* need to throw away a node */
+	    /* Need to throw away a node. */
 	    entry = (struct cache_entry *)list_remhead(&used);
 	    if (entry == NULL)
 		entry = (struct cache_entry *)list_remhead(&unused);
@@ -88,11 +88,11 @@ cache_add(const HASH h, const TOKEN t)
 
 
 /*
-**  Lookup (and remove if found) a MessageID to TOKEN mapping. If this
-**  is a final lookup (ARTICLE or BODY) we remove it if we find it
-**  since this matches the observed behaviour of most clients, but
+**  Lookup (and remove if found) a message-ID to TOKEN mapping.  If this
+**  is a final lookup (ARTICLE, BODY, (X)HDR, XPAT), we remove it if we
+**  find it since this matches the observed behaviour of most clients, but
 **  cache it just in case we can reuse it if they issue multiple
-**  commands against the same message ID (e.g. HEAD, BODY).
+**  commands against the same message-ID (e.g. HEAD, STAT).
 */
 TOKEN
 cache_get(const HASH h, bool final)

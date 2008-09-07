@@ -1,3 +1,8 @@
+/*  $Id$
+**
+**  Message-ID to storage token cache.
+*/
+
 #ifndef CACHE_H
 #define CACHE_H
 
