@@ -164,7 +164,7 @@ static CMDENT	CMDtable[] = {
     {	"XOVER",	CMDover,	true,	1,	2,
 	"[range]" },
     {	"XPAT",		CMDpat,		true,	4,	CMDany,
-	"header range|message-ID wildmat [wildmat ...]" },
+	"header range|message-ID pattern [pattern ...]" },
     {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };
@@ -1192,7 +1192,7 @@ main(int argc, char *argv[])
 	if ((cp->Minac != CMDany && ac < cp->Minac)
 	 || (cp->Maxac != CMDany && ac > cp->Maxac)) {
 	    Reply("%d %s\r\n",
-		NNTP_ERR_SYNTAX,  cp->Help ? cp->Help : "Usage error");
+		NNTP_ERR_SYNTAX, cp->Help ? cp->Help : "No argument allowed");
 	    continue;
 	}
 
