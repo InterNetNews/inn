@@ -198,6 +198,8 @@ CMDauthinfo(int ac, char *av[])
 	    case 0:
 		syslog(L_NOTICE, "%s bad_auth %s (%s)", Client.host, PERMuser,
 			logrec);
+                /* We keep the right 481 code here instead of the wrong 502
+                 * answer suggested in RFC 2080. */
 		Reply("%d Authentication failed\r\n", NNTP_FAIL_AUTHINFO_BAD);
 		free(logrec);
 		return;
@@ -205,13 +207,14 @@ CMDauthinfo(int ac, char *av[])
 		/* Lower level (-1) has already issued a reply. */
 		return;
 	}
-
-#ifdef HAVE_SASL
     } else if (strcasecmp(av[1], "SASL") == 0) {
+#ifdef HAVE_SASL
         /* Arguments are checked by SASLauth(). */
 	SASLauth(ac, av);
+#else
+        Reply("%d SASL authentication unsupported\r\n", NNTP_ERR_UNAVAILABLE);
+        return;
 #endif /* HAVE_SASL */
-
     } else {
         /* Each time AUTHINFO USER is used, the new username is cached. */
         if (strcasecmp(av[1], "USER") == 0) {

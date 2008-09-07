@@ -108,9 +108,9 @@ static CMDENT	CMDtable[] = {
     {   "AUTHINFO",     CMDauthinfo,    false,  3,      CMDany,
         "USER name|PASS password"
 #ifdef HAVE_SASL
-        "|SASL mech [init-resp]"
+        "|SASL mechanism [initial-response]"
 #endif
-        "|GENERIC prog [args ...]" },
+        "|GENERIC program [argument ...]" },
     {	"BODY",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
     {	"DATE",		CMDdate,	false,	1,	1,

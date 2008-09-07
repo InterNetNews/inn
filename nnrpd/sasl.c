@@ -24,6 +24,38 @@ sasl_callback_t sasl_callbacks[] = {
 
 #define BASE64_BUF_SIZE 21848	/* per RFC 2222bis: ((16K / 3) + 1) * 4  */
 
+
+/*
+**  Check if the argument is a valid mechanism according to RFC 4643:
+**
+**    mechanism = 1*20mech-char
+**    mech-char = UPPER / DIGIT / "-" / "_"
+*/
+static bool
+IsValidMechanism(const char *string)
+{
+    int len = 0;
+    const unsigned char *p;
+ 
+    /* Not NULL. */
+    if (string == NULL)
+        return false;
+
+    p = (const unsigned char *) string;
+
+    for (; *p != '\0'; p++) {
+        len++;
+        if (!CTYPE(isalnum, *p) && *p != '-' && *p != '_')
+            return false;
+    }
+
+    if (len > 0 && len < 21)
+        return true;
+    else
+        return false;
+}
+
+
 void
 SASLauth(int ac, char *av[])
 {
@@ -40,11 +72,18 @@ SASLauth(int ac, char *av[])
     int r = SASL_OK;
 
     if (ac < 3 || ac > 4) {
-	Reply("%d AUTHINFO SASL mech [init-resp]>\r\n", NNTP_ERR_SYNTAX);
-	return;
+        /* In fact, ac > 4 here. */
+        Reply("%d Too many arguments\r\n", NNTP_ERR_SYNTAX);
+        return;
     }
 
     mech = av[2];
+
+    if (!IsValidMechanism(mech)) {
+        Reply("%d Syntax error in mechanism\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
     if (ac == 4) {
 	/* initial response */
 	clientin = av[3];
