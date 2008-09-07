@@ -23,11 +23,11 @@ typedef struct {
 
 extern const char *NNRPinstance;
 
-/* returns:
-	-1 for problem (such as no such authenticator etc.)
-	0 for authentication succeeded
-	1 for authentication failed
- */
+/*  Returns:
+**    -1 for problem (such as no such authenticator, etc.).
+**     0 for authentication succeeded.
+**     1 for authentication failed.
+*/
 
 static char *PERMauthstring;
 
@@ -45,20 +45,19 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     PERMcanpost = false;
     PERMaccessconf->locpost = false;
     PERMaccessconf->allowapproved = false;
+    PERMaccessconf->allowihave = false;
+    PERMaccessconf->allownewnews = false;
 
     if (!*av) {
-	Reply("%d no authenticator\r\n", NNTP_ERR_SYNTAX);
-	return(-1);
+        Reply("%d No authenticator provided\r\n", NNTP_ERR_SYNTAX);
+        return -1;
     }
 
-    /* check for ../.  I'd use strstr, but there doesn't appear to
-       be any other references for it, and I don't want to break
-       portability */
-    for (p = av[0]; *p; p++)
-	if (strncmp(p, "../", 3) == 0) {
-	    Reply("%d ../ in authenticator %s\r\n", NNTP_ERR_SYNTAX, av[0]);
-	    return(-1);
-	}
+    /* Check for ".." (not "../").  Path must not be changed! */
+    if (strstr(av[0], "..") != NULL) {
+        Reply("%d .. in authenticator %s\r\n", NNTP_ERR_SYNTAX, av[0]);
+        return -1;
+    }
 
     if (strchr(INN_PATH_AUTHDIR,'/') == NULL)
 	snprintf(path, sizeof(path), "%s/%s/%s/%s", innconf->pathbin,
@@ -80,33 +79,34 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	return -1;
     }
 	
-
     /* Create a pipe. */
     if (pipe(pan) < 0) {
-	syslog(L_FATAL, "cant pipe for %s %m", av[0]);
-	return -1;
+        Reply("%d Can't pipe %s\r\n", NNTP_FAIL_ACTION,
+              strerror(errno));
+        syslog(L_FATAL, "can't pipe for %s %m", av[0]);
+        return -1;
     }
 
     for (i = 0; (pid = fork()) < 0; i++) {
 	if (i == innconf->maxforks) {
 	    Reply("%d Can't fork %s\r\n", NNTP_FAIL_ACTION,
 		strerror(errno));
-	    syslog(L_FATAL, "cant fork %s %m", av[0]);
+	    syslog(L_FATAL, "can't fork %s %m", av[0]);
 	    return -1;
 	}
-	syslog(L_NOTICE, "cant fork %s -- waiting", av[0]);
+	syslog(L_NOTICE, "can't fork %s -- waiting", av[0]);
 	sleep(5);
     }
 
     /* Run the child, with redirection. */
     if (pid == 0) {
-	close(STDERR_FILENO);	/* Close existing stderr */
+	close(STDERR_FILENO);	/* Close existing stderr. */
 	close(pan[PIPE_READ]);
 
 	/* stderr goes down the pipe. */
 	if (pan[PIPE_WRITE] != STDERR_FILENO) {
 	    if ((i = dup2(pan[PIPE_WRITE], STDERR_FILENO)) != STDERR_FILENO) {
-		syslog(L_FATAL, "cant dup2 %d to %d got %d %m",
+		syslog(L_FATAL, "can't dup2 %d to %d got %d %m",
 		    pan[PIPE_WRITE], STDERR_FILENO, i);
 		_exit(1);
 	    }
@@ -118,9 +118,11 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	close_on_exec(STDERR_FILENO, false);
 
 	execv(path, av);
-	Reply("%s\r\n", NNTP_BAD_COMMAND);
+        /* RFC 2980 requires 500 if there are unspecified errors during
+         * the execution of the provided program. */
+	Reply("%d %s\r\n", NNTP_ERR_COMMAND, "Program error occurred");
 
-	syslog(L_FATAL, "cant execv %s %m", path);
+	syslog(L_FATAL, "can't execv %s %m", path);
 	_exit(1);
     }
 
@@ -139,7 +141,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     PERMauthstring = xstrdup(path);
 
-    /*syslog(L_NOTICE, "%s (%ld) returned: %d %s %d\n", av[0], (long) pid, i, path, status);*/
+    //syslog(L_NOTICE, "%s (%ld) returned: %d %s %d\n", av[0], (long) pid, i, path, status);
     /* Split "host:permissions:user:pass:groups" into fields. */
     for (fields[0] = path, i = 0, p = path; *p; p++)
 	if (*p == ':') {
@@ -152,22 +154,21 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     PERMaccessconf->allowapproved = strchr(fields[1], 'A') != NULL;
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
-    if (strchr(fields[1], 'N') != NULL) PERMaccessconf->allownewnews = true;
+    PERMaccessconf->allownewnews = strchr(fields[1], 'N') != NULL;
     snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
-    /*strlcpy(PERMpass, fields[3], sizeof(PERMpass));*/
+    //strlcpy(PERMpass, fields[3], sizeof(PERMpass));
     strlcpy(accesslist, fields[4], size);
-    /*strcpy(writeaccess, fields[5]); future work? */
 
-    /*for (i = 0; fields[i] && i < 6; i++)
-	printf("fields[%d] = %s\n", i, fields[i]);*/
+    //for (i = 0; fields[i] && i < 5; i++)
+    //    syslog(L_NOTICE, "fields[%d] = %s\n", i, fields[i]);
 
     return 0;
 }
 
 
 /*
-** The AUTHINFO command.
-** Arguments are used (ac is used for SASL).
+**  The AUTHINFO command.
+**  Arguments are used (ac is used for SASL).
 */
 void
 CMDauthinfo(int ac UNUSED, char *av[])
@@ -201,7 +202,7 @@ CMDauthinfo(int ac UNUSED, char *av[])
 		free(logrec);
 		return;
 	    default:
-		/* lower level has issued Reply */
+		/* Lower level (-1) has already issued a reply. */
 		return;
 	}
 
@@ -214,17 +215,20 @@ CMDauthinfo(int ac UNUSED, char *av[])
         /* Each time AUTHINFO USER is used, the new username is cached. */
         if (strcasecmp(av[1], "USER") == 0) {
             strlcpy(User, av[2], sizeof(User));
-            Reply("%d PASS required\r\n", NNTP_CONT_AUTHINFO);
+            Reply("%d Enter passphrase\r\n", NNTP_CONT_AUTHINFO);
             return;
         }
 
         /* If it is not AUTHINFO PASS, we do not support the provided subcommand. */
         if (strcasecmp(av[1], "PASS") != 0) {
-            Reply("%d bad authinfo param\r\n", NNTP_ERR_COMMAND);
+            Reply("%d Bad AUTHINFO param\r\n", NNTP_ERR_COMMAND);
             return;
         }
+
+        /* AUTHINFO PASS cannot be sent before AUTHINFO USER. */
         if (User[0] == '\0') {
-            Reply("%d USER required\r\n", NNTP_FAIL_AUTHINFO_REJECT);
+            Reply("%d Authentication commands issued out of sequence\r\n",
+                  NNTP_FAIL_AUTHINFO_REJECT);
             return;
         }
 
@@ -243,7 +247,7 @@ CMDauthinfo(int ac UNUSED, char *av[])
                 fprintf(locallog, "%s user (%s):%s\n", Client.host, Username, PERMuser);
                 fflush(locallog);
             }
-            Reply("%d Ok\r\n", NNTP_OK_AUTHINFO);
+            Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
             PERMneedauth = false;
             PERMauthorized = true;
             PERMcanauthenticate = false;
@@ -461,7 +465,7 @@ CMDpost(int ac, char *av[])
 
     /* Check whether the message-ID is valid for IHAVE. */
     if (ihave && ac == 2 && !IsValidMessageID(av[1])) {
-        Reply("%d Syntax error in Message-ID\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
         return;
     }
 
