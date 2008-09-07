@@ -40,7 +40,7 @@ SASLauth(int ac, char *av[])
     int r = SASL_OK;
 
     if (ac < 3 || ac > 4) {
-	Reply("%d AUTHINFO SASL mech [init-resp]>\r\n", NNTP_ERR_COMMAND);
+	Reply("%d AUTHINFO SASL mech [init-resp]>\r\n", NNTP_ERR_SYNTAX);
 	return;
     }
 

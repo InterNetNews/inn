@@ -221,7 +221,7 @@ CMDauthinfo(int ac UNUSED, char *av[])
 
         /* If it is not AUTHINFO PASS, we do not support the provided subcommand. */
         if (strcasecmp(av[1], "PASS") != 0) {
-            Reply("%d Bad AUTHINFO param\r\n", NNTP_ERR_COMMAND);
+            Reply("%d Bad AUTHINFO param\r\n", NNTP_ERR_SYNTAX);
             return;
         }
 
@@ -290,8 +290,9 @@ CMDdate(int ac UNUSED, char *av[] UNUSED)
 
 /*
 **  Handle the MODE command.
+**  Note that MODE STREAM must return 501 as an unknown MODE variant
+**  because nnrpd does not implement STREAMING.
 */
-/* ARGSUSED */
 void
 CMDmode(int ac UNUSED, char *av[])
 {
@@ -305,8 +306,9 @@ CMDmode(int ac UNUSED, char *av[])
                PERMaccessconf->pathhost, INN_VERSION_STRING,
                (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
     else
-        Reply("%d What?\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Unknown MODE variant\r\n", NNTP_ERR_SYNTAX);
 }
+
 
 static int GroupCompare(const void *a1, const void* b1) {
     const GROUPDATA     *a = a1;
@@ -314,6 +316,7 @@ static int GroupCompare(const void *a1, const void* b1) {
 
     return strcmp(a->name, b->name);
 }
+
 
 /*
 **  Display new newsgroups since a given date and time for specified
@@ -442,7 +445,6 @@ CMDnewgroups(int ac, char *av[])
 /*
 **  Handle the POST and IHAVE commands.
 */
-/* ARGSUSED */
 void
 CMDpost(int ac, char *av[])
 {
