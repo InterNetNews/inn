@@ -9,7 +9,7 @@
 
 
 /*
-**  Send a string of one or more lines down a stdio FILE using RFC977
+**  Send a string of one or more lines down a stdio FILE using RFC 3977
 **  conventions.  Return -1 on error.
 */
 int NNTPsendarticle(char *p, FILE *F, bool Terminate)

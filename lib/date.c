@@ -356,8 +356,7 @@ parsedate_nntp(const char *date, const char *hour, bool local)
     struct tm *current;
     int century;
 
-    /* Accept YYMMDD and YYYYMMDD.  The first is what RFC 977 requires.  The
-       second is what the revision of RFC 977 will require. */
+    /* Accept YYMMDD and YYYYMMDD. */
     datelen = strlen(date);
     if ((datelen != 6 && datelen != 8) || strlen(hour) != 6)
         return (time_t) -1;
@@ -382,15 +381,11 @@ parsedate_nntp(const char *date, const char *hour, bool local)
 
     /* Four-digit years are the easy case.
 
-       For two-digit years, RFC 977 says "The closest century is assumed as
-       part of the year (i.e., 86 specifies 1986, 30 specifies 2030, 99 is
-       1999, 00 is 2000)."  draft-ietf-nntpext-base-10.txt simplifies this
-       considerably and is what we implement:
+       For two-digit years, RFC 3977 says:
 
          If the first two digits of the year are not specified, the year is
          to be taken from the current century if YY is smaller than or equal
-         to the current year, otherwise the year is from the previous
-         century.
+         to the current year, and the previous century otherwise.
 
        This implementation assumes "current year" means the last two digits
        of the current year.  Note that this algorithm interacts poorly with
