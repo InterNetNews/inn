@@ -72,19 +72,23 @@ int RetrMode;
 bool WriteStdout = false;
 
 /* Misc variables needed for the overview creation code. */
+static char             BYTES[] = "Bytes";
+static char             DATE[] = "Date";
+static char             EXPIRES[] = "Expires";
+static char             LINES[] = "Lines";
 static char		MESSAGEID[] = "Message-ID";
-static char		EXPIRES[] = "Expires";
-static char		DATE[] = "Date";
 static char		XREF[] = "Xref";
 static ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
 static size_t		ARTfieldsize;
-static ARTOVERFIELD	*Datep = (ARTOVERFIELD *)NULL;
-static ARTOVERFIELD	*Msgidp = (ARTOVERFIELD *)NULL;
-static ARTOVERFIELD	*Expp = (ARTOVERFIELD *)NULL;
-static ARTOVERFIELD	*Xrefp = (ARTOVERFIELD *)NULL;
-static ARTOVERFIELD	*Missfields; /* header fields not listed in 
-					overview.fmt, but ones that we need
-					(e.g. message-id */
+static ARTOVERFIELD     *Bytesp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *Datep = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *Expp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *Linesp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *Msgidp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *Xrefp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD	*Missfields; /* Header fields not listed in
+                                      * overview.fmt, but ones that we need
+                                      * (e.g. Message-ID:). */
 static size_t		Missfieldsize = 0;
 
 static void OverAddAllNewsgroups(void);
@@ -426,59 +430,89 @@ ARTreadschema(bool Overview)
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
-	    if (strncasecmp(buff, DATE, strlen(DATE)) == 0)
-		Datep = fp;
-	    if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)) == 0)
-		Msgidp = fp;
-	    if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)) == 0)
-		Expp = fp;
-	    if (strncasecmp(buff, XREF, strlen(XREF)) == 0) {
-		Xrefp = fp;
-		foundxreffull = fp->NeedHeadername;
+            /* We need to keep the value of fp for :bytes and :lines
+             * because we will need them afterwards; we will then not
+             * have to compare fp->Headername to both "Bytes" and "Lines"
+             * for each fp. */
+            if (strncasecmp(buff, BYTES, strlen(BYTES)) == 0)
+                Bytesp = fp;
+            if (strncasecmp(buff, DATE, strlen(DATE)) == 0)
+                Datep = fp;
+            if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)) == 0)
+                Expp = fp;
+            if (strncasecmp(buff, LINES, strlen(LINES)) == 0)
+                Linesp = fp;
+            if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)) == 0)
+                Msgidp = fp;
+            if (strncasecmp(buff, XREF, strlen(XREF)) == 0) {
+                Xrefp = fp;
+                foundxreffull = fp->NeedHeadername;
             }
 	    fp++;
 	}
 	ARTfieldsize = fp - ARTfields;
 	fclose(F);
     }
-    if (Msgidp == (ARTOVERFIELD *)NULL)
-	Missfieldsize++;
+    if (Bytesp == (ARTOVERFIELD *)NULL)
+        Missfieldsize++;
     if (Datep == (ARTOVERFIELD *)NULL)
-	Missfieldsize++;
+        Missfieldsize++;
     if (Expp == (ARTOVERFIELD *)NULL)
+        Missfieldsize++;
+    if (Linesp == (ARTOVERFIELD *)NULL)
+        Missfieldsize++;
+    if (Msgidp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
     if (Overview && (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull))
         die("Xref:full must be included in %s", SchemaPath);
     if (Missfieldsize > 0) {
 	Missfields = xmalloc(Missfieldsize * sizeof(ARTOVERFIELD));
         fp = Missfields;
-	if (Msgidp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = false;
-	    fp->Headername = xstrdup(MESSAGEID);
-	    fp->HeadernameLength = strlen(MESSAGEID);
-	    fp->Header = (char *)NULL;
-	    fp->HasHeader = false;
-	    fp->HeaderLength = 0;
-	    Msgidp = fp++;
-	}
-	if (Datep == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = false;
-	    fp->Headername = xstrdup(DATE);
-	    fp->HeadernameLength = strlen(DATE);
-	    fp->Header = (char *)NULL;
-	    fp->HasHeader = false;
-	    fp->HeaderLength = 0;
-	    Datep = fp++;
-	}
-	if (Expp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = false;
-	    fp->Headername = xstrdup(EXPIRES);
-	    fp->HeadernameLength = strlen(EXPIRES);
-	    fp->Header = (char *)NULL;
-	    fp->HasHeader = false;
-	    fp->HeaderLength = 0;
-	    Expp = fp++;
-	}
+        if (Bytesp == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = false;
+            fp->Headername = xstrdup(BYTES);
+            fp->HeadernameLength = strlen(BYTES);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            Bytesp = fp++;
+        }
+        if (Datep == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = false;
+            fp->Headername = xstrdup(DATE);
+            fp->HeadernameLength = strlen(DATE);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            Datep = fp++;
+        }
+        if (Expp == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = false;
+            fp->Headername = xstrdup(EXPIRES);
+            fp->HeadernameLength = strlen(EXPIRES);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            Expp = fp++;
+        }
+        if (Linesp == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = false;
+            fp->Headername = xstrdup(LINES);
+            fp->HeadernameLength = strlen(LINES);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            Linesp = fp++;
+        }
+        if (Msgidp == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = false;
+            fp->Headername = xstrdup(MESSAGEID);
+            fp->HeadernameLength = strlen(MESSAGEID);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            Msgidp = fp++;
+        }
         if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
 	    fp->NeedHeadername = false;
 	    fp->Headername = xstrdup(XREF);
@@ -510,8 +544,12 @@ DoArt(ARTHANDLE *art)
     time_t			Expires;
     time_t			Posted;
     char			overdata[BIG_BUFFER];
-    char			bytes[BIG_BUFFER];
+    char                        Bytes[BIG_BUFFER];
+    char                        Lines[BIG_BUFFER];
     struct artngnum		ann;
+    int                         DotStuffedLines = 0;
+    int                         lines = 0;
+    bool                        hasCounts = false;
 
     /* Set up place to store headers. */
     for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
@@ -553,6 +591,42 @@ DoArt(ARTHANDLE *art)
             }
         }
 
+        /* Work out the real values for :bytes and :lines. */
+        if (RetrMode == RETR_ALL && (fp == Bytesp || fp == Linesp)) {
+            /* Parse the article only once. */
+            if (!hasCounts && (p = wire_findbody(art->data, art->len)) != NULL) {
+                end = art->data + art->len;
+                /* p is at the beginning of the body, if any. */
+                for (; *p != '\0';) {
+                    /* p is at the beginning of a new line, if any. */
+                    lines++;
+                    if (*p == '.')
+                        DotStuffedLines++;
+                    if ((p = wire_nextline(p, end)) == NULL) {
+                        /* p is at the final ".\r\n". */
+                        lines--;
+                        DotStuffedLines--;
+                        break;
+                    }
+                }
+            }
+
+            if (fp == Bytesp) {
+                /* :bytes does not count the final ".\r\n", so remove 3. */
+                snprintf(Bytes, sizeof(Bytes), "%lu",
+                         (unsigned long) art->len - DotStuffedLines - 3);
+                fp->Header = Bytes;
+                fp->HeaderLength = strlen(Bytes);
+            } else {
+                snprintf(Lines, sizeof(Lines), "%lu", (unsigned long) lines);
+                fp->Header = Lines;
+                fp->HeaderLength = strlen(Lines);
+            }
+            fp->HasHeader = true;
+            hasCounts = true;
+            continue;
+        }
+
         /* Now, if we have a header, find and record its length. */
         if (fp->Header != NULL) {
 	    fp->HasHeader = true;
@@ -565,13 +639,8 @@ DoArt(ARTHANDLE *art)
                peel off the \r\n (we're guaranteed we're dealing with
                wire-format articles. */
             fp->HeaderLength = p - fp->Header - 1;
-	} else if (RetrMode == RETR_ALL 
-                   && strcmp(fp->Headername, "Bytes") == 0) {
-            snprintf(bytes, sizeof(bytes), "%lu", (unsigned long) art->len);
-	    fp->HasHeader = true;
-	    fp->Header = bytes;
-	    fp->HeaderLength = strlen(bytes);
 	}
+
     }
     if (Missfieldsize > 0) {
 	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
