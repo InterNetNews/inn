@@ -24,19 +24,19 @@
 #include "inn/wire.h"
 
 static const char usage[] = "\
-Usage: makehistory [-bOIax] [-f file] [-l count] [-s size] [-T tmpdir]\n\
+Usage: makehistory [-abFIOSx] [-f file] [-l count] [-s size] [-T tmpdir]\n\
 \n\
-    -b          delete bad articles from spool\n\
-    -e          read entire articles to compute proper byte count\n\
-    -f          write history entries to file (default $pathdb/history)\n\
-    -s size     size new history database for approximately size entries\n\
     -a          open output history file in append mode\n\
-    -O          create overview entries for articles\n\
+    -b          delete bad articles from spool\n\
+    -F          fork when writing overview\n\
+    -f file     write history entries to file (default $pathdb/history)\n\
     -I          do not create overview for articles numbered below lowmark\n\
     -l count    size of overview updates (default 10000)\n\
-    -x          don't write history entries\n\
+    -O          create overview entries for articles\n\
+    -S          write overview data to standard output\n\
+    -s size     size new history database for approximately size entries\n\
     -T tmpdir   use directory tmpdir for temporary files\n\
-    -F          fork when writing overview\n";
+    -x          don't write history entries\n";
 
 
 /*
@@ -68,7 +68,6 @@ FILE *OverTmpFile;
 char *OverTmpPath = NULL;
 bool NoHistory;
 OVSORTTYPE sorttype;
-int RetrMode;
 bool WriteStdout = false;
 
 /* Misc variables needed for the overview creation code. */
@@ -592,7 +591,7 @@ DoArt(ARTHANDLE *art)
         }
 
         /* Work out the real values for :bytes and :lines. */
-        if (RetrMode == RETR_ALL && (fp == Bytesp || fp == Linesp)) {
+        if (fp == Bytesp || fp == Linesp) {
             /* Parse the article only once. */
             if (!hasCounts && (p = wire_findbody(art->data, art->len)) != NULL) {
                 end = art->data + art->len;
@@ -845,7 +844,6 @@ main(int argc, char **argv)
     Fork = false;
     AppendMode = false;
     NoHistory = false;
-    RetrMode = RETR_HEAD;
 
     while ((i = getopt(argc, argv, "abeFf:Il:OSs:T:x")) != EOF) {
 	switch(i) {
@@ -854,9 +852,6 @@ main(int argc, char **argv)
 	    break;
 	case 'b':
 	    NukeBadArts = true;
-	    break;
-	case 'e':
-	    RetrMode = RETR_ALL;
 	    break;
 	case 'F':
 	    Fork = true;
@@ -970,7 +965,7 @@ main(int argc, char **argv)
      * article.
      */
 	
-    while ((art = SMnext(art, RetrMode)) != NULL) {
+    while ((art = SMnext(art, RETR_ALL)) != NULL) {
 	if (art->len == 0) {
 	    if (NukeBadArts && art->data == NULL && art->token != NULL)
 		SMcancel(*art->token);

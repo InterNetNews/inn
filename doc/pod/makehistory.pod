@@ -4,25 +4,25 @@ makehistory - Initialize or rebuild INN history database
 
 =head1 SYNOPSIS
 
-B<makehistory> [B<-abeFIOx>] [B<-f> I<filename>] [B<-l> I<count>]
-[B<-T> I<tmpdir>] [B<-s> I<size>]
+B<makehistory> [B<-abFIOSx>] [B<-f> I<filename>] [B<-l> I<count>]
+[B<-s> I<size>] [B<-T> I<tmpdir>]
 
 =head1 DESCRIPTION
 
 B<makehistory> rebuilds the history(5) text file, which contains a list of
-Message-IDs of articles already seen by the server.  It can also be used
+message-IDs of articles already seen by the server.  It can also be used
 to rebuild the overview database.  Note that the dbz(3) indexes for the
-history file are rebuilt by makedbz(8), not by B<makehistory> as in
+F<history> file are rebuilt by makedbz(8), not by B<makehistory> as in
 earlier versions of INN.
 
-The default location of the history text file is I<pathdb>/history; to
+The default location of the F<history> text file is I<pathdb>/history; to
 specify an alternate location, use the B<-f> flag.
 
 By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
 overview information, use the B<-O> flag.
 
-WARNING: If you're trying to rebuild the overview database, be sure to
+WARNING:  If you're trying to rebuild the overview database, be sure to
 stop innd(8) and delete or zero out the existing database before you start
 for the best results.  An overview rebuild should not be done while the
 server is running.  Unless the existing overview is deleted, you may end
@@ -30,7 +30,7 @@ up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
 
 If I<ovmethod> in F<inn.conf> is C<ovdb>, you must have the ovdb processes
-running while rebuilding overview.  ovdb needs them available while
+running while rebuilding overview.  <ovdb needs them available while
 writing overview entries.  You can start them by hand separate from the
 rest of the server by running B<ovdb_init>; see ovdb_init(8) for more
 details.
@@ -41,19 +41,14 @@ details.
 
 =item B<-a>
 
-Append to the history file rather than generating a new one.  If you
-append to the main history file, make sure innd(8) is throttled or not
+Append to the F<history> file rather than generating a new one.  If you
+append to the main F<history> file, make sure innd(8) is throttled or not
 running, or you can corrupt the history.
 
 =item B<-b>
 
-Delete any messages found in the spool that do not have valid Message-ID
+Delete any messages found in the spool that do not have valid Message-ID:
 headers in them.
-
-=item B<-e>
-
-Compute Bytes headers which is used for overview data.  This option is valid
-only if B<-O> flag is specified and F<overview.fmt> includes C<Bytes:>.
 
 =item B<-F>
 
@@ -63,7 +58,7 @@ continue to collect more data from the spool while the first batch of data
 is being written to the overview database.  The disadvantage is that up to
 twice as much temporary disk space will be used for the generated overview
 data.  This option only makes sense in combination with B<-O>.  With
-C<buffindexed>, the C<overchan> program is invoked to write overview.
+buffindexed, the B<overchan> program is invoked to write overview.
 
 =item B<-f> I<filename>
 
@@ -89,15 +84,15 @@ the overview batches.  At a rough estimate, about 300 * I<count> bytes
 of temporary space will be required (not counting temp files created
 by sort(1)).  See the description of the B<-T> option for how to
 specify the temporary storage location.  This option has no effect
-with C<buffindexed>, because C<buffindexed> does not need sorted
+with buffindexed, because buffindexed does not need sorted
 overview and no batching is done.
 
 =item B<-O>
 
-Create the overview database as well as the history file.  Overview
+Create the overview database as well as the F<history> file.  Overview
 information is only required if the server supports readers; it is not
 needed for a transit-only server (see I<enableoverview> in inn.conf(5)).
-If you are using the C<buffindexed> overview storage method, erase all of
+If you are using the buffindexed overview storage method, erase all of
 your overview buffers before running B<makehistory> with B<-O>.
 
 =item B<-S>
@@ -121,14 +116,14 @@ overview data.  By default, it uses I<pathtmp>, set in F<inn.conf>, but if
 this option is given, the provided I<tmpdir> is used instead.  This is
 also used for temporary files created by sort(1) (which is invoked in the
 process of writing overview information since sorted overview information
-writes faster).  By default, sort usually uses your system temporary
+writes faster).  By default, B<sort> usually uses your system temporary
 directory; see the sort(1) man page on your system to be sure.
 
 =item B<-x>
 
-If this option is given, B<makehistory> won't write out history file
+If this option is given, B<makehistory> won't write out F<history> file
 entries.  This is useful mostly for building overview without generating
-a new history file.
+a new F<history> file.
 
 =back
 
@@ -136,28 +131,28 @@ a new history file.
 
 Here's a typical example of rebuilding the entire history and overview
 database, removing broken articles in the news spool.  This uses the
-default temporary file locations and should be done while innd isn't
+default temporary file locations and should be done while B<innd> isn't
 running (or is throttled).
 
     makehistory -b -f history.n -O -l 30000 -I
 
-This will rebuild the overview (if using C<buffindexed>, erase the
+This will rebuild the overview (if using buffindexed, erase the
 existing overview buffers before running this command) and leave a new
-history file as C<history.n> in I<pathdb>.  To preserve all of the history
-entries from the old history file that correspond to rejected articles or
+F<history> file as C<history.n> in I<pathdb>.  To preserve all of the history
+entries from the old F<history> file that correspond to rejected articles or
 expired articles, follow the above command with:
 
     cd <pathdb>
     awk 'NF == 2 { print }' < history >> history.n
 
 (replacing the path with your I<pathdb>, if it isn't the default).  Then
-look over the new history file for problems and run:
+look over the new F<history> file for problems and run:
 
     makedbz -s `wc -l < history` -f history.n
 
 Then rename all of the files matching C<history.n.*> to C<history.*>,
 replacing the current history database and indexes.  After that, it's safe
-to unthrottle innd.
+to unthrottle B<innd>.
 
 For a simpler example:
 
@@ -173,10 +168,6 @@ To just rebuild overview:
 =head1 FILES
 
 =over 4
-
-=item inn.conf
-
-Read for I<pathdb>, I<pathtmp>, and other settings.
 
 =item I<pathdb>/history
 
@@ -197,7 +188,7 @@ $Id$
 
 =head1 SEE ALSO
 
-dbz(3), active(5), history(5), inn.conf(5), ctlinnd(8), innd(8),
-makedbz(8), ovdb_init(8), overview.fmt(5).
+active(5), ctlinnd(8), dbz(3), history(5), inn.conf(5), innd(8),
+makedbz(8), ovdb_init(8), overchan(8), overview.fmt(5).
 
 =cut
