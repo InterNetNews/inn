@@ -104,8 +104,7 @@ fi
 # arrival date since we can't really check it, but we leave the expires time.
 sed -e 's/^[^ ]* [^ ]* //' -e 's/Xref: [^ ]*/Xref:/' spool/overview \
     > spool/stripped
-sed -e 's/Xref: [^ ]*/Xref:/' overview/1-4 > spool/correct
-compare spool/stripped spool/correct
+compare spool/stripped overview/1-4stripped
 
 # Done.  Clean up.
 rm -rf spool
