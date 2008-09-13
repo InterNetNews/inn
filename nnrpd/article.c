@@ -885,6 +885,12 @@ CMDover(int ac, char *av[])
     xover = (strcasecmp(av[0], "XOVER") == 0);
     mid = (ac > 1 && IsValidMessageID(av[1]));
 
+    if (mid && !xover) {
+        /* FIXME:  We still do not support OVER MSGID, sorry! */
+        Reply("%d Overview by message-ID unsupported\r\n", NNTP_ERR_UNAVAILABLE);
+        return;
+    }
+
     /* Check the syntax of the arguments first.
      * We do not accept a message-ID for XOVER, contrary to OVER.  A range
      * is accepted for both of them. */
@@ -899,12 +905,6 @@ CMDover(int ac, char *av[])
             Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
             return;
         }   
-    }
-
-    if (mid) {
-        /* FIXME:  We still do not support OVER MSGID, sorry! */
-        Reply("%d Overview by message-ID unsupported\r\n", NNTP_ERR_UNAVAILABLE);
-        return;
     }
 
     /* Check authorizations. */
@@ -930,13 +930,16 @@ CMDover(int ac, char *av[])
         gettimeofday(&stv, NULL);
     }
     if ((handle = (void *)OVopensearch(GRPcur, range.Low, range.High)) == NULL) {
-        /* The response code for OVER is different if a range is provided. */
+        /* The response code for OVER is different if a range is provided.
+         * Note that XOVER answers OK. */
         if (ac > 1)
             Reply("%d No articles in %s\r\n",
-                  xover ? NNTP_FAIL_NO_ARTICLE : NNTP_FAIL_BAD_ARTICLE, av[1]);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
         else
             Reply("%d Current article number %d is invalid\r\n",
-                  NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
+        if (xover)
+            Reply(".\r\n");
         return;
     }
     if (PERMaccessconf->nnrpdoverstats) {
@@ -1025,12 +1028,16 @@ CMDover(int ac, char *av[])
         cvector_free(vector);
 
     if (HasNotReplied) {
+        /* The response code for OVER is different if a range is provided.
+         * Note that XOVER answers OK. */
         if (ac > 1)
             Reply("%d No articles in %s\r\n",
-                  xover ? NNTP_FAIL_NO_ARTICLE : NNTP_FAIL_BAD_ARTICLE, av[1]);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
         else
             Reply("%d Current article number %d is invalid\r\n",
-                  NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
+        if (xover)
+            Reply(".\r\n");
     } else {
         if(useIOb) {
             SendIOb(".\r\n", 3);
