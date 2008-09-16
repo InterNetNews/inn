@@ -137,7 +137,7 @@ SASLauth(int ac, char *av[])
 	    ExitWithStats(1, false);
 	    break;
 	case RTeof:
-	    warn("%s eof in authinfo sasl", Client.host);
+	    warn("%s EOF in authinfo sasl", Client.host);
 	    ExitWithStats(1, false);
 	    break;
 	default:

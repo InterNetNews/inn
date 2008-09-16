@@ -1,11 +1,11 @@
 /*  $Id$
 **
-**  Line by line reading support from sockets/pipes
+**  Line by line reading support from sockets/pipes.
 **
-**  Written by Alex Kiernan (alex.kiernan@thus.net)
+**  Written by Alex Kiernan <alex.kiernan@thus.net>.
 **
-**  This code implements a infinitely (well size_t) long single line
-**  read routine, to protect against eating all available memory it
+**  This code implements an infinitely (well size_t) long single line
+**  read routine.  To protect against eating all available memory, it
 **  actually starts discarding characters if you try to send more than
 **  the maximum article size in a single line.
 ** 
@@ -28,7 +28,7 @@ extern SSL *tls_conn;
 #endif
 
 /*
-**  free a previously allocated line structure
+**  Free a previously allocated line structure.
 */
 void
 line_free(struct line *line)
@@ -55,7 +55,7 @@ alarmHandler(int s UNUSED)
 #endif
   
 /*
-**  initialise a new line structure
+**  Initialise a new line structure.
 */
 void
 line_init(struct line *line)
@@ -67,7 +67,7 @@ line_init(struct line *line)
 }
 
 /*
-** timeout is used only if HAVE_SSL is defined.
+**  Timeout is used only if HAVE_SSL is defined.
 */
 static ssize_t
 line_doread(void *p, size_t len, int timeout UNUSED)
@@ -105,11 +105,12 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 		n = read(STDIN_FILENO, p, len);
 	    } while (n == -1 && errno == EINTR);
 
-	if (n <= 0) break; /* EOF or error */
+	if (n <= 0)
+            break; /* EOF or error. */
 
 #ifdef HAVE_SASL
 	if (sasl_conn && sasl_ssf) {
-	    /* security layer in place, decode the data */
+	    /* Security layer in place, decode the data. */
 	    const char *out;
 	    unsigned outlen;
 	    int r;
@@ -125,7 +126,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 	    }
 	}
 #endif /* HAVE_SASL */
-    } while (n == 0); /* split SASL blob, need to read more data */
+    } while (n == 0); /* Split SASL blob, need to read more data. */
 
     return n;
 }
@@ -140,8 +141,8 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
 
     assert(line != NULL);
     assert(line->start != NULL);
-    /* shuffle any trailing portion not yet processed to the start of
-     * the buffer */
+    /* Shuffle any trailing portion not yet processed to the start of
+     * the buffer. */
     if (line->remaining != 0) {
 	if (line->start != line->where) {
 	    memmove(line->start, line->where, line->remaining);
@@ -150,31 +151,31 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
     }
     where = line->start + line->remaining;
 
-    /* if we found a line terminator in the data we have we don't need
-     * to ask for any more */
+    /* If we found a line terminator in the data we have, we don't need
+     * to ask for any more. */
     if (lf == NULL) {
 	do {
 	    fd_set rmask;
 	    int i;
 	    ssize_t count;
 
-	    /* if we've filled the line buffer, double the size,
-	     * reallocate the buffer and try again */
+	    /* If we've filled the line buffer, double the size,
+	     * reallocate the buffer and try again. */
 	    if (where == line->start + line->allocated) {
 		size_t newsize = line->allocated * 2;
 	    
-		/* don't grow the buffer bigger than the maximum
-		 * article size we'll accept */
+		/* Don't grow the buffer bigger than the maximum
+		 * article size we'll accept. */
                 if (PERMaccessconf->localmaxartsize > NNTP_MAXLEN_COMMAND)
                     if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
                         newsize = PERMaccessconf->localmaxartsize;
 
-		/* if we're trying to grow from the same size, to the
+		/* If we're trying to grow from the same size, to the
 		 * same size, we must have hit the localmaxartsize
-		 * buffer for a second (or subsequent) time - the user
+		 * buffer for a second (or subsequent) time -- the user
 		 * is likely trying to DOS us, so don't double the
 		 * size any more, just overwrite characters until they
-		 * stop, then discard the whole thing */
+		 * stop, then discard the whole thing. */
 		if (newsize == line->allocated) {
 		    warn("%s overflowed our line buffer (%ld), "
 			 "discarding further input", Client.host,
@@ -235,26 +236,26 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
                                 line->allocated - (where - line->start), 
                                 timeout);
 
-	    /* give timeout for read errors */
+	    /* Give timeout for read errors. */
 	    if (count < 0) {
 		sysnotice("%s can't read", Client.host);
 		return RTtimeout;
 	    }
-	    /* if we hit EOF, terminate the string and send it back */
+	    /* If we hit EOF, terminate the string and send it back. */
 	    if (count == 0) {
 		assert((where + count) < (line->start + line->allocated));
 		where[count] = '\0';
 		return RTeof;
 	    }
-	    /* search for `\n' in what we just read, if we find it we'll
+	    /* Search for `\n' in what we just read.  If we find it we'll
 	     * drop out and return the line for processing */
 	    lf = memchr(where, '\n', count);
 	    where += count;
 	} while (lf == NULL);
     }
 
-    /* remember where we've processed up to so we can start off there
-     * next time */
+    /* Remember where we've processed up to, so we can start off there
+     * next time. */
     line->where = lf + 1;
     line->remaining = where - line->where;
 

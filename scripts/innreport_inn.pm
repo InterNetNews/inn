@@ -1766,7 +1766,7 @@ sub collect($$$$$$) {
     # can't read: Broken pipe
     return 1 if $left =~ /can\'t read: Broken pipe/o;
     # eof in post
-    return 1 if $left =~ /^\S+ eof in post$/o;
+    return 1 if $left =~ /^\S+ EOF in post$/o;
     # ioctl: ...
     return 1 if $left =~ /^ioctl: /o;
     # other stats
