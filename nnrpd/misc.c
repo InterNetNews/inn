@@ -38,7 +38,7 @@ Argify(char *line, char ***argvp)
 	free(*argvp);
     }
 
-    /*  Copy the line, which we will split up. */
+    /* Copy the line, which we will split up. */
     while (ISWHITE(*line))
 	line++;
     p = xstrdup(line);
@@ -122,7 +122,7 @@ PERMmatch(char **Pats, char **list)
 
 /*
 **  Check to see if user is allowed to see this article by matching
-**  Newsgroups line.
+**  Xref: (or Newsgroups:) line.
 */
 bool
 PERMartok(void)
@@ -134,7 +134,7 @@ PERMartok(void)
 	return false;
 
     if ((p = GetHeader("Xref")) == NULL) {
-	/* in case article does not include Xref */
+	/* In case article does not include Xref:. */
 	if ((p = GetHeader("Newsgroups")) != NULL) {
 	    if (!NGgetlist(&grplist, p))
 		/* No newgroups or null entry. */
@@ -143,7 +143,7 @@ PERMartok(void)
 	    return true;
 	}
     } else {
-	/* skip path element */
+	/* Skip path element. */
 	if ((p = strchr(p, ' ')) == NULL)
 	    return true;
 	for (p++ ; *p == ' ' ; p++);
@@ -152,7 +152,7 @@ PERMartok(void)
 	if (!NGgetlist(&grplist, p))
 	    /* No newgroups or null entry. */
 	    return true;
-	/* chop ':' and article number */
+	/* Chop ':' and article number. */
 	for (grp = grplist ; *grp != NULL ; grp++) {
 	    if ((p = strchr(*grp, ':')) == NULL)
 		return true;
@@ -164,7 +164,7 @@ PERMartok(void)
     if (PY_use_dynamic) {
         char    *reply;
 
-	/* Authorize user at a Python authorization module */
+	/* Authorize user at a Python authorization module. */
 	if (PY_dynamic(PERMuser, p, false, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
@@ -199,34 +199,34 @@ NGgetlist(char ***argvp, char *list)
 
 
 /*********************************************************************
- * POSTING RATE LIMITS - The following code implements posting rate
- * limits. News clients are indexed by IP number (or PERMuser, see
- * config file). After a relatively configurable number of posts, the nnrpd
+ * POSTING RATE LIMITS -- The following code implements posting rate
+ * limits.  News clients are indexed by IP number (or PERMuser, see
+ * config file).  After a relatively configurable number of posts, the nnrpd
  * process will sleep for a period of time before posting anything.
  * 
  * Each time that IP number posts a message, the time of
- * posting and the previous sleep time is stored. The new sleep time
+ * posting and the previous sleep time is stored.  The new sleep time
  * is computed based on these values.
  *
  * To compute the new sleep time, the previous sleep time is, for most
- * cases multiplied by a factor (backoff_k). 
+ * cases multiplied by a factor (backoff_k).
  *
- * See inn.conf(5) for how this code works
+ * See inn.conf(5) for how this code works.
  *
  *********************************************************************/
 
-/* Defaults are pass through, i.e. not enabled 
- * NEW for INN 1.8 - Use the inn.conf file to specify the following:
+/* Defaults are pass through, i.e. not enabled .
+ * NEW for INN 1.8 -- Use the inn.conf file to specify the following:
  *
- * backoff_k: <integer>
- * backoff_postfast: <integer>
- * backoff_postslow: <integer>
- * backoff_trigger: <integer>
- * backoff_db: <path>
- * backoff_auth: <on|off> 
+ * backoffk: <integer>
+ * backoffpostfast: <integer>
+ * backoffpostslow: <integer>
+ * backofftrigger: <integer>
+ * backoffdb: <path>
+ * backoffauth: <true|false> 
  *
- * You may also specify posting backoffs on a per user basis. To do this
- * turn on "backoff_auth"
+ * You may also specify posting backoffs on a per user basis.  To do this,
+ * turn on backoffauth.
  *
  * Now these are runtime constants. <grin>
  */
@@ -237,16 +237,16 @@ InitBackoffConstants(void)
 {
   struct stat st;
 
-  /* Default is not to enable this code */
+  /* Default is not to enable this code. */
   BACKOFFenabled = false;
   
-  /* Read the runtime config file to get parameters */
+  /* Read the runtime config file to get parameters. */
 
   if ((PERMaccessconf->backoff_db == NULL) ||
     !(PERMaccessconf->backoff_k >= 0L && PERMaccessconf->backoff_postfast >= 0L && PERMaccessconf->backoff_postslow >= 1L))
     return;
 
-  /* Need this database for backing off */
+  /* Need this database for backing off. */
   strlcpy(postrec_dir, PERMaccessconf->backoff_db, sizeof(postrec_dir));
   if (stat(postrec_dir, &st) < 0) {
     if (ENOENT == errno) {
@@ -270,11 +270,11 @@ InitBackoffConstants(void)
 }
 
 /*
- * PostRecs are stored in individual files. I didn't have a better
- * way offhand, don't want to touch DBZ, and the number of posters is
- * small compared to the number of readers. This is the filename corresponding
- * to an IP number.
- */
+**  PostRecs are stored in individual files.  I didn't have a better
+**  way offhand, don't want to touch DBZ, and the number of posters is
+**  small compared to the number of readers.  This is the filename corresponding
+**  to an IP number.
+*/
 char *
 PostRecFilename(char *ip, char *user) 
 {
@@ -318,8 +318,8 @@ PostRecFilename(char *ip, char *user)
 }
 
 /*
- * Lock the post rec file. Return 1 on lock, 0 on error
- */
+**  Lock the post rec file.  Return 1 on lock, 0 on error.
+*/
 int
 LockPostRec(char *path)
 {
@@ -343,7 +343,7 @@ LockPostRec(char *path)
       return(1);
     }
 
-    /* No lock. See if the file is there. */
+    /* No lock.  See if the file is there. */
     if (stat(lockname, &st) < 0) {
       syslog(L_ERROR, "%s cannot stat lock file %s", Client.host, strerror(errno));
       if (statfailed++ > 5) return(0);
@@ -351,7 +351,7 @@ LockPostRec(char *path)
     }
 
     /* If lockfile is older than the value of
-       PERMaccessconf->backoff_postslow, remove it */
+     * PERMaccessconf->backoff_postslow, remove it. */
     statfailed = 0;
     time(&now);
     if (now < st.st_ctime + PERMaccessconf->backoff_postslow) continue;
@@ -373,8 +373,8 @@ UnlockPostRec(char *path)
 }
 
 /* 
- * Get the stored postrecord for that IP 
- */
+** Get the stored postrecord for that IP.
+*/
 static int
 GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
 {
@@ -418,8 +418,8 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
 }
 
 /* 
- * Store the postrecord for that IP 
- */
+** Store the postrecord for that IP.
+*/
 static int
 StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
 {
@@ -438,13 +438,13 @@ StorePostRecord(char *path, time_t lastpost, long lastsleep, long lastn)
 }
 
 /*
- * Return the proper sleeptime. Return false on error.
- */
+** Return the proper sleeptime.  Return false on error.
+*/
 int
 RateLimit(long *sleeptime, char *path) 
 {
-    time_t now;
-    long prevpost, prevsleep, prevn, n;
+     time_t now;
+     long prevpost, prevsleep, prevn, n;
 
      now = time(NULL);
      prevpost = 0L; prevsleep = 0L; prevn = 0L; n = 0L;
@@ -453,17 +453,16 @@ RateLimit(long *sleeptime, char *path)
               Client.host, strerror(errno));
        return 0;
      }
-     /*
-      * Just because yer paranoid doesn't mean they ain't out ta get ya
-      * This is called paranoid clipping
-      */
-     if (prevn < 0L) prevn = 0L;
-     if (prevsleep < 0L)  prevsleep = 0L;
-     if (prevsleep > PERMaccessconf->backoff_postfast)  prevsleep = PERMaccessconf->backoff_postfast;
+     /* Just because yer paranoid doesn't mean they ain't out ta get ya.
+      * This is called paranoid clipping.  */
+     if (prevn < 0L)
+       prevn = 0L;
+     if (prevsleep < 0L)
+       prevsleep = 0L;
+     if (prevsleep > PERMaccessconf->backoff_postfast)
+       prevsleep = PERMaccessconf->backoff_postfast;
      
-      /*
-       * Compute the new sleep time
-       */
+      /* Compute the new sleep time. */
      *sleeptime = 0L;  
      if (prevpost <= 0L) {
        prevpost = 0L;
@@ -490,13 +489,13 @@ RateLimit(long *sleeptime, char *path)
      }
 
      *sleeptime = ((*sleeptime) > PERMaccessconf->backoff_postfast) ? PERMaccessconf->backoff_postfast : (*sleeptime);
-     /* This ought to trap this bogon */
+     /* This ought to trap this bogon. */
      if ((*sleeptime) < 0L) {
 	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",Client.host,*sleeptime,prevsleep,n);
 	*sleeptime = 0L;
      }
   
-     /* Store the postrecord */
+     /* Store the postrecord. */
      if (!StorePostRecord(path,now,*sleeptime,prevn)) {
        syslog(L_ERROR, "%s can't store post record: %s", Client.host, strerror(errno));
        return 0;
@@ -507,10 +506,8 @@ RateLimit(long *sleeptime, char *path)
 
 #ifdef HAVE_SSL
 /*
-**  The "STARTTLS" command.  RFC2595.
+**  The STARTTLS command.  RFC 4642.
 */
-/* ARGSUSED0 */
-
 void
 CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 {
@@ -518,25 +515,25 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 
   tls_init();
   if (nnrpd_starttls_done == 1) {
-      Reply("%d Already successfully executed STARTTLS\r\n",
-            NNTP_FAIL_STARTTLS);
+      Reply("%d Already using an active TLS layer\r\n",
+            NNTP_ERR_ACCESS);
       return;
   }
 
   Reply("%d Begin TLS negotiation now\r\n", NNTP_CONT_STARTTLS);
   fflush(stdout);
 
-  /* must flush our buffers before starting tls */
+  /* Must flush our buffers before starting TLS. */
   
-  result=tls_start_servertls(0, /* read */
-			     1); /* write */
+  result=tls_start_servertls(0,  /* Read.  */
+			     1); /* Write. */
   if (result==-1) {
-    Reply("%d Starttls failed\r\n", NNTP_ERR_STARTTLS);
+    Reply("%d STARTTLS failed\r\n", NNTP_ERR_STARTTLS);
     return;
   }
 
 #ifdef HAVE_SASL
-  /* tell SASL about the negotiated layer */
+  /* Tell SASL about the negotiated layer. */
   result = sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
 			(sasl_ssf_t *) &tls_cipher_usebits);
   if (result != SASL_OK) {

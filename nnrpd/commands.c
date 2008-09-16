@@ -597,7 +597,7 @@ CMDpost(int ac, char *av[])
 	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTeof:
-	    warn("%s eof in post", Client.host);
+	    warn("%s EOF in post", Client.host);
 	    ExitWithStats(1, false);
 	    /* NOTREACHED */
 	case RTlong:
