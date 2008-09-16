@@ -34,14 +34,6 @@ CMDgroup(int ac, char *av[])
     hookpresent = PY_use_dynamic;
 #endif /* DO_PYTHON */
 
-    if (!hookpresent && !PERMcanread) {
-        if (PERMspecified)
-	    Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
-        else
-            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
-	return;
-    }
-
     /* Parse arguments. */
     if (ac == 1) {
 	if (GRPcur == NULL) {
@@ -60,6 +52,15 @@ CMDgroup(int ac, char *av[])
         return;
     }
 
+    /* Check authorizations. */
+    if (!hookpresent && !PERMcanread) {
+        if (PERMspecified)
+            Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+        else
+            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
+        return;
+    }
+
     /* FIXME: Temporarily work around broken API. */
     if (!OVgroupstats(group, &low, &high, &count, NULL)) {
         Reply("%s %s\r\n", NOSUCHGROUP, group);
@@ -73,7 +74,7 @@ CMDgroup(int ac, char *av[])
     if (PY_use_dynamic) {
         char    *reply;
 
-	/* Authorize user using Python module method dynamic*/
+	/* Authorize user using Python module method dynamic. */
 	if (PY_dynamic(PERMuser, group, false, &reply) < 0) {
 	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	} else {
@@ -93,12 +94,15 @@ CMDgroup(int ac, char *av[])
             grplist[0] = group;
             grplist[1] = NULL;
             if (!PERMmatch(PERMreadlist, grplist)) {
-                Reply("%d Permission denied\r\n", NNTP_ERR_ACCESS);
+                Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
                 free(group);
                 return;
             }
         } else {
-            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
+            if (PERMcanauthenticate)
+                Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
+            else
+                Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
             free(group);
             return;
         }
@@ -115,7 +119,7 @@ CMDgroup(int ac, char *av[])
                 ARTlow = 1;
 	    Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
         } else {
-	    /* if we are an NFS reader, check the last nfsreaderdelay
+	    /* If we are an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
 	     * last nfsreaderdelay (default 60) seconds.  If they did,
 	     * don't report them as we don't want them to appear too
@@ -268,7 +272,7 @@ CMDxgtitle(int ac, char *av[])
 	p = av[1];
 
     if (!PERMspecified) {
-	Printf("%d list follows\r\n", NNTP_OK_XGTITLE);
+	Printf("%d No descriptions follow\r\n", NNTP_OK_XGTITLE);
 	Printf(".\r\n");
 	return;
     }
@@ -279,7 +283,7 @@ CMDxgtitle(int ac, char *av[])
 	Printf("%d Can't open %s\r\n", NNTP_FAIL_XGTITLE, NEWSGROUPS);
 	return;
     }
-    Printf("%d list follows\r\n", NNTP_OK_XGTITLE);
+    Printf("%d Descriptions in form \"group description\"\r\n", NNTP_OK_XGTITLE);
 
     /* Print all lines with matching newsgroup name. */
     while ((line = QIOread(qp)) != NULL) {

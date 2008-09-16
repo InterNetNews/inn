@@ -120,7 +120,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	execv(path, av);
         /* RFC 2980 requires 500 if there are unspecified errors during
          * the execution of the provided program. */
-	Reply("%d %s\r\n", NNTP_ERR_COMMAND, "Program error occurred");
+	Reply("%d Program error occurred\r\n", NNTP_ERR_COMMAND);
 
 	syslog(L_FATAL, "can't execv %s %m", path);
 	_exit(1);
