@@ -41,7 +41,7 @@ static LISTINFO		INFOdistribs = {
     "Distributions in form \"area description\""
 };
 static LISTINFO         INFOheaders = {
-    "HEADERS", NULL, cmd_list_headers, false, "supported headers and metadata",
+    "HEADERS", NULL, cmd_list_headers, true, "supported headers and metadata",
     "Headers and metadata items supported"
 };
 static LISTINFO               INFOsubs = {
@@ -57,7 +57,7 @@ static LISTINFO		INFOextensions = {
     "Supported NNTP extensions"
 };
 static LISTINFO		INFOgroups = {
-    "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, false, "newsgroup descriptions",
+    "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, true, "newsgroup descriptions",
     "Descriptions in form \"group description\""
 };
 static LISTINFO		INFOmoderators = {
@@ -185,8 +185,9 @@ CMD_list_single(char *group)
             return false;
     }
     if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
-        Reply("%d %s.\r\n", NNTP_OK_LIST, INFOactive.Format);
-        Printf("%s %010u %010u %c\r\n.\r\n", group, hi, lo, flag);
+        Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
+        Printf("%s %010u %010u %c\r\n", group, hi, lo, flag);
+        Printf(".\r\n");
         return true;
     }
     return false;
@@ -194,7 +195,7 @@ CMD_list_single(char *group)
 
 
 /*
-**  List active newsgroups, newsgroup descriptions, and distributions.
+**  Main LIST function.
 */
 void
 CMDlist(int ac, char *av[])
@@ -226,8 +227,8 @@ CMDlist(int ac, char *av[])
     }
     /* If no defined LIST keyword is found, we return. */
     if (lp == NULL) {
-	Reply("%s\r\n", NNTP_SYNTAX_USE);
-	return;
+        Reply("%d Unknown LIST keyword\r\n", NNTP_ERR_SYNTAX);
+        return;
     }
 
     if (lp == &INFOactive) {
@@ -245,8 +246,8 @@ CMDlist(int ac, char *av[])
     /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES,
      * HEADERS or NEWSGROUPS keywords are used. */
     if (ac > 2 && !wildarg) {
-	Reply("%s\r\n", NNTP_SYNTAX_USE);
-	return;
+        Reply("%d Unexpected wildmat\r\n", NNTP_ERR_SYNTAX);
+        return;
     }
 
     /* If a function is provided for the given keyword, we call it. */
@@ -264,18 +265,19 @@ CMDlist(int ac, char *av[])
     qp = QIOopen(path);
     free(path);
     if (qp == NULL) {
-        Reply("%d No list of %s available.\r\n",
+        Reply("%d No list of %s available\r\n",
               NNTP_ERR_UNAVAILABLE, lp->Items);
-        /* Only the active and overview.fmt files are required (but the last
-         * one has already called cmd_list_schema). */
+        /* Only the active, newsgroups and overview.fmt files are required
+         * (but the last one has already called cmd_list_schema).
+         * LIST HEADERS has also called its own function cmd_list_headers. */
         if (lp->Required || errno != ENOENT) {
             /* %m outputs strerror(errno). */
-            syslog(L_ERROR, "%s cant fopen %s %m", Client.host, lp->File);
+            syslog(L_ERROR, "%s can't fopen %s %m", Client.host, lp->File);
         }
         return;
     }
 
-    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
+    Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
     if (!PERMspecified) {
 	/* Optimize for unlikely case of no permissions and false default. */
 	QIOclose(qp);

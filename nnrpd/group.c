@@ -279,7 +279,7 @@ CMDxgtitle(int ac, char *av[])
 
     /* Open the file, get ready to scan. */
     if ((qp = QIOopen(NEWSGROUPS)) == NULL) {
-	syslog(L_ERROR, "%s cant open %s %m", Client.host, NEWSGROUPS);
+	syslog(L_ERROR, "%s can't open %s %m", Client.host, NEWSGROUPS);
 	Printf("%d Can't open %s\r\n", NNTP_FAIL_XGTITLE, NEWSGROUPS);
 	return;
     }
