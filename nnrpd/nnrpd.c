@@ -36,8 +36,10 @@ extern SSL *tls_conn;
 int nnrpd_starttls_done = 0;
 #endif 
 
-/* If we have getloadavg, include the appropriate header file.  Otherwise,
-   just assume that we always have a load of 0. */
+/*
+**  If we have getloadavg, include the appropriate header file.  Otherwise,
+**  just assume that we always have a load of 0.
+*/
 #if HAVE_GETLOADAVG
 # if HAVE_SYS_LOADAVG_H
 #  include <sys/loadavg.h>
@@ -87,7 +89,7 @@ static sig_atomic_t	ChangeTrace;
 bool	DaemonMode = false;
 bool	ForeGroundMode = false;
 static const char 	*HostErrorStr;
-bool GetHostByAddr = true;      /* formerly DO_NNRP_GETHOSTBYADDR */
+bool GetHostByAddr = true;      /* Formerly DO_NNRP_GETHOSTBYADDR. */
 const char *NNRPinstance = "";
 
 #ifdef DO_PERL
@@ -100,8 +102,10 @@ bool PY_use_dynamic = false;
 
 static char	CMDfetchhelp[] = "[message-ID|number]";
 
-/* { command base name, function to call, need authentication,
-     min args, max args, help string } */
+/*
+**  { command base name, function to call, need authentication,
+**    min args, max args, help string }
+*/
 static CMDENT	CMDtable[] = {
     {	"ARTICLE",	CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
@@ -148,7 +152,7 @@ static CMDENT	CMDtable[] = {
     {   "QUIT",         CMDquit,        false,  1,      1,
         NULL },
     /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
-       protocol in RFC 3977. */
+     * protocol in RFC 3977. */
     {	"SLAVE",	CMD_unimp,	false,	1,	1,
 	NULL },
 #ifdef HAVE_SSL
@@ -200,19 +204,19 @@ ExitWithStats(int x, bool readconf)
     if (ARTcount)
         syslog(L_NOTICE, "%s exit articles %ld groups %ld", 
     	    Client.host, ARTcount, GRPcount);
-    if (POSTreceived ||  POSTrejected)
+    if (POSTreceived || POSTrejected)
 	syslog(L_NOTICE, "%s posts received %ld rejected %ld",
 	   Client.host, POSTreceived, POSTrejected);
     syslog(L_NOTICE, "%s times user %.3f system %.3f idle %.3f elapsed %.3f",
 	Client.host, usertime, systime, IDLEtime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
-	finished with this session */
-    if (!readconf && PERMaccessconf &&  PERMaccessconf->readertrack) {
+     * finished with this session. */
+    if (!readconf && PERMaccessconf && PERMaccessconf->readertrack) {
 	syslog(L_NOTICE, "%s Tracking Disabled (%s)", Client.host, Username);
 	if (LLOGenable) {
 		fprintf(locallog, "%s Tracking Disabled (%s)\n", Client.host, Username);
 		fclose(locallog);
-		syslog(L_NOTICE,"%s Local Logging ends (%s) %s",Client.host, Username, LocalLogFileName);
+		syslog(L_NOTICE,"%s Local Logging ends (%s) %s", Client.host, Username, LocalLogFileName);
 	}
     }
     if (ARTget)
@@ -252,7 +256,7 @@ ExitWithStats(int x, bool readconf)
     SMshutdown();
 
 #ifdef DO_PYTHON
-        PY_close_python();
+    PY_close_python();
 #endif /* DO_PYTHON */
 
     if (History)
@@ -280,7 +284,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
     char	*p, *q;
     static const char *newsmaster = NEWSMASTER;
 
-    Reply("%s\r\n", NNTP_HELP_FOLLOWS);
+    Reply("%d Legal commands\r\n", NNTP_INFO_HELP);
     for (cp = CMDtable; cp->Name; cp++) {
         if (cp->Function == CMD_unimp)
             continue;
@@ -292,30 +296,30 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
     if (PERMaccessconf && (VirtualPathlen > 0)) {
 	if (PERMaccessconf->newsmaster) {
 	    if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
-		Printf("Report problems to <%s@%s>\r\n",
+		Printf("Report problems to <%s@%s>.\r\n",
 		    PERMaccessconf->newsmaster, PERMaccessconf->domain);
 	    } else {
-		Printf("Report problems to <%s>\r\n",
+		Printf("Report problems to <%s>.\r\n",
 		    PERMaccessconf->newsmaster);
 	    }
 	} else {
-	    /* sigh, pickup from newsmaster anyway */
+	    /* Sigh, pickup from newsmaster anyway. */
 	    if ((p = strchr(newsmaster, '@')) == NULL)
-		Printf("Report problems to <%s@%s>\r\n",
+		Printf("Report problems to <%s@%s>.\r\n",
 		    newsmaster, PERMaccessconf->domain);
 	    else {
                 q = xstrndup(newsmaster, p - newsmaster);
-		Printf("Report problems to <%s@%s>\r\n",
+		Printf("Report problems to <%s@%s>.\r\n",
 		    q, PERMaccessconf->domain);
 		free(q);
 	    }
 	}
     } else {
 	if (strchr(newsmaster, '@') == NULL)
-	    Printf("Report problems to <%s@%s>\r\n",
+	    Printf("Report problems to <%s@%s>.\r\n",
 		newsmaster, innconf->fromhost);
 	else
-	    Printf("Report problems to <%s>\r\n",
+	    Printf("Report problems to <%s>.\r\n",
 		newsmaster);
     }
     Reply(".\r\n");
@@ -323,7 +327,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 
 
 /*
-**  Unimplemented catch-all.
+**  Catch-all for unimplemented functions.
 */
 void
 CMD_unimp(int ac UNUSED, char *av[])
@@ -339,13 +343,13 @@ CMD_unimp(int ac UNUSED, char *av[])
 void
 CMDquit(int ac UNUSED, char *av[] UNUSED)
 {
-    Reply("%s\r\n", NNTP_GOODBYE_ACK);
+    Reply("%d Bye!\r\n", NNTP_OK_QUIT);
     ExitWithStats(0, false);
 }
 
 
 /*
-**  Convert an address to a hostname.  Don't trust the reverse lookup since
+**  Convert an address to a hostname.  Don't trust the reverse lookup
 **  since anyone can fake reverse DNS entries.
 */
 static bool
@@ -415,16 +419,18 @@ StartConnection(void)
     length = sizeof(ssc);
     if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
-	    sysnotice("? cant getpeername");
-	    Printf("%d I can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
+	    sysnotice("? can't getpeername");
+	    Printf("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
         strlcpy(Client.host, "stdin", sizeof(Client.host));
     } else {
-	/* figure out client's IP address/hostname */
+	/* Figure out client's IP address/hostname. */
 	HostErrorStr = default_host_error;
         if (!network_sockaddr_sprint(Client.ip, sizeof(Client.ip), sac)) {
-            notice("? cant get client numeric address: %s", HostErrorStr);
+            notice("? can't get client numeric address: %s", HostErrorStr);
+            Printf("%d Can't get your numeric address.  Goodbye!\r\n",
+                   NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
 	if (GetHostByAddr) {
@@ -449,7 +455,9 @@ StartConnection(void)
 	HostErrorStr = default_host_error;
         size = sizeof(Client.serverip);
         if (!network_sockaddr_sprint(Client.serverip, size, sas)) {
-            notice("? cant get server numeric address: %s", HostErrorStr);
+            notice("? can't get server numeric address: %s", HostErrorStr);
+            Printf("%d Can't get my own numeric address.  Goodbye!\r\n",
+                   NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
 	if (GetHostByAddr) {
@@ -477,8 +485,9 @@ StartConnection(void)
     PERMgetpermissions();
 }
 
+
 /*
-** Write a buffer, via SASL security layer and/or TLS if necessary.
+**  Write a buffer, via SASL security layer and/or TLS if necessary.
 */
 void
 write_buffer(const char *buff, ssize_t len)
@@ -497,7 +506,7 @@ write_buffer(const char *buff, ssize_t len)
 	if (sasl_conn && sasl_ssf) {
             int r;
 
-	    /* can only encode as much as the client can handle at one time */
+	    /* Can only encode as much as the client can handle at one time. */
 	    n = (len > sasl_maxout) ? sasl_maxout : len;
 	    if ((r = sasl_encode(sasl_conn, p, n, &out, &outlen)) != SASL_OK) {
 		sysnotice("sasl_encode() failed: %s",
@@ -507,7 +516,7 @@ write_buffer(const char *buff, ssize_t len)
 	} else
 #endif /* HAVE_SASL */
 	{
-	    /* output the entire unencoded string */
+	    /* Output the entire unencoded string. */
 	    n = len;
 	    out = buff;
 	    outlen = len;
@@ -547,8 +556,9 @@ Again:
     TMRstop(TMR_NNTPWRITE);
 }
 
+
 /*
-** Send formatted output, possibly with debugging output.
+**  Send formatted output, possibly with debugging output.
 */
 static void
 VPrintf(const char *fmt, va_list args, int dotrace)
@@ -563,7 +573,7 @@ VPrintf(const char *fmt, va_list args, int dotrace)
 	int oerrno = errno;
 
         /* Copy output, but strip trailing CR-LF.  Note we're assuming here
-           that no output line can ever be longer than 2045 characters. */
+         * that no output line can ever be longer than 2045 characters. */
         p = buff + strlen(buff) - 1;
         while (p >= buff && (*p == '\n' || *p == '\r'))
             *p-- = '\0';
@@ -572,6 +582,7 @@ VPrintf(const char *fmt, va_list args, int dotrace)
         errno = oerrno;
     }
 }
+
 
 /*
 **  Send a reply, possibly with debugging output.
@@ -602,6 +613,8 @@ Printf(const char *fmt, ...)
 #else
 #define NO_SIGACTION_UNUSED
 #endif
+
+
 /*
 **  Got a signal; toggle tracing.
 */
@@ -648,7 +661,7 @@ SetupDaemon(void)
 
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
-	syslog(L_NOTICE, "cant initialize storage method, %s", SMerrorstr);
+	syslog(L_NOTICE, "can't initialize storage method, %s", SMerrorstr);
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
@@ -662,12 +675,12 @@ SetupDaemon(void)
     overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
-	syslog(L_NOTICE, "cant open overview %m");
+	syslog(L_NOTICE, "can't open overview %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
     if (!OVctl(OVCACHEKEEP, &val)) {
-	syslog(L_NOTICE, "cant enable overview cache %m");
+	syslog(L_NOTICE, "can't enable overview cache %m");
 	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
 	ExitWithStats(1, true);
     }
@@ -844,7 +857,7 @@ main(int argc, char *argv[])
         else
             lfd = network_bind_ipv4("0.0.0.0", ListenPort);
         if (lfd < 0)
-            die("cant bind to any addresses");
+            die("can't bind to any addresses");
 
 	/* Detach */
 	if (!ForeGroundMode) {
@@ -908,10 +921,10 @@ main(int argc, char *argv[])
 	    
 		for (i = 0; i <= innconf->maxforks && (pid = fork()) < 0; i++) {
 		    if (i == innconf->maxforks) {
-			syslog(L_FATAL, "cant fork (dropping connection): %m");
+			syslog(L_FATAL, "can't fork (dropping connection): %m");
 			continue;
 		    }
-		    syslog(L_NOTICE, "cant fork (waiting): %m");
+		    syslog(L_NOTICE, "can't fork (waiting): %m");
 		    sleep(1);
 		}
 		if (ChangeTrace) {
@@ -1183,7 +1196,7 @@ main(int argc, char *argv[])
 
         /* 502 if already successfully authenticated, according to RFC 4643. */
         if (!PERMcanauthenticate && (strcasecmp(cp->Name, "AUTHINFO") == 0)) {
-            Reply("%d %s\r\n", NNTP_ERR_ACCESS, "Already authenticated");
+            Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
             continue;
         }
 
