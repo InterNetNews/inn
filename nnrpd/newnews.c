@@ -213,7 +213,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 
 /*
 **  NEWNEWS wildmat date time [GMT]
-**  Return the Message-ID of any articles after the specified date.
+**  Return the message-ID of any articles after the specified date.
 */
 void
 CMDnewnews(int ac, char *av[])
@@ -227,42 +227,17 @@ CMDnewnews(int ac, char *av[])
   int		i;
   bool          local = true;
 
-  if (!PERMaccessconf->allownewnews) {
-      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ERR_ACCESS);
-      return;
-  }
+  TMRstart(TMR_NEWNEWS);
 
-  if (!PERMcanread) {
-      Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
-      return;
-  }
-
-  /* Make other processes happier if someone uses NEWNEWS. */
-  if (innconf->nicenewnews > 0) {
-      nice(innconf->nicenewnews);
-      innconf->nicenewnews = 0;
-  }
-
+  /* Check the arguments and parse the date. */
   if (ac > 4) {
       if (strcasecmp(av[4], "GMT") == 0)
           local = false;
       else {
           Reply("%d Syntax error for \"GMT\"\r\n", NNTP_ERR_SYNTAX);
+          TMRstop(TMR_NEWNEWS);
           return;
       }
-  }
-
-  snprintf(line, sizeof(line), "%s %s %s %s", av[1], av[2], av[3],
-	   local ? "local" : "GMT");
-  notice("%s newnews %s", Client.host, line);
-
-  TMRstart(TMR_NEWNEWS);
-  /* Optimization in case client asks for !* (no groups). */
-  if (strcmp(av[1], "!*") == 0) {
-      Reply("%d No new news\r\n", NNTP_OK_NEWNEWS);
-      Printf(".\r\n");
-      TMRstop(TMR_NEWNEWS);
-      return;
   }
 
   /* Parse the newsgroups. */
@@ -279,6 +254,37 @@ CMDnewnews(int ac, char *av[])
       Reply("%d Bad date\r\n", NNTP_ERR_SYNTAX);
       TMRstop(TMR_NEWNEWS);
       return;
+  }
+
+  /* Check authorizations. */
+  if (!PERMaccessconf->allownewnews) {
+      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ERR_ACCESS);
+      TMRstop(TMR_NEWNEWS);
+      return;
+  }
+
+  if (!PERMcanread) {
+      Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+      TMRstop(TMR_NEWNEWS);
+      return;
+  }
+
+  snprintf(line, sizeof(line), "%s %s %s %s", av[1], av[2], av[3],
+           local ? "local" : "GMT");
+  notice("%s newnews %s", Client.host, line);
+
+  /* Optimization in case client asks for !* (no groups). */
+  if (strcmp(av[1], "!*") == 0) {
+      Reply("%d No new news\r\n", NNTP_OK_NEWNEWS);
+      Printf(".\r\n");
+      TMRstop(TMR_NEWNEWS);
+      return;
+  }
+
+  /* Make other processes happier if someone uses NEWNEWS. */
+  if (innconf->nicenewnews > 0) {
+      nice(innconf->nicenewnews);
+      innconf->nicenewnews = 0;
   }
 
   if (strcspn(av[1], "\\!*[?]") == strlen(av[1])) {
