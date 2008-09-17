@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Net News Reading Protocol server.
+**  NetNews Reading Protocol server.
 */
 
 #include "config.h"
@@ -35,8 +35,8 @@ typedef struct _ARTRANGE {
 } ARTRANGE;
 
 /*
-** access configuration for each readers
- */
+**  Access configuration for each reader.
+*/
 typedef struct _ACCESSGROUP {
     char *name;
     char *key;
@@ -95,7 +95,7 @@ typedef enum _READTYPE {
 
 
 /*
-** Structure used by line_read to keep track of what's been read
+**  Structure used by line_read to keep track of what has been read.
 */
 struct line {
     char *start;
@@ -135,11 +135,11 @@ typedef struct _ARTOVERFIELD {
 */
 enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
-    TMR_NEWNEWS,                /* Executing NEWNEWS command */
-    TMR_READART,                /* Reading an article (SMretrieve) */
-    TMR_CHECKART,               /* Checking an article (ARTinstorebytoken) */
-    TMR_NNTPREAD,               /* Reading from the peer */
-    TMR_NNTPWRITE,              /* Writing to the peer */
+    TMR_NEWNEWS,                /* Executing NEWNEWS command. */
+    TMR_READART,                /* Reading an article (SMretrieve). */
+    TMR_CHECKART,               /* Checking an article (ARTinstorebytoken). */
+    TMR_NNTPREAD,               /* Reading from the peer. */
+    TMR_NNTPWRITE,              /* Writing to the peer. */
     TMR_MAX
 };
 
@@ -174,23 +174,23 @@ extern char	*NEWSGROUPS;
 extern char	*NNRPACCESS;
 EXTERN char	PERMuser[SMBUF];
 EXTERN FILE	*locallog;
-EXTERN ARTNUM	ARTnumber;	/* Current article number */
-EXTERN ARTNUM	ARThigh;	/* Current high number for group */
-EXTERN ARTNUM	ARTlow;		/* Current low number for group */
-EXTERN unsigned long	ARTcount;	/* Number of articles in group */
-EXTERN long	MaxBytesPerSecond; /* maximum bytes per sec a client can use, defaults to 0 */
+EXTERN ARTNUM	ARTnumber;	/* Current article number. */
+EXTERN ARTNUM	ARThigh;	/* Current high number for group. */
+EXTERN ARTNUM	ARTlow;		/* Current low number for group. */
+EXTERN unsigned long	ARTcount;	/* Number of articles in group. */
+EXTERN long	MaxBytesPerSecond; /* Maximum bytes per sec a client can use, defaults to 0. */
 EXTERN long	ARTget;
 EXTERN long	ARTgettime;
 EXTERN long	ARTgetsize;
-EXTERN long	OVERcount;	/* number of (X)OVER commands */
-EXTERN long	OVERhit;	/* number of (X)OVER records found in .overview */
-EXTERN long	OVERmiss;	/* number of (X)OVER records found in articles */
-EXTERN long	OVERtime;	/* number of ms spent sending (X)OVER data */
-EXTERN long	OVERsize;	/* number of bytes of (X)OVER data sent	*/
-EXTERN long	OVERdbz;	/* number of ms spent reading dbz data	*/
-EXTERN long	OVERseek;	/* number of ms spent seeking history	*/
-EXTERN long	OVERget;	/* number of ms spent reading history	*/
-EXTERN long	OVERartcheck;	/* number of ms spent article check	*/
+EXTERN long	OVERcount;	/* Number of (X)OVER commands. */
+EXTERN long	OVERhit;	/* Number of (X)OVER records found in overview. */
+EXTERN long	OVERmiss;	/* Number of (X)OVER records found in articles. */
+EXTERN long	OVERtime;	/* Number of ms spent sending (X)OVER data. */
+EXTERN long	OVERsize;	/* Number of bytes of (X)OVER data sent. */
+EXTERN long	OVERdbz;	/* Number of ms spent reading dbz data. */
+EXTERN long	OVERseek;	/* Number of ms spent seeking history. */
+EXTERN long	OVERget;	/* Number of ms spent reading history. */
+EXTERN long	OVERartcheck;	/* Number of ms spent article check. */
 EXTERN double	IDLEtime;
 EXTERN unsigned long	GRParticles;
 EXTERN long	GRPcount;
@@ -254,9 +254,11 @@ extern void		CMDstarttls  (int ac, char** av);
 #endif
 
 
-/* Run a resolver or authenticator.  The directory is where to look for the
-   command if not fully qualified.  username and password may be NULL to run
-   resolvers. */
+/*
+**  Run a resolver or authenticator.  The directory is where to look for the
+**  command if not fully qualified.  username and password may be NULL to run
+**  resolvers.
+*/
 char *auth_external(struct client *, const char *command,
                     const char *directory, const char *username,
                     const char *password);
@@ -290,8 +292,6 @@ void line_init(struct line *);
 READTYPE line_read(struct line *, int, const char **, size_t *, size_t *);
 
 #ifdef HAVE_SASL
-#include <sasl/sasl.h>
-
 extern sasl_conn_t *sasl_conn;
 extern int sasl_ssf, sasl_maxout;
 extern sasl_callback_t sasl_callbacks[];

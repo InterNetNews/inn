@@ -322,7 +322,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 	    Printf("Report problems to <%s>.\r\n",
 		newsmaster);
     }
-    Reply(".\r\n");
+    Printf(".\r\n");
 }
 
 
@@ -420,7 +420,7 @@ StartConnection(void)
     if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
 	    sysnotice("? can't getpeername");
-	    Printf("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
+	    Reply("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
         strlcpy(Client.host, "stdin", sizeof(Client.host));
@@ -429,7 +429,7 @@ StartConnection(void)
 	HostErrorStr = default_host_error;
         if (!network_sockaddr_sprint(Client.ip, sizeof(Client.ip), sac)) {
             notice("? can't get client numeric address: %s", HostErrorStr);
-            Printf("%d Can't get your numeric address.  Goodbye!\r\n",
+            Reply("%d Can't get your numeric address.  Goodbye!\r\n",
                    NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
@@ -448,7 +448,7 @@ StartConnection(void)
         length = sizeof(sss);
 	if (getsockname(STDIN_FILENO, sas, &length) < 0) {
 	    sysnotice("%s can't getsockname", Client.host);
-	    Printf("%d Can't figure out where you connected to.  Goodbye!\r\n",
+	    Reply("%d Can't figure out where you connected to.  Goodbye!\r\n",
                    NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
@@ -456,7 +456,7 @@ StartConnection(void)
         size = sizeof(Client.serverip);
         if (!network_sockaddr_sprint(Client.serverip, size, sas)) {
             notice("? can't get server numeric address: %s", HostErrorStr);
-            Printf("%d Can't get my own numeric address.  Goodbye!\r\n",
+            Reply("%d Can't get my own numeric address.  Goodbye!\r\n",
                    NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
@@ -586,6 +586,8 @@ VPrintf(const char *fmt, va_list args, int dotrace)
 
 /*
 **  Send a reply, possibly with debugging output.
+**  Reply() is used for answers which can possibly be traced (response codes).
+**  Printf() is used in other cases.
 */
 void
 Reply(const char *fmt, ...)
@@ -1003,7 +1005,7 @@ main(int argc, char *argv[])
     StartConnection();
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Printf("%d You have no permission to talk.  Goodbye!\r\n",
+	Reply("%d You have no permission to talk.  Goodbye!\r\n",
 	       NNTP_ERR_ACCESS);
 	ExitWithStats(1, false);
     }

@@ -37,7 +37,7 @@ CMDgroup(int ac, char *av[])
     /* Parse arguments. */
     if (ac == 1) {
 	if (GRPcur == NULL) {
-	    Printf("%d No group specified\r\n", NNTP_FAIL_NO_GROUP);
+	    Reply("%d No group specified\r\n", NNTP_FAIL_NO_GROUP);
 	    return;
 	} else {
 	    group = xstrdup(GRPcur);
@@ -263,7 +263,7 @@ CMDxgtitle(int ac, char *av[])
     /* Parse the arguments. */
     if (ac == 1) {
 	if (GRPcount == 0) {
-	    Printf("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
+	    Reply("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
 	    return;
 	}
 	p = GRPcur;
@@ -272,7 +272,7 @@ CMDxgtitle(int ac, char *av[])
 	p = av[1];
 
     if (!PERMspecified) {
-	Printf("%d No descriptions follow\r\n", NNTP_OK_XGTITLE);
+	Reply("%d No descriptions follow\r\n", NNTP_OK_XGTITLE);
 	Printf(".\r\n");
 	return;
     }
@@ -280,10 +280,10 @@ CMDxgtitle(int ac, char *av[])
     /* Open the file, get ready to scan. */
     if ((qp = QIOopen(NEWSGROUPS)) == NULL) {
 	syslog(L_ERROR, "%s can't open %s %m", Client.host, NEWSGROUPS);
-	Printf("%d Can't open %s\r\n", NNTP_FAIL_XGTITLE, NEWSGROUPS);
+	Reply("%d Can't open %s\r\n", NNTP_FAIL_XGTITLE, NEWSGROUPS);
 	return;
     }
-    Printf("%d Descriptions in form \"group description\"\r\n", NNTP_OK_XGTITLE);
+    Reply("%d Descriptions in form \"group description\"\r\n", NNTP_OK_XGTITLE);
 
     /* Print all lines with matching newsgroup name. */
     while ((line = QIOread(qp)) != NULL) {

@@ -939,7 +939,7 @@ CMDover(int ac, char *av[])
             Reply("%d Current article number %d is invalid\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
         if (xover)
-            Reply(".\r\n");
+            Printf(".\r\n");
         return;
     }
     if (PERMaccessconf->nnrpdoverstats) {
@@ -1037,7 +1037,7 @@ CMDover(int ac, char *av[])
             Reply("%d Current article number %d is invalid\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
         if (xover)
-            Reply(".\r\n");
+            Printf(".\r\n");
     } else {
         if(useIOb) {
             SendIOb(".\r\n", 3);
@@ -1148,7 +1148,7 @@ CMDpat(int ac, char *av[])
 	if (mid) {
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
-		Printf("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
+		Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 		break;
 	    }
 
@@ -1165,7 +1165,7 @@ CMDpat(int ac, char *av[])
                 break;
             }
 
-	    Printf("%d Header information for %s follows (from the article)\r\n",
+	    Reply("%d Header information for %s follows (from the article)\r\n",
                    hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
 
 	    if ((text = GetHeader(av[1])) != NULL
@@ -1232,7 +1232,7 @@ CMDpat(int ac, char *av[])
                 } else {
                     Reply("%d No header information for %s follows (from articles)\r\n",
                           NNTP_OK_HEAD, av[1]);
-                    Reply(".\r\n");
+                    Printf(".\r\n");
                 }
                 break;
             } else {
@@ -1308,7 +1308,7 @@ CMDpat(int ac, char *av[])
             } else {
                 Reply("%d No header or metadata information for %s follows (from overview)\r\n",
                       NNTP_OK_HEAD, av[1]);
-                Reply(".\r\n");
+                Printf(".\r\n");
             }
             break;
         } else {

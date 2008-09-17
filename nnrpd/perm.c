@@ -1401,7 +1401,7 @@ PERMgetaccess(char *nnrpaccess)
     if (auth_realms == NULL) {
 	/* no one can talk, empty file */
 	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Printf("%d You have no permission to talk.  Goodbye.\r\n",
+	Reply("%d You have no permission to talk.  Goodbye.\r\n",
 	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
@@ -1440,7 +1440,7 @@ PERMgetaccess(char *nnrpaccess)
     } else if (!PERMcanauthenticate) {
 	/* Couldn't resolve the user. */
 	syslog(L_NOTICE, "%s no_user", Client.host);
-	Printf("%d Could not get your access name.  Goodbye!\r\n",
+	Reply("%d Could not get your access name.  Goodbye!\r\n",
 	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     } else {

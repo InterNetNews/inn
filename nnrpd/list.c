@@ -155,14 +155,14 @@ cmd_list_headers(LISTINFO *lp, int ac, char *av[])
         return;
     }
     Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
-    Reply(":\r\n");
+    Printf(":\r\n");
     if (range) {
         /* These information are only known by the overview system,
          * and are only accessible with a range. */
-        Reply(":bytes\r\n");
-        Reply(":lines\r\n");
+        Printf(":bytes\r\n");
+        Printf(":lines\r\n");
     }
-    Reply(".\r\n");
+    Printf(".\r\n");
 }
 
 

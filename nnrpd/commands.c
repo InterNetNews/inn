@@ -643,7 +643,7 @@ CMDpost(int ac, char *av[])
 
     if (longline) {
 	warn("%s too long in post", Client.host);
-	Printf("%d Line %d too long\r\n", 
+	Reply("%d Line %d too long\r\n", 
 	       ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_POST_REJECT, longline);
 	POSTrejected++;
 	return;
