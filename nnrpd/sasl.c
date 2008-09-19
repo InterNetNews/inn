@@ -84,6 +84,12 @@ SASLauth(int ac, char *av[])
         return;
     }
 
+    /* 502 if already successfully authenticated, according to RFC 4643. */
+    if (!PERMcanauthenticate) {
+        Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+        return;
+    }
+
     if (ac == 4) {
 	/* initial response */
 	clientin = av[3];

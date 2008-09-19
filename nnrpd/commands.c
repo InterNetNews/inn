@@ -59,6 +59,12 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
         return -1;
     }
 
+    /* 502 if already successfully authenticated, according to RFC 4643. */
+    if (!PERMcanauthenticate) {
+        Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+        return -1;
+    }
+
     if (strchr(INN_PATH_AUTHDIR,'/') == NULL)
 	snprintf(path, sizeof(path), "%s/%s/%s/%s", innconf->pathbin,
                  INN_PATH_AUTHDIR, INN_PATH_AUTHDIR_GENERIC, av[0]);
@@ -218,6 +224,11 @@ CMDauthinfo(int ac, char *av[])
     } else {
         /* Each time AUTHINFO USER is used, the new username is cached. */
         if (strcasecmp(av[1], "USER") == 0) {
+            /* 502 if already successfully authenticated, according to RFC 4643. */
+            if (!PERMcanauthenticate) {
+                Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+                return;
+            }
             if (ac > 3) {
                 Reply("%d No whitespace allowed in username\r\n", NNTP_ERR_SYNTAX);
                 return;
@@ -230,6 +241,12 @@ CMDauthinfo(int ac, char *av[])
         /* If it is not AUTHINFO PASS, we do not support the provided subcommand. */
         if (strcasecmp(av[1], "PASS") != 0) {
             Reply("%d Bad AUTHINFO param\r\n", NNTP_ERR_SYNTAX);
+            return;
+        }
+
+        /* 502 if already successfully authenticated, according to RFC 4643. */
+        if (!PERMcanauthenticate) {
+            Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
             return;
         }
 

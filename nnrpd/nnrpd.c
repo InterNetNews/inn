@@ -630,13 +630,14 @@ ToggleTrace(int s NO_SIGACTION_UNUSED)
 }
 
 /*
-** Got a SIGPIPE; exit cleanly
+**  Got a SIGPIPE; exit cleanly.
 */
 static RETSIGTYPE
 CatchPipe(int s UNUSED)
 {
     ExitWithStats(0, false);
 }
+
 
 /*
 **  Got a signal; wait for children.
@@ -656,6 +657,7 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 #endif
 }
 
+
 static void
 SetupDaemon(void)
 {
@@ -664,29 +666,30 @@ SetupDaemon(void)
     val = true;
     if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
 	syslog(L_NOTICE, "can't initialize storage method, %s", SMerrorstr);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
     OVextra = overview_extra_fields();
     if (OVextra == NULL) {
-	/* overview_extra_fields should already have logged something
-	 * useful */
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+	/* Overview_extra_fields should already have logged something
+	 * useful. */
+	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
     overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
 	/* This shouldn't really happen. */
 	syslog(L_NOTICE, "can't open overview %m");
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
     if (!OVctl(OVCACHEKEEP, &val)) {
 	syslog(L_NOTICE, "can't enable overview cache %m");
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
 }
+
 
 /*
 **  Print a usage message and exit.
@@ -731,7 +734,7 @@ main(int argc, char *argv[])
     setproctitle_init(argc, argv);
 
     /* Parse arguments.  Must xstrdup() optarg if used because setproctitle
-       may clobber it! */
+     * may clobber it! */
     Reject = NULL;
     LLOGenable = false;
     GRPcur = NULL;
@@ -739,13 +742,14 @@ main(int argc, char *argv[])
     strlcpy(Username, "unknown", sizeof(Username));
 
     /* Set up the pathname, first thing, and teach our error handlers about
-       the name of the program. */
+     * the name of the program. */
     name = argv[0];
     if (name == NULL || *name == '\0')
 	name = "nnrpd";
     else {
 	const char *p;
 
+        /* We take the last "/" in the path. */
 	p = strrchr(name, '/');
 	if (p != NULL)
 	    name = p + 1;
@@ -775,49 +779,49 @@ main(int argc, char *argv[])
 	default:
 	    Usage();
 	    /* NOTREACHED */
-        case '6':                       /* bind to a certain IPv6 address */
+        case '6':                       /* Bind to a certain IPv6 address. */
             ListenAddr6 = xstrdup(optarg);
             break;
- 	case 'b':			/* bind to a certain IPv4 address */
+ 	case 'b':			/* Bind to a certain IPv4 address. */
             ListenAddr = xstrdup(optarg);
  	    break;
-	case 'c':		/* use alternate readers.conf */
+	case 'c':                       /* Use alternate readers.conf. */
 	    ConfFile = concatpath(innconf->pathetc, optarg);
 	    break;
- 	case 'D':			/* standalone daemon mode */
+ 	case 'D':			/* Standalone daemon mode. */
  	    DaemonMode = true;
  	    break;
-        case 'P':                       /* prespawn count in daemon mode */
+        case 'P':                       /* Prespawn count in daemon mode. */
 	    respawn = atoi(optarg);
 	    break;
- 	case 'f':			/* Don't fork on daemon mode */
+ 	case 'f':			/* Don't fork on daemon mode. */
  	    ForeGroundMode = true;
  	    break;
-	case 'i':			/* Initial command */
+	case 'i':			/* Initial command. */
 	    PushedBack = xstrdup(optarg);
 	    break;
-	case 'I':			/* Instance */
+	case 'I':			/* Instance. */
 	    NNRPinstance = xstrdup(optarg);
 	    break;
-	case 'n':			/* No DNS lookups */
+	case 'n':			/* No DNS lookups. */
 	    GetHostByAddr = false;
 	    break;
 	case 'o':
-	    Offlinepost = true;		/* Offline posting only */
+	    Offlinepost = true;		/* Offline posting only. */
 	    break;
- 	case 'p':			/* tcp port for daemon mode */
+ 	case 'p':			/* TCP port for daemon mode. */
  	    ListenPort = atoi(optarg);
  	    break;
-	case 'r':			/* Reject connection message */
+	case 'r':			/* Reject connection message. */
 	    Reject = xstrdup(optarg);
 	    break;
-	case 's':			/* Unused title string */
+	case 's':			/* Unused title string. */
 	    break;
-	case 't':			/* Tracing */
+	case 't':			/* Tracing. */
 	    Tracing = true;
 	    break;
 #ifdef HAVE_SSL
-	case 'S':			/* Force SSL negotiation */
+	case 'S':			/* Force SSL negotiation. */
 	    initialSSL = true;
 	    break;
 #endif /* HAVE_SSL */
@@ -828,9 +832,9 @@ main(int argc, char *argv[])
     if (ListenAddr != NULL && ListenAddr6 != NULL)
         die("-6 and -b may not both be given");
 
-    /* Make other processes happier if someone is reading This allows other
-       processes like overchan to keep up when there are lots of readers.
-       Note that this is cumulative with nicekids. */
+    /* Make other processes happier if someone is reading.  This allows other
+     * processes like overchan to keep up when there are lots of readers.
+     * Note that this is cumulative with nicekids. */
     if (innconf->nicennrpd > 0)
 	nice(innconf->nicennrpd);
 
@@ -844,9 +848,9 @@ main(int argc, char *argv[])
         NNRPACCESS = concatpath(innconf->pathetc,INN_PATH_NNRPACCESS);
 
     /* If started as root, switch to news uid.  Unlike other parts of INN, we
-       don't die if we can't become the news user.  As long as we're not
-       running as root, everything's fine; the things we write it's okay to
-       write as a member of the news group. */
+     * don't die if we can't become the news user.  As long as we're not
+     * running as root, everything's fine; the things we write it's okay to
+     * write as a member of the news group. */
     if (getuid() == 0) {
         ensure_news_user_grp(true, true);
     }
@@ -861,7 +865,7 @@ main(int argc, char *argv[])
         if (lfd < 0)
             die("can't bind to any addresses");
 
-	/* Detach */
+	/* Detach. */
 	if (!ForeGroundMode) {
 	    daemonize("/");
 	}
@@ -880,7 +884,7 @@ main(int argc, char *argv[])
 	fprintf(pidfile,"%lu\n", (unsigned long) getpid());
 	fclose(pidfile);
 
-	/* Set signal handle to care for dead children */
+	/* Set signal handle to care for dead children. */
 	if (!respawn)
 	    xsignal(SIGCHLD, WaitChild);
 
@@ -892,7 +896,7 @@ main(int argc, char *argv[])
 	listen(lfd, 128);	
 
 	if (respawn) {
-	    /* pre-forked mode */
+	    /* Pre-forked mode. */
 	    for (;;) {
 		if (respawn > 0) {
 		    --respawn;
@@ -915,7 +919,7 @@ main(int argc, char *argv[])
 		}
 	    }
 	} else {
-	    /* fork on demand */
+	    /* Fork on demand. */
 	    do {
 		fd = accept(lfd, NULL, NULL);
 		if (fd < 0)
@@ -939,7 +943,7 @@ main(int argc, char *argv[])
 	    } while (pid != 0);
 	}
 
-	/* child process starts here */
+	/* Child process starts here. */
 	setproctitle("connected");
 	close(lfd);
 	dup2(fd, 0);
@@ -951,13 +955,13 @@ main(int argc, char *argv[])
         STATstart = TMRnow_double();
 	SetupDaemon();
 
-	/* if we are a daemon innd didn't make us nice, so be nice kids */
+	/* If we are a daemon, innd didn't make us nice, so be nice kids. */
 	if (innconf->nicekids) {
 	    if (nice(innconf->nicekids) < 0)
 		syslog(L_ERROR, "Could not nice child to %ld: %m", innconf->nicekids);
 	}
 
-	/* Only automatically reap children in the listening process */
+	/* Only automatically reap children in the listening process. */
 	xsignal(SIGCHLD, SIG_DFL);
  
     } else {
@@ -967,14 +971,14 @@ main(int argc, char *argv[])
 	SetupDaemon();
 	/* Arrange to toggle tracing. */
 	xsignal(SIGHUP, ToggleTrace);
-    }/* DaemonMode */
+    } /* DaemonMode */
 
 #ifdef HAVE_SSL
     ClientSSL = false;
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
-            Reply("%d SSL connection failed\r\n", NNTP_ERR_STARTTLS);
+            Reply("%d SSL connection failed\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
         nnrpd_starttls_done = 1;
@@ -998,10 +1002,10 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Catch SIGPIPE so that we can exit out of long write loops */
+    /* Catch SIGPIPE so that we can exit out of long write loops. */
     xsignal(SIGPIPE, CatchPipe);
 
-    /* Get permissions and see if we can talk to this client */
+    /* Get permissions and see if we can talk to this client. */
     StartConnection();
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
@@ -1016,7 +1020,7 @@ main(int argc, char *argv[])
     /* Were we told to reject connections? */
     if (Reject) {
 	syslog(L_NOTICE, "%s rejected %s", Client.host, Reject);
-	Reply("%s %s\r\n", NNTP_GOODBYE, Reject);
+	Reply("%d %s\r\n", NNTP_FAIL_TERMINATING, Reject);
 	ExitWithStats(0, false);
     }
 
@@ -1062,7 +1066,7 @@ main(int argc, char *argv[])
 	syslog(L_FATAL, "sasl_server_new() failed");
 	exit(1);
     } else {
-	/* XXX fill in sec props and ip ports */
+	/* XXX Fill in SASL_IPLOCALPORT and SASL_IPREMOTEPORT. */
 	sasl_security_properties_t secprops;
 
 	memset(&secprops, 0, sizeof(secprops));
@@ -1131,14 +1135,28 @@ main(int argc, char *argv[])
 	    case RTok:
                 /* len does not count CRLF. */
 		if (len + lenstripped <= sizeof(buff)) {
-		    /* line_read guarantees null termination */
+		    /* line_read guarantees null termination. */
 		    memcpy(buff, p, len + 1);
 		    /* Do some input processing, check for blank line. */
-		    if (Tracing)
-			syslog(L_TRACE, "%s < %s", Client.host, buff);
+                    if (buff[0] != '\0')
+                        ac = Argify(buff, &av);
+		    if (Tracing) {
+                        /* Do not log passwords if AUTHINFO PASS,
+                         * AUTHINFO SASL PLAIN or AUTHINFO SASL EXTERNAL
+                         * are used. */
+                        if (ac > 2 && strcasecmp(av[0], "AUTHINFO") == 0
+                            && (strcasecmp(av[1], "PASS") == 0
+                                || (ac > 3 && strcasecmp(av[1], "SASL") == 0
+                                    && (strcasecmp(av[2], "PLAIN") == 0
+                                        || strcasecmp(av[2], "EXTERNAL") == 0))))
+                            syslog(L_TRACE, "%s < %s %s %s ********", Client.host,
+                                   av[0], av[1],
+                                   strcasecmp(av[1], "SASL") == 0 ? av[2] : "");
+                        else
+                            syslog(L_TRACE, "%s < %s", Client.host, buff);
+                    }
 		    if (buff[0] == '\0')
 			continue;
-		    ac = Argify(buff, &av);
 		    break;
 		}
 		/* FALLTHROUGH */		
@@ -1196,17 +1214,11 @@ main(int argc, char *argv[])
                 continue;
         }
 
-        /* 502 if already successfully authenticated, according to RFC 4643. */
-        if (!PERMcanauthenticate && (strcasecmp(cp->Name, "AUTHINFO") == 0)) {
-            Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
-            continue;
-        }
-
 	/* Check usage. */
 	if ((cp->Minac != CMDany && ac < cp->Minac)
 	 || (cp->Maxac != CMDany && ac > cp->Maxac)) {
-	    Reply("%d %s\r\n",
-		NNTP_ERR_SYNTAX, cp->Help ? cp->Help : "No argument allowed");
+	    Reply("%d Syntax is:  %s %s\r\n",
+		NNTP_ERR_SYNTAX, cp->Name, cp->Help ? cp->Help : "No argument allowed");
 	    continue;
 	}
 
