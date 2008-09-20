@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Check article, send it to the local server.
 */

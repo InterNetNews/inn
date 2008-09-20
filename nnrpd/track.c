@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  User and post tracking database.
 */
@@ -11,16 +11,19 @@
 
 #define MAX_LEN 180
 
-/* TrackClient determines whether or not
-   we are interested in tracking the activities
-   of the currently connected host. We have to
-   rely on an external process to set up the
-   entries in the database though which makes
-   this only as reliable as the process that
-   sets this up...
+/*
+**  TrackClient determines whether or not
+**  we are interested in tracking the activities
+**  of the currently connected host.  We have to
+**  rely on an external process to set up the
+**  entries in the database though, which makes
+**  this only as reliable as the process that
+**  sets this up...
 */
 
-/* Format of the input line is <host>:<username>
+/*
+**  Format of the input line is the following one.
+**    <host>:<username>
 */
 
 int
@@ -60,7 +63,7 @@ TrackClient(char *client, char *user, size_t len)
 		fclose(fd);
 	} else {
 		RARTon=false;
-		syslog(L_NOTICE, "%s No logging - can't read %s", Client.host, dbfile);
+		syslog(L_NOTICE, "%s No logging -- can't read %s", Client.host, dbfile);
 	}
 
         free(dbfile);

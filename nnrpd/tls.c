@@ -1,20 +1,17 @@
-/* tls.c --- TLSv1 functions
-   Copyright (C) 2000 Kenichi Okada <okada@opaopa.org>
-
-   Author: Kenichi Okada <okada@opaopa.org>
-   Created: 2000-02-22
-
-   Keywords: TLS, OpenSSL
-
-   Commentary:
-
-   [RFC 2246] "The TLS Protocol Version 1.0"
-        by Christopher Allen <callen@certicom.com> and
-        Tim Dierks <tdierks@certicom.com> (1999/01)
-
-   [RFC 2595] "Using TLS with IMAP, POP3 and ACAP"
-        by Chris Newman <chris.newman@innosoft.com> (1999/06)
-
+/*  $Id$
+**
+**  tls.c -- TLSv1 functions.
+**  Copyright (C) 2000 Kenichi Okada <okada@opaopa.org>.
+**
+**  Author:  Kenichi Okada <okada@opaopa.org>
+**  Created:  2000-02-22
+**
+**  [RFC 2246] "The TLS Protocol Version 1.0"
+**      by Christopher Allen <callen@certicom.com> and
+**      Tim Dierks <tdierks@certicom.com> (1999/01)
+**
+**  [RFC 2595] "Using TLS with IMAP, POP3 and ACAP"
+**      by Chris Newman <chris.newman@innosoft.com> (1999/06)
 */
 
 #include "config.h"
@@ -26,12 +23,12 @@
 #include "nnrpd.h"
 #include "inn/innconf.h"
 
-/* outside the ifdef so `make depend` works even ifndef HAVE_SSL */
+/* Outside the ifdef so that make depend works even ifndef HAVE_SSL. */
 #include "tls.h"
 
 #ifdef HAVE_SSL
 
-/* We must keep some of the info available */
+/* We must keep some of the info available. */
 static const char hexcodes[] = "0123456789ABCDEF";
 
 static bool tls_initialized = false;
@@ -45,12 +42,12 @@ SSL *tls_conn = NULL;
 #define CCERT_BUFSIZ 256
 
 int     tls_serverengine = 0;
-int     tls_serveractive = 0;	/* available or not */
+int     tls_serveractive = 0;	/* Available or not. */
 char   *tls_peer_subject = NULL;
 char   *tls_peer_issuer = NULL;
 char   *tls_peer_fingerprint = NULL;
 
-int     tls_clientactive = 0;	/* available or not */
+int     tls_clientactive = 0;	/* Available or not. */
 char   *tls_peer_CN= NULL;
 char   *tls_issuer_CN = NULL;
 
@@ -63,10 +60,10 @@ int	tls_cipher_algbits = 0;
 int tls_loglevel = 0;
 
 
-/* taken from OpenSSL apps/s_cb.c 
- * tim - this seems to just be giving logging messages
- */
-
+/*
+**  Taken from OpenSSL apps/s_cb.c. 
+**  Tim -- this seems to just be giving logging messages.
+*/
 static void
 apps_ssl_info_callback(const SSL *s, int where, int ret)
 {
@@ -107,11 +104,11 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
 
 /*
- *	Hardcoded DH parameter files, from OpenSSL.
- *	For information on how these files were generated, see
- *	"Assigned Number for SKIP Protocols" 
- *	(http://www.skip-vpn.org/spec/numbers.html.
- */
+**  Hardcoded DH parameter files, from OpenSSL.
+**  For information on how these files were generated, see
+**  "Assigned Number for SKIP Protocols" 
+**  <http://www.skip-vpn.org/spec/numbers.html>.
+*/
 static const char file_dh512[] =
 "-----BEGIN DH PARAMETERS-----\n\
 MEYCQQD1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6ypUM2Zafq9AKUJsCRtMIPWak\n\
@@ -150,9 +147,10 @@ AaqLulO7R8Ifa1SwF2DteSGVtgWEN8gDpN3RBmmPTDngyF2DHb5qmpnznwtFKdTL\n\
 KWbuHn491xNO25CQWMtem80uKw+pTnisBRF/454n1Jnhub144YRBoN8CAQI=\n\
 -----END DH PARAMETERS-----\n";
 
+
 /*
- *	Load hardcoded DH parameters.
- */
+**  Load hardcoded DH parameters.
+*/
 static DH *
 load_dh_buffer (const char *buffer, size_t len)
 {
@@ -163,27 +161,28 @@ load_dh_buffer (const char *buffer, size_t len)
 	if (bio == NULL)
 		return NULL;
 	dh = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
-/*	if (dh == NULL) log error */
+        /* If (dh == NULL) log error? */
 	BIO_free(bio);
 
 	return dh;
 }
 
+
 /*
- *	Generate empheral DH key.  Because this can take a long
- *	time to compute, we use precomputed parameters of the
- *	common key sizes.
- *
- *	These values can be static (once loaded or computed) since
- *	the OpenSSL library can effectively generate random keys
- *	from the information provided.
- *
- *	EDH keying is slightly less efficient than static RSA keying,
- *	but it offers Perfect Forward Secrecy (PFS).
- *
- *	FIXME: support user-specified files, to eliminate risk of
- *	"small group" attacks.
- */
+**  Generate empheral DH key.  Because this can take a long
+**  time to compute, we use precomputed parameters of the
+**  common key sizes.
+**
+**  These values can be static (once loaded or computed) since
+**  the OpenSSL library can effectively generate random keys
+**  from the information provided.
+**
+**  EDH keying is slightly less efficient than static RSA keying,
+**  but it offers Perfect Forward Secrecy (PFS).
+**
+**  FIXME:  support user-specified files, to eliminate risk of
+**  "small group" attacks.
+*/
 static DH *
 tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 {
@@ -217,8 +216,8 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 		r = dh4096;
 		break;
 	default:
-		/* we should check current keylength vs. requested keylength */
-		/* also, this is an extremely expensive operation! */
+		/* We should check current keylength vs. requested keylength
+		 * also, this is an extremely expensive operation! */
 		dh = DH_generate_parameters(keylength, DH_GENERATOR_2, NULL, NULL);
 		r = dh;
 	}
@@ -226,8 +225,10 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 	return r;
 }
 
-/* taken from OpenSSL apps/s_cb.c */
 
+/*
+**  Taken from OpenSSL apps/s_cb.c.
+*/
 static int
 verify_callback(int ok, X509_STORE_CTX * ctx)
 {
@@ -242,7 +243,7 @@ verify_callback(int ok, X509_STORE_CTX * ctx)
     err = X509_STORE_CTX_get_error(ctx);
     depth = X509_STORE_CTX_get_error_depth(ctx);
 
-    X509_NAME_oneline(X509_get_subject_name(err_cert), buf, 256);
+    X509_NAME_oneline(X509_get_subject_name(err_cert), buf, sizeof(buf));
     if ((tls_serveractive) && (tls_loglevel >= 1))
       Printf("Peer cert verify depth=%d %s", depth, buf);
     if (ok==0)
@@ -260,7 +261,7 @@ verify_callback(int ok, X509_STORE_CTX * ctx)
     }
     switch (ctx->error) {
     case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-	X509_NAME_oneline(X509_get_issuer_name(ctx->current_cert), buf, 256);
+	X509_NAME_oneline(X509_get_issuer_name(ctx->current_cert), buf, sizeof(buf));
 	syslog(L_NOTICE, "issuer= %s", buf);
 	break;
     case X509_V_ERR_CERT_NOT_YET_VALID:
@@ -280,10 +281,9 @@ verify_callback(int ok, X509_STORE_CTX * ctx)
 
 
 /*
- * taken from OpenSSL crypto/bio/b_dump.c, modified to save a lot of strcpy
- * and strcat by Matti Aarnio.
- */
-
+**  Taken from OpenSSL crypto/bio/b_dump.c, modified to save a lot of strcpy
+**  and strcat by Matti Aarnio.
+*/
 #define TRUNCATE
 #define DUMP_WIDTH	16
 
@@ -312,7 +312,7 @@ tls_dump(const char *s, int len)
 	rows++;
 
     for (i = 0; i < rows; i++) {
-	buf[0] = '\0';				/* start with empty string */
+	buf[0] = '\0';				/* Start with empty string. */
 	ss = buf;
 
 	snprintf(ss, sizeof(buf), "%04x ", i * DUMP_WIDTH);
@@ -339,10 +339,8 @@ tls_dump(const char *s, int len)
 	    if (j == 7) *ss += ' ';
 	}
 	*ss = 0;
-	/* 
-	 * if this is the last call then update the ddt_dump thing so that
-         * we will move the selection point in the debug window
-         */	
+	/* If this is the last call, then update the ddt_dump thing so that
+         * we will move the selection point in the debug window. */
 	if (tls_loglevel>0)
 	  Printf("%s", buf);
 	ret += strlen(buf);
@@ -358,14 +356,14 @@ tls_dump(const char *s, int len)
     return (ret);
 }
 
- /*
-  * Set up the cert things on the server side. We do need both the
-  * private key (in key_file) and the cert (in cert_file).
-  * Both files may be identical.
-  *
-  * This function is taken from OpenSSL apps/s_cb.c
-  */
 
+/*
+**  Set up the cert things on the server side. We do need both the
+**  private key (in key_file) and the cert (in cert_file).
+**  Both files may be identical.
+**
+**  This function is taken from OpenSSL apps/s_cb.c.
+*/
 static int
 set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 {
@@ -380,7 +378,7 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	if (key_file == NULL)
 	    key_file = cert_file;
 
-	/* check ownership and permissions of key file */
+	/* Check ownership and permissions of key file. */
 	if (lstat(key_file, &buf) == -1) {
 	    syslog(L_ERROR, "unable to stat private key '%s'", key_file);
 	    return (0);
@@ -399,9 +397,9 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	    return (0);
 	}
 	/* Now we know that a key and cert have been set against
-         * the SSL context */
+         * the SSL context. */
 	if (!SSL_CTX_check_private_key(ctx)) {
-	    syslog(L_ERROR, "Private key does not match the certificate public key");
+	    syslog(L_ERROR, "private key does not match the certificate public key");
 	    return (0);
 	}
     }
@@ -409,15 +407,14 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 }
 
 
-
- /*
-  * This is the setup routine for the SSL server. As smtpd might be called
-  * more than once, we only want to do the initialization one time.
-  *
-  * The skeleton of this function is taken from OpenSSL apps/s_server.c.
-
-  * returns -1 on error
-  */
+/*
+**  This is the setup routine for the SSL server.  As nnrpd might be called
+**  more than once, we only want to do the initialization one time.
+**
+**  The skeleton of this function is taken from OpenSSL apps/s_server.c.
+**
+**  returns -1 on error
+*/
 
 int
 tls_init_serverengine(int verifydepth, int askcert, int requirecert,
@@ -433,7 +430,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     struct stat buf;
 
     if (tls_serverengine)
-      return (0);				/* already running */
+      return (0);				/* Already running. */
 
     if (tls_loglevel >= 2)
       Printf("starting TLS engine");
@@ -446,7 +443,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
       return (-1);
     };
 
-    off |= SSL_OP_ALL;		/* Work around all known bugs */
+    off |= SSL_OP_ALL;		/* Work around all known bugs. */
     SSL_CTX_set_options(CTX, off);
     SSL_CTX_set_info_callback(CTX, apps_ssl_info_callback);
     SSL_CTX_sess_set_cache_size(CTX, 128);
@@ -482,8 +479,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
       return (-1);
     }
 
-    /* load some randomization data from /dev/urandom, if it exists */
-    /* FIXME: should also check for ".rand" file, update it on exit */
+    /* Load some randomization data from /dev/urandom, if it exists.
+     * FIXME:  should also check for ".rand" file, update it on exit. */
     if (stat("/dev/urandom", &buf) == 0)
       RAND_load_file("/dev/urandom", 16 * 1024);
 
@@ -518,9 +515,9 @@ tls_init(void)
     if (tls_initialized)
         return;
 
-    ssl_result = tls_init_serverengine(5,        /* depth to verify */
-				       0,        /* can client auth? */
-				       0,        /* required client to auth? */
+    ssl_result = tls_init_serverengine(5,        /* Depth to verify. */
+				       0,        /* Can client auth? */
+				       0,        /* Required client to auth? */
 				       innconf->tlscafile,
 				       innconf->tlscapath,
 				       innconf->tlscertfile,
@@ -537,8 +534,9 @@ tls_init(void)
 }
 
 
-/* taken from OpenSSL apps/s_cb.c */
-
+/*
+**  Taken from OpenSSL apps/s_cb.c.
+*/
 static long
 bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -559,16 +557,16 @@ bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
     return (ret);
 }
 
- /*
-  * This is the actual startup routine for the connection. We expect
-  * that the buffers are flushed and the "220 Ready to start TLS" was
-  * send to the client, so that we can immediately can start the TLS
-  * handshake process.
-  *
-  * layerbits and authid are filled in on sucess. authid is only
-  * filled in if the client authenticated
-  * 
-  */
+
+/*
+**  This is the actual startup routine for the connection.  We expect
+**  that the buffers are flushed and the "382 Continue with TLS negociation"
+**  was sent to the client (if using STARTTLS), so that we can immediately
+**  start the TLS handshake process.
+**
+**  layerbits and authid are filled in on success; authid is only
+**  filled in if the client authenticated.
+*/
 int
 tls_start_servertls(int readfd, int writefd)
 {
@@ -579,7 +577,7 @@ tls_start_servertls(int readfd, int writefd)
 
     if (!tls_serverengine)
     {		
-      /* should never happen */
+      /* It should never happen. */
       syslog(L_ERROR, "tls_engine not running");
       return (-1);
     }
@@ -596,7 +594,7 @@ tls_start_servertls(int readfd, int writefd)
     }
     SSL_clear(tls_conn);
 
-#if	defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
+#if defined(SOL_SOCKET) && defined(SO_KEEPALIVE)
     /* Set KEEPALIVE to catch broken socket connections. */
     keepalive = 1;
     if (setsockopt(readfd, SOL_SOCKET, SO_KEEPALIVE, &keepalive, sizeof(keepalive)) < 0)
@@ -605,7 +603,7 @@ tls_start_servertls(int readfd, int writefd)
         syslog(L_ERROR, "fd %d can't setsockopt(KEEPALIVE) %m", writefd);
 #endif /* SOL_SOCKET && SO_KEEPALIVE */
     
-    /* set the file descriptors for SSL to use */
+    /* Set the file descriptors for SSL to use. */
     if (SSL_set_rfd(tls_conn, readfd)==0)
     {
       return (-1);
@@ -616,25 +614,21 @@ tls_start_servertls(int readfd, int writefd)
       return (-1);
     }
     
-    /*
-     * This is the actual handshake routine. It will do all the negotiations
-     * and will check the client cert etc.
-     */
+    /* This is the actual handshake routine.  It will do all the negotiations
+     * and will check the client cert etc. */
     SSL_set_accept_state(tls_conn);
 
-    /*
-     * We do have an SSL_set_fd() and now suddenly a BIO_ routine is called?
+    /* We do have an SSL_set_fd() and now suddenly a BIO_ routine is called?
      * Well there is a BIO below the SSL routines that is automatically
-     * created for us, so we can use it for debugging purposes.
-     */
+     * created for us, so we can use it for debugging purposes. */
     if (tls_loglevel >= 3)
 	BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
 
-    /* Dump the negotiation for loglevels 3 and 4*/
+    /* Dump the negotiation for loglevels 3 and 4. */
     if (tls_loglevel >= 3)
 	do_dump = 1;
 
-      if ((sts = SSL_accept(tls_conn)) <= 0) { /* xxx <= 0 */
+      if ((sts = SSL_accept(tls_conn)) <= 0) {
 	session = SSL_get_session(tls_conn);
 
 	if (session) {
@@ -645,7 +639,7 @@ tls_start_servertls(int readfd, int writefd)
 	tls_conn = NULL;
 	return (-1);
       }
-      /* Only loglevel==4 dumps everything */
+      /* Only loglevel 4 dumps everything. */
       if (tls_loglevel < 4)
 	do_dump = 0;
 
@@ -663,6 +657,7 @@ tls_start_servertls(int readfd, int writefd)
     return (0);
 }
 
+
 ssize_t
 SSL_writev (SSL *ssl, const struct iovec *vector, int count)
 {
@@ -671,11 +666,11 @@ SSL_writev (SSL *ssl, const struct iovec *vector, int count)
   char *bp;
   size_t bytes, to_copy;
   int i;
-  /* Find the total number of bytes to be written.  */
+  /* Find the total number of bytes to be written. */
   bytes = 0;
   for (i = 0; i < count; ++i)
     bytes += vector[i].iov_len;
-  /* Allocate a buffer to hold the data.  */
+  /* Allocate a buffer to hold the data. */
   if (NULL == buffer) {
     buffer = (char *) xmalloc(bytes);
     allocsize = bytes;
@@ -683,7 +678,7 @@ SSL_writev (SSL *ssl, const struct iovec *vector, int count)
     buffer = (char *) xrealloc (buffer, bytes);
     allocsize = bytes;
   }
-  /* Copy the data into BUFFER.  */
+  /* Copy the data into BUFFER. */
   to_copy = bytes;
   bp = buffer;
   for (i = 0; i < count; ++i)
@@ -698,6 +693,5 @@ SSL_writev (SSL *ssl, const struct iovec *vector, int count)
     }
   return SSL_write (ssl, buffer, bytes);
 }
-
 
 #endif /* HAVE_SSL */
