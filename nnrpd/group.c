@@ -236,13 +236,11 @@ void
 GRPreport(void)
 {
     char		buff[SPOOLNAMEBUFF];
-    char		repbuff[1024];
 
     if (GRPcur) {
 	strlcpy(buff, GRPcur, sizeof(buff));
 	syslog(L_NOTICE, "%s group %s %lu", Client.host, buff, GRParticles);
 	GRParticles = 0;
-	repbuff[0]='\0';
     }
 }
 
