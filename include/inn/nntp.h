@@ -90,7 +90,12 @@ enum nntp_code {
     NNTP_FAIL_CHECK_REFUSE      = 438,
     NNTP_FAIL_TAKETHIS_REJECT   = 439,
 
-    /* Authentication extension. */
+    /*
+    **  Authentication extensions:
+    **    - Generic 480 code;
+    **    - AUTHINFO capability;
+    **    - SASL capability.
+    */
     NNTP_OK_AUTHINFO            = 281,
     NNTP_OK_SASL                = 283,
     NNTP_CONT_AUTHINFO          = 381,
@@ -99,9 +104,13 @@ enum nntp_code {
     NNTP_FAIL_AUTHINFO_BAD      = 481,
     NNTP_FAIL_AUTHINFO_REJECT   = 482,
 
-    /* TLS extension.  (These codes will change.) */
+    /*
+    **  Privacy extensions:
+    **    - Generic 483 code;
+    **    - STARTTLS capability.
+    */
     NNTP_CONT_STARTTLS          = 382,
-    NNTP_FAIL_STARTTLS          = 483,
+    NNTP_FAIL_PRIVACY_NEEDED    = 483,
     NNTP_ERR_STARTTLS           = 580,
 
     /* XGTITLE extension (deprecated, use LIST NEWSGROUPS). */

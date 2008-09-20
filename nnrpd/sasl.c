@@ -223,7 +223,7 @@ SASLauth(int ac, char *av[])
 	    resp_code = NNTP_ERR_SYNTAX;
 	    break;
 	case SASL_ENCRYPT:
-	    resp_code = NNTP_FAIL_STARTTLS;
+	    resp_code = NNTP_FAIL_AUTHINFO_REJECT;
 	    break;
 	default:
 	    resp_code = NNTP_FAIL_AUTHINFO_BAD;

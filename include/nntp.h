@@ -75,20 +75,7 @@
 #define NNTP_AUTH_NEEDED		"480"
 #define NNTP_AUTH_BAD			"481"
 #define NNTP_AUTH_NEXT			"381"
-#define NNTP_AUTH_SASL_CHAL		"383"
 #define NNTP_AUTH_OK			"281"
-#define NNTP_AUTH_SASL_OK		"283"
-
-/*
-**  Starttls commands (not official).
-*/
-#define NNTP_STARTTLS_NEXT		"382"
-#define NNTP_STARTTLS_DONE		"483"
-#define NNTP_STARTTLS_BAD		"580"
-
-/*
-**  XGTITLE, from ANU news.
-*/
 
 /*
 **  MODE CANCEL extension.
