@@ -37,7 +37,7 @@ int tls_init_serverengine(int verifydepth, /* Depth to verify. */
 			  char *tls_key_file);
 
 /* Init TLS. */
-void tls_init(void);
+int tls_init(void);
 
 /* Start TLS negotiation. */
 int tls_start_servertls(int readfd, int writefd);

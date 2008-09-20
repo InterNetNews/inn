@@ -413,7 +413,7 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 **
 **  The skeleton of this function is taken from OpenSSL apps/s_server.c.
 **
-**  returns -1 on error
+**  Returns -1 on error.
 */
 
 int
@@ -506,14 +506,16 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 **  The function called by nnrpd to initialize the TLS support.  Calls
 **  tls_init_server_engine and checks the result.  On any sort of failure,
 **  nnrpd will exit.
+**
+**  Returns -1 on error.
 */
-void
+int
 tls_init(void)
 {
     int ssl_result;
 
     if (tls_initialized)
-        return;
+        return 0;
 
     ssl_result = tls_init_serverengine(5,        /* Depth to verify. */
 				       0,        /* Can client auth? */
@@ -523,14 +525,19 @@ tls_init(void)
 				       innconf->tlscertfile,
 				       innconf->tlskeyfile);
     if (ssl_result == -1) {
-        Reply("%d Error initializing TLS\r\n", NNTP_FAIL_TERMINATING);
+        Reply("%d Error initializing TLS\r\n",
+              initialSSL ? NNTP_FAIL_TERMINATING : NNTP_ERR_STARTTLS);
         syslog(L_ERROR, "error initializing TLS: "
                "[CA_file: %s] [CA_path: %s] [cert_file: %s] [key_file: %s]",
                innconf->tlscafile, innconf->tlscapath,
                innconf->tlscertfile, innconf->tlskeyfile);
-        ExitWithStats(1, false);
+        if (initialSSL)
+            ExitWithStats(1, false);
+        return -1;
     }
+
     tls_initialized = true;
+    return 0;
 }
 
 

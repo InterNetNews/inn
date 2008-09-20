@@ -511,41 +511,47 @@ RateLimit(long *sleeptime, char *path)
 void
 CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 {
-  int result;
+    int result;
 
-  tls_init();
-  if (nnrpd_starttls_done == 1) {
-      Reply("%d Already using an active TLS layer\r\n",
-            NNTP_ERR_ACCESS);
-      return;
-  }
+    if (nnrpd_starttls_done == 1) {
+        Reply("%d Already using an active TLS layer\r\n",
+              NNTP_ERR_ACCESS);
+        return;
+    }
 
-  Reply("%d Begin TLS negotiation now\r\n", NNTP_CONT_STARTTLS);
-  fflush(stdout);
+    result = tls_init();
 
-  /* Must flush our buffers before starting TLS. */
+    if (result == -1) {
+        /* No reply because tls_init() has already sent one. */
+        return;
+    }
+
+    Reply("%d Begin TLS negotiation now\r\n", NNTP_CONT_STARTTLS);
+    fflush(stdout);
+
+    /* Must flush our buffers before starting TLS. */
   
-  result=tls_start_servertls(0,  /* Read.  */
-			     1); /* Write. */
-  if (result==-1) {
-    Reply("%d STARTTLS failed\r\n", NNTP_ERR_STARTTLS);
-    return;
-  }
+    result = tls_start_servertls(0,  /* Read.  */
+                                 1); /* Write. */
+    if (result == -1) {
+        /* No reply because we have already sent NNTP_CONT_STARTTLS. */
+        return;
+    }
 
 #ifdef HAVE_SASL
-  /* Tell SASL about the negotiated layer. */
-  result = sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
-			(sasl_ssf_t *) &tls_cipher_usebits);
-  if (result != SASL_OK) {
-    syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
-  }
+    /* Tell SASL about the negotiated layer. */
+    result = sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
+                          (sasl_ssf_t *) &tls_cipher_usebits);
+    if (result != SASL_OK) {
+        syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
+    }
 
-  result = sasl_setprop(sasl_conn, SASL_AUTH_EXTERNAL, tls_peer_CN);
-  if (result != SASL_OK) {
-    syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
-  }
+    result = sasl_setprop(sasl_conn, SASL_AUTH_EXTERNAL, tls_peer_CN);
+    if (result != SASL_OK) {
+        syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
+    }
 #endif /* HAVE_SASL */
 
-  nnrpd_starttls_done = 1;
+    nnrpd_starttls_done = 1;
 }
 #endif /* HAVE_SSL */
