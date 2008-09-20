@@ -543,8 +543,9 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     result = tls_start_servertls(0,  /* Read.  */
                                  1); /* Write. */
     if (result == -1) {
-        /* No reply because we have already sent NNTP_CONT_STARTTLS. */
-        return;
+        /* No reply because we have already sent NNTP_CONT_STARTTLS.
+         * We close the connection. */
+        ExitWithStats(1, false);
     }
 
 #ifdef HAVE_SASL
