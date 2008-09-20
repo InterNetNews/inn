@@ -1622,8 +1622,8 @@ sub collect($$$$$$) {
       $nnrpd_unrecogn_cmd{$error}++;
       return 1;
     }
-    # exit
-    if ($left =~ /(\S+) exit articles (\d+) groups (\d+)$/o) {
+    # exit (also called when using STARTTLS)
+    if ($left =~ /(\S+) (?:exit|exit for STARTTLS) articles (\d+) groups (\d+)$/o) {
       my ($cust, $articles, $groups) = ($1, $2, $3);
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
