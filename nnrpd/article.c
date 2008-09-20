@@ -57,8 +57,6 @@ static SENDDATA		SENDhead = {
     SThead,	NNTP_OK_HEAD,		"head"
 };
 
-bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
-
 static struct iovec	iov[IOV_MAX > 1024 ? 1024 : IOV_MAX];
 static int		queued_iov = 0;
 

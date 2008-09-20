@@ -253,6 +253,7 @@ extern void		CMD_unimp    (int ac, char** av);
 extern void		CMDstarttls  (int ac, char** av);
 #endif
 
+extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
 
 /*
 **  Run a resolver or authenticator.  The directory is where to look for the

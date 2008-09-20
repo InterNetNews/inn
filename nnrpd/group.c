@@ -10,8 +10,6 @@
 #include "nnrpd.h"
 #include "inn/ov.h"
 
-extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
-
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
 **  group.
