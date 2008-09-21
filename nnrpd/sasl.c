@@ -88,9 +88,12 @@ SASLauth(int ac, char *av[])
         return;
     }
 
-    /* 502 if already successfully authenticated, according to RFC 4643. */
-    if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
-        Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+    /* 502 if authentication will fail. */
+    if (!PERMcanauthenticate) {
+        if (PERMauthorized && !PERMneedauth)
+            Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+        else
+            Reply("%d Authentication will fail\r\n", NNTP_ERR_ACCESS);
         return;
     }
 
