@@ -109,6 +109,7 @@ SASLauth(int ac, char *av[])
     const void *property;
     int r = SASL_OK;
     int r1;
+    bool base64error = false;
 
     if (ac < 3 || ac > 4) {
         /* In fact, ac > 4 here. */
@@ -157,6 +158,7 @@ SASLauth(int ac, char *av[])
                                base64, BASE64_BUF_SIZE, &clientinlen);
             clientin = base64;
             r = (r1 == SASL_CONTINUE ? SASL_BADPROT : r1);
+            base64error = (r == SASL_BADPROT);
 	}
     }
 
@@ -237,6 +239,7 @@ SASLauth(int ac, char *av[])
                                base64, BASE64_BUF_SIZE, &clientinlen);
             clientin = base64;
             r = (r1 == SASL_CONTINUE ? SASL_BADPROT : r1);
+            base64error = (r == SASL_BADPROT);
         }
 
         /* Do the next step. */
@@ -308,7 +311,7 @@ SASLauth(int ac, char *av[])
 
 	switch (r) {
 	case SASL_BADPROT:
-            resp_code = NNTP_ERR_BASE64;
+            resp_code = (base64error ? NNTP_ERR_BASE64 : NNTP_FAIL_AUTHINFO_REJECT);
             break;
         case SASL_BADPARAM:
         case SASL_NOTDONE:
