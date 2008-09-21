@@ -1623,7 +1623,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # exit (also called when using STARTTLS)
-    if ($left =~ /(\S+) (?:exit|exit for STARTTLS) articles (\d+) groups (\d+)$/o) {
+    if ($left =~ /(\S+) (?:exit|exit for STARTTLS|exit for AUTHINFO SASL) articles (\d+) groups (\d+)$/o) {
       my ($cust, $articles, $groups) = ($1, $2, $3);
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);

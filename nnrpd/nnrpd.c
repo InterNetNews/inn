@@ -1063,20 +1063,7 @@ main(int argc, char *argv[])
     }
 
 #ifdef HAVE_SASL
-    if (sasl_server_new("nntp", NULL, NULL, NULL, NULL,
-			NULL, SASL_SUCCESS_DATA, &sasl_conn) != SASL_OK) {
-	syslog(L_FATAL, "sasl_server_new() failed");
-	exit(1);
-    } else {
-	/* XXX Fill in SASL_IPLOCALPORT and SASL_IPREMOTEPORT. */
-	sasl_security_properties_t secprops;
-
-	memset(&secprops, 0, sizeof(secprops));
-	secprops.security_flags = SASL_SEC_NOPLAINTEXT;
-	secprops.max_ssf = 256;
-	secprops.maxbufsize = NNTP_MAXLEN_COMMAND;
-	sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
-    }
+    SASLnewserver();
 #endif /* HAVE_SASL */
 
     if (PERMaccessconf) {

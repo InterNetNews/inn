@@ -298,4 +298,5 @@ extern int sasl_ssf, sasl_maxout;
 extern sasl_callback_t sasl_callbacks[];
 
 void SASLauth(int ac, char *av[]);
+void SASLnewserver(void);
 #endif /* HAVE_SASL */

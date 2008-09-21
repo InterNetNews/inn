@@ -10,6 +10,9 @@
 #include "inn/messages.h"
 #include "nnrpd.h"
 
+/* Outside the ifdef so that make depend works even ifndef HAVE_SSL. */
+#include "inn/ov.h"
+
 #ifdef HAVE_SSL
 extern bool nnrpd_starttls_done;
 #endif /* HAVE_SSL */
@@ -18,7 +21,8 @@ extern bool nnrpd_starttls_done;
 
 #include <sasl/sasl.h>
 sasl_conn_t *sasl_conn = NULL;
-int sasl_ssf = 0, sasl_maxout = NNTP_MAXLEN_COMMAND;
+int sasl_ssf = 0;
+int sasl_maxout = NNTP_MAXLEN_COMMAND;
 
 sasl_callback_t sasl_callbacks[] = {
     /* XXX Do we want a proxy callback? */
@@ -57,6 +61,36 @@ IsValidMechanism(const char *string)
         return true;
     else
         return false;
+}
+
+
+/*
+**  Create a new SASL server authentication object.
+*/
+void
+SASLnewserver(void)
+{
+    if (sasl_conn != NULL) {
+        sasl_dispose(&sasl_conn);
+        sasl_conn = NULL;
+        sasl_ssf = 0;
+        sasl_maxout = NNTP_MAXLEN_COMMAND;
+    }
+ 
+    if (sasl_server_new("nntp", NULL, NULL, NULL, NULL,
+                        NULL, SASL_SUCCESS_DATA, &sasl_conn) != SASL_OK) {
+        syslog(L_FATAL, "sasl_server_new() failed");
+        Reply("%d SASL server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
+    } else {
+        /* XXX Fill in SASL_IPLOCALPORT and SASL_IPREMOTEPORT. */
+        sasl_security_properties_t secprops;
+
+        memset(&secprops, 0, sizeof(secprops));
+        secprops.max_ssf = 256;
+        secprops.maxbufsize = NNTP_MAXLEN_COMMAND;
+        sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
+    }
 }
 
 
@@ -161,24 +195,32 @@ SASLauth(int ac, char *av[])
 	    /* FALLTHROUGH */
 	case RTlong:
 	    warn("%s response too long in AUTHINFO SASL", Client.host);
+            Reply("%d Too long response\r\n", NNTP_FAIL_TERMINATING);
 	    ExitWithStats(1, false);
 	    break;
 	case RTtimeout:
 	    warn("%s timeout in AUTHINFO SASL", Client.host);
+            /* No answer. */
 	    ExitWithStats(1, false);
 	    break;
 	case RTeof:
 	    warn("%s EOF in AUTHINFO SASL", Client.host);
+            Reply("%d EOF\r\n", NNTP_FAIL_TERMINATING);
 	    ExitWithStats(1, false);
 	    break;
 	default:
 	    warn("%s internal %d in AUTHINFO SASL", Client.host, r);
+            Reply("%d Internal error\r\n", NNTP_FAIL_TERMINATING);
 	    ExitWithStats(1, false);
 	    break;
 	}
 
 	/* Check if client cancelled. */
 	if (strcmp(clientin, "*") == 0) {
+            /* Restart the SASL server in order to be able to reauthenticate.
+             * Call that function before the reply because in case of failure,
+             * 400 is sent. */
+            SASLnewserver();
 	    Reply("%d Client cancelled authentication\r\n", NNTP_FAIL_AUTHINFO_BAD);
 	    return;
 	}
@@ -240,6 +282,23 @@ SASLauth(int ac, char *av[])
 	sasl_ssf = *ssfp;
 	sasl_maxout =
 	    (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ? NNTP_MAXLEN_COMMAND : *maxoutp;
+
+        if (sasl_ssf != 0) {
+            /* Close out any existing article, report group stats.
+             * RFC 4643 requires the reset of any knowledge about the client. */
+            if (GRPcur) {
+                bool boolval;
+                ARTclose();
+                GRPreport();
+                OVctl(OVCACHEFREE, &boolval);
+                free(GRPcur);
+                GRPcur = NULL;
+                if (ARTcount)
+                    syslog(L_NOTICE, "%s exit for AUTHINFO SASL articles %ld groups %ld",
+                           Client.host, ARTcount, GRPcount);
+                GRPcount = 0;
+            }
+        }
     } else {
 	/* Failure. */
 	int resp_code;
@@ -266,6 +325,10 @@ SASLauth(int ac, char *av[])
 	    break;
 	}
 
+        /* Restart the SASL server in order to be able to reauthenticate.
+         * Call that function before the reply because in case of failure,
+         * 400 is sent. */
+        SASLnewserver();
 	Reply("%d %s\r\n",
 	      resp_code, errstring ? errstring : "Authentication failed");
     }

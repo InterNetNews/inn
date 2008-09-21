@@ -148,7 +148,8 @@ misc.o: misc.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/time.h ../include/inn/qio.h ../include/inn/libinn.h \
   ../include/nntp.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/vector.h ../include/inn/timer.h \
-  tls.h
+  tls.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h
 newnews.o: newnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -221,7 +222,8 @@ sasl.o: sasl.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/qio.h ../include/inn/libinn.h \
   ../include/nntp.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/timer.h
+  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/timer.h \
+  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h
 tls.o: tls.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h nnrpd.h ../include/portable/socket.h \
