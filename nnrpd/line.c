@@ -116,7 +116,8 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 	    int r;
 
 	    if ((r = sasl_decode(sasl_conn, p, n, &out, &outlen)) == SASL_OK) {
-		if (outlen) memcpy(p, out, outlen);
+		if (outlen)
+                    memcpy(p, out, outlen);
 		n = outlen;
 	    } else {
 		sysnotice("sasl_decode() failed: %s; %s",

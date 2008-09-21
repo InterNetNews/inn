@@ -81,6 +81,7 @@ enum nntp_code {
     NNTP_ERR_SYNTAX             = 501,
     NNTP_ERR_ACCESS             = 502,
     NNTP_ERR_UNAVAILABLE        = 503,
+    NNTP_ERR_BASE64             = 504,
 
     /* Streaming extension. */
     NNTP_OK_STREAM              = 203,

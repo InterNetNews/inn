@@ -36,6 +36,7 @@ extern SSL *tls_conn;
 bool nnrpd_starttls_done = false;
 #endif 
 
+
 /*
 **  If we have getloadavg, include the appropriate header file.  Otherwise,
 **  just assume that we always have a load of 0.
@@ -101,6 +102,7 @@ bool PY_use_dynamic = false;
 #endif
 
 static char	CMDfetchhelp[] = "[message-ID|number]";
+
 
 /*
 **  { command base name, function to call, need authentication,
@@ -183,6 +185,7 @@ static const char *const timer_name[] = {
     "nntpwrite",
 };
 
+
 /*
 **  Log a summary status message and exit.
 */
@@ -241,6 +244,7 @@ ExitWithStats(int x, bool readconf)
 	sasl_ssf = 0;
 	sasl_maxout = NNTP_MAXLEN_COMMAND;
     }
+    sasl_done();
 #endif /* HAVE_SASL */
 
      if (DaemonMode) {
