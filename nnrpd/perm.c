@@ -21,6 +21,10 @@
 # include <sys/select.h>
 #endif
 
+#ifdef HAVE_SSL
+extern bool nnrpd_starttls_done;
+#endif /* HAVE_SSL */
+
 /* data types */
 typedef struct _CONFCHAIN {
     CONFFILE *f;
@@ -1315,9 +1319,6 @@ PERMreadfile(char *filename)
 		inwhat = 0;
 
 		if (curauth->name
-#ifdef HAVE_SSL
-		    && ((curauth->require_ssl == false) || (ClientSSL == true))
-#endif
 		    && MatchHost(curauth->hosts, Client.host, Client.ip)) {
 		    if (!MatchHost(curauth->localaddress, Client.serverhost, Client.serverip)) {
 			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
@@ -1382,6 +1383,9 @@ PERMgetaccess(char *nnrpaccess)
     success_auth    = NULL;
 
     PERMcanauthenticate = false;
+#ifdef HAVE_SSL
+    PERMcanauthenticatewithoutSSL = false;
+#endif
     PERMcanpostgreeting = false;
     PERMcanread	    = PERMcanpost   = false;
     PERMreadlist    = PERMpostlist  = false;
@@ -1406,10 +1410,16 @@ PERMgetaccess(char *nnrpaccess)
 	ExitWithStats(1, true);
     }
 
-    /* auth_realms are all expected to match the user. */
+    /* auth_realms are all expected to match the user.
+     * Be careful whether SSL is required, though. */
     for (i = 0; auth_realms[i]; i++) {
-	if (auth_realms[i]->auth_methods != NULL)
+	if (auth_realms[i]->auth_methods != NULL) {
 	    PERMcanauthenticate = true;
+#ifdef HAVE_SSL
+            if (auth_realms[i]->require_ssl == false)
+                PERMcanauthenticatewithoutSSL = true;
+#endif
+        }
         /* We assume that an access or dynamic script will allow
          * the user to post when authenticated, so that a 200 greeting
          * code can be sent. */
@@ -1419,6 +1429,11 @@ PERMgetaccess(char *nnrpaccess)
     }
     uname = 0;
     while (!uname && i--) {
+#ifdef HAVE_SSL
+        /* If SSL is required, check that the connection is encrypted. */
+        if ((auth_realms[i]->require_ssl == true) && !nnrpd_starttls_done)
+            continue;
+#endif
 	if ((uname = ResolveUser(auth_realms[i])) != NULL)
 	    PERMauthorized = true;
 	if (!uname && auth_realms[i]->default_user)
@@ -1913,6 +1928,12 @@ ResolveUser(AUTHGROUP *auth)
     if (auth->res_methods == NULL)
         return NULL;
 
+#ifdef HAVE_SSL
+    /* If SSL is required, check that the connection is encrypted. */
+    if ((auth->require_ssl == true) && !nnrpd_starttls_done)
+        return NULL;
+#endif
+
     tmp = concatpath(innconf->pathbin, INN_PATH_AUTHDIR);
     resdir = concatpath(tmp, INN_PATH_AUTHDIR_NOPASS);
     free(tmp);
@@ -1956,6 +1977,12 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 
     if (auth->auth_methods == NULL)
         return NULL;
+
+#ifdef HAVE_SSL
+    /* If SSL is required, check that the connection is encrypted. */
+    if ((auth->require_ssl == true) && !nnrpd_starttls_done)
+        return NULL;
+#endif
 
     tmp = concatpath(innconf->pathbin, INN_PATH_AUTHDIR);
     resdir = concatpath(tmp, INN_PATH_AUTHDIR_PASSWD);

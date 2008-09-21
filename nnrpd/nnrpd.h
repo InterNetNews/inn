@@ -151,6 +151,9 @@ enum timer {
 
 EXTERN bool	PERMauthorized;
 EXTERN bool     PERMcanauthenticate;
+#ifdef HAVE_SSL
+EXTERN bool     PERMcanauthenticatewithoutSSL;
+#endif
 EXTERN bool	PERMcanpost;
 EXTERN bool     PERMcanpostgreeting;
 EXTERN bool	PERMcanread;
@@ -164,9 +167,6 @@ EXTERN char	**PERMreadlist;
 EXTERN char	**PERMpostlist;
 EXTERN struct client Client;
 EXTERN char	Username[SMBUF];
-#ifdef HAVE_SSL
-EXTERN bool	ClientSSL;
-#endif
 extern char	*ACTIVETIMES;
 extern char	*HISTORY;
 extern char	*ACTIVE;

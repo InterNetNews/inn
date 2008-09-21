@@ -12,7 +12,7 @@
 #include "inn/messages.h"
 
 #ifdef HAVE_SSL
-extern int nnrpd_starttls_done;
+extern bool nnrpd_starttls_done;
 #endif /* HAVE_SSL */
 
 typedef struct _LISTINFO {

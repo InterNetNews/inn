@@ -88,9 +88,10 @@ wildmat expressions, you may also use CIDR notation to match any IP
 address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
-If compiled against the SSL libraries, an auth group with the require_ssl:
+If compiled against the SSL libraries, an auth group with the I<require_ssl>
 parameter set to true only applies if the incoming connection is using
-SSL.
+SSL, either from the beginning if the B<-S> flag was passed to B<nnrpd> or
+after a successful use of STARTTLS.
 
 For any connection from a host that matches that wildmat expression or
 netblock, each <res-program> (multiple res: lines may be present in a
@@ -306,8 +307,10 @@ containing a matching key parameter.
 =item B<require_ssl:>
 
 If set to true, an incoming connection only matches this auth group if
-it is encrypted using SSL.  This parameter is only valid if INN is
-compiled with SSL support (B<--with-openssl> passed to configure).
+it is encrypted using SSL, either from the beginning if the B<-S> flag
+was passed to B<nnrpd> or after a successful use of STARTTLS.  This
+parameter is only valid if INN is compiled with SSL support
+(B<--with-openssl> passed to configure).
 
 =item B<perl_access:>
 
@@ -526,7 +529,7 @@ Here's a basic summary of what happens when a client connects:
 =item *
 
 All auth groups are scanned and the ones that don't match the client
-(due to hosts:, localaddress:, require_ssl:, etc) are eliminated.
+(due to I<hosts>, I<localaddress>, I<require_ssl>, etc.) are eliminated.
 
 =item *
 
@@ -786,9 +789,10 @@ some ideas:
 
 =item *
 
-To restrict connections on the standard nntp port (119) to use SSL for
-some (or all) of the auth groups to match, use the require_ssl:
-parameter.
+To restrict connections on the standard NNTP port (119) to use SSL for
+some (or all) of the auth groups to match, use the I<require_ssl>
+parameter.  Note that a client can use STARTTLS to negotiate an
+encrypted connection.
 
 =item *
 
@@ -798,12 +802,12 @@ above, with ones having global applicability below.
 
 =item *
 
-Consider running a C<nnrpd -S> (with C<-D>, or out of "super-server"
-like B<inetd>) on the NNTPS port (563) for clients that support SSL.  See
-nnrpd(8) for more details about how to configure that.  You
-can use the require_ssl: parameter, or C<-c> to specify an alternate
-F<readers.conf> if you want a substantially different configuration for
-this case.
+Consider running B<nnrpd> with the B<-S> flag (either also with B<-D>,
+or out of "super-server" like B<inetd>) on the NNTPS port (563) for
+clients that support SSL.  See nnrpd(8) for more details about how
+to configure that.  You can use the I<require_ssl> parameter or the
+B<-c> flag to specify an alternate F<readers.conf> file if you want
+a substantially different configuration for this case.
 
 =item *
 

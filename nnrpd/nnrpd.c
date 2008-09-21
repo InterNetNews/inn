@@ -33,7 +33,7 @@
 
 #ifdef HAVE_SSL
 extern SSL *tls_conn;
-int nnrpd_starttls_done = 0;
+bool nnrpd_starttls_done = false;
 #endif 
 
 /*
@@ -974,15 +974,13 @@ main(int argc, char *argv[])
     } /* DaemonMode */
 
 #ifdef HAVE_SSL
-    ClientSSL = false;
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
             Reply("%d SSL connection failed\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
-        nnrpd_starttls_done = 1;
-        ClientSSL = true;
+        nnrpd_starttls_done = true;
     }
 #endif /* HAVE_SSL */
 

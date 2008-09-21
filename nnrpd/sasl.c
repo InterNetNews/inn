@@ -10,6 +10,10 @@
 #include "inn/messages.h"
 #include "nnrpd.h"
 
+#ifdef HAVE_SSL
+extern bool nnrpd_starttls_done;
+#endif /* HAVE_SSL */
+
 #ifdef HAVE_SASL
 
 #include <sasl/sasl.h>
@@ -85,10 +89,19 @@ SASLauth(int ac, char *av[])
     }
 
     /* 502 if already successfully authenticated, according to RFC 4643. */
-    if (!PERMcanauthenticate) {
+    if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
         Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
         return;
     }
+
+#ifdef HAVE_SSL
+    /* Check whether STARTTLS must be used before trying to authenticate. */
+    if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
+        && !nnrpd_starttls_done) {
+        Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
+        return;
+    }
+#endif
 
     if (ac == 4) {
 	/* initial response */

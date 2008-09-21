@@ -13,6 +13,10 @@
 #include "inn/version.h"
 #include "tls.h"
 
+#ifdef HAVE_SSL
+extern bool nnrpd_starttls_done;
+#endif /* HAVE_SSL */
+
 typedef struct {
     char *name;
     ARTNUM high;
@@ -60,7 +64,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     /* 502 if already successfully authenticated, according to RFC 4643. */
-    if (!PERMcanauthenticate) {
+    if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
         Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
         return -1;
     }
@@ -225,10 +229,20 @@ CMDauthinfo(int ac, char *av[])
         /* Each time AUTHINFO USER is used, the new username is cached. */
         if (strcasecmp(av[1], "USER") == 0) {
             /* 502 if already successfully authenticated, according to RFC 4643. */
-            if (!PERMcanauthenticate) {
+            if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
                 Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
                 return;
             }
+
+#ifdef HAVE_SSL
+            /* Check whether STARTTLS must be used before trying to authenticate. */
+            if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
+                && !nnrpd_starttls_done) {
+                Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
+                return;
+            }
+#endif
+
             if (ac > 3) {
                 Reply("%d No whitespace allowed in username\r\n", NNTP_ERR_SYNTAX);
                 return;
@@ -245,10 +259,19 @@ CMDauthinfo(int ac, char *av[])
         }
 
         /* 502 if already successfully authenticated, according to RFC 4643. */
-        if (!PERMcanauthenticate) {
+        if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
             Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
             return;
         }
+
+#ifdef HAVE_SSL
+        /* Check whether STARTTLS must be used before trying to authenticate. */
+        if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
+            && !nnrpd_starttls_done) {
+             Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
+             return;
+        }
+#endif
 
         /* AUTHINFO PASS cannot be sent before AUTHINFO USER. */
         if (User[0] == '\0') {

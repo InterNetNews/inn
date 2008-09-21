@@ -22,7 +22,7 @@
 extern SSL *tls_conn;
 extern int tls_cipher_usebits;
 extern char *tls_peer_CN;
-extern int nnrpd_starttls_done;
+extern bool nnrpd_starttls_done;
 #endif 
 
 
@@ -517,7 +517,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     int result;
     bool boolval;
 
-    if (nnrpd_starttls_done == 1) {
+    if (nnrpd_starttls_done) {
         Reply("%d Already using an active TLS layer\r\n", NNTP_ERR_ACCESS);
         return;
     }
@@ -562,7 +562,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     }
 #endif /* HAVE_SASL */
 
-    nnrpd_starttls_done = 1;
+    nnrpd_starttls_done = true;
 
     /* Close out any existing article, report group stats.
      * RFC 4642 requires the reset of any knowledge about the client. */
