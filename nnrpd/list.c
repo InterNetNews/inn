@@ -185,6 +185,9 @@ CMD_list_single(char *group)
             return false;
     }
     if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
+        /* Convert flags to standardized ones, if possible. */
+        if (flag == 'j' || flag == 'x')
+            flag = 'n';
         Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
         Printf("%s %010u %010u %c\r\n", group, hi, lo, flag);
         Printf(".\r\n");
@@ -342,8 +345,18 @@ CMDlist(int ac, char *av[])
          * if given. */
 	if (wildarg && !uwildmat(p, wildarg))
 	    continue;
+
 	if (savec != '\0')
 	    *save = savec;
+
+        if (lp == &INFOactive) {
+            /* Convert flags to standardized ones, if possible. */
+            if ((q = strrchr(p, ' ')) != NULL) {
+                q++;
+                if (*q == 'j' || *q == 'x')
+                    *q = 'n';
+            }
+        }
 	Printf("%s\r\n", p);
     }
     QIOclose(qp);
