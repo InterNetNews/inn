@@ -14,6 +14,8 @@
 #include "inn/ov.h"
 
 #ifdef HAVE_SSL
+extern int tls_cipher_usebits;
+extern char *tls_peer_CN;
 extern bool nnrpd_starttls_done;
 #endif /* HAVE_SSL */
 
@@ -87,9 +89,23 @@ SASLnewserver(void)
         sasl_security_properties_t secprops;
 
         memset(&secprops, 0, sizeof(secprops));
+        secprops.security_flags = SASL_SEC_NOANONYMOUS;
         secprops.max_ssf = 256;
         secprops.maxbufsize = NNTP_MAXLEN_COMMAND;
         sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
+#ifdef HAVE_SSL
+        /* Tell SASL about the negotiated TLS layer. */
+        if (nnrpd_starttls_done) {
+            if (sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
+                             (sasl_ssf_t *) &tls_cipher_usebits) != SASL_OK) {
+                syslog(L_NOTICE, "sasl_setprop() failed:  TLS layer for SASL");
+            }
+            if (sasl_setprop(sasl_conn, SASL_AUTH_EXTERNAL, tls_peer_CN)
+                != SASL_OK) {
+                syslog(L_NOTICE, "sasl_setprop() failed:  TLS layer for SASL");
+            }
+        }
+#endif
     }
 }
 
