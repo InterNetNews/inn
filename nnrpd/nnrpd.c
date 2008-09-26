@@ -124,7 +124,7 @@ static CMDENT	CMDtable[] = {
     {	"GROUP",	CMDgroup,	true,	2,	2,
 	"newsgroup" },
     {   "HDR",          CMDpat  ,       true,   2,      3,
-        "header [range|message-ID]" },
+        "header [message-ID|range]" },
     {	"HEAD",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
     {	"HELP",		CMDhelp,	false,	1,	1,
@@ -166,11 +166,11 @@ static CMDENT	CMDtable[] = {
     {	"XGTITLE",	CMDxgtitle,	true,	1,	2,
 	"[wildmat]" },
     {	"XHDR",		CMDpat,		true,	2,	3,
-	"header [range|message-ID]" },
+	"header [message-ID|range]" },
     {	"XOVER",	CMDover,	true,	1,	2,
 	"[range]" },
     {	"XPAT",		CMDpat,		true,	4,	CMDany,
-	"header range|message-ID pattern [pattern ...]" },
+	"header message-ID|range pattern [pattern ...]" },
     {	NULL,           CMD_unimp,      false,  0,      0,
         NULL }
 };
