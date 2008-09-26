@@ -257,7 +257,7 @@ static int verify_callback(int ok, X509_STORE_CTX * ctx)
 	     X509_verify_cert_error_string(err));
       
 	if (verify_depth >= depth) {
-	    ok = 0;
+	    ok = 1;
 	    verify_error = X509_V_OK;
 	} else {
 	    ok = 0;
