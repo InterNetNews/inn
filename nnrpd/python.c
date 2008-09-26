@@ -468,7 +468,7 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     }
 
     /* Log auth result. */
-    syslog(L_NOTICE, "python dynamic method (%s access) succeeded, refusion string: %s", PostFlag ? "post" : "read", string == NULL ? "<empty>" : string);
+    syslog(L_NOTICE, "python dynamic method (%s access) succeeded, refuse string: %s", PostFlag ? "post" : "read", string == NULL ? "<empty>" : string);
 
     /* Initialize reply string. */
     if (reply_message != NULL)
@@ -741,12 +741,12 @@ PYdefmethods(PyFile *fp, int realtype)
 PyObject*
 PY_setup(int type, int method, char *file)
 {
-    int  i;
+    int i;
     PyFile *fp;
-    PyObject    *result;
+    PyObject *result;
 
     /* Check to see if this file is in files. */
-    if (!(hash_lookup(files, file))) {
+    if ((fp = hash_lookup(files, file)) == NULL) {
         fp = xmalloc(sizeof(PyFile));
         fp->file = xstrdup(file);
 
@@ -776,9 +776,8 @@ PY_setup(int type, int method, char *file)
             }
             fp->loaded[type] = true;
         }
-        return fp->procs[type][method];
     }
-    return NULL;
+    return fp->procs[type][method];
 }
 
 

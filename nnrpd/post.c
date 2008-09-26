@@ -703,7 +703,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 
 	    /* Authorize user using Python module method dynamic. */
 	    if (PY_dynamic(PERMuser, p, true, &reply) < 0) {
-	        syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
+	        syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined");
 	    } else {
 	        if (reply != NULL) {
 		    syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, p, reply);

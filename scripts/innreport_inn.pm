@@ -1520,7 +1520,7 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^python method \S+ not found$/o;
     return 1 if $left =~ /^python authenticate method succeeded, return code \d+, error string /o;
     return 1 if $left =~ /^python access method succeeded$/o;
-    return 1 if $left =~ /^python dynamic method \(\w+ access\) succeeded, refusion string: /o;
+    return 1 if $left =~ /^python dynamic method \(\w+ access\) succeeded, refuse string: /o;
     return 1 if $left =~ /^python: .+ module successfully hooked into nnrpd$/o;
     return 1 if $left =~ /^python: nnrpd .+ class instance created$/o;
     return 1 if $left =~ /^python: n_a authenticate\(\) invoked: hostname \S+, ipaddress \S+, interface \S+, user /o;

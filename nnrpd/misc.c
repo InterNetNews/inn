@@ -169,7 +169,7 @@ PERMartok(void)
 
 	/* Authorize user at a Python authorization module. */
 	if (PY_dynamic(PERMuser, p, false, &reply) < 0) {
-	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
+	    syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined");
 	} else {
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, p, reply);
