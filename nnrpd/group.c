@@ -63,8 +63,6 @@ CMDgroup(int ac, char *av[])
         free(group);
         return;
     }
-    ARTlow = low;
-    ARThigh = high;
 
 #ifdef DO_PYTHON
     if (PY_use_dynamic) {
@@ -108,6 +106,11 @@ CMDgroup(int ac, char *av[])
     /* Close out any existing article, report group stats. */
     ARTclose();
     GRPreport();
+
+    /* These values must be changed after the Python dynamic hook and everything
+     * that can lead to a failure of authorization. */
+    ARTlow = low;
+    ARThigh = high;
 
     /* Doing a GROUP command? */
     if (strcasecmp(av[0], "GROUP") == 0) {
