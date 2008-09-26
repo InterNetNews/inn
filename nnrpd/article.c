@@ -633,7 +633,8 @@ CMDfetch(int ac, char *av[])
 
     /* Check authorizations. */
     if (!ok) {
-	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+	Reply("%d Read access denied\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -645,7 +646,8 @@ CMDfetch(int ac, char *av[])
 	}
 	if (!PERMartok()) {
 	    ARTclose();
-	    Reply("%d Read access denied for this article\r\n", NNTP_ERR_ACCESS);
+	    Reply("%d Read access denied for this article\r\n",
+                  PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	    return;
 	}
 	tart=art;
@@ -711,7 +713,8 @@ CMDnextlast(int ac UNUSED, char *av[])
 
     /* No syntax to check.  Only check authorizations. */
     if (!PERMcanread) {
-	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+	Reply("%d Read access denied\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -907,7 +910,8 @@ CMDover(int ac, char *av[])
 
     /* Check authorizations. */
     if (!PERMcanread) {
-	Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+	Reply("%d Read access denied\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
     }
 
@@ -1131,7 +1135,8 @@ CMDpat(int ac, char *av[])
 
     /* Check authorizations. */
     if (!PERMcanread) {
-        Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Read access denied\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
         return;
     }
 
@@ -1159,7 +1164,8 @@ CMDpat(int ac, char *av[])
 
             if (!PERMartok()) {
                 ARTclose();
-                Reply("%d Read access denied for this article\r\n", NNTP_ERR_ACCESS);
+                Reply("%d Read access denied for this article\r\n",
+                      PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
                 break;
             }
 

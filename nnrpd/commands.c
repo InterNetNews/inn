@@ -533,7 +533,8 @@ CMDpost(int ac, char *av[])
     /* Check authorizations. */
     if (ihave && (!PERMaccessconf->allowihave || !PERMcanpost)) {
 	syslog(L_NOTICE, "%s noperm ihave without permission", Client.host);
-        Reply("%d IHAVE command disabled by administrator\r\n", NNTP_ERR_ACCESS);
+        Reply("%d IHAVE command disabled by administrator\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
     }
     if (!ihave && !PERMcanpost) {

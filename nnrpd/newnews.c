@@ -258,13 +258,15 @@ CMDnewnews(int ac, char *av[])
 
   /* Check authorizations. */
   if (!PERMaccessconf->allownewnews) {
-      Reply("%d NEWNEWS command disabled by administrator\r\n", NNTP_ERR_ACCESS);
+      Reply("%d NEWNEWS command disabled by administrator\r\n",
+            PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
       TMRstop(TMR_NEWNEWS);
       return;
   }
 
   if (!PERMcanread) {
-      Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+      Reply("%d Read access denied\r\n",
+            PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
       TMRstop(TMR_NEWNEWS);
       return;
   }

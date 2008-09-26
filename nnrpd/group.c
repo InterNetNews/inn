@@ -52,10 +52,8 @@ CMDgroup(int ac, char *av[])
 
     /* Check authorizations. */
     if (!hookpresent && !PERMcanread) {
-        if (PERMspecified)
-            Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
-        else
-            Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
+        Reply("%d Read access denied\r\n",
+              PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
         return;
     }
 
@@ -78,7 +76,9 @@ CMDgroup(int ac, char *av[])
 	} else {
 	    if (reply != NULL) {
 	        syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s", PERMuser, Client.host, group, reply);
-		Reply("%d %s\r\n", NNTP_ERR_ACCESS, reply);
+		Reply("%d %s\r\n",
+                      PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS,
+                      reply);
 		free(group);
                 free(reply);
 		return;
@@ -92,15 +92,14 @@ CMDgroup(int ac, char *av[])
             grplist[0] = group;
             grplist[1] = NULL;
             if (!PERMmatch(PERMreadlist, grplist)) {
-                Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+                Reply("%d Read access denied\r\n",
+                      PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
                 free(group);
                 return;
             }
         } else {
-            if (PERMcanauthenticate)
-                Reply("%d Authentication required\r\n", NNTP_FAIL_AUTH_NEEDED);
-            else
-                Reply("%d Read access denied\r\n", NNTP_ERR_ACCESS);
+            Reply("%d Read access denied\r\n",
+                  PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
             free(group);
             return;
         }
