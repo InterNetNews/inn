@@ -35,7 +35,7 @@ class MYAUTH:
         attributes['type'] = buffer('authinfo')
         perm = (self.old).authenticate(attributes)
         err_str = "No error"
-        if perm[0] == 502:
+        if perm[0] == 481:
                 err_str = "Python authentication error!"        
         return (perm[0],err_str)                
 

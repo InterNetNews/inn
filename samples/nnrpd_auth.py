@@ -45,16 +45,9 @@ class AUTH:
         """This is a good place to initialize variables or open a
            database connection."""
 
-        # Create a list of NNTP codes to respond on connect.
-        self.connectcodes = {   'READPOST':200,
-                                'READ':201,
-                                'AUTHNEEDED':480,
-                                'PERMDENIED':502
-        }
-
         # Create a list of NNTP codes to respond on authentication.
-        self.authcodes = {  'ALLOWED':281,
-                            'DENIED':502
+        self.authcodes = {  'ALLOWED': 281,
+                            'DENIED': 481
         }
 
         syslog('notice', 'nnrpd authentication class instance created')
