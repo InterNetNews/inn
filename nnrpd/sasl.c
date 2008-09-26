@@ -32,7 +32,7 @@ sasl_callback_t sasl_callbacks[] = {
     { SASL_CB_LIST_END, NULL, NULL }
 };
 
-#define BASE64_BUF_SIZE 21848	/* per RFC 2222bis: ((16K / 3) + 1) * 4  */
+#define BASE64_BUF_SIZE 21848	/* Per RFC 2222bis:  ((16K / 3) + 1) * 4. */
 
 
 /*

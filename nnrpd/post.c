@@ -25,7 +25,7 @@ static const char * const BadDistribs[] = {
 };
 
 HEADER Table[] = {
-    /*  Name                    Canset  Type    Size  Value */
+    /*  Name                    CanSet  Type    Size  Value */
     {   "Path",                 true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "From",                 true,   HTreq,  0,    NULL,    NULL, 0 },
     {   "Newsgroups",           true,   HTreq,  0,    NULL,    NULL, 0 },
@@ -67,11 +67,10 @@ HEADER Table[] = {
 HEADER *EndOfTable = ARRAY_END(Table);
 
 
-
-/* Join() and MaxLength() are taken from innd.c */
 /*
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
 **  headers into a single line.
+**  Taken from innd.c.
 */
 static char *
 Join(char *text)
@@ -84,9 +83,11 @@ Join(char *text)
     return text;
 }
 
+
 /*
-**  Return a short name that won't overrun our bufer or syslog's buffer.
+**  Return a short name that won't overrun our buffer or syslog's buffer.
 **  q should either be p, or point into p where the "interesting" part is.
+**  Taken from innd.c.
 */
 static char *
 MaxLength(char *p, char *q)
@@ -113,7 +114,7 @@ MaxLength(char *p, char *q)
         strlcat(buff, "...", sizeof(buff) - 10);
         strlcat(buff, &p[i - 10], sizeof(buff));
     } else {
-	/* Not in last 10 bytes, so use double elipses. */
+	/* Not in last 10 bytes, so use double ellipses. */
         strlcpy(buff, p, sizeof(buff) - 16);
         strlcat(buff, "...", sizeof(buff) - 13);
         strlcat(buff, &q[-5], sizeof(buff) - 3);
@@ -121,6 +122,8 @@ MaxLength(char *p, char *q)
     }
     return Join(buff);
 }
+
+
 /*
 **  Trim trailing spaces, return pointer to first non-space char.
 */
@@ -176,18 +179,18 @@ StripOffHeaders(char *article)
 	     && p[hp->Size] == ':'
 	     && strncasecmp(p, hp->Name, hp->Size) == 0) {
 		if (hp->Type == HTobs) {
-		    snprintf(Error, sizeof(Error), "Obsolete \"%s\" header",
+		    snprintf(Error, sizeof(Error), "Obsolete %s: header",
                              hp->Name);
 		    return NULL;
 		}
 		if (hp->Value) {
-		    snprintf(Error, sizeof(Error), "Duplicate \"%s\" header",
+		    snprintf(Error, sizeof(Error), "Duplicate %s: header",
                              hp->Name);
 		    return NULL;
 		}
 		hp->Value = &p[hp->Size + 1];
 		/* '\r\n' is replaced with '\n', and unnecessary to consider
-		   '\r' */
+		 *  '\r'. */
 		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
 		    continue;
 		hp->Body = q;
@@ -276,7 +279,7 @@ CheckDistribution(char *p)
     const char * const *dp;
 
     if ((p = strtok(p, SEPS)) == NULL)
-	return "Can't parse Distribution line.";
+	return "Can't parse Distribution: header";
     do {
 	for (dp = BadDistribs; *dp; dp++)
 	    if (uwildmat(p, *dp)) {
@@ -320,7 +323,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	if (!ihave && !hp->CanSet && hp->Value) {
 	    snprintf(Error, sizeof(Error),
-		     "Can't set system \"%s\" header", hp->Name);
+		     "Can't set system %s: header", hp->Name);
 	    return Error;
 	}
 	if (hp->Value) {
@@ -331,7 +334,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
 
     /* If authorized, add the header based on our info.  If not authorized,
-       zap the Sender so we don't put out unauthenticated data. */
+     * zap the Sender: header so we don't put out unauthenticated data. */
     if (PERMaccessconf->nnrpdauthsender) {
 	if (PERMauthorized && PERMuser[0] != '\0') {
             p = strchr(PERMuser, '@');
@@ -347,13 +350,13 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	}
     }
 
-    /* Set Date.  datebuff is used later for NNTP-Posting-Date, so we have
-       to set it and it has to be the UTC date. */
+    /* Set the Date: header.  datebuff is used later for NNTP-Posting-Date:,
+     *  so we have to set it and it has to be the UTC date. */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
-        return "Can't generate date header";
+        return "Can't generate Date: header";
     if (HDR(HDR__DATE) == NULL) {
 	if (ihave)
-	    return "Missing \"Date\" header";
+	    return "Missing Date: header";
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
@@ -364,12 +367,12 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     } else {
         t = parsedate_rfc2822_lax(HDR(HDR__DATE));
 	if (t == (time_t) -1)
-	    return "Can't parse \"Date\" header";
+	    return "Can't parse Date: header";
 	if (t > now + DATE_FUZZ)
 	    return "Article posted in the future";
     }
 
-    /* Newsgroups are checked later. */
+    /* Newsgroups: is checked later. */
 
     if (HDR(HDR__CONTROL)) {
 	if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
@@ -377,7 +380,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     } else {
 	p = HDR(HDR__SUBJECT);
 	if (p == NULL)
-	    return "Required \"Subject\" header is missing";
+	    return "Required Subject: header is missing";
         if (strncmp(p, "cmsg ", 5) == 0) {
             HDR_SET(HDR__CONTROL, p + 5);
             if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
@@ -385,16 +388,16 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         }
     }
 
-    /* Set Message-ID */
+    /* Set the Message-ID: header. */
     if (HDR(HDR__MESSAGEID) == NULL) {
 	if (ihave)
-	    return "Missing \"Message-ID\" header";
+	    return "Missing Message-ID: header";
 	HDR_SET(HDR__MESSAGEID, idbuff);
     }
 
-    /* Set Path */
+    /* Set the Path: header. */
     if (HDR(HDR__PATH) == NULL && ihave)
-        return "Missing \"Path\" header";
+        return "Missing Path: header";
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
 	/* Note that innd will put host name here for us. */
 	HDR_SET(HDR__PATH, (char *) PATHMASTER);
@@ -417,17 +420,17 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	HDR_SET(HDR__PATH, newpath);
     }
 
-    /* Reply-To; left alone. */
-    /* Sender; set above. */
+    /* Reply-To: is left alone. */
+    /* Sender: is set above. */
 
-    /* Check Expires. */
+    /* Check the Expires: header. */
     if (HDR(HDR__EXPIRES) && parsedate_rfc2822_lax(HDR(HDR__EXPIRES)) == -1)
-	return "Can't parse \"Expires\" header";
+	return "Can't parse Expires: header";
 
-    /* References; left alone. */
-    /* Control; checked above. */
+    /* References: is left alone. */
+    /* Control! is checked above. */
 
-    /* Distribution. */
+    /* Check the Distribution: header. */
     if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
 	p = xstrdup(p);
 	error = CheckDistribution(p);
@@ -436,33 +439,34 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	    return error;
     }
 
-    /* Set Organization */
+    /* Set the Organization: header. */
     if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
 	strlcpy(orgbuff, p, sizeof(orgbuff));
 	HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
 
-    /* Keywords; left alone. */
-    /* Summary; left alone. */
-    /* Approved; left alone. */
+    /* Keywords: is left alone. */
+    /* Summary: is left alone. */
+    /* Approved: is left alone. */
 
-    /* Set Lines */
+    /* Set the Lines: header. */
     if (!ihave) {
 	snprintf(linebuff, sizeof(linebuff), "%d", linecount);
 	HDR_SET(HDR__LINES, linebuff);
     }
 
-    /* Supersedes; left alone. */
+    /* Supersedes: is left alone. */
 
-    /* NNTP-Posting host; set. */
+    /* Set the NNTP-Posting-Host: header. */
     if (!ihave && PERMaccessconf->addnntppostinghost) 
     HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
-    /* NNTP-Posting-Date - not in RFC (yet) */
+    
+    /* Set the NNTP-Posting-Date: header. */
     if (!ihave && PERMaccessconf->addnntppostingdate)
     HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
 
-    /* X-Trace; set */
+    /* Set the X-Trace: header. */
     pid = (long) getpid() ;
     if ((gmt = gmtime(&now)) == NULL)
 	return "Can't get the time";
@@ -478,7 +482,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
              gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR_SET(HDR__XTRACE, tracebuff);
 
-    /* X-Complaints-To; set */
+    /* Set the X-Complaints-To: header. */
     if ((p = PERMaccessconf->complaints) != NULL)
 	snprintf (complaintsbuff, sizeof(complaintsbuff), "%s", p);
     else {
@@ -493,17 +497,18 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
     HDR_SET(HDR__XCOMPLAINTSTO, complaintsbuff);
 
-    /* Clear out some headers that should not be here */
+    /* Clear out some headers that should not be here. */
     if (!ihave && PERMaccessconf->strippostcc) {
 	HDR_CLEAR(HDR__CC);
 	HDR_CLEAR(HDR__BCC);
 	HDR_CLEAR(HDR__TO);
     }
+
     /* Now make sure everything is there. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL) {
 	    snprintf(Error, sizeof(Error),
-                     "Required \"%s\" header is missing", hp->Name);
+                     "Missing required %s: header", hp->Name);
 	    return Error;
 	}
 
@@ -516,7 +521,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 **  but reasonably effective for catching neophyte's mistakes.  Son-of-1036
 **  says:
 **
-**      NOTE: While encouraging trimming is desirable, the 50% rule imposed
+**      NOTE:  While encouraging trimming is desirable, the 50% rule imposed
 **      by some old posting agents is both inadequate and counterproductive.
 **      Posters do not respond to it by being more selective about quoting;
 **      they respond by padding short responses, or by using different
@@ -587,7 +592,7 @@ MailArticle(char *group, char *article)
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in inconf->mta) and send the headers. */
     if ((mta = innconf->mta) == NULL)
-	return "Can't start mailer - mta not set";
+	return "Can't start mailer -- mta not set";
     snprintf(buff, sizeof(buff), innconf->mta, address);
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
@@ -660,13 +665,13 @@ ValidNewsgroups(char *hdr, char **modgroup)
     IsNewgroup = (p && strncmp(p, "newgroup", 8) == 0);
     groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL)
-	return "Can't parse newsgroups line";
+	return "Can't parse Newsgroups: header";
     Error[0] = '\0';
 
-    /* Reject all articles with Approved headers unless the user is allowed to
-       add them, even to unmoderated or local groups.  We want to reject them
-       to unmoderated groups in case there's a disagreement of opinion
-       between various sites as to the moderation status. */
+    /* Reject all articles with Approved: headers unless the user is allowed to
+     * add them, even to unmoderated or local groups.  We want to reject them
+     * to unmoderated groups in case there's a disagreement of opinion
+     * between various sites as to the moderation status. */
     approved = HDR(HDR__APPROVED) != NULL;
     if (approved && !PERMaccessconf->allowapproved) {
         snprintf(Error, sizeof(Error),
@@ -676,7 +681,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
     FoundOne = false;
     h = DDstart((FILE *)NULL, (FILE *)NULL);
     do {
-	if (innconf->mergetogroups && p[0] == 't' && p[1] == 'o' && p[2] == '.')
+	if (innconf->mergetogroups && strncmp(p, "to.", 3) == 0)
 	    p = (char *) "to";
         if (!hookpresent && PERMspecified) {
 	    grplist[0] = p;
@@ -696,7 +701,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	if (PY_use_dynamic) {
 	    char    *reply;
 
-	    /* Authorize user using Python module method dynamic */
+	    /* Authorize user using Python module method dynamic. */
 	    if (PY_dynamic(PERMuser, p, true, &reply) < 0) {
 	        syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined.");
 	    } else {
@@ -718,14 +723,14 @@ ValidNewsgroups(char *hdr, char **modgroup)
 	case NF_FLAG_NOLOCAL:
 	    if (!PERMaccessconf->locpost)
 		snprintf(Error, sizeof(Error),
-                         "Postings to \"%s\" are not allowed here.", p);
+                         "Postings to \"%s\" are not allowed here", p);
 	    break;
 	case NF_FLAG_EXCLUDED:
 	    /* Do NOT return an error. */
 	    break;
 	case NF_FLAG_ALIAS:
 	    snprintf(Error, sizeof(Error),
-                     "The newsgroup \"%s\" has been renamed.\n", p);
+                     "The newsgroup \"%s\" has been renamed\n", p);
 	    break;
 	}
     } while ((p = strtok((char *)NULL, NGSEPS)) != NULL);
@@ -755,7 +760,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 
 
 /*
-**  Send a quit message to the server, eat its reply.
+**  Send a QUIT message to the server, eat its reply.
 */
 static void
 SendQuit(FILE *FromServer, FILE *ToServer)
@@ -802,7 +807,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     char *spoolfile = NULL;
     char *q;
 
-    /* Initialize the returned error message */
+    /* Initialize the returned error message. */
     snprintf(CANTSPOOL, sizeof(CANTSPOOL),
              "%s and can't write text to local spool file", err);
 
@@ -810,12 +815,12 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     tmpspool = concatpath(SpoolDir, ".XXXXXX");
     fd = mkstemp(tmpspool);
     if (fd < 0) {
-        syslog(L_FATAL, "cant create temporary spool file %s %m", tmpspool);
+        syslog(L_FATAL, "can't create temporary spool file %s %m", tmpspool);
         goto fail;
     }
     F = fdopen(fd, "w");
     if (F == NULL) {
-        syslog(L_FATAL, "cant open %s %m", tmpspool);
+        syslog(L_FATAL, "can't open %s %m", tmpspool);
         goto fail;
     }
     fchmod(fileno(F), BATCHFILE_MODE);
@@ -844,14 +849,14 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     }
     fprintf(F, "\n");
 
-    /* Write the article body */
+    /* Write the article body. */
     i = strlen(article);
     if (fwrite(article, 1, i, F) != (size_t)i) {
         fclose(F);
         goto fail;
     }
 
-    /* Flush and catch any errors */
+    /* Flush and catch any errors. */
     if (fclose(F))
         goto fail;
 
@@ -859,16 +864,16 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     spoolfile = concatpath(SpoolDir, "XXXXXX");
     fd = mkstemp(spoolfile);
     if (fd < 0) {
-        syslog(L_FATAL, "cant create spool file %s %m", spoolfile);
+        syslog(L_FATAL, "can't create spool file %s %m", spoolfile);
         goto fail;
     }
     close(fd);
     if (rename(tmpspool, spoolfile) < 0) {
-        syslog(L_FATAL, "cant rename %s %s %m", tmpspool, spoolfile);
+        syslog(L_FATAL, "can't rename %s %s %m", tmpspool, spoolfile);
 	goto fail;
     }
 
-    /* Article has been spooled */
+    /* Article has been spooled. */
     free(tmpspool);
     free(spoolfile);
     return NULL;
@@ -881,6 +886,7 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     return CANTSPOOL;
 }
 
+
 /*
 **  Spool article to temp file.
 */
@@ -889,8 +895,11 @@ Spoolit(char *article, char *err)
 {
     return SpoolitTo(article, err, innconf->pathincoming);
 }
- 
-static char *Towire(char *p) {
+
+
+static char *
+Towire(char *p)
+{
     char	*q, *r, *s;
     int		curlen, len = BIG_BUFFER;
 
@@ -906,7 +915,7 @@ static char *Towire(char *p) {
 		if (*(r - 1) != '\r')
 		    *q++ = '\r';
 	    } else {
-		/* this should not happen */
+		/* This should not happen. */
 		free(s);
 		return NULL;
 	    }
@@ -923,6 +932,10 @@ static char *Towire(char *p) {
     return s;
 }
 
+
+/*
+**  The main function which handles POST and IHAVE.
+*/
 const char *
 ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 {
@@ -940,7 +953,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     char	*DirTrackID;
     FILE	*ftd;
 
-    /* Assume errors are permanent, until we discover otherwise */
+    /* Assume errors are permanent, until we discover otherwise. */
     *permanent = true;
 
     /* Set up the other headers list. */
@@ -1004,7 +1017,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     if ((PERMaccessconf->localmaxartsize > 0) &&
 		(strlen(article) > (unsigned)PERMaccessconf->localmaxartsize)) {
         snprintf(Error, sizeof(Error),
-                 "Article is bigger then local limit of %ld bytes\n",
+                 "Article is bigger than local limit of %ld bytes\n",
                  PERMaccessconf->localmaxartsize);
         if (modgroup)
             free(modgroup);
@@ -1012,7 +1025,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     }
 
 #if defined(DO_PERL)
-    /* Calls the Perl subroutine for headers management */
+    /* Calls the Perl subroutine for headers management. */
     p = PERMaccessconf->nnrpdperlfilter ? HandleHeaders(article) : NULL;
     if (p != NULL) {
         char SDir[255];
@@ -1052,7 +1065,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     }
 #endif /* defined(DO_PERL) */
 
-    /* handle mailing to moderated groups */
+    /* Handle mailing to moderated groups. */
 
     if (modgroup) {
 	if (idbuff != NULL) {
@@ -1088,7 +1101,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     }
 
     /* If we cannot open the connection, initialize the error message and
-     * attempt to recover from this by spooling it locally */
+     * attempt to recover from this by spooling it locally. */
     if (i < 0) {
 	if (buff[0])
 	    strlcpy(Error, buff, sizeof(Error));
@@ -1097,6 +1110,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
                      strerror(errno));
         return Spoolit(article,Error);
     }
+
     if (Tracing)
 	syslog(L_TRACE, "%s post_connect %s",
 	    Client.host, PERMaccessconf->nnrpdposthost ? PERMaccessconf->nnrpdposthost : "localhost");
@@ -1135,7 +1149,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
             q = xstrndup(hp->Value, hp->Body - hp->Value + hp->Len);
 	    if (strchr(q, '\n') != NULL) {
 		if ((p = Towire(q)) != NULL) {
-		    /* there is no white space, if hp->Value and hp->Body is the same */
+		    /* There is no white space, if hp->Value and hp->Body are the same. */
 		    if (*hp->Value == ' ' || *hp->Value == '\t')
 			fprintf(ToServer, "%s:%s\r\n", hp->Name, p);
 		    else
@@ -1143,7 +1157,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 		    free(p);
 		}
 	    } else {
-		/* there is no white space, if hp->Value and hp->Body is the same */
+		/* There is no white space, if hp->Value and hp->Body are the same. */
 		if (*hp->Value == ' ' || *hp->Value == '\t')
 		    fprintf(ToServer, "%s:%s\r\n", hp->Name, q);
 		else
@@ -1191,10 +1205,10 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	return Error;
     }
 
-    /* Send a quit and close down */
+    /* Send a quit and close down. */
     SendQuit(FromServer, ToServer);
 
-    /* Tracking */
+    /* Tracking. */
     if (PERMaccessconf->readertrack) {
         TrackID = concat(innconf->pathlog, "/trackposts/track.",
                          HDR(HDR__MESSAGEID), (char *) 0);
@@ -1214,7 +1228,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
                 q = xstrndup(hp->Value, hp->Body - hp->Value + hp->Len);
 		if (strchr(q, '\n') != NULL) {
 		    if ((p = Towire(q)) != NULL) {
-			/* there is no white space, if hp->Value and hp->Body is the same */
+			/* There is no white space, if hp->Value and hp->Body are the same. */
 			if (*hp->Value == ' ' || *hp->Value == '\t')
 			    fprintf(ftd, "%s:%s\r\n", hp->Name, p);
 			else
@@ -1222,7 +1236,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 			free(p);
 		    }
 		} else {
-		    /* there is no white space, if hp->Value and hp->Body is the same */
+		    /* There is no white space, if hp->Value and hp->Body are the same. */
 		    if (*hp->Value == ' ' || *hp->Value == '\t')
 			fprintf(ftd, "%s:%s\r\n", hp->Name, q);
 		    else

@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Net News Reading Protocol server.
+**  NetNews Reading Protocol server.
 */
 
 typedef enum _HEADERTYPE {
@@ -14,9 +14,9 @@ typedef struct _HEADER {
     bool         CanSet;
     HEADERTYPE   Type;
     int          Size;
-    char *       Value; /* just after ':' in header */
-    char *       Body;  /* where actual body begins */
-    int          Len;   /* body length excluding trailing white spaces */
+    char *       Value; /* Just after ':' in header. */
+    char *       Body;  /* Where actual body begins. */
+    int          Len;   /* Body length excluding trailing white spaces. */
 } HEADER;
 
 #define HDR(_x) (Table[(_x)].Body)
