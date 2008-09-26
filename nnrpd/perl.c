@@ -238,7 +238,7 @@ perlAccess(char *user, struct vector *access_vec)
 
     if (perl_get_cv("access", 0) == NULL) {
         syslog(L_ERROR, "Perl function access not defined");
-        Reply("%d Internal Error (3).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (3).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
@@ -249,13 +249,13 @@ perlAccess(char *user, struct vector *access_vec)
     if (rc == 0) { /* Error occured, same as checking $@. */
         syslog(L_ERROR, "Perl function access died: %s",
                SvPV(ERRSV, PL_na));
-        Reply("%d Internal Error (1).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
     if ((rc % 2) != 0) {
         syslog(L_ERROR, "Perl function access returned an odd number of arguments: %i", rc);
-        Reply("%d Internal Error (2).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
@@ -300,7 +300,7 @@ perlAuthInit(void)
     
     if (perl_get_cv("auth_init", 0) == NULL) {
         syslog(L_ERROR, "Perl function auth_init not defined");
-        Reply("%d Internal Error (3).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (3).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
@@ -312,7 +312,7 @@ perlAuthInit(void)
     if (SvTRUE(ERRSV)) {    /* Check $@. */
         syslog(L_ERROR, "Perl function authenticate died: %s",
                SvPV(ERRSV, PL_na));
-        Reply("%d Internal Error (1).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
@@ -340,7 +340,7 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
 
     if (perl_get_cv("authenticate", 0) == NULL) {
         syslog(L_ERROR, "Perl function authenticate not defined");
-        Reply("%d Internal Error (3).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (3).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
@@ -364,13 +364,13 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
     if (rc == 0 ) { /* Error occurred, same as checking $@. */
         syslog(L_ERROR, "Perl function authenticate died: %s",
                SvPV(ERRSV, PL_na));
-        Reply("%d Internal Error (1).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, false);
     }
 
     if ((rc != 3) && (rc != 2)) {
         syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
-        Reply("%d Internal Error (2).  Goodbye!\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, false);
     }
 
