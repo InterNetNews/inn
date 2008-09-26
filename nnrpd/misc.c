@@ -544,7 +544,7 @@ CMDstarttls(ac, av)
   result=tls_start_servertls(0, /* read */
 			     1); /* write */
   if (result==-1) {
-    Reply("%d Starttls failed\r\n", NNTP_STARTTLS_BAD_VAL);
+    /* No reply because we have already sent NNTP_STARTTLS_NEXT_VAL. */
     return;
   }
   nnrpd_starttls_done = 1;
