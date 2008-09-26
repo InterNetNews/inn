@@ -693,7 +693,7 @@ PY_setup(int type, int method, char *file)
     PyObject    *result;
 
     /* check to see if this file is in files */
-    if (!(hash_lookup(files, file))) {
+    if ((fp = hash_lookup(files, file)) == NULL) {
         fp = xmalloc(sizeof(PyFile));
         fp->file = xstrdup(file);
 
@@ -723,9 +723,8 @@ PY_setup(int type, int method, char *file)
             }
             fp->loaded[type] = true;
         }
-        return fp->procs[type][method];
     }
-    return NULL;
+    return fp->procs[type][method];
 }
 
 /*
