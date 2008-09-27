@@ -168,6 +168,7 @@ CMDgroup(int ac, char *av[])
 	    }
 	} else
 	    GRPcur = xstrdup(group);
+        PERMgroupmadeinvalid = false;
     } else {
         /* Must be doing a LISTGROUP command.  We used to just return
            something bland here ("Article list follows"), but reference NNTP
@@ -224,6 +225,7 @@ CMDgroup(int ac, char *av[])
             }
         } else
             GRPcur = xstrdup(group);
+        PERMgroupmadeinvalid = false;
     }
     free(group);
 }

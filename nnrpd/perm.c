@@ -1382,6 +1382,7 @@ PERMgetaccess(char *nnrpaccess)
     success_auth    = NULL;
 
     PERMcanauthenticate = false;
+    PERMgroupmadeinvalid = false;
 #ifdef HAVE_SSL
     PERMcanauthenticatewithoutSSL = false;
 #endif

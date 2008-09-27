@@ -159,6 +159,7 @@ EXTERN bool     PERMcanpostgreeting;
 EXTERN bool	PERMcanread;
 EXTERN bool	PERMneedauth;
 EXTERN bool	PERMspecified;
+EXTERN bool     PERMgroupmadeinvalid;
 EXTERN ACCESSGROUP	*PERMaccessconf;
 EXTERN bool	Tracing;
 EXTERN bool 	Offlinepost;

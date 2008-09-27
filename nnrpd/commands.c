@@ -27,12 +27,62 @@ typedef struct {
 
 extern const char *NNRPinstance;
 
+
+
+/*
+**  Check after a successful authentication if the currently selected
+**  newsgroup is still readable.  AUTHINFO SASL does not need it because
+**  the NNTP protocol is reset after it.
+*/
+static bool
+makeGroupInvalid(void) {
+    bool hookpresent = false;
+    char *grplist[2];
+
+#ifdef DO_PYTHON
+    hookpresent = PY_use_dynamic;
+    if (hookpresent) {
+        char *reply;
+
+        /* Authorize user using Python module method dynamic. */
+        if (PY_dynamic(PERMuser, GRPcur, false, &reply) < 0) {
+            syslog(L_NOTICE, "PY_dynamic(): authorization skipped due to no Python dynamic method defined");
+        } else {
+            if (reply != NULL) {
+                syslog(L_TRACE, "PY_dynamic() returned a refuse string for user %s at %s who wants to read %s: %s",
+                       PERMuser, Client.host, GRPcur, reply);
+                free(reply);
+                return true;
+            }
+        }
+    }
+#endif /* DO_PYTHON */
+
+    if (!hookpresent) {
+        if (PERMspecified) {
+            grplist[0] = GRPcur;
+            grplist[1] = NULL;
+            if (!PERMmatch(PERMreadlist, grplist)) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    if (!hookpresent && !PERMcanread) {
+        return true;
+    }
+
+    return false;
+}
+
+
 /*  Returns:
 **    -1 for problem (such as no such authenticator, etc.).
 **     0 for authentication succeeded.
 **     1 for authentication failed.
 */
-
 static char *PERMauthstring;
 
 static int
@@ -206,6 +256,7 @@ CMDauthinfo(int ac, char *av[])
 		PERMneedauth = false;
 		PERMauthorized = true;
                 PERMcanauthenticate = false;
+                PERMgroupmadeinvalid = makeGroupInvalid();
 		free(logrec);
 		return;
 	    case 0:
@@ -313,6 +364,7 @@ CMDauthinfo(int ac, char *av[])
             PERMneedauth = false;
             PERMauthorized = true;
             PERMcanauthenticate = false;
+            PERMgroupmadeinvalid = makeGroupInvalid();
             return;
         }
 

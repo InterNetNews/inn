@@ -632,7 +632,7 @@ CMDfetch(int ac, char *av[])
     }
 
     /* Check authorizations. */
-    if (!ok) {
+    if (!ok || PERMgroupmadeinvalid) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
@@ -712,7 +712,7 @@ CMDnextlast(int ac UNUSED, char *av[])
     const char *message;
 
     /* No syntax to check.  Only check authorizations. */
-    if (!PERMcanread) {
+    if (!PERMcanread || PERMgroupmadeinvalid) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
@@ -909,7 +909,7 @@ CMDover(int ac, char *av[])
     }
 
     /* Check authorizations. */
-    if (!PERMcanread) {
+    if (!PERMcanread || PERMgroupmadeinvalid) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
@@ -1134,7 +1134,7 @@ CMDpat(int ac, char *av[])
     }
 
     /* Check authorizations. */
-    if (!PERMcanread) {
+    if (!PERMcanread || PERMgroupmadeinvalid) {
         Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
         return;

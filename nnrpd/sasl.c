@@ -316,6 +316,7 @@ SASLauth(int ac, char *av[])
                     syslog(L_NOTICE, "%s exit for AUTHINFO SASL articles %ld groups %ld",
                            Client.host, ARTcount, GRPcount);
                 GRPcount = 0;
+                PERMgroupmadeinvalid = false;
             }
         }
     } else {

@@ -576,6 +576,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
             syslog(L_NOTICE, "%s exit for STARTTLS articles %ld groups %ld",
                    Client.host, ARTcount, GRPcount);
         GRPcount = 0;
+        PERMgroupmadeinvalid = false;
     }
 }
 #endif /* HAVE_SSL */
