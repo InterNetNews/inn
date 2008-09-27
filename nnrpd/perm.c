@@ -25,7 +25,7 @@
 extern bool nnrpd_starttls_done;
 #endif /* HAVE_SSL */
 
-/* data types */
+/* Data types. */
 typedef struct _CONFCHAIN {
     CONFFILE *f;
     struct _CONFCHAIN *parent;
@@ -34,8 +34,8 @@ typedef struct _CONFCHAIN {
 typedef struct _METHOD {
     char *name;
     char *program;
-    int  type;          /* type of auth (perl, python or external) */
-    char *users;	/* only used for auth_methods, not for res_methods. */
+    int  type;          /* Type of auth (perl, python or external)/ */
+    char *users;	/* Only used for auth_methods, not for res_methods. */
     char **extra_logs;
 } METHOD;
 
@@ -52,9 +52,9 @@ typedef struct _AUTHGROUP {
     char *default_domain;
     char *localaddress;
     char *access_script;
-    int  access_type; /* type of access (perl or python) */
+    int  access_type; /* Type of access (Perl or Python). */
     char *dynamic_script;
-    int  dynamic_type; /* type of dynamic authorization (python only) */
+    int  dynamic_type; /* Type of dynamic authorization (Python only). */
 } AUTHGROUP;
 
 typedef struct _GROUP {
@@ -64,7 +64,7 @@ typedef struct _GROUP {
     ACCESSGROUP *access;
 } GROUP;
 
-/* function declarations */
+/* Function declarations. */
 static void PERMreadfile(char *filename);
 static void authdecl_parse(AUTHGROUP*, CONFFILE*, CONFTOKEN*);
 static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok);
@@ -90,7 +90,7 @@ static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*);
 static void GrowArray(void*, void*);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec) UNUSED;
 
-/* global variables */
+/* Global variables. */
 static AUTHGROUP **auth_realms;
 static AUTHGROUP *success_auth;
 static ACCESSGROUP **access_realms;
@@ -255,7 +255,7 @@ static CONFTOKEN PERMtoks[] = {
     { 0,                        (char *) NULL                   }
 };
 
-/* function definitions */
+/* Function definitions. */
 static void
 GrowArray(void *data, void *el)
 {
@@ -408,7 +408,7 @@ copy_accessgroup(ACCESSGROUP *orig)
 	return(0);
     ret = xmalloc(sizeof(ACCESSGROUP));
     memset(ConfigBit, '\0', ConfigBitsize);
-    /* copy all anyway, and update for local strings */
+    /* Copy all anyway, and update for local strings. */
     *ret = *orig;
 
     if (orig->name)
@@ -673,8 +673,8 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(PERMhost);
 
         /* nnrpd.c downcases the names of connecting hosts.  We should
-           therefore also downcase the wildmat patterns to make sure there
-           aren't any surprises.  DNS is case-insensitive. */
+         * therefore also downcase the wildmat patterns to make sure there
+         * aren't any surprises.  DNS is case-insensitive. */
         for (p = curauth->hosts; *p; p++)
             if (CTYPE(isupper, (unsigned char) *p))
                 *p = tolower((unsigned char) *p);
@@ -844,14 +844,14 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
       case PERMnewsgroups:
 	TEST_CONFIG(PERMread, bit);
 	if (bit) {
-	    /* syntax error..  can't set read: or post: _and_ use
-	     * newsgroups: */
+	    /* Syntax error...  can't set read: or post: _and_ use
+	     * newsgroups:. */
 	    ReportError(f, "read: newsgroups already set.");
 	}
 	TEST_CONFIG(PERMpost, bit);
 	if (bit) {
-	    /* syntax error..  can't set read: or post: _and_ use
-	     * newsgroups: */
+	    /* Syntax error...  can't set read: or post: _and_ use
+	     * newsgroups:. */
 	    ReportError(f, "post: newsgroups already set.");
 	}
 
@@ -1104,7 +1104,7 @@ PERMreadfile(char *filename)
     }
     cf->parent	= 0;
 
-    /* are we editing an AUTH or ACCESS group? */
+    /* Are we editing an AUTH or ACCESS group? */
 
     inwhat	= 0;
     newgroup	= curgroup = 0;
@@ -1113,10 +1113,10 @@ PERMreadfile(char *filename)
 
     while (tok != NULL) {
 	if (inwhat == 0) {
-	    /* top-level parser */
+	    /* Top-level parser. */
 
 	    switch (tok->type) {
-		/* include a child file */
+		/* Include a child file. */
 
 	      case PERMinclude:
 		tok = CONFgettoken(0, cf->f);
@@ -1128,9 +1128,8 @@ PERMreadfile(char *filename)
 		hold		= xmalloc(sizeof(CONFCHAIN));
 		hold->parent	= cf;
 
-		/* unless the filename's path is fully qualified, open it
-		 * relative to /news/etc */
-
+		/* Unless the filename's path is fully qualified, open it
+		 * relative to <pathetc>. */
                 path = concatpath(innconf->pathetc, tok->name);
                 hold->f = CONFfopen(path);
                 free(path);
@@ -1143,7 +1142,7 @@ PERMreadfile(char *filename)
 		goto again;
 		break;
 
-		/* nested group declaration. */
+		/* Nested group declaration. */
 	      case PERMgroup:
 		tok = CONFgettoken(PERMtoks, cf->f);
 
@@ -1162,7 +1161,7 @@ PERMreadfile(char *filename)
 		    ReportError(cf->f, "Expected '{' after group name");
 		}
 
-		/* nested group declaration */
+		/* Nested group declaration. */
 		if (curgroup) {
 		    newgroup->auth = copy_authgroup(curgroup->auth);
 		    newgroup->access = copy_accessgroup(curgroup->access);
@@ -1174,7 +1173,7 @@ PERMreadfile(char *filename)
 		curgroup = newgroup;
 		break;
 
-		/* beginning of an auth or access group decl */
+		/* Beginning of an auth or access group declaration. */
 	      case PERMauth:
 	      case PERMaccess:
 		oldtype = tok->type;
@@ -1220,7 +1219,7 @@ PERMreadfile(char *filename)
 
 		break;
 
-		/* end of a group declaration */
+		/* End of a group declaration. */
 
 	      case PERMrbrace:
 		if (curgroup == NULL) {
@@ -1237,7 +1236,7 @@ PERMreadfile(char *filename)
 		free(newgroup);
 		break;
 
-		/* stuff that belongs in an authgroup */
+		/* Stuff that belongs to an auth group. */
 	      case PERMhost:
 #ifdef HAVE_SSL
               case PERMrequire_ssl:
@@ -1259,7 +1258,7 @@ PERMreadfile(char *filename)
 		authdecl_parse(curgroup->auth, cf->f, tok);
 		break;
 
-		/* stuff that belongs in an accessgroup */
+		/* Stuff that belongs to an access group. */
 	      case PERMusers:
 	      case PERMrejectwith:
 	      case PERMnewsgroups:
@@ -1314,7 +1313,7 @@ PERMreadfile(char *filename)
 		break;
 	    }
 	} else if (inwhat == 1) {
-	    /* authgroup parser */
+	    /* Auth group parser. */
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 
@@ -1337,7 +1336,7 @@ PERMreadfile(char *filename)
 
 	    authdecl_parse(curauth, cf->f, tok);
 	} else if (inwhat == 2) {
-	    /* accessgroup parser */
+	    /* Access group parser. */
 	    if (tok->type == PERMrbrace) {
 		inwhat = 0;
 
@@ -1351,11 +1350,11 @@ PERMreadfile(char *filename)
 
 	    accessdecl_parse(curaccess, cf->f, tok);
 	} else {
-	    /* should never happen */
+	    /* Should never happen. */
 	    syslog(L_TRACE, "SHOULD NEVER HAPPEN!");
 	}
 again:
-	/* go back up the 'include' chain. */
+	/* Go back up the 'include' chain. */
 	tok = CONFgettoken(PERMtoks, cf->f);
 
 	while (tok == NULL && cf) {
@@ -1403,7 +1402,7 @@ PERMgetaccess(char *nnrpaccess)
     strip_accessgroups();
 
     if (auth_realms == NULL) {
-	/* no one can talk, empty file */
+	/* No one can talk, empty file. */
 	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Reply("%d You have no permission to talk.  Goodbye.\r\n",
 	  NNTP_ERR_ACCESS);
@@ -1444,7 +1443,7 @@ PERMgetaccess(char *nnrpaccess)
         free(uname);
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
-	    /* append the default domain to the username */
+	    /* Append the default domain to the username. */
 	    strlcat(PERMuser, "@", sizeof(PERMuser));
 	    strlcat(PERMuser, auth_realms[i]->default_domain,
                     sizeof(PERMuser));
@@ -1511,7 +1510,7 @@ PERMlogin(char *uname, char *pass, char *errorstr)
         free(runame);
 	uname = strchr(PERMuser, '@');
 	if (!uname && auth_realms[i]->default_domain) {
-	    /* append the default domain to the username */
+	    /* Append the default domain to the username. */
 	    strlcat(PERMuser, "@", sizeof(PERMuser));
 	    strlcat(PERMuser, auth_realms[i]->default_domain,
                     sizeof(PERMuser));
@@ -1562,7 +1561,7 @@ PERMgetpermissions(void)
 	ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     if (!success_auth) {
-	/* if we haven't successfully authenticated, we can't do anything. */
+	/* If we haven't successfully authenticated, we can't do anything. */
 	syslog(L_TRACE, "%s no_success_auth", Client.host);
 	if (!noaccessconf)
 	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
@@ -1675,7 +1674,7 @@ PERMgetpermissions(void)
       }
     }
     if (i >= 0) {
-	/* found the right access group */
+	/* Found the right access group. */
 	if (access_realms[i]->rejectwith) {
 	    syslog(L_ERROR, "%s rejected by rule (%s)",
 		Client.host, access_realms[i]->rejectwith);
@@ -1713,8 +1712,8 @@ PERMgetpermissions(void)
 	    if (VirtualPath)
 		free(VirtualPath);
 	    if (strcmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
-		/* use domain, if pathhost in access relm matches one in
-		   inn.conf to differentiate virtual host */
+		/* Use domain, if pathhost in access realm matches one in
+		 * inn.conf to differentiate virtual host. */
 		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
 		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
 			Client.host, PERMaccessconf->name);
@@ -1736,7 +1735,7 @@ PERMgetpermissions(void)
 	SetDefaultAccess(PERMaccessconf);
 	syslog(L_TRACE, "%s no_access_realm", Client.host);
     }
-    /* check if dynamic access control is enabled, if so init it */
+    /* Check if dynamic access control is enabled; if so, init it. */
 #ifdef DO_PYTHON
     if ((success_auth->dynamic_type == PERMpython_dynamic) && success_auth->dynamic_script) {
       PY_dynamic_init(success_auth->dynamic_script);
@@ -1744,7 +1743,7 @@ PERMgetpermissions(void)
 #endif /* DO_PYTHON */
 }
 
-/* strip blanks out of a string */
+/* Strip blanks out of a string. */
 static void
 CompressList(char *list)
 {
@@ -1839,15 +1838,16 @@ add_accessgroup(ACCESSGROUP *group)
     access_realms[i+1] = 0;
 }
 
-/* clean out access groups that don't apply to any of our auth groups. */
 
+/*
+**  Clean out access groups that don't apply to any of our auth groups.
+*/
 static void
 strip_accessgroups(void)
 {
     int i, j;
 
-    /* flag the access group as used or not */
-
+    /* Flag the access group as used or not. */
     if(access_realms != NULL) {
 	for (j = 0; access_realms[j] != NULL; j++) {
 	    access_realms[j]->used = 0;
@@ -1856,37 +1856,26 @@ strip_accessgroups(void)
 	syslog(L_TRACE, "No access realms to check!");
     }
 
-    /*	If there are auth realms to check...	*/
-
+    /* If there are auth realms to check... */
     if(auth_realms != NULL) {
-	/*  ... Then for each auth realm...	*/
-
+	/* ... Then for each auth realm... */
 	for (i = 0; auth_realms[i] != NULL; i++) {
-
-	    /*	... for each access realm...	*/
-
+	    /* ... for each access realm... */
 	    for (j = 0; access_realms[j] != NULL; j++) {
-
-		/*  If the access realm isn't already in use...	*/
-
+		/* If the access realm isn't already in use... */
 		if (! access_realms[j]->used) {
-		    /*	Check to see if both the access_realm key and 
-			auth_realm key are NULL...			*/
-
+		    /* Check to see if both the access_realm key and 
+                     * auth_realm key are NULL... */
 		    if (!access_realms[j]->key && !auth_realms[i]->key) {
-			/*  If so, mark the realm in use and continue on... */
-
+			/* If so, mark the realm in use and continue on... */
 			access_realms[j]->used = 1;
 		    } else { 
-			/*  If not, check to see if both the access_realm and 
-			    auth_realm are NOT _both_ NULL, and see if they are
-			    equal...						*/
-
+			/* If not, check to see if both the access_realm and 
+			   auth_realm are NOT _both_ NULL, and see if they are
+			   equal... */
 			if (access_realms[j]->key && auth_realms[i]->key &&
 			    strcmp(access_realms[j]->key, auth_realms[i]->key) == 0) {
-
-			    /*	And if so, mark the realm in use.   */
-
+			    /* And if so, mark the realm in use. */
 			    access_realms[j]->used = 1;
 			}
 		    }
@@ -1897,7 +1886,7 @@ strip_accessgroups(void)
 	syslog(L_TRACE, "No auth realms to check!");
     }
 
-    /* strip out unused access groups */
+    /* Strip out unused access groups. */
     i = j = 0;
 
     while (access_realms[i] != NULL) {
