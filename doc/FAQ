@@ -1,0 +1,1432 @@
+$Id: FAQ,v 1.68 2008-09-03 04:12:13 eagle Exp $
+
+From: Russ Allbery <rra@stanford.edu>
+Subject: INN 2.x FAQ
+Newsgroups: news.software.nntp
+Organization: The Eyrie
+Expires: 35d
+
+Archive-name: usenet/software/inn2-faq
+URL: http://www.eyrie.org/~eagle/faqs/inn.html
+Posting-frequency: monthly
+
+This FAQ is intended to answer frequently asked questions concerning the
+current versions of INN (INN 2.x and later) seen on news.software.nntp.
+It should be referred to in preference to the old INN FAQ, which only
+documents versions up to 1.7.  It mostly covers INN 2.3 and later; earlier
+versions of INN may behave differently or use different configuration
+files.
+
+If you're reading this on Usenet, this FAQ is formatted as a minimal
+digest, so if your news or mail reader has digest handling capabilities
+you can use them to navigate between sections.  In rn variants, you can
+use Ctrl-G to skip to the next section; in Gnus, press Ctrl-D to break
+each section into a separate article.
+
+Please send any comments, suggestions, or updates to rra@stanford.edu.
+Bear in mind when sending me e-mail that I receive upwards of 800 mail
+messages a day and have unanswered personal e-mail dating back six months
+or more, so please don't expect an immediate response.  You may receive
+quicker responses by posting to news.software.nntp (even, due to the
+quirky way in which I read mail and news, from me).
+
+This FAQ is posted monthly to news.software.nntp, and is available on the
+web at <http://www.eyrie.org/~eagle/faqs/inn.html>.
+
+------------------------------
+
+Subject: Contents
+
+1.  General Questions
+    1.1.  What is INN?
+    1.2.  What is the current version?
+    1.3.  Where can I get INN?
+    1.4.  Where can I find documentation?
+    1.5.  What newsgroups are there for INN?
+    1.6.  What mailing lists are there for INN?
+    1.7.  How can I support INN development?
+    1.8.  How can I contribute to INN?
+
+2.  Terms
+    2.1.  What is tradspool (traditional spool)?
+    2.2.  What is CNFS?
+    2.3.  What are timehash and timecaf?
+    2.4.  What is overview?
+    2.5.  What are deferrals (NNTP code 431)?
+
+3.  Specific Problems
+    3.1.  INN won't start after a new installation
+    3.3.  The news server isn't keeping up with incoming news
+    3.4.  news.notice is empty and the nightly report is missing things
+    3.5.  INN is running out of file descriptors
+    3.6.  Can't get debugging information out of INN
+    3.7.  Articles aren't being sent to remote peers
+    3.8.  sendmail isn't installed
+
+4.  Error Messages
+    4.1.  innd: SERVER cant store article
+    4.2.  innd: SERVER internal no control and/or junk group
+    4.3.  Modification of read-only value attempted (Cleanfeed)
+    4.4.  tradspool: could not open ... File exists
+    4.5.  Binary posting to non-binary group (Cleanfeed)
+
+5.  Problems on Specific Systems
+    5.1.  INN won't compile on SCO OpenServer / UnixWare / OpenUNIX
+    5.2.  Using raw devices on Solaris destroys the partition table
+    5.3.  Will INN run on Windows?
+    5.4.  Why aren't INN's files where the documentation says they are?
+
+6.  How Do I...
+    6.1.  Set up a server with no external feeds, just local groups
+    6.2.  Process a single control message
+    6.4.  Feed all articles on a server to another server
+    6.5.  Rename a newsgroup
+    6.6.  Change the domain used for message IDs
+    6.7.  Use INN without a direct news feed
+    6.8.  Generate MRTG graphs for INN
+    6.9.  Hide the junk and control groups from users
+    6.10. Modify the body of posts made through my server
+    6.11. Hide the X-Trace header
+    6.12. Run innd and nnrpd on separate ports
+    6.13. Back up and restore an INN installation
+
+(Note that some numbers have been skipped.  When questions are removed,
+the remaining questions are not renumbered to avoid breaking links in
+Usenet and mailing list archives.)
+
+------------------------------
+
+Subject: 1. General Questions
+
+Contained in this section are general questions about INN, where to find
+it, and things of that sort.  It is aimed at the person who is not yet
+running INN, or who has general questions about how it works.
+
+------------------------------
+
+Subject: 1.1. What is INN?
+
+The README that comes with INN has this to say (in part):
+
+    INN (InterNetNews), originally written by Rich Salz, is an extremely
+    flexible and configurable Usenet / netnews news server.  For a
+    complete description of the protocols behind Usenet and netnews, see
+    RFC 1036 and RFC 977 (or their replacements).  In brief, netnews is a
+    set of protocols for exchanging messages between a decentralized
+    network of news servers.  News articles are organized into newsgroups,
+    which are themselves organized into hierarchies.  Each individual news
+    server stores locally all articles it has received for a given
+    newsgroup, making access to stored articles extremely fast.  Netnews
+    does not require any central server; instead, each news server passes
+    along articles it receives to all of the news servers it peers with,
+    those servers pass the articles along to their peers, and so on,
+    resulting in "flood fill" propagation of news articles.
+
+    INN is free software, supported by Internet Systems Consortium and
+    volunteers around the world.
+
+For a more complete answer, see that file.  A full description of what
+Usenet and netnews are is beyond the scope of this document; for a
+beginner's introduction, see the news.newusers.questions home page at
+<http://www.anta.net/misc/nnq/>.
+
+------------------------------
+
+Subject: 1.2. What is the current version?
+
+The most recently released version of INN is 2.4.5.
+
+INN development proceeds in two branches, as with many other free software
+projects.  The STABLE branch is maintenance of the most recently released
+stable version, and only bug fixes are added to it.  The CURRENT branch is
+the development version of the next release of INN.
+
+As mentioned in the next section, when installing a new INN server, you
+may wish to download the latest snapshot of the STABLE branch rather than
+the current full release.
+
+Note that the previous STABLE series for INN 2.3 terminated in the release
+of INN 2.3.5 and current STABLE snapshots are based on INN 2.4.  You
+should therefore read the upgrade instructions in NEWS when upgrading from
+a STABLE snapshot before May 11th, 2003 to one dated after that.
+
+------------------------------
+
+Subject: 1.3. Where can I get INN?
+
+The download site for INN is <ftp://ftp.isc.org/isc/inn/>.  In that
+directory are the various releases of INN, some additional documentation
+(particularly of security holes), the original INN Usenix paper.
+
+There is also a snapshots subdirectory, in which you will find daily
+snapshots of the INN CVS repository for the last seven days.  The
+snapshots with STABLE in the name are the latest versions of the STABLE
+branch and may have some additional bug fixes over the current released
+version.  The snapshots with CURRENT in the name are of the current
+development version.
+
+Please note:  There is no guarantee that a snapshot will even compile, let
+alone function well as a news server.  In particular, the CURRENT branch
+is under active development, and all sorts of things may be broken at any
+given point in time.  Use snapshots with caution, and don't use snapshots
+from the CURRENT branch on any production system unless you're prepared to
+debug the inevitable problems in code that's actively changing and not yet
+thoroughly tested.  (The STABLE snapshots should be fairly reliable,
+however.)
+
+------------------------------
+
+Subject: 1.4. Where can I find documentation?
+
+INN comes with extensive documentation.  See the files INSTALL and README
+at the top level of the source tree, for starters.  In addition, nearly
+every program and configuration file has its own Unix man page.  The best
+place to start is by reading the entire INSTALL file and then from there
+discovering which configuration files and programs do what you want to do
+and reading their individual man pages.
+
+There are HTML conversions of the documentation that comes with recent
+versions of INN available at:
+
+    <http://www.eyrie.org/~eagle/software/inn/>
+
+For additional documentation beyond what is distributed with INN, start at
+<http://www.isc.org/inn.html> and follow the links.
+
+The documentation that comes with INN is fairly technical in nature and
+lacking in some more general details on configuring news servers.  Some of
+the links off of the INN home page have additional overview documentation
+or documentation on how to set up servers for specific roles.
+
+Another good resource is the newsgroup news.software.nntp (and the Google
+archives thereof) and the archive of the inn-workers mailing list.  A link
+to the latter is off the INN page referenced above.
+
+Finally, the following additional links may be useful:
+
+<http://web.inter.nl.net/users/Elena.Samsonova/unix/INN/v2.3/>
+    Excellent introductory and overview documentation for INN 2.3 and
+    later.
+
+<http://www.aplawrence.com/Unixart/newsserver.html>
+    A tutorial on setting up INN aimed at beginners using SCO Unix.  While
+    it's mostly focused on SCO, it may be useful for any beginner to INN
+    and news servers.
+
+<http://www.kozubik.com/published/inn_tutorial.txt>
+    A tutorial on setting up INN on FreeBSD.  Contains a lot of
+    information focused on FreeBSD and its preferred file layout, so may
+    be easier to follow than the generic instructions on that platform.
+
+------------------------------
+
+Subject: 1.5. What newsgroups are there for INN?
+
+news.software.nntp discusses all NNTP-based news servers, including INN.
+It's the best newsgroup for technical questions and discussion.  The
+newsgroup news.software.b is also chartered for such discussion, but it's
+essentially dead now.  General news administration questions are also
+on-topic in news.admin.technical (moderated) and news.admin.misc
+(unmoderated).
+
+news.admin.hierarchies covers questions of general hierarchy configuration
+and is where announcements of new news hierarchies are generally posted.
+news.admin.net-abuse.* covers the topic of network abuse and prevention
+(including spam), but is not for the faint of heart; it is extremely noisy
+to the point of being essentially unreadable without a lot of time and
+patience (and a good killfile).
+
+------------------------------
+
+Subject: 1.6. What mailing lists are there for INN?
+
+There are several INN-related mailing lists:
+
+inn-announce@isc.org
+    Where announcements about INN are set (no posting allowed).
+
+inn-workers@isc.org
+    Discussion of INN development (postings by members only).
+
+inn-patches@isc.org
+    Where to send patches for consideration for inclusion into INN (open
+    posting).
+
+inn-committers@isc.org
+    CVS commit messages for INN are sent to this list (no posting
+    allowed).
+
+inn-bugs@isc.org
+    Where to send bug reports (open posting).  If you're an INN expert and
+    have the time to help out other users, we encourage you to join this
+    mailing list to answer questions.  (You may also want to read the
+    newsgroup news.software.nntp, which gets a lot of INN-related
+    questions.)
+
+To join these lists, send a subscription request to the `-request'
+address.  The addresses for the above lists are:
+
+    inn-workers-request@isc.org
+    inn-patches-request@isc.org
+    inn-committers-request@isc.org
+    inn-bugs-request@isc.org
+    inn-announce-request@isc.org
+
+inn-workers tends to be moderate volume (3-5 messages a day, but varying a
+lot depending on what's being discussed).  inn-committers is occasionally
+higher volume but entirely automatically generated commit notifications.
+inn-announce is a low-volume moderated list containing only major
+announcements.  The others see sporadic, mostly low, traffic.
+
+------------------------------
+
+Subject: 1.7. How can I support INN development?
+
+There are four major ways.  First, like with any other free software
+project, a great way to support INN development is to join in yourself.
+If you know how to program and have an interest in working on a widely
+deployed and fairly intricate news server, we'd love to have your help.
+See the next question for more details.
+
+Second, even if you don't have the time or expertise to write much code,
+any contributions of documentation are *greatly* appreciated.  There's
+always documentation work to be done, from maintenance of INN's technical
+documentation to tutorials and overviews for the new user or the user who
+wants to do something specific.  Listen on news.software.nntp for what
+people are looking for, or ask on inn-workers.  Similarly, beta testers
+are always welcome; if you have a test news server and some knowledge of
+how to diagnose server problems and want to try out the current
+development code and report any bugs you run into, that helps the
+developers immensely.
+
+Third, there are always more questions from new INN users to answer.
+news.software.nntp gets a regular stream of them, and it's a great way to
+help out intermittantly when you have a few moments to read news.  If you
+can identify general solutions to frequent problems and pass them along to
+the INN maintainers in the form of documentation or suggestions, even
+better.
+
+Fourth, from the README:
+
+    Note that INN is supported by Internet Systems Consortium, and
+    although it is free for use and redistribution and incorporation into
+    vendor products and export and anything else you can think of, it
+    costs money to produce.  That money comes from ISP's, hardware and
+    software vendors, companies who make extensive use of the software,
+    and generally kind hearted folk such as yourself.
+
+    Internet Systems Consortium has also commissioned a DHCP server
+    implementation and handles the official support/release of BIND.  You
+    can learn more about the ISC's goals and accomplishments from the web
+    page at <http://www.isc.org/>.
+
+The ISC provides ftp and web space, CVS server access for developers, and
+mailing lists and archives.  Donations to help support all of that are
+greatly appreciated.
+
+------------------------------
+
+Subject: 1.8. How can I contribute to INN?
+
+First, join inn-workers, since that's where all the development discussion
+takes place.  The traffic isn't that high.
+
+Next, download a snapshot of the INN CURRENT branch as described above so
+that you have a relatively current source base to work from.  You may also
+want to try configuring CVSup or some other update mechanism so that you
+can get the latest version directly out of CVS, or you can just use the
+nightly snapshots if you wish.  Read the HACKING file at the top of the
+INN source tree for some general information and tips for working on INN.
+
+Then pick something that looks interesting to you, mention what you're
+doing on inn-workers if it's likely to affect other parts of the
+development, and have at it!  The TODO file in the CURRENT tree has a
+pretty comprehensive list of things that could be done.  Best to start
+with something small (getting INN to work correctly on a platform where it
+doesn't currently and which you have available is often a great start, or
+working on one of the supporting programs or scripts that's a bit easier
+to wrap one's mind around than the core INN daemons).  Patches to INN
+should be sent to inn-patches@isc.org, or put on an ftp or web site
+somewhere and the URL sent to inn-workers if they're extremely large.
+
+------------------------------
+
+Subject: 2. Terms
+
+Here are definitions of some commonly used terms related to INN.  (More
+definitions are welcome; this section is extremely incomplete at the
+moment and the FAQ maintainer tends not to recognize terms that need a
+definition for people unfamiliar with INN.)
+
+------------------------------
+
+Subject: 2.1. What is tradspool (traditional spool)?
+
+Traditional spool is called that because it's the way that all news
+servers used to store articles.  A traditional news spool is a tree of
+directories matching the hierarchical structure of newsgroups.  For
+example, the newsgroup news.software.nntp would be stored in a directory
+news/software/nntp under the root of the news spool, and next to the
+"nntp" directory in news/software would be a "readers" directory for the
+group news.software.readers.
+
+As of INN 2.3, traditional spool is completely integrated into the storage
+API as the tradspool storage method and use the same overview mechanisms
+as the rest of INN.
+
+Storing articles in the traditional spool format is slow relative to other
+storage mechanisms.  It's probably nearly impossible to keep up with a
+full Usenet feed using pure traditional spool.  It is, however, the
+recommended storage method for low-traffic local newsgroups and any
+newsgroups that you want to back up.
+
+For more details, see the INSTALL file.
+
+------------------------------
+
+Subject: 2.2. What is CNFS?
+
+CNFS is the Cyclic News File System, written by Scott Fritchie.  It is a
+high-performance method of storing news articles, designed to avoid the
+high overhead involved in interacting with the file system when storing
+articles in individual files.  CNFS stores articles sequentially in
+pre-configured buffer files.  When the end of the buffer is reached, new
+articles are stored from the beginning of the buffer, overwriting older
+articles.
+
+It's the fastest article storage method in terms of write performance, and
+is recommended for storing binaries.
+
+For more details, see the INSTALL file.
+
+------------------------------
+
+Subject: 2.3. What are timehash and timecaf?
+
+These are two less-used storage mechanisms available under the INN storage
+API (similar in that respect to CNFS).  Both can usefully be thought of as
+compromises between the write speed of CNFS and the fine-grained control
+over article expiration.  INSTALL says for timehash:
+
+    Articles are stored as individual files as in tradspool, but are
+    divided into directories based on the arrival time to ensure that no
+    single directory contains so many files as to cause a bottleneck.
+
+and for timecaf:
+
+    Similar to timehash, articles are stored by arrival time, but instead
+    of writing a separate file for each article, multiple articles are put
+    in the same file.
+
+timecaf was new in INN 2.3.
+
+------------------------------
+
+Subject: 2.4. What is overview?
+
+Overview is summary information about articles in a newsgroup that is
+returned to news reading clients as a response to the XOVER command.  It's
+a very common extension to the NNTP protocol that allows readers to review
+summary information about articles before taking the time (and bandwidth)
+to download the entire article.
+
+The canonical items of information included in an overview record are the
+Subject, From, Date, References, and Message-ID headers of the article,
+the byte count of the article, and the line count of the article.  Nearly
+every server now also returns the Xref header (a list of the newsgroups
+carried by the server to which the article was posted and the article
+number in each of those newsgroups) as an additional field.
+
+Note that with the References and Message-ID headers, the overview record
+contains enough information to do article threading.  It also contains all
+of the fields normally keyed on for client-side filtering (killfiles and
+the like).
+
+Generating overview information for a newsgroup on the fly would be
+prohibitively expensive, particularly for large groups, since the server
+daemon would have to find all of those articles and scan them to build the
+information.  It would also be inefficient, since the overview information
+for a particular group will generally be requested many times by different
+clients.
+
+Any INN server that supports readers must therefore have an overview
+method configured.  There are three different methods to choose from:
+tradindexed, which is the slowest but the best tested and most reliable
+and the method with the best recovery tools; buffindexed, which is fast at
+writing because it uses preconfigured large buffers like CNFS, but which
+is harder to recover; and the experimental ovdb overview method, which
+stores overview information in a BerkeleyDB database.
+
+------------------------------
+
+Subject: 2.5. What are deferrals (NNTP code 431)?
+
+Consider the following situation.  You have two incoming peers, both of
+which are getting ready to offer you an article in streaming mode.  The
+first sends you a CHECK <message-id> message, to which you respond
+affirmatively (i.e., you don't already have the article).  Then, before
+that peer sends you the article with TAKETHIS, you receive a CHECK
+<message-id> from the second peer for the same message.  What response
+does INN send to the second peer?
+
+If deferrals are enabled (noresendid == false in incoming.conf for that
+peer, the default), INN will send a 431 deferral telling that peer that
+you may or may not want the article; try again later.  Chances are that
+when it retries, you will have received the article from the first peer
+and you'll just refuse it.  But if the first peer dies before it ever
+sends you the article, this way you can still get it from the second peer.
+
+If deferrals are disabled, INN will refuse the article from the second
+peer, which means there's a possibility you'll lose news if the first peer
+dies before sending you the article.
+
+As a side note, some older versions of Diablo, upon receiving a deferral,
+turn around and immediately send the article via TAKETHIS, which is
+basically exactly what you don't want.  (Chances are extremely high in
+practice that the first peer will come through with the article.)
+
+------------------------------
+
+Subject: 3. Specific Problems
+
+This section contains specific problems that are frequently reported when
+using INN, and includes fixes or suggestions for fixes.  Candidates for
+inclusion in this section are any problems reported frequently on
+news.software.nntp or inn-bugs@isc.org.  Contributions, including fixes,
+are very welcome.
+
+------------------------------
+
+Subject: 3.1. INN won't start after a new installation
+
+The most common cause of this problem is that inndstart isn't setuid root.
+inndstart must be installed owned by root and group news, mode 4550.  The
+ls -l output for inndstart should look something like:
+
+-r-sr-x---   1 root     news        53768 Jan  8 00:47 inndstart*
+
+inndstart will automatically be installed with the right permissions if
+you run make install as root.  If inndstart isn't setuid root, it will log
+errors to syslog when it tries to start and cannot.  If you aren't seeing
+those error messages in syslog either, you probably haven't set up syslog
+properly (see 3.4).
+
+The other most frequent cause of this problem is not correctly following
+the instructions in INSTALL on how to set up the initial history database.
+After running makedbz, the initial history database files will have names
+starting with history.n.  These files must be renamed to remove the ".n"
+before innd will start.
+
+------------------------------
+
+Subject: 3.3. The news server isn't keeping up with incoming news
+
+Start by looking for the profile information in your nightly report.  That
+will tell you where the news server is spending most of its time and may
+identify the exact nature of the problem.
+
+This problem is quite frequently due to using the traditional spool
+storage format for news articles.  This storage method is now too slow to
+be able to handle a full Usenet news feed (although with a more limited
+selection of groups it can still do just fine).  If your server is
+spending a lot of time writing articles and you're using traditional
+spool, this is probably the problem.
+
+One possible solution would be to switch to CNFS as a storage mechanism.
+You can do this simply by configuring CNFS (see INSTALL for details),
+changing storage.conf to direct some or all of the incoming traffic to
+CNFS buffers, and then restarting INN.  Older articles will continue to be
+stored in tradspool until they expire, but new articles will go into CNFS.
+
+------------------------------
+
+Subject: 3.4. news.notice is empty and the nightly report is missing things
+
+You have syslog set up incorrectly.
+
+INN logs nearly everything except article trace information via syslog.
+It expects syslog to write its log messages into particular files under
+~news/log, unless you gave it a different path at configure time.  You'll
+need to set up logging of INN-related log messages in your system
+/etc/syslog.conf.  See the "Configuring syslog" section in INSTALL.
+
+Note that you don't have to worry about rotating these log files;
+news.daily (which should be run nightly from cron) will take care of that
+and innreport generates a daily summary report from them.
+
+------------------------------
+
+Subject: 3.5. INN is running out of file descriptors
+
+You may need to increase your system file descriptor limits.  See the
+"File Descriptor Limits" section of INSTALL for more details.  This is
+particularly a concern on Solaris systems, since Solaris by default has an
+exceptionally low file descriptor limit.
+
+------------------------------
+
+Subject: 3.6. Can't get debugging information out of INN
+
+The INN startup process is quite complicated, involving the rc.news shell
+script and the setuid inndstart wrapper.  This can make it rather
+difficult to get enough debugging information out of it to determine
+what's going wrong if it's crashing immediately after startup or otherwise
+having serious difficulties.
+
+One approach is to run innd by hand directly, giving it the -d option.
+This requires setting up a configuration where innd doesn't need to bind
+to privileged ports, however.
+
+Another, sometimes better option, is move the innd binary to another name,
+like innd-real, and put a shell script in its place.  Here's an example,
+from Kai Henningsen:
+
+    #! /bin/bash
+    # allow core dumps
+    ulimit -c unlimited
+    # save any output
+    exec > /tmp/innd.log 2>&1
+    # who are we running as, anyway?
+    id
+    # show exported environment
+    export
+    # start innd (don't forget the arguments, or it will complain)
+    exec strace -o /tmp/innd.strace -f -F /path/to/innd-orig "$@"
+
+This starts innd under strace, suitable for debugging startup core dumps
+and the like.  You can use this as a general model for a variety of
+debugging; for example, you could replace the strace invocation with an
+invocation of gdb and then start innd from inside gdb with the -d option.
+
+------------------------------
+
+Subject: 3.7. Articles aren't being sent to remote peers
+
+(This entry is based on a post by Jeffrey M. Vinocur.)
+
+Here's how to trace through INN's logs to figure out what's happened to a
+particular article.  This should help you discover where the process of
+feeding an article to a peer broke down.
+
+1. First you look in the $pathlog/news file.  There should be one line per
+   article (search for the Message-ID, or they're in order by time of
+   arrival if you know that).
+  
+   If you don't see a line for the article in question, your innd has
+   never seen it.  For articles being fed remotely, this means your peer
+   didn't feed it to you.  For articles being posted to your server, this
+   generally indicates some sort of problem in nnrpd.
+
+   (The only other time you wouldn't see a line for the article in
+   question is if your innd has seen it in the past, and is considering
+   this attempt a "duplicate".)
+
+2. Next, look at the second field of the line you've found in
+   $pathlog/news.
+
+   If it's "-", then your innd rejected the article.  The reason should be
+   at the end of that line.
+
+3. At this point, you should be looking at a line with "+" in the second
+   field.  The article should be on your server at this point.
+
+   If it's not, either it's been canceled, or has already expired.
+
+4. You're now interested in whether the article was sent to your peers.
+   At the end of the same line in $pathlog/news, innd puts all of the
+   peers it thinks should receive this article.
+
+   If you don't see a peer you expect there, it indicates that
+   $pathetc/newsfeeds is not configured in the way you think it is.
+
+5. If a peer is listed at the end of the line, the article should have
+   been fed to that peer.
+  
+   If a peer doesn't have that article, it's possible that the article is
+   spooled on your system somewhere.  Check $pathspool/outgoing, or the
+   innfeed spool if the peer is configured to use innfeed.  (It's probably
+   easier to look for error messages in $pathlog/news.notice than to
+   actually wade around in $pathspool/innfeed.)
+
+6. If you're sure the article isn't spooled, and it doesn't show up on the
+   peer, you have to consider the possibility that the peer has rejected
+   the article.  Alternatively, it's possible that the peer has some
+   misconfiguration like the ones described above.
+
+   In either case, if you're sure that the article was offered to the peer
+   and not spooled, you will need the assistance of the peer's admin to
+   investigate further.  INN does not generally log enough information
+   about outgoing articles to be able to tell more from your server alone.
+
+   It may be possible to get a slight bit of information from the remote
+   server by connecting with telnet (usually to port 119) and issuing
+   "IHAVE <message-id>".  The peer may respond with something like "435
+   Duplicate" which means that the problem is not likely to be with your
+   server (it may be still a problem with the article itself).  If the
+   peer responds with something like "335", your server probably did not
+   offer the article after all.
+
+   If you really are at a dead end and need to get more information about
+   what's going on with an outgoing feed, you can switch it from innfeed
+   to nntpsend (see INSTALL for instructions).  You can then run it
+   manually with innxmit -dv, which will show the full conversation with
+   your remote peer.
+
+------------------------------
+
+Subject: 3.8. sendmail isn't installed
+
+Yes, INN really does require sendmail.  It uses sendmail to send out the
+daily reports and to mail messages to moderators, and it assumes that you
+have a program installed as /usr/sbin/sendmail or /usr/lib/sendmail that
+it can use to do this.  It does not speak SMTP, nor is it likely to ever
+speak SMTP; it's hard enough maintaining a package to speak NNTP.
+
+If you need a very simple local sendmail implementation that just sends
+mail to a smarthost, there are several available (nullmailer, for
+example).
+
+------------------------------
+
+Subject: 4. Error Messages
+
+Explanations of specific error messages, including solutions where
+applicable.
+
+INN logs nearly all messages to syslog, so in general these error messages
+will be found in syslog.  If you aren't seeing anything from INN in syslog
+at all, make sure that you have it set up correctly (see 3.3).
+
+------------------------------
+
+Subject: 4.1. innd: SERVER cant store article
+
+You probably have a misconfigured storage.conf.  In current versions of
+INN, "no matching entry in storage.conf" is added to the end of this
+message unless it really is a disk I/O problem, making the cause
+considerably clearer.
+
+storage.conf(5) has this to say:
+
+    If an article doesn't match any entry, either by being posted to a
+    newsgroup that doesn't match any of the <wildmat> patterns or by being
+    outside the size and expires ranges of all entries whose newsgroups
+    pattern it does match, the article is not stored and is rejected by
+    innd(8).  When this happens, the error message
+    
+         cant store article: no matching entry in storage.conf
+    
+    is logged to syslog.  If you want to silently drop articles matching
+    certain newsgroup patterns or size or expires ranges, assign them to the
+    "trash" storage method rather than having them not match any storage
+    method entry.
+
+One of the more frequent causes of this problem is misuse of the expires
+key in storage.conf entries.  Read the man page for storage.conf very
+carefully if you're using the expires key, since it may not do what you
+think it does.  In particular, if you have a storage class that specifies
+expires with a min-time greater than 0, it won't match any article without
+an Expires header (the vast majority of Usenet articles).
+
+------------------------------
+
+Subject: 4.2. innd: SERVER internal no control and/or junk group
+
+Your active file isn't complete.  Either it's been mangled by something or
+it's missing some required entries.  Even if you're running a small
+stand-alone server for internal use that only carries a handful of groups,
+there are some pseudogroups used internally by INN that you have to have.
+
+Since INN isn't running (it won't start when this error occurs), you can
+edit the active file by hand without worrying about stepping on INN's
+toes.  Make sure the following lines are present in the active file (if
+the numbers are different, that's fine):
+
+    control 0000000000 0000000000 n
+    control.cancel 0000000000 0000000000 n
+    control.checkgroups 0000000000 0000000000 n
+    control.newgroup 0000000000 0000000000 n
+    control.rmgroup 0000000000 0000000000 n
+    junk 0000000000 0000000000 y
+
+and then start INN again.  The control* groups are for control messages
+(messages with a named group will be filed into it, and all other control
+messages will go into the top-level catch-all group).  The n flag is so
+that users won't post messages directly to the control* groups; control
+messages should be posted to the groups that they affect instead and INN
+will refile them automatically based on the Control header.
+
+------------------------------
+
+Subject: 4.3. Modification of read-only value attempted (Cleanfeed)
+
+INN 2.3 and later have an internal optimization to the interface to
+embedded filters that makes filtering about 15-20% faster, but which
+disallows a trick that many versions of Cleanfeed use to count the number
+of lines in the article.  (This problem is fixed in current versions of
+Cleanfeed.)
+
+To correct this problem, find the line in Cleanfeed that looks like:
+
+    $lines = $hdr{'__BODY__'} =~ tr/\n/\n/;
+
+and change it to:
+
+    $lines = $hdr{'__LINES__'};
+
+The __LINES__ hash value is set internally by all recent versions of INN
+and is guaranteed to be correct.
+
+------------------------------
+
+Subject: 4.4. tradspool: could not open ... File exists
+
+This error generally happens after a crash or unclean shutdown of innd
+using the tradspool storage method, and is caused by overview information
+being out of sync with what articles are in the spool.  When innd was
+restarted, it renumbered its active file (which determines the range of
+existing articles in each group and therefore what article number is
+assigned to new articles) based on the overview information.  If there are
+newer articles already on disk that aren't mentioned in the overview
+(because the overview information for those articles hasn't been flushed
+to disk yet), new incoming articles will get assigned the same number as
+the existing article and then innd will fail to store the article and
+throttle with this error.
+
+In INN 2.4 and later when using the tradindexed overview method, you can
+solve this problem by rebuilding the overview for any affected group.
+Throttle the server (if it isn't already) and then run:
+
+    tdx-util -R <path-to-articles> -n <newsgroup>
+
+where <newsgroup> is the newsgroup that INN is complaining about and
+<path-to-particles> is the full path to the directory where the articles
+for that group are stored (it's generally in the error message).
+Immediately afterwards, run ctlinnd renumber for that newsgroup, and then
+unthrottle the server.
+
+The general solution to this problem, which works with any version of INN
+and any overview method, is to shut down the server, delete all of your
+overview database, and then rebuild it from your news spool with:
+
+    makehistory -O -x -F
+
+This takes a long time and is to some degree overkill.
+
+A third and better solution in some cases is to just remove all articles
+in the spool that have higher numbers than the numbers in the active file.
+Here's a Perl script that will do that.  Just save this to a file, make it
+executable, and run it, giving it the path to the active file as the first
+argument and the path to the top of your tradspool news spool as the
+second argument:
+
+    #!/usr/bin/perl
+    die "Usage: <name> <active> <spool-path>\n" unless @ARGV == 2;
+    open (ACTIVE, $ARGV[0]) or die "Can't open $ARGV[0]: $!\n";
+    while (<ACTIVE>) {
+        my ($group, $hi, $lo, $flag) = split;
+        my $directory = $group;
+        next if ($hi == 0 and $lo <= 1);
+        $directory =~ tr%.%/%;
+        $directory = $ARGV[1] . '/' . $directory;
+        if (-d $directory) {
+            opendir (DIR, $directory) or die "Can't open $directory: $!\n";
+            while (defined ($_ = readdir DIR)) {
+                unlink "$directory/$_" if ($_ > $hi);
+            }
+            closedir DIR;
+        }
+    }
+
+If you're not already running INN 2.4, upgrade if you can.  Not only can
+you recover directly from this problem if you're using tradindexed
+overview, but INN 2.4 does a better job of flushing data to disk and is
+less likely to have this problem in the first place.
+
+------------------------------
+
+Subject: 4.5. Binary posting to non-binary group
+
+This message does not actually come from INN.  It's generated by
+Cleanfeed, and if you're seeing it, that means that you have Cleanfeed
+installed.  At least at one point, the default Red Hat installation of INN
+included Cleanfeed without documenting this particularly well.
+
+In order to allow binaries in your local hierarchies, you should modify
+the Cleanfeed configuration file to set bin_allowed to a regular
+expression matching the groups that should allow binaries.  Please don't
+allow binary postings to regular Usenet newsgroups that you don't know
+should have binaries, as they consume large amounts of bandwidth and
+possibly disk space for other sites.
+
+For more information on Cleanfeed configuration options, see the Cleanfeed
+documentation and the comments in the default configuration file.
+
+------------------------------
+
+Subject: 5. Problems on Specific Systems
+
+Problems specific to particular operating systems or platforms.  Look here
+if INN doens't behave as expected on your particular system, or if you're
+having trouble compiling INN in the first place.
+
+------------------------------
+
+Subject: 5.1. INN won't compile on SCO OpenServer
+
+For information about getting INN to run on SCO UnixWare 7.1.* and
+OpenUNIX 8.0.0, see:
+
+    <http://www.zenez.com/tmp/ou8faqz/cache/269.html>
+
+On SCO OpenServer, the default cc requires -O be given when -Kalloca is
+given (which is added by default by configure since the parsers generated
+by bison need it).  However, there appears to be a bug in the compiler
+that causes it to miscompile nnrpd/commands.c under -O, generating the
+error:
+
+    Assembler: commands.c
+            aline 1505      : Syntax error
+
+I had to get around this by cd'ing into nnrpd, running:
+
+    make COPT=-g commands.o
+
+and then cd'ing back to the top level and running make again.  On
+OpenServer, to build with cc, you have to use:
+
+    env CC=cc CFLAGS=-O ./configure --with-sendmail=/usr/lib/sendmail
+
+Building under gcc is cleaner, but of course if you want to use
+--with-perl you want to build with the same compiler that you built Perl
+with.
+
+It's also worth noting that with a shared Perl library, Perl on this
+platform doesn't apparently generate the right link magic to include the
+path to the dynamic Perl libraries.  You need to either set LD_RUN_PATH
+before building or LD_LIBRARY_PATH before running any binaries so that
+they can find the Perl libraries.  (The former is preferred, since then
+the path is encoded into the binaries and you don't have to remember to
+set LD_LIBRARY_PATH later.)
+
+------------------------------
+
+Subject: 5.2. Using raw devices on Solaris destroys the partition table
+
+If you use slice 2, or some other disk slice that includes the entire
+disk, under Solaris as a raw partition for CNFS, you may run into this
+problem.  The symptoms are that INN manages to initialize the cycbuffs
+just fine, but then gets invalid device errors when it tries to open them
+again, and the disks show up in format as needing to be repartitioned.
+
+The solution is to not use raw devices that include the first cylinder of
+the disk.  Solaris doesn't protect the superblock from being overwritten
+by an application writing to raw devices and includes it in the first
+cylinder of the disk, so unless you use a slice that starts with cylinder
+1 instead of 0, INN will invalidate the partition table when it tries to
+initialize the cycbuff and all further accesses will fail until you
+repartition.
+
+Generally all that has to be done is to repartition the disk with slice 0
+starting from cylinder 1 and extending to the end of the disk and then
+point INN at slice 0 instead of slice 2.  You lose some small amount of
+space, but generally not enough to care about.
+
+------------------------------
+
+Subject: 5.3. Will INN work on Windows?
+
+Amazingly enough, the answer is yes.
+
+Not out of the box, however; the standard INN distribution doesn't build
+on Windows.  There is, however, a port to Cygwin (which is a Unix-like
+environment for Windows).  For more information, see:
+
+    <http://homepage.mac.com/imeowbot/inn/>
+
+Don't forget to peruse INSTALL if you download and want to try this.
+
+------------------------------
+
+Subject: 5.4. Why aren't INN's files where the documentation says they are?
+
+INN's default installation locations are intended to be convenient for
+sysadmins adding INN to their system without disturbing other software.
+They don't match any of the standards used by various Linux distributions
+or other Unix packaging systems.  Because of that, distributors who supply
+INN packages often rearrange the files and directories.
+
+Unfortunately, this is very confusing for system administrators, because
+the documentation is not updated to reflect the modified locations of
+files.
+
+You can always get the details of how your system is configured by looking
+in inn.conf at "pathnews" and similar parameters.  But for convenience,
+here are comparisons of INN's default locations with some of the most
+common packages.
+
+(Data courtesy of John F. Morse.)
+
+               DEFAULT                          DEBIAN
+pathnews:      /usr/local/news                  /usr/lib/news
+pathbin:       /usr/local/news/bin              /usr/lib/news/bin
+pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
+pathdb:        /usr/local/news/db               /var/lib/news
+pathetc:       /usr/local/news/etc              /etc/news
+pathfilter:    /usr/local/news/bin/filter       /etc/news/filter
+pathhttp:      /usr/local/news/log              /var/log/news
+pathlog:       /usr/local/news/log              /var/log/news
+pathrun:       /usr/local/news/run              /var/run/news
+pathtmp:       /usr/local/news/tmp              /var/spool/news/incoming/tmp
+pathspool:     /usr/local/news/spool            /var/spool/news
+patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
+patharticles:  /usr/local/news/spool/articles   /var/spool/news/articles
+pathincoming:  /usr/local/news/spool/incoming   /var/spool/news/incoming
+pathoutgoing:  /usr/local/news/spool/outgoing   /var/spool/news/outgoing
+pathoverview:  /usr/local/news/spool/overview   /var/spool/news/overview
+
+               DEFAULT                          FEDORA
+pathnews:      /usr/local/news                  /usr/lib/news
+pathbin:       /usr/local/news/bin              /usr/lib/news/bin
+pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
+pathdb:        /usr/local/news/db               /var/lib/news
+pathetc:       /usr/local/news/etc              /etc/news
+pathfilter:    /usr/local/news/bin/filter       /usr/lib/news/bin/filter
+pathhttp:      /usr/local/news/log              /var/log/news
+pathlog:       /usr/local/news/log              /var/log/news
+pathrun:       /usr/local/news/run              /var/run/news
+pathtmp:       /usr/local/news/tmp              /var/lib/news/tmp
+pathspool:     /usr/local/news/spool            /var/spool/news
+patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
+patharticles:  /usr/local/news/spool/articles   /var/spool/news/articles
+pathincoming:  /usr/local/news/spool/incoming   /var/spool/news/incoming
+pathoutgoing:  /usr/local/news/spool/outgoing   /var/spool/news/outgoing
+pathoverview:  /usr/local/news/spool/overview   /var/spool/news/overview
+
+               DEFAULT                          MANDRAKE
+pathnews:      /usr/local/news                  /usr
+pathbin:       /usr/local/news/bin              /usr/bin
+pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
+pathdb:        /usr/local/news/db               /var/lib/news
+pathetc:       /usr/local/news/etc              /etc/news
+pathfilter:    /usr/local/news/bin/filter       /usr/lib/news/bin/filter
+pathhttp:      /usr/local/news/log              /var/log/news
+pathlog:       /usr/local/news/log              /var/log/news
+pathrun:       /usr/local/news/run              /var/run/news
+pathtmp:       /usr/local/news/tmp              /usr/tmp
+pathspool:     /usr/local/news/spool            /var/spool/news
+patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
+patharticles:  /usr/local/news/spool/articles   /var/spool/news/articles
+pathincoming:  /usr/local/news/spool/incoming   /var/spool/news/incoming
+pathoutgoing:  /usr/local/news/spool/outgoing   /var/spool/news/outgoing
+pathoverview:  /usr/local/news/spool/overview   /var/spool/news/overview
+
+In addition, the FreeBSD port uses the standard INN paths except that it
+puts logs in /var/log/news and pathtmp in /usr/local/news/spool/tmp.
+
+Most packages install INN's man pages into a system man directory
+(/usr/share/man or /usr/local/man) rather than into a separate man
+directory under news's home directory.
+
+------------------------------
+
+Subject: 6. How Do I...
+
+This section documents various common or uncommon tasks or configurations
+that people want to do with INN.  It is mostly taken from frequently asked
+questions in news.software.nntp.
+
+------------------------------
+
+Subject: 6.1. Set up a server with no external feeds, just local groups
+
+The basic steps are to set up a newsfeeds file empty except for internal
+feeds like controlchan or overchan (if you're using either), have only
+localhost in incoming.conf, and start INN with the default minimal active
+file.  Then, create the groups you want to carry with ctlinnd newgroup.
+Set up reading permissions using readers.conf as appropriate for your
+organization.
+
+In other words, it's very much like setting up any other instance of INN,
+but you don't bother with innfeed, nntpsend, or any of their configuration
+files.  INN may also complain that you have no feeds in newsfeeds; this is
+harmless and can be ignored.
+
+------------------------------
+
+Subject: 6.2. Process a single control message
+
+To process a single control message, you can use controlchan from the
+command line.  Just type either:
+
+    echo /path/to/article-file | controlchan
+
+or:
+
+    echo @token@ | controlchan
+
+if you have the storage API token of the article.  (This assumes
+controlchan is in a directory in your path.)  This is useful mostly for
+testing; if you just want to create, remove, or change a group, it's
+easier to use ctlinnd (newgroup, rmgroup, or changegroup).
+
+------------------------------
+
+Subject: 6.4. Feed all articles on a server to another server
+
+To feed all articles on an existing server to another one, regardless of
+how they're stored on the server, first tell the new server to accept
+articles regardless of how old they are (otherwise, INN will reject
+articles older than artcutoff in inn.conf) and disable your filtering:
+
+    ctlinnd param c 0
+    ctlinnd perl n
+    ctlinnd python n
+
+You may also want to set xrefslave to true in inn.conf and then restart
+INN on the new server if you want to keep the same article numbers as you
+had on the old server.
+
+Next, make sure that the old server is listed in incoming.conf of the new
+server, and reload incoming.conf with ctlinnd to pick up that change.
+Also make sure that the new server carries exactly the same set of
+newsgroups as the old server.
+
+Then try these commands (a variation on commands posted by Katsuhiro
+Kondou to inn-workers) on the old server:
+
+    cd pathdb
+    perl -ne 'chomp; ($a,$b,$_) = split " "; print "$_\n" if $_' history \
+        | tr . / > pathoutgoing/list
+    innxmit server list
+
+where pathdb is the path to the directory containing the history file
+(usually ~news/db), pathoutgoing is the path to the outgoing spool
+directory (usually ~news/spool/outgoing), and server is the name of the
+new news server to which you're feeding the articles.
+
+When done, set xrefslave to false in inn.conf again if you changed it and
+then either restart INN on the new server (necessary if you changed
+xrefslave) or use another ctlinnd param command to set the cutoff value
+back to what's specified in inn.conf and use ctlinnd perl and ctlinnd
+python to reactivate your filters.
+
+Please note that when using xrefslave, this method requires that all of
+the articles in your spool have Xref headers.  Current versions of INN
+will always add an Xref header, but very old versions (earlier 1.x
+versions) will only add an Xref header to crossposted articles.  If you're
+trying to import such a spool, you'll need to modify all of those articles
+to add an Xref header.
+
+------------------------------
+
+Subject: 6.5. Rename a newsgroup
+
+INN has no native support for renaming a newsgroup, and doing so is
+difficult, so the best advice is to not do this.  If there's a way that
+you can just create the new newsgroup, encourage people to start using it,
+and then remove the old newsgroup, I recommend that.  It's much easier.
+
+However, if it really must be done, it's best if you're using the
+tradspool storage method.  The newsgroup of an article is stored in the
+Newsgroups header and Xref header of the article as stored on disk (and
+possibly in Followup-To), as well as determining where the overview
+information is stored, and in the case of tradspool is also encoded in the
+article's storage token.  To rename a newsgroup in tradspool, stop the
+server, move the directory containing all of the articles to its
+appropriate new location in the news spool, edit every article to change
+the old name to the new name in Newsgroups, Followup-To, and Xref, create
+the new newsgroup with ctlinnd newgroup, and then rebuild history and
+overview with makehistory.
+
+The following bit of Perl may help with the renaming (from Jeffrey
+Vinocur):
+
+    #!/usr/bin/perl -wi
+    my ($src, $dst) = (shift, shift);
+    die "Usage: $0 oldgroup newgroup [file1 [file2 ...]]\n"
+        unless(defined $dst);
+    while(<>) {
+        s/$src/$dst/g if 1 .. /^$/ and /^(Newsgroups|Followup-To|Xref):/i;
+        print;
+    } continue {
+        close ARGV if eof;
+    }
+
+Note that this may cause some problems if the newsgroup you're renaming is
+contained in the name of another newsgroup to which messages in that group
+are crossposted.  If that's a problem, you may have to use a more
+sophisticated script.
+
+If any articles were crossposted to other newsgroups, you'll also have to
+find and recreate the links in those newsgroups to the new location of the
+articles (if the links were hard links and the process of changing the
+Xref, Followup-To, Newsgroups headers didn't break those links, you may be
+lucky and be able to skip this).
+
+If you're using another storage method, this is harder, although with
+timehash you may be able to just change the Newsgroups, Xref, Followup-To
+headers of the articles in that newsgroup and then rebuild history and
+overview as above.
+
+One other approach that can be used regardless of storage method is to
+refeed the articles to the server into a new newsgroup.  This approach
+works best if you're also changing news servers at the same time;
+otherwise, the message IDs of the articles will already be in history, and
+you'll have to change the message IDs of all of the messages or remove
+them from the history database (such as by moving the articles away,
+changing /remember/ to 0 so that old history entries won't be retained,
+and then running expire to purge them out of history).  To do this, get
+all of the messages into a directory (by pulling them down via NNTP or
+some other method), change the Newsgroups, Xref, and Followup-To headers
+to rename the newsgroup, and then create a file containing paths to all of
+the articles, one per line.  You can then use that file as input to
+innxmit, pointing it at the server to which to feed the articles, and if
+the articles aren't listed in history on that server and it carries the
+new group, they will be accepted into the new newsgroup.
+
+Note that if you use this method and something goes wrong the first time,
+the message IDs will probably have all been added to history on the new
+server and the articles now will never be accepted until those entries are
+removed from history again (or all the message IDs changed).
+
+------------------------------
+
+Subject: 6.6. Change the domain used for message IDs
+
+By default, any message IDs generated by INN will use the domain of the
+local system for the right-hand-side of the message ID.  In some cases,
+this isn't desirable for various reasons (the server may have an internal
+name that doesn't make sense on Usenet at large, or one may not want to
+expose the name of the server).
+
+In INN 2.3.3 and later, you can set virtualhost: to true in an access
+stanza of readers.conf and then set domain: in the same stanza, and all
+posts coming from connections to which that access stanza applies will use
+that domain to generate message IDs.  So if you need to change the domain
+used to generate message IDs for every local post from your server, just
+add virtualhost: and domain: keys to every access stanza in readers.conf.
+
+This is really overkill for this option, and eventually the domain:
+parameter in inn.conf will probably be changed to allow this to be
+modified for the whole server.  (Right now, domain: in inn.conf means
+something completely different.)
+
+------------------------------
+
+Subject: 6.7. Use INN without a direct news feed
+
+INN is designed to be used as a regular news server, receiving direct news
+feeds from other news servers and sending news directly to other news
+servers using the peer-to-peer portions of the NNTP protocol.  However,
+with some additional software, it is also possible to use INN as, in
+essence, a local cache for a news server that you can use to read and post
+but which doesn't treat your server like a peer.
+
+This configuration is generally called a "suck" feed, because rather than
+having news fed directly to your server, you pull it down or "suck" it
+from another news server, and because possibly the first and one of the
+most widely used packages for doing this is named suck.
+
+The software to pull down articles from another server and to feed
+articles to another server using post rather than peer-to-peer commands
+does not come with INN (INN has a few utilities to do this on a small
+scale, but not really anything designed to handle a lot of groups or a lot
+of articles).  You will need an external package to do this.  The two most
+popular are suck and newsx; however, both sites appear to be unavailable
+as of thos writing.  You may be able to find a package in your local
+distribution or package repository.
+
+Note that current versions of INN refer to articles internally using a
+storage API token, not a path name, which is not always what suck or newsx
+expects.  Read the documentation carefully; you'll need to use a script or
+configuration that retrieves articles using the sm program that comes with
+INN rather than trying to open files directly.
+
+It's also worth noting that INN is a fairly complex package, and while
+many people are running it successfully using this sort of configuration
+and like having a full-fledged news server available to them, other people
+have found INN rather complicated and difficult to configure for a small,
+simple personal news cache.  If your needs and goals are simple and the
+number of groups you're interested in is small, you may be better off with
+a smaller, lighter package such as LeafNode or NNTPcache.
+
+------------------------------
+
+Subject: 6.8. Generate MRTG graphs for INN
+
+INN's CNFS storage system has direct support for producing information
+suitable for MRTG graphs on the usage of the CNFS cycbuffs.  Running
+cnfsstat -m <cycbuf> will generate output suitable for MRTG, and running
+cnfsstat -p will generate sample MRTG configuration fragments for each
+cycbuff.
+
+To generate MRTG graphs of the usage of the buffindexed overview system,
+try the following configuration fragment:
+
+    Target[overview-BUFF]: `/usr/local/etc/mrtg/overview.sh`
+    MaxBytes[overview-BUFF]: 100
+    Title[overview-BUFF]: BUFF1 Usage
+    Options[overview-BUFF]: growright gauge
+    YLegend[overview-BUFF]: Overview Buffers
+    ShortLegend[overview-BUFF]: %
+    PageTop[overview-BUFF]: <H1>Usage of Overview Buffers</H1>
+    <BR><TT>overview</TT>
+
+where the overview.sh script is:
+
+    #!/bin/sh
+    echo "100"
+    /usr/local/news/bin/inndf -o | awk '{print $1}'
+    echo "0"
+    echo "overview"
+
+This sample configuration is from Basil Kruglov.  Note that you can
+instead use -n (for total count of articles); in that case, you'll want to
+remove the MaxBytes setting above or change it to be some sensible limit
+on the total number of articles you receive.  You'll also want to change a
+few of the other labels in the MRTG configuration.
+
+I'm not aware of any packaged solutions for generating MRTG data from
+other things, such as incoming or outcoming news flows.  If anyone has any
+pointers, let me know.
+
+------------------------------
+
+Subject: 6.9. Hide the junk and control groups from users
+
+The junk, control, and control.cancel groups must exist in the active file
+for the proper operation of INN, so you can't remove the groups entirely.
+You can, however, hide them completely from users.
+
+To do this, edit readers.conf, and for each user access group where you
+want to hide the junk and control groups, add "!junk,!control,!control.*"
+to the newsgroups pattern.  In other words, if you have a line like:
+
+    newsgroups: *
+
+just change that to:
+
+    newsgroups: *,!junk,!control,!control.*
+
+If you use read and post patterns instead, do the same for each of them
+individually.  The groups will then no longer show up on the server for
+users to which that access group applies; it will be as if they do not
+exist.
+
+------------------------------
+
+Subject: 6.10. Modify the body of posts made through my server
+
+You can't without either making code changes to INN or putting your own
+software in the path of incoming posts.  This is intentional.
+
+Some sites like to try to append a standard signature to all posts through
+their service, generally as advertising.  This creates the appearance of
+users saying things that they didn't, runs the risk of corrupting messages
+by appending text without regard to what's in the message, and can
+possibly modify messages that arrive via a suck/rpost connection.  It also
+adds advertising in an obnoxious location, rather than in the Organization
+header which is more widely used for that purpose.  Accordingly, INN does
+not support this, or any other modification of the body of a message from
+inside the news server.
+
+If you only want to do this for a private hierarchy, the easiest way to do
+this (as well as any other modifications and internal filtering that you
+want to perform) is to mark all of the groups as moderated and route all
+submissions through a script that makes whatever modifications you want
+and then posts the messages with an Approved header.
+
+If you want to do this in order to advertise your service, please
+reconsider.  You can add your advertisements to the headers, like many
+other news service providers.
+
+------------------------------
+
+Subject: 6.11. Hide the X-Trace header
+
+There is no built-in support for suppressing generation of the X-Trace
+header.  You can, however, remove it from inside a Perl posting filter.
+Try using a posting filter like this:
+
+    sub filter_post {
+        $modify_headers = 1;
+        delete $hdr{'X-Trace'};
+        return '';
+    }
+
+Note that you have to set $modify_headers to make changes to the article
+header effective in the actual posted article.
+
+------------------------------
+
+Subject: 6.12. Run innd and nnrpd on separate ports
+
+Originally, innd was designed to handle all incoming connections and hand
+them off to nnrpd as appropriate.  It is, however, becoming increasingly
+common to run innd and nnrpd on separate ports for a variety of reasons,
+such as wanting to handle connections to nnrpd with a smart network
+connection handling daemon like xinetd that can do things like rate
+limiting of connections.  INN does support this configuration, but be
+warned that since you need to run nnrpd on port 119 for most reader
+clients to be able to find it, you'll need to tell all of your news peers
+to use a different port to feed you news.
+
+The recommended alternate port for innd transit-only connections is port
+433, which has been reserved for that purpose.  If you want to use some
+low-numbered port (less than 1024) other than 119 or 433 for innd, you
+will need to build INN with the --with-innd-port option specifying that
+port.
+
+Now, set port in inn.conf to the port you want to run innd on and add
+noreader: true (so that innd will never attempt to hand connections off to
+nnrpd).  Then, restart INN.  It will now be listening on the new port.
+You should now set up nnrpd to run via of xinetd, inetd, tcpserver, or
+some other similar network connection handling daemon on port 119.  Make
+sure that nnrpd is run as the news user, not as root.  You don't have to
+pass any arguments to nnrpd (unless you want to).
+
+------------------------------
+
+Subject: 6.13. Back up and restore an INN installation
+
+(This entry is based on a post by Jeffrey M. Vinocur.)
+
+For a full backup, you need, at a minimum, to save all of the articles in
+$patharticles, the configuration files in $pathetc, and the active and
+newsgroup files in $pathdb.  If you have any custom filters you've
+installed, or a cleanfeed.local file, you'll want to keep that, as well as
+any custom authentication programs or files you're using (like a password
+file for news accounts).  You may also want to save HTML versions of the
+news.daily reports, if you've been generating them, and you may want to
+look at the first few lines of config.status in your original source tree
+so that you can be sure to use the same options to configure.
+
+Note that most people only back up those portions of the news spool that
+they retain for a long time (like local hierarchies) and don't bother with
+all the regular Usenet articles.
+
+It's considerably easier to back up and restore articles from tradspool
+than any other storage mechanism, and it's quite hard to back up and
+restore timecaf or CNFS.  Remember that you can use different storage
+methods for different articles.  I highly recommend saving the hierarchies
+you want to back up in tradspool and use the higher-performance storage
+mechanisms for news you don't care as much about.
+
+To restore a single newsgroup using tradspool and the tradindexed overview
+method, you can just restore the articles into the news spool and then
+rebuild overview for just that group with tdx-util -R.
+
+Otherwise, for more general restorations, compile INN on the new system
+with the same ./configure command if you've lost the installation, run
+make install, then put all the pieces back where they belong.  Now, you
+have to run:
+
+    makehistory -O
+
+to rebuild the history and overview databases.  When that finishes, cd to
+the $pathdb directory and run:
+
+    makedbz -s `wc -l history` -o
+
+You should now be able to start the server and read and post news to it.
