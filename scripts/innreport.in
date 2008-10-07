@@ -212,7 +212,7 @@ $IMG_pth = $ref{'w'} if defined $ref{'w'};
 $IMG_pth = $ref{'webpath'} if defined $ref{'webpath'};
 
 $IMG_dir = $HTML_dir . "/" . $IMG_pth
-  if (defined $output{'default'}{'html_dir'} ||
+  if (defined $output{'default'}{'img_dir'} ||
        defined $ref{'w'} || defined $ref{'webpath'})
       &&
       (defined $output{'default'}{'html_dir'} ||
