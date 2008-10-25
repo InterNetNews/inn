@@ -804,9 +804,9 @@ main(int argc, char *argv[])
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
 #ifdef HAVE_INET6
-    char		ListenAddr[INET6_ADDRSTRLEN];
+    char		ListenAddr[INET6_ADDRSTRLEN] = "::0";
 #else
-    char		ListenAddr[16];
+    char		ListenAddr[16] = "0.0.0.0";
 #endif
     int			lfd, fd;
     socklen_t		clen;
@@ -948,11 +948,14 @@ main(int argc, char *argv[])
     SPOOLlen = strlen(innconf->patharticles);
 
     if (DaemonMode) {
+        bool ipv4binding = true;
+
 #ifdef HAVE_INET6
 	memset(&ssa, '\0', sizeof(struct sockaddr_in6));
 	ssa6->sin6_family = AF_INET6;
 	ssa6->sin6_port   = htons(ListenPort);
 	if (inet_pton(AF_INET6, ListenAddr, ssa6->sin6_addr.s6_addr) > 0) {
+            ipv4binding = false;
 	    if ( (lfd = socket(AF_INET6, SOCK_STREAM, 0)) < 0) {
 		syslog(L_FATAL, "can't open socket (%m)");
 		exit(1);
@@ -979,7 +982,9 @@ main(int argc, char *argv[])
 	    exit(1);
 	}
 
-	if (bind(lfd, (struct sockaddr *) &ssa, sizeof(ssa)) < 0) {
+        if (bind(lfd, (struct sockaddr *) &ssa,
+                 ipv4binding ? sizeof(struct sockaddr_in)
+                             : sizeof(struct sockaddr_storage)) < 0) {
 	    fprintf(stderr, "%s: can't bind (%s)\n", argv[0], strerror(errno));
 	    syslog(L_FATAL, "can't bind local address (%m)");
 	    exit(1);
