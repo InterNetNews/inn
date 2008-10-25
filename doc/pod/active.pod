@@ -75,7 +75,7 @@ If the <flag> field begins with an equal sign, the newsgroup is an alias.
 Articles cannot be posted to that newsgroup, but they can be received from
 other sites.  Any articles received from peers for that newsgroup are
 treated as if they were actually posted to the group named after the equal
-sign.  Note that the Newsgroups: header of the articles are not modified.
+sign.  Note that the Newsgroups: header of the articles is not modified.
 (Alias groups are typically used during a transition and are typically
 created manually with ctlinnd(8).)  An alias should not point to another
 alias.

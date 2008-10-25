@@ -227,7 +227,7 @@ answer questions about it.
 
 =item CleanFeed
 
-URL: <http://www.bofh.it/~md/cleanfeed/>
+URL:  L<http://www.bofh.it/~md/cleanfeed/>
 
 CleanFeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
@@ -237,24 +237,24 @@ configure).
 
 =item GUP (Group Update Program)
 
-URL: <ftp://ftp.debian.org/debian/pool/main/g/gup/>
+URL:  L<ftp://ftp.debian.org/debian/pool/main/g/gup/>
 
-GUP provides a way for your peers to update their newsfeeds entries as
+GUP provides a way for your peers to update their F<newsfeeds> entries as
 they want without having to ask you to edit the configuration file all the
-time.  It's useful when feeding peers who take limited and very specific
+time.  It's useful when feeding peers take limited and very specific
 feeds that change periodically.
 
 =item inflow
 
-URL: <http://www.switch.ch/netnews/wg/netnews-wg.html>
+URL:  L<http://www.switch.ch/netnews/wg/netnews-wg.html>
 
-inflow generates graphs of news flow statistics in real time from INN's
+B<inflow> generates graphs of news flow statistics in real time from INN's
 logs (things like articles accepted per peer, volume accepted per peer,
 and the like).
 
-=item News-Portal
+=item NewsPortal
 
-URL: <http://floh.gartenhaus.net/newsportal/>
+URL:  L<http://amrhein.eu/newsportal/>
 
 A PHP-based web news reader that works as a front-end to a regular news
 server such as INN and lets people read and post without learning a news
@@ -262,17 +262,18 @@ reader.
 
 =item PersonalINN
 
-URL: <http://www.ritual.org/summer/pinn/>
+URL:  L<http://www.ritual.org/summer/pinn/>
 
 PersonalINN is a version of INN modified for personal use and with a
-friendly GUI built on top of it.  It is available for NeXTSTEP or OPENSTEP
+friendly GUI built on top of it.  It is available for NEXTSTEP or OPENSTEP
 only, unfortunately.
 
 =item suck
 
-URL: <http://home.comcast.net/~bobyetman/index.html>
+URL:  L<http://home.comcast.net/~bobyetman/index.html> (obsolete)
+URL:  L<http://packages.debian.org/suck>
 
-suck is a separate package for downloading a news feed via a reading
+B<suck> is a separate package for downloading a news feed via a reading
 connection (rather than via a direct NNTP or UUCP feed) and sending
 outgoing local posts via POST.  It's intended primarily for personal or
 small-organization news servers who get their news via an ISP and are too
@@ -280,12 +281,13 @@ small to warrant setting up a regular news feed.
 
 =item newsx
 
-URL: <http://www.kvaleberg.com/newsx.html>
+URL:  L<http://www.kvaleberg.com/newsx.html> (obsolete)
+URL:  L<http://packages.debian.org/newsx>
 
-Serving the same purpose as suck, newsx is a separate package for
-downloading a news feed via a reading connectino and sending outgoing
-local posts via POST.  Some people find suck easier to configure and use,
-and some people find newsx easier.  If you have problems with one, try the
+Serving the same purpose as B<suck>, B<newsx> is a separate package for
+downloading a news feed via a reading connection and sending outgoing
+local posts via POST.  Some people find B<suck> easier to configure and use,
+and some people find B<newsx> easier.  If you have problems with one, try the
 other.
 
 =back

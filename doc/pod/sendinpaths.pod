@@ -1,6 +1,6 @@
 =head1 NAME
 
-sendinpaths - Send Usenet Path statistics via e-mail
+sendinpaths - Send Usenet Path: statistics via e-mail
 
 =head1 SYNOPSIS
 
@@ -13,8 +13,9 @@ dump files generated in the past 30 days, makes sure they are valid by
 running B<ninpaths> on each one and making sure the exit status is zero,
 and passes them to B<ninpaths> to generate a cumulative report.  That
 report is mailed to the e-mail addresses configured at the beginning of
-this script (by default "pathsurvey@top1000.org" and
-"top1000@anthologeek.net").
+this script (by default <pathsurvey@top1000.org> and
+<top1000@anthologeek.net>) in order to supply the TOP1000 project with
+useful statistics:  see L<http://www.top1000.org/> for more information.
 
 When finished, B<sendinpaths> deletes all dump files in I<pathlog>/path
 that are older than 14 days (configurable at the beginning of the script).
