@@ -947,11 +947,24 @@ ARTparsebody(CHANNEL *cp)
 
         /* Saw \r.  We're just scanning for the article terminator, so if we
            don't have at least five characters left, we can save effort and
-           stop now. */
+           stop now.
+           We also have to check whether the body begins with the article
+           terminator. */
+        if ((i == data->Body + 1) && (bp->used - i > 1)
+            && (memcmp(&bp->data[i - 1], ".\r\n", 3) == 0)) {
+            if (cp->State == CSeatarticle)
+                cp->State = CSgotlargearticle;
+            else
+                cp->State = CSgotarticle;
+            cp->Next = i + 2;
+            return;
+        }
+
         if (bp->used - i < 5) {
             cp->Next = i;
             return;
         }
+
         if (memcmp(&bp->data[i], "\r\n.\r\n", 5) == 0) {
             if (cp->State == CSeatarticle)
                 cp->State = CSgotlargearticle;
