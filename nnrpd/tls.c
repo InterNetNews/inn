@@ -552,12 +552,12 @@ bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
 	return (ret);
 
     if (cmd == (BIO_CB_READ | BIO_CB_RETURN)) {
-	Printf("read from %08X [%08lX] (%d bytes => %ld (0x%X))", (unsigned int) bio, (long unsigned int) argp,
+	Printf("read from %08lX [%08lX] (%d bytes => %ld (0x%X))", (long unsigned int) bio, (long unsigned int) argp,
 		 argi, ret, (unsigned int) ret);
 	tls_dump(argp, (int) ret);
 	return (ret);
     } else if (cmd == (BIO_CB_WRITE | BIO_CB_RETURN)) {
-	Printf("write to %08X [%08lX] (%d bytes => %ld (0x%X))", (unsigned int) bio, (long unsigned int)argp,
+	Printf("write to %08lX [%08lX] (%d bytes => %ld (0x%X))", (long unsigned int) bio, (long unsigned int) argp,
 		 argi, ret, (unsigned int) ret);
 	tls_dump(argp, (int) ret);
     }
