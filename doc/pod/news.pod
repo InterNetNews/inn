@@ -1,3 +1,19 @@
+=head1 Upgrading from 2.4 to 2.5
+
+The following upgrade process is still under construction and not complete.
+
+=over 2
+
+=item *
+
+By default, innbind(8) refuses to bind to any port under 1024 other than 119,
+433 and 563 for security reasons.  In order to run B<innd> or B<nnrpd>
+on a different port under 1024, you will have to use the B<--with-innd-port>
+configure option if there is only one supplementary port to use.  Otherwise,
+you can use inetd(8), xinetd(8), or some equivalent, to achieve your need.
+
+=back
+
 =head1 Changes in 2.5.0
 
 =over 2
