@@ -332,7 +332,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
     error = getaddrinfo(NULL, service, &hints, &addrs);
     if (error < 0) {
 #ifdef IPV6_V6ONLY
-        if (error != EAI_ADDRFAMILY && error != EAI_FAMILY)
+        if (error != EAI_FAMILY)
 #endif
             warn("getaddrinfo failed: %s", gai_strerror(error));
         return;
