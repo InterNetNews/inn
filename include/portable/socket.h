@@ -156,6 +156,12 @@ extern const char *hstrerror(int);
 # define EAFNOSUPPORT EDOM
 #endif
 
+/* EAI_ADDRFAMILY was made obsolete by RFC 3493, but it may still be
+ * used by obsolete IPv6 stacks. */
+#ifndef EAI_ADDRFAMILY
+# define EAI_ADDRFAMILY EAI_FAMILY
+#endif
+
 END_DECLS
 
 #endif /* PORTABLE_SOCKET_H */
