@@ -132,7 +132,7 @@ active
 	    unless defined $groups{$alias};
     }
     foreach $key ( keys %aliases ) {
-	print "$file:$aliases{$group} aliased to unknown group `$key'.\n"
+	print "$file:$aliases{$key} aliased to unknown group `$key'.\n"
 	    unless defined $groups{$key};
     }
     1;
