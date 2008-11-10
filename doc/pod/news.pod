@@ -1275,7 +1275,7 @@ storms.
 =item *
 
 Support for B<actsyncd> to fetch F<active> file with B<ftp>; configured by default
-to use L<ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z> if you run B<actsyncd>.
+to use ftp://ftp.isc.org/pub/usenet/CONFIG/active.Z if you run B<actsyncd>.
 Be sure to read the manual page for B<actsync> to configure an F<actsync.ign>
 file for your site, and test B<simpleftp> if you do not C<configure> with B<wget>
 or B<ncftp>.  Also see L<ftp://ftp.isc.org/pub/usenet/CONFIG/README>.
