@@ -657,6 +657,33 @@ both cases.  The order of the access groups in this case does matter,
 provided the newsgroups: lines differ; the access group with no users:
 line needs to be first, with the "users: <LOCAL>" group after.
 
+Here's an example of another common case: a server that only allows
+connections from a local domain and has an additional hierarchy that's
+password-restricted.
+
+    auth "example.com" {
+        hosts: "*.example.com"
+        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
+        default: "anonymous"
+    }
+
+    access regular {
+        newsgroups: "*,!example.restricted.*"
+    }
+
+    access full {
+        users: "*,!anonymous"
+        newsgroups: *
+    }
+
+In this example, unauthenticated users get the identity C<anonymous>,
+which matches only the first access group and hence doesn't get access
+to the example.restricted.* hierarchy.  Anyone who authenticates using
+a password in the F<newsusers> file gets full access to all groups.
+However, note that the only authentication block is limited to hostnames
+in the example.com domain; connections outside of that domain will never
+be allowed access or an opportunity to authenticate.
+
 Here's a very complicated example.  This is for an organization that has
 an internal hierarchy "example.*" only available to local shell users, who
 are on machines where identd can be trusted.  Dialup users must provide a
