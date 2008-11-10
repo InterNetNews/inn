@@ -281,7 +281,6 @@ small to warrant setting up a regular news feed.
 
 =item newsx
 
-URL:  L<http://www.kvaleberg.com/newsx.html> (obsolete)
 URL:  L<http://packages.debian.org/newsx>
 
 Serving the same purpose as B<suck>, B<newsx> is a separate package for
