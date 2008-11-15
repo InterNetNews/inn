@@ -50,7 +50,9 @@ MIME_Version = intern("MIME-Version")
 Newsgroups = intern("Newsgroups")
 NNTP_Posting_Date = intern("NNTP-Posting-Date")
 NNTP_Posting_Host = intern("NNTP-Posting-Host")
+NNTP_Posting_Path  = intern("NNTP-Posting-Path")
 Organization = intern("Organization")
+Original_Sender = intern("Original-Sender")
 Originator = intern("Originator")
 Path = intern("Path")
 Posted = intern("Posted")
@@ -64,6 +66,7 @@ Subject = intern("Subject")
 Supersedes = intern("Supersedes")
 User_Agent = intern("User-Agent")
 X_Auth = intern("X-Auth")
+X_Auth_Sender = intern("X-Auth-Sender")
 X_Canceled_By = intern("X-Canceled-By")
 X_Cancelled_By = intern("X-Cancelled-By")
 X_Complaints_To = intern("X-Complaints-To")
@@ -77,6 +80,7 @@ X_Newsposter = intern("X-Newsposter")
 X_Newsreader = intern("X-Newsreader")
 X_No_Archive = intern("X-No-Archive")
 X_Original_Message_ID = intern("X-Original-Message-ID")
+X_Original_NNTP_Posting_Host = intern("X-Original-NNTP-Posting-Host")
 X_Original_Trace = intern("X-Original-Trace")
 X_Originating_IP = intern("X-Originating-IP")
 X_PGP_Key = intern("X-PGP-Key")
@@ -87,6 +91,7 @@ X_Proxy_User = intern("X-Proxy-User")
 X_Submissions_To = intern("X-Submissions-To")
 X_Trace = intern("X-Trace")
 X_Usenet_Provider = intern("X-Usenet-Provider")
+X_User_ID = intern("X-User-ID")
 Xref = intern("Xref")
 __BODY__ = intern("__BODY__")
 _LINES__ = intern("__LINES__")
@@ -158,15 +163,16 @@ class InndFilter:
             Content-Type, Control, Date, Date-Received, Distribution, Expires,
             Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
             Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
-            NNTP-Posting-Date, NNTP-Posting-Host, Organization, Originator,
+            NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
+            Organization, Original-Sender, Originator,
             Path, Posted, Posting-Version, Received, References, Relay-Version,
             Reply-To, Sender, Subject, Supersedes, User-Agent,
-            X-Auth, X-Canceled-By, X-Cancelled-By, X-Complaints-To, X-Face,
-            X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
+            X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
+            X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
             X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
-            X-Original-Trace, X-Originating-IP, X-PGP-Key, X-PGP-Sig,
-            X-Poster-Trace, X-Postfilter, X-Proxy-User, X-Submissions-To,
-            X-Trace, X-Usenet-Provider, Xref.
+            X-Original-NNTP-Posting-Host, X-Original-Trace, X-Originating-IP,
+            X-PGP-Key, X-PGP-Sig, X-Poster-Trace, X-Postfilter, X-Proxy-User,
+            X-Submissions-To, X-Trace, X-Usenet-Provider, X-User-ID, Xref.
 
         The body is the buffer in art['__BODY__'] and the INN-reckoned
         line count is held as an integer in art['__LINES__'].  (The

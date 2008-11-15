@@ -193,10 +193,20 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__IN_REPLY_TO			63 */
   ARTHEADERINIT("Injection-Date",	HTstd),
 /* #define HDR__INJECTION_DATE			64 */
-  ARTHEADERINIT("NNTP-Posting-Date",	HTstd)
-/* #define HDR__NNTP_POSTING_DATE		65 */
+  ARTHEADERINIT("NNTP-Posting-Date",    HTstd),
+/* #define HDR__NNTP_POSTING_DATE               65 */
+  ARTHEADERINIT("X-User-ID",            HTstd),
+/* #define HDR__X_USER_ID                       66 */
+  ARTHEADERINIT("X-Auth-Sender",        HTstd),
+/* #define HDR__X_AUTH_SENDER                   67 */
+  ARTHEADERINIT("X-Original-NNTP-Posting-Host", HTstd),
+/* #define HDR__X_ORIGINAL_NNTP_POSTING_HOST    68 */
+  ARTHEADERINIT("Original-Sender",      HTstd),
+/* #define HDR__ORIGINAL_SENDER                 69 */
+  ARTHEADERINIT("NNTP-Posting-Path",    HTstd)
+/* #define HDR__NNTP_POSTING_PATH               70 */
 };
-/* #define MAX_ARTHEADER			66 */
+/* #define MAX_ARTHEADER                        71 */
 
 
 /*
