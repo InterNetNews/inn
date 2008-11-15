@@ -75,15 +75,17 @@ defined:
     Content-Type, Control, Date, Date-Received, Distribution, Expires,
     Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
     Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
-    NNTP-Posting-Date, NNTP-Posting-Host, Organization, Originator,
+    NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
+    Organization, Original-Sender, Originator,
     Path, Posted, Posting-Version, Received, References, Relay-Version,
     Reply-To, Sender, Subject, Supersedes, User-Agent,
-    X-Auth, X-Canceled-By, X-Cancelled-By, X-Complaints-To, X-Face,
-    X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
+    X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
+    X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
     X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
-    X-Original-Trace, X-Originating-IP, X-PGP-Key, X-PGP-Sig,
-    X-Poster-Trace, X-Postfilter, X-Proxy-User, X-Submissions-To,
-    X-Trace, X-Usenet-Provider, Xref, __BODY__, __LINES__.
+    X-Original-NNTP-Posting-Host, X-Original-Trace, X-Originating-IP,
+    X-PGP-Key, X-PGP-Sig, X-Poster-Trace, X-Postfilter, X-Proxy-User,
+    X-Submissions-To, X-Trace, X-Usenet-Provider, X-User-ID, Xref,
+    __BODY__, __LINES__.
 
 Note that all the above values are as they arrived, not modified
 by your INN (especially, the Xref: header, if present, is the one
