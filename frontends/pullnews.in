@@ -537,7 +537,7 @@ sub crossFeedGroup {
     my ($prevRefused, $prevRejected) = ($info{refused}, $info{rejected});
 
     if (!defined($narticles)) { # Group command failed.
-        warn sprintf ("Group command failed: %s %s\n",
+        warn sprintf ("Group command failed for $group: %s %s\n",
                       $fromServer->code(), $fromServer->message());
         return undef;
     }
@@ -613,7 +613,7 @@ sub crossFeedGroup {
 
                     # Unfold this header (with following lines).
                     my $unfolded_art_hdr = $article->[$idx];
-                    for (my $idx_step = $idx+1;  $article->[$idx_step] =~ /^[[:space:]](.+)/; $idx_step++) {
+                    for (my $idx_step = $idx+1;  $idx_step < @$article and $article->[$idx_step] =~ /^[[:space:]](.+)/;  $idx_step++) {
                         # While next line is continuation...
                         my $more_line = $1;
                         chomp $unfolded_art_hdr;
@@ -630,11 +630,11 @@ sub crossFeedGroup {
                         $m_found_hdrs{lc($hdr_m)} = 1;
                         if ($negate_h) {
                             if ($val_un =~ /$val_m/i) {
-                                print LOG "\tDEBUGGING $i\t-- $hdr_un [$1]\n" if $debug >= 2;
+                                print LOG "\tDEBUGGING $i\t-- $hdr_un [$val_un]\n" if $debug >= 2;
                                 $match_all_hdrs = 0;
                             }
                         } elsif (not $val_un =~ /$val_m/i) {
-                            print LOG "\tDEBUGGING $i\t++ $hdr_un [$1]\n" if $debug >= 2;
+                            print LOG "\tDEBUGGING $i\t++ $hdr_un [$val_un]\n" if $debug >= 2;
                             $match_all_hdrs = 0;
                         }
                         last if not $match_all_hdrs;
@@ -793,7 +793,8 @@ sub crossFeedGroup {
 
             $shash->{$group} = [ time, $high = $i ];
         } else {
-            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430;    # no such article, do not retry
+            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430     # no such article, do not retry
+                                                    or $fromServer->code() == 423;
             print LOG "x" unless $quiet;
             printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
                         $fromServer->message()) if $debug >= 2;
