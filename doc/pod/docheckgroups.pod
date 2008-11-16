@@ -23,7 +23,7 @@ except for newsgroups mentioned in the I<pathetc>/localgroups file.
 This file is also formatted like the newsgroups(5) file and
 should contain local newsgroups which would otherwise be mentioned
 for removal.  There is no need to put local newsgroups of hierarchies
-for which no checkgroups control messages are sent, unless if
+for which no checkgroups control messages are sent, unless
 you manually process checkgroups texts for them.  Lines beginning
 with a hash sign (C<#>) are not taken into account in this file.
 All the newsgroups and descriptions mentioned in I<pathetc>/localgroups
@@ -98,7 +98,7 @@ for an explanation of the preferred number of tabulations).
 =head1 EXAMPLES
 
 So as to better understand how B<docheckgroups> works, here are examples
-with the following F<active>:
+with the following F<active> file:
 
     a.first 0000000000 0000000001 y
     a.second.announce 0000000000 0000000001 y

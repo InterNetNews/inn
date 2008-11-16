@@ -385,7 +385,7 @@ fi
 ${DORM} &&
     find ${TEMPSOCKDIR} -name "${TEMPSOCK}" -mtime +2 -exec rm -f '{}' ';'
 
-##  Did we became throttled during the run?
+##  Did we become throttled during the run?
 SERVERMODE=`ctlinnd mode 2>/dev/null | ${SED} 1q`
 case "${SERVERMODE}" in
 *space*" -- throttling")
