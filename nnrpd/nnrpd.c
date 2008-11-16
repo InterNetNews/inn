@@ -851,13 +851,6 @@ main(int argc, char *argv[])
     else
         NNRPACCESS = concatpath(innconf->pathetc,INN_PATH_NNRPACCESS);
 
-    /* If started as root, switch to news uid.  Unlike other parts of INN, we
-     * don't die if we can't become the news user.  As long as we're not
-     * running as root, everything's fine; the things we write it's okay to
-     * write as a member of the news group. */
-    if (getuid() == 0) {
-        ensure_news_user_grp(true, true);
-    }
 
     if (DaemonMode) {
         if (ListenAddr6 != NULL)
@@ -868,6 +861,14 @@ main(int argc, char *argv[])
             lfd = network_bind_ipv4("0.0.0.0", ListenPort);
         if (lfd < 0)
             die("can't bind to any addresses");
+
+        /* If started as root, switch to news uid.  Unlike other parts of INN, we
+         * don't die if we can't become the news user.  As long as we're not
+         * running as root, everything's fine; it's okay to write the things we
+         * write as a member of the news group. */
+        if (getuid() == 0) {
+            ensure_news_user_grp(true, true);
+        }
 
 	/* Detach. */
 	if (!ForeGroundMode) {
