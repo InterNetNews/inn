@@ -6,6 +6,12 @@ The following upgrade process is still under construction and not complete.
 
 =item *
 
+The syntax of the B<innreport> configuration file has slightly changed.
+The new F<innreport.conf> file should be used and your possible changes
+backported to this new version.
+
+=item *
+
 The parameters used by B<nnrpd> to provide TLS support are now I<tlscafile>,
 I<tlscapath>, I<tlscertfile> and I<tlskeyfile> in F<inn.conf>.  The F<sasl.conf>
 file used for that in previous versions of INN is obsolete.  B<innupgrade>
