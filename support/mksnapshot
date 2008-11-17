@@ -15,14 +15,30 @@
 ##  This script takes one argument, a string representing what tree the
 ##  snapshot is being taken from.  Generally this string is either CURRENT or
 ##  STABLE.
+##  If this argument is BETA, a second argument is needed:  the number of the
+##  beta version (for instance 1 or 2).
+##
+##  Examples of use:
+##
+##    support/mksnapshot CURRENT
+##    support/mksnapshot BETA 1
 
 set -e
 
 date=`date -u +%Y%m%d`
 tree="$1"
+
 if [ -z "$tree" ] ; then
     echo "$0: no tree name specified" >&2
     exit 1
+fi
+
+if [ "$tree" = "BETA" ] ; then
+    number="$2"
+    if [ -z "$number" ] ; then
+        echo "$0: no version specified for $tree" >&2
+        exit 1
+    fi
 fi
 
 exec > snapshot.log 2>&1
@@ -48,4 +64,4 @@ If you are using this code, it's highly recommended that you be on the
 <inn-workers@isc.org> mailing list.  See README for more information.
 EOF
 
-make snapshot SNAPSHOT="$tree" SNAPDATE="$date"
+make snapshot SNAPSHOT="$tree" SNAPDATE="$date" SNAPNUMBER="$number"

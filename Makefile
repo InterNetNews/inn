@@ -29,7 +29,11 @@ TARDIR      = inn-$(VERSION)
 TARFILE     = $(TARDIR).tar
 
 ##  The directory to use when building a snapshot.
+ifdef SNAPNUMBER
+SNAPDIR     = inn-$(VERSION)b$(SNAPNUMBER)
+else
 SNAPDIR     = inn-$(SNAPSHOT)-$(SNAPDATE)
+endif
 
 ##  DISTDIRS gets all directories from the MANIFEST, SNAPDIRS gets the same
 ##  but for a snapshot, and DISTFILES gets all regular files.  Anything not
@@ -223,6 +227,8 @@ check-manifest:
 ##  Make a snapshot.  This is like making a release, except that we don't do
 ##  the ChangeLog thing and we don't change the version number.  We also
 ##  assume that SNAPSHOT has been set to the appropriate current branch.
+##  If SNAPNUMBER is empty, it is an automatic generation.  Otherwise,
+##  it is a beta release.
 snapshot:
 	rm -rf $(SNAPDIR)
 	rm -f inn*.tar.gz
@@ -231,9 +237,14 @@ snapshot:
 	set -e ; for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
-	cp README.snapshot $(SNAPDIR)/
-	sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
-	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
+	if [ "x$(SNAPNUMBER)" != "x" ] ; then \
+	    sed 's/= prerelease/= b$(SNAPNUMBER) version/' \
+	        Makefile.global.in > $(SNAPDIR)/Makefile.global.in ; \
+	else \
+	    cp README.snapshot $(SNAPDIR)/ ; \
+	    sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
+	        Makefile.global.in > $(SNAPDIR)/Makefile.global.in ; \
+	fi
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(SNAPDIR).tar $(SNAPDIR)
 	$(GZIP) -9 $(SNAPDIR).tar
