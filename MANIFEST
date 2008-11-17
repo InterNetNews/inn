@@ -320,6 +320,7 @@ doc/pod/readme.pod                    Master file for README
 doc/pod/rnews.pod                     Master file for rnews.1
 doc/pod/scanlogs.pod                  Master file for scanlogs.8
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
+doc/pod/shlock.pod                    Master file for shlock.1
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
 doc/pod/sm.pod                        Master file for sm.1
 doc/pod/storage.conf.pod              Master file for storage.conf.5

@@ -1,0 +1,75 @@
+=head1 NAME
+
+shlock - Create lock files for use in shell scripts
+
+=head1 SYNOPSIS
+
+B<shlock> [B<-b>|B<-c>|B<-u>] B<-f> I<name> B<-p> I<pid>
+
+=head1 DESCRIPTION
+
+B<shlock> tries to create a lock file named I<name> and write
+the process ID I<pid> into it.  If the file already exists, B<shlock>
+will read the process ID from the file and test to see whether
+the process is currently running.  If the process exists, then the file
+will not be created.  I<shlock> exits with a zero status if it could
+create the lock file, or non-zero if the file refers to a currently
+active process.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-b> 
+
+Process IDs are normally read and written in ASCII.  If the B<-b> flag
+is used, then they will be written as a binary int.
+
+=item B<-c> 
+
+If the B<-c> flag is used, then B<shlock> will not create a lock file,
+but will instead use the file to see if the lock is held by another program.
+If the lock is valid, the program will exit with a non-zero status;
+if the lock is not valid (i.e. invoking B<shlock> without the flag would
+have succeeded), then the program will exit with a zero status.
+
+=item B<-f> I<name>
+
+I<name> is the name of the lock file B<shlock> attempts to create.
+If the file already exists, it will read the process ID from the file
+and exit with a non-zero status if this process is currently active.
+
+=item B<-p> I<pid>
+
+I<pid> is the process ID to write into the file I<name>.
+
+=item B<-u>
+
+For compatibility with other systems, the B<-u> flag is accepted
+as a synonym for B<-b> since binary locks are used by many UUCP packages.
+
+=back
+
+=head1 EXAMPLES
+
+The following example shows how B<shlock> would be used within
+a shell script:
+
+    LOCK=<pathrun in inn.conf>/LOCK.send
+    trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
+    if shlock -p $$ -f ${LOCK} ; then
+        # Do appropriate work.
+    else
+        echo "Locked by `cat ${LOCK}`"
+    fi
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews after
+a description of HDB UUCP locking given by Peter Honeyman, and
+improved by Berend Reitsma to solve a race condition.
+Converted to POD by Julien Elie <julien@trigofacile.com>.
+
+$Id$
+
+=cut
