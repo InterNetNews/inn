@@ -634,6 +634,7 @@ samples/incoming.conf                 Permissions for incoming feeds
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
+samples/innreport.css                 Style for innreport web pages
 samples/innwatch.ctl                  INN monitoring configuration
 samples/localgroups                   Local newsgroups with descriptions
 samples/moderators                    Moderation submission addresses

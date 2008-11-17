@@ -1,0 +1,89 @@
+/*
+**  $Id$
+**
+**  innreport.css -- for parameter html_css_url in innreport.conf
+**
+**  Style created by Alexander Bartolich, 2008.
+*/
+div.ir-pageTitle {
+   border-bottom:4px double black;
+   border-top:4px double black;
+   margin-bottom:2ex;
+   margin-top:2ex;
+   text-align:center;
+}
+div.ir-feedTotals {
+   margin-bottom:1ex;
+   margin-left:auto;
+   margin-right:auto;
+   text-align:center;
+}
+table.ir-archives,
+table.ir-report {
+   border-collapse:collapse;
+   margin-left:auto;
+   margin-right:auto;
+   margin-top:1ex;
+   margin-bottom:1ex;
+}
+table.ir-archives td,
+table.ir-archives th,
+table.ir-report td,
+table.ir-report th {
+   border:1px solid black;
+   empty-cells:show;
+   padding:0.3ex 0.3em 0.3ex 0.3em;
+}
+table.ir-archives th,
+table.ir-report th {
+   font-weight:bold;
+   background-color:#D3D3D3;
+}
+table.ir-archives th,
+table.ir-report th,
+tr.ir-totalRow td,
+tr.ir-headerRow th {
+   border-bottom:2px solid black;
+   border-top:2px solid black;
+}
+div.ir-pageFooter {
+   border-top:4px double black;
+   padding-top:1ex;
+   margin-top:1ex;
+   vertical-align:top;
+}
+div.ir-pageFooter img {
+   border:0;
+   float:left;
+   margin-right:1em;
+}
+div.ir-versionNotice {
+   font-size:small;
+}
+div.ir-section {
+   border-top:1px solid black;
+}
+p.ir-sectionTitle {
+   font-weight:bold;
+}
+div.ir-logFileLines {
+   font-family:monospace;
+}
+div.ir-reportGraph {
+   margin-left:auto;
+   margin-right:auto;
+   margin-top:1ex;
+   margin-bottom:1ex;
+   text-align:center;
+}
+td.ir-totalColumn {
+   text-align:left;
+   font-weight:bold;
+}
+tr.ir-oddRow td,
+td.ir-primaryKey {
+   background-color:#F8E0E0;
+}
+
+
+

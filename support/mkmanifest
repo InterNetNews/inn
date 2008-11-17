@@ -221,6 +221,7 @@ site/incoming.conf
 site/inn.conf
 site/innfeed.conf
 site/innreport.conf
+site/innreport.css
 site/innwatch.ctl
 site/localgroups
 site/moderators
