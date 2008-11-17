@@ -1253,7 +1253,7 @@ I<pathbin>/filter.
 Where any HTML files (such as periodic status reports) are placed.  If the
 news reports should be available in real-time on the web, the files in
 this directory should be served by a web server.  The default value is
-the value of I<pathlog>.
+the value of I<pathnews>/http.
 
 =item I<pathincoming>
 

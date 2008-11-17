@@ -24,6 +24,7 @@ sysconfdir=@sysconfdir@
 CONTROLDIR=@CONTROLDIR@
 DBDIR=@DBDIR@
 FILTERDIR=@FILTERDIR@
+HTTPDIR=@HTTPDIR@
 LIBPERLDIR=@LIBPERLDIR@
 LOGDIR=@LOGDIR@
 RUNDIR=@RUNDIR@
@@ -63,6 +64,7 @@ $SED -e "s,@prefix\@,$prefix," \
      -e "s,@CONTROLDIR\@,$CONTROLDIR," \
      -e "s,@DBDIR\@,$DBDIR," \
      -e "s,@FILTERDIR\@,$FILTERDIR," \
+     -e "s,@HTTPDIR\@,$HTTPDIR," \
      -e "s,@LIBPERLDIR\@,$LIBPERLDIR," \
      -e "s,@LOGDIR\@,$LOGDIR," \
      -e "s,@RUNDIR\@,$RUNDIR," \

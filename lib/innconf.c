@@ -330,7 +330,7 @@ innconf_set_defaults(void)
     if (innconf->pathlog == NULL)
         innconf->pathlog = concatpath(innconf->pathnews, "log");
     if (innconf->pathhttp == NULL)
-        innconf->pathhttp = xstrdup(innconf->pathlog);
+        innconf->pathhttp = concatpath(innconf->pathnews, "http");
     if (innconf->pathspool == NULL)
         innconf->pathspool = concatpath(innconf->pathnews, "spool");
     if (innconf->patharticles == NULL)
