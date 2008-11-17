@@ -1356,7 +1356,10 @@ Try using a posting filter like this:
     }
 
 Note that you have to set $modify_headers to make changes to the article
-header effective in the actual posted article.
+header effective in the actual posted article.  Instead of removing the
+header, you can also alter it if you modify $hdr{'X-Trace'}.  If you only
+want to alter the host name used in X-Trace, see the virtualhost: and
+domain: parameters in readers.conf.
 
 ------------------------------
 
