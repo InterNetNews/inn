@@ -83,6 +83,10 @@ innconfcheck
     script to add the correct paths to the man page; see the comments at
     the beginning of this script.
 
+innreport-filter.xslt
+
+    Copies individual sections from innreport's HTML files.
+
 makeexpctl
 
     Generates an expire.ctl based on what newsgroups are actually read.
