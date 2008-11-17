@@ -736,7 +736,21 @@ sub EscapeHTML($) {
   $v =~ s/&/\&amp;/g;
   $v =~ s/</\&lt;/g;
   $v =~ s/>/\&gt;/g;
-  $v =~ s/([\x{7F}-\x{FFFF}])/sprintf('&#%d;', ord($1))/eg;
+
+  # XML comments may not contain --
+  # $v =~ s/--/-\&dash;/g;
+
+  # These characters are not legal in XML 1.0, so they can't be
+  # present in input or output of an XSLT transformation.
+  # Produce a C-style escape instead
+  $v =~ s/([[:cntrl:]])
+         /sprintf('\\x%02x', ord($1))
+        /egx;
+
+  # Replace special characters with entities
+  $v =~ s/([\x{7F}-\x{FFFF}])
+         /sprintf('&#%d;', ord($1))
+        /egx;
   return $v;
 }
 
@@ -2161,7 +2175,7 @@ sub Write_Results {
 	  }
 	  $res[$first] += $r if $v1 =~ m/\%-?(?:\d+(?:\.\d+)?)?d/o;
 	  if ($p) {
-	    $s .= sprintf $v1. "\n", $r unless $done || !$wtext;
+	    $s .= sprintf $v1. "\n", EscapeHTML($r) unless $done || !$wtext;
 	    if ($HTML && $whtml) {
 	      if ($done) {
 		$html .= "<td></td>";
