@@ -238,6 +238,7 @@ snapshot:
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
 	if [ "x$(SNAPNUMBER)" != "x" ] ; then \
+	    cp README.beta $(SNAPDIR)/ ; \
 	    sed 's/= prerelease/= b$(SNAPNUMBER) version/' \
 	        Makefile.global.in > $(SNAPDIR)/Makefile.global.in ; \
 	else \

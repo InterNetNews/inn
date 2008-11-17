@@ -49,7 +49,25 @@ make warnings
 make test
 make check-manifest
 
-cat > README.snapshot <<EOF
+if [ "$tree" = "BETA" ] ; then
+
+    cat > README.beta <<EOF
+This is a beta release of the current development version of INN.
+It was made on:
+
+    `date -u +"%B %e, %Y @ %I:%M %p %Z"`
+
+Although it should work fine, this code should still be considered
+experimental.  If you find any bugs, we'd like to know at
+<inn-bugs@isc.org>.
+
+Your feedback is also more than welcome on the <inn-workers@isc.org>
+mailing list.  See README for more information.
+EOF
+
+else
+
+    cat > README.snapshot <<EOF
 This is a snapshot of the current development version of INN, pulled
 automatically from the Subversion repository.  It was made on:
 
@@ -63,5 +81,7 @@ don't blame us.
 If you are using this code, it's highly recommended that you be on the
 <inn-workers@isc.org> mailing list.  See README for more information.
 EOF
+
+fi
 
 make snapshot SNAPSHOT="$tree" SNAPDATE="$date" SNAPNUMBER="$number"
