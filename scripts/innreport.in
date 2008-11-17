@@ -11,7 +11,8 @@
 # Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
 #
 # Checkpoints tracking was improved by Jim Dutton in 2006.
-# XHTML 1.1 conformance added by Alexander Bartolich in 2008.
+# Lots of improvements and XHTML 1.1 conformance added
+# by Alexander Bartolich in 2008.
 #
 ##########################################################################
 #
@@ -91,6 +92,7 @@
 # to this file.
 
 use strict;
+use Carp qw(confess);
 
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DO";
@@ -99,7 +101,7 @@ my $HTML = "DO";
 my $GRAPH = "DO";
 
 ## Directory for the Web pages (used only if the previous line is active)
-my $HTML_dir = "$INN::Config::pathhttp";
+my $HTML_dir = $INN::Config::pathhttp;
 
 ## Directory for the pictures (need HTML support) in the file space
 my $IMG_dir = "$HTML_dir/pics";
@@ -143,7 +145,7 @@ my $NOT_DAILY = "DONT";
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "3.0.5";
+my $version = "3.1.0";
 my %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
@@ -355,6 +357,13 @@ my $s = sprintf "use lib qw($LIBPATH); use $CLASS;";
 eval $s;  # initialization
 die "Can't find/load $CLASS.pm : $@\n" if $@;
 
+my $collectFunc;
+{
+  my $s = '*{$' . $CLASS . '::{"collect"}}{"CODE"}';
+  $collectFunc = eval $s;
+  confess "eval($s) raises $@" if ($@ || !defined($s));
+}
+
 my $save_line = <>;
 $_ = $save_line;
 local $^W = 0 if $] < 5.004; # to avoid a warning for each '+=' first use.
@@ -380,7 +389,7 @@ LINE: while (!eof ()) {
   }
 
   # skip empty lines
-  next LINE if $_ eq '';
+  next LINE if length($_) == 0;
 
   my $res;
   my ($day, $hour, $prog, $left) =
@@ -440,11 +449,7 @@ LINE: while (!eof ()) {
   $prog_size{$prog} += $size;
 
   # The "heart" of the tool.
-  {
-    no strict;
-    next LINE if
-      &{$CLASS."::collect"} ($day, $hour, $prog, $res, $left, $CASE_SENSITIVE);
-  }
+  next LINE if &$collectFunc($day, $hour, $prog, $res, $left, $CASE_SENSITIVE);
 
   $unrecognize[$unrecognize_max] = $_
     unless $unrecognize_max > $MAX_UNRECOGNIZED
@@ -457,11 +462,14 @@ LINE: while (!eof ()) {
   &{$CLASS . "::adjust"} ($first_date, $last_date);
 }
 
-$| = 1;
+# man perlvar
+# $| ... If set to nonzero, forces a flush right away and after
+# every write or print on the currently selected output channel.
+$| = $DEBUG;
 
 die "no data. Abort.\n" unless $total_line;
 
-my $sec_glob = &ConvDate ("$last_date") - &ConvDate ("$first_date");
+my $sec_glob = &ConvDate($last_date) - &ConvDate($first_date);
 unless ($sec_glob) {
   print "WARNING: bad date (\"$last_date\" or \"$first_date\")\n" .
         "         Please, contact the author of innreport.\n";
@@ -567,7 +575,11 @@ if (!$NOT_DAILY && defined $output{'default'}{'unwanted_log'}) {
 # Compare 2 dates (+hour)
 sub DateCompare {
   # ex: "May 12 06"   for May 12, 6:00am
+
+  # $[ ... The index of the first element in an array, and of the first
+  #        character in a substring. Default is 0.
   local $[ = 0;
+
   # The 2 dates are near. The range is less than a few days that's why we
   # can cheat to determine the order. It is only important if one date
   # is in January and the other in December.
@@ -589,41 +601,25 @@ sub DateCompare {
 
 
 # Convert: seconds to hh:mm:ss
-sub second2time {
-  my $temp;
-  my $t = shift;
-  # Hours
-  $temp = sprintf "%02d", $t / 3600;
-  my $chaine = "$temp:";
-  $t %= 3600;
-  # Min
-  $temp = sprintf "%02d", $t / 60;
-  $chaine .= "$temp:";
-  $t %= 60;
-  # Sec
-  $chaine .= sprintf "%02d", $t;
-  return $chaine;
+sub second2time($) {
+  my $sec = shift;
+  my $hour = $sec / 3600;
+  $sec %= 3600;
+  my $min = $sec / 60;
+  $sec %= 60;
+  return sprintf '%02d:%02d:%02d', $hour, $min, $sec;
 }
 
 # Convert: milliseconds to hh:mm:ss:mm
-sub ms2time {
-  my $temp;
-  my $t = shift;
-  # Hours
-  $temp = sprintf "%02d", $t / 3600000;
-  my $chaine = "$temp:";
-  $t %= 3600000;
-  # Min
-  $temp = sprintf "%02d", $t / 60000;
-  $chaine .= "$temp:";
-  $t %= 60000;
-  # Sec
-  $temp = sprintf "%02d", $t / 1000;
-  $chaine .= "$temp.";
-  $t %= 1000;
-  # Millisec
-  $chaine .= sprintf "%03d", $t;
-  return $chaine;
+sub ms2time($) {
+  my $ms = shift;
+  my $hour = $ms / 3600000;
+  $ms %= 3600000;
+  my $min = $ms / 60000;
+  $ms %= 60000;
+  my $sec = $ms / 1000;
+  $ms %= 1000;
+  return sprintf '%02d:%02d:%02d.%03d', $hour, $min, $sec, $ms;
 }
 
 # Rotate the archive files..
@@ -697,26 +693,51 @@ sub filenamecmp {
   $lb <=> $la;
 }
 
-sub ComputeTotal {
-  my $h = shift;
+my %ComputeTotalCache;
+sub ComputeTotal($) {
+  my $h = shift || confess;
+
+  my $cached = $ComputeTotalCache{$h};
+  if (defined($cached) && !$DEBUG) { return $cached; }
+
   my $total = 0;
-  my $key;
-  foreach $key (keys (%$h)) {
-    $total += $$h{$key};
+  while(my ($key, $value) = each %$h) {
+    confess $key unless(defined($value));
+    $total += $value;
   }
-  $total;
+  if (defined($cached) && $cached != $total)
+    { confess "ComputeTotal mismatch $cached != $total"; }
+  return $ComputeTotalCache{$h} = $total;
 }
 
-sub ComputeTotalDouble {
-  my $h = shift;
+my %ComputeTotalDouble;
+sub ComputeTotalDouble($) {
+  my $h = shift || confess;
+
+  my $cached = $ComputeTotalCache{$h};
+  if (defined($cached) && !$DEBUG) { return $cached; }
+
   my $total = 0;
-  my ($key1, $key2);
-  foreach $key1 (keys (%$h)) {
-    foreach $key2 (keys (%{$$h{$key1}})) {
-      $total += ${$$h{$key1}}{$key2};
+  while(my ($key1, $value1) = each %$h) {
+    confess $key1 unless(defined($value1));
+    while(my ($key2, $value2) = each %$value1) {
+      confess $key2 unless(defined($value2));
+      $total += $value2;
     }
   }
-  $total;
+  if (defined($cached) && $cached != $total)
+    { confess "ComputeTotalDouble mismatch $cached != $total"; }
+  return $ComputeTotalDouble{$h} = $total;
+}
+
+sub EscapeHTML($) {
+  my $v = shift;
+  confess unless(defined($v));
+  $v =~ s/&/\&amp;/g;
+  $v =~ s/</\&lt;/g;
+  $v =~ s/>/\&gt;/g;
+  $v =~ s/([\x{7F}-\x{FFFF}])/sprintf('&#%d;', ord($1))/eg;
+  return $v;
 }
 
 sub GetHTMLHeader($) {
@@ -737,7 +758,6 @@ sub GetHTMLHeader($) {
   my $style_sheet = '';
   my $css_url = $output{'default'}{'html_css_url'};
   if (defined($css_url)) {
-printf STDERR "css_url [%s]\n", $css_url;
     $css_url = &GetValue($css_url);
     $style_sheet = <<EOF;
 <link rel="stylesheet" type="text/css" media="all" href="$css_url"/>
@@ -903,7 +923,7 @@ EOF
 }
 
 # make an index for archive pages
-sub Make_Index {
+sub Make_Index($$$$) {
   my ($rep, $index, $filename, $data) = @_;
   my %output = %$data;
 
@@ -1078,7 +1098,7 @@ sub Graph3d {
   my $xmax = shift;               # width
   my $n = shift;                  # Number of hash code tables
 
-  no strict;
+  use strict;
   my ($i, $k, $t);
   my @val;
   for $i (0 .. $n - 1) {
@@ -1310,11 +1330,11 @@ sub Graph3d {
   $ymax;
 }
 
-sub Histo {
+sub Histo($$$$$$$$) {
   my ($filename, $title, $xmax, $factor,
       $labelx, $labely, $val1, $labels1) = @_;
 
-  no strict;
+  use strict;
   my $max = 0;
   my $ymax = 300;
   my $nb = 0;
@@ -1933,10 +1953,7 @@ sub Write_all_results {
     print HTML "<ul>\n";
     foreach $k (@{$$h{'_order_'}}) {
       next if $k =~ m/^(default|index)$/;
-      my ($data) = $$h{$k}{'data'} =~ m/^\"\s*(.*?)\s*\"$/o;
-      $data =~ s/^\%/\%$CLASS\:\:/ unless $data eq '%prog_type';
-      my %data;
-      { local $^W = 0; no strict; %data = eval $data }
+      my $r_data = EvalHash( $h->{$k}{'data'} );
       my ($string) = $$h{$k}{'title'} =~ m/^\"\s*(.*?)\s*\"$/o;
       $string =~ s/\s*:$//o;
       my $want = 1;
@@ -1944,7 +1961,9 @@ sub Write_all_results {
       ($want) = $$h{$k}{'skip'} =~ m/^\"?\s*(.*?)\s*\"?$/o
 	if defined $$h{$k}{'skip'};
       $want = $want eq 'true' ? 0 : 1;
-      print HTML "<li><a href=\"#$k\">$string</a></li>\n" if %data && $want;
+      if (%$r_data && $want) {
+	printf HTML "<li><a href=\"#%s\">%s</a></li>\n", $k, $string;
+      }
     }
     print HTML "</ul>\n";
   }
@@ -1971,10 +1990,7 @@ sub Write_all_results {
       chomp $unrecognize[$l];     # sometimes, the last line need a CR
       print "$unrecognize[$l]\n"; # so, we always add one
       if ($HTML && $WANT_HTML_UNKNOWN) {
-	$unrecognize[$l] =~ s/&/\&amp;/g;
-	$unrecognize[$l] =~ s/</\&lt;/g;
-	$unrecognize[$l] =~ s/>/\&gt;/g;
-	print HTML $unrecognize[$l], "<br/>\n";
+        print HTML EscapeHTML($unrecognize[$l]), "<br/>\n";
       }
     }
     print "\n";
@@ -2032,26 +2048,17 @@ sub Write_Results {
   my $TOP_TEXT = defined $output{$report}{'top_text'} ?
                    $output{$report}{'top_text'} : $TOP;
 
-  my (%h, %d, $h);
+  my (%h, $r_data, @keys, $h);
   {
     my $t = $output{$report}{'data'} ||
       die "Error in section $report. Need a 'data' field.\n";
-    $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-    $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
-    %d = eval $t;
-    return unless %d; # nothing to report. exit.
-    return unless keys (%d); # nothing to report. exit.
+    $r_data = EvalHash($t);
+    @keys = keys (%$r_data);
+    return unless @keys; # nothing to report. exit.
   }
   {
-    my $t = defined $output{$report}{'sort'} ? $output{$report}{'sort'} :
-      "\$a cmp \$b";
-    $t =~ s/\n/ /smog;
-    $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-    $t =~ s/([\$\%\@])/$1${CLASS}\:\:/go;
-    $t =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|num)/$1$2/go;
-    $t =~ s/\{\$${CLASS}\:\:(a|b)\}/\{\$$1\}/go;
-    $t =~ s/\$${CLASS}\:\:(a|b)/\$$1/go;
-    $h = $t;
+    my $t = $output{$report}{'sort'};
+    ( $h ) = defined($t) ? PrepareEval($t) : sub { $a cmp $b };
   }
 
   if ($HTML) {
@@ -2116,15 +2123,15 @@ sub Write_Results {
   my $done;
   if ($DOUBLE) {
     my $num_d = 0;
-    foreach $key1 (sort keys (%d)) {
+    foreach $key1 (sort @keys) {
       $done = 0;
       $num = 0;
       $num_d++;
       $s = '';
       $html = '';
       my @res;
-      foreach $key2 (sort {$d{$key1}{$b} <=> $d{$key1}{$a}}
-		     keys (%{$d{$key1}})) {
+      foreach $key2 (sort {$r_data->{$key1}{$b} <=> $r_data->{$key1}{$a}}
+		     keys (%{$r_data->{$key1}})) {
 	my $first = 0;
 	$num++;
 	foreach $i (@{$output{$report}{'column'}}) {
@@ -2165,7 +2172,7 @@ sub Write_Results {
 
 		# Hardcoded colspan=3 works for "Miscellaneous innd statistics:".
 		$html .= "<td class=\"ir-primaryKey\" align=\"left\" colspan=\"3\">";
-		$html .= sprintf($v1, $r);
+		$html .= sprintf($v1, EscapeHTML($r));
 		$html .= "</td></tr>\n<tr><td></td>";
 	      }
 	    }
@@ -2176,10 +2183,10 @@ sub Write_Results {
 	      $s .= sprintf $v1 . " ", $r;
 	    }
 	    if ($HTML && $whtml) {
-	      $html .= $numbering ? "<td></td>" : '' if $first == 1;
+	      $html .= $numbering ? '<td></td>' : '' if $first == 1;
 	      $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	      my $temp = $first > 1 ? "right" : "left";
-	      $html .= sprintf "<td align=\"$temp\">$v1</td>", $r;
+	      $html .= sprintf "<td align=\"%s\">$v1</td>", $temp, EscapeHTML($r);
 	    }
 	  }
 	  $done = 1 if $p;
@@ -2212,11 +2219,11 @@ sub Write_Results {
 	    (defined ($$i{'format'}) ? $$i{'format'} : "%s");
 	  $v1 =~ s/^\"\s*(.*?)\s*\"$/$1/o;
 	  my $r = $first == 1 ? $num : $res[$first];
-	  $s .= sprintf $v1 . " ", $r;
+	  $s .= sprintf $v1 . ' ', $r;
 	  if ($HTML) {
 	    my $temp = $first > 1 ? 'align="right"' : 'class="ir-totalColumn"';
 	    $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
-	    $html .= sprintf "<td $temp>$v1</td>", $r;
+	    $html .= sprintf "<td %s>$v1</td>", $temp, EscapeHTML($r);
 	  }
 	  $first++;
 	}
@@ -2257,7 +2264,7 @@ sub Write_Results {
 	$temp .= ' colspan="2"' if $numbering && !$first;
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	$html .= $first == 1 ? "<td></td>" :
-	         sprintf "<td $temp>$v1</td>", $r;
+	         sprintf "<td %s>$v1</td>", $temp, EscapeHTML($r);
       }
       $first++;
     }
@@ -2272,10 +2279,9 @@ sub Write_Results {
     }
   }
   else {
-    # foreach $key (sort { local $^W = 0; no strict; eval $h } (keys (%d)))
-    foreach $key ((eval "sort {local \$^W = 0; no strict; $h} (keys (%d))")) {
+    foreach $key (sort $h @keys) {
       next unless defined $key;
-      next unless defined $d{$key}; # to avoid problems after some undef()
+      next unless defined $r_data->{$key}; # to avoid problems after some undef()
       $num++;
       next unless $num <= $TOP_HTML || $TOP_HTML == -1 ||
 	          $num <= $TOP_TEXT || $TOP_TEXT == -1;
@@ -2300,10 +2306,14 @@ sub Write_Results {
 	$s .= sprintf $v1 . " ", $r
 	  if $wtext && (($num <= $TOP_TEXT) || ($TOP_TEXT == -1));
 	if ($HTML && $whtml && ($num <= $TOP_HTML || $TOP_HTML == -1)) {
+
+          # substitute full fledged "%s" specifiers (alignment, width
+          # and precision) with a plain "%s"
 	  $v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
+
 	  $html .= "<th align=\"center\">$num</th>" if $numbering && !$first;
 	  my $temp = $first ? "right" : "left";
-	  $html .= sprintf "<td align=\"$temp\">$v1</td>", $r;
+	  $html .= sprintf "<td align=\"$temp\">$v1</td>", EscapeHTML($r);
 	}
 	$first++;
       }
@@ -2343,7 +2353,7 @@ sub Write_Results {
 	$v1 =~ s/\%-?(?:\d+(?:\.\d+)?)?s/\%s/g;
 	my $temp = $first ? 'align="right"' : 'class="ir-totalColumn"';
 	$temp .= ' colspan="2"' if $numbering && !$first;
-	$html .= sprintf "<td $temp>$v1</td>", $r;
+	$html .= sprintf "<td $temp>$v1</td>", EscapeHTML($r);
       }
       $first++;
     }
@@ -2366,11 +2376,7 @@ sub Write_Results {
 	  my $j;
 	  foreach $j (@{${${$output{$report}{'graph'}}[$i]}{'data'}}) {
 	    $num++;
-	    my ($h) = $$j{'value'} =~ m/^\"\s*(.*?)\s*\"$/o;
-	    my %hh;
-	    $h =~ s/^\%/\%$CLASS\:\:/ unless $h eq '%prog_type';
-	    { local $^W = 0; no strict; %hh = eval $h }
-	    push @values, \%hh;
+	    push @values, EvalHash( $j->{'value'} );
 	    my ($t) = $$j{'name'} =~ m/^\"\s*(.*?)\s*\"$/o;
 	    push @labels, $t;
 	    $t = $$j{'color'} ||
@@ -2395,7 +2401,6 @@ sub Write_Results {
 	  print HTML "src=\"$IMG_pth$report$s.$GD_FORMAT\"/></div>\n";
 	}
         elsif ($type eq 'histo') {
-	  my (%values, %labels);
 	  my $factor =
 	    ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'factor'}
              || die "Error in section $report section 'graph'. " .
@@ -2418,24 +2423,25 @@ sub Write_Results {
 	       "No 'value' specified for " .
 	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[0]}{'name'} .
 	       ".\n";
-	  $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-	  $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
-	  { local $^W = 0; no strict; %labels = eval $t }
+          my $r_labels = EvalHash( $t );
 
 	  $t = ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'value'} ||
 	     die "Error in section $report section 'graph'. " .
 	       "No 'value' specified for " .
 	       ${${${${$output{$report}{'graph'}}[$i]}{'data'}}[1]}{'name'} .
 	       ".\n";
-	  $t =~ s/^\"\s*(.*?)\s*\"$/$1/o;
-	  $t =~ s/^\%/\%$CLASS\:\:/ unless $t eq '%prog_type';
-	  { local $^W = 0; no strict; %values = eval $t }
+	  my $r_values = EvalHash( $t );
 	  my $s = ($i ? $i : '') . $suffix;
 	  {
 	    my $r;
 	    close HTML;
+	    #
+	    # 6th argument of function Histo is a reference to a hash,
+	    # but it is modified, so pass it a copy
+	    #
+	    my %values = %$r_values;
 	    $r = &Histo ("$IMG_dir/$report$s.$GD_FORMAT", $title, $xmax,
-			 $factor, $labelx, $labely, \%values, \%labels);
+			 $factor, $labelx, $labely, \%values, $r_labels);
 	    open (HTML, ">> $HTML_output") ||
 	      die "Error: cant open $HTML_output\n";
 	    if ($r) {
@@ -2454,47 +2460,127 @@ sub Write_Results {
 	    "Invalid 'type' value.\n"
 	}
 	$i++;
-	print HTML "<p/>\n";
       }
     }
   }
   close HTML if $HTML;
 }
 
-sub EvalExpr {
-  my $v = shift;
-  my ($key, $num, $key1) = @_;
+sub PrepareEval($;$) {
+  my $string = shift;
+  my $double = shift;
+
+  # reduce white space (including line feeds) to single space
+  $string =~ s/\s+/ /smog;
+
+  # remove surrounding double quotes, if any
+  $string =~ s/^\"\s*(.*?)\s*\"$/$1/o;
+
+  # convert "%innd_his" to "%innreport_inn::innd_his"
+  $string =~ s/([\$\%\@])([^{\s\d])/$1${CLASS}\:\:$2/og;
+
+  # However, a few variables are defined through the enclosure.
+  # $a and $b are provided by function sort.
+  # So convert "%innreport_inn::prog_type" back to "%prog_type"
+  $string =~ s/([\$\%\@])${CLASS}\:\:(
+    a|
+    b|
+    key\d*|
+    num|
+    prog_size|
+    prog_type|
+    sec_glob
+  )\b/$1$2/xog;
+
+  # If expression consists of a single hash then just return a
+  # reference to it.
+
+  if ($string !~ s/^\%/\\%/) {
+
+    # otherwise convert pseudo-functions to real Perl code
+
+    my %Func = (
+      'bytes'   => '&NiceByte(',
+      'div0'    => '&Divide0(',
+      'time_ms' => '&ms2time(',
+      'time'    => '&second2time(',
+      'total%'  => (
+	$double ? '&ComputeTotalDouble(\\%' : '&ComputeTotal(\\%'
+      )
+    );
+
+    my $i = 0;
+    do {
+      if ($DEBUG) { printf STDERR "PrepareEval %d [%s]\n", $i++, $string; }
+    } while(
+      $string =~ s/ (^|[^&\w]) ([a-z][a-z_0-9]+) \s* \( \s* (%)?
+		  /$1 . $Func{$2 . ($3||'')}
+		  /xoge
+    );
+  }
+
+  if ($DEBUG) { printf STDERR "PrepareEval - [%s]\n", $string; }
+
+  # These variables are provided to the function inside the closure.
+  # PrepareEval returns references to these variables.
+  my $sub;
+  my $num;
+  my $key;
+  my $key1;
   my $key2;
 
-  $v =~ s/\n/ /smog;
-  $v =~ s/^\"(.*?)\"$/$1/o;
-  if ($key1) {
-    $key2 = $key;
-    $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotalDouble\(\\%/og;
-  }
-  else {
-    $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%/$1&ComputeTotal\(\\%/og;
-    # $v =~ s/([^a-zA-Z_\-]?)total\s*\(\s*%([^\)]*)\)/$1&ComputeTotal\("$2"\)/og;
-  }
-  $v =~ s/([^a-zA-Z_\-]?)bytes\s*\(\s*/$1&NiceByte\(/og;
-  $v =~ s/([^a-zA-Z_\-]?)time\s*\(\s*/$1&second2time\(/og;
-  $v =~ s/([^a-zA-Z_\-]?)time_ms\s*\(\s*/$1&ms2time\(/og;
-  # $v =~ s/([\$\%\@])/$1${CLASS}\:\:/og;
-  $v =~ s/([\$\%\@])([^{\s\d])/$1${CLASS}\:\:$2/og;
-  $v =~ s/([\$\%\@])${CLASS}\:\:(prog_(?:size|type)|key|sec_glob|num)/$1$2/og;
-  my $r;
-  # eval { local $^W = 0; no strict; ($r) = eval $v; };
-  eval " local \$^W = 0; no strict; (\$r) = $v; ";
-  $r = 0 unless defined $r;
-  $r;
+  # man perlvar
+  # $^W ... The current value of the warning switch, initially
+  #         true if -w was used.
+  { local $^W = $DEBUG; $sub = eval "sub { $string; }"; }
+  if ($@) { confess "PrepareEval($string) raises $@"; }
+
+  return ( $sub, \$num, \$key, \$key1, \$key2 );
 }
 
-sub NiceByte {
-  my $size = shift;
-  my $t;
+sub EvalHash($) {
+  my $v = shift;
+  my ( $sub ) = PrepareEval($v);
 
-  $size = 0 unless defined $size;
-  $t = $size / 1024 / 1024 / 1024 > 1 ?
+  my $result;
+  eval { local $^W = $DEBUG; $result = &$sub(); };
+  if ($@ && $DEBUG) { confess "EvalHash($v) raises $@"; }
+  if (ref($result) ne 'HASH')
+    { confess "EvalHash($v) does not return reference to hash."; }
+  return $result;
+}
+
+sub EvalExpr {
+  my ( $v, $key, $num, $key1 ) = @_;
+  my ( $sub, $r_num, $r_key, $r_key1, $r_key2 ) = PrepareEval($v, $key1);
+
+  $$r_num = $num;
+  $$r_key = $key;
+  $$r_key1 = $key1;
+  $$r_key2 = $key1 ? $key : undef;
+
+  my $r;
+  eval { local $^W = $DEBUG; ($r) = &$sub(); };
+  if ($@ && $DEBUG) { confess "EvalExpr($v) raises $@"; }
+  return ($r || 0);
+}
+
+sub Divide0(@)
+{
+  my $dividend = shift;
+  return 0 unless $dividend;
+
+  for my $divisor(@_)
+  {
+    return 0 unless $divisor;
+    $dividend /= $divisor;
+  }
+  return $dividend;
+}
+
+sub NiceByte(;$) {
+  my $size = shift() || 0;
+  my $t = $size / 1024 / 1024 / 1024 > 1 ?
     sprintf "%.1f GB", $size / 1024 / 1024 / 1024 :
       ($size / 1024 / 1024 > 1 ? sprintf "%.1f MB", $size / 1024 / 1024 :
 	sprintf "%.1f KB", $size / 1024);
