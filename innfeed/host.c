@@ -3312,6 +3312,7 @@ Default peer configuration parameters:
  * format of the output is:
  *
  * sitename
+ *    Addr 1: IPv4  12.0.0.42
  *   seconds: 351       art. timeout: 400          ip name: foo.bar
  *   offered: 1194     resp. timeout: 240             port: 119
  *  accepted: 178     want streaming: yes      active cxns: 6
@@ -3357,6 +3358,32 @@ static void hostPrintStatus (Host host, FILE *fp)
     fprintf (fp,"  (remote status: ``%s'')",host->blockedReason) ;
 
   fputc ('\n',fp) ;
+
+  if (host->ipAddrs) {
+    int  i;
+    char ip_addr[INET6_ADDRSTRLEN];
+    char *family;
+
+    for(i = 0; host->ipAddrs[i] != NULL; i++) {
+      switch(host->ipAddrs[i]->sa_family) {
+        case AF_INET:
+          family = xstrdup("IPv4");
+          break;
+#ifdef HAVE_INET6
+        case AF_INET6:
+          family = xstrdup("IPv6");
+          break;
+#endif
+        default:
+          family = xstrdup("????");
+          break;
+      }
+
+      network_sockaddr_sprint(ip_addr, sizeof(ip_addr),
+                              host->ipAddrs[i]);
+      fprintf(fp, "   Addr %-2u: %-4.4s  %s\n", i+1, family, ip_addr);
+    }
+  }
 
   fprintf (fp, "   seconds: %-7ld   art. timeout: %-5d        ip name: %s\n",
 	   host->firstConnectTime > 0 ? (long)(now - host->firstConnectTime) : 0,
