@@ -22,7 +22,9 @@
 
 typedef struct _STATUS {
     char		name[SMBUF];
-    char		ip_addr[INET6_ADDRSTRLEN];
+    /* ip_addr may contain a concatenation of several
+     * IPv4 and IPv6 addresses. */
+    char		ip_addr[SMBUF];
     bool		can_stream;
     unsigned short	activeCxn;
     unsigned short	sleepingCxns;
@@ -117,6 +119,8 @@ STATUSsummary(void)
   int			peers = 0;
   char                  TempString[SMBUF];
   char			*path;
+  char                  other_ip_addr[INET6_ADDRSTRLEN];
+  char                  *p;
   STATUS		*head, *status, *tmp;
   char			str[9];
   time_t		now;
@@ -186,7 +190,21 @@ STATUSsummary(void)
       else
 	tmp->next = status;
       tmp = status;
+    } else if (cp->Address.ss_family != 0) {
+      network_sockaddr_sprint(other_ip_addr, sizeof(other_ip_addr),
+                              (struct sockaddr *) &cp->Address);
+      /* Concatenate the addresses if it is a new one.
+       * Make sure we have enough space to write the entire new address. */
+      if ( (((p = strstr(status->ip_addr, other_ip_addr)) == NULL)
+            || ((p != NULL) && (p[strlen(other_ip_addr)] != ' ')
+                            && (p[strlen(other_ip_addr)] != '\0')))
+           && (strlen(status->ip_addr) + strlen(other_ip_addr) + 1 <
+               sizeof(status->ip_addr)) ) {
+        strlcat(status->ip_addr, " ", sizeof(status->ip_addr));
+        strlcat(status->ip_addr, other_ip_addr, sizeof(status->ip_addr));
+      }
     }
+
     if (Now.tv_sec - cp->Started > status->seconds)
       status->seconds = Now.tv_sec - cp->Started;
     if (Now.tv_sec - cp->Started > seconds)
@@ -309,9 +327,9 @@ STATUSsummary(void)
   /* Incoming Feeds */
   for (status = head ; status != NULL ;) {
     fprintf (F, "%s\n",                      status->name);
+    fprintf (F, " ip address: %s\n",         status->ip_addr);
     fprintf (F, "    seconds: %-7ld  ",      (long) status->seconds);
-    fprintf (F, "      duplicates: %-7ld ",  status->Duplicate);
-    fprintf (F, "    ip address: %s\n",      status->ip_addr);
+    fprintf (F, "      duplicates: %-7ld\n",  status->Duplicate);
     fprintf (F, "    offered: %-7ld  ",
 	     status->accepted + status->refused + status->rejected);
     fprintf (F, "   uw newsgroups: %-7ld ",  status->Unwanted_g);
