@@ -347,6 +347,10 @@ if ${DOEXPIRE} ; then
     if [ -n "${EXPDIR}" ] ; then
 	if [ ! -f ${EXPDIR}/history.n -o ! -f ${EXPDIR}/history.n.done ] ; then
 	    ( echo "$0: No new history files"; ${INNSTAT} ) | eval ${MAIL}
+            ##  Remove the possible reserve mode (in case expire was killed).
+            if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+                ctlinnd -s reserve "" 2>/dev/null
+            fi
 	    exit 1
 	fi
 	cp /dev/null ${HISTORY}
@@ -373,6 +377,10 @@ if ${DOEXPIRE} ; then
     if ${THROTTLED} || test -n "${MESSAGE}" ; then
 	ctlinnd -t "$TOUT" -s go "${MESSAGE}" 2>&1 || {
 	    ( echo "$0: Cannot unthrottle news"; ${INNSTAT} ) | eval ${MAIL}
+            ##  Remove the possible reserve mode (in case expire was killed).
+            if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+                ctlinnd -s reserve "" 2>/dev/null
+            fi
 	    exit 1
 	}
     fi
@@ -386,7 +394,9 @@ ${DORM} &&
     find ${TEMPSOCKDIR} -name "${TEMPSOCK}" -mtime +2 -exec rm -f '{}' ';'
 
 ##  Remove the possible reserve mode (in case expire was killed).
-ctlinnd -s reserve "" 2>/dev/null
+if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+    ctlinnd -s reserve "" 2>/dev/null
+fi
 
 ##  Did we become throttled during the run?
 SERVERMODE=`ctlinnd mode 2>/dev/null | ${SED} 1q`
