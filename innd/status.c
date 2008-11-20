@@ -27,6 +27,7 @@ typedef struct _STATUS {
     char		ip_addr[SMBUF];
     bool		can_stream;
     unsigned short	activeCxn;
+    unsigned short      maxCxn;
     unsigned short	sleepingCxns;
     time_t		seconds;
     unsigned long	accepted;
@@ -169,6 +170,7 @@ STATUSsummary(void)
                                   (struct sockaddr *) &cp->Address);
       }
       status->can_stream = cp->Streaming;
+      status->maxCxn = cp->MaxCnx;
       status->seconds = status->Size = status->DuplicateSize = 0;
       status->RejectSize = 0;
       status->Ihave = status->Ihave_Duplicate =
@@ -329,7 +331,8 @@ STATUSsummary(void)
     fprintf (F, "%s\n",                      status->name);
     fprintf (F, " ip address: %s\n",         status->ip_addr);
     fprintf (F, "    seconds: %-7ld  ",      (long) status->seconds);
-    fprintf (F, "      duplicates: %-7ld\n",  status->Duplicate);
+    fprintf (F, "      duplicates: %-5ld ",  status->Duplicate);
+    fprintf (F, "max allowed cxns: %d\n",    status->maxCxn);
     fprintf (F, "    offered: %-7ld  ",
 	     status->accepted + status->refused + status->rejected);
     fprintf (F, "   uw newsgroups: %-7ld ",  status->Unwanted_g);
