@@ -25,15 +25,11 @@ ALLDIRS     = $(UPDATEDIRS) samples site
 CLEANDIRS   = $(ALLDIRS) tests
 
 ##  The directory name and tar file to use when building a release.
-TARDIR      = inn-$(VERSION)
+TARDIR      = inn-$(VERSION)$(RELEASENUMBER)
 TARFILE     = $(TARDIR).tar
 
 ##  The directory to use when building a snapshot.
-ifdef SNAPNUMBER
-SNAPDIR     = inn-$(VERSION)b$(SNAPNUMBER)
-else
 SNAPDIR     = inn-$(SNAPSHOT)-$(SNAPDATE)
-endif
 
 ##  DISTDIRS gets all directories from the MANIFEST, SNAPDIRS gets the same
 ##  but for a snapshot, and DISTFILES gets all regular files.  Anything not
@@ -194,6 +190,7 @@ warnings:
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
 ##  the version information in Makefile.global.in to remove the prerelease
 ##  designation and update all timestamps to the date the release is made.
+##  If RELEASENUMBER is set, it is a beta release.
 release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
@@ -202,9 +199,15 @@ release: ChangeLog
 	for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
-	sed 's/= prerelease/=/' < Makefile.global.in \
-	    > $(TARDIR)/Makefile.global.in
-	cp ChangeLog $(TARDIR)
+	if [ "x$(RELEASENUMBER)" != "x" ] ; then \
+	    cp README.beta $(TARDIR)/ ; \
+	    sed 's/= prerelease/= $(RELEASENUMBER) version/' \
+	        Makefile.global.in > $(TARDIR)/Makefile.global.in ; \
+	else \
+	    cp ChangeLog $(TARDIR)/ ; \
+	    sed 's/= prerelease/=/' Makefile.global.in \
+	        > $(TARDIR)/Makefile.global.in ; \
+	fi
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
@@ -213,7 +216,9 @@ release: ChangeLog
 ##  run by a maintainer since it depends on svn log working and also
 ##  requires svn2cl be available somewhere.
 ChangeLog:
-	$(PERL) support/mkchangelog
+	if [ "x$(RELEASENUMBER)" = "x" ] ; then \
+	    $(PERL) support/mkchangelog ; \
+	fi
 
 
 ##  Check the MANIFEST against the files present in the current tree,
@@ -227,8 +232,6 @@ check-manifest:
 ##  Make a snapshot.  This is like making a release, except that we don't do
 ##  the ChangeLog thing and we don't change the version number.  We also
 ##  assume that SNAPSHOT has been set to the appropriate current branch.
-##  If SNAPNUMBER is empty, it is an automatic generation.  Otherwise,
-##  it is a beta release.
 snapshot:
 	rm -rf $(SNAPDIR)
 	rm -f inn*.tar.gz
@@ -237,15 +240,9 @@ snapshot:
 	set -e ; for f in `sed $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
-	if [ "x$(SNAPNUMBER)" != "x" ] ; then \
-	    cp README.beta $(SNAPDIR)/ ; \
-	    sed 's/= prerelease/= b$(SNAPNUMBER) version/' \
-	        Makefile.global.in > $(SNAPDIR)/Makefile.global.in ; \
-	else \
-	    cp README.snapshot $(SNAPDIR)/ ; \
-	    sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
-	        Makefile.global.in > $(SNAPDIR)/Makefile.global.in ; \
-	fi
+	cp README.snapshot $(SNAPDIR)/
+	sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
+	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(SNAPDIR).tar $(SNAPDIR)
 	$(GZIP) -9 $(SNAPDIR).tar

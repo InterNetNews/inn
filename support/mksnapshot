@@ -16,12 +16,12 @@
 ##  snapshot is being taken from.  Generally this string is either CURRENT or
 ##  STABLE.
 ##  If this argument is BETA, a second argument is needed:  the number of the
-##  beta version (for instance 1 or 2).
+##  beta version (for instance b1 or b2).
 ##
 ##  Examples of use:
 ##
 ##    support/mksnapshot CURRENT
-##    support/mksnapshot BETA 1
+##    support/mksnapshot BETA b1
 
 set -e
 
@@ -43,11 +43,11 @@ fi
 
 exec > snapshot.log 2>&1
 
-./autogen
-./configure
-make warnings
-make test
-make check-manifest
+#./autogen
+#./configure
+#make warnings
+#make test
+#make check-manifest
 
 if [ "$tree" = "BETA" ] ; then
 
@@ -84,4 +84,8 @@ EOF
 
 fi
 
-make snapshot SNAPSHOT="$tree" SNAPDATE="$date" SNAPNUMBER="$number"
+if [ "$tree" = "BETA" ] ; then
+    make release RELEASENUMBER="$number"
+else
+    make snapshot SNAPSHOT="$tree" SNAPDATE="$date"
+fi
