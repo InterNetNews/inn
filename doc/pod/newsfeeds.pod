@@ -770,7 +770,7 @@ entry for controlchan(8).  Make sure its path is properly set.
 
     controlchan!\
         :!*,control,control.*,!control.cancel/!collabra-internal\
-        :Tc,Wnsm:<pathbin in inn.conf>/controlchan
+        :AC,Tc,Wnsm:<pathbin in inn.conf>/controlchan
 
 This program only wants information about articles posted to a control
 newsgroup other than control.cancel, which due to the sorting of control

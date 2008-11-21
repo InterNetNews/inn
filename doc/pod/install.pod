@@ -947,7 +947,7 @@ like:
 
     controlchan!\
         :!*,control,control.*,!control.cancel\
-        :Tc,Wnsm:/usr/local/news/bin/controlchan
+        :AC,Tc,Wnsm:/usr/local/news/bin/controlchan
 
 (modified for the actual path to B<controlchan> if you put it somewhere
 else).  See L<Processing Newsgroup Control Messages> for more details.

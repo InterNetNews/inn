@@ -26,7 +26,7 @@
 ##
 ##  controlchan!\
 ##     :!*,control,control.*,!control.cancel\
-##     :Tc,Wnsm\
+##     :AC,Tc,Wnsm\
 ##     :<pathbin>/controlchan
 
 require 5.004_03;

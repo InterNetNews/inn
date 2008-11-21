@@ -51,7 +51,7 @@ ME:!*/!local,!collabra-internal::
 # no longer handles any control messages except cancel internally.
 controlchan!\
 	:!*,control,control.*,!control.cancel\
-	:Tc,Wnsm:@bindir@/controlchan
+	:AC,Tc,Wnsm:@bindir@/controlchan
 
 ##  Uncomment if you're using innfeed.  This feed tells INN how to run
 ##  innfeed, and then every site you're feeding with innfeed has a
