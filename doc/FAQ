@@ -747,7 +747,7 @@ the numbers are different, that's fine):
     control.checkgroups 0000000000 0000000000 n
     control.newgroup 0000000000 0000000000 n
     control.rmgroup 0000000000 0000000000 n
-    junk 0000000000 0000000000 y
+    junk 0000000000 0000000000 n
 
 and then start INN again.  The control* groups are for control messages
 (messages with a named group will be filed into it, and all other control
