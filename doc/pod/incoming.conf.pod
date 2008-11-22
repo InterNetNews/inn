@@ -1,0 +1,188 @@
+=head1 NAME
+
+incoming.conf - Names and addresses that feed us news
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/incoming.conf consists of three types of entries:
+key/value, peer and group.  Comments are from the hash character C<#> to the
+end of the line.  Blank lines are ignored.  All key/value entries within each
+type must not be duplicated.  Key/value entries are a keyword immediately
+followed by a colon, at least one blank and a value.  For example:
+
+    max-connections: 10
+
+A legal key does not contains blanks, colons, nor C<#>. There are three
+different types of values:  integers, booleans, and strings.  Integers are
+as to be expected.  A boolean value is either C<true> or C<false>
+(case is significant).  A string value is any other sequence of characters.
+If the string needs to contain whitespace, then it must be quoted
+with double quotes.
+
+Peer entries look like:
+
+    peer <name> {
+        # body
+    }
+
+The word C<peer> is required.  <name> is a label for this peer.  It is any
+string valid as a key.  The body of a peer entry contains some number of
+key/value entries.
+
+Group entries look like:
+
+    group <name> {
+        # body
+    }
+
+The word C<group> is required.  <name> is any string valid as a key.  The body
+of a group entry contains any number of the three types of entries.  So key/value
+pairs can be defined inside a group, and peers can be nested inside a group,
+and other groups can be nested inside a group.  Key/value entries that are
+defined outside of all peer and group entries are said to be at global
+scope.  Global key/value entries act as defaults for peers.  When B<innd> looks
+for a specific value in a peer entry (for example, the maximum number of
+connections to allow), if the value is not defined in the peer entry, then
+the enclosing groups are examined for the entry (starting at the closest
+enclosing group).  If there are no enclosing groups, or the enclosing groups
+don't define the key/value, then the value at global scope is used.  A small
+example could be:
+
+    # Global value applied to all peers that have no value of their own.
+    max-connections: 5
+
+    # A peer definition.
+    peer uunet {
+        hostname: usenet1.uu.net
+    }
+
+    peer vixie {
+        hostname: gw.home.vix.com
+        max-connections: 10        # Override global value.
+    }
+
+    # A group of two peers which can open more connections than normal.
+    group fast-sites {
+        max-connections: 15
+
+        # Another peer.  The max-connections: value from the
+        # fast-sites group scope is used.
+        peer data.ramona.vix.com {
+            hostname: data.ramona.vix.com
+        }
+
+        peer bb.home.vix.com {
+            hostname: bb.home.vix.com
+            max-connections: 20    # He can really cook.
+       }
+    }
+
+Given the above configuration file, the defined peers would have the
+following values for the I<max-connections> key.
+
+    uunet                  5
+    vixie                 10
+    data.ramona.vix.com   15
+    bb.home.vix.com       20
+
+=head1 PARAMETERS
+
+The following keys are allowed:
+
+=over 4
+
+=item I<comment>
+
+This key requires a string value.  Reserved for future use.  The default
+is an empty string.
+
+=item I<email>
+
+This key requires a string value.  Reserved for future use.  The default
+is an empty string.
+
+=item I<hold-time>
+
+This key requires a positive integer value.  It defines the hold time
+before closing, if the connection is over I<max-connections>.  A value
+of zero specifies immediate close.  The default is C<0>.
+
+=item I<hostname>
+
+This key requires a string value.  It is a list of hostnames separated
+by a comma.  A hostname is the host's fully qualified domain name, or
+the dotted quad IP address of the peer.  If this key is not present in
+a peer block, the hostname defaults to the label of the peer.
+
+=item I<identd>
+
+This key requires a string value.  It is used if you wish to require
+a peer's user name retrieved through B<identd> match the specified string.
+Note that currently B<innd> does not implement any timeout in B<identd>
+callbacks, so enabling this option may cause B<innd> to hang if the remote
+peer does not respond to B<ident> callbacks in a reasonable timeframe.
+The default is an empty string, that is to say no B<identd>.
+
+=item I<ignore>
+
+This key requires a boolean value.  Setting this entry causes B<innd> to
+refuse every article sent via CHECK or IHAVE by this peer.  The default
+is false.
+
+=item I<max-connections>
+
+This key requires a positive integer value.  It defines the maximum
+number of connections allowed.  A value of zero specifies an unlimited
+number of maximum connections (C<unlimited> or C<none> can be used
+as synonyms).  The default is C<0>.
+
+=item I<nolist>
+
+This key requires a boolean value.  It defines whether a peer is
+allowed to issue list command.  The default is false, that is to say
+it can.
+
+=item I<noresendid>
+
+This key requires a boolean value.  It defines whether B<innd> should send
+C<431> (response to CHECK, in streaming mode) or C<436> (response to IHAVE
+in non-streaming mode) responses instead of C<438> (response to CHECK)
+or C<435> (response to IHAVE) if a message is offered that is already
+received from another peer.  This can be useful for peers that resend
+messages right away, as innfeed does.  The default is false:  the peer
+receives C<431> and C<436> codes so that it resends the article later.
+
+=item I<password>
+
+This key requires a string value.  It is used if you wish to require
+a peer to supply a password via AUTHINFO USER/PASS.  The default is
+an empty string, that it to say no password.
+
+=item I<patterns>
+
+This key requires a string value.  It is a list of newsfeeds(5)-style
+list of newsgroups which are to be accepted from this host.  The default
+is the string C<*>, that is to say all groups are accepted.
+
+=item I<skip>
+
+This key requires a boolean value.  Setting this entry causes this
+peer to be skipped.  The default is false.
+
+=item I<streaming>
+
+This key requires a boolean value.  It defines whether streaming commands
+(CHECK and TAKETHIS) are allowed from this peer.  The default is true.
+
+=back
+
+=head1 HISTORY
+
+Written by Fabien Tassin <fta@sofaraway.org> for InterNetNews.  Converted to
+POD by Julien Elie <julien@trigofacile.com>.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innd(8), newsfeeds(5), uwildmat(3).

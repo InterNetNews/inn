@@ -20,7 +20,8 @@ MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
 
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
-	../man/distributions.5 ../man/expire.ctl.5 ../man/inn.conf.5 ../man/moderators.5 \
+	../man/distributions.5 ../man/expire.ctl.5 ../man/incoming.conf.5 \
+	../man/inn.conf.5 ../man/moderators.5 \
 	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
 	../man/newslog.5 ../man/ovdb.5 \
 	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
@@ -85,6 +86,7 @@ maintclean: distclean
 ../man/distrib.pats.5:	distrib.pats.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/distributions.5:	distributions.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/expire.ctl.5:	expire.ctl.pod		; $(POD2MAN) -s 5 $? > $@
+../man/incoming.conf.5:	incoming.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/moderators.5:	moderators.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/motd.news.5:	motd.news.pod		; $(POD2MAN) -s 5 $? > $@

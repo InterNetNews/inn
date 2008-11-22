@@ -282,6 +282,7 @@ doc/pod/hacking.pod                   Master file for HACKING
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/ident.pod                     Master file for ident.8
+doc/pod/incoming.conf.pod             Master file for incoming.conf.5
 doc/pod/inews.pod                     Master file for inews.1
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innbind.pod                   Master file for innbind.8
