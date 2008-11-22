@@ -320,6 +320,7 @@ typedef struct _CHANNEL {
   enum channel_state   State;
   int		       fd;
   bool		       Skip;
+  bool                 Ignore;
   bool		       Streaming;
   bool		       NoResendId;
   bool		       privileged;

@@ -524,7 +524,7 @@ NCihave(CHANNEL *cp)
     }
 #endif
 
-    if (HIScheck(History, p)) {
+    if (HIScheck(History, p) || cp->Ignore) {
 	cp->Refused++;
 	cp->Ihave_Duplicate++;
 	NCwritereply(cp, NNTP_HAVEIT);
@@ -1367,7 +1367,7 @@ NCcheck(CHANNEL *cp)
     }
 #endif /* defined(DO_PYTHON) */
 
-    if (HIScheck(History, p)) {
+    if (HIScheck(History, p) || cp->Ignore) {
 	cp->Refused++;
 	cp->Check_got++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",

@@ -37,6 +37,7 @@ typedef struct _REMOTEHOST {
     char 	*Identd;	/* Optional identd */
     bool	Streaming;      /* Streaming allowed ? */
     bool	Skip;	        /* Skip this peer ? */
+    bool        Ignore;        /* Ignore articles sent by this peer? */
     bool	NoResendId;	/* Don't send RESEND responses ? */
     bool	Nolist;		/* no list command allowed */
     int		MaxCnx;		/* Max connections (per peer) */
@@ -80,13 +81,14 @@ static char		RCbuff[BIG_BUFFER];
 #define EMAIL	        "email:"
 #define COMMENT	        "comment:"
 #define SKIP		"skip:"
+#define IGNORE          "ignore:"
 #define NORESENDID	"noresendid:"
 #define HOLD_TIME	"hold-time:"
 #define NOLIST		"nolist:"
 
 typedef enum {K_END, K_BEGIN_PEER, K_BEGIN_GROUP, K_END_PEER, K_END_GROUP,
 	      K_STREAM, K_HOSTNAME, K_MAX_CONN, K_PASSWORD, K_IDENTD,
-	      K_EMAIL, K_PATTERNS, K_COMMENT, K_SKIP, K_NORESENDID,
+	      K_EMAIL, K_PATTERNS, K_COMMENT, K_SKIP, K_IGNORE, K_NORESENDID,
 	      K_HOLD_TIME, K_NOLIST
 	     } _Keywords;
 
@@ -602,6 +604,7 @@ RCreader(CHANNEL *cp)
 	if ((new = NCcreate(fd, rp->Password[0] != '\0', false)) != NULL) {
             new->Streaming = rp->Streaming;
             new->Skip = rp->Skip;
+            new->Ignore = rp->Ignore;
             new->NoResendId = rp->NoResendId;
             new->Nolist = rp->Nolist;
             new->CanAuthenticate = true; /* Can use AUTHINFO. */
@@ -860,6 +863,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->MaxCnx = 0;
     rp->Streaming = true;
     rp->Skip = false;
+    rp->Ignore = false;
     rp->NoResendId = false;
     rp->Nolist = false;
     rp->HoldTime = 0;
@@ -874,6 +878,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     peer_params.Label = NULL;
     default_params.Streaming = true;
     default_params.Skip = false;
+    default_params.Ignore = false;
     default_params.NoResendId = false;
     default_params.Nolist = false;
     default_params.MaxCnx = 0;
@@ -915,6 +920,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	group_params->Label = word;
 	group_params->Skip = groupcount > 1 ?
 	  groups[groupcount - 2].Skip : default_params.Skip;
+        group_params->Ignore = groupcount > 1 ?
+            groups[groupcount - 2].Ignore : default_params.Ignore;
 	group_params->Streaming = groupcount > 1 ?
 	  groups[groupcount - 2].Streaming : default_params.Streaming;
 	group_params->NoResendId = groupcount > 1 ?
@@ -972,6 +979,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	peer_params.Name = NULL;
 	peer_params.Skip = groupcount > 0 ?
 	  group_params->Skip : default_params.Skip;
+        peer_params.Ignore = groupcount > 0 ?
+            group_params->Ignore : default_params.Ignore;
 	peer_params.Streaming = groupcount > 0 ?
 	  group_params->Streaming : default_params.Streaming;
 	peer_params.NoResendId = groupcount > 0 ?
@@ -1061,6 +1070,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 		rp->Comment = xstrdup(peer_params.Comment);
 		rp->Streaming = peer_params.Streaming;
 		rp->Skip = peer_params.Skip;
+                rp->Ignore = peer_params.Ignore;
 		rp->NoResendId = peer_params.NoResendId;
 		rp->Nolist = peer_params.Nolist;
 		rp->Password = xstrdup(peer_params.Password);
@@ -1157,6 +1167,38 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	    default_params.Skip = flag;
 	SET_CONFIG(K_SKIP);
 	continue;
+      }
+
+      /* ignore */
+      if (!strncmp (word, IGNORE, sizeof IGNORE)) {
+          free(word);
+          TEST_CONFIG(K_IGNORE, bit);
+          if (bit) {
+              syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+              break;
+          }
+          if ((word = RCreaddata (&linecount, F, &toolong)) == NULL) {
+              break;
+          }
+          if (!strcmp (word, "true"))
+              flag = true;
+          else
+              if (!strcmp (word, "false"))
+                  flag = false;
+              else {
+                  syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
+                  break;
+              }
+          RCadddata(data, &infocount, K_IGNORE, T_STRING, word);
+          if (peer_params.Label != NULL)
+              peer_params.Ignore = flag;
+          else
+              if (groupcount > 0 && group_params->Label != NULL)
+                  group_params->Ignore = flag;
+              else
+                  default_params.Ignore = flag;
+          SET_CONFIG(K_IGNORE);
+          continue;
       }
 
       /* noresendid */
@@ -1543,6 +1585,12 @@ RCwritelist(char *filename)
 	    RCwritelistvalue (F, RCpeerlistfile[i].value);
 	    fputc ('\n', F);
 	    break;
+          case K_IGNORE:
+            RCwritelistindent (F, inc);
+            fprintf(F, "%s\t", IGNORE);
+            RCwritelistvalue (F, RCpeerlistfile[i].value);
+            fputc ('\n', F);
+            break;
 	  case K_NORESENDID:
 	    RCwritelistindent (F, inc);
 	    fprintf(F, "%s\t", NORESENDID);
