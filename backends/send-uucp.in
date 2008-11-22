@@ -1,5 +1,5 @@
 #! /usr/bin/perl -w
-# fixscript will replace this line with code to load INN::Config::Config
+# fixscript will replace this line with code to load INN::Config
 
 ##############################################################################
 # send-uucp.pl	create and send UUCP news batches from the outgoing files
@@ -19,7 +19,6 @@
 ##############################################################################
 
 use strict;
-use Sys::Syslog;
 
 # for compatibility with earlier versions of INN
 $INN::Config::pathetc ||= '/etc/news';
@@ -43,7 +42,17 @@ my $BATCHER_FLAGS = '';
 my $config_file = $INN::Config::pathetc . '/send-uucp.cf';
 my $lockfile = $INN::Config::locks . '/LOCK.send-uucp';
 
-openlog('send-uucp', 'pid', $INN::Config::syslog_facility);
+my $use_syslog = 0;
+
+eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
+
+if ($use_syslog) {
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
+    openlog('send-uucp', 'pid', $INN::Config::syslog_facility);
+}
 
 my @sitelist;
 if (@ARGV) {
@@ -208,7 +217,7 @@ sub run_site {
 sub logmsg {
     my ($msg, $lvl) = @_;
 
-    syslog($lvl || 'notice', '%s', $msg);
+    syslog($lvl || 'notice', '%s', $msg) if ($use_syslog);
 }
 
 sub logdie {

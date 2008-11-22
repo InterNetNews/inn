@@ -55,18 +55,13 @@ GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer,
 &usage if $opt_h;
 
 if ($opt_s) {
-    ## Comment out this eval line if you don't want to try to syslog
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
     if ($use_syslog) {
-	if (defined &Sys::Syslog::setlogsock && $] >= 5.00403) {
-	    # we really need a common module to work all this junk out
-	    if ($OSNAME eq "dec_osf") {
-		sub Sys::Syslog::_PATH_LOG { "/dev/log" }
-            }
-            Sys::Syslog::setlogsock('unix') 
-                if $OSNAME =~ /linux|freebsd|dec_osf|darwin/;
+        if ($Sys::Syslog::VERSION < 0.15) {
+            eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+            Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
         }
-	openlog ('cnfsstat', 'pid', $INN::Config::syslog_facility);
+	openlog('cnfsstat', 'pid', $INN::Config::syslog_facility);
     } else {
 	print STDERR "Syslog is not available.  -s option is ignored.\n";
     }

@@ -49,8 +49,10 @@ if (not -t 2) {
 }
 
 if ($use_syslog) {
-    eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
     openlog('controlchan', 'pid', $INN::Config::syslog_facility);
 }
 logmsg('starting');

@@ -56,8 +56,10 @@ my $logfile = $INN::Config::pathlog . '/perl-nocem.log';
 eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 
 if ($use_syslog) {
-    eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-    Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf/;
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
     openlog('nocem', '', $INN::Config::syslog_facility);
 }
 

@@ -184,8 +184,10 @@ sub errmsg {
     eval 'use Sys::Syslog qw(:DEFAULT setlogsock)';
     die "$0: cannot use Sys::Syslog: $@ [$msg]\n" if $@;
 
-    die "$0: cannot set syslog method [$msg]\n"
-        if not (setlogsock('unix') or setlogsock('inet'));
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
 
     $msg .= " processing $header{'Message-ID'}" if $header{'Message-ID'};
 

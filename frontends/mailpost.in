@@ -17,7 +17,6 @@
 use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
-use Sys::Syslog;
 use strict;
 
 my $debugging = 0 ;
@@ -39,7 +38,17 @@ my $usage = $0 ;
 $usage =~ s!.*/!! ;
 my $prog = $usage ;
 
-openlog $usage, "pid", $INN::Config::syslog_facility ;
+my $use_syslog = 0;
+
+eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
+
+if ($use_syslog) {
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
+    openlog($prog, 'pid', $INN::Config::syslog_facility);
+}
 
 $usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
@@ -142,7 +151,7 @@ if (!$_) {
     if ( $debugging || -t STDERR ) {
 	die "empty input" ;
     } else {
-	syslog "err", "empty input" ;
+	syslog("err", "empty input") if ($use_syslog);
 	exit (0) ;
     }
 }
@@ -173,7 +182,9 @@ for (;;) {
     if (/^\s+/) {
 	if (! $line) {
 	    $msg = "First line with leading whitespace!" ;
-	    syslog "err", $msg unless -t STDERR ;
+            if ($use_syslog) {
+                syslog("err", $msg) unless -t STDERR;
+            }
 	    die "$msg\n" ;
 	}	    
 
@@ -289,7 +300,9 @@ $tmpfile = sprintf "%s/mailpost.%d.%d", $Tmpdir, time, $$ ;
 if (!open TMPFILE,">$tmpfile") {
     $msg = "can't open temp file ($tmpfile): $!" ;
     $tmpfile = undef ;
-    syslog("err", "$msg\n") unless $debugging || -t STDERR ;
+    if ($use_syslog) {
+        syslog("err", "$msg\n") unless $debugging || -t STDERR;
+    }
     open(TMPFILE, "|" . sprintf ($Sendmail, $Maintainer)) ||
 	die "die(no tmpfile): sendmail: $!\n" ;
     print TMPFILE <<"EOF";
@@ -366,7 +379,7 @@ if (defined $DATABASE{$message_id}) {
 
 ## crosspost -c
   $newsgroups = &append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
-  syslog "err", "crosspost $newsgroups\n" if $debugging ;
+  syslog("err", "crosspost $newsgroups\n") if $debugging && $use_syslog;
 }
 
 #$DATABASE{$message_id} = sprintf "%d.%s", time, 'mailpost' ;
@@ -405,7 +418,7 @@ if ($opt_c) {
   umask($umask_bak);
 
   my $dup = undef ;
-  syslog "err", "check   " . $DATABASE{$message_id} . " :  $newsgroups\n" if $debugging ;
+  syslog("err", "check   " . $DATABASE{$message_id} . " :  $newsgroups\n") if $debugging && $use_syslog;
   $dup = 1 if ($DATABASE{$message_id} ne $newsgroups) ;
 
   dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
@@ -414,7 +427,7 @@ if ($opt_c) {
   close LOCKFILE ;
 
   if (defined($dup)) {
-    syslog "err", "mismatch $newsgroups\n" if $debugging ;
+    syslog("err", "mismatch $newsgroups\n") if $debugging && $use_syslog;
     exit 0 ;
   }
 

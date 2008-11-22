@@ -34,27 +34,32 @@
 require 5.006;
 
 use FileHandle;
-use Sys::Syslog;
 use strict;
 
 my $cfFile = $INN::Config::pathetc . "/news2mail.cf" ;
 my $sendmail = $INN::Config::mta ;
 my $sm = $INN::Config::pathbin . "/sm" ;
 my %maddr = ();
+my $use_syslog = 0;
 
-#
-# the syslog calls are here but don't work on my system
-#
-openlog('news2mail', 'pid', 'mail');
+eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 
-syslog('info', 'begin');
+if ($use_syslog) {
+    if ($Sys::Syslog::VERSION < 0.15) {
+        eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
+        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+    }
+    openlog('news2mail', 'pid', $INN::Config::syslog_facility);
+}
+
+syslog('info', 'begin') if ($use_syslog);
 
 #
 # load the list names and their mail addresses from cf file
 # #comments and blank lines are ignored
 #
 unless (open CF, "< $cfFile") {
-		syslog('notice', 'CF open failed %m');
+		syslog('notice', 'CF open failed %m') if ($use_syslog);
 		die "bad CF";
 		}
 
@@ -71,7 +76,7 @@ close CF;
 while ( <STDIN> ) {
 	chomp;
 
-	syslog('info', $_);
+	syslog('info', $_) if ($use_syslog);
 
 	my ($token, $lnames) = split /\s+/, $_, 2;
 	my @addrs = split /\s+/, $lnames;
@@ -80,17 +85,17 @@ while ( <STDIN> ) {
 	my @bad  = grep { !defined $maddr{$_} } @addrs;
 
 	if (! @good) {
-		syslog('notice', "unknown listname $_");
+		syslog('notice', "unknown listname $_") if ($use_syslog);
 		next;
 		}
 
 	if (@bad) {
-		syslog('info', 'skipping unknown lists: ', join(' ', @bad));
+		syslog('info', 'skipping unknown lists: ', join(' ', @bad)) if ($use_syslog);
 		}
 	mailto($token, $lnames, @maddr{@good});
 	}
 
-syslog ("info", "end") ;
+syslog("info", "end") if ($use_syslog);
 
 exit 0;
 
@@ -102,17 +107,17 @@ sub mailto {
 	my @command = (split (' ', $sendmail), '-ee', '-fnews', '-odq', @a);
 #	@command[0] = '/usr/local/bin/debug';
 
-	syslog('info', join(' ', @command));
+	syslog('info', join(' ', @command)) if ($use_syslog);
 
 	unless (open(SM, '|-', @command)) {
-		syslog('notice', join(' ', '|', @command), 'failed!');
+		syslog('notice', join(' ', '|', @command), 'failed!') if ($use_syslog);
 		die "bad $sendmail";
 		}
 
 	my $smgr = "$sm -q $t |";
 
 	unless (open(SMGR, $smgr)) {
-	    syslog('notice', "$smgr failed!");
+	    syslog('notice', "$smgr failed!") if ($use_syslog);
 	    die "bad $smgr";
 	}
 
