@@ -756,6 +756,11 @@ that users won't post messages directly to the control* groups; control
 messages should be posted to the groups that they affect instead and INN
 will refile them automatically based on the Control header.
 
+If you have mergetogroups: set in inn.conf, you will also need to create
+a newsgroup named "to".  Otherwise, you will get the following error:
+
+    innd: SERVER internal no to group
+
 ------------------------------
 
 Subject: 4.3. Modification of read-only value attempted (Cleanfeed)
@@ -1127,7 +1132,19 @@ difficult, so the best advice is to not do this.  If there's a way that
 you can just create the new newsgroup, encourage people to start using it,
 and then remove the old newsgroup, I recommend that.  It's much easier.
 
-However, if it really must be done, it's best if you're using the
+Although it is not a renaming, it is also possible to create an alias.
+Articles cannot be posted to that newsgroup, but they can be received
+from other sites and treated as if they were actually posted to the
+group named after the equal sign.  However, their Newsgroups: header
+is not modified.
+
+    ctlinnd newgroup group.to.file.under y
+    ctlinnd changegroup old.group =group.to.file.under
+
+Creating an alias newsgroup is useful in case you want residual articles
+received under the old newsgroup name to be filed into the new group.
+
+As for a renaming, if it really must be done, it's best if you're using the
 tradspool storage method.  The newsgroup of an article is stored in the
 Newsgroups header and Xref header of the article as stored on disk (and
 possibly in Followup-To), as well as determining where the overview
