@@ -43,11 +43,11 @@ fi
 
 exec > snapshot.log 2>&1
 
-#./autogen
-#./configure
-#make warnings
-#make test
-#make check-manifest
+./autogen
+./configure
+make warnings
+make test
+make check-manifest
 
 if [ "$tree" = "BETA" ] ; then
 
