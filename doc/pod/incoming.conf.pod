@@ -1,6 +1,6 @@
 =head1 NAME
 
-incoming.conf - Names and addresses that feed us news
+incoming.conf - Configuration of incoming news feeds
 
 =head1 DESCRIPTION
 
