@@ -1520,7 +1520,7 @@ RCwritelistvalue(FILE *F, char *value)
 }
 
 /*
-**  Write the incoming configuration (memory->disk)
+**  Write the incoming configuration (memory->disk).
 */
 static void UNUSED
 RCwritelist(char *filename)
@@ -1545,8 +1545,9 @@ RCwritelist(char *filename)
         if (*p == '/')
 	   q = p + 1;
 
-    fprintf (F, "##  $Revision$\n");
-    fprintf (F, "##  %s - names and addresses that feed us news\n", q);
+    fprintf (F, "##  $Id$\n");
+    fprintf (F, "##\n");
+    fprintf (F, "##  %s -- Configuration of incoming news feeds\n", q);
     free(r);
     fprintf (F, "##\n\n");
 
@@ -1652,7 +1653,7 @@ RCwritelist(char *filename)
 	    fputc ('\n', F);
 	    break;
 	  default:
-	    fprintf(F, "# ***ERROR***\n");
+	    fprintf(F, "##  ***ERROR***\n");
 	}
     }
     if (Fclose(F) == EOF)
