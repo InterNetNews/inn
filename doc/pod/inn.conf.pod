@@ -397,7 +397,7 @@ this parameter must be set if I<enableoverview> is true (the default).
 =item C<buffindexed>
 
 Stores overview data and index information into buffers, which are
-preconfigured files defined in F<buffinedexed.conf>.  C<buffindexed> never
+preconfigured files defined in F<buffindexed.conf>.  C<buffindexed> never
 consumes additional disk space beyond that allocated to these buffers.
 
 =item C<tradindexed>
