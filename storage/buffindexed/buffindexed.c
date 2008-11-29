@@ -758,36 +758,26 @@ static int ovusedblock(OVBUFF *ovbuff, int blocknum, bool set_operation, bool se
 
 static void ovnextblock(OVBUFF *ovbuff) {
   int		i, j, last, lastbit, left;
-  ULONG		mask = 0x80000000;
   ULONG		*table;
 
   last = ovbuff->totalblk/(sizeof(long) * 8);
   if ((left = ovbuff->totalblk % (sizeof(long) * 8)) != 0) {
     last++;
   }
+
   table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
-  for (i = ovbuff->nextchunk ; i < last ; i++) {
-    if (i == last - 1 && left != 0) {
-      for (j = 1 ; j < left ; j++) {
-	mask |= mask >> 1;
-      }
-      if ((table[i] & mask) != mask)
-	break;
-    } else {
-      if ((table[i] ^ ~0) != 0)
-	break;
-    }
+
+  /* For tighter placement look for unused block from the begining on
+   * every run. */
+  for (i = 0 ; i < last ; i++) {
+    if ((table[i] ^ ~0) != 0)
+      break;
   }
   if (i == last) {
-    for (i = 0 ; i < ovbuff->nextchunk ; i++) {
-      if ((table[i] ^ ~0) != 0)
-	break;
-    }
-    if (i == ovbuff->nextchunk) {
-      ovbuff->freeblk = ovbuff->totalblk;
-      return;
-    }
+    ovbuff->freeblk = ovbuff->totalblk;
+    return;
   }
+
   if ((i - 1) >= 0 && (last - 1 == i) && left != 0) {
     lastbit = left;
   } else {
