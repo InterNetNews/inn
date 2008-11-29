@@ -61,6 +61,13 @@ C<configure --help> for the available options.
 
 =item *
 
+Thanks to Kirill Berezin, the buffindexed overview method now supports buffers
+larger than S<2 GB>.  It is not necessary to compile INN with large file support
+to use such large buffers with buffindexed.  Buffindexed is also more robust
+with mmaped files.
+
+=item *
+
 B<tinyleaf>, a miniature IHAVE-only leaf server, is now included.  See the
 tinyleaf(8) man page for more information.
 

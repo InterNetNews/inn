@@ -69,6 +69,7 @@
 #define OV_BEFOREBITF   (1 * OV_BLOCKSIZE)
 #define	OV_BLOCKSIZE	8192
 #define	OV_FUDGE	1024
+#define OV_OFFSET(block) (block*(off_t) OV_BLOCKSIZE)
 
 /* ovblock pointer */
 typedef struct _OV {
@@ -96,7 +97,7 @@ typedef struct {
 
 /* ovbuff info */
 typedef struct _OVBUFF {
-  unsigned int		index;			/* ovbuff index */
+  unsigned int		index;			/* ovbuff (partition or file) */
   char			path[OVBUFFPASIZ];	/* Path to file */
   int			fd;			/* file descriptor for this
 						   ovbuff */
@@ -1330,7 +1331,7 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
   ovindexhead.next = ovnull;
   ovindexhead.low = 0;
   ovindexhead.high = 0;
-  if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ov.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
+  if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ov.blocknum)) != sizeof(OVINDEXHEAD)) {
     syswarn("buffindexed: could not write index record index '%d', blocknum"
             " '%d'", ge->curindex.index, ge->curindex.blocknum);
     return true;
@@ -1352,7 +1353,7 @@ static bool ovsetcurindexblock(GROUPENTRY *ge) {
     ovindexhead.next = ov;
     ovindexhead.low = ge->curlow;
     ovindexhead.high = ge->curhigh;
-    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
+    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ge->curindex.blocknum)) != sizeof(OVINDEXHEAD)) {
       syswarn("buffindexed: could not write index record index '%d', blocknum"
               " '%d'", ge->curindex.index, ge->curindex.blocknum);
       return false;
@@ -1432,7 +1433,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
 #endif /* OV_DEBUG */
   }
 
-  if (PWRITE(ovbuff->fd, data, len, ovbuff->base + ge->curdata.blocknum * OV_BLOCKSIZE + ge->curoffset) != len) {
+  if (PWRITE(ovbuff->fd, data, len, ovbuff->base + OV_OFFSET(ge->curdata.blocknum) + ge->curoffset) != len) {
     syswarn("buffindexed: could not append overview record index '%d',"
             " blocknum '%d'", ge->curdata.index, ge->curdata.blocknum);
     return false;
@@ -1469,7 +1470,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     ovusedblock(ovbuff, ge->curindex.blocknum, true, true);
 #endif /* OV_DEBUG */
   }
-  if (PWRITE(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE + sizeof(OVINDEXHEAD) + sizeof(ie) * ge->curindexoffset) != sizeof(ie)) {
+  if (PWRITE(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + OV_OFFSET(ge->curindex.blocknum) + sizeof(OVINDEXHEAD) + sizeof(ie) * ge->curindexoffset) != sizeof(ie)) {
     syswarn("buffindexed: could not write index record index '%d', blocknum"
             " '%d'", ge->curindex.index, ge->curindex.blocknum);
     return true;
@@ -1486,7 +1487,7 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
     ovindexhead.next = ovnull;
     ovindexhead.low = ge->curlow;
     ovindexhead.high = ge->curhigh;
-    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + ge->curindex.blocknum * OV_BLOCKSIZE) != sizeof(OVINDEXHEAD)) {
+    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ge->curindex.blocknum)) != sizeof(OVINDEXHEAD)) {
       syswarn("buffindexed: could not write index record index '%d', blocknum"
               " '%d'", ge->curindex.index, ge->curindex.blocknum);
       return true;
@@ -1653,7 +1654,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
       ovgroupunmap();
       return false;
     }
-    offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+    offset = ovbuff->base + OV_OFFSET(ov.blocknum);
     pagefudge = offset % pagesize;
     mmapoffset = offset - pagefudge;
     len = pagefudge + OV_BLOCKSIZE;
@@ -1717,11 +1718,12 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
   if (count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
     /* large retrieval, mmap is done in ovsearch() */
     return true;
+  /* Data blocks are being mmapped, not copied. */
   for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
     for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
       ov = gdb->datablk;
       ovbuff = getovbuff(ov);
-      offset = ovbuff->base + (ov.blocknum * OV_BLOCKSIZE);
+      offset = ovbuff->base + OV_OFFSET(ov.blocknum);
       pagefudge = offset % pagesize;
       mmapoffset = offset - pagefudge;
       gdb->len = pagefudge + OV_BLOCKSIZE;
@@ -1857,7 +1859,7 @@ static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN 
 	    search->gdb.datablk.blocknum = srchov.blocknum;
 	    search->gdb.datablk.index = srchov.index;
 	    ovbuff = getovbuff(srchov);
-	    offset = ovbuff->base + (srchov.blocknum * OV_BLOCKSIZE);
+	    offset = ovbuff->base + OV_OFFSET(srchov.blocknum);
 	    pagefudge = offset % pagesize;
 	    mmapoffset = offset - pagefudge;
 	    search->gdb.len = pagefudge + OV_BLOCKSIZE;

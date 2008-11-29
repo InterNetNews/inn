@@ -49,9 +49,7 @@ be longer than 63 characters.
 <size> is the length of the buffer in kilobytes (S<1 KB = 1024 bytes>).  If
 <filename> does not specify a special device, the file size of the buffer
 must be S<< <size> * 1024 bytes >>.  If it does specify a special device, that
-device must have at least <size> space available.  Buffers over S<2 GB> are
-not supported (regardless of whether INN was compiled with large file
-support); this limitation may be fixed in the future.  For more
+device must have at least <size> space available.  For more
 information on setting up the buffers, see L<CREATING BUFFERS>.
 
 An example of F<buffindexed.conf> file can be:
@@ -99,7 +97,7 @@ system overhead.  Note, however, that Solaris has problems with byte range
 locking on block devices, and therefore this method should not be used on
 Solaris.
 
-Partition the disk to make each partition equal to or smaller than S<2 GB>.
+Partition the disk.
 If you're using Solaris, set up your partitions to avoid the first
 cylinder of the disk (or otherwise the buffindexed header will overwrite
 the disk partition table and render the buffers inaccessible).  Then,
