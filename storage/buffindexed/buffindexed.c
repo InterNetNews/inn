@@ -2139,10 +2139,20 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
 #else
     if (!ovaddrec(&newge, artnum, token, data, len, arrived, expires)) {
 #endif /* OV_DEBUG */
-      ovclosesearch(handle, true);
+      /* Old group cannot be freed. */
+      ovclosesearch(handle, false);
       ge->expired = time(NULL);
       GROUPlock(gloc, INN_LOCK_UNLOCK);
-      warn("buffindexed: could not add new overview for '%s'", group);
+      warn("buffindexed: not enough room to expire overview for group '%s'",
+           group);
+      /* Clean just reserved overview entries. */
+      if (!ovgroupmmap(&newge, newge.low, newge.high, true)) {
+        warn("buffindexed: cannot prepare free operation");
+        return false;
+      }
+      freegroupblock();
+      ovgroupunmap();
+
       return false;
     }
   }
