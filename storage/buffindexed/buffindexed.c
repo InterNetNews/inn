@@ -2086,6 +2086,7 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
       ovgroupunmap();
       ge->expired = time(NULL);
       ge->count = 0;
+      ge->baseindex = ge->curindex = ge->curdata = ovnull;
       GROUPlock(gloc, INN_LOCK_UNLOCK);
     }
     return true;
