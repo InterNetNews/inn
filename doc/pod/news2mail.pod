@@ -1,0 +1,73 @@
+=head1 NAME
+
+news2mail - Channel script to gateway news into e-mails
+
+=head1 SYNOPSIS
+
+B<news2mail>
+
+=head1 DESCRIPTION
+
+B<news2mail> runs as a channel process underneath B<innd>.  It is set
+up as channel feed in F<newsfeeds>, with different mailing-lists as funnel
+entries pointing to it (see below); B<news2mail> expects the token of an
+article followed by a sequence of list names.
+
+B<news2mail> uses the configuration file I<pathetc>/news2mail.cf to map
+mailing-list names to e-mail addresses.  B<news2mail> causes B<sendmail>
+to queue the messages for later delivery (to avoid DOS attacks by mass
+postings).  You must run C<sendmail -q> periodically to get the queue
+processed.
+
+=head1 CONFIGURATION FILE
+
+The configuration file format is simple:  comments (starting with a hash sign
+C<#>) and blank lines are ignored.  All other lines have two or three fields
+on them.  The first is the list name and is what B<innd> uses (i.e. the site
+field of the entry in the F<newsfeeds> file).  The second field is the
+actual e-mail address to send the article to.  The third field is optional:
+it sets the envelope-from address (for instance a list member's address;
+if not set, it defaults to the C<news> user).
+
+In e-mail messages, the To: header will have the mailing-list address
+(i.e. the second field).  Besides, B<news2mail> strips most article headers
+from the article before mailing.
+
+In F<newsfeeds>, the channel feed should look like:
+
+    news2mail!:!*:Ac,Tc,Wn*:<pathbin>/news2mail
+
+and for each mailing-list, you only have to add to F<newsfeeds> an entry list
+like:
+
+    list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
+
+Please note the use of C<Ap> and the exclusion of the list owner domain
+to protect the list from feeding back new arrivals from the list.
+The site name used in the F<newfeeds> entry for a mailing-list (above
+C<list-big-red-ants>) must be the same as the first field in an entry in
+F<news2mail.cf>.  For instance:
+
+    # Newsfeeds-name      List-to-address                 [List-sender-address]
+    list-big-red-ants     big-red-ants@lists.ucsd.edu     news+big-red-ants@local.news.server.org
+
+=head1 BUGS
+
+The B<news2mail> program is set up as a funneled channel in F<newsfeeds>,
+implying multiple matches should be handled as one S<- and> multiple matching
+funneled feeds will result in a single call to the script.  Therefore,
+since only one mail is sent, crossposts are not currently properly handled
+as for the envelope-from address (which then defaults to the C<news> user).
+
+=head1 HISTORY
+
+B<news2mail> was written by Brian Kantor in 1998.  This man page was written
+by James Brister and converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+innd(8), newsfeeds(5).
+
+=cut

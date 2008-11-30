@@ -122,10 +122,12 @@ controlchan!\
 
 # News to mail gateway.  Similar to innfeed, this uses a master feed and
 # then individual feeds for every separate address that news is being
-# gated to.  This sends all posts to rec.pets.redants.* to the address
-# news-software@example.com.
-#news2mail!:!*:Tc,Ac,Wn*:@bindir@/news2mail
-#news-software@example.com:rec.pets.redants.*:Tm:news2mail!
+# gated to.  This sends all posts to rec.pets.red-ants to the address
+# listed in @sysconfdir@/news2mail.cf for list-big-red-ants.
+# Posts from the domain list owner are excluded (path for that example:
+# lists.ucsd.edu).
+#news2mail!:!*:Ac,Tc,Wn*:@bindir@/news2mail
+#list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
 
 # Capture all local postings (with a distribution of "foo" and no more
 # than two sites in the Path: header) using a local program (that doesn't
