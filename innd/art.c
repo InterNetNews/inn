@@ -1844,9 +1844,10 @@ ARTmakeoverview(CHANNEL *cp)
 	}
 	break;
       case HDR__LINES:
-        p = NULL;
-        xasprintf(&p, "%d\r\n", data->Lines);
-        len = strlen(p) - 2;
+        snprintf(data->LinesBuffer, sizeof(data->LinesBuffer),
+                 "%d", data->Lines);
+        p = data->LinesBuffer;
+        len = strlen(data->LinesBuffer);
         break;
       default:
 	p = HDR(j);
