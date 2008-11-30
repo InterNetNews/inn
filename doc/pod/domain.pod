@@ -49,7 +49,7 @@ If so, the example above should reflect this functionality.
 
 =head1 HISTORY
 
-This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+This documentation was written by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
 $Id$
 

@@ -271,7 +271,7 @@ The default config file.  It is in the running user's home directory
 B<pullnews> was written by James Brister for INN.  The documentation was
 rewritten in POD by Russ Allbery <rra@stanford.edu>.
 
-Geraint A. Edwards greatly improved B<pullnews>, adding no more than S<16 new>
+Geraint S<A. Edwards> greatly improved B<pullnews>, adding no more than S<16 new>
 recognized flags, fixing some bugs and integrating the B<backupfeed>
 contrib script by Kai Henningsen, adding again S<6 other> flags.
 

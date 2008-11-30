@@ -59,7 +59,7 @@ network whose machines respond to ident queries.
 
 =head1 HISTORY
 
-This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+This documentation was written by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
 $Id$
 

@@ -71,7 +71,7 @@ error message.
 
 =head1 HISTORY
 
-Originally written by Christopher P. Lindsey.  This documentation was
+Originally written by Christopher S<P. Lindsey>.  This documentation was
 written by Russ Allbery <rra@stanford.edu> based on Christopher's original
 F<README> file.
 

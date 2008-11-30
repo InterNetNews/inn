@@ -62,7 +62,7 @@ respectively?
 
 =head1 HISTORY
 
-Written by Jeffrey M. Vinocur <jeff@litech.org> for InterNetNews.
+Written by Jeffrey S<M. Vinocur> <jeff@litech.org> for InterNetNews.
 
 $Id$
 

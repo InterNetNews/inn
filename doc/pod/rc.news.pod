@@ -82,9 +82,9 @@ user ID.
 
 =head1 HISTORY
 
-// FIXME:  any attribution for rc.news itself?
+// FIXME:  any attribution for F<rc.news> itself?
 
-This manual page written by Jeffrey M. Vinocur <jeff@litech.org> for
+This manual page written by Jeffrey S<M. Vinocur> <jeff@litech.org> for
 InterNetNews.
 
 $Id$

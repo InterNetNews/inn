@@ -69,9 +69,9 @@ pointer associated with I<key> is returned.
 
 =head1 HISTORY
 
-Converted to POD from Peter A. Friend's ternary search trie
-documentation by Alex Kiernan <alex.kiernan@thus.net> for InterNetNews
-2.4.0.
+Converted to POD from Peter S<A. Friend>'s ternary search trie
+documentation by Alex Kiernan <alex.kiernan@thus.net> for
+S<InterNetNews 2.4.0>.
 
 $Id$
 

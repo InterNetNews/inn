@@ -44,7 +44,7 @@ within the INN source tree.
 
 Originally written in October 2000 by Krischan Jodies <krischan@jodies.cx>,
 based heavily on B<pam_smb> v1.1.6 by David Airlie <airlied@samba.org>.
-This documentation was written by Jeffrey M. Vinocur <jeff@litech.org>.
+This documentation was written by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
 $Id$
 

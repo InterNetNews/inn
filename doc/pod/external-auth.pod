@@ -111,7 +111,7 @@ you write, and F<ident.c> as an example for any resolvers.
 =head1 HISTORY
 
 Written by Aidan Cully for InterNetNews.  This documentation was rewritten
-in POD by Jeffrey M. Vinocur <jeff@litech.org>.
+in POD by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
 $Id$
 

@@ -98,7 +98,7 @@ The shared secret with the RADIUS server is C<IamARADIUSsecRET>.
 =head1 HISTORY
 
 This documentation was written by Russ Allbery <rra@stanford.edu> based on
-the comments in the sample radius.conf file by Yury B. Razbegin.
+the comments in the sample F<radius.conf> file by Yury S<B. Razbegin>.
 
 $Id$
 

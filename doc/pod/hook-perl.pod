@@ -388,7 +388,7 @@ dynamic generation of an access group for an incoming connection using
 a Perl script.  If a connection matches an auth group which has a
 perl_access parameter, all access groups in readers.conf are ignored;
 instead the procedure described below is used to generate an access group.
-This concept is due to Jeffrey M. Vinocur.
+This concept is due to Jeffrey S<M. Vinocur>.
 
 The new functionality should provide all of the existing capabilities
 of the Perl hook, in combination with the flexibility of readers.conf
