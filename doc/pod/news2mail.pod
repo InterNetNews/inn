@@ -51,6 +51,20 @@ F<news2mail.cf>.  For instance:
     # Newsfeeds-name      List-to-address                 [List-sender-address]
     list-big-red-ants     big-red-ants@lists.ucsd.edu     news+big-red-ants@local.news.server.org
 
+=head1 FILES
+
+=over 4
+
+=item I<pathbin>/news2mail
+
+The Perl program itself used to gateway news into e-mails.
+
+=item I<pathetc>/news2mail.cf
+
+The configuration file which specifies the mapping to use for gatewaying.
+
+=back
+
 =head1 BUGS
 
 The B<news2mail> program is set up as a funneled channel in F<newsfeeds>,
@@ -62,7 +76,8 @@ as for the envelope-from address (which then defaults to the C<news> user).
 =head1 HISTORY
 
 B<news2mail> was written by Brian Kantor in 1998.  This man page was written
-by James Brister and converted to POD by Julien Elie.
+by James Brister and converted to POD by Julien Elie.  The third optional
+field in F<news2mail.cf> was added by S<D. Stussy> in 2008.
 
 $Id$
 
