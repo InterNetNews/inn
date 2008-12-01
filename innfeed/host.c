@@ -2739,8 +2739,9 @@ static HostParams hostDetails (scope *s,
       if (p->bindAddr6)
         {
           free(p->bindAddr6);
-          p->bindAddr6 = xstrdup("none");
         }
+      /* Force bindaddress6: to "none". */
+      p->bindAddr6 = xstrdup("none");
     }
 
   if (findValue (s,"backlog-factor",inherit) == NULL &&
@@ -3806,7 +3807,7 @@ static int validateInteger (FILE *fp, const char *name,
           logOrPrint (LOG_ERR,fp,
                       "ME config: no definition for required key %s",name) ;
         }
-      else if (required)
+      else
         logOrPrint (LOG_INFO,fp,
                     "ME config: adding missing key/value %s: %ld",name
                     ,setval) ;
