@@ -2440,6 +2440,7 @@ sub Decode_Config_File {
     print "};\n\n" if $DEBUG;
   }
   close FILE;
+  die "Configuration file $file is empty." if ($linenum < 1);
   $output{'_order_'} = \@list;
 }
 
