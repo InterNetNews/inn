@@ -45,13 +45,13 @@ $eval  = "while (<OLDACT>) {\n";
 $eval .= "  \$group = (split)[0];\n";
 
 while (<>) {
-  if (/^\s*\S*ctlinnd newgroup (\S+) (\S)/) {
+  if (/^\s*\S*ctlinnd newgroup (\S+) (\S+)/) {
     $toadd{$1} = $2;
     $changes++;
   } elsif (/^\s*\S*ctlinnd rmgroup (\S+)/) {
     $eval .= "  next if \$group eq '$1';\n";
     $changes++;
-  } elsif (/^\s*\S*ctlinnd changegroup (\S+) (\S)/) {
+  } elsif (/^\s*\S*ctlinnd changegroup (\S+) (\S+)/) {
     $eval .= "  s/ \\S+\$/ $2/ if \$group eq '$1';\n";
     $changes++;
   }
