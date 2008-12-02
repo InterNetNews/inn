@@ -217,7 +217,7 @@ typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
 
 static char LocalLogName[] = "buffindexed";
 static long		pagesize = 0;
-static OVBUFF		*ovbufftab;
+static OVBUFF		*ovbufftab = NULL;
 static int              GROUPfd;
 static GROUPHEADER      *GROUPheader = NULL;
 static GROUPENTRY       *GROUPentries = NULL;
