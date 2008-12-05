@@ -31,13 +31,20 @@ extern const char *NNRPinstance;
 
 /*
 **  Check after a successful authentication if the currently selected
-**  newsgroup is still readable.  AUTHINFO SASL does not need it because
-**  the NNTP protocol is reset after it.
+**  newsgroup is still readable.  AUTHINFO SASL and STARTTLS do not need
+**  it because the NNTP protocol is reset after it.
+**
+**  Return true if the group must be made invalid.
 */
 static bool
 makeGroupInvalid(void) {
     bool hookpresent = false;
     char *grplist[2];
+
+    /* If no group has been selected yet, it is considered as valid. */
+    if (GRPcur == NULL) {
+        return false;
+    }
 
 #ifdef DO_PYTHON
     hookpresent = PY_use_dynamic;
