@@ -590,11 +590,13 @@ CMDfetch(int ac, char *av[])
 {
     char		buff[SMBUF];
     SENDDATA		*what;
-    bool		ok;
+    bool                mid, ok;
     ARTNUM		art;
     char		*msgid;
     ARTNUM		tart;
-    bool final = false;
+    bool                final = false;
+
+    mid = (ac > 1 && IsValidMessageID(av[1]));
 
     /* Check the syntax of the arguments first. */
     if (ac > 1 && !IsValidArticleNumber(av[1])) {
@@ -604,7 +606,7 @@ CMDfetch(int ac, char *av[])
         if (CTYPE(isdigit, av[1][0])) {
             Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
             return;
-        } else if (!IsValidMessageID(av[1])) {
+        } else if (!mid) {
             Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
             return;
         }
@@ -631,15 +633,16 @@ CMDfetch(int ac, char *av[])
 	break;
     }
 
-    /* Check authorizations. */
-    if (!ok || PERMgroupmadeinvalid) {
+    /* Check authorizations.  If an article number is requested
+     * (not a message-ID), we check whether the group is still readable. */
+    if (!ok || (!mid && PERMgroupmadeinvalid)) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
     }
 
     /* Requesting by message-ID? */
-    if (ac == 2 && av[1][0] == '<') {
+    if (mid) {
 	if (!ARTopenbyid(av[1], &art, final)) {
 	    Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
 	    return;
@@ -908,8 +911,9 @@ CMDover(int ac, char *av[])
         }   
     }
 
-    /* Check authorizations. */
-    if (!PERMcanread || PERMgroupmadeinvalid) {
+    /* Check authorizations.  If a range is requested (not a message-ID),
+     * we check whether the group is still readable. */
+    if (!PERMcanread || (!mid && PERMgroupmadeinvalid)) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	return;
@@ -1133,8 +1137,9 @@ CMDpat(int ac, char *av[])
         }
     }
 
-    /* Check authorizations. */
-    if (!PERMcanread || PERMgroupmadeinvalid) {
+    /* Check authorizations.  If a range is requested (not a message-ID),
+     * we check whether the group is still readable. */
+    if (!PERMcanread || (!mid && PERMgroupmadeinvalid)) {
         Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
         return;
