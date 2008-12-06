@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2008-03-05
+##  Last modified: 2008-09-16
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -78,7 +78,13 @@
 ##     contacted the listed contact address and arranged a feed.
 ##
 ##     If you have permission to carry any of the hierarchies so listed in
-##     this file, you should change the entries for those hierarchies below.
+##     this file, you should change the entries for those hierarchies
+##     below. 
+##
+##   * Some hierarchies are marked as *HISTORIC*.  These hierarchies
+##     aren't entirely defunct, but they are very low-traffic, not widely
+##     read or carried, and may not be worth carrying.  If you don't intend
+##     to carry them, comment out their entries.
 ##
 ##  The comments of this file aren't in any formal or well-defined syntax,
 ##  but they are meant to use a consistent syntax to allow eventual parsing
@@ -666,6 +672,17 @@ rmgroup:moderator@dana.de:de.*:verify-de.admin.news.announce
 newgroup:*:de.alt.*:doit
 rmgroup:moderator@dana.de:de.alt.*:verify-de.admin.news.announce
 
+## DEMON (Demon Internet, UK)
+# Contact: newsmaster@demon.net
+# Admin group: demon.news
+# Key URL: ftp://ftp.demon.co.uk/pub/news/doc/demon.news.txt
+# *PGP*   See comment at top of file.
+newgroup:*:demon.*:drop
+rmgroup:*:demon.*:drop
+checkgroups:newsmaster@demon.net:demon.*:verify-demon.news
+newgroup:newsmaster@demon.net:demon.*:verify-demon.news
+rmgroup:newsmaster@demon.net:demon.*:verify-demon.news
+
 ## DFW (Dallas/Fort Worth, Texas, USA)
 # URL: http://www.cirr.com/dfw/
 # Admin group: dfw.usenet.config
@@ -690,7 +707,11 @@ rmgroup:news@news.dknet.dk:dk.*:verify-news@news.dknet.dk
 newgroup:*:duke.*:mail
 rmgroup:*:duke.*:doit
 
-## EASYNET (Easynet PLC, UK)
+## EASYNET (*HISTORIC* -- Easynet PLC, UK)
+#
+# This hierarchy is not entirely defunct, but it receives very little
+# traffic and is included primarily for the sake of completeness.
+#
 # Contact: Christiaan Keet <newsmaster@easynet.net>
 # Admin group: easynet.support
 # *PGP*   See comment at top of file.
@@ -711,7 +732,11 @@ checkgroups:news@news.ut.ee:ee.*:verify-ee.news
 newgroup:news@news.ut.ee:ee.*:verify-ee.news
 rmgroup:news@news.ut.ee:ee.*:verify-ee.news
 
-## EFN & EUG (Eugene Free Computer Network, Eugene/Springfield, Oregon, USA)
+## EFN & EUG (*HISTORIC* -- Eugene Free Computer Network, Eugene/Springfield, Oregon, USA)
+#
+# This hierarchy is not entirely defunct, but it receives very little
+# traffic and is included primarily for the sake of completeness.
+#
 # Admin group: eug.config
 # *PGP*   See comment at top of file.
 newgroup:*:efn.*|eug.*:drop
@@ -953,6 +978,18 @@ checkgroups:news@nit.gwu.edu:gwu.*:doit
 newgroup:news@nit.gwu.edu:gwu.*:doit
 rmgroup:news@nit.gwu.edu:gwu.*:doit
 
+## HACKTIC (*HISTORIC* -- XS4ALL, Netherlands)
+#
+# This hierarchy is not entirely defunct, but it receives very little
+# traffic and is included primarily for the sake of completeness.
+#
+# *PGP*   See comment at top of file.
+newgroup:*:hacktic.*:drop
+rmgroup:*:hacktic.*:drop
+checkgroups:news@zhaum.xs4all.nl:hacktic.*:verify-news@zhaum.xs4all.nl
+newgroup:news@zhaum.xs4all.nl:hacktic.*:verify-news@zhaum.xs4all.nl
+rmgroup:news@zhaum.xs4all.nl:hacktic.*:verify-news@zhaum.xs4all.nl
+
 ## HAMBURG (City of Hamburg, Germany)
 # Contact: hamburg@steering-group.net
 # URL: http://www.steering-group.net/hamburg/
@@ -1047,7 +1084,11 @@ checkgroups:newsmaster@carnet.hr:hr.*:verify-newsmaster@carnet.hr
 newgroup:newsmaster@carnet.hr:hr.*:verify-newsmaster@carnet.hr
 rmgroup:newsmaster@carnet.hr:hr.*:verify-newsmaster@carnet.hr
 
-## HUMANITYQUEST (Humanities discussion)
+## HUMANITYQUEST (*HISTORIC* -- Humanities discussion)
+#
+# This hierarchy is not entirely defunct, but it receives very little
+# traffic and is included primarily for the sake of completeness.
+#
 # Contact: news-admin@humanityquest.com
 # URL: http://www.humanityquest.com/projects/newsgroups/
 # Key URL: http://www.humanityquest.com/projects/newsgroups/PGP.htm
@@ -1109,9 +1150,9 @@ rmgroup:control@usenet.ie:ie.*:verify-control@usenet.ie
 newgroup:*:ieee.*:mail
 rmgroup:*:ieee.*:doit
 
-## INFO (Gatewayed mailing lists)
-checkgroups:rjoyner@uiuc.edu:info.*:doit
-newgroup:rjoyner@uiuc.edu:info.*:doit
+## INFO (*DEFUNCT* -- Gatewayed mailing lists)
+# This hierarchy is defunct.  Please remove it.
+newgroup:rjoyner@uiuc.edu:info.*:mail
 rmgroup:rjoyner@uiuc.edu:info.*:doit
 
 ## IS (Iceland)
@@ -1511,7 +1552,7 @@ rmgroup:*:ncu.*:doit
 # newgroup:*:nersc.*:mail
 # rmgroup:*:nersc.*:doit
 
-## NET (Usenet 2)
+## NET (*HISTORIC* -- Usenet 2)
 #
 # This was a failed experiment in a different newsgroup creation policy and
 # administrative policy which has now been almost entirely abandoned.  The
@@ -1543,7 +1584,6 @@ rmgroup:*:netins.*:doit
 # Contact: news@netscape.com
 # URL: http://www.mozilla.org/community.html
 # Admin group: netscape.public.admin
-# Key URL: http://www.mozilla.org/newsfeeds.html
 # Key fingerprint = B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
 # *PGP*   See comment at top of file.
 newgroup:*:netscape.*:drop
@@ -1551,6 +1591,12 @@ rmgroup:*:netscape.*:drop
 checkgroups:news@netscape.com:netscape.*:verify-netscape.public.admin
 newgroup:news@netscape.com:netscape.*:verify-netscape.public.admin
 rmgroup:news@netscape.com:netscape.*:verify-netscape.public.admin
+
+## NEWS4US (*LOCAL* -- NEWS4US dot NL, Netherlands)
+# Contact: info@news4us.nl
+# For local use only, contact the above address for information.
+newgroup:*:news4us.*:mail
+rmgroup:*:news4us.*:doit
 
 ## NF (Newfoundland and Labrador, Canada)
 # Contact: randy@mun.ca
@@ -2284,9 +2330,9 @@ checkgroups:news@mayn.de:ufra.*:verify-news.mayn.de
 newgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 rmgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 
-## UIUC (*LOCAL* -- University of Illinois at Urbana-Champaign, USA)
+## UIUC (*DEFUNCT* -- University of Illinois at Urbana-Champaign, USA)
 # Contact: news@ks.uiuc.edu
-# For local use only, contact the above address for information.
+# This hierarchy is defunct.  Please remove it.
 newgroup:*:uiuc.*:mail
 rmgroup:*:uiuc.*:doit
 
@@ -2322,7 +2368,11 @@ rmgroup:news@*.tc.umn.edu:umn.*:doit
 rmgroup:edh@*.tc.umn.edu:umn.*:doit
 rmgroup:Michael.E.Hedman-1@umn.edu:umn.*:doit
 
-## UN (The United Nations)
+## UN (*HISTORIC* -- The United Nations)
+#
+# This hierarchy is not entirely defunct, but it receives very little
+# traffic and is included primarily for the sake of completeness.
+#
 # Admin group: un.public.usenet.admin
 # *PGP*   See comment at top of file.
 newgroup:*:un.*:drop
@@ -2337,12 +2387,15 @@ newgroup:newsadmin@news.uoregon.edu:uo.*:doit
 rmgroup:newsadmin@news.uoregon.edu:uo.*:doit
 
 ## US (United States of America)
-# Contact: admin@usenetnews.us
-# URL: http://www.usenetnews.us/
+# Contact: us-control@lists.killfile.org
 # Admin group: us.config
-checkgroups:control@usenetnews.us:us.*:doit
-newgroup:control@usenetnews.us:us.*:doit
-rmgroup:control@usenetnews.us:us.*:doit
+# Key fingerprint = BB96 EB2C CFD0 75C8 E9DE  C2C2 1DA2 9D87 B73C AF1B
+# *PGP*   See comment at top of file.
+newgroup:*:us.*:drop
+rmgroup:*:us.*:drop
+checkgroups:us-control@lists.killfile.org:us.*:verify-us-control@lists.killfile.org
+newgroup:us-control@lists.killfile.org:us.*:verify-us-control@lists.killfile.org
+rmgroup:us-control@lists.killfile.org:us.*:verify-us-control@lists.killfile.org
 
 ## UT (*LOCAL* -- University of Toronto, Canada)
 # URL: http://www.utoronto.ca/ns/utornews/
@@ -2499,10 +2552,10 @@ newgroup:dmitry@x-privat.org:x-privat.*:verify-dmitry@x-privat.org
 rmgroup:dmitry@x-privat.org:x-privat.*:verify-dmitry@x-privat.org
 
 ## XS4ALL (XS4ALL, Netherlands)
-# Contact: Cor Bosman <news@xs4all.nl>
-checkgroups:news@*xs4all.nl:xs4all.*:doit
-newgroup:news@*xs4all.nl:xs4all.*:doit
-rmgroup:news@*xs4all.nl:xs4all.*:doit
+# Contact: XS4ALL Newsmaster <news@xs4all.nl>
+checkgroups:news@xs4all.nl:xs4all.*:doit
+newgroup:news@xs4all.nl:xs4all.*:doit
+rmgroup:news@xs4all.nl:xs4all.*:doit
 
 ## YORK (*LOCAL* -- York University, Toronto, ON)
 # Contact: Peter Marques <news@yorku.ca>
