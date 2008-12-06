@@ -7,7 +7,7 @@ pullnews - Pull news from multiple news servers and feed it to another
 B<pullnews> [B<-hnqRx>] [B<-b> I<fraction>] [B<-c> I<config>] [B<-C> I<width>]
 [B<-d> I<level>] [B<-f> I<fraction>] [B<-F> I<fakehop>] [B<-g> I<groups>]
 [B<-G> I<newsgroups>] [B<-H> I<headers>] [B<-k> I<checkpt>] [B<-l> I<logfile>]
-[B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-p> I<port>]
+[B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-O>] [B<-p> I<port>]
 [B<-P> I<hop_limit>] [B<-Q> I<level>] [B<-r> I<file>] [B<-s> I<to-server>[:I<port>]]
 [B<-S> I<max-run>] [B<-t> I<retries>] [B<-T> I<connect-pause>] [B<-w> I<num>]
 [B<-z> I<article-pause>] [B<-Z> I<group-pause>] [I<from-server> ...]
@@ -128,6 +128,12 @@ writes no B<rnews> file, does not update the config file.
 
 Specify the timeout length, as I<timeout> seconds,
 when establishing an NNTP connection.
+
+=item B<-O>
+
+Use an optimized mode:  B<pullnews> checks whether the article already
+exists on the downstream server, before downloading it.  It may help
+for huge articles or a slow link to upstream hosts).
 
 =item B<-p> I<port>
 

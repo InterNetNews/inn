@@ -6,7 +6,12 @@
 # File:         pullnews.pl
 # RCSId:        $Id$
 #
-# History:      May 2008:  Geraint A. Edwards greatly improved pullnews, adding
+# History:
+#               December 2008:  Matija Nalis added -O (optimized mode, checking
+#               whether the downstream server already has the article to download).
+#               Bug fixes too.
+#
+#               May 2008:  Geraint A. Edwards greatly improved pullnews, adding
 #               -b, -C, -d, -G, -H, -k, -l, -m, -M, -n, -P, -Q, -R, -t, -T, -w and
 #               improving -s as well as fixing some bugs.
 #               He also integrated the backupfeed contrib script by Kai Henningsen,
@@ -75,7 +80,7 @@ my $defaultMaxArts;
 $usage =~ s!.*/!!;
 $usage .= " [ -hnqRx -b fraction -c config -C width -d level
         -f fraction -F fakehop -g groups -G newsgroups -H headers
-        -k checkpt -l logfile -m header_pats -M num -N num
+        -k checkpt -l logfile -m header_pats -M num -N num -O
         -p port -P hop_limit -Q level -r file -s host[:port] -S num
         -t retries -T seconds -w num -z num -Z num ]
         [ upstream_host ... ]
@@ -129,6 +134,10 @@ $usage .= " [ -hnqRx -b fraction -c config -C width -d level
 
   -N num        timeout length when establishing NNTP connection.
 
+  -O            optimized mode (may help for big articles/slow link to
+                upstream hosts).  Check whether an article exists
+                before downloading it.
+
   -p port       specify the port to connect to in order to feed articles
                 (default is $defaultPort).
 
@@ -172,9 +181,9 @@ $usage .= " [ -hnqRx -b fraction -c config -C width -d level
 
 use vars qw($opt_b $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
             $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
-            $opt_N $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
+            $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
             $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
-getopts("b:c:C:d:f:F:g:G:hH:k:l:m:M:nN:p:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
+getopts("b:c:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
 
 die $usage if $opt_h;
 
@@ -262,7 +271,7 @@ open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 my $oldfh = select;
 $| = 1; select LOG; $| = 1; select $oldfh;
 
-my $lockfile = $ENV{HOME} . "/.pullnews.pid";
+my $lockfile = $groupFile . '.pid';
 sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700) ||
     die "can't create lock file ($lockfile): $!\n";
 $oldfh = select; select LOCK; $| = 1; select $oldfh;
@@ -285,12 +294,15 @@ if (@groupsToGet && ! $quiet) {
 }
 
 open(FILE, "<$groupFile") || die "can't open group file $groupFile\n";
+
+my $count = 0;
 while (<FILE>) {
     next if m!^\s*\#! || m!^\s*$!;
 
     if (m!^(\S+)(\s+(\S+)\s+(\S+))?\s*$!) {
         $sname = $1;
         $servers->{$sname} = {};
+        $servers->{$sname}->{_order} = $count++;
         $passwd{$sname} = [ $3, $4 ] if defined $3 and $3 ne "";
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
         my ($group,$date,$high) = ($1,$2,$3);
@@ -306,7 +318,7 @@ while (<FILE>) {
 }
 close FILE;
 
-my @servers = (@ARGV || sort keys %$servers);
+my @servers = @ARGV ? @ARGV : sort {$servers->{$a}->{_order} <=> $servers->{$b}->{_order}} keys %$servers;
 
 die "No servers!\n" if ! @servers;
 
@@ -398,6 +410,7 @@ foreach my $server (@servers) {
     $info{server}->{$server}->{rejected} = 0;
 
     foreach my $group (sort keys %{$servers->{$server}}) {
+        next if $group eq '_order';
         next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
 
         last if !crossFeedGroup ($upstream,$localcxn,$server,$group,$shash);
@@ -494,13 +507,14 @@ sub saveConfig {
     print FILE "# Format: (date is epoch seconds)\n";
     print FILE "# hostname [username password]\n";
     print FILE "#         group date high\n";
-    foreach $server (sort keys %$servers) {
+    foreach $server (sort {$servers->{$a}->{_order} <=> $servers->{$b}->{_order}} keys %$servers) {
         print FILE "$server";
         if (defined $passwd{$server}) {
             printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
         }
         print FILE "\n";
         foreach $group (sort keys %{$servers->{$server}}) {
+            next if $group eq '_order';
             my ($date,$high) = @{$servers->{$server}->{$group}};
             printf FILE "\t%s %d %d\n",$group,$date,$high;
         }
@@ -581,12 +595,36 @@ sub crossFeedGroup {
 
     my $i;
     my @warns;
+    my $skip_article;
     for ($i = ($first > $high ? $first : $high + 1) ; $i <= $last ; $i++) {
+        $skip_article = 0;
         last if defined $maxArts and $count >= $maxArts;
         last if defined $opt_f and $count >= $toget;
         $count++;
         sleep $opt_z if defined $opt_z and $count > 1;
-        my $article = $fromServer->article($i);
+        # "Optimized mode" -- check if the article is wanted *before* downloading it.
+        if (defined $opt_O) {
+            #   223 n <a> article retrieved -- request text separately (after STAT)
+            #   423 no such article number in this group
+            #   430 no such article found
+            my $org_msgid = $fromServer->nntpstat($i);
+            my $org_code = $fromServer->code();
+
+            # Continue if the article exists on the upstream server.
+            if ($org_code == 223) {
+                my $new_msgid = $toServer->nntpstat($org_msgid);
+                my $new_code = $toServer->code();
+                print LOG "\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n" if $debug >= 3;
+                # Skip the article if it already exists on the downstream server.
+                if ($new_code == 223) {
+                    print LOG "\tDEBUGGING $i\t-- not downloading already existing message $org_msgid code=$new_code\n" if $debug >= 2;
+                    $skip_article = 1;
+                }
+            }
+        }
+
+        my $article = $skip_article ? '' : $fromServer->article($i);
+
         if ($article) {
             my $msgid;
             my $xref = 0;
@@ -780,7 +818,7 @@ sub crossFeedGroup {
                         exit (1);
                     }
 
-                    } else {
+                } else {
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
                     print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
@@ -788,12 +826,19 @@ sub crossFeedGroup {
                     $fed{$group}++;
                     $info{server}->{$server}->{fed}++;
                     $info{fed}++;
-                    }
+                }
             }
+            $shash->{$group} = [ time, $high = $i ];
 
+        # Optimized mode (-O) decided to skip this article...
+        } elsif ($skip_article) {
+            print LOG "." unless $quiet;
+            $refused{$group}++;
+            $info{server}->{$server}->{refused}++;
+            $info{refused}++;
             $shash->{$group} = [ time, $high = $i ];
         } else {
-            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430     # no such article, do not retry
+            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430     # No such article, do not retry.
                                                     or $fromServer->code() == 423;
             print LOG "x" unless $quiet;
             printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
