@@ -22,6 +22,13 @@ takes care of the change during C<make update>.
 The I<nntpactsync> parameter has been renamed to I<incominglogfrequency>
 in F<inn.conf>; B<innupgrade> handles this renaming during the update.
 
+=item *
+
+The $SPOOLBASE variable has been renamed to $SPOOLDIR in B<innshellvars>
+in order to be more consistent.  It impacts shell scripts only.  If you
+import B<innshellvars> and use that variable in your scripts, you will have
+to rename it.
+
 =back
 
 =head1 Changes in 2.5.0

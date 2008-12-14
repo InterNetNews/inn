@@ -1,5 +1,5 @@
 #! /bin/sh
-##  $Revision$
+##  $Id$
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
 
@@ -12,16 +12,16 @@ exec_prefix=@exec_prefix@
 eval `@bindir@/innconfval -s`
 
 NEWSHOME=${PATHNEWS}
-SPOOLBASE=${PATHSPOOL}
+SPOOLDIR=${PATHSPOOL}
 MOST_LOGS=${PATHLOG}
-export NEWSHOME SPOOL MOST_LOGS
+export NEWSHOME SPOOLDIR MOST_LOGS
 
 NEWSBIN=${PATHBIN}
 NEWSETC=${PATHETC}
 NEWSLIB=@libdir@
 INNDDIR=${PATHRUN}
 LOCKS=${PATHRUN}
-export NEWSBIN NEWSETC INNDDIR NEWSHOME
+export NEWSBIN NEWSETC NEWSLIB INNDDIR LOCKS
 
 ERRLOG=${MOST_LOGS}/errlog
 LOG=${MOST_LOGS}/news
@@ -113,7 +113,10 @@ SPOOLTEMP=${PATHTMP}
 NEWSLBIN=${NEWSHOME}/local
 export NEWSLBIN
 
+UMASK=@NEWSUMASK@
 umask @NEWSUMASK@
+
+SYSLOG_FACILITY=`echo "@SYSLOG_FACILITY@" | tr "[:upper:]" "[:lower:]" | ${SED} -e 's/log_//'`
 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH
