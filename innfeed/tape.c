@@ -640,6 +640,7 @@ void tapeTakeArticle (Tape tape, Article article)
   const char *fname, *msgid ;
 
   ASSERT (tape != NULL) ;
+  ASSERT (article != NULL) ;
 
   /* return immediately if spooling disabled - jgarzik */
   if (tape->noBacklog)
