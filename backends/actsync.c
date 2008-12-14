@@ -1,6 +1,5 @@
-/* @(#) $Id$ */
-/* @(#) Under RCS control in /usr/local/news/src/inn/local/RCS/actsync.c,v */
-/*
+/* $Id$
+ *
  * actsync - sync or merge two active files
  *
  * usage:

@@ -549,9 +549,10 @@ You have syslog set up incorrectly.
 
 INN logs nearly everything except article trace information via syslog.
 It expects syslog to write its log messages into particular files under
-~news/log, unless you gave it a different path at configure time.  You'll
-need to set up logging of INN-related log messages in your system
-/etc/syslog.conf.  See the "Configuring syslog" section in INSTALL.
+~news/log, unless you gave it a different path at configure time (see
+the pathlog parameter in inn.conf).  You'll need to set up logging of
+INN-related log messages in your system /etc/syslog.conf.  See the
+"Configuring syslog" section in INSTALL.
 
 Note that you don't have to worry about rotating these log files;
 news.daily (which should be run nightly from cron) will take care of that
@@ -646,7 +647,7 @@ feeding an article to a peer broke down.
    been fed to that peer.
   
    If a peer doesn't have that article, it's possible that the article is
-   spooled on your system somewhere.  Check $pathspool/outgoing, or the
+   spooled on your system somewhere.  Check $pathoutgoing, or the
    innfeed spool if the peer is configured to use innfeed.  (It's probably
    easier to look for error messages in $pathlog/news.notice than to
    actually wade around in $pathspool/innfeed.)
@@ -1103,13 +1104,13 @@ newsgroups as the old server.
 Then try these commands (a variation on commands posted by Katsuhiro
 Kondou to inn-workers) on the old server:
 
-    cd pathdb
+    cd <pathdb in inn.conf>
     perl -ne 'chomp; ($a,$b,$_) = split " "; print "$_\n" if $_' history \
-        | tr . / > pathoutgoing/list
+        | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
 
-where pathdb is the path to the directory containing the history file
-(usually ~news/db), pathoutgoing is the path to the outgoing spool
+where <pathdb> is the path to the directory containing the history file
+(usually ~news/db), <pathoutgoing> is the path to the outgoing spool
 directory (usually ~news/spool/outgoing), and server is the name of the
 new news server to which you're feeding the articles.
 
@@ -1297,7 +1298,7 @@ where the overview.sh script is:
 
     #!/bin/sh
     echo "100"
-    /usr/local/news/bin/inndf -o | awk '{print $1}'
+    <pathbin in inn.conf>/inndf -o | awk '{print $1}'
     echo "0"
     echo "overview"
 

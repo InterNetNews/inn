@@ -1,8 +1,7 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-# @(#) $Id$
-# @(#) Under RCS control in /usr/local/news/src/inn/local/RCS/actmerge.sh,v
+# $Id$
 #
 # actmerge - merge two active files
 #

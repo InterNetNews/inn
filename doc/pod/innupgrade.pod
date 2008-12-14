@@ -60,9 +60,9 @@ combination with B<-f>.
 
 =head1 EXAMPLES
 
-Upgrade any configuration files found in F</usr/local/news/etc>:
+Upgrade any configuration files found in I<pathetc>:
 
-    innupgrade /usr/local/news/etc
+    innupgrade <pathetc in inn.conf>
 
 Upgrade only F</news/etc/inn.conf>:
 

@@ -74,18 +74,18 @@ is only useful for the buffindexed overview method.
 
 =head1 EXAMPLES
 
-Print the free kilobytes in F</news/spool> as a simple number:
+Print the free kilobytes in I<pathspool> as a simple number:
 
-    inndf /news/spool
+    inndf <pathspool in inn.conf>
 
-Report the free inodes in F</usr/local/news> and F</news/spool> in a format
+Report the free inodes in I<pathnews> and I<pathspool> in a format
 designed for human readability:
 
-    inndf -i /usr/local/news /news/spool
+    inndf -i <pathnews> <pathspool>
 
 The same, but also add in all file systems in I<pathetc>/filesystems:
 
-    inndf -i -F /usr/local/news /news/spool
+    inndf -i -F <pathnews> <pathspool>
 
 Print out the number of overview records and the percentage space used by
 a buffindexed overview database:

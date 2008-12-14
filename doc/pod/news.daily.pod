@@ -69,7 +69,7 @@ during periods of low server usage, such as in the middle of the night.
 To run it at 3am, for example, add the following entry to the news user's
 crontab file:
 
-    0 3 * * * /usr/local/news/bin/news.daily expireover lowmark
+    0 3 * * * <pathbin in inn.conf>/news.daily expireover lowmark
 
 If you're using any non-CNFS storage methods, add the B<delayrm> keyword
 to the above option list for B<news.daily>.

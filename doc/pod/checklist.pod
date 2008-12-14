@@ -19,6 +19,8 @@ C<news> user belongs).  If necessary, you can use:
     adduser --group --home /usr/local/news news
 
 where F</usr/local/news> is the home directory for the C<news> user.
+This directory will be passed to B<configure> via the B<--prefix>
+option.  It will also be set as I<pathnews> in F<inn.conf>.
 
 =item *
 
@@ -41,7 +43,8 @@ it is always better to be accustomed to doing that as the news user.)
 
 =item *
 
-If necessary, add F<~news/bin> to the news user's path and F<~news/share/man>
+If necessary, add F<~news/bin> (that is to say I<pathbin>) to the news
+user's path and F<~news/share/man> (that is to say I<pathnews>/share/man)
 to the news user's MANPATH in your shell config files.  (You may want to
 do this, especially the second part, on your regular account; the
 man pages are very useful.)
@@ -51,15 +54,15 @@ to help with configuring INN.
 
 For bash, try:
 
-    PATH=~news/bin:$PATH
+    PATH=<pathbin in inn.conf>:$PATH
     export PATH
-    MANPATH=~news/share/man:$MANPATH
+    MANPATH=<pathnews in inn.conf>/share/man:$MANPATH
     export MANPATH
 
 or csh:
 
-    setenv PATH ~news/bin:$PATH
-    setenv MANPATH ~news/share/man:$MANPATH
+    setenv PATH <pathbin in inn.conf>:$PATH
+    setenv MANPATH <pathnews in inn.conf>/share/man:$MANPATH
 
 although if you don't already have MANPATH set, the above may give an
 error or override your defaults (making it so you can only read the news
@@ -83,8 +86,8 @@ from L<ftp://ftp.isc.org/isc/inn/snapshots/>.
 
 Work out configure options (C<./configure --help> for a list).  If you
 aren't working out of F</usr/local/news>, or want to put some files on a
-different partition, you can set the directories now (or later in
-F<inn.conf> if you change your mind).  By default,
+different partition, you can set the directories now (or later in I<pathnews>
+in F<inn.conf> if you change your mind).  By default,
 B<--prefix=/usr/local/news> is used.
 
 You probably want B<--with-perl>.  If you're not using NetBSD with
@@ -124,10 +127,11 @@ help in F<INSTALL>.
 
 =item *
 
-Now it's time to work on the files in F<~news/etc>.  Start with
-F<inn.conf>; you must fill in the default moderators address, your fully
-qualified domain names and path.  Fill in all the blanks.  Change the
-file descriptor limits to something like C<500>.
+Now it's time to work on the files in F<~news/etc> (the default I<pathetc>
+location set in F<inn.conf>).  Start with F<inn.conf>; you must fill
+in the default moderators address, your fully qualified domain names
+and path.  Fill in all the blanks.  Change the file descriptor limits
+to something like C<500>.
 
 =item *
 
@@ -161,7 +165,7 @@ section in F<INSTALL>).
 
 =item *
 
-Run C<~news/bin/inncheck -a -v -f -pedantic -perm> and fix anything noted:
+Run C<< <pathbin in inn.conf>inncheck -a -v -f -pedantic -perm >> and fix anything noted:
 B<inncheck> gives a rough check on the appropriateness of the configuration
 files as you go.  (It's the equivalent of C<perl -cw yourfile.pl> for
 Perl scripts.)
@@ -172,7 +176,7 @@ that.
 
 =item *
 
-You can now import an F<active> file (F<~news/db/active>) and run B<inncheck>
+You can now import an F<active> file (I<pathdb in inn.conf>/active) and run B<inncheck>
 again.  You may want to look at L<ftp://ftp.isc.org/pub/usenet/CONFIG/active>
 and only keep the lines corresponding to the newsgroups you are interested in.
 Also import a F<newsgroups> file which contains the descriptions of these
@@ -185,13 +189,13 @@ C<ctlinnd newgroup> or B<actsync>.
 In case you need to create empty initial database files, import an F<active>
 file (owned by C<news>) and execute as the news user:
 
-    cd ~news/db
+    cd <pathdb in inn.conf>
 
     touch newsgroups
     touch active.times
 
     touch history
-    ~news/bin/makedbz -i
+    <pathbin in inn.conf>/makedbz -i
     mv history.n.hash  history.hash
     mv history.n.index history.index
     mv history.n.dir   history.dir
@@ -220,12 +224,12 @@ worrying about feeds or reader access.
 
 =item *
 
-Start B<innd> by running F<~news/bin/rc.news> B<as the news user>.  It
+Start B<innd> by running I<pathbin>/rc.news B<as the news user>.  It
 is also what you should launch in your init scripts:
 
-    su news -c ~news/bin/rc.news
+    su news -c <pathbin in inn.conf>/rc.news
 
-Check F<~news/log/news.notice> to see if everything went well; also use
+Check I<pathlog>/news.notice to see if everything went well; also use
 C<ps> to see if B<innd> is running.
 
 C<telnet localhost 119> and you should see either a welcome banner or a
@@ -275,13 +279,13 @@ In F<readers.conf>, remember that auth and access blocks can be separated.
 Begin with auth.  Your auth for password users could look like this:
 
     auth "foreignokay" {
-        auth: "ckpasswd -d ~news/db/newsusers"
+        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
         default: "<unauthenticated>"
     }
 
 There is a Perl script in the ckpasswd(8) man page if you want to do
 authentications by password and have the appropriate libraries.  Copy it
-to F<~news/bin>, name the file something like F<makepasswd.pl> and change the
+to I<pathbin>, name the file something like F<makepasswd.pl> and change the
 internal paths to whatever you're using and wherever you're putting the
 newsusers database.  The standard Apache B<htpasswd> tool also works
 just fine to create INN password files.
@@ -318,7 +322,7 @@ and F<readers-ssl.conf>).  The syntax is similar for both these files.
 You then need to start a second B<nnrpd> to listen to these connections
 to NNTPS port 563 and put something like that in your init scripts:
 
-    su news -c '~news/bin/nnrpd -D -c ~news/etc/readers-ssl.conf -p 563 -S'
+    su news -c '<pathbin>/nnrpd -D -c <pathetc>/readers-ssl.conf -p 563 -S'
 
 Note that a news client which supports the STARTTLS command can also
 use the conventional NNTP port 119 to initiate a TLS connection.  However,
