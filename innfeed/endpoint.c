@@ -1668,31 +1668,18 @@ void setSigHandler (int signum, void (*ptr)(int))
 static void handleSignals (void)
 {
   int i ;
-#if defined(USE_SIGVEC)
-  int mask ;
-#endif
 
   for (i = 1; i < NSIG; i++)
     {
       if (sigFlags[i])
         {
-#if defined(USE_SIGACTION)
+#if defined(HAVE_SIGACTION)
           sigset_t set, oset ;
       
           if (sigemptyset (&set) != 0 || sigaddset (&set, i) != 0)
             die ("sigemptyset or sigaddset failed") ;
           if (sigprocmask (SIG_BLOCK, &set, &oset) != 0)
             die ("sigprocmask failed: %s", strerror(errno)) ;
-#elif defined(USE_SIGVEC)
-# ifndef sigmask
-#  define sigmask(s)    (1 << ((s) - 1))
-# endif
-          int mask ;
-          
-          mask = sigblock (sigmask(i)) ;
-#elif defined(USE_SIGSET)
-          if (sighold (i) != 0)
-            die ("sighold failed: %s", strerror(errno)) ;
 #else
       /* hope for the best */
 #endif
@@ -1704,14 +1691,9 @@ static void handleSignals (void)
               sigHandlers[i] != SIG_DFL)
             (sigHandlers[i])(i) ;
             
-#if defined(USE_SIGACTION)
+#if defined(HAVE_SIGACTION)
           if (sigprocmask (SIG_SETMASK, &oset, (sigset_t *)NULL) != 0)
             die ("sigprocmask failed: %s", strerror(errno)) ;
-#elif defined(USE_SIGVEC)
-          sigsetmask (mask) ;
-#elif defined(USE_SIGSET)
-          if (sigrelse (i) != 0)
-            die ("sigrelse failed: %s", strerror(errno)) ;
 #else
           /* hope for the best */
 #endif
