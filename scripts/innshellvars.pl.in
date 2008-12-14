@@ -8,7 +8,7 @@
 # File:         innshellvars.pl
 # RCSId:        $Id$
 # Description:  Set up any and all variables that an INN perl script
-#               might need.
+#               might need.  Also sets umask.
 #
 
 package inn ;
@@ -18,26 +18,32 @@ $exec_prefix = "@exec_prefix@";
 eval `@bindir@/innconfval -p`;
 
 $newshome = $pathnews;
-$newslib = "@libdir@";
 $spooldir = $pathspool;
 $most_logs = $pathlog;
+$ENV{'NEWSHOME'} = $pathnews;
+$ENV{'SPOOLDIR'} = $spooldir;
+$ENV{'MOST_LOGS'} = $most_logs;
 
-$errlog = "${most_logs}/errlog" ;
-$log = "${most_logs}/news" ;
+$newsbin = $pathbin;
+$newsetc = $pathetc;
+$newslib = "@libdir@";
+$innddir = $pathrun;
+$locks = $pathrun;
+$ENV{'NEWSBIN'} = $newsbin;
+$ENV{'NEWSETC'} = $newsetc;
+$ENV{'NEWSLIB'} = $newslib;
+$ENV{'INNDDIR'} = $innddir;
 
-$spool = $patharticles;
-$overviewdir = $pathoverview;
+$errlog = "${most_logs}/errlog";
+$log = "${most_logs}/news";
+
 $archivedir = $patharchive;
-$badnews = "$pathincoming/bad";
-$spoolnews = $pathincoming;
+$spool = $patharticles;
 $batch = $pathoutgoing;
 $incoming = $pathincoming;
-
-$locks = $pathrun;
-$newsbin = $pathbin;
-$innddir = $pathrun;
-$newsetc = $pathetc;
-$newslbin = "$pathnews/local";
+$overviewdir = $pathoverview;
+$spoolnews = $pathincoming;
+$badnews = "$pathincoming/bad";
 
 $active = "${pathdb}/active" ;
 $activetimes = "${pathdb}/active.times" ;
@@ -49,14 +55,14 @@ $newsfeeds = "${newsetc}/newsfeeds" ;
 $newsgroups = "${pathdb}/newsgroups" ;
 $oldactive = "${pathdb}/active.old" ;
 $path_motd = "${newsetc}/motd.news" ;
-$localgroups = "$newsetc/localgroups" ;
 $expirectl = "${newsetc}/expire.ctl" ;
+$localgroups = "$newsetc/localgroups" ;
 
 $controlprogs = $pathcontrol;
-$inews = "${newsbin}/inews" ;
 $innconfval = "${newsbin}/innconfval" ;
 $innd = "${newsbin}/innd" ;
 $innwatch = "${newsbin}/innwatch" ;
+$inews = "${newsbin}/inews" ;
 $rnews = "${newsbin}/rnews" ;
 $perl_startup_innd = "$pathfilter/startup_innd.pl" ;
 $perl_filter_innd = "$pathfilter/filter_innd.pl" ;
@@ -78,8 +84,8 @@ $awk = '@AWK@' ;
 $sed = '@SED@' ;
 $inndf = "${newsbin}/inndf" ;
 $egrep = '@EGREP@' ;
-$gpgv = '@GPGV@' ;
 $perl = '@PERL@' ;
+$gpgv = '@GPGV@' ;
 $pgp = '@PGP@' ;
 $sort = '@SORT@' ;
 $getftp = '@PATH_GETFTP@' ;
@@ -104,23 +110,30 @@ $newsmaster = '@NEWSMASTER@' ;
 $newsuser = ${runasuser} ;
 $newsgroup = ${runasgroup} ;
 
-$do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@' ;
+$filemode = @FILEMODE@;
+$inewsmode = @INEWSMODE@;
+$rnewsmode = @RNEWSMODE@;
 
-$ENV{'TMPDIR'} = $pathtmp;
-$tmpdir = $pathtmp;
-$spooltemp = $pathtmp;
+$do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
 
-$filemode = @FILEMODE@ ;
-$inewsmode = @INEWSMODE@ ;
-$rnewsmode = @RNEWSMODE@ ;
-$umask = @NEWSUMASK@ ;
+$tmpdir = ${pathtmp};
+$ENV{'TMPDIR'} = ${pathtmp};
+
+$spooltemp = ${pathtmp};
+
+$newslbin = "${newshome}/local";
+$ENV{'NEWSLBIN'} = ${newslbin};
+
+umask @NEWSUMASK@;
+$umask = @NEWSUMASK@;
 
 $syslog_facility = lc("@SYSLOG_FACILITY@");
 $syslog_facility =~ s/log_//;
 
 $ENV{'PATH'} ||= '';
-$ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin" ;
+$ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin";
 
+$home = ${pathnews};
 $ENV{'HOME'} = ${pathnews};
 
 1 ;

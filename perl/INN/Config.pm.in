@@ -30,12 +30,13 @@ foreach $line (@values) {
 
 
 ##  Paths of useful directories.
-my @DIRVAR = qw($prefix $exec_prefix $newshome $newslib
+my @DIRVAR = qw($prefix $exec_prefix $newshome $home $newslib
 $newsbin $controlprogs $newslbin $newsetc $spooldir
 $archivedir $spool $incoming $spoolnews $badnews
 $batch $overviewdir $most_logs $locks $innddir $tmpdir
 $spooltemp);
 our $newshome = $pathnews;
+our $home = $pathnews;
 our $newslib = "@libdir@";
 our $newsbin = $pathbin;
 our $controlprogs = $pathcontrol;
@@ -153,14 +154,27 @@ $syslog_facility =~ s/log_//;
 my @PARAMVAR = qw($do_dbz_tagged_hash);
 our $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
 
+
 ##  Set up some environment values.
 if ($ovmethod && $ovmethod eq "ovdb") {
     $ENV{'DB_HOME'} = $pathoverview;
 }
 $ENV{'HOME'} = ${pathnews};
+$ENV{'INNDDIR'} = $innddir;
+$ENV{'MOST_LOGS'} = $most_logs;
+$ENV{'NEWSBIN'} = $newsbin;
+$ENV{'NEWSETC'} = $newsetc;
+$ENV{'NEWSHOME'} = $pathnews;
+$ENV{'NEWSLBIN'} = ${newslbin};
+$ENV{'NEWSLIB'} = $newslib;
 $ENV{'PATH'} ||= '';
 $ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin";
+$ENV{'SPOOLDIR'} = $spooldir;
 $ENV{'TMPDIR'} = $pathtmp;
+
+
+##  Set up umask.
+umask @NEWSUMASK@;
 
 
 ##  This array will contain what it is possible to export.
