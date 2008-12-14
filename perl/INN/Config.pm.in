@@ -34,7 +34,7 @@ my @DIRVAR = qw($prefix $exec_prefix $newshome $home $newslib
 $newsbin $controlprogs $newslbin $newsetc $spooldir
 $archivedir $spool $incoming $spoolnews $badnews
 $batch $overviewdir $most_logs $locks $innddir $tmpdir
-$spooltemp);
+$spooltemp $path);
 our $newshome = $pathnews;
 our $home = $pathnews;
 our $newslib = "@libdir@";
@@ -55,7 +55,8 @@ our $locks = $pathrun;
 our $innddir = $pathrun;
 our $tmpdir = $pathtmp;
 our $spooltemp = $pathtmp;
-
+our $path = $ENV{'PATH'} || '';
+$path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 
 ##  Paths of useful files.
 my @FILESVAR = qw($active $activetimes $newactive $oldactive
@@ -161,14 +162,14 @@ if ($ovmethod && $ovmethod eq "ovdb") {
 }
 $ENV{'HOME'} = ${pathnews};
 $ENV{'INNDDIR'} = $innddir;
+$ENV{'LOCKS'} = $locks;
 $ENV{'MOST_LOGS'} = $most_logs;
 $ENV{'NEWSBIN'} = $newsbin;
 $ENV{'NEWSETC'} = $newsetc;
 $ENV{'NEWSHOME'} = $pathnews;
 $ENV{'NEWSLBIN'} = ${newslbin};
 $ENV{'NEWSLIB'} = $newslib;
-$ENV{'PATH'} ||= '';
-$ENV{'PATH'} = "${newslbin}:${newsbin}:$ENV{'PATH'}:/bin:/usr/bin";
+$ENV{'PATH'} = $path;
 $ENV{'SPOOLDIR'} = $spooldir;
 $ENV{'TMPDIR'} = $pathtmp;
 

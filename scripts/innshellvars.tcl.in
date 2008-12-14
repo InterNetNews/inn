@@ -28,6 +28,7 @@ set env(NEWSBIN) "$inn_newsbin"
 set env(NEWSETC) "$inn_newsetc"
 set env(NEWSLIB) "$inn_newslib"
 set env(INNDDIR) "$inn_innddir"
+set env(LOCKS) "$inn_locks"
 
 set inn_errlog "${inn_most_logs}/errlog"
 set inn_log "${inn_most_logs}/news"
