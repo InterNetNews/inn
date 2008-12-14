@@ -159,7 +159,7 @@ directory are the various releases of INN, some additional documentation
 (particularly of security holes), the original INN Usenix paper.
 
 There is also a snapshots subdirectory, in which you will find daily
-snapshots of the INN CVS repository for the last seven days.  The
+snapshots of the INN Subversion repository for the last seven days.  The
 snapshots with STABLE in the name are the latest versions of the STABLE
 branch and may have some additional bug fixes over the current released
 version.  The snapshots with CURRENT in the name are of the current
@@ -253,7 +253,7 @@ inn-patches@isc.org
     posting).
 
 inn-committers@isc.org
-    CVS commit messages for INN are sent to this list (no posting
+    Subversion commit messages for INN are sent to this list (no posting
     allowed).
 
 inn-bugs@isc.org
@@ -320,9 +320,8 @@ Fourth, from the README:
     can learn more about the ISC's goals and accomplishments from the web
     page at <http://www.isc.org/>.
 
-The ISC provides ftp and web space, CVS server access for developers, and
-mailing lists and archives.  Donations to help support all of that are
-greatly appreciated.
+The ISC provides ftp and web space and mailing lists and archives.
+Donations to help support all of that are greatly appreciated.
 
 ------------------------------
 
@@ -332,11 +331,15 @@ First, join inn-workers, since that's where all the development discussion
 takes place.  The traffic isn't that high.
 
 Next, download a snapshot of the INN CURRENT branch as described above so
-that you have a relatively current source base to work from.  You may also
-want to try configuring CVSup or some other update mechanism so that you
-can get the latest version directly out of CVS, or you can just use the
-nightly snapshots if you wish.  Read the HACKING file at the top of the
-INN source tree for some general information and tips for working on INN.
+that you have a relatively current source base to work from.  You may want
+to check out the current source from Subversion; just point a Subversion
+client at:
+
+    http://inn.eyrie.org/svn/
+
+This repository is a read-only mirror that can lag up to an hour behind
+the working repository.  Read the HACKING file at the top of the INN
+source tree for some general information and tips for working on INN.
 
 Then pick something that looks interesting to you, mention what you're
 doing on inn-workers if it's likely to affect other parts of the
