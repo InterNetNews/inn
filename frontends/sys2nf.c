@@ -174,7 +174,7 @@ DoSub(F, p)
         "ba", "ca", "dc", "ne", "ny", "tx",
 
         "info", "mail", "opinions", "uunet"
-    }
+    };
 
     if ((s = strtok(p, ",")) == NULL)
 	return;
