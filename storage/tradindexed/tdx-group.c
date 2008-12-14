@@ -1070,7 +1070,8 @@ hashmap_load(void)
         hash_insert(hash, &group->hash, group);
         line = QIOread(active);
     }
-    cvector_free(data);
+    if (data != NULL)
+        cvector_free(data);
     QIOclose(active);
     return hash;
 }
