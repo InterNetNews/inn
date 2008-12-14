@@ -1410,6 +1410,10 @@ tdx_index_audit(bool fix)
        need to map hashes to group names, so load a hash of the active file to
        do that resolution. */
     hashmap = hashmap_load();
+    if (hashmap == NULL) {
+        warn("tradindexed: cannot hash active file");
+        return;
+    }
     data.index = index;
     data.fix = fix;
     hash_traverse(hashmap, index_audit_active, &data);
@@ -1419,6 +1423,5 @@ tdx_index_audit(bool fix)
             continue;
         index_audit_group(index, entry, hashmap, fix);
     }
-    if (hashmap != NULL)
-        hash_free(hashmap);
+    hash_free(hashmap);
 }
