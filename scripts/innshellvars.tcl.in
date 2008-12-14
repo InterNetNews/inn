@@ -28,11 +28,10 @@ set inn_archivedir "${inn_patharchive}"
 set inn_badnews "${inn_pathincoming}/bad"
 set inn_spoolnews "${inn_pathincoming}"
 
-set inn_newslbin "${inn_newshome}/local"
 set inn_innddir "${inn_pathrun}"
 set inn_locks "${inn_pathrun}"
 set inn_newsbin "${inn_pathbin}"
-set inn_newsetc "${inn_newshome}/etc"
+set inn_newsetc "${inn_pathetc}"
 
 set inn_active "${inn_pathdb}/active"
 set inn_activetimes "${inn_pathdb}/active.times"
