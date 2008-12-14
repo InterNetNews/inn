@@ -1,6 +1,8 @@
 #maxartsize:
     mta:	"/usr/lib/sendmail -oi -oem %s"
 
+incominglogfrequency:	200
+
 # testing comment
 
 # Added by innupgrade
