@@ -15,6 +15,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
+#include "inn/paths.h"
 #include "nntp.h"
 
 #define TEMPFILE	":tmp"
@@ -259,7 +260,7 @@ main(ac, av)
     if (!innconf_read(NULL))
         exit(1);
     /* Set defaults. */
-    act = "/usr/local/lib/newslib/active";
+    act = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     sys = "sys";
     dir = "feeds";
     while ((i = getopt(ac, av, "a:s:d:")) != EOF)
