@@ -93,7 +93,7 @@ no default value for this parameter; it must be set in F<inn.conf> or a
 fatal error message will be logged via syslog.
 
 For most systems, C</usr/lib/sendmail -oi -oem %s> (adjusted for the
-correct path to sendmail) is a good choice.
+correct path to B<sendmail>, and between double quotes) is a good choice.
 
 =item I<pathhost>
 
@@ -1312,7 +1312,7 @@ I<pathnews>/tmp.
 Here is a very minimalist example that only sets those parameters that are
 required.
 
-    mta:                /usr/lib/sendmail -oi -oem %s
+    mta:                "/usr/lib/sendmail -oi -oem %s"
     ovmethod:           tradindexed
     pathhost:           news.example.com
     pathnews:           /usr/local/news
