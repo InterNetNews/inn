@@ -13,25 +13,32 @@ set exec_prefix "@exec_prefix@"
 eval `@bindir@/innconfval -t`
 
 set inn_newshome "$inn_pathnews"
-set inn_newslib "@libdir@"
 set inn_spooldir "$inn_pathspool"
 set inn_most_logs "$inn_pathlog"
+set env(NEWSHOME) "$inn_newshome"
+set env(SPOOLDIR) "$inn_spooldir"
+set env(MOST_LOGS) "$inn_most_logs"
+
+set inn_newsbin "${inn_pathbin}"
+set inn_newsetc "${inn_pathetc}"
+set inn_newslib "@libdir@"
+set inn_innddir "${inn_pathrun}"
+set inn_locks "${inn_pathrun}"
+set env(NEWSBIN) "$inn_newsbin"
+set env(NEWSETC) "$inn_newsetc"
+set env(NEWSLIB) "$inn_newslib"
+set env(INNDDIR) "$inn_innddir"
 
 set inn_errlog "${inn_most_logs}/errlog"
 set inn_log "${inn_most_logs}/news"
 
+set inn_archivedir "${inn_patharchive}"
+set inn_spool "${inn_patharticles}"
 set inn_batch "${inn_pathoutgoing}"
 set inn_incoming "${inn_pathincoming}"
-set inn_spool "${inn_patharticles}"
 set inn_overviewdir "${inn_pathoverview}"
-set inn_archivedir "${inn_patharchive}"
-set inn_badnews "${inn_pathincoming}/bad"
 set inn_spoolnews "${inn_pathincoming}"
-
-set inn_innddir "${inn_pathrun}"
-set inn_locks "${inn_pathrun}"
-set inn_newsbin "${inn_pathbin}"
-set inn_newsetc "${inn_pathetc}"
+set inn_badnews "${inn_pathincoming}/bad"
 
 set inn_active "${inn_pathdb}/active"
 set inn_activetimes "${inn_pathdb}/active.times"
@@ -42,18 +49,16 @@ set inn_newactive "${inn_pathdb}/active.tmp"
 set inn_newsfeeds "${inn_newsetc}/newsfeeds"
 set inn_newsgroups "${inn_pathdb}/newsgroups"
 set inn_oldactive "${inn_pathdb}/active.old"
-set inn_localgroups "${inn_newsetc}/localgroups"
-set inn_expirectl "${inn_newsetc}/expire.ctl"
 set inn_path_motd "${inn_newsetc}/motd.news"
+set inn_expirectl "${inn_newsetc}/expire.ctl"
+set inn_localgroups "${inn_newsetc}/localgroups"
 
-set inn_daily "${inn_locks}/locks/LOCK.news.daily"
-
-set inn_inews "${inn_newsbin}/inews"
+set inn_controlprogs "${inn_pathcontrol}"
 set inn_innconfval "${inn_newsbin}/innconfval"
 set inn_innd "${inn_newsbin}/innd"
 set inn_innwatch "${inn_newsbin}/innwatch"
+set inn_inews "${inn_newsbin}/inews"
 set inn_rnews "${inn_newsbin}/rnews"
-set inn_controlprogs "${inn_pathcontrol}/control"
 set inn_perl_startup_innd "${inn_pathfilter}/startup_innd.pl"
 set inn_perl_filter_innd "${inn_pathfilter}/filter_innd.pl"
 set inn_perl_filter_nnrpd "${inn_pathfilter}/filter_nnrpd.pl"
@@ -62,19 +67,21 @@ set inn_path_python_inn_module "${pathfilter}/INN.py"
 set inn_path_tcl_startup "${inn_pathfilter}/startup.tcl"
 set inn_path_tcl_filter "${inn_pathfilter}/filter.tcl"
 
+set inn_daily "${inn_locks}/locks/LOCK.news.daily"
+
 set inn_newscontrol "${inn_innddir}/control"
 set inn_nntpconnect "${inn_innddir}/nntpin"
+set inn_serverpid "${inn_innddir}/innd.pid"
 set inn_innwstatus "${inn_innddir}/innwatch.status"
 set inn_watchpid "${inn_innddir}/innwatch.pid"
-set inn_serverpid "${inn_innddir}/innd.pid"
 
 set inn_awk "@AWK@"
 set inn_sed "@SED@"
+set inn_inndf "${inn_newsbin}/inndf"
+set inn_egrep "@EGREP@"
 set inn_perl "@PERL@"
 set inn_gpgv "@GPGV@"
 set inn_pgp "@PGP@"
-set inn_inndf "${inn_newsbin}/inndf"
-set inn_egrep "@EGREP@"
 set inn_sort "@SORT@"
 set inn_getftp "@PATH_GETFTP@"
 set inn_uustat "@UUSTAT@"
@@ -94,17 +101,24 @@ set inn_newsmaster "@NEWSMASTER@"
 set inn_newsuser "${inn_runasuser}"
 set inn_newsgroup "${inn_runasgroup}"
 
-set do_dbz_tagged_hash "@DO_DBZ_TAGGED_HASH@"
-
-set env(TMPDIR) "$inn_pathtmp"
-set inn_tmpdir "$inn_pathtmp"
-set inn_spooltemp "$inn_pathtmp"
-
 scan "@FILEMODE@" "%o" inn_filemode
 scan "@INEWSMODE@" "%o" inn_inewsmode
 scan "@RNEWSMODE@" "%o" inn_rnewsmode
+
+set do_dbz_tagged_hash "@DO_DBZ_TAGGED_HASH@"
+
+set inn_tmpdir "$inn_pathtmp"
+set env(TMPDIR) "$inn_pathtmp"
+
+set inn_spooltemp "$inn_pathtmp"
+
+set inn_newslbin "${inn_newshome}/local"
+set env(NEWSLBIN) "$inn_newslbin"
+
 scan "@NEWSUMASK@" "%o" inn_umask
 
-set env(PATH) "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"
+set inn_path "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"
+set env(PATH) "$inn_path"
 
+set inn_home "$inn_pathnews"
 set env(HOME) "$inn_pathnews"
