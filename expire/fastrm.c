@@ -146,6 +146,8 @@ filelist_empty(filelist *list)
 {
     int i;
 
+    if (list->files == NULL)
+        return;
     for (i = 0; i < list->count; i++)
         free(list->files[i]);
     list->count = 0;
