@@ -62,7 +62,7 @@ MaxLength(const char *p, const char *q)
     }
 
     /* Simple case of just want the begining? */
-    if ((unsigned)(q - p) < sizeof buff - 4) {
+    if (q == NULL || (unsigned)(q - p) < sizeof buff - 4) {
         strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
     }
