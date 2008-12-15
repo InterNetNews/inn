@@ -6,7 +6,7 @@
 # File:         innshellvars.tcl
 # RCSId:        $Id$
 # Description:  Set up any and all variables that an INN tcl script
-#               might need.
+#               might need.  Also sets umask.
 
 set prefix "@prefix@"
 set exec_prefix "@exec_prefix@"
@@ -95,6 +95,11 @@ set inn_uncompress "@UNCOMPRESS@"
 set inn_log_compress "@LOG_COMPRESS@"
 set inn_z "@LOG_COMPRESSEXT@"
 
+if { $inn_ovmethod == "ovdb" } {
+    set inn_db_home "${inn_pathoverview}"
+    set env(DB_HOME) "${inn_db_home}"
+}
+
 set inn_tempsock [ eval exec basename ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s/XXXXXX$/*/} ]
 set inn_tempsockdir [ exec echo ${inn_innddir}/ctlinndXXXXXX | $inn_sed -e {s@/[^/]*$@@} ]
 
@@ -117,6 +122,9 @@ set inn_newslbin "${inn_newshome}/local"
 set env(NEWSLBIN) "$inn_newslbin"
 
 scan "@NEWSUMASK@" "%o" inn_umask
+umask @NEWSUMASK@
+
+set inn_syslog_facility [ exec echo [string tolower "@SYSLOG_FACILITY@"] | $inn_sed -e {s/log_//} ]
 
 set inn_path "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"
 set env(PATH) "$inn_path"
