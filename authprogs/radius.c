@@ -444,6 +444,8 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	    now = time(0);
 	    tmout.tv_sec = end - now + 1;
 	    tmout.tv_usec = 0;
+	    warn("timeout talking to remote radius server %s:%d",
+                 inet_ntoa(sreq->sinr.sin_addr), ntohs(sreq->sinr.sin_port));
 	    continue;
 	}
 	slen = sizeof(sinl);
@@ -484,8 +486,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       }
     }
     if (authtries == 0)
-        warn("cannot talk to remote radius server %s:%d",
-             inet_ntoa(sreq->sinr.sin_addr), ntohs(sreq->sinr.sin_port));
+        warn("cannot talk to any remote radius servers");
     return(-2);
 }
 
