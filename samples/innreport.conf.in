@@ -1963,30 +1963,6 @@ section innxmit_unwanted {
         };
 };
 
-section crosspost {
-        title   "Crosspost stats:";
-	data    "%crosspost";
-        column {
-                name          "Events";
-                format        "%-63.63s";
-		value         "$key";
-		format_total  "TOTAL: %-56.56s";
-		total         "$num";
-        };
-        column {
-                name          "Number";
-		value         "$crosspost{$key}";
-		format        "%7s";
-		total         "total(%crosspost)";
-        };
-        column {
-                name          "Num/min";
-		value         "$crosspost_times{$key}";
-		format        "%7s";
-		total         "total(%crosspost_times)";
-        };
-};
-
 section batcher_elapsed {
         title   "UUCP batches created:";
 	data    "%batcher_elapsed";

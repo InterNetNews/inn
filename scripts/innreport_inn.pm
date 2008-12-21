@@ -91,9 +91,6 @@ our %controlchan_rm;
 our %controlchan_sendme_site;
 our %controlchan_skippgp;
 our %controlchan_who;
-our %crosspost;
-our $crosspost_time;
-our %crosspost_times;
 our %inn_badart;
 our %innd_accepted;
 our %innd_accepted_sum;
@@ -2038,33 +2035,6 @@ sub collect($$$$$$) {
   }
 
   ###########
-  ## crosspost
-  if ($prog eq "crosspost") {
-    # seconds 1001 links 3182 0 symlinks 0 0 mkdirs 0 0
-    # missing 13 toolong 0 other 0
-    if ($left =~ /^seconds\ (\d+)
-	           \ links\ (\d+)\ (\d+)
-	           \ symlinks\ (\d+)\ (\d+)
-	           \ mkdirs\ (\d+)\ (\d+)
-	           \ missing\ (\d+)
-	           \ toolong\ (\d+)
-	           \ other\ (\d+)
-	         $/ox) {
-      $crosspost_time += $1;
-      $crosspost{'Links made'} += $2;
-      $crosspost{'Links failed'} += $3;
-      $crosspost{'Symlinks made'} += $4;
-      $crosspost{'Symlinks failed'} += $5;
-      $crosspost{'Mkdirs made'} += $6;
-      $crosspost{'Mkdirs failed'} += $7;
-      $crosspost{'Files missing'} += $8;
-      $crosspost{'Paths too long'} += $9;
-      $crosspost{'Others'} += $10;
-      return 1;
-    }
-  }
-
-  ###########
   ## cnfsstat
   if ($prog eq "cnfsstat") {
     # Class ALT for groups matching "alt.*" article size min/max: 0/1048576
@@ -2273,14 +2243,6 @@ sub adjust($$) {
       undef %nnrpd_time_max;
       undef %nnrpd_time_num;
       undef %nnrpd_time_time;
-    }
-
-    # adjust the crosspost stats.
-    if (%crosspost) {
-      foreach $key (keys (%crosspost)) {
-	$crosspost_times{$key} = $crosspost_time ?
-	  sprintf "%.2f", $crosspost{$key} / $crosspost_time * 60 : "?";
-      }
     }
   }
 

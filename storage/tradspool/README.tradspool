@@ -35,9 +35,3 @@ is posted to, when expiration is done SMCancel() has to open the article
 to find out what other newsgroups the article is posted to.  Eurggh. 
 Suggestions for a better scheme are welcome. 
 
-Other problems of note: the storage manager code has no way to get to the 
-'DoLinks' (-L) flag setting of innd, so currently you can't use the
-"crosspost" program with tradspool.  I guess the proper thing to do would be
-to make DoLinks a config option in storage.conf instead, but I haven't
-done that yet. 
-

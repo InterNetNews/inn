@@ -955,8 +955,8 @@ else).  See L<Processing Newsgroup Control Messages> for more details.
 
 For those of you upgrading from earlier versions of INN, note that the
 functionality of overchan(8) and B<crosspost> is now incorporated into INN
-and neither of those programs is necessary.  Unfortunately, B<crosspost>
-currently will not work even with the tradspool storage method.  You can
+and neither of those programs is necessary.  Although B<crosspost> is no
+longer shipped with INN (and will not be working if used), you can
 still use B<overchan> if you make sure to set I<useoverchan> to true in
 F<inn.conf> so that B<innd> doesn't write overview data itself, but be
 careful:  B<innd> may accept articles faster than B<overchan> can process the

@@ -50,7 +50,6 @@ backends/actsyncd.in                  Daemon to run actsync periodically
 backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
-backends/crosspost.c                  Create links for crossposts (obsolete)
 backends/cvtbatch.c                   Add fields to simple batchfile
 backends/filechan.c                   Split a funnel into separate files
 backends/innbind.c                    Bind to low-numbered network ports
