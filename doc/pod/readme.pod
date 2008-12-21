@@ -271,7 +271,6 @@ only, unfortunately.
 
 =item suck
 
-URL:  L<http://home.comcast.net/~bobyetman/index.html> (obsolete)
 URL:  L<http://packages.debian.org/suck>
 
 B<suck> is a separate package for downloading a news feed via a reading
