@@ -131,7 +131,6 @@ contrib/tunefeed
 control/controlbatch
 control/controlchan
 control/docheckgroups
-control/gpgverify
 control/perl-nocem
 control/pgpverify
 control/signcontrol

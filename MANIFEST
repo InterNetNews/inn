@@ -110,7 +110,6 @@ control/Makefile                      Makefile for control programs
 control/controlbatch.in               Batch program for controlchan
 control/controlchan.in                Channel program for control messages
 control/docheckgroups.in              Script to execute checkgroups
-control/gpgverify.in                  Verify control messages with GnuPG
 control/modules                       Modules for controlchan (Directory)
 control/modules/checkgroups.pl        checkgroups controlchan handler
 control/modules/ihave.pl              ihave controlchan handler
