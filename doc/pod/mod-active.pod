@@ -1,0 +1,55 @@
+=head1 NAME
+
+mod-active - Batch processing of newsgroups creation and removal commands
+
+=head1 SYNOPSIS
+
+B<mod-active> [I<ctlinnd-command-file> ...]
+
+=head1 DESCRIPTION
+
+B<mod-active> is a Perl script that updates the F<active> file based on
+its input lines of B<ctlinnd> C<newgroup>, C<rmgroup> and C<changegroup>
+commands.  It pauses the server briefly while the existing F<active> file
+is read and rewritten, which not only keeps B<innd> from updating the
+F<active> file but also locks against other instances of B<mod-active>.
+
+The script must be run as the news user.
+
+The input to B<mod-active> can come either from one or more I<ctlinnd-command-file>
+files named on the command line, or from the standard input.  Typically its input
+is the output from the B<docheckgroups> or B<actsync> commands.  Every line which
+contains the string C<ctlinnd newgroup>, C<ctlinnd rmgroup>, or C<ctlinnd changegroup>,
+optionally preceded by whitespace and/or the path to B<ctlinnd>, is noted for
+the update.  Redundant commands, such as a newgroup directive for a group
+that already exists, are silently ignored.  All other lines in the input are
+also silently ignored.  After the new F<active> file has been generated,
+the existing one is renamed to F<active.old> and the new one is moved into place.
+The script then displays the differences between the two files.  Any groups
+that were added to the F<active> file are also added to the F<active.times>
+file with the string C<checkgroups-update>.
+
+Please note that no syntax checking is performed on group names by B<mod-active>.
+
+=head1 BUGS
+
+Though B<innd> is paused while B<mod-active> works, it is not inconceivable
+that there could be a conflict if something else tries to update the F<active>
+file during the relatively short time that B<mod-active> is working.  The two
+most realistic ways for this to happen are either by an administrator
+concurrently doing a manual B<ctlinnd> command, or by B<innd> receiving
+a control message, then B<mod-active> pausing the server, then the control
+message handler script that B<innd> forked running its own B<ctlinnd> command
+while B<mod-active> is working.  Note that such scenarios are I<very> unlikely
+to happen.
+
+=head1 HISTORY
+
+Written by David C Lawrence <tale@isc.org> for InterNetNews.  Converted to POD
+by Julien Elie. 
+
+=head1 SEE ALSO
+
+active(5), active.times(5), actsync(8), ctlinnd(8), docheckgroups(8), innd(8).
+
+=cut
