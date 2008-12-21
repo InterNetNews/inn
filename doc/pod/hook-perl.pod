@@ -591,17 +591,14 @@ publication.  This is not an endorsement of these filters by ISC or
 the INN developers, but is included as assistance in locating packages
 which make use of this filter mechanism.
 
-  CleanFeed               Jeremy Nixon <jeremy@exit109.com>
-  <URL:http://www.exit109.com/~jeremy/news/cleanfeed.html>
+  Cleanfeed               Jeremy Nixon <jeremy@exit109.com>
+  <URL:http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+  <URL:http://www.bofh.it/~md/cleanfeed/> (previous version by Marco d'Itri)
+  <URL:http://www.exit109.com/~jeremy/news/cleanfeed.html> (Jeremy Nixon)
         A spam filter catching excessive multi-posting and a host of
         other things.  Uses filter_innd.pl exclusively, requires the MD5
         Perl module.  Probably the most popular and widely-used Perl
         filter around.
-
-  Usenet II Filter        Edward S. Marshall <emarshal@xnet.com>
-  <URL:http://www.xnet.com/~emarshal/inn/filter_nnrpd.pl>
-        Checks for "soundness" according to Usenet II guidelines in the
-        net.* hierarchy.  Designed to use filter_nnrpd.pl.
 
   News Gizmo              Aidan Cully <aidan@panix.com>
   <URL:http://www.panix.com/gizmo/>

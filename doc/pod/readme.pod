@@ -225,11 +225,12 @@ answer questions about it.
 
 =over 4
 
-=item CleanFeed
+=item Cleanfeed
 
-URL:  L<http://www.bofh.it/~md/cleanfeed/>
+URL:  L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+URL:  L<http://www.bofh.it/~md/cleanfeed/> (previous version by Marco d'Itri)
 
-CleanFeed is an extremely powerful spam filter, probably the most widely
+Cleanfeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
 and a host of other things, and is highly configurable.  Note that it
 requires that INN be built with Perl support (the B<--with-perl> option to
