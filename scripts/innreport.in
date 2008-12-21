@@ -95,7 +95,7 @@ use strict;
 use Carp qw(confess);
 
 ## Do you want to create a Web page. Pick DO or DONT.
-my $HTML = "DO";
+my $HTML = "DONT";
 
 ## Do you want the graphs (need $HTML too). Pick DO or DONT.
 my $GRAPH = "DO";
@@ -2819,8 +2819,8 @@ sub Usage {
   print "    -casesensitive      Case sensitive";
   print " [default]" if ($CASE_SENSITIVE);
   print "\n\n";
-  print "Use no in front of boolean options to unset them.\n";
-  print "For example, \"-html\" is set by default. Use \"-nohtml\" to remove this\n";
+  print "Use \"no\" in front of boolean options to unset them.\n";
+  print "For example, \"-graph\" is set by default.  Use \"-nograph\" to remove this\n";
   print "feature.\n";
   exit 0;
 }

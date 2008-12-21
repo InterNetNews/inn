@@ -13,6 +13,7 @@ section default {
 	libpath         "@libdir@";
 	logpath		"@LOGDIR@";
 	unknown		true;        # want unknown entries.
+        html-unknown    true;        # want unknown entries in HTML reports. 
 	max_unknown     50;          # max unknown entries to display.
 	casesensitive   true;
 	module		"innreport_inn";  # ${libpath}/${module}.pm
@@ -26,12 +27,12 @@ section default {
 	index			"index.html"; # name of the HTML index file.
       # html_file_extension	".html";
 
-      # html_dir     "/var/www/News/stats"; # default to pathhttp in inn.conf
+      # html_dir        "@HTTPDIR@"; # default to pathhttp in inn.conf.
 	img_dir         "pics";      # images will go to ${html_dir}/${img_dir}
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
 	title		"Daily Usenet report";
-      # title	        "Daily Usenet report for <a href=\"/News/stats/\">news.y.z</a>";
+      # title	        "Daily Usenet report for <a href=\"news/stats/\">news.y.z</a>";
       # footer		"Local contact: <a href=\"mailto:x@y.z\">x@y.z</a>";
 
       # Attributes inside <body> tag.  Note that this is not valid XHTML.
