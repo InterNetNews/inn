@@ -120,7 +120,7 @@ int main (int argc, char **argv)
   bool checkConfig = false ;
   bool val;
 
-  strlcpy (dateString,ctime(&now),sizeof (dateString)) ;
+  timeToString (now, dateString, sizeof (dateString)) ;
 
   message_program_name = strrchr (argv [0],'/');
   if (message_program_name == NULL)
@@ -289,7 +289,7 @@ int main (int argc, char **argv)
 
   if ( !checkConfig ) 
     {
-      notice ("ME starting at %s (%s)", dateString, INN_VERSION_STRING);
+      notice ("ME starting at %s\n (%s)", dateString, INN_VERSION_STRING);
     }
 
   val = true;
@@ -671,6 +671,7 @@ static void gprintinfo (void)
 {
   char *snapshotFile;
   FILE *fp;
+  char nowString[30];
   time_t now = theTime() ;
 
   snapshotFile = concatpath(innconf->pathlog, SNAPSHOT_FILE);
@@ -689,8 +690,9 @@ static void gprintinfo (void)
   setbuf (fp, NULL) ;
 #endif
 
-  fprintf (fp,"----------------------------System snaphot taken at: %s\n",
-           ctime (&now)) ;
+  timeToString (now, nowString, sizeof (nowString)) ;
+  fprintf (fp,"----------------------------System snaphot taken at: %s\n\n",
+           nowString) ;
   gPrintListenerInfo (fp,0) ;
   fprintf (fp,"\n\n\n\n") ;
   gPrintHostInfo (fp,0) ;
@@ -768,6 +770,12 @@ static int mainConfigLoadCbk (void *data)
     {
       logFile = concatpath(innconf->pathlog, p);
       free (p) ;
+    }
+
+  if (getString (topScope,"log-time-format",&p,NO_INHERIT))
+    {
+      free(timeToStringFormat);
+      timeToStringFormat = p;
     }
 
    /* For imap/lmtp delivering */

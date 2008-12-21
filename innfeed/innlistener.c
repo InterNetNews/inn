@@ -230,8 +230,7 @@ void shutDown (InnListener l)
       char dateString [30] ;
 
       gHostStats();
-      strlcpy (dateString,ctime (&now),sizeof (dateString)) ;
-      dateString [24] = '\0' ;
+      timeToString (now, dateString, sizeof (dateString)) ;
 
       if (fastExit)
         notice ("ME finishing (quickly) at %s", dateString) ;

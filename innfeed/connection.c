@@ -4461,9 +4461,8 @@ static void delConnection (Connection cxn)
       free (PointersFreedOnExit) ;
       freeTimeoutQueue () ;
 
-      strlcpy (dateString,ctime (&now), sizeof(dateString)) ;
-
-      notice ("ME finishing at %s", dateString) ;
+      timeToString (now, dateString, sizeof(dateString)) ;
+      notice ("ME finishing at %s\n", dateString) ;
 
       exit (0) ;
     }

@@ -332,7 +332,7 @@ static unsigned int maxPeerNameLen = 0 ;
 
 static unsigned int hostHighwater = HOST_HIGHWATER ;
 static time_t start ;
-static char startTime [30] ;    /* for ctime(3) */
+static char startTime [30] ;    /* for timeToString */
 static pid_t myPid ;
 
 static char *statusFile = NULL ;
@@ -410,12 +410,10 @@ int hostConfigLoadCbk (void *data)
   else
     hostSetStatusFile (INNFEED_STATUS) ;
   
-  
   if (getBool (topScope,"connection-stats",&bval,NO_INHERIT))
     logConnectionStats = (bval ? true : false) ;
   else
     logConnectionStats = (LOG_CONNECTION_STATS ? true : false) ;
-
 
   if (getInteger (topScope,"host-queue-highwater", &iv,NO_INHERIT))
     {
@@ -1111,7 +1109,7 @@ static Host newHost (InnListener listener, HostParams p)
   if (maxIpNameLen == 0)
     {
       start = theTime() ;
-      strlcpy (startTime,ctime (&start),sizeof (startTime)) ;
+      timeToString (start, startTime, sizeof (startTime)) ;
       myPid = getpid() ;
     }
   
@@ -1258,6 +1256,7 @@ void gPrintHostInfo (FILE *fp, unsigned int indentAmt)
 
 void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 {
+  char dateString [30] ;
   char indent [INDENT_BUFFER_SIZE] ;
   unsigned int i ;
   ProcQElem qe ;
@@ -1404,13 +1403,18 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
            100.0 * host->blFull / cnt) ;
   fprintf (fp,"%s      number of samples : %u\n", indent, host->blCount) ;
 
-  fprintf (fp,"%s    firstConnectTime : %s",indent,
-           ctime (&host->firstConnectTime));
-  fprintf (fp,"%s    connectTime : %s",indent,ctime (&host->connectTime));
-  fprintf (fp,"%s    spoolTime : %s",indent,ctime (&host->spoolTime)) ;
-  fprintf (fp,"%s    last-spool-time : %s",indent,
-           ctime (&host->lastSpoolTime)) ;
-  
+  timeToString (host->firstConnectTime, dateString, sizeof (dateString));
+  fprintf (fp, "%s    firstConnectTime : %s\n", indent, dateString);
+
+  timeToString (host->connectTime, dateString, sizeof (dateString));
+  fprintf (fp, "%s    connectTime : %s\n", indent, dateString);
+
+  timeToString (host->spoolTime, dateString, sizeof (dateString));
+  fprintf (fp, "%s    spoolTime : %s\n", indent, dateString);
+
+  timeToString (host->lastSpoolTime, dateString, sizeof (dateString));
+  fprintf (fp, "%s    last-spool-time : %s\n", indent, dateString);
+
 #if 0
   fprintf (fp,"%s    tape {\n",indent) ;
   printTapeInfo (host->myTape,fp,indentAmt + INDENT_INCR) ;
@@ -3160,7 +3164,7 @@ static void hostLogStatus (void)
       
       now = time (NULL) ;
       sec = (long) (now - start) ;
-      strlcpy (timeString,ctime (&now),sizeof (timeString)) ;
+      timeToString (now, timeString, sizeof (timeString)) ;
 
       if (genHtml)
         {
@@ -3173,7 +3177,7 @@ static void hostLogStatus (void)
 	  fprintf (fp, "<PRE>\n");
 	}
 
-      fprintf (fp,"innfeed from %s\npid %d started %s\nUpdated: %s",
+      fprintf (fp,"innfeed from %s\npid %d started %s\n\nUpdated: %s\n",
                INN_VERSION_STRING,(int) myPid,startTime,timeString) ;
       fprintf (fp,"(peers: %d active-cxns: %d sleeping-cxns: %d idle-cxns: %d)\n\n",
                peerNum, actConn, slpConn,(maxcon - (actConn + slpConn))) ;

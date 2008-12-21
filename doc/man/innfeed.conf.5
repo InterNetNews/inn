@@ -190,6 +190,11 @@ that couldn't be sent via syslog(3) should go (such as those generated when
 a positive value for ``\fBdebug-value\fP'', is used). This corresponds to 
 the ``\fI\-l\fP'' command-line option. A relative pathname is relative to
 the ``\fBbacklog-directory\fP'' value.
+.TP
+.B log-time-format
+This key requires a format string suitable for strftime(3). It is used for
+messages sent via syslog(3) and to the \fBstatus-file\fP. Default value
+is "%a %b %d %H:%M:%S %Y".
 .\" .TP
 .\" .B initial-sleep
 .\" This key requires a positive integer value. It specifies how many seconds

@@ -42,6 +42,9 @@ typedef void (*EndpWorkCbk) (EndPoint ep, void *data) ;
 /* debugging information */
 extern unsigned int loggingLevel ;     /* if 0 then d_printf is a no-op */
 
+/* used by timeToString with strftime(3) */
+extern char *timeToStringFormat ;
+
 /* the current count of file desccriptors */
 extern unsigned int openfds ;
 
@@ -113,6 +116,9 @@ bool isOlder (const char *file1, const char *file2) ;
 
 /* converts val into a printable string */
 const char *boolToString (bool val) ;
+
+/* strftime with "%a %b %d %H:%M:%S %Y" (like ctime without linefeed) */
+char* timeToString (time_t time, char* buffer, size_t size) ;
 
 /* memory leak checker helper. */
 void addPointerFreedOnExit (char *pointerToFree) ;

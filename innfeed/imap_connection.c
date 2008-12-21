@@ -4170,9 +4170,7 @@ static void delConnection (Connection cxn)
       time_t now = theTime () ;
       char dateString [30] ;
 
-      strlcpy (dateString,ctime (&now),sizeof (dateString)) ;
-      dateString [24] = '\0' ;
-
+      timeToString (now, dateString, sizeof (dateString)) ;
       notice ("ME finishing at %s", dateString) ;
 
       exit (0) ;

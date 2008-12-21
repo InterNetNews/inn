@@ -1495,12 +1495,12 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
 static void printDate (TimeoutId tid, void *data) ;
 static void printDate (TimeoutId tid, void *data)
 {
-  time_t t ;
+  char dateString[30];
+  const time_t t = theTime() ;
 
-  t = theTime() ;
-  
-  d_printf (1,"Timeout (%d) time now is %ld %s",
-           (int) tid,(long) t,ctime(&t)) ;
+  timeToString (t, dateString, sizeof (dateString)) ;
+  d_printf (1,"Timeout (%d) time now is %ld %s\n",
+            (int) tid, (long) t, dateString) ;
 
   if (timeoutQueue == NULL) 
     {
@@ -1518,7 +1518,8 @@ static void Timeout (TimeoutId tid, void *data)
   static int seeded ;
   static int howMany ;
   static int i ;
-  time_t t = theTime() ;
+  char dateString[30];
+  const time_t t = theTime() ;
 
   if ( !seeded )
     {
@@ -1526,9 +1527,10 @@ static void Timeout (TimeoutId tid, void *data)
       seeded = 1 ;
     }
 
-  d_printf (1,"Timeout (%d) time now is %ld %s",
-           (int) tid, (long) t,ctime(&t)) ;
-  
+  timeToString (t, dateString, sizeof (dateString)) ;
+  d_printf (1,"Timeout (%d) time now is %ld %s\n",
+            (int) tid, (long) t, dateString) ;
+
   if (timeoutQueue != NULL && timeoutQueue->next != NULL)
     d_printf (1,"%s timeout id %d\n",
              (removeTimeout (rm) ? "REMOVED" : "FAILED TO REMOVE"), rm) ;

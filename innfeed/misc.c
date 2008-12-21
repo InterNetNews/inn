@@ -40,6 +40,7 @@ int debuggingOutput ;
 unsigned int loggingLevel ;
 char **PointersFreedOnExit ;
 
+char *timeToStringFormat = 0;
 bool debuggingDump = true ;
 extern void (*gPrintInfo) (void) ;
 void (*gCleanUp) (void) = 0 ;
@@ -115,6 +116,7 @@ void d_printf (unsigned int level, const char *fmt, ...)
   static pid_t myPid ;
   char timeString [30] ;
   time_t now ;
+  struct tm *tm ;
   va_list ap ;
     
   if (myPid == 0)
@@ -124,9 +126,8 @@ void d_printf (unsigned int level, const char *fmt, ...)
     return ;
   
   now = theTime() ;
-  /* strip off leading day name */
-  strlcpy (timeString, ctime (&now) + 4, sizeof (timeString)) ;
-  timeString [15] = '\0' ;      /* strip off trailing year and newline */
+  tm = localtime (&now);
+  strftime (timeString, sizeof(timeString), "%b %d %H:%M:%S", tm);
 
   va_start (ap, fmt) ;
   fprintf (stderr, "%s %s[%ld]: ",timeString,
@@ -589,6 +590,15 @@ long fileLength (int fd)
 const char *boolToString (bool val)
 {
   return val ? "true" : "false" ;
+}
+
+char* timeToString(time_t t, char* buffer, size_t size)
+{
+  static const char defaultFormat[] = "%a %b %d %H:%M:%S %Y" ;
+  const struct tm *const tm = localtime(&t);
+  strftime (buffer, size,
+    timeToStringFormat == 0 ? defaultFormat : timeToStringFormat, tm);
+  return buffer;
 }
 
 void addPointerFreedOnExit (char *pointerToFree)
