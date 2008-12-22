@@ -132,7 +132,7 @@ sub mailto {
 
         # Empty line signals the end of header.
         if (/^$/) {
-            print SM "To: @a\n\n";
+            print SM "To: ".join(",", @a)."\n\n";
             last;
         }
 
