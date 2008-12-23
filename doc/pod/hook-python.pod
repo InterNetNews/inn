@@ -95,8 +95,8 @@ These values will be buffer objects holding the contents of the
 same named article headers, except for the special C<__BODY__> and C<__LINES__>
 items.  Items not present in the article will contain C<None>.
 
-C<art('__BODY__')> is a buffer object containing the article's entire body, and
-C<art('__LINES__')> is an int holding B<innd>'s reckoning of the number of lines
+C<art['__BODY__']> is a buffer object containing the article's entire body, and
+C<art['__LINES__']> is an int holding B<innd>'s reckoning of the number of lines
 in the article.  All the other elements will be buffers with the contents
 of the same-named article headers.
 
