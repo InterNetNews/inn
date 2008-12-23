@@ -19,6 +19,15 @@
 import re
 from string import *
 
+
+##  The built-in intern() method has been in the sys module
+##  since Python 3.0.
+import sys
+if sys.version_info[0] >= 3:
+    def intern(headerName):
+        return sys.intern(headerName)
+
+
 ##  This looks weird, but creating and interning these strings should
 ##  let us get faster access to header keys (which innd also interns) by
 ##  losing some strcmps under the covers.
@@ -142,7 +151,7 @@ class InndFilter:
         preceded by a CHECK.)
         """
         return ""               # Deactivate the samples.
-        
+
         if self.re_none44.search(msgid):
             return "But I don't like spam!"
         if msgid[0:8] == '<cancel.':
@@ -199,6 +208,10 @@ class InndFilter:
                 if self.re_newrmgroup.match(art[Control]):
                     if self.re_meow.search(art[__BODY__]):
                         return "The fake tale meows again."
+                    # Python 3.x uses memoryview(b'mxyzptlk') because buffers
+                    # do not exist any longer.  Note that the argument is
+                    # a bytes object.
+                    # if art[Distribution] == memoryview(b'mxyzptlk'):
                     if art[Distribution] == buffer('mxyzptlk'):
                         return "Evil control message from the 10th dimension"
                 if self.re_obsctl.match(art[Control]):
@@ -252,7 +265,9 @@ from INN import *
 
 try:
     import sys
-except Exception, errmsg:
+
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('Error', "import boo-boo: " + errmsg[0])
 
 
@@ -275,6 +290,6 @@ spamfilter = InndFilter()
 try:
     set_filter_hook(spamfilter)
     syslog('n', "spamfilter successfully hooked into INN")
-except Exception, errmsg:
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('e', "Cannot obtain INN hook for spamfilter: %s" % errmsg[0])
-

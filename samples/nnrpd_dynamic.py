@@ -56,15 +56,15 @@ class DYNACCESS:
            readers.conf and a reader requests either read or post
            permission for particular newsgroup."""
 
-	# Just for debugging purposes.
-	syslog('notice', 'n_a dynamic() invoked against type %s, hostname %s, ipaddress %s, interface %s, user %s' % (\
-		attributes['type'], \
-		attributes['hostname'], \
-		attributes['ipaddress'], \
-		attributes['interface'], \
-		attributes['user']))
+        # Just for debugging purposes.
+        syslog('notice', 'n_a dynamic() invoked against type %s, hostname %s, ipaddress %s, interface %s, user %s' % ( \
+                attributes['type'], \
+                attributes['hostname'], \
+                attributes['ipaddress'], \
+                attributes['interface'], \
+                attributes['user']))
 
-	# Allow reading of any newsgroup but not posting.
+        # Allow reading of any newsgroup but not posting.
         if 'post' == str(attributes['type']):
             syslog('notice', 'dynamic authorization access for post access denied')
             return "no posting for you"
@@ -95,5 +95,6 @@ mydynaccess = DYNACCESS()
 try:
     set_auth_hook(mydynaccess)
     syslog('notice', "dynamic access module successfully hooked into nnrpd")
-except Exception, errmsg:
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('error', "Cannot obtain nnrpd hook for dynamic access method: %s" % errmsg[0])

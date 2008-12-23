@@ -53,5 +53,6 @@ mydynaccess = MYDYNACCESS()
 try:
     set_auth_hook(mydynaccess)
     syslog('notice', "dynamic access module successfully hooked into nnrpd")
-except Exception, errmsg:
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('error', "Cannot obtain nnrpd hook for dynamic access method: %s" % errmsg[0])

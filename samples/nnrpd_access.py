@@ -53,14 +53,14 @@ class ACCESS:
     def access(self, attributes):
         """Called when python_access: is encountered in readers.conf."""
 
-	# Just for debugging purposes.
-	syslog('notice', 'n_a access() invoked: hostname %s, ipaddress %s, interface %s, user %s' % (\
-		attributes['hostname'], \
-		attributes['ipaddress'], \
-		attributes['interface'], \
-		attributes['user']))
+        # Just for debugging purposes.
+        syslog('notice', 'n_a access() invoked: hostname %s, ipaddress %s, interface %s, user %s' % ( \
+                attributes['hostname'], \
+                attributes['ipaddress'], \
+                attributes['interface'], \
+                attributes['user']))
 
-	# Allow newsreading from specific host only.
+        # Allow newsreading from specific host only.
         if '127.0.0.1' == str(attributes['ipaddress']):
             syslog('notice', 'authentication access by IP address succeeded')
             return {'read':'*', 'post':'*'}
@@ -88,5 +88,6 @@ myaccess = ACCESS()
 try:
     set_auth_hook(myaccess)
     syslog('notice', "access module successfully hooked into nnrpd")
-except Exception, errmsg:
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('error', "Cannot obtain nnrpd hook for access method: %s" % errmsg[0])

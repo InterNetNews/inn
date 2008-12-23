@@ -59,15 +59,15 @@ class AUTH:
     def authenticate(self, attributes):
         """Called when python_auth: is encountered in readers.conf."""
 
-	# Just for debugging purposes.
-	syslog('notice', 'n_a authenticate() invoked: hostname %s, ipaddress %s, interface %s, user %s' % (\
-		attributes['hostname'], \
-		attributes['ipaddress'], \
-		attributes['interface'], \
-		attributes['user']))
+        # Just for debugging purposes.
+        syslog('notice', 'n_a authenticate() invoked: hostname %s, ipaddress %s, interface %s, user %s' % ( \
+                attributes['hostname'], \
+                attributes['ipaddress'], \
+                attributes['interface'], \
+                attributes['user']))
 
-	# Do username password authentication.
-        if 'foo' == str(attributes['user'])  \
+        # Do username password authentication.
+        if 'foo' == str(attributes['user']) \
           and 'foo' == str(attributes['pass']):
             syslog('notice', 'authentication by username succeeded')
             return (self.authcodes['ALLOWED'], 'No error', 'default_user')
@@ -95,5 +95,6 @@ myauth = AUTH()
 try:
     set_auth_hook(myauth)
     syslog('notice', "authentication module successfully hooked into nnrpd")
-except Exception, errmsg:
+except Exception, errmsg:    # Syntax for Python 2.x.
+#except Exception as errmsg: # Syntax for Python 3.x.
     syslog('error', "Cannot obtain nnrpd hook for authentication method: %s" % errmsg[0])
