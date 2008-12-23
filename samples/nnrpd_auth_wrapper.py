@@ -41,7 +41,7 @@ class MYAUTH:
         err_str = "No error"
         if perm[0] == 481:
             err_str = "Python authentication error!"
-        return (perm[0],err_str)
+        return (perm[0], err_str)
 
     def authen_close(self):
         (self.old).close()

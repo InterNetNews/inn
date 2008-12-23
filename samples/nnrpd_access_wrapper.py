@@ -38,7 +38,7 @@ class MYACCESS:
         # attributes['type'] = memoryview(b'connect')
         attributes['type'] = buffer('connect')
         perm = (self.old).authenticate(attributes)
-        result = dict({('users', '*')})
+        result = dict({'users': '*'})
         if perm[1] == 1:
             result['read'] = perm[3]
         if perm[2] == 1:
