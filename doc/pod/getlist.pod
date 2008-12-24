@@ -37,9 +37,8 @@ groups but not aliased groups or groups that disallow postings.
 The listing files other than the F<active> file are common extensions to the
 NNTP protocol and may not be available on all servers.  For instance,
 C<distrib.pats>, C<moderators>, C<motd>, C<overview.fmt> and C<subscriptions>,
-amongst other (like C<extensions>, which is not a file, strictly speaking),
-may be available.  Moreover, a uwildmat(3) pattern I<pattern> may also be
-usable for some of these listing files.
+amongst other, may be available.  Moreover, a uwildmat(3) pattern I<pattern>
+may also be usable for some of these listing files.
 
 For more information on the formats of these files, see distrib.pats(5),
 moderators(5), motd.news(5), overview.fmt(5) and subscriptions(5).

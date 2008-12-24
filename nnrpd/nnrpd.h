@@ -234,24 +234,25 @@ extern void 		SetDefaultAccess(ACCESSGROUP*);
 extern void		Reply(const char *fmt, ...);
 extern void             Printf(const char *fmt, ...);
 
-extern void		CMDauthinfo  (int ac, char** av);
-extern void		CMDdate      (int ac, char** av);
-extern void		CMDfetch     (int ac, char** av);
-extern void		CMDgroup     (int ac, char** av);
-extern void		CMDhelp      (int ac, char** av);
-extern void		CMDlist      (int ac, char** av);
-extern void		CMDmode      (int ac, char** av);
-extern void		CMDnewgroups (int ac, char** av);
-extern void		CMDnewnews   (int ac, char** av);
-extern void		CMDnextlast  (int ac, char** av);
-extern void             CMDover      (int ac, char** av);
-extern void		CMDpost      (int ac, char** av);
-extern void             CMDquit      (int ac, char** av);
-extern void		CMDxgtitle   (int ac, char** av);
-extern void		CMDpat       (int ac, char** av);
-extern void		CMD_unimp    (int ac, char** av);
+extern void             CMDauthinfo     (int ac, char** av);
+extern void             CMDcapabilities (int ac, char** av);
+extern void             CMDdate         (int ac, char** av);
+extern void             CMDfetch        (int ac, char** av);
+extern void             CMDgroup        (int ac, char** av);
+extern void             CMDhelp         (int ac, char** av);
+extern void             CMDlist         (int ac, char** av);
+extern void             CMDmode         (int ac, char** av);
+extern void             CMDnewgroups    (int ac, char** av);
+extern void             CMDnewnews      (int ac, char** av);
+extern void             CMDnextlast     (int ac, char** av);
+extern void             CMDover         (int ac, char** av);
+extern void             CMDpost         (int ac, char** av);
+extern void             CMDquit         (int ac, char** av);
+extern void             CMDxgtitle      (int ac, char** av);
+extern void             CMDpat          (int ac, char** av);
+extern void             CMD_unimp       (int ac, char** av);
 #ifdef HAVE_SSL
-extern void		CMDstarttls  (int ac, char** av);
+extern void             CMDstarttls     (int ac, char** av);
 #endif
 
 extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);

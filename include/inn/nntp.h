@@ -44,6 +44,7 @@
 
 enum nntp_code {
     NNTP_INFO_HELP              = 100,
+    NNTP_INFO_CAPABILITIES      = 101,
     NNTP_INFO_DATE              = 111,
     NNTP_OK_BANNER_POST         = 200,
     NNTP_OK_BANNER_NOPOST       = 201,

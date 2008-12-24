@@ -119,6 +119,8 @@ static CMDENT	CMDtable[] = {
         "|GENERIC program [argument ...]" },
     {	"BODY",		CMDfetch,	true,	1,	2,
 	CMDfetchhelp },
+    {   "CAPABILITIES", CMDcapabilities,false,  1,      2,
+        "[keyword]" },
     {	"DATE",		CMDdate,	false,	1,	1,
 	NULL },
     {	"GROUP",	CMDgroup,	true,	2,	2,
@@ -135,7 +137,7 @@ static CMDENT	CMDtable[] = {
 	NULL },
     {	"LIST",		CMDlist,	true,	1,	3,
 	"[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|DISTRIB.PATS|DISTRIBUTIONS"
-        "|EXTENSIONS|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
+        "|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
         "|OVERVIEW.FMT|SUBSCRIPTIONS]" },
     {	"LISTGROUP",	CMDgroup,	true,	1,	3,
 	"[newsgroup [range]]" },
@@ -326,6 +328,91 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 	    Printf("Report problems to <%s>.\r\n",
 		newsmaster);
     }
+    Printf(".\r\n");
+}
+
+
+/*
+**  The CAPABILITIES command.
+**
+**  nnrpd does not advertise the MODE-READER capability; only innd may
+**  advertise it.
+*/
+void
+CMDcapabilities(int ac, char *av[])
+{
+    if (ac == 2 && !IsValidKeyword(av[1])) {
+        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        return;
+    }
+
+    Reply("%d Capability list:\r\n", NNTP_INFO_CAPABILITIES);
+
+    Printf("VERSION 2\r\n");
+
+    Printf("IMPLEMENTATION %s\r\n", INN_VERSION_STRING);
+
+    /* The client is not already authenticated. */
+    if ((!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
+        Printf("AUTHINFO");
+        /* No arguments if the server does not permit any authentication commands
+         * in its current state. */
+        if (PERMcanauthenticate
+#ifdef HAVE_SSL
+            && (PERMcanauthenticatewithoutSSL || nnrpd_starttls_done)
+#endif
+           ) {
+#ifdef HAVE_SSL
+            /* USER is advertised only if a TLS layer is active. */
+            Printf(" USER");
+#endif
+#ifdef HAVE_SASL
+            Printf(" SASL");
+#endif
+        }
+        Printf("\r\n");
+    }
+
+    if (PERMcanread) {
+        Printf("HDR\r\n");
+    }
+    
+    if (PERMaccessconf->allowihave && PERMcanpost) {
+        Printf("IHAVE\r\n");
+    }
+
+    Printf("LIST ACTIVE ACTIVE.TIMES DISTRIB.PATS HEADERS NEWSGROUPS OVERVIEW.FMT\r\n");
+    
+    if (PERMaccessconf->allownewnews && PERMcanread) {
+        Printf("NEWNEWS\r\n");
+    }
+
+    if (PERMcanread) {
+        Printf("OVER\r\n");
+    }
+
+    if (PERMcanpost) {
+        Printf("POST\r\n");
+    }
+
+    Printf("READER\r\n");
+
+#ifdef HAVE_SASL
+    const char *mechlist = NULL;
+
+    /* Check for available SASL mechanisms. */
+    sasl_listmech(sasl_conn, NULL, "", " ", "", &mechlist, NULL, NULL);
+    Printf("SASL %s\r\n", mechlist != NULL ? mechlist : "");
+#endif
+
+#ifdef HAVE_SSL
+    /* A TLS layer is not active and the client is not already authenticated. */
+    if (!nnrpd_starttls_done
+        && (!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
+        Printf("STARTTLS\r\n");
+    }
+#endif
+
     Printf(".\r\n");
 }
 

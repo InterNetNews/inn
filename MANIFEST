@@ -485,6 +485,7 @@ lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
 lib/clientlib.c                       Replacement for C News library routine
+lib/commands.c                        Functions for NNTP commands
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
 lib/confparse.c                       Generic configuration file parser

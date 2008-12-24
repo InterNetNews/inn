@@ -11,10 +11,6 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 
-#ifdef HAVE_SSL
-extern bool nnrpd_starttls_done;
-#endif /* HAVE_SSL */
-
 typedef struct _LISTINFO {
     const char *method;
     const char * File;
@@ -25,7 +21,6 @@ typedef struct _LISTINFO {
 } LISTINFO;
 
 static void cmd_list_schema(LISTINFO *lp, int ac, char *av[]);
-static void cmd_list_extensions(LISTINFO *lp, int ac, char *av[]);
 static void cmd_list_headers(LISTINFO *lp, int ac, char *av[]);
 
 static LISTINFO		INFOactive = {
@@ -52,10 +47,6 @@ static LISTINFO		INFOdistribpats = {
     "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
     "Default distributions in form \"weight:pattern:value\""
 };
-static LISTINFO		INFOextensions = {
-    "EXTENSIONS", NULL, cmd_list_extensions, false, "supported extensions",
-    "Supported NNTP extensions"
-};
 static LISTINFO		INFOgroups = {
     "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, true, "newsgroup descriptions",
     "Descriptions in form \"group description\""
@@ -80,7 +71,6 @@ static LISTINFO *info[] = {
     &INFOheaders,
     &INFOsubs,
     &INFOdistribpats,
-    &INFOextensions,
     &INFOgroups,
     &INFOmoderators,
     &INFOschema,
@@ -105,36 +95,6 @@ cmd_list_schema(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
     for (i = 0; i < OVextra->count; ++i) {
 	Printf("%s:full\r\n", OVextra->strings[i]);
     }
-    Printf(".\r\n");
-}
-
-
-/*
-**  List supported extensions.
-*/
-static void
-cmd_list_extensions(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
-{
-    const char *mechlist = NULL;
-
-    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
-
-#ifdef HAVE_SSL
-    if (!nnrpd_starttls_done && PERMauthorized != true)
-	Printf("STARTTLS\r\n");
-#endif /* HAVE_SSL */
-
-#ifdef HAVE_SASL
-    /* Check for SASL mechs. */
-    sasl_listmech(sasl_conn, NULL, " SASL:", ",", "", &mechlist, NULL, NULL);
-#endif /* HAVE_SASL */
-
-    if (PERMauthorized != true || mechlist != NULL) {
-	Printf("AUTHINFO%s%s\r\n",
-	       PERMauthorized != true ? " USER" : "",
-	       mechlist != NULL ? mechlist : "");
-    }
-
     Printf(".\r\n");
 }
 

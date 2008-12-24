@@ -6,7 +6,7 @@ top	= ..
 CFLAGS  = $(GCFLAGS)
 
 # The base library files that are always compiled and included.
-SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c concat.c \
+SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c commands.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 		dispatch.c fdflags.c fdlimit.c getfqdn.c \
 		getmodaddr.c hash.c hashtab.c headers.c hex.c innconf.c inndcomm.c \
@@ -105,6 +105,9 @@ clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h
+commands.o: commands.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 concat.o: concat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h \
   ../include/inn/libinn.h ../include/inn/defines.h

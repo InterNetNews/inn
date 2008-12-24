@@ -155,6 +155,7 @@ extern char *             DDend(struct _DDHANDLE *h);
 
 /* Various checks. */
 extern bool             IsValidArticleNumber(const char *string);
+extern bool             IsValidKeyword(const char *string);
 extern bool             IsValidRange(char *string);
 
 
