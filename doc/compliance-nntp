@@ -1,10 +1,8 @@
 $Id$
 
 The following are outstanding issues regarding INN's compliance with the
-NNTP standard.  The reference documents used in this analysis are the
-current NNTP IETF Working Group draft (draft-ietf-nntpext-base-15.txt at
-the time of the last check of this audit) or RFC 2980, not RFC 977 (which
-is woefully out of date).
+NNTP standard.  The reference documents used in this analysis are RFC 3977,
+RFC 4642, RFC 4643 and RFC 4644.
 
 This file documents only compliance issues with the latest version of the
 standard NNTP protocol.  It does not cover INN's private extensions or
@@ -15,8 +13,8 @@ RFC 2980.
 ------------------------------
 
   Summary: innd doesn't require whitespace between commands and arguments
- Standard: draft-ietf-nntpext-base-15.txt, section 4
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 3977, section 3.1
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: innd/nc.c NCproc() and command handlers
  Severity: Accepts invalid input
 
@@ -50,30 +48,30 @@ break interoperability with that code.
 
 ------------------------------
 
-  Summary: INN doesn't check argument length
- Standard: draft-ietf-nntpext-base-15.txt, section 4
-  Version: 1.0 to CURRENT 2002-12-26
-Reference: innd/nc.c and nnrpd/nnrpd.c
+  Summary: innd doesn't check argument length
+ Standard: RFC 3977, section 3.1
+  Version: 1.0 to CURRENT 2008-12-24
+Reference: innd/nc.c
  Severity: Accepts invalid input
 
 The standard says:
 
     Arguments MUST NOT exceed 497 octets.
 
-This is not checked by either innd or nnrpd, although both do check that
-the command itself does not exceed 512 octets.
+This is not checked by innd, although it checks that the command itself
+does not exceed 512 octets.
 
 Impact:  Small.  May accept invalid commands in extremely rare edge cases.
 
 Suggested fix:  Probably not worth fixing separately, although if standard
-command parsing code is written to handle both innd and nnrpd, it wouldn't
-hurt to check this along with everything else.
+command parsing code is written to handle innd, it wouldn't hurt to check
+this along with everything else.
 
 ------------------------------
 
   Summary: Reply codes other than x9x used for private extensions
- Standard: draft-ietf-nntpext-base-15.txt, section 4.1
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 3977, section 3.2
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: include/nntp.h
  Severity: Violates SHOULD
 
@@ -84,11 +82,8 @@ The standard says:
     SHOULD be chosen to fit the pattern of x9x specified above.
 
 INN uses quite a few response codes that do not fit this pattern for
-various extensions.  Some of these will likely later be standardized with
-the response codes that INN uses (the streaming commands, the
-authentication reply codes, and possibly the STARTTLS reply codes), but
-the rest (XGTITLE, MODE CANCEL, and XBATCH) should have used response
-codes in the x9x range.
+various extensions.  XGTITLE, MODE CANCEL and XBATCH should have used
+response codes in the x9x range.
 
 Impact:  Additional ambiguity over the meaning of reply codes, as those
 reply codes could later be standardized as the reply codes for other
@@ -97,14 +92,14 @@ commands.
 Suggested fix:  For XGTITLE and probably XBATCH, there is no way to fix
 this now.  Changing the reply codes would break all existing
 implementations.  It may still be possible to change the reply codes for
-MODE CANCEL (which should probably be MODE XCANCEL), but it may not be
-worth the effort.
+MODE CANCEL (which should probably be MODE XCANCEL or, even better,
+XCANCEL <msgid> without any mode), but it may not be worth the effort.
 
 ------------------------------
 
   Summary: innd may return 480 instead of 500 for unrecognized commands
- Standard: draft-ietf-nntpext-base-15.txt, section 4.1.1
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 3977, section 3.2.1
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: innd/nc.c NCauthinfo()
  Severity: Violates MUST
 
@@ -134,8 +129,8 @@ special handling in NCauthinfo.  This should also simplify the code.
 ------------------------------
 
   Summary: innd always sends 200 for an accepted connection
- Standard: draft-ietf-nntpext-base-15.txt, section 7.1
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 3977, section 5.1.2
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: innd/nc.c NCsetup() and rc.c RCreader()
  Severity: Violates MUST
 
@@ -152,7 +147,7 @@ implement POST and therefore is never going to allow it) should always be
 201, at least for the case where innd never spawns nnrpd.  In the case
 where innd spawns nnrpd, it's unclear what the greeting code should be.
 
-The current implementation nevers send 201 unless one knows for certain
+The current implementation never send 201 unless one knows for certain
 that the connection will never be allowed to issue a POST command, which
 means that innd always sends 200.
 
@@ -188,86 +183,40 @@ allowed reading connections.
 
 ------------------------------
 
-  Summary: innd doesn't support LIST EXTENSIONS
- Standard: draft-ietf-nntpext-base-15.txt, section 8.1
-  Version: 1.0 to CURRENT 2002-12-26
-Reference: innd/nc.c NClist()
- Severity: Not a violation
-
-Support for LIST EXTENSIONS is optional, and innd's current behavior
-(returning a 500 response) is permitted by the standard, but it means that
-innd cannot advertise any of the extensions that it supports.  Since this
-will eventually include streaming, support should be added.
-
-Suggested fix:  Add support for LIST EXTENSIONS to NClist() as soon as
-innd supports a registered extension or as soon as there is documentation
-for INN's extensions that specify an extension name (beginning with X).
-
-------------------------------
-
-  Summary: nnrpd doesn't return 423 errors when there is no overview info
- Standard: draft-ietf-nntpext-base-17.txt, section 10.5.1.2
-  Version: 1.4 to CURRENT 2003-05-04
-Reference: nnrpd/article.c CMDxover()
+  Summary: nnrpd doesn't return 420 errors for XOVER
+ Standard: RFC 2980, section 2.8
+  Version: 1.4 to CURRENT 2008-12-24
+Reference: nnrpd/article.c CMDover()
  Severity: Violates a MUST
 
 The standard says:
 
-   If there are no articles in the range specified, a 423 response MUST be
-   returned.
+   If no articles are in the range specified, a 420 error response
+   is returned by the server.
 
 nnrpd (from the beginning of the XOVER command) has always returned a 224
-response with an empty multiline response instead.  INN doesn't support
-OVER yet so this isn't actually a bug in INN, but eventually the XOVER
-implementation will also be used for OVER.
+response with an empty multiline response instead.
+Note that the OVER command properly returns 423 (no articles in that range)
+when that case occurs.  420 is sent when the urrent article number is
+invalid.
 
 Impact:  Less information is communicated to the client about why there
 are no overview records returned.  An error response indicating there are
 no valid articles in that range is possibly more informative.
 
 Suggested fix:  Don't print out the initial 224 message until at least one
-overview entry has been found, so that CMDxover() can print a 420 response
+overview entry has been found, so that CMDover() can print a 420 response
 instead if no overview records are found.
 
 Impact of fix:  May confuse some clients that don't expect to get 420
-errors back from overview queries.  It may be necessary to do something
-different for OVER (where clients should expect this behavior since OVER
-is a new command) than for XOVER (where clients may be relying on the
-existing behavior.
-
-------------------------------
-
-  Summary: HDR can return message IDs rather than article numbers
- Standard: draft-ietf-nntpext-base-17.txt, section 10.6.1.2
-  Version: 1.0 to CURRENT 2003-05-04
-Reference: nnrpd/article.c CMDpat()
- Severity: Violates a protocol description
-
-The standard says:
-
-   The line consists of the article number, a US-ASCII space, and then the
-   contents of the header (without the header name or the colon and space
-   that follow it) or metadata item.  If the article is specified by
-   message-id rather than by article range, the article number is given as
-   "0".
-
-nnrpd instead returns the message ID as the first word of the line when
-HDR is given a message ID argument.
-
-Impact:  A client may not be able to parse the output of HDR correctly,
-since the first word is not a number.
-
-Suggested fix:  Change the code to return 0 as the first word instead of
-the message ID, per the standard.
-
-Impact of fix:  Clients that are expecting the message ID may be
-confused.
+errors back from overview queries.  Clients may be relying on the
+existing behavior (confirmed with Windows Mail for instance).
 
 ------------------------------
 
   Summary: innd improperly caches DNS returns
- Standard: draft-ietf-nntpext-base-15.txt, section 14.4
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 3977, section 12.4
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: innd/rc.c RCreadfile() and elsewhere
  Severity: Violates a MUST
 
@@ -296,19 +245,25 @@ amount of additional complexity.
 ------------------------------
 
   Summary: innd doesn't diagnose repeated AUTHINFO USER commands
- Standard: RFC 2980, section 3.1.1
-  Version: 1.0 to CURRENT 2002-12-26
+ Standard: RFC 4643, section 2.3.2
+  Version: 1.0 to CURRENT 2008-12-24
 Reference: innd/nc.c NCauthinfo()
  Severity: Violates a protocol description
 
-RFC 2980 says:
+RFC 4643 says:
 
-    The 482 code will also be returned when the AUTHINFO commands are not
-    entered in the correct sequence (like two AUTHINFO USERs in a row, or
-    AUTHINFO PASS preceding AUTHINFO USER).
+   If the server requires both username and password, the former MUST be
+   sent before the latter.  The server will need to cache the username
+   until the password is received; it MAY require that the password be
+   sent in the immediately next command (in other words, only caching
+   the username until the next command is sent).  The server:
+   [...]
+   -  MUST return a 482 response to AUTHINFO PASS if there is no cached
+      username;
 
 innd ignores AUTHINFO USER and just always returns a 381 response, however,
-since it doesn't care about the username.
+since it doesn't care about the username.  482 is not send in reponse
+to AUTHINFO PASS.
 
 Impact:  Probably none.
 
@@ -318,3 +273,28 @@ identity (and perhaps use that identity to map to an incoming.conf entry).
 It's unclear if this would be worthwhile.  Failing that, innd would need
 to keep internal state to know whether AUTHINFO USER had already been
 sent.
+
+------------------------------
+
+  Summary: innd and nnrpd do not advertise IHAVE for the entire session
+ Standard: RFC 3977, section 3.4.1
+  Version: 2.5.0
+Reference: innd/nc.c NCcapabilities() and nnrpd/nnrpd.c CMDcapabilities()
+ Severity: Violates a MUST
+
+RFC 3977 says:
+
+    Except as an effect of the MODE READER command (Section 5.3) on a
+    mode-switching server, once a server advertises either or both of the
+    IHAVE or READER capabilities, it MUST continue to advertise them for
+    the entire session.
+
+If IHAVE has been advertised, it will not necessarily be advertised for
+the entire session.  innd and nnrpd only advertise the IHAVE capability
+when it is really available.
+
+Impact:  Probably none.  It is sort of a weird edge case, since having
+such basic commands disappear after authentication is a little odd and
+would require an unusual configuration.  It is probably not worth fixing.
+Besides, such a fix seems to partly defeat the point of the capability
+system.
