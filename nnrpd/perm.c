@@ -582,7 +582,7 @@ ReportError(CONFFILE *f, const char *err)
 {
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host,
       f->filename, f->lineno, err);
-    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+    Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
     ExitWithStats(1, true);
 }
 
@@ -614,7 +614,7 @@ method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 	break;
       case PERMprogram:
 	if (method->program) {
-	    ReportError(f, "Multiple program: directives in auth/res decl."); 
+	    ReportError(f, "Multiple program: directives in auth/res declaration.");
 	}
 
 	method->program = xstrdup(tok->name);
@@ -640,7 +640,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	snprintf(buff, sizeof(buff), "Duplicated '%s' field in authgroup.",
+	snprintf(buff, sizeof(buff), "Duplicated '%s' field in auth group.",
                  oldname);
 	ReportError(f, buff);
     }
@@ -663,7 +663,8 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	break;
 #ifdef HAVE_SSL
       case PERMrequire_ssl:
-        if (boolval != -1) curauth->require_ssl = boolval;
+        if (boolval != -1)
+            curauth->require_ssl = boolval;
         SET_CONFIG(PERMrequire_ssl);
         break;
 #endif
@@ -700,7 +701,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	    m->name = xstrdup(tok->name);
 	    tok = CONFgettoken(PERMtoks, f);
 	    if (tok == NULL || tok->type != PERMlbrace) {
-		ReportError(f, "Expected '{' after 'res'");
+		ReportError(f, "Expected '{' after 'res'.");
 	    }
 
 	    tok = CONFgettoken(PERMtoks, f);
@@ -730,21 +731,21 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
             m->type = PERMperl_auth;
 	    m->program = xstrdup(tok->name);
 #else
-            ReportError(f, "perl_auth can not be used in readers.conf: inn not compiled with perl support enabled.");
+            ReportError(f, "perl_auth can not be used in readers.conf: INN not compiled with Perl support enabled.");
 #endif
         } else if (oldtype == PERMpython_auth) {
 #ifdef DO_PYTHON
             m->type = PERMpython_auth;
             m->program = xstrdup(tok->name);
 #else
-            ReportError(f, "python_auth can not be used in readers.conf: inn not compiled with python support enabled.");
+            ReportError(f, "python_auth can not be used in readers.conf: INN not compiled with Python support enabled.");
 #endif
         } else {
 	    m->name = xstrdup(tok->name);
 	    tok = CONFgettoken(PERMtoks, f);
 
 	    if (tok == NULL || tok->type != PERMlbrace) {
-		ReportError(f, "Expected '{' after 'auth'");
+		ReportError(f, "Expected '{' after 'auth'.");
 	    }
 
 	    tok = CONFgettoken(PERMtoks, f);
@@ -764,7 +765,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMperl_access;
 #else
-        ReportError(f, "perl_access can not be used in readers.conf: inn not compiled with perl support enabled.");
+        ReportError(f, "perl_access can not be used in readers.conf: INN not compiled with Perl support enabled.");
 #endif
         break;
       case PERMpython_access:
@@ -772,7 +773,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMpython_access;
 #else
-        ReportError(f, "python_access can not be used in readers.conf: inn not compiled with python support enabled.");
+        ReportError(f, "python_access can not be used in readers.conf: INN not compiled with Python support enabled.");
 #endif
         break;
       case PERMpython_dynamic:
@@ -780,7 +781,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
         curauth->dynamic_script = xstrdup(tok->name);
         curauth->dynamic_type = PERMpython_dynamic;
 #else
-        ReportError(f, "python_dynamic can not be used in readers.conf: inn not compiled with python support enabled.");
+        ReportError(f, "python_dynamic can not be used in readers.conf: INN not compiled with Python support enabled.");
 #endif
        break;
       case PERMlocaladdress:
@@ -789,7 +790,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(PERMlocaladdress);
 	break;
       default:
-	snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
+	snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
 	ReportError(f, buff);
 	break;
     }
@@ -812,7 +813,7 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	snprintf(buff, sizeof(buff), "Duplicated '%s' field in accessgroup.",
+	snprintf(buff, sizeof(buff), "Duplicated '%s' field in access group.",
                  oldname);
 	ReportError(f, buff);
     }
@@ -1039,7 +1040,7 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(oldtype);
 	break;
       default:
-	snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
+	snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
 	ReportError(f, buff);
 	break;
     }
@@ -1057,7 +1058,7 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
     file = xcalloc(1, sizeof(CONFFILE));
     file->array = access_vec->strings;
     file->array_len = access_vec->count;
- 
+
     memset(ConfigBit, '\0', ConfigBitsize);
 
     SetDefaultAccess(acc);
@@ -1072,7 +1073,7 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
       }
     }
     free(file);
-    return;       
+    return;
 }
 
 static void
@@ -1092,19 +1093,19 @@ PERMreadfile(char *filename)
     char buff[SMBUF];
 
     if(filename != NULL) {
-	syslog(L_TRACE, "Reading access from %s", 
+	syslog(L_TRACE, "Reading access from %s",
 	       filename == NULL ? "(NULL)" : filename);
     }
 
     cf		= xmalloc(sizeof(CONFCHAIN));
     if ((cf->f = CONFfopen(filename)) == NULL) {
 	syslog(L_ERROR, "%s cannot open %s: %m", Client.host, filename);
-	Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
     cf->parent	= 0;
 
-    /* Are we editing an AUTH or ACCESS group? */
+    /* Are we editing an auth or access group? */
 
     inwhat	= 0;
     newgroup	= curgroup = 0;
@@ -1135,7 +1136,7 @@ PERMreadfile(char *filename)
                 free(path);
 
 		if (hold->f == NULL) {
-		    ReportError(cf->f, "Couldn't open 'include' filename.");
+		    ReportError(cf->f, "Could not open 'include' filename.");
 		}
 
 		cf = hold;
@@ -1147,7 +1148,7 @@ PERMreadfile(char *filename)
 		tok = CONFgettoken(PERMtoks, cf->f);
 
 		if (tok == NULL) {
-		    ReportError(cf->f, "Unexpected EOF at group name");
+		    ReportError(cf->f, "Unexpected EOF at group name.");
 		}
 
 		newgroup	= xmalloc(sizeof(GROUP));
@@ -1158,7 +1159,7 @@ PERMreadfile(char *filename)
 		tok = CONFgettoken(PERMtoks, cf->f);
 
 		if (tok == NULL || tok->type != PERMlbrace) {
-		    ReportError(cf->f, "Expected '{' after group name");
+		    ReportError(cf->f, "Expected '{' after group name.");
 		}
 
 		/* Nested group declaration. */
@@ -1187,14 +1188,14 @@ PERMreadfile(char *filename)
 		tok = CONFgettoken(PERMtoks, cf->f);
 
 		if (tok == NULL || tok->type != PERMlbrace) {
-		    ReportError(cf->f, "Expected '{'");
+		    ReportError(cf->f, "Expected '{'.");
 		}
 
 		switch (oldtype) {
 		  case PERMauth:
-		    if (curgroup && curgroup->auth)
+		    if (curgroup && curgroup->auth) {
 			curauth = copy_authgroup(curgroup->auth);
-		    else {
+                    } else {
 			curauth = xcalloc(1, sizeof(AUTHGROUP));
 			memset(ConfigBit, '\0', ConfigBitsize);
                         SetDefaultAuth(curauth);
@@ -1223,7 +1224,7 @@ PERMreadfile(char *filename)
 
 	      case PERMrbrace:
 		if (curgroup == NULL) {
-		    ReportError(cf->f, "Unmatched '}'");
+		    ReportError(cf->f, "Unmatched '}'.");
 		}
 
 		newgroup = curgroup;
@@ -1254,7 +1255,6 @@ PERMreadfile(char *filename)
 		    memset(ConfigBit, '\0', ConfigBitsize);
                     SetDefaultAuth(curgroup->auth);
 		}
-
 		authdecl_parse(curgroup->auth, cf->f, tok);
 		break;
 
@@ -1354,7 +1354,9 @@ PERMreadfile(char *filename)
 	    syslog(L_TRACE, "SHOULD NEVER HAPPEN!");
 	}
 again:
-	/* Go back up the 'include' chain. */
+
+
+        /* Go back up the 'include' chain. */
 	tok = CONFgettoken(PERMtoks, cf->f);
 
 	while (tok == NULL && cf) {
@@ -1405,7 +1407,7 @@ PERMgetaccess(char *nnrpaccess)
     if (auth_realms == NULL) {
 	/* No one can talk, empty file. */
 	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Reply("%d You have no permission to talk.  Goodbye.\r\n",
+	Reply("%d You have no permission to talk.  Goodbye!\r\n",
 	  NNTP_ERR_ACCESS);
 	ExitWithStats(1, true);
     }
@@ -1472,7 +1474,7 @@ PERMgetaccess(char *nnrpaccess)
             PERMcanpostgreeting = (access_realms[i]->post != NULL);
     }
     if (!i) {
-	/* No applicable access groups.  Zeroing all these makes INN 
+	/* No applicable access groups.  Zeroing all these makes INN
 	 * return permission denied to client. */
 	PERMcanread = PERMcanpost = PERMneedauth = false;
     }
@@ -1589,7 +1591,7 @@ PERMgetpermissions(void)
         free(script_path);
 
         uname = xstrdup(PERMuser);
-        
+
         access_vec = vector_new();
 
         perlAccess(uname, access_vec);
@@ -1602,7 +1604,7 @@ PERMgetpermissions(void)
         vector_free(access_vec);
       } else {
         syslog(L_ERROR, "No script specified in perl_access method.\n");
-        Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+        Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
       }
       free(cpp);
@@ -1628,16 +1630,16 @@ PERMgetpermissions(void)
             free(script_path);
             free(uname);
             free(args);
-            
+
             access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
             memset(access_realms[0], 0, sizeof(ACCESSGROUP));
-            
+
             PERMvectortoaccess(access_realms[0], "python-dynamic", access_vec);
-            
+
             vector_free(access_vec);
         } else {
             syslog(L_ERROR, "No script specified in python_access method.\n");
-            Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+            Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, true);
         }
         free(cpp);
@@ -1705,9 +1707,9 @@ PERMgetpermissions(void)
 	MaxBytesPerSecond = PERMaccessconf->maxbytespersecond;
 	if (PERMaccessconf->virtualhost) {
 	    if (PERMaccessconf->domain == NULL) {
-		syslog(L_ERROR, "%s virtualhost needs domain parameter(%s)",
+		syslog(L_ERROR, "%s virtualhost needs domain parameter (%s).",
 		    Client.host, PERMaccessconf->name);
-		Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+		Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 		ExitWithStats(1, true);
 	    }
 	    if (VirtualPath)
@@ -1716,9 +1718,9 @@ PERMgetpermissions(void)
 		/* Use domain, if pathhost in access realm matches one in
 		 * inn.conf to differentiate virtual host. */
 		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
-		    syslog(L_ERROR, "%s domain parameter(%s) in readers.conf must be different from the one in inn.conf",
+		    syslog(L_ERROR, "%s domain parameter (%s) in readers.conf must be different from the one in inn.conf.",
 			Client.host, PERMaccessconf->name);
-		    Reply("%d NNTP server unavailable. Try later.\r\n", NNTP_ERR_UNAVAILABLE);
+		    Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 		    ExitWithStats(1, true);
 		}
                 VirtualPath = concat(PERMaccessconf->domain, "!", (char *) 0);
@@ -1865,13 +1867,13 @@ strip_accessgroups(void)
 	    for (j = 0; access_realms[j] != NULL; j++) {
 		/* If the access realm isn't already in use... */
 		if (! access_realms[j]->used) {
-		    /* Check to see if both the access_realm key and 
+		    /* Check to see if both the access_realm key and
                      * auth_realm key are NULL... */
 		    if (!access_realms[j]->key && !auth_realms[i]->key) {
 			/* If so, mark the realm in use and continue on... */
 			access_realms[j]->used = 1;
-		    } else { 
-			/* If not, check to see if both the access_realm and 
+		    } else {
+			/* If not, check to see if both the access_realm and
 			   auth_realm are NOT _both_ NULL, and see if they are
 			   equal... */
 			if (access_realms[j]->key && auth_realms[i]->key &&
@@ -1894,7 +1896,7 @@ strip_accessgroups(void)
 	if (access_realms[i]->used)
 	    access_realms[j++] = access_realms[i];
 	else
-	    syslog(L_TRACE, "%s removing irrelevant access group %s", 
+	    syslog(L_TRACE, "%s removing irrelevant access group %s",
 		   Client.host, access_realms[i]->name);
 	i++;
     }
@@ -1996,7 +1998,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                 PERLsetup(NULL, script_path, "authenticate");
                 free(script_path);
                 perlAuthInit();
-          
+
                 newUser[0] = '\0';
                 code = perlAuthenticate(username, password, errorstr, newUser);
                 if (code == NNTP_OK_AUTHINFO) {
@@ -2012,11 +2014,11 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                     break;
                 } else {
                     syslog(L_NOTICE, "%s bad_auth", Client.host);
-                }            
+                }
             } else {
                 syslog(L_ERROR, "no script specified in auth method");
             }
-#endif	/* DO_PERL */    
+#endif	/* DO_PERL */
         } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
             int code;
