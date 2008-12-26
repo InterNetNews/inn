@@ -358,7 +358,7 @@ CMDauthinfo(int ac, char *av[])
         strlcpy(Password, av[2], sizeof(Password));
 
         errorstr[0] = '\0';
-        code[0] = '\0';
+        snprintf(code, sizeof(code), "%d", NNTP_FAIL_AUTHINFO_BAD);
 
         PERMlogin(User, Password, code, errorstr);
         PERMgetpermissions();
