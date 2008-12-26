@@ -103,12 +103,12 @@ char* dynamic_file;
 **  is not defined.
 */
 int
-PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
-                char *newUser)
+PY_authenticate(char* file, char *Username, char *Password, char *code,
+                char *errorstring, char *newUser)
 {
     PyObject    *result, *item, *proc;
     int         authnum;
-    int         code, i;
+    int         codenum, i;
     char        *temp;
 
     PY_load_python();
@@ -187,7 +187,8 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
     }
 
     /* Store the code. */
-    code = PyInt_AS_LONG(item);
+    codenum = PyInt_AS_LONG(item);
+    snprintf(code, sizeof(code), "%d", codenum);
 
     /* Get the error string. */
     item = PyTuple_GetItem(result, 1);
@@ -232,10 +233,10 @@ PY_authenticate(char* file, char *Username, char *Password, char *errorstring,
     }
 
     /* Log auth result. */
-    syslog(L_NOTICE, "python authenticate method succeeded, return code %d, error string %s", code, errorstring);
+    syslog(L_NOTICE, "python authenticate method succeeded, return code %d, error string %s", codenum, errorstring);
 
     /* Return response code. */
-    return code;
+    return codenum;
 }
 
 

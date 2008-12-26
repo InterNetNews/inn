@@ -246,6 +246,8 @@ CMDauthinfo(int ac, char *av[])
     static char	Password[SMBUF];
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
+    char        code[BIG_BUFFER];
+    int         codenum;
 
     if (strcasecmp(av[1], "GENERIC") == 0) {
 	char *logrec = Glom(av);
@@ -356,8 +358,9 @@ CMDauthinfo(int ac, char *av[])
         strlcpy(Password, av[2], sizeof(Password));
 
         errorstr[0] = '\0';
-        
-        PERMlogin(User, Password, errorstr);
+        code[0] = '\0';
+
+        PERMlogin(User, Password, code, errorstr);
         PERMgetpermissions();
 
         /* If authentication is successful. */
@@ -375,12 +378,24 @@ CMDauthinfo(int ac, char *av[])
             return;
         }
 
+        codenum = atoi(code);
+
+        /* For backwards compatibility, we return 481 instead of 502 (which had
+         * the same meaning as 481 in RFC 2980). */
+        if (codenum == NNTP_ERR_ACCESS) {
+            codenum = NNTP_FAIL_AUTHINFO_BAD;
+        }
+
 	syslog(L_NOTICE, "%s bad_auth", Client.host);
+        /* Return 403 in case the return code is not 481. */
         if (errorstr[0] != '\0') {
             syslog(L_NOTICE, "%s script error str: %s", Client.host, errorstr);
-            Reply("%d %s\r\n", NNTP_FAIL_AUTHINFO_BAD, errorstr);
+            Reply("%d %s\r\n",
+                  codenum != NNTP_FAIL_AUTHINFO_BAD ? NNTP_FAIL_ACTION : codenum,
+                  errorstr);
         } else {
-            Reply("%d Authentication failed\r\n", NNTP_FAIL_AUTHINFO_BAD);
+            Reply("%d Authentication failed\r\n",
+                  codenum != NNTP_FAIL_AUTHINFO_BAD ? NNTP_FAIL_ACTION : codenum);
         }
     }
 }

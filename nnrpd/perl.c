@@ -327,13 +327,13 @@ perlAuthInit(void)
 
 
 int
-perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
+perlAuthenticate(char *user, char *passwd, char *code, char *errorstring, char *newUser)
 {
     dSP;
     HV *attribs;
     int rc;
     char *p;
-    int code;
+    int codenum;
     
     if (!PerlFilterActive)
         return NNTP_ERR_ACCESS;
@@ -385,7 +385,8 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
     p = POPp;
     strlcpy(errorstring, p, BIG_BUFFER);
 
-    code = POPi;
+    codenum = POPi;
+    snprintf(code, sizeof(code), "%d", codenum);
 
     hv_undef(attribs);
 
@@ -393,7 +394,7 @@ perlAuthenticate(char *user, char *passwd, char *errorstring, char *newUser)
     FREETMPS;
     LEAVE;
     
-    return code;
+    return codenum;
 }
 
 

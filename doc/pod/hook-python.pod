@@ -523,6 +523,17 @@ dictionary.  Returns a response code, an error string, and an optional
 string to be used in place of the client-supplied username (both for
 logging and for matching the connection with an access group).
 
+The NNTP response code should be 281 (authentication successful),
+481 (authentication unsuccessful), or 403 (server failure).  If the
+code returned is anything other than than these three values, B<nnrpd>
+will use 403.
+
+If C<authenticate> dies (either due to a Python error or due to
+calling die), or if it returns anything other than the two or three
+element array described above, an internal error will be reported
+to the client, the exact error will be logged to syslog, and B<nnrpd>
+will drop the connection and exit with a 400 response code.
+
 =item authen_close(I<self>)
 
 This method is invoked on B<nnrpd> termination.  You can use it to save

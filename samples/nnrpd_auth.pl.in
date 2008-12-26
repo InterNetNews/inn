@@ -30,7 +30,7 @@ use strict;
 use vars qw(%attributes %authcodes %users);
 
 # These codes are a widely implemented de facto standard.
-%authcodes = ('allowed' => 281, 'denied' => 481);
+%authcodes = ('allowed' => 281, 'denied' => 481, 'error' => 403);
 
 # This sub should perform any initialization work that the
 # authentication stuff needs.

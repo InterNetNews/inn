@@ -450,17 +450,16 @@ the username logged. If this element is absent, the username supplied
 by the client during authentication will be used for matching and
 logging.
 
-The NNTP response code should probably be 281 (authentication
-successful), 481 (authentication unsuccessful), or 400 (server
-failure).  If the code returned is anything other than 281, nnrpd will
-print an authentication error message and drop the connection and
-exit.
+The NNTP response code should be 281 (authentication successful),
+481 (authentication unsuccessful), or 403 (server failure).  If the
+code returned is anything other than than these three values, B<nnrpd>
+will use 403.
 
 If authenticate() dies (either due to a Perl error or due to calling die),
 or if it returns anything other than the two or three element array
 described above, an internal error will be reported to the client, the
-exact error will be logged to syslog, and nnrpd will drop the
-connection and exit.
+exact error will be logged to syslog, and B<nnrpd> will drop the
+connection and exit with a 400 response code.
 
 
 =head1 Dynamic Generation of Access Groups

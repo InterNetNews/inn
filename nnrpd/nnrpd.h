@@ -227,7 +227,7 @@ extern bool		NGgetlist(char ***argvp, char *list);
 extern bool		PERMartok(void);
 extern void		PERMgetaccess(char *nnrpaccess);
 extern void		PERMgetpermissions(void);
-extern void		PERMlogin(char *uname, char *pass, char *errorstr);
+extern void		PERMlogin(char *uname, char *pass, char* code, char *errorstr);
 extern bool		PERMmatch(char **Pats, char **list);
 extern bool		ParseDistlist(char ***argvp, char *list);
 extern void 		SetDefaultAccess(ACCESSGROUP*);
@@ -276,14 +276,14 @@ extern int TrackClient(char *client, char* user, size_t len);
 #ifdef  DO_PERL
 extern void loadPerl(void);
 extern void perlAccess(char *user, struct vector *access_vec);
-extern int perlAuthenticate(char *user, char *passwd, char *errorstring, char*newUser);
+extern int perlAuthenticate(char *user, char *passwd, char *code, char *errorstring, char*newUser);
 extern void perlAuthInit(void);
 #endif /* DO_PERL */
 
 #ifdef	DO_PYTHON
 extern bool PY_use_dynamic;
 
-int PY_authenticate(char *path, char *Username, char *Password, char *errorstring, char *newUser);
+int PY_authenticate(char *path, char *Username, char *Password, char *code, char *errorstring, char *newUser);
 void PY_access(char* path, struct vector *access_vec, char *Username);
 void PY_close_python(void);
 int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message);

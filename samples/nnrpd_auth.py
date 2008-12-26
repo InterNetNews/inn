@@ -47,7 +47,8 @@ class AUTH:
 
         # Create a list of NNTP codes to respond on authentication.
         self.authcodes = {  'ALLOWED': 281,
-                            'DENIED': 481
+                            'DENIED': 481,
+                            'ERROR': 403
         }
 
         syslog('notice', 'nnrpd authentication class instance created')
