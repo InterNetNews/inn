@@ -326,17 +326,16 @@ perlAuthInit(void)
 }
 
 
-int
-perlAuthenticate(char *user, char *passwd, char *code, char *errorstring, char *newUser)
+void
+perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *newUser)
 {
     dSP;
     HV *attribs;
     int rc;
     char *p;
-    int codenum;
     
     if (!PerlFilterActive)
-        return NNTP_ERR_ACCESS;
+        *code = NNTP_FAIL_AUTHINFO_BAD;
 
     if (perl_get_cv("authenticate", 0) == NULL) {
         syslog(L_ERROR, "Perl function authenticate not defined");
@@ -385,16 +384,13 @@ perlAuthenticate(char *user, char *passwd, char *code, char *errorstring, char *
     p = POPp;
     strlcpy(errorstring, p, BIG_BUFFER);
 
-    codenum = POPi;
-    snprintf(code, sizeof(code), "%d", codenum);
+    *code = POPi;
 
     hv_undef(attribs);
 
     PUTBACK;
     FREETMPS;
     LEAVE;
-    
-    return codenum;
 }
 
 

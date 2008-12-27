@@ -99,16 +99,16 @@ char* dynamic_file;
 /*
 **  Authenticate connecting host by username&password.
 **
-**  Return NNTP reply code as returned by Python method or -1 if method
-**  is not defined.
+**  code contains the NNTP reply code as returned by Python method
+**  or -1 if method is not defined.
 */
-int
-PY_authenticate(char* file, char *Username, char *Password, char *code,
+void
+PY_authenticate(char* file, char *Username, char *Password, int *code,
                 char *errorstring, char *newUser)
 {
     PyObject    *result, *item, *proc;
     int         authnum;
-    int         codenum, i;
+    int         i;
     char        *temp;
 
     PY_load_python();
@@ -116,7 +116,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *code,
 
     /* Return if authentication method is not defined. */
     if (proc == NULL)
-        return -1;
+        *code = -1;
 
     /* Initialize PythonAuthObject with connect method specific items. */
     authnum = 0;
@@ -187,8 +187,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *code,
     }
 
     /* Store the code. */
-    codenum = PyInt_AS_LONG(item);
-    snprintf(code, sizeof(code), "%d", codenum);
+    *code = PyInt_AS_LONG(item);
 
     /* Get the error string. */
     item = PyTuple_GetItem(result, 1);
@@ -233,10 +232,7 @@ PY_authenticate(char* file, char *Username, char *Password, char *code,
     }
 
     /* Log auth result. */
-    syslog(L_NOTICE, "python authenticate method succeeded, return code %d, error string %s", codenum, errorstring);
-
-    /* Return response code. */
-    return codenum;
+    syslog(L_NOTICE, "python authenticate method succeeded, return code %d, error string %s", *code, errorstring);
 }
 
 

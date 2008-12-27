@@ -85,7 +85,7 @@ static void CompressList(char*);
 static bool MatchHost(char*, char*, char*);
 static int MatchUser(char*, char*);
 static char *ResolveUser(AUTHGROUP*);
-static char *AuthenticateUser(AUTHGROUP*, char*, char*, char*, char*);
+static char *AuthenticateUser(AUTHGROUP*, char*, char*, int*, char*);
 
 static void GrowArray(void*, void*);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec) UNUSED;
@@ -1481,7 +1481,7 @@ PERMgetaccess(char *nnrpaccess)
 }
 
 void
-PERMlogin(char *uname, char *pass, char *code, char *errorstr)
+PERMlogin(char *uname, char *pass, int *code, char *errorstr)
 {
     int i   = 0;
     char *runame;
@@ -1959,7 +1959,7 @@ ResolveUser(AUTHGROUP *auth)
 */
 static char *
 AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
-                 char *code UNUSED, char *errorstr UNUSED)
+                 int *code UNUSED, char *errorstr UNUSED)
 {
     int i, j;
     char *command;
@@ -1983,7 +1983,6 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     for (i = 0; auth->auth_methods[i]; i++) {
         if (auth->auth_methods[i]->type == PERMperl_auth) {
 #ifdef DO_PERL
-            int codenum;
             char *script_path, *cp;
             char **args;
             char newUser[BIG_BUFFER];
@@ -2000,8 +1999,8 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                 perlAuthInit();
 
                 newUser[0] = '\0';
-                codenum = perlAuthenticate(username, password, code, errorstr, newUser);
-                if (codenum == NNTP_OK_AUTHINFO) {
+                perlAuthenticate(username, password, code, errorstr, newUser);
+                if (*code == NNTP_OK_AUTHINFO) {
                     if (newUser[0] != '\0')
                         user = xstrdup(newUser);
                     else
@@ -2021,7 +2020,6 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 #endif	/* DO_PERL */
         } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
-            int codenum;
             char *script_path, *cp;
             char **args;
             char newUser[BIG_BUFFER];
@@ -2032,10 +2030,10 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
             script_path = concat(args[0], (char *) 0);
             if ((script_path != NULL) && (strlen(script_path) > 0)) {
                 newUser[0] = '\0';
-                codenum = PY_authenticate(script_path, username, password,
-                                       code, errorstr, newUser);
+                PY_authenticate(script_path, username, password,
+                                code, errorstr, newUser);
                 free(script_path);
-                if (codenum == NNTP_OK_AUTHINFO) {
+                if (*code == NNTP_OK_AUTHINFO) {
                     if (newUser[0] != '\0')
                         user = xstrdup(newUser);
                     else
@@ -2046,7 +2044,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                         fflush(locallog);
                     }
                     break;
-                } else if (codenum < 0) {
+                } else if (*code < 0) {
                     syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
                 } else {
                     syslog(L_NOTICE, "%s bad_auth", Client.host);
