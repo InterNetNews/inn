@@ -10,7 +10,7 @@ top	= ..
 
 TOPDOCS	= CONTRIBUTORS HACKING INSTALL LICENSE NEWS README TODO
 
-DOCS	= GPL compliance-nntp config-design config-semantics config-syntax \
+DOCS	= GPL config-design config-semantics config-syntax \
 	external-auth history history-innfeed hook-perl hook-python \
 	sample-control
 

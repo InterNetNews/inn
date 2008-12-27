@@ -128,7 +128,6 @@ doc/GPL                               The GNU General Public License 2.0
 doc/IPv6-info                         Nathan Lutchansky's IPv6 notes
 doc/Makefile                          Makefile for documentation
 doc/checklist                         Checklist for installing INN
-doc/compliance-nntp                   INN compliance with the NNTP standard
 doc/config-design                     Configuration parser design principles
 doc/config-semantics                  Configuration file semantics
 doc/config-syntax                     Configuration file syntax
