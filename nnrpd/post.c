@@ -270,7 +270,7 @@ CheckControl(char *ctrl)
 
 
 /*
-**  Check the Distribution header, and exit on error.
+**  Check the Distribution: header, and exit on error.
 */
 static const char *
 CheckDistribution(char *p)

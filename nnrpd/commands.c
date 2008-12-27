@@ -244,6 +244,7 @@ CMDauthinfo(int ac, char *av[])
 {
     static char	User[SMBUF];
     static char	Password[SMBUF];
+    /* XXX BIG_BUFFER, if changed, should also be changed in perl.c and python.c. */
     char	accesslist[BIG_BUFFER];
     char        errorstr[BIG_BUFFER];
     int         code;
