@@ -1243,7 +1243,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # times
-    if ($left =~ /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/o) {
+    if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
       my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_times{$server} += $elapsed;
@@ -1453,7 +1453,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # xmit
-    if ($left =~ /(\S+) xmit user (\S+) system (\S+) elapsed (\S+)$/o) {
+    if ($left =~ /(\S+) xmit user (.+) system (\S+) elapsed (\S+)$/o) {
       my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
       $server = lc $server unless $CASE_SENSITIVE;
       $nntplink_times{$server} += $elapsed;
@@ -1601,8 +1601,9 @@ sub collect($$$$$$) {
     # User not known to the underlying authentication module
     return 1 if $left =~ / ckpasswd: pam_authenticate failed: /o;
     return 1 if $left =~ / ckpasswd: user .+ unknown$/o;
-    # authinfo
-    if ($left =~ /\S+ user (\S+)$/o) {
+    # AUTHINFO (a username is a bytes string)
+    if (($left =~ /\S+ user (.+)$/o) &&
+        ($left !~ /\S+ times user .+ system \S+ idle \S+ elapsed \S+$/o)) {
       my $user = $1;
       $nnrpd_auth{$user}++;
       return 1;
@@ -1635,7 +1636,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # times
-    if ($left =~ /(\S+) times user (\S+) system (\S+) idle (\S+) elapsed (\S+)$/o) {
+    if ($left =~ /(\S+) times user (.+) system (\S+) idle (\S+) elapsed (\S+)$/o) {
       my ($cust, $user, $system, $idle, $elapsed) = ($1, $2, $3, $4, $5);
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
@@ -1794,7 +1795,7 @@ sub collect($$$$$$) {
   ## batcher
   if ($prog eq "batcher") {
     # times
-    if ($left =~ /(\S+) times user (\S+) system (\S+) elapsed (\S+)$/o) {
+    if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
       my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
       $server = lc $server unless $CASE_SENSITIVE;
       # $batcher_user{$server} += $user;
