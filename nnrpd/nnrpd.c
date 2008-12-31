@@ -352,22 +352,56 @@ CMDcapabilities(int ac, char *av[])
 
     Printf("IMPLEMENTATION %s\r\n", INN_VERSION_STRING);
 
+#ifdef HAVE_SASL
+    const char *mechlist = NULL;
+
+    /* Check for available SASL mechanisms.
+     * Start the string with a space for the strstr() calls afterwards. */
+    sasl_listmech(sasl_conn, NULL, " ", " ", "", &mechlist, NULL, NULL);
+#endif
+
     /* The client is not already authenticated. */
     if ((!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
         Printf("AUTHINFO");
+
         /* No arguments if the server does not permit any authentication commands
          * in its current state. */
-        if (PERMcanauthenticate
+        if (PERMcanauthenticate) {
 #ifdef HAVE_SSL
-            && (PERMcanauthenticatewithoutSSL || nnrpd_starttls_done)
+            if (PERMcanauthenticatewithoutSSL || nnrpd_starttls_done) {
 #endif
-           ) {
+                /* AUTHINFO USER is advertised only if a TLS layer is active,
+                 * if compiled with TLS support. */
+                Printf(" USER");
 #ifdef HAVE_SSL
-            /* USER is advertised only if a TLS layer is active. */
-            Printf(" USER");
-#endif
+            } else {
 #ifdef HAVE_SASL
-            Printf(" SASL");
+                /* Remove unsecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
+                 * if compiled with TLS support and a TLS layer is not active. */
+                if (mechlist != NULL) {
+                    char *p;
+
+                    if ((p = strstr(mechlist, " PLAIN")) != NULL
+                        && (p[6] == '\0' || p[6] == ' ')) {
+                        memmove(p, p+6, strlen(p)-5);
+                    }
+                    if ((p = strstr(mechlist, " LOGIN")) != NULL
+                        && (p[6] == '\0' || p[6] == ' ')) {
+                        memmove(p, p+6, strlen(p)-5);
+                    }
+                    if ((p = strstr(mechlist, " EXTERNAL")) != NULL
+                        && (p[9] == '\0' || p[9] == ' ')) {
+                        memmove(p, p+9, strlen(p)-8);
+                    }
+                }
+#endif /* HAVE_SASL */
+            }
+#endif /* HAVE_SSL */
+#ifdef HAVE_SASL
+            /* Check whether at least one SASL mechanism is available. */
+            if (mechlist != NULL && strlen(mechlist) > 2) {
+                Printf(" SASL");
+            }
 #endif
         }
         Printf("\r\n");
@@ -398,11 +432,10 @@ CMDcapabilities(int ac, char *av[])
     Printf("READER\r\n");
 
 #ifdef HAVE_SASL
-    const char *mechlist = NULL;
-
-    /* Check for available SASL mechanisms. */
-    sasl_listmech(sasl_conn, NULL, "", " ", "", &mechlist, NULL, NULL);
-    Printf("SASL %s\r\n", mechlist != NULL ? mechlist : "");
+    /* Check whether at least one SASL mechanism is available. */
+    if (mechlist != NULL && strlen(mechlist) > 2) {
+        Printf("SASL%s\r\n", mechlist);
+    }
 #endif
 
 #ifdef HAVE_SSL
@@ -1220,7 +1253,9 @@ main(int argc, char *argv[])
 		    if (Tracing) {
                         /* Do not log passwords if AUTHINFO PASS,
                          * AUTHINFO SASL PLAIN or AUTHINFO SASL EXTERNAL
-                         * are used. */
+                         * are used. 
+                         * AUTHINFO SASL LOGIN does not use an initial response;
+                         * therefore, there is nothing to hide here. */
                         if (ac > 2 && strcasecmp(av[0], "AUTHINFO") == 0
                             && (strcasecmp(av[1], "PASS") == 0
                                 || (ac > 3 && strcasecmp(av[1], "SASL") == 0
