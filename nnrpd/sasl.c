@@ -150,9 +150,11 @@ SASLauth(int ac, char *av[])
     }
 
 #ifdef HAVE_SSL
-    /* Check whether STARTTLS must be used before trying to authenticate. */
+    /* Check whether STARTTLS must be used before trying to authenticate
+     * with AUTHINFO SASL PLAIN or AUTHINFO SASL EXTERNAL. */
     if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
-        && !nnrpd_starttls_done) {
+        && !nnrpd_starttls_done && ((strcasecmp(mech, "PLAIN") == 0
+                                     || strcasecmp(mech, "EXTERNAL") == 0))) {
         Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
         return;
     }
