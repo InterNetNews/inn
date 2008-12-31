@@ -1383,11 +1383,15 @@ PERMgetaccess(char *nnrpaccess)
     access_realms   = NULL;
     success_auth    = NULL;
 
+#ifdef HAVE_SASL
+    PERMcanauthenticate = true;
+#else
     PERMcanauthenticate = false;
-    PERMgroupmadeinvalid = false;
+#endif
 #ifdef HAVE_SSL
     PERMcanauthenticatewithoutSSL = false;
 #endif
+    PERMgroupmadeinvalid = false;
     PERMcanpostgreeting = false;
     PERMcanread	    = PERMcanpost   = false;
     PERMreadlist    = PERMpostlist  = false;
