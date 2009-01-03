@@ -47,10 +47,11 @@ sub control_newgroup {
         last;
     }
     close ACTIVE;
-    
+
     my $status;
     my $ngdesc = 'No description.';
-    my $olddesc = '';    
+    $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
+    my $olddesc = '';
     my $ngname = $groupname;
 
     # If there is a tag line, search whether the description has changed.
@@ -64,7 +65,7 @@ sub control_newgroup {
         }
         $found = 1 if $_ =~ /^For your newsgroups file:\s*$/;
     }
-    
+
     if ($found) {
       ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
       if ($ngdesc) {
@@ -112,7 +113,7 @@ If this is acceptable, type:
   $INN::Config::newsbin/ctlinnd newgroup $groupname $modcmd $sender
 
 And do not forget to update the corresponding description in your
-newsgroups file.
+$INN::Config::pathdb/newsgroups file.
 
 The control message follows:
 
@@ -138,7 +139,7 @@ END
             # We know the description has changed.
             update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
         }
-        
+
         if ($log) {
             logger($log, "newgroup $groupname $modcmd $status $sender",
                    $headers, $body) if ($log ne 'mail' or $status ne 'no change');

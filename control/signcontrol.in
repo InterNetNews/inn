@@ -150,7 +150,7 @@ $hierarchies = 'HIERARCHIES';
 #   valid reasons to ignore it  in  unusual  circumstances,  but
 #   this  should  be  done  only after careful study of the full
 #   implications and a firm conclusion  that  it  is  necessary,
-#   because  there are serious disadvantages to doing so. 
+#   because  there are serious disadvantages to doing so.
 # as opposed to "MUST" which means:
 #   means that the item is an absolute requirement of the specification
 # MUST is preferred, but might not be acceptable if you have legacy
@@ -193,7 +193,7 @@ if ($die) {
     die "$0: ERROR PROCESSING Subject: $header{'Subject'}\n", $die;
   } else {
     die $die;
-  } 
+  }
 }
 
 &signit;

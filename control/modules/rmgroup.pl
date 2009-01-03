@@ -50,7 +50,7 @@ If this is acceptable, type:
   $INN::Config::newsbin/ctlinnd rmgroup $groupname
 
 And do not forget to remove the corresponding description, if any,
-from your newsgroups file.
+from your $INN::Config::pathdb/newsgroups file.
 
 The control message follows:
 

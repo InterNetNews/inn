@@ -330,7 +330,7 @@ sub pgp_check {
 # Read article.
 sub open_article {
     my $token = shift;
-    
+
     if ($token =~ /^\@.+\@$/) {
         my $pid = open(ART, '-|');
         if ($pid < 0) {
@@ -383,7 +383,7 @@ sub cancel_ctlinnd {
 sub cancel_nntp {
     my $ids = shift;
     my $r;
-    
+
     if ($nntp_open and time - $socket_timeout > $last_cancel) {
         logmsg('Close socket for timeout');
         close (NNTP);

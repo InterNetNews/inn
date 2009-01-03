@@ -47,7 +47,7 @@ sub control_ihave {
                . "Subject: cmsg sendme $INN::Config::pathhost\n"
                . "Control: sendme $INN::Config::pathhost\n\n";
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
-            print $inews $_ while <TEMPFILE>;  
+            print $inews $_ while <TEMPFILE>;
             close $inews or die $!;
             close TEMPFILE;
         }
