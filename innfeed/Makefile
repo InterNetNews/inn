@@ -7,7 +7,7 @@ CFLAGS	      = $(GCFLAGS) $(SASLINC)
 
 ALL	      = innfeed procbatch imapfeed
 
-SOURCES	      = article.c buffer.c config_l.c config_y.c endpoint.c \
+SOURCES	      = article.c buffer.c config_l.c config_y.c connection.c endpoint.c \
 		host.c imap_connection.c innlistener.c main.c misc.c \
 		tape.c
 
@@ -15,7 +15,7 @@ INCLUDES      = article.h buffer.h configfile.h config_y.h connection.h \
 		endpoint.h host.h innfeed.h innlistener.h misc.h tape.h
 
 # The objects linked into innfeed.  All SOURCES except connection.o or
-# imap_connection.o
+# imap_connection.o.
 OBJECTS	      = article.o buffer.o config_l.o config_y.o endpoint.o host.o \
 		innlistener.o main.o misc.o tape.o
 
@@ -109,6 +109,15 @@ buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/libinn.h \
   buffer.h misc.h
+connection.o: connection.c innfeed.h ../include/inn/timer.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/portable/time.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/network.h \
+  ../include/inn/libinn.h article.h misc.h buffer.h configfile.h \
+  connection.h endpoint.h host.h
 config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/libinn.h configfile.h config_y.h misc.h \
