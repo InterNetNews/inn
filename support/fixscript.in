@@ -56,7 +56,7 @@ if [ x"$input" = x"$output" ] ; then
     exit 1
 fi
 
-interpretor=`head -1 "$input"`
+interpretor=`head -n -1 "$input"`
 case "$interpretor" in
 */sh|*SH*)
     path="/bin/sh"

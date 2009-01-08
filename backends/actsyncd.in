@@ -51,23 +51,23 @@ fi
 
 # parse config_file
 #
-host="`sed -n -e 's/^host=[ 	]*//p' $cfg | tail -1`"
+host="`sed -n -e 's/^host=[ 	]*//p' $cfg | tail -n -1`"
 if [ -z "$host" ]; then
     echo "$0: no host specified in $cfg" 1>&2
     exit 3
 fi
-flags="`sed -n -e 's/^flags=[ 	]*//p' $cfg | tail -1`"
+flags="`sed -n -e 's/^flags=[ 	]*//p' $cfg | tail -n -1`"
 if [ -z "$flags" ]; then
     echo "$0: no flags specified in $cfg" 1>&2
     exit 4
 fi
-ign="`sed -n -e 's/^ignore_file=[ 	]*//p' $cfg | tail -1`"
+ign="`sed -n -e 's/^ignore_file=[ 	]*//p' $cfg | tail -n -1`"
 if [ -z "$ign" ]; then
     echo "$0: no ignore file specified in $cfg" 1>&2
     exit 5
 fi
-ftp="`sed   -n -e 's/^ftppath=[ 	]*//p' $cfg | tail -1`"
-spool="`sed -n -e 's/^spool=[ 	]*//p' $cfg | tail -1`"
+ftp="`sed   -n -e 's/^ftppath=[ 	]*//p' $cfg | tail -n -1`"
+spool="`sed -n -e 's/^spool=[ 	]*//p' $cfg | tail -n -1`"
 if [ -z "$spool" ]; then
     spool=$SPOOL
     #echo "$0: no spool directory specified in $cfg" 1>&2

@@ -58,7 +58,7 @@ if test x"$DO_PERL" = xDO ; then
     AC_MSG_CHECKING([for Perl linkage])
     inn_perl_core_path=`$PERL -MConfig -e 'print $Config{archlibexp}'`
     inn_perl_core_flags=`$PERL -MExtUtils::Embed -e ccopts`
-    inn_perl_core_libs=`$PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -1`
+    inn_perl_core_libs=`$PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -n -1`
     inn_perl_core_libs=" $inn_perl_core_libs "
     inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lc / /'`
     for i in $LIBS ; do
