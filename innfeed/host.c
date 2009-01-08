@@ -1859,7 +1859,7 @@ void hostSendArticle (Host host, Article article)
       delArticle (extraRef) ;
           
       remArticle (article,&host->processed,&host->processedTail) ;
-      if (!cxnCheckstate (cxn))
+      if (cxn == NULL || !cxnCheckstate (cxn))
         {
           host->artsToTape++ ;
           host->gArtsToTape++ ;
