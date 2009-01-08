@@ -1783,7 +1783,9 @@ void hostSendArticle (Host host, Article article)
       delArticle (extraRef) ;
           
       remArticle (article,&host->processed,&host->processedTail) ;
-      if (!cxnCheckstate (cxn))
+
+      /* cxn can be NULL if it has never been affected in the loop above. */
+      if (cxn == NULL || !cxnCheckstate (cxn))
         {
           host->artsToTape++ ;
           host->gArtsToTape++ ;
@@ -1793,7 +1795,7 @@ void hostSendArticle (Host host, Article article)
         }
     }
 
-  /* either all the per connection queues were full or we already had
+  /* Either all the peer connection queues were full or we already had
      a backlog, so there was no sense in checking. */
   queueArticle (article,&host->queued,&host->queuedTail, 0) ;
     

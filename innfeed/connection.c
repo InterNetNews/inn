@@ -1162,7 +1162,7 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
 
 
 /*
- * return the number of articles the connection will accept.
+ * Return whether the connection will accept articles.
  */
 bool cxnCheckstate (Connection cxn)
 {
