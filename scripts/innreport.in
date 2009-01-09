@@ -331,6 +331,35 @@ my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
 my ($suffix, $HTML_output, %config, $first_date, $last_date,
     %prog_type, %prog_size);
+my ( $isLeapYear, @month_to_dayofyear, %month_to_dayofyear );
+
+{
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+    localtime(time);
+  $year += 1900;
+  $isLeapYear =
+   (($year % 4 == 0) && ($year % 100 != 0)) || ($year % 400 == 0);
+
+  @month_to_dayofyear = $isLeapYear
+  ? ( -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 )
+  : ( -1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333 );
+
+  %month_to_dayofyear =
+  (
+    'Jan' => $month_to_dayofyear[ 0],
+    'Feb' => $month_to_dayofyear[ 1],
+    'Mar' => $month_to_dayofyear[ 2],
+    'Apr' => $month_to_dayofyear[ 3],
+    'May' => $month_to_dayofyear[ 4],
+    'Jun' => $month_to_dayofyear[ 5],
+    'Jul' => $month_to_dayofyear[ 6],
+    'Aug' => $month_to_dayofyear[ 7],
+    'Sep' => $month_to_dayofyear[ 8],
+    'Oct' => $month_to_dayofyear[ 9],
+    'Nov' => $month_to_dayofyear[10],
+    'Dec' => $month_to_dayofyear[11],
+  );
+}
 
 my $HTML_header = '';
 my $HTML_footer = '';
@@ -394,8 +423,13 @@ LINE: while (!eof ()) {
   my $res;
   my ($day, $hour, $prog, $left) =
     $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): \[ID \d+ \S+\] (.*)$/o;
-  ($day, $hour, $prog, $left) =
-    $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o unless $day;
+
+  unless ($day)
+  { # Dec 14 03:01:14 localhost innd: SERVER servermode paused
+    ($day, $hour, $prog, $left) =
+      $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
+  }
+
   ($day, $hour, $prog, $left) =
     $_ =~ m/^(\S+\s+\S+) (\S+) \d+ \S+ (\S+): (.*)$/o unless $day;
 
@@ -467,7 +501,7 @@ LINE: while (!eof ()) {
 # every write or print on the currently selected output channel.
 $| = $DEBUG;
 
-die "no data. Abort.\n" unless $total_line;
+die "No data. Abort.\n" unless $total_line;
 
 my $sec_glob = &ConvDate($last_date) - &ConvDate($first_date);
 unless ($sec_glob) {
@@ -490,8 +524,8 @@ if ($HTML) {
       # Adjust the year because syslog doesn't record it. We assume that
       # it's the current year unless the last date is in the future.
       my $ld = &ConvDate($last_date);
-      $dy-- if $ld > $ts + 60 * ($tm + 60 * ($th + 24 * ($dd - 1 +
-        substr("000031059090120151181212243273304334", $dm * 3, 3)))) ||
+      $dy-- if $ld > $ts + 60 * ($tm + 60 * ($th + 24 * ($dd +
+        $month_to_dayofyear[ $dm ]))) ||
         $ld < &ConvDate($first_date);
       ($dm, $dd, $th, $tm, $ts) = ($ddm, $d, $h, $mn, $s);
     }
@@ -660,18 +694,17 @@ sub Rotate {
   return 1;
 }
 
-# convert a date to a number of seconds
-sub ConvDate {
-  # usage: $num = &ConvDate ($date);
-  # date format is Aug 22 01:49:40
+# Convert a date to number of seconds since 1st of January.
+# Leap years are handled correctly, daylight saving is not.
+# Usage: $num = &ConvDate ($date);
+# Date format is "Aug 22 01:49:40"
+sub ConvDate($) {
   my $T = shift;
-  my ($m, $d, $h, $mn, $s) = $T =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
-  my $out = $s + 60 * $mn + 3600 * $h + 86400 * ($d - 1);
-
-  $m = substr("000031059090120151181212243273304334",
-	      index ("JanFebMarAprMayJunJulAugSepOctNovDec", $m), 3);
-  $out += $m * 86400;
-  return $out;
+  my ($m, $d, $h, $mn, $s) = $T =~ /^(\S\S\S)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
+  confess "Invalid date $T" unless($m);
+  $m = $month_to_dayofyear{ $m };
+  confess "Invalid month name in $T" unless($m);
+  return $s + 60 * $mn + 3600 * $h + 86400 * ($d + $m);
 }
 
 # Compare 2 filenames
@@ -2558,7 +2591,7 @@ sub EvalHash($) {
 
   my $result;
   eval { local $^W = $DEBUG; $result = &$sub(); };
-  if ($@ && $DEBUG) { confess "EvalHash($v) raises $@"; }
+  if ($@ && $DEBUG > 1) { confess "EvalHash($v) raises $@"; }
   if (ref($result) ne 'HASH')
     { confess "EvalHash($v) does not return reference to hash."; }
   return $result;
@@ -2575,7 +2608,7 @@ sub EvalExpr {
 
   my $r;
   eval { local $^W = $DEBUG; ($r) = &$sub(); };
-  if ($@ && $DEBUG) { confess "EvalExpr($v) raises $@"; }
+  if ($@ && $DEBUG > 1) { confess "EvalExpr($v) raises $@"; }
   return ($r || 0);
 }
 
