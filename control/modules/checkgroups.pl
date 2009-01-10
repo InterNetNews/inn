@@ -19,13 +19,16 @@ use strict;
 
 sub control_checkgroups {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
     my ($newsgrouppats) = @$par;
+    my $head = $article->head;
+    my @headers = split(/\r?\n/, $head->stringify);
+    my @body = split(/\r?\n/, $article->stringify_body);
 
     if ($action eq 'mail') {
         my $mail = sendmail("checkgroups by $sender");
         print $mail "$sender posted the following checkgroups message:\n";
-        print $mail map { s/^~/~~/; "$_\n" } @$headers;
+        print $mail map { s/^~/~~/; "$_\n" } @headers;
         print $mail <<END;
 
 If you want to process it, feed the body
@@ -34,20 +37,20 @@ in as user ID "$INN::Config::newsuser":
 
 $INN::Config::pathbin/docheckgroups '$newsgrouppats' <<zRbJ
 END
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @body;
         print $mail "zRbJ\n";
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "checkgroups by $sender", $headers, $body);
+            logger($log, "checkgroups by $sender", $article);
         } else {
             logmsg("checkgroups by $sender");
         }
     } elsif ($action eq 'doit') {
         if (defined &local_docheckgroups) {
-            local_docheckgroups($body, $newsgrouppats, $log, $sender);
+            local_docheckgroups(\@body, $newsgrouppats, $log, $sender);
         } else {
-            docheckgroups($body, $newsgrouppats, $log, $sender);
+            docheckgroups(\@body, $newsgrouppats, $log, $sender);
         }
     }
 }

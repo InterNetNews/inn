@@ -19,15 +19,17 @@ use strict;
 
 sub control_sendme {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
+
+    my @body = split(/\r?\n/, $article->stringify_body);
 
     if ($action eq 'mail') {
         my $mail = sendmail("sendme by $sender");
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @body;
         close $mail or logdie('Cannot send mail: ' . $!);
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "sendme $sender", $headers, $body);
+            logger($log, "sendme $sender", $article);
         } else {
             logmsg("sendme from $sender");
         }
@@ -35,7 +37,7 @@ sub control_sendme {
         my $tempfile = "$INN::Config::tmpdir/sendme.$$";
         open(GREPHIST, "| $INN::Config::newsbin/grephistory -s > $tempfile")
             or logdie("Cannot run grephistory: $!");
-	foreach (@$body) {
+	foreach (@body) {
             print GREPHIST "$_\n";
 	}
         close GREPHIST or logdie("Cannot run grephistory: $!");

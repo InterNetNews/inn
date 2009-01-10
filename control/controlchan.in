@@ -30,6 +30,7 @@
 ##     :<pathbin>/controlchan
 
 require 5.004_03;
+use MIME::Parser;
 use strict;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
@@ -82,27 +83,35 @@ while (<STDIN>) {
     my $artfh = open_article($token);
     next if not defined $artfh;
 
-    # suck in headers and body, normalize the strange ones
-    my (@headers, @body, %hdr);
-    if (not parse_article($artfh, \@headers, \@body, \%hdr)) {
-        close $artfh;
-        next;
+    my $article_string = '';
+    while (<$artfh>) {
+        $article_string .= $_;
     }
+
     close $artfh or logdie('sm died with status ' . ($? >> 8));
 
-    next if not exists $hdr{control};
+    my %hdr;
+    my $parser = new MIME::Parser;
+    $parser->output_to_core(1);
+    my $article = $parser->parse_data($article_string);
+
+    if (not parse_article($article, \%hdr)) {
+        next;
+    }
+
+    next if not $hdr{'control'};
 
     $curmsgid = $hdr{'message-id'};
-    my $sender = cleanaddr($hdr{sender} || $hdr{from});
-    my $replyto = cleanaddr($hdr{'reply-to'} || $hdr{from});
+    my $sender = cleanaddr($hdr{'sender'} || $hdr{'from'});
+    my $replyto = cleanaddr($hdr{'reply-to'} || $hdr{'from'});
 
     my (@progparams, $progname);
-    if ($hdr{control} =~ /\s/) {
-        $hdr{control} =~ /^(\S+)\s+(.+)?/;
+    if ($hdr{'control'} =~ /\s/) {
+        $hdr{'control'} =~ /^(\S+)\s+(.+)?/;
         $progname = lc $1;
         @progparams = split(/\s+/, lc $2) if $2;
     } else {
-        $progname = lc $hdr{control};
+        $progname = lc $hdr{'control'};
     }
 
     next if $progname eq 'cancel';
@@ -116,7 +125,7 @@ while (<STDIN>) {
     # Do we want to process the message?  Let's check the permissions.
     my ($action, $logname, $newsgrouppats) =
         ctlperm($progname, $sender, $progparams[0],
-                $token, \@headers, \@body);
+                $token, $article);
 
     next if $action eq 'drop';
 
@@ -150,20 +159,20 @@ while (<STDIN>) {
     if (not defined &$subfind) {
         if ($logname) {
             logger($logname, "Unknown control message by $sender",
-                \@headers, \@body);
+                $article);
         } else {
             logmsg("Unknown \"$progname\" control by $sender");
         }
         next;
     }
 
-    my $approved = $hdr{approved} ? 1 : 0;
+    my $approved = $hdr{'approved'} ? 1 : 0;
     logmsg("$subname, " . join(' ', @progparams)
         . " $sender $replyto $token, $sitepath, $action"
         . ($logname ? "=$logname" : '') .", $approved");
 
     &$subfind(\@progparams, $sender, $replyto, $sitepath,
-        $action, $logname, $approved, \@headers, \@body);
+        $action, $logname, $approved, $article);
 }
 
 closelog() if $use_syslog;
@@ -171,41 +180,30 @@ exit 0;
 
 # misc functions ##########################################################
 sub parse_article {
-    my ($artfh, $headers, $body, $hdr) = @_;
-    my $h;
-    my %uniquehdr = map { $_ => 1 }    qw(date followup-to from message-id
-        newsgroups path reply-to subject sender);
+    my ($article, $hdr) = @_;
+    my ($h, $buffer);
+    my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
+        from message-id newsgroups path reply-to sender subject);
 
-    while (<$artfh>) {
-        s/\r?\n$//;
-        last if /^$/;
-        push @$headers, $_;
-        if (/^(\S+):\s+(.+)/) {
-            $h = lc $1;
-            if (exists $hdr->{$h}) {
-                if (exists $uniquehdr{$h}) {
-                    logmsg("Multiple $1 headers in article $curmsgid");
-                    return 0;
-                }
-                $hdr->{$h} .= ' ' . $2;
-            } else {
-                $hdr->{$h} = $2;
-            }
-            next;
-        } elsif (/^\s+(.+)/) {
-            if (defined $h) {
-                $hdr->{$h} .= ' ' . $1;
-                next;
-            }
+    my $head = $article->head;
+
+    foreach $h (%uniquehdr) {
+        $hdr->{$h} = '';
+        $buffer = $head->get($h);
+        if ($buffer) {
+            $buffer =~ s/\r?\n$//;
+            $buffer =~ s/\r?\n\s+/ /g;
+            $hdr->{$h} = $buffer;
         }
-        logmsg("Broken headers in article $curmsgid");
-        return 0;
+        if ($head->count($h) > 1) {
+            logmsg("Multiple $h headers in article $curmsgid");
+            return 0;
+        }
     }
 
-    # article is empty or does not exist
-    return 0 if not @$headers;
+    # Article is empty or does not exist.
+    return 0 if not $head->stringify;
 
-    chop (@$body = <$artfh>);
     return 1;
 }
 
@@ -215,7 +213,7 @@ sub cleanaddr {
     s/(\s+)?\(.*\)(\s+)?//g;
     s/.*<(.*)>.*/$1/;
     s/[^-a-zA-Z0-9+_.@%]/_/g;    # protect MTA
-    s/^-/_/;                    # protect MTA
+    s/^-/_/;                     # protect MTA
     return $_;
 }
 
@@ -255,7 +253,7 @@ sub readctlfile {
 
 # Parse a control message's permissions.
 sub ctlperm {
-    my ($type, $sender, $newsgroup, $token, $headers, $body) = @_;
+    my ($type, $sender, $newsgroup, $token, $article) = @_;
 
     my $action = 'drop';    # default
     my ($logname, $hier);
@@ -291,7 +289,7 @@ sub ctlperm {
         my $keyowner = $1;
         if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
             my $pgpresult = defined &local_pgpverify ?
-                local_pgpverify($token, $headers, $body) : pgpverify($token);
+                local_pgpverify($token, $article) : pgpverify($token);
             if ($keyowner eq $pgpresult) {
                 $action = 'doit';
             } else {
@@ -307,13 +305,22 @@ sub ctlperm {
 
 # Write stuff to a log or send mail to the news admin.
 sub logger {
-    my ($logfile, $message, $headers, $body) = @_;
+    my ($logfile, $message, $article) = @_;
+    my (@headers, @body);
+
+    if (ref $article eq 'ARRAY') {
+        @headers = @$article;
+    } else {
+        my $head = $article->head;
+        @headers = split(/\r?\n/, $head->stringify);
+        @body = split(/\r?\n/, $article->stringify_body);
+    }
 
     if ($logfile eq 'mail') {
         my $mail = sendmail($message);
-        print $mail map { s/^~/~~/; "$_\n" } @$headers;
-        print $mail "\n" . join ('', map { s/^~/~~/; "$_\n" } @$body)
-            if $body;
+        print $mail map { s/^~/~~/; "$_\n" } @headers;
+        print $mail "\n" . join ('', map { s/^~/~~/; "$_\n" } @body)
+            if @body;
         close $mail or logdie("Cannot send mail: $!");
         return;
     }
@@ -333,7 +340,7 @@ sub logger {
 
     open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
     print LOGFILE "$message\n";
-    foreach (@$headers, '', @$body, '') {
+    foreach (@headers, '', @body, '') {
         print LOGFILE "    $_\n";
     }
     close LOGFILE;

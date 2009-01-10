@@ -87,8 +87,12 @@ fine.  We hope to remove this requirement in the future.
 
 =item *
 
-INN requires at least S<B<Perl 5.004_03>> to build and to run several
-subsystems.  INN is tested primarily with newer versions of Perl, so it's
+INN requires at least S<B<Perl 5.8.0>> to build and to run several
+subsystems.  In order to process control messages, B<controlchan> needs
+the C<MIME::Parser> module available from CPAN (C<MIME-tools>
+in F<modules/by-module/MIME/>, for instance on L<ftp://ftp.perl.org/>).  This
+Perl module has probably already been packaged for your distribution.
+INN is tested primarily with newer versions of Perl, so it's
 generally recommended that you install the latest stable distribution of
 Perl before compiling INN.  For instructions on obtaining and installing
 Perl, see L<http://www.perl.com/pub/language/info/software.html>.  Note
@@ -149,7 +153,7 @@ features, you will need to install those packages first.  Here is a table
 of configure options enabling optional features and the software and
 versions you'll need:
 
-    --with-perl         Perl 5.004_03 or higher, 5.6.1+ recommended
+    --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
     --with-python       Python 1.5.2 or higher
     --with-berkeleydb   Berkeley DB 4.4 or higher
     --with-zlib         zlib 1.x or higher

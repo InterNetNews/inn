@@ -19,8 +19,36 @@ use strict;
 
 sub control_newgroup {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
     my ($groupname, $modflag) = @$par;
+
+    my $head = $article->head;
+    my @headers = split(/\r?\n/, $head->stringify);
+    my @fullbody = split(/\r?\n/, $article->stringify_body);
+    my (@body, $part, $part_head);
+    my $mimegroupinfo = 0;
+
+    # Check if it is a multipart message.  The body is restricted to
+    # the application/news-groupinfo part, if any.
+    if ($article->parts > 0) {
+        foreach $part ($article->parts) {
+            $part_head = $part->head;
+
+            if ($part_head->mime_type eq 'application/news-groupinfo') {
+                @body = split(/\r?\n/, $part->stringify_body);
+                $mimegroupinfo = 1;
+            }
+        }
+    }
+
+    # The newgroup control message can be an application/news-groupinfo
+    # entity itself.
+    if ($head->mime_type eq 'application/news-groupinfo') {
+        @body = @fullbody;
+        $mimegroupinfo = 1;
+    }
+
+    @body = @fullbody if not $mimegroupinfo;
 
     $modflag ||= '';
     my $modcmd = $modflag eq 'moderated' ? 'm' : 'y';
@@ -31,7 +59,7 @@ sub control_newgroup {
         $errmsg = checkgroupname($groupname) if $errmsg eq 'DONE';
 
         if ($log) {
-            logger($log, "skipping newgroup ($errmsg)", $headers, $body);
+            logger($log, "skipping newgroup ($errmsg)", $article);
         } else {
             logmsg("skipping newgroup ($errmsg)");
         }
@@ -57,7 +85,9 @@ sub control_newgroup {
     # If there is a tag line, search whether the description has changed.
     my $found = 0;
     my $ngline = '';
-    foreach (@$body) {
+    foreach (@body) {
+        $found = 1 if (($mimegroupinfo)
+                       and ($_ !~ /^For your newsgroups file:\s*$/));
         if ($found) {
             # It is the line which contains the description.
             $ngline = $_;
@@ -118,14 +148,14 @@ $INN::Config::pathdb/newsgroups file.
 The control message follows:
 
 END
-        print $mail map { s/^~/~~/; "$_\n" } @$headers;
+        print $mail map { s/^~/~~/; "$_\n" } @headers;
         print $mail "\n";
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @fullbody;
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
             logger($log, "skipping newgroup $groupname $modcmd"
-                . " $sender (would $status)", $headers, $body);
+                . " $sender (would $status)", $article);
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
                 . " (would $status)");
@@ -142,7 +172,7 @@ END
 
         if ($log) {
             logger($log, "newgroup $groupname $modcmd $status $sender",
-                   $headers, $body) if ($log ne 'mail' or $status ne 'no change');
+                   $article) if ($log ne 'mail' or $status ne 'no change');
         }
     }
     return;

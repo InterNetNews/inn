@@ -19,15 +19,16 @@ use strict;
 
 sub control_ihave {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
+    my @body = split(/\r?\n/, $article->stringify_body);
 
     if ($action eq 'mail') {
         my $mail = sendmail("ihave by $sender");
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @body;
         close $mail or logdie('Cannot send mail: ' . $!);
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "ihave $sender", $headers, $body);
+            logger($log, "ihave $sender", $article);
         } else {
             logmsg("ihave $sender");
         }
@@ -35,7 +36,7 @@ sub control_ihave {
         my $tempfile = "$INN::Config::tmpdir/ihave.$$";
         open(GREPHIST, "| $INN::Config::newsbin/grephistory -i > $tempfile")
             or logdie('Cannot run grephistory: ' . $!);
-	foreach (@$body) {
+	foreach (@body) {
             print GREPHIST "$_\n";
         }
         close GREPHIST;

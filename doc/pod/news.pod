@@ -2,6 +2,12 @@
 
 The following upgrade process is still under construction and not complete.
 
+In order to process control messages which contain an application/news-groupinfo
+entity as described in USEPRO, B<controlchan> needs the C<MIME::Parser> module.
+It is available from CPAN (C<MIME-tools> in F<modules/by-module/MIME/>,
+for instance on ftp.perl.org).  You can also use the one provided with your
+distribution, has it already been packaged for it.
+
 =over 2
 
 =item *

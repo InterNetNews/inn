@@ -19,8 +19,12 @@ use strict;
 
 sub control_senduuname {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
     my ($where) = @$par;
+
+    my $head = $article->head;
+    my @headers = split(/\r?\n/, $head->stringify);
+    my @body = split(/\r?\n/, $article->stringify_body);
 
     if ($action eq 'mail') {
         my $mail = sendmail("senduuname $sender");
@@ -33,13 +37,13 @@ If this is acceptable, type:
 The control message follows:
 
 END
-        print $mail map { s/^~/~~/; "$_\n" } @$headers;
+        print $mail map { s/^~/~~/; "$_\n" } @headers;
         print $mail "\n";
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @body;
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "senduuname $sender", $headers, $body);
+            logger($log, "senduuname $sender", $article);
         } else {
             logmsg("senduuname $sender");
         }
@@ -54,7 +58,7 @@ END
         close UUNAME or logdie("Cannot run uuname: $!");
         close $mail or logdie("Cannot send mail: $!");
 
-        logger($log, "senduuname $sender to $replyto", $headers, $body) if $log;
+        logger($log, "senduuname $sender to $replyto", $article) if $log;
     }
 }
 

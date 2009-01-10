@@ -19,8 +19,12 @@ use strict;
 
 sub control_version {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $headers, $body) = @_;
+        $article) = @_;
     my ($where) = @$par;
+
+    my $head = $article->head;
+    my @headers = split(/\r?\n/, $head->stringify);
+    my @body = split(/\r?\n/, $article->stringify_body);
 
     my $version = $INN::Config::version || '(unknown version)';
 
@@ -36,13 +40,13 @@ If this is acceptable, type:
 The control message follows:
 
 END
-        print $mail map { s/^~/~~/; "$_\n" } @$headers;
+        print $mail map { s/^~/~~/; "$_\n" } @headers;
         print $mail "\n";
-        print $mail map { s/^~/~~/; "$_\n" } @$body;
+        print $mail map { s/^~/~~/; "$_\n" } @body;
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "version $sender", $headers, $body);
+            logger($log, "version $sender", $article);
         } else {
             logmsg("version $sender");
         }
@@ -54,7 +58,7 @@ END
         sendmail("version reply from $INN::Config::pathhost", $replyto,
             [ "InterNetNews $version\n" ]);
 
-        logger($log, "version $sender to $replyto", $headers, $body) if $log;
+        logger($log, "version $sender to $replyto", $article) if $log;
     }
 }
 
