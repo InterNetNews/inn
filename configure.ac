@@ -552,6 +552,13 @@ everything was set correctly.
 
 EOM
 
+dnl Write a warning for missing Perl modules at the end of the output.
+dnl $inn_perl_module_warning already has a leading space.
+if test x"$inn_perl_module_warning" != x ; then
+    echo "Missing Perl modules: $inn_perl_module_warning."
+    echo "You should install them for these programs to work fine."
+fi
+
 dnl Finally, double-check the configured temporary directory.  Some people
 dnl point this at the system temporary directories or at other world-writeable
 dnl directories, which can be a local security hole.

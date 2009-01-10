@@ -14,6 +14,16 @@ AC_DEFUN([_INN_PERL_VERSION],
         AC_MSG_ERROR([Perl $1 or greater is required])
     fi])])
 
+dnl Check for Perl modules used by scripts shipped with INN.
+AC_DEFUN([INN_PERL_MODULE],
+[AC_MSG_CHECKING([for $1])
+    if $PERL -e 'require $1;' > /dev/null 2>&1 ; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_WARN([$1 Perl module is required by $2])
+        inn_perl_module_warning="$inn_perl_module_warning $1 (for $2)"
+    fi])
+
 dnl Check to see if Perl embedding was requested.  Regardless of whether it
 dnl was or not, determine the path to Perl.  If it was requested, make sure
 dnl that we have the right version and then set PERL_CPPFLAGS and PERL_LIBS as
@@ -34,8 +44,11 @@ AC_ARG_WITH([perl],
 dnl Embedded Perl requires 5.004.  controlchan requires 5.004_03.  Other
 dnl things may work with 5.003, but make 5.004_03 the minimum level; anyone
 dnl should really have at least that these days.
+dnl We also check for useful Perl modules.
 INN_PATH_PROG_ENSURE([PERL], [perl])
 _INN_PERL_VERSION(5.004_03)
+INN_PERL_MODULE([Encode], [controlchan])
+INN_PERL_MODULE([MIME::Parser], [controlchan])
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
 dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
