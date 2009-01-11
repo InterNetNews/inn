@@ -92,7 +92,7 @@
 # to this file.
 
 use strict;
-use Carp qw(confess);
+use Carp qw( cluck confess );
 
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DONT";
@@ -329,15 +329,14 @@ if ($HTML) {
 my $unrecognize_max = 0;
 my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
-my ($suffix, $HTML_output, %config, $first_date, $last_date,
-    %prog_type, %prog_size);
-my ( $isLeapYear, @month_to_dayofyear, %month_to_dayofyear );
+my ($suffix, $HTML_output, %config, %prog_type, %prog_size);
+my ( @month_to_dayofyear, %month_to_dayofyear );
 
 {
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
     localtime(time);
   $year += 1900;
-  $isLeapYear =
+  my $isLeapYear =
    (($year % 4 == 0) && ($year % 100 != 0)) || ($year % 400 == 0);
 
   @month_to_dayofyear = $isLeapYear
@@ -364,9 +363,6 @@ my ( $isLeapYear, @month_to_dayofyear, %month_to_dayofyear );
 my $HTML_header = '';
 my $HTML_footer = '';
 
-my $MIN = 1E10;
-my $MAX = -1;
-
 my $xmax = &GetValue ($output{'default'}{'graph_width'})   # Graph size..
   if defined $output{'default'}{'graph_width'};
 $xmax = 550 unless $xmax;
@@ -377,14 +373,26 @@ $transparent = (defined $transparent && $transparent eq 'true') ? 1 : 0;
 
 my $repeated = 1;
 
-my $first_date_cvt = $MIN;
-my $last_date_cvt = $MAX;
+# 1E30 is a very large number:  digit '1' followed by thirty zeroes.
+# With binary radix the number has 100 digits.
+# On contemporary hardware, Perl converts it to the maximum value of
+# an unsigned integer (either 32 or 64 bit).
 
+my $first_date = undef;    # lowest encountered date
+my $first_date_cvt = 1E30; # = &ConvDate($first_date)
+my $last_date = undef;     # highest encountered date
+my $last_date_cvt = -1;    # = &ConvDate($last_date)
 
 #########################################################################
-my $s = sprintf "use lib qw($LIBPATH); use $CLASS;";
-eval $s;  # initialization
-die "Can't find/load $CLASS.pm : $@\n" if $@;
+if (length($CLASS) == 0)
+{
+  die 'No log reader module specified.  Configuration file broken?';
+}
+else
+{
+  eval "use lib qw($LIBPATH); use $CLASS;";  # initialization
+  die "Can't find/load $CLASS.pm : $@\n" if $@;
+}
 
 my $collectFunc;
 {
@@ -503,12 +511,23 @@ $| = $DEBUG;
 
 die "No data. Abort.\n" unless $total_line;
 
-my $sec_glob = &ConvDate($last_date) - &ConvDate($first_date);
-unless ($sec_glob) {
-  print "WARNING: bad date (\"$last_date\" or \"$first_date\")\n" .
-        "         Please, contact the author of innreport.\n";
-  $sec_glob = 24 * 60 * 60; # one day
+sub secondsBetweenFirstAndLast()
+{
+  my $default = 24 * 60 * 60; # one day
+
+  return $default if (!defined($first_date));
+  if (!defined($last_date))
+  {
+    $last_date = $first_date;
+    $last_date_cvt = $first_date_cvt;
+    return $default;
+  }
+
+  my $result = $last_date_cvt - $first_date_cvt;
+  return ($result > 0) ? $result : $default;
 }
+
+my $sec_glob = secondsBetweenFirstAndLast();
 
 $HTML_output = '';
 
@@ -606,9 +625,13 @@ if (!$NOT_DAILY && defined $output{'default'}{'unwanted_log'}) {
 ######
 # Misc...
 
-# Compare 2 dates (+hour)
+# Compare two time stamps.
+# Example input:  "May 12 06" for May 12, 6:00am.
+# - Only month, day of month and hour are checked; minutes and seconds
+#   are ignored.
+# - Used with perl's sort function, arguments are passed as $a and $b.
+# - Specified in section "inn_flow" of innreport.conf.
 sub DateCompare {
-  # ex: "May 12 06"   for May 12, 6:00am
 
   # $[ ... The index of the first element in an array, and of the first
   #        character in a substring. Default is 0.
@@ -617,6 +640,12 @@ sub DateCompare {
   # The 2 dates are near. The range is less than a few days that's why we
   # can cheat to determine the order. It is only important if one date
   # is in January and the other in December.
+  #
+  # Assume that every month has 36 days:  36 * 24 / 3 = 288.
+  # If dates differ for more than 300 days, they are assumed to be in
+  # different years.  However, this limit of 300 is based on a year of
+  # 12 * 36 = 432 days.  Mapped to a year of 365 days, the limit is
+  # 300 / 432 * 365 = 253.310 days.
 
   my $date1 = substr ($a, 4, 2) * 24;
   my $date2 = substr ($b, 4, 2) * 24;
@@ -700,10 +729,23 @@ sub Rotate {
 # Date format is "Aug 22 01:49:40"
 sub ConvDate($) {
   my $T = shift;
+  if (!$T)
+  {
+    cluck 'Parameter $T is undefined.' if ($DEBUG);
+    return undef;
+  }
   my ($m, $d, $h, $mn, $s) = $T =~ /^(\S\S\S)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
-  confess "Invalid date $T" unless($m);
+  if (!$m)
+  {
+    cluck "Invalid date $T" if ($DEBUG);
+    return undef;
+  }
   $m = $month_to_dayofyear{ $m };
-  confess "Invalid month name in $T" unless($m);
+  if (!$m)
+  {
+    cluck "Invalid month name in $T" if ($DEBUG);
+    return undef;
+  }
   return $s + 60 * $mn + 3600 * $h + 86400 * ($d + $m);
 }
 
