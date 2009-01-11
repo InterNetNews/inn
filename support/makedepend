@@ -24,12 +24,14 @@ for source in "$@" ; do
         gcc -MM $flags "$source" | sed "s%^[^.: ][^.: ]*%$base%" \
             | sed -e 's%\(^\|  *\)/[^ ]* *%\1%g' -e '/^ *\\$/d' \
                   -e 's/  *\(  \| \\\)/\1/g' \
+            | sed -e '/ \\$/N; s/ \\\n *$//g; P; D' \
             >> .makefile.tmp
         ;;
     *)
         gcc -MM $flags "$source" \
             | sed -e 's%\(^\|  *\)/[^ ]*%\1%g' -e '/^ *\\$/d' \
                   -e 's/  *\(  \| \\\)/\1/g' \
+            | sed -e '/ \\$/N; s/ \\\n *$//g; P; D' \
             >> .makefile.tmp
         ;;
     esac
