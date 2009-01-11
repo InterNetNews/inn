@@ -92,14 +92,18 @@ while (<STDIN>) {
 
     my %hdr;
     my $parser = new MIME::Parser;
-    $parser->output_to_core(1);
+    $parser->output_dir("$INN::Config::pathtmp");
     my $article = $parser->parse_data($article_string);
 
     if (not parse_article($article, \%hdr)) {
+        $parser->filer->purge;
         next;
     }
 
-    next if not $hdr{'control'};
+    if (not $hdr{'control'}) {
+        $parser->filer->purge;
+        next;
+    }
 
     $curmsgid = $hdr{'message-id'};
     my $sender = cleanaddr($hdr{'sender'} || $hdr{'from'});
@@ -114,10 +118,14 @@ while (<STDIN>) {
         $progname = lc $hdr{'control'};
     }
 
-    next if $progname eq 'cancel';
+    if ($progname eq 'cancel') {
+        $parser->filer->purge;
+        next;
+    }
 
     if ($progname !~ /^([a-z]+)$/) {
         logmsg("Naughty control in article $curmsgid ($progname)");
+        $parser->filer->purge;
         next;
     }
     $progname = $1;
@@ -127,7 +135,10 @@ while (<STDIN>) {
         ctlperm($progname, $sender, $progparams[0],
                 $token, $article);
 
-    next if $action eq 'drop';
+    if ($action eq 'drop') {
+        $parser->filer->purge;
+        next;
+    }
 
     if ($action eq '_pgpfail') {
         my $type = '';
@@ -140,6 +151,7 @@ while (<STDIN>) {
         }
         logmsg("skipping $progname $type$sender"
             . "(pgpverify failed) in $curmsgid");
+        $parser->filer->purge;
         next;
     }
 
@@ -163,6 +175,7 @@ while (<STDIN>) {
         } else {
             logmsg("Unknown \"$progname\" control by $sender");
         }
+        $parser->filer->purge;
         next;
     }
 
@@ -173,6 +186,8 @@ while (<STDIN>) {
 
     &$subfind(\@progparams, $sender, $replyto, $sitepath,
         $action, $logname, $approved, $article);
+
+    $parser->filer->purge;
 }
 
 closelog() if $use_syslog;
