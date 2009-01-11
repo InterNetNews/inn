@@ -26,7 +26,7 @@ sub control_sendsys {
         my $mail = sendmail("sendsys $sender");
         print $mail <<END;
 $sender has requested that you send a copy
-of your newsgroups file.
+of your newsfeeds file.
 
 If this is acceptable, type:
   $inn::mailcmd -s "sendsys reply from $inn::pathhost" $replyto < $inn::newsfeeds
