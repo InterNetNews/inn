@@ -30,7 +30,7 @@ sub control_sendsys {
         my $mail = sendmail("sendsys $sender");
         print $mail <<END;
 $sender has requested that you send a copy
-of your $INN::Config::pathdb/newsgroups file.
+of your $INN::Config::newsfeeds file.
 
 If this is acceptable, type:
   $INN::Config::mailcmd -s "sendsys reply from $INN::Config::pathhost" $replyto < $INN::Config::newsfeeds

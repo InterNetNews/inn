@@ -42,14 +42,14 @@ sub control_ihave {
         close GREPHIST;
 
         if (-s $tempfile) {
-            my $inews = open("$INN::Config::inews -h")
+            open(INEWS, "| $INN::Config::inews -h")
                 or logdie('Cannot run inews: ' . $!);
-            print $inews "Newsgroups: to.$site\n"
+            print INEWS "Newsgroups: to.$site\n"
                . "Subject: cmsg sendme $INN::Config::pathhost\n"
                . "Control: sendme $INN::Config::pathhost\n\n";
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
-            print $inews $_ while <TEMPFILE>;
-            close $inews or die $!;
+            print INEWS $_ while <TEMPFILE>;
+            close INEWS or die $!;
             close TEMPFILE;
         }
         unlink $tempfile;

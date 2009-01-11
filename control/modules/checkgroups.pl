@@ -27,7 +27,7 @@ sub control_checkgroups {
 
     if ($action eq 'mail') {
         my $mail = sendmail("checkgroups by $sender");
-        print $mail "$sender posted the following checkgroups message:\n";
+        print $mail "$sender posted the following checkgroups message:\n\n";
         print $mail map { s/^~/~~/; "$_\n" } @headers;
         print $mail <<END;
 
