@@ -1092,9 +1092,18 @@ sub Make_Index($$$$) {
 	next unless $year; # bad filename.. strange.
 	my ($start, $end) =
 	  $res[$date_idx - 1] =~ m/^(\w+\s+\d+ \S+) -- (\w+\s+\d+ \S+)$/o;
-	next unless $start; # bad date
+        if (!$start)
+        {
+          warn "Invalid line in DB file ignored: $k" if ($DEBUG);
+          next;
+        }
 	$start = &ConvDate ($start);
 	$end = &ConvDate ($end);
+        if ($start - $end == 0)
+        {
+          warn "Time range 0 in DB file ignored: $k" if ($DEBUG);
+          next;
+        }
 	# 31/12 - 1/1 ?
 	my $inc = $end < $start ? 1 : 0;
 	$start += (($year - 1970) * 365 +
@@ -1694,9 +1703,10 @@ sub Chrono {
   foreach $key (sort keys %$dates) {
     $x_min = $key if $x_min > $key;
     $x_max = $$dates{$key} if $x_max < $$dates{$key};
-    my $t = $$out{$key} / ($$dates{$key} - $key);
+    my $delta = $dates->{$key} - $key;
+    my $t = $out->{$key} / $delta;
     $y_max_out = $t if $y_max_out < $t;
-    $t = $$in{$key} / ($$dates{$key} - $key);
+    $t = $in->{$key} / $delta;
     $y_max_in = $t if $y_max_in < $t;
   }
   $y_max = $y_max_out > $y_max_in ? $y_max_out : $y_max_in;
