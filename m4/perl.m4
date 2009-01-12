@@ -20,6 +20,7 @@ AC_DEFUN([INN_PERL_MODULE],
     if $PERL -e 'require $1;' > /dev/null 2>&1 ; then
         AC_MSG_RESULT([yes])
     else
+        AC_MSG_RESULT([no])
         AC_MSG_WARN([$1 Perl module is required by $2])
         inn_perl_module_warning="$inn_perl_module_warning $1 (for $2)"
     fi])
