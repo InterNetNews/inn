@@ -13,7 +13,7 @@
 $0 =~ s!.*/!! ;
 
 require 5.001 ;
-require 'getopts.pl' ;
+use Getopt::Std;
 use vars qw($opt_h);
 
 die "$0: No \$INN::Config::mta  variable defined.\n" 
@@ -26,7 +26,7 @@ die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!) ;
 $usage = "usage: $0 -s subject addresses\n\n" .
     "Reads stdin for message body\n" ;
 
-&Getopts ("s:h") || die $usage ;
+getopts ("s:h") || die $usage ;
 
 die $usage if $opt_h ;
 

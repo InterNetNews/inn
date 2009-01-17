@@ -29,7 +29,7 @@ $outGoing = $INN::Config::pathoutgoing;
 
 $0 =~ s!.*/!! ;
 
-require 'getopts.pl' ;
+use Getopt::Std;
 
 $usage = "$0 [ -q ][ -v ][ -u ][ -e host ][ -d dir ][ -c [ -s dir ]][ -m [-t dir ]] inn-batchfile\n
   -e host    to process on entries for only that host
@@ -62,7 +62,7 @@ they'll be moved automatically.
 
 $opt_u = $opt_h = "";  # shut up, perl -w
 $missing = 0;
-&Getopts ("he:t:s:d:cvumq") || die $usage ;
+getopts ("he:t:s:d:cvumq") || die $usage ;
 
 die $usage if ( $opt_h ) ;
 die "Cannot specify both -q and -v\n\n" . $usage if ($opt_q && $opt_v);

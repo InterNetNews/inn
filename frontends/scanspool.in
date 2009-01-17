@@ -96,7 +96,7 @@
 
 # perl requirements
 #
-require "getopts.pl";
+use Getopt::Std;
 
 use vars qw($opt_c);
 
@@ -117,7 +117,7 @@ $reason = "running scanspool";		# throttle reason
 
 # parse args
 #
-&Getopts("a:s:vcn");
+getopts("a:s:vcn");
 $active = $opt_a if (defined($opt_a));
 $spool = $opt_s if (defined($opt_s));
 

@@ -18,7 +18,7 @@
 
 $0 =~ s!.*/!! ;
 
-require 'getopts.pl' ;
+use Getopt::Std;
 
 $usage = "$0 [ -a -b name -d directory -c count -t sleep-amt -r -u ] peers\n" .
     "  -a is for duplicate article id's periodically\n" .
@@ -29,7 +29,7 @@ $usage = "$0 [ -a -b name -d directory -c count -t sleep-amt -r -u ] peers\n" .
     "  -t is the number of seconds to sleep between each article.\n" .
     "  -r is to have articles be created in NNTP ready format\n" ;
 
-&Getopts ("a:b:c:d:t:rl:h:") || die $usage ;
+getopts ("a:b:c:d:t:rl:h:") || die $usage ;
 
 die $usage if $opt_h ;
 $total = $opt_c ;
