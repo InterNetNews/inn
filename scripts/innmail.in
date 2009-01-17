@@ -16,7 +16,7 @@ require 5.001 ;
 use Getopt::Std;
 use vars qw($opt_h);
 
-die "$0: No \$INN::Config::mta  variable defined.\n" 
+die "$0: No \$INN::Config::mta variable defined.\n" 
     if ! defined ($INN::Config::mta);
 
 $sm = $INN::Config::mta ;
@@ -30,14 +30,14 @@ getopts ("s:h") || die $usage ;
 
 die $usage if $opt_h ;
 
-if ( !$opt_s ) {
-    warn "No subject given. Hope that's ok\n" ;
+if ( !defined($opt_s) ) {
+    warn "No subject given.  Hope that's OK.\n" ;
     $opt_s = "NO SUBJECT" ;
 } else {
     $opt_s =~ s/\n+\Z//;
 }
 
-# fix up any addresses.
+# Fix up any addresses.
 foreach ( @ARGV ) {
     s![^-a-zA-Z0-9+_.@%]!!g ;
 
@@ -47,7 +47,7 @@ foreach ( @ARGV ) {
 die "$0: No addresses specified\n\n$usage" unless @addrs ;
 
 if ($sm =~ m!%s!) {
-    $sm = sprintf $sm,join (' ',@addrs);
+    $sm = sprintf $sm, join (' ', @addrs);
 } else {
     $sm .= " " . join(' ', @addrs);
 }
@@ -55,21 +55,21 @@ if ($sm =~ m!%s!) {
 @smarr = split(/\s+/,$sm);
 
 ($t = $INN::Config::mta) =~ s!\s.*!!;
-die "$0: MTA variable definition is changed after subsitution\n" 
+die "$0:  MTA variable definition is changed after substitution\n" 
     if ($t ne $smarr[0]);
 
-die "$0: MTA excutable doesn't appear to exist: $smarr[0]\n"
+die "$0:  MTA excutable doesn't appear to exist:  $smarr[0]\n"
     if ! -x $smarr[0];
 
-# startup mta without using the shell
+# Startup MTA without using the shell.
 $pid = open (MTA,"|-") ;
 if ($pid == 0) {
-    exec (@smarr) || die "$0: exec of $sm failed: $!\n" ;
+    exec (@smarr) || die "$0:  exec of $sm failed:  $!\n" ;
 } elsif ($pid < 0) {
-    die "$0: Fork failed: $!\n" ;
+    die "$0:  Fork failed:  $!\n" ;
 }
 
-print MTA "To: ", join (",\n\t",@addrs), "\n" ;
+print MTA "To: ", join (",\n\t", @addrs), "\n" ;
 print MTA "Subject: $opt_s\n" ;
 print MTA "\n" ;
 while (<STDIN>) {
