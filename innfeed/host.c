@@ -1717,7 +1717,7 @@ void hostSendArticle (Host host, Article article)
         unsigned int x_queue = host->params->maxChecks + 1 ;
 
         for (idx = 0 ; x_queue > 0 && idx < host->maxConnections ; idx++)
-          if ((cxn = host->connections[idx]) != host->notThisCxn) {
+          if ((cxn = host->connections[idx]) != host->notThisCxn && cxn != NULL) {
             if (!host->cxnActive [idx]) {
               if (!host->cxnSleeping [idx]) {
                 if (cxnTakeArticle (cxn, extraRef)) {
@@ -1752,7 +1752,7 @@ void hostSendArticle (Host host, Article article)
           {
             if (host->cxnActive [idx] &&
                 (cxn = host->connections[idx]) != host->notThisCxn &&
-                cxnTakeArticle (cxn, extraRef)) {
+                cxn != NULL && cxnTakeArticle (cxn, extraRef)) {
               unsigned int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
               if (queue == 0) host->gNoQueue++ ;
               else            host->gCxnQueue += queue ;
@@ -1763,7 +1763,7 @@ void hostSendArticle (Host host, Article article)
         /* Wasn't taken so try to give it to one of the waiting connections. */
         for (idx = 0 ; idx < host->maxConnections ; idx++)
           if (!host->cxnActive [idx] && !host->cxnSleeping [idx] &&
-              (cxn = host->connections[idx]) != host->notThisCxn)
+              (cxn = host->connections[idx]) != host->notThisCxn && cxn != NULL)
             {
               if (cxnTakeArticle (cxn, extraRef)) {
                 unsigned int queue = host->params->maxChecks - cxnQueueSpace (cxn) - 1;
