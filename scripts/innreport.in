@@ -330,18 +330,18 @@ my $unrecognize_max = 0;
 my @unrecognize;
 my ($total_line, $total_size) = (0, 0);
 my ($suffix, $HTML_output, %config, %prog_type, %prog_size);
-my ( @month_to_dayofyear, %month_to_dayofyear );
+my ( @month_to_dayofyear, %month_to_dayofyear, $current_year );
 
 {
   my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
     localtime(time);
-  $year += 1900;
+  $current_year = $year += 1900;
   my $isLeapYear =
    (($year % 4 == 0) && ($year % 100 != 0)) || ($year % 400 == 0);
 
   @month_to_dayofyear = $isLeapYear
-  ? ( -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 )
-  : ( -1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333 );
+  ? ( -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 366 )
+  : ( -1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 365 );
 
   %month_to_dayofyear =
   (
@@ -382,6 +382,11 @@ my $first_date = undef;    # lowest encountered date
 my $first_date_cvt = 1E30; # = &ConvDate($first_date)
 my $last_date = undef;     # highest encountered date
 my $last_date_cvt = -1;    # = &ConvDate($last_date)
+
+# $date_wrap_around is a day of year.  If it is positive, then the log
+# file goes past 31st of December into January.  In that case, 365 (or
+# 366) is added to all dates less than $date_wrap_around.
+my $date_wrap_around = $month_to_dayofyear[ 0];
 
 #########################################################################
 if (length($CLASS) == 0)
@@ -425,79 +430,101 @@ LINE: while (!eof ()) {
     }
   }
 
-  # skip empty lines
+  # Skip empty lines.
   next LINE if length($_) == 0;
 
-  my $res;
-  my ($day, $hour, $prog, $left) =
-    $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): \[ID \d+ \S+\] (.*)$/o;
+  UNRECOGNIZED: {
 
-  unless ($day)
-  { # Dec 14 03:01:14 localhost innd: SERVER servermode paused
-    ($day, $hour, $prog, $left) =
-      $_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
-  }
+    my ($res, $day, $hour, $prog, $left);
+    DECODE: {
+      ($day, $hour, $prog, $left) =
+	$_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): \[ID \d+ \S+\] (.*)$/o;
+      if ($day) { last DECODE; }
 
-  ($day, $hour, $prog, $left) =
-    $_ =~ m/^(\S+\s+\S+) (\S+) \d+ \S+ (\S+): (.*)$/o unless $day;
+      # Dec 14 03:01:14 localhost innd: SERVER servermode paused
+      ($day, $hour, $prog, $left) =
+	$_ =~ m/^(\S+\s+\S+) (\S+) \S+ (\S+): (.*)$/o;
+      if ($day) { last DECODE; }
 
-  unless ($day) {
-    ($day, $hour, $res, $left) = $_ =~ m/^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
-    if ($day) {
-      my $cvtdate = &ConvDate ("$day $hour");
-      if ($cvtdate < $first_date_cvt) {
-	$first_date_cvt = $cvtdate;
-	$first_date = "$day $hour";
-      }
-      elsif ($cvtdate > $last_date_cvt) {
+      ($day, $hour, $prog, $left) =
+	$_ =~ m/^(\S+\s+\S+) (\S+) \d+ \S+ (\S+): (.*)$/o;
+      if ($day) { last DECODE; }
+
+      # Dec 31 03:01:30.796 + localhost <foo@bar.baz> 1821 inpaths!
+      ($day, $hour, $res, $left) = $_ =~ m/^(\S+\s+\S+) (\S+)\.\d+ (\S+) (.*)$/o;
+      if ($day) { $prog = 'inn'; last DECODE; }
+
+      # Empty lines are caught above, before DECODE.
+      # next LINE if $_ =~ /^$/;
+
+      last UNRECOGNIZED;
+    } # DECODE
+
+    my $date_str = $day . ' ' . $hour;
+    my $cvtdate = &ConvDate ($date_str);
+    last UNRECOGNIZED if (!defined($cvtdate));
+
+    if ($cvtdate < $first_date_cvt)
+    {
+      if ($first_date_cvt - $cvtdate > 253 * 24 * 60 * 60 && $first_date)
+      { #
+        # Detected excessive distance between log entries (see function
+        # DateCompare for magic number 253).  This means we are crossing
+        # from 31st of December to 1st of January.
+        #
+        # innreport assumes that it is running in the same year the log
+        # file was written.  This has just been proven false.  All dates
+        # processed up to now are from last year, not current year.  Leap
+        # year calculation for them was wrong.  There is no easy way to
+        # correct this.
+        #
+        # However, we can simply assume that dates before 1st of May
+        # belong to current year.  With this definition, it is not possible
+        # to cross from both 31st of December to 1st of January and from
+        # 28th of February to 1st of March in the same log file.
+        #
+        # Note: $month_to_dayofyear[12] - $month_to_dayofyear[4] = 245
+
+        $date_wrap_around = $month_to_dayofyear[4];
+        $cvtdate += $month_to_dayofyear[12] * 24 * 60 * 60;
+
+	confess if ($cvtdate != &ConvDate ($date_str));
 	$last_date_cvt = $cvtdate;
-	$last_date = "$day $hour";
+	$last_date = $date_str;
       }
-      $prog = "inn";
-    }
-    else {
-      next if $_ =~ /^$/;
-      # Unrecognize line... skip
-      $unrecognize[$unrecognize_max] = $_
-	unless $unrecognize_max > $MAX_UNRECOGNIZED
-		&& $MAX_UNRECOGNIZED > 0;
-      $unrecognize_max++;
-      next LINE;
-    }
-  }
-  else {
-    my $cvtdate = &ConvDate ("$day $hour");
-    if ($cvtdate < $first_date_cvt) {
-      $first_date_cvt = $cvtdate;
-      $first_date = "$day $hour";
+      else
+      {
+	$first_date_cvt = $cvtdate;
+	$first_date = $date_str;
+      }
     }
     elsif ($cvtdate > $last_date_cvt) {
       $last_date_cvt = $cvtdate;
-      $last_date = "$day $hour";
+      $last_date = $date_str;
     }
-  }
 
-  ########
-  ## Program name
-  # word[7164] -> word
-  my ($pid) = $prog =~ s/\[(\d+)\]$//o;
-  # word: -> word
-  $prog =~ s/:$//o;
-  # wordX -> word   (where X is a digit)
-  $prog =~ s/\d+$//o;
+    ########
+    ## Program name
+    # word[7164] -> word
+    my ($pid) = $prog =~ s/\[(\d+)\]$//o;
+    # word: -> word
+    $prog =~ s/:$//o;
+    # wordX -> word   (where X is a digit)
+    $prog =~ s/\d+$//o;
 
-  $prog_type{$prog}++;
-  $prog_size{$prog} = 0 unless defined $prog_size{$prog}; # stupid warning :(
-  $prog_size{$prog} += $size;
+    $prog_type{$prog}++;
+    $prog_size{$prog} = 0 unless defined $prog_size{$prog}; # Stupid warning :(
+    $prog_size{$prog} += $size;
 
-  # The "heart" of the tool.
-  next LINE if &$collectFunc($day, $hour, $prog, $res, $left, $CASE_SENSITIVE);
+    # The "heart" of the tool.
+    next LINE if &$collectFunc($day, $hour, $prog, $res, $left, $CASE_SENSITIVE);
 
+  } # UNRECOGNIZED
   $unrecognize[$unrecognize_max] = $_
     unless $unrecognize_max > $MAX_UNRECOGNIZED
 	    && $MAX_UNRECOGNIZED > 0;
   $unrecognize_max++;
-}
+} # LINE
 
 {
   no strict;
@@ -509,22 +536,33 @@ LINE: while (!eof ()) {
 # every write or print on the currently selected output channel.
 $| = $DEBUG;
 
-die "No data. Abort.\n" unless $total_line;
+if ($total_line == 0 || !defined($first_date))
+{
+  die 'No data.  Abort.';
+}
 
 sub secondsBetweenFirstAndLast()
 {
   my $default = 24 * 60 * 60; # one day
 
-  return $default if (!defined($first_date));
+  if ($DEBUG && $first_date_cvt != &ConvDate($first_date))
+  {
+    die '$last_date_cvt != &ConvDate($last_date)';
+  }
   if (!defined($last_date))
   {
     $last_date = $first_date;
     $last_date_cvt = $first_date_cvt;
     return $default;
   }
-
+  if ($DEBUG && $last_date_cvt != &ConvDate($last_date))
+  {
+    die '$last_date_cvt != &ConvDate($last_date)';
+  }
   my $result = $last_date_cvt - $first_date_cvt;
-  return ($result > 0) ? $result : $default;
+  return $result if ($result > 0);
+  return $default if ($result == 0);
+  die '$last_date_cvt is less then $first_date_cvt';
 }
 
 my $sec_glob = secondsBetweenFirstAndLast();
@@ -532,27 +570,20 @@ my $sec_glob = secondsBetweenFirstAndLast();
 $HTML_output = '';
 
 if ($HTML) {
-  # Create a new filename (unique and _sortable_)
+  # Create a new filename (unique and _sortable_).
   if ($ARCHIVE) {
-    # The filename will contain the first date of the log or the current time.
-    my ($ts, $tm, $th, $dd, $dm, $dy) = localtime;
-    my ($m, $d, $h, $mn, $s) =
+    # The filename will contain the first date of the log.
+
+    my ($month, $d, $h, $mn, $s) =
       $first_date =~ /^(\S+)\s+(\d+)\s+(\d+):(\d+):(\d+)$/;
-    if ($m) {
-      my $ddm = (index "JanFebMarAprMayJunJulAugSepOctNovDec", $m) / 3;
-      # Adjust the year because syslog doesn't record it. We assume that
-      # it's the current year unless the last date is in the future.
-      my $ld = &ConvDate($last_date);
-      $dy-- if $ld > $ts + 60 * ($tm + 60 * ($th + 24 * ($dd +
-        $month_to_dayofyear[ $dm ]))) ||
-        $ld < &ConvDate($first_date);
-      ($dm, $dd, $th, $tm, $ts) = ($ddm, $d, $h, $mn, $s);
-    }
-    $dm++; # because January = 0 and we prefer 1
-    $dy += 100 if $dy < 90; # Try to pacify the year 2000 !
-    $dy += 1900;
-    $suffix = sprintf ".%02d.%02d.%02d-%02d$SEPARATOR%02d$SEPARATOR%02d",
-		       $dy, $dm, $dd, $th, $tm, $ts;
+    die '$first_date is invalid' if (!$month);
+
+    $month = 1 + index("JanFebMarAprMayJunJulAugSepOctNovDec", $month) / 3;
+    my $year = $current_year;
+    $year-- if ($date_wrap_around >= 0);
+
+    $suffix = sprintf ".%02d.%02d.%02d-%02d%s%02d%s%02d",
+      $year, $month, $d, $h, $SEPARATOR, $mn, $SEPARATOR, $s;
   }
   else {
     $suffix = '';
@@ -746,6 +777,7 @@ sub ConvDate($) {
     cluck "Invalid month name in $T" if ($DEBUG);
     return undef;
   }
+  $m += $month_to_dayofyear[12] if ($m < $date_wrap_around);
   return $s + 60 * $mn + 3600 * $h + 86400 * ($d + $m);
 }
 
