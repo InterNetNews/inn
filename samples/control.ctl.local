@@ -1,0 +1,9 @@
+##  $Id$
+##
+##  Sample control.ctl.local file.
+##
+##  It defines local access control for control messages.
+##  The rules in this file are executed after those defined
+##  in control.ctl.
+##  See the control.ctl man page for more information.
+

@@ -232,35 +232,52 @@ sub cleanaddr {
     return $_;
 }
 
-# Read and cache control.ctl.
+# Read and cache control.ctl and control.ctl.local.
 sub readctlfile {
+    if (! -e $INN::Config::ctlfile) {
+        logdie("Cannot open $INN::Config::ctlfile: $!", 'crit');
+    }
+    my $localfile = (-e $INN::Config::ctlfile . '.local');
+
+    my @files = ($INN::Config::ctlfile);
     my $mtime = (stat($INN::Config::ctlfile))[9];
+
+    if ($localfile) {
+        push(@files, $INN::Config::ctlfile . '.local');
+        my $mtimelocalfile = (stat($INN::Config::ctlfile . '.local'))[9];
+        if ($mtimelocalfile > $mtime) {
+            $mtime = $mtimelocalfile;
+        }
+    }
+
     return $cachedctl if $lastctl == $mtime;    # mtime has not changed.
     $lastctl = $mtime;
 
     my @ctllist;
-    open(CTLFILE, $INN::Config::ctlfile)
-        or logdie("Cannot open $INN::Config::ctlfile: $!", 'crit');
-    while (<CTLFILE>) {
-        chop;
-        # Not a comment or blank? Convert wildmat to regex
-        next if not /^(\s+)?[^\#]/ or /^$/;
-        if (not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
-            s/.*://;
-            logmsg("$_ is not a valid action for control.ctl", 'err');
-            next;
+    foreach my $file (@files) {
+        open(CTLFILE, $file)
+            or logdie("Cannot open $file: $!", 'crit');
+        while (<CTLFILE>) {
+            chop;
+            # Not a comment or blank?  Convert wildmat to regex.
+            next if not /^(\s+)?[^\#]/ or /^$/;
+            if (not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
+                s/.*://;
+                logmsg("$_ is not a valid action for control.ctl", 'err');
+                next;
+            }
+            # Convert to a ':'-separated list of regexps.
+            s/^all:/*:/i;
+            s/([\$\+\.])/\\$1/g;
+            s/\*/.*/g;
+            s/\?/./g;
+            s/(.*)/^$1\$/;
+            s/:/\$:^/g;
+            s/\|/\$|^/g;
+            push(@ctllist, $_);
         }
-        # Convert to a : separated list of regexps
-        s/^all:/*:/i;
-        s/([\$\+\.])/\\$1/g;
-        s/\*/.*/g;
-        s/\?/./g;
-        s/(.*)/^$1\$/;
-        s/:/\$:^/g;
-        s/\|/\$|^/g;
-        push @ctllist, $_;
+        close(CTLFILE);
     }
-    close CTLFILE;
 
     logmsg('warning: control.ctl is empty!', 'err') if not @ctllist;
     return $cachedctl = [ reverse @ctllist ];
@@ -293,7 +310,7 @@ sub ctlperm {
             $action =~ s/\\//g;
             $hier = $ctlline[2] if $type eq 'checkgroups';
             # @ctllist is a reversed list so the first match is the last
-            # one in control.ctl.
+            # one in control.ctl followed by control.ctl.local.
             last;
         }
     }

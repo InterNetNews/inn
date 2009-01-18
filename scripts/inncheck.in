@@ -17,6 +17,7 @@ $ST_GID  = 5;
     'badnews',		"$INN::Config::badnews",
     'batchdir',		"$INN::Config::pathoutgoing",
     'control.ctl',	"$INN::Config::ctlfile",
+    'control.ctl.local',"$INN::Config::ctlfile.local",
     'ctlprogs',		"$INN::Config::pathcontrol",
     'expire.ctl',	"$INN::Config::expirectl",
     'history',		"$INN::Config::history",
@@ -50,6 +51,7 @@ $ST_GID  = 5;
 %checklist = (
     'active',		'active',
     'control.ctl',	'control_ctl',
+    'control.ctl.local','control_ctl',
     'expire.ctl',	'expire_ctl',
     'incoming.conf',	'incoming_conf',
     'inn.conf',		'inn_conf',
@@ -140,7 +142,7 @@ active
 
 
 ##
-##  control.ctl
+##  The control.ctl and control.ctl.local files.
 ##
 %control'messages = (
     'all',		1,

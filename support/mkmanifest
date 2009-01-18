@@ -208,6 +208,7 @@ site/actsync.ign
 site/buffindexed.conf
 site/config
 site/control.ctl
+site/control.ctl.local
 site/cycbuff.conf
 site/distrib.pats
 site/distributions

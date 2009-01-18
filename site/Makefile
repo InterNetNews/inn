@@ -27,6 +27,7 @@ PATH_NNRPYDYNAMIC       = ${PATHFILTER}/nnrpd_dynamic.py
 
 PATH_CONFIG		= ${PATHETC}/inn.conf
 PATH_CONTROLCTL		= ${PATHETC}/control.ctl
+PATH_CONTROLCTLLOCAL	= ${PATHETC}/control.ctl.local
 PATH_EXPIRECTL		= ${PATHETC}/expire.ctl
 PATH_INNDHOSTS		= ${PATHETC}/incoming.conf
 PATH_MODERATORS		= ${PATHETC}/moderators
@@ -59,7 +60,7 @@ PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 REST		= \
 	newsfeeds incoming.conf nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf innreport.css localgroups \
-	control.ctl expire.ctl nntpsend.ctl overview.fmt \
+	control.ctl control.ctl.local expire.ctl nntpsend.ctl overview.fmt \
 	innwatch.ctl distrib.pats distributions actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
@@ -76,7 +77,8 @@ REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
 	$D$(PATH_NNRPDTRACK) $D$(PATH_NNTPPASS) \
 	$D$(PATH_CONFIG) $D$(PATH_MODERATORS) \
-	$D$(PATH_CONTROLCTL) $D$(PATH_EXPIRECTL) $D$(PATHETC)/nntpsend.ctl \
+	$D$(PATH_CONTROLCTL) $D$(PATH_CONTROLCTLLOCAL) $D$(PATH_EXPIRECTL) \
+	$D$(PATHETC)/nntpsend.ctl \
 	$D$(PATHETC)/innreport.conf $D$(PATHHTTP)/innreport.css \
 	$D$(PATHETC)/localgroups \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
@@ -182,6 +184,7 @@ $D$(PATH_RADIUS_CONF):	radius.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPUB) $? $@
 $D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPUB) $? $@
+$D$(PATH_CONTROLCTLLOCAL): control.ctl.local	; $(COPY_RPUB) $? $@
 $D$(PATH_CTLWATCH):	innwatch.ctl	; $(COPY_RPUB) $? $@
 $D$(PATH_EXPIRECTL):	expire.ctl	; $(COPY_RPUB) $? $@
 $D$(PATH_CONFIG):	inn.conf	; $(COPY_RPUB) $? $@
@@ -233,6 +236,7 @@ COPY	= $(SHELL) ./getsafe.sh
 actsync.cfg:	../samples/actsync.cfg		; $(COPY) $? $@
 actsync.ign:	../samples/actsync.ign		; $(COPY) $? $@
 control.ctl:	../samples/control.ctl		; $(COPY) $? $@
+control.ctl.local: ../samples/control.ctl.local	; $(COPY) $? $@
 expire.ctl:	../samples/expire.ctl		; $(COPY) $? $@
 nnrpd_auth.pl:  ../samples/nnrpd_auth.pl	; $(COPY) $? $@
 nnrpd_access.pl:  ../samples/nnrpd_access.pl	; $(COPY) $? $@

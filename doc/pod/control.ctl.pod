@@ -4,15 +4,24 @@ control.ctl - Specify handling of Usenet control messages
 
 =head1 DESCRIPTION
 
-F<control.ctl> in I<pathetc> is used to determine what action is taken
+The file I<pathetc>/control.ctl is used to determine what action is taken
 when a control message is received.  It is read by B<controlchan>, which
 is normally invoked as a channel program by B<innd>.  When F<control.ctl>
 is modified, B<controlchan> notices this automatically and reloads it.
+
+If a F<control.ctl.local> file exists in I<pathetc>, it is read by
+B<controlchan> after F<control.ctl> (the resulting behaviour is as
+though the contents of F<control.ctl.local> were at the end of
+F<control.ctl>).  This local file is formatted like F<control.ctl>
+and is intended to contain local customization.  It is also
+automatically reloaded when modified.
 
 Blank lines and lines beginning with a number sign (C<#>) are ignored.
 All other lines should consist of four fields separated by colons:
 
     <type>:<from>:<newsgroups>:<action>
+
+Lines are matched in order and the last matching line in the file will be used.
 
 The first field, <type>, is the type of control message for which this
 line is valid.  It should either be the name of a control message or the
@@ -52,7 +61,7 @@ it does not have an argument, this is equivalent to B<mail>.  This is only
 useful for entries for sendsys control messages, allowing a site to
 request its own F<newsfeeds> entry by posting a C<sendsys mysite> control
 message, but not allowing the entire F<newsfeeds> file to be sent.  This
-was intended to partially counter so-called "sendsys bombs," where forged
+was intended to partially counter so-called "sendsys bombs", where forged
 sendsys control messages were used to mailbomb people.
 
 Processing sendsys control messages is not recommended even with this
@@ -85,7 +94,7 @@ If the action starts with the string C<verify->, as in:
 then PGP verification of the control message will be done and the user ID
 of the key of the authenticated signer will be checked against the
 expected identity defined by the rest of the string
-(C<news.announce.newgroups> in the above example.  This verification is
+(C<news.announce.newgroups> in the above example).  This verification is
 done via B<pgpverify>; see pgpverify(8) for more details.
 
 If no logging is specified (with =I<file> as mentioned below), logging will
@@ -134,9 +143,6 @@ B<mail> will just mail the entire message.  In either case, the news
 administrator will have to take action to implement the checkgroups
 message, and if that mail is ignored, nothing will be changed.
 
-Lines are matched in order and the last matching line in the file will be
-used.
-
 Use of the B<verify> action for processing newgroup, rmgroup, and
 checkgroups messages is STRONGLY recommended.  Abuse of control messages
 is rampant, and authentication via PGP signature is currently the only
@@ -167,6 +173,13 @@ corresponding to the PGP key with a user ID of C<news.announce.newgroups>.
 If any newgroup claiming to be from C<kre@munnari.oz.au> for a newsgroup
 in the aus.* hierarchy is received, it too will be honored.  All other
 newgroup messages will be ignored.
+
+Besides, if a F<control.ctl.local> file exists and contains:
+
+    newgroup:*:comp.lang.*:drop
+
+then a newgroup control article for comp.lang.awk will not be honored
+even though it comes from C<group-admin@isc.org> with a valid signature.
 
 =head1 WARNINGS
 

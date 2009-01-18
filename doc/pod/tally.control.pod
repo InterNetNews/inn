@@ -52,6 +52,6 @@ $Id$
 
 =head1 SEE ALSO
 
-control.ctl(8), news.daily(8), newslog(5), scanlogs(8).
+control.ctl(5), news.daily(8), newslog(5), scanlogs(8).
 
 =cut
