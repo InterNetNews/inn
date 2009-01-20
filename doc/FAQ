@@ -945,15 +945,14 @@ space, but generally not enough to care about.
 
 Subject: 5.3. Will INN work on Windows?
 
-Amazingly enough, the answer is yes.
+It won't out of the box.  The standard INN distribution doesn't build on
+Windows.  It has, however, been built for Cygwin (a Unix-like environment
+for Windows) in the past and some of the necessary patches (although
+perhaps not all of them) have been incorporated into current INN releases.
 
-Not out of the box, however; the standard INN distribution doesn't build
-on Windows.  There is, however, a port to Cygwin (which is a Unix-like
-environment for Windows).  For more information, see:
-
-    <http://homepage.mac.com/imeowbot/inn/>
-
-Don't forget to peruse INSTALL if you download and want to try this.
+Search for http://homepage.mac.com/imeowbot/inn/ at
+<http://web.archive.org/> for the previous work.  Don't forget to peruse
+INSTALL if you download and want to try this.
 
 ------------------------------
 
