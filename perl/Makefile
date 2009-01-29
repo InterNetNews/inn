@@ -40,6 +40,6 @@ $(EXTRA) $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
-../doc/man/INN__Config.3pm: INN/Config.pm
+../doc/man/INN__Config.3pm: INN/Config.pm.in
 	$(POD2MAN) -s '$(MAN3PM_EXT)' -n "INN::Config" $? > $@
 
