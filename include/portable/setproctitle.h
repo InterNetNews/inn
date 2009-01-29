@@ -12,7 +12,7 @@
 
 #include "config.h"
 
-#if !HAVE_SETPROCTITLE
+#if !HAVE_SETPROCTITLE || !HAVE_DECL_SETPROCTITLE
 void setproctitle(const char *format, ...);
 #endif
 
