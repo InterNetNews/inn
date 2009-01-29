@@ -1457,7 +1457,7 @@ convert_list(struct config_parameter *param, const char *file, void *result)
         *value = param->value.list;
         return true;
     } else if (param->type != VALUE_UNKNOWN) {
-        warn("%s:%u: %s is not an list", file, param->line, param->key);
+        warn("%s:%u: %s is not a list", file, param->line, param->key);
         return false;
     }
 

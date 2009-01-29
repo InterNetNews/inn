@@ -361,7 +361,7 @@ OVctl(OVCTLTYPE type, void *val)
     switch (type) {
     case OVGROUPBASEDEXPIRE:
 	if (!innconf->groupbaseexpiry) {
-            warn("OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry if"
+            warn("OVGROUPBASEDEXPIRE is not allowed if groupbaseexpiry is"
                  " false");
 	    return false;
 	}
