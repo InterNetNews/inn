@@ -1605,7 +1605,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
 	num_diskblocks_needed = RoundIt((head.High - head.Low + 1)*sizeof(CAFTOCENT)) 
 	    + RoundIt(datasize - head.Free) + RoundIt(head.BlockSize);
-	if (num_diskblocks_needed > fsinfo.STATAVAIL) {
+	if (num_diskblocks_needed > (unsigned long) fsinfo.STATAVAIL) {
 	    if (verbose) {
 		printf("CANNOT clean %s: needs %lu blocks, only %lu avail.\n",
 		       path, num_diskblocks_needed,

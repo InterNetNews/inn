@@ -651,7 +651,7 @@ tls_start_servertls(int readfd, int writefd)
 	do_dump = 0;
 
     tls_protocol = SSL_get_version(tls_conn);
-    cipher = SSL_get_current_cipher(tls_conn);
+    cipher = (SSL_CIPHER *) SSL_get_current_cipher(tls_conn);
 
     tls_cipher_name = SSL_CIPHER_get_name(cipher);
     tls_cipher_usebits = SSL_CIPHER_get_bits(cipher,
