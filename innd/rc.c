@@ -847,7 +847,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
-    hints.ai_flags = AI_NUMERIC_HOST;
+    hints.ai_flags = AI_NUMERICHOST;
     ret = getaddrinfo("127.0.0.1", NULL, &hints, &ai);
     if (ret != 0)
         die("%s cant getaddrinfo 127.0.0.1: %s", gai_strerror(ret));
