@@ -56,7 +56,7 @@ chowncmd=""
 chgrpcmd=""
 stripcmd=""
 rmcmd="$rmprog -f"
-mvcmd="$mvprog"
+mvcmd="$mvprog -f"
 src=""
 dst=""
 dir_arg=""
@@ -265,7 +265,7 @@ else
 	if [ x"$backupsuffix" != x ] && [ -f "$dstdir/$dstfile" ]; then
 		$doit $mvcmd $dstdir/$dstfile $dstdir/$dstfile$backupsuffix
 	else
-		$doit $rmcmd -f $dstdir/$dstfile
+		$doit $rmcmd $dstdir/$dstfile
 	fi &&
 
 	$doit $mvcmd $dsttmp $dstdir/$dstfile 
