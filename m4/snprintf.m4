@@ -12,7 +12,8 @@ dnl fully working snprintf is found.
 
 dnl Source used by INN_FUNC_SNPRINTF.
 define([_INN_FUNC_SNPRINTF_SOURCE],
-[[#include <stdio.h>
+[AC_LANG_SOURCE([[
+#include <stdio.h>
 #include <stdarg.h>
 
 char buf[2];
@@ -34,18 +35,20 @@ main ()
 {
   return ((test ("%s", "abcd") == 4 && buf[0] == 'a' && buf[1] == '\0'
            && snprintf(NULL, 0, "%s", "abcd") == 4) ? 0 : 1);
-}]])
+}
+]])])
 
 dnl The user-callable test.
 AC_DEFUN([INN_FUNC_SNPRINTF],
-[AC_CACHE_CHECK([for working snprintf], [inn_cv_func_snprintf_works],
-    [AC_TRY_RUN(_INN_FUNC_SNPRINTF_SOURCE(),
+[AC_CACHE_CHECK([for working snprintf],
+    [inn_cv_func_snprintf_works],
+    [AC_RUN_IFELSE([_INN_FUNC_SNPRINTF_SOURCE],
         [inn_cv_func_snprintf_works=yes],
         [inn_cv_func_snprintf_works=no],
         [inn_cv_func_snprintf_works=no])])
-if test "$inn_cv_func_snprintf_works" = yes ; then
+ if test "$inn_cv_func_snprintf_works" = yes ; then
     AC_DEFINE([HAVE_SNPRINTF], 1,
         [Define if your system has a working snprintf function.])
-else
+ else
     AC_LIBOBJ([snprintf])
-fi])
+ fi])

@@ -15,14 +15,16 @@ dnl to avoid config.h clutter.
 AC_DEFUN([_INN_IF_SIZEOF],
 [AC_MSG_CHECKING([size of $1])
 AC_CACHE_VAL(_INN_TYPE_CACHE([$1]),
-[AC_TRY_RUN([#include <stdio.h>
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[
+#include <stdio.h>
 main()
 {
     FILE *f = fopen("conftestval", "w");
     if (!f) exit(1);
     fprintf(f, "%d\n", sizeof($1));
     exit(0);
-}], _INN_TYPE_CACHE([$1])=`cat conftestval`, _INN_TYPE_CACHE([$1])=0,
+}
+]])], _INN_TYPE_CACHE([$1])=`cat conftestval`, _INN_TYPE_CACHE([$1])=0,
 ifelse([$2], , , _INN_TYPE_CACHE([$1])=$2))
 ])dnl
 AC_MSG_RESULT($_INN_TYPE_CACHE([$1]))

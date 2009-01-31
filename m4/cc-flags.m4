@@ -15,13 +15,14 @@ AC_MSG_CHECKING([if $CC supports $1])
 AC_CACHE_VAL([_INN_PROG_CC_FLAG_CACHE([$1])],
 [save_CFLAGS=$CFLAGS
 CFLAGS="$CFLAGS $1"
-AC_TRY_COMPILE([], [int foo = 0;],
+AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([[]], [[int foo = 0;]])],
     [_INN_PROG_CC_FLAG_CACHE([$1])=yes],
     [_INN_PROG_CC_FLAG_CACHE([$1])=no])
 CFLAGS=$save_CFLAGS])
 AC_MSG_RESULT($_INN_PROG_CC_FLAG_CACHE([$1]))
-if test x"$_INN_PROG_CC_FLAG_CACHE([$1])" = xyes ; then
+ if test x"$_INN_PROG_CC_FLAG_CACHE([$1])" = xyes ; then
     ifelse([$2], , :, [$2])
-else
+ else
     ifelse([$3], , :, [$3])
-fi])
+ fi])

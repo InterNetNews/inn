@@ -24,7 +24,8 @@ dnl (most other operating systems).
 
 dnl Source used by INN_FUNC_MMAP.
 define([_INN_FUNC_MMAP_SOURCE],
-[[#include <fcntl.h>
+[AC_LANG_SOURCE([[
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <stdlib.h>
 
@@ -63,28 +64,30 @@ main()
   close (fd);
   unlink ("conftestmmaps");
   return 0;
-}]])
+}
+]])])
 
 dnl This portion is similar to what AC_FUNC_MMAP does, only it tests shared,
 dnl non-fixed mmaps.
 AC_DEFUN([INN_FUNC_MMAP],
 [AC_CACHE_CHECK([for working mmap], [inn_cv_func_mmap],
-[AC_TRY_RUN(_INN_FUNC_MMAP_SOURCE(),
+[AC_RUN_IFELSE([_INN_FUNC_MMAP_SOURCE],
     [inn_cv_func_mmap=yes],
     [inn_cv_func_mmap=no],
     [inn_cv_func_mmap=no])])
-if test $inn_cv_func_mmap = yes ; then
+ if test $inn_cv_func_mmap = yes ; then
     AC_DEFINE([HAVE_MMAP], 1,
         [Define if mmap exists and works for shared, non-fixed maps.])
     $1
-else
+ else
     :
     $2
-fi])
+ fi])
 
 dnl Source used by INN_FUNC_MMAP_NEEDS_MSYNC.
 define([_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE],
-[[#include <sys/types.h>
+[AC_LANG_SOURCE([[
+#include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <stdlib.h>
@@ -131,25 +134,27 @@ main()
   close (fd);
   unlink ("conftestmmapm");
   return 0;
-}]])
+}
+]])])
 
 dnl Check whether the data read from an open file sees the changes made to an
 dnl mmaped region, or if msync has to be called for other applications to see
 dnl those changes.
 AC_DEFUN([INN_FUNC_MMAP_NEEDS_MSYNC],
 [AC_CACHE_CHECK([whether msync is needed], [inn_cv_func_mmap_need_msync],
-[AC_TRY_RUN(_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE(),
+[AC_RUN_IFELSE([_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE],
     [inn_cv_func_mmap_need_msync=no],
     [inn_cv_func_mmap_need_msync=yes],
     [inn_cv_func_mmap_need_msync=yes])])
-if test $inn_cv_func_mmap_need_msync = yes ; then
+ if test $inn_cv_func_mmap_need_msync = yes ; then
     AC_DEFINE([MMAP_NEEDS_MSYNC], 1,
        [Define if you need to call msync for calls to read to see changes.])
-fi])
+ fi])
 
 dnl Source used by INN_FUNC_MMAP_SEES_WRITES.
 define([_INN_FUNC_MMAP_SEES_WRITES_SOURCE],
-[[#include <stdlib.h>
+[AC_LANG_SOURCE([[
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -185,32 +190,34 @@ main ()
         return 4;
     }
   return 0;
-}]])
+}
+]])])
 
 dnl Check if an mmaped region will see writes made to the underlying file
 dnl without an intervening msync.
 AC_DEFUN([INN_FUNC_MMAP_SEES_WRITES],
 [AC_CACHE_CHECK([whether mmap sees writes], [inn_cv_func_mmap_sees_writes],
-[AC_TRY_RUN(_INN_FUNC_MMAP_SEES_WRITES_SOURCE(),
+[AC_RUN_IFELSE([INN_FUNC_MMAP_SEES_WRITES_SOURCE],
     [inn_cv_func_mmap_sees_writes=yes],
     [inn_cv_func_mmap_sees_writes=no],
     [inn_cv_func_mmap_sees_writes=no])])
-if test $inn_cv_func_mmap_sees_writes = no ; then
+ if test $inn_cv_func_mmap_sees_writes = no ; then
     AC_DEFINE([MMAP_MISSES_WRITES], 1,
         [Define if you need to call msync after writes.])
-fi])
+ fi])
 
 dnl Check whether msync takes three arguments.  (It takes three arguments on
 dnl Solaris and Linux, two arguments on BSDI.)
 AC_DEFUN([INN_FUNC_MSYNC_ARGS],
 [AC_CACHE_CHECK([how many arguments msync takes], [inn_cv_func_msync_args],
-[AC_TRY_COMPILE(
-[#include <sys/types.h>
-#include <sys/mman.h>],
-    [char *p; int psize; msync (p, psize, MS_ASYNC);],
+[AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([[
+#include <sys/types.h>
+#include <sys/mman.h>]],
+    [[char *p; int psize; msync (p, psize, MS_ASYNC);]])],
     [inn_cv_func_msync_args=3],
     [inn_cv_func_msync_args=2])])
-if test $inn_cv_func_msync_args = 3 ; then
+ if test $inn_cv_func_msync_args = 3 ; then
     AC_DEFINE([HAVE_MSYNC_3_ARG], 1,
         [Define if your msync function takes three arguments.])
-fi])
+ fi])

@@ -8,7 +8,8 @@ dnl available.
 
 dnl Source used by INN_SYS_STREAMS_SENDFD.
 define([_INN_SYS_STREAMS_SENDFD],
-[[#include <stdio.h>
+[AC_LANG_SOURCE([[
+#include <stdio.h>
 #if STDC_HEADERS || HAVE_STRING_H
 # include <string.h>
 #endif
@@ -59,17 +60,18 @@ main ()
         }
       return 0;
     }
-}]])
+}
+]])])
 
 dnl The public macro.
 AC_DEFUN([INN_SYS_STREAMS_SENDFD],
 [AC_CACHE_CHECK([whether STREAMS fd passing is supported],
-    inn_cv_sys_streams_sendfd,
-[AC_TRY_RUN(_INN_SYS_STREAMS_SENDFD,
-    [inn_cv_sys_streams_sendfd=yes],
-    [inn_cv_sys_streams_sendfd=no],
-    [inn_cv_sys_streams_sendfd=no])])
-if test "$inn_cv_sys_streams_sendfd" = yes ; then
+    [inn_cv_sys_streams_sendfd],
+    [AC_RUN_IFELSE([_INN_SYS_STREAMS_SENDFD],
+        [inn_cv_sys_streams_sendfd=yes],
+        [inn_cv_sys_streams_sendfd=no],
+        [inn_cv_sys_streams_sendfd=no])])
+ if test "$inn_cv_sys_streams_sendfd" = yes ; then
     AC_DEFINE([HAVE_STREAMS_SENDFD], 1,
         [Define if your system supports STREAMS file descriptor passing.])
-fi])
+ fi])

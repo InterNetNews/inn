@@ -15,7 +15,8 @@ dnl to an appropriate value.
 
 dnl Source used by INN_MACRO_IOV_MAX.
 define([_INN_MACRO_IOV_MAX_SOURCE],
-[[#include <sys/types.h>
+[AC_LANG_SOURCE([[
+#include <sys/types.h>
 #include <stdio.h>
 #include <sys/uio.h>
 #include <errno.h>
@@ -62,19 +63,22 @@ main ()
 # endif /* UIO_MAXIOV */
 #endif /* IOV_MAX */
   return 0;
-}]])
+}
+]])])
 
 dnl Do the actual check.
 AC_DEFUN([INN_MACRO_IOV_MAX],
-[AC_CACHE_CHECK([value of IOV_MAX], [inn_cv_macro_iov_max],
-[AC_TRY_RUN(_INN_MACRO_IOV_MAX_SOURCE(),
-            inn_cv_macro_iov_max=`cat conftestval`,
-            inn_cv_macro_iov_max=error, 16)
-if test x"$inn_cv_macro_iov_max" = xerror ; then
-    AC_MSG_WARN([probe failure, assuming 16])
-    inn_cv_macro_iov_max=16
-fi])
-if test x"$inn_cv_macro_iov_max" != x"set in limits.h" ; then
+[AC_CACHE_CHECK([value of IOV_MAX],
+    [inn_cv_macro_iov_max],
+    [AC_RUN_IFELSE([_INN_MACRO_IOV_MAX_SOURCE],
+        inn_cv_macro_iov_max=`cat conftestval`,
+        inn_cv_macro_iov_max=error,
+        16)
+     if test x"$inn_cv_macro_iov_max" = xerror ; then
+         AC_MSG_WARN([probe failure, assuming 16])
+         inn_cv_macro_iov_max=16
+     fi])
+ if test x"$inn_cv_macro_iov_max" != x"set in limits.h" ; then
     AC_DEFINE_UNQUOTED(IOV_MAX, $inn_cv_macro_iov_max,
                        [Define to the max vectors in an iovec.])
-fi])
+ fi])
