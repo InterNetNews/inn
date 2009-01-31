@@ -37,6 +37,7 @@ m4_include([m4/berkeleydb.m4])
 m4_include([m4/cc-c-o.m4])
 m4_include([m4/cc-flags.m4])
 m4_include([m4/compress.m4])
+m4_include([m4/getaddrinfo.m4])
 m4_include([m4/inet-ntoa.m4])
 m4_include([m4/int32.m4])
 m4_include([m4/iov-max.m4])
@@ -471,6 +472,7 @@ INN_MACRO_SUN_LEN
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
 AC_FUNC_MEMCMP
+INN_FUNC_GETADDRINFO_ADDRCONFIG
 INN_FUNC_INET_NTOA
 INN_FUNC_SNPRINTF
 

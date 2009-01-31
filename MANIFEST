@@ -564,6 +564,7 @@ m4/berkeleydb.m4                      Autoconf macro for Berkeley DB
 m4/cc-c-o.m4                          Autoconf macro for -c -o compiler support
 m4/cc-flags.m4                        Autoconf macro for compiler flags
 m4/compress.m4                        Autoconf macro for compress detection
+m4/getaddrinfo.m4                     Autoconf macro to check getaddrinfo support
 m4/inet-ntoa.m4                       Autoconf macro to check inet_ntoa
 m4/int32.m4                           Autoconf macro for int32_t
 m4/iov-max.m4                         Autoconf macro for IOV_MAX

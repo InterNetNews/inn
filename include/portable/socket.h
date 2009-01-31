@@ -131,6 +131,13 @@ extern const char *hstrerror(int);
 # define NETDB_INTERNAL -1
 #endif
 
+/* AI_ADDRCONFIG results in an error from getaddrinfo on BSD/OS and
+   possibly other platforms.  If configure determined it didn't work,
+   pretend it doesn't exist. */
+#if !defined(HAVE_GETADDRINFO_ADDRCONFIG) && defined(AI_ADDRCONFIG)
+# undef AI_ADDRCONFIG
+#endif
+
 /* POSIX requires AI_ADDRCONFIG and AI_NUMERICSERV, but some implementations
    don't have them yet.  It's only used in a bitwise OR of flags, so defining
    them to 0 makes them harmlessly go away. */
