@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w
+#! /usr/bin/perl -w -T
 
 ##  $Id$
 ##
@@ -11,6 +11,10 @@
 ##  Note that this script cannot use INN::Config, since loading that file
 ##  requires innconfval be able to parse inn.conf, and until this script runs,
 ##  inn.conf may not be valid.
+##
+##  Tainting ("-T" flag to perl) is on because innupgrade can be run in that
+##  mode on a few systems ("make update" does that on BSD/OS for instance).
+##  Therefore, we have to be sure innupgrade is taint-safe.
 ##
 ##  Currently handles the following conversions:
 ##
@@ -176,11 +180,18 @@ sub upgrade_file {
 # defined and for each one of those, try running the upgrade rule.
 sub upgrade_directory {
     my $directory = shift;
+    my $file;
+    if ($directory =~ /^(.*)\/?$/) {
+        $directory = $1;
+    }
     chdir $directory or die "Can't chdir to $directory: $!\n";
     opendir (DIR, ".") or die "Can't opendir $directory: $!\n";
     for (readdir DIR) {
-        if ($FIXES{$_}) {
-            upgrade_file ($_, $FIXES{$_});
+        if ($_ =~ /^([^\/]+)$/) {
+           $file = $1;
+        }
+        if ($FIXES{$file}) {
+            upgrade_file ($file, $FIXES{$file});
         }
     }
     closedir DIR;
@@ -194,11 +205,12 @@ Getopt::Long::config ('bundling');
 GetOptions ('file|f=s' => \$file,
             'type|t=s' => \$type) or exit 1;
 if ($file) {
-    my $dirname = $file;
-    $dirname =~ s%/[^/]+$%%;
+    my ($dirname, $basename);
+    if ($file =~ /^(.*)\/([^\/]+)$/) {
+        $dirname = $1;
+        $basename = $2;
+    }
     chdir $dirname or die "Can't chdir to $dirname: $!\n";
-    my $basename = $file;
-    $basename =~ s%.*/%%;
     $type ||= $basename;
     if (!$FIXES{$type}) { die "No upgrade rules defined for $basename\n" }
     upgrade_file ($basename, $FIXES{$type});
