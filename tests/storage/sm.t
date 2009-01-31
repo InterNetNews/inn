@@ -77,9 +77,9 @@ raw () {
 }
 
 # Check retrieval of only the headers, given a token and a path to the real
-# article.
+# article.  (sed '/^$/Q' is unrecognized on some implementations.)
 headers () {
-    sed '/^$/Q' "$2" > spool/real
+    sed '/^$/q' "$2" | sed '/^$/d' > spool/real
     "$sm" -H "$1" > spool/test
     if [ $? = 0 ] && diff spool/real spool/test ; then
         printcount "ok"
