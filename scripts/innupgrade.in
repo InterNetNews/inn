@@ -12,9 +12,10 @@
 ##  requires innconfval be able to parse inn.conf, and until this script runs,
 ##  inn.conf may not be valid.
 ##
-##  Tainting ("-T" flag to perl) is on because innupgrade can be run in that
-##  mode on a few systems ("make update" does that on BSD/OS for instance).
-##  Therefore, we have to be sure innupgrade is taint-safe.
+##  Tainting ("-T" flag to perl) is on because innupgrade can be run as a
+##  setgid program on a few systems ("*g*make update" does that for instance).
+##  Therefore, we have to be sure innupgrade is taint-safe because Perl
+##  will check for tainted variables when it runs a setgid script.
 ##
 ##  Currently handles the following conversions:
 ##
