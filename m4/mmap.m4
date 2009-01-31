@@ -197,7 +197,7 @@ dnl Check if an mmaped region will see writes made to the underlying file
 dnl without an intervening msync.
 AC_DEFUN([INN_FUNC_MMAP_SEES_WRITES],
 [AC_CACHE_CHECK([whether mmap sees writes], [inn_cv_func_mmap_sees_writes],
-[AC_RUN_IFELSE([INN_FUNC_MMAP_SEES_WRITES_SOURCE],
+[AC_RUN_IFELSE([_INN_FUNC_MMAP_SEES_WRITES_SOURCE],
     [inn_cv_func_mmap_sees_writes=yes],
     [inn_cv_func_mmap_sees_writes=no],
     [inn_cv_func_mmap_sees_writes=no])])
