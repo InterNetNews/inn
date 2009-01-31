@@ -850,7 +850,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     hints.ai_flags = AI_NUMERICHOST;
     ret = getaddrinfo("127.0.0.1", NULL, &hints, &ai);
     if (ret != 0)
-        die("%s cant getaddrinfo 127.0.0.1: %s", gai_strerror(ret));
+        die("%s cant getaddrinfo 127.0.0.1: %s", LogName, gai_strerror(ret));
     memcpy(&rp->Address, ai->ai_addr, ai->ai_addrlen);
     freeaddrinfo(ai);
     rp->Name = xstrdup("localhost");

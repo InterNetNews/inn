@@ -54,7 +54,9 @@ int
 ICCopen(void)
 {
     int mask, oerrno, fd;
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
     int size = 65535;
+#endif
 
     if (innconf == NULL) {
 	if (!innconf_read(NULL)) {

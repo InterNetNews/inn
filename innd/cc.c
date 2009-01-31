@@ -83,7 +83,9 @@ static char		CCbigreason[] = "1 Reason too long";
 static char		CCnotrunning[] = "1 Must be running";
 static struct buffer	CCreply;
 static CHANNEL		*CCchan;
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
 static int		CCwriter;
+#endif
 static CCDISPATCH	CCcommands[] = {
     {	SC_ADDHIST,	5, CCaddhist	},
     {	SC_ALLOW,	1, CCallow	},
@@ -1732,15 +1734,15 @@ CCargsplit(char *p, char *end, char **argv, int size)
 static void
 CCreader(CHANNEL *cp)
 {
-    static char		TOOLONG[] = "0 Reply too long for server to send";
     CCDISPATCH		*dp;
     const char *	p;
     ICC_MSGLENTYPE	bufflen;
     ICC_PROTOCOLTYPE	protocol ;
 #if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    struct sockaddr_un	client;
+    static char         TOOLONG[] = "0 Reply too long for server to send";
+    struct sockaddr_un  client;
 #else
-    int			written;
+    int                 written;
 #endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
     int			i;
     char                buff[BIG_BUFFER + 2];
@@ -1909,11 +1911,12 @@ CCreader(CHANNEL *cp)
     if ((i = open(argv[0], O_WRONLY | O_NDELAY)) < 0)
 	syslog(L_ERROR, "%s cant open %s %m", LogName, argv[0]);
     else {
-	if ((written = write(i, tbuff, len)) != len)
+	if ((written = write(i, tbuff, len)) != len) {
 	    if (written < 0)
 		syslog(L_ERROR, "%s cant write %s %m", LogName, argv[0]);
-	    else
+            else
 		syslog(L_ERROR, "%s cant write %s", LogName, argv[0]);
+        }
 	if (close(i) < 0)
 	    syslog(L_ERROR, "%s cant close %s %m", LogName, argv[0]);
     }

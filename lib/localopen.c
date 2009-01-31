@@ -12,7 +12,7 @@
 #include "nntp.h"
 #include "inn/paths.h"
 
-#if HAVE_UNIX_DOMAIN_SOCKETS
+#ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>
 #endif
 
