@@ -19,7 +19,7 @@ use strict;
 
 sub control_newgroup {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article) = @_;
+        $article, $charset_from, $charset_to) = @_;
     my ($groupname, $modflag) = @$par;
 
     my $head = $article->head;
@@ -27,6 +27,11 @@ sub control_newgroup {
     my @fullbody = split(/\r?\n/, $article->stringify_body);
     my (@body, $part, $part_head);
     my $mimegroupinfo = 0;
+
+    my $charset_message;
+    if (defined $head->mime_attr('Content-Type.charset')) {
+        $charset_message = $head->mime_attr('Content-Type.charset');
+    }
 
     # Check if it is a multipart message.  The body is restricted to
     # the application/news-groupinfo part, if any.
@@ -36,6 +41,9 @@ sub control_newgroup {
 
             if ($part_head->mime_type eq 'application/news-groupinfo') {
                 @body = split(/\r?\n/, $part->stringify_body);
+                if (defined $part_head->mime_attr('Content-Type.charset')) {
+                    $charset_message = $part_head->mime_attr('Content-Type.charset');
+                }
                 $mimegroupinfo = 1;
             }
         }
@@ -49,6 +57,24 @@ sub control_newgroup {
     }
 
     @body = @fullbody if not $mimegroupinfo;
+
+    # Find the right charset if absent or forced by control.ctl.
+    foreach (@$charset_from) {
+        my ($group, $charset) = split /:/;
+        if ($groupname =~ /$group/) {
+            if (not defined $charset_message or $charset =~ /=force/) {
+                $charset_message = $charset;
+                $charset_message =~ s/\^(.+)\$/$1/;
+                $charset_message =~ s/\\//g;
+                $charset_message =~ s/=force//;
+            }
+            last;
+        }
+    }
+    if (not defined $charset_message
+        or not defined Encode::find_encoding($charset_message)) {
+        $charset_message = "cp1252";  # Default charset, when undefined.
+    }
 
     $modflag ||= '';
     my $modcmd = $modflag eq 'moderated' ? 'm' : 'y';
@@ -98,11 +124,13 @@ sub control_newgroup {
 
     if ($found) {
       ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
+
       if ($ngdesc) {
           $ngdesc =~ s/\s+$//;
           $ngdesc =~ s/\s+\(moderated\)\s*$//i;
           $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
       }
+
       # Scan newsgroups to see the previous description, if any.
       open(NEWSGROUPS, $INN::Config::newsgroups)
           or logdie("Cannot open $INN::Config::newsgroups: $!");
@@ -114,6 +142,9 @@ sub control_newgroup {
       }
       close NEWSGROUPS;
     }
+
+    # Properly encode the newsgroup description.
+    Encode::from_to($ngdesc, $charset_message, $charset_to);
 
     if (@oldgroup) {
         if ($oldgroup[3] eq 'm' and $modflag ne 'moderated') {

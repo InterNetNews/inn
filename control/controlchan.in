@@ -31,6 +31,7 @@
 
 require 5.004_03;
 use MIME::Parser;
+use Encode;
 use strict;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
@@ -131,9 +132,10 @@ while (<STDIN>) {
     $progname = $1;
 
     # Do we want to process the message?  Let's check the permissions.
-    my ($action, $logname, $newsgrouppats) =
+    my @charset_from;
+    my ($action, $logname, $newsgrouppats, $charset_to) =
         ctlperm($progname, $sender, $progparams[0],
-                $token, $article);
+                $token, $article, \@charset_from);
 
     if ($action eq 'drop') {
         $parser->filer->purge;
@@ -185,7 +187,8 @@ while (<STDIN>) {
         . ($logname ? "=$logname" : '') .", $approved");
 
     &$subfind(\@progparams, $sender, $replyto, $sitepath,
-        $action, $logname, $approved, $article);
+        $action, $logname, $approved, $article,
+        \@charset_from, $charset_to);
 
     $parser->filer->purge;
 }
@@ -261,11 +264,14 @@ sub readctlfile {
             chop;
             # Not a comment or blank?  Convert wildmat to regex.
             next if not /^(\s+)?[^\#]/ or /^$/;
-            if (not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
+
+            if (not /^\/(?:local)?encoding\/:/ and
+                not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
                 s/.*://;
                 logmsg("$_ is not a valid action for control.ctl", 'err');
                 next;
             }
+
             # Convert to a ':'-separated list of regexps.
             s/^all:/*:/i;
             s/([\$\+\.])/\\$1/g;
@@ -274,6 +280,8 @@ sub readctlfile {
             s/(.*)/^$1\$/;
             s/:/\$:^/g;
             s/\|/\$|^/g;
+            s/\//\\\//g;
+
             push(@ctllist, $_);
         }
         close(CTLFILE);
@@ -285,10 +293,10 @@ sub readctlfile {
 
 # Parse a control message's permissions.
 sub ctlperm {
-    my ($type, $sender, $newsgroup, $token, $article) = @_;
+    my ($type, $sender, $newsgroup, $token, $article, $charset_from) = @_;
 
-    my $action = 'drop';    # default
-    my ($logname, $hier);
+    my $action = 'drop';       # Default action.
+    my ($logname, $hier, $charset_to);
 
     # newgroup and rmgroup require newsgroup names; check explicitly for that
     # here and return drop if the newsgroup is missing (to avoid a bunch of
@@ -300,19 +308,43 @@ sub ctlperm {
     }
 
     my $ctllist = readctlfile();
+    my $matchedaction = 0;
+    my $matchedencoding = 0;
     foreach (@$ctllist) {
         my @ctlline = split /:/;
         # 0: type  1: from@addr  2: group.*  3: action
         if ($type =~ /$ctlline[0]/ and $sender =~ /$ctlline[1]/i and
             ($type !~ /(?:new|rm)group/ or $newsgroup =~ /$ctlline[2]/)) {
-            $action = $ctlline[3];
-            $action =~ s/\^(.+)\$/$1/;
-            $action =~ s/\\//g;
-            $hier = $ctlline[2] if $type eq 'checkgroups';
-            # @ctllist is a reversed list so the first match is the last
-            # one in control.ctl followed by control.ctl.local.
-            last;
+            if (not $matchedaction) {
+                $action = $ctlline[3];
+                $action =~ s/\^(.+)\$/$1/;
+                $action =~ s/\\//g;
+                $hier = $ctlline[2] if $type eq 'checkgroups';
+                # @ctllist is a reversed list so the first match is the last
+                # one in control.ctl followed by control.ctl.local.
+                $matchedaction = 1;
+            }
         }
+        # 0: /localencoding/  1: encoding
+        if ($ctlline[0] eq '^\/localencoding\/$') {
+            if (not $matchedencoding) {
+                $charset_to = $ctlline[1];
+                $charset_to =~ s/\^(.+)\$/$1/;
+                $charset_to =~ s/\\//g;
+                $matchedencoding = 1;
+            }
+        }
+        # 0: /encoding/  1: from@addr  2: group.*  3: encoding[=force]
+        if ($ctlline[0] eq '^\/encoding\/$') {
+            if ($sender =~ /$ctlline[1]/i) {
+                push (@$charset_from, $ctlline[2].':'.$ctlline[3]);
+            }
+        }
+    }
+
+    if (not defined $charset_to
+        or not defined Encode::find_encoding($charset_to)) {
+        $charset_to = 'UTF-8';  # Default local encoding.
     }
 
     ($action, $logname) = split(/=/, $action);
@@ -332,7 +364,7 @@ sub ctlperm {
         }
     }
 
-    return ($action, $logname, $hier);
+    return ($action, $logname, $hier, $charset_to);
 }
 
 # Write stuff to a log or send mail to the news admin.
