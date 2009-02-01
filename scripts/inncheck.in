@@ -145,6 +145,8 @@ active
 ##  The control.ctl and control.ctl.local files.
 ##
 %control'messages = (
+    '/encoding/',	1,
+    '/localencoding/',	1,
     'all',		1,
     'checkgroups',	1,
     'ihave',		1,
@@ -171,6 +173,14 @@ control_ctl
 
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
+
+        if (/^\/localencoding\//) {
+            unless ( ($msg, $act) =
+                        /^(\/localencoding\/):([^:=]+)$/ ) {
+                print "$file:$line: malformed line.\n"; 
+            }
+            next input;
+        }
 
 	unless ( ($msg, $from, $ng, $act) =
 		    /^([^:]+):([^:]+):([^:]+):(.+)$/ ) {
@@ -199,7 +209,7 @@ control_ctl
 	$act =~ s/=.*//;
 	$act = "verify" if ($act =~ /^verify-.+/) ;
 	print "$file:$line: unknown action `$act'\n"
-	    if !defined $control'actions{$act};
+	    if !defined $control'actions{$act} and $msg !~ /^\//;
     }
     1;
 }
