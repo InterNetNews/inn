@@ -83,7 +83,7 @@ fi
 ##  Display information on newsgroups which need to be removed/added/changed.
 if [ -s ${T}/$$remove ] ; then
     (
-        echo "# The following newsgroups are non-standard:"
+        echo "# The following newsgroups are non-standard and should be removed:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$remove
         echo "#"
@@ -116,7 +116,8 @@ fi
 
 if [ -s ${T}/$$ismod ] ; then
     (
-        echo "# The following newsgroups are incorrectly marked as moderated:"
+        echo "# The following newsgroups are incorrectly marked as moderated"
+        echo "# and should have their status changed:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$ismod
         echo "#"
@@ -131,7 +132,8 @@ fi
 
 if [ -s ${T}/$$notmod ] ; then
     (
-        echo "# The following newsgroups are incorrectly marked as unmoderated:"
+        echo "# The following newsgroups are incorrectly marked as unmoderated"
+        echo "# and should have their status changed:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$notmod
         echo "#"
@@ -147,7 +149,7 @@ fi
 ##  Display information on descriptions which need to be removed/added.
 if [ -s ${T}/$$removedesc ] ; then
     (
-        echo "# The following newsgroups descriptions are obsolete:"
+        echo "# The following newsgroups descriptions are obsolete and should be removed:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$removedesc
         echo "#"
