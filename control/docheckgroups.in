@@ -59,10 +59,11 @@ comm -23 ${T}/$$ng.mod ${T}/$$amod >${T}/$$nm.all
 comm -23 ${T}/$$nm.all ${T}/$$add >${T}/$$notmod
 
 ##  Check for missing and obsolete newsgroups descriptions (possibly
-##  in wire format).
-${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} "${1:-.}" | ${SED} 's/[	]\+/	/' | ${SORT} >${T}/$$localdesc
+##  in wire format).  A few sed implementations do not recognize
+##  "[	]\+", so we use "	[	]*" instead.
+${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} "${1:-.}" | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$localdesc
 ${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/\r\?$//' \
-    | ${SED} 's/[	]\+/	/' | ${SORT} >${T}/$$newdesc
+    | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$newdesc
 
 comm -13 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$missingdesc
 comm -23 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$removedesc
@@ -73,7 +74,7 @@ if [ "${UPDATEDESC}" = "true" ] ; then
     ${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} -v "${1:-.}" >>${T}/$$updatednewsgroups
     cat ${T}/$$newdesc >>${T}/$$updatednewsgroups
     mv -f ${NEWSGROUPS} ${NEWSGROUPS}.old
-    ${SORT} ${T}/$$updatednewsgroups | ${SED} 's/[	]\+/	/' \
+    ${SORT} ${T}/$$updatednewsgroups | ${SED} 's/	[	]*/	/' \
         | ${AWK} -F'\t' '{if (length($1) < 8) {print $1"\t\t\t"$2} \
                     else {if (length($1) < 16) {print $1"\t\t"$2} \
                     else {print $1"\t"$2}}}' >${NEWSGROUPS}
