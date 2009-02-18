@@ -13,6 +13,8 @@
 
 package inn ;
 
+$ENV{'LC_CTYPE'} = "C";
+
 $prefix = '@prefix@';
 $exec_prefix = "@exec_prefix@";
 eval `@bindir@/innconfval -p`;

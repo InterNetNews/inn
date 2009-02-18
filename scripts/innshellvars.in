@@ -7,6 +7,8 @@
 ##  innshellvars.tcl and the INN::Config Perl module (as well as the
 ##  old innshellvars.pl script).
 
+LC_CTYPE=C; export LC_CTYPE
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 eval `@bindir@/innconfval -s`
@@ -106,7 +108,7 @@ RNEWSMODE=@RNEWSMODE@
 
 DO_DBZ_TAGGED_HASH=@DO_DBZ_TAGGED_HASH@
 
-TMPDIR=${PATHTMP}; export TMPDIR;
+TMPDIR=${PATHTMP}; export TMPDIR
 
 SPOOLTEMP=${PATHTMP}
 

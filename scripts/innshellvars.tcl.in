@@ -8,6 +8,8 @@
 # Description:  Set up any and all variables that an INN tcl script
 #               might need.  Also sets umask.
 
+set env(LC_CTYPE) "C"
+
 set prefix "@prefix@"
 set exec_prefix "@exec_prefix@"
 eval `@bindir@/innconfval -t`
