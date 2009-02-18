@@ -1056,6 +1056,12 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 		return SpoolitTo(article, p, SDir);
             }
 	}
+        else if (strncmp(p, "CLOSE", 5) == 0) {
+            syslog(L_NOTICE, "%s post %s", Client.host, p);
+            Reply("%d NNTP server unavailable; no posting\r\n",
+                  NNTP_FAIL_TERMINATING);
+            ExitWithStats(1, true);
+        }
 	else
 	{
 	    if (modgroup)

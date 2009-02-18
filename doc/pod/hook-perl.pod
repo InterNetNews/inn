@@ -337,17 +337,33 @@ then be rejected by innd).  If $modify_headers is set, I<everything> in
 the %hdr hash is taken to be article headers and added to the article.
 
 If filter_post() returns something other than the empty string, this
-message is normally returned to the client as an error.  There are two
-exceptions:  If the string returned begins with "DROP", the post will be
-silently discarded and success returned to the client.  If the string
-begins with "SPOOL", success is returned to the client, but the post is
-saved in a directory named "spam" under the directory specified by
-pathincoming in F<inn.conf> (in a directory named "spam/mod" if the post
+message is normally returned to the client as an error.  There are three
+exceptions:
+
+=over 4
+
+=item *
+
+If the string returned begins with C<CLOSE>, the post will be discarded
+and the connection closed with a C<400> response code.
+
+=item *
+
+If the string returned begins with C<DROP>, the post will be
+silently discarded and success returned to the client.
+
+=item *
+
+If the string begins with C<SPOOL>, success is returned to the client, but
+the post is saved in a directory named F<spam> under the directory specified by
+I<pathincoming> in F<inn.conf> (in a directory named F<spam/mod> if the post
 is to a moderated group).  This is intended to allow manual inspection of
 the suspect messages; if they should be posted, they can be manually moved
-out of the subdirectory to the directory specified by pathincoming in
+out of the subdirectory to the directory specified by I<pathincoming> in
 F<inn.conf>, where they can be posted by running C<rnews -U>.  If you use
 this functionality, make sure those directories exist.
+
+=back
 
 =head1 Changes to Perl Authentication Support for nnrpd
 
