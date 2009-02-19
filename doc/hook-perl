@@ -1,7 +1,7 @@
 INN Perl Filtering and Authentication Support
 
-    This is $Revision$ dated $Date: 2008-06-07 14:46:49 +0200 (Sat,
-    07 Jun 2008) $.
+    This is $Revision$ dated $Date: 2008-12-27 02:20:59 +0100 (Sat,
+    27 Dec 2008) $.
 
     This file documents INN's built-in support for Perl filtering and reader
     authentication.  The code is based very heavily on work by Christophe
@@ -89,15 +89,16 @@ The innd Perl Filter
         Content-Type, Control, Date, Date-Received, Distribution, Expires,
         Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
         Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
-        NNTP-Posting-Date, NNTP-Posting-Host, Organization, Originator,
+        NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
+        Organization, Original-Sender, Originator,
         Path, Posted, Posting-Version, Received, References, Relay-Version,
         Reply-To, Sender, Subject, Supersedes, User-Agent,
-        X-Auth, X-Canceled-By, X-Cancelled-By, X-Complaints-To, X-Face,
-        X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
+        X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
+        X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
         X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
-        X-Original-Trace, X-Originating-IP, X-PGP-Key, X-PGP-Sig,
-        X-Poster-Trace, X-Postfilter, X-Proxy-User, X-Submissions-To,
-        X-Trace, X-Usenet-Provider, Xref.
+        X-Original-NNTP-Posting-Host, X-Original-Trace, X-Originating-IP,
+        X-PGP-Key, X-PGP-Sig, X-Poster-Trace, X-Postfilter, X-Proxy-User,
+        X-Submissions-To, X-Trace, X-Usenet-Provider, X-User-ID, Xref.
 
     Note that all the above headers are as they arrived, not modified by
     your INN (especially, the Xref: header, if present, is the one of the
@@ -439,10 +440,12 @@ Perl Authentication Support for nnrpd
     logged. If this element is absent, the username supplied by the client
     during authentication will be used for matching and logging.
 
-    The NNTP response code should probably be either 281 (authentication
-    successful) or 502 (authentication unsuccessful).  If the code returned
-    is anything other than 281, nnrpd will print an authentication error
-    message and drop the connection and exit.
+    The NNTP response code should probably be 281 (authentication
+    successful), 481 (authentication unsuccessful), or 403 (internal error).
+    If the code returned is anything other than 281, nnrpd will return an
+    authentication failure message to the client.  Currently, the
+    distinction between 481 and 403 is not preserved, but it will be in a
+    future version of INN.
 
     If authenticate() dies (either due to a Perl error or due to calling
     die), or if it returns anything other than the two or three element
