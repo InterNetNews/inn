@@ -221,14 +221,14 @@ tradindexed_cancel(const char *group, ARTNUM artnum)
 
     if (tradindexed == NULL || tradindexed->index == NULL) {
         warn("tradindexed: overview method not initialized");
-        return NULL;
+        return false;
     }
     entry = tdx_index_entry(tradindexed->index, group);
     if (entry == NULL)
-        return NULL;
+        return false;
     data = data_cache_open(tradindexed, group, entry);
     if (data == NULL)
-        return NULL;
+        return false;
     return tdx_data_cancel(data, artnum);
 }
 
