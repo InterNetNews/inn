@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2008-09-16
+##  Last modified: 2009-01-02
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -9,8 +9,8 @@
 ##      <http://usenet.trigofacile.com/hierarchies/>
 ##
 ##  Please copy usenet-config@isc.org on any updates to this file so that
-##  it can be updated in the INN CVS repository and on ftp.isc.org.  For
-##  changes to a public hierarchy, please also post the changes to
+##  it can be updated in the INN Subversion repository and on ftp.isc.org.
+##  For changes to a public hierarchy, please also post the changes to
 ##  news.admin.hierarchies.
 ##
 ##  The canonical version of this file can be found in the latest INN
@@ -936,7 +936,7 @@ rmgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 newgroup:*:fur.*:mail
 rmgroup:*:fur.*:doit
 
-## GER & HANNET & HANNOVER & HILDESHEIM & HISS (Hannover, Germany)
+## GER & HANNOVER & HANNET & HILDESHEIM & HISS (Hannover, Germany)
 checkgroups:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
 newgroup:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
 rmgroup:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
@@ -971,6 +971,19 @@ rmgroup:*:gov.*:drop
 checkgroups:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
 newgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
 rmgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
+
+## GRISBI (Grisbi Personal Finance Manager software)
+# Contact: newsmaster@grisbi.org
+# URL: http://news.grisbi.org/
+# Admin group: grisbi.admin
+# Key URL: http://news.grisbi.org/public-key.asc
+# Key fingerprint = EB35 0C03 0080 BD2A 7E0C  A4C9 F2C6 2A3D C86C C6E1
+# *PGP*   See comment at top of file.
+newgroup:*:grisbi.*:drop
+rmgroup:*:grisbi.*:drop
+checkgroups:grisbi-control@grisbi.org:grisbi.*:verify-grisbi-control@grisbi.org
+newgroup:grisbi-control@grisbi.org:grisbi.*:verify-grisbi-control@grisbi.org
+rmgroup:grisbi-control@grisbi.org:grisbi.*:verify-grisbi-control@grisbi.org
 
 ## GWU (George Washington University, Washington, DC)
 # Contact: Sweth Chandramouli <news@nit.gwu.edu>
@@ -2509,7 +2522,6 @@ newgroup:graham@ee.washington.edu:wash.*:doit
 rmgroup:graham@ee.washington.edu:wash.*:doit
 
 ## WEST-VIRGINIA (West Virginia, USA)
-# Note: checkgroups only by bryan27, not mark.
 checkgroups:bryan27@hgo.net:west-virginia.*:doit
 newgroup:mark@bluefield.net:west-virginia.*:doit
 newgroup:bryan27@hgo.net:west-virginia.*:doit
