@@ -1038,13 +1038,13 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
-	    syslog(L_NOTICE, "%s post %s", Client.host, p);
+	    syslog(L_NOTICE, "%s post failed %s", Client.host, p);
 	    if (modgroup)
 		free(modgroup);
 	    return NULL;
 	}
 	else if (strncmp(p, "SPOOL", 5) == 0) {
-	    syslog(L_NOTICE, "%s post %s", Client.host, p);
+	    syslog(L_NOTICE, "%s post failed %s", Client.host, p);
 	    strlcpy(SDir, innconf->pathincoming, sizeof(SDir));
 	    if (modgroup) {
 		free(modgroup);
@@ -1057,9 +1057,10 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
             }
 	}
         else if (strncmp(p, "CLOSE", 5) == 0) {
-            syslog(L_NOTICE, "%s post %s", Client.host, p);
+            syslog(L_NOTICE, "%s post failed %s", Client.host, p);
             Reply("%d NNTP server unavailable; no posting\r\n",
                   NNTP_FAIL_TERMINATING);
+            POSTrejected++;
             ExitWithStats(1, true);
         }
 	else

@@ -1549,9 +1549,9 @@ sub collect($$$$$$) {
       }
       return 1;
     }
-    # post failed
-    if ($left =~ /(\S+) post failed (.*)$/o) {
-      my ($cust, $error) = ($1, $2);
+    # post/ihave failed
+    if ($left =~ /(\S+) (post|ihave) failed (.*)$/o) {
+      my ($cust, $error) = ($1, $3);
       $nnrpd_post_error{$error}++;
       return 1;
     }
