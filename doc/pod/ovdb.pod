@@ -6,7 +6,8 @@ ovdb - Overview storage method for INN
 
 Ovdb is a storage method that uses the S<Berkeley DB> library to store
 overview data.  It requires version 4.4 or later of the S<Berkeley DB>
-library.
+library (4.7+ is recommended because older versions suffer from various
+issues).
 
 Ovdb makes use of the full transaction/logging/locking functionality of
 the S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
