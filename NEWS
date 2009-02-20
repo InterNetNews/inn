@@ -1,3 +1,72 @@
+Changes in 2.4.6
+
+    * Fixed the segfault of the radius authenticator when none of the radius
+      servers respond.  Thanks to Matija Nalis for this patch.
+
+    * Fixed a lost initialization in buffindexed, which resolves a potential
+      segfault, thanks to a patch by Kirill Berezin.
+
+    * INN now properly supports Perl 5.10.0; Perl filters were causing innd
+      to segfault on a few systems like FreeBSD.
+
+    * Fixed a long-standing bug which affected Perl hooks for innd: the
+      variable containing the body of an article was not properly created,
+      which caused regular expressions matching new lines to fail.  It
+      especially affected filters like Cleanfeed which sometimes failed to
+      detect unwanted articles.
+
+      To fix that issue, Julien Elie added the use of a shared string,
+      available since Perl 5.7.2, with a fall back to a slower but reliable
+      copy of such bodies in case the function is not available.  Using a
+      Perl version superior to 5.7.2 is therefore recommended.
+
+    * Fixed two bugs which could prevent nnrpd from being run as a daemon in
+      FreeBSD.  Thanks to Johan van Selst for having identified the problem
+      and to Kai Gallasch for having provided a testing FreeBSD server.  The
+      listening address was not initialized to "::0" or 0.0.0.0 when the -b
+      flag was not used and an incorrect size was given when IPv6 was
+      enabled and the binding done using IPv4.
+
+    * Some annoying assertion failures occurring in innfeed have been fixed
+      by Russ Allbery and Julien Elie.
+
+    * Fixed a bug in mod-active for aliased newsgroups.  Only "=" was
+      written to the active file.  Thanks to D. Stussy for this patch.
+
+    * Fixed a bug which caused innd not to honour the Ad flag in newsfeeds.
+
+    * Fixed a bug in the IP address displayed for "localhost" in innd's
+      status file.  It was not correctly initialized.
+
+    * Fixed a permission issue:  XHDR and XPAT were not checking the rights
+      the user had to read articles when accessing them by their message-ID.
+
+    * Fixed a bug in the replies of XHDR, XOVER and XPAT when the newsgroup
+      is empty.  Two initial replies were sent instead of one:  the right
+      420 code followed by a wrong 224 code.
+
+    * When no newsgroup is selected, LISTGROUP now returns the right 412
+      code (instead of 481).
+
+    * A new improved version of docheckgroups is shipped with INN.  The -u
+      flag permits to automatically update the newsgroups file (with a
+      proper number of tabulations and an alphabetical sort), removing
+      obsolete descriptions and adding new ones.  A second argument on
+      command-line permits to specify which newsgroups should not be
+      checked, so as not to treat them.
+
+    * An *email=* keyword has been added by James Ralston to news.daily in
+      order to supply another mail address than the one set at configure
+      time for Usenet daily reports.
+
+    * An updated moderators file with information about the aioe.*, perl.*
+      and si.* hierarchies is provided; control.ctl is also up to date.
+
+    * INN supports Berkeley DB 4.7, which is the recommended version to use
+      owing to various bugs affecting previous versions of Berkeley DB.
+
+    * Other minor bugs have also been fixed.
+
 Changes in 2.4.5
 
     * Fixed the "alarm signal" around "SSL_read" in nnrpd:  it allows a
