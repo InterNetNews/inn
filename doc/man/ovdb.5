@@ -129,14 +129,15 @@
 .\" ========================================================================
 .\"
 .IX Title "OVDB 5"
-.TH OVDB 5 "2008-04-06" "INN 2.4.6" "InterNetNews Documentation"
+.TH OVDB 5 "2009-02-20" "INN 2.4.6" "InterNetNews Documentation"
 .SH "NAME"
 ovdb \- Overview storage method for INN
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-Ovdb is a storage method that uses the BerkeleyDB library to store
-overview data.  It requires version 2.6.x or later of the BerkeleyDB
-library, but has mostly been tested with version 3 and 4.
+Ovdb is a storage method that uses the Berkeley\ \s-1DB\s0 library to store
+overview data.  It requires version 2.6.x or later of the Berkeley\ \s-1DB\s0
+library, but has mostly been tested with version 3 and 4 (4.7+ is
+recommended because older versions suffer from various +issues).
 .PP
 Ovdb makes use of the full transaction/logging/locking functionality of
 the BerkeleyDB environment.  BerkeleyDB may be downloaded from

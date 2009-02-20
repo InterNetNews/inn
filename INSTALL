@@ -135,9 +135,9 @@ Before You Begin
       table of configure options enabling optional features and the software
       and versions you'll need:
 
-          --with-perl         Perl 5.004_03 or higher, 5.6.1+ recommended
-          --with-python       Python 1.5.2 or higher
-          --with-berkeleydb   BerkeleyDB 2.0 or higher, 4.2+ recommended
+          --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
+          --with-python       Python 1.5.2 or higher, 2.5.0+ recommended
+          --with-berkeleydb   Berkeley DB 2.0 or higher, 4.7+ recommended
           --with-openssl      OpenSSL 0.9.6 or higher
           --with-sasl         SASL 2.x or higher
           --with-kerberos     MIT Kerberos v5 1.2.x or higher
