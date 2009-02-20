@@ -127,17 +127,118 @@ runs.  Thanks to Ivan Shmakov for this feature.
 
 =item *
 
-Some annoying assertion failures occurring in B<innfeed> have been fixed
-by Russ Allbery.
-
-=item *
-
 Support for bzip2-compressed batches (with B<bunbatch>) has been added.
 
 =item *
 
 A lot of work has been done on documentation:  improvements of existing one,
 writing new one and proof-reading.  Samples are also more detailed.
+
+=back
+
+=head1 Changes in 2.4.6
+
+=over 2
+
+=item *
+
+Fixed the segfault of the radius authenticator when none of the radius
+servers respond.  Thanks to Matija Nalis for this patch.
+
+=item *
+
+Fixed a lost initialization in buffindexed, which resolves a potential
+segfault, thanks to a patch by Kirill Berezin.
+
+=item *
+
+INN now properly supports S<Perl 5.10.0>; Perl filters were causing
+B<innd> to segfault on a few systems like FreeBSD.
+
+=item *
+
+Fixed a long-standing bug which affected Perl hooks for B<innd>:
+the variable containing the body of an article was not properly
+created, which caused regular expressions matching new lines to fail.
+It especially affected filters like Cleanfeed which sometimes
+failed to detect unwanted articles.
+
+To fix that issue, Julien Elie added the use of a shared string,
+available since S<Perl 5.7.2>, with a fall back to a slower but
+reliable copy of such bodies in case the function is not available.
+Using a Perl version superior to 5.7.2 is therefore recommended.
+
+=item *
+
+Fixed two bugs which could prevent B<nnrpd> from being run as a daemon
+in FreeBSD.  Thanks to Johan van Selst for having identified the
+problem and to Kai Gallasch for having provided a testing FreeBSD server.
+The listening address was not initialized to C<::0> or C<0.0.0.0> when
+the B<-b> flag was not used and an incorrect size was given when IPv6
+was enabled and the binding done using IPv4.
+
+=item *
+
+Some annoying assertion failures occurring in B<innfeed> have been fixed
+by Russ Allbery and Julien Elie.
+
+=item *
+
+Fixed a bug in B<mod-active> for aliased newsgroups.  Only C<=> was written
+to the F<active> file.  Thanks to S<D. Stussy> for this patch.
+
+=item *
+
+Fixed a bug which caused B<innd> not to honour the B<Ad> flag in F<newsfeeds>.
+
+=item *
+
+Fixed a bug in the IP address displayed for C<localhost> in B<innd>'s
+status file.  It was not correctly initialized.
+
+=item *
+
+Fixed a permission issue:  XHDR and XPAT were not checking the rights
+the user had to read articles when accessing them by their message-ID.
+
+=item *
+
+Fixed a bug in the replies of XHDR, XOVER and XPAT when the newsgroup
+is empty.  Two initial replies were sent instead of one:  the right C<420>
+code followed by a wrong C<224> code.
+
+=item *
+
+When no newsgroup is selected, LISTGROUP now returns the right C<412> code
+(instead of C<481>).
+
+=item *
+
+A new improved version of B<docheckgroups> is shipped with INN.  The B<-u>
+flag permits to automatically update the F<newsgroups> file (with a proper
+number of tabulations and an alphabetical sort), removing obsolete
+descriptions and adding new ones.  A second argument on command-line permits
+to specify which newsgroups should not be checked, so as not to treat them.
+
+=item *
+
+An I<email=> keyword has been added by James Ralston to B<news.daily>
+in order to supply another mail address than the one set at configure time
+for Usenet daily reports.
+
+=item *
+
+An updated F<moderators> file with information about the aioe.*, perl.*
+and si.* hierarchies is provided; F<control.ctl> is also up to date.
+
+=item *
+
+INN supports S<Berkeley DB 4.7>, which is the recommended version
+to use owing to various bugs affecting previous versions of S<Berkeley DB>.
+
+=item *
+
+Other minor bugs have also been fixed.
 
 =back
 
