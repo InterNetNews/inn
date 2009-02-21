@@ -728,7 +728,7 @@ intersect
 	}
         foreach ( @in ) {
             if (not exists $dummy{$_}) {
-                print "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
+                print "$pfx$dir:0: ERROR: illegal file `$_' in directory (it may be a valid backup if it ends with '.OLD')\n";
                 $i = 0;
             }
         }
@@ -779,7 +779,7 @@ check_all_perms
 	&checkperm($paths{$_}, 0755);
     }
     &checkperm($paths{'innddir'}, 0750);
-    &checkperm($paths{'innbind'}, 04550, 'root');
+    &checkperm($paths{'innbind'}, 04550, 'root', $INN::Config::runasgroup);
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
