@@ -1450,6 +1450,6 @@ have to run:
 to rebuild the history and overview databases.  When that finishes, cd to
 the $pathdb directory and run:
 
-    makedbz -s `wc -l history` -o
+    makedbz -s `wc -l < history` -o
 
 You should now be able to start the server and read and post news to it.

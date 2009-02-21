@@ -11,9 +11,11 @@ B<makehistory> [B<-abFIOSx>] [B<-f> I<filename>] [B<-l> I<count>]
 
 B<makehistory> rebuilds the history(5) text file, which contains a list of
 message-IDs of articles already seen by the server.  It can also be used
-to rebuild the overview database.  Note that the dbz(3) indexes for the
-F<history> file are rebuilt by makedbz(8), not by B<makehistory> as in
-earlier versions of INN.
+to rebuild the overview database.  Note that even though the dbz(3) indices
+for the F<history> file are also rebuilt by B<makehistory>, it is useful
+to run makedbz(8) after makehistory(8) in order to improve the efficiency
+of the indices (B<makehistory> does not know how large to make the hash
+table at first run, unless it is given by the B<-s> flag).
 
 The default location of the F<history> text file is I<pathdb>/history; to
 specify an alternate location, use the B<-f> flag.
@@ -30,7 +32,7 @@ up with problems like out-of-order overview entries, excessively large
 overview buffers, and the like.
 
 If I<ovmethod> in F<inn.conf> is C<ovdb>, you must have the ovdb processes
-running while rebuilding overview.  <ovdb needs them available while
+running while rebuilding overview.  ovdb needs them available while
 writing overview entries.  You can start them by hand separate from the
 rest of the server by running B<ovdb_init>; see ovdb_init(8) for more
 details.
@@ -63,7 +65,7 @@ buffindexed, the B<overchan> program is invoked to write overview.
 =item B<-f> I<filename>
 
 Rather than writing directly to I<pathdb>/history, instead write to
-I<filename>.
+I<filename>, also in I<pathdb>.
 
 =item B<-I>
 
@@ -97,7 +99,7 @@ your overview buffers before running B<makehistory> with B<-O>.
 
 =item B<-S>
 
-Rather than store the overview data into the overview database, just write
+Rather than storing the overview data into the overview database, just write
 it to standard output in a form suitable for feeding to B<overchan> later
 if wished.  When this option is used, B<-F>, B<-I>, B<-l>, and B<-T> are
 ignored.  This option only makes sense in combination with B<-O>.
@@ -148,10 +150,10 @@ expired articles, follow the above command with:
 (replacing the path with your I<pathdb>, if it isn't the default).  Then
 look over the new F<history> file for problems and run:
 
-    makedbz -s `wc -l < history` -f history.n
+    makedbz -s `wc -l < history.n` -f history.n
 
 Then rename all of the files matching C<history.n.*> to C<history.*>,
-replacing the current history database and indexes.  After that, it's safe
+replacing the current history database and indices.  After that, it's safe
 to unthrottle B<innd>.
 
 For a simpler example:
