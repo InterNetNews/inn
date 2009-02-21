@@ -15,7 +15,7 @@ to rebuild the overview database.  Note that even though the dbz(3) indices
 for the F<history> file are also rebuilt by B<makehistory>, it is useful
 to run makedbz(8) after makehistory(8) in order to improve the efficiency
 of the indices (B<makehistory> does not know how large to make the hash
-table at first run, unless it is given by the B<-s> flag).
+table at first run, unless the size is given by the B<-s> flag).
 
 The default location of the F<history> text file is I<pathdb>/history; to
 specify an alternate location, use the B<-f> flag.
