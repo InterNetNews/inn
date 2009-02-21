@@ -845,7 +845,7 @@ main(int argc, char **argv)
     AppendMode = false;
     NoHistory = false;
 
-    while ((i = getopt(argc, argv, "abeFf:Il:OSs:T:x")) != EOF) {
+    while ((i = getopt(argc, argv, "abFf:Il:OSs:T:x")) != EOF) {
 	switch(i) {
 	case 'a':
 	    AppendMode = true;
