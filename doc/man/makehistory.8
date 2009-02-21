@@ -129,29 +129,31 @@
 .\" ========================================================================
 .\"
 .IX Title "MAKEHISTORY 8"
-.TH MAKEHISTORY 8 "2008-04-06" "INN 2.4.6" "InterNetNews Documentation"
+.TH MAKEHISTORY 8 "2009-02-21" "INN 2.4.6" "InterNetNews Documentation"
 .SH "NAME"
 makehistory \- Initialize or rebuild INN history database
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 \&\fBmakehistory\fR [\fB\-abeFIOx\fR] [\fB\-f\fR \fIfilename\fR] [\fB\-l\fR \fIcount\fR]
-[\fB\-T\fR \fItmpdir\fR] [\fB\-s\fR \fIsize\fR]
+[\fB\-s\fR \fIsize\fR] [\fB\-T\fR \fItmpdir\fR]
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
 \&\fBmakehistory\fR rebuilds the \fIhistory\fR\|(5) text file, which contains a list of
-Message-IDs of articles already seen by the server.  It can also be used
-to rebuild the overview database.  Note that the \fIdbz\fR\|(3) indexes for the
-history file are rebuilt by \fImakedbz\fR\|(8), not by \fBmakehistory\fR as in
-earlier versions of \s-1INN\s0.
+message-IDs of articles already seen by the server.  It can also be used
+to rebuild the overview database.  Note that even though the \fIdbz\fR\|(3) indices
+for the \fIhistory\fR file are also rebuilt by \fBmakehistory\fR, it is useful
+to run \fImakedbz\fR\|(8) after \fImakehistory\fR\|(8) in order to improve the efficiency
+of the indices (\fBmakehistory\fR does not know how large to make the hash
+table at first run, unless the size is given by the \fB\-s\fR flag).
 .PP
-The default location of the history text file is \fIpathdb\fR/history; to
+The default location of the \fIhistory\fR text file is \fIpathdb\fR/history; to
 specify an alternate location, use the \fB\-f\fR flag.
 .PP
 By default, \fBmakehistory\fR will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
 overview information, use the \fB\-O\fR flag.
 .PP
-\&\s-1WARNING:\s0 If you're trying to rebuild the overview database, be sure to
+\&\s-1WARNING:\s0  If you're trying to rebuild the overview database, be sure to
 stop \fIinnd\fR\|(8) and delete or zero out the existing database before you start
 for the best results.  An overview rebuild should not be done while the
 server is running.  Unless the existing overview is deleted, you may end
@@ -167,21 +169,17 @@ details.
 .IX Header "OPTIONS"
 .IP "\fB\-a\fR" 4
 .IX Item "-a"
-Append to the history file rather than generating a new one.  If you
-append to the main history file, make sure \fIinnd\fR\|(8) is throttled or not
+Append to the \fIhistory\fR file rather than generating a new one.  If you
+append to the main \fIhistory\fR file, make sure \fIinnd\fR\|(8) is throttled or not
 running, or you can corrupt the history.
 .IP "\fB\-b\fR" 4
 .IX Item "-b"
-Delete any messages found in the spool that do not have valid Message-ID
+Delete any messages found in the spool that do not have valid Message\-ID:
 headers in them.
 .IP "\fB\-e\fR" 4
 .IX Item "-e"
 Compute Bytes headers which is used for overview data.  This option is valid
 only if \fB\-O\fR flag is specified and \fIoverview.fmt\fR includes \f(CW\*(C`Bytes:\*(C'\fR.
-.IP "\fB\-f\fR \fIfilename\fR" 4
-.IX Item "-f filename"
-Rather than writing directly to \fIpathdb\fR/history, instead write to
-\&\fIfilename\fR.
 .IP "\fB\-F\fR" 4
 .IX Item "-F"
 Fork a separate process to flush overview data to disk rather than doing
@@ -190,7 +188,11 @@ continue to collect more data from the spool while the first batch of data
 is being written to the overview database.  The disadvantage is that up to
 twice as much temporary disk space will be used for the generated overview
 data.  This option only makes sense in combination with \fB\-O\fR.  With
-\&\f(CW\*(C`buffindexed\*(C'\fR, the \f(CW\*(C`overchan\*(C'\fR program is invoked to write overview.
+buffindexed, the \fBoverchan\fR program is invoked to write overview.
+.IP "\fB\-f\fR \fIfilename\fR" 4
+.IX Item "-f filename"
+Rather than writing directly to \fIpathdb\fR/history, instead write to
+\&\fIfilename\fR, also in \fIpathdb\fR.
 .IP "\fB\-I\fR" 4
 .IX Item "-I"
 Don't store overview data for articles numbered lower than the lowest
@@ -209,21 +211,21 @@ the overview batches.  At a rough estimate, about 300 * \fIcount\fR bytes
 of temporary space will be required (not counting temp files created
 by \fIsort\fR\|(1)).  See the description of the \fB\-T\fR option for how to
 specify the temporary storage location.  This option has no effect
-with \f(CW\*(C`buffindexed\*(C'\fR, because \f(CW\*(C`buffindexed\*(C'\fR does not need sorted
+with buffindexed, because buffindexed does not need sorted
 overview and no batching is done.
+.IP "\fB\-O\fR" 4
+.IX Item "-O"
+Create the overview database as well as the \fIhistory\fR file.  Overview
+information is only required if the server supports readers; it is not
+needed for a transit-only server (see \fIenableoverview\fR in \fIinn.conf\fR\|(5)).
+If you are using the buffindexed overview storage method, erase all of
+your overview buffers before running \fBmakehistory\fR with \fB\-O\fR.
 .IP "\fB\-s\fR \fIsize\fR" 4
 .IX Item "-s size"
 Size the history database for approximately \fIsize\fR pairs.  Accurately
 specifying the size is an optimization that will create a more
 efficient database.  (The size should be the estimated eventual size
 of the \fIhistory\fR file, typically the size of the old file, in lines.)
-.IP "\fB\-O\fR" 4
-.IX Item "-O"
-Create the overview database as well as the history file.  Overview
-information is only required if the server supports readers; it is not
-needed for a transit-only server (see \fIenableoverview\fR in \fIinn.conf\fR\|(5)).
-If you are using the \f(CW\*(C`buffindexed\*(C'\fR overview storage method, erase all of
-your overview buffers before running \fBmakehistory\fR with \fB\-O\fR.
 .IP "\fB\-T\fR \fItmpdir\fR" 4
 .IX Item "-T tmpdir"
 If \fB\-O\fR is given, \fBmakehistory\fR needs a location to write temporary
@@ -231,45 +233,45 @@ overview data.  By default, it uses \fIpathtmp\fR, set in \fIinn.conf\fR, but if
 this option is given, the provided \fItmpdir\fR is used instead.  This is
 also used for temporary files created by \fIsort\fR\|(1) (which is invoked in the
 process of writing overview information since sorted overview information
-writes faster).  By default, sort usually uses your system temporary
+writes faster).  By default, \fBsort\fR usually uses your system temporary
 directory; see the \fIsort\fR\|(1) man page on your system to be sure.
 .IP "\fB\-x\fR" 4
 .IX Item "-x"
-If this option is given, \fBmakehistory\fR won't write out history file
+If this option is given, \fBmakehistory\fR won't write out \fIhistory\fR file
 entries.  This is useful mostly for building overview without generating
-a new history file.
+a new \fIhistory\fR file.
 .SH "EXAMPLES"
 .IX Header "EXAMPLES"
 Here's a typical example of rebuilding the entire history and overview
 database, removing broken articles in the news spool.  This uses the
-default temporary file locations and should be done while innd isn't
+default temporary file locations and should be done while \fBinnd\fR isn't
 running (or is throttled).
 .PP
 .Vb 1
 \&    makehistory \-b \-f history.n \-O \-l 30000 \-I
 .Ve
 .PP
-This will rebuild the overview (if using \f(CW\*(C`buffindexed\*(C'\fR, erase the
+This will rebuild the overview (if using buffindexed, erase the
 existing overview buffers before running this command) and leave a new
-history file as \f(CW\*(C`history.n\*(C'\fR in \fIpathdb\fR.  To preserve all of the history
-entries from the old history file that correspond to rejected articles or
+\&\fIhistory\fR file as \f(CW\*(C`history.n\*(C'\fR in \fIpathdb\fR.  To preserve all of the history
+entries from the old \fIhistory\fR file that correspond to rejected articles or
 expired articles, follow the above command with:
 .PP
 .Vb 2
-\&    cd /usr/local/news/db
+\&    cd <pathdb>
 \&    awk 'NF == 2 { print }' < history >> history.n
 .Ve
 .PP
 (replacing the path with your \fIpathdb\fR, if it isn't the default).  Then
-look over the new history file for problems and run:
+look over the new \fIhistory\fR file for problems and run:
 .PP
 .Vb 1
-\&    makedbz \-s `wc \-l < history` \-f history.n
+\&    makedbz \-s `wc \-l < history.n` \-f history.n
 .Ve
 .PP
 Then rename all of the files matching \f(CW\*(C`history.n.*\*(C'\fR to \f(CW\*(C`history.*\*(C'\fR,
-replacing the current history database and indexes.  After that, it's safe
-to unthrottle innd.
+replacing the current history database and indices.  After that, it's safe
+to unthrottle \fBinnd\fR.
 .PP
 For a simpler example:
 .PP
@@ -287,9 +289,6 @@ To just rebuild overview:
 .Ve
 .SH "FILES"
 .IX Header "FILES"
-.IP "inn.conf" 4
-.IX Item "inn.conf"
-Read for \fIpathdb\fR, \fIpathtmp\fR, and other settings.
 .IP "\fIpathdb\fR/history" 4
 .IX Item "pathdb/history"
 This is the default output file for \fBmakehistory\fR.
@@ -304,5 +303,5 @@ updated by various other people since.
 $Id$
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
-\&\fIdbz\fR\|(3), \fIactive\fR\|(5), \fIhistory\fR\|(5), \fIinn.conf\fR\|(5), \fIctlinnd\fR\|(8), \fIinnd\fR\|(8),
-\&\fImakedbz\fR\|(8), \fIovdb_init\fR\|(8), \fIoverview.fmt\fR\|(5).
+\&\fIactive\fR\|(5), \fIctlinnd\fR\|(8), \fIdbz\fR\|(3), \fIhistory\fR\|(5), \fIinn.conf\fR\|(5), \fIinnd\fR\|(8),
+\&\fImakedbz\fR\|(8), \fIovdb_init\fR\|(8), \fIoverchan\fR\|(8), \fIoverview.fmt\fR\|(5).
