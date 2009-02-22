@@ -80,7 +80,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
 	    hp = &ARTheaders[i];
-            hv_store(hdr, (char *) hp->Name, hp->Size, newSVpv(HDR(i), 0), 0);
+            (void) hv_store(hdr, (char *) hp->Name, hp->Size, newSVpv(HDR(i), 0), 0);
 	}
     }
 
@@ -94,13 +94,13 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
        compute a hash for artBody, we give it "42". */
     if (artBody) {
 #if (PERL_REVISION == 5) && ((PERL_VERSION < 7) || ((PERL_VERSION == 7) && (PERL_SUBVERSION < 1)))
-        hv_store(hdr, "__BODY__", 8, newSVpv(artBody, artLen), 0);
+        (void) hv_store(hdr, "__BODY__", 8, newSVpv(artBody, artLen), 0);
 #else
-        hv_store(hdr, "__BODY__", 8, newSVpvn_share(artBody, artLen, 42), 0);
+        (void) hv_store(hdr, "__BODY__", 8, newSVpvn_share(artBody, artLen, 42), 0);
 #endif /* Perl < 5.7.1 */
     }
 
-    hv_store(hdr, "__LINES__", 9, newSViv(lines), 0);
+    (void) hv_store(hdr, "__LINES__", 9, newSViv(lines), 0);
 
     ENTER;
     SAVETMPS;
@@ -196,24 +196,24 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     mode = perl_get_hv("mode", 1);
 
     if (Mode == OMrunning)
-        hv_store(mode, "Mode", 4, newSVpv("running", 7), 0);
+        (void) hv_store(mode, "Mode", 4, newSVpv("running", 7), 0);
     if (Mode == OMpaused)
-        hv_store(mode, "Mode", 4, newSVpv("paused", 6), 0);
+        (void) hv_store(mode, "Mode", 4, newSVpv("paused", 6), 0);
     if (Mode == OMthrottled)
-        hv_store(mode, "Mode", 4, newSVpv("throttled", 9), 0);
+        (void) hv_store(mode, "Mode", 4, newSVpv("throttled", 9), 0);
     if (Mode == OMshutdown)
-        hv_store(mode, "Mode", 4, newSVpv("shutdown", 8), 0);
+        (void) hv_store(mode, "Mode", 4, newSVpv("shutdown", 8), 0);
 
     if (NewMode == OMrunning)
-        hv_store(mode, "NewMode", 7, newSVpv("running", 7), 0);
+        (void) hv_store(mode, "NewMode", 7, newSVpv("running", 7), 0);
     if (NewMode == OMpaused)
-        hv_store(mode, "NewMode", 7, newSVpv("paused", 6), 0);
+        (void) hv_store(mode, "NewMode", 7, newSVpv("paused", 6), 0);
     if (NewMode == OMthrottled)
-        hv_store(mode, "NewMode", 7, newSVpv("throttled", 9), 0);
+        (void) hv_store(mode, "NewMode", 7, newSVpv("throttled", 9), 0);
     if (NewMode == OMshutdown)
-        hv_store(mode, "NewMode", 7, newSVpv("shutdown", 8), 0);
+        (void) hv_store(mode, "NewMode", 7, newSVpv("shutdown", 8), 0);
 
-    hv_store(mode, "reason", 6, newSVpv(reason, 0), 0);
+    (void) hv_store(mode, "reason", 6, newSVpv(reason, 0), 0);
 
     PUSHMARK(SP);
     perl_call_sv((SV *) filter, G_EVAL|G_DISCARD|G_NOARGS);

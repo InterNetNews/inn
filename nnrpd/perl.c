@@ -86,7 +86,7 @@ HandleHeaders(char *article)
     hdr = perl_get_hv("hdr", true);
     for (hp = Table; hp < EndOfTable; hp++) {
         if (hp->Body)
-            hv_store(hdr, (char *) hp->Name, strlen(hp->Name),
+            (void) hv_store(hdr, (char *) hp->Name, strlen(hp->Name),
                      newSVpv(hp->Body, 0), 0);
     }
    
@@ -105,7 +105,7 @@ HandleHeaders(char *article)
         }
         s++;
         t = (*s == ' ' ? s + 1 : s);
-        hv_store(hdr, p, (s - p) - 1, newSVpv(t, 0), 0);
+        (void) hv_store(hdr, p, (s - p) - 1, newSVpv(t, 0), 0);
     }
     /* Store user. */
     sv_setpv(perl_get_sv("user", true), PERMuser);
@@ -226,13 +226,13 @@ perlAccess(char *user, struct vector *access_vec)
     SAVETMPS;
 
     attribs = perl_get_hv("attributes", true);
-    hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
-    hv_store(attribs, "port", 4, newSViv(Client.port), 0);
-    hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
-    hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
-    hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
-    hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
+    (void) hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
+    (void) hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
+    (void) hv_store(attribs, "port", 4, newSViv(Client.port), 0);
+    (void) hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
+    (void) hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
+    (void) hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
+    (void) hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
     PUSHMARK(SP);
 
@@ -346,14 +346,14 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
     ENTER;
     SAVETMPS;
     attribs = perl_get_hv("attributes", true);
-    hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
-    hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
-    hv_store(attribs, "port", 4, newSViv(Client.port), 0);
-    hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
-    hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
-    hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
-    hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
-    hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
+    (void) hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
+    (void) hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
+    (void) hv_store(attribs, "port", 4, newSViv(Client.port), 0);
+    (void) hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
+    (void) hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
+    (void) hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
+    (void) hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
+    (void) hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
     
     PUSHMARK(SP);
     rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
