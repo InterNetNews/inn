@@ -1,32 +1,42 @@
 =head1 Upgrading from 2.4 to 2.5
 
 The following upgrade process is still under construction and not complete.
+There may be additional things to watch out for not listed here; if you run
+across any, please let <inn-workers@lists.isc.org> know about them. 
 
-In order to process control messages which contain an application/news-groupinfo
-entity as described in USEPRO, B<controlchan> needs the C<MIME::Parser> module.
-It is available from CPAN (C<MIME-tools> in F<modules/by-module/MIME/>,
-for instance on ftp.perl.org).  You can also use the one provided with your
-distribution, has it already been packaged for it.
+The following changes require your full attention because a manual intervention
+may be needed:
 
 =over 2
 
 =item *
 
-The syntax of the B<innreport> configuration file has slightly changed.
-The new F<innreport.conf> file should be used and your possible changes
-backported to this new version.
+In order to process control messages, owing to the new application/news-groupinfo
+entity described in USEPRO, B<controlchan> needs the C<MIME::Parser> module.
+It is available from CPAN (C<MIME-tools> in F<modules/by-module/MIME/>,
+for instance on ftp.perl.org).  You can also use the one provided with your
+distribution, has it already been packaged for it.  A version of Perl superior
+to 5.8.0 is recommended with INN.
 
 =item *
 
-The parameters used by B<nnrpd> to provide TLS support are now I<tlscafile>,
-I<tlscapath>, I<tlscertfile> and I<tlskeyfile> in F<inn.conf>.  The F<sasl.conf>
-file used for that in previous versions of INN is obsolete.  B<innupgrade>
-takes care of the change during C<make update>.
+A new F<control.ctl.local> file has been added in I<pathetc>.  It is used
+by B<controlchan> and allows to specify local rules against control messages
+without having to modify F<control.ctl>.  It also contains the encodings
+to use for the F<newsgroups> file (by default, UTF-8 will be used for
+the descriptions of the newsgroups).
+
+You should use that new file and, at the same time, update your F<control.ctl>
+and F<moderators> files.
 
 =item *
 
-The I<nntpactsync> parameter has been renamed to I<incominglogfrequency>
-in F<inn.conf>; B<innupgrade> handles this renaming during the update.
+The B<innreport> configuration file has slightly changed.  The new
+F<innreport.conf> file shipped with INN should be used and your possible
+changes backported to this new version.  Alexander Bartolich has greatly
+improved B<innreport> and especially its XHTML output (a XSL transformation
+is also provided, if needed, in F<innreport-filter.xslt>, in the F<contrib>
+directory).
 
 =item *
 
@@ -37,6 +47,44 @@ to rename it.
 
 =back
 
+The legacy B<innshellvars.pl> script has been replaced with a real INN Perl
+module C<INN::Config> for Perl programs.  The location of Perl modules can
+be set with the B<--with-libperl-dir> option to C<configure>.  All Perl
+scripts shipped with INN have been converted to use that module.  You may
+want to consider using C<INN::Config> in your Perl scripts, though
+B<innshellvars.pl> is still provided with INN.
+
+The parameters used by B<nnrpd> to provide TLS support are now I<tlscafile>,
+I<tlscapath>, I<tlscertfile> and I<tlskeyfile> in F<inn.conf>.  The F<sasl.conf>
+file used for that in previous versions of INN is obsolete.  B<innupgrade>
+takes care of the change during C<make update>.
+
+The I<nntpactsync> parameter has been renamed to I<incominglogfrequency>
+in F<inn.conf>; B<innupgrade> handles this renaming during the update.
+
+B<inndstart> and B<startinnfeed> are no longer part of INN and are no
+longer used.  Instead, a separate setuid root helper program written by
+Russ Allbery is used to bind to the news ports (and does only that),
+and is run by B<innd> and B<nnrpd> when necessary.  This means that INN
+may not be able to increase file descriptor limits for itself the way
+that it could before.  If you get error messages about resetting the file
+descriptor limits, you may need to increase the file descriptor limits
+as root before running B<rc.news> as the news user.  See the sample init
+script in F<contrib> for an example of how to do this.  More information
+on file descriptor limits can be found in F<INSTALL>.
+
+In F<newsfeeds>, B<innfeed> should be run directly rather than through
+B<startinnfeed>.  B<innupgrade> will attempt to take care of this
+modification during C<make update>.  When starting B<innd> by hand, B<innd>
+can just be run directly rather than using B<inndstart>.
+
+Support for S<Berkeley DB> versions prior to 4.3 has been dropped.
+You will have to use at least S<Berkeley DB 4.4>; the recommended version
+is 4.7.
+
+If you are upgrading from a version prior to S<INN 2.4>, see also
+L<Upgrading from 2.3 to 2.4>.
+
 =head1 Changes in 2.5.0
 
 =over 2
@@ -44,26 +92,26 @@ to rename it.
 =item *
 
 Ken Murchison has contributed SASL authentication support for B<nnrpd>,
-implementing the current Internet Draft specification.
+implementing the AUTHINFO SASL section of S<RFC 4643>.  If the
+B<--with-sasl> option is given to C<configure>, B<nnrpd> will be able to
+authenticate clients via secure SASL mechanisms.
 
 =item *
 
-B<inndstart> and B<startinnfeed> are no longer part of INN and are no
-longer used.  Instead, a separate setuid root helper program is used to
-bind to the news ports (and does only that), and is run by B<innd> and
-B<nnrpd> when necessary.
+Julien Elie has implemented in B<nnrpd> the new version of the NNTP
+protocol described in S<RFC 3977>, S<RFC 4642> and S<RFC 4643>.
+Consequently, B<nnrpd> now recognizes the CAPABILITIES command, the
+HDR and LIST HEADERS commands, the second optional argument to specify
+a range of articles to LISTGROUP, the OVER command, as well as the
+C<:bytes> and C<:lines> metadata items.
 
-This means that INN may not be able to increase file descriptor limits for
-itself the way that it could before.  If you get error messages about
-resetting the file descriptor limits, you may need to increase the file
-descriptor limits as root before running B<rc.news> as the news user.  See
-the sample init script in F<contrib> for an example of how to do this.  More
-information on file descriptor limits can be found in F<INSTALL>.
+=item *
 
-In F<newsfeeds>, B<innfeed> should be run directly rather than through
-B<startinnfeed>.  B<innupgrade> will attempt to take care of this
-modification during C<make update>.  When starting B<innd> by hand, B<innd>
-can just be run directly rather than using B<inndstart>.
+Heath Kehoe has added the ability to compress overview data before
+it is stored in ovdb.  It significantly improves the performance
+of this storage method and reduces the time spent by B<expireover>.
+See the new B<--with-zlib> option to C<configure> and the ovdb(5)
+man page.
 
 =item *
 
@@ -76,17 +124,17 @@ C<configure --help> for the available options.
 
 Thanks to Kirill Berezin, the buffindexed overview method now supports buffers
 larger than S<2 GB>.  It is not necessary to compile INN with large file support
-to use such large buffers with buffindexed.  Buffindexed is also more robust
+to use such large buffers with buffindexed.  Buffindexed is now also more robust
 with mmaped files.
 
 =item *
 
-B<tinyleaf>, a miniature IHAVE-only leaf server, is now included.  See the
-tinyleaf(8) man page for more information.
+B<tinyleaf>, a miniature IHAVE-only leaf server written by Russ Allbery,
+is now included.  See the tinyleaf(8) man page for more information.
 
 =item *
 
-The Perl and Python filter_mode hooks are now called when B<innd> is shutting
+The Perl and Python I<filter_mode> hooks are now called when B<innd> is shutting
 down via either C<ctlinnd shutdown> or C<ctlinnd xexec> with a new mode
 value of C<shutdown>.  This will allow the Perl hooks to save filter data
 across B<innd> restarts without requiring that the news administrator
@@ -95,15 +143,9 @@ is also called.)
 
 =item *
 
-The legacy F<innshellvars.pl> file has been replaced with a real INN Perl
-module C<INN::Config> for Perl programs.  All Perl scripts shipped with INN
-have been converted to use that module.
-
-=item *
-
 Support for embedded Tcl filters in B<innd> has been removed.  It hasn't
 worked for some time and causes B<innd> crashes if compiled in (even if not
-used).  If someone wants to step forward and maintain it, I recommend
+used).  If someone wants to step forward and maintain it, we recommend
 starting from scratch and emulating the Perl and Python filters.
 
 =item *
@@ -114,6 +156,12 @@ user-supplied Path: would still be retained.
 
 =item *
 
+B<news2mail> can now set the envelope-from address of the mails it sends.
+A third optional part in F<news2mail.cf> entries has been added by S<D. Stussy>
+to achieve that.
+
+=item *
+
 The B<-g> option to B<nnrpd> is no longer supported.  If you are verifying
 passwords against the system password database, see the ckpasswd(8) man
 page, and in particular the B<-s> option.  (A much better idea would be to
@@ -121,13 +169,20 @@ just use PAM, which B<ckpasswd> supports.)
 
 =item *
 
+Support for bzip2-compressed batches (with B<bunbatch>) has been added.
+
+=item *
+
 Support for I<runasuser> and I<runasgroup> parameters in F<inn.conf>
 allows to set the news user and the news group under which the news server
 runs.  Thanks to Ivan Shmakov for this feature.
 
-=item *
+New other options have been added to configuration files:  I<ignore>
+in F<incoming.conf>, I<logstats> and I<nnrpdflags> in F<inn.conf>,
+and I<log-time-format> in F<innfeed.conf>.
 
-Support for bzip2-compressed batches (with B<bunbatch>) has been added.
+The B<--with-http-dir> option has also been added to C<configure> so as to
+set I<pathhttp> in F<inn.conf>.
 
 =item *
 
@@ -1145,7 +1200,7 @@ systems without libgdbm installed should be fixed.
 
 =item *
 
-INN now complains loudly at C<configure> time if the configured path for
+INN now complains loudly at configure time if the configured path for
 temporary files is world-writeable, since this configuration can be a
 security hole.
 
@@ -1344,7 +1399,7 @@ library support) should be better than previous releases.
 
 B<inews> is not installed setgid news and B<rnews> is not installed setuid root
 by default any more.  If you need the old permissions, you have to give a
-flag to configure.  See F<INSTALL> for more details.
+flag to C<configure>.  See F<INSTALL> for more details.
 
 =item *
 
