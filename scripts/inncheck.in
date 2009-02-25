@@ -65,18 +65,21 @@ $newsgroup = '@NEWSGRP@';
 );
 
 ##  The modes of the config files we can check.
+##  Min and max values, by bit:  between 0400 and 0640,
+##  0600 is allowed, but not 0500 for instance (not executable).
+##  0660 is used when the file can contain passwords.
 %modes = (
-    'active',		@FILEMODE@,
-    'control.ctl',	0644,
-    'expire.ctl',	0644,
-    'incoming.conf',	0640,
-    'inn.conf',		0644,
-    'moderators',	0644,
-    'newsfeeds',	0644,
-    'overview.fmt',	0644,
-    'nntpsend.ctl',	0644,
-    'passwd.nntp',	0640,
-    'readers.conf',	0644
+    'active',		[0600, @FILEMODE@],
+    'control.ctl',	[0400, 0664],
+    'expire.ctl',	[0400, 0664],
+    'incoming.conf',	[0400, 0660],
+    'inn.conf',		[0400, 0664],
+    'moderators',	[0400, 0664],
+    'newsfeeds',	[0400, 0664],
+    'overview.fmt',	[0400, 0664],
+    'nntpsend.ctl',	[0400, 0664],
+    'passwd.nntp',	[0400, 0660],
+    'readers.conf',	[0400, 0664]
 );
 
 
@@ -654,8 +657,8 @@ readers_conf
 ##  Routines to check permissions
 ##
 
-##  Given a file F, check its mode to be M, and its ownership to be by the
-##  user U in the group G.  U and G have defaults.
+##  Given a file F, check its mode to be M (array of min and max file modes),
+##  and its ownership to be by the user U in the group G.  U and G have defaults.
 sub
 checkperm
 {
@@ -665,7 +668,7 @@ checkperm
     die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"
 	if !defined $f;
     die "Internal error, undefined mode in perm from ", (caller(0))[2], "\n"
-	if !defined $m;
+	if !defined @$m;
 
     if ( ! -e $f ) {
 	print "$pfx$f:0: missing\n";
@@ -686,13 +689,16 @@ checkperm
 		if $fix;
 	}
 	if ( $group ne $g ) {
-	    print "$pfx$f:0: in group $group, should be $g\n";
-	    print "chgrp $g $f\n"
-		if $fix;
-	}
-	if ( $mode ne $m ) {
-	    printf "$pfx$f:0: mode %o, should be %o\n", $mode, $m;
-	    printf "chmod %o $f\n", $m
+            # rnews may be setuid news and owned by group uucp.
+            if ($f !~ /\/rnews$/ or $group ne 'uucp') {
+                print "$pfx$f:0: in group $group, should be $g\n";
+                print "chgrp $g $f\n"
+                    if $fix;
+            }
+        }
+        if ( (($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1]) ) {
+            printf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
+            printf "chmod %o $f\n", @$m[1]
 		if $fix;
 	}
     }
@@ -720,7 +726,7 @@ intersect
 	    $dummy{$_}++;
 	}
 	foreach ( grep ($dummy{$_} == 0, @in) ) {
-	    print "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
+	    print "$pfx$dir:0: ERROR: illegal file `$_' in directory (it may be a valid backup if it ends with '.OLD')\n";
 	    $i = 0;
 	}
     }
@@ -735,28 +741,26 @@ intersect
     'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
 @newsbin_public = (
-    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch', 'expire',
+    'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'makehistory', 'nntpget', 'overchan', 'prunehistory', 'shlock',
-    'shrinkfile'
+    'makehistory', 'nntpget', 'nntpsend', 'overchan', 'prunehistory', 'shlock',
+    'shrinkfile', 'send-ihave', 'send-nntp', 'send-uucp'
 );
 @newsbin_private = (
-    'ctlinnd', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'news.daily', 'nntpsend', 'scanlogs', 'sendbatch',
-    'tally.control', 'writelog',
-    'send-ihave', 'send-nntp', 'send-uucp'
+    'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
+    'news.daily', 'scanlogs', 'tally.control', 'writelog'
 );
 #@newslib_private_read = (
 #    'innlog.pl'
 #);
 
-## The modes for the various programs.
+## The modes (min and max) for the various programs.
 %prog_modes = (
-    'inews',		 @INEWSMODE@,
-    'innd',		 0550,
-    'newsboot',		 0550,
-    'nnrpd',		 0555,
-    'rnews',		 @RNEWSMODE@,
+    'inews',		 [0500, @INEWSMODE@],
+    'innd',		 [0500, 0550],
+    'newsboot',		 [0500, 0550],
+    'nnrpd',		 [0500, 0555],
+    'rnews',		 [0500, @RNEWSMODE@]
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
@@ -768,33 +772,33 @@ check_all_perms
     local ($newslib) = $paths{'newslib'};
 
     foreach ( @directories ) {
-	&checkperm($paths{$_}, 0755);
+	&checkperm($paths{$_}, [0755, 0775]);
     }
-    &checkperm($paths{'innddir'}, 0750);
+    &checkperm($paths{'innddir'}, [0750, 0775]);
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
-    &checkperm($paths{'inndstart'}, 04550, 'root', $newsgroup);
+    &checkperm($paths{'inndstart'}, [04500, 04550], 'root', $newsgroup);
     foreach ( keys %paths ) {
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
     }
-    &checkperm($paths{'history'}, 0644);
+    &checkperm($paths{'history'}, [0600, 0664]);
     # Commented out for now since it depends on the history type.
-    #&checkperm($paths{'history'} . ".dir", 0644);
-    #&checkperm($paths{'history'} . ".index", 0644);
-    #&checkperm($paths{'history'} . ".hash", 0644);
+    #&checkperm($paths{'history'} . ".dir", [0600, 0664]);
+    #&checkperm($paths{'history'} . ".index", [0600, 0664]);
+    #&checkperm($paths{'history'} . ".hash", [0600, 0664]);
     #foreach ( @newslib_private_read ) {
-    #   &checkperm("$newslib/$_", 0440);
+    #   &checkperm("$newslib/$_", [0400, 0440]);
     #}
     foreach ( @newsbin_private ) {
-	&checkperm("$newsbin/$_", 0550);
+	&checkperm("$newsbin/$_", [0500, 0550]);
     }
     foreach ( @newsbin_public ) {
-	&checkperm("$newsbin/$_", 0555);
+	&checkperm("$newsbin/$_", [0500, 0555]);
     }
     foreach ( @rnews_programs ) {
-	&checkperm("$rnewsprogs/$_", 0555);
+	&checkperm("$rnewsprogs/$_", [0500, 0555]);
     }
 
     ##  Also make sure that @rnews_programs are the *only* programs in there;
