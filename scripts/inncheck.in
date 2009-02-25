@@ -64,14 +64,17 @@ $ST_GID  = 5;
 );
 
 ##  The modes of the config files we can check.
+##  Min and max values, by bit:  between 0400 and 0640,
+##  0600 is allowed, but not 0500 for instance (not executable).
+##  0660 is used when the file can contain passwords.
 %modes = (
-    'active',		$INN::Config::filemode,
-    'incoming.conf',	0640,
-    'inn.conf',		0644,
-    'moderators',	0644,
-    'newsfeeds',	0644,
-    'overview.fmt',	0644,
-    'passwd.nntp',	0640,
+    'active',		[0600, $INN::Config::filemode],
+    'incoming.conf',	[0400, 0660],
+    'inn.conf',		[0400, 0664],
+    'moderators',	[0400, 0664],
+    'newsfeeds',	[0400, 0664],
+    'overview.fmt',	[0400, 0664],
+    'passwd.nntp',	[0400, 0660],
 );
 
 
@@ -661,8 +664,8 @@ readers_conf
 ##  Routines to check permissions
 ##
 
-##  Given a file F, check its mode to be M, and its ownership to be by the
-##  user U in the group G.  U and G have defaults.
+##  Given a file F, check its mode to be M (array of min and max file modes),
+##  and its ownership to be by the user U in the group G.  U and G have defaults.
 sub
 checkperm
 {
@@ -672,7 +675,7 @@ checkperm
     die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"
 	if !defined $f;
     die "Internal error, undefined mode in perm from ", (caller(0))[2], "\n"
-	if !defined $m;
+	if !defined @$m;
 
     if ( ! -e $f ) {
 	print "$pfx$f:0: missing\n";
@@ -697,9 +700,9 @@ checkperm
 	    print "chgrp $g $f\n"
 		if $fix;
 	}
-	if ( $mode ne $m ) {
-	    printf "$pfx$f:0: mode %o, should be %o\n", $mode, $m;
-	    printf "chmod %o $f\n", $m
+	if ( (($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1]) ) {
+	    printf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
+	    printf "chmod %o $f\n", @$m[1]
 		if $fix;
 	}
     }
@@ -758,13 +761,13 @@ intersect
 #    'innlog.pl'
 #);
 
-## The modes for the various programs.
+## The modes (min and max) for the various programs.
 %prog_modes = (
-    'inews',		 $INN::Config::inewsmode,
-    'innd',		 0550,
-    'newsboot',		 0550,
-    'nnrpd',		 0555,
-    'rnews',		 $INN::Config::rnewsmode,
+    'inews',		 [0500, $INN::Config::inewsmode],
+    'innd',		 [0500, 0550],
+    'newsboot',		 [0500, 0550],
+    'nnrpd',		 [0500, 0555],
+    'rnews',		 [0500, $INN::Config::rnewsmode],
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
@@ -776,10 +779,10 @@ check_all_perms
     #local ($newslib) = $paths{'newslib'};
 
     foreach ( @directories ) {
-	&checkperm($paths{$_}, 0755);
+	&checkperm($paths{$_}, [0755, 0775]);
     }
-    &checkperm($paths{'innddir'}, 0750);
-    &checkperm($paths{'innbind'}, 04550, 'root', $INN::Config::runasgroup);
+    &checkperm($paths{'innddir'}, [0750, 0775]);
+    &checkperm($paths{'innbind'}, [04500, 04550], 'root', $INN::Config::runasgroup);
     foreach ( keys %prog_modes ) {
 	&checkperm($paths{$_}, $prog_modes{$_});
     }
@@ -787,22 +790,22 @@ check_all_perms
 	&checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
     }
-    &checkperm($paths{'history'}, $INN::Config::filemode);
+    &checkperm($paths{'history'}, [0600, $INN::Config::filemode]);
     # Commented out for now since it depends on the history type.
-    #&checkperm($paths{'history'} . ".dir", 0644);
-    #&checkperm($paths{'history'} . ".index", 0644);
-    #&checkperm($paths{'history'} . ".hash", 0644);
+    #&checkperm($paths{'history'} . ".dir", [0600, $INN::Config::filemode]);
+    #&checkperm($paths{'history'} . ".index", [0600, $INN::Config::filemode]);
+    #&checkperm($paths{'history'} . ".hash", [0600, $INN::Config::filemode]);
     #foreach ( @newslib_private_read ) {
-    #   &checkperm("$newslib/$_", 0440);
+    #   &checkperm("$newslib/$_", [0400, 0440]);
     #}
     foreach ( @newsbin_private ) {
-	&checkperm("$newsbin/$_", 0550);
+	&checkperm("$newsbin/$_", [0500, 0550]);
     }
     foreach ( @newsbin_public ) {
-	&checkperm("$newsbin/$_", 0555);
+	&checkperm("$newsbin/$_", [0500, 0555]);
     }
     foreach ( @rnews_programs ) {
-	&checkperm("$rnewsprogs/$_", 0555);
+	&checkperm("$rnewsprogs/$_", [0500, 0555]);
     }
 
     ##  Also make sure that @rnews_programs are the *only* programs in there;
