@@ -269,6 +269,12 @@ When no newsgroup is selected, LISTGROUP now returns the right C<412> code
 
 =item *
 
+B<inncheck> now uses a range of permissions to see whether the file modes
+are correctly set.  Therefore, different configurations depending on the
+security the user wants to enforce on his sytem are possible.
+
+=item *
+
 A new improved version of B<docheckgroups> is shipped with INN.  The B<-u>
 flag permits to automatically update the F<newsgroups> file (with a proper
 number of tabulations and an alphabetical sort), removing obsolete
