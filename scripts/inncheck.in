@@ -696,9 +696,12 @@ checkperm
 		if $fix;
 	}
 	if ( $group ne $g ) {
-	    print "$pfx$f:0: in group $group, should be $g\n";
-	    print "chgrp $g $f\n"
-		if $fix;
+            # rnews may be setuid news and owned by group uucp.
+            if ($f !~ /\/rnews$/ or $group ne 'uucp') {
+	        print "$pfx$f:0: in group $group, should be $g\n";
+	        print "chgrp $g $f\n"
+		    if $fix;
+            }
 	}
 	if ( (($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1]) ) {
 	    printf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
