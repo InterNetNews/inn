@@ -998,8 +998,15 @@ of the existing programs in F<authprogs/> for examples.
 
 =item *
 
-Most (if not all) of the temporary file creation in INN now uses functions
-that create temporary files properly and safely.
+INN now checks to ensure that the configured temporary directory is
+not world-writeable.  Additionally, most (if not all) of the temporary
+file creation in INN now uses functions that create temporary files
+properly and safely.
+
+=item *
+
+All of the applicable bug fixes from the S<INN 2.3> STABLE series are
+also included in S<INN 2.4>. 
 
 =back
 
@@ -1169,6 +1176,10 @@ expiration times.
 =item *
 
 Added a sample F<subscriptions> file and documentation for it and B<innmail>.
+
+=item *
+
+Various other bug fixes and documentation updates.
 
 =back
 
@@ -1389,6 +1400,11 @@ C<make> recursion, and far more of the system-dependent configuration is
 handled directly by C<autoconf>.  libtool build support (including shared
 library support) should be better than previous releases.
 
+=item *
+
+All of the applicable bug fixes from the S<INN 2.2> STABLE series are
+also included in S<INN 2.3>.
+
 =back
 
 =head1 Changes in 2.2.3
@@ -1397,14 +1413,15 @@ library support) should be better than previous releases.
 
 =item *
 
-B<inews> is not installed setgid news and B<rnews> is not installed setuid root
-by default any more.  If you need the old permissions, you have to give a
-flag to C<configure>.  See F<INSTALL> for more details.
+INN no longer installs B<inews> setgid news or B<rnews> setuid root
+by default.  If you need the old behavior, B<--enable-uucp-rnews>
+and/or B<--enable-setgid-inews> must be given to C<configure>.  See
+F<INSTALL> for more information.
 
 =item *
 
-Fixed a security hole when I<verifycancels> was enabled in F<inn.conf> (not the
-default).
+A security hole when I<verifycancels> is turned on in F<inn.conf> (not
+the default) was fixed.
 
 =item *
 
@@ -1413,11 +1430,15 @@ problems with other servers.
 
 =item *
 
-Embedded Perl filters now work with S<Perl 5.6.0>.
+Various other security paranoia fixes have been made.
 
 =item *
 
-Lots of bug fixes and changes for security paranoia.
+Embedded Perl filters fixed to work with S<Perl 5.6.0>.
+
+=item *
+
+Lots of bug fixes.
 
 =back
 
