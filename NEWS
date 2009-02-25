@@ -48,6 +48,10 @@ Changes in 2.4.6
     * When no newsgroup is selected, LISTGROUP now returns the right 412
       code (instead of 481).
 
+    * inncheck now uses a range of permissions to see whether the file modes
+      are correctly set.  Therefore, different configurations depending on
+      the security the user wants to enforce on his sytem are possible.
+
     * A new improved version of docheckgroups is shipped with INN.  The -u
       flag permits to automatically update the newsgroups file (with a
       proper number of tabulations and an alphabetical sort), removing
