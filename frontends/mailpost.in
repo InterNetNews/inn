@@ -322,7 +322,7 @@ ${real_news_hdrs}Date: ${dateHdr}
 ${weird_mail_hdrs}
 EOF
     
-my $rest;
+my $rest = '';
 $rest .= $_ while (<STDIN>);
 $rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last.
 
