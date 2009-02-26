@@ -190,7 +190,7 @@ warnings:
 ##  isn't in the MANIFEST, it doesn't go into the release.  We also update
 ##  the version information in Makefile.global.in to remove the prerelease
 ##  designation and update all timestamps to the date the release is made.
-##  If RELEASENUMBER is set, it is a beta release.
+##  If RELEASENUMBER is set, it is a beta release or a release candidate.
 release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
@@ -200,7 +200,7 @@ release: ChangeLog
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
 	if [ "x$(RELEASENUMBER)" != "x" ] ; then \
-	    cp README.beta $(TARDIR)/ ; \
+	    cp README.$(RELEASEEXTENSION) $(TARDIR)/ ; \
 	    sed 's/= prerelease/= $(RELEASENUMBER) version/' \
 	        Makefile.global.in > $(TARDIR)/Makefile.global.in ; \
 	else \
