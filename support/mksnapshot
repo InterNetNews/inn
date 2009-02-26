@@ -15,13 +15,15 @@
 ##  This script takes one argument, a string representing what tree the
 ##  snapshot is being taken from.  Generally this string is either CURRENT or
 ##  STABLE.
-##  If this argument is BETA, a second argument is needed:  the number of the
-##  beta version (for instance b1 or b2).
+##  If this argument is BETA or RC, a second argument is needed:  the number
+##  of the beta version (for instance b1 or b2) or the release candidate.
 ##
 ##  Examples of use:
 ##
 ##    support/mksnapshot CURRENT
+##    support/mksnapshot STABLE
 ##    support/mksnapshot BETA b1
+##    support/mksnapshot RC rc2
 
 set -e
 
@@ -35,11 +37,22 @@ fi
 
 if [ "$tree" = "BETA" ] ; then
     number="$2"
+    extension=beta
+    releasename="beta release"
+    if [ -z "$number" ] ; then
+        echo "$0: no version specified for $tree" >&2
+        exit 1
+    fi
+elif [ "$tree" = "RC" ] ; then
+    number="$2"
+    extension=release-candidate
+    releasename="release candidate"
     if [ -z "$number" ] ; then
         echo "$0: no version specified for $tree" >&2
         exit 1
     fi
 fi
+
 
 exec > snapshot.log 2>&1
 
@@ -49,20 +62,20 @@ make warnings
 make test
 make check-manifest
 
-if [ "$tree" = "BETA" ] ; then
+if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
 
-    cat > README.beta <<EOF
-This is a beta release of the current development version of INN.
-It was made on:
+    cat > README.$extension <<EOF
+This is a $releasename based on the current development version
+of INN.  It was made on:
 
     `date -u +"%B %e, %Y @ %I:%M %p %Z"`
 
 Although it should work fine, this code should still be considered
 experimental.  If you find any bugs, we'd like to know at
-<inn-bugs@isc.org>.
+<inn-bugs@lists.isc.org>.
 
-Your feedback is also more than welcome on the <inn-workers@isc.org>
-mailing list.  See README for more information.
+Your feedback is also more than welcome on the mailing list
+<inn-workers@lists.isc.org>.  See README for more information.
 EOF
 
 else
@@ -75,17 +88,17 @@ automatically from the Subversion repository.  It was made on:
 
 This code should be considered experimental.  Only a default compile and
 automated testing is done before it is made available.  If it breaks, we'd
-like to know at <inn-bugs@isc.org>, but if it causes your system to explode,
-don't blame us.
+like to know at <inn-bugs@lists.isc.org>, but if it causes your system to
+explode, don't blame us.
 
 If you are using this code, it's highly recommended that you be on the
-<inn-workers@isc.org> mailing list.  See README for more information.
+<inn-workers@lists.isc.org> mailing list.  See README for more information.
 EOF
 
 fi
 
-if [ "$tree" = "BETA" ] ; then
-    make release RELEASENUMBER="$number"
+if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
+    make release RELEASENUMBER="$number" RELEASEEXTENSION="$extension"
 else
     make snapshot SNAPSHOT="$tree" SNAPDATE="$date"
 fi
