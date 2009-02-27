@@ -54,8 +54,7 @@ See newslog(5) for the list of log files processed by B<scanlogs>.
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
-<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie
-<julien@trigofacile.com>.
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
 
 $Id$
 

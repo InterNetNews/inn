@@ -179,7 +179,7 @@ This key requires a boolean value.  It defines whether streaming commands
 =head1 HISTORY
 
 Written by Fabien Tassin <fta@sofaraway.org> for InterNetNews.  Converted to
-POD by Julien Elie <julien@trigofacile.com>.
+POD by Julien Elie.
 
 $Id$
 

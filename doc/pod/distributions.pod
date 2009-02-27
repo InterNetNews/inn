@@ -37,7 +37,7 @@ if distrib.pats(5) is correctly configured.
 
 =head1 HISTORY
 
-Written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+Written by Julien Elie for InterNetNews.
 
 $Id$
 

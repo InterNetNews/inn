@@ -241,7 +241,7 @@ module.
 
 F<innshellvars.pl> was written by James Brister <brister@vix.com>
 for InterNetNews in 1996.  It was converted to the INN::Config Perl
-module by Julien Elie <julien@trigofacile.com> in 2007.
+module by Julien Elie in 2007.
 
 $Id$
 

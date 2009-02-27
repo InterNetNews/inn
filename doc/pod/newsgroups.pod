@@ -113,7 +113,7 @@ and paste them from above.
 
 =head1 HISTORY
 
-Written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+Written by Julien Elie for InterNetNews.
 The preferred format for a one-line newsgroup description is based on
 the policies by which the F<newsgroups> file in
 L<ftp://ftp.isc.org/pub/usenet/CONFIG/> is maintained; they were originally

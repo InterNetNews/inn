@@ -222,7 +222,7 @@ will then use this path as the directory for temporary files.
 
 B<news.daily> and this manual page were written by Landon Curt Noll <chongo@toad.com>
 and Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  It was converted to POD by
-Julien Elie <julien@trigofacile.com>.
+Julien Elie.
 
 $Id$
 

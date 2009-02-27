@@ -341,7 +341,7 @@ should never expire or through the spool of which you need to go manually.
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
-into POD by Julien Elie <julien@trigofacile.com>.
+into POD by Julien Elie.
 
 $Id$
 

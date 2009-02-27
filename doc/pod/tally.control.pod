@@ -46,7 +46,7 @@ An example of lines which can be found in that log file is:
 
 Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
 <rsalz@uunet.uu.net> for InterNetNews.  Rewritten and converted
-to POD by Julien Elie <julien@trigofacile.com>.
+to POD by Julien Elie.
 
 $Id$
 

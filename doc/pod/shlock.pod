@@ -68,7 +68,7 @@ a shell script:
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews after
 a description of HDB UUCP locking given by Peter Honeyman, and
 improved by Berend Reitsma to solve a race condition.
-Converted to POD by Julien Elie <julien@trigofacile.com>.
+Converted to POD by Julien Elie.
 
 $Id$
 

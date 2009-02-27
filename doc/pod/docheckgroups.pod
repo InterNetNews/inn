@@ -184,7 +184,7 @@ The list of local newsgroups along with their descriptions.
 
 =head1 HISTORY
 
-Documentation written by Julien Elie <julien@trigofacile.com> for InterNetNews.
+Documentation written by Julien Elie for InterNetNews.
 
 $Id$
 
