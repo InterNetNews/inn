@@ -147,7 +147,8 @@ if (!$_) {
     }
 }
 
-chomp $_;
+# Remove (CR)LF at the end of each line.
+s/\r?\n$//;
 
 my $line = undef;
 if (/^From\s+([^\s]+)\s+/) {
@@ -167,7 +168,8 @@ for (;;) {
 
     $_ = <STDIN> ;
     last unless defined $_ ;
-    chomp ;
+    # Remove (CR)LF at the end of each line.
+    s/\r?\n$//;
 
     # Gather up a single header with possible continuation lines into $line.
     if (/^\s+/) {
@@ -428,7 +430,8 @@ if ($opt_c) {
   }
     for (;;) {
     $_ = <TMPFILE> ;
-    chomp ;
+    # Remove (CR)LF at the end of each line.
+    s/\r?\n$//;
     last if defined($_) && /^$/ ;
 
     if (/^Newsgroups:\s*/sio) {
