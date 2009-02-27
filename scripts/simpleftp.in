@@ -3,7 +3,7 @@
 # simpleftp - Rudimentary FTP client.
 #
 # Author: David Lawrence <tale@isc.org>.
-#         Rewritten by Julien Elie <julien@trigofacile.com> to use Net::FTP.
+#         Rewritten by Julien Elie to use Net::FTP.
 #
 # Fetch files to the local machine based on URLs on the command line.
 # INN's configure searches for ncftp, wget, linx, et caetera,
