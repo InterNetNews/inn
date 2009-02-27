@@ -510,8 +510,9 @@ EOF
     close SENDMAIL ;
     
 #    unlink $tmpfile ;
-    
-    exit (0) ;			# Using a non-zero exit may cause problems.
+
+    # We use here a non-zero exit.  It should normally not cause problems.
+    exit(1);
 }
 
 
