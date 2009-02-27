@@ -14,8 +14,8 @@ segfault, thanks to a patch by Kirill Berezin.
 
 =item *
 
-INN now properly supports S<Perl 5.10.0>; Perl filters were causing
-B<innd> to segfault on a few systems like FreeBSD.
+INN now properly supports S<Perl 5.10.0> (and also 5.8.9); Perl filters
+were causing B<innd> to segfault on a few systems like FreeBSD.
 
 =item *
 

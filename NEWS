@@ -6,8 +6,8 @@ Changes in 2.4.6
     * Fixed a lost initialization in buffindexed, which resolves a potential
       segfault, thanks to a patch by Kirill Berezin.
 
-    * INN now properly supports Perl 5.10.0; Perl filters were causing innd
-      to segfault on a few systems like FreeBSD.
+    * INN now properly supports Perl 5.10.0 (and also 5.8.9); Perl filters
+      were causing innd to segfault on a few systems like FreeBSD.
 
     * Fixed a long-standing bug which affected Perl hooks for innd: the
       variable containing the body of an article was not properly created,
