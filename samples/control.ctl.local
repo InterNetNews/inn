@@ -21,9 +21,10 @@
 /encoding/:*:cn.*:gb18030
 /encoding/:*:han.*:gb18030
 
-/encoding/:*:fido7.*:cp1251
-/encoding/:*:medlux.*:cp1251
-/encoding/:*:ukr.*:cp1251
+/encoding/:*:fido7.*:koi8-r
+/encoding/:*:medlux.*:koi8-r
+/encoding/:*:relcom.*:koi8-r
+/encoding/:*:ukr.*:koi8-u
 
 /encoding/:*:fr.*:iso-8859-15
 
