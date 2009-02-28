@@ -12,21 +12,21 @@ may be needed:
 =item *
 
 In order to process control messages, B<controlchan> now needs the
-C<MIME::Parser> module.  It is available from CPAN (C<MIME-tools> in
-F<modules/by-module/MIME/>, for instance on ftp.perl.org).  You can also use
-the one provided with your distribution, has it already been packaged for it.
+C<MIME::Parser> module.  Packages are available from most distributions,
+or you can install the module directly from CPAN (C<MIME-tools> in
+F<modules/by-module/MIME/>, for instance on ftp.perl.org).
 
-A version of Perl superior to 5.8.0 is recommended with INN.  In case you
-are not using such a version, you will also need the C<Encode> module so as
-to process control messages (it was not part of Perl before its 5.8.0 version).
+Perl 5.8.0 or later is recommended for INN.  If you are using an earlier
+version, you will also need the C<Encode> module for correct processing of
+control messages.  (It is included with Perl itself in 5.8.0 and later.)
 
 =item *
 
 You should use the new F<control.ctl.local> file shipped with INN in
-I<pathetc> and, at the same time, update your F<control.ctl> and F<moderators>
-files.  Also make sure that your F<active.times>, F<distrib.pats> and
-F<newsgroups> files are properly encoded in UTF-8, as it is strongly
-recommended by S<RFC 3977>.
+I<pathetc> and, at the same time, update your F<control.ctl> and
+F<moderators> files.  Also make sure that your F<active.times>,
+F<distrib.pats> and F<newsgroups> files are properly encoded in UTF-8, as
+it is strongly recommended by S<RFC 3977>.
 
 =item *
 
@@ -38,15 +38,21 @@ changes backported to this new version.
 
 The $SPOOLBASE variable has been renamed to $SPOOLDIR in B<innshellvars>
 in order to be more consistent.  It impacts shell scripts only.  If you
-import B<innshellvars> and use that variable in your scripts, you will have
-to rename it.
+import B<innshellvars> and use that variable in your scripts, you will
+have to rename it.
+
+=item *
+
+B<gpgverify> is no longer included in INN,  B<pgpverify> now has better
+support for GnuPG and should be used instead.
 
 =back
 
-The parameters used by B<nnrpd> to provide TLS support are now I<tlscafile>,
-I<tlscapath>, I<tlscertfile> and I<tlskeyfile> in F<inn.conf>.  The F<sasl.conf>
-file used for that in previous versions of INN is obsolete.  B<innupgrade>
-takes care of the change during C<make update>.
+The parameters used by B<nnrpd> to provide TLS support are now
+I<tlscafile>, I<tlscapath>, I<tlscertfile> and I<tlskeyfile> in
+F<inn.conf>.  The F<sasl.conf> file used for that in previous versions of
+INN is obsolete.  B<innupgrade> takes care of the change during C<make
+update>.
 
 The I<nntpactsync> parameter has been renamed to I<incominglogfrequency>
 in F<inn.conf>; B<innupgrade> handles this renaming during the update.
@@ -56,9 +62,10 @@ B<startinnfeed>.  B<innupgrade> will attempt to take care of this
 modification during C<make update>.
 
 When starting B<innd> by hand, B<innd> can just be run directly rather
-than using B<inndstart>.  If you get error messages about resetting the file
-descriptor limits, you may need to increase the file descriptor limits.
-See the sample init script in F<contrib> for an example of how to do this.
+than using B<inndstart>.  If you get error messages about resetting the
+file descriptor limits, you may need to increase the file descriptor
+limits.  See the sample init script in F<contrib> for an example of how to
+do this.
 
 If you are upgrading from a version prior to S<INN 2.4>, see also
 L<Upgrading from 2.3 to 2.4>.
@@ -112,17 +119,27 @@ on file descriptor limits can be found in F<INSTALL>.
 
 =item *
 
-INN now uses S<autoconf 2.59> or later for configuration.  As a result, some
-C<configure> options have changed slightly and more of the standard B<--*dir>
-options should be supported in lieu of the old INN-specific options.  See
-C<configure --help> for the available options.
+INN's IPv6 support was largely rewritten by Russ Allbery.  IPv4 and IPv6
+are now handled through the same code wherever possible, the new
+IPv6-aware APIs are used everywhere possible, and replacement functions
+are provided for systems that don't have them yet.  The network code is
+now much more centralized, eliminating lots of duplicate code and adding
+better IPv6 support to some utilities.
 
 =item *
 
-Thanks to Kirill Berezin, the buffindexed overview method now supports buffers
-larger than S<2 GB>.  It is not necessary to compile INN with large file support
-to use such large buffers with buffindexed.  Buffindexed is now also more robust
-with mmaped files.
+INN now uses S<autoconf 2.59> or later for configuration.  As a result,
+some C<configure> options have changed slightly and more of the standard
+B<--*dir> options should be supported in lieu of the old INN-specific
+options.  See C<configure --help> for the available options.
+
+=item *
+
+Thanks to Kirill Berezin, the buffindexed overview method now supports
+buffers larger than S<2 GB>.  It is not necessary to compile INN with
+large file support to use such large buffers with buffindexed.
+Buffindexed is now also more robust with mmaped files and uses more
+optimized data placement.
 
 =item *
 
@@ -131,53 +148,56 @@ is now included.  See the tinyleaf(8) man page for more information.
 
 =item *
 
-B<controlchan> recognizes the new application/news-groupinfo entity described
-in USEPRO.  The C<MIME::Parser> and C<Encode> modules are used.  Processing
-control messages has been greatly improved, especially checkgroups:  the
-F<active> and F<newsgroups> files are now properly updated by them.
+B<controlchan> recognizes the new application/news-groupinfo entity
+described in USEPRO and can handle character set conversions of newsgroup
+descriptions.  The C<MIME::Parser> and C<Encode> modules are used.
+Processing control messages has been greatly improved, especially
+checkgroups: the F<active> and F<newsgroups> files are now properly
+updated when they are processed.
 
-A new F<control.ctl.local> file has also been added in I<pathetc>.  It is
-used by B<controlchan> and allows to specify local rules against control messages
-without having to modify F<control.ctl>.  It contains the encodings to use
-for the F<newsgroups> file (by default, UTF-8 will be used for the descriptions
-of the newsgroups, as strongly recommended by S<RFC 3977>).
-
-=item *
-
-The Perl and Python I<filter_mode> hooks are now called when B<innd> is shutting
-down via either C<ctlinnd shutdown> or C<ctlinnd xexec> with a new mode
-value of C<shutdown>.  This will allow the Perl hooks to save filter data
-across B<innd> restarts without requiring that the news administrator
-throttle the server first.  (Python already had a separate close hook that
-is also called.)
+A new F<control.ctl.local> file has also been added in I<pathetc>.  Rules
+set in that file override rules in F<control.ctl>, allowing administrators
+to specify local rules for some control messages without modifying the
+F<control.ctl> configuration file that comes with INN.  It also specifies
+encodings to use for the F<newsgroups> file.  By default, UTF-8 will be
+used for newsgroup descriptions, as strongly recommended by S<RFC 3977>.
 
 =item *
 
-The legacy B<innshellvars.pl> script has been replaced with a real INN Perl
-module C<INN::Config> for Perl programs.  The location of Perl modules can
-be set with the B<--with-libperl-dir> option to C<configure>.  All Perl
-scripts shipped with INN have been converted to use that module.  You may
-want to consider using C<INN::Config> in your Perl scripts, though
+The Perl and Python I<filter_mode> hooks are now called when B<innd> is
+shutting down via either C<ctlinnd shutdown> or C<ctlinnd xexec> with a
+new mode value of C<shutdown>.  This will allow the Perl hooks to save
+filter data across B<innd> restarts without requiring that the news
+administrator throttle the server first.  (Python already had a separate
+close hook that is also called.)
+
+=item *
+
+The legacy B<innshellvars.pl> script has been replaced with a real INN
+Perl module C<INN::Config> for Perl programs.  The location of Perl
+modules can be set with the B<--with-libperl-dir> option to C<configure>.
+All Perl scripts shipped with INN have been converted to use that module.
+You may want to consider using C<INN::Config> in your Perl scripts, though
 B<innshellvars.pl> is still provided with INN.
 
 =item *
 
 Support for embedded Tcl filters in B<innd> has been removed.  It hasn't
-worked for some time and causes B<innd> crashes if compiled in (even if not
-used).  If someone wants to step forward and maintain it, we recommend
+worked for some time and causes B<innd> crashes if compiled in (even if
+not used).  If someone wants to step forward and maintain it, we recommend
 starting from scratch and emulating the Perl and Python filters.
 
 =item *
 
-If I<strippath> is set in F<readers.conf>, the whole user-supplied Path: header
-will now be stripped.  Previously, the final component of the
+If I<strippath> is set in F<readers.conf>, the whole user-supplied Path:
+header will now be stripped.  Previously, the final component of the
 user-supplied Path: would still be retained.
 
 =item *
 
 B<news2mail> can now set the envelope-from address of the mails it sends.
-A third optional part in F<news2mail.cf> entries has been added by S<D. Stussy>
-to achieve that.
+A third optional part in F<news2mail.cf> entries has been added by
+S<D. Stussy> to achieve that.
 
 =item *
 
@@ -196,23 +216,38 @@ Support for I<runasuser> and I<runasgroup> parameters in F<inn.conf>
 allows to set the news user and the news group under which the news server
 runs.  Thanks to Ivan Shmakov for this feature.
 
-New other options have been added to configuration files:  I<ignore>
-in F<incoming.conf>, I<logstats> and I<nnrpdflags> in F<inn.conf>,
-and I<log-time-format> in F<innfeed.conf>.
+New other options have been added to configuration files: I<ignore> in
+F<incoming.conf>, I<logstats> and I<nnrpdflags> in F<inn.conf>, and
+I<log-time-format> in F<innfeed.conf>.
 
-The B<--with-http-dir> option has also been added to C<configure> so as to
-set I<pathhttp> in F<inn.conf>.
-
-=item *
-
-Support for S<Berkeley DB> versions prior to 4.3 has been dropped.
-You will have to use at least S<Berkeley DB 4.4>; the recommended version
-is 4.7.
+The B<--with-http-dir> option has also been added to C<configure> to set
+I<pathhttp> in F<inn.conf>.
 
 =item *
 
-A lot of work has been done on documentation:  improvements of existing one,
-writing new one and proof-reading.  Samples are also more detailed.
+Support for S<Berkeley DB> versions prior to 4.3 has been dropped.  You
+will have to use at least S<Berkeley DB 4.4>; the recommended version is
+4.7.
+
+=item *
+
+INN now builds entirely free of warnings from GCC with fairly aggressive
+warning options enabled.  This involved lots of cleanup of const strings,
+signed versus unsigned type handling, correcting printf formats, and other
+changes that fixed obscure bugs and made INN's code more robust.  Russ
+Allbery has also done considerable cleanup work on some of INN's
+internals, simplifying, refactoring, and removing duplicate code.
+
+=item *
+
+INN's test suite is now much more comprehensive and tests some high-level
+functions as well as more of the portability and utility function layer.
+
+=item *
+
+A lot of work has been done on documentation: improvements of existing
+documents, new documentation, and proof-reading.  Sample configuration
+files are also more detailed.
 
 =back
 
@@ -392,12 +427,13 @@ S<D. Stussy>, for having seen that.  Miquel van Smoorenburg provided the patch.
 
 =item *
 
-A new I<heavily> improved version of B<pullnews> is shipped with this
-INN release.  This new version is provided by Geraint Edwards.  He added
-no more than S<16 flags>, fixed some bugs and integrated the B<backupfeed>
+A new I<heavily> improved version of B<pullnews> is shipped with this INN
+release.  This new version is provided by Geraint Edwards.  He added no
+more than S<16 flags>, fixed some bugs and integrated the B<backupfeed>
 contrib script by Kai Henningsen, adding again S<6 other> flags.  A
 long-standing but very minor bug in the B<-g> option was especially fixed
-and items from the to-do list implemented.  Many thanks again to Geraint Edwards.
+and items from the to-do list implemented.  Many thanks again to Geraint
+Edwards.
 
 =item *
 
