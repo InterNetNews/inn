@@ -26,9 +26,9 @@ Some specific portions of INN are covered by different licenses.  Those
 licenses, if present, will be noted prominantly at the top of those source
 files.  Specifically (but possibly not comprehensively):
 
-   authprogs/smbval/*, backends/send-uucp.in, and control/perl-nocem.in
-   are under the GNU General Public License.  See doc/GPL for a copy of
-   this license.
+   backends/send-uucp.in and control/perl-nocem.in are under the GNU
+   General Public License version 2 or later.  See doc/GPL for a copy of
+   the GPL v2.
 
    backends/shrinkfile.c, frontends/scanspool.in, lib/alloca.c,
    lib/concat.c, lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c,

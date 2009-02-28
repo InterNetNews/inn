@@ -46,6 +46,14 @@ have to rename it.
 B<gpgverify> is no longer included in INN,  B<pgpverify> now has better
 support for GnuPG and should be used instead.
 
+=item *
+
+The B<auth_smb> authenticator program to check passwords with an SMB
+authentication is no longer included in INN.  It was a stripped-down
+version of pam_smbpass, wasn't maintained, and likely had security
+problems.  To authenticate to an SMB server such as Samba, use PAM and
+B<ckpasswd>'s PAM support instead.
+
 =back
 
 The parameters used by B<nnrpd> to provide TLS support are now

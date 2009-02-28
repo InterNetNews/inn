@@ -5,14 +5,13 @@ include ../Makefile.global
 top	      = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL           = auth_smb ckpasswd domain ident radius $(KRB5_AUTH)
+ALL           = ckpasswd domain ident radius $(KRB5_AUTH)
 
 LIBSMB	      = smbval/smbvalid.a
 
 LIBAUTH       = libauth.o
 
-SOURCES       = auth_krb5.c auth_smb.c ckpasswd.c domain.c ident.c libauth.c \
-		radius.c
+SOURCES       = auth_krb5.c ckpasswd.c domain.c ident.c libauth.c radius.c
 
 all: $(ALL)
 
@@ -23,7 +22,7 @@ install: all
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(LI_XPUB) auth_krb5 $(D)$(PATHAUTHPASSWD)/auth_krb5 ; \
 	fi
-	for F in auth_smb ckpasswd radius ; do \
+	for F in ckpasswd radius ; do \
 	    $(LI_XPUB) $$F $D$(PATHAUTHPASSWD)/$$F ; \
 	done
 	for F in domain ident ; do \
@@ -53,9 +52,6 @@ CK_LIBS		= $(CRYPT_LIBS) $(SHADOW_LIBS) $(PAM_LIBS) $(DBM_LIBS)
 auth_krb5: auth_krb5.o $(LIBAUTH) $(LIBINN)
 	$(LINK) auth_krb5.o $(KRB5_LDFLAGS) $(KRB5_LIBS) $(AUTH_LIBS)
 
-auth_smb: auth_smb.o $(LIBSMB) $(LIBAUTH) $(LIBINN)
-	$(LINK) auth_smb.o $(LIBSMB) $(AUTH_LIBS)
-
 ckpasswd: ckpasswd.o $(LIBAUTH) $(LIBINN)
 	$(LINK) ckpasswd.o $(CK_LIBS) $(AUTH_LIBS)
 
@@ -76,7 +72,6 @@ ckpasswd.o: ckpasswd.c
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
-$(LIBSMB):	; (cd smbval ; $(MAKE))
 $(LIBAUTH): 	libauth.h libauth.c
 
 
@@ -92,12 +87,6 @@ auth_krb5.o: auth_krb5.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h
-auth_smb.o: auth_smb.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \
-  libauth.h ../include/portable/socket.h ../include/config.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  smbval/valid.h
 ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \
