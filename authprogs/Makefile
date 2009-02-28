@@ -7,8 +7,6 @@ CFLAGS        = $(GCFLAGS)
 
 ALL           = ckpasswd domain ident radius $(KRB5_AUTH)
 
-LIBSMB	      = smbval/smbvalid.a
-
 LIBAUTH       = libauth.o
 
 SOURCES       = auth_krb5.c ckpasswd.c domain.c ident.c libauth.c radius.c
@@ -34,7 +32,6 @@ bootstrap:
 clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
-	cd smbval && $(MAKE) clean
 
 tags ctags: $(SOURCES)
 	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h

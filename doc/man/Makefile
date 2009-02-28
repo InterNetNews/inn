@@ -20,7 +20,7 @@ SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 	overview.fmt.5 passwd.nntp.5 radius.conf.5 readers.conf.5 \
 	storage.conf.5 subscriptions.5
 
-SEC8	= actsync.8 archive.8 auth_smb.8 batcher.8 buffchan.8 ckpasswd.8 \
+SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	cnfsheadconf.8 cnfsstat.8 controlchan.8 ctlinnd.8 cvtbatch.8 \
 	docheckgroups.8 domain.8 expire.8 expireover.8 expirerm.8 \
 	filechan.8 ident.8 \

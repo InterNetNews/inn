@@ -81,7 +81,6 @@ inn-*
 libtool
 snapshot.log
 authprogs/auth_krb5
-authprogs/auth_smb
 authprogs/ckpasswd
 authprogs/domain
 authprogs/ident

@@ -13,34 +13,12 @@ TODO                                  The list of pending INN projects
 authprogs                             The authentication programs (Directory)
 authprogs/Makefile                    Makefile for auth programs
 authprogs/auth_krb5.c                 Authenticator against Kerberos v5
-authprogs/auth_smb.c                  Authenticator against Samba servers
 authprogs/ckpasswd.c                  Check password
 authprogs/domain.c                    Get username from remote user's hostname
 authprogs/ident.c                     Get username from ident
 authprogs/libauth.c                   Library for talking to nnrpd
 authprogs/libauth.h                   Interface for libauth
 authprogs/radius.c                    Authenticator against RADIUS servers
-authprogs/smbval                      The smb auth libraries (Directory)
-authprogs/smbval/Makefile             Libraries for smb auth
-authprogs/smbval/byteorder.h          Libraries for smb auth
-authprogs/smbval/rfcnb-common.h       Libraries for smb auth
-authprogs/smbval/rfcnb-error.h        Libraries for smb auth
-authprogs/smbval/rfcnb-io.c           Libraries for smb auth
-authprogs/smbval/rfcnb-io.h           Libraries for smb auth
-authprogs/smbval/rfcnb-priv.h         Libraries for smb auth
-authprogs/smbval/rfcnb-util.c         Libraries for smb auth
-authprogs/smbval/rfcnb-util.h         Libraries for smb auth
-authprogs/smbval/rfcnb.h              Libraries for smb auth
-authprogs/smbval/session.c            Libraries for smb auth
-authprogs/smbval/smbdes.c             Libraries for smb auth
-authprogs/smbval/smbencrypt.c         Libraries for smb auth
-authprogs/smbval/smblib-common.h      Libraries for smb auth
-authprogs/smbval/smblib-priv.h        Libraries for smb auth
-authprogs/smbval/smblib-util.c        Libraries for smb auth
-authprogs/smbval/smblib.c             Libraries for smb auth
-authprogs/smbval/smblib.h             Libraries for smb auth
-authprogs/smbval/valid.c              Libraries for smb auth
-authprogs/smbval/valid.h              Libraries for smb auth
 autogen                               Generate Autoconf scripts
 backends                              Outgoing feed programs (Directory)
 backends/Makefile                     Makefile for outgoing feed programs
@@ -144,7 +122,6 @@ doc/man/active.times.5                Manpage for active.times file
 doc/man/actsync.8                     Manpage for active file synch program
 doc/man/archive.8                     Manpage for archive backend
 doc/man/auth_krb5.8                   Manpage for auth_krb5 authenticator
-doc/man/auth_smb.8                    Manpage for auth_smb authenticator
 doc/man/batcher.8                     Manpage for batcher
 doc/man/buffchan.8                    Manpage for buffchan backend
 doc/man/buffindexed.conf.5            Manpage for buffindexed.conf config file
@@ -255,7 +232,6 @@ doc/pod/active.times.pod              Master file for active.times.5
 doc/pod/actsync.pod                   Master file for actsync.8
 doc/pod/archive.pod                   Master file for archive.8
 doc/pod/auth_krb5.pod                 Master file for auth_krb5.8
-doc/pod/auth_smb.pod                  Master file for auth_smb.8
 doc/pod/batcher.pod                   Master file for batcher.8
 doc/pod/buffchan.pod                  Master file for buffchan.8
 doc/pod/buffindexed.conf.pod          Master file for buffindexed.conf.5
