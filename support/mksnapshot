@@ -51,16 +51,15 @@ elif [ "$tree" = "RC" ] ; then
         echo "$0: no version specified for $tree" >&2
         exit 1
     fi
+else
+    exec > snapshot.log 2>&1
+
+    ./autogen
+    ./configure
+    make warnings
+    make test
+    make check-manifest
 fi
-
-
-exec > snapshot.log 2>&1
-
-./autogen
-./configure
-make warnings
-make test
-make check-manifest
 
 if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
 
