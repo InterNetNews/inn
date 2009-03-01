@@ -333,7 +333,8 @@ close TMPFILE ;
 
 if ( ! $tmpfile ) {
     # We had to bail and mail the article to the admin.
-    exit (0) ;
+    print STDERR "The creation of the temporary file $tmpfile failed.\n" if -t STDERR;
+    exit(1);
 }
 
 
@@ -377,7 +378,10 @@ dbmopen(%DATABASE, $Database, 0666) || mailArtAndDie ("can't dbmopen $Database: 
 
 if (defined $DATABASE{$message_id}) {
 
-  exit 0 if (!$opt_c) ;
+  if (!$opt_c) {
+    print STDERR "Duplicate article <$message_id>.\n" if -t STDERR;
+    exit(1);
+  }
 
 ## crosspost -c
   $newsgroups = &append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
@@ -399,7 +403,8 @@ close LOCKFILE ;
 if ($opt_c) {
   if (fork() != 0) {
     undef $tmpfile;  # Don't unlink $tmpfile.
-    exit 0;
+    print STDERR "An error occurred during the fork.\n" if -t STDERR;
+    exit(1);
   }
   sleep $opt_c ;
 
@@ -430,7 +435,7 @@ if ($opt_c) {
 
   if (defined($dup)) {
     syslog("err", "mismatch $newsgroups\n") if $debugging && $use_syslog;
-    exit 0 ;
+    exit(1);
   }
 
   # Replace Newsgroups:.
@@ -604,9 +609,9 @@ headers, removes X-Trace: and X-Complaints-To:, and puts C<X-> in front
 of unknown headers).
 
 If the article has been seen before (B<mailpost> records the Message-ID of
-each article it handles), then the article will be silently dropped.  Other
-errors will cause the article to be mailed to the newsmaster (selected
-at configure time and defaulting to C<usenet>).
+each article it handles), then the article will be dropped with a non-zero
+error status.  Other errors will cause the article to be mailed to the
+newsmaster (selected at configure time and defaulting to C<usenet>).
 
 Normally, B<mailpost> is run by sendmail(8) via an alias entry:
 
