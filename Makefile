@@ -204,10 +204,10 @@ release: ChangeLog
 	    sed 's/= prerelease/= $(RELEASENUMBER) version/' \
 	        Makefile.global.in > $(TARDIR)/Makefile.global.in ; \
 	else \
-	    cp ChangeLog $(TARDIR)/ ; \
 	    sed 's/= prerelease/=/' Makefile.global.in \
 	        > $(TARDIR)/Makefile.global.in ; \
 	fi
+	cp ChangeLog $(TARDIR)/
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
@@ -216,9 +216,7 @@ release: ChangeLog
 ##  run by a maintainer since it depends on svn log working and also
 ##  requires svn2cl be available somewhere.
 ChangeLog:
-	if [ "x$(RELEASENUMBER)" = "x" ] ; then \
-	    $(PERL) support/mkchangelog ; \
-	fi
+	$(PERL) support/mkchangelog
 
 
 ##  Check the MANIFEST against the files present in the current tree,

@@ -71,6 +71,7 @@ CHANGES
 ChangeLog
 LIST.*
 Makefile.global
+README.*
 autom4te.cache
 config.cache
 config.log
