@@ -49,6 +49,7 @@ dnl We also check for useful Perl modules.
 INN_PATH_PROG_ENSURE([PERL], [perl])
 _INN_PERL_VERSION(5.004_03)
 INN_PERL_MODULE([Encode], [controlchan])
+INN_PERL_MODULE([GD], [innreport's HTML output])
 INN_PERL_MODULE([MIME::Parser], [controlchan])
 
 dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
