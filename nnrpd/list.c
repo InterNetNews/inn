@@ -148,11 +148,10 @@ CMD_list_single(char *group)
         /* Convert flags to standardized ones, if possible. */
         if (flag == 'j' || flag == 'x')
             flag = 'n';
-        if (count == 0) {
-            if (lo == 0)
-                lo = 1;
-            hi = lo - 1;
-        }
+        /* When a newsgroup is empty, the high water mark should be one less
+         * than the low water mark according to RFC 3977. */
+        if (count == 0)
+            lo = hi + 1;
         Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
         Printf("%s %010u %010u %c\r\n", group, hi, lo, flag);
         Printf(".\r\n");

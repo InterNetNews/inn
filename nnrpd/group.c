@@ -115,9 +115,7 @@ CMDgroup(int ac, char *av[])
     /* Doing a GROUP command? */
     if (strcasecmp(av[0], "GROUP") == 0) {
 	if (count == 0) {
-            if (ARTlow == 0)
-                ARTlow = 1;
-	    Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
+	    Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh+1, ARThigh, group);
         } else {
 	    /* If we are an NFS reader, check the last nfsreaderdelay
 	     * articles in the group to see if they arrived in the
@@ -194,9 +192,7 @@ CMDgroup(int ac, char *av[])
         }
 
         if (count == 0) {
-            if (ARTlow == 0)
-                ARTlow = 1;
-            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow-1, group);
+            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh, ARThigh+1, group);
             Printf(".\r\n");
         } else {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
