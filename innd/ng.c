@@ -329,7 +329,7 @@ static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
 bool
 NGrenumber(NEWSGROUP *ngp)
 {
-    int			low, high, count,flag;
+    int			low, high, count, flag;
     char	        *f2;
     char		*f3;
     char		*f4;
@@ -355,20 +355,23 @@ NGrenumber(NEWSGROUP *ngp)
 	    LogName, MaxLength(start, start));
 	return false;
     }
-    himark = atol(f2);
-    lomark = himark + 1;
-    /* note these will be the low and himarks if the group turns out to be empty. */
 
     /* Check overview data for the group. */
     if (!OVgroupstats(ngp->Name, &low, &high, &count, &flag)) return false;
     if (count != 0) {
-	/* non-empty group, so set low/himarks from overview. */
+	/* Non-empty group, so set low/high water marks from overview. */
 	lomark = low;
 	himark = high;
+    } else {
+        /* Empty group. */
+        himark = high;
+        lomark = himark + 1;
     }
     l = atol(f2);
     if (himark > l) {
 	syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "hi", l, himark);
+        /* f3 - f2 - 1 gives the length of the full high water mark
+         * in the active file. */
 	if (!FormatLong(f2, himark, f3 - f2 - 1)) {
 	    syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "hi");
 	    return false;
@@ -383,6 +386,9 @@ NGrenumber(NEWSGROUP *ngp)
     if (lomark != l) {
 	if (lomark < l)
 	    syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "lo", l, lomark);
+        /* f4 - f3 gives the length of the full low water mark
+         * in the active file.
+         * f4 points at the space ' ' before the newsgroup flag. */
 	if (!FormatLong(f3, lomark, f4 - f3)) {
 	    syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "lo");
 	    return false;
