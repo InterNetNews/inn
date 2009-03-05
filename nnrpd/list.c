@@ -137,17 +137,22 @@ static bool
 CMD_list_single(char *group)
 {
     char *grplist[2] = { NULL, NULL };
-    int lo, hi, flag;
+    int lo, hi, count, flag;
 
     if (PERMspecified) {
         grplist[0] = group;
         if (!PERMmatch(PERMreadlist, grplist))
             return false;
     }
-    if (OVgroupstats(group, &lo, &hi, NULL, &flag) && flag != '=') {
+    if (OVgroupstats(group, &lo, &hi, &count, &flag) && flag != '=') {
         /* Convert flags to standardized ones, if possible. */
         if (flag == 'j' || flag == 'x')
             flag = 'n';
+        if (count == 0) {
+            if (lo == 0)
+                lo = 1;
+            hi = lo - 1;
+        }
         Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
         Printf("%s %010u %010u %c\r\n", group, hi, lo, flag);
         Printf(".\r\n");
