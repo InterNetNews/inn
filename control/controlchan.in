@@ -303,7 +303,7 @@ sub ctlperm {
     # warnings from undefined values later on in permission checking).
     if ($type eq 'newgroup' or $type eq 'rmgroup') {
         unless ($newsgroup) {
-            return ('drop', undef, undef);
+            return ('drop', undef, undef, undef);
         }
     }
 

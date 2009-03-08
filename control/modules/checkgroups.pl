@@ -19,11 +19,45 @@ use strict;
 
 sub control_checkgroups {
     my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article) = @_;
+        $article, $charset_from, $charset_to) = @_;
     my ($newsgrouppats) = @$par;
     my $head = $article->head;
     my @headers = split(/\r?\n/, $head->stringify);
     my @body = split(/\r?\n/, $article->stringify_body);
+    my @newbody;
+
+    my $charset_message;
+    if (defined $head->mime_attr('Content-Type.charset')) {
+        $charset_message = $head->mime_attr('Content-Type.charset');
+    }
+
+    foreach (@body) {
+        my ($ngname, $ngdesc) = split(/\s+/, $_, 2);
+        my $charset_newsgroup = $charset_message;
+
+        # Find the right charset if absent or forced by control.ctl.
+        foreach (@$charset_from) {
+            my ($group, $charset) = split /:/;
+            if ($ngname =~ /$group/) {
+                if (not defined $charset_newsgroup or $charset =~ /=force/) {
+                    $charset_newsgroup = $charset;
+                    $charset_newsgroup =~ s/\^(.+)\$/$1/;
+                    $charset_newsgroup =~ s/\\//g;
+                    $charset_newsgroup =~ s/=force//;
+                }
+                last;
+            }
+        }
+
+        if (not defined $charset_newsgroup
+            or not defined Encode::find_encoding($charset_newsgroup)) {
+            $charset_newsgroup = "cp1252";  # Default charset, when undefined.
+        }
+
+        # Properly encode the newsgroup description.
+        Encode::from_to($ngdesc, $charset_newsgroup, $charset_to);
+        push(@newbody, $ngname."\t".$ngdesc);
+    }
 
     if ($action eq 'mail') {
         my $mail = sendmail("checkgroups by $sender");
@@ -35,22 +69,23 @@ If you want to process it, feed the body
 of the message to docheckgroups while logged
 in as user ID "$INN::Config::newsuser":
 
-$INN::Config::pathbin/docheckgroups '$newsgrouppats' <<zRbJ
+$INN::Config::pathbin/docheckgroups -u '$newsgrouppats' <<zRbJ
 END
-        print $mail map { s/^~/~~/; "$_\n" } @body;
+        print $mail map { s/^~/~~/; "$_\n" } @newbody;
         print $mail "zRbJ\n";
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
+            # The checkgroups is written unprocessed (@body and not @newbody).
             logger($log, "checkgroups by $sender", $article);
         } else {
             logmsg("checkgroups by $sender");
         }
     } elsif ($action eq 'doit') {
         if (defined &local_docheckgroups) {
-            local_docheckgroups(\@body, $newsgrouppats, $log, $sender);
+            local_docheckgroups(\@newbody, $newsgrouppats, $log, $sender);
         } else {
-            docheckgroups(\@body, $newsgrouppats, $log, $sender);
+            docheckgroups(\@newbody, $newsgrouppats, $log, $sender);
         }
     }
 }
@@ -68,7 +103,7 @@ sub docheckgroups {
     open(OLDOUT, '>&STDOUT') or die $!;
     open(STDIN, "$tempfile.art") or die $!;
     open(STDOUT, ">$tempfile") or die $!;
-    my $st = system("$INN::Config::pathbin/docheckgroups", $newsgrouppats);
+    my $st = system("$INN::Config::pathbin/docheckgroups", "-u", $newsgrouppats);
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
     close(STDIN);
