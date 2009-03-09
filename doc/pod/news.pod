@@ -216,6 +216,14 @@ just use PAM, which B<ckpasswd> supports.)
 
 =item *
 
+Fixed a bug in C<ctlinnd renumber> which was resetting the low and high
+water marks of empty newsgroups in the F<active> file.  This command
+now makes the low water mark one more than the real high water mark.
+The answers to LIST ACTIVE, GROUP and LISTGROUP have also been fixed
+to do that.
+
+=item *
+
 Support for bzip2-compressed batches (with B<bunbatch>) has been added.
 
 =item *
