@@ -147,7 +147,8 @@ match_class(uint32_t text, const unsigned char *start,
 {
     bool reversed, allowrange;
     const unsigned char *p = start;
-    uint32_t first, last;
+    uint32_t first = 0;
+    uint32_t last;
 
     /* Check for an inverted character class (starting with ^).  If the
        character matches the character class, we return !reversed; that way,
