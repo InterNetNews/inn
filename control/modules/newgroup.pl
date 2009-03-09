@@ -79,19 +79,6 @@ sub control_newgroup {
     $modflag ||= '';
     my $modcmd = $modflag eq 'moderated' ? 'm' : 'y';
 
-    my $errmsg;
-    $errmsg= local_checkgroupname($groupname) if defined &local_checkgroupname;
-    if ($errmsg) {
-        $errmsg = checkgroupname($groupname) if $errmsg eq 'DONE';
-
-        if ($log) {
-            logger($log, "skipping newgroup ($errmsg)", $article);
-        } else {
-            logmsg("skipping newgroup ($errmsg)");
-        }
-        return;
-    }
-
     # Scan active to see what sort of change we are making.
     open(ACTIVE, $INN::Config::active) or logdie("Cannot open $INN::Config::active: $!");
     my @oldgroup;
@@ -103,8 +90,7 @@ sub control_newgroup {
     close ACTIVE;
 
     my $status;
-    my $ngdesc = 'No description.';
-    $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
+    my $ngdesc = '';
     my $olddesc = '';
     my $ngname = $groupname;
 
@@ -162,6 +148,31 @@ sub control_newgroup {
         $status = 'unapproved';
     } else {
         $status = 'be created';
+    }
+
+    # Check whether the group name and the description are not junk.
+    my $errmsg;
+    if (defined &local_checkgroupname) {
+        $errmsg = local_checkgroupname($groupname);
+    } else {
+        $errmsg = checkgroupname($groupname);
+    }
+    if (! $errmsg) {
+        if (defined &local_checkdescription) {
+            $errmsg = local_checkdescription($ngdesc);
+        } else {
+            $errmsg = checkdescription($ngdesc);
+        }
+    }
+    if ($errmsg) {
+        if ($log) {
+            logger($log, "skipping newgroup $groupname $modcmd"
+                   . " $sender (would $status): $errmsg", $article);
+        } else {
+            logmsg("skipping newgroup $groupname $modcmd $sender"
+                   . " (would $status): $errmsg");
+        }
+        return;
     }
 
     if ($action eq 'mail' and $status !~ /(no change|unapproved)/) {
@@ -241,35 +252,47 @@ sub update_desc {
 sub checkgroupname {
     local $_ = shift;
 
-    # whole-name checking
-    return 'Empty group name' if /^$/;
+    # Whole-name checking.
+    return 'Empty group name' if (! $_);
     return 'Whitespace in group name' if /\s/;
     return 'Unsafe group name' if /[\`\/:;]/;
     return 'Bad dots in group name' if /^\./ or /\.$/ or /\.\./;
 #    return 'Group name does not begin/end with alphanumeric'
 #        if (/^[a-zA-Z0-9].+[a-zA-Z0-9]$/;
-    return 'Group name begins in control., junk. or to.' if /^(?:control|junk|to)\./;
+    return 'Group name begins in control., example., junk. or to.'
+        if /^(?:control|example|junk|to)\./;
 #    return 'Group name too long' if length $_ > 128;
 
     my @components = split(/\./);
-    # prevent alt.a.b.c.d.e.f.g.w.x.y.z...
+    # Prevent alt.a.b.c.d.e.f.g.w.x.y.z...
     return 'Too many components' if $#components > 9;
 
-    # per-component checking
+    # Per-component checking.
     for (my $i = 0; $i <= $#components; $i++) {
         local $_ = $components[$i];
-        return 'all-numeric name component' if /^[0-9]+$/;
-#        return 'name component starts with non-alphanumeric' if /^[a-zA-Z0-9]/;
-#        return 'name component does not contain letter' if not /[a-zA-Z]/;
+        return 'All-numeric name component' if /^[0-9]+$/;
+#        return 'Name component starts with non-alphanumeric' if /^[a-zA-Z0-9]/;
+#        return 'Name component does not contain letter' if not /[a-zA-Z]/;
         return "`all' or `ctl' used as name component" if /^(?:all|ctl)$/;
-#        return 'name component longer than 30 characters' if length $_ > 30;
-#        return 'uppercase letter(s) in name' if /[A-Z]/;
-        return 'illegal character(s) in name' if /[^a-z0-9+_\-.]/;
-        # sigh, c++ etc must be allowed
-        return 'repeated punctuation in name' if /--|__|\+\+./;
-#        return 'repeated component(s) in name' if ($i + 2 <= $#components
+#        return 'Name component longer than 30 characters' if length $_ > 30;
+        return 'Uppercase letter(s) in name' if /[A-Z]/;
+        return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
+        # Sigh, c++ etc. must be allowed.
+        return 'Repeated punctuation in name' if /--|__|\+\+./;
+#        return 'Repeated component(s) in name' if ($i + 2 <= $#components
 #            and $_ eq $components[$i + 1] and $_ eq $components[$i + 2]);
     }
+    return '';
+}
+
+
+# Check the description.
+sub checkdescription {
+    local $_ = shift;
+
+    # Whole-name checking.
+    return 'Empty description' if (! $_);
+
     return '';
 }
 
