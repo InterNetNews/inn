@@ -3840,10 +3840,10 @@ static void doSomeWrites (Connection cxn)
 {
   bool doneSome = false ;
 
-  /* If there's a write pending we can't do anything now. */
+  /* If there's a write pending we can't do anything now.
+   * No addWorkCallback here (otherwise innfeed consumes too much CPU). */
   if ( writeIsPending (cxn->myEp) )
     {
-      addWorkCallback (cxn->myEp,cxnWorkProc,cxn) ;
       return ;
     }
   else if ( writesNeeded (cxn) ) /* something on a queue. */
