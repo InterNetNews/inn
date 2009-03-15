@@ -66,7 +66,7 @@ enableoverview:         true
 groupbaseexpiry:        true
 mergetogroups:          false
 nfswriter:              false
-overcachesize:          15
+overcachesize:          128
 #ovgrouppat:
 storeonxref:            true
 useoverchan:            false
@@ -79,7 +79,7 @@ allownewnews:           true
 articlemmap:            true
 clienttimeout:          1800
 initialtimeout:         10
-msgidcachesize:         10000
+msgidcachesize:         16000
 nfsreader:              false
 nfsreaderdelay:         60
 nnrpdcheckart:          true
