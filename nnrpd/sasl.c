@@ -305,20 +305,22 @@ SASLauth(int ac, char *av[])
 	sasl_maxout =
 	    (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ? NNTP_MAXLEN_COMMAND : *maxoutp;
 
-        /* Close out any existing article, report group stats.
-         * RFC 4643 requires the reset of any knowledge about the client. */
-        if (GRPcur) {
-            bool boolval;
-            ARTclose();
-            GRPreport();
-            OVctl(OVCACHEFREE, &boolval);
-            free(GRPcur);
-            GRPcur = NULL;
-            if (ARTcount)
-                syslog(L_NOTICE, "%s exit for AUTHINFO SASL articles %ld groups %ld",
-                       Client.host, ARTcount, GRPcount);
-            GRPcount = 0;
-            PERMgroupmadeinvalid = false;
+        if (sasl_ssf > 0) {
+            /* Close out any existing article, report group stats.
+             * RFC 4643 requires the reset of any knowledge about the client. */
+            if (GRPcur) {
+                bool boolval;
+                ARTclose();
+                GRPreport();
+                OVctl(OVCACHEFREE, &boolval);
+                free(GRPcur);
+                GRPcur = NULL;
+                if (ARTcount)
+                    syslog(L_NOTICE, "%s exit for AUTHINFO SASL articles %ld groups %ld",
+                           Client.host, ARTcount, GRPcount);
+                GRPcount = 0;
+                PERMgroupmadeinvalid = false;
+            }
         }
     } else {
 	/* Failure. */
