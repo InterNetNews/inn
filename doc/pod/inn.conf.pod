@@ -425,7 +425,7 @@ may be able to use the C<limit> command to see how many open file
 descriptors your operating system allows.  innd(8) also uses an open file
 descriptor for each incoming feed and outgoing channel or batch file, and
 if it runs out of open file descriptors, it may throttle and stop accepting
-new news.  The default value is C<128> (which is probably still too low if
+new news.  The default value is C<64> (which is probably still too low if
 you have a large number of file descriptors available).
 
 This setting is ignored unless I<ovmethod> is set to C<tradindexed>.
