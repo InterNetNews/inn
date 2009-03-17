@@ -1404,7 +1404,7 @@ port.
 Now, set port in inn.conf to the port you want to run innd on and add
 noreader: true (so that innd will never attempt to hand connections off to
 nnrpd).  Then, restart INN.  It will now be listening on the new port.
-You should now set up nnrpd to run via of xinetd, inetd, tcpserver, or
+You should now set up nnrpd to run via xinetd, inetd, tcpserver, or
 some other similar network connection handling daemon on port 119.  Make
 sure that nnrpd is run as the news user, not as root.  You don't have to
 pass any arguments to nnrpd (unless you want to).
