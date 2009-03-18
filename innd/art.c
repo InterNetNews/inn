@@ -2477,18 +2477,15 @@ ARTpost(CHANNEL *cp)
   if (data->CRwithoutLF > 0 || data->LFwithoutCR > 0) {
     if (data->CRwithoutLF > 0 && data->LFwithoutCR == 0)
       snprintf(cp->Error, sizeof(cp->Error),
-               "%d article includes CR without LF(%d)",
-               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+               "Article accepted but includes CR without LF(%d)",
                data->CRwithoutLF);
     else if (data->CRwithoutLF == 0 && data->LFwithoutCR > 0)
       snprintf(cp->Error, sizeof(cp->Error),
-               "%d article includes LF without CR(%d)",
-               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+               "Article accepted but includes LF without CR(%d)",
                data->LFwithoutCR);
     else
       snprintf(cp->Error, sizeof(cp->Error),
-               "%d article includes CR without LF(%d) and LF withtout CR(%d)",
-               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+               "Article accepted but includes CR without LF(%d) and LF withtout CR(%d)",
                data->CRwithoutLF, data->LFwithoutCR);
     ARTlog(data, ART_STRSTR, cp->Error);
   }
