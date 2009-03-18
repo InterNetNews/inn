@@ -1141,6 +1141,12 @@ ARTreject(Reject_type code, CHANNEL *cp)
 
   cp->Rejected++;
   cp->RejectSize += cp->Next - cp->Start;
+
+  /* Streaming is used.  Increase the reject counter for TAKETHIS. */
+  if (cp->Sendid.size > 3) {
+    cp->Takethis_Err++;
+  }
+
   switch (code) {
     case REJECT_DUPLICATE:
       cp->Duplicate++;
