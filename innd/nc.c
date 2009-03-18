@@ -202,14 +202,31 @@ NCbadid(CHANNEL *cp, char *p)
 static void
 NCpostit(CHANNEL *cp)
 {
-  bool	postok;
   const char	*response;
   char	buff[SMBUF];
 
+  if (Mode == OMthrottled) {
+    cp->Reported++;
+    NCwriteshutdown(cp, ModeReason);
+    return;
+  } else if (Mode == OMpaused) {
+    cp->Reported++;
+    cp->State = CSgetcmd;
+    /* In streaming mode, there is no NNTP_FAIL_TAKETHIS_DEFER and we must
+     * not reject the article. */
+    if (cp->Sendid.size > 3)
+      snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_ACTION, ModeReason);
+    else
+      snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_IHAVE_DEFER, ModeReason);
+    response = buff;
+    NCwritereply(cp, response);
+    return;
+  }
+
   /* Note that some use break, some use return here. */
-  if ((postok = ARTpost(cp)) != 0) {
+  if (ARTpost(cp)) {
     cp->Received++;
-    if (cp->Sendid.size > 3) { /* We be streaming */
+    if (cp->Sendid.size > 3) { /* We are streaming. */
       cp->Takethis_Ok++;
       snprintf(buff, sizeof(buff), "%d", NNTP_OK_TAKETHIS);
       cp->Sendid.data[0] = buff[0];
@@ -219,6 +236,8 @@ NCpostit(CHANNEL *cp)
     } else
       response = NNTP_TOOKIT;
   } else {
+    /* The answer to TAKETHIS is a response code followed by a
+     * message-ID.  The response code is already NNTP_FAIL_TAKETHIS_REJECT. */
     if (cp->Sendid.size)
       response = cp->Sendid.data;
     else
@@ -236,10 +255,7 @@ NCpostit(CHANNEL *cp)
     cp->Duplicate, buff);
     cp->Reported = 0;
   }
-  if (Mode == OMthrottled) {
-    NCwriteshutdown(cp, ModeReason);
-    return;
-  }
+
   cp->State = CSgetcmd;
   NCwritereply(cp, response);
 }
@@ -287,6 +303,7 @@ NChead(CHANNEL *cp)
     char	        *p;
     TOKEN		token;
     ARTHANDLE		*art;
+    char                *buff = NULL;
 
     /* Snip off the Message-ID. */
     for (p = cp->In.data + cp->Start + strlen("head"); ISWHITE(*p); p++)
@@ -294,6 +311,16 @@ NChead(CHANNEL *cp)
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
+
+    if (Mode == OMthrottled) {
+        NCwriteshutdown(cp, ModeReason);
+        return;
+    } else if (Mode == OMpaused) {
+        xasprintf(&buff, "%d %s", NNTP_FAIL_ACTION, ModeReason);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
 
     /* Get the article token and retrieve it. */
     if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
@@ -335,6 +362,16 @@ NCstat(CHANNEL *cp)
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
+
+    if (Mode == OMthrottled) {
+        NCwriteshutdown(cp, ModeReason);
+        return;
+    } else if (Mode == OMpaused) {
+        xasprintf(&buff, "%d %s", NNTP_FAIL_ACTION, ModeReason);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
 
     /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
@@ -454,6 +491,7 @@ static void
 NCihave(CHANNEL *cp)
 {
     char	*p;
+    char        *buff = NULL;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char	*filterrc;
     size_t	msglen;
@@ -466,6 +504,17 @@ NCihave(CHANNEL *cp)
     cp->Start = cp->Next;
     if (NCbadid(cp, p))
 	return;
+
+    if (Mode == OMthrottled) {
+        NCwriteshutdown(cp, ModeReason);
+        return;
+    } else if (Mode == OMpaused) {
+        cp->Ihave_Deferred++;
+        xasprintf(&buff, "%d %s", NNTP_FAIL_IHAVE_DEFER, ModeReason);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
 
     if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
 	cp->Refused++;
@@ -954,6 +1003,8 @@ NCproc(CHANNEL *cp)
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCclearwip(cp);
+        /* The answer to TAKETHIS is a response code followed by a
+         * message-ID. */
 	if (cp->Sendid.size > 3)
 	  NCwritereply(cp, cp->Sendid.data);
 	else
@@ -968,11 +1019,7 @@ NCproc(CHANNEL *cp)
 	 may also include command line */
       readmore = false;
       movedata = false;
-      if (Mode == OMpaused) { /* defer processing while paused */
-	RCHANremove(cp); /* don't bother trying to read more for now */
-	SCHANadd(cp, Now.tv_sec + innconf->pauseretrytime, &Mode, NCproc, NULL);
-	return;
-      } else if (Mode == OMthrottled) {
+      if (Mode == OMthrottled) {
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
 	NCwriteshutdown(cp, ModeReason);
@@ -1306,6 +1353,7 @@ static void
 NCcheck(CHANNEL *cp)
 {
     char		*p;
+    char                *buff = NULL;
     size_t		idlen, msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char		*filterrc;
@@ -1341,6 +1389,17 @@ NCcheck(CHANNEL *cp)
                  NNTP_FAIL_CHECK_REFUSE, p);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
+    }
+
+    if (Mode == OMthrottled) {
+        NCwriteshutdown(cp, ModeReason);
+        return;
+    } else if (Mode == OMpaused) {
+        cp->Check_deferred++;
+        xasprintf(&buff, "%d %s", NNTP_FAIL_CHECK_DEFER, ModeReason);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
     }
 
 #if defined(DO_PERL)
