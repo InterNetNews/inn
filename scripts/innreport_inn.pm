@@ -351,7 +351,7 @@ sub collect($$$$$$) {
     }
 
     # 437 Duplicate article
-    if ($left =~ /(\S+) <[^>]+> 437 Duplicate(?: article)?$/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Duplicate(?: article)?$/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -359,7 +359,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Unapproved for
-    if ($left =~ /(\S+) <[^>]+> 437 Unapproved for \"([^\"]+)\"$/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Unapproved for \"([^\"]+)\"$/o) {
       my ($server, $group) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -368,7 +368,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Too old -- ...
-    if ($left =~ /(\S+) <[^>]+> 437 Too old -- /o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Too old -- /o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -376,7 +376,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Unwanted site ... in path
-    if ($left =~ /(\S+) <[^>]+> 437 Unwanted site (\S+) in path$/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Unwanted site (\S+) in path$/o) {
       my ($server, $site) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -385,7 +385,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Unwanted newsgroup "..."
-    if ($left =~ /(\S+) <[^>]+> 437 Unwanted newsgroup \"(\S+)\"$/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Unwanted newsgroup \"(\S+)\"$/o) {
       my ($server, $group) = ($1, $2);
       ($group) = split(/,/, $group);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -395,7 +395,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Unwanted distribution "..."
-    if ($left =~ /(\S+) <[^>]+> 437 Unwanted distribution \"(\S+)\"$/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Unwanted distribution \"(\S+)\"$/o) {
       my ($server, $dist) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -404,7 +404,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Linecount x != y +- z
-    if ($left =~ /(\S+) <[^>]+> 437 Linecount/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Linecount/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -412,7 +412,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 No colon-space in "xxxx" header
-    if ($left =~ /(\S+) <[^>]+> 437 No colon-space in \"[^\"]+\" header/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) No colon-space in \"[^\"]+\" header/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -421,7 +421,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Article posted in the future -- "xxxxx"
-    if ($left =~ /(\S+) <[^>]+> 437 Article posted in the future -- \"[^\"]+\"/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Article posted in the future -- \"[^\"]+\"/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_posted_future{$server}++;
@@ -430,7 +430,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 article includes "....."
-    if ($left =~ /(\S+) <[^>]+> 437 article includes/o) {
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) article includes/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_strange_strings{$server}++;
@@ -913,6 +913,8 @@ sub collect($$$$$$) {
     # Cleanfeed status reports
     return 1 if $left =~ /^filter: status/o;
     return 1 if $left =~ /^filter: Reloading bad files/o;
+    return 1 if $left =~ /^filter: Saved EMP database/o;
+    return 1 if $left =~ /^filter: Restored EMP database/o;
   }
   ########
   ## innfeed
@@ -1104,7 +1106,7 @@ sub collect($$$$$$) {
   ## innxmit
   if ($prog eq "innxmit") {
     # 437 Duplicate article
-    if ($left =~ /(\S+) rejected [^\s]+ \(.*?\) 437 Duplicate article$/o) {
+    if ($left =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Duplicate article$/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1112,7 +1114,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Unapproved for
-    if ($left =~ /(\S+) rejected [^\s]+ \(.*\) 437 Unapproved for \"(.*?)\"$/o) {
+    if ($left =~ /(\S+) rejected [^\s]+ \(.*\) (?:437|439) Unapproved for \"(.*?)\"$/o) {
       my ($server, $group) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1121,7 +1123,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Too old -- ...
-    if ($left =~ /(\S+) rejected [^\s]+ \(.*\) 437 Too old -- \".*?\"$/o) {
+    if ($left =~ /(\S+) rejected [^\s]+ \(.*\) (?:437|439) Too old -- \".*?\"$/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1130,7 +1132,7 @@ sub collect($$$$$$) {
     }
     # 437 Unwanted site ... in path
     if ($left =~
-      /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted site (\S+) in path$/o) {
+      /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted site (\S+) in path$/o) {
       my ($server, $site) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1140,7 +1142,7 @@ sub collect($$$$$$) {
     }
     # 437 Unwanted newsgroup "..."
     if ($left =~
-      /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted newsgroup \"(\S+)\"$/o) {
+      /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted newsgroup \"(\S+)\"$/o) {
       my ($server, $group) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1150,7 +1152,7 @@ sub collect($$$$$$) {
     }
     # 437 Unwanted distribution "..."
     if ($left =~
-      /(\S+) rejected [^\s]+ \(.*?\) 437 Unwanted distribution \"(\S+)\"$/o) {
+      /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted distribution \"(\S+)\"$/o) {
       my ($server, $dist) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1159,7 +1161,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # xx rejected foo.bar/12345 (foo/bar/12345) 437 Unwanted distribution "..."
-    if ($left =~ /^(\S+) rejected .* 437 Unwanted distribution \"(\S+)\"$/o) {
+    if ($left =~ /^(\S+) rejected .* (?:437|439) Unwanted distribution \"(\S+)\"$/o) {
       my ($server, $dist) = ($1, $2);
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1168,7 +1170,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Linecount x != y +- z
-    if ($left =~ /(\S+) rejected [^\s]+ \(.*?\) 437 Linecount/o) {
+    if ($left =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Linecount/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_badart{$server}++;
@@ -1176,7 +1178,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # 437 Newsgroup name illegal -- "xxx"
-    if ($left =~ /(\S+) rejected .* 437 Newsgroup name illegal -- "[^\"]*"$/) {
+    if ($left =~ /(\S+) rejected .* (?:437|439) Newsgroup name illegal -- "[^\"]*"$/) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_others{$server}++;
@@ -1827,52 +1829,52 @@ sub collect($$$$$$) {
       return 1;
     }
     # rejected 437 Unwanted newsgroup
-    if ($left =~ /rejected 437 Unwanted newsgroup \"(.*)\"$/o) {
+    if ($left =~ /rejected (?:437|439) Unwanted newsgroup \"(.*)\"$/o) {
       $rnews_bogus_ng{$1}++;
       return 1;
     }
     # rejected 437 Unapproved for "xx"
-    if ($left =~ /rejected 437 Unapproved for \"(.*)\"$/o) {
+    if ($left =~ /rejected (?:437|439) Unapproved for \"(.*)\"$/o) {
       $rnews_unapproved{$1}++;
       return 1;
     }
     # rejected 437 Unwanted distribution
-    if ($left =~ /rejected 437 Unwanted distribution (.*)$/o) {
+    if ($left =~ /rejected (?:437|439) Unwanted distribution (.*)$/o) {
       $rnews_bogus_dist{$1}++;
       return 1;
     }
     # rejected 437 Bad "Date"
-    if ($left =~ /rejected 437 Bad \"Date\" (.*)$/o) {
+    if ($left =~ /rejected (?:437|439) Bad \"Date\" (.*)$/o) {
       $rnews_bogus_date{$1}++;
       return 1;
     }
     # rejected 437 Article posted in the future
-    if ($left =~ /rejected 437 Article posted in the future -- \"(.*)\"$/o) {
+    if ($left =~ /rejected (?:437|439) Article posted in the future -- \"(.*)\"$/o) {
       $rnews_bogus_date{"(future) $1"}++;
       return 1;
     }
     # rejected 437 Too old -- "..."
-    if ($left =~ /rejected 437 Too old -- (.*)$/o) {
+    if ($left =~ /rejected (?:437|439) Too old -- (.*)$/o) {
       $rnews_too_old++;
       return 1;
     }
     # rejected 437 Linecount...
-    if ($left =~ /rejected 437 (Linecount) \d+ \!= \d+/o) {
+    if ($left =~ /rejected (?:437|439) Linecount \d+ \!= \d+/o) {
       $rnews_linecount++;
       return 1;
     }
     # rejected 437 Duplicate
-    if ($left =~ /rejected 437 Duplicate$/o) {
+    if ($left =~ /rejected (?:437|439) Duplicate$/o) {
       $rnews_duplicate++;
       return 1;
     }
     # rejected 437 Duplicate article
-    if ($left =~ /rejected 437 (Duplicate article)/o) {
+    if ($left =~ /rejected (?:437|439) Duplicate article/o) {
       $rnews_duplicate++;
       return 1;
     }
     # rejected 437 No colon-space ...
-    if ($left =~ /rejected 437 No colon-space in \"(.*)\" header$/o) {
+    if ($left =~ /rejected (?:437|439) No colon-space in \"(.*)\" header$/o) {
       $rnews_no_colon_space++;
       return 1;
     }
@@ -1894,19 +1896,19 @@ sub collect($$$$$$) {
       return 1;
     }
     # rejected 437 ECP rejected
-    return 1 if $left =~ m/rejected 437 ECP rejected/o;
+    return 1 if $left =~ m/rejected (?:437|439) ECP rejected/o;
     # rejected 437 "Subject" header too long
     return 1 if $left =~ m/header too long/o;
     # rejected 437 Too long line in header 1163 bytes
-    return 1 if $left =~ m/rejected 437 Too long line in header/o;
+    return 1 if $left =~ m/rejected (?:437|439) Too long line in header/o;
     # rejected 437 Too many newsgroups (meow)
-    return 1 if $left =~ m/rejected 437 Too many newsgroups/o;
+    return 1 if $left =~ m/rejected (?:437|439) Too many newsgroups/o;
     # rejected 437 Space before colon in "<a" header
-    return 1 if $left =~ m/rejected 437 Space before colon in/o;
+    return 1 if $left =~ m/rejected (?:437|439) Space before colon in/o;
     # rejected 437 EMP (phl)
-    return 1 if $left =~ m/rejected 437 EMP/o;
+    return 1 if $left =~ m/rejected (?:437|439) EMP/o;
     # rejected 437 Scoring filter (8)
-    return 1 if $left =~ m/rejected 437 Scoring filter/o;
+    return 1 if $left =~ m/rejected (?:437|439) Scoring filter/o;
     # bad_article missing Message-ID
     return 1 if $left =~ m/bad_article missing Message-ID/o;
     # cant unspool saving to xxx
