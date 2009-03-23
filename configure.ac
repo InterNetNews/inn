@@ -503,7 +503,7 @@ AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize hstrerror \
 dnl Probe for fseeko and ftello, which take off_t instead of int.
 if test x"$inn_enable_largefiles" = xyes ; then
     AC_FUNC_FSEEKO
-    if test x"$ac_cv_func_fseeko" != xyes ; then
+    if test x"$ac_cv_sys_largefile_source" = xunknown ; then
         INN_TYPE_FPOS_T_LARGE
         AC_CHECK_DECLS([fseeko, ftello])
         AC_LIBOBJ([fseeko])
