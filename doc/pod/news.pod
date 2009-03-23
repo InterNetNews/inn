@@ -136,7 +136,7 @@ better IPv6 support to some utilities.
 
 =item *
 
-INN now uses S<autoconf 2.59> or later for configuration.  As a result,
+INN now uses S<autoconf 2.61> or later for configuration.  As a result,
 some C<configure> options have changed slightly and more of the standard
 B<--*dir> options should be supported in lieu of the old INN-specific
 options.  See C<configure --help> for the available options.

@@ -27,7 +27,7 @@ dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
 AC_INIT([INN], [2.5.0])
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 AC_REVISION($Revision$)
 AC_CONFIG_AUX_DIR([support])
 

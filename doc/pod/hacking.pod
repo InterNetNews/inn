@@ -17,7 +17,7 @@ or view it with ViewVC at:
 
     <http://inn.eyrie.org/viewcvs>
 
-You will need S<autoconf 2.59> or later to use the development tree.  After
+You will need S<autoconf 2.61> or later to use the development tree.  After
 checking out the tree, run C<./autogen> to generate the necessary autoconf
 files.
 
@@ -63,7 +63,7 @@ F<configure> or F<include/config.h.in> when sending patches to INN;
 instead, note in your patch that those files must be regenerated.  These
 (and all other) generated files should not be checked into Subversion.
 
-At the time of this writing, S<autoconf 2.59> or later is required.
+At the time of this writing, S<Autoconf 2.61> or later is required.
 
 The supporting files for autoconf are in the F<support> subdirectory,
 including the files F<config.guess> and F<config.sub> to determine the
