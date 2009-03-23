@@ -14,6 +14,7 @@
 #include "portable/wait.h"
 #include <netdb.h>
 #include <signal.h>
+#include <netinet/tcp.h>
 
 #if HAVE_GETSPNAM
 # include <shadow.h>
@@ -535,6 +536,7 @@ StartConnection(void)
     struct sockaddr *sas = (struct sockaddr *) &sss;
     socklen_t length;
     size_t size;
+    int nodelay = 1;
 
     memset(&Client, 0, sizeof(Client));
     strlcpy(Client.host, "?", sizeof(Client.host));
@@ -602,6 +604,10 @@ StartConnection(void)
         Client.port = network_sockaddr_port(sac);
         Client.serverport = network_sockaddr_port(sas);
     }
+
+    /* Setting TCP_NODELAY to nnrpd fixes a problem of slow downloading
+     * of overviews and slow answers on some architectures (like BSD/OS). */
+    setsockopt(STDIN_FILENO, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
 
     notice("%s (%s) connect", Client.host, Client.ip);
 
