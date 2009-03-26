@@ -32,7 +32,6 @@ lib/pwrite
 lib/qio
 lib/setenv
 lib/snprintf
-lib/strerror
 lib/strlcat
 lib/strlcpy
 lib/tst

@@ -16,7 +16,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strerror.t lib/strlcat.t \
+	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/tradindexed.t overview/xref.t util/innbind.t
@@ -205,12 +205,6 @@ lib/snprintf.o: ../lib/snprintf.c
 
 lib/snprintf.t: lib/snprintf.o lib/snprintf-t.o libtest.o $(LIBINN)
 	$(LINK) lib/snprintf.o lib/snprintf-t.o libtest.o $(LIBINN)
-
-lib/strerror.o: ../lib/strerror.c
-	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strerror.c
-
-lib/strerror.t: lib/strerror.o lib/strerror-t.o libtest.o $(LIBINN)
-	$(LINK) lib/strerror.o lib/strerror-t.o libtest.o $(LIBINN)
 
 lib/strlcat.o: ../lib/strlcat.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcat.c

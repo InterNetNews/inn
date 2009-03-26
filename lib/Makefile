@@ -21,7 +21,7 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c commands.c conca
 EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
 		getpagesize.c hstrerror.c inet_aton.c inet_ntoa.c memcmp.c \
 		mkstemp.c pread.c pwrite.c setenv.c setproctitle.c \
-		strcasecmp.c strerror.c strlcat.c strlcpy.c strspn.c \
+		strcasecmp.c strlcat.c strlcpy.c strspn.c \
 		strtok.c symlink.c
 
 OBJECTS       = $(LIBOBJS) $(ALLOCA) $(SOURCES:.c=.o)
@@ -352,8 +352,6 @@ setproctitle.o: setproctitle.c ../include/config.h \
 strcasecmp.o: strcasecmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
-strerror.o: strerror.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h
 strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h

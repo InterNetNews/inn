@@ -33,8 +33,7 @@ files.  Specifically (but possibly not comprehensively):
    backends/shrinkfile.c, frontends/scanspool.in, lib/alloca.c,
    lib/concat.c, lib/hstrerror.c, lib/inet_aton.c, lib/inet_ntoa.c,
    lib/memcmp.c, lib/pread.c, lib/pwrite.c, lib/setenv.c, lib/seteuid.c,
-   lib/strerror.c, lib/strlcat.c and lib/strlcpy.c are in the public 
-   domain.
+   lib/strlcat.c and lib/strlcpy.c are in the public domain.
 
    lib/snprintf.c may be used for any purpose as long as the author's
    notice remains intact in all source code distributions.

@@ -519,7 +519,6 @@ lib/seteuid.c                         seteuid replacement
 lib/setproctitle.c                    setproctitle replacement
 lib/snprintf.c                        snprintf and vsnprintf replacement
 lib/strcasecmp.c                      Case-insenstive string comparison (BSD)
-lib/strerror.c                        String representation of errno
 lib/strlcat.c                         strlcat replacement
 lib/strlcpy.c                         strlcpy replacement
 lib/strspn.c                          Skip bytes in a string (BSD)
@@ -861,7 +860,6 @@ tests/lib/qio-t.c                     Tests for lib/qio.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
-tests/lib/strerror-t.c                Tests for lib/strerror.c
 tests/lib/strlcat-t.c                 Tests for lib/strlcat.c
 tests/lib/strlcpy-t.c                 Tests for lib/strlcpy.c
 tests/lib/tst-t.c                     Tests for lib/tst.c

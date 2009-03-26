@@ -289,7 +289,6 @@ tests/lib/pwrite.t
 tests/lib/qio.t
 tests/lib/setenv.tr
 tests/lib/snprintf.t
-tests/lib/strerror.t
 tests/lib/strlcat.t
 tests/lib/strlcpy.t
 tests/lib/tst.t
