@@ -274,7 +274,7 @@ perlAccess(char *user, struct vector *access_vec)
         strlcat(buffer, val, BIG_BUFFER);
         strlcat(buffer, "\"\n", BIG_BUFFER);
  
-        vector_add(access_vec, xstrdup(buffer));
+        vector_add(access_vec, buffer);
     }
 
     free(buffer);

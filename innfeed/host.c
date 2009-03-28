@@ -3369,20 +3369,20 @@ static void hostPrintStatus (Host host, FILE *fp)
   if (host->ipAddrs) {
     int  i;
     char ip_addr[INET6_ADDRSTRLEN];
-    char *family;
+    const char *family;
 
     for(i = 0; host->ipAddrs[i] != NULL; i++) {
       switch(host->ipAddrs[i]->sa_family) {
         case AF_INET:
-          family = xstrdup("IPv4");
+          family = "IPv4";
           break;
 #ifdef HAVE_INET6
         case AF_INET6:
-          family = xstrdup("IPv6");
+          family = "IPv6";
           break;
 #endif
         default:
-          family = xstrdup("????");
+          family = "????";
           break;
       }
 

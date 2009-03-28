@@ -332,7 +332,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
         strlcat(buffer, PyString_AsString(value), BIG_BUFFER);
         strlcat(buffer, "\"\n", BIG_BUFFER);
 
-        vector_add(access_vec, xstrdup(buffer));
+        vector_add(access_vec, buffer);
     }
 
     free(buffer);
