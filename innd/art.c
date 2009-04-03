@@ -624,6 +624,8 @@ ARTstore(CHANNEL *cp)
 /*
 **  Parse, check, and possibly store in the system header table a header that
 **  starts at cp->CurHeader.  size includes the trailing "\r\n".
+**  Even though an error has already occurred (cp->Error is set), we go on
+**  parsing headers (so that we can find the message-ID, the path, etc.).
 */
 static void
 ARTcheckheader(CHANNEL *cp, int size)
@@ -639,10 +641,6 @@ ARTcheckheader(CHANNEL *cp, int size)
 
   /* Check whether we are receiving the article via IHAVE or TAKETHIS. */
   ihave = (cp->Sendid.size > 3) ? false : true;
-
-  /* If we've already found an error, don't parse any more headers. */
-  if (*cp->Error != '\0')
-    return;
 
   /* Find first colon */
   if ((colon = memchr(header, ':', size)) == NULL || !ISWHITE(colon[1])) {
@@ -1961,8 +1959,9 @@ ARTpost(CHANNEL *cp)
 
   /* If we don't have Path or Message-ID, we can't continue. */
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
-    /* cp->Error is set since Path and Message-ID are required header and one
-       of two is not found at ARTclean(). */
+    /* cp->Error is set since Path: and Message-ID: are required headers and one
+     * of them is not found at ARTclean().
+     * We cannot remember the message-ID of this article. */
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
@@ -1971,6 +1970,8 @@ ARTpost(CHANNEL *cp)
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
+    /* We do not remember the message-ID of this article because another
+     * peer may send it with a good Path: header. */
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
@@ -2407,6 +2408,10 @@ ARTpost(CHANNEL *cp)
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
       }
       ARTlog(data, ART_REJECT, cp->Error);
+      if (innconf->remembertrash && (Mode == OMrunning) &&
+          !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+          syslog(L_ERROR, "%s cant write history %s %m",
+                 LogName, HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_OTHER, cp);
       return false;
     }

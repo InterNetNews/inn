@@ -1000,6 +1000,15 @@ NCproc(CHANNEL *cp)
       /* If error is set, we're rejecting this article.  There is no need
        * to call ARTlog() as it has already been done during ARTparse(). */
       if (*cp->Error != '\0') {
+        if (innconf->remembertrash && (Mode == OMrunning)
+            && HDR_FOUND(HDR__MESSAGE_ID)) {
+            HDR_PARSE_START(HDR__MESSAGE_ID);
+            if (!HIScheck(History, HDR(HDR__MESSAGE_ID))
+                && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+                syslog(L_ERROR, "%s cant write history %s %m",
+                       LogName, HDR(HDR__MESSAGE_ID));
+            HDR_PARSE_END(HDR__MESSAGE_ID);
+        }
 	ARTreject(REJECT_OTHER, cp);
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
@@ -1021,6 +1030,8 @@ NCproc(CHANNEL *cp)
       readmore = false;
       movedata = false;
       if (Mode == OMthrottled) {
+        /* We do not remember the message-ID of this article because it has not
+         * been stored. */
         ARTreject(REJECT_OTHER, cp);
         ARTlogreject(cp, ModeReason);
 	/* Clear the work-in-progress entry. */
