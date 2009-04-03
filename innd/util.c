@@ -45,14 +45,21 @@ Join(char *text)
 
 
 /*
-**  Return a short name that won't overrun our bufer or syslog's buffer.
+**  Return a short name that won't overrun our buffer or syslog's buffer.
 **  q should either be p, or point into p where the "interesting" part is.
+**  q may also be NULL.
 */
 char *
 MaxLength(const char *p, const char *q)
 {
     static char buff[80];
     unsigned int i;
+
+    /* Return an empty string when p is NULL. */
+    if (p == NULL) {
+        *buff = '\0';
+        return buff;
+    }
 
     /* Already short enough? */
     i = strlen(p);
@@ -61,7 +68,7 @@ MaxLength(const char *p, const char *q)
         return Join(buff);
     }
 
-    /* Simple case of just want the begining? */
+    /* Simple case of just want the beginning? */
     if (q == NULL || (unsigned)(q - p) < sizeof buff - 4) {
         strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
@@ -73,7 +80,7 @@ MaxLength(const char *p, const char *q)
         strlcat(buff, &p[i - 10], sizeof(buff));
     }
     else {
-        /* Not in last 10 bytes, so use double elipses. */
+        /* Not in last 10 bytes, so use double ellipses. */
         strlcpy(buff, p, sizeof(buff) - 16);
         strlcat(buff, "...", sizeof(buff) - 13);
         strlcat(buff, &q[-5], sizeof(buff) - 3);
