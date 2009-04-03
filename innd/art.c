@@ -332,12 +332,14 @@ ARTlog(const ARTDATA *data, char code, const char *text)
   Done = code == ART_ACCEPT || code == ART_JUNK;
   if (text)
     i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
-      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code, data->Feedsite,
+      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       text, Done ? "" : "\n");
   else
     i = fprintf(Log, "%.15s.%03d %c %s %s%s",
-      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code, data->Feedsite,
+      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       Done ? "" : "\n");
   if (i == EOF || (Done && !BufferedLogs && fflush(Log)) || ferror(Log)) {
@@ -402,30 +404,31 @@ ARTlogreject(CHANNEL *cp, const char *text)
     int hopcount;
     char **hops;
 
-    /* We can't do anything unless we know the message ID. */
-    if (!HDR_FOUND(HDR__MESSAGE_ID))
-        return;
+    /* We may still haven't received the message-ID of the rejected article. */
+    if (HDR_FOUND(HDR__MESSAGE_ID))
+        HDR_PARSE_START(HDR__MESSAGE_ID);
 
     /* Set up the headers that we want to use.  We only need to parse the path
        on rejections if logipaddr is false or we can't find a good host. */
-    HDR_PARSE_START(HDR__MESSAGE_ID);
     if (innconf->logipaddr && cp->Address.ss_family != 0)
         data->Feedsite = RChostname(cp);
     else {
-        if (!HDR_FOUND(HDR__PATH))
-            return;
-        HDR_PARSE_START(HDR__PATH);
-        hopcount =
-            ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
-        HDR_PARSE_END(HDR__PATH);
-        hops = data->Path.List;
-        if (hopcount > 0 && hops != NULL && hops[0] != NULL)
-            data->Feedsite = hops[0];
-        else
-            data->Feedsite = "localhost";
+        if (HDR_FOUND(HDR__PATH)) {
+            HDR_PARSE_START(HDR__PATH);
+            hopcount =
+                ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
+            HDR_PARSE_END(HDR__PATH);
+            hops = data->Path.List;
+            if (hopcount > 0 && hops != NULL && hops[0] != NULL)
+                data->Feedsite = hops[0];
+            else
+                data->Feedsite = "localhost";
+        }
     }
     ARTlog(data, ART_REJECT, text != NULL ? text : cp->Error);
-    HDR_PARSE_END(HDR__MESSAGE_ID);
+
+    if (HDR_FOUND(HDR__MESSAGE_ID))
+        HDR_PARSE_END(HDR__MESSAGE_ID);
 }
 
 /*
@@ -1955,6 +1958,7 @@ ARTpost(CHANNEL *cp)
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
     /* cp->Error is set since Path and Message-ID are required header and one
        of two is not found at ARTclean(). */
+    ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
   }
@@ -1962,6 +1966,7 @@ ARTpost(CHANNEL *cp)
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
+    ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
   }
@@ -2487,6 +2492,7 @@ ARTpost(CHANNEL *cp)
       snprintf(cp->Error, sizeof(cp->Error),
                "Article accepted but includes CR without LF(%d) and LF withtout CR(%d)",
                data->CRwithoutLF, data->LFwithoutCR);
+    /* We have another ARTlog() for the same article just after. */
     ARTlog(data, ART_STRSTR, cp->Error);
   }
   ARTlog(data, Accepted ? ART_ACCEPT : ART_JUNK, (char *)NULL);
