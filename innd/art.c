@@ -2113,8 +2113,9 @@ ARTpost(CHANNEL *cp)
     } else {
       ARTparsedist(HDR(HDR__DISTRIBUTION), HDR_LEN(HDR__DISTRIBUTION),
 	&data->Distribution);
-      if (ME.Distributions &&
-	!DISTwantany(ME.Distributions, data->Distribution.List)) {
+      if (ME.Distributions && data->Distribution.List != NULL
+          && *data->Distribution.List != NULL
+	  && !DISTwantany(ME.Distributions, data->Distribution.List)) {
 	snprintf(cp->Error, sizeof(cp->Error),
                  "%d Unwanted distribution \"%s\"",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
@@ -2433,7 +2434,8 @@ ARTpost(CHANNEL *cp)
     snprintf(cp->Error, sizeof(cp->Error), "%d cant store article",
              ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_ACTION);
     ARTlog(data, ART_REJECT, cp->Error);
-    if ((Mode == OMrunning) && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+    if (innconf->remembertrash && (Mode == OMrunning)
+        && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_OTHER, cp);
