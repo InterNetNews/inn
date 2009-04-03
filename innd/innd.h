@@ -693,6 +693,7 @@ extern void		ARTclose(void);
 extern void		ARTsetup(void);
 extern void		ARTprepare(CHANNEL *cp);
 extern void		ARTparse(CHANNEL *cp);
+extern void             ARTlogreject(CHANNEL *cp, const char *text);
 extern void		ARTreject(Reject_type, CHANNEL *);
 
 extern bool		CHANsleeping(CHANNEL *cp);

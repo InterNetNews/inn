@@ -394,8 +394,8 @@ ARTparsepath(const char *p, int size, LISTBUFFER *list)
 **  We're rejecting an article.  Log a message to the news log about that,
 **  including all the interesting article information.
 */
-static void
-ARTlogreject(CHANNEL *cp)
+void
+ARTlogreject(CHANNEL *cp, const char *text)
 {
     ARTDATA *data = &cp->Data;
     HDRCONTENT *hc = data->HdrContent;
@@ -424,7 +424,7 @@ ARTlogreject(CHANNEL *cp)
         else
             data->Feedsite = "localhost";
     }
-    ARTlog(data, ART_REJECT, cp->Error);
+    ARTlog(data, ART_REJECT, text != NULL ? text : cp->Error);
     HDR_PARSE_END(HDR__MESSAGE_ID);
 }
 
@@ -1011,7 +1011,7 @@ ARTparse(CHANNEL *cp)
     ARTchecksize(cp);
     if (cp->State == CSgotarticle || cp->State == CSgotlargearticle)
         if (cp->Error[0] != '\0')
-            ARTlogreject(cp);
+            ARTlogreject(cp, NULL);
 }
 
 /*

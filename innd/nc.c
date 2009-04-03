@@ -997,7 +997,8 @@ NCproc(CHANNEL *cp)
 	break;
       }
 
-      /* If error is set, we're rejecting this article. */
+      /* If error is set, we're rejecting this article.  There is no need
+       * to call ARTlog() as it has already been done during ARTparse(). */
       if (*cp->Error != '\0') {
 	ARTreject(REJECT_OTHER, cp);
 	cp->State = CSgetcmd;
@@ -1020,10 +1021,11 @@ NCproc(CHANNEL *cp)
       readmore = false;
       movedata = false;
       if (Mode == OMthrottled) {
+        ARTreject(REJECT_OTHER, cp);
+        ARTlogreject(cp, ModeReason);
 	/* Clear the work-in-progress entry. */
 	NCclearwip(cp);
 	NCwriteshutdown(cp, ModeReason);
-	ARTreject(REJECT_OTHER, cp);
 	return;
       }
 
@@ -1156,8 +1158,11 @@ NCproc(CHANNEL *cp)
 	if (!failed) {
 	  NCwritereply(cp, NNTP_OK_XBATCHED);
 	  cp->Received++;
-	} else
+	} else {
+          /* Only reject, no call to ARTlog() because it will not be
+           * useful for XBATCH -- errors were logged to news.err. */
           ARTreject(REJECT_OTHER, cp);
+        }
       }
       syslog(L_NOTICE, "%s accepted batch size %d", CHANname(cp),
 	cp->XBatchSize);
