@@ -1399,6 +1399,11 @@ DISTwanted(char **list, char *p)
 static bool
 DISTwantany(char **site, char **article)
 {
+  /* An empty distributions list is allowed. */
+  if (*article == NULL) {
+    return true;
+  }
+
   for ( ; *article; article++)
     if (DISTwanted(site, *article))
       return true;
