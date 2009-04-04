@@ -2,6 +2,7 @@
     mta:	"/usr/lib/sendmail -oi -oem %s"
 
 incominglogfrequency:	200
+listvalue:      [ one two three ]
 
 # testing comment
 

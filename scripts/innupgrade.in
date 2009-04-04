@@ -52,6 +52,7 @@ sub fix_inn_conf {
     for $raw (@$input) {
         $_ = $raw;
         $line++;
+        # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
             push (@$output, $_);
             next;
@@ -62,9 +63,18 @@ sub fix_inn_conf {
             push (@$output, $_);
             next;
         }
+
         my ($indent, $key, $space, $value) = ($1, $2, $3, $4);
+
+        # Empty value.
         if ($value eq '') {
             push (@$output, "#$_\n");
+            next;
+        }
+
+        # A list value (on only one line).
+        if ($value =~ /^\[/) {
+            push (@$output, "$_\n");
             next;
         }
 
