@@ -330,7 +330,7 @@ with the previously listed functions.
 
 The old authentication and access control functionality has been
 combined with the new F<readers.conf> mechanism by Erik Klavon
-<erik@eriq.org>; bug reports should however go to <inn-bugs@isc.org>,
+<erik@eriq.org>; bug reports should however go to <inn-workers@lists.isc.org>,
 not Erik.
 
 The remainder of this section is an introduction to the new mechanism

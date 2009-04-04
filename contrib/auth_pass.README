@@ -1,13 +1,22 @@
 This directory contains sample authorization programs for use with the
-'authinfo generic' command in nnrpd.
+AUTHINFO GENERIC command in nnrpd.
 
-The first program in here is from Doug Needham I have successfully
+The first program in here is from Doug Needham.  I have successfully
 tested this program when connecting to nnrpd by hand, but I've not
 taken the time to figure out how to get my newsreader to use
-'authinfo generic'.  There is no Makefile here and no serious
-testing of it, so it's not integrated. If you have success using
-it and care to share what you've done. Please drop me a note
-(<inn@isc.org>). Thanks.
+AUTHINFO GENERIC.  There is no Makefile here and no serious
+testing of it, so it's not integrated.  If you have success using
+it and care to share what you've done.  Please drop me a note
+(<inn@isc.org>).  Thanks.
+
+
+Notes:
+  * AUTHINFO GENERIC is currently deprecated in favour of
+    AUTHINFO USER/PASS and AUTHINFO SASL, as described
+    in RFC 4643.
+
+  * In case you write to <inn@isc.org>, please CC
+    <inn-workers@lists.isc.org> too.
 
 
 ---------------------------------------------------------------------------

@@ -61,7 +61,7 @@ INN has been confirmed to work on the following operating systems:
     UX/4800 R11 and up
 
 If you have gotten INN working on an operating system other than the ones
-listed above, please let us know at <inn-bugs@isc.org>.
+listed above, please let us know at <inn-workers@lists.isc.org>.
 
 =head1 Before You Begin
 
@@ -176,7 +176,7 @@ libraries before building INN will be sufficient.
 =head1 Unpacking the Distribution
 
 Released versions of INN are available from L<ftp://ftp.isc.org/isc/inn/>.
-New major releases will be announced on <inn-announce@isc.org> (see
+New major releases will be announced on <inn-announce@lists.isc.org> (see
 F<README>) when they're made.
 
 If you want a more cutting-edge version, you can obtain current
@@ -449,7 +449,7 @@ Enables support for IPv6 in B<innd>, B<innfeed>, B<nnrpd>, and several of the
 supporting programs.  This option should be considered developmental at
 present.  For more information see F<doc/IPv6-info> (and if you have any
 particularly good or bad news to report, please let us know at
-<inn-bugs@isc.org>).
+<inn-workers@lists.isc.org>).
 
 =back
 

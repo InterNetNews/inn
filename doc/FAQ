@@ -191,7 +191,7 @@ versions of INN available at:
     <http://www.eyrie.org/~eagle/software/inn/>
 
 For additional documentation beyond what is distributed with INN, start at
-<http://www.isc.org/inn.html> and follow the links.
+<https://www.isc.org/software/inn/> and follow the links.
 
 The documentation that comes with INN is fairly technical in nature and
 lacking in some more general details on configuring news servers.  Some of
@@ -242,41 +242,39 @@ Subject: 1.6. What mailing lists are there for INN?
 
 There are several INN-related mailing lists:
 
-inn-announce@isc.org
+inn-announce@lists.isc.org
     Where announcements about INN are set (no posting allowed).
 
-inn-workers@isc.org
-    Discussion of INN development (postings by members only).
+inn-workers@lists.isc.org
+    Discussion of INN development.   It is also where to send bug reports
+    and patches for consideration for inclusion into INN (postings by
+    members only).  If you're an INN expert and have the time to help out
+    other users, we encourage you to join this mailing list to answer
+    questions.  (You may also want to read the newsgroup
+    news.software.nntp, which gets a lot of INN-related questions.)
 
-inn-patches@isc.org
-    Where to send patches for consideration for inclusion into INN (open
-    posting).
+inn-committers@lists.isc.org
+    Subversion commit messages for INN are sent to this list (only the
+    automated messages are sent here, no regular posting).
 
-inn-committers@isc.org
-    Subversion commit messages for INN are sent to this list (no posting
-    allowed).
-
-inn-bugs@isc.org
-    Where to send bug reports (open posting).  If you're an INN expert and
-    have the time to help out other users, we encourage you to join this
-    mailing list to answer questions.  (You may also want to read the
-    newsgroup news.software.nntp, which gets a lot of INN-related
-    questions.)
+inn-bugs@lists.isc.org
+    Trac tickets for INN are sent to this list (only the automated
+    messages are sent here, no regular posting).  Bug reports should be
+    sent to the inn-workers mailing list.
 
 To join these lists, send a subscription request to the `-request'
 address.  The addresses for the above lists are:
 
-    inn-workers-request@isc.org
-    inn-patches-request@isc.org
-    inn-committers-request@isc.org
-    inn-bugs-request@isc.org
-    inn-announce-request@isc.org
+    inn-announce-request@lists.isc.org
+    inn-workers-request@lists.isc.org
+    inn-committers-request@lists.isc.org
+    inn-bugs-request@lists.isc.org
 
 inn-workers tends to be moderate volume (3-5 messages a day, but varying a
-lot depending on what's being discussed).  inn-committers is occasionally
-higher volume but entirely automatically generated commit notifications.
-inn-announce is a low-volume moderated list containing only major
-announcements.  The others see sporadic, mostly low, traffic.
+lot depending on what's being discussed).  inn-bugs and inn-committers are
+occasionally higher volume but entirely automatically generated Trac
+or Subversion notifications.  inn-announce is a low-volume moderated list
+containing only major announcements.
 
 ------------------------------
 
@@ -318,7 +316,7 @@ Fourth, from the README:
     Internet Systems Consortium has also commissioned a DHCP server
     implementation and handles the official support/release of BIND.  You
     can learn more about the ISC's goals and accomplishments from the web
-    page at <http://www.isc.org/>.
+    page at <https://www.isc.org/>.
 
 The ISC provides ftp and web space and mailing lists and archives.
 Donations to help support all of that are greatly appreciated.
@@ -349,7 +347,7 @@ with something small (getting INN to work correctly on a platform where it
 doesn't currently and which you have available is often a great start, or
 working on one of the supporting programs or scripts that's a bit easier
 to wrap one's mind around than the core INN daemons).  Patches to INN
-should be sent to inn-patches@isc.org, or put on an ftp or web site
+should be sent to inn-workers@lists.isc.org, or put on an ftp or web site
 somewhere and the URL sent to inn-workers if they're extremely large.
 
 ------------------------------
@@ -495,8 +493,8 @@ Subject: 3. Specific Problems
 This section contains specific problems that are frequently reported when
 using INN, and includes fixes or suggestions for fixes.  Candidates for
 inclusion in this section are any problems reported frequently on
-news.software.nntp or inn-bugs@isc.org.  Contributions, including fixes,
-are very welcome.
+news.software.nntp or inn-workers@lists.isc.org.  Contributions, including
+fixes, are very welcome.
 
 ------------------------------
 
