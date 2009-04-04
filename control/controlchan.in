@@ -114,7 +114,11 @@ while (<STDIN>) {
     if ($hdr{'control'} =~ /\s/) {
         $hdr{'control'} =~ /^(\S+)\s+(.+)?/;
         $progname = lc $1;
-        @progparams = split(/\s+/, lc $2) if $2;
+        # Newsgroups names are case-sensitive.
+        @progparams = split(/\s+/, $2) if $2;
+        if ($progname eq 'newgroup' and defined $progparams[1]) {
+            $progparams[1] = lc $progparams[1];
+        }
     } else {
         $progname = lc $hdr{'control'};
     }
