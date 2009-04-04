@@ -249,12 +249,14 @@ sub checkgroupname {
     # Whole-name checking.
     return 'Empty group name' if (! $_);
     return 'Whitespace in group name' if /\s/;
-    return 'Unsafe group name' if /[\`\/:;]/;
+#    return 'Unsafe group name' if /[\`\/:;]/;
     return 'Bad dots in group name' if /^\./ or /\.$/ or /\.\./;
 #    return 'Group name does not begin/end with alphanumeric'
 #        if (/^[a-zA-Z0-9].+[a-zA-Z0-9]$/;
-    return 'Group name begins in control., example., junk. or to.'
-        if /^(?:control|example|junk|to)\./;
+    return 'Group name begins in control., example. or to.'
+        if /^(?:control|example|to)\./;
+    return 'Group name is control, example, junk, poster or to'
+        if /^(?:control|example|junk|poster|to)$/;
 #    return 'Group name too long' if length $_ > 128;
 
     my @components = split(/\./);
@@ -272,7 +274,7 @@ sub checkgroupname {
         return 'Uppercase letter(s) in name' if /[A-Z]/;
         return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
         # Sigh, c++ etc. must be allowed.
-        return 'Repeated punctuation in name' if /--|__|\+\+./;
+#        return 'Repeated punctuation in name' if /--|__|\+\+./;
 #        return 'Repeated component(s) in name' if ($i + 2 <= $#components
 #            and $_ eq $components[$i + 1] and $_ eq $components[$i + 2]);
     }
