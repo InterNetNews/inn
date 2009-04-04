@@ -111,12 +111,6 @@ sub control_newgroup {
     if ($found) {
       ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
 
-      if ($ngdesc) {
-          $ngdesc =~ s/\s+$//;
-          $ngdesc =~ s/\s+\(moderated\)\s*$//i;
-          $ngdesc .= ' (Moderated)' if $modflag eq 'moderated';
-      }
-
       # Scan newsgroups to see the previous description, if any.
       open(NEWSGROUPS, $INN::Config::newsgroups)
           or logdie("Cannot open $INN::Config::newsgroups: $!");
@@ -159,9 +153,9 @@ sub control_newgroup {
     }
     if (! $errmsg) {
         if (defined &local_checkdescription) {
-            $errmsg = local_checkdescription($ngdesc);
+            $errmsg = local_checkdescription($ngdesc, $modcmd);
         } else {
-            $errmsg = checkdescription($ngdesc);
+            $errmsg = checkdescription($ngdesc, $modcmd);
         }
     }
     if ($errmsg) {
@@ -288,10 +282,19 @@ sub checkgroupname {
 
 # Check the description.
 sub checkdescription {
-    local $_ = shift;
+    my ($desc, $flag) = @_;
 
     # Whole-name checking.
-    return 'Empty description' if (! $_);
+    return 'Empty description' if (! $desc);
+
+    return 'Moderation status mismatch'
+        if ($desc =~ / \(Moderated\)$/) and $flag eq 'y';
+
+    return 'Moderation status mismatch'
+        if ($desc !~ / \(Moderated\)$/) and $flag eq 'm';
+
+    return 'Reserved "(Moderated)" substring used'
+        if ($desc =~ /\(Moderated\).+$/);
 
     return '';
 }
