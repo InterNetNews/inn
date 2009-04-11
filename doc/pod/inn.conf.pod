@@ -704,16 +704,16 @@ that are broken out separately after the initial alphabetized list.
 =item I<addnntppostingdate>
 
 Whether to add an NNTP-Posting-Date: header to all local posts.  This is a
-boolean value and the default is true.  Note that INN either does not add
-this header or adds the name or IP address of the client.  There is no
-intrinsic support for obfuscating the name of the client.  That has to be
-done with a user-written Perl filter, if desired.
+boolean value and the default is true.
 
 =item I<addnntppostinghost>
 
 Whether to add an NNTP-Posting-Host: header to all local posts giving the
 FQDN or IP address of the system from which the post was received.  This
-is a boolean value and the default is true.
+is a boolean value and the default is true.  Note that INN either does not
+add this header or adds the name or IP address of the client.  There is no
+intrinsic support for obfuscating the name of the client.  That has to be
+done with a user-written Perl filter, if desired.
 
 =item I<checkincludedtext>
 
