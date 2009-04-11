@@ -76,8 +76,8 @@ test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 dnl A few tests need to happen before any of the libtool tests in order to
 dnl avoid error messages.  We therefore lift them up to the top of the file.
 AC_PROG_CC
-AC_AIX
-AC_ISC_POSIX
+AC_USE_SYSTEM_EXTENSIONS
+AC_SEARCH_LIBS([strerror], [cposix])
 INN_PROG_CC_C_O
 AC_CANONICAL_HOST
 _LT_DECL_SED
@@ -419,7 +419,7 @@ INN_C_GNU_VAMACROS
 dnl Checks for structures.
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
-AC_CHECK_MEMBERS([struct stat.st_blksize]
+AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff])
 AC_CHECK_MEMBERS([struct sockaddr.sa_len], , ,
 [#include <sys/types.h>
