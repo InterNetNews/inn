@@ -39,7 +39,7 @@ if { (eval $ac_compile) 2> out/conftest.err; } \
   fi
 else
   # Append any errors to the config.log.
-  cat out/conftest.err 1>&AC_FD_CC
+  cat out/conftest.err 1>&AS_MESSAGE_LOG_FD
   inn_cv_compiler_c_o=no
 fi
 CFLAGS="$save_CFLAGS"

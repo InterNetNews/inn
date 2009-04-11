@@ -56,7 +56,7 @@ main(void)
 	    while(size < 8192)
 		size += st.st_blksize;
     }
-#endif /* HAVE_ST_BLKSIZE */
+#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
 
     /* Start with small, equally sized lines exactly equal to the buffer.
        Then a line equal in size to the buffer, then a short line and
