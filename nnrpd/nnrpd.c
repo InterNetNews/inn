@@ -799,7 +799,7 @@ SetupDaemon(void)
 	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
 	ExitWithStats(1, true);
     }
-    OVextra = overview_extra_fields();
+    OVextra = overview_extra_fields(false);
     if (OVextra == NULL) {
 	/* Overview_extra_fields should already have logged something
 	 * useful. */

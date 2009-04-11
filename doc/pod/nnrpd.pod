@@ -230,8 +230,9 @@ C<overview.fmt>, or C<subscriptions> to get a list of when newsgroups
 where created, a file specifying default distribution patterns, a list
 of valid distributions, the moderators list, the message of the day information
 for readers, a one-per-line description of the current set of newsgroups,
-a listing of the F<overview.fmt> file, or a list of the automatic group
-subscriptions.
+a listing of the overview fields for which the overview database is consistent
+(see I<extraoverviewadvertised> in F<inn.conf> for more information), or
+a list of the automatic group subscriptions.
 
 The command C<list active> is equivalent to the C<list> command. This
 is a common extension.

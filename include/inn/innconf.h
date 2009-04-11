@@ -59,6 +59,10 @@ struct innconf {
     /* Article Storage */
     long cnfscheckfudgesize;    /* Additional CNFS integrity checking */
     bool enableoverview;        /* Store overview info for articles? */
+    struct vector
+      *extraoverviewadvertised; /* Extra overview fields for LIST OVERVIEW.FMT */
+    struct vector
+      *extraoverviewhidden;     /* Extra overview fields silently generated */
     bool groupbaseexpiry;       /* Do expiry by newsgroup? */
     bool mergetogroups;         /* Refile articles from to.* into to */
     bool nfswriter;             /* Use NFS writer functionality */

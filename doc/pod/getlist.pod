@@ -41,7 +41,10 @@ amongst other, may be available.  Moreover, a uwildmat(3) pattern I<pattern>
 may also be usable for some of these listing files.
 
 For more information on the formats of these files, see distrib.pats(5),
-moderators(5), motd.news(5), overview.fmt(5) and subscriptions(5).
+moderators(5), motd.news(5) and subscriptions(5).  The overview fields
+obtained with C<overview.fmt> are the ones for which the overview database
+is consistent (see I<extraoverviewadvertised> in F<inn.conf> for more
+information).
 
 =head1 OPTIONS
 
@@ -100,7 +103,7 @@ $Id$
 =head1 SEE ALSO
 
 active(5), active.times(5), distrib.pats(5), distributions(5), inn.conf(5),
-moderators(5), motd.news(5), newsgroups(5), nnrpd(8), overview.fmt(5),
-passwd.nntp(5), subscriptions(5), uwildmat(3).
+moderators(5), motd.news(5), newsgroups(5), nnrpd(8), passwd.nntp(5),
+subscriptions(5), uwildmat(3).
 
 =cut

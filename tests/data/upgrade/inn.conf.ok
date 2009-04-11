@@ -6,10 +6,13 @@ listvalue:      [ one two three ]
 
 # testing comment
 
-# Added by innupgrade
+# Added by innupgrade.
 hismethod: hisv6
 
-# Moved from sasl.conf by innupgrade
+# Moved from overview.fmt by innupgrade.
+extraoverviewadvertised: [ Path Keywords Injection-Info ]
+
+# Moved from sasl.conf by innupgrade.
 tlscafile:		/usr/local/news/lib/ca.cert
 tlscapath:		/usr/local/news/lib/cas
 

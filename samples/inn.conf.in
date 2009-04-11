@@ -63,6 +63,8 @@ wipexpire:              10
 
 cnfscheckfudgesize:     0
 enableoverview:         true
+extraoverviewadvertised: [ ]
+extraoverviewhidden:    [ ]
 groupbaseexpiry:        true
 mergetogroups:          false
 nfswriter:              false

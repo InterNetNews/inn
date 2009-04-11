@@ -133,7 +133,7 @@ makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
   ../include/inn/paths.h ../include/inn/qio.h ../include/inn/storage.h \
-  ../include/inn/wire.h
+  ../include/inn/vector.h ../include/inn/wire.h
 prunehistory.o: prunehistory.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \

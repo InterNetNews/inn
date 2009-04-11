@@ -21,6 +21,7 @@
 #include "inn/paths.h"
 #include "inn/qio.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
 #include "inn/wire.h"
 
 static const char usage[] = "\
@@ -54,7 +55,6 @@ typedef struct _ARTOVERFIELD {
 #define DEFAULT_SEGSIZE	10000;
 
 bool NukeBadArts;
-char *SchemaPath = NULL;
 char *ActivePath = NULL;
 char *HistoryPath = NULL;
 struct history *History;
@@ -77,7 +77,8 @@ static char             EXPIRES[] = "Expires";
 static char             LINES[] = "Lines";
 static char		MESSAGEID[] = "Message-ID";
 static char		XREF[] = "Xref";
-static ARTOVERFIELD	*ARTfields; /* overview fields listed in overview.fmt */
+static ARTOVERFIELD	*ARTfields; /* Overview fields for which overview data
+                                     * is generated. */
 static size_t		ARTfieldsize;
 static ARTOVERFIELD     *Bytesp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Datep = (ARTOVERFIELD *)NULL;
@@ -85,9 +86,8 @@ static ARTOVERFIELD     *Expp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Linesp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Msgidp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Xrefp = (ARTOVERFIELD *)NULL;
-static ARTOVERFIELD	*Missfields; /* Header fields not listed in
-                                      * overview.fmt, but ones that we need
-                                      * (e.g. Message-ID:). */
+static ARTOVERFIELD	*Missfields; /* Header fields not used in overview
+                                      * but that we need (e.g. Expires:). */
 static size_t		Missfieldsize = 0;
 
 static void OverAddAllNewsgroups(void);
@@ -393,39 +393,23 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 static void
 ARTreadschema(bool Overview)
 {
-    FILE                        *F;
-    char                        *p;
+    const struct cvector        *standardoverview;
+    const struct vector         *extraoverview;
     ARTOVERFIELD                *fp;
-    int                         i;
-    char                        buff[SMBUF];
-    bool                        foundxreffull = false;
+    unsigned int                i;
 
     if (Overview) {
-	/* Open file, count lines. */
-	if ((F = fopen(SchemaPath, "r")) == NULL)
-            sysdie("cannot open %s", SchemaPath);
-	for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-	    continue;
-	fseeko(F, 0, SEEK_SET);
-	ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
+	/* Count the number of overview fields and allocate ARTfields. */
+        standardoverview = overview_fields();
+        extraoverview = overview_extra_fields(true);
+	ARTfields = xmalloc((standardoverview->count + extraoverview->count + 1)
+                            * sizeof(ARTOVERFIELD));
 
 	/* Parse each field. */
-	for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
-	    /* Ignore blank and comment lines. */
-	    if ((p = strchr(buff, '\n')) != NULL)
-		*p = '\0';
-	    if ((p = strchr(buff, '#')) != NULL)
-		*p = '\0';
-	    if (buff[0] == '\0')
-		continue;
-	    if ((p = strchr(buff, ':')) != NULL) {
-		*p++ = '\0';
-		fp->NeedHeadername = (strcmp(p, "full") == 0);
-	    }
-	    else
-		fp->NeedHeadername = false;
-	    fp->Headername = xstrdup(buff);
-	    fp->HeadernameLength = strlen(buff);
+        for (i = 0, fp = ARTfields; i < standardoverview->count; i++) {
+            fp->NeedHeadername = false;
+	    fp->Headername = xstrdup(standardoverview->strings[i]);
+	    fp->HeadernameLength = strlen(standardoverview->strings[i]);
 	    fp->Header = (char *)NULL;
 	    fp->HasHeader = false;
 	    fp->HeaderLength = 0;
@@ -433,24 +417,37 @@ ARTreadschema(bool Overview)
              * because we will need them afterwards; we will then not
              * have to compare fp->Headername to both "Bytes" and "Lines"
              * for each fp. */
-            if (strncasecmp(buff, BYTES, strlen(BYTES)) == 0)
+            if (strncasecmp(standardoverview->strings[i],
+                            BYTES, strlen(BYTES)) == 0)
                 Bytesp = fp;
-            if (strncasecmp(buff, DATE, strlen(DATE)) == 0)
+            if (strncasecmp(standardoverview->strings[i],
+                            DATE, strlen(DATE)) == 0)
                 Datep = fp;
-            if (strncasecmp(buff, EXPIRES, strlen(EXPIRES)) == 0)
-                Expp = fp;
-            if (strncasecmp(buff, LINES, strlen(LINES)) == 0)
+            if (strncasecmp(standardoverview->strings[i],
+                            LINES, strlen(LINES)) == 0)
                 Linesp = fp;
-            if (strncasecmp(buff, MESSAGEID, strlen(MESSAGEID)) == 0)
+            if (strncasecmp(standardoverview->strings[i],
+                            MESSAGEID, strlen(MESSAGEID)) == 0)
                 Msgidp = fp;
-            if (strncasecmp(buff, XREF, strlen(XREF)) == 0) {
-                Xrefp = fp;
-                foundxreffull = fp->NeedHeadername;
-            }
 	    fp++;
 	}
+        for (i = 0; i < extraoverview->count; i++) {
+            fp->NeedHeadername = true;
+            fp->Headername = xstrdup(extraoverview->strings[i]);
+            fp->HeadernameLength = strlen(extraoverview->strings[i]);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            if (strncasecmp(extraoverview->strings[i],
+                            XREF, strlen(XREF)) == 0)
+                Xrefp = fp;
+            if (strncasecmp(extraoverview->strings[i],
+                            EXPIRES, strlen(EXPIRES)) == 0)
+                Expp = fp;
+            fp++;
+        }
+
 	ARTfieldsize = fp - ARTfields;
-	fclose(F);
     }
     if (Bytesp == (ARTOVERFIELD *)NULL)
         Missfieldsize++;
@@ -462,8 +459,6 @@ ARTreadschema(bool Overview)
         Missfieldsize++;
     if (Msgidp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
-    if (Overview && (Xrefp == (ARTOVERFIELD *)NULL || !foundxreffull))
-        die("Xref:full must be included in %s", SchemaPath);
     if (Missfieldsize > 0) {
 	Missfields = xmalloc(Missfieldsize * sizeof(ARTOVERFIELD));
         fp = Missfields;
@@ -834,7 +829,6 @@ main(int argc, char **argv)
     HistoryPath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     ActivePath = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     TmpDir = innconf->pathtmp;
-    SchemaPath = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
     RebuiltflagPath = concatpath(innconf->pathrun, INN_PATH_REBUILDOVERVIEW);
 
     OverTmpSegSize = DEFAULT_SEGSIZE;
@@ -914,7 +908,7 @@ main(int argc, char **argv)
             ensure_news_user_grp(true, true);
     }
 
-    /* Read in the overview schema */
+    /* Read in the overview schema. */
     ARTreadschema(DoOverview);
     
     if (DoOverview && !WriteStdout) {

@@ -50,7 +50,7 @@ void OVclose(void);
 
 /* Overview data manipulation functions. */
 const struct cvector *overview_fields(void);
-struct vector *overview_extra_fields(void);
+struct vector *overview_extra_fields(bool hidden);
 struct buffer *overview_build(ARTNUM number, const char *article,
                               size_t length, const struct vector *extra,
                               struct buffer *);

@@ -191,6 +191,6 @@ $Id$
 =head1 SEE ALSO
 
 active(5), ctlinnd(8), dbz(3), history(5), inn.conf(5), innd(8),
-makedbz(8), ovdb_init(8), overchan(8), overview.fmt(5).
+makedbz(8), ovdb_init(8), overchan(8).
 
 =cut

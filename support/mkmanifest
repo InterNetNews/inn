@@ -239,7 +239,6 @@ site/nnrpd_dynamic.py
 site/nntpsend.ctl
 site/nocem.ctl
 site/ovdb.conf
-site/overview.fmt
 site/passwd.nntp
 site/radius.conf
 site/readers.conf

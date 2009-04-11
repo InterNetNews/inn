@@ -36,7 +36,6 @@ PATH_DISTRIBUTIONS	= ${PATHETC}/distributions
 PATH_NEWSFEEDS		= ${PATHETC}/newsfeeds
 PATH_READERSCONF	= ${PATHETC}/readers.conf
 PATH_NNRPDTRACK		= ${PATHETC}/nnrpd.track
-PATH_SCHEMA		= ${PATHETC}/overview.fmt
 PATH_NNTPPASS		= ${PATHETC}/passwd.nntp
 PATH_CTLWATCH		= ${PATHETC}/innwatch.ctl
 PATH_ACTSYNC_IGN	= ${PATHETC}/actsync.ign
@@ -60,7 +59,7 @@ PATH_NEWSGROUPS		= ${PATHDB}/newsgroups
 REST		= \
 	newsfeeds incoming.conf nnrpd.track passwd.nntp \
 	inn.conf moderators innreport.conf innreport.css localgroups \
-	control.ctl control.ctl.local expire.ctl nntpsend.ctl overview.fmt \
+	control.ctl control.ctl.local expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats distributions actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
@@ -81,10 +80,10 @@ REST_INSTALLED	= \
 	$D$(PATHETC)/nntpsend.ctl \
 	$D$(PATHETC)/innreport.conf $D$(PATHHTTP)/innreport.css \
 	$D$(PATHETC)/localgroups \
-	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_SCHEMA) \
+	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
 	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
-	$D$(PATH_OVERVIEWCTL) $D$(PATH_CYCBUFFCONFIG) $D$(PATH_BUFFINDEXED) \
+	$D$(PATH_CYCBUFFCONFIG) $D$(PATH_BUFFINDEXED) \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
@@ -182,7 +181,6 @@ $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_RADIUS_CONF):	radius.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPUB) $? $@
-$D$(PATH_SCHEMA):	overview.fmt	; $(COPY_RPUB) $? $@
 $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPUB) $? $@
 $D$(PATH_CONTROLCTLLOCAL): control.ctl.local	; $(COPY_RPUB) $? $@
 $D$(PATH_CTLWATCH):	innwatch.ctl	; $(COPY_RPUB) $? $@
@@ -268,7 +266,6 @@ newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@
 nntpsend.ctl:	../samples/nntpsend.ctl		; $(COPY) $? $@
 nocem.ctl:	../samples/nocem.ctl		; $(COPY) $? $@
-overview.fmt:	../samples/overview.fmt		; $(COPY) $? $@
 parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@

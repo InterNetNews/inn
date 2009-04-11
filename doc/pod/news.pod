@@ -16,7 +16,7 @@ C<MIME::Parser> module.  Packages are available from most distributions,
 or you can install the module directly from CPAN (C<MIME-tools> in
 F<modules/by-module/MIME/>, for instance on ftp.perl.org).
 
-Perl 5.8.0 or later is recommended for INN.  If you are using an earlier
+S<Perl 5.8.0> or later is recommended for INN.  If you are using an earlier
 version, you will also need the C<Encode> module for correct processing of
 control messages.  (It is included with Perl itself in 5.8.0 and later.)
 
@@ -27,6 +27,16 @@ I<pathetc> and, at the same time, update your F<control.ctl> and
 F<moderators> files.  Also make sure that your F<active.times>,
 F<distrib.pats> and F<newsgroups> files are properly encoded in UTF-8, as
 it is strongly recommended by S<RFC 3977>.
+
+=item *
+
+The F<overview.fmt> file is no longer used by INN.  Two new parameters
+have been added to F<inn.conf>:  I<extraoverviewadvertised> and
+I<extraoverviewhidden>.  Although B<innupgrade> takes care of the
+change during C<make update>, you should make sure that your overview
+database is consistent with all the fields declared in F<overview.fmt>
+because they will all be advertised.  See the inn.conf(5) man page
+for more information about these parameters.
 
 =item *
 
@@ -160,7 +170,7 @@ B<controlchan> recognizes the new application/news-groupinfo entity
 described in USEPRO and can handle character set conversions of newsgroup
 descriptions.  The C<MIME::Parser> and C<Encode> modules are used.
 Processing control messages has been greatly improved, especially
-checkgroups: the F<active> and F<newsgroups> files are now properly
+checkgroups:  the F<active> and F<newsgroups> files are now properly
 updated when they are processed.
 
 A new F<control.ctl.local> file has also been added in I<pathetc>.  Rules
@@ -232,12 +242,30 @@ Support for I<runasuser> and I<runasgroup> parameters in F<inn.conf>
 allows to set the news user and the news group under which the news server
 runs.  Thanks to Ivan Shmakov for this feature.
 
-New other options have been added to configuration files: I<ignore> in
+New other options have been added to configuration files:  I<ignore> in
 F<incoming.conf>, I<logstats> and I<nnrpdflags> in F<inn.conf>, and
 I<log-time-format> in F<innfeed.conf>.
 
 The B<--with-http-dir> option has also been added to C<configure> to set
 I<pathhttp> in F<inn.conf>.
+
+The I<nntpactsync> parameter has been renamed to I<incominglogfrequency>
+in F<inn.conf>.
+
+=item *
+
+The F<sasl.conf> file has been removed in favour of new parameters in
+F<inn.conf> to deal with TLS support:  I<tlscafile>, I<tlscapath>,
+I<tlscertfile> and I<tlskeyfile>.
+
+The F<overview.fmt> file has been removed in favour of new parameters
+in F<inn.conf> to deal with transition periods to accommodate
+overview reconfigurations.  It is now possible to specify on the one
+hand the fields that should be advertised by B<nnrpd> in response to
+LIST OVERVIEW.FMT and used for HDR, XHDR and XPAT requests (see the new
+I<extraoverviewadvertised> parameter) and on the other hand the
+additional fields that should be silently generated (see the new
+I<extraoverviewhidden> parameter).
 
 =item *
 
@@ -261,7 +289,7 @@ functions as well as more of the portability and utility function layer.
 
 =item *
 
-A lot of work has been done on documentation: improvements of existing
+A lot of work has been done on documentation:  improvements of existing
 documents, new documentation, and proof-reading.  Sample configuration
 files are also more detailed.
 

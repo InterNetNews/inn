@@ -496,6 +496,6 @@ $Id$
 =head1 SEE ALSO
 
 active(5), active.times(5), buffchan(8), incoming.conf(5), innd(8),
-inndcomm(3), inn.conf(5), newsfeeds(5), nnrpd(8), overview.fmt(5).
+inndcomm(3), inn.conf(5), newsfeeds(5), nnrpd(8).
 
 =cut

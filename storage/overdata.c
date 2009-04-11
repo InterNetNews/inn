@@ -13,23 +13,20 @@
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "inn/qio.h"
 #include "inn/wire.h"
 #include "inn/vector.h"
 #include "inn/libinn.h"
-#include "inn/ov.h"
 #include "ovinterface.h"
-#include "inn/paths.h"
 
 
-/* The standard overview fields. */
+/* The standard overview fields.  The order of these fields is important. */
 static const char * const fields[] = {
     "Subject", "From", "Date", "Message-ID", "References", "Bytes", "Lines"
 };
 
 
 /*
-**  Return a vector of the standard overview fields. Note there is no
+**  Return a vector of the standard overview fields.  Note there is no
 **  way to free up the resulting data structure.
 */
 const struct cvector *
@@ -51,71 +48,50 @@ overview_fields(void)
 }
 
 /*
-**  Parse the overview schema and return a vector of the additional fields
-**  over the standard ones.  Caller is responsible for freeing the vector.
+**  Return a vector of the additional fields over the standard ones.
+**  The order of these fields is important.
+**
+**  Xref: is mandatory for INN and we make it the first extra field
+**  after the seven overview fields defined in RFC 3977.
+**
+**  Caller is responsible for freeing the vector.
 */
 struct vector *
-overview_extra_fields(void)
+overview_extra_fields(bool hidden)
 {
     struct vector *list = NULL;
-    struct vector *result = NULL;
-    char *schema = NULL;
-    char *line, *p;
-    QIOSTATE *qp = NULL;
-    unsigned int field;
-    bool full = false;
+    unsigned int i;
 
-    schema = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
-    qp = QIOopen(schema);
-    if (qp == NULL) {
-        syswarn("cannot open %s", schema);
-        goto done;
-    }
     list = vector_new();
-    for (field = 0, line = QIOread(qp); line != NULL; line = QIOread(qp)) {
-        while (ISWHITE(*line))
-            line++;
-        p = strchr(line, '#');
-        if (p != NULL)
-            *p = '\0';
-        p = strchr(line, '\n');
-        if (p != NULL)
-            *p = '\0';
-        if (*line == '\0')
-            continue;
-        p = strchr(line, ':');
-        if (p != NULL) {
-            *p++ = '\0';
-            full = (strcmp(p, "full") == 0);
-        }
-        if (field >= ARRAY_SIZE(fields)) {
-            if (!full)
-                warn("additional field %s not marked with :full", line);
-            vector_add(list, line);
-        } else {
-            if (strcasecmp(line, fields[field]) != 0)
-                warn("field %d is %s, should be %s", field, line,
-                     fields[field]);
-        }
-        field++;
-    }
-    if (QIOerror(qp)) {
-        if (QIOtoolong(qp)) {
-            warn("line too long in %s", schema);
-        } else {
-            syswarn("error while reading %s", schema);
-        }
-    }
-    result = list;
 
-done:
-    if (schema != NULL)
-        free(schema);
-    if (qp != NULL)
-        QIOclose(qp);
-    if (result == NULL && list != NULL)
-        vector_free(list);
-    return result;
+    if (hidden) {
+        vector_resize(list, innconf->extraoverviewadvertised->count
+                            + innconf->extraoverviewhidden->count + 1);
+    } else {
+        vector_resize(list, innconf->extraoverviewadvertised->count + 1);
+    }
+
+    vector_add(list, "Xref");
+
+    if (innconf->extraoverviewadvertised->strings != NULL) {
+        for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
+            if (innconf->extraoverviewadvertised->strings[i] != NULL) {
+                vector_add(list, innconf->extraoverviewadvertised->strings[i]);
+            }
+        }
+    }
+
+    if (hidden) {
+        if (innconf->extraoverviewhidden->strings != NULL) {
+            for (i = 0; i < innconf->extraoverviewhidden->count; i++) {
+                if (innconf->extraoverviewhidden->strings[i] != NULL) {
+                    vector_add(list, innconf->extraoverviewhidden->strings[i]);
+                }
+            }
+        }
+    }
+
+    return list;
 }
 
 
@@ -267,7 +243,7 @@ valid_overview_string(const char *string, bool full)
 
 /*
 **  Check the given overview data and make sure it's well-formed.  Extension
-**  headers are not checked against overview.fmt (having a different set of
+**  headers are not checked against LIST OVERVIEW.FMT (having a different set of
 **  extension headers doesn't make the data invalid), but the presence of the
 **  standard fields is checked.  Also checked is whether the article number in
 **  the data matches the passed article number.  Returns true if the data is

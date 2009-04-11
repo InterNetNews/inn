@@ -77,8 +77,9 @@ art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/md5.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h ../include/inn/storage.h ../include/inn/wire.h \
-  innd.h ../include/portable/time.h ../include/config.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/vector.h ../include/inn/wire.h innd.h \
+  ../include/portable/time.h ../include/config.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \

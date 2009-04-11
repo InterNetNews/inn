@@ -387,6 +387,101 @@ will run much faster, but reading news from the system will be impossible
 true, I<ovmethod> must also be set.  This is a boolean value and the
 default is true.
 
+=item I<extraoverviewadvertised>
+
+Besides the seven standard overview fields (which are in order C<Subject:>,
+C<From:>, C<Date:>, C<Message-ID:>, C<References:>, C<:bytes> and
+C<:lines>) and the eighth C<Xref:full> field required by INN in order
+to handle crossposts, it is possible to add other fields in the
+overview database.  This parameter expects a list of such header
+names.  Overview data for these additional headers will be generated
+for each new article at the time of arrival.  For instance, if you specify:
+
+    extraoverviewadvertised: [ Path NNTP-Hosting-Host ]
+
+it implies that B<nnrpd> will advertise C<Path:full> and
+C<NNTP-Hosting-Host:full> as the ninth and tenth fields in response
+to LIST OVERVIEW.FMT and that these two headers will be stored in the
+overview database for each new article.
+
+The default value is an empty list (no additional fields are stored).
+Owing to optimizations when B<innd> parses the articles it receives,
+it is possible that all the values in the list are not recognized by
+B<innd> as standard headers.  In such cases, B<innd> will log an error
+in F<news.err> at startup and the unrecognized fields will be discarded.
+
+You should advertise only fields for which the overview database
+is consistent, that is to say it records the content or absence
+of these fields for I<all> articles, including those already existing
+in the news spool.  Consequently, if you decide to add or remove a field
+from your overview database, you should either modify
+I<extraoverviewadvertised> and rebuild your overview database with
+makehistory(8) after removing all existing overview files, or implement
+a transition period by first using I<extraoverviewhidden> as described below.
+
+Use of a transition period can accommodate most overview reconfigurations,
+but certain drastic changes may still require a complete overview rebuild.
+
+If for instance you want to store the content of the To: header in addition
+to the fields already stored above, you should use:
+
+    extraoverviewadvertised: [ Path NNTP-Hosting-Host ]
+    extraoverviewhidden:     [ To ]
+
+This way, C<To:full> will not be advertised by B<nnrpd> but will be stored
+for each new article.  Once you know that all articles in your overview
+database record the content or absence of that new field (if expire.ctl(5) is
+parametered so that all your articles expire within S<30 days>, you can assume
+the database is in such a state after S<30 days> S<-- however>, note that time
+to expiration can be unpredictable with CNFS and you then have to use
+C<cnfsstat -a> for checking on when buffers have rolled over), you should put:
+
+    extraoverviewadvertised: [ Path NNTP-Hosting-Host To ]
+    extraoverviewhidden:     [ ]
+
+The C<To> value must be added at the end of the list because
+order matters and fields mentioned in I<extraoverviewhidden>
+are generated after those mentioned in I<extraoverviewadvertised>.
+B<nnrpd> will now advertise C<To:full> in response to the LIST
+OVERVIEW.FMT command (C<full> indicates that the header appears
+followed by its value).
+
+Now suppose you want to remove the content of the NNTP-Hosting-Host:
+header from the overview.  As order matters, the overview database will
+no longer be consistent for the To: header.  Therefore, you need to specify:
+
+    extraoverviewadvertised: [ Path ]
+    extraoverviewhidden:     [ To ]
+
+And once overview data is accurate for all articles, you should use:
+
+    extraoverviewadvertised: [ Path To ]
+    extraoverviewhidden:     [ ]
+
+Note that you have to restart B<nnrpd> if it runs as a daemon
+whenever you change the value of I<extraoverviewadvertised>; a mere
+C<ctlinnd xexec innd> is not enough.
+
+=item I<extraoverviewhidden>
+
+This parameter should be used in conjunction with
+I<extraoverviewadvertised> (see above for more details).  It expects
+a list of headers names.  Overview data for these headers will be
+generated for each new article at the time of arrival but, contrary
+to the fields mentioned in I<extraoverviewadvertised>, B<nnrpd> will
+not advertise them in response to the LIST OVERVIEW.FMT command.  It
+also implies that B<nnrpd> will not look in the overview database
+for fields mentioned in I<extraoverviewhidden> when it handles HDR,
+XHDR and XPAT requests; B<nnrpd> will have to parse the headers
+of the requested articles in the news spool, which is slower than
+directly querying the overview database.
+
+The default value is an empty list (no additional fields are stored).
+Owing to optimizations when B<innd> parses the articles it receives,
+it is possible that all the values in the list are not recognized by
+B<innd> as standard headers.  In such cases, B<innd> will log an error
+in F<news.err> at startup and the unrecognized fields will be discarded.
+
 =item I<groupbaseexpiry>
 
 Whether to enable newsgroup-based expiry.  If set to false, article expiry
@@ -1331,7 +1426,7 @@ $Id$
 
 =head1 SEE ALSO
 
-inews(1), innd(8), innwatch(8), nnrpd(8), rnews(1).
+inews(1), innd(8), innwatch(8), makehistory(8), nnrpd(8), rnews(1).
 
 Nearly every program in INN uses this file to one degree or another.  The
 above are just the major and most frequently mentioned ones.

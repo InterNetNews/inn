@@ -315,7 +315,7 @@ group_rebuild(const char *group, const char *path)
         sysdie("cannot open history %s", histpath);
     free(histpath);
 
-    extra = overview_extra_fields();
+    extra = overview_extra_fields(true);
     files = article_list(path);
 
     info.count = 0;

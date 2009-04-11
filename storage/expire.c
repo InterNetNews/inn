@@ -19,6 +19,7 @@
 #include "ovinterface.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
 
 enum KRP {Keep, Remove, Poison};
 
@@ -545,56 +546,34 @@ OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups)
 static void
 ARTreadschema(void)
 {
-    FILE                        *F;
-    char                        *p;
-    char                        *path;
+    const struct cvector        *standardoverview;
+    const struct vector         *extraoverview;
     ARTOVERFIELD                *fp;
-    int                         i;
-    char                        buff[SMBUF];
-    bool                        foundxref = false;
-    bool                        foundxreffull = false;
+    unsigned int                i;
 
-    /* Open file, count lines. */
-    path = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
-    F = fopen(path, "r");
-    if (F == NULL)
-        return;
-    for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-        continue;
-    fseeko(F, 0, SEEK_SET);
-    ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
+    /* Count the number of overview fields and allocate ARTfields. */
+    standardoverview = overview_fields();
+    extraoverview = overview_extra_fields(true);
+    ARTfields = xmalloc((standardoverview->count + extraoverview->count + 1)
+                        * sizeof(ARTOVERFIELD));
 
     /* Parse each field. */
-    for (fp = ARTfields; fgets(buff, sizeof buff, F) != NULL; ) {
-        /* Ignore blank and comment lines. */
-        if ((p = strchr(buff, '\n')) != NULL)
-            *p = '\0';
-        if ((p = strchr(buff, '#')) != NULL)
-            *p = '\0';
-        if (buff[0] == '\0')
-            continue;
-        if ((p = strchr(buff, ':')) != NULL) {
-            *p++ = '\0';
-            fp->NeedsHeader = (strcmp(p, "full") == 0);
-        }
-        else
-            fp->NeedsHeader = false;
+    for (i = 0, fp = ARTfields; i < standardoverview->count; i++) {
+        fp->NeedsHeader = false;
         fp->HasHeader = false;
-        fp->Header = xstrdup(buff);
-        fp->Length = strlen(buff);
-        if (strcasecmp(buff, "Xref") == 0) {
-            foundxref = true;
-            foundxreffull = fp->NeedsHeader;
-        }
+        fp->Header = xstrdup(standardoverview->strings[i]);
+        fp->Length = strlen(standardoverview->strings[i]);
         fp++;
     }
-    ARTfieldsize = fp - ARTfields;
-    fclose(F);
-    if (!foundxref || !foundxreffull) {
-        fprintf(stderr, "'Xref:full' must be included in %s", path);
-        exit(1);
+    for (i = 0; i < extraoverview->count; i++) {
+        fp->NeedsHeader = true;
+        fp->HasHeader = false;
+        fp->Header = xstrdup(extraoverview->strings[i]);
+        fp->Length = strlen(extraoverview->strings[i]);
+        fp++;
     }
-    free(path);
+
+    ARTfieldsize = fp - ARTfields;
 }
 
 /*
@@ -652,7 +631,7 @@ OVERGetHeader(const char *p, int field)
 }
 
 /*
-**  Read overview.fmt and find index for headers
+**  Read overview schema and find index for headers.
 */
 static void
 OVfindheaderindex(void)

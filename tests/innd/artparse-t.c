@@ -7,6 +7,7 @@
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/vector.h"
 #include "inn/wire.h"
 #include "inn/libinn.h"
 #include "libtest.h"
@@ -63,6 +64,8 @@ fake_innconf(void)
     innconf->logipaddr = false;
     innconf->maxartsize = 8 * 1024;
     innconf->pathetc = xstrdup("../data/etc");
+    innconf->extraoverviewadvertised = vector_new();
+    innconf->extraoverviewhidden = vector_new();
 }
 
 /* Create a fake channel with just enough data filled in to be able to use it
@@ -85,8 +88,8 @@ fake_channel(void)
 static void
 initialize(void)
 {
-    if (access("../data/etc/overview.fmt", F_OK) < 0)
-        if (access("data/etc/overview.fmt", F_OK) == 0)
+    if (access("../data/etc/storage.conf", F_OK) < 0)
+        if (access("data/etc/storage.conf", F_OK) == 0)
             if (chdir("innd") != 0)
                 sysdie("Cannot cd to innd");
     fake_innconf();

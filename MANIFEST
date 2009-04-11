@@ -197,7 +197,6 @@ doc/man/ovdb_monitor.8                Manpage for ovdb_monitor
 doc/man/ovdb_server.8                 Manpage for ovdb_server
 doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
-doc/man/overview.fmt.5                Manpage for overview.fmt config file
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
 doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.1                   Manpage for pgpverify
@@ -636,7 +635,6 @@ samples/nnrpd_dynamic_wrapper.py      Wrapper around old Python dynamic hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/nocem.ctl                     Config file for perl-nocem
 samples/ovdb.conf                     Berkeley DB overview configuration
-samples/overview.fmt                  Format of news overview database
 samples/passwd.nntp                   Passwords for remote connections
 samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
@@ -807,7 +805,6 @@ tests/data/etc/buffindexed.conf       buffindexed configuration for testing
 tests/data/etc/inn-bfx.conf           Basic inn.conf for testing buffindexed
 tests/data/etc/inn-tdx.conf           Basic inn.conf for testing tradindexed
 tests/data/etc/inn.conf               Basic inn.conf file for testing
-tests/data/etc/overview.fmt           Overview configuration for testing
 tests/data/etc/passwd                 Password data for ckpasswd tests
 tests/data/etc/storage.conf           Storage configuration for testing
 tests/data/overview                   Test overview data (Directory)
@@ -824,6 +821,7 @@ tests/data/upgrade/inn.conf           inn.conf file that needs fixing
 tests/data/upgrade/inn.conf.ok        Fixed inn.conf file
 tests/data/upgrade/newsfeeds          newsfeeds file that needs fixing
 tests/data/upgrade/newsfeeds.ok       Fixed newsfeeds file
+tests/data/upgrade/overview.fmt       Obsolete overview.fmt config file
 tests/data/upgrade/sasl.conf          Obsolete sasl.conf config file
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd

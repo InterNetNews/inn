@@ -87,7 +87,7 @@ cmd_list_schema(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
     const struct cvector *standard;
     unsigned int i;
 
-    Reply("%d %s.\r\n", NNTP_OK_LIST, lp->Format);
+    Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
     standard = overview_fields();
     for (i = 0; i < standard->count; ++i) {
 	Printf("%s:\r\n", standard->strings[i]);
@@ -234,9 +234,7 @@ CMDlist(int ac, char *av[])
     if (qp == NULL) {
         Reply("%d No list of %s available\r\n",
               NNTP_ERR_UNAVAILABLE, lp->Items);
-        /* Only the active, newsgroups and overview.fmt files are required
-         * (but the last one has already called cmd_list_schema).
-         * LIST HEADERS has also called its own function cmd_list_headers. */
+        /* Only the active and newsgroups files are required. */
         if (lp->Required || errno != ENOENT) {
             /* %m outputs strerror(errno). */
             syslog(L_ERROR, "%s can't fopen %s %m", Client.host, lp->File);

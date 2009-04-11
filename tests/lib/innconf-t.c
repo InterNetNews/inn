@@ -8,8 +8,9 @@
 #include "inn/messages.h"
 #include "libtest.h"
 
+/* We will have strings, integers, bools and lists. */
 static const char grep[] =
-"egrep 'mta|organization|ovmethod|hismethod|path|pgpverify'\
+"egrep 'mta|organization|ovmethod|hismethod|path|port|overview|pgpverify'\
  ../../samples/inn.conf > config/tmp";
 
 int
@@ -55,7 +56,7 @@ main(void)
     fclose(config);
     ok(7, !innconf_check("config/tmp"));
     unlink("config/tmp");
-    ok_string(8, "config/tmp:27: unknown parameter foo\n", errors);
+    ok_string(8, "config/tmp:36: unknown parameter foo\n", errors);
     errors_uncapture();
     free(errors);
     errors = NULL;

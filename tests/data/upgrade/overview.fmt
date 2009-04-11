@@ -1,0 +1,18 @@
+##  overview.fmt for testing its migration to inn.conf.
+##  $Id$
+
+Subject:
+
+From:
+Date:
+Message-ID:
+References:
+Bytes:
+Lines:
+Xref:full
+Path:full
+
+Keywords:full
+# A
+  # Comment.
+Injection-Info:full  # Another comment.

@@ -11,6 +11,7 @@
 #include "inn/md5.h"
 #include "inn/ov.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
 #include "inn/wire.h"
 #include "innd.h"
 
@@ -134,71 +135,60 @@ SITEmark(SITE *sp, NEWSGROUP *ngp)
 bool
 ARTreadschema(void)
 {
-  static char	*SCHEMA = NULL;
-  FILE		*F;
-  int		i;
-  char		*p;
-  ARTOVERFIELD	*fp;
-  const ARTHEADER *hp;
-  bool		ok;
-  char		buff[SMBUF];
-  bool		foundxref = false;
-  bool		foundxreffull = false;
+  const struct cvector *standardoverview;
+  const struct vector  *extraoverview;
+  unsigned int         i;
+  ARTOVERFIELD         *fp;
+  const ARTHEADER      *hp;
+  bool                 ok = true;
 
   if (ARTfields != NULL) {
     free(ARTfields);
     ARTfields = NULL;
   }
 
-  /* Open file, count lines. */
-  if (SCHEMA == NULL)
-    SCHEMA = concatpath(innconf->pathetc, INN_PATH_SCHEMA);
-  if ((F = Fopen(SCHEMA, "r", TEMPORARYOPEN)) == NULL)
-    return false;
-  for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-    continue;
-  fseeko(F, 0, SEEK_SET);
-  ARTfields = xmalloc((i + 1) * sizeof(ARTOVERFIELD));
+  /* Count the number of overview fields and allocate ARTfields. */
+  standardoverview = overview_fields();
+  extraoverview = overview_extra_fields(true);
+  ARTfields = xmalloc((standardoverview->count + extraoverview->count + 1)
+                      * sizeof(ARTOVERFIELD));
 
   /* Parse each field. */
-  for (ok = true, fp = ARTfields ; fgets(buff, sizeof buff, F) != NULL ;) {
-    /* Ignore blank and comment lines. */
-    if ((p = strchr(buff, '\n')) != NULL)
-      *p = '\0';
-    if ((p = strchr(buff, '#')) != NULL)
-      *p = '\0';
-    if (buff[0] == '\0')
-      continue;
-    if ((p = strchr(buff, ':')) != NULL) {
-      *p++ = '\0';
-      fp->NeedHeader = (strcmp(p, "full") == 0);
-    } else
-      fp->NeedHeader = false;
-    if (strcasecmp(buff, "Xref") == 0) {
-      foundxref = true;
-      foundxreffull = fp->NeedHeader;
-    }
+  for (i = 0, fp = ARTfields; i < standardoverview->count; i++) {
+    fp->NeedHeader = false;
     for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++) {
-      if (strcasecmp(buff, hp->Name) == 0) {
+      if (strcasecmp(standardoverview->strings[i], hp->Name) == 0) {
 	fp->Header = hp;
 	break;
       }
     }
     if (hp == ARRAY_END(ARTheaders)) {
       syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
-		LogName, buff);
+             LogName, standardoverview->strings[i]);
       ok = false;
       continue;
     }
     fp++;
   }
+  for (i = 0; i < extraoverview->count; i++) {
+    fp->NeedHeader = true;
+    for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++) {
+      if (strcasecmp(extraoverview->strings[i], hp->Name) == 0) {
+        fp->Header = hp;
+        break;
+      }
+    }
+    if (hp == ARRAY_END(ARTheaders)) {
+      syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
+             LogName, extraoverview->strings[i]);
+      ok = false;
+      continue;
+    }
+    fp++;
+  }
+
   fp->Header = NULL;
 
-  Fclose(F);
-  if (!foundxref || !foundxreffull) {
-    syslog(L_FATAL, "%s 'Xref:full' must be included in %s", LogName, SCHEMA);
-    exit(1);
-  }
   return ok;
 }
 

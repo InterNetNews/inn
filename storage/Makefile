@@ -104,7 +104,7 @@ expire.o: expire.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
   ../include/inn/history.h ovinterface.h ../include/inn/history.h \
-  ../include/inn/storage.h ../include/inn/paths.h
+  ../include/inn/storage.h ../include/inn/paths.h ../include/inn/vector.h
 interface.o: interface.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/conffile.h ../include/inn/innconf.h \
@@ -128,11 +128,11 @@ ov.o: ov.c ../include/config.h ../include/inn/defines.h \
 overdata.o: overdata.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/buffer.h ../include/inn/defines.h \
-  ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/qio.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/wire.h ../include/inn/vector.h ../include/inn/libinn.h \
-  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
-  ovinterface.h ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/paths.h
+  ovinterface.h ../include/inn/history.h ../include/inn/ov.h \
+  ../include/inn/storage.h ../include/inn/history.h \
+  ../include/inn/storage.h
 overview.o: overview.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/buffer.h ../include/inn/defines.h \
