@@ -22,6 +22,7 @@
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
 ##   * Rename nntpactsync to incominglogfrequency in inn.conf.
+##   * Move parameters from overview.fmt to inn.conf if needed.
 ##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
 
@@ -47,7 +48,7 @@ use Getopt::Long qw(GetOptions);
 sub fix_inn_conf {
     my ($input, $output, $file) = @_;
     my $line = 0;
-    my ($raw, $hismethod, $tls);
+    my ($raw, $hismethod, $overview, $tls);
     local $_;
     for $raw (@$input) {
         $_ = $raw;
@@ -72,19 +73,21 @@ sub fix_inn_conf {
             next;
         }
 
-        # A list value (on only one line).
-        if ($value =~ /^\[/) {
-            push (@$output, "$_\n");
-            next;
-        }
-
         $hismethod = 1 if $key eq 'hismethod';
+        $overview = 1 if $key =~ /^extraoverview(advertised|hidden)$/;
+        $tls = 1 if $key =~ /^tls(capath|cafile|certfile|keyfile)$/;
 
         if ($key eq 'nntpactsync') {
             $key = 'incominglogfrequency';
         }
 
-        $tls = 1 if $key =~ /^tls(capath|cafile|certfile|keyfile)$/;
+        # A list value (on only one line).
+        # This condition must occur after having checked for $overview.
+        if ($value =~ /^\[/) {
+            push (@$output, "$_\n");
+            next;
+        }
+
         $value =~ s/\s+$//;
         if ($value =~ /[\s;\"<>\[\]\\{}]/ && $value !~ /^\".*\"\s*$/) {
             $value =~ s/([\"\\])/\\$1/g;
@@ -96,7 +99,33 @@ sub fix_inn_conf {
 
     # Add a setting of hismethod if one wasn't present in the original file.
     unless ($hismethod) {
-        push (@$output, "\n# Added by innupgrade\nhismethod: hisv6\n");
+        push (@$output, "\n# Added by innupgrade.\nhismethod: hisv6\n");
+    }
+
+    # Import the settings from overview.fmt if present and not found in inn.conf.
+    if (!$overview && -f 'overview.fmt') {
+        open (OVERVIEWFMT, 'overview.fmt') or die "Can't open overview.fmt: $!\n";
+        my (@extraoverview, $foundxref);
+        while (<OVERVIEWFMT>) {
+            # Find out what follows the *first* "Xref:full" in the file.
+            # One "Xref" is already advertised as the eighth field in
+            # the overview database.
+            if (!$foundxref) {
+                $foundxref = 1 if (/Xref:full/i && !/^\s*\#/);
+                next;
+            }
+            next if /^\s*\#/ || !/:full/i;
+            chomp;
+            s/\s//g;
+            s/:full.*$//i;
+            push (@extraoverview, $_);
+        }
+        close (OVERVIEWFMT);
+        if ($#extraoverview > 0) {
+            push (@$output, "\n# Moved from overview.fmt by innupgrade.\n");
+            push (@$output, "extraoverviewadvertised: [ " .
+                            join (" ", @extraoverview) . " ]\n");
+        }
     }
 
     # Import the settings from sasl.conf if present and not found in inn.conf.
@@ -111,9 +140,9 @@ sub fix_inn_conf {
             s/^(\s*)tls_key_file:/tlskeyfile:/;
             push (@sasl, $_);
         }
-        close SASL;
+        close (SASL);
         if ($found) {
-            push (@$output, "\n# Moved from sasl.conf by innupgrade\n");
+            push (@$output, "\n# Moved from sasl.conf by innupgrade.\n");
             push (@$output, @sasl);
         }
     }
@@ -205,7 +234,7 @@ sub upgrade_directory {
             upgrade_file ($file, $FIXES{$file});
         }
     }
-    closedir DIR;
+    closedir (DIR);
 }
 
 

@@ -32,7 +32,6 @@ $ST_GID  = 5;
     'newsbin',		"$INN::Config::pathbin",
     'newsboot',		"$INN::Config::pathbin/rc.news",
     'newsfeeds',	"$INN::Config::newsfeeds",
-    'overview.fmt',	"$INN::Config::pathetc/overview.fmt",
     'newsetc',		"$INN::Config::pathetc",
     'newslib',		"$INN::Config::newslib",
     'nnrpd',		"$INN::Config::pathbin/nnrpd",
@@ -57,7 +56,6 @@ $ST_GID  = 5;
     'inn.conf',		'inn_conf',
     'moderators',	'moderators',
     'newsfeeds',	'newsfeeds',
-    'overview.fmt',	'overview_fmt',
     'nntpsend.ctl',	'nntpsend_ctl',
     'passwd.nntp',	'passwd_nntp',
     'readers.conf',	'readers_conf'
@@ -73,7 +71,6 @@ $ST_GID  = 5;
     'inn.conf',		[0400, 0664],
     'moderators',	[0400, 0664],
     'newsfeeds',	[0400, 0664],
-    'overview.fmt',	[0400, 0664],
     'passwd.nntp',	[0400, 0660],
 );
 
@@ -543,57 +540,6 @@ newsfeeds
 
 
 ##
-##  overview.fmt
-##
-#%overview_fmtheaders = (
-#    'Approved',		1,
-#    'Bytes',		1,
-#    'Control',		1,
-#    'Date',		1,
-#    'Distribution',	1,
-#    'Expires',		1,
-#    'From',		1,
-#    'Lines',		1,
-#    'Message-ID',	1,
-#    'Newsgroups',	1,
-#    'Path',		1,
-#    'References',	1,
-#    'Reply-To',		1,
-#    'Sender',		1,
-#    'Subject',		1,
-#    'Supersedes',	1,
-#);
-
-sub
-overview_fmt
-{
-    local ($header, $mode, $sawfull);
-
-    $sawfull = 0;
-    input: while ( <IN> ) {
-	next input if &spacious($file, ++$line);
-
-	unless ( ($header, $mode) = /^([^:]+):([^:]*)$/ ) {
-	    print "$file:$line: malformed line.\n";
-	    next input;
-	}
-
-	#print "$file:$line: unknown header `$header'\n"
-	#    if !defined $overview_fmtheaders{$header};
-	if ( $mode eq "full" ) {
-	    $sawfull++;
-	} elsif ( $mode eq "" ) {
-	    print "$file:$line: short header `$header' appears after full one\n"
-		if $sawfull;
-	} else {
-	    print "$file:$line: unknown mode `$mode'\n";
-	}
-    }
-    1;
-}
-
-
-##
 ##  nntpsend.ctl
 ##
 sub
@@ -945,7 +891,6 @@ if ( 0 ) {
     &moderators();
     &nntpsend_ctl();
     &newsfeeds();
-    &overview_fmt();
     &passwd_nntp();
     &readers_conf();
 }
