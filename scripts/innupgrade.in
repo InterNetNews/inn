@@ -121,7 +121,7 @@ sub fix_inn_conf {
             push (@extraoverview, $_);
         }
         close (OVERVIEWFMT);
-        if ($#extraoverview > 0) {
+        if ($#extraoverview >= 0) {
             push (@$output, "\n# Moved from overview.fmt by innupgrade.\n");
             push (@$output, "extraoverviewadvertised: [ " .
                             join (" ", @extraoverview) . " ]\n");
