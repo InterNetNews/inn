@@ -29,7 +29,7 @@
 require 5.003;
 
 use strict;
-use vars qw(%FIXES);
+use vars qw(%FIXES %RENAME);
 use subs qw(fix_inn_conf);
 
 use Getopt::Long qw(GetOptions);
@@ -37,6 +37,31 @@ use Getopt::Long qw(GetOptions);
 # The mappings of file names to fixes.
 %FIXES = ('inn.conf'  => \&fix_inn_conf,
           'newsfeeds' => \&fix_newsfeeds);
+
+# The mappings of obsolete file names to rename.
+# If the new name is empty, the file is removed.
+%RENAME = ('auth_smb'         => 'auth_smb.OLD',     # Obsolete programs in INN 2.5.0.
+           'auth_smb.8'       => '',
+           'gpgverify'        => 'gpgverify.OLD',
+           'inndstart'        => 'inndstart.OLD',
+           'inndstart.8'      => '',
+           'overview.fmt'     => 'overview.fmt.OLD',
+           'overview.fmt.5'   => '',
+           'sasl.conf'        => 'sasl.conf.OLD',
+           'sasl.conf.5'      => '',
+           'startinnfeed'     => 'startinnfeed.OLD',
+           'startinnfeed.1'   => '',
+
+           'compliance-nntp'  => '',                 # Obsolete documentation in INN 2.5.0.
+           'makeactive.8'     => '',                 # -- empty placeholder.
+           'parsedate.3'      => '',                 # -- replaced by convdate.
+           'pgpverify.8'      => '',                 # -- it is pgpverify(1).
+           'README.readers.conf' => '',              # -- it is external-auth.
+           'sm.8'             => '',                 # -- it is sm(1).
+
+           'hook-tcl'         => 'hook-tcl.OLD',     # Obsolete Tcl hooks in INN 2.5.0.
+           'filter.tcl'       => 'filter.tcl.OLD',
+           'startup.tcl'      => 'startup.tcl.OLD');
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
 # values) need to be commented out since they're no longer allowed (don't just
@@ -230,6 +255,7 @@ sub upgrade_file {
 
 # Upgrade a directory.  Scan the directory for files that have upgrade rules
 # defined and for each one of those, try running the upgrade rule.
+# Also rename obsolete files, appending ".OLD" to their name.
 sub upgrade_directory {
     my $directory = shift;
     my $file;
@@ -242,8 +268,24 @@ sub upgrade_directory {
         if ($_ =~ /^([^\/]+)$/) {
            $file = $1;
         }
-        if ($FIXES{$file}) {
+        if (exists ($FIXES{$file})) {
             upgrade_file ($file, $FIXES{$file});
+        }
+    }
+    closedir (DIR);
+    opendir (DIR, ".") or die "Can't opendir $directory: $!\n";
+    for (readdir DIR) {
+        if ($_ =~ /^([^\/]+)$/) {
+           $file = $1;
+        }
+        if (exists ($RENAME{$file})) {
+            if ($RENAME{$file} eq '') {
+                unlink ($file)
+                    or die "$file: cannot remove: $!\n";
+            } else {
+                rename ($file, $RENAME{$file})
+                    or die "$file: cannot rename to $file.OLD: $!\n";
+            }
         }
     }
     closedir (DIR);
@@ -264,7 +306,7 @@ if ($file) {
     }
     chdir $dirname or die "Can't chdir to $dirname: $!\n";
     $type ||= $basename;
-    if (!$FIXES{$type}) { die "No upgrade rules defined for $basename\n" }
+    if (! exists($FIXES{$type})) { die "No upgrade rules defined for $basename\n" }
     upgrade_file ($basename, $FIXES{$type});
 } else {
     if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }

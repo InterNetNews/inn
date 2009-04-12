@@ -112,7 +112,15 @@ update:
 	    echo '' ; \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
+	test -z "$D" && $(PATHBIN)/innupgrade $(PATHAUTHPASSWD)
+	test -z "$D" && $(PATHBIN)/innupgrade $(PATHBIN)
+	test -z "$D" && $(PATHBIN)/innupgrade $(PATHDOC)
 	test -z "$D" && $(PATHBIN)/innupgrade $(PATHETC)
+	test -z "$D" && $(PATHBIN)/innupgrade ${PATHFILTER}
+	test -z "$D" && $(PATHBIN)/innupgrade $(MAN1)
+	test -z "$D" && $(PATHBIN)/innupgrade $(MAN3)
+	test -z "$D" && $(PATHBIN)/innupgrade $(MAN5)
+	test -z "$D" && $(PATHBIN)/innupgrade $(MAN8)
 
 install-root:
 	@chmod +x support/install-sh

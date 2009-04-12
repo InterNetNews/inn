@@ -26,18 +26,56 @@ Currently, B<innupgrade> knows how to apply the following updates:
 
 =over 2
 
+=item F<inn.conf>
+
+=over 2
+
 =item *
 
-F<inn.conf>:  Quote values with whitespace and comment out keys with no
-values, required for the change in configuration parsers introduced in S<INN
-2.4>.  The new format is not backward compatible with the previous parser,
-since the previous parser will include the double-quotes in the value of
-the parameter.
+Quote values with whitespace and comment out keys with no values, required
+for the change in configuration parsers introduced in S<INN 2.4>.  The new
+format is not backward compatible with the previous parser, since the
+previous parser will include the double-quotes in the value of the parameter.
+
+=item *
+
+Add the I<hismethod> parameter if not found (introduced in S<INN 2.4>,
+with the default value C<hisv6>) and rename I<nntpactsync> to
+I<incominglogfrequency> (since S<INN 2.5>).
+
+=item *
+
+If the F<overview.fmt> file exists, its content is merged in
+the I<extraoverviewadvertised> and I<extraoverviewhidden> parameters
+introduced in S<INN 2.5>.  The file is then renamed to F<overview.fmt.OLD>.
+
+=item *
+
+If the F<sasl.conf> file exists, its content is merged in
+the I<tlscapath>, I<tlscafile>, I<tlscertfile> and I<tlskeyfile>
+parameters introduced in S<INN 2.5>.   The file is then renamed to
+F<sasl.conf.OLD>.
 
 =back
 
-Normally, B<innupgrade> should be run on the I<pathetc> directory after
-any upgrade of INN other than a patch release (any upgrade that changes
+=item F<newsfeeds>
+
+=over 2
+
+=item *
+
+Replace the use of B<startinnfeed> with the appropriate direct invocation
+of B<innfeed> or B<imapfeed>.
+
+=back
+
+=back
+
+A few obsolete programs or configuration files are renamed with a C<.OLD>
+extension by B<innupgrade>.  Obsolete man pages are directly removed.
+
+Normally, B<innupgrade> should be run at least on the I<pathetc> directory
+after any upgrade of INN other than a patch release (any upgrade that changes
 the first or second version numbers).  This may occur automatically during
 the upgrade process.
 
@@ -60,7 +98,8 @@ combination with B<-f>.
 
 =head1 EXAMPLES
 
-Upgrade any configuration files found in I<pathetc>:
+Upgrade any configuration files found in I<pathetc> and append a C<.OLD>
+extension to obsolete files in I<pathetc>:
 
     innupgrade <pathetc in inn.conf>
 

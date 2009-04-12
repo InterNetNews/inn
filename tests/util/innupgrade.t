@@ -55,7 +55,7 @@ if [ ! -x "$innupgrade" ] ; then
 fi
 
 # Print out the number of tests
-echo 11
+echo 13
 
 # Save backup copies.
 cp "upgrade/inn.conf" "upgrade/inn.conf.bad"
@@ -68,11 +68,26 @@ compare "upgrade/newsfeeds.OLD" "upgrade/newsfeeds.bad"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 compare "upgrade/newsfeeds" "upgrade/newsfeeds.ok"
 
+if [ ! -e "upgrade/overview.fmt" ] && [ -e "upgrade/overview.fmt.OLD" ] ; then
+    printcount "ok"
+else
+    printcount "not ok"
+fi
+
 # Move inn.conf back and run it again in file mode.
+# Also move obsolete files back.
 mv -f "upgrade/inn.conf.OLD" "upgrade/inn.conf"
+mv -f "upgrade/overview.fmt.OLD" "upgrade/overview.fmt"
+mv -f "upgrade/sasl.conf.OLD" "upgrade/sasl.conf"
 run "-f" "upgrade/inn.conf"
 compare "upgrade/inn.conf.OLD" "upgrade/inn.conf.bad"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
+
+if [ -e "upgrade/overview.fmt" ] && [ ! -e "upgrade/overview.fmt.OLD" ] ; then
+    printcount "ok"
+else
+    printcount "not ok"
+fi
 
 # Run innupgrade on the good file and make sure that it doesn't change
 # anything.
