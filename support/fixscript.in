@@ -59,7 +59,7 @@ fi
 interpretor=`head -n 1 "$input"`
 case "$interpretor" in
 */sh|*SH*)
-    path="/bin/sh"
+    path="@SHELL@"
     lib=". $libdir/innshellvars"
     ;;
 */perl*|*PERL*)

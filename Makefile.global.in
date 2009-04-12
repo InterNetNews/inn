@@ -320,7 +320,7 @@ CP_MAN		= $(INSTALL) $(OWNER) -m 0444
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistant set of variables are available.
 
-SHELL		= /bin/sh
+SHELL		= @SHELL@
 
 @SET_MAKE@
 
