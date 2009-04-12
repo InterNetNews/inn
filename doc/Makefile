@@ -17,14 +17,14 @@ DOCS	= GPL config-design config-semantics config-syntax \
 DIRS = pod man
 
 all:
-	cd pod && $(MAKE)
+	cd pod && $(MAKE) all || exit 1 ; cd ..
 
 tags ctags:
 profiled:
 depend:
 
 clean clobber distclean maintclean:
-	cd pod && $(MAKE) $@
+	cd pod && $(MAKE) $@ || exit 1 ; cd ..
 
 install:
 	for F in $(TOPDOCS) ; do \
@@ -36,7 +36,7 @@ install:
 	if [ -r $(top)/README.snapshot ] ; then \
 	    $(CP_RPUB) $(top)/README.snapshot $D$(PATHDOC)/README.snapshot ; \
 	fi
-	cd man && $(MAKE) install
+	cd man && $(MAKE) install || exit 1 ; cd ..
 
 bootstrap:
-	cd pod && $(MAKE) bootstrap
+	cd pod && $(MAKE) bootstrap || exit 1 ; cd ..

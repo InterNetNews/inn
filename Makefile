@@ -43,14 +43,17 @@ DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 ##  Major target -- build everything.  Rather than just looping through
 ##  all the directories, use a set of parallel rules so that make -j can
 ##  work on more than one directory at a time.
+##  Be careful of a non-GNU make:  after a completed command, it does not
+##  necessarily return the script back to the starting directory.
 all: all-include all-libraries all-programs
-	cd doc     && $(MAKE) all
-	cd samples && $(MAKE) all
-	cd site    && $(MAKE) all
+	cd doc     && $(MAKE) all || exit 1 ; cd ..
+	cd samples && $(MAKE) all || exit 1 ; cd ..
+	cd site    && $(MAKE) all || exit 1 ; cd ..
+
+all-include:			; cd include   && $(MAKE) all
 
 all-libraries:	all-lib all-storage all-history all-perl
 
-all-include:			; cd include   && $(MAKE) all
 all-lib:	all-include	; cd lib       && $(MAKE) all
 all-storage:	all-lib		; cd storage   && $(MAKE) library
 all-history:	all-storage	; cd history   && $(MAKE) all
@@ -114,7 +117,7 @@ update:
 install-root:
 	@chmod +x support/install-sh
 	support/install-sh $(OWNER) -m 0755 -d $(D)$(PATHBIN)
-	cd backends && $(MAKE) install-root
+	cd backends && $(MAKE) install-root || exit 1 ; cd ..
 
 ##  Install a certificate for TLS/SSL support.
 cert:
@@ -142,7 +145,7 @@ clean:
 clobber realclean distclean:
 	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) $(FLAGS) distclean && cd .. || exit 1 ; \
+	    cd $$D && $(MAKE) $(FLAGS) distclean || exit 1 ; cd .. ; \
 	done
 	@echo ''
 	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
@@ -155,7 +158,7 @@ clobber realclean distclean:
 maintclean:
 	@for D in $(CLEANDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) $(FLAGS) maintclean && cd .. || exit 1 ; \
+	    cd $$D && $(MAKE) $(FLAGS) maintclean || exit 1 ; cd .. ; \
 	done
 	@echo ''
 	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
@@ -177,7 +180,7 @@ TAGS etags:
 
 ##  Run the test suite.
 check test tests:
-	cd tests && $(MAKE) test
+	cd tests && $(MAKE) test || exit 1 ; cd ..
 
 
 ##  For maintainers, build the entire source base with warnings enabled.

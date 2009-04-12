@@ -101,7 +101,7 @@ SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) \
 		$D$(PATH_NEWSGROUPS) $D$(PATH_HISTORY)
 
 ##  Get new versions of everything from samples directory.
-all:		$(P) $(ALL) config
+all:		$(ALL) config
 
 ##  Get only scripts, not per-host config files.
 most:		$(MOST)
