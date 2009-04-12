@@ -55,7 +55,7 @@ FILE *Errlog = NULL;
 #endif
 
 /* Internal prototypes. */
-static RETSIGTYPE       catch_terminate(int sig);
+static void             catch_terminate(int sig);
 static void             xmalloc_abort(const char *what, size_t size,
                                       const char *file, int line);
 
@@ -213,7 +213,7 @@ const ARTHEADER ARTheaders[] = {
 **  Signal handler to catch SIGTERM and similar signals and queue a clean
 **  shutdown.
 */
-static RETSIGTYPE
+static void
 catch_terminate(int sig)
 {
     GotTerminate = true;

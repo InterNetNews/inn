@@ -273,7 +273,7 @@ REMsendxbatch(int fd, char *buf, int size)
 /*
 **  Mark that we got interrupted.
 */
-static RETSIGTYPE
+static void
 CATCHinterrupt(int s)
 {
     GotInterrupt = true;
@@ -287,7 +287,7 @@ CATCHinterrupt(int s)
 **  Mark that the alarm went off.
 */
 /* ARGSUSED0 */
-static RETSIGTYPE
+static void
 CATCHalarm(int s UNUSED)
 {
     GotAlarm = true;
@@ -318,7 +318,7 @@ main(int ac, char *av[])
   FILE			*From;
   FILE			*To;
   char			buff[NNTP_STRLEN];
-  RETSIGTYPE		(*volatile old)(int) = NULL;
+  void	        	(*volatile old)(int) = NULL;
   struct stat		statbuf;
   int			fd;
   int			err;

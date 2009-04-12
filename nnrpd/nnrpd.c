@@ -750,7 +750,7 @@ Printf(const char *fmt, ...)
 /*
 **  Got a signal; toggle tracing.
 */
-static RETSIGTYPE
+static void
 ToggleTrace(int s NO_SIGACTION_UNUSED)
 {
     ChangeTrace = true;
@@ -762,7 +762,7 @@ ToggleTrace(int s NO_SIGACTION_UNUSED)
 /*
 **  Got a SIGPIPE; exit cleanly.
 */
-static RETSIGTYPE
+static void
 CatchPipe(int s UNUSED)
 {
     ExitWithStats(0, false);
@@ -772,7 +772,7 @@ CatchPipe(int s UNUSED)
 /*
 **  Got a signal; wait for children.
 */
-static RETSIGTYPE
+static void
 WaitChild(int s NO_SIGACTION_UNUSED)
 {
     int pid;

@@ -50,7 +50,7 @@ PROCreap(void)
 /*
 **  Signal handler that collects the processes, then resets the signal.
 */
-static RETSIGTYPE
+static void
 PROCcatchsignal(int s)
 {
     PROCreap();

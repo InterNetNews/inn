@@ -317,7 +317,7 @@ Process(char *p)
 /*
 **  Mark that we got a signal; let two signals kill us.
 */
-static RETSIGTYPE
+static void
 CATCHinterrupt(int s)
 {
     GotInterrupt = true;

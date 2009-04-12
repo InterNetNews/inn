@@ -165,7 +165,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 /*
 **  Mark that we got interrupted.
 */
-static RETSIGTYPE
+static void
 CATCHinterrupt(int s)
 {
     GotInterrupt = true;

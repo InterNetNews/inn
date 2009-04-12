@@ -694,7 +694,7 @@ GetMessageID(ARTHANDLE *art) {
 /*
 **  Mark that we got interrupted.
 */
-static RETSIGTYPE
+static void
 CATCHinterrupt(int s) {
     GotInterrupt = true;
 
@@ -706,7 +706,7 @@ CATCHinterrupt(int s) {
 /*
 **  Mark that the alarm went off.
 */
-static RETSIGTYPE
+static void
 CATCHalarm(int s UNUSED)
 {
     GotAlarm = true;
@@ -986,7 +986,7 @@ int main(int ac, char *av[]) {
     char		buff[8192+128];
     char		*Article;
     char		*MessageID;
-    RETSIGTYPE		(*volatile old)(int) = NULL;
+    void		(*volatile old)(int) = NULL;
     volatile int        port = NNTP_PORT;
     bool		val;
     char                *path;

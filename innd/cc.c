@@ -126,7 +126,7 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_XEXEC,	1, CCxexec	}
 };
 
-static RETSIGTYPE CCresetup(int unused);
+static void CCresetup(int unused);
 
 
 void
@@ -2034,7 +2034,7 @@ CCclose(void)
 /*
 **  Restablish the control channel.
 */
-static RETSIGTYPE
+static void
 CCresetup(int unused)
 {
 #ifndef HAVE_SIGACTION

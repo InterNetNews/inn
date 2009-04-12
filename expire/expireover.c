@@ -38,7 +38,7 @@ static volatile sig_atomic_t signalled = 0;
 **  behavior after receiving a signal so that repeating the signal will kill
 **  the program immediately.
 */
-static RETSIGTYPE
+static void
 fatal_signal(int sig)
 {
     signalled = 1;
