@@ -748,10 +748,10 @@ print_list(FILE *file, const char *key, const struct vector *value,
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
             *p = toupper(*p);
-        /* For interoperability reasons, we return a string representing
-         * an array (pure Bourne shell does not have the notion of an
-         * array for instance). */
-        fprintf(file, "%s='( ", upper);
+        /* For interoperability reasons, we return a space-separated string
+         * representing an array (pure Bourne shell does not have the notion
+         * of an array for instance). */
+        fprintf(file, "%s='", upper);
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
                 fprintf(file, "\"");
@@ -766,10 +766,14 @@ print_list(FILE *file, const char *key, const struct vector *value,
                     else
                         fputc(*letter, file);
                 }
-                fprintf(file, "\" ");
+                if (i == value->count - 1) {
+                    fprintf(file, "\"");
+                } else {
+                    fprintf(file, "\" ");
+                }
             }
         }
-        fprintf(file, ")'; export %s;\n", upper);
+        fprintf(file, "'; export %s;\n", upper);
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:

@@ -67,8 +67,8 @@ name will be the F<inn.conf> parameter name in all capitals, and all
 variables will be exported.  String values will be enclosed in single
 quotes with appropriate escaping, and boolean values will be mapped to
 C<true> or C<false>.  String parameters that are set to NULL will be
-mapped to empty strings.  List values will be mapped to a string
-representing an array of strings (as Bourne shell does not recognize
+mapped to empty strings.  List values will be mapped to a space-separated
+string representing an array of strings (as Bourne shell does not recognize
 arrays, contrary to several other shells, an array cannot be returned
 for interoperability reasons).
 
@@ -76,7 +76,7 @@ Here is an example:
 
     DOMAIN=''; export DOMAIN;
     ENABLEOVERVIEW=true; export ENABLEOVERVIEW;
-    EXTRAOVERVIEWADVERTISED='( "Newsgroups" "Injection-Info" )'; export EXTRAOVERVIEWADVERTISED;
+    EXTRAOVERVIEWADVERTISED='"Newsgroups" "Injection-Info"'; export EXTRAOVERVIEWADVERTISED;
     EXTRAOVERVIEWHIDDEN='( )'; export EXTRAOVERVIEWHIDDEN;
     ORGANIZATION='Let'\''s try nasty "quotes"'; export ORGANIZATION;
     MAXFORKS=10; export MAXFORKS;
