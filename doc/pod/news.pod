@@ -35,8 +35,9 @@ have been added to F<inn.conf>:  I<extraoverviewadvertised> and
 I<extraoverviewhidden>.  Although B<innupgrade> takes care of the
 change during C<make update>, you should make sure that your overview
 database is consistent with all the fields declared in F<overview.fmt>
-because they will all be advertised.  See the inn.conf(5) man page
-for more information about these parameters.
+because they will all be advertised, and C<Xref:full> forced as the
+eighth overview field.  See the inn.conf(5) man page for more information
+about these parameters.
 
 =item *
 
@@ -257,6 +258,8 @@ in F<inn.conf>.
 The F<sasl.conf> file has been removed in favour of new parameters in
 F<inn.conf> to deal with TLS support:  I<tlscafile>, I<tlscapath>,
 I<tlscertfile> and I<tlskeyfile>.
+
+=item *
 
 The F<overview.fmt> file has been removed in favour of new parameters
 in F<inn.conf> to deal with transition periods to accommodate

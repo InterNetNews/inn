@@ -105,16 +105,28 @@ sub fix_inn_conf {
     # Import the settings from overview.fmt if present and not found in inn.conf.
     if (!$overview && -f 'overview.fmt') {
         open (OVERVIEWFMT, 'overview.fmt') or die "Can't open overview.fmt: $!\n";
-        my (@extraoverview, $foundxref);
+        my (@extraoverview, $foundfull, $foundxref);
         while (<OVERVIEWFMT>) {
-            # Find out what follows the *first* "Xref:full" in the file.
+            # Find out the first ":full" in the file.  It may not be "Xref:full".
             # One "Xref" is already advertised as the eighth field in
-            # the overview database.
-            if (!$foundxref) {
-                $foundxref = 1 if (/Xref:full/i && !/^\s*\#/);
-                next;
+            # the overview database so we have to drop the *first* "Xref:full".
+            if (!$foundfull) {
+                if (/:full/i && !/^\s*\#/) {
+                    $foundfull = 1;
+                } else {
+                    next;
+                }
             }
-            next if /^\s*\#/ || !/:full/i;
+
+            next if (/^\s*\#/ || !/:full/i);
+
+            if (!$foundxref) {
+                if (/Xref:full/i) {
+                    $foundxref = 1;
+                    next;
+                }
+            }
+
             chomp;
             s/\s//g;
             s/:full.*$//i;
