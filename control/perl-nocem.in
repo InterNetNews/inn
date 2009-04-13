@@ -133,7 +133,8 @@ sub read_nocem {
     my $inhdr = 1;
     my $i = 0;
     my $body = '';
-    my ($from, $msgid);
+    my $from = '';
+    my $msgid = '<>';
     while (<$artfh>) {
         last if $i++ > 200;
         s/\r\n$/\n/;
