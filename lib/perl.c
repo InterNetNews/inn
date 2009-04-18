@@ -47,7 +47,7 @@ bool PerlFilterActive = false;
 CV *perl_filter_cv;
 
 /* The embedded Perl interpretor. */
-static PerlInterpreter *PerlCode;
+static PerlInterpreter *PerlCode = NULL;
 
 
 static void LogPerl(void)
@@ -230,15 +230,17 @@ int PERLreadfilter(char *filterfile, const char *function)
 
 
 /*
-**  Stops using the Perl filter
+**  Stops using the Perl filter.
 */
 void PerlClose(void)
 {
-   perl_destruct(PerlCode);
-   perl_free(PerlCode);
+   if (PerlCode !=  NULL) {
+      perl_destruct(PerlCode);
+      perl_free(PerlCode);
 #ifdef PERL_SYS_TERM
-   PERL_SYS_TERM();
+      PERL_SYS_TERM();
 #endif
+   }
    PerlFilterActive = false;
 }
 
