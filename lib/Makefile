@@ -18,10 +18,10 @@ SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c commands.c conca
 		xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = alloca.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
-		getpagesize.c hstrerror.c inet_aton.c inet_ntoa.c memcmp.c \
-		mkstemp.c pread.c pwrite.c setenv.c setproctitle.c \
-		strcasecmp.c strlcat.c strlcpy.c strspn.c \
+EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
+		getpagesize.c hstrerror.c inet_aton.c inet_ntoa.c inet_ntop.c memcmp.c \
+		mkstemp.c pread.c pwrite.c setenv.c seteuid.c setproctitle.c \
+		snprintf.c strcasecmp.c strlcat.c strlcpy.c strspn.c \
 		strtok.c symlink.c
 
 OBJECTS       = $(LIBOBJS) $(ALLOCA) $(SOURCES:.c=.o)
@@ -305,6 +305,9 @@ xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 alloca.o: alloca.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
+asprintf.o: asprintf.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h
 fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
@@ -330,6 +333,9 @@ inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
+inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
@@ -344,11 +350,16 @@ pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
+seteuid.o: seteuid.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h
 setproctitle.o: setproctitle.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/portable/setproctitle.h ../include/config.h \
   ../include/inn/messages.h ../include/inn/defines.h
+snprintf.o: snprintf.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h
 strcasecmp.o: strcasecmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
