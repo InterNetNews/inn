@@ -181,21 +181,6 @@ NCwriteshutdown(CHANNEL *cp, const char *text)
 
 
 /*
-**  If a Message-ID is bad, write a reject message and return true.
-*/
-static bool
-NCbadid(CHANNEL *cp, char *p)
-{
-    if (ARTidok(p))
-	return false;
-
-    NCwritereply(cp, NNTP_HAVEIT_BADID);
-    syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
-    return true;
-}
-
-
-/*
 **  We have an entire article collected; try to post it.  If we're
 **  not running, drop the article or just pause and reschedule.
 */
@@ -309,8 +294,12 @@ NChead(CHANNEL *cp)
     for (p = cp->In.data + cp->Start + strlen("head"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
-    if (NCbadid(cp, p))
+
+    if (!ARTidok(p)) {
+        NCwritereply(cp, NNTP_SYNTAX_USE);
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
+    }
 
     if (Mode == OMthrottled) {
         NCwriteshutdown(cp, ModeReason);
@@ -360,8 +349,12 @@ NCstat(CHANNEL *cp)
     for (p = cp->In.data + cp->Start + strlen("stat"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
-    if (NCbadid(cp, p))
+
+    if (!ARTidok(p)) {
+        NCwritereply(cp, NNTP_SYNTAX_USE);
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
+    }
 
     if (Mode == OMthrottled) {
         NCwriteshutdown(cp, ModeReason);
@@ -502,8 +495,12 @@ NCihave(CHANNEL *cp)
     for (p = cp->In.data + cp->Start + strlen("ihave"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
-    if (NCbadid(cp, p))
+
+    if (!ARTidok(p)) {
+        NCwritereply(cp, NNTP_HAVEIT_BADID);
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
+    }
 
     if (Mode == OMthrottled) {
         NCwriteshutdown(cp, ModeReason);
