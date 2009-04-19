@@ -192,7 +192,7 @@ CMDgroup(int ac, char *av[])
         }
 
         if (count == 0) {
-            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh, ARThigh+1, group);
+            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh+1, ARThigh, group);
             Printf(".\r\n");
         } else {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
