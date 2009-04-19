@@ -285,12 +285,18 @@ $HTML_EXTENSION = defined($HTML_EXTENSION)
 umask 022;
 
 BEGIN {
+  #
+  # Parentheses can be omitted in a function call if and only if the
+  # function is already declared at that point. However, an undeclared
+  # identifier without parentheses is a syntax error. To make usage of
+  # GD.pm optional always write gdSmallFont(), etc.
+  #
   eval "use GD;";
   $HAVE_GD = $@ eq '';
   if ($HAVE_GD) {
     my $gd = new GD::Image(1,1);
-    $GD_FORMAT = "gif" if $gd->can('gif');
-    $GD_FORMAT = "png" if $gd->can('png');
+    $GD_FORMAT = 'gif' if $gd->can('gif');
+    $GD_FORMAT = 'png' if $gd->can('png');
   }
   $HAVE_GD;
 };
@@ -1247,11 +1253,11 @@ sub Graph3d {
       $t += ${$val[$i]}{$k} if defined ${$val[$i]}{$k};
     }
     $max = $t if $max < $t;
-    $t = length "$k";
+    $t = length($k);
     $max_size = $t if $max_size < $t;
   }
   $max = 1 unless $max;
-  $max_size *= gdSmallFont->width;
+  $max_size *= gdSmallFont()->width;
 
   # relief
   my ($rx, $ry) = (15, 5);
@@ -1260,7 +1266,7 @@ sub Graph3d {
   my ($mt, $mb) = (40, 40);
   my $ml = $max_size > 30 ? $max_size + 8 : 30;
 
-  my $mr = 7 + (length "$max") * gdSmallFont->width;
+  my $mr = 7 + length($max) * gdSmallFont()->width;
   $mr = 30 if $mr < 30;
 
   # height of each bar
@@ -1313,8 +1319,8 @@ sub Graph3d {
   $image->rectangle (0, 0, $xmax - 1, $size * $d + $mt + $mb - 1, $black);
   $image->line (0, $mt - 5, $xmax - 1, $mt - 5, $black);
   for $i (0 .. $n - 1) {
-    $image->string (gdSmallFont, $i * $xmax / $n + $mt - 10 + $rx,
-		    ($mt - gdSmallFont->height) / 2, "$$labels[$i]", $black);
+    $image->string (gdSmallFont(), $i * $xmax / $n + $mt - 10 + $rx,
+		    ($mt - gdSmallFont()->height) / 2, "$$labels[$i]", $black);
     $image->filledRectangle ($i * $xmax / $n + 10, 8 + $ry / 2,
 		       $i * $xmax / $n + $mt - 10, $mt - 12, $col[$i][0]);
     $image->rectangle ($i * $xmax / $n + 10, 8 + $ry / 2,
@@ -1341,8 +1347,8 @@ sub Graph3d {
     }
   }
   # Title
-  $image->string (gdMediumBoldFont, ($xmax - gdMediumBoldFont->width *
-		  (length "$title")) / 2, $ymax - gdMediumBoldFont->height - 7,
+  $image->string (gdMediumBoldFont(), ($xmax - gdMediumBoldFont()->width *
+		  length($title)) / 2, $ymax - gdMediumBoldFont()->height - 7,
 		  "$title", $black);
 
   my $e = $mt - $h + $d;
@@ -1377,27 +1383,27 @@ sub Graph3d {
 			$ml + $k * ($xmax - $ml - $mr - $rx) / $nn,
 			$size * $d + $mt + 5, $black);
     my $t = sprintf "%d%%", $k * 10;
-    $image->string (gdSmallFont, $ml + $k * ($xmax - $ml - $mr - $rx) / $nn -
-		    (length "$t") * gdSmallFont->width / 2,
+    $image->string (gdSmallFont(), $ml + $k * ($xmax - $ml - $mr - $rx) / $nn -
+		    length($t) * gdSmallFont()->width / 2,
 		    $size * $d + $mt + 6, "$t", $black);
   }
   {
     my $t = sprintf "%d%%", 0;
     $image->line ($ml, $size * $d + $mt, $ml, $size * $d + $mt + 5, $black);
-    $image->string (gdSmallFont, $ml - (length "$t") * gdSmallFont->width / 2,
+    $image->string (gdSmallFont(), $ml - length($t) * gdSmallFont()->width / 2,
 		    $size * $d + $mt + 6, "$t", $black);
     $image->line ($xmax - $mr, $size * $d + $mt - $ry,
 		  $xmax - $mr - $rx, $size * $d + $mt, $black);
     $image->line ($xmax - $mr - $rx, $size * $d + $mt,
 		  $xmax - $mr - $rx, $size * $d + $mt + 5, $black);
     $t = sprintf "%d%%", 100;
-    $image->string (gdSmallFont, $xmax - $mr - $rx
-		    - (length "$t") * gdSmallFont->width / 2,
+    $image->string (gdSmallFont(), $xmax - $mr - $rx
+		    - length($t) * gdSmallFont()->width / 2,
 		    $size * $d + $mt + 6, "$t", $black);
   }
   foreach $k (sort {${$val[0]}{$b} <=> ${$val[0]}{$a}} keys (%{$val[0]})) {
-    $image->string (gdSmallFont, $ml - (length "$k") * gdSmallFont->width - 3,
-                    $e + $h / 2 - gdSmallFont->height / 2, "$k", $black);
+    $image->string (gdSmallFont(), $ml - length($k) * gdSmallFont()->width - 3,
+                    $e + $h / 2 - gdSmallFont()->height / 2, "$k", $black);
     my $t = 0;
     $image->line ($ml + ($t + ${$val[0]}{$k}) * $r + $rx - $rx, $e + $h,
                   $ml + ($t + ${$val[0]}{$k}) * $r + $rx, $e - $ry + $h,
@@ -1433,20 +1439,20 @@ sub Graph3d {
     }
     # total length (offered)
     $image->filledRectangle ($ml + $t * $r + $rx + 3,
-			     $e - 2 - gdSmallFont->height / 2,
+			     $e - 2 - gdSmallFont()->height / 2,
 			     $ml + $t * $r + $rx + 4 +
-			     gdSmallFont->width * length $t,
-			     $e - 6 + gdSmallFont->height / 2, $white);
-    $image->string (gdSmallFont, $ml + $t * $r + $rx + 5,
-		    $e - 3 - gdSmallFont->height / 2, "$t", $black);
+			     gdSmallFont()->width * length $t,
+			     $e - 6 + gdSmallFont()->height / 2, $white);
+    $image->string (gdSmallFont(), $ml + $t * $r + $rx + 5,
+		    $e - 3 - gdSmallFont()->height / 2, "$t", $black);
     # first value (accepted)
     $image->filledRectangle ($ml + $t * $r + $rx + 3,
-			     $e - 4 + gdSmallFont->height / 2,
+			     $e - 4 + gdSmallFont()->height / 2,
 			     $ml + $t * $r + $rx + 4 +
-			     gdSmallFont->width * length "${$val[0]}{$k}",
-			     $e - 2 + gdSmallFont->height, $white);
-    $image->string (gdSmallFont, $ml + $t * $r + $rx + 5,
-		    $e - 5 + gdSmallFont->height / 2, ${$val[0]}{$k}, $black);
+			     gdSmallFont()->width * length(${$val[0]}{$k}),
+			     $e - 2 + gdSmallFont()->height, $white);
+    $image->string (gdSmallFont(), $ml + $t * $r + $rx + 5,
+		    $e - 5 + gdSmallFont()->height / 2, ${$val[0]}{$k}, $black);
     $e += $d;
   }
   open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
@@ -1523,8 +1529,8 @@ sub Histo($$$$$$$$) {
 
   $image->transparent ($white) if $transparent;
 
-  my $FontWidth = gdSmallFont->width;
-  my $FontHeight = gdSmallFont->height;
+  my $FontWidth = gdSmallFont()->width;
+  my $FontHeight = gdSmallFont()->height;
 
   $marginl = 60;
   $marginr = 30;
@@ -1554,14 +1560,14 @@ sub Histo($$$$$$$$) {
   }
 
   # Title
-  $image->string (gdMediumBoldFont,
-		  ($xmax - length ($title) * gdMediumBoldFont->width) / 2,
-		  ($margint - $shy - gdMediumBoldFont->height) / 2,
+  $image->string (gdMediumBoldFont(),
+		  ($xmax - length ($title) * gdMediumBoldFont()->width) / 2,
+		  ($margint - $shy - gdMediumBoldFont()->height) / 2,
 		  $title, $coltxt);
 
   # Labels
-  $image->string (gdSmallFont, $marginl / 2, $margint / 2, $labely, $coltxt);
-  $image->string (gdSmallFont, $xmax - $marginr / 2 -
+  $image->string (gdSmallFont(), $marginl / 2, $margint / 2, $labely, $coltxt);
+  $image->string (gdSmallFont(), $xmax - $marginr / 2 -
 		  $FontWidth * length ($labelx), $ymax - $marginb / 2,
 		  $labelx, $coltxt);
 
@@ -1619,12 +1625,12 @@ sub Histo($$$$$$$$) {
     $image->line ($marginl - $shx, $ymax - $marginb -
 		  $i * ($ymax - $marginb - $margint - $shy) / $part,
 		  $marginl, $ymax - $marginb - $shy -
-		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled);
+		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled());
     $image->line ($marginl, $ymax - $marginb - $shy -
 		  $i * ($ymax - $marginb - $margint - $shy) / $part,
 		  $xmax - $marginr, $ymax - $marginb - $shy -
-		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled);
-    $image->string (gdSmallFont,
+		  $i * ($ymax - $marginb - $margint - $shy) / $part, gdStyled());
+    $image->string (gdSmallFont(),
 		    $marginl - $shx - $FontWidth * length ("$j") - 7,
 		    $ymax - $marginb -
 		    ($i) * ($ymax - $marginb - $margint - $shy) / ($part) -
@@ -1647,7 +1653,7 @@ sub Histo($$$$$$$$) {
 		    $marginl + ($i - 1) * $w - $shx, $ymax - $marginb + 3,
 		    $coltxt);
       my $ii = sprintf "%d", $i / $MAX;
-      $image->string (gdSmallFont,
+      $image->string (gdSmallFont(),
 		      $marginl + ($i - 0.5) * $w + 1 -
 		      ($FontWidth * length ($$labels[$i-1])) / 2 - $shx,
 		      $ymax - $marginb + 3, $$labels[$i-1], $coltxt)
@@ -1840,13 +1846,13 @@ sub Chrono {
   $image->filledRectangle (0, 0, $xmax, $ymax, $gray);
   $image->transparent ($gray) if $transparent;
 
-  my $FontWidth = gdSmallFont->width;
-  my $FontHeight = gdSmallFont->height;
+  my $FontWidth = gdSmallFont()->width;
+  my $FontHeight = gdSmallFont()->height;
   $image->setStyle ($black, &GD::gdTransparent, &GD::gdTransparent);
 
   my $marginl = 13 + $FontWidth * length (sprintf "%d", $y_max * $factor);
   my $marginr = 15 + 4 * $FontWidth; # "100%"
-  my $margint = 2 * $FontHeight + gdMediumBoldFont->height;
+  my $margint = 2 * $FontHeight + gdMediumBoldFont()->height;
   my $marginb = 2 * $FontHeight + $size;
   my $xratio = ($xmax - $marginl - $marginr) / ($x_max - $x_min);
   my $yratio = ($ymax - $margint - $marginb) / ($y_max - $y_min);
@@ -1914,17 +1920,17 @@ sub Chrono {
     my $t = $ymax - $margint - $marginb;
     $image->line ($marginl, $ymax - $marginb - $i / 100 * $t,
 		  $xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
-		  &GD::gdStyled);
+		  gdStyled());
     $image->line ($xmax - $marginr, $ymax - $marginb - $i / 100 * $t,
 		  $xmax - $marginr + 3, $ymax - $marginb - $i / 100 * $t,
 		  $black);
     $image->line ($marginl - 3, $ymax - $marginb - $i / 100 * $t,
 		  $marginl, $ymax - $marginb - $i / 100 * $t,
 		  $black);
-    $image->string (&GD::gdSmallFont, $xmax - $marginr + 8, - $FontHeight / 2 +
+    $image->string (gdSmallFont(), $xmax - $marginr + 8, - $FontHeight / 2 +
 		    $ymax - $marginb - $i / 100 * $t, "$i%", $black);
     my $s = sprintf "%d", $y_max * $i / 100 * $factor;
-    $image->string (&GD::gdSmallFont, $marginl - 5 - $FontWidth * length $s,
+    $image->string (gdSmallFont(), $marginl - 5 - $FontWidth * length $s,
 		    - $FontHeight / 2 +
 		    $ymax - $marginb - $i / 100 * $t, $s, $black);
   }
@@ -1943,10 +1949,10 @@ sub Chrono {
     while ($n < $x_max) {
       $t = $marginl + ($n - $x_min) * $xratio;
       if ($n > $x_min) {
-	$image->line ($t, $margint, $t, $ymax - $marginb, &GD::gdStyled);
+	$image->line ($t, $margint, $t, $ymax - $marginb, gdStyled());
 	$image->line ($t, $ymax - $marginb, $t, $ymax - $marginb + 2, $black);
       }
-      $image->string (&GD::gdSmallFont, $FontWidth * 7 / 2 + $t,
+      $image->string (gdSmallFont(), $FontWidth * 7 / 2 + $t,
 		      $ymax - $marginb + 4, (sprintf "Week %02d", $f), $black)
 	if ($n + $w / 2 > $x_min) && ($n + $w / 2 < $x_max);
       $f++;
@@ -1987,12 +1993,12 @@ sub Chrono {
     while ($t < $x_max) {
       $x = $marginl + ($t - $x_min) * $xratio;
       if ($t > $x_min) {
-	$image->line ($x, $margint, $x, $ymax - $marginb, &GD::gdStyled);
+	$image->line ($x, $margint, $x, $ymax - $marginb, gdStyled());
 	$image->line ($x, $ymax - $marginb, $x,
 		      $ymax - $marginb + 2, $black);
 	$image->line ($x, $margint, $x, $ymax - $marginb, $red) unless $i;
       }
-      $image->string (&GD::gdSmallFont,
+      $image->string (gdSmallFont(),
 		      $mm * $xratio / 2 - $FontWidth * 3 / 2 +
 		      $x, $ymax - $marginb + 4, (sprintf "%s", $m[$i]),
 		      $black)
@@ -2017,27 +2023,27 @@ sub Chrono {
   $image->filledPolygon($poly, $red);
 
   # Title
-  $image->string (&GD::gdMediumBoldFont,
+  $image->string (gdMediumBoldFont(),
 		  $xmax / 2 - $FontWidth * length ($title) / 2, 4,
 		  $title, $black);
 
   # Legend
   my $y_in = $ymax - $size - $FontHeight + 5;
-  $image->string (&GD::gdSmallFont, $marginl, $y_in, $legend_in, $col_in);
-  $image->string (&GD::gdSmallFont, $xmax / 4, $y_in,
+  $image->string (gdSmallFont(), $marginl, $y_in, $legend_in, $col_in);
+  $image->string (gdSmallFont(), $xmax / 4, $y_in,
 		  (sprintf "Min: %5.1f $unit", $min_in * $factor), $black);
-  $image->string (&GD::gdSmallFont, $xmax / 2, $y_in,
+  $image->string (gdSmallFont(), $xmax / 2, $y_in,
 		(sprintf "Avg: %5.1f $unit", $s_in / $t_in * $factor), $black);
-  $image->string (&GD::gdSmallFont, 3 * $xmax / 4, $y_in,
+  $image->string (gdSmallFont(), 3 * $xmax / 4, $y_in,
 		  (sprintf "Max: %5.1f $unit", $max_in * $factor), $black);
 
   my $y_out = $ymax - $size + 5;
-  $image->string (&GD::gdSmallFont, $marginl, $y_out, $legend_out, $col_out);
-  $image->string (&GD::gdSmallFont, $xmax / 4, $y_out,
+  $image->string (gdSmallFont(), $marginl, $y_out, $legend_out, $col_out);
+  $image->string (gdSmallFont(), $xmax / 4, $y_out,
 		  (sprintf "Min: %5.1f $unit", $min_out * $factor), $black);
-  $image->string (&GD::gdSmallFont, $xmax / 2, $y_out,
+  $image->string (gdSmallFont(), $xmax / 2, $y_out,
 	      (sprintf "Avg: %5.1f $unit", $s_out / $t_out * $factor), $black);
-  $image->string (&GD::gdSmallFont, 3 * $xmax / 4, $y_out,
+  $image->string (gdSmallFont(), 3 * $xmax / 4, $y_out,
 		  (sprintf "Max: %5.1f $unit", $max_out * $factor), $black);
 
   open (IMG, "> $filename") || die "Error: Can't open \"$filename\": $!\n";
