@@ -23,11 +23,11 @@ if [ $# -gt 0 ]; then
 fi
 
 ##  Copy the message without excluded newsgroups and append local newsgroups.
-cat | ${EGREP} -v "${2:-^#}" >${T}/$$msg
+cat | ${AWK} '{ if ($1 !~ /'"${2:-^#}"'/) { print $0 } }' >${T}/$$msg
 test -f ${LOCALGROUPS} && cat ${LOCALGROUPS} | ${EGREP} -v "^#" >>${T}/$$msg
 
 ##  Get the top-level newsgroup names from the message and turn it into
-##  an egrep pattern.
+##  a regexp.
 PATS=`${SED} <${T}/$$msg \
         -e 's/[ 	].*//' -e 's/\..*//' \
         -e 's/^!//' -e '/^$/d' \
@@ -37,17 +37,16 @@ PATS=`${SED} <${T}/$$msg \
     | ${SED} -e 's/|$//'`
 
 ##  Check for missing and obsolete newsgroups in active.
-${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1:-.}" | ${SED} 's/ .*//' | ${SORT} >${T}/$$active
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/[ 	].*//' | ${SORT} >${T}/$$newsgrps
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/)) { print $1 } }' ${ACTIVE} | ${SORT} >${T}/$$active
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/)) { print $1 } }' ${T}/$$msg | ${SORT} >${T}/$$newsgrps
 
 comm -13 ${T}/$$active ${T}/$$newsgrps >${T}/$$missing
 comm -23 ${T}/$$active ${T}/$$newsgrps >${T}/$$remove
 
 ##  Check for proper moderation flags in active (we need to be careful
 ##  when dealing with wire-formatted articles manually fed from the spool).
-${EGREP} "${PATS}" ${ACTIVE} | ${EGREP} "${1:-.}" | ${SED} -n '/ m$/s/ .*//p' | ${SORT} >${T}/$$amod.all
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/\r\?$//' \
-    | ${SED} -n '/ (Moderated)$/s/[ 	].*//p' | ${SORT} >${T}/$$ng.mod
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/) && ($0 ~ / m$/)) { print $1 } }' ${ACTIVE} | ${SORT} >${T}/$$amod.all
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/) && ($0 ~ / \(Moderated\)\r?$/)) { print $1 } }' ${T}/$$msg | ${SORT} >${T}/$$ng.mod
 
 comm -12 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.mod
 comm -23 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.unmod
@@ -61,8 +60,8 @@ comm -23 ${T}/$$nm.all ${T}/$$add >${T}/$$notmod
 ##  Check for missing and obsolete newsgroups descriptions (possibly
 ##  in wire format).  A few sed implementations do not recognize
 ##  "[	]\+", so we use "	[	]*" instead.
-${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} "${1:-.}" | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$localdesc
-${EGREP} "${PATS}" ${T}/$$msg | ${EGREP} "${1:-.}" | ${SED} 's/\r\?$//' \
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/)) { print $0 } }' ${NEWSGROUPS} | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$localdesc
+${AWK} '{ if (($1 ~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/)) { print $0 } }' ${T}/$$msg | ${SED} 's/\r\?$//' \
     | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$newdesc
 
 comm -13 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$missingdesc
@@ -70,8 +69,8 @@ comm -23 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$removedesc
 
 ##  If the -u flag is given, update the newsgroups descriptions.
 if [ "${UPDATEDESC}" = "true" ] ; then
-    ${EGREP} -v "${PATS}" ${NEWSGROUPS} >${T}/$$updatednewsgroups
-    ${EGREP} "${PATS}" ${NEWSGROUPS} | ${EGREP} -v "${1:-.}" >>${T}/$$updatednewsgroups
+    ${AWK} '{ if ($1 !~ /'"${PATS}"'/) { print $0 } }' ${NEWSGROUPS} >${T}/$$updatednewsgroups
+    ${AWK} '{ if (($1 !~ /'"${1:-.}"'/) && ($1 ~ /'"${PATS}"'/)) { print $0 } }' ${NEWSGROUPS} >>${T}/$$updatednewsgroups
     cat ${T}/$$newdesc >>${T}/$$updatednewsgroups
     mv -f ${NEWSGROUPS} ${NEWSGROUPS}.old
     ${SORT} ${T}/$$updatednewsgroups | ${SED} 's/	[	]*/	/' \
