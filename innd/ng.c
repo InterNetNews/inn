@@ -399,10 +399,9 @@ NGrenumber(NEWSGROUP *ngp)
 }
 
 /*
- * Set the low article count for the given group.
- * Like NGrenumber(), but we don't scan the spool,
- * and the himark is ignored.
- */
+** Set the low article count for the given group.
+** Like NGrenumber(), but we don't query the overview database.
+*/
 bool
 NGlowmark(NEWSGROUP *ngp, long lomark)
 {
@@ -419,6 +418,20 @@ NGlowmark(NEWSGROUP *ngp, long lomark)
             LogName, MaxLength(start, start));
         return false;
     }
+    /* Check whether the high water mark is more than the low water mark
+     * minus one (in the case of an empty newsgroup).  If not, we consider
+     * that the newsgroup is empty and we increase the high water mark. */
+    l = atol(f2);
+    if (l+1 < lomark) {
+        syslog(L_NOTICE, RENUMBER, LogName, ngp->Name, "hi", l, lomark-1);
+        if (!FormatLong(f2, lomark-1, f3 - f2 - 1)) {
+            syslog(L_ERROR, NORENUMBER, LogName, ngp->Name, "hi");
+            return false;
+        }
+        ngp->Last = lomark-1;
+        ICDactivedirty++;
+    }
+    /* Update the low water mark. */
     l = atol(f3);
     if (lomark != l) {
         if (lomark < l)
