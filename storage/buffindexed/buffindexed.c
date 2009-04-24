@@ -2100,10 +2100,9 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
   GROUPlock(gloc, INN_LOCK_WRITE);
   ge = &GROUPentries[gloc.recno];
   if (ge->count == 0) {
-    if (ge->low < ge->high)
-      ge->low = ge->high;
-    if (lo)
-      *lo = ge->low + 1;
+    ge->low = ge->high + 1;
+    if (lo != NULL)
+      *lo = ge->low;
     ge->expired = time(NULL);
     GROUPlock(gloc, INN_LOCK_UNLOCK);
     return true;
@@ -2158,18 +2157,18 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
       return false;
     }
   }
-  if (newge.low == 0)
-    /* no article for the group */
+  if (newge.low == 0) {
+    /* No article for the group. */
     newge.low = newge.high;
+  }
+  if (newge.count == 0) {
+    /* The low water mark should be one more than the high water mark
+     * when there is no article in the group. */
+    newge.low = newge.high + 1;
+  }
   *ge = newge;
-  if (lo) {
-    if (ge->count == 0) {
-      if (ge->low < ge->high)
-	  ge->low = ge->high;
-      /* lomark should be himark + 1, if no article for the group */
-      *lo = ge->low + 1;
-    } else
-      *lo = ge->low;
+  if (lo != NULL) {
+    *lo = ge->low;
   }
   ovclosesearch(handle, true);
   ge->expired = time(NULL);
