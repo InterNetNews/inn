@@ -22,6 +22,15 @@ control messages.  (It is included with Perl itself in 5.8.0 and later.)
 
 =item *
 
+Checkgroups control messages are now differently handled by B<controlchan>:
+all matching lines in F<control.ctl> will be used for a given checkgroups
+and a B<doit> action will really be executed (adding, removing and changing
+the status of newsgroups).  You should make sure that your local
+configuration does not rely on the previous behaviour of only mailing
+changes, without actually performing them.
+
+=item *
+
 You should use the new F<control.ctl.local> file shipped with INN in
 I<pathetc> and, at the same time, update your F<control.ctl> and
 F<moderators> files.  Also make sure that your F<active.times>,
@@ -172,7 +181,9 @@ described in USEPRO and can handle character set conversions of newsgroup
 descriptions.  The C<MIME::Parser> and C<Encode> modules are used.
 Processing control messages has been greatly improved, especially
 checkgroups:  the F<active> and F<newsgroups> files are now properly
-updated when they are processed.
+updated when they are processed, and all matching lines in F<control.ctl>
+for a given checkgroups are honoured (which for instance allows to use
+both B<drop> and B<doit> actions for the same checkgroups message).
 
 A new F<control.ctl.local> file has also been added in I<pathetc>.  Rules
 set in that file override rules in F<control.ctl>, allowing administrators

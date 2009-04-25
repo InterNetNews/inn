@@ -136,63 +136,64 @@ while (<STDIN>) {
     $progname = $1;
 
     # Do we want to process the message?  Let's check the permissions.
-    my @charset_from;
-    my ($action, $logname, $newsgrouppats, $charset_to) =
-        ctlperm($progname, $sender, $progparams[0],
-                $token, $article, \@charset_from);
+    my (@charset_from, @maxchanges, @matches);
+    my $exclusionpats = '';
+    my $droppats = '';
+    my $charset_to = ctlperm($progname, $sender, $progparams[0],
+                             $token, $article, \@charset_from,
+                             \@maxchanges, \@matches);
 
-    if ($action eq 'drop') {
-        $parser->filer->purge;
-        next;
-    }
+    foreach my $i (0..$#matches) {
+        my $action = $matches[$i][0] if $matches[$i][0];
+        my $logname = $matches[$i][1] if $matches[$i][1];
+        $progparams[0] = $matches[$i][2] if $matches[$i][2];
 
-    if ($action eq '_pgpfail') {
-        my $type = '';
-        if ($progname and $progname eq 'newgroup') {
-            if ($progparams[1] and $progparams[1] eq 'moderated') {
-                $type = 'm ';
-            } else {
-                $type = 'y ';
+        if ($action eq '_pgpfail') {
+            my $type = '';
+            if ($progname and $progname eq 'newgroup') {
+                if ($progparams[1] and $progparams[1] eq 'moderated') {
+                    $type = 'm ';
+                } else {
+                    $type = 'y ';
+                }
             }
+            logmsg("skipping $progname $type$sender"
+                . " (pgpverify failed) in $curmsgid");
+            next;
         }
-        logmsg("skipping $progname $type$sender"
-            . "(pgpverify failed) in $curmsgid");
-        $parser->filer->purge;
-        next;
-    }
 
-    # used by checkgroups. Convert from perl regexp to grep regexp.
-    if (local $_ = $newsgrouppats) {
-        s/\$\|/|/g;
-        s/[^\\]\.[^*]/?/g;
-        s/\$//;
-        s/\.\*/*/g;
-        s/\\([\$\+\.])/$1/g;
-        $progparams[0] = $_;
-    }
+        # Find the appropriate module and call it.
+        my $subname = "control_$progname";
+        my $subfind = \&$subname;
+        if (not defined &$subfind) {
+            if ($logname) {
+                logger($logname, "Unknown control message by $sender",
+                    $article);
+            } else {
+                logmsg("Unknown \"$progname\" control by $sender");
+            }
+            next;
+        }
 
-    # find the appropriate module and call it
-    my $subname = "control_$progname";
-    my $subfind = \&$subname;
-    if (not defined &$subfind) {
-        if ($logname) {
-            logger($logname, "Unknown control message by $sender",
-                $article);
+        my $approved = $hdr{'approved'} ? 1 : 0;
+        logmsg("$subname, " . join(' ', @progparams)
+            . " $sender $replyto $token, $exclusionpats, $droppats,"
+            . " $charset_to, $sitepath, $action"
+            . ($logname ? "=$logname" : '') .", $approved");
+
+        if ($action ne 'drop') {
+            &$subfind(\@progparams, $sender, $replyto,
+                $sitepath, $action, $logname, $approved, $article,
+                \@charset_from, $charset_to, $exclusionpats, $droppats,
+                \@maxchanges);
+
+            $exclusionpats .= '|' if $exclusionpats;
+            $exclusionpats .= $progparams[0];
         } else {
-            logmsg("Unknown \"$progname\" control by $sender");
+            $droppats .= '|' if $droppats;
+            $droppats .= $progparams[0];
         }
-        $parser->filer->purge;
-        next;
     }
-
-    my $approved = $hdr{'approved'} ? 1 : 0;
-    logmsg("$subname, " . join(' ', @progparams)
-        . " $sender $replyto $token, $sitepath, $action"
-        . ($logname ? "=$logname" : '') .", $approved");
-
-    &$subfind(\@progparams, $sender, $replyto, $sitepath,
-        $action, $logname, $approved, $article,
-        \@charset_from, $charset_to);
 
     $parser->filer->purge;
 }
@@ -270,6 +271,7 @@ sub readctlfile {
             next if not /^(\s+)?[^\#]/ or /^$/;
 
             if (not /^\/(?:local)?encoding\/:/ and
+                not /^\/maxdocheckgroups\/:/ and
                 not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
                 s/.*://;
                 logmsg("$_ is not a valid action for control.ctl", 'err');
@@ -297,17 +299,19 @@ sub readctlfile {
 
 # Parse a control message's permissions.
 sub ctlperm {
-    my ($type, $sender, $newsgroup, $token, $article, $charset_from) = @_;
+    my ($type, $sender, $newsgroup, $token, $article, $charset_from,
+        $maxchanges, $matches) = @_;
 
-    my $action = 'drop';       # Default action.
-    my ($logname, $hier, $charset_to);
+    my %keyresults = ();
+    my ($action, $maxdocheckgroups, $logname, $charset_to);
 
     # newgroup and rmgroup require newsgroup names; check explicitly for that
     # here and return drop if the newsgroup is missing (to avoid a bunch of
     # warnings from undefined values later on in permission checking).
     if ($type eq 'newgroup' or $type eq 'rmgroup') {
         unless ($newsgroup) {
-            return ('drop', undef, undef, undef);
+            push (@$matches, [ 'drop', undef, undef ]);
+            return ('UTF-8');
         }
     }
 
@@ -323,10 +327,15 @@ sub ctlperm {
                 $action = $ctlline[3];
                 $action =~ s/\^(.+)\$/$1/;
                 $action =~ s/\\//g;
-                $hier = $ctlline[2] if $type eq 'checkgroups';
-                # @ctllist is a reversed list so the first match is the last
-                # one in control.ctl followed by control.ctl.local.
-                $matchedaction = 1;
+                ($action, $logname) = split(/=/, $action);
+                if ($type eq 'checkgroups') {
+                    push (@$matches, [ $action, $logname, $ctlline[2] ]);
+                } else {
+                    push (@$matches, [ $action, $logname, undef ]);
+                    # @ctllist is a reversed list so the first match is the last
+                    # one in control.ctl followed by control.ctl.local.
+                    $matchedaction = 1;
+                }
             }
         }
         # 0: /localencoding/  1: encoding
@@ -344,6 +353,14 @@ sub ctlperm {
                 push (@$charset_from, $ctlline[2].':'.$ctlline[3]);
             }
         }
+        # 0: /maxdocheckgroups/  1: from@addr  2: group.*  3: number
+        if ($ctlline[0] eq '^\/maxdocheckgroups\/$') {
+            if ($sender =~ /$ctlline[1]/i) {
+                $maxdocheckgroups = $ctlline[3];
+                $maxdocheckgroups =~ s/\^(.+)\$/$1/;
+                push (@$maxchanges, $ctlline[2].':'.$maxdocheckgroups);
+            }
+        }
     }
 
     if (not defined $charset_to
@@ -351,24 +368,36 @@ sub ctlperm {
         $charset_to = 'UTF-8';  # Default local encoding.
     }
 
-    ($action, $logname) = split(/=/, $action);
+    # Default value when nothing matches the control article.
+    if ($#$matches < 0) {
+        push (@$matches, [ 'drop', undef, undef ]);
+    }
 
-    if ($action =~ /^verify-(.+)/) {
-        my $keyowner = $1;
-        if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
-            my $pgpresult = defined &local_pgpverify ?
-                local_pgpverify($token, $article) : pgpverify($token);
-            if ($keyowner eq $pgpresult) {
-                $action = 'doit';
-            } else {
-                $action = '_pgpfail';
-            }
-        } else {
-            $action = 'mail';
+    # Default value appended to the end of @maxchanges.
+    push (@$maxchanges, '^.*$:10');
+
+    foreach my $i (0..$#$matches) {
+        if ($$matches[$i][0] =~ /^verify-(.+)/) {
+            my $keyowner = $1;
+
+            if (!exists($keyresults{$keyowner})) {
+                if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
+                    my $pgpresult = defined &local_pgpverify ?
+                        local_pgpverify($token, $article) : pgpverify($token);
+                    if ($keyowner eq $pgpresult) {
+                        $keyresults{$keyowner} = 'doit';
+                    } else {
+                        $keyresults{$keyowner} = '_pgpfail';
+                    }
+                } else {
+                    $keyresults{$keyowner} = 'mail';
+                }
+           }
+           $$matches[$i][0] = $keyresults{$keyowner};
         }
     }
 
-    return ($action, $logname, $hier, $charset_to);
+    return ($charset_to);
 }
 
 # Write stuff to a log or send mail to the news admin.

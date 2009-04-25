@@ -21,11 +21,77 @@ All other lines should consist of four fields separated by colons:
 
     <type>:<from>:<newsgroups>:<action>
 
-Lines are matched in order and the last matching line in the file will be used.
+Lines are matched in order and the last matching line in the file will
+be used, except for checkgroups messages which are handled differently
+(every matching line is used).
 
 The first field, <type>, is the type of control message for which this
 line is valid.  It should either be the name of a control message or the
-word C<all> to indicate that it applies to all control messages.
+word C<all> to indicate that it applies to all control messages.  Besides,
+the following special types are understood:
+
+=over 4
+
+=item B</encoding/>
+
+This type specifies the encoding of newgroup and checkgroups control
+messages so that new descriptions could be decoded the right way.
+
+    /encoding/:*:cn.*:gb18030
+
+means that a description for a newsgroup in the Chinese cn.*
+hierarchy will be decoded as though it were encoded in GB18030,
+unless a charset is specified in the control message (in such a case,
+the charset mentioned in the message is used).  However, it is possible
+to override the mentioned charset if C<=force> is appended after
+the encoding.  For instance,
+
+    /encoding/:*:scout.forum.chinese:big5=force
+
+means that the description for scout.forum.chinese will always
+be decoded as though it were encoded in Big5, no matter the charset
+of the corresponding control message.
+
+The default value when no encoding is mentioned (or when the
+specified encoding is unknown) is C<CP1252>.
+
+The last matching line for a given newsgroup name in F<control.ctl>
+will be used.
+
+=item B</localencoding/>
+
+When this type is used, the line consist of only two fields.  The default
+value when this type does not appear in F<control.ctl> (or when the
+specified charset is unknown) is equivalent to:
+
+    /localencoding/:utf-8
+
+It means that new descriptions in the F<newsgroups> file will be written
+using UTF-8.  And B<controlchan> will try to read existing descriptions,
+so as to see whether they should be updated, as though they were encoded
+in UTF-8.
+
+The last matching line in F<control.ctl> will be used.
+
+=item B</maxdocheckgroups/>
+
+This type specifies the maximum number of changes that could be made
+at one time by a checkgroups before bailing and mailing the changes
+to the admin if no log file was specified.  The default value is C<10>.
+
+    /maxdocheckgroups/:*:*:10
+    /maxdocheckgroups/:*:fr.*:20
+
+Such a configuration means that a checkgroups containing 15 changes
+for the French fr.* hierarchy (newgroups to add, remove or change
+the status) will be automatically honoured whereas a checkgroups
+containing 15 changes for france.* will only have the required
+changes mailed or logged.
+
+The last matching line for a given newsgroup name in F<control.ctl>
+will be used.
+
+=back
 
 The second field, <from>, is a shell-style pattern that matches the e-mail
 address of the person posting the message (with the address first
@@ -33,11 +99,14 @@ converted to lowercase).  The matching is done with rules equivalent to
 those of the shell's I<case> statement; see sh(1) for more details.
 
 If the control message is a newgroup or rmgroup, the third field,
-<newsgroups>, is a shell-style pattern matching the newsgroup affected by
-the control message.  If the control message is a checkgroups, the third
-field is a shell-style pattern matching the newsgroups that should be
-processed for checking.  If the control message is of any other type, the
-third field is ignored.
+<newsgroups>, is a shell-style pattern matching the newsgroup affected
+by the control message (especially C<?> matches exactly one character,
+C<*> matches zero or more characters and C<|> permits to match several
+patterns on the same line S<-- for> instance C<comp.*|humanities.*>
+matches every newsgroup whose name begins with C<comp.> or C<humanities.>).
+If the control message is a checkgroups, the third field is a shell-style
+pattern matching the newsgroups that should be processed for checking.
+If the control message is of any other type, the third field is ignored.
 
 The fourth field, <action>, specifies what action to take with control
 messages that match this line.  The following actions are understood:
@@ -46,13 +115,15 @@ messages that match this line.  The following actions are understood:
 
 =item B<doit>
 
-The action requested by the control message should be performed.  For
-checkgroups messages, this means that the shell commands that should
-be run will be mailed to the news administrator (the argument to
-B<--with-news-master> given at configure time, C<usenet> by default); for
-other commands, this means that the change will be silently performed.  If
-you always want notification of actions taken, use C<doit=mail> instead (see
-below).
+The action requested by the control message should be performed.  It
+means that the change will be silently performed.  For checkgroups messages,
+depending on the value of B</maxdocheckgroups/>, the shell commands that
+should be run may be mailed to the news administrator (the argument to
+B<--with-news-master> given at configure time, C<usenet> by default)
+instead of being performed.
+
+If you always want notification of actions taken, use C<doit=mail> instead
+(see below).
 
 =item B<doifarg>
 
@@ -78,12 +149,20 @@ empty string is equivalent to F</dev/null> and says to log nothing.
 
 If I<file> starts with a slash, it is taken as the absolute filename to
 use for the log file.  Otherwise, the filename is formed by prepending
-I<pathlog> and a slash and appending C<.log>.  In other words, an action
+I<pathlog> and a slash, and appending C<.log>.  In other words, an action
 of C<doit=newgroup> will log to I<pathlog>/newgroup.log.
 
 =item B<drop>
 
-No action is taken and the message is ignored.
+No action is taken and the message is ignored.  For checkgroups messages,
+it means that the newsgroups mentioned will be considered as not existent
+in the checkgroups for its subsequent process.
+
+    checkgroups:*:comp.*:doit
+    checkgroups:*:*binaries*:drop
+
+will for instance remove every newsgroup whose name contains C<binaries>
+in the comp.* hierarchy, even though mentioned in the checkgroups.
 
 =item B<verify-*>
 
@@ -106,7 +185,9 @@ PGP verification is done as for the B<verify-*> action described above, and
 notification of successful newgroup and rmgroup control messages and the
 output of checkgroups messages will be mailed to the news administrator.
 (In the case of checkgroups messages, this means that the shell script that
-should be run will be mailed to the administrator.)
+should be run will be mailed to the administrator.  The subject of the
+mail will contain information on whether the script has already been run,
+depending on the value of B</maxdocheckgroups/>.)
 
 =item B<verify-*>=I<file>
 
@@ -114,7 +195,9 @@ PGP verification is done as for the B<verify-*> action described above,
 and a log entry is written to the specified file as described in
 B<doit>=I<file> above.  (In the case of checkgroups messages, this means
 that the shell script output of the checkgroups message will be written to
-that file.)
+that file.  The initial line of the log will contain information on whether
+the script has already been run, depending on the value of
+B</maxdocheckgroups/>.)
 
 =item B<log>
 
@@ -133,17 +216,13 @@ action.
 
 =back
 
-Processing of a checkgroups message will never actually change the
-F<active> file (the list of groups carried by the server).  The difference
-between a B<doit> or B<verify> action and a B<mail> action for a
-checkgroups control message lies only in what e-mail is sent; B<doit> or
-B<verify> will mail the news administrator a shell script to create,
-delete, or modify newsgroups to match the checkgroups message, whereas
-B<mail> will just mail the entire message.  In either case, the news
-administrator will have to take action to implement the checkgroups
-message, and if that mail is ignored, nothing will be changed.
+The difference between a B<doit> or B<verify> action and a B<mail> action
+for a checkgroups control message lies only in what e-mail is sent; B<doit>
+or B<verify> will mail the news administrator a shell script (which may
+have already been run) to create, delete, or modify newsgroups to match
+the checkgroups message, whereas B<mail> will just mail the entire message.
 
-Use of the B<verify> action for processing newgroup, rmgroup, and
+Use of the B<verify> action for processing newgroup, rmgroup and
 checkgroups messages is STRONGLY recommended.  Abuse of control messages
 is rampant, and authentication via PGP signature is currently the only
 reliable way to be sure that a control message comes from who it claims to
@@ -152,14 +231,14 @@ messages.
 
 In order to use B<verify> actions, the PGP key ring of the news user must
 be populated with the PGP keys of the hierarchy maintainers whose control
-messages you want to honor.  For more details on PGP-authenticated control
+messages you want to honour.  For more details on PGP-authenticated control
 messages and the URL for downloading the PGP keys of major hierarchies,
 see pgpverify(8).
 
 Control messages of type cancel are handled internally by B<innd> and
 cannot be affected by any of the mechanisms described here.
 
-=head1 EXAMPLE
+=head1 EXAMPLES
 
 With the following three lines in F<control.ctl>:
 
@@ -167,35 +246,113 @@ With the following three lines in F<control.ctl>:
     newgroup:group-admin@isc.org:comp.*:verify-news.announce.newgroups
     newgroup:kre@munnari.oz.au:aus.*:mail
 
-a newgroup coming from C<group-admin@isc.org> will be honored if it is for
+a newgroup coming from C<group-admin@isc.org> will be honoured if it is for
 a newsgroup in the comp.* hierarchy and if it has a valid signature
 corresponding to the PGP key with a user ID of C<news.announce.newgroups>.
 If any newgroup claiming to be from C<kre@munnari.oz.au> for a newsgroup
-in the aus.* hierarchy is received, it too will be honored.  All other
+in the aus.* hierarchy is received, it too will be honoured.  All other
 newgroup messages will be ignored.
 
 Besides, if a F<control.ctl.local> file exists and contains:
 
     newgroup:*:comp.lang.*:drop
 
-then a newgroup control article for comp.lang.awk will not be honored
+then a newgroup control article for comp.lang.awk will not be honoured
 even though it comes from C<group-admin@isc.org> with a valid signature.
 
-=head1 WARNINGS
+As for checkgroups, suppose your news server contains these groups for foo.*,
+all of them being unmoderated (C<y> flag in the F<active> file):
 
-The third argument for a line affecting checkgroups does B<not> affect
-whether the line matches.  It is only used after a matching line is found,
-to filter out which newsgroups listed in the checkgroups will be
-processed.  This means that a line like:
+    foo.bar1
+    foo.bar2.first
+    foo.bar2.second
+    foo.bar2.third
+    foo.bar3
+    foo.bar3.first
+    foo.bar3.second
+    foo.bar5
 
-    checkgroups:*:*binaries*:drop
+and you receive the following checkgroups by <foo@bar.com> for foo.*:
 
-will cause B<all> checkgroups control messages to be dropped unless they
-match a line after this one in F<control.ctl>, not just ignore newsgroups
-containing C<binaries> in the name.  The general rule is to never use C<*>
-in the second field for a line matching checkgroups messages.  There is
-unfortunately no way to do what the author of a line like the above
-probably intended to do (yet).
+    foo.bar1          A valid newsgroup.
+    foo.bar3.first    Only one newsgroup in foo.bar3.*.
+    foo.bar4          A newsgroup you want.
+    foo.bar5          A newsgroup you do not want.
+    foo.bar5.first    Another newsgroup you do not want.
+
+with the following F<control.ctl> entries:
+
+    /maxdocheckgroups/:*:foo.*:2
+
+    checkgroups:foo@bar.com:foo.*:verify-key-foo
+    checkgroups:foo@bar.com:foo.bar2.*:doit
+    checkgroups:foo@bar.com:foo.bar3.*:mail
+    checkgroups:foo@bar.com:foo.bar4|foo.bar4.*:doit
+    checkgroups:foo@bar.com:foo.bar5|foo.bar5.*:drop
+
+Then, as F<control.ctl> is processed from bottom, here is what happens:
+
+=over 4
+
+=item 1.
+
+The newsgroups foo.bar5 and foo.bar5.first are marked as unwanted.  But
+nothing is done yet:  other F<control.ctl> entries have to be processed
+with a real action and a set of newsgroups containing foo.bar5 and
+foo.bar5.first.
+
+=item 2.
+
+The newsgroup foo.bar4 is silently created on the news server, with
+the description "A newsgroup you want." added to the F<newsgroups>
+file.  In the absence of encoding values (either in the checkgroups
+message or in B</encoding/> and B</localencoding>), the default is
+to decode the sentence as CP1242 and reencode it as UTF-8.
+
+If C<doit=mail> was used, a mail would be sent to the news administrator
+to inform him that foo.bar4 was successfully created.
+
+=item 3.
+
+The newsgroup foo.bar3.second is no longer present.  A mail is sent
+to the news administrator with a shell script to execute.  When it is
+manually executed, foo.bar3.second will be removed.
+
+Note that the descriptions are handled differently and have already
+been updated without any manual intervention (foo.bar3.first now
+has the description "Only one newsgroup in foo.bar3.*." and
+foo.bar3.second no longer has a description).
+
+=item 4.
+
+The newsgroups foo.bar2.first, foo.bar2.second and foo.bar2.third
+are no longer present.  However, as the maximum number of changes
+that could be made at one time by a checkgroups before bailing
+and mailing the changes to the news administrator is 2, these
+newsgroups are not removed.  A mail is sent with a shell script
+to manually execute in order to remove these groups from
+the news server.
+
+Note that their descriptions are removed from the F<newsgroups> file,
+as well as any other possible descriptions for obsolete newsgroups
+in foo.bar2.*.
+
+=item 5.
+
+The remaining entry is executed if the PGP verification of the
+checkgroups message is successful.  Otherwise, nothing is done
+(especially, foo.bar5 remains on the news server).
+
+In case the PGP signature is verified, foo.bar3 and foo.bar5 are
+removed from the news server.  This entry acts upon newsgroups
+marked as dropped in its scope and newsgroups not already dealt
+with by previous F<control.ctl> entries (like foo.bar3 because
+only foo.bar3.* was previously checked).
+
+Note that if you had wanted to keep foo.bar3 or foo.bar5, you
+could have added them to the F<localgroups> file in I<pathetc>.
+
+=back
 
 =head1 HISTORY
 
@@ -206,6 +363,7 @@ $Id$
 
 =head1 SEE ALSO
 
-controlchan(8), inn.conf(5), innd(8), newsfeeds(5), pgpverify(8), sh(1).
+controlchan(8), inn.conf(5), innd(8), newsfeeds(5), newsgroups(5),
+pgpverify(8), sh(1).
 
 =cut

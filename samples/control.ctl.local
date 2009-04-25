@@ -13,6 +13,11 @@
 ##  Output encoding for the newsgroups file.
 /localencoding/:utf-8
 
+##  Maximum number of changes that could be made at one time
+##  by a checkgroups before bailing and mailing the changes
+##  to the admin if no log file was specified.
+/maxdocheckgroups/:*:*:10
+
 ##  Incoming encodings in newgroup and checkgroups control articles.
 
 # Default (for any description).

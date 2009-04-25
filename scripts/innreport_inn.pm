@@ -2014,6 +2014,9 @@ sub collect($$$$$$) {
                   \s(\S+)             # e-mail
                   \s\S+               # e-mail
                   \s\S+,              # filename
+                  \s(?:\S+)?,         # exclusion pattern
+                  \s(?:\S+)?,         # drop pattern
+                  \s\S+,              # local encoding
                   \s\S+,              # server
                   \s([^=,]+(?:=\S+)?),            # action
                   \s*(.*)             # code
@@ -2033,8 +2036,8 @@ sub collect($$$$$$) {
       $controlchan_doit{$email}++ if $action eq 'doit';
       return 1;
     }
-    # checkgroups processed (no change or not)
-    return 1 if $left =~ /^checkgroups by \S+ processed/o;
+    # checkgroups processed or not (with no change or not)
+    return 1 if $left =~ /^checkgroups by \S+/o;
   }
 
   ###########
