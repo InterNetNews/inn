@@ -107,7 +107,6 @@ backends/overchan
 backends/send-ihave
 backends/send-nntp
 backends/send-uucp
-backends/sendbatch
 backends/sendinpaths
 backends/sendxbatches
 backends/shlock
@@ -185,7 +184,6 @@ samples/nnrpd_access.pl
 samples/nnrpd_access_wrapper.pl
 samples/nnrpd_auth.pl
 samples/nnrpd_auth_wrapper.pl
-samples/sasl.conf
 scripts/inncheck
 scripts/innmail
 scripts/innreport
@@ -213,7 +211,6 @@ site/cycbuff.conf
 site/distrib.pats
 site/distributions
 site/expire.ctl
-site/filter.tcl
 site/filter_innd.pl
 site/filter_innd.py
 site/filter_nnrpd.pl
@@ -242,9 +239,7 @@ site/ovdb.conf
 site/passwd.nntp
 site/radius.conf
 site/readers.conf
-site/sasl.conf
 site/send-uucp.cf
-site/startup.tcl
 site/startup_innd.pl
 site/storage.conf
 site/subscriptions
