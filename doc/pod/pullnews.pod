@@ -133,7 +133,7 @@ when establishing an NNTP connection.
 
 Use an optimized mode:  B<pullnews> checks whether the article already
 exists on the downstream server, before downloading it.  It may help
-for huge articles or a slow link to upstream hosts).
+for huge articles or a slow link to upstream hosts.
 
 =item B<-p> I<port>
 
