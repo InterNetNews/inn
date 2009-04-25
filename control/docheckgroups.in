@@ -23,8 +23,15 @@ if [ $# -gt 0 ]; then
 fi
 
 ##  Copy the message without excluded newsgroups and append local newsgroups.
-cat | ${AWK} '{ if ($1 !~ /'"${2:-^#}"'/) { print $0 } }' >${T}/$$msg
+cat | ${AWK} '{ if ($1 !~ /'"${2:-^#}"'/ && $1) { print $0 } }' >${T}/$$msg
 test -f ${LOCALGROUPS} && cat ${LOCALGROUPS} | ${EGREP} -v "^#" >>${T}/$$msg
+
+##  Exit if there is no matching newsgroup (otherwise docheckgroups is eager
+##  to delete everything).
+test -s ${T}/$$msg || {
+    rm -f ${T}/$$*
+    exit 0
+}
 
 ##  Get the top-level newsgroup names from the message and turn it into
 ##  a regexp.
