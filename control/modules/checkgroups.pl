@@ -143,15 +143,33 @@ sub docheckgroups {
         }
 
         if ($dochanges) {
+            open(OLDIN, '<&STDIN') or die $!;
+            open(OLDOUT, '>&STDOUT') or die $!;
+            open(STDIN, "$tempfile") or die $!;
+            open(STDOUT, ">$tempfile.modact") or die $!;
+
+            my $st = system("$INN::Config::pathbin/mod-active");
+            logdie('Cannot run mod-active: ' . $!) if $st == -1;
+            logdie('mod-active returned status ' . ($st & 255)) if $st > 0;
+
+            close(STDIN);
+            close(STDOUT);
+            open(STDIN, '<&OLDIN') or die $!;
+            open(STDOUT, '>&OLDOUT') or die $!;
+
             if ($log) {
+                unshift(@output, '');
+                unshift(@output, '######################################################################');
+                unshift(@output, '# This script has already been successfully executed by controlchan. #');
+                unshift(@output, '######################################################################');
                 logger($log, "checkgroups by $sender processed (changes applied)",
                        \@output);
             }
-            my $st = system("$INN::Config::pathbin/mod-active",
-                            $tempfile);
-            logdie('Cannot run mod-active: ' . $!) if $st == -1;
-            logdie('mod-active returned status ' . ($st & 255)) if $st > 0;
         } else {
+            unshift(@output, '');
+            unshift(@output, '################################################');
+            unshift(@output, '# This script was NOT executed by controlchan. #');
+            unshift(@output, '################################################');
             logger($log || 'mail', "checkgroups by $sender *not* processed (too many changes)",
                    \@output);
         }
@@ -159,7 +177,7 @@ sub docheckgroups {
         logmsg("checkgroups by $sender processed (no change)");
     }
     close TEMPFILE;
-    unlink($tempfile, "$tempfile.art");
+    unlink($tempfile, "$tempfile.art", "$tempfile.modact");
 }
 
 1;
