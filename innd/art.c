@@ -1038,7 +1038,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
       if (hc[i].Length < 0) {
         sprintf(buff, "%d Duplicate \"%s\" header",
                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-                hp[1].Name);
+                hp[i].Name);
       } else {
 	sprintf(buff, "%d Missing \"%s\" header",
                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
