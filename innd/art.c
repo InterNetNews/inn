@@ -680,12 +680,23 @@ ARTcheckheader(CHANNEL *cp, int size)
     cp->Data.BytesHeader = header;
   hc = &hc[i];
   if (hc->Length != 0) {
-    /* duplicated */
+    /* Duplicated. */
     hc->Length = -1;
   } else {
-    hc->Value = colon + 2;
-    /* HDR_LEN() does not include trailing "\r\n" */
-    hc->Length = size - (hc->Value - header) - 2;
+    /* We need to remove leading and trailing spaces for
+     * message-IDs; otherwise, ARTidok() will fail. */
+    if (i == HDR__MESSAGE_ID || i == HDR__SUPERSEDES) {
+      for (p = colon + 1 ; (p < header + size - 2) &&
+           (ISWHITE(*p)) ; p++);
+      hc->Value = p;
+      for (p = header + size - 3 ; (p > hc->Value) &&
+           (ISWHITE(*p)) ; p--);
+      hc->Length = p - hc->Value + 1;
+    } else {
+      hc->Value = colon + 2;
+      /* HDR_LEN() does not include trailing "\r\n". */
+      hc->Length = size - (hc->Value - header) - 2;
+    }
   }
   return;
 }
