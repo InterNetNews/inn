@@ -413,6 +413,8 @@ ARTlogreject(CHANNEL *cp, const char *text)
                 data->Feedsite = hops[0];
             else
                 data->Feedsite = "localhost";
+        } else if (cp->Address.ss_family != 0) {
+            data->Feedsite = RChostname(cp);
         }
     }
     ARTlog(data, ART_REJECT, text != NULL ? text : cp->Error);
@@ -1958,6 +1960,14 @@ ARTpost(CHANNEL *cp)
   article = &cp->In;
   artclean = ARTclean(data, cp->Error, ihave);
 
+  /* We have not parsed the Path: header yet.  We do not check for logipaddr
+   * right now (it will be done afterwards and change data->Feedsite
+   * in consequence).  We assign a feed site for the next call to ARTlog(). */
+  data->Feedsite = RChostname(cp);
+  if (data->Feedsite == NULL)
+    data->Feedsite = CHANname(cp);
+  data->FeedsiteLength = strlen(data->Feedsite);
+
   /* If we don't have Path or Message-ID, we can't continue. */
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
     /* cp->Error is set since Path: and Message-ID: are required headers and one
@@ -1980,9 +1990,6 @@ ARTpost(CHANNEL *cp)
   hops = data->Path.List;
 
   if (innconf->logipaddr) {
-    data->Feedsite = RChostname(cp);
-    if (data->Feedsite == NULL)
-      data->Feedsite = CHANname(cp);
     if (strcmp("0.0.0.0", data->Feedsite) == 0 || data->Feedsite[0] == '\0')
       data->Feedsite = hops && hops[0] ? hops[0] : CHANname(cp);
   } else {
