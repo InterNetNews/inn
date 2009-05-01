@@ -111,7 +111,8 @@ of zero specifies immediate close.  The default is C<0>.
 
 This key requires a string value.  It is a list of hostnames separated
 by a comma.  A hostname is the host's fully qualified domain name, or
-the dotted quad IP address of the peer.  If this key is not present in
+the dotted-quad IP address of the peer for IPv4, or the colon-separated IP
+address of the peer for IPv6.  If this key is not present in
 a peer block, the hostname defaults to the label of the peer.
 
 =item I<identd>

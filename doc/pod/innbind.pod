@@ -24,7 +24,7 @@ numbered 1024 or higher.
 Each argument to B<innbind> must be a comma-separated list of four
 elements.  The first is the file descriptor number that should be bound,
 the second is the numeric family of the socket (AF_INET or AF_INET6), the
-third is the local address to bind to (in dotted quad format for IPv4 and
+third is the local address to bind to (in dotted-quad format for IPv4 and
 in colon-separated address format for IPv6), and the fourth is the port
 number.  To bind to all addresses with IPv4, use C<0.0.0.0> as the
 address.  To bind to all addresses with IPv6, use C<::> as the address.
@@ -147,7 +147,7 @@ can only bind SOCK_STREAM sockets.
 
 (Fatal) The IPv4 address specified in the given command-line option could
 not be parsed by inet_aton(3).  IPv4 addresses should be specified in the
-standard dotted quad format (10.2.3.4).
+standard dotted-quad format (10.2.3.4).
 
 =item invalid IPv6 address %s in %s
 

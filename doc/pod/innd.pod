@@ -75,7 +75,7 @@ format (C<n:n:n:n:n:n:n:n>).
 
 If this option is specified, it's the same as setting I<bindaddress6> in
 F<inn.conf> and may cause changes in whether INN binds to an IPv4 address
-as well.  See inn.conf(5) for more details.
+as well.  See inn.conf(5) for more details and also the B<-I> flag for B<innd>.
 
 =item B<-a>
 
@@ -141,12 +141,12 @@ check is suppressed.
 Normally B<innd> binds to all local IP addresses (unless I<bindaddress> is
 set in F<inn.conf>).  If this option is given, it specifies the IP address
 that INN should bind as.  This is only relevant for servers with multiple
-local IP addresses.  The IP address must be in dotted quad
+local IP addresses.  The IP address must be in dotted-quad
 (C<nnn.nnn.nnn.nnn>) format.
 
 If this option is specified, it's the same as setting I<bindaddress> in
 F<inn.conf> and may cause changes in whether INN binds to an IPv6 address
-as well.  See inn.conf(5) for more details.
+as well.  See inn.conf(5) for more details and also the B<-6> flag for B<innd>.
 
 =item B<-l> I<size>
 
