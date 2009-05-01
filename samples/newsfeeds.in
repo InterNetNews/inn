@@ -36,10 +36,11 @@
 ##  will only accept articles without those distributions.
 ##
 ##  For the ME line (and the ME line *only*), patterns affect *outgoing*
-##  feeds and distributions affect *incoming* feeds.
+##  feeds and distributions affect *incoming* feeds (including local posts).
 
-# Empty default subscription list, reject all incoming articles with a
-# distribution of "local" or "collabra-internal," accept all others.
+# Empty default subscription list, reject all incoming articles (including
+# locally posted articles) with a distribution of "local" or
+# "collabra-internal", accept all others.
 ME:!*/!local,!collabra-internal::
 
 # The same as the above, but would reject all posts that have

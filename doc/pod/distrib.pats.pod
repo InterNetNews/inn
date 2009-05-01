@@ -30,7 +30,8 @@ Distribution: header, each newsgroup to which an article is posted will be
 checked against this file in turn, and the matching line with the highest
 weight will be used as the value of the Distribution: header.  If no lines
 match, or if the matching line has an empty string for its third field, no
-header will be added.
+header will be added.  In case a distribution is added by B<nnrpd>, make
+sure it is not rejected by the F<newsfeeds> C<ME> entry.
 
 A list of recommended distributions can be specified in distributions(5).
 
@@ -43,6 +44,6 @@ $Id$
 
 =head1 SEE ALSO
 
-distributions(5), inn.conf(5), nnrpd(8), uwildmat(3).
+distributions(5), inn.conf(5), newsfeeds(5), nnrpd(8), uwildmat(3).
 
 =cut
