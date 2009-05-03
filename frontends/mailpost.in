@@ -492,6 +492,7 @@ exit $status;
 sub mailArtAndDie {
     my ($msg) = @_ ;
     
+    syslog("err", "$msg\n") if $debugging && $use_syslog;
     print STDERR $msg,"\n" if -t STDERR ;
     
     open(SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer)) ||
