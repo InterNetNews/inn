@@ -1,8 +1,9 @@
 ##  $Id$
 ##
 ##  Put your local newsgroups, along with their descriptions,
-##  in this file if you want them to be recognized by
-##  docheckgroups.  They would otherwise be mentioned for removal.
+##  in this file (formatted like the newsgroups file) if you want
+##  them to be recognized by docheckgroups.  They would otherwise
+##  be mentioned for removal.
 ##
 ##  There is no need to put here local newsgroups of hierarchies
 ##  for which no checkgroups control messages are sent (unless
