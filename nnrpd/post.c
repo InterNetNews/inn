@@ -95,6 +95,13 @@ MaxLength(char *p, char *q)
     static char		buff[80];
     unsigned int	i;
 
+
+    /* Return an empty string when p is NULL. */
+    if (p == NULL) {
+        *buff = '\0';
+        return buff;
+    }
+
     /* Already short enough? */
     i = strlen(p);
     if (i < sizeof buff - 1)
@@ -105,7 +112,7 @@ MaxLength(char *p, char *q)
 	q = p;
 
     /* Simple case of just want the begining? */
-    if ((size_t)(q - p) < sizeof(buff) - 4) {
+    if (q == NULL || (size_t)(q - p) < sizeof(buff) - 4) {
 	strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
     } else if ((p + i) - q < 10) {
