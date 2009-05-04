@@ -303,7 +303,7 @@ if (!open TMPFILE,">$tmpfile") {
     $msg = "can't open temp file ($tmpfile): $!" ;
     $tmpfile = undef ;
     if ($use_syslog) {
-        syslog("err", "$msg\n") unless $debugging || -t STDERR;
+        syslog("err", "$msg") unless $debugging || -t STDERR;
     }
     open(TMPFILE, "|" . sprintf ($Sendmail, $Maintainer)) ||
 	die "die(no tmpfile): sendmail: $!\n" ;
@@ -385,7 +385,7 @@ if (defined $DATABASE{$message_id}) {
 
 ## crosspost -c
   $newsgroups = &append_newsgroups($DATABASE{$message_id}, $newsgroups) ;
-  syslog("err", "crosspost $newsgroups\n") if $debugging && $use_syslog;
+  syslog("err", "crosspost $newsgroups") if $debugging && $use_syslog;
 }
 
 #$DATABASE{$message_id} = sprintf "%d.%s", time, 'mailpost' ;
@@ -425,7 +425,7 @@ if ($opt_c) {
   umask($umask_bak);
 
   my $dup = undef ;
-  syslog("err", "check   " . $DATABASE{$message_id} . " :  $newsgroups\n") if $debugging && $use_syslog;
+  syslog("err", "check   " . $DATABASE{$message_id} . " :  $newsgroups") if $debugging && $use_syslog;
   $dup = 1 if ($DATABASE{$message_id} ne $newsgroups) ;
 
   dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
@@ -434,7 +434,7 @@ if ($opt_c) {
   close LOCKFILE ;
 
   if (defined($dup)) {
-    syslog("err", "mismatch $newsgroups\n") if $debugging && $use_syslog;
+    syslog("err", "mismatch $newsgroups") if $debugging && $use_syslog;
     exit(1);
   }
 
@@ -492,7 +492,7 @@ exit $status;
 sub mailArtAndDie {
     my ($msg) = @_ ;
     
-    syslog("err", "$msg\n") if $debugging && $use_syslog;
+    syslog("err", "$msg") if $use_syslog;
     print STDERR $msg,"\n" if -t STDERR ;
     
     open(SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer)) ||
