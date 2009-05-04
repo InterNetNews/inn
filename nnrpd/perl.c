@@ -82,7 +82,7 @@ HandleHeaders(char *article)
     ENTER;
     SAVETMPS;
    
-    /* Create the Perl Hash. */
+    /* Create the Perl hash. */
     hdr = perl_get_hv("hdr", true);
     for (hp = Table; hp < EndOfTable; hp++) {
         if (hp->Body)
@@ -107,6 +107,7 @@ HandleHeaders(char *article)
         t = (*s == ' ' ? s + 1 : s);
         (void) hv_store(hdr, p, (s - p) - 1, newSVpv(t, 0), 0);
     }
+
     /* Store user. */
     sv_setpv(perl_get_sv("user", true), PERMuser);
    
@@ -119,7 +120,7 @@ HandleHeaders(char *article)
 
     SPAGAIN;
 
-    /* Restore headers. */
+    /* Restore headers if they have just been modified by the filter. */
     modswitch = perl_get_sv("modify_headers", false);
     HeadersModified = false;
     if (SvTRUE(modswitch)) {
@@ -132,7 +133,8 @@ HandleHeaders(char *article)
 
         hv_iterinit(hdr);
         while ((scan = hv_iternext(hdr)) != NULL) {
-            /* Get the values. */
+            /* Get the values.  We replace the known ones with these
+             * new values. */
             p = HePV(scan, len);
             s = SvPV(HeVAL(scan), PL_na);
 #ifdef DEBUG_MODIFY     
@@ -157,14 +159,16 @@ HandleHeaders(char *article)
             }
             if (hp != EndOfTable)
                 continue;
-       
-            /* Add to other headers. */
-            if (i >= OtherSize - 1) {
-                OtherSize += 20;
-                OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
+
+            /* Add to other headers if not empty. */
+            if (TrimSpaces(s) > 0) {
+                if (i >= OtherSize - 1) {
+                    OtherSize += 20;
+                    OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
+                }
+                t = concat(p, ": ", s, (char *) 0);
+                OtherHeaders[i++] = t;
             }
-            t = concat(p, ": ", s, (char *) 0);
-            OtherHeaders[i++] = t;
         }
         OtherCount = i;
 #ifdef DEBUG_MODIFY
