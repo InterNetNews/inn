@@ -336,6 +336,21 @@ can result in nnrpd trying to post nonsense articles (which will probably
 then be rejected by innd).  If $modify_headers is set, I<everything> in
 the %hdr hash is taken to be article headers and added to the article.
 
+To modify the contents of the Organization: header, you can use:
+
+  $hdr{'Organization'} = 'My new organization';
+  $modify_headers = 1;
+
+To delete the Organization: header, you can use:
+
+  $hdr{'Organization'} = undef;
+  $modify_headers = 1;
+
+or:
+
+  $hdr{'Organization'} = '';
+  $modify_headers = 1;
+
 If filter_post() returns something other than the empty string, this
 message is normally returned to the client as an error.  There are three
 exceptions:
