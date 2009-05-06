@@ -2066,6 +2066,10 @@ ARTpost(CHANNEL *cp)
   if (filterrc != NULL) {
     if (innconf->dontrejectfiltered) {
       Filtered = true;
+      syslog(L_NOTICE, "rejecting[python] %s %d %.200s (with dontrejectfiltered)",
+             HDR(HDR__MESSAGE_ID),
+             ihave ? NNTP_OK_IHAVE : NNTP_OK_TAKETHIS,
+             filterrc);
     } else {
       snprintf(cp->Error, sizeof(cp->Error), "%d %.200s",
                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
@@ -2093,6 +2097,10 @@ ARTpost(CHANNEL *cp)
   if (filterrc) {
     if (innconf->dontrejectfiltered) {
       Filtered = true;
+      syslog(L_NOTICE, "rejecting[perl] %s %d %.200s (with dontrejectfiltered)",
+             HDR(HDR__MESSAGE_ID),
+             ihave ? NNTP_OK_IHAVE : NNTP_OK_TAKETHIS,
+             filterrc);
     } else {
       snprintf(cp->Error, sizeof(cp->Error), "%d %.200s",
                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
