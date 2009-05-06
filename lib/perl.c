@@ -170,10 +170,10 @@ int PERLreadfilter(char *filterfile, const char *function)
     dSP ;
     char *argv[] = { NULL };
     char *evalfile = NULL;
-    
+
     ENTER ;
     SAVETMPS ;
-    
+
     if (perl_get_cv("filter_before_reload", false) != NULL)    {
         perl_call_argv("filter_before_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         if (SvTRUE(ERRSV))     /* check $@ */ {
@@ -211,7 +211,7 @@ int PERLreadfilter(char *filterfile, const char *function)
     } else if ((perl_filter_cv = perl_get_cv(function, false)) == NULL) {
         PerlFilter (false) ;
     }
-    
+
     if (perl_get_cv("filter_after_reload", false) != NULL) {
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         if (SvTRUE(ERRSV))     /* check $@ */ {
@@ -219,6 +219,21 @@ int PERLreadfilter(char *filterfile, const char *function)
                     SvPV(ERRSV, PL_na)) ;
             (void)POPs ;
             PerlFilter (false) ;
+        }
+    }
+
+    /* We try to find an inversion between filter_innd.pl
+     * and filter_nnrpd.pl. */
+    if (function != NULL) {
+        if ((strncmp(function, "filter_art", 10) == 0)
+            && (perl_get_cv("filter_post", false) != NULL)) {
+            syslog(L_NOTICE, "filter_innd.pl defines a filter_post function"
+                             " -- maybe a confusion with filter_nnrpd.pl?");
+        }
+        if ((strncmp(function, "filter_post", 11) == 0)
+            && (perl_get_cv("filter_art", false) != NULL)) {
+            syslog(L_NOTICE, "filter_nnrpd.pl defines a filter_art function"
+                             " -- maybe a confusion with filter_innd.pl?");
         }
     }
 
