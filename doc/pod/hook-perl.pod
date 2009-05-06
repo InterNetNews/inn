@@ -341,7 +341,10 @@ To modify the contents of the Organization: header, you can use:
   $hdr{'Organization'} = 'My new organization';
   $modify_headers = 1;
 
-To delete the Organization: header, you can use:
+To delete the Organization: header, you should not use
+C<delete $hdr{'Organization'}> (this syntax may work with
+some headers, and not with other headers).  Instead, you are
+encouraged to use:
 
   $hdr{'Organization'} = undef;
   $modify_headers = 1;
