@@ -1685,7 +1685,7 @@ HashFeedMatch(HASHFEEDLIST *hf, char *MessageID)
 */
 static void
 ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
-  bool ControlStore, bool OverviewCreated)
+  bool ControlStore, bool OverviewCreated, bool Filtered)
 {
   HDRCONTENT	*hc = data->HdrContent;
   SITE		*sp, *funnel;
@@ -1774,6 +1774,10 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
 	/* A host in the site's exclusion list was in the Path. */
 	continue;
     }
+
+    /* Handle dontrejectfiltered. */
+    if (Filtered && sp->DropFiltered)
+      continue;
 
     /* Write that the site is getting it, and flag to send it. */
     if (innconf->logsitename) {
@@ -2540,7 +2544,7 @@ ARTpost(CHANNEL *cp)
   }
 
   ARTpropagate(data, (const char **)hops, hopcount, data->Distribution.List,
-    ControlStore, OverviewCreated);
+    ControlStore, OverviewCreated, Filtered);
 
   /* Now that it's been written, process the control message.  This has
    * a small window, if we get a new article before the newgroup message
@@ -2556,14 +2560,14 @@ ARTpost(CHANNEL *cp)
     }
   }
 
-  /* And finally, send to everyone who should get it */
+  /* And finally, send to everyone who should get it.
+   * sp->Sendit is false for funnel sites:  ARTpropagate()
+   * transferred it to the corresponding funnel. */
   for (sp = Sites, i = nSites; --i >= 0; sp++) {
     if (sp->Sendit) {
-      if (!Filtered || !sp->DropFiltered) {
-	TMRstart(TMR_SITESEND);
-	SITEsend(sp, data);
-	TMRstop(TMR_SITESEND);
-      }
+      TMRstart(TMR_SITESEND);
+      SITEsend(sp, data);
+      TMRstop(TMR_SITESEND);
     }
   }
 
