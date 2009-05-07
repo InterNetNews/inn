@@ -462,6 +462,7 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
         unmap_index(data);
         map_index(data);
         data->high = high;
+	unmap_data(data);
     }
     if (start > data->high)
         return NULL;
@@ -512,17 +513,13 @@ tdx_search(struct search *search, struct article *artdata)
     if (search->current > search->limit || search->current > max)
         return false;
 
-    /* Make sure that the offset into the data file is sensible, and try
-       remapping the data file if the portion the offset is pointing to isn't
-       currently mapped.  Otherwise, warn about possible corruption and return
-       a miss. */
+    /* There is a small chance that remapping the data file could make this
+       offset accessible, but changing the memory location in the middle of
+       a search conflicts with our OVSTATICSEARCH.  And it seems not to
+       be an issue in limited testing, although write caching that leads to 
+       on-disk IDX and DAT being out of sync could trigger a problem here. */
     if (entry->offset + entry->length > search->data->datalen) {
-        unmap_data(search->data);
-        if (!map_data(search->data))
-            return false;
-    }
-    if (entry->offset + entry->length > search->data->datalen) {
-        warn("Invalid entry for article %lu in %s.IDX: offset %lu length %lu",
+        warn("Invalid or inaccessible entry for article %lu in %s.IDX: offset %lu length %lu",
              search->current + search->data->base, search->data->path,
              (unsigned long) entry->offset, (unsigned long) entry->length);
         return false;

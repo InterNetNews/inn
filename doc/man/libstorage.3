@@ -327,6 +327,9 @@ OVSORT	probe which key is suitable for
 OVSPACE	probe overview space usage
 OVSTATALL	stat all articles when
 	OVexpiregroup is called
+OVSTATICSEARCH	if results of OVsearch are stored
+	in a static buffer and must be copied
+	before the next call to OVsearch
 .fi
 .in -0.5i
 .sp 1
@@ -352,6 +355,11 @@ The request range is determined by
 .I low
 and
 .IR high .
+The setting of OVSTATICSEARCH determines how search result data must be
+handled.  (Note that with some storage methods, each call to OVopensearch
+may cause internal storage to be remapped.  Therefore multiple
+simultaneous searches may require data to be copied in between OVsearch
+calls even if OVSTATICSEARCH is false.)
 .PP
 .I OVsearch
 retrieves information; article number, overview data, or arrival time.
