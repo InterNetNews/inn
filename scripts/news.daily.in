@@ -17,6 +17,7 @@
 ##      noexplog             Do not log expire output
 ##      nologs               Do not scan log files
 ##      nomail               Do not capture and mail output
+##      noprocbatch          Do not run procbatch on innfeed dropped files
 ##      norenumber           Do not renumber the active file
 ##      norm                 Do not remove certain old files
 ##      norotate             Do not rotate logfiles
@@ -31,7 +32,11 @@ INNSTAT=${PATHBIN}/innstat
 HOSTNAME=`hostname`
 DATE=`date`
 TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
-SORT=sort
+
+##  Try to find the path to innfeed's spool.  The default is
+##  ${PATHSPOOL}/innfeed if not found.
+INNFEEDSPOOL=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
+test -z "${INNFEEDSPOOL}" && test -f "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
@@ -49,6 +54,7 @@ DOEXPLOG=true
 DOEXPIREOVER=false
 DOLOGS=true
 DOMAIL=true
+DOPROCBATCH=true
 DORENUMBER=true
 DORM=true
 DOSTAT=true
@@ -143,6 +149,9 @@ do
 	DOMAIL=false
 	MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
 	;;
+    Xnoprocbatch)
+        DOPROCBATCH=false
+        ;;
     Xnorenumber)
 	DORENUMBER=false
 	;;
@@ -213,6 +222,33 @@ if ${DOMAIL} ; then
     touch ${TEMP}
     chmod 0660 ${TEMP}
     exec 3>&1 >${TEMP} 2>&1
+fi
+
+if [ "${DOPROCBATCH}" = "true" ] && [ -d "${PATHSPOOL}/${INNFEEDSPOOL}" ]
+then
+    cd "${PATHSPOOL}/${INNFEEDSPOOL}"
+
+    # Find the PIDs of innfeed.
+    LOCKS=`cat *.lock | ${SORT} -u`
+
+    # Process files like "innfeed-dropped.A001703" where
+    # 1703 is not in $LOCKS.
+    for file in `find -name "innfeed-dropped*"`
+    do
+        PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
+        FOUND=false
+        for LOCK in $LOCKS
+        do
+            if [ "$PID" = "$LOCK" ]
+            then
+                FOUND=true
+            fi
+        done
+        if [ "$FOUND" = "false" ]
+        then
+            ${PATHBIN}/procbatch -qmu $file
+        fi
+    done
 fi
 
 cd ${PATHETC}

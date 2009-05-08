@@ -7,8 +7,8 @@ news.daily - Perform daily Usenet maintenance tasks
 B<news.daily> [B<delayrm>] [B<expctl>=I<path>] [B<expdir>=I<path>]
 [B<expireover>] [B<expireoverflags>=I<args>] [B<flags>=I<args>]
 [B<lowmark>] [B<mailto>=I<address>] [B<noexpire>] [B<noexpireover>]
-[B<noexplog>] [B<nologs>] [B<nomail>] [B<norenumber>] [B<norm>]
-[B<norotate>] [B<nostat>] [B<notdaily>] [B<postexec>=I<program>]
+[B<noexplog>] [B<nologs>] [B<nomail>] [B<noprocbatch>] [B<norenumber>]
+[B<norm>] [B<norotate>] [B<nostat>] [B<notdaily>] [B<postexec>=I<program>]
 [B<tmpdir>=I<path>] [I</path/to/a/program>]
 
 =head1 DESCRIPTION
@@ -35,6 +35,10 @@ keyword is specified;
 =item *
 
 processing log files and rotating the archived log files with B<scanlogs>;
+
+=item *
+
+processing B<innfeed> dropped files with B<procbatch>;
 
 =item *
 
@@ -172,6 +176,13 @@ administrator.  Using this keyword causes this message to be sent to stdout
 and stderr instead.  Normally, all utilities invoked by the script have
 their stdout and stderr redirected into a file.
 If the file is empty, no message is sent.
+
+=item B<noprocbatch>
+
+This keyword disables the run of B<procbatch> on B<innfeed> dropped files
+generated in its spool directory.  These files contain a list of articles
+which were not correctly sent to peers.  By default, they will be processed
+and removed afterwards.
 
 =item B<norenumber>
 
