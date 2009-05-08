@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Test suite for storing overview data based on the Xref header. */
+/* Test suite for storing overview data based on the Xref: header. */
 
 #include "config.h"
 #include "clibrary.h"
@@ -59,8 +59,8 @@ overview_init(void)
 /* Check to be sure that the line wasn't too long, and then parse the
    beginning of the line from one of our data files.  Returns a vector of
    group/number pairs from the first data element, stores in start a
-   pointer to the beginning of the regular overview data, and stores in Xref a
-   pointer to the beginning of the Xref data (which must be the end of the
+   pointer to the beginning of the regular overview data, and stores in xref a
+   pointer to the beginning of the Xref: data (which must be the end of the
    overview record). */
 static struct cvector *
 overview_data_parse(char *data, char **start, char **xref)
@@ -81,13 +81,13 @@ overview_data_parse(char *data, char **start, char **xref)
     groups = cvector_split(data, ',', NULL);
     *xref = strstr(*start, "Xref: ");
     if (*xref == NULL)
-        die("No Xref found in input data");
+        die("No Xref: found in input data");
     return groups;
 }
 
 /* Load overview data from a file.  The first field of each line is a
    comma-separated list of newsgroup name and number pairs, separated by a
-   colon, that should correspond to where the Xref data will put this article.
+   colon, that should correspond to where the Xref: data will put this article.
    After storing each line, try to retrieve it and make sure that it was
    stored in the right locations.  Returns the total count of records
    stored. */
@@ -132,9 +132,10 @@ overview_load(int n, const char *data, struct overview *overview)
             *p = '\0';
             artnum = strtoul(p + 1, NULL, 10);
             search = overview_search_open(overview, group, artnum, artnum);
-            if (search == NULL || !overview_search(overview, search, &article))
+            if (search == NULL || !overview_search(overview, search, &article)) {
                 ok_block(n, 4, false);
-            else {
+                n += 4;
+            } else {
                 ok(n++, true);
                 ok_int(n++, artnum, article.number);
                 result = strchr(article.overview, '\t');
@@ -210,7 +211,7 @@ main(void)
     n = count * 4 + 4 + 1;
     overview_verify_count(n++, overview, count);
 
-    /* In order to test cancelling based on Xref, we have to store one of the
+    /* In order to test cancelling based on Xref:, we have to store one of the
        articles into a real storage method to get a token.  Cheat on where the
        article is stored, since overview doesn't care. */
     value = true;
