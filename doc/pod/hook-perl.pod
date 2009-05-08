@@ -625,20 +625,40 @@ publication.  This is not an endorsement of these filters by ISC or
 the INN developers, but is included as assistance in locating packages
 which make use of this filter mechanism.
 
-  Cleanfeed               Jeremy Nixon <jeremy@exit109.com>
-  <URL:http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
-  <URL:http://www.bofh.it/~md/cleanfeed/> (previous version by Marco d'Itri)
-  <URL:http://www.exit109.com/~jeremy/news/cleanfeed.html> (Jeremy Nixon)
-        A spam filter catching excessive multi-posting and a host of
-        other things.  Uses filter_innd.pl exclusively, requires the MD5
-        Perl module.  Probably the most popular and widely-used Perl
-        filter around.
+=over 4
 
-  News Gizmo              Aidan Cully <aidan@panix.com>
-  <URL:http://www.panix.com/gizmo/>
-        A posting filter for helping a site enforce Usenet-II soundness,
-        and for quotaing the number of messages any user can post to
-        Usenet daily.
+=item Cleanfeed
+
+URL:  L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+
+Cleanfeed is an extremely powerful spam filter, probably the most widely
+used spam filter on Usenet currently.  It catches excessive multiposting
+and a host of other things, and is highly configurable.  It uses
+F<filter_innd.pl> exclusively and requires the MD5 Perl module.
+
+Cleanfeed was originally developed by Jeremy Nixon who maintained it
+until 1998.  Then Marco d'Itri until 2002.  Steve Crook has been
+maintaining it since 2007.
+
+=item Postfilter
+
+URL:  L<http://code.google.com/p/postfilter/> (by Paolo Amoroso)
+
+Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all 
+messages sent by local users in order to block abuses.  Postfilter can limit 
+the number of messages per user, IP or domain, provides a set of powerful 
+ban lists, supports RBLs and URIBLs, can handle connections that come from 
+TOR and is able to deeply modify the headers.  It's designed for large sites.
+
+=item News Shogun
+
+URL:  L<http://www.panix.com/shogun/> (by Aidan Cully)
+
+A posting filter for helping a site enforce Usenet-II soundness,
+and for quotaing the number of messages any user can post to
+Usenet daily.  It uses F<filter_nnrpd.pl>.
+
+=back
 
 $Id$
 

@@ -221,13 +221,16 @@ answer questions about it.
 =item Cleanfeed
 
 URL:  L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
-URL:  L<http://www.bofh.it/~md/cleanfeed/> (previous version by Marco d'Itri)
 
 Cleanfeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
 and a host of other things, and is highly configurable.  Note that it
 requires that INN be built with Perl support (the B<--with-perl> option to
 configure).
+
+Cleanfeed was originally developed by Jeremy Nixon who maintained it
+until 1998.  Then Marco d'Itri until 2002.  Steve Crook has been
+maintaining it since 2007.
 
 =item GUP (Group Update Program)
 
