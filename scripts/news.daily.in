@@ -335,7 +335,7 @@ if ${DOEXPIRE} ; then
 	}
     esac
     case "${SERVERMODE}" in
-    *space*" -- throttling")
+    "Server throttled"*)
 	echo "${SERVERMODE} -- trying to recover"
 	THROTTLED=true
 	EXPIREFLAGS="${EXPIREFLAGS} -n"
@@ -437,7 +437,7 @@ fi
 ##  Did we become throttled during the run?
 SERVERMODE=`ctlinnd mode 2>/dev/null | ${SED} 1q`
 case "${SERVERMODE}" in
-*space*" -- throttling")
+"Server throttled"*)
     ##  We did, try to unthrottle the server.
     echo "${SERVERMODE} -- trying to recover"    
     ctlinnd -s go ""
