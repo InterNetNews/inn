@@ -2598,3 +2598,31 @@ rmgroup:root@duvi.eskom.co.za:za.*:doit
 # This hierarchy is defunct.  Please remove it.
 newgroup:*:zer.*:mail
 rmgroup:*:zer.*:doit
+
+## -------------------------------------------------------------------------
+##      CONTROL.CTL ADDITIONS
+## -------------------------------------------------------------------------
+
+# Incoming encodings in newgroup and checkgroups control articles.
+# These lines are additions to the official control.ctl file.
+
+# Default (for any description).
+/encoding/:*:*:cp1252
+
+/encoding/:*:cn.*:gb18030
+/encoding/:*:han.*:gb18030
+
+/encoding/:*:fido7.*:koi8-r
+/encoding/:*:medlux.*:koi8-r
+/encoding/:*:relcom.*:koi8-r
+/encoding/:*:ukr.*:koi8-u
+
+/encoding/:*:fr.*:iso-8859-15
+
+/encoding/:*:nctu.*:big5
+/encoding/:*:ncu.*:big5
+/encoding/:*:tw.*:big5
+/encoding/:*:scout.forum.chinese:big5
+/encoding/:*:scout.forum.korean:big5
+
+/encoding/:*:fido.*:utf-8
