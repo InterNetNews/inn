@@ -252,7 +252,10 @@ bytes long.  The default is no limit.
 
 An article will only be sent to this site if it meets the requirements
 specified in I<checks>, which should be chosen from the following set.
-I<checks> can be multiple letters if appropriate.
+I<checks> can be multiple letters if appropriate.  Note that this flag
+is not effective on funnel targets; it has to be used on every funnel
+entry (for instance, B<Af> is not effective on the I<innfeed!> funnel
+target and therefore has to be specified on every funnelled news site).
 
 =over 3
 
