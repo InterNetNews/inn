@@ -215,6 +215,7 @@ tdx_data_new(const char *group, bool writable)
     data = xmalloc(sizeof(struct group_data));
     data->path = group_path(group);
     data->writable = writable;
+    data->remapoutoforder = false;
     data->high = 0;
     data->base = 0;
     data->indexfd = -1;
@@ -420,10 +421,12 @@ tdx_article_entry(struct group_data *data, ARTNUM article, ARTNUM high)
     struct index_entry *entry;
     ARTNUM offset;
 
-    if (article > data->high && high > data->high) {
+    if ((article > data->high && high > data->high)
+        || data->remapoutoforder){
         unmap_index(data);
         map_index(data);
         data->high = high;
+        data->remapoutoforder = false;
     } else if (innconf->nfsreader && stale_index(data))
         unmap_index(data);
     if (data->index == NULL)
@@ -458,12 +461,15 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
     if (end < start)
         return NULL;
 
-    if (end > data->high && high > data->high) {
+    if ((end > data->high && high > data->high)
+        || data->remapoutoforder) {
         unmap_index(data);
         map_index(data);
+        unmap_data(data);
         data->high = high;
-	unmap_data(data);
+        data->remapoutoforder = false;
     }
+
     if (start > data->high)
         return NULL;
 
@@ -519,9 +525,10 @@ tdx_search(struct search *search, struct article *artdata)
        be an issue in limited testing, although write caching that leads to 
        on-disk IDX and DAT being out of sync could trigger a problem here. */
     if (entry->offset + entry->length > search->data->datalen) {
-        warn("Invalid or inaccessible entry for article %lu in %s.IDX: offset %lu length %lu",
+        warn("Invalid or inaccessible entry for article %lu in %s.IDX: offset %lu length %lu datalength %lu",
              search->current + search->data->base, search->data->path,
-             (unsigned long) entry->offset, (unsigned long) entry->length);
+             (unsigned long) entry->offset, (unsigned long) entry->length,
+             (unsigned long) search->data->datalen);
         return false;
     }
 

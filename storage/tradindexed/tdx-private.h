@@ -29,6 +29,7 @@ struct search;
 struct group_data {
     char *path;
     bool writable;
+    bool remapoutoforder;
     ARTNUM high;
     ARTNUM base;
     int indexfd;
