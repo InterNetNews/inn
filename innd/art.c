@@ -1972,11 +1972,12 @@ ARTpost(CHANNEL *cp)
     data->Feedsite = CHANname(cp);
   data->FeedsiteLength = strlen(data->Feedsite);
 
-  /* If we don't have Path or Message-ID, we can't continue. */
+  /* If we don't have Path: or Message-ID:, we can't continue. */
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
     /* cp->Error is set since Path: and Message-ID: are required headers and one
-     * of them is not found at ARTclean().
-     * We cannot remember the message-ID of this article. */
+     * of them is not found during ARTclean().
+     * We do not remember the message-ID of this article because another
+     * peer may send it with a good Path: header. */
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
@@ -2475,11 +2476,9 @@ ARTpost(CHANNEL *cp)
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
     snprintf(cp->Error, sizeof(cp->Error), "%d cant store article",
              ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_ACTION);
+    /* Do not remember the message-ID of the article because we want
+     * it to be received again later. */
     ARTlog(data, ART_REJECT, cp->Error);
-    if (innconf->remembertrash && (Mode == OMrunning)
-        && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
-      syslog(L_ERROR, "%s cant write history %s %m", LogName,
-	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_OTHER, cp);
     TMRstop(TMR_ARTWRITE);
     return false;
