@@ -589,7 +589,8 @@ static void hostReconfigure(Host h, HostParams params)
    * just changing "dynamic-method" requires this call
    * to be made
    */
-  hostAlterMaxConnections(h, absMaxCxns, h->maxConnections, false);
+  hostAlterMaxConnections(h, h->params->absMaxConnections,
+                          h->params->absMaxConnections, false);
   
   for ( i = 0 ; i < MAXCONLIMIT(h->params->absMaxConnections) ; i++ )
     if (h->connections[i] != NULL)
