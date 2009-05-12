@@ -55,6 +55,7 @@ remembertrash:          true
 #sourceaddress:
 #sourceaddress6:
 verifycancels:          false
+verifygroups:           false
 wanttrash:              false
 wipcheck:               5
 wipexpire:              10

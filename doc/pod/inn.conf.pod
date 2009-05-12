@@ -315,6 +315,13 @@ While this check may once have served a purpose, it's now essentially
 security via obscurity, commonly avoided by abusers, and probably not
 useful.  This is a boolean value, and the default is false.
 
+=item I<verifygroups>
+
+Set this to true to reject incoming articles which contain an unknown
+newsgroup in the whole list of newsgroups to which they are posted.
+In case I<wanttrash> is set to true, such articles will still be rejected.
+This is a boolean value, and the default is false.
+
 =item I<wanttrash>
 
 Set this to true if you want to file articles posted to unknown newsgroups

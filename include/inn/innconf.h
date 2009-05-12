@@ -49,6 +49,7 @@ struct innconf {
     char *sourceaddress;        /* Source IP for outgoing NNTP connections */
     char *sourceaddress6;       /* Source IPv6 for outgoing NNTP connections */
     bool verifycancels;         /* Verify cancels against article author */
+    bool verifygroups;          /* Check if all newsgroups exist */
     bool wanttrash;             /* Put unwanted articles in junk */
     long wipcheck;              /* How long to defer other copies of article */
     long wipexpire;             /* How long to keep pending article record */

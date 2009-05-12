@@ -2240,8 +2240,25 @@ ARTpost(CHANNEL *cp)
          * if it were created. */
         ARTsendthegroup(*groups);
         Accepted = true;
-      } else
+      } else {
         NonExist = true;
+        /* Check if all the newsgroups listed in the Newsgroups: header of
+         * the article exist on the news server. */
+        if (innconf->verifygroups) {
+          snprintf(cp->Error, sizeof(cp->Error),
+                   "%d Nonexistent newsgroup \"%s\"",
+                   ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+                   MaxLength(p, p));
+          ARTlog(data, ART_REJECT, cp->Error);
+          if (innconf->remembertrash && (Mode == OMrunning) &&
+              !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+              syslog(L_ERROR, "%s cant write history %s %m",
+                     LogName, HDR(HDR__MESSAGE_ID));
+          ARTreject(REJECT_GROUP, cp);
+          return false;
+        }
+      }
+
       ARTpoisongroup(*groups);
 
       if (innconf->mergetogroups) {

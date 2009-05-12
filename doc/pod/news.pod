@@ -255,8 +255,8 @@ allows to set the news user and the news group under which the news server
 runs.  Thanks to Ivan Shmakov for this feature.
 
 New other options have been added to configuration files:  I<ignore> in
-F<incoming.conf>, I<logstats> and I<nnrpdflags> in F<inn.conf>, and
-I<log-time-format> in F<innfeed.conf>.
+F<incoming.conf>, I<logstats>, I<nnrpdflags> and I<verifygroups> in
+F<inn.conf>, and I<log-time-format> in F<innfeed.conf>.
 
 The B<--with-http-dir> option has also been added to C<configure> to set
 I<pathhttp> in F<inn.conf>.

@@ -180,6 +180,7 @@ const struct config config_table[] = {
     { K(stathist),              STRING  (NULL) },
     { K(status),                NUMBER  (0) },
     { K(verifycancels),         BOOL    (false) },
+    { K(verifygroups),          BOOL    (false) },
     { K(wanttrash),             BOOL    (false) },
     { K(wipcheck),              NUMBER  (5) },
     { K(wipexpire),             NUMBER  (10) },
