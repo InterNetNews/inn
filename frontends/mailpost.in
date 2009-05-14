@@ -194,6 +194,9 @@ for (;;) {
 	next ;
     }
 
+    # Add a space after the colon following a header name, if not present.
+    s/:/: / if ($_ !~ /^[^:]+: /);
+
     # On the first header, $line will be undefined.
     ($_, $line) = ($line, $_) ; # Swap $line and $_.
 
@@ -233,7 +236,7 @@ for (;;) {
     if (/^Return-Path:\s*/sio) {
 	$path = $';
 	$path = $1 if ($path =~ /\<([^\>]*)\>/);
-	push@errorText, "((path: $path))\n";
+	push @errorText, "((path: $path))\n";
 	next;
     }
 
