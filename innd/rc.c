@@ -1748,7 +1748,7 @@ RCcanpost(CHANNEL *cp, char *group)
 /*
 **  Create the listening channels.  When IPv6 is available, if only one of
 **  bindaddress and bindaddress6 are set, INN only listens on that address.
-**  If both are set, INN listens to both IPv4 andn IPv6 connections on those
+**  If both are set, INN listens to both IPv4 and IPv6 connections on those
 **  addresses.  If neither is set, use getaddrinfo to walk through all the
 **  possible addresses.  (When IPv6 isn't available, this is obviously a lot
 **  simpler.)

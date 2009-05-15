@@ -851,7 +851,10 @@ main(int argc, char *argv[])
     unsigned short	ListenPort = NNTP_PORT;
     char                *ListenAddr = NULL;
     char                *ListenAddr6 = NULL;
-    int			lfd, fd;
+    int			*lfds;
+    int                 fd = -1;
+    int                 fdcount;
+    bool                fdokay;
     pid_t		pid = -1;
     FILE                *pidfile;
     int			clienttimeout;
@@ -959,8 +962,6 @@ main(int argc, char *argv[])
     argc -= optind;
     if (argc)
 	Usage();
-    if (ListenAddr != NULL && ListenAddr6 != NULL)
-        die("-6 and -b may not both be given");
 
     /* Make other processes happier if someone is reading.  This allows other
      * processes like overchan to keep up when there are lots of readers.
@@ -979,13 +980,31 @@ main(int argc, char *argv[])
 
 
     if (DaemonMode) {
-        if (ListenAddr6 != NULL)
-            lfd = network_bind_ipv6(ListenAddr6, ListenPort);
-        else if (ListenAddr != NULL)
-            lfd = network_bind_ipv4(ListenAddr, ListenPort);
-        else
-            lfd = network_bind_ipv4("0.0.0.0", ListenPort);
-        if (lfd < 0)
+        /* Allocate an lfds array to hold the file descriptors
+         * for IPv4 and/or IPv6 connections. */
+        if (ListenAddr == NULL && ListenAddr6 == NULL) {
+            network_bind_all(ListenPort, &lfds, &fdcount);
+        } else {
+            if (ListenAddr != NULL && ListenAddr6 != NULL)
+                fdcount = 2;
+            else
+                fdcount = 1;
+            lfds = xmalloc(fdcount * sizeof(int));
+            i = 0;
+            if (ListenAddr6 != NULL)
+                lfds[i++] = network_bind_ipv6(ListenAddr6, ListenPort);
+            if (ListenAddr != NULL)
+                lfds[i] = network_bind_ipv4(ListenAddr, ListenPort);
+        }
+
+        /* Bail if we couldn't listen on any sockets. */
+        fdokay = false;
+        for (i = 0; i < fdcount; i++) {
+            if (lfds[i] < 0)
+                continue;
+            fdokay = true;
+        }
+        if (!fdokay)
             die("can't bind to any addresses");
 
         /* If started as root, switch to news uid.  Unlike other parts of INN, we
@@ -1024,7 +1043,15 @@ main(int argc, char *argv[])
  
 	setproctitle("accepting connections");
  	
-	listen(lfd, 128);	
+        for (i = 0; i < fdcount; i++) {
+            if (nonblocking(lfds[i], true) < 0)
+                syslog(L_ERROR, "can't nonblock %d %m", lfds[i]);
+            if (listen(lfds[i], 128) < 0) {
+                if (i != 0 && errno == EADDRINUSE)
+                    continue;
+                syslog(L_ERROR, "can't listen to socket");
+            }
+        }
 
 	if (respawn) {
 	    /* Pre-forked mode. */
@@ -1034,7 +1061,11 @@ main(int argc, char *argv[])
 		    pid = fork();
 		    if (pid == 0) {
 			do {
-			    fd = accept(lfd, NULL, NULL);
+                            for (i = 0; i < fdcount; i++) {
+                                fd = accept(lfds[i], NULL, NULL);
+                                if (fd >= 0)
+                                    break;
+                            }
 			} while (fd < 0);
 			break;
 		    }
@@ -1052,7 +1083,11 @@ main(int argc, char *argv[])
 	} else {
 	    /* Fork on demand. */
 	    do {
-		fd = accept(lfd, NULL, NULL);
+                for (i = 0; i < fdcount; i++) {
+                    fd = accept(lfds[i], NULL, NULL);
+                    if (fd >= 0)
+                        break;
+                }
 		if (fd < 0)
 		    continue;
 	    
@@ -1076,7 +1111,9 @@ main(int argc, char *argv[])
 
 	/* Child process starts here. */
 	setproctitle("connected");
-	close(lfd);
+        for (i = 0; i < fdcount; i++) {
+            close(lfds[i]);
+        }
 	dup2(fd, 0);
 	close(fd);
 	dup2(0, 1);
