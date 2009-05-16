@@ -22,7 +22,7 @@ int
 NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
             char *errbuff, size_t len)
 {
-    char mybuff[NNTP_STRLEN + 2];
+    char mybuff[NNTP_MAXLEN_COMMAND + 2];
     char *buff;
     int fd, code, oerrno;
     FILE *F = NULL;

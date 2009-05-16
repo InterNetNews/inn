@@ -65,7 +65,7 @@ SITEread(SITE *sp, char *start)
     int			i;
     char		c;
 
-    for (p = start, end = &start[NNTP_STRLEN - 1]; ; ) {
+    for (p = start, end = &start[NNTP_MAXLEN_COMMAND - 1]; ; ) {
 	if (sp->Count == 0) {
 	    /* Fill the buffer. */
     Again:
@@ -159,7 +159,7 @@ SITEconnect(char *host)
 static void
 SITEquit(SITE *sp)
 {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     SITEwrite(sp, "quit", 4);
     SITEread(sp, buff);
@@ -186,8 +186,8 @@ Usage(const char *p)
 int
 main(int ac, char *av[])
 {
-    char	buff[NNTP_STRLEN];
-    char	mesgid[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
+    char	mesgid[NNTP_MAXLEN_COMMAND];
     char	tbuff[SMBUF];
     char	*msgidfile = NULL;
     int         msgidfd;

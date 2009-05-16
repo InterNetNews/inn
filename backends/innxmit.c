@@ -220,14 +220,14 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     }
     /* allocate buffers on first use.
     ** If filename ever is longer than SPOOLNAMEBUFF then code will abort.
-    ** If ID is ever longer than NNTP_STRLEN then other code would break.
+    ** If ID is ever longer than NNTP_MAXLEN_COMMAND then other code would break.
     */
     if (!stbuf[i].st_fname)
         stbuf[i].st_fname = xmalloc(SPOOLNAMEBUFF);
     if (!stbuf[i].st_id)
-        stbuf[i].st_id = xmalloc(NNTP_STRLEN);
+        stbuf[i].st_id = xmalloc(NNTP_MAXLEN_COMMAND);
     strlcpy(stbuf[i].st_fname, Article, SPOOLNAMEBUFF);
-    strlcpy(stbuf[i].st_id, MessageID, NNTP_STRLEN);
+    strlcpy(stbuf[i].st_id, MessageID, NNTP_MAXLEN_COMMAND);
     stbuf[i].art = art;
     stbuf[i].st_hash = hash;
     stbuf[i].st_retry = 0;
@@ -576,7 +576,7 @@ HeadersLen(ARTHANDLE *art, int *iscmsg) {
 */
 static bool
 REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     if (!REMflush())
 	return false;
@@ -719,7 +719,7 @@ CATCHalarm(int s UNUSED)
 */
 static bool
 check(int i) {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     /* send "check <ID>" to the other system */
     snprintf(buff, sizeof(buff), "check %s", stbuf[i].st_id);
@@ -746,7 +746,7 @@ check(int i) {
 */
 static bool
 takethis(int i) {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     if (!stbuf[i].art) {
         warn("internal error: null article for %s in takethis",
@@ -784,7 +784,7 @@ strlisten(void)
     int		resp;
     int		i;
     char	*id, *p;
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
     int		hash;
 
     while(true) {
@@ -1285,10 +1285,10 @@ int main(int ac, char *av[]) {
 	    continue;
 	}
 
-        /* Drop articles with a message ID longer than NNTP_MSGID_MAXLEN to
+        /* Drop articles with a message ID longer than NNTP_MAXLEN_MSGID to
            avoid overrunning buffers and throwing the server on the
            receiving end a blow from behind. */
-        if (MessageID != NULL && strlen(MessageID) > NNTP_MSGID_MAXLEN) {
+        if (MessageID != NULL && strlen(MessageID) > NNTP_MAXLEN_MSGID) {
             warn("dropping article in %s: long message ID %s", BATCHname,
                  MessageID);
             continue;

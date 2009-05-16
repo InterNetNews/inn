@@ -30,7 +30,7 @@ NNTPlocalopen(FILE **FromServerp, FILE **ToServerp, char *errbuff, size_t len)
     int			oerrno;
     struct sockaddr_un	server;
     FILE		*F;
-    char		mybuff[NNTP_STRLEN + 2];
+    char		mybuff[NNTP_MAXLEN_COMMAND + 2];
     char		*buff;
 
     if (errbuff)

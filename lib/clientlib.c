@@ -12,7 +12,7 @@
 
 FILE	*ser_rd_fp = NULL;
 FILE	*ser_wr_fp = NULL;
-char	ser_line[NNTP_STRLEN + 2];
+char	ser_line[NNTP_MAXLEN_COMMAND + 2];
 
 
 /*
@@ -36,7 +36,7 @@ getserverbyfile(char *file UNUSED)
 int
 server_init(char *host, int port)
 {
-    char	line2[NNTP_STRLEN];
+    char	line2[NNTP_MAXLEN_COMMAND];
 
     /* This interface may be used by clients that assume C News behavior and
        won't read inn.conf themselves. */
@@ -144,7 +144,7 @@ get_server(char *buff, int buffsize)
 void
 close_server(void)
 {
-    char	buff[NNTP_STRLEN];
+    char	buff[NNTP_MAXLEN_COMMAND];
 
     if (ser_wr_fp != NULL && ser_rd_fp != NULL) {
 	put_server("QUIT");

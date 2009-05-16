@@ -80,7 +80,7 @@ REMwrite(int fd, char *p)
   int		i;
   int		err;
   char		*dest;
-  static char		buff[NNTP_STRLEN];
+  static char		buff[NNTP_MAXLEN_COMMAND];
 
   for (dest = buff, i = 0; p[i]; ) *dest++ = p[i++];
   *dest++ = '\r';
@@ -317,7 +317,7 @@ main(int ac, char *av[])
   char                  *p;
   FILE			*From;
   FILE			*To;
-  char			buff[NNTP_STRLEN];
+  char			buff[NNTP_MAXLEN_COMMAND];
   void	        	(*volatile old)(int) = NULL;
   struct stat		statbuf;
   int			fd;

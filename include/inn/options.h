@@ -101,7 +101,7 @@ typedef unsigned long           ARTNUM;
 /* Input buffers start at START_BUFF_SIZE.  While reading input, if we have
    less than LOW_WATER bytes left free in the buffer, use the current
    buffersize as input to GROW_AMOUNT to determine how much to realloc.
-   Growth must be at least NNTP_STRLEN bytes!  The default settings provide
+   Growth must be at least NNTP_MAXLEN_COMMAND bytes!  The default settings provide
    aggressive, exponential buffer growth. */
 #define START_BUFF_SIZE         (4 * 1024)
 #define LOW_WATER               (1 * 1024)

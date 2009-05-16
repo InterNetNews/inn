@@ -499,9 +499,9 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
           *fileNameEnd = ' ' ;
 
           /* Check the message ID length */
-          if (strlen(msgid) > NNTP_MSGID_MAXLEN) {
+          if (strlen(msgid) > NNTP_MAXLEN_MSGID) {
             warn ("ME message id exceeds limit of %d octets: %s",
-                  NNTP_MSGID_MAXLEN, msgid) ;
+                  NNTP_MAXLEN_MSGID, msgid) ;
             *(msgidEnd+1) = '\0' ;
           }
           *msgidEnd = ' ' ;

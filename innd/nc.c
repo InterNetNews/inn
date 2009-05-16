@@ -865,7 +865,7 @@ NCproc(CHANNEL *cp)
       for (i = cp->Next; (i < bp->used) && (bp->data[i] != '\n'); i++) ;
       if (i == bp->used) {
 	/* Check for too long command. */
-	if ((j = bp->used - cp->Start) > NNTP_STRLEN) {
+	if ((j = bp->used - cp->Start) > NNTP_MAXLEN_COMMAND) {
 	  /* Make some room, saving only the last few bytes. */
 	  for (p = bp->data, i = 0; i < SAVE_AMT; i++)
 	    p[i] = p[bp->used - SAVE_AMT + i];
@@ -1070,10 +1070,10 @@ NCproc(CHANNEL *cp)
 	}
 	i += cp->LargeCmdSize;
 	syslog(L_NOTICE, "%s internal rejecting too long command line (%lu > %d)",
-	  CHANname(cp), (unsigned long) i, NNTP_STRLEN);
+	  CHANname(cp), (unsigned long) i, NNTP_MAXLEN_COMMAND);
 	cp->LargeCmdSize = 0;
 	snprintf(buff, sizeof(buff), "%d command exceeds limit of %d bytes",
-                 NNTP_ERR_COMMAND, NNTP_STRLEN);
+                 NNTP_ERR_COMMAND, NNTP_MAXLEN_COMMAND);
 	cp->State = CSgetcmd;
 	cp->Start = cp->Next;
 	NCwritereply(cp, buff);

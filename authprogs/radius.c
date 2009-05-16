@@ -36,7 +36,7 @@ typedef struct _auth_req {
     unsigned char	id;
     unsigned short	length;
     unsigned char	vector[AUTH_VECTOR_LEN];
-    unsigned char	data[NNTP_STRLEN*2];
+    unsigned char	data[NNTP_MAXLEN_COMMAND*2];
     int			datalen;
 } auth_req;
 

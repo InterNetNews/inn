@@ -91,5 +91,3 @@
 #define NNTP_RESENDIT_XBATCHERR	"436 xbatch failed: "
 /* and one more meaning for the 501 code NNTP_SYNTAX_USE */
 #define NNTP_XBATCH_BADSIZE	"501 Invalid or missing size for xbatch"
-
-#define NNTP_STRLEN			512

@@ -717,7 +717,7 @@ ARTidok(const char *MessageID)
   const char	*p;
 
   /* Check the length of the message ID. */
-  if (MessageID == NULL || strlen(MessageID) > NNTP_MSGID_MAXLEN)
+  if (MessageID == NULL || strlen(MessageID) > NNTP_MAXLEN_MSGID)
     return false;
 
   /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
