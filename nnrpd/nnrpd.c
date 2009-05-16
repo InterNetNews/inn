@@ -852,9 +852,11 @@ main(int argc, char *argv[])
     char                *ListenAddr = NULL;
     char                *ListenAddr6 = NULL;
     int			*lfds;
+    fd_set              lfdset, lfdsetread;
+    int                 lfdcount, lfdreadcount;
+    bool                lfdokay;
+    int                 lfdmax = 0;
     int                 fd = -1;
-    int                 fdcount;
-    bool                fdokay;
     pid_t		pid = -1;
     FILE                *pidfile;
     int			clienttimeout;
@@ -983,13 +985,13 @@ main(int argc, char *argv[])
         /* Allocate an lfds array to hold the file descriptors
          * for IPv4 and/or IPv6 connections. */
         if (ListenAddr == NULL && ListenAddr6 == NULL) {
-            network_bind_all(ListenPort, &lfds, &fdcount);
+            network_bind_all(ListenPort, &lfds, &lfdcount);
         } else {
             if (ListenAddr != NULL && ListenAddr6 != NULL)
-                fdcount = 2;
+                lfdcount = 2;
             else
-                fdcount = 1;
-            lfds = xmalloc(fdcount * sizeof(int));
+                lfdcount = 1;
+            lfds = xmalloc(lfdcount * sizeof(int));
             i = 0;
             if (ListenAddr6 != NULL)
                 lfds[i++] = network_bind_ipv6(ListenAddr6, ListenPort);
@@ -998,13 +1000,13 @@ main(int argc, char *argv[])
         }
 
         /* Bail if we couldn't listen on any sockets. */
-        fdokay = false;
-        for (i = 0; i < fdcount; i++) {
+        lfdokay = false;
+        for (i = 0; i < lfdcount; i++) {
             if (lfds[i] < 0)
                 continue;
-            fdokay = true;
+            lfdokay = true;
         }
-        if (!fdokay)
+        if (!lfdokay)
             die("can't bind to any addresses");
 
         /* If started as root, switch to news uid.  Unlike other parts of INN, we
@@ -1043,13 +1045,20 @@ main(int argc, char *argv[])
  
 	setproctitle("accepting connections");
  	
-        for (i = 0; i < fdcount; i++) {
-            if (nonblocking(lfds[i], true) < 0)
-                syslog(L_ERROR, "can't nonblock %d %m", lfds[i]);
+        /* Initialize the listener file descriptors set. */
+        FD_ZERO(&lfdset);
+
+        for (i = 0; i < lfdcount; i++) {
             if (listen(lfds[i], 128) < 0) {
                 if (i != 0 && errno == EADDRINUSE)
                     continue;
                 syslog(L_ERROR, "can't listen to socket");
+            } else {
+                /* Remember the largest descriptor number
+                 * that is to be tested by select(). */
+                FD_SET(lfds[i], &lfdset);
+                if (lfdmax < lfds[i])
+                    lfdmax = lfds[i];
             }
         }
 
@@ -1061,10 +1070,25 @@ main(int argc, char *argv[])
 		    pid = fork();
 		    if (pid == 0) {
 			do {
-                            for (i = 0; i < fdcount; i++) {
-                                fd = accept(lfds[i], NULL, NULL);
-                                if (fd >= 0)
-                                    break;
+                            fd = -1;
+
+                            /* Copy the master set because lfdsetread
+                             * will be modified. */
+                            lfdsetread = lfdset;
+                            lfdreadcount = select(lfdmax + 1, &lfdsetread,
+                                                  NULL, NULL, NULL);
+
+                            if (lfdreadcount > 0) {
+                                for (i = 0; i < lfdcount; i++) {
+                                    if (FD_ISSET(lfds[i], &lfdsetread)) {
+                                        fd = accept(lfds[i], NULL, NULL);
+                                        /* Only handle the first match.  Future
+                                         * calls to select() will handle possible
+                                         * other matches. */
+                                        if (fd >= 0)
+                                            break;
+                                    }
+                                }
                             }
 			} while (fd < 0);
 			break;
@@ -1083,10 +1107,22 @@ main(int argc, char *argv[])
 	} else {
 	    /* Fork on demand. */
 	    do {
-                for (i = 0; i < fdcount; i++) {
-                    fd = accept(lfds[i], NULL, NULL);
-                    if (fd >= 0)
-                        break;
+                fd = -1;
+                
+                /* Copy the master set because lfdsetread will be modified. */
+                lfdsetread = lfdset;
+                lfdreadcount = select(lfdmax + 1, &lfdsetread, NULL, NULL, NULL);
+
+                if (lfdreadcount > 0) {
+                    for (i = 0; i < lfdcount; i++) {
+                        if (FD_ISSET(lfds[i], &lfdsetread)) {
+                            fd = accept(lfds[i], NULL, NULL);
+                            /* Only handle the first match.  Future calls
+                             * to select() will handle possible other matches. */
+                            if (fd >= 0)
+                                break;
+                        }
+                    }
                 }
 		if (fd < 0)
 		    continue;
@@ -1111,7 +1147,7 @@ main(int argc, char *argv[])
 
 	/* Child process starts here. */
 	setproctitle("connected");
-        for (i = 0; i < fdcount; i++) {
+        for (i = 0; i < lfdcount; i++) {
             close(lfds[i]);
         }
 	dup2(fd, 0);
