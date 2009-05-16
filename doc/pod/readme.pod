@@ -54,7 +54,7 @@ servers, most commonly B<innfeed> (for real-time outgoing feeds) or
 B<nntpsend> and B<innxmit> (used to send batches of news created by innd
 to a remote site via TCP/IP).  INN can also handle outgoing UUCP feeds.
 
-The part of INN that handles connections from newsreaders is nnrpd.
+The part of INN that handles connections from newsreaders is B<nnrpd>.
 
 Also included in INN are a wide variety of supporting programs to handle
 periodic maintenance and recovery from crashes, process special control
@@ -90,11 +90,11 @@ work on.  If you encounter problems compiling or running INN, or if you
 successfully run INN on a platform that isn't listed in F<INSTALL>, please
 let us know (see L<"Reporting Bugs"> below).
 
-S<Perl 5.003> or later is required to build INN.  S<Perl 5.004> is required if
-you want the embedded Perl filter support (which is highly recommended;
-some excellent spam filters have been written for INN).  Since all
-versions of Perl previous to 5.004 are buggy (including security problems)
-and have fewer features, installing S<Perl 5.004> or later is recommended.
+S<Perl 5.004> or later is required to build INN and use the embedded Perl
+filter support (which is highly recommended; some excellent spam filters
+have been written for INN).  Since all versions of Perl previous to 5.004
+are buggy (including security problems) and have fewer features, installing
+S<Perl 5.004> or later (like at least S<Perl 5.8.0>) is recommended.
 
 If you want to enable PGP verification of control messages (highly
 recommended), you will need to have a PGP implementation installed.  See
@@ -301,7 +301,7 @@ as yourself.
 Internet Systems Consortium has also commissioned a DHCP server
 implementation and handles the official support/release of BIND.  You can
 learn more about the ISC's goals and accomplishments from the web page at
-<https://www.isc.org/>.
+L<https://www.isc.org/>.
 
                                         Russ Allbery
                                         Katsuhiro Kondou
