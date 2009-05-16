@@ -332,7 +332,7 @@ changes to those files, use C<ctlinnd xexec innd> to restart B<innd>.
 
 If I<what> is the empty string or the word C<all>, everything is
 reloaded.  If it is the word C<history>, the history database is closed
-and re-opened.  If it is the word C<incoming.conf> or C<overvew.fmt>, the
+and re-opened.  If it is the word C<incoming.conf>, the
 corresponding file is reloaded.  If it is the word C<active> or
 C<newsfeeds>, both the F<active> and F<newsfeeds> files are reloaded,
 which will also cause all outgoing feeds to be flushed and restarted.

@@ -1299,7 +1299,6 @@ CCreject(char *av[])
 static const char *
 CCreload(char *av[])
 {
-    static char	BADSCHEMA[] = "1 Can't read schema";
     const char *p;
 
 #ifdef DO_PERL
@@ -1321,8 +1320,6 @@ CCreload(char *av[])
 	    InndHisOpen();
 	ICDwrite();
 	ICDsetup(true);
-	if (!ARTreadschema())
-	    return BADSCHEMA;
 #ifdef DO_PERL
         path = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_INND);
         PERLreadfilter(path, "filter_art") ;
@@ -1346,11 +1343,8 @@ CCreload(char *av[])
 	InndHisClose();
 	InndHisOpen();
     }
-    else if (strcmp(p, "incoming.conf") == 0)
-	RCreadlist();
-    else if (strcmp(p, "overview.fmt") == 0) {
-	if (!ARTreadschema())
-	    return BADSCHEMA;
+    else if (strcmp(p, "incoming.conf") == 0) {
+        RCreadlist();
     }
 #if 0 /* we should check almost all innconf parameter, but the code
          is still incomplete for innd, so just commented out */
