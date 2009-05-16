@@ -25,9 +25,9 @@ remote INN for peering, only the password is needed.)
 
 The optional fourth field specifies the type of authentication to use.
 At present, the only recognized "authentication style" is C<authinfo>;
-this is also the default.  It means that NNTP "authinfo" commands are
-used to authenticate to the remote host.  (The C<authinfo> command is a
-common extension to S<RFC 977>.)
+this is also the default.  It means that AUTHINFO USER/PASS commands
+are used to authenticate to the remote host.  (These NNTP commands
+are described in S<RFC 4643>.)
 
 For example:
 
