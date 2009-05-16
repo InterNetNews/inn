@@ -191,11 +191,11 @@ The default is C<1>.
 
 =item B<-w> I<num>
 
-Set each group's high watermark (last received article number) to I<num>.
+Set each group's high water mark (last received article number) to I<num>.
 If I<num> is negative, calculate S<I<Current>+I<num>> instead (i.e. get the last
 I<num> articles).  Therefore, a I<num> of C<0> will re-get all articles on the
 server; whereas a I<num> of C<-0> will get no old articles, setting the
-watermark to I<Current> (the most recent article on the server).
+water mark to I<Current> (the most recent article on the server).
 
 =item B<-x>
 

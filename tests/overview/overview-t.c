@@ -425,7 +425,7 @@ overview_verify_search(const char *data)
 /* Try an overview search and verify that all of the data is returned in the
    right order.  The search will cover everything from article 1 to the
    highest numbered article plus one.  There were some problems with a search
-   low-water mark lower than the base of the group.  Returns true if
+   low water mark lower than the base of the group.  Returns true if
    everything checks out, false otherwise. */
 static bool
 overview_verify_full_search(const char *data)

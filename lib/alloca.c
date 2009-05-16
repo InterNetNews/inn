@@ -239,7 +239,7 @@ struct stk_stat
     long maxc;                  /* Amount of contiguous space which would
                                    be required to satisfy the maximum
                                    stack demand to date.  */
-    long high_water;            /* Stack high-water mark.  */
+    long high_water;            /* Stack high water mark.  */
     long overflows;             /* Number of stack overflow ($STKOFEN) calls.  */
     long hits;                  /* Number of internal buffer hits.  */
     long extends;               /* Number of block extensions.  */

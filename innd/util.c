@@ -14,7 +14,7 @@
 /*
 **  Sprintf a long into a buffer with enough leading zero's so that it
 **  takes up width characters.  Don't add trailing NUL.  Return true
-**  if it fit.  Used for updating high-water marks in the active file
+**  if it fit.  Used for updating high water marks in the active file
 **  in-place.
 */
 bool

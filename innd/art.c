@@ -1564,7 +1564,7 @@ ARTxrefslave(ARTDATA *data)
     if (q != NULL)
       *q = c;
 
-    /* Update active file if we got a new high-water mark. */
+    /* Update active file if we got a new high water mark. */
     if (ngp->Last < ngp->Filenum) {
       ngp->Last = ngp->Filenum;
       if (!FormatLong(ngp->LastString, (long)ngp->Last, ngp->Lastwidth)) {

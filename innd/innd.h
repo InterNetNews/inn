@@ -401,7 +401,7 @@ typedef enum {REJECT_DUPLICATE, REJECT_SITE, REJECT_FILTER, REJECT_DISTRIB,
 	      REJECT_GROUP, REJECT_UNAPP, REJECT_OTHER} Reject_type;
 
 /*
-**  A newsgroup has a name in different formats, and a high-water count,
+**  A newsgroup has a name in different formats, and a high water count,
 **  also kept in different formats.  It also has a list of sites that
 **  get this group.
 */

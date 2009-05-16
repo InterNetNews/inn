@@ -186,7 +186,7 @@ and removed afterwards.
 
 =item B<norenumber>
 
-This keyword disables the C<ctlinnd renumber> operation.  Normally, the low-water
+This keyword disables the C<ctlinnd renumber> operation.  Normally, the low water
 marks for all newsgroups are reset in the F<active> file.
 
 =item B<norm>
