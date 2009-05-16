@@ -206,8 +206,8 @@ Documentation Projects
 * Add documentation for slave servers.  [Russ has articles from
   inn-workers that can be used as a beginning.]
 
-* Write complete documentation for all of our extensions to RFC 977 or RFC
-  1036, preferrably in a format that could be suitable for future
+* Write complete documentation for all of our extensions to RFC 3977 or RFC
+  5536 and 5537, preferrably in a format that could be suitable for future
   inclusion into new revisions of the RFCs.
 
 * Audit readers.conf.5 against perm.c for missing options ("include" at

@@ -131,30 +131,32 @@ enum nntp_code {
 };
 
 
-/*     Command lines MUST NOT exceed 512 octets, which includes the
-       terminating  CRLF pair.  The arguments MUST NOT exceed 497
-       octets.  A server MAY relax these limits for commands defined
-       in an extension.
-
-   Also see below for an additional restriction on message IDs. */
+/*
+**  Command lines MUST NOT exceed 512 octets, which includes the
+**  terminating  CRLF pair.  The arguments MUST NOT exceed 497
+**  octets.  A server MAY relax these limits for commands defined
+**  in an extension.
+**
+**  Also see below for an additional restriction on message-IDs.
+*/
 
 #define NNTP_MAXLEN_COMMAND     512
 #define NNTP_MAXLEN_ARG         497
 
-/* Consensus on the USEFOR mailing list in June of 2000 indicates that the
-   next revision of the Usenet article standard will limit the length of the
-   message ID to 250 characters.  This is also the limit recommended by
-   son-of-1036.
-
-   You can increase this limit if you want, but don't increase it above 497.
-   RFC 977 limits each line of the NNTP protocol to 512 octets, including
-   the terminating CRLF.  For a message ID to be passed using the TAKETHIS
-   command, it can therefore be a maximum of 501 octets.  The November 1999
-   draft of the replacement RFC limits it to 497 octets.
-
-   Both Cyclone and DNews are known to reject message IDs longer than 500
-   octets as of June of 2000.  DNews has been reported to have problems with
-   message IDs of 494 octets. */
+/*
+**  The length of a message-ID is limited to 250 characters by RFC 3977
+**  and RFC 5536 (USEFOR).
+**
+**  You can increase this limit if you want, but don't increase it above 497.
+**  RFC 3977 limits each line of the NNTP protocol to 512 octets, including
+**  the terminating CRLF.  For a message-ID to be passed using the TAKETHIS
+**  command, it can therefore be a maximum of 501 octets but 497 is the
+**  maximum length of an argument.
+**
+**  Both Cyclone and DNews are known to reject message-IDs longer than 500
+**  octets as of June of 2000.  DNews has been reported to have problems with
+**  message-IDs of 494 octets.
+*/
 
 #define NNTP_MAXLEN_MSGID       250
 

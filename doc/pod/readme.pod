@@ -13,9 +13,11 @@ license, and distribution terms.
 =head1 What is INN?
 
 INN (InterNetNews), originally written by Rich Salz, is an extremely
-flexible and configurable Usenet / netnews news server.  For a complete
-description of the protocols behind Usenet and netnews, see S<RFC 1036> and
-S<RFC 977> (or their replacements).  In brief, netnews is a set of protocols
+flexible and configurable Usenet / Netnews news server.  For a complete
+description of the protocols behind Usenet and Netnews, see S<RFC 3977>
+(NNTP), S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication),
+S<RFC 4644> (streaming NNTP feeds), S<RFC 5536> (USEFOR) and S<RFC 5537>
+(USEPRO) or their replacements.  In brief, Netnews is a set of protocols
 for exchanging messages between a decentralized network of news servers.
 News articles are organized into newsgroups, which are themselves
 organized into hierarchies.  Each individual news server stores locally
