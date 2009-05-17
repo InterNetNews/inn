@@ -48,28 +48,28 @@ fi
 
 output="$2"
 if [ -z "$output" ] ; then
-    output=`echo "$input" | sed 's/\.in$//'`
+    output=`echo "$input" | $SED -e 's/\.in$//'`
 fi
 if [ x"$input" = x"$output" ] ; then
     echo "No output file specified and input file doesn't end in .in" >&2
     exit 1
 fi
 
-$SED -e "s,@prefix\@,$prefix," \
-     -e "s,@bindir\@,$bindir," \
-     -e "s,@libexecdir\@,$libexecdir," \
-     -e "s,@libdir\@,$libdir," \
-     -e "s,@sbindir\@,$sbindir," \
-     -e "s,@sysconfdir\@,$sysconfdir," \
-     -e "s,@CONTROLDIR\@,$CONTROLDIR," \
-     -e "s,@DBDIR\@,$DBDIR," \
-     -e "s,@FILTERDIR\@,$FILTERDIR," \
-     -e "s,@HTTPDIR\@,$HTTPDIR," \
-     -e "s,@LIBPERLDIR\@,$LIBPERLDIR," \
-     -e "s,@LOGDIR\@,$LOGDIR," \
-     -e "s,@RUNDIR\@,$RUNDIR," \
-     -e "s,@SPOOLDIR\@,$SPOOLDIR," \
-     -e "s,@tmpdir\@,$tmpdir," \
-     -e "s,@DO_PGPVERIFY\@,$DO_PGPVERIFY," \
-     -e "s,@HOSTNAME\@,$HOSTNAME," \
-     -e "s,@SENDMAIL\@,$SENDMAIL," < "$input" > "$output"
+$SED -e "s,@prefix[@],$prefix,g" \
+     -e "s,@bindir[@],$bindir,g" \
+     -e "s,@libexecdir[@],$libexecdir,g" \
+     -e "s,@libdir[@],$libdir,g" \
+     -e "s,@sbindir[@],$sbindir,g" \
+     -e "s,@sysconfdir[@],$sysconfdir,g" \
+     -e "s,@CONTROLDIR[@],$CONTROLDIR,g" \
+     -e "s,@DBDIR[@],$DBDIR,g" \
+     -e "s,@FILTERDIR[@],$FILTERDIR,g" \
+     -e "s,@HTTPDIR[@],$HTTPDIR,g" \
+     -e "s,@LIBPERLDIR[@],$LIBPERLDIR,g" \
+     -e "s,@LOGDIR[@],$LOGDIR,g" \
+     -e "s,@RUNDIR[@],$RUNDIR,g" \
+     -e "s,@SPOOLDIR[@],$SPOOLDIR,g" \
+     -e "s,@tmpdir[@],$tmpdir,g" \
+     -e "s,@DO_PGPVERIFY[@],$DO_PGPVERIFY,g" \
+     -e "s,@HOSTNAME[@],$HOSTNAME,g" \
+     -e "s,@SENDMAIL[@],$SENDMAIL,g" < "$input" > "$output"
