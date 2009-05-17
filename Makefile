@@ -206,16 +206,16 @@ release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `sed $(DISTDIRS) MANIFEST` ; do mkdir -p $$d ; done
-	for f in `sed $(DISTFILES) MANIFEST` ; do \
+	for d in `$(SED) $(DISTDIRS) MANIFEST` ; do mkdir -p $$d ; done
+	for f in `$(SED) $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
 	if [ "x$(RELEASENUMBER)" != "x" ] ; then \
 	    cp README.$(RELEASEEXTENSION) $(TARDIR)/ ; \
-	    sed 's/= prerelease/= $(RELEASENUMBER) version/' \
+	    $(SED) 's/= prerelease/= $(RELEASENUMBER) version/' \
 	        Makefile.global.in > $(TARDIR)/Makefile.global.in ; \
 	else \
-	    sed 's/= prerelease/=/' Makefile.global.in \
+	    $(SED) 's/= prerelease/=/' Makefile.global.in \
 	        > $(TARDIR)/Makefile.global.in ; \
 	fi
 	cp ChangeLog $(TARDIR)/
@@ -233,7 +233,7 @@ ChangeLog:
 ##  Check the MANIFEST against the files present in the current tree,
 ##  building a list with find and running diff between the lists.
 check-manifest:
-	sed -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
+	$(SED) -e 1,2d -e 's/ .*//' MANIFEST > LIST.manifest
 	$(PERL) support/mkmanifest > LIST.real
 	diff -u LIST.manifest LIST.real
 
@@ -245,12 +245,12 @@ snapshot:
 	rm -rf $(SNAPDIR)
 	rm -f inn*.tar.gz
 	mkdir $(SNAPDIR)
-	set -e ; for d in `sed $(SNAPDIRS) MANIFEST` ; do mkdir -p $$d ; done
-	set -e ; for f in `sed $(DISTFILES) MANIFEST` ; do \
+	set -e ; for d in `$(SED) $(SNAPDIRS) MANIFEST` ; do mkdir -p $$d ; done
+	set -e ; for f in `$(SED) $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done
 	cp README.snapshot $(SNAPDIR)/
-	sed 's/= prerelease/= $(SNAPDATE) snapshot/' \
+	$(SED) 's/= prerelease/= $(SNAPDATE) snapshot/' \
 	    Makefile.global.in > $(SNAPDIR)/Makefile.global.in
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(SNAPDIR).tar $(SNAPDIR)
