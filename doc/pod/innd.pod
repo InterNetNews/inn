@@ -4,9 +4,9 @@ innd - InterNetNews daemon
 
 =head1 SYNOPSIS
 
-B<innd> [B<-aCdfNrsu>] [B<-6> I<address>] [B<-c> I<days>] [B<-H> I<count>]
-[B<-i> I<count>] S<[B<-I> I<address>]> [B<-l> I<size>] [B<-m> I<mode>]
-[B<-n> I<flag>] [B<-o> I<count>] [B<-P> I<port>] S<[B<-t> I<timeout>]>
+B<innd> [B<-aCdfNrsu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
+[B<-H> I<count>] [B<-i> I<count>] [B<-l> I<size>] [B<-m> I<mode>]
+[B<-n> I<flag>] [B<-o> I<count>] [B<-P> I<port>] [B<-t> I<timeout>]
 [B<-T> I<count>] [B<-X> I<seconds>]
 
 =head1 DESCRIPTION
@@ -65,6 +65,18 @@ command-line option is given.
 
 =over 4
 
+=item B<-4> I<address>
+
+Normally B<innd> binds to all local IP addresses (unless I<bindaddress> is
+set in F<inn.conf>).  If this option is given, it specifies the IP address
+that INN should bind as.  This is only relevant for servers with multiple
+local IP addresses.  The IP address must be in dotted-quad
+(C<nnn.nnn.nnn.nnn>) format.
+
+If this option is specified, it's the same as setting I<bindaddress> in
+F<inn.conf> and may cause changes in whether INN binds to an IPv6 address
+as well.  See inn.conf(5) for more details and also the B<-6> flag for B<innd>.
+
 =item B<-6> I<address>
 
 Only applies when INN has been built with IPv6 support.  Normally B<innd>
@@ -75,7 +87,7 @@ format (C<n:n:n:n:n:n:n:n>).
 
 If this option is specified, it's the same as setting I<bindaddress6> in
 F<inn.conf> and may cause changes in whether INN binds to an IPv4 address
-as well.  See inn.conf(5) for more details and also the B<-I> flag for B<innd>.
+as well.  See inn.conf(5) for more details and also the B<-4> flag for B<innd>.
 
 =item B<-a>
 
@@ -135,18 +147,6 @@ B<innd> normally allows a maximum number of concurrent NNTP connections
 given by the value of I<maxconnections> in F<inn.conf>.  This option, if
 given, overrides the value of that setting.  If I<count> is C<0>, this
 check is suppressed.
-
-=item B<-I> I<address>
-
-Normally B<innd> binds to all local IP addresses (unless I<bindaddress> is
-set in F<inn.conf>).  If this option is given, it specifies the IP address
-that INN should bind as.  This is only relevant for servers with multiple
-local IP addresses.  The IP address must be in dotted-quad
-(C<nnn.nnn.nnn.nnn>) format.
-
-If this option is specified, it's the same as setting I<bindaddress> in
-F<inn.conf> and may cause changes in whether INN binds to an IPv6 address
-as well.  See inn.conf(5) for more details and also the B<-6> flag for B<innd>.
 
 =item B<-l> I<size>
 

@@ -906,20 +906,23 @@ main(int argc, char *argv[])
 #endif /* HAVE_SASL */
 
 #ifdef HAVE_SSL
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:r:s:tS")) != EOF)
+    while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:St")) != EOF)
 #else
-    while ((i = getopt(argc, argv, "6:c:b:Dfi:I:nop:P:r:s:t")) != EOF)
+    while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:t")) != EOF)
 #endif /* HAVE_SSL */
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+        case '4':                       /* Bind to a certain IPv4 address. */
+        case 'b':
+            if (ListenAddr != NULL)
+                die("-b and -4 may not both be given");
+            ListenAddr = xstrdup(optarg);
+            break;
         case '6':                       /* Bind to a certain IPv6 address. */
             ListenAddr6 = xstrdup(optarg);
             break;
- 	case 'b':			/* Bind to a certain IPv4 address. */
-            ListenAddr = xstrdup(optarg);
- 	    break;
 	case 'c':                       /* Use alternate readers.conf. */
 	    ConfFile = concatpath(innconf->pathetc, optarg);
 	    break;

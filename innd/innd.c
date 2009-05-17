@@ -403,11 +403,16 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "6:ac:Cdfi:l:m:o:Nn:P:rst:uH:T:X:")) != EOF)
+    while ((i = getopt(ac, av, "4:6:ac:CdfH:i:l:m:n:No:P:rst:T:uX:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
+        case '4':
+            if (innconf->bindaddress)
+                free(innconf->bindaddress);
+            innconf->bindaddress = xstrdup(optarg);
+            break;
         case '6':
             if (innconf->bindaddress6)
                 free(innconf->bindaddress6);
@@ -433,10 +438,6 @@ main(int ac, char *av[])
 	    break;
 	case 'i':
 	    innconf->maxconnections = atoi(optarg);
-	    break;
-	case 'I':
-	    if (innconf->bindaddress) free(innconf->bindaddress);
-	    innconf->bindaddress = xstrdup(optarg);
 	    break;
 	case 'l':
 	    innconf->maxartsize = atol(optarg);
