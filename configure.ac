@@ -26,7 +26,7 @@ dnl bother checking for it.  Compile-time errors often produce a lot more
 dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
-AC_INIT([INN], [2.5.0])
+AC_INIT([INN], [2.5.0], [inn-workers@lists.isc.org])
 AC_PREREQ(2.61)
 AC_REVISION($Revision$)
 AC_CONFIG_AUX_DIR([support])
@@ -206,6 +206,7 @@ AC_PROG_GCC_TRADITIONAL
 AC_PROG_LEX
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_MKDIR_P
 AC_PROG_RANLIB
 AC_PROG_YACC
 
@@ -251,7 +252,8 @@ dnl the bison-generated parser for innfeed.conf.
     fi
 esac
   
-dnl Checks for pathnames.
+dnl Checks for pathnames.  If AC_PROG_* does not manage to find a working
+dnl program, INN_PATH_PROG_ENSURE will output an error.
 AC_ARG_VAR([AWK], [Location of awk])
 AC_ARG_VAR([EGREP], [Location of egrep])
 AC_ARG_VAR([SED], [Location of sed])
@@ -259,6 +261,9 @@ AC_ARG_VAR([SORT], [Location of sort])
 AC_ARG_VAR([SSLBIN], [Location of openssl])
 AC_ARG_VAR([UUSTAT], [Location of uustat])
 AC_ARG_VAR([UUX], [Location of uux])
+AC_PROG_AWK
+AC_PROG_EGREP
+AC_PROG_SED
 INN_PATH_PROG_ENSURE([AWK], [awk])
 INN_PATH_PROG_ENSURE([EGREP], [egrep])
 INN_PATH_PROG_ENSURE([SED], [sed])

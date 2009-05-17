@@ -206,7 +206,7 @@ release: ChangeLog
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
-	for d in `$(SED) $(DISTDIRS) MANIFEST` ; do mkdir -p $$d ; done
+	for d in `$(SED) $(DISTDIRS) MANIFEST` ; do $(MKDIR_P) $$d ; done
 	for f in `$(SED) $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(TARDIR)/$$f || exit 1 ; \
 	done
@@ -245,7 +245,7 @@ snapshot:
 	rm -rf $(SNAPDIR)
 	rm -f inn*.tar.gz
 	mkdir $(SNAPDIR)
-	set -e ; for d in `$(SED) $(SNAPDIRS) MANIFEST` ; do mkdir -p $$d ; done
+	set -e ; for d in `$(SED) $(SNAPDIRS) MANIFEST` ; do $(MKDIR_P) $$d ; done
 	set -e ; for f in `$(SED) $(DISTFILES) MANIFEST` ; do \
 	    cp $$f $(SNAPDIR)/$$f ; \
 	done

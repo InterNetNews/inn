@@ -191,6 +191,7 @@ CTAGS		= ctags -t -w
 GZIP		= @GZIP@
 LEX		= @LEX@
 LN_S		= @LN_S@
+MKDIR_P		= @MKDIR_P@
 PERL		= @PERL@
 RANLIB		= @RANLIB@
 SED		= @SED@
