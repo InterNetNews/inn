@@ -917,7 +917,7 @@ main(int argc, char *argv[])
         case '4':                       /* Bind to a certain IPv4 address. */
         case 'b':
             if (ListenAddr != NULL)
-                die("-b and -4 may not both be given");
+                die("-b and -4 are the same and both may not be given");
             ListenAddr = xstrdup(optarg);
             break;
         case '6':                       /* Bind to a certain IPv6 address. */
