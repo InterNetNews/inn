@@ -838,12 +838,14 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
         entry->low = article->number;
     if (entry->high < article->number)
         entry->high = article->number;
-    /* Used to know that we have to remap the data file owing to
-     * our OVSTATICSEARCH (an article whose number is lower than
-     * the highest has been added at the end of the file). */
+    entry->count++;
+
+    /* Used to know that we have to remap the data file owing to our
+       OVSTATICSEARCH (an article whose number is lower than the highest has
+       been added at the end of the file). */
     if (data->high > article->number)
         data->remapoutoforder = true;
-    entry->count++;
+
     inn_msync_page(entry, sizeof(*entry), MS_ASYNC);
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return true;
