@@ -88,9 +88,9 @@ wildmat expressions, you may also use CIDR notation to match any IP
 address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
-If compiled against the SSL libraries, an auth group with the I<require_ssl>
+If compiled against the TLS/SSL libraries, an auth group with the I<require_ssl>
 parameter set to true only applies if the incoming connection is using
-SSL, either from the beginning if the B<-S> flag was passed to B<nnrpd> or
+TLS, either from the beginning if the B<-S> flag was passed to B<nnrpd> or
 after a successful use of STARTTLS.
 
 For any connection from a host that matches that wildmat expression or
@@ -307,9 +307,9 @@ containing a matching key parameter.
 =item B<require_ssl:>
 
 If set to true, an incoming connection only matches this auth group if
-it is encrypted using SSL, either from the beginning if the B<-S> flag
+it is encrypted using TLS/SSL, either from the beginning if the B<-S> flag
 was passed to B<nnrpd> or after a successful use of STARTTLS.  This
-parameter is only valid if INN is compiled with SSL support
+parameter is only valid if INN is compiled with TLS/SSL support
 (B<--with-openssl> passed to configure).
 
 =item B<perl_access:>
@@ -459,7 +459,7 @@ display the reason to the user.
 
 If this parameter is present (and nonzero), it is used for B<nnrpd>'s
 rate-limiting code.  The client will only be able to download at this
-speed (in bytes/second).  Note that if SSL is being used, limiting
+speed (in bytes/second).  Note that if TLS/SSL is being used, limiting
 is applied to the pre-encryption datastream.
 
 =item B<localtime:>
@@ -807,7 +807,7 @@ minimal effects.
 Authentication using the AUTHINFO USER/PASS commands passes unencrypted
 over the network.  Extreme caution should therefore be used especially
 with system passwords (e.g. C<auth: ckpasswd -s>).  Passwords can be
-protected by using NNTP over SSL or through ssh tunnels, and this usage
+protected by using NNTP over TLS/SSL or through ssh tunnels, and this usage
 can be enforced by a well-considered server configuration that only
 permits certain auth groups to be applied in certain cases.  Here are
 some ideas:
@@ -816,7 +816,7 @@ some ideas:
 
 =item *
 
-To restrict connections on the standard NNTP port (119) to use SSL for
+To restrict connections on the standard NNTP port (119) to use TLS for
 some (or all) of the auth groups to match, use the I<require_ssl>
 parameter.  Note that a client can use STARTTLS to negotiate an
 encrypted connection.
@@ -831,7 +831,7 @@ above, with ones having global applicability below.
 
 Consider running B<nnrpd> with the B<-S> flag (either also with B<-D>,
 or out of "super-server" like B<inetd>) on the NNTPS port (563) for
-clients that support SSL.  See nnrpd(8) for more details about how
+clients that support TLS/SSL.  See nnrpd(8) for more details about how
 to configure that.  You can use the I<require_ssl> parameter or the
 B<-c> flag to specify an alternate F<readers.conf> file if you want
 a substantially different configuration for this case.

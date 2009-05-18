@@ -435,13 +435,13 @@ where it is installed.
 
 =item B<--with-openssl>=PATH
 
-Enables support for SSL for news reading, which means it will be possible
-to have SSL or TLS encrypted NNTP connections between your server and
-newsreaders.  This option requires OpenSSL be installed on your system
-(including the header files, not just the runtime libraries).  If a path
-is given, it sets the installed directory of OpenSSL.  After compiling and
-installing INN with this option, you'll still need to make a certificate
-and private key to use SSL.  See below for details on how to do that.
+Enables support for TLS/SSL for news reading, which means it will be possible
+to have TLS encrypted NNTP connections between your server and newsreaders.
+This option requires OpenSSL be installed on your system (including the header
+files, not just the runtime libraries).  If a path is given, it sets the
+installed directory of OpenSSL.  After compiling and installing INN with
+this option, you'll still need to make a certificate and private key to use TLS.
+See below for details on how to do that.
 
 =item B<--enable-ipv6>
 
@@ -489,7 +489,7 @@ resulting INN installation won't be able to use ports below 1024
 (including the default NNTP port of 119) unless you then run C<make
 install-root> as root, which will install only the setuid helper program.
 
-If you are configuring SSL support for newsreaders, you must make a
+If you are configuring TLS/SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:
 
     make cert

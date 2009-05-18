@@ -128,7 +128,7 @@ backoffpostfast:        0
 backoffpostslow:        1
 backofftrigger:         10000
 
-# Reading and posting -- SSL and TLS support
+# Reading and posting -- TLS/SSL support
 
 #tlscafile:
 #tlscapath:

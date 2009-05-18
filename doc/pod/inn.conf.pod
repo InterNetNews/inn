@@ -985,7 +985,7 @@ The default value is C<10000>.
 
 =back
 
-Finally, here are the parameters used by nnrpd(8) to provide SSL and TLS
+Finally, here are the parameters used by nnrpd(8) to provide TLS/SSL
 support:
 
 =over 4
@@ -993,8 +993,8 @@ support:
 =item I<tlscafile>
 
 The path to a file containing certificate authority root certificates,
-used to present a trust chain to an SSL or TLS client.  This parameter is
-only used if nnrpd is built with TLS support.  There is no default value.
+used to present a trust chain to a TLS client.  This parameter is only
+used if B<nnrpd> is built with TLS/SSL support.  There is no default value.
 
 =item I<tlscapath>
 
@@ -1002,13 +1002,13 @@ The path to a directory containing certificate authority root
 certificates.  Each file in the directory should contain one CA
 certificate, and the name of the file should be the CA subject name hash
 value.  See the OpenSSL documentation for more information.  This
-parameter is only used if nnrpd is built with TLS support.  There is no
-default value.
+parameter is only used if B<nnrpd> is built with TLS/SSL support.  There
+is no default value.
 
 =item I<tlscertfile>
 
-The path to a file containing the server certificate to present to SSL or
-TLS clients.  This parameter is only used if nnrpd is built with TLS
+The path to a file containing the server certificate to present to
+TLS clients.  This parameter is only used if B<nnrpd> is built with TLS/SSL
 support.  The default value is I<pathnews>/lib/cert.pem.
 
 =item I<tlskeyfile>
@@ -1018,10 +1018,10 @@ certificate named in I<tlscertfile>.  This may be the same as
 I<tlscertfile> if, when you created the certificate, you put the key in
 the same file (if, for example, you gave the same file name to both the
 B<-out> and B<-keyout> options to C<openssl req>).  This parameter is only
-used if nnrpd is built with TLS support.  The default value is
+used if B<nnrpd> is built with TLS/SSL support.  The default value is
 I<pathnews>/lib/key.pem.
 
-This file must only be readable by the news user or nnrpd will refuse to
+This file must only be readable by the news user or B<nnrpd> will refuse to
 use it.
 
 =back

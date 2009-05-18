@@ -14,7 +14,7 @@ username and password is used to attempt to obtain a S<Kerberos v5 TGT> to
 confirm that they are valid.  As such, this authenticator assumes that
 B<nnrpd> has been given the user's username and password, and therefore is
 not as secure as real Kerberos authentication.  It generally should only
-be used with NNTP over SSL to protect the password from sniffing.
+be used with NNTP over TLS to protect the password from sniffing.
 
 =head1 OPTIONS
 

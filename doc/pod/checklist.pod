@@ -92,7 +92,7 @@ B<--prefix=/usr/local/news> is used.
 
 You probably want B<--with-perl>.  If you're not using NetBSD with
 cycbuffs or OpenBSD, perhaps B<--with-tagged-hash>.  You might want to
-compile in SSL and S<Berkeley DB>, if your system supports them.  You
+compile in TLS/SSL and S<Berkeley DB>, if your system supports them.  You
 will need to have the relevant external libraries to compile (depending
 on whether you use OpenSSL for TLS/SSL access to your news server, GnuPG
 to verify the authenticity of Usenet control messages, Perl, Python, etc.).

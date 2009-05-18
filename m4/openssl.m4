@@ -18,7 +18,7 @@ SSL_CPPFLAGS=
 SSL_LIBS=
 AC_ARG_WITH([openssl],
     [AC_HELP_STRING([--with-openssl@<:@=PATH@:>@],
-        [Enable OpenSSL (for NNTP over SSL support)])],
+        [Enable OpenSSL (for NNTP over TLS/SSL support)])],
     SSL_DIR=$with_openssl,
     SSL_DIR=no)
 AC_MSG_CHECKING([if OpenSSL is desired])
