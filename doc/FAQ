@@ -820,7 +820,9 @@ overview database, and then rebuild it from your news spool with:
 
     makehistory -O -x -F
 
-This takes a long time and is to some degree overkill.
+This takes a long time and is to some degree overkill.  For versions of
+INN prior to 2.5, you will also need to run ctlinnd renumber '' immediately
+after restarting INN.
 
 A third and better solution in some cases is to just remove all articles
 in the spool that have higher numbers than the numbers in the active file.
