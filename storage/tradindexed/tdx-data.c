@@ -421,11 +421,10 @@ tdx_article_entry(struct group_data *data, ARTNUM article, ARTNUM high)
     struct index_entry *entry;
     ARTNUM offset;
 
-    if ((article > data->high && high > data->high) || data->remapoutoforder) {
+    if (article > data->high && high > data->high) {
         unmap_index(data);
         map_index(data);
         data->high = high;
-        data->remapoutoforder = false;
     } else if (innconf->nfsreader && stale_index(data))
         unmap_index(data);
     if (data->index == NULL)
@@ -461,11 +460,13 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
         return NULL;
 
     if ((end > data->high && high > data->high) || data->remapoutoforder) {
+        data->remapoutoforder = false;
+        unmap_data(data);
+    }
+    if (end > data->high && high > data->high) {
         unmap_index(data);
         map_index(data);
-        unmap_data(data);
         data->high = high;
-        data->remapoutoforder = false;
     }
 
     if (start > data->high)
@@ -524,6 +525,7 @@ tdx_search(struct search *search, struct article *artdata)
        that leads to on-disk IDX and DAT being out of sync could trigger a
        problem here. */
     if (entry->offset + entry->length > search->data->datalen) {
+        search->data->remapoutoforder = true;
         warn("Invalid or inaccessible entry for article %lu in %s.IDX:"
              " offset %lu length %lu datalength %lu",
              search->current + search->data->base, search->data->path,
