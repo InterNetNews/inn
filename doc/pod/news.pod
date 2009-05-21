@@ -1,9 +1,5 @@
 =head1 Upgrading from 2.4 to 2.5
 
-The following upgrade process is still under construction and not complete.
-There may be additional things to watch out for not listed here; if you run
-across any, please let <inn-workers@lists.isc.org> know about them. 
-
 The following changes require your full attention because a manual intervention
 may be needed:
 
@@ -247,6 +243,11 @@ to do that.
 =item *
 
 Support for bzip2-compressed batches (with B<bunbatch>) has been added.
+
+=item *
+
+B<news.daily> now processes B<innfeed> dropped files during daily
+maintainance, running B<procbatch>.
 
 =item *
 

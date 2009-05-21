@@ -630,8 +630,8 @@ special care when upgrading.)
 
 =item 4.
 
-Bump the revision number in F<doc/FAQ> so that it is included in
-the release.
+Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
+included in the release.
 
 =item 5.
 
