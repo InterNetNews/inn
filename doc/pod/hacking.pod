@@ -644,6 +644,9 @@ release.
 
     svn copy -r ZZZZ -m "Branch Y.Y.0 release." file:///srv/svn/inn/trunk file:///srv/svn/inn/branches/Y.Y
 
+Then, remove the first paragraph in F<doc/pod/readme.pod> which deals
+with development versions.
+
 =item 6.
 
 Check out a copy of the release branch.  It's currently necessary to run
