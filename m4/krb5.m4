@@ -14,7 +14,7 @@ KRB5_LDFLAGS=
 KRB5_LIBS=
 KRB5_AUTH=
 AC_ARG_WITH([kerberos],
-    [AC_HELP_STRING([--with-kerberos@<:@=PATH@:>@],
+    [AS_HELP_STRING([--with-kerberos@<:@=PATH@:>@],
         [Enable Kerberos v5 (for auth_krb5)])],
     KRB5_DIR=$with_kerberos,
     KRB5_DIR=no)

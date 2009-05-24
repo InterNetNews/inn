@@ -8,7 +8,7 @@ dnl requested.
 AC_DEFUN([INN_ARG_PYTHON],
 [AC_ARG_VAR([PYTHON], [Location of Python interpretor])
 AC_ARG_WITH([python],
-    [AC_HELP_STRING([--with-python], [Embedded Python module support [no]])],
+    [AS_HELP_STRING([--with-python], [Embedded Python module support [no]])],
     [case $withval in
     yes) DO_PYTHON=DO
          AC_DEFINE(DO_PYTHON, 1,

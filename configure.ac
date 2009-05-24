@@ -133,7 +133,7 @@ INN_ARG_SENDMAIL
 dnl innbind by default only allows ports 119, 433 and 563 below 1024; if the user
 dnl wants to use some other port as well, they must use this option.
 AC_ARG_WITH([innd-port],
-    [AC_HELP_STRING([--with-innd-port=PORT],
+    [AS_HELP_STRING([--with-innd-port=PORT],
         [Additional low-numbered port for innbind])],
     [AC_DEFINE_UNQUOTED([INND_PORT], [$with_innd_port],
         [Additional permitted low-numbered port for innbind.])])
@@ -142,7 +142,7 @@ dnl Whether IPv6 support should be enabled (disabled by default).  Eventually
 dnl this will be automatically detected and always turned on, but it's not
 dnl quite mature enough yet.
 AC_ARG_ENABLE([ipv6],
-    [AC_HELP_STRING([--enable-ipv6], [Enable IPv6 support])],
+    [AS_HELP_STRING([--enable-ipv6], [Enable IPv6 support])],
     [if test "x$enableval" = xyes ; then
         AC_DEFINE([HAVE_INET6], 1, [Define to enable IPv6 support.])
     fi])
@@ -154,7 +154,7 @@ dnl variable is needed for now to support news.daily.
 DO_DBZ_TAGGED_HASH=DONT
 inn_enable_tagged_hash=no
 AC_ARG_ENABLE([tagged-hash],
-    [AC_HELP_STRING([--enable-tagged-hash],
+    [AS_HELP_STRING([--enable-tagged-hash],
         [Use tagged hash table for history])],
     [if test "x$enableval" = xyes ; then
         DO_DBZ_TAGGED_HASH=DO
@@ -168,7 +168,7 @@ dnl Whether to enable the keyword generation code in innd.  Use of this code
 dnl requires a regular expression library, which is checked for later on.
 inn_enable_keywords=0
 AC_ARG_ENABLE([keywords],
-    [AC_HELP_STRING([--enable-keywords],
+    [AS_HELP_STRING([--enable-keywords],
         [Automatic innd keyword generation support])],
     if test x"$enableval" = xyes ; then
         inn_enable_keywords=1
@@ -183,7 +183,7 @@ dnl isn't there yet.  Currently tagged hash doesn't work with large file
 dnl support due to assumptions about the size of off_t.
 inn_enable_largefiles=no
 AC_ARG_ENABLE([largefiles],
-    [AC_HELP_STRING([--enable-largefiles],
+    [AS_HELP_STRING([--enable-largefiles],
         [Support for files larger than 2GB [default=no]])],
     if test x"$enableval" = xyes ; then
         inn_enable_largefiles=yes

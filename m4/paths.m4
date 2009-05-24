@@ -18,34 +18,34 @@ AC_SUBST($3)])
 dnl And here are all the paths.
 AC_DEFUN([INN_ARG_PATHS],
 [_INN_ARG_DIR([control], ['${bindir}/control'], [CONTROLDIR],
-    [AC_HELP_STRING([--with-control-dir=PATH],
+    [AS_HELP_STRING([--with-control-dir=PATH],
         [Path for control programs [PREFIX/bin/control]])])
 _INN_ARG_DIR([db], ['${prefix}/db'], [DBDIR],
-    [AC_HELP_STRING([--with-db-dir=PATH],
+    [AS_HELP_STRING([--with-db-dir=PATH],
         [Path for news database files [PREFIX/db]])])
 _INN_ARG_DIR([doc], ['${prefix}/doc'], [docdir],
-    [AC_HELP_STRING([--with-doc-dir=PATH],
+    [AS_HELP_STRING([--with-doc-dir=PATH],
         [Path for news documentation [PREFIX/doc]])])
 _INN_ARG_DIR([filter], ['${bindir}/filter'], [FILTERDIR],
-    [AC_HELP_STRING([--with-filter-dir=PATH],
+    [AS_HELP_STRING([--with-filter-dir=PATH],
         [Path for embedded filters [PREFIX/bin/filter]])])
 _INN_ARG_DIR([http], ['${prefix}/http'], [HTTPDIR],
-    [AC_HELP_STRING([--with-http-dir=PATH],
+    [AS_HELP_STRING([--with-http-dir=PATH],
         [Path for web pages [PREFIX/http]])])
 _INN_ARG_DIR([libperl], ['${libdir}/perl'], [LIBPERLDIR],
-    [AC_HELP_STRING([--with-libperl-dir=PATH],
+    [AS_HELP_STRING([--with-libperl-dir=PATH],
         [Path for Perl modules [PREFIX/lib/perl]])])
 _INN_ARG_DIR([log], ['${prefix}/log'], [LOGDIR],
-    [AC_HELP_STRING([--with-log-dir=PATH],
+    [AS_HELP_STRING([--with-log-dir=PATH],
         [Path for news logs [PREFIX/log]])])
 _INN_ARG_DIR([run], ['${prefix}/run'], [RUNDIR],
-    [AC_HELP_STRING([--with-run-dir=PATH],
+    [AS_HELP_STRING([--with-run-dir=PATH],
         [Path for news PID/runtime files [PREFIX/run]])])
 _INN_ARG_DIR([spool], ['${prefix}/spool'], [SPOOLDIR],
-    [AC_HELP_STRING([--with-spool-dir=PATH],
+    [AS_HELP_STRING([--with-spool-dir=PATH],
         [Path for news storage [PREFIX/spool]])])
 _INN_ARG_DIR([tmp], ['${prefix}/tmp'], [tmpdir],
-    [AC_HELP_STRING([--with-tmp-dir=PATH],
+    [AS_HELP_STRING([--with-tmp-dir=PATH],
         [Path for temporary files [PREFIX/tmp]])])
 
 dnl Some additional paths used by inn/paths.h.

@@ -32,7 +32,7 @@ dnl appropriate for embedded Perl.
 AC_DEFUN([INN_ARG_PERL],
 [AC_ARG_VAR([PERL], [Location of Perl interpretor])
 AC_ARG_WITH([perl],
-    [AC_HELP_STRING([--with-perl], [Embedded Perl script support [no]])],
+    [AS_HELP_STRING([--with-perl], [Embedded Perl script support [no]])],
     [case $withval in
     yes) DO_PERL=DO
          AC_DEFINE(DO_PERL, 1, [Define to compile in Perl script support.])
