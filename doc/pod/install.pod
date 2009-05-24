@@ -1,11 +1,11 @@
-=head1 Welcome to S<INN 2.5>!
+=head1 Welcome to S<INN 2.6>!
 
 Please read this document thoroughly before trying to install INN.  You'll
 be glad you did.
 
 If you are upgrading from a major release of INN prior to 2.3, it is
 recommended that you make copies of your old configuration files and use
-them as guides for doing a clean installation and configuration of 2.5.
+them as guides for doing a clean installation and configuration of 2.6.
 Many config files have changed, some have been added, and some have been
 removed.  You'll find it much easier to start with a fresh install than to
 try to update your old installation.  This is particularly true if you're

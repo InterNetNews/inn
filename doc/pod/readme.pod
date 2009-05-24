@@ -1,6 +1,6 @@
-=head1 Welcome to S<INN 2.5>!
+=head1 Welcome to S<INN 2.6>!
 
-This is the current development version of S<INN 2.5>.  This code is under
+This is the current development version of S<INN 2.6>.  This code is under
 active development and may or may not be stable at any given time.
 Contributions and bug reports are welcome and encouraged.
 
