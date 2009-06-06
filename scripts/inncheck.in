@@ -147,6 +147,7 @@ active
 %control'messages = (
     '/encoding/',	1,
     '/localencoding/',	1,
+    '/maxdocheckgroups/', 1,
     'all',		1,
     'checkgroups',	1,
     'ihave',		1,
