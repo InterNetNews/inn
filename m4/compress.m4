@@ -15,7 +15,7 @@ dnl Choose the log compression method; the argument should not be a full path,
 dnl just the name of the compression type.
 AC_DEFUN([INN_ARG_COMPRESS],
 [AC_ARG_WITH([log-compress],
-    [AC_HELP_STRING([--with-log-compress=METHOD],
+    [AS_HELP_STRING([--with-log-compress=METHOD],
         [Log compression method [gzip]])],
     LOG_COMPRESS=$with_log_compress,
     LOG_COMPRESS=gzip)

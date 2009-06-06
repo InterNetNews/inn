@@ -11,7 +11,7 @@ AC_DEFUN([INN_LIB_BERKELEYDB],
 DB_LDFLAGS=
 DB_LIBS=
 AC_ARG_WITH([berkeleydb],
-    [AC_HELP_STRING([--with-berkeleydb@<:@=PATH@:>@],
+    [AS_HELP_STRING([--with-berkeleydb@<:@=PATH@:>@],
         [Enable Berkeley DB (for ovdb overview method)])],
     DB_DIR=$with_berkeleydb,
     DB_DIR=no)

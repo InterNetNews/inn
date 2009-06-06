@@ -15,12 +15,12 @@ AC_DEFINE_UNQUOTED($3, "$[$3]", [$5])])
 dnl And here they are.
 AC_DEFUN([INN_ARG_USERS],
 [_INN_ARG_USER([user], [news], [RUNASUSER],
-    [AC_HELP_STRING([--with-news-user=USER], [News user name [news]])],
+    [AS_HELP_STRING([--with-news-user=USER], [News user name [news]])],
     [The user that INN should run as.])
 _INN_ARG_USER([group], [news], [RUNASGROUP],
-    [AC_HELP_STRING([--with-news-group=GROUP], [News group name [news]])],
+    [AS_HELP_STRING([--with-news-group=GROUP], [News group name [news]])],
     [The group that INN should run as.])
 _INN_ARG_USER([master], [usenet], [NEWSMASTER],
-    [AC_HELP_STRING([--with-news-master=USER],
+    [AS_HELP_STRING([--with-news-master=USER],
         [News master (address for reports) [usenet]])],
     [The user who gets all INN-related e-mail.])])

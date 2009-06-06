@@ -12,7 +12,7 @@ AC_DEFUN([INN_LIB_SASL],
 SASL_LDFLAGS=
 SASL_LIBS=
 AC_ARG_WITH([sasl],
-    [AC_HELP_STRING([--with-sasl@<:@=PATH@:>@],
+    [AS_HELP_STRING([--with-sasl@<:@=PATH@:>@],
         [Enable SASL (for imapfeed authentication)])],
     SASL_DIR=$with_sasl,
     SASL_DIR=no)

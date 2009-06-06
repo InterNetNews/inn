@@ -17,7 +17,7 @@ AC_DEFUN([INN_LIB_OPENSSL],
 SSL_CPPFLAGS=
 SSL_LIBS=
 AC_ARG_WITH([openssl],
-    [AC_HELP_STRING([--with-openssl@<:@=PATH@:>@],
+    [AS_HELP_STRING([--with-openssl@<:@=PATH@:>@],
         [Enable OpenSSL (for NNTP over TLS/SSL support)])],
     SSL_DIR=$with_openssl,
     SSL_DIR=no)

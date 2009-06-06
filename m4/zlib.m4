@@ -13,7 +13,7 @@ AC_DEFUN([INN_LIB_ZLIB],
 ZLIB_LDFLAGS=
 ZLIB_LIBS=
 AC_ARG_WITH([zlib],
-    [AC_HELP_STRING([--with-zlib@<:@=PATH@:>@],
+    [AS_HELP_STRING([--with-zlib@<:@=PATH@:>@],
         [Enable zlib (used by ovdb)])],
     ZLIB_DIR=$with_zlib,
     [if test x"$DB_LIBS" != x ; then

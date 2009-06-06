@@ -15,7 +15,7 @@ FILEMODE=0664
 DIRMODE=0775
 RUNDIRMODE=0770
 AC_ARG_WITH([news-umask],
-    [AC_HELP_STRING([--with-news-umask=UMASK], [umask for news files [002]])],
+    [AS_HELP_STRING([--with-news-umask=UMASK], [umask for news files [002]])],
     with_news_umask=`echo "$with_news_umask" | sed 's/^0*//'`
     if test "x$with_news_umask" = x22 ; then
         NEWSUMASK=022
@@ -44,7 +44,7 @@ dnl inews used to be installed setgid, but may not be secure.  Only do this if
 dnl it's explicitly requested at configure time.
 INEWSMODE=0550
 AC_ARG_ENABLE([setgid-inews],
-    [AC_HELP_STRING([--enable-setgid-inews], [Install inews setgid])],
+    [AS_HELP_STRING([--enable-setgid-inews], [Install inews setgid])],
     if test "x$enableval" = xyes ; then
         INEWSMODE=02555
     fi)
@@ -57,7 +57,7 @@ dnl Only do even that if it's explicitly requested at configure time.
 RNEWSGRP=$RUNASGROUP
 RNEWSMODE=0500
 AC_ARG_ENABLE([uucp-rnews],
-    [AC_HELP_STRING([--enable-uucp-rnews],
+    [AS_HELP_STRING([--enable-uucp-rnews],
         [Install rnews setuid, group uucp])],
     if test "x$enableval" = xyes ; then
         RNEWSGRP=uucp
