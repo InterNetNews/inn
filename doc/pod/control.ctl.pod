@@ -162,7 +162,9 @@ in the checkgroups for its subsequent process.
     checkgroups:*:*binaries*:drop
 
 will for instance remove every newsgroup whose name contains C<binaries>
-in the comp.* hierarchy, even though mentioned in the checkgroups.
+in the comp.* hierarchy, even though such groups are mentioned in the
+checkgroups.  (In that example, the removal is performed by the B<doit>
+action because B<drop> does nothing by itself.)
 
 =item B<verify-*>
 
@@ -216,11 +218,12 @@ action.
 
 =back
 
-The difference between a B<doit> or B<verify> action and a B<mail> action
-for a checkgroups control message lies only in what e-mail is sent; B<doit>
+One of the difference between a B<doit> or B<verify> action and a B<mail>
+action for a checkgroups control message lies in what e-mail is sent; B<doit>
 or B<verify> will mail the news administrator a shell script (which may
 have already been run) to create, delete, or modify newsgroups to match
-the checkgroups message, whereas B<mail> will just mail the entire message.
+the checkgroups message, whereas B<mail> will just mail relevant lines
+of the checkgroups for manual processing by the news administrator.
 
 Use of the B<verify> action for processing newgroup, rmgroup and
 checkgroups messages is STRONGLY recommended.  Abuse of control messages
