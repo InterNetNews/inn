@@ -17,26 +17,27 @@ AC_DEFUN([INN_ARG_SYSLOG],
     SYSLOG_FACILITY=$with_syslog_facility,
     SYSLOG_FACILITY=none)])
 
+dnl Source used by INN_LOG_FACILITY.
+AC_DEFUN([_INN_LOG_FACILITY], [[
+#include <syslog.h>
+#ifndef LOG_NEWS
+error:  LOG_NEWS not available!
+#endif
+]])
+
 dnl Determine the facility for syslog messages.  Default to LOG_NEWS for
 dnl syslog facility if it's available, but if it's not, fall back on
 dnl LOG_LOCAL1.  Honor the existing SYSLOG_FACILITY value if already set by
 dnl INN_ARG_SYSLOG.
 AC_DEFUN([INN_LOG_FACILITY],
-[AC_MSG_CHECKING(log facility for news)
-AC_CACHE_VAL(inn_cv_log_facility,
-[AC_EGREP_CPP(yes,
-[#include <syslog.h>
-#ifdef LOG_NEWS
-yes
-#endif],
-              inn_cv_log_facility=LOG_NEWS,
-              inn_cv_log_facility=LOG_LOCAL1)])
-if test x"$SYSLOG_FACILITY" = xnone ; then
-    SYSLOG_FACILITY=$inn_cv_log_facility
-fi
-AC_MSG_RESULT([$SYSLOG_FACILITY])
-AC_DEFINE_UNQUOTED([LOG_INN_SERVER], [$SYSLOG_FACILITY],
+[AC_CACHE_CHECK([log facility for news], [inn_cv_log_facility],
+    [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_INN_LOG_FACILITY])],
+        [inn_cv_log_facility=LOG_NEWS],
+        [inn_cv_log_facility=LOG_LOCAL1])])
+ AS_IF([test x"$SYSLOG_FACILITY" = xnone],
+    [SYSLOG_FACILITY=$inn_cv_log_facility])
+ AC_DEFINE_UNQUOTED([LOG_INN_SERVER], [$SYSLOG_FACILITY],
     [Syslog facility to use for innd logs.])
-AC_DEFINE_UNQUOTED([LOG_INN_PROG], [$SYSLOG_FACILITY],
+ AC_DEFINE_UNQUOTED([LOG_INN_PROG], [$SYSLOG_FACILITY],
     [Syslog facility to use for INN program logs.])
-AC_SUBST(SYSLOG_FACILITY)])
+ AC_SUBST(SYSLOG_FACILITY)])
