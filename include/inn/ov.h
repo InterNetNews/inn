@@ -58,13 +58,13 @@ bool overview_check(const char *data, size_t length, ARTNUM article);
 int overview_index(const char *field, const struct vector *extra);
 struct cvector *overview_split(const char *line, size_t length,
 			       ARTNUM *number, struct cvector *vector);
-char *overview_getheader(const struct cvector *vector, unsigned int element,
-			 const struct vector *extra);
+char *overview_get_standard_header(const struct cvector *vector, unsigned int element);
+char *overview_get_extra_header(const struct cvector *vector, const char *header);
 
-/* offsets into vectors for standard overview headers */
+/* Offsets into vectors for standard overview headers. */
 #ifndef INN_OVERVIEW_H
 enum {
-    OVERVIEW_SUBJECT,
+    OVERVIEW_SUBJECT = 0,
     OVERVIEW_FROM,
     OVERVIEW_DATE,
     OVERVIEW_MESSAGE_ID,
