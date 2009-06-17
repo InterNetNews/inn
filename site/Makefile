@@ -133,7 +133,7 @@ update:		all $(MOST_INSTALLED)
 	@echo before you run innd. ; echo ""
 	date >update
 
-##  Special rules for files that sould never be overwritten if they are
+##  Special rules for files that should never be overwritten if they are
 ##  already installed.  These are used only for the initial install of a
 ##  brand new server.
 $D$(PATH_ACTIVE): 	; $(CP_DATA) active.minimal $@
@@ -175,7 +175,7 @@ COPY_RPUB	= $(CP_RPUB)
 COPY_XPRI	= $(CP_XPRI)
 COPY_XPUB	= $(CP_XPUB)
 
-##  Order:  innd, control, expire, inews, sending, misc
+##  Files to copy.
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPUB) $? $@
