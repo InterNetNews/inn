@@ -79,7 +79,8 @@ a few odd hacks.)  New versions should be checked in periodically when
 available.  There are no INN-specific modifications to those files except
 for F<ltmain.sh> which recognizes the additional B<-B> flag that INN's
 B<install-sh> script uses.  This script should also be updated at the
-same time; it similarly contains local modifications in order to support
+same time from L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
+it similarly contains local modifications in order to support
 the additional B<-B> flag, as well as a few other changes mentioned
 in a comment at the beginning of the file.
 
