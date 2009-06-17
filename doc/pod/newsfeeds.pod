@@ -212,7 +212,7 @@ which is then completely equivalent to:
     news.example.com:local.*,example.*:Tf,Wnm:
 
 Variables aren't solely simple substitution.  If either C<!> or C<@>
-immediately preceeds the variable and the value of the variable contains
+immediately preceds the variable and the value of the variable contains
 commas, that character will be duplicated before each comma.  This
 somewhat odd-sounding behavior is designed to make it easier to use
 variables to construct feed patterns.  The utility becomes more obvious

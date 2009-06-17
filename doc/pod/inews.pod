@@ -15,7 +15,7 @@ article is rejected.  If it passes the checks, B<inews> sends the article
 to the local news server as specified in F<inn.conf>.
 
 By default, if a file named F<.signature> exists in the home directory of
-the posting user, it is appended to the post, preceeded by a line that
+the posting user, it is appended to the post, preceded by a line that
 contains only C<-- >.  Signatures are not allowed to be more than four
 lines long.
 
