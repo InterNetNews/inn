@@ -1,4 +1,4 @@
-dnl inet-nota.m4 -- Check for a working inet_ntoa.
+dnl inet-ntoa.m4 -- Check for a working inet_ntoa.
 dnl $Id$
 dnl
 dnl Check whether inet_ntoa is present and working.  Since calling inet_ntoa
