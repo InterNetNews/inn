@@ -84,7 +84,7 @@ users of this library should in general treat long lines as fatal errors.
 =head1 EXAMPLES
 
 This block of code opens F</etc/motd> and reads it a line at a time,
-printing out each line preceeded by its offset in the file.
+printing out each line preceded by its offset in the file.
 
     QIOSTATE *qp;
     off_t offset;

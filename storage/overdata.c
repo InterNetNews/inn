@@ -208,7 +208,7 @@ valid_number(const char *string)
 
 /*
 **  Check whether a given string is a valid overview string (doesn't contain
-**  CR or LF, and if the second argument is true must be preceeded by a header
+**  CR or LF, and if the second argument is true must be preceded by a header
 **  name, colon, and space).  Allow CRLF at the end of the data, but don't
 **  require it.
 */
