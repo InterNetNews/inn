@@ -994,17 +994,31 @@ CMDover(int ac, char *av[])
 
 	vector = overview_split(data, len, NULL, vector);
 	r = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+        if (r == NULL) {
+            if (PERMaccessconf->nnrpdoverstats) {
+                gettimeofday(&stv, NULL);
+            }
+            continue;
+        }
 	cache_add(HashMessageID(r), token);
 	free(r);
 	if (VirtualPathlen > 0 && overhdr_xref != -1) {
-	    if ((size_t)(overhdr_xref + 1) >= vector->count)
-		continue;
+            if ((size_t)(overhdr_xref + 1) >= vector->count) {
+                if (PERMaccessconf->nnrpdoverstats) {
+                    gettimeofday(&stv, NULL);
+                }
+                continue;
+            }
 	    p = vector->strings[overhdr_xref] + sizeof("Xref: ") - 1;
 	    while ((p < data + len) && *p == ' ')
 		++p;
 	    q = memchr(p, ' ', data + len - p);
-	    if (q == NULL)
-		continue;
+            if (q == NULL) {
+                if (PERMaccessconf->nnrpdoverstats) {
+                    gettimeofday(&stv, NULL);
+                }
+                continue;
+            }
 	    if(useIOb) {
 		SendIOb(data, p - data);
 		SendIOb(VirtualPath, VirtualPathlen - 1);
