@@ -442,13 +442,18 @@ sub read_ctlfile {
     }
     while (<CTLFILE>) {
         chop;
-        s/^\s+//; s/\s+$//;
+        s/^\s+//;
+        s/\s+$//;
         next if /^#/ or /^$/;
         my ($issuer, $type) = split(/:/, lc $_);
-        logmsg("Cannot parse nocem.ctl line <<$_>>", 'err')
-            if not $issuer and $type;
+        if (not (defined($issuer) and defined($type))) {
+            logmsg("Cannot parse nocem.ctl line <<$_>>; syntax is <<issuer:type>>.", 'err');
+            next;
+        }
         $type =~ s/\s//g;
-        push @ncmperm, "$issuer\001$_" foreach split(/,/, $type);
+        foreach (split(/,/, $type)) {
+            push(@ncmperm, "$issuer\001$_");
+        }
     }
     close CTLFILE;
     return 1;
