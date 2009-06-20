@@ -1,3 +1,24 @@
+=head1 Changes in 2.5.1
+
+=over 2
+
+=item *
+
+Fixed a memory allocation problem which caused B<nnrpd> to die when
+retrieving via HDR/XHDR/XPAT the contents of an extra overview field
+absent from the headers of an article.  The NEWNEWS command was also
+affected on very rare cases.  Thanks to Tim Woodall for the bug report.
+
+=item *
+
+HDR/XHDR/XPAT answers are now robust when the overview database is
+inconsistent.  When the overview schema was modified without the overview
+database being rebuilt, wrong results could be returned for extra fields
+(especially a random portion of some other header).  The desired header
+name is now explicitly searched in the overview information.
+
+=back
+
 =head1 Upgrading from 2.4 to 2.5
 
 The following changes require your full attention because a manual intervention

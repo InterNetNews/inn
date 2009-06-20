@@ -128,6 +128,7 @@ HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs)
 }
 
 static char **groups;
+static char xref_header[] = "Xref";
 
 static void
 process_newnews(char *group, bool AllGroups, time_t date)
@@ -185,7 +186,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		    continue;
 		/* We only care about the newsgroup list here, virtual
 		 * hosting isn't relevant. */
-		p = overview_getheader(vector, overhdr_xref, OVextra);
+		p = overview_get_extra_header(vector, xref_header);
 	    }
 	    if (p == NULL)
 		continue;
@@ -195,7 +196,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
 		continue;
 	    if (HaveSeen(AllGroups, group, groups, xrefs))
 		continue;
-	    p = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+	    p = overview_get_standard_header(vector, OVERVIEW_MESSAGE_ID);
 	    if (p == NULL)
 		continue;
 

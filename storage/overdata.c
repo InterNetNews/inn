@@ -314,11 +314,11 @@ overview_index(const char *field, const struct vector *extra)
 /*
 **  Given an overview header line, split out a vector pointing at each
 **  of the components (within line), returning a pointer to the
-**  vector. If the vector initially passed in is NULL a new vector is
-**  created, else the existing one is filled in.
+**  vector.  If the vector initially passed in is NULL, a new vector is
+**  created, otherwise the existing one is filled in.
 **
 **  A member `n' of the vector is of length (vector->strings[n+1] -
-**  vector->strings[n] - 1). Note that the last member of the vector
+**  vector->strings[n] - 1).  Note that the last member of the vector
 **  will always point beyond (line + length).
 */
 struct cvector *
@@ -333,7 +333,7 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 	cvector_clear(vector);
     }
     while (line != NULL) {
-	/* the first field is the article number */
+	/* The first field is the article number. */
 	if (p == NULL) {
 	    if (number != NULL) {
 		*number = atoi(line);
@@ -343,15 +343,15 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 	}
 	p = memchr(line, '\t', length);
 	if (p != NULL) {
-	    /* skip over the tab */
+	    /* Skip over the tab. */
 	    ++p;
-	    /* and calculate the remaining length */
+	    /* And calculate the remaining length. */
 	    length -= (p - line);
 	} else {
-	    /* add in a pointer to beyond the end of the final
-	     * component, so you can always calculate the length.
-	     * overview lines are always terminated with \r\n, so the
-	     * -1 ends up chopping those off */
+	    /* Add in a pointer to beyond the end of the final
+	       component, so you can always calculate the length;
+	       overview lines are always terminated with \r\n, so the
+	       -1 ends up chopping those off. */
 	    cvector_add(vector, line + length - 1);
 	}
 	line = p;
@@ -362,31 +362,61 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 /*
 **  Given an overview vector (from overview_split), return a copy of
 **  the member which the caller is interested in (and must free).
+**  The name and order of standard overview fields are fixed so we
+**  can request them by their index.
 */
 char *
-overview_getheader(const struct cvector *vector, unsigned int element,
-		   const struct vector *extra)
+overview_get_standard_header(const struct cvector *vector, unsigned int element)
 {
     char *field = NULL;
     size_t len;
     const char *p;
-    size_t max = ARRAY_SIZE(fields) + extra->count - 1;
+    size_t max = ARRAY_SIZE(fields) - 1;
 
+    /* vector ends with an additional pointer beyond the end of the final
+       component.  It therefore has a count of elements increased by 1. */
     if ((element + 1) >= vector->count || element > max) {
-	warn("request for invalid overview field %d", element);
-	return NULL;
+        warn("request for invalid standard overview field %d", element);
+        return NULL;
     }
-    /* Note... this routine does not synthesise Newsgroups: on behalf
-     * of the caller... */
-    if (element >= ARRAY_SIZE(fields)) {
-	/* +2 for `: ' */
-	p = vector->strings[element] +
-	    strlen(extra->strings[element - ARRAY_SIZE(fields)]) + 2;
-	len = vector->strings[element + 1] - p - 1;
-    } else {
-	p = vector->strings[element];
-	len = vector->strings[element + 1] - vector->strings[element] - 1;
-    }
+
+    p = vector->strings[element];
+    len = vector->strings[element + 1] - vector->strings[element] - 1;
+
     field = xstrndup(p, len);
     return field;
 }
+
+/*
+**  Given an overview vector (from overview_split), return a copy of
+**  the member which the caller is interested in (and must free).
+**  The order of extra overview fields may vary so we walk all the
+**  extra headers to find the requested field.
+*/
+char *
+overview_get_extra_header(const struct cvector *vector, const char *header)
+{
+    char *field = NULL;
+    size_t i, len;
+    const char *p;
+    size_t headerlen = strlen(header);
+
+    /* vector ends with an additional pointer beyond the end of the final
+       component.  It therefore has a count of elements increased by 1. */
+    for (i = ARRAY_SIZE(fields); i < vector->count - 1; i++) {
+        if (strncasecmp(header, vector->strings[i], headerlen) == 0) {
+            p = vector->strings[i] + headerlen;
+            /* Check for ": " after the name of the header. */
+            if ((*p++ == ':') && (*p++ == ' ')) {
+                len = vector->strings[i + 1] - p - 1;
+
+                field = xstrndup(p, len);
+                return field;
+            }
+        }
+    }
+
+    /* The required header was not found in the extra overview fields. */
+    return NULL;
+}
+

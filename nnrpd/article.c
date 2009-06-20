@@ -992,8 +992,8 @@ CMDover(int ac, char *av[])
             HasNotReplied = false;
         }
 
-	vector = overview_split(data, len, NULL, vector);
-	r = overview_getheader(vector, OVERVIEW_MESSAGE_ID, OVextra);
+        vector = overview_split(data, len, NULL, vector);
+        r = overview_get_standard_header(vector, OVERVIEW_MESSAGE_ID);
         if (r == NULL) {
             if (PERMaccessconf->nnrpdoverstats) {
                 gettimeofday(&stv, NULL);
@@ -1092,7 +1092,7 @@ CMDpat(int ac, char *av[])
     bool		IsBytes, IsLines;
     bool                IsMetaBytes, IsMetaLines;
     bool		DidReply, HasNotReplied;
-    char		*header;
+    const char		*header;
     char		*pattern;
     char		*text;
     int			Overview;
@@ -1133,9 +1133,9 @@ CMDpat(int ac, char *av[])
     /* Make these changes because our overview database does
      * not currently know metadata names. */
     if (IsMetaBytes)
-        header = xstrdup("Bytes");
+        header = "Bytes";
     if (IsMetaLines)
-        header = xstrdup("Lines");
+        header = "Lines";
 
     /* We only allow :bytes and :lines for metadata. */
     if (!IsMetaLines && !IsMetaBytes) {
@@ -1293,7 +1293,11 @@ CMDpat(int ac, char *av[])
                 HasNotReplied = false;
             }
 	    vector = overview_split(data, len, NULL, vector);
-	    p = overview_getheader(vector, Overview, OVextra);
+            if (Overview < OVERVIEW_MAX) {
+                p = overview_get_standard_header(vector, Overview);
+            } else {
+                p = overview_get_extra_header(vector, header);
+            }
 	    if (p != NULL) {
 		if (PERMaccessconf->virtualhost &&
 			   Overview == overhdr_xref) {
