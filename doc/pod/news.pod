@@ -4,6 +4,18 @@
 
 =item *
 
+Fixed a segfault in B<imap_connection> which could occur when SASL
+was used.
+
+=item *
+
+Owing to the US-CERT vulnerability note VU#238019, Cyrus SASL library
+has slightly changed.  B<imap_connection> and B<nnrpd> now handle
+that change.  Otherwise, some answers are too long to be properly
+computed during SASL exchanges.
+
+=item *
+
 Fixed a memory allocation problem which caused B<nnrpd> to die when
 retrieving via HDR/XHDR/XPAT the contents of an extra overview field
 absent from the headers of an article.  The NEWNEWS command was also

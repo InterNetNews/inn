@@ -32,7 +32,8 @@ sasl_callback_t sasl_callbacks[] = {
     { SASL_CB_LIST_END, NULL, NULL }
 };
 
-#define BASE64_BUF_SIZE 21848	/* Per RFC 2222bis:  ((16K / 3) + 1) * 4. */
+#define BASE64_BUF_SIZE 21848   /* Per RFC 4422:  (floor(n/3) + 1) * 4
+                                   where n = 16 kB = 16384 bytes. */
 
 
 /*
@@ -189,9 +190,11 @@ SASLauth(int ac, char *av[])
 
     while (r == SASL_CONTINUE || (r == SASL_OK && serveroutlen != 0)) {
 	if (serveroutlen != 0) {
-	    /* Encode the server challenge. */
+            /* Encode the server challenge.
+             * In sasl_encode64() calls, the fourth argument is the length
+             * of the third including the null terminator. */
             r1 = sasl_encode64(serverout, serveroutlen,
-                               base64, BASE64_BUF_SIZE, NULL);
+                               base64, BASE64_BUF_SIZE+1, NULL);
             if (r1 != SASL_OK)
                 r = r1;
 	}

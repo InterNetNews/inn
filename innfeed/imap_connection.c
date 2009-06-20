@@ -2153,13 +2153,18 @@ static conn_ret lmtp_authenticate(connection_t *cxn)
 	/* empty initial client response */
         p = concat("AUTH ", mechusing, " =\r\n", (char *) 0);
     } else {
-	/* initial client response - convert to base64 */
-	inbase64 = xmalloc(outlen*2+10);
+        /* Initial client response - convert to base64.
+         * 2n+7 bytes are enough to contain the result of the base64
+         * encoding of a string whose length is n bytes.
+         * In sasl_encode64() calls, the fourth argument is the length
+         * of the third including the null terminator (thus 2n+8 bytes). */
+        inbase64 = xmalloc(outlen*2 + 8);
 
-	saslresult = sasl_encode64(out, outlen,
-				   inbase64, outlen*2+10,
+        saslresult = sasl_encode64(out, outlen,
+                                   inbase64, outlen*2 + 8,
                                    (unsigned *) &inbase64len);
-	if (saslresult != SASL_OK) return RET_FAIL;
+        if (saslresult != SASL_OK)
+            return RET_FAIL;
         p = concat("AUTH ", mechusing, " ", inbase64, "\r\n", (char *) 0);
         free(inbase64);
     }
@@ -2420,21 +2425,26 @@ static conn_ret imap_sendAuthStep(connection_t *cxn, char *str)
 	cxn->imap_state = IMAP_CONNECTED_NOTAUTH;
 	return RET_FAIL;
     }
+    /* Convert to base64.
+     * 2n+7 bytes are enough to contain the result of the base64
+     * encoding of a string whose length is n bytes.
+     * In sasl_encode64() calls, the fourth argument is the length
+     * of the third including the null terminator (thus 2n+8 bytes).
+     * And CRLF takes the last two bytes (thus 2n+10 bytes). */
+    inbase64 = xmalloc(outlen*2 + 10);
 
-    inbase64 = xmalloc(outlen * 2 + 10);
-
-    /* convert to base64 */
     saslresult = sasl_encode64(out, outlen,
-			       inbase64, outlen*2, (unsigned *) &inbase64len);
+                               inbase64, outlen*2 + 8, (unsigned *) &inbase64len);
 
-    if (saslresult != SASL_OK) return RET_FAIL;
+    if (saslresult != SASL_OK)
+        return RET_FAIL;
 
-    /* append endline */
-    strlcpy(inbase64 + inbase64len, "\r\n", outlen * 2 + 10 - inbase64len);
-    inbase64len+=2;
+    /* Append endline. */
+    strlcpy(inbase64 + inbase64len, "\r\n", outlen*2 + 10 - inbase64len);
+    inbase64len += 2;
     
-    /* send to server */
-    result = WriteToWire_imapstr(cxn,inbase64, inbase64len);
+    /* Send to server. */
+    result = WriteToWire_imapstr(cxn, inbase64, inbase64len);
     
     cxn->imap_state = IMAP_WRITING_STEPAUTH;
 
@@ -3386,28 +3396,33 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 			return;
 		    }
 
-		    /* convert to base64 */
-		    inbase64 = xmalloc(outlen*2+10);
+                    /* Convert to base64.
+                     * 2n+7 bytes are enough to contain the result of the base64
+                     * encoding of a string whose length is n bytes.
+                     * In sasl_encode64() calls, the fourth argument is the length
+                     * of the third including the null terminator (thus 2n+8 bytes).
+                     * And CRLF takes the last two bytes (thus 2n+10 bytes). */
+                    inbase64 = xmalloc(outlen*2 + 10);
 
-		    saslresult = sasl_encode64(out, outlen,
-					       inbase64, outlen*2+10, 
-					       (unsigned *) &inbase64len);
-		    
-		    if (saslresult != SASL_OK)
-		    {
-			d_printf(0,"%s:%d:LMTP sasl_encode64(): %s\n",
-				 hostPeerName (cxn->myHost),cxn->ident,
-				 sasl_errstring(saslresult,NULL,NULL));
+                    saslresult = sasl_encode64(out, outlen,
+                                               inbase64, outlen*2 + 8,
+                                               (unsigned *) &inbase64len);
 
-			lmtp_Disconnect(cxn);
-			return;
-		    }
+                    if (saslresult != SASL_OK) {
+                        d_printf(0,"%s:%d:LMTP sasl_encode64(): %s\n",
+                                 hostPeerName(cxn->myHost), cxn->ident,
+                                 sasl_errstring(saslresult, NULL, NULL));
 
-		    /* add an endline */
-		    strlcpy(inbase64 + inbase64len, "\r\n", outlen * 2 + 10);
+                        lmtp_Disconnect(cxn);
+                        return;
+                    }
 
-		    /* send to server */
-		    result = WriteToWire_lmtpstr(cxn,inbase64, inbase64len+2);
+                    /* Add an endline. */
+                    strlcpy(inbase64 + inbase64len, "\r\n", outlen*2 + 10 - inbase64len);
+                    inbase64len += 2;
+
+                    /* Send to server. */
+                    result = WriteToWire_lmtpstr(cxn, inbase64, inbase64len);
 
 		    if (result != RET_OK)
 		    {
