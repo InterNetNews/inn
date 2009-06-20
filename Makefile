@@ -130,14 +130,14 @@ install-root:
 ##  Install a certificate for TLS/SSL support.
 cert:
 	$(SSLBIN) req -new -x509 -nodes \
-	    -out $(D)$(PATHLIB)/cert.pem -days 366 \
-	    -keyout $(D)$(PATHLIB)/key.pem
-	chown $(RUNASUSER) $(D)$(PATHLIB)/cert.pem
-	chgrp $(RUNASGROUP) $(D)$(PATHLIB)/cert.pem
-	chmod 640 $(D)$(PATHLIB)/cert.pem
-	chown $(RUNASUSER) $(D)$(PATHLIB)/key.pem
-	chgrp $(RUNASGROUP) $(D)$(PATHLIB)/key.pem
-	chmod 600 $(D)$(PATHLIB)/key.pem
+	    -out $(D)$(PATHETC)/cert.pem -days 366 \
+	    -keyout $(D)$(PATHETC)/key.pem
+	chown $(RUNASUSER) $(D)$(PATHETC)/cert.pem
+	chgrp $(RUNASGROUP) $(D)$(PATHETC)/cert.pem
+	chmod 640 $(D)$(PATHETC)/cert.pem
+	chown $(RUNASUSER) $(D)$(PATHETC)/key.pem
+	chgrp $(RUNASGROUP) $(D)$(PATHETC)/key.pem
+	chmod 600 $(D)$(PATHETC)/key.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the

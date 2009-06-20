@@ -29,6 +29,14 @@ database being rebuilt, wrong results could be returned for extra fields
 (especially a random portion of some other header).  The desired header
 name is now explicitly searched in the overview information.
 
+=item *
+
+The default path for TLS certificates has changed from I<pathlib> to
+I<pathetc>.  It only affects new INN installations or generations of
+certificates with C<make cert>.  Besides, a default value has been
+added to I<tlscapath> because it is required by B<nnrpd> when TLS
+is used.
+
 =back
 
 =head1 Upgrading from 2.4 to 2.5
