@@ -222,7 +222,7 @@ const struct config config_table[] = {
     { K(strippostcc),           BOOL    (false) },
 #ifdef HAVE_SSL
     { K(tlscafile),             STRING  ("") },
-    { K(tlscapath),             STRING  ("") },
+    { K(tlscapath),             STRING  (NULL) },
     { K(tlscertfile),           STRING  (NULL) },
     { K(tlskeyfile),            STRING  (NULL) },
 #endif /* HAVE_SSL */
@@ -364,10 +364,12 @@ innconf_set_defaults(void)
 
     /* Defaults used only if TLS (SSL) is supported. */
 #ifdef HAVE_SSL
+    if (innconf->tlscapath == NULL)
+        innconf->tlscapath = xstrdup(innconf->pathetc);
     if (innconf->tlscertfile == NULL)
-        innconf->tlscertfile = concatpath(innconf->pathnews, "lib/cert.pem");
+        innconf->tlscertfile = concatpath(innconf->pathetc, "cert.pem");
     if (innconf->tlskeyfile == NULL)
-        innconf->tlskeyfile = concatpath(innconf->pathnews, "lib/key.pem");
+        innconf->tlskeyfile = concatpath(innconf->pathetc, "key.pem");
 #endif
 }
 

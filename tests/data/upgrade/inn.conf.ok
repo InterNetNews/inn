@@ -13,9 +13,9 @@ hismethod: hisv6
 extraoverviewadvertised: [ Path Keywords Injection-Info ]
 
 # Moved from sasl.conf by innupgrade.
-tlscafile:		/usr/local/news/lib/ca.cert
-tlscapath:		/usr/local/news/lib/cas
+tlscafile:		/usr/local/news/etc/ca.cert
+tlscapath:		/usr/local/news/etc/cas
 
 # Our local certificate.
-tlscertfile:		/usr/local/news/lib/our.cert
-tlskeyfile:		/usr/local/news/lib/our.key
+tlscertfile:		/usr/local/news/etc/our.cert
+tlskeyfile:		/usr/local/news/etc/our.key

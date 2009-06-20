@@ -1002,14 +1002,14 @@ The path to a directory containing certificate authority root
 certificates.  Each file in the directory should contain one CA
 certificate, and the name of the file should be the CA subject name hash
 value.  See the OpenSSL documentation for more information.  This
-parameter is only used if B<nnrpd> is built with TLS/SSL support.  There
-is no default value.
+parameter is only used if B<nnrpd> is built with TLS/SSL support.  The
+default value is I<pathetc>.
 
 =item I<tlscertfile>
 
 The path to a file containing the server certificate to present to
 TLS clients.  This parameter is only used if B<nnrpd> is built with TLS/SSL
-support.  The default value is I<pathnews>/lib/cert.pem.
+support.  The default value is I<pathetc>/cert.pem.
 
 =item I<tlskeyfile>
 
@@ -1019,7 +1019,7 @@ I<tlscertfile> if, when you created the certificate, you put the key in
 the same file (if, for example, you gave the same file name to both the
 B<-out> and B<-keyout> options to C<openssl req>).  This parameter is only
 used if B<nnrpd> is built with TLS/SSL support.  The default value is
-I<pathnews>/lib/key.pem.
+I<pathetc>/key.pem.
 
 This file must only be readable by the news user or B<nnrpd> will refuse to
 use it.

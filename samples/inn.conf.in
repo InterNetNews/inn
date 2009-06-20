@@ -131,9 +131,9 @@ backofftrigger:         10000
 # Reading and posting -- TLS/SSL support
 
 #tlscafile:
-#tlscapath:
-#tlscertfile:           @libdir@/cert.pem
-#tlskeyfile:            @libdir@/key.pem
+#tlscapath:             @sysconfdir@
+#tlscertfile:           @sysconfdir@/cert.pem
+#tlskeyfile:            @sysconfdir@/key.pem
 
 # Monitoring
 
