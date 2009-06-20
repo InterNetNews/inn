@@ -12,11 +12,8 @@
 **  PATHS TO FILES AND SOCKETS
 **
 **  Default prefixes can be overridden by defining the constant to a full
-**  path.  That magic is handled by concatpath.  At some point all of these
-**  defines will change to start with INN_PATH_ instead of _PATH_ because
-**  identifiers beginning with an underscore and an uppercase letter are
-**  reserved by the C standard.  New ones should use INN_PATH_ for this
-**  reason, to save eventual work.
+**  path.  That magic is handled by concatpath.  All of these defines
+**  start with "INN_PATH_".
 */
 
 /* Must be an absolute path since it defines the other prefixes. */
@@ -71,7 +68,6 @@
 #define INN_PATH_MOTD                   "motd.news"
 #define INN_PATH_STORAGECTL             "storage.conf"
 #define INN_PATH_RADIUS_CONFIG          "radius.conf"
-#define INN_PATH_SASL_CONFIG            "sasl.conf"
 #define INN_PATH_FILESYSTEMS            "filesystems"
 
 /* Default prefix path is pathspool. */
