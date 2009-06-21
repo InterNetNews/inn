@@ -103,7 +103,8 @@ article.o: article.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/storage.h article.h misc.h buffer.h endpoint.h
+  ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
+  buffer.h endpoint.h
 buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
@@ -165,9 +166,9 @@ main.o: main.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/version.h \
-  ../include/inn/libinn.h ../include/inn/storage.h article.h misc.h \
-  buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
-  tape.h
+  ../include/inn/libinn.h ../include/inn/storage.h \
+  ../include/inn/options.h article.h misc.h buffer.h configfile.h \
+  connection.h endpoint.h host.h innlistener.h tape.h
 misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \

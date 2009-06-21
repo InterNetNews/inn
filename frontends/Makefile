@@ -169,8 +169,9 @@ ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h \
-  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
@@ -178,8 +179,8 @@ ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
   ../include/portable/wait.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h ../storage/ovdb/ovdb.h \
-  ../storage/ovdb/ovdb-private.h
+  ../include/inn/options.h ../include/inn/history.h \
+  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
@@ -188,15 +189,17 @@ ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getnameinfo.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h \
-  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../storage/ovdb/ovdb.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/history.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../storage/ovdb/ovdb.h \
   ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -204,10 +207,12 @@ rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/wire.h \
-  ../include/nntp.h ../include/inn/nntp.h
+  ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/wire.h ../include/nntp.h \
+  ../include/inn/nntp.h
 sm.o: sm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/buffer.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/qio.h \
-  ../include/inn/wire.h ../include/inn/libinn.h ../include/inn/storage.h
+  ../include/inn/wire.h ../include/inn/libinn.h ../include/inn/storage.h \
+  ../include/inn/options.h
