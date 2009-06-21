@@ -6,6 +6,8 @@
 #ifndef INN_STORAGE_H
 #define INN_STORAGE_H 1
 
+#include <inn/defines.h>
+#include <inn/options.h>
 #include <stdio.h>
 #include <sys/types.h>
 
