@@ -31,8 +31,14 @@ name is now explicitly searched in the overview information.
 
 =item *
 
-The default path for TLS certificates has changed from I<pathlib> to
-I<pathetc>.  It only affects new INN installations or generations of
+A new B<-L> flag has been added by Jonathan Kamens to B<makehistory>
+so as to specify a load average limit.  If the system load average exceeds
+the specified limit, B<makehistory> sleeps until it goes below the limit.
+
+=item *
+
+The default path for TLS certificates has changed from I<pathnews>/lib
+to I<pathetc>.  It only affects new INN installations or generations of
 certificates with C<make cert>.  Besides, a default value has been
 added to I<tlscapath> because it is required by B<nnrpd> when TLS
 is used.
