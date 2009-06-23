@@ -5,7 +5,7 @@ makehistory - Initialize or rebuild INN history database
 =head1 SYNOPSIS
 
 B<makehistory> [B<-abFIOSx>] [B<-f> I<filename>] [B<-l> I<count>]
-[B<-s> I<size>] [B<-T> I<tmpdir>]
+[B<-L> I<load-average>] [B<-s> I<size>] [B<-T> I<tmpdir>]
 
 =head1 DESCRIPTION
 
@@ -88,6 +88,16 @@ by sort(1)).  See the description of the B<-T> option for how to
 specify the temporary storage location.  This option has no effect
 with buffindexed, because buffindexed does not need sorted
 overview and no batching is done.
+
+=item B<-L> I<load-average>
+
+Temporarily pause activities if the system load average exceeds the
+specified level I<load-average>.  This allows B<makehistory> to run
+on a system being used for other purposes without monopolizing system
+resources and thus making the response time for other applications
+unacceptably slow.  Using nice(1) does not help much for that because
+the problem comes from disk I/O usage, and ionice(1) is not always
+available or efficient.
 
 =item B<-O>
 

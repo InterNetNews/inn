@@ -24,8 +24,28 @@
 #include "inn/vector.h"
 #include "inn/wire.h"
 
+/*
+**  If we have getloadavg, include the appropriate header file.  Otherwise,
+**  just assume that we always have a load of 0.
+*/
+#if HAVE_GETLOADAVG
+# if HAVE_SYS_LOADAVG_H
+#  include <sys/loadavg.h>
+# endif
+#else
+static int
+getloadavg(double loadavg[], int nelem)
+{
+    int i;
+
+    for (i = 0; i < nelem && i < 3; i++)
+        loadavg[i] = 0;
+    return i;
+}
+#endif
+
 static const char usage[] = "\
-Usage: makehistory [-abFIOSx] [-f file] [-l count] [-s size] [-T tmpdir]\n\
+Usage: makehistory [-abFIOSx] [-f file] [-l count] [-L load] [-s size] [-T tmpdir]\n\
 \n\
     -a          open output history file in append mode\n\
     -b          delete bad articles from spool\n\
@@ -33,6 +53,7 @@ Usage: makehistory [-abFIOSx] [-f file] [-l count] [-s size] [-T tmpdir]\n\
     -f file     write history entries to file (default $pathdb/history)\n\
     -I          do not create overview for articles numbered below lowmark\n\
     -l count    size of overview updates (default 10000)\n\
+    -L load     pause when load average exceeds threshold\n\
     -O          create overview entries for articles\n\
     -S          write overview data to standard output\n\
     -s size     size new history database for approximately size entries\n\
@@ -810,6 +831,8 @@ main(int argc, char **argv)
 {
     ARTHANDLE *art = NULL;
     bool AppendMode;
+    int LoadAverage;
+    double load[1];
     int i;
     bool val;
     char *HistoryDir;
@@ -837,9 +860,10 @@ main(int argc, char **argv)
     DoOverview = false;
     Fork = false;
     AppendMode = false;
+    LoadAverage = 0;
     NoHistory = false;
 
-    while ((i = getopt(argc, argv, "abFf:Il:OSs:T:x")) != EOF) {
+    while ((i = getopt(argc, argv, "abFf:Il:L:OSs:T:x")) != EOF) {
 	switch(i) {
 	case 'a':
 	    AppendMode = true;
@@ -859,6 +883,9 @@ main(int argc, char **argv)
 	case 'l':
 	    OverTmpSegSize = atoi(optarg);
 	    break;
+        case 'L':
+            LoadAverage = atoi(optarg);
+            break;
 	case 'O':
 	    DoOverview = true;
 	    break;
@@ -956,7 +983,7 @@ main(int argc, char **argv)
 
     /*
      * Scan the entire spool, nuke any bad arts if needed, and process each
-     * article.
+     * article.  We take a break when the load is too high.
      */
 	
     while ((art = SMnext(art, RETR_ALL)) != NULL) {
@@ -965,7 +992,15 @@ main(int argc, char **argv)
 		SMcancel(*art->token);
 	    continue;
 	}
+
 	DoArt(art);
+
+        if (LoadAverage > 0) {
+            while (getloadavg(load, 1) > 0 &&
+                   (int) (load[0]) >= LoadAverage) {
+                sleep(1);
+            }
+        }
     }
 
     if (!NoHistory) {
