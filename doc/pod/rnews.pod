@@ -49,7 +49,7 @@ is more widely available, due to old patent issues, than B<compress>.)
 
 Otherwise, if the command is any other word, then B<rnews> will try to
 execute a program with that name, looking for it in the directory
-I<pathbin>/bin/rnews.libexec.  The rest of the batch will be fed to that
+I<pathbin>/rnews.libexec.  The rest of the batch will be fed to that
 program's standard input, and the standard output from the program will be
 treated as if it were the original input to B<rnews>.  INN comes with three
 such standard batch processors:

@@ -142,7 +142,7 @@ sub unbatcher {
 
     $compressor =~ s%.*/%%;   # Do not keep the complete path.
     $compressor =~ s% .*%%;   # Do not keep the optional parameters.
-    return $UNBATCHER{$compressor} || 'cunbatch';
+    return $UNBATCHER{$compressor} || $UNBATCHER{'gzip'};
 }
 
 ##############################################################################
@@ -162,7 +162,7 @@ sub run_site {
         $maxjobs = '-N ' . ($MAXJOBS - $jobs);
     }
 
-    $compress ||= $INN::Config::compress;
+    $compress ||= $INN::Config::gzip;
     $size ||= $MAXSIZE;
 
     # if a .work temp file left by a previous invocation exists, rename
@@ -320,7 +320,7 @@ flushing the site.
 The compression method to use for batches.  This should be one of C<bzip2>,
 C<compress>, C<gzip> or C<none>.  Arguments for the compression command may be
 specified by using C<_> instead of spaces.  For example, C<gzip_-9>.
-The default value is C<compress>.
+The default value is C<gzip>.
 
 =item I<maxsize>
 
@@ -353,14 +353,15 @@ Here is an example for the F<send-uucp.cf> configuration file:
     able
     pern::MYFUNNEL!
 
-This defines eight UUCP sites.  The first three use C<gzip> compression, the
-following site uses C<bzip2> and the last three use C<compress>.  The first
-six use a batch size of S<1 MB>, and the last site (C<able>) uses the default of
+This defines eight UUCP sites.  The first three and the last two use C<gzip>
+compression, the fourth site (C<drinkel>) uses C<bzip2> and the remaining sites
+(C<manhole> and C<owl>) use C<compress>.  The first six use a batch size of
+S<1 MB>, and the two last sites (C<able> and C<pern>) use the default of
 500,000 bytes.  The C<zoetermeer>, C<hoofddorp>, C<pa3ebv>, and C<manhole> sites
 will only have batches generated for them during the hours of 05:00, 18:00,
 and 22:00, and the C<drinkel> site will only have batches generated during those
 hours and 06:00, 20:00, 00:00, and 02:00.  There are no restrictions on when
-batches will be generated for C<owl> or C<able>.
+batches will be generated for C<owl>, C<able> and C<pern>.
 
 The C<pern> site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
 issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
