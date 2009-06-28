@@ -618,8 +618,9 @@ in L<"Configuring and Portability"> for details on how to update these files.
 
 =item 2.
 
-Make sure that F<samples/control.ctl> is in sync with the master version at
-L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.
+Make sure that F<samples/control.ctl> and F<samples/nocem.ctl> are in sync
+with the master version at L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>
+and L<http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>.
 
 =item 3.
 

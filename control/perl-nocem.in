@@ -545,9 +545,8 @@ download there a unique file which contains all the keys.
 Create a F<nocem.ctl> config file in I<pathetc> indicating the NoCeM issuers
 and notices you want to follow.  This permission file contains lines like:
 
-    annihilator-1:*
-    clewis@ferret.ocunix:mmf
-    stephane@asynchrone:mmf,openproxy,spam
+    bleachbot@httrack.com:spam,site
+    pgpmoose@killfile.org:pgpmoose-forged-moderation
 
 This will remove all articles for which the issuer (first part of the line,
 before the colon C<:>) has issued NoCeM notices corresponding to the
