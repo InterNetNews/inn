@@ -43,6 +43,11 @@ certificates with C<make cert>.  Besides, a default value has been
 added to I<tlscapath> because it is required by B<nnrpd> when TLS
 is used.
 
+=item *
+
+gzip(1) is now the default UUCP batcher in B<send-uucp>, instead of
+compress(1) whose algorithm has patent issues.
+
 =back
 
 =head1 Upgrading from 2.4 to 2.5
