@@ -1,0 +1,73 @@
+=head1 NAME
+
+cnfsstat - Show usage of CNFS buffers
+
+=head1 SYNOPSIS
+
+B<cnfsstat> [B<-ahpPsv>] [B<-c> I<class>] [B<-l> [I<seconds>]] [B<-m> I<buffer>]
+
+=head1 DESCRIPTION
+
+I<cnfsstat> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
+to determine which CNFS buffers are available.  It then reads the specified
+cyclic buffers and shows their usage status.  I<cnfsstat> can be invoked from
+B<rc.news> if I<docnfsstat> is set to true in F<inn.conf>, and the result is
+written to syslog(3).
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a>
+
+Besides its usual output, I<cnfsstat> prints the age of the oldest article
+in the cycbuff.  You may also want to use the B<-v> flag to see extended
+consistency checks.
+
+=item B<-c> I<class>
+
+Only information for the specified class is printed.
+
+=item B<-h>
+
+Print usage information and exit.
+
+=item B<-l> [I<seconds>]
+
+With this option, I<cnfsstat> prints a status snapshot every I<seconds>,
+and only exits if an error occurs.  When unspecified, the default interval
+is C<600> seconds.
+
+=item B<-m> I<buffer>
+
+Print information about the specified buffer in a format suitable for MRTG.
+
+=item B<-p>
+
+Print an MRTG config file.
+
+=item B<-P>
+
+Write PID into I<pathrun>/cnfsstat.pid.
+
+=item B<-s>
+
+Write output to syslog(3) instead of standard output.
+
+=item B<-v>
+
+Write additional information, especially about consistency checks for article
+storage and the F<history> file.
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
+into POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+cycbuff.conf(5), history(5), inn.conf(5), rc.news(8), storage.conf(5).
+
+=cut
