@@ -14,7 +14,7 @@
 # 
 #  bigint support added by Duane Currie (sandman@hub.org) 1998
 
-use vars qw($opt_l $opt_h $opt_a $opt_s $opt_p $opt_P);
+use vars qw($opt_a $opt_h $opt_l $opt_p $opt_P $opt_s $opt_v);
 use Getopt::Long;
 use Math::BigInt;
 use Math::BigFloat;
@@ -28,17 +28,18 @@ sub usage {
 Summary tool for CNFS
 
 Usage:
-	$0 [-c CLASS] [-l [seconds]]
+	$0 [-ahpPsv] [-c class] [-l [seconds]] [-m buffer]
 
 	If called without args, does a one-time status of all CNFS buffers
-	-a:          print the age of the oldest article in the cycbuff
-	-c <CLASS>:  prints out status of CNFS buffers in class CLASS
-	-l seconds:  loops like vmstat, default seconds = 600
-	-s:          logs through syslog
-	-h:          this information
-	-m <BUFFER>: prints out information suitable for MRTG
-	-p:	     prints out an MRTG config file
-	-P:          write PID into $INN::Config::pathrun/cnfsstat.pid
+	-a:           print the age of the oldest article in the cycbuff
+	-c class:     print out status of CNFS buffers in that class
+	-h:           this information
+	-l [seconds]: loop like vmstat, default seconds = 600
+	-m buffer:    print out information suitable for MRTG
+	-p:           print out an MRTG config file
+	-P:           write PID into $INN::Config::pathrun/cnfsstat.pid
+	-s:           log through syslog
+	-v:           do consistency checks and print the result
 _end_
     exit(1);
 }
@@ -49,8 +50,8 @@ my($gr, $cl, $min, $max, @storsort, $oclass, $header_printed);
 my $use_syslog = 0;
 
 Getopt::Long::config('no_ignore_case');
-GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-s", "-m=s", \$obuffer,
-           "-p", "-P");
+GetOptions("-a", "-c=s", \$oclass, "-h", "-l:i", "-m=s", \$obuffer,
+           "-p", "-P", "-s", "-v");
 
 &usage if $opt_h;
 
@@ -497,7 +498,11 @@ sub lookup_age {
     if ($history =~ /\t(\d+)~/) {
 	return $1;
     }
-    print "  (Missing $msgid)\n";
+
+    if ($opt_v) {
+        print "   (Missing $msgid)\n";
+    }
+
     return 0;
 }
 

@@ -37,6 +37,12 @@ the specified limit, B<makehistory> sleeps until it goes below the limit.
 
 =item *
 
+The output of consistency checks for article storage and the F<history>
+file no longer appears by default when C<cnfsstat -a> is used.  A new B<-v>
+flag has been added to B<cnfsstat> so as to see it.
+
+=item *
+
 The default path for TLS certificates has changed from I<pathnews>/lib
 to I<pathetc>.  It only affects new INN installations or generations of
 certificates with C<make cert>.  Besides, a default value has been

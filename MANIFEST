@@ -236,6 +236,7 @@ doc/pod/buffchan.pod                  Master file for buffchan.8
 doc/pod/buffindexed.conf.pod          Master file for buffindexed.conf.5
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
+doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
