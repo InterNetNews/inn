@@ -2,7 +2,7 @@
 # fixscript will replace this line with code to load INN::Config
 
 #  $Id$
-# 
+#
 #  Copyright Andreas Lamrecht 1998
 #  <Andreas.Lamprect@siemens.at>
 #
@@ -11,7 +11,7 @@
 #
 #  Modified by Robert R. Collier 1998
 #  <rob@lspace.org>
-# 
+#
 #  bigint support added by Duane Currie (sandman@hub.org) 1998
 
 use vars qw($opt_a $opt_h $opt_l $opt_p $opt_P $opt_s $opt_v);
@@ -108,9 +108,9 @@ if ($oclass) {
 	    ($gr, $cl, $min, $max) = split(/:/, $stor{$oclass});
 	    if ($use_syslog) {
 		if ($min || $max) {
-		    $logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $oclass, $gr, $min, $max); 
+		    $logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $oclass, $gr, $min, $max);
 		} else {
-		    $logline = sprintf("Class %s for groups matching \"%s\"", $oclass, $gr); 
+		    $logline = sprintf("Class %s for groups matching \"%s\"", $oclass, $gr);
 		}
 	    } else {
 		print STDOUT "Class $oclass";
@@ -140,14 +140,14 @@ if ($oclass) {
 	print STDERR "Class $ARGV[1] not found ...\n";
     }
 } else { # Print all Classes
-    
+
     foreach $c (@storsort) {
 	($gr, $cl, $min, $max) = split(/:/, $stor{$c});
 	if ($use_syslog) {
 	    if ($min || $max) {
-		$logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $c, $gr, $min, $max); 
+		$logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $c, $gr, $min, $max);
 	    } else {
-		$logline = sprintf("Class %s for groups matching \"%s\"", $c, $gr); 
+		$logline = sprintf("Class %s for groups matching \"%s\"", $c, $gr);
 	    }
 	} else {
 	    print STDOUT "Class $c ";
@@ -256,7 +256,7 @@ sub read_storageconf {
 
 	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
 	    $key{'SIZE'} =~ s/,/:/;
-	    
+
 	    if (!defined $stor{$key{'OPTIONS'}}) {
 		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
 			"$key{'SIZE'}:$key{'OPTIONS'}";
@@ -271,21 +271,21 @@ sub print_cycbuff_head {
     my ($buffpath) = $_[0];
     my ($name, $len, $free, $update, $cyclenum, $oldart) =
 	    &get_cycbuff_info($buffpath);
-    
+
     if ($use_syslog) {
 	($name) = split(/\s/, $name);
 	$name =~ s/\0//g;
 	syslog ('notice', '%s Buffer %s, len: %.2f  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
-		$logline, $name, $len / (1024 * 1024),
-		Math::BigFloat->new ($free) / (1024 * 1024),
-		100 * Math::BigFloat->new ($free) / $len, $cyclenum);
+		$logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
+		Math::BigFloat->new($free) / (1024 * 1024),
+		100 * Math::BigFloat->new($free) / Math::BigFloat->new($len), $cyclenum);
 	return 0;
     }
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", &human_readable($len, 4);
     print ", position: ", &human_readable($free, 4);
-    printf("  %.2f cycles\n", $cyclenum + Math::BigFloat->new ($free) / $len);
+    printf("  %.2f cycles\n", $cyclenum + Math::BigFloat->new($free) / Math::BigFloat->new($len));
     my ($when, $ago) = &make_time($update);
     print "  Newest: $when, $ago ago\n";
 
@@ -323,7 +323,7 @@ sub human_readable {
     my $factor = 1024;
 
     my $unit = -1;
-    my $oldscaled = Math::BigFloat->new ($val) / $base;
+    my $oldscaled = Math::BigFloat->new($val) / $base;
     my $scaled = $oldscaled;
     while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
 	$oldscaled = $scaled;
@@ -366,7 +366,7 @@ sub mrtg_buffer {
 	#my ($name, $num, $buff, $size) = @_;
         $tag = 'cnfs-' . $buffer;
 
-        print 'Target[', $tag, ']: `', "$INN::Config::pathbin/cnfsstat -m ", $buffer, '`', "\n";  
+        print 'Target[', $tag, ']: `', "$INN::Config::pathbin/cnfsstat -m ", $buffer, '`', "\n";
         print 'MaxBytes[', $tag, ']: ', (&get_cycbuff_info($buff{$buffer}))[1], "\n";
         print 'Title[', $tag, ']: ', "${buffer} Usage\n";
         print 'Options[', $tag, ']: growright gauge', "\n";
@@ -411,40 +411,40 @@ sub check_read_return {
 
 sub get_cycbuff_info {
     my($buffpath) = $_[0];
-    
+
     my($CNFSMASIZ)=8;
     my($CNFSNASIZ)=16;
     my($CNFSPASIZ)=64;
     my($CNFSLASIZ)=16;
     my($headerlength) = $CNFSMASIZ + $CNFSNASIZ + $CNFSPASIZ + (4 * $CNFSLASIZ);
-    
+
     my($buff, @entries, $e);
     my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma);
-    
+
     if(! open(BUFF, "< $buffpath") ) {
 	print STDERR "Cannot open Cycbuff $buffpath ...\n";
 	exit(1);
     }
-    
+
     $buff = "";
     if(! read(BUFF, $buff, $headerlength) ) {
 	print STDERR "Cannot read $headerlength bytes from file $buffpath...\n";
 	exit(1);
     }
-    
+
     ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma) =
 	    unpack("a8 a16 a64 a16 a16 a16 a16", $buff);
-    
+
     if(!$magic) {
 	print STDERR "Error while unpacking header ...\n";
 	exit(1);
     }
-    
+
     my($len) = bhex($lena);
     my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
-    
+
     if ($opt_a) {
 
 	my $pagesize = 16384;
@@ -465,7 +465,7 @@ sub get_cycbuff_info {
 	check_read_return (sysread (BUFF, $buff, $pagesize));
 	do {
 	    check_read_return (sysread (BUFF, $chunk, $pagesize));
-	    
+
 	    $buff .= $chunk;
 	    while ($buff =~ /^message-id:\s+(<.*?>)/mi) {
 		$buff = $POSTMATCH;
@@ -486,7 +486,7 @@ sub get_cycbuff_info {
 	} while ($sentinel -= $pagesize > 0);
     }
 
-done:    
+done:
     close(BUFF);
     return($name,$len,$free,$update,$cyclenum,$oldart);
 }
@@ -523,30 +523,32 @@ sub safe_run {
     return $output;
 }
 
-# Hex to bigint conversion routine
-# bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)
+# Hex to bigint conversion routine.
+# bhex(HEXSTRING) returns BIGINT (with leading + chopped off).
 #
 # In most languages, unlimited size integers are done using string math
-# libraries usually called bigint.  (Java, Perl, etc...)
-
+# libraries usually called bigint.  (Java, Perl, etc.)
+#
 # Bigint's are really just strings.
 
 sub bhex {
     my $hexValue = shift;
     $hexValue =~ s/^0x//;
-    
-    my $integerValue = new Math::BigInt '0';
+
+    my $integerValue = Math::BigInt->new('0');
     for (my $i = 0; $i < length($hexValue); $i += 2) {
         # Could be more efficient going at larger increments, but byte
-        # by byte is safer for the case of 9 byte values, 11 bytes, etc.. 
- 
+        # by byte is safer for the case of 9 byte values, 11 bytes, etc.
+
         my $byte = substr($hexValue, $i, 2);
         my $byteIntValue = hex($byte);
 
-        $integerValue = $integerValue * "256";
-        $integerValue = $integerValue + "$byteIntValue";
+        # bmuladd() is only in Perl >= 5.10.0.
+        $integerValue->bmul('256');
+        $integerValue->badd("$byteIntValue");
     }
 
-    $integerValue =~ s/^\+//;
-    return $integerValue;
+    my $result = $integerValue->bstr();
+    $result =~ s/^\+//;
+    return $result;
 }

@@ -2,7 +2,7 @@
 # fixscript will replace this line with code to load INN::Config
 
 #  $Id$
-# 
+#
 #  Copyright Andreas Lamrecht 1998
 #  <Andreas.Lamprect@siemens.at>
 #
@@ -11,7 +11,7 @@
 #
 #  Modified by Robert R. Collier 1998
 #  <rob@lspace.org>
-# 
+#
 #  bigint support added by Duane Currie (sandman@hub.org) 1998
 #
 #  cnfsheadconf is originally from cnfsstat 1999
@@ -20,60 +20,51 @@
 use vars qw($opt_h $opt_w);
 use Getopt::Long;
 
-# required for >32bit ints
-require 'bigint.pl';
+# Required for >32bit integers.
+use Math::BigInt;
+use Math::BigFloat;
 
 my($conffile) = "$INN::Config::pathetc/cycbuff.conf";
 my($storageconf) = "$INN::Config::pathetc/storage.conf";
 
-# Hex to bigint conversion routine
-# bhex(HEXSTRING) returns BIGINT  (with leading + chopped off)
+# Hex to bigint conversion routine.
+# bhex(HEXSTRING) returns BIGINT (with leading + chopped off).
 #
-# In most langauge, unlimited size integers are done using string math
-# libraries usually called bigint.  (Java, Perl, etc...)
-
+# In most languages, unlimited size integers are done using string math
+# libraries usually called bigint.  (Java, Perl, etc.)
+#
 # Bigint's are really just strings.
-
-# Mathematics routines for bigint's:
-
-#   bneg(BINT) return BINT              negation
-#   babs(BINT) return BINT              absolute value
-#   bcmp(BINT,BINT) return CODE         compare numbers (undef,<0,=0,>0)
-#   badd(BINT,BINT) return BINT         addition
-#   bsub(BINT,BINT) return BINT         subtraction
-#   bmul(BINT,BINT) return BINT         multiplication
-#   bdiv(BINT,BINT) return (BINT,BINT)  division (quo,rem) just quo if scalar
-#   bmod(BINT,BINT) return BINT         modulus
-#   bgcd(BINT,BINT) return BINT         greatest common divisor
-#   bnorm(BINT) return BINT             normalization
 
 sub bhex {
     my $hexValue = shift;
     $hexValue =~ s/^0x//;
 
-    my $integerValue = '0';
+    my $integerValue = Math::BigInt->new('0');
     for (my $i = 0; $i < length($hexValue); $i+=2) {
         # Could be more efficient going at larger increments, but byte
-        # by byte is safer for the case of 9 byte values, 11 bytes, etc.. 
+        # by byte is safer for the case of 9 byte values, 11 bytes, etc.
 
-        my $byte = substr($hexValue,$i,2);
+        my $byte = substr($hexValue, $i, 2);
         my $byteIntValue = hex($byte);
 
-        $integerValue = bmul($integerValue,'256');        
-        $integerValue = badd($integerValue,"$byteIntValue");
-        }
-
-    $integerValue =~ s/^\+//;
-    return $integerValue;
+        # bmuladd() is only in Perl >= 5.10.0.
+        $integerValue->bmul('256');
+        $integerValue->badd("$byteIntValue");
     }
 
-sub bint2hex {
-    my $d = shift; 
-    my $o = 0;
+    my $result = $integerValue->bstr();
+    $result =~ s/^\+//;
+    return $result;
+}
 
-    while ($d > 0) {
-        my $h = bmod("$d",'16');
-        $d = bdiv("$d",'16');
+sub bint2hex {
+    my $d = shift;
+    my $o = "0";
+
+    my $integerValue = Math::BigInt->new("$d");
+    while ($integerValue->is_pos() and not $integerValue->is_zero()) {
+        my $h = $integerValue->copy()->bmod('16')->bstr();
+        $integerValue->bdiv('16');
         $h =~ s/^\+//;
         $h='a' if $h eq '10';
         $h='b' if $h eq '11';
@@ -81,10 +72,10 @@ sub bint2hex {
         $h='d' if $h eq '13';
         $h='e' if $h eq '14';
         $h='f' if $h eq '15';
-        $h =~ s/^\+//;
-        $o="$h$o";  
+        $o="$h$o";
     }
 
+    # The result ends with a "0".
     return "$o";
 }
 
@@ -259,7 +250,7 @@ sub print_cycbuff_head {
 	print STDERR "Cannot read $headerlength bytes from file $buffpath...\n";
 	exit(1);
     }
-    
+
     ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff)  = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $buff);
 
     if(!$magic) {
@@ -276,14 +267,16 @@ sub print_cycbuff_head {
 
     $name =~ s/\0//g;
     print " Buffer $name, len: ";
-    printf("%.2f", $len / (1024 * 1024));
+    printf("%.2f", Math::BigFloat->new($len) / (1024 * 1024));
     print " Mbytes, used: ";
-    printf("%.2f Mbytes", $free / (1024 * 1024));
-    printf(" (%4.1f%%) %3d cycles\n", 100 * $free/$len, $cyclenum);
+    printf("%.2f Mbytes", Math::BigFloat->new($free) / (1024 * 1024));
+    printf(" (%4.1f%%) %3d cycles\n",
+           100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
+           $cyclenum);
     print(" Meta $metaname, order: ");
     printf("%d", $orderinmeta);
     print(", current: $currentbuff");
-    
+
     print "\n Newest: $nupdate_str, $nago_str ago\n";
 
     if ($opt_w) {
