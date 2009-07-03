@@ -54,6 +54,11 @@ is used.
 gzip(1) is now the default UUCP batcher in B<send-uucp>, instead of
 compress(1) whose algorithm has patent issues.
 
+=item *
+
+B<cnfsheadconf> now uses the Perl core module C<Math::BigInt> rather
+than the deprecated F<bigint.pl> library.
+
 =back
 
 =head1 Upgrading from 2.4 to 2.5
