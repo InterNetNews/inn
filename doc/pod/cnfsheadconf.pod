@@ -1,0 +1,46 @@
+=head1 NAME
+
+cnfsheadconf - Read and write CNFS headers
+
+=head1 SYNOPSIS
+
+B<cnfsheadconf> [B<-hw>] [B<-c> I<class>]
+
+=head1 DESCRIPTION
+
+I<cnfsheadconf> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
+to determine which CNFS buffers are available.  It then reads all of them
+or the specified cyclic buffer via the B<-c> flag, and modifies the header
+as directed by the interactive user if B<-w> is used.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c> I<class>
+
+Print the status of the specified class.  It also modifies it in case B<-w>
+is used.
+
+=item B<-h>
+
+Print usage information and exit.
+
+=item B<-w>
+
+Prompt for modifications to make to cycbuff header.
+
+=back
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted
+to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+cycbuff.conf(5), inn.conf(5), storage.conf(5).
+
+=cut

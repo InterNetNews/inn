@@ -61,8 +61,8 @@ storage and the F<history> file.
 
 =head1 HISTORY
 
-Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
-into POD by Julien Elie.
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted
+to POD by Julien Elie.
 
 $Id$
 
