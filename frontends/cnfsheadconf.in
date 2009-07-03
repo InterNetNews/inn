@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
 #  $Id$
@@ -84,12 +84,12 @@ sub usage {
 Summary tool for cycbuff header manipulation
 
 Usage:
-	$0 [-c CYCBUFF] [-h] [-w]
+        $0 [-c CYCBUFF] [-h] [-w]
 
-	If called without args, does a one-time status of all CNFS buffers
-	-c <cycbuff>:  prints out status of cycbuff
-	-w:            change header
-	-h:            This information
+        If called without args, does a one-time status of all CNFS buffers.
+        -c <cycbuff>:  print out status of cycbuff
+        -h:            this information
+        -w:            change header
 _end_
     exit(1);
 }
@@ -198,10 +198,19 @@ sub read_storageconf {
 
 START:
 
-if (! $buff{$cycbuff} ) {
-	print STDERR "No buffer definition for buffer $cycbuff ...\n";
-	exit(1);
+# If no cycbuff is specified, we check all of them and exit.
+if (not defined $cycbuff) {
+    foreach (sort keys %buff) {
+      &print_cycbuff_head($buff{$_});
+    }
+    exit(0);
 }
+
+if (not defined $buff{$cycbuff}) {
+    print STDERR "No buffer definition for buffer $cycbuff...\n";
+    exit(1);
+}
+
 &print_cycbuff_head($buff{$cycbuff});
 
 sub make_time {
@@ -273,11 +282,11 @@ sub print_cycbuff_head {
     printf(" (%4.1f%%) %3d cycles\n",
            100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
            $cyclenum);
-    print(" Meta $metaname, order: ");
+    print("  Meta $metaname, order: ");
     printf("%d", $orderinmeta);
     print(", current: $currentbuff");
 
-    print "\n Newest: $nupdate_str, $nago_str ago\n";
+    print "\n  Newest: $nupdate_str, $nago_str ago\n";
 
     if ($opt_w) {
 	print "\nBuffer [$name] => ";

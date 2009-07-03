@@ -57,7 +57,8 @@ compress(1) whose algorithm has patent issues.
 =item *
 
 B<cnfsheadconf> now uses the Perl core module C<Math::BigInt> rather
-than the deprecated F<bigint.pl> library.
+than the deprecated F<bigint.pl> library.  When used without specifying
+a CNFS buffer, it properly displays the status of all CNFS buffers.
 
 =back
 
