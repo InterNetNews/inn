@@ -229,7 +229,7 @@ then
     cd "${PATHSPOOL}/${INNFEEDSPOOL}"
 
     # Find the PIDs of innfeed.
-    LOCKS=`cat *.lock | ${SORT} -u`
+    LOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
 
     # Process files like "innfeed-dropped.A001703" where
     # 1703 is not in $LOCKS.
