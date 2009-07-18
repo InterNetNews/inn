@@ -36,7 +36,9 @@ sub control_checkgroups {
         my ($ngname, $ngdesc) = split(/\s+/, $_, 2);
         my $charset_newsgroup = $charset_message;
 
-        next if ($ngname =~ /$exclusionpats/ or $ngname =~ /$droppats/);
+        next if ($ngname !~ /$newsgrouppats/);
+        next if ($exclusionpats and $ngname =~ /$exclusionpats/);
+        next if ($droppats and $ngname =~ /$droppats/);
 
         # Find the right charset if absent or forced by control.ctl.
         foreach (@$charset_from) {
@@ -62,7 +64,10 @@ sub control_checkgroups {
         push(@newbody, $ngname."\t".$ngdesc);
     }
 
-    if ($action eq 'mail' and $#newbody >= 0) {
+    # We do not go on if there is no changes to do.
+    return if ($#newbody < 0);
+
+    if ($action eq 'mail') {
         my $mail = sendmail("checkgroups by $sender");
         print $mail "$sender posted the following checkgroups message:\n\n";
         print $mail map { s/^~/~~/; "$_\n" } @headers;
