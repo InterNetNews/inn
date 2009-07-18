@@ -2003,7 +2003,7 @@ sub collect($$$$$$) {
       }
       return 1;
     }
-    # control_XXgroup, foo.bar [moderated] who who /x/y/12, peer, action, 1
+    # control_XXgroup, foo.bar [moderated] who who token, [pattern], [pattern], encoding, peer, action, 1
     #
     # Various other random junk can end up in the moderated field, like y,
     # unmoderated, m, etc. depending on what the control message says.  It
@@ -2013,23 +2013,23 @@ sub collect($$$$$$) {
                   (\s\S+)?            # optional
                   \s(\S+)             # e-mail
                   \s\S+               # e-mail
-                  \s\S+,              # filename
+                  \s\S+,              # storage token
                   \s(?:\S+)?,         # exclusion pattern
                   \s(?:\S+)?,         # drop pattern
                   \s\S+,              # local encoding
                   \s\S+,              # server
                   \s([^=,]+(?:=\S+)?),            # action
-                  \s*(.*)             # code
+                  \s*(.*)             # 1 if message approved and first logged in the file
                   /x) {
       if ($1 eq 'newgroup') {
 	$controlchan_new{$3}++;
       } elsif ($1 eq 'rmgroup') {
 	$controlchan_rm{$3}++;
       } else {
-	$controlchan_other{$3}++;
+	$controlchan_other{$3}++ if $5 >= 0;
       }
       $controlchan_who{$3}++;
-      $controlchan_ok{$3} += $5;
+      $controlchan_ok{$3} += $5 if $5 > 0;
       my $action = $4;
       my $email = $3;
       $action =~ s/=.*//;

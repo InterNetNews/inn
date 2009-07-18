@@ -175,7 +175,9 @@ while (<STDIN>) {
             next;
         }
 
+        # Count a control article only once.
         my $approved = $hdr{'approved'} ? 1 : 0;
+        $approved = -1 if $i > 0;
         logmsg("$subname, " . join(' ', @progparams)
             . " $sender $replyto $token, $exclusionpats, $droppats,"
             . " $charset_to, $sitepath, $action"
