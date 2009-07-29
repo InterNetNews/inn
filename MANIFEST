@@ -359,10 +359,10 @@ include/Makefile                      Makefile for header files
 include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
-include/dbz.h                         Header file for DBZ
 include/inn                           Installed header files (Directory)
 include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/confparse.h               Header file for configuration parser
+include/inn/dbz.h                     Header file for DBZ
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/dispatch.h                Header file for command dispatching
 include/inn/hashtab.h                 Header file for generic hash table

@@ -130,7 +130,7 @@ date.o: date.c ../include/config.h ../include/inn/defines.h \
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
-  ../include/dbz.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/innconf.h \
   ../include/inn/mmap.h ../include/inn/libinn.h
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
