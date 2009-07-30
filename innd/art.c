@@ -400,23 +400,35 @@ ARTlogreject(CHANNEL *cp, const char *text)
 
     /* Set up the headers that we want to use.  We only need to parse the path
        on rejections if logipaddr is false or we can't find a good host. */
-    if (innconf->logipaddr && cp->Address.ss_family != 0)
-        data->Feedsite = RChostname(cp);
-    else {
+    if (innconf->logipaddr) {
+        if (cp->Address.ss_family != 0) {
+            data->Feedsite = RChostname(cp);
+        } else {
+            data->Feedsite = "localhost";
+        }
+    } else {
         if (HDR_FOUND(HDR__PATH)) {
             HDR_PARSE_START(HDR__PATH);
             hopcount =
                 ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
             HDR_PARSE_END(HDR__PATH);
             hops = data->Path.List;
-            if (hopcount > 0 && hops != NULL && hops[0] != NULL)
+            if (hopcount > 0 && hops != NULL && hops[0] != NULL) {
                 data->Feedsite = hops[0];
-            else
+            } else {
                 data->Feedsite = "localhost";
-        } else if (cp->Address.ss_family != 0) {
-            data->Feedsite = RChostname(cp);
+            }
+        } else {
+            if (cp->Address.ss_family != 0) {
+                data->Feedsite = RChostname(cp);
+            } else {
+                data->Feedsite = "localhost";
+            }
         }
     }
+
+    data->FeedsiteLength = strlen(data->Feedsite);
+
     ARTlog(data, ART_REJECT, text != NULL ? text : cp->Error);
 
     if (HDR_FOUND(HDR__MESSAGE_ID))
@@ -804,6 +816,7 @@ ARTprepare(CHANNEL *cp)
   data->CurHeader = data->LastCRLF = data->Body = cp->Start;
   data->BytesHeader = NULL;
   data->Feedsite = "?";
+  data->FeedsiteLength = strlen(data->Feedsite);
   *cp->Error = '\0';
 }
 
@@ -1967,7 +1980,11 @@ ARTpost(CHANNEL *cp)
   /* We have not parsed the Path: header yet.  We do not check for logipaddr
    * right now (it will be done afterwards and change data->Feedsite
    * in consequence).  We assign a feed site for the next call to ARTlog(). */
-  data->Feedsite = RChostname(cp);
+  if (cp->Address.ss_family != 0) {
+    data->Feedsite = RChostname(cp);
+  } else {
+    data->Feedsite = "localhost";
+  }
   if (data->Feedsite == NULL)
     data->Feedsite = CHANname(cp);
   data->FeedsiteLength = strlen(data->Feedsite);

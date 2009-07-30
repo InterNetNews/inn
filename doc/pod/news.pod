@@ -31,6 +31,13 @@ name is now explicitly searched in the overview information.
 
 =item *
 
+Fixed the source which is logged to the F<news> log file for local
+postings when the local server is not listed in F<incoming.conf>.
+A wrong name was used, taken amongst known peers.  The source is now
+logged as C<localhost>.
+
+=item *
+
 A new B<-L> flag has been added by Jonathan Kamens to B<makehistory>
 so as to specify a load average limit.  If the system load average exceeds
 the specified limit, B<makehistory> sleeps until it goes below the limit.
