@@ -456,7 +456,8 @@ CHANname(CHANNEL *cp)
         snprintf(cp->Name, sizeof(cp->Name), "remconn:%d", cp->fd);
         break;
     case CTreject:
-        snprintf(cp->Name, sizeof(cp->Name), "%s rejected", RChostname(cp));
+        snprintf(cp->Name, sizeof(cp->Name), "%s rejected",
+                 cp->Address.ss_family == 0 ? "localhost" : RChostname(cp));
         break;
     case CTnntp:
         snprintf(cp->Name, sizeof(cp->Name), "%s:%d",

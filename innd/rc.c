@@ -1675,6 +1675,8 @@ RCreadlist(void)
 
 /*
 **  Find the name of a remote host we've connected to.
+**  Note that when cp->Address.ss_family is 0, the connection is local
+**  and the caller should use "localhost".
 */
 char *
 RChostname(const CHANNEL *cp)
