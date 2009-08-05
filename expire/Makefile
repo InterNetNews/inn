@@ -122,7 +122,7 @@ grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
   ../include/inn/options.h
 makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/dbz.h ../include/inn/libinn.h \
+  ../include/config.h ../include/inn/dbz.h ../include/inn/libinn.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \

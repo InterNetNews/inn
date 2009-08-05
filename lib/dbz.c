@@ -77,7 +77,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#include "dbz.h"
+#include "inn/dbz.h"
 #include "inn/messages.h"
 #include "inn/innconf.h"
 #include "inn/mmap.h"

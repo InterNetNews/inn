@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <syslog.h>  
 
-#include "dbz.h"
+#include "inn/dbz.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
