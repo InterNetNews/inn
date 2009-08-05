@@ -71,7 +71,7 @@ of INN.  It was made on:
 
 Although it should work fine, this code should still be considered
 experimental.  If you find any bugs, we'd like to know at
-<inn-bugs@lists.isc.org>.
+<inn-workers@lists.isc.org>.
 
 Your feedback is also more than welcome on the mailing list
 <inn-workers@lists.isc.org>.  See README for more information.
@@ -87,7 +87,7 @@ automatically from the Subversion repository.  It was made on:
 
 This code should be considered experimental.  Only a default compile and
 automated testing is done before it is made available.  If it breaks, we'd
-like to know at <inn-bugs@lists.isc.org>, but if it causes your system to
+like to know at <inn-workers@lists.isc.org>, but if it causes your system to
 explode, don't blame us.
 
 If you are using this code, it's highly recommended that you be on the
