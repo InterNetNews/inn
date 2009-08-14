@@ -1197,17 +1197,18 @@ ARTreject(Reject_type code, CHANNEL *cp)
 }
 
 /*
-**  Verify if a cancel message is valid.  If the user posting the cancel
-**  matches the user who posted the article, return the list of filenames
-**  otherwise return NULL.
+**  Verify if a cancel message is valid.  Unless at least one group in the 
+**  cancel message's Newsgroups: line can be found in the Newsgroups: line 
+**  of the article to be cancelled, the cancel is considered bogus and 
+**  false is returned.
 */
 static bool
 ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
 {
-  const HDRCONTENT *hc = data->HdrContent;
   const char	*p;
   char		*q, *q1;
-  const char	*local, *poster;
+  char          **gp;
+  const char	*local;
   char		buff[SMBUF];
   ARTHANDLE	*art;
   bool		r;
@@ -1216,13 +1217,13 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
     return false;
   if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
     return false;
-  local = wire_findheader(art->data, art->len, "Sender");
+
+  /* Copy Newsgroups: from article be to cancelled to q.
+   * Double-terminate q (sentinel). */
+  local = wire_findheader(art->data, art->len, "Newsgroups");
   if (local == NULL) {
-    local = wire_findheader(art->data, art->len, "From");
-    if (local == NULL) {
-      SMfreearticle(art);
-      return false;
-    }
+    SMfreearticle(art);
+    return false;
   }
   for (p = local; p < art->data + art->len; p++) {
     if (*p == '\r' || *p == '\n')
@@ -1232,30 +1233,37 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
     SMfreearticle(art);
     return false;
   }
-  q = xmalloc(p - local + 1);
+  q = xmalloc(p - local + 2);
   memcpy(q, local, p - local);
   SMfreearticle(art);
   q[p - local] = '\0';
-  HeaderCleanFrom(q);
+  q[p - local + 1] = '\0';
 
-  /* Compare canonical forms. */
-  if (HDR_FOUND(HDR__SENDER))
-    poster = HDR(HDR__SENDER);
-  else
-    poster = HDR(HDR__FROM);
-  q1 = xstrdup(poster);
-  HeaderCleanFrom(q1);
-  if (strcmp(q, q1) != 0) {
-    r = false;
-    sprintf(buff, "\"%.50s\" wants to cancel %s by \"%.50s\"",
-      q1, MaxLength(MessageID, MessageID), q);
+  /* Replace separator ',' by '\0'. */
+  for (q1 = q; *q1; q1++) {
+    if (NG_ISSEP(*q1)) {
+      *q1 = '\0';
+    }
+  }
+
+  r = false;
+  for (gp = data->Newsgroups.List; *gp && !r; gp++) {
+    for (q1 = q; *q1; q1 += strlen(q1) + 1) {
+      if (strcmp(q1, *gp) == 0) {
+        r = true;
+        break;
+      }
+    }
+  }
+
+  free(q);
+
+  if (!r) {
+    sprintf(buff, "No matching newsgroups in cancel %s",
+            MaxLength(MessageID, MessageID));
     ARTlog(data, ART_REJECT, buff);
   }
-  else {
-    r = true;
-  }
-  free(q1);
-  free(q);
+      
   return r;
 }
 

@@ -308,12 +308,16 @@ addresses contain colons.
 =item I<verifycancels>
 
 Set this to true to enable a simplistic check on all cancel messages,
-attempting to verify (by simple header comparison) that the cancel message
-is from the same person as the original post.  This can't be done if the
-cancel arrives before the article does, and is extremely easy to spoof.
-While this check may once have served a purpose, it's now essentially
-security via obscurity, commonly avoided by abusers, and probably not
-useful.  This is a boolean value, and the default is false.
+attempting to verify (by simple header comparison) that at least one newsgroup
+in the cancel message can be found in the article to be cancelled.  This
+check can't be done if the cancel arrives before the article does.  This
+is a boolean value, and the default is false.
+
+Note that RFC 5537 (USEPRO) mentions that "cancel control messages are
+not required to contain From: and Sender: header fields matching the
+target message.  This requirement only encouraged cancel issuers to
+conceal their identity and provided no security".  This check is
+therefore not done as it is extremely easy to spoof.
 
 =item I<verifygroups>
 
