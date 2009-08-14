@@ -459,7 +459,7 @@ set of options is:
     ./configure --with-perl
 
 provided that you have the necessary version of Perl installed.
-(Compiling with an embedded Perl interpretor will allow you to use one of
+(Compiling with an embedded Perl interpreter will allow you to use one of
 the available excellent spam filters if you so choose.)
 
 If the configure program runs successfully, then you are ready to build

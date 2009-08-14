@@ -46,7 +46,7 @@ bool PerlFilterActive = false;
 /* The filter sub called (filter_art or filter_post). */
 CV *perl_filter_cv;
 
-/* The embedded Perl interpretor. */
+/* The embedded Perl interpreter. */
 static PerlInterpreter *PerlCode = NULL;
 
 

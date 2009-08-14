@@ -6,7 +6,7 @@ dnl argument and also sets various flags needed for embedded Python if it is
 dnl requested.
 
 AC_DEFUN([INN_ARG_PYTHON],
-[AC_ARG_VAR([PYTHON], [Location of Python interpretor])
+[AC_ARG_VAR([PYTHON], [Location of Python interpreter])
 AC_ARG_WITH([python],
     [AS_HELP_STRING([--with-python], [Embedded Python module support [no]])],
     [case $withval in

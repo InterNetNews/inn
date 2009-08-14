@@ -30,7 +30,7 @@ dnl was or not, determine the path to Perl.  If it was requested, make sure
 dnl that we have the right version and then set PERL_CPPFLAGS and PERL_LIBS as
 dnl appropriate for embedded Perl.
 AC_DEFUN([INN_ARG_PERL],
-[AC_ARG_VAR([PERL], [Location of Perl interpretor])
+[AC_ARG_VAR([PERL], [Location of Perl interpreter])
 AC_ARG_WITH([perl],
     [AS_HELP_STRING([--with-perl], [Embedded Perl script support [no]])],
     [case $withval in
