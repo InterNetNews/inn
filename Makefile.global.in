@@ -135,8 +135,8 @@ REGEX_LIBS	= @REGEX_LIBS@
 SHADOW_LIBS	= @SHADOW_LIBS@
 
 ##  Embedding support.	Additional flags and libraries used when compiling
-##  or linking portions of INN that support embedded interpretors, set by
-##  configure based on what interpretor embeddings are selected.
+##  or linking portions of INN that support embedded interpreters, set by
+##  configure based on what interpreter embeddings are selected.
 
 PERL_CPPFLAGS	= @PERL_CPPFLAGS@ $(PERL_WARNINGS)
 PERL_LIBS	= $(abs_builddir)/lib/perl$(LIBSUFFIX).o @PERL_LIBS@

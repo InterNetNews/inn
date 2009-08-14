@@ -2,10 +2,10 @@
 
 ##  $Id$
 ##
-##  Fix interpretor paths and INN variable load paths.
+##  Fix interpreter paths and INN variable load paths.
 ##
 ##  Scripts shipped with INN always have the invocation path for the
-##  interpretor on the first line and the command to load INN variable
+##  interpreter on the first line and the command to load INN variable
 ##  settings into the script on the second line.  For example, for a Bourne
 ##  shell script:
 ##
@@ -14,9 +14,9 @@
 ##
 ##  This script takes as input such a script and outputs the same script
 ##  with the first two lines replaced to have the correct path to the
-##  interpretor and to the INN variable library, as determined by configure.
+##  interpreter and to the INN variable library, as determined by configure.
 ##
-##  If the script is invoked with the -i flag, only fix the interpretor
+##  If the script is invoked with the -i flag, only fix the interpreter
 ##  path and don't modify the second line of the file to include the
 ##  appropriate innshellvars.
 
@@ -56,18 +56,18 @@ if [ x"$input" = x"$output" ] ; then
     exit 1
 fi
 
-interpretor=`head -n 1 "$input"`
-case "$interpretor" in
+interpreter=`head -n 1 "$input"`
+case "$interpreter" in
 */sh|*SH*)
     path="@SHELL@"
     lib=". $libdir/innshellvars"
     ;;
 */perl*|*PERL*)
-    path=`echo "$interpretor" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%"`
+    path=`echo "$interpreter" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%"`
     lib="use lib '@LIBPERLDIR@'; use INN::Config;"
     ;;
 *)
-    echo "Unknown interpretor $interpretor" >&2
+    echo "Unknown interpreter $interpreter" >&2
     exit 1
     ;;
 esac

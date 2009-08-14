@@ -299,13 +299,13 @@ Bourne shell and Perl, and also comes with support for Tcl scripts
 F<configure>-time information and configuration information from F<inn.conf> are
 set by the B<innshellvars> support libraries, so the only system-specific
 configuration that should have to be done is fixing the right path to the
-interpretor and adding a line to load the appropriate B<innshellvars>.
+interpreter and adding a line to load the appropriate B<innshellvars>.
 
 F<support/fixscript>, built by F<configure>, does this.  It takes a F<.in> file
 and generates the final script (removing the F<.in>) by fixing the path to
-the interpretor on the first line and replacing the second line, whatever
+the interpreter on the first line and replacing the second line, whatever
 it is, with code to load the B<innshellvars> appropriate for that
-interpretor.  (If invoked with B<-i>, it just fixes the interpretor path.)
+interpreter.  (If invoked with B<-i>, it just fixes the interpreter path.)
 
 Scripts should use B<innshellvars> (via B<fixscript>) to get the right path and
 the right variables whenever possible, rather than having F<configure>

@@ -192,7 +192,7 @@ if test x"$inn_enable_tagged_hash" = xyes \
     AC_MSG_ERROR([--enable-tagged-hash conflicts with --enable-largefiles.])
 fi
 
-dnl Checks for embedded interpretors.
+dnl Checks for embedded interpreters.
 INN_ARG_PERL
 INN_ARG_PYTHON
 

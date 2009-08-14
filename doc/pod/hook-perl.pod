@@ -184,7 +184,7 @@ possible use for this function is to save filter state across a restart of
 innd by dumping state to disk when NewMode is shutdown and then reloading
 it when innd restarts (possibly by F<startup_innd.pl>).
 
-The state of the Perl interpretor in which all of these Perl functions run
+The state of the Perl interpreter in which all of these Perl functions run
 is preserved over the lifetime of innd.  In other words, it's permissible for
 the Perl code to create its own global Perl variables, data structures,
 saved state, and the like, and all of that will be available to
