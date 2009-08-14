@@ -129,6 +129,7 @@ install-root:
 
 ##  Install a certificate for TLS/SSL support.
 cert:
+	umask 077 ; \
 	$(SSLBIN) req -new -x509 -nodes \
 	    -out $(D)$(PATHETC)/cert.pem -days 366 \
 	    -keyout $(D)$(PATHETC)/key.pem

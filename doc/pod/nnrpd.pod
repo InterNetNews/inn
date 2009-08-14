@@ -180,6 +180,7 @@ warnings with some news reader clients), you can create and install one in
 the default path by running C<make cert> after C<make install> when
 installing INN, or by running the following commands:
 
+    umask 077
     openssl req -new -x509 -nodes -out <pathetc>/cert.pem \
         -days 366 -keyout <pathetc>/key.pem
     chown news:news <pathetc>/cert.pem
