@@ -38,6 +38,20 @@ logged as C<localhost>.
 
 =item *
 
+The check on cancel messages when I<verifycancels> is set to true
+in F<inn.conf> has been changed to verify that at least one newsgroup
+in the cancel message can be found in the article to be cancelled.
+This new feature is from Christopher Biedl.
+
+The previous behaviour was to check whether the cancel message is
+from the same person as the original post, which is extremely easy
+to spoof; besides, RFC 5537 (USEPRO) mentions that "cancel control
+messages are not required to contain From: and Sender: header fields
+matching the target message.  This requirement only encouraged cancel
+issuers to conceal their identity and provided no security".
+
+=item *
+
 A new B<-L> flag has been added by Jonathan Kamens to B<makehistory>
 so as to specify a load average limit.  If the system load average exceeds
 the specified limit, B<makehistory> sleeps until it goes below the limit.
