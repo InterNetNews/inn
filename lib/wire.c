@@ -117,7 +117,7 @@ skip_fws(char *text, const char *end)
 
 /*
 **  Given a pointer to the start of the article, the article length, and the
-**  header to look for, find the first occurance of that header in the
+**  header to look for, find the first occurrence of that header in the
 **  article.  Skip over headers with no content, but allow for headers that
 **  are folded before the first text in the header.  If no matching headers
 **  with content other than spaces and tabs are found, return NULL.

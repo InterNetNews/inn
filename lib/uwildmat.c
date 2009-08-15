@@ -235,7 +235,7 @@ match_pattern(const unsigned char *text, const unsigned char *start,
 
                Optimization: If the character after the * in the pattern
                isn't a metacharacter (the common case), then the * has to
-               consume characters at least up to the next occurance of that
+               consume characters at least up to the next occurrence of that
                character in the text.  Scan forward for those points rather
                than recursing at every possible point to save the extra
                function call overhead. */

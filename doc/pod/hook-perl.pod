@@ -311,7 +311,7 @@ filter_post() has access to a global hash %hdr, which contains all of the
 headers of the article.  (Unlike the innd Perl filter, %hdr for the nnrpd
 Perl filter contains *all* of the headers, not just the standard ones.  If
 any of the headers are duplicated, though, %hdr will contain only the
-value of the last occurance of the header.  nnrpd will reject the
+value of the last occurrence of the header.  nnrpd will reject the
 article before the filter runs if any of the standard headers are
 duplicated.)  It also has access to the full body of the article in the
 variable $body, and if the poster authenticated via AUTHINFO (or if either

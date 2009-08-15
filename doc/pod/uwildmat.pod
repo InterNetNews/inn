@@ -44,7 +44,7 @@ defined in the B<inn/libinn.h> header.
 A wildmat expression follows rules similar to those of shell filename
 wildcards but with some additions and changes.  A wildmat I<expression> is
 composed of one or more wildmat I<patterns> separated by commas.  Each
-character in the wildmat pattern matches a literal occurance of that same
+character in the wildmat pattern matches a literal occurrence of that same
 character in the text, with the exception of the following metacharacters:
 
 =over 8
