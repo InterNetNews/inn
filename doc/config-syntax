@@ -39,7 +39,7 @@ enclosed in square brackets and the elements are space-separated.
 
 As seen above, groups may be nested.
 
-Multiple occurances of the same parameter in the parameter section of a
+Multiple occurrences of the same parameter in the parameter section of a
 group is an error.  In practice, the second parameter will take precedent,
 but an error will be reported when such a configuration file is parsed.
 

@@ -924,7 +924,7 @@ ARTparseheader(CHANNEL *cp)
                 ARTerror(cp, "Header line too long (%lu bytes)", length);
 
             /* Be a little tricky here.  Normally, the headers end at the
-               first occurrance of \r\n\r\n, so since we've seen \r\n, we want
+               first occurrence of \r\n\r\n, so since we've seen \r\n, we want
                to advance i and then look to see if we have another one.  The
                exception is the degenerate case of an article with no headers.
                In that case, log an error and *don't* advance i so that we'll
