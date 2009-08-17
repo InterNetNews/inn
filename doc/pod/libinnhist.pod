@@ -45,7 +45,7 @@ B<bool HIScheck(struct history *>I<history>B<, const char *>I<key>B<);>
 
 B<bool HISwrite(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
-B<bool HISremember(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<);>
+B<bool HISremember(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<);>
 
 B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
@@ -61,9 +61,9 @@ B<bool HISctl(struct history *>I<history>B<, int >I<request>B<, void *>I<val>B<)
 
 =head1 DESCRIPTION
 
-These functions provide provide access to the INN history
-database. They maintain key/value pairs in an opaque database whilst
-providing for expiry of outdated information.
+These functions provide access to the INN history database.  They maintain
+key/value pairs in an opaque database whilst providing for expiry of
+outdated information.
 
 The history structure is an opaque handle returned from HISopen.
 
@@ -129,10 +129,11 @@ existing entries in I<history> is unspecified.
 
 B<HISremember> writes a new entry to the database I<history>
 associated with I<key>, merely remembering that this I<key> has been
-seen, together with its arrival time I<arrived>. B<HISremember>
-returns B<true> on success, or B<false> on failure. The behaviour when
-I<key> is not unique with respect to the existing entries in
-I<history> is unspecified.
+seen, together with its arrival time I<arrived> and also its posting
+time I<posted>, if known.  (Otherwise, its posting time may be specified
+as <= 0 in case it is absent.)  B<HISremember> returns B<true> on success,
+or B<false> on failure.  The behaviour when I<key> is not unique with
+respect to the existing entries in I<history> is unspecified.
 
 B<HISreplace> replaces an existing entry in the database I<history>,
 associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
@@ -175,11 +176,12 @@ times, in addition to the token associated with the entry. Note that
 posting and/or expiry may be zero, but that the token will never be
 B<NULL> (such entries are handled solely via the threshold
 mechanism). The storage token passed to the discrimination function
-may updated if required (for example, as might be needed by a
+may be updated if required (for example, as might be needed by a
 hierachical storage management implementation).
 
-Entries in the database with an arrival time less than I<threshold>
+Entries in the database with a posting time less than I<threshold>
 with no token associated with them are deleted from the database.
+In case the posting time is unknown, the arrival time is used instead.
 
 The parameter I<cookie> is passed to the discrimination function, and
 may be used for any purpose required by the caller.

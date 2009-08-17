@@ -700,7 +700,7 @@ In all INN configuration files, blank lines and lines beginning with a
 C<#> symbol are considered comments and are ignored.  Be careful, not all
 files permit comments to begin in the middle of the line.
 
-=head2 inn.conf
+=head2 F<inn.conf>
 
 The first, and most important file is F<inn.conf>.  This file is organized
 as a series of parameter-value pairs, one per line.  The parameter is
@@ -788,7 +788,7 @@ understand the purpose of most of them right now.  Some of the settings
 are only needed for very obscure things, and with more experience running
 your news server the rest will make more sense.
 
-=head2 newsfeeds
+=head2 F<newsfeeds>
 
 F<newsfeeds> determines how incoming articles are redistributed to your
 peers and to other INN processes.  F<newsfeeds> is very versatile and
@@ -966,7 +966,7 @@ F<inn.conf> so that B<innd> doesn't write overview data itself, but be
 careful:  B<innd> may accept articles faster than B<overchan> can process the
 data.
 
-=head2 incoming.conf
+=head2 F<incoming.conf>
 
 F<incoming.conf> file specifies which machines are permitted to connect to
 your host and feed it articles.  Remote servers you peer with should be
@@ -1016,7 +1016,7 @@ all the details.
 Note for those familiar with older versions of INN:  this file replaces
 the old F<hosts.nntp> configuration file.
 
-=head2 cycbuff.conf
+=head2 F<cycbuff.conf>
 
 F<cycbuff.conf> is only required if CNFS is used.  If you aren't using
 CNFS, skip this section.
@@ -1124,7 +1124,7 @@ more details.
 Finally, you have to create the cycbuffs.  See L<Creating the Article
 Spool (CNFS only)> for more information on how to do that.
 
-=head2 storage.conf
+=head2 F<storage.conf>
 
 F<storage.conf> determines where incoming articles will be stored (what
 storage method, and in the case of CNFS, what metacycbuff).  Each entry in
@@ -1198,20 +1198,20 @@ in those groups and create a storage class for each such collection of
 newsgroups.  Make note of the storage class IDs you assign as they will be
 needed when you edit F<expire.ctl> a bit later.
 
-=head2 expire.ctl
+=head2 F<expire.ctl>
 
 F<expire.ctl> sets the expiration policy for articles stored on the
 server.  Be careful, since the default configuration will expire most
-articles after 10 days; in most circumstances this deletion is
+articles after 15 days; in most circumstances this deletion is
 I<permanent>, so read this whole section carefully if you want to keep
 local hierarchies forever.  (See archive(8) for a way to automate backups
 of important articles.)
 
 Only one entry is required for all storage classes; it looks like:
 
-    /remember/:10
+    /remember/:11
 
-This entry says how long to keep the Message-IDs for articles that have
+This entry says how long to keep the message-IDs for articles that have
 already expired in the history file so that the server doesn't accept them
 again.  Occasionally, fairly old articles will get regurgitated somewhere
 and offered to you again, so even after you've expired articles from your
@@ -1220,7 +1220,8 @@ while to ensure you don't get duplicates.
 
 INN will reject any articles more than a certain number of days old (the
 I<artcutoff> parameter in F<inn.conf>, defaulting to C<10>); the number on
-the C</remember/> line should match that.
+the C</remember/> line should be one more than that number in order to take
+into account articles whose posting date is one day into the future.
 
 CNFS makes no further use of F<expire.ctl>, since articles stored in CNFS
 buffers expire automatically when the buffer runs out of free space (but
@@ -1237,7 +1238,7 @@ in that storage class (decimal values are allowed).  For articles that
 don't have an Expires: header, those are the only two values that matter.
 For articles with an Expires: header, the other two values come into play;
 the date given in the Expires: header of an article will be honored,
-subject to the contraints set by <keep> and <purge>.  All articles in this
+subject to the constraints set by <keep> and <purge>.  All articles in this
 storage class will be kept for at least <keep> days, regardless of their
 Expires: headers, and all articles in this storage class will be expired
 after <purge> days, even if their Expires: headers specify a longer life.
@@ -1263,7 +1264,7 @@ with any moderation status; the line only matches groups with the
 indicated expiration status.  All of the other fields have the same
 meaning as above.
 
-=head2 readers.conf
+=head2 F<readers.conf>
 
 Provided that I<noreader> is set to false in F<inn.conf>, any connection
 from a host that doesn't match an entry in F<incoming.conf> (as well as

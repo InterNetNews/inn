@@ -28,9 +28,9 @@ only one line in this format, which looks like:
     /remember/:<days>
 
 where <days> is a decimal number that specifies the minimum number of days
-a history record for a given message ID is retained, regardless of whether
-the article is present in the spool.  (History entries for articles still
-present in the spool are always retained.)
+a history record for a given message-ID is retained (from its original
+posting time), regardless of whether the article is present in the spool.
+(History entries for articles still present in the spool are always retained.)
 
 The primary reason to retain a record of old articles is in case a peer
 offers old articles that were previously accepted but have already
@@ -38,8 +38,11 @@ expired.  Without a history record for such articles, the server would
 accept the article again and readers would see duplicate articles.
 Articles older than a certain number of days won't be accepted by the
 server at all (see I<artcutoff> in inn.conf(5) and the B<-c> flag in
-innd(8)), and this setting should probably match that time period (10 days
-by default) to ensure that the server never accepts duplicates.
+innd(8)), and this setting should probably match that time period
+to ensure that the server never accepts duplicates.  As the default
+value for I<artcutoff> is C<10> days, it means that C</remember/>
+should be set to C<11> days in order to take into account articles
+whose posting date is one day into the future.
 
 Most of the lines in this file will be in the second format, which
 consists of either four or five colon-separated fields:
@@ -69,15 +72,15 @@ applies, and should be chosen from the following set:
     A   All groups
     X   Remove the article from all groups it appears in
 
-One of M, U, or A must be specified.  X should be used in combination with
-one of the other letters, not by itself.
+One of C<M>, C<U>, or C<A> must be specified.  C<X> should be used in
+combination with one of the other letters, not by itself.
 
 An expiration policy is applied to every article in a newsgroup it
 matches.  There is no way to set an expiration policy for articles
 crossposted to groups you don't carry that's different than other articles
 in the same group.  Normally, articles are not completely deleted until
 they expire out of every group to which they were posted, but if an
-article is expired following a rule where <flag> contains X, it is deleted
+article is expired following a rule where <flag> contains C<X>, it is deleted
 out of all newsgroups to which it was posted immediately.
 
 If I<groupbaseexpiry> is instead set to false, there is no <pattern> and
@@ -90,26 +93,28 @@ when articles are expired, they're always removed from all groups to which
 they were posted.
 
 The remaining three fields are the same in either format, and are used to
-determine how long an article should be kept.  Each field should be either
+determine how long an article should be kept from its original arrival
+time (unless the B<-p> flag is passed to expire(8) or expireover(8), in
+which case its original posting time is used).  Each field should be either
 a decimal number of days (fractions like C<8.5> are allowed, but remember
 that articles are only removed when B<expire> or B<expireover> is run,
 normally once a day by B<news.daily>) or the word C<never>.
 
 The middle field, <default>, will be used as the expiration period for
 most articles.  The other two fields, <min> and <max>, only come into
-play if the article requests a particular expiration date with an Expires
-header.  Articles with an Expires header will be expired at the date given
+play if the article requests a particular expiration date with an Expires:
+header.  Articles with an Expires: header will be expired at the date given
 in that header, subject to the constraints that they will be retained at
 least <min> days and no longer than <max> days.
 
 If <min> is set to C<never>, no article matching that line will ever be
 expired.  If <default> is set to C<never>, no article matching that line
-without an explicit Expires header will ever be expired.  If <max> is
-set to C<never>, Expires headers will be honored no matter how far into
+without an explicit Expires: header will ever be expired.  If <max> is
+set to C<never>, Expires: headers will be honored no matter how far into
 the future they are.
 
 One should think of the fields as a lower bound, the default, and an upper
-bound.  Since most articles do not have an Expires header, the second
+bound.  Since most articles do not have an Expires: header, the second
 field is the most important and most commonly applied.
 
 Articles that do not match any expiration rule will not be expired, but
@@ -121,24 +126,24 @@ configuration.  The default line should generally be the first line of the
 file (except for C</remember/>) so that other expiration rules can
 override it.
 
-It is often useful to honor the Expires header in articles, especially
+It is often useful to honor the Expires: header in articles, especially
 those in moderated groups.  To do this, set <min> to zero, <default> to
 whatever normal expiration you wish, and <max> to C<never> or some large
-number, like 365 days for a maximum article life of a year.
+number, like C<365> days for a maximum article life of a year.
 
-To ignore any Expires header, set all three fields to the same value.
+To ignore any Expires: header, set all three fields to the same value.
 
 =head1 EXAMPLES
 
 When I<groupbaseexpiry> is true (the default):
 
-    # Keep expired article history for 10 days, matching artcutoff.
-    /remember/:10
+    # Keep expired article history for 11 days, matching artcutoff plus one.
+    /remember/:11
 
-    # Most articles stay for two weeks, ignoring Expires.
+    # Most articles stay for two weeks, ignoring Expires: headers.
     *:A:14:14:14
 
-    # Accept Expires headers in moderated groups for up to a year and
+    # Accept Expires: headers in moderated groups for up to a year and
     # retain moderated groups for a bit longer.
     *:M:1:30:365
 
@@ -148,8 +153,8 @@ When I<groupbaseexpiry> is true (the default):
 
 When I<groupbaseexpiry> is false, for class-based expiration:
 
-    # Keep expired article history for 10 days, matching artcutoff.
-    /remember/:10
+    # Keep expired article history for 11 days, matching artcutoff plus one.
+    /remember/:11
 
     # Set a default expiration of seven days.
     *:7:7:7

@@ -15,7 +15,7 @@ different file can be specified with the B<-f> option) and then removes
 from the overview database mentions of any articles that no longer exist
 in the news spool.
 
-If I<groupbaseexpiry> in I<inn.conf> is true, B<expireover> also removes
+If I<groupbaseexpiry> in F<inn.conf> is true, B<expireover> also removes
 old articles from the news spool according to the expiration rules in
 F<expire.ctl>.  Otherwise it only removes overview entries for articles
 that have already been removed by some other process, and B<-e>, B<-k>,
@@ -93,7 +93,7 @@ I<groupbaseexpiry> is false.
 
 B<expireover> normally only checks the existence of articles in the news
 spool if querying the storage method for that article to see if it still
-exists is considered "inexpensive."  To always check the existence of all
+exists is considered "inexpensive".  To always check the existence of all
 articles regardless of how resource-intensive this may be, use the B<-s>
 flag.  See storage.conf(5) for more information about this metric.
 
@@ -103,7 +103,7 @@ flag.  See storage.conf(5) for more information about this metric.
 other than the current time.  This is occasionally useful to force groups
 to be expired or not expired without changing F<expire.ctl> for the expire
 run.  I<offset> should be a signed floating point number specifying the
-number of days difference from the current time to use as "now."  This
+number of days difference from the current time to use as "now".  This
 flag is ignored if I<groupbaseexpiry> is false.
 
 =item B<-z> I<rmfile>

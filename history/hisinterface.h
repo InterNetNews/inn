@@ -31,7 +31,7 @@ typedef struct hismethod {
     bool (*walk)(void *, const char *, void *,
 		 bool (*)(void *, time_t, time_t, time_t,
 			  const struct token *));
-    bool (*remember)(void *, const char *, time_t);
+    bool (*remember)(void *, const char *, time_t, time_t);
     bool (*ctl)(void *, int, void *);
 } HIS_METHOD;
 

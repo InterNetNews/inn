@@ -734,9 +734,20 @@ hisv6_formatline(char *s, const HASH *hash, time_t arrived,
     const char *hashtext = HashToText(*hash);
 
     if (token == NULL) {
-	i = snprintf(s, HISV6_MAXLINE, "[%s]%c%lu%c%c\n",
-		     hashtext, HISV6_FIELDSEP,
-		     (unsigned long)arrived, HISV6_SUBFIELDSEP, HISV6_NOEXP);
+        /* Only a line to remember an article.  We keep its arrival
+         * and posting time. */
+        if (posted <= 0) {
+            i = snprintf(s, HISV6_MAXLINE, "[%s]%c%lu%c%c\n",
+                         hashtext, HISV6_FIELDSEP,
+                         (unsigned long)arrived, HISV6_SUBFIELDSEP,
+                         HISV6_NOEXP);
+        } else {
+            i = snprintf(s, HISV6_MAXLINE, "[%s]%c%lu%c%c%c%lu\n",
+                         hashtext, HISV6_FIELDSEP,
+                         (unsigned long)arrived, HISV6_SUBFIELDSEP,
+                         HISV6_NOEXP, HISV6_SUBFIELDSEP,
+                         (unsigned long)posted);
+        }
     } else {
 	const char *texttok;
 
@@ -881,10 +892,11 @@ hisv6_write(void *history, const char *key, time_t arrived,
 
 
 /*
-**  remember a history entry, key, with arrival time arrived.
+**  Remember a history entry, key, with arrival time, and also
+**  posting time if known.
 */
 bool
-hisv6_remember(void *history, const char *key, time_t arrived)
+hisv6_remember(void *history, const char *key, time_t arrived, time_t posted)
 {
     struct hisv6 *h = history;
     HASH hash;
@@ -892,7 +904,7 @@ hisv6_remember(void *history, const char *key, time_t arrived)
 
     his_logger("HISwrite begin", S_HISwrite);
     hash = HashMessageID(key);
-    r = hisv6_writeline(h, &hash, arrived, 0, 0, NULL);
+    r = hisv6_writeline(h, &hash, arrived, posted, 0, NULL);
     his_logger("HISwrite end", S_HISwrite);
     return r;
 }
@@ -1140,18 +1152,24 @@ hisv6_expirecb(struct hisv6 *h, void *cookie, const HASH *hash,
 	    keep = (*hiscookie->cb.expire)(hiscookie->cookie,
 					   arrived, posted, expires,
 					   t);
-	    /* if the callback returns true, we should keep the
-	       token for the time being, else we just remember
-	       it */
+	    /* If the callback returns true, we should keep the
+	     * token for the time being, else we just remember
+	     * it. */
 	    if (keep == false) {
 		t = NULL;
-		posted = expires = 0;
+		expires = 0;
 	    }
 	} else {
 	    t = NULL;
 	}
+        /* When t is NULL (no token), the message-ID is removed from
+         * history when the posting time of the article is older than
+         * threshold, as set by the /remember/ line in expire.ctl.
+         * We keep the check for the arrival time because some entries
+         * might not have one. */
 	if (hiscookie->new &&
-	    (t != NULL || arrived >= hiscookie->threshold)) {
+	    (t != NULL || posted >= hiscookie->threshold
+             || (posted <= 0 && arrived >= hiscookie->threshold))) {
 	    r = hisv6_writeline(hiscookie->new, hash,
 				 arrived, posted, expires, t);
 	}

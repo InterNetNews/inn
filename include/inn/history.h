@@ -90,7 +90,7 @@ bool                    HISlookup(struct history *, const char *, time_t *,
 bool                    HIScheck(struct history *, const char *);
 bool                    HISwrite(struct history *, const char *, time_t,
 				 time_t, time_t, const struct token *);
-bool                    HISremember(struct history *, const char *, time_t);
+bool                    HISremember(struct history *, const char *, time_t, time_t);
 bool                    HISreplace(struct history *, const char *, time_t,
 				   time_t, time_t, const struct token *);
 bool                    HISexpire(struct history *, const char *, const char *,
