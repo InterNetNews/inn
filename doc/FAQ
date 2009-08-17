@@ -634,7 +634,7 @@ feeding an article to a peer broke down.
 3. At this point, you should be looking at a line with "+" in the second
    field.  The article should be on your server at this point.
 
-   If it's not, either it's been canceled, or has already expired.
+   If it's not, either it's been cancelled, or has already expired.
 
 4. You're now interested in whether the article was sent to your peers.
    At the end of the same line in $pathlog/news, innd puts all of the
