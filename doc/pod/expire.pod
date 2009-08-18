@@ -1,0 +1,161 @@
+=head1 NAME
+
+expire - Usenet article and history expiration program
+
+=head1 SYNOPSIS
+
+B<expire> [B<-iNnptx>] [B<-d> I<dir>] [B<-f> I<file>] [B<-g> I<file>]
+[B<-h> I<file>] [B<-r> I<reason>] [B<-s> I<size>] [B<-v> I<level>]
+[B<-w> I<number>] [B<-z> I<file>] [I<expire.ctl>]
+
+=head1 DESCRIPTION
+
+B<expire> scans the history(5)-format text file I<pathdb>/history
+and uses the information recorded in it to purge itself of old news articles.
+Articles stored using a storage method that has self-expire functionality
+are by default not affected by B<expire>'s primary behavior (but see the
+B<-N> flag to disable this).  In this case, F<expire.ctl> is ignored
+except the C</remember/> line for that article; B<expire> does still
+probe to see if the article still exists and purges the relevant history
+and overview entries if appropriate.  However, if I<groupbaseexpiry> in
+F<inn.conf> is true, B<expire> acts on all articles as specified by
+F<expire.ctl> regardless of whether their storage methods have
+self-expire functionality.
+
+Note that B<expire> never purges articles which do not match any entry
+in F<expire.ctl>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d> I<dir>
+
+If the B<-d> flag is used, then the new F<history> file and database
+is created in the specified directory I<dir>.  This is useful when the
+filesystem does not have sufficient space to hold both the old and
+new history files.  When this flag is used, B<expire> leaves the server
+paused and creates a zero-length file named after the new history file,
+with an extension of C<.done> to indicate that it has successfully completed
+the expiration.  The calling script should install the new history file and
+unpause the server.  The B<-r> flag should be used with this flag.
+
+=item B<-f> I<file>
+
+To specify an alternate history file, use the B<-f> flag.  This flag is
+valid when used with the B<-d> flag, and the output will be written
+to the specified file.  The default without B<-f> is C<history>.
+
+=item B<-g> I<file>
+
+If the B<-g> flag is given, then a one-line summary equivalent to the
+output of B<-v 1>, except preceded by the current time, will be appended
+to the specified I<file>.
+
+=item B<-h> I<file>
+
+To specify an alternate input text history file, use the B<-h> flag.
+B<expire> uses the old dbz(3) database to determine the size of the
+new one.  (If the B<-d> flag is not used, the output filename will be
+the same as the input filename with an extension of C<.n>.)
+
+The default without the B<-h> flag is I<pathdb>/history.
+
+=item B<-i>
+
+To ignore the old database, use the B<-i> flag.
+
+=item B<-N>
+
+The control file is normally ignored for articles in storage methods
+which have self-expire functionality.  If the B<-N> flag is used,
+B<expire> still uses the control file for these articles.
+
+=item B<-n>
+
+If B<innd> is not running, use the B<-n> flag and B<expire> will not
+send the C<pause> or C<go> commands.  (For more details on the commands,
+see ctlinnd(8)).  Note that B<expire> only needs exclusive access for
+a very short time S<-- long> enough to see if any new articles arrived
+since it first hit the end of the file, and to rename the new files
+to the working files.
+
+=item B<-p>
+
+B<expire> makes its decisions on the time the article arrived, as found
+in the F<history> file.  This means articles are often kept a little
+longer than with other expiration programs that base their decisions
+on the article's posting date.  To use the article's posting date,
+use the B<-p> flag.
+
+=item B<-r> I<reason>
+
+B<expire> normally sends a C<pause> command to the local B<innd> daemon
+when it needs exclusive access to the F<history> file, using the string
+C<Expiring> as the reason.  To give a different reason, use the B<-r> flag.
+The process ID will be appended to the reason.  When B<expire> is finished
+and the new F<history> file is ready, it sends a C<go> command.  See
+also the B<-n> flag.
+
+=item B<-s> I<size>
+
+Optimize the new history database for approximately I<size> pairs
+(lines in F<history>).  Accurately specifying the size will create
+a more efficient database.  (The size should be the estimated eventual size
+of the file, typically the size of the old file.)
+
+=item B<-t>
+
+If the B<-t> flag is used, then B<expire> will generate a list of the
+tokens that should be removed on its standard output, and the new F<history>
+file will be left in F<history.n>, F<history.n.dir>, F<history.n.index>
+and F<history.n.hash>.  This flag is useful for debugging when used with
+the B<-n> flag.  Note that if the B<-f> flag is used, then the name
+specified with that flag will be used instead of F<history>.
+
+=item B<-v> I<level>
+
+The B<-v> flag is used to increase the verbosity of the program, generating
+messages to standard output.  The I<level> should be a number, where higher
+numbers result in more output.  Level one will print totals of the various
+actions done (not valid if a new F<history> file is not written), level two
+will print a report on each individual file, while level five results in
+multiple lines of output for every history line processed.
+
+=item B<-w> I<number>
+
+Use the B<-w> flag to "warp" time so that B<expire> thinks it is running
+at some time other then the current time.  The value should be a signed
+floating point number indicating the number of days to use as the offset.
+
+=item B<-x>
+
+If the B<-x> flag is used, then B<expire> will not create any new history
+files.  This is most useful when combined with the B<-n> and B<-t> flags
+to see how different expiration policies would change the amount of disk
+space used.
+
+=item B<-z> I<file>
+
+If the B<-z> flag is used, then articles are not removed, but their names
+are appended to the specified I<file>.  See the description of B<delayrm>
+in news.daily(8).  If a filename is specified, it is taken as the control
+file and parsed according to the rules in F<expire.ctl>.  A single dash
+(C<->) may be used to read the file from standard input.  If no file
+is specified, the file I<pathetc>/expire.ctl is read.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+ctlinnd(8), dbz(3), expire.ctl(5), history(5), inn.conf(5), innd(8),
+inndcomm(3), news.daily(8).
+
+=cut

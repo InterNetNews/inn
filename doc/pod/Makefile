@@ -31,8 +31,8 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/batcher.8 ../man/buffchan.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
 	../man/ctlinnd.8 ../man/docheckgroups.8 \
-	../man/domain.8 \
-	../man/expireover.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
+	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
+	../man/expirerm.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
 	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
 	../man/makehistory.8 ../man/mod-active.8 \
 	../man/news.daily.8 ../man/news2mail.8 ../man/ninpaths.8 \
@@ -113,7 +113,9 @@ maintclean: distclean
 ../man/ctlinnd.8:	ctlinnd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/docheckgroups.8:	docheckgroups.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/domain.8:	domain.pod		; $(POD2MAN) -s 8 $? > $@
+../man/expire.8:	expire.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expireover.8:	expireover.pod		; $(POD2MAN) -s 8 $? > $@
+../man/expirerm.8:	expirerm.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ident.8:		ident.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innbind.8:	innbind.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@

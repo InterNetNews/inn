@@ -247,7 +247,9 @@ doc/pod/distributions.pod             Master file for distributions.5
 doc/pod/docheckgroups.pod             Master file for docheckgroups.8
 doc/pod/domain.pod                    Master file for domain.8
 doc/pod/expire.ctl.pod                Master file for expire.ctl.5
+doc/pod/expire.pod                    Master file for expire.8
 doc/pod/expireover.pod                Master file for expireover.8
+doc/pod/expirerm.pod                  Master file for expirerm.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/getlist.pod                   Master file for getlist.1
