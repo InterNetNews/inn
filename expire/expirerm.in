@@ -1,6 +1,8 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
+##  $Id$
+##
 ##  Remove articles listed by expire -z.
 ##  Remove all files specified in the input file.
 
@@ -25,6 +27,6 @@ eval "cd ${SPOOL} \
     && mv $1 ${MOST_LOGS}/expire.list"
 if [ -f $1 ] ; then
     echo "Expire had problems removing articles on `hostname`" \
-	| eval ${MAIL}
+  | eval ${MAIL}
     exit 1
 fi

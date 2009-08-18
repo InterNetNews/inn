@@ -2,7 +2,7 @@
 **
 **  Delete a list of filenames or tokens from stdin.
 **
-**  Originally written by <kre@munnari.oz.au> (to only handle files)
+**  Originally written by <kre@munnari.oz.au> (to only handle files).
 **
 **  Files that can't be unlinked because they didn't exist are considered
 **  okay.  Any error condition results in exiting with non-zero exit
