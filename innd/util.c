@@ -353,10 +353,14 @@ InndHisWrite(const char *key, time_t arrived, time_t posted, time_t expires,
     return r;
 }
 
+/*
+**  Remember the rejected article.  Its posting time is negative or zero
+**  in case it is unknown.  Its arrival time is now.
+*/
 bool
-InndHisRemember(const char *key)
+InndHisRemember(const char *key, time_t posted)
 {
-    bool r = HISremember(History, key, Now.tv_sec);
+    bool r = HISremember(History, key, Now.tv_sec, posted);
 
     if (r != true)
 	IOError("history remember", errno);

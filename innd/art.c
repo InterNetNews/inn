@@ -869,7 +869,9 @@ ARTchecksize(CHANNEL *cp)
 	if (HDR_FOUND(HDR__MESSAGE_ID)) {
             HDR_PARSE_START(HDR__MESSAGE_ID);
             msgid = HDR(HDR__MESSAGE_ID);
-            if (!HIScheck(History, msgid) && !InndHisRemember(msgid))
+            /* The article posting time has not been parsed.  We cannot
+             * give it to InndHisRemember. */
+            if (!HIScheck(History, msgid) && !InndHisRemember(msgid, 0))
                 warn("SERVER cant write %s", msgid);
 	}
     }
@@ -1048,6 +1050,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   TMRstart(TMR_ARTCLEAN);
   data->Arrived = Now.tv_sec;
   data->Expires = 0;
+  data->Posted = 0;
 
   /* replace trailing '\r\n' with '\0\n' of all system header to be handled
      easily by str*() functions */
@@ -1297,7 +1300,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
       TMRstop(TMR_ARTCNCL);
       return;
     }
-    InndHisRemember(MessageID);
+    InndHisRemember(MessageID, data->Posted);
     snprintf(buff, sizeof(buff), "Cancelling %s",
              MaxLength(MessageID, MessageID));
     ARTlog(data, ART_CANC, buff);
@@ -2038,8 +2041,10 @@ ARTpost(CHANNEL *cp)
   }
   if (!artclean) {
     ARTlog(data, ART_REJECT, cp->Error);
+    /* If the article posting time has not been properly parsed, data->Posted
+     * will be negative or zero. */
     if (innconf->remembertrash && (Mode == OMrunning) &&
-	!InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	!InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
       syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	HDR(HDR__MESSAGE_ID));
     ARTreject(REJECT_OTHER, cp);
@@ -2072,7 +2077,7 @@ ARTpost(CHANNEL *cp)
                MaxLength(ME.Exclusions[j], ME.Exclusions[j]));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_SITE, cp);
@@ -2104,7 +2109,7 @@ ARTpost(CHANNEL *cp)
              cp->Error);
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_FILTER, cp);
@@ -2135,7 +2140,7 @@ ARTpost(CHANNEL *cp)
              cp->Error);
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_FILTER, cp);
@@ -2152,7 +2157,7 @@ ARTpost(CHANNEL *cp)
                MaxLength(HDR(HDR__DISTRIBUTION), HDR(HDR__DISTRIBUTION)));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && Mode == OMrunning &&
-	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
         syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_DISTRIB, cp);
@@ -2170,7 +2175,7 @@ ARTpost(CHANNEL *cp)
                            data->Distribution.List[0]));
 	ARTlog(data, ART_REJECT, cp->Error);
         if (innconf->remembertrash && (Mode == OMrunning) &&
-	    !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	    !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
 	ARTreject(REJECT_DISTRIB, cp);
@@ -2277,7 +2282,7 @@ ARTpost(CHANNEL *cp)
                    MaxLength(p, p));
           ARTlog(data, ART_REJECT, cp->Error);
           if (innconf->remembertrash && (Mode == OMrunning) &&
-              !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+              !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
               syslog(L_ERROR, "%s cant write history %s %m",
                      LogName, HDR(HDR__MESSAGE_ID));
           ARTreject(REJECT_GROUP, cp);
@@ -2318,7 +2323,7 @@ ARTpost(CHANNEL *cp)
                MaxLength(ngp->Name, ngp->Name));
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
 	syslog(L_ERROR, "%s cant write history %s %m", LogName,
 	  HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_UNAPP, cp);
@@ -2422,7 +2427,8 @@ ARTpost(CHANNEL *cp)
       ARTlog(data, ART_REJECT, cp->Error);
       if (!innconf->wanttrash) {
 	if (innconf->remembertrash && (Mode == OMrunning) &&
-	  !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	  !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID),
+                                               data->Posted))
 	  syslog(L_ERROR, "%s cant write history %s %m",
 	    LogName, HDR(HDR__MESSAGE_ID));
 	ARTreject(REJECT_GROUP, cp);
@@ -2435,7 +2441,8 @@ ARTpost(CHANNEL *cp)
          * which you explicitly excluded in your active file. */
   	if (!GroupMissing) {
 	  if (innconf->remembertrash && (Mode == OMrunning) &&
-	      !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+	      !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID),
+                                                   data->Posted))
 	    syslog(L_ERROR, "%s cant write history %s %m",
 	      LogName, HDR(HDR__MESSAGE_ID));
 	  ARTreject(REJECT_GROUP, cp);
@@ -2472,7 +2479,7 @@ ARTpost(CHANNEL *cp)
       }
       ARTlog(data, ART_REJECT, cp->Error);
       if (innconf->remembertrash && (Mode == OMrunning) &&
-          !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+          !InndHisRemember(HDR(HDR__MESSAGE_ID), data->Posted))
           syslog(L_ERROR, "%s cant write history %s %m",
                  LogName, HDR(HDR__MESSAGE_ID));
       ARTreject(REJECT_OTHER, cp);

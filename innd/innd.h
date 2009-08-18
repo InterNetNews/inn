@@ -666,7 +666,7 @@ extern void             InndHisClose(void);
 extern bool             InndHisWrite(const char *key, time_t arrived,
 				     time_t posted, time_t expires,
 				     TOKEN *token);
-extern bool             InndHisRemember(const char *key);
+extern bool             InndHisRemember(const char *key, time_t posted);
 extern void             InndHisLogStats(void);
 extern bool		FormatLong(char *p, unsigned long value, int width);
 extern bool		NeedShell(char *p, const char **av, const char **end);

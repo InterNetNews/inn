@@ -1,32 +1,42 @@
-##  $Revision$
-##  expire.ctl - expire control file
+##  $Id$
+##
+##  Sample configuration file for article expiration.
+##
 ##  Format:
-##	/remember/:<keep>
-##	<class>:<min>:<default>:<max>
-##	<wildmat>:<flag>:<min>:<default>:<max>
+##      /remember/:<keep>
+##      <class>:<min>:<default>:<max>
+##      <wildmat>:<flag>:<min>:<default>:<max>
+##
 ##  First line gives history retention; second line specifies expiration
 ##  for classes; third line specifies expiration for group if groupbaseexpiry
-##  is true
-##	<class>		class specified in storage.conf
-##	<wildmat>	wildmat-style patterns for the newsgroups
-##	<min>		Mininum number of days to keep article
-##	<default>	Default number of days to keep the article
-##	<max>		Flush article after this many days
-##  <min>, <default>, and <max> can be floating-point numbers or the
-##  word "never."  Times are based on when received unless -p is used;
-##  see expire.8
+##  is true in inn.conf.
+##      <class>         Class specified in storage.conf.
+##      <wildmat>       Wildmat-style patterns for the newsgroups.
+##      <flag>          Status of the newsgroups.
+##      <keep>          Number of days to retain a message-ID in history.
+##      <min>           Minimum number of days to keep the article.
+##      <default>       Default number of days to keep the article.
+##      <max>           Flush the article after this many days.
+##  <keep>, <min>, <default> and <max> can be floating-point numbers or the
+##  word "never".  Times are based on the arrival time for expire and expireover
+##  (unless -p is used; see expire(8) and expireover(8)), and on the posting
+##  time for history retention.
+##
+##  See the expire.ctl man page for more information.
 
-##  If article expires before 10 days, we still remember it for 10 days in
-##  case we get offered it again.  Depending on what you use for the innd
-##  -c flag and how paranoid you are about old news, you might want to
-##  make this 28, 30, etc, but it's probably safe to reduce it to 7 in most
-##  cases if you want to keep your history file smaller.
-/remember/:10
+##  When an article is rejected or expires before 10 days, we still remember
+##  it for 11 days from its original posting time in case we get offered it
+##  again.  See the artcutoff parameter in inn.conf; it should match this
+##  parameter (/remember/ uses 11 days instead of 10 in order to take into
+##  account articles whose posting date is one day into the future).
+/remember/:11
 
-##  Keep for 1-10 days, allow Expires headers to work.  This entry uses
-##  the syntax appropriate when groupbaseexpiry is true in inn.conf.
-*:A:1:10:never
+##  Keep for 1-15 days, allow Expires: headers to work.  This entry uses
+##  the syntax appropriate when groupbaseexpiry is true in inn.conf.  Times
+##  are based on the arrival time (unless -p is used).
+*:A:1:15:never
 
-##  Keep for 1-10 days, allow Expires headers to work.  This is an entry
-##  based on storage class, used when groupbaseexpiry is false.
-#0:1:10:never
+##  Keep for 1-15 days, allow Expires: headers to work.  This is an entry
+##  based on storage class, used when groupbaseexpiry is false.  Times
+##  are based on the arrival time (unless -p is used).
+#0:1:15:never

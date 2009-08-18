@@ -52,6 +52,28 @@ issuers to conceal their identity and provided no security".
 
 =item *
 
+The way the C</remember/> line in F<expire.ctl> works has changed.
+History retention for an article was done according to its original
+arrival time; it is now according to its original posting date.
+Otherwise, unnecessary data may be kept too long in the F<history>
+file.
+
+To achieve that, the HISremember() function in history API now
+expects a fourth parameter:  the article posting time.
+
+Note that article expiration has not changed and is still based
+on arrival time, unless the B<-p> flag is passed to B<expire>
+or B<expireover>, in which case posting time is used.
+
+=item *
+
+The default value for C</remember/> has changed from C<10> to C<11>
+because it should be one more than the I<artcutoff> parameter
+in F<inn.conf>, so that articles posted one day into the future
+are properly retained in history.
+
+=item *
+
 A new B<-L> flag has been added by Jonathan Kamens to B<makehistory>
 so as to specify a load average limit.  If the system load average exceeds
 the specified limit, B<makehistory> sleeps until it goes below the limit.

@@ -1000,8 +1000,10 @@ NCproc(CHANNEL *cp)
         if (innconf->remembertrash && (Mode == OMrunning)
             && HDR_FOUND(HDR__MESSAGE_ID)) {
             HDR_PARSE_START(HDR__MESSAGE_ID);
+            /* The article posting time has not been parsed.  We cannot
+             * give it to InndHisRemember. */
             if (!HIScheck(History, HDR(HDR__MESSAGE_ID))
-                && !InndHisRemember(HDR(HDR__MESSAGE_ID)))
+                && !InndHisRemember(HDR(HDR__MESSAGE_ID), 0))
                 syslog(L_ERROR, "%s cant write history %s %m",
                        LogName, HDR(HDR__MESSAGE_ID));
             HDR_PARSE_END(HDR__MESSAGE_ID);

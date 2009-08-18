@@ -276,14 +276,14 @@ HISwrite(struct history *h, const char *key, time_t arrived,
 }
 
 bool
-HISremember(struct history *h, const char *key, time_t arrived)
+HISremember(struct history *h, const char *key, time_t arrived, time_t posted)
 {
     bool r;
 
     if (his_checknull(h))
 	return false;
     TMRstart(TMR_HISWRITE);
-    r = (*h->methods->remember)(h->sub, key, arrived);
+    r = (*h->methods->remember)(h->sub, key, arrived, posted);
     if (r == true) {
 	HASH hash;
 

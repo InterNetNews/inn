@@ -38,7 +38,7 @@ bool hisv6_walk(void *, const char *, void *,
 
 const char *hisv6_error(void *);
 
-bool hisv6_remember(void *, const char *key, time_t arrived);
+bool hisv6_remember(void *, const char *key, time_t arrived, time_t posted);
 
 bool hisv6_ctl(void *, int, void *);
 

@@ -37,18 +37,21 @@ print OUTFILE <<'EOF' ;
 ##	<patterns>:<modflag>:<keep>:<default>:<purge>
 ##  First line gives history retention; other lines specify expiration
 ##  for newsgroups.  Must have a "*:A:..." line which is the default.
-##	<patterns>	wildmat-style patterns for the newsgroups
+##	<patterns>	Wildmat-style patterns for the newsgroups
 ##	<modflag>	Pick one of M U A -- modifies pattern to be only
 ##			moderated, unmoderated, or all groups
-##	<keep>		Mininum number of days to keep article
+##	<keep>		Minimum number of days to keep article
 ##	<default>	Default number of days to keep the article
 ##	<purge>		Flush article after this many days
 ##  <keep>, <default>, and <purge> can be floating-point numbers or the
-##  word "never."  Times are based on when received unless -p is used;
-##  see expire.8
+##  word "never".  Times are based on the arrival time for expire and expireover
+##  (unless -p is used; see expire(8) and expireover(8)), and on the posting
+##  time for history retention.
+##
+##  See the expire.ctl man page for more information.
 
 # How long to remember old history entries for.
-/remember/:2
+/remember/:11
 #
 EOF
 
