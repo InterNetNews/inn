@@ -25,7 +25,7 @@
 #include "inn/storage.h"
 
 static const char usage[] = "\
-Usage: expireover [-ekNpqs] [-w offset] [-z rmfile] [-Z lowmarkfile]\n";
+Usage: expireover [-ekNpqs] [-f file] [-w offset] [-z rmfile] [-Z lowmarkfile]\n";
 
 /* Set to 1 if we've received a signal; expireover then terminates after
    finishing the newsgroup that it's working on (this prevents corruption of

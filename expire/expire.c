@@ -534,7 +534,7 @@ main(int ac, char *av[])
     }
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "f:h:d:g:iNnpr:s:tv:w:xz:")) != EOF)
+    while ((i = getopt(ac, av, "d:f:g:h:iNnpr:s:tv:w:xz:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
