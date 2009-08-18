@@ -4,7 +4,7 @@ fastrm - Quickly remove a list of files
 
 =head1 SYNOPSIS
 
-B<fastrm> [B<-de>] [B<-u>|B<-u>I<N>] [B<-s>|B<-s>I<M>] [B<-c>|B<-c>I<I>]
+B<fastrm> [B<-de>] [B<-c>|B<-c>I<I>] [B<-s>|B<-s>I<M>] [B<-u>|B<-u>I<N>]
 I<base-directory>
 
 =head1 DESCRIPTION
@@ -40,7 +40,7 @@ aren't empty, which can cause file system corruption.)
 The input to B<fastrm> should always be sorted S<-- or> even better be in the
 order file names are output by S<find(1) --> if speed is an issue and the
 input isn't solely storage API tokens.  (It deals fine with unsorted
-input, but is unlikely to be any faster in that case than a simple C<xargs
+input, but is unlikely to be any faster in that case than a simple C<| xargs
 rm> command.)  Sorting may even slightly speed up the removal of storage
 API tokens due to caching effects, since sorting will tend to keep all of
 the tokens from a particular storage method together.
@@ -58,6 +58,17 @@ internally.
 
 =over 4
 
+=item B<-c>[I<I>]
+
+Controls when B<fastrm> calls chdir(2).  If the number of files to be
+unlinked from a given directory is at least I<I>, then B<fastrm> will
+change to that directory before unlinking those files.  Otherwise, it will
+use either the absolute path names or a path name relative to the current
+directory (whichever is likely more efficient).  The I<I> parameter is
+optional; if just B<-c> is given, B<-c1> is assumed, which will cause
+B<fastrm> to always chdir before calling unlink(2).  The default is
+B<-c3>.  Use B<-c0> to prevent B<fastrm> from ever using chdir(2).
+
 =item B<-d>
 
 Don't remove any files.  Instead, print a list of the files that would be
@@ -74,18 +85,7 @@ Treat an empty input file as an error.  This is most useful when B<fastrm>
 is last in a pipeline after a preceding sort(1) command, ensuring that
 B<fastrm> will fail if the sort fails.
 
-=item B<-c>I<I>
-
-Controls when B<fastrm> calls chdir(2).  If the number of files to be
-unlinked from a given directory is at least I<I>, then B<fastrm> will
-change to that directory before unlinking those files.  Otherwise, it will
-use either the absolute path names or a path name relative to the current
-directory (whichever is likely more efficient).  The I<I> parameter is
-optional; if just B<-c> is given, B<-c1> is assumed, which will cause
-B<fastrm> to always chdir before calling unlink(2).  The default is
-B<-c3>.  Use B<-c0> to prevent B<fastrm> from ever using chdir(2).
-
-=item B<-s>I<M>
+=item B<-s>[I<M>]
 
 When B<-s> is given and the number of files to remove in a directory is
 greater than I<M>, rather than remove files in the order given, B<fastrm>
@@ -108,7 +108,7 @@ already been deleted).
 
 This optimization is off by default.
 
-=item B<-u>I<N>
+=item B<-u>[I<N>]
 
 Specifying this option promises that there are no symbolic links in the
 directory tree from which files are being removed.  This allows B<fastrm>
@@ -129,7 +129,7 @@ This optimization is off by default.
 =back
 
 B<fastrm> also accepts B<-a> and B<-r> options, which do nothing at all
-except allow you to say C<fastrm -usa>, C<fastrm -ussr>, or C<fastrm
+except allow you to say C<fastrm -usa>, C<fastrm -usr>, or C<fastrm
 -user>.  These happen to often be convenient sets of options to use.
 
 =head1 EXIT STATUS
@@ -179,7 +179,7 @@ general fast file removal program.
 =head1 HISTORY
 
 B<fastrm> was originally written by <kre@munnari.oz.au>.  This manual page
-rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
+was rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
 
 $Id$
 

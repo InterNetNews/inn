@@ -59,6 +59,8 @@ Write output to syslog(3) instead of standard output.
 Write additional information, especially about consistency checks for article
 storage and the F<history> file.
 
+=back
+
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted
