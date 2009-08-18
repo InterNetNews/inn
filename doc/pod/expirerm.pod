@@ -1,0 +1,33 @@
+=head1 NAME
+
+expirerm - Remove articles that have been expired
+
+=head1 SYNOPSIS
+
+B<expirerm> I<file>
+
+=head1 DESCRIPTION
+
+B<expirerm> is a script that removes a list of files.  The specified
+I<file> lists the files to be removed.  It is usually created by
+B<expire -z>.  This file is sorted, and then fed into a pipeline
+responsible for doing the removal, normally B<fastrm>.  (You may want
+to edit B<expirerm> to change the flags passed to B<fastrm>.)
+
+If there seemed to be a problem removing the files, then a mail is
+sent to the news administrator.  If there were no problems, then
+I<file> is renamed to I<pathlog>/expire.list where it is kept
+(for safety) until the next time expiration is done.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net>.  Converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+expire(8), fastrm(8), newslog(5).
+
+=cut
