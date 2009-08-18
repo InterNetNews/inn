@@ -38,6 +38,13 @@ logged as C<localhost>.
 
 =item *
 
+B<grephistory -l> now returns the contents of the expires history field
+as well as the hash of the message-ID.  Besides, when the storage API
+token does not exist, B<grephistory -v> now also returns the hash
+of the requested message-ID.
+
+=item *
+
 The check on cancel messages when I<verifycancels> is set to true
 in F<inn.conf> has been changed to verify that at least one newsgroup
 in the cancel message can be found in the article to be cancelled.
