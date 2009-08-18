@@ -135,7 +135,7 @@ main(int ac, char *av[])
 	/* NOTREACHED */
     }
 
-    /* All modes other than -i -l want a Message-ID. */
+    /* All modes other than -i and -l want a message-ID. */
     if (ac != 1)
 	Usage();
 
@@ -161,8 +161,16 @@ main(int ac, char *av[])
     else if (What != 'q') {
 	if (HISlookup(history, key, &arrived, &posted, &expires, &token)) {
 	    if (What == 'l') {
-		printf("[]\t%ld~-~%ld\t%s\n", (long)arrived, (long)posted,
-		       TokenToText(token));
+                if (expires <= 0) {
+                    printf("[%s]\t%ld~-~%ld\t%s\n",
+                           HashToText(HashMessageID(key)),
+                           (long)arrived, (long)posted, TokenToText(token));
+                } else {
+                    printf("[%s]\t%ld~%ld~%ld\t%s\n",
+                           HashToText(HashMessageID(key)),
+                           (long)arrived, (long)expires, (long)posted,
+                           TokenToText(token));
+                }
 	    }
 	    else {
 		if (Verbosity > 0)
@@ -172,8 +180,12 @@ main(int ac, char *av[])
 		    printf("%s\n", TokenToText(token));
 	    }
 	}
-	else if (What == 'n')
-	    printf("/dev/null\n");
+        else if (What == 'n') {
+            if (Verbosity > 0)
+                printf("/dev/null (hash is %s)\n", HashToText(HashMessageID(key)));
+            else
+                printf("/dev/null\n");
+        }
     }
     HISclose(history);
     return 0;
