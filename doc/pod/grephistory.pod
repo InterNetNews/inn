@@ -75,6 +75,38 @@ B<-s>.
 
 =back
 
+=head1 EXAMPLES
+
+In case the requested article is not listed in the history database:
+
+    % grephistory '<unknown.article@news.example.com>'
+    grephistory: not found
+    % grephistory -v '<unknown.article@news.example.com>'
+    grephistory: not found (hash is 501C66C22932BA91131186D7218201EB)
+
+In case the requested article is listed in the history database
+but not stored on the server:
+
+    % grephistory '<remembered.article@news.example.com>'
+    /dev/null
+
+In case the requested article is stored on the server:
+
+    % grephistory '<87fxeaay1z.fsf@windlord.stanford.edu>'
+    @02014A2DD6231FCC00000000000000000000@
+    % grephistory -l '<87fxeaay1z.fsf@windlord.stanford.edu>'
+    [B6DDF69376E3CC199246CEC949B3ACAC]  1244517923~-~1244517912  @02014A2DD6231FCC00000000000000000000@
+
+With B<sm>, we can retrieve the article, and get its posting date:
+
+    % grephistory '<87fxeaay1z.fsf@windlord.stanford.edu>' | sm | grep Date
+    Date: Mon, 08 Jun 2009 20:25:12 -0700
+
+    % convdate -dc 1244517912
+    Tue, 9 Jun 2009 03:25:12 +0000 (UTC)
+
+It matches the number recorded in history as for its posting date.
+
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
@@ -84,6 +116,6 @@ $Id$
 
 =head1 SEE ALSO
 
-history(5), inn.conf(5).
+history(5), inn.conf(5), sm(1).
 
 =cut
