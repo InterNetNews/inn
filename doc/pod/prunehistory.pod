@@ -1,0 +1,58 @@
+=head1 NAME
+
+prunehistory - Remove tokens from Usenet F<history> file
+
+=head1 SYNOPSIS
+
+B<prunehistory> [B<-p>] [B<-f> I<filename>]
+
+=head1 DESCRIPTION
+
+B<prunehistory> modifies a history(5)-format text file to "remove"
+a set of tokens from it.  The tokens are removed by overwriting
+them with spaces, so that the size and position of any following entries
+does not change.  This has an effect similar to expiring the article, in
+that it is still mentioned in the history database but cannot be retrieved.
+
+B<prunehistory> reads the standard input.  The input is taken as a set of lines.
+Blank lines and lines starting with a number sign (C<#>) are ignored.  All other
+lines should consist of a message-ID followed by zero or more other fields
+(which are ignored).  The message-ID is used as the dbz(3) key to get
+an offset into the text file.  Since B<innd> only appends to the text file,
+B<prunehistory> does not need to have any interaction with it.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-p>
+
+B<prunehistory> will normally complain about lines that do not follow
+the correct format.  If the B<-p> flag is used, then the program will
+silently print any invalid lines on its standard output.  (Blank lines
+and comment lines are also passed through.)
+
+This can be useful when B<prunehistory> is used as a filter for other
+programs such as B<reap> (a legacy program, probably no longer useful
+with current versions of INN, but still available at
+L<ftp://ftp.ruhr-uni-bochum.de/.subdisc1/local/jk.collection/>).
+
+=item B<-f> I<filename>
+
+The default name of the F<history> file is I<pathdb>/history; to specify
+a different name, use the B<-f> flag.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+dbz(3), history(5), innd(8).
+
+=cut

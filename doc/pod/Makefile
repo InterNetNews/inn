@@ -34,10 +34,11 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
 	../man/expirerm.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
 	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
-	../man/makehistory.8 ../man/mod-active.8 \
+	../man/makedbz.8 ../man/makehistory.8 ../man/mod-active.8 \
 	../man/news.daily.8 ../man/news2mail.8 ../man/ninpaths.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
-	../man/ovdb_stat.8 ../man/overchan.8 ../man/radius.8 \
+	../man/ovdb_stat.8 ../man/overchan.8 \
+        ../man/prunehistory.8 ../man/radius.8 \
 	../man/rc.news.8 ../man/scanlogs.8 ../man/sendinpaths.8 \
 	../man/tally.control.8 ../man/tdx-util.8 \
 	../man/tinyleaf.8
@@ -121,6 +122,7 @@ maintclean: distclean
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndf.8:		inndf.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innupgrade.8:	innupgrade.pod		; $(POD2MAN) -s 8 $? > $@
+../man/makedbz.8:	makedbz.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/mod-active.8:	mod-active.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/news.daily.8:	news.daily.pod		; $(POD2MAN) -s 8 $? > $@
@@ -132,6 +134,7 @@ maintclean: distclean
 ../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_stat.8:	ovdb_stat.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/overchan.8:	overchan.pod		; $(POD2MAN) -s 8 $? > $@
+../man/prunehistory.8:	prunehistory.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/radius.8:	radius.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/rc.news.8:	rc.news.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/scanlogs.8:	scanlogs.pod		; $(POD2MAN) -s 8 $? > $@

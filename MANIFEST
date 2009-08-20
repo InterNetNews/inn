@@ -271,6 +271,7 @@ doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/list.pod                      Master file for list.3
+doc/pod/makedbz.pod                   Master file for makedbz.8
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/mod-active.pod                Master file for mod-active.8
 doc/pod/moderators.pod                Master file for moderators.5
@@ -290,6 +291,7 @@ doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/overchan.pod                  Master file for overchan.8
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
+doc/pod/prunehistory.pod              Master file for prunehistory.8
 doc/pod/pullnews.pod                  Master file for pullnews.1
 doc/pod/qio.pod                       Master file for qio.3
 doc/pod/radius.conf.pod               Master file for radius.conf.5
