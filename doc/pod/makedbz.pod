@@ -1,0 +1,61 @@
+=head1 NAME
+
+makedbz - Rebuild dbz files
+
+=head1 SYNOPSIS
+
+B<makedbz> [B<-io>] [B<-f> I<filename>] [B<-s> I<size>]
+
+=head1 DESCRIPTION
+
+B<makedbz> rebuilds dbz(3) database.  The default name of the text
+file is I<pathdb>/history; to specify a different name, use the B<-f> flag.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<filename>
+
+If the B<-f> flag is used, then the database files are named C<I<filename>.dir>,
+C<I<filename>.index>, and C<I<filename>.hash>.  If the B<-f> flag is not used,
+then a temporary link to the name C<history.n> is made and the database files
+are written as C<history.n.index> , C<history.n.hash> and C<history.n.dir>.
+
+=item B<-i>
+
+To ignore the old database, use the B<-i> flag.  Using the B<-o> or B<-s>
+flags implies the B<-i> flag.
+
+=item B<-o>
+
+If the B<-o> flag is used, then the link is not made and any existing history
+files are overwritten.  If the old database exists, B<makedbz> will use it to
+determine the size of the new database.
+
+=item B<-s> I<size>
+
+B<makedbz> will also ignore any old database if the B<-s> flag is used to
+specify the approximate number of entries in the new database.  Accurately
+specifying the size is an optimization that will create a more efficient
+database.  Size is measured in key-value pairs (i.e. lines).  (The size
+should be the estimated eventual size of the file, typically the size
+of the old file.)
+
+For more information, see the discussion of B<dbzfresh> and B<dbzsize>
+in dbz(3).
+
+=back
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+dbz(3), history(5).
+
+=cut

@@ -21,7 +21,7 @@
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage:  prunehistory [-p] [-f file] [input]\n");
+    fprintf(stderr, "Usage:  prunehistory [-p] [-f file]\n");
     exit(1);
 }
 
