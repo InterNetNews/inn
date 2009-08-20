@@ -1,6 +1,6 @@
 =head1 NAME
 
-prunehistory - Remove tokens from Usenet F<history> file
+prunehistory - Remove tokens from Usenet history file
 
 =head1 SYNOPSIS
 
