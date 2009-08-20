@@ -123,72 +123,66 @@ GoodIdent(int fd, char *identd)
 {
 #define PORT_IDENTD 113
     char IDENTuser[80];
-    struct sockaddr_storage ss_local;
-    struct sockaddr_storage ss_distant;
-    struct sockaddr *s_local = (struct sockaddr *)&ss_local;
-    struct sockaddr *s_distant = (struct sockaddr *)&ss_distant;
+    struct sockaddr *s_local, *s_distant;
     int ident_fd;
     socklen_t len;
     int port1,port2;
     ssize_t lu;
     char buf[80], *buf2;
 
-    if(identd[0] == '\0') {
+    if (identd[0] == '\0')
          return true;
-    }
-    
-    len = sizeof( ss_local );
-    if ((getsockname(fd,s_local,&len)) < 0) {
+
+    s_local = xmalloc(sizeof(struct sockaddr_storage));
+    len = sizeof(struct sockaddr_storage);
+    if ((getsockname(fd, s_local, &len)) < 0) {
 	syslog(L_ERROR, "can't do getsockname for identd");
-	return false;
+        goto fail;
     }
-    len = sizeof( ss_distant );
-    if ((getpeername(fd,s_distant,&len)) < 0) {
+    s_distant = xmalloc(sizeof(struct sockaddr_storage));
+    len = sizeof(struct sockaddr_storage);
+    if ((getpeername(fd, s_distant, &len)) < 0) {
 	syslog(L_ERROR, "can't do getsockname for identd");
-	return false;
+        goto fail;
     }
 #ifdef HAVE_INET6
-    if( s_local->sa_family == AF_INET6 )
+    if (s_local->sa_family == AF_INET6)
     {
-	struct sockaddr_in6 *s_l6 = (struct sockaddr_in6 *)s_local;
-	struct sockaddr_in6 *s_d6 = (struct sockaddr_in6 *)s_distant;
-
-	port1=ntohs(s_l6->sin6_port);
-	port2=ntohs(s_d6->sin6_port);
-	s_l6->sin6_port = 0;
-	s_d6->sin6_port = htons( PORT_IDENTD );
-	ident_fd=socket(PF_INET6, SOCK_STREAM, 0);
+	port1 = ntohs(((struct sockaddr_in6 *) s_local)->sin6_port);
+	port2 = ntohs(((struct sockaddr_in6 *) s_distant)->sin6_port);
+	((struct sockaddr_in6 *) s_local)->sin6_port = 0;
+	((struct sockaddr_in6 *) s_distant)->sin6_port = htons(PORT_IDENTD);
+	ident_fd = socket(PF_INET6, SOCK_STREAM, 0);
     } else
 #endif
-    if( s_local->sa_family == AF_INET )
+    if (s_local->sa_family == AF_INET)
     {
-	struct sockaddr_in *s_l = (struct sockaddr_in *)s_local;
-	struct sockaddr_in *s_d = (struct sockaddr_in *)s_distant;
-
-	port1=ntohs(s_l->sin_port);
-	port2=ntohs(s_d->sin_port);
-	s_l->sin_port = 0;
-	s_d->sin_port = htons( PORT_IDENTD );
-	ident_fd=socket(PF_INET, SOCK_STREAM, 0);
+	port1 = ntohs(((struct sockaddr_in *) s_local)->sin_port);
+        port2 = ntohs(((struct sockaddr_in *) s_distant)->sin_port);
+	((struct sockaddr_in *) s_local)->sin_port = 0;
+	((struct sockaddr_in *) s_distant)->sin_port = htons(PORT_IDENTD);
+	ident_fd = socket(PF_INET, SOCK_STREAM, 0);
     } else
     {
-	syslog(L_ERROR, "Bad address family: %d\n", s_local->sa_family );
-	return false;
+	syslog(L_ERROR, "Bad address family: %d\n", s_local->sa_family);
+        goto fail;
     }
     if (ident_fd < 0) {
 	syslog(L_ERROR, "can't open socket for identd (%m)");
-	return false;
+        goto fail;
     }
-    if (bind(ident_fd,s_local,SA_LEN(s_local)) < 0) {
+    if (bind(ident_fd, s_local, SA_LEN(s_local)) < 0) {
 	syslog(L_ERROR, "can't bind socket for identd (%m)");
         close(ident_fd);
-	return false;
+        goto fail;
     }
-    if (connect(ident_fd,s_distant,SA_LEN(s_distant)) < 0) {
+    if (connect(ident_fd, s_distant, SA_LEN(s_distant)) < 0) {
 	syslog(L_ERROR, "can't connect to identd (%m)");
         close(ident_fd);
-	return false;
+        goto fail;
     }
+    free(s_local);
+    free(s_distant);
 
     snprintf(buf,sizeof(buf),"%d,%d\r\n",port2, port1);
     write(ident_fd,buf, strlen(buf));
@@ -215,6 +209,13 @@ GoodIdent(int fd, char *identd)
     close(ident_fd);
 
     return strcmp(identd, IDENTuser) == 0;
+
+fail:
+    if (s_local != NULL)
+        free(s_local);
+    if (s_distant != NULL)
+        free(s_distant);
+    return false;
 }
 
 /*
@@ -256,46 +257,6 @@ RCCommaSplit(char *text)
     return save;
 }
 
-static bool
-RCaddressmatch(const struct sockaddr_storage *cp, const struct sockaddr_storage *rp)
-{
-#ifdef HAVE_INET6
-    const struct sockaddr_in *sin_cp, *sin_rp;
-    const struct sockaddr_in6 *sin6_cp, *sin6_rp;
-
-    if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET) {
-	sin6_cp = (const struct sockaddr_in6 *)cp;
-	sin_rp = (const struct sockaddr_in *)rp;
-	if (IN6_IS_ADDR_V4MAPPED(&sin6_cp->sin6_addr) &&
-		memcmp(&sin6_cp->sin6_addr.s6_addr[12],
-		    &sin_rp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
-	    return true;
-    } else if (cp->ss_family == AF_INET && rp->ss_family == AF_INET6) {
-	sin_cp = (const struct sockaddr_in *)cp;
-	sin6_rp = (const struct sockaddr_in6 *)rp;
-	if (IN6_IS_ADDR_V4MAPPED(&sin6_rp->sin6_addr) &&
-		memcmp(&sin6_rp->sin6_addr.s6_addr[12],
-		    &sin_cp->sin_addr.s_addr, sizeof(struct in_addr)) == 0)
-	    return true;
-    } else if (cp->ss_family == AF_INET6 && rp->ss_family == AF_INET6) {
-#ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
-	if (!memcmp(&((const struct sockaddr_in6 *)cp)->sin6_addr,
-		    &((const struct sockaddr_in6 *)rp)->sin6_addr,
-		    sizeof(struct in6_addr)))
-#else
-	if (IN6_ARE_ADDR_EQUAL( &((const struct sockaddr_in6 *)cp)->sin6_addr,
-				&((const struct sockaddr_in6 *)rp)->sin6_addr))
-#endif
-	    return true;
-    } else
-#endif /* INET6 */
-	if (((const struct sockaddr_in *)cp)->sin_addr.s_addr ==
-	     ((const struct sockaddr_in *)rp)->sin_addr.s_addr)
-	    return true;
-
-    return false;
-}
-
 /*
 **  See if the site properly entered the password.
 */
@@ -309,7 +270,8 @@ RCauthorized(CHANNEL *cp, char *pass)
     network_sockaddr_sprint(addr, sizeof(addr),
                             (struct sockaddr *) &cp->Address);
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (RCaddressmatch(&cp->Address, &rp->Address)) {
+	if (network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                   (struct sockaddr *) &rp->Address)) {
 	    if (rp->Password[0] == '\0' || strcmp(pass, rp->Password) == 0)
 		return true;
             warn("%s (%s) bad_auth", rp->Label, addr);
@@ -334,7 +296,8 @@ RCnolimit(CHANNEL *cp)
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (RCaddressmatch(&cp->Address, &rp->Address))
+	if (network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                   (struct sockaddr *) &rp->Address))
             return !rp->MaxCnx;
 
     /* Not found in our table; this can't happen. */
@@ -351,7 +314,8 @@ RClimit(CHANNEL *cp)
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (RCaddressmatch(&cp->Address, &rp->Address))
+	if (network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                   (struct sockaddr *) &rp->Address))
 	    return rp->MaxCnx;
     /* Not found in our table; this can't happen. */
     return RemoteLimit;
@@ -528,7 +492,7 @@ RCreader(CHANNEL *cp)
 
        Finally, if neither rejection happened, add the entry to the table, and
        continue on as a normal connect. */
-    memcpy(&tempchan.Address, &remote, SA_LEN((struct sockaddr *)&remote));
+    memcpy(&tempchan.Address, &remote, sizeof(tempchan.Address));
     reject_message = NULL;
     if (RemoteTimer != 0) {
 	now = time(NULL);
@@ -542,7 +506,8 @@ RCreader(CHANNEL *cp)
 		i = (i + 1) & (REMOTETABLESIZE - 1);
 		continue;
 	    }
-	    if (RCaddressmatch(&remotetable[i].Address, &remote))
+	    if (network_sockaddr_equal((struct sockaddr *) &remotetable[i].Address,
+                                       (struct sockaddr *) &remote))
 		found++;
 	    i = (i + 1) & (REMOTETABLESIZE - 1);
 	}
@@ -557,7 +522,8 @@ RCreader(CHANNEL *cp)
 	}
 	else {
 	    i = (remotefirst + remotecount) & (REMOTETABLESIZE - 1);
-	    memcpy(&remotetable[i].Address, &remote, SA_LEN((struct sockaddr *)&remote));
+	    memcpy(&remotetable[i].Address, &remote,
+                   sizeof(remotetable[i].Address));
 	    remotetable[i].Expires = now + RemoteTimer;
 	    remotecount++;
 	}
@@ -570,7 +536,8 @@ RCreader(CHANNEL *cp)
     if (reject_message) {
 	new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
 	    RCrejectwritedone);
-	memcpy(&remotetable[i].Address, &remote, SA_LEN((struct sockaddr *)&remote));
+	memcpy(&remotetable[i].Address, &remote,
+               sizeof(remotetable[i].Address));
 	new->Rejected = reject_val;
 	RCHANremove(new);
 	WCHANset(new, reject_message, (int)strlen(reject_message));
@@ -581,7 +548,8 @@ RCreader(CHANNEL *cp)
 
     /* See if it's one of our servers. */
     for (name = NULL, rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (RCaddressmatch(&rp->Address, &remote)) {
+	if (network_sockaddr_equal((struct sockaddr *) &rp->Address,
+                                   (struct sockaddr *) &remote)) {
 	    name = rp->Name;
 	    break;
 	}
@@ -610,7 +578,7 @@ RCreader(CHANNEL *cp)
             new->CanAuthenticate = true; /* Can use AUTHINFO. */
             new->MaxCnx = rp->MaxCnx;
             new->HoldTime = rp->HoldTime;
-	    memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
+	    memcpy(&new->Address, &remote, sizeof(new->Address));
 	    if (new->MaxCnx > 0 && new->HoldTime == 0) {
 		CHANcount_active(new);
 		if((new->ActiveCnx > new->MaxCnx) && (new->fd > 0)) {
@@ -640,7 +608,7 @@ RCreader(CHANNEL *cp)
 	reject_message = NNTP_ACCESS;
         new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
             RCrejectwritedone);
-	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
+	memcpy(&new->Address, &remote, sizeof(new->Address));
         new->Rejected = reject_val;
         RCHANremove(new);
         WCHANset(new, reject_message, (int)strlen(reject_message));
@@ -650,7 +618,7 @@ RCreader(CHANNEL *cp)
     }
 
     if (new != NULL) {
-	memcpy(&new->Address, &remote, SA_LEN((struct sockaddr *)&remote));
+	memcpy(&new->Address, &remote, sizeof(new->Address));
         network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &remote);
         notice("%s connected %d streaming %s", name ? name : addr, new->fd,
@@ -1686,7 +1654,8 @@ RChostname(const CHANNEL *cp)
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++)
-	if (RCaddressmatch(&cp->Address, &rp->Address))
+	if (network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                   (struct sockaddr *) &rp->Address))
 	    return rp->Name;
     network_sockaddr_sprint(buff, sizeof(buff),
                             (struct sockaddr *) &cp->Address);
@@ -1702,7 +1671,8 @@ RClabelname(CHANNEL *cp) {
     int		i;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
-	if (RCaddressmatch(&cp->Address, &rp->Address))
+	if (network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                   (struct sockaddr *) &rp->Address))
 	    return rp->Label;
     }
     return NULL;
@@ -1726,7 +1696,8 @@ RCcanpost(CHANNEL *cp, char *group)
 	return 1;
 
     for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
-	if (!RCaddressmatch(&cp->Address, &rp->Address))
+	if (!network_sockaddr_equal((struct sockaddr *) &cp->Address,
+                                    (struct sockaddr *) &rp->Address))
 	    continue;
 	if (rp->Patterns == NULL)
 	    break;
