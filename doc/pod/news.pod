@@ -81,6 +81,13 @@ are properly retained in history.
 
 =item *
 
+B<auth_krb5> has been rewritten by Russ Allbery to use modern
+Kerberos APIs.  Note that using B<ckpasswd> with PAM support
+and a Kerberos PAM module instead of this authenticator is still
+recommended.
+
+=item *
+
 A new B<-L> flag has been added by Jonathan Kamens to B<makehistory>
 so as to specify a load average limit.  If the system load average exceeds
 the specified limit, B<makehistory> sleeps until it goes below the limit.
