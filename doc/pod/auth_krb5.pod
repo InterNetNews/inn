@@ -17,7 +17,7 @@ not as secure as real Kerberos authentication.  It generally should only
 be used with NNTP over TLS to protect the password from sniffing.
 
 Normally, you do not want to use this authenticator.  Instead, use
-ckpasswd with PAM support and configure the nnrpd PAM stack to use a
+B<ckpasswd> with PAM support and configure the B<nnrpd> PAM stack to use a
 Kerberos PAM module.  A full Kerberos PAM module is more sophisticated
 about how it validates passwords and has a much broader array of options
 than this authenticator.
@@ -85,7 +85,7 @@ $Id$
 
 =head1 SEE ALSO
 
-nnrpd(8), readers.conf(5).
+ckpasswd(8), nnrpd(8), readers.conf(5).
 
 The latest version of Christopher's original B<nnrpkrb5auth> may be found
 on his web site at L<http://www.mallorn.com/tools/>.
