@@ -13,7 +13,7 @@ dnl inn_syslog_facility variable for later use.
 AC_DEFUN([INN_ARG_SYSLOG],
 [AC_ARG_WITH([syslog-facility],
     [AS_HELP_STRING([--with-syslog-facility=LOG_FAC],
-        [Syslog facility [LOG_NEWS or LOG_LOCAL1]])],
+        [Syslog facility @<:@LOG_NEWS or LOG_LOCAL1@:>@])],
     SYSLOG_FACILITY=$with_syslog_facility,
     SYSLOG_FACILITY=none)])
 

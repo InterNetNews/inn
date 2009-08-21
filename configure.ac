@@ -85,11 +85,12 @@ dnl Check to see if the user wants to use libtool.  We only invoke the libtool
 dnl setup macros if they do.  Keep this call together with the libtool setup
 dnl so that the arguments to configure will be together in configure --help.
 inn_use_libtool=no
-AC_ARG_ENABLE(libtool,
-    [  --enable-libtool        Use libtool for lib generation [default=no]],
-    if test "$enableval" = yes ; then
+AC_ARG_ENABLE([libtool],
+    [AS_HELP_STRING([--enable-libtool],
+        [Use libtool for lib generation @<:@default=no@:>@])],
+    [if test x"$enableval" = xyes ; then
         inn_use_libtool=yes
-    fi)
+    fi])
 if test x"$inn_use_libtool" = xyes ; then
     LT_INIT
     EXTLIB='la'
