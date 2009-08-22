@@ -123,7 +123,8 @@ GoodIdent(int fd, char *identd)
 {
 #define PORT_IDENTD 113
     char IDENTuser[80];
-    struct sockaddr *s_local, *s_distant;
+    struct sockaddr *s_local;
+    struct sockaddr *s_distant = NULL;
     int ident_fd;
     socklen_t len;
     int port1,port2;
@@ -142,7 +143,7 @@ GoodIdent(int fd, char *identd)
     s_distant = xmalloc(sizeof(struct sockaddr_storage));
     len = sizeof(struct sockaddr_storage);
     if ((getpeername(fd, s_distant, &len)) < 0) {
-	syslog(L_ERROR, "can't do getsockname for identd");
+	syslog(L_ERROR, "can't do getpeername for identd");
         goto fail;
     }
 #ifdef HAVE_INET6
