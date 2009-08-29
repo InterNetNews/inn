@@ -61,9 +61,9 @@ static int		metabuff_update = METACYCBUFF_UPDATE;
 static int		refresh_interval = REFRESH_INTERVAL;
 
 static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
-		       uint32_t cycnum, STORAGECLASS class) {
+			   int blksz, uint32_t cycnum, STORAGECLASS class) {
     TOKEN               token;
-    int32_t		int32;
+    uint32_t		uint32;
 
     /*
     ** XXX We'll assume that TOKENSIZE is 16 bytes and that we divvy it
@@ -73,10 +73,10 @@ static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
     token.type = TOKEN_CNFS;
     token.class = class;
     memcpy(token.token, cycbuffname, CNFSMAXCYCBUFFNAME);
-    int32 = htonl(offset / CNFS_BLOCKSIZE);
-    memcpy(&token.token[8], &int32, sizeof(int32));
-    int32 = htonl(cycnum);
-    memcpy(&token.token[12], &int32, sizeof(int32));
+    uint32 = htonl(offset / blksz);
+    memcpy(&token.token[8], &uint32, sizeof(uint32));
+    uint32 = htonl(cycnum);
+    memcpy(&token.token[12], &uint32, sizeof(uint32));
     return token;
 }
 
@@ -85,20 +85,20 @@ static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
 */
 
 static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
-			   off_t *offset, uint32_t *cycnum) {
-    int32_t	int32;
+			   uint32_t *blk, uint32_t *cycnum) {
+    uint32_t	uint32;
 
-    if (cycbuffname == NULL || offset == NULL || cycnum == NULL) {
+    if (cycbuffname == NULL || blk == NULL || cycnum == NULL) {
         warn("CNFS: BreakToken: invalid argument: %s", cycbuffname);
 	SMseterror(SMERR_INTERNAL, "BreakToken: invalid argument");
 	return false;
     }
     memcpy(cycbuffname, token.token, CNFSMAXCYCBUFFNAME);
     *(cycbuffname + CNFSMAXCYCBUFFNAME) = '\0';	/* Just to be paranoid */
-    memcpy(&int32, &token.token[8], sizeof(int32));
-    *offset = (off_t)ntohl(int32) * (off_t)CNFS_BLOCKSIZE;
-    memcpy(&int32, &token.token[12], sizeof(int32));
-    *cycnum = ntohl(int32);
+    memcpy(&uint32, &token.token[8], sizeof(uint32));
+    *blk = ntohl(uint32);
+    memcpy(&uint32, &token.token[12], sizeof(uint32));
+    *cycnum = ntohl(uint32);
     return true;
 }
 
@@ -188,9 +188,12 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
     return false;
   }
   memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
-  if (cycbuff->magicver == 3) {
+  if (cycbuff->magicver == 3 || cycbuff->magicver == 4) {
     cycbuff->updated = time(NULL);
-    strncpy(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3));
+    if (cycbuff->magicver == 3)
+	strncpy(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3));
+    else
+	strncpy(rpx.magic, CNFS_MAGICV4, strlen(CNFS_MAGICV4));
     strncpy(rpx.name, cycbuff->name, CNFSNASIZ);
     strncpy(rpx.path, cycbuff->path, CNFSPASIZ);
     /* Don't use sprintf() directly ... the terminating '\0' causes grief */
@@ -205,6 +208,7 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
     } else {
 	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
     }
+    strncpy(rpx.blksza, CNFSofft2hex(cycbuff->blksz, true), CNFSLASIZ);
     memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
     msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
     cycbuff->needflush = false;
@@ -326,8 +330,7 @@ static void CNFSReadFreeAndCycle(CYCBUFF *cycbuff) {
 static bool CNFSparse_part_line(char *l) {
   char		*p;
   struct stat	sb;
-  off_t         len, minartoffset;
-  int		tonextblock;
+  off_t         len;
   CYCBUFF	*cycbuff, *tmp;
 
   /* Symbolic cnfs partition name */
@@ -384,16 +387,7 @@ static bool CNFSparse_part_line(char *l) {
   cycbuff->next = (CYCBUFF *)NULL;
   cycbuff->needflush = false;
   cycbuff->bitfield = NULL;
-  /*
-  ** The minimum article offset will be the size of the bitfield itself,
-  ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
-  ** external header occupies ... then round up to the next block.
-  */
-  minartoffset =
-      cycbuff->len / (CNFS_BLOCKSIZE * 8) + CNFS_BEFOREBITF;
-  tonextblock = CNFS_HDR_PAGESIZE - (minartoffset & (CNFS_HDR_PAGESIZE - 1));
-  cycbuff->minartoffset = minartoffset + tonextblock;
-
+  cycbuff->minartoffset = 0;
   if (cycbufftab == (CYCBUFF *)NULL)
     cycbufftab = cycbuff;
   else {
@@ -542,7 +536,9 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
   char		buf[64];
   CYCBUFFEXTERN	*rpx;
   int		fd;
+  int		tonextblock;
   off_t         tmpo;
+  off_t		minartoffset;
   bool		oneshot;
 
   /*
@@ -571,7 +567,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	}
     }
     errno = 0;
-    cycbuff->bitfield = mmap(NULL, cycbuff->minartoffset,
+    cycbuff->bitfield = mmap(NULL, CNFS_HDR_PAGESIZE,
 			     SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
 			     MAP_SHARED, cycbuff->fd, 0);
     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
@@ -586,8 +582,14 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
     ** & buggy & particularly icky & unupdated.  Use at your own risk.  :-)
     */
     rpx = (CYCBUFFEXTERN *)cycbuff->bitfield;
+    cycbuff->magicver = 0;
     if (strncmp(rpx->magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3)) == 0) {
 	cycbuff->magicver = 3;
+	cycbuff->blksz = 512;
+    }
+    if (strncmp(rpx->magic, CNFS_MAGICV4, strlen(CNFS_MAGICV4)) == 0)
+	cycbuff->magicver = 4;
+    if (cycbuff->magicver >= 3) {
 	if (strncmp(rpx->name, cycbuff->name, CNFSNASIZ) != 0) {
             warn("CNFS: Mismatch 3: read %s for cycbuff %s", rpx->name,
                  cycbuff->name);
@@ -621,20 +623,57 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	    cycbuff->currentbuff = true;
 	} else
 	    cycbuff->currentbuff = false;
+	if (cycbuff->magicver > 3) {
+	    strncpy(buf, rpx->blksza, CNFSLASIZ);
+	    buf[CNFSLASIZ] = '\0';
+	    cycbuff->blksz = CNFShex2offt(buf);
+	}
+	if (cycbuff->blksz < 512 || cycbuff->blksz > CNFS_MAX_BLOCKSIZE ||
+	    2 * (cycbuff->blksz / 2) != cycbuff->blksz) {
+	    warn("CNFS: Invalid: read 0x%s blocksize for cycbuff %s",
+		 CNFSofft2hex(cycbuff->blksz, false), cycbuff->path);
+	    return false;
+	}
     } else {
         notice("CNFS: no magic cookie found for cycbuff %s, initializing",
                cycbuff->name);
-	cycbuff->magicver = 3;
+	cycbuff->magicver = 4;
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->updated = 0;
 	cycbuff->cyclenum = 1;
 	cycbuff->currentbuff = true;
 	cycbuff->order = 0;	/* to indicate this is newly added cycbuff */
 	cycbuff->needflush = true;
+	cycbuff->blksz = CNFS_DFL_BLOCKSIZE;
+	cycbuff->free = 0;
 	memset(cycbuff->metaname, '\0', CNFSLASIZ);
-	if (!CNFSflushhead(cycbuff))
-	    return false;
     }
+    /*
+    ** The minimum article offset will be the size of the bitfield itself,
+    ** len / (blocksize * 8), plus however many additional blocks the CYCBUFF
+    ** external header occupies ... then round up to the next block.
+    */
+    minartoffset = cycbuff->len / (cycbuff->blksz * 8) + CNFS_BEFOREBITF;
+    tonextblock = CNFS_HDR_PAGESIZE - (minartoffset & (CNFS_HDR_PAGESIZE - 1));
+    cycbuff->minartoffset = minartoffset + tonextblock;
+
+    munmap(cycbuff->bitfield, CNFS_HDR_PAGESIZE);
+    errno = 0;
+    cycbuff->bitfield = mmap(NULL, cycbuff->minartoffset,
+                           SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
+                           MAP_SHARED, cycbuff->fd, 0);
+     if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
+      warn("CNFS: CNFSinitdisks: mmap for %s offset %d len %ld failed: %m",
+           cycbuff->path, 0, (long) cycbuff->minartoffset);
+      cycbuff->bitfield = NULL;
+      return false;
+    }
+
+    if (cycbuff->free == 0)
+      cycbuff->free = cycbuff->minartoffset;
+    if (cycbuff->needflush && !CNFSflushhead(cycbuff))
+          return false;
+
     if (oneshot)
       break;
   }
@@ -908,13 +947,13 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, off_t offset,
              bufoff, bufmin, bufmax);
 	return 0;
     }
-    if (offset % CNFS_BLOCKSIZE != 0) {
+    if (offset % cycbuff->blksz != 0) {
 	SMseterror(SMERR_INTERNAL, NULL);
         warn("CNFS: CNFSsetusedbitbyrp: offset %s not on %d-byte block"
-             " boundary", CNFSofft2hex(offset, false), CNFS_BLOCKSIZE);
+             " boundary", CNFSofft2hex(offset, false), cycbuff->blksz);
 	return 0;
     }
-    blocknum = offset / CNFS_BLOCKSIZE;
+    blocknum = offset / cycbuff->blksz;
     longoffset = blocknum / (longsize * 8);
     bitoffset = blocknum % (longsize * 8);
     where = (ULONG *)cycbuff->bitfield + (CNFS_BEFOREBITF / longsize)
@@ -1053,7 +1092,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     METACYCBUFF		*metacycbuff = NULL;
     int			i;
     static char		buf[1024];
-    static char		alignbuf[CNFS_BLOCKSIZE];
+    static char		alignbuf[CNFS_MAX_BLOCKSIZE];
     char		*artcycbuffname;
     off_t               artoffset, middle;
     uint32_t		artcyclenum;
@@ -1093,18 +1132,18 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 
     /* cycbuff->free should have already been aligned by the last write, but
        realign it just to be sure. */
-    tonextblock = CNFS_BLOCKSIZE - (cycbuff->free & (CNFS_BLOCKSIZE - 1));
-    if (tonextblock != CNFS_BLOCKSIZE)
+    tonextblock = cycbuff->blksz - (cycbuff->free & (cycbuff->blksz - 1));
+    if (tonextblock != cycbuff->blksz)
 	cycbuff->free += tonextblock;
 
     /* Article too big? */
-    if (cycbuff->len - cycbuff->free < CNFS_BLOCKSIZE + 1)
+    if (cycbuff->len - cycbuff->free < cycbuff->blksz + 1)
         left = 0;
     else
-        left = cycbuff->len - cycbuff->free - CNFS_BLOCKSIZE - 1;
+        left = cycbuff->len - cycbuff->free - cycbuff->blksz - 1;
     if ((off_t) article.len > left) {
-	for (middle = cycbuff->free ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
-	    middle += CNFS_BLOCKSIZE) {
+	for (middle = cycbuff->free ;middle < cycbuff->len - cycbuff->blksz - 1;
+	    middle += cycbuff->blksz) {
 	    CNFSUsedBlock(cycbuff, middle, true, false);
 	}
 	if (innconf->nfswriter) {
@@ -1112,8 +1151,13 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	}
 	cycbuff->free = cycbuff->minartoffset;
 	cycbuff->cyclenum++;
-	if (cycbuff->cyclenum == 0)
-	  cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
+	if (cycbuff->magicver <= 3) {
+	    if (cycbuff->cyclenum == 0)
+	      cycbuff->cyclenum += 2;		/* cnfs_next() needs this */
+	} else {
+	    if ((cycbuff->cyclenum & 0xFFFFFF) == 0)	/* 24 bits max */
+	      cycbuff->cyclenum = 2;		/* cnfs_next() needs this */
+	}
 	cycbuff->needflush = true;
 	if (metacycbuff->metamode == INTERLEAVE) {
 	  CNFSflushhead(cycbuff);		/* Flush, just for giggles */
@@ -1176,10 +1220,11 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
         iov[i].iov_len = article.iov[i-1].iov_len;
 	totlen += iov[i].iov_len;
     }
-    if ((totlen & (CNFS_BLOCKSIZE - 1)) != 0) {
-	/* Want to xwritev an exact multiple of CNFS_BLOCKSIZE */
+    if ((totlen & (cycbuff->blksz - 1)) != 0) {
+	/* Want to xwritev an exact multiple of cycbuff->blksz */
 	iov[i].iov_base = alignbuf;
-	iov[i].iov_len = CNFS_BLOCKSIZE - (totlen & (CNFS_BLOCKSIZE - 1));
+	iov[i].iov_len = cycbuff->blksz -
+				(totlen & (cycbuff->blksz - 1));
 	totlen += iov[i].iov_len;
 	i++;
     }
@@ -1208,21 +1253,23 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
 	}
     }
     CNFSUsedBlock(cycbuff, artoffset, true, true);
-    for (middle = artoffset + CNFS_BLOCKSIZE; middle < cycbuff->free;
-	 middle += CNFS_BLOCKSIZE) {
+    for (middle = artoffset + cycbuff->blksz; middle < cycbuff->free;
+	 middle += cycbuff->blksz) {
 	CNFSUsedBlock(cycbuff, middle, true, false);
     }
     if (innconf->nfswriter) {
 	cnfs_mapcntl(NULL, 0, MS_ASYNC);
     }
     if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
-    return CNFSMakeToken(artcycbuffname, artoffset, artcyclenum, class);
+    return CNFSMakeToken(artcycbuffname, artoffset,
+			cycbuff->blksz, artcyclenum, class);
 }
 
 ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     char		cycbuffname[9];
     off_t               offset;
     uint32_t		cycnum;
+    uint32_t		block;
     CYCBUFF		*cycbuff;
     ARTHANDLE   	*art;
     CNFSARTHEADER	cah;
@@ -1238,7 +1285,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return NULL;
     }
-    if (! CNFSBreakToken(token, cycbuffname, &offset, &cycnum)) {
+    if (! CNFSBreakToken(token, cycbuffname, &block, &cycnum)) {
 	/* SMseterror() should have already been called */
 	return NULL;
     }
@@ -1247,7 +1294,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	if (!nomessage) {
             warn("CNFS: cnfs_retrieve: token %s: bogus cycbuff name:"
                  " %s:0x%s:%d", TokenToText(token), cycbuffname,
-                 CNFSofft2hex(offset, false), cycnum);
+                 CNFSofft2hex(block, false), cycnum);
 	    nomessage = true;
 	}
 	return NULL;
@@ -1257,6 +1304,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
         warn("CNFS: cycbuff '%s' initialization fail", cycbuff->name);
 	return NULL;
     }
+    offset = (off_t)block * cycbuff->blksz;
     if (! CNFSArtMayBeHere(cycbuff, offset, cycnum)) {
 	SMseterror(SMERR_NOENT, NULL);
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
@@ -1310,7 +1358,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	plusoffset = sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER);
     }
 #endif /* OLD_CNFS */
-    if (offset > cycbuff->len - CNFS_BLOCKSIZE - (off_t) ntohl(cah.size) - 1) {
+    if (offset > cycbuff->len - cycbuff->blksz - (off_t) ntohl(cah.size) - 1) {
         if (!SMpreopen) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
             warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
@@ -1321,7 +1369,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
 	CNFSReadFreeAndCycle(cycbuff);
-	if (offset > cycbuff->len - CNFS_BLOCKSIZE - (off_t) ntohl(cah.size) - 1) {
+	if (offset > cycbuff->len - cycbuff->blksz - (off_t) ntohl(cah.size) - 1) {
 	    SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER size overflow");
             warn("CNFS: could not match article size token %s %s:0x%s:%d: %ld",
                  TokenToText(token), cycbuffname, CNFSofft2hex(offset, false),
@@ -1455,13 +1503,14 @@ bool cnfs_cancel(TOKEN token) {
     char		cycbuffname[9];
     off_t               offset;
     uint32_t		cycnum;
+    uint32_t		block;
     CYCBUFF		*cycbuff;
 
     if (token.type != TOKEN_CNFS) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return false;
     }
-    if (! CNFSBreakToken(token, cycbuffname, &offset, &cycnum)) {
+    if (! CNFSBreakToken(token, cycbuffname, &block, &cycnum)) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	/* SMseterror() should have already been called */
 	return false;
@@ -1475,6 +1524,7 @@ bool cnfs_cancel(TOKEN token) {
         warn("CNFS: cycbuff '%s' initialization fail", cycbuff->name);
 	return false;
     }
+    offset = (off_t)block * cycbuff->blksz;
     if (! (cycnum == cycbuff->cyclenum ||
 	(cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free) ||
 	(cycnum + 1 == 0 && cycbuff->cyclenum == 2 && offset > cycbuff->free))) {
@@ -1561,19 +1611,19 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	    }
 	}
 	if (!priv.rollover) {
-	    for (middle = priv.offset ;middle < cycbuff->len - CNFS_BLOCKSIZE - 1;
-		middle += CNFS_BLOCKSIZE) {
+	    for (middle = priv.offset ;middle < cycbuff->len - cycbuff->blksz - 1;
+		middle += cycbuff->blksz) {
 		if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
 		    break;
 	    }
-	    if (middle >= cycbuff->len - CNFS_BLOCKSIZE - 1) {
+	    if (middle >= cycbuff->len - cycbuff->blksz - 1) {
 		priv.rollover = true;
 		middle = cycbuff->minartoffset;
 	    }
 	    break;
 	} else {
 	    for (middle = priv.offset ;middle < cycbuff->free;
-		middle += CNFS_BLOCKSIZE) {
+		middle += cycbuff->blksz) {
 		if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
 		    break;
 	    }
@@ -1614,8 +1664,8 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     *private = priv;
     private->cycbuff = cycbuff;
     private->offset = middle;
-    if (cycbuff->len - cycbuff->free < (off_t) ntohl(cah.size) + CNFS_BLOCKSIZE + 1) {
-	private->offset += CNFS_BLOCKSIZE;
+    if (cycbuff->len - cycbuff->free < (off_t) ntohl(cah.size) + cycbuff->blksz + 1) {
+	private->offset += cycbuff->blksz;
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;
@@ -1623,11 +1673,11 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	return art;
     }
     /* check the bitmap to ensure cah.size is not broken */
-    blockfudge = (sizeof(cah) + plusoffset + ntohl(cah.size)) % CNFS_BLOCKSIZE;
-    limit = private->offset + sizeof(cah) + plusoffset + ntohl(cah.size) - blockfudge + CNFS_BLOCKSIZE;
+    blockfudge = (sizeof(cah) + plusoffset + ntohl(cah.size)) % cycbuff->blksz;
+    limit = private->offset + sizeof(cah) + plusoffset + ntohl(cah.size) - blockfudge + cycbuff->blksz;
     if (offset < cycbuff->free) {
-	for (middle = offset + CNFS_BLOCKSIZE; (middle < cycbuff->free) && (middle < limit);
-	    middle += CNFS_BLOCKSIZE) {
+	for (middle = offset + cycbuff->blksz; (middle < cycbuff->free) && (middle < limit);
+	    middle += cycbuff->blksz) {
 	    if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
 		/* Bitmap set.  This article assumes to be broken */
 		break;
@@ -1641,8 +1691,8 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	    return art;
 	}
     } else {
-	for (middle = offset + CNFS_BLOCKSIZE; (middle < cycbuff->len) && (middle < limit);
-	    middle += CNFS_BLOCKSIZE) {
+	for (middle = offset + cycbuff->blksz; (middle < cycbuff->len) && (middle < limit);
+	    middle += cycbuff->blksz) {
 	    if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
 		/* Bitmap set.  This article assumes to be broken */
 		break;
@@ -1667,10 +1717,12 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     }
 
     private->offset += (off_t) ntohl(cah.size) + sizeof(cah) + plusoffset;
-    tonextblock = CNFS_BLOCKSIZE - (private->offset & (CNFS_BLOCKSIZE - 1));
+    tonextblock = cycbuff->blksz - (private->offset & (cycbuff->blksz - 1));
     private->offset += (off_t) tonextblock;
     art->arrived = ntohl(cah.arrived);
-    token = CNFSMakeToken(cycbuff->name, offset, (offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum, cah.class);
+    token = CNFSMakeToken(cycbuff->name, offset, cycbuff->blksz,
+	(offset > cycbuff->free) ? cycbuff->cyclenum - 1 : cycbuff->cyclenum,
+	cah.class);
     art->token = &token;
     offset += sizeof(cah) + plusoffset;
     if (innconf->articlemmap) {

@@ -416,7 +416,7 @@ sub get_cycbuff_info {
     my($CNFSNASIZ)=16;
     my($CNFSPASIZ)=64;
     my($CNFSLASIZ)=16;
-    my($headerlength) = $CNFSMASIZ + $CNFSNASIZ + $CNFSPASIZ + (4 * $CNFSLASIZ);
+    my($headerlength) = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
 
     my($buff, @entries, $e);
     my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma);
@@ -432,8 +432,10 @@ sub get_cycbuff_info {
 	exit(1);
     }
 
-    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma) =
-	    unpack("a8 a16 a64 a16 a16 a16 a16", $buff);
+    use vars qw($metaname $orderinmeta $currentbuff);
+    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
+     $orderinmeta, $currentbuff, $blksza) =
+           unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if(!$magic) {
 	print STDERR "Error while unpacking header ...\n";
@@ -444,11 +446,12 @@ sub get_cycbuff_info {
     my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
+    my($blksz) = ($magic =~ m/^CBuf4/) ? hex($blksza) : 512;
 
     if ($opt_a) {
 
 	my $pagesize = 16384;
-	my $minartoffset = int($len / (512 * 8)) + 512;
+	my $minartoffset = int($len / ($blksz * 8)) + 512;
 	# Align upwards:
 	$minartoffset = ($minartoffset + $pagesize) & ~($pagesize - 1);
 	
@@ -481,7 +484,7 @@ sub get_cycbuff_info {
 	    }
 	    # Just in case we chopped Message-ID in two, use the end
 	    # at the front in next iteration.
-	    $buff = substr ($buff, -512);
+	    $buff = substr ($buff, -$blksz);
 
 	} while ($sentinel -= $pagesize > 0);
     }
