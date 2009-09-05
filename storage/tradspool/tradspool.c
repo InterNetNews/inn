@@ -471,6 +471,7 @@ MakeToken(char *ng, unsigned long artnum, STORAGECLASS class) {
 
     /* The token is @05nnxxxxxxxxyyyyyyyy0000000000000000@
      * where "05" is the tradspool method number,
+     * "nn" the hexadecimal value of the storage class,
      * "xxxxxxxx" the name of the primary newsgroup (as defined
      * in <pathspool>/tradspool.map),
      * "yyyyyyyy" the article number in the primary newsgroup. */
