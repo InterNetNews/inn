@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Cyclic News File System.
+**  Storage manager module for Cyclic News File System method.
 */
 
 #include "config.h"
@@ -65,11 +65,13 @@ static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
     TOKEN               token;
     uint32_t		uint32;
 
-    /*
-    ** XXX We'll assume that TOKENSIZE is 16 bytes and that we divvy it
-    ** up as: 8 bytes for cycbuffname, 4 bytes for offset, 4 bytes
-    ** for cycnum.  See also: CNFSBreakToken() for hard-coded constants.
-    */
+    /* The token is @03nnxxxxxxxxxxxxxxxxyyyyyyyyzzzzzzzz@
+     * where "03" is the cnfs method number,
+     * "nn" the hexadecimal value of the storage class,
+     * "xxxxxxxxxxxxxxxx" the name of the cyclic buffer (as defined
+     * in <pathetc>/cycbuff.conf),
+     * "yyyyyyyy" the offset,
+     * "zzzzzzzz" the cyclic number. */
     token.type = TOKEN_CNFS;
     token.class = class;
     memcpy(token.token, cycbuffname, CNFSMAXCYCBUFFNAME);
@@ -83,7 +85,6 @@ static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
 /*
 ** NOTE: We assume that cycbuffname is 9 bytes long.
 */
-
 static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
 			   uint32_t *blk, uint32_t *cycnum) {
     uint32_t	uint32;
@@ -119,7 +120,7 @@ static char * CNFSofft2hex(off_t offset, bool leadingzeros) {
     if (sizeof(off_t) <= sizeof(unsigned long)) {
 	snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx",
                  (unsigned long) offset);
-    } else { 
+    } else {
 	int	i;
 
 	for (i = 0; i < CNFSLASIZ; i++)
@@ -137,7 +138,7 @@ static char * CNFSofft2hex(off_t offset, bool leadingzeros) {
 	else
 		return p - 1;	/* We converted a "0" and then bypassed all
 				   the zeros */
-    } else 
+    } else
 	return buf;
 }
 
@@ -274,11 +275,11 @@ static void CNFScleanexpirerule(void) {
 
 static CYCBUFF *CNFSgetcycbuffbyname(char *name) {
     CYCBUFF	*cycbuff;
- 
+
     if (name == NULL)
 	return NULL;
     for (cycbuff = cycbufftab; cycbuff != (CYCBUFF *)NULL; cycbuff = cycbuff->next)
-	if (strcmp(name, cycbuff->name) == 0) 
+	if (strcmp(name, cycbuff->name) == 0)
 	    return cycbuff;
     return NULL;
 }
@@ -289,7 +290,7 @@ static METACYCBUFF *CNFSgetmetacycbuffbyname(char *name) {
   if (name == NULL)
     return NULL;
   for (metacycbuff = metacycbufftab; metacycbuff != (METACYCBUFF *)NULL; metacycbuff = metacycbuff->next)
-    if (strcmp(name, metacycbuff->name) == 0) 
+    if (strcmp(name, metacycbuff->name) == 0)
       return metacycbuff;
   return NULL;
 }
@@ -472,7 +473,7 @@ static bool CNFSparse_metapart_line(char *l) {
       metacycbuff->members = xrealloc(metacycbuff->members, (metacycbuff->count + 1) * sizeof(CYCBUFF *));
     metacycbuff->members[metacycbuff->count++] = rp;
   }
-  
+
   if (metacycbuff->count == 0) {
     warn("CNFS: no cycbuffs assigned to cycbuff '%s'", metacycbuff->name);
     free(metacycbuff->name);
@@ -598,7 +599,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	if (strncmp(rpx->path, cycbuff->path, CNFSPASIZ) != 0) {
             warn("CNFS: Path mismatch: read %s for cycbuff %s", rpx->path,
                  cycbuff->path);
-	} 
+	}
 	strncpy(buf, rpx->lena, CNFSLASIZ);
         buf[CNFSLASIZ] = '\0';
 	tmpo = CNFShex2offt(buf);
@@ -976,7 +977,7 @@ static int CNFSUsedBlock(CYCBUFF *cycbuff, off_t offset,
     /* It's a read operation */
     mask = onarray[bitoffset];
 
-/* 
+/*
  * return bitlong & mask; doesn't work if sizeof(ulong) > sizeof(int)
  */
     if ( bitlong & mask ) return 1; else return 0;
@@ -1117,7 +1118,7 @@ TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     metacycbuff = metaexprule->dest;
 
-    cycbuff = metacycbuff->members[metacycbuff->memb_next];  
+    cycbuff = metacycbuff->members[metacycbuff->memb_next];
     if (cycbuff == NULL) {
 	SMseterror(SMERR_INTERNAL, "no cycbuff found");
         warn("CNFS: no cycbuff found for %d", metacycbuff->memb_next);
@@ -1317,7 +1318,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	art->data = NULL;
 	art->len = 0;
 	art->private = NULL;
-	ret_token = token;    
+	ret_token = token;
 	art->token = &ret_token;
 	if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
 	return art;
@@ -1430,7 +1431,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	    return NULL;
 	}
     }
-    ret_token = token;    
+    ret_token = token;
     art->token = &ret_token;
     art->len = ntohl(cah.size);
     if (amount == RETR_ALL) {
@@ -1487,7 +1488,7 @@ void cnfs_freearticle(ARTHANDLE *article) {
 
     if (!article)
 	return;
-    
+
     if (article->private) {
 	private = (PRIV_CNFS *)article->private;
 	if (innconf->articlemmap)
@@ -1569,7 +1570,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
         priv.len = 0;
         priv.base = NULL;
         priv.cycbuff = NULL;
-    } else {        
+    } else {
 	priv = *(PRIV_CNFS *)article->private;
 	free(article->private);
 	free(article);
@@ -1798,21 +1799,21 @@ bool cnfs_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value) {
     struct artngnum *ann;
 
     switch (type) {
-    case SMARTNGNUM:    
+    case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
 	    return false;
 	/* make SMprobe() call cnfs_retrieve() */
 	ann->artnum = 0;
-	return true; 
+	return true;
     default:
-	return false; 
-    }   
+	return false;
+    }
 }
 
 bool cnfs_flushcacheddata(FLUSHTYPE type) {
     if (type == SM_ALL || type == SM_HEAD)
 	CNFSflushallheads();
-    return true; 
+    return true;
 }
 
 void
