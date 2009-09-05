@@ -16,7 +16,7 @@
 
 /* Needed for htonl() and friends on AIX 4.1. */
 #include <netinet/in.h>
-    
+
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
@@ -38,7 +38,8 @@ typedef struct {
 } PRIV_TRADSPOOL;
 
 /*
-** The 64-bit hashed representation of a ng name that gets stashed in each token. 
+**  The 64-bit hashed representation of a newsgroup name that gets stashed
+**  in each token.
 */
 
 #define HASHEDNGLEN 8
@@ -74,11 +75,11 @@ NGTENT *NGTable[NGT_SIZE];
 unsigned long MaxNgNumber = 0;
 NGTREENODE *NGTree;
 
-bool NGTableUpdated; /* set to true if we've added any entries since reading 
+bool NGTableUpdated; /* set to true if we've added any entries since reading
 			in the database file */
 
-/* 
-** Convert all .s to /s in a newsgroup name.  Modifies the passed string 
+/*
+** Convert all .s to /s in a newsgroup name.  Modifies the passed string
 ** inplace.
 */
 static void
@@ -92,14 +93,14 @@ DeDotify(char *ngname) {
 }
 
 /*
-** Hash a newsgroup name to an 8-byte.  Basically, we convert all .s to 
+** Hash a newsgroup name to an 8-byte.  Basically, we convert all .s to
 ** /s (so it doesn't matter if we're passed the spooldir name or newsgroup
-** name) and then call Hash to MD5 the mess, then take 4 bytes worth of 
+** name) and then call Hash to MD5 the mess, then take 4 bytes worth of
 ** data from the front of the hash.  This should be good enough for our
-** purposes. 
+** purposes.
 */
 
-static HASHEDNG 
+static HASHEDNG
 HashNGName(char *ng) {
     HASH hash;
     HASHEDNG return_hash;
@@ -208,7 +209,7 @@ AddNG(char *ng, unsigned long number) {
             warn("tradspool: AddNG: hash collision %s/%s", ngtp->ngname, p);
 	    free(p);
 	    return;
-#endif 
+#endif
 	} else {
 	    /* not found yet, so advance to next entry in chain */
 	    ngtpp = &(ngtp->next);
@@ -244,7 +245,7 @@ FindNGByName(char *ngname) {
 	ngtp = ngtp->next;
     }
     free(p);
-    return NULL; 
+    return NULL;
 }
 
 /* find a newsgroup/spooldir name, given only the newsgroup number */
@@ -267,7 +268,7 @@ FindNGByNum(unsigned long ngnumber) {
 	}
     }
     /* not in tree, return NULL */
-    return NULL; 
+    return NULL;
 }
 
 #define _PATH_TRADSPOOLNGDB "tradspool.map"
@@ -319,10 +320,10 @@ DumpDB(void)
     return;
 }
 
-/* 
-** init NGTable from saved database file and from active.  Note that
-** entries in the database file get added first,  and get their specifications
-** of newsgroup number from there. 
+/*
+**  Init NGTable from saved database file and from active.  Note that
+**  entries in the database file get added first, and get their specifications
+**  of newsgroup number from there.
 */
 
 static bool
@@ -400,18 +401,18 @@ InitNGTable(void)
     ** set NGTableUpdated to false; that way we know if the load of active or
     ** any AddNGs later on did in fact add new entries to the db.
     */
-    NGTableUpdated = false; 
+    NGTableUpdated = false;
     if (!SMopenmode)
 	/* don't read active unless write mode. */
 	return true;
-    return ReadActiveFile(); 
+    return ReadActiveFile();
 }
 
-/* 
+/*
 ** Routine called to check every so often to see if we need to reload the
 ** database and add in any new groups that have been added.   This is primarily
 ** for the benefit of innfeed in funnel mode, which otherwise would never
-** get word that any new newsgroups had been added. 
+** get word that any new newsgroups had been added.
 */
 
 #define RELOAD_TIME_CHECK 600
@@ -468,20 +469,23 @@ MakeToken(char *ng, unsigned long artnum, STORAGECLASS class) {
     NGTENT *ngtp;
     unsigned long num;
 
+    /* The token is @05nnxxxxxxxxyyyyyyyy0000000000000000@
+     * where "05" is the tradspool method number,
+     * "xxxxxxxx" the name of the primary newsgroup (as defined
+     * in <pathspool>/tradspool.map),
+     * "yyyyyyyy" the article number in the primary newsgroup. */
     memset(&token, '\0', sizeof(token));
 
     token.type = TOKEN_TRADSPOOL;
     token.class = class;
 
-    /* 
-    ** if not already in the NG Table, be sure to add this ng! This way we
-    ** catch things like newsgroups added since startup. 
-    */
+    /* If not already in the NG Table, be sure to add this ng! This way we
+     * catch things like newsgroups added since startup. */
     if ((ngtp = FindNGByName(ng)) == NULL) {
-	AddNG(ng, 0);
-	DumpDB(); /* flush to disk so other programs can see the change */
-	ngtp = FindNGByName(ng);
-    } 
+        AddNG(ng, 0);
+        DumpDB(); /* Flush to disk so other programs can see the change. */
+        ngtp = FindNGByName(ng);
+    }
 
     num = ngtp->ngnumber;
     num = htonl(num);
@@ -492,8 +496,8 @@ MakeToken(char *ng, unsigned long artnum, STORAGECLASS class) {
     return token;
 }
 
-/* 
-** Convert a token back to a pathname. 
+/*
+**  Convert a token back to a pathname.
 */
 static char *
 TokenToPath(TOKEN token) {
@@ -502,6 +506,10 @@ TokenToPath(TOKEN token) {
     char *ng, *path;
     size_t length;
 
+    /* innconf->patharticles + '/news/group/path/yyyyyyyy'
+     * where "news/group/path" is the path of the primary newsgroup
+     * (as defined in <pathspool>/tradspool.map),
+     * "yyyyyyyy" the article number in the primary newsgroup. */
     CheckNeedReloadDB(false);
 
     memcpy(&ngnum, &token.token[0], sizeof(ngnum));
@@ -524,8 +532,8 @@ TokenToPath(TOKEN token) {
 }
 
 /*
-** Crack an Xref line apart into separate strings, each of the form "ng:artnum".
-** Return in "num" the number of newsgroups found. 
+**  Crack an Xref: line apart into separate strings, each of the form "ng:artnum".
+**  Return in "num" the number of newsgroups found.
 */
 static char **
 CrackXref(char *xref, unsigned int *lenp) {
@@ -580,7 +588,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     unsigned int i;
     size_t length, nonwflen;
 
-    memset(&token, 0, sizeof(token)); 
+    memset(&token, 0, sizeof(token));
     xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 	token.type = TOKEN_EMPTY;
@@ -601,7 +609,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     ng = xrefs[0];
     DeDotify(ng);
     artnum = atol(p);
-    
+
     token = MakeToken(ng, artnum, class);
 
     length = strlen(innconf->patharticles) + strlen(ng) + 32;
@@ -669,11 +677,8 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     close(fd);
 
-    /* 
-    ** blah, this is ugly.  Have to make symlinks under other pathnames for
-    ** backwards compatiblility purposes. 
-    */
-
+    /* Blah, this is ugly.  Have to make symlinks under other pathnames for
+     * backwards compatiblility purposes. */
     if (numxrefs > 1) {
 	for (i = 1; i < numxrefs ; ++i) {
 	    if ((p = strchr(xrefs[i], ':')) == NULL) continue;
@@ -826,7 +831,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	}
     }
     close(fd);
-    
+
     private->ngtp = NULL;
     private->curdir = NULL;
     private->curdirname = NULL;
@@ -837,7 +842,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
 	art->len = private->artlen;
 	return art;
     }
-    
+
     if (((p = wire_findbody(private->artbase, private->artlen)) == NULL)) {
 	if (private->mmapped)
 	    munmap(private->artbase, private->artlen);
@@ -872,7 +877,7 @@ OpenArticle(const char *path, RETRTYPE amount) {
     return NULL;
 }
 
-    
+
 ARTHANDLE *
 tradspool_retrieve(const TOKEN token, const RETRTYPE amount) {
     char *path;
@@ -918,7 +923,7 @@ tradspool_freearticle(ARTHANDLE *article)
     free(article);
 }
 
-bool 
+bool
 tradspool_cancel(TOKEN token) {
     char **xrefs;
     char *xrefhdr;
@@ -936,12 +941,10 @@ tradspool_cancel(TOKEN token) {
 	free(path);
 	return false;
     }
-    /*
-    **  Ooooh, this is gross.  To find the symlinks pointing to this article,
-    ** we open the article and grab its Xref line (since the token isn't long
-    ** enough to store this info on its own).   This is *not* going to do 
-    ** good things for performance of fastrm...  -- rmtodd
-    */
+    /* Ooooh, this is gross.  To find the symlinks pointing to this article,
+     * we open the article and grab its Xref: line (since the token isn't long
+     * enough to store this info on its own).   This is *not* going to do
+     * good things for performance of fastrm...  -- rmtodd */
     if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
 	free(path);
 	SMseterror(SMERR_UNDEFINED, NULL);
@@ -995,7 +998,7 @@ tradspool_cancel(TOKEN token) {
     return result;
 }
 
-   
+
 /*
 ** Find entries for possible articles in dir. "dir" (directory name "dirname").
 ** The dirname is needed so we can do stats in the directory to disambiguate
@@ -1081,10 +1084,8 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
 	    priv.curdirname = NULL;
 	}
 
-	/*
-	** advance ngtp to the next entry, if it exists, otherwise start 
-	** searching down another ngtable hashchain. 
-	*/
+        /* Advance ngtp to the next entry, if it exists, otherwise start
+         * searching down another ngtable hashchain. */
 	while (priv.ngtp == NULL || (priv.ngtp = priv.ngtp->next) == NULL) {
 	    /*
 	    ** note that at the start of a search nextindex is -1, so the inc.
@@ -1212,7 +1213,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
     newpriv->curdir = priv.curdir;
     newpriv->curdirname = priv.curdirname;
     newpriv->ngtp = priv.ngtp;
-    
+
     if ((sub = SMgetsub(*art)) == NULL || sub->type != TOKEN_TRADSPOOL) {
 	/* maybe storage.conf is modified, after receiving article */
 	token = MakeToken(priv.ngtp->ngname, artnum, 0);
@@ -1257,7 +1258,7 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
     unsigned long artnum;
     char *ng, *p;
 
-    switch (type) { 
+    switch (type) {
     case SMARTNGNUM:
 	if ((ann = (struct artngnum *)value) == NULL)
 	    return false;
@@ -1281,7 +1282,7 @@ bool tradspool_ctl(PROBETYPE type, TOKEN *token, void *value) {
 	return true;
     default:
 	return false;
-    }       
+    }
 }
 
 bool
