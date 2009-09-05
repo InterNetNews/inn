@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Timehash based storage method.
+**  Storage manager module for timehash method.
 */
 
 #include "config.h"
@@ -40,9 +40,13 @@ static int SeqNum = 0;
 
 static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
-    unsigned int        i;
-    unsigned short      s;
+    uint32_t            i;
+    uint16_t            s;
 
+    /* The token is @02nnaabbccddyyyy00000000000000000000@
+     * where "02" is the timehash method number,
+     * "aabbccdd" the arrival time in hexadecimal,
+     * "yyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
     else 
@@ -51,44 +55,49 @@ static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtok
     token.class = class;
     i = htonl(now);
     memcpy(token.token, &i, sizeof(i));
-    if (sizeof(i) > 4)
-	memmove(token.token, &token.token[sizeof(i) - 4], 4);
-    s = htons(seqnum);
-    memcpy(&token.token[4], &s + (sizeof(s) - 2), 2);
+    s = htons(seqnum & 0xffff);
+    memcpy(&token.token[sizeof(i)], &s, sizeof(s));
     return token;
 }
 
 static void BreakToken(TOKEN token, time_t *now, int *seqnum) {
-    unsigned int        i;
-    unsigned short      s = 0;
+    uint32_t            i;
+    uint16_t            s = 0;
 
     memcpy(&i, token.token, sizeof(i));
-    memcpy(&s, &token.token[4], sizeof(s));
+    memcpy(&s, &token.token[sizeof(i)], sizeof(s));
     *now = ntohl(i);
     *seqnum = (int)ntohs(s);
 }
 
-static char *MakePath(int now, int seqnum, const STORAGECLASS class) {
+static char *MakePath(time_t now, int seqnum, const STORAGECLASS class) {
     char *path;
     size_t length;
     
-    /* innconf->patharticles + '/time-zz/xx/xx/yyyy-xxxx' */
+    /* innconf->patharticles + '/time-nn/bb/cc/yyyy-aadd'
+     * where "nn" is the hexadecimal value of the storage class,
+     * "aabbccdd" the arrival time in hexadecimal,
+     * "yyyy" the hexadecimal sequence number seqnum. */
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
     snprintf(path, length, "%s/time-%02x/%02x/%02x/%04x-%04x",
              innconf->patharticles, class,
-             (now >> 16) & 0xff, (now >> 8) & 0xff, seqnum,
-             (now & 0xff) | ((now >> 16 & 0xff00)));
+             (unsigned int)((now >> 16) & 0xff),
+             (unsigned int)((now >> 8) & 0xff),
+             seqnum,
+             (unsigned int)((now & 0xff) | ((now >> 16 & 0xff00))));
     return path;
 }
 
 static TOKEN *PathToToken(char *path) {
     int			n;
-    unsigned int	t1, t2, t3, seqnum, class;
+    unsigned int        t1, t2, t3, seqnum;
+    STORAGECLASS        class;
     time_t		now;
     static TOKEN	token;
 
-    n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x", &class, &t1, &t2, &seqnum, &t3);
+    n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x",
+               (unsigned int *)&class, &t1, &t2, &seqnum, &t3);
     if (n != 5)
 	return (TOKEN *)NULL;
     now = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
