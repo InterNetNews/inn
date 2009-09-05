@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Trashing articles method
+**  Storage manager module for trash method.
 */
 #include "config.h"
 #include "clibrary.h"
@@ -13,8 +13,8 @@ bool
 trash_init(SMATTRIBUTE *attr)
 {
     if (attr == NULL) {
-	SMseterror(SMERR_INTERNAL, "attr is NULL");
-	return false;
+        SMseterror(SMERR_INTERNAL, "attr is NULL");
+        return false;
     }
     attr->selfexpire = true;
     attr->expensivestat = false;
@@ -27,10 +27,10 @@ trash_store(const ARTHANDLE article, const STORAGECLASS class)
     TOKEN               token;
 
     if (article.token == (TOKEN *)NULL)
-	memset(&token, '\0', sizeof(token));
+        memset(&token, '\0', sizeof(token));
     else {
-	memcpy(&token, article.token, sizeof(token));
-	memset(&token.token, '\0', STORAGE_TOKEN_LENGTH);
+        memcpy(&token, article.token, sizeof(token));
+        memset(&token.token, '\0', STORAGE_TOKEN_LENGTH);
     }
     token.type = TOKEN_TRASH;
     token.class = class;
@@ -41,8 +41,8 @@ ARTHANDLE *
 trash_retrieve(const TOKEN token, const RETRTYPE amount UNUSED)
 {
     if (token.type != TOKEN_TRASH) {
-	SMseterror(SMERR_INTERNAL, NULL);
-	return (ARTHANDLE *)NULL;
+        SMseterror(SMERR_INTERNAL, NULL);
+        return (ARTHANDLE *)NULL;
     }
     SMseterror(SMERR_NOENT, NULL);
     return (ARTHANDLE *)NULL;
@@ -66,7 +66,7 @@ trash_ctl(PROBETYPE type, TOKEN *token UNUSED, void *value UNUSED)
     switch (type) {
     case SMARTNGNUM:
     default:
-	return false;
+        return false;
     }
 }
 
