@@ -65,14 +65,18 @@ Implementation details (format of a CAF file) and some design rationale:
 something like this.  Each CAF file has a blocksize associated with it
 (usually 512 bytes, but it can vary).  The layout of a CAF file is as
 follows:
-  1.	Header (~52 bytes) containing information like low and high
+  1.	Header (~300 bytes) containing information like low and high
 article numbers, amount of free space, blocksize.
   2.	Free space bitmap (size given by the FreeZoneTabSize field of the
-header).
-  3.	CAFTOCENTs (CAF Table of Contents Entries), 1/article storable
+header).  Its index is ~212 bytes (in fact, it is exactly between the end
+of the header and the end of the block).  Its main part depends on the
+length of the index (n bits for the index => n bytes for the main free
+space bitmap, therefore ~1696 blocks, thus ~868KB).  Consequently, the
+maximal length of a CAF file is ~3.5GB.
+  3.	CAFTOCENTs (CAF Table of Contents Entries), 1 per article storable
 in the file.  Each CAFTOCENT gives the article's size, creation time,
 and offset in the CAF file.  Usually space is alloted in the CAF file
-for 64K CAFTOCENTs, even if the # of articles in the CAF file is
+for 262144 CAFTOCENTs, even if the # of articles in the CAF file is
 nowhere near that amount.  The unused CAFTOCENTs are all zeros, and
 this means CAF files are almost always sparse.
   4.	Articles, always stored starting at blocksize boundaries.
@@ -95,7 +99,8 @@ bitmap (each bit of the bitmap tells whether a data block is in use or free).
 First there is an 'index' bitmap which tells which blocks of the 'main' bitmap
 have free blocks listed in them, and then a 'main' bitmap which tells whether
 the data blocks are in use or free.  This setup means that we can have
-bitmaps for CAF files as large as 8GB, while still being able to find free
+bitmaps for CAF files as large as 8GB (in fact, it is now about 3.5GB, see
+computation above -- note by Julien Elie), while still being able to find free
 space by only reading the 'index' bitmap and one block of the 'main' bitmap.
 (Previous versions of the CAF code had just a 'main' bitmap and scaled the
 blocksize up when CAF files got large; this became rather, um, non-optimal
