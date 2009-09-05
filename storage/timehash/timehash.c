@@ -45,6 +45,7 @@ static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtok
 
     /* The token is @02nnaabbccddyyyy00000000000000000000@
      * where "02" is the timehash method number,
+     * "nn" the hexadecimal value of the storage class,
      * "aabbccdd" the arrival time in hexadecimal,
      * "yyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
