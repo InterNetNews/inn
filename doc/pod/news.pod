@@ -38,6 +38,22 @@ logged as C<localhost>.
 
 =item *
 
+Fixed a bug in the timecaf storage method:  only the first 65535 articles
+could be retrievable in a CAF, though everything was properly stored.  (A
+Crunched Article File contains all the articles that arrive to the news
+server during 256 seconds.)
+
+The storage token now uses 4 bytes to store the article sequence number
+for timecaf, instead of only 2 bytes.  Thanks to Kamil Jonca for the
+bug report and also the patch.
+
+=item *
+
+Fixed a bug in both timecaf and timehash which prevented them from working
+on systems where short ints were not 16-bit integers.
+
+=item *
+
 A new CNFS version has been introduced by Miquel van Smoorenburg in
 the CNFS header.  CNFSv4 uses S<4 KB> blocks instead of S<512 bytes>,
 which more particularly makes writes faster.  CNFSv4 supports
