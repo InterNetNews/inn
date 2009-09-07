@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  trashing articles method header
+**  Storage manager module header for trash method.
 */
 
 #ifndef __TRASH_H__
