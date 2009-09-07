@@ -1,6 +1,6 @@
-/*
-** $Id$
-** tradspool -- storage manager for traditional spool format.
+/*  $Id$
+** 
+**  Storage manager module header for traditional spool format.
 */
 
 #ifndef __TRADSPOOL_H__
