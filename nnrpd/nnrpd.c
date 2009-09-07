@@ -1434,7 +1434,7 @@ main(int argc, char *argv[])
 	    clienttimeout = innconf->clienttimeout;
     }
 
-    CMDquit(ac, av);
+    ExitWithStats(0, false);
 
     /* NOTREACHED */
     return 1;
