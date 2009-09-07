@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  cyclic news file system header
+**  Storage manager module header for Cyclic News File System method.
 */
 
 #ifndef __CNFS_H__
