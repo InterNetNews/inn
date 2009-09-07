@@ -35,9 +35,9 @@ typedef struct {
     DIR	       		*sec; /* open handle on the 2nd level directory */
     DIR 		*ter; /* open handle on 3rd level dir. */
     struct dirent	*topde; /* last entry we got from top */
-    struct dirent	*secde; /* last entry we got from sec */ 
-    struct dirent	*terde; /* last entry we got from sec */ 
-    CAFTOCENT		*curtoc; 
+    struct dirent	*secde; /* last entry we got from sec */
+    struct dirent	*terde; /* last entry we got from sec */
+    CAFTOCENT		*curtoc;
     ARTNUM		curartnum;
     CAFHEADER		curheader;
 } PRIV_TIMECAF;
@@ -56,8 +56,8 @@ static unsigned int NumDeleteArtnums, MaxDeleteArtnums;
 typedef enum {FIND_DIR, FIND_CAF, FIND_TOPDIR} FINDTYPE;
 
 /*
-** Structures for the cache for stat information (to make expireover etc. 
-** faster. 
+** Structures for the cache for stat information (to make expireover etc.)
+** faster.
 **
 ** The first structure contains the TOC info for a single CAF file.  The 2nd
 ** one has pointers to the info for up to 256 CAF files, indexed
@@ -97,7 +97,7 @@ typedef struct caftocl3cache CAFTOCL3CACHE;
 static CAFTOCL3CACHE *TOCCache[256]; /* indexed by storage class! */
 static int TOCCacheHits, TOCCacheMisses;
 
-    
+
 static TOKEN MakeToken(time_t now, ARTNUM seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     uint32_t            i;
@@ -110,7 +110,7 @@ static TOKEN MakeToken(time_t now, ARTNUM seqnum, STORAGECLASS class, TOKEN *old
      * "xxxxyyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
-    else 
+    else
 	memcpy(&token, oldtoken, sizeof(token));
     token.type = TOKEN_TIMECAF;
     token.class = class;
@@ -136,14 +136,14 @@ static void BreakToken(TOKEN token, time_t *now, ARTNUM *seqnum) {
     *seqnum = (ARTNUM)((ntohs(s2) << 16) + ntohs(s1));
 }
 
-/* 
+/*
 ** Note: the time here is really "time>>8", i.e. a timestamp that's been
 ** shifted right by 8 bits.
 */
 static char *MakePath(time_t now, const STORAGECLASS class) {
     char *path;
     size_t length;
-    
+
     /* innconf->patharticles + '/timecaf-nn/bb/aacc.CF'
      * where "nn" is the hexadecimal value of the storage class,
      * "aabbccdd" the arrival time in hexadecimal (dd is unused). */
@@ -196,7 +196,7 @@ bool timecaf_init(SMATTRIBUTE *attr) {
 ** Routines for managing the 'TOC cache' (cache of TOCs of various CAF files)
 **
 ** Attempt to look up a given TOC entry in the cache.  Takes the timestamp
-** as arguments. 
+** as arguments.
 */
 
 static CAFTOCCACHEENT *
@@ -267,7 +267,7 @@ AddTOCCache(time_t timestamp, CAFTOCENT *toc, CAFHEADER head, STORAGECLASS token
 }
 
 /*
-** Do stating of an article, going thru the TOC cache if possible. 
+** Do stating of an article, going thru the TOC cache if possible.
 */
 
 static ARTHANDLE *
@@ -296,13 +296,13 @@ StatArticle(time_t timestamp, ARTNUM artnum, STORAGECLASS tokenclass)
 	cent = AddTOCCache(timestamp, toc, head, tokenclass);
 	free(path);
     }
-    
+
     /* check current TOC for the given artnum. */
     if (artnum < cent->header.Low || artnum > cent->header.High) {
 	SMseterror(SMERR_NOENT, NULL);
 	return NULL;
     }
-    
+
     tocentry = &(cent->toc[artnum - cent->header.Low]);
     if (tocentry->Size == 0) {
 	/* no article with that article number present */
@@ -379,7 +379,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 			token.type = TOKEN_EMPTY;
 			return token;
 		    }
-		} 
+		}
 	    } else {
                 warn("timecaf: could not OpenArtWrite %s/%ld: %s", path, art,
                      CAFErrorStr());
@@ -417,14 +417,14 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
 	CloseOpenFile(&WritingFile);
 	return token;
     }
-    if (CAFFinishArtWrite(fd) < 0) { 
+    if (CAFFinishArtWrite(fd) < 0) {
 	SMseterror(SMERR_UNDEFINED, NULL);
         warn("timecaf: error writing %s: %s", path, CAFErrorStr());
 	token.type = TOKEN_EMPTY;
 	CloseOpenFile(&WritingFile);
 	return token;
     }
-    
+
     return MakeToken(timestamp, art, class, article.token);
 }
 
@@ -512,13 +512,13 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
     private->topde = NULL;
     private->secde = NULL;
     private->terde = NULL;
-    
+
     if (amount == RETR_ALL) {
 	art->data = private->artdata;
 	art->len = private->artlen;
 	return art;
     }
-    
+
     if ((p = wire_findbody(private->artdata, private->artlen)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap)
@@ -560,7 +560,7 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     ARTHANDLE           *art;
     static TOKEN	ret_token;
     time_t		now;
-    
+
     if (token.type != TOKEN_TIMECAF) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return NULL;
@@ -569,15 +569,15 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     BreakToken(token, &timestamp, &artnum);
 
     /*
-    ** Do a possible shortcut on RETR_STAT requests, going thru the "TOC cache"
-    ** we mentioned above.  We only try to go thru the TOC Cache under these
+    ** Do a possible shortcut on RETR_STAT requests, going through the "TOC cache"
+    ** we mentioned above.  We only try to go through the TOC Cache under these
     ** conditions:
-    **   1) SMpreopen is true (so we're "preopening" the TOCs.)
+    **   1) SMpreopen is true (so we're "preopening" the TOCs).
     **   2) the timestamp is older than the timestamp corresponding to current
-    ** time. Any timestamp that matches current time (to within 256 secondsf
-    ** would be in a CAF file that innd is actively 
+    ** time.  Any timestamp that matches current time (to within 256 seconds)
+    ** would be in a CAF file that innd is actively
     ** writing, in which case we would not want to cache the TOC for that
-    ** CAF file. 
+    ** CAF file.
     */
 
     if (SMpreopen && amount == RETR_STAT) {
@@ -590,7 +590,7 @@ ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
     path = MakePath(timestamp, token.class);
     if ((art = OpenArticle(path, artnum, amount)) != (ARTHANDLE *)NULL) {
 	art->arrived = timestamp<<8; /* XXX not quite accurate arrival time,
-				     ** but getting a more accurate one would 
+				     ** but getting a more accurate one would
 				     ** require more fiddling with CAF innards.
 				     */
 	ret_token = token;
@@ -605,7 +605,7 @@ void timecaf_freearticle(ARTHANDLE *article) {
 
     if (!article)
 	return;
-    
+
     if (article->private) {
 	private = (PRIV_TIMECAF *)article->private;
 	if (innconf->articlemmap)
@@ -618,7 +618,7 @@ void timecaf_freearticle(ARTHANDLE *article) {
 	    closedir(private->sec);
 	if (private->ter)
 	    closedir(private->ter);
-	if (private->curtoc) 
+	if (private->curtoc)
 	    free(private->curtoc);
 	free(private);
     }
@@ -631,7 +631,7 @@ static void
 DoCancels(void) {
     if (DeletePath != NULL) {
 	if (NumDeleteArtnums != 0) {
-	    /* 
+	    /*
 	    ** Murgle. If we are trying to cancel something out of the
 	    ** currently open-for-writing file, we need to close it before
 	    ** doing CAFRemove...
@@ -649,7 +649,7 @@ DoCancels(void) {
 	DeletePath = NULL;
     }
 }
-	    
+
 bool timecaf_cancel(TOKEN token) {
     time_t              now;
     ARTNUM              seqnum;
@@ -682,7 +682,7 @@ bool timecaf_cancel(TOKEN token) {
 
 static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     struct dirent       *de;
-    
+
     while ((de = readdir(dir)) != NULL) {
         if (type == FIND_TOPDIR)
 	    if ((strlen(de->d_name) == 10) &&
@@ -832,7 +832,7 @@ timecaf_next(ARTHANDLE *article, const RETRTYPE amount)
     newpriv->curheader = priv.curheader;
     newpriv->curtoc = priv.curtoc;
     newpriv->curartnum = priv.curartnum;
-    
+
     snprintf(path, length, "%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name);
     art->token = PathNumToToken(path, priv.curartnum);
     art->arrived = priv.curtoc[priv.curartnum - priv.curheader.Low].ModTime;

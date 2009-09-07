@@ -164,8 +164,8 @@ CAFSeekTOCEnt(int fd, CAFHEADER *head, ARTNUM art)
 }
 
 /*
-** Fetch the TOC entry for a  given article.  As usual -1 for error, 0 success */
-
+** Fetch the TOC entry for a given article.  As usual -1 for error, 0 success.
+*/
 static int
 CAFGetTOCEnt(int fd, CAFHEADER *head, ARTNUM art, CAFTOCENT *tocp)
 {
@@ -480,7 +480,7 @@ CAFSetBlockFree(CAFBITMAP *bm, int fd, off_t block, int isfree)
 ** failure, offset of starting block if successful.
 ** XXX does not attempt to find chunks that span BMB boundaries.  This is 
 ** messy to fix.
-** (Actually I think this case  works, as does the case when it tries to find
+** (Actually I think this case works, as does the case when it tries to find
 ** a block bigger than BytesPerBMB.  Testing reveals that it does seem to work, 
 ** though not optimally (some BMBs will get scanned several times).  
 */
@@ -630,7 +630,7 @@ static unsigned int CAF_numblks_write;
 ** file so that we don't "lose" free space and not be able to reuse it.
 ** (Currently only returns CAF_DEFAULT_BLOCKSIZE, as with the new 2-level
 ** bitmaps, the FreeZoneTabSize that results from a 512-byte blocksize can 
-** handle any newsgroup with <7.3G of data.  Yow!)
+** handle any file with <7.3G of data.  Yow!)
 */
 
 static unsigned int

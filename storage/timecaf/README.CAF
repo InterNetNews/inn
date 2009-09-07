@@ -1,17 +1,17 @@
 The timecaf storage manager is like the timehash storage manager, except that
 it stores multiple articles in one file.  The file format is called CAF
 (for "crunched article file", putting multiple articles together into one big
-file), and uses a library 'caf.c' dating back from the pre-storage manager 
+file), and uses a library 'caf.c' dating back from the pre-storage manager
 days when I made a locally-hacked version of INN1.5 that used this
 code in order to boost performance on my system.  Originally I had planned to
 do one big file per newsgroup, but it turns out that a time-based file layout
 rather than newsgroup-name-based is a. more efficient and b. much easier to
-fit into the current storage manager interface paradigm.  Anyway, the 
+fit into the current storage manager interface paradigm.  Anyway, the
 pathnames for the files are of the form
 	<patharticles>/timecaf-nn/bb/aacc.CF
 where 'nn' is the numeric storage class (same as in 'timehash') and the
-file contains all articles written during the interval from 
-(time_t) 0xaabbcc00 to 0xaabbccFF.  
+file contains all articles written during the interval from
+(time_t) 0xaabbcc00 to 0xaabbccFF.
 
   The way expiration works on the 'timecaf' storage manager is a bit
 complicated.  When articles are expired or cancelled (via SMcancel())
@@ -26,7 +26,7 @@ doesn't create a new one.  This means that if your setup has
 newsgroups with differing expiration lengths put in the same timecaf
 storage class, everything will work ok but your expire runs will spend
 some extra time copying files about.  In my experience this hasn't been too
-much of a problem.  If you find that it is a problem, you may wish to 
+much of a problem.  If you find that it is a problem, you may wish to
 consider dividing up your spool layout so each storage class gets newsgroups
 that expire at more-or-less the same time, or putting *.binaries in their own
 storage class.
@@ -39,21 +39,21 @@ I did on the old news.ecn.uoknor.edu showed a roughly 4x improvement in
 artwrite speed).  This is presumably due to improved locality of reference and
 not having to open/close article files all the time but only every 4 minutes or
 so.  Artcancel speed, on the other hand, is not much different, because
-cancel requests have terrible locality of reference.   Expire times seem
-to be generally somewhat faster than timehash as well, even given the 
+cancel requests have terrible locality of reference.  Expire times seem
+to be generally somewhat faster than timehash as well, even given the
 extra copying overhead mentioned above.
 
   Timecaf is probably slower than CNFS, but I haven't had a chance
 to do any comparison tests.  Timecaf does share the feature with timehash
-that you can get much more fine-tuned control of your expire times (on a 
-group-by-group basis, if needed) than you can with CNFS.  
+that you can get much more fine-tuned control of your expire times (on a
+group-by-group basis, if needed) than you can with CNFS.
 
 Down below is an old README telling more about the implementation details
 of the CAF file format.  Most people won't care about this, but if you're
 curious, read on; it also tells some of the historical developments that
 went on in this code.  I've been running some version of this code off and
 on for the past two years, and have been running it as a storage manager
-module for the past few months, so I'm pretty sure of it's stability.
+module for the past few months, so I'm pretty sure of its stability.
 
 			Richard Todd
 	(rmtodd@mailhost.ecn.ou.edu/rmtodd@servalan.servalan.com)
@@ -61,12 +61,12 @@ module for the past few months, so I'm pretty sure of it's stability.
 
 Implementation details (format of a CAF file) and some design rationale:
 
- Look at include/caf.h for the details, but basically, the layout is
+  Look at caf.h for the details, but basically, the layout is
 something like this.  Each CAF file has a blocksize associated with it
 (usually 512 bytes, but it can vary).  The layout of a CAF file is as
 follows:
   1.	Header (~52 bytes) containing information like low and high
-article numbers, amount of free space, blocksize.  
+article numbers, amount of free space, blocksize.
   2.	Free space bitmap (size given by the FreeZoneTabSize field of the
 header).
   3.	CAFTOCENTs (CAF Table of Contents Entries), 1/article storable
@@ -75,7 +75,7 @@ and offset in the CAF file.  Usually space is alloted in the CAF file
 for 64K CAFTOCENTs, even if the # of articles in the CAF file is
 nowhere near that amount.  The unused CAFTOCENTs are all zeros, and
 this means CAF files are almost always sparse.
-  4.	Articles, always stored starting at blocksize boundaries. 
+  4.	Articles, always stored starting at blocksize boundaries.
 
 When fastrm is told to remove an article, the article is not actually
 removed as such, it is merely marked as non-existent (the CAFTOCENT is
@@ -86,27 +86,27 @@ contiguous chunk large enough to handle the article, and if so writes
 the article into those blocks and marks those blocks as being in use.
 If there is no suitable free space chunk in the CAF file, then innd
 merely appends the article to the end of the CAF file and records the
-article's position in the TOC. [Given the way the CAF code is currently
+article's position in the TOC.  [Given the way the CAF code is currently
 used by the timecaf storage manager, it's almost always the case that we're
-appending to the end of the file.] 
+appending to the end of the file.]
 
-   A note on the free bitmap portion of the CAF file: it's not just a simple
-bitmap (each bit of the bitmap tells whether a data block is in use or free.)
+  A note on the free bitmap portion of the CAF file:  it's not just a simple
+bitmap (each bit of the bitmap tells whether a data block is in use or free).
 First there is an 'index' bitmap which tells which blocks of the 'main' bitmap
 have free blocks listed in them, and then a 'main' bitmap which tells whether
-the data blocks are in use or free.  This setup means that we can have 
+the data blocks are in use or free.  This setup means that we can have
 bitmaps for CAF files as large as 8GB, while still being able to find free
 space by only reading the 'index' bitmap and one block of the 'main' bitmap.
-(Previous versions of the CAF code had just a 'main' bitmap and scaled the 
+(Previous versions of the CAF code had just a 'main' bitmap and scaled the
 blocksize up when CAF files got large; this became rather, um, non-optimal
 when control.cancel started to hit hundreds of thousands of articles and 8K
 blocksizes.)  In practice, CAF files over 2GB or 4GB may be a problem because
-of unsigned/signed long problems, and ones over 4G are probably impossible 
+of unsigned/signed long problems, and ones over 4GB are probably impossible
 on anything besides an Alpha unless you track down all the places in innd
-where they assume off_t is a long and fix it to work with long longs.  
+where they assume off_t is a long and fix it to work with long longs.
 
   At some point I'd also like to try some other, more efficient
-directory layout for the CAF files, as opposed to the old 
+directory layout for the CAF files, as opposed to the old
 /var/spool/news/newsgroup/name/component/ scheme.  At the time I
 started implementing this, it seemed like it'd be too much of a hassle
 to change this in INN as it stands.  I'm hoping that changing this
@@ -119,7 +119,7 @@ so that the CAF file for, e.g.,
 alt.tv.babylon-5 will now be /var/spool/news/alt/tv/babylon-5.CF -- note the
 final . instead of a /.  This pretty much bypasses the need for the 'terminal'
 layer of directories to be read, and means that these directory blocks will not
-be fighting with other blocks for the limited space available in the buffer 
-cache.   This provides more of an improvement than you might think; thruput on 
+be fighting with other blocks for the limited space available in the buffer
+cache.   This provides more of an improvement than you might think; throuput on
 news.ecn.uoknor.edu went from 160,000 articles/day to >200,000 articles/day
 with this patch, and this is on an aging 32M 486/66.]

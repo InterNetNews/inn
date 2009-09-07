@@ -1,4 +1,5 @@
-/* $Revision$
+/* $Id$
+**
 ** Declarations needed for handling CAF (Crunched Article Files)
 ** Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96
 */
@@ -28,31 +29,31 @@ typedef struct _CAFHEADER {
 #define CAF_DEFAULT_BLOCKSIZE 512
 
 /*
-** then the table of free blocks.  The table is FreeZoneTabSize bytes
+** Then the table of free blocks.  The table is FreeZoneTabSize bytes
 ** long.  First comes a "first-level" or "index" bitmap, taking up the
 ** space from the end of the CAFHEADER to the end of the first
-** block, i.e. FreeZoneIndexBytes. The rest of the table is a big  bitmap
+** block, i.e. FreeZoneIndexSize.  The rest of the table is a big bitmap
 ** listing free blocks in the 'data' portion of the CAF file.
 **
-** In the "index" bitmap: LSB of bitmap byte 0 is 1 if there are any 1s 
+** In the "index" bitmap:  LSB of bitmap byte 0 is 1 if there are any 1s
 ** (free blocks) listed in the first block of the big bitmap, and 0 if there
-** are no 1s in that block.  The remaining bits of the index bitmap 
+** are no 1s in that block.  The remaining bits of the index bitmap
 ** correspond to the remaining blocks of the big bitmap accordingly.
-** The idea is that from the index bitmap one can tell which part of the 
-** main bitmap is likely to have free blocks w/o having to read the entire 
+** The idea is that from the index bitmap one can tell which part of the
+** main bitmap is likely to have free blocks w/o having to read the entire
 ** main bitmap.
 **
 ** As for the main bitmap, each bit is 1 if the corresponding data
 ** block (BlockSize bytes) is free.  LSB of bitmap byte 0 corresponds
 ** to the block @ offset StartDataBlock, and all the rest follow on
-** accordingly.  
+** accordingly.
 **
-** Note that the main part of the bitmap is *always* FreeZoneIndexByte*8
+** Note that the main part of the bitmap is *always* FreeZoneIndexSize*8
 ** blocks long, no matter how big the CAF file is.  The table of free blocks
 ** is almost always sparse.  Also note that blocks past EOF in the CAF file
-** are *not* considered free.  If the CAF article write routines fail to 
-** find free space in the fre block bitmaps, they will always attempt to 
-** extend the CAF file instead. 
+** are *not* considered free.  If the CAF article write routines fail to
+** find free space in the free block bitmaps, they will always attempt to
+** extend the CAF file instead.
 */
 
 #define CAF_DEFAULT_FZSIZE (512-sizeof(CAFHEADER))
@@ -86,9 +87,9 @@ typedef struct _CAFBMB {
     char *BMBBits;
 } CAFBMB;
 
-/* 
+/*
 ** Next in the file are the TOC (Table of Contents) entries.  Each TOC
-** entry describes an article. 
+** entry describes an article.
 */
 
 typedef struct _CAFTOCENT {
@@ -98,19 +99,19 @@ typedef struct _CAFTOCENT {
 } CAFTOCENT;
 
 /*
-** and then after the NumSlots TOC Entries, the actual articles, one after
-** another, always starting at offsets == 0 mod BlockSize
+** And then after the NumSlots TOC Entries, the actual articles, one after
+** another, always starting at offsets == 0 mod BlockSize.
 */
 
 /*
-** Number of slots to put in TOC by default.  Can be raised if we ever get 
-** more than 256K articles in a newsgroup (frightening thought).
+** Number of slots to put in TOC by default.  Can be raised if we ever get
+** more than 256K articles in a file (frightening thought).
 */
 
 #define CAF_DEFAULT_TOC_SIZE (256 * 1024)
 
 /*
-** Default name for CAF file in the news spool dir for a given newsgroup.
+** Default extension name for CAF file in the news spool dir.
 */
 #define CAF_NAME "CF"
 
@@ -126,15 +127,18 @@ extern int CAFRemoveMultArts(char *cfpath, unsigned int narts, ARTNUM *arts);
 extern int CAFStatArticle(char *path, ARTNUM art, struct stat *st);
 
 #ifdef CAF_INNARDS
-/* functions used internally by caf.c, and by the cleaner program, and cafls
-   but probably aren't useful/desirable to be used by others. */
+/*
+** Functions used internally by caf.c, and by the cleaner program, and cafls
+** but probably aren't useful/desirable to be used by others.
+*/
 extern int CAFOpenReadTOC(char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp);
 extern int CAFReadHeader(int fd, CAFHEADER *h);
 extern off_t CAFRoundOffsetUp(off_t offt, unsigned int bsize);
 extern CAFBITMAP * CAFReadFreeBM(int fd, CAFHEADER *h);
 extern void CAFDisposeBitmap(CAFBITMAP *cbm);
+
 /*
-** note! CAFIsBlockFree needs the fd, since blocks of the free bitmap may 
+** Note:  CAFIsBlockFree needs the fd, since blocks of the free bitmap may
 ** need to be fetched from disk.
 */
 extern int CAFIsBlockFree(CAFBITMAP *bm, int fd, off_t block);
