@@ -626,9 +626,10 @@ static unsigned int CAF_numblks_write;
 /*
 ** Given estimated size of CAF file (i.e., the size of the old CAF file found
 ** by cafclean), find an "optimal" blocksize (one big enough so that the
-** default FreeZoneTabSize can cover the entire
-** file so that we don't "lose" free space and not be able to reuse it.
-** (Currently only returns CAF_DEFAULT_BLOCKSIZE, as with the new 2-level
+** default FreeZoneTabSize can cover the entire file in order not to "lose"
+** free space and not be able to reuse it.
+** (Currently only returns the first multiple of CAF_DEFAULT_BLOCKSIZE that
+** allows to have at least CAF_MIN_FZSIZE bytes of index, as with the new 2-level
 ** bitmaps, the FreeZoneTabSize that results from a 512-byte blocksize can
 ** handle any file with <7.3G of data.  Yow!)
 */
@@ -636,10 +637,14 @@ static unsigned int CAF_numblks_write;
 static unsigned int
 CAFFindOptimalBlocksize(ARTNUM tocsize UNUSED, size_t cfsize)
 {
+    /* No size given, use default. */
+    if (cfsize == 0) {
+        return (((sizeof(CAFHEADER) + CAF_MIN_FZSIZE)/CAF_DEFAULT_BLOCKSIZE + 1)
+                *CAF_DEFAULT_BLOCKSIZE);
+    }
 
-    if (cfsize == 0) return CAF_DEFAULT_BLOCKSIZE; /* no size given, use default. */
-
-    return CAF_DEFAULT_BLOCKSIZE;
+    return (((sizeof(CAFHEADER) + CAF_MIN_FZSIZE)/CAF_DEFAULT_BLOCKSIZE + 1)
+            *CAF_DEFAULT_BLOCKSIZE);
 }
 
 /*
