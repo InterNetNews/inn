@@ -54,6 +54,16 @@ on systems where short ints were not 16-bit integers.
 
 =item *
 
+When there is not enough space to write a CAF header, the timecaf storage
+manager now uses a larger blocksize.  On 32-bit systems, the CAF header
+is about 300 bytes, leaving about 200 bytes for the free bitmap index
+(the remaining of a 512-byte blocksize).  On 64-bit systems, the size
+of the CAF header could exceed 512 bytes, thus leaving no room for the
+free bitmap index.  A S<1 KB> blocksize is then used, or a larger
+size if need be.
+
+=item *
+
 A new CNFS version has been introduced by Miquel van Smoorenburg in
 the CNFS header.  CNFSv4 uses S<4 KB> blocks instead of S<512 bytes>,
 which more particularly makes writes faster.  CNFSv4 supports

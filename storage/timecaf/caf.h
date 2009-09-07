@@ -56,7 +56,8 @@ typedef struct _CAFHEADER {
 ** extend the CAF file instead.
 */
 
-#define CAF_DEFAULT_FZSIZE (512-sizeof(CAFHEADER))
+#define CAF_DEFAULT_FZSIZE (CAF_DEFAULT_BLOCKSIZE-sizeof(CAFHEADER))
+#define CAF_MIN_FZSIZE 128
 
 /*
 ** (Note: the CAFBITMAP structure isn't what's actually stored on disk
@@ -105,7 +106,7 @@ typedef struct _CAFTOCENT {
 
 /*
 ** Number of slots to put in TOC by default.  Can be raised if we ever get
-** more than 256K articles in a file (frightening thought).
+** more than 256*1024=262144 articles in a file (frightening thought).
 */
 
 #define CAF_DEFAULT_TOC_SIZE (256 * 1024)

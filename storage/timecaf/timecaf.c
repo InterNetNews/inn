@@ -104,7 +104,7 @@ static TOKEN MakeToken(time_t now, ARTNUM seqnum, STORAGECLASS class, TOKEN *old
     uint16_t            s;
 
     /* The token is @04nn00aabbccyyyyxxxx0000000000000000@
-     * where "02" is the timehash method number,
+     * where "04" is the timecaf method number,
      * "nn" the hexadecimal value of the storage class,
      * "aabbccdd" the arrival time in hexadecimal (dd is unused),
      * "xxxxyyyy" the hexadecimal sequence number seqnum. */
