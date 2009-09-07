@@ -27,7 +27,7 @@ typedef struct {
     int                 len;      /* Length of the file */
     DIR                 *top;     /* Open handle on the top level directory */
     DIR                 *sec;     /* Open handle on the 2nd level directory */
-    DIR			*ter;     /* Open handle on the third level directory */
+    DIR                 *ter;     /* Open handle on the third level directory */
     DIR                 *artdir;  /* Open handle on the article directory */
     struct dirent       *topde;   /* dirent entry for the last entry retrieved in top */
     struct dirent       *secde;   /* dirent entry for the last entry retrieved in sec */
@@ -50,7 +50,7 @@ static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtok
      * "yyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
-    else 
+    else
 	memcpy(&token, oldtoken, sizeof(token));
     token.type = TOKEN_TIMEHASH;
     token.class = class;
@@ -74,7 +74,7 @@ static void BreakToken(TOKEN token, time_t *now, int *seqnum) {
 static char *MakePath(time_t now, int seqnum, const STORAGECLASS class) {
     char *path;
     size_t length;
-    
+
     /* innconf->patharticles + '/time-nn/bb/cc/yyyy-aadd'
      * where "nn" is the hexadecimal value of the storage class,
      * "aabbccdd" the arrival time in hexadecimal,
@@ -226,7 +226,7 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
 	free(art);
 	return NULL;
     }
-    
+
     private = xmalloc(sizeof(PRIV_TIMEHASH));
     art->private = (void *)private;
     private->len = sb.st_size;
@@ -262,13 +262,13 @@ static ARTHANDLE *OpenArticle(const char *path, RETRTYPE amount) {
     private->topde = NULL;
     private->secde = NULL;
     private->terde = NULL;
-    
+
     if (amount == RETR_ALL) {
 	art->data = private->base;
 	art->len = private->len;
 	return art;
     }
-    
+
     if ((p = wire_findbody(private->base, private->len)) == NULL) {
 	SMseterror(SMERR_NOBODY, NULL);
 	if (innconf->articlemmap)
@@ -309,7 +309,7 @@ ARTHANDLE *timehash_retrieve(const TOKEN token, const RETRTYPE amount) {
     char                *path;
     ARTHANDLE           *art;
     static TOKEN	ret_token;
-    
+
     if (token.type != TOKEN_TIMEHASH) {
 	SMseterror(SMERR_INTERNAL, NULL);
 	return NULL;
@@ -331,7 +331,7 @@ void timehash_freearticle(ARTHANDLE *article) {
 
     if (!article)
 	return;
-    
+
     if (article->private) {
 	private = (PRIV_TIMEHASH *)article->private;
 	if (innconf->articlemmap)
@@ -370,7 +370,7 @@ bool timehash_cancel(TOKEN token) {
 
 static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
     struct dirent       *de;
-    
+
     while ((de = readdir(dir)) != NULL) {
         if (type == FIND_TOPDIR)
 	    if ((strlen(de->d_name) == 7) &&
@@ -538,7 +538,7 @@ timehash_printfiles(FILE *file, TOKEN token, char **xref UNUSED,
     time_t now;
     int seqnum;
     char *path;
-    
+
     BreakToken(token, &now, &seqnum);
     path = MakePath(now, seqnum, token.class);
     fprintf(file, "%s\n", path);

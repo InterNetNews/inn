@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  timehash based storing method header
+**  Storage manager module header for timehash method.
 */
 
 #ifndef __TIMEHASH_H__
