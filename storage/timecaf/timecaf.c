@@ -98,11 +98,16 @@ static CAFTOCL3CACHE *TOCCache[256]; /* indexed by storage class! */
 static int TOCCacheHits, TOCCacheMisses;
 
     
-static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
+static TOKEN MakeToken(time_t now, ARTNUM seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
-    unsigned int        i;
-    unsigned short      s;
+    uint32_t            i;
+    uint16_t            s;
 
+    /* The token is @04nn00aabbccyyyyxxxx0000000000000000@
+     * where "02" is the timehash method number,
+     * "nn" the hexadecimal value of the storage class,
+     * "aabbccdd" the arrival time in hexadecimal (dd is unused),
+     * "xxxxyyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
     else 
@@ -111,49 +116,56 @@ static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtok
     token.class = class;
     i = htonl(now);
     memcpy(token.token, &i, sizeof(i));
-    if (sizeof(i) > 4)
-	memmove(token.token, &token.token[sizeof(i) - 4], 4);
-    s = htons(seqnum);
-    memcpy(&token.token[4], &s + (sizeof(s) - 2), 2);
+    s = htons(seqnum & 0xffff);
+    memcpy(&token.token[sizeof(i)], &s, sizeof(s));
+    s = htons((seqnum >> 16) & 0xffff);
+    memcpy(&token.token[sizeof(i)+sizeof(s)], &s, sizeof(s));
     return token;
 }
 
 
-static void BreakToken(TOKEN token, int *now, int *seqnum) {
-    unsigned int        i;
-    unsigned short      s = 0;
+static void BreakToken(TOKEN token, time_t *now, ARTNUM *seqnum) {
+    uint32_t            i;
+    uint16_t            s1 = 0;
+    uint16_t            s2 = 0;
 
     memcpy(&i, token.token, sizeof(i));
-    memcpy(&s, &token.token[4], sizeof(s));
+    memcpy(&s1, &token.token[sizeof(i)], sizeof(s1));
+    memcpy(&s2, &token.token[sizeof(i)+sizeof(s1)], sizeof(s2));
     *now = ntohl(i);
-    *seqnum = (int)ntohs(s);
+    *seqnum = (ARTNUM)((ntohs(s2) << 16) + ntohs(s1));
 }
 
 /* 
 ** Note: the time here is really "time>>8", i.e. a timestamp that's been
 ** shifted right by 8 bits.
 */
-static char *MakePath(int now, const STORAGECLASS class) {
+static char *MakePath(time_t now, const STORAGECLASS class) {
     char *path;
     size_t length;
     
-    /* innconf->patharticles + '/timecaf-zz/xx/xxxx.CF' */
+    /* innconf->patharticles + '/timecaf-nn/bb/aacc.CF'
+     * where "nn" is the hexadecimal value of the storage class,
+     * "aabbccdd" the arrival time in hexadecimal (dd is unused). */
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
     snprintf(path, length, "%s/timecaf-%02x/%02x/%02x%02x.CF",
              innconf->patharticles, class,
-             (now >> 8) & 0xff, (now >> 16) & 0xff, now & 0xff);
+             (unsigned int)((now >> 8) & 0xff),
+             (unsigned int)((now >> 16) & 0xff),
+             (unsigned int)(now & 0xff));
 
     return path;
 }
 
 static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
     int			n;
-    unsigned int	t1, t2, class;
-    unsigned int	timestamp;
+    unsigned int        t1, t2;
+    STORAGECLASS        class;
+    time_t              timestamp;
     static TOKEN	token;
 
-    n = sscanf(path, "timecaf-%02x/%02x/%04x.CF", &class, &t1, &t2);
+    n = sscanf(path, "timecaf-%02x/%02x/%04x.CF", (unsigned int *)&class, &t1, &t2);
     if (n != 3)
 	return (TOKEN *)NULL;
     timestamp = ((t1 << 8) & 0xff00) | ((t2 << 8) & 0xff0000) | ((t2 << 0) & 0xff);
@@ -188,7 +200,7 @@ bool timecaf_init(SMATTRIBUTE *attr) {
 */
 
 static CAFTOCCACHEENT *
-CheckTOCCache(int timestamp, int tokenclass)
+CheckTOCCache(time_t timestamp, STORAGECLASS tokenclass)
 {
     CAFTOCL2CACHE *l2;
     CAFTOCL1CACHE *l1;
@@ -217,7 +229,7 @@ CheckTOCCache(int timestamp, int tokenclass)
 ** cache.
 */
 static CAFTOCCACHEENT *
-AddTOCCache(int timestamp, CAFTOCENT *toc, CAFHEADER head, int tokenclass)
+AddTOCCache(time_t timestamp, CAFTOCENT *toc, CAFHEADER head, STORAGECLASS tokenclass)
 {
     CAFTOCL2CACHE *l2;
     CAFTOCL1CACHE *l1;
@@ -259,7 +271,7 @@ AddTOCCache(int timestamp, CAFTOCENT *toc, CAFHEADER head, int tokenclass)
 */
 
 static ARTHANDLE *
-StatArticle(int timestamp, ARTNUM artnum, int tokenclass)
+StatArticle(time_t timestamp, ARTNUM artnum, STORAGECLASS tokenclass)
 {
     CAFTOCCACHEENT *cent;
     CAFTOCENT *toc;
@@ -322,7 +334,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     char                *path;
     char                *p;
     time_t              now;
-    int			timestamp;
+    time_t              timestamp;
     TOKEN               token;
     int                 fd;
     ssize_t             result;
@@ -542,8 +554,8 @@ static ARTHANDLE *OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE am
 }
 
 ARTHANDLE *timecaf_retrieve(const TOKEN token, const RETRTYPE amount) {
-    int                 timestamp;
-    int			artnum;
+    time_t              timestamp;
+    ARTNUM              artnum;
     char                *path;
     ARTHANDLE           *art;
     static TOKEN	ret_token;
@@ -639,8 +651,8 @@ DoCancels(void) {
 }
 	    
 bool timecaf_cancel(TOKEN token) {
-    int                 now;
-    int                 seqnum;
+    time_t              now;
+    ARTNUM              seqnum;
     char                *path;
 
     BreakToken(token, &now, &seqnum);
