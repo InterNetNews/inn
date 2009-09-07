@@ -38,6 +38,16 @@ logged as C<localhost>.
 
 =item *
 
+A new CNFS version has been introduced by Miquel van Smoorenburg in
+the CNFS header.  CNFSv4 uses S<4 KB> blocks instead of S<512 bytes>,
+which more particularly makes writes faster.  CNFSv4 supports
+files/partitions up to S<16 TB> with a S<4 KB> blocksize.
+
+Existing CNFS buffers are kept unchanged; only new CNFS buffers are
+initialized with that new version.
+
+=item *
+
 B<grephistory -l> now returns the contents of the expires history field
 as well as the hash of the message-ID.  Besides, when the storage API
 token does not exist, B<grephistory -v> now also returns the hash

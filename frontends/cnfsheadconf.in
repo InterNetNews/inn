@@ -238,9 +238,9 @@ sub print_cycbuff_head {
     my($CNFSNASIZ)=16;
     my($CNFSPASIZ)=64;
     my($CNFSLASIZ)=16;
-    my($headerlength) = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (5 * $CNFSLASIZ);
+    my($headerlength) = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
     my($buff, @entries, $e);
-    my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff);
+    my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff, $blksza);
 
     if ($opt_w) {
 	if(! open(BUFF, "+< $buffpath") ) {
@@ -260,7 +260,7 @@ sub print_cycbuff_head {
 	exit(1);
     }
 
-    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff)  = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $buff);
+    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if(!$magic) {
 	print STDERR "Error while unpacking header ...\n";
@@ -271,6 +271,7 @@ sub print_cycbuff_head {
     my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
+    my($blksz) = ($magic =~ m/^CBuf4/) ? hex($blksza) : 512;
 
     my ($nupdate_str, $nago_str) = &make_time ($update);
 
@@ -285,6 +286,7 @@ sub print_cycbuff_head {
     print("  Meta $metaname, order: ");
     printf("%d", $orderinmeta);
     print(", current: $currentbuff");
+    print(", blocksize: $blksz");
 
     print "\n  Newest: $nupdate_str, $nago_str ago\n";
 
@@ -334,6 +336,7 @@ sub print_cycbuff_head {
 	    $currentbuff = sprintf("%0.8s", $in);
 	}
 	$buff = pack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff);
+        $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
 	seek(BUFF, 0, 0);
 	    if(! syswrite(BUFF, $buff, $headerlength) ) {
 	    print STDERR "Cannot write $headerlength bytes to file $buffpath...\n";

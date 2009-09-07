@@ -20,10 +20,12 @@
 #define	CNFS_MAGICV1	"Cycbuff"	/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV2	"CBuf1"		/* CNFSMASIZ bytes */
 #define	CNFS_MAGICV3	"CBuf3"		/* CNFSMASIZ bytes */
-#define	CNFS_BLOCKSIZE	512		/* Unit block size we'll work with */
+#define	CNFS_MAGICV4	"CBuf4"		/* CNFSMASIZ bytes */
+#define	CNFS_DFL_BLOCKSIZE	4096	/* Unit block size we'll work with */
+#define	CNFS_MAX_BLOCKSIZE	16384	/* Max unit block size */
 
 /* Amount of data stored at beginning of CYCBUFF before the bitfield */
-#define	CNFS_BEFOREBITF	(1 * CNFS_BLOCKSIZE)
+#define	CNFS_BEFOREBITF		512	/* Rounded up to CNFS_HDR_PAGESIZE */
 
 struct metacycbuff;		/* Definition comes below */
 
@@ -49,6 +51,7 @@ typedef struct _CYCBUFF {
 				   storage */
   bool		needflush;	/* true if CYCBUFFEXTERN is needed to be
 				   flushed */
+  int		blksz;		/* Blocksize */
   struct _CYCBUFF	*next;
   bool		currentbuff;	/* true if this cycbuff is currently used */
   char		metaname[CNFSNASIZ];/* Symbolic name of meta */
@@ -70,6 +73,7 @@ typedef struct {
     char	metaname[CNFSNASIZ];
     char	orderinmeta[CNFSLASIZ];
     char	currentbuff[CNFSMASIZ];
+    char	blksza[CNFSLASIZ];	/* ASCII version of blksz */
 } CYCBUFFEXTERN;
 
 #define METACYCBUFF_UPDATE	25
