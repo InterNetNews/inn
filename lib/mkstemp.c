@@ -25,7 +25,7 @@ int test_mkstemp(char *);
 #endif
 
 /* Pick the longest available integer type. */
-#if HAVE_LONG_LONG
+#if HAVE_LONG_LONG_INT
 typedef unsigned long long long_int_type;
 #else
 typedef unsigned long long_int_type;

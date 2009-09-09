@@ -38,7 +38,6 @@ m4_include([m4/cc-c-o.m4])
 m4_include([m4/cc-flags.m4])
 m4_include([m4/compress.m4])
 m4_include([m4/inet-ntoa.m4])
-m4_include([m4/int32.m4])
 m4_include([m4/iov-max.m4])
 m4_include([m4/krb5.m4])
 m4_include([m4/large-fpos.m4])
@@ -431,18 +430,17 @@ AC_CHECK_MEMBERS([struct sockaddr.sa_len], , ,
 #include <sys/socket.h>])
 
 dnl Checks for types.
-INN_TYPE_INT32_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_LONG_LONG_INT
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 AC_TYPE_UID_T
-AC_CHECK_TYPES([long long])
 AC_CHECK_TYPE([ptrdiff_t], ,
     [AC_DEFINE([ptrdiff_t], [long],
         [Define to long if <sys/types.h> does not define.])])
-AC_CHECK_TYPE([ssize_t], ,
-    [AC_DEFINE([ssize_t], [int],
-        [Define to int if <sys/types.h> does not define.])])
 AC_CHECK_TYPE([sig_atomic_t], ,
     [AC_DEFINE([sig_atomic_t], [int],
         [Define to int if <signal.h> does not define.])],
