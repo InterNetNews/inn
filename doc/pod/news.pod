@@ -27,7 +27,7 @@ HDR/XHDR/XPAT answers are now robust when the overview database is
 inconsistent.  When the overview schema was modified without the overview
 database being rebuilt, wrong results could be returned for extra fields
 (especially a random portion of some other header).  The desired header
-name is now explicitly searched in the overview information.
+name is now explicitly searched for in the overview information.
 
 =item *
 
@@ -54,8 +54,8 @@ on systems where short ints were not 16-bit integers.
 
 =item *
 
-When there is not enough space to write a CAF header, the timecaf storage
-manager now uses a larger blocksize.  On 32-bit systems, the CAF header
+When there is not enough space to write an entire CAF header, the timecaf
+storage manager now uses a larger blocksize.  On 32-bit systems, the CAF header
 is about 300 bytes, leaving about 200 bytes for the free bitmap index
 (the remaining of a 512-byte blocksize).  On 64-bit systems, the size
 of the CAF header could exceed 512 bytes, thus leaving no room for the
@@ -144,14 +144,16 @@ is used.
 
 =item *
 
-gzip(1) is now the default UUCP batcher in B<send-uucp>, instead of
-compress(1) whose algorithm has patent issues.
+gzip(1) is now the default UUCP batcher in B<send-uucp> instead of
+compress(1) because B<gzip> is more widely available than B<compress>,
+due to old patent issues.  Note that there is no impact on decompression
+as it is handled by B<rnews>.
 
 =item *
 
 B<cnfsheadconf> now uses the Perl core module C<Math::BigInt> rather
 than the deprecated F<bigint.pl> library.  When used without specifying
-a CNFS buffer, it properly displays the status of all CNFS buffers.
+a CNFS buffer, it now properly displays the status of all CNFS buffers.
 
 =back
 
