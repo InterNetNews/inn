@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2009-01-02
+##  Last modified: 2009-08-04
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -787,6 +787,18 @@ checkgroups:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 newgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 rmgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 
+## ETERNAL-SEPTEMBER (Eternal-September Project)
+# Contact: news@eternal-september.org
+# URL: http://www.eternal-september.org/
+# Key URL: http://www.eternal-september.org/control/pgpkey.txt
+# Key fingerprint = A05F 5FA4 D43E 7250 24CE  F4D4 10F3 7C12 9E5D D866
+# *PGP*   See comment at top of file.
+newgroup:*:eternal-september.*:drop
+rmgroup:*:eternal-september.*:drop
+checkgroups:news@eternal-september.org:eternal-september.*:verify-news@eternal-september.org
+newgroup:news@eternal-september.org:eternal-september.*:verify-news@eternal-september.org
+rmgroup:news@eternal-september.org:eternal-september.*:verify-news@eternal-september.org
+
 ## EUNET (Europe)
 checkgroups:news@noc.eu.net:eunet.*:doit
 newgroup:news@noc.eu.net:eunet.*:doit
@@ -958,10 +970,14 @@ newgroup:usenet@gnu.org:gnu.*:verify-usenet@gnu.org
 rmgroup:usenet@gnu.org:gnu.*:verify-usenet@gnu.org
 
 ## GNUU (*PRIVATE* -- GNUU e.V., Oberursel, Germany)
-# Contact: news@gnuu.de
-# For private use only, contact the above address for information.
-newgroup:*:gnuu.*:mail
-rmgroup:*:gnuu.*:doit
+# URL: http://www.gnuu.de/
+# Key URL: http://www.gnuu.de/config/PGPKEY.GNUU
+# For private use only.
+# *PGP*   See comment at top of file.
+newgroup:*:gnuu.*:drop
+rmgroup:*:gnuu.*:drop
+newgroup:news@gnuu.de:gnuu.*:mail
+rmgroup:news@gnuu.de:gnuu.*:verify-news@gnuu.de
 
 ## GOV (Government Information)
 # Admin group: gov.usenet.announce
@@ -1802,9 +1818,9 @@ rmgroup:pkern@gpu.utcc.utoronto.ca:ont.*:doit
 # *PGP*   See comment at top of file.
 newgroup:*:opennews.*:drop
 rmgroup:*:opennews.*:drop
-checkgroups:schiller@babsi.de:opennews.*:verify-news@news2.open-news-network.org
-newgroup:schiller@babsi.de:opennews.*:verify-news@news2.open-news-network.org
-rmgroup:schiller@babsi.de:opennews.*:verify-news@news2.open-news-network.org
+checkgroups:news@news2.open-news-network.org:opennews.*:verify-news@news2.open-news-network.org
+newgroup:news@news2.open-news-network.org:opennews.*:verify-news@news2.open-news-network.org
+rmgroup:news@news2.open-news-network.org:opennews.*:verify-news@news2.open-news-network.org
 
 ## OPENWATCOM (Open Watcom compilers)
 # Contact: admin@openwatcom.news-admin.org
@@ -1969,7 +1985,7 @@ newgroup:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 rmgroup:pmelo@*.inescc.pt:pt.*:verify-control@usenet-pt.org
 
 ## PUBNET (*DEFUNCT* -- ?)
-# URL: ftp://ftp.isc.org/pub/usenet/control/pubnet/pubnet.config.Z
+# URL: ftp://ftp.isc.org/pub/usenet/control/pubnet/pubnet.config.gz
 # This hierarchy is defunct.  Please remove it.
 newgroup:*:pubnet.*:mail
 rmgroup:*:pubnet.*:doit
@@ -2060,12 +2076,6 @@ rmgroup:*:scout.*:drop
 checkgroups:control@news.scoutnet.org:scout.*:verify-control@news.scoutnet.org
 newgroup:control@news.scoutnet.org:scout.*:verify-control@news.scoutnet.org
 rmgroup:control@news.scoutnet.org:scout.*:verify-control@news.scoutnet.org
-
-## SDNET (Greater San Diego Area, California, USA)
-# URL: http://www-rohan.sdsu.edu/~wk/sdnet/sdnet.html
-checkgroups:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
-newgroup:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
-rmgroup:wkronert@sunstroke.sdsu.edu:sdnet.*:doit
 
 ## SDSU (*LOCAL* -- San Diego State University, CA)
 # Contact: Craig R. Sadler <usenet@sdsu.edu>
@@ -2216,6 +2226,12 @@ rmgroup:*:syd.*:drop
 checkgroups:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 newgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 rmgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
+
+## SZAF (*PRIVATE* -- German ?)
+# Admin group: szaf.admin
+# For private use only.
+newgroup:hirtenrat@szaf.org:szaf.*:mail
+rmgroup:hirtenrat@szaf.org:szaf.*:doit
 
 ## T-NETZ (*DEFUNCT* -- Germany)
 # This hierarchy is defunct.  Please remove it.
