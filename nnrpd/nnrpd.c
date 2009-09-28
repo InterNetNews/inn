@@ -1225,7 +1225,8 @@ main(int argc, char *argv[])
     /* Were we told to reject connections? */
     if (Reject) {
 	syslog(L_NOTICE, "%s rejected %s", Client.host, Reject);
-	Reply("%d %s\r\n", NNTP_FAIL_TERMINATING, Reject);
+	Reply("%d %s\r\n", NNTP_FAIL_TERMINATING,
+              is_valid_utf8(Reject) ? Reject : "Connection rejected");
 	ExitWithStats(0, false);
     }
 

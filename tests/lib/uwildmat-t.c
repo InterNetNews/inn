@@ -44,10 +44,21 @@ test_s(int n, const char *text, const char *pattern, bool matches)
         printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
 }
 
+static void
+test_v(int n, const char *text, bool matches)
+{
+    bool matched;
+
+    matched = is_valid_utf8(text);
+    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    if (matched != matches)
+        printf("  %s\n  expected %d\n", text, matches);
+}
+
 int
 main(void)
 {
-    test_init(174);
+    test_init(187);
 
     /* Basic wildmat features. */
     test_r(  1, "foo",            "foo",               true);
@@ -249,5 +260,22 @@ main(void)
     test_r(174, "\303\206\357\277\277",
                                   "*[^\303\206]",      true);
 
+    /* Tests for the is_valid_utf8 interface. */
+    test_v(175, "a",                                   true);
+    test_v(176, "aaabbb",                              true);
+    test_v(177, "test\303\251\302\240!",               true);
+    test_v(178, "\200",                                false);
+    test_v(179, "\277",                                false);
+    test_v(180, "\300 ",                               false);
+    test_v(181, "\340\277",                            false);
+    test_v(182, "\374\277\277\277\277",                false);
+    test_v(183, "\374\277\277\277\277\277",            true);
+    test_v(184, "a\303\251b\303\251c\374\277\277\277\277\277",
+                                                       true);
+    test_v(185, "a\303\251b\303c\374\277\277\277\277\277",
+                                                       false);
+    test_v(186, "",                                    true);
+    test_v(187, "a\303\251b\303\0c",                   false);
+    
     return 0;
 }

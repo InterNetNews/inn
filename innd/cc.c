@@ -275,7 +275,7 @@ CCaddhist(char *av[])
 
 
 /*
-**  Do the work to allow foreign connectiosn.
+**  Do the work to allow foreign connections.
 */
 static const char *
 CCallow(char *av[])
@@ -1001,6 +1001,13 @@ CCnewgroup(char *av[])
 	if (CTYPE(isupper, Rest[0]))
 	    Rest[0] = tolower(Rest[0]);
     }
+
+    who = av[2];
+    if (*who == '\0')
+        who = NEWSMASTER;
+    if (!is_valid_utf8(who))
+        return "1 Invalid UTF-8 creator's name";
+
     if (strlen(Name) + strlen(Rest) > SMBUF - 24)
 	return "1 Name too long";
 
@@ -1018,9 +1025,6 @@ CCnewgroup(char *av[])
 	IOError(WHEN, oerrno);
     }
     else {
-	who = av[2];
-	if (*who == '\0')
-	    who = NEWSMASTER;
         xasprintf(&buff, "%s %ld %s\n", Name, (long) Now.tv_sec, who);
 	if (xwrite(fd, buff, strlen(buff)) < 0) {
 	    oerrno = errno;
@@ -1145,8 +1149,11 @@ CCblock(OPERATINGMODE NewMode, char *reason)
     if (*reason == '\0')
 	return CCnoreason;
 
-    if (strlen(reason) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe */
+    if (strlen(reason) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe. */
 	return CCbigreason;
+
+    if (!is_valid_utf8(reason))
+        return "1 Invalid UTF-8 reason";
 
     if (Reservation) {
 	if (strcmp(reason, Reservation) != 0) {
@@ -1228,8 +1235,10 @@ CCreaders(char *av[])
 	p = av[1];
 	if (*p == '\0')
 	    return CCnoreason;
-	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe */
+	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe. */
 	    return CCbigreason;
+        if (!is_valid_utf8(p))
+            return "1 Invalid UTF-8 reason";
 	NNRPReason = xstrdup(p);
 	break;
     }
@@ -1286,8 +1295,10 @@ CCreject(char *av[])
 {
     if (RejectReason)
 	return "1 Already rejecting";
-    if (strlen(av[0]) > MAX_REASON_LEN)	/* MAX_REASON_LEN is as big as is safe */
+    if (strlen(av[0]) > MAX_REASON_LEN)	/* MAX_REASON_LEN is as big as is safe. */
 	return CCbigreason;
+    if (!is_valid_utf8(av[0]))
+        return "1 Invalid UTF-8 reason";
     RejectReason = xstrdup(av[0]);
     return NULL;
 }
@@ -1452,8 +1463,10 @@ CCreserve(char *av[])
 	/* Trying to make a reservation. */
 	if (Reservation)
 	    return "1 Already reserved";
-	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe */
+	if (strlen(p) > MAX_REASON_LEN) /* MAX_REASON_LEN is as big as is safe. */
 	    return CCbigreason;
+        if (!is_valid_utf8(p))
+            return "1 Invalid UTF-8 reason";
 	Reservation = xstrdup(p);
     }
     else {

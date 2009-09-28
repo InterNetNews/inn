@@ -107,6 +107,7 @@ enum uwildmat {
     UWILDMAT_POISON
 };
 
+extern bool             is_valid_utf8(const char *start);
 extern bool             uwildmat(const char *text, const char *pat);
 extern bool             uwildmat_simple(const char *text, const char *pat);
 extern enum uwildmat    uwildmat_poison(const char *text, const char *pat);
