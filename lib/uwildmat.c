@@ -93,10 +93,51 @@ utf8_length(const unsigned char *start, const unsigned char *end)
     if (end != NULL && (end - start + 1) < length)
         return 1;
     left = length - 1;
-    p = start + 1;
     for (p = start + 1; left > 0 && (*p & 0xc0) == 0x80; p++)
         left--;
     return (left == 0) ? length : 1;
+}
+
+
+/*
+**  Check whether a string contains only valid UTF-8 characters.
+*/
+bool
+is_valid_utf8(const char *text)
+{
+    unsigned char mask;
+    const unsigned char *p;
+    int length;
+    int left;
+
+    for (p = (const unsigned char *)text; *p != '\0';) {
+        mask = 0x80;
+        length = 0;
+
+        /* Find out the expected length of the character. */
+        for (; mask > 0 && (*p & mask) == mask; mask >>= 1)
+            length++;
+
+        p++;
+
+        /* Valid ASCII. */
+        if (length == 0)
+            continue;
+        
+        /* Invalid length. */
+        if (length < 2 || length > 6)
+            return false;
+
+        /* Check that each byte looks like 10xxxxxx, except for the first. */
+        left = length - 1;
+        for (; left > 0 && (*p & 0xc0) == 0x80; p++)
+            left--;
+
+        if (left > 0)
+            return false;
+    }
+
+    return true;
 }
 
 
