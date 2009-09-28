@@ -23,7 +23,9 @@ pattern to specify a set of newsgroups.
 The third field is the value that should be used for the Distribution:
 header of a posted article, if this line was picked as the best match and
 no Distribution: header was supplied by the user.  It can be an empty
-string, specifying that no Distribution: header should be added.
+string, specifying that no Distribution: header should be added.  If it
+is not empty, it is better to only use US-ASCII characters for that field;
+otherwise, make sure it is encoded in UTF-8.
 
 When a post is received by B<nnrpd> that does not already contain a
 Distribution: header, each newsgroup to which an article is posted will be

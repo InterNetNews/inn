@@ -16,10 +16,12 @@ Each line consists of three fields:
 
 The first field is the name of the newsgroup.  The second field is the
 time it was created, expressed as the number of seconds since the epoch.
-The third field is the e-mail address of the person who created the group,
-as specified in the control message or on the B<ctlinnd> command line, or
-the newsmaster specified at configure time if no creator argument was
-given to B<ctlinnd> (by default, it is C<usenet>).
+The third field is plain text intended to describe the entity that created
+the newsgroup.  This field is encoded in UTF-8 and is usually the e-mail
+address of the person who created the group, as specified in the control
+message or on the B<ctlinnd> command line, or the newsmaster specified
+at configure time if no creator argument was given to B<ctlinnd> (by
+default, it is C<usenet>).
 
 You can get the F<active.times> file of another NNTP server with getlist(1).
 
@@ -27,7 +29,7 @@ You can get the F<active.times> file of another NNTP server with getlist(1).
 
 The line:
 
-   news.admin.moderation 1175716803 group-admin@isc.org
+   news.admin.moderation 1175716803 <group-admin@isc.org>
 
 shows that the newsgroup news.admin.moderation was created on April 4th, 2007,
 at 20:00:03 UTC.  This date can be obtained for instance with

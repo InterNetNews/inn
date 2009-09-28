@@ -256,12 +256,12 @@ equal sign, only the first character is used.  I<creator> should be the
 identity of the person creating the group.  If the newsgroup already
 exists, this is equivalent to the C<changegroup> command.
 
-I<creator> may be omitted; if so, it will default to the newsmaster (as
-specified at configure time, normally C<usenet>).  I<mode> may also be
-omitted; if so, it will default to C<y> (a normal, unmoderated group).
-The combination of defaults make it possible to use the text of the
-Control: header directly (although don't do this without checking the
-syntactic validity of the header first).
+I<creator>, encoded in UTF-8 if given, may be omitted; if so, it will
+default to the newsmaster (as specified at configure time, normally
+C<usenet>).  I<mode> may also be omitted; if so, it will default to C<y>
+(a normal, unmoderated group).  The combination of defaults make it possible
+to use the text of the Control: header directly (although don't do this
+without checking the syntactic validity of the header first).
 
 This command can only be done while the server is running or throttled
 manually.  It will update its internal state when a C<go> command is
@@ -289,7 +289,7 @@ connections are closed, but the history database is closed.  This should
 be used for short-term locks, such as when replacing the history
 database.  If the server was not started with the B<-n y> flag, this
 command also does the equivalent of a C<readers> command with C<no> as the
-flag and I<reason> as the text.
+flag and I<reason> as the text, encoded in UTF-8.
 
 =item perl I<flag>
 
@@ -308,8 +308,8 @@ filtering is enabled; if it starts with C<n>, filtering is disabled.
 Allow or disallow readers.  If I<flag> starts with the letter C<n>, then
 reading is disallowed by causing the server to pass I<text> as the value
 of the B<-r> flag to B<nnrpd>.  If I<flag> starts with the letter C<y> and
-I<text> is either an empty string or the same string that was used when
-reading was disabled, reading will be re-enabled.
+I<text> is either an empty string or the same string, encoded in UTF-8, that
+was used when reading was disabled, reading will be re-enabled.
 
 This command has no effect if B<nnrpd> is being run separately rather than
 spawned by B<innd>.
@@ -317,8 +317,8 @@ spawned by B<innd>.
 =item reject I<reason>
 
 Remote connections (those that would not be handed off to B<nnrpd>) are
-rejected with I<reason> given as the explanation.  Existing connections
-are not closed.
+rejected with I<reason> given as the explanation, encoded in UTF-8.  Existing
+connections are not closed.
 
 =item reload I<what> I<reason>
 
@@ -373,9 +373,9 @@ Identical to the C<lowmark> command.
 =item reserve I<reason>
 
 Require the next C<pause> or C<throttle> command to use I<reason> as its
-reason.  This reservation is cleared by giving an empty string for the
-reason.  This is used by programs like B<expire> to coordinate pauses and
-throttles of the server and avoid trampling on other instances of
+reason, encoded in UTF-8.  This reservation is cleared by giving an empty
+string for the reason.  This is used by programs like B<expire> to coordinate
+pauses and throttles of the server and avoid trampling on other instances of
 themselves.
 
 =item rmgroup I<group>
@@ -427,7 +427,7 @@ server is throttled cannot be done.)
 
 If the server was not started with the B<-n y> flag, then this
 command also does the equivalent of a C<readers> command with C<no> as the
-flag and I<reason> as the text.
+flag and I<reason> as the text, encoded in UTF-8.
 
 =item timer (off | I<interval>)
 
