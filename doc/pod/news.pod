@@ -131,8 +131,8 @@ the specified limit, B<makehistory> sleeps until it goes below the limit.
 =item *
 
 As UTF-8 is the default character set in S<RFC 3977>, C<ctlinnd pause>,
-C<ctlinnd readers>, C<ctlinnd reject>, C<ctlinnd throttle> and
-C<nnrpd -r> commands now require the given reason to be encoded in UTF-8,
+C<ctlinnd readers>, C<ctlinnd reject>, C<ctlinnd reserve>, C<ctlinnd throttle>
+and C<nnrpd -r> commands now require the given reason to be encoded in UTF-8,
 so that it can be properly sent to news readers.
 
 =item *

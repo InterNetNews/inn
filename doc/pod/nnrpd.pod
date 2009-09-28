@@ -141,7 +141,7 @@ B<-D> flag.
 
 If the B<-r> flag is used, then B<nnrpd> will reject the incoming
 connection giving I<reason> as the text.  This flag is used by innd(8)
-when it is paused or throttled.
+when it is paused or throttled.  I<reason> should be encoded in UTF-8.
 
 =item B<-s> I<padding>
 

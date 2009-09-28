@@ -11,7 +11,7 @@
 ##  the one with the highest weight.
 ##      <weight>        The weight assigned to this match, integer.
 ##      <pattern>       Newsgroup name or single wildmat(3) pattern.
-##      <value>         Value of Distribution: header.
+##      <value>         Value of Distribution: header, encoded in UTF-8.
 ##
 ##  See the distrib.pats man page for more information.
 
