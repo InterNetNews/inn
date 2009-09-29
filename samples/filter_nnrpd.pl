@@ -10,7 +10,8 @@
 # posting. It has access to the headers of the article via the associative
 # array `%hdr'. If it returns a null string then the article is accepted
 # for posting. A non-null string rejects it, and the value returned is used
-# in the rejection message.
+# in the rejection message (make sure that such a message is properly encoded
+# in UTF-8 so as to comply with the NNTP protocol).
 #
 
 #

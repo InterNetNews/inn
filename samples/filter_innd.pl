@@ -22,7 +22,9 @@
 #		global associative array `%hdr.'  If it returns the empty
 #		string ("") then the article is accepted. If it returns any
 #		non-null string value, then the article is rejected and the
-#		returned string value is logged as the reason why.
+#		returned string value is logged as the reason why (make sure
+#               that such a message is properly encoded in UTF-8 so as to comply
+#               with the NNTP protocol).
 #
 #		The standard headers are:
 #
@@ -56,8 +58,10 @@
 #		This routine is called when each article (in streaming
 #		mode only) is checked to see if INN wants to accept the
 #		article.  If it returns the empty string, the article
-#		is accepted. If it returns a non-empty value, the
-#		article is refused.  It is called with one argument,
+#		is accepted.  If it returns a non-empty value, the
+#		article is refused (make sure that such a message is
+#               properly encoded in UTF-8 so as to comply with the
+#               NNTP protocol).  It is called with one argument,
 #		the message-id to check.
 
 
