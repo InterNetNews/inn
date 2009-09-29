@@ -19,8 +19,7 @@ readers.conf mechanism used by nnrpd.
 
 For Perl filtering support, you need to have Perl S<version 5.004> or newer.
 Earlier versions of Perl will fail with a link error at compilation time.
-http://language.perl.com/info/software.html should have the latest Perl
-version.
+L<http://www.perl.com/download.csp> should have the latest Perl version.
 
 To enable Perl support, you have to specify B<--with-perl> when you run
 configure.  See F<INSTALL> for more information.
@@ -74,7 +73,9 @@ article is received from a peer, via either IHAVE or TAKETHIS,
 filter_art() is called if Perl filtering is turned on.  It receives no
 arguments, and should return a single scalar value.  That value should be
 the empty string to indicate that INN should accept the article, or some
-rejection message to indicate that the article should be rejected.
+rejection message to indicate that the article should be rejected (make sure
+that such a message is properly encoded in UTF-8 so as to comply with the
+NNTP protocol).
 
 filter_art() has access to a global hash named %hdr, which contains all of
 the standard headers present in the article and their values.  The
@@ -142,26 +143,29 @@ As mentioned above, if filter_art() returns the empty string (''), the
 article is accepted.  Note that this must be the empty string, not 0 or
 undef.  Otherwise, the article is rejected, and whatever scalar
 filter_art() returns (typically a string) will be taken as the reason why
-the article was rejected.  This reason will be returned to the remote peer
-as well as logged to the news logs.  (innreport, in its nightly report,
-will summarize the number of articles rejected by the Perl filter and
-include a count of how many articles were rejected with each reason
-string.)
+the article was rejected (make sure that such a message is properly encoded
+in UTF-8 so as to comply with the NNTP protocol).  This reason will be
+returned to the remote peer as well as logged to the news logs.  (innreport,
+in its nightly report, will summarize the number of articles rejected
+by the Perl filter and include a count of how many articles were rejected
+with each reason string.)
 
 One other type of filtering is also supported.  If Perl filtering is
 turned on and the Perl function filter_messageid() is defined, that
 function will be called for each message ID received from a peer (via
 either CHECK or IHAVE).  The function receives a single argument, the
 message ID, and like filter_art() should return an empty string to accept
-the article or an error string to refuse the article.  This function is
-called before any history lookups and for every article offered to innd
-with CHECK or IHAVE (before the actual article is sent).  Accordingly, the
-message ID is the only information it has about the article (the %hdr hash
-will be empty).  This code would sit in a performance-critical hot path in
-a typical server, and therefore should be as fast as possible, but it can
-do things like refuse articles from certain hosts or cancels for already
-rejected articles (if they follow the $alz convention) without having to
-take the network bandwidth hit of accepting the entire article first.
+the article or an error string to refuse the article (make sure that
+such a message is properly encoded in UTF-8 so as to comply with the
+NNTP protocol).  This function is called before any history lookups and
+for every article offered to innd with CHECK or IHAVE (before the actual
+article is sent).  Accordingly, the message ID is the only information
+it has about the article (the %hdr hash will be empty).  This code would
+sit in a performance-critical hot path in a typical server, and therefore
+should be as fast as possible, but it can do things like refuse articles
+from certain hosts or cancels for already rejected articles (if they
+follow the $alz convention) without having to take the network bandwidth
+hit of accepting the entire article first.
 
 Note that you cannot rely on filter_messageid() being called for every
 incoming article; articles sent via TAKETHIS without an earlier CHECK will
@@ -355,8 +359,9 @@ or:
   $modify_headers = 1;
 
 If filter_post() returns something other than the empty string, this
-message is normally returned to the client as an error.  There are three
-exceptions:
+message is normally returned to the client as an error (make sure that
+such a message is properly encoded in UTF-8 so as to comply with the
+NNTP protocol).  There are three exceptions:
 
 =over 4
 
@@ -477,12 +482,13 @@ C<$attributes{password}> the password.
 authenticate() should return a two or three element array.  The first
 element is the NNTP response code to return to the client, the second
 element is an error string which is passed to the client if the
-response code indicates that the authentication attempt has failed. An
-optional third return element if present will be used to match the
-connection with the users: parameter in access groups and will also be
-the username logged. If this element is absent, the username supplied
-by the client during authentication will be used for matching and
-logging.
+response code indicates that the authentication attempt has failed (make
+sure that such a message is properly encoded in UTF-8 so as to comply
+with the NNTP protocol).  An optional third return element if present
+will be used to match the connection with the users: parameter in access
+groups and will also be the username logged.  If this element is absent,
+the username supplied by the client during authentication will be used
+for matching and logging.
 
 The NNTP response code should be 281 (authentication successful),
 481 (authentication unsuccessful), or 403 (server failure).  If the

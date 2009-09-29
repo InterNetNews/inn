@@ -145,10 +145,12 @@ class InndFilter:
         This method interacts with the IHAVE and CHECK NNTP commands.
         If you return a non-empty string here, the offered article
         will be refused before you ever have to waste any bandwidth
-        looking at it.  This is not foolproof, so you should do your
-        ID checks both here and in filter_art.  (TAKETHIS does not
-        offer the ID for examination, and a TAKETHIS isn't always
-        preceded by a CHECK.)
+        looking at it (make sure that such a message is properly
+        encoded in UTF-8 so as to comply with the NNTP protocol).
+        This is not foolproof, so you should do your ID checks both
+        here and in filter_art.  (TAKETHIS does not offer the ID
+        for examination, and a TAKETHIS isn't always preceded
+        by a CHECK.)
         """
         return ""               # Deactivate the samples.
 
@@ -192,7 +194,8 @@ class InndFilter:
         want to reject, return a non-empty string.  The rejection
         string will appear in transfer and posting response banners,
         and local posters will see them if their messages are
-        rejected.
+        rejected (make sure that such a response is properly encoded
+        in UTF-8 so as to comply with the NNTP protocol).
         """
         return ""               # Deactivate the samples.
 

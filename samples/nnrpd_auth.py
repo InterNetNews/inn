@@ -20,7 +20,10 @@
 ##                                readers.conf.  Returns a response
 ##                                code, an error string and an
 ##                                optional string to appear in the
-##                                logs as the username.
+##                                logs as the username (make sure that
+##                                such a message is properly encoded
+##                                in UTF-8 so as to comply with the
+##                                NNTP protocol).
 ##  authen_close()              - Called on nnrpd termination.  Save
 ##                                your state variables or close a database
 ##                                connection.  May be omitted.
