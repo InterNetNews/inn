@@ -26,7 +26,8 @@
 #if !DO_KEYWORDS
 void
 KEYgenerate(HDRCONTENT *header UNUSED, const char *body UNUSED,
-            const char *orig UNUSED, size_t length UNUSED)
+            size_t bodylen UNUSED, const char *orig UNUSED,
+            size_t length UNUSED)
 {
 }
 
@@ -89,13 +90,14 @@ ptr_strcmp(const void *p1, const void *p2)
 
 void
 KEYgenerate(
-    HDRCONTENT	*hc,	/* header data */
-    const char	*body,	/* article body */
-    const char	*v,	/* old kw value */
-    size_t	l)	/* old kw length */
+    HDRCONTENT	*hc,		/* header data */
+    const char	*body,		/* article body */
+    size_t      bodylen,	/* article body length */
+    const char	*v,		/* old kw value */
+    size_t	l)		/* old kw length */
 {
 
-    int		word_count, word_length, bodylen, word_index, distinct_words;
+    int		word_count, word_length, word_index, distinct_words;
     int		last;
     char	*text, *orig_text, *text_end, *this_word, *chase, *punc;
     static struct word_entry	*word_vec;
@@ -145,11 +147,14 @@ KEYgenerate(
      * now figure acceptable extents, and copy body to working string.
      * (Memory-intensive for hefty articles: limit to non-ABSURD articles.)
      */
-    bodylen = strlen(body);
     if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* too small/big to bother */
 	return;
 
-    orig_text = text = xstrdup(body);	/* orig_text is for free() later on */
+    /* Nul-terminate the body.  orig_text will be freed later. */
+    orig_text = xmalloc(bodylen + 1);
+    memcpy(orig_text, body, bodylen);
+    orig_text[bodylen] = '\0';
+    text = orig_text;
 
     text_end = text + bodylen;
 
