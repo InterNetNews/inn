@@ -1886,7 +1886,7 @@ ARTmakeoverview(CHANNEL *cp)
 	key_old_value  = HDR(HDR__KEYWORDS);
 	key_old_length = HDR_LEN(HDR__KEYWORDS);
 	KEYgenerate(&hc[HDR__KEYWORDS], cp->In.data + data->Body,
-                    key_old_value, key_old_length);
+                    cp->Next - data->Body, key_old_value, key_old_length);
       }
     }
 
