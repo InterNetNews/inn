@@ -502,9 +502,11 @@ fixes, are very welcome.
 
 Subject: 3.1. INN won't start after a new installation
 
-The most common cause of this problem is that inndstart isn't setuid root.
-inndstart must be installed owned by root and group news, mode 4550.  The
-ls -l output for inndstart should look something like:
+The most common cause of this problem is that inndstart isn't setuid root
+(please note that it only affects versions prior to INN 2.5.0 because
+inndstart was removed in INN 2.5.0).  inndstart must be installed owned
+by root and group news, mode 4550.  The ls -l output for inndstart should
+look something like:
 
 -r-sr-x---   1 root     news        53768 Jan  8 00:47 inndstart*
 
@@ -572,10 +574,10 @@ exceptionally low file descriptor limit.
 Subject: 3.6. Can't get debugging information out of INN
 
 The INN startup process is quite complicated, involving the rc.news shell
-script and the setuid inndstart wrapper.  This can make it rather
-difficult to get enough debugging information out of it to determine
-what's going wrong if it's crashing immediately after startup or otherwise
-having serious difficulties.
+script (and the setuid inndstart wrapper for versions of INN prior to 2.5.0).
+This can make it rather difficult to get enough debugging information out
+of it to determine what's going wrong if it's crashing immediately after
+startup or otherwise having serious difficulties.
 
 One approach is to run innd by hand directly, giving it the -d option.
 This requires setting up a configuration where innd doesn't need to bind
