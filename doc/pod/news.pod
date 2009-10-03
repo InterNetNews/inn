@@ -9,6 +9,11 @@ was used.
 
 =item *
 
+Fixed a segfault in the keyword generation code which was assuming
+that an article was nul-terminated.
+
+=item *
+
 Owing to the US-CERT vulnerability note VU#238019, Cyrus SASL library
 has slightly changed.  B<imap_connection> and B<nnrpd> now handle
 that change.  Otherwise, some answers are too long to be properly
