@@ -233,7 +233,7 @@ then
 
     # Process files like "innfeed-dropped.A001703" where
     # 1703 is not in $LOCKS.
-    for file in `find -name "innfeed-dropped*"`
+    for file in `find . -name "innfeed-dropped*" -print`
     do
         PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
         FOUND=false
