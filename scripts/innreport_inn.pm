@@ -1775,15 +1775,6 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^starttls: \S+ with cipher \S+ \(\d+\/\d+ bits\) no authentication$/o;
   }
   ########
-  ## inndstart
-  if ($prog eq "inndstart") {
-    # cant bind Address already in use
-    # cant bind Permission denied
-    return 1 if $left =~ /cant bind /o;
-    # cant setgroups Operation not permitted
-    return 1 if $left =~ /cant setgroups /o;
-  }
-  ########
   ## overchan
   if ($prog eq "overchan") {
     # times
