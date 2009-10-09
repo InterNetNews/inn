@@ -208,7 +208,10 @@ test -n "${RMFILE}" && {
     }
 
 test -n "${LOWMARKFILE}" && {
-	EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
+        EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
+        if [ "${DOEXPIREOVER}" != "true" ] ; then
+            echo "lowmark requires expireover" >> ${EXPLOG}
+        fi
 }
 
 
@@ -301,7 +304,7 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
-	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
+	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
 	${SORT} -u -o ${RMFILE} ${RMFILE}
 	if ${DOEXPLOG}; then
 	    echo "expirerm start `date`" >>${EXPLOG}
@@ -362,7 +365,7 @@ if ${DOEXPIRE} ; then
     fi
 
     ## Get rid of an old expire RMFILE since news.daily locks itself and
-    ## we would not get here if another instance were still running.       
+    ## we would not get here if another instance were still running.
     if [ -n "${RMFILE}" ] ; then
         rm -f ${RMFILE}
     fi
@@ -439,7 +442,7 @@ SERVERMODE=`ctlinnd mode 2>/dev/null | ${SED} 1q`
 case "${SERVERMODE}" in
 "Server throttled"*)
     ##  We did, try to unthrottle the server.
-    echo "${SERVERMODE} -- trying to recover"    
+    echo "${SERVERMODE} -- trying to recover"
     ctlinnd -s go ""
     ;;
 esac
@@ -455,7 +458,7 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
 	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
-	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"	
+	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
 	${SORT} -u -o ${RMFILE} ${RMFILE}
 	if ${DOEXPLOG}; then
 	    echo "expirerm start `date`" >>${EXPLOG}
@@ -464,46 +467,10 @@ if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
 	if ${DOEXPLOG}; then
 	    echo "expirerm end `date`" >>${EXPLOG}
 	fi
-	${DOEXPIREOVER} && {
-	    if ${DOEXPLOG}; then
-		echo "${EXPIREOVER} start `date`" >>${EXPLOG}
-	    fi
-	    ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
-	      grep -v 'No such file or directory'
-	    DOEXPIREOVER=false
-	    if ${DOEXPLOG}; then
-		echo "${EXPIREOVER} end `date`" >>${EXPLOG}
-	    fi
-	}
-	test -n "${LOWMARKFILE}" && {
-	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
-	    ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	    echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
-	    rm -f ${MOST_LOGS}/expire.lastlowmark
-	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
-	}
     }
-    ##  Expire overview lines for files we just removed.
-    if ${DOEXPIREOVER}; then
-	if ${DOEXPLOG}; then
-	    echo "${EXPIREOVER} start `date`" >>${EXPLOG}
-	fi
-	( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
-	    grep -v 'No such file or directory'
-	DOEXPIREOVER=false
-	if ${DOEXPLOG}; then
-	    echo "${EXPIREOVER} end `date`" >>${EXPLOG}
-	fi
-	test -n "${LOWMARKFILE}" && {
-	    echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
-	    ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	    echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
-	    rm -f ${MOST_LOGS}/expire.lastlowmark
-	    mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
-	}
-    fi
 fi
-##  In case noexpire expireover.
+
+##  Remove the articles that are supposed to go from the overview.
 if ${DOEXPIREOVER}; then
     if ${DOEXPLOG}; then
 	echo "${EXPIREOVER} start `date`" >>${EXPLOG}
@@ -514,9 +481,9 @@ if ${DOEXPIREOVER}; then
 	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
     fi
     test -n "${LOWMARKFILE}" && {
-	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
+	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})" >>${EXPLOG}
 	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	echo "lowmarkrenumber end `date`"                           >>${EXPLOG}
+	echo "lowmarkrenumber end `date`" >>${EXPLOG}
 	rm -f ${MOST_LOGS}/expire.lastlowmark
 	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
     }
