@@ -30,7 +30,7 @@
 **  stored in <pathoverview>/n/a/n/news.announce.newgroups.{IDX,DAT}.  The
 **  .DAT file contains the individual overview entries, one per line, stored
 **  in wire format (in other words, suitable for dumping directly across the
-**  network to a client in response to an XOVER command).  The overview data
+**  network to a client in response to an OVER command).  The overview data
 **  stored in that file may be out of order.
 **
 **  The .IDX file consists of a series of struct index_entry's, one for each

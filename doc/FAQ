@@ -428,7 +428,7 @@ timecaf was new in INN 2.3.
 Subject: 2.4. What is overview?
 
 Overview is summary information about articles in a newsgroup that is
-returned to news reading clients as a response to the XOVER command.  It's
+returned to news reading clients as a response to the OVER command.  It's
 a very common extension to the NNTP protocol that allows readers to review
 summary information about articles before taking the time (and bandwidth)
 to download the entire article.
