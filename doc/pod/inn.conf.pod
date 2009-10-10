@@ -777,9 +777,11 @@ it.
 Whether the keyword generation support should be enabled.  This is a
 boolean value and the default is false.
 
-FIXME: Currently, support for keyword generation is configured into INN
-semi-randomly (based on whether configure found the regex library); it
-should be an option to configure and that option should be mentioned here.
+In order to use this feature, the regex library should be available
+and INN configured with the B<--enable-keywords> flag.  Otherwise,
+no keywords will be generated, even though this boolean value is set
+to true.  You also have to add the integration of the Keywords: header
+into the overview with I<extraoverviewadvertised> or I<extraoverviewhidden>.
 
 =item I<keyartlimit>
 
@@ -1239,7 +1241,7 @@ The default value is C<10>.
 =item I<keepmmappedthreshold>
 
 When using buffindexed, retrieving overview data (that is, responding to
-XOVER or running expireover) causes mmapping of all overview data blocks
+OVER or running expireover) causes mmapping of all overview data blocks
 which include requested overview data for newsgroup.  But for high volume
 newsgroups like control.cancel, this may cause too much mmapping at once
 leading to system resource problems.  To avoid this, if the amount to be
@@ -1317,7 +1319,7 @@ C<256> on Solaris systems is highly recommended.
 
 =back
 
-=head2 Paths and File Names
+=head2 Paths Names
 
 =over 4
 
