@@ -10,7 +10,9 @@ was used.
 =item *
 
 Fixed a segfault in the keyword generation code which was assuming
-that an article was nul-terminated.
+that an article was nul-terminated.  Fixed another segfault in the
+keyword generation code when an article already contained a
+Keywords: header.  Thanks to Nix for the bug reports.
 
 =item *
 

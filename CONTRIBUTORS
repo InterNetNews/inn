@@ -79,7 +79,7 @@ Fabien Tassin:
         configuration file.  Added support for nested profile timers.
 
 Jeremy Nixon:
-        Wrote the initial patch for Perl filtering of message IDs on IHAVE
+        Wrote the initial patch for Perl filtering of message-IDs on IHAVE
         or CHECK and other patches related to the filtering code.
 
 Karl Kleinpaste:
@@ -271,4 +271,4 @@ J. Thomas Halliley, Matija Nalis, Geraint A. Edwards, Alexander Bartolich,
 David Hlacik, Andreas Mattheiss, James Ralston, Wim Lewis, Johan van Selst,
 Wolfgang M. Weyand, Berend Reitsma, William Kronert, Petr Novopashenniy,
 Steve Crook, John F. Morse, Tim Woodall, Jonathan Kamens, Kamil Jonca,
-S.P. Zeidler
+S.P. Zeidler, Nix

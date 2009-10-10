@@ -1878,7 +1878,7 @@ ARTmakeoverview(CHANNEL *cp)
     j = hp - ARTheaders;
 
     /* If requested, generate keywords from the body of the article and patch
-       them into the apparent value of the Keywords header so that they make
+       them into the apparent value of the Keywords: header so that they make
        it into overview. */
     if (DO_KEYWORDS && innconf->keywords) {
       /* Ensure that there are Keywords: to shovel. */
@@ -1939,11 +1939,11 @@ ARTmakeoverview(CHANNEL *cp)
     /* Patch the old keywords back in. */
     if (DO_KEYWORDS && innconf->keywords) {
       if (key_old_value) {
-	if (hc->Value)
-	  free(hc->Value);		/* malloc'd within */
-	hc->Value  = key_old_value;
-	hc->Length = key_old_length;
-	key_old_value = NULL;
+        if (hc[HDR__KEYWORDS].Value)
+          free(hc[HDR__KEYWORDS].Value); /* malloc'd within. */
+        hc[HDR__KEYWORDS].Value  = key_old_value;
+        hc[HDR__KEYWORDS].Length = key_old_length;
+        key_old_value = NULL;
       }
     }
   }
