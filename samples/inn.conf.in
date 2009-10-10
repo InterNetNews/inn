@@ -95,9 +95,9 @@ tradindexedmmap:        true
 
 # Reading -- Keyword Support
 #
-# Enabling this without stopping innd and deleting the existing overview
-# database and adding will probably confuse a lot of things.  You must
-# have compiled this support in too.
+# You should add "keywords" to extraoverviewadvertised or extraoverviewhidden
+# if you enable this feature.  You must have compiled this support in too
+# with --enable-keywords at configure time.
 
 keywords:               false
 keyartlimit:            100000
@@ -128,7 +128,10 @@ backoffpostfast:        0
 backoffpostslow:        1
 backofftrigger:         10000
 
-# Reading and posting -- TLS/SSL support
+# Reading and Posting -- TLS/SSL Support
+#
+# You must have compiled this support in with --with-openssl
+# at configure time.
 
 #tlscafile:
 #tlscapath:             @sysconfdir@
