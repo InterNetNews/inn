@@ -26,8 +26,6 @@
 
 #define NNTP_BAD_COMMAND		"500 Syntax error or bad command"
 #define NNTP_ACCESS			"502 Permission denied"
-#define NNTP_GOODBYE_ACK		"205 ."
-#define NNTP_GOODBYE			"400"
 #define NNTP_HAVEIT			"435 Duplicate"
 #define NNTP_HAVEIT_BADID		"435 Bad Message-ID"
 #define NNTP_LIST_FOLLOWS		"215"
@@ -42,7 +40,6 @@
 #define NNTP_SENDIT			"335"
 #define NNTP_SYNTAX_USE			"501 Bad command use"
 #define NNTP_BAD_SUBCMD			"501 Bad subcommand"
-#define NNTP_TOOKIT			"235"
 #define NNTP_NOTINGROUP			"412 Not in a newsgroup"
 #define NNTP_NOSUCHGROUP		"411 No such group"
 #define NNTP_NEWNEWSOK			"230 New news follows"
