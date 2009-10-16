@@ -893,27 +893,27 @@ NCproc(CHANNEL *cp)
 	  bp->left = bp->size - SAVE_AMT;
 	  cp->Start = 0;
 	  cp->State = CSeatcommand;
-	  /* above means moving data already */
+	  /* Above means moving data already. */
 	  movedata = false;
 	} else {
 	  cp->Next = bp->used;
-	  /* move data to the begining anyway */
+	  /* Move data to the begining anyway. */
 	  movedata = true;
 	}
 	readmore = true;
 	break;
       }
-      /* i points where '\n" and go forward */
+      /* i points where "\n" is; go forward. */
       cp->Next = ++i;
-      /* never move data so long as "\r\n" is found, since subsequent
-	 data may also include command line */
+      /* Never move data so long as "\r\n" is found, since subsequent
+       * data may also include a command line. */
       movedata = false;
       readmore = false;
       if (i - cp->Start < 3) {
 	break;
       }
       p = &bp->data[i];
-      if (p[-2] != '\r') { /* probably in an article */
+      if (p[-2] != '\r') { /* Probably in an article. */
 	char *tmpstr;
 
 	tmpstr = xmalloc(i - cp->Start + 1);
@@ -926,11 +926,14 @@ NCproc(CHANNEL *cp)
 
 	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
 	  cp->State = CSwritegoodbye;
-	  NCwritereply(cp, NCbadcommand);
+          snprintf(buff, sizeof(buff), "%d Too many unrecognized commands",
+                   NNTP_FAIL_TERMINATING);
+	  NCwritereply(cp, buff);
 	  break;
 	}
-	NCwritereply(cp, NCbadcommand);
-	/* still some data left, go for it */
+        snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
+	NCwritereply(cp, buff);
+	/* Still some data left, go for it. */
 	cp->Start = cp->Next;
 	break;
       }
@@ -952,8 +955,31 @@ NCproc(CHANNEL *cp)
 	cp->Argument = NULL;
       }
 
+      /* If the line is too long, we have to make sure that
+       * no recognized command has been sent. */
+      if (i - cp->Start > NNTP_MAXLEN_COMMAND) {
+        bool validcommandtoolong = false;
+
+        for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
+          if ((dp->Function != NC_unimp) &&
+              (strncasecmp(p, dp->Name, dp->Size) == 0)) {
+            if (p[dp->Size] == ' ') {
+                validcommandtoolong = true;
+                break;
+            }
+          }
+        }
+        snprintf(buff, sizeof(buff), "%d Line too long",
+                 validcommandtoolong ? NNTP_ERR_SYNTAX : NNTP_ERR_COMMAND);
+        NCwritereply(cp, buff);
+        cp->Start = cp->Next;
+
+        syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+               MaxLength(q, q));
+        break;
+      }
       if (cp->State == CSgetauth) {
-	if (strncasecmp(q, "mode", 4) == 0)
+	if (strncasecmp(q, "MODE", 4) == 0)
 	  NCmode(cp);
 	else
 	  NCauthinfo(cp);
@@ -966,7 +992,7 @@ NCproc(CHANNEL *cp)
       /* Loop through the command table. */
       for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
 	if (strncasecmp(p, dp->Name, dp->Size) == 0) {
-	  /* ignore the streaming commands if necessary. */
+	  /* Ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
 	    (*dp->Function)(cp);
@@ -976,8 +1002,13 @@ NCproc(CHANNEL *cp)
 	}
       }
       if (dp == ARRAY_END(NCcommands)) {
-	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT)
-	    cp->State = CSwritegoodbye;
+	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
+          cp->State = CSwritegoodbye;
+          snprintf(buff, sizeof(buff), "%d Too many unrecognized commands",
+                   NNTP_FAIL_TERMINATING);
+          NCwritereply(cp, buff);
+          break;
+        }
 	NCwritereply(cp, NCbadcommand);
 	cp->Start = cp->Next;
 
