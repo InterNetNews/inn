@@ -1312,6 +1312,7 @@ main(int argc, char *argv[])
 	    size_t len;
             size_t lenstripped = 0;
 	    const char *p;
+            char *q;
 
 	    r = line_read(&NNTPline, timeout, &p, &len, &lenstripped);
 	    switch (r) {
@@ -1358,14 +1359,14 @@ main(int argc, char *argv[])
 	    case RTlong:
                 /* The line is too long but we have to make sure that
                  * no recognized command has been sent. */
+                q = (char *)p;
+                ac = Argify(q, &av);
                 validcommandtoolong = false;
                 for (cp = CMDtable; cp->Name; cp++) {
                     if ((cp->Function != CMD_unimp) &&
-                        (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0)) {
-                        if (p[strlen(cp->Name)] == ' ') {
-                            validcommandtoolong = true;
-                            break;
-                        }
+                        (ac > 0 && strcasecmp(cp->Name, av[0]) == 0)) {
+                        validcommandtoolong = true;
+                        break;
                     }
                 }
                 Reply("%d Line too long\r\n",
