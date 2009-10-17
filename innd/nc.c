@@ -22,6 +22,9 @@ typedef struct _NCDISPATCH {
     const char *        Name;
     innd_callback_func  Function;
     int                 Size;
+    int                 Minac;
+    int                 Maxac;
+    const char *        Help;
 } NCDISPATCH;
 
 /* The functions that implement the various commands. */
@@ -48,46 +51,60 @@ static void NC_unimp(CHANNEL *cp);
 static void NCwritedone(CHANNEL *cp);
 
 /* Set up the dispatch table for all of the commands. */
-#define COMMAND(name, func) { name, func, sizeof(name) - 1 }
+#define NC_any -1
+#define COMMAND(name, func, min, max, help) { name, func, sizeof(name) - 1, min, max, help }
+#define COMMAND_READER(name) { name, NC_reader, sizeof(name) - 1, 1, NC_any, NULL }
+#define COMMAND_UNIMP(name) { name, NC_unimp, sizeof(name) - 1, 1, NC_any, NULL }
 static NCDISPATCH NCcommands[] = {
-    COMMAND("authinfo",  NCauthinfo),
-    COMMAND("check",     NCcheck),
-    COMMAND("head",      NChead),
-    COMMAND("help",      NChelp),
-    COMMAND("ihave",     NCihave),
-    COMMAND("list",      NClist),
-    COMMAND("mode",      NCmode),
-    COMMAND("quit",      NCquit),
-    COMMAND("stat",      NCstat),
-    COMMAND("takethis",  NCtakethis),
-    COMMAND("xbatch",    NCxbatch),
+    COMMAND("AUTHINFO",  NCauthinfo,   3,  3,
+            "USER name|PASS password"),
+    COMMAND("CHECK",     NCcheck,      2,  2,
+            "message-ID"),
+    COMMAND("HEAD",      NChead,       1,  2,
+            "message-ID"),
+    COMMAND("HELP",      NChelp,       1,  1,
+            NULL),
+    COMMAND("IHAVE",     NCihave,      2,  2,
+            "message-ID"),
+    COMMAND("LIST",      NClist,       1,  3,
+            "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS]"),
+    COMMAND("MODE",      NCmode,       2,  2,
+            "READER"),
+    COMMAND("QUIT",      NCquit,       1,  1,
+            NULL),
+    COMMAND("STAT",      NCstat,       1,  2,
+            "message-ID"),
+    COMMAND("TAKETHIS",  NCtakethis,   2,  2,
+            "message-ID"),
+    COMMAND("XBATCH",    NCxbatch,     2,  2,
+            "size"),
 
     /* Unimplemented reader commands which may become available after a MODE
        READER command. */
-    COMMAND("article",   NC_reader),
-    COMMAND("body",      NC_reader),
-    COMMAND("date",      NC_reader),
-    COMMAND("group",     NC_reader),
-    COMMAND("hdr",       NC_reader),
-    COMMAND("last",      NC_reader),
-    COMMAND("listgroup", NC_reader),
-    COMMAND("newgroups", NC_reader),
-    COMMAND("newnews",   NC_reader),
-    COMMAND("next",      NC_reader),
-    COMMAND("over",      NC_reader),
-    COMMAND("post",      NC_reader),
+    COMMAND_READER("ARTICLE"),
+    COMMAND_READER("BODY"),
+    COMMAND_READER("DATE"),
+    COMMAND_READER("GROUP"),
+    COMMAND_READER("HDR"),
+    COMMAND_READER("LAST"),
+    COMMAND_READER("LISTGROUP"),
+    COMMAND_READER("NEWGROUPS"),
+    COMMAND_READER("NEWNEWS"),
+    COMMAND_READER("NEXT"),
+    COMMAND_READER("OVER"),
+    COMMAND_READER("POST"),
 #ifdef HAVE_SSL
-    COMMAND("starttls",  NC_reader),
+    COMMAND_READER("STARTTLS"),
 #endif
-    COMMAND("xgtitle",   NC_reader),
-    COMMAND("xhdr",      NC_reader),
-    COMMAND("xover",     NC_reader),
-    COMMAND("xpat",      NC_reader),
+    COMMAND_READER("XGTITLE"),
+    COMMAND_READER("XHDR"),
+    COMMAND_READER("XOVER"),
+    COMMAND_READER("XPAT"),
 
     /* Other unimplemented standard commands.
        SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
        protocol in RFC 3977. */
-    COMMAND("slave",     NC_unimp)
+    COMMAND_UNIMP("SLAVE")
 };
 #undef COMMAND
 
@@ -294,10 +311,18 @@ NChead(CHANNEL *cp)
     ARTHANDLE		*art;
     char                *buff = NULL;
 
-    /* Snip off the Message-ID. */
+    /* Snip off the message-ID. */
     for (p = cp->In.data + cp->Start + strlen("HEAD"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
+
+    /* No argument given. */
+    if (*p == '\0') {
+        xasprintf(&buff, "%d Not in a newsgroup", NNTP_FAIL_NO_GROUP);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
 
     if (!ARTidok(p)) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
@@ -354,7 +379,7 @@ NCstat(CHANNEL *cp)
     ARTHANDLE		*art;
     char		*buff = NULL;
 
-    /* Snip off the Message-ID. */
+    /* Snip off the message-ID. */
     for (p = cp->In.data + cp->Start + strlen("STAT"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
@@ -460,8 +485,8 @@ NCauthinfo(CHANNEL *cp)
 }
 
 /*
-**  The "help" command.
-**  As MODE STREAM is recognized, we still display "mode" when
+**  The HELP command.
+**  As MODE STREAM is recognized, we still display MODE when
 **  noreader is set to true or the server is paused or throttled
 **  with readerswhenstopped set to false.
 */
@@ -470,16 +495,22 @@ NChelp(CHANNEL *cp)
 {
     static char		LINE1[] = "For more information, contact \"";
     static char		LINE2[] = "\" at this machine.";
+    char                *buff = NULL;
     NCDISPATCH		*dp;
 
-    WCHANappend(cp, NNTP_HELP_FOLLOWS, strlen(NNTP_HELP_FOLLOWS));
-    WCHANappend(cp, NCterm, strlen(NCterm));
+    xasprintf(&buff, "%d Legal commands%s", NNTP_INFO_HELP, NCterm);
+    WCHANappend(cp, buff, strlen(buff));
     for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++)
 	if (dp->Function != NC_unimp && dp->Function != NC_reader) {
+            /* Ignore the streaming commands if necessary. */
             if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
-                WCHANappend(cp, "\t", 1);
+                WCHANappend(cp, "  ", 2);
                 WCHANappend(cp, dp->Name, dp->Size);
+                if (dp->Help != NULL) {
+                    WCHANappend(cp, " ", 1);
+                    WCHANappend(cp, dp->Help, strlen(dp->Help));
+                }
                 WCHANappend(cp, NCterm, strlen(NCterm));
             }
 	}
@@ -489,10 +520,11 @@ NChelp(CHANNEL *cp)
     WCHANappend(cp, NCterm, strlen(NCterm));
     NCwritereply(cp, NCdot) ;
     cp->Start = cp->Next;
+    free(buff);
 }
 
 /*
-**  The "ihave" command.  Check the Message-ID, and see if we want the
+**  The IHAVE command.  Check the message-ID, and see if we want the
 **  article or not.  Set the state appropriately.
 */
 static void
@@ -506,7 +538,7 @@ NCihave(CHANNEL *cp)
 #endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
     cp->Ihave++;
-    /* Snip off the Message-ID. */
+    /* Snip off the message-ID. */
     for (p = cp->In.data + cp->Start + strlen("ihave"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
@@ -846,6 +878,10 @@ NCproc(CHANNEL *cp)
   bool		readmore, movedata;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT    *hc = data->HdrContent;
+  int           ac;
+  static char   **av;
+  char          **v;
+  bool          validcommandtoolong;
 
   readmore = movedata = false;
   if (Tracing || cp->Tracing)
@@ -944,7 +980,12 @@ NCproc(CHANNEL *cp)
 	cp->Start = cp->Next;
 	break;
       }
+
+      /* Guarantee null-termination. */
       p[-2] = '\0';
+      p = q;
+      ac = Argify(p, &av);
+
       if (Tracing || cp->Tracing)
 	syslog(L_TRACE, "%s < %s", CHANname(cp), q);
 
@@ -957,9 +998,8 @@ NCproc(CHANNEL *cp)
 
       /* If the line is too long, we have to make sure that
        * no recognized command has been sent. */
+      validcommandtoolong = false;
       if (i - cp->Start > NNTP_MAXLEN_COMMAND) {
-        bool validcommandtoolong = false;
-
         for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
           if ((dp->Function != NC_unimp) &&
               (strncasecmp(p, dp->Name, dp->Size) == 0)) {
@@ -995,12 +1035,12 @@ NCproc(CHANNEL *cp)
 	  /* Ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
-	    (*dp->Function)(cp);
-	    cp->BadCommands = 0;
 	    break;
 	  }
 	}
       }
+
+      /* If no command has been recognized. */
       if (dp == ARRAY_END(NCcommands)) {
 	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
           cp->State = CSwritegoodbye;
@@ -1022,7 +1062,39 @@ NCproc(CHANNEL *cp)
 	if (p == NULL)
 	  syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
 	    MaxLength(q, q));
+        break;
       }
+
+      /* Check whether all arguments do not exceed their allowed size. */
+      if (ac > 1) {
+          validcommandtoolong = false;
+          for (v = av; *v; v++)
+              if (strlen(*v) > NNTP_MAXLEN_ARG) {
+                  validcommandtoolong = true;
+                  snprintf(buff, sizeof(buff), "%d Argument too long",
+                           NNTP_ERR_SYNTAX);
+                  NCwritereply(cp, buff);
+                  break;
+              }
+          if (validcommandtoolong) {
+              cp->Start = cp->Next;
+              break;
+          }
+      }
+
+      /* Check usage. */
+      if ((dp->Minac != NC_any && ac < dp->Minac)
+          || (dp->Maxac != NC_any && ac > dp->Maxac)) {
+          snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
+                   NNTP_ERR_SYNTAX, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
+          NCwritereply(cp, buff);
+          cp->Start = cp->Next;
+          break;
+      }
+
+      (*dp->Function)(cp);
+      cp->BadCommands = 0;
+
       break;
 
     case CSgetheader:
@@ -1304,7 +1376,6 @@ NCreader(CHANNEL *cp)
 }
 
 
-
 /*
 **  Set up the NNTP channel state.
 */
@@ -1406,12 +1477,13 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
 
 
 
-/* These modules support the streaming option to tranfer articles
-** faster.
+/*
+**  These modules support the streaming option to tranfer articles
+**  faster.
 */
 
 /*
-**  The "check" command.  Check the Message-ID, and see if we want the
+**  The CHECK command.  Check the message-ID, and see if we want the
 **  article or not.  Stay in command state.
 */
 static void
@@ -1425,7 +1497,7 @@ NCcheck(CHANNEL *cp)
 #endif /* DO_PERL || DO_PYTHON */
 
     cp->Check++;
-    /* Snip off the Message-ID. */
+    /* Snip off the message-ID. */
     for (p = cp->In.data + cp->Start; *p && !ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
@@ -1529,7 +1601,7 @@ NCtakethis(CHANNEL *cp)
     WIP                 *wp;
 
     cp->Takethis++;
-    /* Snip off the Message-ID. */
+    /* Snip off the message-ID. */
     for (p = cp->In.data + cp->Start + strlen("takethis"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;

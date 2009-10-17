@@ -460,6 +460,7 @@ innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/alloca.c                          alloca replacement
+lib/argparse.c                        Functions for parsing arguments
 lib/asprintf.c                        asprintf replacement
 lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
