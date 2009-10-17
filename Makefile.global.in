@@ -18,7 +18,7 @@
 ##      keep their length reasonable; otherwise, your news server will not
 ##      be complying with the NNTP protocol.
 
-VERSION		= 2.5.1
+VERSION		= 2.5.2
 VERSION_EXTRA	= prerelease
 
 ##  If you want to install INN relative to a root directory other than /,
