@@ -314,7 +314,8 @@ enum channel_state {
 **  pointer to a channel, so set up a typedef for that.
 */
 struct _CHANNEL;
-typedef void (*innd_callback_func)(struct _CHANNEL *);
+typedef void (*innd_callback_func)     (struct _CHANNEL *);
+typedef void (*innd_callback_nntp_func)(struct _CHANNEL *, int ac, char *av[]);
 
 typedef struct _CHANNEL {
   enum channel_type    Type;
