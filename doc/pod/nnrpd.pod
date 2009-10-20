@@ -101,8 +101,9 @@ foreground when started as a standalone daemon using the B<-D> flag.
 
 =item B<-i> I<initial>
 
-Specify an initial command to B<nnrpd>. When used, I<initial> is taken
-as if it were the first command received by B<nnrpd>.
+Specify an initial command to B<nnrpd>.  When used, I<initial> is taken
+as if it were the first command received by B<nnrpd>.  After having
+responded, B<nnrpd> will close the connection.
 
 =item B<-I> I<instance>
 
