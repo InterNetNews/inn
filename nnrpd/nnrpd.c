@@ -70,6 +70,7 @@ typedef struct _CMDENT {
     bool                Needauth;
     int                 Minac;
     int                 Maxac;
+    bool                Stripspaces;
     const char *        Help;
 } CMDENT;
 
@@ -107,74 +108,76 @@ static char	CMDfetchhelp[] = "[message-ID|number]";
 
 /*
 **  { command base name, function to call, need authentication,
-**    min args, max args, help string }
+**    min args, max args, strip spaces, help string }
 */
 static CMDENT	CMDtable[] = {
-    {	"ARTICLE",	CMDfetch,	true,	1,	2,
+    {	"ARTICLE",	CMDfetch,	true,	1,	2,      true,
 	CMDfetchhelp },
-    {   "AUTHINFO",     CMDauthinfo,    false,  3,      CMDany,
+    /* Parse AUTHINFO in a special way so as to keep white spaces
+     * in usernames and passwords. */
+    {   "AUTHINFO",     CMDauthinfo,    false,  3,      CMDany, false,
         "USER name|PASS password"
 #ifdef HAVE_SASL
         "|SASL mechanism [initial-response]"
 #endif
         "|GENERIC program [argument ...]" },
-    {	"BODY",		CMDfetch,	true,	1,	2,
+    {	"BODY",		CMDfetch,	true,	1,	2,      true,
 	CMDfetchhelp },
-    {   "CAPABILITIES", CMDcapabilities,false,  1,      2,
+    {   "CAPABILITIES", CMDcapabilities,false,  1,      2,      true,
         "[keyword]" },
-    {	"DATE",		CMDdate,	false,	1,	1,
+    {	"DATE",		CMDdate,	false,	1,	1,      true,
 	NULL },
-    {	"GROUP",	CMDgroup,	true,	2,	2,
+    {	"GROUP",	CMDgroup,	true,	2,	2,      true,
 	"newsgroup" },
-    {   "HDR",          CMDpat  ,       true,   2,      3,
+    {   "HDR",          CMDpat  ,       true,   2,      3,      true,
         "header [message-ID|range]" },
-    {	"HEAD",		CMDfetch,	true,	1,	2,
+    {	"HEAD",		CMDfetch,	true,	1,	2,      true,
 	CMDfetchhelp },
-    {	"HELP",		CMDhelp,	false,	1,	1,
+    {	"HELP",		CMDhelp,	false,	1,	1,      true,
 	NULL },
-    {	"IHAVE",	CMDpost,	true,	2,	2,
+    {	"IHAVE",	CMDpost,	true,	2,	2,      true,
 	"message-ID" },
-    {	"LAST",		CMDnextlast,	true,	1,	1,
+    {	"LAST",		CMDnextlast,	true,	1,	1,      true,
 	NULL },
-    {	"LIST",		CMDlist,	true,	1,	3,
+    {	"LIST",		CMDlist,	true,	1,	3,      true,
 	"[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|DISTRIB.PATS|DISTRIBUTIONS"
         "|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
         "|OVERVIEW.FMT|SUBSCRIPTIONS]" },
-    {	"LISTGROUP",	CMDgroup,	true,	1,	3,
+    {	"LISTGROUP",	CMDgroup,	true,	1,	3,      true,
 	"[newsgroup [range]]" },
-    {	"MODE",		CMDmode,	false,	2,	2,
+    {	"MODE",		CMDmode,	false,	2,	2,      true,
 	"READER" },
-    {	"NEWGROUPS",	CMDnewgroups,	true,	3,	4,
+    {	"NEWGROUPS",	CMDnewgroups,	true,	3,	4,      true,
 	"[yy]yymmdd hhmmss [GMT]" },
-    {	"NEWNEWS",	CMDnewnews,	true,	4,	5,
+    {	"NEWNEWS",	CMDnewnews,	true,	4,	5,      true,
 	"wildmat [yy]yymmdd hhmmss [GMT]" },
-    {	"NEXT",		CMDnextlast,	true,	1,	1,
+    {	"NEXT",		CMDnextlast,	true,	1,	1,      true,
 	NULL },
-    {   "OVER",         CMDover,        true,   1,      2,
+    {   "OVER",         CMDover,        true,   1,      2,      true,
         "[range]" },
-    {	"POST",		CMDpost,	true,	1,	1,
+    {	"POST",		CMDpost,	true,	1,	1,      true,
 	NULL },
-    {   "QUIT",         CMDquit,        false,  1,      1,
+    {   "QUIT",         CMDquit,        false,  1,      1,      true,
         NULL },
     /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
      * protocol in RFC 3977. */
-    {	"SLAVE",	CMD_unimp,	false,	1,	1,
+    {	"SLAVE",	CMD_unimp,	false,	1,	1,      true,
 	NULL },
 #ifdef HAVE_SSL
-    {   "STARTTLS",     CMDstarttls,    false,  1,      1,
+    {   "STARTTLS",     CMDstarttls,    false,  1,      1,      true,
         NULL },
 #endif
-    {	"STAT",		CMDfetch,	true,	1,	2,
+    {	"STAT",		CMDfetch,	true,	1,	2,      true,
 	CMDfetchhelp },
-    {	"XGTITLE",	CMDxgtitle,	true,	1,	2,
+    {	"XGTITLE",	CMDxgtitle,	true,	1,	2,      true,
 	"[wildmat]" },
-    {	"XHDR",		CMDpat,		true,	2,	3,
+    {	"XHDR",		CMDpat,		true,	2,	3,      true,
 	"header [message-ID|range]" },
-    {	"XOVER",	CMDover,	true,	1,	2,
+    {	"XOVER",	CMDover,	true,	1,	2,      true,
 	"[range]" },
-    {	"XPAT",		CMDpat,		true,	4,	CMDany,
+    {	"XPAT",		CMDpat,		true,	4,	CMDany,      true,
 	"header message-ID|range pattern [pattern ...]" },
-    {	NULL,           CMD_unimp,      false,  0,      0,
+    {	NULL,           CMD_unimp,      false,  0,      0,      true,
         NULL }
 };
 
@@ -1305,7 +1308,7 @@ main(int argc, char *argv[])
 		continue;
 	    if (Tracing)
 		syslog(L_TRACE, "%s < %s", Client.host, PushedBack);
-	    ac = Argify(PushedBack, &av);
+	    ac = nArgify(PushedBack, &av, 1);
 	    r = RTok;
 	}
 	else {
@@ -1333,23 +1336,30 @@ main(int argc, char *argv[])
 		    memcpy(buff, p, len + 1);
 		    /* Do some input processing, check for blank line. */
                     if (buff[0] != '\0')
-                        ac = Argify(buff, &av);
+                        ac = nArgify(buff, &av, 1);
 		    if (Tracing) {
                         /* Do not log passwords if AUTHINFO PASS,
                          * AUTHINFO SASL PLAIN or AUTHINFO SASL EXTERNAL
-                         * are used. 
+                         * are used.  (Only one space between SASL and
+                         * PLAIN/EXTERNAL should be put; otherwise, the
+                         * whole command will be logged).
                          * AUTHINFO SASL LOGIN does not use an initial response;
                          * therefore, there is nothing to hide here. */
-                        if (ac > 2 && strcasecmp(av[0], "AUTHINFO") == 0
-                            && (strcasecmp(av[1], "PASS") == 0
-                                || (ac > 3 && strcasecmp(av[1], "SASL") == 0
-                                    && (strcasecmp(av[2], "PLAIN") == 0
-                                        || strcasecmp(av[2], "EXTERNAL") == 0))))
-                            syslog(L_TRACE, "%s < %s %s %s ********", Client.host,
-                                   av[0], av[1],
-                                   strcasecmp(av[1], "SASL") == 0 ? av[2] : "");
-                        else
+                        if (ac > 1 && strcasecmp(av[0], "AUTHINFO") == 0) {
+                            if (strncasecmp(av[1], "PASS", 4) == 0)
+                                syslog(L_TRACE, "%s < AUTHINFO PASS ********",
+                                       Client.host);
+                            else if (strncasecmp(av[1], "SASL PLAIN", 10) == 0)
+                                syslog(L_TRACE, "%s < AUTHINFO SASL PLAIN ********",
+                                       Client.host);
+                            else if (strncasecmp(av[1], "SASL EXTERNAL", 13) == 0)
+                                syslog(L_TRACE, "%s < AUTHINFO SASL EXTERNAL ********",
+                                       Client.host);
+                            else
+                                syslog(L_TRACE, "%s < %s", Client.host, buff);
+                        } else {
                             syslog(L_TRACE, "%s < %s", Client.host, buff);
+                        }
                     }
 		    if (buff[0] == '\0')
 			continue;
@@ -1360,7 +1370,7 @@ main(int argc, char *argv[])
                 /* The line is too long but we have to make sure that
                  * no recognized command has been sent. */
                 q = (char *)p;
-                ac = Argify(q, &av);
+                ac = nArgify(q, &av, 1);
                 validcommandtoolong = false;
                 for (cp = CMDtable; cp->Name; cp++) {
                     if ((cp->Function != CMD_unimp) &&
@@ -1397,6 +1407,12 @@ main(int argc, char *argv[])
 	    Reply("%d What?\r\n", NNTP_ERR_COMMAND);
 	    continue;
 	}
+
+        /* Go on parsing the command. */
+        ac--;
+        ac += reArgify(av[ac], &av[ac],
+                       cp->Stripspaces ? -1 : cp->Minac - ac - 1,
+                       cp->Stripspaces);
 
         /* Check whether all arguments do not exceed their allowed size. */
         if (ac > 1) {
