@@ -21,6 +21,7 @@
 typedef struct _NCDISPATCH {
     const char *             Name;
     innd_callback_nntp_func  Function;
+    bool                     Needauth;
     int                      Minac;
     int                      Maxac;
     const char *             Help;
@@ -51,31 +52,31 @@ static void NCwritedone(CHANNEL *cp);
 
 /* Set up the dispatch table for all of the commands. */
 #define NC_any -1
-#define COMMAND(name, func, min, max, help) { name, func, min, max, help }
-#define COMMAND_READER(name) { name, NC_reader, 1, NC_any, NULL }
-#define COMMAND_UNIMP(name)  { name, NC_unimp,  1, NC_any, NULL }
+#define COMMAND(name, func, auth, min, max, help) { name, func, auth, min, max, help }
+#define COMMAND_READER(name) { name, NC_reader, false, 1, NC_any, NULL }
+#define COMMAND_UNIMP(name)  { name, NC_unimp,  false, 1, NC_any, NULL }
 static NCDISPATCH NCcommands[] = {
-    COMMAND("AUTHINFO",  NCauthinfo,   3,  3,
+    COMMAND("AUTHINFO",  NCauthinfo,   false, 3,  3,
             "USER name|PASS password"),
-    COMMAND("CHECK",     NCcheck,      2,  2,
+    COMMAND("CHECK",     NCcheck,      true,  2,  2,
             "message-ID"),
-    COMMAND("HEAD",      NChead,       1,  2,
+    COMMAND("HEAD",      NChead,       true,  1,  2,
             "message-ID"),
-    COMMAND("HELP",      NChelp,       1,  1,
+    COMMAND("HELP",      NChelp,       false, 1,  1,
             NULL),
-    COMMAND("IHAVE",     NCihave,      2,  2,
+    COMMAND("IHAVE",     NCihave,      true,  2,  2,
             "message-ID"),
-    COMMAND("LIST",      NClist,       1,  3,
+    COMMAND("LIST",      NClist,       true,  1,  3,
             "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS]"),
-    COMMAND("MODE",      NCmode,       2,  2,
+    COMMAND("MODE",      NCmode,       false, 2,  2,
             "READER"),
-    COMMAND("QUIT",      NCquit,       1,  1,
+    COMMAND("QUIT",      NCquit,       false, 1,  1,
             NULL),
-    COMMAND("STAT",      NCstat,       1,  2,
+    COMMAND("STAT",      NCstat,       true,  1,  2,
             "message-ID"),
-    COMMAND("TAKETHIS",  NCtakethis,   2,  2,
+    COMMAND("TAKETHIS",  NCtakethis,   true,  2,  2,
             "message-ID"),
-    COMMAND("XBATCH",    NCxbatch,     2,  2,
+    COMMAND("XBATCH",    NCxbatch,     true,  2,  2,
             "size"),
 
     /* Unimplemented reader commands which may become available after a MODE
@@ -286,7 +287,6 @@ NCwritedone(CHANNEL *cp)
 	break;
 
     case CSgetcmd:
-    case CSgetauth:
     case CSgetheader:
     case CSgetbody:
     case CSgetxbatch:
@@ -427,40 +427,14 @@ NCstat(CHANNEL *cp, int ac, char *av[])
 
 
 /*
-**  The AUTHINFO command.  Actually, we come in here whenever the
-**  channel is in CSgetauth state and we just got a command.
+**  The AUTHINFO command.
 */
 static void
 NCauthinfo(CHANNEL *cp, int ac, char *av[])
 {
-    char buff[SMBUF];
-
     cp->Start = cp->Next;
 
-    /* No command given. */
-    if (ac == 0) {
-        if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
-            cp->State = CSwritegoodbye;
-            snprintf(buff, sizeof(buff), "%d Too many unrecognized commands",
-                     NNTP_FAIL_TERMINATING);
-            NCwritereply(cp, buff);
-            return;
-        }
-        NCwritereply(cp, NCbadcommand);
-        return;
-    }
-
-    /* Allow the poor sucker to quit. */
-    if (strcasecmp(av[0], "QUIT") == 0) {
-	NCquit(cp, ac, av);
-	return;
-    }
-
-    /* Otherwise, make sure we're only getting AUTHINFO commands. */
-    if (strcasecmp(av[0], "AUTHINFO") != 0) {
-        NCwritereply(cp, cp->CanAuthenticate ? NNTP_AUTH_NEEDED : NNTP_ACCESS);
-	return;
-    } else if (!cp->CanAuthenticate) {
+    if (!cp->CanAuthenticate) {
         /* Already authenticated. */
         NCwritereply(cp, NNTP_ACCESS);
         return;
@@ -483,8 +457,8 @@ NCauthinfo(CHANNEL *cp, int ac, char *av[])
     if (!RCauthorized(cp, av[2])) {
 	NCwritereply(cp, NNTP_AUTH_BAD);
     } else {
-	cp->State = CSgetcmd;
         cp->CanAuthenticate = false;
+        cp->IsAuthenticated = true;
 	NCwritereply(cp, NNTP_AUTH_OK);
     }
 }
@@ -823,7 +797,7 @@ NC_reader(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 
     if ((innconf->noreader)
      || (NNRPReason != NULL && !innconf->readerswhenstopped))
-        snprintf(buff, sizeof(buff), "%d Permission denied\r\n",
+        snprintf(buff, sizeof(buff), "%d Permission denied",
                  NNTP_ERR_ACCESS);
     else
         snprintf(buff, sizeof(buff), "%d MODE-READER",
@@ -900,7 +874,6 @@ NCproc(CHANNEL *cp)
       break;
 
     case CSgetcmd:
-    case CSgetauth:
     case CScancel:
       /* Did we get the whole command, terminated with "\r\n"? */
       for (i = cp->Next; (i < bp->used) && (bp->data[i] != '\n'); i++) ;
@@ -1009,17 +982,9 @@ NCproc(CHANNEL *cp)
                MaxLength(q, q));
         break;
       }
-      if (cp->State == CSgetauth) {
-	if (strcasecmp(av[0], "MODE") == 0)
-          /* Because of that call, ac > 1 must be checked in NCmode.
-           * Will be removed when that special case for CSgetauth
-           * has been changed to be in the channel instead of a
-           * channel state.  FIXME */
-	  NCmode(cp, ac, av);
-	else
-	  NCauthinfo(cp, ac, av);
-	break;
-      } else if (cp->State == CScancel) {
+
+      /* After MODE CANCEL. */
+      if (cp->State == CScancel) {
 	NCcancel(cp, ac, av);
 	break;
       }
@@ -1082,6 +1047,21 @@ NCproc(CHANNEL *cp)
           || (dp->Maxac != NC_any && ac > dp->Maxac)) {
           snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
                    NNTP_ERR_SYNTAX, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
+          NCwritereply(cp, buff);
+          cp->Start = cp->Next;
+          break;
+      }
+
+      /* Check permissions and dispatch. */
+      if (dp->Needauth && !cp->IsAuthenticated) {
+          if (cp->CanAuthenticate) {
+              snprintf(buff, sizeof(buff),
+                       "%d Authentication required for command",
+                       NNTP_FAIL_AUTH_NEEDED);
+          } else {
+              snprintf(buff, sizeof(buff),
+                       "%d Access denied", NNTP_ERR_ACCESS);
+          }
           NCwritereply(cp, buff);
           cp->Start = cp->Next;
           break;
@@ -1419,8 +1399,9 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
     int			i;
 
     /* Create the channel. */
-    cp = CHANcreate(fd, CTnntp, MustAuthorize ? CSgetauth : CSgetcmd,
-	    NCreader, NCwritedone);
+    cp = CHANcreate(fd, CTnntp, CSgetcmd, NCreader, NCwritedone);
+
+    cp->IsAuthenticated = !MustAuthorize;
 
     NCclearwip(cp);
     cp->privileged = IsLocal;
