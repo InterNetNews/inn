@@ -1360,13 +1360,15 @@ NCsetup(void)
     char		*p;
     char		buff[SMBUF];
 
-    /* Set the greeting message. */
+    /* Set the greeting message.  We always send 200 because we cannot know
+     * for sure that the client will not be able to use POST during its
+     * entire session. */
     p = innconf->pathhost;
     if (p == NULL)
 	/* Worked in main, now it fails?  Curious. */
 	p = Path.data;
-    snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready",
-	    NNTP_OK_BANNER_POST, p, INN_VERSION_STRING);
+    snprintf(buff, sizeof(buff), "%d %s InterNetNews server %s ready (transit mode)",
+             NNTP_OK_BANNER_POST, p, INN_VERSION_STRING);
     NCgreeting = xstrdup(buff);
 }
 
