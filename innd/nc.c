@@ -520,7 +520,10 @@ NCihave(CHANNEL *cp, int ac UNUSED, char *av[])
     cp->Start = cp->Next;
 
     if (!ARTidok(av[1])) {
-        NCwritereply(cp, NNTP_HAVEIT_BADID);
+        /* Return 435 here instead of 501 for compatibility reasons. */
+        xasprintf(&buff, "%d Syntax error in message-ID", NNTP_FAIL_IHAVE_REFUSE);
+        NCwritereply(cp, buff);
+        free(buff);
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
                MaxLength(av[1], av[1]));
 	return;
@@ -540,7 +543,9 @@ NCihave(CHANNEL *cp, int ac UNUSED, char *av[])
     if ((innconf->refusecybercancels) && (strncmp(av[1], "<cancel.", 8) == 0)) {
 	cp->Refused++;
 	cp->Ihave_Cybercan++;
-	NCwritereply(cp, NNTP_HAVEIT);
+        xasprintf(&buff, "%d Cyberspam cancel", NNTP_FAIL_IHAVE_REFUSE);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
 
@@ -598,24 +603,30 @@ NCihave(CHANNEL *cp, int ac UNUSED, char *av[])
     if (HIScheck(History, av[1]) || cp->Ignore) {
 	cp->Refused++;
 	cp->Ihave_Duplicate++;
-	NCwritereply(cp, NNTP_HAVEIT);
-    }
-    else if (WIPinprogress(av[1], cp, false)) {
+        xasprintf(&buff, "%d Duplicate", NNTP_FAIL_IHAVE_REFUSE);
+        NCwritereply(cp, buff);
+        free(buff);
+    } else if (WIPinprogress(av[1], cp, false)) {
 	cp->Ihave_Deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
-	    NCwritereply(cp, NNTP_HAVEIT);
+            xasprintf(&buff, "%d Do not resend", NNTP_FAIL_IHAVE_REFUSE);
+            NCwritereply(cp, buff);
+            free(buff);
 	} else {
-	    NCwritereply(cp, NNTP_RESENDIT_LATER);
+            xasprintf(&buff, "%d Retry later", NNTP_FAIL_IHAVE_DEFER);
+            NCwritereply(cp, buff);
+            free(buff);
 	}
-    }
-    else {
+    } else {
 	if (cp->Sendid.size > 0) {
             free(cp->Sendid.data);
 	    cp->Sendid.size = 0;
 	}
 	cp->Ihave_SendIt++;
-	NCwritereply(cp, NNTP_SENDIT);
+        xasprintf(&buff, "%d Send it", NNTP_CONT_IHAVE);
+        NCwritereply(cp, buff);
+        free(buff);
 	cp->ArtBeg = Now.tv_sec;
 	cp->State = CSgetheader;
 	ARTprepare(cp);
@@ -845,6 +856,7 @@ NCproc(CHANNEL *cp)
   static char   **av;
   char          **v;
   bool          validcommandtoolong;
+  int           syntaxerrorcode = NNTP_ERR_SYNTAX;
 
   readmore = movedata = false;
   if (Tracing || cp->Tracing)
@@ -973,11 +985,22 @@ NCproc(CHANNEL *cp)
         for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
           if ((dp->Function != NC_unimp) &&
               (strcasecmp(av[0], dp->Name) == 0)) {
-              validcommandtoolong = true;
+              if (!StreamingOff || cp->Streaming ||
+                  (dp->Function != NCcheck && dp->Function != NCtakethis)) {
+                  validcommandtoolong = true;
+              }
+              /* Return 435/438 instead of 501 to IHAVE/CHECK commands
+               * for compatibility reasons. */
+              if (strcasecmp(av[0], "IHAVE") == 0) {
+                  syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
+              } else if (strcasecmp(av[0], "CHECK") == 0
+                         && (!StreamingOff || cp->Streaming)) {
+                  syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
+              }
           }
         }
         snprintf(buff, sizeof(buff), "%d Line too long",
-                 validcommandtoolong ? NNTP_ERR_SYNTAX : NNTP_ERR_COMMAND);
+                 validcommandtoolong ? syntaxerrorcode : NNTP_ERR_COMMAND);
         NCwritereply(cp, buff);
         cp->Start = cp->Next;
 
@@ -995,6 +1018,14 @@ NCproc(CHANNEL *cp)
       /* Loop through the command table. */
       for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
 	if (strcasecmp(av[0], dp->Name) == 0) {
+          /* Return 435/438 instead of 501 to IHAVE/CHECK commands
+           * for compatibility reasons. */
+          if (strcasecmp(av[0], "IHAVE") == 0) {
+              syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
+          } else if (strcasecmp(av[0], "CHECK") == 0
+                     && (!StreamingOff || cp->Streaming)) {
+              syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
+          }
 	  /* Ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
@@ -1035,7 +1066,7 @@ NCproc(CHANNEL *cp)
               if (strlen(*v) > NNTP_MAXLEN_ARG) {
                   validcommandtoolong = true;
                   snprintf(buff, sizeof(buff), "%d Argument too long",
-                           NNTP_ERR_SYNTAX);
+                           syntaxerrorcode);
                   NCwritereply(cp, buff);
                   break;
               }
@@ -1049,7 +1080,7 @@ NCproc(CHANNEL *cp)
       if ((dp->Minac != NC_any && ac < dp->Minac)
           || (dp->Maxac != NC_any && ac > dp->Maxac)) {
           snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
-                   NNTP_ERR_SYNTAX, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
+                   syntaxerrorcode, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
           NCwritereply(cp, buff);
           cp->Start = cp->Next;
           break;
@@ -1174,6 +1205,7 @@ NCproc(CHANNEL *cp)
 	syslog(L_NOTICE, "%s internal rejecting too long command line (%lu > %d)",
 	  CHANname(cp), (unsigned long) i, NNTP_MAXLEN_COMMAND);
 	cp->LargeCmdSize = 0;
+        /* Command eaten; we do not know whether it was valid (500 or 501). */
 	snprintf(buff, sizeof(buff), "%d command exceeds limit of %d bytes",
                  NNTP_ERR_COMMAND, NNTP_MAXLEN_COMMAND);
 	cp->State = CSgetcmd;
