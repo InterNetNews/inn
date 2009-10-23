@@ -311,8 +311,8 @@ NChead(CHANNEL *cp, int ac, char *av[])
 
     cp->Start = cp->Next;
 
-    /* No argument given. */
-    if (ac == 1) {
+    /* No argument given, or an article number. */
+    if (ac == 1 || IsValidArticleNumber(av[1])) {
         xasprintf(&buff, "%d Not in a newsgroup", NNTP_FAIL_NO_GROUP);
         NCwritereply(cp, buff);
         free(buff);
@@ -338,7 +338,8 @@ NChead(CHANNEL *cp, int ac, char *av[])
         return;
     }
 
-    /* Get the article token and retrieve it. */
+    /* Get the article token and retrieve it (to make sure
+     * the article is still here). */
     if (!HISlookup(History, av[1], NULL, NULL, NULL, &token)) {
         xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
         NCwritereply(cp, buff);
@@ -353,7 +354,7 @@ NChead(CHANNEL *cp, int ac, char *av[])
     }
 
     /* Write it. */
-    xasprintf(&buff, "%d 0 %s%s", NNTP_OK_HEAD, av[1], NCterm);
+    xasprintf(&buff, "%d 0 %s head%s", NNTP_OK_HEAD, av[1], NCterm);
     WCHANappend(cp, buff, strlen(buff));
     WCHANappend(cp, art->data, art->len);
 
@@ -376,8 +377,8 @@ NCstat(CHANNEL *cp, int ac, char *av[])
 
     cp->Start = cp->Next;
 
-    /* No argument given. */
-    if (ac == 1) {
+    /* No argument given, or an article number. */
+    if (ac == 1 || IsValidArticleNumber(av[1])) {
         xasprintf(&buff, "%d Not in a newsgroup", NNTP_FAIL_NO_GROUP);
         NCwritereply(cp, buff);
         free(buff);
@@ -403,7 +404,7 @@ NCstat(CHANNEL *cp, int ac, char *av[])
         return;
     }
 
-    /* Get the article filenames; open the first file (to make sure
+    /* Get the article token and retrieve it (to make sure
      * the article is still here). */
     if (!HISlookup(History, av[1], NULL, NULL, NULL, &token)) {
         xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
@@ -420,7 +421,7 @@ NCstat(CHANNEL *cp, int ac, char *av[])
     SMfreearticle(art);
 
     /* Write the message. */
-    xasprintf(&buff, "%d 0 %s", NNTP_OK_STAT, av[1]);
+    xasprintf(&buff, "%d 0 %s status", NNTP_OK_STAT, av[1]);
     NCwritereply(cp, buff);
     free(buff);
 }
