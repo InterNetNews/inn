@@ -154,13 +154,13 @@ lc.o: lc.c ../include/config.h ../include/inn/defines.h \
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/version.h innd.h ../include/portable/time.h \
-  ../include/config.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/qio.h ../include/inn/version.h innd.h \
+  ../include/portable/time.h ../include/config.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/messages.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
+  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \

@@ -8,6 +8,7 @@
 #include "clibrary.h"
 
 #include "inn/innconf.h"
+#include "inn/qio.h"
 #include "inn/version.h"
 #include "innd.h"
 
@@ -67,7 +68,7 @@ static NCDISPATCH NCcommands[] = {
     COMMAND("IHAVE",     NCihave,      true,  2,  2,
             "message-ID"),
     COMMAND("LIST",      NClist,       true,  1,  3,
-            "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS]"),
+            "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS [wildmat]]"),
     COMMAND("MODE",      NCmode,       false, 2,  2,
             "READER"),
     COMMAND("QUIT",      NCquit,       false, 1,  1,
@@ -671,8 +672,10 @@ NCxbatch(CHANNEL *cp, int ac UNUSED, char *av[])
 static void
 NClist(CHANNEL *cp, int ac, char *av[])
 {
-    char *p, *q, *end, *path;
-    char *buff = NULL;
+    QIOSTATE    *qp;
+    char        *p, *path, *save;
+    char        savec;
+    char        *buff = NULL;
 
     cp->Start = cp->Next;
 
@@ -689,18 +692,26 @@ NClist(CHANNEL *cp, int ac, char *av[])
 
     /* ACTIVE when no argument given. */
     if (ac == 1 || (strcasecmp(av[1], "ACTIVE") == 0)) {
-        p = ICDreadactive(&end);
-        /* We always have a valid return from ICDreadactive.
-         * Otherwise, innd is shut down. */
-        xasprintf(&buff, "%d Newsgroups in form \"group high low flags\"",
-                  NNTP_OK_LIST);
-        NCwritereply(cp, buff);
-        free(buff);
+        path = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
+        qp = QIOopen(path);
+        free(path);
+        if (qp == NULL) {
+            xasprintf(&buff, "%d No list of active newsgroups available",
+                      NNTP_ERR_UNAVAILABLE);
+            NCwritereply(cp, buff);
+            free(buff);
+            return;
+        } else {
+            xasprintf(&buff, "%d Newsgroups in form \"group high low flags\"",
+                      NNTP_OK_LIST);
+            NCwritereply(cp, buff);
+            free(buff);
+        }
     } else if (strcasecmp(av[1], "NEWSGROUPS") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
-	p = ReadInFile(path, NULL);
+	qp = QIOopen(path);
         free(path);
-	if (p == NULL) {
+	if (qp == NULL) {
             xasprintf(&buff, "%d No list of newsgroup descriptions available",
                       NNTP_ERR_UNAVAILABLE);
             NCwritereply(cp, buff);
@@ -712,12 +723,11 @@ NClist(CHANNEL *cp, int ac, char *av[])
             NCwritereply(cp, buff);
             free(buff);
         }
-	end = p + strlen(p);
     } else if (strcasecmp(av[1], "ACTIVE.TIMES") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
-	p = ReadInFile(path, NULL);
+	qp = QIOopen(path);
         free(path);
-	if (p == NULL) {
+	if (qp == NULL) {
             xasprintf(&buff, "%d No list of creation times available",
                       NNTP_ERR_UNAVAILABLE);
             NCwritereply(cp, buff);
@@ -729,7 +739,6 @@ NClist(CHANNEL *cp, int ac, char *av[])
             NCwritereply(cp, buff);
             free(buff);
         }
-	end = p + strlen(p);
     } else {
         xasprintf(&buff, "%d Unknown LIST keyword", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
@@ -738,10 +747,41 @@ NClist(CHANNEL *cp, int ac, char *av[])
     }
 
     /* Loop over all lines, sending the text and "\r\n". */
-    for (; p < end && (q = strchr(p, '\n')) != NULL; p = q + 1) {
-	WCHANappend(cp, p, q - p);
-	WCHANappend(cp, NCterm, strlen(NCterm));
+    while ((p = QIOread(qp)) != NULL) {
+        /* Check that the output does not break the NNTP protocol. */
+        if (p[0] == '.' && p[1] == '\0') {
+            syslog(L_ERROR, "%s NClist single dot in file %s",
+                   CHANname(cp), av[1]);
+            continue;
+        }
+
+        /* Check whether the newsgroup matches the wildmat pattern,
+         * if given. */
+        if (ac == 3) {
+            savec = '\0';
+            for (save = p; *save != '\0'; save++) {
+                if (*save == ' ' || *save == '\t') {
+                    savec = *save;
+                    *save = '\0';
+                    break;
+                }
+            }
+
+            if (!uwildmat(p, av[2]))
+                continue;
+        
+            if (savec != '\0')
+                *save = savec;
+        }
+
+        /* Write the line. */
+        WCHANappend(cp, p, strlen(p));
+        WCHANappend(cp, NCterm, strlen(NCterm));
     }
+
+    QIOclose(qp);
+
+    /* Write the terminator. */
     NCwritereply(cp, NCdot);
 }
 

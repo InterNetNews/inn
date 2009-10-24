@@ -88,6 +88,10 @@ depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
 ../include/inn/defines.h: ../include/inn/system.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/buffer.h ../include/inn/defines.h \
@@ -202,7 +206,7 @@ md5.o: md5.c ../include/config.h ../include/inn/defines.h \
 messageid.o: messageid.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h
+  ../include/inn/libinn.h ../include/inn/nntp.h
 messages.o: messages.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \
