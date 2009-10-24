@@ -24,13 +24,11 @@
 
 #include "inn/nntp.h"
 
-#define NNTP_BAD_COMMAND		"500 Syntax error or bad command"
 #define NNTP_ACCESS			"502 Permission denied"
 #define NNTP_LIST_FOLLOWS		"215"
 #define NNTP_ARTICLE_FOLLOWS		"220"
 #define NNTP_REJECTIT_EMPTY		"437 Empty article"
 #define NNTP_POSTEDOK			"240 Article posted"
-#define NNTP_BAD_SUBCMD			"501 Bad subcommand"
 #define NNTP_NOTINGROUP			"412 Not in a newsgroup"
 #define NNTP_NOSUCHGROUP		"411 No such group"
 #define NNTP_NEWNEWSOK			"230 New news follows"

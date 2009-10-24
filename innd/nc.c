@@ -114,8 +114,6 @@ static int NCcount;
 static char		*NCquietlist[] = { INND_QUIET_BADLIST };
 static const char	NCterm[] = "\r\n";
 static const char 	NCdot[] = "." ;
-static const char	NCbadcommand[] = NNTP_BAD_COMMAND;
-static const char       NCbadsubcommand[] = NNTP_BAD_SUBCMD;
 
 /*
 ** Clear the WIP entry for the given channel.
@@ -433,6 +431,7 @@ NCstat(CHANNEL *cp, int ac, char *av[])
 static void
 NCauthinfo(CHANNEL *cp, int ac, char *av[])
 {
+    char *buff = NULL;
     cp->Start = cp->Next;
 
     if (!cp->CanAuthenticate) {
@@ -450,7 +449,9 @@ NCauthinfo(CHANNEL *cp, int ac, char *av[])
 
     /* Now make sure we're getting only AUTHINFO PASS commands. */
     if (ac < 3 || strcasecmp(av[1], "PASS") != 0) {
-	NCwritereply(cp, NNTP_BAD_SUBCMD);
+        xasprintf(&buff, "%d Syntax error", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
 
@@ -665,17 +666,24 @@ NCxbatch(CHANNEL *cp, int ac UNUSED, char *av[])
 }
 
 /*
-**  The LIST command.  Send the required file.
+**  The LIST command.  Send relevant lines of required file.
 */
 static void
 NClist(CHANNEL *cp, int ac, char *av[])
 {
     char *p, *q, *end, *path;
+    char *buff = NULL;
 
     cp->Start = cp->Next;
 
     if (cp->Nolist) {
-	NCwritereply(cp, NCbadcommand);
+        if ((innconf->noreader)
+            || (NNRPReason != NULL && !innconf->readerswhenstopped))
+            xasprintf(&buff, "%d Permission denied", NNTP_ERR_ACCESS);
+        else
+            xasprintf(&buff, "%d MODE-READER", NNTP_FAIL_WRONG_MODE);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
 
@@ -701,7 +709,9 @@ NClist(CHANNEL *cp, int ac, char *av[])
 	}
 	end = p + strlen(p);
     } else {
-	NCwritereply(cp, NCbadsubcommand);
+        xasprintf(&buff, "%d Unknown LIST keyword", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
 
@@ -1043,7 +1053,8 @@ NCproc(CHANNEL *cp)
           NCwritereply(cp, buff);
           break;
         }
-	NCwritereply(cp, NCbadcommand);
+        snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
+	NCwritereply(cp, buff);
 	cp->Start = cp->Next;
 
 	/* Channel could have been freed by above NCwritereply if
