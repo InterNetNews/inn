@@ -690,23 +690,45 @@ NClist(CHANNEL *cp, int ac, char *av[])
     /* ACTIVE when no argument given. */
     if (ac == 1 || (strcasecmp(av[1], "ACTIVE") == 0)) {
         p = ICDreadactive(&end);
+        /* We always have a valid return from ICDreadactive.
+         * Otherwise, innd is shut down. */
+        xasprintf(&buff, "%d Newsgroups in form \"group high low flags\"",
+                  NNTP_OK_LIST);
+        NCwritereply(cp, buff);
+        free(buff);
     } else if (strcasecmp(av[1], "NEWSGROUPS") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
 	p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {
-	    NCwritereply(cp, NCdot);
+            xasprintf(&buff, "%d No list of newsgroup descriptions available",
+                      NNTP_ERR_UNAVAILABLE);
+            NCwritereply(cp, buff);
+            free(buff);
 	    return;
-	}
+	} else {
+            xasprintf(&buff, "%d Descriptions in form \"group description\"",
+                      NNTP_OK_LIST);
+            NCwritereply(cp, buff);
+            free(buff);
+        }
 	end = p + strlen(p);
     } else if (strcasecmp(av[1], "ACTIVE.TIMES") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
 	p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {
-	    NCwritereply(cp, NCdot);
+            xasprintf(&buff, "%d No list of creation times available",
+                      NNTP_ERR_UNAVAILABLE);
+            NCwritereply(cp, buff);
+            free(buff);
 	    return;
-	}
+	} else {
+            xasprintf(&buff, "%d Group creations in form \"name time who\"",
+                      NNTP_OK_LIST);
+            NCwritereply(cp, buff);
+            free(buff);
+        }
 	end = p + strlen(p);
     } else {
         xasprintf(&buff, "%d Unknown LIST keyword", NNTP_ERR_SYNTAX);
@@ -716,8 +738,6 @@ NClist(CHANNEL *cp, int ac, char *av[])
     }
 
     /* Loop over all lines, sending the text and "\r\n". */
-    WCHANappend(cp, NNTP_LIST_FOLLOWS, strlen(NNTP_LIST_FOLLOWS));
-    WCHANappend(cp, NCterm, strlen(NCterm)) ;
     for (; p < end && (q = strchr(p, '\n')) != NULL; p = q + 1) {
 	WCHANappend(cp, p, q - p);
 	WCHANappend(cp, NCterm, strlen(NCterm));
