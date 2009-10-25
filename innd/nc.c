@@ -1001,7 +1001,9 @@ NCproc(CHANNEL *cp)
   char	        *p, *q;
   NCDISPATCH   	*dp;
   struct buffer	*bp;
-  char		buff[SMBUF];
+  char		buff[NNTP_MAXLEN_COMMAND];  /* For our (long) answers for CHECK/TAKETHIS,
+                                             * we need at least the length of the command
+                                             * (512 bytes). */
   size_t	i, j;
   bool		readmore, movedata;
   ARTDATA	*data = &cp->Data;
@@ -1153,8 +1155,13 @@ NCproc(CHANNEL *cp)
               }
           }
         }
-        snprintf(buff, sizeof(buff), "%d Line too long",
-                 validcommandtoolong ? syntaxerrorcode : NNTP_ERR_COMMAND);
+        if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
+            snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode,
+                     ac > 1 ? av[1] : "");
+        } else {
+            snprintf(buff, sizeof(buff), "%d Line too long",
+                     validcommandtoolong ? syntaxerrorcode : NNTP_ERR_COMMAND);
+        }
         NCwritereply(cp, buff);
         cp->Start = cp->Next;
 
@@ -1231,8 +1238,13 @@ NCproc(CHANNEL *cp)
           for (v = av; *v; v++)
               if (strlen(*v) > NNTP_MAXLEN_ARG) {
                   validcommandtoolong = true;
-                  snprintf(buff, sizeof(buff), "%d Argument too long",
-                           syntaxerrorcode);
+                  if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
+                      snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode,
+                               ac > 1 ? av[1] : "");
+                  } else {
+                      snprintf(buff, sizeof(buff), "%d Argument too long",
+                               syntaxerrorcode);
+                  }
                   NCwritereply(cp, buff);
                   break;
               }
@@ -1245,8 +1257,12 @@ NCproc(CHANNEL *cp)
       /* Check usage. */
       if ((dp->Minac != NC_any && ac < dp->Minac)
           || (dp->Maxac != NC_any && ac > dp->Maxac)) {
-          snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
-                   syntaxerrorcode, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
+          if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
+              snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode, ac > 1 ? av[1] : "");
+          } else {
+              snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
+                       syntaxerrorcode, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
+          }
           NCwritereply(cp, buff);
           cp->Start = cp->Next;
           break;
