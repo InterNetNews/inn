@@ -29,27 +29,28 @@ typedef struct _NCDISPATCH {
 } NCDISPATCH;
 
 /* The functions that implement the various commands. */
-static void NCauthinfo(CHANNEL *cp, int ac, char *av[]);
-static void NCcancel  (CHANNEL *cp, int ac, char *av[]);
-static void NCcheck   (CHANNEL *cp, int ac, char *av[]);
-static void NChead    (CHANNEL *cp, int ac, char *av[]);
-static void NChelp    (CHANNEL *cp, int ac, char *av[]);
-static void NCihave   (CHANNEL *cp, int ac, char *av[]);
-static void NClist    (CHANNEL *cp, int ac, char *av[]);
-static void NCmode    (CHANNEL *cp, int ac, char *av[]);
-static void NCquit    (CHANNEL *cp, int ac, char *av[]);
-static void NCstat    (CHANNEL *cp, int ac, char *av[]);
-static void NCtakethis(CHANNEL *cp, int ac, char *av[]);
-static void NCxbatch  (CHANNEL *cp, int ac, char *av[]);
+static void NCauthinfo       (CHANNEL *cp, int ac, char *av[]);
+static void NCcancel         (CHANNEL *cp, int ac, char *av[]);
+static void NCcapabilities   (CHANNEL *cp, int ac, char *av[]);
+static void NCcheck          (CHANNEL *cp, int ac, char *av[]);
+static void NChead           (CHANNEL *cp, int ac, char *av[]);
+static void NChelp           (CHANNEL *cp, int ac, char *av[]);
+static void NCihave          (CHANNEL *cp, int ac, char *av[]);
+static void NClist           (CHANNEL *cp, int ac, char *av[]);
+static void NCmode           (CHANNEL *cp, int ac, char *av[]);
+static void NCquit           (CHANNEL *cp, int ac, char *av[]);
+static void NCstat           (CHANNEL *cp, int ac, char *av[]);
+static void NCtakethis       (CHANNEL *cp, int ac, char *av[]);
+static void NCxbatch         (CHANNEL *cp, int ac, char *av[]);
 
 /* Handlers for unimplemented commands.  We need two handlers so that we can
    return the right status code; reader commands that are required by the
    standard must return a 401 response code rather than a 500 error. */
-static void NC_reader (CHANNEL *cp, int ac, char *av[]);
-static void NC_unimp  (CHANNEL *cp, int ac, char *av[]);
+static void NC_reader        (CHANNEL *cp, int ac, char *av[]);
+static void NC_unimp         (CHANNEL *cp, int ac, char *av[]);
 
 /* Supporting functions. */
-static void NCwritedone(CHANNEL *cp);
+static void NCwritedone      (CHANNEL *cp);
 
 /* Set up the dispatch table for all of the commands. */
 #define NC_any -1
@@ -57,27 +58,29 @@ static void NCwritedone(CHANNEL *cp);
 #define COMMAND_READER(name) { name, NC_reader, false, 1, NC_any, NULL }
 #define COMMAND_UNIMP(name)  { name, NC_unimp,  false, 1, NC_any, NULL }
 static NCDISPATCH NCcommands[] = {
-    COMMAND("AUTHINFO",  NCauthinfo,   false, 3,  3,
+    COMMAND("AUTHINFO",      NCauthinfo,      false, 3,  3,
             "USER name|PASS password"),
-    COMMAND("CHECK",     NCcheck,      true,  2,  2,
+    COMMAND("CAPABILITIES",  NCcapabilities,  false, 1,  2,
+            "[keyword]"),
+    COMMAND("CHECK",         NCcheck,         true,  2,  2,
             "message-ID"),
-    COMMAND("HEAD",      NChead,       true,  1,  2,
+    COMMAND("HEAD",          NChead,          true,  1,  2,
             "message-ID"),
-    COMMAND("HELP",      NChelp,       false, 1,  1,
+    COMMAND("HELP",          NChelp,          false, 1,  1,
             NULL),
-    COMMAND("IHAVE",     NCihave,      true,  2,  2,
+    COMMAND("IHAVE",         NCihave,         true,  2,  2,
             "message-ID"),
-    COMMAND("LIST",      NClist,       true,  1,  3,
+    COMMAND("LIST",          NClist,          true,  1,  3,
             "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS [wildmat]]"),
-    COMMAND("MODE",      NCmode,       false, 2,  2,
+    COMMAND("MODE",          NCmode,          false, 2,  2,
             "READER"),
-    COMMAND("QUIT",      NCquit,       false, 1,  1,
+    COMMAND("QUIT",          NCquit,          false, 1,  1,
             NULL),
-    COMMAND("STAT",      NCstat,       true,  1,  2,
+    COMMAND("STAT",          NCstat,          true,  1,  2,
             "message-ID"),
-    COMMAND("TAKETHIS",  NCtakethis,   true,  2,  2,
+    COMMAND("TAKETHIS",      NCtakethis,      true,  2,  2,
             "message-ID"),
-    COMMAND("XBATCH",    NCxbatch,     true,  2,  2,
+    COMMAND("XBATCH",        NCxbatch,        true,  2,  2,
             "size"),
 
     /* Unimplemented reader commands which may become available after a MODE
@@ -499,6 +502,8 @@ NChelp(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
     char                *buff = NULL;
     NCDISPATCH		*dp;
 
+    cp->Start = cp->Next;
+
     xasprintf(&buff, "%d Legal commands%s", NNTP_INFO_HELP, NCterm);
     WCHANappend(cp, buff, strlen(buff));
     for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++)
@@ -519,10 +524,69 @@ NChelp(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
     WCHANappend(cp, NEWSMASTER, strlen(NEWSMASTER));
     WCHANappend(cp, LINE2, strlen(LINE2));
     WCHANappend(cp, NCterm, strlen(NCterm));
-    NCwritereply(cp, NCdot) ;
-    cp->Start = cp->Next;
+    NCwritereply(cp, NCdot);
     free(buff);
 }
+
+/*
+**  The CAPABILITIES command.
+*/
+static void
+NCcapabilities(CHANNEL *cp, int ac, char *av[])
+{
+    char *buff = NULL;
+
+    cp->Start = cp->Next;
+
+    if (ac == 2 && !IsValidKeyword(av[1])) {
+        xasprintf(&buff, "%d Syntax error in keyword", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
+
+    xasprintf(&buff, "%d Capability list:", NNTP_INFO_CAPABILITIES);
+    NCwritereply(cp, buff);
+    free(buff);
+
+    WCHANappend(cp, "VERSION 2", 9);
+    WCHANappend(cp, NCterm, strlen(NCterm));
+
+    xasprintf(&buff, "IMPLEMENTATION %s", INN_VERSION_STRING);
+    NCwritereply(cp, buff);
+    free(buff);
+
+    if (cp->CanAuthenticate) {
+        WCHANappend(cp, "AUTHINFO", 8);
+        if (!cp->IsAuthenticated)
+            WCHANappend(cp, " USER", 5);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
+    if (cp->IsAuthenticated) {
+        WCHANappend(cp, "IHAVE", 5);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
+    if (cp->IsAuthenticated && !cp->Nolist) {
+        WCHANappend(cp, "LIST ACTIVE ACTIVE.TIMES NEWSGROUPS", 35);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
+    if ((!innconf->noreader)
+        && (NNRPReason == NULL || innconf->readerswhenstopped)) {
+        WCHANappend(cp, "MODE-READER", 11);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
+    if (cp->IsAuthenticated && !StreamingOff && cp->Streaming) {
+        WCHANappend(cp, "STREAMING", 9);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
+    NCwritereply(cp, NCdot);
+}
+
 
 /*
 **  The IHAVE command.  Check the message-ID, and see if we want the
