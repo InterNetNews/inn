@@ -430,40 +430,59 @@ NCstat(CHANNEL *cp, int ac, char *av[])
 **  The AUTHINFO command.
 */
 static void
-NCauthinfo(CHANNEL *cp, int ac, char *av[])
+NCauthinfo(CHANNEL *cp, int ac UNUSED, char *av[])
 {
     char *buff = NULL;
     cp->Start = cp->Next;
 
-    if (!cp->CanAuthenticate) {
-        /* Already authenticated. */
-        NCwritereply(cp, NNTP_ACCESS);
+    if (cp->IsAuthenticated) {
+        /* 502 if authentication will fail. */
+        if (cp->CanAuthenticate)
+            xasprintf(&buff, "%d Authentication will fail", NNTP_ERR_ACCESS);
+        else
+            xasprintf(&buff, "%d Already authenticated", NNTP_ERR_ACCESS);
+        NCwritereply(cp, buff);
+        free(buff);
         return;
     }
 
     /* Ignore AUTHINFO USER commands, since we only care about the
      * password. */
-    if (ac > 1 && strcasecmp(av[1], "USER") == 0) {
-	NCwritereply(cp, NNTP_AUTH_NEXT);
-	return;
-    }
-
-    /* Now make sure we're getting only AUTHINFO PASS commands. */
-    if (ac < 3 || strcasecmp(av[1], "PASS") != 0) {
-        xasprintf(&buff, "%d Syntax error", NNTP_ERR_SYNTAX);
+    if (strcasecmp(av[1], "USER") == 0) {
+        cp->HasSentUsername = true;
+        xasprintf(&buff, "%d Enter password", NNTP_CONT_AUTHINFO);
         NCwritereply(cp, buff);
         free(buff);
 	return;
     }
 
+    /* Now make sure we're getting only AUTHINFO PASS commands. */
+    if (strcasecmp(av[1], "PASS") != 0) {
+        xasprintf(&buff, "%d Bad AUTHINFO param", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
+	return;
+    }
+
+    /* AUTHINFO PASS cannot be sent before AUTHINFO USER. */
+    if (!cp->HasSentUsername) {
+        xasprintf(&buff, "%d Authentication commands issued out of sequence",
+                  NNTP_FAIL_AUTHINFO_REJECT);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
+
     /* Got the password -- is it okay? */
     if (!RCauthorized(cp, av[2])) {
-	NCwritereply(cp, NNTP_AUTH_BAD);
+        xasprintf(&buff, "%d Authentication failed", NNTP_FAIL_AUTHINFO_BAD);
     } else {
+        xasprintf(&buff, "%d Authentication succeeded", NNTP_OK_AUTHINFO);
         cp->CanAuthenticate = false;
         cp->IsAuthenticated = true;
-	NCwritereply(cp, NNTP_AUTH_OK);
     }
+    NCwritereply(cp, buff);
+    free(buff);
 }
 
 /*
@@ -1510,6 +1529,7 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
     cp = CHANcreate(fd, CTnntp, CSgetcmd, NCreader, NCwritedone);
 
     cp->IsAuthenticated = !MustAuthorize;
+    cp->HasSentUsername = false;
 
     NCclearwip(cp);
     cp->privileged = IsLocal;

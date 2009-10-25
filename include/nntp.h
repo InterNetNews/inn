@@ -42,15 +42,6 @@
 #define NNTP_CLASS_ERROR		'4'
 #define NNTP_CLASS_FATAL		'5'
 
-
-/*
-**  Authentication commands from the RFC update (not official).
-*/
-#define NNTP_AUTH_NEEDED		"480"
-#define NNTP_AUTH_BAD			"481"
-#define NNTP_AUTH_NEXT			"381"
-#define NNTP_AUTH_OK			"281"
-
 /*
 **  MODE CANCEL extension.
 */
