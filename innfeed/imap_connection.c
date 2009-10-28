@@ -3382,7 +3382,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 						inlen,
 						&client_interact,
 						&out,
-						&outlen);
+						(unsigned *) &outlen);
 
 		    free(in);
 
