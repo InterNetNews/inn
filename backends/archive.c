@@ -202,7 +202,7 @@ write_index_header(FILE *index, ARTHANDLE *art, const char *header)
 
 /*
 **  Write an index entry to standard output.  This is the path (without the
-**  archive root), the message ID of the article, and the subject.
+**  archive root), the message-ID of the article, and the subject.
 */
 static void
 write_index(FILE *index, ARTHANDLE *art, const char *file)
@@ -279,12 +279,12 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
     struct cvector *groups;
     struct buffer *path = NULL;
 
-    /* Determine the groups from the Xref header.  In groups will be the split
-       Xref header; from the second string on should be a group, a colon, and
+    /* Determine the groups from the Xref: header.  In groups will be the split
+       Xref: header; from the second string on should be a group, a colon, and
        an article number. */
     start = wire_findheader(art->data, art->len, "Xref");
     if (start == NULL) {
-        warn("cannot find Xref header in %s", token);
+        warn("cannot find Xref: header in %s", token);
         return;
     }
     end = wire_endheader(start, art->data + art->len);
@@ -294,7 +294,8 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
             *p = ' ';
     groups = cvector_split_space(xref, NULL);
     if (groups->count < 2) {
-        warn("bogus Xref header in %s", token);
+        warn("bogus Xref: header in %s", token);
+        free(xref);
         return;
     }
 
@@ -305,7 +306,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
         group = groups->strings[i];
         delim = strchr(group, ':');
         if (delim == NULL) {
-            warn("bogus Xref entry %s in %s", group, token);
+            warn("bogus Xref: entry %s in %s", group, token);
             continue;
         }
         *delim = '\0';
