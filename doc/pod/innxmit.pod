@@ -1,0 +1,132 @@
+=head1 NAME
+
+innxmit - Send Usenet articles to a remote NNTP server
+
+=head1 SYNOPSIS
+
+B<innxmit> [B<-acdHlprsv>] [B<-P> I<portnum>] [B<-T> I<seconds>]
+[B<-t> I<seconds>] I<host> I<file>
+
+=head1 DESCRIPTION
+
+B<innxmit> connects to the NNTP server at the specified I<host>
+(validating itself via F<passwd.nntp> if possible) and sends it the
+articles specified in the batch file named I<file>.  It is normally
+invoked by a script run out of cron(8) that uses B<shlock> to lock the
+host name, followed by a B<ctlinnd> command to flush the batch file.
+If I<file> is not an absolute path name, it is taken relative to the
+directory specified by the I<pathoutgoing> parameter in F<inn.conf>.
+It is normally written by specifying the C<Wnm> flags in the F<newsfeeds>
+file.  Each line in the batch file should be in one of the following
+formats:
+
+    article Message-ID
+    article
+
+The first field is either the storage API token of an article or the
+name of a file holding an article.  If it is not an absolute pathname
+or a storage API token, it is taken to be a file name relative to
+I<patharticles> in F<inn.conf>. If the second field is not specified,
+the message-ID will be obtained by scanning the article.  The two fields,
+if present, are separated by a space.  If a communication error such
+as a write(2) failure occurs, B<innxmit> will stop sending and rewrite
+the batch file to contain the current article and any other unsent
+articles.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a>
+
+If all articles were sent successfully, B<innxmit> will remove the
+batch file; otherwise it will rewrite it to contain the list of unsent articles.
+If no articles were sent or rejected, the file is left untouched.  This can
+cause the batch file to grow excessively large if many articles have been
+expired and there are communication problems.  To always rewrite the batch file,
+use the B<-a> flag.
+
+=item B<-c>
+
+In streaming mode, a check of each message-ID is still made to avoid sending
+articles already on the server.  The B<-c> flag will, if streaming mode
+is supported, result in sending articles without checking.  This results
+in slightly greater throughput and may be appropriate when it is known
+that the site could not already have the articles such as in the case of
+a "leaf" site.
+
+=item B<-d>
+
+Use the B<-d> flag to print debugging information on standard error.  This
+will show the protocol transactions between B<innxmit> and the NNTP server
+on the remote host.
+
+=item B<-H>
+
+If the B<-H> flag is given, then only headers are sent to I<host> for all
+articles except control messages.  And the Bytes: header is also included
+even if it does not exist in the original article.  The B<-H> flag is useful
+for Diablo reader.
+
+=item B<-l>
+
+The B<-l> flag is used to turn on logging of reasons the remote gives
+for rejecting an article.
+
+=item B<-P> I<portnum>
+
+To specify a port number other than the default, use the B<-P> flag.
+
+=item B<-p>
+
+If the B<-p> flag is given, then no connection is made and the batchfile
+is purged of entries that refer to files that no longer exist.  This
+implies the B<-a> flag.
+
+=item B<-r>
+
+If the remote server sends an unexpected reply code, B<innxmit> will
+requeue the article and proceed.  Use the B<-r> flag if the article
+should not be requeued.
+
+=item B<-s>
+
+B<innxmit> will attempt to negotiate a streaming mode extension of the NNTP
+protocol with the server at connect time.  If successful, it will use a slightly
+different protocol that enhances throughput.  If the server does not recognize
+the streaming mode negotiation, B<innxmit> will revert to normal NNTP transfer
+mode.  Use the B<-s> flag to disable the attempt to negotiate the streaming mode
+extension.
+
+=item B<-T> I<seconds>
+
+To specify the total amount of time that should be allowed for article transfers,
+use the B<-T> flag.  The default is to wait until an I/O error occurs, or all
+the articles have been transferred.  If the B<-T> flag is used, the time is
+checked just before each article is started; it will not abort a transfer
+that is in progress.
+
+=item B<-t> I<seconds>
+
+B<innxmit> normally blocks until the connection is made.  To specify a timeout
+on how long to try to make the connection, use  the B<-t> flag.
+
+=item B<-v>
+
+Upon exit, B<innxmit> reports transfer and CPU usage statistics via syslog.
+If the B<-v> flag is used, they will also be printed on the standard output.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews. Converted to POD
+by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+ctlinnd(8), inn.conf(5), innd(8), newsfeeds(5), shlock(1).
+
+=cut

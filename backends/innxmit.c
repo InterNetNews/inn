@@ -1018,14 +1018,11 @@ int main(int ac, char *av[]) {
     umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "lacdHprst:T:vP:")) != EOF)
+    while ((i = getopt(ac, av, "acdHlpP:rst:T:v")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
 	    /* NOTREACHED */
-	case 'P':
-	    port = atoi(optarg);
-	    break;
 	case 'a':
 	    AlwaysRewrite = true;
 	    break;
@@ -1045,6 +1042,9 @@ int main(int ac, char *av[]) {
 	    AlwaysRewrite = true;
 	    Purging = true;
 	    break;
+        case 'P':
+            port = atoi(optarg);
+            break;
 	case 'r':
 	    DoRequeue = false;
 	    break;
