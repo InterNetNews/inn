@@ -241,6 +241,7 @@ doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
+doc/pod/cvtbatch.pod                  Master file for cvtbatch.8
 doc/pod/cycbuff.conf.pod              Master file for cycbuff.conf.5
 doc/pod/distrib.pats.pod              Master file for distrib.pats.5
 doc/pod/distributions.pod             Master file for distributions.5
@@ -267,6 +268,7 @@ doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/innupgrade.pod                Master file for innupgrade.8
+doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3

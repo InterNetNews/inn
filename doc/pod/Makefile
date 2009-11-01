@@ -30,9 +30,10 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/batcher.8 ../man/buffchan.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
-	../man/ctlinnd.8 ../man/docheckgroups.8 \
+	../man/ctlinnd.8 ../man/cvtbatch.8 ../man/docheckgroups.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
 	../man/expirerm.8 ../man/ident.8 ../man/innd.8 ../man/inndf.8 \
+	../man/innxmit.8 \
 	../man/nnrpd.8 ../man/innbind.8 ../man/innupgrade.8 \
 	../man/makedbz.8 ../man/makehistory.8 ../man/mod-active.8 \
 	../man/news.daily.8 ../man/news2mail.8 ../man/ninpaths.8 \
@@ -112,6 +113,7 @@ maintclean: distclean
 ../man/cnfsheadconf.8:	cnfsheadconf.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/cnfsstat.8:	cnfsstat.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ctlinnd.8:	ctlinnd.pod		; $(POD2MAN) -s 8 $? > $@
+../man/cvtbatch.8:	cvtbatch.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/docheckgroups.8:	docheckgroups.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/domain.8:	domain.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expire.8:	expire.pod		; $(POD2MAN) -s 8 $? > $@
@@ -122,6 +124,7 @@ maintclean: distclean
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndf.8:		inndf.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innupgrade.8:	innupgrade.pod		; $(POD2MAN) -s 8 $? > $@
+../man/innxmit.8:	innxmit.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makedbz.8:	makedbz.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/makehistory.8:	makehistory.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/mod-active.8:	mod-active.pod		; $(POD2MAN) -s 8 $? > $@
