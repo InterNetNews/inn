@@ -2185,17 +2185,18 @@ sub adjust($$) {
 
     # Sum all incoming traffic for each full server.
     foreach $key (keys (%innd_connect)) {
-      ($hostname, $channel) = split(':', $key);
-      $innd_seconds_sum{$hostname} += ($innd_seconds{$key} || 0);
-      $innd_connect_sum{$hostname} += ($innd_connect{$key} || 0);
-      $innd_offered_sum{$hostname} += ($innd_offered{$key} || 0);
-      $innd_accepted_sum{$hostname} += ($innd_accepted{$key} || 0);
-      $innd_refused_sum{$hostname} += ($innd_refused{$key} || 0);
-      $innd_rejected_sum{$hostname} += ($innd_rejected{$key} || 0);
-      $innd_stored_size_sum{$hostname} += ($innd_stored_size{$key} || 0);
-      $innd_duplicated_size_sum{$hostname} += ($innd_duplicated_size{$key} || 0);
-      $innd_offered_size_sum{$hostname} += ($innd_offered_size{$key} || 0);
-      $innd_rejected_size_sum{$hostname} += ($innd_rejected_size{$key} || 0);
+      if ($key =~ /^(\S+):\d+$/) {
+        $innd_seconds_sum{$1} += ($innd_seconds{$key} || 0);
+        $innd_connect_sum{$1} += ($innd_connect{$key} || 0);
+        $innd_offered_sum{$1} += ($innd_offered{$key} || 0);
+        $innd_accepted_sum{$1} += ($innd_accepted{$key} || 0);
+        $innd_refused_sum{$1} += ($innd_refused{$key} || 0);
+        $innd_rejected_sum{$1} += ($innd_rejected{$key} || 0);
+        $innd_stored_size_sum{$1} += ($innd_stored_size{$key} || 0);
+        $innd_duplicated_size_sum{$1} += ($innd_duplicated_size{$key} || 0);
+        $innd_offered_size_sum{$1} += ($innd_offered_size{$key} || 0);
+        $innd_rejected_size_sum{$1} += ($innd_rejected_size{$key} || 0);
+      }
     }
 
     # adjust min/max of innd timer stats.
