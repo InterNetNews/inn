@@ -1,0 +1,57 @@
+=head1 NAME
+
+cvtbatch - Convert Usenet batch files to INN format
+
+=head1 SYNOPSIS
+
+B<cvtbatch> [B<-w> I<items>]
+
+=head1 DESCRIPTION
+
+B<cvtbatch> reads standard input as a sequence of lines, converts
+each line, and writes it to standard output.  It is used to convert
+simple batch files that contain just the storage API token of
+an article to INN batch files that contain additional information
+about each article.
+
+Each line is taken as a storage API token indicating a Usenet article.
+Only the first word of each line is parsed; anything following whitespace
+is ignored.  Lines not starting with a valid token are also silently ignored.
+
+If the input file consists of a series of message-IDs, then use
+B<grephistory> with the B<-s> flag piped into B<cvtbatch>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-w> I<items>
+
+The B<-w> flag specifies how each output line should be written.
+The items for this flag should be chosen from the C<W> flag items
+as specified in newsfeeds(5).  They may be chosen from the following
+set:
+
+    b    Size of the article headers in bytes.
+    f    Storage API token of the article (same as "n").
+    m    Article message-ID.
+    n    Storage API token of the article.
+    t    Arrival time of the article as seconds since epoch.
+
+The default is C<nm>, that is to say the storage API token
+followed by the message-ID of the article.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted
+to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+grephistory(1), newsfeeds(5).
+
+=cut

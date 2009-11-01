@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Read file list on standard input and spew out batchfiles.
+**  Read file list on standard input and spew out batch files.
 */
 
 #include "config.h"
@@ -27,7 +27,8 @@ main(int ac, char *av[]) {
     bool	Dirty;
     TOKEN	token;
     ARTHANDLE	*art;
-    int		len;
+    size_t	len;
+    time_t      arrived;
 
     /* First thing, set up our identity. */
     message_program_name = "cvtbatch";
@@ -45,6 +46,7 @@ main(int ac, char *av[]) {
 	    for (p = format = optarg; *p; p++) {
 		switch (*p) {
 		case FEED_BYTESIZE:
+                case FEED_TIMERECEIVED:
 		case FEED_FULLNAME:
 		case FEED_MESSAGEID:
 		case FEED_NAME:
@@ -81,6 +83,8 @@ main(int ac, char *av[]) {
 	    continue;
 	}
 	len = art->len;
+        arrived = art->arrived;
+
 	for (r = text; r < art->data + art->len; r++) {
 	    if (*r == '\r' || *r == '\n')
 		break;
@@ -115,6 +119,11 @@ main(int ac, char *av[]) {
 		    putchar(' ');
 		printf("%s", q);
 		break;
+            case FEED_TIMERECEIVED:
+                if (Dirty)
+                    putchar(' ');
+                printf("%lu", (unsigned long) arrived);
+                break;
 	    }
 	    Dirty = true;
 	}
