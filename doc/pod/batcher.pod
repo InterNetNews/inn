@@ -7,7 +7,7 @@ batcher - Article batching for InterNetNews
 B<batcher> [B<-rv>] [B<-a> I<articles>] [B<-A> I<total-articles>]
 [B<-b> I<size>] [B<-B> I<total-size>] [B<-i> I<string>]
 [B<-N> I<batches>] [B<-p> I<process>] [B<-s> I<separator>]
-[B<-S> I<spool>] I<host> [I<input>]
+I<host> [I<input>]
 
 =head1 DESCRIPTION
 
@@ -23,11 +23,8 @@ If I<input> is a relative file name, it is assumed to be in
 I<pathoutgoing> as set in F<inn.conf>.  Blank lines and lines starting
 with a number sign (C<#>) are ignored.  All other lines in the input
 should consist of one or two fields separated by a single space.  The
-first field is either the storage API token of an article or the name of a
-file holding an article.  If it is not an absolute pathname or a storage
-API token, it is taken to be a file name relative to I<patharticles> in
-F<inn.conf>.  The second field, if present, specifies the size of the
-article in bytes.
+first field is the storage API token of an article.  The second field,
+if present, specifies the size of the article in bytes.
 
 By default, batches are written to standard output (which isn't very
 useful if more than one batch is output), but see the B<-p> option.
@@ -109,13 +106,6 @@ The default separator is:
     #! rnews %ld
 
 and this should rarely be changed.
-
-=item B<-S> I<spool>
-
-Specifies an additional spool directory to search in for articles.  If
-this option is given, the first field of an input line is a relative path
-name, and if the article isn't found in I<patharticles>, it is also looked
-for under I<spool>.
 
 =item B<-v>
 
