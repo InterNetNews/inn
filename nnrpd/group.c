@@ -13,6 +13,7 @@
 /*
 **  Change to or list the specified newsgroup.  If invalid, stay in the old
 **  group.
+**  Do not forget to free(group) before any return after "group" has been set.
 */
 void
 CMDgroup(int ac, char *av[])
@@ -44,9 +45,10 @@ CMDgroup(int ac, char *av[])
 	group = xstrdup(av[1]);
     }
 
-    /* Check whether the second argument is valid. */
+    /* Check whether the second argument is valid (for LISTGROUP). */
     if (ac == 3 && !IsValidRange(av[2])) {
-        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
+        free(group);
         return;
     }
 
@@ -54,6 +56,7 @@ CMDgroup(int ac, char *av[])
     if (!hookpresent && !PERMcanread) {
         Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
+        free(group);
         return;
     }
 
