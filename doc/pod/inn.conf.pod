@@ -762,8 +762,8 @@ boolean value and the default is true.
 
 INN has optional support for generating keyword information automatically
 from article body text and putting that information in overview for the
-use of clients that know to look for it.  The following parameters control
-that feature.
+use of clients that know to look for it (HDR, OVER and XPAT commands).
+The following parameters control that feature.
 
 This may be too slow if you're taking a substantial feed, and probably
 will not be useful for the average news reader; enabling this is not
@@ -776,6 +776,9 @@ it.
 
 Whether the keyword generation support should be enabled.  This is a
 boolean value and the default is false.
+
+If an article already contains a Keywords: header, no keyword
+generation is done and the original Keywords: header is kept untouched.
 
 In order to use this feature, the regex library should be available
 and INN configured with the B<--enable-keywords> flag.  Otherwise,

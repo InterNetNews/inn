@@ -95,11 +95,9 @@ ptr_strcmp(const void *p1, const void *p2)
 
 void
 KEYgenerate(
-    HDRCONTENT	*hc,		/* Header data. */
-    const char	*body,		/* Article body. */
-    size_t      bodylen,	/* Article body length. */
-    const char	*v,		/* Old Keywords: value. */
-    size_t	l)		/* Old Keywords: length. */
+    HDRCONTENT	*hc,            /* Header data. */
+    const char	*body,          /* Article body. */
+    size_t      bodylen)        /* Article body length. */
 {
 
     int		word_count, word_length, word_index, distinct_words;
@@ -134,16 +132,11 @@ KEYgenerate(
 	}
     }
 
-    /* First re-init Keywords: from original value.  This is a mostly arbitrary
-     * cutoff leaving room for a minimal word vector. */
+    /* Initialize a fresh Keywords: value, limited to the size
+     * specified by the keylimit parameter in inn.conf. */
     hc->Value = xmalloc(innconf->keylimit + 1);
-    if ((v != NULL) && (*v != '\0')) {
-        if (l > (size_t) innconf->keylimit + 1)
-            l = innconf->keylimit + 1;
-        strlcpy(hc->Value, v, l);
-    } else
-        *hc->Value = '\0';
-    l = hc->Length = strlen(hc->Value);
+    *hc->Value = '\0';
+    hc->Length = 0;
 
     /* Now figure acceptable extents, and copy body to working string.
      * (Memory-intensive for hefty articles:  limit to non-ABSURD articles.) */
@@ -242,24 +235,28 @@ KEYgenerate(
 	qsort(&word_vec[last], word_index - last,
 	      sizeof(struct word_entry), wvec_length_cmp);
 
-    /* Scribble onto end of Keywords: after a magic separator. */
-    strlcpy(hc->Value + l, ",\377", innconf->keylimit + 1 - l);
-    for (chase = hc->Value + l + 2, word_index = 0;
+    /* Write the Keywords: header. */
+    for (chase = hc->Value, word_index = 0;
 	 word_index < distinct_words;
 	 word_index++) {
-	
-        /* "noise" words don't count. */
+
+        /* "Noise" words don't count. */
 	if (regexec(&preg, word[word_vec[word_index].index], 0, NULL, 0) == 0)
 	    continue;
 
 	/* Add to list. */
-	*chase++ = ',';
-	strlcpy(chase, word[word_vec[word_index].index],
-                innconf->keylimit + 1 - (chase - hc->Value));
-	chase += word_vec[word_index].length;
+        if (word_index != 0)
+            *chase++ = ',';
 
-	if (chase - hc->Value > (innconf->keylimit - (MAX_WORD_LENGTH + 4)))
-	    break;
+        strlcpy(chase, word[word_vec[word_index].index],
+                innconf->keylimit + 1 - (chase - hc->Value));
+
+        /* Is there enough space to go on?  (comma + longest word) */
+        if (chase + word_vec[word_index].length - hc->Value >
+            (long) (innconf->keylimit - MAX_WORD_LENGTH - 1))
+            break;
+        else
+            chase += word_vec[word_index].length;
     }
 
     hc->Length = strlen(hc->Value);
