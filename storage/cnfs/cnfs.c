@@ -1382,7 +1382,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
     /* checking the bitmap to ensure cah.size is not broken was dropped */
     cycsize = ntohl(cah.size);
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	(cycsize > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	((unsigned) cycsize > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	char buf1[24];
 	strlcpy(buf1, CNFSofft2hex(cycbuff->free, false), sizeof(buf1));
 	SMseterror(SMERR_UNDEFINED, "CNFSARTHEADER fudge size overflow");
@@ -1708,7 +1708,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	}
     }
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	((off_t) ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;

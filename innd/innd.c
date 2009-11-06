@@ -422,7 +422,7 @@ main(int ac, char *av[])
 	    AnyIncoming = true;
 	    break;
 	case 'c':
-	    innconf->artcutoff = atoi(optarg);
+	    innconf->artcutoff = strtoul(optarg, NULL, 10);
 	    break;
  	case 'C':
  	    DoCancels = false;
@@ -437,10 +437,10 @@ main(int ac, char *av[])
 	    RemoteLimit = atoi(optarg);
 	    break;
 	case 'i':
-	    innconf->maxconnections = atoi(optarg);
+	    innconf->maxconnections = strtoul(optarg, NULL, 10);
 	    break;
 	case 'l':
-	    innconf->maxartsize = atol(optarg);
+	    innconf->maxartsize = strtoul(optarg, NULL, 10);
 	    break;
 	case 'm':
 	    if (ModeReason)
@@ -473,7 +473,7 @@ main(int ac, char *av[])
 	    MaxOutgoing = atoi(optarg);
 	    break;
 	case 'P':
-	    innconf->port = atoi(optarg);
+	    innconf->port = strtoul(optarg, NULL, 10);
 	    break;
 	case 'r':
 	    ShouldRenumber = true;
@@ -598,7 +598,7 @@ main(int ac, char *av[])
        Otherwise, we use insane amounts of memory for the channel table.
        FIXME: Get rid of this hard-coded constant. */
     if (i > 5000) {
-        int max;
+        unsigned long max;
 
         max = innconf->maxconnections + MaxOutgoing + 20;
         if (max < 5000)
@@ -650,7 +650,7 @@ main(int ac, char *av[])
     NCsetup();
     ARTsetup();
     ICDsetup(true);
-    if (innconf->timer)
+    if (innconf->timer != 0)
         TMRinit(TMR_MAX);
 
     /* Initialize the storage subsystem. */

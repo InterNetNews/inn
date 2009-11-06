@@ -82,7 +82,7 @@ data_cache_reopen(struct tradindexed *global, const char *group,
 bool
 tradindexed_open(int mode)
 {
-    unsigned int cache_size, fdlimit;
+    unsigned long cache_size, fdlimit;
 
     if (tradindexed != NULL) {
         warn("tradindexed: overview method already open");
@@ -99,8 +99,8 @@ tradindexed_open(int mode)
     fdlimit = getfdlimit();
     if (fdlimit > 0 && fdlimit < cache_size * 2) {
         warn("tradindexed: not enough file descriptors for an overview cache"
-             " size of %u; increase rlimitnofile or decrease overcachesize"
-             " to at most %u", cache_size, fdlimit / 2);
+             " size of %lu; increase rlimitnofile or decrease overcachesize"
+             " to at most %lu", cache_size, fdlimit / 2);
         cache_size = (fdlimit > 2) ? fdlimit / 2 : 1;
     }
     tradindexed->cache = tdx_cache_create(cache_size);

@@ -247,7 +247,7 @@ CHANtracing(CHANNEL *cp, bool flag)
     notice("%s trace %s", name, flag ? "on" : "off");
     cp->Tracing = flag;
     if (flag) {
-        notice("%s trace badwrites %d blockwrites %d badreads %d", name,
+        notice("%s trace badwrites %lu blockwrites %lu badreads %lu", name,
                cp->BadWrites, cp->BlockedWrites, cp->BadReads);
         network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &cp->Address);
@@ -787,8 +787,8 @@ CHANreadtext(CHANNEL *cp)
 
        FIXME: A better approach would be to limit the number of commands we
        process for each channel. */
-    if (innconf->maxcmdreadsize <= 0 || cp->State != CSgetcmd
-        || bp->left < (unsigned long) innconf->maxcmdreadsize)
+    if (innconf->maxcmdreadsize == 0 || cp->State != CSgetcmd
+        || bp->left < innconf->maxcmdreadsize)
         maxbyte = bp->left;
     else
         maxbyte = innconf->maxcmdreadsize;
@@ -906,7 +906,7 @@ CHANwakeup(CHANNEL *cp)
 static void
 CHANwritesleep(CHANNEL *cp, const char *name)
 {
-    int bad, delay;
+    unsigned long bad, delay;
 
     bad = ++(cp->BlockedWrites);
     if (bad > innconf->badiocount)
@@ -924,7 +924,7 @@ CHANwritesleep(CHANNEL *cp, const char *name)
             return;
         }
     delay = bad * innconf->blockbackoff;
-    warn("%s blocked sleeping %d", name, delay);
+    warn("%s blocked sleeping %lu", name, delay);
     SCHANadd(cp, Now.tv_sec + delay, NULL, CHANwakeup, NULL);
 }
 
@@ -1116,7 +1116,7 @@ CHANreadloop(void)
     CHANNEL *cp;
     fd_set rdfds, wrfds;
     struct timeval tv;
-    long silence;
+    unsigned long silence;
     const char *name;
     time_t last_sync;
     int fd = 0;
@@ -1133,10 +1133,10 @@ CHANreadloop(void)
         rdfds = channels.read_set;
         wrfds = channels.write_set;
         tv = TimeOut;
-        if (innconf->timer) {
+        if (innconf->timer != 0) {
             unsigned long now = TMRnow();
 
-            if (now < 1000 * (unsigned long)(innconf->timer))
+            if (now < 1000 * innconf->timer)
                 tv.tv_sec = innconf->timer - now / 1000;
             else {
                 TMRsummary("ME", timer_name);
@@ -1167,7 +1167,7 @@ CHANreadloop(void)
         gettimeofday(&Now, NULL);
         if (Now.tv_sec > last_sync + TimeOut.tv_sec) {
             HISsync(History);
-            if (ICDactivedirty) {
+            if (ICDactivedirty != 0) {
                 ICDwriteactive();
                 ICDactivedirty = 0;
             }

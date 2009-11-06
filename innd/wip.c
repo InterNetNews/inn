@@ -106,7 +106,7 @@ bool
 WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 {
     WIP *wp;
-    int i;
+    unsigned long i;
     
     if ((wp = WIPbyid(msgid)) != NULL) {
 	if(wp->Chan->ArtBeg == 0)
@@ -117,9 +117,9 @@ WIPinprogress(const char *msgid, CHANNEL *cp, bool Precommit)
 		i = WIP_ARTMAX;
 	}
  
-	if ((Now.tv_sec - wp->Timestamp) < (i + innconf->wipcheck))
+	if ((Now.tv_sec - wp->Timestamp) < (time_t) (i + innconf->wipcheck))
 	    return true;
-	if ((Now.tv_sec - wp->Timestamp) > (i + innconf->wipexpire)) {
+	if ((Now.tv_sec - wp->Timestamp) > (time_t) (i + innconf->wipexpire)) {
 	    for (i = 0 ; i < PRECOMMITCACHESIZE ; i++) {
 		if (wp->Chan->PrecommitWIP[i] == wp) {
 		    wp->Chan->PrecommitWIP[i] = (WIP *)NULL;

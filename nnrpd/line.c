@@ -168,7 +168,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
 		/* Don't grow the buffer bigger than the maximum
 		 * article size we'll accept. */
                 if (PERMaccessconf->localmaxartsize > NNTP_MAXLEN_COMMAND)
-                    if (newsize > (unsigned)PERMaccessconf->localmaxartsize)
+                    if (newsize > PERMaccessconf->localmaxartsize)
                         newsize = PERMaccessconf->localmaxartsize;
 
 		/* If we're trying to grow from the same size, to the
@@ -178,7 +178,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
 		 * size any more, just overwrite characters until they
 		 * stop, then discard the whole thing. */
 		if (newsize == line->allocated) {
-		    warn("%s overflowed our line buffer (%ld), "
+		    warn("%s overflowed our line buffer (%lu), "
 			 "discarding further input", Client.host,
 			 PERMaccessconf->localmaxartsize);
 		    where = line->start;

@@ -633,11 +633,11 @@ void Run (void)
       TMRstop(TMR_IDLE);
 
       timePasses () ;
-      if (innconf->timer)
+      if (innconf->timer != 0)
         {
 	  unsigned long now = TMRnow () ;
 	  if (last_summary == 0 
-	      || (long) (now - last_summary) > (innconf->timer * 1000))
+	      || (now - last_summary) > (innconf->timer * 1000))
 	    {
 	      TMRsummary ("ME", timer_name) ;
 	      last_summary = now;

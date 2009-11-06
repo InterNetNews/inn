@@ -165,11 +165,11 @@ process_newnews(char *group, bool AllGroups, time_t date)
 	    time(&now);
 	    /* Move the start time back nfsreaderdelay seconds
              * as we are an NFS reader. */
-	    if (date >= innconf->nfsreaderdelay)
+	    if (date >= (time_t) innconf->nfsreaderdelay)
 		date -= innconf->nfsreaderdelay;
 	}
 	while (OVsearch(handle, &artnum, &data, &len, &token, &arrived)) {
-	    if (innconf->nfsreader && arrived + innconf->nfsreaderdelay > now)
+	    if (innconf->nfsreader != 0 && (time_t) (arrived + innconf->nfsreaderdelay) > now)
 		continue;
 	    if (len == 0 || date > arrived)
 		continue;
@@ -285,7 +285,7 @@ CMDnewnews(int ac, char *av[])
   }
 
   /* Make other processes happier if someone uses NEWNEWS. */
-  if (innconf->nicenewnews > 0) {
+  if (innconf->nicenewnews != 0) {
       nice(innconf->nicenewnews);
       innconf->nicenewnews = 0;
   }

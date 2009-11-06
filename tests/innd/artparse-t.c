@@ -151,7 +151,7 @@ ok_article(int n, const char *path, const char *error, bool slow, bool shift)
         message_handlers_warn(1, message_log_stderr);
     }
     ok(n++, okay);
-    if (wirelen > (size_t) innconf->maxartsize)
+    if (wirelen > innconf->maxartsize)
         expected = CSgotlargearticle;
     else if (wirelen == 5)
         expected = CSnoarticle;

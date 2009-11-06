@@ -50,7 +50,8 @@ const char *config_group_tag(struct config_group *);
    unchanged and that parameter wasn't set (or was set to an invalid value for
    the expected type). */
 bool config_param_boolean(struct config_group *, const char *, bool *);
-bool config_param_integer(struct config_group *, const char *, long *);
+bool config_param_signed_number(struct config_group *, const char *, long *);
+bool config_param_unsigned_number(struct config_group *, const char *, unsigned long *);
 bool config_param_real(struct config_group *, const char *, double *);
 bool config_param_string(struct config_group *, const char *, const char **);
 bool config_param_list(struct config_group *, const char *,

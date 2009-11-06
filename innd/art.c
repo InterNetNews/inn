@@ -273,7 +273,7 @@ ARTsetup(void)
   ARTheadertree = ARTbuildtree(table, 0, ARRAY_SIZE(ARTheaders));
   free(table);
 
-  /* Get our Path name, kill trailing !. */
+  /* Get our Path name, kill trailing! */
   ARTpathme = xstrdup(Path.data);
   ARTpathme[Path.used - 1] = '\0';
 
@@ -716,8 +716,8 @@ ARTcheckheader(CHANNEL *cp, int size)
 }
 
 /*
-**  Check Message-ID format based on RFC 822 grammar, except that (as per
-**  RFC 1036) whitespace, non-printing, and '>' characters are excluded.
+**  Check message-ID format based on RFC 5322 grammar, except that (as per
+**  USEFOR, RFC 5536) whitespace, non-printing, and '>' characters are excluded.
 **  Based on code by Paul Eggert posted to news.software.b on 22-Nov-90
 **  in <#*tyo2'~n@twinsun.com>, with additional e-mail discussion.
 **  Thanks, Paul.
@@ -728,7 +728,7 @@ ARTidok(const char *MessageID)
   int		c;
   const char	*p;
 
-  /* Check the length of the message ID. */
+  /* Check the length of the message-ID. */
   if (MessageID == NULL || strlen(MessageID) > NNTP_MAXLEN_MSGID)
     return false;
 
@@ -853,16 +853,16 @@ ARTchecksize(CHANNEL *cp)
     const char *msgid;
 
     size = cp->Next - cp->Start;
-    if (innconf->maxartsize > 0 && size > (size_t) innconf->maxartsize) {
+    if (innconf->maxartsize != 0 && size > innconf->maxartsize) {
         if (cp->State == CSgotarticle || cp->State == CSgotlargearticle)
             cp->State = CSgotlargearticle;
         else
             cp->State = CSeatarticle;
     }
     if (cp->State == CSgotlargearticle) {
-        notice("%s internal rejecting huge article (%lu > %ld)", CHANname(cp),
+        notice("%s internal rejecting huge article (%lu > %lu)", CHANname(cp),
                (unsigned long) size, innconf->maxartsize);
-        ARTerror(cp, "Article of %lu bytes exceeds local limit of %ld bytes",
+        ARTerror(cp, "Article of %lu bytes exceeds local limit of %lu bytes",
                  (unsigned long) size, innconf->maxartsize);
 
 	/* Write a local cancel entry so nobody else gives it to us. */
@@ -1097,11 +1097,12 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     return false;
   }
 
-  if (innconf->linecountfuzz && HDR_FOUND(HDR__LINES)) {
+  if (innconf->linecountfuzz != 0 && HDR_FOUND(HDR__LINES)) {
     p = HDR(HDR__LINES);
     i = data->Lines;
-    if ((delta = i - atoi(p)) != 0 && abs(delta) > innconf->linecountfuzz) {
-      sprintf(buff, "%d Linecount %s != %d +- %ld",
+    if ((delta = i - atoi(p)) != 0
+        && (unsigned long) abs(delta) > innconf->linecountfuzz) {
+      sprintf(buff, "%d Linecount %s != %d +- %lu",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
 	MaxLength(p, p), i, innconf->linecountfuzz);
       TMRstop(TMR_ARTCLEAN);
@@ -1120,7 +1121,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     TMRstop(TMR_ARTCLEAN);
     return false;
   }
-  if (innconf->artcutoff) {
+  if (innconf->artcutoff != 0) {
       long cutoff = innconf->artcutoff * 24 * 60 * 60;
 
       if (data->Posted < Now.tv_sec - cutoff) {

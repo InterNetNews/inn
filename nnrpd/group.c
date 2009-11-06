@@ -125,7 +125,7 @@ CMDgroup(int ac, char *av[])
 	     * last nfsreaderdelay (default 60) seconds.  If they did,
 	     * don't report them as we don't want them to appear too
 	     * soon. */
-	    if (innconf->nfsreader) {
+	    if (innconf->nfsreader != 0) {
 		ARTNUM low, prev;
 		time_t now, arrived;
 
@@ -144,7 +144,7 @@ CMDgroup(int ac, char *av[])
 		}
 		prev = low;
 		while (OVsearch(handle, &i, NULL, NULL, NULL, &arrived)) {
-		    if (arrived + innconf->nfsreaderdelay > now) {
+		    if ((time_t) (arrived + innconf->nfsreaderdelay) > now) {
 			ARThigh = prev;
                         /* No need to update the count since it is only
                          * an estimate but make sure it is not too high. */
