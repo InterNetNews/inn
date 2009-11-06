@@ -315,12 +315,14 @@ enum channel_state {
 */
 struct _CHANNEL;
 typedef void (*innd_callback_func)     (struct _CHANNEL *);
-typedef void (*innd_callback_nntp_func)(struct _CHANNEL *, int ac, char *av[]);
+typedef void (*innd_callback_nntp_func)(struct _CHANNEL *);
 
 typedef struct _CHANNEL {
   enum channel_type    Type;
   enum channel_state   State;
   int		       fd;
+  int                  ac; /* Number of arguments in NNTP command. */
+  char              ** av; /* List of arguments in NNTP command. */
   bool		       Skip;
   bool                 Ignore;
   bool		       Streaming;
