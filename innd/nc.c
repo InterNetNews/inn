@@ -218,13 +218,18 @@ NCpostit(CHANNEL *cp)
     return;
   } else if (Mode == OMpaused) {
     cp->Reported++;
-    cp->State = CSgetcmd;
-    /* In streaming mode, there is no NNTP_FAIL_TAKETHIS_DEFER and we must
-     * not reject the article. */
-    if (cp->Sendid.size > 3)
-      snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_ACTION, ModeReason);
-    else
+    if (cp->Sendid.size > 3) {
+      /* In streaming mode, there is no NNTP_FAIL_TAKETHIS_DEFER and RFC 4644
+       * mentions that we MUST send 400 here and close the connection so
+       * as not to reject the article.
+       * Yet, we could have sent NNTP_FAIL_ACTION without closing the
+       * connection... */
+      cp->State = CSwritegoodbye;
+      snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_TERMINATING, ModeReason);
+    } else {
+      cp->State = CSgetcmd;
       snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_IHAVE_DEFER, ModeReason);
+    }
     response = buff;
     NCwritereply(cp, response);
     return;
