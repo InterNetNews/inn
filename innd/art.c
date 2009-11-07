@@ -71,15 +71,10 @@ static char	ARTjnk[] = "junk";
 static char	*ARTpathme;
 
 /*
-**  Flag array, indexed by character.  Character classes for Message-ID's.
+**  Flag array, indexed by character.  Character classes for hostnames.
 */
-static char		ARTcclass[256];
-#define CC_MSGID_ATOM	01
-#define CC_MSGID_NORM	02
-#define CC_HOSTNAME	04
-#define ARTnormchar(c)	((ARTcclass[(unsigned char)(c)] & CC_MSGID_NORM) != 0)
-#define ARTatomchar(c)	((ARTcclass[(unsigned char)(c)] & CC_MSGID_ATOM) != 0)
-#define ARThostchar(c)	((ARTcclass[(unsigned char)(c)] & CC_HOSTNAME) != 0)
+static char             hostcclass[256];
+#define ARThostchar(c)  ((hostcclass[(unsigned char)(c)]) != 0)
 
 #if defined(DO_PERL) || defined(DO_PYTHON)
 const char	*filterPath;
@@ -239,31 +234,27 @@ ARTcompare(const void *p1, const void *p2)
 void
 ARTsetup(void)
 {
-  const char *	p;
   const ARTHEADER **	table;
+  const unsigned char *p;
   unsigned int	i;
 
   /* Set up the character class tables.  These are written a
    * little strangely to work around a GCC2.0 bug. */
-  memset(ARTcclass, 0, sizeof ARTcclass);
-  p = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  memset(hostcclass, 0, sizeof(hostcclass));
+
+  p = (const unsigned char*) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   while ((i = *p++) != 0) {
-    ARTcclass[i] = CC_HOSTNAME | CC_MSGID_ATOM | CC_MSGID_NORM;
-  }
-  p = "!#$%&'*+-/=?^_`{|}~";
-  while ((i = *p++) != 0) {
-    ARTcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
-  }
-  p = "\"(),.:;<@[\\]";
-  while ((i = *p++) != 0) {
-    ARTcclass[i] = CC_MSGID_NORM;
+    hostcclass[i] = 1;
   }
 
-  /* The RFC's don't require it, but we add underscore to the list of valid
-   * hostname characters. */
-  ARTcclass['.'] |= CC_HOSTNAME;
-  ARTcclass['-'] |= CC_HOSTNAME;
-  ARTcclass['_'] |= CC_HOSTNAME;
+  /* The RFCs don't require it, but we add underscore to the list
+   * of valid hostname characters. */
+  hostcclass['.'] = 1;
+  hostcclass['-'] = 1;
+  hostcclass['_'] = 1;
+
+  /* Also initialize the character class tables for message-IDs. */
+  InitializeMessageIDcclass();
 
   /* Build the header tree. */
   table = xmalloc(ARRAY_SIZE(ARTheaders) * sizeof(ARTHEADER *));
@@ -715,86 +706,6 @@ ARTcheckheader(CHANNEL *cp, int size)
   return;
 }
 
-/*
-**  Check message-ID format based on RFC 5322 grammar, except that (as per
-**  USEFOR, RFC 5536) whitespace, non-printing, and '>' characters are excluded.
-**  Based on code by Paul Eggert posted to news.software.b on 22-Nov-90
-**  in <#*tyo2'~n@twinsun.com>, with additional e-mail discussion.
-**  Thanks, Paul.
-*/
-bool
-ARTidok(const char *MessageID)
-{
-  int		c;
-  const char	*p;
-
-  /* Check the length of the message-ID. */
-  if (MessageID == NULL || strlen(MessageID) > NNTP_MAXLEN_MSGID)
-    return false;
-
-  /* Scan local-part:  "< atom|quoted [ . atom|quoted]" */
-  p = MessageID;
-  if (*p++ != '<')
-    return false;
-  for (; ; p++) {
-    if (ARTatomchar(*p))
-      while (ARTatomchar(*++p))
-	continue;
-    else {
-      if (*p++ != '"')
-	return false;
-      for ( ; ; ) {
-	switch (c = *p++) {
-	case '\\':
-	  c = *p++;
-	  /* FALLTHROUGH */
-	default:
-	  if (ARTnormchar(c))
-	    continue;
-	  return false;
-	case '"':
-	  break;
-	}
-	break;
-      }
-    }
-    if (*p != '.')
-      break;
-  }
-
-  /* Scan domain part:  "@ atom|domain [ . atom|domain] > \0" */
-  if (*p++ != '@')
-    return false;
-  for ( ; ; p++) {
-    if (ARTatomchar(*p))
-      while (ARTatomchar(*++p))
-	continue;
-    else {
-      if (*p++ != '[')
-	return false;
-      for ( ; ; ) {
-	switch (c = *p++) {
-	case '\\':
-	  c = *p++;
-	  /* FALLTHROUGH */
-	default:
-	  if (ARTnormchar(c))
-	    continue;
-	  /* FALLTHROUGH */
-	case '[':
-	  return false;
-	case ']':
-	  break;
-	}
-	break;
-      }
-    }
-    if (*p != '.')
-      break;
-  }
-
-  return *p == '>' && *++p == '\0';
-}
 
 /*
 **  Clean up data field where article informations are stored.
@@ -1088,8 +999,8 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     }
   }
 
-  /* assumes Message-ID header is required header */
-  if (!ARTidok(HDR(HDR__MESSAGE_ID))) {
+  /* Assumes the Message-ID: header is a required header. */
+  if (!IsValidMessageID(HDR(HDR__MESSAGE_ID))) {
     HDR_LEN(HDR__MESSAGE_ID) = 0;
     sprintf(buff, "%d Bad \"Message-ID\" header",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
@@ -1297,7 +1208,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     return;
   }
 
-  if (!ARTidok(MessageID)) {
+  if (!IsValidMessageID(MessageID)) {
     syslog(L_NOTICE, "%s bad cancel Message-ID %s", data->Feedsite,
       MaxLength(MessageID, MessageID));
     TMRstop(TMR_ARTCNCL);
@@ -1356,7 +1267,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
   if (c == 'c' && strncmp(Control, "cancel", 6) == 0) {
     for (p = &Control[6]; ISWHITE(*p); p++)
       continue;
-    if (*p && ARTidok(p))
+    if (*p && IsValidMessageID(p))
       ARTcancel(data, p, false);
     return;
   }
@@ -2627,7 +2538,7 @@ ARTpost(CHANNEL *cp)
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
     }
     if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
-      if (ARTidok(HDR(HDR__SUPERSEDES)))
+      if (IsValidMessageID(HDR(HDR__SUPERSEDES)))
 	ARTcancel(data, HDR(HDR__SUPERSEDES), false);
     }
   }
