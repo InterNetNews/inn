@@ -100,7 +100,7 @@ InitializeMessageIDcclass(void)
 **  Updated to RFC 5536 by Julien Elie.
 */
 bool
-IsValidMessageID(const char *MessageID)
+IsValidMessageID(const char *MessageID, bool stripspaces)
 {
     int c;
     const unsigned char *p;
@@ -110,6 +110,10 @@ IsValidMessageID(const char *MessageID)
         return false;
 
     p = (const unsigned char *) MessageID;
+
+    if (stripspaces) {
+        for (; ISWHITE(*p); p++);
+    }
 
     /* Scan local-part:  "< dot-atom-text". */
     if (*p++ != '<')
@@ -154,6 +158,13 @@ IsValidMessageID(const char *MessageID)
         if (*p != '.')
             break;
     }
-    
-    return *p == '>' && *++p == '\0';
+
+    if (*p++ != '>')
+        return false;
+
+    if (stripspaces) {
+        for (; ISWHITE(*p); p++);
+    }
+
+    return (*p == '\0');
 }
