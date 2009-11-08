@@ -46,13 +46,3 @@
 **  MODE CANCEL extension.
 */
 #define NNTP_OK_CANCELLED       "289"
-
-/*
-**  XBATCH feed extension.
-*/
-#define NNTP_OK_XBATCHED	"239"
-#define NNTP_CONT_XBATCH_STR	"339"
-/* and one more meaning for the 436 code NNTP_FAIL_IHAVE_DEFER */
-#define NNTP_RESENDIT_XBATCHERR	"436 xbatch failed: "
-/* and one more meaning for the 501 code NNTP_SYNTAX_USE */
-#define NNTP_XBATCH_BADSIZE	"501 Invalid or missing size for xbatch"

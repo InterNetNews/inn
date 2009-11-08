@@ -730,6 +730,8 @@ NCihave(CHANNEL *cp)
 static void
 NCxbatch(CHANNEL *cp)
 {
+    char *buff = NULL;
+
     cp->Start = cp->Next;
 
     if (cp->XBatchSize) {
@@ -745,15 +747,19 @@ NCxbatch(CHANNEL *cp)
     if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) &&
                                 (innconf->maxartsize < (unsigned long) cp->XBatchSize))) {
         syslog(L_NOTICE, "%s got bad xbatch size %d",
-	       CHANname(cp), cp->XBatchSize);
-	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
-	return;
+               CHANname(cp), cp->XBatchSize);
+        xasprintf(&buff, "%d Invalid size for XBATCH", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
     }
 
     /* We prefer not to touch the buffer; NCreader() does enough magic
      * with it. */
     cp->State = CSgetxbatch;
-    NCwritereply(cp, NNTP_CONT_XBATCH_STR);
+    xasprintf(&buff, "%d Send batch", NNTP_CONT_XBATCH);
+    NCwritereply(cp, buff);
+    free(buff);
 }
 
 /*
@@ -1450,16 +1456,16 @@ NCproc(CHANNEL *cp)
 	  failed = 1;
 	  syslog(L_ERROR, "%s cannot open outfile %s for xbatch: %m",
 	    CHANname(cp), buff);
-	  snprintf(buff, sizeof(buff), "%s cant create file: %s",
-                   NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+          snprintf(buff, sizeof(buff), "%d XBATCH failed -- cant create file: %s",
+                   NNTP_FAIL_XBATCH, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	} else {
 	  if (write(fd, cp->In.data, cp->XBatchSize) != cp->XBatchSize) {
 	    oerrno = errno;
 	    syslog(L_ERROR, "%s cant write batch to file %s: %m", CHANname(cp),
 	      buff);
-	    snprintf(buff, sizeof(buff), "%s cant write batch to file: %s",
-                     NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+            snprintf(buff, sizeof(buff), "%d XBATCH failed -- cant write batch to file: %s",
+                     NNTP_FAIL_XBATCH, strerror(oerrno));
 	    NCwritereply(cp, buff);
 	    failed = 1;
 	  }
@@ -1468,8 +1474,8 @@ NCproc(CHANNEL *cp)
 	  oerrno = errno;
 	  syslog(L_ERROR, "%s error closing batch file %s: %m", CHANname(cp),
 	    failed ? "" : buff);
-	  snprintf(buff, sizeof(buff), "%s error closing batch file: %s",
-                   NNTP_RESENDIT_XBATCHERR, strerror(oerrno));
+          snprintf(buff, sizeof(buff), "%d XBATCH failed -- error closing batch file: %s",
+                   NNTP_FAIL_XBATCH, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	  failed = 1;
 	}
@@ -1479,14 +1485,16 @@ NCproc(CHANNEL *cp)
 	  oerrno = errno;
 	  syslog(L_ERROR, "%s cant rename %s to %s: %m", CHANname(cp),
 	    failed ? "" : buff, buff2);
-	  snprintf(buff, sizeof(buff), "%s cant rename batch to %s: %s",
-                   NNTP_RESENDIT_XBATCHERR, buff2, strerror(oerrno));
+          snprintf(buff, sizeof(buff), "%d XBATCH failed -- cant rename batch to %s: %s",
+                   NNTP_FAIL_XBATCH, buff2, strerror(oerrno));
 	  NCwritereply(cp, buff);
 	  failed = 1;
 	}
 	cp->Reported++;
 	if (!failed) {
-	  NCwritereply(cp, NNTP_OK_XBATCHED);
+          snprintf(buff, sizeof(buff), "%d Batch transferred OK",
+                   NNTP_OK_XBATCH);
+          NCwritereply(cp, buff);
 	  cp->Received++;
 	} else {
           /* Only reject, no call to ARTlog() because it will not be
