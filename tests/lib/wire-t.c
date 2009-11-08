@@ -74,38 +74,38 @@ main(void)
     ok(12, strncmp(p, "Second: Not", strlen("Second: Not")) == 0);
     p = wire_nextline(p, article + st.st_size - 1);
     ok(13, p == NULL);
-    p = wire_findheader(article, st.st_size, "Path");
+    p = wire_findheader(article, st.st_size, "Path", true);
     ok(14, p == article + 6);
-    p = wire_findheader(article, st.st_size, "From");
+    p = wire_findheader(article, st.st_size, "From", true);
     ok(15, strncmp(p, "This is the real", strlen("This is the real")) == 0);
-    p = wire_findheader(article, st.st_size, "SUMMARY");
+    p = wire_findheader(article, st.st_size, "SUMMARY", true);
     ok(16, strncmp(p, "First text", strlen("First text")) == 0);
-    p = wire_findheader(article, st.st_size, "Header");
+    p = wire_findheader(article, st.st_size, "Header", true);
     ok(17, strncmp(p, "This one is real", strlen("This one is real")) == 0);
-    p = wire_findheader(article, st.st_size, "message-id");
+    p = wire_findheader(article, st.st_size, "message-id", true);
     ok(18, strncmp(p, "<foo@example.com>", strlen("<foo@example.com>")) == 0);
-    p = wire_findheader(article, st.st_size, "Second");
+    p = wire_findheader(article, st.st_size, "Second", true);
     ok(19, p == NULL);
-    p = wire_findheader(article, st.st_size, "suBJect");
+    p = wire_findheader(article, st.st_size, "suBJect", true);
     ok(20, strncmp(p, "This is\rnot", strlen("This is\rnot")) == 0);
     end = wire_endheader(p, article + st.st_size - 1);
     ok(21, strncmp(end, "\nFrom: This is", strlen("\nFrom: This is")) == 0);
-    p = wire_findheader(article, st.st_size, "keywordS");
+    p = wire_findheader(article, st.st_size, "keywordS", true);
     ok(22, strncmp(p, "this is --", strlen("this is --")) == 0);
     end = wire_endheader(p, article + st.st_size - 1);
     ok(23, strncmp(end, "\nSummary: ", strlen("\nSummary: ")) == 0);
-    p = wire_findheader(article, st.st_size, "strange");
+    p = wire_findheader(article, st.st_size, "strange", true);
     ok(24, strncmp(p, "This is\n\nnot", strlen("This is\n\nnot")) == 0);
     end = wire_endheader(p, article + st.st_size - 1);
     ok(25, strncmp(end, "\nMessage-ID: ", strlen("\nMessage-ID: ")) == 0);
-    p = wire_findheader(article, st.st_size, "Message");
+    p = wire_findheader(article, st.st_size, "Message", true);
     ok(26, p == NULL);
 
     free(article);
     article = read_file("articles/wire-no-body", &st);
 
     ok(27, wire_findbody(article, st.st_size) == NULL);
-    p = wire_findheader(article, st.st_size, "message-id");
+    p = wire_findheader(article, st.st_size, "message-id", true);
     ok(28, strncmp(p, "<bad-body@example.com>\r\n",
                    strlen("<bad-body@example.com>\r\n")) == 0);
     end = wire_endheader(p, article + st.st_size - 1);
@@ -116,7 +116,7 @@ main(void)
     article = read_file("articles/wire-truncated", &st);
 
     ok(31, wire_findbody(article, st.st_size) == NULL);
-    p = wire_findheader(article, st.st_size, "date");
+    p = wire_findheader(article, st.st_size, "date", true);
     ok(32, strncmp(p, "Mon, 23 Dec", strlen("Mon, 23 Dec")) == 0);
     ok(33, wire_endheader(p, article + st.st_size - 1) == NULL);
     ok(34, wire_nextline(p, article + st.st_size - 1) == NULL);

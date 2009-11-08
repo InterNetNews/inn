@@ -123,7 +123,8 @@ skip_fws(char *text, const char *end)
 **  with content other than spaces and tabs are found, return NULL.
 */
 char *
-wire_findheader(const char *article, size_t length, const char *header)
+wire_findheader(const char *article, size_t length, const char *header,
+                bool stripspaces)
 {
     char *p;
     const char *end;
@@ -141,7 +142,9 @@ wire_findheader(const char *article, size_t length, const char *header)
         if (p[0] == '\r' && p[1] == '\n')
             return NULL;
         else if (isheader(p, header, headerlen)) {
-            p = skip_fws(p + headerlen + 2, end);
+            p += headerlen + 2;
+            if (stripspaces)
+                p = skip_fws(p, end);
             if (p == NULL)
                 return NULL;
             if (p >= end || p[0] != '\r' || p[1] != '\n')

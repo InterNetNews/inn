@@ -76,7 +76,7 @@ store_article(int fd)
     buffer_free(article);
 
     /* Find the expiration time, if any. */
-    start = wire_findheader(text, size, "Expires");
+    start = wire_findheader(text, size, "Expires", true);
     if (start != NULL) {
         char *expires;
 
@@ -92,7 +92,7 @@ store_article(int fd)
 
     /* Find the appropriate newsgroups header. */
     if (innconf->storeonxref) {
-        start = wire_findheader(text, size, "Xref");
+        start = wire_findheader(text, size, "Xref", true);
         if (start == NULL)
             die("no Xref header found in message");
         end = wire_endheader(start, text + size - 1);
@@ -104,7 +104,7 @@ store_article(int fd)
             die("malformed Xref header");
         start++;
     } else {
-        start = wire_findheader(text, size, "Newsgroups");
+        start = wire_findheader(text, size, "Newsgroups", true);
         if (start == NULL)
             die("no Newsgroups header found in message");
         end = wire_endheader(start, text + size - 1);

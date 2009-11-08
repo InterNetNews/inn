@@ -28,13 +28,11 @@ char *wire_nextline(const char *, const char *end);
 
 /* Given a pointer to the start of an article and the name of a header, find
    the beginning of the value of the given header (the returned pointer will
-   be after the name of the header and any initial whitespace).  Headers whose
-   only content is whitespace are ignored.  If the header isn't found, returns
-   NULL.
-
-   WARNING: This function does not comply with RFC 2822's idea of header
-   content, particularly in its skipping of initial whitespace. */
-char *wire_findheader(const char *article, size_t, const char *header);
+   be after the name of the header, and also any initial whitespace if specified
+   by the stripspaces argument).  Headers whose only content is whitespace are
+   ignored when whitespaces are stripped.  If the header isn't found, returns
+   NULL. */
+char *wire_findheader(const char *article, size_t, const char *header, bool stripspaces);
 
 /* Given a pointer inside a header's value and a pointer to the end of the
    article, returns a pointer to the end of the header value (the \n at the

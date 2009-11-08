@@ -228,7 +228,7 @@ Process(char *article, size_t artlen)
 
     /* Make sure that all the headers are there, note the ID. */
     for (hp = RequiredHeaders; hp < ARRAY_END(RequiredHeaders); hp++) {
-        p = wire_findheader(wirefmt, length, hp->Name);
+        p = wire_findheader(wirefmt, length, hp->Name, true);
         if (p == NULL) {
             free(wirefmt);
 	    Reject(article, artlen, "bad_article missing %s", hp->Name);

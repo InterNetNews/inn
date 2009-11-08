@@ -584,7 +584,7 @@ DoArt(ARTHANDLE *art)
 	}
     }
     for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
-        fp->Header = wire_findheader(art->data, art->len, fp->Headername);
+        fp->Header = wire_findheader(art->data, art->len, fp->Headername, false);
 
         /* Someone managed to break their server so that they were appending
            multiple Xref headers, and INN had a bug where it wouldn't notice
@@ -600,7 +600,7 @@ DoArt(ARTHANDLE *art)
                     break;
                 next++;
                 left = art->len - (next - art->data);
-                next = wire_findheader(next, left, fp->Headername);
+                next = wire_findheader(next, left, fp->Headername, false);
                 if (next != NULL)
                     fp->Header = next;
             }
@@ -659,7 +659,7 @@ DoArt(ARTHANDLE *art)
     }
     if (Missfieldsize > 0) {
 	for (fp = Missfields, i = 0; i < Missfieldsize; i++, fp++) {
-            fp->Header = wire_findheader(art->data, art->len, fp->Headername);
+            fp->Header = wire_findheader(art->data, art->len, fp->Headername, false);
             if (fp->Header != NULL) {
 		fp->HasHeader = true;
                 p = wire_endheader(fp->Header, art->data + art->len - 1);
