@@ -1169,7 +1169,7 @@ NCproc(CHANNEL *cp)
         for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
           if ((dp->Function != NC_unimp) &&
               (strcasecmp(cp->av[0], dp->Name) == 0)) {
-            if (!StreamingOff || cp->Streaming ||
+            if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
                 validcommandtoolong = true;
             }
@@ -1178,7 +1178,7 @@ NCproc(CHANNEL *cp)
             if (strcasecmp(cp->av[0], "IHAVE") == 0) {
               syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
             } else if (strcasecmp(cp->av[0], "CHECK") == 0
-                       && (!StreamingOff || cp->Streaming)) {
+                       && (!StreamingOff && cp->Streaming)) {
               syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
             }
           }
@@ -1186,7 +1186,7 @@ NCproc(CHANNEL *cp)
         /* If TAKETHIS, we have to read the entire multi-line response
          * block before answering. */
         if (strcasecmp(cp->av[0], "TAKETHIS") != 0
-            || (StreamingOff && !cp->Streaming)) {
+            || (StreamingOff || !cp->Streaming)) {
           if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
             snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode,
                      cp->ac > 1 ? cp->av[1] : "");
@@ -1211,11 +1211,11 @@ NCproc(CHANNEL *cp)
           if (strcasecmp(cp->av[0], "IHAVE") == 0) {
               syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
           } else if (strcasecmp(cp->av[0], "CHECK") == 0
-                     && (!StreamingOff || cp->Streaming)) {
+                     && (!StreamingOff && cp->Streaming)) {
               syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
           }
 	  /* Ignore the streaming commands if necessary. */
-	  if (!StreamingOff || cp->Streaming ||
+	  if ((!StreamingOff && cp->Streaming) ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
 	    break;
 	  }
@@ -1278,7 +1278,7 @@ NCproc(CHANNEL *cp)
               /* If TAKETHIS, we have to read the entire multi-line response
                * block before answering. */
               if (strcasecmp(cp->av[0], "TAKETHIS") != 0
-                  || (StreamingOff && !cp->Streaming)) {
+                  || (StreamingOff || !cp->Streaming)) {
                   NCwritereply(cp, buff);
                   cp->Start = cp->Next;
                   break;
@@ -1299,7 +1299,7 @@ NCproc(CHANNEL *cp)
           /* If TAKETHIS, we have to read the entire multi-line response
            * block before answering. */
           if (strcasecmp(cp->av[0], "TAKETHIS") != 0
-              || (StreamingOff && !cp->Streaming)) {
+              || (StreamingOff || !cp->Streaming)) {
               NCwritereply(cp, buff);
               cp->Start = cp->Next;
               break;
@@ -1319,7 +1319,7 @@ NCproc(CHANNEL *cp)
           /* If TAKETHIS, we have to read the entire multi-line response
            * block before answering. */
           if (strcasecmp(cp->av[0], "TAKETHIS") != 0
-              || (StreamingOff && !cp->Streaming)) {
+              || (StreamingOff || !cp->Streaming)) {
               NCwritereply(cp, buff);
               cp->Start = cp->Next;
               break;
