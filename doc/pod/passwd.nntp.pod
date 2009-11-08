@@ -20,8 +20,9 @@ addresses, is done.)
 
 The second field is a user name, and the third is a password.  If either
 the username or password is empty, then that portion of the
-authentication will not occur.  (For example, when connecting to a
-remote INN for peering, only the password is needed.)
+authentication will not occur.  (For example, a server may require only
+a username, in which case the password is not necessary.  Note that
+a username is mandatory with AUTHINFO USER/PASS.)
 
 The optional fourth field specifies the type of authentication to use.
 At present, the only recognized "authentication style" is C<authinfo>;

@@ -139,6 +139,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5), rnews(1)
+inn.conf(5), passwd.nntp(5), rnews(1).
 
 =cut

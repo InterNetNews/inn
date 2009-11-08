@@ -127,6 +127,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8), inn.conf(5), innd(8), newsfeeds(5), shlock(1).
+ctlinnd(8), inn.conf(5), innd(8), newsfeeds(5), passwd.nntp(5), shlock(1).
 
 =cut
