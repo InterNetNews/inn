@@ -4,17 +4,17 @@ tinyleaf - Very simple IHAVE-only NNTP server
 
 =head1 SYNOPSIS
 
-tinyleaf I<spool> [I<processor>]
+B<tinyleaf> I<spool> [I<processor>]
 
 =head1 DESCRIPTION
 
 B<tinyleaf> is intended to be the simplest possible transit news server
 that still does something useful.  It must be run under inetd(8) or some
-equivalent, and only implements three commands (IHAVE, HELP, and QUIT).
+equivalent, and only implements three commands (HELP, IHAVE, and QUIT).
 When it receives an article, it saves it into the directory I<spool> and,
 if I<processor> is given, passes information about the article to
 I<processor> via a pipe.  The file name of the article will be the MD5
-hash of its message ID, and if a file by that name already exists,
+hash of its message-ID, and if a file by that name already exists,
 B<tinyleaf> will refuse the article, reporting it as a duplicate.
 
 If I<processor> is given, it should specify the path to a program.  That
@@ -22,9 +22,9 @@ program is started when B<tinyleaf> starts, and its current working
 directory will be I<spool>.  For each article received by B<tinyleaf>, a
 single line will be sent to standard input of I<processor>.  That line
 will consist of the file name of the received article (relative to
-I<spool>), a single space, and the message ID of the received article.
-Note that the message ID will be taken from the argument to the IHAVE
-command and may not match the Message-ID header in the article.  When
+I<spool>), a single space, and the message-ID of the received article.
+Note that the message-ID will be taken from the argument to the IHAVE
+command and may not match the Message-ID: header in the article.  When
 B<tinyleaf> shuts down, standard input to I<processor> will be closed.
 
 B<tinyleaf> does no syntax verification of received articles whatsoever;
@@ -81,7 +81,7 @@ program.
 
 The timeout and maximum message size should really be configurable.
 B<tinyleaf> should also probably not just respond 500 to every command
-other than IHAVE, HELP, and QUIT; there are more useful (and more
+other than HELP, IHAVE, and QUIT; there are more useful (and more
 expected) error codes that could be returned.
 
 An option to scan the spool directory for any left-over files and pass
