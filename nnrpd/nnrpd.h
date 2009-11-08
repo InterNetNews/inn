@@ -219,7 +219,7 @@ extern int		LockPostRec(char *path);
 extern void		UnlockPostRec(char *path);
 extern int		RateLimit(long *sleeptime, char *path);
 extern void		ExitWithStats(int x, bool readconf);
-extern char		*GetHeader(const char *header);
+extern char		*GetHeader(const char *header, bool stripspaces);
 extern void		GRPreport(void);
 extern bool		NGgetlist(char ***argvp, char *list);
 extern bool		PERMartok(void);

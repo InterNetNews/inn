@@ -71,9 +71,9 @@ PERMartok(void)
     if (!PERMspecified)
 	return false;
 
-    if ((p = GetHeader("Xref")) == NULL) {
+    if ((p = GetHeader("Xref", true)) == NULL) {
 	/* In case article does not include Xref:. */
-	if ((p = GetHeader("Newsgroups")) != NULL) {
+	if ((p = GetHeader("Newsgroups", true)) != NULL) {
 	    if (!NGgetlist(&grplist, p))
 		/* No newgroups or null entry. */
 		return true;

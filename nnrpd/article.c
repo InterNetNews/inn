@@ -468,10 +468,10 @@ ARTsendmmap(SENDTYPE what)
 **  Return the header from the specified file, or NULL if not found.
 */
 char *
-GetHeader(const char *header)
+GetHeader(const char *header, bool stripspaces)
 {
     const char		*p, *q, *r, *s, *t;
-    char		*w, prevchar;
+    char		*w, *wnew, prevchar;
     /* Bogus value here to make sure that it isn't initialized to \n. */
     char		lastchar = ' ';
     const char		*limit;
@@ -492,9 +492,12 @@ GetHeader(const char *header)
 	}
 	if ((lastchar == '\n') || (p == ARThandle->data)) {
 	    headerlen = strlen(header);
-	    if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':') {
-		for (; (p < limit) && !isspace((int)*p) ; p++);
-		for (; (p < limit) && isspace((int)*p) ; p++);
+	    if (strncasecmp(p, header, headerlen) == 0 && p[headerlen] == ':' &&
+                ISWHITE(p[headerlen+1])) {
+                p += headerlen + 2;
+                if (stripspaces) {
+                    for (; (p < limit) && ISWHITE(*p) ; p++);
+                }
 		for (q = p; q < limit; q++) 
 		    if ((*q == '\r') || (*q == '\n')) {
 			/* Check for continuation header lines. */
@@ -506,7 +509,7 @@ GetHeader(const char *header)
 				    break;
 			    }
 			    if ((*t == '\t' || *t == ' ')) {
-				for (; (t < limit) && isspace((int)*t) ; t++);
+				for (; (t < limit) && ISWHITE(*t) ; t++);
 				q = t;
 			    } else {
 				break;
@@ -571,9 +574,19 @@ GetHeader(const char *header)
 		    memcpy(retval, p, q - p);
 		    *(retval + (int)(q - p)) = '\0';
 		}
-		for (w = retval; *w; w++)
-		    if (*w == '\n' || *w == '\r')
-			*w = ' ';
+		for (w = retval, wnew = retval; *w; w++) {
+                    if (*w == '\r' && w[1] == '\n') {
+                        w++;
+                        continue;
+                    }
+		    if (*w == '\0' || *w == '\t' || *w == '\r' || *w == '\n') {
+			*wnew = ' ';
+                    } else {
+                        *wnew = *w;
+                    }
+                    wnew++;
+                }
+                *wnew = '\0';
 		return retval;
 	    }
 	}
@@ -690,7 +703,7 @@ CMDfetch(int ac, char *av[])
     }
     if (ac > 1)
 	ARTnumber = tart;
-    if ((msgid = GetHeader("Message-ID")) == NULL) {
+    if ((msgid = GetHeader("Message-ID", true)) == NULL) {
         ARTclose();
         Reply("%s\r\n", ARTnoartingroup);
 	return;
@@ -755,7 +768,7 @@ CMDnextlast(int ac UNUSED, char *av[])
         }
         if (!ARTopen(ARTnumber))
             continue;
-        msgid = GetHeader("Message-ID");
+        msgid = GetHeader("Message-ID", true);
         ARTclose();
     } while (msgid == NULL);
 
@@ -1191,7 +1204,7 @@ CMDpat(int ac, char *av[])
 	    Reply("%d Header information for %s follows (from the article)\r\n",
                    hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
 
-	    if ((text = GetHeader(av[1])) != NULL
+	    if ((text = GetHeader(av[1], false)) != NULL
 		&& (!pattern || uwildmat_simple(text, pattern)))
 		Printf("%s %s\r\n", hdr ? "0" : p, text);
             else if (hdr) {
@@ -1231,7 +1244,7 @@ CMDpat(int ac, char *av[])
                           hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
                     HasNotReplied = false;
                 }
-		p = GetHeader(header);
+		p = GetHeader(header, false);
 		if (p && (!pattern || uwildmat_simple(p, pattern))) {
 		    snprintf(buff, sizeof(buff), "%lu ", i);
 		    SendIOb(buff, strlen(buff));
