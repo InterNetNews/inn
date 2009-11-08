@@ -43,7 +43,7 @@ typedef struct _SITE {
 */
 static struct iovec	SITEvec[2];
 static char		SITEv1[] = "\r\n";
-static char		READER[] = "mode reader";
+static char		READER[] = "MODE READER";
 static unsigned long	STATgot;
 static unsigned long	STAToffered;
 static unsigned long	STATsent;
@@ -161,7 +161,7 @@ SITEquit(SITE *sp)
 {
     char	buff[NNTP_MAXLEN_COMMAND];
 
-    SITEwrite(sp, "quit", 4);
+    SITEwrite(sp, "QUIT", 4);
     SITEread(sp, buff);
 }
 
@@ -359,7 +359,7 @@ main(int ac, char *av[])
 	if (Offer) {
 	    /* See if the local server wants it. */
 	    STAToffered++;
-	    snprintf(buff, sizeof(buff), "ihave %s", mesgid);
+	    snprintf(buff, sizeof(buff), "IHAVE %s", mesgid);
 	    if (!SITEwrite(Local, buff, (int)strlen(buff))
 	     || !SITEread(Local, buff)) {
                 syswarn("cannot offer %s", mesgid);
@@ -370,7 +370,7 @@ main(int ac, char *av[])
 	}
 
 	/* Try to get the article. */
-	snprintf(buff, sizeof(buff), "article %s", mesgid);
+	snprintf(buff, sizeof(buff), "ARTICLE %s", mesgid);
 	if (!SITEwrite(Remote, buff, (int)strlen(buff))
 	 || !SITEread(Remote, buff)) {
             syswarn("cannot get %s", mesgid);
