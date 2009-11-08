@@ -41,8 +41,3 @@
 #define NNTP_CLASS_OK			'2'
 #define NNTP_CLASS_ERROR		'4'
 #define NNTP_CLASS_FATAL		'5'
-
-/*
-**  MODE CANCEL extension.
-*/
-#define NNTP_OK_CANCELLED       "289"
