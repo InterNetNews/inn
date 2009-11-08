@@ -55,7 +55,7 @@ server_init(char *host, int port)
     }
 
     /* Send the INN command; if understood, use that reply. */
-    put_server("mode reader");
+    put_server("MODE READER");
     if (get_server(line2, (int)sizeof line2) < 0)
 	return -1;
     if (atoi(line2) != NNTP_ERR_COMMAND)

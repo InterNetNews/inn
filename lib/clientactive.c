@@ -58,16 +58,16 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 
     /* Send a LIST command to and capture the output. */
     if (request == NULL)
-	fprintf(ToServer, "list\r\n");
+	fprintf(ToServer, "LIST\r\n");
     else
-	fprintf(ToServer, "list %s\r\n", request);
+	fprintf(ToServer, "LIST %s\r\n", request);
     fflush(ToServer);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
      || strncmp(buff, NNTP_LIST_FOLLOWS, strlen(NNTP_LIST_FOLLOWS)) != 0) {
 	oerrno = errno;
-	/* Only call CAclose() if opened through CAopen() */
+	/* Only call CAclose() if opened through CAopen(). */
 	if (strcmp(CApathname, pathname) == 0)
             CAclose();
 	errno = oerrno;
