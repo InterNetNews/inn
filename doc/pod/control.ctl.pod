@@ -264,7 +264,7 @@ then a newgroup control article for comp.lang.awk will not be honoured
 even though it comes from C<group-admin@isc.org> with a valid signature.
 
 As for checkgroups, suppose your news server contains these groups for foo.*,
-all of them being unmoderated (C<y> flag in the F<active> file):
+all of them being unmoderated (C<y> status in the F<active> file):
 
     foo.bar1
     foo.bar2.first

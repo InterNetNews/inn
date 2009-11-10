@@ -254,11 +254,11 @@ the returned string won't be in wire format).
 
 =item INN::newsgroup(I<newsgroup>)
 
-Returns the status of I<newsgroup> (the last field of the active file
+Returns the status of I<newsgroup> (the last field of the F<active> file
 entry for that newsgroup).  See active(5) for a description of the
-possible values and their meanings (the most common are "y" for an
-unmoderated group and "m" for a moderated group).  If I<newsgroup> isn't
-in the active file, returns undef.
+possible values and their meanings (the most common are C<y> for an
+unmoderated group and C<m> for a moderated group).  If I<newsgroup> isn't
+in the F<active> file, returns C<undef>.
 
 =back
 
