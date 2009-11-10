@@ -810,7 +810,7 @@ NClist(CHANNEL *cp)
             free(buff);
             return;
         } else {
-            xasprintf(&buff, "%d Newsgroups in form \"group high low flags\"",
+            xasprintf(&buff, "%d Newsgroups in form \"group high low status\"",
                       NNTP_OK_LIST);
             NCwritereply(cp, buff);
             free(buff);
