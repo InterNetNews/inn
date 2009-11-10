@@ -11,21 +11,35 @@ B<getlist> [B<-AR>] [B<-h> I<host>] [B<-p> I<port>]
 
 B<getlist> obtains a list from an NNTP server and sends it to standard
 output.  I<list> may be one of C<active> (which is the default value),
-C<active.times>, C<distributions>, or C<newsgroups>.  C<active> contains
+C<active.times>, C<distrib.pats>, or C<newsgroups>.  C<active> contains
 a list of all newsgroups carried by the server with the high and low article
-numbers in the group and the group status flag.  C<active.times> is a list of
+numbers in the group, and the group status field.  C<active.times> is a list of
 newsgroups, their creation times (in seconds since epoch), and the creator
-of the group.  C<distributions> is a list of relevant distributions and
-their descriptions.  C<newsgroups> is a list of newsgroups and their short
-descriptions.
+of the group.  C<distrib.pats> is a list of relevant distributions and
+the newsgroups they apply to.  C<newsgroups> is a list of newsgroups
+along with their short descriptions.
 
 For more information on the formats of these files, see active(5),
-active.times(5), distributions(5) and newsgroups(5).
+active.times(5), distrib.pats(5) and newsgroups(5).
 
-The I<pattern> parameter may be used with a I<list> value of C<active> or
-C<newsgroups> to limit the output.  If given, only entries corresponding
-to newsgroups that match the uwildmat(3) pattern I<pattern> will be
-printed.
+The listing files other than the F<active> file are common extensions to the
+NNTP protocol and may not be available on all servers.  For instance,
+C<distributions>, C<headers>, C<moderators>, C<motd>, C<overview.fmt> and
+C<subscriptions>, amongst other, may be available.  Moreover, a uwildmat(3)
+pattern I<pattern> may also be usable for some of these listing files.
+
+For more information on the formats of these files, see distributions(5),
+moderators(5), motd.news(5) and subscriptions(5).  The overview fields
+obtained with C<overview.fmt> are the ones for which the overview database
+is consistent (see I<extraoverviewadvertised> in F<inn.conf> for more
+information).  The list obtained with C<headers> contains the fields
+that can be retrieved using the HDR command (I<pattern> can then be
+either C<msgid> or C<range>).
+
+The I<pattern> parameter may be used with a I<list> value of C<active>,
+C<active.times> or C<newsgroups> to limit the output.  If given, only
+entries corresponding to newsgroups that match the uwildmat(3) pattern
+I<pattern> will be printed.
 
 If the I<list> parameter is C<active>, a third parameter, I<types>, may
 also be used to restrict the list.  If given, only entries corresponding
@@ -33,18 +47,6 @@ to newsgroups with a newsgroup mode found in I<types> will be printed.
 For example, a I<types> value of C<y> would only show unmoderated groups,
 and a I<types> value of C<ym> would show all unmoderated and moderated
 groups but not aliased groups or groups that disallow postings.
-
-The listing files other than the F<active> file are common extensions to the
-NNTP protocol and may not be available on all servers.  For instance,
-C<distrib.pats>, C<moderators>, C<motd>, C<overview.fmt> and C<subscriptions>,
-amongst other, may be available.  Moreover, a uwildmat(3) pattern I<pattern>
-may also be usable for some of these listing files.
-
-For more information on the formats of these files, see distrib.pats(5),
-moderators(5), motd.news(5) and subscriptions(5).  The overview fields
-obtained with C<overview.fmt> are the ones for which the overview database
-is consistent (see I<extraoverviewadvertised> in F<inn.conf> for more
-information).
 
 =head1 OPTIONS
 
