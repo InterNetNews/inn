@@ -116,24 +116,27 @@ typedef struct _ARTHEADER {
 
 
 /*
-**  Header content
+**  Header content.
 */
 typedef struct _HDRCONTENT {
-  char  *  Value;   /* don't copy, shows where it begins */
-  int	   Length;  /* Length of Value(tailing CRLF is not
-			   included.  -1 if duplicated */
+  char  *  Value;     /* Don't copy, shows where it begins. */
+  int      Length;    /* Length of Value(tailing CRLF is not
+                         included.  -1 if duplicated. */
+  char     LastChar;  /* Saved char when the last one is cut during parsing.
+                         Usually '\r' but it may be another char. */
 } HDRCONTENT;
 
 
 /*
 **  A way to index into the header table.
 */
-#define HDR_FOUND(_x)		(hc[(_x)].Length > 0)
-#define HDR_PARSE_START(_x)	hc[(_x)].Value[hc[_x].Length] = '\0'
-#define HDR(_x)			(hc[(_x)].Value)
+#define HDR_FOUND(_x)           (hc[(_x)].Length > 0)
+#define HDR_LASTCHAR_SAVE(_x)   hc[(_x)].LastChar = hc[(_x)].Value[hc[_x].Length]
+#define HDR_PARSE_START(_x)     hc[(_x)].Value[hc[_x].Length] = '\0'
+#define HDR(_x)                 (hc[(_x)].Value)
 /* HDR_LEN does not includes trailing "\r\n" */
-#define HDR_LEN(_x)		(hc[(_x)].Length)
-#define HDR_PARSE_END(_x)	hc[(_x)].Value[hc[_x].Length] = '\r'
+#define HDR_LEN(_x)             (hc[(_x)].Length)
+#define HDR_PARSE_END(_x)       hc[(_x)].Value[hc[_x].Length] = hc[(_x)].LastChar
 
 
 #define HDR__APPROVED		0

@@ -386,8 +386,10 @@ ARTlogreject(CHANNEL *cp, const char *text)
     char **hops;
 
     /* We may still haven't received the message-ID of the rejected article. */
-    if (HDR_FOUND(HDR__MESSAGE_ID))
+    if (HDR_FOUND(HDR__MESSAGE_ID)) {
+        HDR_LASTCHAR_SAVE(HDR__MESSAGE_ID);
         HDR_PARSE_START(HDR__MESSAGE_ID);
+    }
 
     /* Set up the headers that we want to use.  We only need to parse the path
        on rejections if logipaddr is false or we can't find a good host. */
@@ -399,6 +401,7 @@ ARTlogreject(CHANNEL *cp, const char *text)
         }
     } else {
         if (HDR_FOUND(HDR__PATH)) {
+            HDR_LASTCHAR_SAVE(HDR__PATH);
             HDR_PARSE_START(HDR__PATH);
             hopcount =
                 ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
@@ -689,7 +692,8 @@ ARTcheckheader(CHANNEL *cp, int size)
     hc->Length = -1;
   } else {
     /* We need to remove leading and trailing spaces for
-     * message-IDs; otherwise, ARTidok() will fail. */
+     * message-IDs; otherwise, history hashes may not be
+     * correctly computed. */
     if (i == HDR__MESSAGE_ID || i == HDR__SUPERSEDES) {
       for (p = colon + 1 ; (p < header + size - 2) &&
            (ISWHITE(*p)) ; p++);
@@ -721,6 +725,7 @@ ARTprepare(CHANNEL *cp)
   for (i = 0 ; i < MAX_ARTHEADER ; i++, hc++) {
     hc->Value = NULL;
     hc->Length = 0;
+    hc->LastChar = '\r';
   }
   data->Lines = data->HeaderLines = data->CRwithoutLF = data->LFwithoutCR = 0;
   data->DotStuffedLines = 0;
@@ -778,12 +783,14 @@ ARTchecksize(CHANNEL *cp)
 
 	/* Write a local cancel entry so nobody else gives it to us. */
 	if (HDR_FOUND(HDR__MESSAGE_ID)) {
+            HDR_LASTCHAR_SAVE(HDR__MESSAGE_ID);
             HDR_PARSE_START(HDR__MESSAGE_ID);
             msgid = HDR(HDR__MESSAGE_ID);
             /* The article posting time has not been parsed.  We cannot
              * give it to InndHisRemember. */
             if (!HIScheck(History, msgid) && !InndHisRemember(msgid, 0))
                 warn("SERVER cant write %s", msgid);
+            HDR_PARSE_END(HDR__MESSAGE_ID);
 	}
     }
 }
@@ -976,8 +983,10 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   /* replace trailing '\r\n' with '\0\n' of all system header to be handled
      easily by str*() functions */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
-    if (HDR_FOUND(i))
+    if (HDR_FOUND(i)) {
+      HDR_LASTCHAR_SAVE(i);
       HDR_PARSE_START(i);
+    }
   }
 
   /* Make sure all the headers we need are there */
@@ -985,7 +994,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     if (hp[i].Type == HTreq) {
       if (HDR_FOUND(i))
         continue;
-      if (hc[i].Length < 0) {
+      if (HDR_LEN(i) < 0) {
         sprintf(buff, "%d Duplicate \"%s\" header",
                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                 hp[i].Name);
@@ -1000,7 +1009,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   }
 
   /* Assumes the Message-ID: header is a required header. */
-  if (!IsValidMessageID(HDR(HDR__MESSAGE_ID))) {
+  if (!IsValidMessageID(HDR(HDR__MESSAGE_ID), true)) {
     HDR_LEN(HDR__MESSAGE_ID) = 0;
     sprintf(buff, "%d Bad \"Message-ID\" header",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
@@ -1208,9 +1217,9 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     return;
   }
 
-  if (!IsValidMessageID(MessageID)) {
+  if (!IsValidMessageID(MessageID, true)) {
     syslog(L_NOTICE, "%s bad cancel Message-ID %s", data->Feedsite,
-      MaxLength(MessageID, MessageID));
+           MaxLength(MessageID, MessageID));
     TMRstop(TMR_ARTCNCL);
     return;
   }
@@ -1243,7 +1252,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     OVcancel(token);
   if (!SMcancel(token) && SMerrno != SMERR_NOENT && SMerrno != SMERR_UNINIT)
     syslog(L_ERROR, "%s cant cancel %s (SMerrno %d)", LogName,
-	TokenToText(token), SMerrno);
+           TokenToText(token), SMerrno);
   if (innconf->immediatecancel && !SMflushcacheddata(SM_CANCELLEDART))
     syslog(L_ERROR, "%s cant cancel cached %s", LogName, TokenToText(token));
   snprintf(buff, sizeof(buff), "Cancelling %s",
@@ -1267,7 +1276,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
   if (c == 'c' && strncmp(Control, "cancel", 6) == 0) {
     for (p = &Control[6]; ISWHITE(*p); p++)
       continue;
-    if (*p && IsValidMessageID(p))
+    if (*p && IsValidMessageID(p, true))
       ARTcancel(data, p, false);
     return;
   }
@@ -2426,10 +2435,12 @@ ARTpost(CHANNEL *cp)
     ngp->PostCount = 0;
 
   token = ARTstore(cp);
-  /* change trailing '\r\n' to '\0\n' of all system header */
+  /* Change trailing '\r\n' to '\0\n' of all system header. */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
-    if (HDR_FOUND(i))
+    if (HDR_FOUND(i)) {
+      HDR_LASTCHAR_SAVE(i);
       HDR_PARSE_START(i);
+    }
   }
   if (token.type == TOKEN_EMPTY) {
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
@@ -2538,7 +2549,7 @@ ARTpost(CHANNEL *cp)
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
     }
     if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
-      if (IsValidMessageID(HDR(HDR__SUPERSEDES)))
+      if (IsValidMessageID(HDR(HDR__SUPERSEDES), true))
 	ARTcancel(data, HDR(HDR__SUPERSEDES), false);
     }
   }

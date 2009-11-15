@@ -602,7 +602,7 @@ CMDpost(int ac, char *av[])
     ihave = (strcasecmp(av[0], "IHAVE") == 0);
 
     /* Check whether the message-ID is valid for IHAVE. */
-    if (ihave && ac == 2 && !IsValidMessageID(av[1])) {
+    if (ihave && ac == 2 && !IsValidMessageID(av[1], true)) {
         Reply("%d Syntax error in message-ID\r\n", NNTP_ERR_SYNTAX);
         return;
     }

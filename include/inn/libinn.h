@@ -152,7 +152,7 @@ extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
 /* Headers. */
 extern char *           GenerateMessageID(char *domain);
 extern void             InitializeMessageIDcclass(void);
-extern bool             IsValidMessageID(const char *string);
+extern bool             IsValidMessageID(const char *string, bool stripspaces);
 extern bool             IsValidHeaderName(const char *string);
 extern void             HeaderCleanFrom(char *from);
 extern struct _DDHANDLE * DDstart(FILE *FromServer, FILE *ToServer);
