@@ -255,14 +255,15 @@ CMDlist(int ac, char *av[])
 
     /* Read lines, ignore long ones. */
     while ((p = QIOread(qp)) != NULL) {
-	if (lp == &INFOmotd) {
-	    Printf("%s\r\n", p);
-	    continue;
-	}
-	if (p[0] == '.' && p[1] == '\0') {
-	    syslog(L_ERROR, "%s single dot in %s", Client.host, lp->File);
-	    continue;
-	}
+        /* Check that the output does not break the NNTP protocol. */
+        if (p[0] == '.' && p[1] == '\0') {
+            syslog(L_ERROR, "%s single dot in %s", Client.host, lp->File);
+            continue;
+        }
+        if (lp == &INFOmotd) {
+            Printf("%s\r\n", p);
+            continue;
+        }
 	/* Matching patterns against patterns is not that
 	 * good but it is better than nothing... */
 	if (lp == &INFOdistribpats) {
