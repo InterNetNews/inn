@@ -1281,6 +1281,9 @@ NCproc(CHANNEL *cp)
                   || (StreamingOff || !cp->Streaming)) {
                   NCwritereply(cp, buff);
                   cp->Start = cp->Next;
+
+                  syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+                         MaxLength(q, q));
                   break;
               }
           }
@@ -1302,6 +1305,9 @@ NCproc(CHANNEL *cp)
               || (StreamingOff || !cp->Streaming)) {
               NCwritereply(cp, buff);
               cp->Start = cp->Next;
+
+              syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+                     MaxLength(q, q));
               break;
           }
       }
