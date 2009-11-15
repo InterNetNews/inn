@@ -29,7 +29,7 @@ const struct {
     { "../data/articles/6",
       "437 Article of 8193 bytes exceeds local limit of 8192 bytes" },
     { "../data/articles/bad-empty",
-      "437 Empty article" },
+      "437 Empty headers and body" },
     { "../data/articles/bad-hdr-nospc",
       "437 No colon-space in \"Test:<-he: re\" header" },
     { "../data/articles/bad-hdr-space",
