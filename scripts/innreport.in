@@ -2073,7 +2073,9 @@ sub Write_all_results {
     $Title =~ s/\&amp;/&/go;
     $Title =~ s/\&lt;/</go;
     $Title =~ s/\&gt;/>/go;
-    print "$Title from $first_date to $last_date\n\n";
+    print "$Title from $first_date to $last_date\n\n"
+      if ((defined $$h{'default'}{'text'})
+          and ($$h{'default'}{'text'} =~ m/^true$/io));
   }
 
   if ($HTML) {

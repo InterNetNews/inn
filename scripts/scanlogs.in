@@ -266,12 +266,16 @@ OLD_LOG=${OLD}/${BASE}.0
 ##  and summarize syslog information.
 BASE=`basename ${SYSLOG_NOTICE}`
 OLD_SYSLOG=${OLD}/${BASE}.0
+INNREPORT=${TMPDIR}/innreport$$
 if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
-    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
-    echo ---------
-    echo ''
+    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG} > ${INNREPORT}
+    if [ -s ${INNREPORT} ] ; then
+        cat ${INNREPORT}
+        echo ---------
+        echo ''
+    fi
 fi
-rm -f ${OLD_LOG} ${OLD_SYSLOG}
+rm -f ${OLD_LOG} ${OLD_SYSLOG} ${INNREPORT}
 
 ##  Now that innreport has finished, we can move unwanted.log.  This
 ##  file is not reset because it keeps the count of unwanted newsgroups.

@@ -146,8 +146,8 @@ do
 	DOLOGS=false
 	;;
     Xnomail)
-	DOMAIL=false
-	MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
+        DOMAIL=false
+        DOSTAT=false
 	;;
     Xnoprocbatch)
         DOPROCBATCH=false
@@ -184,8 +184,12 @@ if ${DAILY} ; then
 else
    MAILSUBJ="${HOSTNAME} intermediate Usenet report for ${DATE}"
 fi
-MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
-    ${MAILCMD} -s '$MAILSUBJ' ${NEWSMASTER}"
+if ${DOMAIL} ; then
+   MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
+      ${MAILCMD} -s '${MAILSUBJ}' ${NEWSMASTER}"
+else
+   MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
+fi
 
 ##  Sanity check.  Shouldn't we just bail out here with an error
 ##  instead of trying to patch things up?
@@ -272,14 +276,18 @@ shlock -p $$ -f ${LOCK} || {
 ##  Run any user programs.
 if [ -n "${PROGRAMS}" ] ; then
     for P in ${PROGRAMS} ; do
-	echo ''
-	echo "${P}:"
-	eval ${P}
+        if ${DOMAIL} ; then
+            echo ''
+            echo "${P}:"
+        fi
+        eval ${P}
     done
 fi
 
 ${DOLOGS} && {
-    echo ''
+    if ${DOMAIL} ; then
+        echo ''
+    fi
     scanlogs ${SCANARG}
 }
 
@@ -491,8 +499,10 @@ fi
 
 ##  Renumber the active file.
 if ${DORENUMBER} ; then
-    echo ''
-    echo 'Renumbering active file.'
+    if ${DOMAIL} ; then
+        echo ''
+        echo 'Renumbering active file.'
+    fi
     if [ -z "${RENUMBER}" ] ;then
 	ctlinnd -s -t`wc -l <${ACTIVE}` renumber '' 2>&1
     else
@@ -520,6 +530,17 @@ ${DOSTAT} && {
     echo ''
 }
 
+##  Run any user programs.
+if [ -n "${POSTPROGRAMS}" ] ; then
+    for P in ${POSTPROGRAMS} ; do
+        if ${DOMAIL} ; then
+            echo ''
+            echo "${P}:"
+        fi
+        eval ${P}
+    done
+fi
+
 ##  Mail the report.
 if ${DOMAIL} ; then
     ##  Stop using the temp file, and mail captured output.
@@ -527,15 +548,6 @@ if ${DOMAIL} ; then
     MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
     test -s ${TEMP} && cat ${TEMP} | ${SED} -e 's/^~/~~/' | eval ${MAIL}
     rm -f ${TEMP}
-fi
-
-##  Run any user programs.
-if [ -n "${POSTPROGRAMS}" ] ; then
-    for P in ${POSTPROGRAMS} ; do
-	echo ''
-	echo "${P}:"
-	eval ${P}
-    done
 fi
 
 ##  All done
