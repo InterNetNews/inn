@@ -1868,8 +1868,7 @@ ARTmakeoverview(CHANNEL *cp)
   const ARTHEADER *hp;
   char		*p, *q;
   int		i, j, len;
-  char		*key_old_value = NULL;
-  int		key_old_length = 0;
+  bool          keywords_generated = false;
 
   if (ARTfields == NULL) {
     /* User error. */
@@ -1892,11 +1891,17 @@ ARTmakeoverview(CHANNEL *cp)
        it into overview. */
     if (DO_KEYWORDS && innconf->keywords) {
       /* Ensure that there are Keywords: to shovel. */
-      if (hp == &ARTheaders[HDR__KEYWORDS]) {
-	key_old_value  = HDR(HDR__KEYWORDS);
-	key_old_length = HDR_LEN(HDR__KEYWORDS);
-	KEYgenerate(&hc[HDR__KEYWORDS], cp->In.data + data->Body,
-                    cp->Next - data->Body, key_old_value, key_old_length);
+      if (hp == &ARTheaders[HDR__KEYWORDS] && HDR(HDR__KEYWORDS) == NULL) {
+        keywords_generated = true;
+        KEYgenerate(&hc[HDR__KEYWORDS], cp->In.data + data->Body,
+                    cp->Next - data->Body);
+        /* Do not memorize an empty Keywords: header. */
+        if (HDR_LEN(HDR__KEYWORDS) == 0) {
+          if (HDR(HDR__KEYWORDS) != NULL)
+              free(HDR(HDR__KEYWORDS)); /* malloc'd within. */
+          HDR(HDR__KEYWORDS) = NULL;
+          keywords_generated = false;
+        }
       }
     }
 
@@ -1948,12 +1953,12 @@ ARTmakeoverview(CHANNEL *cp)
 
     /* Patch the old keywords back in. */
     if (DO_KEYWORDS && innconf->keywords) {
-      if (key_old_value) {
-        if (hc[HDR__KEYWORDS].Value)
-          free(hc[HDR__KEYWORDS].Value); /* malloc'd within. */
-        hc[HDR__KEYWORDS].Value  = key_old_value;
-        hc[HDR__KEYWORDS].Length = key_old_length;
-        key_old_value = NULL;
+      if (keywords_generated) {
+        if (HDR(HDR__KEYWORDS) != NULL)
+          free(HDR(HDR__KEYWORDS)); /* malloc'd within. */
+        HDR(HDR__KEYWORDS) = NULL;
+        HDR_LEN(HDR__KEYWORDS) = 0;
+        keywords_generated = false;
       }
     }
   }
