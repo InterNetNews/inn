@@ -64,7 +64,7 @@ The fourth field contains one of the following status:
     =foo.bar  Articles are filed in the group foo.bar instead.
 
 If a newsgroup has the C<j> status, no articles will be filed in that
-newsgroup, and local postings to that group will be rejected.  If an
+newsgroup.  If an article is locally posted to that group or if an
 article for that newsgroup is received from a remote site, and if it is not
 crossposted to some other valid group, it will be filed into the C<junk>
 newsgroup instead.  This is different than simply not listing the group,
@@ -79,6 +79,9 @@ sign.  Note that the Newsgroups: header of the articles is not modified.
 (Alias groups are typically used during a transition and are typically
 created manually with ctlinnd(8).)  An alias should not point to another
 alias.
+
+Note that F<readers.conf> can be configured so that local posts
+to newsgroups with status C<n> or C<x> are accepted.
 
 =head1 MINIMAL ACTIVE FILE
 
