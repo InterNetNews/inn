@@ -5,10 +5,7 @@
 ##  It contains recommended values for the Distribution: header.
 ##  See the distributions man page for more information.
 
-#all     Everywhere:  it is a worldwide distribution.
 #fr      Local to France.
 #local   Local to this news server.
 #nj      Local to New Jersey.
 #usa     Local to the United States of America.
-#world   Everywhere:  it is a worldwide distribution.
-
