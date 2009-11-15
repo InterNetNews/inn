@@ -230,8 +230,16 @@ NCpostit(CHANNEL *cp)
       cp->State = CSgetcmd;
       snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_IHAVE_DEFER, ModeReason);
     }
-    response = buff;
-    NCwritereply(cp, response);
+    NCwritereply(cp, buff);
+    return;
+  }
+
+  /* Return an error without trying to post the article if the TAKETHIS
+   * command was not correct in the first place (code which does not start
+   * with a '2'). */
+  if ((cp->Sendid.size > 3) && (cp->Sendid.data[0] != NNTP_CLASS_OK)) {
+    cp->State = CSgetcmd;
+    NCwritereply(cp, cp->Sendid.data);
     return;
   }
 
@@ -250,23 +258,27 @@ NCpostit(CHANNEL *cp)
       response = buff;
     }
   } else {
-    /* The answer to TAKETHIS is a response code followed by a
-     * message-ID.  The response code is already NNTP_FAIL_TAKETHIS_REJECT. */
-    if (cp->Sendid.size)
+    /* The answer to TAKETHIS is a response code followed by a message-ID. */
+    if (cp->Sendid.size > 3) {
+      snprintf(buff, sizeof(buff), "%d", NNTP_FAIL_TAKETHIS_REJECT);
+      cp->Sendid.data[0] = buff[0];
+      cp->Sendid.data[1] = buff[1];
+      cp->Sendid.data[2] = buff[2];
       response = cp->Sendid.data;
-    else
+    } else {
       response = cp->Error;
+    }
   }
   cp->Reported++;
   if (cp->Reported >= innconf->incominglogfrequency) {
     snprintf(buff, sizeof(buff),
-      "accepted size %.0f duplicate size %.0f rejected size %.0f",
-       cp->Size, cp->DuplicateSize, cp->RejectSize);
+             "accepted size %.0f duplicate size %.0f rejected size %.0f",
+             cp->Size, cp->DuplicateSize, cp->RejectSize);
     syslog(L_NOTICE,
-      "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
-      CHANname(cp), (long)(Now.tv_sec - cp->Started),
-    cp->Received, cp->Refused, cp->Rejected,
-    cp->Duplicate, buff);
+           "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
+           CHANname(cp), (long)(Now.tv_sec - cp->Started),
+           cp->Received, cp->Refused, cp->Rejected,
+           cp->Duplicate, buff);
     cp->Reported = 0;
   }
 
@@ -1157,33 +1169,38 @@ NCproc(CHANNEL *cp)
         for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
           if ((dp->Function != NC_unimp) &&
               (strcasecmp(cp->av[0], dp->Name) == 0)) {
-              if (!StreamingOff || cp->Streaming ||
-                  (dp->Function != NCcheck && dp->Function != NCtakethis)) {
-                  validcommandtoolong = true;
-              }
-              /* Return 435/438 instead of 501 to IHAVE/CHECK commands
-               * for compatibility reasons. */
-              if (strcasecmp(cp->av[0], "IHAVE") == 0) {
-                  syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
-              } else if (strcasecmp(cp->av[0], "CHECK") == 0
-                         && (!StreamingOff || cp->Streaming)) {
-                  syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
-              }
+            if (!StreamingOff || cp->Streaming ||
+                (dp->Function != NCcheck && dp->Function != NCtakethis)) {
+                validcommandtoolong = true;
+            }
+            /* Return 435/438 instead of 501 to IHAVE/CHECK commands
+             * for compatibility reasons. */
+            if (strcasecmp(cp->av[0], "IHAVE") == 0) {
+              syntaxerrorcode = NNTP_FAIL_IHAVE_REFUSE;
+            } else if (strcasecmp(cp->av[0], "CHECK") == 0
+                       && (!StreamingOff || cp->Streaming)) {
+              syntaxerrorcode = NNTP_FAIL_CHECK_REFUSE;
+            }
           }
         }
-        if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
+        /* If TAKETHIS, we have to read the entire multi-line response
+         * block before answering. */
+        if (strcasecmp(cp->av[0], "TAKETHIS") != 0
+            || (StreamingOff && !cp->Streaming)) {
+          if (syntaxerrorcode == NNTP_FAIL_CHECK_REFUSE) {
             snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode,
                      cp->ac > 1 ? cp->av[1] : "");
-        } else {
+          } else {
             snprintf(buff, sizeof(buff), "%d Line too long",
                      validcommandtoolong ? syntaxerrorcode : NNTP_ERR_COMMAND);
-        }
-        NCwritereply(cp, buff);
-        cp->Start = cp->Next;
+          }
+          NCwritereply(cp, buff);
+          cp->Start = cp->Next;
 
-        syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
-               MaxLength(q, q));
-        break;
+          syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
+                 MaxLength(q, q));
+          break;
+        }
       }
 
       /* Loop through the command table. */
@@ -1255,12 +1272,17 @@ NCproc(CHANNEL *cp)
                       snprintf(buff, sizeof(buff), "%d Argument too long",
                                syntaxerrorcode);
                   }
-                  NCwritereply(cp, buff);
                   break;
               }
           if (validcommandtoolong) {
-              cp->Start = cp->Next;
-              break;
+              /* If TAKETHIS, we have to read the entire multi-line response
+               * block before answering. */
+              if (strcasecmp(cp->av[0], "TAKETHIS") != 0
+                  || (StreamingOff && !cp->Streaming)) {
+                  NCwritereply(cp, buff);
+                  cp->Start = cp->Next;
+                  break;
+              }
           }
       }
 
@@ -1274,9 +1296,14 @@ NCproc(CHANNEL *cp)
               snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
                        syntaxerrorcode, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
           }
-          NCwritereply(cp, buff);
-          cp->Start = cp->Next;
-          break;
+          /* If TAKETHIS, we have to read the entire multi-line response
+           * block before answering. */
+          if (strcasecmp(cp->av[0], "TAKETHIS") != 0
+              || (StreamingOff && !cp->Streaming)) {
+              NCwritereply(cp, buff);
+              cp->Start = cp->Next;
+              break;
+          }
       }
 
       /* Check permissions and dispatch. */
@@ -1289,9 +1316,14 @@ NCproc(CHANNEL *cp)
               snprintf(buff, sizeof(buff),
                        "%d Access denied", NNTP_ERR_ACCESS);
           }
-          NCwritereply(cp, buff);
-          cp->Start = cp->Next;
-          break;
+          /* If TAKETHIS, we have to read the entire multi-line response
+           * block before answering. */
+          if (strcasecmp(cp->av[0], "TAKETHIS") != 0
+              || (StreamingOff && !cp->Streaming)) {
+              NCwritereply(cp, buff);
+              cp->Start = cp->Next;
+              break;
+          }
       }
 
       (*dp->Function)(cp);
@@ -1339,10 +1371,21 @@ NCproc(CHANNEL *cp)
 	NCclearwip(cp);
         /* The answer to TAKETHIS is a response code followed by a
          * message-ID. */
-	if (cp->Sendid.size > 3)
+	if (cp->Sendid.size > 3) {
+          /* Return the right response code if the TAKETHIS command
+           * was not correct in the first place (code which does not
+           * start with a '2').  Otherwise, change it to reject the
+           * article. */
+          if (cp->Sendid.data[0] == NNTP_CLASS_OK) {
+            snprintf(buff, sizeof(buff), "%d", NNTP_FAIL_TAKETHIS_REJECT);
+            cp->Sendid.data[0] = buff[0];
+            cp->Sendid.data[1] = buff[1];
+            cp->Sendid.data[2] = buff[2];
+          }
 	  NCwritereply(cp, cp->Sendid.data);
-	else
+        } else {
 	  NCwritereply(cp, cp->Error);
+        }
 	readmore = false;
 	movedata = false;
 	break;
@@ -1805,17 +1848,39 @@ NCcheck(CHANNEL *cp)
 static void
 NCtakethis(CHANNEL *cp)
 {
-    size_t		msglen;
-    WIP                 *wp;
+    char    *mid;
+    static char empty[] = "";
+    int     returncode; /* Will *not* be changed in NCpostit()
+                           if it does *not* start with '2'. */
+    size_t  msglen;
+    WIP     *wp;
 
     cp->Takethis++;
     cp->Start = cp->Next;
 
-    if (!IsValidMessageID(cp->av[1], false)) {
-	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
-               MaxLength(cp->av[1], cp->av[1]));
+    /* Check the syntax and authentication here because
+     * it is not done before (TAKETHIS has to eat
+     * the whole multi-line block before responding). */
+    if (cp->ac == 1) {
+        mid = empty;
+        returncode = NNTP_FAIL_TAKETHIS_REJECT;
+    } else {
+        mid = cp->av[1];
+        returncode = NNTP_OK_TAKETHIS; /* Default code. */
     }
-    msglen = strlen(cp->av[1]) + 5; /* 3 digits + space + id + null. */
+    if (!IsValidMessageID(mid, false)) {
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(mid, mid));
+        returncode = NNTP_FAIL_TAKETHIS_REJECT;
+    }
+
+    /* Check authentication after everything else. */
+    if (!cp->IsAuthenticated) {
+        returncode = cp->CanAuthenticate ?
+            NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS;
+    }
+
+    msglen = strlen(mid) + 5; /* 3 digits + space + id + null. */
     if (cp->Sendid.size < msglen) {
         if (cp->Sendid.size > 0)
             free(cp->Sendid.data);
@@ -1827,14 +1892,14 @@ NCtakethis(CHANNEL *cp)
     }
     /* Save ID for later NACK or ACK. */
     snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-             NNTP_FAIL_TAKETHIS_REJECT, cp->av[1]);
+             returncode, mid);
 
     cp->ArtBeg = Now.tv_sec;
     cp->State = CSgetheader;
     ARTprepare(cp);
     /* Set WIP for benefit of later code in NCreader. */
-    if ((wp = WIPbyid(cp->av[1])) == (WIP *)NULL)
-	wp = WIPnew(cp->av[1], cp);
+    if ((wp = WIPbyid(mid)) == (WIP *)NULL)
+	wp = WIPnew(mid, cp);
     cp->CurrentMessageIDHash = wp->MessageID;
 }
 
