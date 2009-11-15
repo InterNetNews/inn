@@ -1134,6 +1134,12 @@ NCproc(CHANNEL *cp)
 	cp->Argument = NULL;
       }
 
+      /* When MODE CANCEL is used... */
+      if (cp->State == CScancel) {
+          NCcancel(cp, ac, av);
+          break;
+      }
+
       /* If the line is too long, we have to make sure that
        * no recognized command has been sent. */
       validcommandtoolong = false;
@@ -1168,12 +1174,6 @@ NCproc(CHANNEL *cp)
         syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
                MaxLength(q, q));
         break;
-      }
-
-      /* After MODE CANCEL. */
-      if (cp->State == CScancel) {
-	NCcancel(cp, ac, av);
-	break;
       }
 
       /* Loop through the command table. */
