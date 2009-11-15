@@ -1,3 +1,194 @@
+=head1 Changes in 2.5.2
+
+Please note that owing to the implementation of S<RFC 4643> (AUTHINFO USER/PASS)
+in B<innd>, if remote peers have to authenticate in order to feed articles,
+they now have to send a username (which was previously wrongly optional), before
+sending their password.  The mandatory username, though unused by B<innd>, can be
+whatever the remote peer wishes.  In previous versions of INN, B<inncheck> was
+already complaining when F<passwd.nntp> contained an empty username associated
+with a password.
+
+=over 2
+
+=item *
+
+Julien Elie has implemented in B<innd> the new version of the NNTP protocol
+described in S<RFC 3977>, S<RFC 4643> and S<RFC 4644>.  Consequently, B<innd>
+now recognizes the CAPABILITIES command.  Notwithstanding these standards,
+three commands (IHAVE, CHECK and TAKETHIS) will continue, for interoperability
+reasons, to return a reject code (respectively C<435>, C<438> and C<439>) when
+the command contains a syntax error (which normally leads to C<501>).
+
+Major improvements are:
+
+=over 2
+
+=item *
+
+B<innd> now has a decent parser for NNTP commands.  It permits to have a far
+better grammar parser (commands like C<< IHAVEZ<><mid> >>, without a space between
+the command and its argument, are no longer valid) and to allow leading and
+trailing whitespaces in commands.  Besides, B<innd> checks the length of the
+NNTP command sent by the client:  if the command contains more than 512 bytes
+(or 497 bytes for an argument), an error is returned and the command is
+discarded.  Note that after ten unrecognized commands, B<innd> closes the
+connection with the appropriate code (C<400> instead of C<500>).
+
+=item *
+
+The output of the HELP command specifies the arguments expected by NNTP
+commands, the same way as B<nnrpd> does.
+
+=item *
+
+LIST ACTIVE, LIST ACTIVE.TIMES and LIST NEWSGROUPS recognize an optional
+argument:  a wildmat can now be specified to restrict the results of these
+commands to specific newsgroups.
+
+=item *
+
+When using HEAD or STAT with an article number or a range, 412 (no group
+selected) is now returned instead of 501 (syntax error).
+
+=back
+
+=item *
+
+Jeffrey S<M. Vinocur> has implemented in both B<innd> and B<nnrpd>
+support for whitespaces in usernames/passwords provided
+with AUTHINFO USER/PASS.  They were previously considered
+as invalid arguments, or wrongly parsed.  B<innd> and B<nnrpd> now treat
+everything after the first whitespace character following AUTHINFO
+USER/PASS, up to, but not including, the final CRLF, as the
+username/password, in conformity with S<RFC 4643>.
+
+=item *
+
+The syntax of message-IDs is now based on S<RFC 5536> (USEFOR)
+instead of S<RFC 1036>.  The major change is that quoted-pairs
+have been removed from the syntax.
+
+=item *
+
+A new "unsigned long" type bas been added to the configuration parser.  It
+will properly warn the news administrator when a variable supposed to
+be positive contains a negative integer.  It will prevent INN
+from crashing at several places where it did not expect negative
+values.
+
+=item *
+
+B<innxbatch> and B<innxmit> now recognize the new C<403> code introduced
+by S<RFC 3977> for a problem preventing the action from being taken.
+
+=item *
+
+B<actsync>, B<inews>, B<innxbatch>, B<innxmit>, B<nntpget> and B<rnews>
+can now authenticate on news servers which only expect a username,
+without password, in conformity with S<RFC 4643>.
+
+=item *
+
+The keyword generation code now generates a Keywords: header only
+if the original article does not already have one.  The generated
+Keywords: header no longer begins with a comma.  Moreover, if
+keyword generation is set to true in F<inn.conf> but the
+Keywords: header is not stored in the overview, the news
+administrator is warned and keyword generation deactivated
+because it would be run for nothing.
+
+=item *
+
+Fixed two segfaults in keyword generation.  The first occurred when
+an article already had a Keywords: header the length of which is greater
+than the I<keylimit> parameter.  The second was caused by a possible
+invalid pointer beyond the newly allocated Keywords: header.
+
+=item *
+
+Fixed a bug in the parsing of empty lines:  B<innd> was not properly
+discarding an empty command, and it was closing the connection upon
+receiving only whitespaces in a command.
+
+=item *
+
+Fixed a bug in how B<innd> responded to reader commands when readers
+were not allowed.  A superfluous blank line was sent in its response.
+
+=item *
+
+Fixed a bug in TAKETHIS:  when authentication was required, a C<480> code
+was directly answered without treating the whole multi-data block following
+the command from the client, which broke the NNTP protocol.
+
+=item *
+
+Fixed a bug when empty articles were fed to B<innd> via IHAVE or TAKETHIS:
+the article terminator was not recognized.  Therefore, subsequent NNTP
+commands were eaten inside the article.
+
+=item *
+
+Fixed a bug when B<innd> could not provide information for LIST ACTIVE.TIMES
+and LIST NEWSGROUPS:  it was giving an invalid result, without any
+response code.  The proper C<503> answer code is now returned.
+
+=item *
+
+Fixed a bug in both B<innd> and B<nnrpd> answers to LIST commands which
+did not check for a valid dot-stuffed output.
+
+=item *
+
+Fixed a bug in B<innreport> which was not correctly summing B<innd>
+stats when I<hostname> was set as an IPv6 address instead of a fully
+qualified domain name.  Thanks to Petr Novopashenniy for the bug report.
+
+=item *
+
+Fixed a bug on the parsing of Message-ID: and Supersedes: headers
+which contained trailing whitespaces.  The article ended up
+corrupted because of an unexpected "\r" in the middle of the header.
+
+=item *
+
+Fixed a bug in how leading whitespaces were treated in headers.  The
+HDR, XHDR and XPAT commands were not properly showing leading whitespaces
+in header values.  Besides, "\n" and "\r" were both changed into spaces
+whereas "\r\n" just was to be removed.  As for B<archive>, B<makehistory>
+and B<tdx-util>, they did not keep leading whitespaces in headers when
+generating overview data, and B<archive> did not change "\n"
+(when not preceded by "\r") into a space when generating overview data.
+
+=item *
+
+Fixed a bug in B<cvtbatch> which was returning only the size of the
+headers of an article when the C<b> parameter was used with the B<-w>
+flag.  It now correctly returns the size of the whole article, which
+is what C<b> is supposed to do.  Besides, B<cvtbatch> has a new C<t>
+parameter which can be used with the B<-w> flag, so as to retrieve
+the arrival time of an article.
+
+=item *
+
+B<batcher> has not supported the retrieval of an article with its
+file name for a long time.  The B<-S> flag is therefore removed.
+
+=item *
+
+B<news.daily> no longer sends superfluous mails when the B<nomail>
+keyword is given.  Mail is only sent when there is real output.
+Previously, there would always be headings and empty lines useful
+to structure the full report, which are now ommitted.  Also, the
+output of programs executed with B<postexec> is now included in the
+regular mail.  Thanks to Florian Schlichting for the patch.
+
+=item *
+
+Other minor bug fixes and documentation improvements.
+
+=back
+
 =head1 Changes in 2.5.1
 
 =over 2
@@ -95,7 +286,7 @@ This new feature is from Christopher Biedl.
 
 The previous behaviour was to check whether the cancel message is
 from the same person as the original post, which is extremely easy
-to spoof; besides, RFC 5537 (USEPRO) mentions that "cancel control
+to spoof; besides, S<RFC 5537> (USEPRO) mentions that "cancel control
 messages are not required to contain From: and Sender: header fields
 matching the target message.  This requirement only encouraged cancel
 issuers to conceal their identity and provided no security".
