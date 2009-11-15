@@ -29,7 +29,6 @@
 #define NNTP_HAVEIT			"435 Duplicate"
 #define NNTP_HAVEIT_BADID		"435 Bad Message-ID"
 #define NNTP_LIST_FOLLOWS		"215"
-#define NNTP_HELP_FOLLOWS		"100 Legal commands"
 #define NNTP_ARTICLE_FOLLOWS		"220"
 #define NNTP_POSTOK			"200"
 #define NNTP_REJECTIT_EMPTY		"437 Empty article"

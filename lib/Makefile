@@ -6,7 +6,7 @@ top	= ..
 CFLAGS  = $(GCFLAGS)
 
 # The base library files that are always compiled and included.
-SOURCES       = buffer.c cleanfrom.c clientactive.c clientlib.c commands.c concat.c \
+SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c commands.c concat.c \
 		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
 		dispatch.c fdflags.c fdlimit.c getfqdn.c \
 		getmodaddr.c hash.c hashtab.c headers.c hex.c innconf.c inndcomm.c \
