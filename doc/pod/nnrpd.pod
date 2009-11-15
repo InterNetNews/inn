@@ -251,14 +251,20 @@ Note that LIST NEWSGROUPS should be used instead of XGTITLE.
 
 =item 3.
 
-The XHDR I<header> [I<message-ID>|I<range>] command is implemented.  It is
-based on the reference Unix implementation.  See S<RFC 2980>.
+The XHDR I<header> [I<message-ID>|I<range>] command is implemented.  It
+returns a C<221> reply code, followed by specific headers for the
+specified range; the default is to return the data for the current article.
+See S<RFC 2980>.
+
+Note that HDR should be used instead of XHDR.
 
 =item 4.
 
-The XOVER [I<range>] command is provided. It returns a C<224> reply code,
+The XOVER [I<range>] command is provided.  It returns a C<224> reply code,
 followed by the overview data for the specified range; the default is to
-return the data for the current article.
+return the data for the current article.  See S<RFC 2980>.
+
+Note that OVER should be used instead of XOVER.
 
 =item 5.
 
@@ -271,6 +277,21 @@ they are joined together separated by a single space to form the complete
 pattern.  This command is similar to the XHDR command.  It returns a C<221>
 response code, followed by the text response of all article numbers that
 match the pattern.
+
+=item 6.
+
+A newsgroup name is case-sensitive for B<nnrpd>.
+
+=item 7.
+
+If IHAVE has been advertised, it will not necessarily be advertised for
+the entire session (contrary to section 3.4.1 of S<RFC 3977>).  B<nnrpd>
+only advertises the IHAVE capability when it is really available.
+
+=item 8.
+
+B<nnrpd> allows a wider syntax for wildmats and ranges (especially C<->
+and C<-I<article-number>>).
 
 =back
 
