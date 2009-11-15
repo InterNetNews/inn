@@ -32,7 +32,7 @@ The items for this flag should be chosen from the C<W> flag items
 as specified in newsfeeds(5).  They may be chosen from the following
 set:
 
-    b    Size of the article headers in bytes.
+    b    Size of the article in bytes.
     f    Storage API token of the article (same as "n").
     m    Article message-ID.
     n    Storage API token of the article.

@@ -43,6 +43,7 @@ main(int ac, char *av[]) {
             die("usage error");
             break;
 	case 'w':
+            free(format);
 	    for (p = format = optarg; *p; p++) {
 		switch (*p) {
 		case FEED_BYTESIZE:
@@ -75,7 +76,7 @@ main(int ac, char *av[]) {
 	if (!IsToken(line))
 	    continue;
 	token = TextToToken(line);
-	if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
+	if ((art = SMretrieve(token, RETR_ALL)) == NULL)
 	    continue;
         text = wire_findheader(art->data, art->len, "Message-ID");
 	if (text == NULL) {
