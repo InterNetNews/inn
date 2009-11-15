@@ -249,10 +249,10 @@ main(int argc, char *argv[])
     }
 
     /* Go into the main input loop.  The only commands we support, for now,
-       are IHAVE and QUIT. */
+       are HELP, IHAVE and QUIT. */
     notice("starting");
     state.nntp = nntp_new(STDIN_FILENO, STDOUT_FILENO, 1024 * 1024, 10 * 60);
-    nntp_respond(state.nntp, NNTP_OK_BANNER_POST, "tinyfeed ready");
+    nntp_respond(state.nntp, NNTP_OK_BANNER_NOPOST, "tinyfeed ready");
     command = cvector_new();
     while (1) {
         status = nntp_read_command(state.nntp, command);
