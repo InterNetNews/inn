@@ -27,6 +27,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
     char		*pass;
     char		*style;
     int			oerrno;
+    bool                authenticated;
 
     /* Default to innconf->server.  If that's not set either, error out.  Fake
        errno since some of our callers rely on it. */
@@ -69,19 +70,24 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	if (strcasecmp(server, buff) != 0)
 	    continue;
 
+        authenticated = false;
+
 	if (*user) {
 	    /* Send the first part of the command, get a reply. */
-	    fprintf(ToServer, "authinfo user %s\r\n", user);
+	    fprintf(ToServer, "AUTHINFO USER %s\r\n", user);
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
-	    if (fgets(input, sizeof input, FromServer) == NULL
-	     || atoi(input) != NNTP_CONT_AUTHINFO)
+	    if (fgets(input, sizeof input, FromServer) == NULL)
+                break;
+            if (atoi(input) == NNTP_OK_AUTHINFO)
+                authenticated = true;
+            else if (atoi(input) != NNTP_CONT_AUTHINFO)
 		break;
 	}
 
-	if (*pass) {
+	if (*pass && !authenticated) {
 	    /* Send the second part of the command, get a reply. */
-	    fprintf(ToServer, "authinfo pass %s\r\n", pass);
+	    fprintf(ToServer, "AUTHINFO PASS %s\r\n", pass);
 	    if (fflush(ToServer) == EOF || ferror(ToServer))
 		break;
 	    if (fgets(input, sizeof input, FromServer) == NULL
