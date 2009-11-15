@@ -346,7 +346,7 @@ void
 CMDcapabilities(int ac, char *av[])
 {
     if (ac == 2 && !IsValidKeyword(av[1])) {
-        Reply("%d Syntax error\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in keyword\r\n", NNTP_ERR_SYNTAX);
         return;
     }
 
