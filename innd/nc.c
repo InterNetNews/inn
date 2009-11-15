@@ -284,7 +284,7 @@ NCwritedone(CHANNEL *cp)
 
 
 /*
-**  The "head" command.
+**  The HEAD command.
 */
 static void
 NChead(CHANNEL *cp)
@@ -295,12 +295,14 @@ NChead(CHANNEL *cp)
     char                *buff = NULL;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("head"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("HEAD"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
     if (!ARTidok(p)) {
-        NCwritereply(cp, NNTP_SYNTAX_USE);
+        xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
     }
@@ -317,29 +319,32 @@ NChead(CHANNEL *cp)
 
     /* Get the article token and retrieve it. */
     if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
     if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
 
     /* Write it. */
-    WCHANappend(cp, NNTP_HEAD_FOLLOWS, strlen(NNTP_HEAD_FOLLOWS));
-    WCHANappend(cp, " 0 ", 3);
-    WCHANappend(cp, p, strlen(p));
-    WCHANappend(cp, NCterm, strlen(NCterm));
+    xasprintf(&buff, "%d 0 %s%s", NNTP_OK_HEAD, p, NCterm);
+    WCHANappend(cp, buff, strlen(buff));
     WCHANappend(cp, art->data, art->len);
 
     /* Write the terminator. */
     NCwritereply(cp, NCdot);
+    free(buff);
     SMfreearticle(art);
 }
 
 
 /*
-**  The "stat" command.
+**  The STAT command.
 */
 static void
 NCstat(CHANNEL *cp)
@@ -350,12 +355,14 @@ NCstat(CHANNEL *cp)
     char		*buff = NULL;
 
     /* Snip off the Message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("stat"); ISWHITE(*p); p++)
+    for (p = cp->In.data + cp->Start + strlen("STAT"); ISWHITE(*p); p++)
 	continue;
     cp->Start = cp->Next;
 
     if (!ARTidok(p)) {
-        NCwritereply(cp, NNTP_SYNTAX_USE);
+        xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
 	return;
     }
@@ -373,11 +380,15 @@ NCstat(CHANNEL *cp)
     /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
     if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
     if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
-	NCwritereply(cp, NNTP_DONTHAVEIT);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        NCwritereply(cp, buff);
+        free(buff);
 	return;
     }
     SMfreearticle(art);
@@ -908,7 +919,7 @@ NCproc(CHANNEL *cp)
 	tmpstr = xmalloc(i - cp->Start + 1);
 	memcpy(tmpstr, bp->data + cp->Start, i - cp->Start);
 	tmpstr[i - cp->Start] = '\0';
-	
+
 	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
 	  MaxLength(tmpstr, tmpstr));
 	free(tmpstr);
