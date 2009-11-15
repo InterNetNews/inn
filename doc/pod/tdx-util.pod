@@ -4,7 +4,7 @@ tdx-util - Tradindexed overview manipulation utility
 
 =head1 SYNOPSIS
 
-B<tdx-util> [B<-AFcgiOo>] [B<-a> I<article>] [B<-f> I<flag>]
+B<tdx-util> [B<-AFcgiOo>] [B<-a> I<article>] [B<-f> I<status>]
 [B<-n> I<newsgroup>] [B<-p> I<path>] [B<-R> I<path>]
 
 =head1 DESCRIPTION
@@ -32,7 +32,7 @@ different formats.  For B<-g>, B<-o>, and B<-O>, the B<-n> option must
 also be given to specify a newsgroup to operate on.
 
 To add a new newsgroup to the overview database, use B<-c>.  A group must
-be specified with B<-n>.  If the group flag is something other than C<y>,
+be specified with B<-n>.  If the group status is something other than C<y>,
 it should be specified with B<-f>, and the low and high article numbers
 may be specified with B<-a>.  If only one number is given rather than a
 range, it will be taken to be the high water mark and the low mark will be
@@ -83,7 +83,7 @@ creating a group.
 =item B<-c>
 
 Create a new group in the overview database.  The group must be specified
-with B<-n>.  The newsgroup flag defaults to C<y> but may be set with
+with B<-n>.  The newsgroup status defaults to C<y> but may be set with
 B<-f>.  The low and high article numbers default to 1 and 0 respectively,
 but may be set with B<-a>.  If only one number is given to B<-a>, it is
 taken as the high article number.
@@ -102,10 +102,10 @@ data has been corrupted.
 
 To see what would be changed by B<-F>, run B<tdx-util> with B<-A> first.
 
-=item B<-f> I<flag>
+=item B<-f> I<status>
 
-When creating a newsgroup with B<-c>, set the flag of the newly created
-group to I<flag> instead of C<y>.  Only useful with B<-c>.
+When creating a newsgroup with B<-c>, set the status of the newly created
+group to I<status> instead of C<y>.  Only useful with B<-c>.
 
 =item B<-g>
 
@@ -129,7 +129,7 @@ clients.
 
 The fields are, in order, the newsgroup name, the high water mark, the low
 water mark, the base article number (the point at which the group index
-begins), the count of articles in the group, the group status flag, the
+begins), the count of articles in the group, the group status, the
 time (in seconds since epoch) when that newsgroup was deleted or 0 if it
 hasn't been, and the inode of the index file for that group.
 

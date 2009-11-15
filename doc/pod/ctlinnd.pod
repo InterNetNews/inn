@@ -107,10 +107,10 @@ If the server is throttled manually, this command causes it to briefly
 open the history database.  If the server is paused or throttled for any
 other reason, this command is rejected.
 
-=item changegroup I<group> I<mode>
+=item changegroup I<group> I<status>
 
-The newsgroup I<group> is changed so that its mode (the fourth field in
-the F<active> file) becomes I<mode>.  This may be used to make an existing
+The newsgroup I<group> is changed so that its status (the fourth field in
+the F<active> file) becomes I<status>.  This may be used to make an existing
 group moderated or unmoderated, for example.
 
 This command, unlike C<newgroup> or C<rmgroup>, can only be used while the
@@ -248,9 +248,9 @@ channel will be paused automatically if the number of remote connections
 for that label in F<incoming.conf> is greater than I<max-connections>
 within I<hold-time> seconds.
 
-=item newgroup I<group> [I<mode> [I<creator>]]
+=item newgroup I<group> [I<status> [I<creator>]]
 
-Create the specified newsgroup.  The I<mode> parameter is the fourth field
+Create the specified newsgroup.  The I<status> parameter is the fourth field
 of the F<active> file entry, as described in active(5).  If it is not an
 equal sign, only the first character is used.  I<creator> should be the
 identity of the person creating the group.  If the newsgroup already
@@ -258,7 +258,7 @@ exists, this is equivalent to the C<changegroup> command.
 
 I<creator>, encoded in UTF-8 if given, may be omitted; if so, it will
 default to the newsmaster (as specified at configure time, normally
-C<usenet>).  I<mode> may also be omitted; if so, it will default to C<y>
+C<usenet>).  I<status> may also be omitted; if so, it will default to C<y>
 (a normal, unmoderated group).  The combination of defaults make it possible
 to use the text of the Control: header directly (although don't do this
 without checking the syntactic validity of the header first).

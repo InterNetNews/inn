@@ -315,12 +315,12 @@ with the previously listed functions.
     # Finally, do you want to see if a given newsgroup is moderated or
     # whatever?  INN.newsgroup returns the last field of a group's
     # entry in active as a string.
-    froupflag = INN.newsgroup('alt.fan.karl-malden.nose')
-    if froupflag == '':
+    groupstatus = INN.newsgroup('alt.fan.karl-malden.nose')
+    if groupstatus == '':
         moderated = 'no such newsgroup'
-    elif froupflag == 'y':
+    elif groupstatus == 'y':
         moderated = "nope"
-    elif froupflag == 'm':
+    elif groupstatus == 'm':
         moderated = "yep"
     else:
         moderated = "something else"

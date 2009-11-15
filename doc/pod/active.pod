@@ -31,7 +31,7 @@ true).
 
 Each line of this file consists of four fields separated by a space:
 
-    <name> <high> <low> <flag>
+    <name> <high> <low> <status>
 
 The first field is the name of the newsgroup.  The newsgroup C<junk> is
 special, as mentioned above.  The newsgroup C<control> and any newsgroups
@@ -54,7 +54,7 @@ order to make it possible to update an entry in-place without rewriting
 the entire file, the second and third fields are padded out with leading
 zeros to make them a fixed width.
 
-The fourth field contains one of the following flags:
+The fourth field contains one of the following status:
 
     y         Local postings are allowed.
     m         The group is moderated and all postings must be approved.
@@ -63,7 +63,7 @@ The fourth field contains one of the following flags:
     x         No local postings, and articles from peers are ignored.
     =foo.bar  Articles are filed in the group foo.bar instead.
 
-If a newsgroup has the C<j> flag, no articles will be filed in that
+If a newsgroup has the C<j> status, no articles will be filed in that
 newsgroup, and local postings to that group will be rejected.  If an
 article for that newsgroup is received from a remote site, and if it is not
 crossposted to some other valid group, it will be filed into the C<junk>
@@ -71,7 +71,7 @@ newsgroup instead.  This is different than simply not listing the group,
 since the article will still be accepted and can be propagated to other
 sites, and the C<junk> group can be made available to readers if wished.
 
-If the <flag> field begins with an equal sign, the newsgroup is an alias.
+If the <status> field begins with an equal sign, the newsgroup is an alias.
 Articles cannot be posted to that newsgroup, but they can be received from
 other sites.  Any articles received from peers for that newsgroup are
 treated as if they were actually posted to the group named after the equal
@@ -100,7 +100,7 @@ The minimal F<active> file shipped with INN is:
 has already been in use.)
 
 There are more control.* pseudogroups here than needed by B<innd> to start;
-the corresponding control messages will be filed into them.  The C<n> flag
+the corresponding control messages will be filed into them.  The C<n> status
 is so that users cannot post directly to these groups (control messages
 should only be posted to the groups that they affect).  If you do not want
 these groups to be visible to clients, do not delete them but simply hide
