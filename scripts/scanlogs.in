@@ -92,11 +92,6 @@ for F in ${LOGS} ; do
     test ! -f ${F} && touch ${F}
 done
 
-##  Temporary files.
-T=${TMPDIR}/scan$$
-PROBS=${TMPDIR}/scanlog$$
-trap "rm -f ${T} ${PROBS}; exit 0" 0 1 2 3 15
-
 ##  Rotate the logs?
 if ${ROTATE} ; then
     ##  Lock out others.
@@ -104,7 +99,7 @@ if ${ROTATE} ; then
 	echo "$0: Locked by `cat ${LOCK}`"
 	exit 1
     }
-    trap "rm -f ${T} ${PROBS} ${LOCK}; exit 0" 1 2 3 15
+    trap "rm -f ${LOCK}; exit 0" 1 2 3 15
 
     HERE=`pwd`
     cd ${MOST_LOGS}
