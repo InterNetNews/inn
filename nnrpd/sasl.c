@@ -210,7 +210,7 @@ SASLauth(int ac, char *av[])
 
 	/* Get the response from the client. */
 	r1 = line_read(&NNTPline, PERMaccessconf->clienttimeout,
-		      &clientin, &clientinlen, NULL);
+		      &clientin, (size_t *) &clientinlen, NULL);
         
         switch (r1) {
 	case RTok:
