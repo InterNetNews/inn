@@ -903,14 +903,24 @@ ARTparseheader(CHANNEL *cp)
            terminator (five characters).  If we don't have at least five more
            characters, we're guaranteed that the article isn't complete, so
            save ourselves complexity and just return and wait for more
-           data. */
+           data.
+           We also have to check whether the headers begin with the article
+           terminator. */
+        if ((i == cp->Start + 1) && (bp->used - i > 1)
+            && (memcmp(&bp->data[i - 1], ".\r\n", 3) == 0)) {
+            ARTerror(cp, "Empty article");
+            cp->State = CSnoarticle;
+            cp->Next = i + 2;
+            return;
+        }
+
         if (bp->used - i < 5) {
             cp->Next = i;
             return;
         }
         if (memcmp(&bp->data[i], "\r\n.\r\n", 5) == 0) {
             if (i == cp->Start) {
-                ARTerror(cp, "Empty article");
+                ARTerror(cp, "Empty headers and body");
                 cp->State = CSnoarticle;
             } else {
                 ARTerror(cp, "No body");
