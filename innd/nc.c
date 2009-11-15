@@ -322,7 +322,7 @@ NChead(CHANNEL *cp)
         return;
     }
 
-    if (!ARTidok(cp->av[1])) {
+    if (!IsValidMessageID(cp->av[1])) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
@@ -388,7 +388,7 @@ NCstat(CHANNEL *cp)
         return;
     }
 
-    if (!ARTidok(cp->av[1])) {
+    if (!IsValidMessageID(cp->av[1])) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
@@ -605,7 +605,7 @@ NCihave(CHANNEL *cp)
     cp->Ihave++;
     cp->Start = cp->Next;
 
-    if (!ARTidok(cp->av[1])) {
+    if (!IsValidMessageID(cp->av[1])) {
         /* Return 435 here instead of 501 for compatibility reasons. */
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_FAIL_IHAVE_REFUSE);
         NCwritereply(cp, buff);
@@ -1705,7 +1705,7 @@ NCcheck(CHANNEL *cp)
             cp->Sendid.size = MAXHEADERSIZE;
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
-    if (!ARTidok(cp->av[1])) {
+    if (!IsValidMessageID(cp->av[1])) {
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
                  NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
@@ -1797,7 +1797,7 @@ NCtakethis(CHANNEL *cp)
     cp->Takethis++;
     cp->Start = cp->Next;
 
-    if (!ARTidok(cp->av[1])) {
+    if (!IsValidMessageID(cp->av[1])) {
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
                MaxLength(cp->av[1], cp->av[1]));
     }

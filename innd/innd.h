@@ -687,7 +687,6 @@ extern void		ThrottleNoMatchError(void);
 extern void		ReopenLog(FILE *F);
 extern void		xchown(char *p);
 
-extern bool		ARTidok(const char *MessageID);
 extern bool		ARTreadschema(void);
 extern const char   *	ARTreadarticle(char *files);
 extern char	    *   ARTreadheader(char *files);

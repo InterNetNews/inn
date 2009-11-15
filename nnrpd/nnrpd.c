@@ -898,6 +898,9 @@ main(int argc, char *argv[])
     message_handlers_warn(1, message_log_syslog_warning);
     message_handlers_notice(1, message_log_syslog_notice);
 
+    /* Initialize the character class tables for message-IDs. */
+    InitializeMessageIDcclass();
+
     if (!innconf_read(NULL))
         exit(1);
 
