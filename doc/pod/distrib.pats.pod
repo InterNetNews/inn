@@ -35,7 +35,8 @@ match, or if the matching line has an empty string for its third field, no
 header will be added.  In case a distribution is added by B<nnrpd>, make
 sure it is not rejected by the F<newsfeeds> C<ME> entry.
 
-A list of recommended distributions can be specified in distributions(5).
+A list of recommended distributions can be specified and described
+in distributions(5).
 
 =head1 HISTORY
 
