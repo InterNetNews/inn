@@ -537,6 +537,12 @@ CMDnewgroups(int ac, char *av[])
     if ((qp = QIOopen(ACTIVE)) == NULL) {
 	syslog(L_ERROR, "%s can't fopen %s %m", Client.host, ACTIVE);
 	Reply("%d Can't open active file\r\n", NNTP_FAIL_ACTION);
+
+        for (i = 0; i < numgroups; i++) {
+            free(grouplist[i].name);
+        }
+        free(grouplist);
+
 	return;
     }
     qsort(grouplist, numgroups, sizeof(GROUPDATA), GroupCompare);
