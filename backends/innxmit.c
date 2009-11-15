@@ -820,7 +820,7 @@ strlisten(void)
 	switch (resp) { /* first time is to verify it */
         case NNTP_ERR_SYNTAX:
             /* Nothing we can check here. */
-            break;
+            /* FALLTHROUGH (and hope the message-ID is given after 501). */
 	case NNTP_FAIL_CHECK_REFUSE:
 	case NNTP_OK_CHECK:
 	case NNTP_OK_TAKETHIS:
