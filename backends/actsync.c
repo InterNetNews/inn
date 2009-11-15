@@ -1092,7 +1092,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	QIOclose(qp);
     } else {
 	CAclose();
-	fprintf(ToServer, "quit\r\n");
+	fprintf(ToServer, "QUIT\r\n");
 	fclose(ToServer);
 	fgets(buff, sizeof buff, FromServer);
 	fclose(FromServer);

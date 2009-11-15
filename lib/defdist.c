@@ -55,7 +55,7 @@ DDstart(FILE *FromServer, FILE *ToServer)
             return NULL;
         close(fd);
 	if ((F = CA_listopen(name, FromServer, ToServer,
-		    "distrib.pats")) == NULL)
+		    "DISTRIB.PATS")) == NULL)
 	    return NULL;
     }
 
