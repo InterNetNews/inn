@@ -117,7 +117,7 @@ if ${ROTATE} ; then
     fi
 
     ##  Make sure these .old files exist, in case innd is down.
-    for F in ${LOG} ${ERRLOG} ${EXPLOG} ; do
+    for F in ${LOG} ${ERRLOG} ; do
 	if [ ! -f ${F}.old ]; then
 	    rm -f ${F}.old
 	    cp ${F} ${F}.old
@@ -162,7 +162,7 @@ if ${ROTATE} ; then
 	BASE=`basename ${F}`
 	rm -f ${OLD}/${BASE}
 	case ${F} in
-	${SYSLOG_CRIT}|${ERRLOG}|${EXPLOG}|${LOG}|${SYSLOG_NOTICE})
+	${SYSLOG_CRIT}|${ERRLOG}|${LOG}|${SYSLOG_NOTICE})
 	    ##  Make a link that can be deleted (since if not rotating
 	    ##  we delete the copy that is made in ${TMPDIR}).
 	    mv ${F}.old ${OLD}/${BASE}
@@ -225,7 +225,7 @@ else
 
     ##  Make a snapshot of what we need for below.
     ctlinnd -s pause "Snapshot log and syslog files" 2>&1
-    for F in ${SYSLOG_CRIT} ${ERRLOG} ${EXPLOG} ${LOG} ${SYSLOG_NOTICE} ; do
+    for F in ${SYSLOG_CRIT} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE} ; do
 	BASE=`basename ${F}`
 	rm -f ${OLD}/${BASE}.0
 	cp ${F} ${OLD}/${BASE}.0
@@ -289,9 +289,6 @@ if ${ROTATE} ; then
 	chmod 0660 ${OLD}/${BASE}
     fi
 fi
-
-OLD_SYSLOG=${OLD}/${EXPLOG}.0
-rm -f ${EXPLOG}
 
 ##  Compress and rotate the logs.
 if ${ROTATE} ; then
