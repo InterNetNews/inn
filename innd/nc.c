@@ -1845,6 +1845,7 @@ static void
 NCcancel(CHANNEL *cp)
 {
     char *argv[2] = { NULL, NULL };
+    char buff[SMBUF];
     const char *res;
 
     ++cp->Received;
@@ -1852,14 +1853,14 @@ NCcancel(CHANNEL *cp)
     cp->Start = cp->Next;
     res = CCcancel(argv);
     if (res) {
-        char buff[SMBUF];
-
         snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_CANCEL,
                  MaxLength(res, res));
         syslog(L_NOTICE, "%s cant_cancel %s", CHANname(cp),
                MaxLength(res, res));
         NCwritereply(cp, buff);
     } else {
-        NCwritereply(cp, NNTP_OK_CANCELLED);
+        snprintf(buff, sizeof(buff), "%d Article cancelled OK",
+                 NNTP_OK_CANCEL);
+        NCwritereply(cp, buff);
     }
 }
