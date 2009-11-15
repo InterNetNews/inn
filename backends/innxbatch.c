@@ -248,6 +248,7 @@ REMsendxbatch(int fd, char *buf, int size)
     break;
   case NNTP_FAIL_XBATCH:
   case NNTP_FAIL_TERMINATING:
+  case NNTP_FAIL_ACTION:
     notice("%s xbatch failed %s", REMhost, buf);
     STATrejected++;
     return false;
@@ -495,7 +496,7 @@ main(int ac, char *av[])
     if (GotInterrupt) Interrupted();
 
     /* Offer the xbatch. */
-    snprintf(buff, sizeof(buff), "xbatch %d", XBATCHsize);
+    snprintf(buff, sizeof(buff), "XBATCH %d", XBATCHsize);
     if (!REMwrite(ToServer, buff)) {
       syswarn("cannot offer xbatch to %s", REMhost);
       ExitWithStats(1);
@@ -519,6 +520,7 @@ main(int ac, char *av[])
       break;
     case NNTP_FAIL_XBATCH:
     case NNTP_FAIL_TERMINATING:
+    case NNTP_FAIL_ACTION:
       /* Most likely out of space -- no point in continuing. */
       notice("%s xbatch failed %s", REMhost, buff);
       ExitWithStats(1);

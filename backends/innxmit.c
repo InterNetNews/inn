@@ -297,7 +297,7 @@ REMwrite(char *p, int i, bool escdot) {
 static void
 ExitWithStats(int x)
 {
-    static char		QUIT[] = "quit";
+    static char		QUIT[] = "QUIT";
     double		usertime;
     double		systime;
 
@@ -644,14 +644,14 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	    Requeue(Article, MessageID);
 	break;
     case NNTP_ERR_COMMAND:
-    case NNTP_ERR_SYNTAX:
     case NNTP_ERR_ACCESS:
-	/* The receiving server is likely confused...no point in continuing */
+        /* The receiving server is likely confused... no point in continuing! */
         syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
         RequeueRestAndExit(Article, MessageID);
         /* NOTREACHED */
     case NNTP_FAIL_IHAVE_DEFER:
     case NNTP_FAIL_TERMINATING:
+    case NNTP_FAIL_ACTION:
 	Requeue(Article, MessageID);
 	break;
     case NNTP_OK_IHAVE:
@@ -659,6 +659,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	STATacceptedsize += (double)art->len;
 	break;
     case NNTP_FAIL_IHAVE_REJECT:
+    case NNTP_ERR_SYNTAX:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
@@ -733,8 +734,8 @@ static bool
 check(int i) {
     char	buff[NNTP_MAXLEN_COMMAND];
 
-    /* send "check <ID>" to the other system */
-    snprintf(buff, sizeof(buff), "check %s", stbuf[i].st_id);
+    /* Send "CHECK <mid>" to the other system. */
+    snprintf(buff, sizeof(buff), "CHECK %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), false)) {
         syswarn("cannot check article");
 	return true;
@@ -765,10 +766,10 @@ takethis(int i) {
              stbuf[i].st_fname);
         return true;
     }
-    /* send "takethis <ID>" to the other system */
-    snprintf(buff, sizeof(buff), "takethis %s", stbuf[i].st_id);
+    /* Send "TAKETHIS <mid>" to the other system. */
+    snprintf(buff, sizeof(buff), "TAKETHIS %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), false)) {
-        syswarn("cannot send takethis");
+        syswarn("cannot send TAKETHIS");
         return true;
     }
     if (Debug)
@@ -801,7 +802,7 @@ strlisten(void)
 
     while(true) {
 	if (!REMread(buff, (int)sizeof buff)) {
-            syswarn("no reply to check");
+            syswarn("no reply to CHECK");
 	    return true;
 	}
 	if (GotInterrupt)
@@ -811,9 +812,15 @@ strlisten(void)
 
 	/* Parse the reply. */
 	resp =  atoi(buff);
-	/* Skip the 1XX informational messages */
-	if ((resp >= 100) && (resp < 200)) continue;
+
+	/* Skip the 1XX informational messages. */
+	if ((resp >= 100) && (resp < 200))
+            continue;
+
 	switch (resp) { /* first time is to verify it */
+        case NNTP_ERR_SYNTAX:
+            /* Nothing we can check here. */
+            break;
 	case NNTP_FAIL_CHECK_REFUSE:
 	case NNTP_OK_CHECK:
 	case NNTP_OK_TAKETHIS:
@@ -834,6 +841,7 @@ strlisten(void)
 	    }
 	    break;
 	case NNTP_FAIL_TERMINATING:
+        case NNTP_FAIL_ACTION:
 	    /* Most likely out of space -- no point in continuing. */
 	    syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
 	    return true;
@@ -845,6 +853,7 @@ strlisten(void)
 						    buff);
 	    return (true);
 	}
+
 	switch (resp) { /* now we take some action */
 	case NNTP_FAIL_CHECK_DEFER:	/* remote wants it later */
 	    /* try again now because time has passed */
@@ -857,6 +866,8 @@ strlisten(void)
 		strel(i); /* release entry */
 	    }
 	    break;
+
+        case NNTP_ERR_SYNTAX:
 	case NNTP_FAIL_CHECK_REFUSE:	/* remote doesn't want it */
 	    strel(i); /* release entry */
 	    STATrefused++;
@@ -1184,7 +1195,8 @@ int main(int ac, char *av[]) {
 		    CanStream = true;
 		    break;
                 case NNTP_FAIL_AUTH_NEEDED: /* authentication refusal */
-		case NNTP_ERR_COMMAND: /* normal refusal */
+		case NNTP_ERR_COMMAND: /* unknown MODE command */
+                case NNTP_ERR_SYNTAX:  /* unknown STREAM keyword */
 		    CanStream = false;
 		    break;
 		}
@@ -1213,7 +1225,9 @@ int main(int ac, char *av[]) {
 		switch (atoi(buff)) {
 		case 250:		/* YES! */
 		    break;
-		case NNTP_ERR_COMMAND: /* normal refusal */
+                case NNTP_FAIL_AUTH_NEEDED: /* authentication refusal */
+		case NNTP_ERR_COMMAND: /* unknown MODE command */
+                case NNTP_ERR_SYNTAX:  /* unknown STREAM keyword */
                     die("%s not allowed -- %s", modeheadfeed, buff);
 		default:
                     die("unknown reply to %s -- %s", modeheadfeed, buff);
@@ -1390,7 +1404,7 @@ int main(int ac, char *av[]) {
 	    }
 	    continue; /* next article */
 	}
-	snprintf(buff, sizeof(buff), "ihave %s", MessageID);
+	snprintf(buff, sizeof(buff), "IHAVE %s", MessageID);
 	if (!REMwrite(buff, (int)strlen(buff), false)) {
             syswarn("cannot offer article");
             article_free(art);
@@ -1404,7 +1418,7 @@ int main(int ac, char *av[]) {
 
 	/* Does he want it? */
 	if (!REMread(buff, (int)sizeof buff)) {
-            syswarn("no reply to ihave");
+            syswarn("no reply to IHAVE");
             article_free(art);
 	    RequeueRestAndExit(Article, MessageID);
 	}
@@ -1421,12 +1435,12 @@ int main(int ac, char *av[]) {
 		Requeue(Article, MessageID);
 	    break;
         case NNTP_ERR_COMMAND:
-        case NNTP_ERR_SYNTAX:
         case NNTP_ERR_ACCESS:
-            /* The receiving server is likely confused...no point in continuing */
+            /* The receiving server is likely confused... no point in continuing! */
             syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
 	    RequeueRestAndExit(Article, MessageID);
 	    /* NOTREACHED */
+        case NNTP_FAIL_ACTION:
         case NNTP_FAIL_AUTH_NEEDED:
 	case NNTP_FAIL_IHAVE_DEFER:
 	case NNTP_FAIL_TERMINATING:
@@ -1439,6 +1453,7 @@ int main(int ac, char *av[]) {
 		RequeueRestAndExit(Article, MessageID);
 	    break;
 	case NNTP_FAIL_IHAVE_REFUSE:
+        case NNTP_ERR_SYNTAX:
 	    STATrefused++;
 	    break;
 	}
