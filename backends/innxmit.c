@@ -1,7 +1,7 @@
 /*  $Id$
 **
 **  Transmit articles to remote site.
-**  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre
+**  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre.
 */
 
 #include "config.h"
@@ -17,7 +17,9 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-/* Needed on AIX 4.1 to get fd_set and friends. */
+/*
+**  Needed on AIX 4.1 to get fd_set and friends.
+*/
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
@@ -35,24 +37,32 @@
 
 #define OUTPUT_BUFFER_SIZE	(16 * 1024)
 
-/* Streaming extensions to NNTP.  This extension removes the lock-step
-** limitation of conventional NNTP.  Article transfer is several times
-** faster.  Negotiated and falls back to old mode if receiver refuses.
+/*
+**  Streaming extensions to NNTP.  This extension removes the lock-step
+**  limitation of conventional NNTP.  Article transfer is several times
+**  faster.  Negotiated and falls back to old mode if receiver refuses.
 */
 
-/* max number of articles that can be streamed ahead */
+/*
+**  Max number of articles that can be streamed ahead.
+*/
 #define STNBUF 32
 
-/* Send "takethis" without "check" if this many articles were
-** accepted in a row.
+/*
+** Send TAKETHIS without CHECK if this many articles were
+**  accepted in a row.
 */
 #define STNC 16
 
-/* typical number of articles to stream  */
-/* must be able to fopen this many articles */
+/*
+**  Typical number of articles to stream.
+**  Must be able to fopen this many articles.
+*/
 #define STNBUFL (STNBUF/2)
 
-/* number of retries before requeueing to disk */
+/*
+**  Number of retries before requeueing to disk.
+*/
 #define STNRETRY 5
 
 struct stbufs {		/* for each article we are procesing */
@@ -79,7 +89,7 @@ static int logRejects = false ;  /* syslog the 437 responses. */
 
 
 /*
-** Syslog formats - collected together so they remain consistent
+**  Syslog formats - collected together so they remain consistent.
 */
 static char	STAT1[] =
 	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
@@ -130,7 +140,9 @@ static double		STATacceptedsize;
 static double		STATrejectedsize;
 
 
-/* Prototypes. */
+/*
+**  Prototypes.
+*/
 static ARTHANDLE *article_open(const char *path, const char *id);
 static void article_free(ARTHANDLE *);
 
@@ -184,7 +196,7 @@ stindex(char *MessageID, int hash) {
     return (i);
 }
 
-/* stidhash(): calculate a hash value for message IDs to speed comparisons */
+/*  stidhash(): calculate a hash value for message IDs to speed comparisons */
 static int
 stidhash(char *MessageID) {
     char	*p;
@@ -1429,11 +1441,6 @@ int main(int ac, char *av[]) {
 	case NNTP_FAIL_IHAVE_REFUSE:
 	    STATrefused++;
 	    break;
-#if	defined(NNTP_SENDIT_LATER)
-	case NNTP_SENDIT_LATER_VAL:
-	    Requeue(Article, MessageID);
-	    break;
-#endif	/* defined(NNTP_SENDIT_LATER) */
 	}
 
         article_free(art);
