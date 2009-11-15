@@ -25,7 +25,7 @@ static void cmd_list_headers(LISTINFO *lp, int ac, char *av[]);
 
 static LISTINFO		INFOactive = {
     "ACTIVE", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
-    "Newsgroups in form \"group high low flags\""
+    "Newsgroups in form \"group high low status\""
 };
 static LISTINFO		INFOactivetimes = {
     "ACTIVE.TIMES", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
@@ -33,7 +33,7 @@ static LISTINFO		INFOactivetimes = {
 };
 static LISTINFO		INFOdistribs = {
     "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
-    "Distributions in form \"area description\""
+    "Distributions in form \"distribution description\""
 };
 static LISTINFO         INFOheaders = {
     "HEADERS", NULL, cmd_list_headers, true, "supported headers and metadata",
@@ -45,7 +45,7 @@ static LISTINFO               INFOsubs = {
 };
 static LISTINFO		INFOdistribpats = {
     "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
-    "Default distributions in form \"weight:pattern:value\""
+    "Default distributions in form \"weight:group-pattern:distribution\""
 };
 static LISTINFO		INFOgroups = {
     "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, true, "newsgroup descriptions",
