@@ -25,6 +25,7 @@ typedef struct _NCDISPATCH {
     bool                     Needauth;
     int                      Minac;
     int                      Maxac;
+    bool                     Stripspaces;
     const char *             Help;
 } NCDISPATCH;
 
@@ -54,33 +55,33 @@ static void NCwritedone      (CHANNEL *cp);
 
 /* Set up the dispatch table for all of the commands. */
 #define NC_any -1
-#define COMMAND(name, func, auth, min, max, help) { name, func, auth, min, max, help }
-#define COMMAND_READER(name) { name, NC_reader, false, 1, NC_any, NULL }
-#define COMMAND_UNIMP(name)  { name, NC_unimp,  false, 1, NC_any, NULL }
+#define COMMAND(name, func, auth, min, max, strip, help) { name, func, auth, min, max, strip, help }
+#define COMMAND_READER(name) { name, NC_reader, false, 1, NC_any, true, NULL }
+#define COMMAND_UNIMP(name)  { name, NC_unimp,  false, 1, NC_any, true, NULL }
 static NCDISPATCH NCcommands[] = {
-    COMMAND("AUTHINFO",      NCauthinfo,      false, 3,  3,
+    COMMAND("AUTHINFO",      NCauthinfo,      false, 3,  3, false,
             "USER name|PASS password"),
-    COMMAND("CAPABILITIES",  NCcapabilities,  false, 1,  2,
+    COMMAND("CAPABILITIES",  NCcapabilities,  false, 1,  2, true,
             "[keyword]"),
-    COMMAND("CHECK",         NCcheck,         true,  2,  2,
+    COMMAND("CHECK",         NCcheck,         true,  2,  2, false,
             "message-ID"),
-    COMMAND("HEAD",          NChead,          true,  1,  2,
+    COMMAND("HEAD",          NChead,          true,  1,  2, true,
             "message-ID"),
-    COMMAND("HELP",          NChelp,          false, 1,  1,
+    COMMAND("HELP",          NChelp,          false, 1,  1, true,
             NULL),
-    COMMAND("IHAVE",         NCihave,         true,  2,  2,
+    COMMAND("IHAVE",         NCihave,         true,  2,  2, true,
             "message-ID"),
-    COMMAND("LIST",          NClist,          true,  1,  3,
+    COMMAND("LIST",          NClist,          true,  1,  3, true,
             "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS [wildmat]]"),
-    COMMAND("MODE",          NCmode,          false, 2,  2,
+    COMMAND("MODE",          NCmode,          false, 2,  2, true,
             "READER"),
-    COMMAND("QUIT",          NCquit,          false, 1,  1,
+    COMMAND("QUIT",          NCquit,          false, 1,  1, true,
             NULL),
-    COMMAND("STAT",          NCstat,          true,  1,  2,
+    COMMAND("STAT",          NCstat,          true,  1,  2, true,
             "message-ID"),
-    COMMAND("TAKETHIS",      NCtakethis,      true,  2,  2,
+    COMMAND("TAKETHIS",      NCtakethis,      true,  2,  2, false,
             "message-ID"),
-    COMMAND("XBATCH",        NCxbatch,        true,  2,  2,
+    COMMAND("XBATCH",        NCxbatch,        true,  2,  2, true,
             "size"),
 
     /* Unimplemented reader commands which may become available after a MODE
@@ -1113,7 +1114,7 @@ NCproc(CHANNEL *cp)
       /* Guarantee null-termination. */
       p[-2] = '\0';
       p = q;
-      ac = Argify(p, &av);
+      ac = nArgify(p, &av, 1);
 
       /* Ignore empty lines. */
       if (ac == 0) {
@@ -1212,6 +1213,17 @@ NCproc(CHANNEL *cp)
 	    MaxLength(q, q));
         break;
       }
+
+      /* Go on parsing the command.
+       * For instance:
+       * - "CHECK     <bad mid>  " will give the message-ID "<bad mid>  "
+       *   with only leading whitespaces stripped.
+       * - "AUTHINFO USER  test " will give the username " test " with
+       *   no whitespaces stripped. */
+      ac--;
+      ac += reArgify(av[ac], &av[ac],
+                     dp->Stripspaces ? -1 : dp->Minac - ac - 1,
+                     dp->Stripspaces);
 
       /* Check whether all arguments do not exceed their allowed size. */
       if (ac > 1) {
