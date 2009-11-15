@@ -536,7 +536,7 @@ serverproc(int me)
 
 	for(i = 0; i < numreaders; i++) {
 	    if(readertab[i].mode == MODE_CLOSED
-		  || readertab[i].lastactive + CLIENT_TIMEOUT < now) {
+		  || (time_t) (readertab[i].lastactive + CLIENT_TIMEOUT) < now) {
 	    	delclient(i);
 		numreaders--;
 		i--;

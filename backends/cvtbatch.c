@@ -107,7 +107,7 @@ main(int ac, char *av[]) {
 	    case FEED_BYTESIZE:
 		if (Dirty)
 		    putchar(' ');
-		printf("%d", len);
+		printf("%lu", (unsigned long)len);
 		break;
 	    case FEED_FULLNAME:
 	    case FEED_NAME:
