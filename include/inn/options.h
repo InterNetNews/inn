@@ -40,13 +40,13 @@
 /* innd will flush the history and active file after this many seconds. */
 #define DEFAULT_TIMEOUT         300
 
-/* Define if inews should put hostnames into the Path header itself. */
+/* Define if inews should put hostnames into the Path: header itself. */
 #define DO_INEWS_PATH
 
 /* Define if inews should munge the GECOS entry of the passwd file when
    attempting to determine a poster's real name.  Use this if your GECOS
    entries have other stuff after trailing commas or before dashes, things
-   in parentheses that aren't part of the name, etc.  See frontends/inews.c
+   in parenthesis that aren't part of the name, etc.  See frontends/inews.c
    for the full algorithm. */
 #define DO_MUNGE_GECOS
 
@@ -60,7 +60,7 @@
 /* #undef DO_RNEWS_SAVE_BAD */
 
 /* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
-   circumstance you may want this not to be 1, but normally you always want
+   circumstance, you may want this not to be 1, but normally you always want
    to load the full history indexes into innd's memory.  Has no effect if
    using tagged hash (which is always in core). */
 #define INND_DBZINCORE          1
@@ -81,7 +81,7 @@
 /* The standard NNTP port. */
 #define NNTP_PORT               119
 
-/* What to use for a Path tail for local posts. */
+/* What to use for a Path: tail for local posts. */
 #define PATHMASTER              "not-for-mail"
 
 
@@ -114,7 +114,7 @@ typedef unsigned long           ARTNUM;
 /* The maximum length of a single header, used as a good guess at a buffer
    size for some header parsing code.  This is currently also used by innd
    to determine whether to reject a message for an excessively long header;
-   this behavior should be fixed. */
+   this behavior should be fixed.  FIXME */
 #define MAXHEADERSIZE           1024
 
 /* Default buffer size for outgoing feeds from innd. */
@@ -180,7 +180,7 @@ typedef unsigned long           ARTNUM;
 #define NF_FLAG_NOLOCAL		'n'
 #define NF_FLAG_IGNORE		'x'
 
-/* Used for parsing the Newsgroups header.  Should be rolled into a library
+/* Used for parsing the Newsgroups: header.  Should be rolled into a library
    for parsing headers, combining all the code that's currently scattered
    all over INN for doing that. */
 #define NG_SEPARATOR            ","
