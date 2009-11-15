@@ -457,7 +457,6 @@ static bool
 innconf_validate(struct config_group *group)
 {
     bool okay = true;
-    unsigned long threshold;
 
     if (GetFQDN(innconf->domain) == NULL) {
         warn("hostname does not resolve or domain not set in inn.conf");
@@ -480,12 +479,42 @@ innconf_validate(struct config_group *group)
         okay = false;
     }
 
-    threshold = innconf->datamovethreshold;
-    if (threshold > 1024 * 1024) {
+    if (innconf->datamovethreshold > 1024 * 1024) {
         config_error_param(group, "datamovethreshold",
                            "maximum value for datamovethreshold is 1MB");
         innconf->datamovethreshold = 1024 * 1024;
     }
+
+    if (innconf->keywords) {
+        bool found = false;
+        unsigned int i;
+        if (innconf->extraoverviewadvertised->strings != NULL) {
+            for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
+                if (innconf->extraoverviewadvertised->strings[i] != NULL &&
+                    (strcasecmp(innconf->extraoverviewadvertised->strings[i], "Keywords") == 0)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (innconf->extraoverviewhidden->strings != NULL) {
+            for (i = 0; i < innconf->extraoverviewhidden->count; i++) {
+                if (innconf->extraoverviewhidden->strings[i] != NULL &&
+                    (strcasecmp(innconf->extraoverviewhidden->strings[i], "Keywords") == 0)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            config_error_param(group, "keywords",
+                               "keyword generation is useless if the Keywords:"
+                               " header is not stored in the overview");
+            innconf->keywords = false;
+        }
+    }
+
     return okay;
 }
 
