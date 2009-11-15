@@ -40,7 +40,7 @@ static void NCxbatch(CHANNEL *cp);
 
 /* Handlers for unimplemented commands.  We need two handlers so that we can
    return the right status code; reader commands that are required by the
-   standard must return a 502 error rather than a 500 error. */
+   standard must return a 401 response code rather than a 500 error. */
 static void NC_reader(CHANNEL *cp);
 static void NC_unimp(CHANNEL *cp);
 
@@ -132,24 +132,24 @@ NCwritereply(CHANNEL *cp, const char *text)
 
     /* XXX could do RCHANremove(cp) here, as the old NCwritetext() used to
      * do, but that would be wrong if the channel is sreaming (because it
-     * would zap the channell's input buffer).  There's no harm in
+     * would zap the channel's input buffer).  There's no harm in
      * never calling RCHANremove here.  */
 
     bp = &cp->Out;
     i = bp->left;
-    WCHANappend(cp, text, strlen(text));	/* text in buffer */
-    WCHANappend(cp, NCterm, strlen(NCterm));	/* add CR NL to text */
+    WCHANappend(cp, text, strlen(text));	/* Text in buffer. */
+    WCHANappend(cp, NCterm, strlen(NCterm));	/* Add CR LF to text. */
 
-    if (i == 0) {	/* if only data then try to write directly */
+    if (i == 0) {	/* If only data, then try to write directly. */
 	i = write(cp->fd, &bp->data[bp->used], bp->left);
 	if (Tracing || cp->Tracing)
 	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %lu)",
 		CHANname(cp), i, cp->fd, &bp->data[bp->used],
 		(unsigned long) bp->left);
-	if (i > 0) 
+	if (i > 0)
             bp->used += i;
 	if (bp->used == bp->left) {
-	    /* all the data was written */
+	    /* All the data was written. */
 	    bp->used = bp->left = 0;
 	    NCwritedone(cp);
 	} else {
@@ -157,7 +157,7 @@ NCwritereply(CHANNEL *cp, const char *text)
             i = 0;
         }
     } else i = 0;
-    if (i <= 0) {	/* write failed, queue it for later */
+    if (i <= 0) {	/* Write failed, queue it for later. */
 	WCHANadd(cp);
     }
     if (Tracing || cp->Tracing)
@@ -170,12 +170,14 @@ NCwritereply(CHANNEL *cp, const char *text)
 void
 NCwriteshutdown(CHANNEL *cp, const char *text)
 {
+    char buff[SMBUF];
+
+    snprintf(buff, sizeof(buff), "%d %s%s", NNTP_FAIL_TERMINATING, text,
+             NCterm);
+
     cp->State = CSwritegoodbye;
-    RCHANremove(cp); /* we're not going to read anything more */
-    WCHANappend(cp, NNTP_GOODBYE, strlen(NNTP_GOODBYE));
-    WCHANappend(cp, " ", 1);
-    WCHANappend(cp, text, (int)strlen(text));
-    WCHANappend(cp, NCterm, strlen(NCterm));
+    RCHANremove(cp); /* We're not going to read anything more. */
+    WCHANappend(cp, buff, strlen(buff));
     WCHANadd(cp);
 }
 
@@ -218,8 +220,10 @@ NCpostit(CHANNEL *cp)
       cp->Sendid.data[1] = buff[1];
       cp->Sendid.data[2] = buff[2];
       response = cp->Sendid.data;
-    } else
-      response = NNTP_TOOKIT;
+    } else {
+      snprintf(buff, sizeof(buff), "%d Article transferred OK", NNTP_OK_IHAVE);
+      response = buff;
+    }
   } else {
     /* The answer to TAKETHIS is a response code followed by a
      * message-ID.  The response code is already NNTP_FAIL_TAKETHIS_REJECT. */
@@ -457,8 +461,8 @@ NChelp(CHANNEL *cp)
     static char		LINE2[] = "\" at this machine.";
     NCDISPATCH		*dp;
 
-    WCHANappend(cp, NNTP_HELP_FOLLOWS,strlen(NNTP_HELP_FOLLOWS));
-    WCHANappend(cp, NCterm,strlen(NCterm));
+    WCHANappend(cp, NNTP_HELP_FOLLOWS, strlen(NNTP_HELP_FOLLOWS));
+    WCHANappend(cp, NCterm, strlen(NCterm));
     for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++)
 	if (dp->Function != NC_unimp && dp->Function != NC_reader) {
             if ((!StreamingOff && cp->Streaming) ||
@@ -597,7 +601,7 @@ NCihave(CHANNEL *cp)
     }
 }
 
-/* 
+/*
 ** The "xbatch" command. Set the state appropriately.
 */
 
@@ -764,8 +768,12 @@ NCmode(CHANNEL *cp)
 static void
 NCquit(CHANNEL *cp)
 {
+    char buff[SMBUF];
+
+    snprintf(buff, sizeof(buff), "%d Bye!", NNTP_OK_QUIT);
+
     cp->State = CSwritegoodbye;
-    NCwritereply(cp, NNTP_GOODBYE_ACK);
+    NCwritereply(cp, buff);
 }
 
 
@@ -962,7 +970,7 @@ NCproc(CHANNEL *cp)
 	NCwritereply(cp, NCbadcommand);
 	cp->Start = cp->Next;
 
-	/* Channel could have been freed by above NCwritereply if 
+	/* Channel could have been freed by above NCwritereply if
 	   we're writing-goodbye */
 	if (cp->Type == CTfree)
 	  return;
@@ -1308,7 +1316,7 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
 
     NCclearwip(cp);
     cp->privileged = IsLocal;
-#if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) 
+#if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF)
     if (!IsLocal) {
 	i = 24 * 1024;
 	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
@@ -1339,7 +1347,7 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
     }
 
     /* See if we have too many channels. */
-    if (!IsLocal && innconf->maxconnections && 
+    if (!IsLocal && innconf->maxconnections &&
 			NCcount >= innconf->maxconnections && !RCnolimit(cp)) {
 	/* Recount, just in case we got out of sync. */
 	for (NCcount = 0, i = 0; CHANiter(&i, CTnntp) != NULL; )
