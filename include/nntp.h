@@ -26,32 +26,16 @@
 
 #define NNTP_BAD_COMMAND		"500 Syntax error or bad command"
 #define NNTP_ACCESS			"502 Permission denied"
-#define NNTP_HAVEIT			"435 Duplicate"
-#define NNTP_HAVEIT_BADID		"435 Bad Message-ID"
 #define NNTP_LIST_FOLLOWS		"215"
 #define NNTP_ARTICLE_FOLLOWS		"220"
 #define NNTP_REJECTIT_EMPTY		"437 Empty article"
-#define NNTP_RESENDIT_LATER             "436 Retry later"
 #define NNTP_POSTEDOK			"240 Article posted"
-#define NNTP_SENDIT			"335"
 #define NNTP_BAD_SUBCMD			"501 Bad subcommand"
 #define NNTP_NOTINGROUP			"412 Not in a newsgroup"
 #define NNTP_NOSUCHGROUP		"411 No such group"
 #define NNTP_NEWNEWSOK			"230 New news follows"
 #define NNTP_NOARTINGRP			"423 Bad article number"
 #define NNTP_NOCURRART			"420 No current article"
-#define NNTP_CANTPOST			"440 Posting not allowed"
-
-/* new entries for the "streaming" protocol */
-/* response to "mode stream" else 500 if stream not supported */
-
-/* response to "check <id>".  Must include ID of article.
-** Example: "431 <1234@host.domain>"
-*/
-
-/* responses to "takethis <id>.  Must include ID of article */
-
-/* End of new entries for the "streaming" protocol */
 
 /*
 **  The first character of an NNTP reply can be used as a category class.
