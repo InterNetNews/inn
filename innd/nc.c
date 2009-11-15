@@ -19,42 +19,41 @@
 **  of every command we support.
 */
 typedef struct _NCDISPATCH {
-    const char *        Name;
-    innd_callback_func  Function;
-    int                 Size;
-    int                 Minac;
-    int                 Maxac;
-    const char *        Help;
+    const char *             Name;
+    innd_callback_nntp_func  Function;
+    int                      Minac;
+    int                      Maxac;
+    const char *             Help;
 } NCDISPATCH;
 
 /* The functions that implement the various commands. */
-static void NCauthinfo(CHANNEL *cp);
-static void NCcancel(CHANNEL *cp);
-static void NCcheck(CHANNEL *cp);
-static void NChead(CHANNEL *cp);
-static void NChelp(CHANNEL *cp);
-static void NCihave(CHANNEL *cp);
-static void NClist(CHANNEL *cp);
-static void NCmode(CHANNEL *cp);
-static void NCquit(CHANNEL *cp);
-static void NCstat(CHANNEL *cp);
-static void NCtakethis(CHANNEL *cp);
-static void NCxbatch(CHANNEL *cp);
+static void NCauthinfo(CHANNEL *cp, int ac, char *av[]);
+static void NCcancel  (CHANNEL *cp, int ac, char *av[]);
+static void NCcheck   (CHANNEL *cp, int ac, char *av[]);
+static void NChead    (CHANNEL *cp, int ac, char *av[]);
+static void NChelp    (CHANNEL *cp, int ac, char *av[]);
+static void NCihave   (CHANNEL *cp, int ac, char *av[]);
+static void NClist    (CHANNEL *cp, int ac, char *av[]);
+static void NCmode    (CHANNEL *cp, int ac, char *av[]);
+static void NCquit    (CHANNEL *cp, int ac, char *av[]);
+static void NCstat    (CHANNEL *cp, int ac, char *av[]);
+static void NCtakethis(CHANNEL *cp, int ac, char *av[]);
+static void NCxbatch  (CHANNEL *cp, int ac, char *av[]);
 
 /* Handlers for unimplemented commands.  We need two handlers so that we can
    return the right status code; reader commands that are required by the
    standard must return a 401 response code rather than a 500 error. */
-static void NC_reader(CHANNEL *cp);
-static void NC_unimp(CHANNEL *cp);
+static void NC_reader (CHANNEL *cp, int ac, char *av[]);
+static void NC_unimp  (CHANNEL *cp, int ac, char *av[]);
 
 /* Supporting functions. */
 static void NCwritedone(CHANNEL *cp);
 
 /* Set up the dispatch table for all of the commands. */
 #define NC_any -1
-#define COMMAND(name, func, min, max, help) { name, func, sizeof(name) - 1, min, max, help }
-#define COMMAND_READER(name) { name, NC_reader, sizeof(name) - 1, 1, NC_any, NULL }
-#define COMMAND_UNIMP(name) { name, NC_unimp, sizeof(name) - 1, 1, NC_any, NULL }
+#define COMMAND(name, func, min, max, help) { name, func, min, max, help }
+#define COMMAND_READER(name) { name, NC_reader, 1, NC_any, NULL }
+#define COMMAND_UNIMP(name)  { name, NC_unimp,  1, NC_any, NULL }
 static NCDISPATCH NCcommands[] = {
     COMMAND("AUTHINFO",  NCauthinfo,   3,  3,
             "USER name|PASS password"),
@@ -304,31 +303,28 @@ NCwritedone(CHANNEL *cp)
 **  The HEAD command.
 */
 static void
-NChead(CHANNEL *cp)
+NChead(CHANNEL *cp, int ac, char *av[])
 {
-    char	        *p;
     TOKEN		token;
     ARTHANDLE		*art;
     char                *buff = NULL;
 
-    /* Snip off the message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("HEAD"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
 
     /* No argument given. */
-    if (*p == '\0') {
+    if (ac == 1) {
         xasprintf(&buff, "%d Not in a newsgroup", NNTP_FAIL_NO_GROUP);
         NCwritereply(cp, buff);
         free(buff);
         return;
     }
 
-    if (!ARTidok(p)) {
+    if (!ARTidok(av[1])) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
-        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
 	return;
     }
 
@@ -343,7 +339,7 @@ NChead(CHANNEL *cp)
     }
 
     /* Get the article token and retrieve it. */
-    if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
+    if (!HISlookup(History, av[1], NULL, NULL, NULL, &token)) {
         xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
@@ -357,7 +353,7 @@ NChead(CHANNEL *cp)
     }
 
     /* Write it. */
-    xasprintf(&buff, "%d 0 %s%s", NNTP_OK_HEAD, p, NCterm);
+    xasprintf(&buff, "%d 0 %s%s", NNTP_OK_HEAD, av[1], NCterm);
     WCHANappend(cp, buff, strlen(buff));
     WCHANappend(cp, art->data, art->len);
 
@@ -372,23 +368,28 @@ NChead(CHANNEL *cp)
 **  The STAT command.
 */
 static void
-NCstat(CHANNEL *cp)
+NCstat(CHANNEL *cp, int ac, char *av[])
 {
-    char	        *p;
     TOKEN		token;
     ARTHANDLE		*art;
     char		*buff = NULL;
 
-    /* Snip off the message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("STAT"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
 
-    if (!ARTidok(p)) {
+    /* No argument given. */
+    if (ac == 1) {
+        xasprintf(&buff, "%d Not in a newsgroup", NNTP_FAIL_NO_GROUP);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
+
+    if (!ARTidok(av[1])) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
-        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
 	return;
     }
 
@@ -404,7 +405,7 @@ NCstat(CHANNEL *cp)
 
     /* Get the article filenames; open the first file (to make sure
      * the article is still here). */
-    if (!HISlookup(History, p, NULL, NULL, NULL, &token)) {
+    if (!HISlookup(History, av[1], NULL, NULL, NULL, &token)) {
         xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
@@ -419,35 +420,44 @@ NCstat(CHANNEL *cp)
     SMfreearticle(art);
 
     /* Write the message. */
-    xasprintf(&buff, "%d 0 %s", NNTP_OK_STAT, p);
+    xasprintf(&buff, "%d 0 %s", NNTP_OK_STAT, av[1]);
     NCwritereply(cp, buff);
     free(buff);
 }
 
 
 /*
-**  The "authinfo" command.  Actually, we come in here whenever the
+**  The AUTHINFO command.  Actually, we come in here whenever the
 **  channel is in CSgetauth state and we just got a command.
 */
 static void
-NCauthinfo(CHANNEL *cp)
+NCauthinfo(CHANNEL *cp, int ac, char *av[])
 {
-    static char		AUTHINFO[] = "authinfo ";
-    static char		PASS[] = "pass ";
-    static char		USER[] = "user ";
-    char		*p;
+    char buff[SMBUF];
 
-    p = cp->In.data + cp->Start;
     cp->Start = cp->Next;
 
+    /* No command given. */
+    if (ac == 0) {
+        if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
+            cp->State = CSwritegoodbye;
+            snprintf(buff, sizeof(buff), "%d Too many unrecognized commands",
+                     NNTP_FAIL_TERMINATING);
+            NCwritereply(cp, buff);
+            return;
+        }
+        NCwritereply(cp, NCbadcommand);
+        return;
+    }
+
     /* Allow the poor sucker to quit. */
-    if (strcasecmp(p, "quit") == 0) {
-	NCquit(cp);
+    if (strcasecmp(av[0], "QUIT") == 0) {
+	NCquit(cp, ac, av);
 	return;
     }
 
-    /* Otherwise, make sure we're only getting "authinfo" commands. */
-    if (strncasecmp(p, AUTHINFO, strlen(AUTHINFO)) != 0) {
+    /* Otherwise, make sure we're only getting AUTHINFO commands. */
+    if (strcasecmp(av[0], "AUTHINFO") != 0) {
         NCwritereply(cp, cp->CanAuthenticate ? NNTP_AUTH_NEEDED : NNTP_ACCESS);
 	return;
     } else if (!cp->CanAuthenticate) {
@@ -456,26 +466,21 @@ NCauthinfo(CHANNEL *cp)
         return;
     }
 
-    for (p += strlen(AUTHINFO); ISWHITE(*p); p++)
-	continue;
-
-    /* Ignore "authinfo user" commands, since we only care about the
+    /* Ignore AUTHINFO USER commands, since we only care about the
      * password. */
-    if (strncasecmp(p, USER, strlen(USER)) == 0) {
+    if (ac > 1 && strcasecmp(av[1], "USER") == 0) {
 	NCwritereply(cp, NNTP_AUTH_NEXT);
 	return;
     }
 
-    /* Now make sure we're getting only "authinfo pass" commands. */
-    if (strncasecmp(p, PASS, strlen(PASS)) != 0) {
+    /* Now make sure we're getting only AUTHINFO PASS commands. */
+    if (ac < 3 || strcasecmp(av[1], "PASS") != 0) {
 	NCwritereply(cp, NNTP_BAD_SUBCMD);
 	return;
     }
-    for (p += strlen(PASS); ISWHITE(*p); p++)
-	continue;
 
     /* Got the password -- is it okay? */
-    if (!RCauthorized(cp, p)) {
+    if (!RCauthorized(cp, av[2])) {
 	NCwritereply(cp, NNTP_AUTH_BAD);
     } else {
 	cp->State = CSgetcmd;
@@ -491,7 +496,7 @@ NCauthinfo(CHANNEL *cp)
 **  with readerswhenstopped set to false.
 */
 static void
-NChelp(CHANNEL *cp)
+NChelp(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 {
     static char		LINE1[] = "For more information, contact \"";
     static char		LINE2[] = "\" at this machine.";
@@ -506,7 +511,7 @@ NChelp(CHANNEL *cp)
             if ((!StreamingOff && cp->Streaming) ||
                 (dp->Function != NCcheck && dp->Function != NCtakethis)) {
                 WCHANappend(cp, "  ", 2);
-                WCHANappend(cp, dp->Name, dp->Size);
+                WCHANappend(cp, dp->Name, strlen(dp->Name));
                 if (dp->Help != NULL) {
                     WCHANappend(cp, " ", 1);
                     WCHANappend(cp, dp->Help, strlen(dp->Help));
@@ -528,9 +533,8 @@ NChelp(CHANNEL *cp)
 **  article or not.  Set the state appropriately.
 */
 static void
-NCihave(CHANNEL *cp)
+NCihave(CHANNEL *cp, int ac UNUSED, char *av[])
 {
-    char	*p;
     char        *buff = NULL;
 #if defined(DO_PERL) || defined(DO_PYTHON)
     char	*filterrc;
@@ -538,14 +542,12 @@ NCihave(CHANNEL *cp)
 #endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
     cp->Ihave++;
-    /* Snip off the message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("ihave"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
 
-    if (!ARTidok(p)) {
+    if (!ARTidok(av[1])) {
         NCwritereply(cp, NNTP_HAVEIT_BADID);
-        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
+        syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
 	return;
     }
 
@@ -560,7 +562,7 @@ NCihave(CHANNEL *cp)
         return;
     }
 
-    if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
+    if ((innconf->refusecybercancels) && (strncmp(av[1], "<cancel.", 8) == 0)) {
 	cp->Refused++;
 	cp->Ihave_Cybercan++;
 	NCwritereply(cp, NNTP_HAVEIT);
@@ -568,13 +570,14 @@ NCihave(CHANNEL *cp)
     }
 
 #if defined(DO_PERL)
-    /*  Invoke a perl message filter on the message ID. */
-    filterrc = PLmidfilter(p);
+    /* Invoke a Perl message filter on the message-ID. */
+    filterrc = PLmidfilter(av[1]);
     if (filterrc) {
         cp->Refused++;
-        msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+        msglen = strlen(av[1]) + 5; /* 3 digits + space + id + null. */
         if (cp->Sendid.size < msglen) {
-            if (cp->Sendid.size > 0) free(cp->Sendid.data);
+            if (cp->Sendid.size > 0)
+                free(cp->Sendid.data);
             if (msglen > MAXHEADERSIZE)
                 cp->Sendid.size = msglen;
             else
@@ -591,15 +594,15 @@ NCihave(CHANNEL *cp)
 #endif
 
 #if defined(DO_PYTHON)
-    /*  invoke a Python message filter on the message id */
-    msglen = strlen(p);
+    /* Invoke a Python message filter on the message-ID. */
+    msglen = strlen(av[1]);
     TMRstart(TMR_PYTHON);
-    filterrc = PYmidfilter(p, msglen);
+    filterrc = PYmidfilter(av[1], msglen);
     TMRstop(TMR_PYTHON);
     if (filterrc) {
-	cp->Refused++;
-	msglen += 5; /* 3 digits + space + id + null */
-	if (cp->Sendid.size < msglen) {
+        cp->Refused++;
+        msglen += 5; /* 3 digits + space + id + null. */
+        if (cp->Sendid.size < msglen) {
 	    if (cp->Sendid.size > 0)
 		free(cp->Sendid.data);
 	    if (msglen > MAXHEADERSIZE)
@@ -617,12 +620,12 @@ NCihave(CHANNEL *cp)
     }
 #endif
 
-    if (HIScheck(History, p) || cp->Ignore) {
+    if (HIScheck(History, av[1]) || cp->Ignore) {
 	cp->Refused++;
 	cp->Ihave_Duplicate++;
 	NCwritereply(cp, NNTP_HAVEIT);
     }
-    else if (WIPinprogress(p, cp, false)) {
+    else if (WIPinprogress(av[1], cp, false)) {
 	cp->Ihave_Deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
@@ -645,17 +648,11 @@ NCihave(CHANNEL *cp)
 }
 
 /*
-** The "xbatch" command. Set the state appropriately.
+** The XBATCH command.  Set the state appropriately.
 */
-
 static void
-NCxbatch(CHANNEL *cp)
+NCxbatch(CHANNEL *cp, int ac UNUSED, char *av[])
 {
-    char	*p;
-
-    /* Snip off the batch size */
-    for (p = cp->In.data + cp->Start + strlen("xbatch"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
 
     if (cp->XBatchSize) {
@@ -663,7 +660,7 @@ NCxbatch(CHANNEL *cp)
 	       cp->XBatchSize);
     }
 
-    cp->XBatchSize = atoi(p);
+    cp->XBatchSize = atoi(av[1]);
     if (Tracing || cp->Tracing)
         syslog(L_TRACE, "%s will read batch of size %d",
 	       CHANname(cp), cp->XBatchSize);
@@ -675,86 +672,76 @@ NCxbatch(CHANNEL *cp)
 	return;
     }
 
-    /* we prefer not to touch the buffer, NCreader() does enough magic
-     * with it
-     */
+    /* We prefer not to touch the buffer; NCreader() does enough magic
+     * with it. */
     cp->State = CSgetxbatch;
     NCwritereply(cp, NNTP_CONT_XBATCH_STR);
 }
 
 /*
-**  The "list" command.  Send the active file.
+**  The LIST command.  Send the required file.
 */
 static void
-NClist(CHANNEL *cp)
+NClist(CHANNEL *cp, int ac, char *av[])
 {
-    char *p, *q, *trash, *end, *path;
+    char *p, *q, *end, *path;
 
-    for (p = cp->In.data + cp->Start + strlen("list"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
+
     if (cp->Nolist) {
 	NCwritereply(cp, NCbadcommand);
 	return;
     }
-    if (strcasecmp(p, "newsgroups") == 0) {
+
+    /* ACTIVE when no argument given. */
+    if (ac == 1 || (strcasecmp(av[1], "ACTIVE") == 0)) {
+        p = ICDreadactive(&end);
+    } else if (strcasecmp(av[1], "NEWSGROUPS") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
-	trash = p = ReadInFile(path, NULL);
+	p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;
 	}
 	end = p + strlen(p);
-    }
-    else if (strcasecmp(p, "active.times") == 0) {
+    } else if (strcasecmp(av[1], "ACTIVE.TIMES") == 0) {
         path = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
-	trash = p = ReadInFile(path, NULL);
+	p = ReadInFile(path, NULL);
         free(path);
 	if (p == NULL) {
 	    NCwritereply(cp, NCdot);
 	    return;
 	}
 	end = p + strlen(p);
-    }
-    else if (*p == '\0' || (strcasecmp(p, "active") == 0)) {
-	p = ICDreadactive(&end);
-	trash = NULL;
-    }
-    else {
+    } else {
 	NCwritereply(cp, NCbadsubcommand);
 	return;
     }
 
-    /* Loop over all lines, sending the text and \r\n. */
-    WCHANappend(cp, NNTP_LIST_FOLLOWS,strlen(NNTP_LIST_FOLLOWS));
+    /* Loop over all lines, sending the text and "\r\n". */
+    WCHANappend(cp, NNTP_LIST_FOLLOWS, strlen(NNTP_LIST_FOLLOWS));
     WCHANappend(cp, NCterm, strlen(NCterm)) ;
     for (; p < end && (q = strchr(p, '\n')) != NULL; p = q + 1) {
 	WCHANappend(cp, p, q - p);
 	WCHANappend(cp, NCterm, strlen(NCterm));
     }
     NCwritereply(cp, NCdot);
-    if (trash)
-	free(trash);
 }
 
 
 /*
-**  The "mode" command.  Hand off the channel.
+**  The MODE command.  Hand off the channel.
 */
 static void
-NCmode(CHANNEL *cp)
+NCmode(CHANNEL *cp, int ac, char *av[])
 {
-    char		*p;
-    HANDOFF		h;
+    HANDOFF h;
 
-    /* Skip the first word, get the argument. */
-    for (p = cp->In.data + cp->Start + strlen("mode"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
 
-    if (strcasecmp(p, "reader") == 0 && !innconf->noreader) {
-        /* MODE READER */
+    if (ac > 1 && strcasecmp(av[1], "READER") == 0 && !innconf->noreader) {
+        /* MODE READER. */
         if (!cp->CanAuthenticate) {
             /* AUTHINFO has already been successfully used. */
             NCwritereply(cp, NNTP_ACCESS);
@@ -771,24 +758,24 @@ NCmode(CHANNEL *cp)
             /* We will hand off the channel to nnrpd. */
             h = HOnnrpd;
         }
-    } else if (strcasecmp(p, "stream") == 0 &&
-             (!StreamingOff && cp->Streaming)) {
-        /* MODE STREAM */
+    } else if (ac > 1 && strcasecmp(av[1], "STREAM") == 0 &&
+               (!StreamingOff && cp->Streaming)) {
+        /* MODE STREAM. */
 	char buff[16];
 
 	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM);
 	NCwritereply(cp, buff);
-	syslog(L_NOTICE, "%s NCmode \"mode stream\" received",
-		CHANname(cp));
+	syslog(L_NOTICE, "%s NCmode \"MODE STREAM\" received",
+               CHANname(cp));
         return;
-    } else if (strcasecmp(p, "cancel") == 0 && cp->privileged) {
+    } else if (ac > 1 && strcasecmp(av[1], "CANCEL") == 0 && cp->privileged) {
         /* MODE CANCEL */
         char buff[16];
 
         cp->State = CScancel;
         snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_MODE_CANCEL);
         NCwritereply(cp, buff);
-        syslog(L_NOTICE, "%s NCmode \"mode cancel\" received",
+        syslog(L_NOTICE, "%s NCmode \"MODE CANCEL\" received",
                 CHANname(cp));
         return;
     } else {
@@ -806,12 +793,14 @@ NCmode(CHANNEL *cp)
 
 
 /*
-**  The "quit" command.  Acknowledge, and set the state to closing down.
+**  The QUIT command.  Acknowledge, and set the state to closing down.
 */
 static void
-NCquit(CHANNEL *cp)
+NCquit(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 {
     char buff[SMBUF];
+
+    cp->Start = cp->Next;
 
     snprintf(buff, sizeof(buff), "%d Bye!", NNTP_OK_QUIT);
 
@@ -826,11 +815,12 @@ NCquit(CHANNEL *cp)
 **  available.
 */
 static void
-NC_reader(CHANNEL *cp)
+NC_reader(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 {
     char buff[SMBUF];
 
     cp->Start = cp->Next;
+
     if ((innconf->noreader)
      || (NNRPReason != NULL && !innconf->readerswhenstopped))
         snprintf(buff, sizeof(buff), "%d Permission denied\r\n",
@@ -846,18 +836,14 @@ NC_reader(CHANNEL *cp)
 **  The catch-all for unimplemented commands.
 */
 static void
-NC_unimp(CHANNEL *cp)
+NC_unimp(CHANNEL *cp, int ac UNUSED, char *av[])
 {
-    char		*p, *q;
-    char		buff[SMBUF];
+    char buff[SMBUF];
 
-    /* Nip off the first word. */
-    for (p = q = cp->In.data + cp->Start; *p && !ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
-    *p = '\0';
-    snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"help\"",
-             NNTP_ERR_COMMAND, MaxLength(q, q));
+
+    snprintf(buff, sizeof(buff), "%d \"%s\" not implemented; try \"HELP\"",
+             NNTP_ERR_COMMAND, MaxLength(av[0], av[0]));
     NCwritereply(cp, buff);
 }
 
@@ -988,6 +974,12 @@ NCproc(CHANNEL *cp)
       p = q;
       ac = Argify(p, &av);
 
+      /* Ignore empty lines. */
+      if (ac == 0) {
+        cp->Start = cp->Next;
+        break;
+      }
+
       if (Tracing || cp->Tracing)
 	syslog(L_TRACE, "%s < %s", CHANname(cp), q);
 
@@ -1002,13 +994,10 @@ NCproc(CHANNEL *cp)
        * no recognized command has been sent. */
       validcommandtoolong = false;
       if (i - cp->Start > NNTP_MAXLEN_COMMAND) {
-        for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
+        for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
           if ((dp->Function != NC_unimp) &&
-              (strncasecmp(p, dp->Name, dp->Size) == 0)) {
-            if (p[dp->Size] == ' ') {
-                validcommandtoolong = true;
-                break;
-            }
+              (strcasecmp(av[0], dp->Name) == 0)) {
+              validcommandtoolong = true;
           }
         }
         snprintf(buff, sizeof(buff), "%d Line too long",
@@ -1021,19 +1010,23 @@ NCproc(CHANNEL *cp)
         break;
       }
       if (cp->State == CSgetauth) {
-	if (strncasecmp(q, "MODE", 4) == 0)
-	  NCmode(cp);
+	if (strcasecmp(av[0], "MODE") == 0)
+          /* Because of that call, ac > 1 must be checked in NCmode.
+           * Will be removed when that special case for CSgetauth
+           * has been changed to be in the channel instead of a
+           * channel state.  FIXME */
+	  NCmode(cp, ac, av);
 	else
-	  NCauthinfo(cp);
+	  NCauthinfo(cp, ac, av);
 	break;
       } else if (cp->State == CScancel) {
-	NCcancel(cp);
+	NCcancel(cp, ac, av);
 	break;
       }
 
       /* Loop through the command table. */
-      for (p = q, dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
-	if (strncasecmp(p, dp->Name, dp->Size) == 0) {
+      for (dp = NCcommands; dp < ARRAY_END(NCcommands); dp++) {
+	if (strcasecmp(av[0], dp->Name) == 0) {
 	  /* Ignore the streaming commands if necessary. */
 	  if (!StreamingOff || cp->Streaming ||
 	    (dp->Function != NCcheck && dp->Function != NCtakethis)) {
@@ -1094,7 +1087,7 @@ NCproc(CHANNEL *cp)
           break;
       }
 
-      (*dp->Function)(cp);
+      (*dp->Function)(cp, ac, av);
       cp->BadCommands = 0;
 
       break;
@@ -1489,9 +1482,8 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
 **  article or not.  Stay in command state.
 */
 static void
-NCcheck(CHANNEL *cp)
+NCcheck(CHANNEL *cp, int ac UNUSED, char *av[])
 {
-    char		*p;
     char                *buff = NULL;
     size_t		idlen, msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
@@ -1499,33 +1491,33 @@ NCcheck(CHANNEL *cp)
 #endif /* DO_PERL || DO_PYTHON */
 
     cp->Check++;
-    /* Snip off the message-ID. */
-    for (p = cp->In.data + cp->Start; *p && !ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
-    for ( ; ISWHITE(*p); p++)
-	continue;
-    idlen = strlen(p);
-    msglen = idlen + 5; /* 3 digits + space + id + null */
+
+    idlen = strlen(av[1]);
+    msglen = idlen + 5; /* 3 digits + space + id + null. */
     if (cp->Sendid.size < msglen) {
-	if (cp->Sendid.size > 0) free(cp->Sendid.data);
-	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
-	else cp->Sendid.size = MAXHEADERSIZE;
-	cp->Sendid.data = xmalloc(cp->Sendid.size);
+        if (cp->Sendid.size > 0)
+            free(cp->Sendid.data);
+        if (msglen > MAXHEADERSIZE)
+            cp->Sendid.size = msglen;
+        else
+            cp->Sendid.size = MAXHEADERSIZE;
+        cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
-    if (!ARTidok(p)) {
+    if (!ARTidok(av[1])) {
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, p);
+                 NNTP_FAIL_CHECK_REFUSE, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
-	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
+	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
 	return;
     }
 
-    if ((innconf->refusecybercancels) && (strncmp(p, "<cancel.", 8) == 0)) {
+    if ((innconf->refusecybercancels) && (strncmp(av[1], "<cancel.", 8) == 0)) {
 	cp->Refused++;
 	cp->Check_cybercan++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, p);
+                 NNTP_FAIL_CHECK_REFUSE, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1542,109 +1534,108 @@ NCcheck(CHANNEL *cp)
     }
 
 #if defined(DO_PERL)
-    /*  Invoke a perl message filter on the message ID. */
-    filterrc = PLmidfilter(p);
+    /* Invoke a Perl message filter on the message-ID. */
+    filterrc = PLmidfilter(av[1]);
     if (filterrc) {
 	cp->Refused++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, p);
+                 NNTP_FAIL_CHECK_REFUSE, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
 #endif /* defined(DO_PERL) */
 
 #if defined(DO_PYTHON)
-    /*  invoke a python message filter on the message id */
-    filterrc = PYmidfilter(p, idlen);
+    /* Invoke a Python message filter on the message-ID. */
+    filterrc = PYmidfilter(av[1], idlen);
     if (filterrc) {
 	cp->Refused++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, p);
+                 NNTP_FAIL_CHECK_REFUSE, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
 #endif /* defined(DO_PYTHON) */
 
-    if (HIScheck(History, p) || cp->Ignore) {
+    if (HIScheck(History, av[1]) || cp->Ignore) {
 	cp->Refused++;
 	cp->Check_got++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, p);
+                 NNTP_FAIL_CHECK_REFUSE, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
-    } else if (WIPinprogress(p, cp, true)) {
+    } else if (WIPinprogress(av[1], cp, true)) {
 	cp->Check_deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
 	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                     NNTP_FAIL_CHECK_REFUSE, p);
+                     NNTP_FAIL_CHECK_REFUSE, av[1]);
 	} else {
 	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                     NNTP_FAIL_CHECK_DEFER, p);
+                     NNTP_FAIL_CHECK_DEFER, av[1]);
 	}
 	NCwritereply(cp, cp->Sendid.data);
     } else {
 	cp->Check_send++;
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_OK_CHECK, p);
+                 NNTP_OK_CHECK, av[1]);
 	NCwritereply(cp, cp->Sendid.data);
     }
-    /* stay in command mode */
+    /* Stay in command mode. */
 }
 
 /*
-**  The "takethis" command.  Article follows.
+**  The TAKETHIS command.  Article follows.
 **  Remember <id> for later ack.
 */
 static void
-NCtakethis(CHANNEL *cp)
+NCtakethis(CHANNEL *cp, int ac UNUSED, char *av[])
 {
-    char	        *p;
     size_t		msglen;
     WIP                 *wp;
 
     cp->Takethis++;
-    /* Snip off the message-ID. */
-    for (p = cp->In.data + cp->Start + strlen("takethis"); ISWHITE(*p); p++)
-	continue;
     cp->Start = cp->Next;
-    for ( ; ISWHITE(*p); p++)
-	continue;
-    if (!ARTidok(p)) {
-	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp), MaxLength(p, p));
+
+    if (!ARTidok(av[1])) {
+	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
     }
-    msglen = strlen(p) + 5; /* 3 digits + space + id + null */
+    msglen = strlen(av[1]) + 5; /* 3 digits + space + id + null. */
     if (cp->Sendid.size < msglen) {
-	if (cp->Sendid.size > 0) free(cp->Sendid.data);
-	if (msglen > MAXHEADERSIZE) cp->Sendid.size = msglen;
-	else cp->Sendid.size = MAXHEADERSIZE;
-	cp->Sendid.data = xmalloc(cp->Sendid.size);
+        if (cp->Sendid.size > 0)
+            free(cp->Sendid.data);
+        if (msglen > MAXHEADERSIZE)
+            cp->Sendid.size = msglen;
+        else
+            cp->Sendid.size = MAXHEADERSIZE;
+        cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
-    /* save ID for later NACK or ACK */
-    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s", NNTP_FAIL_TAKETHIS_REJECT,
-             p);
+    /* Save ID for later NACK or ACK. */
+    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+             NNTP_FAIL_TAKETHIS_REJECT, av[1]);
 
     cp->ArtBeg = Now.tv_sec;
     cp->State = CSgetheader;
     ARTprepare(cp);
-    /* set WIP for benefit of later code in NCreader */
-    if ((wp = WIPbyid(p)) == (WIP *)NULL)
-	wp = WIPnew(p, cp);
+    /* Set WIP for benefit of later code in NCreader. */
+    if ((wp = WIPbyid(av[1])) == (WIP *)NULL)
+	wp = WIPnew(av[1], cp);
     cp->CurrentMessageIDHash = wp->MessageID;
 }
 
 /*
-**  Process a cancel ID from a "mode cancel" channel.
+**  Process a cancel ID from a MODE CANCEL channel.
 */
 static void
-NCcancel(CHANNEL *cp)
+NCcancel(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 {
-    char *av[2] = { NULL, NULL };
+    char *argv[2] = { NULL, NULL };
     const char *res;
 
     ++cp->Received;
-    av[0] = cp->In.data + cp->Start;
+    argv[0] = cp->In.data + cp->Start;
     cp->Start = cp->Next;
-    res = CCcancel(av);
+    res = CCcancel(argv);
     if (res) {
         char buff[SMBUF];
 
