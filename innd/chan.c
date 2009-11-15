@@ -188,6 +188,7 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
     /* Set up the channel's info.  Note that we don't have to initialize
        anything that's already set properly to zero in CHANnull. */
     *cp = CHANnull;
+    cp->av = NULL;
     cp->fd = fd;
     cp->Type = type;
     cp->State = state;
@@ -422,6 +423,13 @@ CHANclose(CHANNEL *cp, const char *name)
         cp->Sendid.left = 0;
         free(cp->Sendid.data);
         cp->Sendid.data = NULL;
+    }
+
+    /* Free the space allocated for NNTP commands. */
+    if (cp->av != NULL) {
+        free(cp->av[0]);
+        free(cp->av);
+        cp->av = NULL;
     }
 }
 
