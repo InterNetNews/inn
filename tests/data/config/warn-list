@@ -1,0 +1,4 @@
+parameter: "\c"
+===
+config/tmp:1: unrecognized escape '\c'
+===

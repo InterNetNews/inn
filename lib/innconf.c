@@ -10,7 +10,7 @@
 **  When adding new inn.conf parameters, make sure to add them in all of the
 **  following places:
 **
-**   * The table in this file.
+**   * The table in this file
 **   * include/inn/innconf.h
 **   * doc/pod/inn.conf.pod (and regenerate doc/man/inn.conf.5)
 **   * Add the default value to samples/inn.conf.in
@@ -43,6 +43,7 @@ struct innconf *innconf = NULL;
 enum type {
     TYPE_BOOLEAN,
     TYPE_NUMBER,
+    TYPE_UNUMBER,
     TYPE_STRING,
     TYPE_LIST
 };
@@ -53,7 +54,8 @@ struct config {
     enum type type;
     struct {
         bool boolean;
-        long integer;
+        long signed_number;
+        unsigned long unsigned_number;
         const char *string;
         const struct vector *list;
     } defaults;
@@ -64,16 +66,18 @@ struct config {
 
 #define K(name)         (#name), offsetof(struct innconf, name)
 
-#define BOOL(def)       TYPE_BOOLEAN, { (def),     0,  NULL,  NULL }
-#define NUMBER(def)     TYPE_NUMBER,  {     0, (def),  NULL,  NULL }
-#define STRING(def)     TYPE_STRING,  {     0,     0, (def),  NULL }
-#define LIST(def)       TYPE_LIST,    {     0,     0,  NULL, (def) }
+#define BOOL(def)       TYPE_BOOLEAN,   { (def),     0,     0,  NULL,  NULL }
+#define NUMBER(def)     TYPE_NUMBER,    {     0, (def),     0,  NULL,  NULL }
+#define UNUMBER(def)    TYPE_UNUMBER,   {     0,     0, (def),  NULL,  NULL }
+#define STRING(def)     TYPE_STRING,    {     0,     0,     0, (def),  NULL }
+#define LIST(def)       TYPE_LIST,      {     0,     0,     0,  NULL, (def) }
 
 /* Accessor macros to get a pointer to a value inside a struct. */
-#define CONF_BOOL(conf, offset)   (bool *)          (void *)((char *) (conf) + (offset))
-#define CONF_LONG(conf, offset)   (long *)          (void *)((char *) (conf) + (offset))
-#define CONF_STRING(conf, offset) (char **)         (void *)((char *) (conf) + (offset))
-#define CONF_LIST(conf, offset)   (struct vector **)(void *)((char *) (conf) + (offset))
+#define CONF_BOOL(conf, offset)     (bool *)          (void *)((char *) (conf) + (offset))
+#define CONF_NUMBER(conf, offset)   (long *)          (void *)((char *) (conf) + (offset))
+#define CONF_UNUMBER(conf, offset)  (unsigned long *) (void *)((char *) (conf) + (offset))
+#define CONF_STRING(conf, offset)   (char **)         (void *)((char *) (conf) + (offset))
+#define CONF_LIST(conf, offset)     (struct vector **)(void *)((char *) (conf) + (offset))
 
 /* Special notes:
 
@@ -106,166 +110,166 @@ struct config {
 */
 
 const struct config config_table[] = {
-    { K(domain),                STRING  (NULL) },
-    { K(enableoverview),        BOOL    (true) },
-    { K(extraoverviewadvertised), LIST  (NULL) },
-    { K(extraoverviewhidden),   LIST    (NULL) },
-    { K(fromhost),              STRING  (NULL) },
-    { K(groupbaseexpiry),       BOOL    (true) },
-    { K(mailcmd),               STRING  (NULL) },
-    { K(maxforks),              NUMBER  (10) },
-    { K(mta),                   STRING  (NULL) },
-    { K(nicekids),              NUMBER  (4) },
-    { K(ovmethod),              STRING  (NULL) },
-    { K(pathhost),              STRING  (NULL) },
-    { K(rlimitnofile),          NUMBER  (-1) },
-    { K(server),                STRING  (NULL) },
-    { K(sourceaddress),         STRING  (NULL) },
-    { K(sourceaddress6),        STRING  (NULL) },
-    { K(timer),                 NUMBER  (0) },
+    { K(domain),                  STRING  (NULL) },
+    { K(enableoverview),          BOOL    (true) },
+    { K(extraoverviewadvertised), LIST    (NULL) },
+    { K(extraoverviewhidden),     LIST    (NULL) },
+    { K(fromhost),                STRING  (NULL) },
+    { K(groupbaseexpiry),         BOOL    (true) },
+    { K(mailcmd),                 STRING  (NULL) },
+    { K(maxforks),                UNUMBER   (10) },
+    { K(mta),                     STRING  (NULL) },
+    { K(nicekids),                NUMBER     (4) },
+    { K(ovmethod),                STRING  (NULL) },
+    { K(pathhost),                STRING  (NULL) },
+    { K(rlimitnofile),            NUMBER    (-1) },
+    { K(server),                  STRING  (NULL) },
+    { K(sourceaddress),           STRING  (NULL) },
+    { K(sourceaddress6),          STRING  (NULL) },
+    { K(timer),                   UNUMBER    (0) },
 
-    { K(runasuser),             STRING  (RUNASUSER) },
-    { K(runasgroup),            STRING  (RUNASGROUP) },
+    { K(runasuser),               STRING  (RUNASUSER) },
+    { K(runasgroup),              STRING  (RUNASGROUP) },
 
-    { K(patharchive),           STRING  (NULL) },
-    { K(patharticles),          STRING  (NULL) },
-    { K(pathbin),               STRING  (NULL) },
-    { K(pathcontrol),           STRING  (NULL) },
-    { K(pathdb),                STRING  (NULL) },
-    { K(pathetc),               STRING  (NULL) },
-    { K(pathfilter),            STRING  (NULL) },
-    { K(pathhttp),              STRING  (NULL) },
-    { K(pathincoming),          STRING  (NULL) },
-    { K(pathlog),               STRING  (NULL) },
-    { K(pathnews),              STRING  (NULL) },
-    { K(pathoutgoing),          STRING  (NULL) },
-    { K(pathoverview),          STRING  (NULL) },
-    { K(pathrun),               STRING  (NULL) },
-    { K(pathspool),             STRING  (NULL) },
-    { K(pathtmp),               STRING  (NULL) },
+    { K(patharchive),             STRING  (NULL) },
+    { K(patharticles),            STRING  (NULL) },
+    { K(pathbin),                 STRING  (NULL) },
+    { K(pathcontrol),             STRING  (NULL) },
+    { K(pathdb),                  STRING  (NULL) },
+    { K(pathetc),                 STRING  (NULL) },
+    { K(pathfilter),              STRING  (NULL) },
+    { K(pathhttp),                STRING  (NULL) },
+    { K(pathincoming),            STRING  (NULL) },
+    { K(pathlog),                 STRING  (NULL) },
+    { K(pathnews),                STRING  (NULL) },
+    { K(pathoutgoing),            STRING  (NULL) },
+    { K(pathoverview),            STRING  (NULL) },
+    { K(pathrun),                 STRING  (NULL) },
+    { K(pathspool),               STRING  (NULL) },
+    { K(pathtmp),                 STRING  (NULL) },
 
     /* The following settings are specific to innd. */
-    { K(artcutoff),             NUMBER  (10) },
-    { K(badiocount),            NUMBER  (5) },
-    { K(bindaddress),           STRING  (NULL) },
-    { K(bindaddress6),          STRING  (NULL) },
-    { K(blockbackoff),          NUMBER  (120) },
-    { K(chaninacttime),         NUMBER  (600) },
-    { K(chanretrytime),         NUMBER  (300) },
-    { K(datamovethreshold),     NUMBER  (8192) },
-    { K(dontrejectfiltered),    BOOL    (false) },
-    { K(hiscachesize),          NUMBER  (256) },
-    { K(icdsynccount),          NUMBER  (10) },
-    { K(ignorenewsgroups),      BOOL    (false) },
-    { K(incominglogfrequency),  NUMBER  (200) },
-    { K(linecountfuzz),         NUMBER  (0) },
-    { K(logartsize),            BOOL    (true) },
-    { K(logcancelcomm),         BOOL    (false) },
-    { K(logipaddr),             BOOL    (true) },
-    { K(logsitename),           BOOL    (true) },
-    { K(logstatus),             BOOL    (false) },
-    { K(maxartsize),            NUMBER  (1000000) },
-    { K(maxconnections),        NUMBER  (50) },
-    { K(mergetogroups),         BOOL    (false) },
-    { K(nntplinklog),           BOOL    (false) },
-    { K(noreader),              BOOL    (false) },
-    { K(pathalias),             STRING  (NULL) },
-    { K(pathcluster),           STRING  (NULL) },
-    { K(pauseretrytime),        NUMBER  (300) },
-    { K(peertimeout),           NUMBER  (3600) },
-    { K(port),                  NUMBER  (119) },
-    { K(readerswhenstopped),    BOOL    (false) },
-    { K(refusecybercancels),    BOOL    (false) },
-    { K(remembertrash),         BOOL    (true) },
-    { K(stathist),              STRING  (NULL) },
-    { K(status),                NUMBER  (0) },
-    { K(verifycancels),         BOOL    (false) },
-    { K(verifygroups),          BOOL    (false) },
-    { K(wanttrash),             BOOL    (false) },
-    { K(wipcheck),              NUMBER  (5) },
-    { K(wipexpire),             NUMBER  (10) },
-    { K(xrefslave),             BOOL    (false) },
+    { K(artcutoff),               UNUMBER   (10) },
+    { K(badiocount),              UNUMBER    (5) },
+    { K(bindaddress),             STRING  (NULL) },
+    { K(bindaddress6),            STRING  (NULL) },
+    { K(blockbackoff),            UNUMBER  (120) },
+    { K(chaninacttime),           UNUMBER  (600) },
+    { K(chanretrytime),           UNUMBER  (300) },
+    { K(datamovethreshold),       UNUMBER (8192) },
+    { K(dontrejectfiltered),      BOOL   (false) },
+    { K(hiscachesize),            UNUMBER  (256) },
+    { K(icdsynccount),            UNUMBER   (10) },
+    { K(ignorenewsgroups),        BOOL   (false) },
+    { K(incominglogfrequency),    UNUMBER  (200) },
+    { K(linecountfuzz),           UNUMBER    (0) },
+    { K(logartsize),              BOOL    (true) },
+    { K(logcancelcomm),           BOOL   (false) },
+    { K(logipaddr),               BOOL    (true) },
+    { K(logsitename),             BOOL    (true) },
+    { K(logstatus),               BOOL   (false) },
+    { K(maxartsize),              UNUMBER (1000000) },
+    { K(maxconnections),          UNUMBER   (50) },
+    { K(mergetogroups),           BOOL   (false) },
+    { K(nntplinklog),             BOOL   (false) },
+    { K(noreader),                BOOL   (false) },
+    { K(pathalias),               STRING  (NULL) },
+    { K(pathcluster),             STRING  (NULL) },
+    { K(pauseretrytime),          UNUMBER  (300) },
+    { K(peertimeout),             UNUMBER (3600) },
+    { K(port),                    UNUMBER  (119) },
+    { K(readerswhenstopped),      BOOL   (false) },
+    { K(refusecybercancels),      BOOL   (false) },
+    { K(remembertrash),           BOOL    (true) },
+    { K(stathist),                STRING  (NULL) },
+    { K(status),                  UNUMBER    (0) },
+    { K(verifycancels),           BOOL   (false) },
+    { K(verifygroups),            BOOL   (false) },
+    { K(wanttrash),               BOOL   (false) },
+    { K(wipcheck),                UNUMBER    (5) },
+    { K(wipexpire),               UNUMBER   (10) },
+    { K(xrefslave),               BOOL   (false) },
 
     /* The following settings are specific to nnrpd. */
-    { K(addnntppostingdate),    BOOL    (true) },
-    { K(addnntppostinghost),    BOOL    (true) },
-    { K(allownewnews),          BOOL    (true) },
-    { K(backoffauth),           BOOL    (false) },
-    { K(backoffdb),             STRING  (NULL) },
-    { K(backoffk),              NUMBER  (1) },
-    { K(backoffpostfast),       NUMBER  (0) },
-    { K(backoffpostslow),       NUMBER  (1) },
-    { K(backofftrigger),        NUMBER  (10000) },
-    { K(checkincludedtext),     BOOL    (false) },
-    { K(clienttimeout),         NUMBER  (1800) },
-    { K(complaints),            STRING  (NULL) },
-    { K(initialtimeout),        NUMBER  (10) },
-    { K(keyartlimit),           NUMBER  (100000) },
-    { K(keylimit),              NUMBER  (512) },
-    { K(keymaxwords),           NUMBER  (250) },
-    { K(keywords),              BOOL    (false) },
-    { K(localmaxartsize),       NUMBER  (1000000) },
-    { K(maxcmdreadsize),        NUMBER  (BUFSIZ) },
-    { K(msgidcachesize),        NUMBER  (16000) },
-    { K(moderatormailer),       STRING  (NULL) },
-    { K(nfsreader),             BOOL    (false) },
-    { K(nfsreaderdelay),        NUMBER  (60) },
-    { K(nicenewnews),           NUMBER  (0) },
-    { K(nicennrpd),             NUMBER  (0) },
-    { K(nnrpdflags),            STRING  ("") },
-    { K(nnrpdauthsender),       BOOL    (false) },
-    { K(nnrpdloadlimit),        NUMBER  (16) },
-    { K(nnrpdoverstats),        BOOL    (false) },
-    { K(organization),          STRING  (NULL) },
-    { K(readertrack),           BOOL    (false) },
-    { K(spoolfirst),            BOOL    (false) },
-    { K(strippostcc),           BOOL    (false) },
+    { K(addnntppostingdate),      BOOL    (true) },
+    { K(addnntppostinghost),      BOOL    (true) },
+    { K(allownewnews),            BOOL    (true) },
+    { K(backoffauth),             BOOL   (false) },
+    { K(backoffdb),               STRING  (NULL) },
+    { K(backoffk),                UNUMBER    (1) },
+    { K(backoffpostfast),         UNUMBER    (0) },
+    { K(backoffpostslow),         UNUMBER    (1) },
+    { K(backofftrigger),          UNUMBER (10000) },
+    { K(checkincludedtext),       BOOL   (false) },
+    { K(clienttimeout),           UNUMBER (1800) },
+    { K(complaints),              STRING  (NULL) },
+    { K(initialtimeout),          UNUMBER   (10) },
+    { K(keyartlimit),             UNUMBER (100000) },
+    { K(keylimit),                UNUMBER  (512) },
+    { K(keymaxwords),             UNUMBER  (250) },
+    { K(keywords),                BOOL   (false) },
+    { K(localmaxartsize),         UNUMBER (1000000) },
+    { K(maxcmdreadsize),          UNUMBER (BUFSIZ) },
+    { K(msgidcachesize),          UNUMBER (16000) },
+    { K(moderatormailer),         STRING  (NULL) },
+    { K(nfsreader),               BOOL   (false) },
+    { K(nfsreaderdelay),          UNUMBER   (60) },
+    { K(nicenewnews),             UNUMBER    (0) },
+    { K(nicennrpd),               UNUMBER    (0) },
+    { K(nnrpdflags),              STRING    ("") },
+    { K(nnrpdauthsender),         BOOL   (false) },
+    { K(nnrpdloadlimit),          UNUMBER   (16) },
+    { K(nnrpdoverstats),          BOOL   (false) },
+    { K(organization),            STRING  (NULL) },
+    { K(readertrack),             BOOL   (false) },
+    { K(spoolfirst),              BOOL   (false) },
+    { K(strippostcc),             BOOL   (false) },
 #ifdef HAVE_SSL
-    { K(tlscafile),             STRING  ("") },
-    { K(tlscapath),             STRING  (NULL) },
-    { K(tlscertfile),           STRING  (NULL) },
-    { K(tlskeyfile),            STRING  (NULL) },
+    { K(tlscafile),               STRING    ("") },
+    { K(tlscapath),               STRING  (NULL) },
+    { K(tlscertfile),             STRING  (NULL) },
+    { K(tlskeyfile),              STRING  (NULL) },
 #endif /* HAVE_SSL */
 
     /* The following settings are used by nnrpd and rnews. */
-    { K(nnrpdposthost),         STRING  (NULL) },
-    { K(nnrpdpostport),         NUMBER  (119) },
+    { K(nnrpdposthost),           STRING  (NULL) },
+    { K(nnrpdpostport),           UNUMBER  (119) },
 
     /* The following settings are specific to the storage subsystem. */
-    { K(articlemmap),           BOOL    (true) },
-    { K(cnfscheckfudgesize),    NUMBER  (0) },
-    { K(immediatecancel),       BOOL    (false) },
-    { K(keepmmappedthreshold),  NUMBER  (1024) },
-    { K(nfswriter),             BOOL    (false) },
-    { K(nnrpdcheckart),         BOOL    (true) },
-    { K(overcachesize),         NUMBER  (64) },
-    { K(ovgrouppat),            STRING  (NULL) },
-    { K(storeonxref),           BOOL    (true) },
-    { K(tradindexedmmap),       BOOL    (true) },
-    { K(useoverchan),           BOOL    (false) },
-    { K(wireformat),            BOOL    (false) },
+    { K(articlemmap),             BOOL    (true) },
+    { K(cnfscheckfudgesize),      UNUMBER    (0) },
+    { K(immediatecancel),         BOOL   (false) },
+    { K(keepmmappedthreshold),    UNUMBER (1024) },
+    { K(nfswriter),               BOOL   (false) },
+    { K(nnrpdcheckart),           BOOL    (true) },
+    { K(overcachesize),           UNUMBER   (64) },
+    { K(ovgrouppat),              STRING  (NULL) },
+    { K(storeonxref),             BOOL    (true) },
+    { K(tradindexedmmap),         BOOL    (true) },
+    { K(useoverchan),             BOOL   (false) },
+    { K(wireformat),              BOOL   (false) },
 
     /* The following settings are specific to the history subsystem. */
-    { K(hismethod),             STRING  (NULL) },
+    { K(hismethod),               STRING  (NULL) },
 
     /* The following settings are specific to rc.news. */
-    { K(docnfsstat),            BOOL    (false) },
-    { K(innflags),              STRING  (NULL) },
-    { K(pgpverify),             BOOL    (false) },
+    { K(docnfsstat),              BOOL   (false) },
+    { K(innflags),                STRING  (NULL) },
+    { K(pgpverify),               BOOL   (false) },
 
     /* The following settings are specific to innwatch. */
-    { K(doinnwatch),            BOOL    (true) },
-    { K(innwatchbatchspace),    NUMBER  (4000) },
-    { K(innwatchlibspace),      NUMBER  (25000) },
-    { K(innwatchloload),        NUMBER  (1000) },
-    { K(innwatchhiload),        NUMBER  (2000) },
-    { K(innwatchpauseload),     NUMBER  (1500) },
-    { K(innwatchsleeptime),     NUMBER  (600) },
-    { K(innwatchspoolnodes),    NUMBER  (200) },
-    { K(innwatchspoolspace),    NUMBER  (25000) },
+    { K(doinnwatch),              BOOL    (true) },
+    { K(innwatchbatchspace),      UNUMBER (4000) },
+    { K(innwatchlibspace),        UNUMBER (25000) },
+    { K(innwatchloload),          UNUMBER (1000) },
+    { K(innwatchhiload),          UNUMBER (2000) },
+    { K(innwatchpauseload),       UNUMBER (1500) },
+    { K(innwatchsleeptime),       UNUMBER  (600) },
+    { K(innwatchspoolnodes),      UNUMBER  (200) },
+    { K(innwatchspoolspace),      UNUMBER (25000) },
 
     /* The following settings are specific to scanlogs. */
-    { K(logcycles),             NUMBER  (3) },
+    { K(logcycles),               UNUMBER    (3) },
 };
 
 
@@ -385,7 +389,8 @@ innconf_parse(struct config_group *group)
 {
     unsigned int i, j;
     bool *bool_ptr;
-    long *long_ptr;
+    long *signed_number_ptr;
+    unsigned long *unsigned_number_ptr;
     const char *char_ptr;
     char **string;
     const struct vector *vector_ptr;
@@ -401,9 +406,14 @@ innconf_parse(struct config_group *group)
                 *bool_ptr = config_table[i].defaults.boolean;
             break;
         case TYPE_NUMBER:
-            long_ptr = CONF_LONG(config, config_table[i].location);
-            if (!config_param_integer(group, config_table[i].name, long_ptr))
-                *long_ptr = config_table[i].defaults.integer;
+            signed_number_ptr = CONF_NUMBER(config, config_table[i].location);
+            if (!config_param_signed_number(group, config_table[i].name, signed_number_ptr))
+                *signed_number_ptr = config_table[i].defaults.signed_number;
+            break;
+        case TYPE_UNUMBER:
+            unsigned_number_ptr = CONF_UNUMBER(config, config_table[i].location);
+            if (!config_param_unsigned_number(group, config_table[i].name, unsigned_number_ptr))
+                *unsigned_number_ptr = config_table[i].defaults.unsigned_number;
             break;
         case TYPE_STRING:
             if (!config_param_string(group, config_table[i].name, &char_ptr))
@@ -447,7 +457,7 @@ static bool
 innconf_validate(struct config_group *group)
 {
     bool okay = true;
-    long threshold;
+    unsigned long threshold;
 
     if (GetFQDN(innconf->domain) == NULL) {
         warn("hostname does not resolve or domain not set in inn.conf");
@@ -471,7 +481,7 @@ innconf_validate(struct config_group *group)
     }
 
     threshold = innconf->datamovethreshold;
-    if (threshold <= 0 || threshold > 1024 * 1024) {
+    if (threshold > 1024 * 1024) {
         config_error_param(group, "datamovethreshold",
                            "maximum value for datamovethreshold is 1MB");
         innconf->datamovethreshold = 1024 * 1024;
@@ -641,11 +651,11 @@ print_boolean(FILE *file, const char *key, bool value,
 
 
 /*
-**  Print a single integer value with appropriate quoting.
+**  Print a single signed integer value with appropriate quoting.
 */
 static void
-print_number(FILE *file, const char *key, long value,
-             enum innconf_quoting quoting)
+print_signed_number(FILE *file, const char *key, long value,
+                    enum innconf_quoting quoting)
 {
     char *upper, *p;
 
@@ -666,6 +676,36 @@ print_number(FILE *file, const char *key, long value,
     case INNCONF_QUOTE_TCL:
         fprintf(file, "set inn_%s %ld\n", key, value);
         break;
+    }
+}
+
+
+/*
+**  Print a single unsigned integer value with appropriate quoting.
+*/
+static void
+print_unsigned_number(FILE *file, const char *key, unsigned long value,
+                      enum innconf_quoting quoting)
+{
+    char *upper, *p;
+
+    switch (quoting) {
+        case INNCONF_QUOTE_NONE:
+            fprintf(file, "%lu\n", value);
+            break;
+        case INNCONF_QUOTE_SHELL:
+            upper = xstrdup(key);
+            for (p = upper; *p != '\0'; p++)
+                *p = toupper(*p);
+            fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
+            free(upper);
+            break;
+        case INNCONF_QUOTE_PERL:
+            fprintf(file, "$%s = %lu;\n", key, value);
+            break;
+        case INNCONF_QUOTE_TCL:
+            fprintf(file, "set inn_%s %lu\n", key, value);
+            break;
     }
 }
 
@@ -828,7 +868,8 @@ static void
 print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
 {
     bool bool_val;
-    long long_val;
+    long signed_number_val;
+    unsigned long unsigned_number_val;
     const char *string_val;
     const struct vector *list_val;
 
@@ -838,8 +879,12 @@ print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
         print_boolean(file, config_table[i].name, bool_val, quoting);
         break;
     case TYPE_NUMBER:
-        long_val = *CONF_LONG(innconf, config_table[i].location);
-        print_number(file, config_table[i].name, long_val, quoting);
+        signed_number_val = *CONF_NUMBER(innconf, config_table[i].location);
+        print_signed_number(file, config_table[i].name, signed_number_val, quoting);
+        break;
+    case TYPE_UNUMBER:
+        unsigned_number_val = *CONF_UNUMBER(innconf, config_table[i].location);
+        print_unsigned_number(file, config_table[i].name, unsigned_number_val, quoting);
         break;
     case TYPE_STRING:
         string_val = *CONF_STRING(innconf, config_table[i].location);
@@ -899,7 +944,8 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
 {
     unsigned int i, j;
     bool bool1, bool2;
-    long long1, long2;
+    long signed_number1, signed_number2;
+    unsigned long unsigned_number1, unsigned_number2;
     const char *string1, *string2;
     const struct vector *list1, *list2;
     bool okay = true;
@@ -916,11 +962,20 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
             }
             break;
         case TYPE_NUMBER:
-            long1 = *CONF_LONG(conf1, config_table[i].location);
-            long2 = *CONF_LONG(conf2, config_table[i].location);
-            if (long1 != long2) {
+            signed_number1 = *CONF_NUMBER(conf1, config_table[i].location);
+            signed_number2 = *CONF_NUMBER(conf2, config_table[i].location);
+            if (signed_number1 != signed_number2) {
                 warn("integer variable %s differs: %ld != %ld",
-                     config_table[i].name, long1, long2);
+                     config_table[i].name, signed_number1, signed_number2);
+                okay = false;
+            }
+            break;
+        case TYPE_UNUMBER:
+            unsigned_number1 = *CONF_UNUMBER(conf1, config_table[i].location);
+            unsigned_number2 = *CONF_UNUMBER(conf2, config_table[i].location);
+            if (unsigned_number1 != unsigned_number2) {
+                warn("integer variable %s differs: %lu  != %lu",
+                     config_table[i].name, unsigned_number1, unsigned_number2);
                 okay = false;
             }
             break;

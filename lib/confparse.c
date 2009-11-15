@@ -114,7 +114,8 @@ struct config_file {
 enum value_type {
     VALUE_UNKNOWN,
     VALUE_BOOL,
-    VALUE_INTEGER,
+    VALUE_NUMBER,
+    VALUE_UNUMBER,
     VALUE_REAL,
     VALUE_STRING,
     VALUE_LIST,
@@ -134,7 +135,8 @@ struct config_parameter {
     enum value_type type;
     union {
         bool boolean;
-        long integer;
+        long signed_number;
+        unsigned long unsigned_number;
         double real;
         char *string;
         struct vector *list;
@@ -181,7 +183,8 @@ static bool group_parameter_get(struct config_group *group, const char *key,
 /* Parameter type conversion functions.  All take the parameter, the file, and
    a pointer to where the result can be placed. */
 static bool convert_boolean(struct config_parameter *, const char *, void *);
-static bool convert_integer(struct config_parameter *, const char *, void *);
+static bool convert_signed_number(struct config_parameter *, const char *, void *);
+static bool convert_unsigned_number(struct config_parameter *, const char *, void *);
 static bool convert_real(struct config_parameter *, const char *, void *);
 static bool convert_string(struct config_parameter *, const char *, void *);
 static bool convert_list(struct config_parameter *, const char *, void *);
@@ -1305,14 +1308,14 @@ convert_boolean(struct config_parameter *param, const char *file,
 **  successful and false otherwise.
 */
 static bool
-convert_integer(struct config_parameter *param, const char *file,
-                void *result)
+convert_signed_number(struct config_parameter *param, const char *file,
+                      void *result)
 {
     long *value = result;
     char *p;
 
-    if (param->type == VALUE_INTEGER) {
-        *value = param->value.integer;
+    if (param->type == VALUE_NUMBER) {
+        *value = param->value.signed_number;
         return true;
     } else if (param->type != VALUE_UNKNOWN) {
         warn("%s:%u: %s is not an integer", file, param->line, param->key);
@@ -1334,14 +1337,62 @@ convert_integer(struct config_parameter *param, const char *file,
 
     /* Do the actual conversion with strtol. */
     errno = 0;
-    param->value.integer = strtol(param->raw_value, NULL, 10);
+    param->value.signed_number = strtol(param->raw_value, NULL, 10);
     if (errno != 0) {
         warn("%s:%u: %s doesn't convert to an integer", file, param->line,
              param->key);
         return false;
     }
-    *value = param->value.integer;
-    param->type = VALUE_INTEGER;
+    *value = param->value.signed_number;
+    param->type = VALUE_NUMBER;
+    return true;
+}
+
+
+/*
+**  Convert a given parameter value to an unsigned integer, returning true
+**  if successful and false otherwise.
+*/
+static bool
+convert_unsigned_number(struct config_parameter *param, const char *file,
+                        void *result)
+{
+    unsigned long *value = result;
+    char *p;
+
+    if (param->type == VALUE_UNUMBER) {
+        *value = param->value.unsigned_number;
+        return true;
+    } else if (param->type != VALUE_UNKNOWN) {
+        warn("%s:%u: %s is not an integer", file, param->line, param->key);
+        return false;
+    }
+
+    /* Do a syntax check even though strtoul would do some of this for us,
+     * since otherwise some syntax errors may go silently undetected. */
+    p = param->raw_value;
+    if (*p == '-') {
+        warn("%s:%u: %s is not a positive integer", file, param->line, param->key);
+        return false;
+    }
+    for (; *p != '\0'; p++)
+        if (*p < '0' || *p > '9')
+            break;
+    if (*p != '\0') {
+        warn("%s:%u: %s is not an integer", file, param->line, param->key);
+        return false;
+    }
+
+    /* Do the actual conversion with strtoul. */
+    errno = 0;
+    param->value.unsigned_number = strtoul(param->raw_value, NULL, 10);
+    if (errno != 0) {
+        warn("%s:%u: %s doesn't convert to a positive integer", file, param->line,
+             param->key);
+        return false;
+    }
+    *value = param->value.unsigned_number;
+    param->type = VALUE_UNUMBER;
     return true;
 }
 
@@ -1530,10 +1581,17 @@ config_param_boolean(struct config_group *group, const char *key,
 }
 
 bool
-config_param_integer(struct config_group *group, const char *key,
-                     long *result)
+config_param_signed_number(struct config_group *group, const char *key,
+                           long *result)
 {
-    return group_parameter_get(group, key, result, convert_integer);
+    return group_parameter_get(group, key, result, convert_signed_number);
+}
+
+bool
+config_param_unsigned_number(struct config_group *group, const char *key,
+                             unsigned long *result)
+{
+    return group_parameter_get(group, key, result, convert_unsigned_number);
 }
 
 bool

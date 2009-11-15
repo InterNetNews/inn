@@ -158,9 +158,9 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     for (i = 0; (pid = fork()) < 0; i++) {
-	if (i == innconf->maxforks) {
-	    Reply("%d Can't fork %s\r\n", NNTP_FAIL_ACTION,
-		strerror(errno));
+        if (i == (long) innconf->maxforks) {
+            Reply("%d Can't fork %s\r\n", NNTP_FAIL_ACTION,
+                  strerror(errno));
 	    syslog(L_FATAL, "can't fork %s %m", av[0]);
 	    return -1;
 	}
@@ -176,8 +176,8 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	/* stderr goes down the pipe. */
 	if (pan[PIPE_WRITE] != STDERR_FILENO) {
 	    if ((i = dup2(pan[PIPE_WRITE], STDERR_FILENO)) != STDERR_FILENO) {
-		syslog(L_FATAL, "can't dup2 %d to %d got %d %m",
-		    pan[PIPE_WRITE], STDERR_FILENO, i);
+                syslog(L_FATAL, "can't dup2 %d to %d got %d %m",
+                       pan[PIPE_WRITE], STDERR_FILENO, i);
 		_exit(1);
 	    }
 	    close(pan[PIPE_WRITE]);

@@ -114,7 +114,7 @@ static NCDISPATCH NCcommands[] = {
 #undef COMMAND
 
 /* Number of open connections. */
-static int NCcount;
+static unsigned long NCcount;
 
 static char		*NCquietlist[] = { INND_QUIET_BADLIST };
 static const char	NCterm[] = "\r\n";
@@ -737,7 +737,8 @@ NCxbatch(CHANNEL *cp, int ac UNUSED, char *av[])
         syslog(L_TRACE, "%s will read batch of size %d",
 	       CHANname(cp), cp->XBatchSize);
 
-    if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) && (innconf->maxartsize < cp->XBatchSize))) {
+    if (cp->XBatchSize <= 0 || ((innconf->maxartsize != 0) &&
+                                (innconf->maxartsize < (unsigned long) cp->XBatchSize))) {
         syslog(L_NOTICE, "%s got bad xbatch size %d",
 	       CHANname(cp), cp->XBatchSize);
 	NCwritereply(cp, NNTP_XBATCH_BADSIZE);
@@ -1296,8 +1297,8 @@ NCproc(CHANNEL *cp)
       TMRstop(TMR_ARTPARSE);
       if (cp->State == CSgetbody || cp->State == CSgetheader ||
 	      cp->State == CSeatarticle) {
-        if (cp->Next - cp->Start > (unsigned long) innconf->datamovethreshold
-            || (innconf->maxartsize > 0 && cp->Size > innconf->maxartsize)) {
+        if (cp->Next - cp->Start > innconf->datamovethreshold
+            || (innconf->maxartsize != 0 && cp->Size > innconf->maxartsize)) {
 	  /* avoid buffer extention for ever */
 	  movedata = true;
 	} else {
@@ -1656,7 +1657,7 @@ NCcreate(int fd, bool MustAuthorize, bool IsLocal)
     }
 
     /* See if we have too many channels. */
-    if (!IsLocal && innconf->maxconnections &&
+    if (!IsLocal && innconf->maxconnections != 0 &&
 			NCcount >= innconf->maxconnections && !RCnolimit(cp)) {
 	/* Recount, just in case we got out of sync. */
 	for (NCcount = 0, i = 0; CHANiter(&i, CTnntp) != NULL; )

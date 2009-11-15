@@ -958,7 +958,7 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(oldtype);
 	break;
       case PERMlocalmaxartsize:
-	curaccess->localmaxartsize = atol(tok->name);
+	curaccess->localmaxartsize = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMreadertrack:
@@ -984,7 +984,7 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(oldtype);
 	break;
       case PERMnnrpdpostport:
-	curaccess->nnrpdpostport = atoi(tok->name);
+	curaccess->nnrpdpostport = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMnnrpdoverstats:
@@ -1002,19 +1002,19 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_k:
-	curaccess->backoff_k = atol(tok->name);
+	curaccess->backoff_k = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_postfast:
-	curaccess->backoff_postfast = atol(tok->name);
+	curaccess->backoff_postfast = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_postslow:
-	curaccess->backoff_postslow = atol(tok->name);
+	curaccess->backoff_postslow = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMbackoff_trigger:
-	curaccess->backoff_trigger = atol(tok->name);
+	curaccess->backoff_trigger = strtoul(tok->name, NULL, 10);
 	SET_CONFIG(oldtype);
 	break;
       case PERMnnrpdcheckart:

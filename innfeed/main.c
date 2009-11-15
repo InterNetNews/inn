@@ -444,7 +444,7 @@ int main (int argc, char **argv)
     if (setfdlimit (innconf->rlimitnofile) < 0)
       syswarn ("ME oserr setrlimit(RLIM_NOFILE,%ld)", innconf->rlimitnofile) ;
 
-  if (innconf->timer > 0)
+  if (innconf->timer != 0)
     TMRinit (TMR_MAX) ;
 
   configHosts (talkToSelf) ;

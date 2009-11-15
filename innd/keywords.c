@@ -100,7 +100,7 @@ KEYgenerate(
     size_t      bodylen)        /* Article body length. */
 {
 
-    int		word_count, word_length, word_index, distinct_words;
+    unsigned long word_count, word_index, word_length, distinct_words;
     int		last;
     char	*text, *orig_text, *text_end, *this_word, *chase, *punc;
     static struct word_entry	*word_vec;
@@ -140,7 +140,7 @@ KEYgenerate(
 
     /* Now figure acceptable extents, and copy body to working string.
      * (Memory-intensive for hefty articles:  limit to non-ABSURD articles.) */
-    if ((bodylen < 100) || (bodylen > (size_t) innconf->keyartlimit)) /* Too small/big to bother. */
+    if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* Too small/big to bother. */
 	return;
 
     /* Nul-terminate the body.  orig_text will be freed later. */

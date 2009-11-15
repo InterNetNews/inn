@@ -142,6 +142,8 @@ Articles older than this number of days are dropped.  The default value
 is C<10>, which means that an incoming article will be rejected if its
 posting date is farther in the past than ten days.
 
+In order to disable that check on date, you can set this parameter to C<0>.
+
 The number on the C</remember/> line in F<expire.ctl> should probably
 be one more than that number in order to take into account articles
 whose posting date is one day into the future.

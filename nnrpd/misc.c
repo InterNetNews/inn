@@ -181,7 +181,7 @@ InitBackoffConstants(void)
   /* Read the runtime config file to get parameters. */
 
   if ((PERMaccessconf->backoff_db == NULL) ||
-    !(PERMaccessconf->backoff_k >= 0L && PERMaccessconf->backoff_postfast >= 0L && PERMaccessconf->backoff_postslow >= 1L))
+    !(PERMaccessconf->backoff_postslow >= 1L))
     return;
 
   /* Need this database for backing off. */
@@ -284,7 +284,8 @@ LockPostRec(char *path)
     /* No lock.  See if the file is there. */
     if (stat(lockname, &st) < 0) {
       syslog(L_ERROR, "%s cannot stat lock file %s", Client.host, strerror(errno));
-      if (statfailed++ > 5) return(0);
+      if (statfailed++ > 5)
+          return(0);
       continue;
     }
 
@@ -292,7 +293,8 @@ LockPostRec(char *path)
      * PERMaccessconf->backoff_postslow, remove it. */
     statfailed = 0;
     time(&now);
-    if (now < st.st_ctime + PERMaccessconf->backoff_postslow) continue;
+    if (now < (time_t) (st.st_ctime + PERMaccessconf->backoff_postslow))
+        continue;
     syslog(L_ERROR, "%s removing stale lock file %s", Client.host, lockname);
     unlink(lockname);
   }
@@ -386,7 +388,7 @@ RateLimit(long *sleeptime, char *path)
 
      now = time(NULL);
      prevpost = 0L; prevsleep = 0L; prevn = 0L; n = 0L;
-     if (!GetPostRecord(path,&prevpost,&prevsleep,&prevn)) {
+     if (!GetPostRecord(path, &prevpost, &prevsleep, &prevn)) {
        syslog(L_ERROR, "%s can't get post record: %s",
               Client.host, strerror(errno));
        return 0;
@@ -397,7 +399,7 @@ RateLimit(long *sleeptime, char *path)
        prevn = 0L;
      if (prevsleep < 0L)
        prevsleep = 0L;
-     if (prevsleep > PERMaccessconf->backoff_postfast)
+     if ((unsigned long) prevsleep > PERMaccessconf->backoff_postfast)
        prevsleep = PERMaccessconf->backoff_postfast;
      
       /* Compute the new sleep time. */
@@ -412,12 +414,12 @@ RateLimit(long *sleeptime, char *path)
                 Client.host,n);
          n = 0L;
        }
-       if (n < PERMaccessconf->backoff_postfast) {
-         if (prevn >= PERMaccessconf->backoff_trigger) {
+       if ((unsigned long) n < PERMaccessconf->backoff_postfast) {
+         if ((unsigned long) prevn >= PERMaccessconf->backoff_trigger) {
            *sleeptime = 1 + (prevsleep * PERMaccessconf->backoff_k);
          } 
-       } else if (n < PERMaccessconf->backoff_postslow) {
-         if (prevn >= PERMaccessconf->backoff_trigger) {
+       } else if ((unsigned long) n < PERMaccessconf->backoff_postslow) {
+         if ((unsigned long) prevn >= PERMaccessconf->backoff_trigger) {
            *sleeptime = prevsleep;
          }
        } else {
@@ -426,15 +428,17 @@ RateLimit(long *sleeptime, char *path)
        prevn++;
      }
 
-     *sleeptime = ((*sleeptime) > PERMaccessconf->backoff_postfast) ? PERMaccessconf->backoff_postfast : (*sleeptime);
+     *sleeptime = ((*sleeptime) > (long) PERMaccessconf->backoff_postfast) ?
+        (long) PERMaccessconf->backoff_postfast : (*sleeptime);
      /* This ought to trap this bogon. */
      if ((*sleeptime) < 0L) {
-	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",Client.host,*sleeptime,prevsleep,n);
+	syslog(L_ERROR,"%s Negative sleeptime detected: %ld, prevsleep: %ld, N: %ld",
+               Client.host, *sleeptime, prevsleep, n);
 	*sleeptime = 0L;
      }
   
      /* Store the postrecord. */
-     if (!StorePostRecord(path,now,*sleeptime,prevn)) {
+     if (!StorePostRecord(path, now, *sleeptime, prevn)) {
        syslog(L_ERROR, "%s can't store post record: %s", Client.host, strerror(errno));
        return 0;
      }

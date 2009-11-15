@@ -1019,9 +1019,9 @@ main(int ac, char *av[])
 	SigLines = 0;
     ProcessHeaders(AddOrg, i + SigLines, pwp);
     Length = strlen(article);
-    if ((innconf->localmaxartsize > 0)
-	    && (Length > (size_t)innconf->localmaxartsize))
-        die("article is larger than local limit of %ld bytes",
+    if ((innconf->localmaxartsize != 0)
+	    && (Length > innconf->localmaxartsize))
+        die("article is larger than local limit of %lu bytes",
             innconf->localmaxartsize);
 
     /* Do final checks. */

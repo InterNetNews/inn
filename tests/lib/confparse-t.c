@@ -114,6 +114,8 @@ test_errors(int n)
         ok(n++, group == NULL);
         ok_string(n++, expected, errors);
         free(expected);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(errfile);
     unlink("config/link");
@@ -140,7 +142,8 @@ test_warnings(int n)
         ok(n++, group != NULL);
         ok_string(n++, expected, errors);
         free(expected);
-        config_free(group);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -171,7 +174,8 @@ test_warnings_bool(int n)
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
-        config_free(group);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -179,7 +183,8 @@ test_warnings_bool(int n)
 
 /* Test the warning test cases in config/warn-int, ensuring that they all
    parse successfully and produce the expected error messages when retrieved
-   as bools.  Takes the current test count and returns the new test count. */
+   as signed numbers.  Takes the current test count and returns the new test
+   count. */
 static int
 test_warnings_int(int n)
 {
@@ -198,11 +203,45 @@ test_warnings_int(int n)
         ok(n++, group != NULL);
         ok(n++, errors == NULL);
         errors_capture();
-        ok(n++, !config_param_integer(group, "parameter", &l_value));
+        ok(n++, !config_param_signed_number(group, "parameter", &l_value));
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
-        config_free(group);
+        if (group != NULL)
+            config_free(group);
+    }
+    fclose(warnfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warn-uint, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as usigned numbers.  Takes the current test count and returns the new test
+   count. */
+static int
+test_warnings_uint(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    unsigned long lu_value = 1;
+
+    warnfile = fopen("config/warn-uint", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-uint");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        errors_capture();
+        ok(n++, !config_param_unsigned_number(group, "parameter", &lu_value));
+        ok_string(n++, expected, errors);
+        errors_uncapture();
+        free(expected);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -210,7 +249,7 @@ test_warnings_int(int n)
 
 /* Test the warning test cases in config/warn-real, ensuring that they all
    parse successfully and produce the expected error messages when retrieved
-   as bools.  Takes the current test count and returns the new test count. */
+   as reals.  Takes the current test count and returns the new test count. */
 static int
 test_warnings_real(int n)
 {
@@ -233,7 +272,8 @@ test_warnings_real(int n)
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
-        config_free(group);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -241,7 +281,7 @@ test_warnings_real(int n)
 
 /* Test the warning test cases in config/warn-string, ensuring that they all
    parse successfully and produce the expected error messages when retrieved
-   as bools.  Takes the current test count and returns the new test count. */
+   as strings.  Takes the current test count and returns the new test count. */
 static int
 test_warnings_string(int n)
 {
@@ -264,7 +304,40 @@ test_warnings_string(int n)
         ok_string(n++, expected, errors);
         errors_uncapture();
         free(expected);
-        config_free(group);
+        if (group != NULL)
+            config_free(group);
+    }
+    fclose(warnfile);
+    return n;
+}
+
+/* Test the warning test cases in config/warn-list, ensuring that they all
+   parse successfully and produce the expected error messages when retrieved
+   as lists.  Takes the current test count and returns the new test count. */
+static int
+test_warnings_list(int n)
+{
+    FILE *warnfile;
+    char *expected;
+    struct config_group *group;
+    const struct vector *v_value = NULL;
+
+    warnfile = fopen("config/warn-list", "r");
+    if (warnfile == NULL)
+        sysdie("Cannot open config/warn-list");
+    while (parse_test_config(warnfile, &group)) {
+        expected = read_section(warnfile);
+        if (expected == NULL)
+            die("Unexpected end of file while reading error tests");
+        ok(n++, group != NULL);
+        ok(n++, errors == NULL);
+        errors_capture();
+        ok(n++, !config_param_list(group, "parameter", &v_value));
+        ok_string(n++, expected, errors);
+        errors_uncapture();
+        free(expected);
+        if (group != NULL)
+            config_free(group);
     }
     fclose(warnfile);
     return n;
@@ -285,7 +358,7 @@ main(void)
     int n;
     FILE *tmpconfig;
 
-    test_init(345);
+    test_init(373);
 
     if (access("../data/config/valid", F_OK) == 0)
         chdir("../data");
@@ -317,17 +390,17 @@ main(void)
     ok(13, !b_value);
 
     /* Integers. */
-    ok(14, config_param_integer(group, "int1", &l_value));
+    ok(14, config_param_signed_number(group, "int1", &l_value));
     ok(15, l_value == 0);
-    ok(16, config_param_integer(group, "int2", &l_value));
+    ok(16, config_param_signed_number(group, "int2", &l_value));
     ok(17, l_value == -3);
-    ok(18, !config_param_integer(group, "int3", &l_value));
+    ok(18, !config_param_signed_number(group, "int3", &l_value));
     ok(19, l_value == -3);
-    ok(20, config_param_integer(group, "int4", &l_value));
+    ok(20, config_param_signed_number(group, "int4", &l_value));
     ok(21, l_value == 5000);
-    ok(22, config_param_integer(group, "int5", &l_value));
+    ok(22, config_param_signed_number(group, "int5", &l_value));
     ok(23, l_value == 2147483647L);
-    ok(24, config_param_integer(group, "int6", &l_value));
+    ok(24, config_param_signed_number(group, "int6", &l_value));
     ok(25, l_value == (-2147483647L - 1));
 
     /* Strings. */
@@ -427,9 +500,9 @@ main(void)
     ok(59, b_value);
     ok(60, config_param_boolean(group, "param4", &b_value));
     ok(61, !b_value);
-    ok(62, config_param_integer(group, "int1", &l_value));
+    ok(62, config_param_signed_number(group, "int1", &l_value));
     ok(63, l_value == 0);
-    ok(64, config_param_integer(group, "int2", &l_value));
+    ok(64, config_param_signed_number(group, "int2", &l_value));
     ok(65, l_value == -3);
     config_free(group);
 
@@ -492,21 +565,21 @@ main(void)
     ok(97, config_param_boolean(subgroup, "value", &b_value));
     subgroup = config_next_group(subgroup);
     ok(98, subgroup != NULL);
-    ok(99, config_param_integer(subgroup, "value", &l_value));
+    ok(99, config_param_signed_number(subgroup, "value", &l_value));
     ok_int(100, 2, l_value);
     subgroup = config_next_group(subgroup);
     ok(101, subgroup != NULL);
-    ok(102, config_param_integer(subgroup, "value", &l_value));
+    ok(102, config_param_signed_number(subgroup, "value", &l_value));
     ok_int(103, 3, l_value);
     subgroup = config_find_group(subgroup, "test");
     ok(104, subgroup != NULL);
-    ok(105, config_param_integer(subgroup, "value", &l_value));
+    ok(105, config_param_signed_number(subgroup, "value", &l_value));
     ok_int(106, 2, l_value);
     subgroup = config_next_group(subgroup);
     ok(107, subgroup != NULL);
     ok_string(108, "test", config_group_type(subgroup));
     ok_string(109, "final", config_group_tag(subgroup));
-    ok(110, config_param_integer(subgroup, "value", &l_value));
+    ok(110, config_param_signed_number(subgroup, "value", &l_value));
     ok_int(111, 4, l_value);
     subgroup = config_next_group(subgroup);
     ok(112, subgroup == NULL);
@@ -514,22 +587,22 @@ main(void)
     ok(113, subgroup != NULL);
     ok_string(114, "nest", config_group_type(subgroup));
     ok_string(115, "1", config_group_tag(subgroup));
-    ok(116, config_param_integer(subgroup, "param", &l_value));
+    ok(116, config_param_signed_number(subgroup, "param", &l_value));
     ok_int(117, 10, l_value);
     subgroup = config_next_group(subgroup);
     ok(118, subgroup != NULL);
     ok_string(119, "2", config_group_tag(subgroup));
-    ok(120, config_param_integer(subgroup, "param", &l_value));
+    ok(120, config_param_signed_number(subgroup, "param", &l_value));
     ok_int(121, 10, l_value);
     subgroup = config_next_group(subgroup);
     ok(122, subgroup != NULL);
     ok_string(123, "3", config_group_tag(subgroup));
-    ok(124, config_param_integer(subgroup, "param", &l_value));
+    ok(124, config_param_signed_number(subgroup, "param", &l_value));
     ok_int(125, 10, l_value);
     subgroup = config_next_group(subgroup);
     ok(126, subgroup != NULL);
     ok_string(127, "4", config_group_tag(subgroup));
-    ok(128, config_param_integer(subgroup, "param", &l_value));
+    ok(128, config_param_signed_number(subgroup, "param", &l_value));
     ok_int(129, 10, l_value);
     subgroup = config_next_group(subgroup);
     ok(130, subgroup == NULL);
@@ -541,24 +614,24 @@ main(void)
     ok(133, subgroup != NULL);
     ok_string(134, "params", config_group_type(subgroup));
     ok_string(135, "first", config_group_tag(subgroup));
-    ok(136, config_param_integer(subgroup, "first", &l_value));
+    ok(136, config_param_signed_number(subgroup, "first", &l_value));
     ok_int(137, 1, l_value);
-    ok(138, !config_param_integer(subgroup, "second", &l_value));
+    ok(138, !config_param_signed_number(subgroup, "second", &l_value));
     subgroup = config_next_group(subgroup);
     ok(139, subgroup != NULL);
     ok_string(140, "second", config_group_tag(subgroup));
-    ok(141, config_param_integer(subgroup, "first", &l_value));
+    ok(141, config_param_signed_number(subgroup, "first", &l_value));
     ok_int(142, 1, l_value);
-    ok(143, config_param_integer(subgroup, "second", &l_value));
+    ok(143, config_param_signed_number(subgroup, "second", &l_value));
     ok_int(144, 2, l_value);
     subgroup = config_next_group(subgroup);
     ok(145, subgroup != NULL);
     ok_string(146, "third", config_group_tag(subgroup));
-    ok(147, config_param_integer(subgroup, "first", &l_value));
+    ok(147, config_param_signed_number(subgroup, "first", &l_value));
     ok_int(148, 1, l_value);
-    ok(149, config_param_integer(subgroup, "second", &l_value));
+    ok(149, config_param_signed_number(subgroup, "second", &l_value));
     ok_int(150, 2, l_value);
-    ok(151, config_param_integer(subgroup, "third", &l_value));
+    ok(151, config_param_signed_number(subgroup, "third", &l_value));
     ok_int(152, 3, l_value);
     vector = config_params(subgroup);
     ok(153, vector != NULL);
@@ -581,7 +654,7 @@ main(void)
     ok_string(162, "baz", s_value);
     ok(163, config_param_string(subgroup, "bar", &s_value));
     ok_string(164, "baz", s_value);
-    ok(165, !config_param_integer(subgroup, "value", &l_value));
+    ok(165, !config_param_signed_number(subgroup, "value", &l_value));
     subgroup = config_next_group(subgroup);
     ok(166, subgroup != NULL);
     subgroup = config_next_group(subgroup);
@@ -589,7 +662,7 @@ main(void)
     ok_string(168, "test", config_group_tag(subgroup));
     ok(169, config_param_string(subgroup, "foo", &s_value));
     ok_string(170, "baz", s_value);
-    ok(171, config_param_integer(subgroup, "value", &l_value));
+    ok(171, config_param_signed_number(subgroup, "value", &l_value));
     ok_int(172, 10, l_value);
     config_free(group);
 
@@ -615,8 +688,10 @@ main(void)
     n = test_warnings(n);
     n = test_warnings_bool(n);
     n = test_warnings_int(n);
+    n = test_warnings_uint(n);
     n = test_warnings_real(n);
     n = test_warnings_string(n);
+    n = test_warnings_list(n);
 
     return 0;
 }

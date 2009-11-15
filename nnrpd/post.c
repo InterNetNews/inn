@@ -1023,10 +1023,10 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	    free(modgroup);
 	return error;
     }
-    if ((PERMaccessconf->localmaxartsize > 0) &&
-		(strlen(article) > (unsigned)PERMaccessconf->localmaxartsize)) {
+    if ((PERMaccessconf->localmaxartsize != 0) &&
+		(strlen(article) > PERMaccessconf->localmaxartsize)) {
         snprintf(Error, sizeof(Error),
-                 "Article is bigger than local limit of %ld bytes\n",
+                 "Article is bigger than local limit of %lu bytes\n",
                  PERMaccessconf->localmaxartsize);
         if (modgroup)
             free(modgroup);

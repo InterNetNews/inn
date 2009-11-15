@@ -31,7 +31,7 @@ static struct tst *msgidcache;
 **  (X)OVER, GROUP, (X)OVER, etc. for example doesn't blow up with
 **  out of memory.
 */
-static int msgcachecount;
+static unsigned long msgcachecount;
 
 struct cache_entry {
     struct node node;

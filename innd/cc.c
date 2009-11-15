@@ -839,7 +839,7 @@ CCmode(char *unused[] UNUSED)
     /* Server parameters. */
     for (count = 0, index = 0; CHANiter(&index, CTnntp) != NULL; )
 	count++;
-    buffer_sprintf(&CCreply, true, "Parameters c %ld i %ld (%d) l %ld o %d"
+    buffer_sprintf(&CCreply, true, "Parameters c %lu i %lu (%d) l %lu o %d"
                    " t %ld H %d T %d X %ld %s %s\n",
                   innconf->artcutoff, innconf->maxconnections, count,
                   innconf->maxartsize, MaxOutgoing, (long) TimeOut.tv_sec,
@@ -1090,16 +1090,16 @@ CCparam(char *av[])
 	    return BADVAL;
 	break;
     case 'c':
-	innconf->artcutoff = atoi(p);
-	syslog(L_NOTICE, "%s changed -c %ld", LogName, innconf->artcutoff);
+	innconf->artcutoff = strtoul(p, NULL, 10);
+	syslog(L_NOTICE, "%s changed -c %lu", LogName, innconf->artcutoff);
 	break;
     case 'i':
-	innconf->maxconnections = atoi(p);
-	syslog(L_NOTICE, "%s changed -i %ld", LogName, innconf->maxconnections);
+	innconf->maxconnections = strtoul(p, NULL, 10);
+	syslog(L_NOTICE, "%s changed -i %lu", LogName, innconf->maxconnections);
 	break;
     case 'l':
-	innconf->maxartsize = atol(p);
-	syslog(L_NOTICE, "%s changed -l %ld", LogName, innconf->maxartsize);
+	innconf->maxartsize = strtoul(p, NULL, 10);
+	syslog(L_NOTICE, "%s changed -l %lu", LogName, innconf->maxartsize);
 	break;
     case 'n':
 	if (!CCparsebool('n', (bool *)&innconf->readerswhenstopped, *p))
@@ -1615,7 +1615,7 @@ CCthrottle(char *av[])
 static const char *
 CCtimer(char *av[])
 {
-    int                 value;
+    unsigned long    value;
     char                *p;
     
     if (strcmp(av[0], "off") == 0)
@@ -1625,10 +1625,10 @@ CCtimer(char *av[])
 	    if (!CTYPE(isdigit, *p))
 		return "1 parameter should be a number or 'off'";
 	}
-	value = atoi(av[0]);
+	value = strtoul(av[0], NULL, 10);
     }
     innconf->timer = value;
-    if (innconf->timer)
+    if (innconf->timer != 0)
         TMRinit(TMR_MAX);
     else
 	TMRinit(0);
@@ -1654,7 +1654,7 @@ CCstathist(char *av[])
 static const char *
 CCstatus(char *av[])
 {
-    int                 value;
+    unsigned long       value;
     char                *p;
     
     if (strcmp(av[0], "off") == 0)
@@ -1664,7 +1664,7 @@ CCstatus(char *av[])
 	    if (!CTYPE(isdigit, *p))
 		return "1 parameter should be a number or 'off'";
 	}
-	value = atoi(av[0]);
+	value = strtoul(av[0], NULL, 10);
     }
     innconf->status = value;
     return NULL;

@@ -974,7 +974,7 @@ main(int argc, char *argv[])
     /* Make other processes happier if someone is reading.  This allows other
      * processes like overchan to keep up when there are lots of readers.
      * Note that this is cumulative with nicekids. */
-    if (innconf->nicennrpd > 0)
+    if (innconf->nicennrpd != 0)
 	nice(innconf->nicennrpd);
 
     HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
@@ -1133,8 +1133,8 @@ main(int argc, char *argv[])
 		if (fd < 0)
 		    continue;
 	    
-		for (i = 0; i <= innconf->maxforks && (pid = fork()) < 0; i++) {
-		    if (i == innconf->maxforks) {
+		for (i = 0; i <= (long) innconf->maxforks && (pid = fork()) < 0; i++) {
+		    if (i == (long) innconf->maxforks) {
 			syslog(L_FATAL, "can't fork (dropping connection): %m");
 			continue;
 		    }
@@ -1175,7 +1175,7 @@ main(int argc, char *argv[])
 	xsignal(SIGCHLD, SIG_DFL);
  
     } else {
-        if (innconf->timer)
+        if (innconf->timer != 0)
             TMRinit(TMR_MAX);
         STATstart = TMRnow_double();
 	SetupDaemon();
@@ -1195,14 +1195,14 @@ main(int argc, char *argv[])
 #endif /* HAVE_SSL */
 
     /* If requested, check the load average. */
-    if (innconf->nnrpdloadlimit > 0) {
+    if (innconf->nnrpdloadlimit != 0) {
         double load[1];
 
         if (getloadavg(load, 1) < 0)
             warn("cannot obtain system load");
         else {
-            if ((int)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
-                syslog(L_NOTICE, "load %.2f > %ld", load[0], innconf->nnrpdloadlimit);
+            if ((unsigned long)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
+                syslog(L_NOTICE, "load %.2f > %lu", load[0], innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_FAIL_TERMINATING,
                       load[0]);
                 ExitWithStats(1, true);

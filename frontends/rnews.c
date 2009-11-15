@@ -77,7 +77,7 @@ StartChild(int fd, const char *path, const char *argv[])
 
     /* Get a child. */
     for (i = 0; (pid = fork()) < 0; i++) {
-	if (i == innconf->maxforks) {
+	if (i == (long) innconf->maxforks) {
             syswarn("cannot fork %s, spooling", path);
 	    return -1;
 	}
@@ -917,11 +917,11 @@ int main(int ac, char *av[])
 
     /* Open the link to the server. */
     if (remoteServer != NULL) {
-	if (!OpenRemote(remoteServer,port,buff,sizeof(buff)))
+	if (!OpenRemote(remoteServer, port, buff, sizeof(buff)))
 		CantConnect(buff,mode,fd);
     } else if (innconf->nnrpdposthost != NULL) {
 	if (!OpenRemote(innconf->nnrpdposthost,
-                        (port != NNTP_PORT) ? port : innconf->nnrpdpostport,
+                        (port != NNTP_PORT) ? (unsigned) port : innconf->nnrpdpostport,
                         buff, sizeof(buff)))
 		CantConnect(buff, mode, fd);
     }
@@ -930,7 +930,7 @@ int main(int ac, char *av[])
 	    /* If server rejected us, no point in continuing. */
 	    if (buff[0])
 		CantConnect(buff, mode, fd);
-	    if (!OpenRemote(NULL, (port != NNTP_PORT) ? port : innconf->port,
+	    if (!OpenRemote(NULL, (port != NNTP_PORT) ? (unsigned) port : innconf->port,
                             buff, sizeof(buff)))
 			CantConnect(buff, mode, fd);
 	}

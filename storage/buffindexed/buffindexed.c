@@ -114,7 +114,7 @@ typedef struct _OVBUFF {
 						   header */
   void *		bitfield;		/* Bitfield for ovbuff block in
 						   use */
-  int			dirty;			/* OVBUFFHEAD dirty count */
+  unsigned long         dirty;                  /* OVBUFFHEAD dirty count */
   struct _OVBUFF	*next;			/* next ovbuff */
   int			nextchunk;		/* next chunk */
   smcd_t		*smc;			/* shared mem control data */
@@ -1715,7 +1715,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
   }
   if (count == 0)
     return true;
-  if (count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
+  if ((unsigned) count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
     /* large retrieval, mmap is done in ovsearch() */
     return true;
   /* Data blocks are being mmapped, not copied. */
@@ -2321,7 +2321,7 @@ void buffindexed_close(void) {
   /* sync the bit field */
   ovbuff = ovbufftab;
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
-    if (ovbuff->dirty) {
+    if (ovbuff->dirty != 0) {
       ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
       ovflushhead(ovbuff);
     }
