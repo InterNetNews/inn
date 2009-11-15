@@ -590,8 +590,8 @@ passwd_nntp
 	    next input;
 	    print "$file:$line: malformed line.\n";
 	}
-	print "$file:$line: username/password must both be blank or non-blank\n"
-	    if ( $name eq "" && $pass ne "" ) || ($name ne "" && $pass eq "");
+	print "$file:$line: missing username\n"
+	    if ( $name eq "" );
     }
     1;
 }
