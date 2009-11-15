@@ -1380,7 +1380,7 @@ main(int argc, char *argv[])
 	if (r == RTeof)
 	    break;
 	if (ac == 0)
-	    break;
+	    continue;
 
 	/* Find command. */
 	for (cp = CMDtable; cp->Name; cp++)
