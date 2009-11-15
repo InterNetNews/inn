@@ -857,8 +857,8 @@ NClist(CHANNEL *cp)
     /* Loop over all lines, sending the text and "\r\n". */
     while ((p = QIOread(qp)) != NULL) {
         /* Check that the output does not break the NNTP protocol. */
-        if (p[0] == '.' && p[1] == '\0') {
-            syslog(L_ERROR, "%s NClist single dot in file %s",
+        if (p[0] == '.' && p[1] != '.') {
+            syslog(L_ERROR, "%s NClist bad dot-stuffing in file %s",
                    CHANname(cp), cp->av[1]);
             continue;
         }

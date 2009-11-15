@@ -256,8 +256,8 @@ CMDlist(int ac, char *av[])
     /* Read lines, ignore long ones. */
     while ((p = QIOread(qp)) != NULL) {
         /* Check that the output does not break the NNTP protocol. */
-        if (p[0] == '.' && p[1] == '\0') {
-            syslog(L_ERROR, "%s single dot in %s", Client.host, lp->File);
+        if (p[0] == '.' && p[1] != '.') {
+            syslog(L_ERROR, "%s bad dot-stuffing in %s", Client.host, lp->File);
             continue;
         }
         if (lp == &INFOmotd) {
