@@ -708,23 +708,26 @@ NClist(CHANNEL *cp, int ac, char *av[])
 **  The MODE command.  Hand off the channel.
 */
 static void
-NCmode(CHANNEL *cp, int ac, char *av[])
+NCmode(CHANNEL *cp, int ac UNUSED, char *av[])
 {
+    char buff[SMBUF];
     HANDOFF h;
 
     cp->Start = cp->Next;
 
-    if (ac > 1 && strcasecmp(av[1], "READER") == 0 && !innconf->noreader) {
+    if (strcasecmp(av[1], "READER") == 0 && !innconf->noreader) {
         /* MODE READER. */
+        syslog(L_NOTICE, "%s NCmode \"MODE READER\" received",
+               CHANname(cp));
         if (!cp->CanAuthenticate) {
             /* AUTHINFO has already been successfully used. */
-            NCwritereply(cp, NNTP_ACCESS);
+            snprintf(buff, sizeof(buff), "%d Already authenticated as a feeder",
+                     NNTP_ERR_ACCESS);
+            NCwritereply(cp, buff);
             return;
         }
         if (NNRPReason != NULL && !innconf->readerswhenstopped) {
             /* Server paused or throttled. */
-            char buff[SMBUF];
-
             snprintf(buff, sizeof(buff), "%d %s", NNTP_FAIL_ACTION, NNRPReason);
             NCwritereply(cp, buff);
             return;
@@ -732,29 +735,28 @@ NCmode(CHANNEL *cp, int ac, char *av[])
             /* We will hand off the channel to nnrpd. */
             h = HOnnrpd;
         }
-    } else if (ac > 1 && strcasecmp(av[1], "STREAM") == 0 &&
+    } else if (strcasecmp(av[1], "STREAM") == 0 &&
                (!StreamingOff && cp->Streaming)) {
         /* MODE STREAM. */
-	char buff[16];
-
-	snprintf(buff, sizeof(buff), "%d StreamOK.", NNTP_OK_STREAM);
+        snprintf(buff, sizeof(buff), "%d Streaming permitted", NNTP_OK_STREAM);
 	NCwritereply(cp, buff);
 	syslog(L_NOTICE, "%s NCmode \"MODE STREAM\" received",
                CHANname(cp));
         return;
-    } else if (ac > 1 && strcasecmp(av[1], "CANCEL") == 0 && cp->privileged) {
+    } else if (strcasecmp(av[1], "CANCEL") == 0 && cp->privileged) {
         /* MODE CANCEL */
-        char buff[16];
-
         cp->State = CScancel;
-        snprintf(buff, sizeof(buff), "%d CancelOK.", NNTP_OK_MODE_CANCEL);
+        snprintf(buff, sizeof(buff), "%d Cancels permitted", NNTP_OK_MODE_CANCEL);
         NCwritereply(cp, buff);
         syslog(L_NOTICE, "%s NCmode \"MODE CANCEL\" received",
                 CHANname(cp));
         return;
     } else {
         /* Unknown MODE command or readers not allowed. */
-        NCwritereply(cp, NCbadsubcommand);
+        snprintf(buff, sizeof(buff), "%d Unknown MODE variant", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        syslog(L_NOTICE, "%s bad_command MODE %s", CHANname(cp),
+               MaxLength(av[1], av[1]));
         return;
     }
 

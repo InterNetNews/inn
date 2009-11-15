@@ -459,7 +459,8 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 
     /* If the client is already authenticated, STARTTLS is not possible. */
     if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
-        Reply("%d Already authenticated\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Already authenticated without the use of a security layer\r\n",
+              NNTP_ERR_ACCESS);
         return;
     }
 
