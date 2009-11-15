@@ -293,7 +293,7 @@ CMDauthinfo(int ac, char *av[])
         /* Arguments are checked by SASLauth(). */
 	SASLauth(ac, av);
 #else
-        Reply("%d SASL authentication unsupported\r\n", NNTP_ERR_UNAVAILABLE);
+        Reply("%d SASL authentication unsupported\r\n", NNTP_ERR_SYNTAX);
         return;
 #endif /* HAVE_SASL */
     } else {
