@@ -945,7 +945,9 @@ NCproc(CHANNEL *cp)
        * data may also include a command line. */
       movedata = false;
       readmore = false;
+      /* Ignore too small lines. */
       if (i - cp->Start < 3) {
+        cp->Start = cp->Next;
 	break;
       }
       p = &bp->data[i];
