@@ -214,7 +214,7 @@ test -n "${RMFILE}" && {
 test -n "${LOWMARKFILE}" && {
         EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
         if [ "${DOEXPIREOVER}" != "true" ] ; then
-            echo "lowmark requires expireover" >> ${EXPLOG}
+            echo "warning:  lowmark requires expireover"
         fi
 }
 
