@@ -671,8 +671,10 @@ ValidNewsgroups(char *hdr, char **modgroup)
     p = HDR(HDR__CONTROL);
     IsNewgroup = (p && strncmp(p, "newgroup", 8) == 0);
     groups = xstrdup(hdr);
-    if ((p = strtok(groups, NGSEPS)) == NULL)
+    if ((p = strtok(groups, NGSEPS)) == NULL) {
+        free(groups);
 	return "Can't parse Newsgroups: header";
+    }
     Error[0] = '\0';
 
     /* Reject all articles with Approved: headers unless the user is allowed to
