@@ -329,6 +329,7 @@ typedef struct _CHANNEL {
   bool		       Nolist;
   bool                 CanAuthenticate; /* Can use AUTHINFO? */
   bool                 IsAuthenticated; /* No need to use AUTHINFO? */
+  bool                 HasSentUsername; /* Has used AUTHINFO USER? */
   unsigned long	       Duplicate;
   unsigned long	       Unwanted_s;
   unsigned long	       Unwanted_f;
