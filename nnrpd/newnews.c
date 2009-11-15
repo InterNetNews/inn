@@ -21,7 +21,7 @@ FindHeader(ARTHANDLE *art, const char **pp, const char **qp,
   const char *p, *p1, *q;
   bool Nocr = true;
 
-  p = wire_findheader(art->data, art->len, hdr);
+  p = wire_findheader(art->data, art->len, hdr, true);
   if (p == NULL)
     return false;
   q = p;

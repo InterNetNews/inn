@@ -373,7 +373,7 @@ ARTsendmmap(SENDTYPE what)
 
     /* q points to the start of the article buffer, p to the end of it. */
     if (VirtualPathlen > 0 && (what != STbody)) {
-        path = wire_findheader(ARThandle->data, ARThandle->len, "Path");
+        path = wire_findheader(ARThandle->data, ARThandle->len, "Path", true);
         if (path == NULL) {
 	    SendIOv(".\r\n", 3);
 	    ARTgetsize += 3;
@@ -381,7 +381,7 @@ ARTsendmmap(SENDTYPE what)
 	    ARTget++;
 	    return;
 	} else {
-            xref = wire_findheader(ARThandle->data, ARThandle->len, "Xref");
+            xref = wire_findheader(ARThandle->data, ARThandle->len, "Xref", true);
             if (xref == NULL) {
                 SendIOv(".\r\n", 3);
                 ARTgetsize += 3;

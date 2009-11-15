@@ -952,7 +952,7 @@ tradspool_cancel(TOKEN token) {
         return false;
     }
 
-    xrefhdr = wire_findheader(article->data, article->len, "Xref");
+    xrefhdr = wire_findheader(article->data, article->len, "Xref", true);
     if (xrefhdr == NULL) {
 	/* for backwards compatibility; there is no Xref unless crossposted
 	   for 1.4 and 1.5 */
@@ -1139,7 +1139,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
            implications that might have for the callers of SMnext.
 
            Basically, this whole area really needs to be rethought. */
-	xrefhdr = wire_findheader(art->data, art->len, "Xref");
+	xrefhdr = wire_findheader(art->data, art->len, "Xref", true);
 	if (xrefhdr != NULL) {
 	    if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
 		art->len = 0;
@@ -1178,7 +1178,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
 	    }
 	}
 	if (xrefhdr == NULL || !innconf->storeonxref) {
-            ng = wire_findheader(art->data, art->len, "Newsgroups");
+            ng = wire_findheader(art->data, art->len, "Newsgroups", true);
 	    if (ng == NULL) {
 		art->groups = NULL;
 		art->groupslen = 0;
@@ -1188,7 +1188,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
 		art->groupslen = p - ng;
 	    }
 	}
-        expires = wire_findheader(art->data, art->len, "Expires");
+        expires = wire_findheader(art->data, art->len, "Expires", true);
         if (expires == NULL) {
 	    art->expires = 0;
 	} else {

@@ -126,7 +126,7 @@ GetXref(ARTHANDLE *art)
   char	*buff;
   bool	Nocr = false;
 
-  p = wire_findheader(art->data, art->len, "xref");
+  p = wire_findheader(art->data, art->len, "xref", true);
   if (p == NULL)
     return NULL;
   q = p;

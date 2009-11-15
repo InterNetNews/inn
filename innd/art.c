@@ -1154,7 +1154,7 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
 
   /* Copy Newsgroups: from article be to cancelled to q.
    * Double-terminate q (sentinel). */
-  local = wire_findheader(art->data, art->len, "Newsgroups");
+  local = wire_findheader(art->data, art->len, "Newsgroups", true);
   if (local == NULL) {
     SMfreearticle(art);
     return false;

@@ -175,7 +175,7 @@ write_index_header(FILE *index, ARTHANDLE *art, const char *header)
 {
     const char *start, *end, *p;
 
-    start = wire_findheader(art->data, art->len, header);
+    start = wire_findheader(art->data, art->len, header, false);
     if (start == NULL) {
         fprintf(index, "<none>");
         return;
@@ -186,13 +186,11 @@ write_index_header(FILE *index, ARTHANDLE *art, const char *header)
         return;
     }
     for (p = start; p <= end; p++) {
-        if (*p == '\r' && p[1] == '\n') {
+        if (*p == '\r' && p < end && p[1] == '\n') {
             p++;
             continue;
         }
-        if (*p == '\n')
-            continue;
-        else if (*p == '\0' || *p == '\t' || *p == '\r')
+        if (*p == '\0' || *p == '\t' || *p == '\r' || *p == '\n')
             putc(' ', index);
         else
             putc(*p, index);
@@ -282,7 +280,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
     /* Determine the groups from the Xref: header.  In groups will be the split
        Xref: header; from the second string on should be a group, a colon, and
        an article number. */
-    start = wire_findheader(art->data, art->len, "Xref");
+    start = wire_findheader(art->data, art->len, "Xref", true);
     if (start == NULL) {
         warn("cannot find Xref: header in %s", token);
         return;

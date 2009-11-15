@@ -248,7 +248,7 @@ overview_cancel_xref(struct overview *overview, TOKEN token)
     art = SMretrieve(token, RETR_HEAD);
     if (art == NULL)
         return false;
-    xref = wire_findheader(art->data, art->len, "Xref");
+    xref = wire_findheader(art->data, art->len, "Xref", true);
     if (xref == NULL)
         goto fail;
     xrefend = wire_endheader(xref, art->data + art->len - 1);

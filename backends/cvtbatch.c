@@ -78,7 +78,7 @@ main(int ac, char *av[]) {
 	token = TextToToken(line);
 	if ((art = SMretrieve(token, RETR_ALL)) == NULL)
 	    continue;
-        text = wire_findheader(art->data, art->len, "Message-ID");
+        text = wire_findheader(art->data, art->len, "Message-ID", true);
 	if (text == NULL) {
 	    SMfreearticle(art);
 	    continue;

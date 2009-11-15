@@ -109,7 +109,7 @@ build_header(const char *article, size_t length, const char *header,
     size_t offset;
     const char *data, *end, *p;
 
-    data = wire_findheader(article, length, header);
+    data = wire_findheader(article, length, header, false);
     if (data == NULL)
         return;
     end = wire_endheader(data, article + length - 1);
@@ -124,7 +124,7 @@ build_header(const char *article, size_t length, const char *header,
         const char *next = end + 1;
 
         while (next != NULL) {
-            next = wire_findheader(next, length - (next - article), header);
+            next = wire_findheader(next, length - (next - article), header, false);
             if (next != NULL) {
                 data = next;
                 end = wire_endheader(data, article + length - 1);

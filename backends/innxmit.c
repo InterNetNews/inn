@@ -681,7 +681,7 @@ GetMessageID(ARTHANDLE *art) {
     static int	buffsize = 0;
     const char	*p, *q;
 
-    p = wire_findheader(art->data, art->len, "Message-ID");
+    p = wire_findheader(art->data, art->len, "Message-ID", true);
     if (p == NULL)
 	return NULL;
     for (q = p; q < art->data + art->len; q++) {
