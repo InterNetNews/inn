@@ -574,7 +574,7 @@ NCcapabilities(CHANNEL *cp, int ac, char *av[])
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
-    if ((!innconf->noreader)
+    if (cp->CanAuthenticate && !innconf->noreader
         && (NNRPReason == NULL || innconf->readerswhenstopped)) {
         WCHANappend(cp, "MODE-READER", 11);
         WCHANappend(cp, NCterm, strlen(NCterm));
@@ -764,7 +764,7 @@ NClist(CHANNEL *cp, int ac, char *av[])
     cp->Start = cp->Next;
 
     if (cp->Nolist) {
-        if ((innconf->noreader)
+        if (!cp->CanAuthenticate || innconf->noreader
             || (NNRPReason != NULL && !innconf->readerswhenstopped))
             xasprintf(&buff, "%d Permission denied", NNTP_ERR_ACCESS);
         else
@@ -963,7 +963,7 @@ NC_reader(CHANNEL *cp, int ac UNUSED, char *av[] UNUSED)
 
     cp->Start = cp->Next;
 
-    if ((innconf->noreader)
+    if (!cp->CanAuthenticate || innconf->noreader
      || (NNRPReason != NULL && !innconf->readerswhenstopped))
         snprintf(buff, sizeof(buff), "%d Permission denied",
                  NNTP_ERR_ACCESS);
