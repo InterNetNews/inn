@@ -1360,7 +1360,8 @@ main(int argc, char *argv[])
                  * no recognized command has been sent. */
                 validcommandtoolong = false;
                 for (cp = CMDtable; cp->Name; cp++) {
-                    if (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0) {
+                    if ((cp->Function != CMD_unimp) &&
+                        (strncasecmp(cp->Name, p, strlen(cp->Name)) == 0)) {
                         if (p[strlen(cp->Name)] == ' ') {
                             validcommandtoolong = true;
                             break;
