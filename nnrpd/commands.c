@@ -252,6 +252,10 @@ CMDauthinfo(int ac, char *av[])
     if (strcasecmp(av[1], "GENERIC") == 0) {
 	char *logrec = Glom(av);
 
+        /* Go on parsing the command line. */
+        ac--;
+        ac += reArgify(av[ac], &av[ac], -1, true);
+
 	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 
         /* Arguments are checked by PERMgeneric(). */
@@ -282,6 +286,10 @@ CMDauthinfo(int ac, char *av[])
 	}
     } else if (strcasecmp(av[1], "SASL") == 0) {
 #ifdef HAVE_SASL
+        /* Go on parsing the command line. */
+        ac--;
+        ac += reArgify(av[ac], &av[ac], -1, true);
+
         /* Arguments are checked by SASLauth(). */
 	SASLauth(ac, av);
 #else
@@ -309,10 +317,6 @@ CMDauthinfo(int ac, char *av[])
             }
 #endif
 
-            if (ac > 3) {
-                Reply("%d No whitespace allowed in username\r\n", NNTP_ERR_SYNTAX);
-                return;
-            }
             strlcpy(User, av[2], sizeof(User));
             Reply("%d Enter password\r\n", NNTP_CONT_AUTHINFO);
             return;
@@ -346,11 +350,6 @@ CMDauthinfo(int ac, char *av[])
         if (User[0] == '\0') {
             Reply("%d Authentication commands issued out of sequence\r\n",
                   NNTP_FAIL_AUTHINFO_REJECT);
-            return;
-        }
-
-        if (ac > 3) {
-            Reply("%d No whitespace allowed in password\r\n", NNTP_ERR_SYNTAX);
             return;
         }
 
