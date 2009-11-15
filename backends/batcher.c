@@ -157,6 +157,7 @@ RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 	i = 1;
     }
 
+    free(spool);
     exit(i);
     /* NOTREACHED */
 }
@@ -180,15 +181,12 @@ main(int ac, char *av[])
 {
     bool	Redirect;
     FILE	*F;
-    const char	*AltSpool;
     char	*p;
-    char	*data;
     char	line[BIG_BUFFER];
     char	buff[BIG_BUFFER];
     size_t	BytesInArt;
     size_t	BytesInCB;
     off_t	Cookie;
-    size_t	datasize;
     int		i;
     int		ArtsInCB;
     int		length;
@@ -202,7 +200,6 @@ main(int ac, char *av[])
     message_program_name = "batcher";
     if (!innconf_read(NULL))
         exit(1);
-    AltSpool = NULL;
     Redirect = true;
     umask(NEWSUMASK);
     ERRLOG = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
@@ -211,7 +208,7 @@ main(int ac, char *av[])
     message_handlers_notice(1, message_log_syslog_notice);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:S:v")) != EOF)
+    while ((i = getopt(ac, av, "a:A:b:B:i:N:p:rs:v")) != EOF)
 	switch (i) {
 	default:
             die("usage error");
@@ -243,9 +240,6 @@ main(int ac, char *av[])
 	case 's':
 	    Separator = optarg;
 	    break;
-	case 'S':
-	    AltSpool = optarg;
-	    break;
 	case 'v':
             message_handlers_notice(2, message_log_syslog_notice,
                                     message_log_stdout);
@@ -272,13 +266,7 @@ main(int ac, char *av[])
     if (Redirect)
 	freopen(ERRLOG, "a", stderr);
 
-    /* Go to where the articles are. */
-    if (chdir(innconf->patharticles) < 0)
-        sysdie("%s cannot chdir to %s", Host, innconf->patharticles);
-
     /* Set initial counters, etc. */
-    datasize = 8 * 1024;
-    data = xmalloc(datasize);
     BytesInCB = 0;
     ArtsInCB = 0;
     Cookie = -1;
@@ -292,13 +280,13 @@ main(int ac, char *av[])
     SMinit();
     F = NULL;
     while (fgets(line, sizeof line, stdin) != NULL) {
-	/* Record line length in case we do an ftello. Not portable to
+	/* Record line length in case we do an ftello.  Not portable to
 	 * systems with non-Unix file formats. */
 	length = strlen(line);
 	Cookie = ftello(stdin) - length;
 
 	/* Get lines like "name size".  Note that we ignore size but accept
-           it for backwards compatibility. */
+         * it for backwards compatibility. */
 	if ((p = strchr(line, '\n')) == NULL) {
             warn("%s skipping %.40s: too long", Host, line);
 	    continue;
@@ -310,15 +298,9 @@ main(int ac, char *av[])
         if (p != NULL)
             *p = '\0';
 
-	/* Strip of leading spool pathname. */
-	if (line[0] == '/'
-	 && line[strlen(innconf->patharticles)] == '/'
-	 && strncmp(line, innconf->patharticles, strlen(innconf->patharticles)) == 0)
-	    p = line + strlen(innconf->patharticles) + 1;
-	else
-	    p = line;
+        p = line;
 
-	/* Open the file. */
+	/* Open the article. */
 	if (IsToken(p)) {
 	    token = TextToToken(p);
 	    if ((art = SMretrieve(token, RETR_ALL)) == NULL) {
@@ -334,7 +316,7 @@ main(int ac, char *av[])
 	}
 
 	/* Have an open article, do we need to open a batch?  This code
-	 * is here (rather then up before the while loop) so that we
+	 * is here (rather than up before the while loop) so that we
 	 * can avoid sending an empty batch.  The goto makes the code
 	 * a bit more clear. */
 	if (F == NULL) {
@@ -398,7 +380,7 @@ main(int ac, char *av[])
 	}
 
         /* Write the article.  In case of interrupts, retry the read but not
-           the fwrite because we can't check that reliably and portably. */
+         * the fwrite because we can't check that reliably and portably. */
         written = fwrite(artdata, 1, BytesInArt, F);
 	if (written != BytesInArt || ferror(F))
 	    break;
