@@ -33,6 +33,11 @@ test -s ${T}/$$msg || {
     exit 0
 }
 
+##  Make sure we do not have duplicates in the resulting concatenation of
+##  the checkgroups and the localgroups file.
+${SORT} -u ${T}/$$msg > ${T}/$$msg2
+mv -f ${T}/$$msg2 ${T}/$$msg
+
 ##  Get the top-level newsgroup names from the message and turn it into
 ##  a regexp.
 PATS=`${SED} <${T}/$$msg \
