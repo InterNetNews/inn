@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Provide a command line interface to the storage manager
+**  Provide a command line interface to the storage manager.
 */
 
 #include "config.h"
@@ -16,13 +16,14 @@
 #include "inn/storage.h"
 
 static const char usage[] = "\
-Usage: sm [-dHiqrRSs] [token ...]\n\
+Usage: sm [-cdHiqrRSs] [token ...]\n\
 \n\
 Command-line interface to the INN storage manager.  The default action is\n\
 to display the complete article associated with each token given.  If no\n\
 tokens are specified on the command line, they're read from stdin, one per\n\
 line.\n\
 \n\
+    -c          Show clear information about a token\n\
     -d, -r      Delete the articles associated with the given tokens\n\
     -H          Display the headers of articles only\n\
     -i          Translate tokens into newsgroup names and article numbers\n\
@@ -35,6 +36,7 @@ line.\n\
    do with each token. */
 struct options {
     bool artinfo;               /* Show newsgroup and article number. */
+    bool clearinfo;             /* Show clear information about a token. */
     bool delete;                /* Delete articles instead of showing them. */
     bool header;                /* Display article headers only. */
     bool raw;                   /* Show the raw wire-format articles. */
@@ -156,6 +158,10 @@ process_token(const char *id, const struct options *options)
             printf("%s: %lu\n", artinfo.groupname, artinfo.artnum);
             free(artinfo.groupname);
         }
+    } else if (options->clearinfo) {
+        text = SMexplaintoken(token);
+        printf("%s %s\n", id, text);
+        free(text);
     } else if (options->delete) {
         if (!SMcancel(token)) {
             warn("could not remove %s: %s", id, SMerrorstr);
@@ -189,7 +195,7 @@ main(int argc, char *argv[])
 {
     int option;
     bool okay, status;
-    struct options options = { false, false, false, false, false };
+    struct options options = { false, false, false, false, false, false };
     bool store = false;
 
     /* Suppress notice messages like tradspool rebuilding its map. */
@@ -200,8 +206,11 @@ main(int argc, char *argv[])
     if (!innconf_read(NULL))
         exit(1);
 
-    while ((option = getopt(argc, argv, "iqrdRSsH")) != EOF) {
+    while ((option = getopt(argc, argv, "cdHiqrRSs")) != EOF) {
         switch (option) {
+        case 'c':
+            options.clearinfo = true;
+            break;
         case 'd':
         case 'r':
             options.delete = true;
@@ -246,6 +255,9 @@ main(int argc, char *argv[])
         die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
     if (store && (options.raw || options.rnews))
         die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
+    if (options.clearinfo && (options.artinfo || options.delete || options.header
+                              || options.raw || options.rnews || store))
+        die("-c cannot be used with -i, -r, -d, -H, -R, -S, or -s");
 
     /* Initialize the storage manager.  If we're doing article deletions, we
        need to open it read/write. */

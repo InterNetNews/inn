@@ -18,6 +18,7 @@ bool trash_cancel(TOKEN token);
 bool trash_ctl(PROBETYPE type, TOKEN *token, void *value);
 bool trash_flushcacheddata(FLUSHTYPE type);
 void trash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
+char *trash_explaintoken(const TOKEN token);
 void trash_shutdown(void);
 
 #endif

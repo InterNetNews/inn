@@ -38,16 +38,42 @@ typedef enum {FIND_DIR, FIND_ART, FIND_TOPDIR} FINDTYPE;
 
 static int SeqNum = 0;
 
+/*
+**  The token is @02nnaabbccddyyyy00000000000000000000@
+**  where "02" is the timehash method number,
+**  "nn" the hexadecimal value of the storage class,
+**  "aabbccdd" the arrival time in hexadecimal,
+**  "yyyy" the hexadecimal sequence number seqnum.
+**
+**  innconf->patharticles + '/time-nn/bb/cc/yyyy-aadd'
+**  where "nn" is the hexadecimal value of the storage class,
+**  "aabbccdd" the arrival time in hexadecimal,
+**  "yyyy" the hexadecimal sequence number seqnum.
+*/
+char *
+timehash_explaintoken(const TOKEN token)
+{
+    char                *text;
+    uint32_t            arrival;
+    uint16_t            seqnum;
+
+    memcpy(&arrival, &token.token[0], sizeof(arrival));
+    memcpy(&seqnum, &token.token[4], sizeof(seqnum));
+
+    xasprintf(&text, "method=timehash class=%u time=%lu seqnum=%lu file=%s/time-%02x/%02x/%02x/%04x-%02x%02x",
+              (unsigned int) token.class, ntohl(arrival), ntohs(seqnum),
+              innconf->patharticles, token.class, (ntohl(arrival) >> 16) & 0xff,
+              (ntohl(arrival) >> 8) & 0xff, ntohs(seqnum),
+              (ntohl(arrival) >> 24) & 0xff, ntohl(arrival) & 0xff);
+
+    return text;
+}
+
 static TOKEN MakeToken(time_t now, int seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     uint32_t            i;
     uint16_t            s;
 
-    /* The token is @02nnaabbccddyyyy00000000000000000000@
-     * where "02" is the timehash method number,
-     * "nn" the hexadecimal value of the storage class,
-     * "aabbccdd" the arrival time in hexadecimal,
-     * "yyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
     else
@@ -75,10 +101,6 @@ static char *MakePath(time_t now, int seqnum, const STORAGECLASS class) {
     char *path;
     size_t length;
 
-    /* innconf->patharticles + '/time-nn/bb/cc/yyyy-aadd'
-     * where "nn" is the hexadecimal value of the storage class,
-     * "aabbccdd" the arrival time in hexadecimal,
-     * "yyyy" the hexadecimal sequence number seqnum. */
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
     snprintf(path, length, "%s/time-%02x/%02x/%02x/%04x-%04x",

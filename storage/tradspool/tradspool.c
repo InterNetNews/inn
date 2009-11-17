@@ -78,6 +78,8 @@ NGTREENODE *NGTree;
 bool NGTableUpdated; /* set to true if we've added any entries since reading
 			in the database file */
 
+static char * TokenToPath(TOKEN token);
+
 /*
 ** Convert all .s to /s in a newsgroup name.  Modifies the passed string
 ** inplace.
@@ -462,19 +464,52 @@ tradspool_init(SMATTRIBUTE *attr) {
     return InitNGTable();
 }
 
-/* Make a token for an article given the primary newsgroup name and article # */
+/*
+**  The token is @05nnxxxxxxxxyyyyyyyy0000000000000000@
+**  where "05" is the tradspool method number,
+**  "nn" the hexadecimal value of the storage class,
+**  "xxxxxxxx" the name of the primary newsgroup (as defined
+**  in <pathspool>/tradspool.map),
+**  "yyyyyyyy" the article number in the primary newsgroup.
+**
+**  innconf->patharticles + '/news/group/path/yyyyyyyy'
+**  where "news/group/path" is the path of the primary newsgroup
+**  (as defined in <pathspool>/tradspool.map),
+**  "yyyyyyyy" the article number in the primary newsgroup.
+*/
+char *
+tradspool_explaintoken(const TOKEN token)
+{
+    char                *text;
+    char                *path;
+    uint32_t            ngnum;
+    uint32_t            artnum;
+
+    memcpy(&ngnum, &token.token[0], sizeof(ngnum));
+    memcpy(&artnum, &token.token[4], sizeof(artnum));
+
+    path = TokenToPath(token);
+
+    xasprintf(&text, "method=tradspool class=%u ngnum=%lu artnum=%lu file=%s",
+              (unsigned int) token.class, ntohl(ngnum), ntohl(artnum),
+              path != NULL ? path : "");
+
+    if (path != NULL)
+        free(path);
+
+    return text;
+}
+
+/*
+**  Make a token for an article given the primary newsgroup name and
+**  article number.
+*/
 static TOKEN
 MakeToken(char *ng, unsigned long artnum, STORAGECLASS class) {
     TOKEN token;
     NGTENT *ngtp;
     unsigned long num;
 
-    /* The token is @05nnxxxxxxxxyyyyyyyy0000000000000000@
-     * where "05" is the tradspool method number,
-     * "nn" the hexadecimal value of the storage class,
-     * "xxxxxxxx" the name of the primary newsgroup (as defined
-     * in <pathspool>/tradspool.map),
-     * "yyyyyyyy" the article number in the primary newsgroup. */
     memset(&token, '\0', sizeof(token));
 
     token.type = TOKEN_TRADSPOOL;
@@ -507,10 +542,6 @@ TokenToPath(TOKEN token) {
     char *ng, *path;
     size_t length;
 
-    /* innconf->patharticles + '/news/group/path/yyyyyyyy'
-     * where "news/group/path" is the path of the primary newsgroup
-     * (as defined in <pathspool>/tradspool.map),
-     * "yyyyyyyy" the article number in the primary newsgroup. */
     CheckNeedReloadDB(false);
 
     memcpy(&ngnum, &token.token[0], sizeof(ngnum));

@@ -148,10 +148,6 @@ sample.init.script
     the system since INN and related programs can be file descriptor hogs.
     It then starts INN.
 
-showtoken
-
-    Decodes storage API tokens.
-
 stathist
 
     Parses and summarizes the log files created by the history profiling

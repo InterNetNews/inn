@@ -18,6 +18,7 @@ bool timehash_cancel(TOKEN token);
 bool timehash_ctl(PROBETYPE type, TOKEN *token, void *value);
 bool timehash_flushcacheddata(FLUSHTYPE type);
 void timehash_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
+char *timehash_explaintoken(const TOKEN token);
 void timehash_shutdown(void);
 
 #endif

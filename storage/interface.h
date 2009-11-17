@@ -27,6 +27,7 @@ typedef struct {
     bool                (*ctl)(PROBETYPE type, TOKEN *token, void *value);
     bool                (*flushcacheddata)(FLUSHTYPE type);
     void                (*printfiles)(FILE *, TOKEN, char **xref, int ngroups);
+    char                *(*explaintoken)(const TOKEN token);
     void                (*shutdown)(void);
 } STORAGE_METHOD;
 
