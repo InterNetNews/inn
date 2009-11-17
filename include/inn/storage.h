@@ -85,6 +85,7 @@ bool        SMcancel(TOKEN token);
 bool        SMprobe(PROBETYPE type, TOKEN *token, void *value);
 bool        SMflushcacheddata(FLUSHTYPE type);
 void        SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups);
+char *      SMexplaintoken(const TOKEN token);
 void        SMshutdown(void);
 
 END_DECLS

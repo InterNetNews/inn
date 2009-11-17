@@ -15,7 +15,7 @@ use vars qw(@OVERVIEW @STORAGE);
 
 # Storage API functions.
 @STORAGE = qw(init store retrieve next freearticle cancel ctl flushcacheddata
-              printfiles shutdown);
+              printfiles explaintoken shutdown);
 
 # Overview API functions.
 @OVERVIEW = qw(open groupstats groupadd groupdel add cancel opensearch search

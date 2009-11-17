@@ -60,18 +60,51 @@ static long		pagesize = 0;
 static int		metabuff_update = METACYCBUFF_UPDATE;
 static int		refresh_interval = REFRESH_INTERVAL;
 
+static CYCBUFF          *CNFSgetcycbuffbyname(char *name);
+
+
+/*
+**  The token is @03nnxxxxxxxxxxxxxxxxyyyyyyyyzzzzzzzz@
+**  where "03" is the cnfs method number,
+**  "nn" the hexadecimal value of the storage class,
+**  "xxxxxxxxxxxxxxxx" the name of the cyclic buffer (as defined
+**  in <pathetc>/cycbuff.conf),
+**  "yyyyyyyy" the block,
+**  "zzzzzzzz" the cyclic number.
+*/
+char *
+cnfs_explaintoken(const TOKEN token)
+{
+    char                *text;
+    CYCBUFF             *cycbuff;
+    char                cycbuffname[CNFSMAXCYCBUFFNAME+1];
+    unsigned int        blksz;
+    uint32_t            block;
+    uint32_t            cycnum;
+
+    snprintf(cycbuffname, sizeof(cycbuffname), "%s", token.token);
+
+    if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
+        blksz = CNFS_DFL_BLOCKSIZE;
+    } else {
+        blksz = (unsigned int) cycbuff->blksz;
+    }
+
+    memcpy(&block, &token.token[8], sizeof(block));
+    memcpy(&cycnum, &token.token[12], sizeof(cycnum));
+    xasprintf(&text, "method=cnfs class=%u buffer=%s block=%lu blocksize=%u cycnum=%lu file=%s",
+              (unsigned int) token.class, cycbuffname, ntohl(block), blksz, ntohl(cycnum),
+              cycbuff ? cycbuff->path : "");
+
+    return text;
+}
+
+
 static TOKEN CNFSMakeToken(char *cycbuffname, off_t offset,
 			   int blksz, uint32_t cycnum, STORAGECLASS class) {
     TOKEN               token;
     uint32_t		uint32;
 
-    /* The token is @03nnxxxxxxxxxxxxxxxxyyyyyyyyzzzzzzzz@
-     * where "03" is the cnfs method number,
-     * "nn" the hexadecimal value of the storage class,
-     * "xxxxxxxxxxxxxxxx" the name of the cyclic buffer (as defined
-     * in <pathetc>/cycbuff.conf),
-     * "yyyyyyyy" the offset,
-     * "zzzzzzzz" the cyclic number. */
     token.type = TOKEN_CNFS;
     token.class = class;
     memcpy(token.token, cycbuffname, CNFSMAXCYCBUFFNAME);

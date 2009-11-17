@@ -70,6 +70,13 @@ have been removed from the syntax.
 
 =item *
 
+A new feature has been added to B<sm>.  When the B<-c> flag is used,
+it shows a clear, decoded form of the storage API token.  This
+was previously done by the contrib B<showtoken> script developed
+by Olaf Titz and Marco d'Itri.
+
+=item *
+
 A new "unsigned long" type bas been added to the configuration parser.  It
 will properly warn the news administrator when a variable supposed to
 be positive contains a negative integer.  It will prevent INN

@@ -11,7 +11,7 @@ CFLAGS        = $(GCFLAGS)
 
 ALL	      = archivegz backlogstat cleannewsgroups delayer \
 		findreadgroups makeexpctl makestorconf mlockfile newsresp \
-		pullart reset-cnfs respool showtoken stathist thdexpire \
+		pullart reset-cnfs respool stathist thdexpire \
 		tunefeed
 
 all: $(ALL)
@@ -49,7 +49,6 @@ delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in
 findreadgroups:  findreadgroups.in  $(FIX) ; $(FIX) findreadgroups.in
 makeexpctl:      makeexpctl.in      $(FIX) ; $(FIX) makeexpctl.in
 makestorconf:    makestorconf.in    $(FIX) ; $(FIX) makestorconf.in
-showtoken:       showtoken.in       $(FIX) ; $(FIX) -i showtoken.in
 stathist:        stathist.in        $(FIX) ; $(FIX) -i stathist.in
 thdexpire:       thdexpire.in       $(FIX) ; $(FIX) thdexpire.in
 tunefeed:        tunefeed.in        $(FIX) ; $(FIX) -i tunefeed.in

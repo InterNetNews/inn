@@ -123,7 +123,6 @@ contrib/newsresp
 contrib/pullart
 contrib/reset-cnfs
 contrib/respool
-contrib/showtoken
 contrib/stathist
 contrib/thdexpire
 contrib/tunefeed

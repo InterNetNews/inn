@@ -97,17 +97,45 @@ typedef struct caftocl3cache CAFTOCL3CACHE;
 static CAFTOCL3CACHE *TOCCache[256]; /* indexed by storage class! */
 static int TOCCacheHits, TOCCacheMisses;
 
+/*
+**  The token is @04nn00aabbccyyyyxxxx0000000000000000@
+**  where "04" is the timecaf method number,
+**  "nn" the hexadecimal value of the storage class,
+**  "aabbccdd" the arrival time in hexadecimal (dd is unused),
+**  "xxxxyyyy" the hexadecimal sequence number seqnum.
+**
+**  innconf->patharticles + '/timecaf-nn/bb/aacc.CF'
+**  where "nn" is the hexadecimal value of the storage class,
+**  "aabbccdd" the arrival time in hexadecimal (dd is unused).
+*/
+char *
+timecaf_explaintoken(const TOKEN token)
+{
+    char                *text;
+    uint32_t            arrival;
+    uint16_t            seqnum1;
+    uint16_t            seqnum2;
+
+    memcpy(&arrival, &token.token[0], sizeof(arrival));
+    memcpy(&seqnum1, &token.token[4], sizeof(seqnum1));
+    memcpy(&seqnum2, &token.token[6], sizeof(seqnum2));
+ 
+    xasprintf(&text, "method=timecaf class=%u time=%lu seqnum=%lu file=%s/timecaf-%02x/%02x/%02x%02x.CF",
+              (unsigned int) token.class, ntohl(arrival) << 8,
+              ntohs(seqnum1) + (ntohs(seqnum2) << 16),
+              innconf->patharticles, token.class,
+              (ntohl(arrival) >> 8) & 0xff,
+              (ntohl(arrival) >> 16) & 0xff,
+              ntohl(arrival) & 0xff);
+
+    return text;
+}
 
 static TOKEN MakeToken(time_t now, ARTNUM seqnum, STORAGECLASS class, TOKEN *oldtoken) {
     TOKEN               token;
     uint32_t            i;
     uint16_t            s;
 
-    /* The token is @04nn00aabbccyyyyxxxx0000000000000000@
-     * where "04" is the timecaf method number,
-     * "nn" the hexadecimal value of the storage class,
-     * "aabbccdd" the arrival time in hexadecimal (dd is unused),
-     * "xxxxyyyy" the hexadecimal sequence number seqnum. */
     if (oldtoken == (TOKEN *)NULL)
 	memset(&token, '\0', sizeof(token));
     else
@@ -144,9 +172,6 @@ static char *MakePath(time_t now, const STORAGECLASS class) {
     char *path;
     size_t length;
 
-    /* innconf->patharticles + '/timecaf-nn/bb/aacc.CF'
-     * where "nn" is the hexadecimal value of the storage class,
-     * "aabbccdd" the arrival time in hexadecimal (dd is unused). */
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
     snprintf(path, length, "%s/timecaf-%02x/%02x/%02x%02x.CF",

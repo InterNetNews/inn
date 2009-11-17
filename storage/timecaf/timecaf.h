@@ -20,6 +20,7 @@ bool timecaf_cancel(TOKEN token);
 bool timecaf_ctl(PROBETYPE type, TOKEN *token, void *value);
 bool timecaf_flushcacheddata(FLUSHTYPE type);
 void timecaf_printfiles(FILE *file, TOKEN token, char **xref, int ngroups);
+char *timecaf_explaintoken(const TOKEN token);
 void timecaf_shutdown(void);
 
 #endif

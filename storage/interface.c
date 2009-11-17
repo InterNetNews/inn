@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  Storage Manager interface
+**  Storage Manager interface.
 */
 #include "config.h"
 #include "clibrary.h"
@@ -790,6 +790,15 @@ void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups) {
 	return;
     }
     storage_methods[typetoindex[token.type]].printfiles(file, token, xref, ngroups);
+}
+
+/*
+**  Print a clear, decoded information on a token.
+*/
+char *
+SMexplaintoken(const TOKEN token)
+{
+    return storage_methods[typetoindex[token.type]].explaintoken(token);
 }
 
 void SMshutdown(void) {

@@ -82,6 +82,16 @@ trash_printfiles(FILE *file UNUSED, TOKEN token UNUSED, char **xref UNUSED,
 {
 }
 
+char *
+trash_explaintoken(const TOKEN token UNUSED)
+{
+    char *text;
+
+    xasprintf(&text, "method=%s", "trash");
+
+    return text;
+}
+
 ARTHANDLE *
 trash_next(ARTHANDLE *article UNUSED, const RETRTYPE amount UNUSED)
 {
