@@ -9,7 +9,7 @@ it is not passed off to B<innd> for normal handling; instead, it is sent
 via e-mail to the submission address for that newsgroup.  The submission
 address is determined using this configuration file.
 
-The F<moderators> file is a list of associations between uwildmat(3)
+The file I<pathetc>/moderators is a list of associations between uwildmat(3)
 patterns matching newsgroups and the submission address for those
 newsgroups.  Blank lines and lines starting with a number sign (C<#>) are
 ignored.  All other lines should consist of two fields separated by a
@@ -22,7 +22,7 @@ which this line applies.  The first matching line is used, so more
 specific patterns should be listed before general patterns.
 
 The second field, the submission address, should be a simple e-mail
-adddress with one exception:  At most C<%s> may occur anywhere in the
+address with one exception:  at most one C<%s> may occur anywhere in the
 address.  If present, it will be replaced by the name of the newsgroup,
 with all periods in the name changed to dashes (C<->).  If there is a
 literal C<%> in the submission address, it must be written as C<%%>, even
@@ -33,7 +33,7 @@ days when periods in the local part of addresses were not always handled
 correctly.  It's probably no longer necessary, but so much now depends on
 it that it can't be easily changed.
 
-It's intended that the sample moderators file included in the INN
+It's intended that the sample F<moderators> file included in the INN
 distribution always be sufficient for all world-wide newsgroups.  The
 hosts behind moderators.isc.org have graciously volunteered to handle
 forwarding tasks for all world-wide newsgroups so that individual sites
@@ -66,10 +66,10 @@ column below will be sent to the address shown in the right column below:
     example.x-announce  example-x-announce@smtp.example.com
     alt.dev.null        alt-dev-null@moderators.isc.org
 
-Note that periods are changed to dashes and dashes are left alone, so two
-moderated newsgroups whose names differ only by changing a period to a
-dash would go to the same address.  Such newsgroup pairs should therefore
-not be created.
+Note that periods are changed to dashes and dashes are left alone with
+the C<%s> syntax, so two moderated newsgroups whose names differ only by
+changing a period to a dash would go to the same address.  Such newsgroup
+pairs should therefore not be created.
 
 =head1 HISTORY
 
@@ -80,6 +80,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5), nnrpd(8), uwildmat(3)
+inn.conf(5), nnrpd(8), uwildmat(3).
 
 =cut

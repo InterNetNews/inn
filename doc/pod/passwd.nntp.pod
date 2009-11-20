@@ -1,10 +1,10 @@
 =head1 NAME
 
-passwd.nntp - passwords for connecting to remote NNTP servers
+passwd.nntp - Passwords for connecting to remote NNTP servers
 
 =head1 DESCRIPTION
 
-The file F<passwd.nntp> in I<pathetc> contains host / name / password
+The file I<pathetc>/passwd.nntp contains host / name / password
 triplets for use when authenticating client programs to NNTP servers.
 This file is normally interpreted by NNTPsendpassword() in libinn(3).
 Blank lines and lines beginning with a number sign (C<#>) are ignored.
