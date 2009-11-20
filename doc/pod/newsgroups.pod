@@ -7,7 +7,7 @@ newsgroups - List of newsgroups and their short descriptions
 The file I<pathdb>/newsgroups contains a list of newsgroups for which
 a short description is available.  This file is generally updated by
 controlchan(8) whenever a control message is received; it is used by
-B<nnrpd> in response to C<LIST NEWSGROUPS> and is only meant to provide
+B<nnrpd> in response to LIST NEWSGROUPS and is only meant to provide
 information to users.  News readers often show the list of carried
 newsgroups along with these descriptions.
 

@@ -13,7 +13,8 @@ of a news server to which they are fed.  See newsfeeds(5) for more
 information about how a news server handles the Distribution: header.
 
 Each line of this file consists in a distribution area followed by
-its description after at least a whitespace.  For instance:
+its description (encoded in UTF-8) after at least a whitespace.  For
+instance:
 
     fr      Local to France.
     local   Local to this news server.

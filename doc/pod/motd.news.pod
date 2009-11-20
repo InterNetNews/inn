@@ -9,11 +9,16 @@ news readers in a free-form format.  The entire file is returned verbatim
 to any client that issues the LIST MOTD command.  This might be used for
 new information, notification of upcoming downtime, or similar purposes.
 
+Make sure that the F<motd.news> file is encoded in UTF-8.  It should also
+be "dot-stuffed", that is to say that a line beginning with a dot should
+have that dot doubled.
+
 Be aware that use of the LIST MOTD command is not widespread and most news
 clients will never ask for this file.
 
 If this file is missing, it is not an error.  The server will just send
-the client an empty response.
+p
+the client the appropriate response for an unmaintained F<motd.news> file.
 
 =head1 HISTORY
 
@@ -23,6 +28,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn.conf(5)
+inn.conf(5).
 
 =cut

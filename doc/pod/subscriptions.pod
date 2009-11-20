@@ -4,13 +4,13 @@ subscriptions - Default recommended subscriptions
 
 =head1 DESCRIPTION
 
-The I<pathetc>/F<subscriptions> file contains a list of newsgroups that is
+The I<pathetc>/subscriptions file contains a list of newsgroups that is
 returned by the NNTP command LIST SUBSCRIPTIONS.
 
-Clients that support this command and send it the first time they connect
-to a new news server use the returned list to initialize the list of
+Clients that support this command usually send it the first time they connect
+to a new news server.  They use the returned list to initialize the list of
 subscribed newsgroups.  The F<subscriptions> file therefore should contain
-groups intented for new users, for testing, or that contain FAQs and other
+groups intended for new users, for testing, or that contain FAQs and other
 useful information for first-time Usenet users.
 
 The syntax of the F<subscriptions> file is trivial; it is a simple list of
