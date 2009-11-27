@@ -1093,50 +1093,35 @@ NCproc(CHANNEL *cp)
       }
       /* i points where "\n" is; go forward. */
       cp->Next = ++i;
+
       /* Never move data so long as "\r\n" is found, since subsequent
        * data may also include a command line. */
       movedata = false;
       readmore = false;
+
       /* Ignore too small lines. */
       if (i - cp->Start < 3) {
         cp->Start = cp->Next;
 	break;
       }
+
       p = &bp->data[i];
-      if (p[-2] != '\r') { /* Probably in an article. */
-	char *tmpstr;
-
-	tmpstr = xmalloc(i - cp->Start + 1);
-	memcpy(tmpstr, bp->data + cp->Start, i - cp->Start);
-	tmpstr[i - cp->Start] = '\0';
-
-	syslog(L_NOTICE, "%s bad_command %s", CHANname(cp),
-	  MaxLength(tmpstr, tmpstr));
-	free(tmpstr);
-
-	if (++(cp->BadCommands) >= BAD_COMMAND_COUNT) {
-	  cp->State = CSwritegoodbye;
-          snprintf(buff, sizeof(buff), "%d Too many unrecognized commands",
-                   NNTP_FAIL_TERMINATING);
-	  NCwritereply(cp, buff);
-	  break;
-	}
-        snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
-	NCwritereply(cp, buff);
-	/* Still some data left, go for it. */
-	cp->Start = cp->Next;
-	break;
-      }
-
       q = &bp->data[cp->Start];
+
       /* Ignore blank lines. */
       if (*q == '\0' || i - cp->Start == 2) {
 	cp->Start = cp->Next;
 	break;
       }
 
-      /* Guarantee null-termination. */
-      p[-2] = '\0';
+      /* Guarantee null-termination.  Usually, "\r\n" is found at the end
+       * of the command line.  In case we only have "\n", we also accept
+       * the command. */
+      if (p[-2] == '\r')
+          p[-2] = '\0';
+      else
+          p[-1] = '\0';
+
       p = q;
       cp->ac = nArgify(p, &cp->av, 1);
 
