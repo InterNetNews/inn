@@ -132,7 +132,7 @@ MaxLength(char *p, char *q)
 
 
 /*
-**  Trim trailing spaces, return pointer to first non-space char.
+**  Trim leading and trailing spaces, return the length of the result.
 */
 int
 TrimSpaces(char *p)
@@ -400,6 +400,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if (ihave)
 	    return "Missing Message-ID: header";
 	HDR_SET(HDR__MESSAGEID, idbuff);
+    }
+    if (!IsValidMessageID(HDR(HDR__MESSAGEID), true)) {
+        return "Can't parse Message-ID: header";
     }
 
     /* Set the Path: header. */
@@ -792,6 +795,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 {
     static char		CANTSEND[] = "Can't send %s to server, %s";
 
+    /* We have a valid message-ID here (checked beforehand). */
     fprintf(ToServer, "IHAVE %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
@@ -1149,11 +1153,13 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     if (i != NNTP_CONT_IHAVE) {
         strlcpy(Error, buff, sizeof(Error));
         SendQuit(FromServer, ToServer);
-	if (i != NNTP_FAIL_IHAVE_REFUSE)
-	    return Spoolit(article, Error);
 	if (i == NNTP_FAIL_IHAVE_REJECT || i == NNTP_FAIL_IHAVE_DEFER) {
 	    *permanent = false;
 	}
+        /* As the syntax of the IHAVE command sent by nnrpd is valid,
+         * the only valid case of response is a refusal. */
+        if (i != NNTP_FAIL_IHAVE_REFUSE)
+            return Spoolit(article, Error);
         return Error;
     }
     if (Tracing)

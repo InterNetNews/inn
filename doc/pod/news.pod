@@ -153,9 +153,11 @@ qualified domain name.  Thanks to Petr Novopashenniy for the bug report.
 
 =item *
 
-Fixed a bug on the parsing of Message-ID: and Supersedes: headers
+Fixed a bug on how B<innd> was parsing Message-ID: and Supersedes: headers
 which contained trailing whitespaces.  The article ended up
 corrupted because of an unexpected "\r" in the middle of the header.
+Besides, B<nnrpd> now checks the syntax of the Message-ID: header,
+if present.
 
 =item *
 
