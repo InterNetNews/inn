@@ -222,6 +222,8 @@ valid_overview_string(const char *string, bool full)
        We also allow high-bit characters, just in case, but not DEL. */
     p = (const unsigned char *) string;
     if (full) {
+        if (*p == '\0' || (*p == '\r' && p[1] == '\n' && p[2] == '\0'))
+            return true;
         for (; *p != '\0' && *p != ':'; p++)
             if (!CTYPE(isgraph, *p))
                 return false;
@@ -232,9 +234,9 @@ valid_overview_string(const char *string, bool full)
             return false;
     }
     for (p++; *p != '\0'; p++) {
-        if (*p == '\015' && p[1] == '\012' && p[2] == '\0')
+        if (*p == '\r' && p[1] == '\n' && p[2] == '\0')
             break;
-        if (*p == '\015' || *p == '\012')
+        if (*p == '\r' || *p == '\n')
             return false;
     }
     return true;
