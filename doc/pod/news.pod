@@ -171,6 +171,11 @@ generating overview data, and B<archive> did not change "\n"
 
 =item *
 
+Fixed a bug in B<tdx-util> which was not properly parsing empty overview
+fields when called with B<-A> or B<-F>.
+
+=item *
+
 Fixed a bug in B<cvtbatch> which was returning only the size of the
 headers of an article when the C<b> parameter was used with the B<-w>
 flag.  It now correctly returns the size of the whole article, which
