@@ -41,7 +41,7 @@ static LISTINFO         INFOheaders = {
 };
 static LISTINFO               INFOsubs = {
     "SUBSCRIPTIONS", INN_PATH_NNRPSUBS, NULL, false,
-    "automatic group subscriptions", "Subscriptions in form \"group\""
+    "recommended group subscriptions", "Subscriptions in form \"group\""
 };
 static LISTINFO		INFOdistribpats = {
     "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
@@ -206,12 +206,12 @@ CMDlist(int ac, char *av[])
 		return;
 	}
     } else if (lp == &INFOgroups || lp == &INFOactivetimes
-               || lp == &INFOheaders) {
+               || lp == &INFOheaders || lp == &INFOsubs) {
 	if (ac == 3)
 	    wildarg = av[2];
     }
     /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES,
-     * HEADERS or NEWSGROUPS keywords are used. */
+     * HEADERS, NEWSGROUPS or SUBSCRIPTIONS keywords are used. */
     if (ac > 2 && !wildarg) {
         Reply("%d Unexpected wildmat\r\n", NNTP_ERR_SYNTAX);
         return;
@@ -243,7 +243,7 @@ CMDlist(int ac, char *av[])
     }
 
     Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
-    if (!PERMspecified) {
+    if (!PERMspecified && lp != &INFOmotd) {
 	/* Optimize for unlikely case of no permissions and false default. */
 	QIOclose(qp);
 	Printf(".\r\n");
@@ -304,6 +304,7 @@ CMDlist(int ac, char *av[])
 	    if (!PERMmatch(PERMreadlist, grplist))
 		continue;
 	}
+
         /* Check whether the newsgroup matches the wildmat pattern,
          * if given. */
 	if (wildarg && !uwildmat(p, wildarg))
