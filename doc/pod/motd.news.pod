@@ -17,7 +17,6 @@ Be aware that use of the LIST MOTD command is not widespread and most news
 clients will never ask for this file.
 
 If this file is missing, it is not an error.  The server will just send
-p
 the client the appropriate response for an unmaintained F<motd.news> file.
 
 =head1 HISTORY
