@@ -12,7 +12,7 @@ that such articles will not leak elsewhere because of a misconfiguration
 of a news server to which they are fed.  See newsfeeds(5) for more
 information about how a news server handles the Distribution: header.
 
-Each line of this file consists in a distribution area followed by
+Each line of this file consists of a distribution area followed by
 its description (encoded in UTF-8) after at least a whitespace.  For
 instance:
 

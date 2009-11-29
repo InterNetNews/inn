@@ -28,10 +28,10 @@ with all periods in the name changed to dashes (C<->).  If there is a
 literal C<%> in the submission address, it must be written as C<%%>, even
 if not followed by an C<s>.
 
-Periods are converted to dashes for historical reasons, from back in the
-days when periods in the local part of addresses were not always handled
-correctly.  It's probably no longer necessary, but so much now depends on
-it that it can't be easily changed.
+With the C<%s> syntax, periods are converted to dashes for historical reasons,
+from back in the days when periods in the local part of addresses were not
+always handled correctly.  It's probably no longer necessary, but so much now
+depends on it that it can't be easily changed.
 
 It's intended that the sample F<moderators> file included in the INN
 distribution always be sufficient for all world-wide newsgroups.  The
