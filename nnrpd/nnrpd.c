@@ -142,7 +142,7 @@ static CMDENT	CMDtable[] = {
     {	"LIST",		CMDlist,	true,	1,	3,      true,
 	"[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|DISTRIB.PATS|DISTRIBUTIONS"
         "|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
-        "|OVERVIEW.FMT|SUBSCRIPTIONS]" },
+        "|OVERVIEW.FMT|SUBSCRIPTIONS [wildmat]]" },
     {	"LISTGROUP",	CMDgroup,	true,	1,	3,      true,
 	"[newsgroup [range]]" },
     {	"MODE",		CMDmode,	false,	2,	2,      true,
