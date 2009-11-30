@@ -77,7 +77,7 @@ extern int x_asprintf(char **, const char *, int, const char *, ...)
     __attribute__((__format__(printf, 4, 5)));
 #else
 extern int x_asprintf(char **, const char *, ...)
-    __attribute__((__format__(printf, 4, 5)));
+    __attribute__((__format__(printf, 2, 3)));
 #endif
 
 /* Failure handler takes the function, the size, the file, and the line. */
