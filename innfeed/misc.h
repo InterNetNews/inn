@@ -49,7 +49,8 @@ extern char *timeToStringFormat ;
 extern unsigned int openfds ;
 
 /* if level <= loggingLevel then print */
-void d_printf (unsigned int level, const char *fmt, ...) __attribute__ ((__format__ (printf, 2, 3)));
+void d_printf (unsigned int level, const char *fmt, ...)
+    __attribute__((__format__ (printf, 2, 3)));
 
 /* for the gethostbyname() error code */
 const char *host_err_str (void) ;
@@ -68,7 +69,7 @@ char *findNonBlankString (char *ptr, char **tail) ;
 
 /* if fp is not NULL then print to it, otherwise syslog at the level. */
 void logOrPrint (int level, FILE *fp, const char *fmt, ...)
-  __attribute__ ((__format__ (printf, 3, 4)));
+    __attribute__((__format__(printf, 3, 4)));
 
 /* Error handling functions for use with warn and die. */
 void error_log_stderr_date(int len, const char *fmt, va_list args, int err);
@@ -78,7 +79,7 @@ int dump_core(void);
 
 /* Alternate die that doesn't invoke an error handler. */
 void logAndExit (int exitVal, const char *fmt, ...)
-  __attribute__ ((__format__ (printf, 2, 3)));
+    __attribute__((__format__(printf, 2, 3)));
 
 /* return true of the file exists and is a regular file */
 bool fileExistsP (const char *filename) ;

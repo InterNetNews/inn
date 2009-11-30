@@ -227,15 +227,19 @@ bool nntp_write(struct nntp *, const char *buffer, size_t size);
 
 /* Send a line to the remote connection.  The output is flushed after sending
    the line unless the noflush variant is used. */
-bool nntp_send_line(struct nntp *, const char *format, ...);
-bool nntp_send_line_noflush(struct nntp *, const char *format, ...);
+bool nntp_send_line(struct nntp *, const char *format, ...)
+    __attribute__((__format__(printf, 2, 3)));
+bool nntp_send_line_noflush(struct nntp *, const char *format, ...)
+    __attribute__((__format__(printf, 2, 3)));
 
 /* Send a response to an NNTP command or an opening banner.  The string may be
    NULL to indicate nothing should follow the response code; otherwise, it is
    a printf-style format.  The noflush variant doesn't flush the output after
    sending it, used for introducing multiline responses. */
-bool nntp_respond(struct nntp *, enum nntp_code, const char *, ...);
-void nntp_respond_noflush(struct nntp *, enum nntp_code, const char *, ...);
+bool nntp_respond(struct nntp *, enum nntp_code, const char *, ...)
+    __attribute__((__format__(printf, 3, 4)));
+void nntp_respond_noflush(struct nntp *, enum nntp_code, const char *, ...)
+    __attribute__((__format__(printf, 3, 4)));
 
 /* Flush NNTP output, returning true on success and false on any error. */
 bool nntp_flush(struct nntp *);

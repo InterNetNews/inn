@@ -772,7 +772,7 @@ CMDnextlast(int ac UNUSED, char *av[])
         ARTclose();
     } while (msgid == NULL);
 
-    Reply("%d %d %s Article retrieved; request text separately\r\n",
+    Reply("%d %lu %s Article retrieved; request text separately\r\n",
 	   NNTP_OK_STAT, ARTnumber, msgid);
 }
 
@@ -955,7 +955,7 @@ CMDover(int ac, char *av[])
             Reply("%d No articles in %s\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
         else
-            Reply("%d Current article number %d is invalid\r\n",
+            Reply("%d Current article number %lu is invalid\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
         if (xover)
             Printf(".\r\n");
@@ -999,7 +999,7 @@ CMDover(int ac, char *av[])
                 Reply("%d Overview information for %s follows\r\n",
                       NNTP_OK_OVER, av[1]);
             else
-                Reply("%d Overview information for %d follows\r\n",
+                Reply("%d Overview information for %lu follows\r\n",
                       NNTP_OK_OVER, ARTnumber);
             fflush(stdout);
             HasNotReplied = false;
@@ -1067,7 +1067,7 @@ CMDover(int ac, char *av[])
             Reply("%d No articles in %s\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
         else
-            Reply("%d Current article number %d is invalid\r\n",
+            Reply("%d Current article number %lu is invalid\r\n",
                   xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
         if (xover)
             Printf(".\r\n");
@@ -1156,7 +1156,7 @@ CMDpat(int ac, char *av[])
         p++;
         if (strncasecmp(header, ":", 1) == 0 && IsValidHeaderName(p)) {
             Reply("%d Unsupported metadata request\r\n",
-                  NNTP_ERR_UNAVAILABLE, header);
+                  NNTP_ERR_UNAVAILABLE);
             return;
         } else if (!IsValidHeaderName(header)) {
             Reply("%d Syntax error in header name\r\n", NNTP_ERR_SYNTAX);
@@ -1263,7 +1263,7 @@ CMDpat(int ac, char *av[])
                         Reply("%d No articles in %s\r\n",
                               NNTP_FAIL_BAD_ARTICLE, av[2]);
                     else
-                        Reply("%d Current article number %d is invalid\r\n",
+                        Reply("%d Current article number %lu is invalid\r\n",
                               NNTP_FAIL_NO_ARTICLE, ARTnumber);
                 } else {
                     Reply("%d No header information for %s follows (from articles)\r\n",
@@ -1286,7 +1286,7 @@ CMDpat(int ac, char *av[])
                     Reply("%d No articles in %s\r\n",
                           NNTP_FAIL_BAD_ARTICLE, av[2]);
                 else
-                    Reply("%d Current article number %d is invalid\r\n",
+                    Reply("%d Current article number %lu is invalid\r\n",
                           NNTP_FAIL_NO_ARTICLE, ARTnumber);
             } else {
                 Reply("%d No header information for %s follows (from overview)\r\n",
@@ -1343,7 +1343,7 @@ CMDpat(int ac, char *av[])
                     Reply("%d No articles in %s\r\n",
                           NNTP_FAIL_BAD_ARTICLE, av[2]);
                 else
-                    Reply("%d Current article number %d is invalid\r\n",
+                    Reply("%d Current article number %lu is invalid\r\n",
                           NNTP_FAIL_NO_ARTICLE, ARTnumber);
             } else {
                 Reply("%d No header or metadata information for %s follows (from overview)\r\n",

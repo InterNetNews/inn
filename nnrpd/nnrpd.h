@@ -229,8 +229,10 @@ extern void		PERMlogin(char *uname, char *pass, int* code, char *errorstr);
 extern bool		PERMmatch(char **Pats, char **list);
 extern bool		ParseDistlist(char ***argvp, char *list);
 extern void 		SetDefaultAccess(ACCESSGROUP*);
-extern void		Reply(const char *fmt, ...);
-extern void             Printf(const char *fmt, ...);
+extern void		Reply(const char *fmt, ...)
+    __attribute__((__format__(printf, 1, 2)));
+extern void             Printf(const char *fmt, ...)
+    __attribute__((__format__(printf, 1, 2)));
 
 extern void             CMDauthinfo     (int ac, char** av);
 extern void             CMDcapabilities (int ac, char** av);

@@ -73,9 +73,11 @@ extern int x_vasprintf(char **, const char *, va_list, const char *, int);
 
 /* asprintf special case. */
 #if INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS
-extern int x_asprintf(char **, const char *, int, const char *, ...);
+extern int x_asprintf(char **, const char *, int, const char *, ...)
+    __attribute__((__format__(printf, 4, 5)));
 #else
-extern int x_asprintf(char **, const char *, ...);
+extern int x_asprintf(char **, const char *, ...)
+    __attribute__((__format__(printf, 4, 5)));
 #endif
 
 /* Failure handler takes the function, the size, the file, and the line. */

@@ -121,8 +121,8 @@ timecaf_explaintoken(const TOKEN token)
     memcpy(&seqnum2, &token.token[6], sizeof(seqnum2));
  
     xasprintf(&text, "method=timecaf class=%u time=%lu seqnum=%lu file=%s/timecaf-%02x/%02x/%02x%02x.CF",
-              (unsigned int) token.class, ntohl(arrival) << 8,
-              ntohs(seqnum1) + (ntohs(seqnum2) << 16),
+              (unsigned int) token.class, ((unsigned long) (ntohl(arrival))) << 8,
+              ((unsigned long) ntohs(seqnum1)) + (((unsigned long) ntohs(seqnum2)) << 16),
               innconf->patharticles, token.class,
               (ntohl(arrival) >> 8) & 0xff,
               (ntohl(arrival) >> 16) & 0xff,

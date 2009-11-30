@@ -93,8 +93,8 @@ cnfs_explaintoken(const TOKEN token)
     memcpy(&block, &token.token[8], sizeof(block));
     memcpy(&cycnum, &token.token[12], sizeof(cycnum));
     xasprintf(&text, "method=cnfs class=%u buffer=%s block=%lu blocksize=%u cycnum=%lu file=%s",
-              (unsigned int) token.class, cycbuffname, ntohl(block), blksz, ntohl(cycnum),
-              cycbuff ? cycbuff->path : "");
+              (unsigned int) token.class, cycbuffname, (unsigned long) ntohl(block),
+              blksz, (unsigned long) ntohl(cycnum), cycbuff ? cycbuff->path : "");
 
     return text;
 }

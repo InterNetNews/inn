@@ -17,7 +17,8 @@
 #if TESTING
 # define asprintf test_asprintf
 # define vasprintf test_vasprintf
-int test_asprintf(char **, const char *, ...);
+int test_asprintf(char **, const char *, ...)
+    __attribute__((__format__(printf, 2, 3)));
 int test_vasprintf(char **, const char *, va_list);
 #endif
 

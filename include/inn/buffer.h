@@ -52,7 +52,8 @@ void buffer_append(struct buffer *, const char *data, size_t length);
 
 /* Print data into the buffer, either appending or replacing the existing
    data.  No trailing nul is added. */
-void buffer_sprintf(struct buffer *, bool append, const char *, ...);
+void buffer_sprintf(struct buffer *, bool append, const char *, ...)
+    __attribute__((__format__(printf, 3, 4)));
 void buffer_vsprintf(struct buffer *, bool append, const char *, va_list);
 
 /* Swap the contents of two buffers. */
