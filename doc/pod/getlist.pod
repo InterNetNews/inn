@@ -23,7 +23,7 @@ For more information on the formats of these files, see active(5),
 active.times(5), distrib.pats(5) and newsgroups(5).
 
 The listing files other than the F<active> file are common extensions to the
-NNTP protocol and may not be available on all servers.  For instance,
+NNTP protocol and may not be available on all servers.  For instance, C<counts>
 C<distributions>, C<headers>, C<moderators>, C<motd>, C<overview.fmt> and
 C<subscriptions>, amongst other, may be available.  Moreover, a uwildmat(3)
 pattern I<pattern> may also be usable for some of these listing files.
@@ -34,7 +34,9 @@ obtained with C<overview.fmt> are the ones for which the overview database
 is consistent (see I<extraoverviewadvertised> in F<inn.conf> for more
 information).  The list obtained with C<headers> contains the fields
 that can be retrieved using the HDR command (I<pattern> can then be
-either C<msgid> or C<range>).
+either C<msgid> or C<range>).  The list obtained with C<counts> is like
+the C<active> one except that the number of articles in a newsgroup
+is mentioned just before the flag of this newsgroup.
 
 The I<pattern> parameter may be used with a I<list> value of C<active>,
 C<active.times> or C<newsgroups> to limit the output.  If given, only
