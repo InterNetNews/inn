@@ -11,6 +11,8 @@ SOURCES		= art.c cc.c chan.c icd.c innd.c keywords.c lc.c nc.c \
 		  newsfeeds.c ng.c perl.c proc.c python.c rc.c site.c \
 		  status.c util.c wip.c
 
+EXTRASOURCES	= tinyleaf.c
+
 OBJECTS		= $(SOURCES:.c=.o)
 
 all: $(ALL)
@@ -31,8 +33,8 @@ clean:
 clobber distclean maintclean: clean
 	rm -f tags
 
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c innd.h ../include/*.h
+tags ctags: $(SOURCES) $(EXTRASOURCES)
+	$(CTAGS) $(SOURCES) $(EXTRASOURCES) ../lib/*.c innd.h ../include/*.h
 
 
 ##  Compilation rules.
@@ -68,9 +70,9 @@ inndp: $(SOURCES)
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend:	Makefile $(SOURCES)
+depend:	Makefile $(SOURCES) $(EXTRASOURCES)
 	$(MAKEDEPEND) '$(CFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS)' \
-	    $(SOURCES)
+	    $(SOURCES) $(EXTRASOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 art.o: art.c ../include/config.h ../include/inn/defines.h \
@@ -267,3 +269,10 @@ wip.o: wip.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
+tinyleaf.o: tinyleaf.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/wait.h ../include/config.h \
+  ../include/inn/dispatch.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/md5.h ../include/inn/nntp.h \
+  ../include/inn/utility.h ../include/inn/vector.h \
+  ../include/inn/version.h ../include/inn/libinn.h
