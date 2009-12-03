@@ -118,7 +118,7 @@ controlchan!\
 # Feed NoCeM notices to perl-nocem in order to process third-party,
 # PGP-signed article cancellation notices.  See perl-nocem(8) for more
 # details on how to set this up.
-#nocem!:!*,alt.nocem.misc,news.lists.filter\
+#nocem!:!*,alt.nocem.misc,news.lists.filters\
 #	:Tc,Wf,Ap:@bindir@/perl-nocem
 
 # News to mail gateway.  Similar to innfeed, this uses a master feed and
