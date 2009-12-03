@@ -76,6 +76,13 @@ to specific newsgroups.
 
 =item *
 
+A new LIST variant named COUNTS is supported by B<nnrpd>:  LIST COUNTS
+is a combination of LIST ACTIVE and GROUP.  It returns the same
+result as LIST ACTIVE except that the number of articles in a
+newsgroup is inserted before its status.
+
+=item *
+
 A new feature has been added to B<sm>.  When the B<-c> flag is used,
 it shows a clear, decoded form of the storage API token.  This
 was previously done by the contrib B<showtoken> script developed

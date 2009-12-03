@@ -235,10 +235,11 @@ following differences:
 
 Besides the keywords defined in S<RFC 3977> (ACTIVE, ACTIVE.TIMES,
 DISTRIB.PATS, HEADERS, NEWSGROUPS and OVERVIEW.FMT), the LIST command
-may be followed by the optional keywords DISTRIBUTIONS, MODERATORS, MOTD
-and SUBSCRIPTIONS to get a list of valid distributions, the moderators list,
-the message of the day information for readers, or a list of the
-automatic group subscriptions.
+may be followed by the optional keywords COUNTS, DISTRIBUTIONS, MODERATORS,
+MOTD and SUBSCRIPTIONS to respectively get an improved version of the
+ACTIVE variant with the number of articles in every newsgroup, a list
+of valid distributions, the moderators list, the message of the day
+information for readers, and a list of recommended group subscriptions.
 
 =item 2.
 

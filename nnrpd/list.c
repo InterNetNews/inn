@@ -31,6 +31,10 @@ static LISTINFO		INFOactivetimes = {
     "ACTIVE.TIMES", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
     "Group creations in form \"name time who\""
 };
+static LISTINFO         INFOcounts = {
+    "COUNTS", INN_PATH_ACTIVE, NULL, true, "active newsgroups with counts",
+    "Newsgroups in form \"group high low count status\""
+};
 static LISTINFO		INFOdistribs = {
     "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
     "Distributions in form \"distribution description\""
@@ -39,7 +43,7 @@ static LISTINFO         INFOheaders = {
     "HEADERS", NULL, cmd_list_headers, true, "supported headers and metadata",
     "Headers and metadata items supported"
 };
-static LISTINFO               INFOsubs = {
+static LISTINFO         INFOsubs = {
     "SUBSCRIPTIONS", INN_PATH_NNRPSUBS, NULL, false,
     "recommended group subscriptions", "Subscriptions in form \"group\""
 };
@@ -67,6 +71,7 @@ static LISTINFO		INFOmotd = {
 static LISTINFO *info[] = {
     &INFOactive,
     &INFOactivetimes,
+    &INFOcounts,
     &INFOdistribs,
     &INFOheaders,
     &INFOsubs,
@@ -177,8 +182,10 @@ CMDlist(int ac, char *av[])
     char		*wildarg = NULL;
     char		savec;
     unsigned int i;
+    int         lo, hi, count, flag;
 
     p = av[1];
+
     /* LIST ACTIVE is the default LIST command.  If a keyword is provided,
      * we check whether it is defined. */
     if (p == NULL) {
@@ -192,6 +199,7 @@ CMDlist(int ac, char *av[])
 	    }
 	}
     }
+
     /* If no defined LIST keyword is found, we return. */
     if (lp == NULL) {
         Reply("%d Unknown LIST keyword\r\n", NNTP_ERR_SYNTAX);
@@ -205,12 +213,13 @@ CMDlist(int ac, char *av[])
             if (CMD_list_single(wildarg))
 		return;
 	}
-    } else if (lp == &INFOgroups || lp == &INFOactivetimes
+    } else if (lp == &INFOgroups || lp == &INFOactivetimes || lp == &INFOcounts
                || lp == &INFOheaders || lp == &INFOsubs) {
 	if (ac == 3)
 	    wildarg = av[2];
     }
-    /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES,
+
+    /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES, COUNTS
      * HEADERS, NEWSGROUPS or SUBSCRIPTIONS keywords are used. */
     if (ac > 2 && !wildarg) {
         Reply("%d Unexpected wildmat\r\n", NNTP_ERR_SYNTAX);
@@ -224,6 +233,7 @@ CMDlist(int ac, char *av[])
     }
 
     path = innconf->pathetc;
+
     /* The active, active.times and newsgroups files are in pathdb. */
     if ((strstr(lp->File, "active") != NULL) ||
 	(strstr(lp->File, "newsgroups") != NULL))
@@ -310,6 +320,28 @@ CMDlist(int ac, char *av[])
 	if (wildarg && !uwildmat(p, wildarg))
 	    continue;
 
+        if (lp == &INFOcounts) {
+            if (OVgroupstats(p, &lo, &hi, &count, &flag)) {
+                /* When a newsgroup is empty, the high water mark should be
+                 * one less than the low water mark according to RFC 3977. */
+                if (count == 0)
+                    lo = hi + 1;
+
+                if (flag != '=') {
+                    Printf("%s %u %u %u %c\r\n", p, hi, lo, count, flag);
+                } else if (savec != '\0') {
+                    *save = savec;
+
+                    if ((q = strrchr(p, '=')) != NULL) {
+                        *save = '\0';
+                        Printf("%s %u %u %u %s\r\n", p, hi, lo, count, q);
+                    }
+                }
+            }
+
+            continue;
+        }
+
 	if (savec != '\0')
 	    *save = savec;
 
@@ -321,6 +353,7 @@ CMDlist(int ac, char *av[])
                     *q = 'n';
             }
         }
+
 	Printf("%s\r\n", p);
     }
     QIOclose(qp);
