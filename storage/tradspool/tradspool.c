@@ -491,8 +491,8 @@ tradspool_explaintoken(const TOKEN token)
     path = TokenToPath(token);
 
     xasprintf(&text, "method=tradspool class=%u ngnum=%lu artnum=%lu file=%s",
-              (unsigned int) token.class, ntohl(ngnum), ntohl(artnum),
-              path != NULL ? path : "");
+              (unsigned int) token.class, (unsigned long) ntohl(ngnum),
+              (unsigned long) ntohl(artnum), path != NULL ? path : "");
 
     if (path != NULL)
         free(path);

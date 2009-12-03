@@ -110,7 +110,8 @@ extern off_t            ftello(FILE *);
    HAVE_DECL macros for those functions that may be prototyped but
    implemented incorrectly or implemented without a prototype. */
 #if !HAVE_ASPRINTF
-extern int              asprintf(char **, const char *, ...);
+extern int              asprintf(char **, const char *, ...)
+    __attribute__((__format__(printf, 2, 3)));
 extern int              vasprintf(char **, const char *, va_list);
 #endif
 #if !HAVE_MKSTEMP

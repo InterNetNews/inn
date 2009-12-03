@@ -413,7 +413,7 @@ CMDdate(int ac UNUSED, char *av[] UNUSED)
         Reply("%d Can't get time, %s\r\n", NNTP_FAIL_ACTION, strerror(errno));
         return;
     }
-    Reply("%d %04.4d%02.2d%02.2d%02.2d%02.2d%02.2d\r\n",
+    Reply("%d %04d%02d%02d%02d%02d%02d\r\n",
           NNTP_INFO_DATE,
           gmt->tm_year + 1900, gmt->tm_mon + 1, gmt->tm_mday,
           gmt->tm_hour, gmt->tm_min, gmt->tm_sec);

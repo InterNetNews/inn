@@ -65,9 +65,11 @@ struct vector *config_params(struct config_group *);
    error at a particular parameter in a config_group and config_error_group
    reports an error at the definition of that group.  The error is reported
    using warn. */
-void config_error_group(struct config_group *, const char *format, ...);
+void config_error_group(struct config_group *, const char *format, ...)
+    __attribute__((__format__(printf, 2, 3)));
 void config_error_param(struct config_group *, const char *key,
-                        const char *format, ...);
+                        const char *format, ...)
+    __attribute__((__format__(printf, 3, 4)));
 
 /* Free all space allocated by the tree rooted at config_group.  One normally
    never wants to do this.  WARNING: This includes the storage allocated for

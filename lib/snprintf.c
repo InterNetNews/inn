@@ -119,7 +119,8 @@
 # define LLONG long
 #endif
 
-int snprintf (char *str, size_t count, const char *fmt, ...);
+int snprintf (char *str, size_t count, const char *fmt, ...)
+    __attribute__((__format__(printf, 3, 4)));
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 
 static int dopr (char *buffer, size_t maxlen, const char *format, 
@@ -844,7 +845,7 @@ int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
 
 /* VARARGS3 */
 #ifdef HAVE_STDARGS
-int snprintf (char *str,size_t count,const char *fmt,...)
+int snprintf (char *str, size_t count, const char *fmt, ...)
 #else
 int snprintf (va_alist) va_dcl
 #endif

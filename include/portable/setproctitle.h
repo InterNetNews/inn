@@ -13,7 +13,8 @@
 #include "config.h"
 
 #if !HAVE_SETPROCTITLE || !HAVE_DECL_SETPROCTITLE
-void setproctitle(const char *format, ...);
+void setproctitle(const char *format, ...)
+    __attribute__((__format__(printf, 1, 2)));
 #endif
 
 #if HAVE_SETPROCTITLE || HAVE_PSTAT

@@ -172,7 +172,7 @@ command_help(struct cvector *command UNUSED, void *cookie)
     nntp_respond_noflush(state->nntp, NNTP_INFO_HELP, "tinyfeed from %s",
                          INN_VERSION_STRING);
     nntp_send_line_noflush(state->nntp, "Supported commands:");
-    nntp_send_line_noflush(state->nntp, "");
+    nntp_send_line_noflush(state->nntp, " ");
     nntp_send_line_noflush(state->nntp, "  IHAVE <message-id>");
     nntp_send_line_noflush(state->nntp, "  HELP");
     nntp_send_line_noflush(state->nntp, "  QUIT");

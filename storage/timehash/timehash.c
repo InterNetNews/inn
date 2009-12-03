@@ -61,7 +61,7 @@ timehash_explaintoken(const TOKEN token)
     memcpy(&seqnum, &token.token[4], sizeof(seqnum));
 
     xasprintf(&text, "method=timehash class=%u time=%lu seqnum=%lu file=%s/time-%02x/%02x/%02x/%04x-%02x%02x",
-              (unsigned int) token.class, ntohl(arrival), ntohs(seqnum),
+              (unsigned int) token.class, (unsigned long) ntohl(arrival), (unsigned long) ntohs(seqnum),
               innconf->patharticles, token.class, (ntohl(arrival) >> 16) & 0xff,
               (ntohl(arrival) >> 8) & 0xff, ntohs(seqnum),
               (ntohl(arrival) >> 24) & 0xff, ntohl(arrival) & 0xff);
