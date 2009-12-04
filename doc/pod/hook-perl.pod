@@ -81,7 +81,7 @@ filter_art() has access to a global hash named %hdr, which contains all of
 the standard headers present in the article and their values.  The
 standard headers are:
 
-    Also-Control, Approved, Bytes, Cancel-Key, Cancel-Lock,
+    Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
     Content-Base, Content-Disposition, Content-Transfer-Encoding,
     Content-Type, Control, Date, Date-Received, Distribution, Expires,
     Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
@@ -89,7 +89,7 @@ standard headers are:
     NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
     Organization, Original-Sender, Originator,
     Path, Posted, Posting-Version, Received, References, Relay-Version,
-    Reply-To, Sender, Subject, Supersedes, User-Agent,
+    Reply-To, Sender, Subject, Summary, Supersedes, User-Agent,
     X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
     X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
     X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
