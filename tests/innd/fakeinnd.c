@@ -102,7 +102,10 @@ const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("X-Auth-Sender",         HTstd),
     ARTHEADERINIT("X-Original-NNTP-Posting-Host", HTstd),
     ARTHEADERINIT("Original-Sender",       HTstd),
-    ARTHEADERINIT("NNTP-Posting-Path",     HTstd)
+    ARTHEADERINIT("NNTP-Posting-Path",     HTstd),
+    ARTHEADERINIT("Archive",               HTstd),
+    ARTHEADERINIT("Archived-At",           HTstd),
+    ARTHEADERINIT("Summary",               HTstd)
 };
 
 /* Dummy functions that innd.c provides. */

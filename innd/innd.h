@@ -210,8 +210,11 @@ typedef struct _HDRCONTENT {
 #define HDR__X_ORIGINAL_NNTP_POSTING_HOST       68
 #define HDR__ORIGINAL_SENDER    69
 #define HDR__NNTP_POSTING_PATH  70
+#define HDR__ARCHIVE            71
+#define HDR__ARCHIVED_AT        72
+#define HDR__SUMMARY            73
 
-#define MAX_ARTHEADER           71
+#define MAX_ARTHEADER           74
 
 /*
 **  Miscellaneous data we want to keep on an article.  All the fields

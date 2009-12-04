@@ -203,10 +203,16 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__X_ORIGINAL_NNTP_POSTING_HOST    68 */
   ARTHEADERINIT("Original-Sender",      HTstd),
 /* #define HDR__ORIGINAL_SENDER                 69 */
-  ARTHEADERINIT("NNTP-Posting-Path",    HTstd)
+  ARTHEADERINIT("NNTP-Posting-Path",    HTstd),
 /* #define HDR__NNTP_POSTING_PATH               70 */
+  ARTHEADERINIT("Archive",              HTstd),
+/* #define HDR__ARCHIVE                         71 */
+  ARTHEADERINIT("Archived-At",          HTstd),
+/* #define HDR__ARCHIVED_AT                     72 */
+  ARTHEADERINIT("Summary",              HTstd)
+/* #define HDR__SUMMARY                         73 */
 };
-/* #define MAX_ARTHEADER                        71 */
+/* #define MAX_ARTHEADER                        74 */
 
 
 /*

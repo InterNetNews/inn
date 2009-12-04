@@ -33,6 +33,8 @@ if sys.version_info[0] >= 3:
 ##  losing some strcmps under the covers.
 Also_Control = intern("Also-Control")
 Approved = intern("Approved")
+Archive = intern("Archive")
+Archived_At = intern("Archived-At")
 Bytes = intern("Bytes")
 Cancel_Key = intern("Cancel-Key")
 Cancel_Lock = intern("Cancel-Lock")
@@ -72,6 +74,7 @@ Relay_Version = intern("Relay-Version")
 Reply_To = intern("Reply-To")
 Sender = intern("Sender")
 Subject = intern("Subject")
+Summary = intern("Summary")
 Supersedes = intern("Supersedes")
 User_Agent = intern("User-Agent")
 X_Auth = intern("X-Auth")
@@ -103,7 +106,7 @@ X_Usenet_Provider = intern("X-Usenet-Provider")
 X_User_ID = intern("X-User-ID")
 Xref = intern("Xref")
 __BODY__ = intern("__BODY__")
-_LINES__ = intern("__LINES__")
+__LINES__ = intern("__LINES__")
 
 
 class InndFilter:
@@ -169,7 +172,7 @@ class InndFilter:
         The available headers are the ones listed near the top of
         innd/art.c.  At this writing, they are:
 
-            Also-Control, Approved, Bytes, Cancel-Key, Cancel-Lock,
+            Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
             Content-Base, Content-Disposition, Content-Transfer-Encoding,
             Content-Type, Control, Date, Date-Received, Distribution, Expires,
             Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
@@ -177,7 +180,7 @@ class InndFilter:
             NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
             Organization, Original-Sender, Originator,
             Path, Posted, Posting-Version, Received, References, Relay-Version,
-            Reply-To, Sender, Subject, Supersedes, User-Agent,
+            Reply-To, Sender, Subject, Summary, Supersedes, User-Agent,
             X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
             X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
             X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
