@@ -200,8 +200,8 @@ for (;;) {
     # On the first header, $line will be undefined.
     ($_, $line) = ($line, $_) ; # Swap $line and $_.
 
-    last if defined($_) && /^$/ ;
-    next if /^$/ ;		# Only on first header will this happen.
+    last if defined($_) && /^$/;
+    next unless defined($_);     # Only on first header will this happen.
 
     push @errorText, "($_)\n";
 
