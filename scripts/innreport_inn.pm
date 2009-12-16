@@ -966,6 +966,9 @@ sub collect($$$$$$) {
     if ($left =~ /(\S+) final seconds (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $spooled) = ($1, $2, $3);
       $server = lc $server unless $CASE_SENSITIVE;
+      # Initialize a value for that key (otherwise, it does not appear in the
+      # report, and the total line is wrong).
+      $innfeed_offered{$server} += 0;
       $innfeed_seconds{$server} += $seconds;
       $innfeed_spooled{$server} += $spooled;
       return 1;
