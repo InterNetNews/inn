@@ -236,17 +236,17 @@ then
     cd "${PATHSPOOL}/${INNFEEDSPOOL}"
 
     # Find the PIDs of innfeed.
-    LOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
+    INNFEEDLOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
 
     # Process files like "innfeed-dropped.A001703" where
-    # 1703 is not in $LOCKS.
+    # 1703 is not in $INNFEEDLOCKS.
     for file in `find . -name "innfeed-dropped*" -print`
     do
         PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
         FOUND=false
-        for LOCK in $LOCKS
+        for INNFEEDLOCK in $INNFEEDLOCKS
         do
-            if [ "$PID" = "$LOCK" ]
+            if [ "$PID" = "$INNFEEDLOCK" ]
             then
                 FOUND=true
             fi
