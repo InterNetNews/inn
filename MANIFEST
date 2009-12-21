@@ -338,7 +338,7 @@ frontends/inews.c                     Send article to local NNTP server
 frontends/innconfval.c                Get an INN configuration parameter
 frontends/mailpost.in                 Mail to news gateway
 frontends/ovdb_init.c                 Prepare ovdb database for use
-frontends/ovdb_monitor.c              Database maintainance for ovdb
+frontends/ovdb_monitor.c              Database maintenance for ovdb
 frontends/ovdb_server.c               Helper server for ovdb
 frontends/ovdb_stat.c                 Display information from ovdb database
 frontends/pullnews.in                 Sucking news feeder
