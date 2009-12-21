@@ -639,7 +639,7 @@ Support for bzip2-compressed batches (with B<bunbatch>) has been added.
 =item *
 
 B<news.daily> now processes B<innfeed> dropped files during daily
-maintainance, running B<procbatch>.
+maintenance, running B<procbatch>.
 
 =item *
 
