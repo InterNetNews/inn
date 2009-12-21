@@ -279,7 +279,7 @@ dnl GnuPG (which we prefer).
 DO_PGPVERIFY=true
 AC_ARG_VAR([GPGV], [Location of GnuPG gpgv program])
 AC_ARG_VAR([PGP], [Location of PGP verification program])
-AC_PATH_PROGS([GPGV], [gpgv])
+AC_PATH_PROGS([GPGV], [gpgv2 gpgv])
 AC_PATH_PROGS([PGP], [pgpv pgp pgpgpg])
 if test -z "$PGP" && test -z "$GPGV" ; then
     DO_PGPVERIFY=false
