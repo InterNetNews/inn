@@ -24,6 +24,10 @@ static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
+/*
+**  Do not modify the table without also looking at post.h for potential
+**  changes in the order of the fields.
+*/
 HEADER Table[] = {
     /*  Name                    CanSet  Type    Size  Value */
     {   "Path",                 true,   HTstd,  0,    NULL,    NULL, 0 },
@@ -38,6 +42,7 @@ HEADER Table[] = {
     {   "Lines",                true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Sender",               true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Approved",             true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Archive",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Distribution",         true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Expires",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Message-ID",           true,   HTstd,  0,    NULL,    NULL, 0 },
@@ -51,9 +56,11 @@ HEADER Table[] = {
     {   "X-Complaints-To",      false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "NNTP-Posting-Date",    false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "Xref",                 false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "Injector-Info",        false,  HTstd,  0,    NULL,    NULL, 0 },
+    {   "Injection-Date",       true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Injection-Info",       false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "Summary",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Keywords",             true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "User-Agent",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Date-Received",        false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Received",             false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Posted",               false,  HTobs,  0,    NULL,    NULL, 0 },
@@ -62,6 +69,9 @@ HEADER Table[] = {
     {   "Cc",                   true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Bcc",                  true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "To",                   true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Archived-At",          true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Comments",             true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Original-Sender",      true,   HTstd,  0,    NULL,    NULL, 0 },
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);
@@ -196,7 +206,7 @@ StripOffHeaders(char *article)
 		    return NULL;
 		}
 		hp->Value = &p[hp->Size + 1];
-		/* '\r\n' is replaced with '\n', and unnecessary to consider
+		/* '\r\n,' is replaced with '\n', and unnecessary to consider
 		 *  '\r'. */
 		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
 		    continue;
@@ -268,7 +278,7 @@ CheckControl(char *ctrl)
     else {
 	snprintf(Error, sizeof(Error),
                  "\"%s\" is not a valid control message",
-                 MaxLength(ctrl,ctrl));
+                 MaxLength(ctrl, ctrl));
 	return Error;
     }
     *p = save;
@@ -304,13 +314,12 @@ CheckDistribution(char *p)
 **  Return NULL if okay, or an error message.
 */
 static const char *
-ProcessHeaders(int linecount, char *idbuff, bool ihave)
+ProcessHeaders(char *idbuff, bool ihave)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		datebuff[40];
     static char		localdatebuff[40];
     static char		orgbuff[SMBUF];
-    static char		linebuff[40];
     static char		tracebuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
     static char		sendbuff[SMBUF];
@@ -358,7 +367,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
 
     /* Set the Date: header.  datebuff is used later for NNTP-Posting-Date:,
-     *  so we have to set it and it has to be the UTC date. */
+     * so we have to set it, and it has to be the UTC date. */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate Date: header";
     if (HDR(HDR__DATE) == NULL) {
@@ -438,7 +447,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	return "Can't parse Expires: header";
 
     /* References: is left alone. */
-    /* Control! is checked above. */
+    /* Control: is checked above. */
 
     /* Check the Distribution: header. */
     if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
@@ -460,21 +469,28 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Summary: is left alone. */
     /* Approved: is left alone. */
 
-    /* Set the Lines: header. */
-    if (!ihave) {
-	snprintf(linebuff, sizeof(linebuff), "%d", linecount);
-	HDR_SET(HDR__LINES, linebuff);
-    }
+    /* Lines: should not be generated. */
 
     /* Supersedes: is left alone. */
 
     /* Set the NNTP-Posting-Host: header. */
     if (!ihave && PERMaccessconf->addnntppostinghost) 
-    HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
+        HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
     
     /* Set the NNTP-Posting-Date: header. */
     if (!ihave && PERMaccessconf->addnntppostingdate)
-    HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
+        HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
+
+    /* Set the Injection-Date: header. */
+    if (HDR(HDR__INJECTION_DATE) == NULL) {
+        HDR_SET(HDR__INJECTION_DATE, datebuff);
+    } else {
+        t = parsedate_rfc2822_lax(HDR(HDR__INJECTION_DATE));
+        if (t == (time_t) -1)
+            return "Can't parse Injection-Date: header";
+        if (t > now + DATE_FUZZ)
+            return "Article injected in the future";
+    }
 
     /* Set the X-Trace: header. */
     pid = (long) getpid() ;
@@ -990,7 +1006,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(i, idbuff, ihave)) != NULL)
+    if ((error = ProcessHeaders(idbuff, ihave)) != NULL)
 	return error;
     if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";
