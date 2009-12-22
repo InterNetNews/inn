@@ -105,7 +105,8 @@ const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("NNTP-Posting-Path",     HTstd),
     ARTHEADERINIT("Archive",               HTstd),
     ARTHEADERINIT("Archived-At",           HTstd),
-    ARTHEADERINIT("Summary",               HTstd)
+    ARTHEADERINIT("Summary",               HTstd),
+    ARTHEADERINIT("Comments",              HTstd)
 };
 
 /* Dummy functions that innd.c provides. */

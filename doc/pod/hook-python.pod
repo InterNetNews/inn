@@ -71,7 +71,7 @@ is called every time B<innd> receives an article.  The following can be
 defined:
 
     Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
-    Content-Base, Content-Disposition, Content-Transfer-Encoding,
+    Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
     Content-Type, Control, Date, Date-Received, Distribution, Expires,
     Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
     Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
