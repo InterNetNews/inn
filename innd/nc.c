@@ -1085,7 +1085,7 @@ NCproc(CHANNEL *cp)
 	  movedata = false;
 	} else {
 	  cp->Next = bp->used;
-	  /* Move data to the begining anyway. */
+	  /* Move data to the beginning anyway. */
 	  movedata = true;
 	}
 	readmore = true;
@@ -1460,7 +1460,7 @@ NCproc(CHANNEL *cp)
 	  (unsigned long) bp->used, cp->XBatchSize);
 
       if (cp->Next != 0) {
-	/* data must start from the begining of the buffer */
+	/* data must start from the beginning of the buffer */
         movedata = true;
 	readmore = false;
 	break;

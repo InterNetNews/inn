@@ -635,7 +635,7 @@ CMDpost(int ac, char *av[])
       /* Acquire lock (this could be in RateLimit but that would
        * invoke the spaghetti factor). 
        */
-      if ((path = (char *) PostRecFilename(Client.ip,PERMuser)) == NULL) {
+      if ((path = (char *) PostRecFilename(Client.ip, PERMuser)) == NULL) {
         Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH,
               ihave ? "Retry later" : "Posting not allowed");
         return;
