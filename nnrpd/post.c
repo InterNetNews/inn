@@ -381,7 +381,7 @@ ProcessHeaders(char *idbuff, bool ihave)
 	    HDR_SET(HDR__DATE, datebuff);
 	}
     } else {
-        t = parsedate_rfc2822_lax(HDR(HDR__DATE));
+        t = parsedate_rfc5322_lax(HDR(HDR__DATE));
 	if (t == (time_t) -1)
 	    return "Can't parse Date: header";
 	if (t > now + DATE_FUZZ)
@@ -443,7 +443,7 @@ ProcessHeaders(char *idbuff, bool ihave)
     /* Sender: is set above. */
 
     /* Check the Expires: header. */
-    if (HDR(HDR__EXPIRES) && parsedate_rfc2822_lax(HDR(HDR__EXPIRES)) == -1)
+    if (HDR(HDR__EXPIRES) && parsedate_rfc5322_lax(HDR(HDR__EXPIRES)) == -1)
 	return "Can't parse Expires: header";
 
     /* References: is left alone. */
@@ -479,7 +479,7 @@ ProcessHeaders(char *idbuff, bool ihave)
             HDR_SET(HDR__INJECTION_DATE, datebuff);
         }
     } else {
-        t = parsedate_rfc2822_lax(HDR(HDR__INJECTION_DATE));
+        t = parsedate_rfc5322_lax(HDR(HDR__INJECTION_DATE));
         if (t == (time_t) -1)
             return "Can't parse Injection-Date: header";
         if (t > now + DATE_FUZZ)

@@ -95,7 +95,7 @@ isheader(const char *line, const char *header, size_t length)
 
 
 /*
-**  Skip over folding whitespace, as defined by RFC 2822.  Takes a pointer to
+**  Skip over folding whitespace, as defined by RFC 5322.  Takes a pointer to
 **  where to start skipping and a pointer to the end of the data, and will not
 **  return a pointer past the end pointer.  If skipping folding whitespace
 **  takes us past the end of data, return NULL.

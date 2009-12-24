@@ -26,7 +26,7 @@ static const time_t test_times[] = {
     972813600UL                 /* Sun, 29 Oct 2000 02:00:00 -0800 (PST) */
 };
 
-/* Used to hold dates for testing parsedate_rfc2822. */
+/* Used to hold dates for testing parsedate_rfc5322. */
 struct test_date {
     const char *date;
     time_t result;
@@ -123,7 +123,7 @@ check_strict(int *n, const struct test_date *test)
 {
     time_t seen;
 
-    seen = parsedate_rfc2822(test->date);
+    seen = parsedate_rfc5322(test->date);
     ok_time((*n)++, test->result, seen);
 }
 
@@ -132,7 +132,7 @@ check_strict_bad(int *n, const struct test_date *test)
 {
     time_t seen;
 
-    seen = parsedate_rfc2822(test->date);
+    seen = parsedate_rfc5322(test->date);
     ok_time((*n)++, -1, seen);
 }
 
@@ -141,7 +141,7 @@ check_lax(int *n, const struct test_date *test)
 {
     time_t seen;
 
-    seen = parsedate_rfc2822_lax(test->date);
+    seen = parsedate_rfc5322_lax(test->date);
     ok_time((*n)++, test->result, seen);
 }
 
@@ -166,14 +166,14 @@ main(void)
     now = time(NULL);
     status = makedate(-1, false, buff, sizeof(buff));
     if (status) {
-        result = parsedate_rfc2822(buff);
+        result = parsedate_rfc5322(buff);
         diff = difftime(result, now);
     }
     ok(1, status && diff >= 0 && diff < 10);
     now = time(NULL);
     status = makedate(-1, true, buff, sizeof(buff));
     if (status) {
-        result = parsedate_rfc2822(buff);
+        result = parsedate_rfc5322(buff);
         diff = difftime(result, now);
     }
     ok(2, status && diff >= 0 && diff < 10);

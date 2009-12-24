@@ -152,8 +152,8 @@ standard dotted-quad format (10.2.3.4).
 =item invalid IPv6 address %s in %s
 
 (Fatal) The IPv6 address specified in the given command-line option could
-not be parsed by inet_pton(3).  IPv6 addresses should be specified in S<RFC
-2373> format (1080:0:0:0:8:800:200C:417A or 1080::8:800:200C:417A).
+not be parsed by inet_pton(3).  IPv6 addresses should be specified in
+S<RFC 4291> format (1080:0:0:0:8:800:200C:417A or 1080::8:800:200C:417A).
 
 =item invalid command-line argument %s
 

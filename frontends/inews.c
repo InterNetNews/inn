@@ -618,7 +618,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     /* Followup-To; checked with Newsgroups. */
 
     /* Check Expires. */
-    if (HDR(_expires) && parsedate_rfc2822_lax(HDR(_expires)) == -1)
+    if (HDR(_expires) && parsedate_rfc5322_lax(HDR(_expires)) == -1)
         die("cannot parse \"%s\" as an expiration date", HDR(_expires));
 
     /* References; left alone. */

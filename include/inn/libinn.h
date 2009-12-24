@@ -100,8 +100,8 @@ extern int      reArgify(char *p, char **argv, int n, bool stripspaces);
 extern char *   Glom(char **av);
 extern bool     makedate(time_t, bool local, char *buff, size_t buflen);
 extern time_t   parsedate_nntp(const char *, const char *, bool local);
-extern time_t   parsedate_rfc2822(const char *);
-extern time_t   parsedate_rfc2822_lax(const char *);
+extern time_t   parsedate_rfc5322(const char *);
+extern time_t   parsedate_rfc5322_lax(const char *);
 
 
 

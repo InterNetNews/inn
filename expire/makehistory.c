@@ -727,7 +727,7 @@ DoArt(ARTHANDLE *art)
     } else {
         buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
         buffer_append(&buffer, NUL, 1);
-        Posted = parsedate_rfc2822_lax(buffer.data);
+        Posted = parsedate_rfc5322_lax(buffer.data);
         if (Posted == (time_t) -1)
 	    Posted = Arrived;
     }
@@ -735,7 +735,7 @@ DoArt(ARTHANDLE *art)
     if (Expp->HasHeader) {
         buffer_set(&buffer, Expp->Header, Expp->HeaderLength);
         buffer_append(&buffer, NUL, 1);
-        Expires = parsedate_rfc2822_lax(buffer.data);
+        Expires = parsedate_rfc5322_lax(buffer.data);
         if (Expires == (time_t) -1)
             Expires = 0;
     }

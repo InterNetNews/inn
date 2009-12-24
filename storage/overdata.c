@@ -217,7 +217,7 @@ valid_overview_string(const char *string, bool full)
 {
     const unsigned char *p;
 
-    /* RFC 2822 says that header fields must consist of printable ASCII
+    /* RFC 5322 says that header fields must consist of printable ASCII
        characters (characters between 33 and 126, inclusive) excluding colon.
        We also allow high-bit characters, just in case, but not DEL. */
     p = (const unsigned char *) string;

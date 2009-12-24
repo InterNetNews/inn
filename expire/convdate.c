@@ -16,7 +16,7 @@ Usage: convdate -n [date ...]\n\
        convdate [-dl] -c [time ...]\n\
        convdate [-dl] [-s] [date ...]\n\
 \n\
-convdate -n converts a date in RFC 2822 format to the number of seconds\n\
+convdate -n converts a date in RFC 5322 format to the number of seconds\n\
 since epoch.  convdate -s does the same, but converts to a date string.\n\
 convdate -c converts seconds since epoch to a date string.  The default\n\
 output is the output of ctime (normally the same format as returned by the\n\
@@ -100,7 +100,7 @@ convdate(const char *date, char mode)
             seconds = (time_t) atol(date);
         }
     } else {
-        seconds = parsedate_rfc2822_lax(date);
+        seconds = parsedate_rfc5322_lax(date);
         if (seconds == (time_t) -1) {
             warn("can't convert \"%s\"", date);
             return false;
