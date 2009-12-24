@@ -65,8 +65,8 @@ typedef struct _ACCESSGROUP {
     unsigned long localmaxartsize;
     int readertrack;
     int strippostcc;
-    int addnntppostinghost;
-    int addnntppostingdate;
+    int addinjectiondate;
+    int addinjectionpostinghost;
     char *nnrpdposthost;
     unsigned long nnrpdpostport;
     int nnrpdoverstats;

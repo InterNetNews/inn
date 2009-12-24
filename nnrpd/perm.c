@@ -137,8 +137,8 @@ extern bool PerlLoaded;
 #define PERMlocalmaxartsize	35
 #define PERMreadertrack		36
 #define PERMstrippostcc		37
-#define PERMaddnntppostinghost	38
-#define PERMaddnntppostingdate	39
+#define PERMaddinjectiondate	38
+#define PERMaddinjectionpostinghost	39
 #define PERMnnrpdposthost	40
 #define PERMnnrpdpostport	41
 #define PERMnnrpdoverstats	42
@@ -226,8 +226,8 @@ static CONFTOKEN PERMtoks[] = {
     { PERMlocalmaxartsize,      (char *) "localmaxartsize:"     },
     { PERMreadertrack,          (char *) "readertrack:"         },
     { PERMstrippostcc,          (char *) "strippostcc:"         },
-    { PERMaddnntppostinghost,   (char *) "addnntppostinghost:"  },
-    { PERMaddnntppostingdate,   (char *) "addnntppostingdate:"  },
+    { PERMaddinjectiondate,     (char *) "addinjectiondate:"    },
+    { PERMaddinjectionpostinghost, (char *) "addinjectionpostinghost:" },
     { PERMnnrpdposthost,        (char *) "nnrpdposthost:"       },
     { PERMnnrpdpostport,        (char *) "nnrpdpostport:"       },
     { PERMnnrpdoverstats,       (char *) "nnrpdoverstats:"      },
@@ -487,8 +487,8 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->localmaxartsize = innconf->localmaxartsize;
     curaccess->readertrack = innconf->readertrack;
     curaccess->strippostcc = innconf->strippostcc;
-    curaccess->addnntppostinghost = innconf->addnntppostinghost;
-    curaccess->addnntppostingdate = innconf->addnntppostingdate;
+    curaccess->addinjectiondate = innconf->addinjectiondate;
+    curaccess->addinjectionpostinghost = innconf->addinjectionpostinghost;
     curaccess->nnrpdposthost = innconf->nnrpdposthost;
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
     curaccess->nnrpdoverstats = innconf->nnrpdoverstats;
@@ -969,12 +969,14 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
 	if (boolval != -1) curaccess->strippostcc = boolval;
 	SET_CONFIG(oldtype);
 	break;
-      case PERMaddnntppostinghost:
-	if (boolval != -1) curaccess->addnntppostinghost = boolval;
+      case PERMaddinjectiondate:
+	if (boolval != -1)
+            curaccess->addinjectiondate = boolval;
 	SET_CONFIG(oldtype);
 	break;
-      case PERMaddnntppostingdate:
-	if (boolval != -1) curaccess->addnntppostingdate = boolval;
+      case PERMaddinjectionpostinghost:
+	if (boolval != -1)
+            curaccess->addinjectionpostinghost = boolval;
 	SET_CONFIG(oldtype);
 	break;
       case PERMnnrpdposthost:
@@ -1281,8 +1283,8 @@ PERMreadfile(char *filename)
 	      case PERMlocalmaxartsize:
 	      case PERMreadertrack:
 	      case PERMstrippostcc:
-	      case PERMaddnntppostinghost:
-	      case PERMaddnntppostingdate:
+	      case PERMaddinjectiondate:
+	      case PERMaddinjectionpostinghost:
 	      case PERMnnrpdposthost:
 	      case PERMnnrpdpostport:
 	      case PERMnnrpdoverstats:

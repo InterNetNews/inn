@@ -51,10 +51,6 @@ typedef struct _HEADER {
 #define HDR__DISTRIBUTION    13
 #define HDR__EXPIRES	     14
 #define HDR__MESSAGEID	     15
-#define HDR__NNTPPOSTINGHOST 18
-#define HDR__XTRACE          22
-#define HDR__XCOMPLAINTSTO   23
-#define HDR__NNTPPOSTINGDATE 24
 #define HDR__INJECTION_DATE  26
 #define HDR__INJECTION_INFO  27
 #define HDR__CC		     36

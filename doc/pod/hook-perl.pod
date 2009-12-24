@@ -537,7 +537,7 @@ list of newsgroups based on the client's username and domain.
      sub access {
         %return_hash = (
            "max_rate" => "10000",
-	   "addnntppostinghost" => "true",
+	   "addinjectionpostinghost" => "true",
      #     ...
         );
         if( defined $attributes{username} &&

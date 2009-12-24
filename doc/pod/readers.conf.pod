@@ -501,7 +501,7 @@ in the relevant access group in F<readers.conf> to something different
 than is set in F<inn.conf>.  All articles displayed to clients will then have
 their Path: and Xref: headers altered to appear to be from the server
 named in pathhost: or domain: (whichever is set), and posted articles will
-use that server name in the Path:, Message-ID:, and X-Trace: headers.
+use that server name in the Path:, Message-ID:, and Injection-Info: headers.
 
 Note that setting this parameter requires the server modify all posts
 before presenting them to the client and therefore may decrease
@@ -513,7 +513,7 @@ In addition, all of the following parameters are valid in access groups
 and override the global setting in F<inn.conf>.  See inn.conf(5) for the
 descriptions of these parameters:
 
-    addnntppostingdate, addnntppostinghost, backoff_auth, backoff_db,
+    addinjectiondate, addinjectionpostinghost, backoff_auth, backoff_db,
     backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
     checkincludedtext, clienttimeout, complaints, domain,
     fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,

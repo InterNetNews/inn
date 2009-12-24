@@ -121,7 +121,7 @@ MaxLength(char *p, char *q)
     if (q < p || q > p + i)
 	q = p;
 
-    /* Simple case of just want the begining? */
+    /* Simple case of just want the beginning? */
     if (q == NULL || (size_t)(q - p) < sizeof(buff) - 4) {
 	strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
@@ -316,18 +316,18 @@ CheckDistribution(char *p)
 static const char *
 ProcessHeaders(char *idbuff, bool ihave)
 {
-    static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		datebuff[40];
     static char		localdatebuff[40];
     static char		orgbuff[SMBUF];
-    static char		tracebuff[SMBUF];
+    static char         pathidentitybuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
+    static char         postinghostbuff[SMBUF];
     static char		sendbuff[SMBUF];
+    static char         injectioninfobuff[SMBUF];
     static char		*newpath = NULL;
     HEADER		*hp;
     char		*p;
     time_t		t, now;
-    struct tm		*gmt;
     const char          *error;
     pid_t               pid;
     bool		addvirtual = false;
@@ -366,7 +366,7 @@ ProcessHeaders(char *idbuff, bool ihave)
 	}
     }
 
-    /* Set the Date: header.  datebuff is used later for NNTP-Posting-Date:,
+    /* Set the Date: header.  datebuff is used later for Injection-Date:,
      * so we have to set it, and it has to be the UTC date. */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate Date: header";
@@ -473,17 +473,11 @@ ProcessHeaders(char *idbuff, bool ihave)
 
     /* Supersedes: is left alone. */
 
-    /* Set the NNTP-Posting-Host: header. */
-    if (!ihave && PERMaccessconf->addnntppostinghost) 
-        HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
-    
-    /* Set the NNTP-Posting-Date: header. */
-    if (!ihave && PERMaccessconf->addnntppostingdate)
-        HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
-
     /* Set the Injection-Date: header. */
     if (HDR(HDR__INJECTION_DATE) == NULL) {
-        HDR_SET(HDR__INJECTION_DATE, datebuff);
+        if (PERMaccessconf->addinjectiondate) {
+            HDR_SET(HDR__INJECTION_DATE, datebuff);
+        }
     } else {
         t = parsedate_rfc2822_lax(HDR(HDR__INJECTION_DATE));
         if (t == (time_t) -1)
@@ -492,36 +486,51 @@ ProcessHeaders(char *idbuff, bool ihave)
             return "Article injected in the future";
     }
 
-    /* Set the X-Trace: header. */
-    pid = (long) getpid() ;
-    if ((gmt = gmtime(&now)) == NULL)
-	return "Can't get the time";
-    if (VirtualPathlen > 0)
-	p = PERMaccessconf->domain;
-    else
-	if ((p = GetFQDN(PERMaccessconf->domain)) == NULL)
-	    p = (char *) "unknown";
-    snprintf(tracebuff, sizeof(tracebuff),
-             "%s %ld %ld %s (%d %3.3s %d %02d:%02d:%02d GMT)",
-             p, (long) now, (long) pid, Client.ip,
-             gmt->tm_mday, &MONTHS[3 * gmt->tm_mon], 1900 + gmt->tm_year,
-             gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
-    HDR_SET(HDR__XTRACE, tracebuff);
-
-    /* Set the X-Complaints-To: header. */
-    if ((p = PERMaccessconf->complaints) != NULL)
-	snprintf (complaintsbuff, sizeof(complaintsbuff), "%s", p);
-    else {
-	static const char newsmaster[] = NEWSMASTER;
-
-	if ((p = PERMaccessconf->fromhost) != NULL && strchr(newsmaster, '@') == NULL)
-	    snprintf (complaintsbuff, sizeof(complaintsbuff), "%s@%s",
-                      newsmaster, p);
-	else
-	    snprintf (complaintsbuff, sizeof(complaintsbuff), "%s",
-                      newsmaster);
+    /* Set the Injection-Info: header. */
+    /* Set the path identity. */
+    if (VirtualPathlen > 0) {
+        p = PERMaccessconf->domain;
+    } else {
+        if ((p = GetFQDN(PERMaccessconf->domain)) == NULL) {
+            p = (char *) "unknown";
+        }
     }
-    HDR_SET(HDR__XCOMPLAINTSTO, complaintsbuff);
+    snprintf(pathidentitybuff, sizeof(pathidentitybuff), "%s", p);
+
+    /* Set the posting-host identity. */
+    if (strcmp(Client.host, Client.ip) == 0) {
+        snprintf(postinghostbuff, sizeof(postinghostbuff),
+                 "; posting-host=\"%s\"", Client.ip);
+    } else {
+        snprintf(postinghostbuff, sizeof(postinghostbuff),
+                 "; posting-host=\"%s:%s\"", Client.host, Client.ip);
+    }
+
+    /* Set the logging-data attribute. */
+    pid = getpid();
+
+    /* Set the mail-complaints-to attribute. */
+    if ((p = PERMaccessconf->complaints) != NULL) {
+        snprintf(complaintsbuff, sizeof(complaintsbuff), "%s", p);
+    } else {
+        static const char newsmaster[] = NEWSMASTER;
+
+        if ((p = PERMaccessconf->fromhost) != NULL && strchr(newsmaster, '@') == NULL) {
+            snprintf(complaintsbuff, sizeof(complaintsbuff), "%s@%s",
+                     newsmaster, p);
+        } else {
+            snprintf(complaintsbuff, sizeof(complaintsbuff), "%s",
+                     newsmaster);
+        }
+    }
+
+    snprintf(injectioninfobuff, sizeof(injectioninfobuff),
+             "%s%s;\r\n\tlogging-data=\"%ld\"; mail-complaints-to=\"%s\"",
+             pathidentitybuff,
+             PERMaccessconf->addinjectionpostinghost ? postinghostbuff : "",
+             (long) pid, complaintsbuff);
+
+    HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
 
     /* Clear out some headers that should not be here. */
     if (!ihave && PERMaccessconf->strippostcc) {

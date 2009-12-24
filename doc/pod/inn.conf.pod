@@ -414,10 +414,10 @@ overview database.  This parameter expects a list of such header
 names.  Overview data for these additional headers will be generated
 for each new article at the time of arrival.  For instance, if you specify:
 
-    extraoverviewadvertised: [ Path NNTP-Hosting-Host ]
+    extraoverviewadvertised: [ Path Injection-Info ]
 
 it implies that B<nnrpd> will advertise C<Path:full> and
-C<NNTP-Hosting-Host:full> as the ninth and tenth fields in response
+C<Injection-Info:full> as the ninth and tenth fields in response
 to LIST OVERVIEW.FMT and that these two headers will be stored in the
 overview database for each new article.
 
@@ -442,7 +442,7 @@ but certain drastic changes may still require a complete overview rebuild.
 If for instance you want to store the content of the To: header in addition
 to the fields already stored above, you should use:
 
-    extraoverviewadvertised: [ Path NNTP-Hosting-Host ]
+    extraoverviewadvertised: [ Path Injection-Info ]
     extraoverviewhidden:     [ To ]
 
 This way, C<To:full> will not be advertised by B<nnrpd> but will be stored
@@ -453,7 +453,7 @@ the database is in such a state after S<30 days> S<-- however>, note that time
 to expiration can be unpredictable with CNFS and you then have to use
 C<cnfsstat -a> for checking on when buffers have rolled over), you should put:
 
-    extraoverviewadvertised: [ Path NNTP-Hosting-Host To ]
+    extraoverviewadvertised: [ Path Injection-Info To ]
     extraoverviewhidden:     [ ]
 
 The C<To> value must be added at the end of the list because
@@ -463,7 +463,7 @@ B<nnrpd> will now advertise C<To:full> in response to the LIST
 OVERVIEW.FMT command (C<full> indicates that the header appears
 followed by its value).
 
-Now suppose you want to remove the content of the NNTP-Hosting-Host:
+Now suppose you want to remove the content of the Injection-Info:
 header from the overview.  As order matters, the overview database will
 no longer be consistent for the To: header.  Therefore, you need to specify:
 
@@ -818,19 +818,20 @@ that are broken out separately after the initial alphabetized list.
 
 =over 4
 
-=item I<addnntppostingdate>
+=item I<addinjectiondate>
 
-Whether to add an NNTP-Posting-Date: header to all local posts.  This is a
+Whether to add an Injection-Date: header to all local posts.  This is a
 boolean value and the default is true.
 
-=item I<addnntppostinghost>
+=item I<addinjectionpostinghost>
 
-Whether to add an NNTP-Posting-Host: header to all local posts giving the
-FQDN or IP address of the system from which the post was received.  This
-is a boolean value and the default is true.  Note that INN either does not
-add this header or adds the name or IP address of the client.  There is no
-intrinsic support for obfuscating the name of the client.  That has to be
-done with a user-written Perl filter, if desired.
+Whether to add a posting-host attribute to the Injection-Info: header to
+all local posts giving the FQDN (when known) and IP address of the system
+from which the post was received.  This is a boolean value and the default
+is true.  Note that INN either does not add this attribute or adds the name
+(when known) and IP address of the client.  There is no intrinsic support for
+obfuscating the name of the client.  That has to be done with a user-written
+Perl filter, if desired.
 
 =item I<checkincludedtext>
 
@@ -841,11 +842,11 @@ boolean value and the default is false.
 
 =item I<complaints>
 
-The value of the X-Complaints-To: header added to all local posts.  The
-default is the newsmaster's e-mail address.  (If the newsmaster, selected
-at configure time and defaulting to C<usenet>, doesn't contain C<@>, the
-address will consist of the newsmaster, a C<@>, and the value of
-I<fromhost>.)
+The value of the mail-complaints-to attribute of the Injection-Info: header
+added to all local posts.  The default is the newsmaster's e-mail address.
+(If the newsmaster, selected at configure time and defaulting to C<usenet>,
+doesn't contain C<@>, the address will consist of the newsmaster, a C<@>,
+and the value of I<fromhost>.)
 
 =item I<fromhost>
 
@@ -885,7 +886,7 @@ Whether to generate a Sender: header based on reader authentication.  If
 this parameter is set, a Sender: header will be added to local posts
 containing the identity assigned by F<readers.conf>.  If the assigned
 identity does not include an C<@>, the reader's hostname is used.  If this
-parameter is set but no identity is be assigned, the Sender: header will
+parameter is set but no identity is assigned, the Sender: header will
 be removed from all posts even if the poster includes one.  This is a
 boolean value and the default is false.
 

@@ -191,8 +191,8 @@ const struct config config_table[] = {
     { K(xrefslave),               BOOL   (false) },
 
     /* The following settings are specific to nnrpd. */
-    { K(addnntppostingdate),      BOOL    (true) },
-    { K(addnntppostinghost),      BOOL    (true) },
+    { K(addinjectiondate),        BOOL    (true) },
+    { K(addinjectionpostinghost), BOOL    (true) },
     { K(allownewnews),            BOOL    (true) },
     { K(backoffauth),             BOOL   (false) },
     { K(backoffdb),               STRING  (NULL) },

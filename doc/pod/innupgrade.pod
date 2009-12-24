@@ -40,8 +40,10 @@ previous parser will include the double-quotes in the value of the parameter.
 =item *
 
 Add the I<hismethod> parameter if not found (introduced in S<INN 2.4>,
-with the default value C<hisv6>) and rename I<nntpactsync> to
-I<incominglogfrequency> (since S<INN 2.5>).
+with the default value C<hisv6>).  Rename I<nntpactsync> to
+I<incominglogfrequency> (since S<INN 2.5>).  Rename I<addnntppostingdate>
+and I<addnntppostinghost> to respectively I<addinjectiondate> and
+I<addinjectionpostinghost> (since S<INN 2.6>).
 
 =item *
 

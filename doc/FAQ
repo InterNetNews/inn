@@ -86,7 +86,7 @@ Subject: Contents
     6.8.  Generate MRTG graphs for INN
     6.9.  Hide the junk and control groups from users
     6.10. Modify the body of posts made through my server
-    6.11. Hide the X-Trace header
+    6.11. Hide the Injection-Info header
     6.12. Run innd and nnrpd on separate ports
     6.13. Back up and restore an INN installation
 
@@ -1367,23 +1367,23 @@ other news service providers.
 
 ------------------------------
 
-Subject: 6.11. Hide the X-Trace header
+Subject: 6.11. Hide the Injection-Info header
 
-There is no built-in support for suppressing generation of the X-Trace
-header.  You can, however, remove it from inside a Perl posting filter.
-Try using a posting filter like this:
+There is no built-in support for suppressing generation of the
+Injection-Info header.  You can, however, remove it from inside a Perl
+posting filter.  Try using a posting filter like this:
 
     sub filter_post {
         $modify_headers = 1;
-        delete $hdr{'X-Trace'};
+        delete $hdr{'Injection-Info'};
         return '';
     }
 
 Note that you have to set $modify_headers to make changes to the article
 header effective in the actual posted article.  Instead of removing the
-header, you can also alter it if you modify $hdr{'X-Trace'}.  If you only
-want to alter the host name used in X-Trace, see the virtualhost: and
-domain: parameters in readers.conf.
+header, you can also alter it if you modify $hdr{'Injection-Info'}.  If you
+only want to alter the host name used in Injection-Info, see the
+virtualhost: and domain: parameters in readers.conf.
 
 ------------------------------
 

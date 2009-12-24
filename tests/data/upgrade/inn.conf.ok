@@ -2,6 +2,8 @@
     mta:	"/usr/lib/sendmail -oi -oem %s"
 
 incominglogfrequency:	200
+addinjectiondate:   true
+addinjectionpostinghost:   false
 listvalue:      [ one two three ]
 
 # testing comment

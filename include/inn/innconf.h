@@ -99,10 +99,10 @@ struct innconf {
     unsigned long keymaxwords;  /* Max count of interesting words */
 
     /* Posting */
-    bool addnntppostingdate;    /* Add NNTP-Posting-Date: to posts */
-    bool addnntppostinghost;    /* Add NNTP-Posting-Host: to posts */
+    bool addinjectiondate;      /* Add Injection-Date: to posts */
+    bool addinjectionpostinghost; /* Add posting-host attribute to Injection-Info: to posts */
     bool checkincludedtext;     /* Reject if too much included text */
-    char *complaints;           /* Address for X-Complaints-To: */
+    char *complaints;           /* Address for mail-complaints-to attribute to Injection-Info: */
     char *fromhost;             /* Host for the From: line */
     unsigned long localmaxartsize; /* Max article size of local postings */
     char *moderatormailer;      /* Default host to mail moderated articles */

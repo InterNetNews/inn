@@ -106,8 +106,8 @@ keymaxwords:            250
 
 # Posting
 
-addnntppostingdate:     true
-addnntppostinghost:     true
+addinjectiondate:       true
+addinjectionpostinghost: true
 checkincludedtext:      false
 #complaints:
 #fromhost:

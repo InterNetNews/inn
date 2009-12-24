@@ -22,6 +22,8 @@
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
 ##   * Rename nntpactsync to incominglogfrequency in inn.conf.
+##   * Rename addnntppostingdate and addnntppostinghost to respectively
+##     addinjectiondate and addinjectionpostinghost in inn.conf.
 ##   * Move parameters from overview.fmt to inn.conf if needed.
 ##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
@@ -104,6 +106,12 @@ sub fix_inn_conf {
 
         if ($key eq 'nntpactsync') {
             $key = 'incominglogfrequency';
+        }
+        if ($key eq 'addnntppostingdate') {
+            $key = 'addinjectiondate';
+        }
+        if ($key eq 'addnntppostinghost') {
+            $key = 'addinjectionpostinghost';
         }
 
         # A list value (on only one line).
