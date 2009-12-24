@@ -423,7 +423,7 @@ The client may use the NEWNEWS command, overriding the global setting.
 =item L
 
 The client may post to newsgroups that are set to disallow local posting
-(mode C<n> in the active(5) file).
+(status fields C<n> and C<x> in the active(5) file).
 
 =back
 
@@ -819,7 +819,8 @@ some ideas:
 To restrict connections on the standard NNTP port (119) to use TLS for
 some (or all) of the auth groups to match, use the I<require_ssl>
 parameter.  Note that a client can use STARTTLS to negotiate an
-encrypted connection.
+encrypted connection.  A secure layer can also be negotiated during
+authentication via AUTHINFO SASL.
 
 =item *
 
