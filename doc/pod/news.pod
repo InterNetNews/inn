@@ -160,6 +160,11 @@ did not check for a valid dot-stuffed output.
 
 =item *
 
+Fixed a bug to control-only feeds:  junked non-control articles were being
+fed down control-only feeds).  Thanks to Andrew Gierth for the patch.
+
+=item *
+
 Fixed a bug in B<innreport> which was not correctly summing B<innd>
 stats when I<hostname> was set as an IPv6 address instead of a fully
 qualified domain name.  Thanks to Petr Novopashenniy for the bug report.
