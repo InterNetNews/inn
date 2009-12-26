@@ -406,6 +406,7 @@ ARTsendmmap(SENDTYPE what)
 	    return;
 	}
 	/* r points to the first space in the Xref: header. */
+
 	for (s = path, lastchar = '\0';
 	    s + VirtualPathlen + 1 < endofpath;
 	    lastchar = *s++) {
@@ -430,9 +431,11 @@ ARTsendmmap(SENDTYPE what)
 	        SendIOv(s, p - s);
 	    }
 	} else {
+            /* Double the '!' (thus, adding one '!') in Path: header. */
 	    if (xref > path) {
 	        SendIOv(q, path - q);
 	        SendIOv(VirtualPath, VirtualPathlen);
+                SendIOv("!", 1);
 	        SendIOv(path, xref - path);
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
 	        SendIOv(r, p - r);
@@ -441,6 +444,7 @@ ARTsendmmap(SENDTYPE what)
 	        SendIOv(VirtualPath, VirtualPathlen - 1);
 	        SendIOv(r, path - r);
 	        SendIOv(VirtualPath, VirtualPathlen);
+                SendIOv("!", 1);
 	        SendIOv(path, p - path);
 	    }
 	}
@@ -525,7 +529,9 @@ GetHeader(const char *header, bool stripspaces)
 		else if (strncasecmp("Xref", header, headerlen) == 0)
 		    xrefheader = true;
 		if (retval == NULL) {
-		    retlen = q - p + VirtualPathlen + 1;
+                    /* Possibly add '!' (a second one) at the end of the virtual path.
+                     * So it is +2 because of '\0'. */
+		    retlen = q - p + VirtualPathlen + 2;
 		    retval = xmalloc(retlen);
 		} else {
 		    if ((q - p + VirtualPathlen + 1) > retlen) {
@@ -558,8 +564,9 @@ GetHeader(const char *header, bool stripspaces)
 			*(retval + (int)(q - s)) = '\0';
 		    } else {
 			memcpy(retval, VirtualPath, VirtualPathlen);
-			memcpy(retval + VirtualPathlen, p, q - p);
-			*(retval + (int)(q - p) + VirtualPathlen) = '\0';
+                        *(retval + VirtualPathlen) = '!';
+			memcpy(retval + VirtualPathlen + 1, p, q - p);
+			*(retval + (int)(q - p) + VirtualPathlen + 1) = '\0';
 		    }
 		} else if (xrefheader && (VirtualPathlen > 0)) {
 		    if ((r = memchr(p, ' ', q - p)) == NULL)
