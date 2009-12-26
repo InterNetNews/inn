@@ -534,8 +534,8 @@ GetHeader(const char *header, bool stripspaces)
 		    retlen = q - p + VirtualPathlen + 2;
 		    retval = xmalloc(retlen);
 		} else {
-		    if ((q - p + VirtualPathlen + 1) > retlen) {
-			retlen = q - p + VirtualPathlen + 1;
+		    if ((q - p + VirtualPathlen + 2) > retlen) {
+			retlen = q - p + VirtualPathlen + 2;
                         retval = xrealloc(retval, retlen);
 		    }
 		}
@@ -574,6 +574,7 @@ GetHeader(const char *header, bool stripspaces)
 		    for (; (r < q) && isspace((int)*r) ; r++);
 		    if (r == q)
 			return NULL;
+                    /* Copy the virtual path without its final '!'. */
 		    memcpy(retval, VirtualPath, VirtualPathlen - 1);
 		    memcpy(retval + VirtualPathlen - 1, r - 1, q - r + 1);
 		    *(retval + (int)(q - r) + VirtualPathlen) = '\0';
@@ -887,6 +888,7 @@ vhost_xref(char *p)
     return field;
 }
 
+
 /*
 **  Dump parts of the overview database with the OVER command.
 **  The legacy XOVER is also kept, with its specific behaviour.
@@ -1039,6 +1041,7 @@ CMDover(int ac, char *av[])
                 }
                 continue;
             }
+            /* Copy the virtual path without its final '!'. */
 	    if(useIOb) {
 		SendIOb(data, p - data);
 		SendIOb(VirtualPath, VirtualPathlen - 1);
