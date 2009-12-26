@@ -244,7 +244,7 @@ KEYgenerate(
 	    continue;
 
 	/* Add to list. */
-        if (word_index != 0)
+        if (chase != hc->Value)
             *chase++ = ',';
 
         strlcpy(chase, word[word_vec[word_index].index],
