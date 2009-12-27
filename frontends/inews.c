@@ -409,10 +409,7 @@ CheckControl(char *ctrl)
 	  || strcmp(ctrl, "ihave")       == 0
 	  || strcmp(ctrl, "sendme")      == 0
 	  || strcmp(ctrl, "newgroup")    == 0
-	  || strcmp(ctrl, "rmgroup")     == 0
-	  || strcmp(ctrl, "sendsys")     == 0
-	  || strcmp(ctrl, "senduuname")  == 0
-	  || strcmp(ctrl, "version")     == 0) {
+	  || strcmp(ctrl, "rmgroup")     == 0) {
 	if (!AnAdministrator())
             die("ask your news administrator to do the %s for you", ctrl);
     }

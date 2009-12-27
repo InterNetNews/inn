@@ -270,10 +270,7 @@ CheckControl(char *ctrl)
 	if (*q == '\0')
 	    return "Message-ID missing in cancel";
     }
-    else if (strcmp(ctrl, "sendsys")     == 0
-          || strcmp(ctrl, "senduuname")  == 0
-	  || strcmp(ctrl, "version")     == 0
-          || strcmp(ctrl, "checkgroups") == 0
+    else if (strcmp(ctrl, "checkgroups") == 0
 	  || strcmp(ctrl, "ihave")       == 0
           || strcmp(ctrl, "sendme")      == 0
 	  || strcmp(ctrl, "newgroup")    == 0
