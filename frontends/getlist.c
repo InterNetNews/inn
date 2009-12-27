@@ -259,7 +259,7 @@ main(int argc, char *argv[])
         pattern = argv[1];
     if (argc == 3)
         types = argv[2];
-    if (strcmp(list, "active") != 0 && types != NULL)
+    if (strcasecmp(list, "active") != 0 && types != NULL)
         die("group types can only be specified with a list type of active");
 
     /* Connect to the server. */

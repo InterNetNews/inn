@@ -122,7 +122,7 @@ main(ac, av)
     /* Scan for the message-id. */
     if (mesgid == NULL) {
 	while (fgets(buff, sizeof buff, F) != NULL)
-	    if (strncasecmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
+	    if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
 		if ((p = strchr(buff, '<')) == NULL
                  || (q = strchr(p, '>')) == NULL)
                     die("bad message ID line");
@@ -163,7 +163,7 @@ main(ac, av)
     /* Send the file over. */
     fseeko(F, 0, SEEK_SET);
     while (fgets(buff, sizeof buff, F) != NULL) {
-	if (strncasecmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
+	if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
 	    fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);
 	    continue;
 	}

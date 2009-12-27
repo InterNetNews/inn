@@ -1720,10 +1720,10 @@ PERMgetpermissions(void)
 	    }
 	    if (VirtualPath)
 		free(VirtualPath);
-	    if (strcmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
+	    if (strcasecmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
 		/* Use domain, if pathhost in access realm matches one in
 		 * inn.conf to differentiate virtual host. */
-		if (innconf->domain != NULL && strcmp(innconf->domain, PERMaccessconf->domain) == 0) {
+		if (innconf->domain != NULL && strcasecmp(innconf->domain, PERMaccessconf->domain) == 0) {
 		    syslog(L_ERROR, "%s domain parameter (%s) in readers.conf must be different from the one in inn.conf.",
 			Client.host, PERMaccessconf->name);
 		    Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);

@@ -1273,7 +1273,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
 
   /* See if it's a cancel message. */
   c = *Control;
-  if (c == 'c' && strncmp(Control, "cancel", 6) == 0) {
+  if ((c == 'c' || c == 'C') && strncasecmp(Control, "cancel", 6) == 0) {
     for (p = &Control[6]; ISWHITE(*p); p++)
       continue;
     if (*p && IsValidMessageID(p, true))
@@ -1338,9 +1338,9 @@ DISTwanted(char **list, char *p)
   for (sawbang = false, c = *p; (q = *list) != NULL; list++) {
     if (*q == '!') {
       sawbang = true;
-      if (c == *++q && strcmp(p, q) == 0)
+      if (c == *++q && strcasecmp(p, q) == 0)
 	return false;
-    } else if (c == *q && strcmp(p, q) == 0)
+    } else if (c == *q && strcasecmp(p, q) == 0)
       return true;
   }
 
@@ -1989,13 +1989,13 @@ ARTpost(CHANNEL *cp)
 
   n = strlen(hops[0]);
   if (n == Path.used - 1 &&
-    strncmp(Path.data, hops[0], Path.used - 1) == 0)
+    strncasecmp(Path.data, hops[0], Path.used - 1) == 0)
     data->Hassamepath = true;
   else
     data->Hassamepath = false;
   if (Pathcluster.data != NULL &&
     n == Pathcluster.used - 1 &&
-    strncmp(Pathcluster.data, hops[0], Pathcluster.used - 1) == 0)
+    strncasecmp(Pathcluster.data, hops[0], Pathcluster.used - 1) == 0)
     data->Hassamecluster = true;
   else
     data->Hassamecluster = false;
@@ -2151,8 +2151,8 @@ ARTpost(CHANNEL *cp)
       if (CTYPE(isupper, *p))
 	*p = tolower(*p);
     *p = '\0';
-    LikeNewgroup = (strcmp(ControlWord, "newgroup") == 0
-                    || strcmp(ControlWord, "rmgroup") == 0);
+    LikeNewgroup = (strcasecmp(ControlWord, "newgroup") == 0
+                    || strcasecmp(ControlWord, "rmgroup") == 0);
 
     if (innconf->ignorenewsgroups && LikeNewgroup) {
       for (p++; *p && ISWHITE(*p); p++);
@@ -2177,7 +2177,7 @@ ARTpost(CHANNEL *cp)
 	data->Followcount = data->Groupcount;
     }
     
-    LikeNewgroup = (LikeNewgroup || strcmp(ControlWord, "checkgroups") == 0);
+    LikeNewgroup = (LikeNewgroup || strcasecmp(ControlWord, "checkgroups") == 0);
     
     /* Control messages to "foo.ctl" are treated as if they were
      * posted to "foo".  I should probably apologize for all the

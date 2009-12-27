@@ -368,7 +368,7 @@ procpaths(FILE *f)
 
     while (fgets(buf, sizeof(buf), f)) {
 	c=buf;
-	if (!strncmp(c, "Path: ", 6))
+	if (!strncasecmp(c, "Path: ", 6))
 	    c+=6;
 	/* find end of line. Some broken newsreaders preload Path with
 	   a name containing spaces. Chop off those entries. */

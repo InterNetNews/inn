@@ -184,12 +184,14 @@ stindex(char *MessageID, int hash) {
 	 && (stbuf[i].st_hash == hash)) {
 	    int n;
 
-	    if (strcasecmp(MessageID, stbuf[i].st_id)) continue;
+	    if (strcmp(MessageID, stbuf[i].st_id))
+                continue;
 
-	    /* left of '@' is case sensitive */
 	    for (n = 0; (MessageID[n] != '@') && (MessageID[n] != '\0'); n++) ;
-	    if (strncmp(MessageID, stbuf[i].st_id, n)) continue;
-	    else break;	/* found a match */
+	    if (strncmp(MessageID, stbuf[i].st_id, n))
+                continue;
+	    else
+                break;	/* found a match */
 	}
     }
     if (i >= STNBUF) i = -1;  /* no match found ? */
@@ -574,7 +576,7 @@ HeadersLen(ARTHANDLE *art, int *iscmsg) {
 		    p--;
 		break;
 	    }
-	    if (*(p + 1) == 'C' && strncasecmp(p + 1, "Control: ", 9) == 0)
+	    if ((*(p + 1) == 'C' || *(p + 1) == 'c') && strncasecmp(p + 1, "Control: ", 9) == 0)
 		*iscmsg = 1;
 	}
 	lastchar = *p;

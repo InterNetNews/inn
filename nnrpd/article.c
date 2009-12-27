@@ -411,7 +411,7 @@ ARTsendmmap(SENDTYPE what)
 	    s + VirtualPathlen + 1 < endofpath;
 	    lastchar = *s++) {
 	    if ((lastchar != '\0' && lastchar != '!') || *s != *VirtualPath ||
-		strncmp(s, VirtualPath, VirtualPathlen - 1) != 0)
+		strncasecmp(s, VirtualPath, VirtualPathlen - 1) != 0)
 		continue;
 	    if (*(s + VirtualPathlen - 1) != '\0' &&
 		*(s + VirtualPathlen - 1) != '!')
@@ -552,7 +552,7 @@ GetHeader(const char *header, bool stripspaces)
 			prevchar = *s++) {
 			if ((prevchar != '\0' && prevchar != '!') ||
 			    *s != *VirtualPath ||
-			    strncmp(s, VirtualPath, VirtualPathlen - 1) != 0)
+			    strncasecmp(s, VirtualPath, VirtualPathlen - 1) != 0)
 			    continue;
 			if (*(s + VirtualPathlen - 1) != '\0' &&
 			    *(s + VirtualPathlen - 1) != '!')
