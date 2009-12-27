@@ -391,18 +391,9 @@ ProcessHeaders(char *idbuff, bool ihave)
 
     /* Newsgroups: is checked later. */
 
-    if (HDR(HDR__CONTROL)) {
+    if (HDR(HDR__CONTROL) != NULL) {
 	if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
 	    return error;
-    } else {
-	p = HDR(HDR__SUBJECT);
-	if (p == NULL)
-	    return "Required Subject: header is missing";
-        if (strncmp(p, "cmsg ", 5) == 0) {
-            HDR_SET(HDR__CONTROL, p + 5);
-            if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
-                return error;
-        }
     }
 
     /* Set the Message-ID: header. */
