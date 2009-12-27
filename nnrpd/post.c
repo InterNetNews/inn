@@ -48,13 +48,13 @@ HEADER Table[] = {
     {   "Message-ID",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "References",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Reply-To",             true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "NNTP-Posting-Host",    false,  HTstd,  0,    NULL,    NULL, 0 },
+    {   "NNTP-Posting-Host",    false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Mime-Version",         true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Content-Type",         true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Content-Transfer-Encoding", true, HTstd,  0,    NULL,    NULL, 0 },
-    {   "X-Trace",              false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "X-Complaints-To",      false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "NNTP-Posting-Date",    false,  HTstd,  0,    NULL,    NULL, 0 },
+    {   "X-Trace",              false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "X-Complaints-To",      false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "NNTP-Posting-Date",    false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Xref",                 false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "Injection-Date",       true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Injection-Info",       false,  HTstd,  0,    NULL,    NULL, 0 },
@@ -72,6 +72,10 @@ HEADER Table[] = {
     {   "Archived-At",          true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Comments",             true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Original-Sender",      true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Also-Control",         false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "Article-Names",        false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "Article-Updates",      false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "See-Also",             false,  HTobs,  0,    NULL,    NULL, 0 },
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);

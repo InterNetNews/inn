@@ -75,7 +75,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__EXPIRES				4 */
   ARTHEADERINIT("From",			HTreq),
 /* #define HDR__FROM				5 */
-  ARTHEADERINIT("Lines",		HTstd),
+  ARTHEADERINIT("Lines",		HTobs),
 /* #define HDR__LINES				6 */
   ARTHEADERINIT("Message-ID",		HTreq),
 /* #define HDR__MESSAGE_ID			7 */
@@ -91,7 +91,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__SUBJECT				12 */
   ARTHEADERINIT("Supersedes",		HTstd),
 /* #define HDR__SUPERSEDES			13 */
-  ARTHEADERINIT("Bytes",		HTstd),
+  ARTHEADERINIT("Bytes",		HTobs),
 /* #define HDR__BYTES				14 */
   ARTHEADERINIT("Also-Control",		HTobs),
 /* #define HDR__ALSOCONTROL			15 */
@@ -101,7 +101,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__XREF				17 */
   ARTHEADERINIT("Keywords",		HTstd),
 /* #define HDR__KEYWORDS			18 */
-  ARTHEADERINIT("X-Trace",		HTstd),
+  ARTHEADERINIT("X-Trace",		HTobs),
 /* #define HDR__XTRACE				19 */
   ARTHEADERINIT("Date-Received",	HTobs),
 /* #define HDR__DATERECEIVED			20 */
@@ -113,7 +113,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__RECEIVED			23 */
   ARTHEADERINIT("Relay-Version",	HTobs),
 /* #define HDR__RELAYVERSION			24 */
-  ARTHEADERINIT("NNTP-Posting-Host",	HTstd),
+  ARTHEADERINIT("NNTP-Posting-Host",	HTobs),
 /* #define HDR__NNTPPOSTINGHOST			25 */
   ARTHEADERINIT("Followup-To",		HTstd),
 /* #define HDR__FOLLOWUPTO			26 */
@@ -157,7 +157,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__ORIGINATOR			45 */
   ARTHEADERINIT("X-Auth",		HTstd),
 /* #define HDR__X_AUTH				46 */
-  ARTHEADERINIT("X-Complaints-To",	HTstd),
+  ARTHEADERINIT("X-Complaints-To",	HTobs),
 /* #define HDR__X_COMPLAINTS_TO			47 */
   ARTHEADERINIT("X-Face",		HTstd),
 /* #define HDR__X_FACE				48 */
@@ -169,7 +169,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__X_MODBOT			51 */
   ARTHEADERINIT("X-Modtrace",		HTstd),
 /* #define HDR__X_MODTRACE			52 */
-  ARTHEADERINIT("X-No-Archive",		HTstd),
+  ARTHEADERINIT("X-No-Archive",		HTobs),
 /* #define HDR__X_NO_ARCHIVE			53 */
   ARTHEADERINIT("X-Original-Trace",	HTstd),
 /* #define HDR__X_ORIGINAL_TRACE		54 */
@@ -193,7 +193,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__IN_REPLY_TO			63 */
   ARTHEADERINIT("Injection-Date",	HTstd),
 /* #define HDR__INJECTION_DATE			64 */
-  ARTHEADERINIT("NNTP-Posting-Date",    HTstd),
+  ARTHEADERINIT("NNTP-Posting-Date",    HTobs),
 /* #define HDR__NNTP_POSTING_DATE               65 */
   ARTHEADERINIT("X-User-ID",            HTstd),
 /* #define HDR__X_USER_ID                       66 */
@@ -203,7 +203,7 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__X_ORIGINAL_NNTP_POSTING_HOST    68 */
   ARTHEADERINIT("Original-Sender",      HTstd),
 /* #define HDR__ORIGINAL_SENDER                 69 */
-  ARTHEADERINIT("NNTP-Posting-Path",    HTstd),
+  ARTHEADERINIT("NNTP-Posting-Path",    HTobs),
 /* #define HDR__NNTP_POSTING_PATH               70 */
   ARTHEADERINIT("Archive",              HTstd),
 /* #define HDR__ARCHIVE                         71 */
