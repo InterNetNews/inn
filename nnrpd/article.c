@@ -706,14 +706,14 @@ CMDfetch(int ac, char *av[])
 
     /* Open the article and send the reply. */
     if (!ARTopen(atol(buff))) {
-        Reply("%s\r\n", ARTnoartingroup);
+        Reply("%s\r\n", ac == 1 ? ARTnocurrart : ARTnoartingroup);
         return;
     }
     if (ac > 1)
 	ARTnumber = tart;
     if ((msgid = GetHeader("Message-ID", true)) == NULL) {
         ARTclose();
-        Reply("%s\r\n", ARTnoartingroup);
+        Reply("%s\r\n", ac == 1 ? ARTnocurrart : ARTnoartingroup);
 	return;
     }
     /* A message-ID does not have more than 250 octets. */
