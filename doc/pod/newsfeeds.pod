@@ -292,8 +292,8 @@ Only send articles for which overview data was stored.
 
 =item O
 
-Send articles to this site that don't have an X-Trace: header, even if the
-C<O> flag is also given.
+Send articles to this site that don't have an Injection-Info: or X-Trace:
+header, even if the C<O> flag is also given.
 
 =item p
 
@@ -372,13 +372,14 @@ unmoderated groups are sent.
 =item B<O> I<originator>
 
 If this flag is specified, an article will only be sent to this site if it
-contains an X-Trace: header and the first field of this header matches
-I<originator>.  I<originator> is a uwildmat(3) expression without commas or
-a list of such expressions, separated by C</>.  The article is never sent
-if the first character of the pattern begins with C<@> and the rest of the
-pattern matches.  One use of this flag is to restrict the feed to locally
-generated posts by using an I<originator> pattern that matches the
-X-Trace: header added by the local server.
+contains an Injection-Info: header (or an X-Trace: header if no
+Injection-Info: header is found) and the first field of this header matches
+I<originator>.  I<originator> is a uwildmat(3) expression without commas
+or a list of such expressions, separated by C</>.  The article is never
+sent if the first character of the pattern begins with C<@> and the rest
+of the pattern matches.  One use of this flag is to restrict the feed to
+locally generated posts by using an I<originator> pattern that matches
+the Injection-Info: header added by the local server.
 
 =item B<P> I<priority>
 

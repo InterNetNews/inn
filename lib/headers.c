@@ -40,3 +40,49 @@ IsValidHeaderName(const char *string)
 
     return true;
 }
+
+
+/*
+**  Skip any amount of CFWS (comments and folding whitespace), the RFC 5322
+**  grammar term for whitespace, CRLF pairs, and possibly nested comments that
+**  may contain escaped parens.  We also allow simple newlines since we don't
+**  always deal with wire-format messages.  Note that we do not attempt to
+**  ensure that CRLF or a newline is followed by whitespace.  Returns the new
+**  position of the pointer.
+*/
+const char *
+skip_cfws(const char *p)
+{
+    int nesting = 0;
+
+    for (; *p != '\0'; p++) {
+        switch (*p) {
+        case ' ':
+        case '\t':
+        case '\n':
+            break;
+        case '\r':
+            if (p[1] != '\n' && nesting == 0)
+                return p;
+            break;
+        case '(':
+            nesting++;
+            break;
+        case ')':
+            if (nesting == 0)
+                return p;
+            nesting--;
+            break;
+        case '\\':
+            if (nesting == 0 || p[1] == '\0')
+                return p;
+            p++;
+            break;
+        default:
+            if (nesting == 0)
+                return p;
+            break;
+        }
+    }
+    return p;
+}
