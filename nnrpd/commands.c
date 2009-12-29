@@ -780,7 +780,7 @@ CMDpost(int ac, char *av[])
     }
 
     /* Send the article to the server. */
-    response = ARTpost(article, idbuff, ihave, &permanent);
+    response = ARTpost(article, idbuff, &permanent);
     if (response == NULL) {
         notice("%s %s ok %s", Client.host, ihave ? "ihave" : "post", idbuff);
         Reply("%d Article received %s\r\n", ihave ? NNTP_OK_IHAVE : NNTP_OK_POST, idbuff);

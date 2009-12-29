@@ -315,7 +315,7 @@ CheckDistribution(char *p)
 **  Return NULL if okay, or an error message.
 */
 static const char *
-ProcessHeaders(char *idbuff, bool ihave)
+ProcessHeaders(char *idbuff)
 {
     static char		datebuff[40];
     static char		localdatebuff[40];
@@ -338,7 +338,7 @@ ProcessHeaders(char *idbuff, bool ihave)
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
-	if (!ihave && !hp->CanSet && hp->Value) {
+	if (hp->CanSet && hp->Value) {
 	    snprintf(Error, sizeof(Error),
 		     "Can't set system %s: header", hp->Name);
 	    return Error;
@@ -372,8 +372,6 @@ ProcessHeaders(char *idbuff, bool ihave)
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate Date: header";
     if (HDR(HDR__DATE) == NULL) {
-	if (ihave)
-	    return "Missing Date: header";
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
                 return "Can't generate local date header";
@@ -398,8 +396,6 @@ ProcessHeaders(char *idbuff, bool ihave)
 
     /* Set the Message-ID: header. */
     if (HDR(HDR__MESSAGEID) == NULL) {
-	if (ihave)
-	    return "Missing Message-ID: header";
 	HDR_SET(HDR__MESSAGEID, idbuff);
     }
     if (!IsValidMessageID(HDR(HDR__MESSAGEID), true)) {
@@ -407,8 +403,6 @@ ProcessHeaders(char *idbuff, bool ihave)
     }
 
     /* Set the Path: header. */
-    if (HDR(HDR__PATH) == NULL && ihave)
-        return "Missing Path: header";
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
 	/* Note that innd will put host name here for us. */
 	HDR_SET(HDR__PATH, (char *) PATHMASTER);
@@ -471,9 +465,9 @@ ProcessHeaders(char *idbuff, bool ihave)
 	    return error;
     }
 
-    /* Set the Organizaion: header. */
-    if (!ihave && HDR(HDR__ORGANIZATION) == NULL
-     && (p = PERMaccessconf->organization) != NULL) {
+    /* Set the Organization: header. */
+    if (HDR(HDR__ORGANIZATION) == NULL
+        && (p = PERMaccessconf->organization) != NULL) {
 	strlcpy(orgbuff, p, sizeof(orgbuff));
 	HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
@@ -546,7 +540,7 @@ ProcessHeaders(char *idbuff, bool ihave)
     HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
 
     /* Clear out some headers that should not be here. */
-    if (!ihave && PERMaccessconf->strippostcc) {
+    if (PERMaccessconf->strippostcc) {
 	HDR_CLEAR(HDR__CC);
 	HDR_CLEAR(HDR__BCC);
 	HDR_CLEAR(HDR__TO);
@@ -988,7 +982,7 @@ Towire(char *p)
 **  The main function which handles POST and IHAVE.
 */
 const char *
-ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
+ARTpost(char *article, char *idbuff, bool *permanent)
 {
     static char	CANTSEND[] = "Can't send %s to server, %s";
     int		i;
@@ -1028,7 +1022,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(idbuff, ihave)) != NULL)
+    if ((error = ProcessHeaders(idbuff)) != NULL)
 	return error;
     if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";

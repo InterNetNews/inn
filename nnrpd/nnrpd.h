@@ -208,8 +208,7 @@ EXTERN struct vector *OVextra;
 EXTERN int	overhdr_xref;
 EXTERN bool     LLOGenable;
 
-extern const char	*ARTpost(char *article, char *idbuff, bool ihave,
-				 bool *permanent);
+extern const char	*ARTpost(char *article, char *idbuff, bool *permanent);
 extern void		ARTclose(void);
 extern int		TrimSpaces(char *line);
 extern void		InitBackoffConstants(void);
