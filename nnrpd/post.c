@@ -415,6 +415,17 @@ ProcessHeaders(char *idbuff, bool ihave)
 	if (VirtualPathlen > 0)
 	    addvirtual = true;
     } else {
+        /* Check that the article has not been injected yet. */
+        for (p = HDR(HDR__PATH); *p != '\0'; p++) {
+            if (*p == '.' && strncasecmp(p, ".POSTED", 7) == 0
+                && (p[7] == '.' || p[7] == '!' || p[7] == ' ' || p[7] == '\t'
+                    || p[7] == '\r')
+                && (p == HDR(HDR__PATH) || p[-1] == '!')) {
+                return "Path: header shows a previous injection of the article";
+            }
+        }
+
+        /* Check whether the virtual host name is required. */
 	if ((VirtualPathlen > 0) &&
 	    (p = strchr(HDR(HDR__PATH), '!')) != NULL) {
 	    *p = '\0';
@@ -424,9 +435,19 @@ ProcessHeaders(char *idbuff, bool ihave)
 	} else if (VirtualPathlen > 0)
 	    addvirtual = true;
     }
+
+    if (newpath != NULL)
+        free(newpath);
+    if (PERMaccessconf->addinjectionpostinghost) {
+        newpath = concat(".POSTED.", Client.host, "!", HDR(HDR__PATH), (char *) 0);
+    } else {
+        newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
+    }
+    HDR_SET(HDR__PATH, newpath);
+
     if (addvirtual) {
-	if (newpath != NULL)
-	    free(newpath);
+        if (newpath != NULL)
+            free(newpath);
         newpath = concat(VirtualPath, HDR(HDR__PATH), (char *) 0);
 	HDR_SET(HDR__PATH, newpath);
     }
@@ -450,7 +471,7 @@ ProcessHeaders(char *idbuff, bool ihave)
 	    return error;
     }
 
-    /* Set the Organization: header. */
+    /* Set the Organizaion: header. */
     if (!ihave && HDR(HDR__ORGANIZATION) == NULL
      && (p = PERMaccessconf->organization) != NULL) {
 	strlcpy(orgbuff, p, sizeof(orgbuff));

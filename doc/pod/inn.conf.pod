@@ -833,6 +833,10 @@ is true.  Note that INN either does not add this attribute or adds the name
 obfuscating the name of the client.  That has to be done with a user-written
 Perl filter, if desired.
 
+When this parameter is set to true, the FQDN (or, if unknown, the IP address)
+of the client is also added to the Path: header, after the C<!.POSTED>
+diagnostic.
+
 =item I<checkincludedtext>
 
 Whether to check local postings for the ratio of new to quoted text and
