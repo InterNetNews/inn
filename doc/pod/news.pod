@@ -1,13 +1,5 @@
 =head1 Changes in 2.5.2
 
-Please note that owing to the implementation of S<RFC 4643> (AUTHINFO USER/PASS)
-in B<innd>, if remote peers have to authenticate in order to feed articles,
-they now have to send a username (which was previously wrongly optional), before
-sending their password.  The mandatory username, though unused by B<innd>, can be
-whatever the remote peer wishes.  In previous versions of INN, B<inncheck> was
-already complaining when F<passwd.nntp> contained an empty username associated
-with a password.
-
 =over 2
 
 =item *
@@ -17,7 +9,9 @@ described in S<RFC 3977>, S<RFC 4643> and S<RFC 4644>.  Consequently, B<innd>
 now recognizes the CAPABILITIES command.  Notwithstanding these standards,
 three commands (IHAVE, CHECK and TAKETHIS) will continue, for interoperability
 reasons, to return a reject code (respectively C<435>, C<438> and C<439>) when
-the command contains a syntax error (which normally leads to C<501>).
+the command contains a syntax error (which normally leads to C<501>).  Besides,
+the mandatory username for authenticated peers will only be enforced by
+S<INN 2.6.0>.
 
 Major improvements are:
 
@@ -47,8 +41,8 @@ commands to specific newsgroups.
 
 =item *
 
-When using HEAD or STAT with an article number or a range, 412 (no group
-selected) is now returned instead of 501 (syntax error).
+When using HEAD or STAT with an article number or a range, C<412> (no
+group selected) is now returned instead of C<501> (syntax error).
 
 =back
 

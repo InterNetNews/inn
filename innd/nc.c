@@ -486,6 +486,9 @@ NCauthinfo(CHANNEL *cp)
     }
 
     /* AUTHINFO PASS cannot be sent before AUTHINFO USER. */
+    /* Enforced only in INN 2.6.0, for backwards compatibility.
+     * [INN 2.5.2 implements RFC 3977 + RFC 4643 + RFC 4644 in innd.] */
+    /*
     if (!cp->HasSentUsername) {
         xasprintf(&buff, "%d Authentication commands issued out of sequence",
                   NNTP_FAIL_AUTHINFO_REJECT);
@@ -493,6 +496,7 @@ NCauthinfo(CHANNEL *cp)
         free(buff);
         return;
     }
+    */
 
     /* Got the password -- is it okay? */
     if (!RCauthorized(cp, cp->av[2])) {
