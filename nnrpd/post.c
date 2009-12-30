@@ -338,7 +338,7 @@ ProcessHeaders(char *idbuff)
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
-	if (hp->CanSet && hp->Value) {
+	if (!hp->CanSet && hp->Value) {
 	    snprintf(Error, sizeof(Error),
 		     "Can't set system %s: header", hp->Name);
 	    return Error;
