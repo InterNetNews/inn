@@ -413,7 +413,7 @@ ProcessHeaders(char *idbuff)
         for (p = HDR(HDR__PATH); *p != '\0'; p++) {
             if (*p == '.' && strncasecmp(p, ".POSTED", 7) == 0
                 && (p[7] == '.' || p[7] == '!' || p[7] == ' ' || p[7] == '\t'
-                    || p[7] == '\r')
+                    || p[7] == '\r' || p[7] == '\n')
                 && (p == HDR(HDR__PATH) || p[-1] == '!')) {
                 return "Path: header shows a previous injection of the article";
             }
@@ -531,8 +531,9 @@ ProcessHeaders(char *idbuff)
         }
     }
 
+    /* ARTpost() will convert bare LF to CRLF.  Do not use CRLF here.*/
     snprintf(injectioninfobuff, sizeof(injectioninfobuff),
-             "%s%s;\r\n\tlogging-data=\"%ld\"; mail-complaints-to=\"%s\"",
+             "%s%s;\n\tlogging-data=\"%ld\"; mail-complaints-to=\"%s\"",
              pathidentitybuff,
              PERMaccessconf->addinjectionpostinghost ? postinghostbuff : "",
              (long) pid, complaintsbuff);
