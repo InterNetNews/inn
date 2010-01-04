@@ -433,18 +433,22 @@ ProcessHeaders(char *idbuff)
     if (newpath != NULL)
         free(newpath);
     if (PERMaccessconf->addinjectionpostinghost) {
-        newpath = concat(".POSTED.", Client.host, "!", HDR(HDR__PATH), (char *) 0);
+        if (addvirtual) {
+            newpath = concat(VirtualPath, ".POSTED.", Client.host, "!",
+                             HDR(HDR__PATH), (char *) 0);
+        } else {
+            newpath = concat(".POSTED.", Client.host, "!", HDR(HDR__PATH),
+                             (char *) 0);
+        }
     } else {
-        newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
+        if (addvirtual) {
+            newpath = concat(VirtualPath, ".POSTED!", HDR(HDR__PATH),
+                             (char *) 0);
+        } else {
+            newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
+        }
     }
     HDR_SET(HDR__PATH, newpath);
-
-    if (addvirtual) {
-        if (newpath != NULL)
-            free(newpath);
-        newpath = concat(VirtualPath, HDR(HDR__PATH), (char *) 0);
-	HDR_SET(HDR__PATH, newpath);
-    }
 
     /* Reply-To: is left alone. */
     /* Sender: is set above. */
