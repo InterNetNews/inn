@@ -54,7 +54,7 @@ Core Channel Handling
 
     CHANreadloop is the main processing loop of innd.  As long as innd is
     running, it will be inside that function.  The core channel code
-    maintains a table of channels, which have a one-to-one correspondance
+    maintains a table of channels, which have a one-to-one correspondence
     with open file descriptors, and three file descriptor sets.  Each
     channel is generally in one of the three sets (reading, writing, or
     sleeping) at any given time.  The states should generally be
