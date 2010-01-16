@@ -207,6 +207,11 @@ qualified domain name.  Thanks to Petr Novopashenniy for the bug report.
 
 =item *
 
+Fixed a bug in B<nnrpd> Perl filter:  a header field whose name begins with
+the name of a standardized header field was not properly taken into account.
+
+=item *
+
 Fixed a bug on how B<innd> was parsing Message-ID: and Supersedes: headers
 which contained trailing whitespaces.  The article ended up
 corrupted because of an unexpected "\r" in the middle of the header.
