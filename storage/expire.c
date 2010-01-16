@@ -824,11 +824,9 @@ OVgroupmatch(const char *group)
     for (i = 0; i < OVnumpatterns; i++) {
         switch (OVpatterns[i][0]) {
         case '!':
-            if (!wanted && uwildmat(group, &OVpatterns[i][1]))
-                break;
         case '@':
             if (uwildmat(group, &OVpatterns[i][1])) {
-                return false;
+                wanted = false;
             }
             break;
         default:

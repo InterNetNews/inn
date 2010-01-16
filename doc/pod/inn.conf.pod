@@ -551,6 +551,10 @@ set to true and the storage method for these newsgroups does not have
 self-expire functionality, storing overview data will fail.
 The default is unset.
 
+Note that the use of C<!> in this wildmat expression has the same meaning as
+C<@>, that is to say it is a poisoned match and the overview data will not
+be generated if one of the newsgroups an article is posted to is unwanted.
+
 =item I<ovmethod>
 
 Which overview storage method to use.  Currently supported values are
