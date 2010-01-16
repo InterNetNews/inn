@@ -209,10 +209,12 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__ARCHIVE                         71 */
   ARTHEADERINIT("Archived-At",          HTstd),
 /* #define HDR__ARCHIVED_AT                     72 */
-  ARTHEADERINIT("Summary",              HTstd)
+  ARTHEADERINIT("Summary",              HTstd),
 /* #define HDR__SUMMARY                         73 */
+  ARTHEADERINIT("Comments",             HTstd)
+/* #define HDR__COMMENTS                        74 */
 };
-/* #define MAX_ARTHEADER                        74 */
+/* #define MAX_ARTHEADER                        75 */
 
 
 /*

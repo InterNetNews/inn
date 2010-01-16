@@ -82,7 +82,7 @@ the standard headers present in the article and their values.  The
 standard headers are:
 
     Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
-    Content-Base, Content-Disposition, Content-Transfer-Encoding,
+    Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
     Content-Type, Control, Date, Date-Received, Distribution, Expires,
     Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
     Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
