@@ -24,6 +24,10 @@ static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
+/*
+**  Do not modify the table without also looking at post.h for potential
+**  changes in the order of the fields.
+*/
 HEADER Table[] = {
     /*  Name                    CanSet  Type    Size  Value */
     {   "Path",                 true,   HTstd,  0,    NULL,    NULL, 0 },
@@ -38,6 +42,7 @@ HEADER Table[] = {
     {   "Lines",                true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Sender",               true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Approved",             true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Archive",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Distribution",         true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Expires",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Message-ID",           true,   HTstd,  0,    NULL,    NULL, 0 },
@@ -51,9 +56,11 @@ HEADER Table[] = {
     {   "X-Complaints-To",      false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "NNTP-Posting-Date",    false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "Xref",                 false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "Injector-Info",        false,  HTstd,  0,    NULL,    NULL, 0 },
+    {   "Injection-Date",       true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Injection-Info",       false,  HTstd,  0,    NULL,    NULL, 0 },
     {   "Summary",              true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Keywords",             true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "User-Agent",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Date-Received",        false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Received",             false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Posted",               false,  HTobs,  0,    NULL,    NULL, 0 },
@@ -62,6 +69,9 @@ HEADER Table[] = {
     {   "Cc",                   true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Bcc",                  true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "To",                   true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Archived-At",          true,   HTstd,  0,    NULL,    NULL, 0 },
+/* The Comments: and Original-Sender: header fields can appear more than once
+ * in the headers of an article.  Consequently, we MUST NOT put them here. */
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);
@@ -197,7 +207,7 @@ StripOffHeaders(char *article)
 		}
 		hp->Value = &p[hp->Size + 1];
 		/* '\r\n' is replaced with '\n', and unnecessary to consider
-		 *  '\r'. */
+		 * '\r'. */
 		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
 		    continue;
 		hp->Body = q;
@@ -268,7 +278,7 @@ CheckControl(char *ctrl)
     else {
 	snprintf(Error, sizeof(Error),
                  "\"%s\" is not a valid control message",
-                 MaxLength(ctrl,ctrl));
+                 MaxLength(ctrl, ctrl));
 	return Error;
     }
     *p = save;
@@ -358,7 +368,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     }
 
     /* Set the Date: header.  datebuff is used later for NNTP-Posting-Date:,
-     *  so we have to set it and it has to be the UTC date. */
+     * so we have to set it and it has to be the UTC date. */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate Date: header";
     if (HDR(HDR__DATE) == NULL) {
@@ -438,7 +448,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	return "Can't parse Expires: header";
 
     /* References: is left alone. */
-    /* Control! is checked above. */
+    /* Control: is checked above. */
 
     /* Check the Distribution: header. */
     if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
@@ -460,7 +470,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
     /* Summary: is left alone. */
     /* Approved: is left alone. */
 
-    /* Set the Lines: header. */
+    /* Set the Lines: header (deprecated by RFC 5536). */
+    /* It will be removed in INN 2.6.0. */
     if (!ihave) {
 	snprintf(linebuff, sizeof(linebuff), "%d", linecount);
 	HDR_SET(HDR__LINES, linebuff);
@@ -468,15 +479,26 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 
     /* Supersedes: is left alone. */
 
-    /* Set the NNTP-Posting-Host: header. */
-    if (!ihave && PERMaccessconf->addnntppostinghost) 
-    HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
-    
-    /* Set the NNTP-Posting-Date: header. */
-    if (!ihave && PERMaccessconf->addnntppostingdate)
-    HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
+    /* Set the NNTP-Posting-Host: header (deprecated by RFC 5536). */
+    /* It will be replaced by Injection-Info: in INN 2.6.0. */
+    if (!ihave && PERMaccessconf->addnntppostinghost)
+        HDR_SET(HDR__NNTPPOSTINGHOST, Client.host);
 
-    /* Set the X-Trace: header. */
+    /* Set the NNTP-Posting-Date: header (deprecated by RFC 5536). */
+    /* It will be replaced by Injection-Date: in INN 2.6.0. */
+    if (!ihave && PERMaccessconf->addnntppostingdate)
+        HDR_SET(HDR__NNTPPOSTINGDATE, datebuff);
+
+    if (HDR(HDR__INJECTION_DATE) != NULL) {
+        t = parsedate_rfc2822_lax(HDR(HDR__INJECTION_DATE));
+        if (t == (time_t) -1)
+            return "Can't parse Injection-Date: header";
+        if (t > now + DATE_FUZZ)
+            return "Article injected in the future";
+    }
+
+    /* Set the X-Trace: header (deprecated by RFC 5536). */
+    /* It will be replaced by Injection-Info: in INN 2.6.0. */
     pid = (long) getpid() ;
     if ((gmt = gmtime(&now)) == NULL)
 	return "Can't get the time";
@@ -492,7 +514,8 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
              gmt->tm_hour, gmt->tm_min, gmt->tm_sec);
     HDR_SET(HDR__XTRACE, tracebuff);
 
-    /* Set the X-Complaints-To: header. */
+    /* Set the X-Complaints-To: header (deprecated by RFC 5536). */
+    /* It will be replaced by Injection-Info: in INN 2.6.0. */
     if ((p = PERMaccessconf->complaints) != NULL)
 	snprintf (complaintsbuff, sizeof(complaintsbuff), "%s", p);
     else {
@@ -594,7 +617,7 @@ MailArticle(char *group, char *article)
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
 	snprintf(Error, sizeof(Error), "No mailing address for \"%s\" -- %s",
                  group, "ask your news administrator to fix this");
-	free(group);  
+	free(group);
 	return Error;
     }
     free(group);
@@ -997,7 +1020,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 
     if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
 	return error;
-    
+
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
 	if ((p = strchr(p, '\n')) == NULL)
