@@ -70,12 +70,12 @@ HEADER Table[] = {
     {   "Bcc",                  true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "To",                   true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Archived-At",          true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Comments",             true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Original-Sender",      true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Also-Control",         false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Article-Names",        false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Article-Updates",      false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "See-Also",             false,  HTobs,  0,    NULL,    NULL, 0 },
+/* The Comments: and Original-Sender: header fields can appear more than once
+ * in the headers of an article.  Consequently, we MUST NOT put them here. */
 };
 
 HEADER *EndOfTable = ARRAY_END(Table);
@@ -210,8 +210,8 @@ StripOffHeaders(char *article)
 		    return NULL;
 		}
 		hp->Value = &p[hp->Size + 1];
-		/* '\r\n,' is replaced with '\n', and unnecessary to consider
-		 *  '\r'. */
+		/* '\r\n' is replaced with '\n', and unnecessary to consider
+		 * '\r'. */
 		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
 		    continue;
 		hp->Body = q;
@@ -631,7 +631,7 @@ MailArticle(char *group, char *article)
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
 	snprintf(Error, sizeof(Error), "No mailing address for \"%s\" -- %s",
                  group, "ask your news administrator to fix this");
-	free(group);  
+	free(group);
 	return Error;
     }
     free(group);
@@ -1034,7 +1034,7 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 
     if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
 	return error;
-    
+
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
 	if ((p = strchr(p, '\n')) == NULL)
