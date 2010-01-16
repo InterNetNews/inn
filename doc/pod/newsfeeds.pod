@@ -108,7 +108,7 @@ and would exclude the newsgroup comp.sources (if it exists) as well as the
 groups in the comp.sources.* hierarchy, but note that this would also
 exclude a newsgroup named comp.sources-only (whereas the above pattern
 would add that group to the site subscription list since it matches
-C<comp.*> and none of the other patterns.
+C<comp.*> and none of the other patterns).
 
 For another example, to feed alt.* and misc.* to a given site but not any
 articles posted to alt.binaries.warez (even if they're also crossposted to
@@ -116,7 +116,7 @@ other alt.* or misc.* groups), the following pattern can be used:
 
     alt.*,@alt.binaries.warez,misc.*
 
-Note, however, that if you reversed the C<alt.*> and <@alt.binaries.warez>
+Note, however, that if you reversed the C<alt.*> and C<@alt.binaries.warez>
 entries, this pattern would be equivalent to C<alt.*,misc.*>, since the
 last matching pattern determines whether a given newsgroup matches and the
 poison logic only applies if the poison entry is the last matching entry.

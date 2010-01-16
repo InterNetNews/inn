@@ -189,7 +189,7 @@ did not check for a valid dot-stuffed output.
 =item *
 
 Fixed a bug to control-only feeds:  junked non-control articles were being
-fed down control-only feeds).  Thanks to Andrew Gierth for the patch.
+fed down control-only feeds.  Thanks to Andrew Gierth for the patch.
 
 =item *
 

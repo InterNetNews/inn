@@ -1014,7 +1014,8 @@ support:
 
 The path to a file containing certificate authority root certificates,
 used to present a trust chain to a TLS client.  This parameter is only
-used if B<nnrpd> is built with TLS/SSL support.  There is no default value.
+used if B<nnrpd> is built with TLS/SSL support.  The default value is an
+empty string.
 
 =item I<tlscapath>
 
