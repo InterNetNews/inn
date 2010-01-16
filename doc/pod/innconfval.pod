@@ -44,16 +44,14 @@ F<inn.conf> would be.
 Print out parameters as Perl assignment statements.  The variable name
 will be the same as the F<inn.conf> parameter, and string values will be
 enclosed in single quotes with appropriate escaping.  Boolean values will
-be mapped to the strings C<true> or C<false>, and string parameters that
-are set to NULL will be mapped to empty strings.  List values will be
-mapped to an array of strings.
+be mapped to the strings C<true> or C<false>.  List values will be mapped
+to an array of strings.  NULL values are not printed out and will therefore
+be C<undef> in Perl.
 
 Here is an example:
 
-    $domain = '';
     $enableoverview = 'true';
     @extraoverviewadvertised = ( 'Newsgroups', 'Injection-Info' );
-    @extraoverviewhidden = ( );
     $organization = 'Let\'s try nasty "quotes"';
     $maxforks = 10;
 
@@ -64,20 +62,17 @@ these variables are properly exported.
 
 Print out parameters as Bourne shell assignment statements.  The variable
 name will be the F<inn.conf> parameter name in all capitals, and all
-variables will be exported.  String values will be enclosed in single
-quotes with appropriate escaping, and boolean values will be mapped to
-C<true> or C<false>.  String parameters that are set to NULL will be
-mapped to empty strings.  List values will be mapped to a space-separated
+variables will be exported, if not NULL.  String values will be enclosed in
+single quotes with appropriate escaping, and boolean values will be mapped
+to C<true> or C<false>.  List values will be mapped to a space-separated
 string representing an array of strings (as Bourne shell does not recognize
-arrays, contrary to several other shells, an array cannot be returned
-for interoperability reasons).
+arrays, contrary to several other shells, an array cannot be returned for
+interoperability reasons).
 
 Here is an example:
 
-    DOMAIN=''; export DOMAIN;
     ENABLEOVERVIEW=true; export ENABLEOVERVIEW;
     EXTRAOVERVIEWADVERTISED='"Newsgroups" "Injection-Info"'; export EXTRAOVERVIEWADVERTISED;
-    EXTRAOVERVIEWHIDDEN='( )'; export EXTRAOVERVIEWHIDDEN;
     ORGANIZATION='Let'\''s try nasty "quotes"'; export ORGANIZATION;
     MAXFORKS=10; export MAXFORKS;
 
@@ -86,16 +81,13 @@ Here is an example:
 Print out parameters as Tcl assignment statements.  The variable name will
 be the same as the F<inn.conf> parameter name but with C<inn_> prepended,
 and string variables will be escaped appropriately.  Boolean values will
-be mapped to the strings C<true> or C<false>, and string parameters that
-are set to NULL will be mapped to empty strings.  List values will be
-mapped to an array of strings.
+be mapped to the strings C<true> or C<false>.  List values will be mapped
+to an array of strings.  NULL values are not printed out.
 
 Here is an example:
 
-    set inn_domain ""
     set inn_enableoverview "true"
     set inn_extraoverviewadvertised { "Newsgroups" "Injection-Info" }
-    set inn_extraoverviewhidden { }
     set inn_organization "Let's try nasty \"quotes\""
     set inn_maxforks 10
 
