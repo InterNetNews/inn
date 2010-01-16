@@ -35,6 +35,7 @@ struct innconf {
     char *bindaddress;          /* Which interface IP to bind to */
     char *bindaddress6;         /* Which interface IPv6 to bind to */
     bool dontrejectfiltered;    /* Don't reject filtered article? */
+    bool feedtrash;             /* Feed the junk group as though the groups really existed. */
     unsigned long hiscachesize; /* Size of the history cache in kB */
     bool ignorenewsgroups;      /* Propagate cmsgs by affected group? */
     bool immediatecancel;       /* Immediately cancel timecaf messages? */

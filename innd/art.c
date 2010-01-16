@@ -1367,17 +1367,17 @@ DISTwantany(char **site, char **article)
 }
 
 /*
-**  Send the current article to all sites that would get it if the
-**  group were created.
+**  Send the current article to all sites that would get it (used
+**  for instance to propagate newgroup control articles or junk articles).
 */
 static void
-ARTsendthegroup(char *name)
+ARTsendthegroup(char *name, char *fromgroup)
 {
   SITE		*sp;
   int		i;
   NEWSGROUP	*ngp;
 
-  for (ngp = NGfind(ARTctl), sp = Sites, i = nSites; --i >= 0; sp++) {
+  for (ngp = NGfind(fromgroup), sp = Sites, i = nSites; --i >= 0; sp++) {
     if (sp->Name != NULL && SITEwantsgroup(sp, name)) {
       SITEmark(sp, ngp);
     }
@@ -2232,8 +2232,13 @@ ARTpost(CHANNEL *cp)
          * removed (or to the admin group to which the checkgroups is posted),
          * and send it to all sites that would or would have had the group
          * if it were created. */
-        ARTsendthegroup(*groups);
+        ARTsendthegroup(*groups, ARTctl);
         Accepted = true;
+      } else if (innconf->wanttrash && innconf->feedtrash && !innconf->verifygroups) {
+        /* Don't set Accepted in this case, because we may still end
+         * up filing the article in the junk group. */
+        ARTsendthegroup(*groups, ARTjnk);
+        NonExist = true;
       } else {
         NonExist = true;
         /* Check if all the newsgroups listed in the Newsgroups: header of

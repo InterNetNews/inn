@@ -178,6 +178,18 @@ outbound articles.  If this parameter is set, all articles will be
 accepted on the local machine, but articles rejected by the filter will
 I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
 
+=item I<feedtrash>
+
+Set this to true if you want to feed articles accepted and filed in C<junk>
+(due to I<wanttrash>) to peers based on their F<newsfeeds> feed patterns
+(applied to the Newsgroups: header as though the article were accepted
+and all those groups were locally carried).  This is useful if you want
+to run INN with a minimal F<active> file and propagate all posts.
+
+This is a boolean value and the default is false, that is to say that
+articles are filed in C<junk> and propagated to sites that receive the
+C<junk> newsgroup.
+
 =item I<hiscachesize>
 
 If set to a value other than C<0>, a hash of recently received Message-IDs
@@ -337,8 +349,9 @@ This is a boolean value, and the default is false.
 Set this to true if you want to file articles posted to unknown newsgroups
 (newsgroups not in the F<active> file) into the C<junk> newsgroup rather
 than rejecting them.  This is sometimes useful for a transit news server
-that needs to propagate articles in all newsgroups regardless if they're
-carried locally.  This is a boolean value and the default is false.
+that needs to propagate articles (according to the setting of I<feedtrash>)
+in all newsgroups regardless if they're carried locally.  This is a boolean
+value and the default is false.
 
 =item I<wipcheck>
 

@@ -123,11 +123,11 @@ poison logic only applies if the poison entry is the last matching entry.
 
 Control messages follow slightly different propagation rules than normal
 articles; see innd(8) for the details.  Note that most subscriptions
-should have C<!junk,!control,!control.*> in their pattern list due to those
-propagation rules (and since junk is a special internal newsgroup; see
-I<wanttrash> in inn.conf(5) for more details on what it's used for) and
-that the best way to keep control messages local to a site is with a
-distribution.
+should have C<!junk,!control,!control.*> in their pattern list due to
+those propagation rules (and since C<junk> is a special internal newsgroup;
+see I<feedtrash> and I<wanttrash> in inn.conf(5) for more details on what
+it's used for) and that the best way to keep control messages local to a
+site is with a distribution.
 
 A subscription can be further modified by specifying distributions that
 the site should or should not receive.  The default is to send all
