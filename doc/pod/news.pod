@@ -183,13 +183,21 @@ response code.  The proper C<503> answer code is now returned.
 
 =item *
 
+When an unauthenticated user tried to post an article, B<nnrpd> replied
+C<440> (posting not allowed) instead of the right C<480> (authentication
+required) when the user might be able to post after authentication.
+Thanks to Daniel Weber for the bug report.
+
+=item *
+
 Fixed a bug in both B<innd> and B<nnrpd> answers to LIST commands which
 did not check for a valid dot-stuffed output.
 
 =item *
 
 Fixed a bug to control-only feeds:  junked non-control articles were being
-fed down control-only feeds.  Thanks to Andrew Gierth for the patch.
+fed down control-only feeds.  Besides, poisoned control groups were not
+properly handled.  Thanks to Andrew Gierth for the patch.
 
 =item *
 
