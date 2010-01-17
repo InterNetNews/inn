@@ -68,11 +68,11 @@ enum nntp_code {
     NNTP_FAIL_ACTION            = 403, /* Internal fault or temporary problem */
     NNTP_FAIL_BAD_GROUP         = 411, /* Group unknown */
     NNTP_FAIL_NO_GROUP          = 412, /* Not in a newsgroup */
-    NNTP_FAIL_NO_ARTICLE        = 420, /* No current article */
+    NNTP_FAIL_ARTNUM_INVALID    = 420, /* Current article is invalid */
     NNTP_FAIL_NEXT              = 421,
     NNTP_FAIL_PREV              = 422,
-    NNTP_FAIL_BAD_ARTICLE       = 423, /* Bad article number */
-    NNTP_FAIL_NOTFOUND          = 430, /* Article not found */
+    NNTP_FAIL_ARTNUM_NOTFOUND   = 423, /* Article not found (by article number) */
+    NNTP_FAIL_MSGID_NOTFOUND    = 430, /* Article not found (by message-ID) */
     NNTP_FAIL_IHAVE_REFUSE      = 435, /* IHAVE article not wanted */
     NNTP_FAIL_IHAVE_DEFER       = 436, /* IHAVE article deferred */
     NNTP_FAIL_IHAVE_REJECT      = 437, /* IHAVE article rejected */

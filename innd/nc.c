@@ -361,13 +361,13 @@ NChead(CHANNEL *cp)
     /* Get the article token and retrieve it (to make sure
      * the article is still here). */
     if (!HISlookup(History, cp->av[1], NULL, NULL, NULL, &token)) {
-        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_MSGID_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
 	return;
     }
     if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
-        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_MSGID_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
 	return;
@@ -427,13 +427,13 @@ NCstat(CHANNEL *cp)
     /* Get the article token and retrieve it (to make sure
      * the article is still here). */
     if (!HISlookup(History, cp->av[1], NULL, NULL, NULL, &token)) {
-        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_MSGID_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
 	return;
     }
     if ((art = SMretrieve(token, RETR_STAT)) == NULL) {
-        xasprintf(&buff, "%d No such article", NNTP_FAIL_NOTFOUND);
+        xasprintf(&buff, "%d No such article", NNTP_FAIL_MSGID_NOTFOUND);
         NCwritereply(cp, buff);
         free(buff);
 	return;
