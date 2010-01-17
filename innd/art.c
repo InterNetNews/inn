@@ -2311,13 +2311,6 @@ ARTpost(CHANNEL *cp)
     ngp->PostCount = 0;
   }
 
-  /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
-  for (i = nSites, sp = Sites; --i >= 0; sp++) {
-    if (sp->Poison || (sp->ControlOnly && !IsControl)
-      || (sp->DontWantNonExist && NonExist))
-      sp->Sendit = false;		
-  }
-
   /* Control messages not filed in "to" get filed only in control.name
    * or control. */
   if (IsControl && Accepted && !ToGroup) {
@@ -2401,16 +2394,23 @@ ARTpost(CHANNEL *cp)
   }
   *ngptr = NULL;
 
+  /* Loop over sites to find Poisons/ControlOnly and undo Sendit flags. */
+  for (i = nSites, sp = Sites; --i >= 0; sp++) {
+    if (sp->Poison || (sp->ControlOnly && !IsControl)
+        || (sp->DontWantNonExist && NonExist))
+      sp->Sendit = false;
+  }
+
   if (innconf->xrefslave) {
     if (ARTxrefslave(data) == false) {
       if (HDR_FOUND(HDR__XREF)) {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Xref header \"%s\" invalid in xrefslave mode",
+                 "%d Xref: header \"%s\" invalid in xrefslave mode",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                  MaxLength(HDR(HDR__XREF), HDR(HDR__XREF)));
       } else {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Xref header required in xrefslave mode",
+                 "%d Xref: header required in xrefslave mode",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
       }
       ARTlog(data, ART_REJECT, cp->Error);
