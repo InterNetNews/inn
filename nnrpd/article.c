@@ -876,7 +876,7 @@ vhost_xref(char *p)
 	warn("malformed Xref: `%s'", field);
 	goto fail;
     }
-    offset = space + 1 - p;
+    offset = space - p;
     space = strchr(p + offset, ' ');
     if (space == NULL) {
 	warn("malformed Xref: `%s'", field);

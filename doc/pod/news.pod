@@ -183,6 +183,12 @@ generating overview data, and B<archive> did not change "\n"
 
 =item *
 
+Fixed a bug when HDR, XHDR and XPAT were used when I<virtualhost> was set
+to true in F<readers.conf>.  The Xref: header of articles posted to only
+one newsgroup appeared empty.
+
+=item *
+
 Fixed a bug in B<tdx-util> which was not properly parsing empty overview
 fields when called with B<-A> or B<-F>.
 
