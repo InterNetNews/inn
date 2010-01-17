@@ -651,6 +651,12 @@ CMDfetch(int ac, char *av[])
 	break;
     }
 
+    /* Trying to read. */
+    if (GRPcount == 0 && !mid) {
+        Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
+        return;
+    }
+
     /* Check authorizations.  If an article number is requested
      * (not a message-ID), we check whether the group is still readable. */
     if (!ok || (!mid && PERMgroupmadeinvalid)) {
@@ -677,12 +683,6 @@ CMDfetch(int ac, char *av[])
 	    ARTsendmmap(what->Type);
 	}
 	ARTclose();
-	return;
-    }
-
-    /* Trying to read. */
-    if (GRPcount == 0) {
-	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	return;
     }
 
@@ -733,6 +733,12 @@ CMDnextlast(int ac UNUSED, char *av[])
     bool next;
     const char *message;
 
+    /* Trying to read. */
+    if (GRPcount == 0) {
+        Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
+        return;
+    }
+
     /* No syntax to check.  Only check authorizations. */
     if (!PERMcanread || PERMgroupmadeinvalid) {
 	Reply("%d Read access denied\r\n",
@@ -740,11 +746,6 @@ CMDnextlast(int ac UNUSED, char *av[])
 	return;
     }
 
-    /* Trying to read. */
-    if (GRPcount == 0) {
-	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
-	return;
-    }
     if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
         Reply("%d Current article number %lu is invalid\r\n",
               NNTP_FAIL_ARTNUM_INVALID, ARTnumber);
@@ -933,17 +934,17 @@ CMDover(int ac, char *av[])
         }   
     }
 
+    /* Trying to read. */
+    if (GRPcount == 0) {
+        Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
+        return;
+    }
+
     /* Check authorizations.  If a range is requested (not a message-ID),
      * we check whether the group is still readable. */
     if (!PERMcanread || (!mid && PERMgroupmadeinvalid)) {
 	Reply("%d Read access denied\r\n",
               PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
-	return;
-    }
-
-    /* Trying to read. */
-    if (GRPcount == 0) {
-	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	return;
     }
 
@@ -1174,6 +1175,12 @@ CMDpat(int ac, char *av[])
         }
     }
 
+    /* Trying to read. */
+    if (GRPcount == 0 && !mid) {
+        Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
+        return;
+    }
+
     /* Check authorizations.  If a range is requested (not a message-ID),
      * we check whether the group is still readable. */
     if (!PERMcanread || (!mid && PERMgroupmadeinvalid)) {
@@ -1191,18 +1198,18 @@ CMDpat(int ac, char *av[])
     do {
 	/* Message-ID specified? */
 	if (mid) {
-	    p = av[2];
-	    if (!ARTopenbyid(p, &artnum, false)) {
-		Reply("%d No such article\r\n", NNTP_FAIL_MSGID_NOTFOUND);
-		break;
-	    }
-
             /* FIXME:  We do not handle metadata requests by message-ID. */
             if (hdr && (IsMetaBytes || IsMetaLines)) {
                 Reply("%d Metadata requests by message-ID unsupported\r\n",
                       NNTP_ERR_UNAVAILABLE);
                 break;
             }
+
+	    p = av[2];
+	    if (!ARTopenbyid(p, &artnum, false)) {
+		Reply("%d No such article\r\n", NNTP_FAIL_MSGID_NOTFOUND);
+		break;
+	    }
 
             if (!PERMartok()) {
                 ARTclose();
@@ -1224,12 +1231,6 @@ CMDpat(int ac, char *av[])
 
 	    ARTclose();
 	    Printf(".\r\n");
-	    break;
-	}
-
-        /* Trying to read. */
-	if (GRPcount == 0) {
-	    Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	    break;
 	}
 
