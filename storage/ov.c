@@ -129,6 +129,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     int			i;
     char		*group;
     ARTNUM		artnum;
+    enum uwildmat       groupmatch;
 
     if (!ov.open) {
 	/* Must be opened. */
@@ -197,16 +198,20 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
             while (isspace((int)*group))
                 group++;
-            if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
+            if ((nextcheck = memchr(group, ':', xreflen - (group - patcheck))) == NULL)
                 return OVADDFAILED;
             *nextcheck++ = '\0';
-            if (!OVgroupmatch(group)) {
-                if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
-                    /* This article will never be expired, since it does not
-                       have self expiry function in stored method and
-                       groupbaseexpiry is true. */
-                    return OVADDFAILED;
+
+            groupmatch = OVgroupmatch(group);
+            if (groupmatch == UWILDMAT_POISON) {
                 return OVADDGROUPNOMATCH;
+            } else if (groupmatch == UWILDMAT_FAIL) {
+                if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry) {
+                    /* This article will never be expired, since it does not
+                     * have self expiry function in stored method and
+                     * groupbaseexpiry is true. */
+                    return OVADDFAILED;
+                }
             }
         }
     }
@@ -221,6 +226,10 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         *next++ = '\0';
         artnum = atoi(next);
         if (artnum <= 0)
+            continue;
+
+        /* Skip overview generation according to ovgrouppat. */
+        if (innconf->ovgrouppat != NULL && OVgroupmatch(group) != UWILDMAT_MATCH)
             continue;
 
         sprintf(overdata, "%ld\t", artnum);

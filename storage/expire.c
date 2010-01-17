@@ -813,28 +813,37 @@ OVhisthasmsgid(struct history *h, const char *data)
     return HISlookup(h, p, NULL, NULL, NULL, NULL);
 }
 
-bool
+/*
+**  Return the matching status of the group (UWILDMAT_MATCH,
+**  UWILDMAT_FAIL, or UWILDMAT_POISON).
+*/
+enum uwildmat
 OVgroupmatch(const char *group)
 {
     int i;
-    bool wanted = false;
+    enum uwildmat result = UWILDMAT_FAIL;
 
     if (OVnumpatterns == 0 || group == NULL)
         return true;
     for (i = 0; i < OVnumpatterns; i++) {
         switch (OVpatterns[i][0]) {
         case '!':
+            if (uwildmat(group, &OVpatterns[i][1])) {
+                result = UWILDMAT_FAIL;
+            }
+            break;
         case '@':
             if (uwildmat(group, &OVpatterns[i][1])) {
-                wanted = false;
+                result = UWILDMAT_POISON;
             }
             break;
         default:
-            if (uwildmat(group, OVpatterns[i]))
-                wanted = true;
+            if (uwildmat(group, OVpatterns[i])) {
+                result = UWILDMAT_MATCH;
+            }
         }
     }
-    return wanted;
+    return result;
 }
 
 void

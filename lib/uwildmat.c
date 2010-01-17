@@ -328,10 +328,10 @@ match_pattern(const unsigned char *text, const unsigned char *start,
 /*
 **  Takes text and a wildmat expression; a wildmat expression is a
 **  comma-separated list of wildmat patterns, optionally preceded by ! to
-**  invert the sense of the expression.  Returns WILDMAT_MATCH if that
-**  expression matches the text, WILDMAT_FAIL otherwise.  If allowpoison is
+**  invert the sense of the expression.  Returns UWILDMAT_MATCH if that
+**  expression matches the text, UWILDMAT_FAIL otherwise.  If allowpoison is
 **  set, allow @ to introduce a poison expression (the same as !, but if it
-**  triggers the failed match the routine returns WILDMAT_POISON instead).
+**  triggers the failed match the routine returns UWILDMAT_POISON instead).
 */
 static enum uwildmat
 match_expression(const unsigned char *text, const unsigned char *start,
