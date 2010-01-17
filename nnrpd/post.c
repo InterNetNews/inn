@@ -121,7 +121,7 @@ MaxLength(char *p, char *q)
     if (q < p || q > p + i)
 	q = p;
 
-    /* Simple case of just want the begining? */
+    /* Simple case of just want the beginning? */
     if (q == NULL || (size_t)(q - p) < sizeof(buff) - 4) {
 	strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
