@@ -269,13 +269,12 @@ CheckControl(char *ctrl)
 	    continue;
 	if (*q == '\0')
 	    return "Message-ID missing in cancel";
-    }
-    else if (strcasecmp(ctrl, "checkgroups") == 0
-	  || strcasecmp(ctrl, "ihave")       == 0
-          || strcasecmp(ctrl, "sendme")      == 0
-	  || strcasecmp(ctrl, "newgroup")    == 0
-          || strcasecmp(ctrl, "rmgroup")     == 0)
-	;
+    } else if (strcasecmp(ctrl, "checkgroups") == 0
+               || strcasecmp(ctrl, "ihave")    == 0
+               || strcasecmp(ctrl, "sendme")   == 0
+               || strcasecmp(ctrl, "newgroup") == 0
+               || strcasecmp(ctrl, "rmgroup")  == 0)
+        ;
     else {
 	snprintf(Error, sizeof(Error),
                  "\"%s\" is not a valid control message",
