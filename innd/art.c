@@ -1033,7 +1033,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   /* Is article too old? */
   /* assumes Date header is required header */
   p = HDR(HDR__DATE);
-  data->Posted = parsedate_rfc2822_lax(p);
+  data->Posted = parsedate_rfc5322_lax(p);
   if (data->Posted == (time_t) -1) {
     sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
@@ -1061,7 +1061,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   }
   if (HDR_FOUND(HDR__EXPIRES)) {
     p = HDR(HDR__EXPIRES);
-    data->Expires = parsedate_rfc2822_lax(p);
+    data->Expires = parsedate_rfc5322_lax(p);
     if (data->Expires == (time_t) -1)
       data->Expires = 0;
   }

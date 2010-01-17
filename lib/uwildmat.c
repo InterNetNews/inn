@@ -52,7 +52,7 @@
 **  Added support for UTF-8 as the default character set for any high-bit
 **  characters.
 **
-**  For more information on UTF-8, see RFC 2279.
+**  For more information on UTF-8, see RFC 3629.
 **
 **  Please note that this file is intentionally written so that conditionally
 **  executed expressions are on separate lines from the condition to

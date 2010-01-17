@@ -16,7 +16,7 @@
 /*
 **  Time constants.
 **
-**  Do not translate these names.  RFC 822 by way of RFC 1036 requires that
+**  Do not translate these names.  RFC 5322 by way of RFC 5536 requires that
 **  weekday and month names *not* be translated.  This is why we use static
 **  tables rather than strftime for building dates, to avoid locale
 **  interference.
@@ -43,7 +43,7 @@ static const int MONTHDAYS[] = {
 };
 
 /* Non-numeric time zones.  Supporting these is required to support the
-   obsolete date format of RFC 2822.  The military time zones are handled
+   obsolete date format of RFC 5322.  The military time zones are handled
    separately. */
 static const struct {
     const char name[4];
@@ -57,7 +57,7 @@ static const struct {
 };
 
 /* Additional non-numeric time zones supported because the old parsedate
-   parser supported them.  These aren't legal in RFC 2822, but are supported
+   parser supported them.  These aren't legal in RFC 5322, but are supported
    in lax mode. */
 static const struct {
     const char name[5];
@@ -113,7 +113,7 @@ static const struct {
 
 
 /*
-**  RFC 2822 date parsing rules.
+**  RFC 5322 date parsing rules.
 */
 
 /* The data structure to store a rule.  The interpretation of the other fields
@@ -188,8 +188,8 @@ local_tz_offset(time_t date, bool current UNUSED)
 
 /*
 **  Given a time_t, a flag saying whether to use local time, a buffer, and
-**  the length of the buffer, write the contents of a valid RFC 2822 / RFC
-**  1036 Date header into the buffer (provided it's long enough).  Returns
+**  the length of the buffer, write the contents of a valid RFC 5322 / RFC
+**  5536 Date header into the buffer (provided it's long enough).  Returns
 **  true on success, false if the buffer is too long.  Use snprintf rather
 **  than strftime to be absolutely certain that locales don't result in the
 **  wrong output.  If the time is -1, obtain and use the current time.
@@ -205,7 +205,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
     size_t date_length;
     const char *tz_name;
 
-    /* Make sure the buffer is large enough.  A complete RFC 2822 date with
+    /* Make sure the buffer is large enough.  A complete RFC 5322 date with
        spaces wherever FWS is required and the optional weekday takes:
 
                     1         2         3
@@ -221,7 +221,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
     /* Get the current time if the provided time is -1. */
     realdate = (date == (time_t) -1) ? time(NULL) : date;
 
-    /* RFC 2822 says the timezone offset is given as [+-]HHMM, so we have to
+    /* RFC 5322 says the timezone offset is given as [+-]HHMM, so we have to
        separate the offset into a sign, hours, and minutes.  Dividing the
        offset by 36 looks like it works, but will fail for any offset that
        isn't an even number of hours, and there are half-hour timezones. */
@@ -419,7 +419,7 @@ parsedate_nntp(const char *date, const char *hour, bool local)
 
 
 /*
-**  Skip any amount of CFWS (comments and folding whitespace), the RFC 2822
+**  Skip any amount of CFWS (comments and folding whitespace), the RFC 5322
 **  grammar term for whitespace, CRLF pairs, and possibly nested comments that
 **  may contain escaped parens.  We also allow simple newlines since we don't
 **  always deal with wire-format messages.  Note that we do not attempt to
@@ -592,7 +592,7 @@ parse_by_rule(const char *p, const struct rule rules[], size_t count,
 
 
 /*
-**  Parse a legacy time zone.  This uses the parsing rules in RFC 2822,
+**  Parse a legacy time zone.  This uses the parsing rules in RFC 5322,
 **  including assigning an offset of 0 to all single-character military time
 **  zones due to their ambiguity in practice.  Returns the new position in the
 **  parse stream or NULL if we failed to parse the zone.  If the obsolete flag
@@ -634,12 +634,12 @@ parse_legacy_timezone(const char *p, long *offset, bool obsolete)
 
 
 /*
-**  Parse an RFC 2822 date, accepting the normal and obsolete syntax.  Takes a
+**  Parse an RFC 5322 date, accepting the normal and obsolete syntax.  Takes a
 **  pointer to the beginning of the date.  Returns the translated time in
 **  seconds since epoch, or (time_t) -1 on error.
 */
 time_t
-parsedate_rfc2822(const char *date)
+parsedate_rfc5322(const char *date)
 {
     const char *p;
     int zone_sign;
@@ -719,7 +719,7 @@ parsedate_rfc2822(const char *date)
             return (time_t) -1;
     }
 
-    /* Fix up the year, using the RFC 2822 rules.  Remember that tm_year
+    /* Fix up the year, using the RFC 5322 rules.  Remember that tm_year
        stores the year - 1900. */
     if (tm.tm_year < 50)
         tm.tm_year += 100;
@@ -741,13 +741,13 @@ parsedate_rfc2822(const char *date)
 
 /*
 **  Parse a date, accepting a lax syntax that tries to allow for any vaguely
-**  RFC-2822-like date that the old parsedate code would accept, allowing for
+**  RFC-5322-like date that the old parsedate code would accept, allowing for
 **  a lot of variation that's seen in Usenet articles.  Takes a pointer to the
 **  date and returns the translated time in seconds since epoch, or (time_t)
 **  -1 on error.
 */
 time_t
-parsedate_rfc2822_lax(const char *date)
+parsedate_rfc5322_lax(const char *date)
 {
     const char *p, *start;
     struct tm tm;
@@ -842,7 +842,7 @@ parsedate_rfc2822_lax(const char *date)
             p = skip_cfws(p);
     }
 
-    /* Fix up the year, using the RFC 2822 rules.  Remember that tm_year
+    /* Fix up the year, using the RFC 5322 rules.  Remember that tm_year
        stores the year - 1900. */
     if (tm.tm_year < 50)
         tm.tm_year += 100;

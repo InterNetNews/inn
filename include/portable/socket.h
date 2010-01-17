@@ -52,8 +52,8 @@ extern const char *     inet_ntop(int, const void *, char *, socklen_t);
 # define INADDR_LOOPBACK 0x7f000001UL
 #endif
 
-/* Defined by RFC 2553, used to store a generic address.  Note that this
-   doesn't do the alignment mangling that RFC 2553 does; it's not clear if
+/* Defined by RFC 3493, used to store a generic address.  Note that this
+   doesn't do the alignment mangling that RFC 3493 does; it's not clear if
    that should be added.... */
 #if !HAVE_STRUCT_SOCKADDR_STORAGE
 # if HAVE_STRUCT_SOCKADDR_SA_LEN

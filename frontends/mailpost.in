@@ -526,8 +526,8 @@ EOF
 
 
 #
-# Take 822-format name (either "comment <addr> comment" or "addr (comment)")
-# and return in always-qualified 974-format ("addr (comment)").
+# Take RFC-5322-format name (either "comment <addr> comment" or "addr (comment)")
+# and return in always-qualified RFC-5321-format ("addr (comment)").
 #
 sub fix_sender_addr {
     my ($address) = @_;

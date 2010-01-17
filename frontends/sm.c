@@ -86,7 +86,7 @@ store_article(int fd)
         if (end == NULL)
             die("cannot find end of Expires header");
         expires = xstrndup(start, end - start);
-        handle.expires = parsedate_rfc2822_lax(expires);
+        handle.expires = parsedate_rfc5322_lax(expires);
         free(expires);
         if (handle.expires == (time_t) -1)
             handle.expires = 0;

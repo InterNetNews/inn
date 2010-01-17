@@ -1230,7 +1230,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
             memcpy(x, expires, p - expires - 1);
             x[p - expires - 1] = '\0';
 
-            art->expires = parsedate_rfc2822_lax(x);
+            art->expires = parsedate_rfc5322_lax(x);
             if (art->expires == (time_t) -1)
                 art->expires = 0;
             else

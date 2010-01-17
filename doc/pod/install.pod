@@ -943,7 +943,7 @@ And set up entries for each remote site like:
 
 For more information on B<imapfeed>, look at the
 F<innfeed/imap_connection.c> file.  For more information on IMAP in general,
-see S<RFC 2060>.
+see S<RFC 3501>.
 
 Finally, there is a special entry for controlchan(8), which processes
 newsgroup control messages, that should always be in F<newsfeeds> unless
