@@ -768,7 +768,7 @@ static void ovnextblock(OVBUFF *ovbuff) {
 
   table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
 
-  /* For tighter placement look for unused block from the begining on
+  /* For tighter placement look for unused block from the beginning on
    * every run. */
   for (i = 0 ; i < last ; i++) {
     if ((table[i] ^ ~0) != 0)

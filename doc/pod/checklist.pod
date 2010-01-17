@@ -33,7 +33,7 @@ Make sure the directory F</usr/local/news> and its subdirectories
 are owned by C<news>, group C<news>.
 
 You want to be careful that things in that directory stay owned by
-C<news> S<-- but> you can't just C<chown -R news.news> after the install,
+C<news> S<-- but> you can't just C<chown -R news:news> after the install,
 because you may have binaries that are SUID root.  You can do the build
 as any user, but you need to be root when doing C<make install> so as
 to set the permissions correctly.  After that point, though, you may

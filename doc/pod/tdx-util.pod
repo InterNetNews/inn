@@ -62,7 +62,7 @@ option.
 Audit the entire overview database for problems.  This runs the internal
 consistency checks built into the tradindexed overview implementation,
 checking such things as the validity and reachability of all group index
-entries, the format of the individual overview entries, the correspondance
+entries, the format of the individual overview entries, the correspondence
 of index entries to overview data, and similar such things.  No changes
 will be made to the database, but problems will be reported to standard
 error.
@@ -94,7 +94,7 @@ Audit the entire overview database for problems, fixing them as they're
 detected where possible. This runs the internal consistency checks built
 into the tradindexed overview implementation, checking such things as the
 validity and reachability of all group index entries, the format of the
-individual overview entries, the correspondance of index entries to
+individual overview entries, the correspondence of index entries to
 overview data, and similar such things.  The strategy used when fixing
 problems is to throw away data that's unrecoverable, so be warned that
 using this option may result in inaccessible articles if their overview
