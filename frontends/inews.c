@@ -310,9 +310,9 @@ CheckCancel(char *msgid, bool JustReturn)
 	    *p = '\0';
 	if (buff[0] == '.' && buff[1] == '\0')
 	    break;
-        if (strncmp(buff, "Sender:", 7) == 0)
+        if (strncasecmp(buff, "Sender:", 7) == 0)
             strlcpy(remotefrom, TrimSpaces(&buff[7]), SMBUF);
-        else if (remotefrom[0] == '\0' && strncmp(buff, "From:", 5) == 0)
+        else if (remotefrom[0] == '\0' && strncasecmp(buff, "From:", 5) == 0)
             strlcpy(remotefrom, TrimSpaces(&buff[5]), SMBUF);
     }
     if (remotefrom[0] == '\0') {
@@ -397,7 +397,7 @@ CheckControl(char *ctrl)
     save = *p;
     *p = '\0';
 
-    if (strcmp(ctrl, "cancel") == 0) {
+    if (strcasecmp(ctrl, "cancel") == 0) {
 	for (q = p + 1; ISWHITE(*q); q++)
 	    continue;
 	if (*q == '\0')
@@ -405,14 +405,14 @@ CheckControl(char *ctrl)
 	if (!Spooling)
 	    CheckCancel(q, false);
     }
-    else if (strcmp(ctrl, "checkgroups") == 0
-	  || strcmp(ctrl, "ihave")       == 0
-	  || strcmp(ctrl, "sendme")      == 0
-	  || strcmp(ctrl, "newgroup")    == 0
-	  || strcmp(ctrl, "rmgroup")     == 0
-	  || strcmp(ctrl, "sendsys")     == 0
-	  || strcmp(ctrl, "senduuname")  == 0
-	  || strcmp(ctrl, "version")     == 0) {
+    else if (strcasecmp(ctrl, "checkgroups") == 0
+	  || strcasecmp(ctrl, "ihave")       == 0
+	  || strcasecmp(ctrl, "sendme")      == 0
+	  || strcasecmp(ctrl, "newgroup")    == 0
+	  || strcasecmp(ctrl, "rmgroup")     == 0
+	  || strcasecmp(ctrl, "sendsys")     == 0
+	  || strcasecmp(ctrl, "senduuname")  == 0
+	  || strcasecmp(ctrl, "version")     == 0) {
 	if (!AnAdministrator())
             die("ask your news administrator to do the %s for you", ctrl);
     }

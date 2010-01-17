@@ -184,7 +184,7 @@ DoSub(F, p)
     len = 8 + 1 + 2;
     do {
         for (matched = false, i = 0; i < ARRAY_SIZE(distributions); i++)
-            if (strcmp(s, distributions[i]) == 0) {
+            if (strcasecmp(s, distributions[i]) == 0) {
                 matched = true;
                 break;
             }
@@ -210,7 +210,7 @@ DoSub(F, p)
 	    s++;
 	}
 
-	SawAll = (strcmp(s, "all") == 0);
+	SawAll = (strcasecmp(s, "all") == 0);
 	if (SawAll)
 	    s = SawBang ? "*" : "*,!control,!control.*";
 	len += strlen(s);

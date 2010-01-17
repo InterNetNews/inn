@@ -260,20 +260,20 @@ CheckControl(char *ctrl)
     save = *p;
     *p = '\0';
 
-    if (strcmp(ctrl, "cancel") == 0) {
+    if (strcasecmp(ctrl, "cancel") == 0) {
 	for (q = p + 1; ISWHITE(*q); q++)
 	    continue;
 	if (*q == '\0')
 	    return "Message-ID missing in cancel";
     }
-    else if (strcmp(ctrl, "sendsys")     == 0
-          || strcmp(ctrl, "senduuname")  == 0
-	  || strcmp(ctrl, "version")     == 0
-          || strcmp(ctrl, "checkgroups") == 0
-	  || strcmp(ctrl, "ihave")       == 0
-          || strcmp(ctrl, "sendme")      == 0
-	  || strcmp(ctrl, "newgroup")    == 0
-          || strcmp(ctrl, "rmgroup")     == 0)
+    else if (strcasecmp(ctrl, "sendsys")     == 0
+          || strcasecmp(ctrl, "senduuname")  == 0
+	  || strcasecmp(ctrl, "version")     == 0
+          || strcasecmp(ctrl, "checkgroups") == 0
+	  || strcasecmp(ctrl, "ihave")       == 0
+          || strcasecmp(ctrl, "sendme")      == 0
+	  || strcasecmp(ctrl, "newgroup")    == 0
+          || strcasecmp(ctrl, "rmgroup")     == 0)
 	;
     else {
 	snprintf(Error, sizeof(Error),
@@ -427,7 +427,7 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
 	if ((VirtualPathlen > 0) &&
 	    (p = strchr(HDR(HDR__PATH), '!')) != NULL) {
 	    *p = '\0';
-	    if (strcmp(HDR(HDR__PATH), PERMaccessconf->pathhost) != 0)
+	    if (strcasecmp(HDR(HDR__PATH), PERMaccessconf->pathhost) != 0)
 		addvirtual = true;
 	    *p = '!';
 	} else if (VirtualPathlen > 0)
@@ -695,7 +695,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 #endif /* DO_PYTHON */
 
     p = HDR(HDR__CONTROL);
-    IsNewgroup = (p && strncmp(p, "newgroup", 8) == 0);
+    IsNewgroup = (p && strncasecmp(p, "newgroup", 8) == 0);
     groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL) {
         free(groups);

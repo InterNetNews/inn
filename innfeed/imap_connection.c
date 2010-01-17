@@ -2731,7 +2731,7 @@ static conn_ret imap_ParseCapability(char *string, imap_capabilities_t **caps)
 	    (*caps)->imap4 = 1;
 	} else if (strcasecmp(start,"LOGINDISABLED")==0) {
 	    (*caps)->logindisabled = 1;
-	} else if ( strncmp(start, "AUTH=", 5)==0) {
+	} else if ( strncasecmp(start, "AUTH=", 5)==0) {
 	    
 	    if ( (*caps)->saslmechs == NULL)
 	    {
@@ -2919,7 +2919,7 @@ static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	
 
 	
-    } else if (strncmp(str, cxn->imap_currentTag, IMAP_TAGLENGTH)==0) {	
+    } else if (strncasecmp(str, cxn->imap_currentTag, IMAP_TAGLENGTH)==0) {	
 	/* matches our tag */
 	str += IMAP_TAGLENGTH;
 	
@@ -2933,7 +2933,7 @@ static void imap_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	str++;
 
 	/* should be OK/NO */
-	if (strncmp(str,"OK",2)==0)
+	if (strncasecmp(str,"OK",2)==0)
 	{
 	    okno = 1;
 	} else {
@@ -3304,15 +3304,15 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    }
 
 	    /* look for one we know about; ignore all others */
-	    if (strncmp(str+4,"8BITMIME",strlen("8BITMIME"))==0)
+	    if (strncasecmp(str+4,"8BITMIME",strlen("8BITMIME"))==0)
 	    {
 		cxn->lmtp_capabilities->Eightbitmime = 1;
-	    } else if (strncmp(str+4, "ENHANCEDSTATUSCODES",
+	    } else if (strncasecmp(str+4, "ENHANCEDSTATUSCODES",
 			       strlen("ENHANCEDSTATUSCODES"))==0) {
 		cxn->lmtp_capabilities->EnhancedStatusCodes = 1;
-	    } else if (strncmp(str+4, "AUTH",4)==0) {
+	    } else if (strncasecmp(str+4, "AUTH",4)==0) {
 		cxn->lmtp_capabilities->saslmechs = xstrdup(str + 4 + 5);
-	    } else if (strncmp(str+4,"PIPELINING",strlen("PIPELINING"))==0) {
+	    } else if (strncasecmp(str+4,"PIPELINING",strlen("PIPELINING"))==0) {
 		cxn->lmtp_capabilities->pipelining = 1;
 	    } else {
 		/* don't care; ignore */
