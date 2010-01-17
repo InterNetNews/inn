@@ -18,7 +18,6 @@
 void
 CMDgroup(int ac, char *av[])
 {
-    static char		NOSUCHGROUP[] = NNTP_NOSUCHGROUP;
     ARTNUM              i;
     int                 low, high;
     char		*grplist[2];
@@ -62,7 +61,7 @@ CMDgroup(int ac, char *av[])
 
     /* FIXME: Temporarily work around broken API. */
     if (!OVgroupstats(group, &low, &high, &count, NULL)) {
-        Reply("%s %s\r\n", NOSUCHGROUP, group);
+        Reply("%d No such group %s\r\n", NNTP_FAIL_BAD_GROUP, group);
         free(group);
         return;
     }

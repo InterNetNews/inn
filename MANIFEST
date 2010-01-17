@@ -395,7 +395,6 @@ include/inn/utility.h                 Header file for utility functions
 include/inn/vector.h                  Header file for vectors of strings
 include/inn/wire.h                    Header file for wire-format functions
 include/innperl.h                     Header file for embedded Perl
-include/nntp.h                        NNTP command and reply codes
 include/portable                      Portability wrappers (Directory)
 include/portable/alloca.h             alloca replacement header
 include/portable/getaddrinfo.h        getaddrinfo replacement header

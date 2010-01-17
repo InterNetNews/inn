@@ -49,7 +49,7 @@
 #include "inn/messages.h"
 #include "inn/timer.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 
 /*
 **  Global variables.

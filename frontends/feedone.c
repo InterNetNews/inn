@@ -7,9 +7,9 @@
 #include "clibrary.h"
 #include <errno.h>
 
-#include "inn/messages.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/messages.h"
+#include "inn/nntp.h"
 
 
 static FILE	*FromServer;

@@ -156,9 +156,9 @@ imap_connection.o: imap_connection.c ../include/config.h \
 innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/messages.h ../include/inn/libinn.h \
-  article.h misc.h buffer.h configfile.h endpoint.h host.h innlistener.h \
-  ../include/nntp.h ../include/inn/nntp.h tape.h
+  ../include/config.h ../include/inn/libinn.h ../include/inn/messages.h \
+  ../include/inn/nntp.h article.h misc.h buffer.h configfile.h endpoint.h \
+  host.h innlistener.h tape.h
 main.o: main.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \

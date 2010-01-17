@@ -15,8 +15,8 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
-#include "nntp.h"
 
 #define TEMPFILE	":tmp"
 static char		**Groups;

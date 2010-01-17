@@ -21,7 +21,7 @@
 #include "inn/md5.h"
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 #include "conffile.h"
 

@@ -8,7 +8,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 
 
@@ -48,6 +48,7 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
             const char *request)
 {
     char	buff[BUFSIZ];
+    char        expectedanswer[BUFSIZ];
     char	*p;
     int		oerrno;
     FILE	*F;
@@ -56,16 +57,18 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
     if (F == NULL)
 	return NULL;
 
-    /* Send a LIST command to and capture the output. */
+    /* Send a LIST command and capture the output. */
     if (request == NULL)
 	fprintf(ToServer, "LIST\r\n");
     else
 	fprintf(ToServer, "LIST %s\r\n", request);
     fflush(ToServer);
 
+    snprintf(expectedanswer, sizeof(expectedanswer), "%d", NNTP_OK_LIST);
+
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || strncmp(buff, NNTP_LIST_FOLLOWS, strlen(NNTP_LIST_FOLLOWS)) != 0) {
+     || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
 	oerrno = errno;
 	/* Only call CAclose() if opened through CAopen(). */
 	if (strcmp(CApathname, pathname) == 0)

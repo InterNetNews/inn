@@ -22,7 +22,7 @@
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 
 /*

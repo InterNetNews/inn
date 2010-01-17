@@ -5,7 +5,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 
 
 /*

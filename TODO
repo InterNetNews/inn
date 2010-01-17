@@ -232,9 +232,6 @@ Code Cleanup Projects
   include/inn/paths.h and look at adding anything needed by innfeed (and
   eliminating the separate innfeed header serving the same purpose).
 
-* Update all INN code to use include/inn/nntp.h for NNTP codes and
-  eliminate include/nntp.h.
-
 * Use vectors or cvectors everywhere that argify and friends are currently
   used and eliminate the separate implementation in nnrpd/misc.c.
 

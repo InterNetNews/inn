@@ -112,7 +112,7 @@ radius.o: radius.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/time.h ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h ../include/inn/md5.h \
-  ../include/inn/messages.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/conffile.h \
-  libauth.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/conffile.h libauth.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h

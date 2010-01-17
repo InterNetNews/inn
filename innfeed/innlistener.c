@@ -16,8 +16,9 @@
 #include <syslog.h>
 #include <time.h>
 
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
+#include "inn/nntp.h"
 
 #include "article.h"
 #include "buffer.h"
@@ -25,7 +26,6 @@
 #include "endpoint.h"
 #include "host.h"
 #include "innlistener.h"
-#include "nntp.h"
 #include "tape.h"
 
 #define LISTENER_INPUT_BUFFER (1024 * 8) /* byte size of the input buffer */

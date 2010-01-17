@@ -21,10 +21,10 @@
 #include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/newsuser.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 #include "inn/wire.h"
-#include "nntp.h"
 
 
 typedef struct _HEADER {
