@@ -156,6 +156,7 @@ extern char *           GenerateMessageID(char *domain);
 extern void             InitializeMessageIDcclass(void);
 extern bool             IsValidMessageID(const char *string, bool stripspaces);
 extern bool             IsValidHeaderName(const char *string);
+extern const char *     skip_cfws(const char *p);
 extern void             HeaderCleanFrom(char *from);
 extern struct _DDHANDLE * DDstart(FILE *FromServer, FILE *ToServer);
 extern void               DDcheck(struct _DDHANDLE *h, char *group);

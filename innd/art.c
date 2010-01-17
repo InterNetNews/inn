@@ -1645,7 +1645,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
   HDRCONTENT	*hc = data->HdrContent;
   SITE		*sp, *funnel;
   int		i, j, Groupcount, Followcount, Crosscount;
-  char	        *p, *q;
+  char	        *p, *q, *begin, savec;
   struct buffer	*bp;
   bool		sendit;
 
@@ -1662,10 +1662,37 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
     sp->Sendit = false;
 	
     if (sp->Originator) {
-      if (!HDR_FOUND(HDR__XTRACE)) {
+      if (!HDR_FOUND(HDR__XTRACE) && !HDR_FOUND(HDR__INJECTION_INFO)) {
 	if (!sp->FeedwithoutOriginator)
 	  continue;
-      } else {
+      } else if (HDR_FOUND(HDR__INJECTION_INFO)) {
+        begin = (char *) skip_cfws(HDR(HDR__INJECTION_INFO));
+
+        if (begin == '\0')
+          continue;
+
+        /* The path identity ends with ';' or CFWS. */
+        for (p = begin; *p != ';' && *p != ' ' && *p != '\t' && *p != '\r'
+                        && *p != '\0'; p++) ;
+        savec = *p;
+        *p = '\0';
+
+        for (j = 0, sendit = false; (q = sp->Originator[j]) != NULL; j++) {
+          if (*q == '@') {
+            if (uwildmat(begin, &q[1])) {
+              *p = savec;
+              sendit = false;
+              break;
+            }
+          } else {
+            if (uwildmat(begin, q))
+              sendit = true;
+          }
+        }
+        *p = savec;
+        if (!sendit)
+          continue;
+      } else if (HDR_FOUND(HDR__XTRACE)) {
 	if ((p = strchr(HDR(HDR__XTRACE), ' ')) != NULL) {
 	  *p = '\0';
 	  for (j = 0, sendit = false; (q = sp->Originator[j]) != NULL; j++) {

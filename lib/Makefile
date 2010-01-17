@@ -130,7 +130,8 @@ daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/libinn.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
+  ../include/config.h headers.c ../include/inn/libinn.h \
+  ../include/inn/defines.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
