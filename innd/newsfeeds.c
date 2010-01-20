@@ -468,6 +468,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
     sp->NeedOverviewCreation = false;
     sp->FeedwithoutOriginator = false;
     sp->DropFiltered = false;
+    sp->FeedTrash = false;
     sp->HashFeedList = NULL;
 
     /* Nip off the first field, the site name. */
@@ -540,6 +541,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		case 'd': sp->DistRequired = true;	break;
 		case 'e': sp->DontWantNonExist = true;	break;
 		case 'f': sp->DropFiltered = true;	break;
+                case 'j': sp->FeedTrash = true;         break;
 		case 'o': sp->NeedOverviewCreation = true;	break;
 		case 'O': sp->FeedwithoutOriginator = true;	break;
 		case 'p': sp->IgnorePath = true;	break;

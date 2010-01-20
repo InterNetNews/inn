@@ -123,11 +123,10 @@ poison logic only applies if the poison entry is the last matching entry.
 
 Control messages follow slightly different propagation rules than normal
 articles; see innd(8) for the details.  Note that most subscriptions
-should have C<!junk,!control,!control.*> in their pattern list due to
-those propagation rules (and since C<junk> is a special internal newsgroup;
-see I<feedtrash> and I<wanttrash> in inn.conf(5) for more details on what
-it's used for) and that the best way to keep control messages local to a
-site is with a distribution.
+should have C<!junk,!control,!control.*> in their pattern list due to those
+propagation rules (and since C<junk> is a special internal newsgroup; see
+I<wanttrash> in inn.conf(5) for more details on what it's used for) and that
+the best way to keep control messages local to a site is with a distribution.
 
 A subscription can be further modified by specifying distributions that
 the site should or should not receive.  The default is to send all
@@ -269,7 +268,7 @@ Only send control messages, not regular articles.
 
 =item d
 
-Only send articles with a Distribution header.  Combined with a particular
+Only send articles with a Distribution: header.  Combined with a particular
 distribution value in the I<distribution> part of the site entry, this can
 be used to limit articles sent to a site to just those with a particuliar
 distribution.
@@ -277,14 +276,26 @@ distribution.
 =item e
 
 Only send articles where every newsgroup listed in the Newsgroups: header
-exists in the active file.
+exists in the F<active> file.
 
 =item f
 
 Don't send articles rejected by filters.  This is only useful when
-I<dontrejectfiltered> is set in F<inn.conf>.  With that variable set, this
-lets one accept all articles but not propagate filtered ones to some
-sites.
+I<dontrejectfiltered> is set to true in F<inn.conf>.  With that variable
+set, this lets one accept all articles but not propagate filtered ones to
+some sites.
+
+=item j
+
+Propagate articles according to their Newsgroups: header.  This is only
+useful when I<wanttrash> is set to true in F<inn.conf>.  With that variable
+set, articles accepted and filed in C<junk> (due to I<wanttrash>) are fed to
+peers based on their subscription pattern applied to the Newsgroups: header
+as though they were accepted and all those groups were locally carried.
+Otherwise, they are propagated to sites that receive the C<junk> newsgroup.
+
+This variable is useful if you want to run INN with a minimal F<active>
+file and propagate all posts.
 
 =item o
 

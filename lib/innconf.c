@@ -158,7 +158,6 @@ const struct config config_table[] = {
     { K(chanretrytime),           UNUMBER  (300) },
     { K(datamovethreshold),       UNUMBER (8192) },
     { K(dontrejectfiltered),      BOOL   (false) },
-    { K(feedtrash),               BOOL   (false) },
     { K(hiscachesize),            UNUMBER  (256) },
     { K(icdsynccount),            UNUMBER   (10) },
     { K(ignorenewsgroups),        BOOL   (false) },

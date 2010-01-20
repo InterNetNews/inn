@@ -2234,10 +2234,14 @@ ARTpost(CHANNEL *cp)
          * if it were created. */
         ARTsendthegroup(*groups, ARTctl);
         Accepted = true;
-      } else if (innconf->wanttrash && innconf->feedtrash && !innconf->verifygroups) {
+      } else if (innconf->wanttrash && !innconf->verifygroups) {
         /* Don't set Accepted in this case, because we may still end
          * up filing the article in the junk group. */
-        ARTsendthegroup(*groups, ARTjnk);
+        for (ngp = NGfind(ARTjnk), sp = Sites, i = nSites; --i >= 0; sp++) {
+            if (sp->Name != NULL && sp->FeedTrash && SITEwantsgroup(sp, *groups)) {
+                SITEmark(sp, ngp);
+            }
+        }
         NonExist = true;
       } else {
         NonExist = true;

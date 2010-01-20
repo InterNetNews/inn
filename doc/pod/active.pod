@@ -25,9 +25,9 @@ file, those newsgroups are ignored.
 
 If none of the newsgroups listed in the Newsgroups: header of an article
 are present in this file, the article is either rejected (if I<wanttrash>
-is false in F<inn.conf>), or is filed into the newsgroup C<junk> and, in
-case I<feedtrash> is false, only propagated to sites that receive the C<junk>
-newsgroup (if I<wanttrash> is true).
+is false in F<inn.conf>), or is filed into the newsgroup C<junk> and,
+when C<Aj> is not set in the F<newsfeeds> feed pattern, only propagated
+to sites that receive the C<junk> newsgroup (if I<wanttrash> is true).
 
 Each line of this file consists of four fields separated by a space:
 

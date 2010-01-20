@@ -486,6 +486,7 @@ typedef struct _SITE {
   bool		  NeedOverviewCreation;
   bool		  FeedwithoutOriginator;
   bool		  DropFiltered;
+  bool            FeedTrash;
   int		  Hops;
   int		  Groupcount;
   int		  Followcount;
