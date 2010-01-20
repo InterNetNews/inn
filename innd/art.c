@@ -1924,6 +1924,7 @@ ARTpost(CHANNEL *cp)
   int		i, j, *isp, hopcount, oerrno, canpost;
   size_t        n;
   NEWSGROUP	*ngp, **ngptr;
+  NEWSGROUP     *ngpjunk;
   SITE		*sp;
   ARTDATA	*data = &cp->Data;
   HDRCONTENT	*hc = data->HdrContent;
@@ -2237,9 +2238,9 @@ ARTpost(CHANNEL *cp)
       } else if (innconf->wanttrash && !innconf->verifygroups) {
         /* Don't set Accepted in this case, because we may still end
          * up filing the article in the junk group. */
-        for (ngp = NGfind(ARTjnk), sp = Sites, i = nSites; --i >= 0; sp++) {
+        for (ngpjunk = NGfind(ARTjnk), sp = Sites, i = nSites; --i >= 0; sp++) {
             if (sp->Name != NULL && sp->FeedTrash && SITEwantsgroup(sp, *groups)) {
-                SITEmark(sp, ngp);
+                SITEmark(sp, ngpjunk);
             }
         }
         NonExist = true;
