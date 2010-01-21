@@ -341,6 +341,9 @@ that needs to propagate articles (according to the setting of C<Aj> in
 the F<newsfeeds> feed pattern) in all newsgroups regardless if they're
 carried locally.  This is a boolean value and the default is false.
 
+The I<logtrash> parameter specifies whether such articles should be logged
+as posted to unwanted newsgroups in the F<news> log file.
+
 =item I<wipcheck>
 
 If INN is offered an article by a peer on one channel, it will return
@@ -1167,6 +1170,13 @@ Whether B<innd> should write a shortened version of its status report
 to syslog every I<status> seconds.  This is a boolean value and the default
 is false.  If set to true, see the I<status> parameter for more details
 on how to enable status reporting.
+
+=item I<logtrash>
+
+Whether B<innd> should add a line in the F<news> log file to report
+unwanted newsgroups (that is to say newsgroups not locally carried by the
+news server).  This is a boolean value and the default is true.  It may
+be useful to set it to false when I<wanttrash> is set to true.
 
 =item I<nnrpdoverstats>
 

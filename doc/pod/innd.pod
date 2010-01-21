@@ -449,7 +449,9 @@ widespread such articles are; B<innd> does not reject such articles.
 
 Note that when I<wanttrash> is set to true in F<inn.conf> and an article
 is received that isn't posted to any valid newsgroups, it will be accepted
-and logged with two lines, a C<j> line and a minus sign line.
+and logged with two lines, a C<j> line and a minus sign line, unless the
+I<logtrash> parameter is set to false (in which case only the C<j> line
+is written).
 
 B<innd> also makes extensive reports through syslog(3).  The first word of
 the log message will be the name of the site if the entry is site-specific

@@ -149,6 +149,7 @@ struct innconf {
     bool logipaddr;             /* Log by host IP address? */
     bool logsitename;           /* Log outgoing site names? */
     bool logstatus;             /* Send a status report to syslog? */
+    bool logtrash;              /* Log unwanted newsgroups? */
     bool nnrpdoverstats;        /* Log overview statistics? */
     bool nntplinklog;           /* Put storage token into the log? */
     unsigned long status;       /* Status file update interval */

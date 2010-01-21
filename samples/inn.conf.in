@@ -160,6 +160,7 @@ logcycles:              3
 logipaddr:              true
 logsitename:            true
 logstatus:              false
+logtrash:               true
 nnrpdoverstats:         false
 nntplinklog:            false
 #stathist:
