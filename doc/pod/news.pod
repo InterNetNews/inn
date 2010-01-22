@@ -237,6 +237,14 @@ regular mail.  Thanks to Florian Schlichting for the patch.
 
 =item *
 
+B<innconfval> no longer maps NULL string or list values to an empty string
+or list.  These values should really be undefined.  In particular, it
+fixes an issue reported by Kamil Jonca about B<nnrpd> inserting an empty
+Organization: header when the I<organization> parameter in F<inn.conf>
+was unset.
+
+=item *
+
 Other minor bug fixes and documentation improvements.
 
 =back
@@ -1569,7 +1577,7 @@ rejected if the posting user didn't have permission to approve postings.
 
 =item *
 
-Fixed bugs in B<inncheck> with setuid rnews or setgid inews, in I<innconfval>
+Fixed bugs in B<inncheck> with setuid B<rnews> or setgid B<inews>, in B<innconfval>
 with F<inn.conf> parameters containing shell metacharacters but no spaces,
 and in F<parsedate.y> with some versions of B<yacc>.  Fixed a variety of
 size-related printf format warnings (e.g., C<%d> vs. C<%ld>) thanks to the work

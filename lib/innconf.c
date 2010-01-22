@@ -750,6 +750,10 @@ print_string(FILE *file, const char *key, const char *value,
     const char *letter;
     static const char tcl_unsafe[] = "$[]{}\"\\";
 
+    /* Do not output NULL values.  They are not empty strings. */
+    if (value == NULL)
+        return;
+
     switch (quoting) {
     case INNCONF_QUOTE_NONE:
         fprintf(file, "%s\n", value != NULL ? value : "");
@@ -803,6 +807,10 @@ print_list(FILE *file, const char *key, const struct vector *value,
     const char *letter;
     unsigned int i;
     static const char tcl_unsafe[] = "$[]{}\"\\";
+
+    /* Do not output NULL values.  They are not empty lists. */
+    if (value == NULL || value->strings == NULL)
+        return;
 
     switch (quoting) {
     case INNCONF_QUOTE_NONE:
