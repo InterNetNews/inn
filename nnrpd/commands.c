@@ -628,45 +628,40 @@ CMDpost(int ac, char *av[])
 	backoff_inited = true;
     }
 
-    /* Dave's posting limiter.  Limit postings to a certain rate
+    /* Dave's posting limiter.  Limit postings to a certain rate.
      * And now we support multiprocess rate limits.  Questions?
-     * E-mail <dave@jetcafe.org>.
-     */
+     * E-mail <dave@jetcafe.org>. */
     if (BACKOFFenabled) {
-
-      /* Acquire lock (this could be in RateLimit but that would
-       * invoke the spaghetti factor). 
-       */
-      if ((path = (char *) PostRecFilename(Client.ip, PERMuser)) == NULL) {
-        Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH,
-              ihave ? "Retry later" : "Posting not allowed");
-        return;
-      }
+        /* Acquire lock (this could be in RateLimit but that would
+         * invoke the spaghetti factor). */
+        if ((path = (char *) PostRecFilename(Client.ip, PERMuser)) == NULL) {
+            Reply("%d Retry later\r\n",
+                  ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH);
+            return;
+        }
       
-      if (LockPostRec(path) == 0) {
-        syslog(L_ERROR, "%s error write locking '%s'",
-               Client.host, path);
-        Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH,
-              ihave ? "Retry later" : "Posting not allowed");
-        return;
-      }
+        if (LockPostRec(path) == 0) {
+            syslog(L_ERROR, "%s error write locking '%s'",
+                   Client.host, path);
+            Reply("%d Retry later\r\n",
+                  ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH);
+            return;
+        }
       
-      if (!RateLimit(&sleeptime,path)) {
-	syslog(L_ERROR, "%s can't check rate limit info", Client.host);
-        Reply("%d %s\r\n", ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH,
-              ihave ? "Retry later" : "Posting not allowed");
+        if (!RateLimit(&sleeptime,path)) {
+            syslog(L_ERROR, "%s can't check rate limit info", Client.host);
+            Reply("%d Retry later\r\n",
+                  ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_POST_AUTH);
+            UnlockPostRec(path);
+            return;
+        } else if (sleeptime != 0L) {
+            syslog(L_NOTICE,"%s post sleep time is now %ld", Client.host, sleeptime);
+            sleep(sleeptime);
+        }
+      
+        /* Remove the lock here so that only one nnrpd process does the
+         * backoff sleep at once.  Other procs are sleeping for the lock. */
         UnlockPostRec(path);
-	return;
-      } else if (sleeptime != 0L) {
-        syslog(L_NOTICE,"%s post sleep time is now %ld", Client.host, sleeptime);
-        sleep(sleeptime);
-      }
-      
-      /* Remove the lock here so that only one nnrpd process does the
-       * backoff sleep at once.  Other procs are sleeping for the lock.
-       */
-      UnlockPostRec(path);
-
     } /* End backoff code. */
 
     /* Start at beginning of buffer. */
