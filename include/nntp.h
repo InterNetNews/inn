@@ -32,8 +32,6 @@
 #define NNTP_NOTINGROUP			"412 Not in a newsgroup"
 #define NNTP_NOSUCHGROUP		"411 No such group"
 #define NNTP_NEWNEWSOK			"230 New news follows"
-#define NNTP_NOARTINGRP			"423 Bad article number"
-#define NNTP_NOCURRART			"420 No current article"
 
 /*
 **  The first character of an NNTP reply can be used as a category class.

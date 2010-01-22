@@ -41,8 +41,6 @@ typedef struct _SENDDATA {
 } SENDDATA;
 
 static char		ARTnotingroup[] = NNTP_NOTINGROUP;
-static char		ARTnoartingroup[] = NNTP_NOARTINGRP;
-static char		ARTnocurrart[] = NNTP_NOCURRART;
 static ARTHANDLE        *ARThandle = NULL;
 static SENDDATA		SENDbody = {
     STbody,	NNTP_OK_BODY,		"body"
@@ -665,7 +663,7 @@ CMDfetch(int ac, char *av[])
     /* Requesting by message-ID? */
     if (mid) {
 	if (!ARTopenbyid(av[1], &art, final)) {
-	    Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
+	    Reply("%d No such article\r\n", NNTP_FAIL_MSGID_NOTFOUND);
 	    return;
 	}
 	if (!PERMartok()) {
@@ -691,35 +689,36 @@ CMDfetch(int ac, char *av[])
 
     /* Default is to get current article, or specified article. */
     if (ac == 1) {
-	if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-	    Reply("%s\r\n", ARTnocurrart);
-	    return;
-	}
-	snprintf(buff, sizeof(buff), "%lu", ARTnumber);
-	tart=ARTnumber;
-    }
-    else {
+        if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
+            Reply("%d Current article number %lu is invalid\r\n",
+                  NNTP_FAIL_ARTNUM_INVALID, ARTnumber);
+            return;
+        }
+        snprintf(buff, sizeof(buff), "%lu", ARTnumber);
+        tart = ARTnumber;
+    } else {
         /* We have already checked that the article number is valid. */
-	strlcpy(buff, av[1], sizeof(buff));
-	tart=(ARTNUM)atol(buff);
+        strlcpy(buff, av[1], sizeof(buff));
+        tart = (ARTNUM)atol(buff);
     }
 
     /* Open the article and send the reply. */
-    if (!ARTopen(atol(buff))) {
-        Reply("%s\r\n", ARTnoartingroup);
+    if (!ARTopen(tart)) {
+        Reply("%d No such article number %lu\r\n", NNTP_FAIL_ARTNUM_NOTFOUND, tart);
+        return;
+    }
+    if ((msgid = GetHeader("Message-ID", true)) == NULL) {
+        ARTclose();
+        Reply("%d No such article number %lu\r\n", NNTP_FAIL_ARTNUM_NOTFOUND, tart);
         return;
     }
     if (ac > 1)
-	ARTnumber = tart;
-    if ((msgid = GetHeader("Message-ID", true)) == NULL) {
-        ARTclose();
-        Reply("%s\r\n", ARTnoartingroup);
-	return;
-    }
+        ARTnumber = tart;
+
     /* A message-ID does not have more than 250 octets. */
     Reply("%d %s %.250s %s\r\n", what->ReplyCode, buff, msgid, what->Item); 
     if (what->Type != STstat)
-	ARTsendmmap(what->Type);
+        ARTsendmmap(what->Type);
     ARTclose();
 }
 
@@ -748,8 +747,9 @@ CMDnextlast(int ac UNUSED, char *av[])
 	return;
     }
     if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-	Reply("%s\r\n", ARTnocurrart);
-	return;
+        Reply("%d Current article number %lu is invalid\r\n",
+              NNTP_FAIL_ARTNUM_INVALID, ARTnumber);
+        return;
     }
 
     /* NEXT? */
@@ -815,13 +815,14 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
     *DidReply = false;
 
     if (ac == 1) {
-	/* No arguments, do only current article. */
-	if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
-	    Reply("%s\r\n", ARTnocurrart);
-	    *DidReply = true;
-	    return false;
-	}
-	rp->High = rp->Low = ARTnumber;
+        /* No arguments, do only current article. */
+        if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
+            Reply("%d Current article number %lu is invalid\r\n",
+                  NNTP_FAIL_ARTNUM_INVALID, ARTnumber);
+            *DidReply = true;
+            return false;
+        }
+        rp->High = rp->Low = ARTnumber;
         return true;
     }
 
@@ -962,10 +963,10 @@ CMDover(int ac, char *av[])
          * Note that XOVER answers OK. */
         if (ac > 1)
             Reply("%d No articles in %s\r\n",
-                  xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_ARTNUM_NOTFOUND, av[1]);
         else
-            Reply("%d Current article number %lu is invalid\r\n",
-                  xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
+            Reply("%d No such article number %lu\r\n",
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_ARTNUM_NOTFOUND, ARTnumber);
         if (xover)
             Printf(".\r\n");
         return;
@@ -1075,10 +1076,10 @@ CMDover(int ac, char *av[])
          * Note that XOVER answers OK. */
         if (ac > 1)
             Reply("%d No articles in %s\r\n",
-                  xover ? NNTP_OK_OVER : NNTP_FAIL_BAD_ARTICLE, av[1]);
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_ARTNUM_NOTFOUND, av[1]);
         else
-            Reply("%d Current article number %lu is invalid\r\n",
-                  xover ? NNTP_OK_OVER : NNTP_FAIL_NO_ARTICLE, ARTnumber);
+            Reply("%d No such article number %lu\r\n",
+                  xover ? NNTP_OK_OVER : NNTP_FAIL_ARTNUM_NOTFOUND, ARTnumber);
         if (xover)
             Printf(".\r\n");
     } else {
@@ -1193,7 +1194,7 @@ CMDpat(int ac, char *av[])
 	if (mid) {
 	    p = av[2];
 	    if (!ARTopenbyid(p, &artnum, false)) {
-		Reply("%d No such article\r\n", NNTP_FAIL_NOTFOUND);
+		Reply("%d No such article\r\n", NNTP_FAIL_MSGID_NOTFOUND);
 		break;
 	    }
 
@@ -1271,10 +1272,10 @@ CMDpat(int ac, char *av[])
                 if (hdr) {
                     if (ac > 2)
                         Reply("%d No articles in %s\r\n",
-                              NNTP_FAIL_BAD_ARTICLE, av[2]);
+                              NNTP_FAIL_ARTNUM_NOTFOUND, av[2]);
                     else
-                        Reply("%d Current article number %lu is invalid\r\n",
-                              NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                        Reply("%d No such article number %lu\r\n",
+                              NNTP_FAIL_ARTNUM_NOTFOUND, ARTnumber);
                 } else {
                     Reply("%d No header information for %s follows (from articles)\r\n",
                           NNTP_OK_HEAD, av[1]);
@@ -1294,10 +1295,10 @@ CMDpat(int ac, char *av[])
             if (hdr) {
                 if (ac > 2)
                     Reply("%d No articles in %s\r\n",
-                          NNTP_FAIL_BAD_ARTICLE, av[2]);
+                          NNTP_FAIL_ARTNUM_NOTFOUND, av[2]);
                 else
-                    Reply("%d Current article number %lu is invalid\r\n",
-                          NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                    Reply("%d No such article number %lu\r\n",
+                          NNTP_FAIL_ARTNUM_NOTFOUND, ARTnumber);
             } else {
                 Reply("%d No header information for %s follows (from overview)\r\n",
                       NNTP_OK_HEAD, av[1]);
@@ -1351,10 +1352,10 @@ CMDpat(int ac, char *av[])
             if (hdr) {
                 if (ac > 2)
                     Reply("%d No articles in %s\r\n",
-                          NNTP_FAIL_BAD_ARTICLE, av[2]);
+                          NNTP_FAIL_ARTNUM_NOTFOUND, av[2]);
                 else
                     Reply("%d Current article number %lu is invalid\r\n",
-                          NNTP_FAIL_NO_ARTICLE, ARTnumber);
+                          NNTP_FAIL_ARTNUM_INVALID, ARTnumber);
             } else {
                 Reply("%d No header or metadata information for %s follows (from overview)\r\n",
                       NNTP_OK_HEAD, av[1]);
