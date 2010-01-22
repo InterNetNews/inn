@@ -337,7 +337,8 @@ This is a boolean value, and the default is false.
 Set this to true if you want to file articles posted to unknown newsgroups
 (newsgroups not in the F<active> file) into the C<junk> newsgroup rather
 than rejecting them.  This is sometimes useful for a transit news server
-that needs to propagate articles in all newsgroups regardless if they're
+that needs to propagate articles (according to the setting of C<Aj> in
+the F<newsfeeds> feed pattern) in all newsgroups regardless if they're
 carried locally.  This is a boolean value and the default is false.
 
 =item I<wipcheck>
