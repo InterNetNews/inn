@@ -196,6 +196,13 @@ generating overview data, and B<archive> did not change "\n"
 
 =item *
 
+Fixed a bug in the parsing of the I<ovgrouppat> wildmat in F<inn.conf>
+that prevented overview data from being generated when poisoned groups
+were specified but a latter sub-pattern made the group wanted.  Thanks
+to S<D. Stussy> for the bug report.
+
+=item *
+
 Fixed a bug when HDR, XHDR and XPAT were used when I<virtualhost> was set
 to true in F<readers.conf>.  The Xref: header of articles posted to only
 one newsgroup appeared empty.

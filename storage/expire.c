@@ -4,8 +4,8 @@
 **
 **  In order to expire on a per-newsgroup (instead of per-storage-class)
 **  basis, one has to use overview-driven expiration.  This contains all of
-**  the code to do that.  It provides OVgroupbasedexpire, OVhisthasmsgid, and
-**  OVgroupmatch for the use of various overview methods.
+**  the code to do that.  It provides OVgroupbasedexpire and OVhisthasmsgid
+**  for the use of various overview methods.
 */
 
 #include "config.h"
@@ -101,8 +101,6 @@ bool     OVusepost;
 bool     OVkeep;
 bool     OVearliest;
 bool     OVquiet;
-int      OVnumpatterns;
-char **  OVpatterns;
 
 
 /*
@@ -813,32 +811,6 @@ OVhisthasmsgid(struct history *h, const char *data)
     return HISlookup(h, p, NULL, NULL, NULL, NULL);
 }
 
-bool
-OVgroupmatch(const char *group)
-{
-    int i;
-    bool wanted = false;
-
-    if (OVnumpatterns == 0 || group == NULL)
-        return true;
-    for (i = 0; i < OVnumpatterns; i++) {
-        switch (OVpatterns[i][0]) {
-        case '!':
-            if (!wanted && uwildmat(group, &OVpatterns[i][1]))
-                break;
-        case '@':
-            if (uwildmat(group, &OVpatterns[i][1])) {
-                return false;
-            }
-            break;
-        default:
-            if (uwildmat(group, OVpatterns[i]))
-                wanted = true;
-        }
-    }
-    return wanted;
-}
-
 void
 OVEXPcleanup(void)
 {
@@ -854,11 +826,6 @@ OVEXPcleanup(void)
             printf("Overview index dropped  %8ld\n", EXPoverindexdrop);
         }
         EXPprocessed = EXPunlinked = EXPoverindexdrop = 0;
-    }
-    if (innconf->ovgrouppat != NULL) {
-        for (i = 0 ; i < OVnumpatterns ; i++)
-            free(OVpatterns[i]);
-        free(OVpatterns);
     }
     for (bg = EXPbadgroups; bg; bg = bgnext) {
         bgnext = bg->Next;

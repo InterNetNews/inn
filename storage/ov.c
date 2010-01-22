@@ -36,7 +36,6 @@ OVopen(int mode)
 {
     int	i;
     bool val;
-    char *p;
 
     if (ov.open)
 	/* already opened */
@@ -67,17 +66,6 @@ OVopen(int mode)
     if (atexit(OVclose) < 0) {
 	OVclose();
 	return false;
-    }
-    if (innconf->ovgrouppat != NULL) {
-	for (i = 1, p = innconf->ovgrouppat; *p && (p = strchr(p+1, ',')); i++);
-	OVnumpatterns = i;
-	OVpatterns = xmalloc(OVnumpatterns * sizeof(char *));
-	for (i = 0, p = strtok(innconf->ovgrouppat, ","); p != NULL && i <= OVnumpatterns ; i++, p = strtok(NULL, ","))
-	    OVpatterns[i] = xstrdup(p);
-	if (i != OVnumpatterns) {
-            warn("extra ',' in pattern");
-	    return false;
-	}
     }
     return val;
 }
@@ -129,6 +117,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     int			i;
     char		*group;
     ARTNUM		artnum;
+    enum uwildmat       groupmatch;
 
     if (!ov.open) {
 	/* Must be opened. */
@@ -197,16 +186,20 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
             while (isspace((int)*group))
                 group++;
-            if ((nextcheck = memchr(group, ':', xreflen - (patcheck - group))) == NULL)
+            if ((nextcheck = memchr(group, ':', xreflen - (group - patcheck))) == NULL)
                 return OVADDFAILED;
             *nextcheck++ = '\0';
-            if (!OVgroupmatch(group)) {
-                if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry)
-                    /* This article will never be expired, since it does not
-                       have self expiry function in stored method and
-                       groupbaseexpiry is true. */
-                    return OVADDFAILED;
+
+            groupmatch = uwildmat_poison(group, innconf->ovgrouppat);
+            if (groupmatch == UWILDMAT_POISON) {
                 return OVADDGROUPNOMATCH;
+            } else if (groupmatch == UWILDMAT_FAIL) {
+                if (!SMprobe(SELFEXPIRE, &token, NULL) && innconf->groupbaseexpiry) {
+                    /* This article will never be expired, since it does not
+                     * have self expiry function in stored method and
+                     * groupbaseexpiry is true. */
+                    return OVADDFAILED;
+                }
             }
         }
     }
@@ -222,6 +215,12 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         artnum = atoi(next);
         if (artnum <= 0)
             continue;
+
+        /* Skip overview generation according to ovgrouppat. */
+        if (innconf->ovgrouppat != NULL
+            && uwildmat_poison(group, innconf->ovgrouppat) != UWILDMAT_MATCH) {
+            continue;
+        }
 
         sprintf(overdata, "%ld\t", artnum);
         i = strlen(overdata);

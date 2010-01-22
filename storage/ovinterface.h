@@ -37,7 +37,6 @@ typedef struct overview_method {
 
 bool OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
                         int len, time_t arrived, time_t expires);
-bool OVgroupmatch(const char *group);
 bool OVhisthasmsgid(struct history *, const char *data);
 void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 void OVEXPcleanup(void);
@@ -52,8 +51,6 @@ extern bool OVusepost;
 extern bool OVkeep;
 extern bool OVearliest;
 extern bool OVquiet;
-extern int  OVnumpatterns;
-extern char **OVpatterns;
 extern time_t OVrealnow;
 extern long EXPprocessed;
 extern long EXPunlinked;

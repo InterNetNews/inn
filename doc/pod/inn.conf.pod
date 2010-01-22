@@ -545,7 +545,7 @@ This setting is ignored unless I<ovmethod> is set to C<tradindexed>.
 =item I<ovgrouppat>
 
 If set, restricts the overview data stored by INN to only the newsgroups
-matching this comma-separated list of wildmat expressions.  Newsgroups not
+matching this comma-separated list of uwildmat(3) expressions.  Newsgroups not
 matching this setting may not be readable, and if I<groupbaseexpiry> is
 set to true and the storage method for these newsgroups does not have
 self-expire functionality, storing overview data will fail.
