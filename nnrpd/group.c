@@ -159,7 +159,7 @@ CMDgroup(int ac, char *av[])
                   ARThigh, group);
 	}
 	GRPcount++;
-	ARTnumber = ARTlow;
+	ARTnumber = (count == 0 ? 0 : ARTlow);
 	if (GRPcur) {
 	    if (strcmp(GRPcur, group) != 0) {
 		OVctl(OVCACHEFREE, &boolval);
@@ -214,7 +214,7 @@ CMDgroup(int ac, char *av[])
             Printf(".\r\n");
         }
         GRPcount++;
-        ARTnumber = ARTlow;
+        ARTnumber = (count == 0 ? 0 : ARTlow);
         if (GRPcur) {
             if (strcmp(GRPcur, group) != 0) {
                 OVctl(OVCACHEFREE, &boolval);
@@ -261,6 +261,7 @@ CMDxgtitle(int ac, char *av[])
     /* Parse the arguments. */
     if (ac == 1) {
 	if (GRPcount == 0) {
+            /* Keep the legacy response code 481 instead of 412. */
 	    Reply("%d No group specified\r\n", NNTP_FAIL_XGTITLE);
 	    return;
 	}
