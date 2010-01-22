@@ -2373,7 +2373,7 @@ ARTpost(CHANNEL *cp)
 
   /* If !Accepted, then none of the article's newgroups exist in our
    * active file.  Proper action is to drop the article on the floor.
-   * If ngp == GroupPointers, then all the new articles newsgroups are
+   * If ngptr == GroupPointers, then all the new articles newsgroups are
    * "j" entries in the active file.  In that case, we have to file it
    * under junk so that downstream feeds can get it. */
   if (!Accepted || ngptr == GroupPointers) {
@@ -2390,7 +2390,12 @@ ARTpost(CHANNEL *cp)
                  MaxLength(data->Newsgroups.List[0],
                            data->Newsgroups.List[0]));
       }
-      ARTlog(data, ART_REJECT, cp->Error);
+
+      if (innconf->logtrash) {
+          /* Log the previous reject. */
+          ARTlog(data, ART_REJECT, cp->Error);
+      }
+
       if (!innconf->wanttrash) {
 	if (innconf->remembertrash && (Mode == OMrunning) &&
 	  !NoHistoryUpdate && !InndHisRemember(HDR(HDR__MESSAGE_ID),

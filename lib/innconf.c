@@ -168,6 +168,7 @@ const struct config config_table[] = {
     { K(logipaddr),               BOOL    (true) },
     { K(logsitename),             BOOL    (true) },
     { K(logstatus),               BOOL   (false) },
+    { K(logtrash),                BOOL    (true) },
     { K(maxartsize),              UNUMBER (1000000) },
     { K(maxconnections),          UNUMBER   (50) },
     { K(mergetogroups),           BOOL   (false) },
