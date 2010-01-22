@@ -429,7 +429,7 @@ RCreader(CHANNEL *cp)
     CHANNEL		*new;
     char		*name;
     long		reject_val = 0;
-    const char		*reject_message;
+    char		*reject_message;
     int			count;
     int			found;
     time_t		now;
@@ -514,12 +514,13 @@ RCreader(CHANNEL *cp)
 	}
 	if (remotecount == RemoteTotal) {
 	    reject_val = NNTP_FAIL_TERMINATING;
-	    reject_message = "400 Server overloaded, try later";
+	    xasprintf(&reject_message, "%d Server overloaded, try later",
+                      NNTP_FAIL_TERMINATING);
 	}
 	else if (found >= RemoteLimit && !RCnolimit(&tempchan)) {
 	    reject_val = NNTP_FAIL_TERMINATING;
-	    reject_message = "400 Connection rejected, you're making too"
-                " many connects per minute";
+            xasprintf(&reject_message, "%d Connection rejected, you're making too"
+                      " many connects per minute", NNTP_FAIL_TERMINATING);
 	}
 	else {
 	    i = (remotefirst + remotecount) & (REMOTETABLESIZE - 1);
@@ -534,7 +535,7 @@ RCreader(CHANNEL *cp)
     ** Create a reject channel to reject the connection.  This is done
     ** to avoid a call to fork.  
     */
-    if (reject_message) {
+    if (reject_message != NULL) {
 	new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
 	    RCrejectwritedone);
 	memcpy(&remotetable[i].Address, &remote,
@@ -544,6 +545,7 @@ RCreader(CHANNEL *cp)
 	WCHANset(new, reject_message, (int)strlen(reject_message));
 	WCHANappend(new, RCterm, strlen(RCterm));
 	WCHANadd(new);
+        free(reject_message);
 	return;
     }
 
@@ -606,7 +608,7 @@ RCreader(CHANNEL *cp)
 	return;
     } else {
 	reject_val = NNTP_ERR_ACCESS;
-	reject_message = NNTP_ACCESS;
+	xasprintf(&reject_message, "%d Permission denied", NNTP_ERR_ACCESS);
         new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
             RCrejectwritedone);
 	memcpy(&new->Address, &remote, sizeof(new->Address));
@@ -615,6 +617,7 @@ RCreader(CHANNEL *cp)
         WCHANset(new, reject_message, (int)strlen(reject_message));
         WCHANappend(new, RCterm, strlen(RCterm));
         WCHANadd(new);
+        free(reject_message);
         return;
     }
 

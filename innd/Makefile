@@ -85,8 +85,8 @@ art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h
 cc.o: cc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -95,9 +95,9 @@ cc.o: cc.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
   ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/inndcomm.h ../include/innperl.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/inndcomm.h ../include/innperl.h
 chan.o: chan.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -106,9 +106,8 @@ chan.o: chan.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
   ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
@@ -117,10 +116,9 @@ icd.o: icd.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
   ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
+  ../include/inn/storage.h ../include/inn/history.h
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -130,9 +128,9 @@ innd.o: innd.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/timer.h ../include/inn/libinn.h \
-  ../include/nntp.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h
+  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h
 keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
@@ -140,8 +138,8 @@ keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 lc.o: lc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -150,8 +148,8 @@ lc.o: lc.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -161,8 +159,8 @@ nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -171,8 +169,8 @@ newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 ng.o: ng.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -181,8 +179,8 @@ ng.o: ng.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
   ../include/inn/history.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
@@ -192,8 +190,8 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h \
   ../include/ppport.h ../include/innperl.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
@@ -203,8 +201,8 @@ proc.o: proc.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -214,9 +212,8 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
   ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
@@ -225,8 +222,8 @@ rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/network.h ../include/inn/vector.h innd.h \
   ../include/portable/time.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -235,8 +232,8 @@ site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 status.o: status.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -246,8 +243,8 @@ status.o: status.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/version.h innd.h \
   ../include/portable/time.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/innperl.h
 util.o: util.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -256,8 +253,8 @@ util.o: util.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 wip.o: wip.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -266,8 +263,8 @@ wip.o: wip.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 tinyleaf.o: tinyleaf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \

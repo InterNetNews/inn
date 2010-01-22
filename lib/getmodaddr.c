@@ -8,7 +8,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 
 
@@ -40,6 +40,7 @@ static FILE *
 GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 {
     char	buff[BUFSIZ];
+    char        expectedanswer[BUFSIZ];
     char	*p;
     int		oerrno;
     FILE	*F;
@@ -50,14 +51,16 @@ GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 
     /* Send a LIST command to and capture the output. */
     if (request == NULL)
-	fprintf(ToServer, "list moderators\r\n");
+	fprintf(ToServer, "LIST MODERATORS\r\n");
     else
-	fprintf(ToServer, "list %s\r\n", request);
+	fprintf(ToServer, "LIST %s\r\n", request);
     fflush(ToServer);
+
+    snprintf(expectedanswer, sizeof(expectedanswer), "%d", NNTP_OK_LIST);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || strncmp(buff, NNTP_LIST_FOLLOWS, strlen(NNTP_LIST_FOLLOWS)) != 0) {
+     || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
 	oerrno = errno;
         fclose(F);
 	GMAclose();
@@ -121,7 +124,7 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
         GMApathname = concatpath(innconf->pathtmp, INN_PATH_TEMPMODERATORS);
         fd = mkstemp(GMApathname);
         if (fd >= 0)
-            GMAfp = GMA_listopen(fd, FromServer, ToServer, "moderators");
+            GMAfp = GMA_listopen(fd, FromServer, ToServer, "MODERATORS");
         else
             GMAfp = NULL;
 

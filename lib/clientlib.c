@@ -7,7 +7,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 
 
 FILE	*ser_rd_fp = NULL;

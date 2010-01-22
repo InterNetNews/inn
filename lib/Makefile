@@ -103,12 +103,11 @@ clientactive.o: clientactive.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h
 clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h
+  ../include/inn/libinn.h ../include/inn/nntp.h
 commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -159,8 +158,7 @@ getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
 getmodaddr.o: getmodaddr.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/md5.h ../include/inn/defines.h \
@@ -193,8 +191,7 @@ list.o: list.c ../include/config.h ../include/inn/defines.h \
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h
 lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -255,8 +252,7 @@ remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/network.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h
+  ../include/inn/libinn.h ../include/inn/network.h ../include/inn/nntp.h
 reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -266,12 +262,11 @@ resource.o: resource.c ../include/config.h ../include/inn/defines.h \
 sendarticle.o: sendarticle.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/nntp.h ../include/inn/nntp.h
+  ../include/inn/nntp.h
 sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/nntp.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/sequence.h ../include/inn/defines.h

@@ -293,7 +293,7 @@ CMDnewnews(int ac, char *av[])
   if (strcspn(av[1], "\\!*[?]") == strlen(av[1])) {
       /* Optimise case -- don't need to scan the active file pattern
        * matching. */
-      Reply("%s\r\n", NNTP_NEWNEWSOK);
+      Reply("%d New news follows\r\n", NNTP_OK_NEWNEWS);
       for (i = 0; groups[i]; ++i) {
 	  process_newnews(groups[i], AllGroups, date);
       }
@@ -313,7 +313,7 @@ CMDnewnews(int ac, char *av[])
       }
       free(path);
 
-      Reply("%s\r\n", NNTP_NEWNEWSOK);
+      Reply("%d New news follows\r\n", NNTP_OK_NEWNEWS);
 
       while ((p = QIOread(qp)) != NULL) {
 	  for (q = p; *q != '\0'; q++) {

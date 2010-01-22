@@ -182,8 +182,7 @@ innxbatch.o: innxbatch.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h
 innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
@@ -191,8 +190,8 @@ innxmit.o: innxmit.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/time.h ../include/inn/history.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/qio.h ../include/inn/timer.h \
-  ../include/inn/wire.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/wire.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 map.o: map.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -207,8 +206,8 @@ nntpget.o: nntpget.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/history.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/libinn.h ../include/nntp.h \
-  ../include/inn/nntp.h ../include/inn/paths.h
+  ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h
 overchan.o: overchan.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/time.h ../include/config.h \

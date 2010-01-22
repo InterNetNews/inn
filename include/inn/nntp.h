@@ -42,6 +42,12 @@
 **  available for holding NNTP codes specifically.
 */
 
+#define NNTP_CLASS_INFO                 '1'
+#define NNTP_CLASS_OK                   '2'
+#define NNTP_CLASS_CONT                 '3'
+#define NNTP_CLASS_FAIL                 '4'
+#define NNTP_CLASS_ERR                  '5'
+
 enum nntp_code {
     NNTP_INFO_HELP              = 100,
     NNTP_INFO_CAPABILITIES      = 101,

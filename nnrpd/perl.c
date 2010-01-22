@@ -18,10 +18,9 @@
 
 #include "inn/innconf.h"
 #include "nnrpd.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 #include "post.h"
-
-#include "nntp.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #ifdef DO_PERL

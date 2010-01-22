@@ -9,7 +9,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS

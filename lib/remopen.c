@@ -9,9 +9,9 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
-#include "inn/network.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/network.h"
+#include "inn/nntp.h"
 
 
 /*

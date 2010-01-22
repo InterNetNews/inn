@@ -15,7 +15,7 @@
 
 #include "inn/qio.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 #include "inn/vector.h"

@@ -159,7 +159,7 @@ inews.o: inews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
-  ../include/inn/paths.h ../include/nntp.h ../include/inn/nntp.h
+  ../include/inn/nntp.h ../include/inn/paths.h
 innconfval.o: innconfval.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -207,9 +207,8 @@ rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/wire.h ../include/nntp.h \
-  ../include/inn/nntp.h
+  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/wire.h
 sm.o: sm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/buffer.h ../include/inn/defines.h \

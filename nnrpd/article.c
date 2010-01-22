@@ -40,7 +40,6 @@ typedef struct _SENDDATA {
     const char *Item;
 } SENDDATA;
 
-static char		ARTnotingroup[] = NNTP_NOTINGROUP;
 static ARTHANDLE        *ARThandle = NULL;
 static SENDDATA		SENDbody = {
     STbody,	NNTP_OK_BODY,		"body"
@@ -683,7 +682,7 @@ CMDfetch(int ac, char *av[])
 
     /* Trying to read. */
     if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
+	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	return;
     }
 
@@ -743,7 +742,7 @@ CMDnextlast(int ac UNUSED, char *av[])
 
     /* Trying to read. */
     if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
+	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	return;
     }
     if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
@@ -944,7 +943,7 @@ CMDover(int ac, char *av[])
 
     /* Trying to read. */
     if (GRPcount == 0) {
-	Reply("%s\r\n", ARTnotingroup);
+	Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	return;
     }
 
@@ -1230,7 +1229,7 @@ CMDpat(int ac, char *av[])
 
         /* Trying to read. */
 	if (GRPcount == 0) {
-	    Reply("%s\r\n", ARTnotingroup);
+	    Reply("%d Not in a newsgroup\r\n", NNTP_FAIL_NO_GROUP);
 	    break;
 	}
 

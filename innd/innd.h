@@ -42,7 +42,7 @@
 #include "inn/messages.h"
 #include "inn/timer.h"
 #include "inn/libinn.h"
-#include "nntp.h"
+#include "inn/nntp.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 
