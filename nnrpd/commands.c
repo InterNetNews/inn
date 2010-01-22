@@ -616,7 +616,9 @@ CMDpost(int ac, char *av[])
     }
     if (!ihave && !PERMcanpost) {
 	syslog(L_NOTICE, "%s noperm post without permission", Client.host);
-	Reply("%d Posting not allowed\r\n", NNTP_FAIL_POST_AUTH);
+        Reply("%d Posting not allowed\r\n",
+              PERMcanauthenticate && PERMcanpostgreeting ?
+              NNTP_FAIL_AUTH_NEEDED : NNTP_FAIL_POST_AUTH);
 	return;
     }
 
