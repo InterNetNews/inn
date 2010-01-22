@@ -36,7 +36,6 @@ OVopen(int mode)
 {
     int	i;
     bool val;
-    char *p;
 
     if (ov.open)
 	/* already opened */
@@ -67,17 +66,6 @@ OVopen(int mode)
     if (atexit(OVclose) < 0) {
 	OVclose();
 	return false;
-    }
-    if (innconf->ovgrouppat != NULL) {
-	for (i = 1, p = innconf->ovgrouppat; *p && (p = strchr(p+1, ',')); i++);
-	OVnumpatterns = i;
-	OVpatterns = xmalloc(OVnumpatterns * sizeof(char *));
-	for (i = 0, p = strtok(innconf->ovgrouppat, ","); p != NULL && i <= OVnumpatterns ; i++, p = strtok(NULL, ","))
-	    OVpatterns[i] = xstrdup(p);
-	if (i != OVnumpatterns) {
-            warn("extra ',' in pattern");
-	    return false;
-	}
     }
     return val;
 }
@@ -202,7 +190,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
                 return OVADDFAILED;
             *nextcheck++ = '\0';
 
-            groupmatch = OVgroupmatch(group);
+            groupmatch = uwildmat_poison(group, innconf->ovgrouppat);
             if (groupmatch == UWILDMAT_POISON) {
                 return OVADDGROUPNOMATCH;
             } else if (groupmatch == UWILDMAT_FAIL) {
@@ -229,8 +217,10 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
             continue;
 
         /* Skip overview generation according to ovgrouppat. */
-        if (innconf->ovgrouppat != NULL && OVgroupmatch(group) != UWILDMAT_MATCH)
+        if (innconf->ovgrouppat != NULL
+            && uwildmat_poison(group, innconf->ovgrouppat) != UWILDMAT_MATCH) {
             continue;
+        }
 
         sprintf(overdata, "%ld\t", artnum);
         i = strlen(overdata);
