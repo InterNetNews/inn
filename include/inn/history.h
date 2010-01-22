@@ -4,7 +4,7 @@
 */
 
 #ifndef INN_HISTORY_H
-#define INN_HISTORY_H
+#define INN_HISTORY_H 1
 
 #include <inn/defines.h>
 #include <sys/types.h>
