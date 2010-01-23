@@ -64,6 +64,23 @@ have been removed from the syntax.
 
 =item *
 
+Case-insensitive matches are now used for distributions, path identities,
+IMAP commands, header names, and control commands.  (Newsgroups are still
+matched case-sensitively.)  Message-IDs are case-sensitively matched,
+except for history hashes.
+
+=item *
+
+The new Archive:, Archive-At:, Comments:, and Summary: header fields
+defined in S<RFC 5064> and S<RFC 5536> can be used in B<innd> filters.
+B<nnrpd> now checks at injection time that an article does not contain an
+Injection-Info: header, that an Injection-Date: header (if provided) is
+valid, and that the Path: header does not contain C<.POSTED>.  Note that the
+generation of these two injection fields and the update of the Path: field
+for locally posted articles will only be for the next major release of INN.
+
+=item *
+
 LIST SUBSCRIPTIONS recognizes an optional argument:  a wildmat
 can now be specified to restrict the results of this command
 to specific newsgroups.
@@ -77,10 +94,34 @@ newsgroup is inserted before its status.
 
 =item *
 
+A new check has been added to F<newsfeeds> entries:  C<Aj>, when present,
+adds the capability to feed articles accepted and filed in C<junk> (due to
+I<wanttrash>) to peers based on their F<newsfeeds> feed patterns applied to
+the Newsgroups: header as though the article were accepted and all those
+groups were locally carried.  This is useful if you want to run INN with
+a minimal F<active> file and propagate all posts.  Thanks to Andrew Gierth
+for the patch.
+
+=item *
+
+A new parameter has been added to F<inn.conf>:  I<logtrash> defines whether
+a line for articles posted to groups not locally carried by the news server
+should be added in the F<news> log file to report unwanted newsgroups.
+The default is true but it can be useful to set it to false (especially
+when I<wanttrash> is also used).
+
+=item *
+
 A new feature has been added to B<sm>.  When the B<-c> flag is used,
 it shows a clear, decoded form of the storage API token.  This
 was previously done by the contrib B<showtoken> script developed
 by Olaf Titz and Marco d'Itri.
+
+=item *
+
+The B<O> flag in F<newsfeeds> now relies on the contents of the
+Injection-Info: header (or X-Trace: header if there is no Injection-Info:
+header) to determine the origin of an article.
 
 =item *
 
@@ -94,6 +135,11 @@ values.
 
 B<innxbatch> and B<innxmit> now recognize the new C<403> code introduced
 by S<RFC 3977> for a problem preventing the action from being taken.
+
+=item *
+
+HDR and OVER commands now return the right C<423> code (instead of C<420>)
+when the current article number is used but the article no longer exists.
 
 =item *
 
@@ -196,10 +242,17 @@ generating overview data, and B<archive> did not change "\n"
 
 =item *
 
+Fixed a bug in the generation of overview data which may corrupt previously
+generated overview data when a malicious pseudo Xref: header field is
+injected in an extra overview field.
+
+=item *
+
 Fixed a bug in the parsing of the I<ovgrouppat> wildmat in F<inn.conf>
 that prevented overview data from being generated when poisoned groups
-were specified but a latter sub-pattern made the group wanted.  Thanks
-to S<D. Stussy> for the bug report.
+were specified but a latter sub-pattern made the group wanted.  A uwildmat
+expression is now correctly handled, and a potential segfault has been fixed.
+Thanks to S<D. Stussy> for the bug report.
 
 =item *
 
