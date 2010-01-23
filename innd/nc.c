@@ -456,6 +456,15 @@ NCauthinfo(CHANNEL *cp)
     char *buff = NULL;
     cp->Start = cp->Next;
 
+    /* Make sure we're getting only AUTHINFO USER/PASS commands. */
+    if (strcasecmp(cp->av[1], "USER") != 0
+        && strcasecmp(cp->av[1], "PASS") != 0) {
+        xasprintf(&buff, "%d Bad AUTHINFO param", NNTP_ERR_SYNTAX);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
+
     if (cp->IsAuthenticated) {
         /* 502 if authentication will fail. */
         if (cp->CanAuthenticate)
@@ -472,14 +481,6 @@ NCauthinfo(CHANNEL *cp)
     if (strcasecmp(cp->av[1], "USER") == 0) {
         cp->HasSentUsername = true;
         xasprintf(&buff, "%d Enter password", NNTP_CONT_AUTHINFO);
-        NCwritereply(cp, buff);
-        free(buff);
-	return;
-    }
-
-    /* Now make sure we're getting only AUTHINFO PASS commands. */
-    if (strcasecmp(cp->av[1], "PASS") != 0) {
-        xasprintf(&buff, "%d Bad AUTHINFO param", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
 	return;
@@ -788,6 +789,8 @@ NClist(CHANNEL *cp)
     cp->Start = cp->Next;
 
     if (cp->Nolist) {
+        /* Even authenticated, a peer that has nolist: set will not
+         * be able to use the LIST command. */
         if (!cp->CanAuthenticate || innconf->noreader
             || (NNRPReason != NULL && !innconf->readerswhenstopped))
             xasprintf(&buff, "%d Permission denied", NNTP_ERR_ACCESS);
