@@ -119,6 +119,13 @@ by Olaf Titz and Marco d'Itri.
 
 =item *
 
+A new option has been added to B<inews>.  When the B<-m> flag is specified,
+the corresponding value will be used to determine the maximum number of
+header fields that are accepted for an article.  The default was C<50>
+and it is now configurable.  Thanks to Torsten Jerzembeck for the bug report.
+
+=item *
+
 The B<O> flag in F<newsfeeds> now relies on the contents of the
 Injection-Info: header (or X-Trace: header if there is no Injection-Info:
 header) to determine the origin of an article.
