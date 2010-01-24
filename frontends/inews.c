@@ -47,6 +47,7 @@ typedef struct _HEADER {
 } HEADER;
 
 static bool	Dump;
+static int      MaxHeadersCount;
 static bool	Revoked;
 static bool	Spooling;
 static char	**OtherHeaders;
@@ -221,7 +222,7 @@ StripOffHeaders(char *article)
     OtherCount = 0;
 
     /* Scan through buffer, a header at a time. */
-    for (i = 0, p = article; ; i++) {
+    for (i = 1, p = article; ; i++) {
 
 	if ((q = strchr(p, ':')) == NULL)
             die("no colon in header line \"%.30s...\"", p);
@@ -256,8 +257,8 @@ StripOffHeaders(char *article)
 	    }
 
 	/* Too many headers? */
-	if (++i > 5 * HEADER_DELTA)
-            die("more than %d lines of header", i);
+	if (i > MaxHeadersCount)
+            die("more than %d header fields", MaxHeadersCount);
 
 	/* No; add it to the set of other headers. */
 	if (hp == ARRAY_END(Table)) {
@@ -886,6 +887,7 @@ main(int ac, char *av[])
     /* Set defaults. */
     Mode = '\0';
     Dump = false;
+    MaxHeadersCount = 50;
     DoSignature = true;
     AddOrg = true;
     port = 0;
@@ -896,7 +898,7 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:")) != EOF)
+    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:m:n:p:r:t:F:o:w:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -922,10 +924,13 @@ main(int ac, char *av[])
 	case 'h':
 	    Mode = i;
 	    break;
+        case 'm':
+            MaxHeadersCount = atoi(optarg);
+            break;
 	case 'x':
             Exclusions = concat(optarg, "!", (char *) 0);
 	    break;
-	 case 'p':
+	case 'p':
 	    port = atoi(optarg);
 	    break;
 	/* Header lines that can be specified on the command line. */
