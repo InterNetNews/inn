@@ -172,8 +172,9 @@ SASLauth(int ac, char *av[])
             clientinlen = 0;
 	} else {
 	    /* Decode the response.  On error, SASL_CONTINUE should not be
-             * given.  Use SASL_BADPROT instead, in order to indicate
-             * a base64-encoding error. */
+             * given because we know for sure that we have already received
+             * the whole challenge/response.  Use SASL_BADPROT instead,
+             * in order to indicate a base64-encoding error. */
             r1 = sasl_decode64(clientin, strlen(clientin),
                                base64, BASE64_BUF_SIZE, &clientinlen);
             clientin = base64;
@@ -255,8 +256,9 @@ SASLauth(int ac, char *av[])
             clientinlen = 0;
         } else {
             /* Decode the response.  On error, SASL_CONTINUE should not be
-             * given.  Use SASL_BADPROT instead, in order to indicate
-             * a base64-encoding error. */
+             * given because we know for sure that we have already received
+             * the whole challenge/response.  Use SASL_BADPROT instead,
+             * in order to indicate a base64-encoding error. */
             r1 = sasl_decode64(clientin, clientinlen,
                                base64, BASE64_BUF_SIZE, &clientinlen);
             clientin = base64;
