@@ -944,14 +944,14 @@ default is false.
 nnrpd(8) has support for controlling high-volume posters via an
 exponential backoff algorithm, as configured by the following parameters.
 
-Exponential posting backoff works as follows:  News clients are indexed by
-IP address (or username, see I<backoffauth> below).  Each time a post is
-received from an IP address, the time of posting is stored (along with the
-previous sleep time, see below).  After a configurable number of posts in
-a configurable period of time, nnrpd(8) will activate posting backoff and
-begin to sleep for increasing periods of time before actually posting
-anything.  Posts will still be accepted, but at an increasingly reduced
-rate.
+Exponential posting backoff works as follows:  news clients are indexed
+by IP address (or username, see I<backoffauth> below).  Each time a post
+is received from an IP address, the time of posting is stored (along
+with the previous sleep time, see below).  After a configurable number
+of posts in a configurable period of time, nnrpd(8) will begin to sleep
+for increasing periods of time before actually posting anything (posting
+backoff is therefore activated).  Posts will still be accepted, but at an
+increasingly reduced rate.
 
 After backoff has been activated, the length of time to sleep is computed
 based on the difference in time between the last posting and the current
@@ -961,6 +961,8 @@ difference is less than I<backoffpostslow> but greater than
 I<backoffpostfast>, then the new sleep time will equal the previous sleep
 time.  If this difference is greater than I<backoffpostslow>, the new
 sleep time is zero and posting backoff is deactivated for this poster.
+(Note that this does not mean posting backoff cannot be reactivated later
+in the session.)
 
 Exponential posting backoff will not be enabled unless I<backoffdb> is set
 and I<backoffpostfast> and I<backoffpostslow> are set to something other
