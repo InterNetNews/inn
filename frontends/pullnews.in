@@ -219,7 +219,7 @@ die "``-b'' value not 0.0-1.0: $opt_b\n"    if defined $opt_b and $opt_b !~ /^([
 die "``-C'' value not an integer: $opt_C\n" if $progressWidth !~ m!^\d+$!;
 die "``-d'' value not an integer: $opt_d\n" if $debug !~ m!^\d+$!;
 die "``-f'' value not 0.0-1.0: $opt_f\n"    if defined $opt_f and $opt_f !~ /^([01](\.0*)?|0?\.\d+)$/;
-die "``-F'' value not a hostname: $opt_F\n" if defined $opt_f and $opt_f !~ m!^[\w\-\.]+$!;
+die "``-F'' value not a hostname: $opt_F\n" if defined $opt_F and $opt_F !~ m!^[\w\-\.]+$!;
 die "``-k'' value not an integer: $opt_k\n" if $checkPoint !~ m!^\d+$!;
 die "``-M'' value not an integer: $opt_M\n" if defined $maxArts and $maxArts !~ m!^\d+$!;
 die "``-N'' value not an integer: $opt_N\n" if defined $opt_N and $opt_N !~ /^\d+$/;
