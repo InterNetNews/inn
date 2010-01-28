@@ -4,7 +4,7 @@ inews - Post a Usenet article to the local news server
 
 =head1 SYNOPSIS
 
-B<inews> [B<-ADhNORSVW>] [B<-acdeFfmnortwx> I<value>] [B<-p> I<port>] [I<file>]
+B<inews> [B<-ADhNORSVW>] [B<-acdeFfnortwx> I<value>] [B<-p> I<port>] [I<file>]
 
 =head1 DESCRIPTION
 
@@ -89,11 +89,6 @@ consists of headers, a blank line, and then the message body.  If it is
 omitted, the input is taken to be just the body of the message, and any
 desired headers have to be specified with command-line options as
 described above.
-
-=item B<-m> I<value>
-
-Articles that contain more than I<value> header fields are rejected.
-The default is C<50>.
 
 =item B<-O>
 
