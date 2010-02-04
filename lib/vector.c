@@ -296,7 +296,7 @@ split_space_count(const char *string)
 
 /*
 **  Given a string, split it at whitespace to form a vector, copying each
-**  string segment.  If the fourth argument isn't NULL, reuse that vector;
+**  string segment.  If the second argument isn't NULL, reuse that vector;
 **  otherwise, allocate a new one.  Any number of consecutive whitespace
 **  characters is considered a single separator.
 */
@@ -328,7 +328,7 @@ vector_split_space(const char *string, struct vector *vector)
 
 /*
 **  Given a string, split it at whitespace to form a vector, destructively
-**  modifying the string to nul-terminate each segment.  If the fourth
+**  modifying the string to nul-terminate each segment.  If the second
 **  argument isn't NULL, reuse that vector; otherwise, allocate a new one.
 **  Any number of consecutive whitespace characters is considered a single
 **  separator.
