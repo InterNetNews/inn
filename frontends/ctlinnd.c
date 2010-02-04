@@ -180,7 +180,7 @@ Usage(const char *what)
 
 int main(int ac, char *av[])
 {
-    static char		Y[] = "y";
+    static char		Y[] = NF_FLAG_OK_STRING;
     static char		EMPTY[] = "";
     COMMAND	        *cp;
     char	        *p;
@@ -289,7 +289,7 @@ int main(int ac, char *av[])
 	    Usage("Bad group mode");
 	    /* NOTREACHED */
 	case NF_FLAG_ALIAS:
-	case NF_FLAG_EXCLUDED:
+	case NF_FLAG_JUNK:
 	case NF_FLAG_MODERATED:
 	case NF_FLAG_OK:
 	case NF_FLAG_NOLOCAL:

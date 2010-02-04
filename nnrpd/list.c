@@ -149,10 +149,7 @@ CMD_list_single(char *group)
         if (!PERMmatch(PERMreadlist, grplist))
             return false;
     }
-    if (OVgroupstats(group, &lo, &hi, &count, &flag) && flag != '=') {
-        /* Convert flags to standardized ones, if possible. */
-        if (flag == 'j' || flag == 'x')
-            flag = 'n';
+    if (OVgroupstats(group, &lo, &hi, &count, &flag) && flag != NF_FLAG_ALIAS) {
         /* When a newsgroup is empty, the high water mark should be one less
          * than the low water mark according to RFC 3977. */
         if (count == 0)
@@ -327,12 +324,12 @@ CMDlist(int ac, char *av[])
                 if (count == 0)
                     lo = hi + 1;
 
-                if (flag != '=') {
+                if (flag != NF_FLAG_ALIAS) {
                     Printf("%s %u %u %u %c\r\n", p, hi, lo, count, flag);
                 } else if (savec != '\0') {
                     *save = savec;
 
-                    if ((q = strrchr(p, '=')) != NULL) {
+                    if ((q = strrchr(p, NF_FLAG_ALIAS)) != NULL) {
                         *save = '\0';
                         Printf("%s %u %u %u %s\r\n", p, hi, lo, count, q);
                     }
@@ -344,15 +341,6 @@ CMDlist(int ac, char *av[])
 
 	if (savec != '\0')
 	    *save = savec;
-
-        if (lp == &INFOactive) {
-            /* Convert flags to standardized ones, if possible. */
-            if ((q = strrchr(p, ' ')) != NULL) {
-                q++;
-                if (*q == 'j' || *q == 'x')
-                    *q = 'n';
-            }
-        }
 
 	Printf("%s\r\n", p);
     }

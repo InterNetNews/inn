@@ -773,7 +773,7 @@ ValidNewsgroups(char *hdr, char **modgroup)
 		snprintf(Error, sizeof(Error),
                          "Postings to \"%s\" are not allowed here", p);
 	    break;
-	case NF_FLAG_EXCLUDED:
+	case NF_FLAG_JUNK:
 	    /* Do NOT return an error. */
 	    break;
 	case NF_FLAG_ALIAS:

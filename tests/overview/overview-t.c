@@ -166,7 +166,7 @@ overview_load(const char *data)
     struct group *group;
     FILE *overview;
     char buffer[4096];
-    char flag[] = "y";
+    char flag[] = NF_FLAG_OK_STRING;
     char *start;
     unsigned long artnum;
 
@@ -247,8 +247,9 @@ overview_verify_groups(void *data, void *cookie)
              (unsigned long) count, group->count);
         *status = false;
     }
-    if (flag != 'y') {
-        warn("Flag wrong for %s: %c != y", group->group, (char) flag);
+    if (flag != NF_FLAG_OK) {
+        warn("Flag wrong for %s: %c != %c", group->group, (char) flag,
+             NF_FLAG_OK);
         *status = false;
     }
 }

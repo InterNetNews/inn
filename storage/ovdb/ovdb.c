@@ -1807,7 +1807,7 @@ ovdb_groupadd(const char *group, ARTNUM lo, ARTNUM hi, char *flag)
 	return false;
     }
 
-    if(*flag == '=') {
+    if(*flag == NF_FLAG_ALIAS) {
 	key.data = (char *) group;
 	key.size = strlen(group);
 	val.data = flag + 1;

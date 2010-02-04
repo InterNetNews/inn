@@ -2351,8 +2351,8 @@ ARTpost(CHANNEL *cp)
       }
     }
 
-    /* If it's excluded, don't file it. */
-    if (ngp->Rest[0] == NF_FLAG_EXCLUDED)
+    /* If it's junk, don't file it. */
+    if (ngp->Rest[0] == NF_FLAG_JUNK)
       continue;
 
     /* Expand aliases, mark the article as getting filed in the group. */

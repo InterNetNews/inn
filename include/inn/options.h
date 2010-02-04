@@ -173,12 +173,19 @@ typedef unsigned long           ARTNUM;
 #define MAX_BUILTIN_ARGV        20
 
 /* active file flags.  Should be moved to a more specific header file. */
-#define NF_FLAG_ALIAS		'='
-#define NF_FLAG_EXCLUDED	'j'
-#define NF_FLAG_MODERATED	'm'
-#define NF_FLAG_OK		'y'
-#define NF_FLAG_NOLOCAL		'n'
-#define NF_FLAG_IGNORE		'x'
+#define NF_FLAG_ALIAS            '='
+#define NF_FLAG_JUNK             'j'
+#define NF_FLAG_MODERATED        'm'
+#define NF_FLAG_OK               'y'
+#define NF_FLAG_NOLOCAL          'n'
+#define NF_FLAG_IGNORE           'x'
+
+#define NF_FLAG_ALIAS_STRING     "="
+#define NF_FLAG_JUNK_STRING      "j"
+#define NF_FLAG_MODERATED_STRING "m"
+#define NF_FLAG_OK_STRING        "y"
+#define NF_FLAG_NOLOCAL_STRING   "n"
+#define NF_FLAG_IGNORE_STRING    "x"
 
 /* Used for parsing the Newsgroups: header.  Should be rolled into a library
    for parsing headers, combining all the code that's currently scattered
