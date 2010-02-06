@@ -329,7 +329,10 @@ CMDlist(int ac, char *av[])
                     lo = hi + 1;
 
                 if (flag != NF_FLAG_ALIAS) {
-                    Printf("%s %u %u %u %c\r\n", p, hi, lo, count, flag);
+                    Printf("%s %u %u %u %c\r\n", p, hi, lo, count,
+                           PERMaccessconf->locpost
+                           && (flag == NF_FLAG_NOLOCAL || flag == NF_FLAG_IGNORE)
+                           ? NF_FLAG_OK : flag);
                 } else if (savec != '\0') {
                     *save = savec;
 
