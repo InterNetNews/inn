@@ -531,7 +531,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
 **  Determine access rights of the client.
 */
 static void
-StartConnection(void)
+StartConnection(unsigned short port)
 {
     static const char *default_host_error = "unknown error";
     struct sockaddr_storage ssc, sss;
@@ -612,7 +612,7 @@ StartConnection(void)
      * of overviews and slow answers on some architectures (like BSD/OS). */
     setsockopt(STDIN_FILENO, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
 
-    notice("%s (%s) connect", Client.host, Client.ip);
+    notice("%s (%s) connect - port %u", Client.host, Client.ip, port);
 
     PERMgetaccess(NNRPACCESS);
     PERMgetpermissions();
@@ -1217,7 +1217,7 @@ main(int argc, char *argv[])
     xsignal(SIGPIPE, CatchPipe);
 
     /* Get permissions and see if we can talk to this client. */
-    StartConnection();
+    StartConnection(ListenPort);
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Reply("%d You have no permission to talk.  Goodbye!\r\n",
