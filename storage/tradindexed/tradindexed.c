@@ -229,6 +229,11 @@ tradindexed_cancel(const char *group, ARTNUM artnum)
     data = data_cache_open(tradindexed, group, entry);
     if (data == NULL)
         return false;
+    if (artnum > data->high) {
+        data = data_cache_reopen(tradindexed, group, entry);
+        if (data == NULL)
+            return false;
+    }
     return tdx_data_cancel(data, artnum);
 }
 

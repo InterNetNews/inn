@@ -379,6 +379,12 @@ Thanks to Dieter Stussy for the patch.
 
 =item *
 
+When using tradindexed, the overview data for a cancelled article is now
+properly immediately removed from the overview.  Thanks to Lars Magne
+Ingebrigtsen for the patch.
+
+=item *
+
 B<batcher> has not supported the retrieval of an article with its
 file name for a long time.  The B<-S> flag is therefore removed.
 
