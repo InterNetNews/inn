@@ -68,7 +68,6 @@ static ARTOVERFIELD	*ARTfields;
 */
 static char	ARTctl[] = "control";
 static char	ARTjnk[] = "junk";
-static char	*ARTpathme;
 
 /*
 **  Flag array, indexed by character.  Character classes for hostnames.
@@ -263,10 +262,6 @@ ARTsetup(void)
   qsort(table, ARRAY_SIZE(ARTheaders), sizeof *table, ARTcompare);
   ARTheadertree = ARTbuildtree(table, 0, ARRAY_SIZE(ARTheaders));
   free(table);
-
-  /* Get our Path name, kill trailing! */
-  ARTpathme = xstrdup(Path.data);
-  ARTpathme[Path.used - 1] = '\0';
 
   /* Set up database; ignore errors. */
   ARTreadschema();
