@@ -146,15 +146,13 @@ class InndFilter:
     def filter_messageid(self, msgid):
         """Filter articles just by their Message-IDs.
 
-        This method interacts with the IHAVE and CHECK NNTP commands.
+        This method interacts with the CHECK, IHAVE and TAKETHIS
+        NNTP commands.
         If you return a non-empty string here, the offered article
         will be refused before you ever have to waste any bandwidth
-        looking at it (make sure that such a message is properly
-        encoded in UTF-8 so as to comply with the NNTP protocol).
-        This is not foolproof, so you should do your ID checks both
-        here and in filter_art.  (TAKETHIS does not offer the ID
-        for examination, and a TAKETHIS isn't always preceded
-        by a CHECK.)
+        looking at it (unless TAKETHIS is used before an earlier CHECK).
+        Make sure that such a message is properly encoded in UTF-8
+        so as to comply with the NNTP protocol.
         """
         return ""               # Deactivate the samples.
 
