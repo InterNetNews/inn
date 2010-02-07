@@ -150,27 +150,22 @@ in its nightly report, will summarize the number of articles rejected
 by the Perl filter and include a count of how many articles were rejected
 with each reason string.)
 
-One other type of filtering is also supported.  If Perl filtering is
-turned on and the Perl function filter_messageid() is defined, that
-function will be called for each message ID received from a peer (via
-either CHECK or IHAVE).  The function receives a single argument, the
-message ID, and like filter_art() should return an empty string to accept
-the article or an error string to refuse the article (make sure that
-such a message is properly encoded in UTF-8 so as to comply with the
-NNTP protocol).  This function is called before any history lookups and
-for every article offered to innd with CHECK or IHAVE (before the actual
-article is sent).  Accordingly, the message ID is the only information
-it has about the article (the %hdr hash will be empty).  This code would
-sit in a performance-critical hot path in a typical server, and therefore
-should be as fast as possible, but it can do things like refuse articles
-from certain hosts or cancels for already rejected articles (if they
-follow the $alz convention) without having to take the network bandwidth
-hit of accepting the entire article first.
-
-Note that you cannot rely on filter_messageid() being called for every
-incoming article; articles sent via TAKETHIS without an earlier CHECK will
-never pass through filter_messageid() and will only go through
-filter_art().
+One other type of filtering is also supported.  If Perl filtering is turned
+on and the Perl function filter_messageid() is defined, that function will
+be called for each message-ID received from a peer (via either CHECK, IHAVE
+or TAKETHIS).  The function receives a single argument, the message-ID,
+and like filter_art() should return an empty string to accept the article
+or an error string to refuse the article (make sure that such a message
+is properly encoded in UTF-8 so as to comply with the NNTP protocol).
+This function is called before any history lookups and for every article
+offered to B<innd> with CHECK or IHAVE (before the actual article is sent),
+or with TAKETHIS (after the actual article is sent).  Accordingly, the
+message-ID is the only information it has about the article (the %hdr hash
+will be empty).  This code would sit in a performance-critical hot path in
+a typical server, and therefore should be as fast as possible, but it can
+do things like refuse articles from certain hosts or cancels for already
+rejected articles (if they follow the $alz convention) without having to
+take the network bandwidth hit of accepting the entire article first.
 
 Finally, whenever ctlinnd throttle, ctlinnd pause, or ctlinnd go is run,
 the Perl function filter_mode() is called if it exists.  It receives no

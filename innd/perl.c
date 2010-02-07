@@ -132,7 +132,8 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 
 
 /*
-**  Run an incoming message ID from CHECK or IHAVE through the Perl filter.
+**  Run an incoming message-ID from CHECK, IHAVE or TAKETHIS through
+**  the Perl filter.
 **  Returns NULL to accept the article or a rejection message to reject it.
 */
 char *

@@ -126,11 +126,9 @@ in UTF-8 so as to comply with the NNTP protocol.
 =item filter_messageid(I<self>, I<msgid>)
 
 I<msgid> is a buffer object containing the ID of an article being offered by
-IHAVE or CHECK.  Like with C<filter_art>, the message will be refused if
+CHECK, IHAVE or TAKETHIS.  Like with C<filter_art>, the message will be refused if
 you return a non-empty string.  If you use this feature, keep it light
-because it is called at a rather busy place in B<innd>'s main loop.  Also, do
-not rely on this function alone to reject by ID; you should repeat the
-tests in C<filter_art> to catch articles sent with TAKETHIS but no CHECK.
+because it is called at a rather busy place in B<innd>'s main loop.
 
 =item filter_mode(I<self>, I<oldmode>, I<newmode>, I<reason>)
 

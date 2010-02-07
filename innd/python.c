@@ -154,7 +154,8 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 
 
 /*
-**  Refuse Message-IDs offered through CHECK or IHAVE that we don't like.
+**  Refuse message-IDs offered through CHECK, IHAVE or TAKETHIS that
+**  we don't like.
 */
 char *
 PYmidfilter(char *messageID, int msglen)

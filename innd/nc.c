@@ -1846,8 +1846,11 @@ NCtakethis(CHANNEL *cp)
     static char empty[] = "";
     int     returncode; /* Will *not* be changed in NCpostit()
                            if it does *not* start with '2'. */
-    size_t  msglen;
+    size_t  idlen, msglen;
     WIP     *wp;
+#if defined(DO_PERL) || defined(DO_PYTHON)
+    char    *filterrc;
+#endif /* DO_PERL || DO_PYTHON */
 
     cp->Takethis++;
     cp->Start = cp->Next;
@@ -1862,10 +1865,30 @@ NCtakethis(CHANNEL *cp)
         mid = cp->av[1];
         returncode = NNTP_OK_TAKETHIS; /* Default code. */
     }
+
+    idlen = strlen(mid);
+    msglen = idlen + 5; /* 3 digits + space + id + null. */
+
     if (!IsValidMessageID(mid, false)) {
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
                MaxLength(mid, mid));
         returncode = NNTP_FAIL_TAKETHIS_REJECT;
+    } else {
+#if defined(DO_PERL)
+        /* Invoke a Perl message filter on the message-ID. */
+        filterrc = PLmidfilter(mid);
+        if (filterrc) {
+            returncode = NNTP_FAIL_TAKETHIS_REJECT;
+        }
+#endif /* defined(DO_PERL) */
+
+#if defined(DO_PYTHON)
+        /* Invoke a Python message filter on the message-ID. */
+        filterrc = PYmidfilter(mid, idlen);
+        if (filterrc) {
+            returncode = NNTP_FAIL_TAKETHIS_REJECT;
+        }
+#endif /* defined(DO_PYTHON) */
     }
 
     /* Check authentication after everything else. */
@@ -1874,7 +1897,6 @@ NCtakethis(CHANNEL *cp)
             NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS;
     }
 
-    msglen = strlen(mid) + 5; /* 3 digits + space + id + null. */
     if (cp->Sendid.size < msglen) {
         if (cp->Sendid.size > 0)
             free(cp->Sendid.data);
