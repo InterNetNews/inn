@@ -1037,7 +1037,10 @@ dbzfetch(const HASH key, off_t *value)
 
 /*
  * dbzstore - add an entry to the database
- * returns true for success and false for failure
+ *
+ * returns DBZSTORE_OK     for success
+ *         DBZSTORE_EXISTS for existing entries (duplicates)
+ *         DBZSTORE_ERROR  for other failure
  */
 DBZSTORE_RESULT
 dbzstore(const HASH key, off_t data)
