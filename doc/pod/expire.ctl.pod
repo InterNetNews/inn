@@ -148,7 +148,7 @@ When I<groupbaseexpiry> is true (the default):
     *:M:1:30:365
 
     # Keep local groups for a long time and local project groups forever.
-    example.*:A:90:90:90
+    example.*:A:1:90:90
     example.project.*:A:never:never:never
 
 When I<groupbaseexpiry> is false, for class-based expiration:
@@ -156,11 +156,13 @@ When I<groupbaseexpiry> is false, for class-based expiration:
     # Keep expired article history for 11 days, matching artcutoff plus one.
     /remember/:11
 
-    # Set a default expiration of seven days.
-    *:7:7:7
+    # Set a default expiration of seven days and honour Expires: headers
+    # within reasonable limits.
+    *:1:7:35
 
-    # Class 0 is retained for two weeks.
-    0:14:14:14
+    # Class 0 is retained for two weeks and honor Expires: headers
+    # within reasonable limits.
+    0:1:14:65
 
 =head1 HISTORY
 
