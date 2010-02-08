@@ -39,8 +39,8 @@ range, it will be taken to be the high water mark and the low mark will be
 set to 1.
 
 To audit the entire overview database for problems, use B<-A>.  Any
-problems found will be reported to standard error.  There is not (yet) a
-corresponding option to correct the errors found.
+problems found will be reported to standard error.  Use B<-F> to correct
+the errors found.
 
 To rebuild the database for a particular newsgroup, use B<-R>.  The B<-R>
 option takes a path to a directory which contains all of the articles for
@@ -91,7 +91,7 @@ taken as the high article number.
 =item B<-F>
 
 Audit the entire overview database for problems, fixing them as they're
-detected where possible. This runs the internal consistency checks built
+detected where possible.  This runs the internal consistency checks built
 into the tradindexed overview implementation, checking such things as the
 validity and reachability of all group index entries, the format of the
 individual overview entries, the correspondence of index entries to
@@ -113,8 +113,8 @@ Dump the index of a particular group.  The fields are, in order, the
 article number, the offset of the data for that article in the overview
 data file for that group, the length of the overview data, the time (in
 seconds since epoch) when the article arrived on the server, the time (in
-seconds since epoch) when the article should expire based on its Expires
-header (or 0 if there is no Expires header), and the storage API token of
+seconds since epoch) when the article should expire based on its Expires:
+header (or 0 if there is no Expires: header), and the storage API token of
 the article.
 
 If this option is given, the B<-n> option must also be given to specify
@@ -123,8 +123,8 @@ the newsgroup on which to act.
 =item B<-i>
 
 Dump the master index of the overview database.  This contains similar
-information to the server active file, such as high and low water marks
-and moderation status, and is the information that nnrpd hands out to
+information to the server F<active> file, such as high and low water marks
+and moderation status, and is the information that B<nnrpd> hands out to
 clients.
 
 The fields are, in order, the newsgroup name, the high water mark, the low
@@ -146,7 +146,7 @@ B<-R> options.
 Dump the overview information for a newsgroup in the format used by
 B<overchan> as input.  Each line will start with the storage API token,
 the arrival timestamp in seconds since epoch, the expires timestamp in the
-same format (or 0 if there is no Expires header), and then the overview
+same format (or 0 if there is no Expires: header), and then the overview
 data.
 
 If this option is given, the B<-n> option must also be given to specify
@@ -163,7 +163,7 @@ number according to the index file for that group labelled with
 C<Article:>, the storage API token for that article labelled with
 C<Token:>, the arrival date for that article on the server in S<RFC 5322> date
 format labelled with C<Arrived:>, and the expiration date for that article
-(from the Expires header) in S<RFC 5322> date format if there is any, labelled
+(from the Expires: header) in S<RFC 5322> date format if there is any, labelled
 with C<Expires:>.
 
 If this option is given, the B<-n> option must also be given to specify
@@ -233,6 +233,6 @@ $Id$
 
 =head1 SEE ALSO
 
-makehistory(8)
+makehistory(8), nnrpd(8).
 
 =cut
