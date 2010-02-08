@@ -90,9 +90,10 @@ never again until restarted.  B<nnrpd> should therefore be restarted if
 F<inn.conf> is changed.
 
 When started in daemon mode, B<nnrpd> will write its PID into a file in
-the I<pathrun> directory.  The file will be named F<nnrpd-%d.pid>, where
-C<%d> is replaced with the port that B<nnrpd> is configured to listen on
-(119 unless the B<-p> option is given).
+the I<pathrun> directory.  The file will be named F<nnrpd.pid> if B<nnrpd>
+listens on port 119 (default), or F<nnrpd-%d.pid>, where C<%d> is replaced
+with the port that B<nnrpd> is configured to listen on (B<-p> option is
+given and its argument is not C<119>).
 
 =item B<-f>
 
