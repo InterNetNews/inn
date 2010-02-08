@@ -107,7 +107,7 @@ initialize(void)
    (which may be ""), create a channel, run the article through ARTparse
    either all at once or, if slow is true, one character at a time, and check
    the result.  If shift is true, shift the start of the article in the buffer
-   by a random amount.  Produces three test results. */
+   by a random amount.  Produces five test results. */
 static void
 ok_article(int n, const char *path, const char *error, bool slow, bool shift)
 {
