@@ -1536,7 +1536,7 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^python: dynamic authorization access for read access granted$/o;
     return 1 if $left =~ /^python: dynamic authorization access type is not known: /o;
     # connect
-    if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect$/o) {
+    if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect(?: - port \d+)?$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
       my $dom = &host2dom($cust);
