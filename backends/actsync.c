@@ -1012,16 +1012,16 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 
 	/* check for a bad group type */
 	switch (cur->type[0]) {
-	case 'y':
+	case NF_FLAG_OK:
 		/* of COURSE: collabra has incompatible flags. but it	*/
 		/* looks like they can be fixed easily enough.		*/
 		if (cur->type[1] == 'g') {
 			cur->type[1] = '\0';
 		}
-	case 'm':
-	case 'j':
-	case 'n':
-	case 'x':
+	case NF_FLAG_MODERATED:
+	case NF_FLAG_JUNK:
+	case NF_FLAG_NOLOCAL:
+	case NF_FLAG_IGNORE:
 	    if (cur->type[1] != '\0') {
 		if (!QUIET(hostid))
                     warn("line %d <%s> from %s has a bad newsgroup type",
@@ -1029,7 +1029,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 		cur->ignore |= ERROR_BADTYPE;
 	    }
 	    break;
-	case '=':
+	case NF_FLAG_ALIAS:
 	    if (cur->type[1] == '\0') {
 		if (!QUIET(hostid))
                     warn("line %d <%s> from %s has an empty =group name",
@@ -1049,7 +1049,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	}
 
 	/* if an = type, check for bad = name */
-	if (cur->type[0] == '=' && bad_grpname(&(cur->type[1]), num_check)) {
+	if (cur->type[0] == NF_FLAG_ALIAS && bad_grpname(&(cur->type[1]), num_check)) {
 	    if (!QUIET(hostid))
                 warn("line %d <%s> from %s is equivalenced to a bad name:"
                      " <%s>", cnt+1, cur->name, host,
@@ -1059,7 +1059,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	}
 
 	/* if an = type, check for long = name if requested */
-	if (cur->type[0] == '=' && s_flag > 0 &&
+	if (cur->type[0] == NF_FLAG_ALIAS && s_flag > 0 &&
 	    strlen(&(cur->type[1])) > (size_t)s_flag) {
 	    if (!QUIET(hostid))
                 warn("line %d <%s> from %s is equivalenced to a long name:"
@@ -1345,18 +1345,18 @@ get_ignore(char *filename, int *len)
 
 	    /* ensure that this next token is a valid type */
 	    switch (p[0]) {
-	    case 'y':
-	    case 'm':
-	    case 'j':
-	    case 'n':
-	    case 'x':
+	    case NF_FLAG_OK:
+	    case NF_FLAG_MODERATED:
+	    case NF_FLAG_JUNK:
+	    case NF_FLAG_NOLOCAL:
+	    case NF_FLAG_IGNORE:
 		if (p[1] != '\0') {
                     warn("field %d on line %d of %s not a valid type",
                          i, linenum, filename);
                     die("valid types are a char from [ymnjx=] or =name");
 		}
 		break;
-	    case '=':
+	    case NF_FLAG_ALIAS:
 		break;
 	    default:
                 warn("field %d on line %d of %s is not a valid type",
@@ -1368,12 +1368,12 @@ get_ignore(char *filename, int *len)
 	    cur->type_match = 1;
 
 	    /* ensure that type is not a duplicate */
-	    if ((p[0] == 'y' && cur->y_type) ||
-	        (p[0] == 'm' && cur->m_type) ||
-	        (p[0] == 'n' && cur->n_type) ||
-	        (p[0] == 'j' && cur->j_type) ||
-	        (p[0] == 'x' && cur->x_type) ||
-	        (p[0] == '=' && cur->eq_type)) {
+	    if ((p[0] == NF_FLAG_OK && cur->y_type) ||
+	        (p[0] == NF_FLAG_MODERATED && cur->m_type) ||
+	        (p[0] == NF_FLAG_NOLOCAL && cur->n_type) ||
+	        (p[0] == NF_FLAG_JUNK && cur->j_type) ||
+	        (p[0] == NF_FLAG_IGNORE && cur->x_type) ||
+	        (p[0] == NF_FLAG_ALIAS && cur->eq_type)) {
                 warn("only one %c type allowed per line", p[0]);
                 die("field %d on line %d of %s is a duplicate type",
                     i, linenum, filename);
@@ -1381,24 +1381,24 @@ get_ignore(char *filename, int *len)
 
 	    /* note what we have seen */
 	    switch (p[0]) {
-	    case 'y':
+	    case NF_FLAG_OK:
 		cur->y_type = 1;
 		break;
-	    case 'm':
+	    case NF_FLAG_MODERATED:
 		cur->m_type = 1;
 		break;
-	    case 'j':
+	    case NF_FLAG_JUNK:
 		cur->j_type = 1;
 		break;
-	    case 'n':
+	    case NF_FLAG_NOLOCAL:
 		cur->n_type = 1;
 		break;
-	    case 'x':
+	    case NF_FLAG_IGNORE:
 		cur->x_type = 1;
 		break;
-	    case '=':
+	    case NF_FLAG_ALIAS:
 		cur->eq_type = 1;
-		if (p[0] == '=' && p[1] != '\0')
+		if (p[0] == NF_FLAG_ALIAS && p[1] != '\0')
                     cur->epat = xstrdup(p + 1);
 		break;
 	    }
@@ -1470,22 +1470,22 @@ ignore(struct grp *grp, int grplen, struct pat *igcl, int iglen)
 
 		/* specific type required, check for match */
 		switch (gp->type[0]) {
-		case 'y':
+		case NF_FLAG_OK:
 		    if (! pp->y_type) continue;  /* pattern does not apply */
 		    break;
-		case 'm':
+		case NF_FLAG_MODERATED:
 		    if (! pp->m_type) continue;  /* pattern does not apply */
 		    break;
-		case 'n':
+		case NF_FLAG_NOLOCAL:
 		    if (! pp->n_type) continue;  /* pattern does not apply */
 		    break;
-		case 'j':
+		case NF_FLAG_JUNK:
 		    if (! pp->j_type) continue;  /* pattern does not apply */
 		    break;
-		case 'x':
+		case NF_FLAG_IGNORE:
 		    if (! pp->x_type) continue;  /* pattern does not apply */
 		    break;
-		case '=':
+		case NF_FLAG_ALIAS:
 		    if (! pp->eq_type) continue;  /* pattern does not apply */
 		    if (pp->epat != NULL && !uwildmat(&gp->type[1], pp->epat)) {
 			/* equiv pattern doesn't match, patt does not apply */
@@ -2353,7 +2353,7 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 	if (grp[i].hostid == hostid &&
 	    ! IS_ERROR(grp[i].ignore) &&
 	    grp[i].type != NULL &&
-	    grp[i].type[0] == '=') {
+	    grp[i].type[0] == NF_FLAG_ALIAS) {
 	    ++eq_cnt;
 	}
     }
@@ -2371,7 +2371,7 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 	if (grp[i].hostid == hostid &&
 	    ! IS_ERROR(grp[i].ignore) &&
 	    grp[i].type != NULL &&
-	    grp[i].type[0] == '=') {
+	    grp[i].type[0] == NF_FLAG_ALIAS) {
 
 	    /* initialize record */
 	    eqgrp[j].skip = 0;
@@ -2436,7 +2436,7 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
 		}
 
 		/* if =group refers to a valid group, we are done with it */
-		if (grp[i].type != NULL && grp[i].type[0] != '=') {
+		if (grp[i].type != NULL && grp[i].type[0] != NF_FLAG_ALIAS) {
 		    eqgrp[j].skip = 1;
 		    --new_eq_cnt;
 		/* otherwise note the equiv name */
@@ -2569,7 +2569,7 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 	    exit(43);
 	}
 
-	/* if non-empty line doesn't start with 'y' or 'Y', skip command */
+	/* If non-empty line doesn't start with 'y' or 'Y', skip command. */
 	if (buf[0] != 'y' && buf[0] != 'Y' && buf[0] != '\n') {
 	    /* indicate nothing was done */
 	    return 0;

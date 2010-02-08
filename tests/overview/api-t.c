@@ -158,7 +158,7 @@ overview_load(const char *data, struct overview *overview)
     char buffer[4096];
     char *start;
     unsigned long artnum;
-    struct overview_group stats = { 0, 0, 0, 'y' };
+    struct overview_group stats = { 0, 0, 0, NF_FLAG_OK };
     struct overview_data article;
 
     /* Run through the overview data.  Each time we see a group, we update our
@@ -251,8 +251,9 @@ overview_verify_groups(void *data, void *cookie)
              stats.count, group->count);
         verify->status = false;
     }
-    if (stats.flag != 'y') {
-        warn("Flag wrong for %s: %c != y", group->group, stats.flag);
+    if (stats.flag != NF_FLAG_OK) {
+        warn("Flag wrong for %s: %c != %c", group->group, stats.flag,
+             NF_FLAG_OK);
         verify->status = false;
     }
 }

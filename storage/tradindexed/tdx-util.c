@@ -295,7 +295,7 @@ group_rebuild(const char *group, const char *path)
         die("cannot open group index");
     entry = tdx_index_entry(index, group);
     if (entry == NULL) {
-        if (!tdx_index_add(index, group, 1, 0, "y"))
+        if (!tdx_index_add(index, group, 1, 0, NF_FLAG_OK_STRING))
             die("cannot create group %s", group);
         entry = tdx_index_entry(index, group);
         if (entry == NULL)

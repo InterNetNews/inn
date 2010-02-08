@@ -180,7 +180,7 @@ main(void)
 {
     int n, count;
     struct overview *overview;
-    struct overview_group group = { 0, 0, 0, 'y' };
+    struct overview_group group = { 0, 0, 0, NF_FLAG_OK };
     bool value;
     char *article, *wire;
     size_t size;
