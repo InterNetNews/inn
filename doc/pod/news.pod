@@ -64,6 +64,12 @@ have been removed from the syntax.
 
 =item *
 
+The Perl and Python filters for B<innd> now check the message-ID of articles
+arriving through TAKETHIS.  Only CHECK and IHAVE commands previously
+used them.
+
+=item *
+
 Case-insensitive matches are now used for distributions, path identities,
 IMAP commands, header names, and control commands.  (Newsgroups are still
 matched case-sensitively.)  Message-IDs are case-sensitively matched,
