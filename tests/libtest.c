@@ -78,7 +78,7 @@ ok_string(int n, const char *wanted, const char *seen)
 
 
 /*
-**  Takes an expected integer and a seen integer and assumes the test passes
+**  Takes an expected double and a seen double and assumes the test passes
 **  if those two numbers match.
 */
 void
