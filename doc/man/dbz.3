@@ -19,8 +19,8 @@ dbzinit, dbzfresh, dbzagain, dbzclose, dbzexists, dbzfetch, dbzstore, dbzsync, d
 .B "off_t dbzfetch(const HASH key)"
 .B "bool dbzfetch(const HASH key, void *ivalue)"
 .PP
-.B "bool dbzstore(const HASH key, off_t offset)"
-.B "bool dbzstore(const HASH key, void *ivalue)"
+.B "DBZSTORE_RESULT dbzstore(const HASH key, off_t offset)"
+.B "DBZSTORE_RESULT dbzstore(const HASH key, void *ivalue)"
 .PP
 .B "bool dbzsync(void)"
 .PP
