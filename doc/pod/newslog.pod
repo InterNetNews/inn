@@ -223,6 +223,9 @@ rejected group first).  This file is not rotated so as to keep the count
 of the articles posted to newsgroups which are absent from the F<active>
 file of the news server.
 
+Note that I<logtrash> has to be set to true in F<inn.conf> for this file
+to be generated.
+
 =back
 
 Finally, these files are also rotated by B<scanlogs>, if they exist, but
