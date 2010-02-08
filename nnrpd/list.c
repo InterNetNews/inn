@@ -113,7 +113,7 @@ cmd_list_headers(LISTINFO *lp, int ac, char *av[])
     bool range;
 
     range = (ac > 2 && strcasecmp(av[2], "RANGE") == 0);
-    
+
     if (ac > 2 && (strcasecmp(av[2], "MSGID") != 0)
         && !range) {
         Reply("%d Syntax error in arguments\r\n", NNTP_ERR_SYNTAX);
@@ -150,6 +150,10 @@ CMD_list_single(char *group)
             return false;
     }
     if (OVgroupstats(group, &lo, &hi, &count, &flag) && flag != NF_FLAG_ALIAS) {
+        /* When the connected user has the right to locally post, mention it. */
+        if (PERMaccessconf->locpost && (flag == NF_FLAG_NOLOCAL
+                                        || flag == NF_FLAG_IGNORE))
+            flag = NF_FLAG_OK;
         /* When a newsgroup is empty, the high water mark should be one less
          * than the low water mark according to RFC 3977. */
         if (count == 0)
@@ -325,7 +329,10 @@ CMDlist(int ac, char *av[])
                     lo = hi + 1;
 
                 if (flag != NF_FLAG_ALIAS) {
-                    Printf("%s %u %u %u %c\r\n", p, hi, lo, count, flag);
+                    Printf("%s %u %u %u %c\r\n", p, hi, lo, count,
+                           PERMaccessconf->locpost
+                           && (flag == NF_FLAG_NOLOCAL || flag == NF_FLAG_IGNORE)
+                           ? NF_FLAG_OK : flag);
                 } else if (savec != '\0') {
                     *save = savec;
 
@@ -341,6 +348,15 @@ CMDlist(int ac, char *av[])
 
 	if (savec != '\0')
 	    *save = savec;
+
+        if (lp == &INFOactive) {
+            /* When the connected user has the right to locally post, mention it. */
+            if (PERMaccessconf->locpost && (q = strrchr(p, ' ')) != NULL) {
+                q++;
+                if (*q == NF_FLAG_NOLOCAL || *q == NF_FLAG_IGNORE)
+                    *q = NF_FLAG_OK;
+            }
+        }
 
 	Printf("%s\r\n", p);
     }
