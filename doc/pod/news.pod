@@ -276,6 +276,11 @@ the arrival time of an article.
 
 =item *
 
+Fixed a bug in how B<mailpost> handles cross-posting feature.  It was not
+properly detaching from B<sendmail>.  Thanks to Harald Dunkel for the patch.
+
+=item *
+
 B<batcher> has not supported the retrieval of an article with its
 file name for a long time.  The B<-S> flag is therefore removed.
 
@@ -1347,7 +1352,7 @@ Fixed a serious bug in XPAT handling, thanks to Tommy van Leeuwen.
 
 C<configure> now looks for B<sendmail> only in F</usr/sbin> and F</usr/lib>, not on
 the user's path.  This should reduce the need for B<--with-sendmail> if your
-preferred sendmail is in a standard location.
+preferred B<sendmail> is in a standard location.
 
 =item *
 

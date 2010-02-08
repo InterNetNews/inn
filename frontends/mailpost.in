@@ -17,6 +17,7 @@
 use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
+use POSIX qw(setsid);
 use strict;
 
 my $debugging = 0 ;
@@ -382,6 +383,7 @@ dbmopen(%DATABASE, $Database, 0666) || mailArtAndDie ("can't dbmopen $Database: 
 if (defined $DATABASE{$message_id}) {
 
   if (!$opt_c) {
+    syslog("err", "Duplicate article <$message_id>.") if $use_syslog;
     print STDERR "Duplicate article <$message_id>.\n" if -t STDERR;
     exit(1);
   }
@@ -404,11 +406,24 @@ close LOCKFILE ;
 ## For crosspost.
 
 if ($opt_c) {
-  if (fork() != 0) {
+  my $pid = fork();
+  if (!defined($pid)) {
     undef $tmpfile;  # Don't unlink $tmpfile.
     print STDERR "An error occurred during the fork.\n" if -t STDERR;
     exit(1);
   }
+  if ($pid != 0) { # Parent.
+    undef $tmpfile;  # Don't unlink $tmpfile.
+    exit(0);
+  }
+  close STDIN;
+  close STDOUT;
+  close STDERR;
+  setsid();
+  open (STDIN, "</dev/zero");
+  open (STDOUT, ">/dev/null");
+  open (STDERR, ">&STDOUT");
+
   sleep $opt_c ;
 
   open(LOCKFILE, "<$lockfile") || 
@@ -514,7 +529,7 @@ EOF
 	print SENDMAIL while <FILE> ;
 	close FILE ;
     } else {
-	print "No article left to send back.\n" ;
+	print STDERR "No article left to send back.\n" if -t STDERR;
     }
     close SENDMAIL ;
     
