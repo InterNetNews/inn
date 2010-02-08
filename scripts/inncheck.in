@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-##  $Revision$
+##  $Id$
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
@@ -366,7 +366,7 @@ moderators
 %newsfeeds'flags = (
     '<',	'^\d+$',
     '>',	'^\d+$',
-    'A',	'^[cCdefoOp]+$',
+    'A',	'^[cCdefjoOp]+$',
     'B',	'^\d+(/\d+)?$',
     'C',	'^\d+$',
     'F',	'^.+$',
