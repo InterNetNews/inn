@@ -242,7 +242,7 @@ OVcancel(TOKEN token)
     ARTHANDLE *art;
     const char *xref, *xrefend, *group;
     size_t xreflen, i;
-    char *xref_copy, *p, *end;
+    char *xref_copy, *p;
     ARTNUM artnum;
     struct cvector *groups;
 
@@ -276,8 +276,8 @@ OVcancel(TOKEN token)
             continue;
         *p = '\0';
         errno = 0;
-        artnum = strtoul(p + 1, &end, 10);
-        if (artnum == 0 || *end != '\0' || errno == ERANGE)
+        artnum = strtoul(p + 1, NULL, 10);
+        if (artnum == 0 || errno == ERANGE)
             continue;
 
         /* Don't worry about the return status; the article may have already
