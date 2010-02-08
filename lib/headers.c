@@ -86,3 +86,32 @@ skip_cfws(const char *p)
     }
     return p;
 }
+
+
+/*
+**  Skip any amount of FWS (folding whitespace), the RFC 5322 grammar term
+**  for whitespace and CRLF pairs.  We also allow simple newlines since we don't
+**  always deal with wire-format messages.  Note that we do not attempt to
+**  ensure that CRLF or a newline is followed by whitespace.  Returns the new
+**  position of the pointer.
+*/
+const char *
+skip_fws(const char *p)
+{
+    for (; *p != '\0'; p++) {
+        switch (*p) {
+        case ' ':
+        case '\t':
+        case '\n':
+            break;
+        case '\r':
+            if (p[1] != '\n')
+                return p;
+            break;
+        default:
+            return p;
+        }
+    }
+    return p;
+}
+

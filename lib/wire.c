@@ -101,7 +101,7 @@ isheader(const char *line, const char *header, size_t length)
 **  takes us past the end of data, return NULL.
 */
 static char *
-skip_fws(char *text, const char *end)
+skip_fws_bounded(char *text, const char *end)
 {
     char *p;
 
@@ -144,7 +144,7 @@ wire_findheader(const char *article, size_t length, const char *header,
         else if (isheader(p, header, headerlen)) {
             p += headerlen + 2;
             if (stripspaces)
-                p = skip_fws(p, end);
+                p = skip_fws_bounded(p, end);
             if (p == NULL)
                 return NULL;
             if (p >= end || p[0] != '\r' || p[1] != '\n')

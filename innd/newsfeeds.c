@@ -560,7 +560,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    if (*++p && CTYPE(isdigit, *p))
 		sp->Crosscount = atoi(p);
 	    else
-		sp->Crosscount = 1;
+		sp->Crosscount = 2;
 	    break;
 	case 'F':
 	    if (*++p == '\0')

@@ -1066,8 +1066,8 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
       data->Expires = 0;
   }
 
-  /* Colon or whitespace in the Newsgroups header? */
-  /* assumes Newsgroups header is required header */
+  /* Colon or whitespace in the Newsgroups: header? */
+  /* Assumes Newsgroups: header is required header. */
   if ((data->Groupcount =
     NGsplit(HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS),
     &data->Newsgroups)) == 0) {
@@ -2159,16 +2159,30 @@ ARTpost(CHANNEL *cp)
   }
 
   if (HDR_FOUND(HDR__FOLLOWUPTO)) {
-    for (i = 0, p = HDR(HDR__FOLLOWUPTO) ; (p = strchr(p, ',')) != NULL ;
-      i++, p++)
-      continue;
+    /* Count the number of commas without syntactically parsing the header. */
+    for (i = 1, p = HDR(HDR__FOLLOWUPTO) ; (p = strchr(p, ',')) != NULL ;
+         i++, p++) ;
+
     data->Followcount = i;
-  }
-  if (data->Followcount == 0)
+
+    /* When "poster" is the only value, then it is not a followup. */
+    if (i == 1) {
+      /* Skip leading whitespaces. */
+      p = (char *) skip_fws(HDR(HDR__FOLLOWUPTO));
+
+      /* Check for an empty header field or "poster". */
+      if (*p == '\0' || (strncasecmp(p, "poster", 6) == 0
+          && (p[6] == ' ' || p[6] == '\t' || p[6] == '\0'
+              || p[6] == '\r' || p[6] == '\n'))) {
+        data->Followcount = 0;
+      }
+    }
+  } else {
     data->Followcount = data->Groupcount;
+  }
 
   groups = data->Newsgroups.List;
-  /* Parse the Control header. */
+  /* Parse the Control: header. */
   LikeNewgroup = false;
   if (HDR_FOUND(HDR__CONTROL)) {
     IsControl = true;

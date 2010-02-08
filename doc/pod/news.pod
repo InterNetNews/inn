@@ -252,7 +252,7 @@ Fixed a bug in the parsing of the I<ovgrouppat> wildmat in F<inn.conf>
 that prevented overview data from being generated when poisoned groups
 were specified but a latter sub-pattern made the group wanted.  A uwildmat
 expression is now correctly handled, and a potential segfault has been fixed.
-Thanks to S<D. Stussy> for the bug report.
+Thanks to Dieter Stussy for the bug report.
 
 =item *
 
@@ -278,6 +278,13 @@ the arrival time of an article.
 
 Fixed a bug in how B<mailpost> handles cross-posting feature.  It was not
 properly detaching from B<sendmail>.  Thanks to Harald Dunkel for the patch.
+
+=item *
+
+Fixed a bug in the F<newsfeeds> B<C> flag:  the count of followup groups
+was one less than the real number.  When the value of the Followup-To:
+header is C<poster>, it is no longer considered to be a followup.
+Thanks to Dieter Stussy for the patch.
 
 =item *
 
