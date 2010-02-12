@@ -37,14 +37,16 @@ TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
 
 ##  Try to find the path to innfeed's spool.  The default is
 ##  ${PATHSPOOL}/innfeed if not found.
-if [ -f ${INNFEEDCONF} ]; then
+PROCBATCHDIR=
+if [ -f "${INNFEEDCONF}" ]; then
     INNFEEDSPOOL=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${INNFEEDCONF}`
 fi
 test -z "${INNFEEDSPOOL}" && test -d "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
-PROCBATCHDIR="${PATHSPOOL}/${INNFEEDSPOOL}"
+test -n "${INNFEEDSPOOL}" && PROCBATCHDIR="${PATHSPOOL}/${INNFEEDSPOOL}"
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
+
 ##  Renumber all at once, or in steps?  Set to the delay if steps (that
 ##  may take a long time!).
 RENUMBER=
@@ -265,7 +267,7 @@ then
                 done
                 if [ "$FOUND" = "false" ]
                 then
-                    ${PATHBIN}/procbatch -qmu $file
+                    ${PATHBIN}/procbatch -qmu -t ${DIRECTORY} $file
                 fi
             done
         fi
