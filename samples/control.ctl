@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2009-08-04
+##  Last modified: 2010-01-17
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -167,7 +167,7 @@ rmgroup:greg@*.ucns.uga.edu:ahn.*:doit
 # URL: http://news.aioe.org/hierarchy/
 # Admin group: aioe.system
 # Key URL: http://news.aioe.org/hierarchy/aioe.txt
-# Key fingerprint = 2203 1AAC 51E7 C7FD 664F  1D80 90DF 6C71 2322 A7F8
+# Key fingerprint: 2203 1AAC 51E7 C7FD 664F  1D80 90DF 6C71 2322 A7F8
 # Syncable server: nntp.aioe.org
 # *PGP*   See comment at top of file.
 newgroup:*:aioe.*:drop
@@ -333,7 +333,7 @@ rmgroup:news@*netuse.de:bda.*:doit
 # URL: http://usenet.be/
 # Admin group: be.announce
 # Key URL: http://usenet.be/be.announce.newgroups.asc
-# Key fingerprint = 30 2A 45 94 70 DE 1F D5  81 8C 58 64 D2 F7 08 71
+# Key fingerprint: 30 2A 45 94 70 DE 1F D5  81 8C 58 64 D2 F7 08 71
 # *PGP*   See comment at top of file.
 newgroup:*:be.*:drop
 rmgroup:*:be.*:drop
@@ -341,8 +341,12 @@ checkgroups:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 newgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 rmgroup:group-admin@usenet.be:be.*:verify-be.announce.newgroups
 
-## BELWUE (Baden-Wuerttemberg, Germany)
+## BELWUE (Landeshochschulnetz Baden-Wuerttemberg, Germany)
+# Contact: news@belwue.de
+# URL: http://www.belwue.de/produkte/dienste/dienste-usenet1.html
 # Admin group: belwue.infos
+# Key URL: http://www.belwue.de/fileadmin/belwue/Dokumente/Newsserver/belwue-hir-control.asc
+# Key fingerprint: 2E FF 2B 8A 89 1F E5 AA  6F 89 67 24 50 B5 42 D9
 # *PGP*   See comment at top of file.
 newgroup:*:belwue.*:drop
 rmgroup:*:belwue.*:drop
@@ -355,12 +359,6 @@ checkgroups:news@*ibl.bm:bermuda.*:doit
 newgroup:news@*ibl.bm:bermuda.*:doit
 rmgroup:news@*ibl.bm:bermuda.*:doit
 
-## BES (*PRIVATE* -- Beijing Electron Spectrometer)
-# Contact: news@news.stanford.edu
-# For private use only, contact the above address for information.
-newgroup:news@news.stanford.edu:bes.*:mail
-rmgroup:news@news.stanford.edu:bes.*:doit
-
 ## BEST (*LOCAL* -- Best Internet Communications, Inc.)
 # Contact: news@best.net
 # For local use only, contact the above address for information.
@@ -370,7 +368,7 @@ rmgroup:*:best.*:doit
 ## BIONET (Biology Network)
 # URL: http://www.bio.net/
 # Admin group: bionet.general
-# Key fingerprint = EB C0 F1 BA 26 0B C6 D6  FB 8D ED C4 AE 5D 10 54
+# Key fingerprint: EB C0 F1 BA 26 0B C6 D6  FB 8D ED C4 AE 5D 10 54
 # *PGP*   See comment at top of file.
 newgroup:*:bionet.*:drop
 rmgroup:*:bionet.*:drop
@@ -405,6 +403,9 @@ newgroup:control@news.bloomington.in.us:blgtn.*:doit
 rmgroup:control@news.bloomington.in.us:blgtn.*:doit
 
 ## BLN (Berlin, Germany)
+# Contact: news@fu-berlin.de
+# URL: ftp://ftp.fu-berlin.de/doc/news/bln/bln
+# Admin group: bln.net.news
 checkgroups:news@*fu-berlin.de:bln.*:doit
 newgroup:news@*fu-berlin.de:bln.*:doit
 rmgroup:news@*fu-berlin.de:bln.*:doit
@@ -487,7 +488,7 @@ rmgroup:News.Support@cern.ch:cern.*:doit
 # Contact: ch-news-admin@use-net.ch
 # URL: http://www.use-net.ch/Usenet/
 # Key URL: http://www.use-net.ch/Usenet/adminkey.html
-# Key fingerprint = 71 80 D6 8C A7 DE 2C 70  62 4A 48 6E D9 96 02 DF
+# Key fingerprint: 71 80 D6 8C A7 DE 2C 70  62 4A 48 6E D9 96 02 DF
 # *PGP*   See comment at top of file.
 newgroup:*:ch.*:drop
 rmgroup:*:ch.*:drop
@@ -564,7 +565,7 @@ rmgroup:*:cmu.*:doit
 ## CN (China)
 # URL: http://news.yaako.com/
 # Admin group: cn.announce
-# Key fingerprint = 62 97 EE 33 F7 16 25 C1  A4 9E 47 BA C5 3E 5E 9E
+# Key fingerprint: 62 97 EE 33 F7 16 25 C1  A4 9E 47 BA C5 3E 5E 9E
 # *PGP*   See comment at top of file.
 newgroup:*:cn.*:drop
 rmgroup:*:cn.*:drop
@@ -597,7 +598,7 @@ rmgroup:news@supernews.net:codewarrior.*:doit
 # Contact: board@big-8.org
 # URL: http://www.big-8.org/
 # Admin group: news.announce.newgroups
-# Key fingerprint = F5 35 58 D3 55 64 10 14  07 C6 95 53 13 6F D4 07
+# Key fingerprint: F5 35 58 D3 55 64 10 14  07 C6 95 53 13 6F D4 07
 # *PGP*   See comment at top of file.
 newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
 rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
@@ -659,7 +660,7 @@ rmgroup:news@mattress.atww.org:dc.*:doit
 # URL: http://www.dana.de/mod/
 # Admin group: de.admin.news.announce
 # Key URL: http://www.dana.de/mod/pgp/dana.asc
-# Key fingerprint = 5B B0 52 88 BF 55 19 4F  66 7D C2 AE 16 26 28 25
+# Key fingerprint: 5B B0 52 88 BF 55 19 4F  66 7D C2 AE 16 26 28 25
 # *PGP*   See comment at top of file.
 newgroup:*:de.*:drop
 rmgroup:*:de.*:drop
@@ -693,7 +694,7 @@ rmgroup:eric@*cirr.com:dfw.*:doit
 ## DK (Denmark)
 # URL: http://www.usenet.dk/dk-admin/
 # Key URL: http://www.usenet.dk/dk-admin/pubkey.html
-# Key fingerprint = 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
+# Key fingerprint: 7C B2 C7 50 F3 7D 5D 73  8C EE 2E 3F 55 80 72 FF
 # *PGP*   See comment at top of file.
 newgroup:*:dk.*:drop
 rmgroup:*:dk.*:drop
@@ -756,7 +757,7 @@ rmgroup:news@doc.dpc.ehime-u.ac.jp:ehime-u.*:doit
 ## ENGLAND (England)
 # Contact: admin@england.news-admin.org
 # Admin group: england.news.policy
-# Key fingerprint = DA 3E C2 01 46 E5 61 CB  A2 43 09 CA 13 6D 31 1F
+# Key fingerprint: DA 3E C2 01 46 E5 61 CB  A2 43 09 CA 13 6D 31 1F
 # *PGP*   See comment at top of file.
 newgroup:*:england.*:drop
 rmgroup:*:england.*:drop
@@ -791,7 +792,7 @@ rmgroup:mod-ena@ennui.org:esp.*:verify-esp.news.administracion
 # Contact: news@eternal-september.org
 # URL: http://www.eternal-september.org/
 # Key URL: http://www.eternal-september.org/control/pgpkey.txt
-# Key fingerprint = A05F 5FA4 D43E 7250 24CE  F4D4 10F3 7C12 9E5D D866
+# Key fingerprint: B7 9A 2B C6 7D 5A FF 79  18 E2 AC 91 4B C1 25 F1
 # *PGP*   See comment at top of file.
 newgroup:*:eternal-september.*:drop
 rmgroup:*:eternal-september.*:drop
@@ -808,7 +809,7 @@ rmgroup:news@noc.eu.net:eunet.*:doit
 # URL: http://www.europa.usenet.eu.org/
 # Admin group: europa.usenet.admin
 # Key URL: http://www.europa.usenet.eu.org/pgp/index.html
-# Key fingerprint = 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
+# Key fingerprint: 3A 05 A8 49 FB 16 29 25  75 E3 DE BB 69 E0 1D B4
 # *PGP*   See comment at top of file.
 newgroup:*:europa.*:drop
 rmgroup:*:europa.*:drop
@@ -816,23 +817,33 @@ checkgroups:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 newgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 
-## EXAMPLE (Bogus hierarchy reserved for standards documents)
-newgroup:*:example.*:mail
-rmgroup:*:example.*:doit
+## EXAMPLE (*RESERVED* -- For use in examples)
+#
+# The example.* hierarchy is reserved by RFC 5536 and MUST NOT be used
+# for regular newsgroups.  It is intended for use in examples, standards
+# documents, and similar places to avoid clashes with real newsgroup
+# names.
+#
+newgroup:*:example.*:drop
+rmgroup:*:example.*:drop
 
 ## FA (Gated mailing lists)
-# This hierarchy was removed in the "Great Renaming" of 1988.
+#
+# This hierarchy was removed in the Great Renaming of 1988.
 #
 # A site in Norway is currently (as of 2002) gatewaying various mailing
 # lists into fa.* newsgroups, but that site does not appear to be issuing
 # any control messages for those groups.
 #
-newgroup:*:fa.*:mail
-rmgroup:*:fa.*:doit
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
 
 ## FFM (Frankfurt/M., Germany)
 # URL: http://ffm.arcornews.de/
+# Admin group: ffm.admin
 # Key URL: ftp://ftp.arcor-online.net/pub/news/PGPKEY.FFM
+# Key fingerprint: 53 A0 82 62 6F C7 81 C9  CF 53 AB 00 A3 F8 C2 11
 # *PGP*   See comment at top of file.
 newgroup:*:ffm.*:drop
 rmgroup:*:ffm.*:drop
@@ -841,9 +852,10 @@ newgroup:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
 rmgroup:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
 
 ## FIDO (FidoNet)
-checkgroups:root@mbh.org:fido.*:doit
-newgroup:root@mbh.org:fido.*:doit
-rmgroup:root@mbh.org:fido.*:doit
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
 
 ## FIDO.BELG (Belgian FidoNet)
 # Admin group: fido.belg.news
@@ -993,7 +1005,7 @@ rmgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announ
 # URL: http://news.grisbi.org/
 # Admin group: grisbi.admin
 # Key URL: http://news.grisbi.org/public-key.asc
-# Key fingerprint = EB35 0C03 0080 BD2A 7E0C  A4C9 F2C6 2A3D C86C C6E1
+# Key fingerprint: EB35 0C03 0080 BD2A 7E0C  A4C9 F2C6 2A3D C86C C6E1
 # *PGP*   See comment at top of file.
 newgroup:*:grisbi.*:drop
 rmgroup:*:grisbi.*:drop
@@ -1024,7 +1036,7 @@ rmgroup:news@zhaum.xs4all.nl:hacktic.*:verify-news@zhaum.xs4all.nl
 # URL: http://www.steering-group.net/hamburg/
 # Admin group: hamburg.koordination
 # Key URL: http://www.steering-group.net/hamburg/hamburg.koordination.txt
-# Key fingerprint = 3E E7 0C BB 6E 01 94 EE  45 6F C5 57 F4 B9 54 8E
+# Key fingerprint: 3E E7 0C BB 6E 01 94 EE  45 6F C5 57 F4 B9 54 8E
 # *PGP*   See comment at top of file.
 newgroup:*:hamburg.*:drop
 rmgroup:*:hamburg.*:drop
@@ -1040,7 +1052,7 @@ rmgroup:news@*dcss.mcmaster.ca:hamilton.*:doit
 ## HAMSTER (Hamster, a Win32 news and mail proxy server)
 # Contact: hamster-contact@snafu.de
 # Admin group: hamster.de.config
-# Key fingerprint = 12 75 A9 42 8A D6 1F 77  6A CF B4 0C 79 15 5F 93
+# Key fingerprint: 12 75 A9 42 8A D6 1F 77  6A CF B4 0C 79 15 5F 93
 # *PGP*   See comment at top of file.
 newgroup:*:hamster.*:drop
 rmgroup:*:hamster.*:drop
@@ -1077,7 +1089,7 @@ rmgroup:stevemackie@gmail.com:hfx.*:doit
 ## HIV (HIVNET Foundation, for HIV+/AIDS information)
 # Contact: news@hivnet.org
 # Admin group: hiv.config
-# Key fingerprint = 5D D6 0E DC 1E 2D EA 0B  B0 56 4D D6 52 53 D7 A4
+# Key fingerprint: 5D D6 0E DC 1E 2D EA 0B  B0 56 4D D6 52 53 D7 A4
 # *PGP*   See comment at top of file.
 newgroup:*:hiv.*:drop
 rmgroup:*:hiv.*:drop
@@ -1104,7 +1116,7 @@ rmgroup:news@academ.com:houston.*:verify-houston.usenet.config
 # URL: http://newsfeed.carnet.hr/control/
 # Admin group: hr.news.admin
 # Key URL: http://newsfeed.carnet.hr/control/key.txt
-# Key fingerprint = 0EE5 74FB 1C40 7ADB 0AAC  A52F 7192 1BA3 ED63 AD9A
+# Key fingerprint: 0EE5 74FB 1C40 7ADB 0AAC  A52F 7192 1BA3 ED63 AD9A
 # Syncable server: news.carnet.hr
 # *PGP*   See comment at top of file.
 newgroup:*:hr.*:drop
@@ -1121,7 +1133,7 @@ rmgroup:newsmaster@carnet.hr:hr.*:verify-newsmaster@carnet.hr
 # Contact: news-admin@humanityquest.com
 # URL: http://www.humanityquest.com/projects/newsgroups/
 # Key URL: http://www.humanityquest.com/projects/newsgroups/PGP.htm
-# Key fingerprint = BA3D B306 B6F5 52AA BA8F 32F0 8C4F 5040 16F9 C046
+# Key fingerprint: BA3D B306 B6F5 52AA BA8F 32F0 8C4F 5040 16F9 C046
 # *PGP*   See comment at top of file.
 newgroup:*:humanityquest.*:drop
 rmgroup:*:humanityquest.*:drop
@@ -1130,7 +1142,7 @@ newgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin
 rmgroup:news-admin@humanityquest.com:humanityquest.*:verify-humanityquest.admin.config
 
 ## HUN (Hungary)
-# URL: http://www.sztaki.hu/~kissg/news/hiteles.html
+# URL: http://gatling.ikk.sztaki.hu/~kissg/news/
 # Admin group: hun.admin.news
 # Key URL: http://gatling.ikk.sztaki.hu/~kissg/news/hun.admin.news.asc
 # *PGP*   See comment at top of file.
@@ -1189,7 +1201,7 @@ rmgroup:rjoyner@uiuc.edu:info.*:doit
 # URL: http://www.usenet.is/
 # Admin group: is.isnet
 # Key URL: http://www.usenet.is/group-admin.asc
-# Key fingerprint = 33 32 8D 46 1E 5E 1C 7F  48 60 8E 72 E5 3E CA EA
+# Key fingerprint: 33 32 8D 46 1E 5E 1C 7F  48 60 8E 72 E5 3E CA EA
 # *PGP*   See comment at top of file.
 newgroup:*:is.*:drop
 rmgroup:*:is.*:drop
@@ -1223,7 +1235,7 @@ rmgroup:news@news.isu.edu.tw:isu.*:verify-news@news.isu.edu.tw
 # URL: http://www.news.nic.it/
 # Admin group: it.news.annunci
 # Key URL: http://www.news.nic.it/pgp.txt
-# Key fingerprint = 94 A4 F7 B5 46 96 D6 C7  A6 73 F2 98 C4 8C D0 E0
+# Key fingerprint: 94 A4 F7 B5 46 96 D6 C7  A6 73 F2 98 C4 8C D0 E0
 # *PGP*   See comment at top of file.
 newgroup:*:it.*:drop
 rmgroup:*:it.*:drop
@@ -1251,7 +1263,7 @@ rmgroup:*:it-alt.*:drop
 # URL: http://news.cineca.it/italia/
 # Admin group: italia.announce.newgroups
 # Key URL: http://news.cineca.it/italia/italia-pgp.txt
-# Key fingerprint = 0F BB 71 62 DA 5D 5D B8  D5 86 FC 28 02 67 1A 6B
+# Key fingerprint: 0F BB 71 62 DA 5D 5D B8  D5 86 FC 28 02 67 1A 6B
 # *PGP*   See comment at top of file.
 newgroup:*:italia.*:drop
 rmgroup:*:italia.*:drop
@@ -1271,7 +1283,7 @@ rmgroup:root@usenet.ucs.indiana.edu:iu.*:doit
 # URL: http://www.asahi-net.or.jp/~AE5T-KSN/japan-e.html
 # Admin group: japan.admin.announce
 # Key URL: http://grex.cyberspace.org/~tt/japan.admin.announce.asc
-# Key fingerprint = 6A FA 19 47 69 1B 10 74  38 53 4B 1B D8 BA 3E 85
+# Key fingerprint: 6A FA 19 47 69 1B 10 74  38 53 4B 1B D8 BA 3E 85
 # *PGP*   See comment at top of file.
 newgroup:*:japan.*:drop
 rmgroup:*:japan.*:drop
@@ -1300,8 +1312,9 @@ rmgroup:braultr@*csmanoirs.qc.ca:k12.*:doit
 ## KA (*PRIVATE* -- Karlsruhe, Germany)
 # Contact: usenet@karlsruhe.org
 # URL: http://www.karlsruhe.org/
+# Admin group: ka.admin
 # Key URL: http://www.karlsruhe.org/pubkey-news.karlsruhe.org.asc
-# Key fingerprint = DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
+# Key fingerprint: DE 19 BB 25 76 19 81 17  F0 67 D2 23 E8 C8 7C 90
 # For private use only, contact the above address for information.
 # *PGP*   See comment at top of file.
 newgroup:*:ka.*:drop
@@ -1320,6 +1333,7 @@ newgroup:*@*.jp:kanto.*:doit
 rmgroup:ty@kamoi.imasy.or.jp:kanto.*:verify-kanto.news.network
 
 ## KASSEL (Kassel, Germany)
+# Admin group: kassel.admin
 # *PGP*   See comment at top of file.
 newgroup:*:kassel.*:drop
 rmgroup:*:kassel.*:drop
@@ -1341,10 +1355,12 @@ newgroup:usenet@film.rlss.okayama-u.ac.jp:kgk.*:doit
 rmgroup:usenet@film.rlss.okayama-u.ac.jp:kgk.*:doit
 
 ## KIEL (Kiel, Germany)
-# URL: http://news.koehntopp.de/kiel/
-checkgroups:kris@koehntopp.de:kiel.*:doit
-newgroup:kris@koehntopp.de:kiel.*:doit
-rmgroup:kris@koehntopp.de:kiel.*:doit
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
+#
+# Admin group: kiel.sysop
 
 ## KRST (*LOCAL* -- University of Oslo, Norway)
 # Contact: jani@ifi.uio.no
@@ -1370,7 +1386,7 @@ rmgroup:*@*.law.vill.edu:law.*:doit
 ## LINUX (Gated Linux mailing lists)
 # Contact: Marco d'Itri <md@linux.it>
 # Admin group: linux.admin.news
-# Key fingerprint = 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
+# Key fingerprint: 81 B3 27 99 4F CE 32 D1  1B C9 01 0D BB B3 2E 41
 # *PGP*   See comment at top of file.
 newgroup:*:linux.*:drop
 rmgroup:*:linux.*:drop
@@ -1378,10 +1394,15 @@ checkgroups:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 newgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 rmgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 
-## LOCAL (Local-only groups)
-# It is not really a good idea for sites to use these since they may occur
-# on many unconnected sites.
-newgroup:*:local.*:mail
+## LOCAL (*RESERVED* -- Local-only groups)
+#
+# Historically reserved for local groups and occasionally configured for
+# such groups in news software.  It is not really a good idea for sites
+# to use this hierarchy for local groups, since they may occur on many
+# unconnected sites and may confuse news readers that read at multiple
+# sites.
+#
+newgroup:*:local.*:drop
 rmgroup:*:local.*:drop
 
 ## LUEBECK (Luebeck, Germany)
@@ -1396,7 +1417,7 @@ rmgroup:usenet@zybrkat.org:luebeck.*:doit
 # URL: http://www.malta.news-admin.org/
 # Admin group: malta.config
 # Key URL: http://www.cis.um.edu.mt/news-malta/PGP.PUBLICKEY
-# Key fingerprint = 20 17 01 5C F0 D0 1A 42  E4 13 30 58 0B 14 48 A6
+# Key fingerprint: 20 17 01 5C F0 D0 1A 42  E4 13 30 58 0B 14 48 A6
 # *PGP*   See comment at top of file.
 newgroup:*:malta.*:drop
 rmgroup:*:malta.*:drop
@@ -1412,7 +1433,7 @@ rmgroup:*:manawatu.*:doit
 
 ## MAUS (MausNet, Germany)
 # Admin group: maus.info
-# Key fingerprint = 82 52 C7 70 26 B9 72 A1  37 98 55 98 3F 26 62 3E
+# Key fingerprint: 82 52 C7 70 26 B9 72 A1  37 98 55 98 3F 26 62 3E
 # *PGP*   See comment at top of file.
 newgroup:*:maus.*:drop
 rmgroup:*:maus.*:drop
@@ -1459,7 +1480,7 @@ rmgroup:ausadmin@aus.news-admin.org:melb.*:verify-ausadmin@aus.news-admin.org
 ## MENSA (The Mensa Organisation)
 # Contact: usenet@newsgate.mensa.org
 # Admin group: mensa.config
-# Key fingerprint = 52B9 3963 85D9 0806 8E19  7344 973C 5005 DC7D B7A7
+# Key fingerprint: 52B9 3963 85D9 0806 8E19  7344 973C 5005 DC7D B7A7
 # *PGP*   See comment at top of file.
 newgroup:*:mensa.*:drop
 rmgroup:*:mensa.*:drop
@@ -1495,7 +1516,7 @@ rmgroup:scs@lokkur.dexter.mi.us:mi.*:doit
 # URL: http://www.trigofacile.com/divers/usenet/clefs/index.htm
 # Admin group: microsoft.public.news.server
 # Key URL: http://www.trigofacile.com/divers/usenet/clefs/pgpkey-microsoft.asc
-# Key fingerprint = DF70 5FC9 F615 D52E 02DB  A3CB 63A9 8D13 E60E 2FAA
+# Key fingerprint: DF70 5FC9 F615 D52E 02DB  A3CB 63A9 8D13 E60E 2FAA
 # Syncable server: msnews.microsoft.com
 # *PGP*   See comment at top of file.
 newgroup:*:microsoft.*:drop
@@ -1509,7 +1530,7 @@ rmgroup:control-microsoft@trigofacile.com:microsoft.*:verify-control-microsoft@t
 # URL: http://usenet.mil.wi.us/
 # Admin group: milw.config
 # Key URL: http://usenet.mil.wi.us/pgpkey
-# Key fingerprint = 6E 9B 9F 70 98 AB 9C E5  C3 C0 05 82 21 5B F4 9E
+# Key fingerprint: 6E 9B 9F 70 98 AB 9C E5  C3 C0 05 82 21 5B F4 9E
 # *PGP*   See comment at top of file.
 newgroup:*:milw.*:drop
 rmgroup:*:milw.*:drop
@@ -1524,7 +1545,8 @@ rmgroup:*:mod.*:doit
 
 ## MUC (Munchen [Munich], Germany)
 # Admin group: muc.admin
-# Key fingerprint = 43 C7 0E 7C 45 C7 06 E0  BD 6F 76 CE 07 39 5E 66
+# Key URL: http://home.arcor.de/andreas-barth/muc-admin.html
+# Key fingerprint: 43 C7 0E 7C 45 C7 06 E0  BD 6F 76 CE 07 39 5E 66
 # *PGP*   See comment at top of file.
 newgroup:*:muc.*:drop
 rmgroup:*:muc.*:drop
@@ -1551,12 +1573,9 @@ rmgroup:*:nasa.*:doit
 
 ## NC (North Carolina, USA)
 #
-# Tim Seaver <tas@bellsouth.net> says he hasn't had any dealings with nc.*
-# for over two years and the hierarchy is basically "open to anyone who
-# wants it."
-#
-# newgroup:tas@ncren.net:nc.*:doit
-# rmgroup:tas@ncren.net:nc.*:doit
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
 
 ## NCF (*LOCAL* -- National Capital Freenet, Ottawa, Ontario, Canada)
 # Contact: news@freenet.carleton.ca
@@ -1577,9 +1596,12 @@ newgroup:*:ncu.*:mail
 rmgroup:*:ncu.*:doit
 
 ## NERSC (National Energy Research Scientific Computing Center)
-# Contact: <usenet@nersc.gov>
-# newgroup:*:nersc.*:mail
-# rmgroup:*:nersc.*:doit
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
+#
+# Contact: usenet@nersc.gov
 
 ## NET (*HISTORIC* -- Usenet 2)
 #
@@ -1595,7 +1617,7 @@ rmgroup:*:ncu.*:doit
 # URL: http://www.usenet2.org
 # Admin group: net.config
 # Key URL: http://www.usenet2.org/control@usenet2.org.asc
-# Key fingerprint = D7 D3 5C DB 18 6A 29 79  BF 74 D4 58 A3 78 9D 22
+# Key fingerprint: D7 D3 5C DB 18 6A 29 79  BF 74 D4 58 A3 78 9D 22
 # *PGP*   See comment at top of file.
 newgroup:*:net.*:drop
 rmgroup:*:net.*:drop
@@ -1613,7 +1635,7 @@ rmgroup:*:netins.*:doit
 # Contact: news@netscape.com
 # URL: http://www.mozilla.org/community.html
 # Admin group: netscape.public.admin
-# Key fingerprint = B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
+# Key fingerprint: B7 80 55 12 1F 9C 17 0B  86 66 AD 3B DB 68 35 EC
 # *PGP*   See comment at top of file.
 newgroup:*:netscape.*:drop
 rmgroup:*:netscape.*:drop
@@ -1657,7 +1679,7 @@ rmgroup:ktomita@jade.dti.ne.jp:nihon.*:doit
 # URL: http://www.gcd.org/news/nippon/
 # Admin group: nippon.news.group
 # Key URL: http://www.gcd.org/news/nippon/
-# Key fingerprint = BC CF 15 CD B1 3C DF B3  C3 DE 35 6F 2F F7 46 DB
+# Key fingerprint: BC CF 15 CD B1 3C DF B3  C3 DE 35 6F 2F F7 46 DB
 # For private use only.
 # *PGP*   See comment at top of file.
 newgroup:*:nippon.*:drop
@@ -1676,7 +1698,7 @@ rmgroup:nj-admin@gunslinger.net:nj.*:doit
 # Contact: nl-admin@nic.surfnet.nl
 # URL: http://nl.news-admin.org/info/nladmin.html
 # Admin group: nl.newsgroups
-# Key fingerprint = 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
+# Key fingerprint: 45 20 0B D5 A1 21 EA 7C  EF B2 95 6C 25 75 4D 27
 # *PGP*   See comment at top of file.
 newgroup:*:nl.*:drop
 rmgroup:*:nl.*:drop
@@ -1685,7 +1707,7 @@ newgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 rmgroup:nl-admin@nic.surfnet.nl:nl.*:verify-nl.newsgroups
 
 ## NL-ALT (Alternative Netherlands groups)
-# Key fingerprint = 6B 62 EB 53 4D 5D 2F 96  35 D9 C8 9C B0 65 0E 4C
+# Key fingerprint: 6B 62 EB 53 4D 5D 2F 96  35 D9 C8 9C B0 65 0E 4C
 # *PGP*   See comment at top of file.
 checkgroups:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 newgroup:*:nl-alt.*:doit
@@ -1693,9 +1715,9 @@ rmgroup:nl-alt-janitor@surfer.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 rmgroup:news@kink.xs4all.nl:nl-alt.*:verify-nl-alt.config.admin
 
 ## NLO (Open Source / Free Software, hosted by nl.linux.org)
-# URL: http://news.nl.linux.org/doc/nlo.html
-# Key URL: http://news.nl.linux.org/doc/nlo-3.html#ss3.1
-# Key fingerprint = 63 DC B2 51 0A F3 DD 72  C2 BD C6 FD C1 C5 44 CF
+# URL: http://mail.nl.linux.org/
+# Key fingerprint: 63 DC B2 51 0A F3 DD 72  C2 BD C6 FD C1 C5 44 CF
+# Syncable server: news.nl.linux.org
 # *PGP*   See comment at top of file.
 newgroup:*:nlo.*:drop
 rmgroup:*:nlo.*:drop
@@ -1727,16 +1749,17 @@ newgroup:*@*.no:no.alt.*:doit
 rmgroup:control@usenet.no:no.alt.*:verify-no-hir-control
 
 ## NORD (Northern Germany)
-# thilo@own.deceiver.org no longer a valid address
-# newgroup:thilo@own.deceiver.org:nord.*:doit
-# rmgroup:thilo@own.deceiver.org:nord.*:doit
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
 
 ## NRW (Northrine-Westfalia, Germany)
 # Contact: moderator@nrw.usenetverwaltung.de
 # URL: http://nrw.usenetverwaltung.de/
 # Admin group: nrw.admin.announce
 # Key URL: http://nrw.usenetverwaltung.de/pgp/nrw.asc
-# Key fingerprint = 13 4A 80 FE D6 34 B4 64  AF 32 08 3F 62 0E B1 E2
+# Key fingerprint: 13 4A 80 FE D6 34 B4 64  AF 32 08 3F 62 0E B1 E2
 # *PGP*   See comment at top of file.
 newgroup:*:nrw.*:drop
 rmgroup:*:nrw.*:drop
@@ -1767,7 +1790,7 @@ rmgroup:perry@piermont.com:nyc.*:doit
 # Contact: root@usenet.net.nz
 # URL: http://www.faqs.org/faqs/usenet/nz-news-hierarchy
 # Admin group: nz.net.announce
-# Key fingerprint = 07 DF 48 AA D0 ED AA 88  16 70 C5 91 65 3D 1A 28
+# Key fingerprint: 07 DF 48 AA D0 ED AA 88  16 70 C5 91 65 3D 1A 28
 # *PGP*   See comment at top of file.
 newgroup:*:nz.*:drop
 rmgroup:*:nz.*:drop
@@ -1870,6 +1893,15 @@ rmgroup:news@bnr.ca:ott.*:doit
 rmgroup:news@ferret.ocunix.on.ca:ott.*:doit
 rmgroup:news@nortel.ca:ott.*:doit
 
+## OWL (Ostwestfalen-Lippe, Germany)
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
+#
+# Contact: news@owl.de
+# Syncable server: news.owl.de
+
 ## PA (Pennsylvania, USA)
 # URL: http://www.netcom.com/~rb1000/pa_hierarchy/
 checkgroups:fxp@epix.net:pa.*:doit
@@ -1889,7 +1921,7 @@ rmgroup:postmaster@upb.de:pbinfo.*:verify-news@uni-paderborn.de
 # Contact: newsadmin@perl.org
 # URL: http://www.nntp.perl.org/about/
 # Key URL: http://www.nntp.perl.org/about/newsadmin@perl.org.pgp
-# Key fingerprint = 438F D1BA 4DCC 3B1A BED8  2BCC 3298 8A7D 8B2A CFBB
+# Key fingerprint: 438F D1BA 4DCC 3B1A BED8  2BCC 3298 8A7D 8B2A CFBB
 # *PGP*   See comment at top of file.
 newgroup:*:perl.*:drop
 rmgroup:*:perl.*:drop
@@ -2018,7 +2050,7 @@ checkgroups:control@saar-admin-news.de:saar.*:verify-saar-control
 newgroup:control@saar-admin-news.de:saar.*:verify-saar-control
 rmgroup:control@saar-admin-news.de:saar.*:verify-saar-control
 
-## SACHSNET (German)
+## SACHSNET (Sachsen [Saxony], Germany)
 checkgroups:root@lusatia.de:sachsnet.*:doit
 newgroup:root@lusatia.de:sachsnet.*:doit
 rmgroup:root@lusatia.de:sachsnet.*:doit
@@ -2047,7 +2079,7 @@ rmgroup:steveh@grafex.sbay.org:sbay.*:doit
 # URL: http://home.pages.de/~schule-admin/
 # Admin group: schule.admin
 # Key URL: http://www.afaik.de/usenet/admin/schule/control/schule.asc
-# Key fingerprint = 64 06 F0 AE E1 46 85 0C  BD CA 0E 53 8B 1E 73 D2
+# Key fingerprint: 64 06 F0 AE E1 46 85 0C  BD CA 0E 53 8B 1E 73 D2
 # *PGP*   See comment at top of file.
 newgroup:*:schule.*:drop
 rmgroup:*:schule.*:drop
@@ -2086,7 +2118,7 @@ rmgroup:*:sdsu.*:doit
 ## SE (Sweden)
 # Contact: usenet@usenet-se.net
 # Admin group: se.internet.news.meddelanden
-# Key fingerprint = 68 03 F0 FD 0C C3 4E 69  6F 0D 0C 60 3C 58 63 96
+# Key fingerprint: 68 03 F0 FD 0C C3 4E 69  6F 0D 0C 60 3C 58 63 96
 # *PGP*   See comment at top of file.
 newgroup:*:se.*:drop
 rmgroup:*:se.*:drop
@@ -2106,7 +2138,7 @@ rmgroup:graham@ee.washington.edu:seattle.*:doit
 # Contact: sfnet@cs.tut.fi
 # URL: http://www.cs.tut.fi/sfnet/
 # Admin group: sfnet.ryhmat+listat
-# Key fingerprint = DE79 33C2 D359 D128 44E5  6A0C B6E3 0E53 6933 A636
+# Key fingerprint: DE79 33C2 D359 D128 44E5  6A0C B6E3 0E53 6933 A636
 # *PGP*   See comment at top of file.
 newgroup:*:sfnet.*:drop
 rmgroup:*:sfnet.*:drop
@@ -2141,12 +2173,6 @@ checkgroups:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 newgroup:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 rmgroup:uhlar@ccnews.ke.sanet.sk:sk.*:doit
 
-## SLAC (*PRIVATE* -- Stanford Linear Accelerator Center, Stanford, USA)
-# Contact: news@news.stanford.edu
-# For private use only, contact the above address for information.
-newgroup:news@news.stanford.edu:slac.*:mail
-rmgroup:news@news.stanford.edu:slac.*:doit
-
 ## SLO (San Luis Obispo, CA)
 checkgroups:news@punk.net:slo.*:doit
 newgroup:news@punk.net:slo.*:doit
@@ -2171,7 +2197,7 @@ rmgroup:sparre@sslug.se:sslug.*:doit
 ## STAROFFICE (StarOffice business suite, Sun Microsystems, Inc.)
 # Contact: news@starnews.sun.com
 # Admin group: staroffice.admin
-# Key fingerprint = C6 3E 81 6F 2A 19 D3 84  72 51 F9 1B E3 B9 B2 C9
+# Key fingerprint: C6 3E 81 6F 2A 19 D3 84  72 51 F9 1B E3 B9 B2 C9
 # Syncable server: starnews.sun.com
 # *PGP*   See comment at top of file.
 newgroup:*:staroffice.*:drop
@@ -2181,8 +2207,11 @@ newgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 rmgroup:news@stardivision.de:staroffice.*:verify-staroffice.admin
 
 ## STGT (Stuttgart, Germany)
+# Contact: news@news.uni-stuttgart.de
 # URL: http://news.uni-stuttgart.de/hierarchie/stgt/
+# Admin group: stgt.net
 # Key URL: http://news.uni-stuttgart.de/hierarchie/stgt/stgt-control.txt
+# Key fingerprint: BA A4 0A 54 8F F5 F5 1E  72 48 51 AE 09 51 DE 44
 # *PGP*   See comment at top of file.
 newgroup:*:stgt.*:drop
 rmgroup:*:stgt.*:drop
@@ -2227,11 +2256,16 @@ checkgroups:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 newgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 rmgroup:ausadmin@aus.news-admin.org:syd.*:verify-ausadmin@aus.news-admin.org
 
-## SZAF (*PRIVATE* -- German ?)
+## SZAF (*PRIVATE* -- Szafe im Netz)
+# Contact: hirtenrat@szaf.org
 # Admin group: szaf.admin
-# For private use only.
+# Key URL: http://news.szaf.org/szaf/szaf-key.txt
+# For private use only, contact the above address for information.
+# *PGP*   See comment at top of file.
+newgroup:*:szaf.*:drop
+rmgroup:*:szaf.*:drop
 newgroup:hirtenrat@szaf.org:szaf.*:mail
-rmgroup:hirtenrat@szaf.org:szaf.*:doit
+rmgroup:hirtenrat@szaf.org:szaf.*:verify-Hirtenrat
 
 ## T-NETZ (*DEFUNCT* -- Germany)
 # This hierarchy is defunct.  Please remove it.
@@ -2267,14 +2301,21 @@ rmgroup:*:tele.*:doit
 newgroup:*:termvakt.*:mail
 rmgroup:*:termvakt.*:doit
 
-## TEST (Local test hierarchy)
-# It is not really a good idea for sites to use these since they may occur
+## TEST (*RESERVED* -- Local test hierarchy)
+#
+# Historically used as a local test hierarchy.  It is not a good idea to
+# use this hierarchy name on any production server since they may occur
 # on many unconnected sites.
-newgroup:*:test.*:mail
-rmgroup:*:test.*:mail
+#
+newgroup:*:test.*:drop
+rmgroup:*:test.*:drop
 
 ## THUR (Thuringia, Germany)
-# Key fingerprint = 7E 3D 73 13 93 D4 CA 78  39 DE 3C E7 37 EE 22 F1
+# Contact: usenet@thur.de
+# URL: http://www.thur.de/thurnet/old/thurnews.html
+# Admin group: thur.net.news.groups
+# Key fingerprint: 7E 3D 73 13 93 D4 CA 78  39 DE 3C E7 37 EE 22 F1
+# Syncable server: news.thur.de
 # *PGP*   See comment at top of file.
 newgroup:*:thur.*:drop
 rmgroup:*:thur.*:drop
@@ -2330,7 +2371,7 @@ rmgroup:usenet@academ.com:tx.*:doit
 # Contact: Chris van den Berg <usenet@agate.berkeley.edu>
 # URL: http://www.net.berkeley.edu/usenet/
 # Key URL: http://www.net.berkeley.edu/usenet/usenet.asc
-# Key fingerprint = 96 B8 8E 9A 98 09 37 7D  0E EC 81 88 DB 90 29 BF
+# Key fingerprint: 96 B8 8E 9A 98 09 37 7D  0E EC 81 88 DB 90 29 BF
 # *PGP*   See comment at top of file.
 newgroup:*:ucb.*:drop
 rmgroup:*:ucb.*:drop
@@ -2347,17 +2388,16 @@ rmgroup:usenet@mark.ucdavis.edu:ucd.*:doit
 rmgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
 
 ## UFRA (Unterfranken, Deutschland)
-# Contact: news@mayn.de
-# URL: http://www.mayn.de/users/news/
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
+#
 # Admin group: ufra.admin
-# Key fingerprint = F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
-# Syncable server: news.mayn.de (contact news@mayn.de if permission denied)
+# Key fingerprint: F7 AD 96 D8 7A 3F 7E 84  02 0C 83 9A DB 8F EB B8
 # *PGP*   See comment at top of file.
 newgroup:*:ufra.*:drop
 rmgroup:*:ufra.*:drop
-checkgroups:news@mayn.de:ufra.*:verify-news.mayn.de
-newgroup:news@mayn.de:ufra.*:verify-news.mayn.de
-rmgroup:news@mayn.de:ufra.*:verify-news.mayn.de
 
 ## UIUC (*DEFUNCT* -- University of Illinois at Urbana-Champaign, USA)
 # Contact: news@ks.uiuc.edu
@@ -2380,6 +2420,13 @@ rmgroup:control@usenet.org.uk:uk.*:verify-uk.net.news.announce
 checkgroups:ay@sita.kiev.ua:ukr.*:doit
 newgroup:ay@sita.kiev.ua:ukr.*:doit
 rmgroup:ay@sita.kiev.ua:ukr.*:doit
+
+## ULM (*PRIVATE* -- Ulm, Germany)
+# Admin group: ulm.misc
+# Syncable server: news.in-ulm.de
+# For private use only.
+newgroup:*:ulm.*:mail
+rmgroup:*:ulm.*:doit
 
 ## UMICH (University of Michigan, USA)
 checkgroups:*@*.umich.edu:umich.*:doit
@@ -2418,7 +2465,7 @@ rmgroup:newsadmin@news.uoregon.edu:uo.*:doit
 ## US (United States of America)
 # Contact: us-control@lists.killfile.org
 # Admin group: us.config
-# Key fingerprint = BB96 EB2C CFD0 75C8 E9DE  C2C2 1DA2 9D87 B73C AF1B
+# Key fingerprint: BB96 EB2C CFD0 75C8 E9DE  C2C2 1DA2 9D87 B73C AF1B
 # *PGP*   See comment at top of file.
 newgroup:*:us.*:drop
 rmgroup:*:us.*:drop
@@ -2524,7 +2571,7 @@ rmgroup:kohe-t@*wakayama-u.ac.jp:wadai.*:doit
 # URL: http://www.wales-usenet.org/
 # Admin group: wales.usenet.config
 # Key URL: http://www.wales-usenet.org/english/newsadmin.txt
-# Key fingerprint = 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
+# Key fingerprint: 2D 9E DE DF 12 DA 34 5C  49 E1 EE 28 E3 AB 0D AD
 # *PGP*   See comment at top of file.
 newgroup:*:wales.*:drop
 rmgroup:*:wales.*:drop
@@ -2571,7 +2618,7 @@ rmgroup:*@*.wustl.edu:wu.*:doit
 # URL: http://www.x-privat.org/
 # Admin group: x-privat.info
 # Key URL: http://www.x-privat.org/dmitry.asc
-# Key fingerprint = 9B 0A 7E 68 27 80 C7 96  47 6B 03 90 51 05 68 43
+# Key fingerprint: 9B 0A 7E 68 27 80 C7 96  47 6B 03 90 51 05 68 43
 # *PGP*   See comment at top of file.
 newgroup:*:x-privat.*:drop
 rmgroup:*:x-privat.*:drop
