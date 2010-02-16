@@ -118,6 +118,12 @@ when I<wanttrash> is also used).
 
 =item *
 
+The B<procbatchdir> keyword has been added to B<news.daily> so as to specify
+the backlog directories of B<innfeed> when several instances of B<innfeed>
+are running or when its configuration file is not the default one.
+
+=item *
+
 A new feature has been added to B<sm>.  When the B<-c> flag is used,
 it shows a clear, decoded form of the storage API token.  This
 was previously done by the contrib B<showtoken> script developed

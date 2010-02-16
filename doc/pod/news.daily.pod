@@ -9,7 +9,7 @@ B<news.daily> [B<delayrm>] [B<expctl>=I<path>] [B<expdir>=I<path>]
 [B<lowmark>] [B<mailto>=I<address>] [B<noexpire>] [B<noexpireover>]
 [B<noexplog>] [B<nologs>] [B<nomail>] [B<noprocbatch>] [B<norenumber>]
 [B<norm>] [B<norotate>] [B<nostat>] [B<notdaily>] [B<postexec>=I<program>]
-[B<tmpdir>=I<path>] [I</path/to/a/program>]
+[B<procbatchdir>=I<path>] [B<tmpdir>=I<path>] [I</path/to/a/program>]
 
 =head1 DESCRIPTION
 
@@ -220,6 +220,14 @@ This keyword implies B<nologs>.
 
 The program specified by the given path I<program> is executed just after all expiration
 is done.  Multiple programs may be specified; they will be invoked in order.
+
+=item B<procbatchdir>=I<path>
+
+B<news.daily> tries to find the backlog directory of B<innfeed> in
+F<innfeed.conf>.  In case several instances of B<innfeed> are running or
+when its configuration file is not the default one, the B<procbatchdir>
+keyword can be used to specify the path of the backlog directory.
+This keyword can be used more than once in the command-line.
 
 =item B<tmpdir>=I<path>
 
