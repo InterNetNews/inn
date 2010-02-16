@@ -24,22 +24,29 @@
 ##      nostat               Do not run innstat
 ##      notdaily             Not a daily run, and therefore implies nologs
 ##      postexec=xxx         Path to a program to run after expiring
+##      procbatchdir=xxx     Directory in which to run procbatch
 ##      tmpdir=xxx           Working directory for `sort' and such
 ##      /full/path           Path to a program to run before expiring
 
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat
+INNFEEDCONF=${PATHETC}/innfeed.conf
 HOSTNAME=`hostname`
 DATE=`date`
 TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
 
 ##  Try to find the path to innfeed's spool.  The default is
 ##  ${PATHSPOOL}/innfeed if not found.
-INNFEEDSPOOL=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
-test -z "${INNFEEDSPOOL}" && test -f "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
+PROCBATCHDIR=
+if [ -f "${INNFEEDCONF}" ]; then
+    INNFEEDSPOOL=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${INNFEEDCONF}`
+fi
+test -z "${INNFEEDSPOOL}" && test -d "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
+test -n "${INNFEEDSPOOL}" && PROCBATCHDIR="${PATHSPOOL}/${INNFEEDSPOOL}"
 
 ##  If your expire does not pause or throttle innd, enable this next line:
 #MESSAGE="Expiration script $$"
+
 ##  Renumber all at once, or in steps?  Set to the delay if steps (that
 ##  may take a long time!).
 RENUMBER=
@@ -109,6 +116,9 @@ do
     Xexpdir=*)
 	EXPDIR=`expr "${I}" : 'expdir=\(.*\)'`
 	;;
+    Xprocbatchdir=*)
+        PROCBATCHDIR="${PROCBATCHDIR} `expr "${I}" : 'procbatchdir=\(.*\)'`"
+        ;;
     Xtmpdir=*)
 	TMPDIR=`expr "${I}" : 'tmpdir=\(.*\)'`
 	;;
@@ -231,29 +241,35 @@ if ${DOMAIL} ; then
     exec 3>&1 >${TEMP} 2>&1
 fi
 
-if [ "${DOPROCBATCH}" = "true" ] && [ -d "${PATHSPOOL}/${INNFEEDSPOOL}" ]
+if [ "${DOPROCBATCH}" = "true" ]
 then
-    cd "${PATHSPOOL}/${INNFEEDSPOOL}"
-
-    # Find the PIDs of innfeed.
-    INNFEEDLOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
-
-    # Process files like "innfeed-dropped.A001703" where
-    # 1703 is not in $INNFEEDLOCKS.
-    for file in `find . -name "innfeed-dropped*" -print`
+    for DIRECTORY in ${PROCBATCHDIR}
     do
-        PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
-        FOUND=false
-        for INNFEEDLOCK in $INNFEEDLOCKS
-        do
-            if [ "$PID" = "$INNFEEDLOCK" ]
-            then
-                FOUND=true
-            fi
-        done
-        if [ "$FOUND" = "false" ]
+        if [ -d "${DIRECTORY}" ]
         then
-            ${PATHBIN}/procbatch -qmu $file
+            cd "${DIRECTORY}"
+
+            # Find the PIDs of innfeed.
+            INNFEEDLOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
+
+            # Process files like "innfeed-dropped.A001703" where
+            # 1703 is not in $INNFEEDLOCKS.
+            for file in `find . -name "innfeed-dropped*" -print`
+            do
+                PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
+                FOUND=false
+                for INNFEEDLOCK in $INNFEEDLOCKS
+                do
+                    if [ "$PID" = "$INNFEEDLOCK" ]
+                    then
+                        FOUND=true
+                    fi
+                done
+                if [ "$FOUND" = "false" ]
+                then
+                    ${PATHBIN}/procbatch -qmu -t ${DIRECTORY} $file
+                fi
+            done
         fi
     done
 fi

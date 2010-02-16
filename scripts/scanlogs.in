@@ -22,12 +22,15 @@ ACTIVEFILE=${ACTIVE}
 ##  Where these programs, if used, write their logs.
 ##  We also have to find innfeed's log file.
 CONTROLBATCH=${MOST_LOGS}/controlbatch.log
-INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${PATHETC}/innfeed.conf`
+INNFEEDCONF=${PATHETC}/innfeed.conf
+if [ -f "${INNFEEDCONF}" ]; then
+    INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${INNFEEDCONF}`
+fi
 INNFEED=
 for F in "${INNFEEDLOG}" ; do
     test -f "${MOST_LOGS}/${F}" && INNFEED="${INNFEED} ${MOST_LOGS}/${F}"
 done
-test -z "${INNFEED}" && test -f ${MOST_LOGS}/innfeed.log && INNFEED="${MOST_LOGS}/innfeed.log"
+test -z "${INNFEED}" && test -f "${MOST_LOGS}/innfeed.log" && INNFEED="${MOST_LOGS}/innfeed.log"
 NNTPSEND=${MOST_LOGS}/nntpsend.log
 PERLNOCEM=${MOST_LOGS}/perl-nocem.log
 SENDIHAVE=${MOST_LOGS}/send-ihave.log
