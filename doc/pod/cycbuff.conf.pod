@@ -147,9 +147,17 @@ when accessing the cycbuff.
 Use block devices directly.  If your operating system allows you to call
 mmap() on block devices (Solaris and recent versions of Linux do, FreeBSD
 at last report does not), this is the recommended method since you can
-avoid all of the native file system overhead.  Note, however, that each
-cycbuff cannot be larger than S<2 GB> with this method, so if you need a lot
-of spool space, you may have to go back to disk files.
+avoid all of the native file system overhead.
+
+Note that some OSes do not support files larger than S<2 GB>, which will
+limit the size you can make a single cycbuff, but you can still combine
+many cycbuffs into each metacycbuff.  Very old versions of Linux (before 2.4
+kernels, that raised the limit to S<2 TB>) are known to have this limitation;
+FreeBSD does not.  Some OSes that support large files don't support direct
+access to block devices for large partitions (Solaris prior to S<Solaris
+7>, or not running in 64-bit mode, is in this category); on those OSes,
+if you want cycbuffs over S<2 GB>, you'll have to use regular files.
+If in doubt, keep your cycbuffs smaller than S<2 GB>.
 
 Partition the disk to make each partition equal to or smaller than S<2 GB>.
 If you're using Solaris, set up your partitions to avoid the first
