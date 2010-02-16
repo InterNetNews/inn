@@ -1067,17 +1067,9 @@ other storage methods, such as tradspool.)
 
 For each metacycbuff, you now need to determine how many cycbuffs will
 make up the metacycbuff, the size of those cycbuffs, and where they will
-be stored.  Some OSes do not support files larger than S<2 GB>, which will
-limit the size you can make a single cycbuff, but you can still combine
-many cycbuffs into each metacycbuff.  Older versions of Linux are known to
-have this limitation; FreeBSD does not.  Some OSes that support large
-files don't support direct access to block devices for large partitions
-(Solaris prior to S<Solaris 7>, or not running in 64-bit mode, is in this
-category); on those OSes, if you want cycbuffs over S<2 GB>, you'll have to
-use regular files.  If in doubt, keep your cycbuffs smaller than S<2 GB>.
-Also, when laying out your cycbuffs, you will want to try to arrange them
-across as many physical disks as possible (or use a striped disk array and
-put them all on that).
+be stored.  Also, when laying out your cycbuffs, you will want to try to
+arrange them across as many physical disks as possible (or use a striped
+disk array and put them all on that).
 
 In order to use any cycbuff larger than S<2 GB>, you need to build INN with
 the B<--enable-largefiles> option.  See L<Installing INN> for more
