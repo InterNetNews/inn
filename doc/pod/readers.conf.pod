@@ -408,7 +408,10 @@ The client may post articles.
 
 The client may inject articles with IHAVE.  Note that in order to inject
 articles with the IHAVE command, the user must also have POST permission
-(the C<P> option).
+(the C<P> option).  Articles injected with IHAVE are treated as though
+they were injected with POST, that is to say such articles must not
+have been previously injected (they must not contain headers like
+Injection-Info:).
 
 =item A
 

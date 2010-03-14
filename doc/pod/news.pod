@@ -84,8 +84,10 @@ at injection time.
 
 =item *
 
-B<nnrpd> no longer differentiates IHAVE from POST.  Articles injected with
-IHAVE are now treated as though they were injected with POST.
+B<nnrpd> no longer differentiates IHAVE from POST.  Articles injected
+with IHAVE are now treated as though they were injected with POST.
+It means that if the previous behaviour of IHAVE was expected, B<innd>
+should handle itself the connection instead of B<nnrpd>.
 
 =back
 
