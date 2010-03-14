@@ -272,7 +272,7 @@ sub checkgroupname {
         return "`all' or `ctl' used as name component" if /^(?:all|ctl)$/;
 #        return 'Name component longer than 30 characters' if length $_ > 30;
         return 'Uppercase letter(s) in name' if /[A-Z]/;
-        return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
+#        return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
         # Sigh, c++ etc. must be allowed.
 #        return 'Repeated punctuation in name' if /--|__|\+\+./;
 #        return 'Repeated component(s) in name' if ($i + 2 <= $#components
