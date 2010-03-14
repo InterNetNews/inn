@@ -231,6 +231,7 @@ tmpdir		= @tmpdir@
 
 PATHNEWS	= $(prefix)
 PATHBIN		= $(bindir)
+PATHDATASHARE	= $(datarootdir)
 PATHDOC		= $(docdir)
 PATHETC		= $(sysconfdir)
 PATHMAN		= $(mandir)
