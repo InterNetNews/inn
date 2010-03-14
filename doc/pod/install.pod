@@ -649,7 +649,7 @@ programs should be answered in them.  You may want to add I<pathnews>/share/man 
 your MANPATH environment variable; otherwise, you may have to use a
 command like:
 
-    man -M I<pathnews in inn.conf>/share/man inn.conf
+    man -M <pathnews in inn.conf>/share/man inn.conf
 
 to see the inn.conf(5) man page (for example).
 

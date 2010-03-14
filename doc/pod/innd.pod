@@ -402,12 +402,12 @@ question mark if the information is not available.
 
 The fourth field indicates whether the article was accepted or not.  If it
 is a plus sign, then the article was accepted.  If it is the letter C<j>,
-then the article was accepted, but all of the newsgroups to which the
-article was posted were set to status C<j> in the F<active> file (or not listed
-in the F<active> file and I<wanttrash> was set in F<inn.conf>) so the article
-was filed into the C<junk> newsgroup.  In both of these cases, the article
-has been accepted and the C<site ...> field contains the space-separated
-list of sites to which the article is being sent.
+then the article was accepted, providing all of the newsgroups to which
+the article was posted were set to status C<j> in the F<active> file (or
+not listed in the F<active> file and I<wanttrash> was set in F<inn.conf>),
+and then the article was filed into the C<junk> newsgroup.  In both of these
+cases, the article has been accepted and the C<site ...> field contains
+the space-separated list of sites to which the article is being sent.
 
 If the fourth field is the letter C<c>, then a cancel message was accepted
 before the original article arrived, and a history entry for the cancelled
