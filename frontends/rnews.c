@@ -621,7 +621,7 @@ Unspool(void)
     struct dirent       *ep;
     bool	ok;
     struct stat		Sb;
-    char		hostname[10];
+    char		hostname[SMBUF];
     int			fd;
     size_t		i;
     char                *uuhost;
