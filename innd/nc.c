@@ -271,14 +271,12 @@ NCpostit(CHANNEL *cp)
   }
   cp->Reported++;
   if (cp->Reported >= innconf->incominglogfrequency) {
-    snprintf(buff, sizeof(buff),
-             "accepted size %.0f duplicate size %.0f rejected size %.0f",
-             cp->Size, cp->DuplicateSize, cp->RejectSize);
     syslog(L_NOTICE,
-           "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld %s",
+           "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld"
+           " accepted size %.0f duplicate size %.0f rejected size %.0f",
            CHANname(cp), (long)(Now.tv_sec - cp->Started),
            cp->Received, cp->Refused, cp->Rejected,
-           cp->Duplicate, buff);
+           cp->Duplicate, cp->Size, cp->DuplicateSize, cp->RejectSize);
     cp->Reported = 0;
   }
 
