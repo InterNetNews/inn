@@ -197,9 +197,12 @@ tdx_cache_insert(struct cache *cache, HASH hash, struct group_data *data)
 void
 tdx_cache_delete(struct cache *cache, HASH hash)
 {
-    if (!hash_delete(cache->hashtable, &hash))
+    if (!hash_delete(cache->hashtable, &hash)) {
         warn("tradindexed: unable to remove cache entry for %s",
              HashToText(hash));
+    } else {
+        cache->count--;
+    }
 }
 
 
