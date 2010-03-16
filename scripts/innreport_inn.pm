@@ -2384,7 +2384,8 @@ sub adjust($$) {
   if (%nnrpd_groups) {
     foreach my $key (keys (%nnrpd_connect)) {
       unless ($nnrpd_groups{$key} || $nnrpd_post_ok{$key} ||
-	      $nnrpd_articles{$key}) {
+              $nnrpd_post_rej{$key} || $nnrpd_post_error{$key} ||
+              $nnrpd_articles{$key}) {
 	$nnrpd_curious{$key} = $nnrpd_connect{$key};
 	delete $nnrpd_connect{$key};
       }
