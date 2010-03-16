@@ -274,10 +274,24 @@ NCpostit(CHANNEL *cp)
     syslog(L_NOTICE,
            "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld duplicate %ld"
            " accepted size %.0f duplicate size %.0f rejected size %.0f",
-           CHANname(cp), (long)(Now.tv_sec - cp->Started),
-           cp->Received, cp->Refused, cp->Rejected,
-           cp->Duplicate, cp->Size, cp->DuplicateSize, cp->RejectSize);
+           CHANname(cp),
+           (long)(Now.tv_sec - cp->Started_checkpoint),
+           cp->Received - cp->Received_checkpoint,
+           cp->Refused - cp->Refused_checkpoint,
+           cp->Rejected - cp->Rejected_checkpoint,
+           cp->Duplicate - cp->Duplicate_checkpoint,
+           cp->Size - cp->Size_checkpoint,
+           cp->DuplicateSize - cp->DuplicateSize_checkpoint,
+           cp->RejectSize - cp->RejectSize_checkpoint);
     cp->Reported = 0;
+    cp->Started_checkpoint = Now.tv_sec;
+    cp->Received_checkpoint = cp->Received;
+    cp->Refused_checkpoint = cp->Refused;
+    cp->Rejected_checkpoint = cp->Rejected;
+    cp->Duplicate_checkpoint = cp->Duplicate;
+    cp->Size_checkpoint = cp->Size;
+    cp->DuplicateSize_checkpoint = cp->DuplicateSize;
+    cp->RejectSize_checkpoint = cp->RejectSize;
   }
 
   cp->State = CSgetcmd;

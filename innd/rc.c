@@ -540,6 +540,7 @@ RCreader(CHANNEL *cp)
 	    RCrejectwritedone);
 	memcpy(&remotetable[i].Address, &remote,
                sizeof(remotetable[i].Address));
+        /* Use cp->Rejected for the response code in CHANclose. */
 	new->Rejected = reject_val;
 	RCHANremove(new);
 	WCHANset(new, reject_message, (int)strlen(reject_message));
@@ -612,6 +613,7 @@ RCreader(CHANNEL *cp)
         new = CHANcreate(fd, CTreject, CSwritegoodbye, RCrejectreader,
             RCrejectwritedone);
 	memcpy(&new->Address, &remote, sizeof(new->Address));
+        /* Use cp->Rejected for the response code in CHANclose. */
         new->Rejected = reject_val;
         RCHANremove(new);
         WCHANset(new, reject_message, (int)strlen(reject_message));

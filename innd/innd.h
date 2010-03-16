@@ -339,16 +339,20 @@ typedef struct _CHANNEL {
   bool                 CanAuthenticate; /* Can use AUTHINFO? */
   bool                 IsAuthenticated; /* No need to use AUTHINFO? */
   bool                 HasSentUsername; /* Has used AUTHINFO USER? */
-  unsigned long	       Duplicate;
+  unsigned long        Duplicate;
+  unsigned long        Duplicate_checkpoint;
   unsigned long	       Unwanted_s;
   unsigned long	       Unwanted_f;
   unsigned long	       Unwanted_d;
   unsigned long	       Unwanted_g;
   unsigned long	       Unwanted_u;
   unsigned long	       Unwanted_o;
-  float		       Size;
-  float		       DuplicateSize;
-  float		       RejectSize;
+  float                Size;
+  float                Size_checkpoint;
+  float                DuplicateSize;
+  float                DuplicateSize_checkpoint;
+  float                RejectSize;
+  float                RejectSize_checkpoint;
   unsigned long	       Check;
   unsigned long	       Check_send;
   unsigned long	       Check_deferred;
@@ -363,20 +367,24 @@ typedef struct _CHANNEL {
   unsigned long	       Ihave_SendIt;
   unsigned long	       Ihave_Cybercan;
   unsigned long        Reported;
-  long		       Received;
-  long		       Refused;
-  long		       Rejected;
+  unsigned long        Received;
+  unsigned long        Received_checkpoint;
+  unsigned long        Refused;
+  unsigned long        Refused_checkpoint;
+  unsigned long        Rejected;
+  unsigned long        Rejected_checkpoint;
   unsigned long        BadWrites;
   unsigned long        BadReads;
   unsigned long        BlockedWrites;
-  int		       BadCommands;
+  unsigned int         BadCommands;
   time_t	       LastActive;
   time_t	       NextLog;
   struct sockaddr_storage Address;
   innd_callback_func   Reader;
   innd_callback_func   WriteDone;
   time_t	       Waketime;
-  time_t	       Started;
+  time_t               Started;
+  time_t               Started_checkpoint;
   innd_callback_func   Waker;
   void		    *  Argument;
   void		    *  Event;
