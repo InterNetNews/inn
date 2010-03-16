@@ -212,6 +212,7 @@ our %nnrpd_dom_bytes;
 our %nnrpd_dom_connect;
 our %nnrpd_dom_groups;
 our %nnrpd_dom_no_permission;
+our %nnrpd_dom_post_error;
 our %nnrpd_dom_post_ok;
 our %nnrpd_dom_post_rej;
 our %nnrpd_dom_reset_peer;
@@ -1508,7 +1509,10 @@ sub collect($$$$$$) {
     # post/ihave failed
     if ($left =~ /(\S+) (post|ihave) failed (.*)$/o) {
       my ($cust, $error) = ($1, $3);
-      $nnrpd_post_error{$error}++;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_post_error{$dom}++;
+      $nnrpd_post_error{$cust}++;
       return 1;
     }
     # post ok
