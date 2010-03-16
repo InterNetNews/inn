@@ -2073,20 +2073,15 @@ sub adjust($$) {
 	  my $dom = &host2dom($serv);
 	  $nnrpd_dom_connect{$dom} -= $nnrpd_connect{$serv}
 	    if defined $nnrpd_dom_connect{$dom};
-	  $nnrpd_dom_groups{$dom}  -= $nnrpd_groups{$serv}
-	    if defined $nnrpd_dom_groups{$dom};
 	  $nnrpd_dom_times{$dom}   -= $nnrpd_times{$serv}
 	    if defined $nnrpd_dom_times{$dom};
 
-          # The message "bad_auth" can occur more then once per session.
+          # The message "bad_auth" can occur more than once per session.
           # Subtracting nnrpd_no_permission from nnrpd_connect is
           # broken and can yield negative values for nnrpd_connect.
 	  $nnrpd_connect{$serv} -= $nnrpd_no_permission{$serv};
 
-	  $nnrpd_groups{$serv} -= $nnrpd_no_permission{$serv}
-	    if defined $nnrpd_groups{$serv};
-
-          # Perl considers negative values to be true. Previously the
+          # Perl considers negative values to be true.  Previously the
           # hash entry was deleted only if the value was exactly 0.
           delete $nnrpd_connect{$serv} unless $nnrpd_connect{$serv} > 0;
 
@@ -2094,7 +2089,7 @@ sub adjust($$) {
 	  delete $nnrpd_times{$serv}   unless $nnrpd_times{$serv};
 	  delete $nnrpd_usr_times{$serv}   unless $nnrpd_usr_times{$serv};
 	  delete $nnrpd_sys_times{$serv}   unless $nnrpd_sys_times{$serv};
-	  delete $nnrpd_dom_connect{$dom} unless $nnrpd_dom_connect{$dom};
+	  delete $nnrpd_dom_connect{$dom} unless $nnrpd_dom_connect{$dom} > 0;
 	  delete $nnrpd_dom_groups{$dom}  unless $nnrpd_dom_groups{$dom};
 	  delete $nnrpd_dom_times{$dom}   unless $nnrpd_dom_times{$dom};
 	  $c--;
