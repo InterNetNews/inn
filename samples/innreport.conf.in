@@ -1057,8 +1057,8 @@ section innd_python {
 
 section nocem {
         title   "NoCeM on Spool:";
-	data    "%nocem_goodsigs";
-	sort    "$nocem_goodsigs{$b} <=> $nocem_goodsigs{$a}";
+        data    "%nocem_totalids";
+        sort    "$nocem_goodsigs{$b} <=> $nocem_goodsigs{$a}";
 	column {
 		name		"Id";
                	format		"%-47.47s";
@@ -1699,7 +1699,7 @@ section innxmit_connect {
 
 section innxmit_volume {
 	title	"Outgoing Feeds (innxmit) by Volume:";
-	data	"%innxmit_accepted_size";
+        data    "%innxmit_times";
 	sort	"$innxmit_accepted_size{$b} <=> $innxmit_accepted_size{$a}";
 	numbering true;
 	column {
@@ -2072,8 +2072,8 @@ section rnews_misc {
 
 section nnrpd_groups {
         title   "NNRP readership statistics:";
-	data    "%nnrpd_articles";
-	sort    "$nnrpd_articles{$b} <=> $nnrpd_articles{$a}";
+        data    "%nnrpd_connect";
+        sort    "$nnrpd_articles{$b} <=> $nnrpd_articles{$a}";
 	numbering true;
         column {
                 name          "System";
