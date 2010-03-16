@@ -1499,8 +1499,14 @@ sub collect($$$$$$) {
     # group
     if ($left =~ /(\S+) group (\S+) (\d+)$/o) {
       my ($cust, $group, $num) = ($1, $2, $3);
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+
       if ($num) {
 	$nnrpd_group{$group} += $num;
+        $nnrpd_groups{$cust}++;
+        $nnrpd_dom_groups{$dom}++;
+
 	my ($hierarchy) = $group =~ /^([^\.]+).*$/o;
 	$nnrpd_hierarchy{$hierarchy} += $num;
       }
@@ -1589,8 +1595,6 @@ sub collect($$$$$$) {
         $nnrpd_connect{$cust}++;
         $nnrpd_dom_connect{$dom}++;
       }
-      $nnrpd_groups{$cust} += $groups;
-      $nnrpd_dom_groups{$dom} += $groups;
       $nnrpd_articles{$cust} += $articles;
       $nnrpd_dom_articles{$dom} += $articles;
       return 1;
