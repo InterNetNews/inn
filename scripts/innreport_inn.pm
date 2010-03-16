@@ -1674,14 +1674,14 @@ sub collect($$$$$$) {
       $nnrpd_gethostbyaddr{$msg}++;
       return 1;
     }
-    # cant gethostbyaddr
-    if ($left =~ /\? cant gethostbyaddr (\S+) .*$/o) {
+    # can't gethostbyaddr
+    if ($left =~ /\? can\'t gethostbyaddr (\S+) .*$/o) {
       my $ip = $1;
       $nnrpd_gethostbyaddr{$ip}++;
       return 1;
     }
-    # cant getpeername
-    if ($left =~ /\? cant getpeername/o) {
+    # can't getpeername
+    if ($left =~ /\? can\'t getpeername/o) {
       # $nnrpd_getpeername++;
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
