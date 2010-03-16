@@ -324,6 +324,15 @@ qualified domain name.  Thanks to Petr Novopashenniy for the bug report.
 
 =item *
 
+Changed how B<innreport> takes into account B<innd> and B<innfeed> checkpoint
+messages.  Previously, the fact that connections can be open for days led
+to produce skewed numbers on how many articles had been received or sent.
+The count is now more accurate and, for each connection of a feed, only
+depends on I<incominglogfrequency> in F<inn.conf> and I<stats-period>
+in F<innfeed.conf>.
+
+=item *
+
 Fixed a bug in B<nnrpd> Perl filter:  a header field whose name begins with
 the name of a standardized header field was not properly taken into account.
 

@@ -195,6 +195,7 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
     cp->Reader = reader;
     cp->WriteDone = write_done;
     cp->Started = Now.tv_sec;
+    cp->Started_checkpoint = Now.tv_sec;
     cp->LastActive = Now.tv_sec;
     cp->In = in;
     cp->Out = out;
@@ -286,6 +287,17 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
         notice("%s closed seconds %ld cancels %ld", name,
                (long)(Now.tv_sec - cp->Started), cp->Received);
     else {
+        notice("%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld"
+               " duplicate %ld accepted size %.0f duplicate size %.0f"
+               " rejected size %.0f", name,
+               (long)(Now.tv_sec - cp->Started_checkpoint),
+               cp->Received - cp->Received_checkpoint,
+               cp->Refused - cp->Refused_checkpoint,
+               cp->Rejected - cp->Rejected_checkpoint,
+               cp->Duplicate - cp->Duplicate_checkpoint,
+               cp->Size - cp->Size_checkpoint,
+               cp->DuplicateSize - cp->DuplicateSize_checkpoint,
+               cp->RejectSize - cp->RejectSize_checkpoint);
         notice("%s closed seconds %ld accepted %ld refused %ld rejected %ld"
                " duplicate %ld accepted size %.0f duplicate size %.0f"
                " rejected size %.0f", name, (long)(Now.tv_sec - cp->Started),
@@ -376,7 +388,7 @@ CHANclose(CHANNEL *cp, const char *name)
         if (cp->Type == CTnntp)
             CHANclose_nntp(cp, name);
         else if (cp->Type == CTreject)
-            notice("%s %ld", name, cp->Rejected);
+            notice("%s %ld", name, cp->Rejected); /* Use cp->Rejected for the response code. */
         else if (cp->Out.left)
             warn("%s closed lost %lu", name, (unsigned long) cp->Out.left);
         else
