@@ -390,7 +390,6 @@ if test x"$ac_cv_header_stdc" = xno ; then
 fi
 
 dnl Special checks for header files.
-AC_HEADER_DIRENT
 AC_HEADER_STDBOOL
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
@@ -421,7 +420,6 @@ INN_C_C99_VAMACROS
 INN_C_GNU_VAMACROS
 
 dnl Checks for structures.
-AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff])

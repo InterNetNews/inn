@@ -27,13 +27,8 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
-#if defined (HAVE_DIRENT_H)
 #include <dirent.h>
 typedef struct dirent DIRENTRY ;
-#else
-#include <sys/dir.h>
-typedef struct direct DIRENTRY ;
-#endif
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
