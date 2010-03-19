@@ -430,7 +430,7 @@ static bool ovbuffread_config(void) {
     while (1) {
       if (*from && *from == '\\' && *(from + 1) == '\n') {
 	from += 2;	/* Skip past backslash+newline */
-	while (*from && isspace((int)*from))
+	while (*from && isspace((unsigned char) *from))
 	  from++;
 	continue;
       }
@@ -517,7 +517,7 @@ static off_t hex2offt(char *hex) {
 	break;
       }
       n += (*hex - diff);
-      if (isalnum((int)*(hex + 1)))
+      if (isalnum((unsigned char) *(hex + 1)))
 	n <<= 4;
     }
     return n;
@@ -2374,7 +2374,7 @@ main(int argc, char **argv) {
   }
   fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n", GROUPheader->freelist.recno, GROUPheader->freelist.recno);
   group = argv[1];
-  if (CTYPE(isdigit, *group)) {
+  if (isdigit((unsigned char) *group)) {
     gloc.recno = atoi(group);
     ge = &GROUPentries[gloc.recno];
     fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n", ge->count, gloc.recno, (long) ge->expired);

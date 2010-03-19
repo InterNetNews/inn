@@ -196,10 +196,10 @@ bool getNntpResponse (char *p, int *code, char **rest)
   if (p == NULL)
     return false ;
   
-  while (*p && CTYPE (isspace, *p))
+  while (*p && isspace((unsigned char) *p))
     p++ ;
 
-  while (*p && CTYPE (isdigit, *p))
+  while (*p && isdigit((unsigned char) *p))
     {
       digits++ ;
       cd = (cd * 10) + (*p - '0') ;
@@ -212,7 +212,7 @@ bool getNntpResponse (char *p, int *code, char **rest)
   if (*p == '-')
     p++ ;
   
-  while (*p && CTYPE (isspace, *p))
+  while (*p && isspace((unsigned char) *p))
     p++ ;
       
   if (rest)
@@ -231,15 +231,15 @@ char *getMsgId (const char *p)
   const char *q ;
   char *rval ;
   
-  while (*p && CTYPE (isspace, *p)) p++ ;
-  while (*p && !CTYPE (isspace, *p)) p++ ; /* skip response code */
-  while (*p && CTYPE (isspace, *p)) p++ ;
+  while (*p && isspace((unsigned char) *p)) p++ ;
+  while (*p && !isspace((unsigned char) *p)) p++ ; /* skip response code */
+  while (*p && isspace((unsigned char) *p)) p++ ;
 
   if ( *p == '\0' )
     return NULL ;
 
   q = p ;
-  while ( *q && !CTYPE (isspace, *q) )
+  while ( *q && !isspace((unsigned char) *q) )
     q++ ;
 
   rval = xstrndup (p, q - p) ;
@@ -254,12 +254,12 @@ char *findNonBlankString (char *ptr, char **tail)
 {
   char *p, *q ;
 
-  for (p = ptr ; *p && CTYPE (isspace, *p) ; p++)
+  for (p = ptr ; *p && isspace((unsigned char) *p) ; p++)
     /* nada */ ;
   if ( ! *p )
     return NULL ;
 
-  for (q = p ; *q && !CTYPE (isspace, *q) ; q++)
+  for (q = p ; *q && !isspace((unsigned char) *q) ; q++)
     /* nada */ ;
 
   *tail = q ;
@@ -327,7 +327,7 @@ void trim_ws (char *string)
   if (len == 0)
     return ;
   
-  for (p = string + len - 1 ; p >= string && CTYPE (isspace, *p) ; p--)
+  for (p = string + len - 1 ; p >= string && isspace((unsigned char) *p) ; p--)
     /* nada */ ;
   *++p = '\0' ;
 }

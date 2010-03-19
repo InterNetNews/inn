@@ -271,7 +271,7 @@ Process(char *article, size_t artlen)
 	return false;
     }
     REMclean(buff);
-    if (!CTYPE(isdigit, buff[0])) {
+    if (!isdigit((unsigned char) buff[0])) {
         free(wirefmt);
         notice("bad_reply after ihave %s", buff);
 	return false;
@@ -325,7 +325,7 @@ Process(char *article, size_t artlen)
 	return false;
     }
     REMclean(buff);
-    if (!CTYPE(isdigit, buff[0])) {
+    if (!isdigit((unsigned char) buff[0])) {
         notice("bad_reply after article %s", buff);
 	return false;
     }

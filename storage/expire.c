@@ -284,7 +284,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
                 break;
             SawDot = true;
         }
-        else if (!CTYPE(isdigit, (int)*p))
+        else if (!isdigit((unsigned char) *p))
             break;
     if (*p) {
         fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
@@ -358,7 +358,7 @@ EXPreadfile(FILE *F)
         else
             p = buff + strlen(buff);
         while (--p >= buff) {
-            if (isspace((int)*p))
+            if (isspace((unsigned char) *p))
                 *p = '\0';
             else
                 break;

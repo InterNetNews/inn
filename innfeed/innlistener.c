@@ -526,7 +526,7 @@ static void newArticleCommand (EndPoint ep, IoStatus i,
               
               /* See if this is a valid peername */
               for(s = peer; *s; s++)
-                if (!CTYPE(isalnum, *s) && *s != '.' && *s != '-' && *s != '_')
+                if (!isalnum((unsigned char) *s) && *s != '.' && *s != '-' && *s != '_')
                   break;
               if (*s != 0) {
                   warn ("ME invalid peername %s", peer) ;

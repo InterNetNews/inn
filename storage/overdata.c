@@ -200,7 +200,7 @@ valid_number(const char *string)
     const char *p;
 
     for (p = string; *p != '\0'; p++)
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return false;
     return true;
 }
@@ -225,7 +225,7 @@ valid_overview_string(const char *string, bool full)
         if (*p == '\0' || (*p == '\r' && p[1] == '\n' && p[2] == '\0'))
             return true;
         for (; *p != '\0' && *p != ':'; p++)
-            if (!CTYPE(isgraph, *p))
+            if (!isgraph((unsigned char) *p))
                 return false;
         if (*p != ':')
             return false;

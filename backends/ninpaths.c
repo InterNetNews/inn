@@ -372,7 +372,7 @@ procpaths(FILE *f)
 	    c+=6;
 	/* find end of line. Some broken newsreaders preload Path with
 	   a name containing spaces. Chop off those entries. */
-	for (ce=c; *ce && !CTYPE(isspace, *ce); ++ce);
+	for (ce=c; *ce && !isspace((unsigned char) *ce); ++ce);
 	if (!*ce) {
 	    /* bogus line */
 	    v=0;

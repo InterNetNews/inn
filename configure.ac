@@ -374,21 +374,6 @@ if test x"$inn_enable_largefiles" = xyes ; then
     AC_DEFINE([DO_LARGEFILES], [1], [Define to use large files.])
 fi
 
-dnl Start by checking for standard C headers.  AC_HEADER_STDC will set
-dnl STDC_HEADERS if stdlib.h, stdarg.h, string.h, and float.h all exist, if
-dnl memchr (and probably the other mem functions) is in string.h, if free (and
-dnl probably malloc and friends) are in stdlib.h, and if ctype.h will work on
-dnl high-bit characters.
-AC_HEADER_STDC
-
-dnl Only if that wasn't set do we need to go hunting for other headers to
-dnl include on non-ANSI systems and check for functions that all ANSI C
-dnl systems should have.
-if test x"$ac_cv_header_stdc" = xno ; then
-    AC_CHECK_HEADERS(memory.h stdlib.h strings.h)
-    AC_CHECK_FUNCS(memcpy strchr)
-fi
-
 dnl Special checks for header files.
 AC_HEADER_STDBOOL
 AC_HEADER_TIME

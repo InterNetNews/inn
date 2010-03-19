@@ -734,7 +734,7 @@ Article getArticle (Tape tape)
         {
           msgid = filename = NULL ;
           
-          for (p = line ; *p && CTYPE(isspace, *p) ; p++) /* eat whitespace */
+          for (p = line ; *p && isspace((unsigned char) *p) ; p++) /* eat whitespace */
             /* nada */ ;
 
           if (*p != '\0')
@@ -746,7 +746,7 @@ Article getArticle (Tape tape)
                   filename = p ;
                   *q = '\0' ;
       
-                  for (q++ ; *q && CTYPE(isspace, *q) ; q++)
+                  for (q++ ; *q && isspace((unsigned char) *q) ; q++)
                     /* nada */ ;
 
                   if (*q != '\0')

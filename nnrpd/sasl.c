@@ -56,7 +56,7 @@ IsValidMechanism(const char *string)
 
     for (; *p != '\0'; p++) {
         len++;
-        if (!CTYPE(isalnum, *p) && *p != '-' && *p != '_')
+        if (!isalnum((unsigned char) *p) && *p != '-' && *p != '_')
             return false;
     }
 

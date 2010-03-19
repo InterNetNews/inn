@@ -649,7 +649,7 @@ ARTcheckheader(CHANNEL *cp, int size)
   }
 
   /* See if this is a system header.  A fairly tightly-coded binary search. */
-  c = CTYPE(islower, *header) ? toupper(*header) : *header;
+  c = islower((unsigned char) *header) ? toupper(*header) : *header;
   for (*colon = '\0', tp = ARTheadertree; tp; ) {
     if ((i = c - tp->Name[0]) == 0 && (i = strcasecmp(header, tp->Name)) == 0)
       break;
@@ -2185,7 +2185,7 @@ ARTpost(CHANNEL *cp)
     /* Nip off the first word into lowercase. */
     strlcpy(ControlWord, HDR(HDR__CONTROL), sizeof(ControlWord));
     for (p = ControlWord; *p && !ISWHITE(*p); p++)
-      if (CTYPE(isupper, *p))
+      if (isupper((unsigned char) *p))
 	*p = tolower(*p);
     *p = '\0';
     LikeNewgroup = (strcasecmp(ControlWord, "newgroup") == 0

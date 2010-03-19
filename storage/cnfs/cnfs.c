@@ -205,7 +205,7 @@ static off_t CNFShex2offt(char *hex) {
 		break;
 	    }
 	    n += (*hex - diff);
-	    if (isalnum((int)*(hex + 1)))
+	    if (isalnum((unsigned char) *(hex + 1)))
 		n <<= 4;
 	}
 	return n;
@@ -809,7 +809,7 @@ static bool CNFSread_config(void) {
 	while (1) {
 	    if (*from && *from == '\\' && *(from + 1) == '\n') {
 		from += 2;		/* Skip past backslash+newline */
-		while (*from && isspace((int)*from))
+		while (*from && isspace((unsigned char) *from))
 		    from++;
 		continue;
 	    }

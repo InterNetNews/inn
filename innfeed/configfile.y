@@ -487,7 +487,7 @@ static void printValue (FILE *fp, value *v, int indent)
               break ;
 
             default:
-              if (CTYPE (isprint, v->v.char_val))
+              if (isprint((unsigned char) v->v.char_val))
                 fprintf (fp,"%c",v->v.char_val) ;
               else
                 fprintf (fp,"\\%03o",v->v.char_val) ;
@@ -587,7 +587,7 @@ static char *keyOk (const char *key)
       return rval ;
     }
   
-  if (!CTYPE(isalpha, *p))
+  if (!isalpha((unsigned char) *p))
     {
       rval = xmalloc (strlen (NON_ALPHA) + strlen (key) + 15) ;
       sprintf (rval,NON_ALPHA,lineCount, key) ;
@@ -597,7 +597,7 @@ static char *keyOk (const char *key)
   p++ ;
   while (*p)
     {
-      if (!(CTYPE (isalnum, *p) || *p == '_' || *p == '-'))
+      if (!(isalnum((unsigned char) *p) || *p == '_' || *p == '-'))
         {
           rval = xmalloc (strlen (BAD_KEY) + strlen (key) + 15) ;
           sprintf (rval,BAD_KEY,lineCount,key) ;

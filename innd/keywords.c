@@ -152,7 +152,7 @@ KEYgenerate(
 
     /* Abusive punctuation stripping:  turn it all into spaces. */
     for (punc = text; *punc; punc++)
-	if (!CTYPE(isalpha, *punc))
+	if (!isalpha((unsigned char) *punc))
 	    *punc = ' ';
 
     /* Move to first word. */
@@ -184,7 +184,7 @@ KEYgenerate(
 
 	/* Squash to lowercase. */
 	for (chase = this_word; *chase; chase++)
-	    if (CTYPE(isupper, *chase))
+	    if (isupper((unsigned char) *chase))
 		*chase = tolower(*chase);
     }
 

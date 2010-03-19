@@ -568,7 +568,7 @@ GetHeader(const char *header, bool stripspaces)
 		} else if (xrefheader && (VirtualPathlen > 0)) {
 		    if ((r = memchr(p, ' ', q - p)) == NULL)
 			return NULL;
-		    for (; (r < q) && isspace((int)*r) ; r++);
+		    for (; (r < q) && isspace((unsigned char) *r) ; r++);
 		    if (r == q)
 			return NULL;
                     /* Copy the virtual path without its final '!'. */
@@ -621,7 +621,7 @@ CMDfetch(int ac, char *av[])
         /* It is better to check for a number before a message-ID because
          * '<' could have been forgotten and the error message should then
          * report a syntax error in the message-ID. */
-        if (CTYPE(isdigit, av[1][0])) {
+        if (isdigit((unsigned char) av[1][0])) {
             Reply("%d Syntax error in article number\r\n", NNTP_ERR_SYNTAX);
             return;
         } else if (!mid) {
@@ -925,7 +925,7 @@ CMDover(int ac, char *av[])
         /* It is better to check for a range before a message-ID because
          * '<' could have been forgotten and the error message should then
          * report a syntax error in the message-ID. */
-        if (xover || CTYPE(isdigit, av[1][0]) || av[1][0] == '-') {
+        if (xover || isdigit((unsigned char) av[1][0]) || av[1][0] == '-') {
             Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
             return;
         } else if (!mid) {
@@ -1137,7 +1137,7 @@ CMDpat(int ac, char *av[])
         /* It is better to check for a range before a message-ID because
          * '<' could have been forgotten and the error message should then
          * report a syntax error in the message-ID. */
-        if (CTYPE(isdigit, av[2][0]) || av[2][0] == '-') {
+        if (isdigit((unsigned char) av[2][0]) || av[2][0] == '-') {
             Reply("%d Syntax error in range\r\n", NNTP_ERR_SYNTAX);
             return;
         } else if (!mid) {

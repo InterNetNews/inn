@@ -171,7 +171,7 @@ check_number(const char *string)
     const char *p;
 
     for (p = string; *p != '\0'; p++)
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return false;
     return true;
 }

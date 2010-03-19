@@ -808,7 +808,7 @@ static conn_ret FindHeader(Buffer *bufs, const char *header, char **start,
 		    *start = str+headerlen+1;
 
 		    /* get rid of leading whitespace */
-		    while ( isspace((int) **start))			
+		    while (isspace((unsigned char) **start))			
 			(*start)++;
 		}
 		
@@ -998,8 +998,8 @@ static conn_ret addCancelItem(connection_t *cxn,
     ASSERT(folder); ASSERT(msgid); ASSERT(cxn);
 
     /* sanity check folder, msgid */
-    for (i = 0; i < folderlen; i++) ASSERT(!isspace((int) folder[i]));
-    for (i = 0; i < msgidlen; i++) ASSERT(!isspace((int) msgid[i]));
+    for (i = 0; i < folderlen; i++) ASSERT(!isspace((unsigned char) folder[i]));
+    for (i = 0; i < msgidlen; i++) ASSERT(!isspace((unsigned char) msgid[i]));
 
     /* create the object */
     item = xcalloc (1, sizeof(control_item_t));
@@ -1703,9 +1703,9 @@ static int ask_code(char *str)
     if (strlen(str) < 3) return -1;
 
     /* check to make sure 0-2 are digits */
-    if ((isdigit((int) str[0])==0) ||
-	(isdigit((int) str[1])==0) ||
-	(isdigit((int) str[2])==0))
+    if ((!isdigit((unsigned char) str[0])) ||
+	(!isdigit((unsigned char) str[1])) ||
+	(!isdigit((unsigned char) str[2])))
     {
 	d_printf(0,
 		 "Parse error: response does not begin with a code [%s]\n",

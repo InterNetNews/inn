@@ -712,22 +712,22 @@ static struct dirent *FindDir(DIR *dir, FINDTYPE type) {
         if (type == FIND_TOPDIR)
 	    if ((strlen(de->d_name) == 10) &&
 		(strncmp(de->d_name, "timecaf-", 8) == 0) &&
-		CTYPE(isxdigit, de->d_name[8]) &&
-		CTYPE(isxdigit, de->d_name[9]))
+		isxdigit((unsigned char) de->d_name[8]) &&
+		isxdigit((unsigned char) de->d_name[9]))
 	        return de;
 
 	if (type == FIND_DIR)
 	    if ((strlen(de->d_name) == 2)
-                && CTYPE(isxdigit, de->d_name[0])
-                && CTYPE(isxdigit, de->d_name[1]))
+                && isxdigit((unsigned char) de->d_name[0])
+                && isxdigit((unsigned char) de->d_name[1]))
 		return de;
 
 	if (type == FIND_CAF)
 	    if ((strlen(de->d_name) == 7) &&
-		CTYPE(isxdigit, de->d_name[0]) &&
-		CTYPE(isxdigit, de->d_name[1]) &&
-		CTYPE(isxdigit, de->d_name[2]) &&
-		CTYPE(isxdigit, de->d_name[3]) &&
+		isxdigit((unsigned char) de->d_name[0]) &&
+		isxdigit((unsigned char) de->d_name[1]) &&
+		isxdigit((unsigned char) de->d_name[2]) &&
+		isxdigit((unsigned char) de->d_name[3]) &&
 		(de->d_name[4] == '.') &&
 		(de->d_name[5] == 'C') &&
 		(de->d_name[6] == 'F'))

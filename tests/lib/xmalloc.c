@@ -246,7 +246,7 @@ main(int argc, char *argv[])
 
     /* If the code is capitalized, install our customized error handler. */
     code = argv[1][0];
-    if (isupper(code)) {
+    if (isupper((unsigned char) code)) {
         xmalloc_error_handler = test_handler;
         code = tolower(code);
     }

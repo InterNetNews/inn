@@ -475,7 +475,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	worksize = insize;
 
 	/* Chop leading whitespace. */
-	for (p=instring ; worksize>0 && isspace(*p) ; p++) {
+	for (p=instring ; worksize>0 && isspace((unsigned char) *p) ; p++) {
 	    if (*p == '\n')
 		lines--;
 	    worksize--;
@@ -483,7 +483,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	wpos = p;
 
 	/* And trailing. */
-	for (p=&wpos[worksize] ; worksize>0 && isspace(*p) ; p--) {
+	for (p=&wpos[worksize] ; worksize>0 && isspace((unsigned char) *p) ; p--) {
 	    if (*p == '\n')
 		lines--;
 	    worksize--;
@@ -506,7 +506,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	p = wpos;
 	q = workstring;
 	for (i=0 ; i<worksize ; i++) {
-	    if (isspace(*p)) {
+	    if (isspace((unsigned char) *p)) {
 		if (!wasspace)
 		    *q++ = ' ';
 		wasspace = 1;

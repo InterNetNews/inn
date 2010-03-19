@@ -10,7 +10,7 @@ dnl Source used by INN_SYS_STREAMS_SENDFD.
 define([_INN_SYS_STREAMS_SENDFD],
 [AC_LANG_SOURCE([[
 #include <stdio.h>
-#if STDC_HEADERS || HAVE_STRING_H
+#if HAVE_STRING_H
 # include <string.h>
 #endif
 #include <stropts.h>
