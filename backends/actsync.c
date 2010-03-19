@@ -949,7 +949,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/* 
 	 * check for bad chars in the hi water mark 
 	 */
-	for (p=cur->hi, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
+	for (p=cur->hi, i=0; *p && isdigit((unsigned char) *p); ++p, ++i) {
 	}
 	if (*p) {
 	    if (!QUIET(hostid))
@@ -981,7 +981,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/* 
 	 * check for bad chars in the low water mark 
 	 */
-	for (p=cur->low, i=0; *p && isascii(*p) && isdigit((int)*p); ++p, ++i) {
+	for (p=cur->low, i=0; *p && isdigit((unsigned char) *p); ++p, ++i) {
 	}
 	if (*p) {
 	    if (!QUIET(hostid))
@@ -1108,9 +1108,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
  *
  *	[.+-_]
  *
- * One cannot have two '.'s in a row.  The first character must be
- * alphanumeric.  The character following a '.' must be alphanumeric.
- * The name cannot end in a '.' character.
+ * One cannot have two '.'s in a row or end in a '.' character.
  *
  * If we are checking for all numeric components, (see num_chk) then
  * a component cannot be all numeric.  I.e,. there must be a non-numeric
@@ -1140,14 +1138,11 @@ bad_grpname(char *name, int num_chk)
 	return 1;
     }
 
-    /* must start with an alphanumeric ascii character */
-    if (!isascii(name[0])) {
-	return 1;
-    }
     /* set non_num as needed */
-    if (isalpha((int)name[0])) {
+    if (isalpha((unsigned char) name[0])
+        || name[0] == '+' || name[0] == '-' || name[0] == '_') {
 	non_num = true;
-    } else if ((int)isdigit((int)name[0])) {
+    } else if (isdigit((unsigned char) name[0])) {
 	non_num = false;
     } else {
 	return 1;
@@ -1156,20 +1151,14 @@ bad_grpname(char *name, int num_chk)
     /* scan each char */
     level = 0;
     for (p=name+1; *p; ++p) {
-
-	/* name must contain ASCII chars */
-	if (!isascii(*p)) {
-	    return 1;
-	}
-
 	/* alpha chars are ok */
-	if (isalpha((int)*p)) {
+	if (isalpha((unsigned char) *p)) {
 	    non_num = true;
 	    continue;
 	}
 
 	/* numeric chars are ok */
-	if (isdigit((int)*p)) {
+	if (isdigit((unsigned char) *p)) {
 	    continue;
 	}
 
@@ -1190,7 +1179,8 @@ bad_grpname(char *name, int num_chk)
 	    }
 
 	    /*
-	     * A '.' is ok as long as the next character is alphanumeric.
+             * A '.' is ok as long as the next character is alphanumeric
+             * or '+', '-', '_'.
 	     * This implies that '.' cannot be before a previous '.' and
 	     * that it cannot be at the end.
 	     *
@@ -1199,9 +1189,10 @@ bad_grpname(char *name, int num_chk)
 	     * last '.', or before the beginning if no previous '.'
 	     * has been seen.
 	     */
-	    if ((!num_chk || non_num) && isascii(*(p+1)) && isalnum((int)*(p+1))) {
+            if ((!num_chk || non_num) &&
+                (isalnum((unsigned char) *(p+1)) || *(p+1) == '+' || *(p+1) == '-' || *(p+1) == '_' )) {
 		++p;		/* '.' is ok, and so is the next char */
-		if (isdigit((int)*p)) {	/* reset non_num as needed */
+		if (isdigit((unsigned char) *p)) {	/* reset non_num as needed */
 		    non_num = false;
 		} else {
 		    non_num = true;
