@@ -29,9 +29,7 @@
 #include "inn/libinn.h"
 
 #include <stdarg.h>
-#if STDC_HEADERS
-# include <string.h>
-#endif
+#include <string.h>
 
 /* Abbreviation for cleaner code. */
 #define VA_NEXT(var, type)      ((var) = (type) va_arg(args, type))

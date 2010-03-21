@@ -54,7 +54,7 @@ bool IsToken(const char *text) {
 	return false;
 
     for (p = text + 1; *p != '@'; p++)
-	if (!isxdigit((int)*p))
+	if (!isxdigit((unsigned char) *p))
 	    return false;
     
     return true;
@@ -90,7 +90,7 @@ TokenToText(const TOKEN token)
 ** Converts a hex digit and converts it to a int
 */
 static int hextodec(const int c) {
-    return isdigit(c) ? (c - '0') : ((c - 'A') + 10);
+    return isdigit((unsigned char) c) ? (c - '0') : ((c - 'A') + 10);
 }
 
 /*
@@ -195,7 +195,7 @@ static time_t ParseTime(char *tmbuf)
     ret = 0;
     startnum = tmbuf;
     while (*tmbuf) {
-	if (!isdigit((int)*tmbuf)) {
+	if (!isdigit((unsigned char) *tmbuf)) {
 	    tmp = atol(startnum);
 	    switch (*tmbuf) {
 	      case 'M':

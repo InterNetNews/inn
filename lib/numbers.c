@@ -28,7 +28,7 @@ IsValidArticleNumber(const char *string)
    
     for (; *p != '\0'; p++) {
         len++;
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return false;
     }
 

@@ -179,7 +179,7 @@ TrimSpaces(char *p)
 
     for (start = p; ISWHITE(*start); start++)
 	continue;
-    for (p = start + strlen(start); p > start && CTYPE(isspace, p[-1]); )
+    for (p = start + strlen(start); p > start && isspace((unsigned char) p[-1]); )
 	*--p = '\0';
     return start;
 }
@@ -238,7 +238,7 @@ StripOffHeaders(char *article)
 	}
 
 	/* See if it's a known header. */
-	c = CTYPE(islower, *p) ? toupper(*p) : *p;
+	c = islower((unsigned char) *p) ? toupper(*p) : *p;
 	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
@@ -458,8 +458,8 @@ FormatUserName(struct passwd *pwp, char *node)
     for (out = outbuff; *p && !GECOSTERM(*p) && left; p++) {
 	if (*p == '&') {
 	    strncpy(out, pwp->pw_name, left);
-	    if (CTYPE(islower, *out)
-	     && (out == outbuff || !CTYPE(isalpha, out[-1])))
+	    if (islower((unsigned char) *out)
+	     && (out == outbuff || !isalpha((unsigned char) out[-1])))
 		*out = toupper(*out);
 	    while (*out) {
 		out++;
@@ -468,7 +468,7 @@ FormatUserName(struct passwd *pwp, char *node)
 	}
 	else if (*p == '-'
 	      && p > pwp->pw_gecos
-              && (CTYPE(isdigit, p[-1]) || CTYPE(isspace, p[-1])
+              && (isdigit((unsigned char) p[-1]) || isspace((unsigned char) p[-1])
                   || p[-1] == ']')) {
 	    out = outbuff;
             left = SMBUF - 1;

@@ -677,7 +677,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
          * therefore also downcase the wildmat patterns to make sure there
          * aren't any surprises.  DNS is case-insensitive. */
         for (p = curauth->hosts; *p; p++)
-            if (CTYPE(isupper, (unsigned char) *p))
+            if (isupper((unsigned char) *p))
                 *p = tolower((unsigned char) *p);
 
 	break;

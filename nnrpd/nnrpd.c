@@ -517,7 +517,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
     /* Lowercase the returned name since wildmats are case-sensitive. */
     if (valid) {
         for (p = hostname; *p != '\0'; p++)
-            if (CTYPE(isupper, *p))
+            if (isupper((unsigned char) *p))
                 *p = tolower((int) *p);
         return true;
     } else {

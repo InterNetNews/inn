@@ -154,7 +154,7 @@ static bool EXPgetnum(int line, char *word, time_t *v, const char *name)
 		break;
 	    SawDot = true;
 	}
-	else if (!CTYPE(isdigit, (int)*p))
+	else if (!isdigit((unsigned char) *p))
 	    break;
     if (*p) {
         warn("bad '%c' character in %s field on line %d", *p, name, line);
@@ -202,7 +202,7 @@ static bool EXPreadfile(FILE *F)
 	else
 	    p = buff + strlen(buff);
 	while (--p >= buff) {
-	    if (isspace((int)*p))
+	    if (isspace((unsigned char) *p))
                 *p = '\0';
             else
                 break;

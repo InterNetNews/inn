@@ -362,10 +362,10 @@ parsedate_nntp(const char *date, const char *hour, bool local)
     if ((datelen != 6 && datelen != 8) || strlen(hour) != 6)
         return (time_t) -1;
     for (p = date; *p; p++)
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return (time_t) -1;
     for (p = hour; *p; p++)
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return (time_t) -1;
 
     /* Parse the date into a struct tm, skipping over the century part of
@@ -476,7 +476,7 @@ parse_legacy_month(const char *p, const struct rule *rule UNUSED, int *value)
     size_t i, size;
     const char *end;
 
-    for (end = p; *end != '\0' && CTYPE(isalpha, *end); end++)
+    for (end = p; *end != '\0' && isalpha((unsigned char) *end); end++)
         ;
     if (*end == '.')
         end++;
@@ -559,7 +559,7 @@ parse_legacy_timezone(const char *p, long *offset, bool obsolete)
     const char *end;
     size_t max, i;
 
-    for (end = p; *end != '\0' && CTYPE(isalpha, *end); end++)
+    for (end = p; *end != '\0' && isalpha((unsigned char) *end); end++)
         ;
     if (end == p)
         return NULL;
@@ -570,7 +570,7 @@ parse_legacy_timezone(const char *p, long *offset, bool obsolete)
             *offset = ZONE_OFFSET[i].offset;
             return p;
         }
-    if (max == 1 && CTYPE(isalpha, *p) && *p != 'J' && *p != 'j') {
+    if (max == 1 && isalpha((unsigned char) *p) && *p != 'J' && *p != 'j') {
         *offset = 0;
         return p + 1;
     }
@@ -635,7 +635,7 @@ parsedate_rfc5322(const char *date)
     /* Parse the base part of the date.  The initial day of the week is
        optional. */
     p = skip_cfws(date);
-    if (CTYPE(isalpha, *p))
+    if (isalpha((unsigned char) *p))
         p = parse_by_rule(p, base_rule, ARRAY_SIZE(base_rule), values);
     else
         p = parse_by_rule(p, base_rule + 2, ARRAY_SIZE(base_rule) - 2,
@@ -745,7 +745,7 @@ parsedate_rfc5322_lax(const char *date)
     /* Parse the base part of the date.  The initial day of the week is
        optional.  Allow for anything that looks vaguely day-like. */
     p = skip_cfws(date);
-    while (*p != '\0' && !CTYPE(isdigit, *p) && *p != ',')
+    while (*p != '\0' && !isdigit((unsigned char) *p) && *p != ',')
         p++;
     if (*p == ',')
         p = skip_cfws(p + 1);

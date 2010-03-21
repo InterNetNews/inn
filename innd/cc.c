@@ -407,7 +407,7 @@ CCchgroup(char *av[])
     Rest = av[1];
     if (Rest[0] != NF_FLAG_ALIAS) {
 	Rest[1] = '\0';
-	if (CTYPE(isupper, Rest[0]))
+	if (isupper((unsigned char) Rest[0]))
 	    Rest[0] = tolower(Rest[0]);
     }
     return CCdochange(ngp, Rest);
@@ -709,7 +709,7 @@ CChangup(char *av[])
 
     /* Parse the argument, a channel number. */
     for (p = av[0], fd = 0; *p; p++) {
-	if (!CTYPE(isdigit, *p))
+	if (!isdigit((unsigned char) *p))
 	    return "1 Bad channel number";
 	fd = fd * 10 + *p - '0';
     }
@@ -998,7 +998,7 @@ CCnewgroup(char *av[])
     Rest = av[1];
     if (Rest[0] != NF_FLAG_ALIAS) {
 	Rest[1] = '\0';
-	if (CTYPE(isupper, Rest[0]))
+	if (isupper((unsigned char) Rest[0]))
 	    Rest[0] = tolower(Rest[0]);
     }
 
@@ -1622,7 +1622,7 @@ CCtimer(char *av[])
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {
-	    if (!CTYPE(isdigit, *p))
+	    if (!isdigit((unsigned char) *p))
 		return "1 parameter should be a number or 'off'";
 	}
 	value = strtoul(av[0], NULL, 10);
@@ -1661,7 +1661,7 @@ CCstatus(char *av[])
 	value = 0;
     else {
 	for (p = av[0]; *p; p++) {
-	    if (!CTYPE(isdigit, *p))
+	    if (!isdigit((unsigned char) *p))
 		return "1 parameter should be a number or 'off'";
 	}
 	value = strtoul(av[0], NULL, 10);

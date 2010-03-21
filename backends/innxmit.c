@@ -207,7 +207,7 @@ stidhash(char *MessageID) {
     hash = 0;
     for (p = MessageID + 1; *p && (*p != '>'); p++) {
 	hash <<= 1;
-	if (isascii((int)*p) && isupper((int)*p)) {
+	if (isupper((unsigned char) *p)) {
 	    hash += tolower(*p);
 	} else {
 	    hash += *p;

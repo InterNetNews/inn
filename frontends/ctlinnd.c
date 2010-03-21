@@ -320,7 +320,7 @@ int main(int ac, char *av[])
 
     if (reply) {
 	/* Skip "<exitcode><space>" part of reply. */
-	for (p = reply; *p && CTYPE(isdigit, *p); p++)
+	for (p = reply; *p && isdigit((unsigned char) *p); p++)
 	    continue;
 	while (*p && ISWHITE(*p))
 	    p++;

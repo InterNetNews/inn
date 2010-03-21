@@ -34,7 +34,7 @@ IsValidHeaderName(const char *string)
     for (; *p != '\0'; p++) {
         /* Contains only printable US-ASCII characters other
          * than colon. */
-        if (!CTYPE(isgraph, *p) || *p == ':')
+        if (!isgraph((unsigned char) *p) || *p == ':')
             return false;
     }
 

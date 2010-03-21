@@ -70,7 +70,7 @@ HashMessageID(const char *MessageID)
     cip = cipoint(MessageID, len);
     if (cip != NULL) {
         for (p = cip + 1; *p != '\0'; p++) {
-            if (!CTYPE(islower, *p)) {
+            if (!islower((unsigned char) *p)) {
                 new = xstrdup(MessageID);
                 break;
             }

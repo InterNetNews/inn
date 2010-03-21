@@ -1252,7 +1252,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	RCadddata(data, &infocount, K_MAX_CONN, T_STRING, word);
-	for (p = word; CTYPE(isdigit, *p) && *p != '\0'; p++);
+	for (p = word; isdigit((unsigned char) *p) && *p != '\0'; p++);
 	if (!strcmp (word, "none") || !strcmp (word, "unlimited")) {
 	  max = 0;
 	} else {
@@ -1285,7 +1285,7 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	  break;
 	}
 	RCadddata(data, &infocount, K_HOLD_TIME, T_STRING, word);
-	for (p = word; CTYPE(isdigit, *p) && *p != '\0'; p++);
+	for (p = word; isdigit((unsigned char) *p) && *p != '\0'; p++);
 	if (*p != '\0') {
 	  syslog(L_ERROR, MUST_BE_INT, LogName, filename, linecount);
 	  break;

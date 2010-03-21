@@ -666,7 +666,7 @@ main(int argc, char *argv[])
                 continue;
             case 'c':
                 chdir_threshold = 1;
-                if (!CTYPE(isdigit, p[1]))
+                if (!isdigit((unsigned char) p[1]))
                     continue;
                 chdir_threshold = atoi(p + 1);
                 break;
@@ -678,13 +678,13 @@ main(int argc, char *argv[])
                 continue;
             case 's':
                 sort_threshold = 5;
-                if (!CTYPE(isdigit, p[1]))
+                if (!isdigit((unsigned char) p[1]))
                     continue;
                 sort_threshold = atoi(p + 1);
                 break;
             case 'u':
                 relative_threshold = 1;
-                if (!CTYPE(isdigit, p[1]))
+                if (!isdigit((unsigned char) p[1]))
                     continue;
                 relative_threshold = atoi(p + 1);
                 if (relative_threshold >= (int) strlen(dotdots) / 3)

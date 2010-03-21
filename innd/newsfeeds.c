@@ -57,7 +57,7 @@ SITEaddvariable(char *line)
     if (*line != VARIABLE_CHAR)
     	return false;
     	
-    for (p = line + 1; *p != '\0' && CTYPE(isalnum, *p); p++)
+    for (p = line + 1; *p != '\0' && isalnum((unsigned char) *p); p++)
         ;
     if (*p != '=')
     	return false;
@@ -151,7 +151,7 @@ SITEexpandvariables(char *site)
     for (p = site; p <= site + strlen(site); p++) {
         /* In variable name. */
         if (*varname) {
-            if (CTYPE(isalnum, *p)) {
+            if (isalnum((unsigned char) *p)) {
                 if (q - varname > 32) {
                     /* Add ignored modifier. */
                     if (modifier)
@@ -212,7 +212,7 @@ SITEexpandvariables(char *site)
     for (p = site; p <= site + strlen(site); p++) {
         /* In variable name. */
         if (*varname) {
-            if (CTYPE(isalnum, *p)) {
+            if (isalnum((unsigned char) *p)) {
                 if (q - varname > 32) {
                     if (modifier)
                         *s++ = modifier;
@@ -321,7 +321,7 @@ SITEreadfile(const bool ReadOnly)
 		break;
 	    }
 	    if (*p == '\\' && p[1] == '\n')
-		while (*++p && CTYPE(isspace, *p))
+		while (*++p && isspace((unsigned char) *p))
 		    continue;
 	    else
 		*to++ = *p++;
@@ -520,11 +520,11 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	case '\0':
 	    break;
 	case '<':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->MaxSize = atol(p);
 	    break;
 	case '>':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->MinSize = atol(p);
 	    break;
 	case 'A':
@@ -548,16 +548,16 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 		}
 	    break;
 	case 'B':
-	    if (*++p && CTYPE(isdigit, *p)) {
+	    if (*++p && isdigit((unsigned char) *p)) {
 		sp->StartWriting = atoi(p);
 		if ((p = strchr(p, NF_SUBFIELD_SEP)) != NULL
 		 && *++p
-		 && CTYPE(isdigit, *p))
+		 && isdigit((unsigned char) *p))
 		    sp->StopWriting = atoi(p);
 	    }
 	    break;
 	case 'C':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->Crosscount = atoi(p);
 	    else
 		sp->Crosscount = 2;
@@ -569,19 +569,19 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
                 sp->SpoolName = concatpath(innconf->pathoutgoing, p);
 	    break;
 	case 'G':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->Groupcount = atoi(p);
 	    else
 		sp->Groupcount = 1;
 	    break;
 	case 'H':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->Hops = atoi(p);
 	    else
 		sp->Hops = 1;
 	    break;
 	case 'I':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->Flushpoint = strtoul(p, NULL, 10);
 	    break;
 	case 'N':
@@ -599,7 +599,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    sp->Originator = SlashSplit(p);
 	    break;
         case 'P':
-            if (*++p && CTYPE(isdigit, *p))
+            if (*++p && isdigit((unsigned char) *p))
                 sp->Nice = atoi(p);
             break;
         case 'Q':
@@ -636,7 +636,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
             sp->HashFeedList = hf;
             break;
 	case 'S':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->StartSpooling = atol(p);
 	    break;
 	case 'T':
@@ -652,7 +652,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    }
 	    break;
 	case 'U':
-	    if (*++p && CTYPE(isdigit, *p))
+	    if (*++p && isdigit((unsigned char) *p))
 		sp->Followcount = atoi(p);
 	    else
 		sp->Followcount = 1;
@@ -747,7 +747,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
 	    if (f3 != NULL)
 		return "bad (extra) sprintf format for field 4";
 	    f3 = p;
-	    while (*++p && *p != '*' && !CTYPE(isalpha, *p))
+	    while (*++p && *p != '*' && !isalpha((unsigned char) *p))
 		continue;
 	    if (*p != 's')
 		return "bad sprintf format for field 4";

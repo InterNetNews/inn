@@ -1050,7 +1050,7 @@ FindDir(DIR *dir, char *dirname) {
     while ((de = readdir(dir)) != NULL) {
 	namelen = strlen(de->d_name);
 	for (i = 0, flag = true ; i < namelen ; ++i) {
-	    if (!CTYPE(isdigit, de->d_name[i])) {
+	    if (!isdigit((unsigned char) de->d_name[i])) {
 		flag = false;
 		break;
 	    }

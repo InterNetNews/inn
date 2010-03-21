@@ -27,11 +27,11 @@ IsValidKeyword(const char *string)
         return false;
 
     /* Begins with a letter. */
-    if (!CTYPE(isalpha, string[0]))
+    if (!isalpha((unsigned char) string[0]))
         return false;
 
     for (; *string != '\0'; string++) {
-        if (CTYPE(isalnum, *string) || *string == '.' || *string == '-')
+        if (isalnum((unsigned char) *string) || *string == '.' || *string == '-')
             len++;
         else
             return false;

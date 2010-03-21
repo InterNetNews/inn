@@ -87,7 +87,7 @@ ReadSys(sys)
 		break;
 	    }
 	    if (*p == '\\' && p[1] == '\n')
-		while (*++p && CTYPE(isspace, *p))
+		while (*++p && isspace((unsigned char) *p))
 		    continue;
 	    else
 		*to++ = *p++;

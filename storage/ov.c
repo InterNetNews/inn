@@ -184,7 +184,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
         memcpy(patcheck, next, xreflen);
         patcheck[xreflen] = '\0';
         for (group = patcheck; group && *group; group = memchr(nextcheck, ' ', xreflen - (nextcheck - patcheck))) {
-            while (isspace((int)*group))
+            while (isspace((unsigned char) *group))
                 group++;
             if ((nextcheck = memchr(group, ':', xreflen - (group - patcheck))) == NULL)
                 return OVADDFAILED;
@@ -207,7 +207,7 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     xrefdata[xreflen] = '\0';
     for (group = xrefdata; group && *group; group = memchr(next, ' ', xreflen - (next - xrefdata))) {
         /* Parse the Xref: part into group name and article number. */
-        while (isspace((int)*group))
+        while (isspace((unsigned char) *group))
             group++;
         if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
             return OVADDFAILED;

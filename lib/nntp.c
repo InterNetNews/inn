@@ -220,7 +220,7 @@ nntp_read_response(struct nntp *nntp, enum nntp_code *code, char **rest)
     *code = strtol(line, rest, 10);
     if (*rest != line + 3)
         *code = 0;
-    else if (CTYPE(isspace, *rest[0]))
+    else if (isspace((unsigned char) *rest[0]))
         (*rest)++;
     return status;
 }

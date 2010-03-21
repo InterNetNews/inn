@@ -39,7 +39,7 @@ static bool
 isdigits(const char *p)
 {
     for (; *p; p++)
-        if (!CTYPE(isdigit, *p))
+        if (!isdigit((unsigned char) *p))
             return false;
     return true;
 }

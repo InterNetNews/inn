@@ -35,25 +35,9 @@
    prototypes isn't high enough to be worth the trouble.  */
 #include <stdio.h>
 #include <sys/types.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# if HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-# if !HAVE_STRCHR
-#  define strchr index
-#  define strrchr rindex
-# endif
-# if !HAVE_MEMCPY
-#  define memcpy(d, s, n)  bcopy((s), (d), (n))
-# endif
-#endif
+#include <stdlib.h>
+#include <stddef.h>
 #if HAVE_STRING_H
-# if !STDC_HEADERS && HAVE_MEMORY_H
-#  include <memory.h>
-# endif
 # include <string.h>
 #else
 # if HAVE_STRINGS_H
@@ -171,18 +155,6 @@ END_DECLS
 # define STDIN_FILENO   0
 # define STDOUT_FILENO  1
 # define STDERR_FILENO  2
-#endif
-
-/* On some systems, the macros defined by <ctype.h> are only vaild on ASCII
-   characters (those characters that isascii() says are ASCII).  This comes
-   into play when applying <ctype.h> macros to eight-bit data.  autoconf
-   checks for this with as part of AC_HEADER_STDC, so if autoconf doesn't
-   think our headers are standard, check isascii() first. */
-#if STDC_HEADERS
-# define CTYPE(isXXXXX, c) (isXXXXX((unsigned char)(c)))
-#else
-# define CTYPE(isXXXXX, c) \
-    (isascii((unsigned char)(c)) && isXXXXX((unsigned char)(c)))
 #endif
 
 /* POSIX.1g requires <sys/un.h> to define a SUN_LEN macro for determining
