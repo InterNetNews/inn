@@ -150,7 +150,7 @@ if ($oclass) {
 		$logline = sprintf("Class %s for groups matching \"%s\"", $c, $gr);
 	    }
 	} else {
-	    print STDOUT "Class $c ";
+	    print STDOUT "Class $c";
 	    print STDOUT " for groups matching \"$gr\"";
 	    if($min || $max) {
 		print STDOUT ", article size min/max: $min/$max";
