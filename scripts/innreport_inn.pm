@@ -1,6 +1,8 @@
 ##########################################################################
 # INN module for innreport (3.*).
 #
+# $Id$
+#
 # Sample file tested with INN 2.5, 2.4, 2.3, 2.2, 1.7.2 and 1.5.1.
 #
 # (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.
@@ -882,12 +884,14 @@ sub collect($$$$$$) {
     return 1 if $left =~ m/\S+:\d+ closed periodic$/o;
     # periodic close
     return 1 if $left =~ m/\S+:\d+ periodic close$/o;
+    # checkpoint (child)
+    return 1 if $left =~ m/\S+:\d+ checkpoint seconds \d+ offered \d+ accepted \d+ refused \d+ rejected \d+/o;
     # final (child)
     return 1 if $left =~ m/\S+:\d+ final seconds \d+ offered \d+ accepted \d+ refused \d+ rejected \d+/o;
     # global (real)
     return 1 if $left =~ m/\S+ global seconds \d+ offered \d+ accepted \d+ refused \d+ rejected \d+ missing \d+/o;
-    # final (real) (new format)
-    if ($left =~ /(\S+) final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o) {
+    # checkpoint (real) (new format)
+    if ($left =~ /(\S+) checkpoint seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
 	  $missing, $accepted_size, $rejected_size, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       $server = lc $server unless $CASE_SENSITIVE;
@@ -901,9 +905,9 @@ sub collect($$$$$$) {
       $innfeed_accepted_size{$server} += $accepted_size;
       $innfeed_rejected_size{$server} += $rejected_size;
       return 1;
-    } elsif ($left =~ /(\S+) final seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) spooled (\d+)/o) {
+    } elsif ($left =~ /(\S+) checkpoint seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $offered, $accepted, $refused, $rejected,
-	  $missing, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+	  $missing, $spooled) = ($1, $2, $3, $4, $5, $6, $7, $8);
       $server = lc $server unless $CASE_SENSITIVE;
       $innfeed_seconds{$server} += $seconds;
       $innfeed_offered{$server} += $offered;
@@ -914,8 +918,8 @@ sub collect($$$$$$) {
       $innfeed_spooled{$server} += $spooled;
       return 1;
     }
-    # final (only seconds & spooled)
-    if ($left =~ /(\S+) final seconds (\d+) spooled (\d+)/o) {
+    # checkpoint (only seconds & spooled)
+    if ($left =~ /(\S+) checkpoint seconds (\d+) spooled (\d+)/o) {
       my ($server, $seconds, $spooled) = ($1, $2, $3);
       $server = lc $server unless $CASE_SENSITIVE;
       # Initialize a value for that key (otherwise, it does not appear in the
@@ -925,8 +929,10 @@ sub collect($$$$$$) {
       $innfeed_spooled{$server} += $spooled;
       return 1;
     }
-    # checkpoint
-    return 1 if $left =~ m/\S+ checkpoint seconds/o;
+
+    # final
+    return 1 if $left =~ m/\S+ final seconds/o;
+
     # ME file xxxx shrunk from yyyy to zzz
     if ($left =~ /^ME file (.*)\.output shrunk from (\d+) to (\d+)$/) {
       my ($file, $s1, $s2) = ($1, $2, $3);

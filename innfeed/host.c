@@ -161,19 +161,32 @@ struct host_s
 
     /* these numbers get reset periodically (after a 'final' logging). */
     unsigned int artsOffered ;         /* # of articles we offered to remote. */
+    unsigned int artsOffered_checkpoint ;
     unsigned int artsAccepted ;        /* # of articles succesfully transferred */
+    unsigned int artsAccepted_checkpoint ;
     unsigned int artsNotWanted ;       /* # of articles remote already had */
+    unsigned int artsNotWanted_checkpoint ;
     unsigned int artsRejected ;        /* # of articles remote rejected */
+    unsigned int artsRejected_checkpoint ;
     unsigned int artsDeferred ;        /* # of articles remote asked us to retry */
+    unsigned int artsDeferred_checkpoint ;
     unsigned int artsMissing ;         /* # of articles whose file was missing. */
+    unsigned int artsMissing_checkpoint ;
     unsigned int artsToTape ;          /* # of articles given to tape */
+    unsigned int artsToTape_checkpoint ;
     unsigned int artsQueueOverflow ;   /* # of articles that overflowed `queued' */
     unsigned int artsCxnDrop ;         /* # of articles caught in dead cxn */
+    unsigned int artsCxnDrop_checkpoint ;
     unsigned int artsHostSleep ;       /* # of articles spooled by sleeping host */
+    unsigned int artsHostSleep_checkpoint ;
     unsigned int artsHostClose ;       /* # of articles caught by closing host */
+    unsigned int artsHostClose_checkpoint ;
     unsigned int artsFromTape ;        /* # of articles we pulled off tape */
+    unsigned int artsFromTape_checkpoint ;
     double artsSizeAccepted ;	/* size of articles succesfully transferred */
+    double artsSizeAccepted_checkpoint ;
     double artsSizeRejected ;	/* size of articles remote rejected */
+    double artsSizeRejected_checkpoint ;
 
     /* Dynamic Peerage - MGF */
     unsigned int artsProcLastPeriod ;  /* # of articles processed in last period */
@@ -210,8 +223,12 @@ struct host_s
     time_t connectTime ;        /* the time the first connection was fully
                                    set up (MODE STREAM and everything
                                    else). */
+    time_t connectTime_checkpoint ;
+
     time_t spoolTime ;          /* the time the Host had to revert to
                                    spooling articles to tape. */
+    time_t spoolTime_checkpoint ;
+
     time_t lastSpoolTime ;      /* the time the last time the Host had to
                                    revert to spooling articles to tape. */
     time_t nextIpLookup ;	/* time of last IP name resolution */
@@ -1037,19 +1054,32 @@ static Host newHost (InnListener listener, HostParams p)
   nh->isDynamic = false ;
 
   nh->artsOffered = 0 ;
+  nh->artsOffered_checkpoint = 0 ;
   nh->artsAccepted = 0 ;
+  nh->artsAccepted_checkpoint = 0 ;
   nh->artsNotWanted = 0 ;
+  nh->artsNotWanted_checkpoint = 0 ;
   nh->artsRejected = 0 ;
+  nh->artsRejected_checkpoint = 0 ;
   nh->artsDeferred = 0 ;
+  nh->artsDeferred_checkpoint = 0 ;
   nh->artsMissing = 0 ;
+  nh->artsMissing_checkpoint = 0 ;
   nh->artsToTape = 0 ;
+  nh->artsToTape_checkpoint = 0 ;
   nh->artsQueueOverflow = 0 ;
   nh->artsCxnDrop = 0 ;
+  nh->artsCxnDrop_checkpoint = 0 ;
   nh->artsHostSleep = 0 ;
+  nh->artsHostSleep_checkpoint = 0 ;
   nh->artsHostClose = 0 ;
+  nh->artsHostClose_checkpoint = 0 ;
   nh->artsFromTape = 0 ;
+  nh->artsFromTape_checkpoint = 0 ;
   nh->artsSizeAccepted = 0 ;
+  nh->artsSizeAccepted_checkpoint = 0 ;
   nh->artsSizeRejected = 0 ;
+  nh->artsSizeRejected_checkpoint = 0 ;
 
   nh->artsProcLastPeriod = 0;
   nh->secsInLastPeriod = 0;
@@ -1083,8 +1113,10 @@ static Host newHost (InnListener listener, HostParams p)
   
   nh->firstConnectTime = 0 ;
   nh->connectTime = 0 ;
+  nh->connectTime_checkpoint = 0 ;
   
   nh->spoolTime = 0 ;
+  nh->spoolTime_checkpoint = 0 ;
 
   nh->blNone = 0 ;
   nh->blFull = 0 ;
@@ -1898,6 +1930,8 @@ void hostRemoteStreams (Host host, Connection cxn, bool doesStreaming)
       host->remoteStreams = (host->params->wantStreaming ? doesStreaming : false) ;
 
       host->connectTime = theTime() ;
+      host->connectTime_checkpoint = host->connectTime ;
+
       if (host->firstConnectTime == 0)
         host->firstConnectTime = host->connectTime ;
     }
@@ -2953,6 +2987,8 @@ static void hostStartSpooling (Host host)
   hostLogStats (host,true) ;
   
   host->spoolTime = theTime() ;
+  host->spoolTime_checkpoint = host->spoolTime ;
+
   if (host->firstConnectTime == 0)
     host->firstConnectTime = host->spoolTime ;
 
@@ -2979,7 +3015,7 @@ static void hostStartSpooling (Host host)
 
 
 /*
- * Time to log the statistics for the Host. If FINAL is true then the
+ * Time to log the statistics for the Host.  If FINAL is true then the
  * counters will be reset.
  */
 static void hostLogStats (Host host, bool final)
@@ -2987,42 +3023,102 @@ static void hostLogStats (Host host, bool final)
   time_t now = theTime() ;
   time_t *startPeriod ;
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
-  char msgstr[SMBUF] ;
 
   if (host->spoolTime == 0 && host->connectTime == 0)
-    return ;        /* host has never connected and never started spooling*/
+    return ;        /* host has never connected and never started spooling. */
 
   startPeriod = (host->spoolTime != 0 ? &host->spoolTime : &host->connectTime);
 
   if (now - *startPeriod >= statsResetPeriod)
     final = true ;
   
-  if (host->spoolTime != 0)
-    notice ("%s %s seconds %ld spooled %d on_close %d sleeping %d",
-            host->params->peerName, (final ? "final" : "checkpoint"),
-            (long) (now - host->spoolTime), host->artsToTape,
-            host->artsHostClose, host->artsHostSleep) ;
-  else {
-    snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
-             host->artsSizeAccepted, host->artsSizeRejected);
-    notice ("%s %s seconds %ld offered %d accepted %d refused %d rejected %d"
-            " missing %d %s spooled %d on_close %d unspooled %d"
-            " deferred %d/%.1f requeued %d"
-            " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
-            host->params->peerName, (final ? "final" : "checkpoint"),
-            (long) (now - host->connectTime),
-            host->artsOffered, host->artsAccepted,
-            host->artsNotWanted, host->artsRejected,
-            host->artsMissing, msgstr,
-            host->artsToTape,
-            host->artsHostClose, host->artsFromTape,
-            host->artsDeferred, (double)host->dlAccum/cnt,
-            host->artsCxnDrop,
-            (double)host->blAccum/cnt, hostHighwater,
-            (100.0*host->blNone)/cnt,
-            (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
-            (100.0*host->blQuartile[2])/cnt, (100.0*host->blQuartile[3])/cnt,
-            (100.0*host->blFull)/cnt) ;
+  if (host->spoolTime != 0) {
+    /* Log a checkpoint in any case. */
+    notice("%s checkpoint seconds %ld spooled %d on_close %d sleeping %d",
+           host->params->peerName,
+           (long) (now - host->spoolTime_checkpoint),
+           host->artsToTape - host->artsToTape_checkpoint,
+           host->artsHostClose - host->artsHostClose_checkpoint,
+           host->artsHostSleep - host->artsHostSleep_checkpoint);
+
+    host->spoolTime_checkpoint = now;
+    host->artsToTape_checkpoint = host->artsToTape;
+    host->artsHostClose_checkpoint = host->artsHostClose;
+    host->artsHostSleep_checkpoint = host->artsHostSleep;
+
+    if (final) {
+      notice("%s final seconds %ld spooled %d on_close %d sleeping %d",
+             host->params->peerName,
+             (long) (now - host->spoolTime), host->artsToTape,
+             host->artsHostClose, host->artsHostSleep);
+    }
+  } else {
+    /* Log a checkpoint in any case.
+     *
+     * Note that deferred and queue values are cumulative
+     * (and not treated by innreport). */
+    notice("%s checkpoint seconds %ld offered %d accepted %d refused %d rejected %d"
+           " missing %d accsize %.0f rejsize %.0f spooled %d on_close %d unspooled %d"
+           " deferred %d/%.1f requeued %d"
+           " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+           host->params->peerName,
+           (long) (now - host->connectTime_checkpoint),
+           host->artsOffered - host->artsOffered_checkpoint,
+           host->artsAccepted - host->artsAccepted_checkpoint,
+           host->artsNotWanted - host->artsNotWanted_checkpoint,
+           host->artsRejected - host->artsRejected_checkpoint,
+           host->artsMissing - host->artsMissing_checkpoint,
+           host->artsSizeAccepted - host->artsSizeAccepted_checkpoint,
+           host->artsSizeRejected - host->artsSizeRejected_checkpoint,
+           host->artsToTape - host->artsToTape_checkpoint,
+           host->artsHostClose - host->artsHostClose_checkpoint,
+           host->artsFromTape - host->artsFromTape_checkpoint,
+           host->artsDeferred - host->artsDeferred_checkpoint,
+           (double)host->dlAccum/cnt,
+           host->artsCxnDrop - host->artsCxnDrop_checkpoint,
+           (double)host->blAccum/cnt,
+           hostHighwater,
+           (100.0*host->blNone)/cnt,
+           (100.0*host->blQuartile[0])/cnt,
+           (100.0*host->blQuartile[1])/cnt,
+           (100.0*host->blQuartile[2])/cnt,
+           (100.0*host->blQuartile[3])/cnt,
+           (100.0*host->blFull)/cnt);
+
+    host->connectTime_checkpoint = now;
+    host->artsOffered_checkpoint = host->artsOffered;
+    host->artsAccepted_checkpoint = host->artsAccepted;
+    host->artsNotWanted_checkpoint = host->artsNotWanted;
+    host->artsRejected_checkpoint = host->artsRejected;
+    host->artsMissing_checkpoint = host->artsMissing;
+    host->artsSizeAccepted_checkpoint = host->artsSizeAccepted;
+    host->artsSizeRejected_checkpoint = host->artsSizeRejected;
+    host->artsToTape_checkpoint = host->artsToTape;
+    host->artsHostClose_checkpoint = host->artsHostClose;
+    host->artsFromTape_checkpoint = host->artsFromTape;
+    host->artsDeferred_checkpoint = host->artsDeferred;
+    host->artsCxnDrop_checkpoint = host->artsCxnDrop;
+
+    if (final) {
+      notice("%s final seconds %ld offered %d accepted %d refused %d rejected %d"
+             " missing %d accsize %.0f rejsize %.0f spooled %d on_close %d unspooled %d"
+             " deferred %d/%.1f requeued %d"
+             " queue %.1f/%d:%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+             host->params->peerName,
+             (long) (now - host->connectTime),
+             host->artsOffered, host->artsAccepted,
+             host->artsNotWanted, host->artsRejected,
+             host->artsMissing, host->artsSizeAccepted, host->artsSizeRejected,
+             host->artsToTape,
+             host->artsHostClose, host->artsFromTape,
+             host->artsDeferred, (double)host->dlAccum/cnt,
+             host->artsCxnDrop,
+             (double)host->blAccum/cnt, hostHighwater,
+             (100.0*host->blNone)/cnt,
+             (100.0*host->blQuartile[0])/cnt, (100.0*host->blQuartile[1])/cnt,
+             (100.0*host->blQuartile[2])/cnt, (100.0*host->blQuartile[3])/cnt,
+             (100.0*host->blFull)/cnt);
+    }
   }
 
   if (logConnectionStats) 
@@ -3040,32 +3136,47 @@ static void hostLogStats (Host host, bool final)
 
   if (final)
     {
+      /* We also reset checkpoints because the same host structure
+       * may be used again. */
       host->artsOffered = 0 ;
+      host->artsOffered_checkpoint = 0 ;
       host->artsAccepted = 0 ;
+      host->artsAccepted_checkpoint = 0 ;
       host->artsNotWanted = 0 ;
+      host->artsNotWanted_checkpoint = 0 ;
       host->artsRejected = 0 ;
+      host->artsRejected_checkpoint = 0 ;
       host->artsDeferred = 0 ;
+      host->artsDeferred_checkpoint = 0 ;
       host->artsMissing = 0 ;
+      host->artsMissing_checkpoint = 0 ;
       host->artsToTape = 0 ;
+      host->artsToTape_checkpoint = 0 ;
       host->artsQueueOverflow = 0 ;
       host->artsCxnDrop = 0 ;
+      host->artsCxnDrop_checkpoint = 0 ;
       host->artsHostSleep = 0 ;
+      host->artsHostSleep_checkpoint = 0 ;
       host->artsHostClose = 0 ;
+      host->artsHostClose_checkpoint = 0 ;
       host->artsFromTape = 0 ;
+      host->artsFromTape_checkpoint = 0 ;
       host->artsSizeAccepted = 0 ;
+      host->artsSizeAccepted_checkpoint = 0 ;
       host->artsSizeRejected = 0 ;
+      host->artsSizeRejected_checkpoint = 0 ;
       
       *startPeriod = theTime () ; /* in of case STATS_RESET_PERIOD */
     }
 
-    /* reset these each log period */
-    host->blNone = 0 ;
-    host->blFull = 0 ;
-    host->blQuartile[0] = host->blQuartile[1] = host->blQuartile[2] =
-                          host->blQuartile[3] = 0;
-    host->dlAccum = 0;
-    host->blAccum = 0;
-    host->blCount = 0;
+  /* Reset these each log period. */
+  host->blNone = 0 ;
+  host->blFull = 0 ;
+  host->blQuartile[0] = host->blQuartile[1] = host->blQuartile[2] =
+                        host->blQuartile[3] = 0;
+  host->dlAccum = 0;
+  host->blAccum = 0;
+  host->blCount = 0;
 
 #if 0
   /* XXX turn this section on to get a snapshot at each log period. */

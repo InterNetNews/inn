@@ -179,30 +179,39 @@ struct connection_s
                                    streaming mode (rather than just sending
                                    TAKETHIS commands) */
 
-    time_t timeCon ;            /* the time the connect happened (including
-                                   the MODE STREAM command). */
+    time_t timeCon;             /* the time the connect happened (including
+                                   the MODE STREAM command) */
+    time_t timeCon_checkpoint;
 
     /*
      * STATISTICS
      */
-    unsigned int artsTaken ;           /* the number of articles INN gave this cxn */
-    unsigned int checksIssued ;        /* the number of CHECKS/IHAVES we
-                                   sent. Note that if we're running in
-                                   no-CHECK mode, then we add in the
-                                   TAKETHIS commands too */
-    unsigned int checksRefused ;       /* the number of response 435/438 */
-    unsigned int takesRejected ;       /* the number of response 437/439 recevied */
-    unsigned int takesOkayed ;         /* the number of response 235/239 received */
+    unsigned int artsTaken;           /* the number of articles INN gave this cxn */
 
-    double takesSizeRejected ;
-    double takesSizeOkayed ;
+    unsigned int checksIssued;        /* the number of CHECKs/IHAVEs we
+                                          sent.  Note that if we're running in
+                                          no-CHECK mode, then we add in the
+                                          TAKETHIS commands too */
+    unsigned int checksIssued_checkpoint;
+
+    unsigned int checksRefused;       /* the number of response 435/438 */
+    unsigned int checksRefused_checkpoint;
+    unsigned int takesRejected;       /* the number of response 437/439 received */
+    unsigned int takesRejected_checkpoint;
+    unsigned int takesOkayed;         /* the number of response 235/239 received */
+    unsigned int takesOkayed_checkpoint;
+
+    double takesSizeRejected;
+    double takesSizeRejected_checkpoint;
+    double takesSizeOkayed;
+    double takesSizeOkayed_checkpoint;
 
     double onThreshold ;        /* for no-CHECK mode */
     double offThreshold ;       /* for no-CHECK mode */
     double filterValue ;        /* current value of IIR filter */
     double lowPassFilter ;      /* time constant for IIR filter */
 
-    Connection next ;           /* for global list. */
+    Connection next ;           /* for global list */
 };
 
 static Connection gCxnList = NULL ;
@@ -971,8 +980,8 @@ bool cxnQueueArticle (Connection cxn, Article art)
 
 
 /*
- * generate a log message for activity. Usually called by the Connection's
- * owner
+ * Generate a log message for activity.  Usually called by the Connection's
+ * owner.
  */
 void cxnLogStats (Connection cxn, bool final)
 {
@@ -981,7 +990,7 @@ void cxnLogStats (Connection cxn, bool final)
 
   ASSERT (cxn != NULL) ;
 
-  /* only log stats when in one of these three states. */
+  /* Only log stats when in one of these three states. */
   switch (cxn->state)
     {
       case cxnFeedingS:
@@ -995,25 +1004,45 @@ void cxnLogStats (Connection cxn, bool final)
 
   peerName = hostPeerName (cxn->myHost) ;
 
-  notice ("%s:%d %s seconds %ld offered %d accepted %d refused %d"
-          " rejected %d accsize %.0f rejsize %.0f", peerName, cxn->ident,
-          (final ? "final" : "checkpoint"), (long) (now - cxn->timeCon),
-          cxn->checksIssued, cxn->takesOkayed, cxn->checksRefused,
-          cxn->takesRejected, cxn->takesSizeOkayed, cxn->takesSizeRejected) ;
+  /* Log a checkpoint in any case. */
+  notice("%s:%d checkpoint seconds %ld offered %d accepted %d refused %d"
+         " rejected %d accsize %.0f rejsize %.0f",
+         peerName, cxn->ident,
+         (long) (now - cxn->timeCon_checkpoint),
+         cxn->checksIssued - cxn->checksIssued_checkpoint,
+         cxn->takesOkayed - cxn->takesOkayed_checkpoint,
+         cxn->checksRefused - cxn->checksRefused_checkpoint,
+         cxn->takesRejected - cxn->takesRejected_checkpoint,
+         cxn->takesSizeOkayed - cxn->takesSizeOkayed_checkpoint,
+         cxn->takesSizeRejected - cxn->takesSizeRejected_checkpoint);
 
-  if (final)
-    {
-      cxn->artsTaken = 0 ;
-      cxn->checksIssued = 0 ;
-      cxn->checksRefused = 0 ;
-      cxn->takesRejected = 0 ;
-      cxn->takesOkayed = 0 ;
-      cxn->takesSizeRejected = 0 ;
-      cxn->takesSizeOkayed = 0 ;
+  if (final) {
+    notice("%s:%d final seconds %ld offered %d accepted %d refused %d"
+           " rejected %d accsize %.0f rejsize %.0f",
+           peerName, cxn->ident, (long) (now - cxn->timeCon),
+           cxn->checksIssued, cxn->takesOkayed, cxn->checksRefused,
+           cxn->takesRejected, cxn->takesSizeOkayed, cxn->takesSizeRejected);
 
-      if (cxn->timeCon > 0)
-        cxn->timeCon = theTime() ;
-    }
+    cxn->artsTaken = 0;
+    cxn->checksIssued = 0;
+    cxn->checksRefused = 0;
+    cxn->takesRejected = 0;
+    cxn->takesOkayed = 0;
+    cxn->takesSizeRejected = 0;
+    cxn->takesSizeOkayed = 0;
+
+      if (cxn->timeCon > 0) {
+        cxn->timeCon = theTime();
+      }
+  }
+
+  cxn->timeCon_checkpoint = now;
+  cxn->checksIssued_checkpoint = cxn->checksIssued;
+  cxn->takesOkayed_checkpoint = cxn->takesOkayed;
+  cxn->checksRefused_checkpoint = cxn->checksRefused;
+  cxn->takesRejected_checkpoint = cxn->takesRejected;
+  cxn->takesSizeOkayed_checkpoint = cxn->takesSizeOkayed;
+  cxn->takesSizeRejected_checkpoint = cxn->takesSizeRejected;
 }
 
 
@@ -1806,7 +1835,9 @@ static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
             }
           
           /* now we consider ourselves completly connected. */
-          cxn->timeCon = theTime () ;
+          cxn->timeCon = theTime();
+          cxn->timeCon_checkpoint = theTime();
+
           if (cxn->articleQTotal == 0)
             cxnIdle (cxn) ;
           else
@@ -3746,6 +3777,14 @@ static void resetConnection (Connection cxn)
   cxn->takesOkayed = 0 ;
   cxn->takesSizeRejected = 0 ;
   cxn->takesSizeOkayed = 0 ;
+
+  cxn->timeCon_checkpoint = 0;
+  cxn->checksIssued_checkpoint = 0;
+  cxn->checksRefused_checkpoint = 0;
+  cxn->takesRejected_checkpoint = 0;
+  cxn->takesOkayed_checkpoint = 0;
+  cxn->takesSizeRejected_checkpoint = 0;
+  cxn->takesSizeOkayed_checkpoint = 0;
 
   cxn->filterValue = 0.0 ;
 }
