@@ -252,8 +252,24 @@ for (;;) {
     }
 
     if (/^References:\s*/sio) {
-	$references = $';
-	next;
+        $references = $';
+
+        # 986 = 998 (maximum per RFC 5536) - length("References: ")
+        if (length($references) > 985) {
+            my @refarray = ( $references =~ /(<.*?>)/g );
+            # Keep only the first and the last two message-IDs, per RFC 5537.
+            #
+            # Remove the header in case we do not have at least 3 message-IDs
+            # because it then probably means that the header is broken, or
+            # contains CFWS that we do not deal with.
+            if (scalar(@refarray) > 2) {
+                my $last_mid = pop(@refarray);
+                $references = shift(@refarray) . ' ' . pop(@refarray) . ' ' . $last_mid;
+            } else {
+                $references = undef;
+            }
+        }
+        next;
     }
 
     if (!defined($references) && /^In-Reply-To:[^\<]*\<([^\>]+)\>/sio) {
