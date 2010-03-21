@@ -272,7 +272,12 @@ CMDlist(int ac, char *av[])
             continue;
         }
         if (lp == &INFOmotd) {
-            Printf("%s\r\n", p);
+            if (is_valid_utf8(p)) {
+                Printf("%s\r\n", p);
+            } else {
+                syslog(L_ERROR, "%s bad encoding in %s (UTF-8 expected)",
+                       Client.host, lp->File);
+            }
             continue;
         }
 	/* Matching patterns against patterns is not that
@@ -296,8 +301,14 @@ CMDlist(int ac, char *av[])
 	    continue;
 	}
 	if (lp == &INFOdistribs || lp == &INFOmoderators) {
-	    if (*p != '\0' && *p != '#' && *p != ';' && *p != ' ')
-		Printf("%s\r\n", p);
+            if (*p != '\0' && *p != '#' && *p != ';' && *p != ' ') {
+                if (is_valid_utf8(p)) {
+                    Printf("%s\r\n", p);
+                } else if (lp == &INFOdistribs) {
+                    syslog(L_ERROR, "%s bad encoding in %s (UTF-8 expected)",
+                           Client.host, lp->File);
+                }
+            }
 	    continue;
 	}
 	savec = '\0';
