@@ -129,7 +129,7 @@ sub read_cycbuffconf {
 	    }
 
 	    $class{$line[1]} = $line[2];
-	    if ($line[3] ne "") {
+	    if (scalar @line > 3 && $line[3] ne "") {
 		$metamode{$line[1]} = $line[3];
 	    } else {
 		$metamode{$line[1]} = "INTERLEAVE";
