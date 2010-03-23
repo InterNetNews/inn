@@ -423,7 +423,7 @@ The client may use the NEWNEWS command, overriding the global setting.
 =item L
 
 The client may post to newsgroups that are set to disallow local posting
-(status fields C<n> and C<x> in the active(5) file).
+(status fields C<j>, C<n> and C<x> in the active(5) file).
 
 =back
 

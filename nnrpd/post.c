@@ -770,13 +770,11 @@ ValidNewsgroups(char *hdr, char **modgroup)
 		*modgroup = xstrdup(p);
 	    break;
 	case NF_FLAG_IGNORE:
+        case NF_FLAG_JUNK:
 	case NF_FLAG_NOLOCAL:
 	    if (!PERMaccessconf->locpost)
 		snprintf(Error, sizeof(Error),
                          "Postings to \"%s\" are not allowed here", p);
-	    break;
-	case NF_FLAG_JUNK:
-	    /* Do NOT return an error. */
 	    break;
 	case NF_FLAG_ALIAS:
 	    snprintf(Error, sizeof(Error),

@@ -151,8 +151,9 @@ CMD_list_single(char *group)
     }
     if (OVgroupstats(group, &lo, &hi, &count, &flag) && flag != NF_FLAG_ALIAS) {
         /* When the connected user has the right to locally post, mention it. */
-        if (PERMaccessconf->locpost && (flag == NF_FLAG_NOLOCAL
-                                        || flag == NF_FLAG_IGNORE))
+        if (PERMaccessconf->locpost && (flag == NF_FLAG_IGNORE
+                                        || flag == NF_FLAG_JUNK
+                                        || flag == NF_FLAG_NOLOCAL))
             flag = NF_FLAG_OK;
         /* When a newsgroup is empty, the high water mark should be one less
          * than the low water mark according to RFC 3977. */
@@ -342,7 +343,9 @@ CMDlist(int ac, char *av[])
                 if (flag != NF_FLAG_ALIAS) {
                     Printf("%s %u %u %u %c\r\n", p, hi, lo, count,
                            PERMaccessconf->locpost
-                           && (flag == NF_FLAG_NOLOCAL || flag == NF_FLAG_IGNORE)
+                           && (flag == NF_FLAG_IGNORE
+                               || flag == NF_FLAG_JUNK
+                               || flag == NF_FLAG_NOLOCAL)
                            ? NF_FLAG_OK : flag);
                 } else if (savec != '\0') {
                     *save = savec;
@@ -364,7 +367,9 @@ CMDlist(int ac, char *av[])
             /* When the connected user has the right to locally post, mention it. */
             if (PERMaccessconf->locpost && (q = strrchr(p, ' ')) != NULL) {
                 q++;
-                if (*q == NF_FLAG_NOLOCAL || *q == NF_FLAG_IGNORE)
+                if (*q == NF_FLAG_IGNORE
+                    || *q == NF_FLAG_JUNK
+                    || *q == NF_FLAG_NOLOCAL)
                     *q = NF_FLAG_OK;
             }
         }
