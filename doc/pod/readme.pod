@@ -239,14 +239,6 @@ they want without having to ask you to edit the configuration file all the
 time.  It's useful when feeding peers take limited and very specific
 feeds that change periodically.
 
-=item inflow
-
-URL:  L<http://www.switch.ch/netnews/wg/netnews-wg.html>
-
-B<inflow> generates graphs of news flow statistics in real time from INN's
-logs (things like articles accepted per peer, volume accepted per peer,
-and the like).
-
 =item NewsPortal
 
 URL:  L<http://amrhein.eu/newsportal/>
