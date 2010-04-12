@@ -662,7 +662,7 @@ fix the F<MANIFEST> file.
 Run C<make release> for a final release, C<support/mksnapshot BETA b1>
 for the first beta version of a new release, or C<support/mksnapshot RC rc1>
 for the first release candidate version of a new release.  Note that you
-need to have a copy of B<svn2cl> from L<http://ch.tudelft.nl/~arthur/svn2cl/>
+need to have a copy of B<svn2cl> from L<http://arthurdejong.org/svn2cl/>
 to do this; at least version 0.7 is required.  Start the F<ChangeLog> at the
 time of the previous release.  (Eventually, the script will be smart enough
 to do this for you.)
