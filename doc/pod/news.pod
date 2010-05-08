@@ -16,6 +16,12 @@ B<cnfsheadconf> now properly recognizes continuation lines in
 F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
 Thanks to John S<F. Morse> for the bug report.
 
+=item *
+
+The order of CNFS buffers in a metacycbuff is now properly read and written
+by B<cnfsheadconf>.  There previoulsy was a confusion between hexadecimal
+and decimal values.  Thanks again to John S<F. Morse>.
+
 =back
 
 =head1 Changes in 2.5.2
