@@ -249,7 +249,7 @@ sub print_cycbuff_head {
     my($CNFSLASIZ)=16;
     my($headerlength) = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
     my($buff, @entries, $e);
-    my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff, $blksza);
+    my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza);
 
     if ($opt_w) {
 	if(! open(BUFF, "+< $buffpath") ) {
@@ -269,7 +269,7 @@ sub print_cycbuff_head {
 	exit(1);
     }
 
-    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
+    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if(!$magic) {
 	print STDERR "Error while unpacking header ...\n";
@@ -280,6 +280,7 @@ sub print_cycbuff_head {
     my($free) = bhex($freea);
     my($update) = hex($updatea);
     my($cyclenum) = hex($cyclenuma) - 1;
+    my($orderinmeta) = hex($orderinmetaa);
     my($blksz) = ($magic =~ m/^CBuf4/) ? hex($blksza) : 512;
 
     my ($nupdate_str, $nago_str) = &make_time ($update);
@@ -332,19 +333,20 @@ sub print_cycbuff_head {
 	if ($in ne "") {
 	    $metaname = sprintf("%0.17s\0", $in);
 	}
-	print "Order [$orderinmeta] => ";
-	$in = <>;
-	chop $in;
-	if ($in ne "") {
-	    $orderinmeta = sprintf("%016d\0", $in);
-	}
+        print "Order [$orderinmeta ($orderinmetaa)] => ";
+        $in = <>;
+        chop $in;
+        if ($in ne "") {
+            $in = bint2hex($in);
+            $orderinmetaa = sprintf("%017.17s\0", $in);
+        }
 	print "Currentbuff [$currentbuff] => ";
 	$in = <>;
 	chop $in;
 	if ($in eq "TRUE" || $in eq "FALSE") {
 	    $currentbuff = sprintf("%0.8s", $in);
 	}
-	$buff = pack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmeta, $currentbuff);
+        $buff = pack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff);
         $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
 	seek(BUFF, 0, 0);
 	    if(! syswrite(BUFF, $buff, $headerlength) ) {
