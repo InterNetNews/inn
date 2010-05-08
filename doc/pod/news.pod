@@ -4,6 +4,14 @@
 
 =item *
 
+When HDR/XHDR/XPAT was used on a new article coming into a newsgroup,
+requesting a header not present in the overview database, the first
+subsequent OVER/XOVER command did not show that article.  A remap of the
+overview data file was missing in B<nnrpd>.  Thanks to Sam Varshavchik
+for the bug report.
+
+=item *
+
 B<cnfsheadconf> now properly recognizes continuation lines in
 F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
 Thanks to John S<F. Morse> for the bug report.
