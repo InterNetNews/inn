@@ -425,6 +425,8 @@ tdx_article_entry(struct group_data *data, ARTNUM article, ARTNUM high)
         unmap_index(data);
         map_index(data);
         data->high = high;
+        /* Mark the data file to be remapped for the next opensearch. */
+        data->remapoutoforder = true;
     } else if (innconf->nfsreader && stale_index(data))
         unmap_index(data);
     if (data->index == NULL)
