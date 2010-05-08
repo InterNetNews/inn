@@ -1,3 +1,15 @@
+=head1 Changes in 2.5.3
+
+=over 2
+
+=item *
+
+B<cnfsheadconf> now properly recognizes continuation lines in
+F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
+Thanks to John S<F. Morse> for the bug report.
+
+=back
+
 =head1 Changes in 2.5.2
 
 The way checkpoints are handled by B<innreport> for B<innd> and B<innfeed>
