@@ -1694,7 +1694,7 @@ properly and safely.
 =item *
 
 All of the applicable bug fixes from the S<INN 2.3> STABLE series are
-also included in S<INN 2.4>. 
+also included in S<INN 2.4>.
 
 =back
 

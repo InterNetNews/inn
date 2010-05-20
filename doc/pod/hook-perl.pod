@@ -645,10 +645,10 @@ maintaining it since 2007.
 
 URL:  L<http://code.google.com/p/postfilter/> (by Paolo Amoroso)
 
-Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all 
-messages sent by local users in order to block abuses.  Postfilter can limit 
-the number of messages per user, IP or domain, provides a set of powerful 
-ban lists, supports RBLs and URIBLs, can handle connections that come from 
+Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all
+messages sent by local users in order to block abuses.  Postfilter can limit
+the number of messages per user, IP or domain, provides a set of powerful
+ban lists, supports RBLs and URIBLs, can handle connections that come from
 TOR and is able to deeply modify the headers.  It's designed for large sites.
 
 =item News Shogun

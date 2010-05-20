@@ -20,12 +20,12 @@ active process.
 
 =over 4
 
-=item B<-b> 
+=item B<-b>
 
 Process IDs are normally read and written in ASCII.  If the B<-b> flag
 is used, then they will be written as a binary int.
 
-=item B<-c> 
+=item B<-c>
 
 If the B<-c> flag is used, then B<shlock> will not create a lock file,
 but will instead use the file to see if the lock is held by another program.
