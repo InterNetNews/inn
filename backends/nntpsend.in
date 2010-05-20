@@ -149,6 +149,7 @@ NNTPLOCK=${LOCKS}/LOCK.nntpsend
 if [ -z "${NOLOCK}" ]; then
     shlock -p $$ -f ${NNTPLOCK} || {
         # Nothing to do.
+        echo "${PROGNAME}:  Lock found" 1>&2
         exit 0
     }
 fi
@@ -303,8 +304,8 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	X-w)
 	    if [ -z "$2" ] ; then
 		echo "${PROGNAME}: option requires an argument -- w" 1>&2
-	    rm -f "${NNTPLOCK}" "${LOCK}"
-	    exit 1
+                rm -f "${NNTPLOCK}" "${LOCK}"
+                exit 1
 	    fi
 	    W_SECONDS="$2"
 	    shift
