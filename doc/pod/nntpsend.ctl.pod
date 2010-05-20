@@ -1,0 +1,42 @@
+=head1 NAME
+
+nntpsend.ctl - List of sites to feed via nntpsend
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/nntpsend.ctl specifies the default list of sites
+to be fed by B<nntpsend>.  Comments begin with a number sign (C<#>) and
+continue through the end of the line.  Blank lines and comments are ignored.
+All other lines should consist of four fields separated by a colon.
+
+The first field is the name of the site as specified in the F<newsfeeds>
+file.
+
+The second field should be the hostname or IP address of the remote site.
+
+The third field, if non-empty, specifies the default head truncation size
+of the batch file.  If this field is empty, no truncation is performed.
+This field may be of the form C<< I<maxsize>-I<truncsize> >>, in which
+case it is passed to B<shrinkfile> as C<< -m I<maxsize> -s I<truncsize>
+>>; otherwise it is of the form C<< I<truncsize> >>, in which case it is
+passed as C<< -s I<truncsize> >>.
+
+The fourth field specifies some default flags passed to B<innxmit>.  Note
+that the flag B<-a> is always given to B<innxmit> and need not appear here.
+If no B<-t> flag is given in this field or on the B<nntpsend> command line,
+C<-t 180> will be given to B<innxmit>.
+
+See nntpsend(8) for an example of F<nntpsend.ctl> config file.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+innxmit(1), newsfeeds(5), nntpsend(8), shrinkfile(1).
+
+=cut

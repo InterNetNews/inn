@@ -1,0 +1,124 @@
+=head1 NAME
+
+nntpsend - Send Usenet articles to remote sites
+
+=head1 SYNOPSIS
+
+B<nntpsend> [B<-acDdlNnpr>] [B<-P> I<portnum>] [B<-s> I<size>]
+[B<-T> I<timelimit>] [B<-t> I<timeout>] [B<-w> I<delay>]
+[I<sitename> I<fqdn>] ...
+
+=head1 DESCRIPTION
+
+B<nntpsend> is a front-end that invokes B<innxmit> to send Usenet articles
+to a remote NNTP site.  The sites to be fed may be specified by giving
+I<sitename> I<fqdn> pairs on the command line.  If no such pairs are given,
+B<nntpsend> defaults to the information given in the F<nntpsend.ctl>
+config file.  The I<sitename> should be the name of the site as specified
+in the F<newsfeeds> file.  The I<fqdn> should be the hostname or IP address
+of the remote site.  An B<innxmit> is launched for sites with queued news.
+All B<innxmit> processes are spawned in the background and the script
+waits for them all to finish before returning.  Output is sent to the file
+F<nntpsend.log> in I<pathlog>.  In order to keep from overwhelming the
+local system, B<nntpsend> waits five seconds before spawning each child.
+
+B<nntpsend> expects that the batch file for a site is named I<sitename>
+in I<pathoutgoing>.  To prevent batch files corruption, B<shlock> is used to
+"lock" these files.  When I<sitename> I<fqdn> pairs are given on the command
+line, any flags given on the command completely describe how B<innxmit>
+and B<shrinkfile> operate.  When no such pairs are given on the command
+line, then the information found in F<nntpsend.ctl> becomes the default
+flags for that site.  Any flags given on the command line override the
+default flags for the site.
+
+=head1 OPTIONS
+
+=over 2
+
+=item B<-D>, B<-d>
+
+The B<-D> flag causes B<nntpsend> to send output to stdout rather than
+the log file F<nntpsend.log> in I<pathlog>.  The B<-d> flag does the same
+and it passes B<-d> to all B<innxmit> invocations, which in turn causes
+B<innxmit> to go into debug mode.
+
+=item B<-n>
+
+If the B<-n> flag is used, then B<nntpsend> does not use B<shlock> and
+does not lock batch files.  It also does not sleep before spawning each
+B<innxmit> child.
+
+=item B<-s> I<size>
+
+If the B<-s> flag is used, then B<shrinkfile> will be invoked to perform
+a head truncation of I<size> bytes on the batch file and the flag will be
+passed to it.
+
+=item B<-w> I<delay>
+
+If the B<-w> flag is used, then B<nntpsend> waits for I<delay> seconds
+after flushing the site before launching B<innxmit>.
+
+=item B<-a>, B<-c>, B<-l>, B<-N>, B<-P> I<portnum>, B<-p>, B<-r>, B<-T>
+I<timelimit>, B<-t> I<timeout>
+
+The B<-a>, B<-c>, B<-l>, B<-P> I<portnum>, B<-p>, B<-r>, B<-T> I<timelimit>
+and B<-t> I<timeout> flags are passed on to the child B<innxmit> program.
+The B<-N> flag is passed as B<-s> flag to the child B<innxmit> program.
+See innxmit(8) for more details.
+
+Note that if the B<-p> flag is used, then no connection is made and no
+articles are fed to the remote site.  It is useful to have cron(8) invoke
+B<nntpsend> with this flag in case a site cannot be reached for an extended
+period of time.
+
+=back
+
+=head1 EXAMPLES
+
+With the following F<nntpsend.ctl> config file:
+
+    nsavax:erehwon.nsavax.gov::-t60
+    group70:group70.org::
+    walldrug:walldrug.com:4m-1m:-T1800 -t300
+    kremvax:kremvax.cis:2m:
+
+the command C<nntpsend> will result in the following:
+
+    Sitename        Truncation      Innxmit flags
+    nsavax          (none)          -a -t60
+    group70         (none)          -a -t180
+    walldrug        1m if >4m       -T1800 -t300
+    kremvax         2m              -t180
+
+The command C<nntpsend -d -T1200> will result in the following:
+
+    Sitename        Truncation      Innxmit flags
+    nsavax          (none)          -a -d -T1200 -t60
+    group70         (none)          -a -d -T1200 -t180
+    walldrug        1m if >4m       -d -T1200 -t300
+    kremvax         2m              -d -T1200 -t180
+
+The command C<nntpsend -s 5m -T1200 nsavax erehwon.nsavax.gov group70
+group70.org> will result in the following:
+
+    Sitename        Truncation      Innxmit flags
+    nsavax          5m              -T1200 -t180
+    group70         5m              -T1200 -t180
+
+Remember that B<-a> is always given when there is no size limit, and B<-t>
+defaults to C<180>.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innxmit(1), newsfeeds(5), nntpsend.ctl(5), shlock(1),
+shrinkfile(1).
+
+=cut
