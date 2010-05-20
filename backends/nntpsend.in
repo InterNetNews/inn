@@ -12,7 +12,7 @@
 ##	-d		same as -d, and run innxmit with debug as well
 ##	-l		innxmit, log rejected articles
 ##	-N		innxmit, disable streaming mode
-##	-n		do not lock for nntpsend, do not sleep between sets
+##	-n		do not lock for nntpsend
 ##	-P portnum	port number to use
 ##	-p		run innxmit with -p to prune batch files
 ##	-r		innxmit, don't requeue on unexpected error code

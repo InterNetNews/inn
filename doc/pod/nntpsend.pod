@@ -44,9 +44,8 @@ B<innxmit> to go into debug mode.
 
 =item B<-n>
 
-If the B<-n> flag is used, then B<nntpsend> does not use B<shlock> and
-does not lock batch files.  It also does not sleep before spawning each
-B<innxmit> child.
+If the B<-n> flag is used, then B<nntpsend> does not use B<shlock> to lock
+the use of B<nntpsend>.  Batch files will still be locked.
 
 =item B<-s> I<size>
 
