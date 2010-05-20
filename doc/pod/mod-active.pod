@@ -46,7 +46,7 @@ to happen.
 =head1 HISTORY
 
 Written by David C Lawrence <tale@isc.org> for InterNetNews.  Converted to POD
-by Julien Elie. 
+by Julien Elie.
 
 =head1 SEE ALSO
 

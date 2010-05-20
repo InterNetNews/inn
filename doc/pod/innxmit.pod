@@ -79,9 +79,9 @@ To specify a port number other than the default, use the B<-P> flag.
 
 =item B<-p>
 
-If the B<-p> flag is given, then no connection is made and the batchfile
-is purged of entries that refer to files that no longer exist.  This
-implies the B<-a> flag.
+If the B<-p> flag is given, then no connection is made and the batch
+file is purged of entries that refer to files that no longer exist.
+This implies the B<-a> flag.
 
 =item B<-r>
 
