@@ -203,7 +203,7 @@ if ${ROTATE} ; then
 			&& mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
 		done
 	    fi
-	    ##  Innreport assumes where unwanted.log exists, so leave it
+	    ##  innreport assumes where unwanted.log exists, so leave it
 	    ##  and process later.
 	    ;;
 	*)

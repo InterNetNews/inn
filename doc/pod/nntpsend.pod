@@ -85,7 +85,7 @@ With the following F<nntpsend.ctl> config file:
 
 the command C<nntpsend> will result in the following:
 
-    Sitename        Truncation      Innxmit flags
+    Sitename        Truncation      innxmit flags
     nsavax          (none)          -a -t60
     group70         (none)          -a -t180
     walldrug        1m if >4m       -T1800 -t300
@@ -93,7 +93,7 @@ the command C<nntpsend> will result in the following:
 
 The command C<nntpsend -d -T1200> will result in the following:
 
-    Sitename        Truncation      Innxmit flags
+    Sitename        Truncation      innxmit flags
     nsavax          (none)          -a -d -T1200 -t60
     group70         (none)          -a -d -T1200 -t180
     walldrug        1m if >4m       -d -T1200 -t300
@@ -102,7 +102,7 @@ The command C<nntpsend -d -T1200> will result in the following:
 The command C<nntpsend -s 5m -T1200 nsavax erehwon.nsavax.gov group70
 group70.org> will result in the following:
 
-    Sitename        Truncation      Innxmit flags
+    Sitename        Truncation      innxmit flags
     nsavax          5m              -T1200 -t180
     group70         5m              -T1200 -t180
 

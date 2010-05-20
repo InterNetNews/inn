@@ -58,7 +58,7 @@ echo ''
 		echo 'Lock files:'
 		ls -C LOCK.* 2>&1
 	else
-		echo 'Innwatch is not running'
+		echo 'innwatch is not running'
 	fi
 )
 
