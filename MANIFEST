@@ -285,6 +285,8 @@ doc/pod/newsgroups.pod                Master file for newsgroups.5
 doc/pod/newslog.pod                   Master file for newslog.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/nnrpd.pod                     Master file for nnrpd.8
+doc/pod/nntpsend.ctl.pod              Master file for nntpsend.ctl.5
+doc/pod/nntpsend.pod                  Master file for nntpsend.8
 doc/pod/ovdb.pod                      Master file for ovdb.5
 doc/pod/ovdb_init.pod                 Master file for ovdb_init.8
 doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8

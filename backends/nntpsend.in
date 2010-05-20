@@ -1,23 +1,24 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
+##  $Id$
 ##  Send news via NNTP by running several innxmit processes in the background.
 ##  Usage:
-##	nntpsend [-n][-p][-r][-s size][-S][-t timeout][-T limit][host fqdn]...
-##	-a		Always have innxmit rewrite the batchfile
-##	-d		debug mode, run innxmits with debug as well
-##	-D		same as -d except innxmits are not debugged
-##	-p		Run innxmit with -p to prune batch files
-##	-r		innxmit, don't requeue on unexpected error code
-##	-s size		limit the =n file to size bytes
+##	nntpsend [-acDdlNnpr] [-P portnum] [-s size] [-T limit] [-t timeout]
+##		 [-w delay] [host fqdn] ...
+##	-a		always have innxmit rewrite the batch file (if no size limit)
 ##	-c		disable message-ID checking in streaming mode
-##	-t timeout	innxmit timeout to make connection (def: 180)
-##	-T limit	innxmit connection transmit time limit (def: forever)
-##	-P portnum	port number to use
+##	-D		debug mode, send output to stdout
+##	-d		same as -d, and run innxmit with debug as well
 ##	-l		innxmit, log rejected articles
 ##	-N		innxmit, disable streaming mode
 ##	-n		do not lock for nntpsend, do not sleep between sets
+##	-P portnum	port number to use
+##	-p		run innxmit with -p to prune batch files
+##	-r		innxmit, don't requeue on unexpected error code
+##	-s size		limit the file to size bytes
+##	-T limit	innxmit connection transmit time limit (def: forever)
+##	-t timeout	innxmit timeout to make connection (def: 180)
 ##	-w delay	wait delay seconds just before innxmit
 ##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
@@ -34,10 +35,9 @@ D_FLAG=
 NO_LOG_FLAG=
 P_FLAG=
 R_FLAG=
-S_FLAG=
 C_FLAG=
 L_FLAG=
-S2_FLAG=
+S_FLAG=
 TRUNC_SIZE=
 T_FLAG=
 TIMELIMIT=
@@ -68,11 +68,8 @@ while ${MORETODO} ; do
     X-r)
 	R_FLAG="-r"
 	;;
-    X-S)
-	S_FLAG="-S"
-	;;
     X-N)
-	S2_FLAG="-s"
+	S_FLAG="-s"
 	;;
     X-c)
 	C_FLAG="-c"
@@ -147,12 +144,12 @@ while ${MORETODO} ; do
     ${MORETODO} && shift
 done
 
-## grab the lock if not -n
+##  Grab the lock if not -n.
 NNTPLOCK=${LOCKS}/LOCK.nntpsend
 if [ -z "${NOLOCK}" ]; then
     shlock -p $$ -f ${NNTPLOCK} || {
-	# nothing to do
-	exit 0
+        # Nothing to do.
+        exit 0
     }
 fi
 
@@ -234,7 +231,6 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     D_PARAM=
     R_PARAM=
     S_PARAM=
-    S2_PARAM=
     C_PARAM=
     PP_PARAM=
     L_PARAM=
@@ -262,11 +258,8 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	X-r)
 	    R_PARAM="-r"
 	    ;;
-	X-S)
-	    S_PARAM="-S"
-	    ;;
 	X-s)
-	    S2_PARAM="-s"
+	    S_PARAM="-s"
 	    ;;
 	X-l)
 	    L_PARAM="-l"
@@ -359,11 +352,6 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     else
 	test -n "${S_PARAM}" && INNFLAGS="${INNFLAGS} ${S_PARAM}"
     fi
-    if [ -n "${S2_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${S2_FLAG}"
-    else
-	test -n "${S2_PARAM}" && INNFLAGS="${INNFLAGS} ${S2_PARAM}"
-    fi
     if [ -n "${T_FLAG}" ]; then
 	INNFLAGS="${INNFLAGS} ${T_FLAG}"
     else
@@ -399,7 +387,7 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	    cat ${SITE}.work >>"${BATCHFILE}"
 	    rm -f ${SITE}.work
 	else
-	    # flush failed, continue if we have any batchfile to work on
+	    # flush failed, continue if we have any batch file to work on
 	    echo "${PROGNAME}: bad flush for ${HOST} via ${SITE}"
 	    if [ -f "${BATCHFILE}" ]; then
 		echo "${PROGNAME}: trying ${HOST} via ${SITE} anyway"
@@ -458,15 +446,15 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
     ' &
 done
 
-## release the nntpsend lock and clean up before we wait on child processes
+##  Release the nntpsend lock and clean up before we wait on child processes.
 if [ -z "${NOLOCK}" ]; then
     rm -f ${NNTPLOCK}
 fi
 rm -f ${INPUT}
 
-## wait for child processes to finish
+##  Wait for child processes to finish.
 wait
 
-## all done
+##  All done.
 echo "${PROGNAME}: [${PARENTPID}] stop"
 exit 0
