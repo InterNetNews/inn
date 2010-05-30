@@ -7,6 +7,7 @@ his - routines for managing INN history
 B<#include E<lt>inn/history.hE<gt>>
 
 B<struct history;>
+B<struct token;>
 
 B<struct histstats {>
 B<    int hitpos;>
@@ -49,9 +50,9 @@ B<bool HISremember(struct history *>I<history>B<, const char *>I<key>B<, time_t 
 
 B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
 
-B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, bool >I<writing>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, bool >I<writing>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *>I<cookie>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<));>
 
-B<bool HISwalk(struct history *>I<history>B<, const char *>I<reason>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));>
+B<bool HISwalk(struct history *>I<history>B<, const char *>I<reason>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *>I<cookie>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<));>
 
 B<struct histstats HISstats(struct history *>I<history>B<);>
 
