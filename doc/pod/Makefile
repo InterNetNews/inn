@@ -15,7 +15,8 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
 	../man/innmail.1 ../man/pullnews.1 ../man/rnews.1 \
 	../man/shlock.1 ../man/simpleftp.1 ../man/sm.1
 
-MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/list.3 ../man/qio.3 \
+MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/libstorage.3 \
+	../man/list.3 ../man/qio.3 \
 	../man/tst.3 ../man/uwildmat.3
 
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
@@ -78,6 +79,7 @@ maintclean: distclean
 
 ../man/libauth.3:	libauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libstorage.3:	libstorage.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/list.3:		list.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
 ../man/tst.3:		tst.pod			; $(POD2MAN) -s 3 $? > $@

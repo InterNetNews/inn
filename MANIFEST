@@ -271,6 +271,7 @@ doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
+doc/pod/libstorage.pod                Master file for libstorage.3
 doc/pod/list.pod                      Master file for list.3
 doc/pod/makedbz.pod                   Master file for makedbz.8
 doc/pod/makehistory.pod               Master file for makehistory.8
