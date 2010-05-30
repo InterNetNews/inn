@@ -1,0 +1,445 @@
+=head1 NAME
+
+libstorage - routines for managing INN storage
+
+=head1 SYNOPSIS
+
+B<#include E<lt>inn/storage.hE<gt>>
+
+B<typedef enum {>
+B<    RETR_ALL,>
+B<    RETR_HEAD,>
+B<    RETR_BODY,>
+B<    RETR_STAT>
+B<} RETRTYPE;>
+
+B<typedef enum {>
+B<    SM_RDWR,>
+B<    SM_PREOPEN>
+B<} SMSETUP;>
+
+B<typedef unsigned char STORAGECLASS;>
+B<typedef unsigned char STORAGETYPE;>
+
+B<typedef struct token {>
+B<    STORAGETYPE  >I<type>B<;>
+B<    STORAGECLASS >I<class>B<;>
+B<    char         >I<token>B<[STORAGE_TOKEN_LENGTH];>
+B<} TOKEN;>
+
+B<typedef struct {>
+B<    unsigned char >I<type>B<;>
+B<    const char    *>I<data>B<;>
+B<    struct iovec  *>I<iov>B<;>
+B<    int           >I<iovcnt>B<;>
+B<    size_t        >I<len>B<;>
+B<    unsigned char >I<nextmethod>B<;>
+B<    void          *>I<private>B<;>
+B<    time_t        >I<arrived>B<;>
+B<    time_t        >I<expires>B<;>
+B<    char          *>I<groups>B<;>
+B<    int           >I<groupslen>B<;>
+B<    TOKEN         *>I<token>B<;>
+B<} ARTHANDLE;>
+
+B<typedef enum {>
+B<    SELFEXPIRE,>
+B<    SMARTNGNUM,>
+B<    EXPENSIVESTAT>
+B<} PROBETYPE;>
+
+B<typedef enum {>
+B<    SM_ALL,>
+B<    SM_HEAD,>
+B<    SM_CANCELLEDART>
+B<} FLUSHTYPE;>
+
+B<struct artngnum {>
+B<    char   *>I<groupname>B<;>
+B<    ARTNUM >I<artnum>B<;>
+B<};>
+
+B<bool IsToken(const char *>I<text>B<);>
+
+B<char *TokenToText(const TOKEN >I<token>B<);>
+
+B<TOKEN TextToToken(const char >I<*text>B<);>
+
+B<bool SMsetup(SMSETUP >I<type>B<, void >I<*value>B<);>
+
+B<bool SMinit(void);>
+
+B<TOKEN SMstore(const ARTHANDLE >I<article>B<);>
+
+B<ARTHANDLE *SMretrieve(const TOKEN >I<token>B<, const RETRTYPE >I<amount>B<);>
+
+B<ARTHANDLE *SMnext(const ARTHANDLE *>I<article>B<, const RETRTYPE >I<amount>B<);>
+
+B<void SMfreearticle(ARTHANDLE *>I<article>B<);>
+
+B<bool SMcancel(TOKEN >I<token>B<);>
+
+B<bool SMprobe(PROBETYPE >I<type>B<, TOKEN *>I<token>B<, void *>I<value>B<);>
+
+B<void SMprintfiles(FILE *>I<file>B<, TOKEN >I<token>B<, char **>I<xref>B<, int >I<ngroups>B<);>
+
+B<bool SMflushcacheddata(FLUSHTYPE >I<type>B<);>
+
+B<char *SMexplaintoken(const TOKEN >I<token>B<);>
+
+B<void SMshutdown(void);>
+
+B<int SMerrno;>
+
+B<char *SMerrorstr;>
+
+B<#include E<lt>inn/ov.hE<gt>>
+
+B<#define OV_NOSPACE ...>
+
+B<typedef enum {>
+B<    OVSPACE,>
+B<    OVSORT,>
+B<    OVCUTOFFLOW,>
+B<    OVGROUPBASEDEXPIRE,>
+B<    OVSTATICSEARCH,>
+B<    OVSTATALL,>
+B<    OVCACHEKEEP,>
+B<    OVCACHEFREE>
+B<} OVCTLTYPE;>
+
+B<typedef enum {>
+B<    OVNEWSGROUP,>
+B<    OVARRIVED,>
+B<    OVNOSORT>
+B<} OVSORTTYPE;>
+
+B<typedef enum {>
+B<    OVADDCOMPLETED,>
+B<    OVADDFAILED,>
+B<    OVADDGROUPNOMATCH>
+B<} OVADDRESULT;>
+
+B<bool OVopen(int >I<mode>B<);>
+
+B<bool OVctl(OVCTLTYPE >I<type>B<, void *>I<val>B<);>
+
+B<bool OVgroupstats(char *>I<group>B<, int *>I<lo>B<, int *>I<hi>B<, int *>I<count>B<, int *>I<flag>B<);>
+
+B<bool OVgroupadd(char *>I<group>B<, ARTNUM >I<lo>B<, ARTNUM >I<hi>B<, char *>I<flag>B<);>
+
+B<bool OVgroupdel(char *>I<group>B<);>
+
+B<OVADDRESULT OVadd(TOKEN >I<token>B<, char *>I<data>B<, int >I<len>B<, time_t >I<arrived>B<, time_t >I<expires>B<);>
+
+B<bool OVcancel(TOKEN >I<token>B<);>
+
+B<void *OVopensearch(char *>I<group>B<, int >I<low>B<, int >I<high>B<);>
+
+B<bool OVsearch(void *>I<handle>B<, ARTNUM *>I<artnum>B<, char **>I<data>B<, int *>I<len>B<, TOKEN *>I<token>B<, time_t *>I<arrived>B<);>
+
+B<void OVclosesearch(void *>I<handle>B<);>
+
+B<bool OVgetartinfo(char *>I<group>B<, ARTNUM >I<artnum>B<, TOKEN *>I<token>B<);>
+
+B<bool OVexpiregroup(char *>I<group>B<, int *>I<lo>B<, struct history *>I<h>B<);>
+
+B<typedef struct _OVGE {>
+B<    bool   >I<delayrm>B<;>
+B<    bool   >I<usepost>B<;>
+B<    bool   >I<quiet>B<;>
+B<    bool   >I<keep>B<;>
+B<    bool   >I<earliest>B<;>
+B<    bool   >I<ignoreselfexpire>B<;>
+B<    char   *>I<filename>B<;>
+B<    time_t >I<now>B<;>
+B<    float  >I<timewarp>B<;>
+B<} OVGE;>
+
+B<void OVclose(void);>
+
+=head1 DESCRIPTION
+
+B<libstorage> is a library of common utility (the storage manager) routines
+for accessing Usenet articles and related data independent of particular
+storage method; this is known as the storage API.
+
+The storage manager's function is to isolate the applications from the
+individual methods and make the policy decisions as to which storage method
+should be called to store an article.  One of the core concepts in the
+storage API is that articles are not manipulated using the message-ID or
+article number, but rather a token that uniquely identifies the article
+to the method that stored it.  This may seem to be redundant since the
+message-ID already is a unique identifier for the article; however, since
+the storage method generates the token, it can encode all the information
+it needs to locate the article in the token.
+
+B<OV> is a common utility routines for accessing newsgroups and overview
+data independent of particular overview method.
+
+The B<OV> function is to isolate the applications from the individual
+methods.  All articles passed through the storage API are assumed to
+be in wire format.  Wire format means C<\r\n> at the end of lines,
+dot-stuffed lines (that is to say C<.> at the beginning of lines which
+already start with C<.>), and C<.\r\n> at the end of article on NNTP stream
+are not stripped.  This has a performance win when transferring articles.
+Note that for the tradspool method, wire format can be disabled.  This is
+just for compatibility which is needed by some old tools written for
+traditional spool.
+
+The B<IsToken> function checks to see if the text is formatted as a text
+token string.  It returns true if formatted correctly or returns false
+if not.
+
+The B<TokenToText> function converts a token into a text string for output.
+
+The B<TextToToken> function converts a text string into a token.
+
+The B<SMsetup> function configures some parameters for use by the storage
+manager.  I<type> is one of following:
+
+=over 4
+
+=item C<SM_RDWR>
+
+Allow read/write open for storage files (default is false).
+
+=item C<SM_PREOPEN>
+
+Open all storage files at startup time and keep them (default is false).
+
+=back
+
+I<value> is the pointer which tells each type's value.  It returns true
+if setup is successful, or false if not.
+
+The B<SMinit> function calls the setup function for all of the configured
+methods based on B<SMsetup>.  This function should be called prior to all
+other storage API functions which begin with C<SM> except B<SMsetup>.  It
+returns true if initialization is successful or returns false if not.
+B<SMinit> returns true, unless all storage methods fail initialization.
+
+The B<SMstore> function stores an article specified with I<article>.
+The headers and body of the article are supplied to B<SMstore> using the
+I<iov> and I<iovcnt> members of B<ARTHANDLE>.  (I<data> and I<private>
+are ignored by B<SMstore>.)  If I<arrived> is specified, B<SMstore> uses
+its value as article's arrival time; otherwise B<SMstore> uses the current
+time for it.  B<SMstore> returns the token type or returns B<TOKEN_EMPTY>
+if the article is not stored because some error occurs or simply does not
+match any uwildmat(3) expression in F<storage.conf>.  B<SMstore> fails if
+B<SM_RDWR> has not been set to true with B<SMsetup>.
+
+The B<SMretrieve> function retrieves an article specified with I<token>.
+I<amount> is the one of following which specifies retrieving type:
+
+=over 4
+
+=item C<RETR_ALL>
+
+Retrieve the whole article.
+
+=item C<RETR_HEAD>
+
+Retrieve the headers of the article.
+
+=item C<RETR_BODY>
+
+Retrieve the body of the article.
+
+=item C<RETR_STAT>
+
+Just check to see if the article exists.
+
+=back
+
+B<SMretrieve> provides the article data via the I<data> and I<len> members
+of B<ARTHANDLE>.  (I<iov> is not set by B<SMretrieve>.)  The data area
+indicated by B<ARTHANDLE> should not be modified.
+
+The B<SMnext> function is similar in function to B<SMretrieve> except that it
+is intended for traversing the method's article store sequentially.  To start
+a query, B<SMnext> should be called with a NULL pointer B<ARTHANDLE>.
+Then B<SMnext> returns B<ARTHANDLE> which should be used for the next
+query.  If a NULL pointer B<ARTHANDLE> is returned, no articles are left
+to be queried.  If I<data> of B<ARTHANDLE> is NULL pointer or I<len> of
+B<ARTHANDLE> is C<0>, it indicates the article may be corrupted and should
+be cancelled by I<SMcancel>.  The data area indicated by B<ARTHANDLE>
+should not be modified.
+
+The B<SMfreearticle> function frees all allocated memory used by
+B<SMretrieve> and B<SMnext>.  If B<SMnext> will be called with previously
+returned B<ARTHANDLE>, B<SMfreearticle> should not be called as B<SMnext>
+frees allocated memory internally.
+
+The B<SMcancel> function removes the article specified with I<token>.
+It returns true if cancellation is successful or returns false if not.
+B<SMcancel> fails if B<SM_RDWR> has not been set to true with B<SMsetup>.
+
+The B<SMprobe> function checks the token on B<PROBETYPE>.  I<type> is
+one of following:
+
+=over 4
+
+=item C<SELFEXPIRE>
+
+Check to see if the method of the token
+has self expire functionality.
+
+=item C<SMARTNGNUM>
+
+Get the newsgroup name and
+the article number of the token.
+
+=item C<EXPENSIVESTAT>
+
+Check to see whether
+checking the existence of an article is expensive or not.
+
+=back
+
+The B<SMprintfiles> function shows file name or token usable by fastrm(8).
+
+The B<SMflushcacheddata> function flushes cached data on each storage
+method.  I<type> is one of following:
+
+=over 4
+
+=item C<SM_HEAD>
+
+Flush cached header.
+
+=item C<SM_CANCELLEDART>
+
+Flush the articles which should be cancelled.
+
+=item C<SM_ALL>
+
+Flush all cached data.
+
+=back
+
+The B<SMexplaintoken> function returns a human-readable text string with
+a clear, decoded form of the storage API token.
+
+The B<SMshutdown> function calls the shutdown for each configured storage
+method and then frees any resources it has allocated for itself.
+
+B<SMerrno> and B<SMerrorstr> indicate the reason of the last error concerning
+storage manager.
+
+B<OVopen> calls the setup function for configured method which is specified
+as I<ovmethod> in F<inn.conf>.  I<mode> is constructed from following:
+
+=over 4
+
+=item C<OV_READ>
+
+Allow read open for the overview method.
+
+=item C<OV_WRITE>
+
+Allow write open for the overview method.
+
+=back
+
+This function should be called prior to all other OV functions which begin
+with C<OV>.
+
+The B<OVctl> function probes or sets some parameters for the overview method.
+I<type> is one of following:
+
+=over 4
+
+=item C<OVGROUPBASEDEXPIRE>
+
+Setup how group-based expiry is done.
+
+=item C<OVCUTOFFLOW>
+
+Do not add overview data if the data is under the lowest article.
+
+=item C<OVSORT>
+
+Probe which key is suitable for the overview method.
+
+=item C<OVSPACE>
+
+Probe the overview space usage.
+
+=item C<OVSTATALL>
+
+Stat all the articles when B<OVexpiregroup> is called.
+
+=item C<OVSTATICSEARCH>
+
+Setup if results of B<OVsearch> are stored in a static buffer and must be
+copied before the next call to B<OVsearch>.
+
+=item C<OVCACHEKEEP>
+
+Setup whether the cache should be kept.
+
+=item C<OVCACHEFREE>
+
+Free the cache.
+
+=back
+
+The B<OVgroupstats> function retrieves the specified newsgroup information
+from the overview method.
+
+The B<OVgroupadd> function informs the overview method that the specified
+newsgroup is being added.
+
+The B<OVgroupdel> function informs the overview method that the specified
+newsgroup is being removed.
+
+The B<OVadd> function stores an overview data.
+
+The B<OVcancel> function requests the overview method delete overview data
+specified with token.
+
+The B<OVopensearch> function requests the overview method prepare overview
+data retrieval.  The request range is determined by I<low> and I<high>.
+The setting of B<OVSTATICSEARCH> determines how search result data
+must be handled.  (Note that with some storage methods, each call to
+B<OVopensearch> may cause internal storage to be remapped.  Therefore,
+multiple simultaneous searches may require data to be copied in between
+B<OVsearch> calls even if B<OVSTATICSEARCH> is false.)
+
+The B<OVsearch> function retrieves information, article number, overview
+data, or arrival time.  It should be called with NULL handle when it
+is the first time; subsequent B<OVsearch> calls should use the handle
+returned by the previous call to B<OVsearch>.  B<OVsearch> returns
+true, unless it reaches I<high>, which is specified by B<OVopensearch>.
+Retrieved overview data are sorted by article number, and I<len> is C<0>
+if there is no overview data for the article.  Note that the retrieved
+data is not necessarily null-terminated; you should only rely on I<len>
+octets of overview data being present.
+
+The B<OVclosesearch> function frees all resources which have been allocated
+by B<OVopensearch>.
+
+The B<OVgetartinfo> function retrieves the overview data and the token
+specified with I<artnum>.
+
+The B<OVexpiregroup> function expires the overview data for the newsgroup.
+It checks the existence of the article and purges the overview data if the
+article no longer exists.  If I<groupbaseexpiry> in F<inn.conf> is true,
+B<OVexpiregroup> also expires articles.
+
+The B<OVclose> function frees all resources which are used by the overview
+method.
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
+Converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+expire(8), fastrm(8), inn.conf(5), storage.conf(5).
+
+=cut
