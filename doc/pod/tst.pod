@@ -4,19 +4,19 @@ tst - ternary search trie functions
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/tst.hE<gt>>
+    #include <inn/tst.h>
 
-B<struct tst;>
+    struct tst;
 
-B<struct tst *tst_init(int >I<node_line_width>B<);>
+    struct tst *tst_init(int node_line_width);
 
-B<void tst_cleanup(struct tst *>I<tst>B<);>
+    void tst_cleanup(struct tst *tst);
 
-B<int tst_insert(struct tst *>I<tst>B<, const unsigned char *>I<key>B<, void *>I<data>B<, int >I<option>B<, void **>I<exist_ptr>B<);>
+    int tst_insert(struct tst *tst, const unsigned char *key, void *data, int option, void **exist_ptr);
 
-B<void *tst_search(struct tst *>I<tst>B<, const unsigned char *>I<key>B<);>
+    void *tst_search(struct tst *tst, const unsigned char *key);
 
-B<void *tst_delete(struct tst *>I<tst>B<, const unsigned char *>I<key>B<);>
+    void *tst_delete(struct tst *tst, const unsigned char *key);
 
 =head1 DESCRIPTION
 

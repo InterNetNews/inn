@@ -4,27 +4,27 @@ qio - Quick I/O routines for reading files
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/qio.hE<gt>>
+    #include <inn/qio.h>
 
-B<QIOSTATE *QIOopen(const char *>I<name>B<);>
+    QIOSTATE *QIOopen(const char *name);
 
-B<QIOSTATE *QIOfdopen(int> I<fd>B<);>
+    QIOSTATE *QIOfdopen(int> I<fd);
 
-B<void QIOclose(QIOSTATE *>I<qp>B<);>
+    void QIOclose(QIOSTATE *qp);
 
-B<char *QIOread(QIOSTATE *>I<qp>B<);>
+    char *QIOread(QIOSTATE *qp);
 
-B<int QIOfileno(QIOSTATE *>I<qp>B<);>
+    int QIOfileno(QIOSTATE *qp);
 
-B<size_t QIOlength(QIOSTATE *>I<qp>B<);>
+    size_t QIOlength(QIOSTATE *qp);
 
-B<int QIOrewind(QIOSTATE *>I<qp>B<);>
+    int QIOrewind(QIOSTATE *qp);
 
-B<off_t QIOtell(QIOSTATE *>I<qp>B<);>
+    off_t QIOtell(QIOSTATE *qp);
 
-B<bool QIOerror(QIOSTATE *>I<qp>B<);>
+    bool QIOerror(QIOSTATE *qp);
 
-B<bool QIOtoolong(QIOSTATE *>I<qp>B<);>
+    bool QIOtoolong(QIOSTATE *qp);
 
 =head1 DESCRIPTION
 

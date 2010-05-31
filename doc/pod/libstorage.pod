@@ -4,159 +4,159 @@ libstorage - routines for managing INN storage
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/storage.hE<gt>>
+    #include <inn/storage.h>
 
-B<typedef enum {>
-B<    RETR_ALL,>
-B<    RETR_HEAD,>
-B<    RETR_BODY,>
-B<    RETR_STAT>
-B<} RETRTYPE;>
+    typedef enum {
+        RETR_ALL,
+        RETR_HEAD,
+        RETR_BODY,
+        RETR_STAT
+    } RETRTYPE;
 
-B<typedef enum {>
-B<    SM_RDWR,>
-B<    SM_PREOPEN>
-B<} SMSETUP;>
+    typedef enum {
+        SM_RDWR,
+        SM_PREOPEN
+    } SMSETUP;
 
-B<typedef unsigned char STORAGECLASS;>
-B<typedef unsigned char STORAGETYPE;>
+    typedef unsigned char STORAGECLASS;
+    typedef unsigned char STORAGETYPE;
 
-B<typedef struct token {>
-B<    STORAGETYPE  >I<type>B<;>
-B<    STORAGECLASS >I<class>B<;>
-B<    char         >I<token>B<[STORAGE_TOKEN_LENGTH];>
-B<} TOKEN;>
+    typedef struct token {
+        STORAGETYPE  type;
+        STORAGECLASS class;
+        char         token[STORAGE_TOKEN_LENGTH];
+    } TOKEN;
 
-B<typedef struct {>
-B<    unsigned char >I<type>B<;>
-B<    const char    *>I<data>B<;>
-B<    struct iovec  *>I<iov>B<;>
-B<    int           >I<iovcnt>B<;>
-B<    size_t        >I<len>B<;>
-B<    unsigned char >I<nextmethod>B<;>
-B<    void          *>I<private>B<;>
-B<    time_t        >I<arrived>B<;>
-B<    time_t        >I<expires>B<;>
-B<    char          *>I<groups>B<;>
-B<    int           >I<groupslen>B<;>
-B<    TOKEN         *>I<token>B<;>
-B<} ARTHANDLE;>
+    typedef struct {
+        unsigned char type;
+        const char    *data;
+        struct iovec  *iov;
+        int           iovcnt;
+        size_t        len;
+        unsigned char nextmethod;
+        void          *private;
+        time_t        arrived;
+        time_t        expires;
+        char          *groups;
+        int           groupslen;
+        TOKEN         *token;
+    } ARTHANDLE;
 
-B<typedef enum {>
-B<    SELFEXPIRE,>
-B<    SMARTNGNUM,>
-B<    EXPENSIVESTAT>
-B<} PROBETYPE;>
+    typedef enum {
+        SELFEXPIRE,
+        SMARTNGNUM,
+        EXPENSIVESTAT
+    } PROBETYPE;
 
-B<typedef enum {>
-B<    SM_ALL,>
-B<    SM_HEAD,>
-B<    SM_CANCELLEDART>
-B<} FLUSHTYPE;>
+    typedef enum {
+        SM_ALL,
+        SM_HEAD,
+        SM_CANCELLEDART
+    } FLUSHTYPE;
 
-B<struct artngnum {>
-B<    char   *>I<groupname>B<;>
-B<    ARTNUM >I<artnum>B<;>
-B<};>
+    struct artngnum {
+        char   *groupname;
+        ARTNUM artnum;
+    };
 
-B<bool IsToken(const char *>I<text>B<);>
+    bool IsToken(const char *text);
 
-B<char *TokenToText(const TOKEN >I<token>B<);>
+    char *TokenToText(const TOKEN token);
 
-B<TOKEN TextToToken(const char >I<*text>B<);>
+    TOKEN TextToToken(const char *text);
 
-B<bool SMsetup(SMSETUP >I<type>B<, void >I<*value>B<);>
+    bool SMsetup(SMSETUP type, void *value);
 
-B<bool SMinit(void);>
+    bool SMinit(void);
 
-B<TOKEN SMstore(const ARTHANDLE >I<article>B<);>
+    TOKEN SMstore(const ARTHANDLE article);
 
-B<ARTHANDLE *SMretrieve(const TOKEN >I<token>B<, const RETRTYPE >I<amount>B<);>
+    ARTHANDLE *SMretrieve(const TOKEN token, const RETRTYPE amount);
 
-B<ARTHANDLE *SMnext(const ARTHANDLE *>I<article>B<, const RETRTYPE >I<amount>B<);>
+    ARTHANDLE *SMnext(const ARTHANDLE *article, const RETRTYPE amount);
 
-B<void SMfreearticle(ARTHANDLE *>I<article>B<);>
+    void SMfreearticle(ARTHANDLE *article);
 
-B<bool SMcancel(TOKEN >I<token>B<);>
+    bool SMcancel(TOKEN token);
 
-B<bool SMprobe(PROBETYPE >I<type>B<, TOKEN *>I<token>B<, void *>I<value>B<);>
+    bool SMprobe(PROBETYPE type, TOKEN *token, void *value);
 
-B<void SMprintfiles(FILE *>I<file>B<, TOKEN >I<token>B<, char **>I<xref>B<, int >I<ngroups>B<);>
+    void SMprintfiles(FILE *file, TOKEN token, char **xref, int ngroups);
 
-B<bool SMflushcacheddata(FLUSHTYPE >I<type>B<);>
+    bool SMflushcacheddata(FLUSHTYPE type);
 
-B<char *SMexplaintoken(const TOKEN >I<token>B<);>
+    char *SMexplaintoken(const TOKEN token);
 
-B<void SMshutdown(void);>
+    void SMshutdown(void);
 
-B<int SMerrno;>
+    int SMerrno;
 
-B<char *SMerrorstr;>
+    char *SMerrorstr;
 
-B<#include E<lt>inn/ov.hE<gt>>
+    #include <inn/ov.h>
 
-B<#define OV_NOSPACE ...>
+    #define OV_NOSPACE ...
 
-B<typedef enum {>
-B<    OVSPACE,>
-B<    OVSORT,>
-B<    OVCUTOFFLOW,>
-B<    OVGROUPBASEDEXPIRE,>
-B<    OVSTATICSEARCH,>
-B<    OVSTATALL,>
-B<    OVCACHEKEEP,>
-B<    OVCACHEFREE>
-B<} OVCTLTYPE;>
+    typedef enum {
+        OVSPACE,
+        OVSORT,
+        OVCUTOFFLOW,
+        OVGROUPBASEDEXPIRE,
+        OVSTATICSEARCH,
+        OVSTATALL,
+        OVCACHEKEEP,
+        OVCACHEFREE
+    } OVCTLTYPE;
 
-B<typedef enum {>
-B<    OVNEWSGROUP,>
-B<    OVARRIVED,>
-B<    OVNOSORT>
-B<} OVSORTTYPE;>
+    typedef enum {
+        OVNEWSGROUP,
+        OVARRIVED,
+        OVNOSORT
+    } OVSORTTYPE;
 
-B<typedef enum {>
-B<    OVADDCOMPLETED,>
-B<    OVADDFAILED,>
-B<    OVADDGROUPNOMATCH>
-B<} OVADDRESULT;>
+    typedef enum {
+        OVADDCOMPLETED,
+        OVADDFAILED,
+        OVADDGROUPNOMATCH
+    } OVADDRESULT;
 
-B<bool OVopen(int >I<mode>B<);>
+    bool OVopen(int mode);
 
-B<bool OVctl(OVCTLTYPE >I<type>B<, void *>I<val>B<);>
+    bool OVctl(OVCTLTYPE type, void *val);
 
-B<bool OVgroupstats(char *>I<group>B<, int *>I<lo>B<, int *>I<hi>B<, int *>I<count>B<, int *>I<flag>B<);>
+    bool OVgroupstats(char *group, int *lo, int *hi, int *count, int *flag);
 
-B<bool OVgroupadd(char *>I<group>B<, ARTNUM >I<lo>B<, ARTNUM >I<hi>B<, char *>I<flag>B<);>
+    bool OVgroupadd(char *group, ARTNUM lo, ARTNUM hi, char *flag);
 
-B<bool OVgroupdel(char *>I<group>B<);>
+    bool OVgroupdel(char *group);
 
-B<OVADDRESULT OVadd(TOKEN >I<token>B<, char *>I<data>B<, int >I<len>B<, time_t >I<arrived>B<, time_t >I<expires>B<);>
+    OVADDRESULT OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires);
 
-B<bool OVcancel(TOKEN >I<token>B<);>
+    bool OVcancel(TOKEN token);
 
-B<void *OVopensearch(char *>I<group>B<, int >I<low>B<, int >I<high>B<);>
+    void *OVopensearch(char *group, int low, int high);
 
-B<bool OVsearch(void *>I<handle>B<, ARTNUM *>I<artnum>B<, char **>I<data>B<, int *>I<len>B<, TOKEN *>I<token>B<, time_t *>I<arrived>B<);>
+    bool OVsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived);
 
-B<void OVclosesearch(void *>I<handle>B<);>
+    void OVclosesearch(void *handle);
 
-B<bool OVgetartinfo(char *>I<group>B<, ARTNUM >I<artnum>B<, TOKEN *>I<token>B<);>
+    bool OVgetartinfo(char *group, ARTNUM artnum, TOKEN *token);
 
-B<bool OVexpiregroup(char *>I<group>B<, int *>I<lo>B<, struct history *>I<h>B<);>
+    bool OVexpiregroup(char *group, int *lo, struct history *h);
 
-B<typedef struct _OVGE {>
-B<    bool   >I<delayrm>B<;>
-B<    bool   >I<usepost>B<;>
-B<    bool   >I<quiet>B<;>
-B<    bool   >I<keep>B<;>
-B<    bool   >I<earliest>B<;>
-B<    bool   >I<ignoreselfexpire>B<;>
-B<    char   *>I<filename>B<;>
-B<    time_t >I<now>B<;>
-B<    float  >I<timewarp>B<;>
-B<} OVGE;>
+    typedef struct _OVGE {
+        bool   delayrm;
+        bool   usepost;
+        bool   quiet;
+        bool   keep;
+        bool   earliest;
+        bool   ignoreselfexpire;
+        char   *filename;
+        time_t now;
+        float  timewarp;
+    } OVGE;
 
-B<void OVclose(void);>
+    void OVclose(void);
 
 =head1 DESCRIPTION
 
