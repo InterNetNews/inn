@@ -4,61 +4,61 @@ his - routines for managing INN history
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/history.hE<gt>>
+    #include <inn/history.h>
 
-B<struct history;>
-B<struct token;>
+    struct history;
+    struct token;
 
-B<struct histstats {>
-B<    int hitpos;>
-B<    int hitneg;>
-B<    int misses;>
-B<    int dne;>
-B<};>
+    struct histstats {
+        int hitpos;
+        int hitneg;
+        int misses;
+        int dne;
+    };
 
-B<#define HIS_RDONLY ...>
-B<#define HIS_RDWR ...>
-B<#define HIS_CREAT ...>
-B<#define HIS_ONDISK ...>
-B<#define HIS_INCORE ...>
-B<#define HIS_MMAP ...>
+    #define HIS_RDONLY ...
+    #define HIS_RDWR ...
+    #define HIS_CREAT ...
+    #define HIS_ONDISK ...
+    #define HIS_INCORE ...
+    #define HIS_MMAP ...
 
-B<enum {>
-B<    HISCTLG_PATH,>
-B<    HISCTLS_PATH,>
-B<    HISCTLS_SYNCCOUNT,>
-B<    HISCTLS_NPAIRS,>
-B<    HISCTLS_IGNOREOLD,>
-B<    HISCTLS_STATINTERVAL>
-B<};>
+    enum {
+        HISCTLG_PATH,
+        HISCTLS_PATH,
+        HISCTLS_SYNCCOUNT,
+        HISCTLS_NPAIRS,
+        HISCTLS_IGNOREOLD,
+        HISCTLS_STATINTERVAL
+    };
 
-B<struct history *HISopen(const char *>I<path>B<, const char *>I<method>B<, int >I<flags>B<);>
+    struct history *HISopen(const char *path, const char *method, int flags);
 
-B<bool HISclose(struct history *>I<history>B<);>
+    bool HISclose(struct history *history);
 
-B<bool HISsync(struct history *>I<history>B<);>
+    bool HISsync(struct history *history);
 
-B<void HISsetcache(struct history *>I<history>B<, size_t >I<size>B<);>
+    void HISsetcache(struct history *history, size_t size);
 
-B<bool HISlookup(struct history *>I<history>B<, const char *>I<key>B<, time_t *>I<arrived>B<, time_t *>I<posted>B<, time_t *>I<expires>B<, TOKEN *>I<token>B<);>
+    bool HISlookup(struct history *history, const char *key, time_t *arrived, time_t *posted, time_t *expires, TOKEN *token);
 
-B<bool HIScheck(struct history *>I<history>B<, const char *>I<key>B<);>
+    bool HIScheck(struct history *history, const char *key);
 
-B<bool HISwrite(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
+    bool HISwrite(struct history *history, const char *key, time_t arrived, time_t posted, time_t expires, const TOKEN *token);
 
-B<bool HISremember(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<);>
+    bool HISremember(struct history *history, const char *key, time_t arrived, time_t posted);
 
-B<bool HISreplace(struct history *>I<history>B<, const char *>I<key>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<);>
+    bool HISreplace(struct history *history, const char *key, time_t arrived, time_t posted, time_t expires, const TOKEN *token);
 
-B<bool HISexpire(struct history *>I<history>B<, const char *>I<path>B<, const char *>I<reason>B<, bool >I<writing>B<, void *>I<cookie>B<, time_t >I<threshold>B<, bool (*>I<exists>B<)(void *>I<cookie>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<));>
+    bool HISexpire(struct history *history, const char *path, const char *reason, bool writing, void *cookie, time_t threshold, bool (*exists)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));
 
-B<bool HISwalk(struct history *>I<history>B<, const char *>I<reason>B<, void *>I<cookie>B<, bool (*>I<callback>B<)(void *>I<cookie>B<, time_t >I<arrived>B<, time_t >I<posted>B<, time_t >I<expires>B<, const TOKEN *>I<token>B<));>
+    bool HISwalk(struct history *history, const char *reason, void *cookie, bool (*callback)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));
 
-B<struct histstats HISstats(struct history *>I<history>B<);>
+    struct histstats HISstats(struct history *history);
 
-B<const char *HISerror(struct history *>I<history>B<);>
+    const char *HISerror(struct history *history);
 
-B<bool HISctl(struct history *>I<history>B<, int >I<request>B<, void *>I<val>B<);>
+    bool HISctl(struct history *history, int request, void *val);
 
 =head1 DESCRIPTION
 

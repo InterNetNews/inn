@@ -4,14 +4,13 @@ uwildmat, uwildmat_simple, uwildmat_poison - Perform wildmat matching
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/libinn.hE<gt>>
+    #include <inn/libinn.h>
 
-B<bool uwildmat(const char *>I<text>B<, const char *>I<pattern>B<);>
+    bool uwildmat(const char *text, const char *pattern);
 
-B<bool uwildmat_simple(const char *>I<text>B<, const char *>I<pattern>B<);>
+    bool uwildmat_simple(const char *text, const char *pattern);
 
-B<enum uwildmat uwildmat_poison(const char *>I<text>B<,
-const char *>I<pattern>B<);>
+    enum uwildmat uwildmat_poison(const char *text, const char *pattern);
 
 =head1 DESCRIPTION
 

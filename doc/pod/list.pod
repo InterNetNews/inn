@@ -4,42 +4,42 @@ list - list routines
 
 =head1 SYNOPSIS
 
-B<#include E<lt>inn/list.hE<gt>>
+    #include <inn/list.h>
 
-struct node {
-    struct node *succ;
-    struct node *pred;
-};
+    struct node {
+        struct node *succ;
+        struct node *pred;
+    };
 
-struct list {
-    struct node *head;
-    struct node *tail;
-    struct node *tailpred;
-};
+    struct list {
+        struct node *head;
+        struct node *tail;
+        struct node *tailpred;
+    };
 
-B<void list_new(struct list *>I<list>B<);>
+    void list_new(struct list *list);
 
-B<struct node *list_addhead(struct list *>I<list>B<, struct node *>I<node>B<);>
+    struct node *list_addhead(struct list *list, struct node *node);
 
-B<struct node *list_addtail(struct list *>I<list>B<, struct node *>I<node>B<);>
+    struct node *list_addtail(struct list *list, struct node *node);
 
-B<struct node *list_head(struct list *>I<list>B<);>
+    struct node *list_head(struct list *list);
 
-B<struct node *list_tail(struct list *>I<list>B<);>
+    struct node *list_tail(struct list *list);
 
-B<struct node *list_succ(struct node *>I<node>B<);>
+    struct node *list_succ(struct node *node);
 
-B<struct node *list_pred(struct node *>I<node>B<);>
+    struct node *list_pred(struct node *node);
 
-B<struct node *list_remhead(struct list *>I<list>B<);>
+    struct node *list_remhead(struct list *list);
 
-B<struct node *list_remtail(struct list *>I<list>B<);>
+    struct node *list_remtail(struct list *list);
 
-B<struct node *list_remove(struct node *>I<node>B<);>
+    struct node *list_remove(struct node *node);
 
-B<struct node *list_insert(struct list *>I<list>B<, struct node *>I<node>B<, struct node *>I<pred>B<);>
+    struct node *list_insert(struct list *list, struct node *node, struct node *pred);
 
-B<bool list_isempty(struct list *>I<list>B<);>
+    bool list_isempty(struct list *list);
 
 =head1 DESCRIPTION
 
