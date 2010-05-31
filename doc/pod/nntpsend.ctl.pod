@@ -24,7 +24,7 @@ passed as C<< -s I<truncsize> >>.
 The fourth field specifies some default flags passed to B<innxmit>.  Note
 that the flag B<-a> is always given to B<innxmit> and need not appear here.
 If no B<-t> flag is given in this field or on the B<nntpsend> command line,
-C<-t 180> will be given to B<innxmit>.
+C<-t 180> will be given to B<innxmit>.
 
 See nntpsend(8) for an example of F<nntpsend.ctl> config file.
 
