@@ -105,7 +105,11 @@ undef($logline);
 if ($oclass) {
     if ($class{$oclass}) {
 	if (!$header_printed) {
-	    ($gr, $cl, $min, $max) = split(/:/, $stor{$oclass});
+            if ($stor{$oclass}) {
+                ($gr, $cl, $min, $max) = split(/:/, $stor{$oclass});
+            } else {
+                ($gr, $cl, $min, $max) = ('', $oclass, 0, 0);
+            }
 	    if ($use_syslog) {
 		if ($min || $max) {
 		    $logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $oclass, $gr, $min, $max);
@@ -125,7 +129,7 @@ if ($oclass) {
 	
 	@buffers = split(/,/, $class{$oclass});
 	if (! @buffers) {
-	    print STDERR "No buffers in Class $main::ARGV[0] ...\n";
+	    print STDERR "No buffers in Class $oclass ...\n";
 	    next;
 	}
 	
@@ -137,7 +141,7 @@ if ($oclass) {
 	    &print_cycbuff_head($buff{$b});
 	}
     } else {
-	print STDERR "Class $ARGV[1] not found ...\n";
+	print STDERR "Class $oclass not found ...\n";
     }
 } else { # Print all Classes
 
@@ -411,6 +415,7 @@ sub check_read_return {
 
 sub get_cycbuff_info {
     my($buffpath) = $_[0];
+    my $oldart;
 
     my($CNFSMASIZ)=8;
     my($CNFSNASIZ)=16;
@@ -475,7 +480,7 @@ sub get_cycbuff_info {
 		$oldart = &lookup_age ($1);
 		next unless $oldart;
 		
-		# Is the article newer than the last update?
+		# Is the article newer than the last update of the cycbuff?
 		if ($oldart >= $update) {
 		    $update = $oldart;
 		} elsif ($oldart < $update - 60) {
