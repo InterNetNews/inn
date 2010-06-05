@@ -2,9 +2,10 @@ dnl compress.m4 -- Log compression handling.
 dnl $Id$
 dnl
 dnl By default, INN compresses logs with gzip, but some people may want to use
-dnl compress instead and others may want to use bzip2.  INN also needs to
-dnl locate gzip regardless, since it's used for compressed rnews batches, and
-dnl needs to know how to uncompress .Z files.
+dnl compress instead, and others may want to use bzip2, or even not compress
+dnl at all their logs.  INN also needs to locate gzip regardless, since it's
+dnl used for compressed rnews batches, and needs to know how to uncompress .Z
+dnl files.
 dnl
 dnl There are two macros defined here.  The first, INN_ARG_COMPRESS, sets the
 dnl command-line option that lets the user specify what compression program to
@@ -21,8 +22,9 @@ AC_DEFUN([INN_ARG_COMPRESS],
     LOG_COMPRESS=gzip)
 case "$LOG_COMPRESS" in
 bzip2)    LOG_COMPRESSEXT=".bz2" ;;
-gzip)     LOG_COMPRESSEXT=".gz"  ;;
+cat)      LOG_COMPRESSEXT=""     ;;
 compress) LOG_COMPRESSEXT=".Z"   ;;
+gzip)     LOG_COMPRESSEXT=".gz"  ;;
 *)        AC_MSG_ERROR([unknown log compression type $LOG_COMPRESS]) ;;
 esac
 AC_SUBST([LOG_COMPRESS])
@@ -38,17 +40,25 @@ dnl Only the program for log compression has to be found; for other purposes,
 dnl use the bare program name if it can't be found in the path.
 AC_DEFUN([INN_PATH_COMPRESS],
 [AC_ARG_VAR([BZIP2], [Location of bzip2 program])
+AC_ARG_VAR([CAT], [Location of cat program])
 AC_ARG_VAR([COMPRESS], [Location of compress program])
 AC_ARG_VAR([GZIP], [Location of gzip program])
 AC_PATH_PROG([BZIP2], [bzip2], [bzip2])
+AC_PATH_PROG([CAT], [cat], [cat])
 AC_PATH_PROG([COMPRESS], [compress], [compress])
 AC_PATH_PROG([GZIP], [gzip], [gzip])
 case "$LOG_COMPRESS" in
-gzip)
-    if test x"$GZIP" = xgzip ; then
-        AC_MSG_ERROR([gzip not found but specified for log compression])
+bzip2)
+    if test x"$BZIP2" = xbzip2 ; then
+        AC_MSG_ERROR([bzip2 not found but specified for log compression])
     fi
-    LOG_COMPRESS=$GZIP
+    LOG_COMPRESS=$BZIP2
+    ;;
+cat)
+    if test x"$CAT" = xcat ; then
+        AC_MSG_ERROR([cat not found but specified for log compression])
+    fi
+    LOG_COMPRESS=$CAT
     ;;
 compress)
     if test x"$COMPRESS" = xcompress ; then
@@ -56,11 +66,11 @@ compress)
     fi
     LOG_COMPRESS=$COMPRESS
     ;;
-bzip2)
-    if test x"$BZIP2" = xbzip2 ; then
-        AC_MSG_ERROR([bzip2 not found but specified for log compression])
+gzip)
+    if test x"$GZIP" = xgzip ; then
+        AC_MSG_ERROR([gzip not found but specified for log compression])
     fi
-    LOG_COMPRESS=$BZIP2
+    LOG_COMPRESS=$GZIP
     ;;
 *)
     INN_PATH_PROG_ENSURE([LOG_COMPRESS], [$LOG_COMPRESS])
