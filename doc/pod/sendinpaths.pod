@@ -4,16 +4,16 @@ sendinpaths - Send Usenet Path: statistics via e-mail
 
 =head1 SYNOPSIS
 
-B<sendinpaths> [B<-n>]
+B<sendinpaths> [B<-n> | "I<address> [I<address> ...]"]
 
 =head1 DESCRIPTION
 
 B<sendinpaths> checks I<pathlog>/path for B<ninpaths> dump files, finds
-dump files generated in the past 30 days, makes sure they are valid by
-running B<ninpaths> on each one and making sure the exit status is zero,
-and passes them to B<ninpaths> to generate a cumulative report.  That
-report is mailed to the e-mail addresses configured at the beginning of
-this script (by default <pathsurvey@top1000.org> and
+dump files generated in the past 30 days, makes sure they are valid
+by running B<ninpaths> on each one and making sure the exit status is
+zero, and passes them to B<ninpaths> to generate a cumulative report.
+By default, that report is mailed to the e-mail addresses configured at
+the beginning of this script (by default <pathsurvey@top1000.org> and
 <top1000@anthologeek.net>) in order to supply the TOP1000 project with
 useful statistics:  see L<http://www.top1000.org/> for more information.
 
@@ -30,6 +30,16 @@ For more information on how to set up B<ninpaths>, see ninpaths(8).
 
 Don't e-mail the report; instead, just print it to standard output.  Don't
 delete old dump files.
+
+=item I<address> ...
+
+E-mail the report to the mentioned addresses instead of the default ones.
+Several addresses can be used, separated by whitespace.  For instance,
+for two adresses:
+
+    sendinpaths "pathsurvey@top1000.org top1000@anthologeek.net"
+
+The quotes can be omitted when only an address is specified.
 
 =back
 
