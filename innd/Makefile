@@ -26,15 +26,9 @@ install: all
 
 bootstrap:
 
-clean:
+clean clobber distclean maintclean:
 	rm -f *.o $(ALL) inndp
 	rm -rf .libs
-
-clobber distclean maintclean: clean
-	rm -f tags
-
-tags ctags: $(SOURCES) $(EXTRASOURCES)
-	$(CTAGS) $(SOURCES) $(EXTRASOURCES) ../lib/*.c innd.h ../include/*.h
 
 
 ##  Compilation rules.

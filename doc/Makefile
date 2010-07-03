@@ -19,7 +19,6 @@ DIRS = pod man
 all:
 	cd pod && $(MAKE) all || exit 1 ; cd ..
 
-tags ctags:
 profiled:
 depend:
 

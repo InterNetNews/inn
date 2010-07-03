@@ -34,7 +34,6 @@ SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 
 all:
 clobber clean distclean:
-tags ctags:
 profiled:
 
 install: install-man1 install-man3 install-man3pm install-man5 install-man8

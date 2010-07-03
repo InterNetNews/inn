@@ -27,16 +27,10 @@ install: all
 
 bootstrap:
 
-clean:
+clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
 	rm -f profiled expirep
 	rm -rf .libs
-
-clobber distclean maintclean: clean
-	rm -f tags
-
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES)
 
 
 ##  Compilation rules.

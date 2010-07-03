@@ -42,9 +42,6 @@ clean clobber distclean:
 maintclean: distclean
 	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
 
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES) ../include/*.h ../include/inn/*.h
-
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1

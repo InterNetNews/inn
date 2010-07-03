@@ -24,7 +24,7 @@ clean:
 clobber distclean maintclean: clean
 	rm -f $(EXTRA)
 
-depend tags ctags:
+depend:
 
 profiled: all
 

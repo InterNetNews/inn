@@ -45,9 +45,6 @@ clean clobber distclean maintclean:
 	rm -f libinn_pure_*.a .pure
 	rm -rf .libs
 
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES) ../include/*.h
-
 libinn.la: $(OBJECTS) $(LOBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info 2:0:0

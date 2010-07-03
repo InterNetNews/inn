@@ -38,9 +38,6 @@ clean clobber distclean:
 maintclean: distclean
 	rm -f Make.methods hismethods.c hismethods.h
 
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES) ../include/*.h
-
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1

@@ -37,13 +37,10 @@ clean:
 	rm -rf .libs
 
 clobber distclean: clean 
-	rm -f tags y.tab.c y.tab.h lex.yy.c
+	rm -f y.tab.c y.tab.h lex.yy.c
 
 maintclean: distclean
 	rm -f config_l.c config_y.c config_y.h
-
-tags: $(SOURCES) $(INCLUDES)
-	$(CTAGS) $(SOURCES) $(INCLUDES)
 
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.

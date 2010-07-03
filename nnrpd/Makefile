@@ -25,15 +25,9 @@ install: all
 
 bootstrap:
 
-clean:
+clean clobber distclean maintclean:
 	rm -f *.o $(ALL) nnrpdp profiled
 	rm -rf .libs
-
-clobber distclean maintclean: clean
-	rm -f tags
-
-tags ctags: $(SOURCES) $(INCLUDES)
-	$(CTAGS) $(SOURCES) $(INCLUDES) ../lib/*.c ../include/*.h
 
 
 ##  Compilation rules.

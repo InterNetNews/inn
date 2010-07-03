@@ -187,7 +187,6 @@ LIBOBJS		= @LIBOBJS@
 AWK		= @AWK@
 BZIP2		= @BZIP2@
 COMPRESS	= @COMPRESS@
-CTAGS		= ctags -t -w
 GZIP		= @GZIP@
 LEX		= @LEX@
 LN_S		= @LN_S@

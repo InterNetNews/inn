@@ -280,11 +280,10 @@ There are also variables set for each of the installation directories that
 INN uses, for use in building the list of installed paths to files.
 
 Each subdirectory makefile should have the targets C<all> (the default),
-C<clean>, C<clobber>/C<distclean>, C<install>, C<tags>, and C<profiled>.
-The C<tags> target generates B<vi> tags files, and the C<profiled> target
-generates a profiling version of the programs (although this hasn't been
-tested much).  These rules should be present and empty in those
-directories where they don't apply.
+C<clean>, C<clobber>/C<distclean>, C<install>, and C<profiled>.  The
+C<profiled> target generates a profiling version of the programs (although
+this hasn't been tested much).  These rules should be present and empty in
+those directories where they don't apply.
 
 Be sure to test compiling with both static and dynamic libraries and make
 sure that all the libtool support works correctly.  All linking steps, and

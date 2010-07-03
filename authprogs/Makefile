@@ -33,9 +33,6 @@ clean clobber distclean maintclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES) ../lib/*.c ../include/*.h
-
 profiled:
 	$(MAKEPROFILING) all
 

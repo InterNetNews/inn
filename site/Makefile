@@ -159,10 +159,7 @@ clean:
 	done
 
 clobber distclean maintclean:
-	rm -f $(ALL) tags profiled config update
-
-tags ctags:
-	cp /dev/null tags
+	rm -f $(ALL) profiled config update
 
 profiled:
 	cp /dev/null profiled

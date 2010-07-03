@@ -157,7 +157,7 @@ clobber realclean distclean:
 	    cd $$D && $(MAKE) $(FLAGS) distclean || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
+	rm -f LIST.* Makefile.global config.cache config.log
 	rm -f config.status libtool support/fixconfig support/fixscript
 	rm -f config.status.lineno configure.lineno
 
@@ -170,21 +170,18 @@ maintclean:
 	    cd $$D && $(MAKE) $(FLAGS) maintclean || exit 1 ; cd .. ; \
 	done
 	@echo ''
-	rm -f LIST.* Makefile.global TAGS tags config.cache config.log
+	rm -f LIST.* Makefile.global config.cache config.log
 	rm -f config.status libtool support/fixconfig support/fixscript
 	rm -f config.status.lineno configure.lineno
 	rm -f CHANGES ChangeLog inn*.tar.gz configure include/config.h.in
 	rm -rf $(TARDIR)
 
 ##  Other generic targets.
-bootstrap depend tags ctags profiled:
+bootstrap depend profiled:
 	@for D in $(ALLDIRS) ; do \
 	    echo '' ; \
 	    cd $$D && $(MAKE) $@ || exit 1 ; cd .. ; \
 	done
-
-TAGS etags:
-	etags */*.c */*.h */*/*.c */*/*.h
 
 
 ##  Run the test suite.

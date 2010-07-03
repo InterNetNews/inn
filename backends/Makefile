@@ -53,18 +53,12 @@ install-root:
 
 bootstrap: $(MAN)
 
-clean:
+clean clobber distclean:
 	rm -f *.o $(ALL)
 	rm -rf .libs
 
-clobber distclean: clean
-	rm -f tags
-
 maintclean: distclean
 	rm -f $(MAN)
-
-tags ctags: $(SOURCES)
-	$(CTAGS) $(SOURCES)
 
 profiled:
 	$(MAKEPROFILING) all
