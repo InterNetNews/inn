@@ -8,7 +8,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "headers.c"
 #include <ctype.h>
 #include <time.h>
 
