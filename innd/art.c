@@ -806,8 +806,13 @@ ARTparseheader(CHANNEL *cp)
     for (i = cp->Next; i < bp->used; i++) {
         if (bp->data[i] == '\0')
             ARTerror(cp, "Nul character in header");
-        if (bp->data[i] == '\n')
+        if (bp->data[i] == '\n') {
             data->LFwithoutCR++;
+            /* Behave as though we really saw a new line (otherwise,
+             * the length of the header line may be exceeded in
+             * non-compliant messages). */
+            data->LastCRLF = i;
+        }
         if (bp->data[i] != '\r')
             continue;
 
@@ -875,6 +880,10 @@ ARTparseheader(CHANNEL *cp)
             data->LastCRLF = i - 1;
         } else {
             data->CRwithoutLF++;
+            /* Behave as though we really saw a new line (otherwise,
+             * the length of the header line may be exceeded in
+             * non-compliant messages). */
+            data->LastCRLF = i;
         }
     }
     cp->Next = i;
@@ -2563,7 +2572,7 @@ ARTpost(CHANNEL *cp)
                data->LFwithoutCR);
     else
       snprintf(cp->Error, sizeof(cp->Error),
-               "Article accepted but includes CR without LF(%d) and LF withtout CR(%d)",
+               "Article accepted but includes CR without LF(%d) and LF without CR(%d)",
                data->CRwithoutLF, data->LFwithoutCR);
     /* We have another ARTlog() for the same article just after. */
     ARTlog(data, ART_STRSTR, cp->Error);
