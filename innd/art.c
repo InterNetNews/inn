@@ -934,7 +934,7 @@ ARTparsebody(CHANNEL *cp)
             if (bp->data[i + 1] == '.')
                 data->DotStuffedLines++;
         } else {
-            data->LFwithoutCR++;
+            data->CRwithoutLF++;
         }
     }
     cp->Next = i;
