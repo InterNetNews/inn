@@ -107,21 +107,23 @@ typedef unsigned long           ARTNUM;
 #define LOW_WATER               (1 * 1024)
 #define GROW_AMOUNT(x)          ((x) < 128 * 1024 ? (x) : 128 * 1024)
 
+/* The maximum length of a single header or body line, including CRLF. */
+#define MAXARTLINELENGTH        1000
+
+/* The size of a small buffer. */
+#define SMBUF                   256
+
+/* The size of a medium buffer.  It should be greater than MAXARTLINELENGTH
+ * because it is sometimes used as a good guess at a buffer size for some
+ * header parsing code.*/
+#define MED_BUFFER              1024
+
 /* The size of a large buffer.  Free dynamically allocated buffers larger
    than this when we're done with them. */
 #define BIG_BUFFER              (2 * START_BUFF_SIZE)
 
-/* The maximum length of a single header, used as a good guess at a buffer
-   size for some header parsing code.  This is currently also used by innd
-   to determine whether to reject a message for an excessively long header;
-   this behavior should be fixed.  FIXME */
-#define MAXHEADERSIZE           1024
-
 /* Default buffer size for outgoing feeds from innd. */
 #define SITE_BUFFER_SIZE        (16 * 1024)
-
-/* The size of a small buffer. */
-#define SMBUF                   256
 
 /* Maximum size of a pathname in the spool directory. */
 #define SPOOLNAMEBUFF           512

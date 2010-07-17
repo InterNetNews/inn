@@ -674,10 +674,10 @@ NCihave(CHANNEL *cp)
         if (cp->Sendid.size < msglen) {
             if (cp->Sendid.size > 0)
                 free(cp->Sendid.data);
-            if (msglen > MAXHEADERSIZE)
+            if (msglen > MED_BUFFER)
                 cp->Sendid.size = msglen;
             else
-                cp->Sendid.size = MAXHEADERSIZE;
+                cp->Sendid.size = MED_BUFFER;
             cp->Sendid.data = xmalloc(cp->Sendid.size);
         }
         snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
@@ -701,10 +701,10 @@ NCihave(CHANNEL *cp)
         if (cp->Sendid.size < msglen) {
 	    if (cp->Sendid.size > 0)
 		free(cp->Sendid.data);
-	    if (msglen > MAXHEADERSIZE)
+	    if (msglen > MED_BUFFER)
 		cp->Sendid.size = msglen;
 	    else
-		cp->Sendid.size = MAXHEADERSIZE;
+		cp->Sendid.size = MED_BUFFER;
 	    cp->Sendid.data = xmalloc(cp->Sendid.size);
 	}
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %.200s",
@@ -1762,10 +1762,10 @@ NCcheck(CHANNEL *cp)
     if (cp->Sendid.size < msglen) {
         if (cp->Sendid.size > 0)
             free(cp->Sendid.data);
-        if (msglen > MAXHEADERSIZE)
+        if (msglen > MED_BUFFER)
             cp->Sendid.size = msglen;
         else
-            cp->Sendid.size = MAXHEADERSIZE;
+            cp->Sendid.size = MED_BUFFER;
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     if (!IsValidMessageID(cp->av[1], false)) {
@@ -1912,10 +1912,10 @@ NCtakethis(CHANNEL *cp)
     if (cp->Sendid.size < msglen) {
         if (cp->Sendid.size > 0)
             free(cp->Sendid.data);
-        if (msglen > MAXHEADERSIZE)
+        if (msglen > MED_BUFFER)
             cp->Sendid.size = msglen;
         else
-            cp->Sendid.size = MAXHEADERSIZE;
+            cp->Sendid.size = MED_BUFFER;
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     /* Save ID for later NACK or ACK. */

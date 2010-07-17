@@ -340,9 +340,9 @@ PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 	size = end - ngp->Rest;
 
     /* If an alias is longer than this, active is probably broken. */
-    if (size > MAXHEADERSIZE) {
+    if (size > MED_BUFFER) {
 	syslog(L_ERROR, "too-long flag field in active for %s", newsgroup);
-	size = MAXHEADERSIZE;
+	size = MED_BUFFER;
     }
 
     return PyString_FromStringAndSize(ngp->Rest, size);

@@ -115,6 +115,12 @@ The order of CNFS buffers in a metacycbuff is now properly read and written
 by B<cnfsheadconf>.  There previoulsy was a confusion between hexadecimal
 and decimal values.  Thanks again to John S<F. Morse>.
 
+=item *
+
+A single header field line is limited to 998 bytes, per S<RFC 5536>.
+B<innd> was previously accepting, and also generating Xref: header field
+lines, up to 1022 bytes.
+
 =back
 
 =head1 Changes in 2.5.2

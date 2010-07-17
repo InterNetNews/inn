@@ -845,7 +845,8 @@ ARTparseheader(CHANNEL *cp)
             length = i - data->LastCRLF - 1;
             if (data->LastCRLF == cp->Start)
                 length++;
-            if (length > MAXHEADERSIZE)
+            /* length includes final CRLF. */
+            if (length > MAXARTLINELENGTH)
                 ARTerror(cp, "Header line too long (%lu bytes)", length);
 
             /* Be a little tricky here.  Normally, the headers end at the
@@ -1397,7 +1398,7 @@ ARTpoisongroup(char *name)
 }
 
 /*
-** Assign article numbers to the article and create the Xref line.
+** Assign article numbers to the article and create the Xref: header field.
 ** If we end up not being able to write the article, we'll get "holes"
 ** in the directory and active file.
 */
@@ -1409,7 +1410,7 @@ ARTassignnumbers(ARTDATA *data)
   NEWSGROUP	*ngp;
 
   if (data->XrefBufLength == 0) {
-    data->XrefBufLength = MAXHEADERSIZE * 2 + 1;
+    data->XrefBufLength = MED_BUFFER * 2 + 1;
     data->Xref = xmalloc(data->XrefBufLength);
     strncpy(data->Xref, Path.data, Path.used - 1);
   }
@@ -1429,14 +1430,16 @@ ARTassignnumbers(ARTDATA *data)
       continue;
     }
     ngp->Filenum = ngp->Last;
-    /*  len  ' ' "news_groupname"  ':' "#" "\r\n" */
-    if (len + 1 + ngp->NameLength + 1 + 10 + 2 > data->XrefBufLength) {
-      data->XrefBufLength += MAXHEADERSIZE;
+    /*  len  ' ' "news_groupname"  ':' "#" "\r\n"
+        plus an extra 2 bytes for "\r\n" in case of a continuation line. */
+    if (len + 1 + ngp->NameLength + 1 + 10 + 2 + 2 > data->XrefBufLength) {
+      data->XrefBufLength += MED_BUFFER;
       data->Xref = xrealloc(data->Xref, data->XrefBufLength);
       p = data->Xref + len;
     }
-    if (linelen + 1 + ngp->NameLength + 1 + 10 > MAXHEADERSIZE) {
-      /* line exceeded */
+    /* Trailing CRLF is counted in the maximum length. */
+    if (linelen + 1 + ngp->NameLength + 1 + 10 + 2 > MAXARTLINELENGTH) {
+      /* Line exceeded. */
       sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
       buflen = strlen(p);
       linelen = buflen - 2;
@@ -1449,10 +1452,11 @@ ARTassignnumbers(ARTDATA *data)
     p += buflen;
   }
   /* p[0] is replaced with '\r' to be wireformatted when stored.  p[1] needs to
-     be '\n' */
+     be '\n'.  We have enough place to modify p here (checked during the
+     reallocation above). */
   p[0] = '\r';
   p[1] = '\n';
-  /* data->XrefLength includes trailing "\r\n" */
+  /* data->XrefLength includes trailing "\r\n". */
   data->XrefLength = len + 2;
   data->Replic = q + 1;
   data->ReplicLength = len - (q + 1 - data->Xref);
@@ -1819,7 +1823,7 @@ ARTmakeoverview(CHANNEL *cp)
   }
 
   /* Setup. */
-  buffer_resize(overview, MAXHEADERSIZE);
+  buffer_resize(overview, MED_BUFFER);
   buffer_set(overview, "", 0);
 
   /* Write the data, a field at a time. */

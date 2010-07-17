@@ -1133,7 +1133,7 @@ hisv6_expirecb(struct hisv6 *h, void *cookie, const HASH *hash,
 
     /* check if we've seen this message id already */
     if (hiscookie->new && dbzexists(*hash)) {
-	/* continue after duplicates, it serious, but not fatal */
+	/* continue after duplicates, it's serious, but not fatal */
 	hisv6_seterror(h, concat("duplicate message-id [",
 				 HashToText(*hash), "] in history ",
 				 hiscookie->new->histpath, NULL));

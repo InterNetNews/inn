@@ -91,7 +91,7 @@ static int upgrade_v1_to_v2(void)
     group_id_t gid, higid = 0, higidbang = 0;
     struct groupinfo gi;
     struct groupstats gs;
-    char group[MAXHEADERSIZE];
+    char group[MED_BUFFER];
     u_int32_t v2 = 2;
     int ret;
 
@@ -121,7 +121,7 @@ static int upgrade_v1_to_v2(void)
 		memcpy(&higidbang, val.data, sizeof(group_id_t));
 	    continue;
 	}
-	if(key.size >= MAXHEADERSIZE)
+	if(key.size >= MED_BUFFER)
 	    continue;
 	memcpy(group, key.data, key.size);
 	group[key.size] = 0;
