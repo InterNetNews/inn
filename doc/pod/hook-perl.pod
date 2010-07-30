@@ -306,17 +306,18 @@ normal processing of it continues.  Otherwise, the article is rejected and
 the string returned by filter_post() is returned to the client as the
 error message (with some exceptions; see below).
 
-filter_post() has access to a global hash %hdr, which contains all of the
-headers of the article.  (Unlike the innd Perl filter, %hdr for the nnrpd
-Perl filter contains *all* of the headers, not just the standard ones.  If
-any of the headers are duplicated, though, %hdr will contain only the
-value of the last occurrence of the header.  nnrpd will reject the
-article before the filter runs if any of the standard headers are
-duplicated.)  It also has access to the full body of the article in the
-variable $body, and if the poster authenticated via AUTHINFO (or if either
-Perl authentication or a readers.conf authentication method is used and
-produces user information), it has access to the authenticated username of
-the poster in the variable $user.
+filter_post() has access to a global hash C<%hdr>, which contains all
+of the headers of the article.  (Unlike the B<innd> Perl filter, C<%hdr>
+for the B<nnrpd> Perl filter contains *all* of the headers, not just the
+standard ones.  If any of the headers are duplicated, though, C<%hdr>
+will contain only the value of the last occurrence of the header, whereas
+it is the first occurrence with the B<innd> Perl filter.  B<nnrpd> will
+reject the article before the filter runs if any of the standard headers
+are duplicated.)  It also has access to the full body of the article in
+the variable C<$body>, and if the poster authenticated via AUTHINFO (or
+if either Perl authentication or a F<readers.conf> authentication method
+is used and produces user information), it has access to the authenticated
+username of the poster in the variable C<$user>.
 
 Unlike the innd Perl filter, the nnrpd Perl filter can modify the %hdr
 hash.  In fact, if the Perl variable $modify_headers is set to true after
