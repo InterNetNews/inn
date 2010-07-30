@@ -105,6 +105,13 @@ for the bug report.
 
 =item *
 
+When a header field appeared more than once in an article, it was missing
+from the overview data.  OVER/XOVER, as well as HDR/XHDR/XPAT using the
+overview, were therefore returning an empty field.  The content of the
+first occurrence is now returned, in accordance with RFC 3977.
+
+=item *
+
 B<cnfsheadconf> now properly recognizes continuation lines in
 F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
 Thanks to John S<F. Morse> for the bug report.
