@@ -688,7 +688,7 @@ ARTcheckheader(CHANNEL *cp, int size)
      * from the overview.
      * The content of the first occurrence must be returned by HDR and OVER
      * according to RFC 3977. */
-    if (hp[i].Type == HTreq) {
+    if (ARTheaders[i].Type == HTreq) {
       hc->Length = -1;
     }
   } else {
