@@ -2430,7 +2430,6 @@ sub report_unwanted_ng($) {
 # Compare 2 dates (+hour), used with sort (arguments $a and $b)
 sub datecmp() {
   # ex: "May 12 06"   for May 12, 6:00am
-  local($[) = 0;
   # The 2 dates are near. The range is less than a few days that's why we
   # can cheat to determine the order. It is only important if one date
   # is in January and the other in December.
