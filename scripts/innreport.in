@@ -671,11 +671,6 @@ if (!$NOT_DAILY && defined $output{'default'}{'unwanted_log'}) {
 # - Used with perl's sort function, arguments are passed as $a and $b.
 # - Specified in section "inn_flow" of innreport.conf.
 sub DateCompare {
-
-  # $[ ... The index of the first element in an array, and of the first
-  #        character in a substring. Default is 0.
-  local $[ = 0;
-
   # The 2 dates are near. The range is less than a few days that's why we
   # can cheat to determine the order. It is only important if one date
   # is in January and the other in December.
@@ -791,7 +786,6 @@ sub ConvDate($) {
 
 # Compare 2 filenames
 sub filenamecmp {
-  local $[ = 0;
   my ($la, $lb) = ($a, $b);
   my ($ya) = $la =~ m/news-notice\.(\d+)\./o;
   $ya += 100  if $ya < 90; # Try to pacify the year 2000 !
