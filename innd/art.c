@@ -1447,13 +1447,13 @@ ARTassignnumbers(ARTDATA *data)
     ngp->Filenum = ngp->Last;
     /*  len  ' ' "news_groupname"  ':' "#" "\r\n"
         plus an extra 2 bytes for "\r\n" in case of a continuation line. */
-    if (len + 1 + ngp->NameLength + 1 + 10 + 2 + 2 > data->XrefBufLength) {
+    if (len + 1 + ngp->NameLength + 1 + ARTNUMPRINTSIZE + 2 + 2 > data->XrefBufLength) {
       data->XrefBufLength += MED_BUFFER;
       data->Xref = xrealloc(data->Xref, data->XrefBufLength);
       p = data->Xref + len;
     }
     /* Trailing CRLF is counted in the maximum length. */
-    if (linelen + 1 + ngp->NameLength + 1 + 10 + 2 > MAXARTLINELENGTH) {
+    if (linelen + 1 + ngp->NameLength + 1 + ARTNUMPRINTSIZE + 2 > MAXARTLINELENGTH) {
       /* Line exceeded. */
       sprintf(p, "\r\n %s:%lu", ngp->Name, ngp->Filenum);
       buflen = strlen(p);
