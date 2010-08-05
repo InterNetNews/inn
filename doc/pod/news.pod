@@ -17,6 +17,10 @@ from the overview data.  OVER/XOVER, as well as HDR/XHDR/XPAT using the
 overview, were therefore returning an empty field.  The content of the
 first occurrence is now returned, in accordance with RFC 3977.
 
+Perl and Python filters for B<innd> now also properly initialize their
+headers variables with the first occurrence of header fields.  (It is
+still the last occurrence for the Perl filter for B<nnrpd>.)
+
 =item *
 
 B<cnfsheadconf> now properly recognizes continuation lines in
