@@ -1719,7 +1719,7 @@ ovdb_groupadd(const char *group, ARTNUM lo, ARTNUM hi, char *flag)
 		&& !(gi.status & GROUPINFO_EXPIRING)
 		&& !(gi.status & GROUPINFO_MOVING)) {
 	int s, c = 0;
-	char g[MAXHEADERSIZE];
+	char g[MED_BUFFER];
 
 	strlcpy(g, group, sizeof(g));
 	s = strlen(g) + 1;
