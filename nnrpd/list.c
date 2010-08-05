@@ -160,8 +160,8 @@ CMD_list_single(char *group)
         if (count == 0)
             lo = hi + 1;
         Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
-        /* 10 is ARTNUMPRINTSIZE. */
-        Printf("%s %010u %010u %c\r\n", group, hi, lo, flag);
+        Printf("%s %0*u %0*u %c\r\n", group, ARTNUMPRINTSIZE, hi,
+               ARTNUMPRINTSIZE, lo, flag);
         Printf(".\r\n");
         return true;
     }
