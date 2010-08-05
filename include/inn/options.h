@@ -110,6 +110,9 @@ typedef unsigned long           ARTNUM;
 /* The maximum length of a single header or body line, including CRLF. */
 #define MAXARTLINELENGTH        1000
 
+/* String length of high/low watermark.  Currently for 32-bit article numbers. */
+#define ARTNUMPRINTSIZE         10
+
 /* The size of a small buffer. */
 #define SMBUF                   256
 

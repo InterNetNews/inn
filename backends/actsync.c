@@ -226,7 +226,6 @@ struct eqgrp {
 
 #define DEF_HI   "0000000000"	/* default hi string value for new groups */
 #define DEF_LOW  "0000000001"	/* default low string value for new groups */
-#define WATER_LEN 10		/* string length of hi/low water mark */
 
 #define DEF_NAME "actsync"	/* default name to use for ctlinnd newgroup */
 
@@ -962,10 +961,10 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/*
 	 * check for excessive hi water length
 	 */
-	if (i > WATER_LEN) {
+	if (i > ARTNUMPRINTSIZE) {
 	    if (!QUIET(hostid))
                 warn("line %d <%s> from %s hi water len: %d < %d",
-                     cnt + 1, cur->name, cur->hi, i, WATER_LEN);
+                     cnt + 1, cur->name, cur->hi, i, ARTNUMPRINTSIZE);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -973,9 +972,9 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/*
 	 * if the hi water length is too small, malloc and resize
 	 */
-	if (i != WATER_LEN) {
-            p = xmalloc(WATER_LEN + 1);
-	    memcpy(p, cur->hi, ((i > WATER_LEN) ? WATER_LEN : i)+1);
+	if (i != ARTNUMPRINTSIZE) {
+            p = xmalloc(ARTNUMPRINTSIZE + 1);
+	    memcpy(p, cur->hi, ((i > ARTNUMPRINTSIZE) ? ARTNUMPRINTSIZE : i)+1);
 	}
 
 	/* 
@@ -994,10 +993,10 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/*
 	 * check for excessive low water length
 	 */
-	if (i > WATER_LEN) {
+	if (i > ARTNUMPRINTSIZE) {
 	    if (!QUIET(hostid))
                 warn("line %d <%s> from %s low water len: %d < %d",
-		     cnt + 1, cur->name, cur->hi, i, WATER_LEN);
+		     cnt + 1, cur->name, cur->hi, i, ARTNUMPRINTSIZE);
 	    cur->ignore |= ERROR_FORMAT;
 	    continue;
 	}
@@ -1005,9 +1004,9 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	/*
 	 * if the low water length is too small, malloc and resize
 	 */
-	if (i != WATER_LEN) {
-            p = xmalloc(WATER_LEN + 1);
-	    memcpy(p, cur->low, ((i > WATER_LEN) ? WATER_LEN : i)+1);
+	if (i != ARTNUMPRINTSIZE) {
+            p = xmalloc(ARTNUMPRINTSIZE + 1);
+	    memcpy(p, cur->low, ((i > ARTNUMPRINTSIZE) ? ARTNUMPRINTSIZE : i)+1);
 	}
 
 	/* check for a bad group type */
