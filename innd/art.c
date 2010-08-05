@@ -683,8 +683,14 @@ ARTcheckheader(CHANNEL *cp, int size)
     cp->Data.BytesHeader = header;
   hc = &hc[i];
   if (hc->Length != 0) {
-    /* Duplicated. */
-    hc->Length = -1;
+    /* Duplicated required header.
+     * We do not check every header because they would otherwise disappear
+     * from the overview.
+     * The content of the first occurrence must be returned by HDR and OVER
+     * according to RFC 3977. */
+    if (ARTheaders[i].Type == HTreq) {
+      hc->Length = -1;
+    }
   } else {
     /* We need to remove leading and trailing spaces for
      * message-IDs; otherwise, history hashes may not be
