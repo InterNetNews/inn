@@ -11,8 +11,8 @@ recommended because older versions suffer from various +issues).
 
 Ovdb makes use of the full transaction/logging/locking functionality
 of the BerkeleyDB environment.  BerkeleyDB may be downloaded from
-L<http://www.oracle.com/database/berkeley-db.html> and is needed to build
-the ovdb backend.
+L<http://www.oracle.com/database/berkeley-db/index.html> and is needed to
+build the ovdb backend.
 
 =head1 UPGRADING
 
@@ -319,7 +319,7 @@ inn.conf(5), innd(8), nnrpd(8), ovdb_init(8), ovdb_monitor(8),
 ovdb_stat(8)
 
 BerkeleyDB documentation: in the F<docs> directory of the BerkeleyDB
-source distribution, or on the Sleepycat web page:
-L<http://www.oracle.com/database/berkeley-db.html>
+source distribution, or on the Oracle web page:
+L<http://www.oracle.com/database/berkeley-db/index.html>.
 
 =cut
