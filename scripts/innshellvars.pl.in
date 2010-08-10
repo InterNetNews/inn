@@ -138,6 +138,5 @@ $path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 $ENV{'PATH'} = $path;
 
 $home = ${pathnews};
-$ENV{'HOME'} = ${pathnews};
 
 1 ;

@@ -1,4 +1,6 @@
 #! /usr/bin/perl -w
+# use lib '@LIBPERLDIR@'; use INN::Config;
+# If running inside INN, uncomment the above and point to INN::Config.
 #
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
@@ -21,7 +23,7 @@
 #               machines (in the guise of a reader), and pulls over articles 
 #               and feeds them to a downstream server (in the guise of a feeder).
 #
-#               Uses a simple configuration file:  $HOME/.pullnews to define
+#               Uses a simple configuration file:  <pathdb>/pullnews.marks to define
 #               which machines to pull articles from and which groups at each
 #               machine to pull over.  There is also support for more specific
 #               configurations like cross-posted newsgroups to kill, thanks to
@@ -46,6 +48,10 @@
 #               over.
 #
 
+# If you have INN and the script is able to successfully include your
+# INN::Config module, the value of $INN::Config::pathdb will override it.
+my $pathdb = $ENV{HOME};
+
 require 5.004;
 
 $0 =~ s!.*/!!;
@@ -67,7 +73,8 @@ use Fcntl qw(:flock);
 use strict;
 
 my $usage = $0;
-my $defaultConfig = "$ENV{HOME}/.pullnews";
+$pathdb = $INN::Config::pathdb if $INN::Config::pathdb;
+my $defaultConfig = "${pathdb}/pullnews.marks";
 my $defaultPort = 119;
 my $defaultHost = "localhost";
 my $defaultCheckPoint = 0;
@@ -91,8 +98,8 @@ $usage .= " [ -hnqRx -b fraction -c config -C width -d level
                 group.  When fraction is 1.0, pull all the articles on
                 the server.  The default is to do nothing.
 
-  -c config     specify the configuration file instead of the 
-                default of $ENV{HOME}/.pullnews (also called ~/.pullnews).
+  -c config     specify the configuration file
+                (default is ${pathdb}/pullnews.marks).
 
   -C width      use width characters for progress (default is $defaultProgressWidth).
 

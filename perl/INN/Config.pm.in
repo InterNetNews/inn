@@ -160,7 +160,6 @@ our $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
 if ($ovmethod && $ovmethod eq "ovdb") {
     $ENV{'DB_HOME'} = $pathoverview;
 }
-$ENV{'HOME'} = ${pathnews};
 $ENV{'INNDDIR'} = $innddir;
 $ENV{'LOCKS'} = $locks;
 $ENV{'MOST_LOGS'} = $most_logs;

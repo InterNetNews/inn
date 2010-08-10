@@ -132,4 +132,3 @@ set inn_path "$inn_newslbin:$inn_newsbin:$env(PATH):/bin:/usr/bin"
 set env(PATH) "$inn_path"
 
 set inn_home "$inn_pathnews"
-set env(HOME) "$inn_pathnews"

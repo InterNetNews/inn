@@ -123,5 +123,4 @@ SYSLOG_FACILITY=`echo "@SYSLOG_FACILITY@" | tr "[:upper:]" "[:lower:]" | ${SED} 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH
 
-HOME=$PATHNEWS
-export HOME
+# Do not override HOME.

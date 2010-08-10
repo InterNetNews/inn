@@ -97,7 +97,7 @@ ovdb_stat.o: ovdb_stat.c
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
 mailpost:	mailpost.in      $(FIX)	; $(FIX) mailpost.in
-pullnews:	pullnews.in      $(FIX)	; $(FIX) -i pullnews.in
+pullnews:	pullnews.in      $(FIX)	; $(FIX) pullnews.in
 scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
 
 bunbatch: Makefile ../Makefile.global

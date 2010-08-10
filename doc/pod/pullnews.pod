@@ -20,15 +20,15 @@ older versions of Perl, you can download it from L<http://www.cpan.org/>.
 
 =head1 DESCRIPTION
 
-B<pullnews> reads a config file in the running user's home directory
-(normally called F<~/.pullnews>) and connects to the upstream servers
-given there as a reader client.  By default, it connects to all servers
-listed in the configuration file, but you can limit B<pullnews> to
-specific servers by listing them on the command line:  a whitespace-separated
-list of server names can be specified, like I<from-server> for one of them.
-For each server it connects to, it pulls over articles and feeds them to the
-destination server via the IHAVE or POST commands.  This means that the system
-B<pullnews> is run on must have feeding access to the destination news server.
+B<pullnews> reads a config file named F<pullnews.marks> in I<pathdb> as set
+in F<inn.conf>, and connects to the upstream servers given there as a reader
+client.  By default, it connects to all servers listed in the configuration
+file, but you can limit B<pullnews> to specific servers by listing them
+on the command line:  a whitespace-separated list of server names can be
+specified, like I<from-server> for one of them.  For each server it connects
+to, it pulls over articles and feeds them to the destination server via
+the IHAVE or POST commands.  This means that the system B<pullnews> is
+run on must have feeding access to the destination news server.
 
 B<pullnews> is designed for very small sites that do not want to bother
 setting up traditional peering and is not meant for handling large feeds.
@@ -46,10 +46,10 @@ a renumbered server.  The default is to do nothing.
 
 =item B<-c> I<config>
 
-Normally, the config file is stored in F<~/.pullnews> for the user running
-B<pullnews>.  If B<-c> is given, I<config> will be used as the config file
-instead.  This is useful if you're running B<pullnews> as a system user on
-an automated basis out of cron rather than as an individual user.
+Normally, the config file is stored in F<pullnews.marks> in I<pathdb>.
+If B<-c> is given, I<config> will be used as the config file instead.
+This is useful if you're running B<pullnews> as a system user on an automated
+basis out of cron or as an individual user, rather than the news user.
 
 See L<CONFIG FILE> below for the format of this file.
 
@@ -265,10 +265,9 @@ the username C<pull> and the password C<sekret>.
 The Perl script itself used to pull news from upstream servers and feed
 it to another news server.
 
-=item I<$HOME>/.pullnews
+=item I<pathdb>/pullnews.marks
 
-The default config file.  It is in the running user's home directory
-(normally called F<~/.pullnews>).
+The default config file.
 
 =back
 
