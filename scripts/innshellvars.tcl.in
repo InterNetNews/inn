@@ -12,7 +12,7 @@ set env(LC_CTYPE) "C"
 
 set prefix "@prefix@"
 set exec_prefix "@exec_prefix@"
-eval `@bindir@/innconfval -t`
+eval [exec @bindir@/innconfval -t]
 
 set inn_newshome "$inn_pathnews"
 set inn_spooldir "$inn_pathspool"
@@ -65,8 +65,8 @@ set inn_rnews "${inn_newsbin}/rnews"
 set inn_perl_startup_innd "${inn_pathfilter}/startup_innd.pl"
 set inn_perl_filter_innd "${inn_pathfilter}/filter_innd.pl"
 set inn_perl_filter_nnrpd "${inn_pathfilter}/filter_nnrpd.pl"
-set inn_python_filter_innd "${pathfilter}/filter_innd.py"
-set inn_path_python_inn_module "${pathfilter}/INN.py"
+set inn_python_filter_innd "${inn_pathfilter}/filter_innd.py"
+set inn_path_python_inn_module "${inn_pathfilter}/INN.py"
 set inn_path_tcl_startup "${inn_pathfilter}/startup.tcl"
 set inn_path_tcl_filter "${inn_pathfilter}/filter.tcl"
 
@@ -124,7 +124,7 @@ set inn_newslbin "${inn_newshome}/local"
 set env(NEWSLBIN) "$inn_newslbin"
 
 scan "@NEWSUMASK@" "%o" inn_umask
-umask @NEWSUMASK@
+catch {umask @NEWSUMASK@}
 
 set inn_syslog_facility [ exec echo [string tolower "@SYSLOG_FACILITY@"] | $inn_sed -e {s/log_//} ]
 
