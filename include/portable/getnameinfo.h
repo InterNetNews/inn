@@ -22,8 +22,8 @@
 /* Skip this entire file if a system getaddrinfo was detected. */
 #if !HAVE_GETNAMEINFO
 
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 
 /* Constants for flags from RFC 3493, combined with binary or. */
 #define NI_NOFQDN       0x0001

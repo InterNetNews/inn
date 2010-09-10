@@ -14,6 +14,7 @@ define([_INN_SYS_STREAMS_SENDFD],
 # include <string.h>
 #endif
 #include <stropts.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>

@@ -22,8 +22,8 @@
 /* Skip this entire file if a system getaddrinfo was detected. */
 #if !HAVE_GETADDRINFO
 
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 
 /* The struct returned by getaddrinfo, from RFC 3493. */
 struct addrinfo {

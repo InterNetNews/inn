@@ -39,6 +39,11 @@ A single header field line is limited to 998 bytes, per S<RFC 5536>.
 B<innd> was previously accepting, and also generating Xref: header field
 lines, up to 1022 bytes.
 
+=item *
+
+Fixed an issue at configure time that made INN wrongly assume that OpenBSD
+(4.6) didn't support Unix-domain sockets.  Thanks to Wim Lewis for the patch.
+
 =back
 
 =head1 Changes in 2.5.2
