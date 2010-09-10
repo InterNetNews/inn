@@ -24,6 +24,7 @@ dnl Source used by INN_FUNC_GETADDRINFO_ADDRCONFIG.
 AC_DEFUN([_INN_FUNC_GETADDRINFO_ADDRCONFIG_SOURCE], [[
 #include <netdb.h>
 #include <stdio.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 
 int
@@ -135,6 +136,7 @@ AC_DEFUN([INN_MACRO_SUN_LEN],
 
 dnl Source used by INN_SYS_UNIX_SOCKETS.
 AC_DEFUN([_INN_SYS_UNIX_SOCKETS], [[
+#include <sys/types.h>
 #include <sys/socket.h>
 #ifndef AF_UNIX
 error:  No Unix domain sockets!
