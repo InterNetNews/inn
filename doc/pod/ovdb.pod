@@ -11,8 +11,8 @@ issues).
 
 Ovdb makes use of the full transaction/logging/locking functionality of
 the S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
-L<http://www.oracle.com/database/berkeley-db/index.html> and is needed to
-build the ovdb backend.
+L<http://www.oracle.com/technetwork/database/berkeleydb/overview/index.html>
+and is needed to build the ovdb backend.
 
 =head1 UPGRADING
 
@@ -357,6 +357,6 @@ ovdb_stat(8)
 
 S<Berkeley DB> documentation: in the F<docs> directory of the S<Berkeley DB>
 source distribution, or on the Oracle S<Berkeley DB> web page:
-L<http://www.oracle.com/database/berkeley-db/index.html>.
+L<http://www.oracle.com/technetwork/database/berkeleydb/overview/index.html>.
 
 =cut
