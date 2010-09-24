@@ -1,0 +1,14 @@
+##  $Id$
+##
+##  Sample innshellvars.pl.local script.
+##
+##  It permits to add or override variables defined by
+##  the INN::Config Perl module (or the legacy innshellvars.pl
+##  Perl script).
+##  This script has to be executable in order to be included
+##  during the run of INN::Config.
+
+##  Defining or redefining $variable will allow to use
+##  $INN::Config::variable with the corresponding value
+##  in a script calling INN::Config.
+#$variable = 'test';

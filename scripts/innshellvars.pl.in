@@ -140,4 +140,9 @@ $ENV{'PATH'} = $path;
 $home = ${pathnews};
 $ENV{'HOME'} = ${pathnews};
 
+##  Load another script that can override or add variables.
+if (-x "${pathetc}/innshellvars.pl.local") {
+    do "${pathetc}/innshellvars.pl.local";
+}
+
 1 ;

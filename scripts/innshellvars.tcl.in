@@ -133,3 +133,9 @@ set env(PATH) "$inn_path"
 
 set inn_home "$inn_pathnews"
 set env(HOME) "$inn_pathnews"
+
+
+##  Load another script that can override or add variables.
+if {[file executable "${inn_pathetc}/innshellvars.tcl.local"] == 1} {
+    source "${inn_pathetc}/innshellvars.tcl.local"
+}

@@ -63,7 +63,9 @@ REST		= \
 	innwatch.ctl distrib.pats distributions actsync.cfg actsync.ign \
 	motd.news storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
-	filter_innd.py INN.py nnrpd.py \
+	filter_innd.py INN.py \
+	innshellvars.local innshellvars.pl.local innshellvars.tcl.local \
+	nnrpd.py \
 	nnrpd_auth.pl nnrpd_access.pl nocem.ctl \
         news2mail.cf readers.conf \
 	radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
@@ -89,6 +91,8 @@ REST_INSTALLED	= \
 	$D$(PATH_PYTHON_FILTER_INND) $D$(PATH_PYTHON_INN_MODULE) \
 	$D$(PATH_PYTHON_NNRPD_MODULE) \
 	$D$(PATH_TCL_STARTUP) $D$(PATH_TCL_FILTER) \
+	$D$(PATHETC)/innshellvars.local $D$(PATHETC)/innshellvars.pl.local \
+	$D$(PATHETC)/innshellvars.tcl.local \
 	$D$(PATHETC)/nocem.ctl \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_NNRPYACCESS) $D$(PATH_NNRPYDYNAMIC) \
@@ -194,6 +198,9 @@ $D$(PATHETC)/nntpsend.ctl: nntpsend.ctl	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPUB) $? $@
 $D$(PATHHTTP)/innreport.css: innreport.css	; $(COPY_RPUB) $? $@
+$D$(PATHETC)/innshellvars.local: innshellvars.local	; $(COPY_XPUB) $? $@
+$D$(PATHETC)/innshellvars.pl.local: innshellvars.pl.local	; $(COPY_XPUB) $? $@
+$D$(PATHETC)/innshellvars.tcl.local: innshellvars.tcl.local	; $(COPY_XPUB) $? $@
 $D$(PATHETC)/localgroups: localgroups	; $(COPY_RPUB) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPUB) $? $@
@@ -250,6 +257,9 @@ incoming.conf:	../samples/incoming.conf	; $(COPY) $? $@
 inn.conf:	../samples/inn.conf		; $(COPY) $? $@
 innreport.conf:	../samples/innreport.conf	; $(COPY) $? $@
 innreport.css:	../samples/innreport.css	; $(COPY) $? $@
+innshellvars.local: ../samples/innshellvars.local	; $(COPY) $? $@
+innshellvars.pl.local: ../samples/innshellvars.pl.local	; $(COPY) $? $@
+innshellvars.tcl.local: ../samples/innshellvars.tcl.local	; $(COPY) $? $@
 localgroups:	../samples/localgroups		; $(COPY) $? $@
 storage.conf:	../samples/storage.conf		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@

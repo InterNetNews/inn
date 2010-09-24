@@ -125,3 +125,9 @@ export PATH
 
 HOME=$PATHNEWS
 export HOME
+
+
+##  Load another script that can override or add variables. 
+if [ -x ${PATHETC}/innshellvars.local ]; then
+    . ${PATHETC}/innshellvars.local
+fi

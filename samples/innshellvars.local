@@ -1,0 +1,13 @@
+##  $Id$
+##
+##  Sample innshellvars.local script.
+##
+##  It permits to add or override variables defined by
+##  the innshellvars shell script.
+##  This script has to be executable in order to be included
+##  during the run of innshellvars.
+
+##  Defining or redefining VARIABLE will allow to use
+##  $VARIABLE with the corresponding value in a script
+##  calling innshellvars.
+#VARIABLE = 'test'
