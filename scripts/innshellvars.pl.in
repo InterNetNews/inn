@@ -137,6 +137,12 @@ $path = $ENV{'PATH'} || '';
 $path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 $ENV{'PATH'} = $path;
 
+
 $home = ${pathnews};
+
+##  Load another script that can override or add variables.
+if (-x "${pathetc}/innshellvars.pl.local") {
+    do "${pathetc}/innshellvars.pl.local";
+}
 
 1 ;

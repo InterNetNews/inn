@@ -123,4 +123,10 @@ SYSLOG_FACILITY=`echo "@SYSLOG_FACILITY@" | tr "[:upper:]" "[:lower:]" | ${SED} 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH
 
-# Do not override HOME.
+##  Do not override HOME.
+
+
+##  Load another script that can override or add variables. 
+if [ -x ${PATHETC}/innshellvars.local ]; then
+    . ${PATHETC}/innshellvars.local
+fi

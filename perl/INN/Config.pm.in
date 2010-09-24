@@ -186,6 +186,11 @@ our @EXPORT_OK = (@INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
 @LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR);
 
 
+##  Load another script that can override or add variables.
+if (-x "${pathetc}/innshellvars.pl.local") {
+    do "${pathetc}/innshellvars.pl.local";
+}
+
 ##  That's all.
 1;
 
@@ -204,6 +209,10 @@ the version of INN (in the variable C<$INN::Config::version>).
 Other useful variables are also provided (directories, files,
 programs, masks, parameters) and you should have a look at the source
 code of the module to see what you can use in your Perl scripts.
+
+A local Perl script named F<innshellvars.pl.local> in I<pathetc> will be
+loaded, if present and executable, at the end of the run of this module.
+A typical use is to add or override variables.
 
 You only have to declare the module at the beginning of them:
 

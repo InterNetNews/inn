@@ -158,6 +158,15 @@ lines, up to 1022 bytes.
 Fixed an issue at configure time that made INN wrongly assume that OpenBSD
 (4.6) didn't support Unix-domain sockets.  Thanks to Wim Lewis for the patch.
 
+=item *
+
+It is now possible to run a script at the end of the execution of
+B<innshellvars> scripts.  If a file named F<innshellvars.local>,
+F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
+executable in I<pathetc>, then it will be executed by the corresponding
+B<innshellvars> script (respectively shell, INN::Config Perl module,
+and Tcl).  A typical use is to add or override variables.
+
 =back
 
 =head1 Changes in 2.5.2
