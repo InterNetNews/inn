@@ -621,6 +621,9 @@ samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
 samples/innreport.css                 Style for innreport web pages
+samples/innshellvars.local            Additional shell script for innshellvars
+samples/innshellvars.pl.local         Additional Perl script for INN::Config
+samples/innshellvars.tcl.local        Additional Tcl script for innshellvars.tcl
 samples/innwatch.ctl                  INN monitoring configuration
 samples/localgroups                   Local newsgroups with descriptions
 samples/moderators                    Moderation submission addresses

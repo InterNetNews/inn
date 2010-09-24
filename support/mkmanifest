@@ -218,6 +218,9 @@ site/inn.conf
 site/innfeed.conf
 site/innreport.conf
 site/innreport.css
+site/innshellvars.local
+site/innshellvars.pl.local
+site/innshellvars.tcl.local
 site/innwatch.ctl
 site/localgroups
 site/moderators
