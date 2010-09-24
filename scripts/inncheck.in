@@ -389,6 +389,7 @@ newsfeeds
     local ($next, $start, $me_empty, @muxes, %sites);
     local ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
     local ($bang, $nobang, $prog, $dir);
+    local (%variables, $key);
 
     input: while ( <IN> ) {
 	$line++;
@@ -410,10 +411,16 @@ newsfeeds
 	print "$file:$line: ends with whitespace\n"
 	    if /\s+$/;
 
-        # Catch a variable setting.
-        if ( /^\$([A-Za-z0-9]+)=/ ) {
+        ##  Substitute variables.
+        for my $key (keys %variables) {
+            s/\$$key/$variables{$key}/;
+        }
+
+        ##  Catch a variable setting.
+        if ( /^\$([A-Za-z0-9]+)=(.*)$/ ) {
             print "$file:$line: variable name too long\n"
                 if length ($1) > 31;
+            $variables{$1} = $2;
             next input;
         }
 
