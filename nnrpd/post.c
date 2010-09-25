@@ -384,6 +384,15 @@ ProcessHeaders(char *idbuff)
 	    return "Can't parse Date: header";
 	if (t > now + DATE_FUZZ)
 	    return "Article posted in the future";
+        /* This check is done for Date: by nnrpd.
+         * innd, as a relaying agent, does not check it when an Injection-Date:
+         * header is present. */
+        if (innconf->artcutoff != 0) {
+            long cutoff = innconf->artcutoff * 24 * 60 * 60;
+            if (t < now - cutoff)
+                return "Article posted too far in the past (check still "
+                       "done for legacy reasons on the Date: header)";
+        }
     }
 
     /* Newsgroups: is checked later. */

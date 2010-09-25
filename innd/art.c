@@ -1041,17 +1041,34 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     }
   }
 
-  /* Is article too old? */
-  /* assumes Date header is required header */
-  p = HDR(HDR__DATE);
-  data->Posted = parsedate_rfc5322_lax(p);
-  if (data->Posted == (time_t) -1) {
-    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
-            ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-      MaxLength(p, p));
-    TMRstop(TMR_ARTCLEAN);
-    return false;
+  /* Is the article too old? */
+  /* Assumes the Date: header is a required header.
+   * Check the presence of the Injection-Date: header field before.
+   * Set the time the article was posted. */
+  if (HDR_FOUND(HDR__INJECTION_DATE)) {
+    p = HDR(HDR__INJECTION_DATE);
+    data->Posted = parsedate_rfc5322_lax(p);
+
+    if (data->Posted == (time_t) -1) {
+      sprintf(buff, "%d Bad \"Injection-Date\" header -- \"%s\"",
+              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+              MaxLength(p, p));
+      TMRstop(TMR_ARTCLEAN);
+      return false;
+    }
+  } else {
+    p = HDR(HDR__DATE);
+    data->Posted = parsedate_rfc5322_lax(p);
+
+    if (data->Posted == (time_t) -1) {
+      sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
+              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+              MaxLength(p, p));
+      TMRstop(TMR_ARTCLEAN);
+      return false;
+    }
   }
+
   if (innconf->artcutoff != 0) {
       long cutoff = innconf->artcutoff * 24 * 60 * 60;
 
@@ -1064,7 +1081,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
       }
   }
   if (data->Posted > Now.tv_sec + DATE_FUZZ) {
-    sprintf(buff, "%d Article posted in the future -- \"%s\"",
+    sprintf(buff, "%d Article injected or posted in the future -- \"%s\"",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
             MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);

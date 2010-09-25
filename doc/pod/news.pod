@@ -160,6 +160,12 @@ Fixed an issue at configure time that made INN wrongly assume that OpenBSD
 
 =item *
 
+The Injection-Date: header, when present, is now used by B<innd> and
+B<makehistory> to determine the posting date of an article.  Otherwise,
+the Date: header is used.
+
+=item *
+
 It is now possible to run a script at the end of the execution of
 B<innshellvars> scripts.  If a file named F<innshellvars.local>,
 F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and

@@ -95,6 +95,7 @@ bool WriteStdout = false;
 static char             BYTES[] = "Bytes";
 static char             DATE[] = "Date";
 static char             EXPIRES[] = "Expires";
+static char             INJECTIONDATE[] = "Injection-Date";
 static char             LINES[] = "Lines";
 static char		MESSAGEID[] = "Message-ID";
 static char		XREF[] = "Xref";
@@ -104,6 +105,7 @@ static size_t		ARTfieldsize;
 static ARTOVERFIELD     *Bytesp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Datep = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Expp = (ARTOVERFIELD *)NULL;
+static ARTOVERFIELD     *InjectionDatep = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Linesp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Msgidp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Xrefp = (ARTOVERFIELD *)NULL;
@@ -465,6 +467,9 @@ ARTreadschema(bool Overview)
             if (strncasecmp(extraoverview->strings[i],
                             EXPIRES, strlen(EXPIRES)) == 0)
                 Expp = fp;
+            if (strncasecmp(extraoverview->strings[i],
+                            INJECTIONDATE, strlen(INJECTIONDATE)) == 0)
+                InjectionDatep = fp;
             fp++;
         }
 
@@ -475,6 +480,8 @@ ARTreadschema(bool Overview)
     if (Datep == (ARTOVERFIELD *)NULL)
         Missfieldsize++;
     if (Expp == (ARTOVERFIELD *)NULL)
+        Missfieldsize++;
+    if (InjectionDatep == (ARTOVERFIELD *)NULL)
         Missfieldsize++;
     if (Linesp == (ARTOVERFIELD *)NULL)
         Missfieldsize++;
@@ -509,6 +516,15 @@ ARTreadschema(bool Overview)
             fp->HasHeader = false;
             fp->HeaderLength = 0;
             Expp = fp++;
+        }
+        if (InjectionDatep == (ARTOVERFIELD *)NULL) {
+            fp->NeedHeadername = true;
+            fp->Headername = xstrdup(INJECTIONDATE);
+            fp->HeadernameLength = strlen(INJECTIONDATE);
+            fp->Header = (char *)NULL;
+            fp->HasHeader = false;
+            fp->HeaderLength = 0;
+            InjectionDatep = fp++;
         }
         if (Linesp == (ARTOVERFIELD *)NULL) {
             fp->NeedHeadername = false;
@@ -722,14 +738,22 @@ DoArt(ARTHANDLE *art)
      * newer than start time of makehistory. 
      */
 
-    if (!Datep->HasHeader) {
+    if (!InjectionDatep->HasHeader && !Datep->HasHeader) {
 	Posted = Arrived;
     } else {
-        buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
-        buffer_append(&buffer, NUL, 1);
-        Posted = parsedate_rfc5322_lax(buffer.data);
-        if (Posted == (time_t) -1)
-	    Posted = Arrived;
+        if (InjectionDatep->HasHeader) {
+            buffer_set(&buffer, InjectionDatep->Header, InjectionDatep->HeaderLength);
+            buffer_append(&buffer, NUL, 1);
+            Posted = parsedate_rfc5322_lax(buffer.data);
+            if (Posted == (time_t) -1)
+                Posted = Arrived;
+        } else {
+            buffer_set(&buffer, Datep->Header, Datep->HeaderLength);
+            buffer_append(&buffer, NUL, 1);
+            Posted = parsedate_rfc5322_lax(buffer.data);
+            if (Posted == (time_t) -1)
+                Posted = Arrived;
+        }
     }
 
     if (Expp->HasHeader) {
