@@ -487,6 +487,8 @@ ARTreadschema(bool Overview)
         Missfieldsize++;
     if (Msgidp == (ARTOVERFIELD *)NULL)
 	Missfieldsize++;
+    /* The fields in Missfields are not used in the overview (because they were not
+     * set before), so the values do not matter much (especially for NeedHeadername). */
     if (Missfieldsize > 0) {
 	Missfields = xmalloc(Missfieldsize * sizeof(ARTOVERFIELD));
         fp = Missfields;
@@ -509,7 +511,7 @@ ARTreadschema(bool Overview)
             Datep = fp++;
         }
         if (Expp == (ARTOVERFIELD *)NULL) {
-            fp->NeedHeadername = false;
+            fp->NeedHeadername = true;
             fp->Headername = xstrdup(EXPIRES);
             fp->HeadernameLength = strlen(EXPIRES);
             fp->Header = (char *)NULL;
@@ -545,7 +547,7 @@ ARTreadschema(bool Overview)
             Msgidp = fp++;
         }
         if (Overview && Xrefp == (ARTOVERFIELD *)NULL) {
-	    fp->NeedHeadername = false;
+	    fp->NeedHeadername = true;
 	    fp->Headername = xstrdup(XREF);
 	    fp->HeadernameLength = strlen(XREF);
 	    fp->Header = (char *)NULL;
