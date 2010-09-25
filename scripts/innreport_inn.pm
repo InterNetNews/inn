@@ -413,8 +413,8 @@ sub collect($$$$$$) {
       $innd_no_colon_space{$server}++;
       return 1;
     }
-    # 437 Article posted in the future -- "xxxxx"
-    if ($left =~ /(\S+) <[^>]+> (?:437|439) Article posted in the future -- \"[^\"]+\"/o) {
+    # 437 Article injected or posted in the future -- "xxxxx"
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) Article injected or posted in the future -- \"[^\"]+\"/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_posted_future{$server}++;
@@ -1807,8 +1807,13 @@ sub collect($$$$$$) {
       $rnews_bogus_date{$1}++;
       return 1;
     }
-    # rejected 437 Article posted in the future
-    if ($left =~ /rejected (?:437|439) Article posted in the future -- \"(.*)\"$/o) {
+    # rejected 437 Bad "Injection-Date"
+    if ($left =~ /rejected (?:437|439) Bad \"Injection-Date\" (.*)$/o) {
+      $rnews_bogus_date{$1}++;
+      return 1;
+    }
+    # rejected 437 Article injected or posted in the future
+    if ($left =~ /rejected (?:437|439) Article injected or posted in the future -- \"(.*)\"$/o) {
       $rnews_bogus_date{"(future) $1"}++;
       return 1;
     }
