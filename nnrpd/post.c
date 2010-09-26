@@ -310,7 +310,7 @@ CheckDistribution(char *p)
 
 
 /*
-**  Process all the headers.  FYI, they're done in RFC-order.
+**  Process all the headers.
 **  Return NULL if okay, or an error message.
 */
 static const char *
@@ -347,6 +347,25 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 	    if (hp->Len == 0)
 		hp->Value = hp->Body = NULL;
 	}
+    }
+
+    /* Set the Injection-Date: header. */
+    /* Start with this header because it MUST NOT be added in case
+     * the article already contains both Message-ID: and Date:
+     * header fields (possibility of multiple injections). */
+    if (HDR(HDR__INJECTION_DATE) == NULL) {
+        /* If moderation is needed, do not add an Injection-Date: header field. */
+        if (!needmoderation && PERMaccessconf->addinjectiondate) {
+            if ((HDR(HDR__MESSAGEID) == NULL) || (HDR(HDR__DATE) == NULL)) {
+                HDR_SET(HDR__INJECTION_DATE, datebuff);
+            }
+        }
+    } else {
+        t = parsedate_rfc5322_lax(HDR(HDR__INJECTION_DATE));
+        if (t == (time_t) -1)
+            return "Can't parse Injection-Date: header";
+        if (t > now + DATE_FUZZ)
+            return "Article injected in the future";
     }
 
     /* If authorized, add the header based on our info.  If not authorized,
@@ -498,20 +517,6 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Lines: should not be generated. */
 
     /* Supersedes: is left alone. */
-
-    /* Set the Injection-Date: header. */
-    if (HDR(HDR__INJECTION_DATE) == NULL) {
-        /* If moderation is needed, do not add an Injection-Date: header field. */
-        if (!needmoderation && PERMaccessconf->addinjectiondate) {
-            HDR_SET(HDR__INJECTION_DATE, datebuff);
-        }
-    } else {
-        t = parsedate_rfc5322_lax(HDR(HDR__INJECTION_DATE));
-        if (t == (time_t) -1)
-            return "Can't parse Injection-Date: header";
-        if (t > now + DATE_FUZZ)
-            return "Article injected in the future";
-    }
 
     /* Set the Injection-Info: header. */
     /* Set the path identity. */
