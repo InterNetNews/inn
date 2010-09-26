@@ -1050,11 +1050,17 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
     if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
         return error;
 
-    if ((error = ProcessHeaders(i, idbuff, ihave, modgroup != NULL)) != NULL)
+    if ((error = ProcessHeaders(i, idbuff, ihave, modgroup != NULL)) != NULL) {
+        if (modgroup != NULL)
+            free(modgroup);
 	return error;
+    }
 
-    if (i == 0 && HDR(HDR__CONTROL) == NULL)
+    if (i == 0 && HDR(HDR__CONTROL) == NULL) {
+        if (modgroup != NULL)
+            free(modgroup);
 	return "Article is empty";
+    }
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
@@ -1149,6 +1155,7 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	if (idbuff != NULL) {
 	    const char *retstr;
 	    retstr = MailArticle(modgroup, article);
+            /* MailArticle frees modgroup. */
 	    strlcpy (idbuff, "(mailed to moderator)", SMBUF);
 	    return retstr;
 	}
