@@ -166,10 +166,9 @@ the Date: header is used.
 
 =item *
 
-B<nnrpd> no longer adds or updates Injection-Date:, Injection-Info:
-and Path: header fields when the article is forwarded to a moderator.
-It could otherwise lead to rejects at injection time when the article was
-approved by the moderator.
+B<nnrpd> no longer adds or updates the Path: header field when an article is
+forwarded to a moderator.  It could otherwise lead to rejects at injection
+time when the article was approved by the moderator.
 
 =item *
 
