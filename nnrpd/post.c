@@ -524,13 +524,21 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     }
     snprintf(pathidentitybuff, sizeof(pathidentitybuff), "%s", p);
 
-    /* Set the posting-host identity. */
-    if (strcmp(Client.host, Client.ip) == 0) {
-        snprintf(postinghostbuff, sizeof(postinghostbuff),
-                 "; posting-host=\"%s\"", Client.ip);
-    } else {
-        snprintf(postinghostbuff, sizeof(postinghostbuff),
-                 "; posting-host=\"%s:%s\"", Client.host, Client.ip);
+    /* Set the posting-host identity.
+     * Check a proper definition of Client.host and Client.ip
+     * (we already saw the case of "stdin:" without IP). */
+    if ((strlen(Client.host) > 0) || (strlen(Client.ip) > 0)) {
+        if ((strcmp(Client.host, Client.ip) == 0)
+           || (strlen(Client.host) == 0)) {
+            snprintf(postinghostbuff, sizeof(postinghostbuff),
+                     "; posting-host=\"%s\"", Client.ip);
+        } else if (strlen(Client.ip) == 0) {
+            snprintf(postinghostbuff, sizeof(postinghostbuff),
+                     "; posting-host=\"%s\"", Client.host);
+        } else {
+            snprintf(postinghostbuff, sizeof(postinghostbuff),
+                     "; posting-host=\"%s:%s\"", Client.host, Client.ip);
+        }
     }
 
     /* Set the logging-data attribute. */
