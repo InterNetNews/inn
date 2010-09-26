@@ -1043,25 +1043,25 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
 
   /* Is the article too old? */
   /* Assumes the Date: header is a required header.
-   * Check the presence of the Injection-Date: header field before.
-   * Set the time the article was posted. */
+   * Check the presence of the Injection-Date: header field, which will
+   * override the value of the time the article was posted. */
+  p = HDR(HDR__DATE);
+  data->Posted = parsedate_rfc5322_lax(p);
+
+  if (data->Posted == (time_t) -1) {
+    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
+            ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
+            MaxLength(p, p));
+    TMRstop(TMR_ARTCLEAN);
+    return false;
+  }
+
   if (HDR_FOUND(HDR__INJECTION_DATE)) {
     p = HDR(HDR__INJECTION_DATE);
     data->Posted = parsedate_rfc5322_lax(p);
 
     if (data->Posted == (time_t) -1) {
       sprintf(buff, "%d Bad \"Injection-Date\" header -- \"%s\"",
-              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
-              MaxLength(p, p));
-      TMRstop(TMR_ARTCLEAN);
-      return false;
-    }
-  } else {
-    p = HDR(HDR__DATE);
-    data->Posted = parsedate_rfc5322_lax(p);
-
-    if (data->Posted == (time_t) -1) {
-      sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
               MaxLength(p, p));
       TMRstop(TMR_ARTCLEAN);

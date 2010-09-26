@@ -747,6 +747,8 @@ DoArt(ARTHANDLE *art)
             buffer_set(&buffer, InjectionDatep->Header, InjectionDatep->HeaderLength);
             buffer_append(&buffer, NUL, 1);
             Posted = parsedate_rfc5322_lax(buffer.data);
+            /* If parsing failed for Injection-Date:, take the arrival time.
+             * Do not look at the Date: header (though we could). */
             if (Posted == (time_t) -1)
                 Posted = Arrived;
         } else {
