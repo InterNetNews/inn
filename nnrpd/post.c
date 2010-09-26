@@ -314,7 +314,7 @@ CheckDistribution(char *p)
 **  Return NULL if okay, or an error message.
 */
 static const char *
-ProcessHeaders(char *idbuff)
+ProcessHeaders(char *idbuff, bool needmoderation)
 {
     static char		datebuff[40];
     static char		localdatebuff[40];
@@ -413,7 +413,12 @@ ProcessHeaders(char *idbuff)
     /* Set the Path: header. */
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
 	/* Note that innd will put host name here for us. */
-	HDR_SET(HDR__PATH, (char *) PATHMASTER);
+        /* If moderation is needed, do not update the Path: header field. */
+        if (!needmoderation)
+            HDR_SET(HDR__PATH, (char *) PATHMASTER);
+        else if (PERMaccessconf->strippath)
+            HDR_CLEAR(HDR__PATH);
+
 	if (VirtualPathlen > 0)
 	    addvirtual = true;
     } else {
@@ -456,7 +461,9 @@ ProcessHeaders(char *idbuff)
             newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
         }
     }
-    HDR_SET(HDR__PATH, newpath);
+    /* If moderation is needed, do not update the Path: header field. */
+    if (!needmoderation)
+        HDR_SET(HDR__PATH, newpath);
 
     /* Reply-To: is left alone. */
     /* Sender: is set above. */
@@ -494,7 +501,8 @@ ProcessHeaders(char *idbuff)
 
     /* Set the Injection-Date: header. */
     if (HDR(HDR__INJECTION_DATE) == NULL) {
-        if (PERMaccessconf->addinjectiondate) {
+        /* If moderation is needed, do not add an Injection-Date: header field. */
+        if (!needmoderation && PERMaccessconf->addinjectiondate) {
             HDR_SET(HDR__INJECTION_DATE, datebuff);
         }
     } else {
@@ -550,7 +558,9 @@ ProcessHeaders(char *idbuff)
              PERMaccessconf->addinjectionpostinghost ? postinghostbuff : "",
              (long) pid, complaintsbuff);
 
-    HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
+    /* If moderation is needed, do not add an Injection-Info: header field. */
+    if (!needmoderation)
+        HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
 
     /* Clear out some headers that should not be here. */
     if (PERMaccessconf->strippostcc) {
@@ -1033,13 +1043,19 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(idbuff)) != NULL)
+
+    /* modgroup is set when moderated newsgroups are found in the
+     * Newsgroups: header field, and the article does not contain
+     * an Approved: header field.
+     * Therefore, moderation will be needed. */
+    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
+        return error;
+
+    if ((error = ProcessHeaders(idbuff, modgroup != NULL)) != NULL)
 	return error;
+
     if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";
-
-    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
-	return error;
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)

@@ -166,6 +166,13 @@ the Date: header is used.
 
 =item *
 
+B<nnrpd> no longer adds or updates Injection-Date:, Injection-Info:
+and Path: header fields when the article is forwarded to a moderator.
+It could otherwise lead to rejects at injection time when the article was
+approved by the moderator.
+
+=item *
+
 It is now possible to run a script at the end of the execution of
 B<innshellvars> scripts.  If a file named F<innshellvars.local>,
 F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
