@@ -314,7 +314,7 @@ CheckDistribution(char *p)
 **  Return NULL if okay, or an error message.
 */
 static const char *
-ProcessHeaders(int linecount, char *idbuff, bool ihave)
+ProcessHeaders(int linecount, char *idbuff, bool ihave, bool needmoderation)
 {
     static char		MONTHS[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
     static char		datebuff[40];
@@ -429,7 +429,12 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         return "Missing Path: header";
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
 	/* Note that innd will put host name here for us. */
-	HDR_SET(HDR__PATH, (char *) PATHMASTER);
+        /* If moderation is needed, do not update the Path: header field. */
+        if (!needmoderation)
+            HDR_SET(HDR__PATH, (char *) PATHMASTER);
+        else if (PERMaccessconf->strippath)
+            HDR_CLEAR(HDR__PATH);
+
 	if (VirtualPathlen > 0)
 	    addvirtual = true;
     } else {
@@ -462,7 +467,9 @@ ProcessHeaders(int linecount, char *idbuff, bool ihave)
         newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
     }
 
-    HDR_SET(HDR__PATH, newpath);
+    /* If moderation is needed, do not update the Path: header field. */
+    if (!needmoderation)
+        HDR_SET(HDR__PATH, newpath);
 
     /* Reply-To: is left alone. */
     /* Sender: is set above. */
@@ -1035,13 +1042,19 @@ ARTpost(char *article, char *idbuff, bool ihave, bool *permanent)
 	if ((error = CheckIncludedText(article, i)) != NULL)
 		return error;
     }
-    if ((error = ProcessHeaders(i, idbuff, ihave)) != NULL)
+
+    /* modgroup is set when moderated newsgroups are found in the
+     * Newsgroups: header field, and the article does not contain
+     * an Approved: header field.
+     * Therefore, moderation will be needed. */
+    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
+        return error;
+
+    if ((error = ProcessHeaders(i, idbuff, ihave, modgroup != NULL)) != NULL)
 	return error;
+
     if (i == 0 && HDR(HDR__CONTROL) == NULL)
 	return "Article is empty";
-
-    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
-	return error;
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
     for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
