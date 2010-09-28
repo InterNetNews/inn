@@ -335,6 +335,11 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Get the current time, used for creating and checking dates. */
     now = time(NULL);
 
+    /* datebuff is used for both Injection-Date: and Date: header fields
+     * so we have to set it now, and it has to be the UTC date. */
+    if (!makedate(-1, false, datebuff, sizeof(datebuff)))
+        return "Can't generate Date: header";
+
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	if (!hp->CanSet && hp->Value) {
@@ -385,10 +390,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 	}
     }
 
-    /* Set the Date: header.  datebuff is used later for Injection-Date:,
-     * so we have to set it, and it has to be the UTC date. */
-    if (!makedate(-1, false, datebuff, sizeof(datebuff)))
-        return "Can't generate Date: header";
+    /* Set the Date: header. */
     if (HDR(HDR__DATE) == NULL) {
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
