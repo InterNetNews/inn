@@ -1055,6 +1055,10 @@ sub collect($$$$$$) {
       return 1 if $left =~ m/\(quickly\) /o;
       # ME config: value of streaming is not a boolean
       return 1 if $left =~ m/config: value of \S+ is not/o;
+      # innfeed rolling funnel file
+      return 1 if $left =~ m/ preparing to roll /o;
+      return 1 if $left =~ m/ reached EOF in /o;
+      return 1 if $left =~ m/ opened /o;
     }
     # hostChkCxn - now: x.xx, prev: x.xx, abs: xx, curr: x
     return 1 if $left =~ m/ hostChkCxn - now/o;
