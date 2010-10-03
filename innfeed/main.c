@@ -298,8 +298,8 @@ int main (int argc, char **argv)
       exit(1);
   }
   if (!SMinit()) {
-      d_printf(0, "Storage manager initialization failed\n");
-      syslog(LOG_ERR, "Storage manager initialization failed\n");
+      d_printf(0, "Storage manager initialization failed -- it is OK after a change in storage methods\n");
+      syslog(LOG_ERR, "Storage manager initialization failed -- it is OK after a change in storage methods\n");
       exit(1);
   }
 
