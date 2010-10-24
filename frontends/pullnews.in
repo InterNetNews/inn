@@ -339,6 +339,11 @@ if ( not $rnews ) {
     my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
     $localcxn = Net::NNTP->new($localServer, %localopts) ||
         die "Can't connect to server $localServer\n";
+
+    if (exists $passwd{$localServer} && !$localcxn->authinfo(@{$passwd{$localServer}})) {
+        warn sprintf ("failed to authorize: %s %s\n",
+                      $localcxn->code(), $localcxn->message());
+    }
 }
 
 if ( not $quiet and not $quietness ) {
@@ -385,6 +390,10 @@ foreach my $server (@servers) {
 
     my $shash = $servers->{$server};
 
+    # No need to connect to the upstream server when there is no newsgroup
+    # to fetch.  (The value 1 is for the "_order" key in the hash.)
+    next if keys(%{$shash}) == 1;
+
     my $connectionAttempts = 0;
     my $upstream;
     {{
@@ -420,7 +429,10 @@ foreach my $server (@servers) {
         next if $group eq '_order';
         next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
 
-        last if !crossFeedGroup ($upstream,$localcxn,$server,$group,$shash);
+        # crossFeedGroup returns 1 when the newsgroup is successfully
+        # pulled.  No need to check the return value because we do not
+        # want to abort on the first error.
+        crossFeedGroup ($upstream, $localcxn, $server, $group, $shash);
         last if defined $opt_S and time >= $^T+$opt_S;
         sleep $opt_Z if defined $opt_Z;
     }

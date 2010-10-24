@@ -172,6 +172,13 @@ time when the article was approved by the moderator.
 
 =item *
 
+B<pullnews> no longer stops processing newsgroups when an error occur during
+its run (for instance when a newsgroup mentioned in the configuration file
+is removed from an upstream server).  Besides, it can now use authentication
+when posting to the downstream server.
+
+=item *
+
 It is now possible to run a script at the end of the execution of
 B<innshellvars> scripts.  If a file named F<innshellvars.local>,
 F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
