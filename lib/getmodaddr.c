@@ -91,6 +91,48 @@ GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 }
 
 /*
+**  Check if the argument is a valid submission template according to RFC 6048.
+**  At least, make sure it does not contain "%" except as part of "%s" or "%%",
+**  and that only one occurrence of "%s" exists, if any.
+*/
+static bool
+IsValidSubmissionTemplate(const char *string)
+{
+    bool found = false;
+    const char *p;
+
+    /* Not NULL. */
+    if (string == NULL)
+        return false;
+
+    p = string;
+
+    while ((p = strchr(p, '%')) != NULL) {
+        /* Look at the next character. */
+        p++;
+
+        /* Skip "%%". */
+        if (*p == '%') {
+           p++;
+           continue;
+        }
+
+        /* Invalid template if not "%s". */
+        if (*p != 's')
+            return false;
+
+        /* Invalid template if another "%s". */
+        if (found)
+            return false;
+
+        found = true;
+    }
+
+    return true;
+}
+
+
+/*
 **  Read the moderators file, looking for a moderator.
 */
 char *
@@ -158,12 +200,14 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 		for (p = name; *p; p++)
 		    if (*p == '.')
 			*p = '-';
-		snprintf(address, sizeof(address), save, name);
-		break;
+                if (IsValidSubmissionTemplate(save)) {
+                    snprintf(address, sizeof(address), save, name);
+                    break;
+                }
 	    }
 	}
 
-	 GMAclose();
+	GMAclose();
 	if (address[0])
 	    return address;
     }
@@ -175,6 +219,12 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
     for (p = name; *p; p++)
 	if (*p == '.')
 	    *p = '-';
-    snprintf(address, sizeof(address), save, name);
+
+    if (IsValidSubmissionTemplate(save)) {
+        snprintf(address, sizeof(address), save, name);
+    } else {
+        return NULL;
+    }
+
     return address;
 }
