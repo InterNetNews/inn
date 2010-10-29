@@ -290,12 +290,23 @@ sub print_cycbuff_head {
     print " Buffer $name, size: ", &human_readable($len, 4);
     print ", position: ", &human_readable($free, 4);
     printf("  %.2f cycles\n", $cyclenum + Math::BigFloat->new($free) / Math::BigFloat->new($len));
+
+    # The CNFS buffer may not have been initialized yet or received an article.
+    # Take it into account because $oldart may be undefined.
     my ($when, $ago) = &make_time($update);
-    print "  Newest: $when, $ago ago\n";
+    if (defined $oldart || not $opt_a) {
+        print "  Newest: $when, $ago ago\n";
+    } else {
+        print "  Created: $when, $ago ago\n";
+    }
 
     if ($opt_a) {
-	my ($when, $ago) = &make_time($oldart);
-	print "  Oldest: $when, $ago ago\n";
+        if (defined $oldart) {
+            my ($when, $ago) = &make_time($oldart);
+            print "  Oldest: $when, $ago ago\n";
+        } else {
+            print "  No oldest article\n";
+        }
     }
 }
 
