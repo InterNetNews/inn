@@ -16,17 +16,18 @@ INN (InterNetNews), originally written by Rich Salz, is an extremely
 flexible and configurable Usenet / Netnews news server.  For a complete
 description of the protocols behind Usenet and Netnews, see S<RFC 3977>
 (NNTP), S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication),
-S<RFC 4644> (streaming NNTP feeds), S<RFC 5536> (USEFOR) and S<RFC 5537>
-(USEPRO) or their replacements.  In brief, Netnews is a set of protocols
-for exchanging messages between a decentralized network of news servers.
-News articles are organized into newsgroups, which are themselves
-organized into hierarchies.  Each individual news server stores locally
-all articles it has received for a given newsgroup, making access to
-stored articles extremely fast.  Netnews does not require any central
-server; instead, each news server passes along articles it receives to all
-of the news servers it peers with, those servers pass the articles along
-to their peers, and so on, resulting in "flood fill" propagation of news
-articles.
+S<RFC 4644> (streaming NNTP feeds), S<RFC 5536> (USEFOR), S<RFC 5537>
+(USEPRO) and S<RFC 6048> (NNTP LIST additions) or their replacements.
+
+In brief, Netnews is a set of protocols for exchanging messages between
+a decentralized network of news servers.  News articles are organized
+into newsgroups, which are themselves organized into hierarchies.
+Each individual news server stores locally all articles it has received
+for a given newsgroup, making access to stored articles extremely fast.
+Netnews does not require any central server; instead, each news server
+passes along articles it receives to all of the news servers it peers
+with, those servers pass the articles along to their peers, and so on,
+resulting in "flood fill" propagation of news articles.
 
 A news server performs three basic functions:  it accepts articles from
 other servers and stores them on disk, sends articles it has received out

@@ -308,8 +308,8 @@ be filed in C<to> and sent to the site C<uunet>.
 =head1 PROTOCOL DIFFERENCES
 
 B<innd> implements the NNTP commands defined in S<RFC 3977> (NNTP),
-S<RFC 4643> (NNTP authentication) and S<RFC 4644> (streaming) with
-the following differences:
+S<RFC 4643> (NNTP authentication), S<RFC 4644> (streaming NNTP feeds)
+and S<RFC 6048> (NNTP LIST additions) with the following differences:
 
 =over 4
 
