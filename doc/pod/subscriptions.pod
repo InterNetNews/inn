@@ -18,6 +18,10 @@ newsgroup names, one per line.  The order of newsgroups may be
 significant; the news reading client may present the groups in that order
 to the user.
 
+Be aware that use of the LIST SUBSCRIPTIONS command is not widespread
+(though documented in S<RFC 6048>) and most news clients will never ask
+for this file.
+
 =head1 EXAMPLE
 
 A typical F<subscriptions> file may look like:

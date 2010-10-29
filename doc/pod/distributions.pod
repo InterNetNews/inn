@@ -24,9 +24,9 @@ instance:
 Blank lines and lines beginning with a number sign (C<#>) are ignored.
 
 Any client that issues the LIST DISTRIBUTIONS command obtain these
-recommended values, if available.  However, be aware that use of the
-LIST DISTRIBUTIONS command is not widespread and most news clients will
-never ask for this file.
+recommended values, if available.  However, be aware that use of the LIST
+DISTRIBUTIONS command is not widespread (though documented in S<RFC 6048>)
+and most news clients will never ask for this file.
 
 If this file is empty, it is not an error.  The server will just send
 the client an empty response.  And if the file is missing, the server

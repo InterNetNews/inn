@@ -227,22 +227,12 @@ defined in F</etc/services> on your system.
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in S<RFC 3977> (NNTP),
-S<RFC 4642> (TLS/NNTP) and S<RFC 4643> (NNTP authentication) with the
-following differences:
+S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication) and S<RFC 6048>
+(NNTP LIST additions) with the following differences:
 
 =over 4
 
 =item 1.
-
-Besides the keywords defined in S<RFC 3977> (ACTIVE, ACTIVE.TIMES,
-DISTRIB.PATS, HEADERS, NEWSGROUPS and OVERVIEW.FMT), the LIST command
-may be followed by the optional keywords COUNTS, DISTRIBUTIONS, MODERATORS,
-MOTD and SUBSCRIPTIONS to respectively get an improved version of the
-ACTIVE variant with the number of articles in every newsgroup, a list
-of valid distributions, the moderators list, the message of the day
-information for readers, and a list of recommended group subscriptions.
-
-=item 2.
 
 The XGTITLE [I<wildmat>] command is provided.  This extension is used by
 ANU-News and documented in S<RFC 2980>.  It returns a C<282> reply code,
@@ -251,7 +241,7 @@ pattern.  The default is the current group.
 
 Note that LIST NEWSGROUPS should be used instead of XGTITLE.
 
-=item 3.
+=item 2.
 
 The XHDR I<header> [I<message-ID>|I<range>] command is implemented.  It
 returns a C<221> reply code, followed by specific headers for the
@@ -260,7 +250,7 @@ See S<RFC 2980>.
 
 Note that HDR should be used instead of XHDR.
 
-=item 4.
+=item 3.
 
 The XOVER [I<range>] command is provided.  It returns a C<224> reply code,
 followed by the overview data for the specified range; the default is to
@@ -268,7 +258,7 @@ return the data for the current article.  See S<RFC 2980>.
 
 Note that OVER should be used instead of XOVER.
 
-=item 5.
+=item 4.
 
 A new command, XPAT I<header> I<message-ID>|I<range> I<pattern>
 [I<pattern> ...], is provided.  The first argument is the case-insensitive
@@ -280,17 +270,17 @@ pattern.  This command is similar to the XHDR command.  It returns a C<221>
 response code, followed by the text response of all article numbers that
 match the pattern.
 
-=item 6.
+=item 5.
 
 A newsgroup name is case-sensitive for B<nnrpd>.
 
-=item 7.
+=item 6.
 
 If IHAVE has been advertised, it will not necessarily be advertised for
 the entire session (contrary to section 3.4.1 of S<RFC 3977>).  B<nnrpd>
 only advertises the IHAVE capability when it is really available.
 
-=item 8.
+=item 7.
 
 B<nnrpd> allows a wider syntax for wildmats and ranges (especially C<->
 and C<-I<article-number>>).

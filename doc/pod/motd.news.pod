@@ -13,8 +13,9 @@ Make sure that the F<motd.news> file is encoded in UTF-8.  It should also
 be "dot-stuffed", that is to say that a line beginning with a dot should
 have that dot doubled.
 
-Be aware that use of the LIST MOTD command is not widespread and most news
-clients will never ask for this file.
+Be aware that use of the LIST MOTD command is not widespread (though
+documented in S<RFC 6048>) and most news clients will never ask for
+this file.
 
 If this file is missing, it is not an error.  The server will just send
 the client the appropriate response for an unmaintained F<motd.news> file.
