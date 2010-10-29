@@ -164,12 +164,26 @@ TrimSpaces(char *p)
 static char *
 NextHeader(char *p)
 {
-    for ( ; (p = strchr(p, '\n')) != NULL; p++) {
-	if (ISWHITE(p[1]))
-	    continue;
+    char *q;
+    for (q = p; (p = strchr(p, '\n')) != NULL; p++) {
+        /* Note that '\r\n' has temporarily been internally replaced by '\n'.
+         * Therefore, the count takes it into account (+1, besides the
+         * length (p-q+1) of the string). */
+        if (p - q + 2 > MAXARTLINELENGTH) {
+            strlcpy(Error, "Header line too long",
+                    sizeof(Error));
+            return NULL;
+        }
+        /* Check if there is a continuation line for the header. */
+        if (ISWHITE(p[1])) {
+            q = p + 1;
+            continue;
+        }
 	*p = '\0';
 	return p + 1;
     }
+    strlcpy(Error, "Article has no body -- just headers",
+            sizeof(Error));
     return NULL;
 }
 
@@ -226,8 +240,7 @@ StripOffHeaders(char *article)
 
 	/* Get start of next header; if it's a blank line, we hit the end. */
 	if ((p = NextHeader(p)) == NULL) {
-	    strlcpy(Error, "Article has no body -- just headers",
-                    sizeof(Error));
+            /* Error set in NextHeader(). */
 	    return NULL;
 	}
 	if (*p == '\n')

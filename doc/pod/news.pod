@@ -15,7 +15,7 @@ for the bug report.
 When a header field appeared more than once in an article, it was missing
 from the overview data.  OVER/XOVER, as well as HDR/XHDR/XPAT using the
 overview, were therefore returning an empty field.  The content of the
-first occurrence is now returned, in accordance with RFC 3977.
+first occurrence is now returned, in accordance with S<RFC 3977>.
 
 Perl and Python filters for B<innd> now also properly initialize their
 headers variables with the first occurrence of header fields.  (It is
@@ -35,9 +35,11 @@ and decimal values.  Thanks again to John S<F. Morse>.
 
 =item *
 
-A single header field line is limited to 998 bytes, per S<RFC 5536>.
-B<innd> was previously accepting, and also generating Xref: header field
-lines, up to 1022 bytes.
+A single header field line is limited to 998 bytes, per S<RFC 5536>.  B<innd>
+was previously accepting, and also generating Xref: header field lines,
+up to 1022 bytes.  Now, B<nnrpd> (acting as an injecting agent) rejects
+articles which contain header field lines whose length exceeds 998 bytes.
+And B<innd> (acting as a relaying or serving agent) no longer checks that.
 
 =item *
 

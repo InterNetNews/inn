@@ -1581,7 +1581,6 @@ NCproc(CHANNEL *cp)
 	cp->State == CSeatarticle) {
 	/* adjust offset only in CSgetheader, CSgetbody or CSeatarticle */
 	data->CurHeader -= cp->Start;
-	data->LastCRLF -= cp->Start;
 	data->Body -= cp->Start;
 	if (data->BytesHeader != NULL)
 	  data->BytesHeader -= cp->Start;

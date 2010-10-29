@@ -262,9 +262,6 @@ typedef struct _ARTDATA {
   size_t	  CurHeader;		/* where current header starts.
 					   this is used for folded header
 					   it indicates offset from bp->Data */
-  size_t	  LastCRLF;		/* where last CRLF exists.
-					   indicates where last LF exists
-					   it indicates offset from bp->Data */
   HDRCONTENT	  HdrContent[MAX_ARTHEADER];
 					/* includes system headers info */
   bool            AddAlias;             /* Whether Pathalias should be added
