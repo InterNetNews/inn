@@ -36,10 +36,8 @@ const struct {
       "437 Space before colon in \"Test\" header" },
     { "../data/articles/bad-hdr-trunc",
       "437 No colon-space in \"Test:\" header" },
-    { "../data/articles/bad-long-cont",
-      "437 Header line too long (1001 bytes)" },
-    { "../data/articles/bad-long-hdr",
-      "437 Header line too long (1001 bytes)" },
+    { "../data/articles/bad-long-cont", "" }, /* Not an error for a relaying agent. */
+    { "../data/articles/bad-long-hdr", "" }, /* Not an error for a relaying agent. */
     { "../data/articles/bad-no-body",
       "437 No body" },
     { "../data/articles/bad-no-header",

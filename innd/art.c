@@ -730,7 +730,7 @@ ARTprepare(CHANNEL *cp)
   }
   data->Lines = data->HeaderLines = data->CRwithoutLF = data->LFwithoutCR = 0;
   data->DotStuffedLines = 0;
-  data->CurHeader = data->LastCRLF = data->Body = cp->Start;
+  data->CurHeader = data->Body = cp->Start;
   data->BytesHeader = NULL;
   data->Feedsite = "?";
   data->FeedsiteLength = strlen(data->Feedsite);
@@ -807,17 +807,12 @@ ARTparseheader(CHANNEL *cp)
     struct buffer *bp = &cp->In;
     ARTDATA *data = &cp->Data;
     size_t i;
-    unsigned long length;
 
     for (i = cp->Next; i < bp->used; i++) {
         if (bp->data[i] == '\0')
             ARTerror(cp, "Nul character in header");
         if (bp->data[i] == '\n') {
             data->LFwithoutCR++;
-            /* Behave as though we really saw a new line (otherwise,
-             * the length of the header line may be exceeded in
-             * non-compliant messages). */
-            data->LastCRLF = i;
         }
         if (bp->data[i] != '\r')
             continue;
@@ -853,13 +848,6 @@ ARTparseheader(CHANNEL *cp)
             cp->Next = i + 5;
             return;
         } else if (bp->data[i + 1] == '\n') {
-            length = i - data->LastCRLF - 1;
-            if (data->LastCRLF == cp->Start)
-                length++;
-            /* length includes final CRLF. */
-            if (length > MAXARTLINELENGTH)
-                ARTerror(cp, "Header line too long (%lu bytes)", length);
-
             /* Be a little tricky here.  Normally, the headers end at the
                first occurrence of \r\n\r\n, so since we've seen \r\n, we want
                to advance i and then look to see if we have another one.  The
@@ -883,13 +871,8 @@ ARTparseheader(CHANNEL *cp)
                 ARTparsebody(cp);
 		return;
             }
-            data->LastCRLF = i - 1;
         } else {
             data->CRwithoutLF++;
-            /* Behave as though we really saw a new line (otherwise,
-             * the length of the header line may be exceeded in
-             * non-compliant messages). */
-            data->LastCRLF = i;
         }
     }
     cp->Next = i;
