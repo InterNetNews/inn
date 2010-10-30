@@ -419,7 +419,8 @@ CMDcapabilities(int ac, char *av[])
         Printf("IHAVE\r\n");
     }
 
-    Printf("LIST ACTIVE ACTIVE.TIMES DISTRIB.PATS HEADERS NEWSGROUPS OVERVIEW.FMT\r\n");
+    Printf("LIST ACTIVE ACTIVE.TIMES COUNTS DISTRIB.PATS DISTRIBUTIONS"
+           " HEADERS MODERATORS MOTD NEWSGROUPS OVERVIEW.FMT SUBSCRIPTIONS\r\n");
     
     if (PERMaccessconf->allownewnews && PERMcanread) {
         Printf("NEWNEWS\r\n");

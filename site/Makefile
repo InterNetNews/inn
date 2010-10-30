@@ -40,7 +40,8 @@ PATH_NNTPPASS		= ${PATHETC}/passwd.nntp
 PATH_CTLWATCH		= ${PATHETC}/innwatch.ctl
 PATH_ACTSYNC_IGN	= ${PATHETC}/actsync.ign
 PATH_ACTSYNC_CFG	= ${PATHETC}/actsync.cfg
-PATH_MOTD		= ${PATHETC}/motd.news
+PATH_MOTD_INND		= ${PATHETC}/motd.innd
+PATH_MOTD_NNRPD		= ${PATHETC}/motd.nnrpd
 PATH_STORAGECONF	= ${PATHETC}/storage.conf
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
@@ -61,7 +62,7 @@ REST		= \
 	inn.conf moderators innreport.conf innreport.css localgroups \
 	control.ctl control.ctl.local expire.ctl nntpsend.ctl \
 	innwatch.ctl distrib.pats distributions actsync.cfg actsync.ign \
-	motd.news storage.conf cycbuff.conf buffindexed.conf \
+	motd.innd motd.nnrpd storage.conf cycbuff.conf buffindexed.conf \
 	innfeed.conf startup_innd.pl filter_innd.pl filter_nnrpd.pl \
 	filter_innd.py INN.py \
 	innshellvars.local innshellvars.pl.local innshellvars.tcl.local \
@@ -84,7 +85,7 @@ REST_INSTALLED	= \
 	$D$(PATHETC)/localgroups \
 	$D$(PATH_CTLWATCH) $D$(PATH_DISTPATS) $D$(PATH_DISTRIBUTIONS) \
 	$D$(PATH_ACTSYNC_CFG) $D$(PATH_ACTSYNC_IGN) \
-	$D$(PATH_MOTD) $D$(PATH_STORAGECONF) \
+	$D$(PATH_MOTD_INND) $D$(PATH_MOTD_NNRPD) $D$(PATH_STORAGECONF) \
 	$D$(PATH_CYCBUFFCONFIG) $D$(PATH_BUFFINDEXED) \
 	$D$(PATH_INNFEEDCTL) $D$(PATH_PERL_STARTUP_INND) \
 	$D$(PATH_PERL_FILTER_INND) $D$(PATH_PERL_FILTER_NNRPD) \
@@ -220,7 +221,8 @@ $D$(PATH_NNRPYDYNAMIC): nnrpd_dynamic.py     ; $(COPY_RPUB) $? $@
 $D$(PATHETC)/nocem.ctl: nocem.ctl       ; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_CFG): actsync.cfg	; $(COPY_RPUB) $? $@
 $D$(PATH_ACTSYNC_IGN): actsync.ign	; $(COPY_RPUB) $? $@
-$D$(PATH_MOTD): motd.news		; $(COPY_RPUB) $? $@
+$D$(PATH_MOTD_INND): motd.innd		; $(COPY_RPUB) $? $@
+$D$(PATH_MOTD_NNRPD): motd.nnrpd	; $(COPY_RPUB) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_SENDUUCP_CF): send-uucp.cf	; $(COPY_RPUB) $? $@
 $D$(PATH_SUBSCRIPTIONS): subscriptions	; $(COPY_RPUB) $? $@
@@ -270,7 +272,8 @@ innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@
 distrib.pats:	../samples/distrib.pats		; $(COPY) $? $@
 distributions:	../samples/distributions	; $(COPY) $? $@
-motd.news:	../samples/motd.news		; $(COPY) $? $@
+motd.innd:	../samples/motd.innd		; $(COPY) $? $@
+motd.nnrpd:	../samples/motd.nnrpd		; $(COPY) $? $@
 news2mail.cf:	../samples/news2mail.cf		; $(COPY) $? $@
 newsfeeds:	../samples/newsfeeds		; $(COPY) $? $@
 nnrpd.track:	../samples/nnrpd.track		; $(COPY) $? $@

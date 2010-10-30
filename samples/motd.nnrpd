@@ -1,0 +1,5 @@
+Sample "message of the day" file.  Any text you put in here will be returned
+to the news reader when it issues the LIST MOTD command to nnrpd.
+
+It is not an error if this file does not exist nor if it is empty.  However,
+it must be encoded in UTF-8.

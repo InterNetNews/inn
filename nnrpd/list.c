@@ -24,48 +24,49 @@ static void cmd_list_schema(LISTINFO *lp, int ac, char *av[]);
 static void cmd_list_headers(LISTINFO *lp, int ac, char *av[]);
 
 static LISTINFO		INFOactive = {
-    "ACTIVE", INN_PATH_ACTIVE, NULL, true, "active newsgroups",
+    "ACTIVE", INN_PATH_ACTIVE, NULL, true, "list of active newsgroups",
     "Newsgroups in form \"group high low status\""
 };
 static LISTINFO		INFOactivetimes = {
-    "ACTIVE.TIMES", INN_PATH_ACTIVETIMES, NULL, false, "creation times",
-    "Group creations in form \"name time who\""
+    "ACTIVE.TIMES", INN_PATH_ACTIVETIMES, NULL, false, "list of newsgroup creation times",
+    "Newsgroup creation times in form \"group time who\""
 };
 static LISTINFO         INFOcounts = {
-    "COUNTS", INN_PATH_ACTIVE, NULL, true, "active newsgroups with counts",
+    "COUNTS", INN_PATH_ACTIVE, NULL, true, "list of active newsgroups with estimated counts",
     "Newsgroups in form \"group high low count status\""
 };
 static LISTINFO		INFOdistribs = {
-    "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "newsgroup distributions",
+    "DISTRIBUTIONS", INN_PATH_NNRPDIST, NULL, false, "list of newsgroup distributions",
     "Distributions in form \"distribution description\""
 };
 static LISTINFO         INFOheaders = {
-    "HEADERS", NULL, cmd_list_headers, true, "supported headers and metadata",
+    "HEADERS", NULL, cmd_list_headers, true, "list of supported headers and metadata items",
     "Headers and metadata items supported"
 };
 static LISTINFO         INFOsubs = {
     "SUBSCRIPTIONS", INN_PATH_NNRPSUBS, NULL, false,
-    "recommended group subscriptions", "Subscriptions in form \"group\""
+    "list of recommended newsgroup subscriptions",
+    "Recommended subscriptions in form \"group\""
 };
 static LISTINFO		INFOdistribpats = {
-    "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "distribution patterns",
+    "DISTRIB.PATS", INN_PATH_DISTPATS, NULL, false, "list of distribution patterns",
     "Default distributions in form \"weight:group-pattern:distribution\""
 };
 static LISTINFO		INFOgroups = {
-    "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, true, "newsgroup descriptions",
-    "Descriptions in form \"group description\""
+    "NEWSGROUPS", INN_PATH_NEWSGROUPS, NULL, true, "list of newsgroup descriptions",
+    "Newsgroup descriptions in form \"group description\""
 };
 static LISTINFO		INFOmoderators = {
-    "MODERATORS", INN_PATH_MODERATORS, NULL, false, "moderator patterns",
-    "Newsgroup moderators in form \"group-pattern:mail-address-pattern\""
+    "MODERATORS", INN_PATH_MODERATORS, NULL, false, "list of submission templates",
+    "Newsgroup moderators in form \"group-pattern:submission-template\""
 };
 static LISTINFO		INFOschema = {
     "OVERVIEW.FMT", NULL, cmd_list_schema, true, "overview format",
     "Order of fields in overview database"
 };
 static LISTINFO		INFOmotd = {
-    "MOTD", INN_PATH_MOTD, NULL, false, "motd",
-    "Message of the day text"
+    "MOTD", INN_PATH_MOTD_NNRPD, NULL, false, "message of the day",
+    "Message of the day text in UTF-8"
 };
 
 static LISTINFO *info[] = {
@@ -225,7 +226,7 @@ CMDlist(int ac, char *av[])
     /* Three arguments can be passed only when ACTIVE, ACTIVE.TIMES, COUNTS
      * HEADERS, NEWSGROUPS or SUBSCRIPTIONS keywords are used. */
     if (ac > 2 && !wildarg) {
-        Reply("%d Unexpected wildmat\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Unexpected wildmat or argument\r\n", NNTP_ERR_SYNTAX);
         return;
     }
 
@@ -245,7 +246,7 @@ CMDlist(int ac, char *av[])
     qp = QIOopen(path);
     free(path);
     if (qp == NULL) {
-        Reply("%d No list of %s available\r\n",
+        Reply("%d No %s available\r\n",
               NNTP_ERR_UNAVAILABLE, lp->Items);
         /* Only the active and newsgroups files are required. */
         if (lp->Required || errno != ENOENT) {

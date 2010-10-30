@@ -72,7 +72,7 @@ static NCDISPATCH NCcommands[] = {
     COMMAND("IHAVE",         NCihave,         true,  2,  2, true,
             "message-ID"),
     COMMAND("LIST",          NClist,          true,  1,  3, true,
-            "[ACTIVE|ACTIVE.TIMES|NEWSGROUPS [wildmat]]"),
+            "[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|MOTD|NEWSGROUPS [wildmat]]"),
     COMMAND("MODE",          NCmode,          false, 2,  2, true,
             "READER"),
     COMMAND("QUIT",          NCquit,          false, 1,  1, true,
@@ -604,7 +604,7 @@ NCcapabilities(CHANNEL *cp)
     }
 
     if (cp->IsAuthenticated && !cp->Nolist) {
-        WCHANappend(cp, "LIST ACTIVE ACTIVE.TIMES NEWSGROUPS", 35);
+        WCHANappend(cp, "LIST ACTIVE ACTIVE.TIMES MOTD NEWSGROUPS", 40);
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
@@ -801,6 +801,7 @@ NClist(CHANNEL *cp)
     char        *p, *path, *save;
     char        savec;
     char        *buff = NULL;
+    bool        checkutf8 = false;
 
     cp->Start = cp->Next;
 
@@ -845,7 +846,7 @@ NClist(CHANNEL *cp)
             free(buff);
 	    return;
 	} else {
-            xasprintf(&buff, "%d Descriptions in form \"group description\"",
+            xasprintf(&buff, "%d Newsgroup descriptions in form \"group description\"",
                       NNTP_OK_LIST);
             NCwritereply(cp, buff);
             free(buff);
@@ -855,13 +856,37 @@ NClist(CHANNEL *cp)
 	qp = QIOopen(path);
         free(path);
 	if (qp == NULL) {
-            xasprintf(&buff, "%d No list of creation times available",
+            xasprintf(&buff, "%d No list of newsgroup creation times available",
                       NNTP_ERR_UNAVAILABLE);
             NCwritereply(cp, buff);
             free(buff);
 	    return;
 	} else {
-            xasprintf(&buff, "%d Group creations in form \"name time who\"",
+            xasprintf(&buff, "%d Newsgroup creation times in form \"group time who\"",
+                      NNTP_OK_LIST);
+            NCwritereply(cp, buff);
+            free(buff);
+        }
+    } else if (strcasecmp(cp->av[1], "MOTD") == 0) {
+        checkutf8 = true;
+        if (cp->ac > 2) {
+            xasprintf(&buff, "%d Unexpected wildmat or argument",
+                      NNTP_ERR_SYNTAX);
+            NCwritereply(cp, buff);
+            free(buff);
+            return;
+        }
+        path = concatpath(innconf->pathetc, INN_PATH_MOTD_INND);
+        qp = QIOopen(path);
+        free(path);
+        if (qp == NULL) {
+            xasprintf(&buff, "%d No message of the day available",
+                      NNTP_ERR_UNAVAILABLE);
+            NCwritereply(cp, buff);
+            free(buff);
+            return;
+        } else {
+            xasprintf(&buff, "%d Message of the day text in UTF-8",
                       NNTP_OK_LIST);
             NCwritereply(cp, buff);
             free(buff);
@@ -880,6 +905,14 @@ NClist(CHANNEL *cp)
             syslog(L_ERROR, "%s NClist bad dot-stuffing in file %s",
                    CHANname(cp), cp->av[1]);
             continue;
+        }
+
+        if (checkutf8) {
+            if (!is_valid_utf8(p)) {
+                syslog(L_ERROR, "%s NClist bad encoding in %s (UTF-8 expected)",
+                       CHANname(cp), cp->av[1]);
+                continue;
+            }
         }
 
         /* Check whether the newsgroup matches the wildmat pattern,

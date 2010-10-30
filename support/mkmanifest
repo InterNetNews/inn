@@ -224,7 +224,8 @@ site/innshellvars.tcl.local
 site/innwatch.ctl
 site/localgroups
 site/moderators
-site/motd.news
+site/motd.innd
+site/motd.nnrpd
 site/news2mail.cf
 site/newsfeeds
 site/newsgroups.minimal

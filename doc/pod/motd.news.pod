@@ -1,24 +1,28 @@
 =head1 NAME
 
-motd.news - Message of the day information for readers
+motd.news - Message of the day information for feeders or readers
 
 =head1 DESCRIPTION
 
-This file, found in I<pathetc>/motd.news, contains local information for
-news readers in a free-form format.  The entire file is returned verbatim
+Two files, found in I<pathetc>, contain local information for news feeders or
+news readers in a free-form format.  The entire files are returned verbatim
 to any client that issues the LIST MOTD command.  This might be used for
 new information, notification of upcoming downtime, or similar purposes.
 
-Make sure that the F<motd.news> file is encoded in UTF-8.  It should also
-be "dot-stuffed", that is to say that a line beginning with a dot should
-have that dot doubled.
+These files are named F<motd.innd> (for news feeders) and F<motd.nnrpd>
+(for news readers); they are used by B<innd> and B<nnrpd>, respectively.
+
+Make sure that these files are encoded in UTF-8.  They should also be
+"dot-stuffed", that is to say that a line beginning with a dot should have
+that dot doubled.
 
 Be aware that use of the LIST MOTD command is not widespread (though
 documented in S<RFC 6048>) and most news clients will never ask for
 this file.
 
-If this file is missing, it is not an error.  The server will just send
-the client the appropriate response for an unmaintained F<motd.news> file.
+If one or both of these files are missing, it is not an error.  The server
+will just send the client the appropriate response for an unmaintained
+F<motd.innd> or F<motd.nnrpd> file.
 
 =head1 HISTORY
 

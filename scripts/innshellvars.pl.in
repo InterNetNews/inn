@@ -57,7 +57,9 @@ $newactive = "${pathdb}/active.tmp" ;
 $newsfeeds = "${newsetc}/newsfeeds" ;
 $newsgroups = "${pathdb}/newsgroups" ;
 $oldactive = "${pathdb}/active.old" ;
-$path_motd = "${newsetc}/motd.news" ;
+$path_motd_innd = "${newsetc}/motd.innd" ;
+$path_motd_nnrpd = "${newsetc}/motd.nnrpd" ;
+$path_motd = "${path_motd_nnrpd}" ;
 $expirectl = "${newsetc}/expire.ctl" ;
 $localgroups = "$newsetc/localgroups" ;
 
