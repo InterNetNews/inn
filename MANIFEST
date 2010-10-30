@@ -178,7 +178,7 @@ doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
 doc/man/mod-active.8                  Manpage for mod-active
 doc/man/moderators.5                  Manpage for moderators config file
-doc/man/motd.news.5                   Manpage for motd.news config file
+doc/man/motd.news.5                   Manpage for MOTD config files
 doc/man/news.daily.8                  Manpage for news.daily
 doc/man/news2mail.8                   Manpage for news2mail
 doc/man/newsfeeds.5                   Manpage for newsfeeds config file
@@ -627,7 +627,8 @@ samples/innshellvars.tcl.local        Additional Tcl script for innshellvars.tcl
 samples/innwatch.ctl                  INN monitoring configuration
 samples/localgroups                   Local newsgroups with descriptions
 samples/moderators                    Moderation submission addresses
-samples/motd.news                     Sample MOTD file
+samples/motd.innd                     Sample MOTD file for innd
+samples/motd.nnrpd                    Sample MOTD file for nnrpd
 samples/news2mail.cf                  news2mail config file
 samples/newsfeeds.in                  innd feed configuration
 samples/newsgroups.minimal            Minimal starting newsgroups file

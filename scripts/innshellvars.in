@@ -45,7 +45,9 @@ NEWACTIVE=${PATHDB}/active.tmp
 NEWSFEEDS=${NEWSETC}/newsfeeds
 NEWSGROUPS=${PATHDB}/newsgroups
 OLDACTIVE=${PATHDB}/active.old
-PATH_MOTD=${NEWSETC}/motd.news
+PATH_MOTD_INND=${NEWSETC}/motd.innd
+PATH_MOTD_NNRPD=${NEWSETC}/motd.nnrpd
+PATH_MOTD=${PATH_MOTD_NNRPD}
 EXPIRECTL=${NEWSETC}/expire.ctl
 LOCALGROUPS=${NEWSETC}/localgroups
 

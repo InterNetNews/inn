@@ -61,7 +61,8 @@ $path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 ##  Paths of useful files.
 my @FILESVAR = qw($active $activetimes $newactive $oldactive
 $history $newsgroups $ctlfile $ctlwatch $localgroups
-$newsfeeds $path_motd $expirectl $errlog $log);
+$newsfeeds $path_motd_innd $path_motd_nnrpd $path_motd
+$expirectl $errlog $log);
 our $active = "${pathdb}/active";
 our $activetimes = "${pathdb}/active.times";
 our $newactive = "${pathdb}/active.tmp";
@@ -72,7 +73,9 @@ our $ctlfile = "${newsetc}/control.ctl";
 our $ctlwatch = "${newsetc}/innwatch.ctl";
 our $localgroups = "${newsetc}/localgroups";
 our $newsfeeds = "${newsetc}/newsfeeds";
-our $path_motd = "${newsetc}/motd.news";
+our $path_motd_innd = "${newsetc}/motd.innd";
+our $path_motd_nnrpd = "${newsetc}/motd.nnrpd";
+our $path_motd = "${path_motd_nnrpd}";
 our $expirectl = "${newsetc}/expire.ctl";
 our $errlog = "${most_logs}/errlog";
 our $log = "${most_logs}/news";

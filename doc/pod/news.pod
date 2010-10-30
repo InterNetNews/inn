@@ -157,6 +157,20 @@ And B<innd> (acting as a relaying or serving agent) no longer checks that.
 
 =item *
 
+B<nnrpd> advertises the COUNTS, DISTRIBUTIONS, MODERATORS, MOTD and
+SUBSCRIPTIONS variants of the LIST command in response to CAPABILITIES.
+These commands already existed in B<nnrpd> but S<RFC 6048> had not yet
+been published.
+
+=item *
+
+Add support for LIST MOTD in B<innd>.  Consequently, the F<motd.news>
+configuration file which was previously used only by B<nnrpd> is renamed
+to F<motd.nnrpd> (B<innupgrade> takes care of the rename).  B<innd> uses
+the new F<motd.innd> file in I<pathetc> for its message of the day.
+
+=item *
+
 Fixed an issue at configure time that made INN wrongly assume that OpenBSD
 (4.6) didn't support Unix-domain sockets.  Thanks to Wim Lewis for the patch.
 
