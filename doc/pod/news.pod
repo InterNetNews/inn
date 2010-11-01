@@ -62,6 +62,13 @@ Fixed an issue at configure time that made INN wrongly assume that OpenBSD
 
 =item *
 
+Fixed an issue in the Python access hook for B<nnrpd>:  it has not been
+working since S<Python 2.5> on 64-bit platforms, owing to a change to
+Python's C API, using a new Py_ssize_t type definition instead of int.
+Thanks to Raphael Barrois for the patch.
+
+=item *
+
 The Injection-Date: header, when present, is now used by B<innd> and
 B<makehistory> to determine the posting date of an article.  Otherwise,
 the Date: header is used.
