@@ -19,18 +19,31 @@
 */
 
 #include "config.h"
-#include "clibrary.h"
-
-#include "inn/innconf.h"
-#include "inn/wire.h"
-#include "innd.h"
-
 
 #ifdef DO_PYTHON
 
 /*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
 #undef _POSIX_C_SOURCE
+
+/*  Make "s#" use Py_ssize_t rather than int. */
+#define PY_SSIZE_T_CLEAN
+
+/*  Python.h must be included after having defined PY_SSIZE_T_CLEAN,
+ *  and before any standard headers are included (because Python may
+ *  define some pre-processor definitions which affect the standard
+ *  headers on some systems). */
 #include "Python.h"
+
+/*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
+#if PY_VERSION_HEX < 0x02050000
+  typedef int Py_ssize_t;
+#endif
+
+#include "clibrary.h"
+
+#include "inn/innconf.h"
+#include "inn/wire.h"
+#include "innd.h"
 
 bool		PythonFilterActive;
 char		*filterPath;	/* This gets set in art.c. */
@@ -249,7 +262,7 @@ static PyObject *
 PY_havehist(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
-    int		msgidlen;
+    Py_ssize_t  msgidlen;
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
 	return NULL;
@@ -268,7 +281,7 @@ static PyObject *
 PY_cancel(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
-    int		msgidlen;
+    Py_ssize_t  msgidlen;
     char	*parambuf[2];
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
@@ -291,7 +304,7 @@ static PyObject *
 PY_addhist(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
-    int		msgidlen;
+    Py_ssize_t  msgidlen;
     char	*articlepaths = (char *) "";
     char	tbuff[12];
     char	*parambuf[6];
@@ -320,7 +333,7 @@ static PyObject *
 PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 {
     char	*newsgroup;
-    int		nglen;
+    Py_ssize_t  nglen;
     NEWSGROUP	*ngp;
     char	*end;
     int		size;
@@ -359,7 +372,7 @@ static PyObject *
 PY_head(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
-    int		msgidlen;
+    Py_ssize_t  msgidlen;
     char	*p;
     TOKEN	token;
     ARTHANDLE	*art;
@@ -390,7 +403,7 @@ static PyObject *
 PY_article(PyObject *self UNUSED, PyObject *args)
 {
     char	*msgid;
-    int		msgidlen;
+    Py_ssize_t  msgidlen;
     char	*p;
     TOKEN	token;
     ARTHANDLE	*arth;
@@ -423,9 +436,9 @@ static PyObject *
 PY_syslog(PyObject *self UNUSED, PyObject *args)
 {
     char	*loglevel;
-    int		levellen;
+    Py_ssize_t  levellen;
     char	*logmsg;
-    int		msglen;
+    Py_ssize_t  msglen;
     int		priority;
 
     /* Get loglevel and message. */
@@ -463,7 +476,8 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 {
     char	*instring, *wpos, *p, *q;
     char	*workstring = NULL;
-    int		insize, worksize, newsize, i, wasspace;
+    Py_ssize_t  insize;
+    int         worksize, newsize, i, wasspace;
     int		lines = 0;
     HASH	myhash;
 
@@ -472,7 +486,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 
     /* If a linecount is provided, munge before hashing. */
     if (lines > 0) {
-	worksize = insize;
+	worksize = (int) insize;
 
 	/* Chop leading whitespace. */
 	for (p=instring ; worksize>0 && isspace((unsigned char) *p) ; p++) {
@@ -522,7 +536,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	free(workstring);
     }
     else
-	myhash = Hash(instring, insize);
+	myhash = Hash(instring, (int) insize);
 
     return PyString_FromStringAndSize((const char *)&myhash, sizeof(myhash));
 }

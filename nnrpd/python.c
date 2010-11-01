@@ -20,18 +20,31 @@
 */
 
 #include "config.h"
-#include "clibrary.h"
-
-#include "inn/innconf.h"
-#include "nnrpd.h"
-#include "inn/hashtab.h"
-
 
 #ifdef DO_PYTHON
 
 /*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
 #undef _POSIX_C_SOURCE
+
+/*  Make "s#" use Py_ssize_t rather than int. */
+#define PY_SSIZE_T_CLEAN
+
+/*  Python.h must be included after having defined PY_SSIZE_T_CLEAN,
+ *  and before any standard headers are included (because Python may
+ *  define some pre-processor definitions which affect the standard
+ *  headers on some systems). */
 #include "Python.h"
+
+/*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
+#if PY_VERSION_HEX < 0x02050000
+  typedef int Py_ssize_t;
+#endif
+
+#include "clibrary.h"
+
+#include "inn/innconf.h"
+#include "nnrpd.h"
+#include "inn/hashtab.h"
 
 /*  Values relate name of hook to array index. */
 #define PYTHONauthen           1
@@ -250,6 +263,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     char        *buffer;
     int		authnum;
     int		i;
+    Py_ssize_t  pos;
 
     PY_load_python();
     proc = PY_setup(PYTHONaccess, PYTHONmain, file);
@@ -312,17 +326,17 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     vector_resize(access_vec, PyDict_Size(result) - 1);
 
     /* Store dict values in proper format in access vector. */
-    i = 0;
+    pos = 0;
     buffer = xmalloc(BIG_BUFFER);
 
-    while(PyDict_Next(result, &i, &key, &value)) {
+    while(PyDict_Next(result, &pos, &key, &value)) {
         if (!PyString_Check(key)) {
-            syslog(L_ERROR, "python access method return dictionary key %i not a string", i);
+            syslog(L_ERROR, "python access method return dictionary key %d not a string", pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
         if (!PyString_Check(value)) {
-            syslog(L_ERROR, "python access method return dictionary value %i not a string", i);
+            syslog(L_ERROR, "python access method return dictionary value %d not a string", pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
