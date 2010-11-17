@@ -302,14 +302,14 @@ if (@groupsToGet && ! $quiet) {
 
 open(FILE, "<$groupFile") || die "can't open group file $groupFile\n";
 
-my $count = 0;
+my $array_order = 0;
 while (<FILE>) {
     next if m!^\s*\#! || m!^\s*$!;
 
     if (m!^(\S+)(\s+(\S+)\s+(\S+))?\s*$!) {
         $sname = $1;
         $servers->{$sname} = {};
-        $servers->{$sname}->{_order} = $count++;
+        $servers->{$sname}->{_order} = $array_order++;
         $passwd{$sname} = [ $3, $4 ] if defined $3 and $3 ne "";
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
         my ($group,$date,$high) = ($1,$2,$3);
@@ -330,6 +330,7 @@ my @servers = @ARGV ? @ARGV : sort {$servers->{$a}->{_order} <=> $servers->{$b}-
 die "No servers!\n" if ! @servers;
 
 my $localcxn;
+my $art_total_count = 0;    # The number of articles transferred during the session.
 
 if ( not $rnews ) {
     print LOG "Connecting to downstream host: $localServer " .
@@ -621,6 +622,7 @@ sub crossFeedGroup {
         last if defined $maxArts and $count >= $maxArts;
         last if defined $opt_f and $count >= $toget;
         $count++;
+        $art_total_count++;
         sleep $opt_z if defined $opt_z and $count > 1;
         # "Optimized mode" -- check if the article is wanted *before* downloading it.
         if (defined $opt_O) {
@@ -868,7 +870,7 @@ sub crossFeedGroup {
             printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
                         $fromServer->message()) if $debug >= 2;
         }
-        saveConfig() if $checkPoint and ($count % $checkPoint) == 0;
+        saveConfig() if $checkPoint and ($art_total_count % $checkPoint) == 0;
         print LOG "\n" if (!$quiet && (($count % $progressWidth) == 0));
         last if defined $opt_S and time >= $^T+$opt_S;
     }
