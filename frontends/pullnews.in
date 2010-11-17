@@ -565,6 +565,7 @@ sub crossFeedGroup {
     my ($prevDate,$prevHigh) = @{$shash->{$group}};
     my ($narticles,$first,$last,$name) = $fromServer->group($group);
     my $count = 0;
+    my $len = 0;                 # Received article length (bytes) (for stats).
     my $code;
     my $startTime = time;
     my ($prevRefused, $prevRejected) = ($info{refused}, $info{rejected});
@@ -649,7 +650,7 @@ sub crossFeedGroup {
             my $xref = 0;
             my $headers = 1;
             my $idx;
-            my $len = 0;                 # Received article length (bytes) (for stats).
+            my $line_len = 0;
             my $tx_len = 0;              # Transmitted article length (bytes) (for rnews).
             my @header_nums_to_go = ();
             my $match_all_hdrs = 1;      # Assume no headers to match.
@@ -658,8 +659,12 @@ sub crossFeedGroup {
             my $curr_hdr = '';
 
             for ($idx = 0 ; $idx < @{$article} ; $idx++) {
-                $len += length($article->[$idx]);
-                $tx_len += length($article->[$idx]);
+                $line_len = length($article->[$idx]);
+                $len += $line_len;
+                $tx_len += $line_len;
+                $info{server}->{$server}->{bytes} += $line_len;
+                $info{bytes} += $line_len;
+
                 next if not $headers;
 
                 $curr_hdr = lc($1) if $article->[$idx] =~ /^([^:[:blank:]]+):/;
@@ -730,7 +735,9 @@ sub crossFeedGroup {
                     print STDERR "Fixing bad header line[$idx]-1: $article->[$idx-1]" if $idx > 0;
                     print STDERR "Fixing bad header line[$idx]::: $article->[$idx]";
                     print STDERR "Fixing bad header line[$idx]+1: $article->[$idx+1]";
-                    $tx_len -= length($article->[$idx])-1;
+                    # Do not use $line_len here because $article->[$idx] has been modified
+                    # since the length was computed.
+                    $tx_len -= length($article->[$idx]) - 1;
                     $article->[$idx] = "\n";
                 }
 
@@ -770,8 +777,6 @@ sub crossFeedGroup {
             }
 
             $pulled->{$server}->{$group}++;
-            $info{server}->{$server}->{bytes} += $len;
-            $info{bytes} += $len;
 
             if ($skip_due_to_hdrs) {
                 print LOG "m" unless $quiet;
@@ -880,8 +885,7 @@ sub crossFeedGroup {
     } else {
         printf LOG "%s article%s retrieved in %d seconds (%d bytes, %d cps)\n",
                 $count, ($count == 1 ? "" : "s"), $elapsed_time,
-                $info{server}->{$server}->{bytes},
-                int($info{server}->{$server}->{bytes}*100/$elapsed_time)/100;
+                $len, int($len*100/$elapsed_time)/100;
     }
     return 1;
 }
