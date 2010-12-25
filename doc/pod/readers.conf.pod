@@ -518,10 +518,10 @@ descriptions of these parameters:
 
     addinjectiondate, addinjectionpostinghost, backoff_auth, backoff_db,
     backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
-    checkincludedtext, clienttimeout, complaints, domain,
-    fromhost, localmaxartsize, moderatormailer, nnrpdauthsender,
-    nnrpdcheckart, nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization,
-    pathhost, readertrack, spoolfirst, strippostcc.
+    checkincludedtext, clienttimeout, complaints, domain, fromhost,
+    localmaxartsize, moderatormailer, nnrpdauthsender, nnrpdcheckart,
+    nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization, pathhost,
+    readertrack, spoolfirst, strippostcc.
 
 =head1 SUMMARY
 
