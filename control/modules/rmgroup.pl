@@ -37,18 +37,18 @@ sub control_rmgroup {
     close ACTIVE;
     my $status;
     if (not @oldgroup) {
-        $status = 'no change';
+        $status = 'not change';
     } elsif (not $approved) {
-        $status = 'unapproved';
+        $status = 'be unapproved';
     } else {
-        $status = 'removed';
+        $status = 'be removed';
     }
 
-    if ($action eq 'mail' and $status !~ /(no change|unapproved)/) {
+    if ($action eq 'mail' and $status !~ /(not change|be unapproved)/) {
         my $mail = sendmail("rmgroup $groupname $sender");
         print $mail <<END;
 $sender asks for $groupname
-to be $status.
+to $status.
 
 If this is acceptable, type:
   $INN::Config::newsbin/ctlinnd rmgroup $groupname
@@ -66,11 +66,11 @@ END
     } elsif ($action eq 'log') {
         if ($log) {
             logger($log, "skipping rmgroup $groupname"
-                . " $sender (would be $status)", $article);
+                . " $sender (would $status)", $article);
         } else {
-            logmsg("skipping rmgroup $groupname $sender (would be $status)");
+            logmsg("skipping rmgroup $groupname $sender (would $status)");
         }
-    } elsif ($action eq 'doit' and $status !~ /(no change|unapproved)/) {
+    } elsif ($action eq 'doit' and $status !~ /(not change|be unapproved)/) {
         ctlinnd('rmgroup', $groupname);
         # Update newsgroups too.
         shlock("$INN::Config::locks/LOCK.newsgroups");
