@@ -133,13 +133,13 @@ sub control_newgroup {
             $status = 'be made moderated';
         } else {
             if ($ngdesc eq $olddesc) {
-                $status = 'no change';
+                $status = 'not change';
             } else {
                 $status = 'have a new description';
             }
         }
     } elsif (not $approved) {
-        $status = 'unapproved';
+        $status = 'be unapproved';
     } else {
         $status = 'be created';
     }
@@ -169,7 +169,7 @@ sub control_newgroup {
         return;
     }
 
-    if ($action eq 'mail' and $status !~ /(no change|unapproved)/) {
+    if ($action eq 'mail' and $status !~ /(not change|be unapproved)/) {
         my $mail = sendmail("newgroup $groupname $modcmd $sender");
         print $mail <<END;
 $sender asks for $groupname
@@ -196,8 +196,8 @@ END
             logmsg("skipping newgroup $groupname $modcmd $sender"
                 . " (would $status)");
         }
-    } elsif ($action eq 'doit' and $status ne 'unapproved') {
-        if ($status ne 'no change') {
+    } elsif ($action eq 'doit' and $status ne 'be unapproved') {
+        if ($status ne 'not change') {
             # The status 'be made (un)moderated' prevails over
             # 'have a new description' so it is executed.
             ctlinnd('newgroup', $groupname, $modcmd, $sender)
@@ -208,7 +208,7 @@ END
 
         if ($log) {
             logger($log, "newgroup $groupname $modcmd $status $sender",
-                   $article) if ($log ne 'mail' or $status ne 'no change');
+                   $article) if ($log ne 'mail' or $status ne 'not change');
         }
     }
     return;
