@@ -1064,6 +1064,7 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
     SetDefaultAccess(acc);
     str = xstrdup(name);
     acc->name = str;
+    file->filename = str;
 
     for (i = 0; i <= access_vec->count; i++) {
       tok = CONFgettoken(PERMtoks, file);
@@ -1072,6 +1073,9 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
         accessdecl_parse(acc, file, tok);
       }
     }
+
+    /* No need to free str here; it is used by acc, and will be
+     * free'd when the access block is free'd. */
     free(file);
     return;
 }
@@ -1603,7 +1607,7 @@ PERMgetpermissions(void)
 
         access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
 
-        PERMvectortoaccess(access_realms[0], "perl-dynamic", access_vec);
+        PERMvectortoaccess(access_realms[0], "perl_access-block", access_vec);
 
         vector_free(access_vec);
       } else {
@@ -1638,7 +1642,7 @@ PERMgetpermissions(void)
             access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
             memset(access_realms[0], 0, sizeof(ACCESSGROUP));
 
-            PERMvectortoaccess(access_realms[0], "python-dynamic", access_vec);
+            PERMvectortoaccess(access_realms[0], "python_access-block", access_vec);
 
             vector_free(access_vec);
         } else {
