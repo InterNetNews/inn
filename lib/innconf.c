@@ -159,6 +159,7 @@ const struct config config_table[] = {
     { K(datamovethreshold),       UNUMBER (8192) },
     { K(dontrejectfiltered),      BOOL   (false) },
     { K(hiscachesize),            UNUMBER  (256) },
+    { K(htmlstatus),              BOOL    (true) },
     { K(icdsynccount),            UNUMBER   (10) },
     { K(ignorenewsgroups),        BOOL   (false) },
     { K(incominglogfrequency),    UNUMBER  (200) },

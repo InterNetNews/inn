@@ -202,6 +202,14 @@ when posting to the downstream server.
 
 =item *
 
+A new parameter has been added to F<inn.conf> to determine whether the status
+file that B<innd> can write out (depending on the value of the I<status>
+parameter) is plain text or wrapped in HTML.  It previously only was a
+compile-time option, set to true by default.  Florian Schlichting added
+the I<htmlstatus> parameter to provide a configurable behaviour.
+
+=item *
+
 It is now possible to run a script at the end of the execution of
 B<innshellvars> scripts.  If a file named F<innshellvars.local>,
 F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
@@ -1139,7 +1147,7 @@ When no newsgroup is selected, LISTGROUP now returns the right C<412> code
 
 B<inncheck> now uses a range of permissions to see whether the file modes
 are correctly set.  Therefore, different configurations depending on the
-security the user wants to enforce on his sytem are possible.
+security the user wants to enforce on his system are possible.
 
 =item *
 

@@ -153,6 +153,7 @@ innwatchspoolspace:          25000
 # Logging
 
 docnfsstat:                  false
+htmlstatus:                  true
 incominglogfrequency:        200
 logartsize:                  true
 logcancelcomm:               false
