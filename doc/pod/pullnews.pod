@@ -109,7 +109,7 @@ Feed an article based on header matching.  The argument is a number of
 whitespace-separated tuples (each tuple being a colon-separated header and
 regular expression).  For instance:
 
-    Hdr1:regexp1 !Hdr2:regexp2
+    -m "Hdr1:regexp1 !Hdr2:regexp2"
 
 specifies that the article will be passed only if the C<Hdr1:> header
 matches C<regexp1> and the C<Hdr2:> header does not match C<regexp2>.
@@ -215,11 +215,13 @@ Sleep I<group-pause> seconds between groups.  The default is C<0>.
 
 =head1 CONFIG FILE
 
-The config file for B<pullnews> is divided into blocks, one block for each
-remote server to connect to.  A block begins with the host line, which
-must have no leading whitespace and contains just the hostname of the
-remote server, optionally followed by authentication details (username
-and password for that server).
+The config file for B<pullnews> is divided into blocks, one block for
+each remote server to connect to.  A block begins with the host line
+(which must have no leading whitespace) and contains just the hostname of
+the remote server, optionally followed by authentication details (username
+and password for that server).  Note that authentication details can also
+be provided for the downstream server (a host line could be added for it
+in the configuration file, with no newsgroup to fetch).
 
 Following the host line should be one or more newsgroup lines which start
 with whitespace followed by the name of a newsgroup to retrieve.  Only one
