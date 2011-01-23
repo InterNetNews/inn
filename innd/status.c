@@ -13,12 +13,6 @@
 #include "innperl.h"
 
 #define MIN_REFRESH   60  /* 1 min */
-#define HTML_STATUS
-#if defined(HTML_STATUS)
-#define STATUS_FILE	"inn_status.html"	/* will be in pathhttp */
-#else
-#define STATUS_FILE	"inn.status"		/* will be in pathlog */
-#endif
 
 typedef struct _STATUS {
     char		name[SMBUF];
@@ -126,24 +120,24 @@ STATUSsummary(void)
   char			str[9];
   time_t		now;
  
-#if defined(HTML_STATUS)
-  path = concatpath(innconf->pathhttp, STATUS_FILE);
-#else
-  path = concatpath(innconf->pathlog, STATUS_FILE);
-#endif
+  if (innconf->htmlstatus) {
+    path = concatpath(innconf->pathhttp, "inn_status.html");
+  } else {
+    path = concatpath(innconf->pathlog, "inn.status");
+  }
   if ((F = Fopen(path, "w", TEMPORARYOPEN)) == NULL) {
     syswarn("SERVER cant open %s", path);
     return;
   }
 
-#if defined(HTML_STATUS)
-  /* HTML Header */
-
-  fprintf (F,"<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"Refresh\" CONTENT=\"%lu;\">\n",
-	   innconf->status < MIN_REFRESH ? MIN_REFRESH : innconf->status);
-  fprintf (F, "<TITLE>%s: incoming feeds</TITLE>\n", innconf->pathhost);
-  fprintf (F, "</HEAD>\n<BODY>\n<PRE>\n") ;
-#endif /* defined(HTML_STATUS) */
+  /* HTML header. */
+  if (innconf->htmlstatus) {
+    fprintf(F, "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n");
+    fprintf(F, "<meta http-equiv=\"refresh\" content=\"%lu\">\n",
+            innconf->status < MIN_REFRESH ? MIN_REFRESH : innconf->status);
+    fprintf(F, "<title>%s: incoming feeds</title>\n", innconf->pathhost);
+    fprintf(F, "</head>\n<body>\n<pre>\n");
+  }
 
   fprintf (F, "%s\n", INN_VERSION_STRING);
   fprintf (F, "pid %d started %s\n", (int) getpid(), start_time);
@@ -385,10 +379,10 @@ STATUSsummary(void)
     status = tmp;
   }
 
-#if defined(HTML_STATUS)
-  /* HTML Footer */
-  fprintf (F,"</PRE>\n</BODY>\n</HTML>\n");
-#endif /* defined(HTML_STATUS) */
+  /* HTML footer. */
+  if (innconf->htmlstatus) {
+    fprintf (F, "</pre>\n</body>\n</html>\n");
+  }
 
   Fclose(F);
   free(path);

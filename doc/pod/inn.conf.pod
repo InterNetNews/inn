@@ -1127,6 +1127,14 @@ the status of all CNFS cycbuffs to syslog on a periodic basis (frequency
 is the default for C<cnfsstat -l>, currently 600 seconds).  This is a
 boolean value and the default is false.
 
+=item I<htmlstatus>
+
+Whether B<innd> should write the status report as HTML file or in plain text.
+The HTML status file goes to I<pathhttp>/inn_status.html, while the plain
+text status file is written to I<pathlog>/inn.status.  This is a boolean
+value and the default is true (an HTML status file is written).  Also see
+the I<status> parameter.
+
 =item I<incominglogfrequency>
 
 How many articles to process on an incoming channel before logging the
@@ -1199,7 +1207,8 @@ default value.
 =item I<status>
 
 How frequently (in seconds) innd(8) should write out a status report.  The
-report is written to I<pathhttp>/inn_status.html.  If this is set to C<0> or
+report is written to I<pathhttp>/inn_status.html or I<pathlog>/inn.status 
+depending on the value of I<htmlstatus>.  If this is set to C<0> or
 C<false>, status reporting is disabled.  The default value is C<0>.
 
 =item I<timer>

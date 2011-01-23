@@ -142,6 +142,7 @@ struct innconf {
 
     /* Logging */
     bool docnfsstat;            /* Run cnfsstat in the background? */
+    bool htmlstatus;            /* Write status file as HTML instead of plain text? */
     unsigned long incominglogfrequency;  /* Checkpoint log after this many articles */
     bool logartsize;            /* Log article sizes? */
     bool logcancelcomm;         /* Log ctlinnd cancel commands to syslog? */
