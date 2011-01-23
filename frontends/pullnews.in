@@ -705,19 +705,23 @@ sub crossFeedGroup {
                 if ($article->[$idx] =~ m!^message-id:\s*(\S+)!i) {
                     $msgid = $1;
                 }
-                if (not $skip_due_to_hdrs and defined $pathSteps and $article->[$idx] =~ m!^Path:\s*!i) {
-                    my $path_count = $article->[$idx];
-                    $path_count = ($path_count =~ s@!@@g) || 0;
-                    if (substr($pathSteps, 0, 1) eq '-') {
-                        $skip_due_to_hdrs = 1 if $path_count >= $path_limit;
-                    } elsif (substr($pathSteps, 0, 1) eq '+') {
-                        $skip_due_to_hdrs = 1 if $path_count <= $path_limit;
+                if ($article->[$idx] =~ m!^Path:\s*!i) {
+                    if (defined $pathSteps) {
+                        my $path_count = $article->[$idx];
+                        $path_count = ($path_count =~ s@!@@g) || 0;
+                        if (substr($pathSteps, 0, 1) eq '-') {
+                            $skip_due_to_hdrs = 1 if $path_count >= $path_limit;
+                        } elsif (substr($pathSteps, 0, 1) eq '+') {
+                            $skip_due_to_hdrs = 1 if $path_count <= $path_limit;
+                        }
                     }
                     if ($skip_due_to_hdrs) {
                         print LOG "\tDEBUGGING $i\tNpath_skip_art $i\n" if $debug >= 2;
-                    } elsif (defined $opt_F) {
-                        $tx_len += length($opt_F)+1;
-                        $article->[$idx] =~ s/^Path:\s*/$&$opt_F!/i;
+                    } else {
+                        if (defined $opt_F) {
+                            $tx_len += length($opt_F)+1;
+                            $article->[$idx] =~ s/^Path:\s*/$&$opt_F!/i;
+                        }
                     }
                 }
 
