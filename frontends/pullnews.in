@@ -354,7 +354,7 @@ if ( not $quiet and not $quietness ) {
     print LOG "        ``+'' is an article the downstream server accepted\n";
     print LOG "        ``x'' is an article the upstream server couldn't ";
     print LOG "give out\n";
-    print LOG "        ``m'' is an article skipped due to headers (-m)\n";
+    print LOG "        ``m'' is an article skipped due to headers (-m or -P)\n";
     print LOG "\n";
     print LOG "Writing to rnews-format output: $rnews\n\n" if $rnews;
 }
