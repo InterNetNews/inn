@@ -72,7 +72,7 @@ SITEaddvariable(char *line)
     while (q > p && (*q == ' ' || *q == '\t'))
     	*q-- = '\0';
 
-    /* Seperate variable name from contents. */
+    /* Separate variable name from contents. */
     *p++ = '\0';	
     if (*p == '\0')
     	return false;
