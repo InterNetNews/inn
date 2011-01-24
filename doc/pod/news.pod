@@ -1,5 +1,9 @@
 =head1 Changes in 2.5.3
 
+Please note that the HTML_STATUS compile-time option has been replaced
+with the I<htmlstatus> parameter in F<inn.conf>.  If you used HTML_STATUS,
+you should set I<htmlstatus> accordingly.
+
 =over 2
 
 =item *
@@ -85,6 +89,9 @@ B<pullnews> no longer stops processing newsgroups when an error occur during
 its run (for instance when a newsgroup mentioned in the configuration file
 is removed from an upstream server).  Besides, it can now use authentication
 when posting to the downstream server.
+
+A few other minor bugs have been fixed as for the way B<pullnews> counts
+the articles.
 
 =item *
 

@@ -13,7 +13,7 @@ SASL_LDFLAGS=
 SASL_LIBS=
 AC_ARG_WITH([sasl],
     [AS_HELP_STRING([--with-sasl@<:@=PATH@:>@],
-        [Enable SASL (for imapfeed authentication)])],
+        [Enable SASL (for imapfeed and nnrpd authentication)])],
     SASL_DIR=$with_sasl,
     SASL_DIR=no)
 AC_MSG_CHECKING([if SASL is desired])
