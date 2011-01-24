@@ -491,54 +491,56 @@ static void usage (int val)
   fprintf (stderr,"\t-a dir      Use the given directory as the top of the article spool\n") ;
 
   fprintf (stderr,"\t-b dir      Use the given directory as the the storage\n");
-  fprintf (stderr,"\t            place for backlog files and lock files.\n");
+  fprintf (stderr,"\t            place for backlog files and lock files\n");
 
   fprintf (stderr,"\t-c file     Use the given file as the config file instead of the\n");
   fprintf (stderr,"\t            default of %s\n",CONFIG_FILE);
 
-  fprintf (stderr,"\t-C          Check the config file and then exit.\n") ;
-  fprintf (stderr,"\t-d num      set the logging level to num (an integer).\n");
-  fprintf (stderr,"\t            Larger value means more logging. 0 means no\n");
-  fprintf (stderr,"\t            logging. The default is 0\n");
+  fprintf (stderr,"\t-C          Check the config file and then exit\n") ;
+  fprintf (stderr,"\t-d num      Set the logging level to num (an integer).\n");
+  fprintf (stderr,"\t            Larger value means more logging.  0 means no\n");
+  fprintf (stderr,"\t            logging.  The default is 0\n");
 
   fprintf (stderr,"\t-e bytes    Keep the output backlog files to no bigger\n");
   fprintf (stderr,"\t            than %.2f times this number\n",LIMIT_FUDGE);
 
-  fprintf (stderr,"\t-h          print this message\n");
+  fprintf (stderr,"\t-h          Print this message\n");
 
-  fprintf (stderr,"\t-l file     redirect stderr and stdout to the given file.\n");
-  fprintf (stderr,"\t            When run under INN they normally are redirected to\n");
-  fprintf (stderr,"\t            /dev/null. This is needed if using '-d'.\n");
+  fprintf (stderr,"\t-l file     Redirect stderr and stdout to the given file.\n");
+  fprintf (stderr,"\t            When run under INN, they normally are redirected to\n");
+  fprintf (stderr,"\t            /dev/null.  This is needed if using '-d'\n");
 
   fprintf (stderr,"\t-m          Log information on all missing articles\n");
 
   fprintf (stderr,"\t-M          Turn *off* use of mmap\n") ;
 #if ! defined (HAVE_MMAP)
-  fprintf (stderr,"\t            (a no-op as this excutable has been built without mmap support\n") ;
+  fprintf (stderr,"\t            (a no-op as this excutable has been built without mmap support)\n") ;
 #endif
+  fprintf (stderr,"\t-o bytes    Set a limit for the maximum number of bytes of article\n");
+  fprintf (stderr,"\t            data innfeed is supposed to keep in memory\n");
 
   fprintf (stderr,"\t-p file     Write the process id to the given file\n") ;
-  fprintf (stderr,"\t            instead of the default of %s\n",PID_FILE);
-  fprintf (stderr,"\t            A relative path is relative to %s\n", innconf->pathrun) ;
+  fprintf (stderr,"\t            instead of the default of %s;\n",PID_FILE);
+  fprintf (stderr,"\t            a relative path is relative to %s\n", innconf->pathrun) ;
 
-  fprintf (stderr,"\t-s command  run the given command in a subprocess and use\n");
+  fprintf (stderr,"\t-s command  Run the given command in a subprocess and use\n");
   fprintf (stderr,"\t            its output as article information instead of\n");
   fprintf (stderr,"\t            running under innd\n");
 
-  fprintf (stderr,"\t-S file     Use the give filename instead of innfeed.status\n") ;
-  fprintf (stderr,"\t            relative pathnames start from %s\n", innconf->pathlog) ;
+  fprintf (stderr,"\t-S file     Use the given filename instead of innfeed.status;\n") ;
+  fprintf (stderr,"\t            relative path names start from %s\n", innconf->pathlog) ;
 
-  fprintf (stderr,"\t-v          print version information\n");
+  fprintf (stderr,"\t-v          Print version information\n");
 
   fprintf (stderr,"\t-x          Do not read any article information off stdin,\n");
   fprintf (stderr,"\t            but simply process backlog files and then exit\n");
   fprintf (stderr,"\t            when done\n");
 
-  fprintf (stderr,"\t-y          Add peers dynamically. If an unrecognized peername\n");
+  fprintf (stderr,"\t-y          Add peers dynamically.  If an unrecognized peer name\n");
   fprintf (stderr,"\t            is received from innd, then it is presumed to also\n");
-  fprintf (stderr,"\t            be the ip name and a new peer binding is set up\n");
+  fprintf (stderr,"\t            be the IP name and a new peer binding is set up\n");
 
-  fprintf (stderr,"\t-z          have each of the connections issue their own stats\n");
+  fprintf (stderr,"\t-z          Have each of the connections issue their own stats\n");
   fprintf (stderr,"\t            whenever they close, or whenever their controller\n");
   fprintf (stderr,"\t            issues its own stats\n");
 

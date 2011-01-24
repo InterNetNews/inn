@@ -158,7 +158,7 @@ doc/man/innconfval.1                  Manpage for innconfval
 doc/man/innd.8                        Manpage for innd server
 doc/man/inndcomm.3                    Manpage for part of INN library
 doc/man/inndf.8                       Manpage for inndf utility
-doc/man/innfeed.1                     Manpage for innfeed backend
+doc/man/innfeed.8                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
 doc/man/innmail.1                     Manpage for innmail utility
 doc/man/innreport.8                   Manpage for innreport
@@ -265,6 +265,7 @@ doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
+doc/pod/innfeed.pod                   Master file for innfeed.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
