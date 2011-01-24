@@ -908,7 +908,7 @@ the funnel feeds:
         :!*\
         :Tc,Wnm*:<pathbin in inn.conf>/innfeed -y
 
-(adjust the path to innfeed(1) if you installed it elsewhere).  Note that
+(adjust the path to innfeed(8) if you installed it elsewhere).  Note that
 we don't feed this entry any articles directly (its newsgroup pattern is
 C<!*>).  Note also that the name of this entry ends in an exclamation
 point.  This is a standard convention for all special feeds; since the
