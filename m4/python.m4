@@ -25,8 +25,8 @@ dnl versions of Python.
 if test x"$DO_PYTHON" = xDO ; then
     INN_PATH_PROG_ENSURE([PYTHON], [python])
     AC_MSG_CHECKING([for Python linkage])
-    py_prefix=`$PYTHON -c 'import sys; print sys.prefix'`
-    py_ver=`$PYTHON -c 'import sys; print sys.version[[:3]]'`
+    py_prefix=`$PYTHON -c 'import sys; print (sys.prefix)'`
+    py_ver=`$PYTHON -c 'import sys; print (sys.version[[:3]])'`
     py_libdir="$py_prefix/lib/python$py_ver"
     PYTHON_CPPFLAGS="-I$py_prefix/include/python$py_ver"
     py_linkage=""
