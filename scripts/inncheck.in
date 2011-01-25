@@ -714,9 +714,6 @@ intersect
     'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs', 
     'tally.control', 'writelog'
 );
-#@newslib_private_read = (
-#    'innlog.pl'
-#);
 
 ## The modes (min and max) for the various programs.
 %prog_modes = (
@@ -733,7 +730,6 @@ check_all_perms
 {
     local ($rnewsprogs) = $paths{'rnewsprogs'};
     local ($newsbin) = $paths{'newsbin'};
-    #local ($newslib) = $paths{'newslib'};
 
     foreach ( @directories ) {
 	&checkperm($paths{$_}, [0755, 0775]);
@@ -752,9 +748,6 @@ check_all_perms
     #&checkperm($paths{'history'} . ".dir", [0600, $INN::Config::filemode]);
     #&checkperm($paths{'history'} . ".index", [0600, $INN::Config::filemode]);
     #&checkperm($paths{'history'} . ".hash", [0600, $INN::Config::filemode]);
-    #foreach ( @newslib_private_read ) {
-    #   &checkperm("$newslib/$_", [0400, 0440]);
-    #}
     foreach ( @newsbin_private ) {
 	&checkperm("$newsbin/$_", [0500, 0550]);
     }
@@ -889,16 +882,3 @@ action: foreach $workfile ( @todo ) {
 &check_all_perms()
     if $perms;
 exit(0);
-
-if ( 0 ) {
-    &active();
-    &control_ctl();
-    &incoming_conf();
-    &expire_ctl();
-    &inn_conf();
-    &moderators();
-    &nntpsend_ctl();
-    &newsfeeds();
-    &passwd_nntp();
-    &readers_conf();
-}
