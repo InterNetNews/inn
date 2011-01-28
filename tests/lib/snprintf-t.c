@@ -82,14 +82,14 @@ test_format(int n, bool truncate, const char *expected, int count,
     result = test_vsnprintf(buf, truncate ? 32 : sizeof(buf), format, args);
     va_end(args);
     if (!strcmp(buf, expected) && result == count) {
-        printf("ok %d\n", n);
+        ok(n, true);
     } else {
-        printf("not ok %d\n", n);
-        printf("  format: %s\n", format);
+        ok(n, false);
+        diag("  format: %s\n", format);
         if (strcmp(buf, expected))
-            printf("   saw: %s\n  want: %s\n", buf, expected);
+            diag("   saw: %s\n  want: %s\n", buf, expected);
         if (result != count)
-            printf("  %d != %d\n", result, count);
+            diag("  %d != %d\n", result, count);
     }
 }
 

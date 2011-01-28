@@ -18,11 +18,12 @@ test_addr(int n, const char *string, unsigned long addr)
     success = test_inet_aton(string, &in);
     okay = (success && in.s_addr == htonl(addr));
     
-    printf("%sok %d\n", okay ? "" : "not ", n);
-    if (!okay && !success) printf("  success: %d\n", success);
+    ok(n, okay);
+    if (!okay && !success)
+        diag("  success: %d\n", success);
     if (!okay && in.s_addr != htonl(addr))
-        printf("  want: %lx\n   saw: %lx\n", (unsigned long) htonl(addr),
-               (unsigned long) in.s_addr);
+        diag("  want: %lx\n   saw: %lx\n", (unsigned long) htonl(addr),
+             (unsigned long) in.s_addr);
 }
 
 static void
@@ -34,7 +35,7 @@ test_fail(int n, const char *string)
     in.s_addr = htonl(0x01020304UL);
     success = test_inet_aton(string, &in);
     success = (success == 0 && in.s_addr == htonl(0x01020304UL));
-    printf("%sok %d\n", success ? "" : "not ", n);
+    ok(n, success);
 }
 
 int

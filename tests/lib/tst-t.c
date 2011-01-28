@@ -84,7 +84,7 @@ main(void)
     tst = tst_init(1000);
     reported = false;
     if (tst == NULL)
-        printf("not ");
+        reported = true;
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
@@ -93,20 +93,19 @@ main(void)
             word = (unsigned char *) xstrdup((char *) buffer);
             if (tst_insert(tst, buffer, word, 0, NULL) != TST_OK) {
                 if (!reported) {
-                    printf("# Failed insert of word %s\n", word);
-                    printf("not ");
+                    diag("Failed insert of word %s\n", word);
                 }
                 reported = true;
             }
         }
     }
-    puts("ok 37");
+    ok(37, !reported);
 
     if (fseek(words, 0, SEEK_SET) < 0)
         sysdie("Unable to rewind words file");
     reported = false;
     if (tst == NULL)
-        printf("not ");
+        reported = true;
     else {
         while (fgets((char *) buffer, sizeof(buffer), words)) {
             buffer[ustrlen(buffer) - 1] = '\0';
@@ -115,16 +114,14 @@ main(void)
             word = tst_search(tst, buffer);
             if (word == NULL || strcmp((char *) word, (char *) buffer) != 0) {
                 if (!reported) {
-                    printf("# Failed search of word %s\n", word);
-                    printf("not ");
+                    diag("Failed search of word %s\n", word);
                 }
                 reported = true;
             }
             word = tst_delete(tst, buffer);
             if (word == NULL || strcmp((char *) word, (char *) buffer) != 0) {
                 if (!reported) {
-                    printf("# Failed delete of word %s\n", word);
-                    printf("not ");
+                    diag("Failed delete of word %s\n", word);
                 }
                 reported = true;
             }
@@ -132,7 +129,7 @@ main(void)
         }
     }
     tst_cleanup(tst);
-    puts("ok 38");
+    ok(38, !reported);
 
     return 0;
 }

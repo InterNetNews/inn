@@ -183,15 +183,15 @@ test_error(int n, int status, const char *output, test_function_t function)
 
     real_status = run_test(function, buf, sizeof(buf));
     if (!WIFEXITED(real_status) || status != WEXITSTATUS(real_status)) {
-        printf("  unexpected exit status %d\n", real_status);
+        diag("  unexpected exit status %d\n", real_status);
         succeeded = 0;
     }
     if (strcmp(output, buf)) {
-        printf("  unexpected output: %s", buf);
-        printf("    expected output: %s", output);
+        diag("  unexpected output: %s", buf);
+        diag("    expected output: %s", output);
         succeeded = 0;
     }
-    printf("%sok %d\n", succeeded ? "" : "not ", n);
+    ok(n, succeeded);
 }
 
 /* Given the test number, intended status, intended message sans the

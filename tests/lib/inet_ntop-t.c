@@ -23,7 +23,7 @@ test_addr(int n, const char *expected, unsigned long addr)
     in.s_addr = htonl(addr);
     if (test_inet_ntop(AF_INET, &in, result, sizeof(result)) == NULL) {
         ok(n++, false);
-        printf("# cannot convert %lu: %s", addr, strerror(errno));
+        diag("cannot convert %lu: %s", addr, strerror(errno));
     } else
         ok(n++, true);
     ok_string(n++, expected, result);

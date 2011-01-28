@@ -695,15 +695,15 @@ main(void)
     fake_innconf();
     innconf->ovmethod = xstrdup("tradindexed");
     innconf->tradindexedmmap = true;
-    printf("# tradindexed with mmap\n");
+    diag("tradindexed with mmap");
     n = overview_tests(1);
 
-    printf("# tradindexed without mmap\n");
+    diag("tradindexed without mmap");
     n = overview_mmap_tests(n);
 
     free(innconf->ovmethod);
     innconf->ovmethod = xstrdup("buffindexed");
-    printf("# buffindexed\n");
+    diag("buffindexed");
     n = overview_tests(n);
 
     return 0;
