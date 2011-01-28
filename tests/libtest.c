@@ -304,7 +304,7 @@ void
 skip_block(int n UNUSED, int count, const char *reason) {
     new_skip_block(count, reason);
 }
-  
+
 void
 new_skip_block(unsigned long count, const char *reason, ...)
 #endif
@@ -369,7 +369,7 @@ void
 ok_string(int n UNUSED, const char *wanted, const char *seen)
 {
     is_string(wanted, seen, NULL);
-}   
+}
 #endif
 void
 is_string(const char *wanted, const char *seen, const char *format, ...)
@@ -406,7 +406,7 @@ void
 ok_double(int n UNUSED, double wanted, double seen)
 {
     is_double(wanted, seen, 0.01, NULL);
-}   
+}
 #endif
 void
 is_double(double wanted, double seen, double epsilon, const char *format, ...)

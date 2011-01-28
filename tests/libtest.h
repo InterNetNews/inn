@@ -79,6 +79,14 @@ void new_skip_block(unsigned long count, const char *reason, ...)
         __attribute__((__format__(printf, 2, 3)));
 
 void test_init(int count);
+
+/* A global buffer into which errors_capture stores errors. */
+extern char *errors;
+
+/* Turn on capturing of errors with errors_capture.  Errors reported by warn
+ * will be stored in the global errors variable.  Turn this off again with
+ * errors_uncapture.  Caller is responsible for freeing errors when done.
+ */
 void errors_capture(void);
 void errors_uncapture(void);
 #else
