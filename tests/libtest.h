@@ -32,7 +32,12 @@
 #ifndef LIBTEST_H
 #define LIBTEST_H 1
 
+/* These inclusions contain va_list, pid_t, __attribute__, BEGIN_DECLS,
+ * END_DECLS, ARRAY_SIZE and ARRAY_END.  All used by C TAP Harness.
+ */
 #include "config.h"
+#include "clibrary.h"
+                           
 #include <inn/defines.h>
 
 BEGIN_DECLS
