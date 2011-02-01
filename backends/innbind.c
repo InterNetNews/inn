@@ -212,7 +212,7 @@ static void
 create_socket(struct binding *binding, const char *spec)
 {
     int fd;
-#ifdef SO_REUSEADDR
+#if defined(SO_REUSEADDR) || defined(IPV6_V6ONLY)
     int flag;
 #endif
 
