@@ -1,6 +1,6 @@
 =head1 NAME
 
-innfeed - Multi-host, multi-connection, streaming NNTP feeder
+innfeed, imapfeed - Multi-host, multi-connection, streaming NNTP feeder
 
 =head1 SYNOPSIS
 
