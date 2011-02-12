@@ -1,0 +1,133 @@
+=head1 NAME
+
+inncheck - Check INN configuration and database files
+
+=head1 SYNOPSIS
+
+B<inncheck> [B<-afv>] [B<-noperm> | B<-perm>] [B<-pedantic>]
+[I<file> | I<file>B<=>I<path> ...]
+
+=head1 DESCRIPTION
+
+B<inncheck> examines various configuration files and databases and verifies
+things about them.  Things verified depend on the file being checked,
+but generally are things like permissions, ownership, syntax errors in
+config files, etc.
+
+B<inncheck> does not make changes to any files S<-- it> just reports what
+it thinks may be wrong, and it is up to the operator to fix the problem
+
+The set of files checked may be restricted by using I<file> or
+I<file>B<=>I<path> arguments.  For example, putting C<incoming.conf>
+causes only the F<incoming.conf> file to be checked.  Using
+C<incoming.conf=/tmp/incoming.conf> on the command line will cause
+B<inncheck> to only verify the F<incoming.conf> file, and it will perform
+the checks on the F</tmp/incoming.conf> file instead of the default one.
+
+Valid values for I<file> are:
+
+    active
+    control.ctl
+    control.ctl.local
+    expire.ctl
+    incoming.conf
+    inn.conf
+    moderators
+    newsfeeds
+    nntpsend.ctl
+    passwd.nntp
+    readers.conf
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a>
+
+If any I<file> value or I<file>B<=>I<path> pairs (see below) are given,
+then normally only the files they refer to are checked.  Use the B<-a>
+flag to specify that I<all> files should be checked regardless.  In this
+case the form I<file>B<=>I<path> will be the more useful.
+
+=item B<-f>
+
+Use the B<-f> flag to have B<inncheck> print the appropriate
+B<chown>/B<chgrp>/B<chmod> command necessary to fix a problem that it
+reports.  Any other output lines will be prefixed with a hash sign (C<#>)
+to make the output be valid input for a shell.  Note that the B<-perm>
+flag must be used as well when using this flag.
+
+=item B<-noperm>
+
+To avoid doing any checking of file permissions or ownership, use the
+B<-noperm> option.
+
+=item B<-pedantic>
+
+Use the B<-pedantic> option to get reports on things that are not necessarily
+wrong, but may indicate a bad configuration, such as F<inn.conf> missing
+a key.
+
+=item B<-perm>
+
+B<inncheck> checks all files for permission problems.  If the B<-perm>
+flag is used, then I<only> the files specified by the I<file> or
+I<file>B<=>I<path> command line arguments will be checked for problems
+other than permission problems.
+
+=item B<-v>
+
+Use the B<-v> option to get more verbose output.
+
+=back
+
+=head1 EXAMPLES
+
+To have B<inncheck> check all files for syntax and permission problems
+simply run:
+
+    inncheck
+
+To have B<inncheck> check all files for permission problems and to verify
+the syntax of the F<active> and F<incoming.conf> files, do:
+
+    inncheck -perm active incoming.conf
+
+To fix the permissions problems noted in the output of the above command,
+modify it as follows:
+
+    inncheck -f -perm | sh
+
+(Note that it is useless to mention the name of the two files since
+permission problems are checked on all files.)
+
+To have B<inncheck> check the test F<newsfeeds> file in
+F</var/tmp/newsfeeds.testing>, do:
+
+    inncheck newsfeeds=/var/tmp/newsfeeds.testing
+
+To have B<inncheck> check all the files as it normally does, but to specify
+a different location for the F<newsfeeds> file, do:
+
+    inncheck -a newsfeeds=/var/tmp/newsfeeds.testing
+
+=head1 BUGS
+
+If the B<-f> and B<-perm> options are used together, along with B<-a> or
+some I<file> or I<file>B<=>I<path> arguments that refer to a file with
+a syntax problem, then the output will no longer be valid input for a shell.
+
+=head1 HISTORY
+
+Written by Brendan Kehoe <brendan@cygnus.com> and Rich Salz
+<rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5), control.ctl(5), expire.ctl(5), history(5), incoming.conf(5),
+inn.conf(5), moderators(5), newsfeeds(5), nntpsend.ctl(5), passwd.nntp(5),
+readers.conf(5).
+
+=cut
