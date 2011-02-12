@@ -278,7 +278,7 @@ static int client_connect(void)
     path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
     strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     free(path);
-    r = connect(clientfd, (struct sockaddr *) &sa, SUN_LEN(&sa))
+    r = connect(clientfd, (struct sockaddr *) &sa, SUN_LEN(&sa));
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = 0;
