@@ -790,9 +790,9 @@ Usage
     print "Usage error: @_.\n";
     print
 "Usage:
-	$program [-v] [-noperm] [-pedantic] [-perms [-fix] ] [-a|file...]
+	$program [-afv] [-noperm|perm] [-pedantic] [file | file=value...]
 File to check may be followed by \"=path\" to use the specified path.  All
-files are checked if -a is used or if -perms is not used.  Files that may
+files are checked if -a is used or if -perm is not used.  Files that may
 be checked are:\n";
     foreach ( sort(keys %checklist) ) {
 	printf "     %-20s", $_;

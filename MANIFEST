@@ -262,6 +262,7 @@ doc/pod/incoming.conf.pod             Master file for incoming.conf.5
 doc/pod/inews.pod                     Master file for inews.1
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innbind.pod                   Master file for innbind.8
+doc/pod/inncheck.pod                  Master file for inncheck.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
