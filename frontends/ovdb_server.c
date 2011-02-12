@@ -648,13 +648,14 @@ main(int argc, char *argv[])
 
     nonblocking(listensock, 1);
 
+    memset(&sa, 0, sizeof sa);
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
     path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
     strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     unlink(sa.sun_path);
     free(path);
-    ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
+    ret = bind(listensock, (struct sockaddr *)&sa, SUN_LEN(&sa));
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = htons(OVDB_SERVER_PORT);

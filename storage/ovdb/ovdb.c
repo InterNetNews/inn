@@ -272,19 +272,22 @@ static int client_connect(void)
 	return -1;
     }
 
+    memset(&sa, 0, sizeof sa);
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
     sa.sun_family = AF_UNIX;
     path = concatpath(innconf->pathrun, OVDB_SERVER_SOCKET);
     strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     free(path);
+    r = connect(clientfd, (struct sockaddr *) &sa, SUN_LEN(&sa))
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = 0;
     sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     bind(clientfd, (struct sockaddr *) &sa, sizeof sa);
     sa.sin_port = htons(OVDB_SERVER_PORT);
+    r = connect(clientfd, (struct sockaddr *) &sa, sizeof sa);
 #endif
-    if((r = connect(clientfd, (struct sockaddr *) &sa, sizeof sa)) != 0) {
+    if(r != 0) {
         syswarn("OVDB: rc: cant connect to server");
 	close(clientfd);
 	clientfd = -1;

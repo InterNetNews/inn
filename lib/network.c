@@ -200,6 +200,7 @@ network_bind_ipv4(const char *address, unsigned short port)
             close(fd);
         return bindfd;
     } else {
+        memset(&server, 0, sizeof server);
         server.sin_family = AF_INET;
         server.sin_port = htons(port);
         if (!inet_aton(address, &addr)) {
@@ -262,6 +263,7 @@ network_bind_ipv6(const char *address, unsigned short port)
             close(fd);
         return bindfd;
     } else {
+        memset(&server, 0, sizeof server);
         server.sin6_family = AF_INET6;
         server.sin6_port = htons(port);
         if (inet_pton(AF_INET6, address, &addr) < 1) {
