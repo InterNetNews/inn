@@ -224,6 +224,7 @@ test_create_ipv4(int n, const char *source)
             fd = network_client_create(PF_INET, SOCK_STREAM, source);
             if (fd < 0)
                 _exit(1);
+            memset(&sin, 0, sizeof sin);
             sin.sin_family = AF_INET;
             sin.sin_port = htons(11119);
             sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);

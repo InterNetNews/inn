@@ -1492,6 +1492,7 @@ static conn_ret init_net(char *serverFQDN,
       return RET_FAIL;	
   }
 
+  memset(&addr, 0, sizeof addr);
   addr.sin_family = AF_INET;
   memcpy(&addr.sin_addr, hp->h_addr, hp->h_length);
   addr.sin_port = htons(port);
