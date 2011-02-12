@@ -45,7 +45,7 @@ sent.  It is used for writing log entries and for determining if an
 article should be forwarded to a site.  (A "site" is the generic term for
 some destination of newsfeed data; it often corresponds to a remote news
 peer, but doesn't have to.  For example, a local archiving program run
-from F<newsfeeds> is also a "site.")  If I<sitename> already appears in
+from F<newsfeeds> is also a "site".)  If I<sitename> already appears in
 the article's Path: header, then the article will not be sent to the site.
 The name is usually whatever the remote site uses to identify itself in
 the Path: header, but can be almost any word.

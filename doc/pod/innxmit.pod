@@ -109,7 +109,7 @@ that is in progress.
 =item B<-t> I<seconds>
 
 B<innxmit> normally blocks until the connection is made.  To specify a timeout
-on how long to try to make the connection, use  the B<-t> flag.
+on how long to try to make the connection, use the B<-t> flag.
 
 =item B<-v>
 

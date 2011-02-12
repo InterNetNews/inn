@@ -449,11 +449,10 @@ By default, C<-o c> is assumed.
 =item B<-p> I<min-unchanged>
 
 By default, the B<actsync> utility has safeguards against performing
-massive changes.  If fewer than I<min-unchanged> percent of the
-non-ignored lines from the local host remain unchanged, no actions
-(output, execution, etc.)  are performed and B<actsync> exits with a
-non-zero exit status.  The I<min-unchanged> value may be a floating point
-value such as C<66.667>.
+massive changes.  If fewer than I<min-unchanged> percent of the non-ignored
+lines from the local host remain unchanged, no actions (output, execution,
+etc.) are performed and B<actsync> exits with a non-zero exit status.
+The I<min-unchanged> value may be a floating point value such as C<66.667>.
 
 A change is a local newsgroup line that was removed, added, changed,
 or found to be in error.  Changing the 2nd or 3rd F<active> fields via

@@ -20,7 +20,7 @@ history database.
 
 By default, B<scanlogs> rotates and cleans out the logs.  It keeps up to
 I<logcycles> old compressed log files in I<pathlog>/OLD (the I<logcycles>
-parameter can be set in F<inn.conf>).   B<scanlogs> also keeps archives
+parameter can be set in F<inn.conf>).  B<scanlogs> also keeps archives
 of the F<active> file in this directory.
 
 It invokes B<tally.control> if F<newgroup.log> or F<rmgroup.log> exists

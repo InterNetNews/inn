@@ -823,7 +823,7 @@ have to rename it.
 
 =item *
 
-B<gpgverify> is no longer included in INN,  B<pgpverify> now has better
+B<gpgverify> is no longer included in INN, B<pgpverify> now has better
 support for GnuPG and should be used instead.
 
 =item *

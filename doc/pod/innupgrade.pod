@@ -53,10 +53,9 @@ introduced in S<INN 2.5>.  The file is then renamed to F<overview.fmt.OLD>.
 
 =item *
 
-If the F<sasl.conf> file exists, its content is merged in
-the I<tlscapath>, I<tlscafile>, I<tlscertfile> and I<tlskeyfile>
-parameters introduced in S<INN 2.5>.   The file is then renamed to
-F<sasl.conf.OLD>.
+If the F<sasl.conf> file exists, its content is merged in the I<tlscapath>,
+I<tlscafile>, I<tlscertfile> and I<tlskeyfile> parameters introduced in
+S<INN 2.5>.  The file is then renamed to F<sasl.conf.OLD>.
 
 =back
 
