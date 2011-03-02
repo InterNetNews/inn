@@ -1351,7 +1351,7 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 	   host->params->lowPassFilter) ;
   fprintf (fp,"%s    backlog-limit : %d\n",indent,
 	   host->params->backlogLimit) ;
-  fprintf (fp,"%s    backlog-limit-high : %d\n",indent,
+  fprintf (fp,"%s    backlog-limit-highwater : %d\n",indent,
 	   host->params->backlogLimitHigh) ;
   fprintf (fp,"%s    backlog-factor : %2.1f\n",indent,
 	   host->params->backlogFactor) ;
@@ -2786,11 +2786,11 @@ static HostParams hostDetails (scope *s,
     }
 
   if (findValue (s,"backlog-factor",inherit) == NULL &&
-      findValue (s,"backlog-limit-high",inherit) == NULL)
+      findValue (s,"backlog-limit-highwater",inherit) == NULL)
     {
       logOrPrint (LOG_ERR,fp,
                   "ME config: must define at least one of backlog-factor"
-                  " and backlog-limit-high. Adding %s: %f", "backlog-factor",
+                  " and backlog-limit-highwater. Adding %s: %f", "backlog-factor",
                   LIMIT_FUDGE) ;
       addReal (s,"backlog-factor",LIMIT_FUDGE) ;
       rv = 0 ;
@@ -2814,7 +2814,7 @@ static HostParams hostDetails (scope *s,
                    " to peer, but backlog-feed-first is set");
     }
 
-  GETINT(s,fp,"backlog-limit-high",0,LONG_MAX,NOTREQNOADD,p->backlogLimitHigh, inherit);
+  GETINT(s,fp,"backlog-limit-highwater",0,LONG_MAX,NOTREQNOADD,p->backlogLimitHigh, inherit);
   GETREAL(s,fp,"backlog-factor",1.0,DBL_MAX,NOTREQNOADD,p->backlogFactor, inherit);
 
   GETINT(s,fp,"dynamic-method",0,3,REQ,p->dynamicMethod, inherit);

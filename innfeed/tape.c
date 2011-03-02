@@ -415,7 +415,7 @@ static void initTape (Tape nt)
               if (!getInteger (s,"backlog-limit-highwater",
                                &nt->outputHighLimit,INHERIT))
                 {
-                  warn ("%s no backlog-factor or backlog-high-limit",
+                  warn ("%s no backlog-factor or backlog-limit-highwater",
                         nt->peerName) ;
                   nt->outputLowLimit = 0 ;
                   nt->outputHighLimit = 0 ;

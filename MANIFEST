@@ -266,6 +266,7 @@ doc/pod/inncheck.pod                  Master file for inncheck.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
 doc/pod/inndf.pod                     Master file for inndf.8
+doc/pod/innfeed.conf.pod              Master file for innfeed.conf.5
 doc/pod/innfeed.pod                   Master file for innfeed.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/innupgrade.pod                Master file for innupgrade.8
