@@ -776,7 +776,7 @@ POD by Russ Allbery <rra@stanford.edu>.
 
 $Id$
 
-By: Landon Curt Noll <chongo@toad.com> (chongo was here /\../\).
+By Landon Curt Noll <chongo@toad.com> (chongo was here /\../\).
 
 Copyright (c) Landon Curt Noll, 1993.  All rights reserved.
 
