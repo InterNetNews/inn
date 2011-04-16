@@ -82,6 +82,8 @@ install-man8:
 	$(LN_S) actsync.8 $D$(MAN8)/actsyncd.8
 	rm -f $D$(MAN8)/imapfeed.8
 	$(LN_S) innfeed.8 $D$(MAN8)/imapfeed.8
+	rm -f $D$(MAN8)/inpaths.8
+	$(LN_S) ninpaths.8 $D$(MAN8)/inpaths.8
 	if [ x"$(KRB5_AUTH)" != x ] ; then \
 	    $(CP_MAN) auth_krb5.8 $D$(MAN8)/auth_krb5.8 ; \
 	fi
