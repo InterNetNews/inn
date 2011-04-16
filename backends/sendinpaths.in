@@ -14,7 +14,7 @@ TMP=""
 defaddr="pathsurvey@top1000.org top1000@anthologeek.net"
 
 # Renice to give other processes priority, since this isn't too important.
-renice 20 -p $$ > /dev/null
+renice 20 -p $$ > /dev/null 2>&1
 
 # Make report from (up to) $report days of dumps
 LOGS=`find . -name 'inpaths.*' ! -size 0 -mtime -$report -print`
