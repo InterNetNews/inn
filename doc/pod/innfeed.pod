@@ -457,7 +457,11 @@ The directory for backlog files.
 
 =head1 HISTORY
 
-Written by James Brister <brister@vix.com> for InterNetNews.  Converted to POD by Julien Elie.
+Written by James Brister <brister@vix.com> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+Earlier versions of B<innfeed> (up to 0.10.1) were shipped separately;
+B<innfeed> is now part of INN and shares the same version number.
 
 $Id$
 

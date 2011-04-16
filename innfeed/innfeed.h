@@ -49,7 +49,7 @@
 #define GEN_HTML		false 		/* gen-html */
 #define INNFEED_STATUS 		"innfeed.status" /* status-file */
 #define LOG_CONNECTION_STATS 	0 		/* connection-stats */
-#define HOST_HIGHWATER 		10 		/* host-highwater */
+#define HOST_HIGHWATER 		10 		/* host-queue-highwater */
 #define STATS_PERIOD 		(60 * 10) 	/* stats-period */
 #define STATS_RESET_PERIOD 	(60 * 60 * 12) 	/* stats-reset-period */
 

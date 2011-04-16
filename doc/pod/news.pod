@@ -4,6 +4,12 @@ Please note that the HTML_STATUS compile-time option has been replaced
 with the I<htmlstatus> parameter in F<inn.conf>.  If you used HTML_STATUS,
 you should set I<htmlstatus> accordingly.
 
+A confusion in the name of a key in F<innfeed.conf> existed in the source
+code.  Make sure that the mispelled, undocumented I<backlog-limit-high>
+key is *not* used in your F<innfeed.conf> file; its real name is
+I<backlog-limit-highwater>.  You should rename the key in case it is present
+in your configuration file.  Otherwise, it will not be taken into account.
+
 =over 2
 
 =item *
@@ -109,6 +115,12 @@ F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
 executable in I<pathetc>, then it will be executed by the corresponding
 B<innshellvars> script (respectively shell, INN::Config Perl module,
 and Tcl).  A typical use is to add or override variables.
+
+=item *
+
+Other minor bug fixes and documentation improvements.  In particular, the
+I<debug-shrinking>, I<fast-exit> and I<initial-sleep> keys in F<innfeed.conf>
+are now documented.
 
 =back
 
