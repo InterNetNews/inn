@@ -88,16 +88,15 @@ fine.  We hope to remove this requirement in the future.
 =item *
 
 INN requires at least S<B<Perl 5.8.0>> to build and to run several
-subsystems.  In order to process control messages, B<controlchan> needs
-the C<MIME::Parser> module available from CPAN (C<MIME-tools>
-in F<modules/by-module/MIME/>, for instance on L<ftp://ftp.perl.org/>).  This
+subsystems.  In order to process control messages, B<controlchan>
+needs the C<MIME::Parser> module available from CPAN (C<MIME-tools> in
+F<modules/by-module/MIME/>, for instance on L<ftp://ftp.perl.org/>).  This
 Perl module has probably already been packaged for your distribution.
-INN is tested primarily with newer versions of Perl, so it's
-generally recommended that you install the latest stable distribution of
-Perl before compiling INN.  For instructions on obtaining and installing
-Perl, see L<http://www.perl.com/pub/language/info/software.html>.  Note
-that you may need to use the same compiler and options (particularly
-large file support) for Perl and INN.
+INN is tested primarily with newer versions of Perl, so it's generally
+recommended that you install the latest stable distribution of Perl before
+compiling INN.  For instructions on obtaining and installing Perl, see
+L<http://www.perl.org/get.html>.  Note that you may need to use the same
+compiler and options (particularly large file support) for Perl and INN.
 
 If you're using a version of Perl prior to 5.6.0, you may need to make
 sure that the Perl versions of your system header files have been
@@ -128,16 +127,9 @@ not required, but is highly recommended for systems carrying public Usenet
 hierarchies) then you will need to install some version of PGP.  The
 recommended version is B<GnuPG>, since it's actively developed, supports
 OpenPGP, is freely available from L<http://www.gnupg.org/> and free to use
-for any purpose (in the US and elsewhere), and (as of version 1.0.4 at least)
-supports the RSA signatures used by most current control message senders.
-
-Alternately, you can install PGP from L<http://www.pgp.com/> or one of the
-international versions of it.  Be warned, however, that the licensing
-restrictions on PGP inside the United States are extremely unclear; it's
-possible that if you are installing INN for a company in the U.S., even if
-the news server is not part of the business of that company, you would
-need to purchase a commercial license for PGP.  For an educational or
-non-profit organization, this shouldn't be a problem.
+for any purpose (in the US and elsewhere), and (as of version 1.0.4 at
+least) supports the RSA signatures used by most current control message
+senders.
 
 =item *
 
