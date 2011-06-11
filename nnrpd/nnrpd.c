@@ -553,7 +553,7 @@ StartConnection(unsigned short port)
 	    Reply("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
-        strlcpy(Client.host, "stdin", sizeof(Client.host));
+        strlcpy(Client.host, "localhost", sizeof(Client.host));
     } else {
 	/* Figure out client's IP address/hostname. */
 	HostErrorStr = default_host_error;

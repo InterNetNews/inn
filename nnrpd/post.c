@@ -546,7 +546,8 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 
     /* Set the posting-host identity.
      * Check a proper definition of Client.host and Client.ip
-     * (we already saw the case of "stdin:" without IP). */
+     * (we already saw the case of "localhost:" without IP),
+     * when getpeername fails. */
     if ((strlen(Client.host) > 0) || (strlen(Client.ip) > 0)) {
         if ((strcmp(Client.host, Client.ip) == 0)
            || (strlen(Client.host) == 0)) {
