@@ -108,7 +108,7 @@ main(int argc, char** argv)
             fprintf(stderr, "cant getpeername()::%s:+:!*\n", username);
             exit(1);
         }
-        strlcpy(peername, "stdin", sizeof(peername));
+        strlcpy(peername, "localhost", sizeof(peername));
     } else if (sin.sin_family != AF_INET) {
         fprintf(stderr, "Bad address family %ld::%s:+:!*\n",
                 (long)sin.sin_family, username);

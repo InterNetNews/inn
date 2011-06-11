@@ -553,7 +553,9 @@ StartConnection(unsigned short port)
 	    Reply("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
 	    ExitWithStats(1, true);
 	}
-        strlcpy(Client.host, "stdin", sizeof(Client.host));
+        /* For the X-Trace: header field, initialize Client.ip. */
+        strlcpy(Client.host, "localhost", sizeof(Client.host));
+        strlcpy(Client.ip, "127.0.0.1", sizeof(Client.ip)); 
     } else {
 	/* Figure out client's IP address/hostname. */
 	HostErrorStr = default_host_error;
