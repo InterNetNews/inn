@@ -28,8 +28,8 @@
 static bool             OVdelayrm;
 static OV_METHOD	ov;
 
-time_t	OVrealnow;
-bool    OVstatall;
+time_t	OVrealnow = 0;
+bool    OVstatall = false;
 
 bool
 OVopen(int mode)
