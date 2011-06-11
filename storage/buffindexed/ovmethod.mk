@@ -5,5 +5,4 @@ buffindexed/buffindexed_d.o: buffindexed/buffindexed.c
 
 buffindexed/buffindexed_d: buffindexed/buffindexed_d.o libstorage.$(EXTLIB) $(LIBHIST)
 	$(LIBLD) $(LDFLAGS) -o $@ buffindexed/buffindexed_d.o \
-	    buffindexed/shmem.o expire.o ov.o \
 	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
