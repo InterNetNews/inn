@@ -13,6 +13,8 @@
 # in the rejection message (make sure that such a message is properly encoded
 # in UTF-8 so as to comply with the NNTP protocol).
 #
+# When filtering is disabled, the filter_end() Perl routine is called,
+# if defined, prior to the deactivation of the filter.
 
 #
 # Do any initialization steps.
@@ -73,3 +75,8 @@ sub analyze {
 
     return ($lines, $quoted, $antiquoted);
 }
+
+sub filter_end {
+# Do whatever you want to clean up things when Perl filtering is disabled.
+}
+

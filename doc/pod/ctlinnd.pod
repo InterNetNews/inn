@@ -297,6 +297,10 @@ Enable or disable Perl filtering.  This command is only available if INN
 was built with Perl filtering support.  If I<flag> starts with C<y>,
 filtering is enabled; if it starts with C<n>, filtering is disabled.
 
+When filtering is disabled, if the F<filter_innd.pl> Perl filter defined
+a function C<filter_end>, it will be called prior to the deactivation of
+the filter.
+
 =item python I<flag>
 
 Enable or disable Python filtering.  This command is only available if INN

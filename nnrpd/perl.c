@@ -64,6 +64,7 @@ HandleHeaders(char *article)
     SV *modswitch;
     int OtherSize;
     char *argv[] = { NULL };
+    bool failure;
 
     if(!PerlLoaded) {
         loadPerl();
@@ -77,10 +78,10 @@ HandleHeaders(char *article)
         syslog(L_ERROR,"Whoops.  Can't open error log: %m");
     }
 #endif /* DEBUG_MODIFY */
-   
+
     ENTER;
     SAVETMPS;
-   
+
     /* Create the Perl hash. */
     hdr = perl_get_hv("hdr", true);
     for (hp = Table; hp < EndOfTable; hp++) {
@@ -88,7 +89,7 @@ HandleHeaders(char *article)
             (void) hv_store(hdr, (char *) hp->Name, strlen(hp->Name),
                      newSVpv(hp->Body, 0), 0);
     }
-   
+
     /* Also store other headers. */
     OtherSize = OtherCount;
     for (i = 0; i < OtherCount; i++) {
@@ -109,12 +110,13 @@ HandleHeaders(char *article)
 
     /* Store user. */
     sv_setpv(perl_get_sv("user", true), PERMuser);
-   
+
     /* Store body. */
     body = perl_get_sv("body", true);
     sv_setpv(body, article);
 
     /* Call the filtering function. */
+    /* No need for PUSHMARK(SP) with call_argv(). */
     rc = perl_call_argv("filter_post", G_EVAL|G_SCALAR, argv);
 
     SPAGAIN;
@@ -126,7 +128,7 @@ HandleHeaders(char *article)
         HeadersModified = true;
         i = 0;
 
-#ifdef DEBUG_MODIFY     
+#ifdef DEBUG_MODIFY
         dumpTable("Before mod");
 #endif /* DEBUG_MODIFY */
 
@@ -136,7 +138,7 @@ HandleHeaders(char *article)
              * new values. */
             p = HePV(scan, len);
             s = SvPV(HeVAL(scan), PL_na);
-#ifdef DEBUG_MODIFY     
+#ifdef DEBUG_MODIFY
             fprintf(flog,"Hash iter: '%s','%s'\n", p, s);
 #endif /* DEBUG_MODIFY */
 
@@ -179,22 +181,30 @@ HandleHeaders(char *article)
     sv_setsv(body, &PL_sv_undef);
 
     buf[0] = '\0';
-   
-    if (SvTRUE(ERRSV)) {    /* Check $@. */
+
+    /* Check $@. */
+    if (SvTRUE(ERRSV)) {
+        failure = true;
         syslog(L_ERROR, "Perl function filter_post died: %s",
                SvPV(ERRSV, PL_na));
         (void)POPs;
-        PerlFilter(false);
-    } else if (rc == 1) {
-        p = POPp;
-        if (p != NULL && *p != '\0')
-            strlcpy(buf, p, sizeof(buf));
+    } else {
+        failure = false;
+        if (rc == 1) {
+            p = POPp;
+            if (p != NULL && *p != '\0')
+                strlcpy(buf, p, sizeof(buf));
+        }
     }
 
+    PUTBACK;
     FREETMPS;
     LEAVE;
-   
-    if (buf[0] != '\0') 
+
+    if (failure)
+        PerlFilter(false);
+
+    if (buf[0] != '\0')
         return buf;
     return NULL;
 }
@@ -238,6 +248,7 @@ perlAccess(char *user, struct vector *access_vec)
     (void) hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
 
     PUSHMARK(SP);
+    PUTBACK;
 
     if (perl_get_cv("access", 0) == NULL) {
         syslog(L_ERROR, "Perl function access not defined");
@@ -276,7 +287,7 @@ perlAccess(char *user, struct vector *access_vec)
         strlcat(buffer, ": \"", BIG_BUFFER);
         strlcat(buffer, val, BIG_BUFFER);
         strlcat(buffer, "\"\n", BIG_BUFFER);
- 
+
         vector_add(access_vec, buffer);
     }
 
@@ -293,14 +304,15 @@ perlAuthInit(void)
 {
     dSP;
     int rc;
-    
+
     if (!PerlFilterActive)
         return;
 
     ENTER;
     SAVETMPS;
     PUSHMARK(SP);
-    
+    PUTBACK;
+
     if (perl_get_cv("auth_init", 0) == NULL) {
         syslog(L_ERROR, "Perl function auth_init not defined");
         Reply("%d Internal error (3).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
@@ -310,7 +322,6 @@ perlAuthInit(void)
     rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
 
     SPAGAIN;
-
 
     if (SvTRUE(ERRSV)) {    /* Check $@. */
         syslog(L_ERROR, "Perl function authenticate died: %s",
@@ -336,7 +347,7 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
     HV *attribs;
     int rc;
     char *p;
-    
+
     if (!PerlFilterActive)
         *code = NNTP_FAIL_AUTHINFO_BAD;
 
@@ -357,8 +368,9 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
     (void) hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
     (void) hv_store(attribs, "username", 8, newSVpv(user, 0), 0);
     (void) hv_store(attribs, "password", 8, newSVpv(passwd, 0), 0);
-    
+
     PUSHMARK(SP);
+    PUTBACK;
     rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
 
     SPAGAIN;
@@ -382,7 +394,7 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
     if (rc == 3) {
         p = POPp;
         strlcpy(newUser, p, BIG_BUFFER);
-    } 
+    }
 
     p = POPp;
     strlcpy(errorstring, p, BIG_BUFFER);
@@ -405,7 +417,7 @@ dumpTable (char *msg)
     int i;
 
     fprintf(flog, "===BEGIN TABLE DUMP: %s\n", msg);
-      
+
     for (hp = Table; hp < EndOfTable; hp++) {
         fprintf(flog, " Name: '%s'",hp->Name);
         fflush(flog);

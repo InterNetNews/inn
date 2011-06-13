@@ -205,6 +205,14 @@ time when the article was approved by the moderator.
 
 =item *
 
+The X-Trace: header field was not properly generated when an article
+was locally posted.  The field mentioning the IP address was skipped,
+resulting in a wrong syntax for this header.  The local "127.0.0.1" IP
+address is now used.  Besides, C<localhost> is now mentioned instead of
+an obscure C<stdin> in injection header fields.
+
+=item *
+
 B<pullnews> no longer stops processing newsgroups when an error occur during
 its run (for instance when a newsgroup mentioned in the configuration file
 is removed from an upstream server).  Besides, it can now use authentication
@@ -234,7 +242,8 @@ and Tcl).  A typical use is to add or override variables.
 
 Other minor bug fixes and documentation improvements.  In particular, the
 I<debug-shrinking>, I<fast-exit> and I<initial-sleep> keys in F<innfeed.conf>
-are now documented.
+are now documented.  The function C<filter_end()>, called when Perl filtering
+is turned off, is also documented for the B<innd> and B<nnrpd> Perl filters.
 
 =back
 

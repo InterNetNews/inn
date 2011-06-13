@@ -3,7 +3,7 @@
 **  Embedded Perl support for INN.
 **
 **  Originally written by Christophe Wolfhugel <wolf@pasteur.fr> (although
-**  he wouldn't recongize it any more, so don't blame him) and modified,
+**  he wouldn't recognize it any more, so don't blame him) and modified,
 **  expanded, and tweaked by James Brister, Dave Hayes, and Russ Allbery
 **  among others.
 **
@@ -75,12 +75,15 @@ PerlFilter(bool value)
         if (perl_get_cv("filter_end", false) != NULL) {
             ENTER;
             SAVETMPS;
+            /* No need for PUSHMARK(SP) with call_argv(). */
             perl_call_argv("filter_end", G_EVAL | G_DISCARD | G_NOARGS, argv);
+            SPAGAIN;
             if (SvTRUE(ERRSV)) {
                 syslog (L_ERROR, "SERVER perl function filter_end died: %s",
                         SvPV(ERRSV, PL_na));
                 (void) POPs;
             }
+            PUTBACK;
             FREETMPS;
             LEAVE;
         }
@@ -126,36 +129,49 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
 #endif
         perl_parse(PerlCode, xs_init, argc, argv, env) ;
     }
-    
+
     if (startupfile != NULL && filterfile != NULL) {
         char *evalfile = NULL;
+        bool failure;
         dSP;
-    
-        ENTER ;
-        SAVETMPS ;
 
-        /* The Perl expression which will be evaluated. */   
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        PUTBACK;
+
+        /* The Perl expression which will be evaluated. */
         xasprintf(&evalfile, "do '%s'", startupfile);
 
         PerlSilence();
         perl_eval_pv(evalfile, TRUE);
         PerlUnSilence();
-        
-        SPAGAIN ;
-        
-        if (SvTRUE(ERRSV))     /* check $@ */ {
+
+        SPAGAIN;
+
+        free(evalfile);
+        evalfile = NULL;
+
+        /* Check $@. */
+        if (SvTRUE(ERRSV)) {
+            failure = true;
             syslog(L_ERROR,"SERVER perl loading %s failed: %s",
-		   startupfile, SvPV(ERRSV, PL_na)) ;
-            PerlFilter (false) ;
-    
+                   startupfile, SvPV(ERRSV, PL_na));
         } else {
-            PERLreadfilter (filterfile,function) ;
+            failure = false;
         }
 
-        FREETMPS ;
-        LEAVE ;
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+
+        if (failure) {
+            PerlFilter (false);
+        } else {
+            PERLreadfilter (filterfile, function);
+        }
     } else {
-        PERLreadfilter (filterfile,function) ;
+        PERLreadfilter (filterfile, function);
     }
 }
 
@@ -167,22 +183,37 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
    function there. */
 int PERLreadfilter(char *filterfile, const char *function)
 {
-    dSP ;
+    dSP;
     char *argv[] = { NULL };
     char *evalfile = NULL;
+    bool failure;
 
-    ENTER ;
-    SAVETMPS ;
-
-    if (perl_get_cv("filter_before_reload", false) != NULL)    {
+    if (perl_get_cv("filter_before_reload", false) != NULL) {
+        ENTER;
+        SAVETMPS;
+        /* No need for PUSHMARK(SP) with call_argv(). */
         perl_call_argv("filter_before_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
-        if (SvTRUE(ERRSV))     /* check $@ */ {
+        SPAGAIN;
+        /* Check $@. */
+        if (SvTRUE(ERRSV)) {
+            failure = true;
             syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
-                    SvPV(ERRSV, PL_na)) ;
-            (void)POPs ;
-            PerlFilter (false) ;
+                    SvPV(ERRSV, PL_na));
+            (void)POPs;
+        } else {
+            failure = false;
         }
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+        if (failure)
+            PerlFilter (false);
     }
+
+    ENTER;
+    SAVETMPS;
+    PUSHMARK(SP);
+    PUTBACK;
 
     /* The Perl expression which will be evaluated. */
     xasprintf(&evalfile, "do '%s'", filterfile);
@@ -191,34 +222,73 @@ int PERLreadfilter(char *filterfile, const char *function)
     perl_eval_pv(evalfile, TRUE);
     PerlUnSilence();
 
+    SPAGAIN;
+
     free(evalfile);
     evalfile = NULL;
 
-    if (SvTRUE(ERRSV))     /* check $@ */ {
+    /* Check $@. */
+    if (SvTRUE(ERRSV)) {
+        failure = true;
         syslog (L_ERROR,"SERVER perl loading %s failed: %s",
-                filterfile, SvPV(ERRSV, PL_na)) ;
-        PerlFilter (false) ;
-        
+                filterfile, SvPV(ERRSV, PL_na));
+    } else {
+        failure = false;
+    }
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+    if (failure) {
+        PerlFilter (false);
+
         /* If the reload failed we don't want the old definition hanging
            around. */
+
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        PUTBACK;
+
         xasprintf(&evalfile, "undef &%s", function);
         perl_eval_pv(evalfile, TRUE);
 
-        if (SvTRUE(ERRSV))     /* check $@ */ {
+        SPAGAIN;
+
+        free(evalfile);
+        evalfile = NULL;
+
+        /* Check $@. */
+        if (SvTRUE(ERRSV)) {
             syslog (L_ERROR,"SERVER perl undef &%s failed: %s",
                     function, SvPV(ERRSV, PL_na)) ;
         }
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
     } else if ((perl_filter_cv = perl_get_cv(function, false)) == NULL) {
-        PerlFilter (false) ;
+        PerlFilter (false);
     }
 
     if (perl_get_cv("filter_after_reload", false) != NULL) {
+        ENTER;
+        SAVETMPS;
+        /* No need for PUSHMARK(SP) with call_argv(). */
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
-        if (SvTRUE(ERRSV))     /* check $@ */ {
+        SPAGAIN;
+        /* Check $@. */
+        if (SvTRUE(ERRSV)) {
+            failure = true;
             syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
-                    SvPV(ERRSV, PL_na)) ;
-            (void)POPs ;
-            PerlFilter (false) ;
+                    SvPV(ERRSV, PL_na));
+            (void)POPs;
+        } else {
+            failure = false;
+        }
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+        if (failure) {
+            PerlFilter (false);
         }
     }
 
@@ -236,9 +306,6 @@ int PERLreadfilter(char *filterfile, const char *function)
                              " -- maybe a confusion with filter_innd.pl?");
         }
     }
-
-    FREETMPS ;
-    LEAVE ;
 
     return (perl_filter_cv != NULL) ;
 }
@@ -296,7 +363,7 @@ void PerlSilence(void)
     savestdout = 0;
     return;
   }
-    
+
   if (dup2(newfd,2) < 0) {
     syslog(L_ERROR,"SERVER perl silence cant redirect stderr: %m");
     savestderr = 0;
