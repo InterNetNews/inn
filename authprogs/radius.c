@@ -104,7 +104,6 @@ static int read_config(char *authfile, rad_config_t *radconf)
     rad_config_t *radconfig=NULL;
     CONFFILE *file;
     CONFTOKEN *token;
-    char *server;
     int type;
     char *iter;
 
@@ -118,7 +117,6 @@ static int read_config(char *authfile, rad_config_t *radconf)
           die("expected server keyword on line %d", file->lineno);
 	if ((token = CONFgettoken(0, file)) == NULL)
           die("expected server name on line %d", file->lineno);
-	server = xstrdup(token->name);
 	if ((token = CONFgettoken(radtoks, file)) == NULL 
 	    || token->type != RADlbrace)
           die("expected { on line %d", file->lineno);
@@ -211,14 +209,14 @@ static int read_config(char *authfile, rad_config_t *radconf)
 #define RAD_NAS_IP_ADDRESS      4       /* IP address */
 #define RAD_NAS_PORT            5       /* Integer */
 
-static void req_copyto (auth_req to, sending_t *from)
+static void req_copyto (auth_req *to, sending_t *from)
 {
-    to = from->req;
+    *to = from->req;
 }
 
-static void req_copyfrom (sending_t *to, auth_req from)
+static void req_copyfrom (sending_t *to, auth_req *from)
 {
-    to->req = from;
+    to->req = *from;
 }
 
 static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
@@ -267,7 +265,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	sreq->next = new;
 	sreq = sreq->next;
       }
-      req_copyto(req, sreq);
+      req_copyto(&req, sreq);
   
       /* first, build the sockaddrs */
       memset(&sinl, '\0', sizeof(sinl));
@@ -392,7 +390,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
       sreq->reqlen = req.length;
       req.length = htons(req.length);
 
-      req_copyfrom(sreq, req);
+      req_copyfrom(sreq, &req);
 
       /* Go to the next record in the list */
       config = config->next;
@@ -415,7 +413,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     for(done = 0; authtries > 0 && !done; authtries--) {
       for (config = radconfig, sreq = reqtop; sreq != NULL && !done;
 	   config = config->next, sreq = sreq->next){
-	req_copyto(req, sreq);
+	req_copyto(&req, sreq);
 
 	/* send out the packet and wait for reply. */
 	if (sendto(sock, (char *)&req, sreq->reqlen, 0, 
@@ -481,7 +479,7 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	close(sock);
 	return (req.code == PW_AUTHENTICATION_ACK) ? 0 : -1;
 	done = 1;
-	req_copyfrom(sreq, req);
+	req_copyfrom(sreq, &req);
 	break;
       }
     }
