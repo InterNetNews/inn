@@ -566,7 +566,7 @@ static void freeHostParams(HostParams params)
 
 static void hostReconfigure(Host h, HostParams params)
 {
-  unsigned int i, absMaxCxns ;
+  unsigned int i;
   double oldBacklogFilter ;
   
   if (strcmp(h->params->ipName, params->ipName) != 0)
@@ -585,7 +585,6 @@ static void hostReconfigure(Host h, HostParams params)
   
   oldBacklogFilter = h->params->dynBacklogFilter;
   i = h->params->absMaxConnections; /* keep old value */
-  absMaxCxns = params->absMaxConnections;
   /* Use this set of params and allocate, and free
    * up the old
    */
@@ -2854,8 +2853,6 @@ static HostParams getHostInfo (void)
   scope *s ;
   HostParams p=NULL;
 
-  bool isGood = false ;
-
   if (topScope == NULL)
     return p;
   
@@ -2868,8 +2865,6 @@ static HostParams getHostInfo (void)
 
       p=hostDetails(s,v->name,false,NULL);
 
-      isGood = true ;
-      
       break ;
     }
 

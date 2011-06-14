@@ -111,7 +111,6 @@ PYcontrol(char **av)
 char *
 PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
-    const ARTHEADER *hp;
     const HDRCONTENT *hc = data->HdrContent;
     int		hdrnum;
     int		i;
@@ -125,7 +124,6 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     hdrnum = 0;
     for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
-	    hp = &ARTheaders[i];
 	    PYheaditem[hdrnum] = PyBuffer_FromMemory(HDR(i), HDR_LEN(i));
 	} else
 	    PYheaditem[hdrnum] = Py_None;
@@ -477,7 +475,8 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
     char	*instring, *wpos, *p, *q;
     char	*workstring = NULL;
     Py_ssize_t  insize;
-    int         worksize, newsize, i, wasspace;
+    int         worksize, i;
+    bool        wasspace;
     int		lines = 0;
     HASH	myhash;
 
@@ -516,21 +515,21 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	 * do a copy because this is probably an original art
 	 * buffer. */
 	workstring =  memcpy(xmalloc(worksize), wpos, worksize);
-	newsize = wasspace = 0;
+        wasspace = false;
 	p = wpos;
 	q = workstring;
 	for (i=0 ; i<worksize ; i++) {
 	    if (isspace((unsigned char) *p)) {
-		if (!wasspace)
-		    *q++ = ' ';
-		wasspace = 1;
-	    }
-	    else {
-		*q++ = tolower(*p);
-		wasspace = 0;
-	    }
-	    p++;
-	}
+                if (!wasspace) {
+                    *q++ = ' ';
+                }
+                wasspace = true;
+	    } else {
+                *q++ = tolower(*p);
+                wasspace = false;
+            }
+            p++;
+        }
 	worksize = q - workstring;
 	myhash = Hash(workstring, worksize);
 	free(workstring);

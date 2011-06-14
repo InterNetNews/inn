@@ -135,14 +135,12 @@ server_ipv4(int n)
 int
 main(void)
 {
-    int n;
-
     if (access("ident.t", F_OK) < 0)
         if (access("authprogs/ident.t", F_OK) == 0)
             chdir("authprogs");
 
     test_init(4);
-    n = server_ipv4(1);
+    server_ipv4(1);
 
     return 0;
 }

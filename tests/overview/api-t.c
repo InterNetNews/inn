@@ -264,7 +264,7 @@ check_data(const char *group, ARTNUM artnum, const char *expected,
            struct overview_data *data)
 {
     bool status = true;
-    time_t expires;
+    time_t expires UNUSED; // See below why it is still unused.
     char *saw;
 
     if (artnum != data->number) {

@@ -768,7 +768,6 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     int			infocount;
     int                 groupcount;
     int                 maxgroup;
-    REMOTEHOST_DATA 	*dt;
     REMOTEHOST		*rp;
     char		*word;
     REMOTEHOST		*groups;
@@ -815,7 +814,8 @@ RCreadfile (REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 	syslog(L_FATAL, "%s cant read %s: %m", LogName, filename);
 	exit(1);
     }
-    dt = *data = xmalloc(sizeof(REMOTEHOST_DATA));
+
+    *data = xmalloc(sizeof(REMOTEHOST_DATA));
     rp = *list = xmalloc(sizeof(REMOTEHOST));
 
 #if	!defined(HAVE_UNIX_DOMAIN_SOCKETS)

@@ -41,14 +41,12 @@ start_process(struct client *client, const char *command, const char *dir)
     pid_t pid;
     char *path;
     struct vector *args;
-    bool allocated = false;
 
     /* Parse the command and find the path to the binary. */
     args = vector_split_space(command, NULL);
     path = args->strings[0];
     if (path[0] != '/') {
         path = concatpath(dir, path);
-        allocated = true;
     }
 
     /* Set up the pipes and run the program. */

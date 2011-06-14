@@ -228,12 +228,10 @@ EndPoint newEndPoint (int fd)
 
   if (fd > absHighestFd)
     {
-      static bool sizelogged = false ;
           
 #if defined (FD_SETSIZE)
       if ((unsigned int) fd >= FD_SETSIZE)
         {
-          sizelogged = true ;
           warn ("ME fd (%d) looks too big (%d -- FD_SETSIZE)", fd,
                 FD_SETSIZE) ;
           return NULL ;
@@ -241,7 +239,6 @@ EndPoint newEndPoint (int fd)
 #else
       if (fd > (sizeof (fd_set) * CHAR_BIT))
         {
-          sizelogged = true ;
           warn ("ME fd (%d) looks too big (%d -- sizeof (fd_set) * CHAR_BIT)",
                 fd, (sizeof (fd_set) * CHAR_BIT)) ;
           return NULL ;

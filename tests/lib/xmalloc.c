@@ -150,13 +150,12 @@ static int
 test_asprintf(size_t size)
 {
     char *copy, *string;
-    int status;
     size_t i;
 
     string = xmalloc(size);
     memset(string, 42, size - 1);
     string[size - 1] = '\0';
-    status = xasprintf(&copy, "%s", string);
+    xasprintf(&copy, "%s", string);
     free(string);
     for (i = 0; i < size - 1; i++)
         if (copy[i] != 42)
@@ -186,13 +185,12 @@ static int
 test_vasprintf(size_t size)
 {
     char *copy, *string;
-    int status;
     size_t i;
 
     string = xmalloc(size);
     memset(string, 42, size - 1);
     string[size - 1] = '\0';
-    status = xvasprintf_wrapper(&copy, "%s", string);
+    xvasprintf_wrapper(&copy, "%s", string);
     free(string);
     for (i = 0; i < size - 1; i++)
         if (copy[i] != 42)

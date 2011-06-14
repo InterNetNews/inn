@@ -335,12 +335,10 @@ ARTsendmmap(SENDTYPE what)
 {
     const char		*p, *q, *r;
     const char		*s, *path, *xref, *endofpath;
-    long		bytecount;
     char		lastchar;
 
     ARTcount++;
     GRParticles++;
-    bytecount = 0;
     lastchar = -1;
 
     /* Get the headers and detect if wire format. */

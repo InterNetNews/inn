@@ -98,7 +98,7 @@ static void
 STATUSsummary(void)
 {
   FILE			*F;
-  int			i, j;
+  int			i;
   CHANNEL               *cp;
   int			activeCxn = 0;
   int			sleepingCxns = 0;
@@ -144,7 +144,6 @@ STATUSsummary(void)
 
   tmp = head = NULL;
   for (i = 0; (cp = CHANiter(&i, CTnntp)) != NULL; ) {
-    j = 0;
     strlcpy(TempString,
 	    cp->Address.ss_family == 0 ? "localhost" : RChostname(cp),
             sizeof(TempString));

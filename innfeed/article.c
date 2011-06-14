@@ -815,9 +815,7 @@ static void appendBuffer (Buffer b, Buffer **buffs, int *newSpot, int *curLen)
      characters as needed */
 static bool prepareArticleForNNTP (Article article)
 {
-  static Buffer dotFirstBuffer ;
   static Buffer dotBuffer ;
-  static Buffer crlfBuffer ;
   Buffer *nntpBuffs = NULL ;
   int buffLen = 0 ;
   int buffIdx = 0 ;
@@ -841,8 +839,6 @@ static bool prepareArticleForNNTP (Article article)
   if (dotBuffer == NULL)
     {
       dotBuffer = newBufferByCharP (".\r\n",3,3) ;
-      dotFirstBuffer = newBufferByCharP ("\r\n.",3,3) ;
-      crlfBuffer = newBufferByCharP ("\r\n",2,2) ;
     }
 
   /* overlay a set of buffers on top of the articles contents buffer. This
