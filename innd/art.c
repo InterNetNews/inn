@@ -1554,18 +1554,17 @@ ARTxrefslave(ARTDATA *data)
 
 /*
 **  Return true if a list of strings has a specific one.  This is a
-**  generic routine, but is used for seeing if a host is in the Path line.
+**  generic routine, but is used for seeing if a host is in the Path: line.
 */
 static bool
 ListHas(const char **list, const char *p)
 {
-  const char	*q;
-  char		c;
-
-  for (c = *p; (q = *list) != NULL; list++)
-    if (strcasecmp(p, q) == 0)
-      return true;
-  return false;
+    size_t i;
+     
+    for (i = 0; list[i] != NULL; i++)
+        if (strcasecmp(p, list[i]) == 0)
+            return true;
+    return false;
 }
 
 /*
