@@ -5,12 +5,12 @@
 **  Written by James Brister <brister@vix.com>
 **
 **  The EndPoint objects are encapsulations of file descriptors that normally
-**  do blocking i/o (i.e. NOT fd's hooked to a disk file).  The EndPoint class
-**  provides methods for reqesting read/writes to happen when next possible
-**  and for the requestor to be notified when the i/o is complete (or failed
+**  do blocking I/O (i.e. NOT fd's hooked to a disk file).  The EndPoint class
+**  provides methods for requesting read/writes to happen when next possible
+**  and for the requestor to be notified when the I/O is complete (or failed
 **  for some reason).  Facilities for timeout notifications are provided too.
 **
-**  We should add a way to cancel prepared read/write.
+**  We should add a way to cancel prepared read/writes.
 */
 
 #if ! defined ( endpoint_h__ )
@@ -29,23 +29,23 @@
 
 
 
-/* These typedefs really lives in misc.h
+/* These typedefs really live in misc.h.
  *
  *****************************************
  *             
- * The basic (opqaue to the outside world) type.
+ * The basic (opaque to the outside world) type:
  *              
  *      typedef struct endpoint_s *EndPoint ;
  *
  *****************************************
  *
- * The returns status of an IO request
+ * The return status of an I/O request:
  *
  *      typedef enum {
- *          IoDone,                     i/o completed successfully 
- *          IoIncomplete,               i/o still got more to read/write
- *          IoProgress,                 i/o still got more to read/write
- *          IoFailed                    i/o failed
+ *          IoDone,                     I/O completed successfully 
+ *          IoIncomplete,               I/O still got more to read/write
+ *          IoProgress,                 I/O still got more to read/write
+ *          IoFailed                    I/O failed
  *      } IoStatus ;
  *
  * The completion callbacks are never called with the status IoIncomplete or
@@ -53,18 +53,18 @@
  *
  *****************************************
  *
- * typedef for function callback when IO is complete (or failed).
+ * typedef for function callback when I/O is complete (or failed).
  *      E is the EndPoint
  *      I is the status of the IO
- *      B is the buffer the IO was to read to or write from.
+ *      B is the buffer the IO was to read to or write from
  *      D is the client data originally given to prepare{Write,Read}
  *
  * typedef void (*EndpRWCB) (EndPoint e, IoStatus i, Buffer b, void *d) ;
  *
  *****************************************
  *
- * typedef for function callback when a timer has gone off. D is the client
- * data given to prepare{Sleep,Wake}
+ * typedef for function callback when a timer has gone off.  D is the client
+ * data given to prepare{Sleep,Wake}:
  *
  * typedef void (*EndpTCB) (void *d) ;
  *
@@ -74,14 +74,14 @@
 EndPoint newEndPoint (int fd) ;
 
 /* shutdown the file descriptor and delete the endpoint. */
-void delEndPoint (EndPoint endp) ;
+void delEndPoint (EndPoint ep);
 
 /* return the file descriptor the endpoint is managing */
 int endPointFd (EndPoint endp) ;
 
 /* Request a read when available. Reads MINLEN bytes into the
- * buffers in BUFFS. BUFFS is an array of Buffers, the last of which
- * must be NULL. Note that ownership of BUFFS is never asserted, but
+ * buffers in BUFFERS. BUFFERS is an array of Buffers, the last of which
+ * must be NULL. Note that ownership of BUFFERS is never asserted, but
  * the ownership of the Buffers in it is. So if an EndPoint is
  * deleted while a read is pending the Buffers will be released, but
  * the array won't be. If MINLEN is 0 then the buffers must be
@@ -90,15 +90,15 @@ int endPointFd (EndPoint endp) ;
  * callback. Returns non-zero if can be scheduled for processing.
  */
 int prepareRead (EndPoint endp,
-                 Buffer *buffs,
+                 Buffer *buffers,
                  EndpRWCB func,
                  void *clientData,
                  int minlen) ;
 
 /* Request a write when possible. All the data in the buffers in
- * BUFFS will be written out the endpoint. BUFFS is a NULL
- * terminated array of Buffers. See prepareWrite for a discussion on
- * the ownership of BUFFS and the Buffers inside BUFFS. The PROGRESS
+ * BUFFERS will be written out the endpoint. BUFFERS is a NULL
+ * terminated array of Buffers. See prepareRead for a discussion on
+ * the ownership of BUFFERS and the Buffers inside BUFFERS. The PROGRESS
  * callback function will be called and the CLIENTDATA value will be
  * passed through to it whenever any data is written except for the
  * final write.  The DONE callback function will be called and the
@@ -106,7 +106,7 @@ int prepareRead (EndPoint endp,
  * Returns non-zero if scheduled succesfully.
  */
 int prepareWrite (EndPoint endp,
-                  Buffer *buffs,
+                  Buffer *buffers,
                   EndpRWCB progress,
                   EndpRWCB done,
                   void *clientData) ;
@@ -144,9 +144,9 @@ TimeoutId updateSleep (TimeoutId tid,
      been serviced. */
 void *addWorkCallback (EndPoint endp, EndpWorkCbk cbk, void *data) ;
 
-void setSigHandler (int sig, void (*)(int)) ;
+void setSigHandler (int signum, void (*ptr)(int));
 
-/* remove the timeout that was previously requested. Retuesn true if
+/* remove the timeout that was previously requested. Returns true if
    succesfully removed, false otherwise. 0 is a legal parameter value, in
    which case the function simply returns. */
 bool removeTimeout (TimeoutId tid) ;
