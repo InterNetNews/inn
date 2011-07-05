@@ -38,6 +38,8 @@
 # -- skip minor pgp signature headers like "charset:" after "version:"
 #    header and until the empty line that starts the base64 signature block.
 
+use strict;
+
 # CONFIGURATION
 
 # PGP variables.
@@ -59,11 +61,11 @@
 # work to lock against other instances of signcontrol, not all pgp uses.
 # $pgplock is not used if $pgp ends in 'gpg' since GnuPG doesn't need
 # this.
-$pgpsigner = 'INSERT_YOUR_PGP_USERID';
-$pgppassfile = '';      # file with pass phrase for $pgpsigner
-$pgp = "/usr/local/bin/pgp";
-$pgpheader = "X-PGP-Sig";
-$pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
+my $pgpsigner = 'INSERT_YOUR_PGP_USERID';
+my $pgppassfile = '';      # file with pass phrase for $pgpsigner
+my $pgp = "/usr/local/bin/pgp";
+my $pgpheader = "X-PGP-Sig";
+my $pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
 
 # this program is strict about always wanting to be consistent about what
 # headers appear in the control messages.  the defaults for the
@@ -74,6 +76,7 @@ $pgplock = (getpwuid($<))[7] . '/.pgp/config.txt';
 # Subject: is forced to be the Control header prepending by "cmsg".  also,
 # Newsgroups: is forced to be just the group being added/removed.
 #             (but is taken as-is for checkgroups)
+my %force;
 $force{'Path'} = 'bounce-back';
 $force{'From'} = 'YOUR_ADDRESS_AND_NAME';
 $force{'Approved'} = 'ADDRESS_FOR_Approved_HEADER';
@@ -85,7 +88,7 @@ $force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
 # created with the given value.  None are enabled by default, because they
 # should not be necessary.  Setting one to a null string will pass through
 # any instance of it found in the input, but not generate one if it is
-# missing.  If you set any $default{} variables, you must also put it in
+# missing.  If you set any $use_or_add{} variables, you must also put it in
 # @orderheaders below.
 #
 # Note that Distribution nearly never works correctly, so use it only if
@@ -93,13 +96,14 @@ $force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
 # you intend.  This normally means that you control all servers the
 # distribution will go to with an iron fist.
 #
+my %use_or_add;
 # $use_or_add{'Reply-To'} = 'YOUR_REPLY_ADDRESS';
 # $use_or_add{'Oranization'} = 'YOUR_ORGANIZATION';
 # $use_or_add{'Distribution'} = 'MESSAGE_DISTRIBUTION';
 
 # host for message-id; this could be determined automatically based on
 # where it is run, but consistency is the goal here
-$id_host = 'FULL_HOST_NAME';
+my $id_host = 'FULL_HOST_NAME';
 
 # headers to sign.  Sender is included because non-PGP authentication uses
 # it.  The following should always be signed:
@@ -109,12 +113,12 @@ $id_host = 'FULL_HOST_NAME';
 #  Date       -- guards against replay attacks.
 #  From       -- used by news systems as part of authenticating the message.
 #  Sender     -- used by news systems as part of authenticating the message.
-@signheaders = ('Subject', 'Control', 'Message-ID', 'Date', 'From', 'Sender');
+my @signheaders = ('Subject', 'Control', 'Message-ID', 'Date', 'From', 'Sender');
 
 # headers to remove from real headers of final message.
 # If it is a signed header, it is signed with an empty value.
 # set to () if you do not want any headers removed.
-@ignoreheaders = ('Sender');
+my @ignoreheaders = ('Sender');
 
 # headers that will appear in final message, and their order of
 # appearance.  all _must_ be set, either in input or via the $force{} and
@@ -130,7 +134,7 @@ $id_host = 'FULL_HOST_NAME';
 # any non-null header in the input but not in @orderheaders or @ignoreheaders
 #   is an error.
 # null headers are silently dropped.
-@orderheaders =
+my @orderheaders =
   ('Path', 'From', 'Newsgroups', 'Subject', 'Control', 'Approved',
    'Message-ID', 'Date', 'Lines', 'X-Info', $pgpheader);
 
@@ -141,7 +145,7 @@ $id_host = 'FULL_HOST_NAME';
 # set to match only hierarchies you will use it on
 # include no '|' for a single hierarchy (eg, "$hierarchies = 'uk';").
 
-$hierarchies = 'HIERARCHIES';
+my $hierarchies = 'HIERARCHIES';
 
 # the draft news article format standard says:
 #   "subsequent components SHOULD begin with a letter"
@@ -157,11 +161,11 @@ $hierarchies = 'HIERARCHIES';
 # newsgroups that have name components that begin with a letter, like
 # news.announce.newgroups does with comp.sys.3b1 and 17 other groups.
 
-$start_component_with_letter = 'MUST';
+my $start_component_with_letter = 'MUST';
 
 ## END CONFIGURATION
 
-use Fcntl qw(F_SETFD);
+use Fcntl qw(F_SETFD LOCK_EX);
 use FileHandle;
 use IPC::Open3 qw(open3);
 use POSIX qw(setlocale strftime LC_TIME);
@@ -171,18 +175,23 @@ $0 =~ s#^.*/##;
 
 die "Usage: $0 < message\n" if @ARGV > 0;
 
+my $LOCK;
 umask(0022);                    # flock needs a writable file, if we create it
 if ($pgp !~ /gpg$/) {
-  open(LOCK, ">>$pgplock") || die "$0: open $pgplock: $!, exiting\n";
-  flock(LOCK, 2);               # block until locked
+  open ($LOCK, '>>', $pgplock) || die "$0: open $pgplock: $!, exiting\n";
+  flock ($LOCK, LOCK_EX);         # block until locked
 }
 
-&setgrouppat;
+my ($die, $group, $action, $grouppat, %header, $moderated, $body, @ERROR);
 
+# Initialize the $die variable here (we use it to concatenate possible
+# error messages during the run of the following functions).
 $die = '';
 
-&readhead;
-&readbody;
+setgrouppat();
+
+readhead();
+readbody();
 
 if ($die) {
   if ($group) {
@@ -196,20 +205,18 @@ if ($die) {
   }
 }
 
-&signit;
+signit();
 
 if ($pgp !~ /gpg$/) {
-  close(LOCK) || warn "$0: close $pgplock: $!\n";
+  close ($LOCK) || warn "$0: close $pgplock: $!\n";
 }
 exit 0;
 
-sub
-setgrouppat
 
-{
-  my ($hierarchy, $plain_component, $no_component);
+
+sub setgrouppat {
+  my ($plain_component, $no_component);
   my ($must_start_letter, $should_start_letter);
-  my ($eval);
 
   # newsgroup name checks based on RFC 1036bis (not including encodings) rules:
   #  "component MUST contain at least one letter"
@@ -238,29 +245,25 @@ setgrouppat
     die "$0: unknown value configured for \$start_component_with_letter\n";
   }
 
-  foreach $hierarchy (split(/\|/, $hierarchies)) {
+  foreach my $hierarchy (split /\|/, $hierarchies) {
     die "$0: hierarchy name $hierarchy not standards-compliant\n"
       if $hierarchy !~ /^$plain_component$/o;
   }
 
-  $eval = "\$_ = 'test'; /$grouppat/;";
-  eval $eval;
+  eval { 'test' =~ /$grouppat/ };
   die "$0: bad regexp for matching group names:\n $@" if $@;
+  return;
 }
 
-sub
-readhead
+sub readhead {
+  my ($head, $label, $value);
 
-{
-  my($head, $label, $value);
-  local($_, $/);
-
-  $/ = "";
+  local $/ = "";
   $head = <STDIN>;              # get the whole news header
   $die .= "$0: continuation lines in headers not allowed\n"
     if $head =~ s/\n[ \t]+/ /g; # rejoin continued lines
 
-  for (split(/\n/, $head)) {
+  foreach (split /\n/, $head) {
     if (/^(\S+): (.*)/) {
       $label = $1;
       $value = $2;
@@ -317,17 +320,14 @@ readhead
   } else {
     $die .= "$0: can't verify message content; missing Control header\n";
   }
+  return;
 }
 
-sub
-readbody
+sub readbody {
+  my ($status, $ngline, $fixline, $used, $desc, $mods);
 
-{
-  local($_, $/);
-  local($status, $ngline, $fixline, $used, $desc, $mods);
-
-  undef $/;
-  $body = $_ = <STDIN>;
+  local $/ = undef;
+  $body = <STDIN>;      # slurp the rest of the article
   $header{'Lines'} = $body =~ tr/\n/\n/ if $body;
 
   # the following tests are based on the structure of a
@@ -337,11 +337,11 @@ readbody
   if ($action eq 'new') {
     $status = $moderated ? 'a\smoderated' : 'an\sunmoderated';
     $die .= "$0: nonstandard first line in body for $group\n"
-      if ! /^\Q$group\E\sis\s$status\snewsgroup\b/;
+      if $body !~ /^\Q$group\E\sis\s$status\snewsgroup\b/;
 
     my $intro = "For your newsgroups file:\n";
     $ngline =
-      (/^$intro\Q$group\E[ \t]+(.+)\n(\n|\Z(?!\n))/mi)[0];
+      ($body =~ /^$intro\Q$group\E[ \t]+(.+)\n(\n|\Z(?!\n))/mi)[0];
     if ($ngline) {
       $_ = $group;
       $desc = $1;
@@ -373,7 +373,7 @@ readbody
 
   # checkgroups have structured bodies
   if ($action eq 'check') {
-    for (split(/\n/, $body)) {
+    for (split /\n/, $body) {
       my ($group, $description) = /^(\S+)\t+(.+)/;
       $die .= "$0: no group:\n  $_\n"           unless $group;
       $die .= "$0: no description:\n  $_\n"     unless $description;
@@ -383,6 +383,7 @@ readbody
       $die .= "$0: $group line too long\n"      if length(expand($_)) > 80;
     }
   }
+  return;
 }
 
 # Create a detached signature for the given data.  The first argument
@@ -497,22 +498,19 @@ sub pgp_sign {
   }
   shift @signature;
   pop @signature;
-  $signature = join ('', @signature);
+  $signature = join '', @signature;
   chomp $signature;
   undef @ERROR;
   return wantarray ? ($signature, $version) : $signature;
 }
 
-sub
-signit
-
-{
-  my($head, $header, $signheaders, $pgpflags, $pgpbegin, $pgpend);
+sub signit {
+  my ($head, $signheaders);
 
   # Form the message to be signed.
-  $signheaders = join(",", @signheaders);
+  $signheaders = join ",", @signheaders;
   $head = "X-Signed-Headers: $signheaders\n";
-  foreach $header (@signheaders) {
+  foreach my $header (@signheaders) {
     $head .= "$header: $header{$header}\n";
   }
   my $message = "$head\n$body";
@@ -521,15 +519,15 @@ signit
   my $passphrase;
   if ($pgppassfile && -f $pgppassfile) {
     $pgppassfile =~ s%^(\s)%./$1%;
-    if (open (PGPPASS, "< $pgppassfile\0")) {
-      $passphrase = <PGPPASS>;
-      close PGPPASS;
+    if (open my $PGPPASS, '<', $pgppassfile) {
+      $passphrase = <$PGPPASS>;
+      close $PGPPASS;
       chomp $passphrase;
     }
   }
 
   # Sign the message, getting the signature and PGP version number.
-  my ($signature, $version) = pgp_sign ($pgpsigner, $passphrase, $message);
+  my ($signature, $version) = pgp_sign($pgpsigner, $passphrase, $message);
   unless ($signature) {
     die "@ERROR\n$0: could not generate signature\n";
   }
@@ -547,18 +545,19 @@ signit
   }
 
   $head = '';
-  foreach $header (@orderheaders) {
+  foreach my $header (@orderheaders) {
     $head .= "$header: $header{$header}\n" if $header{$header};
     delete $header{$header};
   }
 
-  foreach $header (keys %header) {
+  foreach my $header (keys %header) {
     die "$0: unexpected header $header left in header array\n";
   }
 
   print STDOUT $head;
   print STDOUT "\n";
   print STDOUT $body;
+  return;
 }
 
 # Our lawyer told me to include the following.  The upshot of it is that
