@@ -67,6 +67,17 @@ line_init(struct line *line)
 }
 
 /*
+**  Reset a line structure.
+*/
+void
+line_reset(struct line *line)
+{
+    assert(line);
+    line->where = line->start;
+    line->remaining = 0;
+}
+
+/*
 **  Timeout is used only if HAVE_SSL is defined.
 */
 static ssize_t

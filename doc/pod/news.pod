@@ -147,6 +147,14 @@ still the last occurrence for the Perl filter for B<nnrpd>.)
 
 =item *
 
+Fixed a possible plaintext command injection during the negotiation of a
+TLS layer.  The vulnerability detailed in CVE-2011-0411 affects the STARTTLS
+and AUTHINFO SASL commands.  B<nnrpd> now resets its read buffer upon a
+successful negotiation of a TLS layer.  It prevents malicious commands, sent
+unencrypted, from being executed in the new encrypted state of the session.
+
+=item *
+
 B<cnfsheadconf> now properly recognizes continuation lines in
 F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
 Thanks to John S<F. Morse> for the bug report.

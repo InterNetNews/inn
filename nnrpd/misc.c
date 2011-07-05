@@ -518,5 +518,8 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         GRPcount = 0;
         PERMgroupmadeinvalid = false;
     }
+
+    /* Reset our read buffer so as to prevent plaintext command injection. */
+    line_reset(&NNTPline);
 }
 #endif /* HAVE_SSL */
