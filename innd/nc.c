@@ -151,7 +151,7 @@ NCwritereply(CHANNEL *cp, const char *text)
     int i;
 
     /* XXX could do RCHANremove(cp) here, as the old NCwritetext() used to
-     * do, but that would be wrong if the channel is sreaming (because it
+     * do, but that would be wrong if the channel is streaming (because it
      * would zap the channel's input buffer).  There's no harm in
      * never calling RCHANremove here.  */
 
