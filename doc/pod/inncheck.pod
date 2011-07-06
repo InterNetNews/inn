@@ -4,7 +4,7 @@ inncheck - Check INN configuration and database files
 
 =head1 SYNOPSIS
 
-B<inncheck> [B<-afv>] [B<-noperm> | B<-perm>] [B<-pedantic>]
+B<inncheck> [B<-afqv>] [B<-noperm> | B<-perm>] [B<-pedantic>]
 [I<file> | I<file>B<=>I<path> ...]
 
 =head1 DESCRIPTION
@@ -77,9 +77,15 @@ flag is used, then I<only> the files specified by the I<file> or
 I<file>B<=>I<path> command line arguments will be checked for problems
 other than permission problems.
 
+=item B<-q>
+
+Use the B<-q> option to get less output.  When this quiet mode is used,
+the B<-v> flag cannot also be specified.
+
 =item B<-v>
 
-Use the B<-v> option to get more verbose output.
+Use the B<-v> option to get more verbose output.  When this mode is used,
+the B<-q> flag cannot also be specified.
 
 =back
 
@@ -89,6 +95,11 @@ To have B<inncheck> check all files for syntax and permission problems
 simply run:
 
     inncheck
+
+It is recommended to run the following command to be aware of all the
+potential problems B<inncheck> can detect:
+
+    inncheck -a -perm -pedantic
 
 To have B<inncheck> check all files for permission problems and to verify
 the syntax of the F<active> and F<incoming.conf> files, do:

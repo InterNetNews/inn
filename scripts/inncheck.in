@@ -84,6 +84,9 @@ my %modes = (
 ##  The file and line we're currently at.
 my ($file, $line, $IN);
 
+##  Error counter / exit value.
+my $exitval = 0;
+
 ##  Command line arguments.
 my ($all, $verbose, $pedantic, $fix, $perms, $noperms, $pfx, @todo);
 
@@ -91,6 +94,15 @@ my $program = $0;
 $program =~ s@.*/@@;
 local $| = 1;
 
+
+sub
+eprint
+{
+    my ($msg) = @_;
+    print $msg if $verbose >= 0;
+    $exitval++;
+    return;
+}
 
 sub
 spacious
@@ -102,10 +114,10 @@ spacious
     if ( /^#/ || /^$/ ) {
 	$i = 1;
     } elsif ( /^\s/ ) {
-	print "$file:$line: starts with whitespace\n";
+	eprint "$file:$line: starts with whitespace\n";
 	$i = 1;
     } elsif ( /\s$/ ) {
-	print "$file:$line: ends with whitespace\n";
+	eprint "$file:$line: ends with whitespace\n";
 	$i = 1;
     }
     return $i;
@@ -133,7 +145,7 @@ get_config_word
                     if (!@res);
 
                 if (!@res) {
-                    print "$file:$line: malformed line (runaway quote / empty pair of quotes?)\n";
+                    eprint "$file:$line: malformed line (runaway quote / empty pair of quotes?)\n";
                     last;
                 }
 
@@ -191,7 +203,7 @@ parse_config
             # $word starts a new group definition:  "peer news.example.com {"
             my ($name, $curly);
 
-            print "$file:$line: cannot nest $word in $group->{'type'}!\n"
+            eprint "$file:$line: cannot nest $word in $group->{'type'}!\n"
                 unless ($group->{'type'} eq 'group'
                     ||  $group->{'type'} eq '<global scope>');
             push @groups, $group;
@@ -199,27 +211,27 @@ parse_config
 
             $name = get_config_word();
             if ($name =~ /^\{/) {
-                print "$file:$line: $word must have a name\n";
+                eprint "$file:$line: $word must have a name\n";
                 $curly = $name;
                 $name = '<missing name>';
             } elsif ($name =~ /[\\:;{}\[\]<>\s"]/) { # invalid token chars
-                print "$file:$line: not a valid $word name: $name\n";
+                eprint "$file:$line: not a valid $word name: $name\n";
             }
             $group->{'name'} = $name;
 
             $curly = $curly || get_config_word();
             if ($curly =~ s/^\{//) {
                 next if length $curly == 0;
-                print "$file:$line: whitespace required between option and curly brackets\n";
+                eprint "$file:$line: whitespace required between option and curly brackets\n";
             } else {
-                print "$file:$line: $word definition must start with a curly bracket\n";
+                eprint "$file:$line: $word definition must start with a curly bracket\n";
             }
             $word = $curly;
         }
 
         if ($word eq '}') {
             if (scalar @groups == 0) {
-                print "$file:$line: extra closing brace";
+                eprint "$file:$line: extra closing brace";
             } else {
                 $return{$group->{'name'}} = $group;
                 $group = pop @groups;
@@ -228,9 +240,9 @@ parse_config
         }
 
         # $word must be an option key by now
-        print "$file:$line: option $word must be immediately followed by a colon\n"
+        eprint "$file:$line: option $word must be immediately followed by a colon\n"
             unless $word =~ s/:$//;
-        print "$file:$line: duplicate option $word in $group->{'type'} $group->{'name'}\n"
+        eprint "$file:$line: duplicate option $word in $group->{'type'} $group->{'name'}\n"
             if exists $group->{$word} and not defined $options->{'<multi>'}->{$word};
 
         my $type = defined $options->{$group->{'type'}}->{$word} ? $options->{$group->{'type'}}->{$word}
@@ -239,14 +251,14 @@ parse_config
         if ($type) {
             my $value = get_config_word();
             $group->{$word} = $value;
-            print "$file:$line: not a valid $type: '$value'\n"
+            eprint "$file:$line: not a valid $type: '$value'\n"
                 unless $value =~ /$type_regex{$type}/;
         } else {
-            print "$file:$line: not a valid option name: $word\n";
+            eprint "$file:$line: not a valid option name: $word\n";
         }
     }
     while (scalar @groups > 0) {
-        print "$file: missing closing bracket, opening bracket was on line " .
+        eprint "$file: missing closing bracket, opening bracket was on line " .
             "$group->{'line'}, $group->{'type'} $group->{'name'}\n";
         $return{$group->{'name'}} = $group;
         $group = pop @groups;
@@ -275,29 +287,29 @@ active
     input: while ( <$IN> ) {
 	$line++;
 	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
 
-	print "$file:$line: group `$group' already appeared\n"
+	eprint "$file:$line: group `$group' already appeared\n"
 	    if $groups{$group}++;
-	print "$file:$line: `$hi' <  '$lo'.\n"
+	eprint "$file:$line: `$hi' <  '$lo'.\n"
 	    if $hi < $lo && $lo != $hi + 1;
 
 	next input if $f =~ /^[jmynx]$/;
 	unless ( ($alias) = $f =~ /^=(.*)$/ ) {
-	    print "$file:$line: bad flag `$f'.\n";
+	    eprint "$file:$line: bad flag `$f'.\n";
 	    next input;
 	}
 	if ($alias eq "") {
-	    print "$file:$line: empty alias.\n";
+	    eprint "$file:$line: empty alias.\n";
 	    next input;
 	}
 	$aliases{$alias} = $line
 	    unless defined $groups{$alias};
     }
     foreach my $key ( keys %aliases ) {
-	print "$file:$aliases{$key} aliased to unknown group `$key'.\n"
+	eprint "$file:$aliases{$key} aliased to unknown group `$key'.\n"
 	    unless defined $groups{$key};
     }
     return;
@@ -341,38 +353,38 @@ control_ctl
         if (/^\/localencoding\//) {
             unless ( ($msg, $act) =
                         /^(\/localencoding\/):([^:=]+)$/ ) {
-                print "$file:$line: malformed line.\n";
+                eprint "$file:$line: malformed line.\n";
             }
             next input;
         }
 
 	unless ( ($msg, $from, $ng, $act) =
 		    /^([^:]+):([^:]+):([^:]+):(.+)$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
 	if ( !defined $control_messages{$msg} ) {
-	    print "$file:$line: unknown control message `$msg'.\n";
+	    eprint "$file:$line: unknown control message `$msg'.\n";
 	    next input;
 	}
-	print "$file:$line: action for unknown control messages is `doit'.\n"
+	eprint "$file:$line: action for unknown control messages is `doit'.\n"
 	    if $msg eq "default" && $act eq "doit";
-	print "$file:$line: empty from field.\n"
+	eprint "$file:$line: empty from field.\n"
 	    if $from eq "";
-	print "$file:$line: bad e-mail address.\n"
+	eprint "$file:$line: bad e-mail address.\n"
 	    if $from ne "*" && $from !~ /[@!]/;
 
 	##  Perhaps check for conflicting rules, or warn about the last-match
 	##  rule?  Maybe later...
-	print "$file:$line: may not match groups properly.\n"
+	eprint "$file:$line: may not match groups properly.\n"
 	    if $ng ne "*" && $ng !~ /\./;
 	if ( $act !~ /([^=]+)(=.+)?/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
 	$act =~ s/=.*//;
 	$act = "verify" if ($act =~ /^verify-.+/) ;
-	print "$file:$line: unknown action `$act'\n"
+	eprint "$file:$line: unknown action `$act'\n"
 	    if !defined $control_actions{$act} and $msg !~ /^\//;
     }
     return;
@@ -393,13 +405,13 @@ expire_ctl
 	next input if &spacious($file, ++$line);
 
 	if ( ($v) = m@/remember/:(.+)@ ) {
-	    print "$file:$line: more than one /remember/ line.\n"
+	    eprint "$file:$line: more than one /remember/ line.\n"
 		if $rem++;
 	    if ( $v !~ /[\d\.]+/ ) {
-		print "$file:$line: illegal value `$v' for remember.\n";
+		eprint "$file:$line: illegal value `$v' for remember.\n";
 		next input;
 	    }
-	    print "$file:$line: are you sure about your /remember/ value?\n"
+	    eprint "$file:$line: are you sure about your /remember/ value?\n"
 		##  These are arbitrary "sane" values.
 		if $v != 0 && ($v > 60.0 || $v < 5.0);
 	    next input;
@@ -410,25 +422,25 @@ expire_ctl
 	    $groupbaseexpiry =~ /^on$/) {
 	    unless ( ($pat, $flag, $keep, $default, $purge) =
 	     /^([^:])+:([^:]+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-		print "$file:$line: malformed line.\n";
+		eprint "$file:$line: malformed line.\n";
 		next input;
 	    }
-	    print "$file:$line: duplicate default line\n"
+	    eprint "$file:$line: duplicate default line\n"
 		if $pat eq "*" && $flag eq "a" && $def++;
-	    print "$file:$line: unknown modflag `$flag'\n"
+	    eprint "$file:$line: unknown modflag `$flag'\n"
 		if $flag !~ /[mMuUaAxX]/;
 	} else {
 	    unless ( ($class, $keep, $default, $purge) =
 	     /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-		print "$file:$line: malformed line.\n";
+		eprint "$file:$line: malformed line.\n";
 		next input;
 	    }
-	    print "$file:$line: invalid class\n"
+	    eprint "$file:$line: invalid class\n"
 		if $class < 0;
 	}
-	print "$file:$line: purge `$purge' younger than default `$default'.\n"
+	eprint "$file:$line: purge `$purge' younger than default `$default'.\n"
 	    if $purge ne "never" && $default > $purge;
-	print "$file:$line: default `$default' younger than keep `$keep'.\n"
+	eprint "$file:$line: default `$default' younger than keep `$keep'.\n"
 	    if $default ne "never" && $keep ne "never" && $keep > $default;
     }
     return;
@@ -594,16 +606,16 @@ innfeed_conf
     # check presence of required keys in global scope
     foreach (keys %required_globals) {
         next if /bindaddress|bindaddress6|username|password|deliver/; # not required
-        print "$file: required key $_ not defined in global scope.\n"
+        eprint "$file: required key $_ not defined in global scope.\n"
             unless defined $groups{'<global scope>'}->{$_};
     }
     # check some numeric values
     foreach my $group (keys %groups) {
-        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-method must be between 0 and 3\n"
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-method must be between 0 and 3\n"
             if (defined $groups{$group}->{'dynamic-method'} && $groups{$group}->{'dynamic-method'} > 3);
-        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-backlog-filter must be between 0.0 and 1.0\n"
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-backlog-filter must be between 0.0 and 1.0\n"
             if (defined $groups{$group}->{'dynamic-backlog-filter'} && $groups{$group}->{'dynamic-backlog-filter'} > 1.0);
-        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: backlog-factor must be larger than 1.0\n"
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: backlog-factor must be larger than 1.0\n"
             if (defined $groups{$group}->{'backlog-factor'} && $groups{$group}->{'backlog-factor'} <= 1.0);
     }
     return;
@@ -622,19 +634,19 @@ moderators
 	next input if &spacious($file, ++$line);
 
 	unless ( ($k, $v) = /^([^:]+):(.+)$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
 
 	if ( $k eq "" || $v eq "" ) {
-	    print "$file:$line: missing field\n";
+	    eprint "$file:$line: missing field\n";
 	    next input;
 	}
-	print "$file:$line: not an e-mail address\n"
+	eprint "$file:$line: not an e-mail address\n"
 	    if $pedantic && $v !~ /[@!]/;
-	print "$file:$line: `$v' goes to local address\n"
+	eprint "$file:$line: `$v' goes to local address\n"
 	    if $pedantic && $v eq "%s";
-	print "$file:$line: more than one %s in address field\n"
+	eprint "$file:$line: more than one %s in address field\n"
 	    if $v =~ /%s.*%s/;
     }
     return;
@@ -676,7 +688,7 @@ newsfeeds
 	$line++;
 	next input if /^$/;
 	chop;
-	print "$file:$line: starts with whitespace\n"
+	eprint "$file:$line: starts with whitespace\n"
 	    if /^\s+/;
 
 	##  Read continuation lines.
@@ -689,7 +701,7 @@ newsfeeds
 	    $_ .= $next;
 	}
 	next input if /^#/;
-	print "$file:$line: ends with whitespace\n"
+	eprint "$file:$line: ends with whitespace\n"
 	    if /\s+$/;
 
         ##  Substitute variables.
@@ -699,7 +711,7 @@ newsfeeds
 
         ##  Catch a variable setting.
         if ( /^\$([A-Za-z0-9]+)=(.*)$/ ) {
-            print "$file:$line: variable name too long\n"
+            eprint "$file:$line: variable name too long\n"
                 if length ($1) > 31;
             $variables{$1} = $2;
             next input;
@@ -707,26 +719,26 @@ newsfeeds
 
 	unless ( ($site, $pats, $flags, $param) =
 		    /^([^:]+):([^:]*):([^:]*):(.*)$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
 
-	print "$file:$line: Newsfeed `$site' has whitespace in its name\n"
+	eprint "$file:$line: Newsfeed `$site' has whitespace in its name\n"
 	    if $site =~ /\s/;
-	print "$file:$line: comma-space in site name\n"
+	eprint "$file:$line: comma-space in site name\n"
 	    if $site =~ m@, @;
-	print "$file:$line: comma-space in subscription list\n"
+	eprint "$file:$line: comma-space in subscription list\n"
 	    if $pats =~ m@, @;
-	print "$file:$line: comma-space in flags\n"
+	eprint "$file:$line: comma-space in flags\n"
 	    if $flags =~ m@, @;
 
-	print "$file:$start: ME has exclusions\n"
+	eprint "$file:$start: ME has exclusions\n"
 	    if $site =~ m@^ME/@;
-	print "$file:$start: multiple slashes in exclusions for `$site'\n"
+	eprint "$file:$start: multiple slashes in exclusions for `$site'\n"
 	    if $site =~ m@/.*/@;
 	$site =~ s@([^/]*)/.*@$1@;
 	print "$site, "
-	    if $verbose;
+	    if $verbose > 0;
 
 	if ( $site eq "ME" ) {
 	    $defsub = $pats;
@@ -734,13 +746,13 @@ newsfeeds
 	} elsif  ( $defsub ne "" ) {
 	    $pats = "$defsub,$pats";
 	}
-	print "$file:$start: Multiple slashes in distribution for `$site'\n"
+	eprint "$file:$start: Multiple slashes in distribution for `$site'\n"
 	    if $pats =~ m@/.*/@;
 
 	if ( $site eq "ME" ) {
-	    print "$file:$start: ME flags should be empty\n"
+	    eprint "$file:$start: ME flags should be empty\n"
 		if $flags ne "";
-	    print "$file:$start: ME param should be empty\n"
+	    eprint "$file:$start: ME param should be empty\n"
 		if $param ne "";
 	    $me_empty = 1
 		if $pats !~ "/.+";
@@ -764,21 +776,21 @@ newsfeeds
 		else {
 		    $nobang++;
 		}
-		print "$file:$start: questionable distribution `$d'\n"
+		eprint "$file:$start: questionable distribution `$d'\n"
 		    if $d !~ /^!?[a-z0-9-]+$/;
 	    }
-	    print "$file:$start: both ! and non-! distributions\n"
+	    eprint "$file:$start: both ! and non-! distributions\n"
 		if $bang && $nobang;
 	}
 	$type = "f";
 	flag: foreach my $flag ( split(/,/, $flags) ) {
 	    ($k, $v) = $flag =~ /(.)(.*)/;
 	    if ( !defined $newsfeeds_flags{$k} ) {
-		print "$file:$start: unknown flag `$flag'\n";
+		eprint "$file:$start: unknown flag `$flag'\n";
 		next flag;
 	    }
 	    if ( $v !~ /$newsfeeds_flags{$k}/ ) {
-		print "$file:$start: bad value `$v' for flag `$k'\n";
+		eprint "$file:$start: bad value `$v' for flag `$k'\n";
 		next flag;
 	    }
 	    $type = $v
@@ -789,15 +801,15 @@ newsfeeds
 	if ( !defined $sites{$site} ) {
 	    $sites{$site} = $type;
 	} elsif ( $sites{$site} ne $type ) {
-	    print "$file:$start: feed $site multiple conflicting feeds\n";
+	    eprint "$file:$start: feed $site multiple conflicting feeds\n";
 	}
 
 	if ( $type =~ /[cpx]/ ) {
 	    $prog = $param;
 	    $prog =~ s/\s.*//;
-	    print "$file:$start: relative path for $site\n"
+	    eprint "$file:$start: relative path for $site\n"
 		if $prog !~ m@^/@;
-	    print "$file:$start: `$prog' is not executable for $site\n"
+	    eprint "$file:$start: `$prog' is not executable for $site\n"
 		if ! -x $prog;
 	}
 	if ( $type eq "f" && $param =~ m@/@ ) {
@@ -805,7 +817,7 @@ newsfeeds
 	    $dir =~ s@(.*)/.*@$1@;
 	    $dir = $paths{'batchdir'} . "/" . $dir
 		unless $dir =~ m@^/@;
-	    print "$file:$start: directory `$dir' does not exist for $site\n"
+	    eprint "$file:$start: directory `$dir' does not exist for $site\n"
 		if ! -d $dir;
 	}
 
@@ -816,14 +828,14 @@ newsfeeds
 
     ##  Go through and make sure all referenced multiplex exist.
     foreach (@muxes) {
-	print "$file:$_\n"
+	eprint "$file:$_\n"
 	    if /`(.*)'/ && !defined $sites{$1};
     }
-    print "$file:0: warning you accept all incoming article distributions\n"
+    eprint "$file:0: warning you accept all incoming article distributions\n"
 	if !defined $sites{"ME"} || $me_empty;
 
     print "done.\n"
-	if $verbose;
+	if $verbose > 0;
     return;
 }
 
@@ -842,19 +854,19 @@ nntpsend_ctl
 	##  Ignore the size info for now.
 	unless ( ($site, $fqdn, $flags) =
 		    /^([\w\-\.]+):([^:]*):[^:]*:([^:]*)$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
-	print "$file:$line: FQDN is empty for `$site'\n"
+	eprint "$file:$line: FQDN is empty for `$site'\n"
 	    if $fqdn eq "";
 
 	next input if $flags eq "";
 	flag: foreach (split(/ /, $flags)) {
 	    unless ( ($f, $v) = /^-([adrvtTpSP])(.*)$/ ) {
-		print "$file:$line: unknown argument for `$site'\n";
+		eprint "$file:$line: unknown argument for `$site'\n";
 		next flag;
 	    }
-	    print "$file:$line: unknown argument to option `$f': $flags\n"
+	    eprint "$file:$line: unknown argument to option `$f': $flags\n"
 		if ( $f eq "P" || $f eq "s" || $f eq "t" || $f eq "T" || $f eq "w")
                      && $v !~ /\d+/;
 	}
@@ -875,10 +887,10 @@ passwd_nntp
 	next input if &spacious($file, ++$line);
 
 	unless ( ($name, $pass) = /[\w\-\.]+:(.*):(.*)(:authinfo)?$/ ) {
-	    print "$file:$line: malformed line.\n";
+	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}
-	print "$file:$line: missing username\n"
+	eprint "$file:$line: missing username\n"
 	    if ( $name eq "" );
     }
     return;
@@ -982,7 +994,7 @@ storage_conf
     );
     # allowed method names include:  cnfs timecaf timehash tradspool trash
     foreach my $method (keys %groups) {
-        print "$file:$groups{$method}->{'line'}: not a valid storage method: $method.\n"
+        eprint "$file:$groups{$method}->{'line'}: not a valid storage method: $method.\n"
             unless $method =~ /^(?:cnfs|timecaf|timehash|tradspool|trash|<global scope>)$/;
     }
     return;
@@ -1007,7 +1019,7 @@ checkperm
 	if !defined @$m;
 
     if ( ! -e $f ) {
-	print "$pfx$f:0: missing\n";
+	eprint "$pfx$f:0: missing\n";
     }
     else {
 	@sb = stat _;
@@ -1020,20 +1032,20 @@ checkperm
 	    if -d _;
 
 	if ( $owner ne $u ) {
-	    print "$pfx$f:0: owned by $owner, should be $u\n";
+	    eprint "$pfx$f:0: owned by $owner, should be $u\n";
 	    print "chown $u $f\n"
 		if $fix;
 	}
 	if ( $group ne $g ) {
             # rnews may be setuid news and owned by group uucp.
             if ($f !~ /\/rnews$/ or $group ne 'uucp') {
-	        print "$pfx$f:0: in group $group, should be $g\n";
+	        eprint "$pfx$f:0: in group $group, should be $g\n";
 	        print "chgrp $g $f\n"
 		    if $fix;
             }
 	}
 	if ( (($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1]) ) {
-	    printf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
+	    eprint sprintf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
 	    printf "chmod %o $f\n", @$m[1]
 		if $fix;
 	}
@@ -1050,7 +1062,7 @@ intersect
     my (@in, %dummy, $i);
 
     if ( !opendir(my $DH, $dir) ) {
-	print "$pfx$dir:0: can't open directory\n";
+	eprint "$pfx$dir:0: can't open directory\n";
     }
     else {
 	@in = grep($_ ne "." && $_ ne "..", readdir($DH));
@@ -1064,7 +1076,7 @@ intersect
 	}
         foreach ( @in ) {
             if (not exists $dummy{$_}) {
-                print "$pfx$dir:0: ERROR: illegal file `$_' in directory (it may be a valid backup if it ends with '.OLD')\n";
+                eprint "$pfx$dir:0: ERROR: illegal file `$_' in directory (it may be a valid backup if it ends with '.OLD')\n";
                 $i = 0;
             }
         }
@@ -1167,7 +1179,7 @@ be checked are:\n";
     }
     print "\n"
 	if $i;
-    exit 0;
+    exit 255;
 }
 
 
@@ -1187,7 +1199,15 @@ parse_flags
 	    next arg;
 	}
 	if ( /^-v/ ) {
+            &Usage("Can't use both `-q' and `-v'")
+                if $verbose != 0;
 	    $verbose++;
+	    next arg;
+	}
+	if ( /^-q/ ) {
+            &Usage("Can't use both `-q' and `-v'")
+                if $verbose != 0;
+	    $verbose--;
 	    next arg;
 	}
 	if ( /^-ped/ ) {
@@ -1237,13 +1257,13 @@ parse_flags
 action: foreach my $workfile ( @todo ) {
     $file = $paths{$workfile};
     if ( ! -f $file ) {
-	print "$file:0: file missing\n";
+	eprint "$file:0: file missing\n";
 	next action;
     }
     print "Looking at $file...\n"
-	if $verbose;
+	if $verbose > 0;
     if ( !open($IN, '<', $file) ) {
-	print "$pfx$workfile:0: can't open $!\n";
+	eprint "$pfx$workfile:0: can't open $!\n";
 	next action;
     }
     &checkperm($file, $modes{$workfile})
@@ -1255,4 +1275,4 @@ action: foreach my $workfile ( @todo ) {
 
 &check_all_perms()
     if $perms;
-exit(0);
+exit($exitval);
