@@ -50,17 +50,17 @@ my %paths = (
 
 ##  The sub's that check the config files.
 my %checklist = (
-    'active',		'active',
-    'control.ctl',	'control_ctl',
-    'control.ctl.local','control_ctl',
-    'expire.ctl',	'expire_ctl',
-    'incoming.conf',	'incoming_conf',
-    'inn.conf',		'inn_conf',
-    'moderators',	'moderators',
-    'newsfeeds',	'newsfeeds',
-    'nntpsend.ctl',	'nntpsend_ctl',
-    'passwd.nntp',	'passwd_nntp',
-    'readers.conf',	'readers_conf'
+    'active',		\&active,
+    'control.ctl',	\&control_ctl,
+    'control.ctl.local',\&control_ctl,
+    'expire.ctl',	\&expire_ctl,
+    'incoming.conf',	\&incoming_conf,
+    'inn.conf',		\&inn_conf,
+    'moderators',	\&moderators,
+    'newsfeeds',	\&newsfeeds,
+    'nntpsend.ctl',	\&nntpsend_ctl,
+    'passwd.nntp',	\&passwd_nntp,
+    'readers.conf',	\&readers_conf
 );
 
 ##  The modes of the config files we can check.
@@ -77,14 +77,14 @@ my %modes = (
 );
 
 ## The file and line we're currently at.
-my ($file, $line);
+my ($file, $line, $IN);
 
 ## Command line arguments.
 my ($all, $verbose, $pedantic, $fix, $perms, $noperms, $pfx, @todo);
 
 my $program = $0;
 $program =~ s@.*/@@;
-$| = 1;
+local $| = 1;
 
 
 sub
@@ -108,7 +108,7 @@ spacious
 
 ##
 ##  These are the functions that verify each individual file, called
-##  from the main code.  Each function gets <IN> as the open file, $line
+##  from the main code.  Each function gets <$IN> as the open file, $line
 ##  as the linecount, and $file as the name of the file.
 ##
 
@@ -121,7 +121,7 @@ active
 {
     my ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	$line++;
 	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
 	    print "$file:$line: malformed line.\n";
@@ -149,7 +149,7 @@ active
 	print "$file:$aliases{$key} aliased to unknown group `$key'.\n"
 	    unless defined $groups{$key};
     }
-    1;
+    return;
 }
 
 
@@ -184,7 +184,7 @@ control_ctl
 {
     my ($msg, $from, $ng, $act);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
         if (/^\/localencoding\//) {
@@ -224,7 +224,7 @@ control_ctl
 	print "$file:$line: unknown action `$act'\n"
 	    if !defined $control_actions{$act} and $msg !~ /^\//;
     }
-    1;
+    return;
 }
 
 
@@ -238,7 +238,7 @@ expire_ctl
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
 	if ( ($v) = m@/remember/:(.+)@ ) {
@@ -280,7 +280,7 @@ expire_ctl
 	print "$file:$line: default `$default' younger than keep `$keep'.\n"
 	    if $default ne "never" && $keep ne "never" && $keep > $default;
     }
-    1;
+    return;
 }
 
 
@@ -290,7 +290,7 @@ expire_ctl
 sub
 incoming_conf
 {
-    1;
+    return;
 }
 
 
@@ -337,7 +337,7 @@ inn_conf
 #            if ! -f $paths{"moderators"};
 #    }
 
-    1;
+    return;
 }
 
 
@@ -349,7 +349,7 @@ moderators
 {
     my ($k, $v);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
 	unless ( ($k, $v) = /^([^:]+):(.+)$/ ) {
@@ -368,7 +368,7 @@ moderators
 	print "$file:$line: more than one %s in address field\n"
 	    if $v =~ /%s.*%s/;
     }
-    1;
+    return;
 }
 
 
@@ -403,7 +403,7 @@ newsfeeds
     my ($bang, $nobang, $prog, $dir);
     my (%variables, $key);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	$line++;
 	next input if /^$/;
 	chop;
@@ -414,7 +414,7 @@ newsfeeds
 	$start = $line;
 	while ( /\\$/ ) {
 	    chop;
-	    chop($next = <IN>);
+	    chop($next = <$IN>);
 	    $line++;
 	    $next =~ s/^\s*//;
 	    $_ .= $next;
@@ -555,7 +555,7 @@ newsfeeds
 
     print "done.\n"
 	if $verbose;
-    1;
+    return;
 }
 
 
@@ -567,7 +567,7 @@ nntpsend_ctl
 {
     my ($site, $fqdn, $flags, $f, $v);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
 	##  Ignore the size info for now.
@@ -590,7 +590,7 @@ nntpsend_ctl
                      && $v !~ /\d+/;
 	}
     }
-    1;
+    return;
 }
 
 
@@ -602,17 +602,17 @@ passwd_nntp
 {
     my ($name, $pass);
 
-    input: while ( <IN> ) {
+    input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
 	unless ( ($name, $pass) = /[\w\-\.]+:(.*):(.*)(:authinfo)?$/ ) {
-	    next input;
 	    print "$file:$line: malformed line.\n";
+	    next input;
 	}
 	print "$file:$line: missing username\n"
 	    if ( $name eq "" );
     }
-    1;
+    return;
 }
 
 
@@ -622,7 +622,7 @@ passwd_nntp
 sub
 readers_conf
 {
-    1;
+    return;
 }
 
 
@@ -675,6 +675,7 @@ checkperm
 		if $fix;
 	}
     }
+    return;
 }
 
 ##  Return 1 if the Intersection of the files in the DIR and FILES is empty.
@@ -685,12 +686,12 @@ intersect
     my ($dir, @files) = @_;
     my (@in, %dummy, $i);
 
-    if ( !opendir(DH, $dir) ) {
+    if ( !opendir(my $DH, $dir) ) {
 	print "$pfx$dir:0: can't open directory\n";
     }
     else {
-	@in = grep($_ ne "." && $_ ne "..", readdir(DH));
-	closedir(DH);
+	@in = grep($_ ne "." && $_ ne "..", readdir($DH));
+	closedir($DH);
     }
 
     $i = 1;
@@ -774,7 +775,7 @@ check_all_perms
     ##  anything else is probably someone trying to spoof rnews into being bad.
     &intersect($rnewsprogs, @rnews_programs);
 
-    1;
+    return;
 }
 
 
@@ -865,6 +866,7 @@ parse_flags
 
     @todo = grep(defined $checklist{$_}, sort(keys %paths))
 	if $all || (scalar(@todo) == 0 && ! $perms);
+    return;
 }
 
 
@@ -877,15 +879,15 @@ action: foreach my $workfile ( @todo ) {
     }
     print "Looking at $file...\n"
 	if $verbose;
-    if ( !open(IN, $file) ) {
+    if ( !open($IN, '<', $file) ) {
 	print "$pfx$workfile:0: can't open $!\n";
 	next action;
     }
     &checkperm($file, $modes{$workfile})
 	if $noperms == 0 && !$perms && defined $modes{$workfile};
     $line = 0;
-    eval "&$checklist{$workfile}" || warn "$@";
-    close(IN);
+    $checklist{$workfile}();
+    close($IN);
 }
 
 &check_all_perms()
