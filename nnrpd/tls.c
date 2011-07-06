@@ -378,16 +378,22 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	if (key_file == NULL)
 	    key_file = cert_file;
 
-	/* Check ownership and permissions of key file. */
-	if (lstat(key_file, &buf) == -1) {
+	/* Check ownership and permissions of key file.
+         * Look at the real file (stat) and not a possible symlink (lstat). */
+	if (stat(key_file, &buf) == -1) {
 	    syslog(L_ERROR, "unable to stat private key '%s'", key_file);
 	    return (0);
 	}
-	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0077) != 0 ||
-	    buf.st_uid != getuid()) {
+
+        /* Check that the key file is a real file, not readable by
+         * everyone.  If the mode is 440 or 640, make sure the group owner
+         * is the news group (to prevent the failure case of having news:users
+         * as the owner and group. */
+	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0137) != 0
+            || ((buf.st_mode & 0040) != 0 && buf.st_gid != getegid())) {
 	    syslog(L_ERROR, "bad ownership or permissions on private key"
-                   " '%s': private key must be mode 600 and owned by "
-                   "uid %d", cert_file, getuid());
+                   " '%s':  private key must be mode 640 at most, and readable"
+                   " by the news group only", key_file);
 	    return (0);
 	}
 
