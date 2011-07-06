@@ -32,11 +32,13 @@ Valid values for I<file> are:
     expire.ctl
     incoming.conf
     inn.conf
+    innfeed.conf
     moderators
     newsfeeds
     nntpsend.ctl
     passwd.nntp
     readers.conf
+    storage.conf
 
 =head1 OPTIONS
 
@@ -127,7 +129,7 @@ $Id$
 =head1 SEE ALSO
 
 active(5), control.ctl(5), expire.ctl(5), history(5), incoming.conf(5),
-inn.conf(5), moderators(5), newsfeeds(5), nntpsend.ctl(5), passwd.nntp(5),
-readers.conf(5).
+inn.conf(5), innfeed.conf(5), moderators(5), newsfeeds(5), nntpsend.ctl(5),
+passwd.nntp(5), readers.conf(5), storage.conf(5).
 
 =cut
