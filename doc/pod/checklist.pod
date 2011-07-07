@@ -165,7 +165,7 @@ section in F<INSTALL>).
 
 =item *
 
-Run C<< <pathbin in inn.conf>inncheck -a -v -f -pedantic -perm >> and fix anything noted:
+Run C<< <pathbin in inn.conf>inncheck -a -v -f --pedantic --perm >> and fix anything noted:
 B<inncheck> gives a rough check on the appropriateness of the configuration
 files as you go.  (It's the equivalent of C<perl -cw yourfile.pl> for
 Perl scripts.)

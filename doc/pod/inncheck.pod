@@ -4,7 +4,7 @@ inncheck - Check INN configuration and database files
 
 =head1 SYNOPSIS
 
-B<inncheck> [B<-afqv>] [B<-noperm> | B<-perm>] [B<-pedantic>]
+B<inncheck> [B<-afqv>] [B<--noperm> | B<--perm>] [B<--pedantic>]
 [I<file> | I<file>B<=>I<path> ...]
 
 =head1 DESCRIPTION
@@ -44,48 +44,46 @@ Valid values for I<file> are:
 
 =over 4
 
-=item B<-a>
+=item B<-a>, B<--all>
 
 If any I<file> value or I<file>B<=>I<path> pairs (see below) are given,
-then normally only the files they refer to are checked.  Use the B<-a>
-flag to specify that I<all> files should be checked regardless.  In this
-case the form I<file>B<=>I<path> will be the more useful.
+then normally only the files they refer to are checked.  Use the B<-a> (or
+B<--all>) flag to specify that I<all> files should be checked regardless.
+In this case the form I<file>B<=>I<path> will be the more useful.
 
-=item B<-f>
+=item B<-f>, B<--fix>
 
-Use the B<-f> flag to have B<inncheck> print the appropriate
+Use the B<-f> flag (or B<--fix>) to have B<inncheck> print the appropriate
 B<chown>/B<chgrp>/B<chmod> command necessary to fix a problem that it
 reports.  Any other output lines will be prefixed with a hash sign (C<#>)
-to make the output be valid input for a shell.  Note that the B<-perm>
+to make the output be valid input for a shell.  Note that the B<--perm>
 flag must be used as well when using this flag.
 
-=item B<-noperm>
+=item B<--noperm>
 
 To avoid doing any checking of file permissions or ownership, use the
-B<-noperm> option.
+B<--noperm> option.
 
-=item B<-pedantic>
+=item B<--pedantic>
 
-Use the B<-pedantic> option to get reports on things that are not necessarily
+Use the B<--pedantic> option to get reports on things that are not necessarily
 wrong, but may indicate a bad configuration, such as F<inn.conf> missing
 a key.
 
-=item B<-perm>
+=item B<--perm>
 
-B<inncheck> checks all files for permission problems.  If the B<-perm>
+B<inncheck> checks all files for permission problems.  If the B<--perm>
 flag is used, then I<only> the files specified by the I<file> or
 I<file>B<=>I<path> command line arguments will be checked for problems
 other than permission problems.
 
-=item B<-q>
+=item B<-q>, B<--quiet>
 
-Use the B<-q> option to get less output.  When this quiet mode is used,
-the B<-v> flag cannot also be specified.
+Use the B<-q> option (or B<--quiet>) to get less output.
 
-=item B<-v>
+=item B<-v>, B<--verbose>
 
-Use the B<-v> option to get more verbose output.  When this mode is used,
-the B<-q> flag cannot also be specified.
+Use the B<-v> option (or B<--verbose>) to get more verbose output.
 
 =back
 
@@ -99,17 +97,17 @@ simply run:
 It is recommended to run the following command to be aware of all the
 potential problems B<inncheck> can detect:
 
-    inncheck -a -perm -pedantic
+    inncheck -a --perm --pedantic
 
 To have B<inncheck> check all files for permission problems and to verify
 the syntax of the F<active> and F<incoming.conf> files, do:
 
-    inncheck -perm active incoming.conf
+    inncheck --perm active incoming.conf
 
 To fix the permissions problems noted in the output of the above command,
 modify it as follows:
 
-    inncheck -f -perm | sh
+    inncheck -f --perm | sh
 
 (Note that it is useless to mention the name of the two files since
 permission problems are checked on all files.)
@@ -126,7 +124,7 @@ a different location for the F<newsfeeds> file, do:
 
 =head1 BUGS
 
-If the B<-f> and B<-perm> options are used together, along with B<-a> or
+If the B<-f> and B<--perm> options are used together, along with B<-a> or
 some I<file> or I<file>B<=>I<path> arguments that refer to a file with
 a syntax problem, then the output will no longer be valid input for a shell.
 
