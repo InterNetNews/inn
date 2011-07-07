@@ -411,7 +411,7 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "4:6:ac:CdfH:i:l:m:n:No:P:rst:T:uX:")) != EOF)
+    while ((i = getopt(ac, av, "4:6:ac:CdfH:i:l:m:n:No:P:rsSt:T:uX:")) != EOF)
 	switch (i) {
 	default:
 	    Usage();
@@ -489,6 +489,10 @@ main(int ac, char *av[])
 	case 's':
 	    ShouldSyntaxCheck = true;
 	    break;
+        case 'S':
+            RCreadlist();
+            exit(0);
+            break;
 	case 't':
 	    TimeOut.tv_sec = atol(optarg);
 	    break;

@@ -4,7 +4,7 @@ innd - InterNetNews daemon
 
 =head1 SYNOPSIS
 
-B<innd> [B<-aCdfNrsu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
+B<innd> [B<-aCdfNrsSu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
 [B<-H> I<count>] [B<-i> I<count>] [B<-l> I<size>] [B<-m> I<mode>]
 [B<-n> I<flag>] [B<-o> I<count>] [B<-P> I<port>] [B<-t> I<timeout>]
 [B<-T> I<count>] [B<-X> I<seconds>]
@@ -211,6 +211,11 @@ if a C<ctlinnd renumber> command were sent.
 Just check the syntax of the F<newsfeeds> file and exit.  B<innd> will
 exit with a non-zero status if any errors are found; the actual errors
 will be reported via syslog(3).
+
+=item B<-S>
+
+Report errors found in F<incoming.conf> via syslog(3) and exit normally.
+(Yes, this is less useful than it should be.)
 
 =item B<-t> I<seconds>
 
