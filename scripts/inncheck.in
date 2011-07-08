@@ -168,7 +168,7 @@ my $ip = '(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})';
 my $ipv4 = "$ip$dot$ip$dot$ip$dot$ip";
 my $ipv4_cidr = "$ip(?:$dot$ip){0,3}\\/[1-3]?\\d";
 my $ipv4_wildmat = '[\d\[\]\*]+(?:\.[\d\[\]\*]+){0,3}';
-my $ipv6 = '[\da-f:.]+'; # e.g. ::ffff:192.168.0.10
+my $ipv6 = '[\da-fA-F:.]+'; # e.g. ::ffff:192.168.0.10
 my $ipv6_cidr = '[\da-f:.]+(?:\\/1?\d?\d)?'; # matches $ipv6 as well
 my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}'; # hostname, FQDN
 my $hostnameRE = "(?:$hostname|$ipv4|$ipv6)";
@@ -182,8 +182,8 @@ my %type_regex = (
     'IPv6 address / "any / "none"'      => '^(?:' . $ipv6 . '|any|none)$',
     'list of hostnames'                 => '^'.$hostnameRE.'(?:\s*,\s*'.$hostnameRE.')*$',
     'list of hostnames or netblocks'    => '^'.$hostblockRE.'(?:\s*,\s*'.$hostblockRE.')*$',
-    'minsize[,maxsize] definition'      => '^\d+(?:,\d+)?$',
-    'mintime[,maxtime] definition'      => '^(?:\d+[Mdhms])+(?:,(?:\d+[Mdhms])+)?$',
+    'minsize[,maxsize] definition'      => '^\d+(?:,\d*)?$',
+    'mintime[,maxtime] definition'      => '^(?:\d+[Mdhms])+(?:,(?:\d+[Mdhms])*)?$',
     'number'                            => '^\d+$',
     'number / "unlimited" / "none"'     => '^(?:\d+|unlimited|none)$',
     'path'                              => '.*', # useful?
@@ -201,11 +201,13 @@ parse_config
     my @groups; # our stack of nested groups
     my %return; # flat hash of groups returned to caller for further examination
     my $group = { 'type' => '<global scope>', 'line' => 0, 'name' => '<global scope>' };
+    my $parse_error = 0; # stop printing errors when we've seen unknown text, until re-sync
 
     while (my $word = get_config_word()) {
         if (defined $options->{$word}) {
             # $word starts a new group definition:  "peer news.example.com {"
             my ($name, $curly);
+            $parse_error = 0;
 
             eprint "$file:$line: cannot nest $word in $group->{'type'}!\n"
                 unless ($group->{'type'} eq 'group'
@@ -234,6 +236,7 @@ parse_config
         }
 
         if ($word eq '}') {
+            $parse_error = 0;
             if (scalar @groups == 0) {
                 eprint "$file:$line: extra closing brace";
             } else {
@@ -243,9 +246,16 @@ parse_config
             next;
         }
 
+        # include-file hack:  ignore; user needs to check it separately
+        if (defined $options->{'<include>'}->{$word}) {
+            $parse_error = 0;
+            my $includefile = get_config_word();
+            next;
+        }
+
         # $word must be an option key by now
         eprint "$file:$line: option $word must be immediately followed by a colon\n"
-            unless $word =~ s/:$//;
+            unless $word =~ s/:$// or $parse_error;
         eprint "$file:$line: duplicate option $word in $group->{'type'} $group->{'name'}\n"
             if exists $group->{$word} and not defined $options->{'<multi>'}->{$word};
 
@@ -253,12 +263,15 @@ parse_config
                  : defined $options->{'<anywhere>'}->{$word}     ? $options->{'<anywhere>'}->{$word}
                  : undef;
         if ($type) {
+            $parse_error = 0;
             my $value = get_config_word();
             $group->{$word} = $value;
             eprint "$file:$line: not a valid $type: '$value'\n"
                 unless $value =~ /$type_regex{$type}/;
         } else {
-            eprint "$file:$line: not a valid option name: $word\n";
+            eprint "$file:$line: not a valid option name: $word\n"
+                unless $parse_error;
+            $parse_error = 1;
         }
     }
     while (scalar @groups > 0) {
@@ -605,6 +618,7 @@ innfeed_conf
             'peer'              => {
                 'ip-name'               => 'hostname',
             },
+            '<include>'         => { '$INCLUDE' => 'ignore' },
         }
     );
     # check presence of required keys in global scope
@@ -971,7 +985,8 @@ readers_conf
                 'auth'          => 1,
                 'perl_auth'     => 1,
                 'python_auth'   => 1,
-            }
+            },
+            '<include>' => { 'include' => 'ignore' },
         }
     );
     return;
