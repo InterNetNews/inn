@@ -67,7 +67,7 @@ error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
 
 /* If desired, print out the state of innfeed, call a cleanup function, and
    then dump core.  Used as an exit handler for die. */
-int
+void
 dump_core(void)
 {
 #if SNAPSHOT_ON_DIE
@@ -82,9 +82,6 @@ dump_core(void)
   
     sleep(5);
     abort();
-
-    /* Not reached. */
-    return 1;
 }
 
 /* An alternate version of die, used when we don't want to dump core.  This

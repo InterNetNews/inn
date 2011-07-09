@@ -52,7 +52,9 @@ const char *InputFile ;
 char *configFile = NULL ;
 bool RollInputFile = false ;
 char *pidFile = NULL ;
-bool useMMap = false ;
+bool useMMap = false ; /* Even if HAVE_MMAP.  Only used when innfeed is given
+                        * file names to send instead of storage API tokens,
+                        * which is a fairly rare use case. */
 void (*gPrintInfo) (void) ;
 char *dflTapeDir;
 /* these are used by imapfeed */
@@ -69,6 +71,9 @@ extern char *optarg ;           /* needed for Solaris */
 extern int optind;
 #endif
 extern bool genHtml ;
+extern bool debugShrinking;
+extern bool fastExit;
+extern unsigned int stdioFdMax;
 
 extern void openInputFile (void);
 
@@ -135,12 +140,6 @@ int main (int argc, char **argv)
       syslog(LOG_ERR, "cant read inn.conf\n");
       exit(1);
   }
-
-#if defined (HAVE_MMAP)
-  useMMap = true ;
-#else
-  useMMap = false ;
-#endif
 
   message_handlers_die (2, error_log_stderr_date, message_log_syslog_err) ;
   message_handlers_warn (1, message_log_syslog_warning);
@@ -971,7 +970,10 @@ void mainLogStatus (FILE *fp)
   fprintf (fp,"    News spool: %s\n",newsspool) ;
   fprintf (fp,"      Pid file: %s\n",pidFile) ;
   fprintf (fp,"      Log file: %s\n",(logFile == NULL ? "(none)" : logFile));
-  fprintf (fp,"   Debug level: %2ld                Mmap: %s\n",
-           (long)loggingLevel,boolToString(useMMap)) ;
+  fprintf (fp,"   Debug level: %-5u        Debug shrinking: %s\n",
+           loggingLevel, boolToString(debugShrinking));
+  fprintf (fp,"     Fast exit: %-5s            stdio-fdmax: %d\n",
+           boolToString(fastExit), stdioFdMax);
+  fprintf (fp,"          Mmap: %s\n", boolToString(useMMap));
   fprintf (fp,"\n") ;
 }

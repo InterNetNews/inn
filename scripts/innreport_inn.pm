@@ -1059,6 +1059,8 @@ sub collect($$$$$$) {
       return 1 if $left =~ m/ preparing to roll /o;
       return 1 if $left =~ m/ reached EOF in /o;
       return 1 if $left =~ m/ opened /o;
+      # when optional parameters are not present in innfeed.conf
+      return 1 if $left =~ m/ config: adding default value for key /o;
     }
     # hostChkCxn - now: x.xx, prev: x.xx, abs: xx, curr: x
     return 1 if $left =~ m/ hostChkCxn - now/o;

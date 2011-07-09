@@ -106,7 +106,7 @@ extern const char *InputFile ;
 
 static EndPoint mainEndPoint ;
 static bool mainEpIsReg = false ;
-static unsigned int stdioFdMax = MAX_STDIO_FD ;
+unsigned int stdioFdMax = MAX_STDIO_FD ;
 
 time_t  PrivateTime;
 
