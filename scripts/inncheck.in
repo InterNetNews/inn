@@ -164,15 +164,19 @@ get_config_word
 
 ##  Build regular expressions used for checking configuration values.
 my $dot = '\.';
+my $wildmat = '\[\]\*\?-'; # anybody needing ^ ! @ ??
 my $ip = '(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})';
 my $ipv4 = "$ip$dot$ip$dot$ip$dot$ip";
 my $ipv4_cidr = "$ip(?:$dot$ip){0,3}\\/[1-3]?\\d";
-my $ipv4_wildmat = '[\d\[\]\*]+(?:\.[\d\[\]\*]+){0,3}';
-my $ipv6 = '[\da-fA-F:.]+'; # e.g. ::ffff:192.168.0.10
-my $ipv6_cidr = '[\da-f:.]+(?:\\/1?\d?\d)?'; # matches $ipv6 as well
+my $ipv4_wildmat = "[\\d$wildmat]+(?:$dot\[\\d$wildmat\]+){0,3}";
+my $ip6 = '\da-fA-F:';
+my $ipv6 = "[$ip6]+(?:$ipv4)?"; # e.g. ::ffff:192.168.0.10
+my $ipv6_cidr = "[$ip6]+\\/1?\\d?\\d";
+my $ipv6_wildmat = "[$ip6$wildmat]+";
 my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}'; # hostname, FQDN
+my $hostname_wildmat = '(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)"; # Assumption:  wildmat chars only in leftmost subdomain part
 my $hostnameRE = "(?:$hostname|$ipv4|$ipv6)";
-my $hostblockRE = '(?:(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)|$ipv4_wildmat|$ipv4_cidr|$ipv6_cidr)"; # Assumption:  wildmat chars only in leftmost subdomain part
+my $hostblockRE = "(?:$hostname_wildmat|$ipv4_cidr|$ipv4_wildmat|$ipv6|$ipv6_cidr|$ipv6_wildmat)";
 my %type_regex = (
     'boolean'                           => '^(?:true|false)$', # innfeed.conf doesn't allow other
     'floating-point number'             => '^\d+\.\d+$',       # no exponents
