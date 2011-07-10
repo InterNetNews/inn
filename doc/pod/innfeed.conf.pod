@@ -313,6 +313,46 @@ specified, is C<0>.
 
 =back
 
+=head2 Special keys for B<imapfeed>
+
+The following keys are used with B<imapfeed> to authenticate to a remote
+host.  Several parameters may be included at global scope:
+
+=over 4
+
+=item I<deliver-authname>
+
+The authname is who you want to authenticate as.
+
+=item I<deliver-password>
+
+This is the appropriate password for authname.
+
+=item I<deliver-username>
+
+The username is who you want to "act" as, that is, who is actually going
+to be using the server.
+
+=item I<deliver-realm>
+
+In this case, the "realm" is the realm in which the specified authname
+is valid.  Currently this is only needed by the DIGEST-MD5 SASL mechanism.
+
+=item I<deliver-rcpt-to>
+
+A printf(3)-style format string for creating the envelope recipient address.
+The pattern MUST include a single string specifier which will be replaced
+with the newgroup (e.g. C<bb+%s>).  The default is C<+%s>.
+
+=item I<deliver-to-header>
+
+An optional printf(3)-style format string for creating a To: header field
+to be prepended to the article.  The pattern MUST include a single string
+specifier which will be replaced with the newgroup (e.g. C<post+%s@domain>).
+If not specified, the To: header field will not be prepended.
+
+=back
+
 =head1 GLOBAL PEER DEFAULTS
 
 All the I<key>:I<value> pairs mentioned in this section can be specified at
@@ -624,46 +664,6 @@ I<password> must also be defined, if this key is defined.
 
 This key requires a string value.  The value is the password used for
 AUTHINFO PASS.  I<username> must also be defined, if this key is defined.
-
-=back
-
-=head2 Special keys for B<imapfeed>
-
-The following keys are used with B<imapfeed> to authenticate to a remote
-host.  Several parameters may be included:
-
-=over 4
-
-=item I<deliver-authname>
-
-The authname is who you want to authenticate as.
-
-=item I<deliver-password>
-
-This is the appropriate password for authname.
-
-=item I<deliver-username>
-
-The username is who you want to "act" as, that is, who is actually going
-to be using the server.
-
-=item I<deliver-realm>
-
-In this case, the "realm" is the realm in which the specified authname
-is valid.  Currently this is only needed by the DIGEST-MD5 SASL mechanism.
-
-=item I<deliver-rcpt-to>
-
-A printf(3)-style format string for creating the envelope recipient address.
-The pattern MUST include a single string specifier which will be replaced
-with the newgroup (e.g. C<bb+%s>).  The default is C<+%s>.
-
-=item I<deliver-to-header>
-
-An optional printf(3)-style format string for creating a To: header field
-to be prepended to the article.  The pattern MUST include a single string
-specifier which will be replaced with the newgroup (e.g. C<post+%s@domain>).
-If not specified, the To: header field will not be prepended.
 
 =back
 
