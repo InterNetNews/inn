@@ -451,6 +451,19 @@ network_connect(struct addrinfo *ai, const char *source)
             break;
         }
     }
+
+#ifdef SO_RCVTIMEO
+    struct timeval connect_timeout;
+    connect_timeout.tv_sec = DEFAULT_TIMEOUT;
+    connect_timeout.tv_usec = 0;
+
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &connect_timeout, sizeof(connect_timeout)) < 0) {
+        syswarn("setsockopt SO_RCVTIMEO %d failed", DEFAULT_TIMEOUT);
+        /* No need to return an error, as failure would just be like before
+         * (no timeout on socket).  Better create the socket anyway! */
+    }
+#endif
+
     if (success)
         return fd;
     else {
