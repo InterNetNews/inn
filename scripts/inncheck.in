@@ -721,7 +721,7 @@ newsfeeds
 
         ##  Substitute variables.
         for my $key (keys %variables) {
-            s/\$$key/$variables{$key}/;
+            s/\$$key\b/$variables{$key}/;
         }
 
         ##  Catch a variable setting.
