@@ -30,8 +30,9 @@
 ##     :<pathbin>/controlchan
 
 require 5.004_03;
-use MIME::Parser;
+use DateTime::Format::Mail;
 use Encode;
+use MIME::Parser;
 use strict;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
@@ -102,6 +103,46 @@ while (<STDIN>) {
     }
 
     if (not $hdr{'control'}) {
+        $parser->filer->purge;
+        next;
+    }
+
+    # Make sure old control articles are not replayed.
+    # Use a loose date parser (not strict).
+    my ($postingdate, $injectiondate);
+    my $dateparser = DateTime::Format::Mail->new( 'loose' => 1 );
+    my $currentdate = DateTime->now();
+
+    # Parse date header fields.  We will take the oldest date.
+    if ($hdr{'date'}) {
+        $postingdate = $dateparser->parse_datetime($hdr{'date'});
+    } else {
+        logmsg('Missing Date: header field');
+        $parser->filer->purge;
+        next;
+    }
+    if ($hdr{'injection-date'}) {
+        $injectiondate = $dateparser->parse_datetime($hdr{'injection-date'});
+    } else {
+        $injectiondate = $postingdate;
+    }
+
+    my $articledate = ($postingdate < $injectiondate) ? $postingdate : $injectiondate;
+
+    my $mindate = $currentdate->clone->subtract( 'days' => $INN::Config::artcutoff );
+    my $maxdate = $currentdate->clone->add( 'days' => 1 );
+
+    if ($articledate > $maxdate) {
+        logmsg('Control article injected or posted in the future ('
+               . $articledate->datetime() . ')');
+        $parser->filer->purge;
+        next;
+    }
+
+    if ($INN::Config::artcutoff > 0 && $articledate < $mindate) {
+        logmsg('Control article too old ('
+               . $articledate->datetime() . '), artcutoff set to '
+               . $INN::Config::artcutoff . ' days');
         $parser->filer->purge;
         next;
     }
@@ -208,7 +249,7 @@ sub parse_article {
     my ($article, $hdr) = @_;
     my ($h, $buffer);
     my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
-        from message-id newsgroups path reply-to sender subject);
+        from injection-date message-id newsgroups path reply-to sender subject);
 
     my $head = $article->head;
 
