@@ -951,8 +951,8 @@ readers_conf
                 'pythonfilter'  => 'boolean',
                 'virtualhost'   => 'boolean',
                 # inn.conf parameters:
-                'addnntppostingdate'    => 'boolean',
-                'addnntppostinghost'    => 'boolean',
+                'addinjectiondate'      => 'boolean',
+                'addinjectionpostinghost' => 'boolean',
                 'backoff_auth'          => 'boolean',   # careful:
                 'backoff_db'            => 'string',    # the inn.conf options
                 'backoff_k'             => 'number',    # are without "_"
