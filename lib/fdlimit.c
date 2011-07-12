@@ -7,7 +7,7 @@
 **  portability (if we don't have getrlimit, try sysconf, then
 **  getdtablesize, then ulimit, and then try to find a hard-coded constant
 **  in <sys/param.h> and failing that fall back to the POSIX-guaranteed
-**  minimum of 20.
+**  minimum of 20).
 **
 **  For setting the limit, only setrlimit is supported; if it isn't
 **  available, return -1 always.  We also refuse to set the limit to

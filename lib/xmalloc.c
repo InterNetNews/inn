@@ -65,6 +65,7 @@
 #include "inn/libinn.h"
 
 /* The default error handler. */
+void xmalloc_fail(const char *, size_t, const char *, int) __attribute__((__noreturn__));
 void
 xmalloc_fail(const char *function, size_t size, const char *file, int line)
 {
