@@ -214,9 +214,10 @@ network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/wait.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/inn/libinn.h
+  ../include/portable/time.h ../include/portable/wait.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/network.h \
+  ../include/inn/libinn.h
 newsuser.o: newsuser.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \

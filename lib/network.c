@@ -14,6 +14,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include "portable/time.h"
 #include "portable/wait.h"
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD
