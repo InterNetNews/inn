@@ -30,17 +30,29 @@
 ##     :<pathbin>/controlchan
 
 require 5.004_03;
-use MIME::Parser;
 use Encode;
+use Getopt::Std;
+use MIME::Parser;
 use strict;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+$0 =~ s!.*/!!;
 
 # globals
 my ($cachedctl, $curmsgid);
 my $lastctl = 0;
 my $use_syslog = 0;
 my $debug = 0;
+
+my $usage = "usage: $0 [-ch]\n\n" .
+    "Reads stdin for file names or tokens.\n\n" .
+    "  -c   Disables cutoff on dates.\n" .
+    "  -h   Giveis this usage information.\n";
+
+my %opt;
+getopts("ch", \%opt) || die $usage;
+
+die $usage if defined $opt{'h'};
 
 # setup logging ###########################################################
 # do not log to syslog if stderr is connected to a console
@@ -104,6 +116,48 @@ while (<STDIN>) {
     if (not $hdr{'control'}) {
         $parser->filer->purge;
         next;
+    }
+
+    if (not defined $opt{'c'}) {
+        # Make sure old control articles are not replayed.
+        my ($postingdate, $injectiondate);
+
+        # Parse date header fields.  We will take the oldest date.
+        if ($hdr{'date'}) {
+            $postingdate = int(convdate('-n', "$hdr{'date'}"));
+        } else {
+            logmsg('Missing Date: header field');
+            $parser->filer->purge;
+            next;
+        }
+        if ($hdr{'injection-date'}) {
+            $injectiondate = int(convdate('-n', "$hdr{'injection-date'}"));
+        } else {
+            $injectiondate = $postingdate;
+        }
+
+        my $articledate = ($postingdate < $injectiondate) ? $postingdate : $injectiondate;
+
+        # Compute the allowed interval of time:
+        # artcutoff days in the past, one day in the future.
+        my $currentdate = int(convdate('-n'));
+        my $mindate = $currentdate - $INN::Config::artcutoff * 86400;
+        my $maxdate = $currentdate + 86400;
+
+        if ($articledate > $maxdate) {
+            logmsg('Control article injected or posted in the future ('
+                   . convdate('-d', '-c', "$articledate") . ')');
+            $parser->filer->purge;
+            next;
+        }
+
+        if ($INN::Config::artcutoff > 0 && $articledate < $mindate) {
+            logmsg('Control article too old ('
+                   . convdate('-d', '-c', "$articledate")
+                   . '), artcutoff set to ' . $INN::Config::artcutoff . ' days');
+            $parser->filer->purge;
+            next;
+        }
     }
 
     $curmsgid = $hdr{'message-id'};
@@ -208,7 +262,7 @@ sub parse_article {
     my ($article, $hdr) = @_;
     my ($h, $buffer);
     my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
-        from message-id newsgroups path reply-to sender subject);
+        from injection-date message-id newsgroups path reply-to sender subject);
 
     my $head = $article->head;
 
@@ -513,6 +567,28 @@ sub ctlinnd {
     my $st = system("$INN::Config::newsbin/ctlinnd", '-s', $cmd, @args);
     logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
     logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
+}
+
+# Run convdate on the given arguments.
+# The result can be numeric (with -n) or a string (with -d).
+sub convdate {
+    my (@args) = @_;
+    my $result = 0;
+
+    my $pid = open(my $CONVDATE, '-|');
+    logdie("Cannot fork:  $!") if $pid < 0;
+    if ($pid == 0) {
+        # exec() properly escapes its arguments to prevent shell injection.
+        exec("$INN::Config::pathbin/convdate", @args) or
+             logdie("Cannot exec convdate:  $!");
+    } else {
+        $result = <$CONVDATE>;
+        close($CONVDATE);
+    }
+
+    $result = 0 if not $result;
+    chomp $result;
+    return $result;
 }
 
 sub shlock {

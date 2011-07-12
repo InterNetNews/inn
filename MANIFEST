@@ -238,6 +238,7 @@ doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
 doc/pod/cnfsheadconf.pod              Master file for cnfsheadconf.8
 doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
+doc/pod/controlchan.pod               Master file for controlchan.8
 doc/pod/convdate.pod                  Master file for convdate.1
 doc/pod/ctlinnd.pod                   Master file for ctlinnd.8
 doc/pod/cvtbatch.pod                  Master file for cvtbatch.8

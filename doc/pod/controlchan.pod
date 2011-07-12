@@ -1,0 +1,90 @@
+=head1 NAME
+
+controlchan - Channel-fed control message handler
+
+=head1 SYNOPSIS
+
+B<controlchan> [B<-ch>]
+
+=head1 DESCRIPTION
+
+B<controlchan> removes the responsibility for handling control messages
+(except cancels) from B<innd> and instead processes them from a channel
+or file feed.
+
+The two Perl modules C<Encode> and C<MIME::Parser> are required by
+B<controlchan>.
+
+To reduce load, B<controlchan> keeps a copy of F<control.ctl> and
+F<control.ctl.local> in memory and checks permissions (including any required
+PGP headers) before any scripts are called.  These two configuration
+files are automatically reloaded when B<controlchan> notices they have
+been modified.  Also, the default case of an unrecognized control article
+is handled internally.  The C<drop> case is handled with far less fuss.
+
+Normally, B<controlchan> is invoked by B<innd> as configured in F<newsfeeds>.
+An example entry is below.  Make sure that the newsgroup C<control.cancel>
+exists so that B<controlchan> does not have to scan through cancels,
+which it will not be processing anyway.
+
+    controlchan!\
+        :!*,control,control.*,!control.cancel\
+        :AC,Tc,Wnsm\
+        :<pathbin in inn.conf>/controlchan
+
+B<controlchan> can also be manually invoked with a mere path to a file
+(containing a complete control article with its headers and its body)
+or a token on its standard input:
+
+    echo '/path/to/a/control/article' | controlchan
+    echo '@0303465234000000000000235AE000000002@' | controlchan
+
+Note that in the (very, very unlikely) event that you need to process
+ihave/sendme control messages, be sure that I<logipaddr> is set to false
+in F<inn.conf>, because in this case B<controlchan> needs a site name,
+not an IP address.
+
+B<controlchan> tries to report all log messages through syslog(3),
+unless connected to an interactive terminal.  To enable syslog(3)'ing for
+versions of Perl prior to 5.6.0, you will need to have run B<h2ph> on your system
+include files at some point (this is required to make C<Sys::Syslog> work).
+If you have not done so, do this:
+
+    cd /usr/include
+    h2ph * sys/*
+
+If you run FreeBSD, you will need to run the following in addition:
+
+    h2ph machine/*
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c>
+
+By default, B<controlchan> does not process articles whose Date:
+or Injection-Date: header fields are too far in the past (more than
+I<artcutoff> days, as set in F<inn.conf>) or one day in the future.
+It allows to prevent a malicious replay of old control articles.
+
+Using the B<-c> flag disables this check on the cutoff date.
+
+=item B<-h>
+
+Gives usage information.
+
+=back
+
+=head1 HISTORY
+
+Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted to
+POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+control.ctl(5), inn.conf(5).
+
+=cut
