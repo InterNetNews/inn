@@ -609,11 +609,31 @@ a new release of INN.
 
 =item 1.
 
+Update the files shipped with INN, and that are maintained by external
+projects.
+
+=over 2
+
+=item *
+
 Make sure that F<support/config.guess>, F<support/config.sub>,
 F<support/install-sh>, F<support/ltmain.sh> and libtool m4 files
 (F<libtool.m4>, F<ltoptions.m4>, F<ltsugar.m4>, F<ltversion.m4>
 and F<lt~obsolete.m4>) are the latest versions.  See the instructions
 in L<"Configuring and Portability"> for details on how to update these files.
+
+=item *
+
+Make sure that the latest version of C TAP Harness
+is used for the test suite.  It is available from
+L<http://www.eyrie.org/~eagle/software/c-tap-harness/>.  The file
+F<runtests.c> should be updated.  F<libtest.c>, F<libtest.h> and
+F<libtest.sh> come from F<tap/basic.c>, F<tap/basic.h> and F<tap/libtap.sh>
+respectively.  Parts specific to INN should be kept during an update
+(especially sections relative to LIBTEST_NEW_FORMAT because the test suite
+has not yet been updated to use the new format of C TAP Harness).
+
+=back
 
 =item 2.
 

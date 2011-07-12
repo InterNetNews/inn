@@ -8,7 +8,8 @@
 #
 # Written by Russ Allbery <rra@stanford.edu>
 # Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
-# Copyright 2006, 2007, 2008 Board of Trustees, Leland Stanford Jr. University
+# Copyright 2006, 2007, 2008
+#     The Board of Trustees of the Leland Stanford Junior University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to

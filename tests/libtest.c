@@ -14,37 +14,51 @@
  * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008
- *     Board of Trustees, Leland Stanford Jr. University
- * Copyright (c) 2004, 2005, 2006
- *     by Internet Systems Consortium, Inc. ("ISC")
- * Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
- *     2002, 2003 by The Internet Software Consortium and Rich Salz
+ * Copyright 2001, 2002, 2004, 2005, 2006, 2007, 2008
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
- * This code is derived from software contributed to the Internet Software
- * Consortium by Rich Salz.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
-#include "config.h"
-#include "clibrary.h"
+/* Required for isnan() and isinf(). */
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE 600
+#endif
 
-#include "inn/messages.h"
-#include "inn/libinn.h"
 #include <errno.h>
 #include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "libtest.h"
+
+/* Specific to the integration of C TAP Harness in INN. */
+#ifndef LIBTEST_NEW_FORMAT
+# include "inn/messages.h"
+# include "inn/libinn.h"
+#endif
 
 /*
  * The test count.  Always contains the number that will be used for the next

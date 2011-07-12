@@ -6,39 +6,67 @@
  * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
- * Copyright 2006, 2007, 2008
- *     Board of Trustees, Leland Stanford Jr. University
- * Copyright (c) 2004, 2005, 2006
- *     by Internet Systems Consortium, Inc. ("ISC")
- * Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
- *     2002, 2003 by The Internet Software Consortium and Rich Salz
+ * Copyright 2001, 2002, 2004, 2005, 2006, 2007, 2008
+ *     The Board of Trustees of the Leland Stanford Junior University
  *
- * This code is derived from software contributed to the Internet Software
- * Consortium by Rich Salz.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
- * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
- * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef LIBTEST_H
-#define LIBTEST_H 1
+#ifndef TAP_BASIC_H
+#define TAP_BASIC_H 1
 
-/* These inclusions contain va_list, pid_t, __attribute__, BEGIN_DECLS,
- * END_DECLS, ARRAY_SIZE and ARRAY_END.  All used by C TAP Harness.
+#include <stdarg.h>             /* va_list */
+#include <sys/types.h>          /* pid_t */
+
+/*
+ * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
+ * could you use the __format__ form of the attributes, which is what we use
+ * (to avoid confusion with other macros).
  */
-#include "config.h"
-#include "clibrary.h"
-                           
-#include <inn/defines.h>
+#ifndef __attribute__
+# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#  define __attribute__(spec)   /* empty */
+# endif
+#endif
+
+/*
+ * BEGIN_DECLS is used at the beginning of declarations so that C++
+ * compilers don't mangle their names.  END_DECLS is used at the end.
+ */
+#undef BEGIN_DECLS
+#undef END_DECLS
+#ifdef __cplusplus
+# define BEGIN_DECLS    extern "C" {
+# define END_DECLS      }
+#else
+# define BEGIN_DECLS    /* empty */
+# define END_DECLS      /* empty */
+#endif
+
+/*
+ * Used for iterating through arrays.  ARRAY_SIZE returns the number of
+ * elements in the array (useful for a < upper bound in a for loop) and
+ * ARRAY_END returns a pointer to the element past the end (ISO C99 makes it
+ * legal to refer to such a pointer as long as it's never dereferenced).
+ */
+#define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
+#define ARRAY_END(array)        (&(array)[ARRAY_SIZE(array)])
 
 BEGIN_DECLS
 
@@ -142,4 +170,4 @@ void test_file_path_free(char *path);
 
 END_DECLS
 
-#endif /* LIBTEST_H */
+#endif /* TAP_BASIC_H */
