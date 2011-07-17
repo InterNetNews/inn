@@ -29,6 +29,7 @@ my %paths = (
     'innbind',          "$INN::Config::pathbin/innbind",
     'innd',		"$INN::Config::innd",
     'innddir',		"$INN::Config::pathrun",
+    'innfeed.conf',     "$INN::Config::pathetc/innfeed.conf",
     'moderators',	"$INN::Config::pathetc/moderators",
     'most_logs',	"$INN::Config::pathlog",
     'newsbin',		"$INN::Config::pathbin",
@@ -45,7 +46,8 @@ my %paths = (
     'rnewsprogs',	"$INN::Config::pathbin/rnews.libexec",
     'spooltemp',	"$INN::Config::pathtmp",
     'spool',		"$INN::Config::patharticles",
-    'spoolnews',	"$INN::Config::pathincoming"
+    'spoolnews',	"$INN::Config::pathincoming",
+    'storage.conf',     "$INN::Config::pathetc/storage.conf",
 );
 
 ##  The sub's that check the config files.
@@ -56,11 +58,13 @@ my %checklist = (
     'expire.ctl',	\&expire_ctl,
     'incoming.conf',	\&incoming_conf,
     'inn.conf',		\&inn_conf,
+    'innfeed.conf',	\&innfeed_conf,
     'moderators',	\&moderators,
     'newsfeeds',	\&newsfeeds,
     'nntpsend.ctl',	\&nntpsend_ctl,
     'passwd.nntp',	\&passwd_nntp,
-    'readers.conf',	\&readers_conf
+    'readers.conf',	\&readers_conf,
+    'storage.conf',	\&storage_conf,
 );
 
 ##  The modes of the config files we can check.
@@ -71,15 +75,16 @@ my %modes = (
     'active',		[0600, $INN::Config::filemode],
     'incoming.conf',	[0400, 0660],
     'inn.conf',		[0400, 0664],
+    'innfeed.conf',	[0400, 0660],
     'moderators',	[0400, 0664],
     'newsfeeds',	[0400, 0664],
     'passwd.nntp',	[0400, 0660],
 );
 
-## The file and line we're currently at.
+##  The file and line we're currently at.
 my ($file, $line, $IN);
 
-## Command line arguments.
+##  Command line arguments.
 my ($all, $verbose, $pedantic, $fix, $perms, $noperms, $pfx, @todo);
 
 my $program = $0;
@@ -105,6 +110,152 @@ spacious
     }
     return $i;
 }
+
+##  Get the next "word" from an incoming.conf-like config file.
+##  Skip over comments and deliver double quoted strings as one word,
+##  without the quotes.  Don't allow multi-line strings, to be safe
+##  with all the different parsers.
+my @stack;
+sub
+get_config_word
+{
+    if (!@stack) {
+        while (<$IN>) {
+            $line++;
+            chomp;
+
+            while (1) {
+                my @res;
+                last if /\G \s*  $/gcx; # skip empty lines
+                last if /\G \s* \#/gcx; # and comments
+                @res =  /\G \s*  ([^#"\s]+)  /gcx; # extract simple words
+                @res =  /\G \s* "(.*?[^\\])" /gcx  # or quoted strings
+                    if (!@res);
+
+                if (!@res) {
+                    print "$file:$line: malformed line (runaway quote / empty pair of quotes?)\n";
+                    last;
+                }
+
+                push @stack, @res;
+                last if pos == length;
+            }
+            last if @stack;
+        }
+    }
+
+    return shift @stack;
+}
+
+##  Build regular expressions used for checking configuration values.
+my $dot = '\.';
+my $ip = '(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})';
+my $ipv4 = "$ip$dot$ip$dot$ip$dot$ip";
+my $ipv4_cidr = "$ip(?:$dot$ip){0,3}\\/[1-3]?\\d";
+my $ipv4_wildmat = '[\d\[\]\*]+(?:\.[\d\[\]\*]+){0,3}';
+my $ipv6 = '[\da-f:.]+'; # e.g. ::ffff:192.168.0.10
+my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}'; # hostname, FQDN
+my $hostnameRE = "(?:$hostname|$ipv4|$ipv6)";
+my $hostblockRE = '(?:(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)|$ipv4_wildmat|$ipv4_cidr|$ipv6)"; # Assumption:  wildmat chars only in leftmost subdomain part
+my %type_regex = (
+    'boolean'                           => '^(?:true|false)$', # innfeed.conf doesn't allow other
+    'floating-point number'             => '^\d+\.\d+$',       # no exponents
+    'floating-point number (0.0-100.0)' => '^(?:100\.0+|\d{1,2}\.\d+)$', # no exponents
+    'hostname'                          => '^' . $hostnameRE . '$',
+    'IPv4 address / "any / "none"'      => '^(?:' . $ipv4 . '|any|none)$',
+    'IPv6 address / "any / "none"'      => '^(?:' . $ipv6 . '|any|none)$',
+    'list of hostnames'                 => '^'.$hostnameRE.'(?:\s*,\s*'.$hostnameRE.')*$',
+    'list of hostnames or netblocks'    => '^'.$hostblockRE.'(?:\s*,\s*'.$hostblockRE.')*$',
+    'minsize[,maxsize] definition'      => '^\d+(?:,\d+)?$',
+    'mintime[,maxtime] definition'      => '^(?:\d+[Mdhms])+(?:,(?:\d+[Mdhms])+)?$',
+    'number'                            => '^\d+$',
+    'number / "unlimited" / "none"'     => '^(?:\d+|unlimited|none)$',
+    'path'                              => '.*', # useful?
+    'set of access permission letters'  => '^[RPIANL]+$',
+    'string'                            => '.*', # not checked
+);
+
+##  Parse a new-style config file.
+##  Must be given a reference to a hash containing valid groups and option names / types.
+sub
+parse_config
+{
+    my ($options) = @_;
+
+    my @groups; # our stack of nested groups
+    my %return; # flat hash of groups returned to caller for further examination
+    my $group = { 'type' => '<global scope>', 'line' => 0, 'name' => '<global scope>' };
+
+    while (my $word = get_config_word()) {
+        if (defined $options->{$word}) {
+            # $word starts a new group definition:  "peer news.example.com {"
+            my ($name, $curly);
+
+            print "$file:$line: cannot nest $word in $group->{'type'}!\n"
+                unless ($group->{'type'} eq 'group'
+                    ||  $group->{'type'} eq '<global scope>');
+            push @groups, $group;
+            $group = { 'type' => $word, 'line' => $line };
+
+            $name = get_config_word();
+            if ($name =~ /^\{/) {
+                print "$file:$line: $word must have a name\n";
+                $curly = $name;
+                $name = '<missing name>';
+            } elsif ($name =~ /[\\:;{}\[\]<>\s"]/) { # invalid token chars
+                print "$file:$line: not a valid $word name: $name\n";
+            }
+            $group->{'name'} = $name;
+
+            $curly = $curly || get_config_word();
+            if ($curly =~ s/^\{//) {
+                next if length $curly == 0;
+                print "$file:$line: whitespace required between option and curly brackets\n";
+            } else {
+                print "$file:$line: $word definition must start with a curly bracket\n";
+            }
+            $word = $curly;
+        }
+
+        if ($word eq '}') {
+            if (scalar @groups == 0) {
+                print "$file:$line: extra closing brace";
+            } else {
+                $return{$group->{'name'}} = $group;
+                $group = pop @groups;
+            }
+            next;
+        }
+
+        # $word must be an option key by now
+        print "$file:$line: option $word must be immediately followed by a colon\n"
+            unless $word =~ s/:$//;
+        print "$file:$line: duplicate option $word in $group->{'type'} $group->{'name'}\n"
+            if exists $group->{$word} and not defined $options->{'<multi>'}->{$word};
+
+        my $type = defined $options->{$group->{'type'}}->{$word} ? $options->{$group->{'type'}}->{$word}
+                 : defined $options->{'<anywhere>'}->{$word}     ? $options->{'<anywhere>'}->{$word}
+                 : undef;
+        if ($type) {
+            my $value = get_config_word();
+            $group->{$word} = $value;
+            print "$file:$line: not a valid $type: '$value'\n"
+                unless $value =~ /$type_regex{$type}/;
+        } else {
+            print "$file:$line: not a valid option name: $word\n";
+        }
+    }
+    while (scalar @groups > 0) {
+        print "$file: missing closing bracket, opening bracket was on line " .
+            "$group->{'line'}, $group->{'type'} $group->{'name'}\n";
+        $return{$group->{'name'}} = $group;
+        $group = pop @groups;
+    }
+
+    $return{$group->{'name'}} = $group;
+    return %return;
+}
+
 
 ##
 ##  These are the functions that verify each individual file, called
@@ -190,7 +341,7 @@ control_ctl
         if (/^\/localencoding\//) {
             unless ( ($msg, $act) =
                         /^(\/localencoding\/):([^:=]+)$/ ) {
-                print "$file:$line: malformed line.\n"; 
+                print "$file:$line: malformed line.\n";
             }
             next input;
         }
@@ -290,6 +441,27 @@ expire_ctl
 sub
 incoming_conf
 {
+    parse_config(
+        {
+            '<anywhere>' => {
+                'comment'         => 'string',
+                'email'           => 'string',
+                'identd'          => 'string',
+                'password'        => 'string',
+                'patterns'        => 'string',
+                'hostname'        => 'list of hostnames',
+                'hold-time'       => 'number',
+                'max-connections' => 'number / "unlimited" / "none"',
+                'ignore'          => 'boolean',
+                'nolist'          => 'boolean',
+                'noresendid'      => 'boolean',
+                'skip'            => 'boolean',
+                'streaming'       => 'boolean',
+            },
+            'group' => {},
+            'peer' => {},
+        }
+    );
     return;
 }
 
@@ -337,6 +509,103 @@ inn_conf
 #            if ! -f $paths{"moderators"};
 #    }
 
+    return;
+}
+
+
+##
+## innfeed.conf
+##
+sub
+innfeed_conf
+{
+    my %required_globals = ( # allowed anywhere, but have to exist in global scope
+        'article-timeout'       => 'number',
+        'response-timeout'      => 'number',
+        'initial-sleep'         => 'number',
+        'initial-connections'   => 'number',
+        'max-connections'       => 'number',
+        'dynamic-method'        => 'number',
+        'dynamic-backlog-low'   => 'floating-point number (0.0-100.0)',
+        'dynamic-backlog-high'  => 'floating-point number (0.0-100.0)',
+        'dynamic-backlog-filter'=> 'floating-point number',
+        'max-queue-size'        => 'number',
+        'streaming'             => 'boolean',
+        'no-check-high'         => 'floating-point number (0.0-100.0)',
+        'no-check-low'          => 'floating-point number (0.0-100.0)',
+        'no-check-filter'       => 'floating-point number',
+        'bindaddress'           => 'IPv4 address / "any / "none"',
+        'bindaddress6'          => 'IPv6 address / "any / "none"',
+        'port-number'           => 'number',
+        'force-ipv4'            => 'boolean',
+        'drop-deferred'         => 'boolean',
+        'min-queue-connection'  => 'boolean',
+        'no-backlog'            => 'boolean',
+        'backlog-limit'         => 'number',
+        'backlog-factor'        => 'floating-point number',
+        'backlog-limit-highwater' => 'number',
+        'backlog-feed-first'    => 'boolean',
+        'username'              => 'string',
+        'password'              => 'string',
+        'deliver-authname'      => 'string',
+        'deliver-password'      => 'string',
+        'deliver-username'      => 'string',
+        'deliver-realm'         => 'string',
+        'deliver-rcpt-to'       => 'string',
+        'deliver-to-header'     => 'string',
+    );
+    my %groups = parse_config(
+        {
+            '<anywhere>'  => \%required_globals,
+            '<global scope>'    => {    # not required, defaults exist
+                'news-spool'            => 'path',
+                'input-file'            => 'path',
+                'pid-file'              => 'path',
+                'debug-level'           => 'number',
+                'debug-shrinking'       => 'boolean',
+                'fast-exit'             => 'boolean',
+                'use-mmap'              => 'boolean',
+                'log-file'              => 'path',
+                'log-time-format'       => 'string',
+                'backlog-directory'     => 'path',
+                'backlog-highwater'     => 'number',
+                'backlog-ckpt-period'   => 'number',
+                'backlog-newfile-period'=> 'number',
+                'backlog-rotate-period' => 'number',
+                'dns-retry'             => 'number',
+                'dns-expire'            => 'number',
+                'close-period'          => 'number',
+                'gen-html'              => 'boolean',
+                'status-file'           => 'path',
+                'connection-stats'      => 'boolean',
+                'host-queue-highwater'  => 'number',
+                'stats-period'          => 'number',
+                'stats-reset'           => 'number',
+                'initial-reconnect-time'=> 'number',
+                'max-reconnect-time'    => 'number',
+                'stdio-fdmax'           => 'number',
+            },
+            'group'             => {},
+            'peer'              => {
+                'ip-name'               => 'hostname',
+            },
+        }
+    );
+    # check presence of required keys in global scope
+    foreach (keys %required_globals) {
+        next if /bindaddress|bindaddress6|username|password|deliver/; # not required
+        print "$file: required key $_ not defined in global scope.\n"
+            unless defined $groups{'<global scope>'}->{$_};
+    }
+    # check some numeric values
+    foreach my $group (keys %groups) {
+        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-method must be between 0 and 3\n"
+            if (defined $groups{$group}->{'dynamic-method'} && $groups{$group}->{'dynamic-method'} > 3);
+        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-backlog-filter must be between 0.0 and 1.0\n"
+            if (defined $groups{$group}->{'dynamic-backlog-filter'} && $groups{$group}->{'dynamic-backlog-filter'} > 1.0);
+        print "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: backlog-factor must be larger than 1.0\n"
+            if (defined $groups{$group}->{'backlog-factor'} && $groups{$group}->{'backlog-factor'} <= 1.0);
+    }
     return;
 }
 
@@ -622,12 +891,106 @@ passwd_nntp
 sub
 readers_conf
 {
+    parse_config(
+        {
+            'auth'      => {
+                'hosts'         => 'list of hostnames or netblocks',
+                'localaddress'  => 'list of hostnames or netblocks',
+                'res'           => 'path', # pathbin/auth/resolv or absolute
+                'auth'          => 'path', # pathbin/auth/passwd or absolute
+                'perl_auth'     => 'path',
+                'python_auth'   => 'path',
+                'default'       => 'string',
+                'default-domain'=> 'string',
+                'key'           => 'string',
+                'require-ssl'   => 'boolean',
+                'perl_access'   => 'path',
+                'python_access' => 'path',
+                'python_dynamic'=> 'path',
+            },
+            'access'    => {
+                'users'         => 'string', # comma-separated list of wildmat patterns
+                'newsgroups'    => 'string', # comma-separated list of wildmat patterns
+                'read'          => 'string', # like newsgroups, cannot be used together!
+                'post'          => 'string', # like read
+                'access'        => 'set of access permission letters',
+                'key'           => 'string',
+                'reject_with'   => 'string',
+                'max_rate'      => 'number',
+                'localtime'     => 'boolean',
+                'newsmaster'    => 'string', # email address
+                'strippath'     => 'boolean',
+                'perlfilter'    => 'boolean',
+                'pythonfilter'  => 'boolean',
+                'virtualhost'   => 'boolean',
+                # inn.conf parameters:
+                'addnntppostingdate'    => 'boolean',
+                'addnntppostinghost'    => 'boolean',
+                'backoff_auth'          => 'boolean',   # careful:
+                'backoff_db'            => 'string',    # the inn.conf options
+                'backoff_k'             => 'number',    # are without "_"
+                'backoff_postfast'      => 'number',
+                'backoff_postslow'      => 'number',
+                'backoff_trigger'       => 'number',
+                'checkincludedtext'     => 'boolean',
+                'clienttimeout'         => 'number',
+                'complaints'            => 'string',
+                'domain'                => 'hostname',
+                'fromhost'              => 'hostname',
+                'localmaxartsize'       => 'number',
+                'moderatormailer'       => 'string', # email address: %s@moderators.isc.org
+                'nnrpdauthsender'       => 'boolean',
+                'nnrpdcheckart'         => 'boolean',
+                'nnrpdoverstats'        => 'boolean',
+                'nnrpdposthost'         => 'hostname',
+                'nnrpdpostport'         => 'number',
+                'organization'          => 'string',
+                'pathhost'              => 'string', # hostname?
+                'readertrack'           => 'boolean',
+                'spoolfirst'            => 'boolean',
+                'strippostcc'           => 'boolean',
+            },
+            '<multi>'   => { # hack: "don't warn about duplicates for these keys"
+                'res'           => 1,
+                'auth'          => 1,
+                'perl_auth'     => 1,
+                'python_auth'   => 1,
+            }
+        }
+    );
     return;
 }
 
 
 ##
-##  Routines to check permissions
+##  storage.conf
+##
+sub
+storage_conf
+{
+    my %groups = parse_config(
+        {
+            'method' => {
+                'class'         => 'number',
+                'newsgroups'    => 'string', # uwildmat_poison
+                'size'          => 'minsize[,maxsize] definition',
+                'expires'       => 'mintime[,maxtime] definition',
+                'options'       => 'string',
+                'exactmatch'    => 'boolean',
+            },
+        }
+    );
+    # allowed method names include:  cnfs timecaf timehash tradspool trash
+    foreach my $method (keys %groups) {
+        print "$file:$groups{$method}->{'line'}: not a valid storage method: $method.\n"
+            unless $method =~ /^(?:cnfs|timecaf|timehash|tradspool|trash|<global scope>)$/;
+    }
+    return;
+}
+
+
+##
+##  Routines to check permissions.
 ##
 
 ##  Given a file F, check its mode to be M (array of min and max file modes),
@@ -724,11 +1087,11 @@ my @newsbin_public = (
 );
 my @newsbin_private = (
     'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
-    'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs', 
+    'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs',
     'tally.control', 'writelog'
 );
 
-## The modes (min and max) for the various programs.
+##  The modes (min and max) for the various programs.
 my %prog_modes = (
     'inews',		 [0500, $INN::Config::inewsmode],
     'innd',		 [0500, 0550],
