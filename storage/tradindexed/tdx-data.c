@@ -464,8 +464,6 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
     if ((end > data->high && high > data->high) || data->remapoutoforder) {
         data->remapoutoforder = false;
         unmap_data(data);
-    }
-    if (end > data->high && high > data->high) {
         unmap_index(data);
         map_index(data);
         data->high = high;
