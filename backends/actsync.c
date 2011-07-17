@@ -1800,9 +1800,6 @@ output_grps(struct grp *grp, int grplen)
     int add;		/* number of groups added */
     int change;		/* number of groups changed */
     int remove;		/* number of groups removed */
-    int no_new_dir;	/* number of new groups with missing/empty dirs */
-    int new_dir;	/* number of new groups, non-empty dir no water chg */
-    int water_change;	/* number of new groups where hi&low water changed */
     int work;		/* adds + changes + removals */
     int same;		/* the number of groups the same */
     int ignore;		/* host1 newsgroups to ignore */
@@ -1901,9 +1898,6 @@ output_grps(struct grp *grp, int grplen)
     remove = 0;
     same = 0;
     ignore = 0;
-    no_new_dir = 0;
-    new_dir = 0;
-    water_change = 0;
     for (i=0; i < grplen; ++i) {
 	/* skip non-output ...  */
 	if (grp[i].output == 0) {
