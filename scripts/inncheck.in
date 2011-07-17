@@ -369,7 +369,7 @@ control_ctl
     my ($msg, $from, $ng, $act);
 
     input: while ( <$IN> ) {
-	next input if &spacious($file, ++$line);
+	next input if spacious($file, ++$line);
 
         if (/^\/localencoding\//) {
             unless ( ($msg, $act) =
@@ -423,7 +423,7 @@ expire_ctl
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
     input: while ( <$IN> ) {
-	next input if &spacious($file, ++$line);
+	next input if spacious($file, ++$line);
 
 	if ( ($v) = m@/remember/:(.+)@ ) {
 	    eprint "$file:$line: more than one /remember/ line.\n"
@@ -653,7 +653,7 @@ moderators
     my ($k, $v);
 
     input: while ( <$IN> ) {
-	next input if &spacious($file, ++$line);
+	next input if spacious($file, ++$line);
 
 	unless ( ($k, $v) = /^([^:]+):(.+)$/ ) {
 	    eprint "$file:$line: malformed line.\n";
@@ -871,7 +871,7 @@ nntpsend_ctl
     my ($site, $fqdn, $flags, $f, $v);
 
     input: while ( <$IN> ) {
-	next input if &spacious($file, ++$line);
+	next input if spacious($file, ++$line);
 
 	##  Ignore the size info for now.
 	unless ( ($site, $fqdn, $flags) =
@@ -906,7 +906,7 @@ passwd_nntp
     my ($name, $pass);
 
     input: while ( <$IN> ) {
-	next input if &spacious($file, ++$line);
+	next input if spacious($file, ++$line);
 
 	unless ( ($name, $pass) = /[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/ ) {
 	    eprint "$file:$line: malformed line.\n";
@@ -1143,35 +1143,35 @@ check_all_perms
     my ($newsbin) = $paths{'newsbin'};
 
     foreach ( @directories ) {
-	&checkperm($paths{$_}, [0755, 0775]);
+	checkperm($paths{$_}, [0755, 0775]);
     }
-    &checkperm($paths{'innddir'}, [0750, 0775]);
-    &checkperm($paths{'innbind'}, [04500, 04550], 'root', $INN::Config::runasgroup);
+    checkperm($paths{'innddir'}, [0750, 0775]);
+    checkperm($paths{'innbind'}, [04500, 04550], 'root', $INN::Config::runasgroup);
     foreach ( keys %prog_modes ) {
-	&checkperm($paths{$_}, $prog_modes{$_});
+	checkperm($paths{$_}, $prog_modes{$_});
     }
     foreach ( keys %paths ) {
-	&checkperm($paths{$_}, $modes{$_})
+	checkperm($paths{$_}, $modes{$_})
 	    if defined $modes{$_};
     }
-    &checkperm($paths{'history'}, [0600, $INN::Config::filemode]);
+    checkperm($paths{'history'}, [0600, $INN::Config::filemode]);
     # Commented out for now since it depends on the history type.
-    #&checkperm($paths{'history'} . ".dir", [0600, $INN::Config::filemode]);
-    #&checkperm($paths{'history'} . ".index", [0600, $INN::Config::filemode]);
-    #&checkperm($paths{'history'} . ".hash", [0600, $INN::Config::filemode]);
+    #checkperm($paths{'history'} . ".dir", [0600, $INN::Config::filemode]);
+    #checkperm($paths{'history'} . ".index", [0600, $INN::Config::filemode]);
+    #checkperm($paths{'history'} . ".hash", [0600, $INN::Config::filemode]);
     foreach ( @newsbin_private ) {
-	&checkperm("$newsbin/$_", [0500, 0550]);
+	checkperm("$newsbin/$_", [0500, 0550]);
     }
     foreach ( @newsbin_public ) {
-	&checkperm("$newsbin/$_", [0500, 0555]);
+	checkperm("$newsbin/$_", [0500, 0555]);
     }
     foreach ( @rnews_programs ) {
-	&checkperm("$rnewsprogs/$_", [0500, 0555]);
+	checkperm("$rnewsprogs/$_", [0500, 0555]);
     }
 
     ##  Also make sure that @rnews_programs are the *only* programs in there;
     ##  anything else is probably someone trying to spoof rnews into being bad.
-    &intersect($rnewsprogs, @rnews_programs);
+    intersect($rnewsprogs, @rnews_programs);
 
     return;
 }
@@ -1230,7 +1230,7 @@ arg: foreach ( @ARGV ) {
     push(@todo, $_);
 }
 
-&Usage("Can't use `--fix' without `--perm'")
+Usage("Can't use `--fix' without `--perm'")
     if $fix && $perms < 1;
 $pfx = $fix ? '# ' : '';
 
@@ -1249,13 +1249,13 @@ action: foreach my $workfile ( @todo ) {
 	eprint "$pfx$workfile:0: can't open $!\n";
 	next action;
     }
-    &checkperm($file, $modes{$workfile})
+    checkperm($file, $modes{$workfile})
 	if $perms == -1 && defined $modes{$workfile};
     $line = 0;
     $checklist{$workfile}();
     close($IN);
 }
 
-&check_all_perms()
+check_all_perms()
     if $perms == 1;
 exit($exitval);
