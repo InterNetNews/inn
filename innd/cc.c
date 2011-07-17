@@ -680,7 +680,7 @@ CCgo(char *av[])
     Mode = OMrunning;
     ThrottledbyIOError = false;
 
-    if (NNRPReason && !innconf->readerswhenstopped) {
+    if (NNRPReason != NULL && !innconf->readerswhenstopped) {
 	av[0] = YES;
 	av[1] = p;
 	CCreaders(av);
@@ -1178,6 +1178,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
     if (ModeReason)
 	free(ModeReason);
     ModeReason = xstrdup(reason);
+    /* Disallow readers when the server is paused or throttled. */
     if (NNRPReason == NULL && !innconf->readerswhenstopped) {
 	av[0] = NO;
 	av[1] = ModeReason;
