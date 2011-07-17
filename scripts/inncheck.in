@@ -5,13 +5,15 @@
 ##  Sanity-check the configuration of an INN system
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
-$ST_MODE = 2;
-$ST_UID  = 4;
-$ST_GID  = 5;
+use strict;
+
+my $ST_MODE = 2;
+my $ST_UID  = 4;
+my $ST_GID  = 5;
 
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
-%paths = (
+my %paths = (
     'active',		"$INN::Config::active",
     'archive',		"$INN::Config::patharchive",
     'badnews',		"$INN::Config::badnews",
@@ -47,7 +49,7 @@ $ST_GID  = 5;
 );
 
 ##  The sub's that check the config files.
-%checklist = (
+my %checklist = (
     'active',		'active',
     'control.ctl',	'control_ctl',
     'control.ctl.local','control_ctl',
@@ -65,7 +67,7 @@ $ST_GID  = 5;
 ##  Min and max values, by bit:  between 0400 and 0640,
 ##  0600 is allowed, but not 0500 for instance (not executable).
 ##  0660 is used when the file can contain passwords.
-%modes = (
+my %modes = (
     'active',		[0600, $INN::Config::filemode],
     'incoming.conf',	[0400, 0660],
     'inn.conf',		[0400, 0664],
@@ -74,11 +76,21 @@ $ST_GID  = 5;
     'passwd.nntp',	[0400, 0660],
 );
 
+## The file and line we're currently at.
+my ($file, $line);
+
+## Command line arguments.
+my ($all, $verbose, $pedantic, $fix, $perms, $noperms, $pfx, @todo);
+
+my $program = $0;
+$program =~ s@.*/@@;
+$| = 1;
+
 
 sub
 spacious
 {
-    local ($i);
+    my ($i);
 
     chop;
     study;
@@ -91,7 +103,7 @@ spacious
 	print "$file:$line: ends with whitespace\n";
 	$i = 1;
     }
-    $i;
+    return $i;
 }
 
 ##
@@ -107,7 +119,7 @@ spacious
 sub
 active
 {
-    local ($group, $hi, $lo, $f, $alias, %groups, %aliases);
+    my ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
     input: while ( <IN> ) {
 	$line++;
@@ -133,7 +145,7 @@ active
 	$aliases{$alias} = $line
 	    unless defined $groups{$alias};
     }
-    foreach $key ( keys %aliases ) {
+    foreach my $key ( keys %aliases ) {
 	print "$file:$aliases{$key} aliased to unknown group `$key'.\n"
 	    unless defined $groups{$key};
     }
@@ -144,7 +156,7 @@ active
 ##
 ##  The control.ctl and control.ctl.local files.
 ##
-%control'messages = (
+my %control_messages = (
     '/encoding/',	1,
     '/localencoding/',	1,
     '/maxdocheckgroups/', 1,
@@ -158,7 +170,7 @@ active
     'senduuname',	1,
     'version',		1,
 );
-%control'actions = (
+my %control_actions = (
     'drop',		1,
     'log',		1,
     'mail',		1,
@@ -170,7 +182,7 @@ active
 sub
 control_ctl
 {
-    local ($msg, $from, $ng, $act);
+    my ($msg, $from, $ng, $act);
 
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
@@ -188,7 +200,7 @@ control_ctl
 	    print "$file:$line: malformed line.\n";
 	    next input;
 	}
-	if ( !defined $control'messages{$msg} ) {
+	if ( !defined $control_messages{$msg} ) {
 	    print "$file:$line: unknown control message `$msg'.\n";
 	    next input;
 	}
@@ -210,7 +222,7 @@ control_ctl
 	$act =~ s/=.*//;
 	$act = "verify" if ($act =~ /^verify-.+/) ;
 	print "$file:$line: unknown action `$act'\n"
-	    if !defined $control'actions{$act} and $msg !~ /^\//;
+	    if !defined $control_actions{$act} and $msg !~ /^\//;
     }
     1;
 }
@@ -222,7 +234,7 @@ control_ctl
 sub
 expire_ctl
 {
-    local ($rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge, $groupbaseexpiry);
+    my ($rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge, $groupbaseexpiry);
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
@@ -335,7 +347,7 @@ inn_conf
 sub
 moderators
 {
-    local ($k, $v);
+    my ($k, $v);
 
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
@@ -363,7 +375,7 @@ moderators
 ##
 ##  newsfeeds
 ##
-%newsfeeds'flags = (
+my %newsfeeds_flags = (
     '<',	'^\d+$',
     '>',	'^\d+$',
     'A',	'^[cCdefjoOp]+$',
@@ -386,10 +398,10 @@ moderators
 sub
 newsfeeds
 {
-    local ($next, $start, $me_empty, @muxes, %sites);
-    local ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
-    local ($bang, $nobang, $prog, $dir);
-    local (%variables, $key);
+    my ($next, $start, $me_empty, @muxes, %sites);
+    my ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
+    my ($bang, $nobang, $prog, $dir);
+    my (%variables, $key);
 
     input: while ( <IN> ) {
 	$line++;
@@ -476,7 +488,7 @@ newsfeeds
 	##  Check distributions.
 	if ( ($dists) = $pats =~ m@.*/(.*)@ ) {
 	    $bang = $nobang = 0;
-	    dist: foreach $d ( split(/,/, $dists) ) {
+	    dist: foreach my $d ( split(/,/, $dists) ) {
 		if ( $d =~ /^!/ ) {
 		    $bang++;
 		}
@@ -490,13 +502,13 @@ newsfeeds
 		if $bang && $nobang;
 	}
 	$type = "f";
-	flag: foreach $flag ( split(/,/, $flags) ) {
+	flag: foreach my $flag ( split(/,/, $flags) ) {
 	    ($k, $v) = $flag =~ /(.)(.*)/;
-	    if ( !defined $newsfeeds'flags{$k} ) {
+	    if ( !defined $newsfeeds_flags{$k} ) {
 		print "$file:$start: unknown flag `$flag'\n";
 		next flag;
 	    }
-	    if ( $v !~ /$newsfeeds'flags{$k}/ ) {
+	    if ( $v !~ /$newsfeeds_flags{$k}/ ) {
 		print "$file:$start: bad value `$v' for flag `$k'\n";
 		next flag;
 	    }
@@ -553,7 +565,7 @@ newsfeeds
 sub
 nntpsend_ctl
 {
-    local ($site, $fqdn, $flags, $f, $v);
+    my ($site, $fqdn, $flags, $f, $v);
 
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
@@ -588,7 +600,7 @@ nntpsend_ctl
 sub
 passwd_nntp
 {
-    local ($name, $pass);
+    my ($name, $pass);
 
     input: while ( <IN> ) {
 	next input if &spacious($file, ++$line);
@@ -623,8 +635,8 @@ readers_conf
 sub
 checkperm
 {
-    local ($f, $m, $u, $g) = ( @_, $INN::Config::runasuser, $INN::Config::runasgroup);
-    local (@sb, $owner, $group, $mode);
+    my ($f, $m, $u, $g) = ( @_, $INN::Config::runasuser, $INN::Config::runasgroup);
+    my (@sb, $owner, $group, $mode);
 
     die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"
 	if !defined $f;
@@ -670,8 +682,8 @@ checkperm
 sub
 intersect
 {
-    local ($dir, @files) = @_;
-    local (@in, %dummy, $i);
+    my ($dir, @files) = @_;
+    my (@in, %dummy, $i);
 
     if ( !opendir(DH, $dir) ) {
 	print "$pfx$dir:0: can't open directory\n";
@@ -693,30 +705,30 @@ intersect
             }
         }
     }
-    $i;
+    return $i;
 }
 
-@directories = (
+my @directories = (
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
     'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
 );
-@rnews_programs = (
+my @rnews_programs = (
     'bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch'
 );
-@newsbin_public = (
+my @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'filechan', 'getlist', 'grephistory', 'innconfval', 'innxmit',
     'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-nntp', 'send-uucp',
     'shlock', 'shrinkfile'
 );
-@newsbin_private = (
+my @newsbin_private = (
     'ctlinnd', 'expire', 'expirerm', 'inncheck', 'innstat', 'innwatch',
     'makehistory', 'news.daily', 'overchan', 'prunehistory', 'scanlogs', 
     'tally.control', 'writelog'
 );
 
 ## The modes (min and max) for the various programs.
-%prog_modes = (
+my %prog_modes = (
     'inews',		 [0500, $INN::Config::inewsmode],
     'innd',		 [0500, 0550],
     'newsboot',		 [0500, 0550],
@@ -728,8 +740,8 @@ intersect
 sub
 check_all_perms
 {
-    local ($rnewsprogs) = $paths{'rnewsprogs'};
-    local ($newsbin) = $paths{'newsbin'};
+    my ($rnewsprogs) = $paths{'rnewsprogs'};
+    my ($newsbin) = $paths{'newsbin'};
 
     foreach ( @directories ) {
 	&checkperm($paths{$_}, [0755, 0775]);
@@ -773,7 +785,7 @@ check_all_perms
 sub
 Usage
 {
-    local ($i) = 0;
+    my ($i) = 0;
 
     print "Usage error: @_.\n";
     print
@@ -833,7 +845,7 @@ parse_flags
 	if ( /^-/ ) {
 	    &Usage("Unknown flag `$_'");
 	}
-	if ( ($k, $v) = /(.*)=(.*)/ ) {
+	if ( my ($k, $v) = /(.*)=(.*)/ ) {
 	    &Usage("Can't check `$k'")
 		if !defined $checklist{$k};
 	    push(@todo, $k);
@@ -856,11 +868,8 @@ parse_flags
 }
 
 
-$program = $0;
-$program =~ s@.*/@@;
-$| = 1;
 &parse_flags();
-action: foreach $workfile ( @todo ) {
+action: foreach my $workfile ( @todo ) {
     $file = $paths{$workfile};
     if ( ! -f $file ) {
 	print "$file:0: file missing\n";
