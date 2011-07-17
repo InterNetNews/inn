@@ -552,50 +552,44 @@ inn_conf
 sub
 innfeed_conf
 {
-    my %required_globals = ( # allowed anywhere, but have to exist in global scope
-        'article-timeout'       => 'number',
-        'response-timeout'      => 'number',
-        'initial-sleep'         => 'number',
-        'initial-connections'   => 'number',
-        'max-connections'       => 'number',
-        'dynamic-method'        => 'number',
-        'dynamic-backlog-low'   => 'floating-point number (0.0-100.0)',
-        'dynamic-backlog-high'  => 'floating-point number (0.0-100.0)',
-        'dynamic-backlog-filter'=> 'floating-point number',
-        'max-queue-size'        => 'number',
-        'streaming'             => 'boolean',
-        'no-check-high'         => 'floating-point number (0.0-100.0)',
-        'no-check-low'          => 'floating-point number (0.0-100.0)',
-        'no-check-filter'       => 'floating-point number',
-        'bindaddress'           => 'IPv4 address / "any / "none"',
-        'bindaddress6'          => 'IPv6 address / "any / "none"',
-        'port-number'           => 'number',
-        'force-ipv4'            => 'boolean',
-        'drop-deferred'         => 'boolean',
-        'min-queue-connection'  => 'boolean',
-        'no-backlog'            => 'boolean',
-        'backlog-limit'         => 'number',
-        'backlog-factor'        => 'floating-point number',
-        'backlog-limit-highwater' => 'number',
-        'backlog-feed-first'    => 'boolean',
-        'username'              => 'string',
-        'password'              => 'string',
-        'deliver-authname'      => 'string',
-        'deliver-password'      => 'string',
-        'deliver-username'      => 'string',
-        'deliver-realm'         => 'string',
-        'deliver-rcpt-to'       => 'string',
-        'deliver-to-header'     => 'string',
-    );
     my %groups = parse_config(
         {
-            '<anywhere>'  => \%required_globals,
-            '<global scope>'    => {    # not required, defaults exist
+            '<anywhere>'        => {
+                'article-timeout'       => 'number',
+                'response-timeout'      => 'number',
+                'initial-connections'   => 'number',
+                'max-connections'       => 'number',
+                'close-period'          => 'number',
+                'dynamic-method'        => 'number',
+                'dynamic-backlog-low'   => 'floating-point number (0.0-100.0)',
+                'dynamic-backlog-high'  => 'floating-point number (0.0-100.0)',
+                'dynamic-backlog-filter'=> 'floating-point number',
+                'max-queue-size'        => 'number',
+                'streaming'             => 'boolean',
+                'no-check-high'         => 'floating-point number (0.0-100.0)',
+                'no-check-low'          => 'floating-point number (0.0-100.0)',
+                'no-check-filter'       => 'floating-point number',
+                'bindaddress'           => 'IPv4 address / "any / "none"',
+                'bindaddress6'          => 'IPv6 address / "any / "none"',
+                'port-number'           => 'number',
+                'force-ipv4'            => 'boolean',
+                'drop-deferred'         => 'boolean',
+                'min-queue-connection'  => 'boolean',
+                'no-backlog'            => 'boolean',
+                'backlog-limit'         => 'number',
+                'backlog-factor'        => 'floating-point number',
+                'backlog-limit-highwater' => 'number',
+                'backlog-feed-first'    => 'boolean',
+                'username'              => 'string',
+                'password'              => 'string',
+            },
+            '<global scope>'    => {
                 'news-spool'            => 'path',
                 'input-file'            => 'path',
                 'pid-file'              => 'path',
                 'debug-level'           => 'number',
                 'debug-shrinking'       => 'boolean',
+                'initial-sleep'         => 'number',
                 'fast-exit'             => 'boolean',
                 'use-mmap'              => 'boolean',
                 'log-file'              => 'path',
@@ -607,7 +601,6 @@ innfeed_conf
                 'backlog-rotate-period' => 'number',
                 'dns-retry'             => 'number',
                 'dns-expire'            => 'number',
-                'close-period'          => 'number',
                 'gen-html'              => 'boolean',
                 'status-file'           => 'path',
                 'connection-stats'      => 'boolean',
@@ -617,6 +610,12 @@ innfeed_conf
                 'initial-reconnect-time'=> 'number',
                 'max-reconnect-time'    => 'number',
                 'stdio-fdmax'           => 'number',
+                'deliver-authname'      => 'string',
+                'deliver-password'      => 'string',
+                'deliver-username'      => 'string',
+                'deliver-realm'         => 'string',
+                'deliver-rcpt-to'       => 'string',
+                'deliver-to-header'     => 'string',
             },
             'group'             => {},
             'peer'              => {
@@ -625,12 +624,6 @@ innfeed_conf
             '<include>'         => { '$INCLUDE' => 'ignore' },
         }
     );
-    # check presence of required keys in global scope
-    foreach (keys %required_globals) {
-        next if /bindaddress|bindaddress6|username|password|deliver/; # not required
-        eprint "$file: required key $_ not defined in global scope.\n"
-            unless defined $groups{'<global scope>'}->{$_};
-    }
     # check some numeric values
     foreach my $group (keys %groups) {
         eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-method must be between 0 and 3\n"
