@@ -12,6 +12,9 @@
 # called, and after it's finished loading, the perl routine
 # `filter_after_reload' is called. See startup_innd.pl for more details.
 #
+# When filtering is disabled, the filter_end() Perl routine is called,
+# if defined, prior to the deactivation of the filter.
+#
 # The following routines can be defined here for use by innd:
 #
 #	sub filter_art { ... }
@@ -124,7 +127,9 @@ sub filter_messageid {
      $rval;
 }
 
-
+sub filter_end {
+# Do whatever you want to clean up things when Perl filtering is disabled.
+}
 
 
 

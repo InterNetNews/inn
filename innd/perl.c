@@ -70,6 +70,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     int         i, rc;
     char *      p;
     static char buf[256];
+    bool        failure;
 
     if (!PerlFilterActive) return NULL;
     filter = perl_get_cv("filter_art", 0);
@@ -105,6 +106,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     ENTER;
     SAVETMPS;
     PUSHMARK(SP);
+    PUTBACK;
     rc = perl_call_sv((SV *) filter, G_EVAL|G_SCALAR|G_NOARGS);
     SPAGAIN;
 
@@ -113,20 +115,27 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
     if (SvTRUE(ERRSV)) {
+        failure = true;
         syslog(L_ERROR, "Perl function filter_art died on article %s: %s",
                HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "?",
                SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(false);
-    } else if (rc == 1) {
-        p = POPp;
-        if (p && *p)
-            strlcpy(buf, p, sizeof(buf));
+    } else {
+        failure = false;
+        if (rc == 1) {
+            p = POPp;
+            if (p && *p)
+                strlcpy(buf, p, sizeof(buf));
+        }
     }
 
     PUTBACK;
     FREETMPS;
     LEAVE;
+
+    if (failure)
+        PerlFilter(false);
+
     return (buf[0] != '\0') ? buf : NULL;
 }
 
@@ -144,6 +153,7 @@ PLmidfilter(char *messageID)
     int         rc;
     char        *p;
     static char buf[256];
+    bool        failure;
 
     if (!PerlFilterActive) return NULL;
     filter = perl_get_cv("filter_messageid", 0);
@@ -161,19 +171,26 @@ PLmidfilter(char *messageID)
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
     if (SvTRUE(ERRSV)) {
+        failure = true;
         syslog(L_ERROR, "Perl function filter_messageid died on id %s: %s",
                messageID, SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(false);
-    } else if (rc == 1) {
-        p = POPp;
-        if (p && *p)
-            strlcpy(buf, p, sizeof(buf));
+    } else {
+        failure = false;
+        if (rc == 1) {
+            p = POPp;
+            if (p && *p)
+                strlcpy(buf, p, sizeof(buf));
+        }
     }
-    
+
     PUTBACK;
     FREETMPS;
     LEAVE;
+
+    if (failure)
+        PerlFilter(false);
+
     return (buf[0] != '\0') ? buf : NULL;
 }
 
@@ -188,6 +205,7 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     dSP;
     HV          *mode;
     CV          *filter;
+    bool        failure;
 
     filter = perl_get_cv("filter_mode", 0);
     if (!filter) return;
@@ -216,16 +234,31 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
 
     (void) hv_store(mode, "reason", 6, newSVpv(reason, 0), 0);
 
+    ENTER;
+    SAVETMPS;
     PUSHMARK(SP);
+    PUTBACK;
+
     perl_call_sv((SV *) filter, G_EVAL|G_DISCARD|G_NOARGS);
+
+    SPAGAIN;
 
     /* Check $@, which will be set if the sub died. */
     if (SvTRUE(ERRSV)) {
+        failure = true;
         syslog(L_ERROR, "Perl function filter_mode died: %s",
                 SvPV(ERRSV, PL_na));
         (void) POPs;
-        PerlFilter(false);
+    } else {
+        failure = false;
     }
+
+    PUTBACK;
+    FREETMPS;
+    LEAVE;
+
+    if (failure)
+        PerlFilter(false);
 }
 
 
@@ -240,7 +273,7 @@ PLstats(void)
 {
     dSP;
     char *argv[] = { NULL };
-    
+
     if (perl_get_cv("filter_stats", false) == NULL)
         return NULL;
     else {
@@ -249,6 +282,7 @@ PLstats(void)
 
 	ENTER;
 	SAVETMPS;
+        /* No need for PUSHMARK(SP) with call_argv(). */
 	perl_call_argv("filter_stats", G_EVAL | G_NOARGS, argv);
 	SPAGAIN;
         result = POPp;

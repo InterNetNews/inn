@@ -195,6 +195,8 @@ Perl filtering can be turned off with C<ctlinnd perl n> and back on again
 with C<ctlinnd perl y>.  Perl filtering is turned off automatically if
 loading of the filter fails or if the filter code returns any sort of a
 fatal error (either due to Perl itself or due to a C<die> in the Perl code).
+When filtering is disabled and a C<filter_end()> function is available,
+it will be called prior to the deactivation of the filter.
 
 =head1 Supported innd Callbacks
 
@@ -294,9 +296,10 @@ B<--with-filter-dir> to configure.
 If F<filter_nnrpd.pl> loads successfully and defines the Perl function
 filter_post(), Perl filtering is turned on.  Otherwise, it's turned off.
 If filter_post() ever returns a fatal error (either from Perl or from a
-C<die> in the Perl code), Perl filtering is turned off for the life of that
-nnrpd process and any further posts made during that session won't go
-through the filter.
+C<die> in the Perl code), Perl filtering is turned off for the life of
+that nnrpd process and any further posts made during that session won't go
+through the filter.  Besides, if F<filter_nnrpd.pl> defines a C<filter_end()>
+function, it will be called prior to the deactivation of the filter.
 
 While Perl filtering is on, every article received by nnrpd via the POST
 command is passed to the filter_post() Perl function before it is passed
