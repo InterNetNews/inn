@@ -908,7 +908,7 @@ passwd_nntp
     input: while ( <$IN> ) {
 	next input if &spacious($file, ++$line);
 
-	unless ( ($name, $pass) = /[\w\-\.]+:(.*):(.*)(:authinfo)?$/ ) {
+	unless ( ($name, $pass) = /[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/ ) {
 	    eprint "$file:$line: malformed line.\n";
 	    next input;
 	}

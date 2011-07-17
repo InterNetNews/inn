@@ -62,7 +62,7 @@ int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer)
 	if ((style = strchr(pass, ':')) != NULL) {
 	    *style++ = '\0';
 	    if (strcmp(style, "authinfo") != 0) {
-		errno = EDOM;
+		errno = E2BIG;
 		break;
 	    }
 	}
