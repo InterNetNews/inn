@@ -56,7 +56,8 @@ main(void)
 {
     struct hash *hash;
     FILE *words;
-    int reported, i;
+    bool reported;
+    int i;
     char buffer[1024];
     char *word;
     char *test, *testing, *strange, *change, *foo, *bar;
@@ -108,13 +109,12 @@ main(void)
     ok(26, hash_count(hash) == 3);
 
     hash_traverse(hash, string_traverse, &wordrefs[0]);
-    reported = 0;
+    reported = false;
     for (i = 0; wordrefs[i].word != NULL; i++)
         if (wordrefs[i].count != 1 && !reported) {
-            printf("not ");
-            reported = 1;
+            reported = true;
         }
-    puts("ok 27");
+    ok(27, !reported);
     ok(28, wordrefs[3].count == 0);
 
     hash_free(hash);
@@ -151,39 +151,35 @@ main(void)
 
     hash = hash_create(4, hash_string, string_key, string_equal,
                        string_delete);
-    reported = 0;
+    reported = false;
     if (hash == NULL)
-        printf("not ");
+        reported = true;
     else {
         while (fgets(buffer, sizeof(buffer), words)) {
             buffer[strlen(buffer) - 1] = '\0';
             word = xstrdup(buffer);
             if (!hash_insert(hash, word, word)) {
-                if (!reported)
-                    printf("not ");
-                reported = 1;
+                reported = true;
             }
         }
     }
-    puts("ok 37");
+    ok(37, !reported);
 
     if (fseek(words, 0, SEEK_SET) < 0)
         sysdie("Unable to rewind words file");
-    reported = 0;
+    reported = false;
     if (hash == NULL)
-        printf("not ");
+        reported = true;
     else {
         while (fgets(buffer, sizeof(buffer), words)) {
             buffer[strlen(buffer) - 1] = '\0';
             word = hash_lookup(hash, buffer);
             if (!word || strcmp(word, buffer) != 0) {
-                if (!reported)
-                    printf("not ");
-                reported = 1;
+                reported = true;
             }
         }
     }
-    puts("ok 38");
+    ok(38, !reported);
 
     hash_free(hash);
 

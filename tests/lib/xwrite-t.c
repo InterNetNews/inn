@@ -23,9 +23,9 @@ test_write(int n, int status, int total)
     int success;
 
     success = (status == total && memcmp(data, write_buffer, 256) == 0);
-    printf("%sok %d\n", success ? "" : "not ", n);
+    ok(n, success);
     if (!success && status != total)
-        printf("  status %d, total %d\n", status, total);
+        diag("  status %d, total %d\n", status, total);
 }
 
 int

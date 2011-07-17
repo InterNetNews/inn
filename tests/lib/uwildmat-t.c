@@ -16,9 +16,9 @@ test_r(int n, const char *text, const char *pattern, bool matches)
     bool matched;
 
     matched = uwildmat(text, pattern);
-    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    ok(n, matched == matches);
     if (matched != matches)
-        printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
+        diag("  %s\n  %s\n  expected %d\n", text, pattern, matches);
 }
 
 static void
@@ -27,10 +27,10 @@ test_p(int n, const char *text, const char *pattern, enum uwildmat matches)
     enum uwildmat matched;
 
     matched = uwildmat_poison(text, pattern);
-    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    ok(n, matched == matches);
     if (matched != matches)
-        printf("  %s\n  %s\n  expected %d got %d\n", text, pattern,
-               (int) matches, (int) matched);
+        diag("  %s\n  %s\n  expected %d got %d\n", text, pattern,
+             (int) matches, (int) matched);
 }
 
 static void
@@ -39,9 +39,9 @@ test_s(int n, const char *text, const char *pattern, bool matches)
     bool matched;
 
     matched = uwildmat_simple(text, pattern);
-    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    ok(n, matched == matches);
     if (matched != matches)
-        printf("  %s\n  %s\n  expected %d\n", text, pattern, matches);
+        diag("  %s\n  %s\n  expected %d\n", text, pattern, matches);
 }
 
 static void
@@ -50,9 +50,9 @@ test_v(int n, const char *text, bool matches)
     bool matched;
 
     matched = is_valid_utf8(text);
-    printf("%sok %d\n", matched == matches ? "" : "not ", n);
+    ok(n, matched == matches);
     if (matched != matches)
-        printf("  %s\n  expected %d\n", text, matches);
+        diag("  %s\n  expected %d\n", text, matches);
 }
 
 int

@@ -1,139 +1,612 @@
-/*  $Id$
-**
-**  Some utility routines for writing tests.
-**
-**  Herein are a variety of utility routines for writing tests.  All
-**  routines of the form ok*() take a test number and some number of
-**  appropriate arguments, check to be sure the results match the expected
-**  output using the arguments, and print out something appropriate for that
-**  test number.  Other utility routines help in constructing more complex
-**  tests.
-*/
+/* $Id$
+ *
+ * Some utility routines for writing tests.
+ *
+ * Here are a variety of utility routines for writing tests compatible with
+ * the TAP protocol.  All routines of the form ok() or is*() take a test
+ * number and some number of appropriate arguments, check to be sure the
+ * results match the expected output using the arguments, and print out
+ * something appropriate for that test number.  Other utility routines help in
+ * constructing more complex tests, skipping tests, or setting up the TAP
+ * output format.
+ *
+ * This file is part of C TAP Harness.  The current version plus supporting
+ * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ *
+ * Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
+ * Copyright 2001, 2002, 2004, 2005, 2006, 2007, 2008
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
-#include "config.h"
-#include "clibrary.h"
+/* Required for isnan() and isinf(). */
+#ifndef _XOPEN_SOURCE
+# define _XOPEN_SOURCE 600
+#endif
 
-#include "inn/messages.h"
-#include "inn/libinn.h"
+#include <errno.h>
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "libtest.h"
 
-/* A global buffer into which message_log_buffer stores error messages. */
-char *errors = NULL;
+/* Specific to the integration of C TAP Harness in INN. */
+#ifndef LIBTEST_NEW_FORMAT
+# include "inn/messages.h"
+# include "inn/libinn.h"
+#endif
+
+/*
+ * The test count.  Always contains the number that will be used for the next
+ * test status.
+ */
+unsigned long testnum = 1;
+
+/*
+ * Status information stored so that we can give a test summary at the end of
+ * the test case.  We store the planned final test and the count of failures.
+ * We can get the highest test count from testnum.
+ *
+ * We also store the PID of the process that called plan() and only summarize
+ * results when that process exits, so as to not misreport results in forked
+ * processes.
+ *
+ * If _lazy is true, we're doing lazy planning and will print out the plan
+ * based on the last test number at the end of testing.
+ */
+static unsigned long _planned = 0;
+static unsigned long _failed  = 0;
+static pid_t _process = 0;
+static int _lazy = 0;
 
 
 /*
-**  Initialize things.  Turns on line buffering on stdout and then prints out
-**  the number of tests in the test suite.
-*/
+ * Our exit handler.  Called on completion of the test to report a summary of
+ * results provided we're still in the original process.
+ */
+static void
+finish(void)
+{
+    unsigned long highest = testnum - 1;
+
+    if (_planned == 0 && !_lazy)
+        return;
+    fflush(stderr);
+    if (_process != 0 && getpid() == _process) {
+        if (_lazy) {
+            printf("1..%lu\n", highest);
+            _planned = highest;
+        }
+        if (_planned > highest)
+            printf("# Looks like you planned %lu test%s but only ran %lu\n",
+                   _planned, (_planned > 1 ? "s" : ""), highest);
+        else if (_planned < highest)
+            printf("# Looks like you planned %lu test%s but ran %lu extra\n",
+                   _planned, (_planned > 1 ? "s" : ""), highest - _planned);
+        else if (_failed > 0)
+            printf("# Looks like you failed %lu test%s of %lu\n", _failed,
+                   (_failed > 1 ? "s" : ""), _planned);
+        else if (_planned > 1)
+            printf("# All %lu tests successful or skipped\n", _planned);
+        else
+            printf("# %lu test successful or skipped\n", _planned);
+    }
+}
+
+
+/*
+ * Initialize things.  Turns on line buffering on stdout and then prints out
+ * the number of tests in the test suite.
+ */
+#ifndef LIBTEST_NEW_FORMAT
 void
 test_init(int count)
 {
+    plan(count);
+}
+#endif
+void
+plan(unsigned long count)
+{
     if (setvbuf(stdout, NULL, _IOLBF, BUFSIZ) != 0)
-        syswarn("cannot set stdout to line buffered");
-    printf("%d\n", count);
+        fprintf(stderr, "# cannot set stdout to line buffered: %s\n",
+                strerror(errno));
+    fflush(stderr);
+    printf("1..%lu\n", count);
+    testnum = 1;
+    _planned = count;
+    _process = getpid();
+    atexit(finish);
 }
 
 
 /*
-**  Takes a boolean success value and assumes the test passes if that value
-**  is true and fails if that value is false.
-*/
+ * Initialize things for lazy planning, where we'll automatically print out a
+ * plan at the end of the program.  Turns on line buffering on stdout as well.
+ */
 void
-ok(int n, int success)
+plan_lazy(void)
 {
-    printf("%sok %d\n", success ? "" : "not ", n);
+    if (setvbuf(stdout, NULL, _IOLBF, BUFSIZ) != 0)
+        fprintf(stderr, "# cannot set stdout to line buffered: %s\n",
+                strerror(errno));
+    testnum = 1;
+    _process = getpid();
+    _lazy = 1;
+    atexit(finish);
 }
 
 
 /*
-**  Takes an expected integer and a seen integer and assumes the test passes
-**  if those two numbers match.
-*/
+ * Skip the entire test suite and exits.  Should be called instead of plan(),
+ * not after it, since it prints out a special plan line.
+ */
 void
-ok_int(int n, int wanted, int seen)
+skip_all(const char *format, ...)
 {
-    if (wanted == seen)
-        printf("ok %d\n", n);
-    else
-        printf("not ok %d\n  wanted: %d\n    seen: %d\n", n, wanted, seen);
+    fflush(stderr);
+    printf("1..0 # skip");
+    if (format != NULL) {
+        va_list args;
+
+        putchar(' ');
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+    }
+    putchar('\n');
+    exit(0);
 }
 
 
 /*
-**  Takes a string and what the string should be, and assumes the test
-**  passes if those strings match (using strcmp).
-*/
-void
-ok_string(int n, const char *wanted, const char *seen)
+ * Print the test description.
+ */
+static void
+print_desc(const char *format, va_list args)
 {
-    if (wanted == NULL)
-        wanted = "(null)";
-    if (seen == NULL)
-        seen = "(null)";
-    if (strcmp(wanted, seen) != 0)
-        printf("not ok %d\n  wanted: %s\n    seen: %s\n", n, wanted, seen);
-    else
-        printf("ok %d\n", n);
+    printf(" - ");
+    vprintf(format, args);
 }
 
 
 /*
-**  Takes an expected double and a seen double and assumes the test passes
-**  if those two numbers match.
-*/
+ * Takes a boolean success value and assumes the test passes if that value
+ * is true and fails if that value is false.
+ */
+#if defined LIBTEST_NEW_FORMAT
 void
-ok_double(int n, double wanted, double seen)
-{
-    if (wanted == seen)
-        printf("ok %d\n", n);
-    else
-        printf("not ok %d\n  wanted: %g\n    seen: %g\n", n, wanted, seen);
+ok(int success, const char *format, ...)
+#else
+void
+ok(int n UNUSED, int success) {
+    new_ok(success, NULL);
 }
 
-
-/*
-**  Skip a test.
-*/
 void
-skip(int n, const char *reason)
+new_ok(int success, const char *format, ...)
+#endif
 {
-    printf("ok %d # skip", n);
-    if (reason != NULL)
-        printf(" - %s", reason);
+    fflush(stderr);
+    printf("%sok %lu", success ? "" : "not ", testnum++);
+    if (!success)
+        _failed++;
+    if (format != NULL) {
+        va_list args;
+
+        va_start(args, format);
+        print_desc(format, args);
+        va_end(args);
+    }
     putchar('\n');
 }
 
 
 /*
-**  Report the same status on the next count tests.
-*/
+ * Same as ok(), but takes the format arguments as a va_list.
+ */
 void
-ok_block(int n, int count, int status)
+okv(int success, const char *format, va_list args)
 {
-    int i;
-
-    for (i = 0; i < count; i++)
-        ok(n++, status);
+    fflush(stderr);
+    printf("%sok %lu", success ? "" : "not ", testnum++);
+    if (!success)
+        _failed++;
+    if (format != NULL)
+        print_desc(format, args);
+    putchar('\n');
 }
 
 
 /*
-**  Skip the next count tests.
-*/
+ * Skip a test.
+ */
+#if defined LIBTEST_NEW_FORMAT
 void
-skip_block(int n, int count, const char *reason)
-{
-    int i;
+skip(const char *reason, ...)
+#else
+void
+skip(int n UNUSED, const char *reason) {
+    new_skip(reason);
+}
 
-    for (i = 0; i < count; i++)
-        skip(n++, reason);
+void
+new_skip(const char *reason, ...)
+#endif
+{
+    fflush(stderr);
+    printf("ok %lu # skip", testnum++);
+    if (reason != NULL) {
+        va_list args;
+
+        va_start(args, reason);
+        putchar(' ');
+        vprintf(reason, args);
+        va_end(args);
+    }
+    putchar('\n');
 }
 
 
 /*
-**  An error handler that appends all errors to the errors global.  Used by
-**  error_capture.
-*/
+ * Report the same status on the next count tests.
+ */
+#if defined LIBTEST_NEW_FORMAT
+void
+ok_block(unsigned long count, int status, const char *format, ...)
+#else
+void
+ok_block(int n UNUSED, int count, int success) {
+    new_ok_block(count, success, NULL);
+}
+
+void
+new_ok_block(unsigned long count, int status, const char *format, ...)
+#endif
+{
+    unsigned long i;
+
+    fflush(stderr);
+    for (i = 0; i < count; i++) {
+        printf("%sok %lu", status ? "" : "not ", testnum++);
+        if (!status)
+            _failed++;
+        if (format != NULL) {
+            va_list args;
+
+            va_start(args, format);
+            print_desc(format, args);
+            va_end(args);
+        }
+        putchar('\n');
+    }
+}
+
+
+/*
+ * Skip the next count tests.
+ */
+#if defined LIBTEST_NEW_FORMAT
+void
+skip_block(unsigned long count, const char *reason, ...)
+#else
+void
+skip_block(int n UNUSED, int count, const char *reason) {
+    new_skip_block(count, reason);
+}
+
+void
+new_skip_block(unsigned long count, const char *reason, ...)
+#endif
+{
+    unsigned long i;
+
+    fflush(stderr);
+    for (i = 0; i < count; i++) {
+        printf("ok %lu # skip", testnum++);
+        if (reason != NULL) {
+            va_list args;
+
+            va_start(args, reason);
+            putchar(' ');
+            vprintf(reason, args);
+            va_end(args);
+        }
+        putchar('\n');
+    }
+}
+
+
+/*
+ * Takes an expected integer and a seen integer and assumes the test passes
+ * if those two numbers match.
+ */
+#ifndef LIBTEST_NEW_FORMAT
+void
+ok_int(int n UNUSED, int wanted, int seen)
+{
+    is_int(wanted, seen, NULL);
+}
+#endif
+void
+is_int(long wanted, long seen, const char *format, ...)
+{
+    fflush(stderr);
+    if (wanted == seen)
+        printf("ok %lu", testnum++);
+    else {
+        printf("# wanted: %ld\n#   seen: %ld\n", wanted, seen);
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    if (format != NULL) {
+        va_list args;
+
+        va_start(args, format);
+        print_desc(format, args);
+        va_end(args);
+    }
+    putchar('\n');
+}
+
+
+/*
+ * Takes a string and what the string should be, and assumes the test passes
+ * if those strings match (using strcmp).
+ */
+#ifndef LIBTEST_NEW_FORMAT
+void
+ok_string(int n UNUSED, const char *wanted, const char *seen)
+{
+    is_string(wanted, seen, NULL);
+}
+#endif
+void
+is_string(const char *wanted, const char *seen, const char *format, ...)
+{
+    if (wanted == NULL)
+        wanted = "(null)";
+    if (seen == NULL)
+        seen = "(null)";
+    fflush(stderr);
+    if (strcmp(wanted, seen) == 0)
+        printf("ok %lu", testnum++);
+    else {
+        printf("# wanted: %s\n#   seen: %s\n", wanted, seen);
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    if (format != NULL) {
+        va_list args;
+
+        va_start(args, format);
+        print_desc(format, args);
+        va_end(args);
+    }
+    putchar('\n');
+}
+
+
+/*
+ * Takes an expected double and a seen double and assumes the test passes if
+ * those two numbers are within delta of each other.
+ */
+#ifndef LIBTEST_NEW_FORMAT
+void
+ok_double(int n UNUSED, double wanted, double seen)
+{
+    is_double(wanted, seen, 0.01, NULL);
+}
+#endif
+void
+is_double(double wanted, double seen, double epsilon, const char *format, ...)
+{
+    fflush(stderr);
+    if ((isnan(wanted) && isnan(seen))
+        || (isinf(wanted) && isinf(seen) && wanted == seen)
+        || fabs(wanted - seen) <= epsilon)
+        printf("ok %lu", testnum++);
+    else {
+        printf("# wanted: %g\n#   seen: %g\n", wanted, seen);
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    if (format != NULL) {
+        va_list args;
+
+        va_start(args, format);
+        print_desc(format, args);
+        va_end(args);
+    }
+    putchar('\n');
+}
+
+
+/*
+ * Takes an expected unsigned long and a seen unsigned long and assumes the
+ * test passes if the two numbers match.  Otherwise, reports them in hex.
+ */
+void
+is_hex(unsigned long wanted, unsigned long seen, const char *format, ...)
+{
+    fflush(stderr);
+    if (wanted == seen)
+        printf("ok %lu", testnum++);
+    else {
+        printf("# wanted: %lx\n#   seen: %lx\n", (unsigned long) wanted,
+               (unsigned long) seen);
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    if (format != NULL) {
+        va_list args;
+
+        va_start(args, format);
+        print_desc(format, args);
+        va_end(args);
+    }
+    putchar('\n');
+}
+
+
+/*
+ * Bail out with an error.
+ */
+void
+bail(const char *format, ...)
+{
+    va_list args;
+
+    fflush(stderr);
+    fflush(stdout);
+    printf("Bail out! ");
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf("\n");
+    exit(1);
+}
+
+
+/*
+ * Bail out with an error, appending strerror(errno).
+ */
+void
+sysbail(const char *format, ...)
+{
+    va_list args;
+    int oerrno = errno;
+
+    fflush(stderr);
+    fflush(stdout);
+    printf("Bail out! ");
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf(": %s\n", strerror(oerrno));
+    exit(1);
+}
+
+
+/*
+ * Report a diagnostic to stderr.
+ */
+void
+diag(const char *format, ...)
+{
+    va_list args;
+
+    fflush(stderr);
+    fflush(stdout);
+    printf("# ");
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf("\n");
+}
+
+
+/*
+ * Report a diagnostic to stderr, appending strerror(errno).
+ */
+void
+sysdiag(const char *format, ...)
+{
+    va_list args;
+    int oerrno = errno;
+
+    fflush(stderr);
+    fflush(stdout);
+    printf("# ");
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    printf(": %s\n", strerror(oerrno));
+}
+
+
+/*
+ * Locate a test file.  Given the partial path to a file, look under BUILD and
+ * then SOURCE for the file and return the full path to the file.  Returns
+ * NULL if the file doesn't exist.  A non-NULL return should be freed with
+ * test_file_path_free().
+ *
+ * This function uses sprintf because it attempts to be independent of all
+ * other portability layers.  The use immediately after a memory allocation
+ * should be safe without using snprintf or strlcpy/strlcat.
+ */
+char *
+test_file_path(const char *file)
+{
+    char *base;
+    char *path = NULL;
+    size_t length;
+    const char *envs[] = { "BUILD", "SOURCE", NULL };
+    int i;
+
+    for (i = 0; envs[i] != NULL; i++) {
+        base = getenv(envs[i]);
+        if (base == NULL)
+            continue;
+        length = strlen(base) + 1 + strlen(file) + 1;
+        path = malloc(length);
+        if (path == NULL)
+            sysbail("cannot allocate memory");
+        sprintf(path, "%s/%s", base, file);
+        if (access(path, R_OK) == 0)
+            break;
+        free(path);
+        path = NULL;
+    }
+    return path;
+}
+
+
+/*
+ * Free a path returned from test_file_path().  This function exists primarily
+ * for Windows, where memory must be freed from the same library domain that
+ * it was allocated from.
+ */
+void
+test_file_path_free(char *path)
+{
+    if (path != NULL)
+        free(path);
+}
+
+
+#ifndef LIBTEST_NEW_FORMAT
+/* A global buffer into which message_log_buffer stores error messages. */
+char *errors = NULL;
+
+/*
+ *  An error handler that appends all errors to the errors global.  Used by
+ *  error_capture.
+ */
 static void
 message_log_buffer(int len, const char *fmt, va_list args, int error UNUSED)
 {
@@ -155,10 +628,10 @@ message_log_buffer(int len, const char *fmt, va_list args, int error UNUSED)
 
 
 /*
-**  Turn on the capturing of errors.  Errors will be stored in the global
-**  errors variable where they can be checked by the test suite.  Capturing is
-**  turned off with errors_uncapture.
-*/
+ *  Turn on the capturing of errors.  Errors will be stored in the global
+ *  errors variable where they can be checked by the test suite.  Capturing is
+ *  turned off with errors_uncapture.
+ */
 void
 errors_capture(void)
 {
@@ -172,11 +645,12 @@ errors_capture(void)
 
 
 /*
-**  Turn off the capturing of errors again.
-*/
+ *  Turn off the capturing of errors again.
+ */
 void
 errors_uncapture(void)
 {
     message_handlers_warn(1, message_log_stderr);
     message_handlers_notice(1, message_log_stdout);
 }
+#endif

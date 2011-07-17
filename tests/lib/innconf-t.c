@@ -14,9 +14,10 @@ static const char grep[] =
  ../../samples/inn.conf; echo 'domain: \"news.example.org\"';\
  echo 'fromhost: \"news.example.org\"';) > config/tmp";
 
-static const char sed[] =
-"sed 's/^#\\(domain\\|fromhost\\):/\\1: \"news.example.org\"/'\
- ../../samples/inn.conf > config/tmp2";
+static const char cat[] =
+"(cat ../../samples/inn.conf | egrep -v '^#(domain|fromhost)';\
+ echo 'domain: \"news.example.org\"'; echo 'fromhost: \"news.example.org\"';)\
+ > config/tmp2";
 
 int
 main(void)
@@ -33,7 +34,7 @@ main(void)
 
     test_init(9);
 
-    if (system(sed) != 0)
+    if (system(cat) != 0)
         die("Unable to create stripped configuration file");
     ok(1, innconf_read("config/tmp2"));
     standard = innconf;

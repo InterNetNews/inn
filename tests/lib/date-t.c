@@ -80,10 +80,12 @@ static void
 ok_time(int n, time_t wanted, time_t seen)
 {
     if (wanted == seen)
-        printf("ok %d\n", n);
-    else
-        printf("not ok %d\n  wanted %lu seen %lu\n", n,
-               (unsigned long) wanted, (unsigned long) seen);
+        ok(n, true);
+    else {
+        ok(n, false);
+        diag("wanted %lu seen %lu\n",
+             (unsigned long) wanted, (unsigned long) seen);
+    }
 }
 
 static void

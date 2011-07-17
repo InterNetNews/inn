@@ -8,6 +8,7 @@
 
 #define DEFINE_DATA 1
 #include "../../innd/innd.h"
+#include "clibrary.h"
 
 /* Global variables defined in innd.c. */
 bool Debug = false;
@@ -110,6 +111,6 @@ const ARTHEADER ARTheaders[] = {
 };
 
 /* Dummy functions that innd.c provides. */
-void CleanupAndExit(int status UNUSED, const char *why UNUSED) { }
+void CleanupAndExit(int status, const char *why UNUSED) { exit(status); }
 void JustCleanup(void) { }
 void ReopenLog(FILE *F UNUSED) { }

@@ -885,8 +885,9 @@ tests/lib/wire-t.c                    Tests for lib/wire.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
-tests/libtest.c                       Helper library for writing tests
+tests/libtest.c                       Helper C library for writing tests
 tests/libtest.h                       Interface to libtest
+tests/libtest.sh                      Helper shell library for writing tests
 tests/nnrpd                           test suite for nnrpd (Directory)
 tests/nnrpd/auth-ext-t.c              Tests for auth_external in nnrpd
 tests/nnrpd/auth-test                 Helper program for external auth tests
