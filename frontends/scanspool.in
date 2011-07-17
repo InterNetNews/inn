@@ -306,8 +306,8 @@ sub check_spool
     my $filename;               # article pathname under $spool
     my $artgrp;                 # group of an article
     my $artnum;                 # article number in a group
-    my $prevgrp;                # previous different value of $artgrp
-    my $preverrgrp;             # previous non-active $artgrp
+    my $prevgrp = '';           # previous different value of $artgrp
+    my $preverrgrp = '';        # previous non-active $artgrp
     my $ARTICLE;                # article handle
     my $aline;                  # header line from an article
     my @group;                  # array of groups from the Newsgroups: header
@@ -363,7 +363,7 @@ sub check_spool
 	# note if the article is not in a directory that is used by
 	# a real (non-aliased) group in the active file
 	#
-	# If we complained about this dgroup before, don't complain again.
+	# If we complained about this group before, don't complain again.
 	# If verbose, note files that could be removed.
 	#
 	if (!defined $gname2type{$artgrp} || $gname2type{$artgrp} =~ /[=jx]/o){
@@ -413,10 +413,11 @@ sub check_spool
 
 	    # catch the Newsgroups: header
 	    if ($aline =~ /^Newsgroups:\w*\W/io) {
-
 		# convert $aline into a comma separated list of groups
+                # remove both CR and LF from the header value (because the article may be
+                # stored in wire-format).
 		$aline =~ s/^Newsgroups://io;
-		$aline =~ tr/ \t\n//d;
+		$aline =~ tr/ \t\r\n//d;
 
 		# form an array of news groups
 		@group = split(",", $aline);
@@ -425,14 +426,14 @@ sub check_spool
 		for (my $j=0; $j <= $#group; ++$j) {
 
 		    # look at the group
-		    if ($realgname{$group[$j]} eq $artgrp) {
+		    if (exists $realgname{$group[$j]} and $realgname{$group[$j]} eq $artgrp) {
 			# this article was posted to this group
 			last AREADLINE;
 		    }
 		}
 
 		# no group or group alias was found
-		problem("$filename: does not belong in $artgrp");
+		problem("$filename: does not belong in $artgrp according to its Newsgroups: header");
 		last;
 
 	    # else watch for the end of the header
