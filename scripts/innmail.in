@@ -10,41 +10,41 @@
 #		problems. 
 # 
 
-$0 =~ s!.*/!! ;
-
-require 5.001 ;
+use strict;
 use Getopt::Std;
-use vars qw($opt_h);
+
+$0 =~ s!.*/!!;
 
 die "$0: No \$INN::Config::mta variable defined.\n" 
     if ! defined ($INN::Config::mta);
 
-$sm = $INN::Config::mta ;
+my $sm = $INN::Config::mta;
 
-die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!) ;
+die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!);
 
-$usage = "usage: $0 -s subject addresses\n\n" .
-    "Reads stdin for message body\n" ;
+my $usage = "usage: $0 -s subject addresses\n\n" .
+    "Reads stdin for message body\n";
 
-getopts ("s:h") || die $usage ;
+my (%opt, @addrs);
+getopts ("s:h", \%opt) || die $usage;
 
-die $usage if $opt_h ;
+die $usage if $opt{'h'};
 
-if ( !defined($opt_s) ) {
-    warn "No subject given.  Hope that's OK.\n" ;
-    $opt_s = "NO SUBJECT" ;
+if ( !defined($opt{'s'}) ) {
+    warn "No subject given.  Hope that's OK.\n";
+    $opt{'s'} = "NO SUBJECT";
 } else {
-    $opt_s =~ s/\n+\Z//;
+    $opt{'s'} =~ s/\n+\Z//;
 }
 
 # Fix up any addresses.
 foreach ( @ARGV ) {
-    s![^-a-zA-Z0-9+_.@%]!!g ;
+    s![^-a-zA-Z0-9+_.@%]!!g;
 
-    push (@addrs,$_) if ($_ ne "") ;
+    push (@addrs, $_) if ($_ ne "");
 }
 
-die "$0: No addresses specified\n\n$usage" unless @addrs ;
+die "$0: No addresses specified\n\n$usage" unless @addrs;
 
 if ($sm =~ m!%s!) {
     $sm = sprintf $sm, join (' ', @addrs);
@@ -52,9 +52,9 @@ if ($sm =~ m!%s!) {
     $sm .= " " . join(' ', @addrs);
 }
 
-@smarr = split(/\s+/,$sm);
+my @smarr = split(/\s+/, $sm);
 
-($t = $INN::Config::mta) =~ s!\s.*!!;
+(my $t = $INN::Config::mta) =~ s!\s.*!!;
 die "$0:  MTA variable definition is changed after substitution\n" 
     if ($t ne $smarr[0]);
 
@@ -62,18 +62,18 @@ die "$0:  MTA excutable doesn't appear to exist:  $smarr[0]\n"
     if ! -x $smarr[0];
 
 # Startup MTA without using the shell.
-$pid = open (MTA,"|-") ;
+my $pid = open my $MTA, '|-';
 if ($pid == 0) {
-    exec (@smarr) || die "$0:  exec of $sm failed:  $!\n" ;
+    exec (@smarr) || die "$0:  exec of $sm failed:  $!\n";
 } elsif ($pid < 0) {
-    die "$0:  Fork failed:  $!\n" ;
+    die "$0:  Fork failed:  $!\n";
 }
 
-print MTA "To: ", join (",\n\t", @addrs), "\n" ;
-print MTA "Subject: $opt_s\n" ;
-print MTA "\n" ;
+print $MTA "To: ", join (",\n\t", @addrs), "\n";
+print $MTA "Subject: $opt{'s'}\n";
+print $MTA "\n";
 while (<STDIN>) {
-    print MTA $_ ;
+    print $MTA $_;
 }
-close (MTA) ;
-exit ;
+close $MTA;
+exit;

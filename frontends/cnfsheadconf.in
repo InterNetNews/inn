@@ -17,15 +17,15 @@
 #  cnfsheadconf is originally from cnfsstat 1999
 #  <kondou@nec.co.jp>
 
-use vars qw($opt_h $opt_w);
+use strict;
 use Getopt::Long;
 
 # Required for >32bit integers.
 use Math::BigInt;
 use Math::BigFloat;
 
-my($conffile) = "$INN::Config::pathetc/cycbuff.conf";
-my($storageconf) = "$INN::Config::pathetc/storage.conf";
+my $conffile = "$INN::Config::pathetc/cycbuff.conf";
+my $storageconf = "$INN::Config::pathetc/storage.conf";
 
 # Hex to bigint conversion routine.
 # bhex(HEXSTRING) returns BIGINT (with leading + chopped off).
@@ -80,7 +80,7 @@ sub bint2hex {
 }
 
 sub usage {
-    print <<_end_;
+    print <<"_end_";
 Summary tool for cycbuff header manipulation
 
 Usage:
@@ -94,45 +94,46 @@ _end_
     exit(1);
 }
 
-my(@line, %class, %metamode, %buff, %stor, $c, @buffers, $cycbuff);
+my (%buff, $cycbuff, $opt_w);
 
-my($gr, $cl, $min, $max, @storsort, $header_printed);
+GetOptions(
+    'c=s'       => \$cycbuff,
+    'w'         => \$opt_w,
+    'h'         => sub { usage() },
+);
 
-GetOptions("-c=s", \$cycbuff, "-w", "-h");
-
-&usage if $opt_h;
-
-unless (&read_cycbuffconf) {
+unless (read_cycbuffconf()) {
     print STDERR "Cannot open CycBuff Conffile $conffile ...\n";
     exit (1);
 }
 
-unless (&read_storageconf) {
+unless (read_storageconf()) {
     print STDERR "No valid $storageconf.\n";
     exit (1);
 }
 
 sub read_cycbuffconf {
-    return 0 unless open (CONFFILE, $conffile);
+    my (@line, %class, %metamode);
+    return 0 unless open my $CONFFILE, '<', $conffile;
 
-    while(<CONFFILE>) {
+    while (<$CONFFILE>) {
         $_ =~ s/^\s*(.*?)\s*$/$1/;
 
         # Read continuation lines.
         while(/\\$/) {
             chop;
-            chop($next = <CONFFILE>);
+            chop (my $next = <$CONFFILE>);
             $next =~ s/^\s*(.*?)\s*$/$1/;
             $_ .= $next;
         }
 
 	# \x23 below is #.  Emacs perl-mode gets confused by the "comment".
-	next if($_ =~ /^\s*$/ || $_ =~ /^\x23/);
-	next if($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
+	next if ($_ =~ /^\s*$/ || $_ =~ /^\x23/);
+	next if ($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
 
 	if($_ =~ /^metacycbuff:/) {
 	    @line = split(/:/, $_);
-	    if($class{$line[1]}) {
+	    if ($class{$line[1]}) {
 		print STDERR "Class $line[1] more than one time in CycBuff Conffile $conffile ...\n";
 		return 0;
 	    }
@@ -148,7 +149,7 @@ sub read_cycbuffconf {
 
 	if ($_ =~ /^cycbuff/) {
 	    @line = split(/:/, $_);
-	    if($buff{$line[1]}) {
+	    if ($buff{$line[1]}) {
 		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
 		return 1;
 	    }
@@ -158,24 +159,25 @@ sub read_cycbuffconf {
 
 	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
     }
-    close(CONFFILE);
+    close $CONFFILE;
     return 1;
 }
 
 sub read_storageconf {
     my $line = 0;
-    return 0 unless open (STOR, $storageconf);
+    my %stor;
+    return 0 unless open my $STOR, '<', $storageconf;
 
-    while (<STOR>) {
+    while (<$STOR>) {
 	++$line;
 	next if /^\s*#/;
 
 	# defaults
-	%key = ("NEWSGROUPS" => "*",
-		"SIZE" => "0,0");
+	my %key = ("NEWSGROUPS" => "*",
+		    "SIZE" => "0,0");
 
 	if (/method\s+cnfs\s+\{/) {
-	    while (<STOR>) {
+	    while (<$STOR>) {
 		++$line;
 		next if /^\s*#/;
 		last if /\}/;
@@ -198,10 +200,10 @@ sub read_storageconf {
 	    } else {
 		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
 			"$key{'SIZE'}:$key{'OPTIONS'}";
-		push(@storsort, $key{'OPTIONS'});
 	    }
 	}
     }
+    close $STOR;
     return 1;
 }
 
@@ -210,7 +212,7 @@ START:
 # If no cycbuff is specified, we check all of them and exit.
 if (not defined $cycbuff) {
     foreach (sort keys %buff) {
-      &print_cycbuff_head($buff{$_});
+      print_cycbuff_head($buff{$_});
     }
     exit(0);
 }
@@ -220,7 +222,7 @@ if (not defined $buff{$cycbuff}) {
     exit(1);
 }
 
-&print_cycbuff_head($buff{$cycbuff});
+print_cycbuff_head($buff{$cycbuff});
 
 sub make_time {
     my ($t) = @_;
@@ -242,67 +244,66 @@ sub make_time {
 }
 
 sub print_cycbuff_head {
-    my($buffpath) = $_[0];
-    my($CNFSMASIZ)=8;
-    my($CNFSNASIZ)=16;
-    my($CNFSPASIZ)=64;
-    my($CNFSLASIZ)=16;
-    my($headerlength) = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
-    my($buff, @entries, $e);
-    my($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza);
+    my ($buffpath) = @_;
+    my $CNFSMASIZ = 8;
+    my $CNFSNASIZ = 16;
+    my $CNFSPASIZ = 64;
+    my $CNFSLASIZ = 16;
+    my $headerlength = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
+    my ($BUFF, $buff);
 
     if ($opt_w) {
-	if(! open(BUFF, "+< $buffpath") ) {
+	if ( !open $BUFF, '+<', $buffpath ) {
 	    print STDERR "Cannot open Cycbuff $buffpath ...\n";
 	    exit(1);
 	}
     } else {
-	if(! open(BUFF, "< $buffpath") ) {
+	if ( !open $BUFF, '<', $buffpath ) {
 	    print STDERR "Cannot open Cycbuff $buffpath ...\n";
 	    exit(1);
 	}
     }
 
     $buff = "";
-    if(! read(BUFF, $buff, $headerlength) ) {
+    if ( !read $BUFF, $buff, $headerlength ) {
 	print STDERR "Cannot read $headerlength bytes from file $buffpath...\n";
 	exit(1);
     }
 
-    ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
+    my ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
-    if(!$magic) {
+    if (!$magic) {
 	print STDERR "Error while unpacking header ...\n";
 	exit(1);
     }
 
-    my($len) = bhex($lena);
-    my($free) = bhex($freea);
-    my($update) = hex($updatea);
-    my($cyclenum) = hex($cyclenuma) - 1;
-    my($orderinmeta) = hex($orderinmetaa);
-    my($blksz) = ($magic =~ m/^CBuf4/) ? hex($blksza) : 512;
+    my $len = bhex($lena);
+    my $free = bhex($freea);
+    my $update = hex($updatea);
+    my $cyclenum = hex($cyclenuma) - 1;
+    my $orderinmeta = hex($orderinmetaa);
+    my $blksz = ($magic =~ m/^CBuf4/) ? hex($blksza) : 512;
 
-    my ($nupdate_str, $nago_str) = &make_time ($update);
+    my ($nupdate_str, $nago_str) = make_time($update);
 
     $name =~ s/\0//g;
     print " Buffer $name, len: ";
-    printf("%.2f", Math::BigFloat->new($len) / (1024 * 1024));
+    printf "%.2f", Math::BigFloat->new($len) / (1024 * 1024);
     print " Mbytes, used: ";
-    printf("%.2f Mbytes", Math::BigFloat->new($free) / (1024 * 1024));
-    printf(" (%4.1f%%) %3d cycles\n",
+    printf "%.2f Mbytes", Math::BigFloat->new($free) / (1024 * 1024);
+    printf " (%4.1f%%) %3d cycles\n",
            100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
-           $cyclenum);
-    print("  Meta $metaname, order: ");
-    printf("%d", $orderinmeta);
-    print(", current: $currentbuff");
-    print(", blocksize: $blksz");
+           $cyclenum;
+    print "  Meta $metaname, order: ";
+    printf "%d", $orderinmeta;
+    print ", current: $currentbuff";
+    print ", blocksize: $blksz";
 
     print "\n  Newest: $nupdate_str, $nago_str ago\n";
 
     if ($opt_w) {
 	print "\nBuffer [$name] => ";
-	$in = <>;
+	my $in = <>;
 	chop $in;
 	if ($in ne "") {
 	    $name = sprintf("%0.9s\0", $in);
@@ -348,11 +349,12 @@ sub print_cycbuff_head {
 	}
         $buff = pack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff);
         $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
-	seek(BUFF, 0, 0);
-	    if(! syswrite(BUFF, $buff, $headerlength) ) {
+	seek $BUFF, 0, 0;
+	    if(! syswrite $BUFF, $buff, $headerlength ) {
 	    print STDERR "Cannot write $headerlength bytes to file $buffpath...\n";
 	    exit(1);
 	}
     }
-    close(BUFF);
+    close $BUFF;
+    return;
 }
