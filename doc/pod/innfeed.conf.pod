@@ -314,6 +314,8 @@ Note that when peers are added dynamically (i.e. when B<innfeed> receives
 an article for an unspecified peer), it will add the peer site using the
 parameters specified at global scope.
 
+=head2 Required keys
+
 =over 4
 
 =item I<article-timeout>
@@ -409,7 +411,7 @@ For intermediate sites, an appropriate combination is used.
 
 =item I<dynamic-backlog-low>
 
-This key requires an integer value between 0 and 100.  It represents (as
+This key requires a floating-point value between 0 and 100.  It represents (as
 a percentage) the low water mark for the host queue.  If the host queue
 falls below this level while using I<dynamic-method> 2 or 3, and if 2 or
 more connections are open, B<innfeed> will attempt to drop connections to
@@ -419,7 +421,7 @@ is recommended.  This value must be smaller than I<dynamic-backlog-high>.
 
 =item I<dynamic-backlog-high>
 
-This key requires an integer value between 0 and 100.  It represents
+This key requires a floating-point value between 0 and 100.  It represents
 (as a percentage) the high water mark for the host queue.  If the host
 queue rises above this level while using I<dynamic-method> 2 or 3, and
 if less than I<max-connections> are open to the host, B<innfeed> will
@@ -485,29 +487,6 @@ filter of time constant 50.  This roughly equates to making a decision
 about the mode over the previous 50 articles.  A higher number will result
 in a slower response to changing percentages of articles accepted; a lower
 number will result in a faster response.
-
-=item I<bindaddress>
-
-This key requires a string value.  It specifies which outgoing IPv4 address
-B<innfeed> should bind the local end of its connection to.  It must be an
-IPv4 address in dotted-quad format (nnn.nnn.nnn.nnn), C<any>, or C<none>.
-If not set or set to C<any>, B<innfeed> defaults to letting the kernel
-choose this address.  If set to C<none>, B<innfeed> will not use IPv4 for
-outgoing connections to peers in this scope (i.e. it forces IPv6).
-
-If not set in F<innfeed.conf>, B<innfeed> defaults to the value of
-I<sourceaddress> from F<inn.conf> (which by default is unset).
-
-=item I<bindaddress6>
-
-This key requires a string value.  It behaves like I<bindaddress> except
-for outgoing IPv6 connections.  It must be in numeric IPv6 format (note
-that a value containing colons must be enclosed in double quotes), C<any>,
-or C<none>.  If set to C<none>, B<innfeed> will not use IPv6 for outgoing
-connections to peers in this scope.
-
-If not set in F<innfeed.conf>, B<innfeed> defaults to the value of
-I<sourceaddress6> from F<inn.conf> (which by default is unset).
 
 =item I<port-number>
 
@@ -596,6 +575,37 @@ to true, the backlog is fed before new files.  This is intended to enforce
 in-order delivery, so setting this to true when I<initial-connections>
 or I<max-connections> is more than 1 is inconsistent.
 
+=back
+
+=head2 Optional keys
+
+The following keys are optional:
+
+=over 4
+
+=item I<bindaddress>
+
+This key requires a string value.  It specifies which outgoing IPv4 address
+B<innfeed> should bind the local end of its connection to.  It must be an
+IPv4 address in dotted-quad format (nnn.nnn.nnn.nnn), C<any>, or C<none>.
+If not set or set to C<any>, B<innfeed> defaults to letting the kernel
+choose this address.  If set to C<none>, B<innfeed> will not use IPv4 for
+outgoing connections to peers in this scope (i.e. it forces IPv6).
+
+If not set in F<innfeed.conf>, B<innfeed> defaults to the value of
+I<sourceaddress> from F<inn.conf> (which by default is unset).
+
+=item I<bindaddress6>
+
+This key requires a string value.  It behaves like I<bindaddress> except
+for outgoing IPv6 connections.  It must be in numeric IPv6 format (note
+that a value containing colons must be enclosed in double quotes), C<any>,
+or C<none>.  If set to C<none>, B<innfeed> will not use IPv6 for outgoing
+connections to peers in this scope.
+
+If not set in F<innfeed.conf>, B<innfeed> defaults to the value of
+I<sourceaddress6> from F<inn.conf> (which by default is unset).
+
 =item I<username>
 
 This key requires a string value.  If the value is defined, then B<innfeed>
@@ -607,14 +617,14 @@ I<password> must also be defined, if this key is defined.
 This key requires a string value.  The value is the password used for
 AUTHINFO PASS.  I<username> must also be defined, if this key is defined.
 
-=item Special keys for B<imapfeed>
+=back
+
+=head2 Special keys for B<imapfeed>
 
 The following keys are used with B<imapfeed> to authenticate to a remote
-host.  They are optional.
+host.  Several parameters may be included:
 
-Several parameters must be included:
-
-=over 2
+=over 4
 
 =item I<deliver-authname>
 
@@ -646,8 +656,6 @@ An optional printf(3)-style format string for creating a To: header field
 to be prepended to the article.  The pattern MUST include a single string
 specifier which will be replaced with the newgroup (e.g. C<post+%s@domain>).
 If not specified, the To: header field will not be prepended.
-
-=back
 
 =back
 
