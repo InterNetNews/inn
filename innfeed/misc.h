@@ -75,11 +75,12 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
 void error_log_stderr_date(int len, const char *fmt, va_list args, int err);
 
 /* Do cleanup and then abort, for use with die. */
-int dump_core(void);
+void dump_core(void)
+    __attribute__ ((noreturn));
 
 /* Alternate die that doesn't invoke an error handler. */
 void logAndExit (int exitVal, const char *fmt, ...)
-    __attribute__((__format__(printf, 2, 3)));
+    __attribute__((noreturn, __format__(printf, 2, 3)));
 
 /* return true of the file exists and is a regular file */
 bool fileExistsP (const char *filename) ;

@@ -216,8 +216,8 @@ struct connection_s
 
 static Connection gCxnList = NULL ;
 static unsigned int gCxnCount = 0 ;
-static unsigned int max_reconnect_period = MAX_RECON_PER ;
-static unsigned int init_reconnect_period = INIT_RECON_PER ;
+unsigned int max_reconnect_period = MAX_RECON_PER ;
+unsigned int init_reconnect_period = INIT_RECON_PER ;
 #if 0
 static bool inited = false ;
 #endif

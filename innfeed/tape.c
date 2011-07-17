@@ -52,6 +52,7 @@ typedef struct dirent DIRENTRY ;
 
 extern char *dflTapeDir;
 extern bool genHtml ;
+extern unsigned int hostHighwater;
 
 #if 0
 /* a structure for temporary storage of articles. */
@@ -395,9 +396,9 @@ static void initTape (Tape nt)
   nt->lossage = 0 ;
 
   nt->noBacklog = false ;
-  nt->backlogFactor = 0.0 ;
-  nt->outputLowLimit = 0 ;
-  nt->outputHighLimit = 0 ;
+  nt->outputLowLimit = BLOGLIMIT;
+  nt->outputHighLimit = BLOGLIMIT_HIGH;
+  nt->backlogFactor = LIMIT_FUDGE;
 
   if (!talkToSelf)
     {
@@ -417,9 +418,9 @@ static void initTape (Tape nt)
                 {
                   warn ("%s no backlog-factor or backlog-limit-highwater",
                         nt->peerName) ;
-                  nt->outputLowLimit = 0 ;
-                  nt->outputHighLimit = 0 ;
-                  nt->backlogFactor = 0.0 ;
+                  nt->outputLowLimit = BLOGLIMIT;
+                  nt->outputHighLimit = BLOGLIMIT_HIGH;
+                  nt->backlogFactor = LIMIT_FUDGE;
                 }
             }
           else
@@ -495,6 +496,8 @@ void tapeLogGlobalStatus (FILE *fp)
   fprintf (fp,"    rotate period: %-3ld seconds\n",(long) rotatePeriod) ;
   fprintf (fp,"checkpoint period: %-3ld seconds\n",(long) tapeCkPtPeriod) ;
   fprintf (fp,"   newfile period: %-3ld seconds\n",(long) tapeCkNewFilePeriod);
+  fprintf (fp,"backlog highwater: %u\n", tapeHighwater);
+  fprintf (fp,"  highwater queue: %u\n", hostHighwater);
   fprintf (fp,"\n") ;
 }
 

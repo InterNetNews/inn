@@ -70,6 +70,9 @@ extern char *configFile ;
 extern int h_errno;
 #endif
 
+extern unsigned int init_reconnect_period;
+extern unsigned int max_reconnect_period;
+
 /* the host keeps a couple lists of these */
 typedef struct proc_q_elem 
 {
@@ -347,7 +350,7 @@ static unsigned int gHostCount = 0 ;
 static unsigned int maxIpNameLen = 0 ;
 static unsigned int maxPeerNameLen = 0 ;
 
-static unsigned int hostHighwater = HOST_HIGHWATER ;
+unsigned int hostHighwater = HOST_HIGHWATER ;
 static time_t start ;
 static char startTime [30] ;    /* for timeToString */
 static pid_t myPid ;
@@ -526,7 +529,7 @@ static HostParams newHostParams(HostParams p)
       params->portNum=PORTNUM;
       params->forceIPv4=FORCE_IPv4;
       params->closePeriod=CLOSE_PERIOD;
-      params->dynamicMethod=METHOD_STATIC;
+      params->dynamicMethod=METHOD_COMBINED;
       params->wantStreaming=STREAM;
       params->dropDeferred=false;
       params->minQueueCxn=false;
@@ -2753,20 +2756,20 @@ static HostParams hostDetails (scope *s,
   val = (bv ? true : false);
 
   inherit = isDefault?NO_INHERIT:INHERIT;
-  GETINT(s,fp,"article-timeout",0,LONG_MAX,REQ,p->articleTimeout, inherit);
-  GETINT(s,fp,"response-timeout",0,LONG_MAX,REQ,p->responseTimeout, inherit);
-  GETINT(s,fp,"close-period",0,LONG_MAX,REQ,p->closePeriod, inherit);
-  GETINT(s,fp,"initial-connections",0,LONG_MAX,REQ,p->initialConnections, inherit);
-  GETINT(s,fp,"max-connections",0,LONG_MAX,REQ,p->absMaxConnections, inherit);
-  GETINT(s,fp,"max-queue-size",1,LONG_MAX,REQ,p->maxChecks, inherit);
-  GETBOOL(s,fp,"streaming",REQ,p->wantStreaming, inherit);
-  GETBOOL(s,fp,"drop-deferred",REQ,p->dropDeferred, inherit);
-  GETBOOL(s,fp,"min-queue-connection",REQ,p->minQueueCxn, inherit);
-  GETREAL(s,fp,"no-check-high",0.0,100.0,REQ,p->lowPassHigh, inherit);
-  GETREAL(s,fp,"no-check-low",0.0,100.0,REQ,p->lowPassLow, inherit);
-  GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,REQ,p->lowPassFilter, inherit);
-  GETINT(s,fp,"port-number",0,LONG_MAX,REQ,p->portNum, inherit);
-  GETINT(s,fp,"backlog-limit",0,LONG_MAX,REQ,p->backlogLimit, inherit);
+  GETINT(s,fp,"article-timeout",0,LONG_MAX,NOTREQ,p->articleTimeout, inherit);
+  GETINT(s,fp,"response-timeout",0,LONG_MAX,NOTREQ,p->responseTimeout, inherit);
+  GETINT(s,fp,"close-period",0,LONG_MAX,NOTREQ,p->closePeriod, inherit);
+  GETINT(s,fp,"initial-connections",0,LONG_MAX,NOTREQ,p->initialConnections, inherit);
+  GETINT(s,fp,"max-connections",0,LONG_MAX,NOTREQ,p->absMaxConnections, inherit);
+  GETINT(s,fp,"max-queue-size",1,LONG_MAX,NOTREQ,p->maxChecks, inherit);
+  GETBOOL(s,fp,"streaming",NOTREQ,p->wantStreaming, inherit);
+  GETBOOL(s,fp,"drop-deferred",NOTREQ,p->dropDeferred, inherit);
+  GETBOOL(s,fp,"min-queue-connection",NOTREQ,p->minQueueCxn, inherit);
+  GETREAL(s,fp,"no-check-high",0.0,100.0,NOTREQ,p->lowPassHigh, inherit);
+  GETREAL(s,fp,"no-check-low",0.0,100.0,NOTREQ,p->lowPassLow, inherit);
+  GETREAL(s,fp,"no-check-filter",0.1,DBL_MAX,NOTREQ,p->lowPassFilter, inherit);
+  GETINT(s,fp,"port-number",0,LONG_MAX,NOTREQ,p->portNum, inherit);
+  GETINT(s,fp,"backlog-limit",0,LONG_MAX,NOTREQ,p->backlogLimit, inherit);
 
   GETBOOL(s,fp,"force-ipv4",NOTREQ,p->forceIPv4,inherit);
   if (p->forceIPv4)
@@ -2787,10 +2790,13 @@ static HostParams hostDetails (scope *s,
   if (findValue (s,"backlog-factor",inherit) == NULL &&
       findValue (s,"backlog-limit-highwater",inherit) == NULL)
     {
-      logOrPrint (LOG_ERR,fp,
+      /* This is not an error.  A default value will be used.
+       *
+       * logOrPrint (LOG_ERR,fp,
                   "ME config: must define at least one of backlog-factor"
-                  " and backlog-limit-highwater. Adding %s: %f", "backlog-factor",
+                  " and backlog-limit-highwater.  Adding %s: %f", "backlog-factor",
                   LIMIT_FUDGE) ;
+       */
       addReal (s,"backlog-factor",LIMIT_FUDGE) ;
       rv = 0 ;
     }
@@ -2816,10 +2822,10 @@ static HostParams hostDetails (scope *s,
   GETINT(s,fp,"backlog-limit-highwater",0,LONG_MAX,NOTREQNOADD,p->backlogLimitHigh, inherit);
   GETREAL(s,fp,"backlog-factor",1.0,DBL_MAX,NOTREQNOADD,p->backlogFactor, inherit);
 
-  GETINT(s,fp,"dynamic-method",0,3,REQ,p->dynamicMethod, inherit);
-  GETREAL(s,fp,"dynamic-backlog-filter",0.0,DBL_MAX,REQ,p->dynBacklogFilter, inherit);
-  GETREAL(s,fp,"dynamic-backlog-low",0.0,100.0,REQ,p->dynBacklogLowWaterMark, inherit);
-  GETREAL(s,fp,"dynamic-backlog-high",0.0,100.0,REQ,p->dynBacklogHighWaterMark, inherit);
+  GETINT(s,fp,"dynamic-method",0,3,NOTREQ,p->dynamicMethod, inherit);
+  GETREAL(s,fp,"dynamic-backlog-filter",0.0,DBL_MAX,NOTREQ,p->dynBacklogFilter, inherit);
+  GETREAL(s,fp,"dynamic-backlog-low",0.0,100.0,NOTREQ,p->dynBacklogLowWaterMark, inherit);
+  GETREAL(s,fp,"dynamic-backlog-high",0.0,100.0,NOTREQ,p->dynBacklogHighWaterMark, inherit);
 
   l=p->lowPassLow;
   h=p->lowPassHigh;
@@ -3288,6 +3294,8 @@ static void hostLogStatus (void)
 
       fprintf (fp,"innfeed from %s\npid %d started %s\n\nUpdated: %s\n",
                INN_VERSION_STRING,(int) myPid,startTime,timeString) ;
+      fprintf (fp,"Stats period: %-5ld    Stats reset: %ld\n",
+               (long) statsPeriod, (long) statsResetPeriod);
       fprintf (fp,"(peers: %d active-cxns: %d sleeping-cxns: %d idle-cxns: %d)\n\n",
                peerNum, actConn, slpConn,(maxcon - (actConn + slpConn))) ;
 
@@ -3328,9 +3336,16 @@ Default peer configuration parameters:
       fprintf(fp,"   response timeout: %-5d         max connections: %d\n",
 	    defaultParams->responseTimeout,
 	    defaultParams->absMaxConnections) ;
+      fprintf(fp,"  reconnection time: %-5d   max reconnection time: %d\n",
+              init_reconnect_period, max_reconnect_period);
       fprintf(fp,"       close period: %-5d              max checks: %d\n",
 	    defaultParams->closePeriod,
 	    defaultParams->maxChecks) ;
+      fprintf(fp,"   DNS retry period: %-5d       DNS expire period: %d\n", 
+              dnsRetPeriod, dnsExpPeriod);
+      fprintf(fp,"           port num: %-5d              force IPv4: %s\n",
+              defaultParams->portNum,
+              defaultParams->forceIPv4 ? "true " : "false");
       fprintf(fp,"     want streaming: %-5s          dynamic method: %d\n",
 	    defaultParams->wantStreaming ? "true " : "false",
 	    defaultParams->dynamicMethod) ;
@@ -3349,7 +3364,7 @@ Default peer configuration parameters:
       fprintf(fp," backlog limit high: %-7d         min-queue-cxn: %s\n",
 	    defaultParams->backlogLimitHigh,
 	    defaultParams->minQueueCxn ? "true " : "false");
-      fprintf(fp,"  backlog feed first: %s\n",
+      fprintf(fp," backlog feed first: %s\n",
            defaultParams->backlogFeedFirst ? "true " : "false");
       fprintf(fp,"     backlog factor: %1.1f\n\n",
 	    defaultParams->backlogFactor);
@@ -3922,7 +3937,7 @@ static int validateInteger (FILE *fp, const char *name,
         }
       else
         logOrPrint (LOG_INFO,fp,
-                    "ME config: adding missing key/value %s: %ld",name
+                    "ME config: adding default value for key %s: %ld",name
                     ,setval) ;
     }
   else if (v != NULL && v->type != intval)
@@ -3976,7 +3991,7 @@ static int validateReal (FILE *fp, const char *name, double low,
         }
       else
         logOrPrint (LOG_INFO,fp,
-                    "ME config: adding missing key/value %s: %f",name,
+                    "ME config: adding default value for key %s: %f",name,
                     setval) ;
     }
   else if (v != NULL && v->type != realval)
@@ -4027,7 +4042,7 @@ static int validateBool (FILE *fp, const char *name, int required, bool setval,
         }
       else
         logOrPrint (LOG_INFO,fp,
-                    "ME config: adding missing key/value %s: %s",name,
+                    "ME config: adding default value for key %s: %s",name,
                     (setval ? "true" : "false")) ;
     }
   else if (v != NULL && v->type != boolval)

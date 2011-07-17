@@ -54,7 +54,7 @@ static FILE *droppedFp = NULL ;
 static long droppedCount = 0 ;
 static int droppedFileCount = 0 ;
 static char *dropArtFile = NULL ;
-static bool fastExit = false ;
+bool fastExit = false ;
 
 extern const char *pidFile ;
 extern const char *InputFile ;
