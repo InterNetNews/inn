@@ -326,6 +326,9 @@ SASLauth(int ac, char *av[])
                 GRPcount = 0;
                 PERMgroupmadeinvalid = false;
             }
+
+            /* Reset our read buffer so as to prevent plaintext command injection. */
+            line_reset(&NNTPline);
         }
     } else {
 	/* Failure. */
