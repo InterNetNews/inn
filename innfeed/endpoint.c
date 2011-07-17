@@ -345,19 +345,19 @@ int endPointFd (EndPoint endp)
 
 
 
-/* Request a read to be done next time there's data. The endpoint
- * ENDP is what will do the read. BUFF is the Buffer the data should
- * go into. FUNC is the callback function to call when the read is
- * complete. CLIENTDATA is the client data to pass back into the
+/* Request a read to be done next time there's data. The endpoint ENDP
+ * is what will do the read. BUFFERS is the array of Buffers the data
+ * should go into. FUNC is the callback function to call when the read
+ * is complete. CLIENTDATA is the client data to pass back into the
  * callback function. MINLEN is the minimum amount of data to
- * read. If MINLEN is 0 then then BUFF must be filled, otherwise at
+ * read. If MINLEN is 0 then then BUFFERS must be filled, otherwise at
  * least MINLEN bytes must be read.
  *
- * BUFF can be null, in which case no read is actually done, but the
+ * BUFFERS can be NULL, in which case no read is actually done, but the
  * callback function will be called still. This is useful for
  * listening sockets.
  *
- * Returns 0 if the read couln't be prepared (for example if a read
+ * Returns 0 if the read couldn't be prepared (for example if a read
  * is already outstanding).
  */
 
@@ -400,12 +400,12 @@ int prepareRead (EndPoint endp,
 
 
 
-/* Request a write to be done at a later point. ENDP is the EndPoint
- * to do the write. BUFF is the Buffer to write from. FUNC is the
- * function to call when the write is complete. CLIENTDATA is some
+/* Request a write to be done at a later point. ENDP is the EndPoint to
+ * do the write. BUFFERS is the array of Buffers to write from. FUNC is
+ * the function to call when the write is complete. CLIENTDATA is some
  * data to hand back to the callback function.
  *
- * If BUFF is null, then no write will actually by done, but the
+ * If BUFFERS is NULL, then no write will actually by done, but the
  * callback function will still be called. This is useful for
  * connecting sockets.
  *
@@ -527,7 +527,7 @@ TimeoutId prepareSleep (EndpTCB func, int timeToSleep, void *clientData)
 }
 
 
-/* Updates a an existing timeout request to go off TIMETOSLEEP seconds from
+/* Updates an existing timeout request to go off TIMETOSLEEP seconds from
    now, or queues a new request.  Always returns a new ID. */
 TimeoutId updateSleep (TimeoutId tid, EndpTCB func, int timeToSleep,
                        void *clientData) 
@@ -1383,22 +1383,11 @@ static void doTimeout (void)
 
 
 
-
 #if defined (WANT_MAIN)
-
 
 #define BUFF_SIZE 100
 
-
-void timerCallback (void *cd) ;
-void timerCallback (void *cd)
-{
-  d_printf (1,"Callback \n") ;
-}
-
-  
-void lineIsWritten (EndPoint ep, IoStatus status, Buffer *buffer, void *data);
-void lineIsWritten (EndPoint ep, IoStatus status, Buffer *buffer, void *data)
+static void lineIsWritten (EndPoint ep, IoStatus status, Buffer *buffers, void *d UNUSED)
 {
   int i ;
   
@@ -1413,12 +1402,12 @@ void lineIsWritten (EndPoint ep, IoStatus status, Buffer *buffer, void *data)
       errno = oldErrno ;
     }
 
-  for (i = 0 ; buffer && buffer [i] ; i++)
-    delBuffer (buffer [i]) ;
+  for (i = 0 ; buffers && buffers[i] ; i++) {
+    delBuffer (buffers[i]);
+  }
 }
 
-void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *data);
-void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
+static void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffers, void *d UNUSED)
 {
   Buffer *writeBuffers, *readBuffers ;
   Buffer newBuff1, newBuff2 ;
@@ -1445,13 +1434,13 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
     }
   
   
-  data = bufferBase (buffer[0]) ;
-  len = bufferDataSize (buffer[0]) ;
+  data = bufferBase (buffers[0]);
+  len = bufferDataSize (buffers[0]);
   
   if (data [len - 1] == '\r' || data [len - 1] == '\n')
-    bufferDecrDataSize (buffer [0],1) ;
+    bufferDecrDataSize (buffers[0], 1);
   if (data [len - 1] == '\r' || data [len - 1] == '\n')
-    bufferDecrDataSize (buffer [0],1) ;
+    bufferDecrDataSize (buffers[0], 1);
 
   data [len] = '\0' ;
   
@@ -1469,19 +1458,14 @@ void lineIsRead (EndPoint myEp, IoStatus status, Buffer *buffer, void *d)
   strlcpy (p,"\" very tasty\n", bufferSize (newBuff2)) ;
   bufferSetDataSize (newBuff2,strlen (p)) ;
 
-  writeBuffers = makeBufferArray (newBuff1,buffer[0],newBuff2,NULL) ;
+  writeBuffers = makeBufferArray (newBuff1, buffers[0], newBuff2, NULL);
   readBuffers = makeBufferArray (newInputBuffer,NULL) ;
   
-  prepareWrite (myEp,writeBuffers,lineIsWritten,NULL) ;
-  prepareRead (myEp,readBuffers,lineIsRead,NULL,1) ;
-
-#if 0
-  myEp->registerWake (&timerCallback,theTime() + 7,0) ;
-#endif
+  prepareWrite(myEp, writeBuffers, NULL, lineIsWritten, NULL);
+  prepareRead(myEp, readBuffers, lineIsRead, NULL, 1);
 }
 
 
-static void printDate (TimeoutId tid, void *data) ;
 static void printDate (TimeoutId tid, void *data)
 {
   char dateString[30];
@@ -1501,7 +1485,6 @@ static void printDate (TimeoutId tid, void *data)
 
 TimeoutId rm ;
 
-static void Timeout (TimeoutId tid, void *data) ;
 static void Timeout (TimeoutId tid, void *data)
 {
   static int seeded ;
@@ -1541,14 +1524,13 @@ static void Timeout (TimeoutId tid, void *data)
 }
 
 
-void newConn (EndPoint ep, IoStatus status, Buffer *buffer, void *d) ;
-void newConn (EndPoint ep, IoStatus status, Buffer *buffer, void *d)
+static void newConn (EndPoint ep, IoStatus status UNUSED, Buffer *buffers UNUSED, void *d UNUSED)
 {
   EndPoint newEp ;
   struct sockaddr_in in ;
   Buffer *readBuffers ;
   Buffer newBuff = newBuffer (BUFF_SIZE) ;
-  int len = sizeof (in) ;
+  socklen_t len = sizeof (in);
   int fd ;
 
   memset (&in, 0, sizeof (in)) ;
@@ -1563,11 +1545,11 @@ void newConn (EndPoint ep, IoStatus status, Buffer *buffer, void *d)
   
   newEp = newEndPoint (fd) ;
 
-  prepareRead (ep, NULL, newConn,NULL,0) ;
+  prepareRead(ep, NULL, newConn, NULL, 0);
 
   readBuffers = makeBufferArray (newBuff,NULL) ;
 
-  prepareRead (newEp, readBuffers, lineIsRead, NULL, 1) ;
+  prepareRead(newEp, readBuffers, lineIsRead, NULL, 1);
 
   d_printf (1,"Set up a new connection\n");
 }
@@ -1582,7 +1564,7 @@ int main (int argc, char **argv)
   time_t t = theTime() ;
 
 
-  program = strrchr (argv[0],'/') ;
+  char * program = strrchr (argv[0],'/') ;
 
   if (!program)
     program = argv [0] ;
@@ -1612,7 +1594,7 @@ int main (int argc, char **argv)
   
   accConn = newEndPoint (accFd) ;
 
-  prepareRead (accConn,NULL,newConn,NULL,0) ;
+  prepareRead(accConn, NULL, newConn, NULL, 0);
 
   prepareSleep (Timeout,5,(void *) 0x10) ;
 
