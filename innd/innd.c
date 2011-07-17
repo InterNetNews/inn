@@ -607,9 +607,9 @@ main(int ac, char *av[])
         sysdie("SERVER cant get file descriptor limit");
 
 #ifdef FD_SETSIZE
-    if (i > FD_SETSIZE-1) {
-        syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding FD_SETSIZE-1 (%d)",
-               LogName, i, FD_SETSIZE-1);
+    if (FD_SETSIZE > 0 && (unsigned) i >= FD_SETSIZE) {
+        syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding or equaling FD_SETSIZE (%d)",
+               LogName, i, FD_SETSIZE);
         i = FD_SETSIZE-1;
     }
 #endif
