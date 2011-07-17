@@ -508,7 +508,7 @@ main(int ac, char *av[])
     ac -= optind;
     if (ac != 0)
 	Usage();
-    if (ModeReason && !innconf->readerswhenstopped)
+    if (ModeReason != NULL && !innconf->readerswhenstopped)
 	NNRPReason = xstrdup(ModeReason);
 
     if (ShouldSyntaxCheck) {
@@ -592,19 +592,29 @@ main(int ac, char *av[])
         die("SERVER cant open overview method");
 
     /* Attempt to increase the number of open file descriptors. */
-    if (innconf->rlimitnofile > 0)
+    if (innconf->rlimitnofile > 0) {
         if (setfdlimit(innconf->rlimitnofile) < 0)
             syswarn("SERVER cant set file descriptor limit");
+    }
 
     /* Get number of open channels. */
     i = getfdlimit();
     if (i < 0)
         sysdie("SERVER cant get file descriptor limit");
 
+#ifdef FD_SETSIZE
+    if (i > FD_SETSIZE-1) {
+        syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding FD_SETSIZE-1 (%d)",
+               LogName, i, FD_SETSIZE-1);
+        i = FD_SETSIZE-1;
+    }
+#endif
+
     /* There is no file descriptor limit on some hosts; for those, cap at
        MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger. 
        Otherwise, we use insane amounts of memory for the channel table.
-       FIXME: Get rid of this hard-coded constant. */
+       FIXME:  Get rid of this hard-coded constant.
+       (TODO:  Consider implementing libevent.) */
     if (i > 5000) {
         unsigned long max;
 
