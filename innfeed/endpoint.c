@@ -583,7 +583,6 @@ void Run (void)
   fd_set rSet ;
   fd_set wSet ;
   fd_set eSet ;
-  unsigned long last_summary = 0 ;
 
   keepSelecting = 1 ;
   xsignal (SIGPIPE, pipeHandler) ;
@@ -630,17 +629,10 @@ void Run (void)
       TMRstop(TMR_IDLE);
 
       timePasses () ;
-      if (innconf->timer != 0)
-        {
-	  unsigned long now = TMRnow () ;
-	  if (last_summary == 0 
-	      || (now - last_summary) > (innconf->timer * 1000))
-	    {
-	      TMRsummary ("ME", timer_name) ;
-	      last_summary = now;
-	    }
-	}
-      
+      if (innconf->timer != 0 && TMRnow() > innconf->timer * 1000) {
+          TMRsummary ("ME", timer_name);
+      }
+
       if (sval == 0 && twait == NULL)
         die ("No fd's ready and no timeouts") ;
       else if (sval < 0 && errno == EINTR)
