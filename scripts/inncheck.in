@@ -6,6 +6,7 @@
 ##  by Brendan Kehoe <brendan@cygnus.com> and Rich $alz.
 
 use strict;
+use Getopt::Long;
 
 my $ST_MODE = 2;
 my $ST_UID  = 4;
@@ -88,7 +89,9 @@ my ($file, $line, $IN);
 my $exitval = 0;
 
 ##  Command line arguments.
-my ($all, $verbose, $pedantic, $fix, $perms, $noperms, $pfx, @todo);
+##  Note that $perms can be 1 (if --perm), 0 (if --noperm)
+##  and -1 (the default, when no flag is specified).
+my ($all, $verbose, $pedantic, $fix, $perms, $pfx, @todo) = (0, 0, 0, 0, -1, '', ());
 
 my $program = $0;
 $program =~ s@.*/@@;
@@ -1186,9 +1189,9 @@ Usage
     print "Usage error: @_.\n";
     print
 "Usage:
-	$program [-afv] [-noperm|perm] [-pedantic] [file | file=value...]
+	$program [-afqv] [--noperm|perm] [--pedantic] [file | file=value...]
 File to check may be followed by \"=path\" to use the specified path.  All
-files are checked if -a is used or if -perm is not used.  Files that may
+files are checked if -a is used or if --perm is not used.  Files that may
 be checked are:\n";
     foreach ( sort(keys %checklist) ) {
 	printf "     %-20s", $_;
@@ -1203,77 +1206,37 @@ be checked are:\n";
 }
 
 
-sub
-parse_flags
-{
-    $all = 0;
-    $fix = 0;
-    $perms = 0;
-    $noperms = 0;
-    $verbose = 0;
-    @todo = ();
+Getopt::Long::Configure('bundling_override');
+GetOptions(
+    'all|a'     => \$all,
+    'verbose|v' => \$verbose,
+    'quiet|q'   => sub { $verbose = -1 },
+    'pedantic'  => \$pedantic,
+    'fix|f'     => \$fix,
+    'perm!'     => \$perms,
+) or Usage("Unknown option");
 
-    arg: foreach ( @ARGV ) {
-	if ( /-a/ ) {
-	    $all++;
-	    next arg;
-	}
-	if ( /^-v/ ) {
-            &Usage("Can't use both `-q' and `-v'")
-                if $verbose != 0;
-	    $verbose++;
-	    next arg;
-	}
-	if ( /^-q/ ) {
-            &Usage("Can't use both `-q' and `-v'")
-                if $verbose != 0;
-	    $verbose--;
-	    next arg;
-	}
-	if ( /^-ped/ ) {
-	    $pedantic++;
-	    next arg;
-	}
-	if ( /^-f/ ) {
-	    $fix++;
-	    next arg;
-	}
-	if ( /^-per/ ) {
-	    $perms++;
-	    next arg;
-	}
-	if ( /^-noperm/ ) {
-	    $noperms++;
-	    next arg;
-	}
-	if ( /^-/ ) {
-	    &Usage("Unknown flag `$_'");
-	}
-	if ( my ($k, $v) = /(.*)=(.*)/ ) {
-	    &Usage("Can't check `$k'")
-		if !defined $checklist{$k};
-	    push(@todo, $k);
-	    $paths{$k} = $v;
-	    next arg;
-	}
-	&Usage("Can't check `$_'")
-	    if !defined $checklist{$_};
-	push(@todo, $_);
+arg: foreach ( @ARGV ) {
+    if ( my ($k, $v) = /(.*)=(.*)/ ) {
+        Usage("Can't check `$k'")
+            if !defined $checklist{$k};
+        push(@todo, $k);
+        $paths{$k} = $v;
+        next arg;
     }
 
-    &Usage("Can't use `-fix' without `-perm'")
-	if $fix && !$perms;
-    &Usage("Can't use `-noperm' with `-perm'")
-	if $noperms && $perms;
-    $pfx = $fix ? '# ' : '';
-
-    @todo = grep(defined $checklist{$_}, sort(keys %paths))
-	if $all || (scalar(@todo) == 0 && ! $perms);
-    return;
+    Usage("Can't check `$_'")
+        if !defined $checklist{$_};
+    push(@todo, $_);
 }
 
+&Usage("Can't use `--fix' without `--perm'")
+    if $fix && $perms < 1;
+$pfx = $fix ? '# ' : '';
 
-&parse_flags();
+@todo = grep(defined $checklist{$_}, sort(keys %paths))
+    if $all || (scalar(@todo) == 0 && $perms < 1);
+
 action: foreach my $workfile ( @todo ) {
     $file = $paths{$workfile};
     if ( ! -f $file ) {
@@ -1287,12 +1250,12 @@ action: foreach my $workfile ( @todo ) {
 	next action;
     }
     &checkperm($file, $modes{$workfile})
-	if $noperms == 0 && !$perms && defined $modes{$workfile};
+	if $perms == -1 && defined $modes{$workfile};
     $line = 0;
     $checklist{$workfile}();
     close($IN);
 }
 
 &check_all_perms()
-    if $perms;
+    if $perms == 1;
 exit($exitval);
