@@ -9,6 +9,13 @@ code.  Make sure that the mispelled, undocumented I<backlog-limit-high>
 key is *not* used in your F<innfeed.conf> file; its real name is
 I<backlog-limit-highwater>.  You should rename the key in case it is present
 in your configuration file.  Otherwise, it will not be taken into account.
+You can run B<inncheck> to verify that the syntax of this file is correct.
+
+It is generally recommended to run B<inncheck> after any changes done to
+configuration files, especially with the new improved version of this script
+shipped with S<INN 2.5.3>, thanks to the hard work of Florian Schlichting
+who added support for the syntax of F<incoming.conf>, F<innfeed.conf>,
+F<readers.conf> and F<storage.conf>.
 
 =over 2
 
@@ -87,9 +94,24 @@ Thanks to Raphael Barrois for the patch.
 
 =item *
 
+Improve the stability of the Perl filters for B<innd> and B<nnrpd>:
+properly save and restore the stack pointer when needed.
+
+=item *
+
 The Injection-Date: header, when present, is now used by B<innd> and
 B<makehistory> to determine the posting date of an article.  Otherwise,
 the Date: header is used.
+
+=item *
+
+B<controlchan> now imposes a date cutoff on processing control articles.
+The I<artcutoff> parameter set in F<inn.conf> is used.  Otherwise, without
+that cutoff, old control articles could be maliciously reinjected into
+Usenet, and replayed.  (An unsigned Injection-Date: header field could be
+added to an article that only had a Date: header field.)  A new B<-c> flag
+has been added to B<controlchan> to disable the cutoff check, if needed
+(usually when manually invoking the program).
 
 =item *
 
@@ -104,6 +126,47 @@ was locally posted.  The field mentioning the IP address was skipped,
 resulting in a wrong syntax for this header.  The local "127.0.0.1" IP
 address is now used.  Besides, C<localhost> is now mentioned instead of
 an obscure C<stdin> in injection header fields.
+
+=item *
+
+Fixed a bug in the frequency B<innfeed> logs its status:  too many useless
+lines were written to F<news.notice>.  Thanks to Florian Schlichting for
+the fix.
+
+=item *
+
+When unset in F<innfeed.conf>, the I<dynamic-method> parameter now
+properly defaults to C<3> (instead of C<0>) and I<use-mmap> to false
+(instead of true).  These two values were already the recommended ones in
+the documentation and the sample file.  Note that I<use-mmap> is only used
+when B<innfeed> is given file names to send instead of storage API tokens,
+which is a fairly rare use case.
+
+=item *
+
+B<innfeed> no longer generates an error message (logged in F<news.err>) when
+a parameter is not defined in F<innfeed.conf>.  All the parameters have a
+default value, so there is no need to warn the user if they are not present
+in F<innfed.conf>.  Thanks to Dieter Stussy for having reported this problem.
+
+=item *
+
+Implement an upper limit to the number of file descriptors B<innd>
+can handle.  At most (FD_SETSIZE-1) file descriptors can be used.  This
+upper limit now overrides any superior number set with I<rlimitnofile>
+in F<inn.conf>.  Thanks to Steve Crook for the bug report.
+
+=item *
+
+A default timeout on outgoing sockets (using NNTPconnect) has been added
+by Florian Schlichting.  For a long time, there have been occasional
+problems with B<actsync> (and probably other programs) that would hang
+until manually killed or restarted.
+
+=item *
+
+The flag B<-S> has been added to B<innd> by Florian Schlichting.  When used,
+B<innd> reports the errors found in F<incoming.conf> and exits.
 
 =item *
 
@@ -131,6 +194,27 @@ F<innshellvars.pl.local> or F<innshellvars.tcl.local> is present and
 executable in I<pathetc>, then it will be executed by the corresponding
 B<innshellvars> script (respectively shell, INN::Config Perl module,
 and Tcl).  A typical use is to add or override variables.
+
+=item *
+
+Add support for wire-formatted articles in B<scanspool>.
+
+=item *
+
+A lot of work on cleaning old perl4-style code has been done by Florian
+Schlichting.
+
+=item *
+
+B<inncheck> now generates a proper non-zero exit value when errors are found,
+and allows quiet mode with the B<-q> flag.  Florian Schlichting has greatly
+improved this script in many regards, especially with a config-syntax parser
+for F<incoming.conf>, F<innfeed.conf>, F<readers.conf> and F<storage.conf>.
+
+=item *
+
+B<inncheck> now properly finds the boundaries of substituted variables in
+F<newsfeeds> thanks to Alexander Bartolich.
 
 =item *
 
