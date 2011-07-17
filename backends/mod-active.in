@@ -9,21 +9,23 @@
 # is output by docheckgroups and actsync, and efficiently handles them all at
 # once.  Input can come from command-line files or stdin, a la awk/sed.
 
-$oldact = $INN::Config::active;         # active file location
-$newact = "$oldact.new$$";              # temporary name for new active file
-$actime = $INN::Config::activetimes;    # active.times file
-$pausemsg = 'batch active update, ok';  # message to be used for pausing?
-$diff_flags = '';                       # flags for diff(1); default chosen if null
-$changes = 0;                           # number of changes to do
+use strict;
+
+my $oldact = $INN::Config::active;         # active file location
+my $newact = "$oldact.new$$";              # temporary name for new active file
+my $actime = $INN::Config::activetimes;    # active.times file
+my $pausemsg = 'batch active update, ok';  # message to be used for pausing?
+my $diff_flags = '';                       # flags for diff(1); default chosen if null
+my $changes = 0;                           # number of changes to do
 
 $0 =~ s#^.*/##;
 
 die "$0: must run as $INN::Config::newsuser user"
   unless $> == (getpwnam($INN::Config::newsuser))[2];
 
-$debug = -t STDOUT ? 1 : 0;
+my $debug = -t STDOUT ? 1 : 0;
 
-$| = 1;                # show output as it happens (for an rsh/ssh pipe)
+local $| = 1;                # show output as it happens (for an rsh/ssh pipe)
 
 # Guess at best flags for a condensed diff listing.  The
 # checks for alternative operating systems is incomplete.
@@ -41,27 +43,21 @@ unless ($diff_flags) {
 
 print "reading list of groups to update\n" if $debug;
 
-$eval  = "while (<OLDACT>) {\n";
-$eval .= "  \$group = (split)[0];\n";
+my (%toadd, %todelete, %tochange);
 
+# Read the commands given to mod-active.
 while (<>) {
   if (/^\s*\S*ctlinnd newgroup (\S+) (\S+)/) {
     $toadd{$1} = $2;
     $changes++;
   } elsif (/^\s*\S*ctlinnd rmgroup (\S+)/) {
-    $eval .= "  next if \$group eq '$1';\n";
+    $todelete{$1} = 1;
     $changes++;
   } elsif (/^\s*\S*ctlinnd changegroup (\S+) (\S+)/) {
-    $eval .= "  s/ \\S+\$/ $2/ if \$group eq '$1';\n";
+    $tochange{$1} = $2;
     $changes++;
   }
 }
-
-$eval .= "  delete \$toadd{\$group};\n";
-$eval .= "  if (!print(NEWACT \$_)) {\n";
-$eval .= "    die \"\$0: writing \$newact failed (\$!), aborting\\n\";\n";
-$eval .= "  }\n";
-$eval .= "}\n";
 
 if ($changes == 0) {
     print "active file not changed\n" if $debug;
@@ -70,43 +66,59 @@ if ($changes == 0) {
 
 print "$changes change(s) to do\n" if $debug;
 
-&ctlinnd("pause $pausemsg");
+ctlinnd("pause $pausemsg");
 
-open(OLDACT, "< $oldact") || die "$0: open $oldact: $!\n";
-open(NEWACT, "> $newact") || die "$0: open $newact: $!\n";
+open (my $OLDACT, '<', $oldact) || die "$0: open $oldact: $!\n";
+open (my $NEWACT, '>', $newact) || die "$0: open $newact: $!\n";
 
 print "rewriting active file\n" if $debug;
-eval $eval;
-for (sort keys %toadd) {
-  $add = "$_ 0000000000 0000000001 $toadd{$_}\n";
-  if (!print(NEWACT $add)) {
-    &ctlinnd("go $pausemsg");
+
+# Read the current active file.  The beginning of each line is
+# the name of an existing newsgroup.
+while (<$OLDACT>) {
+  my $group = (split)[0];
+  next if exists $todelete{$group};
+  s/ \S+$/ $tochange{$group}/ if exists $tochange{$group};
+  delete $toadd{$group};   # The newsgroup already exists.
+  if (!print $NEWACT $_) {
+    # Do not forget to restart INN before dying.
+    ctlinnd("go $pausemsg");
     die "$0: writing $newact failed ($!), aborting\n";
   }
 }
 
-close(OLDACT) || warn "$0: close $oldact: $!\n";
-close(NEWACT) || warn "$0: close $newact: $!\n";
+for (sort keys %toadd) {
+  my $add = "$_ 0000000000 0000000001 $toadd{$_}\n";
+  if (!print $NEWACT $add) {
+    # Do not forget to restart INN before dying.
+    ctlinnd("go $pausemsg");
+    die "$0: writing $newact failed ($!), aborting\n";
+  }
+}
 
-if (!rename("$oldact", "$oldact.old")) {
+close ($OLDACT) || warn "$0: close $oldact: $!\n";
+close ($NEWACT) || warn "$0: close $newact: $!\n";
+
+if (!rename "$oldact", "$oldact.old") {
   warn "$0: rename $oldact $oldact.old: $!\n";
 }
 
-if (!rename("$newact", "$oldact")) {
+if (!rename "$newact", "$oldact") {
+  # Do not restart INN here:  we no longer have a valid active file!
   die "$0: rename $newact $oldact: $!\n";
 }
 
-&ctlinnd("reload active 'updated from checkgroups'");
-system("diff $diff_flags $oldact.old $oldact");
-&ctlinnd("go $pausemsg");
+ctlinnd("reload active 'updated from checkgroups'");
+system "diff $diff_flags $oldact.old $oldact";
+ctlinnd("go $pausemsg");
 
 print "updating $actime\n" if $debug;
-if (open(TIMES, ">> $actime")) {
-  $time = time;
+if (open (my $TIMES, '>>', $actime)) {
+  my $time = time;
   for (sort keys %toadd) {
-    print TIMES "$_ $time checkgroups-update\n" || last;
+    print ($TIMES "$_ $time checkgroups-update\n") || last;
   }
-  close(TIMES) || warn "$0: close $actime: $!\n";
+  close ($TIMES) || warn "$0: close $actime: $!\n";
 } else {
   warn "$0: $actime not updated: $!\n";
 }
@@ -118,13 +130,11 @@ if (! chmod 0664, $oldact, "$oldact.old", $actime) {
 
 exit 0;
 
-sub
-ctlinnd
-{
-  local($command) = @_;
+sub ctlinnd {
+  my ($command) = @_;
 
   print "ctlinnd $command\n" if $debug;
-  if (system("$INN::Config::newsbin/ctlinnd -s $command")) {
+  if (system "$INN::Config::newsbin/ctlinnd -s $command") {
     die "$0: \"$command\" failed, aborting\n";
   }
 }
