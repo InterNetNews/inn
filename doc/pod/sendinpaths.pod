@@ -4,12 +4,13 @@ sendinpaths - Send Usenet Path: statistics via e-mail
 
 =head1 SYNOPSIS
 
-B<sendinpaths> [B<-n> | "I<address> [I<address> ...]"]
+B<sendinpaths> [B<-n>] [B<-k> I<keep-days>] [B<-r> I<report-days>]
+[I<address> [I<address> ...]]
 
 =head1 DESCRIPTION
 
 B<sendinpaths> checks I<pathlog>/path for B<ninpaths> dump files, finds
-dump files generated in the past 30 days, makes sure they are valid
+dump files generated in the past I<report-days> days, makes sure they are valid
 by running B<ninpaths> on each one and making sure the exit status is
 zero, and passes them to B<ninpaths> to generate a cumulative report.
 By default, that report is mailed to the e-mail addresses configured at
@@ -18,7 +19,7 @@ the beginning of this script (by default <pathsurvey@top1000.org> and
 useful statistics:  see L<http://www.top1000.org/> for more information.
 
 When finished, B<sendinpaths> deletes all dump files in I<pathlog>/path
-that are older than 14 days (configurable at the beginning of the script).
+that are older than I<keep-days> days.
 
 For more information on how to set up B<ninpaths>, see ninpaths(8).
 
@@ -26,10 +27,27 @@ For more information on how to set up B<ninpaths>, see ninpaths(8).
 
 =over 4
 
+=item B<-k> I<keep-days>
+
+After having processed dump files, B<sendinpaths> removes those that are
+older than I<keep-days> days.  The default is C<0>, that is to say to
+remove all dump files.
+
+Setting I<keep-days> to another value can be useful for debugging purpose
+because it permits to keep a few dump files.
+
 =item B<-n>
 
 Don't e-mail the report; instead, just print it to standard output.  Don't
 delete old dump files.
+
+=item B<-r> I<report-days>
+
+Process dump files generated during the last I<report-days> days.
+The default is C<32>, that is to say to process all the dump files that
+have been generated during the last 32 days (if, of course, they have
+not been deleted yet by a previous run of B<sendinpaths> according to the
+value set by the B<-k> flag).
 
 =item I<address> ...
 
@@ -37,9 +55,7 @@ E-mail the report to the mentioned addresses instead of the default ones.
 Several addresses can be used, separated by whitespace.  For instance,
 for two adresses:
 
-    sendinpaths "pathsurvey@top1000.org top1000@anthologeek.net"
-
-The quotes can be omitted when only an address is specified.
+    sendinpaths pathsurvey@top1000.org top1000@anthologeek.net
 
 =back
 

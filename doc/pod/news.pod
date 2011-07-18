@@ -162,6 +162,15 @@ unencrypted, from being executed in the new encrypted state of the session.
 
 =item *
 
+It is now possible to properly generate daily statistics with B<sendinpaths>
+thanks to the new B<-k> and B<-r> flags that permit to control the interval
+of days for processing dump files.
+
+Also fixed an issue with statistics that could be missing for a couple of
+days when monthly sent.
+
+=item *
+
 B<cnfsheadconf> now properly recognizes continuation lines in
 F<cycbuff.conf>, that is to say lines ending with a backslash (C<\>).
 Thanks to John S<F. Morse> for the bug report.
