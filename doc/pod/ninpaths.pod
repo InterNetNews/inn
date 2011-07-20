@@ -19,11 +19,11 @@ the program picks up all the dump files, adds them up and formats them
 into the report.  The purpose of the final report is to summarize the
 frequency of occurrence of sites in the Path: headers of articles.
 
-Some central sites accumulate the Path: data from many news servers running
-this program or one like it, and then report statistics on the most
-frequently seen news servers in Usenet article Path: lines.  The
-B<sendinpaths> shell script can be run once a month to mail the
-accumulated statistics to such a site and remove the old dump files.
+Some central sites accumulate the Path: data from many news servers
+running this program or one like it, and then report statistics on
+the most frequently seen news servers in Usenet article Path: lines.
+The B<sendinpaths> shell script can be run daily to mail the accumulated
+statistics to such a site and remove the old dump files.
 
 You can get a working setup by doing the following:
 
@@ -33,30 +33,44 @@ You can get a working setup by doing the following:
 
 Create a directory at I<pathlog>/path (replacing I<pathlog> here and in
 all steps that follow with the full path to your INN log directory).
+Do not change the name of the C<path> subdirectory because it is used
+by B<sendinpaths>.
 
 =item 2.
 
 Set up a channel feed using an entry like:
 
-    inpaths!:*:Tc,WP:ninpaths -p -d <pathlog>/path/inpaths.%d
+    inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
 
 if your version of INN supports C<WP> (2.0 and later all do).  Replace
+<pathbin> with the full path to your INN binaries directory, and
 <pathlog> with the full path to your INN log directory.
 
 =item 3.
 
-Enter into your news user crontab something like:
+Run the following command to start logging these statistics:
 
-    6 6 * * *   ctlinnd flush inpaths!
-
-(the actual time doesn't matter).  This will force B<ninpaths> to generate
-a dump file once a day.
+    ctlinnd reload newsfeeds 'inpaths feed setup'
 
 =item 4.
 
-Once per month, run the B<sendinpaths> script, which collects the dumps,
-makes a report, and then deletes the old dumps.  (You can generate a
-report without mailing it and without deleting it with C<sendinpaths -n>.)
+Enter into your news user crontab these two lines:
+
+    6   6 * * *   <pathbin>/ctlinnd flush inpaths!
+    10  6 * * *   <pathbin>/sendinpaths
+
+(the actual time doesn't matter).  This will force B<ninpaths> to generate
+a dump file once a day.  Then, a few minutes later, B<sendinpaths> collects
+the dumps, makes a report, sends the collected statistics, and deletes
+the old dumps.
+
+Note that you can manually generate a report without mailing it, and
+without deleting processed dump files, with C<sendinpaths -n>.
+
+=item 5.
+
+In a couple of days, check that your daily statistics properly appear in
+L<http://www.top1000.org/>.
 
 =back
 
@@ -88,8 +102,8 @@ multiple dump files.
 
 =item B<-v> I<level>
 
-Set the verbosity level of the report.  Valid values for I<level> are 0,
-1, and 2, with 2 being the default.
+Set the verbosity level of the report.  Valid values for I<level> are C<0>,
+C<1>, and C<2>, with C<2> being the default.
 
 =back
 
@@ -139,14 +153,14 @@ where the two processed Path: headers are:
 If your INN doesn't have the C<WP> feed flag (1.5 does not, 1.6 and 1.7 do,
 2.0 and later all do), use the following F<newsfeeds> entry:
 
-   inpaths!:*:Tc,WH:ginpaths
+   inpaths!:*:Tc,WH:<pathbin>/ginpaths
 
 where B<ginpaths> is the following script:
 
     #!/bin/sh
-    exec egrep '^Path: ' | ninpaths -p -d <pathlog>/path/inpaths.%d
+    exec egrep '^Path: ' | <pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
 
-replacing <pathlog> as above.
+replacing <pathbin> and <pathlog> as above.
 
 =head1 HISTORY
 

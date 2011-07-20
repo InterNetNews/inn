@@ -1,44 +1,97 @@
 #!/bin/sh
 # fixscript will replace this line with code to load innshellvars
 #
-# Submit path statistics based on ninpaths
+# Submit path statistics based on ninpaths.
 # $Id$
 
-# Assuming the ninpaths dump files are in ${MOST_LOGS}/path/inpaths.%d
+# Assuming the ninpaths dump files are in ${MOST_LOGS}/path/inpaths.%d files.
 
 cd ${MOST_LOGS}/path
 ME=`${NEWSBIN}/innconfval pathhost`
-report=30
-keep=14
-TMP=""
-defaddr="pathsurvey@top1000.org top1000@anthologeek.net"
+
+USAGE="Usage: sendinpaths [-n] [-k keep-days] [-r report-days] [address [address ...]]"
+NOMAIL=false
+MAILTO=""
+DEFAULTMAILTO="pathsurvey@top1000.org top1000@anthologeek.net"
+
+# Default to report up to 32 days (ideal for monthly statistics).  It works fine
+# for daily stats too because already processed dump files are deleted by default
+# (0 day of kept articles).
+REPORT=32
+KEEP=0
+NINPATHS_ARGS=""
+
+# Parse command-line arguments.
+while [ $# -gt 0 ]
+do
+  case "$1" in
+  -k)
+    case "$2" in
+    *[^0-9]*)
+      echo "Argument to -k flag must be an integer."
+      exit 1
+      ;;
+    esac
+    KEEP=$2
+    shift
+    ;;
+  -n)
+    NOMAIL=true
+    ;;
+  -r)
+    case "$2" in
+    *[^0-9]*)
+      echo "Argument to -r flag must be an integer."
+      exit 1 
+      ;;
+    esac
+    REPORT=$2
+    shift
+    ;;
+  -*)
+    echo $USAGE
+    exit 1
+    ;;
+  *)
+    MAILTO="${MAILTO} $1"
+    ;;
+  esac
+  shift
+done
 
 # Renice to give other processes priority, since this isn't too important.
 renice 20 -p $$ > /dev/null 2>&1
 
-# Make report from (up to) $report days of dumps
-LOGS=`find . -name 'inpaths.*' ! -size 0 -mtime -$report -print`
+# Make report from (up to) $REPORT days of dumps.
+LOGS=`find . -name 'inpaths.*' ! -size 0 \( -mtime -${REPORT} -o -mtime ${REPORT} \) -print`
 if [ -z "$LOGS" ] ; then
-  echo "No data has been collected this month!"
+  echo "No data has been collected since the last run of this script!"
   exit 1
 fi
 
-# for check dumps
+# Process dumps.
 for i in $LOGS
 do
- ninpaths -u $i -r $ME > /dev/null 2>&1
- if test $? -eq 0; then :
-  TMP="$TMP -u $i"
- fi
+  ninpaths -u ${i} -r ${ME} > /dev/null 2>&1
+  if test $? -eq 0 ; then
+    NINPATHS_ARGS="${NINPATHS_ARGS} -u ${i}"
+  else
+    echo "Skipping unrecognized inpaths file ${i}"
+  fi
 done
 
-if [ "$1" = "-n" ] ; then
-  ninpaths $TMP -r $ME
+if [ -z "${NINPATHS_ARGS}" ] ; then
+  echo "No valid data has been collected since the last run of this script!"
+  exit 1
+fi
+
+if [ "${NOMAIL}" = "true" ] ; then
+  ninpaths ${NINPATHS_ARGS} -r ${ME}
 else
-  ninpaths $TMP -r $ME |\
-   $MAILCMD -s "inpaths $ME" ${1:-$defaddr}
-  # remove dumps older than $keep days
-  find . -name 'inpaths.*' -mtime +$keep -exec rm '{}' \;
+  ninpaths ${NINPATHS_ARGS} -r ${ME} |\
+    ${MAILCMD} -s "inpaths ${ME}" ${MAILTO:-$DEFAULTMAILTO}
+  # Remove dumps older than $KEEP days.
+  find . -name 'inpaths.*' \( -mtime +${KEEP} -o -mtime ${KEEP} \) -exec rm '{}' \;
 fi
 
 exit 0
