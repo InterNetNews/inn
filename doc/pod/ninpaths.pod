@@ -22,7 +22,7 @@ frequency of occurrence of sites in the Path: headers of articles.
 Some central sites accumulate the Path: data from many news servers
 running this program or one like it, and then report statistics on
 the most frequently seen news servers in Usenet article Path: lines.
-The B<sendinpaths> shell script can be run daily to mail the accumulated
+The B<sendinpaths> script can be run daily to mail the accumulated
 statistics to such a site and remove the old dump files.
 
 You can get a working setup by doing the following:
@@ -64,8 +64,10 @@ a dump file once a day.  Then, a few minutes later, B<sendinpaths> collects
 the dumps, makes a report, sends the collected statistics, and deletes
 the old dumps.
 
-Note that you can manually generate a report without mailing it, and
-without deleting processed dump files, with C<sendinpaths -n>.
+Note that you can manually generate a report without mailing it, and without
+deleting processed dump files, with C<sendinpaths -n>.  Another useful
+command is C<sendinpaths -c> so as to receive a copy of the e-mail sent
+by B<sendinpaths> and therefore make sure that everything is properly set.
 
 =item 5.
 

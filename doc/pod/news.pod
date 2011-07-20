@@ -164,10 +164,15 @@ unencrypted, from being executed in the new encrypted state of the session.
 
 It is now possible to properly generate daily statistics with B<sendinpaths>
 thanks to the new B<-k> and B<-r> flags that permit to control the interval
-of days for processing dump files.
+of days for processing dump files.  The new B<-c> flag permits to send a
+copy of the generated e-mail to the newsmaster.
 
-Also fixed an issue with statistics that could be missing for a couple of
-days when monthly sent.
+Also fixed an issue with statistics that could be missing or duplicated
+for a couple of days when monthly sent.
+
+The documentation has been updated and mentions a preferred daily run of
+B<sendinpaths>.  This script is a complete rewrite in Perl, and is based
+on Mohan Kokal's initial work.
 
 =item *
 
