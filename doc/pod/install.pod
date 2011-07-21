@@ -131,14 +131,6 @@ OpenPGP, is freely available from L<http://www.gnupg.org/> and free to use
 for any purpose (in the US and elsewhere), and (as of version 1.0.4 at least)
 supports the RSA signatures used by most current control message senders.
 
-Alternately, you can install PGP from L<http://www.pgp.com/> or one of the
-international versions of it.  Be warned, however, that the licensing
-restrictions on PGP inside the United States are extremely unclear; it's
-possible that if you are installing INN for a company in the U.S., even if
-the news server is not part of the business of that company, you would
-need to purchase a commercial license for PGP.  For an educational or
-non-profit organization, this shouldn't be a problem.
-
 =item *
 
 If you want to use either the Python embedded hooks, you'll need to have a
