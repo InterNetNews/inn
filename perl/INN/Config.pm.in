@@ -10,7 +10,7 @@ use warnings;
 use Exporter;
 
 our @ISA = qw(Exporter);
-our $VERSION = @PACKAGE_VERSION@;
+our $VERSION = '@PACKAGE_VERSION@';
 
 
 ##  First, two necessary variables (listed below in @DIRVAR).
@@ -21,7 +21,7 @@ our $exec_prefix = "@exec_prefix@";
 ##  Then, process the variables provided by innconfval.
 my @INNCONFVAR = ();
 my @values = `${exec_prefix}/bin/innconfval -p`;
-foreach $line (@values) {
+foreach my $line (@values) {
   eval 'our '.$line;
   if ($line =~ /^(.*?) = /m) {
     push(@INNCONFVAR, $1);
@@ -186,13 +186,15 @@ umask @NEWSUMASK@;
 
 ##  This array will contain what it is possible to export.
 our @EXPORT_OK = (@INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
-@LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR);
+@LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR,
+qw($VERSION));
 
 
 ##  Load another script that can override or add variables.
 if (-x "${pathetc}/innshellvars.pl.local") {
     do "${pathetc}/innshellvars.pl.local";
 }
+
 
 ##  That's all.
 1;
@@ -201,17 +203,37 @@ __END__
 
 =head1 NAME
 
-Config.pm - Export all the variables an INN Perl script might need
+INN::Config - Export all the variables an INN Perl script might need
 
 =head1 DESCRIPTION
 
-This Perl module sets up any and all the variables that an INN Perl
-script might need.  More particularly, it allows to use F<inn.conf>
-variables:  they are all provided by B<innconfval>, as well as
-the version of INN (in the variable C<$INN::Config::version>).
-Other useful variables are also provided (directories, files,
-programs, masks, parameters) and you should have a look at the source
-code of the module to see what you can use in your Perl scripts.
+This Perl module sets up any and all the variables that an INN Perl script
+might need.  More particularly, it allows to use F<inn.conf> variables:
+they are all provided by B<innconfval>, as well as the version of INN
+(in the variable C<$INN::Config::VERSION> for its short number form, on in
+C<$INN::Config::version> for its complete form).  Other useful variables
+are also provided (directories, files, programs, masks, parameters).
+The complete list can be obtained with the following script that prints
+them out:
+
+    use lib '<pathnews>/lib/perl';
+    use INN::Config;
+    use Data::Dumper;
+
+    my ($varname, $value);
+    foreach my $var (@INN::Config::EXPORT_OK) {
+        if ($var =~ /^\$(.*)$/) {
+            $varname = "INN::Config::$1";
+            $value = Dumper($$varname);
+            $value =~ s/^\$VAR1 = //;
+            print "\$$varname = $value";
+        } elsif ($var =~ /^\@(.*)$/) {
+            $varname = "INN::Config::$1";
+            $value = Dumper(\@$varname);
+            $value =~ s/^\$VAR1 = //;
+            print "\@$varname = $value";
+        }
+    }
 
 A local Perl script named F<innshellvars.pl.local> in I<pathetc> will be
 loaded, if present and executable, at the end of the run of this module.
