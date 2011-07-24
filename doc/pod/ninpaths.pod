@@ -46,6 +46,10 @@ if your version of INN supports C<WP> (2.0 and later all do).  Replace
 <pathbin> with the full path to your INN binaries directory, and
 <pathlog> with the full path to your INN log directory.
 
+Note that the naming convention of the generated inpaths dump files should
+not be changed.  B<sendinpaths> explicitly searches files whose name starts
+with C<inpaths.> in the <pathlog>/path directory.
+
 =item 3.
 
 Run the following command to start logging these statistics:

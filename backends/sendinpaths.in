@@ -10,6 +10,7 @@
 ##
 ##  Prerequisites:
 ##    The ninpaths dump files are in the ${INN::Config::pathlog}/path directory.
+##    The ninpaths dump filenames begin with "inpaths.".
 ##    The ninpaths program is installed in ${INN::Config::pathbin}.
 
 use strict;
@@ -85,11 +86,12 @@ sub main {
   @files = readdir($DIR);
   closedir($DIR);
 
-  chdir($ninpathsdir);
+  chdir($ninpathsdir) || die "cannot chdir $ninpathsdir:  $!\n";
 
   foreach my $file (@files) {
-    # Process only files.
+    # Process only inpaths files.
     next if (! -f $file);
+    next if ($file !~ /^inpaths\./);
 
     # Get a listing of all the wanted files to process.
     # -s for nonzero size, -M for last modification age in days.
@@ -97,7 +99,7 @@ sub main {
       push @validfiles, $file;
     }
 
-    # Now get the listing of allthe  files that will be removed.
+    # Now get the listing of all the files that will be removed.
     if (int(-M $file) >= $keepdays) {
       push @oldfiles, $file;
     }
