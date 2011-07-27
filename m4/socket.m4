@@ -44,7 +44,7 @@ dnl If so, set HAVE_GETADDRINFO_ADDRCONFIG.
 AC_DEFUN([INN_FUNC_GETADDRINFO_ADDRCONFIG],
 [AC_CACHE_CHECK([for working AI_ADDRCONFIG flag],
     [inn_cv_func_getaddrinfo_addrconfig_works],
-    [AC_RUN_IFELSE(AC_LANG_SOURCE([_INN_FUNC_GETADDRINFO_ADDRCONFIG_SOURCE]),
+    [AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_FUNC_GETADDRINFO_ADDRCONFIG_SOURCE])],
         [inn_cv_func_getaddrinfo_addrconfig_works=yes],
         [inn_cv_func_getaddrinfo_addrconfig_works=no],
         [inn_cv_func_getaddrinfo_addrconfig_works=no])])
