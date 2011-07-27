@@ -351,23 +351,25 @@ AnAdministrator(void)
     /* See if we are in the right group and examine process
      * supplementary groups, rather than the group(5) file entry.
      */
+#ifdef HAVE_GETGROUPS
     {
         int ngroups = getgroups(0, 0);
-        gid_t *groups, *gp;
+        GETGROUPS_T *groups, *gp;
         int rv;
         int rest;
 
-        groups = (gid_t *) xmalloc(ngroups * sizeof(*groups));
+        groups = (GETGROUPS_T *) xmalloc(ngroups * sizeof(GETGROUPS_T));
         if ((rv = getgroups(ngroups, groups)) < 0) {
             /* Silent failure; client doesn't have the group. */
             return false;
         }
         for (rest = ngroups, gp = groups; rest > 0; rest--, gp++) {
-            if (*gp == news_gid)
+            if (*gp == (GETGROUPS_T) news_gid)
                 return true;
         }
     }
-    
+#endif
+
     return false;
 }
 
