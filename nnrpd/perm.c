@@ -625,7 +625,10 @@ method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
 static void
 authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
-    int oldtype,boolval;
+    int oldtype;
+#ifdef HAVE_SSL
+    int boolval;
+#endif
     METHOD *m;
     bool bit;
     char buff[SMBUF], *oldname, *p;
@@ -645,6 +648,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	ReportError(f, buff);
     }
 
+#ifdef HAVE_SSL
     if (strcasecmp(tok->name, "on") == 0
         || strcasecmp(tok->name, "true") == 0
         || strcasecmp(tok->name, "yes") == 0)
@@ -655,6 +659,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	boolval = false;
     else
 	boolval = -1;
+#endif
 
     switch (oldtype) {
       case PERMkey:

@@ -356,13 +356,15 @@ main(int ac, char *av[])
     bool		ShouldFork;
     bool		ShouldRenumber;
     bool		ShouldSyntaxCheck;
-    bool		filter = true;
     pid_t		pid;
-#if	defined(_DEBUG_MALLOC_INC)
+#if defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
 #endif	/* defined(_DEBUG_MALLOC_INC) */
 #if DO_PERL
     char                *path1, *path2;
+#endif
+#if defined(DO_PERL) || defined(DO_PYTHON)
+    bool                filter = true;
 #endif
 
     /* Set up the pathname, first thing, and teach our error handlers about
@@ -466,7 +468,9 @@ main(int ac, char *av[])
                                     "ed from the command line", (char *) 0);
 	    break;
 	case 'N':
+#if defined(DO_PERL) || defined(DO_PYTHON)
 	    filter = false;
+#endif
 	    break;
 	case 'n':
 	    switch (*optarg) {
