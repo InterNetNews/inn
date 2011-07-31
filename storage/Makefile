@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top	      = ..
-CFLAGS	      = $(GCFLAGS) -I. $(BERKELEY_DB_CFLAGS)
+CFLAGS	      = $(GCFLAGS) -I. $(DB_CPPFLAGS)
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c overview.c \
 		ovmethods.c $(METHOD_SOURCES)
@@ -68,7 +68,7 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i buildconfig.in
 
 .c.o .c.lo:
-	$(LIBCC) $(CFLAGS) $(DB_CPPFLAGS) $(CCOUTPUT)
+	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
 
 ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
 	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
