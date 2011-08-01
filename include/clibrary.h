@@ -131,15 +131,15 @@ extern int              vsnprintf(char *, size_t, const char *, va_list);
 
 /* In case <sys/types.h> does not define ptrdiff_t. */
 #if !HAVE_PTRDIFF_T
-typedef ptrdiff_t       long;
+typedef long            ptrdiff_t;
 #endif
 /* In case <signal.h> does not define sig_atomic_t. */
 #if !HAVE_SIG_ATOMIC_T
-typedef sig_atomic_t    int;
+typedef int             sig_atomic_t;
 #endif
 /* In case <sys/socket.h> does not define socklen_t. */
 #if !HAVE_SOCKLEN_T
-typedef socklen_t       int;
+typedef int             socklen_t;
 #endif
 
 END_DECLS
