@@ -1741,7 +1741,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
 	}
     }
     if (innconf->cnfscheckfudgesize != 0 && innconf->maxartsize != 0 &&
-	(ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
+	((unsigned int) ntohl(cah.size) > innconf->maxartsize + innconf->cnfscheckfudgesize)) {
 	art->data = NULL;
 	art->len = 0;
 	art->token = NULL;
