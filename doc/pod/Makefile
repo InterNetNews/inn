@@ -43,7 +43,8 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
 	../man/ovdb_stat.8 ../man/overchan.8 \
         ../man/prunehistory.8 ../man/radius.8 \
-	../man/rc.news.8 ../man/scanlogs.8 ../man/sendinpaths.8 \
+	../man/rc.news.8 ../man/scanlogs.8 ../man/scanspool.8 \
+	../man/sendinpaths.8 \
 	../man/tally.control.8 ../man/tdx-util.8 \
 	../man/tinyleaf.8
 
@@ -151,6 +152,7 @@ maintclean: distclean
 ../man/radius.8:	radius.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/rc.news.8:	rc.news.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/scanlogs.8:	scanlogs.pod		; $(POD2MAN) -s 8 $? > $@
+../man/scanspool.8:	scanspool.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/sendinpaths.8:	sendinpaths.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/tally.control.8:	tally.control.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/tdx-util.8:	tdx-util.pod		; $(POD2MAN) -s 8 $? > $@

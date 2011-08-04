@@ -11,10 +11,10 @@ use strict;
 # scanspool - Perform a big scan over all articles in <patharticles>
 #
 # usage:
-#    scanspool [-a active_file] [-s spool_dir] [-v] [-c] [-n]
+#    scanspool [-cnv] [-a active-file] [-s spool-dir]
 #
-#    -a active_file	active file to use (default <pathdb>/active)
-#    -s spool_dir	spool tree (default <patharticles>)
+#    -a active-file	active file to use (default <pathdb>/active)
+#    -s spool-dir	spool tree (default <patharticles>)
 #    -v 		verbose mode
 #			verbose messages begin with a tab
 #			show articles found in non-active directories
@@ -28,7 +28,7 @@ use strict;
 #
 #	malformed line
 #	group aliased to a non-existent group
-#	group aliased to a group tat is also aliased
+#	group aliased to a group that is also aliased
 #
 # Then it will examine all articles under your news spool directory,
 # looking for articles that:
@@ -41,7 +41,7 @@ use strict;
 #	article that is in a group to which it does not belong
 #
 # Scanspool understands aliased groups.  Thus, if an article is posted
-# to foo.old.name that is aliases to foo.bar, it will be expected to
+# to foo.old.name that is aliased to foo.bar, it will be expected to
 # be found under foo.bar and not foo.old.name.
 #
 # Any group that is of type 'j' or 'x' (4th field of the active file)
@@ -158,7 +158,6 @@ sub parse_active
     my $low;            # low article number
     my $high;           # high article number
     my $type;           # type of newsgroup (4th active field)
-    my $dir;            # directory path of group from $spool
     my $alias;          # realname of an aliased group
     my $linenum;        # active file line number
 
@@ -184,7 +183,7 @@ sub parse_active
 
 	# watch for duplicate entries
 	if (defined $realgname{$name}) {
-	    problem("WARNING: ignoring dup group: $name, at line $linenum");
+	    problem("WARNING: ignoring duplicate group: $name, at active line $linenum");
 	    next;
 	}
 
@@ -197,15 +196,11 @@ sub parse_active
 
 	# determine the directory and real group name
 	if ($type eq "j" || $type eq "x") {
-	    $dir = "junk";
 	    $alias = $name;
 	} elsif ($type =~ /^=(.+)/o) {
 	    $alias = $1;
-	    ($dir = $alias) =~ s#\.#/#go;
 	    $gname2type{$name} = "=";	# rename type to be just =
 	} else {
-	    $dir = $name;
-	    $dir =~ s#\.#/#go;
 	    $alias = $name;
 	}
 	$realgname{$name} = $alias;
@@ -258,7 +253,7 @@ sub problem
 #
 # Print a message to stderr.  The message has the program name prepended
 # to it.  Parameters are space separated.  A final newline is appended
-# to it.  This function exists with the code of exitval.
+# to it.  This function exits with the code of exitval.
 #
 # usage:
 #	fatal(exitval, arg, arg2, ...)
@@ -267,9 +262,9 @@ sub fatal
 {
     my ($exitval, @args) = @_;
 
-    # firewall
+    # firewall, in case we're called with less than two arguments
     if ($#_ < 1) {
-	print STDERR "FATAL: fatal called with only ", $#_-1, " arguments\n";
+	print STDERR "FATAL: fatal() called with only ", $#_+1, " arguments\n";
 	if ($#_ < 0) {
 	    $exitval = -1;
 	}
@@ -277,7 +272,7 @@ sub fatal
 
     # print the error message
     my $line = join(" ", @args);
-    print STDERR "$prog: ", $line, "\n";
+    print STDERR "$prog: $line\n";
 
     # unthrottle innd unless -n
     #
@@ -331,16 +326,16 @@ sub check_spool
     while ($filename = <$FINDFILE>) {
 
 	# if the line contains find:, assume it is a find error and print it
-	chop($filename);
+	chomp($filename);
 	if ($filename =~ /find:\s/o) {
 	    problem("WARNING:", $filename);
 	    next;
 	}
 
-	# remove the \n and ./ that find put in our path
+	# remove the ./ that find put in our path
 	$filename =~ s#^\./##o;
 
-	# skip is this path has a . in it (beyond a leading ./)
+	# skip if this path has a . in it (beyond a leading ./)
 	next if ($filename =~ /\./o);
 
 	# skip if lost+found

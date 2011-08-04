@@ -1,0 +1,178 @@
+=head1 NAME
+
+scanspool - Perform a sanity scan over all articles in news spool
+
+=head1 SYNOPSIS
+
+B<scanspool> [B<-cnv>] [B<-a> I<active-file>] [B<-s> I<spool-dir>]
+
+=head1 DESCRIPTION
+
+B<scanspool> is a Perl script for use with a I<tradspool> article spool.
+It will scan the F<active> file as well as all articles in the spool and
+report on the errors it encounters.  As this may take a while, using the
+B<-v> switch is recommended to see how far the program has progressed.
+
+First, B<scanspool> scans the F<active> file, noting problems such as:
+
+=over 4
+
+=item *
+
+malformed lines;
+
+=item *
+
+newsgroups aliased to a non-existent newsgroup;
+
+=item *
+
+newsgroups aliased to a newsgroup that is also aliased.
+
+=back
+
+Then it will examine all articles under your news spool directory,
+complaining about articles that:
+
+=over 4
+
+=item *
+
+have a basename that starts with a leading 0;
+
+=item *
+
+have a basename that is out of range according to the F<active> file;
+
+=item *
+
+do not contain a Newsgroups: header line;
+
+=item *
+
+are all header and no text;
+
+=item *
+
+are in a directory for which there is no newsgroup in the F<active> file;
+
+=item *
+
+are in a newsgroup to which they do not belong.
+
+=back
+
+B<scanspool> understands aliased newsgroups.  Thus, if an article is posted
+to foo.old.name that is aliased to foo.bar, it will be expected to
+be found under foo.bar and not foo.old.name.
+
+Articles posted to a newsgroup of status C<j> or C<x> (the fourth field
+of the F<active> file) will be expected to show up under the I<junk> group.
+
+B<scanspool> assumes that the path of a valid newsgroup's directory
+from the root of the spool tree will not contain any C<.> character.
+Thus, directories such as F<out.going>, F<tmp.dir>, F<in.coming> and
+F<news.archive> will not be searched.  This program also assumes that
+article basenames contain only decimal digits.  Last, files under
+the top level directory F<lost+found> are not scanned.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<active-file>
+
+The F<active> file to use; I<pathdb>/active is the default.
+
+=item B<-c>
+
+Only check article filenames.  B<scanspool> will therefore not actually
+scan the Newsgroups: header field of the articles.
+
+=item B<-n>
+
+Don't throttle B<innd> while scanning.
+
+=item B<-s> I<spool-dir>
+
+The root of the spool tree; I<patharticles> is the default.
+
+=item B<-v>
+
+Setting this flag enables a verbose mode.  B<scanspool> will then print
+which newsgroup is currently worked upon.  It will list all the articles
+found in non-F<active> directories (that is to say articles sorted into
+groups no longer present in the F<active> file), rather than just printing
+the group once.
+
+=back
+
+=head1 DIAGNOSTICS
+
+The output of B<scanspool> will start with one of the following forms:
+
+=over 4
+
+=item C<FATAL:> (to stderr)
+
+Fatal or internal error.
+
+=item C<WARN:> (to stderr)
+
+F<active> or article format problem, newsgroup alias problem, find(1)
+error, article open error.
+
+=item C<path/123:> (to stdout)
+
+Issues such as:
+
+=over 4
+
+=item *
+
+basename starts with 0;
+
+=item *
+
+article number out of range;
+
+=item *
+
+article in the wrong directory;
+
+=item *
+
+article in a directory not related to an F<active> non-aliased newsgroup.
+
+=back
+
+=item C<\t ...> (to stdout)
+
+Verbose messages start with a tab.
+
+=back
+
+=head1 BUGS
+
+B<scanspool> is unable to detect and properly deal with spool formats
+other than tradspool.  However, if the files that store your articles
+are named other than just all-digits, they will simply be skipped
+(and your F<active> is still checked).
+
+B<scanspool> only considers the first line of the Newsgroups: header field.
+Continuation lines are not taken into account.
+
+=head1 HISTORY
+
+B<scanspool> was written by Landon Curt Noll (chongo was here  /\../\).
+
+This manual page was written by Florian Schlichting, largely based on
+comments in the script.
+
+$Id$
+
+=head1 SEE ALSO
+
+active(5).
+
+=cut
