@@ -208,6 +208,7 @@ doc/man/rc.news.8                     Manpage for rc.news
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
 doc/man/scanlogs.8                    Manpage for scanlogs
+doc/man/scanspool.8                   Manpage for scanspool
 doc/man/send-nntp.8                   Manpage for send-nntp and send-ihave
 doc/man/send-uucp.8                   Manpage for send-uucp
 doc/man/sendinpaths.8                 Manpage for sendinpaths
@@ -309,6 +310,7 @@ doc/pod/readers.conf.pod              Master file for readers.conf.5
 doc/pod/readme.pod                    Master file for README
 doc/pod/rnews.pod                     Master file for rnews.1
 doc/pod/scanlogs.pod                  Master file for scanlogs.8
+doc/pod/scanspool.pod                 Master file for scanspool.8
 doc/pod/sendinpaths.pod               Master file for sendinpaths.8
 doc/pod/shlock.pod                    Master file for shlock.1
 doc/pod/simpleftp.pod                 Master file for simpleftp.1
