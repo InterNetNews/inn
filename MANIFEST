@@ -115,6 +115,7 @@ doc/hook-perl                         Christophe Wolfhugel's Perl hook notes
 doc/hook-python                       Python hook notes
 doc/man                               nroff documentation (Directory)
 doc/man/INN__Config.3pm               Manpage for INN::Config Perl module
+doc/man/INN__Utils__Shlock.3pm        Manpage for INN::Utils::Shlock Perl module
 doc/man/Makefile                      Makefile for nroff documentation
 doc/man/active.5                      Manpage for active database
 doc/man/active.times.5                Manpage for active.times file
@@ -605,6 +606,8 @@ nnrpd/track.c                         Track client behavior
 perl                                  Perl libraries (Directory)
 perl/INN                              INN Perl modules (Directory)
 perl/INN/Config.pm.in                 INN::Config module
+perl/INN/Utils                        INN::Utils Perl modules (Directory)
+perl/INN/Utils/Shlock.pm.in           INN::Utils::Shlock module
 perl/Makefile                         Makefile for perl libraries
 samples                               Prototype INN config files (Directory)
 samples/INN.py                        Stub Python functions

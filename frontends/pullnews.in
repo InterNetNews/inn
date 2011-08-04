@@ -62,8 +62,7 @@ use Net::NNTP 2.18; # With libnet 1.0606 (10-Dec-1998) because older versions
 use Getopt::Std;
 use IO::Handle;
 use POSIX qw(ceil floor);
-use Fcntl;
-use Fcntl qw(:flock);
+use INN::Utils::Shlock;
 use strict;
 
 my $usage = $0;
@@ -268,22 +267,14 @@ if ($rnews) {
 }
 open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 
+# Forces a flush after each write or print.
 my $oldfh = select;
 $| = 1; select LOG; $| = 1; select $oldfh;
 
 my $lockfile = $groupFile . '.pid';
-sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700) ||
-    die "can't create lock file ($lockfile): $!\n";
-$oldfh = select; select LOCK; $| = 1; select $oldfh;
 
-if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
-    seek LOCK, 0, 0;
-    my $otherpid = <LOCK>;
-    chomp $otherpid;
-    die "Another pullnews (pid: $otherpid) seems to be running.\n";
-}
-
-print LOCK "$$\n";
+# Acquire a lock.
+INN::Utils::Shlock::lock($lockfile) or die "cannot create lockfile $lockfile\n";
 
 print LOG scalar(localtime(time)), " start\n\n" unless $quiet;
 
@@ -543,8 +534,8 @@ sub outtaHere {
 }
 
 sub cleanLock {
-    flock (LOCK, LOCK_UN);
-    unlink $lockfile if defined $lockfile;
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile) if defined $lockfile;
 }
 
 sub bail {

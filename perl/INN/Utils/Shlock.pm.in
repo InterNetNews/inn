@@ -1,0 +1,140 @@
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
+##  $Id$
+##
+##  Perl module for wrapping the shlock program shipped with INN.
+##
+
+package INN::Utils::Shlock;
+
+use strict;
+use warnings;
+use Exporter;
+
+our @ISA = qw(Exporter);
+our $VERSION = "$INN::Config::VERSION";
+
+
+##
+##  Returns true if the file is properly locked.
+##
+sub lock {
+    my $lockfile = shift;
+    my $lockretrymax = shift;
+    my $lockwait = shift;
+    my $locktry = 0;
+
+    $lockretrymax = 1 if not defined $lockretrymax;
+    $lockwait = 2 if not defined $lockwait;
+
+    while ($locktry < $lockretrymax) {
+        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+            return 1;
+        }
+        $locktry++;
+        sleep $lockwait;
+    }
+
+    # Failed to lock.
+    return 0;
+}
+
+
+##
+##  Returns true if the file is properly unlocked.
+##
+sub unlock {
+    my $lockfile = shift;
+    return unlink $lockfile;
+}
+
+
+##  This array will contain what it is possible to export.
+our @EXPORT_OK = qw(lock unlock);
+
+
+##  That's all.
+1;
+
+__END__
+
+=head1 NAME
+
+INN::Utils::Shlock - Wrapper around the shlock program
+
+=head1 DESCRIPTION
+
+This Perl module wraps the shlock(1) program so that it can easily be used.
+Calling B<shlock> is more portable than using flock(2) and its corresponding
+Perl function because this function does not work as expected on all
+existing systems.
+
+See the shlock(1) documentation for more information.
+
+Using INN::Utils::Shlock is straight-forward:
+
+    use lib '<pathnews>/lib/perl';
+    use INN::Utils::Shlock;
+
+    my $lockfile = "myprogram.LOCK";
+
+    # Acquire a lock.
+    INN::Utils::Shlock::lock($lockfile);
+
+    # Do whatever you want.  The lock prevents concurrent accesses.
+
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile);
+
+These two functions return C<1> on success, C<0> on failure.  For example,
+the success of (un)locking can be checked as:
+
+    INN::Utils::Shlock::lock($lockfile) or die "cannot create lock file";
+
+or:
+
+    if (! INN::Utils::Shlock::lock($lockfile, 4)) {
+        die "giving up after 4 unsuccessful attempts to create lock file";
+    }
+
+=head1 INTERFACE
+
+=over 4
+
+=item lock(I<lockfile>)
+
+Tries to create a lock file named I<lockfile>.
+
+=item lock(I<lockfile>, I<tries>)
+
+Tries to create a lock file named I<lockfile>.  If it fails, locking
+attempts are repeated once every 2 seconds for at most I<tries> times
+(including the first unsuccessful attempt).
+
+=item lock(I<lockfile>, I<tries>, I<delay>)
+
+Tries to create a lock file named F<lockfile>.  If it fails, locking
+attempts are repeated once every I<delay> seconds for at most I<tries>
+times (including the first unsuccessful attempt).
+
+Note that C<< lock(I<lockfile>) >> is equivalent to C<< lock(I<lockfile>,
+1, 2) >>.
+
+=item unlock(I<lockfile>)
+
+Removes the file named I<lockfile>.
+
+=back
+
+=head1 HISTORY
+
+Documentation written by Julien Elie for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+perl(1), shlock(1).
+
+=cut

@@ -18,6 +18,7 @@ use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
 use POSIX qw(setsid);
+use INN::Utils::Shlock;
 use strict;
 
 my $debugging = 0 ;
@@ -29,11 +30,6 @@ END {
     unlink ($tmpfile) if $tmpfile ;		# in case we die()
     unlink ($tmpfile2) if $tmpfile2 ;		# in case we die()
 }
-
-my $LOCK_SH = 1;
-my $LOCK_EX = 2;
-my $LOCK_NB = 4;
-my $LOCK_UN = 8;
 
 my $usage = $0 ;
 $usage =~ s!.*/!! ;
@@ -377,21 +373,12 @@ $rhs =~ tr/A-Z/a-z/;
 
 $message_id = "${lhs}\@${rhs}";
 
-push @errorText, "(TAS Message-ID database for $message_id)\n";
+push @errorText, "(TAS message-ID database for $message_id)\n";
 
 my $lockfile = sprintf("%s.lock", $Database);
 
-open(LOCKFILE, "<$lockfile") || 
-    open(LOCKFILE, ">$lockfile") ||
-    mailArtAndDie ("can't open $lockfile: $!") ;
-
-my $i ;
-for ($i = 0 ; $i < 5 ; $i++) {
-    flock(LOCKFILE, $LOCK_EX) && last ;
-    sleep 1 ;
-}
-
-mailArtAndDie ("can't lock $lockfile: $!") if ($i == 5) ;
+# Acquire a lock.
+INN::Utils::Shlock::lock($lockfile, 5) or mailArtAndDie ("cannot create lockfile $lockfile");
 
 my %DATABASE ;
 dbmopen(%DATABASE, $Database, 0666) || mailArtAndDie ("can't dbmopen $Database: $!");
@@ -416,8 +403,8 @@ mailArtAndDie ("TAS didn't set $message_id") unless defined $DATABASE{$message_i
 
 dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
 
-flock(LOCKFILE, $LOCK_UN) || mailArtAndDie ("can't unlock $lockfile: $!");
-close LOCKFILE ;
+# Unlock.
+INN::Utils::Shlock::unlock($lockfile) or mailArtAndDie ("cannot unlock $lockfile");
 
 ## For crosspost.
 
@@ -442,16 +429,8 @@ if ($opt_c) {
 
   sleep $opt_c ;
 
-  open(LOCKFILE, "<$lockfile") || 
-    open(LOCKFILE, ">$lockfile") ||
-      mailArtAndDie ("can't open $lockfile: $!") ;
-
-  my $i ;
-  for ($i = 0 ; $i < 5 ; $i++) {
-    flock(LOCKFILE, $LOCK_EX) && last ;
-    sleep 1 ;
-  }
-  mailArtAndDie ("can't lock $lockfile: $!") if ($i == 5) ;
+  # Acquire a lock.
+  INN::Utils::Shlock::lock($lockfile, 5) or mailArtAndDie ("cannot create lockfile $lockfile");
 
   my $umask_bak = umask();
   umask(000);
@@ -464,8 +443,8 @@ if ($opt_c) {
 
   dbmclose(%DATABASE) || mailArtAndDie ("can't dbmclose $Database: $!") ;
 
-  flock(LOCKFILE, $LOCK_UN) || mailArtAndDie ("can't unlock $lockfile: $!");
-  close LOCKFILE ;
+  # Unlock.
+  INN::Utils::Shlock::unlock($lockfile) or mailArtAndDie ("cannot unlock $lockfile");
 
   if (defined($dup)) {
     syslog("err", "mismatch $newsgroups") if $debugging && $use_syslog;

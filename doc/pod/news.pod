@@ -96,6 +96,15 @@ Fixed an issue at configure time that made INN wrongly assume that OpenBSD
 
 =item *
 
+Fixed an issue on systems which do not have a working flock(2) function
+(Solaris, for instance).  B<mailpost> and B<pullnews> are reported not to
+be usable on such systems.  Many thanks to Dennis Davis for the bug report.
+
+A wrapper around B<shlock> is now called in Perl scripts.  The
+INN::Utils::Shlock module has been added for that use.
+
+=item *
+
 Fixed an issue in the Python access hook for B<nnrpd>:  it has not been
 working since S<Python 2.5> on 64-bit platforms, owing to a change to
 Python's C API, using a new Py_ssize_t type definition instead of int.

@@ -73,7 +73,11 @@ END
     } elsif ($action eq 'doit' and $status !~ /(not change|be unapproved)/) {
         ctlinnd('rmgroup', $groupname);
         # Update newsgroups too.
-        shlock("$INN::Config::locks/LOCK.newsgroups");
+        my $lockfile = "$INN::Config::locks/LOCK.newsgroups";
+
+        # Acquire a lock.
+        INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
+
         open(NEWSGROUPS, $INN::Config::newsgroups)
             or logdie("Cannot open $INN::Config::newsgroups: $!");
         my $tempfile = "$INN::Config::newsgroups.$$";
@@ -85,8 +89,10 @@ END
         close NEWSGROUPS;
         rename($tempfile, $INN::Config::newsgroups)
             or logdie("Cannot rename $tempfile: $!");
-        unlink "$INN::Config::locks/LOCK.newsgroups";
         unlink $tempfile;
+
+        # Unlock.
+        INN::Utils::Shlock::unlock($lockfile);
 
         logger($log, "rmgroup $groupname $status $sender", $article)
             if $log;

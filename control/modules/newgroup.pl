@@ -216,7 +216,11 @@ END
 
 sub update_desc {
     my ($name, $desc) = @_;
-    shlock("$INN::Config::locks/LOCK.newsgroups");
+    my $lockfile = "$INN::Config::locks/LOCK.newsgroups";
+
+    # Acquire a lock.
+    INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
+
     my $tempfile = "$INN::Config::newsgroups.$$";
     open(NEWSGROUPS, $INN::Config::newsgroups)
         or logdie("Cannot open $INN::Config::newsgroups: $!");
@@ -237,7 +241,10 @@ sub update_desc {
     close NEWSGROUPS;
     rename($tempfile, $INN::Config::newsgroups)
         or logdie("Cannot rename $tempfile: $!");
-    unlink("$INN::Config::locks/LOCK.newsgroups", $tempfile);
+    unlink($tempfile);
+
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile);
 }
 
 # Check the group name.  This is partially derived from C News.

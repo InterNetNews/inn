@@ -11,7 +11,8 @@ SEC1	= convdate.1 fastrm.1 getlist.1 grephistory.1 inews.1 innconfval.1 \
 SEC3	= clientlib.3 dbz.3 inndcomm.3 libauth.3 libinn.3 libinnhist.3 \
 	libstorage.3 list.3 qio.3 tst.3 uwildmat.3
 
-SEC3PM	= INN__Config.3pm
+SEC3PM	= INN__Config.3pm \
+	INN__Utils__Shlock.3pm
 
 SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
 	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 history.5 incoming.conf.5 \
@@ -51,6 +52,7 @@ install-man3:
 
 install-man3pm:
 	$(CP_MAN) INN__Config.3pm $D$(MAN3PM)/INN\:\:Config.$(MAN3PM_EXT)
+	$(CP_MAN) INN__Utils__Shlock.3pm $D$(MAN3PM)/INN\:\:Utils\:\:Shlock.$(MAN3PM_EXT)
 
 # We also create symbolic links between config files and programs.
 # We try to use relative symbolic links, when possible.  As '-ef' is

@@ -175,6 +175,7 @@ innfeed/procbatch
 innfeed/version.c
 nnrpd/nnrpd
 perl/INN/Config.pm
+perl/INN/Utils/Shlock.pm
 samples/buffindexed.conf
 samples/inn.conf
 samples/innreport.conf
