@@ -33,6 +33,7 @@ require 5.004_03;
 use Encode;
 use Getopt::Std;
 use MIME::Parser;
+use INN::Utils::Shlock;
 use strict;
 
 delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
@@ -489,7 +490,8 @@ sub logger {
     my $lockfile = $logfile;
     $lockfile =~ s#.*/##;
     $lockfile = "$INN::Config::locks/LOCK.$lockfile";
-    shlock($lockfile);
+    # Acquire a lock.
+    INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
 
     open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
     print LOGFILE "$message\n";
@@ -497,7 +499,9 @@ sub logger {
         print LOGFILE "    $_\n";
     }
     close LOGFILE;
-    unlink $lockfile;
+    
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile);
 }
 
 # write to syslog or errlog
@@ -591,29 +595,6 @@ sub convdate {
     return $result;
 }
 
-sub shlock {
-    my $lockfile = shift;
-
-    my $locktry = 0;
-    while ($locktry < 60) {
-        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
-            return 1;
-        }
-        $locktry++;
-        sleep 2;
-    }
-
-    my $lockreason;
-    if (open(LOCKFILE, $lockfile)) {
-        $lockreason = 'held by ' . (<LOCKFILE> || '?');
-        close LOCKFILE;
-    } else {
-        $lockreason = $!;
-    }
-    logdie("Cannot get lock $lockfile: $lockreason");
-    return undef;
-}
-
 # If $body is not defined, returns a file handle which must be closed.
 # Don't forget checking the return value of close().
 # $addresses may be a scalar or a reference to a list of addresses.
@@ -634,7 +615,7 @@ sub sendmail {
         $sm .= ' ' . join(' ', @addrs);
     }
 
-    # fork and spawn the MTA whitout using the shell
+    # fork and spawn the MTA without using the shell
     my $pid = open(MTA, '|-');
     logdie('Cannot fork: ' . $!) if $pid < 0;
     if ($pid == 0) {

@@ -16,6 +16,9 @@ will not be created.  I<shlock> exits with a zero status if it could
 create the lock file, or non-zero if the file refers to a currently
 active process.
 
+A Perl wrapper around B<shlock> can be used via the C<INN::Utils::Shlock>
+module.
+
 =head1 OPTIONS
 
 =over 4
@@ -71,5 +74,9 @@ improved by Berend Reitsma to solve a race condition.
 Converted to POD by Julien Elie.
 
 $Id$
+
+=head1 SEE ALSO
+
+INN::Utils::Shlock(3pm).
 
 =cut

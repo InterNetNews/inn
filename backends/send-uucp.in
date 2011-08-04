@@ -19,6 +19,7 @@
 ##############################################################################
 
 use strict;
+use INN::Utils::Shlock;
 
 # for compatibility with earlier versions of INN
 $INN::Config::pathetc ||= '/etc/news';
@@ -75,10 +76,14 @@ if (not @sitelist) {
 
 chdir $INN::Config::batch or logdie("Can't access $INN::Config::batch: $!", 'crit');
 
-shlock($lockfile);
+# Acquire a lock.
+INN::Utils::Shlock::lock($lockfile, 60) or logdie("cannot create lockfile $lockfile");
 
 run_site($_) foreach @sitelist;
-unlink $lockfile;
+
+# Unlock.
+INN::Utils::Shlock::unlock($lockfile) or mailArtAndDie ("cannot unlock $lockfile");
+
 exit 0;
 
 ##############################################################################
@@ -224,7 +229,9 @@ sub logdie {
     my ($msg, $lvl) = @_;
 
     logmsg($msg, $lvl || 'err');
-    unlink $lockfile;
+
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile);
     exit 1;
 }
 
@@ -234,29 +241,6 @@ sub ctlinnd {
     my $st = system("$INN::Config::newsbin/ctlinnd", '-s', $cmd, @args);
     logdie('Cannot run ctlinnd: ' . $!) if $st == -1;
     logdie('ctlinnd returned status ' . ($st & 255)) if $st > 0;
-}
-
-sub shlock {
-    my $lockfile = shift;
-
-    my $locktry = 0;
-    while ($locktry < 60) {
-        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
-            return 1;
-        }
-        $locktry++;
-        sleep 2;
-    }
-
-    my $lockreason;
-    if (open(LOCKFILE, $lockfile)) {
-        $lockreason = 'held by ' . (<LOCKFILE> || '?');
-        close LOCKFILE;
-    } else {
-        $lockreason = $!;
-    }
-    logdie("Cannot get lock $lockfile: $lockreason");
-    return undef;
 }
 
 __END__

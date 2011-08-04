@@ -6,6 +6,7 @@ $ID='$Id$$';
 use POSIX ":fcntl_h";
 use SDBM_File;
 use Getopt::Std;
+use INN::Utils::Shlock;
 
 # With the -M switch this program installs its own man page.
 #-----------------------------------------------------------------------------
@@ -245,6 +246,8 @@ July 1999: bugfixes.
 
 #-----------------------------------------------------------------------------
 
+my $lockfile = "$INN::Config::innddir/thdexpire.pid";
+
 chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 $opt_r=0;      # make a report
 $opt_t=30;     # check interval in minutes
@@ -275,8 +278,9 @@ if ($opt_r) {
     exit 0;
 }
 
-(system "$INN::Config::newsbin/shlock", "-p", $$, "-f", "$INN::Config::innddir/thdexpire.pid")>>8==0
-  || die "Already running";
+# Acquire a lock.
+INN::Utils::Shlock::lock($lockfile, 5) or die ("cannot create lockfile $lockfile");
+
 tie(%S, SDBM_File, $sfile, O_RDWR|O_CREAT, 0664) || die "open $sfile: $!";
 $SIG{'TERM'}=$SIG{'INT'}='finish';
 $|=1;
@@ -641,7 +645,10 @@ sub err
 sub finish
 {
     untie(%S);
-    unlink "$INN::Config::innddir/thdexpire.pid";
+
+    # Unlock.
+    INN::Utils::Shlock::unlock($lockfile);
+
     exit 0;
 }
 #-----------------------------------------------------------------------------
