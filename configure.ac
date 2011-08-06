@@ -421,17 +421,11 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_TYPE_UID_T
-AC_CHECK_TYPE([ptrdiff_t], ,
-    [AC_DEFINE([ptrdiff_t], [long],
-        [Define to long if <sys/types.h> does not define.])])
-AC_CHECK_TYPE([sig_atomic_t], ,
-    [AC_DEFINE([sig_atomic_t], [int],
-        [Define to int if <signal.h> does not define.])],
+AC_CHECK_TYPES([ptrdiff_t])
+AC_CHECK_TYPES([sig_atomic_t], , ,
 [#include <sys/types.h>
 #include <signal.h>])
-AC_CHECK_TYPE([socklen_t], ,
-    [AC_DEFINE([socklen_t], [int],
-        [Define to int if <sys/socket.h> does not define.])],
+AC_CHECK_TYPES([socklen_t], , ,
 [#include <sys/types.h>
 #include <sys/socket.h>])
 AC_CHECK_TYPES([union semun], , ,

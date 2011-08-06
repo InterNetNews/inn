@@ -129,6 +129,19 @@ extern int              symlink(const char *, const char *);
 extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
+/* In case <sys/types.h> does not define ptrdiff_t. */
+#if !HAVE_PTRDIFF_T
+typedef long            ptrdiff_t;
+#endif
+/* In case <signal.h> does not define sig_atomic_t. */
+#if !HAVE_SIG_ATOMIC_T
+typedef int             sig_atomic_t;
+#endif
+/* In case <sys/socket.h> does not define socklen_t. */
+#if !HAVE_SOCKLEN_T
+typedef int             socklen_t;
+#endif
+
 END_DECLS
 
 /* "Good enough" replacements for standard functions. */
