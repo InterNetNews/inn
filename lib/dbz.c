@@ -948,7 +948,7 @@ dbzfetch(const HASH key, off_t *value)
     nb2r = sizeof(buffer) - 1;
 
     while ((offset = search(&srch)) != NOTFOUND) {
-	debug("got 0x%lx", key_ptr);
+	debug("got 0x%lx", offset);
 
 	/* fetch the key */
 	offset <<= conf.dropbits;
@@ -1139,9 +1139,8 @@ getconf(FILE *df, dbzconfig *cp)
 	cp->tagshift = TAGSHIFT;
 	cp->dropbits = 0;
 	cp->lenfuzzy = 0;
-	debug("getconf: defaults (%ld, %c, (0x%lx/0x%lx<<%d %d))",
-              cp->tsize, cp->casemap, cp->tagenb, 
-              cp->tagmask, cp->tagshift, cp->dropbits);
+	debug("getconf: defaults (%ld, (0x%lx/0x%lx<<%d %d))",
+              cp->tsize, cp->tagenb, cp->tagmask, cp->tagshift, cp->dropbits);
 	return true;
     }
 
@@ -1413,7 +1412,7 @@ search(searcher *sp)
 	    taboffset = sp->tabno * conf.tsize;
 	}
 	sp->place = ((sp->shorthash + sp->run) % conf.tsize) + taboffset;
-	debug("search @ %ld", place);
+	debug("search @ %ld", sp->place);
 
 	/* get the tagged value */
 	if ((options.pag_incore != INCORE_NO) && (sp->place < conf.tsize)) {
