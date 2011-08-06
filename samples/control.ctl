@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2010-01-17
+##  Last modified: 2010-12-12
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -301,16 +301,17 @@ newgroup:system@asuvax.eas.asu.edu:az.*:doit
 rmgroup:system@asuvax.eas.asu.edu:az.*:doit
 
 ## BA (San Francisco Bay Area, USA)
-# Contact: ba-mod@nas.nasa.gov
-# URL: http://ennui.org/ba/
-# Admin group: ba.news.config
-# Key URL: http://ennui.org/ba/ba-mod.asc
+# Contact: ba-mod@panix.com
+# URL: http://www.panix.com/~babm/ba/
+# Admin group: ba.config
+# Key URL: http://www.panix.com/~babm/ba/ba-mod.asc
+# Key fingerprint: 3C B6 7A 3B 34 53 C0 58  D2 FB 65 E8 E9 6F CD 46
 # *PGP*   See comment at top of file.
 newgroup:*:ba.*:drop
 rmgroup:*:ba.*:drop
-checkgroups:ba-mod@nas.nasa.gov:ba.*:verify-ba.news.config
-newgroup:ba-mod@nas.nasa.gov:ba.*:verify-ba.news.config
-rmgroup:ba-mod@nas.nasa.gov:ba.*:verify-ba.news.config
+checkgroups:ba-mod@panix.com:ba.*:verify-ba.config
+newgroup:ba-mod@panix.com:ba.*:verify-ba.config
+rmgroup:ba-mod@panix.com:ba.*:verify-ba.config
 
 ## BACKBONE (*LOCAL* -- ruhr.de/ruhrgebiet.individual.net in Germany)
 # Contact: admin@ruhr.de
@@ -657,9 +658,9 @@ rmgroup:news@mattress.atww.org:dc.*:doit
 
 ## DE (German language)
 # Contact: moderator@dana.de
-# URL: http://www.dana.de/mod/
+# URL: http://www.dana.de/
 # Admin group: de.admin.news.announce
-# Key URL: http://www.dana.de/mod/pgp/dana.asc
+# Key URL: http://www.dana.de/pgp/dana.txt
 # Key fingerprint: 5B B0 52 88 BF 55 19 4F  66 7D C2 AE 16 26 28 25
 # *PGP*   See comment at top of file.
 newgroup:*:de.*:drop
@@ -923,9 +924,9 @@ newgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 rmgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 
 ## FR (French language)
-# URL: http://www.usenet-fr.news.eu.org/
+# URL: http://www.usenet-fr.net/
 # Admin group: fr.usenet.forums.annonces
-# Key URL: http://www.usenet-fr.news.eu.org/fur/usenet/presentation-fr.html
+# Key URL: http://www.usenet-fr.net/fur/usenet/presentation-fr.html
 # *PGP*   See comment at top of file.
 newgroup:*:fr.*:drop
 rmgroup:*:fr.*:drop
@@ -1729,6 +1730,19 @@ rmgroup:news@nl.linux.org:nlo.*:verify-nlo.newsgroups
 checkgroups:news@tesuque.cs.sandia.gov:nm.*:doit
 newgroup:news@tesuque.cs.sandia.gov:nm.*:doit
 rmgroup:news@tesuque.cs.sandia.gov:nm.*:doit
+
+## NNTPWORLD (General discussion)
+# Contact: usenet@nntpworld.net
+# URL: http://www.nntpworld.net/
+# Admin group: nntpworld.config
+# Key URL: http://www.nntpworld.net/nntpworld.asc
+# Key fingerprint: C7 BB E0 56 7A 8A 5A 86  09 B5 E3 29 E1 BB 8C E1
+# *PGP*   See comment at top of file.
+newgroup:*:nntpworld.*:drop
+rmgroup:*:nntpworld.*:drop
+checkgroups:usenet@nntpworld.net:nntpworld.*:verify-usenet@nntpworld.net
+newgroup:usenet@nntpworld.net:nntpworld.*:verify-usenet@nntpworld.net
+rmgroup:usenet@nntpworld.net:nntpworld.*:verify-usenet@nntpworld.net
 
 ## NO (Norway)
 # URL: http://www.usenet.no/
