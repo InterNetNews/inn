@@ -4,7 +4,7 @@ dnl
 dnl This file provides INN_LIB_BERKELEYDB, which defines the --with-berkeleydb
 dnl command-line option and probes for the location of Berkeley DB if that
 dnl option is used without an optional path.  It looks for Berkeley DB in $prefix,
-dnl /usr/local and /usr.  It then exports DB_LDFLAGS, DB_CFLAGS, and DB_LIBS.
+dnl /usr/local and /usr.  It then exports DB_LDFLAGS, DB_CPPFLAGS, and DB_LIBS.
 
 AC_DEFUN([INN_LIB_BERKELEYDB],
 [DB_CPPFLAGS=
