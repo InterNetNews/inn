@@ -1949,20 +1949,23 @@ ARTpost(CHANNEL *cp)
   bool		IsControl = false;
   bool		Filtered = false;
   bool          ihave;
-  struct buffer	*article;
   HASH		hash;
   TOKEN		token;
   char		*groupbuff[2];
 #if defined(DO_PERL) || defined(DO_PYTHON)
+  struct buffer *article;
   char		*filterrc;
-#endif /* defined(DO_PERL) || defined(DO_PYTHON) */
+#endif
   OVADDRESULT	result;
 
   /* Check whether we are receiving the article via IHAVE or TAKETHIS. */
   ihave = (cp->Sendid.size > 3) ? false : true;
 
-  /* Preliminary clean-ups. */
+#if defined(DO_PERL) || defined(DO_PYTHON)
   article = &cp->In;
+#endif
+
+  /* Preliminary clean-ups. */
   artclean = ARTclean(data, cp->Error, ihave);
 
   /* We have not parsed the Path: header yet.  We do not check for logipaddr
