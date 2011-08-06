@@ -82,7 +82,7 @@ INN::Utils::Shlock::lock($lockfile, 60) or logdie("cannot create lockfile $lockf
 run_site($_) foreach @sitelist;
 
 # Unlock.
-INN::Utils::Shlock::unlock($lockfile) or mailArtAndDie ("cannot unlock $lockfile");
+INN::Utils::Shlock::unlock($lockfile) or logdie("cannot unlock $lockfile");
 
 exit 0;
 
