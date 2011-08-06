@@ -4,7 +4,7 @@ sendinpaths - Send Usenet Path: statistics via e-mail
 
 =head1 SYNOPSIS
 
-B<sendinpaths> [B<-n>] [B<-k> I<keep-days>] [B<-r> I<report-days>]
+B<sendinpaths> [B<-cdhn>] [B<-k> I<keep-days>] [B<-r> I<report-days>]
 [I<address> [I<address> ...]]
 
 =head1 DESCRIPTION
@@ -26,6 +26,20 @@ For more information on how to set up B<ninpaths>, see ninpaths(8).
 =head1 OPTIONS
 
 =over 4
+
+=item B<-c>
+
+When this flag is used, the report is also e-mailed, besides the default
+submission addresses or those given as command-line arguments, to the
+newsmaster's address set at configure time.
+
+=item B<-d>
+
+Enables debug messages.
+
+=item B<-h>
+
+Gives usage information.
 
 =item B<-k> I<keep-days>
 

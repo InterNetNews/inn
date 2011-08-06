@@ -1,97 +1,194 @@
-#!/bin/sh
-# fixscript will replace this line with code to load innshellvars
-#
-# Submit path statistics based on ninpaths.
-# $Id$
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
 
-# Assuming the ninpaths dump files are in ${MOST_LOGS}/path/inpaths.%d files.
+##  $Id$
+##
+##  Submit Path: statistics based on ninpaths.
+##
+##  A rewrite of the sendinpaths shell script in Perl, based on Mohan Kokal's
+##  initial work.  Improved by Julien Elie.
+##
+##  Prerequisites:
+##    The ninpaths dump files are in the ${INN::Config::pathlog}/path directory.
+##    The ninpaths dump filenames begin with "inpaths.".
+##    The ninpaths program is installed in ${INN::Config::pathbin}.
 
-cd ${MOST_LOGS}/path
-ME=`${NEWSBIN}/innconfval pathhost`
+use strict;
+use Getopt::Std;
 
-USAGE="Usage: sendinpaths [-n] [-k keep-days] [-r report-days] [address [address ...]]"
-NOMAIL=false
-MAILTO=""
-DEFAULTMAILTO="pathsurvey@top1000.org top1000@anthologeek.net"
+my $pathhost    = "$INN::Config::pathhost";
+my $ninpaths    = "$INN::Config::pathbin/ninpaths";
+my $ninpathsdir = "$INN::Config::pathlog/path";
+my $alsoto      = "$INN::Config::newsmaster";
+my $sm          = "$INN::Config::mta";
 
-# Default to report up to 32 days (ideal for monthly statistics).  It works fine
-# for daily stats too because already processed dump files are deleted by default
-# (0 day of kept articles).
-REPORT=32
-KEEP=0
-NINPATHS_ARGS=""
+##  Default to report up to 32 days (ideal for monthly statistics).  It works fine
+##  for daily stats too because already processed dump files are deleted by default
+##  (0 day of kept articles).
+my $reportdays  = 32;
+my $keepdays    = 0;
 
-# Parse command-line arguments.
-while [ $# -gt 0 ]
-do
-  case "$1" in
-  -k)
-    case "$2" in
-    *[^0-9]*)
-      echo "Argument to -k flag must be an integer."
-      exit 1
-      ;;
-    esac
-    KEEP=$2
-    shift
-    ;;
-  -n)
-    NOMAIL=true
-    ;;
-  -r)
-    case "$2" in
-    *[^0-9]*)
-      echo "Argument to -r flag must be an integer."
-      exit 1 
-      ;;
-    esac
-    REPORT=$2
-    shift
-    ;;
-  -*)
-    echo $USAGE
-    exit 1
-    ;;
-  *)
-    MAILTO="${MAILTO} $1"
-    ;;
-  esac
-  shift
-done
+my @emailto     = ('pathsurvey@top1000.org', 'top1000@anthologeek.net');
+my $emaildef    = join(' ', @emailto);
+my $debug       = 0;
 
-# Renice to give other processes priority, since this isn't too important.
-renice 20 -p $$ > /dev/null 2>&1
+my %opt;
 
-# Make report from (up to) $REPORT days of dumps.
-LOGS=`find . -name 'inpaths.*' ! -size 0 \( -mtime -${REPORT} -o -mtime ${REPORT} \) -print`
-if [ -z "$LOGS" ] ; then
-  echo "No data has been collected since the last run of this script!"
-  exit 1
-fi
+$0 =~ s!.*/!!;
 
-# Process dumps.
-for i in $LOGS
-do
-  ninpaths -u ${i} -r ${ME} > /dev/null 2>&1
-  if test $? -eq 0 ; then
-    NINPATHS_ARGS="${NINPATHS_ARGS} -u ${i}"
-  else
-    echo "Skipping unrecognized inpaths file ${i}"
-  fi
-done
 
-if [ -z "${NINPATHS_ARGS}" ] ; then
-  echo "No valid data has been collected since the last run of this script!"
-  exit 1
-fi
+sub usage {
+    print <<_end_;
+Usage:
+  $0 [-cdhn] [-k keep-days] [-r report-days] [address [address ...]]
 
-if [ "${NOMAIL}" = "true" ] ; then
-  ninpaths ${NINPATHS_ARGS} -r ${ME}
-else
-  ninpaths ${NINPATHS_ARGS} -r ${ME} |\
-    ${MAILCMD} -s "inpaths ${ME}" ${MAILTO:-$DEFAULTMAILTO}
-  # Remove dumps older than $KEEP days.
-  find . -name 'inpaths.*' \( -mtime +${KEEP} -o -mtime ${KEEP} \) -exec rm '{}' \;
-fi
+  If called without any arguments, reports are generated and auto
+  submitted to the inpaths accumulation site.
 
-exit 0
+  -c               sends a copy of the submitted mail to "$alsoto" (newsmaster's address)
+  -d               enables debug messages
+  -h               prints this help message
+  -k keep-days     specifies how many days to keep processed dump files
+  -n               nomail:  gathers stats, but does not auto-submit e-mails
+  -r report-days   specifies how many days of dump files should be processed
+
+  Current default submit address: [$emaildef].
+  The optional arguments [address [address ...]] may be used to override this default.
+_end_
+    exit(1);
+}
+
+
+sub main {
+  my (@files, @validfiles, @oldfiles, @appendargs, @cmd);
+  my $pid;
+  my $sendout = '';
+
+  getopts('cdhk:nr:', \%opt) || usage();
+  usage() if defined $opt{'h'};
+
+  # If we took an e-mail argument, override the default submission addresses.
+  @emailto = @ARGV if ($#ARGV >= 0);
+  push (@emailto, $alsoto) if defined $opt{'c'};
+
+  # Override default parameters.
+  $keepdays = $opt{'k'} if defined $opt{'k'};
+  usage() if $keepdays !~ /\d+/;
+
+  $reportdays = $opt{'r'} if defined $opt{'r'};
+  usage() if $reportdays !~ /\d+/;
+
+  # Set debug.
+  $debug = 1 if defined $opt{'d'};
+
+  # Scan the ninpaths directory.
+  opendir(my $DIR, $ninpathsdir) || die "cannot open $ninpathsdir:  $!\n";
+  @files = readdir($DIR);
+  closedir($DIR);
+
+  chdir($ninpathsdir) || die "cannot chdir $ninpathsdir:  $!\n";
+
+  foreach my $file (@files) {
+    # Process only inpaths files.
+    next if (! -f $file);
+    next if ($file !~ /^inpaths\./);
+
+    # Get a listing of all the wanted files to process.
+    # -s for nonzero size, -M for last modification age in days.
+    if (-s $file && int(-M $file) <= $reportdays) {
+      push @validfiles, $file;
+    }
+
+    # Now get the listing of all the files that will be removed.
+    if (int(-M $file) >= $keepdays) {
+      push @oldfiles, $file;
+    }
+  }
+
+  if ($#validfiles < 0) {
+    print "No data has been collected since the last run of this script!\n";
+    return;
+  }
+
+  # Process each dump file.
+  foreach my $file (@validfiles) {
+    @cmd = ($ninpaths, '-u', $file, '-r', $pathhost);
+
+    printf("exec'ing %s\n", join(' ', @cmd)) if $debug;
+
+    $pid = open(my $NINPATHS, '-|');
+    die "cannot fork:  $!\n" if $pid < 0;
+    if ($pid == 0) {
+      exec(@cmd) || die "cannot exec ninpaths:  $!\n";
+    } else {
+      while (<$NINPATHS>) {
+        ;
+      }
+      close($NINPATHS) || next;
+    }
+
+    if ($? == 0) {
+      push(@appendargs, ('-u', $file));
+    }
+  }
+
+  if ($#appendargs < 0) {
+    print "No valid data has been collected since the last run of this script!\n";
+    return;
+  }
+
+  # Prepare to send reports, and purge old entries from disk.
+  @cmd = ($ninpaths, @appendargs, '-r', $pathhost);
+
+  printf("exec'ing %s\n", join(' ', @cmd)) if $debug;
+
+  $pid = open(my $NINPATHS, '-|');
+  die "cannot fork:  $!\n" if $pid < 0;
+  if ($pid == 0) {
+    exec(@cmd) || die "cannot exec ninpaths:  $!\n";
+  } else {
+    while (<$NINPATHS>) {
+      $sendout .= $_;
+    }
+    close($NINPATHS) || die "execution of ninpaths failed:  $!\n";
+  }
+
+  if (defined $opt{'n'}) {
+    # We are not sending this report anywhere, but to stdout.
+    print $sendout;
+  } else {
+    if ($sm =~ /%s/) {
+      $sm = sprintf($sm, join(' ', @emailto));
+    } else {
+      $sm .= ' ' . join(' ', @emailto);
+    }
+
+    print "exec'ing $sm\n" if $debug;
+
+    # Fork and spawn the MTA without using the shell.
+    $pid = open(my $MTA, '|-');
+    die "cannot fork:  $!\n" if $pid < 0;
+    if ($pid == 0) {
+      exec(split(/\s+/, $sm)) || die "cannot exec $sm:  $!";
+    } else {
+
+    print $MTA 'To: ' . join(",\n\t", @emailto);
+    print $MTA "\nSubject: inpaths $pathhost\n\n";
+    print $MTA $sendout;
+    print $MTA "\n";
+    close($MTA) || die "execution of $sm failed:  $!\n";
+    }
+
+    # Remove old dumps.
+    foreach my $file (@oldfiles) {
+      print "removing $file\n" if $debug;
+      unlink($file);
+    }
+  }
+
+  return;
+}
+
+main();
+
+exit 0;
