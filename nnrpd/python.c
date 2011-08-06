@@ -26,7 +26,7 @@
 /*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
 #undef _POSIX_C_SOURCE
 
-/*  Make "s#" use Py_ssize_t rather than int. */
+/*  Make "s#" use Py_ssize_t rather than signed size_t. */
 #define PY_SSIZE_T_CLEAN
 
 /*  Python.h must be included after having defined PY_SSIZE_T_CLEAN,
@@ -37,7 +37,7 @@
 
 /*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
 #if PY_VERSION_HEX < 0x02050000
-  typedef int Py_ssize_t;
+  typedef ssize_t Py_ssize_t;
 #endif
 
 #include "clibrary.h"
@@ -331,12 +331,14 @@ PY_access(char* file, struct vector *access_vec, char *Username)
 
     while(PyDict_Next(result, &pos, &key, &value)) {
         if (!PyString_Check(key)) {
-            syslog(L_ERROR, "python access method return dictionary key %d not a string", pos);
+            syslog(L_ERROR, "python access method return dictionary key %ld not a string",
+                   (long int) pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
         if (!PyString_Check(value)) {
-            syslog(L_ERROR, "python access method return dictionary value %d not a string", pos);
+            syslog(L_ERROR, "python access method return dictionary value %ld not a string",
+                   (long int) pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
