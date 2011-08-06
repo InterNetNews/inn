@@ -752,15 +752,19 @@ print_string(FILE *file, const char *key, const char *value,
     const char *letter;
     static const char tcl_unsafe[] = "$[]{}\"\\";
 
-    /* Do not output NULL values.  They are not empty strings. */
-    if (value == NULL)
-        return;
-
     switch (quoting) {
     case INNCONF_QUOTE_NONE:
-        fprintf(file, "%s\n", value != NULL ? value : "");
+        /* Do not output NULL values.  They are not empty strings. */
+        if (value == NULL) {
+            return;
+        }
+        fprintf(file, "%s\n", value);
         break;
     case INNCONF_QUOTE_SHELL:
+        /* Do not output NULL values.  They are not empty strings. */
+        if (value == NULL) {
+            return;
+        }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
             *p = toupper(*p);
@@ -777,6 +781,10 @@ print_string(FILE *file, const char *key, const char *value,
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:
+        if (value == NULL) {
+            fprintf(file, "$%s = undef;\n", key);
+            return;
+        }
         fprintf(file, "$%s = '", key);
         for (letter = value; letter != NULL && *letter != '\0'; letter++) {
             if (*letter == '\'' || *letter == '\\')
@@ -786,6 +794,10 @@ print_string(FILE *file, const char *key, const char *value,
         fputs("';\n", file);
         break;
     case INNCONF_QUOTE_TCL:
+        /* Do not output NULL values.  They are not empty strings. */
+        if (value == NULL) {
+            return;
+        }
         fprintf(file, "set inn_%s \"", key);
         for (letter = value; letter != NULL && *letter != '\0'; letter++) {
             if (strchr(tcl_unsafe, *letter) != NULL)
@@ -810,12 +822,12 @@ print_list(FILE *file, const char *key, const struct vector *value,
     unsigned int i;
     static const char tcl_unsafe[] = "$[]{}\"\\";
 
-    /* Do not output NULL values.  They are not empty lists. */
-    if (value == NULL || value->strings == NULL)
-        return;
-
     switch (quoting) {
     case INNCONF_QUOTE_NONE:
+        /* Do not output NULL values.  They are not empty lists. */
+        if (value == NULL || value->strings == NULL) {
+            return;
+        }
         fprintf(file, "[ ");
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
@@ -827,6 +839,10 @@ print_list(FILE *file, const char *key, const struct vector *value,
         fprintf(file, "]\n");
         break;
     case INNCONF_QUOTE_SHELL:
+        /* Do not output NULL values.  They are not empty lists. */
+        if (value == NULL || value->strings == NULL) {
+            return;
+        }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
             *p = toupper(*p);
@@ -859,6 +875,11 @@ print_list(FILE *file, const char *key, const struct vector *value,
         free(upper);
         break;
     case INNCONF_QUOTE_PERL:
+        /* Consider that an empty list is undefined. */
+        if (value == NULL || value->strings == NULL) {
+            fprintf(file, "@%s = undef;\n", key);
+            return;
+        }   
         fprintf(file, "@%s = ( ", key);
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
@@ -879,6 +900,10 @@ print_list(FILE *file, const char *key, const struct vector *value,
         fprintf(file, ");\n");
         break;
     case INNCONF_QUOTE_TCL:
+        /* Do not output NULL values.  They are not empty lists. */
+        if (value == NULL || value->strings == NULL) {
+            return;
+        }   
         fprintf(file, "set inn_%s { ", key);
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {

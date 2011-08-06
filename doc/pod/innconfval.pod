@@ -45,13 +45,13 @@ Print out parameters as Perl assignment statements.  The variable name
 will be the same as the F<inn.conf> parameter, and string values will be
 enclosed in single quotes with appropriate escaping.  Boolean values will
 be mapped to the strings C<true> or C<false>.  List values will be mapped
-to an array of strings.  NULL values are not printed out and will therefore
-be C<undef> in Perl.
+to an array of strings.  NULL values are printed out with the C<undef> value.
 
 Here is an example:
 
     $enableoverview = 'true';
     @extraoverviewadvertised = ( 'Newsgroups', 'Injection-Info' );
+    @extraoverviewhidden = undef;
     $organization = 'Let\'s try nasty "quotes"';
     $maxforks = 10;
 
