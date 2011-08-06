@@ -194,6 +194,9 @@ that distribution list are accepted and all other articles are rejected.
 A common use for this is to put something like C</!local> in the C<ME>
 entry to reject local postings from other misconfigured sites.
 
+An empty C<ME> entry is possible, in which case no exclusion patterns will
+be defined.
+
 Finally, it is also possible to set variables in F<newsfeeds> and use them
 later in the file.  A line starting with C<$> sets a variable.  For
 example:

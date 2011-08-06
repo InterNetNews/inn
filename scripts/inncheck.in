@@ -694,7 +694,7 @@ my %newsfeeds_flags = (
 sub
 newsfeeds
 {
-    my ($next, $start, $me_empty, @muxes, %sites);
+    my ($next, $start, @muxes, %sites);
     my ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
     my ($bang, $nobang, $prog, $dir);
     my (%variables, $key);
@@ -769,8 +769,6 @@ newsfeeds
 		if $flags ne "";
 	    eprint "$file:$start: ME param should be empty\n"
 		if $param ne "";
-	    $me_empty = 1
-		if $pats !~ "/.+";
 	}
 
 	##  If we don't have !junk,!control, give a helpful warning.
@@ -846,8 +844,8 @@ newsfeeds
 	eprint "$file:$_\n"
 	    if /`(.*)'/ && !defined $sites{$1};
     }
-    eprint "$file:0: warning you accept all incoming article distributions\n"
-	if !defined $sites{"ME"} || $me_empty;
+    eprint "$file:0: documentation says there must be exactly one ME entry\n"
+	if !defined $sites{"ME"};
 
     print "done.\n"
 	if $verbose > 0;

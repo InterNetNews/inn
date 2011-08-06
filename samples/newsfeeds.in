@@ -47,6 +47,10 @@ ME:!*/!local,!collabra-internal::
 # news.example.com in the path (posts passing through that site).
 #ME/news.example.com:!*/!local,!collabra-internal::
 
+# An empty ME entry is possible, in which case no exclusion patterns
+# will be defined.
+#ME:::
+
 # The special feed that handles all newsgroup control messages.  Only
 # disable this if you want to ignore all newsgroup control messages; INN
 # no longer handles any control messages except cancel internally.
