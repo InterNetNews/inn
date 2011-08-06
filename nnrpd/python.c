@@ -331,13 +331,13 @@ PY_access(char* file, struct vector *access_vec, char *Username)
 
     while(PyDict_Next(result, &pos, &key, &value)) {
         if (!PyString_Check(key)) {
-            syslog(L_ERROR, "python access method return dictionary key %lu not a string",
+            syslog(L_ERROR, "python access method return dictionary key %ld not a string",
                    (long int) pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
         if (!PyString_Check(value)) {
-            syslog(L_ERROR, "python access method return dictionary value %lu not a string",
+            syslog(L_ERROR, "python access method return dictionary value %ld not a string",
                    (long int) pos);
             Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
