@@ -1,4 +1,6 @@
 #! /usr/bin/perl -w
+# use lib '@LIBPERLDIR@'; use INN::Config;
+# If running inside INN, uncomment the above and point to INN::Config.
 #
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
