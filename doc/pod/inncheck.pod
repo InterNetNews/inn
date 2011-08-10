@@ -23,6 +23,9 @@ causes only the F<incoming.conf> file to be checked.  Using
 C<incoming.conf=/tmp/incoming.conf> on the command line will cause
 B<inncheck> to only verify the F<incoming.conf> file, and it will perform
 the checks on the F</tmp/incoming.conf> file instead of the default one.
+Setting a file path to an empty value like C<incoming.conf=> will skip
+the check for that file (this only makes sense with B<-a>, or no files
+will be checked at all).
 
 Valid values for I<file> are:
 
@@ -118,9 +121,10 @@ F</var/tmp/newsfeeds.testing>, do:
     inncheck newsfeeds=/var/tmp/newsfeeds.testing
 
 To have B<inncheck> check all the files as it normally does, but to specify
-a different location for the F<newsfeeds> file, do:
+a different location for the F<newsfeeds> file and ommit checking of the
+F<innfeed.conf> file, do:
 
-    inncheck -a newsfeeds=/var/tmp/newsfeeds.testing
+    inncheck -a newsfeeds=/var/tmp/newsfeeds.testing innfeed.conf=
 
 =head1 BUGS
 

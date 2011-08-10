@@ -1230,6 +1230,7 @@ $pfx = $fix ? '# ' : '';
 
 action: foreach my $workfile ( @todo ) {
     $file = $paths{$workfile};
+    next action unless $file; # skip if set to empty value by user
     if ( ! -f $file ) {
 	eprint "$file:0: file missing\n";
 	next action;
