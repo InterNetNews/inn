@@ -1,6 +1,5 @@
 #! /usr/bin/perl -w
-# use lib '@LIBPERLDIR@'; use INN::Config;
-# If running inside INN, uncomment the above and point to INN::Config.
+# fixscript will replace this line with code to load INN::Config
 #
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
@@ -720,17 +719,6 @@ sub crossFeedGroup {
 
                 if ($opt_x && $article->[$idx] =~ m!^xref:!i) {
                     $xref = 1;
-                }
-
-                # Catch some of the more common problems with articles.
-                if ($article->[$idx] =~ m!^\s+\n$! and $curr_hdr ne 'subject') {
-                    print STDERR "Fixing bad header line[$idx]-1: $article->[$idx-1]" if $idx > 0;
-                    print STDERR "Fixing bad header line[$idx]::: $article->[$idx]";
-                    print STDERR "Fixing bad header line[$idx]+1: $article->[$idx+1]";
-                    # Do not use $line_len here because $article->[$idx] has been modified
-                    # since the length was computed.
-                    $tx_len -= length($article->[$idx]) - 1;
-                    $article->[$idx] = "\n";
                 }
 
                 $headers = 0 if $article->[$idx] eq "\n";
