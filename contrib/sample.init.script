@@ -1,18 +1,55 @@
-#!/sbin/sh
+#! /bin/sh
 
+# $Id$
+#
 # This is a simple, bare-bones example of a SysV-style init.d script for INN.
 # It tries to increase the file descriptor limits to the maximum allowed by
 # the system since INN and related programs can be file descriptor hogs.
 
-case $1 in
+test -f '<pathbin>/rc.news' || exit 0
+
+start () {
+    ulimit -n unlimited
+    # Start INN.
+    su news -c '<pathbin>/rc.news' >> <pathlog>/rc.news 2>&1
+    # Start another nnrpd daemon, handling initial TLS connections, on port 563.
+    # (The preferred way would be to use port 119 and STARTTLS but not all news
+    # readers support it yet.)
+    #su news -c '<pathbin>/nnrpd -D -p 563 -S' >> <pathlog>/rc.news 2>&1
+}
+
+case "$1" in
 
 start)
-    ulimit -n unlimited
-    su news -c /usr/local/news/bin/rc.news
+    start
     ;;
 
 stop)
-    su news -c '/usr/local/news/bin/rc.news stop'
+    # Stop INN.
+    su news -c '<pathbin>/rc.news stop' >> <pathlog>/rc.news 2>&1
+    # Stop possible other nnrpd daemons.  One of the two following commands is enough.
+    #start-stop-daemon --stop --name nnrpd --quiet --oknodo
+    #su news -c 'killall nnrpd' >> <pathlog>/rc.news 2>&1
+    ;;
+
+reload|force-reload)
+    # Reload INN.
+    <pathbin>/ctlinnd -t 20 reload '' 'reload asked'
+    ;;
+
+restart)
+    # Restart INN.
+    if [ -f '<pathrun>/innd.pid' ]; then
+        <pathbin>/ctlinnd -t 20 throttle 'restart asked' > /dev/null || true
+        <pathbin>/ctlinnd -t 20 xexec innd > /dev/null || start
+    else
+        start
+    fi
+    ;;
+
+*)
+    echo "Recognized arguments:  start|stop|reload|force-reload|restart" >&2
+    exit 1
     ;;
 
 esac
