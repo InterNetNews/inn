@@ -148,7 +148,7 @@ get_config_word
                     if (!@res);
 
                 if (!@res) {
-                    eprint "$file:$line: malformed line (runaway quote / empty pair of quotes?)\n";
+                    eprint "$file:$line: possibly malformed line (runaway quote / empty pair of quotes?)\n";
                     last;
                 }
 

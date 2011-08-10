@@ -128,6 +128,11 @@ If the B<-f> and B<--perm> options are used together, along with B<-a> or
 some I<file> or I<file>B<=>I<path> arguments that refer to a file with
 a syntax problem, then the output will no longer be valid input for a shell.
 
+In most cases, B<inncheck> currently does not correctly understand option
+values spanning multiple lines.  If you get error messages about runaway
+quotes, you either have to ignore them and check the correctness of the
+relevant lines yourself, or merge the value into a single line.
+
 =head1 HISTORY
 
 Written by Brendan Kehoe <brendan@cygnus.com> and Rich Salz
