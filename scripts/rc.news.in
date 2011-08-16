@@ -121,7 +121,7 @@ if [ ! -s ${ACTIVE} ] ; then
 	if [ -s ${OLDACTIVE} ] ; then
 	    cp ${OLDACTIVE} ${ACTIVE}
 	else
-	    echo 'INND:   No active file!'
+	    echo 'INND:  No active file!'
 	    exit 1
 	fi
     fi

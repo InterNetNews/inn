@@ -32,7 +32,11 @@ stopped.
 
 =item *
 
-If I<docnfsstat> is true in F<inn.conf>:  B<ovdb_init> is run;
+If I<docnfsstat> is true in F<inn.conf>:  B<cnfsstat> is started and stopped.
+
+=item *
+
+If I<ovmethod> is set to C<ovdb> in F<inn.conf>:  B<ovdb_init> is run;
 B<ovdb_server> and B<ovdb_monitor> are stopped.
 
 =item *
