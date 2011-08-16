@@ -17,6 +17,10 @@ shipped with S<INN 2.5.3>, thanks to the hard work of Florian Schlichting
 who added support for the syntax of F<incoming.conf>, F<innfeed.conf>,
 F<readers.conf> and F<storage.conf>.
 
+An up to date F<control.ctl> file is provided with this release.  You should
+manually update your F<control.ctl> file with the new information recorded
+about Usenet hierarchies.
+
 =over 2
 
 =item *
@@ -71,6 +75,12 @@ Thanks to John S<F. Morse> for the bug report.
 The order of CNFS buffers in a metacycbuff is now properly read and written
 by B<cnfsheadconf>.  There previoulsy was a confusion between hexadecimal
 and decimal values.  Thanks again to John S<F. Morse>.
+
+=item *
+
+When the B<-l> flag is given to B<cnfsstat>, the F<cycbuff.conf> and
+F<storage.conf> files are now reloaded if they have been modified since
+the previous output of B<cnfsstat>.
 
 =item *
 

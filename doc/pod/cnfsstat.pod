@@ -38,6 +38,10 @@ With this option, I<cnfsstat> prints a status snapshot every I<seconds>,
 and only exits if an error occurs.  When unspecified, the default interval
 is C<600> seconds.
 
+At each iteration, B<cnfsstat> checks whether the F<cycbuff.conf> and
+F<storage.conf> files have been modified, and loads the new configuration
+if needed.
+
 =item B<-m> I<buffer>
 
 Print information about the specified buffer in a format suitable for MRTG.
