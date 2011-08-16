@@ -22,6 +22,7 @@ use English;
 
 my $conffile = "$INN::Config::pathetc/cycbuff.conf";
 my $storageconf = "$INN::Config::pathetc/storage.conf";
+my $lastconftime = 0;
 
 sub usage {
     print <<"_end_";
@@ -44,7 +45,10 @@ _end_
     exit(1);
 }
 
-my (%class, %buff, %stor, @storsort, @buffers);
+my (%class, %buff, %stor, @storsort);
+my (%prevclass, %prevbuff, %prevstor, @prevstorsort);
+
+my @buffers;
 
 my ($oclass, $obuffer);
 my %opt = (c=>\$oclass, m=>\$obuffer);
@@ -79,12 +83,12 @@ if ($opt{'P'}) {
 my $sleeptime = (defined($opt{'l'}) && $opt{'l'} > 0) ? $opt{'l'} : 600;
 
 unless (read_cycbuffconf()) {
-    print STDERR "Cannot open CycBuff Conffile $conffile ...\n";
+    print STDERR "Invalid $conffile file.\n";
     exit (1);
 }
 
 unless (read_storageconf()) {
-    print STDERR "No valid $storageconf.\n";
+    print STDERR "Invalid $storageconf file.\n";
     exit (1);
 }
 
@@ -94,6 +98,46 @@ mrtg_config() if $opt{'p'};
 
 
 START:
+
+# Check whether the configuration files need reloading.
+my $cycbufftime = (stat($conffile))[9] if (-r $conffile);
+my $storagetime = (stat($storageconf))[9] if (-r $storageconf);
+my $maxtime = ($cycbufftime < $storagetime) ? $storagetime : $cycbufftime;
+
+# Set $lastconftime for the first run of the comparison.
+$lastconftime = $maxtime if not $lastconftime;
+
+if ($lastconftime < $maxtime) {
+    my $reloadok = 1;
+
+    $lastconftime = $maxtime;
+
+    # Save the previous configuration, in case reloading it fails.
+    # Direct copies of the arrays and hashes works fine here.
+    %prevclass = %class; undef %class;
+    %prevbuff = %buff; undef %buff;
+    %prevstor = %stor; undef %stor;
+    @prevstorsort = @storsort; undef @storsort;
+
+    unless (read_cycbuffconf()) {
+        print STDERR "Invalid $conffile file.\n";
+        $reloadok = 0;
+    }
+
+    unless (read_storageconf()) {
+        print STDERR "Invalid $storageconf file.\n";
+        $reloadok = 0;
+    }
+
+    # In case reloading configuration files fails, restore the
+    # previous known configuration for this run of cnfsstat.
+    if (!$reloadok) {
+        %class = %prevclass;
+        %buff = %prevbuff;
+        %stor = %prevstor;
+        @storsort = @prevstorsort;
+    }
+}
 
 my $logline;
 my $header_printed = 0;
@@ -216,13 +260,14 @@ sub read_cycbuffconf {
 	    @line = split(/:/, $_);
 	    if ($buff{$line[1]}) {
 		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 1;
+		return 0;
 	    }
 	    $buff{$line[1]} = $line[2];
 	    next;
 	}
 
 	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
+        return 0;
     }
     close $CONFFILE;
     return 1;
