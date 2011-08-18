@@ -84,7 +84,8 @@ extern int x_asprintf(char **, const char *, ...)
 typedef void (*xmalloc_handler_type)(const char *, size_t, const char *, int);
 
 /* The default error handler. */
-void xmalloc_fail(const char *, size_t, const char *, int);
+void xmalloc_fail(const char *, size_t, const char *, int)
+    __attribute__((__noreturn__));
 
 /* Assign to this variable to choose a handler other than the default, which
    just calls sysdie. */
