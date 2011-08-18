@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 /*
-**  Set a file to close on exec.
+**  Set a file to close on exec (or clear that setting if the flag is false).
 **
 **  One is supposed to retrieve the flags, add FD_CLOEXEC, and then set
 **  them, although I've never seen a system with any flags other than

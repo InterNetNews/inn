@@ -107,11 +107,8 @@
 #define VA_SHIFT(v,t)  ;   /* no-op for ANSI */
 #define VA_END          va_end(ap)
 
-#ifdef HAVE_LONG_DOUBLE
+/* Assume all compilers support long double, per Autoconf documentation. */
 #define LDOUBLE long double
-#else
-#define LDOUBLE double
-#endif
 
 #ifdef HAVE_LONG_LONG_INT
 # define LLONG long long

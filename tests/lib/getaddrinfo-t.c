@@ -1,5 +1,23 @@
-/* $Id$ */
-/* getaddrinfo test suite. */
+/*
+ * getaddrinfo test suite.
+ * 
+ * $Id$
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ *
+ * The authors hereby relinquish any claim to any copyright that they may have
+ * in this work, whether granted under contract or by operation of law or
+ * international treaty, and hereby commit to the public, at large, that they
+ * shall not, at any time in the future, seek to enforce any copyright in this
+ * work against any person or entity, or prevent any person or entity from
+ * copying, publishing, distributing or creating derivative works of this
+ * work.
+ */
+
+#define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
 #include "clibrary.h"
@@ -8,8 +26,11 @@
 #include "inn/messages.h"
 #include "libtest.h"
 
-/* If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
-   pick some other values for them. */
+/*
+ * If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
+ * pick some other values for them that match the values set in our
+ * implementation.
+ */
 #if AI_NUMERICSERV == 0
 # undef AI_NUMERICSERV
 # define AI_NUMERICSERV 0x0080
@@ -32,175 +53,231 @@ main(void)
     struct sockaddr_in *saddr;
     struct hostent *host;
     struct in_addr addr;
-    int i;
-    bool found;
+    struct servent *service;
+    int i, result;
+    int found;
 
-    test_init(75);
+    plan(75);
 
-    ok_string(1, "Host name lookup failure", test_gai_strerror(1));
-    ok_string(2, "System error", test_gai_strerror(9));
-    ok_string(3, "Unknown error", test_gai_strerror(40));
-    ok_string(4, "Unknown error", test_gai_strerror(-37));
+    is_string("Host name lookup failure", test_gai_strerror(1),
+              "gai_strerror(1)");
+    is_string("System error", test_gai_strerror(9), "gai_strerror(9)");
+    is_string("Unknown error", test_gai_strerror(40), "gai_strerror(40)");
+    is_string("Unknown error", test_gai_strerror(-37), "gai_strerror(-37)");
 
-    ok(5, test_getaddrinfo(NULL, "25", NULL, &ai) == 0);
-    ok(6, ai->ai_family == AF_INET);
-    ok(7, ai->ai_socktype == 0);
-    ok(8, ai->ai_protocol == IPPROTO_TCP);
-    ok(9, ai->ai_canonname == NULL);
-    ok(10, ai->ai_addrlen == sizeof(struct sockaddr_in));
+    ok(test_getaddrinfo(NULL, "25", NULL, &ai) == 0, "service of 25");
+    is_int(AF_INET, ai->ai_family, "...right family");
+    is_int(0, ai->ai_socktype, "...right socktype");
+    is_int(IPPROTO_TCP, ai->ai_protocol, "...right protocol");
+    is_string(NULL, ai->ai_canonname, "...no canonname");
+    is_int(sizeof(struct sockaddr_in), ai->ai_addrlen, "...right addrlen");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(11, saddr->sin_port == htons(25));
-    ok(12, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
+    is_int(htons(25), saddr->sin_port, "...right port");
+    ok(saddr->sin_addr.s_addr == INADDR_LOOPBACK, "...right address");
     test_freeaddrinfo(ai);
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_PASSIVE;
     hints.ai_socktype = SOCK_STREAM;
-    ok(13, test_getaddrinfo(NULL, "25", &hints, &ai) == 0);
-    ok(14, ai->ai_socktype == SOCK_STREAM);
+    ok(test_getaddrinfo(NULL, "25", &hints, &ai) == 0, "passive lookup");
+    is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(15, saddr->sin_port == htons(25));
-    ok(16, saddr->sin_addr.s_addr == INADDR_ANY);
+    is_int(htons(25), saddr->sin_port, "...right port");
+    ok(saddr->sin_addr.s_addr == INADDR_ANY, "...right address");
     test_freeaddrinfo(ai);
 
-    hints.ai_socktype = 0;
-    ok(17, test_getaddrinfo(NULL, "smtp", &hints, &ai) == 0);
-    ok(18, ai->ai_socktype == SOCK_STREAM);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(19, saddr->sin_port == htons(25));
-    ok(20, saddr->sin_addr.s_addr == INADDR_ANY);
-    test_freeaddrinfo(ai);
+    service = getservbyname("smtp", "tcp");
+    if (service == NULL)
+        skip_block(4, "smtp service not found");
+    else {
+        hints.ai_socktype = 0;
+        ok(test_getaddrinfo(NULL, "smtp", &hints, &ai) == 0,
+           "service of smtp");
+        is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(25), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr == INADDR_ANY, "...right address");
+        test_freeaddrinfo(ai);
+    }
 
     hints.ai_flags = AI_NUMERICSERV;
-    ok(21, test_getaddrinfo(NULL, "smtp", &hints, &ai) == EAI_NONAME);
-    ok(22, test_getaddrinfo(NULL, "25 smtp", &hints, &ai) == EAI_NONAME);
-    ok(23, test_getaddrinfo(NULL, "25 ", &hints, &ai) == EAI_NONAME);
-    ok(24, test_getaddrinfo(NULL, "25", &hints, &ai) == 0);
+    ok(test_getaddrinfo(NULL, "smtp", &hints, &ai) == EAI_NONAME,
+       "AI_NUMERICSERV with smtp");
+    ok(test_getaddrinfo(NULL, "25 smtp", &hints, &ai) == EAI_NONAME,
+       "AI_NUMERICSERV with 25 smtp");
+    ok(test_getaddrinfo(NULL, "25 ", &hints, &ai) == EAI_NONAME,
+       "AI_NUMERICSERV with 25 space");
+    ok(test_getaddrinfo(NULL, "25", &hints, &ai) == 0,
+       "valid AI_NUMERICSERV");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(25, saddr->sin_port == htons(25));
-    ok(26, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
+    is_int(htons(25), saddr->sin_port, "...right port");
+    ok(saddr->sin_addr.s_addr == INADDR_LOOPBACK, "...right address");
     test_freeaddrinfo(ai);
 
-    ok(27, test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME);
+    ok(test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME, "EAI_NONAME");
     hints.ai_flags = 2000;
-    ok(28, test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_BADFLAGS);
+    ok(test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_BADFLAGS,
+       "EAI_BADFLAGS");
     hints.ai_flags = 0;
     hints.ai_socktype = SOCK_RAW;
-    ok(29, test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_SOCKTYPE);
+    ok(test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_SOCKTYPE,
+       "EAI_SOCKTYPE");
     hints.ai_socktype = 0;
     hints.ai_family = AF_UNIX;
-    ok(30, test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_FAMILY);
+    ok(test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_FAMILY, "EAI_FAMILY");
     hints.ai_family = AF_UNSPEC;
 
     inet_aton("10.20.30.40", &addr);
-    ok(31, test_getaddrinfo("10.20.30.40", NULL, NULL, &ai) == 0);
-    ok(32, ai->ai_family == AF_INET);
-    ok(33, ai->ai_socktype == 0);
-    ok(34, ai->ai_protocol == IPPROTO_TCP);
-    ok(35, ai->ai_canonname == NULL);
-    ok(36, ai->ai_addrlen == sizeof(struct sockaddr_in));
+    ok(test_getaddrinfo("10.20.30.40", NULL, NULL, &ai) == 0,
+       "IP address lookup");
+    is_int(AF_INET, ai->ai_family, "...right family");
+    is_int(0, ai->ai_socktype, "...right socktype");
+    is_int(IPPROTO_TCP, ai->ai_protocol, "...right protocol");
+    is_string(NULL, ai->ai_canonname, "...no canonname");
+    is_int(sizeof(struct sockaddr_in), ai->ai_addrlen, "...right addrlen");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(37, saddr->sin_port == 0);
-    ok(38, saddr->sin_addr.s_addr == addr.s_addr);
+    is_int(0, saddr->sin_port, "...right port");
+    ok(saddr->sin_addr.s_addr == addr.s_addr, "...right address");
     test_freeaddrinfo(ai);
 
-    ok(39, test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0);
-    ok(40, ai->ai_family == AF_INET);
-    ok(41, ai->ai_socktype == SOCK_STREAM);
-    ok(42, ai->ai_protocol == IPPROTO_TCP);
-    ok(43, ai->ai_canonname == NULL);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(44, saddr->sin_port == htons(25));
-    ok(45, saddr->sin_addr.s_addr == addr.s_addr);
-    test_freeaddrinfo(ai);
+    if (service == NULL)
+        skip_block(7, "smtp service not found");
+    else {
+        ok(test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0,
+           "IP address lookup with smtp service");
+        is_int(AF_INET, ai->ai_family, "...right family");
+        is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
+        is_int(IPPROTO_TCP, ai->ai_protocol, "...right protocol");
+        is_string(NULL, ai->ai_canonname, "...no canonname");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(25), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr == addr.s_addr, "...right address");
+        test_freeaddrinfo(ai);
+    }
 
     hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
-    ok(46, test_getaddrinfo("10.2.3.4", "smtp", &hints, &ai) == EAI_NONAME);
-    ok(47, test_getaddrinfo("example.com", "25", &hints, &ai) == EAI_NONAME);
-    ok(48, test_getaddrinfo("10.20.30.40", "25", &hints, &ai) == 0);
+    ok(test_getaddrinfo("10.2.3.4", "smtp", &hints, &ai) == EAI_NONAME,
+       "AI_NUMERICHOST and AI_NUMERICSERV with symbolic service");
+    ok(test_getaddrinfo("example.com", "25", &hints, &ai) == EAI_NONAME,
+       "AI_NUMERICHOST and AI_NUMERICSERV with symbolic name");
+    ok(test_getaddrinfo("10.20.30.40", "25", &hints, &ai) == 0,
+       "valid AI_NUMERICHOST and AI_NUMERICSERV");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(49, saddr->sin_port == htons(25));
-    ok(50, saddr->sin_addr.s_addr == addr.s_addr);
+    is_int(htons(25), saddr->sin_port, "...right port");
+    ok(saddr->sin_addr.s_addr == addr.s_addr, "...right address");
     test_freeaddrinfo(ai);
 
-    hints.ai_flags = AI_NUMERICHOST | AI_CANONNAME;
-    ok(51, test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0);
-    ok_string(52, "10.20.30.40", ai->ai_canonname);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(53, saddr->sin_port == htons(25));
-    ok(54, saddr->sin_addr.s_addr == addr.s_addr);
-    test_freeaddrinfo(ai);
+    if (service == NULL)
+        skip_block(4, "smtp service not found");
+    else {
+        hints.ai_flags = AI_NUMERICHOST | AI_CANONNAME;
+        ok(test_getaddrinfo("10.20.30.40", "smtp", &hints, &ai) == 0,
+           "AI_NUMERICHOST and AI_CANONNAME");
+        is_string("10.20.30.40", ai->ai_canonname, "...right canonname");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(25), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr == addr.s_addr, "...right address");
+        test_freeaddrinfo(ai);
+    }
 
-    hints.ai_flags = 0;
-    hints.ai_socktype = SOCK_DGRAM;
-    ok(55, test_getaddrinfo("10.20.30.40", "domain", &hints, &ai) == 0);
-    ok(56, ai->ai_socktype == SOCK_DGRAM);
-    ok(57, ai->ai_canonname == NULL);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(58, saddr->sin_port == htons(53));
-    ok(59, saddr->sin_addr.s_addr == addr.s_addr);
-    test_freeaddrinfo(ai);
+    service = getservbyname("domain", "udp");
+    if (service == NULL)
+        skip_block(5, "domain service not found");
+    else {
+        hints.ai_flags = 0;
+        hints.ai_socktype = SOCK_DGRAM;
+        ok(test_getaddrinfo("10.20.30.40", "domain", &hints, &ai) == 0,
+           "domain service with UDP hint");
+        is_int(SOCK_DGRAM, ai->ai_socktype, "...right socktype");
+        is_string(NULL, ai->ai_canonname, "...no canonname");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(53), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr == addr.s_addr, "...right address");
+        test_freeaddrinfo(ai);
+    }
 
     /* Hopefully this will always resolve. */
-    hints.ai_socktype = SOCK_STREAM;
-    ok(60, test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0);
-    ok(61, ai->ai_socktype == SOCK_STREAM);
-    ok(62, ai->ai_canonname == NULL);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(63, saddr->sin_port == htons(80));
-    ok(64, saddr->sin_addr.s_addr != INADDR_ANY);
-    addr = saddr->sin_addr;
-    test_freeaddrinfo(ai);
+    host = gethostbyname("www.isc.org");
+    if (host == NULL)
+        skip_block(9, "cannot look up www.isc.org");
+    else {
+        hints.ai_flags = 0;
+        hints.ai_socktype = SOCK_STREAM;
+        ok(test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0,
+           "lookup of www.isc.org");
+        is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
+        is_string(NULL, ai->ai_canonname, "...no canonname");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(80), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr != INADDR_ANY, "...address is something");
+        addr = saddr->sin_addr;
+        test_freeaddrinfo(ai);
 
-    hints.ai_flags = AI_CANONNAME;
-    ok(65, test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0);
-    ok(66, ai->ai_canonname != NULL);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(67, saddr->sin_port == htons(80));
-    ok(68, saddr->sin_addr.s_addr == addr.s_addr);
-    test_freeaddrinfo(ai);
+        hints.ai_flags = AI_CANONNAME;
+        ok(test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0,
+           "lookup of www.isc.org with A_CANONNAME");
+        ok(ai->ai_canonname != NULL, "...canonname isn't null");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(80), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr == addr.s_addr, "...and same address");
+        test_freeaddrinfo(ai);
+    }
 
     /* Included because it had multiple A records. */
-    ok(69, test_getaddrinfo("cnn.com", "80", NULL, &ai) == 0);
-    saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(70, saddr->sin_port == htons(80));
-    ok(71, saddr->sin_addr.s_addr != INADDR_ANY);
-    addr = saddr->sin_addr;
-    test_freeaddrinfo(ai);
+    host = gethostbyname("cnn.com");
+    if (host == NULL)
+        skip_block(3, "cannot look up cnn.com");
+    else {
+        ok(test_getaddrinfo("cnn.com", "80", NULL, &ai) == 0,
+           "lookup of cnn.com with multiple A records");
+        saddr = (struct sockaddr_in *) ai->ai_addr;
+        is_int(htons(80), saddr->sin_port, "...right port");
+        ok(saddr->sin_addr.s_addr != INADDR_ANY, "...address is something");
+        test_freeaddrinfo(ai);
+    }
 
-    hints.ai_flags = AI_CANONNAME;
-    ok(72, test_getaddrinfo("foo.invalid", NULL, NULL, &ai) == EAI_NONAME);
+    host = gethostbyname("addrinfo-test.invalid");
+    if (host != NULL)
+        skip("lookup of addrinfo-test.invalid succeeded");
+    else {
+        result = test_getaddrinfo("addrinfo-test.invalid", NULL, NULL, &ai);
+        is_int(EAI_NONAME, result, "lookup of invalid address");
+    }
+
     host = gethostbyname("cnn.com");
     if (host == NULL) {
-        skip_block(73, 3, "cannot look up cnn.com");
+        skip_block(3, "cannot look up cnn.com");
         exit(0);
     }
-    ok(73, test_getaddrinfo("cnn.com", NULL, &hints, &ai) == 0);
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_CANONNAME;
+    ok(test_getaddrinfo("cnn.com", NULL, &hints, &ai) == 0,
+       "lookup of cnn.com");
     saddr = (struct sockaddr_in *) ai->ai_addr;
-    ok(74, saddr->sin_port == 0);
+    is_int(0, saddr->sin_port, "...port is 0");
     first = ai;
-    for (found = false; ai != NULL; ai = ai->ai_next) {
+    for (found = 0; ai != NULL; ai = ai->ai_next) {
         if (!strcmp(ai->ai_canonname, first->ai_canonname) == 0) {
-            ok(75, false);
+            ok(0, "...canonname matches");
             break;
         }
         if (ai != first && ai->ai_canonname == first->ai_canonname) {
-            ok(75, false);
+            ok(0, "...each canonname is a separate pointer");
             break;
         }
-        found = false;
+        found = 0;
         saddr = (struct sockaddr_in *) ai->ai_addr;
         addr = saddr->sin_addr;
         for (i = 0; host->h_addr_list[i] != NULL; i++)
             if (memcmp(&addr, host->h_addr_list[i], host->h_length) == 0)
-                found = true;
+                found = 1;
         if (!found) {
-            ok(75, false);
+            ok(0, "...result found in gethostbyname address list");
             break;
         }
     }
     if (found)
-        ok(75, true);
+        ok(1, "...result found in gethostbyname address list");
     test_freeaddrinfo(ai);
 
     return 0;

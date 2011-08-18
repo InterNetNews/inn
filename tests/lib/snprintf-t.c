@@ -1,11 +1,41 @@
-/* $Id$ */
-/* snprintf test suite. */
+/*
+ * snprintf test suite.
+ *
+ * $Id$
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006
+ *     Russ Allbery <rra@stanford.edu>
+ * Copyright 2009, 2010
+ *     The Board of Trustees of the Leland Stanford Junior University
+ * Copyright 1995 Patrick Powell
+ * Copyright 2001 Hrvoje Niksic
+ *
+ * This code is based on code written by Patrick Powell (papowell@astart.com)
+ * It may be used for any purpose as long as this notice remains intact
+ * on all source code distributions
+ */
+
+#define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
 #include "clibrary.h"
 
 #include "libtest.h"
 
+/*
+ * Disable the requirement that format strings be literals.  We need variable
+ * formats for easy testing.
+ */
+//#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
+/*
+ * Intentionally don't add the printf attribute here since we pass a
+ * zero-length printf format during testing and don't want warnings.
+ */
 int test_snprintf(char *str, size_t count, const char *fmt, ...);
 int test_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 
@@ -70,8 +100,9 @@ static unsigned long long ullong_nums[] = {
     0
 };
 
+
 static void
-test_format(int n, bool truncate, const char *expected, int count,
+test_format(bool trunc, const char *expected, int count,
             const char *format, ...)
 {
     char buf[128];
@@ -79,97 +110,83 @@ test_format(int n, bool truncate, const char *expected, int count,
     va_list args;
 
     va_start(args, format);
-    result = test_vsnprintf(buf, truncate ? 32 : sizeof(buf), format, args);
+    result = test_vsnprintf(buf, trunc ? 32 : sizeof(buf), format, args);
     va_end(args);
-    if (!strcmp(buf, expected) && result == count) {
-        ok(n, true);
-    } else {
-        ok(n, false);
-        diag("  format: %s\n", format);
-        if (strcmp(buf, expected))
-            diag("   saw: %s\n  want: %s\n", buf, expected);
-        if (result != count)
-            diag("  %d != %d\n", result, count);
-    }
+    is_string(expected, buf, "format %s, wanted %s", format, expected);
+    is_int(count, result, "...and output length correct");
 }
+
 
 int
 main(void)
 {
-    int n, i, count;
+    int i, count;
     unsigned int j;
     long lcount;
     char lgbuf[128];
 
-    test_init((26 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
-              + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
-              + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
-              + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
-              + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums)));
+    plan(8 +
+         (18 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
+          + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
+          + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
+          + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
+          + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums)) * 2);
 
-    ok(1, test_snprintf(NULL, 0, "%s", "abcd") == 4);
-    ok(2, test_snprintf(NULL, 0, "%d", 20) == 2);
-    ok(3, test_snprintf(NULL, 0, "Test %.2s", "abcd") == 7);
-    ok(4, test_snprintf(NULL, 0, "%c", 'a') == 1);
-    ok(5, test_snprintf(NULL, 0, "") == 0);
+    is_int(4, test_snprintf(NULL, 0, "%s", "abcd"), "simple string length");
+    is_int(2, test_snprintf(NULL, 0, "%d", 20), "number length");
+    is_int(7, test_snprintf(NULL, 0, "Test %.2s", "abcd"), "limited string");
+    is_int(1, test_snprintf(NULL, 0, "%c", 'a'), "character length");
+    is_int(0, test_snprintf(NULL, 0, ""), "empty format length");
 
-    test_format(6, true, "abcd", 4, "%s", "abcd");
-    test_format(7, true, "20", 2, "%d", 20);
-    test_format(8, true, "Test ab", 7, "Test %.2s", "abcd");
-    test_format(9, true, "a", 1, "%c", 'a');
-    test_format(10, true, "", 0, "");
-    test_format(11, true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%s",
-                string);
-    test_format(12, true, "abcdefghij", 10, "%.10s", string);
-    test_format(13, true, "  abcdefghij", 12, "%12.10s", string);
-    test_format(14, true, "    abcdefghijklmnopqrstuvwxyz0", 40, "%40s",
-                string);
-    test_format(15, true, "abcdefghij    ", 14, "%-14.10s", string);
-    test_format(16, true, "              abcdefghijklmnopq", 50, "%50s",
-                string);
-    test_format(17, true, "%abcd%", 6, "%%%0s%%", "abcd");
-    test_format(18, true, "", 0, "%.0s", string);
-    test_format(19, true, "abcdefghijklmnopqrstuvwxyz  444", 32, "%.26s  %d",
+    test_format(true, "abcd", 4, "%s", "abcd");
+    test_format(true, "20", 2, "%d", 20);
+    test_format(true, "Test ab", 7, "Test %.2s", "abcd");
+    test_format(true, "a", 1, "%c", 'a');
+    test_format(true, "", 0, "");
+    test_format(true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%s", string);
+    test_format(true, "abcdefghij", 10, "%.10s", string);
+    test_format(true, "  abcdefghij", 12, "%12.10s", string);
+    test_format(true, "    abcdefghijklmnopqrstuvwxyz0", 40, "%40s", string);
+    test_format(true, "abcdefghij    ", 14, "%-14.10s", string);
+    test_format(true, "              abcdefghijklmnopq", 50, "%50s", string);
+    test_format(true, "%abcd%", 6, "%%%0s%%", "abcd");
+    test_format(true, "", 0, "%.0s", string);
+    test_format(true, "abcdefghijklmnopqrstuvwxyz  444", 32, "%.26s  %d",
                 string, 4444);
-    test_format(20, true, "abcdefghijklmnopqrstuvwxyz  -2.", 32,
-                "%.26s  %.1f", string, -2.5);
-    test_format(21, true, "abcdefghij4444", 14, "%.10s%n%d", string, &count,
-                4444);
-    ok(22, count == 10);
-    test_format(23, true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%n%s%ln",
+    test_format(true, "abcdefghijklmnopqrstuvwxyz  -2.", 32, "%.26s  %.1f",
+                string, -2.5);
+    test_format(true, "abcdefghij4444", 14, "%.10s%n%d", string, &count, 4444);
+    is_int(10, count, "correct output from %%n");
+    test_format(true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%n%s%ln",
                 &count, string, &lcount);
-    ok(24, count == 0);
-    ok(25, lcount == 31);
-    test_format(26, true, "(null)", 6, "%s", NULL);
+    is_int(0, count, "correct output from two %%n");
+    is_int(31, lcount, "correct output from long %%ln");
+    test_format(true, "(null)", 6, "%s", NULL);
 
-    n = 26;
     for (i = 0; fp_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(fp_nums); j++) {
             count = sprintf(lgbuf, fp_formats[i], fp_nums[j]);
-            test_format(++n, false, lgbuf, count, fp_formats[i], fp_nums[j]);
+            test_format(false, lgbuf, count, fp_formats[i], fp_nums[j]);
         }
     for (i = 0; int_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(int_nums); j++) {
             count = sprintf(lgbuf, int_formats[i], int_nums[j]);
-            test_format(++n, false, lgbuf, count, int_formats[i],
-                        int_nums[j]);
+            test_format(false, lgbuf, count, int_formats[i], int_nums[j]);
         }
     for (i = 0; uint_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(uint_nums); j++) {
             count = sprintf(lgbuf, uint_formats[i], uint_nums[j]);
-            test_format(++n, false, lgbuf, count, uint_formats[i],
-                        uint_nums[j]);
+            test_format(false, lgbuf, count, uint_formats[i], uint_nums[j]);
         }
     for (i = 0; llong_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(llong_nums); j++) {
             count = sprintf(lgbuf, llong_formats[i], llong_nums[j]);
-            test_format(++n, false, lgbuf, count, llong_formats[i],
-                        llong_nums[j]);
+            test_format(false, lgbuf, count, llong_formats[i], llong_nums[j]);
         }
     for (i = 0; ullong_formats[i] != NULL; i++)
         for (j = 0; j < ARRAY_SIZE(ullong_nums); j++) {
             count = sprintf(lgbuf, ullong_formats[i], ullong_nums[j]);
-            test_format(++n, false, lgbuf, count, ullong_formats[i],
+            test_format(false, lgbuf, count, ullong_formats[i],
                         ullong_nums[j]);
         }
 
