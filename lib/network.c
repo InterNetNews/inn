@@ -50,8 +50,9 @@ static void
 network_set_reuseaddr(int fd)
 {
     int flag = 1;
+    const void *flagaddr = &flag;
 
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, flagaddr, sizeof(flag)) < 0)
         syswarn("cannot mark bind address reusable");
 }
 #endif
@@ -252,7 +253,7 @@ network_bind_ipv6(const char *address, unsigned short port)
         syswarn("cannot set IPv6 socket to v6only");
 #endif
 
-    /* Accept "any" or "all" in the bind address to mean 0.0.0.0. */
+    /* Accept "any" or "all" in the bind address to mean ::. */
     if (!strcmp(address, "any") || !strcmp(address, "all"))
         address = "::";
 
@@ -301,10 +302,11 @@ network_bind_ipv6(const char *address, unsigned short port)
 */
 #if HAVE_INET6
 void
-network_bind_all(unsigned short port, int **fds, int *count)
+network_bind_all(unsigned short port, int **fds, unsigned int *count)
 {
     struct addrinfo hints, *addrs, *addr;
-    int error, fd, size;
+    unsigned int size;
+    int error, fd;
     char service[16], name[INET6_ADDRSTRLEN];
 
     *count = 0;
@@ -363,7 +365,7 @@ network_bind_all(unsigned short port, int **fds, int *count)
 }
 #else /* HAVE_INET6 */
 void
-network_bind_all(unsigned short port, int **fds, int *count)
+network_bind_all(unsigned short port, int **fds, unsigned int *count)
 {
     int fd;
 
@@ -378,6 +380,55 @@ network_bind_all(unsigned short port, int **fds, int *count)
     }
 }
 #endif /* HAVE_INET6 */
+
+/*
+ * Given an array of file descriptors and the length of that array (the same
+ * data that's returned by network_bind_all), wait for an incoming connection
+ * on any of those sockets, accept the connection with accept(), and return
+ * the new file descriptor.
+ *
+ * This is essentially a replacement for accept() with a single socket for
+ * daemons that are listening to multiple separate bound sockets, possibly
+ * because they need to listen to specific interfaces or possibly because
+ * they're listening for both IPv4 and IPv6 connections.
+ *
+ * Returns the new socket on success or INVALID_SOCKET on failure.  On
+ * success, fills out the arguments with the address and address length of the
+ * accepted client.  No error will be reported, so the caller should do that
+ * Note that INVALID_SOCKET may be returned if the timeout is interrupted by a
+ * signal, which is not, precisely speaking, an error condition.  In this
+ * case, errno will be set to EINTR.
+*/
+socket_type
+network_accept_any(socket_type fds[], unsigned int count,
+                   struct sockaddr *addr, socklen_t *addrlen)
+{
+    fd_set readfds;
+    socket_type maxfd, fd;
+    unsigned int i;
+    int status;
+
+    FD_ZERO(&readfds);
+    maxfd = -1;
+    for (i = 0; i < count; i++) {
+        FD_SET(fds[i], &readfds);
+        if (fds[i] > maxfd)
+            maxfd = fds[i];
+    }
+    status = select(maxfd + 1, &readfds, NULL, NULL, NULL);
+    if (status < 0)
+        return INVALID_SOCKET;
+    fd = INVALID_SOCKET;
+    for (i = 0; i < count; i++)
+        if (FD_ISSET(fds[i], &readfds)) {
+            fd = fds[i];
+            break;
+        }
+    if (fd == INVALID_SOCKET)
+        return INVALID_SOCKET;
+    else
+        return accept(fd, addr, addrlen);
+}
 
 
 /*
@@ -718,7 +769,7 @@ network_addr_match(const char *a, const char *b, const char *mask)
             if (cidr > 32 || *end != '\0')
                 return false;
             for (bits = 0, i = 0; i < cidr; i++)
-                bits |= (1 << (31 - i));
+                bits |= (1UL << (31 - i));
             addr_mask = htonl(bits);
         } else if (inet_aton(mask, &tmp))
             addr_mask = tmp.s_addr;
@@ -745,7 +796,7 @@ network_addr_match(const char *a, const char *b, const char *mask)
                 return false;
         } else {
             for (addr_mask = 0, bits = 0; bits < cidr % 8; bits++)
-                addr_mask |= (1 << (7 - bits));
+                addr_mask |= (1UL << (7 - bits));
             if ((a6.s6_addr[i] & addr_mask) != (b6.s6_addr[i] & addr_mask))
                 return false;
         }

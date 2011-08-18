@@ -96,9 +96,10 @@ domain.o: domain.c ../include/config.h ../include/inn/defines.h \
 ident.o: ident.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \
-  ../include/inn/network.h ../include/inn/libinn.h libauth.h \
-  ../include/portable/socket.h ../include/config.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/config.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/libinn.h libauth.h \
+  ../include/portable/socket.h
 libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \

@@ -11,6 +11,7 @@
 #define INN_NETWORK_H 1
 
 #include <inn/defines.h>
+#include "portable/socket.h"
 #include <sys/types.h>          /* socklen_t */
 
 /* Forward declarations to avoid unnecessary includes. */
@@ -42,7 +43,19 @@ int network_bind_ipv6(const char *address, unsigned short port);
    just one socket will be created and bound to the IPv4 wildcard address.
    fds will be set to an array containing the resulting file descriptors, with
    count holding the count returned. */
-void network_bind_all(unsigned short port, int **fds, int *count);
+void network_bind_all(unsigned short port, int **fds, unsigned int *count);
+
+/*
+ * Accept an incoming connection from any file descriptor in an array.  This
+ * is a blocking accept that will wait until there is an incoming connection,
+ * unless interrupted by receipt of a signal.  Returns the new socket or
+ * INVALID_SOCKET, and fills out the arguments with the address of the remote
+ * client.  If the wait for a connection was interrupted by a signal, returns
+ * INVALID_SOCKET with errno set to EINTR.
+ */
+socket_type network_accept_any(socket_type fds[], unsigned int count,
+                               struct sockaddr *addr, socklen_t *addrlen)
+    __attribute__((__nonnull__(1)));
 
 /* Create a socket and connect it to the remote service given by the linked
    list of addrinfo structs.  Returns the new file descriptor on success and

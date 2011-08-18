@@ -217,7 +217,7 @@ network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/time.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/network.h \
-  ../include/inn/libinn.h
+  ../include/portable/socket.h ../include/inn/libinn.h
 newsuser.o: newsuser.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -229,8 +229,8 @@ nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/buffer.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
-  ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
-  ../include/inn/libinn.h
+  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/inn/nntp.h ../include/inn/vector.h ../include/inn/libinn.h
 numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -249,7 +249,8 @@ remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/network.h ../include/inn/nntp.h
+  ../include/inn/libinn.h ../include/inn/network.h \
+  ../include/portable/socket.h ../include/inn/nntp.h
 reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h

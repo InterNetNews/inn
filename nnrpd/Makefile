@@ -163,13 +163,13 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getnameinfo.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/inn/newsuser.h ../include/config.h \
-  ../include/clibrary.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/history.h \
-  ../include/inn/version.h nnrpd.h ../include/portable/time.h \
-  ../include/inn/qio.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/timer.h \
-  tls.h
+  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/history.h ../include/inn/version.h nnrpd.h \
+  ../include/portable/time.h ../include/inn/qio.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/vector.h \
+  ../include/inn/timer.h tls.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -185,11 +185,11 @@ perm.o: perm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/wait.h ../include/config.h \
   ../include/conffile.h ../include/inn/network.h ../include/inn/defines.h \
-  ../include/inn/innconf.h ../include/innperl.h nnrpd.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/portable/time.h \
-  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/innperl.h nnrpd.h ../include/portable/socket.h \
+  ../include/portable/time.h ../include/inn/qio.h ../include/inn/libinn.h \
+  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/vector.h ../include/inn/timer.h
 post.o: post.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -202,7 +202,8 @@ post.o: post.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
   post.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/inn/system.h ../include/inn/options.h \
+  ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   nnrpd.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \

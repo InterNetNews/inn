@@ -95,13 +95,14 @@ cc.o: cc.c ../include/config.h ../include/inn/defines.h \
 chan.o: chan.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/network.h innd.h ../include/portable/time.h \
-  ../include/config.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h \
-  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/config.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h innd.h ../include/portable/time.h \
+  ../include/portable/socket.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/messages.h \
+  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/config.h \
@@ -199,7 +200,8 @@ proc.o: proc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/inn/system.h ../include/inn/options.h \
+  ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/wire.h innd.h ../include/portable/time.h \
   ../include/config.h ../include/portable/socket.h \
@@ -213,12 +215,12 @@ rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/network.h ../include/inn/vector.h innd.h \
-  ../include/portable/time.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/inn/vector.h innd.h ../include/portable/time.h \
+  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/messages.h ../include/inn/timer.h \
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h
 site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -234,12 +236,12 @@ status.o: status.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/portable/socket.h ../include/config.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/network.h ../include/inn/defines.h \
-  ../include/inn/innconf.h ../include/inn/version.h innd.h \
-  ../include/portable/time.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/innperl.h
+  ../include/portable/socket.h ../include/inn/innconf.h \
+  ../include/inn/version.h innd.h ../include/portable/time.h \
+  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/messages.h ../include/inn/timer.h \
+  ../include/inn/libinn.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h ../include/innperl.h
 util.o: util.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \

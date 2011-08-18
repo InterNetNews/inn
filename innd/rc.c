@@ -64,7 +64,7 @@ static char		*RCslaveflag;
 static char		*RCnnrpd = NULL;
 static char		*RCnntpd = NULL;
 static CHANNEL		**RCchan;
-static int		chanlimit;
+static unsigned int	chanlimit;
 static REMOTEHOST_DATA	*RCpeerlistfile;
 static REMOTEHOST	*RCpeerlist;
 static int		RCnpeerlist;
@@ -425,6 +425,7 @@ RCreader(CHANNEL *cp)
     struct sockaddr_storage	remote;
     socklen_t		size;
     int                 i;
+    unsigned int        j;
     REMOTEHOST          *rp;
     CHANNEL		*new;
     char		*name;
@@ -437,12 +438,12 @@ RCreader(CHANNEL *cp)
     char		buff[SMBUF];
     char                addr[INET6_ADDRSTRLEN];
 
-    for (i = 0 ; i < chanlimit ; i++) {
-	if (RCchan[i] == cp) {
+    for (j = 0 ; j < chanlimit ; j++) {
+	if (RCchan[j] == cp) {
 	    break;
 	}
     }
-    if (i == chanlimit) {
+    if (j == chanlimit) {
 	syslog(L_ERROR, "%s internal RCreader wrong channel 0x%p",
 		LogName, (void *)cp);
 	return;
@@ -1736,7 +1737,7 @@ void
 RCsetup(void)
 {
     CHANNEL *rc;
-    int count, i, start;
+    unsigned int count, i, start;
     int *fds;
     bool okay;
 
@@ -1810,12 +1811,13 @@ RCsetup(void)
 void
 RCclose(void)
 {
-    REMOTEHOST	*rp;
-    int		i;
+    REMOTEHOST   *rp;
+    int          i;
+    unsigned int j;
 
-    for (i = 0 ; i < chanlimit ; i++) {
-	if (RCchan[i] != NULL) {
-	    CHANclose(RCchan[i], CHANname(RCchan[i]));
+    for (j = 0 ; j < chanlimit ; j++) {
+	if (RCchan[j] != NULL) {
+	    CHANclose(RCchan[j], CHANname(RCchan[j]));
 	} else {
 	    break;
 	}
