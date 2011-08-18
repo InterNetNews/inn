@@ -198,18 +198,14 @@ print_desc(const char *format, va_list args)
  * Takes a boolean success value and assumes the test passes if that value
  * is true and fails if that value is false.
  */
-#if defined LIBTEST_NEW_FORMAT
-void
-ok(int success, const char *format, ...)
-#else
+#ifndef LIBTEST_NEW_FORMAT
 void
 ok(int n UNUSED, int success) {
     new_ok(success, NULL);
 }
-
+#endif
 void
 new_ok(int success, const char *format, ...)
-#endif
 {
     fflush(stderr);
     printf("%sok %lu", success ? "" : "not ", testnum++);
@@ -245,18 +241,14 @@ okv(int success, const char *format, va_list args)
 /*
  * Skip a test.
  */
-#if defined LIBTEST_NEW_FORMAT
-void
-skip(const char *reason, ...)
-#else
+#ifndef LIBTEST_NEW_FORMAT
 void
 skip(int n UNUSED, const char *reason) {
     new_skip(reason);
 }
-
+#endif
 void
 new_skip(const char *reason, ...)
-#endif
 {
     fflush(stderr);
     printf("ok %lu # skip", testnum++);
@@ -275,18 +267,14 @@ new_skip(const char *reason, ...)
 /*
  * Report the same status on the next count tests.
  */
-#if defined LIBTEST_NEW_FORMAT
-void
-ok_block(unsigned long count, int status, const char *format, ...)
-#else
+#ifndef LIBTEST_NEW_FORMAT
 void
 ok_block(int n UNUSED, int count, int success) {
     new_ok_block(count, success, NULL);
 }
-
+#endif
 void
 new_ok_block(unsigned long count, int status, const char *format, ...)
-#endif
 {
     unsigned long i;
 
@@ -310,18 +298,14 @@ new_ok_block(unsigned long count, int status, const char *format, ...)
 /*
  * Skip the next count tests.
  */
-#if defined LIBTEST_NEW_FORMAT
-void
-skip_block(unsigned long count, const char *reason, ...)
-#else
+#ifndef LIBTEST_NEW_FORMAT
 void
 skip_block(int n UNUSED, int count, const char *reason) {
     new_skip_block(count, reason);
 }
-
+#endif
 void
 new_skip_block(unsigned long count, const char *reason, ...)
-#endif
 {
     unsigned long i;
 

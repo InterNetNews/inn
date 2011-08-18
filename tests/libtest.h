@@ -123,6 +123,10 @@ extern char *errors;
 void errors_capture(void);
 void errors_uncapture(void);
 #else
+# define ok new_ok
+# define skip new_skip
+# define ok_block new_ok_block
+# define skip_block new_skip_block
 void ok(int success, const char *format, ...)
     __attribute__((__format__(printf, 2, 3)));
 void skip(const char *reason, ...)
