@@ -44,6 +44,10 @@ struct cvector *cvector_new(void);
 void vector_add(struct vector *, const char *string);
 void cvector_add(struct cvector *, const char *string);
 
+/* Add a counted string to a vector.  Only available for vectors. */
+void vector_addn(struct vector *, const char *string, size_t length)
+    __attribute__((__nonnull__));
+
 /* Resize the array of strings to hold size entries.  Saves reallocation work
    in vector_add if it's known in advance how many entries there will be. */
 void vector_resize(struct vector *, size_t size);
@@ -59,22 +63,34 @@ void cvector_clear(struct cvector *);
 void vector_free(struct vector *);
 void cvector_free(struct cvector *);
 
-/* Split functions build a vector from a string.  vector_split splits on a
-   specified character, while vector_split_space splits on any sequence of
-   spaces or tabs (not any sequence of whitespace, as just spaces or tabs is
-   more useful for INN).  The cvector versions destructively modify the
-   provided string in-place to insert nul characters between the strings.  If
-   the vector argument is NULL, a new vector is allocated; otherwise, the
-   provided one is reused.
-
-   Empty strings will yield zero-length vectors.  Adjacent delimiters are
-   treated as a single delimiter by *_split_space, but *not* by *_split, so
-   callers of *_split should be prepared for zero-length strings in the
-   vector. */
-struct vector *vector_split(const char *string, char sep, struct vector *);
-struct vector *vector_split_space(const char *string, struct vector *);
-struct cvector *cvector_split(char *string, char sep, struct cvector *);
-struct cvector *cvector_split_space(char *string, struct cvector *);
+/*
+ * Split functions build a vector from a string.  vector_split splits on a
+ * specified character, vector_split_multi splits on a set of characters, and
+ * vector_split_space splits on any sequence of spaces or tabs (not any
+ * sequence of whitespace, as just spaces or tabs is more useful).  The
+ * cvector versions destructively modify the provided string in-place to
+ * insert nul characters between the strings.  If the vector argument is NULL,
+ * a new vector is allocated; otherwise, the provided one is reused.
+ *
+ * Empty strings will yield zero-length vectors.  Adjacent delimiters are
+ * treated as a single delimiter by *_split_space and *_split_multi, but *not*
+ * by *_split, so callers of *_split should be prepared for zero-length
+ * strings in the vector.
+ */
+struct vector *vector_split(const char *string, char sep, struct vector *)
+    __attribute__((__nonnull__(1)));
+struct vector *vector_split_multi(const char *string, const char *seps,
+                                  struct vector *)
+    __attribute__((__nonnull__(1, 2)));
+struct vector *vector_split_space(const char *string, struct vector *)
+    __attribute__((__nonnull__(1)));
+struct cvector *cvector_split(char *string, char sep, struct cvector *)
+    __attribute__((__nonnull__(1)));
+struct cvector *cvector_split_multi(char *string, const char *seps,
+                                    struct cvector *)
+    __attribute__((__nonnull__(1, 2)));
+struct cvector *cvector_split_space(char *string, struct cvector *)
+    __attribute__((__nonnull__(1)));
 
 /* Build a string from a vector by joining its components together with the
    specified string as separator.  Returns a newly allocated string; caller is

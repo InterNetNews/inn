@@ -124,6 +124,24 @@ cvector_add(struct cvector *vector, const char *string)
 
 
 /*
+ * Add a new counted string to the vector, resizing the vector as necessary
+ * the same as with vector_add.  This function is only available for vectors,
+ * not cvectors, since it requires the duplication of the input string to be
+ * sure it's nul-terminated.
+ */
+void
+vector_addn(struct vector *vector, const char *string, size_t length)
+{
+    size_t next = vector->count;
+
+    if (vector->count == vector->allocated)
+        vector_resize(vector, vector->allocated + 1);
+    vector->strings[next] = xstrndup(string, length);
+    vector->count++;
+}
+
+
+/*
 **  Empty a vector but keep the allocated memory for the pointer table.
 */
 void
@@ -264,6 +282,101 @@ cvector_split(char *string, char separator, struct cvector *vector)
             start = p + 1;
         }
     vector->strings[i++] = start;
+    vector->count = i;
+
+    return vector;
+}
+
+
+/*
+ * Given a string and a set of separators expressed as a string, count the
+ * number of strings that it will split into when splitting on those
+ * separators.
+ */
+static size_t
+split_multi_count(const char *string, const char *seps)
+{
+    const char *p;
+    size_t count;
+
+    if (*string == '\0')
+        return 0;
+    for (count = 1, p = string + 1; *p != '\0'; p++)
+        if (strchr(seps, *p) != NULL && strchr(seps, p[-1]) == NULL)
+            count++;
+
+    /*
+     * If the string ends in separators, we've overestimated the number of
+     * strings by one.
+     */
+    if (strchr(seps, p[-1]) != NULL)
+        count--;
+    return count;
+}
+
+
+/*
+ * Given a string, split it at any of the provided separators to form a
+ * vector, copying each string segment.  If the third argument isn't NULL,
+ * reuse that vector; otherwise, allocate a new one.  Any number of
+ * consecutive separators are considered a single separator.
+ */
+struct vector *
+vector_split_multi(const char *string, const char *seps,
+                   struct vector *vector)
+{
+    const char *p, *start;
+    size_t i, count;
+
+    vector = vector_reuse(vector);
+
+    count = split_multi_count(string, seps);
+    if (vector->allocated < count)
+        vector_resize(vector, count);
+
+    for (start = string, p = string, i = 0; *p; p++)
+        if (strchr(seps, *p) != NULL) {
+            if (start != p)
+                vector->strings[i++] = xstrndup(start, p - start);
+            start = p + 1;
+        }
+    if (start != p)
+        vector->strings[i++] = xstrndup(start, p - start);
+    vector->count = i;
+
+    return vector;
+}
+
+
+/*
+ * Given a string, split it at any of the provided separators to form a
+ * vector, destructively modifying the string to nul-terminate each segment.
+ * If the third argument isn't NULL, reuse that vector; otherwise, allocate a
+ * new one.  Any number of consecutive separators are considered a single
+ * separator.
+ */
+struct cvector *
+cvector_split_multi(char *string, const char *seps, struct cvector *vector)
+{
+    char *p, *start;
+    size_t i, count;
+
+    vector = cvector_reuse(vector);
+
+    count = split_multi_count(string, seps);
+    if (vector->allocated < count)
+        cvector_resize(vector, count);
+
+    for (start = string, p = string, i = 0; *p; p++)
+        if (strchr(seps, *p) != NULL) {
+            if (start != p) {
+                *p = '\0';
+                vector->strings[i++] = start;
+            }
+            start = p + 1;
+        }
+    if (start != p)
+        vector->strings[i++] = start;
     vector->count = i;
 
     return vector;
