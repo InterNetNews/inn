@@ -1,5 +1,36 @@
-/* $Id$ */
-/* Test suite for error handling routines. */
+/*
+ * Test suite for error handling routines.
+ *
+ * $Id$
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ * Copyright 2002, 2004, 2005 Russ Allbery <rra@stanford.edu>
+ * Copyright 2009, 2010
+ *     The Board of Trustees of the Leland Stanford Junior University
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+#define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
 #include "clibrary.h"
@@ -12,31 +43,38 @@
 #include "inn/libinn.h"
 #include "libtest.h"
 
-#define END     (char *) 0
+typedef void (*test_function_type)(void);
+void is_function_output(test_function_type, int status, const char *output,
+                        const char *format, ...)
+    __attribute__((__format__(printf, 4, 5)));
 
-/* Test function type. */
-typedef void (*test_function_t)(void);
-
-/* Fork and execute the provided function, connecting stdout and stderr to a
-   pipe.  Captures the output into the provided buffer and returns the exit
-   status as a waitpid status value. */
-static int
-run_test(test_function_t function, char *buf, size_t buflen)
+/*
+ * Given a function, an expected exit status, and expected output, runs that
+ * function in a subprocess, capturing stdout and stderr via a pipe, and
+ * compare the combination of stdout and stderr with the expected output and
+ * the exit status with the expected status.  Expects the function to always
+ * exit (not die from a signal).
+ */
+void
+is_function_output(test_function_type function, int status, const char *output,
+                   const char *format, ...)
 {
     int fds[2];
     pid_t child;
-    ssize_t count, status;
+    char *buf, *msg;
+    ssize_t count, ret, buflen;
     int rval;
+    va_list args;
 
     /* Flush stdout before we start to avoid odd forking issues. */
     fflush(stdout);
 
     /* Set up the pipe and call the function, collecting its output. */
     if (pipe(fds) == -1)
-        sysdie("can't create pipe");
+        sysbail("can't create pipe");
     child = fork();
     if (child == (pid_t) -1) {
-        sysdie("can't fork");
+        sysbail("can't fork");
     } else if (child == 0) {
         /* In child.  Set up our stdout and stderr. */
         close(fds[0]);
@@ -50,23 +88,43 @@ run_test(test_function_t function, char *buf, size_t buflen)
         fflush(stdout);
         _exit(0);
     } else {
-        /* In the parent; close the extra file descriptor, read the output
-           if any, and then collect the exit status. */
+        /*
+         * In the parent; close the extra file descriptor, read the output if
+         * any, and then collect the exit status.
+         */
         close(fds[1]);
+        buflen = BUFSIZ;
+        buf = xmalloc(buflen);
         count = 0;
         do {
-            status = read(fds[0], buf + count, buflen - count - 1);
-            if (status > 0)
-                count += status;
-        } while (status > 0);
+            ret = read(fds[0], buf + count, buflen - count - 1);
+            if (ret > 0)
+                count += ret;
+            if (count >= buflen - 1) {
+                buflen += BUFSIZ;
+                buf = xrealloc(buf, buflen);
+            }
+        } while (ret > 0);
         buf[count < 0 ? 0 : count] = '\0';
         if (waitpid(child, &rval, 0) == (pid_t) -1)
-            sysdie("waitpid failed");
+            sysbail("waitpid failed");
     }
-    return rval;
+
+    /* Now, check the results against what we expected. */
+    va_start(args, format);
+    if (xvasprintf(&msg, format, args) < 0)
+        bail("cannot format test description");
+    va_end(args);
+    ok(WIFEXITED(rval), "%s (exited)", msg);
+    is_int(status, WEXITSTATUS(rval), "%s (status)", msg);
+    is_string(output, buf, "%s (output)", msg);
+    free(buf);
+    free(msg);
 }
 
-/* Test functions. */
+/*
+ * Test functions.
+ */
 static void test1(void) { warn("warning"); }
 static void test2(void) { die("fatal"); }
 static void test3(void) { errno = EPERM; syswarn("permissions"); }
@@ -172,87 +230,73 @@ static void test24(void) {
     notice("third");
 }
 
-/* Given the test number, intended exit status and message, and the function
-   to run, print ok or not ok. */
+
+/*
+ * Given the intended status, intended message sans the appended strerror
+ * output, errno, and the function to run, check the output.
+ */
 static void
-test_error(int n, int status, const char *output, test_function_t function)
+test_strerror(int status, const char *output, int error,
+              test_function_type function)
 {
-    int real_status;
-    char buf[256];
-    int succeeded = 1;
+    char *full_output, *name;
 
-    real_status = run_test(function, buf, sizeof(buf));
-    if (!WIFEXITED(real_status) || status != WEXITSTATUS(real_status)) {
-        diag("  unexpected exit status %d\n", real_status);
-        succeeded = 0;
-    }
-    if (strcmp(output, buf)) {
-        diag("  unexpected output: %s", buf);
-        diag("    expected output: %s", output);
-        succeeded = 0;
-    }
-    ok(n, succeeded);
-}
-
-/* Given the test number, intended status, intended message sans the
-   appended strerror output, errno, and the function to run, print ok or not
-   ok. */
-static void
-test_strerror(int n, int status, const char *output, int error,
-              test_function_t function)
-{
-    char *full_output;
-
-    full_output = concat(output, ": ", strerror(error), "\n", END);
-    test_error(n, status, full_output, function);
+    full_output = concat(output, ": ", strerror(error), "\n", (char *) NULL);
+    xasprintf(&name, "strerror %lu", testnum / 3 + 1);
+    is_function_output(function, status, full_output, "%s", name);
     free(full_output);
+    free(name);
 }
 
-/* Run the tests. */
+
+/*
+ * Run the tests.
+ */
 int
 main(void)
 {
     char buff[32];
+    char *output;
 
-    test_init(24);
+    plan(24 * 3);
 
-    test_error(1, 0, "warning\n", test1);
-    test_error(2, 1, "fatal\n", test2);
-    test_strerror(3, 0, "permissions", EPERM, test3);
-    test_strerror(4, 1, "fatal access", EACCES, test4);
-    test_error(5, 0, "test5: warning\n", test5);
-    test_error(6, 1, "test6: fatal\n", test6);
-    test_strerror(7, 0, "test7: perms 7", EPERM, test7);
-    test_strerror(8, 1, "test8: fatal", EACCES, test8);
-    test_error(9, 10, "fatal\n", test9);
-    test_strerror(10, 10, "fatal perm", EPERM, test10);
-    test_strerror(11, 10, "1st test11: fatal", EPERM, test11);
-    test_error(12, 0, "7 0 warning\n", test12);
-    test_error(13, 1, "5 0 fatal\n", test13);
+    is_function_output(test1, 0, "warning\n", "test1");
+    is_function_output(test2, 1, "fatal\n", "test2");
+    test_strerror(0, "permissions", EPERM, test3);
+    test_strerror(1, "fatal access", EACCES, test4);
+    is_function_output(test5, 0, "test5: warning\n", "test5");
+    is_function_output(test6, 1, "test6: fatal\n", "test6");
+    test_strerror(0, "test7: perms 7", EPERM, test7);
+    test_strerror(1, "test8: fatal", EACCES, test8);
+    is_function_output(test9, 10, "fatal\n", "test9");
+    test_strerror(10, "fatal perm", EPERM, test10);
+    test_strerror(10, "1st test11: fatal", EPERM, test11);
+    is_function_output(test12, 0, "7 0 warning\n", "test12");
+    is_function_output(test13, 1, "5 0 fatal\n", "test13");
 
     sprintf(buff, "%d", EPERM);
 
-    test_error(14, 0,
-               concat("7 ", buff, " warning\n7 ", buff, " warning\n", END),
-               test14);
-    test_error(15, 10,
-               concat("5 ", buff, " fatal\n5 ", buff, " fatal\n", END),
-               test15);
-    test_error(16, 0,
-               concat("test16: warning: ", strerror(EPERM), "\n7 ", buff,
-                      " warning\n", END),
-               test16);
+    xasprintf(&output, "7 %d warning\n7 %d warning\n", EPERM, EPERM);
+    is_function_output(test14, 0, output, "test14");
+    free(output);
+    xasprintf(&output, "5 %d fatal\n5 %d fatal\n", EPERM, EPERM);
+    is_function_output(test15, 10, output, "test15");
+    free(output);
+    xasprintf(&output, "test16: warning: %s\n7 %d warning\n", strerror(EPERM),
+              EPERM);
+    is_function_output(test16, 0, output, "test16");
+    free(output);
 
-    test_error(17, 0, "notice\n", test17);
-    test_error(18, 0, "test18: notice\n", test18);
-    test_error(19, 0, "", test19);
-    test_error(20, 0, "3 0 foo\n", test20);
-    test_error(21, 0, "test23: baz\n", test21);
+    is_function_output(test17, 0, "notice\n", "test17");
+    is_function_output(test18, 0, "test18: notice\n", "test18");
+    is_function_output(test19, 0, "", "test19");
+    is_function_output(test20, 0, "3 0 foo\n", "test20");
+    is_function_output(test21, 0, "test23: baz\n", "test21");
 
     /* Make sure that it's possible to turn off a message type entirely. */ 
-    test_error(22, 1, "", test22);
-    test_error(23, 0, "", test23);
-    test_error(24, 0, "first\nthird\n", test24);
+    is_function_output(test22, 1, "", "test22");
+    is_function_output(test23, 0, "", "test23");
+    is_function_output(test24, 0, "first\nthird\n", "test24");
 
     return 0;
 }

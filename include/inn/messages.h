@@ -54,25 +54,25 @@ extern void debug(const char *, ...)
    take a count of the number of handlers and then function pointers for each
    of those handlers.  These functions are not thread-safe; they set global
    variables. */
-extern void message_handlers_debug(int count, ...);
-extern void message_handlers_notice(int count, ...);
-extern void message_handlers_warn(int count, ...);
-extern void message_handlers_die(int count, ...);
+extern void message_handlers_debug(size_t count, ...);
+extern void message_handlers_notice(size_t count, ...);
+extern void message_handlers_warn(size_t count, ...);
+extern void message_handlers_die(size_t count, ...);
 
 /* Some useful handlers, intended to be passed to message_handlers_*.  All
    handlers take the length of the formatted message, the format, a variadic
    argument list, and the errno setting if any. */
-extern void message_log_stdout(int, const char *, va_list, int);
-extern void message_log_stderr(int, const char *, va_list, int);
-extern void message_log_syslog_debug(int, const char *, va_list, int);
-extern void message_log_syslog_info(int, const char *, va_list, int);
-extern void message_log_syslog_notice(int, const char *, va_list, int);
-extern void message_log_syslog_warning(int, const char *, va_list, int);
-extern void message_log_syslog_err(int, const char *, va_list, int);
-extern void message_log_syslog_crit(int, const char *, va_list, int);
+extern void message_log_stdout(size_t, const char *, va_list, int);
+extern void message_log_stderr(size_t, const char *, va_list, int);
+extern void message_log_syslog_debug(size_t, const char *, va_list, int);
+extern void message_log_syslog_info(size_t, const char *, va_list, int);
+extern void message_log_syslog_notice(size_t, const char *, va_list, int);
+extern void message_log_syslog_warning(size_t, const char *, va_list, int);
+extern void message_log_syslog_err(size_t, const char *, va_list, int);
+extern void message_log_syslog_crit(size_t, const char *, va_list, int);
 
 /* The type of a message handler. */
-typedef void (*message_handler_func)(int, const char *, va_list, int);
+typedef void (*message_handler_func)(size_t, const char *, va_list, int);
 
 /* If non-NULL, called before exit and its return value passed to exit. */
 extern int (*message_fatal_cleanup)(void);
