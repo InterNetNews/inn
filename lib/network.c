@@ -252,7 +252,7 @@ network_bind_ipv6(const char *address, unsigned short port)
         syswarn("cannot set IPv6 socket to v6only");
 #endif
 
-    /* Accept "any" or "all" in the bind address to mean 0.0.0.0. */
+    /* Accept "any" or "all" in the bind address to mean ::. */
     if (!strcmp(address, "any") || !strcmp(address, "all"))
         address = "::";
 

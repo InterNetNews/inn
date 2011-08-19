@@ -132,6 +132,7 @@ message_log_stdout(int len UNUSED, const char *fmt, va_list args, int err)
     if (err)
         fprintf(stdout, ": %s", strerror(err));
     fprintf(stdout, "\n");
+    fflush(stdout);
 }
 
 

@@ -2,8 +2,9 @@
 
 include ../Makefile.global
 
-top	= ..
-CFLAGS	= $(GCFLAGS) -I.
+top		= ..
+RUNTESTS_CFLAGS	= -DSOURCE='"$(abs_builddir)/tests"' -DBUILD='"$(abs_builddir)/tests"'
+CFLAGS		= $(GCFLAGS) $(RUNTESTS_CFLAGS) -I.
 
 ##  The tests that need to be built.  Tests in the form of shell scripts
 ##  or some other form that doesn't require compiling shouldn't be in this
@@ -25,7 +26,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 
 EXTRA	= runtests clients/server-list lib/setenv.tr lib/xmalloc
 
-all check test: $(TESTS) $(EXTRA)
+all check test tests: $(TESTS) $(EXTRA)
 	./runtests TESTS
 
 build: $(TESTS) $(EXTRA)
