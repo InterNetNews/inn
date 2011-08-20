@@ -154,28 +154,6 @@ struct sockaddr_storage {
 # endif /* HAVE_SOCKADDR_LEN */
 #endif /* !HAVE_SA_LEN_MACRO */
 
-/* Make sure we have access to h_errno and hstrerror to print out name
-   resolution error messages. */
-#if !HAVE_DECL_H_ERRNO
-extern int h_errno;
-#endif
-
-/* The netdb constants, which aren't always defined (particularly if h_errno
-   isn't declared.  We also make sure that a few of the less-used ones are
-   defined so that we can deal with them in case statements. */
-#ifndef NETDB_SUCCESS
-# define NETDB_SUCCESS  0
-#endif
-#ifndef HOST_NOT_FOUND
-# define HOST_NOT_FOUND 1
-# define TRY_AGAIN      2
-# define NO_RECOVERY    3
-# define NO_DATA        4
-#endif
-#ifndef NETDB_INTERNAL
-# define NETDB_INTERNAL -1
-#endif
-
 /* AI_ADDRCONFIG results in an error from getaddrinfo on BSD/OS and
    possibly other platforms.  If configure determined it didn't work,
    pretend it doesn't exist. */

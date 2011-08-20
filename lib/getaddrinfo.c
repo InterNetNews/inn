@@ -26,6 +26,28 @@
 #include "portable/socket.h"
 #include <errno.h>
 
+/* Make sure we have access to h_errno and hstrerror to print out name
+   resolution error messages. */
+#if !HAVE_DECL_H_ERRNO
+extern int h_errno;
+#endif
+
+/* The netdb constants, which aren't always defined (particularly if h_errno
+   isn't declared.  We also make sure that a few of the less-used ones are
+   defined so that we can deal with them in case statements. */
+#ifndef NETDB_SUCCESS
+# define NETDB_SUCCESS  0
+#endif
+#ifndef HOST_NOT_FOUND
+# define HOST_NOT_FOUND 1
+# define TRY_AGAIN      2
+# define NO_RECOVERY    3
+# define NO_DATA        4
+#endif
+#ifndef NETDB_INTERNAL
+# define NETDB_INTERNAL -1
+#endif
+
 /* If we're running the test suite, rename the functions to avoid conflicts
    with the system version.  Note that we don't rename the structures and
    constants, but that should be okay (except possibly for gai_strerror. */
