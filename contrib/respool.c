@@ -39,6 +39,10 @@ ProcessLine(char *line)
 	tokenptr[len-1] = '\0';
     }
 
+    if (!IsToken(tokenptr)) {
+        fprintf(stderr, "%s: bad token format %s\n", ME, tokenptr);
+        return;
+    }
     token = TextToToken(tokenptr);
     if ((art = SMretrieve(token, RETR_ALL)) == NULL) return;
 
