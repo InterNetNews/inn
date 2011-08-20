@@ -36,27 +36,32 @@ bool			SMopenmode = false;
 bool			SMpreopen = false;
 
 /*
-** Checks to see if the token is valid
+** Checks to see if the token is valid.
 */
 bool IsToken(const char *text) {
     const char          *p;
-    
+
     if (!text)
 	return false;
-    
+
     if (strlen(text) != (sizeof(TOKEN) * 2) + 2)
 	return false;
-    
+
     if (text[0] != '@')
 	return false;
 
-    if (text[(sizeof(TOKEN) * 2) + 1] != '@')
+    /* Make sure the token ends with '@' and contains no other '@'
+     * besides its first and its last char. */
+    if (strchr(text + 1, '@') != text + (sizeof(TOKEN) * 2) + 1)
 	return false;
 
-    for (p = text + 1; *p != '@'; p++)
-	if (!isxdigit((unsigned char) *p))
-	    return false;
-    
+    for (p = text + 1; *p != '@'; p++) {
+        /* Accept only [0-9] and uppercase [A-F]. */
+	if (!isxdigit((unsigned char) *p)
+            || toupper((unsigned char) *p) != (unsigned char) *p)
+            return false;
+    }
+
     return true;
 }
 
@@ -73,7 +78,6 @@ TokenToText(const TOKEN token)
     char                *q;
     size_t              i;
 
-    
     result[0] = '@';
     for (q = result + 1, p = (const char *) &token, i = 0; i < sizeof(TOKEN);
          i++, p++) {
@@ -83,19 +87,20 @@ TokenToText(const TOKEN token)
     *q++ = '@';
     *q++ = '\0';
     return result;
-    
 }
 
 /*
-** Converts a hex digit and converts it to a int
+** Converts a hex digit to an int.
+** Uppercase the character to always obtain the right answer, though a lowercase
+** character should not be present in a token -- and is refused by IsToken().
 */
 static int hextodec(const int c) {
-    return isdigit((unsigned char) c) ? (c - '0') : ((c - 'A') + 10);
+    return isdigit((unsigned char) c) ? (c - '0') : ((toupper((unsigned char) c) - 'A') + 10);
 }
 
 /*
 ** Converts a textual representation of a token back to a native
-** representation
+** representation.
 */
 TOKEN TextToToken(const char *text) {
     const char          *p;
@@ -103,14 +108,18 @@ TOKEN TextToToken(const char *text) {
     int                 i;
     TOKEN               token;
 
-    if (text[0] == '@')
-	p = &text[1];
-    else
-	p = text;
+    /* Return an empty token (with only '0' chars) if the text is
+     * not a valid token. */
+    if (!IsToken(text)) {
+        memset(&token, 0, sizeof(TOKEN));
+    } else {
+        /* First char is a '@'. */
+        p = &text[1];
 
-    for (q = (char *)&token, i = 0; i != sizeof(TOKEN); i++) {
-	q[i] = (hextodec(*p) << 4) + hextodec(*(p + 1));
-	p += 2;
+        for (q = (char *)&token, i = 0; i != sizeof(TOKEN); i++) {
+            q[i] = (hextodec(*p) << 4) + hextodec(*(p + 1));
+            p += 2;
+        }
     }
     return token;
 }
@@ -291,7 +300,7 @@ SMreadconfig(void)
 	return false;
     }
     free(path);
-    
+
     inbrace = 0;
     while ((tok = CONFgettoken(smtoks, f)) != NULL) {
 	if (!inbrace) {
@@ -431,7 +440,7 @@ SMreadconfig(void)
 	    sub->next = NULL;
 	}
     }
-    
+
     CONFfclose(f);
 
     return true;
@@ -441,7 +450,7 @@ SMreadconfig(void)
 ** setup storage api environment (open mode etc.)
 */
 bool SMsetup(SMSETUP type, void *value) {
-    if (Initialized)    
+    if (Initialized)
 	return false;
     switch (type) {
     case SM_RDWR:
@@ -468,9 +477,9 @@ bool SMinit(void) {
 
     if (Initialized)
 	return true;
-    
+
     Initialized = true;
-    
+
     if (!SMreadconfig()) {
 	SMshutdown();
 	Initialized = false;
@@ -521,7 +530,7 @@ static bool InitMethod(STORAGETYPE method) {
 	    return false;
 	}
     Initialized = true;
-    
+
     if (method_data[method].initialized == INIT_DONE)
 	return true;
 
@@ -829,7 +838,7 @@ SMseterror(int errornum, const char *error)
 {
     if (SMerrorstr != NULL)
         free(SMerrorstr);
-    
+
     if (errornum == SMERR_UNDEFINED && errno == ENOENT)
 	errornum = SMERR_NOENT;
     SMerrno = errornum;

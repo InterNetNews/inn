@@ -259,6 +259,9 @@ CCaddhist(char *av[])
 	return "1 Bad posted date";
     Data.Posted = atol(av[3]);
 
+    /* Allow empty tokens, but not badly formatted tokens. */
+    if (*av[4] != '\0' && !IsToken(av[4]))
+        return "1 Bad token";
     token = TextToToken(av[4]);
     if (Mode == OMrunning)
 	ok = InndHisWrite(msgid, Data.Arrived, Data.Posted,
