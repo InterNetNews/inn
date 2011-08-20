@@ -19,7 +19,7 @@ SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c comma
 
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
-		getpagesize.c hstrerror.c inet_aton.c inet_ntoa.c inet_ntop.c memcmp.c \
+		getpagesize.c inet_aton.c inet_ntoa.c inet_ntop.c memcmp.c \
 		mkstemp.c pread.c pwrite.c setenv.c seteuid.c setproctitle.c \
 		snprintf.c strcasecmp.c strlcat.c strlcpy.c strspn.c \
 		strtok.c symlink.c
@@ -322,9 +322,6 @@ getnameinfo.o: getnameinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
-hstrerror.o: hstrerror.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h
 inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h

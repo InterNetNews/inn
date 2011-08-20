@@ -14,7 +14,7 @@ CFLAGS		= $(GCFLAGS) $(RUNTESTS_CFLAGS) -I.
 TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
 	lib/dispatch.t lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
-	lib/hashtab.t lib/hex.t lib/hstrerror.t lib/inet_aton.t \
+	lib/hashtab.t lib/hex.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
 	lib/pwrite.t lib/qio.t lib/snprintf.t lib/strlcat.t \
@@ -119,12 +119,6 @@ lib/hash.t: lib/hash-t.o libtest.o $(LIBINN)
 
 lib/hashtab.t: lib/hashtab-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hashtab-t.o libtest.o $(LIBINN)
-
-lib/hstrerror.o: ../lib/hstrerror.c
-	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/hstrerror.c
-
-lib/hstrerror.t: lib/hstrerror.o lib/hstrerror-t.o libtest.o $(LIBINN)
-	$(LINK) lib/hstrerror.o lib/hstrerror-t.o libtest.o $(LIBINN)
 
 lib/hex.t: lib/hex-t.o libtest.o $(LIBINN)
 	$(LINK) lib/hex-t.o libtest.o $(LIBINN) $(LIBS)

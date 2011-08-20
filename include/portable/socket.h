@@ -159,9 +159,6 @@ struct sockaddr_storage {
 #if !HAVE_DECL_H_ERRNO
 extern int h_errno;
 #endif
-#if !HAVE_HSTRERROR
-extern const char *hstrerror(int);
-#endif
 
 /* The netdb constants, which aren't always defined (particularly if h_errno
    isn't declared.  We also make sure that a few of the less-used ones are
