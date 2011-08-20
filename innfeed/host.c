@@ -66,9 +66,6 @@
 #define TRYBLOCKEDHOSTPERIOD 120
 
 extern char *configFile ;
-#if defined(hpux) || defined(__hpux) || defined(_SCO_DS)
-extern int h_errno;
-#endif
 
 extern unsigned int init_reconnect_period;
 extern unsigned int max_reconnect_period;
