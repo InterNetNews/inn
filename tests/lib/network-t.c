@@ -94,22 +94,28 @@ listener(socket_type fd)
  * A varient version of the server portion of the test.  Takes an array of
  * sockets and the size of the sockets and accepts a connection on any of
  * those sockets.
+ *
+ * saddr is allocated from the heap instead of using a local struct
+ * sockaddr_storage to work around a misdiagnosis of strict aliasing
+ * violations from gcc 4.4 (fixed in later versions).
  */
 static void
 listener_any(socket_type fds[], unsigned int count)
 {
     socket_type client;
     unsigned int i;
-    struct sockaddr_storage ss;
-    socklen_t sslen;
+    struct sockaddr *saddr;
+    socklen_t slen;
 
-    sslen = sizeof(ss);
-    client = network_accept_any(fds, count, (struct sockaddr *) &ss, &sslen);
+    slen = sizeof(struct sockaddr_storage);
+    saddr = xmalloc(slen);
+    client = network_accept_any(fds, count, saddr, &slen);
     listener_handler(client);
-    is_int(AF_INET, ss.ss_family, "...address family is IPv4");
+    is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
     is_int(htonl(INADDR_LOOPBACK),
-           ((struct sockaddr_in *) &ss)->sin_addr.s_addr,
+           ((struct sockaddr_in *) saddr)->sin_addr.s_addr,
            "...and client address is 127.0.0.1");
+    free(saddr);
     for (i = 0; i < count; i++)
         close(fds[i]);
 }
