@@ -525,7 +525,7 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
                 }
                 wasspace = true;
 	    } else {
-                *q++ = tolower(*p);
+                *q++ = tolower((unsigned char) *p);
                 wasspace = false;
             }
             p++;

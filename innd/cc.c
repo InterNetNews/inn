@@ -411,7 +411,7 @@ CCchgroup(char *av[])
     if (Rest[0] != NF_FLAG_ALIAS) {
 	Rest[1] = '\0';
 	if (isupper((unsigned char) Rest[0]))
-	    Rest[0] = tolower(Rest[0]);
+	    Rest[0] = tolower((unsigned char) Rest[0]);
     }
     return CCdochange(ngp, Rest);
 }
@@ -1002,7 +1002,7 @@ CCnewgroup(char *av[])
     if (Rest[0] != NF_FLAG_ALIAS) {
 	Rest[1] = '\0';
 	if (isupper((unsigned char) Rest[0]))
-	    Rest[0] = tolower(Rest[0]);
+	    Rest[0] = tolower((unsigned char) Rest[0]);
     }
 
     who = av[2];

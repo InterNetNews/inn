@@ -185,7 +185,7 @@ KEYgenerate(
 	/* Squash to lowercase. */
 	for (chase = this_word; *chase; chase++)
 	    if (isupper((unsigned char) *chase))
-		*chase = tolower(*chase);
+		*chase = tolower((unsigned char) *chase);
     }
 
     /* If there were no words, we're done. */
