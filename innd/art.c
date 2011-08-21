@@ -2207,7 +2207,7 @@ ARTpost(CHANNEL *cp)
     strlcpy(ControlWord, HDR(HDR__CONTROL), sizeof(ControlWord));
     for (p = ControlWord; *p && !ISWHITE(*p); p++)
       if (isupper((unsigned char) *p))
-	*p = tolower(*p);
+	*p = tolower((unsigned char) *p);
     *p = '\0';
     LikeNewgroup = (strcasecmp(ControlWord, "newgroup") == 0
                     || strcasecmp(ControlWord, "rmgroup") == 0);

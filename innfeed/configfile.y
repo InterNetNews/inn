@@ -530,41 +530,11 @@ static scope *newScope (const char *type)
   t->scope_type = xstrdup (type) ;
 
   for (i = 0 ; t->scope_type[i] != '\0' ; i++)
-    t->scope_type[i] = tolower (t->scope_type[i]) ;
+    t->scope_type[i] = tolower ((unsigned char) t->scope_type[i]) ;
 
   return t ;
 }
 
-
-
-#if 0
-static int strNCaseCmp (const char *a, const char *b, size_t len)
-{
-  while (a && b && *a && *b && (tolower (*a) == tolower (*b)) && len > 0)
-    a++, b++, len-- ;
-
-  if (a == NULL && b == NULL)
-    return 0 ;
-  else if (a == NULL)
-    return 1 ;
-  else if (b == NULL)
-    return -1 ;
-  else if (*a == '\0' && *b == '\0')
-    return 0 ;
-  else if (*a == '\0')
-    return 1 ;
-  else if (*b == '\0')
-    return -1 ;
-  else if (*a < *b)
-    return 1 ;
-  else if (*a > *b)
-    return -1 ;
-  else
-    return 0 ;
-
-  abort () ;
-}
-#endif
 
 #define BAD_KEY "line %d: illegal key name: %s"
 #define NON_ALPHA "line %d: keys must start with a letter: %s"

@@ -519,7 +519,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
     if (valid) {
         for (p = hostname; *p != '\0'; p++)
             if (isupper((unsigned char) *p))
-                *p = tolower((int) *p);
+                *p = tolower((unsigned char) *p);
         return true;
     } else {
 	HostErrorStr = MISMATCH;
