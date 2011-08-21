@@ -498,7 +498,6 @@ lib/hash.c                            Create hash from a message-ID
 lib/hashtab.c                         Generic hash table
 lib/headers.c                         Functions for headers
 lib/hex.c                             Convert to and from hex strings
-lib/hstrerror.c                       Error reporting for resolver
 lib/inet_aton.c                       inet_aton replacement
 lib/inet_ntoa.c                       inet_ntoa replacement
 lib/inet_ntop.c                       inet_ntop replacement
@@ -864,7 +863,6 @@ tests/lib/getnameinfo-t.c             Tests for lib/getnameinfo.c
 tests/lib/hash-t.c                    Tests for lib/hash.c
 tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
 tests/lib/hex-t.c                     Tests for lib/hex.c
-tests/lib/hstrerror-t.c               Tests for lib/hstrerror.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c
 tests/lib/inet_ntop-t.c               Tests for lib/inet_ntop.c

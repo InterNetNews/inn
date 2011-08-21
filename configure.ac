@@ -480,7 +480,7 @@ AC_CHECK_FUNCS([statvfs], ,
     ])
 
 dnl If we can't find any of the following, we have replacements for them.
-AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize hstrerror \
+AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize \
                  inet_aton inet_ntop mkstemp pread pwrite seteuid strcasecmp \
                  strlcat strlcpy strspn setenv symlink)
 

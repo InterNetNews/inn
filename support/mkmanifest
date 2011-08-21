@@ -271,7 +271,6 @@ tests/lib/getnameinfo.t
 tests/lib/hash.t
 tests/lib/hashtab.t
 tests/lib/hex.t
-tests/lib/hstrerror.t
 tests/lib/inet_aton.t
 tests/lib/inet_ntoa.t
 tests/lib/inet_ntop.t
