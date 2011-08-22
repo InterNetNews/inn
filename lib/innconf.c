@@ -666,7 +666,7 @@ print_boolean(FILE *file, const char *key, bool value,
     case INNCONF_QUOTE_SHELL:
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper(*p);
+            *p = toupper((unsigned char) *p);
         fprintf(file, "%s=%s; export %s;\n", upper, value ? "true" : "false",
                 upper);
         free(upper);
@@ -697,7 +697,7 @@ print_signed_number(FILE *file, const char *key, long value,
     case INNCONF_QUOTE_SHELL:
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper(*p);
+            *p = toupper((unsigned char) *p);
         fprintf(file, "%s=%ld; export %s;\n", upper, value, upper);
         free(upper);
         break;
@@ -727,7 +727,7 @@ print_unsigned_number(FILE *file, const char *key, unsigned long value,
         case INNCONF_QUOTE_SHELL:
             upper = xstrdup(key);
             for (p = upper; *p != '\0'; p++)
-                *p = toupper(*p);
+                *p = toupper((unsigned char) *p);
             fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
             free(upper);
             break;
@@ -767,7 +767,7 @@ print_string(FILE *file, const char *key, const char *value,
         }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper(*p);
+            *p = toupper((unsigned char) *p);
         fprintf(file, "%s='", upper);
         for (letter = value; letter != NULL && *letter != '\0'; letter++) {
             if (*letter == '\'')
@@ -845,7 +845,7 @@ print_list(FILE *file, const char *key, const struct vector *value,
         }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper(*p);
+            *p = toupper((unsigned char) *p);
         /* For interoperability reasons, we return a space-separated string
          * representing an array (pure Bourne shell does not have the notion
          * of an array for instance). */
