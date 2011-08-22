@@ -238,7 +238,7 @@ StripOffHeaders(char *article)
 	}
 
 	/* See if it's a known header. */
-	c = islower((unsigned char) *p) ? toupper(*p) : *p;
+	c = islower((unsigned char) *p) ? toupper((unsigned char) *p) : *p;
 	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (c == hp->Name[0]
 	     && p[hp->Size] == ':'
