@@ -365,6 +365,14 @@ F<newsfeeds> thanks to Alexander Bartolich.
 
 =item *
 
+B<docheckgroups> no longer uses awk.  On a few systems, the script was
+failing because of the presence of an old version of awk that has a limit
+in the size of the input it can handle.  Processing large newsgroups files
+was consequently impossible.  B<docheckgroups> now uses Perl instead of awk,
+which solves the issue reported by S<John F. Morse>.
+
+=item *
+
 Other minor bug fixes and documentation improvements.  In particular, the
 I<debug-shrinking>, I<fast-exit> and I<initial-sleep> keys in F<innfeed.conf>
 are now documented.  The function C<filter_end()>, called when Perl filtering
