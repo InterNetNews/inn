@@ -612,8 +612,13 @@ main(int ac, char *av[])
 
 #ifdef FD_SETSIZE
     if (FD_SETSIZE > 0 && (unsigned) i >= FD_SETSIZE) {
-        syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding or equaling FD_SETSIZE (%d)",
-               LogName, i, FD_SETSIZE);
+        /* Only log a warning if rlimitnofile has been set
+         * to a value different than the default setting of letting
+         * the system set the number of file descriptors. */
+        if (innconf->rlimitnofile > 0) {
+            syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding or equaling FD_SETSIZE (%d)",
+                   LogName, i, FD_SETSIZE);
+        }
         i = FD_SETSIZE-1;
     }
 #endif
