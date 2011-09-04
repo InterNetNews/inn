@@ -128,9 +128,10 @@ process as a whole, and on each peer this instance of B<innfeed> is managing.
 If B<innfeed> is told to send an article to a host it is not managing,
 then the article information will be put into a file matching the pattern
 F<innfeed-dropped.*>, with part of the file name matching the pid of the
-B<innfeed> process that is writing to it.  B<innfeed> will not process
-this file except to write to it.  If nothing is written to the file,
-then it will be removed if B<innfeed> exits normally.
+B<innfeed> process that is writing to it.  B<innfeed> will not process this
+file except to write to it.  If nothing is written to the file, then it
+will be removed if B<innfeed> exits normally.  Otherwise, the file remains,
+and B<procbatch> can be invoked to process it afterwards.
 
 =head1 SIGNALS
 
@@ -467,6 +468,6 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8), inn.conf(5), innfeed.conf(5), innd(8).
+ctlinnd(8), inn.conf(5), innfeed.conf(5), innd(8), procbatch(8).
 
 =cut
