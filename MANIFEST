@@ -200,6 +200,7 @@ doc/man/overchan.8                    Manpage for overchan backend
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
 doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.1                   Manpage for pgpverify
+doc/man/procbatch.8                   Manpage for procbatch
 doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.1                    Manpage for pullnews
 doc/man/qio.3                         Manpage for fast I/O file routines
@@ -301,6 +302,7 @@ doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/overchan.pod                  Master file for overchan.8
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
+doc/pod/procbatch.pod                 Master file for procbatch.8
 doc/pod/prunehistory.pod              Master file for prunehistory.8
 doc/pod/pullnews.pod                  Master file for pullnews.1
 doc/pod/qio.pod                       Master file for qio.3

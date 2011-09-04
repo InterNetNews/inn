@@ -1,0 +1,144 @@
+=head1 NAME
+
+procbatch - Process an INN funnel file or innfeed-dropped file
+
+=head1 SYNOPSIS
+
+B<procbatch> [B<-hquv>] [B<-c> [B<-s> I<spooldir>]] [B<-d> I<outdir>]
+[B<-e> I<peer>] [B<-m> [B<-t> I<backlogdir>]] I<batchfile>
+
+=head1 DESCRIPTION
+
+B<procbatch> will take an INN funnel or F<innfeed-dropped> file and split
+it up by host for direct processing with B<innfeed> or B<innxmit>.
+
+While funnel files will normally only be of interest after a crash,
+B<innfeed> may drop articles for a variety of reasons, not all of which
+indicate a fundamental problem.  For example, B<innfeed> may drop articles
+when started and stopped in quick succession while INN processes a large
+number of control messages (a temporary indisposition), or when INN feeds
+it articles for a site that isn't in F<innfeed.conf> (a misconfiguration).
+
+Every running B<innfeed> opens a file named F<< innfeed-dropped.<id>
+>>, which should normally always be zero length and deleted on exit.
+If there are non-zero length files, B<innfeed> has dropped some articles,
+and those dropped article files have to be processed or those articles will
+never be sent to peers.  Though B<news.daily> automatically process these
+files (invoking B<procbatch>), it is also possible to do that manually.
+First make sure that the file doesn't correspond to a currently running
+B<innfeed>, for example by calling C<ctlinnd flush innfeed!>.
+
+An INN funnel file, or an F<innfeed-dropped> file, will usually be of
+the format:
+
+    pathname message-id peer1 peer2 peer3 ...
+
+where I<pathname> can alternatively be a storage API token.
+
+B<procbatch> will break this file up into files named F<peer1.tmp>,
+F<peer2.tmp>, F<peer3.tmp>, etc. of the format:
+
+    pathname message-id
+
+These tape files will be sorted and stripped of duplicate entries.  Simply
+renaming them to F<peer1>, F<peer2>, F<peer3>, etc. in a running B<innfeed>'s
+backlog directory will cause them to be picked up automatically by B<innfeed>
+every I<backlog-newfile-period> seconds (as set in in F<innfeed.conf>).
+Use the B<-m> flag to have B<procbatch> rename and move them into place
+automatically.
+
+After running B<procbatch>, you may want to make sure that every generated
+backlog file has a corresponding C<.lock> file.  Otherwise, B<innfeed>
+doesn't have that site configured as a peer, meaning your F<innfeed.conf>
+may need fixing.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c>
+
+Check for the existence of an article before writing references to it to
+the tape files.  Currently, this option can only be used with a tradspool
+article store.  Using it with any other spool format will lead to all
+articles being dropped.
+
+=item B<-d> I<outdir>
+
+Put the output file(s) into the directory I<outdir> (defaults to I<pathtmp>
+as set in F<inn.conf>).  When also specifying B<-m>, the temporary output
+files will still be put here before being moved into their final location.
+
+=item B<-e> I<peer>
+
+Only process entries for I<peer>.
+
+=item B<-h>
+
+Display a short help screen.
+
+=item B<-m>
+
+Directly append to tape files in B<innfeed>'s backlog directory.
+
+=item B<-q>
+
+Quiet mode:  only display error messages.
+
+=item B<-s> I<spooldir>
+
+Use I<spooldir> as the location of the article spool (defaults to
+I<patharticles> as set in F<inn.conf>).  This option has an effect only
+on a tradspool storage system when also specifying B<-c>.
+
+=item B<-t> I<backlogdir>
+
+Use I<backlogdir> as the location of the B<innfeed> backlog directory
+(the directory where the created tape files will be put).  Defaults to
+I<pathspool>/innfeed.  This option has an effect only when also specifying
+B<-m>.
+
+=item B<-u>
+
+Unlink the input batchfile after processing.
+
+=item B<-v>
+
+Add verbosity.
+
+=back
+
+=head1 EXAMPLES
+
+Take the file F<innfeed-dropped.B012345>, process its lines appending to
+tapefiles in B<innfeed>'s backlog directory, and remove it when done.
+Be verbose while doing so:
+
+    procbatch -umv innfeed-dropped.B012345
+
+Go through F<innfeed-dropped.B012345> saving entries for C<peer1>
+in F</tmp/peer1.tmp>, but only if the articles are still available
+in the local tradspool:
+
+    procbatch -e peer1 -d /tmp -c innfeed-dropped.B012345
+
+=head1 BUGS
+
+B<procbatch> should be able to check for the existence of articles
+with any kind of article store, possibly using B<grephistory>.
+
+=head1 HISTORY
+
+B<procbatch> was written by James Brister and improved for speed by
+Clayton O'Neill.
+
+This manual page was written by Florian Schlichting, with the help of a
+memo by Russ Allbery.
+
+$Id$
+
+=head1 SEE ALSO
+
+filechan(8), innfeed(8), innxmit(8), news.daily(8).
+
+=cut
