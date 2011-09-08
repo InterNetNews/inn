@@ -9,7 +9,7 @@ include ../Makefile.global
 top           = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL	      = archivegz backlogstat cleannewsgroups delayer \
+ALL	      = archivegz backlogstat cleannewsgroups delayer expirectl \
 		findreadgroups makeexpctl makestorconf mlockfile newsresp \
 		pullart reset-cnfs respool stathist thdexpire \
 		tunefeed

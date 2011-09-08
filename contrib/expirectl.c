@@ -46,7 +46,7 @@
 #define EXPIRE_CTL	EXPIRE_CTL_DIR "/expire.ctl"
 #define EXPIRE_CTL_CTL	EXPIRE_CTL_DIR "/expire.ctl.ctl"
 
-void
+int
 main(int ac, char **av)
 {
     struct statfs sfs;
@@ -261,6 +261,8 @@ main(int ac, char **av)
 	}
     }
     exit(0);
+
+    return 1;
 }
 
 
