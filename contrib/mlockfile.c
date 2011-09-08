@@ -56,7 +56,7 @@ inn_lock_files(struct mlock *ml)
 		     ml->st.st_size != st.st_size) {
 		if (ml->base != MAP_FAILED)
 		    munmap(ml->base,
-			   ml->length ? ml->length : ml->st.st_size);
+			   ml->length > 0 ? ml->length : (size_t) ml->st.st_size);
 
 		/* free everything here, so in case of failure we try
 		 * again next time */
@@ -65,7 +65,7 @@ inn_lock_files(struct mlock *ml)
 		ml->st.st_size = 0;
 
 		ml->base = mmap(NULL,
-				ml->length ? ml->length : st.st_size,
+				ml->length > 0 ? ml->length : (size_t) st.st_size,
 				PROT_READ,
 				MAP_SHARED, fd, ml->offset);
 
@@ -74,7 +74,7 @@ inn_lock_files(struct mlock *ml)
 			    progname, ml->path, strerror(errno));
 		} else {
 		    if (mlock(ml->base,
-			      ml->length ? ml->length : st.st_size) != 0) {
+			      ml->length > 0 ? ml->length : (size_t) st.st_size) != 0) {
 			fprintf(stderr, "%s: can't mlock `%s' - %s\n",
 				progname, ml->path, strerror(errno));
 		    } else {
@@ -82,7 +82,7 @@ inn_lock_files(struct mlock *ml)
 		    }
 		}
 	    } else if (flush) {
-		msync(ml->base, ml->length ? ml->length : st.st_size, MS_SYNC);
+		msync(ml->base, ml->length > 0 ? ml->length : (size_t) st.st_size, MS_SYNC);
 	    }
 	}
 	close (fd);
