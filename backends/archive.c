@@ -285,7 +285,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
         warn("cannot find Xref: header in %s", token);
         return;
     }
-    end = wire_endheader(start, art->data + art->len);
+    end = wire_endheader(start, art->data + art->len - 1);
     xref = xstrndup(start, end - start);
     for (p = xref; *p != '\0'; p++)
         if (*p == '\r' || *p == '\n')
