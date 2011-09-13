@@ -506,7 +506,7 @@ ARTstore(CHANNEL *cp)
 	  iov[iovcnt++].iov_len = data->XrefLength - 2;
 	  arth.len += data->XrefLength - 2;
 	  /* next to write */
-	  /* this points where trailing "\r\n" of orginal Xref header exists */
+	  /* this points where trailing "\r\n" of original Xref: header exists */
 	  p = HDR(HDR__XREF) + HDR_LEN(HDR__XREF);
 	}
 	break;
@@ -694,8 +694,15 @@ ARTcheckheader(CHANNEL *cp, int size)
   } else {
     /* We need to remove leading and trailing spaces for
      * message-IDs; otherwise, history hashes may not be
-     * correctly computed. */
-    if (i == HDR__MESSAGE_ID || i == HDR__SUPERSEDES) {
+     * correctly computed.
+     * We also do it for Xref: header fields because
+     * a few parts of the code currently assume that no
+     * leading whitespace exists for this header (when
+     * parsing it to find the newsgroups in which the article
+     * is stored).  Only when INN does not generate it (that is
+     * to say in xrefslave mode). */
+    if (i == HDR__MESSAGE_ID || i == HDR__SUPERSEDES ||
+        (innconf->xrefslave && i == HDR__XREF)) {
       for (p = colon + 1 ; (p < header + size - 2) &&
            (ISWHITE(*p)) ; p++);
       hc->Value = p;
@@ -1478,7 +1485,7 @@ ARTassignnumbers(ARTDATA *data)
 }
 
 /*
-**  Parse the data from the xref header and assign the numbers.
+**  Parse the data from the Xref: header and assign the numbers.
 **  This involves replacing the GroupPointers entries.
 */
 static bool
