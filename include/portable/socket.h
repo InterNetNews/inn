@@ -47,11 +47,6 @@ extern const char *     inet_ntoa(const struct in_addr);
 extern const char *     inet_ntop(int, const void *, char *, socklen_t);
 #endif
 
-/* Some systems don't define INADDR_LOOPBACK. */
-#ifndef INADDR_LOOPBACK
-# define INADDR_LOOPBACK 0x7f000001UL
-#endif
-
 /* Defined by RFC 3493, used to store a generic address.  Note that this
    doesn't do the alignment mangling that RFC 3493 does; it's not clear if
    that should be added.... */

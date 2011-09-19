@@ -227,7 +227,7 @@ test_create_ipv4(int n, const char *source)
             memset(&sin, 0, sizeof sin);
             sin.sin_family = AF_INET;
             sin.sin_port = htons(11119);
-            sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            sin.sin_addr.s_addr = htonl(0x7f000001UL);
             if (connect(fd, (struct sockaddr *) &sin, sizeof(sin)) < 0)
                 _exit(1);
             out = fdopen(fd, "w");

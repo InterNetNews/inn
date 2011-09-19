@@ -50,7 +50,7 @@ main(void)
     ok(10, ai->ai_addrlen == sizeof(struct sockaddr_in));
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(11, saddr->sin_port == htons(25));
-    ok(12, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
+    ok(12, saddr->sin_addr.s_addr == htonl(0x7f000001UL));
     test_freeaddrinfo(ai);
 
     memset(&hints, 0, sizeof(hints));
@@ -78,7 +78,7 @@ main(void)
     ok(24, test_getaddrinfo(NULL, "25", &hints, &ai) == 0);
     saddr = (struct sockaddr_in *) ai->ai_addr;
     ok(25, saddr->sin_port == htons(25));
-    ok(26, saddr->sin_addr.s_addr == INADDR_LOOPBACK);
+    ok(26, saddr->sin_addr.s_addr == htonl(0x7f000001UL));
     test_freeaddrinfo(ai);
 
     ok(27, test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME);
