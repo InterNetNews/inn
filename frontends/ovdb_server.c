@@ -659,7 +659,7 @@ main(int argc, char *argv[])
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = htons(OVDB_SERVER_PORT);
-    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    sa.sin_addr.s_addr = htonl(0x7f000001UL);
     
     ret = bind(listensock, (struct sockaddr *)&sa, sizeof sa);
 

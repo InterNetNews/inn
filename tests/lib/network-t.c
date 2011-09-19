@@ -112,7 +112,7 @@ listener_any(socket_type fds[], unsigned int count)
     client = network_accept_any(fds, count, saddr, &slen);
     listener_handler(client);
     is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
-    is_int(htonl(INADDR_LOOPBACK),
+    is_int(htonl(0x7f000001UL),
            ((struct sockaddr_in *) saddr)->sin_addr.s_addr,
            "...and client address is 127.0.0.1");
     free(saddr);
@@ -342,7 +342,7 @@ test_create_ipv4(const char *source)
             memset(&sin, 0, sizeof(sin));
             sin.sin_family = AF_INET;
             sin.sin_port = htons(11119);
-            sin.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            sin.sin_addr.s_addr = htonl(0x7f000001UL);
             if (connect(fd, (struct sockaddr *) &sin, sizeof(sin)) < 0)
                 _exit(1);
             out = fdopen(fd, "w");

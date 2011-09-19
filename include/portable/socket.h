@@ -95,11 +95,6 @@ typedef SOCKET socket_type;
 typedef int socket_type;
 #endif
 
-/* Some systems don't define INADDR_LOOPBACK. */
-#ifndef INADDR_LOOPBACK
-# define INADDR_LOOPBACK 0x7f000001UL
-#endif
-
 /* Defined by RFC 3493, used to store a generic address.  Note that this
    doesn't do the alignment mangling that RFC 3493 does; it's not clear if
    that should be added.... */

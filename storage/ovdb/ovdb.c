@@ -282,7 +282,7 @@ static int client_connect(void)
 #else
     sa.sin_family = AF_INET;
     sa.sin_port = 0;
-    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    sa.sin_addr.s_addr = htonl(0x7f000001UL);
     bind(clientfd, (struct sockaddr *) &sa, sizeof sa);
     sa.sin_port = htons(OVDB_SERVER_PORT);
     r = connect(clientfd, (struct sockaddr *) &sa, sizeof sa);

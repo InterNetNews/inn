@@ -378,7 +378,10 @@ getaddrinfo(const char *nodename, const char *servname,
     else {
         if (servname == NULL)
             return EAI_NONAME;
-        addr.s_addr = (flags & AI_PASSIVE) ? INADDR_ANY : INADDR_LOOPBACK;
+        if ((flags & AI_PASSIVE) == AI_PASSIVE)
+            addr.s_addr = INADDR_ANY;
+        else
+            addr.s_addr = htonl(0x7f000001UL);
         ai = gai_addrinfo_new(socktype, NULL, addr, port);
         if (ai == NULL)
             return EAI_MEMORY;
