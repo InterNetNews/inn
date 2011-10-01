@@ -4,7 +4,7 @@ include ../Makefile.global
 
 top		= ..
 RUNTESTS_CFLAGS	= -DSOURCE='"$(abs_builddir)/tests"' -DBUILD='"$(abs_builddir)/tests"'
-CFLAGS		= $(GCFLAGS) $(RUNTESTS_CFLAGS) -I.
+CFLAGS		= $(GCFLAGS) $(DB_CPPFLAGS) $(DBM_CPPFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
 
 ##  The tests that need to be built.  Tests in the form of shell scripts
 ##  or some other form that doesn't require compiling shouldn't be in this
@@ -45,7 +45,7 @@ $(FIXSCRIPT):
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
-LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) -o $@
+LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) $(DB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
