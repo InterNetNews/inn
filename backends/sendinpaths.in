@@ -28,7 +28,7 @@ my $sm          = "$INN::Config::mta";
 my $reportdays  = 32;
 my $keepdays    = 0;
 
-my @emailto     = ('pathsurvey@top1000.org', 'top1000@anthologeek.net');
+my @emailto     = ('top1000@anthologeek.net');
 my $emaildef    = join(' ', @emailto);
 my $debug       = 0;
 

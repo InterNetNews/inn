@@ -76,7 +76,7 @@ by B<sendinpaths> and therefore make sure that everything is properly set.
 =item 5.
 
 In a couple of days, check that your daily statistics properly appear in
-L<http://www.top1000.org/>.
+L<http://top1000.anthologeek.net/>.
 
 =back
 

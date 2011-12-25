@@ -14,9 +14,9 @@ dump files generated in the past I<report-days> days, makes sure they are valid
 by running B<ninpaths> on each one and making sure the exit status is
 zero, and passes them to B<ninpaths> to generate a cumulative report.
 By default, that report is mailed to the e-mail addresses configured at
-the beginning of this script (by default <pathsurvey@top1000.org> and
+the beginning of this script (by default, only one address is configured:
 <top1000@anthologeek.net>) in order to supply the TOP1000 project with
-useful statistics:  see L<http://www.top1000.org/> for more information.
+useful statistics.  See L<http://top1000.anthologeek.net/> for more information.
 
 When finished, B<sendinpaths> deletes all dump files in I<pathlog>/path
 that are older than I<keep-days> days.
@@ -65,9 +65,9 @@ value set by the B<-k> flag).
 
 =item I<address> ...
 
-E-mail the report to the mentioned addresses instead of the default ones.
-Several addresses can be used, separated by whitespace.  For instance,
-for two adresses:
+E-mail the report to the mentioned address or addresses, instead of the
+default one.  Several addresses can be used, separated by whitespace.
+For instance, for two adresses:
 
     sendinpaths pathsurvey@top1000.org top1000@anthologeek.net
 
