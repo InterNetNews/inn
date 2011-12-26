@@ -188,7 +188,7 @@ TAGS etags:
 
 
 ##  Run the test suite.
-check test tests:
+check test tests: all
 	cd tests && $(MAKE) test || exit 1 ; cd ..
 
 
