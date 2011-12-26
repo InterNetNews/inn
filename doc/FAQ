@@ -249,7 +249,7 @@ inn-announce@lists.isc.org
     Where announcements about INN are set (no posting allowed).
 
 inn-workers@lists.isc.org
-    Discussion of INN development.   It is also where to send bug reports
+    Discussion of INN development.  It is also where to send bug reports
     and patches for consideration for inclusion into INN (postings by
     members only).  If you're an INN expert and have the time to help out
     other users, we encourage you to join this mailing list to answer
