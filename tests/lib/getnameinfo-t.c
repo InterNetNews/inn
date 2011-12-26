@@ -63,7 +63,8 @@ main(void)
     status = test_getnameinfo(sa, sizeof(sin), NULL, 0, service,
                               sizeof(service), NI_DGRAM);
     ok_int(13, 0, status);
-    ok_string(14, "biff", service);
+    ok(14, service != NULL &&
+       (strcmp("biff", service) == 0 || strcmp("comsat", service) == 0));
     status = test_getnameinfo(sa, sizeof(sin), node, sizeof(node), NULL, 0,
                               NI_NUMERICHOST);
     ok_int(15, 0, status);
