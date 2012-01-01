@@ -1823,7 +1823,8 @@ NCcheck(CHANNEL *cp)
         return;
     } else if (Mode == OMpaused) {
         cp->Check_deferred++;
-        xasprintf(&buff, "%d %s", NNTP_FAIL_CHECK_DEFER, ModeReason);
+        xasprintf(&buff, "%d %s %s", NNTP_FAIL_CHECK_DEFER, cp->av[1],
+                  ModeReason);
         NCwritereply(cp, buff);
         free(buff);
         return;
