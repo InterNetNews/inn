@@ -1076,9 +1076,15 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     /* modgroup is set when moderated newsgroups are found in the
      * Newsgroups: header field, and the article does not contain
      * an Approved: header field.
-     * Therefore, moderation will be needed. */
-    if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
-        return error;
+     * Therefore, moderation will be needed.
+     *
+     * Be sure to check that a Newsgroups: header field exists
+     * because ProcessHeaders() still has not been called.  It would
+     * have rejected the message. */
+    if (HDR(HDR__NEWSGROUPS) != NULL) {
+        if ((error = ValidNewsgroups(HDR(HDR__NEWSGROUPS), &modgroup)) != NULL)
+            return error;
+    }
 
     if ((error = ProcessHeaders(idbuff, modgroup != NULL)) != NULL) {
         if (modgroup != NULL)
