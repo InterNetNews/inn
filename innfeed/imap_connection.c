@@ -47,7 +47,12 @@
 
 #ifdef HAVE_SASL
 # include <sasl/sasl.h>
+# include <sasl/saslplug.h>
 # include <sasl/saslutil.h>
+/* For Cyrus SASL versions < 2.1.24. */
+# ifndef sasl_callback_ft
+typedef int (*sasl_callback_ft)(void);
+# endif
 #endif
 
 #ifndef MAXHOSTNAMELEN
@@ -1287,13 +1292,13 @@ getsecret(sasl_conn_t *conn,
 /* callbacks we support */
 static sasl_callback_t saslcallbacks[] = {
   {
-    SASL_CB_GETREALM, &getsimple, NULL
+    SASL_CB_GETREALM, (sasl_callback_ft) &getsimple, NULL
   }, {
-    SASL_CB_USER, &getsimple, NULL
+    SASL_CB_USER, (sasl_callback_ft) &getsimple, NULL
   }, {
-    SASL_CB_AUTHNAME, &getsimple, NULL
+    SASL_CB_AUTHNAME, (sasl_callback_ft) &getsimple, NULL
   }, {
-    SASL_CB_PASS, &getsecret, NULL
+    SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL
   }, {
     SASL_CB_LIST_END, NULL, NULL
   }
