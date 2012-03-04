@@ -61,6 +61,14 @@ having caught this bug.
 
 =item *
 
+Fixed an invalid C<431> response to CHECK commands when B<innd> is paused:
+the message-ID of the article to defer was missing.  Also fixed another
+issue in the messages B<innd> replied; when an error occurred during a
+write on a channel, a trailing extra junk byte was added to the reply.
+Thanks to River Tarnell for these bug reports.
+
+=item *
+
 It is now possible to properly generate daily statistics with B<sendinpaths>
 thanks to the new B<-k> and B<-r> flags that permit to control the interval
 of days for processing dump files.  The new B<-c> flag permits to send a
