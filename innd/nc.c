@@ -160,7 +160,7 @@ NCwritereply(CHANNEL *cp, const char *text)
     WCHANappend(cp, text, strlen(text));	/* Text in buffer. */
     WCHANappend(cp, NCterm, strlen(NCterm));	/* Add CR LF to text. */
 
-    if (i == 0) {	/* If only data, then try to write directly. */
+    if (i == 0) {	/* If only new data, then try to write directly. */
 	i = write(cp->fd, &bp->data[bp->used], bp->left);
 	if (Tracing || cp->Tracing)
 	    syslog(L_TRACE, "%s NCwritereply %d=write(%d, \"%.15s\", %lu)",
@@ -173,10 +173,14 @@ NCwritereply(CHANNEL *cp, const char *text)
 	    bp->used = bp->left = 0;
 	    NCwritedone(cp);
 	} else {
-            bp->left -= i;
+            if (i > 0) {
+                bp->left -= i;
+            }
             i = 0;
         }
-    } else i = 0;
+    } else {
+        i = 0;
+    }
     if (i <= 0) {	/* Write failed, queue it for later. */
 	WCHANadd(cp);
     }
