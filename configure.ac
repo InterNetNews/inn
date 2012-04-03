@@ -71,8 +71,10 @@ AC_PREFIX_DEFAULT([/usr/local/news])
 dnl Make sure $prefix is set so that we can use it internally.
 test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 
-dnl A few tests need to happen before any of the libtool tests.  avoid error
-dnl messages.  We therefore lift them up to the top of the file.
+dnl A few tests need to happen before any of the libtool tests.  We
+dnl therefore lift them up to the top of the file.  (This is probably no
+dnl longer needed now that we're running LT_INIT unconditionally, but
+dnl we'll leave it alone until we switch to Automake.)
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SEARCH_LIBS([strerror], [cposix])
