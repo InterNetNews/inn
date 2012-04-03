@@ -71,48 +71,24 @@ AC_PREFIX_DEFAULT([/usr/local/news])
 dnl Make sure $prefix is set so that we can use it internally.
 test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 
-dnl A few tests need to happen before any of the libtool tests in order to
-dnl avoid error messages.  We therefore lift them up to the top of the file.
+dnl A few tests need to happen before any of the libtool tests.  avoid error
+dnl messages.  We therefore lift them up to the top of the file.
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SEARCH_LIBS([strerror], [cposix])
 INN_PROG_CC_C_O
 AC_CANONICAL_HOST
-_LT_DECL_SED
 
-dnl Check to see if the user wants to use libtool.  We only invoke the libtool
-dnl setup macros if they do.  Keep this call together with the libtool setup
-dnl so that the arguments to configure will be together in configure --help.
-inn_use_libtool=no
-AC_ARG_ENABLE([libtool],
-    [AS_HELP_STRING([--enable-libtool],
-        [Use libtool for lib generation @<:@default=no@:>@])],
-    [if test x"$enableval" = xyes ; then
-        inn_use_libtool=yes
-    fi])
-if test x"$inn_use_libtool" = xyes ; then
-    LT_INIT
-    EXTLIB='la'
-    EXTOBJ='lo'
-    LIBTOOL='$(top)/libtool'
-    LIBTOOLCC='$(top)/libtool --mode=compile'
-    LIBTOOLINST='$(top)/libtool --mode=install'
-    LIBTOOLLD='$(top)/libtool --mode=link'
-    CCOUTPUT='-c -o $@ $<'
-else
-    EXTLIB='a'
-    EXTOBJ='o'
-    LIBTOOL=''
-    LIBTOOLCC=''
-    LIBTOOLINST=''
-    LIBTOOLLD=''
-    if test x"$compiler_c_o" = xyes ; then
-        CCOUTPUT='-c -o $@ $<'
-    else
-        CCOUTPUT='-c $< && if test x"$(@F)" != x"$@" ; then mv $(@F) $@ ; fi'
-    fi
-    AC_SUBST(LIBTOOL)
-fi
+dnl Configure libtool and set the variables that we used to use when we
+dnl supported builds without libtool.
+LT_INIT
+EXTLIB='la'
+EXTOBJ='lo'
+LIBTOOL='$(top)/libtool'
+LIBTOOLCC='$(top)/libtool --mode=compile'
+LIBTOOLINST='$(top)/libtool --mode=install'
+LIBTOOLLD='$(top)/libtool --mode=link'
+CCOUTPUT='-c -o $@ $<'
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
 AC_SUBST(LIBTOOLCC)

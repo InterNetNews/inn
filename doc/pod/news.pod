@@ -110,6 +110,11 @@ should handle itself the connection instead of B<nnrpd>.
 The name and location of the B<pullnews> configuration file is now
 F<pullnews.marks> in I<pathdb> (instead of F<.pullnews> in I<pathnews>).
 
+=item *
+
+Building with Libtool is no longer optional.  The B<--enable-libtool>
+option to B<configure> has been removed.
+
 =back
 
 =head1 Changes in 2.5.3
