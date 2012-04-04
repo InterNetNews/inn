@@ -360,30 +360,6 @@ overrides the automatic detection.  Be sure to specify a facility not used
 by anything else on your system (one of LOG_LOCAL0 through LOG_LOCAL7, for
 example).
 
-=item B<--enable-libtool>
-
-INN has optional support for libtool to generate shared versions of INN's
-libraries.  This can significantly decrease the size of the various
-binaries that come with a complete INN installation.  You can also choose
-to use libtool even when only building static libraries; a libtool build
-may be somewhat more portable on weird systems.  libtool builds aren't the
-default because they take somewhat longer.  See C<./configure --help> for
-the various available options related to libtool builds.
-
-Please note that INN's shared library interface is not stable and may
-change drastically in future releases.  For this reason, it's also not
-properly versioned and won't be until some degree of stability is
-guaranteed, and the relevant header files are not installed.  Only INN
-should use INN's shared libraries, and you should only use the shared
-libraries corresponding to the version of INN that you're installing.
-
-Also, when updating an existing version of INN, INN tries to save backup
-copies of all files but man pages so that you can revert to the previous installed
-version.  Unfortunately, when using shared libraries, this confuses
-B<ldconfig> on some systems (such as Linux) and the symbolic links for the
-libraries may point to the C<.OLD> versions.  If this happens, you can either
-fix the links by hand or remove the C<.OLD> versions and re-run B<ldconfig>.
-
 =item B<--enable-uucp-rnews>
 
 If this option is given to configure, B<rnews> will be installed setuid C<news>,
@@ -480,6 +456,21 @@ news user, you can run C<make install> as the configured news user.  The
 resulting INN installation won't be able to use ports below 1024
 (including the default NNTP port of 119) unless you then run C<make
 install-root> as root, which will install only the setuid helper program.
+
+Please note that INN's shared library interface is not stable and may
+change drastically in future releases.  For this reason, it's also not
+properly versioned and won't be until some degree of stability is
+guaranteed, and the relevant header files are not installed.  Only INN
+should use INN's shared libraries, and you should only use the shared
+libraries corresponding to the version of INN that you're installing.
+
+Also, when updating an existing version of INN, INN tries to save backup
+copies of all files but man pages so that you can revert to the previous
+installed version.  Unfortunately, when using shared libraries, this
+confuses B<ldconfig> on some systems (such as Linux) and the symbolic
+links for the libraries may point to the C<.OLD> versions.  If this
+happens, you can either fix the links by hand or remove the C<.OLD>
+versions and re-run B<ldconfig>.
 
 If you are configuring TLS/SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:
