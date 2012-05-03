@@ -70,8 +70,11 @@ readers.conf(5).  The default value is unset.
 
 =item I<innflags>
 
-The flags to pass to innd on startup.  See innd(8) for details on the
+The flags to pass to B<innd> on startup.  See innd(8) for details on the
 possible flags.  The default value is unset.
+
+Note that these flags are only used when B<innd> is started from B<rc.news>
+or B<nntpsend>.
 
 =item I<mailcmd>
 
