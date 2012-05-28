@@ -5,6 +5,8 @@
 # recognize the additional -B flag that INN's install-sh program
 # recognizes; apart from that, it is identical to the stock libtool
 # distribution.
+# Only one part of the code is modified; search for the comment below
+# containing "INN".
 
 # libtool (GNU libtool) 2.4.2
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
@@ -2827,6 +2829,7 @@ func_mode_install ()
 	fi
 	;;
       -g | -m | -o | -B)
+        # Modification for INN just above (add support for the -B flag).
 	prev=$arg
 	;;
       -s)
