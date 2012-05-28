@@ -15,6 +15,8 @@ use Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = "$INN::Config::VERSION";
 
+my %lockfiles;
+
 
 ##
 ##  Returns true if the file is properly locked.
@@ -30,6 +32,7 @@ sub lock {
 
     while ($locktry < $lockretrymax) {
         if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+            $lockfiles{$lockfile} = 1;
             return 1;
         }
         $locktry++;
@@ -46,12 +49,34 @@ sub lock {
 ##
 sub unlock {
     my $lockfile = shift;
-    return unlink $lockfile;
+    if (unlink $lockfile) {
+        delete $lockfiles{$lockfile};
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+##
+##  Attempts to unlock any leftover locks.
+##  Returns the number of removed locks.
+##
+sub releaselocks {
+    my $key;
+    my $count = 0;
+
+    foreach $key (keys(%lockfiles)) {
+        $count += unlock($key);
+    }
+
+    undef(%lockfiles);
+    return $count;
 }
 
 
 ##  This array will contain what it is possible to export.
-our @EXPORT_OK = qw(lock unlock);
+our @EXPORT_OK = qw(lock unlock releaselocks);
 
 
 ##  That's all.
@@ -98,6 +123,16 @@ or:
         die "giving up after 4 unsuccessful attempts to create lock file";
     }
 
+Instead of calling C<< unlock(I<lockfile>) >>, the C<releaselocks()>
+function can be called.  It removes any leftover locks, which is useful
+when several different locks are used.  Another possible use is to call
+it in an END code block:
+
+    END {
+        # In case we bail out, while holding a lock.
+        INN::Utils::Shlock::releaselocks();
+    }   
+
 =head1 INTERFACE
 
 =over 4
@@ -106,11 +141,15 @@ or:
 
 Tries to create a lock file named I<lockfile>.
 
+This function returns C<1> on success, C<0> on failure.
+
 =item lock(I<lockfile>, I<tries>)
 
 Tries to create a lock file named I<lockfile>.  If it fails, locking
 attempts are repeated once every 2 seconds for at most I<tries> times
 (including the first unsuccessful attempt).
+
+This function returns C<1> on success, C<0> on failure.
 
 =item lock(I<lockfile>, I<tries>, I<delay>)
 
@@ -121,9 +160,20 @@ times (including the first unsuccessful attempt).
 Note that C<< lock(I<lockfile>) >> is equivalent to C<< lock(I<lockfile>,
 1, 2) >>.
 
+This function returns C<1> on success, C<0> on failure.
+
+=item releaselocks()
+
+Removes all the lock files previously created by calling the C<<
+lock(I<lockfile>) >> function.
+
+This function returns the number of removed lock files.
+
 =item unlock(I<lockfile>)
 
 Removes the file named I<lockfile>.
+
+This function returns C<1> on success, C<0> on failure.
 
 =back
 

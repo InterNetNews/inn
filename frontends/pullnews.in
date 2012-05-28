@@ -77,6 +77,11 @@ my $defaultRetryTime = 1;
 my $defaultProgressWidth = 50;
 my $defaultMaxArts;
 
+END {
+    # In case we bail out, while holding a lock.
+    INN::Utils::Shlock::releaselocks();
+}
+
 $usage =~ s!.*/!!;
 $usage .= " [ -hnqRx -b fraction -c config -C width -d level
         -f fraction -F fakehop -g groups -G newsgroups -H headers
