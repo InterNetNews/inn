@@ -27,8 +27,12 @@ my $tmpfile2 ;
 my $msg ;
 
 END {
-    unlink ($tmpfile) if $tmpfile ;		# in case we die()
-    unlink ($tmpfile2) if $tmpfile2 ;		# in case we die()
+    unlink ($tmpfile) if $tmpfile;              # in case we die()
+    unlink ($tmpfile2) if $tmpfile2;            # in case we die()
+
+    # In case we bail out, typically by calling mailArtAndDie(), while
+    # holding a lock.
+    INN::Utils::Shlock::releaselocks();
 }
 
 my $usage = $0 ;

@@ -43,6 +43,11 @@ my $BATCHER_FLAGS = '';
 my $config_file = $INN::Config::pathetc . '/send-uucp.cf';
 my $lockfile = $INN::Config::locks . '/LOCK.send-uucp';
 
+END {
+    # In case we bail out, while holding a lock.
+    INN::Utils::Shlock::releaselocks();
+}
+
 my $use_syslog = 0;
 
 eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };

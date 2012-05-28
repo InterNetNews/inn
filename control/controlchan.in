@@ -45,6 +45,12 @@ my $lastctl = 0;
 my $use_syslog = 0;
 my $debug = 0;
 
+END {
+    # In case we bail out, while holding a lock.
+    INN::Utils::Shlock::releaselocks();
+}
+
+
 my $usage = "usage: $0 [-ch]\n\n" .
     "Reads stdin for file names or tokens.\n\n" .
     "  -c   Disables cutoff on dates.\n" .

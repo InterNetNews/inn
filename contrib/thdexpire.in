@@ -248,6 +248,11 @@ July 1999: bugfixes.
 
 my $lockfile = "$INN::Config::innddir/thdexpire.pid";
 
+END {
+    # In case we bail out, while holding a lock.
+    INN::Utils::Shlock::releaselocks();
+}
+
 chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 $opt_r=0;      # make a report
 $opt_t=30;     # check interval in minutes
