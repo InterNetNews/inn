@@ -148,6 +148,10 @@ sample.init.script
     the system since INN and related programs can be file descriptor hogs.
     It then starts INN.
 
+sample.init.systemd
+
+    Sample systemd-style init script for INN.
+
 stathist
 
     Parses and summarizes the log files created by the history profiling

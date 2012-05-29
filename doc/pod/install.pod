@@ -1537,8 +1537,9 @@ option:
 
     su news -c '<pathbin in inn.conf>/rc.news stop'
 
-In the F<contrib> directory of this source tree is a sample init script
-for people using System V-style init.d directories.
+In the F<contrib> directory of this source tree, two sample init scripts are provided:  one
+for people using System V-style init.d directories, and another for people
+using systemd-style init scripts.
 
 If you wish to use TLS/SSL for your readers, you need to start a second
 B<nnrpd> to listen to these connections to NNTPS port 563 and put something

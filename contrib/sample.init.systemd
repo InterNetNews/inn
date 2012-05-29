@@ -1,0 +1,20 @@
+# $Id$
+#
+# This is a simple, bare-bones example of a systemd-style init script for INN.
+#
+[Unit]
+Description=InterNetNews Daemon
+After=syslog.target network.target
+ConditionPathExists=/etc/news/inn.conf
+
+[Service]
+User=news
+PermissionsStartOnly=true
+PIDFile=/run/news/innd.pid
+Type=forking
+ExecStart=/usr/libexec/news/rc.news
+ExecStop=/bin/su -m news -c '/usr/libexec/news/rc.news stop'
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
