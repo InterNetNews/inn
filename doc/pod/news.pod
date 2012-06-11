@@ -349,6 +349,14 @@ the articles.
 
 =item *
 
+Fixed the way B<innreport> handles leap years.  It now properly generates
+HTML reports; dates were assumed to be relative to the current year, which
+may break their computation during for instance the whole 2012 leap year.
+Please note that no HTML reports have been lost, and that they will appear
+when INN is updated to this new version.
+
+=item *
+
 A new parameter has been added to F<inn.conf> to determine whether the status
 file that B<innd> can write out (depending on the value of the I<status>
 parameter) is plain text or wrapped in HTML.  It previously only was a
