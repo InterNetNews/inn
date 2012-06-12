@@ -1089,8 +1089,8 @@ intersect
 	    $dummy{$_}++;
 	}
         foreach ( @in ) {
-            if (not exists $dummy{$_}) {
-                eprint "$pfx$dir:0: ERROR: illegal file `$_' in directory (it may be a valid backup if it ends with '.OLD')\n";
+            if (not exists $dummy{$_} and $_ !~ /\.OLD$/) {
+                eprint "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
                 $i = 0;
             }
         }
