@@ -498,7 +498,7 @@ CCcheckfile(char *unused[])
   if (errors == 0)
     return NULL;
 
-  buffer_sprintf(&CCreply, false, "1 Found %d errors -- see syslog", errors);
+  buffer_sprintf(&CCreply, false, "1 Found %d error(s) -- see syslog", errors);
   return CCreply.data;
 }
 
@@ -1315,6 +1315,7 @@ static const char *
 CCreload(char *av[])
 {
     const char *p;
+    const char *error;
 
 #ifdef DO_PERL
     static char BADPERLRELOAD[] = "1 Failed to define filter_art" ;
@@ -1327,6 +1328,9 @@ CCreload(char *av[])
 
     p = av[0];
     if (*p == '\0' || strcmp(p, "all") == 0) {
+        /* Check the syntax of the newsfeeds file before reloading. */
+        if ((error = CCcheckfile(NULL)) != NULL)
+            return error;
 	SITEflushall(false);
         if (Mode == OMrunning)
 	    InndHisClose();
@@ -1348,7 +1352,10 @@ CCreload(char *av[])
 	p = "all";
     }
     else if (strcmp(p, "active") == 0 || strcmp(p, "newsfeeds") == 0) {
-	SITEflushall(false);
+        /* Check the syntax of the newsfeeds file before reloading. */
+        if ((error = CCcheckfile(NULL)) != NULL)
+            return error;
+        SITEflushall(false);
 	ICDwrite();
 	ICDsetup(true);
     }
@@ -1407,8 +1414,11 @@ CCreload(char *av[])
 #ifdef DO_PERL
     else if (strcmp(p, "filter.perl") == 0) {
         path = concatpath(innconf->pathfilter, INN_PATH_PERL_FILTER_INND);
-        if (!PERLreadfilter(path, "filter_art"))
+        if (!PERLreadfilter(path, "filter_art")) {
+            free(path);
             return BADPERLRELOAD;
+        }
+        free(path);
     }
 #endif
 #ifdef DO_PYTHON
