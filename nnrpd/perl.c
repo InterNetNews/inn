@@ -308,16 +308,14 @@ perlAuthInit(void)
     if (!PerlFilterActive)
         return;
 
+    if (perl_get_cv("auth_init", 0) == NULL) {
+        return;
+    }
+
     ENTER;
     SAVETMPS;
     PUSHMARK(SP);
     PUTBACK;
-
-    if (perl_get_cv("auth_init", 0) == NULL) {
-        syslog(L_ERROR, "Perl function auth_init not defined");
-        Reply("%d Internal error (3).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
-        ExitWithStats(1, true);
-    }
 
     rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
 
