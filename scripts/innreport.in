@@ -739,6 +739,8 @@ sub Rotate {
 }
 
 # Convert a date to number of seconds since epoch.
+# Return undef in case the date is invalid.
+#
 # Leap years are handled correctly, daylight saving is not.
 # Usage: $num = &ConvDate ($date, $wrap_around);
 # Date format is "2012 Aug 22 01:49:40".
@@ -767,8 +769,14 @@ sub ConvDate($$) {
   # Take the previous year if a change of year has been detected and
   # the date is after May, 1st.
   $y-- if $wrap > 0 and $m > 4;
+
   # Convert the given date to the number of seconds since epoch.
-  return Time::Local::timelocal($s, $mn, $h, $d, $m, $y);
+  # Use an eval block to catch the error in case of an invalid date.
+  my $epochtime = undef;
+  eval {
+    $epochtime = Time::Local::timelocal($s, $mn, $h, $d, $m, $y);
+  };
+  return $epochtime;
 }
 
 # Compare 2 filenames
@@ -1120,6 +1128,11 @@ sub Make_Index($$$$) {
         }
 	my $start_sec = &ConvDate ($year . ' ' . $start, 0);
 	my $end_sec = &ConvDate ($year . ' ' . $end, 0);
+        if (!defined($start_sec) or !defined($end_sec))
+        { 
+          warn "Invalid date in DB file ignored: $k" if ($DEBUG);
+          next;
+        }
         if ($start_sec - $end_sec == 0)
         {
           warn "Time range 0 in DB file ignored: $k" if ($DEBUG);
