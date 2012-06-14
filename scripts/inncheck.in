@@ -1067,7 +1067,8 @@ checkperm
     return;
 }
 
-##  Return 1 if the Intersection of the files in the DIR and FILES is empty.
+##  Return 1 if the intersection of the files in the $dir directory
+##  and @files is empty.
 ##  Otherwise, report an error for each illegal file, and return 0.
 sub
 intersect
@@ -1087,9 +1088,11 @@ intersect
     if ( scalar(@in) ) {
 	foreach ( @files ) {
 	    $dummy{$_}++;
+            # Also consider backup files as valid.
+            $dummy{"$_.OLD"}++;
 	}
         foreach ( @in ) {
-            if (not exists $dummy{$_} and $_ !~ /\.OLD$/) {
+            if (not exists $dummy{$_}) {
                 eprint "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
                 $i = 0;
             }
