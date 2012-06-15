@@ -64,7 +64,7 @@ were chosen.
  6.  Parameter values inherit via group nesting.  In other words, if a
      group is nested inside another group, all parameters defined in the
      enclosing group are inherited by the nested group unless they're
-     explicitly overriden within the nested group.  (This point and point
+     explicitly overridden within the nested group.  (This point and point
      5 are to some degree just corollaries of point 3.)
 
  7.  The parsing library must permit writing as well as reading.  It must

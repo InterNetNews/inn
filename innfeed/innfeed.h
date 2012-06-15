@@ -24,7 +24,7 @@
 
 
 /*
- * This next section contains things than can be overriden in the config
+ * This next section contains things than can be overridden in the config
  * file. The strings inside each comment is the key used in the
  * innfeed.conf file to override the value here. See innfeed.conf for a
  * description of each./

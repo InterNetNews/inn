@@ -121,7 +121,7 @@ F</var/tmp/newsfeeds.testing>, do:
     inncheck newsfeeds=/var/tmp/newsfeeds.testing
 
 To have B<inncheck> check all the files as it normally does, but to specify
-a different location for the F<newsfeeds> file and ommit checking of the
+a different location for the F<newsfeeds> file and omit checking of the
 F<innfeed.conf> file, do:
 
     inncheck -a newsfeeds=/var/tmp/newsfeeds.testing innfeed.conf=
