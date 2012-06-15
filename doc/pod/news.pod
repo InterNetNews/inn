@@ -5,7 +5,7 @@ with the I<htmlstatus> parameter in F<inn.conf>.  If you used HTML_STATUS,
 you should set I<htmlstatus> accordingly.
 
 A confusion in the name of a key in F<innfeed.conf> existed in the source
-code.  Make sure that the mispelled, undocumented I<backlog-limit-high>
+code.  Make sure that the misspelled, undocumented I<backlog-limit-high>
 key is *not* used in your F<innfeed.conf> file; its real name is
 I<backlog-limit-highwater>.  You should rename the key in case it is present
 in your configuration file.  Otherwise, it will not be taken into account.
@@ -90,7 +90,7 @@ Thanks to John S<F. Morse> for the bug report.
 =item *
 
 The order of CNFS buffers in a metacycbuff is now properly read and written
-by B<cnfsheadconf>.  There previoulsy was a confusion between hexadecimal
+by B<cnfsheadconf>.  There previously was a confusion between hexadecimal
 and decimal values.  Thanks again to John S<F. Morse>.
 
 =item *
@@ -636,7 +636,7 @@ fields.  Thanks to Torsten Jerzembeck for the bug report.
 B<news.daily> no longer sends superfluous mails when the B<nomail> keyword
 is given.  Mail is only sent when there is real output.  Previously, there
 would always be headings and empty lines left over from the structuring of
-the full report, which are now ommitted.  Also, the output of programs
+the full report, which are now omitted.  Also, the output of programs
 executed with B<postexec> is now included in the regular mail.  Thanks to
 Florian Schlichting for the patch.
 
@@ -1429,9 +1429,9 @@ host.  Thanks to Miquel van Smoorenburg for this patch.
 
 =item *
 
-Added a I<nnrpdflags> parameter to F<inn.conf> (modeled on the concept of
-I<innflags>) to permit passing of command line arguments to instances of
-B<nnrpd> spawned from B<innd>.
+Added a I<nnrpdflags> parameter to F<inn.conf> (modelled on the concept
+of I<innflags>) to permit passing of command line arguments to instances
+of B<nnrpd> spawned from B<innd>.
 
 =item *
 
@@ -2216,7 +2216,7 @@ overview.)  Or if your overview is buffindexed, use:
     makehistory -b -f history.n -O -F
 
 Both will generate a new history file as F<history.n> and rebuild overview
-at the same time.  If you want to preseve a record of expired Message-IDs
+at the same time.  If you want to preserve a record of expired Message-IDs
 in the history file, run:
 
     awk 'NF==2 { print; }' < history >> history.n
