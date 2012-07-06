@@ -417,6 +417,18 @@ C<inn_>, or some other unique prefix indicating the subsystem that symbol
 is part of, to avoid accidental conflicts with symbols defined by the
 program that uses that header file.
 
+=head1 Libraries
+
+INN includes three shared libraries, in F<lib>, F<storage>, and
+F<history>.  Whenever any of the source to those libraries is modified,
+the library version information must be updated at the top of the
+F<Makefile> in that directory.  Follow the instructions in the Libtool
+manual under Versioning / Updating version info, with the exception that,
+contrary to point 2, it's useful to those running snapshots to update the
+version information more frequently than for each public release.
+Remember that the version information has to be updated to allow recovery
+from a C<make update> command.
+
 =head1 Coding Style
 
 INN has quite a variety of coding styles intermixed.  As with all
@@ -669,6 +681,12 @@ a release candidate.
 
 =item 5.
 
+Double-check that the version information in F<lib/Makefile>,
+F<storage/Makefile>, and F<history/Makefile> has been updated if there has
+been any change in the library sources since the previous release.
+
+=item 6.
+
 If making a major release, branch the source tree by creating a new
 directory under F<branches> in Subversion named after the major release.
 This branch will be used for minor releases based on that major release
@@ -681,7 +699,7 @@ release.
 Then, remove the first paragraph in F<doc/pod/readme.pod> which deals
 with development versions.
 
-=item 6.
+=item 7.
 
 Check out a copy of the release branch.  It's currently necessary to run
 C<autogen> and C<configure> to generate F<Makefile.global>.  Then, run
@@ -689,7 +707,7 @@ C<make warnings> to generate all necessary files.  Afterwards, run
 C<make check-manifest>.  There shouldn't be any differences; otherwise,
 fix the F<MANIFEST> file.
 
-=item 7.
+=item 8.
 
 Run C<make release> for a final release, C<support/mksnapshot BETA b1> for
 the first beta version of a new release, or C<support/mksnapshot RC rc1>
@@ -703,13 +721,13 @@ Check that the F<ChangeLog> file is correct; otherwise, regenerate it or
 manually edit it.  Then run again C<make release> or any other command
 you used.
 
-=item 8.
+=item 9.
 
 Generate an MD5 checksum of the release tarball.
 
     md5sum inn-Y.Y.Y.tar.gz > inn-Y.Y.Y.tar.gz.md5
 
-=item 9.
+=item 10.
 
 Generate a diff between this release and the previous release if feasible
 (always for minor releases, possibly not a good idea due to the length of
@@ -719,7 +737,7 @@ release for the comparison.
     diff -Nurp inn-X.X.X inn-Y.Y.Y > inn-X.X.X-Y.Y.Y.diff
     gzip inn-X.X.X-Y.Y.Y.diff
 
-=item 10.
+=item 11.
 
 Make the resulting tar file, along with its MD5 checksum and the possible
 diff from the previous release, available for testing in the F<testing>
@@ -728,7 +746,7 @@ Install it on at least one system and make sure that system runs fine for
 at least a few days.  This is also a good time to send out a draft of the
 release announcement to inn-workers for proof-reading.
 
-=item 11.
+=item 12.
 
 Move the release into the public area of the ftp site and update the
 F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
@@ -737,13 +755,13 @@ the release PGP-signed and the ISC web site updated (the relevant contact
 is C<web-request> instead of C<webmaster>).  Update the F<inn.tar.gz.asc>
 link.  Possibly move older releases off into the F<OLD> directory.
 
-=item 12.
+=item 13.
 
 After the ISC web site has been updated with links towards the new
 release, send an announce on inn-announce and in news.software.nntp
 (with a possible crosspost to news.admin.announce).
 
-=item 13.
+=item 14.
 
 Tag the checked-out tree that was used for generating the release with a
 release tag by copying it to F<tags> in Subversion.
@@ -751,7 +769,7 @@ release tag by copying it to F<tags> in Subversion.
     svn copy -r ZZZZ -m "Tag Y.Y.Y release." \
         file:///srv/svn/inn/branches/Y.Y file:///srv/svn/inn/tags/Y.Y.Y
 
-=item 14.
+=item 15.
 
 Bump revision numbers to reflect the one of the following release,
 especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod> for major
