@@ -29,7 +29,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	$(LI_XPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
+	$(LI_LPUB) libinnhist.$(EXTLIB) $D$(PATHLIB)/libinnhist.$(EXTLIB)
 
 bootstrap: Make.methods
 

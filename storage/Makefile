@@ -30,7 +30,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	$(LI_XPUB) libstorage.$(EXTLIB) $D$(PATHLIB)/libstorage.$(EXTLIB)
+	$(LI_LPUB) libstorage.$(EXTLIB) $D$(PATHLIB)/libstorage.$(EXTLIB)
 	for F in $(PROGRAMS) ; do \
 	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
 	done

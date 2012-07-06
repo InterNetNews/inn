@@ -286,17 +286,22 @@ ROWNER		= -o $(RUNASUSER) -g $(RNEWSGROUP)
 
 INSTALL		= $(top)/support/install-sh -c
 
-##  Installation commands.  These commands are used by the installation rules
-##  of each separate subdirectory.  The naming scheme is as follows: the first
-##  two characters are CP (indicating a plain copy) or LI (indicating an
-##  installation that goes through libtool).  After an underscore is a
-##  one-character indicator of the file type (R for a regular file, X for an
-##  executable, S for a setuid root executable) and then PUB for a
-##  world-readable/world-executable file or PRI for a group-readable/
-##  group-executable file (only the news group).
+##  Installation commands.  These commands are used by the installation
+##  rules of each separate subdirectory.  The naming scheme is as follows:
+##  the first two characters are CP (indicating a plain copy) or LI
+##  (indicating an installation that goes through libtool).  After an
+##  underscore is a one-character indicator of the file type (R for a
+##  regular file, X for an executable, S for a setuid root executable, L for
+##  a shared library) and then PUB for a world-readable/world-executable
+##  file or PRI for a group-readable/ group-executable file (only the news
+##  group).
 ##
-##  Man pages should not be backed up with an .OLD extension since it causes man
-##  to complain about bogus filenames in MANPATH.
+##  Man pages should not be backed up with an .OLD extension since it causes
+##  man to complain about bogus filenames in MANPATH.  Shared libraries
+##  should not be backed up with an .OLD extension since ldconfig will
+##  select the .OLD version in preference to the regular version.  We use
+##  shared library versioning to allow recovery from make update for shared
+##  libraries.
 ##
 ##  inews and rnews have their own special installation rules, as do database
 ##  files like active and newsgroups that should have the same permissions as
@@ -307,6 +312,7 @@ BACKUP_OPTION	= -B .OLD
 LI_SPRI		= $(LIBTOOLINST) $(INSTALL) -o root -g $(RUNASGROUP) -m 4550 $(BACKUP_OPTION)
 LI_XPRI		= $(LIBTOOLINST) $(INSTALL) $(OWNER) -m 0550 $(BACKUP_OPTION)
 LI_XPUB		= $(LIBTOOLINST) $(INSTALL) $(OWNER) -m 0555 $(BACKUP_OPTION)
+LI_LPUB		= $(LIBTOOLINST) $(INSTALL) $(OWNER) -m 0555
 
 LI_INEWS	= $(LIBTOOLINST) $(INSTALL) $(OWNER) -m $(INEWSMODE) $(BACKUP_OPTION)
 LI_RNEWS	= $(LIBTOOLINST) $(INSTALL) $(ROWNER) -m $(RNEWSMODE) $(BACKUP_OPTION)

@@ -43,7 +43,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	$(LI_XPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)
+	$(LI_LPUB) libinn.$(EXTLIB) $D$(PATHLIB)/libinn.$(EXTLIB)
 
 bootstrap:
 
