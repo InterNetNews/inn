@@ -750,10 +750,11 @@ release announcement to inn-workers for proof-reading.
 
 Move the release into the public area of the ftp site and update the
 F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
-site and update the F<inn.tar.gz.md5> link.  Contact the ISC folks to get
-the release PGP-signed and the ISC web site updated (the relevant contact
-is C<web-request> instead of C<webmaster>).  Update the F<inn.tar.gz.asc>
-link.  Possibly move older releases off into the F<OLD> directory.
+site and update the F<inn.tar.gz.md5> link.  Sign the release and update
+the F<inn.tar.gz.asc> link.  Possibly move older releases off into the
+F<OLD> directory.  Contact the ISC folks to push the release to
+ftp.isc.org and to update the ISC web site (the relevant contact is
+C<web-request> instead of C<webmaster>).
 
 =item 13.
 
