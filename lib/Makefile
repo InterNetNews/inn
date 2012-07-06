@@ -6,23 +6,23 @@ top	= ..
 CFLAGS  = $(GCFLAGS)
 
 # The base library files that are always compiled and included.
-SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c commands.c concat.c \
-		conffile.c confparse.c daemonize.c date.c dbz.c defdist.c \
-		dispatch.c fdflags.c fdlimit.c getfqdn.c \
-		getmodaddr.c hash.c hashtab.c headers.c hex.c innconf.c inndcomm.c \
-		list.c localopen.c lockfile.c makedir.c md5.c messageid.c messages.c \
-		mmap.c network.c newsuser.c nntp.c numbers.c qio.c radix32.c \
-		readin.c remopen.c \
-		reservedfd.c resource.c sendarticle.c sendpass.c sequence.c \
-		timer.c tst.c uwildmat.c vector.c wire.c xfopena.c \
-		xmalloc.c xsignal.c xwrite.c
+SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
+	      	commands.c concat.c conffile.c confparse.c daemonize.c	   \
+	      	date.c dbz.c defdist.c dispatch.c fdflags.c fdlimit.c	   \
+	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \
+	      	innconf.c inndcomm.c list.c localopen.c lockfile.c	   \
+	      	makedir.c md5.c messageid.c messages.c mmap.c network.c	   \
+	      	newsuser.c nntp.c numbers.c qio.c radix32.c readin.c	   \
+	      	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
+	      	sequence.c timer.c tst.c uwildmat.c vector.c wire.c	   \
+	      	xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c getnameinfo.c \
-		getpagesize.c inet_aton.c inet_ntoa.c inet_ntop.c memcmp.c \
-		mkstemp.c pread.c pwrite.c setenv.c seteuid.c setproctitle.c \
-		snprintf.c strcasecmp.c strlcat.c strlcpy.c strspn.c \
-		strtok.c symlink.c
+EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c	   \
+		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
+		inet_ntop.c memcmp.c mkstemp.c pread.c pwrite.c setenv.c   \
+		seteuid.c setproctitle.c snprintf.c strcasecmp.c strlcat.c \
+		strlcpy.c strspn.c strtok.c symlink.c
 
 OBJECTS       = $(LIBOBJS) $(ALLOCA) $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
