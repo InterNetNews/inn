@@ -5,8 +5,8 @@ include ../Makefile.global
 # This version number should be increased with every change to the library
 # source following the rules laid out in the libtool manual.  This will also
 # force the file name of the shared library to change so that one can
-# recover from make update.  We can't use .BAK extensions for the shared
-# library since ldconfig will think .BAK sorts after the regular library and
+# recover from make update.  We can't use .OLD extensions for the shared
+# library since ldconfig will think .OLD sorts after the regular library and
 # will point the binaries at the old library.
 LTVERSION     = 3:0:0
 
