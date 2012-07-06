@@ -2,6 +2,14 @@
 
 include ../Makefile.global
 
+# This version number should be increased with every change to the library
+# source following the rules laid out in the libtool manual.  This will also
+# force the file name of the shared library to change so that one can
+# recover from make update.  We can't use .BAK extensions for the shared
+# library since ldconfig will think .BAK sorts after the regular library and
+# will point the binaries at the old library.
+LTVERSION     = 3:0:0
+
 top	= ..
 CFLAGS  = $(GCFLAGS)
 
@@ -47,7 +55,7 @@ clean clobber distclean maintclean:
 
 libinn.la: $(OBJECTS) $(LOBJECTS)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) $(LIBS) \
-	    -rpath $(PATHLIB) -version-info 2:0:0
+	    -rpath $(PATHLIB) -version-info $(LTVERSION)
 
 libinn.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
