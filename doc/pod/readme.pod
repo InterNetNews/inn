@@ -242,7 +242,7 @@ feeds that change periodically.
 
 =item NewsPortal
 
-URL:  L<http://amrhein.eu/newsportal/>
+URL:  L<http://amrhein.eu/newsportal/doc/>
 
 A PHP-based web news reader that works as a front-end to a regular news
 server such as INN and lets people read and post without learning a news
