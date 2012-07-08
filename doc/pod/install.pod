@@ -464,13 +464,15 @@ guaranteed, and the relevant header files are not installed.  Only INN
 should use INN's shared libraries, and you should only use the shared
 libraries corresponding to the version of INN that you're installing.
 
-Also, when updating an existing version of INN, INN tries to save backup
-copies of all files but man pages so that you can revert to the previous
-installed version.  Unfortunately, when using shared libraries, this
-confuses B<ldconfig> on some systems (such as Linux) and the symbolic
-links for the libraries may point to the C<.OLD> versions.  If this
-happens, you can either fix the links by hand or remove the C<.OLD>
-versions and re-run B<ldconfig>.
+Also, when updating an existing version of INN, INN tries to save
+backup copies of all files but man pages and shared libraries so that
+you can revert to the previous installed version.  Shared libraries
+are not backed up because this confuses B<ldconfig> on some systems
+(such as Linux) and the symbolic links for the libraries may point to
+the C<.OLD> versions.  Nonetheless, reverting to a previous version of
+INN should work fine for official releases (that is to say releases
+that are not daily STABLE or CURRENT snapshots) because a proper
+versioning is done, if needed, during the release of a new version.
 
 If you are configuring TLS/SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:
