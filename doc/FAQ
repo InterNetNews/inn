@@ -207,10 +207,6 @@ to the latter is off the INN page referenced above.
 
 Finally, the following additional links may be useful:
 
-<http://web.inter.nl.net/users/Elena.Samsonova/unix/INN/v2.3/>
-    Excellent introductory and overview documentation for INN 2.3 and
-    later.
-
 <http://aplawrence.com/Unixart/newsserver.html>
     A tutorial on setting up INN aimed at beginners using SCO Unix.  While
     it's mostly focused on SCO, it may be useful for any beginner to INN
