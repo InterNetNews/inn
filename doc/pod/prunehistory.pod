@@ -32,11 +32,6 @@ the correct format.  If the B<-p> flag is used, then the program will
 silently print any invalid lines on its standard output.  (Blank lines
 and comment lines are also passed through.)
 
-This can be useful when B<prunehistory> is used as a filter for other
-programs such as B<reap> (a legacy program, probably no longer useful
-with current versions of INN, but still available at
-L<ftp://ftp.ruhr-uni-bochum.de/.subdisc1/local/jk.collection/>).
-
 =item B<-f> I<filename>
 
 The default name of the F<history> file is I<pathdb>/history; to specify
