@@ -55,9 +55,10 @@ $(FIXSCRIPT):
 INNFEEDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 config_y.c config_y.h: configfile.y
-	$(YACC) -d $?
+	$(YACC) -d configfile.y
 	mv y.tab.h config_y.h
 	mv y.tab.c config_y.c
+	touch config_y.h
 config_y.h: config_y.c
 
 config_l.c: configfile.l
