@@ -50,7 +50,7 @@ the L<DB_CONFIG> section.
 
 To enable ovdb, set the I<ovmethod> parameter in F<inn.conf> to C<ovdb>.
 The ovdb database is stored in the directory specified by the
-I<pathoverview> paramter in F<inn.conf>.  This is the "DB_HOME" directory.
+I<pathoverview> parameter in F<inn.conf>.  This is the "DB_HOME" directory.
 To start out, this directory should be empty (other than an optional
 F<DB_CONFIG> file; see L<DB_CONFIG> for details) and B<innd> (or
 B<makehistory>) will create the files as necessary in that directory.
