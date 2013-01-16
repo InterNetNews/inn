@@ -638,7 +638,7 @@ at its leisure.  File feeds are most frequently used in combination with
 nntpsend(8).
 
 A program feed (B<Tp>) spawns a given program for every article that the
-site receives.  The I<paramter> field must be the command line to execute,
+site receives.  The I<parameter> field must be the command line to execute,
 and should contain one instance of C<%s>, which will be replaced by the
 storage API token of the article (the actual article can be retrieved by
 the program using sm(8)).  The program will not receive anything on
