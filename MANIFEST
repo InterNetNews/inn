@@ -880,7 +880,6 @@ tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
-tests/lib/setenv.t                    Wrapper for setenv tests
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strlcat-t.c                 Tests for lib/strlcat.c
 tests/lib/strlcpy-t.c                 Tests for lib/strlcpy.c

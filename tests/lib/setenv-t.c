@@ -37,10 +37,7 @@ static const char test_value2[] = "Do not use Happy Fun Ball on concrete.";
 int
 main(void)
 {
-    char *value;
-    int status;
-
-    plan(12);
+    plan(8);
 
     if (getenv(test_var))
         bail("%s already in the environment!", test_var);
@@ -54,22 +51,5 @@ main(void)
     ok(test_setenv(test_var, "", 1) == 0, "overwrite with empty string");
     is_string("", getenv(test_var), "...and getenv correct");
 
-    /* We're run by a shell script wrapper that sets resource limits such
-     * that we can allocate one string of this size but not two.  Note that
-     * Linux doesn't support data limits, so skip if we get an unexpected
-     * success here.
-     */
-    value = xmalloc(100 * 1024);
-    memset(value, 'A', 100 * 1024 - 1);
-    value[100 * 1024 - 1] = 0;
-    ok(test_setenv(test_var, value, 0) == 0, "set string 3");
-    is_string("", getenv(test_var), "...and getenv empty");
-    status = test_setenv(test_var, value, 1);
-    if (status == 0) {
-        skip_block(2, "no data limit support");
-    } else {
-        ok((status == -1) && (errno == ENOMEM), "overwrite string 3");
-        is_string("", getenv(test_var), "...and getenv still empty");
-    }
     return 0;
 }

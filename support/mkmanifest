@@ -284,7 +284,7 @@ tests/lib/network.t
 tests/lib/pread.t
 tests/lib/pwrite.t
 tests/lib/qio.t
-tests/lib/setenv.tr
+tests/lib/setenv.t
 tests/lib/snprintf.t
 tests/lib/strlcat.t
 tests/lib/strlcpy.t
