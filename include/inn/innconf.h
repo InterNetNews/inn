@@ -122,12 +122,10 @@ struct innconf {
     unsigned long backofftrigger;  /* Number of postings before triggered */
 
     /* Reading and posting -- SSL and TLS support */
-#ifdef HAVE_SSL
     char *tlscafile;            /* Path to a certificate authority file */
     char *tlscapath;            /* Path to a directory of CA certificates */
     char *tlscertfile;          /* Path to the SSL certificate to use */
     char *tlskeyfile;           /* Path to the key for the certificate */
-#endif /* HAVE_SSL */
 
     /* Monitoring */
     bool doinnwatch;            /* Start innwatch from rc.news? */
