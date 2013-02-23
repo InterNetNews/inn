@@ -16,12 +16,6 @@ libinn \- InterNetNews library routines
 .B "HeaderCleanFrom(from)"
 .B "    char	*from;"
 
-.B "char *"
-.B "HeaderFind(Article, Header, size)"
-.B "    char	*Article;"
-.B "    char	*Header;"
-.B "    int	size;"
-
 .B "FILE *"
 .B "CAopen(FromServer, ToServer)"
 .B "    FILE	*FromServer;"
@@ -166,20 +160,6 @@ stuff <address>	-->  address
 .RE
 The transformations are simple, based on RFC\ 5536 which limits the format
 of the header.
-.PP
-.I HeaderFind
-searches through
-.I Article
-looking for the specified
-.IR Header .
-.I Size
-should be the length of the header name.
-It returns a pointer to the value of the header, skipping leading whitespace,
-or NULL if the header cannot be found.
-.I Article
-should be a standard C string containing the text of the article; the end
-of the headers is indicated by a blank line \(em two consecutive \en
-characters.
 .PP
 .I CAopen
 and
