@@ -238,7 +238,7 @@ Article newArticle (const char *filename, const char *msgid)
               newArt->fname) ;
       
       newArt->refCount++ ;
-      d_printf (2,"Reusing existing article for %s\nx",msgid) ;
+      d_printf (2,"Reusing existing article for %s\n",msgid) ;
     }
   TMRstop(TMR_NEWARTICLE);
   return newArt ;
