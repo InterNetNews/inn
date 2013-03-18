@@ -629,11 +629,14 @@ CCflush(char *av[])
 
 
 /*
-**  Flush the log files.
+**  Flush the log files as well as exploder and process channels.
 */
 static const char *
 CCflushlogs(char *unused[])
 {
+    SITE        *sp;
+    CHANNEL     *cp;
+    int         i;
     unused = unused;		/* ARGSUSED */
 
     if (Debug)
@@ -643,6 +646,15 @@ CCflushlogs(char *unused[])
     syslog(L_NOTICE, "%s flushlogs %s", LogName, CCcurrmode());
     ReopenLog(Log);
     ReopenLog(Errlog);
+    /* Flush exploder and process channels so that they take into account
+     * the new log files (for instance during log rotation). */
+    for (sp = Sites, i = nSites; --i >= 0; sp++) {
+        if (((cp = sp->Channel) != NULL)
+             && ((cp->Type == CTexploder) || (cp->Type == CTprocess))) {
+            SITEflush(sp, true);
+            syslog(L_NOTICE, "%s flush", sp->Name);
+        }
+    }
     return NULL;
 }
 

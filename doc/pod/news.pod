@@ -1,3 +1,15 @@
+=head1 Changes in 2.5.4
+
+=item *
+
+When using funnel feeds, B<innfeed> log files were open forever, which
+resulted in empty log files, once rotated by B<scanlogs>.  Exploder and
+process channels are now reopened when C<ctlinnd flushlogs> is used,
+which is in particular the command invoked by B<scanlogs> to rotate
+log files.
+
+=back
+
 =head1 Changes in 2.5.3
 
 Please note that the HTML_STATUS compile-time option has been replaced
