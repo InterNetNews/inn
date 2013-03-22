@@ -150,7 +150,8 @@ new B<innfeed> process while the old process shuts down cleanly.
 
 Close the news and error log files and rename them to add C<.old> to the
 file name, then open fresh news and error logs.  The F<active> file and
-history database are also flushed to disk.
+history database are also flushed to disk.  Exploder and process channels
+are reopened so that they properly take into account the new log files.
 
 =item go I<reason>
 
