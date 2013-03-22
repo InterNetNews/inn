@@ -1,5 +1,7 @@
 =head1 Changes in 2.5.4
 
+=over 2
+
 =item *
 
 When using funnel feeds, B<innfeed> log files were open forever, which
