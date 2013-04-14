@@ -881,7 +881,7 @@ OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
     fprintf(ToServer, "IHAVE %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
-	snprintf(buff, sizeof(buff), CANTSEND, "IHAVE", strerror(errno));
+	snprintf(buff, buffsize, CANTSEND, "IHAVE", strerror(errno));
 	return -1;
     }
     return atoi(buff);
