@@ -1168,19 +1168,20 @@ CHANreadloop(void)
         count = select(channels.max_fd + 1, &rdfds, &wrfds, NULL, &tv);
         TMRstop(TMR_IDLE);
 
-        STATUSmainloophook();
-        if (GotTerminate) {
-            warn("%s exiting due to signal", LogName);
-            CleanupAndExit(0, NULL);
-        }
         if (count < 0) {
             if (errno != EINTR) {
                 syswarn("%s cant select", LogName);
 #ifdef INND_FIND_BAD_FDS
                 CHANdiagnose();
-#endif
+#endif      
             }
             continue;
+        }
+
+        STATUSmainloophook();
+        if (GotTerminate) {
+            warn("%s exiting due to signal", LogName);
+            CleanupAndExit(0, NULL);
         }
 
         /* Update the "reasonably accurate" time. */
