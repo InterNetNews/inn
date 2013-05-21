@@ -49,6 +49,10 @@ typedef struct {
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack(1)
 #endif /* nor lint, nor __SUNPRO_C, nor sgi, nor _nec_ews */
+/* Leave the PACKED on there because removing it might change the layout of
+ * the data structure on disk on some platform, thus invalidating old history
+ * files.  It is fairly unlikely that this is a problem, though.
+ */
 typedef struct {
     char		hash[DBZ_INTERNAL_HASH_SIZE];
 } PACKED erec;
