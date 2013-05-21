@@ -525,24 +525,24 @@ level as follows:
 
 =over 2
 
-=item 0
+=item 0Z<>
 
 No debug or status reports (default).
 
-=item 1
+=item 1Z<>
 
 Print summary, but only if work was needed or done.
 
-=item 2
+=item 2Z<>
 
 Print actions, exec output, and summary, but only if work was needed or
 done.
 
-=item 3
+=item 3Z<>
 
 Print actions, exec output, and summary.
 
-=item 4
+=item 4Z<>
 
 Full debug output.
 
