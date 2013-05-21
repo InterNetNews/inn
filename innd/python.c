@@ -196,9 +196,7 @@ PYmidfilter(char *messageID, int msglen)
 **  Tell the external module about innd's state.
 */
 void
-PYmode(Mode, NewMode, reason)
-    OPERATINGMODE Mode, NewMode;
-    char *reason;
+PYmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
 {
     PyObject	*result;
     char	oldmode[10], newmode[10];

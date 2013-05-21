@@ -439,8 +439,7 @@ ICDrmgroup(NEWSGROUP *ngp)
 **  Open the active file and "map" it into memory.
 */
 char *
-ICDreadactive(endp)
-    char		**endp;
+ICDreadactive(char **endp)
 {
     struct stat		Sb;
 
