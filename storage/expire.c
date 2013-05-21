@@ -157,12 +157,6 @@ EXPsplit(char *p, char sep, char **argv, int count)
     if (!p)
       return 0;
 
-    while (*p == sep)
-      ++p;
-
-    if (!*p)
-      return 0;
-
     for (i = 1, *argv++ = p; *p; )
         if (*p++ == sep) {
             p[-1] = '\0';
