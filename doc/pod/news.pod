@@ -123,6 +123,13 @@ option to B<configure> has been removed.
 
 =item *
 
+As the name of the F<radius.conf> configuration file shipped with INN
+for the B<nnrpd> authenticator against a RADIUS server conflicts with
+the libradius package, this file is renamed to F<inn-radius.conf>
+(B<innupgrade> takes care of the rename during the update).
+
+=item *
+
 When using funnel feeds, B<innfeed> log files were open forever, which
 resulted in empty log files, once rotated by B<scanlogs>.  Exploder and
 process channels are now reopened when C<ctlinnd flushlogs> is used,

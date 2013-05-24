@@ -1,13 +1,13 @@
 =head1 NAME
 
-radius.conf - Configuration for nnrpd RADIUS authenticator
+inn-radius.conf - Configuration for nnrpd RADIUS authenticator
 
 =head1 DESCRIPTION
 
 This describes the format and attributes of the configuration file for the
-nnrpd RADIUS authenticator.  See radius(1) for more information about the
+nnrpd RADIUS authenticator.  See radius(8) for more information about the
 authenticator program.  The default location for this file is
-F<radius.conf> in I<pathetc>.
+F<inn-radius.conf> in I<pathetc>.
 
 Blank lines and lines beginning with C<#> are ignored, as is anything
 after a C<#> on a line.  All other lines should begin with a parameter
@@ -98,12 +98,12 @@ The shared secret with the RADIUS server is C<IamARADIUSsecRET>.
 =head1 HISTORY
 
 This documentation was written by Russ Allbery <rra@stanford.edu> based on
-the comments in the sample F<radius.conf> file by Yury S<B. Razbegin>.
+the comments in the sample F<inn-radius.conf> file by Yury S<B. Razbegin>.
 
 $Id$
 
 =head1 SEE ALSO
 
-radius(1)
+radius(8)
 
 =cut

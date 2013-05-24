@@ -68,7 +68,8 @@ use Getopt::Long qw(GetOptions);
            'filter.tcl'       => 'filter.tcl.OLD',
            'startup.tcl'      => 'startup.tcl.OLD',
 
-           'motd.news'        => 'motd.nnrpd'        # Rename in INN 2.5.3.
+           'motd.news'        => 'motd.nnrpd',       # Rename in INN 2.5.3.
+           'radius.conf'      => 'inn-radius.conf'   # Rename in INN 2.5.4.
           );
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without

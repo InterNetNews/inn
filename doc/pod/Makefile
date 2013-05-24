@@ -25,7 +25,7 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/inn.conf.5 ../man/innfeed.conf.5 ../man/moderators.5 \
 	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
 	../man/newslog.5 ../man/nntpsend.ctl.5 ../man/ovdb.5 \
-	../man/passwd.nntp.5 ../man/radius.conf.5 ../man/readers.conf.5 \
+	../man/passwd.nntp.5 ../man/inn-radius.conf.5 ../man/readers.conf.5 \
 	../man/storage.conf.5 ../man/subscriptions.5
 
 MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
@@ -106,7 +106,7 @@ maintclean: distclean
 ../man/nntpsend.ctl.5:	nntpsend.ctl.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@
-../man/radius.conf.5:	radius.conf.pod		; $(POD2MAN) -s 5 $? > $@
+../man/inn-radius.conf.5: inn-radius.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/storage.conf.5:	storage.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/subscriptions.5:	subscriptions.pod	; $(POD2MAN) -s 5 $? > $@
