@@ -46,7 +46,7 @@ PATH_STORAGECONF	= ${PATHETC}/storage.conf
 PATH_CYCBUFFCONFIG	= ${PATHETC}/cycbuff.conf
 PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
-PATH_RADIUS_CONF	= ${PATHETC}/radius.conf
+PATH_RADIUS_CONF	= ${PATHETC}/inn-radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
 PATH_SENDUUCP_CF	= ${PATHETC}/send-uucp.cf
 PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
@@ -69,7 +69,7 @@ REST		= \
 	nnrpd.py \
 	nnrpd_auth.pl nnrpd_access.pl nocem.ctl \
         news2mail.cf readers.conf \
-	radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
+	inn-radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
 	ovdb.conf active.minimal \
 	newsgroups.minimal send-uucp.cf subscriptions
 
@@ -184,7 +184,7 @@ COPY_XPUB	= $(CP_XPUB)
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NEWSFEEDS):	newsfeeds	; $(COPY_RPUB) $? $@
 $D$(PATH_READERSCONF):	readers.conf	; $(COPY_RPUB) $? $@
-$D$(PATH_RADIUS_CONF):	radius.conf	; $(COPY_RPRI) $? $@
+$D$(PATH_RADIUS_CONF):	inn-radius.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_NNRPDTRACK):	nnrpd.track	; $(COPY_RPUB) $? $@
 $D$(PATH_CONTROLCTL):	control.ctl	; $(COPY_RPUB) $? $@
 $D$(PATH_CONTROLCTLLOCAL): control.ctl.local	; $(COPY_RPUB) $? $@
@@ -282,7 +282,7 @@ nocem.ctl:	../samples/nocem.ctl		; $(COPY) $? $@
 parsecontrol:	../samples/parsecontrol		; $(COPY) $? $@
 passwd.nntp:	../samples/passwd.nntp		; $(COPY) $? $@
 readers.conf:	../samples/readers.conf		; $(COPY) $? $@
-radius.conf:	../samples/radius.conf		; $(COPY) $? $@
+inn-radius.conf: ../samples/inn-radius.conf	; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 send-uucp.cf:	../samples/send-uucp.cf		; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@

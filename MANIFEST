@@ -153,6 +153,7 @@ doc/man/history.5                     Manpage for history database
 doc/man/ident.8                       Manpage for ident resolver
 doc/man/incoming.conf.5               Manpage for incoming.conf config file
 doc/man/inews.1                       Manpage for inews frontend
+doc/man/inn-radius.conf.5             Manpage for inn-radius.conf config file
 doc/man/inn.conf.5                    Manpage for inn.conf config file
 doc/man/innbind.8                     Manpage for innbind
 doc/man/inncheck.8                    Manpage for inncheck utility
@@ -206,7 +207,6 @@ doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.1                    Manpage for pullnews
 doc/man/qio.3                         Manpage for fast I/O file routines
 doc/man/radius.8                      Manpage for radius authenticator
-doc/man/radius.conf.5                 Manpage for radius.conf config file
 doc/man/rc.news.8                     Manpage for rc.news
 doc/man/readers.conf.5                Manpage for readers.conf config file
 doc/man/rnews.1                       Manpage for rnews frontend
@@ -265,6 +265,7 @@ doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/ident.pod                     Master file for ident.8
 doc/pod/incoming.conf.pod             Master file for incoming.conf.5
 doc/pod/inews.pod                     Master file for inews.1
+doc/pod/inn-radius.conf.pod           Master file for inn-radius.conf.5
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/inncheck.pod                  Master file for inncheck.8
@@ -307,7 +308,6 @@ doc/pod/procbatch.pod                 Master file for procbatch.8
 doc/pod/prunehistory.pod              Master file for prunehistory.8
 doc/pod/pullnews.pod                  Master file for pullnews.1
 doc/pod/qio.pod                       Master file for qio.3
-doc/pod/radius.conf.pod               Master file for radius.conf.5
 doc/pod/radius.pod                    Master file for radius.8
 doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
@@ -629,6 +629,7 @@ samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd
 samples/filter_nnrpd.pl               Sample Perl filter for nnrpd
 samples/incoming.conf                 Permissions for incoming feeds
+samples/inn-radius.conf               Sample config for RADIUS authentication
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
@@ -660,7 +661,6 @@ samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/nocem.ctl                     Config file for perl-nocem
 samples/ovdb.conf                     Berkeley DB overview configuration
 samples/passwd.nntp                   Passwords for remote connections
-samples/radius.conf                   Sample config for RADIUS authentication
 samples/readers.conf                  Reader connection configuration
 samples/send-uucp.cf                  send-uucp configuration file
 samples/startup_innd.pl               Perl startup code for innd

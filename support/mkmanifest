@@ -215,6 +215,7 @@ site/filter_innd.pl
 site/filter_innd.py
 site/filter_nnrpd.pl
 site/incoming.conf
+site/inn-radius.conf
 site/inn.conf
 site/innfeed.conf
 site/innreport.conf
@@ -241,7 +242,6 @@ site/nntpsend.ctl
 site/nocem.ctl
 site/ovdb.conf
 site/passwd.nntp
-site/radius.conf
 site/readers.conf
 site/send-uucp.cf
 site/startup_innd.pl

@@ -16,9 +16,9 @@ authenticator.  It is useful for a site that already does user
 authentication via RADIUS and wants to authenticate news reading
 connections as well.
 
-By default, B<radius> reads I<pathetc>/radius.conf for configuration
+By default, B<radius> reads I<pathetc>/inn-radius.conf for configuration
 information, but a different configuration file can be specified with
-B<-f>.  See radius.conf(5) for a description of the configuration file.
+B<-f>.  See inn-radius.conf(5) for a description of the configuration file.
 
 =head1 OPTIONS
 
@@ -26,7 +26,7 @@ B<-f>.  See radius.conf(5) for a description of the configuration file.
 
 =item B<-f> I<config>
 
-Read I<config> instead of I<pathetc>/radius.conf for configuration
+Read I<config> instead of I<pathetc>/inn-radius.conf for configuration
 information.
 
 =item B<-h>
@@ -70,7 +70,7 @@ $Id$
 
 =head1 SEE ALSO
 
-nnrpd(8), radius.conf(5), readers.conf(5)
+inn-radius.conf(5), nnrpd(8), readers.conf(5)
 
 S<RFC 2865>, Remote Authentication Dial In User Service.
 

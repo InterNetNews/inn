@@ -68,7 +68,7 @@
 #define INN_PATH_MOTD_INND              "motd.innd"
 #define INN_PATH_MOTD_NNRPD             "motd.nnrpd"
 #define INN_PATH_STORAGECTL             "storage.conf"
-#define INN_PATH_RADIUS_CONFIG          "radius.conf"
+#define INN_PATH_RADIUS_CONFIG          "inn-radius.conf"
 #define INN_PATH_FILESYSTEMS            "filesystems"
 
 /* Default prefix path is pathspool. */
