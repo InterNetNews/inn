@@ -572,6 +572,9 @@ static void sighup (int sig UNUSED)
     }
 
   configHosts (talkToSelf) ;
+
+  notice ("ME reloading log file %s", logFile) ;
+  openLogFile() ;
 }
 
 static void sigemt (int sig UNUSED)

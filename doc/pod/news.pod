@@ -12,10 +12,17 @@ the libradius package, this file is renamed to F<inn-radius.conf>
 =item *
 
 When using funnel feeds, B<innfeed> log files were open forever, which
-resulted in empty log files, once rotated by B<scanlogs>.  Exploder and
-process channels are now reopened when C<ctlinnd flushlogs> is used,
-which is in particular the command invoked by B<scanlogs> to rotate
-log files.
+resulted in empty log files, once rotated by B<scanlogs>.  B<innfeed>
+now reopens its log files upon receiving a HUP signal; this signal
+is in particular sent by B<scanlogs> during log rotation.  Thanks to
+Florian Schlichting for the patch.
+
+=item *
+
+Exploder and process channels are now reopened when C<ctlinnd flushlogs>
+is used.  Otherwise, they could hold open an already deleted F<errlog>
+file.  The issue affected in particular B<controlchan> or B<ninpaths>,
+running as such channels.
 
 =item *
 

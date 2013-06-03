@@ -693,6 +693,8 @@ will only affect new connections).
 
 Any new peers are added and any missing peers have their connections closed.
 
+The log file is also reopened.
+
 =head1 EXAMPLE
 
 For a comprehensive example, see the sample F<innfeed.conf> distributed
