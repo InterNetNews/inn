@@ -309,7 +309,18 @@ normal processing of it continues.  Otherwise, the article is rejected and
 the string returned by filter_post() is returned to the client as the
 error message (with some exceptions; see below).
 
-filter_post() has access to a global hash C<%hdr>, which contains all
+filter_post() has access to a global hash %attributes which contains
+information about the connection as follows:  C<$attributes{'hostname'}>
+will contain the hostname (or the IP address if it does not resolve)
+of the client machine, C<$attributes{'ipaddress'}> will contain its IP
+address (as a string), C<$attributes{'port'}> will contain the client
+port (as an integer), C<$attributes{'interface'}> contains the hostname
+of the interface the client connected on, C<$attributes{'intipaddr'}>
+contains the IP address (as a string) of the interface the client
+connected on, and C<$attributes{'intport'}> contains the port (as an
+integer) on the interface the client connected on.
+
+filter_post() also has access to a global hash C<%hdr>, which contains all
 of the headers of the article.  (Unlike the B<innd> Perl filter, C<%hdr>
 for the B<nnrpd> Perl filter contains *all* of the headers, not just the
 standard ones.  If any of the headers are duplicated, though, C<%hdr>
