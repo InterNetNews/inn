@@ -303,6 +303,7 @@ perlAccess(char *user, struct vector *access_vec)
     }
 
     free(buffer);
+    hv_undef(attribs);
 
     PUTBACK;
     FREETMPS;

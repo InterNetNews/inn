@@ -253,6 +253,8 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
         failure = false;
     }
 
+    hv_undef(mode);
+
     PUTBACK;
     FREETMPS;
     LEAVE;
