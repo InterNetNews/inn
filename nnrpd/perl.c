@@ -52,6 +52,7 @@ HandleHeaders(char *article)
 {
     dSP;
     HEADER *hp;
+    HV *attribs;
     HV *hdr;
     SV *body;
     int rc;
@@ -82,7 +83,16 @@ HandleHeaders(char *article)
     ENTER;
     SAVETMPS;
 
-    /* Create the Perl hash. */
+    /* Create the Perl attributes hash. */
+    attribs = perl_get_hv("attributes", true);
+    (void) hv_store(attribs, "hostname", 8, newSVpv(Client.host, 0), 0);
+    (void) hv_store(attribs, "ipaddress", 9, newSVpv(Client.ip, 0), 0);
+    (void) hv_store(attribs, "port", 4, newSViv(Client.port), 0);
+    (void) hv_store(attribs, "interface", 9, newSVpv(Client.serverhost, 0), 0);
+    (void) hv_store(attribs, "intipaddr", 9, newSVpv(Client.serverip, 0), 0);
+    (void) hv_store(attribs, "intport", 7, newSViv(Client.serverport), 0);
+
+    /* Create the Perl header hash. */
     hdr = perl_get_hv("hdr", true);
     for (hp = Table; hp < EndOfTable; hp++) {
         if (hp->Body)
@@ -177,6 +187,7 @@ HandleHeaders(char *article)
 #endif /* DEBUG_MODIFY */
     }
 
+    hv_undef(attribs);
     hv_undef(hdr);
     sv_setsv(body, &PL_sv_undef);
 

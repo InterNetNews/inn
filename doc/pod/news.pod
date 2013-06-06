@@ -130,6 +130,13 @@ the libradius package, this file is renamed to F<inn-radius.conf>
 
 =item *
 
+The attributes hash is now accessible to B<nnrpd> Perl posting filter.
+As a result, F<filter_nnrpd.pl> can make use of it.  Only authentication
+and access Perl hooks could previously use the attributes hash.
+Thanks to Steve Crook for this addition.
+
+=item *
+
 When using funnel feeds, B<innfeed> log files were open forever, which
 resulted in empty log files, once rotated by B<scanlogs>.  Exploder and
 process channels are now reopened when C<ctlinnd flushlogs> is used,
