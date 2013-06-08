@@ -25,6 +25,7 @@ CONTROLBATCH=${MOST_LOGS}/controlbatch.log
 INNFEEDCONF=${PATHETC}/innfeed.conf
 if [ -f "${INNFEEDCONF}" ]; then
     INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${INNFEEDCONF}`
+    INNFEEDPIDFILE=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "pid-file" && $2 == ":") print $3}' ${INNFEEDCONF}`
 fi
 INNFEED=
 for F in "${INNFEEDLOG}" ; do
@@ -112,8 +113,8 @@ if ${ROTATE} ; then
     PAUSED=false
     ctlinnd -s pause "Flushing log and syslog files" 2>&1 && PAUSED=true
 
-    # First, flush log files to be sure everything has been recorded
-    # before rotating them.
+    ##  First, flush log files to be sure everything has been recorded
+    ##  before rotating them.
     OUTPUT=`ctlinnd flushlogs 2>&1`
     if [ "$OUTPUT" != "Ok" -a "$OUTPUT" != "In debug mode" ]; then
 	echo "$OUTPUT"
@@ -160,14 +161,17 @@ if ${ROTATE} ; then
     ##  Tally control messages if we logged them.
     test -n "${CONTROL_DATA}" && cat ${CONTROL_DATA} | ${TALLY_CONTROL}
 
-    # Flush again log files so that freshly rotated new log files
-    # are properly taken into account.
-    OUTPUT=`ctlinnd flushlogs 2>&1`
-    if [ "$OUTPUT" != "Ok" -a "$OUTPUT" != "In debug mode" ]; then
-        echo "$OUTPUT"
-        echo 'Cannot flush logs.'
-        rm -f ${LOCK}
-        exit 1
+    ##  Find out the PID of innfeed now and not at the beginning of scanlogs
+    ##  because it is restarted when running ctlinnd flushlogs.
+    INNFEEDPID=
+    for F in "${INNFEEDPIDFILE}" ; do
+        test -f "${PATHRUN}/${F}" && INNFEEDPID=`cat "${PATHRUN}/${F}"`
+    done
+    test -z "${INNFEEDPID}" && test -f "${PATHRUN}/innfeed.pid" && INNFEEDPID=`cat "${PATHRUN}/innfeed.pid"`
+
+    ##  Send a HUP signal to innfeed so that it reopens its log files.
+    if [ ! -z ${INNFEEDPID} ]; then
+        kill -HUP ${INNFEEDPID} > /dev/null 2>&1
     fi
 
     ${PAUSED} && ctlinnd -s go "Flushing log and syslog files" 2>&1

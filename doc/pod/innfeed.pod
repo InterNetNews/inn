@@ -141,8 +141,8 @@ on the command line, and will reopen it (see funnel file description above).
 B<innfeed> with catch SIGINT and will write a large debugging snapshot of
 the state of the running system.
 
-B<innfeed> will catch SIGHUP and will reload the config file.
-See innfeed.conf(5) for more details.
+B<innfeed> will catch SIGHUP and will reload both the config and the
+log files.  See innfeed.conf(5) for more details.
 
 B<innfeed> will catch SIGCHLD and will close and reopen all backlog files.
 
