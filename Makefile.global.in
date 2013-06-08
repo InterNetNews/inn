@@ -68,27 +68,50 @@ CCOUTPUT	= @CCOUTPUT@
 ##  useful warnings unless there's something that makes them unsuitable.  In
 ##  particular, the following warnings are *not* included:
 ##
-##    -ansi		Requires messing with feature test macros.
-##    -pedantic		Too much noise from embedded Perl.
-##    -Wtraditional	We assume ANSI C, so these aren't interesting.
-##    -Wshadow		Names like log or index are too convenient.
-##    -Wcast-qual	Used for a while, but some casts are unavoidable.
-##    -Wconversion	Too much unsigned to signed noise.
-##    -Wredundant-decls Too much noise from system headers.
+##    -ansi                 Requires messing with feature test macros.
+##    -pedantic             Too much noise from embedded Perl.
+##    -Wswitch-default      Quite annoying to enforce it.
+##    -Wstrict-overflow=2   Gives false positives.
+##    -Wtraditional         We assume ANSI C, so these aren't interesting.
+##    -Wtraditional-conversion
+##                          Warns about problems when upgrading from K&R to
+##                          ANSI C, so these aren't interesting.
+##    -Wundef               We need portability code.
+##    -Wshadow              Names like log or index are too convenient.
+##    -Wunsafe-loop-optimizations
+##                          Too much noise.
+##    -Wcast-qual           Used for a while, but some casts are unavoidable.
+##    -Wconversion          Too much unsigned to signed noise.
+##    -Waggregate-return    Syntax allowed in C.
+##    -Wmissing-noreturn    Not necessary (unless for optimization).
+##    -Wpacked              Used by INN.
+##    -Wpadded              Used by INN.
+##    -Wredundant-decls     Too much noise from system headers.
+##    -Woverlength-strings  Useless noise.
 ##
 ##  Some may be worth looking at again once a released version of gcc doesn't
 ##  warn on system headers.  The warnings below are in the same order as
 ##  they're listed in the gcc manual.
 ##
-##  Add -g because when building with warnings one generally also wants the
+##  Last checked against gcc 4.4.5 (2010-10-01).
+##  Add -g because when building with warnings, one generally also wants the
 ##  debugging information, and add -O2 because gcc won't find some warnings
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
 ##  compile all debugging code and check it as well.
+##  It would be worthwhile trying to enforce the following checks:
+##  -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
+##  on glibc functions on Linux, as well as more object size checking,
+##  which catches a few more issues.
+##  -Wformat=2, -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
+##  "-Wconversion -Wno-sign-conversion", -Wmissing-format-attribute
+##  -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 
-WARNINGS	= -g -O2 -DDEBUG=1 -Wall -W -Wendif-labels -Wpointer-arith \
+WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Winit-self \
+                  -Wsync-nand -Wendif-labels -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
-		  -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs \
-		  -Werror
+		  -Wstrict-prototypes -Wold-style-definition \
+                  -Wmissing-prototypes -Wmissing-declarations \
+                  -Wnormalized=nfc -Wnested-externs -Winline -Wvla
 
 ##  Some warnings have to be suppressed for Perl, since there's no way to work
 ##  around the Perl header problems in INN code.
