@@ -301,9 +301,9 @@ Large file support is not necessary unless your F<history> database is so
 large that it exceeds S<2 GB> or you want to use CNFS buffers larger than
 S<2 GB>.
 
-The history, tradindexed and buffindexed overview, CNFS, and timecaf
-databases written by an INN built with this option are incompatible with
-those written by an INN without this option.
+The history, tradindexed and buffindexed overview, and timecaf databases
+written by an INN built with this option are incompatible with those
+written by an INN without this option.  (CNFS buffers are compatible.)
 
 =item B<--enable-tagged-hash>
 
