@@ -283,12 +283,21 @@ Begin with auth.  Your auth for password users could look like this:
         default: "<unauthenticated>"
     }
 
-There is a Perl script in the ckpasswd(8) man page if you want to do
-authentications by password and have the appropriate libraries.  Copy it
-to I<pathbin>, name the file something like F<makepasswd.pl> and change the
-internal paths to whatever you're using and wherever you're putting the
-newsusers database.  The standard Apache B<htpasswd> tool also works
-just fine to create INN password files.
+There is a Perl script in the ckpasswd(8) man page if you want to
+do authentications by password and have the appropriate libraries.
+Copy it to I<pathbin>, name the file something like F<makepasswd.pl> and
+change the internal paths to whatever you're using and wherever you're
+putting the newsusers database.  The standard Apache B<htpasswd> tool
+also works just fine to create INN password files, as well as pure Perl.
+For instance, a line for the newsusers database corresponding to the
+user C<user> with the password C<pass> would be C<user:LIfOpbjNaEQYE>
+as obtained by the following commands::
+
+    % htpasswd -nbd user pass
+    user:LIfOpbjNaEQYE
+
+    % perl -e 'print "user:".crypt("pass", "LI")."\n";'
+    user:LIfOpbjNaEQYE
 
 Follow with the access stanzas.  Something for people with passwords:
 
