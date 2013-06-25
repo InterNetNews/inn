@@ -343,7 +343,7 @@ typedef struct connection_s {
     int imap_disconnects;
     char *imap_tofree_str;
 
-    char imap_currentTag[IMAP_TAGLENGTH];
+    char imap_currentTag[IMAP_TAGLENGTH+1];
     int  imap_tag_num;
 
     /* Timer for the max amount of time to wait for a response from the
@@ -2383,7 +2383,7 @@ static void imap_writeCB (EndPoint e UNUSED, IoStatus i UNUSED, Buffer *b,
 
 static void imap_GetTag(connection_t *cxn)
 {
-    sprintf(cxn->imap_currentTag,"%06d",cxn->imap_tag_num);
+    snprintf(cxn->imap_currentTag, IMAP_TAGLENGTH+1, "%06d", cxn->imap_tag_num);
     cxn->imap_tag_num++;
     if (cxn->imap_tag_num >= 999999)
     {

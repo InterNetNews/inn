@@ -33,7 +33,13 @@ running as such channels.
 
 =item *
 
-Fix a Perl warning in B<inncheck>; using C<defined(@array)> has been
+Fixed a buffer overflow when using B<imapfeed> with more than a million
+commands during the same IMAP session.  Thanks to David Binderman for
+the bug report.
+
+=item *
+
+Fixed a Perl warning in B<inncheck>; using C<defined(@array)> has been
 deprecated since S<Perl 5.16>.
 
 =item *
