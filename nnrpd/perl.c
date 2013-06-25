@@ -217,6 +217,11 @@ HandleHeaders(char *article)
 
     if (buf[0] != '\0')
         return buf;
+
+#ifdef DEBUG_MODIFY
+    fclose(flog);
+#endif /* DEBUG_MODIFY */
+
     return NULL;
 }
 

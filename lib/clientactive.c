@@ -74,6 +74,7 @@ CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 	if (strcmp(CApathname, pathname) == 0)
             CAclose();
 	errno = oerrno;
+        fclose(F);
 	return NULL;
     }
 

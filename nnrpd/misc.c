@@ -335,6 +335,7 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
      if (fgets(buff,SMBUF,fp) == NULL) {
        syslog(L_ERROR, "%s Error reading '%s': %s",
               Client.host, path, strerror(errno));
+       fclose(fp);
        return 0;
      }
      *lastpost = atol(buff);
@@ -342,6 +343,7 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
      if ((s = strchr(buff,',')) == NULL) {
        syslog(L_ERROR, "%s bad data in postrec file: '%s'",
               Client.host, buff);
+       fclose(fp);
        return 0;
      }
      s++; *lastsleep = atol(s);
@@ -349,6 +351,7 @@ GetPostRecord(char *path, long *lastpost, long *lastsleep, long *lastn)
      if ((s = strchr(s,',')) == NULL) {
        syslog(L_ERROR, "%s bad data in postrec file: '%s'",
               Client.host, buff);
+       fclose(fp);
        return 0;
      }
      s++; *lastn = atol(s);
