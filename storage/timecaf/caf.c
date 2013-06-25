@@ -1559,15 +1559,14 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	    ** this next fseeko might actually fail, because we have buffered
 	    ** stuff that might fail on write.
 	    */
-	    if (fseeko(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
-		       SEEK_SET) < 0) {
-		perror(path);
-		free(tocarray);
-		free(newpath);
-		fclose(infile);
-		unlink(newpath);
-		return -1;
-	    }
+            if (fseeko(infile, sizeof(CAFHEADER) + head.FreeZoneTabSize,
+                       SEEK_SET) < 0) {
+                perror(path);
+                free(tocarray);
+                free(newpath);
+                fclose(infile);
+                return -1;
+            }
 	    if (fwrite(tocarray, sizeof(CAFTOCENT), head.High - newlow + 1, infile) < head.High - newlow + 1
 		|| fflush(infile) < 0) {
 		CAFError(CAF_ERR_IO);
@@ -1682,7 +1681,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 
     /* initialize blocksize, zeroes buffer. */
     blocksize = newhead.BlockSize;
-    if (blocksize == 0) blocksize=CAF_DEFAULT_BLOCKSIZE;
+    if (blocksize == 0) {
+        blocksize=CAF_DEFAULT_BLOCKSIZE;
+    }
 
     zerobuff = xcalloc(blocksize, 1);
 
