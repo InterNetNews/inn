@@ -75,6 +75,7 @@ Subject: Contents
     5.2.  Using raw devices on Solaris destroys the partition table
     5.3.  Will INN run on Windows?
     5.4.  Why aren't INN's files where the documentation says they are?
+    5.5.  Running INN on Mac OS X
 
 6.  How Do I...
     6.1.  Set up a server with no external feeds, just local groups
@@ -1036,6 +1037,40 @@ puts logs in /var/log/news and pathtmp in /usr/local/news/spool/tmp.
 Most packages install INN's man pages into a system man directory
 (/usr/share/man or /usr/local/man) rather than into a separate man
 directory under news's home directory.
+
+------------------------------
+
+Subject: 5.5. Running INN on Mac OS X
+
+Richard Tobin provided the following advice in news.software.nntp on
+2013-06-29 based on experience with running INN on Snow Leopard:
+
+    Mac OS X, at least through the GUI, won't let you create a group with
+    the same name as a user.  So you can't use "news" for both.
+    
+    The Perl module GD isn't installed by default.  GPG is not installed
+    by default.
+    
+    You probably want to turn off Spotlight for the news spool directory.
+    
+    Configure didn't get the Perl compile flags right.  PERL_CPPFLAGS had
+    "-arch x86_64 -arch i386 -arch ppc", but on this x86_64 machine the
+    files for the other architectures don't seem to be installed.  I
+    edited Makefile.global by hand to remove them.
+    
+    I needed to tell the application firewall to allow innd to accept
+    incoming connections.  (A window pops up to ask you, but this doesn't
+    help when you're connected by ssh!)
+    
+    When I ran rc.news form a terminal window, it stopped working when I
+    logged out.  This is because of MacOS's convoluted and undocumented
+    way of doing DNS lookups.  Using "nohup" fixed it -- not because of
+    anything to do with SIGHUP, but because nohup calls an undocumented
+    function related to "vprocmgr".  Running from launchd shouldn't have
+    this problem, and it appears to be fixed in Mountain Lion.
+
+The Perl flags come from the Perl configuration, so this problem may be
+fixed with newer builds of Mac OS X.
 
 ------------------------------
 
