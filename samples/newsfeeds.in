@@ -31,16 +31,19 @@
 ##
 ##  "/distrib" for this feed entry specifies what distributions the server
 ##  will accept.  If any distributions are listed there, the server will
-##  accept only articles with those distributions.  If all the
-##  distributions listed are negated (starting with !), then the server
-##  will only accept articles without those distributions.
+##  accept only articles with those distributions and articles that do not
+##  have a Distribution: header field.  If all the distributions listed are
+##  negated (starting with "!"), then the server will only accept articles
+##  without those distributions and articles that do not have a Distribution:
+##  header field.
 ##
 ##  For the ME line (and the ME line *only*), patterns affect *outgoing*
 ##  feeds and distributions affect *incoming* feeds (including local posts).
 
 # Empty default subscription list, reject all incoming articles (including
 # locally posted articles) with a distribution of "local" or
-# "collabra-internal", accept all others.
+# "collabra-internal", accept all others (including articles that do not
+# have a Distribution: header field).
 ME:!*/!local,!collabra-internal::
 
 # The same as the above, but would reject all posts that have
