@@ -189,10 +189,13 @@ C<foo.*> explicitly appears in the site's subscription list.  This feature
 tends to be somewhat confusing since the default subscription is prepended
 and can be overridden by other patterns.
 
-If the C<ME> entry has a distribution sub-field, only articles that match
-that distribution list are accepted and all other articles are rejected.
-A common use for this is to put something like C</!local> in the C<ME>
-entry to reject local postings from other misconfigured sites.
+If the C<ME> entry has a distribution sub-field, only articles that
+match that distribution list are accepted and all other articles with a
+distribution are rejected.  A common use for this is to put something
+like C</!local> in the C<ME> entry to reject local postings from other
+misconfigured sites.  The distribution sub-field of C<ME> has no effect on
+the acceptance or rejection of articles that do not have a Distribution
+header field.
 
 An empty C<ME> entry is possible, in which case no exclusion patterns will
 be defined.
