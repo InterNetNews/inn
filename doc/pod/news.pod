@@ -115,6 +115,11 @@ F<pullnews.marks> in I<pathdb> (instead of F<.pullnews> in I<pathnews>).
 Building with Libtool is no longer optional.  The B<--enable-libtool>
 option to B<configure> has been removed.
 
+=item *
+
+For security reasons, use of the flawed SSLv2 protocol is now disabled
+for TLS sessions with B<nnrpd>.
+
 =back
 
 =head1 Changes in 2.5.4

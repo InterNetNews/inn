@@ -450,6 +450,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     };
 
     off |= SSL_OP_ALL;		/* Work around all known bugs. */
+#ifdef SSL_OP_NO_SSLv2
+    off |= SSL_OP_NO_SSLv2;     /* Too many holes in SSLv2. */
+#endif
     SSL_CTX_set_options(CTX, off);
     SSL_CTX_set_info_callback(CTX, apps_ssl_info_callback);
     SSL_CTX_sess_set_cache_size(CTX, 128);
