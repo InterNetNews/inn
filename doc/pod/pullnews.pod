@@ -267,10 +267,9 @@ the username C<pull> and the password C<sekret>.
 The Perl script itself used to pull news from upstream servers and feed
 it to another news server.
 
-=item I<$HOME>/.pullnews
+=item ~/.pullnews
 
-The default config file.  It is in the running user's home directory
-(normally called F<~/.pullnews>).
+The default config file.  It is in the running user's home directory.
 
 =back
 

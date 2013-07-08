@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
-# fixscript will replace this line with code to load INN::Config
-#
+# use lib '@LIBPERLDIR@'; use INN::Config;
+# If running inside INN, uncomment the above and point to INN::Config.
+# 
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
 # Project:      INN
@@ -22,7 +23,7 @@
 #               machines (in the guise of a reader), and pulls over articles 
 #               and feeds them to a downstream server (in the guise of a feeder).
 #
-#               Uses a simple configuration file:  $HOME/.pullnews to define
+#               Uses a simple configuration file:  ~/.pullnews to define
 #               which machines to pull articles from and which groups at each
 #               machine to pull over.  There is also support for more specific
 #               configurations like cross-posted newsgroups to kill, thanks to
@@ -63,11 +64,10 @@ use Net::NNTP 2.18; # With libnet 1.0606 (10-Dec-1998) because older versions
 use Getopt::Std;
 use IO::Handle;
 use POSIX qw(ceil floor);
-use INN::Utils::Shlock;
 use strict;
 
 my $usage = $0;
-my $defaultConfig = "$ENV{HOME}/.pullnews";
+my $defaultConfig = (getpwuid($<))[7] . "/.pullnews";
 my $defaultPort = 119;
 my $defaultHost = "localhost";
 my $defaultCheckPoint = 0;
@@ -76,10 +76,34 @@ my $defaultDebug = 0;
 my $defaultRetryTime = 1;
 my $defaultProgressWidth = 50;
 my $defaultMaxArts;
+my $lockfile;
+
+# Check whether pullnews is run inside INN.
+my $use_inn_shlock = 0;
+eval {
+    require INN::Utils::Shlock;
+    import INN::Utils::Shlock;
+    $use_inn_shlock = 1;
+};
+
+# In case pullnews is run outside INN, fall back to call flock(2)
+# and its corresponding Perl function instead of shlock (a program
+# shipped with INN).
+# Note that this Perl function does not work as expected on all
+# existing systems (for instance on Solaris).
+if (not $use_inn_shlock) {
+    use Fcntl;
+    use Fcntl qw(:flock);
+}
 
 END {
     # In case we bail out, while holding a lock.
-    INN::Utils::Shlock::releaselocks();
+    if ($use_inn_shlock) {
+        INN::Utils::Shlock::releaselocks();
+    } elsif (defined $lockfile) {
+        flock (LOCK, LOCK_UN);
+        unlink $lockfile;
+    }
 }
 
 $usage =~ s!.*/!!;
@@ -97,7 +121,7 @@ $usage .= " [ -hnqRx -b fraction -c config -C width -d level
                 the server.  The default is to do nothing.
 
   -c config     specify the configuration file instead of the 
-                default of $ENV{HOME}/.pullnews (also called ~/.pullnews).
+                default of ~/.pullnews (in the running user's home directory).
 
   -C width      use width characters for progress (default is $defaultProgressWidth).
 
@@ -277,10 +301,25 @@ open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 my $oldfh = select;
 $| = 1; select LOG; $| = 1; select $oldfh;
 
-my $lockfile = $groupFile . '.pid';
+$lockfile = $groupFile . '.pid';
 
 # Acquire a lock.
-INN::Utils::Shlock::lock($lockfile) or die "cannot create lockfile $lockfile\n";
+if ($use_inn_shlock) {
+    INN::Utils::Shlock::lock($lockfile) or die "cannot create lockfile $lockfile\n";
+} else {
+    sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700)
+        or die "cannot create lockfile $lockfile: $!\n";
+    $oldfh = select; select LOCK; $| = 1; select $oldfh;
+
+    if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
+        seek LOCK, 0, 0;
+        my $otherpid = <LOCK>;
+        chomp $otherpid;
+        die "Another pullnews (pid: $otherpid) seems to be running.\n";
+    }
+
+    print LOCK "$$\n";
+}
 
 print LOG scalar(localtime(time)), " start\n\n" unless $quiet;
 
@@ -541,7 +580,12 @@ sub outtaHere {
 
 sub cleanLock {
     # Unlock.
-    INN::Utils::Shlock::unlock($lockfile) if defined $lockfile;
+    if ($use_inn_shlock) {
+        INN::Utils::Shlock::unlock($lockfile) if defined $lockfile;
+    } else {
+        flock (LOCK, LOCK_UN);
+        unlink $lockfile if defined $lockfile;
+    }
 }
 
 sub bail {
