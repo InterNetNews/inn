@@ -663,7 +663,7 @@ TAP Harness).
 Make sure that F<samples/control.ctl> and F<samples/nocem.ctl> are in sync
 with the master version at
 L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
-L<http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>.
+L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 
 =item 3.
 
