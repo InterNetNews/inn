@@ -20,9 +20,13 @@ older versions of Perl, you can download it from L<http://www.cpan.org/>.
 
 =head1 DESCRIPTION
 
-B<pullnews> reads a config file named F<pullnews.marks> in I<pathdb> as set
-in F<inn.conf>, and connects to the upstream servers given there as a reader
-client.  By default, it connects to all servers listed in the configuration
+B<pullnews> reads a config file named F<pullnews.marks>, and connects
+to the upstream servers given there as a reader client.  This file is
+looked for in I<pathdb> when B<pullnews> is run as the user set in
+I<runasuser> in F<inn.conf> (which is by default the C<news> user);
+otherwise, this file is looked for in the running user's home directory.
+
+By default, B<pullnews> connects to all servers listed in the configuration
 file, but you can limit B<pullnews> to specific servers by listing them
 on the command line:  a whitespace-separated list of server names can be
 specified, like I<from-server> for one of them.  For each server it connects
@@ -46,10 +50,12 @@ a renumbered server.  The default is to do nothing.
 
 =item B<-c> I<config>
 
-Normally, the config file is stored in F<pullnews.marks> in I<pathdb>.
-If B<-c> is given, I<config> will be used as the config file instead.
-This is useful if you're running B<pullnews> as a system user on an automated
-basis out of cron or as an individual user, rather than the news user.
+Normally, the config file is stored in F<pullnews.marks> in I<pathdb>
+when B<pullnews> is run as the news user, or otherwise in the running
+user's home directory.  If B<-c> is given, I<config> will be used as
+the config file instead.  This is useful if you're running B<pullnews>
+as a system user on an automated basis out of cron or as an individual
+user, rather than the news user.
 
 See L<CONFIG FILE> below for the format of this file.
 
@@ -267,9 +273,11 @@ the username C<pull> and the password C<sekret>.
 The Perl script itself used to pull news from upstream servers and feed
 it to another news server.
 
-=item I<pathdb>/pullnews.marks
+=item I<pathdb>/pullnews.marks or ~/pullnews.marks
 
-The default config file.
+The default config file.  It is stored in F<pullnews.marks> in I<pathdb>
+when B<pullnews> is run as the news user, or otherwise in the running
+user's home directory.
 
 =back
 

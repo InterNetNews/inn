@@ -8,11 +8,13 @@ intervention may be needed:
 =item *
 
 The name and location of the B<pullnews> configuration file have changed.
-It is now F<pullnews.marks> in I<pathdb> (instead of F<.pullnews>
-in I<pathnews>).  If you use B<pullnews>, you need to manually move the
-configuration file; otherwise, it will no longer work.  Note that the B<-c>
-flag passed to B<pullnews> allows to specify another configuration file,
-if need be.
+It is now F<pullnews.marks>, located in I<pathdb> when B<pullnews> is
+run as the news user, or otherwise in the running user's home directory.
+This file was previously stored in F<.pullnews> in the running user's
+home directory (even for the news user).  If you use B<pullnews>, you
+need to manually move and rename the configuration file; otherwise,
+it will no longer work.  Note that the B<-c> flag passed to B<pullnews>
+allows to specify another configuration file, if need be.
 
 =item *
 
@@ -107,8 +109,11 @@ should handle itself the connection instead of B<nnrpd>.
 
 =item *
 
-The name and location of the B<pullnews> configuration file is now
-F<pullnews.marks> in I<pathdb> (instead of F<.pullnews> in I<pathnews>).
+The name of the B<pullnews> configuration file is now F<pullnews.marks>
+located in I<pathdb> when B<pullnews> is run as the news user, or
+otherwise in the running user's home directory.  It was previously
+stored in F<.pullnews> in the running user's home directory (even for
+the news user).
 
 =item *
 
@@ -160,6 +165,14 @@ running as such channels.
 Fixed a buffer overflow when using B<imapfeed> with more than a million
 commands during the same IMAP session.  Thanks to David Binderman for
 the bug report.
+
+=item *
+
+Fixed a regression that occurred in S<INN 2.5.3> regarding the path used
+by default by B<pullnews> for its configuration file.  Instead of looking
+in the running user's home directory, it was looking in the I<pathnews>
+directory parametered in F<inn.conf>.  Thanks to Tony Evans for the
+bug report.
 
 =item *
 
