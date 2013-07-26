@@ -5,7 +5,7 @@
 ##
 ##  Based on Rosalind Hengeveld's NoCeM Registry:
 ##
-##      <http://www.xs4all.nl/~rosalind/nocemreg/nocemreg.html>
+##      <http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>
 ##
 ##  Format:
 ##          issuer:notice1,notice2
