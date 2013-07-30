@@ -645,7 +645,7 @@ network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
     if (addr->sa_family == AF_INET6) {
         const struct sockaddr_in6 *sin6;
 
-        sin6 = (const struct sockaddr_in6 *) addr;
+        sin6 = (const struct sockaddr_in6 *) (void *) addr;
         if (IN6_IS_ADDR_V4MAPPED(&sin6->sin6_addr)) {
             struct in_addr in;
 
@@ -659,7 +659,7 @@ network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
     if (addr->sa_family == AF_INET) {
         const struct sockaddr_in *sin;
 
-        sin = (const struct sockaddr_in *) addr;
+        sin = (const struct sockaddr_in *) (void *) addr;
         result = inet_ntop(AF_INET, &sin->sin_addr, dst, size);
         return (result != NULL);
     } else {
@@ -677,20 +677,20 @@ network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
 bool
 network_sockaddr_equal(const struct sockaddr *a, const struct sockaddr *b)
 {
-    const struct sockaddr_in *a4 = (const struct sockaddr_in *) a;
-    const struct sockaddr_in *b4 = (const struct sockaddr_in *) b;
+    const struct sockaddr_in *a4 = (const struct sockaddr_in *) (void *) a;
+    const struct sockaddr_in *b4 = (const struct sockaddr_in *) (void *) b;
 
 #ifdef HAVE_INET6
-    const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *) a;
-    const struct sockaddr_in6 *b6 = (const struct sockaddr_in6 *) b;
+    const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *) (void *) a;
+    const struct sockaddr_in6 *b6 = (const struct sockaddr_in6 *) (void *) b;
     const struct sockaddr *tmp;
 
     if (a->sa_family == AF_INET && b->sa_family == AF_INET6) {
         tmp = a;
         a = b;
         b = tmp;
-        a6 = (const struct sockaddr_in6 *) a;
-        b4 = (const struct sockaddr_in *) b;
+        a6 = (const struct sockaddr_in6 *) (void *) a;
+        b4 = (const struct sockaddr_in *) (void *) b;
     }
     if (a->sa_family == AF_INET6) {
         if (b->sa_family == AF_INET6)
@@ -726,14 +726,14 @@ network_sockaddr_port(const struct sockaddr *sa)
     const struct sockaddr_in6 *sin6;
 
     if (sa->sa_family == AF_INET6) {
-        sin6 = (const struct sockaddr_in6 *) sa;
+        sin6 = (const struct sockaddr_in6 *) (void *) sa;
         return htons(sin6->sin6_port);
     }
 #endif
     if (sa->sa_family != AF_INET)
         return 0;
     else {
-        sin = (const struct sockaddr_in *) sa;
+        sin = (const struct sockaddr_in *) (void *) sa;
         return htons(sin->sin_port);
     }
 }

@@ -148,7 +148,7 @@ getnameinfo(const struct sockaddr *sa, socklen_t salen UNUSED, char *node,
     /* We only support AF_INET. */
     if (sa->sa_family != AF_INET)
         return EAI_FAMILY;
-    sin = (const struct sockaddr_in *) sa;
+    sin = (const struct sockaddr_in *) (const void *) sa;
 
     /* Name lookup. */
     if (node != NULL && nodelen > 0) {

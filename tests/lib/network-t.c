@@ -113,7 +113,7 @@ listener_any(socket_type fds[], unsigned int count)
     listener_handler(client);
     is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
     is_int(htonl(0x7f000001UL),
-           ((struct sockaddr_in *) saddr)->sin_addr.s_addr,
+           ((struct sockaddr_in *) (void *) saddr)->sin_addr.s_addr,
            "...and client address is 127.0.0.1");
     free(saddr);
     for (i = 0; i < count; i++)

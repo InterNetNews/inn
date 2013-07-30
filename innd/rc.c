@@ -149,19 +149,19 @@ GoodIdent(int fd, char *identd)
 #ifdef HAVE_INET6
     if (s_local->sa_family == AF_INET6)
     {
-	port1 = ntohs(((struct sockaddr_in6 *) s_local)->sin6_port);
-	port2 = ntohs(((struct sockaddr_in6 *) s_distant)->sin6_port);
-	((struct sockaddr_in6 *) s_local)->sin6_port = 0;
-	((struct sockaddr_in6 *) s_distant)->sin6_port = htons(PORT_IDENTD);
+        port1 = ntohs(((struct sockaddr_in6 *) (void *) s_local)->sin6_port);
+        port2 = ntohs(((struct sockaddr_in6 *) (void *) s_distant)->sin6_port);
+        ((struct sockaddr_in6 *) (void *) s_local)->sin6_port = 0;
+        ((struct sockaddr_in6 *) (void *) s_distant)->sin6_port = htons(PORT_IDENTD);
 	ident_fd = socket(PF_INET6, SOCK_STREAM, 0);
     } else
 #endif
     if (s_local->sa_family == AF_INET)
     {
-	port1 = ntohs(((struct sockaddr_in *) s_local)->sin_port);
-        port2 = ntohs(((struct sockaddr_in *) s_distant)->sin_port);
-	((struct sockaddr_in *) s_local)->sin_port = 0;
-	((struct sockaddr_in *) s_distant)->sin_port = htons(PORT_IDENTD);
+        port1 = ntohs(((struct sockaddr_in *) (void *) s_local)->sin_port);
+        port2 = ntohs(((struct sockaddr_in *) (void *) s_distant)->sin_port);
+        ((struct sockaddr_in *) (void *) s_local)->sin_port = 0;
+        ((struct sockaddr_in *) (void *) s_distant)->sin_port = htons(PORT_IDENTD);
 	ident_fd = socket(PF_INET, SOCK_STREAM, 0);
     } else
     {

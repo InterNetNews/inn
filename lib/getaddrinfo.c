@@ -176,15 +176,17 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
                  unsigned short port)
 {
     struct addrinfo *ai;
+    struct sockaddr_in *sin;
 
     ai = malloc(sizeof(*ai));
     if (ai == NULL)
         return NULL;
-    ai->ai_addr = malloc(sizeof(struct sockaddr_in));
-    if (ai->ai_addr == NULL) {
+    sin = calloc(1, sizeof(struct sockaddr_in));
+    if (sin == NULL) {
         free(ai);
         return NULL;
     }
+    ai->ai_addr = (struct sockaddr *) sin;
     ai->ai_next = NULL;
     if (canonical == NULL)
         ai->ai_canonname = NULL;
@@ -195,16 +197,15 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
             return NULL;
         }
     }
-    memset(ai->ai_addr, 0, sizeof(struct sockaddr_in));
     ai->ai_flags = 0;
     ai->ai_family = AF_INET;
     ai->ai_socktype = socktype;
     ai->ai_protocol = (socktype == SOCK_DGRAM) ? IPPROTO_UDP : IPPROTO_TCP;
     ai->ai_addrlen = sizeof(struct sockaddr_in);
-    ((struct sockaddr_in *) ai->ai_addr)->sin_family = AF_INET;
-    ((struct sockaddr_in *) ai->ai_addr)->sin_addr = addr;
-    ((struct sockaddr_in *) ai->ai_addr)->sin_port = htons(port);
-    sin_set_length((struct sockaddr_in *) ai->ai_addr);
+    sin->sin_family = AF_INET;
+    sin->sin_addr = addr;
+    sin->sin_port = htons(port);
+    sin_set_length(sin);
     return ai;
 }
 
