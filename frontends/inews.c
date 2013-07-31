@@ -462,7 +462,7 @@ FormatUserName(struct passwd *pwp, char *node)
 	    strncpy(out, pwp->pw_name, left);
 	    if (islower((unsigned char) *out)
 	     && (out == outbuff || !isalpha((unsigned char) out[-1])))
-		*out = toupper(*out);
+		*out = toupper((unsigned char) *out);
 	    while (*out) {
 		out++;
                 left--;

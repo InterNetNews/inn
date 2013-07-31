@@ -649,7 +649,7 @@ ARTcheckheader(CHANNEL *cp, int size)
   }
 
   /* See if this is a system header.  A fairly tightly-coded binary search. */
-  c = islower((unsigned char) *header) ? toupper(*header) : *header;
+  c = islower((unsigned char) *header) ? toupper((unsigned char) *header) : *header;
   for (*colon = '\0', tp = ARTheadertree; tp; ) {
     if ((i = c - tp->Name[0]) == 0 && (i = strcasecmp(header, tp->Name)) == 0)
       break;
