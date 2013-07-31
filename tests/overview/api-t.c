@@ -294,7 +294,7 @@ check_data(const char *group, ARTNUM artnum, const char *expected,
     }
     if (data->arrived != (time_t) artnum * 10) {
         warn("Arrival time wrong for %s:%lu: %lu != %lu", group, artnum,
-             data->arrived, artnum * 10);
+             (unsigned long) data->arrived, artnum * 10);
         status = false;
     }
 
@@ -304,7 +304,7 @@ check_data(const char *group, ARTNUM artnum, const char *expected,
     expires = (artnum % 5 == 0) ? artnum * 100 : artnum;
     if (data->expires != 0) {
         warn("Expires time wrong for %s:%lu: %lu != %lu", group, artnum,
-             data->expires, 0UL);
+             (unsigned long) data->expires, 0UL);
         status = false;
     }
     return status;
