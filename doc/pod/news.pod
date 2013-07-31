@@ -147,6 +147,11 @@ Thanks to Steve Crook for this addition.
 
 =item *
 
+INN now properly builds fine with S<< B<flex> 2.5.36 >> (this version
+introduced a change of type for a variable used by INN).
+
+=item *
+
 When using funnel feeds, B<innfeed> log files were open forever, which
 resulted in empty log files, once rotated by B<scanlogs>.  B<innfeed>
 now reopens its log files upon receiving a HUP signal; this signal
