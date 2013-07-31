@@ -308,13 +308,13 @@ ARTlog(const ARTDATA *data, char code, const char *text)
   Done = code == ART_ACCEPT || code == ART_JUNK;
   if (text)
     i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
-      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      ctime((const time_t *) &Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
       data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       text, Done ? "" : "\n");
   else
     i = fprintf(Log, "%.15s.%03d %c %s %s%s",
-      ctime(&Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      ctime((const time_t *) &Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
       data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       Done ? "" : "\n");
