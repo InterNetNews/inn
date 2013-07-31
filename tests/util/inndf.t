@@ -56,7 +56,8 @@ fi
 if df -i . > /dev/null 2>&1 ; then
     if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
         real=`df -i . | sed 1d | awk '{ print $8 }'`
-    elif [ "${UNAME_SYSTEM}" = "FreeBSD" ] ; then
+    elif [ "${UNAME_SYSTEM}" = "FreeBSD" ] \
+      || [ "${UNAME_SYSTEM}" = "NetBSD" ] ; then
         real=`df -i . | sed 1d | awk '{ print $7 }'`
     else
         real=`df -i . | sed 1d | awk '{ print $4 }'`
