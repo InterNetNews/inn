@@ -25,12 +25,17 @@
 #include <pwd.h>
 #include <grp.h>
 
+
+/*
+**  If compiling with Berkeley DB, use its ndbm compatibility layer
+**  in preference to other libraries.
+*/
 #if defined(HAVE_DBM) || defined(HAVE_BDB_DBM)
-# if HAVE_NDBM_H
-#  include <ndbm.h>
-# elif HAVE_BDB_DBM
+# if HAVE_BDB_DBM
 #  define DB_DBM_HSEARCH 1
 #  include <db.h>
+# elif HAVE_NDBM_H
+#  include <ndbm.h>
 # elif HAVE_GDBM_NDBM_H
 #  include <gdbm-ndbm.h>
 # elif HAVE_DB1_NDBM_H
