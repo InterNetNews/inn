@@ -34,9 +34,9 @@ echo 6
 # Make sure df -k works, or we have to just skip this test.
 if df -k . > /dev/null 2>&1 ; then
     if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
-        real=`df -k . | sed 1d | awk '{ print $5 }'`
+        real=`df -k . | sed 1d | tr -d '\r\n' | awk '{ print $5 }'`
     else
-        real=`df -k . | sed 1d | awk '{ print $4 }'`
+        real=`df -k . | sed 1d | tr -d '\r\n' | awk '{ print $4 }'`
     fi
     try=`$inndf .`
     diff=`expr "$real" - "$try"`
@@ -55,12 +55,12 @@ fi
 # Linux.
 if df -i . > /dev/null 2>&1 ; then
     if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
-        real=`df -i . | sed 1d | awk '{ print $8 }'`
+        real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $8 }'`
     elif [ "${UNAME_SYSTEM}" = "FreeBSD" ] \
       || [ "${UNAME_SYSTEM}" = "NetBSD" ] ; then
-        real=`df -i . | sed 1d | awk '{ print $7 }'`
+        real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $7 }'`
     else
-        real=`df -i . | sed 1d | awk '{ print $4 }'`
+        real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $4 }'`
     fi
     try=`$inndf -i .`
     if [ "$try" = 4294967295 ] ; then
