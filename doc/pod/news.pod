@@ -52,6 +52,12 @@ bug report.
 
 =item *
 
+If compiling with S<Berkeley DB>, use its ndbm compatibility layer for
+B<ckpasswd> in preference to the GNU dbm library that appears to be
+broken on a few systems.
+
+=item *
+
 Fixed a Perl warning in B<inncheck>; using C<defined(@array)> has been
 deprecated since S<Perl 5.16>.
 
