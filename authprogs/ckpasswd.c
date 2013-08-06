@@ -21,6 +21,7 @@
 #if HAVE_CRYPT_H
 # include <crypt.h>
 #endif
+
 #include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
@@ -30,8 +31,8 @@
 **  If compiling with Berkeley DB, use its ndbm compatibility layer
 **  in preference to other libraries.
 */
-#if defined(HAVE_DBM) || defined(HAVE_BDB_DBM)
-# if HAVE_BDB_DBM
+#if defined(HAVE_DBM) || defined(HAVE_BDB_NDBM)
+# if HAVE_BDB_NDBM
 #  define DB_DBM_HSEARCH 1
 #  include <db.h>
 # elif HAVE_NDBM_H
@@ -153,7 +154,7 @@ auth_pam(const char *username, char *password)
 **  password, if found, is returned as a newly allocated string; otherwise,
 **  NULL is returned.
 */
-#if !(defined(HAVE_DBM) || defined(HAVE_BDB_DBM))
+#if !(defined(HAVE_DBM) || defined(HAVE_BDB_NDBM))
 static char *
 password_dbm(char *user UNUSED, const char *file UNUSED)
 {
@@ -182,7 +183,7 @@ password_dbm(char *name, const char *file)
     dbm_close(database);
     return password;
 }
-#endif /* HAVE_DBM || HAVE_BDB_DBM */
+#endif /* HAVE_DBM || HAVE_BDB_NDBM */
 
 
 /*

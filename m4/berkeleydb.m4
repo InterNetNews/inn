@@ -1,10 +1,14 @@
-dnl berkeleydb.m4 -- Find the path to the Berkeley DB libraries.
+dnl berkeleydb.m4 -- Various checks for the Berkeley DB libraries.
 dnl $Id$
 dnl
 dnl This file provides INN_LIB_BERKELEYDB, which defines the --with-berkeleydb
 dnl command-line option and probes for the location of Berkeley DB if that
 dnl option is used without an optional path.  It looks for Berkeley DB in $prefix,
 dnl /usr/local and /usr.  It then exports DB_LDFLAGS, DB_CPPFLAGS, and DB_LIBS.
+dnl
+dnl This file also provides INN_LIB_BERKELEYDB_NDBM, which checks whether
+dnl Berkeley DB has ndbm support.  It then defines HAVE_BDB_NDBM if ndbm
+dnl compatibility layer for Berkely DB is available.
 
 AC_DEFUN([INN_LIB_BERKELEYDB],
 [DB_CPPFLAGS=
@@ -43,3 +47,36 @@ fi
 AC_SUBST([DB_CPPFLAGS])
 AC_SUBST([DB_LDFLAGS])
 AC_SUBST([DB_LIBS])])
+
+dnl Source used by INN_LIB_BERKELEYDB_NDBM.
+AC_DEFUN([_INN_LIB_BERKELEYDB_NDBM_SOURCE], [[
+#include <stdio.h>
+#define DB_DBM_HSEARCH 1
+#include <db.h>
+
+int
+main(void) {
+    DBM *database;
+    database = dbm_open("test", 0, 0600);
+    dbm_close(database);
+    return 0;
+}
+]])
+
+dnl Check whether Berkeley DB was compiled with ndbm compatibily layer.
+dnl If so, set HAVE_BDB_NDBM.
+AC_DEFUN([INN_LIB_BERKELEYDB_NDBM],
+[inn_save_LDFLAGS="$LDFLAGS"
+inn_save_CFLAGS="$CFLAGS"
+LDFLAGS="$LDFLAGS $DB_LDFLAGS $DB_LIBS"
+CFLAGS="$CFLAGS $DB_CPPFLAGS"
+AC_CACHE_CHECK([for working nbdm compatibility layer with Berkeley DB],
+    [inn_cv_lib_berkeleydb_ndbm_works],
+    [AC_LINK_IFELSE([AC_LANG_SOURCE([_INN_LIB_BERKELEYDB_NDBM_SOURCE])],
+        [inn_cv_lib_berkeleydb_ndbm_works=yes],
+        [inn_cv_lib_berkeleydb_ndbm_works=no])])
+AS_IF([test x"$inn_cv_lib_berkeleydb_ndbm_works" = xyes],
+    [AC_DEFINE([HAVE_BDB_NDBM], 1,
+        [Define if the Berkeley DB ndbm compatibility layer is available.])])
+LDFLAGS="$inn_save_LDFLAGS"
+CFLAGS="$inn_save_CFLAGS"])

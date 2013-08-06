@@ -181,9 +181,9 @@ bug report.
 
 =item *
 
-If compiling with S<Berkeley DB>, use its ndbm compatibility layer for
-B<ckpasswd> in preference to the GNU dbm library that appears to be
-broken on a few systems.
+B<ckpasswd> no longer tries to use the ndbm compatibility layer provided
+by S<Berkeley DB> if S<Berkeley DB> has been built without ndbm support.
+Also add support for gdbm libraries in B<ckpasswd>.
 
 =item *
 
