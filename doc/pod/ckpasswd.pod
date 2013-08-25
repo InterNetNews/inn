@@ -41,10 +41,10 @@ PAM.
 
 =item B<-d> I<database>
 
-Read passwords from a database (ndbm or dbm format depending on what your
-system has) rather than by using getpwnam(3).  B<ckpasswd> expects
-I<database>.dir and I<database>.pag to exist and to be a database keyed by
-username with the encrypted passwords as the values.
+Read passwords from a database (ndbm, gdbm or dbm format depending on
+what your system has) rather than by using getpwnam(3).  B<ckpasswd>
+expects I<database>.dir and I<database>.pag to exist and to be a database
+keyed by username with the encrypted passwords as the values.
 
 While INN doesn't come with a program intended specifically to create such
 databases, on most systems it's fairly easy to write a Perl script to do
@@ -72,7 +72,7 @@ improvements that could be made to this, but it should be a reasonable
 start.  Sometimes a program like this will be available with the name
 B<dbmpasswd>.
 
-This option will not be available on systems without dbm or ndbm
+This option will not be available on systems without ndbm, gdbm or dbm
 libraries.
 
 =item B<-f> I<filename>
