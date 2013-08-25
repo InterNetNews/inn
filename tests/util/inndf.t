@@ -40,7 +40,7 @@ if df -k . > /dev/null 2>&1 ; then
     fi
     try=`$inndf .`
     diff=`expr "$real" - "$try"`
-    if [ "$diff" -gt 1000 ] || [ "$diff" -lt -1000 ] ; then
+    if [ "$diff" -gt 30000 ] || [ "$diff" -lt -30000 ] ; then
         printcount "not ok"
     else
         printcount "ok"
@@ -67,7 +67,7 @@ if df -i . > /dev/null 2>&1 ; then
         printcount "ok"
     else
         diff=`expr "$real" - "$try"`
-        if [ "$diff" -gt 10 ] || [ "$diff" -lt -10 ] ; then
+        if [ "$diff" -gt 5000 ] || [ "$diff" -lt -5000 ] ; then
             printcount "not ok"
         else
             printcount "ok"
