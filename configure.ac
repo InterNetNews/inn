@@ -335,7 +335,7 @@ dnl just use the ndbm support provided by it.
 if test x"$DB_LIBS" != x ; then
     INN_LIB_BERKELEYDB_NDBM
 fi
-if test x"$HAVE_BDB_NDBM" != x ; then
+if test x"$inn_cv_lib_berkeleydb_ndbm_works" != xyes ; then
     INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm gdbm "gdbm_compat -lgdbm"], [DBM_LIBS],
         [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
     DBM_CPPFLAGS=
