@@ -151,9 +151,11 @@ ID	[a-zA-Z][-a-zA-Z0-9._/]+
 
 	for (i = 1, strIdx = 0, sawBsl = 0 ; ; i++)
           {
-            /* Cast yyget_leng() to size_t because it used to be an int
-             * in flex versions anterior to 2.5.35 (not included). */
-            if (i < (size_t) yyget_leng())
+            /* Cast yyleng to size_t because it used to be an int
+             * in flex versions anterior or equal to 2.5.35.
+             * Do not use yyget_leng() here because old flex versions
+             * do not define it. */
+            if (i < (size_t) yyleng)
               current = yytext [i] ;
             else
               current = input() ;
