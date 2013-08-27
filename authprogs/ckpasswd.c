@@ -55,10 +55,10 @@
 #endif
 
 #if HAVE_PAM
-# if HAVE_PAM_PAM_APPL_H
-#  include <pam/pam_appl.h>
-# else
+# if HAVE_SECURITY_PAM_APPL_H
 #  include <security/pam_appl.h>
+# else
+#  include <pam/pam_appl.h>
 # endif
 #endif
 
@@ -83,7 +83,7 @@
 */
 #if HAVE_PAM
 static int
-pass_conv(int num_msg, const struct pam_message **msgm UNUSED,
+pass_conv(int num_msg, PAM_CONST struct pam_message **msgm UNUSED,
           struct pam_response **response, void *appdata_ptr)
 {
     int i;

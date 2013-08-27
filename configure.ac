@@ -49,6 +49,7 @@ m4_include([m4/ltversion.m4])
 m4_include([m4/mmap.m4])
 m4_include([m4/modes.m4])
 m4_include([m4/openssl.m4])
+m4_include([m4/pam-const.m4])
 m4_include([m4/paths.m4])
 m4_include([m4/perl.m4])
 m4_include([m4/prog-ensure.m4])
@@ -308,12 +309,13 @@ dnl IRIX has a PAM library with the right symbols but no header files suitable
 dnl for use with it, so we have to check the header files first and then only
 dnl if one is found do we check for the library.
 inn_check_pam=1
-AC_CHECK_HEADERS([pam/pam_appl.h], ,
-    [AC_CHECK_HEADER([security/pam_appl.h], , [inn_check_pam=0])])
+AC_CHECK_HEADERS([security/pam_appl.h], [],
+    [AC_CHECK_HEADERS([pam/pam_appl.h], [], [inn_check_pam=0])])
 if test x"$inn_check_pam" = x1; then
     INN_SEARCH_AUX_LIBS([pam_start], [pam], [PAM_LIBS],
         [AC_DEFINE([HAVE_PAM], 1, [Define if you have PAM.])])
 fi
+INN_HEADER_PAM_CONST
 
 dnl If keyword generation support was requested, check for the appropriate
 dnl libraries.
@@ -359,7 +361,7 @@ AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
-AC_CHECK_HEADERS([crypt.h inttypes.h limits.h pam/pam_appl.h stddef.h \
+AC_CHECK_HEADERS([crypt.h inttypes.h limits.h stddef.h \
                   stdint.h string.h sys/bitypes.h sys/filio.h sys/loadavg.h \
                   sys/select.h sys/time.h unistd.h])
 
