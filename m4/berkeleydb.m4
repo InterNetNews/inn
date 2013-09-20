@@ -37,8 +37,10 @@ else
     if test x"$DB_DIR" = xyes ; then
         AC_MSG_ERROR([cannot find Berkeley DB])
     else
-        DB_CPPFLAGS="-I$DB_DIR/include"
-        DB_LDFLAGS="-L$DB_DIR/lib"
+        if test x"$DB_DIR" != x/usr ; then
+            DB_CPPFLAGS="-I$DB_DIR/include"
+            DB_LDFLAGS="-L$DB_DIR/lib"
+        fi
         DB_LIBS="-ldb"
         AC_MSG_RESULT([$DB_DIR])
     fi
