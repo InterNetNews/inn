@@ -384,14 +384,18 @@ do).  Installing B<inews> setgid was the default prior to S<INN 2.3>.
 
 =item B<--with-berkeleydb>=PATH
 
-Enables support for S<Berkeley DB> (4.4 or higher), which means that it will
-then be possible to use the ovdb overview method if you wish.  Enabling
-this configure option doesn't mean you'll be required to use ovdb, but it
-does require that S<Berkeley DB> be installed on your system (including the
-header files, not just the runtime libraries).  If a path is given, it
-sets the installed directory of S<Berkeley DB> (configure will search for it
-in some standard locations, but if you have it installed elsewhere, you
-may need this option).
+Enables support for S<Berkeley DB> (4.4 or higher), which means that
+it will then be possible to use the ovdb overview method if you wish.
+Enabling this configure option doesn't mean you'll be required to use
+ovdb, but it does require that S<Berkeley DB> be installed on your system
+(including the header files, not just the runtime libraries).  If a path
+is given, it sets the installed directory of S<Berkeley DB> (configure
+will search for it in standard locations, but if you have it installed
+elsewhere, you may need this option).  This directory is expected to have
+subdirectories F<include> and F<lib>, containing respectively F<db.h>,
+and the library itself.  In case non-standard paths to the S<Berkeley
+DB> are used, one or both of the options B<--with-berkeleydb-include>
+and B<--with-berkeleydb-lib> can be given to configure with a path.
 
 =item B<--with-zlib>=PATH
 

@@ -24,16 +24,17 @@ ovdb_init(8) for upgrade instructions.
 =head1 INSTALLATION
 
 To build ovdb support into INN, specify the option B<--with-berkeleydb>
-when running the configure script.  By default, configure will search for
-a S<Berkeley DB> tree in several likely locations, and choose the highest
-version (based on the name of the directory, e.g., F<BerkeleyDB.4.4>) that
-it finds.  There will be a message in the configure output indicating the
-chosen pathname.
+when running the configure script.  By default, configure will search
+for S<Berkeley DB> in standard paths; there will be a message in the
+configure output indicating the pathname that will be used.
 
-You can override this pathname by adding a path to the option, e.g.,
-B<--with-berkeleydb=/usr/BerkeleyDB.4.4>.  This directory is expected to
-have subdirectories F<include> and F<lib>, containing F<db.h>, and the
-library itself, respectively.
+You can override this pathname by adding a path to the option, for
+instance B<--with-berkeleydb=/usr/BerkeleyDB.4.4>.  This directory
+is expected to have subdirectories F<include> and F<lib>, containing
+respectively F<db.h>, and the library itself.  In case non-standard
+paths to the S<Berkeley DB> are used, one or both of the options
+B<--with-berkeleydb-include> and B<--with-berkeleydb-lib> can be given
+to configure with a path.
 
 The ovdb database may take up more disk space for a given spool than the
 other overview methods.  Plan on needing at least S<1.1 KB> for every article

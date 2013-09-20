@@ -122,6 +122,16 @@ option to B<configure> has been removed.
 
 =item *
 
+When building INN with S<Berkeley DB> support, no longer add standard
+locations to compiler and linker include flags; unconditionally
+adding F<-L/usr/lib> (for instance) may break the build.  Such
+default paths are now added only if explicitly given to one or
+more of the B<--with-berkeleydb>, B<--with-berkeleydb-include>, or
+B<--with-berkeleydb-lib> configure flags (the last two flags are new
+in S<INN 2.6.0>).
+
+=item *
+
 For security reasons, use of the flawed SSLv2 protocol is now disabled
 for TLS sessions with B<nnrpd>.
 
