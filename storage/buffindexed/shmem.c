@@ -163,7 +163,7 @@ smcd_t* smcGetShmemBuffer(const char *name, int size)
     if ((semap = smcGetSemaphore(name)) < 0) {
         warn("failed to get semaphore for key %s", name);
         if (shmdt(addr) < 0)
-            syswarn("cant detatch shared memory");
+            syswarn("cant detach shared memory");
         if (shmctl(shmid, IPC_RMID, 0) < 0)
             syswarn("cant remove shared memory");
         return NULL;
@@ -227,7 +227,7 @@ smcd_t* smcCreateShmemBuffer(const char *name, int size)
     if ((semap = smcCreateSemaphore(name)) < 0) {
         warn("failed to create semaphore for %s", name);
         if (shmdt(addr) < 0)
-            syswarn("cant detatch shared memory");
+            syswarn("cant detach shared memory");
         if (shmctl(shmid, IPC_RMID, 0) < 0)
             syswarn("cant remove shared memory");
         return NULL;
