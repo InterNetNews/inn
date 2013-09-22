@@ -356,8 +356,8 @@ $Id$
 inn.conf(5), innd(8), nnrpd(8), ovdb_init(8), ovdb_monitor(8),
 ovdb_stat(8)
 
-S<Berkeley DB> documentation: in the F<docs> directory of the S<Berkeley DB>
-source distribution, or on the Oracle S<Berkeley DB> web page:
-L<http://www.oracle.com/technetwork/database/berkeleydb/overview/index.html>.
+S<Berkeley DB> documentation:  in the F<docs> directory of the S<Berkeley DB>
+source distribution, or on the Oracle S<Berkeley DB> web page
+(L<http://www.oracle.com/technetwork/products/berkeleydb/overview/index.html>).
 
 =cut
