@@ -19,7 +19,7 @@ readers.conf mechanism used by nnrpd.
 
 For Perl filtering support, you need to have Perl S<version 5.004> or newer.
 Earlier versions of Perl will fail with a link error at compilation time.
-L<http://www.perl.com/get.html> should have the latest Perl version.
+L<http://www.perl.org/get.html> should have the latest Perl version.
 
 To enable Perl support, you have to specify B<--with-perl> when you run
 configure.  See F<INSTALL> for more information.
