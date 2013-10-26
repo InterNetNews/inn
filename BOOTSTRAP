@@ -9,7 +9,7 @@ To do this, run:
     ./configure
     make bootstrap
 
-You will need to have Autoconf 2.61 or later, Perl, a make that supports
+You will need to have Autoconf 2.64 or later, Perl, a make that supports
 file inclusion, and a compiler installed.  This should generate, among
 other things, the README and HACKING files, which you can then read for
 more information about INN.

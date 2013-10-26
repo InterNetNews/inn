@@ -26,9 +26,10 @@ dnl bother checking for it.  Compile-time errors often produce a lot more
 dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
-AC_INIT([INN], [2.6.0], [inn-workers@lists.isc.org])
-AC_PREREQ(2.61)
-AC_REVISION($Revision$)
+AC_INIT([INN], [2.6.0], [inn-workers@lists.isc.org],
+    [inn], [https://www.isc.org/software/inn/])
+AC_PREREQ([2.64])
+AC_REVISION([$Revision$])
 AC_CONFIG_AUX_DIR([support])
 
 dnl Lots of our macros are stored in separate files for ease of maintenance.
@@ -127,7 +128,7 @@ dnl quite mature enough yet.
 AC_ARG_ENABLE([ipv6],
     [AS_HELP_STRING([--enable-ipv6], [Enable IPv6 support])],
     [if test "x$enableval" = xyes ; then
-        AC_DEFINE([HAVE_INET6], 1, [Define to enable IPv6 support.])
+        AC_DEFINE([HAVE_INET6], [1], [Define to enable IPv6 support.])
     fi])
 
 dnl Whether to use a different (less tested) history algorithm.  This will
@@ -142,7 +143,7 @@ AC_ARG_ENABLE([tagged-hash],
     [if test "x$enableval" = xyes ; then
         DO_DBZ_TAGGED_HASH=DO
         inn_enable_tagged_hash=yes
-        AC_DEFINE([DO_TAGGED_HASH], 1,
+        AC_DEFINE([DO_TAGGED_HASH], [1],
             [Define to use tagged hash for the history file.])
     fi])
 AC_SUBST([DO_DBZ_TAGGED_HASH])
@@ -167,7 +168,7 @@ dnl support due to assumptions about the size of off_t.
 inn_enable_largefiles=no
 AC_ARG_ENABLE([largefiles],
     [AS_HELP_STRING([--enable-largefiles],
-        [Support for files larger than 2GB [default=no]])],
+        [Support for files larger than 2GB @<:@default=no@:>@])],
     if test x"$enableval" = xyes ; then
         inn_enable_largefiles=yes
     fi)
@@ -207,7 +208,7 @@ dnl When building on Linux, we need to compile with _GNU_SOURCE to get the
 dnl right definitions of pread and pwrite and to get some other functions
 dnl (like asprintf) that we use.
 *linux*)
-    AC_DEFINE([_GNU_SOURCE], 1,
+    AC_DEFINE([_GNU_SOURCE], [1],
         [Define if compiling on Linux to get prototypes for some functions.])
     ;;
 
@@ -286,7 +287,7 @@ dnl Check for setproctitle in libc first, then libutil if not found there.
 dnl We have a replacement function if we can't find it, and then we also need
 dnl to check for pstat.
 AC_SEARCH_LIBS([setproctitle], [util],
-    [AC_DEFINE([HAVE_SETPROCTITLE], 1,
+    [AC_DEFINE([HAVE_SETPROCTITLE], [1],
         [Define if you have the setproctitle function.])],
     [AC_LIBOBJ([setproctitle])
      AC_CHECK_FUNCS([pstat])])
@@ -297,8 +298,9 @@ dnl linking with libnsl unless we need it, though, since on some OSes where
 dnl it isn't necessary it will totally break networking.  Unisys also
 dnl includes gethostbyname in libsocket but needs libnsl for socket().
 AC_SEARCH_LIBS([gethostbyname], [nsl])
-AC_SEARCH_LIBS([socket], [socket], ,
-    [AC_CHECK_LIB([nsl], [socket], LIBS="$LIBS -lsocket -lnsl", , -lsocket)])
+AC_SEARCH_LIBS([socket], [socket], [],
+    [AC_CHECK_LIB([nsl], [socket], [LIBS="$LIBS -lsocket -lnsl"], [],
+        [-lsocket])])
 
 dnl Check for inet_aton.  We have our own, but on Solaris the version in
 dnl libresolv is more lenient in ways that Solaris's internal DNS resolution
@@ -318,14 +320,14 @@ AC_CHECK_HEADERS([security/pam_appl.h], [],
     [AC_CHECK_HEADERS([pam/pam_appl.h], [], [inn_check_pam=0])])
 if test x"$inn_check_pam" = x1; then
     INN_SEARCH_AUX_LIBS([pam_start], [pam], [PAM_LIBS],
-        [AC_DEFINE([HAVE_PAM], 1, [Define if you have PAM.])])
+        [AC_DEFINE([HAVE_PAM], [1], [Define if you have PAM.])])
 fi
 INN_HEADER_PAM_CONST
 
 dnl If keyword generation support was requested, check for the appropriate
 dnl libraries.
 if test x"$inn_enable_keywords" = x1 ; then
-    INN_SEARCH_AUX_LIBS([regexec], [regex], [REGEX_LIBS], ,
+    INN_SEARCH_AUX_LIBS([regexec], [regex], [REGEX_LIBS], [],
         [AC_MSG_ERROR([no usable regular expression library found])])
 fi
 
@@ -340,7 +342,7 @@ INN_LIB_KRB5_OPTIONAL
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
 dnl that program.
 AS_IF([test x"$KRB5_LIBS" != x],
-   [KRB5_AUTH=auth_krb5])
+    [KRB5_AUTH=auth_krb5])
 AC_SUBST([KRB5_AUTH])
 
 dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
@@ -350,7 +352,7 @@ if test x"$DB_LIBS" != x ; then
 fi
 if test x"$inn_cv_lib_berkeleydb_ndbm_works" != xyes ; then
     INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm gdbm "gdbm_compat -lgdbm"], [DBM_LIBS],
-        [AC_DEFINE([HAVE_DBM], 1, [Define if you have a dbm library.])])
+        [AC_DEFINE([HAVE_DBM], [1], [Define if you have a dbm library.])])
     DBM_CPPFLAGS=
 else
     DBM_CPPFLAGS="$DB_CPPFLAGS"
@@ -383,12 +385,12 @@ AC_CHECK_HEADERS([ndbm.h db1/ndbm.h gdbm-ndbm.h], [break])
 dnl Check for whether various symbols are declared.
 AC_CHECK_DECLS([pread, pwrite, snprintf, setproctitle, strlcat,
                 strlcpy, vsnprintf])
-AC_CHECK_DECLS([h_errno], , , [#include <netdb.h>])
-AC_CHECK_DECLS([inet_aton, inet_ntoa], , ,
-[#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>])
-AC_CHECK_DECLS([altzone], , , [#include <time.h>])
+AC_CHECK_DECLS([h_errno], [], [], [#include <netdb.h>])
+AC_CHECK_DECLS([inet_aton, inet_ntoa], [], [],
+    [#include <sys/types.h>
+     #include <netinet/in.h>
+     #include <arpa/inet.h>])
+AC_CHECK_DECLS([altzone], [], [], [#include <time.h>])
 
 dnl Checks for compiler characteristics.
 AC_C_BIGENDIAN
@@ -400,9 +402,9 @@ dnl Checks for structures.
 AC_STRUCT_TIMEZONE
 AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff])
-AC_CHECK_MEMBERS([struct sockaddr.sa_len], , ,
-[#include <sys/types.h>
-#include <sys/socket.h>])
+AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
 
 dnl Checks for types.
 AC_TYPE_INT8_T
@@ -419,25 +421,25 @@ AC_TYPE_SSIZE_T
 AC_FUNC_GETGROUPS
 AC_TYPE_UID_T
 AC_CHECK_TYPES([ptrdiff_t])
-AC_CHECK_TYPES([sig_atomic_t], , ,
-[#include <sys/types.h>
-#include <signal.h>])
-AC_CHECK_TYPES([socklen_t], , ,
-[#include <sys/types.h>
-#include <sys/socket.h>])
-AC_CHECK_TYPES([union semun], , ,
-[#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>])
+AC_CHECK_TYPES([sig_atomic_t], [], [],
+    [#include <sys/types.h>
+     #include <signal.h>])
+AC_CHECK_TYPES([socklen_t], [], [],
+    [#include <sys/types.h>
+     #include <sys/socket.h>])
+AC_CHECK_TYPES([union semun], [], [],
+    [#include <sys/types.h>
+     #include <sys/ipc.h>
+     #include <sys/sem.h>])
 
 dnl See if struct sockaddr_storage is available, and if so, how its members
 dnl are named.
 AC_CHECK_TYPES([struct sockaddr_storage],
-    [AC_CHECK_MEMBERS([struct sockaddr_storage.ss_family], , ,
+    [AC_CHECK_MEMBERS([struct sockaddr_storage.ss_family], [], [],
         [#include <sys/types.h>
-        #include <sys/socket.h>])], ,
+         #include <sys/socket.h>])], [],
     [#include <sys/types.h>
-    #include <sys/socket.h>])
+     #include <sys/socket.h>])
 
 dnl Checks for macros.
 INN_MACRO_IN6_ARE_ADDR_EQUAL
@@ -461,7 +463,7 @@ dnl Find a way to get the file descriptor limit.
 AC_CHECK_FUNCS([getrlimit getdtablesize ulimit], [break])
 
 dnl Probe for the appropriate stat functions.
-AC_CHECK_FUNCS([statvfs], ,
+AC_CHECK_FUNCS([statvfs], [],
     [AC_CHECK_FUNCS([statfs])
      AC_CHECK_HEADERS([sys/vfs.h sys/param.h])
      AC_CHECK_HEADERS(sys/mount.h, [], [],
@@ -513,9 +515,8 @@ AC_CONFIG_FILES([support/fixconfig], [chmod +x support/fixconfig])
 AC_CONFIG_FILES([support/fixscript], [chmod +x support/fixscript])
 
 dnl Include some additional files at the beginning of config.h.
-AH_TOP(
-[#include "inn/defines.h"
-#include "inn/options.h"])
+AH_TOP([#include "inn/defines.h"
+        #include "inn/options.h"])
 
 dnl Most configuration information goes here.
 AC_CONFIG_HEADER([include/config.h])

@@ -17,7 +17,7 @@ or view it with Trac source browser at:
 
     <http://inn.eyrie.org/trac/browser/>
 
-You will need S<autoconf 2.61> or later to use the development tree.  After
+You will need S<autoconf 2.64> or later to use the development tree.  After
 checking out the tree, run C<./autogen> to generate the necessary autoconf
 files.
 
@@ -64,25 +64,25 @@ F<configure> or F<include/config.h.in> when sending patches to INN;
 instead, note in your patch that those files must be regenerated.  These
 (and all other) generated files should not be checked into Subversion.
 
-At the time of this writing, S<Autoconf 2.61> or later is required.
+At the time of this writing, S<autoconf 2.64> or later is required.
 
 The supporting files for B<autoconf> are in the F<support> subdirectory,
-including the files F<config.guess> and F<config.sub> to determine the
-system name and F<ltmain.sh> for libtool support.  The latter file comes
-from the libtool distribution available from
-L<http://www.gnu.org/software/libtool/>; the canonical version of the
-former two are available from L<ftp://ftp.gnu.org/gnu/config/> (which
-currently redirects to
-L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).  In addition,
-F<m4/libtool.m4> is just a copy of F<libtool.m4> from the libtool
-distribution.  (Using libtool without using B<automake> requires a few odd
-hacks.)  New versions should be checked in periodically when available.
-There are no INN-specific modifications to those files except for
-F<ltmain.sh> which recognizes the additional B<-B> flag that INN's
+including the files F<config.guess> and F<config.sub> to determine
+the system name and F<ltmain.sh> for libtool support.  The latter
+file comes from the bootstrapped libtool distribution available
+from L<http://www.gnu.org/software/libtool/> (F<ltmain.sh> is in the
+F<libltdl/config> subdirectory); the canonical version of the former
+two are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
+redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
+In addition, F<m4/libtool.m4> and a few others m4 files are just a copy
+of the corresponding files in the F<libltdl/m4> subdirectory of the
+libtool distribution.  (Using libtool without using B<automake> requires
+a few odd hacks.)  New versions should be checked in periodically when
+available.  There are no INN-specific modifications to those files except
+for F<ltmain.sh> which recognizes the additional B<-B> flag that INN's
 B<install-sh> script uses.  This script should also be updated at the same
-time from
-L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>; it
-similarly contains local modifications in order to support the additional
+time from L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
+it similarly contains local modifications in order to support the additional
 B<-B> flag, as well as a few other changes mentioned in a comment at the
 beginning of the file.
 
@@ -91,6 +91,11 @@ otherwise normal compilations are quite slow.  (Using libtool is not
 without some cost.)  Basic compilation with libtool works fine as of this
 writing, with both static and shared compiles, but the dependencies aren't
 quite right for C<make -j> using libtool.
+
+=head1 Autobuilds
+
+Automatic build logs on several platforms are available at
+L<http://usenet.trigofacile.com/autobuild/inn/>.
 
 =head1 Documentation
 
@@ -237,7 +242,8 @@ Then add the name of the test to F<tests/TESTS>, without the F<.t> ending.
 
 For C tests, you probably want to use the functions in F<libtest.c>
 (prototypes in F<libtest.h>) to handle all of the output.  For shell script
-tests, see the existing tests for some helpful shell functions.
+tests, F<libtest.sh> contains helpful shell functions.  See the existing tests
+for some hints about how to write new tests.
 
 One naming convention:  to distinguish more easily between for example
 F<lib/error.c> (the implementation) and F<tests/lib/error-t.c> (the test
@@ -253,6 +259,16 @@ someone who wants to run the test suite may not have it) and just have to
 follow the above output conventions.
 
 Additions to the test suite, no matter how simple, are very welcome.
+
+Running the test suite is done with:
+
+    make check
+
+A single test can be run with verbose ouput via:
+
+    tests/runtests -o <name-of-test>
+
+Using B<runtests> ensures that necessary environment variables are set up.
 
 =head1 Makefiles
 
@@ -656,14 +672,23 @@ during an update (especially sections relative to LIBTEST_NEW_FORMAT
 because the test suite has not yet been updated to use the new format of C
 TAP Harness).
 
-=back
+=item *
 
-=item 2.
+Make sure that the latest version of rra-c-util is used for the librairies.
+It is available from L<http://www.eyrie.org/~eagle/software/rra-c-util/>.
+
+=item *
 
 Make sure that F<samples/control.ctl> and F<samples/nocem.ctl> are in sync
 with the master version at
 L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
 L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
+
+=back
+
+=item 2.
+
+Update copyright years in F<LICENSE>.
 
 =item 3.
 
