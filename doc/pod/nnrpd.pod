@@ -155,8 +155,9 @@ title.
 
 =item B<-S>
 
-If specified, B<nnrpd> will start a negotiation for a TLS session as
-soon as connected.  To use this flag, B<--with-openssl> must have been
+If specified, B<nnrpd> will start a negotiation for a TLS session
+as soon as connected.  To use this flag, the OpenSSL SSL and crypto
+libraries must have been found at configure time, or B<--with-openssl>
 specified at configure time.  For more information on running B<nnrpd>
 with TLS support, see L<TLS SUPPORT>.
 
@@ -171,11 +172,12 @@ is toggled upon receipt of a SIGHUP; see signal(2).
 
 =head1 TLS SUPPORT
 
-If INN is built with B<--with-openssl>, B<nnrpd> will support news reading
+If INN is built with B<--with-openssl> or if the OpenSSL SSL and crypto
+libraries are found at configure time, B<nnrpd> will support news reading
 over TLS (also known as SSL).  For clients that use the STARTTLS command,
 no special configuration is needed beyond creating a TLS/SSL certificate
-for the server.  You should do this in exactly the same way that you would
-generate a certificate for a web server.
+for the server.  You should do this in exactly the same way that you
+would generate a certificate for a web server.
 
 If you're happy with a self-signed certificate (which will generate
 warnings with some news reader clients), you can create and install one in

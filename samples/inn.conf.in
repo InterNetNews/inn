@@ -130,8 +130,9 @@ backofftrigger:              10000
 
 # Reading and Posting -- TLS/SSL Support
 #
-# You must have compiled this support in with --with-openssl
-# at configure time.
+# The OpenSSL SSL and crypto libraries must have been found
+# at configure time to have this support, or you must have
+# compiled this support in with --with-openssl at configure time.
 
 #tlscafile:
 #tlscapath:                  @sysconfdir@

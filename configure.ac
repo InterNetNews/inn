@@ -39,9 +39,11 @@ m4_include([m4/cc-flags.m4])
 m4_include([m4/compress.m4])
 m4_include([m4/inet-ntoa.m4])
 m4_include([m4/iov-max.m4])
+m4_include([m4/krb5-config.m4])
 m4_include([m4/krb5.m4])
 m4_include([m4/large-fpos.m4])
 m4_include([m4/lib-depends.m4])
+m4_include([m4/lib-helper.m4])
 m4_include([m4/lib-pathname.m4])
 m4_include([m4/libtool.m4])
 m4_include([m4/lt~obsolete.m4])
@@ -330,9 +332,15 @@ dnl Handle optional libraries and probing for their locations and component
 dnl libraries if needed.
 INN_LIB_BERKELEYDB
 INN_LIB_ZLIB
-INN_LIB_OPENSSL
+INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL
-INN_LIB_KERBEROS
+INN_LIB_KRB5_OPTIONAL
+
+dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
+dnl that program.
+AS_IF([test x"$KRB5_LIBS" != x],
+   [KRB5_AUTH=auth_krb5])
+AC_SUBST([KRB5_AUTH])
 
 dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
 dnl just use the ndbm support provided by it.

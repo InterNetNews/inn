@@ -33,7 +33,7 @@ instance B<--with-berkeleydb=/usr/BerkeleyDB.4.4>.  This directory
 is expected to have subdirectories F<include> and F<lib> (F<lib32>
 and F<lib64> are also checked), containing respectively F<db.h>, and
 the library itself.  In case non-standard paths to the S<Berkeley DB>
-are used, one or both of the options B<--with-berkeleydb-include>
+libraries are used, one or both of the options B<--with-berkeleydb-include>
 and B<--with-berkeleydb-lib> can be given to configure with a path.
 
 The ovdb database may take up more disk space for a given spool than the

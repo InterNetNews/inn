@@ -151,7 +151,7 @@ versions you'll need:
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
     --with-sasl         SASL 2.x or higher
-    --with-kerberos     MIT Kerberos v5 1.2.x or higher
+    --with-krb5         MIT Kerberos v5 1.2.x or higher
 
 If any of these libraries (other than Perl or Python) are built shared and
 installed in locations where your system doesn't search for shared
@@ -291,6 +291,15 @@ It's also possible to set the paths for most other sections of the INN
 installation independently; see C<./configure --help> and look for the
 B<--with-*-dir>=PATH options.
 
+=item B<--enable-reduced-depends>
+
+Requests that library probes assume shared libraries are in use and
+dependencies of libraries should not be probed.  It therefore tries to
+minimize the shared library dependencies of the resulting binaries on
+platforms with proper shared library dependencies.  This is not enabled
+by default, and is of interest primarily to people building packages
+for distributions.
+
 =item B<--enable-largefiles>
 
 Enables large file support.  This is not enabled by default, even on
@@ -395,7 +404,7 @@ it installed elsewhere, you may need this option).  This directory
 is expected to have subdirectories F<include> and F<lib> (F<lib32>
 and F<lib64> are also checked), containing respectively F<db.h>, and
 the library itself.  In case non-standard paths to the S<Berkeley DB>
-are used, one or both of the options B<--with-berkeleydb-include>
+libraries are used, one or both of the options B<--with-berkeleydb-include>
 and B<--with-berkeleydb-lib> can be given to configure with a path.
 
 =item B<--with-zlib>=PATH
@@ -415,6 +424,14 @@ files, not just the runtime libraries).  If a path is given, it sets the
 installed directory of OpenSSL.  After compiling and installing INN with
 this option, you'll still need to make a certificate and private key to use TLS.
 See below for details on how to do that.
+
+In case non-standard paths to the OpenSSL libraries are used, one or
+both of the options B<--with-openssl-include> and B<--with-openssl-lib>
+can be given to configure with a path.
+
+If the OpenSSL SSL and crypto libraries are found at configure time,
+INN will be built with TLS/SSL support unless the B<--without-openssl>
+flag is explicitly passed to configure.
 
 =item B<--enable-ipv6>
 

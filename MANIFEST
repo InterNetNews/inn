@@ -559,9 +559,11 @@ m4/cc-flags.m4                        Autoconf macro for compiler flags
 m4/compress.m4                        Autoconf macro for compress detection
 m4/inet-ntoa.m4                       Autoconf macro to check inet_ntoa
 m4/iov-max.m4                         Autoconf macro for IOV_MAX
-m4/krb5.m4                            Autoconf macro for Kerberos v5
+m4/krb5-config.m4                     Autoconf macros to use krb5-config
+m4/krb5.m4                            Autoconf macros for Kerberos v5
 m4/large-fpos.m4                      Autoconf macro for large-file fpos_t
 m4/lib-depends.m4                     Autoconf macro to change library probes
+m4/lib-helper.m4                      Autoconf macros used by other library probes
 m4/lib-pathname.m4                    Autoconf macros to find the library path
 m4/libtool.m4                         Autoconf macros for libtool
 m4/ltoptions.m4                       Autoconf macros for libtool option handling

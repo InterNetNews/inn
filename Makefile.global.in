@@ -171,9 +171,9 @@ PYTHON_LIBS	= @PYTHON_LIBS@
 ##  linking code that contains OpenSSL support, and the path to the OpenSSL
 ##  binaries.
 
-SSL_CPPFLAGS	= @SSL_CPPFLAGS@
-SSL_LDFLAGS	= @SSL_LDFLAGS@
-SSL_LIBS	= @SSL_LIBS@
+SSL_CPPFLAGS	= @OPENSSL_CPPFLAGS@
+SSL_LDFLAGS	= @OPENSSL_LDFLAGS@
+SSL_LIBS	= @OPENSSL_LIBS@
 
 SSLBIN		= @SSLBIN@
 

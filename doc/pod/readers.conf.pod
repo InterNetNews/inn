@@ -307,10 +307,11 @@ containing a matching key parameter.
 =item B<require_ssl:>
 
 If set to true, an incoming connection only matches this auth group if
-it is encrypted using TLS/SSL, either from the beginning if the B<-S> flag
-was passed to B<nnrpd> or after a successful use of STARTTLS.  This
-parameter is only valid if INN is compiled with TLS/SSL support
-(B<--with-openssl> passed to configure).
+it is encrypted using TLS/SSL, either from the beginning if the B<-S>
+flag was passed to B<nnrpd> or after a successful use of STARTTLS.
+This parameter is only valid if INN is compiled with TLS/SSL support (by
+default if the OpenSSL SSL and crypto libraries are found at configure
+time, otherwise see the B<--with-openssl> flag passed to configure).
 
 =item B<perl_access:>
 
