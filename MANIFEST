@@ -582,6 +582,7 @@ m4/sasl.m4                            Autoconf macro for SASL libraries
 m4/sendfd.m4                          Autoconf macro for STREAMS fd passing
 m4/sendmail.m4                        Autoconf macro for finding sendmail
 m4/snprintf.m4                        Autoconf macro to check snprintf
+m4/socket-unix.m4                     Autoconf macros to check UNIX domain sockets
 m4/socket.m4                          Autoconf macros to check socket support
 m4/syslog.m4                          Autoconf macro for syslog facility
 m4/users.m4                           Autoconf macro for INN users
