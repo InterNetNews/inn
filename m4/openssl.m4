@@ -52,7 +52,8 @@ AC_DEFUN([_INN_LIB_OPENSSL_INTERNAL],
  AC_SUBST([CRYPTO_LIBS])
  INN_LIB_OPENSSL_SWITCH
  AC_CHECK_LIB([crypto], [AES_cbc_encrypt], [CRYPTO_LIBS=-lcrypto],
-    [AC_MSG_ERROR([cannot find usable OpenSSL crypto library])])
+    [AS_IF([test x"$1" = xtrue],
+        [AC_MSG_ERROR([cannot find usable OpenSSL crypto library])])])
  AS_IF([test x"$inn_reduced_depends" = xtrue],
     [AC_CHECK_LIB([ssl], [SSL_library_init],
         [OPENSSL_LIBS="-lssl $CRYPTO_LIBS"],
@@ -61,7 +62,8 @@ AC_DEFUN([_INN_LIB_OPENSSL_INTERNAL],
         [$CRYPTO_LIBS])],
     [AC_CHECK_LIB([ssl], [SSL_library_init], [OPENSSL_LIBS=-lssl],
         [AS_IF([test x"$1" = xtrue],
-            [AC_MSG_ERROR([cannot find usable OpenSSL library])])])])])
+            [AC_MSG_ERROR([cannot find usable OpenSSL library])])])])
+ INN_LIB_OPENSSL_RESTORE])
 
 dnl The main macro for packages with mandatory OpenSSL support.
 AC_DEFUN([INN_LIB_OPENSSL],
@@ -79,4 +81,5 @@ AC_DEFUN([INN_LIB_OPENSSL_OPTIONAL],
         [_INN_LIB_OPENSSL_INTERNAL([true])],
         [_INN_LIB_OPENSSL_INTERNAL([false])])])
  AS_IF([test x"$OPENSSL_LIBS" != x],
-    [AC_DEFINE([HAVE_SSL], 1, [Define if libssl is available.])])])
+    [inn_use_OPENSSL=true
+     AC_DEFINE([HAVE_SSL], 1, [Define if libssl is available.])])])
