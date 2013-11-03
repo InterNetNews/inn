@@ -674,8 +674,12 @@ TAP Harness).
 
 =item *
 
-Make sure that the latest version of rra-c-util is used for the librairies.
-It is available from L<http://www.eyrie.org/~eagle/software/rra-c-util/>.
+Make sure that the latest version of the files maintained in the
+rra-c-util package that INN uses are in sync with upstream.  These files
+are available at L<http://www.eyrie.org/~eagle/software/rra-c-util/>
+and can be easily synchronized with the script F<support/getrra-c-util>;
+just run it, have a look at the resulting changes in INN source code and,
+if all looks right, commit these changes.
 
 =item *
 

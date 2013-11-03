@@ -1,0 +1,77 @@
+#!/bin/sh
+
+##  $Id$
+##
+##  Synchronize INN files maintained in rra-c-util with upstream.
+##
+##  This script downloads the latest version of the files maintained
+##  in the rra-c-util package that INN uses.  These files are
+##  available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+##
+##  Running this script automatically downloads the latest version
+##  of the files, and puts them in the expected location in the INN source
+##  code.  The name of the files that have been modified since the last
+##  run of the script are written to standard output.  Have a look at
+##  the changes and, if all looks right, commit the changes.
+
+##  URL where the files can be downloaded.
+URL_START="http://git.eyrie.org/?p=devel/rra-c-util.git;a=blob_plain;hb=HEAD;f="
+
+##  This function downloads the files and copies them to the expected
+##  location in the INN source code, after having changed "RRA_" to "INN_"
+##  and "rra_" to "inn_" so as to keep a homogeneous naming convention.
+##  If a file is not found in upstream or has been modified, write it
+##  on standard output.
+##
+##  This function expects the following arguments:
+##    $1 - full path of the file to download in rra-c-util
+##    $2 - directory where the file should be copied in INN source code
+##    $3 - name of the file in INN source code
+download ()
+{
+  TEMP=$3.tmp
+
+  rm -f ${TEMP}
+  wget -q "${URL_START}$1" -O ${TEMP}
+
+  if [ ! -s "${TEMP}" ]
+  then
+    echo "File $1 does not exist in rra-c-util"
+  else
+    if [ "$2" = "m4" ]
+    then
+      sed -i -e 's/RRA_/INN_/g' \
+             -e 's/rra_/inn_/g' \
+             -e '1 a\
+dnl $Id$' ${TEMP}
+    elif [ "$2" = "lib" ] || [ "$2" = "include/portable" ]
+    then
+      sed -i -e 's/<config\.h>/"config.h"/g' \
+             -e 's/<portable\/system\.h>/"clibrary.h"/g' \
+             -e 's/<portable\/socket\.h>/"portable\/socket.h"/g' \
+             -e '/^#include <portable\/macros\.h>$/d' \
+             -e '1 s/$/ $Id$\n */' ${TEMP}
+    fi
+    mv -f ${TEMP} ../$2/$3
+    svn status ../$2/$3
+  fi
+}
+
+# Synchronize Autoconf macros from upstream.
+download m4/inet-ntoa.m4 m4 inet-ntoa.m4
+download m4/lib-depends.m4 m4 lib-depends.m4
+download m4/lib-helper.m4 m4 lib-helper.m4
+download m4/lib-pathname.m4 m4 lib-pathname.m4
+download m4/krb5.m4 m4 krb5.m4
+download m4/krb5-config.m4 m4 krb5-config.m4
+download m4/openssl.m4 m4 openssl.m4
+download m4/pam-const.m4 m4 pam-const.m4
+download m4/snprintf.m4 m4 snprintf.m4
+download m4/socket.m4 m4 socket.m4
+download m4/socket-unix.m4 m4 socket-unix.m4
+download m4/vamacros.m4 m4 vamacros.m4
+
+# Synchronize portability functions from upstream.
+download portable/asprintf.c lib asprintf.c
+download portable/getaddrinfo.c lib getaddrinfo.c
+download portable/getaddrinfo.h include/portable getaddrinfo.h
