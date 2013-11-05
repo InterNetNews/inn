@@ -1,23 +1,36 @@
-/*  $Id$
-**
-**  Replacement for a missing mkstemp.
-**
-**  Written by Russ Allbery <rra@stanford.edu>
-**  This work is hereby placed in the public domain by its author.
-**
-**  Provides the same functionality as the library function mkstemp for those
-**  systems that don't have it.
-*/
+/* $Id$
+ *
+ * Replacement for a missing mkstemp.
+ *
+ * Provides the same functionality as the library function mkstemp for those
+ * systems that don't have it.
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <rra@stanford.edu>
+ *
+ * The authors hereby relinquish any claim to any copyright that they may have
+ * in this work, whether granted under contract or by operation of law or
+ * international treaty, and hereby commit to the public, at large, that they
+ * shall not, at any time in the future, seek to enforce any copyright in this
+ * work against any person or entity, or prevent any person or entity from
+ * copying, publishing, distributing or creating derivative works of this
+ * work.
+ */
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/time.h"
+
 #include <errno.h>
 #include <fcntl.h>
+#include "portable/time.h"
 
-/* If we're running the test suite, rename mkstemp to avoid conflicts with the
-   system version.  #undef it first because some systems may define it to
-   another name. */
+/*
+ * If we're running the test suite, rename mkstemp to avoid conflicts with the
+ * system version.  #undef it first because some systems may define it to
+ * another name.
+ */
 #if TESTING
 # undef mkstemp
 # define mkstemp test_mkstemp
@@ -42,8 +55,10 @@ mkstemp(char *template)
     long_int_type randnum, working;
     int i, tries, fd;
 
-    /* Make sure we have a valid template and initialize p to point at the
-       beginning of the template portion of the string. */
+    /*
+     * Make sure we have a valid template and initialize p to point at the
+     * beginning of the template portion of the string.
+     */
     length = strlen(template);
     if (length < 6) {
         errno = EINVAL;
@@ -59,8 +74,10 @@ mkstemp(char *template)
     gettimeofday(&tv, NULL);
     randnum = ((long_int_type) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid();
 
-    /* Now, try to find a working file name.  We try no more than TMP_MAX file
-       names. */
+    /*
+     * Now, try to find a working file name.  We try no more than TMP_MAX file
+     * names.
+     */
     for (tries = 0; tries < TMP_MAX; tries++) {
         for (working = randnum, i = 0; i < 6; i++) {
             XXXXXX[i] = letters[working % 62];
@@ -70,8 +87,10 @@ mkstemp(char *template)
         if (fd >= 0 || (errno != EEXIST && errno != EISDIR))
             return fd;
 
-        /* This is a relatively random increment.  Cut off the tail end of
-           tv_usec since it's often predictable. */
+        /*
+         * This is a relatively random increment.  Cut off the tail end of
+         * tv_usec since it's often predictable.
+         */
         randnum += (tv.tv_usec >> 10) & 0xfff;
     }
     errno = EEXIST;
