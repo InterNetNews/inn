@@ -47,6 +47,54 @@ extern const char *     inet_ntoa(const struct in_addr);
 extern const char *     inet_ntop(int, const void *, char *, socklen_t);
 #endif
 
+/*
+ * Used for portability to Windows, which requires different functions be
+ * called to close sockets, send data to or read from sockets, and get socket
+ * errors than the regular functions and variables.  Windows also uses SOCKET
+ * to store socket descriptors instead of an int.
+ *
+ * socket_init must be called before socket functions are used and
+ * socket_shutdown at the end of the program.  socket_init may return failure,
+ * but this interface doesn't have a way to retrieve the exact error.
+ *
+ * socket_close, socket_read, and socket_write must be used instead of the
+ * standard functions.  On Windows, closesocket must be called instead of
+ * close for sockets and recv and send must always be used instead of read and
+ * write.
+ *
+ * When reporting errors from socket functions, use socket_errno and
+ * socket_strerror instead of errno and strerror.  When setting errno to
+ * something for socket errors (to preserve errors through close, for
+ * example), use socket_set_errno instead of just assigning to errno.
+ *
+ * Socket file descriptors must be passed and stored in variables of type
+ * socket_type rather than an int.  Use INVALID_SOCKET for invalid socket file
+ * descriptors rather than -1, and compare to INVALID_SOCKET when testing
+ * whether operations succeed.
+ */
+#ifdef _WIN32
+int socket_init(void);
+# define socket_shutdown()      WSACleanup()
+# define socket_close(fd)       closesocket(fd)
+# define socket_read(fd, b, s)  recv((fd), (b), (s), 0)
+# define socket_write(fd, b, s) send((fd), (b), (s), 0)
+# define socket_errno           WSAGetLastError()
+# define socket_set_errno(e)    WSASetLastError(e)
+const char *socket_strerror(int);
+typedef SOCKET socket_type;
+#else
+# define socket_init()          1
+# define socket_shutdown()      /* empty */
+# define socket_close(fd)       close(fd)
+# define socket_read(fd, b, s)  read((fd), (b), (s))
+# define socket_write(fd, b, s) write((fd), (b), (s))
+# define socket_errno           errno
+# define socket_set_errno(e)    errno = (e)
+# define socket_strerror(e)     strerror(e)
+# define INVALID_SOCKET         -1
+typedef int socket_type;
+#endif
+
 /* Defined by RFC 3493, used to store a generic address.  Note that this
    doesn't do the alignment mangling that RFC 3493 does; it's not clear if
    that should be added.... */
