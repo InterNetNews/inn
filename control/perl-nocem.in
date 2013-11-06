@@ -532,7 +532,7 @@ but anyone creating a key really should self-sign the key.  Current
 PGP implementations do this automatically.
 
 The keys of NoCeM issuers can be found in the web site of I<The NoCeM Registry>:
-L<ttp://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.  You can even
+L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.  You can even
 download there a unique file which contains all the keys.
 
 =item 2.
