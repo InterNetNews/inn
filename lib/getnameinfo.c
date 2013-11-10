@@ -111,6 +111,7 @@ lookup_service(unsigned short port, char *service, socklen_t servicelen,
 {
     struct servent *srv;
     const char *protocol;
+    int status;
 
     /* Do the name lookup first unless told not to. */
     if (!(flags & NI_NUMERICSERV)) {
@@ -125,7 +126,8 @@ lookup_service(unsigned short port, char *service, socklen_t servicelen,
     }
 
     /* Just convert the port number to ASCII. */
-    if ((socklen_t) snprintf(service, servicelen, "%hu", port) > servicelen)
+    status = snprintf(service, servicelen, "%hu", port);
+    if (status < 0 || (socklen_t) status > servicelen)
         return EAI_OVERFLOW;
     return 0;
 }
