@@ -151,7 +151,7 @@ enum timer {
 
 EXTERN bool	PERMauthorized;
 EXTERN bool     PERMcanauthenticate;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 EXTERN bool     PERMcanauthenticatewithoutSSL;
 #endif
 EXTERN bool	PERMcanpost;
@@ -250,7 +250,7 @@ extern void             CMDquit         (int ac, char** av) __attribute__ ((nore
 extern void             CMDxgtitle      (int ac, char** av);
 extern void             CMDpat          (int ac, char** av);
 extern void             CMD_unimp       (int ac, char** av);
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern void             CMDstarttls     (int ac, char** av);
 #endif
 

@@ -20,7 +20,7 @@
 #include "tls.h"
 #include "cache.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern SSL *tls_conn;
 #endif 
 
@@ -74,7 +74,7 @@ PushIOvHelper(struct iovec* vec, int* countp)
 
         TMRstart(TMR_NNTPWRITE);
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 	if (tls_conn) {
 Again:
 	    result = SSL_writev(tls_conn, vec, *countp);
@@ -94,7 +94,7 @@ Again:
 		break;
 	    }
 	} else
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 	    result = xwritev(STDOUT_FILENO, vec, *countp);
 
         TMRstop(TMR_NNTPWRITE);

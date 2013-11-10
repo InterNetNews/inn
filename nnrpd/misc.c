@@ -15,10 +15,10 @@
 #include "nnrpd.h"
 #include "tls.h"
 
-/* Outside the ifdef so that make depend works even ifndef HAVE_SSL. */
+/* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern SSL *tls_conn;
 extern int tls_cipher_usebits;
 extern char *tls_peer_CN;
@@ -449,7 +449,7 @@ RateLimit(long *sleeptime, char *path)
      return 1;
 }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 /*
 **  The STARTTLS command.  RFC 4642.
 */
@@ -525,4 +525,4 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     /* Reset our read buffer so as to prevent plaintext command injection. */
     line_reset(&NNTPline);
 }
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */

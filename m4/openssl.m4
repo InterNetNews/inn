@@ -13,14 +13,15 @@ dnl INN_LIB_CRYPTO_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
 dnl SSL or crypto libraries, saving the current values first, and
 dnl INN_LIB_OPENSSL_RESTORE and INN_LIB_CRYPTO_RESTORE to restore those
 dnl settings to before the last INN_LIB_OPENSSL_SWITCH or
-dnl INN_LIB_CRYPTO_SWITCH.
+dnl INN_LIB_CRYPTO_SWITCH.  Defines HAVE_OPENSSL and sets inn_use_OPENSSL to
+dnl true if the library is found.
 dnl
-dnl Depends on the lib-helper.m4 framework.
+dnl Depends on INN_ENABLE_REDUCED_DEPENDS and the lib-helper.m4 framework.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Written by Russ Allbery <rra@stanford.edu>
+dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2010, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -43,7 +44,8 @@ dnl Checks if the OpenSSL and crypto libraries are present.  The single
 dnl argument, if "true", says to fail if the OpenSSL SSL library could not be
 dnl found.
 AC_DEFUN([_INN_LIB_OPENSSL_INTERNAL],
-[INN_LIB_HELPER_PATHS([OPENSSL])
+[AC_REQUIRE([INN_ENABLE_REDUCED_DEPENDS])
+ INN_LIB_HELPER_PATHS([OPENSSL])
  CRYPTO_CPPFLAGS="$OPENSSL_CPPFLAGS"
  CRYPTO_LDFLAGS="$OPENSSL_LDFLAGS"
  CRYPTO_LIBS=
@@ -51,18 +53,26 @@ AC_DEFUN([_INN_LIB_OPENSSL_INTERNAL],
  AC_SUBST([CRYPTO_LDFLAGS])
  AC_SUBST([CRYPTO_LIBS])
  INN_LIB_OPENSSL_SWITCH
- AC_CHECK_LIB([crypto], [AES_cbc_encrypt], [CRYPTO_LIBS=-lcrypto],
+ inn_openssl_extra=
+ LIBS=
+ AS_IF([test x"$inn_reduced_depends" != xtrue],
+    [AC_SEARCH_LIBS([dlopen], [dl])])
+ inn_openssl_extra="$LIBS"
+ LIBS="$inn_OPENSSL_save_LIBS"
+ AC_CHECK_LIB([crypto], [AES_cbc_encrypt],
+    [CRYPTO_LIBS="-lcrypto $inn_openssl_extra"],
     [AS_IF([test x"$1" = xtrue],
-        [AC_MSG_ERROR([cannot find usable OpenSSL crypto library])])])
+        [AC_MSG_ERROR([cannot find usable OpenSSL crypto library])])],
+    [$inn_openssl_extra])
  AS_IF([test x"$inn_reduced_depends" = xtrue],
+    [AC_CHECK_LIB([ssl], [SSL_library_init], [OPENSSL_LIBS=-lssl],
+        [AS_IF([test x"$1" = xtrue],
+            [AC_MSG_ERROR([cannot find usable OpenSSL library])])])],
     [AC_CHECK_LIB([ssl], [SSL_library_init],
         [OPENSSL_LIBS="-lssl $CRYPTO_LIBS"],
         [AS_IF([test x"$1" = xtrue],
             [AC_MSG_ERROR([cannot find usable OpenSSL library])])],
-        [$CRYPTO_LIBS])],
-    [AC_CHECK_LIB([ssl], [SSL_library_init], [OPENSSL_LIBS=-lssl],
-        [AS_IF([test x"$1" = xtrue],
-            [AC_MSG_ERROR([cannot find usable OpenSSL library])])])])
+        [$CRYPTO_LIBS])])
  INN_LIB_OPENSSL_RESTORE])
 
 dnl The main macro for packages with mandatory OpenSSL support.
@@ -70,7 +80,8 @@ AC_DEFUN([INN_LIB_OPENSSL],
 [INN_LIB_HELPER_VAR_INIT([OPENSSL])
  INN_LIB_HELPER_WITH([openssl], [OpenSSL], [OPENSSL])
  _INN_LIB_OPENSSL_INTERNAL([true])
- AC_DEFINE([HAVE_SSL], 1, [Define if libssl is available.])])
+ inn_use_OPENSSL=true
+ AC_DEFINE([HAVE_OPENSSL], 1, [Define if libssl is available.])])
 
 dnl The main macro for packages with optional OpenSSL support.
 AC_DEFUN([INN_LIB_OPENSSL_OPTIONAL],
@@ -82,4 +93,4 @@ AC_DEFUN([INN_LIB_OPENSSL_OPTIONAL],
         [_INN_LIB_OPENSSL_INTERNAL([false])])])
  AS_IF([test x"$OPENSSL_LIBS" != x],
     [inn_use_OPENSSL=true
-     AC_DEFINE([HAVE_SSL], 1, [Define if libssl is available.])])])
+     AC_DEFINE([HAVE_OPENSSL], 1, [Define if libssl is available.])])])

@@ -226,12 +226,12 @@ const struct config config_table[] = {
     { K(readertrack),             BOOL   (false) },
     { K(spoolfirst),              BOOL   (false) },
     { K(strippostcc),             BOOL   (false) },
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     { K(tlscafile),               STRING    ("") },
     { K(tlscapath),               STRING  (NULL) },
     { K(tlscertfile),             STRING  (NULL) },
     { K(tlskeyfile),              STRING  (NULL) },
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 
     /* The following settings are used by nnrpd and rnews. */
     { K(nnrpdposthost),           STRING  (NULL) },
@@ -369,7 +369,7 @@ innconf_set_defaults(void)
         innconf->extraoverviewhidden = vector_new();
 
     /* Defaults used only if TLS (SSL) is supported. */
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     if (innconf->tlscapath == NULL)
         innconf->tlscapath = xstrdup(innconf->pathetc);
     if (innconf->tlscertfile == NULL)

@@ -10,14 +10,14 @@
 #include "inn/messages.h"
 #include "nnrpd.h"
 
-/* Outside the ifdef so that make depend works even ifndef HAVE_SSL. */
+/* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern int tls_cipher_usebits;
 extern char *tls_peer_CN;
 extern bool nnrpd_starttls_done;
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 
 #ifdef HAVE_SASL
 
@@ -94,7 +94,7 @@ SASLnewserver(void)
         secprops.max_ssf = 256;
         secprops.maxbufsize = NNTP_MAXLEN_COMMAND;
         sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
         /* Tell SASL about the negotiated TLS layer. */
         if (nnrpd_starttls_done) {
             if (sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
@@ -150,7 +150,7 @@ SASLauth(int ac, char *av[])
         return;
     }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     /* Check whether STARTTLS must be used before trying to authenticate
      * with AUTHINFO SASL PLAIN, LOGIN or EXTERNAL. */
     if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL

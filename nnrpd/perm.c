@@ -21,9 +21,9 @@
 # include <sys/select.h>
 #endif
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern bool nnrpd_starttls_done;
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 
 /* Data types. */
 typedef struct _CONFCHAIN {
@@ -42,7 +42,7 @@ typedef struct _METHOD {
 typedef struct _AUTHGROUP {
     char *name;
     char *key;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     int require_ssl;
 #endif
     char *hosts;
@@ -160,7 +160,7 @@ extern bool PerlLoaded;
 #define PERMperl_access         58
 #define PERMpython_access       59
 #define PERMpython_dynamic      60
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 #define PERMrequire_ssl                61
 #define PERMMAX                        62
 #else
@@ -249,7 +249,7 @@ static CONFTOKEN PERMtoks[] = {
     { PERMperl_access,          (char *) "perl_access:"         },
     { PERMpython_access,        (char *) "python_access:"       },
     { PERMpython_dynamic,       (char *) "python_dynamic:"      },
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     { PERMrequire_ssl,          (char *) "require_ssl:"         },
 #endif
     { 0,                        (char *) NULL                   }
@@ -345,7 +345,7 @@ copy_authgroup(AUTHGROUP *orig)
     else
 	ret->hosts = 0;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     ret->require_ssl = orig->require_ssl;
 #endif
 
@@ -447,7 +447,7 @@ copy_accessgroup(ACCESSGROUP *orig)
 static void
 SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
         curauth->require_ssl = false;
 #endif
 }
@@ -626,7 +626,7 @@ static void
 authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     int boolval;
 #endif
     METHOD *m;
@@ -648,7 +648,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	ReportError(f, buff);
     }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     if (strcasecmp(tok->name, "on") == 0
         || strcasecmp(tok->name, "true") == 0
         || strcasecmp(tok->name, "yes") == 0)
@@ -666,7 +666,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	curauth->key = xstrdup(tok->name);
 	SET_CONFIG(PERMkey);
 	break;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
       case PERMrequire_ssl:
         if (boolval != -1)
             curauth->require_ssl = boolval;
@@ -1250,7 +1250,7 @@ PERMreadfile(char *filename)
 
 		/* Stuff that belongs to an auth group. */
 	      case PERMhost:
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
               case PERMrequire_ssl:
 #endif
 	      case PERMauthprog:
@@ -1399,7 +1399,7 @@ PERMgetaccess(char *nnrpaccess)
 #else
     PERMcanauthenticate = false;
 #endif
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     PERMcanauthenticatewithoutSSL = false;
 #endif
     PERMgroupmadeinvalid = false;
@@ -1432,7 +1432,7 @@ PERMgetaccess(char *nnrpaccess)
     for (i = 0; auth_realms[i]; i++) {
 	if (auth_realms[i]->auth_methods != NULL) {
 	    PERMcanauthenticate = true;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             if (auth_realms[i]->require_ssl == false)
                 PERMcanauthenticatewithoutSSL = true;
 #endif
@@ -1446,7 +1446,7 @@ PERMgetaccess(char *nnrpaccess)
     }
     uname = 0;
     while (!uname && i--) {
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
         /* If SSL is required, check that the connection is encrypted. */
         if ((auth_realms[i]->require_ssl == true) && !nnrpd_starttls_done)
             continue;
@@ -1935,7 +1935,7 @@ ResolveUser(AUTHGROUP *auth)
     if (auth->res_methods == NULL)
         return NULL;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     /* If SSL is required, check that the connection is encrypted. */
     if ((auth->require_ssl == true) && !nnrpd_starttls_done)
         return NULL;
@@ -1985,7 +1985,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     if (auth->auth_methods == NULL)
         return NULL;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     /* If SSL is required, check that the connection is encrypted. */
     if ((auth->require_ssl == true) && !nnrpd_starttls_done)
         return NULL;

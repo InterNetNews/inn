@@ -32,7 +32,7 @@
 
 #include "tls.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern SSL *tls_conn;
 bool nnrpd_starttls_done = false;
 #endif 
@@ -163,7 +163,7 @@ static CMDENT	CMDtable[] = {
      * protocol in RFC 3977. */
     {	"SLAVE",	CMD_unimp,	false,	1,	1,      true,
 	NULL },
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     {   "STARTTLS",     CMDstarttls,    false,  1,      1,      true,
         NULL },
 #endif
@@ -235,7 +235,7 @@ ExitWithStats(int x, bool readconf)
         syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", Client.host,
             OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
      if (tls_conn) {
         SSL_shutdown(tls_conn);
         SSL_free(tls_conn);
@@ -371,13 +371,13 @@ CMDcapabilities(int ac, char *av[])
         /* No arguments if the server does not permit any authentication commands
          * in its current state. */
         if (PERMcanauthenticate) {
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             if (PERMcanauthenticatewithoutSSL || nnrpd_starttls_done) {
 #endif
                 /* AUTHINFO USER is advertised only if a TLS layer is active,
                  * if compiled with TLS support. */
                 Printf(" USER");
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             } else {
 #ifdef HAVE_SASL
                 /* Remove unsecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
@@ -400,7 +400,7 @@ CMDcapabilities(int ac, char *av[])
                 }
 #endif /* HAVE_SASL */
             }
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 #ifdef HAVE_SASL
             /* Check whether at least one SASL mechanism is available. */
             if (mechlist != NULL && strlen(mechlist) > 2) {
@@ -443,7 +443,7 @@ CMDcapabilities(int ac, char *av[])
     }
 #endif
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     /* A TLS layer is not active and the client is not already authenticated. */
     if (!nnrpd_starttls_done
         && (!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
@@ -659,7 +659,7 @@ write_buffer(const char *buff, ssize_t len)
 	len -= n;
 	p += n;
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 	if (tls_conn) {
             int r;
 
@@ -681,7 +681,7 @@ Again:
 		break;
 	    }
 	} else
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 	    do {
 		n = write(STDIN_FILENO, out, outlen);
 	    } while (n == -1 && errno == EINTR);
@@ -914,11 +914,11 @@ main(int argc, char *argv[])
     }
 #endif /* HAVE_SASL */
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:St")) != EOF)
 #else
     while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:t")) != EOF)
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 	switch (i) {
 	default:
 	    Usage();
@@ -967,11 +967,11 @@ main(int argc, char *argv[])
 	case 't':			/* Tracing. */
 	    Tracing = true;
 	    break;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 	case 'S':			/* Force SSL negotiation. */
 	    initialSSL = true;
 	    break;
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 	}
     argc -= optind;
     if (argc)
@@ -1189,7 +1189,7 @@ main(int argc, char *argv[])
 	xsignal(SIGHUP, ToggleTrace);
     } /* DaemonMode */
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
@@ -1198,7 +1198,7 @@ main(int argc, char *argv[])
         }
         nnrpd_starttls_done = true;
     }
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 
     /* If requested, check the load average. */
     if (innconf->nnrpdloadlimit != 0) {

@@ -23,7 +23,7 @@
 #include <signal.h>
 #include "tls.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern SSL *tls_conn;
 #endif
 
@@ -41,7 +41,7 @@ line_free(struct line *line)
     }
 }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 /*
 **  Alarm signal handler for client timeout.
 */
@@ -78,7 +78,7 @@ line_reset(struct line *line)
 }
 
 /*
-**  Timeout is used only if HAVE_SSL is defined.
+**  Timeout is used only if HAVE_OPENSSL is defined.
 */
 static ssize_t
 line_doread(void *p, size_t len, int timeout UNUSED)
@@ -86,7 +86,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
     ssize_t n;
 
     do {
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 	if (tls_conn) {
 	    int err;
             xsignal(SIGALRM, alarmHandler);
@@ -111,7 +111,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 	    } while (err == SSL_ERROR_WANT_READ);
             xsignal (SIGALRM, SIG_DFL);
 	} else
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 	    do {
 		n = read(STDIN_FILENO, p, len);
 	    } while (n == -1 && errno == EINTR);
@@ -201,7 +201,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
 		}
 	    }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             /* It seems that the SSL_read cannot be mixed with select()
              * as in the current code.  SSL communicates in its own data
              * blocks and hand shaking.  The do_readline using SSL_read
@@ -241,7 +241,7 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
                 /* If stdin didn't select, we must have timed out. */
                 if (i == 0 || !FD_ISSET(STDIN_FILENO, &rmask))
                     return RTtimeout;
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             }
 #endif
             count = line_doread(where,

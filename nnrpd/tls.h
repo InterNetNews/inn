@@ -14,7 +14,7 @@
 **      by Chris Newman <chris.newman@innosoft.com> (1999/06)
 */
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 #ifndef TLS_H
 #define TLS_H
@@ -46,4 +46,4 @@ ssize_t SSL_writev(SSL *ssl, const struct iovec *vector, int count);
 
 #endif /* TLS_H */
 
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */

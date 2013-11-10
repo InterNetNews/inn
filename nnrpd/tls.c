@@ -23,10 +23,10 @@
 #include "nnrpd.h"
 #include "inn/innconf.h"
 
-/* Outside the ifdef so that make depend works even ifndef HAVE_SSL. */
+/* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "tls.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 
 /* We must keep some of the info available. */
 static const char hexcodes[] = "0123456789ABCDEF";
@@ -710,4 +710,4 @@ SSL_writev (SSL *ssl, const struct iovec *vector, int count)
   return SSL_write (ssl, buffer, bytes);
 }
 
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */

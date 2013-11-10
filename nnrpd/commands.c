@@ -13,9 +13,9 @@
 #include "inn/version.h"
 #include "tls.h"
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
 extern bool nnrpd_starttls_done;
-#endif /* HAVE_SSL */
+#endif /* HAVE_OPENSSL */
 
 typedef struct {
     char *name;
@@ -308,7 +308,7 @@ CMDauthinfo(int ac, char *av[])
                 return;
             }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
             /* Check whether STARTTLS must be used before trying to authenticate. */
             if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
                 && !nnrpd_starttls_done) {
@@ -337,7 +337,7 @@ CMDauthinfo(int ac, char *av[])
             return;
         }
 
-#ifdef HAVE_SSL
+#ifdef HAVE_OPENSSL
         /* Check whether STARTTLS must be used before trying to authenticate. */
         if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
             && !nnrpd_starttls_done) {
