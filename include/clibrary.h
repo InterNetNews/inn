@@ -137,10 +137,6 @@ typedef long            ptrdiff_t;
 #if !HAVE_SIG_ATOMIC_T
 typedef int             sig_atomic_t;
 #endif
-/* In case <sys/socket.h> does not define socklen_t. */
-#if !HAVE_SOCKLEN_T
-typedef int             socklen_t;
-#endif
 
 END_DECLS
 

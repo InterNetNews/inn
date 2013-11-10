@@ -1,43 +1,52 @@
-/*  $Id$
-**
-**  Replacement for a missing getaddrinfo.
-**
-**  Written by Russ Allbery <rra@stanford.edu>
-**  This work is hereby placed in the public domain by its author.
-**
-**  This is an implementation of getaddrinfo for systems that don't have one
-**  so that networking code can use a consistant interface without #ifdef.  It
-**  is a fairly minimal implementation, with the following limitations:
-**
-**    - IPv4 support only.  IPv6 is not supported.
-**    - AI_ADDRCONFIG is ignored.
-**    - Not thread-safe due to gethostbyname and getservbyname.
-**    - SOCK_DGRAM and SOCK_STREAM only.
-**    - Multiple possible socket types only generate one addrinfo struct.
-**    - Protocol hints aren't used correctly.
-**
-**  The last four issues could probably be easily remedied, but weren't
-**  needed for INN's purposes.  Adding IPv6 support isn't worth it; systems
-**  with IPv6 support should already support getaddrinfo natively.
-*/
+/* $Id$
+ *
+ * Replacement for a missing getaddrinfo.
+ *
+ * This is an implementation of getaddrinfo for systems that don't have one so
+ * that networking code can use a consistant interface without #ifdef.  It is
+ * a fairly minimal implementation, with the following limitations:
+ *
+ *   - IPv4 support only.  IPv6 is not supported.
+ *   - AI_ADDRCONFIG is ignored.
+ *   - Not thread-safe due to gethostbyname and getservbyname.
+ *   - SOCK_DGRAM and SOCK_STREAM only.
+ *   - Multiple possible socket types only generate one addrinfo struct.
+ *   - Protocol hints aren't used correctly.
+ *
+ * The last four issues could probably be easily remedied, but haven't been
+ * needed to date.  Adding IPv6 support isn't worth it; systems with IPv6
+ * support should already support getaddrinfo natively.
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <eagle@eyrie.org>
+ *
+ * The authors hereby relinquish any claim to any copyright that they may have
+ * in this work, whether granted under contract or by operation of law or
+ * international treaty, and hereby commit to the public, at large, that they
+ * shall not, at any time in the future, seek to enforce any copyright in this
+ * work against any person or entity, or prevent any person or entity from
+ * copying, publishing, distributing or creating derivative works of this
+ * work.
+ */
 
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+
 #include <errno.h>
 
-/* Make sure we have access to h_errno and hstrerror to print out name
-   resolution error messages. */
+/* We need access to h_errno to map errors from gethostbyname. */
 #if !HAVE_DECL_H_ERRNO
 extern int h_errno;
 #endif
 
-/* The netdb constants, which aren't always defined (particularly if h_errno
-   isn't declared.  We also make sure that a few of the less-used ones are
-   defined so that we can deal with them in case statements. */
-#ifndef NETDB_SUCCESS
-# define NETDB_SUCCESS  0
-#endif
+/*
+ * The netdb constants, which aren't always defined (particularly if h_errno
+ * isn't declared).  We also make sure that a few of the less-used ones are
+ * defined so that we can deal with them in case statements.
+ */
 #ifndef HOST_NOT_FOUND
 # define HOST_NOT_FOUND 1
 # define TRY_AGAIN      2
@@ -48,9 +57,11 @@ extern int h_errno;
 # define NETDB_INTERNAL -1
 #endif
 
-/* If we're running the test suite, rename the functions to avoid conflicts
-   with the system version.  Note that we don't rename the structures and
-   constants, but that should be okay (except possibly for gai_strerror. */
+/*
+ * If we're running the test suite, rename the functions to avoid conflicts
+ * with the system version.  Note that we don't rename the structures and
+ * constants, but that should be okay (except possibly for gai_strerror).
+ */
 #if TESTING
 # define gai_strerror test_gai_strerror
 # define freeaddrinfo test_freeaddrinfo
@@ -59,9 +70,13 @@ const char *test_gai_strerror(int);
 void test_freeaddrinfo(struct addrinfo *);
 int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
                      struct addrinfo **);
+#endif
 
-/* If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
-   pick some other values for them. */
+/*
+ * If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,
+ * pick some other values for them.
+ */
+#if TESTING
 # if AI_NUMERICSERV == 0
 #  undef AI_NUMERICSERV
 #  define AI_NUMERICSERV 0x0080
@@ -72,6 +87,19 @@ int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
 # endif
 #endif
 
+/*
+ * Value representing all of the hint flags set.  Linux uses flags up to
+ * 0x0400, so be sure not to break when testing on that platform.
+ */
+#if TESTING
+# ifdef HAVE_GETADDRINFO
+#  define AI_INTERNAL_ALL 0x04ff
+# else
+#  define AI_INTERNAL_ALL 0x01ff
+# endif
+#else
+# define AI_INTERNAL_ALL 0x007f
+#endif
 
 /* Table of strings corresponding to the EAI_* error codes. */
 static const char * const gai_errors[] = {
@@ -87,30 +115,24 @@ static const char * const gai_errors[] = {
     "Supplied buffer too small",        /* 10 EAI_OVERFLOW */
 };
 
-/* Value representing all of the hint flags set.  Linux uses flags up to
-   0x0400, so be sure not to break when testing on that platform. */
-#if TESTING
-# ifdef HAVE_GETADDRINFO
-#  define AI_INTERNAL_ALL 0x04ff
-# else
-#  define AI_INTERNAL_ALL 0x01ff
-# endif
-#else
-# define AI_INTERNAL_ALL 0x007f
-#endif
-
 /* Macro to set the len attribute of sockaddr_in. */
 #if HAVE_STRUCT_SOCKADDR_SA_LEN
-# define sin_set_length(s)      ((s)->sin_len  = sizeof(struct sockaddr_in))
+# define sin_set_length(s) ((s)->sin_len  = sizeof(struct sockaddr_in))
 #else
-# define sin_set_length(s)      /* empty */
+# define sin_set_length(s) /* empty */
 #endif
+
+/*
+ * Used for iterating through arrays.  ARRAY_SIZE returns the number of
+ * elements in the array (useful for a < upper bound in a for loop).
+ */
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 
 /*
-**  Return a constant string for a given EAI_* error code or a string
-**  indicating an unknown error.
-*/
+ * Return a constant string for a given EAI_* error code or a string
+ * indicating an unknown error.
+ */
 const char *
 gai_strerror(int ecode)
 {
@@ -122,8 +144,8 @@ gai_strerror(int ecode)
 
 
 /*
-**  Free a linked list of addrinfo structs.
-*/
+ * Free a linked list of addrinfo structs.
+ */
 void
 freeaddrinfo(struct addrinfo *ai)
 {
@@ -142,13 +164,13 @@ freeaddrinfo(struct addrinfo *ai)
 
 
 /*
-**  Convert a numeric service string to a number with error checking,
-**  returning true if the number was parsed correctly and false otherwise.
-**  Stores the converted number in the second argument.  Equivalent to calling
-**  strtol, but with the base always fixed at 10, with checking of errno,
-**  ensuring that all of the string is consumed, and checking that the
-**  resulting number is positive.
-*/
+ * Convert a numeric service string to a number with error checking, returning
+ * true if the number was parsed correctly and false otherwise.  Stores the
+ * converted number in the second argument.  Equivalent to calling strtol, but
+ * with the base always fixed at 10, with checking of errno, ensuring that all
+ * of the string is consumed, and checking that the resulting number is
+ * positive.
+ */
 static bool
 convert_service(const char *string, long *result)
 {
@@ -165,12 +187,12 @@ convert_service(const char *string, long *result)
 
 
 /*
-**  Allocate a new addrinfo struct, setting some defaults given that this
-**  implementation is IPv4 only.  Also allocates an attached sockaddr_in and
-**  zeroes it, per the requirement for getaddrinfo.  Takes the socktype,
-**  canonical name (which is copied if not NULL), address, and port.  Returns
-**  NULL on a memory allocation failure.
-*/
+ * Allocate a new addrinfo struct, setting some defaults given that this
+ * implementation is IPv4 only.  Also allocates an attached sockaddr_in and
+ * zeroes it, per the requirement for getaddrinfo.  Takes the socktype,
+ * canonical name (which is copied if not NULL), address, and port.  Returns
+ * NULL on a memory allocation failure.
+ */
 static struct addrinfo *
 gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
                  unsigned short port)
@@ -211,13 +233,13 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
 
 
 /*
-**  Look up a service.  Takes the service name (which may be numeric), the
-**  hint flags, a pointer to the socket type (used to determine whether TCP or
-**  UDP services are of interest and, if 0, is filled in with the result of
-**  getservbyname if the service was not numeric), and a pointer to the
-**  addrinfo struct to fill in.  Returns 0 on success or an EAI_* error on
-**  failure.
-*/
+ * Look up a service.  Takes the service name (which may be numeric), the hint
+ * flags, a pointer to the socket type (used to determine whether TCP or UDP
+ * services are of interest and, if 0, is filled in with the result of
+ * getservbyname if the service was not numeric), and a pointer to the
+ * addrinfo struct to fill in.  Returns 0 on success or an EAI_* error on
+ * failure.
+ */
 static int
 gai_service(const char *servname, int flags, int *type, unsigned short *port)
 {
@@ -237,9 +259,11 @@ gai_service(const char *servname, int flags, int *type, unsigned short *port)
         else
             protocol = NULL;
 
-        /* We really technically should be generating an addrinfo struct for
-           each possible protocol unless type is set, but this works well
-           enough for what I need this for. */
+        /*
+         * We really technically should be generating an addrinfo struct for
+         * each possible protocol unless type is set, but this works well
+         * enough for what I need this for.
+         */
         servent = getservbyname(servname, protocol);
         if (servent == NULL)
             return EAI_NONAME;
@@ -256,13 +280,13 @@ gai_service(const char *servname, int flags, int *type, unsigned short *port)
 
 
 /*
-**  Look up a host and fill in a linked list of addrinfo structs with the
-**  results, one per IP address of the returned host.  Takes the name or IP
-**  address of the host as a string, the lookup flags, the type of socket (to
-**  fill into the addrinfo structs), the port (likewise), and a pointer to
-**  where the head of the linked list should be put.  Returns 0 on success or
-**  the appropriate EAI_* error.
-*/
+ * Look up a host and fill in a linked list of addrinfo structs with the
+ * results, one per IP address of the returned host.  Takes the name or IP
+ * address of the host as a string, the lookup flags, the type of socket (to
+ * fill into the addrinfo structs), the port (likewise), and a pointer to
+ * where the head of the linked list should be put.  Returns 0 on success or
+ * the appropriate EAI_* error.
+ */
 static int
 gai_lookup(const char *nodename, int flags, int socktype, unsigned short port,
            struct addrinfo **res)
@@ -330,8 +354,8 @@ gai_lookup(const char *nodename, int flags, int socktype, unsigned short port,
 
 
 /*
-**  The actual getaddrinfo implementation.
-*/
+ * The actual getaddrinfo implementation.
+ */
 int
 getaddrinfo(const char *nodename, const char *servname,
             const struct addrinfo *hints, struct addrinfo **res)
@@ -363,10 +387,12 @@ getaddrinfo(const char *nodename, const char *servname,
         socktype = 0;
     }
 
-    /* See what we're doing.  If nodename is null, either AI_PASSIVE is set or
-       we're getting information for connecting to a service on the loopback
-       address.  Otherwise, we're getting information for connecting to a
-       remote system. */
+    /*
+     * See what we're doing.  If nodename is null, either AI_PASSIVE is set or
+     * we're getting information for connecting to a service on the loopback
+     * address.  Otherwise, we're getting information for connecting to a
+     * remote system.
+     */
     if (servname == NULL)
         port = 0;
     else {

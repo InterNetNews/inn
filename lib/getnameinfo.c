@@ -1,31 +1,44 @@
-/*  $Id$
-**
-**  Replacement for a missing getnameinfo.
-**
-**  Written by Russ Allbery <rra@stanford.edu>
-**  This work is hereby placed in the public domain by its author.
-**
-**  This is an implementation of getaddrinfo for systems that don't have one
-**  so that networking code can use a consistant interface without #ifdef.  It
-**  is a fairly minimal implementation, with the following limitations:
-**
-**    - IPv4 support only.  IPv6 is not supported.
-**    - NI_NOFQDN is ignored.
-**    - Not thread-safe due to gethostbyaddr, getservbyport, and inet_ntoa.
-**
-**  The last two issues could probably be easily remedied, but weren't needed
-**  for INN's purposes.  Adding IPv6 support isn't worth it; systems with IPv6
-**  support should already support getnameinfo natively.
-*/
+/* $Id$
+ *
+ * Replacement for a missing getnameinfo.
+ *
+ * This is an implementation of getnameinfo for systems that don't have one so
+ * that networking code can use a consistant interface without #ifdef.  It is
+ * a fairly minimal implementation, with the following limitations:
+ *
+ *   - IPv4 support only.  IPv6 is not supported.
+ *   - NI_NOFQDN is ignored.
+ *   - Not thread-safe due to gethostbyaddr, getservbyport, and inet_ntoa.
+ *
+ * The last two issues could probably be easily remedied, but haven't been
+ * needed so far.  Adding IPv6 support isn't worth it; systems with IPv6
+ * support should already support getnameinfo natively.
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Written by Russ Allbery <eagle@eyrie.org>
+ *
+ * The authors hereby relinquish any claim to any copyright that they may have
+ * in this work, whether granted under contract or by operation of law or
+ * international treaty, and hereby commit to the public, at large, that they
+ * shall not, at any time in the future, seek to enforce any copyright in this
+ * work against any person or entity, or prevent any person or entity from
+ * copying, publishing, distributing or creating derivative works of this
+ * work.
+ */
 
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+
 #include <errno.h>
 
-/* If we're running the test suite, rename inet_ntoa to avoid conflicts with
-   the system version.  Note that we don't rename the structures and
-   constants, but that should be okay (except possibly for gai_strerror. */
+/*
+ * If we're running the test suite, rename inet_ntoa to avoid conflicts with
+ * the system version.  Note that we don't rename the structures and
+ * constants, but that should be okay (except possibly for gai_strerror).
+ */
 #if TESTING
 # define getnameinfo test_getnameinfo
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
@@ -37,12 +50,15 @@ int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
 # endif
 #endif
 
+/* Used for unused parameters to silence gcc warnings. */
+#define UNUSED  __attribute__((__unused__))
+
 
 /*
-**  Check to see if a name is fully qualified by seeing if it contains a
-**  period.  If it does, try to copy it into the provided node buffer and set
-**  status accordingly, returning true.  If not, return false.
-*/
+ * Check to see if a name is fully qualified by seeing if it contains a
+ * period.  If it does, try to copy it into the provided node buffer and set
+ * status accordingly, returning true.  If not, return false.
+ */
 static bool
 try_name(const char *name, char *node, socklen_t nodelen, int *status)
 {
@@ -59,9 +75,9 @@ try_name(const char *name, char *node, socklen_t nodelen, int *status)
 
 
 /*
-**  Look up an address (or convert it to ASCII form) and put it in the
-**  provided buffer, depending on what is requested by flags.
-*/
+ * Look up an address (or convert it to ASCII form) and put it in the provided
+ * buffer, depending on what is requested by flags.
+ */
 static int
 lookup_name(const struct in_addr *addr, char *node, socklen_t nodelen,
             int flags)
@@ -86,8 +102,10 @@ lookup_name(const struct in_addr *addr, char *node, socklen_t nodelen,
                     return status;
         }
 
-        /* We found some results, but none of them were fully-qualified, so
-           act as if we found nothing and either fail or fall through. */
+        /*
+         * We found some results, but none of them were fully-qualified, so
+         * act as if we found nothing and either fail or fall through.
+         */
         if (flags & NI_NAMEREQD)
             return EAI_NONAME;
     }
@@ -102,15 +120,16 @@ lookup_name(const struct in_addr *addr, char *node, socklen_t nodelen,
 
 
 /*
-**  Look up a service (or convert it to ASCII form) and put it in the provided
-**  buffer, depending on what is requested by flags.
-*/
+ * Look up a service (or convert it to ASCII form) and put it in the provided
+ * buffer, depending on what is requested by flags.
+ */
 static int
 lookup_service(unsigned short port, char *service, socklen_t servicelen,
                int flags)
 {
     struct servent *srv;
     const char *protocol;
+    int status;
 
     /* Do the name lookup first unless told not to. */
     if (!(flags & NI_NUMERICSERV)) {
@@ -125,15 +144,16 @@ lookup_service(unsigned short port, char *service, socklen_t servicelen,
     }
 
     /* Just convert the port number to ASCII. */
-    if ((socklen_t) snprintf(service, servicelen, "%hu", port) > servicelen)
+    status = snprintf(service, servicelen, "%hu", port);
+    if (status < 0 || (socklen_t) status > servicelen)
         return EAI_OVERFLOW;
     return 0;
 }
 
 
 /*
-**  The getnameinfo implementation.
-*/
+ * The getnameinfo implementation.
+ */
 int
 getnameinfo(const struct sockaddr *sa, socklen_t salen UNUSED, char *node,
             socklen_t nodelen, char *service, socklen_t servicelen, int flags)

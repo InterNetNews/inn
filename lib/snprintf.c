@@ -1,18 +1,24 @@
-/*  $Id$
-**
-**  Replacement for a missing snprintf or vsnprintf.
-**
-**  The following implementation of snprintf was taken mostly verbatim from
-**  <http://www.fiction.net/~blong/programs/>; it is the version of snprintf
-**  used in Mutt.
-**
-**  Please do not reformat or otherwise change this file more than
-**  necessary so that later merges with the original source are easy.
-**  Bug fixes and improvements should be sent back to the original author.
-*/
+/* $Id$
+ *
+ * Replacement for a missing snprintf or vsnprintf.
+ *
+ * The following implementation of snprintf was taken mostly verbatim from
+ * <http://www.fiction.net/blong/programs/>; it is the version of snprintf
+ * used in Mutt.  A possibly newer version is used in wget, found at
+ * <https://github.com/wertarbyte/wget/blob/master/src/snprintf.c>.
+ *
+ * Please do not reformat or otherwise change this file more than necessary so
+ * that later merges with the original source are easy.  Bug fixes and
+ * improvements should be sent back to the original author.
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ */
 
-/* If we're running the test suite, rename snprintf and vsnprintf to avoid
-   conflicts with the system version. */
+/*
+ * If we're running the test suite, rename snprintf and vsnprintf to avoid
+ * conflicts with the system version.
+ */
 #if TESTING
 # define snprintf test_snprintf
 # define vsnprintf test_vsnprintf
@@ -69,7 +75,7 @@
  *    fixed handling of %.0f
  *    added test for HAVE_LONG_DOUBLE
  *
- *  Russ Allbery <rra@stanford.edu> 2000-08-26
+ *  Russ Allbery <eagle@eyrie.org> 2000-08-26
  *    fixed return value to comply with C99
  *    fixed handling of snprintf(NULL, ...)
  *
@@ -90,6 +96,7 @@
  **************************************************************/
 
 #include "config.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -116,8 +123,7 @@
 # define LLONG long
 #endif
 
-int snprintf (char *str, size_t count, const char *fmt, ...)
-    __attribute__((__format__(printf, 3, 4)));
+int snprintf (char *str, size_t count, const char *fmt, ...);
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 
 static int dopr (char *buffer, size_t maxlen, const char *format, 
@@ -428,7 +434,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	break;
       case 'w':
 	/* not supported yet, treat as next char */
-	ch = *format++;
+	format++;
 	break;
       default:
 	/* Unknown, skip */
@@ -650,7 +656,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   size_t omitcount = 0;
   
   /* 
-   * AIX man page says the default is 0, but Solaris says the default
+   * AIX manpage says the default is 0, but Solaris says the default
    * is 6, and sprintf on AIX defaults to 6
    */
   if (max < 0)
@@ -691,7 +697,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 	  /* For each leading 0 in fractional part, print one more
 	     fractional digit. */
 	  LDOUBLE temp;
-	  if (ufvalue != 0)
+	  if (ufvalue > 0)
 	    for (temp = ufvalue; temp < 0.1; temp *= 10)
 	      ++max;
 	}
@@ -842,7 +848,7 @@ int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
 
 /* VARARGS3 */
 #ifdef HAVE_STDARGS
-int snprintf (char *str, size_t count, const char *fmt, ...)
+int snprintf (char *str,size_t count,const char *fmt,...)
 #else
 int snprintf (va_alist) va_dcl
 #endif

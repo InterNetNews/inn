@@ -14,7 +14,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2007 Russ Allbery <rra@stanford.edu>
+dnl Copyright 2007 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2007, 2008 Markus Moeller
 dnl
 dnl This file is free software; the authors give unlimited permission to copy

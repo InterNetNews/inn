@@ -12,21 +12,20 @@ dnl KRB5_CPPFLAGS, KRB5_LDFLAGS, and KRB5_LIBS.  Also provides
 dnl INN_LIB_KRB5_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
 dnl Kerberos libraries, saving the current values first, and
 dnl INN_LIB_KRB5_RESTORE to restore those settings to before the last
-dnl INN_LIB_KRB5_SWITCH.  HAVE_KERBEROS will always be defined if INN_LIB_KRB5
-dnl is used.
+dnl INN_LIB_KRB5_SWITCH.  HAVE_KRB5 will always be defined if INN_LIB_KRB5 is
+dnl used.
 dnl
 dnl If KRB5_CPPFLAGS, KRB5_LDFLAGS, or KRB5_LIBS are set before calling these
 dnl macros, their values will be added to whatever the macros discover.
 dnl
 dnl Provides the INN_LIB_KRB5_OPTIONAL macro, which should be used if Kerberos
 dnl support is optional.  In this case, Kerberos libraries are mandatory if
-dnl --with-krb5 or related flags are given, and will not be probed for if
-dnl --without-krb5 is given.  Otherwise, they'll be probed for, and
-dnl inn_use_kerberos will be set to true if they're found and not set
-dnl otherwise.  The substitution variables will always be set, but they will
-dnl be empty unless Kerberos libraries are found and the user did not disable
-dnl Kerberos support.  Similarly, HAVE_KERBEROS will be defined if Kerberos
-dnl libraries are found and the user didn't disable Kerberos support.
+dnl --with-krb5 is given, and will not be probed for if --without-krb5 is
+dnl given.  Otherwise, they'll be probed for but will not be required.
+dnl Defines HAVE_KRB5 and sets inn_use_KRB5 to true if the libraries are
+dnl found.  The substitution variables will always be set, but they will be
+dnl empty unless Kerberos libraries are found and the user did not disable
+dnl Kerberos support.
 dnl
 dnl Sets the Automake conditional KRB5_USES_COM_ERR saying whether we use
 dnl com_err, since if we're also linking with AFS libraries, we may have to
@@ -45,13 +44,16 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Written by Russ Allbery <rra@stanford.edu>
+dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
+
+dnl Ignore Automake conditionals if not using Automake.
+m4_define_default([AM_CONDITIONAL], [:])
 
 dnl Headers to include when probing for Kerberos library properties.
 AC_DEFUN([INN_INCLUDES_KRB5], [[
@@ -249,16 +251,15 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
          _INN_LIB_KRB5_MANUAL([$1])])])
  inn_krb5_uses_com_err=false
  AS_CASE([$LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
- m4_ifdef([AM_CONDITIONAL],
-    [AM_CONDITIONAL([KRB5_USES_COM_ERR],
-        [test x"$inn_krb5_uses_com_err" = xtrue])])])
+ AM_CONDITIONAL([KRB5_USES_COM_ERR],
+    [test x"$inn_krb5_uses_com_err" = xtrue])])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([INN_LIB_KRB5],
 [inn_krb5_root=
  inn_krb5_libdir=
  inn_krb5_includedir=
- inn_use_kerberos=true
+ inn_use_KRB5=true
  AC_SUBST([KRB5_CPPFLAGS])
  AC_SUBST([KRB5_LDFLAGS])
  AC_SUBST([KRB5_LIBS])
@@ -279,14 +280,14 @@ AC_DEFUN([INN_LIB_KRB5],
     [AS_IF([test x"$withval" != xyes && test x"$withval" != xno],
         [inn_krb5_libdir="$withval"])])
  _INN_LIB_KRB5_INTERNAL([true])
- AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])])
+ AC_DEFINE([HAVE_KRB5], 1, [Define to enable Kerberos features.])])
 
 dnl The main macro for packages with optional Kerberos support.
 AC_DEFUN([INN_LIB_KRB5_OPTIONAL],
 [inn_krb5_root=
  inn_krb5_libdir=
  inn_krb5_includedir=
- inn_use_kerberos=
+ inn_use_KRB5=
  AC_SUBST([KRB5_CPPFLAGS])
  AC_SUBST([KRB5_LDFLAGS])
  AC_SUBST([KRB5_LIBS])
@@ -295,9 +296,9 @@ AC_DEFUN([INN_LIB_KRB5_OPTIONAL],
     [AS_HELP_STRING([--with-krb5@<:@=DIR@:>@],
         [Location of Kerberos headers and libraries])],
     [AS_IF([test x"$withval" = xno],
-        [inn_use_kerberos=false],
+        [inn_use_KRB5=false],
         [AS_IF([test x"$withval" != xyes], [inn_krb5_root="$withval"])
-         inn_use_kerberos=true])])
+         inn_use_KRB5=true])])
  AC_ARG_WITH([krb5-include],
     [AS_HELP_STRING([--with-krb5-include=DIR],
         [Location of Kerberos headers])],
@@ -309,17 +310,14 @@ AC_DEFUN([INN_LIB_KRB5_OPTIONAL],
     [AS_IF([test x"$withval" != xyes && test x"$withval" != xno],
         [inn_krb5_libdir="$withval"])])
 
- AS_IF([test x"$inn_use_kerberos" != xfalse],
-     [AS_IF([test x"$inn_use_kerberos" = xtrue],
+ AS_IF([test x"$inn_use_KRB5" != xfalse],
+     [AS_IF([test x"$inn_use_KRB5" = xtrue],
          [_INN_LIB_KRB5_INTERNAL([true])],
          [_INN_LIB_KRB5_INTERNAL([false])])],
-     [m4_ifdef([AM_CONDITIONAL],
-         [AM_CONDITIONAL([KRB5_USES_COM_ERR], [false])],
-         [:])])
-
+     [AM_CONDITIONAL([KRB5_USES_COM_ERR], [false])])
  AS_IF([test x"$KRB5_LIBS" != x],
-    [inn_use_kerberos=true
-     AC_DEFINE([HAVE_KERBEROS], 1, [Define to enable Kerberos features.])])])
+    [inn_use_KRB5=true
+     AC_DEFINE([HAVE_KRB5], 1, [Define to enable Kerberos features.])])])
 
 dnl Source used by INN_FUNC_KRB5_GET_INIT_CREDS_OPT_FREE_ARGS.
 AC_DEFUN([_INN_FUNC_KRB5_OPT_FREE_ARGS_SOURCE], [INN_INCLUDES_KRB5] [[

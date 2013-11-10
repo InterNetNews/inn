@@ -4,7 +4,7 @@ dnl
 dnl This file provides INN_LIB_SASL, which defines the --with-sasl
 dnl command-line option and probes for the location of Cyrus SASL v2 if that
 dnl option is used without an optional path.  It looks by default in $prefix,
-dnl /usr/local, and /usr.  It then makes sure that Cyrus SASL is verison two
+dnl /usr/local, and /usr.  It then makes sure that Cyrus SASL is version two
 dnl and will link, and exports SASL_LDFLAGS, SASL_CPPFLAGS, and SASL_LIBS.
 
 AC_DEFUN([INN_LIB_SASL],
