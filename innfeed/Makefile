@@ -100,19 +100,18 @@ depend: Makefile $(SOURCES)
 article.o: article.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/mmap.h ../include/config.h \
-  ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
-  buffer.h endpoint.h
+  ../include/config.h ../include/portable/mmap.h ../include/inn/messages.h \
+  ../include/inn/libinn.h ../include/inn/storage.h \
+  ../include/inn/options.h article.h misc.h buffer.h endpoint.h
 buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/libinn.h \
   buffer.h misc.h
 config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
-  ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/libinn.h configfile.h config_y.h misc.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/options.h
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/libinn.h \
+  configfile.h config_y.h misc.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/options.h
 config_y.o: config_y.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
@@ -121,16 +120,16 @@ config_y.o: config_y.c innfeed.h ../include/inn/timer.h \
 connection.o: connection.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/network.h \
-  ../include/portable/socket.h ../include/inn/libinn.h article.h misc.h \
-  buffer.h configfile.h connection.h endpoint.h host.h
+  ../include/inn/libinn.h article.h misc.h buffer.h configfile.h \
+  connection.h endpoint.h host.h
 endpoint.o: endpoint.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/libinn.h buffer.h misc.h \
@@ -138,21 +137,20 @@ endpoint.o: endpoint.c innfeed.h ../include/inn/timer.h \
 host.o: host.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/socket.h ../include/config.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/version.h ../include/inn/libinn.h article.h misc.h \
   buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
   tape.h
 imap_connection.o: imap_connection.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/socket.h ../include/config.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/messages.h ../include/inn/defines.h \
-  ../include/inn/libinn.h buffer.h misc.h connection.h endpoint.h host.h \
-  innfeed.h ../include/inn/timer.h article.h configfile.h
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/libinn.h buffer.h misc.h \
+  connection.h endpoint.h host.h innfeed.h ../include/inn/timer.h \
+  article.h configfile.h
 innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
@@ -162,13 +160,13 @@ innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
 main.o: main.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/socket.h ../include/config.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/time.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/version.h \
-  ../include/inn/libinn.h ../include/inn/storage.h \
-  ../include/inn/options.h article.h misc.h buffer.h configfile.h \
-  connection.h endpoint.h host.h innlistener.h tape.h
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/time.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/version.h ../include/inn/libinn.h \
+  ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
+  buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
+  tape.h
 misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \

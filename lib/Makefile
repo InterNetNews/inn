@@ -117,8 +117,8 @@ commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 concat.o: concat.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h \
-  ../include/inn/libinn.h ../include/inn/defines.h
+  ../include/inn/system.h ../include/inn/options.h ../include/inn/libinn.h \
+  ../include/inn/defines.h
 conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/conffile.h ../include/inn/libinn.h \
@@ -137,10 +137,9 @@ date.o: date.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/mmap.h ../include/config.h \
-  ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/innconf.h \
-  ../include/inn/mmap.h ../include/inn/libinn.h
+  ../include/config.h ../include/portable/mmap.h ../include/inn/dbz.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/innconf.h ../include/inn/mmap.h
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -184,7 +183,7 @@ innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/paths.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/time.h ../include/config.h \
+  ../include/config.h ../include/portable/time.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/inndcomm.h \
@@ -215,30 +214,28 @@ messages.o: messages.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/libinn.h
 mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/mmap.h ../include/config.h \
-  ../include/inn/messages.h ../include/inn/defines.h \
-  ../include/inn/mmap.h
+  ../include/config.h ../include/portable/mmap.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/mmap.h
 network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/network.h \
-  ../include/portable/socket.h ../include/inn/libinn.h
+  ../include/inn/libinn.h
 newsuser.o: newsuser.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/newsuser.h ../include/config.h \
-  ../include/clibrary.h
+  ../include/inn/messages.h ../include/inn/newsuser.h
 nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/portable/time.h ../include/inn/buffer.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
-  ../include/inn/network.h ../include/portable/socket.h \
-  ../include/inn/nntp.h ../include/inn/vector.h ../include/inn/libinn.h
+  ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
+  ../include/inn/libinn.h
 numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -254,11 +251,10 @@ readin.o: readin.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/network.h \
-  ../include/portable/socket.h ../include/inn/nntp.h
+  ../include/inn/libinn.h ../include/inn/network.h ../include/inn/nntp.h
 reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -278,9 +274,8 @@ sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/sequence.h ../include/inn/defines.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/time.h ../include/config.h \
-  ../include/inn/messages.h ../include/inn/defines.h \
-  ../include/inn/timer.h ../include/inn/libinn.h
+  ../include/config.h ../include/portable/time.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/timer.h ../include/inn/libinn.h
 tst.o: tst.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/tst.h ../include/inn/defines.h \
@@ -304,8 +299,8 @@ xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \
   ../include/inn/libinn.h
 xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/options.h \
-  ../include/inn/libinn.h ../include/inn/defines.h
+  ../include/inn/system.h ../include/inn/options.h ../include/inn/libinn.h \
+  ../include/inn/defines.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
@@ -322,28 +317,31 @@ ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h
 getaddrinfo.o: getaddrinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 getnameinfo.o: getnameinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/socket.h ../include/config.h \
+  ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
 inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h
+  ../include/config.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h
+  ../include/config.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h
+  ../include/config.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/time.h ../include/config.h
+  ../include/config.h ../include/portable/time.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h
@@ -359,8 +357,8 @@ seteuid.o: seteuid.c ../include/config.h ../include/inn/defines.h \
 setproctitle.o: setproctitle.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/setproctitle.h ../include/config.h \
-  ../include/inn/messages.h ../include/inn/defines.h
+  ../include/portable/setproctitle.h ../include/inn/messages.h \
+  ../include/inn/defines.h
 snprintf.o: snprintf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h
 strcasecmp.o: strcasecmp.c ../include/config.h ../include/inn/defines.h \
@@ -383,5 +381,4 @@ symlink.o: symlink.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/ppport.h \
-  ../include/innperl.h
+  ../include/ppport.h ../include/innperl.h
