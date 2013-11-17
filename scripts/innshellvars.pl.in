@@ -93,7 +93,7 @@ $perl = '@PERL@' ;
 $gpgv = '@GPGV@' ;
 $pgp = '@PGP@' ;
 $sort = '@SORT@' ;
-$getftp = '@PATH_GETFTP@' ;
+$getftp = "@PATH_GETFTP@" ;
 $uustat = '@UUSTAT@' ;
 $uux = '@UUX@' ;
 
