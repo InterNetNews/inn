@@ -52,6 +52,14 @@ bug report.
 
 =item *
 
+When neither B<wget> nor B<ncftpget> nor B<ncftp> was found at configure
+time, the path to the B<simpleftp> substitution program shipped with
+INN was not proprely set in B<innshellvars>, B<innshellvars.pl>, and
+the C<INN::Config> Perl module.  Thanks to Christian Garbs for the
+bug report.
+
+=item *
+
 B<ckpasswd> no longer tries to use the ndbm compatibility layer provided
 by S<Berkeley DB> if S<Berkeley DB> has been built without ndbm support.
 Also add support for gdbm libraries in B<ckpasswd>.

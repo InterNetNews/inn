@@ -124,7 +124,7 @@ our $perl = '@PERL@';
 our $pgp = '@PGP@';
 our $sed = '@SED@';
 our $sort = '@SORT@';
-our $getftp = '@PATH_GETFTP@';
+our $getftp = "@PATH_GETFTP@";
 our $uustat = '@UUSTAT@';
 our $uux = '@UUX@';
 
