@@ -45,7 +45,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011
+dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -132,7 +132,9 @@ AC_DEFUN([_INN_LIB_KRB5_REDUCED],
                      [INN_INCLUDES_KRB5])],
                  [AC_CHECK_LIB([com_err], [com_err],
                      [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
-                     [AC_MSG_ERROR([cannot find usable com_err library])])
+                     [AS_IF([test x"$1" = xtrue],
+                         [AC_MSG_ERROR([cannot find usable com_err library])],
+                         [KRB5_LIBS=""])])
                   AC_CHECK_HEADERS([et/com_err.h])])])])])
  INN_LIB_KRB5_RESTORE])
 
@@ -250,7 +252,7 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
         [_INN_LIB_KRB5_PATHS
          _INN_LIB_KRB5_MANUAL([$1])])])
  inn_krb5_uses_com_err=false
- AS_CASE([$LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
+ AS_CASE([$KRB5_LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
  AM_CONDITIONAL([KRB5_USES_COM_ERR],
     [test x"$inn_krb5_uses_com_err" = xtrue])])
 
