@@ -34,7 +34,7 @@ clean clobber distclean maintclean:
 
 NNRPDLIBS	= $(LIBHIST) $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) \
 		  $(PERL_LIBS) $(PYTHON_LIBS) $(SSL_LDFLAGS) $(SSL_LIBS) \
-		  $(SASL_LDFLAGS) $(SASL_LIBS) $(LIBS)
+		  $(CRYPTO_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS) $(LIBS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) -c $<
