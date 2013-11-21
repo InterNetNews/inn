@@ -127,21 +127,22 @@ option to B<configure> has been removed.
 
 =item *
 
-When building INN with S<Berkeley DB>, S<Kerberos v5>, or OpenSSL
-support, no longer add standard locations to compiler and linker include
-flags.  Such default paths are now added only if explicitly given to
-one or more of the B<--with-berkeleydb>, B<--with-berkeleydb-include>,
-B<--with-berkeleydb-lib>, B<--with-krb5>, B<--with-krb5-include>,
+When building INN with S<Berkeley DB>, Cyrus SASL, S<Kerberos v5>, or
+OpenSSL support, no longer add standard locations to compiler and linker
+include flags.  Such default paths are now added only if explicitly given
+to one or more of the B<--with-berkeleydb>, B<--with-berkeleydb-include>,
+B<--with-berkeleydb-lib>, B<--with-sasl>, B<--with-sasl-include>,
+B<--with-sasl-lib>, B<--with-krb5>, B<--with-krb5-include>,
 B<--with-krb5-lib>, B<--with-openssl>, B<--with-openssl-include>, or
 B<--with-openssl-lib> configure flags (the flags ending with C<-include>
 and C<-lib> are new in S<INN 2.6.0>).
 
 =item *
 
-If the S<Kerberos v5>, or OpenSSL SSL and crypto libraries are found
-at configure time, INN will now be built with support for them unless
-respectively the B<--without-krb5>, or B<--without-openssl> flags are
-explicitly passed to configure.
+If the Cyrus SASL, S<Kerberos v5>, or OpenSSL SSL and crypto libraries
+are found at configure time, INN will now be built with support for
+them unless respectively the B<--without-sasl>, B<--without-krb5>,
+or B<--without-openssl> flags are explicitly passed to configure.
 
 =item *
 

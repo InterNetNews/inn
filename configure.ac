@@ -335,9 +335,9 @@ dnl Handle optional libraries and probing for their locations and component
 dnl libraries if needed.
 INN_LIB_BERKELEYDB
 INN_LIB_ZLIB
-INN_LIB_OPENSSL_OPTIONAL
-INN_LIB_SASL
 INN_LIB_KRB5_OPTIONAL
+INN_LIB_OPENSSL_OPTIONAL
+INN_LIB_SASL_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
 dnl that program.
