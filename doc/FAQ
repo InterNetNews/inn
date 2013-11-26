@@ -194,8 +194,8 @@ versions of INN available at:
 
     <http://www.eyrie.org/~eagle/software/inn/>
 
-For additional documentation beyond what is distributed with INN, start at
-<https://www.isc.org/software/inn/> and follow the links.
+For additional documentation beyond what is distributed with INN, follow
+the links suggested in the above page.
 
 The documentation that comes with INN is fairly technical in nature and
 lacking in some more general details on configuring news servers.  Some of

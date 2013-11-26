@@ -15,7 +15,7 @@ development tree using Subversion from:
 
 or view it with Trac source browser at:
 
-    <http://inn.eyrie.org/trac/browser/>
+    <https://inn.eyrie.org/trac/browser/>
 
 You will need S<autoconf 2.64> or later to use the development tree.  After
 checking out the tree, run C<./autogen> to generate the necessary autoconf
