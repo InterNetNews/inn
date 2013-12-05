@@ -27,7 +27,7 @@ dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
 AC_INIT([INN], [2.6.0], [inn-workers@lists.isc.org],
-    [inn], [https://www.isc.org/downloads/other/])
+    [inn], [https://www.isc.org/downloads/projects/])
 AC_PREREQ([2.64])
 AC_REVISION([$Revision$])
 AC_CONFIG_AUX_DIR([support])
