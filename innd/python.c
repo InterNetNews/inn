@@ -444,7 +444,6 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
 
     /* Assign syslog priority by abbreviated names. */
     switch (*loglevel) {
-    default:		priority = LOG_NOTICE ;
     case 'd': case 'D': priority = LOG_DEBUG ;		break;
     case 'i': case 'I': priority = LOG_INFO ;		break;
     case 'n': case 'N': priority = LOG_NOTICE ;		break;
@@ -452,6 +451,7 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
     case 'e': case 'E': priority = LOG_ERR ;		break;
     case 'c': case 'C': priority = LOG_CRIT ;		break;
     case 'a': case 'A': priority = LOG_ALERT ;		break;
+    default:            priority = LOG_NOTICE ;
     }
 
     /* Log the message. */

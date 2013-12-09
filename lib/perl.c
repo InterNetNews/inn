@@ -419,7 +419,6 @@ XS(XS_INN_syslog)
     logmsg = (const char *) SvPV(ST(1), PL_na);
 
     switch (*loglevel) {
-        default:                priority = LOG_NOTICE;
         case 'a': case 'A':     priority = LOG_ALERT;           break;
         case 'c': case 'C':     priority = LOG_CRIT;            break;
         case 'e': case 'E':     priority = LOG_ERR;             break;
@@ -427,6 +426,7 @@ XS(XS_INN_syslog)
         case 'n': case 'N':     priority = LOG_NOTICE;          break;
         case 'i': case 'I':     priority = LOG_INFO;            break;
         case 'd': case 'D':     priority = LOG_DEBUG;           break;
+        default:                priority = LOG_NOTICE;
     }
     syslog(priority, "filter: %s", logmsg);
     XSRETURN_UNDEF;
