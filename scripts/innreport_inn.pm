@@ -422,8 +422,8 @@ sub collect($$$$$$) {
       $inn_badart{$server}++;
       return 1;
     }
-    # 437 article includes "....."
-    if ($left =~ /(\S+) <[^>]+> (?:437|439) article includes/o) {
+    # Article accepted but includes "....."
+    if ($left =~ /(\S+) <[^>]+> Article accepted but includes/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innd_strange_strings{$server}++;
