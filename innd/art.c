@@ -1999,7 +1999,7 @@ ARTpost(CHANNEL *cp)
   }
   hopcount = ARTparsepath(HDR(HDR__PATH), HDR_LEN(HDR__PATH), &data->Path);
   if (hopcount == 0) {
-    snprintf(cp->Error, sizeof(cp->Error), "%d illegal path element",
+    snprintf(cp->Error, sizeof(cp->Error), "%d Illegal path element",
              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
     /* We do not remember the message-ID of this article because another
      * peer may send it with a good Path: header. */
@@ -2139,7 +2139,7 @@ ARTpost(CHANNEL *cp)
   /* If we limit what distributions we get, see if we want this one. */
   if (HDR_FOUND(HDR__DISTRIBUTION)) {
     if (HDR(HDR__DISTRIBUTION)[0] == ',') {
-      snprintf(cp->Error, sizeof(cp->Error), "%d bogus distribution \"%s\"",
+      snprintf(cp->Error, sizeof(cp->Error), "%d Bogus distribution \"%s\"",
                ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                MaxLength(HDR(HDR__DISTRIBUTION), HDR(HDR__DISTRIBUTION)));
       ARTlog(data, ART_REJECT, cp->Error);
@@ -2523,7 +2523,7 @@ ARTpost(CHANNEL *cp)
   }
   if (token.type == TOKEN_EMPTY) {
     syslog(L_ERROR, "%s cant store article: %s", LogName, SMerrorstr);
-    snprintf(cp->Error, sizeof(cp->Error), "%d cant store article",
+    snprintf(cp->Error, sizeof(cp->Error), "%d Can't store article",
              ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_ACTION);
     /* Do not remember the message-ID of the article because we want
      * it to be received again later. */
@@ -2564,7 +2564,7 @@ ARTpost(CHANNEL *cp)
     i = errno;
     syslog(L_ERROR, "%s cant write history %s %m", LogName,
       HDR(HDR__MESSAGE_ID));
-    snprintf(cp->Error, sizeof(cp->Error), "%d cant write history, %s",
+    snprintf(cp->Error, sizeof(cp->Error), "%d Can't write history, %s",
              ihave ? NNTP_FAIL_IHAVE_DEFER : NNTP_FAIL_ACTION,
              strerror(errno));
     ARTlog(data, ART_REJECT, cp->Error);
