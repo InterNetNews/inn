@@ -662,7 +662,6 @@ RCreaddata(int *num, FILE *F, bool *toolong)
   char	*s;
   char	*t;
   char	*word;
-  bool	flag;
 
   *toolong = false;
   if (*RCbuff == '\0') {
@@ -674,7 +673,6 @@ RCreaddata(int *num, FILE *F, bool *toolong)
       return (NULL); /* Line too long */
     }
   }
-  p = RCbuff;
   do {
      /* Ignore blank and comment lines. */
      if ((p = strchr(RCbuff, '\n')) != NULL)
@@ -684,19 +682,17 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 	   *p = '\0';
      }
      for (p = RCbuff; *p == ' ' || *p == '\t' ; p++);
-     flag = true;
      if (*p == '\0' && !feof (F)) {
-       flag = false;
        fgets(RCbuff, sizeof RCbuff, F);
        (*num)++;
        if (strlen (RCbuff) == sizeof RCbuff) {
-	 *toolong = true;
-	 return (NULL); /* Line too long */
+           *toolong = true;
+           return (NULL); /* Line too long */
        }
        continue;
      }
      break;
-  } while (!feof (F) || !flag);
+  } while (!feof (F));
 
   if (*p == '"') { /* double quoted string ? */
     p++;

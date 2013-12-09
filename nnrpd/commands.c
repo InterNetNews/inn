@@ -197,7 +197,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     close(pan[PIPE_WRITE]);
-    i = read(pan[PIPE_READ], path, sizeof(path));
+    read(pan[PIPE_READ], path, sizeof(path));
 
     waitpid(pid, &status, 0);
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
@@ -254,7 +254,7 @@ CMDauthinfo(int ac, char *av[])
 
         /* Go on parsing the command line. */
         ac--;
-        ac += reArgify(av[ac], &av[ac], -1, true);
+        (void) reArgify(av[ac], &av[ac], -1, true);
 
 	strlcpy(PERMuser, "<none>", sizeof(PERMuser));
 

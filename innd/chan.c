@@ -539,7 +539,7 @@ CHANNEL *
 CHANiter(int *ip, enum channel_type type)
 {
     CHANNEL *cp;
-    int i = *ip;
+    int i;
 
     for (i = *ip; i >= 0 && i < channels.table_size; i++) {
         cp = &channels.table[i];

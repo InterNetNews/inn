@@ -675,7 +675,6 @@ CMDfetch(int ac, char *av[])
                   PERMcanauthenticate ? NNTP_FAIL_AUTH_NEEDED : NNTP_ERR_ACCESS);
 	    return;
 	}
-	tart=art;
 	Reply("%d %lu %s %s\r\n", what->ReplyCode, art, av[1], what->Item);
 	if (what->Type != STstat) {
 	    ARTsendmmap(what->Type);

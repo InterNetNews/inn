@@ -41,7 +41,7 @@ static char *CONFgetword(CONFFILE *F)
   char *s;
   char *t;
   char *word;
-  bool flag, comment;
+  bool comment;
 
   if (!F) return (NULL);	/* No conf file */
   if (!F->buf || !F->buf[0]) {
@@ -58,15 +58,13 @@ static char *CONFgetword(CONFFILE *F)
      if ((p = strchr(F->buf, '\n')) != NULL)
        *p = '\0';
      for (p = F->buf; *p == ' ' || *p == '\t' ; p++);
-     flag = true;
      if ((*p == '\0' || *p == '#') && !cfeof(F)) {
-       flag = false;
        if (getconfline(F, F->buf, F->sbuf))
          return (NULL); /* Line too long */
        continue;
      }
      break;
-  } while (!cfeof(F) || !flag);
+  } while (!cfeof(F));
 
   comment = false;
   if (*p == '"') { /* double quoted string ? */

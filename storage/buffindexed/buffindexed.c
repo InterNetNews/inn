@@ -2237,7 +2237,7 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
 
 void buffindexed_close(void) {
   struct stat	sb;
-  OVBUFF	*ovbuff = ovbufftab;
+  OVBUFF	*ovbuff = NULL;
 #ifdef OV_DEBUG
   FILE		*F = NULL;
   pid_t		pid;
@@ -2249,6 +2249,7 @@ void buffindexed_close(void) {
 #endif /* OV_DEBUG */
 
 #ifdef OV_DEBUG
+  ovbuff = ovbufftab;
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
     for (i = 0 ; i < ovbuff->totalblk ; i++) {
       trace = &ovbuff->trace[i];

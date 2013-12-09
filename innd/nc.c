@@ -1088,7 +1088,6 @@ NCproc(CHANNEL *cp)
   bool          validcommandtoolong;
   int           syntaxerrorcode = NNTP_ERR_SYNTAX;
 
-  readmore = movedata = false;
   if (Tracing || cp->Tracing)
     syslog(L_TRACE, "%s NCproc Used=%lu", CHANname(cp),
            (unsigned long) cp->In.used);
@@ -1604,7 +1603,6 @@ NCproc(CHANNEL *cp)
 
     if (movedata) { /* move data rather than extend buffer */
       TMRstart(TMR_DATAMOVE);
-      movedata = false;
       if (cp->Start > 0)
 	memmove(bp->data, &bp->data[cp->Start], bp->used - cp->Start);
       bp->used -= cp->Start;
@@ -1625,9 +1623,10 @@ NCproc(CHANNEL *cp)
       cp->Start = 0;
       TMRstop(TMR_DATAMOVE);
     }
-    if (readmore)
-      /* need to read more */
-      break;
+    if (readmore) {
+        /* need to read more */
+        break;
+    }
   }
 }
 
