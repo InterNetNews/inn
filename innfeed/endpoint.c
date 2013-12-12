@@ -502,8 +502,8 @@ TimeoutId prepareWake (EndpTCB func, time_t timeToWake, void *clientData)
   id = timerElemAdd (timeToWake,func,clientData) ;
 
 #if 0
-  d_printf (1,"Preparing wake %d at date %ld for %d seconds\n",
-           (int) id, (long) now, timeToWake - now) ;
+  d_printf (1, "Preparing wake %d at date %ld for %ld seconds\n",
+           (int) id, (long) now, (long) (timeToWake - now)) ;
 #endif
 
   return id ;
@@ -519,8 +519,8 @@ TimeoutId prepareSleep (EndpTCB func, int timeToSleep, void *clientData)
   id = timerElemAdd (now + timeToSleep,func,clientData) ;
 
 #if 0
-  d_printf (1,"Preparing sleep %d at date %ld for %d seconds\n",
-           (int) id, (long) now, timeToSleep) ;
+  d_printf (1, "Preparing sleep %d at date %ld for %ld seconds\n",
+           (int) id, (long) now, (long) timeToSleep) ;
 #endif
 
   return id ;
