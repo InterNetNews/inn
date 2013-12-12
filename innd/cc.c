@@ -952,7 +952,7 @@ CCname(char *av[])
             mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
             buffer_sprintf(&CCreply, true, ":%s:%ld:%s",
                            cp->State == CScancel ? "cancel" : "nntp",
-                           (long) Now.tv_sec - cp->LastActive, mode);
+                           (long) (Now.tv_sec - cp->LastActive), mode);
 	    break;
 	case CTlocalconn:
             buffer_sprintf(&CCreply, true, ":localconn::");

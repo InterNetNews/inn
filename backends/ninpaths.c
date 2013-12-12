@@ -147,7 +147,7 @@ writedump(FILE *f)
     }
     fprintf(f, "!!NINP " VERSION " %lu %lu %ld %ld %ld\n",
             (unsigned long) starttime, (unsigned long) time(NULL), sites,
-            total, (long)(atimes/total)+starttime);
+            total, (long) ((atimes/total) + starttime));
     n=j=0;
     /* write the S-records (hosts), numbering them in the process */
     for (i=0; i<HASH_TBL; ++i)
