@@ -340,9 +340,17 @@ INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
-dnl that program.
+dnl that program.  In case neither et/com_err.h nor com_err.h can be found
+dnl and --with-krb5 is not given, do not define KRB5_AUTH and clear the
+dnl other variables set for Kerberos support.
 AS_IF([test x"$KRB5_LIBS" != x],
-    [KRB5_AUTH=auth_krb5])
+    [AC_CHECK_HEADERS([et/com_err.h], [KRB5_AUTH=auth_krb5],
+         [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
+              [AS_IF([test x"$with_krb5" = x],
+                   [KRB5_CPPFLAGS=
+                    KRB5_LDFLAGS=
+                    KRB5_LIBS=],
+                   [AC_MSG_ERROR([cannot find usable com_err header])])])])])
 AC_SUBST([KRB5_AUTH])
 
 dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
