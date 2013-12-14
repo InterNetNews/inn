@@ -387,8 +387,22 @@ AC_CHECK_HEADERS([crypt.h inttypes.h limits.h stddef.h \
                   sys/select.h sys/time.h unistd.h])
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.  Others have
-dnl gdbm-ndbm.h.
-AC_CHECK_HEADERS([ndbm.h db1/ndbm.h gdbm-ndbm.h], [break])
+dnl gdbm/ndbm.h or gdbm-ndbm.h.  Detecting the last two ones is not
+dnl straight-forward because Autoconf defines the same preprocessor name
+dnl and the same shell variable for them; we therefore have to make sure
+dnl the cache is not populated, and to define HAVE_GDBM_SLASH_NDBM_H and
+dnl HAVE_GDBM_HYPHEN_NDBM_H separately.
+AC_CHECK_HEADERS([ndbm.h db1/ndbm.h], [break])
+AS_UNSET([ac_cv_header_gdbm_ndbm_h])
+AC_CHECK_HEADER([gdbm/ndbm.h])
+AS_IF([test x"$ac_cv_header_gdbm_ndbm_h" != xno],
+    [AC_DEFINE([HAVE_GDBM_SLASH_NDBM_H], [1],
+         [Define if you have the <gdbm/ndbm.h> header file.])],
+    [AS_UNSET([ac_cv_header_gdbm_ndbm_h])
+     AC_CHECK_HEADER([gdbm-ndbm.h])
+     AS_IF([test x"$ac_cv_header_gdbm_ndbm_h" != xno],
+         [AC_DEFINE([HAVE_GDBM_HYPHEN_NDBM_H], [1],
+              [Define if you have the <gdbm-ndbm.h> header file.])])])
 
 dnl Check for whether various symbols are declared.
 AC_CHECK_DECLS([pread, pwrite, snprintf, setproctitle, strlcat,

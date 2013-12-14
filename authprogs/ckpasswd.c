@@ -37,10 +37,12 @@
 #  include <db.h>
 # elif HAVE_NDBM_H
 #  include <ndbm.h>
-# elif HAVE_GDBM_NDBM_H
-#  include <gdbm-ndbm.h>
 # elif HAVE_DB1_NDBM_H
 #  include <db1/ndbm.h>
+# elif HAVE_GDBM_SLASH_NDBM_H
+#  include <gdbm/ndbm.h>
+# elif HAVE_GDBM_HYPHEN_NDBM_H
+#  include <gdbm-ndbm.h>
 # endif
 # define OPT_DBM "d:"
 #else
