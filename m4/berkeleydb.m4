@@ -65,7 +65,7 @@ main(void) {
 }
 ]])
 
-dnl Check whether Berkeley DB was compiled with ndbm compatibily layer.
+dnl Check whether Berkeley DB was compiled with ndbm compatibility layer.
 dnl If so, set HAVE_BDB_NDBM.
 AC_DEFUN([INN_LIB_BERKELEYDB_NDBM],
 [inn_save_LDFLAGS="$LDFLAGS"
