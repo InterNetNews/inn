@@ -145,13 +145,15 @@ it can.
 
 =item I<noresendid>
 
-This key requires a boolean value.  It defines whether B<innd> should send
-C<431> (response to CHECK, in streaming mode) or C<436> (response to IHAVE
-in non-streaming mode) responses instead of C<438> (response to CHECK)
-or C<435> (response to IHAVE) if a message is offered that is already
-received from another peer.  This can be useful for peers that resend
-messages right away, as innfeed does.  The default is false:  the peer
-receives C<431> and C<436> codes so that it resends the article later.
+This key requires a boolean value.  It defines whether B<innd> should
+send C<438> (response to CHECK, in streaming mode) or C<435> (response
+to IHAVE in non-streaming mode) responses instead of C<431> (response
+to CHECK) or C<436> (response to IHAVE) if a message is offered that
+is already received from another peer.  The deferral feature can be
+useful for peers that resend messages right away, as B<innfeed> does.
+The default is false:  the deferral feature is used so that the peer
+receives C<431> and C<436> codes, and therefore resends the article
+later.
 
 =item I<password>
 
