@@ -33,6 +33,9 @@ as a write(2) failure occurs, B<innxmit> will stop sending and rewrite
 the batch file to contain the current article and any other unsent
 articles.
 
+An alternative to B<innxmit> can be B<innduct>, mentioned in the
+innfeed(8) man page.
+
 =head1 OPTIONS
 
 =over 4

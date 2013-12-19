@@ -244,6 +244,16 @@ they want without having to ask you to edit the configuration file all the
 time.  It's useful when feeding peers take limited and very specific
 feeds that change periodically.
 
+=item innduct
+
+URL:  L<http://www.chiark.greenend.org.uk/ucgi/~ian/git-manpage/innduct.git/innduct.8> (maintained by Ian Jackson)
+
+A possible replacement for B<innfeed>, B<innxmit> and B<nntpsend>
+that quickly and reliably streams Usenet article to a remote site.
+B<innduct> is designed to be robust and not to lose any articles (when
+offered to peers) in case it unexpectedly dies, contrary to B<innfeed>.
+It also permits a realtime feed, contrary to B<innxmit> or B<nntpsend>.
+
 =item NewsPortal
 
 URL:  L<http://amrhein.eu/newsportal/doc/>

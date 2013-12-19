@@ -31,6 +31,9 @@ line, then the information found in F<nntpsend.ctl> becomes the default
 flags for that site.  Any flags given on the command line override the
 default flags for the site.
 
+An alternative to B<nntpsend> can be B<innduct>, mentioned in the
+innfeed(8) man page.
+
 =head1 OPTIONS
 
 =over 2
