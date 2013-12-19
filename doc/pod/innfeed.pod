@@ -438,6 +438,18 @@ This needs to be prepared for it by external means.
 
 Probably too many other bugs to count.
 
+=head1 ALTERNATIVE
+
+An alternative to B<innfeed> can be
+B<innduct>, maintained by Ian Jackson and available at
+L<http://www.chiark.greenend.org.uk/ucgi/~ian/git-manpage/innduct.git/innduct.8>.
+It is intended to solve a design issue in the way B<innfeed> works.
+As a matter of fact, the program feed protocol spoken between B<innd>
+and B<innfeed> is lossy:  if B<innfeed> dies unexpectedly, articles
+which B<innd> has written to the pipe to B<innfeed> will be skipped.
+B<innd> has no way of telling which articles those are, no useful
+records, and no attempts to resend these articles.
+
 =head1 FILES
 
 =over 4
