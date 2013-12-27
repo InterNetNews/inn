@@ -34,7 +34,7 @@ AC_CONFIG_AUX_DIR([support])
 
 dnl Lots of our macros are stored in separate files for ease of maintenance.
 m4_include([m4/aux-libs.m4])
-m4_include([m4/berkeleydb.m4])
+m4_include([m4/bdb.m4])
 m4_include([m4/cc-c-o.m4])
 m4_include([m4/cc-flags.m4])
 m4_include([m4/compress.m4])
@@ -332,9 +332,8 @@ if test x"$inn_enable_keywords" = x1 ; then
 fi
 
 dnl Handle optional libraries and probing for their locations and component
-dnl libraries if needed.
-INN_LIB_BERKELEYDB
-INN_LIB_ZLIB
+dnl libraries if needed.  Support for zlib is handled later.
+INN_LIB_BDB_OPTIONAL
 INN_LIB_KRB5_OPTIONAL
 INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
@@ -354,19 +353,20 @@ AS_IF([test x"$KRB5_LIBS" != x],
 AC_SUBST([KRB5_AUTH])
 
 dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
-dnl just use the ndbm support provided by it.
-if test x"$DB_LIBS" != x ; then
-    INN_LIB_BERKELEYDB_NDBM
-fi
-if test x"$inn_cv_lib_berkeleydb_ndbm_works" != xyes ; then
-    INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm gdbm "gdbm_compat -lgdbm"], [DBM_LIBS],
-        [AC_DEFINE([HAVE_DBM], [1], [Define if you have a dbm library.])])
-    DBM_CPPFLAGS=
-else
-    DBM_CPPFLAGS="$DB_CPPFLAGS"
-    DBM_LIBS="$DB_LDFLAGS $DB_LIBS"
-    AC_SUBST([DBM_LIBS])
-fi
+dnl just use the ndbm support provided by it.  Also, do not build with zlib
+dnl support unless Berkeley DB is enabled.
+AS_IF([test x"$inn_use_BDB" = xtrue],
+    [INN_LIB_BDB_NDBM
+     INN_LIB_ZLIB_OPTIONAL])
+AS_IF([test x"$inn_cv_lib_bdb_ndbm" != xyes],
+    [INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm gdbm "gdbm_compat -lgdbm"],
+         [DBM_LIBS],
+         [AC_DEFINE([HAVE_DBM], [1],
+              [Define if you have a dbm library.])])
+     DBM_CPPFLAGS=],
+    [DBM_CPPFLAGS="$BDB_CPPFLAGS"
+     DBM_LIBS="$BDB_LDFLAGS $BDB_LIBS"
+     AC_SUBST([DBM_LIBS])])
 AC_SUBST([DBM_CPPFLAGS])
 
 dnl If configuring with large file support, determine the right flags to

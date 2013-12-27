@@ -553,7 +553,7 @@ lib/xsignal.c                         signal() wrapper using sigaction
 lib/xwrite.c                          write that handles partial transfers
 m4                                    Autoconf support macros (Directory)
 m4/aux-libs.m4                        Autoconf macro for extra libraries
-m4/berkeleydb.m4                      Autoconf macros for Berkeley DB
+m4/bdb.m4                             Autoconf macros for Berkeley DB
 m4/cc-c-o.m4                          Autoconf macro for -c -o compiler support
 m4/cc-flags.m4                        Autoconf macro for compiler flags
 m4/compress.m4                        Autoconf macro for compress detection

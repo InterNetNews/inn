@@ -1,4 +1,4 @@
-#ifdef USE_BERKELEY_DB
+#ifdef HAVE_BDB
 
 #include <db.h>
 
@@ -190,4 +190,4 @@ struct rs_artinfo {
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
 
-#endif /* USE_BERKELEY_DB */
+#endif /* HAVE_BDB */

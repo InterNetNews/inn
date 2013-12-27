@@ -106,7 +106,7 @@
 # include <sys/un.h>
 #endif
 
-#ifndef USE_BERKELEY_DB
+#ifndef HAVE_BDB
 
 /* Provide stub functions if we don't have db */
 
@@ -150,7 +150,7 @@ bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
 
 void ovdb_close(void) { }
 
-#else /* USE_BERKELEY_DB */
+#else /* HAVE_BDB */
 
 #define EXPIREGROUP_TXN_SIZE 100
 #define DELETE_TXN_SIZE 500
@@ -3056,4 +3056,4 @@ void ovdb_close(void)
     ovdb_releaselock();
 }
 
-#endif /* USE_BERKELEY_DB */
+#endif /* HAVE_BDB */

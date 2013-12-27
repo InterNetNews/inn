@@ -133,11 +133,11 @@ LIBCC		= $(LIBTOOLCC) $(CC)
 LIBLD		= $(LIBTOOLLD) $(CC)
 
 ##  Berkeley DB support.  If this support is configured, anything linking
-##  against libstorage also needs to link against DB_LDFLAGS and DB_LIBS.
+##  against libstorage also needs to link against BDB_LDFLAGS and BDB_LIBS.
 
-DB_CPPFLAGS	= @DB_CPPFLAGS@ @ZLIB_CPPFLAGS@
-DB_LDFLAGS	= @DB_LDFLAGS@ @ZLIB_LDFLAGS@
-DB_LIBS		= @DB_LIBS@ @ZLIB_LIBS@
+BDB_CPPFLAGS	= @BDB_CPPFLAGS@ @ZLIB_CPPFLAGS@
+BDB_LDFLAGS	= @BDB_LDFLAGS@ @ZLIB_LDFLAGS@
+BDB_LIBS	= @BDB_LIBS@ @ZLIB_LIBS@
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is
@@ -147,7 +147,7 @@ DB_LIBS		= @DB_LIBS@ @ZLIB_LIBS@
 LIBINN		= $(abs_builddir)/lib/libinn$(LIBSUFFIX).$(EXTLIB)
 LIBHIST		= $(abs_builddir)/history/libinnhist$(LIBSUFFIX).$(EXTLIB)
 LIBSTORAGE	= $(abs_builddir)/storage/libstorage$(LIBSUFFIX).$(EXTLIB)
-STORAGE_LIBS	= $(DB_LDFLAGS) $(DB_LIBS)
+STORAGE_LIBS	= $(BDB_LDFLAGS) $(BDB_LIBS)
 
 DBM_CPPFLAGS	= @DBM_CPPFLAGS@
 DBM_LIBS	= @DBM_LIBS@

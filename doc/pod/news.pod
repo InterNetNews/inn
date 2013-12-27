@@ -23,6 +23,11 @@ support has been renamed to B<--with-krb5>.
 
 =item *
 
+The B<--with-berkeleydb> configure flag used to add S<Berkeley DB>
+support has been renamed to B<--with-bdb>.
+
+=item *
+
 $HOME is no longer exported as an environment variable by B<innshellvars>,
 B<innshellvars.tcl> and the Perl module C<INN::Config>.  It was previously
 overriding the default user home directory with I<pathnews>.  If you use
@@ -127,22 +132,27 @@ option to B<configure> has been removed.
 
 =item *
 
-When building INN with S<Berkeley DB>, Cyrus SASL, S<Kerberos v5>, or
-OpenSSL support, no longer add standard locations to compiler and linker
-include flags.  Such default paths are now added only if explicitly given
-to one or more of the B<--with-berkeleydb>, B<--with-berkeleydb-include>,
-B<--with-berkeleydb-lib>, B<--with-sasl>, B<--with-sasl-include>,
-B<--with-sasl-lib>, B<--with-krb5>, B<--with-krb5-include>,
-B<--with-krb5-lib>, B<--with-openssl>, B<--with-openssl-include>, or
-B<--with-openssl-lib> configure flags (the flags ending with C<-include>
-and C<-lib> are new in S<INN 2.6.0>).
+When building INN with S<Berkeley DB>, Cyrus SASL, S<Kerberos
+v5>, OpenSSL, or zlib support, no longer add standard locations to
+compiler and linker include flags.  Such default paths are now added
+only if explicitly given to one or more of the B<--with-bdb>,
+B<--with-bdb-include>, B<--with-bdb-lib>, B<--with-sasl>,
+B<--with-sasl-include>, B<--with-sasl-lib>, B<--with-krb5>,
+B<--with-krb5-include>, B<--with-krb5-lib>, B<--with-openssl>,
+B<--with-openssl-include>, B<--with-openssl-lib>, B<--with-zlib>,
+B<--with-zlib-include>, or B<--with-zlib-lib> configure flags (the
+flags ending with C<-include> and C<-lib> are new in S<INN 2.6.0>).
 
 =item *
 
-If the Cyrus SASL, S<Kerberos v5>, or OpenSSL SSL and crypto libraries
-are found at configure time, INN will now be built with support for
-them unless respectively the B<--without-sasl>, B<--without-krb5>,
-or B<--without-openssl> flags are explicitly passed to configure.
+If the S<Berkeley DB>, Cyrus SASL, S<Kerberos v5>, or OpenSSL SSL
+and crypto libraries are found at configure time, INN will now be
+built with support for them unless respectively the B<--without-bdb>,
+B<--without-sasl>, B<--without-krb5>, or B<--without-openssl> flags
+are explicitly passed to configure.
+
+Note that it was already the default behaviour for zlib support when
+S<Berkeley DB> support was also enabled.
 
 =item *
 

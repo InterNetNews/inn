@@ -4,7 +4,7 @@ include ../Makefile.global
 
 top		= ..
 RUNTESTS_CFLAGS	= -DSOURCE='"$(abs_builddir)/tests"' -DBUILD='"$(abs_builddir)/tests"'
-CFLAGS		= $(GCFLAGS) $(DB_CPPFLAGS) $(DBM_CPPFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
+CFLAGS		= $(GCFLAGS) $(BDB_CPPFLAGS) $(DBM_CPPFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
 
 ##  On some platforms, linking with libm is needed as the test suite uses
 ##  math functions (currently only lib/confparse-t.c).
@@ -49,7 +49,7 @@ $(FIXSCRIPT):
 .c.o: $*.c
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
-LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) $(LIBM_LDFLAGS) $(DB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
+LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) $(LIBM_LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 

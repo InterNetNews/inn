@@ -11,7 +11,7 @@ include ../Makefile.global
 LTVERSION     = 3:0:0
 
 top	      = ..
-CFLAGS	      = $(GCFLAGS) -I. $(DB_CPPFLAGS)
+CFLAGS	      = $(GCFLAGS) -I. $(BDB_CPPFLAGS)
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c overview.c \
 		ovmethods.c $(METHOD_SOURCES)

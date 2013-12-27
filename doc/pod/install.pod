@@ -147,7 +147,7 @@ versions you'll need:
 
     --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
     --with-python       Python 1.5.2 or higher, 2.5.0+ recommended
-    --with-berkeleydb   Berkeley DB 4.4 or higher, 4.7+ recommended
+    --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
     --with-sasl         SASL 2.x or higher
@@ -391,7 +391,7 @@ can post fine via a network connection to your running news server and
 doesn't need to use the local socket (which is what setgid enables it to
 do).  Installing B<inews> setgid was the default prior to S<INN 2.3>.
 
-=item B<--with-berkeleydb>=PATH
+=item B<--with-bdb>=PATH
 
 Enables support for S<Berkeley DB> (4.4 or higher), which means that
 it will then be possible to use the ovdb overview method if you wish.
@@ -404,16 +404,24 @@ it installed elsewhere, you may need this option).  This directory
 is expected to have subdirectories F<include> and F<lib> (F<lib32>
 and F<lib64> are also checked), containing respectively F<db.h>, and
 the library itself.  In case non-standard paths to the S<Berkeley DB>
-libraries are used, one or both of the options B<--with-berkeleydb-include>
-and B<--with-berkeleydb-lib> can be given to configure with a path.
+libraries are used, one or both of the options B<--with-bdb-include>
+and B<--with-bdb-lib> can be given to configure with a path.
+
+If the S<Berkeley DB> library is found at configure time, INN will be
+built with S<Berkeley DB> support unless the B<--without-bdb> flag is
+explicitly passed to configure.
 
 =item B<--with-zlib>=PATH
 
-The ovdb storage method can optionally use compression.  If B<--with-berkeleydb>
-is set, and configure finds a suitable S<Berkeley DB> version, this option
-defaults to C<yes>, otherwise the default is C<no>.  If you have B<zlib> but it is
-not installed under F</usr> or F</usr/local>, you must specify the directory
-where it is installed.
+The ovdb storage method can optionally use compression.  If B<--with-bdb>
+is set, and configure finds a suitable S<Berkeley DB> version, configure
+will by default also try to find the zlib library.  INN will then be
+built with zlib support unless the B<--without-zlib> flag is explicitly
+passed to configure.
+
+In case non-standard paths to the zlib library are used, one or both
+of the options B<--with-zlib-include> and B<--with-zlib-lib> can be
+given to configure with a path.
 
 =item B<--with-openssl>=PATH
 

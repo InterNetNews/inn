@@ -21,14 +21,14 @@
 #include "../storage/ovdb/ovdb-private.h"
 
 
-#ifndef USE_BERKELEY_DB
+#ifndef HAVE_BDB
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
     die("Berkeley DB support not compiled");
 }
 
-#else /* USE_BERKELEY_DB */
+#else /* HAVE_BDB */
 
 static int signalled = 0;
 static void sigfunc(int signum UNUSED)
@@ -897,5 +897,5 @@ out:
     return 0;
 }
 
-#endif /* USE_BERKELEY_DB */
+#endif /* HAVE_BDB */
 
