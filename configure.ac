@@ -342,7 +342,7 @@ dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
 dnl that program.  In case neither et/com_err.h nor com_err.h can be found
 dnl and --with-krb5 is not given, do not define KRB5_AUTH and clear the
 dnl other variables set for Kerberos support.
-AS_IF([test x"$KRB5_LIBS" != x],
+AS_IF([test x"$inn_use_KRB5" = xtrue],
     [AC_CHECK_HEADERS([et/com_err.h], [KRB5_AUTH=auth_krb5],
          [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
               [AS_IF([test x"$with_krb5" = x],
