@@ -149,7 +149,7 @@ versions you'll need:
     --with-berkeleydb   Berkeley DB 4.4 or higher, 4.7+ recommended
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
-    --with-sasl         SASL 2.x or higher
+    --with-sasl         Cyrus SASL 2.x or higher
     --with-kerberos     MIT Kerberos v5 1.2.x or higher
 
 If any of these libraries (other than Perl or Python) are built shared and
