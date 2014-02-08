@@ -35,9 +35,9 @@ are owned by C<news>, group C<news>.
 You want to be careful that things in that directory stay owned by
 C<news> S<-- but> you can't just C<chown -R news:news> after the install,
 because you may have binaries that are SUID root.  You can do the build
-as any user, but you need to be root when doing C<make install> so as
-to set the permissions correctly.  After that point, though, you may
-want to C<su news> to avoid creating any files as root.  (For routine
+as any user, but you need to be root when doing C<make install> so as to
+set the permissions correctly.  After that point, though, you may want to
+C<su news -s /bin/sh> to avoid creating any files as root.  (For routine
 maintenance once INN is working, you can generally be root.  However,
 it is always better to be accustomed to doing that as the news user.)
 
@@ -227,7 +227,7 @@ worrying about feeds or reader access.
 Start B<innd> by running I<pathbin>/rc.news B<as the news user>.  It
 is also what you should launch in your init scripts:
 
-    su news -c <pathbin in inn.conf>/rc.news
+    su news -s /bin/sh -c <pathbin in inn.conf>/rc.news
 
 Check I<pathlog>/news.notice to see if everything went well; also use
 C<ps> to see if B<innd> is running.
@@ -331,7 +331,7 @@ and F<readers-ssl.conf>).  The syntax is similar for both these files.
 You then need to start a second B<nnrpd> to listen to these connections
 to NNTPS port 563 and put something like that in your init scripts:
 
-    su news -c '<pathbin>/nnrpd -D -c <pathetc>/readers-ssl.conf -p 563 -S'
+    su news -s /bin/sh -c '<pathbin>/nnrpd -D -c <pathetc>/readers-ssl.conf -p 563 -S'
 
 Note that a news client which supports the STARTTLS command can also
 use the conventional NNTP port 119 to initiate a TLS connection.  However,

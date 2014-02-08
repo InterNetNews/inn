@@ -3,10 +3,10 @@
 
 ##  $Revision$
 ##  News boot script.  Runs as "news" user.  Run from rc.whatever as:
-##     su news -c /path/to/rc.news >/dev/console
+##     su news -s /bin/sh -c /path/to/rc.news >/dev/console
 ##
 ##  Or to stop INN:
-##     su news -c '/path/to/rc.news stop'
+##     su news -s /bin/sh -c '/path/to/rc.news stop'
 
 waitforpid()
 {
