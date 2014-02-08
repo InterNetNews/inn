@@ -11,11 +11,11 @@ test -f '<pathbin>/rc.news' || exit 0
 start () {
     ulimit -n unlimited
     # Start INN.
-    su news -c '<pathbin>/rc.news' >> <pathlog>/rc.news 2>&1
+    su news -s /bin/sh -c '<pathbin>/rc.news' >> <pathlog>/rc.news 2>&1
     # Start another nnrpd daemon, handling initial TLS connections, on port 563.
     # (The preferred way would be to use port 119 and STARTTLS but not all news
     # readers support it yet.)
-    #su news -c '<pathbin>/nnrpd -D -p 563 -S' >> <pathlog>/rc.news 2>&1
+    #su news -s /bin/sh -c '<pathbin>/nnrpd -D -p 563 -S' >> <pathlog>/rc.news 2>&1
 }
 
 case "$1" in
@@ -26,10 +26,10 @@ start)
 
 stop)
     # Stop INN.
-    su news -c '<pathbin>/rc.news stop' >> <pathlog>/rc.news 2>&1
+    su news -s /bin/sh -c '<pathbin>/rc.news stop' >> <pathlog>/rc.news 2>&1
     # Stop possible other nnrpd daemons.  One of the two following commands is enough.
     #start-stop-daemon --stop --name nnrpd --quiet --oknodo
-    #su news -c 'killall nnrpd' >> <pathlog>/rc.news 2>&1
+    #su news -s /bin/sh -c 'killall nnrpd' >> <pathlog>/rc.news 2>&1
     ;;
 
 reload|force-reload)

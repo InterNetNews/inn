@@ -215,7 +215,7 @@ for regular reader connections.  You will therefore need to arrange for
 B<nnrpd> to listen on that port through some other means.  This can be
 done with the B<-D> flag along with C<-p 563> and put into your init scripts:
 
-    su news -c '<pathbin>/nnrpd -D -p 563 -S'
+    su news -s /bin/sh -c '<pathbin>/nnrpd -D -p 563 -S'
 
 but the easiest way is probably to add a line like:
 

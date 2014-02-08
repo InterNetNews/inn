@@ -1479,7 +1479,7 @@ crontab file:
 or, if your system does not have per-user crontabs, put the following line
 into your system crontab instead:
 
-    0 3 * * * su -c '<pathbin in inn.conf>/news.daily expireover lowmark' news
+    0 3 * * * su news -s /bin/sh -c '<pathbin in inn.conf>/news.daily expireover lowmark'
 
 If you're using any non-CNFS storage methods, add C<delayrm> to the above
 option list for B<news.daily>.
@@ -1559,7 +1559,7 @@ INN is started via the shell script B<rc.news>.  This must be run as the
 news user and not as root.  To start INN on system boot, you therefore
 want to put something like:
 
-    su news -c <pathbin in inn.conf>/rc.news
+    su news -s /bin/sh -c <pathbin in inn.conf>/rc.news
 
 in the system boot scripts.  If B<innd> is stopped or killed, you can restart
 it by running B<rc.news> by hand as the news user.
@@ -1567,7 +1567,7 @@ it by running B<rc.news> by hand as the news user.
 The B<rc.news> script may also be used to shut down INN, with the C<stop>
 option:
 
-    su news -c '<pathbin in inn.conf>/rc.news stop'
+    su news -s /bin/sh -c '<pathbin in inn.conf>/rc.news stop'
 
 In the F<contrib> directory of this source tree, two sample init scripts are provided:  one
 for people using System V-style init.d directories, and another for people
@@ -1577,7 +1577,7 @@ If you wish to use TLS/SSL for your readers, you need to start a second
 B<nnrpd> to listen to these connections to NNTPS port 563 and put something
 like that in your init scripts:
 
-    su news -c '<pathbin in inn.conf>/nnrpd -D -c <pathetc in inn.conf>/readers-ssl.conf -p 563 -S'
+    su news -s /bin/sh -c '<pathbin in inn.conf>/nnrpd -D -c <pathetc in inn.conf>/readers-ssl.conf -p 563 -S'
 
 where F<readers-ssl.conf> is the file which indicates whether a given
 connection is allowed to read and post news (you can also use the
@@ -1592,7 +1592,7 @@ In the shutdown section of the init script, you can put:
 
 or if you do not have a B<start-stop-daemon> utility:
 
-    su news -c 'killall nnrpd'
+    su news -s /bin/sh -c 'killall nnrpd'
 
 =head1 Processing Newsgroup Control Messages
 
