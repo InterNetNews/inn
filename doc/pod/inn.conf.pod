@@ -593,6 +593,9 @@ according to what storage class the control pseudogroups are filed in
 rather than according to the newsgroups the control messages are posted
 to.  This is a boolean value and the default is true.
 
+If the tradspool article storage method is used, I<storeonxref> must
+be true.
+
 =item I<useoverchan>
 
 Whether to innd(8) should create overview data internally through

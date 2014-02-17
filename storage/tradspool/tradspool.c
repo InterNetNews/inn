@@ -454,6 +454,11 @@ tradspool_init(SMATTRIBUTE *attr) {
 	SMseterror(SMERR_INTERNAL, "attr is NULL");
 	return false;
     }
+    /* Though a few parts of tradspool handle both values for storeonxref,
+     * the implementation when storeonxref is false is not complete.
+     * For instance, CrackXref() is still called on the Newsgroups: header
+     * once, which obviously fails.
+     */ 
     if (!innconf->storeonxref) {
         warn("tradspool: storeonxref needs to be true");
 	SMseterror(SMERR_INTERNAL, "storeonxref needs to be true");
