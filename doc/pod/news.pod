@@ -221,6 +221,11 @@ Fixed a segfault occurring in B<innd> on systems where time_t is a
 
 =item *
 
+Fixed a segfault occurring in B<nnrpd> when a res block was used in
+F<readers.conf> without the program: key.
+
+=item *
+
 Fixed an issue where users were denied posting because of an overlapping
 buffer copy in a check B<nnrpd> was doing.  Thanks to Florian Schlichting
 for the patch.

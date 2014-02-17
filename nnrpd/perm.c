@@ -284,7 +284,11 @@ copy_method(METHOD *orig)
     memset(ConfigBit, '\0', ConfigBitsize);
 
     ret->name = xstrdup(orig->name);
-    ret->program = xstrdup(orig->program);
+    if (orig->program != NULL) {
+        ret->program = xstrdup(orig->program);
+    } else {
+        ret->program = NULL;
+    }
     if (orig->users)
 	ret->users = xstrdup(orig->users);
     else
@@ -715,6 +719,10 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 		method_parse(m, f, tok, 0);
 		tok = CONFgettoken(PERMtoks, f);
 	    }
+
+        if (m->program == NULL) {
+            ReportError(f, "Missing 'program:' key.");
+        }
 
 	    if (tok == NULL) {
 		ReportError(f, "Unexpected EOF.");
