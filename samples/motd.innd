@@ -1,5 +1,49 @@
-Sample "message of the day" file.  Any text you put in here will be returned
-to the news feeder when it issues the LIST MOTD command to innd.
+Here are a few suggestions of messages to display to peers feeding news
+articles to the server.
 
-It is not an error if this file does not exist nor if it is empty.  However,
-it must be encoded in UTF-8.
+The contents of this file is displayed in reply to the LIST MOTD command
+from feeders.
+
+Just rename this file to "motd.innd" and adjust its contents to whatever
+message of the day (encoded in UTF-8) you want to communicate.  It is
+not an error if this file does not exist nor if it is empty.
+
+For more information, please have a look at the generic motd.news
+man page.
+
+
+Example 1
+---------
+
+Attention all users,
+
+This server will be down for scheduled upgrades on February 1st.
+It should be back up by 8:00 a.m. February 2nd.
+Any questions should be e-mailed to <newsmaster@example.com>.
+
+Apologies for the disturbance.
+
+
+Example 2
+---------
+
+This news server now carries the comp.* hierarchy.  Feel free to add
+it to the list of hierarchies you feed us.
+
+
+Example 3
+---------
+
+This news server no longer accepts articles whose length exceeds 32
+768 bytes.  Please configure your server not to send us such articles.
+
+
+Example 4
+---------
+
+Starting from February 1st, the IP of this news server will change.
+Note that its host name remains the same.
+
+In case explicit rules based on IP exist at your end (firewall, iptables,
+feed configuration, etc.), please update them to use 10.0.0.1 as the
+IP of our news server.

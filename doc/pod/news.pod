@@ -269,6 +269,13 @@ When building INN with S<Berkeley DB> support, no longer add
 F<-L/usr/lib> to the linker include flags; unconditionally adding it
 may break the build on systems using lib32 and lib64 directories.
 
+=item *
+
+On a fresh INN install, F<motd.innd> and F<motd.nnrpd> are no longer
+installed by default.  Instead, samples for these files are provided
+in I<pathetc>, named differently so that their default contents are
+not displayed to news clients before they get customised.
+
 =back
 
 =head1 Changes in 2.5.3

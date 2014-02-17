@@ -1,5 +1,57 @@
-Sample "message of the day" file.  Any text you put in here will be returned
-to the news reader when it issues the LIST MOTD command to nnrpd.
+Here are a few suggestions of messages to display to news readers
+accessing the server.
 
-It is not an error if this file does not exist nor if it is empty.  However,
-it must be encoded in UTF-8.
+The contents of this file is displayed in reply to the LIST MOTD command
+from readers.
+
+Just rename this file to "motd.nnrpd" and adjust its contents to whatever
+message of the day (encoded in UTF-8) you want to communicate.  It is
+not an error if this file does not exist nor if it is empty.
+
+For more information, please have a look at the generic motd.news
+man page.
+
+
+Example 1
+---------
+
+Attention all users,
+
+This server will be down for scheduled upgrades on February 1st.
+It should be back up by 8:00 a.m. February 2nd.
+Any questions should be e-mailed to <newsmaster@example.com>.
+
+Apologies for the disturbance.
+
+
+Example 2
+---------
+
+Dear customers,
+
+We are pleased to announce the creation of a support newsgroup, named
+"our.company.support".  It was created on February 1st and is intended
+to receive your questions about the use of our services.  Our support
+team will usually be responding within a couple of days.
+
+Please use this new newsgroup as the preferable means to contact us.
+
+
+Example 3
+---------
+
+This news server now supports TLS connections.  Please configure your
+news reader to use TLS when connecting or authenticating.  A tutorial
+is available in the "our.company.tutorials" newsgroup to help you do
+the change.  Do not hesitate to ask for help in the "our.company.support"
+newsgroup if you encounter issues during the change.
+
+Starting from February 1st, unencrypted authentications (that is to
+say not using TLS) will be rejected.
+
+
+Example 4
+---------
+
+Support for a new SASL mechanism has been added:  OPENID20 can now be
+used to authenticate.  Feel free to use it!
