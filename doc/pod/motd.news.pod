@@ -24,6 +24,11 @@ If one or both of these files are missing, it is not an error.  The server
 will just send the client the appropriate response for an unmaintained
 F<motd.innd> or F<motd.nnrpd> file.
 
+On a fresh INN install, samples for these files are installed
+in I<pathec>; you will therefore find in F<motd.innd.sample> and
+F<motd.nnrpd.sample> a few examples of messages that can be communicated
+to news clients.
+
 =head1 HISTORY
 
 Rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
