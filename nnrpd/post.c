@@ -1107,8 +1107,7 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     HeaderCleanFrom(frombuf);
     p = strchr(frombuf, '@');
     if (p) {
-	strlcpy(frombuf, p+1, sizeof(frombuf));
-	p = strrchr(frombuf, '.');
+	p = strrchr(p+1, '.');
 	if (!p) {
 	    if (modgroup)
 		free(modgroup);

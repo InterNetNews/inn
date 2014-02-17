@@ -221,6 +221,12 @@ Fixed a segfault occurring in B<innd> on systems where time_t is a
 
 =item *
 
+Fixed an issue where users were denied posting because of an overlapping
+buffer copy in a check B<nnrpd> was doing.  Thanks to Florian Schlichting
+for the patch.
+
+=item *
+
 Fixed a regression that occurred in S<INN 2.5.3> regarding the path used
 by default by B<pullnews> for its configuration file.  Instead of looking
 in the running user's home directory, it was looking in the I<pathnews>
