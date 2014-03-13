@@ -66,31 +66,27 @@ instead, note in your patch that those files must be regenerated.  These
 
 At the time of this writing, S<autoconf 2.64> or later is required.
 
-The supporting files for B<autoconf> are in the F<support> subdirectory,
-including the files F<config.guess> and F<config.sub> to determine
-the system name and F<ltmain.sh> for libtool support.  The latter
-file comes from the bootstrapped libtool distribution available
-from L<http://www.gnu.org/software/libtool/> (F<ltmain.sh> is in the
-F<libltdl/config> subdirectory); the canonical version of the former
-two are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
+The supporting files for B<autoconf> are in the F<support>
+subdirectory, including the files F<config.guess> and F<config.sub>
+to determine the system name and F<ltmain.sh> for libtool support.
+The latter file comes from the Debian package of Libtool, available
+from L<https://packages.debian.org/libtool> (F<ltmain.sh> is in the
+F<libltdl/config> subdirectory created after building the package
+with for instance B<debuild>); the canonical version of the former two
+are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
 redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
-In addition, F<m4/libtool.m4> and a few others m4 files are just a copy
-of the corresponding files in the F<libltdl/m4> subdirectory of the
-libtool distribution.  (Using libtool without using B<automake> requires
-a few odd hacks.)  New versions should be checked in periodically when
-available.  There are no INN-specific modifications to those files except
-for F<ltmain.sh> which recognizes the additional B<-B> flag that INN's
-B<install-sh> script uses.  This script should also be updated at the same
-time from L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
-it similarly contains local modifications in order to support the additional
-B<-B> flag, as well as a few other changes mentioned in a comment at the
-beginning of the file.
-
-INN should not compile with libtool by default, only when requested, since
-otherwise normal compilations are quite slow.  (Using libtool is not
-without some cost.)  Basic compilation with libtool works fine as of this
-writing, with both static and shared compiles, but the dependencies aren't
-quite right for C<make -j> using libtool.
+In addition, F<m4/libtool.m4> and a few others m4 files are just a
+copy of the corresponding files in the F<libltdl/m4> subdirectory
+of the Debian package of the libtool distribution.  (Using libtool
+without using B<automake> requires a few odd hacks.)  New versions
+should be checked in periodically when available.  There are no
+INN-specific modifications to those files except for F<ltmain.sh>
+which recognizes the additional B<-B> flag that INN's B<install-sh>
+script uses.  This script should also be updated at the same time from
+L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
+it similarly contains local modifications in order to support the
+additional B<-B> flag, as well as a few other changes mentioned in a
+comment at the beginning of the file.
 
 =head1 Autobuilds
 
