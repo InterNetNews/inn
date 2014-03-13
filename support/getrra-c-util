@@ -44,11 +44,14 @@ download ()
              -e 's/rra_/inn_/g' \
              -e '1 a\
 dnl $Id$' ${TEMP}
-    elif [ "$2" = "lib" ] || [ "$2" = "include/portable" ]
+    elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
+      || [ "$2" = "lib" ]
     then
       sed -i -e 's/<config\.h>/"config.h"/g' \
              -e 's/<portable\/system\.h>/"clibrary.h"/g' \
              -e 's/<portable\/socket\.h>/"portable\/socket.h"/g' \
+             -e 's/<sys\/time\.h>/"portable\/time.h"/g' \
+             -e '/^#if HAVE_UNISTD_H$/{N;N; s/.*/#include "clibrary.h"/}' \
              -e '/^#include <portable\/macros\.h>$/d' \
              -e '1 s/$/ $Id$\n */' ${TEMP}
     fi
@@ -58,20 +61,35 @@ dnl $Id$' ${TEMP}
 }
 
 # Synchronize Autoconf macros from upstream.
+download m4/bdb.m4 m4 bdb.m4
 download m4/inet-ntoa.m4 m4 inet-ntoa.m4
+download m4/krb5-config.m4 m4 krb5-config.m4
+download m4/krb5.m4 m4 krb5.m4
 download m4/lib-depends.m4 m4 lib-depends.m4
 download m4/lib-helper.m4 m4 lib-helper.m4
 download m4/lib-pathname.m4 m4 lib-pathname.m4
-download m4/krb5.m4 m4 krb5.m4
-download m4/krb5-config.m4 m4 krb5-config.m4
 download m4/openssl.m4 m4 openssl.m4
 download m4/pam-const.m4 m4 pam-const.m4
+download m4/sasl.m4 m4 sasl.m4
 download m4/snprintf.m4 m4 snprintf.m4
-download m4/socket.m4 m4 socket.m4
 download m4/socket-unix.m4 m4 socket-unix.m4
+download m4/socket.m4 m4 socket.m4
 download m4/vamacros.m4 m4 vamacros.m4
+download m4/zlib.m4 m4 zlib.m4
 
 # Synchronize portability functions from upstream.
 download portable/asprintf.c lib asprintf.c
 download portable/getaddrinfo.c lib getaddrinfo.c
 download portable/getaddrinfo.h include/portable getaddrinfo.h
+download portable/getnameinfo.c lib getnameinfo.c
+download portable/getnameinfo.h include/portable getnameinfo.h
+download portable/inet_aton.c lib inet_aton.c
+download portable/inet_ntoa.c lib inet_ntoa.c
+download portable/inet_ntop.c lib inet_ntop.c
+download portable/mkstemp.c lib mkstemp.c
+download portable/setenv.c lib setenv.c
+download portable/seteuid.c lib seteuid.c
+download portable/snprintf.c lib snprintf.c
+download portable/socket.h include/portable socket.h
+download portable/strlcat.c lib strlcat.c
+download portable/strlcpy.c lib strlcpy.c
