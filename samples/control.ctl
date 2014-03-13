@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2010-12-12
+##  Last modified: 2013-09-06
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -423,10 +423,16 @@ newgroup:ausadmin@aus.news-admin.org:bne.*:verify-ausadmin@aus.news-admin.org
 rmgroup:ausadmin@aus.news-admin.org:bne.*:verify-ausadmin@aus.news-admin.org
 
 ## BOFH (*PRIVATE* -- Bastard Operator From Hell)
-# Contact: myname@myhost.mydomain.com
+# Contact: bofh-control@lists.killfile.org
+# Key fingerprint: 40B5 8A56 1E00 6152 083E  38B3 CEF5 6980 7DC1 A266
 # For private use only, contact the above address for information.
-newgroup:*:bofh.*:mail
-rmgroup:*:bofh.*:doit
+# *PGP*   See comment at top of file.
+newgroup:*:bofh.*:drop
+rmgroup:*:bofh.*:drop
+# The following three lines are only for authorized bofh.* sites.
+#checkgroups:bofh-control@killfile.org:bofh.*:verify-bofh-control@lists.killfile.org
+#newgroup:bofh-control@killfile.org:bofh.*:verify-bofh-control@lists.killfile.org
+#rmgroup:bofh-control@killfile.org:bofh.*:verify-bofh-control@lists.killfile.org
 
 ## CA (California, USA)
 # Contact: ikluft@thunder.sbay.org
@@ -513,9 +519,12 @@ rmgroup:lisbon@*chi.il.us:chi.*:doit
 # Contact: mod-cga@usenet.cl
 # URL: http://www.usenet.cl/
 # Admin group: chile.grupos.anuncios
-checkgroups:mod-cga@*lj.cl:chile.*:doit
-newgroup:mod-cga@*lj.cl:chile.*:doit
-rmgroup:mod-cga@*lj.cl:chile.*:doit
+checkgroups:mod-cga@*usenet.cl:chile.*:doit
+checkgroups:mod-cga@*farah.cl:chile.*:doit
+newgroup:mod-cga@*usenet.cl:chile.*:doit
+newgroup:mod-cga@*farah.cl:chile.*:doit
+rmgroup:mod-cga@*usenet.cl:chile.*:doit
+rmgroup:mod-cga@*farah.cl:chile.*:doit
 
 ## CHINESE (China and Chinese language groups)
 checkgroups:pinghua@stat.berkeley.edu:chinese.*:doit
@@ -691,6 +700,19 @@ rmgroup:newsmaster@demon.net:demon.*:verify-demon.news
 checkgroups:eric@*cirr.com:dfw.*:doit
 newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
+
+## DICTATOR (Dictator's Handbook)
+# Contact: Randall Wood <rsw@therandymon.com>
+# URL: http://www.dictatorshandbook.net/usenet/usenetadmin.html
+# Admin group: dictator.announce
+# Key URL: http://www.dictatorshandbook.net/usenet/news-public.key
+# Key fingerprint: 5C0A 741A F931 D79A D9E9  BBB7 4406 4481 91ED C5F2
+# *PGP*   See comment at top of file.
+newgroup:*:dictator.*:drop
+rmgroup:*:dictator.*:drop
+checkgroups:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
+newgroup:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
+rmgroup:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
 
 ## DK (Denmark)
 # URL: http://www.usenet.dk/dk-admin/
