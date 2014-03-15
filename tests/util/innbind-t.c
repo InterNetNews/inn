@@ -323,7 +323,7 @@ main(void)
 
     n = test_ipv4(1);           /* Tests  1-5.  */
     n = test_ipv6(n);           /* Tests  6-10. */
-    n = test_sendfd(n);         /* Tests 11-15. */
+    test_sendfd(n);         /* Tests 11-15. */
 
     return 0;
 }

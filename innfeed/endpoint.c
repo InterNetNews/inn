@@ -940,8 +940,6 @@ static IoStatus doRead (EndPoint endp)
 
   bCount = (bCount > IOV_MAX ? IOV_MAX : bCount) ;
 
-  i = 0 ;
-
   /* now set up the iovecs for the readv */
   if (bCount > 0)
     {
@@ -1064,8 +1062,6 @@ static IoStatus doWrite (EndPoint endp)
 
   bCount = (bCount > IOV_MAX ? IOV_MAX : bCount) ;
 
-  i = 0 ;
-  
   if (bCount > 0)
     {
       vp = xcalloc (bCount, sizeof(struct iovec)) ;

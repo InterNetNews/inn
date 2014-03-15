@@ -691,7 +691,7 @@ main(void)
     n = test_warnings_uint(n);
     n = test_warnings_real(n);
     n = test_warnings_string(n);
-    n = test_warnings_list(n);
+    test_warnings_list(n);
 
     return 0;
 }

@@ -1149,7 +1149,6 @@ main(int argc, char *argv[])
         fprintf(stderr, usage_message, argv[0], argv[0]);
         exit(1);
     }
-    argc -= optind;
     argv += optind;
 
     if (source != NULL) {

@@ -1099,7 +1099,7 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
-    for (i = 0, p = frombuf;p < frombuf + sizeof(frombuf);)
+    for (p = frombuf;p < frombuf + sizeof(frombuf);)
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
 	else

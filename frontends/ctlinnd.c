@@ -262,7 +262,6 @@ int main(int ac, char *av[])
 	case 3:
 	    break;
 	}
-	ac = 3;
     }
     else if (ac > cp->argc && cp->Glue) {
 	/* Glue any extra words together. */

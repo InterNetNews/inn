@@ -704,7 +704,7 @@ main(void)
     free(innconf->ovmethod);
     innconf->ovmethod = xstrdup("buffindexed");
     diag("buffindexed");
-    n = overview_tests(n);
+    overview_tests(n);
 
     return 0;
 }

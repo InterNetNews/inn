@@ -1,5 +1,4 @@
 /*  $Id$
-**
 **  Read file list on standard input and spew out batch files.
 */
 
@@ -57,7 +56,6 @@ main(int ac, char *av[]) {
 	    }
 	}
     ac -= optind;
-    av += optind;
     if (ac)
 	die("usage error");
 

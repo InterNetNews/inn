@@ -172,7 +172,6 @@ main(int ac, char *av[])
   }
 
   ac -= optind;
-  av += optind;
   if (ac || pid == 0 || name == NULL) {
     Usage();
   }

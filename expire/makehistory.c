@@ -710,10 +710,8 @@ DoArt(ARTHANDLE *art)
         }
     }
 
-    MessageID = (char *)NULL;
     Arrived = art->arrived;
     Expires = 0;
-    Posted = 0;
 
     if (!Msgidp->HasHeader) {
         warn("no Message-ID header in %s", TokenToText(*art->token));
@@ -938,7 +936,6 @@ main(int argc, char **argv)
 	}
     }
     argc -= optind;
-    argv += optind;
     if (argc) {
         fprintf(stderr, "%s", usage);
         exit(1);

@@ -306,7 +306,7 @@ main(int argc, char *argv[])
     /* Be polite and say goodbye; it gives the server a chance to shut the
        connection down cleanly. */
     if (nntp_send_line(nntp, "QUIT"))
-        status = nntp_read_response(nntp, &response, &line);
+        nntp_read_response(nntp, &response, &line);
     nntp_free(nntp);
     exit(0);
 }

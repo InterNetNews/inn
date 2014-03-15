@@ -1127,7 +1127,7 @@ PERMreadfile(char *filename)
     /* Are we editing an auth or access group? */
 
     inwhat	= 0;
-    newgroup	= curgroup = 0;
+    curgroup = 0;
 
     tok		= CONFgettoken(PERMtoks, cf->f);
 

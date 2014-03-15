@@ -129,7 +129,7 @@ main(void)
                     "example.com auth: program caught signal 1\n");
     n = ok_external(n, client, "newline", "tester", NULL);
     n = ok_external(n, client, "partial", "tester", NULL);
-    n = ok_external(n, client, "partial-error", NULL,
+    ok_external(n, client, "partial-error", NULL,
                     "example.com auth: program error: This is an error\n");
 
     return 0;

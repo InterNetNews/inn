@@ -1043,7 +1043,6 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	return RET_FAIL;
     }
 
-    res = RET_OK;
     /* now let's look at the control to see what it is */
     if (!strncasecmp(control_header,"newgroup",8)) {
 	control_header += 8;
@@ -1758,10 +1757,9 @@ static conn_ret imap_Connect(connection_t *cxn)
 
     ASSERT(cxn->imap_sleepTimerId == 0);
 
-    /* make the IMAP connection */
-    result = SetupIMAPConnection(cxn,
-				 cxn->ServerName,
-				 IMAP_PORT);
+    /* make the IMAP connection */                        SetupIMAPConnection(cxn,
+                        cxn->ServerName,
+                        IMAP_PORT);
 
     /* Listen to the intro and start the authenticating process */
     result = imap_listenintro(cxn);
@@ -4016,9 +4014,9 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 	result = FindHeader(cxn->current_bufs, "Followup-To",
 			    &to_list, &to_list_end);
 
-	if ((result != RET_OK) || (to_list == NULL)) {
-	    result = FindHeader(cxn->current_bufs, "Newsgroups",
-				&to_list, &to_list_end);
+	if ((result != RET_OK) || (to_list == NULL)){
+        FindHeader(cxn->current_bufs, "Newsgroups",
+                   &to_list, &to_list_end);
 	}
 
 	/* free's original to_list */
@@ -4471,7 +4469,7 @@ void cxnLogStats (Connection cxn, bool final)
 {
   const char *peerName ;
   time_t now = theTime() ;
-  int total, good, bad;
+  int total, bad;
 
   ASSERT (cxn != NULL) ;
 
@@ -4482,15 +4480,11 @@ void cxnLogStats (Connection cxn, bool final)
   total += cxn->create_succeeded + cxn->create_failed;
   total += cxn->remove_succeeded + cxn->remove_failed;
 
-  good = cxn->lmtp_succeeded;
-  good += cxn->cancel_succeeded;
-  good += cxn->create_succeeded;
-  good += cxn->remove_succeeded;
-
   bad = cxn->lmtp_failed;
   bad += cxn->cancel_failed;
   bad += cxn->create_failed;
   bad += cxn->remove_failed;
+
   notice ("%s:%d %s seconds %ld accepted %d refused %d rejected %d",
           peerName, cxn->ident, (final ? "final" : "checkpoint"),
           (long) (now - cxn->timeCon), total, 0, bad);
@@ -4509,7 +4503,6 @@ void cxnLogStats (Connection cxn, bool final)
       if (cxn->timeCon > 0)
         cxn->timeCon = theTime() ;
     }
-
 }
 
   /* return the number of articles the connection can be given. This lets

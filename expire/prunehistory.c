@@ -62,7 +62,6 @@ main(int ac, char *av[])
 	    break;
 	}
     ac -= optind;
-    av += optind;
     if (ac) {
 	Usage();
 	rc = 1;

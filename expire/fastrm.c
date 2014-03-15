@@ -273,7 +273,6 @@ process_line(QIOSTATE *qp, int *queued, int *deleted)
                     dlen = strlen(line);
                     dir = xstrdup(line);
                 } else {
-                    p = line;
                     dlen = -1;
                     dir = NULL;
                 }

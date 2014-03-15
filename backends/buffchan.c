@@ -409,7 +409,6 @@ main(int ac, char *av[])
 	    break;
 	}
     ac -= optind;
-    av += optind;
     if (ac)
 	die("usage error");
 

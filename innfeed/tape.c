@@ -1090,8 +1090,6 @@ static void prepareFiles (Tape tape)
                  tape->inputFilename) ;
       else
         inpExists = true ;
-
-      outExists = false ;
     }
 
   /* now open up the input file and seek to the proper position. */

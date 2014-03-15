@@ -434,12 +434,13 @@ ReadBytecount(int fd, int artsize)
        seems like the best of a set of bad options; Reject would save the
        article into bad and then someone might reprocess it, leaving us with
        accepting the truncated version. */
-    for (p = article, left = artsize; left; p += i, left -= i)
-	if ((i = read(fd, p, left)) <= 0) {
-	    i = errno;
+    for (p = article, left = artsize; left; p += i, left -= i) {
+        i = read(fd, p, left);
+        if (i <= 0) {
             warn("cannot read, wanted %d got %d", artsize, artsize - left);
-	    return true;
-	}
+            return true;
+        }
+    }
     if (p[-1] != '\n') {
 	*p++ = '\n';
         artsize++;
