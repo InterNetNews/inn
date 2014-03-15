@@ -3,8 +3,8 @@
 # If running inside INN, uncomment the above and point to INN::Config.
 #
 # Written April 1996, <tale@isc.org> (David C Lawrence)
-# Currently maintained by Russ Allbery <rra@stanford.edu>
-# Version 1.28, 2007-09-18
+# Currently maintained by Russ Allbery <eagle@eyrie.org>
+# Version 1.29, 2014-04-15
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -12,9 +12,17 @@
 #
 # This program requires Perl 5, probably at least about Perl 5.003 since
 # that's when FileHandle was introduced.  If you want to use this program
-# and your Perl is too old, please contact me (rra@stanford.edu) and tell
+# and your Perl is too old, please contact me (eagle@eyrie.org) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.28 -> 1.29
+# -- Disambiguate numbered lists from description lists in POD to silent
+#    a pod2man warning.
+# -- Add a --findid=<string> flag to explicitly search for <string> in the
+#    output from PGP's analysis of the message.  In case the signature is
+#    valid but does not contain <string>, pgpverify exits with the new
+#    exit status 4.
 #
 # Changes from 1.27 -> 1.28
 # -- Use the INN::Config Perl module instead of innshellvars.pl to
@@ -196,22 +204,22 @@ require 5;
 
 use strict;
 use vars qw($gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
-            $syslog_facility $syslog_level $log_date $test $messageid);
+            $syslog_facility $syslog_level $log_date $findid $test $messageid);
 
 use Fcntl qw(O_WRONLY O_CREAT O_EXCL);
 use FileHandle;
 use IPC::Open3 qw(open3);
 use POSIX qw(strftime);
+use Getopt::Long;
 
-# Turn on test mode if the first argument is '-test'.
-if (@ARGV && $ARGV[0] eq '-test') {
-  shift @ARGV;
-  $test = 1;
-}
-
-# Not syslogged, such an error is almost certainly from someone running
-# the script manually.
-die "Usage: $0 < message\n" if @ARGV != 0;
+# Check the arguments passed to pgpverify.
+# If a syntax error occurs, do not syslog it:  such an error is almost
+# certainly from someone running the script manually.
+Getopt::Long::Configure('bundling_override');
+GetOptions(
+  'test'      => sub { $test = 1 },
+  'findid=s'  => \$findid
+) or die "Usage: $0 [--findid='string'] [--test] < message\n";
 
 # Grab various defaults from INN::Config if running inside INN.
 $pgp = $INN::Config::pgp
@@ -366,7 +374,9 @@ sub generate_message {
 # the form of an ASCII-armored string with embedded newlines), a version
 # number (which may be undef), and the message.  We return an exit status
 # and the key id if the signature is verified.  0 means good signature, 1
-# means bad data, 2 means an unknown signer, and 3 means a bad signature.
+# means bad data, 2 means an unknown signer, 3 means a bad signature, and
+# 4 means good signature without having found the argument given to the
+# --findid flag.
 # In the event of an error, we report with errmsg.
 #
 # This code is taken almost verbatim from PGP::Sign except for the code to
@@ -497,34 +507,45 @@ sub pgp_verify {
         $signer = $1;
       } elsif (/\[GNUPG:\]\s+NODATA/ || /\[GNUPG:\]\s+UNEXPECTED/) {
         $ok = 1;
+        last;
       } elsif (/\[GNUPG:\]\s+NO_PUBKEY/) {
         $ok = 2;
+        last;
       } elsif (/\[GNUPG:\]\s+BADSIG\s+/) {
         $ok = 3;
+        last;
       }
     } else {
       if (/^Good signature from user(?::\s+(.*)|\s+\"(.*)\"\.)$/m) {
         $signer = $+;
         $ok = 0;
-        last;
       } elsif (/^Good signature made .* by key:\n.+\n\s+\"(.*)\"/m) {
         $signer = $1;
         $ok = 0;
-        last;
       } elsif (/^\S+: Good signature from \"(.*)\"/m) {
         $signer = $1;
         $ok = 0;
-        last;
       } elsif (/^(?:\S+: )?Bad signature /im) {
         $ok = 3;
         last;
       }
+    }
+    # If the --findid flag is used, and the signature is good,
+    # override the value of the signer with the string specified in
+    # the --findid flag.
+    if (defined ($findid) and $ok eq 0) {
+      $signer = $findid if (/$findid/);
     }
   }
   close $input;
   waitpid ($pid, 0);
   unlink ($filename, "$filename.asc");
   umask $umask;
+
+  if (defined ($findid) and $ok eq 0 and $signer ne $findid) {
+    $ok = 4;
+  }
+
   return ($ok, $signer || '');
 }
 
@@ -687,7 +708,7 @@ pgpverify - Cryptographically verify Usenet control messages
 
 =head1 SYNOPSIS
 
-B<pgpverify> [B<-test>] < I<message>
+B<pgpverify> [B<--findid>=I<string>] [B<--test>] < I<message>
 
 =head1 DESCRIPTION
 
@@ -723,10 +744,25 @@ this behavior.
 
 =head1 OPTIONS
 
-The B<-test> flag causes B<pgpverify> to print out the input that it is
+=over 4
+
+=item B<--findid>=I<string>
+
+The B<--findid> flag causes B<pgpverify> to explicitly search for
+I<string> in the output from PGP's analysis of the message.  This option
+is useful when several UIDs are defined on a single PGP key, and the
+caller to B<pgpverify> needs checking whether a given one is defined on
+this key.  In case the signature is valid but does not contain I<string>,
+B<pgpverify> exits with exit status 4.
+
+=item B<--test>
+
+The B<--test> flag causes B<pgpverify> to print out the input that it is
 passing to PGP (which is a reconstructed version of the input that
 supposedly created the control message) as well as the output from PGP's
 analysis of the message.
+
+=back
 
 =head1 EXIT STATUS
 
@@ -738,19 +774,25 @@ B<pgpverify> may exit with the following statuses:
 
 The control message had a good PGP signature.
 
-=item 1
+=item 1Z<>
 
 The control message had no PGP signature.
 
-=item 2
+=item 2Z<>
 
 The control message had an unknown PGP signature.
 
-=item 3
+=item 3Z<>
 
 The control message had a bad PGP signature.
 
-=item 255
+=item 4Z<>
+
+The control message had a good PGP signature but the argument given
+to the B<--findid> flag had non been found in the output from PGP's
+analysis of the message.
+
+=item 255Z<>
 
 A problem occurred not directly related to PGP analysis of signature.
 
@@ -810,7 +852,7 @@ to be prohibitively difficult for PGP keys of a sufficient bit length.
 
 B<pgpverify> was written by David C Lawrence <tale@isc.org>.  Manual page
 provided by James Ralston.  It is currently maintained by Russ Allbery
-<rra@stanford.edu>.
+<eagle@eyrie.org>.
 
 =head1 COPYRIGHT AND LICENSE
 

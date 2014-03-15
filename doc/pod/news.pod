@@ -4,6 +4,21 @@
 
 =item *
 
+An up-to-date F<control.ctl> file is provided with this release.  You should
+manually update your F<control.ctl> file with the new information recorded
+about Usenet hierarchies.
+
+=item *
+
+Fixed a long-standing limitation on how B<controlchan> and B<pgpverify>
+were checking the signer of control messages.  They now properly handle
+the case of several UIDs being defined on a single PGP key, as well
+as the presence of spaces into UIDs.  In previous versions of INN,
+a few valid control messages got ignored because of that limitation
+(fido.ger.* and grisbi.* were for instance impacted).
+
+=item *
+
 As the name of the F<radius.conf> configuration file shipped with INN
 for the B<nnrpd> authenticator against a RADIUS server conflicts with
 the libradius package, this file is renamed to F<inn-radius.conf>
@@ -103,6 +118,10 @@ On a fresh INN install, F<motd.innd> and F<motd.nnrpd> are no longer
 installed by default.  Instead, samples for these files are provided
 in I<pathetc>, named differently so that their default contents are
 not displayed to news clients before they get customised.
+
+=item *
+
+Other minor bug fixes and documentation improvements.
 
 =back
 
