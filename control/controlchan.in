@@ -446,7 +446,7 @@ sub ctlperm {
             if (!exists($keyresults{$keyowner})) {
                 if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
                     my $pgpresult = defined &local_pgpverify ?
-                        local_pgpverify($token, $article) : pgpverify($token);
+                        local_pgpverify($token, $article, $keyowner) : pgpverify($token, $keyowner);
                     if ($keyowner eq $pgpresult) {
                         $keyresults{$keyowner} = 'doit';
                     } else {
@@ -554,12 +554,13 @@ sub open_article {
 
 sub pgpverify {
     my $token = shift;
+    my $keyid = shift;
 
     if ($token =~ /^\@.+\@$/) {
         open(PGPCHECK, "$INN::Config::newsbin/sm -q $token "
-            . "| $INN::Config::newsbin/pgpverify |") or goto ERROR;
+            . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |") or goto ERROR;
     } else {
-        open(PGPCHECK, "$INN::Config::newsbin/pgpverify < $token |") or goto ERROR;
+        open(PGPCHECK, "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |") or goto ERROR;
     }
     my $pgpresult = <PGPCHECK>;
     close PGPCHECK or goto ERROR;
