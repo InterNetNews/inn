@@ -66,10 +66,12 @@ value set by the B<-k> flag).
 =item I<address> ...
 
 E-mail the report to the mentioned address or addresses, instead of the
-default one.  Several addresses can be used, separated by whitespace.
-For instance, for two adresses:
+default one.  Several addresses can be used, separated by whitespace
+(sending the e-mail to your own e-mail address can be useful for
+debugging purpose, to check that everything works fine).  For instance,
+for two addresses:
 
-    sendinpaths pathsurvey@top1000.org top1000@anthologeek.net
+    sendinpaths pathsurvey@example.org top1000@anthologeek.net
 
 =back
 
