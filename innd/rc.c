@@ -32,7 +32,7 @@
 typedef struct _REMOTEHOST {
     char	*Label;         /* Peer label */
     char	*Name;          /* Hostname */
-    struct sockaddr_storage Address;     /* List of ip adresses */
+    struct sockaddr_storage Address;     /* List of ip addresses */
     char	*Password;      /* Optional password */
     char 	*Identd;	/* Optional identd */
     bool	Streaming;      /* Streaming allowed ? */
