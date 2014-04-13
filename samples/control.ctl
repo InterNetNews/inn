@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2013-09-06
+##  Last modified: 2014-04-06
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -702,8 +702,8 @@ newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
 
 ## DICTATOR (Dictator's Handbook)
-# Contact: Randall Wood <rsw@therandymon.com>
-# URL: http://www.dictatorshandbook.net/usenet/usenetadmin.html
+# Contact: news@dictatorshandbook.net
+# URL: http://dictatorshandbook.net/usenet/usenetadmin.html
 # Admin group: dictator.announce
 # Key URL: http://www.dictatorshandbook.net/usenet/news-public.key
 # Key fingerprint: 5C0A 741A F931 D79A D9E9  BBB7 4406 4481 91ED C5F2
