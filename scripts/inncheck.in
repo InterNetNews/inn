@@ -214,8 +214,9 @@ parse_config
             $parse_error = 0;
 
             eprint "$file:$line: cannot nest $word in $group->{'type'}!\n"
-                unless ($group->{'type'} eq 'group'
-                    ||  $group->{'type'} eq '<global scope>');
+                unless (($group->{'type'} eq 'group'
+                      or $group->{'type'} eq '<global scope>')
+                     or ($word eq 'res' and $group->{'type'} eq 'auth'));
             push @groups, $group;
             $group = { 'type' => $word, 'line' => $line };
 
@@ -975,11 +976,16 @@ readers_conf
                 'spoolfirst'            => 'boolean',
                 'strippostcc'           => 'boolean',
             },
+            'res'       => {
+                'log'      => 'string',
+                'program'  => 'string',
+            },
             '<multi>'   => { # hack: "don't warn about duplicates for these keys"
                 'res'           => 1,
                 'auth'          => 1,
                 'perl_auth'     => 1,
                 'python_auth'   => 1,
+                'log'           => 1,
             },
             '<include>' => { 'include' => 'ignore' },
         }

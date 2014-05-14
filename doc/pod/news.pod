@@ -10,6 +10,12 @@ about Usenet hierarchies.
 
 =item *
 
+A test has been improved in F<innwatch.ctl> so that B<innwatch> no
+longer throttles B<innd> when no overview directory exists.  You should
+manually update your F<innwatch.ctl> file to get this improvement.
+
+=item *
+
 Fixed a long-standing limitation on how B<controlchan> and B<pgpverify>
 were checking the signer of control messages.  They now properly handle
 the case of several UIDs being defined on a single PGP key, as well
@@ -121,7 +127,9 @@ not displayed to news clients before they get customised.
 
 =item *
 
-Other minor bug fixes and documentation improvements.
+Other minor bug fixes and documentation improvements (like the addition
+in the F<readers.conf> man page of the log: and program: parameters in
+res blocks, and the include directive).
 
 =back
 
