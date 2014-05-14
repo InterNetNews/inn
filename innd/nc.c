@@ -1267,7 +1267,12 @@ NCproc(CHANNEL *cp)
           NCwritereply(cp, buff);
           break;
         }
-        snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
+        if (strcasecmp(cp->av[0], "XYZZY") == 0) {
+            /* Acknowledge the magic word from the Colossal Cave Adventure computer game. */
+            snprintf(buff, sizeof(buff), "%d Nothing happens", NNTP_ERR_COMMAND);
+        } else {
+            snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
+        }
 	NCwritereply(cp, buff);
 	cp->Start = cp->Next;
 

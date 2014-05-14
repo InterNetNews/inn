@@ -1410,7 +1410,12 @@ main(int argc, char *argv[])
 		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
 	    else
 		syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
-	    Reply("%d What?\r\n", NNTP_ERR_COMMAND);
+	    if (strcasecmp(av[0], "XYZZY") == 0) {
+                /* Acknowledge the magic word from the Colossal Cave Adventure computer game. */
+                Reply("%d Nothing happens\r\n", NNTP_ERR_COMMAND);
+            } else {
+                Reply("%d What?\r\n", NNTP_ERR_COMMAND);
+            }
 	    continue;
 	}
 
