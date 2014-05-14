@@ -876,7 +876,7 @@ ARTparseheader(CHANNEL *cp)
                 data->Body = i + 2;
                 cp->State = CSgetbody;
                 ARTparsebody(cp);
-		return;
+                return;
             }
         } else {
             data->CRwithoutLF++;

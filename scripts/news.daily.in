@@ -532,9 +532,9 @@ fi
 ##  Display expire log messages.
 if ${DOMAIL} ; then
     if [ -s ${EXPLOG} ] ; then
-	    echo Expire messages:
+	    echo 'Expire messages:'
 	    cat ${EXPLOG}
-	    echo ---------
+	    echo '---------'
 	    echo ''
     fi
 fi
