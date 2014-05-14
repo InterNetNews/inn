@@ -781,6 +781,8 @@ sub collect($$$$$$) {
       $innd_control{"shutdown"}++;
       return 1;
     }
+    # re-executed
+    return 1 if $left =~ m/^SERVER execv /o;
     # SERVER servermode paused
     return 1 if ($left =~ /(\S+) servermode paused$/o);
     # SERVER servermode running
@@ -1499,6 +1501,12 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^python: dynamic access module successfully hooked into nnrpd$/o;
     return 1 if $left =~ /^python: dynamic authorization access for read access granted$/o;
     return 1 if $left =~ /^python: dynamic authorization access type is not known: /o;
+    # during scanlogs
+    return 1 if $left =~ /^\S+ rejected Flushing log and syslog files$/o;
+    return 1 if $left =~ /^\S+ rejected Snapshot log and syslog files$/o;
+    # other logs that should not be reported as errors
+    return 1 if $left =~ /^\S+ auth also-log: /o;
+    return 1 if $left =~ /^\S+ res also-log: /o;
     # connect
     if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect(?: - port \d+)?$/o) {
       my $cust = $1;

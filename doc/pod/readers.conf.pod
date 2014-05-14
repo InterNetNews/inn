@@ -185,13 +185,21 @@ add-ons to INN may prefer that authenticated identities always return a
 full e-mail address (including a domain), so you may want to set up your
 system that way.
 
+Configuration files can be included in other configuration files via
+the syntax:
+
+    include <filename>
+
+The file named <filename> is then included.  This syntax is allowed
+only at top-level.
+
 Below is the full list of allowable parameters for auth groups and access
 groups, and after that are some examples that may make this somewhat
 clearer.
 
 =head1 AUTH GROUP PARAMETERS
 
-An access group without at least one of the res:, auth:, perl_auth:,
+An auth group without at least one of the res:, auth:, perl_auth:,
 python_auth:, or default: parameters makes no sense (and in practice will
 just be ignored).
 
@@ -238,6 +246,36 @@ from the user's hostname.
 One auth group can have multiple res: parameters, and they will be tried
 in the order they're listed.  The results of the first successful one
 will be used.
+
+Alternatively, a res block can be used instead of a res: paramater.
+The recognized parameters in such res blocks are:
+
+=over 3
+
+=item B<log:>
+
+A string to log in I<pathlog>/news.notice (with C<res also-log:>
+prepended) before the resolver is tried.  One res group can have multiple
+log: parameters, and they will be logged in the order they're listed.
+
+=item B<program:>
+
+This parameter is mandatory in a res block.  Its meaning is the same
+as the res: parameter used directly in an auth block.
+
+    auth <auth-name> {
+        res: <res-program>
+    }
+
+is therefore equivalent to:
+
+    auth <auth-name> {
+        res <res-name> {
+            program: <res-program>
+        }
+    }
+
+=back
 
 =item B<auth:>
 
