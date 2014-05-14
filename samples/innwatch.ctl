@@ -40,4 +40,4 @@
 !!! ${INNDF} ${BATCH} ! lt ! ${INNWATCHBATCHSPACE} ! throttle ! No space (newsq)
 !!! ${INNDF} ${PATHDB} ! lt ! ${INNWATCHLIBSPACE} ! throttle ! No space (newslib)
 !!! ${INNDF} -i . ! lt ! ${INNWATCHSPOOLNODES} ! throttle ! No space (spool inodes)
-!!! ${INNDF} ${OVERVIEWDIR} ! lt ! ${INNWATCHSPOOLSPACE} ! throttle ! No space (overview)
+!!! test -d ${OVERVIEWDIR} && ${INNDF} ${OVERVIEWDIR} ! lt ! ${INNWATCHSPOOLSPACE} ! throttle ! No space (overview)
