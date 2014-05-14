@@ -1528,8 +1528,8 @@ static void issueModeStream (EndPoint e, Connection cxn)
   p = bufferBase (modeBuffer) ;
 
   /* now issue the MODE STREAM command */
-  d_printf (1,"%s:%d Issuing the streaming command: %s\n",
-	    hostPeerName (cxn->myHost),cxn->ident,MODE_CMD) ;
+  d_printf (1, "%s:%d Issuing the streaming command\n",
+            hostPeerName (cxn->myHost), cxn->ident) ;
 
   strlcpy (p, MODE_CMD, bufferSize (modeBuffer)) ;
 
@@ -2689,7 +2689,7 @@ static void cxnWorkProc (EndPoint ep UNUSED, void *data)
         issueQUIT (cxn) ;
     }
   else
-    d_printf (2,"%s:%d no writes were needed....\n",
+    d_printf (2,"%s:%d no writes were needed...\n",
              hostPeerName (cxn->myHost), cxn->ident) ;
 }
 
