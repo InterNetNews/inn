@@ -140,6 +140,10 @@ time.  With the B<lowmark> keyword, this will take less time.  If the B<lowmark>
 keyword is used, the B<norenumber> keyword is not needed since B<news.daily> specifies
 it implicitly.
 
+If the B<lowmark> keyword is given to B<news.daily>, then the
+B<expireover> keyword must also be given; otherwise, that kind of
+renumbering will not be taken into account.
+
 =item B<mailto>=I<address>
 
 By default, B<news.daily> mails the report to the newsmaster address specified
