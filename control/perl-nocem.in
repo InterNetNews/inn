@@ -526,15 +526,19 @@ Import the keys of the NoCeM issuers you trust in order to check
 the authenticity of their notices.  You can do:
 
     gpg --no-default-keyring --primary-keyring <pathetc>/pgp/ncmring.gpg --import <key-file>
+    chmod 644 <pathetc>/pgp/ncmring.gpg
 
-where <pathetc> is the value of the I<pathetc> parameter set in F<inn.conf>
-and <key-file> the file containing the key(s) to import.  The keyring must
-be located in <pathetc>/pgp/ncmring.gpg; you only have to create the directory
-<pathetc>/pgp before using B<gpg> (it will automatically generate the
-F<ncmring.gpg> file).  For old PGP-generated keys, you may have to use
+where <pathetc> is the value of the I<pathetc> parameter set in
+F<inn.conf> and <key-file> the file containing the key(s) to import.
+The keyring must be located in <pathetc>/pgp/ncmring.gpg; you only
+have to create the directory <pathetc>/pgp before using B<gpg> (it will
+automatically generate the F<ncmring.gpg> file) and make sure the news
+user can read this file, once generated.
+
+For old PGP-generated keys, you may have to use
 B<--allow-non-selfsigned-uid> if they are not properly self-signed,
-but anyone creating a key really should self-sign the key.  Current
-PGP implementations do this automatically.
+but anyone creating a key really should self-sign the key.  Current PGP
+implementations do this automatically.
 
 The keys of NoCeM issuers can be found in the web site of I<The NoCeM Registry>:
 L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.  You can even
