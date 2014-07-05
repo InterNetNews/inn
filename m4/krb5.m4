@@ -18,6 +18,12 @@ dnl
 dnl If KRB5_CPPFLAGS, KRB5_LDFLAGS, or KRB5_LIBS are set before calling these
 dnl macros, their values will be added to whatever the macros discover.
 dnl
+dnl KRB5_CPPFLAGS_GCC will be set to the same value as KRB5_CPPFLAGS but with
+dnl any occurrences of -I changed to -isystem.  This may be useful to suppress
+dnl warnings from the Kerberos header files when building with GCC and
+dnl aggressive warning flags.  Be aware that this change will change the
+dnl compiler header file search order as well.
+dnl
 dnl Provides the INN_LIB_KRB5_OPTIONAL macro, which should be used if Kerberos
 dnl support is optional.  In this case, Kerberos libraries are mandatory if
 dnl --with-krb5 is given, and will not be probed for if --without-krb5 is
@@ -45,7 +51,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013
+dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -240,6 +246,10 @@ dnl checking.
 AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
 [AC_REQUIRE([INN_ENABLE_REDUCED_DEPENDS])
  inn_krb5_incroot=
+ AC_SUBST([KRB5_CPPFLAGS])
+ AC_SUBST([KRB5_CPPFLAGS_GCC])
+ AC_SUBST([KRB5_LDFLAGS])
+ AC_SUBST([KRB5_LIBS])
  AS_IF([test x"$inn_krb5_includedir" != x],
     [inn_krb5_incroot="$inn_krb5_includedir"],
     [AS_IF([test x"$inn_krb5_root" != x],
@@ -254,7 +264,8 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
  inn_krb5_uses_com_err=false
  AS_CASE([$KRB5_LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
  AM_CONDITIONAL([KRB5_USES_COM_ERR],
-    [test x"$inn_krb5_uses_com_err" = xtrue])])
+    [test x"$inn_krb5_uses_com_err" = xtrue])
+ KRB5_CPPFLAGS_GCC=`echo "$KRB5_CPPFLAGS" | sed -e 's/-I/-isystem /g'`])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([INN_LIB_KRB5],
@@ -262,9 +273,6 @@ AC_DEFUN([INN_LIB_KRB5],
  inn_krb5_libdir=
  inn_krb5_includedir=
  inn_use_KRB5=true
- AC_SUBST([KRB5_CPPFLAGS])
- AC_SUBST([KRB5_LDFLAGS])
- AC_SUBST([KRB5_LIBS])
 
  AC_ARG_WITH([krb5],
     [AS_HELP_STRING([--with-krb5=DIR],
@@ -290,9 +298,6 @@ AC_DEFUN([INN_LIB_KRB5_OPTIONAL],
  inn_krb5_libdir=
  inn_krb5_includedir=
  inn_use_KRB5=
- AC_SUBST([KRB5_CPPFLAGS])
- AC_SUBST([KRB5_LDFLAGS])
- AC_SUBST([KRB5_LIBS])
 
  AC_ARG_WITH([krb5],
     [AS_HELP_STRING([--with-krb5@<:@=DIR@:>@],
