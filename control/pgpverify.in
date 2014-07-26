@@ -734,19 +734,19 @@ B<pgpverify> may exit with the following statuses:
 
 The control message had a good PGP signature.
 
-=item 1
+=item 1Z<>
 
 The control message had no PGP signature.
 
-=item 2
+=item 2Z<>
 
 The control message had an unknown PGP signature.
 
-=item 3
+=item 3Z<>
 
 The control message had a bad PGP signature.
 
-=item 255
+=item 255Z<>
 
 A problem occurred not directly related to PGP analysis of signature.
 

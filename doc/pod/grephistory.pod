@@ -71,6 +71,8 @@ C<sendme> control messages.
 Print out the hash of the message ID for diagnostic purposes, as well as
 any other requested information.  This flag is not useful with B<-s>.
 
+=back
+
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
