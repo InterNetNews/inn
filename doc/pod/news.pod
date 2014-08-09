@@ -170,6 +170,21 @@ for TLS sessions with B<nnrpd>.
 
 =back
 
+=head1 Changes in 2.5.5
+
+=over 2
+
+=item *
+
+B<innwatch> no longer creates a child process only for sleeping and then
+waits on that process.  The forked-off process only died after it had
+done sleeping, which caused the INN service to drop into maintenance
+state when for instance running under SMF on illumos/Solaris (since
+not all processes die within timeout).  Thanks to Lauri Tirkkonen for
+the patch.
+
+=back
+
 =head1 Changes in 2.5.4
 
 =over 2
