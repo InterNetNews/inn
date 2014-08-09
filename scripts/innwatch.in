@@ -126,7 +126,8 @@ cd ${SPOOL}
 NEXTSLEEP=1
 HASEXITED=false
 
-while { sleep ${NEXTSLEEP} & wait; } ; : ; do
+while sleep ${NEXTSLEEP}
+do
     NEXTSLEEP=${INNWATCHSLEEPTIME}
 
     ##  If news.daily is running, idle:  we don't want to change the
