@@ -187,7 +187,7 @@ the patch.
 
 Several improvements have been contributed to B<pullnews> by Geraint
 Edwards:  the B<-m> flag now permits to remove headers matching (or not)
-a given regexp.
+a given regexp, and B<rnews> reporting is improved.
 
 =back
 
