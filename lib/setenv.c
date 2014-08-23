@@ -35,29 +35,22 @@ int
 setenv(const char *name, const char *value, int overwrite)
 {
     char *envstring;
-    size_t size;
 
+    /* Do nothing if not overwriting and the variable is already set. */
     if (!overwrite && getenv(name) != NULL)
         return 0;
 
     /*
-     * Allocate memory for the environment string.  We intentionally don't use
-     * the xmalloc family of allocation routines here, since the intention is
-     * to provide a replacement for the standard library function that sets
-     * errno and returns in the event of a memory allocation failure.
-     */
-    size = strlen(name) + 1 + strlen(value) + 1;
-    envstring = malloc(size);
-    if (envstring == NULL)
-        return -1;
-
-    /*
      * Build the environment string and add it to the environment using
      * putenv.  Systems without putenv lose, but XPG4 requires it.
+     *
+     * We intentionally don't use the xmalloc family of allocation routines
+     * here, since the intention is to provide a replacement for the standard
+     * library function that sets errno and returns in the event of a memory
+     * allocation failure.
      */
-    strlcpy(envstring, name, size);
-    strlcat(envstring, "=", size);
-    strlcat(envstring, value, size);
+    if (asprintf(&envstring, "%s=%s", name, value) < 0)
+        return -1;
     return putenv(envstring);
 
     /*
