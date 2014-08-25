@@ -13,6 +13,7 @@
 #               INN project.  Major changes are:
 #
 #               January 2010:  Geraint A. Edwards added header-only feeding (-B);
+#               added ability to hashfeed (-a) - uses MD5 - Diablo-compatible;
 #               enabled -m to remove headers matching (or not) a given regexp;
 #               minor bug fix to rnews when -O; improved rnews reporting.
 #
@@ -121,12 +122,18 @@ END {
 }
 
 $usage =~ s!.*/!!;
-$usage .= " [ -BhnOqRx -b fraction -c config -C width -d level
+$usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
         -f fraction -F fakehop -g groups -G newsgroups -H headers
         -k checkpt -l logfile -m header_pats -M num -N num
         -p port -P hop_limit -Q level -r file -s host[:port] -S num
         -t retries -T seconds -w num -z num -Z num ]
         [ upstream_host ... ]
+
+  -a hashfeed   only feed article if the MD5 hash of the Message-ID
+                matches hashfeed (where hashfeed is of the form value/mod,
+                value/mod:offset, start-end/mod, or start-end/mod:offset).
+                The algorithm used is compatible with the one used by Diablo;
+                see the pullnews man page for more details.
 
   -b fraction   backtrack on server numbering reset.  The proportion
                 (0.0 to 1.0) of a group's articles to pull when the
@@ -231,11 +238,11 @@ $usage .= " [ -BhnOqRx -b fraction -c config -C width -d level
 ";
 
 
-use vars qw($opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
-            $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
+use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
+            $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
             $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
             $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
-getopts("b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
+getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
 
 die $usage if $opt_h;
 
@@ -246,6 +253,7 @@ my $groupFile           = $opt_c || $defaultConfig;
 my $localServer         = $opt_s || $defaultHost;
 my $localPort           = $opt_p || $defaultPort;
 my $quiet               = $opt_q;
+my $hashfeed            = $opt_a || '';
 my $header_only         = $opt_B;
 my $watermark           = $opt_w;
 my $retries             = $opt_t || $defaultRetries;
@@ -287,6 +295,26 @@ die "``-t'' value not an integer: $opt_t\n" if $retries !~ m!^\d+$!;
 die "``-w'' value not an integer: $opt_w\n" if defined $watermark and $watermark !~ /^-?\d+$/;
 die "``-z'' value not an integer: $opt_z\n" if defined $opt_z and $opt_z !~ /^\d+$/;
 die "``-Z'' value not an integer: $opt_Z\n" if defined $opt_Z and $opt_Z !~ /^\d+$/;
+
+if ($hashfeed ne '') {
+    my $a_err = "``-a'' value not in format ``start[-end]/mod[:offset]'': $opt_a\n";
+    die $a_err if $opt_a !~ m!^(\d+)(?:-(\d+))?/(\d+)(?:[:_](\d+))?$!;
+    $hashfeed = {
+        'low'       => $1,
+        'high'      => $2 || $1,
+        'modulus'   => $3,
+        'offset'    => $4 || 0,
+    };
+    die $a_err if $hashfeed->{'low'} > $hashfeed->{'high'}
+                  or $hashfeed->{'modulus'} == 0
+                  or $hashfeed->{'offset'} > 12;
+    if ($hashfeed->{'low'} == 1 and $hashfeed->{'high'} == $hashfeed->{'modulus'}) {
+        $hashfeed = '';
+    } else {
+        require Digest::MD5;
+        Digest::MD5->import(qw/md5/);
+    }
+}
 
 $quiet = 1 if $quietness > 1;
 my %NNTP_Args = ();
@@ -409,7 +437,7 @@ if ( not $quiet and not $quietness ) {
     print LOG "        ``+'' is an article the downstream server accepted\n";
     print LOG "        ``x'' is an article the upstream server couldn't ";
     print LOG "give out\n";
-    print LOG "        ``m'' is an article skipped due to headers (-m or -P)\n";
+    print LOG "        ``m'' is an article skipped due to headers (-a, -m or -P)\n";
     print LOG "\n";
     print LOG "Writing to rnews-format output: $rnews\n\n" if $rnews;
 }
@@ -743,7 +771,7 @@ sub crossFeedGroup {
             my $tx_len = 0;              # Transmitted article length (bytes) (for rnews, Bytes:).
             my @header_nums_to_go = ();
             my $match_all_hdrs = 1;      # Assume no headers to match.
-            my $skip_due_to_hdrs = 0;
+            my $skip_due_to_hdrs = 0;    # Set to 1 if triggered by -P, 2 if by -m, 3 if by -a.
             my %m_found_hdrs = ();
             my $curr_hdr = '';
 
@@ -894,9 +922,22 @@ sub crossFeedGroup {
                 }
             }
 
+            if (not $skip_due_to_hdrs and ref $hashfeed) {
+                my $hash_val = unpack('N', substr(md5($msgid), 12-$hashfeed->{'offset'}, 4)) % $hashfeed->{'modulus'} + 1;
+                $skip_due_to_hdrs = 3 if $hash_val < $hashfeed->{'low'} or $hash_val > $hashfeed->{'high'};
+            }
+
             $pulled->{$server}->{$group}++;
 
             if ($skip_due_to_hdrs) {
+                if ($debug >= 2) { 
+                    print LOG "\tDEBUGGING $i\tskip_art: " .
+                              ($skip_due_to_hdrs == 1 ? 'hopsPath'
+                                  : ($skip_due_to_hdrs == 2 ? 'hdr'
+                                      : ($skip_due_to_hdrs == 3 ? 'hashfeed'
+                                          : 'unknown'))) .
+                              "\n";
+                }
                 print LOG "m" unless $quiet;
             } elsif ($rnews) {
                 printf RNEWS "#! rnews %d\n", $tx_len;

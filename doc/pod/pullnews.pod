@@ -4,7 +4,8 @@ pullnews - Pull news from multiple news servers and feed it to another
 
 =head1 SYNOPSIS
 
-B<pullnews> [B<-BhnOqRx>] [B<-b> I<fraction>] [B<-c> I<config>] [B<-C> I<width>]
+B<pullnews> [B<-BhnOqRx>] [B<-a> I<hashfeed>] [B<-b> I<fraction>]
+[B<-c> I<config>] [B<-C> I<width>]
 [B<-d> I<level>] [B<-f> I<fraction>] [B<-F> I<fakehop>] [B<-g> I<groups>]
 [B<-G> I<newsgroups>] [B<-H> I<headers>] [B<-k> I<checkpt>] [B<-l> I<logfile>]
 [B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-p> I<port>]
@@ -40,6 +41,43 @@ setting up traditional peering and is not meant for handling large feeds.
 =head1 OPTIONS
 
 =over 4
+
+=item B<-a> I<hashfeed>
+
+This option is a deterministic way to control the flow of articles and to
+split a feed.  The I<hashfeed> parameter must be in the form C<value/mod>
+or C<start-end/mod>.  The Message-ID of each article is hashed using MD5,
+which results in a 128-bit hash.  The lowest S<32 bits> are then taken
+by default as the hashfeed value (which is an integer).  If the hashfeed
+value modulus C<mod> plus one equals C<value> or is between C<start>
+and C<end>, B<pullnews> will feed the article.  All these numbers must
+be integers.
+
+For instance:
+
+    pullnews -a 1/2      Feeds about 50% of all articles.
+    pullnews -a 2/2      Feeds the other 50% of all articles.
+
+Another example:
+
+    pullnews -a 1-3/10   Feeds about 30% of all articles.
+    pullnews -a 4-5/10   Feeds about 20% of all articles.
+    pullnews -a 6-10/10  Feeds about 50% of all articles.
+
+You can use an extended syntax of the form C<value/mod:offset> or
+C<start-end/mod:offset> (using an underscore C<_> instead of a colon
+C<:> is also recognized).  As MD5 generates a 128-bit return value,
+it is possible to specify from which byte-offset the 32-bit integer
+used by hashfeed starts.  The default value for C<offset> is C<:0> and
+thirteen overlapping values from C<:0> to C<:12> can be used.  Only up to
+four totally independent values exist:  C<:0>, C<:4>, C<:8> and C<:12>.
+
+Therefore, it allows to a generate a second level of deterministic
+distribution.  Indeed, if B<pullnews> feeds C<1/2>, it can go on
+splitting thanks to C<1-3/9:4> for instance.  Up to four levels of
+deterministic distribution can be used.
+
+The algorithm is compatible with the one used by S<Diablo 5.1> and up.
 
 =item B<-b> I<fraction>
 
