@@ -498,7 +498,7 @@ CCcheckfile(char *unused[])
   if (errors == 0)
     return NULL;
 
-  buffer_sprintf(&CCreply, false, "1 Found %d error(s) -- see syslog", errors);
+  buffer_sprintf(&CCreply, "1 Found %d error(s) -- see syslog", errors);
   return CCreply.data;
 }
 
@@ -829,32 +829,32 @@ CCmode(char *unused[] UNUSED)
     char *stats;
 #endif
 
-    buffer_sprintf(&CCreply, false, "0 Server ");
+    buffer_sprintf(&CCreply, "0 Server ");
 
     /* Server's mode. */
     switch (Mode) {
     default:
-        buffer_sprintf(&CCreply, true, "Unknown %d\n", Mode);
+        buffer_append_sprintf(&CCreply, "Unknown %d\n", Mode);
 	break;
     case OMrunning:
-        buffer_sprintf(&CCreply, true, "running\n");
+        buffer_append_sprintf(&CCreply, "running\n");
 	break;
     case OMpaused:
-        buffer_sprintf(&CCreply, true, "paused %s\n", ModeReason);
+        buffer_append_sprintf(&CCreply, "paused %s\n", ModeReason);
 	break;
     case OMthrottled:
-        buffer_sprintf(&CCreply, true, "throttled %s\n", ModeReason);
+        buffer_append_sprintf(&CCreply, "throttled %s\n", ModeReason);
 	break;
     }
     if (RejectReason)
-        buffer_sprintf(&CCreply, true, "Rejecting %s\n", RejectReason);
+        buffer_append_sprintf(&CCreply, "Rejecting %s\n", RejectReason);
     else
-        buffer_sprintf(&CCreply, true, "Allowing remote connections\n");
+        buffer_append_sprintf(&CCreply, "Allowing remote connections\n");
 
     /* Server parameters. */
     for (count = 0, index = 0; CHANiter(&index, CTnntp) != NULL; )
 	count++;
-    buffer_sprintf(&CCreply, true, "Parameters c %lu i %lu (%d) l %lu o %d"
+    buffer_append_sprintf(&CCreply, "Parameters c %lu i %lu (%d) l %lu o %d"
                    " t %ld H %d T %d X %ld %s %s\n",
                   innconf->artcutoff, innconf->maxconnections, count,
                   innconf->maxartsize, MaxOutgoing, (long) TimeOut.tv_sec,
@@ -864,40 +864,40 @@ CCmode(char *unused[] UNUSED)
 
     /* Reservation. */
     if (Reservation)
-        buffer_sprintf(&CCreply, true, "Reserved %s\n", Reservation);
+        buffer_append_sprintf(&CCreply, "Reserved %s\n", Reservation);
     else
-        buffer_sprintf(&CCreply, true, "Not reserved\n");
+        buffer_append_sprintf(&CCreply, "Not reserved\n");
 
     /* Newsreaders. */
-    buffer_sprintf(&CCreply, true, "Readers ");
+    buffer_append_sprintf(&CCreply, "Readers ");
     if (innconf->readerswhenstopped)
-        buffer_sprintf(&CCreply, true, "independent ");
+        buffer_append_sprintf(&CCreply, "independent ");
     else
-        buffer_sprintf(&CCreply, true, "follow ");
+        buffer_append_sprintf(&CCreply, "follow ");
     if (NNRPReason == NULL)
-        buffer_sprintf(&CCreply, true, "enabled");
+        buffer_append_sprintf(&CCreply, "enabled");
     else
-        buffer_sprintf(&CCreply, true, "disabled %s", NNRPReason);
+        buffer_append_sprintf(&CCreply, "disabled %s", NNRPReason);
 
 #ifdef DO_PERL
-    buffer_sprintf(&CCreply, true, "\nPerl filtering ");
+    buffer_append_sprintf(&CCreply, "\nPerl filtering ");
     if (PerlFilterActive)
-        buffer_sprintf(&CCreply, true, "enabled");
+        buffer_append_sprintf(&CCreply, "enabled");
     else
-        buffer_sprintf(&CCreply, true, "disabled");
+        buffer_append_sprintf(&CCreply, "disabled");
     stats = PLstats();
     if (stats != NULL) {
-        buffer_sprintf(&CCreply, true, "\nPerl filter stats: %s", stats);
+        buffer_append_sprintf(&CCreply, "\nPerl filter stats: %s", stats);
         free(stats);
     }    
 #endif
 
 #ifdef DO_PYTHON
-    buffer_sprintf(&CCreply, true, "\nPython filtering ");
+    buffer_append_sprintf(&CCreply, "\nPython filtering ");
     if (PythonFilterActive)
-        buffer_sprintf(&CCreply, true, "enabled");
+        buffer_append_sprintf(&CCreply, "enabled");
     else
-        buffer_sprintf(&CCreply, true, "disabled");
+        buffer_append_sprintf(&CCreply, "disabled");
 #endif
 
     buffer_append(&CCreply, "", 1);
@@ -930,8 +930,8 @@ CCname(char *av[])
     if (av[0][0] != '\0') {
         cp = CHANfromdescriptor(atoi(av[0]));
         if (cp == NULL)
-	    return xstrdup(CCnochannel);
-        buffer_sprintf(&CCreply, false, "0 %s", CHANname(cp));
+            return xstrdup(CCnochannel);
+        buffer_sprintf(&CCreply, "0 %s", CHANname(cp));
 	return CCreply.data;
     }
     buffer_set(&CCreply, "0 ", 2);
@@ -940,37 +940,37 @@ CCname(char *av[])
 	    continue;
 	if (++count > 1)
 	    buffer_append(&CCreply, "\n", 1);
-        buffer_sprintf(&CCreply, true, "%s", CHANname(cp));
+        buffer_append_sprintf(&CCreply, "%s", CHANname(cp));
 	switch (cp->Type) {
 	case CTremconn:
-            buffer_sprintf(&CCreply, true, ":remconn::");
+            buffer_append_sprintf(&CCreply, ":remconn::");
 	    break;
 	case CTreject:
-            buffer_sprintf(&CCreply, true, ":reject::");
+            buffer_append_sprintf(&CCreply, ":reject::");
 	    break;
 	case CTnntp:
             mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
-            buffer_sprintf(&CCreply, true, ":%s:%ld:%s",
+            buffer_append_sprintf(&CCreply, ":%s:%ld:%s",
                            cp->State == CScancel ? "cancel" : "nntp",
                            (long) (Now.tv_sec - cp->LastActive), mode);
 	    break;
 	case CTlocalconn:
-            buffer_sprintf(&CCreply, true, ":localconn::");
+            buffer_append_sprintf(&CCreply, ":localconn::");
 	    break;
 	case CTcontrol:
-            buffer_sprintf(&CCreply, true, ":control::");
+            buffer_append_sprintf(&CCreply, ":control::");
 	    break;
 	case CTfile:
-            buffer_sprintf(&CCreply, true, "::");
+            buffer_append_sprintf(&CCreply, "::");
 	    break;
 	case CTexploder:
-            buffer_sprintf(&CCreply, true, ":exploder::");
+            buffer_append_sprintf(&CCreply, ":exploder::");
 	    break;
 	case CTprocess:
-            buffer_sprintf(&CCreply, true, ":");
+            buffer_append_sprintf(&CCreply, ":");
 	    break;
 	default:
-            buffer_sprintf(&CCreply, true, ":unknown::");
+            buffer_append_sprintf(&CCreply, ":unknown::");
 	    break;
 	}
     }
@@ -1602,7 +1602,7 @@ CCsignal(char *av[])
 	oerrno = errno;
 	syslog(L_ERROR, "%s cant kill %ld %d site %s, %m", LogName, 
 		(long) sp->pid, s, p);
-        buffer_sprintf(&CCreply, false, "1 Can't signal process %ld: %s",
+        buffer_sprintf(&CCreply, "1 Can't signal process %ld: %s",
                        (long) sp->pid, strerror(oerrno));
 	return CCreply.data;
     }

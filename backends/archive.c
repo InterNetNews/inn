@@ -254,7 +254,7 @@ build_path(const char *group, const char *number, struct config *config,
         tm = localtime(&now);
         year = tm->tm_year + 1900;
         month = tm->tm_mon + 1;
-        buffer_sprintf(path, true, "/%04d%02d", year, month);
+        buffer_append_sprintf(path, "/%04d%02d", year, month);
     } else {
         buffer_append(path, "/", 1);
         buffer_append(path, number, strlen(number));

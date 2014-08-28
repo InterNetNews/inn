@@ -1145,87 +1145,87 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 	return;
     }
 
-    buffer_sprintf(bp, true, "%s%s:\t", sp->Name, sp->IsMaster ? "(*)" : "");
+    buffer_append_sprintf(bp, "%s%s:\t", sp->Name, sp->IsMaster ? "(*)" : "");
 
     if (sp->Type == FTfunnel) {
 	sp = &Sites[sp->Funnel];
-        buffer_sprintf(bp, true, "funnel -> %s: ", sp->Name);
+        buffer_append_sprintf(bp, "funnel -> %s: ", sp->Name);
     }
 
     switch (sp->Type) {
     default:
-        buffer_sprintf(bp, true, "unknown feed type %d", sp->Type);
+        buffer_append_sprintf(bp, "unknown feed type %d", sp->Type);
 	break;
     case FTerror:
     case FTfile:
-        buffer_sprintf(bp, true, "file");
+        buffer_append_sprintf(bp, "file");
 	if (sp->Buffered)
-            buffer_sprintf(bp, true, " buffered(%lu)",
+            buffer_append_sprintf(bp, " buffered(%lu)",
                            (unsigned long) sp->Buffer.left);
 	else if ((cp = sp->Channel) == NULL)
-            buffer_sprintf(bp, true, " no channel?");
+            buffer_append_sprintf(bp, " no channel?");
 	else
-            buffer_sprintf(bp, true, " open fd=%d, in mem %lu", cp->fd,
+            buffer_append_sprintf(bp, " open fd=%d, in mem %lu", cp->fd,
                            (unsigned long) cp->Out.left);
 	break;
     case FTchannel:
-        buffer_sprintf(bp, true, "channel");
+        buffer_append_sprintf(bp, "channel");
 	goto common;
     case FTexploder:
-        buffer_sprintf(bp, true, "exploder");
+        buffer_append_sprintf(bp, "exploder");
 common:
 	if (sp->Process >= 0)
-            buffer_sprintf(bp, true, " pid=%ld", (long) sp->pid);
+            buffer_append_sprintf(bp, " pid=%ld", (long) sp->pid);
 	if (sp->Spooling)
-            buffer_sprintf(bp, true, " spooling");
+            buffer_append_sprintf(bp, " spooling");
         cp = sp->Channel;
 	if (cp == NULL)
-            buffer_sprintf(bp, true, " no channel?");
+            buffer_append_sprintf(bp, " no channel?");
 	else
-            buffer_sprintf(bp, true, " fd=%d, in mem %lu", cp->fd,
+            buffer_append_sprintf(bp, " fd=%d, in mem %lu", cp->fd,
                            (unsigned long) cp->Out.left);
 	break;
     case FTfunnel:
-        buffer_sprintf(bp, true, "recursive funnel");
+        buffer_append_sprintf(bp, "recursive funnel");
 	break;
     case FTlogonly:
-        buffer_sprintf(bp, true, "log only");
+        buffer_append_sprintf(bp, "log only");
 	break;
     case FTprogram:
-        buffer_sprintf(bp, true, "program");
+        buffer_append_sprintf(bp, "program");
 	if (sp->FNLwantsnames)
-            buffer_sprintf(bp, true, " with names");
+            buffer_append_sprintf(bp, " with names");
 	break;
     }
     buffer_append(bp, "\n", 1);
     if (Verbose) {
 	sep = "\t";
 	if (sp->Buffered && sp->Flushpoint) {
-            buffer_sprintf(bp, true, "%sFlush @ %lu", sep,
+            buffer_append_sprintf(bp, "%sFlush @ %lu", sep,
                            (unsigned long) sp->Flushpoint);
 	    sep = "; ";
 	}
 	if (sp->StartWriting || sp->StopWriting) {
-            buffer_sprintf(bp, true, "%sWrite [%ld..%ld]", sep,
+            buffer_append_sprintf(bp, "%sWrite [%ld..%ld]", sep,
                            sp->StopWriting, sp->StartWriting);
 	    sep = "; ";
 	}
 	if (sp->StartSpooling) {
-            buffer_sprintf(bp, true, "%sSpool @ %ld", sep, sp->StartSpooling);
+            buffer_append_sprintf(bp, "%sSpool @ %ld", sep, sp->StartSpooling);
 	    sep = "; ";
 	}
 	if (sep[0] != '\t')
             buffer_append(bp, "\n", 1);
 	if (sp->Spooling && sp->SpoolName)
-            buffer_sprintf(bp, true, "\tSpooling to \"%s\"\n", sp->SpoolName);
+            buffer_append_sprintf(bp, "\tSpooling to \"%s\"\n", sp->SpoolName);
         cp = sp->Channel;
 	if (cp != NULL) {
-            buffer_sprintf(bp, true, "\tChannel created %.12s",
+            buffer_append_sprintf(bp, "\tChannel created %.12s",
                            ctime(&cp->Started) + 4);
-            buffer_sprintf(bp, true, ", last active %.12s\n",
+            buffer_append_sprintf(bp, ", last active %.12s\n",
                            ctime(&cp->LastActive) + 4);
 	    if (cp->Waketime > Now.tv_sec)
-                buffer_sprintf(bp, true, "\tSleeping until %.12s\n",
+                buffer_append_sprintf(bp, "\tSleeping until %.12s\n",
                                ctime(&cp->Waketime) + 4);
 	}
 

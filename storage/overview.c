@@ -166,7 +166,7 @@ overview_add(struct overview *overview, const char *group,
         overview->overdata = buffer_new();
         buffer_resize(overview->overdata, data->overlen + 13);
     }
-    buffer_sprintf(overview->overdata, false, "%ld\t", data->number);
+    buffer_sprintf(overview->overdata, "%ld\t", data->number);
     buffer_append(overview->overdata, data->overview, data->overlen);
     buffer_append(overview->overdata, "\r\n", 2);
 

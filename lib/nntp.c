@@ -329,7 +329,7 @@ nntp_send_line(struct nntp *nntp, const char *format, ...)
     va_list args;
 
     va_start(args, format);
-    buffer_vsprintf(&nntp->out, true, format, args);
+    buffer_append_vsprintf(&nntp->out, format, args);
     va_end(args);
     buffer_append(&nntp->out, "\r\n", 2);
     return nntp_flush(nntp);
@@ -346,7 +346,7 @@ nntp_send_line_noflush(struct nntp *nntp, const char *format, ...)
     va_list args;
 
     va_start(args, format);
-    buffer_vsprintf(&nntp->out, true, format, args);
+    buffer_append_vsprintf(&nntp->out, format, args);
     va_end(args);
     buffer_append(&nntp->out, "\r\n", 2);
     return nntp_flush(nntp);
@@ -366,11 +366,11 @@ nntp_respond(struct nntp *nntp, enum nntp_code code, const char *format, ...)
     va_list args;
 
     if (format == NULL)
-        buffer_sprintf(&nntp->out, true, "%d\r\n", code);
+        buffer_append_sprintf(&nntp->out, "%d\r\n", code);
     else {
-        buffer_sprintf(&nntp->out, true, "%d ", code);
+        buffer_append_sprintf(&nntp->out, "%d ", code);
         va_start(args, format);
-        buffer_vsprintf(&nntp->out, true, format, args);
+        buffer_append_vsprintf(&nntp->out, format, args);
         va_end(args);
         buffer_append(&nntp->out, "\r\n", 2);
     }
@@ -389,11 +389,11 @@ nntp_respond_noflush(struct nntp *nntp, enum nntp_code code,
     va_list args;
 
     if (format == NULL)
-        buffer_sprintf(&nntp->out, true, "%d\r\n", code);
+        buffer_append_sprintf(&nntp->out, "%d\r\n", code);
     else {
-        buffer_sprintf(&nntp->out, true, "%d ", code);
+        buffer_append_sprintf(&nntp->out, "%d ", code);
         va_start(args, format);
-        buffer_vsprintf(&nntp->out, true, format, args);
+        buffer_append_vsprintf(&nntp->out, format, args);
         va_end(args);
         buffer_append(&nntp->out, "\r\n", 2);
     }

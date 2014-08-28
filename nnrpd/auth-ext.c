@@ -284,15 +284,15 @@ static void
 append_client_info(struct client *client, struct buffer *data)
 {
     if (*client->host)
-        buffer_sprintf(data, true, "ClientHost: %s\r\n", client->host);
+        buffer_append_sprintf(data, "ClientHost: %s\r\n", client->host);
     if (*client->ip)
-        buffer_sprintf(data, true, "ClientIP: %s\r\n", client->ip);
+        buffer_append_sprintf(data, "ClientIP: %s\r\n", client->ip);
     if (client->port != 0)
-        buffer_sprintf(data, true, "ClientPort: %hu\r\n", client->port);
+        buffer_append_sprintf(data, "ClientPort: %hu\r\n", client->port);
     if (*client->serverip)
-        buffer_sprintf(data, true, "LocalIP: %s\r\n", client->serverip);
+        buffer_append_sprintf(data, "LocalIP: %s\r\n", client->serverip);
     if (client->serverport != 0)
-        buffer_sprintf(data, true, "LocalPort: %hu\r\n", client->serverport);
+        buffer_append_sprintf(data, "LocalPort: %hu\r\n", client->serverport);
 }
 
 
@@ -321,10 +321,10 @@ auth_external(struct client *client, const char *command,
     input = buffer_new();
     append_client_info(client, input);
     if (username != NULL)
-        buffer_sprintf(input, true, "ClientAuthname: %s\r\n", username);
+        buffer_append_sprintf(input, "ClientAuthname: %s\r\n", username);
     if (password != NULL)
-        buffer_sprintf(input, true, "ClientPassword: %s\r\n", password);
-    buffer_sprintf(input, true, ".\r\n");
+        buffer_append_sprintf(input, "ClientPassword: %s\r\n", password);
+    buffer_append_sprintf(input, ".\r\n");
     xwrite(process->write_fd, input->data, input->left);
     close(process->write_fd);
     buffer_free(input);

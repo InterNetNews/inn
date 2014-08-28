@@ -32,14 +32,30 @@ static const char test_string1[] = "This is a test";
 static const char test_string2[] = " of the buffer system";
 static const char test_string3[] = "This is a test\0 of the buffer system";
 
-
+/*
+ * Test buffer_vsprintf.  Wrapper needed to generate the va_list.
+ */
 static void
-test_vsprintf(struct buffer *buffer, bool append, const char *format, ...)
+test_vsprintf(struct buffer *buffer, const char *format, ...)
 {
     va_list args;
 
     va_start(args, format);
-    buffer_vsprintf(buffer, append, format, args);
+    buffer_vsprintf(buffer, format, args);
+    va_end(args);
+}
+
+
+/*
+ * Likewise for buffer_append_vsprintf.
+ */
+static void
+test_append_vsprintf(struct buffer *buffer, const char *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    buffer_append_vsprintf(buffer, format, args);
     va_end(args);
 }
 
@@ -159,10 +175,10 @@ main(void)
     free(data);
     buffer_free(three);
 
-    /* buffer_sprintf */
+    /* buffer_sprintf and buffer_append_sprintf */
     three = buffer_new();
-    buffer_sprintf(three, true, "testing %d testing", 6);
-    is_int(0, three->used, "buffer_sprintf doesn't change used");
+    buffer_append_sprintf(three, "testing %d testing", 6);
+    is_int(0, three->used, "buffer_append_sprintf doesn't change used");
     is_int(17, three->left, "but sets left correctly");
     buffer_append(three, "", 1);
     is_int(18, three->left, "appending a nul works");
@@ -170,18 +186,18 @@ main(void)
     three->left--;
     three->used += 5;
     three->left -= 5;
-    buffer_sprintf(three, true, " %d", 7);
+    buffer_append_sprintf(three, " %d", 7);
     is_int(14, three->left, "appending a digit works");
     buffer_append(three, "", 1);
     is_string("testing 6 testing 7", three->data, "and the data is correct");
-    buffer_sprintf(three, false, "%d testing", 8);
+    buffer_sprintf(three, "%d testing", 8);
     is_int(9, three->left, "replacing the buffer works");
     is_string("8 testing", three->data, "and the results are correct");
     data = xmalloc(1050);
     memset(data, 'a', 1049);
     data[1049] = '\0';
     is_int(1024, three->size, "size before large sprintf is 1024");
-    buffer_sprintf(three, false, "%s", data);
+    buffer_sprintf(three, "%s", data);
     is_int(2048, three->size, "size after large sprintf is 2048");
     is_int(1049, three->left, "and left is correct");
     buffer_append(three, "", 1);
@@ -235,10 +251,10 @@ main(void)
     free(data);
     buffer_free(three);
 
-    /* buffer_vsprintf */
+    /* buffer_vsprintf and buffer_append_vsprintf */
     three = buffer_new();
-    test_vsprintf(three, true, "testing %d testing", 6);
-    is_int(0, three->used, "buffer_vsprintf leaves used as 0");
+    test_append_vsprintf(three, "testing %d testing", 6);
+    is_int(0, three->used, "buffer_append_vsprintf leaves used as 0");
     is_int(17, three->left, "and left is correct");
     buffer_append(three, "", 1);
     is_int(18, three->left, "and left is correct after appending a nul");
@@ -246,18 +262,18 @@ main(void)
     three->left--;
     three->used += 5;
     three->left -= 5;
-    test_vsprintf(three, true, " %d", 7);
+    test_append_vsprintf(three, " %d", 7);
     is_int(14, three->left, "and appending results in the correct left");
     buffer_append(three, "", 1);
     is_string("testing 6 testing 7", three->data, "and the right data");
-    test_vsprintf(three, false, "%d testing", 8);
+    test_vsprintf(three, "%d testing", 8);
     is_int(9, three->left, "replacing the buffer results in the correct size");
     is_string("8 testing", three->data, "and the correct data");
     data = xmalloc(1050);
     memset(data, 'a', 1049);
     data[1049] = '\0';
     is_int(1024, three->size, "size is 1024 before large vsprintf");
-    test_vsprintf(three, false, "%s", data);
+    test_vsprintf(three, "%s", data);
     is_int(2048, three->size, "and 2048 afterwards");
     is_int(1049, three->left, "and left is correct");
     buffer_append(three, "", 1);
