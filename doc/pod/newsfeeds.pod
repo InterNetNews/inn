@@ -440,7 +440,8 @@ C<_8> and C<_12>.
 
 Therefore, it allows to a generate a second level of deterministic
 distribution.  Indeed, if a news server is fed C<Q1/2>, it can go on
-splitting thanks to C<Q1-3/9_4> for instance.
+splitting thanks to C<Q1-3/9_4> for instance.  Up to four levels of
+deterministic distribution can be used.
 
 The algorithm is compatible with the one used by S<Diablo 5.1> and up.
 If you want to use the legacy quickhashing method used by Diablo

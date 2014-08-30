@@ -14,7 +14,8 @@ the patch.
 =item *
 
 Several improvements have been contributed to B<pullnews> by Geraint
-Edwards:  the new B<-B> flag triggers header-only feeding, the B<-m>
+Edwards:  the new B<-a> flag adds the Diablo-compatible hashfeed
+ability, the new B<-B> flag triggers header-only feeding, the B<-m>
 flag now permits to remove headers matching (or not) a given regexp,
 and B<rnews> reporting is improved.
 
