@@ -616,9 +616,10 @@ sub crossFeedGroup {
 
     if (not $quiet) {
         printf LOG "\n%s:\n", $name;
-        printf LOG "\tlast checked: %s\n", scalar(localtime($prevDate));
-        printf LOG "\t%d articles available.  First %d Last %d\n",
-               $narticles, $first, $last;
+        printf LOG "\tLast checked: %s\n",
+            $prevDate ? scalar(localtime($prevDate)) : "never";
+        printf LOG "\t%d article%s available (first %d, last %d)\n",
+               $narticles, $narticles != 1 ? "s" : "", $first, $last;
     }
     if (defined $watermark) {
         printf LOG "\tOur previous highest: %d\n", $prevHigh if not $quiet;
@@ -632,6 +633,8 @@ sub crossFeedGroup {
     return 0 if ! $name;
     if ($narticles == 0) {
         print LOG " (nothing to get)\n" unless $quiet;
+        # Just update the time; keep the last known high watermark.
+        $shash->{$group} = [ time, $high ];
         return 1;
     }
 
