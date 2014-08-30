@@ -9,6 +9,13 @@
 # RCSId:        $Id$
 #
 # History:
+#               Full changelog can be found in the Subversion repository of the
+#               INN project.  Major changes are:
+#
+#               January 2010:  Geraint A. Edwards
+#               enable -m to remove headers matching (or not) a given regexp;
+#               minor bug fix to rnews when -O; improved rnews reporting.
+#
 #               December 2008:  Matija Nalis added -O (optimized mode, checking
 #               whether the downstream server already has the article to download).
 #               Bug fixes too.
@@ -107,9 +114,9 @@ END {
 }
 
 $usage =~ s!.*/!!;
-$usage .= " [ -hnqRx -b fraction -c config -C width -d level
+$usage .= " [ -hnOqRx -b fraction -c config -C width -d level
         -f fraction -F fakehop -g groups -G newsgroups -H headers
-        -k checkpt -l logfile -m header_pats -M num -N num -O
+        -k checkpt -l logfile -m header_pats -M num -N num
         -p port -P hop_limit -Q level -r file -s host[:port] -S num
         -t retries -T seconds -w num -z num -Z num ]
         [ upstream_host ... ]
@@ -297,6 +304,8 @@ if ($rnews) {
         open(RNEWS, ">$rnews") ||
             die "can't open rnews-format output: $rnews: $!\n";
     }
+    $info{'rnews'}->{bytes} = 0;
+    $info{'rnews'}->{fed} = 0;
 }
 open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 
@@ -440,11 +449,11 @@ foreach my $server (@servers) {
     }}
 
     if (!$upstream) {
-        print LOG "failed.\n" unless $quiet;
+        print LOG " failed.\n" unless $quiet;
         warn "can't connect to upstream server $server: $!\n";
         next;
     } else {
-        print LOG "done.\n" unless $quiet;
+        print LOG " done.\n" unless $quiet;
     }
 
     if ($username && !$upstream->authinfo($username, $passwd)) {
@@ -506,6 +515,9 @@ sub stats {
     if ($quiet) {
         printf LOG localtime() . " [$$] %d article%s to $localServer\n",
             $sum, ($sum != 1 ? "s" : "");
+    } elsif ($rnews) {
+        printf LOG "\n%d article%s written to $rnews\n",
+            $sum, ($sum != 1 ? "s were" : " was");
     } else {
         printf LOG "\n%d article%s offered to server on $localServer\n",
             $sum, ($sum != 1 ? "s were" : " was");
@@ -515,7 +527,7 @@ sub stats {
 
     if ($quiet) {
         print LOG localtime() . " [$$] $ltotal ok, $reftotal ref, $rejtotal rej\n";
-    } else {
+    } elsif (not $rnews) {
         printf LOG "%d article%s accepted\n",
             $ltotal, ($ltotal != 1 ? "s were" : " was") 
                 if ($ltotal != 0);
@@ -673,7 +685,7 @@ sub crossFeedGroup {
             my $org_code = $fromServer->code();
 
             # Continue if the article exists on the upstream server.
-            if ($org_code == 223) {
+            if ($org_code == 223 and not $rnews) {
                 my $new_msgid = $toServer->nntpstat($org_msgid);
                 my $new_code = $toServer->code();
                 print LOG "\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n" if $debug >= 3;
@@ -830,10 +842,12 @@ sub crossFeedGroup {
                 printf RNEWS "#! rnews %d\n", $tx_len;
                 map { print RNEWS $_ } @{$article};
                 print LOG "+" unless $quiet;
+                $fed{$group}++;
+                $info{'rnews'}->{fed}++;
+                $info{fed}++;
             } else {
                 if ($no_op) {
                     print "Would offer $msgid\n";
-
                 } elsif ($reader and not $toServer->post($article)) {
                     #   240 article posted ok
                     #   340 send article to be posted.  End with <CR-LF>.<CR-LF>
