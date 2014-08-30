@@ -151,10 +151,13 @@ $usage .= " [ -hnqRx -b fraction -c config -C width -d level
 
   -l logfile    log progress/stats to logfile (default is stdout).
 
-  -m 'Hdr1:regexp1 !Hdr2:regexp2 ...'
+  -m 'Hdr1:regexp1 !Hdr2:regexp2 #Hdr3:regexp3 !#Hdr4:regexp4 ...'
                 feed article only if:
-                the Hdr1: header matches regexp1
-                and the Hdr2: header does not match regexp2.
+                  the Hdr1: header matches regexp1;
+                  and the Hdr2: header does not match regexp2;
+                also, process the message thus:
+                  if the Hdr3: header matches regexp3, remove that header;
+                  if the Hdr4: header does not match regexp4, remove it.
 
   -M num        maximum number of articles (per group) to process before
                 bailing out.
@@ -721,22 +724,33 @@ sub crossFeedGroup {
                     my ($hdr_un, $val_un) = split(':', $unfolded_art_hdr, 2);
                     $val_un = '' if not defined $val_un;
                     $val_un =~ s/^\s*//;
+                    my $remove_hdr = 0;
                     for my $tuple_match (@hdr_to_match) {
                         my ($hdr_m, $val_m) = split(':', $tuple_match, 2);
                         my $negate_h = ($hdr_m =~ s/^!//);
+                        my $remove_h = ($hdr_m =~ s/^#//);
                         next if lc($hdr_un) ne lc($hdr_m);
-                        $m_found_hdrs{lc($hdr_m)} = 1;
+                        $m_found_hdrs{lc($hdr_m)} = 1 if not $remove_h;
                         if ($negate_h) {
                             if ($val_un =~ /$val_m/i) {
                                 print LOG "\tDEBUGGING $i\t-- $hdr_un [$val_un]\n" if $debug >= 2;
-                                $match_all_hdrs = 0;
+                                if (not $remove_h) {
+                                    $match_all_hdrs = 0;
+                                }
+                            } elsif ($remove_h) {
+                                $remove_hdr = 1;
                             }
                         } elsif (not $val_un =~ /$val_m/i) {
                             print LOG "\tDEBUGGING $i\t++ $hdr_un [$val_un]\n" if $debug >= 2;
-                            $match_all_hdrs = 0;
+                            if (not $remove_h) {
+                                $match_all_hdrs = 0;
+                            }
+                        } elsif ($remove_h) {
+                            $remove_hdr = 1;
                         }
                         last if not $match_all_hdrs;
                     }
+                    push @header_nums_to_go, $idx if $remove_hdr;
                 }
 
                 if (grep { $curr_hdr eq $_ } split(':', $skip_headers)) {
@@ -772,12 +786,12 @@ sub crossFeedGroup {
 
                 $headers = 0 if $article->[$idx] eq "\n";
             }
-            if (@hdr_to_match and (not $match_all_hdrs or @hdr_to_match != scalar(keys %m_found_hdrs))) {
-                print LOG "\tDEBUGGING $i\thdr_skip_art $i\n" if $debug >= 2;
-                $skip_due_to_hdrs = 1;
+            if (@hdr_to_match and (not $match_all_hdrs
+                or scalar(grep { ! /^!?#/ } @hdr_to_match) != keys %m_found_hdrs)) {
+                $skip_due_to_hdrs = 2;
             }
             while (@header_nums_to_go) {
-                my $idx = pop @header_nums_to_go;  # Start from last.
+                my $idx = pop @header_nums_to_go;  # Start from last, so numbers are not affected.
                 my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                 $tx_len -= length($cut);
                 print LOG "\tDEBUGGING $i\tcut1 $cut" if $debug >= 2;

@@ -109,10 +109,13 @@ Feed an article based on header matching.  The argument is a number of
 whitespace-separated tuples (each tuple being a colon-separated header and
 regular expression).  For instance:
 
-    -m "Hdr1:regexp1 !Hdr2:regexp2"
+    -m "Hdr1:regexp1 !Hdr2:regexp2 #Hdr3:regexp3 !#Hdr4:regexp4"
 
 specifies that the article will be passed only if the C<Hdr1:> header
 matches C<regexp1> and the C<Hdr2:> header does not match C<regexp2>.
+Besides, if the C<Hdr3:> header matches C<regexp3>, that header is
+removed; and if the C<Hdr4:> header does not match C<regexp4>, that
+header is removed.
 
 =item B<-M> I<num>
 

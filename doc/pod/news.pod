@@ -11,6 +11,12 @@ state when for instance running under SMF on illumos/Solaris (since
 not all processes die within timeout).  Thanks to Lauri Tirkkonen for
 the patch.
 
+=item *
+
+Several improvements have been contributed to B<pullnews> by Geraint
+Edwards:  the B<-m> flag now permits to remove headers matching (or not)
+a given regexp.
+
 =back
 
 =head1 Changes in 2.5.4
