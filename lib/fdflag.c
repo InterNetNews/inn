@@ -35,9 +35,6 @@
 #include "clibrary.h"
 #include <errno.h>
 
-#include "inn/fdflag.h"
-#include "inn/libinn.h"
-
 #ifdef _WIN32
 # include <winsock2.h>
 #else
@@ -50,6 +47,8 @@
 # endif
 #endif
 
+#include "inn/fdflag.h"
+#include "inn/libinn.h"
 
 /*
  * Set a file to close-on-exec (or clear that setting if the flag is false),
@@ -60,7 +59,10 @@
  * Do it right anyway; it's not that expensive.
  *
  * Stub this out on Windows, where it's not supported (at least currently by
- * this utility library).
+ * this utility library).  Do not use socket_type for the first parameter,
+ * since it's meaningful to set file descriptors for regular files to
+ * close-on-exec (even though this is currently irrelevant since the function
+ * isn't supported on Windows).
  */
 #ifdef _WIN32
 bool

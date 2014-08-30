@@ -67,8 +67,8 @@ AC_DEFUN([INN_FUNC_GETADDRINFO_ADDRCONFIG],
     [AC_DEFINE([HAVE_GETADDRINFO_ADDRCONFIG], 1,
         [Define if the AI_ADDRCONFIG flag works with getaddrinfo.])])])
 
-dnl Source used by INN_IN6_EQ_BROKEN.  Test borrowed from a bug report by
-dnl tmoestl@gmx.net for glibc.
+dnl Source used by INN_MACRO_IN6_ARE_ADDR_EQUAL.  Test borrowed from a bug
+dnl report by tmoestl@gmx.net for glibc.
 AC_DEFUN([_INN_MACRO_IN6_ARE_ADDR_EQUAL_SOURCE], [[
 #include <sys/types.h>
 #include <sys/socket.h>

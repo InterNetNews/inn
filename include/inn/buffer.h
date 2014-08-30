@@ -2,13 +2,13 @@
  *
  * Counted, reusable memory buffer.
  *
- * A buffer is an allocated bit of memory with a known size and a separate
+ * A buffer is an allocated block of memory with a known size and a separate
  * data length.  It's intended to store strings and can be reused repeatedly
  * to minimize the number of memory allocations.  Buffers increase in
  * increments of 1K, or double for some operations.
  *
- * A buffer contains a notion of the data that's been used and the data
- * that's been left, used when the buffer is an I/O buffer where lots of data
+ * A buffer contains a record of what data has been used and what data is as
+ * yet unprocessed, used when the buffer is an I/O buffer where lots of data
  * is buffered and then slowly processed out of the buffer.  The total length
  * of the data is used + left.  If a buffer is just used to store some data,
  * used can be set to 0 and left stores the length of the data.
