@@ -157,7 +157,9 @@ buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/history.h ../include/inn/paths.h \
-  ovinterface.h ../include/inn/storage.h buffindexed/shmem.h \
+  ovinterface.h ../include/inn/storage.h ../include/inn/fdflag.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h buffindexed/shmem.h \
   buffindexed/buffindexed.h
 buffindexed/shmem.o: buffindexed/shmem.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -166,8 +168,10 @@ buffindexed/shmem.o: buffindexed/shmem.c ../include/config.h ../include/inn/defi
 cnfs/cnfs.o: cnfs/cnfs.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h \
-  ../include/portable/time.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/messages.h ../include/inn/mmap.h \
+  ../include/portable/time.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/mmap.h \
   ../include/inn/wire.h interface.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/libinn.h methods.h interface.h \
   ../include/inn/paths.h cnfs/cnfs.h cnfs/cnfs-private.h
@@ -175,8 +179,8 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/time.h ../include/conffile.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/portable/time.h ../include/conffile.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
@@ -189,7 +193,9 @@ timecaf/caf.o: timecaf/caf.c ../include/config.h ../include/inn/defines.h \
 timecaf/timecaf.o: timecaf/timecaf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h timecaf/caf.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/fdflag.h ../include/inn/defines.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/wire.h ../include/inn/libinn.h \
   methods.h interface.h ../include/inn/storage.h ../include/inn/options.h \
   timecaf/timecaf.h interface.h ../include/inn/paths.h
@@ -211,8 +217,10 @@ tradindexed/tdx-cache.o: tradindexed/tdx-cache.c ../include/config.h \
 tradindexed/tdx-data.o: tradindexed/tdx-data.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/mmap.h ../include/inn/history.h \
-  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/portable/mmap.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/history.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/libinn.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/options.h \
   ovinterface.h ../include/inn/storage.h tradindexed/tdx-private.h \
@@ -220,8 +228,10 @@ tradindexed/tdx-data.o: tradindexed/tdx-data.c ../include/config.h \
 tradindexed/tdx-group.o: tradindexed/tdx-group.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/mmap.h ../include/inn/hashtab.h \
-  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/portable/mmap.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/hashtab.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/qio.h \
   ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/paths.h \
   tradindexed/tdx-private.h ../include/inn/storage.h \

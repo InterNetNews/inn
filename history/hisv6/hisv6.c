@@ -46,6 +46,7 @@
 #include "hisv6.h"
 #include "hisv6-private.h"
 #include "inn/dbz.h"
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/timer.h"
 #include "inn/qio.h"
@@ -314,7 +315,7 @@ hisv6_reopen(struct hisv6 *h)
 	    hisv6_closefiles(h);
 	    goto fail;
 	}
-	close_on_exec(fileno(h->writefp), true);
+	fdflag_close_exec(fileno(h->writefp), true);
     }
 
     /* Open the history file for reading. */
@@ -324,7 +325,7 @@ hisv6_reopen(struct hisv6 *h)
 	hisv6_closefiles(h);
 	goto fail;
     }
-    close_on_exec(h->readfd, true);
+    fdflag_close_exec(h->readfd, true);
     
     /* if there's no current dbz owner, claim it here */
     if (hisv6_dbzowner == NULL) {

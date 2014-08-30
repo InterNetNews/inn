@@ -138,12 +138,10 @@ extern bool     inn_lock_range(int fd, enum inn_locktype type, bool block,
 /*
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
-extern void     close_on_exec(int fd, bool flag);
 extern char *   concat(const char *first, ...);
 extern char *   concatpath(const char *base, const char *name);
 extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
-extern int      nonblocking(int fd, bool flag);
 extern int      setfdlimit(unsigned int limit);
 extern ssize_t  xpwrite(int fd, const void *buffer, size_t size, off_t offset);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);

@@ -110,9 +110,9 @@ commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/qio.h ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/vector.h ../include/inn/timer.h \
-  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/version.h tls.h
+  ../include/inn/fdflag.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/version.h tls.h
 line.o: line.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/messages.h ../include/inn/defines.h \

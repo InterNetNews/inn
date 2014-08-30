@@ -36,6 +36,7 @@
 #include "inn/paths.h"
 #include "ovinterface.h"
 #include "inn/storage.h"
+#include "inn/fdflag.h"
 
 /* Yes. I know that it violates INN coding style. However, this allows
  * me to compile this new version without reconfiguring INN.
@@ -610,7 +611,7 @@ static bool ovbuffinit_disks(void) {
 	syswarn("buffindexed: ERROR opening '%s'", ovbuff->path);
 	return false;
       } else {
-	close_on_exec(fd, true);
+	fdflag_close_exec(fd, true);
 	ovbuff->fd = fd;
       }
     }
@@ -1056,7 +1057,7 @@ bool buffindexed_open(int mode) {
       return false;
     }
   }
-  close_on_exec(GROUPfd, true);
+  fdflag_close_exec(GROUPfd, true);
 
   free(groupfn);
   Cutofflow = false;

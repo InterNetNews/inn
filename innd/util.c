@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 
@@ -236,9 +237,9 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
         if (close(fd2) < 0)
             syslog(L_ERROR, NOCLOSE, LogName, fd2, av[0]);
     }
-    close_on_exec(0, false);
-    close_on_exec(1, false);
-    close_on_exec(2, false);
+    fdflag_close_exec(0, false);
+    fdflag_close_exec(1, false);
+    fdflag_close_exec(2, false);
 
     /* Nice our child if we're supposed to. */
     if (niceval != 0 && nice(niceval) == -1)

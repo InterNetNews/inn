@@ -16,7 +16,7 @@ CFLAGS  = $(GCFLAGS)
 # The base library files that are always compiled and included.
 SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 	      	commands.c concat.c conffile.c confparse.c daemonize.c	   \
-	      	date.c dbz.c defdist.c dispatch.c fdflags.c fdlimit.c	   \
+	      	date.c dbz.c defdist.c dispatch.c fdflag.c fdlimit.c	   \
 	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \
 	      	innconf.c inndcomm.c list.c localopen.c lockfile.c	   \
 	      	makedir.c md5.c messageid.c messages.c mmap.c network.c	   \
@@ -138,8 +138,10 @@ date.o: date.c ../include/config.h ../include/inn/defines.h \
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/mmap.h ../include/inn/dbz.h \
-  ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/innconf.h ../include/inn/mmap.h
+  ../include/inn/libinn.h ../include/inn/defines.h ../include/inn/fdflag.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/messages.h \
+  ../include/inn/innconf.h ../include/inn/mmap.h
 defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
@@ -148,9 +150,11 @@ dispatch.o: dispatch.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/dispatch.h ../include/inn/vector.h \
   ../include/inn/defines.h
-fdflags.o: fdflags.c ../include/config.h ../include/inn/defines.h \
+fdflag.o: fdflag.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h
+  ../include/config.h ../include/inn/fdflag.h ../include/inn/defines.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/libinn.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/libinn.h ../include/inn/defines.h

@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <sys/stat.h>
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
@@ -936,8 +937,8 @@ int main(int ac, char *av[])
 			CantConnect(buff, mode, fd);
 	}
     }
-    close_on_exec(fileno(FromServer), true);
-    close_on_exec(fileno(ToServer), true);
+    fdflag_close_exec(fileno(FromServer), true);
+    fdflag_close_exec(fileno(ToServer), true);
 
     /* Execute the command. */
     if (mode == 'U')

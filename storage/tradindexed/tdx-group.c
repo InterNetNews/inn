@@ -90,6 +90,7 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inn/fdflag.h"
 #include "inn/hashtab.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -263,7 +264,7 @@ file_open_group_index(struct group_index *index, struct stat *st)
         syswarn("tradindexed: cannot fstat %s", index->path);
         goto fail;
     }
-    close_on_exec(index->fd, true);
+    fdflag_close_exec(index->fd, true);
     return true;
 
  fail:

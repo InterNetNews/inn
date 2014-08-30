@@ -8,6 +8,7 @@
 #include "portable/mmap.h"
 #include <sys/uio.h>
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/mmap.h"
 #include "innd.h"
@@ -453,7 +454,7 @@ ICDreadactive(char **endp)
 	syslog(L_FATAL, "%s cant open %s %m", LogName, ICDactpath);
 	exit(1);
     }
-    close_on_exec(ICDactfd, true);
+    fdflag_close_exec(ICDactfd, true);
 
 #ifdef HAVE_MMAP
 

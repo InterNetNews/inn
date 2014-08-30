@@ -90,6 +90,7 @@
 #endif
 
 #include "conffile.h"
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
@@ -1265,7 +1266,7 @@ bool ovdb_getlock(int mode)
                      " running");
 	    return false;
 	}
-	close_on_exec(lockfd, true);
+	fdflag_close_exec(lockfd, true);
 	free(lockfn);
     } else
 	return true;

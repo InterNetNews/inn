@@ -7,6 +7,7 @@
 #include "portable/wait.h"
 
 #include "nnrpd.h"
+#include "inn/fdflag.h"
 #include "inn/ov.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -183,9 +184,9 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 	    close(pan[PIPE_WRITE]);
 	}
 
-	close_on_exec(STDIN_FILENO, false);
-	close_on_exec(STDOUT_FILENO, false);
-	close_on_exec(STDERR_FILENO, false);
+	fdflag_close_exec(STDIN_FILENO, false);
+	fdflag_close_exec(STDOUT_FILENO, false);
+	fdflag_close_exec(STDERR_FILENO, false);
 
 	execv(path, av);
         /* RFC 2980 requires 500 if there are unspecified errors during

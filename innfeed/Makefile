@@ -122,10 +122,10 @@ connection.o: connection.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/time.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/network.h \
-  ../include/inn/libinn.h article.h misc.h buffer.h configfile.h \
-  connection.h endpoint.h host.h
+  ../include/portable/time.h ../include/inn/fdflag.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/network.h ../include/inn/libinn.h article.h misc.h \
+  buffer.h configfile.h connection.h endpoint.h host.h
 endpoint.o: endpoint.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \

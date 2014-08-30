@@ -22,6 +22,7 @@
 # include <sys/un.h>
 #endif
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/libinn.h"
@@ -380,7 +381,7 @@ newclient(int fd)
     struct reader *r;
     int i;
 
-    nonblocking(fd, 1);
+    fdflag_nonblocking(fd, 1);
 
     if(numreaders >= readertablen) {
     	readertablen += 50;
@@ -646,7 +647,7 @@ main(int argc, char *argv[])
     if(listensock < 0)
         sysdie("cannot create socket");
 
-    nonblocking(listensock, 1);
+    fdflag_nonblocking(listensock, 1);
 
     memset(&sa, 0, sizeof sa);
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS

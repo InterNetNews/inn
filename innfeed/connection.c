@@ -64,6 +64,7 @@
 # include <sys/ioctl.h>
 #endif
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/network.h"
@@ -537,7 +538,7 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  if (nonblocking (fd, true) < 0)
+  if (!fdflag_nonblocking (fd, true))
     {
       syswarn ("%s:%d cxnsleep can't set socket non-blocking", peerName,
                cxn->ident) ;

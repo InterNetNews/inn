@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <netdb.h>
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/network.h"
 #include "inn/vector.h"
@@ -381,7 +382,7 @@ RChandoff(int fd, HANDOFF h)
         syslog(L_ERROR, "fd %d cant setsockopt(KEEPALIVE) %m", fd);
 #endif /* defined(SOL_SOCKET) && defined(SO_KEEPALIVE) */
 
-    if (nonblocking(fd, false) < 0)
+    if (!fdflag_nonblocking(fd, false))
 	syslog(L_ERROR, "%s cant nonblock %d in RChandoff %m", LogName, fd);
     switch (h) {
     default:

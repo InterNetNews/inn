@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
@@ -596,7 +597,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
             syswarn("CNFS: ERROR opening '%s' O_RDONLY", cycbuff->path);
 	    return false;
 	} else {
-	    close_on_exec(fd, true);
+	    fdflag_close_exec(fd, true);
 	    cycbuff->fd = fd;
 	}
     }

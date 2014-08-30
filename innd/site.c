@@ -7,6 +7,7 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "innd.h"
 
@@ -601,7 +602,7 @@ SITEstartprocess(SITE *sp)
 	return false;
     }
 #endif
-    close_on_exec(pan[PIPE_WRITE], true);
+    fdflag_close_exec(pan[PIPE_WRITE], true);
 
     /* Set up the argument vector. */
     process = xstrdup(sp->Param);

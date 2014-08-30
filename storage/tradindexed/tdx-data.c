@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "inn/fdflag.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -179,7 +180,7 @@ file_open_index(struct group_data *data, const char *suffix)
         return false;
     }
     data->indexinode = st.st_ino;
-    close_on_exec(data->indexfd, true);
+    fdflag_close_exec(data->indexfd, true);
     return true;
 }
 
@@ -198,7 +199,7 @@ file_open_data(struct group_data *data, const char *suffix)
     data->datafd = file_open(data->path, suffix, data->writable, true);
     if (data->datafd < 0)
         return false;
-    close_on_exec(data->datafd, true);
+    fdflag_close_exec(data->datafd, true);
     return true;
 }
 

@@ -180,10 +180,11 @@ ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/time.h ../include/portable/setproctitle.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/portable/wait.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../include/inn/fdflag.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/libinn.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
   ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -194,8 +195,10 @@ ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/wait.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/config.h ../include/portable/wait.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h \
   ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/wire.h

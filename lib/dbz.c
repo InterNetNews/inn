@@ -78,6 +78,7 @@
 #include <sys/time.h>
 
 #include "inn/dbz.h"
+#include "inn/fdflag.h"
 #include "inn/messages.h"
 #include "inn/innconf.h"
 #include "inn/mmap.h"
@@ -670,7 +671,7 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
     free(name);
 
     tab->reclen = reclen;
-    close_on_exec(tab->fd, true);
+    fdflag_close_exec(tab->fd, true);
     tab->pos = -1;
 
     /* get first table into core, if it looks desirable and feasible */
@@ -685,7 +686,7 @@ openhashtable(const char *base, const char *ext, hash_table *tab,
 	}
     }
 
-    if (options.nonblock && nonblocking(tab->fd, true) < 0) {
+    if (options.nonblock && !fdflag_nonblocking(tab->fd, true)) {
 	syswarn("fcntl: could not set nonblock");
         oerrno = errno;
 	close(tab->fd);
@@ -721,7 +722,7 @@ openbasefile(const char *name)
     } else
 	basefname = NULL;
     if (basef != NULL)
-	close_on_exec(fileno(basef), true);
+	fdflag_close_exec(fileno(basef), true);
     if (basef != NULL)
 	 setvbuf(basef, NULL, _IOFBF, 64);
     return true;
@@ -758,7 +759,7 @@ dbzinit(const char *name)
 	syswarn("dbzinit: can't open .dir file");
 	return false;
     }
-    close_on_exec(fileno(dirf), true);
+    fdflag_close_exec(fileno(dirf), true);
 
     /* pick up configuration */
     if (!getconf(dirf, &conf)) {
@@ -1313,14 +1314,14 @@ putcore(hash_table *tab)
     if (tab->incore == INCORE_MEM) {
 	if(options.writethrough)
 	    return true;
-	nonblocking(tab->fd, false);
+	fdflag_nonblocking(tab->fd, false);
 	size = tab->reclen * conf.tsize;
         result = xpwrite(tab->fd, tab->core, size, 0);
 	if (result < 0 || (size_t) result != size) {
-	    nonblocking(tab->fd, options.nonblock);
+	    fdflag_nonblocking(tab->fd, options.nonblock);
 	    return false;
 	}
-	nonblocking(tab->fd, options.nonblock);
+	fdflag_nonblocking(tab->fd, options.nonblock);
     }
 #ifdef HAVE_MMAP
     if(tab->incore == INCORE_MMAP) {

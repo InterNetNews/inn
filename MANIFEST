@@ -383,6 +383,7 @@ include/inn/confparse.h               Header file for configuration parser
 include/inn/dbz.h                     Header file for DBZ
 include/inn/defines.h                 Portable defs for installed headers
 include/inn/dispatch.h                Header file for command dispatching
+include/inn/fdflag.h                  Header file for file descriptor flags
 include/inn/hashtab.h                 Header file for generic hash table
 include/inn/history.h                 Header file for the history API
 include/inn/innconf.h                 Header file for the innconf struct
@@ -488,7 +489,7 @@ lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default Distribution: header
 lib/dispatch.c                        Dispatch a command to a function
-lib/fdflags.c                         Set or clear file descriptor flags
+lib/fdflag.c                          Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
 lib/fseeko.c                          fseeko replacement
 lib/ftello.c                          ftello replacement

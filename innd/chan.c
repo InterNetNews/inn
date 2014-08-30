@@ -22,6 +22,7 @@
 # include <sys/select.h>
 #endif
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/network.h"
 #include "innd.h"
@@ -203,14 +204,14 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
     HashClear(&cp->CurrentMessageIDHash);
     ARTprepare(cp);
 
-    close_on_exec(fd, true);
+    fdflag_close_exec(fd, true);
 
 #ifndef _HPUX_SOURCE
     /* Stupid HPUX 11.00 has a broken listen/accept where setting the listen
        socket to nonblocking prevents you from successfully setting the
        socket returned by accept(2) back to blocking mode, no matter what,
        resulting in all kinds of funny behaviour, data loss, etc. etc.  */
-    if (nonblocking(fd, true) < 0 && errno != ENOTSOCK && errno != ENOTTY)
+    if (!fdflag_nonblocking(fd, true) && errno != ENOTSOCK && errno != ENOTTY)
         syswarn("%s cant nonblock %d", LogName, fd);
 #endif
 

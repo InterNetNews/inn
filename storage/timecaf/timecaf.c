@@ -15,6 +15,7 @@
 #include <time.h>
 
 #include "caf.h"
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
@@ -433,7 +434,7 @@ TOKEN timecaf_store(const ARTHANDLE article, const STORAGECLASS class) {
     }
     WritingFile.fd = fd;
     WritingFile.path = path;
-    close_on_exec(fd, true);
+    fdflag_close_exec(fd, true);
     result = xwritev(fd, article.iov, article.iovcnt);
     if (result != (ssize_t) article.len) {
 	SMseterror(SMERR_UNDEFINED, NULL);
