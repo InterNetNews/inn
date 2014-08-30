@@ -232,7 +232,7 @@ been created by
 or
 .IR CAlistopen .
 .PP
-.I CloseOnExec
+.I close_on_exec
 can make a descriptor ``close-on-exec'' so that it is not shared
 with any child processes.
 If the flag is non-zero, the file is so marked; if zero, the ``close-on-exec''
@@ -277,7 +277,7 @@ It can be called as often as necessary.
 releases any state maintained in the handle and returns an allocated copy
 of the text that should be used for the Distribution header.
 .PP
-.I SetNonBlocking
+.I nonblocking
 enables (if
 .I flag
 is non-zero) or disables (if
@@ -463,7 +463,7 @@ if ((F = CAopen(FromServer, ToServer)) == NULL)
     Fatal("Can't open active file");
 
 /* Don't pass the file on to our children. */
-CloseOnExec(fileno(F), 1);
+close_on_exec(fileno(F), 1);
 
 /* Make a local copy. */
 p = ReadInDescriptor(fileno(F), (struct stat *)NULL);
