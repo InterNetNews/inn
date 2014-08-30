@@ -47,7 +47,10 @@ dnl $Id$' ${TEMP}
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
       || [ "$2" = "lib" ]
     then
-      sed -i -e 's/<config\.h>/"config.h"/g' \
+      sed -i -e 's/UTIL_/INN_/g' \
+             -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
+             -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
+             -e 's/<config\.h>/"config.h"/g' \
              -e 's/<portable\/system\.h>/"clibrary.h"/g' \
              -e 's/<portable\/socket\.h>/"portable\/socket.h"/g' \
              -e 's/<sys\/time\.h>/"portable\/time.h"/g' \
@@ -93,3 +96,9 @@ download portable/snprintf.c lib snprintf.c
 download portable/socket.h include/portable socket.h
 download portable/strlcat.c lib strlcat.c
 download portable/strlcpy.c lib strlcpy.c
+
+# Synchronize utility functions from upstream.
+download util/buffer.c lib buffer.c
+download util/buffer.h include/inn buffer.h
+download util/fdflag.c lib fdflag.c
+download util/fdflag.h include/inn fdflag.h

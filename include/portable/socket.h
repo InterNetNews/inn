@@ -212,9 +212,6 @@ extern int inet_aton(const char *, struct in_addr *);
 extern const char *inet_ntoa(const struct in_addr);
 #endif
 
-/* Default to a hidden visibility for all portability functions. */
-#pragma GCC visibility push(hidden)
-
 #if !HAVE_INET_NTOP
 # ifdef _WIN32
 extern const char *inet_ntop(int, const void *, char *, int);
@@ -270,9 +267,6 @@ typedef SOCKET socket_type;
 # define INVALID_SOCKET         -1
 typedef int socket_type;
 #endif
-
-/* Undo default visibility change. */
-#pragma GCC visibility pop
 
 END_DECLS
 

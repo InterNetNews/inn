@@ -56,16 +56,10 @@
 
 BEGIN_DECLS
 
-/* Default to a hidden visibility for all portability functions. */
-#pragma GCC visibility push(hidden)
-
 /* Function prototypes. */
 int getnameinfo(const struct sockaddr *sa, socklen_t salen,
                 char *node, socklen_t nodelen,
                 char *service, socklen_t servicelen, int flags);
-
-/* Undo default visibility change. */
-#pragma GCC visibility pop
 
 END_DECLS
 

@@ -71,17 +71,11 @@ struct addrinfo {
 
 BEGIN_DECLS
 
-/* Default to a hidden visibility for all portability functions. */
-#pragma GCC visibility push(hidden)
-
 /* Function prototypes. */
 int getaddrinfo(const char *nodename, const char *servname,
                 const struct addrinfo *hints, struct addrinfo **res);
 void freeaddrinfo(struct addrinfo *ai);
 const char *gai_strerror(int ecode);
-
-/* Undo default visibility change. */
-#pragma GCC visibility pop
 
 END_DECLS
 
