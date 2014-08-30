@@ -4,10 +4,10 @@ pullnews - Pull news from multiple news servers and feed it to another
 
 =head1 SYNOPSIS
 
-B<pullnews> [B<-hnqRx>] [B<-b> I<fraction>] [B<-c> I<config>] [B<-C> I<width>]
+B<pullnews> [B<-BhnOqRx>] [B<-b> I<fraction>] [B<-c> I<config>] [B<-C> I<width>]
 [B<-d> I<level>] [B<-f> I<fraction>] [B<-F> I<fakehop>] [B<-g> I<groups>]
 [B<-G> I<newsgroups>] [B<-H> I<headers>] [B<-k> I<checkpt>] [B<-l> I<logfile>]
-[B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-O>] [B<-p> I<port>]
+[B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-p> I<port>]
 [B<-P> I<hop_limit>] [B<-Q> I<level>] [B<-r> I<file>] [B<-s> I<to-server>[:I<port>]]
 [B<-S> I<max-run>] [B<-t> I<retries>] [B<-T> I<connect-pause>] [B<-w> I<num>]
 [B<-z> I<article-pause>] [B<-Z> I<group-pause>] [I<from-server> ...]
@@ -43,6 +43,13 @@ Backtrack on server numbering reset.  Specify the proportion (C<0.0> to C<1.0>)
 of a group's articles to pull when the server's article number is less than
 our high for that group.  When I<fraction> is C<1.0>, pull all the articles on
 a renumbered server.  The default is to do nothing.
+
+=item B<-B>
+
+Feed is header-only, that is to say B<pullnews> only feeds the headers
+of the articles, plus one blank line.  It adds the Bytes: header field
+if the article does not already have one, and keeps the body only if
+the article is a control article.
 
 =item B<-c> I<config>
 

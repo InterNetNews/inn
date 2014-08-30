@@ -12,8 +12,8 @@
 #               Full changelog can be found in the Subversion repository of the
 #               INN project.  Major changes are:
 #
-#               January 2010:  Geraint A. Edwards
-#               enable -m to remove headers matching (or not) a given regexp;
+#               January 2010:  Geraint A. Edwards added header-only feeding (-B);
+#               enabled -m to remove headers matching (or not) a given regexp;
 #               minor bug fix to rnews when -O; improved rnews reporting.
 #
 #               December 2008:  Matija Nalis added -O (optimized mode, checking
@@ -114,7 +114,7 @@ END {
 }
 
 $usage =~ s!.*/!!;
-$usage .= " [ -hnOqRx -b fraction -c config -C width -d level
+$usage .= " [ -BhnOqRx -b fraction -c config -C width -d level
         -f fraction -F fakehop -g groups -G newsgroups -H headers
         -k checkpt -l logfile -m header_pats -M num -N num
         -p port -P hop_limit -Q level -r file -s host[:port] -S num
@@ -126,6 +126,10 @@ $usage .= " [ -hnOqRx -b fraction -c config -C width -d level
                 server's article number is less than our high for that
                 group.  When fraction is 1.0, pull all the articles on
                 the server.  The default is to do nothing.
+
+  -B            feed is header-only (headers plus one blank line).
+                Add the Bytes: header field if needed.  Keep body if
+                control article.
 
   -c config     specify the configuration file instead of the 
                 default of ~/.pullnews (in the running user's home directory).
@@ -218,11 +222,11 @@ $usage .= " [ -hnOqRx -b fraction -c config -C width -d level
 ";
 
 
-use vars qw($opt_b $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
+use vars qw($opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F $opt_g $opt_G
             $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
             $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
             $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
-getopts("b:c:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
+getopts("b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
 
 die $usage if $opt_h;
 
@@ -233,6 +237,7 @@ my $groupFile           = $opt_c || $defaultConfig;
 my $localServer         = $opt_s || $defaultHost;
 my $localPort           = $opt_p || $defaultPort;
 my $quiet               = $opt_q;
+my $header_only         = $opt_B;
 my $watermark           = $opt_w;
 my $retries             = $opt_t || $defaultRetries;
 my $retryTime           = $opt_T || $defaultRetryTime;
@@ -697,22 +702,43 @@ sub crossFeedGroup {
             }
         }
 
-        my $article = $skip_article ? '' : $fromServer->article($i);
+        my $add_bytes_header = 0;
+        my $is_control_art = 0;
+        my $article;
+        if (not $skip_article and $header_only) {
+            $article = $fromServer->head($i);
+            if ($fromServer->code() == 221) {
+                my $has_bytes_header = 0;
+                for my $hdr (@$article) {
+                    if (lc(substr($hdr, 0, 6)) eq 'bytes:') {
+                        $has_bytes_header = 1;
+                    } elsif (lc(substr($hdr, 0, 8)) eq 'control:') {
+                        $is_control_art = 1;
+                        last;
+                    }
+                }
+                $add_bytes_header = 1 if not $has_bytes_header;
+                push @{$article}, "\n" if not $is_control_art;
+            }
+        }
+        if (not $skip_article and (not $header_only or $is_control_art or $add_bytes_header)) {
+            $article = $fromServer->article($i);
+        }
 
         if ($article) {
             my $msgid;
             my $xref = 0;
             my $headers = 1;
-            my $idx;
             my $line_len = 0;
-            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews).
+            my $idx_blank_pre_body;      # Index of the blank line between headers/body.
+            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews, Bytes:).
             my @header_nums_to_go = ();
             my $match_all_hdrs = 1;      # Assume no headers to match.
             my $skip_due_to_hdrs = 0;
             my %m_found_hdrs = ();
             my $curr_hdr = '';
 
-            for ($idx = 0 ; $idx < @{$article} ; $idx++) {
+            for (my $idx = 0 ; $idx < @{$article} ; $idx++) {
                 $line_len = length($article->[$idx]);
                 $len += $line_len;
                 $tx_len += $line_len;
@@ -720,9 +746,13 @@ sub crossFeedGroup {
                 $info{bytes} += $line_len;
 
                 next if not $headers;
+                $idx_blank_pre_body = $idx;
 
                 $curr_hdr = lc($1) if $article->[$idx] =~ /^([^:[:blank:]]+):/;
-                $curr_hdr = '    ' if $article->[$idx] eq "\n";
+                if ($article->[$idx] eq "\n") {
+                    $headers = 0;
+                    next;
+                }
 
                 if ($match_all_hdrs and @hdr_to_match and $article->[$idx] =~ /^[^[:blank:]]/) {
                     # Check header matches -m flag if new header.
@@ -798,8 +828,6 @@ sub crossFeedGroup {
                 if ($opt_x && $article->[$idx] =~ m!^xref:!i) {
                     $xref = 1;
                 }
-
-                $headers = 0 if $article->[$idx] eq "\n";
             }
             if (@hdr_to_match and (not $match_all_hdrs
                 or scalar(grep { ! /^!?#/ } @hdr_to_match) != keys %m_found_hdrs)) {
@@ -809,11 +837,13 @@ sub crossFeedGroup {
                 my $idx = pop @header_nums_to_go;  # Start from last, so numbers are not affected.
                 my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                 $tx_len -= length($cut);
+                $idx_blank_pre_body--;
                 print LOG "\tDEBUGGING $i\tcut1 $cut" if $debug >= 2;
                 while ($article->[$idx] =~ /^[[:space:]](.+)/) {
                     # Folded lines.
                     my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                     $tx_len -= length($cut);
+                    $idx_blank_pre_body--;
                     print LOG "\tDEBUGGING $i\tcut_ $cut" if $debug >= 2;
                 }
             }
@@ -830,8 +860,29 @@ sub crossFeedGroup {
             if ($opt_x && !$xref) {
                 warn "No Xref: header found in article, adding\n";
                 my $xref_h = "Xref: $server $group: $i\n";
-                splice(@{$article}, $idx, 0, $xref_h);
+                splice(@{$article}, $idx_blank_pre_body, 0, $xref_h);
                 $tx_len += length($xref_h);
+                $idx_blank_pre_body++;
+            }
+
+            if ($add_bytes_header) {
+                # Compute the number of bytes the same way the :bytes
+                # metadata item would do.  The additional Bytes: header
+                # field is not counted, as well as headers removed by
+                # pullnews.
+                my $bytes_real_count = $tx_len + scalar(@{$article});
+                my $bytes_h = "Bytes: $bytes_real_count\n";
+                splice(@{$article}, $idx_blank_pre_body, 0, $bytes_h);
+                $tx_len += length($bytes_h);
+                $idx_blank_pre_body++;
+            }
+
+            if ($header_only and not $is_control_art and @{$article} > $idx_blank_pre_body+1) {
+                splice(@{$article}, $idx_blank_pre_body+1);
+                $tx_len = 0;
+                for my $line (@{$article}) {
+                    $tx_len += length($line);
+                }
             }
 
             $pulled->{$server}->{$group}++;
