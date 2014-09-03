@@ -23,7 +23,7 @@
 #include <string.h>
 
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 #define END (char *) 0
 

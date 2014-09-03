@@ -8,7 +8,7 @@
 
 #include "conffile.h"
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Test valid configuration file. */
 static const char valid[] = "test \"test #te\nst\\\"\" {\n  #foo\n test\n\n}";

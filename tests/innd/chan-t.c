@@ -9,7 +9,7 @@
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 #include "../../innd/innd.h"
 

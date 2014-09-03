@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 ssize_t test_pwrite(int fd, const void *buf, size_t nbyte, off_t offset);
 

@@ -23,7 +23,7 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 const char *test_inet_ntoa(const struct in_addr);
 

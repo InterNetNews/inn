@@ -8,7 +8,7 @@
 #include "inn/hashtab.h"
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 struct wordref {
     const char *word;

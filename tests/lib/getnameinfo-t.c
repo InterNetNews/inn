@@ -25,7 +25,7 @@
 
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
                      char *, socklen_t, int);

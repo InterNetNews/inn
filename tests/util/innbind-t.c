@@ -11,7 +11,7 @@
 #endif
 
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* If SO_REUSEADDR isn't available, make calls to set_reuseaddr go away. */
 #ifndef SO_REUSEADDR

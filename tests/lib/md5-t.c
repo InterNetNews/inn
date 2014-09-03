@@ -5,7 +5,7 @@
 #include "clibrary.h"
 #include "inn/md5.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Used to initialize strings of unsigned characters. */
 #define U       (const unsigned char *)

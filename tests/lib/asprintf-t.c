@@ -22,7 +22,7 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 int test_asprintf(char **, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));

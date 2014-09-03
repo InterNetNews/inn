@@ -16,7 +16,7 @@
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 #include "inn/ov.h"
 #include "inn/storage.h"
 

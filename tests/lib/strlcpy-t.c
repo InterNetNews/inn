@@ -22,7 +22,7 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 size_t test_strlcpy(char *, const char *, size_t);
 

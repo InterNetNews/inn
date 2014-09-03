@@ -36,7 +36,7 @@
 #include <sys/uio.h>
 
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* The data array we'll use to do testing. */
 char data[256];

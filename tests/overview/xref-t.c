@@ -13,7 +13,7 @@
 #include "inn/wire.h"
 #include "inn/vector.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 #include "inn/storage.h"
 
 /* Used as the artificial token for all articles inserted into overview. */

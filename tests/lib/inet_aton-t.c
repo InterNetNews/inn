@@ -23,7 +23,7 @@
 #include "clibrary.h"
 #include <netinet/in.h>
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 int test_inet_aton(const char *, struct in_addr *);
 

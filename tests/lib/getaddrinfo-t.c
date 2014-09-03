@@ -24,7 +24,7 @@
 #include "portable/socket.h"
 
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /*
  * If the native platform doesn't support AI_NUMERICSERV or AI_NUMERICHOST,

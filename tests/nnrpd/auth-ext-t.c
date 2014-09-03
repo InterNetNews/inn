@@ -5,7 +5,7 @@
 #include "clibrary.h"
 
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 #include "../../nnrpd/nnrpd.h"
 

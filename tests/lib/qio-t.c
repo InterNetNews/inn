@@ -10,7 +10,7 @@
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 static void
 output(int fd, const void *data, size_t size)

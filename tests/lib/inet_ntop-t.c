@@ -24,7 +24,7 @@
 #include "portable/socket.h"
 #include <errno.h>
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Some systems too old to have inet_ntop don't have EAFNOSUPPORT. */
 #ifndef EAFNOSUPPORT

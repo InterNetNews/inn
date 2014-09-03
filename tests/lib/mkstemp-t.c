@@ -24,7 +24,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 int test_mkstemp(char *template);
 

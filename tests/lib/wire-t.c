@@ -9,7 +9,7 @@
 #include "inn/messages.h"
 #include "inn/wire.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Read in a file and return the contents in newly allocated memory.  Fills in
    the provided stat buffer. */

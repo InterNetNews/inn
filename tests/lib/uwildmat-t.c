@@ -8,7 +8,7 @@
 
 #include "clibrary.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 static void
 test_r(int n, const char *text, const char *pattern, bool matches)

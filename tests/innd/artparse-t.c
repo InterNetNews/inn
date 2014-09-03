@@ -10,7 +10,7 @@
 #include "inn/vector.h"
 #include "inn/wire.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 #include "../../innd/innd.h"
 

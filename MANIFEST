@@ -773,6 +773,7 @@ support/mksystem                      Generate <inn/system.h> from config.h
 support/mkversion                     Generate <inn/version.h> with INN version
 tests                                 Test suite for INN (Directory)
 tests/Makefile                        Makefile for test suite
+tests/README                          Guide to write TAP tests
 tests/TESTS                           List of tests to run
 tests/authprogs                       Test suite for auth programs (Directory)
 tests/authprogs/ckpasswd.t            Tests for authprogs/ckpasswd
@@ -898,10 +899,7 @@ tests/lib/wire-t.c                    Tests for lib/wire.c
 tests/lib/xmalloc.c                   Helper program for xmalloc tests
 tests/lib/xmalloc.t                   Tests for lib/xmalloc.c
 tests/lib/xwrite-t.c                  Tests for lib/xwrite.c
-tests/libtest.c                       Helper C library for writing tests
-tests/libtest.h                       Interface to libtest
-tests/libtest.sh                      Helper shell library for writing tests
-tests/nnrpd                           test suite for nnrpd (Directory)
+tests/nnrpd                           Test suite for nnrpd (Directory)
 tests/nnrpd/auth-ext-t.c              Tests for auth_external in nnrpd
 tests/nnrpd/auth-test                 Helper program for external auth tests
 tests/overview                        Test suite for overview (Directory)
@@ -914,6 +912,13 @@ tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive
 tests/storage/makehistory.t           Tests for expire/makehistory
 tests/storage/sm.t                    Tests for frontends/sm
+tests/tap                             Helper scripts for TAP (Directory)
+tests/tap/basic.c                     Helper C library for writing tests
+tests/tap/basic.h                     Header file for basic testing routines
+tests/tap/float.c                     Helper C library for floating point tests
+tests/tap/float.h                     Header file for floating point routines
+tests/tap/libtap.sh                   Helper shell library for writing tests
+tests/tap/macros.h                    Helpful macros for TAP header files
 tests/util                            Test suite for utilities (Directory)
 tests/util/convdate.t                 Tests for expire/convdate
 tests/util/innbind-t.c                Tests for backends/innbind

@@ -2,13 +2,18 @@
 #
 # Shell function library for test cases.
 #
+# Note that while many of the functions in this library could benefit from
+# using "local" to avoid possibly hammering global variables, Solaris /bin/sh
+# doesn't support local and this library aspires to be portable to Solaris
+# Bourne shell.  Instead, all private variables are prefixed with "tap_".
+#
 # This file provides a TAP-compatible shell function library useful for
 # writing test cases.  It is part of C TAP Harness, which can be found at
 # <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
-# Written by Russ Allbery <rra@stanford.edu>
-# Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
-# Copyright 2006, 2007, 2008
+# Written by Russ Allbery <eagle@eyrie.org>
+# Copyright 2009, 2010, 2011, 2012 Russ Allbery <eagle@eyrie.org>
+# Copyright 2006, 2007, 2008, 2013
 #     The Board of Trustees of the Leland Stanford Junior University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -48,33 +53,35 @@ plan_lazy () {
 
 # Report the test status on exit.
 finish () {
-    local highest looks
-    highest=`expr "$count" - 1`
+    tap_highest=`expr "$count" - 1`
     if [ "$planned" = 0 ] ; then
-        echo "1..$highest"
-        planned="$highest"
+        echo "1..$tap_highest"
+        planned="$tap_highest"
     fi
-    looks='# Looks like you'
+    tap_looks='# Looks like you'
     if [ "$planned" -gt 0 ] ; then
-        if [ "$planned" -gt "$highest" ] ; then
+        if [ "$planned" -gt "$tap_highest" ] ; then
             if [ "$planned" -gt 1 ] ; then
-                echo "$looks planned $planned tests but only ran $highest"
+                echo "$tap_looks planned $planned tests but only ran" \
+                    "$tap_highest"
             else
-                echo "$looks planned $planned test but only ran $highest"
+                echo "$tap_looks planned $planned test but only ran" \
+                    "$tap_highest"
             fi
-        elif [ "$planned" -lt "$highest" ] ; then
-            local extra
-            extra=`expr "$highest" - "$planned"`
+        elif [ "$planned" -lt "$tap_highest" ] ; then
+            tap_extra=`expr "$tap_highest" - "$planned"`
             if [ "$planned" -gt 1 ] ; then
-                echo "$looks planned $planned tests but ran $extra extra"
+                echo "$tap_looks planned $planned tests but ran" \
+                    "$tap_extra extra"
             else
-                echo "$looks planned $planned test but ran $extra extra"
+                echo "$tap_looks planned $planned test but ran" \
+                    "$tap_extra extra"
             fi
         elif [ "$failed" -gt 0 ] ; then
             if [ "$failed" -gt 1 ] ; then
-                echo "$looks failed $failed tests of $planned"
+                echo "$tap_looks failed $failed tests of $planned"
             else
-                echo "$looks failed $failed test of $planned"
+                echo "$tap_looks failed $failed test of $planned"
             fi
         elif [ "$planned" -gt 1 ] ; then
             echo "# All $planned tests successful or skipped"
@@ -86,10 +93,9 @@ finish () {
 
 # Skip the entire test suite.  Should be run instead of plan.
 skip_all () {
-    local desc
-    desc="$1"
-    if [ -n "$desc" ] ; then
-        echo "1..0 # skip $desc"
+    tap_desc="$1"
+    if [ -n "$tap_desc" ] ; then
+        echo "1..0 # skip $tap_desc"
     else
         echo "1..0 # skip"
     fi
@@ -100,16 +106,15 @@ skip_all () {
 # command is successful, false otherwise.  The count starts at 1 and is
 # updated each time ok is printed.
 ok () {
-    local desc
-    desc="$1"
-    if [ -n "$desc" ] ; then
-        desc=" - $desc"
+    tap_desc="$1"
+    if [ -n "$tap_desc" ] ; then
+        tap_desc=" - $tap_desc"
     fi
     shift
     if "$@" ; then
-        echo ok $count$desc
+        echo ok "$count$tap_desc"
     else
-        echo not ok $count$desc
+        echo not ok "$count$tap_desc"
         failed=`expr $failed + 1`
     fi
     count=`expr $count + 1`
@@ -124,34 +129,34 @@ skip () {
 # Report the same status on a whole set of tests.  Takes the count of tests,
 # the description, and then the command to run to determine the status.
 ok_block () {
-    local end i desc
-    i=$count
-    end=`expr $count + $1`
+    tap_i=$count
+    tap_end=`expr $count + $1`
     shift
-    desc="$1"
-    shift
-    while [ "$i" -lt "$end" ] ; do
-        ok "$desc" "$@"
-        i=`expr $i + 1`
+    while [ "$tap_i" -lt "$tap_end" ] ; do
+        ok "$@"
+        tap_i=`expr $tap_i + 1`
     done
 }
 
 # Skip a whole set of tests.  Takes the count and then the reason for skipping
 # the test.
 skip_block () {
-    local i end
-    i=$count
-    end=`expr $count + $1`
+    tap_i=$count
+    tap_end=`expr $count + $1`
     shift
-    while [ "$i" -lt "$end" ] ; do
+    while [ "$tap_i" -lt "$tap_end" ] ; do
         skip "$@"
-        i=`expr $i + 1`
+        tap_i=`expr $tap_i + 1`
     done
 }
 
 # Portable variant of printf '%s\n' "$*".  In the majority of cases, this
 # function is slower than printf, because the latter is often implemented
 # as a builtin command.  The value of the variable IFS is ignored.
+#
+# This macro must not be called via backticks inside double quotes, since this
+# will result in bizarre escaping behavior and lots of extra backslashes on
+# Solaris.
 puts () {
     cat << EOH
 $@
@@ -167,21 +172,21 @@ EOH
 # If the command may contain system-specific error messages in its output,
 # add strip_colon_error before the command to post-process its output.
 ok_program () {
-    local desc w_status w_output output status
-    desc="$1"
+    tap_desc="$1"
     shift
-    w_status="$1"
+    tap_w_status="$1"
     shift
-    w_output="$1"
+    tap_w_output="$1"
     shift
-    output=`"$@" 2>&1`
-    status=$?
-    if [ $status = $w_status ] && [ x"$output" = x"$w_output" ] ; then
-        ok "$desc" true
+    tap_output=`"$@" 2>&1`
+    tap_status=$?
+    if [ $tap_status = $tap_w_status ] \
+        && [ x"$tap_output" = x"$tap_w_output" ] ; then
+        ok "$tap_desc" true
     else
-        echo "#  saw: ($status) $output"
-        echo "#  not: ($w_status) $w_output"
-        ok "$desc" false
+        echo "#  saw: ($tap_status) $tap_output"
+        echo "#  not: ($tap_w_status) $tap_w_output"
+        ok "$tap_desc" false
     fi
 }
 
@@ -191,18 +196,17 @@ ok_program () {
 # message.)  This is used to remove system-specific error messages (coming
 # from strerror, for example).
 strip_colon_error() {
-    local output status
-    output=`"$@" 2>&1`
-    status=$?
-    output=`puts "$output" | sed 's/^\([^ ]* [^:]*\):.*/\1/'`
-    puts "$output"
-    return $status
+    tap_output=`"$@" 2>&1`
+    tap_status=$?
+    tap_output=`puts "$tap_output" | sed 's/^\([^ ]* [^:]*\):.*/\1/'`
+    puts "$tap_output"
+    return $tap_status
 }
 
 # Bail out with an error message.
 bail () {
     echo 'Bail out!' "$@"
-    exit 1
+    exit 255
 }
 
 # Output a diagnostic on standard error, preceded by the required # mark.
@@ -213,6 +217,9 @@ diag () {
 # Search for the given file first in $BUILD and then in $SOURCE and echo the
 # path where the file was found, or the empty string if the file wasn't
 # found.
+#
+# This macro uses puts, so don't run it using backticks inside double quotes
+# or bizarre quoting behavior will happen with Solaris sh.
 test_file_path () {
     if [ -n "$BUILD" ] && [ -f "$BUILD/$1" ] ; then
         puts "$BUILD/$1"
@@ -221,4 +228,21 @@ test_file_path () {
     else
         echo ''
     fi
+}
+
+# Create $BUILD/tmp for use by tests for storing temporary files and return
+# the path (via standard output).
+#
+# This macro uses puts, so don't run it using backticks inside double quotes
+# or bizarre quoting behavior will happen with Solaris sh.
+test_tmpdir () {
+    if [ -z "$BUILD" ] ; then
+        tap_tmpdir="./tmp"
+    else
+        tap_tmpdir="$BUILD"/tmp
+    fi
+    if [ ! -d "$tap_tmpdir" ] ; then
+        mkdir "$tap_tmpdir" || bail "Error creating $tap_tmpdir"
+    fi
+    puts "$tap_tmpdir"
 }

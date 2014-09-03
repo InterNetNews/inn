@@ -9,7 +9,7 @@
 
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* The path to the uninstalled ident resolver. */
 static const char ident[] = "../../authprogs/ident";

@@ -6,7 +6,7 @@
 #include <time.h>
 
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 static const time_t test_times[] = {
     28800UL,                    /* Thu,  1 Jan 1970 00:00:00 -0800 (PST) */

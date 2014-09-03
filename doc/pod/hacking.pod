@@ -222,7 +222,7 @@ and may change in the future to message_log_syslog_err.
 
 The test suite for INN is located in the F<tests> directory and is just
 getting started.  The test suite consists of a set of programs listed in
-F<tests/TESTS> and the scaffolding in the F<runtests> program.
+F<tests/TESTS> and the scaffolding in the B<runtests> program.
 
 Adding new tests is very straightforward and very flexible.  Just write a
 program that tests some part of INN, put it in a directory under F<tests>
@@ -236,10 +236,11 @@ F<tests/Makefile> (note that for simplicity it doesn't recurse into
 subdirectories) and make sure it creates an executable ending in F<.t>.
 Then add the name of the test to F<tests/TESTS>, without the F<.t> ending.
 
-For C tests, you probably want to use the functions in F<libtest.c>
-(prototypes in F<libtest.h>) to handle all of the output.  For shell script
-tests, F<libtest.sh> contains helpful shell functions.  See the existing tests
-for some hints about how to write new tests.
+For C tests, you probably want to use the functions in
+F<tests/tap/basic.c> (prototypes in F<tests/tap/basic.h>) to handle
+all of the output.  For shell script tests, F<tests/tap/libtap.sh>
+contains helpful shell functions.  See the existing tests for some
+hints about how to write new tests, as well as the F<tests/README> guide.
 
 One naming convention:  to distinguish more easily between for example
 F<lib/error.c> (the implementation) and F<tests/lib/error-t.c> (the test
@@ -658,19 +659,18 @@ L<"Configuring and Portability"> for details on how to update these files.
 
 =item *
 
-Make sure that the latest version of C TAP Harness is used for the test
-suite.  It is available from
+Make sure that the latest upstream version of the C TAP Harness package
+is used for the test suite driver.  It is available from
 L<http://www.eyrie.org/~eagle/software/c-tap-harness/>.  The file
-F<runtests.c> should be updated.  F<libtest.c>, F<libtest.h> and
-F<libtest.sh> come from F<tap/basic.c>, F<tap/basic.h> and
-F<tap/libtap.sh> respectively.  Parts specific to INN should be kept
-during an update (especially sections relative to LIBTEST_NEW_FORMAT
-because the test suite has not yet been updated to use the new format of C
+F<tests/runtests.c> should be updated, as well as the files in the
+F<tests/tap> directory.  Parts specific to INN should be kept during
+an update (especially sections relative to LIBTEST_NEW_FORMAT because
+the test suite has not yet been updated to use the new format of C
 TAP Harness).
 
 =item *
 
-Make sure that the latest version of the files maintained in the
+Make sure that the latest upstream version of the files maintained in the
 rra-c-util package that INN uses are in sync with upstream.  These files
 are available at L<http://www.eyrie.org/~eagle/software/rra-c-util/>
 and can be easily synchronized with the script F<support/getrra-c-util>;

@@ -26,7 +26,7 @@
 #include "inn/buffer.h"
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 static const char test_string1[] = "This is a test";
 static const char test_string2[] = " of the buffer system";

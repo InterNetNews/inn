@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 int test_memcmp(const void *, const void *, size_t);
 

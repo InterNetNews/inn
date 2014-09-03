@@ -6,7 +6,7 @@
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* We will have strings, integers, bools and lists. */
 static const char grep[] =

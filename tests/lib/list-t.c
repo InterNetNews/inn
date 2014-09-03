@@ -7,7 +7,7 @@
 #include "inn/messages.h"
 #include "inn/list.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 int
 main(void)

@@ -8,7 +8,8 @@
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
+#include "tap/float.h"
 
 /* Given a FILE *, read from that file, putting the results into a newly
    allocated buffer, until encountering a line consisting solely of "===".

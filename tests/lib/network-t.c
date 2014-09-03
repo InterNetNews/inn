@@ -43,7 +43,7 @@
 #include "inn/messages.h"
 #include "inn/network.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Set this globally to 0 if IPv6 is available but doesn't work. */
 static int ipv6 = 1;

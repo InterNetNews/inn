@@ -24,7 +24,7 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "libtest.h"
+#include "tap/basic.h"
 
 /*
  * Disable the requirement that format strings be literals.  We need variable

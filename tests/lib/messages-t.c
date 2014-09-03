@@ -41,7 +41,7 @@
 
 #include "inn/messages.h"
 #include "inn/libinn.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 typedef void (*test_function_type)(void);
 void is_function_output(test_function_type, int status, const char *output,

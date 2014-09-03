@@ -6,7 +6,7 @@
 
 #include "inn/dispatch.h"
 #include "inn/vector.h"
-#include "libtest.h"
+#include "tap/basic.h"
 
 /* Prototypes for command callbacks. */
 static void command_0(struct cvector *, void *);

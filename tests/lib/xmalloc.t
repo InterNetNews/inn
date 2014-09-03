@@ -30,7 +30,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-. "$SOURCE/libtest.sh"
+. "$SOURCE/tap/libtap.sh"
 cd "$BUILD/lib"
 
 # Run an xmalloc test.  Takes the description, the expectd exit status, the
