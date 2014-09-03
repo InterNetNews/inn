@@ -761,6 +761,7 @@ support/config.guess                  Determine system type for libtool
 support/config.sub                    Canonicalize system type for libtool
 support/fixconfig.in                  Config file path fixup script
 support/fixscript.in                  Interpreter path fixup script
+support/getc-tap-harness              Get the latest files from C TAP Harness
 support/getrra-c-util                 Get the latest files from rra-c-util
 support/indent                        A mostly working wrapper around indent
 support/install-sh                    Installation utility

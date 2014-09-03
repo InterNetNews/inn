@@ -168,6 +168,14 @@ is of interest primarily to people building packages for distributions.
 For security reasons, use of the flawed SSLv2 protocol is now disabled
 for TLS sessions with B<nnrpd>.
 
+=item *
+
+The INN test suite driver is now fully synchronized with the upstream
+version of the C TAP Harness package maintained by Russ Allbery.
+Keeping the INN test suite driver up-to-date will be possible thanks
+to a new B<getc-tap-harness> script in the F<support> directory that
+automatically fetches the latest upstream changes.
+
 =back
 
 =head1 Changes in 2.5.5

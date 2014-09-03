@@ -659,23 +659,26 @@ L<"Configuring and Portability"> for details on how to update these files.
 
 =item *
 
-Make sure that the latest upstream version of the C TAP Harness package
-is used for the test suite driver.  It is available from
-L<http://www.eyrie.org/~eagle/software/c-tap-harness/>.  The file
-F<tests/runtests.c> should be updated, as well as the files in the
-F<tests/tap> directory.  Parts specific to INN should be kept during
-an update (especially sections relative to LIBTEST_NEW_FORMAT because
-the test suite has not yet been updated to use the new format of C
-TAP Harness).
+Make sure that the latest upstream version of the C TAP Harness
+package is used for the test suite driver.  It is available at
+L<http://www.eyrie.org/~eagle/software/c-tap-harness/>, and can be
+easily synchronized with the script F<support/getc-tap-harness>; just
+run it, have a look at the resulting changes in INN source code and,
+if everything seems all right, commit these changes.
+
+Parts specific to INN should be kept during an update (especially
+sections relative to LIBTEST_NEW_FORMAT because the test suite has not
+yet been fully updated to use the new format of C TAP Harness).
 
 =item *
 
-Make sure that the latest upstream version of the files maintained in the
-rra-c-util package that INN uses are in sync with upstream.  These files
-are available at L<http://www.eyrie.org/~eagle/software/rra-c-util/>
-and can be easily synchronized with the script F<support/getrra-c-util>;
-just run it, have a look at the resulting changes in INN source code and,
-if everything seems all right, commit these changes.
+Make sure that the latest upstream version of the files
+maintained in the rra-c-util package that INN uses are the
+ones shipped with the release.  These files are available at
+L<http://www.eyrie.org/~eagle/software/rra-c-util/> and can be easily
+synchronized with the script F<support/getrra-c-util>; just run it, have
+a look at the resulting changes in INN source code and, if everything
+seems all right, commit these changes.
 
 =item *
 
