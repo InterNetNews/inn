@@ -514,7 +514,7 @@ main(void)
         exit(1);
     vector = config_params(group);
     ok_int(67, 2, vector->count);
-    ok_int(68, 2, vector->allocated);
+    ok_int(68, 3, vector->allocated);
     if (strcmp(vector->strings[0], "foo") == 0)
         ok_string(69, "bar", vector->strings[1]);
     else if (strcmp(vector->strings[0], "bar") == 0)
@@ -637,7 +637,7 @@ main(void)
     vector = config_params(subgroup);
     ok(153, vector != NULL);
     ok_int(154, 3, vector->count);
-    ok_int(155, 3, vector->allocated);
+    ok_int(155, 4, vector->allocated);
     ok_string(156, "third", vector->strings[0]);
     ok_string(157, "second", vector->strings[1]);
     ok_string(158, "first", vector->strings[2]);
