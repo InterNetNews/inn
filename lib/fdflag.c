@@ -33,7 +33,6 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <errno.h>
 
 #ifdef _WIN32
 # include <winsock2.h>
@@ -49,6 +48,7 @@
 
 #include "inn/fdflag.h"
 #include "inn/libinn.h"
+
 
 /*
  * Set a file to close-on-exec (or clear that setting if the flag is false),

@@ -17,6 +17,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006
@@ -57,7 +58,8 @@ struct buffer {
 BEGIN_DECLS
 
 /* Allocate a new buffer and initialize its contents. */
-struct buffer *buffer_new(void);
+struct buffer *buffer_new(void)
+    __attribute__((__warn_unused_result__, __malloc__));
 
 /* Free an allocated buffer. */
 void buffer_free(struct buffer *);
@@ -66,35 +68,45 @@ void buffer_free(struct buffer *);
  * Resize a buffer to be at least as large as the provided size.  Invalidates
  * pointers into the buffer.
  */
-void buffer_resize(struct buffer *, size_t);
+void buffer_resize(struct buffer *, size_t)
+    __attribute__((__nonnull__));
 
 /*
  * Compact a buffer, removing all used data and moving unused data to the
  * beginning of the buffer.  Invalidates pointers into the buffer.
  */
-void buffer_compact(struct buffer *);
+void buffer_compact(struct buffer *)
+    __attribute__((__nonnull__));
 
-/* Set the buffer contents, ignoring anything currently there. */
-void buffer_set(struct buffer *, const char *data, size_t length);
+/*
+ * Set the buffer contents, ignoring anything currently there.  If length is
+ * 0, empties the buffer, in which case data may be NULL.
+ */
+void buffer_set(struct buffer *, const char *data, size_t length)
+    __attribute__((__nonnull__(1)));
 
 /*
  * Set the buffer contents via a sprintf-style format string.  No trailing
  * nul is added.
  */
 void buffer_sprintf(struct buffer *, const char *, ...)
-    __attribute__((__format__(printf, 2, 3)));
-void buffer_vsprintf(struct buffer *, const char *, va_list);
+    __attribute__((__format__(printf, 2, 3), __nonnull__));
+void buffer_vsprintf(struct buffer *, const char *, va_list)
+    __attribute__((__nonnull__));
 
 /* Append data to the buffer. */
-void buffer_append(struct buffer *, const char *data, size_t length);
+void buffer_append(struct buffer *, const char *data, size_t length)
+    __attribute__((__nonnull__(1)));
 
 /* Append via an sprintf-style format string.  No trailing nul is added. */
 void buffer_append_sprintf(struct buffer *, const char *, ...)
-    __attribute__((__format__(printf, 2, 3)));
-void buffer_append_vsprintf(struct buffer *, const char *, va_list);
+    __attribute__((__format__(printf, 2, 3), __nonnull__));
+void buffer_append_vsprintf(struct buffer *, const char *, va_list)
+    __attribute__((__nonnull__));
 
 /* Swap the contents of two buffers. */
-void buffer_swap(struct buffer *, struct buffer *);
+void buffer_swap(struct buffer *, struct buffer *)
+    __attribute__((__nonnull__));
 
 /*
  * Find the given string in the unconsumed data in a buffer.  start is an
@@ -105,22 +117,33 @@ void buffer_swap(struct buffer *, struct buffer *);
  * the fourth argument.  Returns false if the terminator isn't found.
  */
 bool buffer_find_string(struct buffer *, const char *, size_t start,
-                        size_t *offset);
+                        size_t *offset)
+    __attribute__((__nonnull__));
 
 /*
  * Read from a file descriptor into a buffer, up to the available space in the
- * buffer.  Return the number of characters read.
+ * buffer.  Return the number of characters read.  Retries the read if
+ * interrupted by a signal or if it returns EAGAIN, but stops on any other
+ * error or after any successful read.  Returns -1 on an error reading from
+ * the file descriptor and sets errno.
  */
-ssize_t buffer_read(struct buffer *, int fd);
+ssize_t buffer_read(struct buffer *, int fd)
+    __attribute__((__nonnull__));
 
-/* Read from a file descriptor into a buffer until end of file is reached. */
-bool buffer_read_all(struct buffer *, int fd);
+/*
+ * Read from a file descriptor into a buffer until end of file is reached.
+ * Returns true on success and false (setting errno) on error.
+ */
+bool buffer_read_all(struct buffer *, int fd)
+    __attribute__((__nonnull__));
 
 /*
  * Read the contents of a file into a buffer.  This should be used instead of
- * buffer_read_all when fstat can be called on the file descriptor.
+ * buffer_read_all when fstat can be called on the file descriptor.  Returns
+ * true on success and false (setting errno) on error.
  */
-bool buffer_read_file(struct buffer *, int fd);
+bool buffer_read_file(struct buffer *, int fd)
+    __attribute__((__nonnull__));
 
 END_DECLS
 

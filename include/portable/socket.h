@@ -17,6 +17,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
+ * Copyright 2014 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2009, 2011, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007
@@ -203,13 +204,24 @@ BEGIN_DECLS
 /*
  * Provide prototypes for inet_aton and inet_ntoa if not prototyped in the
  * system header files since they're occasionally available without proper
- * prototypes.
+ * prototypes.  If we're providing a replacement, be sure to set visibility
+ * accordingly.
  */
 #if !HAVE_DECL_INET_ATON
+# if !HAVE_INET_ATON
+extern int inet_aton(const char *, struct in_addr *)
+    __attribute__((__visibility__("hidden")));
+# else
 extern int inet_aton(const char *, struct in_addr *);
+# endif
 #endif
 #if !HAVE_DECL_INET_NTOA
+# if !HAVE_INET_NTOA
+extern const char *inet_ntoa(const struct in_addr)
+    __attribute__((__visibility__("hidden")));
+# else
 extern const char *inet_ntoa(const struct in_addr);
+# endif
 #endif
 
 #if !HAVE_INET_NTOP
