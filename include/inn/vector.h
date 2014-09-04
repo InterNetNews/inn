@@ -26,7 +26,7 @@
 #ifndef INN_VECTOR_H
 #define INN_VECTOR_H 1
 
-#include <inn/defines.h>
+#include "config.h"
 
 #include <stddef.h>
 

@@ -223,8 +223,8 @@ lib/tst.t: lib/tst-t.o tap/basic.o $(LIBINN)
 lib/uwildmat.t: lib/uwildmat-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/uwildmat-t.o tap/basic.o $(LIBINN)
 
-lib/vector.t: lib/vector-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/vector-t.o tap/basic.o $(LIBINN)
+lib/vector.t: lib/vector-t.o tap/basic.o tap/string.o $(LIBINN)
+	$(LINK) lib/vector-t.o tap/basic.o tap/string.o $(LIBINN)
 
 lib/wire.t: lib/wire-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/wire-t.o tap/basic.o $(LIBINN)
