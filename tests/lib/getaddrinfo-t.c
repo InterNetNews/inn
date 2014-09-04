@@ -1,12 +1,11 @@
-/*
+/* $Id$
+ *
  * getaddrinfo test suite.
- * 
- * $Id$
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -23,7 +22,6 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 
-#include "inn/messages.h"
 #include "tap/basic.h"
 
 /*
@@ -73,7 +71,7 @@ main(void)
     is_int(sizeof(struct sockaddr_in), ai->ai_addrlen, "...right addrlen");
     saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
     is_int(htons(25), saddr->sin_port, "...right port");
-    ok(saddr->sin_addr.s_addr == htonl(0x7f000001UL), "...right address");
+    is_int(htonl(0x7f000001UL), saddr->sin_addr.s_addr, "...right address");
     test_freeaddrinfo(ai);
 
     memset(&hints, 0, sizeof(hints));
@@ -83,7 +81,7 @@ main(void)
     is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
     saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
     is_int(htons(25), saddr->sin_port, "...right port");
-    ok(saddr->sin_addr.s_addr == INADDR_ANY, "...right address");
+    is_int(INADDR_ANY, saddr->sin_addr.s_addr, "...right address");
     test_freeaddrinfo(ai);
 
     service = getservbyname("smtp", "tcp");
@@ -96,7 +94,7 @@ main(void)
         is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
         saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
         is_int(htons(25), saddr->sin_port, "...right port");
-        ok(saddr->sin_addr.s_addr == INADDR_ANY, "...right address");
+        is_int(INADDR_ANY, saddr->sin_addr.s_addr, "...right address");
         test_freeaddrinfo(ai);
     }
 
@@ -111,7 +109,7 @@ main(void)
        "valid AI_NUMERICSERV");
     saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
     is_int(htons(25), saddr->sin_port, "...right port");
-    ok(saddr->sin_addr.s_addr == htonl(0x7f000001UL), "...right address");
+    is_int(htonl(0x7f000001UL), saddr->sin_addr.s_addr, "...right address");
     test_freeaddrinfo(ai);
 
     ok(test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME, "EAI_NONAME");
@@ -228,6 +226,7 @@ main(void)
     if (host == NULL)
         skip_block(3, "cannot look up cnn.com");
     else {
+        ai = NULL;
         ok(test_getaddrinfo("cnn.com", "80", NULL, &ai) == 0,
            "lookup of cnn.com with multiple A records");
         saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
@@ -240,8 +239,14 @@ main(void)
     if (host != NULL)
         skip("lookup of addrinfo-test.invalid succeeded");
     else {
+        ai = NULL;
         result = test_getaddrinfo("addrinfo-test.invalid", NULL, NULL, &ai);
-        is_int(EAI_NONAME, result, "lookup of invalid address");
+        if (result == EAI_AGAIN || result == EAI_FAIL)
+            skip("lookup of invalid address returns DNS failure");
+        else
+            is_int(EAI_NONAME, result, "lookup of invalid address");
+        if (ai != NULL)
+            test_freeaddrinfo(ai);
     }
 
     host = gethostbyname("cnn.com");
@@ -278,7 +283,7 @@ main(void)
     }
     if (found)
         ok(1, "...result found in gethostbyname address list");
-    test_freeaddrinfo(ai);
+    test_freeaddrinfo(first);
 
     return 0;
 }
