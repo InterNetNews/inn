@@ -44,9 +44,10 @@
 #ifndef INN_BUFFER_H
 #define INN_BUFFER_H 1
 
+#include "config.h"
+
 #include <stdarg.h>
 #include <sys/types.h>
-#include <inn/defines.h>
 
 struct buffer {
     size_t size;                /* Total allocated length. */

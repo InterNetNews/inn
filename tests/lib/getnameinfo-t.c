@@ -1,12 +1,11 @@
-/*
- * getnameinfo test suite.
+/* $Id$
  *
- * $Id$
+ * getnameinfo test suite.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -23,9 +22,8 @@
 #include "clibrary.h"
 #include "portable/socket.h"
 
-#include "inn/messages.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
+#include "inn/libinn.h"
 
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
                      char *, socklen_t, int);

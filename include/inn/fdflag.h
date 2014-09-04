@@ -31,7 +31,7 @@
 #ifndef INN_FDFLAG_H
 #define INN_FDFLAG_H 1
 
-#include <inn/defines.h>
+#include "config.h"
 #include "portable/socket.h"
 
 BEGIN_DECLS
