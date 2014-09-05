@@ -39,7 +39,7 @@ $1 '
 /^#define HAVE_INTTYPES_H/      { print $1 " INN_" $2 " " $3 }
 /^#define HAVE_MSYNC_3_ARG/     { print $1 " INN_" $2 " " $3 }
 /^#define HAVE_STDBOOL_H/       { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_SYS_BITTYPES_H/  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_SYS_BITYPES_H/   { print $1 " INN_" $2 " " $3 }
 /^#define HAVE__BOOL/           { print $1 " INN_" $2 " " $3 }
 
 ' $2
