@@ -106,6 +106,9 @@ extern ssize_t          pread(int, void *, size_t, off_t);
 #if !HAVE_DECL_PWRITE
 extern ssize_t          pwrite(int, const void *, size_t, off_t);
 #endif
+#if !HAVE_REALLOCARRAY
+extern void             *reallocarray(void *, size_t, size_t);
+#endif
 #if !HAVE_SETENV
 extern int              setenv(const char *, const char *, int);
 #endif

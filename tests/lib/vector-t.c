@@ -26,7 +26,7 @@
 #include "tap/basic.h"
 #include "tap/string.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
+#include "inn/xmalloc.h"
 
 
 int

@@ -47,7 +47,7 @@
 #include <sys/stat.h>
 
 #include "inn/buffer.h"
-#include "inn/libinn.h"
+#include "inn/xmalloc.h"
 
 
 /*

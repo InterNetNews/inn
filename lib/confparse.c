@@ -1710,10 +1710,7 @@ config_error_param(struct config_group *group, const char *key,
     struct config_parameter *param;
 
     va_start(args, fmt);
-    if (xvasprintf(&message, fmt, args) < 0) {
-        va_end(args);
-        return;
-    }
+    xvasprintf(&message, fmt, args);
     va_end(args);
 
     param = hash_lookup(group->params, key);
@@ -1740,10 +1737,7 @@ config_error_group(struct config_group *group, const char *fmt, ...)
     char *message;
 
     va_start(args, fmt);
-    if (xvasprintf(&message, fmt, args) < 0) {
-        va_end(args);
-        return;
-    }
+    xvasprintf(&message, fmt, args);
     va_end(args);
     warn("%s:%u: %s", group->file, group->line, message);
     free(message);

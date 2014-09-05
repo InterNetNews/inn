@@ -21,7 +21,8 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/hashtab.t lib/hex.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/setenv.t lib/snprintf.t lib/strlcat.t \
+	lib/pwrite.t lib/qio.t lib/reallocarray.t \
+	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
 	overview/tradindexed.t overview/xref.t util/innbind.t
@@ -192,6 +193,12 @@ lib/pwrite.t: lib/pwrite.o lib/pwrite-t.o tap/basic.o $(LIBINN)
 
 lib/qio.t: lib/qio-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/qio-t.o tap/basic.o $(LIBINN)
+
+lib/reallocarray.o: ../lib/reallocarray.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/reallocarray.c
+
+lib/reallocarray.t: lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
 
 lib/setenv.o: ../lib/setenv.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c

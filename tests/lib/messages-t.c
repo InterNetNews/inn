@@ -112,8 +112,7 @@ is_function_output(test_function_type function, int status, const char *output,
 
     /* Now, check the results against what we expected. */
     va_start(args, format);
-    if (xvasprintf(&msg, format, args) < 0)
-        bail("cannot format test description");
+    xvasprintf(&msg, format, args);
     va_end(args);
     ok(WIFEXITED(rval), "%s (exited)", msg);
     is_int(status, WEXITSTATUS(rval), "%s (status)", msg);

@@ -408,6 +408,7 @@ include/inn/tst.h                     Header file for ternary search tries
 include/inn/utility.h                 Header file for utility functions
 include/inn/vector.h                  Header file for vectors of strings
 include/inn/wire.h                    Header file for wire-format functions
+include/inn/xmalloc.h                 Header file for allocation functions
 include/innperl.h                     Header file for embedded Perl
 include/portable                      Portability wrappers (Directory)
 include/portable/alloca.h             alloca replacement header
@@ -527,6 +528,7 @@ lib/pwrite.c                          pwrite replacement
 lib/qio.c                             Quick I/O package
 lib/radix32.c                         Encode a number as a radix-32 string
 lib/readin.c                          Read file into memory
+lib/reallocarray.c                    reallocarray replacement
 lib/remopen.c                         Open a remote NNTP connection
 lib/reservedfd.c                      File descriptor reservation
 lib/resource.c                        Get process CPU usage
@@ -889,6 +891,7 @@ tests/lib/network-t.c                 Tests for lib/network.c
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c
+tests/lib/reallocarray-t.c            Tests for lib/reallocarray.c
 tests/lib/setenv-t.c                  Tests for lib/setenv.c
 tests/lib/snprintf-t.c                Tests for lib/snprintf.c
 tests/lib/strlcat-t.c                 Tests for lib/strlcat.c

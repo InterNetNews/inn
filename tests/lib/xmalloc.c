@@ -1,13 +1,12 @@
-/*
- * Test suite for xmalloc and family.
+/* $Id$
  *
- * $Id$
+ * Test suite for xmalloc and family.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2000, 2001, 2006 Russ Allbery <rra@stanford.edu>
- * Copyright 2008
+ * Copyright 2000, 2001, 2006 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,23 +30,21 @@
 
 #define LIBTEST_NEW_FORMAT 1
 
+#line 1 "xmalloc.c"
+
 #include "config.h"
 #include "clibrary.h"
+
 #include <ctype.h>
 #include <errno.h>
-#include <unistd.h>
+#include "portable/time.h"
 
 /* Linux requires sys/time.h be included before sys/resource.h. */
-#if HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
 #include <sys/resource.h>
 
 #include "inn/messages.h"
-#include "inn/libinn.h"
+#include "inn/xmalloc.h"
 
-/* Adjust the beginning of the test file. */
-#line 15 "xmalloc.c"
 
 /*
  * A customized error handler for checking xmalloc's support of them.  Prints
@@ -85,9 +82,9 @@ test_malloc(size_t size)
 
 
 /*
- * Allocate 10 bytes, write to it, then reallocate to the desired
- * size, writing to the rest and then checking it all.  Returns true on
- * success, false on any failure.
+ * Allocate 10 bytes of memory given, write to it, then reallocate to the
+ * desired size, writing to the rest and then checking it all.  Returns true
+ * on success, false on any failure.
  */
 static int
 test_realloc(size_t size)
@@ -108,6 +105,36 @@ test_realloc(size_t size)
         if (buffer[i] != 1)
             return 0;
     for (i = 10; i < size; i++)
+        if (buffer[i] != 2)
+            return 0;
+    free(buffer);
+    return 1;
+}
+
+
+/*
+ * Like test_realloc, but test allocating an array instead.  Returns true on
+ * success, false on any failure.
+ */
+static int
+test_reallocarray(size_t n, size_t size)
+{
+    char *buffer;
+    size_t i;
+
+    buffer = xmalloc(10);
+    if (buffer == NULL)
+        return 0;
+    memset(buffer, 1, 10);
+    buffer = xreallocarray(buffer, n, size);
+    if (buffer == NULL)
+        return 0;
+    if (n > 0 && size > 0)
+        memset(buffer + 10, 2, (n * size) - 10);
+    for (i = 0; i < 10; i++)
+        if (buffer[i] != 1)
+            return 0;
+    for (i = 10; i < n * size; i++)
         if (buffer[i] != 2)
             return 0;
     free(buffer);
@@ -142,15 +169,34 @@ test_strdup(size_t size)
 
 /*
  * Generate a string of the size indicated plus some, call xstrndup on it, and
- * then ensure the result matches.  Returns true on success, false on any
- * failure.
+ * then ensure the result matches.  Also test xstrdup on a string that's
+ * shorter than the specified size and ensure that we don't copy too much, and
+ * on a string that's not nul-terminated.  Returns true on success, false on
+ * any failure.
  */
 static int
 test_strndup(size_t size)
 {
     char *string, *copy;
-    int match, toomuch;
+    int shortmatch, nonulmatch, match, toomuch;
 
+    /* Copy a short string. */
+    string = xmalloc(5);
+    memcpy(string, "test", 5);
+    copy = xstrndup(string, size);
+    shortmatch = strcmp(string, copy);
+    free(string);
+    free(copy);
+
+    /* Copy a string that's not nul-terminated. */
+    string = xmalloc(4);
+    memcpy(string, "test", 4);
+    copy = xstrndup(string, 4);
+    nonulmatch = strcmp(copy, "test");
+    free(string);
+    free(copy);
+
+    /* Now the test of running out of memory. */
     string = xmalloc(size + 1);
     if (string == NULL)
         return 0;
@@ -164,7 +210,7 @@ test_strndup(size_t size)
     toomuch = strcmp(string, copy);
     free(string);
     free(copy);
-    return (match == 0 && toomuch != 0);
+    return (shortmatch == 0 && nonulmatch == 0 && match == 0 && toomuch != 0);
 }
 
 
@@ -200,16 +246,13 @@ static int
 test_asprintf(size_t size)
 {
     char *copy, *string;
-    int status;
     size_t i;
 
     string = xmalloc(size);
     memset(string, 42, size - 1);
     string[size - 1] = '\0';
-    status = xasprintf(&copy, "%s", string);
+    xasprintf(&copy, "%s", string);
     free(string);
-    if (status < 0)
-        return 0;
     for (i = 0; i < size - 1; i++)
         if (copy[i] != 42)
             return 0;
@@ -221,16 +264,14 @@ test_asprintf(size_t size)
 
 
 /* Wrapper around vasprintf to do the va_list stuff. */
-static int
+static void
 xvasprintf_wrapper(char **strp, const char *format, ...)
 {
     va_list args;
-    int status;
 
     va_start(args, format);
-    status = xvasprintf(strp, format, args);
+    xvasprintf(strp, format, args);
     va_end(args);
-    return status;
 }
 
 
@@ -242,16 +283,13 @@ static int
 test_vasprintf(size_t size)
 {
     char *copy, *string;
-    int status;
     size_t i;
 
     string = xmalloc(size);
     memset(string, 42, size - 1);
     string[size - 1] = '\0';
-    status = xvasprintf_wrapper(&copy, "%s", string);
+    xvasprintf_wrapper(&copy, "%s", string);
     free(string);
-    if (status < 0)
-        return 0;
     for (i = 0; i < size - 1; i++)
         if (copy[i] != 42)
             return 0;
@@ -317,6 +355,7 @@ main(int argc, char *argv[])
 #if HAVE_SETRLIMIT && defined(RLIMIT_AS)
         struct rlimit rl;
         void *tmp;
+        size_t test_size;
 
         rl.rlim_cur = limit;
         rl.rlim_max = limit;
@@ -324,11 +363,14 @@ main(int argc, char *argv[])
             syswarn("Can't set data limit to %lu", (unsigned long) limit);
             exit(2);
         }
-        if (size < limit || code == 'r') {
-            tmp = malloc(code == 'r' ? 10 : size);
+        if (size < limit || code == 'r' || code == 'y') {
+            test_size = (code == 'r' || code == 'y') ? 10 : size;
+            if (test_size == 0)
+                test_size = 1;
+            tmp = malloc(test_size);
             if (tmp == NULL) {
-                syswarn("Can't allocate initial memory of %lu",
-                        (unsigned long) size);
+                syswarn("Can't allocate initial memory of %lu (limit %lu)",
+                        (unsigned long) test_size, (unsigned long) limit);
                 exit(2);
             }
             free(tmp);
@@ -343,6 +385,7 @@ main(int argc, char *argv[])
     case 'c': exit(test_calloc(size) ? willfail : 1);
     case 'm': exit(test_malloc(size) ? willfail : 1);
     case 'r': exit(test_realloc(size) ? willfail : 1);
+    case 'y': exit(test_reallocarray(4, size / 4) ? willfail : 1);
     case 's': exit(test_strdup(size) ? willfail : 1);
     case 'n': exit(test_strndup(size) ? willfail : 1);
     case 'a': exit(test_asprintf(size) ? willfail : 1);

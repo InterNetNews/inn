@@ -29,6 +29,7 @@ lib/network
 lib/pread
 lib/pwrite
 lib/qio
+lib/reallocarray
 lib/setenv
 lib/snprintf
 lib/strlcat
