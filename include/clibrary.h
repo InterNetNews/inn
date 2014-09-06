@@ -4,6 +4,8 @@
 **  Including this file is the equivalent of including all of the following
 **  headers, portably:
 **
+**      #include "inn/macros.h"
+**      #include <limits.h>
 **      #include <sys/types.h>
 **      #include <stdarg.h>
 **      #include <stdio.h>
@@ -23,6 +25,7 @@
 
 /* Make sure we have our configuration information. */
 #include "config.h"
+#include "inn/macros.h"
 
 /* Assume stdarg is available; don't bother with varargs support any more.
    We need this to be able to declare vsnprintf. */
@@ -33,6 +36,7 @@
    strrchr, and memcpy.  Note that we don't attempt to declare any of the
    functions; the number of systems left without ANSI-compatible function
    prototypes isn't high enough to be worth the trouble.  */
+#include <limits.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -181,13 +185,6 @@ END_DECLS
 /* Used to name the elements of the array passed to pipe(). */
 #define PIPE_READ       0
 #define PIPE_WRITE      1
-
-/* Used for iterating through arrays.  ARRAY_SIZE returns the number of
-   elements in the array (useful for a < upper bound in a for loop) and
-   ARRAY_END returns a pointer to the element past the end (ISO C99 makes it
-   legal to refer to such a pointer as long as it's never dereferenced). */
-#define ARRAY_SIZE(array)       (sizeof(array) / sizeof((array)[0]))
-#define ARRAY_END(array)        (&(array)[ARRAY_SIZE(array)])
 
 /* C99 requires va_copy.  Older versions of GCC provide __va_copy.  Per the
    Autoconf manual, memcpy is a generally portable fallback. */

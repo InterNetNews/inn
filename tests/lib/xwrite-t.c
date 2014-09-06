@@ -1,13 +1,12 @@
-/*
- * Test suite for xwrite, xwritev, and xpwrite.
+/* $Id$
  *
- * $Id$
+ * Test suite for xwrite, xwritev, and xpwrite.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2000, 2001, 2002, 2004 Russ Allbery <rra@stanford.edu>
- * Copyright 2009
+ * Copyright 2000, 2001, 2002, 2004 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -33,10 +32,12 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <sys/uio.h>
+#include "portable/uio.h"
 
-#include "inn/libinn.h"
+#include <errno.h>
+
 #include "tap/basic.h"
+#include "inn/xwrite.h"
 
 /* The data array we'll use to do testing. */
 char data[256];
@@ -62,7 +63,7 @@ main(void)
     int i;
     struct iovec iov[4];
 
-    plan(38);
+    plan(44);
 
     /* Test xwrite. */
     for (i = 0; i < 256; i++)
@@ -121,6 +122,16 @@ main(void)
     write_offset = 0;
     write_interrupt = 0;
 
+    /* Test bounds errors in xwritev. */
+    is_int(-1, xwritev(0, iov, -1), "xwrite with negative count");
+    is_int(EINVAL, errno, "...with correct errno");
+    if (INT_MAX <= SIZE_MAX / sizeof(struct iovec))
+        skip_block(2, "xwritev count overflow not possible");
+    else {
+        is_int(-1, xwritev(0, iov, INT_MAX), "xwrite with INT_MAX count");
+        is_int(EINVAL, errno, "...with correct errno");
+    }
+
     /* Test xpwrite. */
     for (i = 0; i < 256; i++)
         data[i] = i;
@@ -150,6 +161,8 @@ main(void)
     iov[0].iov_base = data + 1;
     iov[0].iov_len = 2;
     test_write(xwritev(0, iov, 0), 0, "xwritev zero length");
+    iov[0].iov_len = 0;
+    test_write(xwritev(0, iov, 1), 0, "xwritev zero length with buffers");
 
     return 0;
 }

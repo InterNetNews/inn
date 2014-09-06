@@ -390,6 +390,7 @@ include/inn/innconf.h                 Header file for the innconf struct
 include/inn/inndcomm.h                Header file for control channel commands
 include/inn/libinn.h                  Header file for utility functions
 include/inn/list.h                    Header file for list routines
+include/inn/macros.h                  Header file for useful macros
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
@@ -409,15 +410,18 @@ include/inn/utility.h                 Header file for utility functions
 include/inn/vector.h                  Header file for vectors of strings
 include/inn/wire.h                    Header file for wire-format functions
 include/inn/xmalloc.h                 Header file for allocation functions
+include/inn/xwrite.h                  Header file for partial write functions
 include/innperl.h                     Header file for embedded Perl
 include/portable                      Portability wrappers (Directory)
 include/portable/alloca.h             alloca replacement header
 include/portable/getaddrinfo.h        getaddrinfo replacement header
 include/portable/getnameinfo.h        getnameinfo replacement header
+include/portable/macros.h             Set of portability macros
 include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/setproctitle.h       Portable setup for setproctitle
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
+include/portable/uio.h                Wrapper for <sys/uio.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>
 include/ppport.h                      Header file for Perl support
 innd                                  Server (Directory)

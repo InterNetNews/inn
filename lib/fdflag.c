@@ -47,7 +47,7 @@
 #endif
 
 #include "inn/fdflag.h"
-#include "inn/libinn.h"
+#include "inn/macros.h"
 
 
 /*

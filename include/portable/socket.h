@@ -45,6 +45,7 @@
 #define PORTABLE_SOCKET_H 1
 
 #include "config.h"
+#include "portable/macros.h"
 
 #include <errno.h>
 #include <sys/types.h>
@@ -64,8 +65,8 @@
  * Pick up definitions of getaddrinfo and getnameinfo if not otherwise
  * available.
  */
-#include <portable/getaddrinfo.h>
-#include <portable/getnameinfo.h>
+#include "portable/getaddrinfo.h"
+#include "portable/getnameinfo.h"
 
 /* Define socklen_t if it's not available in sys/socket.h. */
 #ifndef HAVE_SOCKLEN_T

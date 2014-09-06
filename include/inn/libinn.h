@@ -8,6 +8,7 @@
 
 #include <inn/defines.h>
 #include "inn/xmalloc.h"
+#include "inn/xwrite.h"
 
 #include <stdarg.h>             /* va_list */
 #include <stdio.h>              /* FILE */
@@ -22,7 +23,6 @@
 
 /* Forward declarations to avoid unnecessary includes. */
 struct stat;
-struct iovec;
 struct sockaddr;
 struct sockaddr_in;
 struct in_addr;
@@ -80,11 +80,8 @@ extern char *   concatpath(const char *base, const char *name);
 extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
 extern int      setfdlimit(unsigned int limit);
-extern ssize_t  xpwrite(int fd, const void *buffer, size_t size, off_t offset);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern void     (*xsignal_norestart(int signum, void (*sigfunc)(int)))(int);
-extern ssize_t  xwrite(int fd, const void *buffer, size_t size);
-extern ssize_t  xwritev(int fd, const struct iovec *iov, int iovcnt);
 
 
 /* Headers. */

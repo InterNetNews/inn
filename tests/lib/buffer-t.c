@@ -1,12 +1,11 @@
-/*
- * buffer test suite.
+/* $Id$
  *
- * $Id$
+ * buffer test suite.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Written by Russ Allbery <rra@stanford.edu>
+ * Written by Russ Allbery <eagle@eyrie.org>
  *
  * The authors hereby relinquish any claim to any copyright that they may have
  * in this work, whether granted under contract or by operation of law or
@@ -21,16 +20,17 @@
 
 #include "config.h"
 #include "clibrary.h"
+
 #include <fcntl.h>
 
-#include "inn/buffer.h"
-#include "inn/messages.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
+#include "inn/buffer.h"
+#include "inn/xwrite.h"
 
 static const char test_string1[] = "This is a test";
 static const char test_string2[] = " of the buffer system";
 static const char test_string3[] = "This is a test\0 of the buffer system";
+
 
 /*
  * Test buffer_vsprintf.  Wrapper needed to generate the va_list.
@@ -116,6 +116,8 @@ main(void)
     /* buffer_resize */
     three = buffer_new();
     ok(three != NULL, "buffer_new works");
+    if (three == NULL)
+        bail("buffer_new returned NULL");
     is_int(0, three->size, "initial size is 0");
     buffer_set(three, test_string1, sizeof(test_string1));
     is_int(1024, three->size, "size becomes 1024 when adding data");
@@ -129,7 +131,7 @@ main(void)
     fd = open("buffer-test", O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (fd < 0)
         sysbail("cannot create buffer-test");
-    data = xmalloc(2048);
+    data = bmalloc(2048);
     memset(data, 'a', 1023);
     data[1023] = '\r';
     data[1024] = '\n';
@@ -140,6 +142,8 @@ main(void)
         sysbail("cannot rewind buffer-test");
     three = buffer_new();
     ok(three != NULL, "buffer_new works");
+    if (three == NULL)
+        bail("buffer_new returned NULL");
     is_int(0, three->size, "and initial size is 0");
     buffer_resize(three, 1024);
     is_int(1024, three->size, "resize to 1024 works");
@@ -193,7 +197,7 @@ main(void)
     buffer_sprintf(three, "%d testing", 8);
     is_int(9, three->left, "replacing the buffer works");
     is_string("8 testing", three->data, "and the results are correct");
-    data = xmalloc(1050);
+    data = bmalloc(1050);
     memset(data, 'a', 1049);
     data[1049] = '\0';
     is_int(1024, three->size, "size before large sprintf is 1024");
@@ -209,7 +213,7 @@ main(void)
     fd = open("buffer-test", O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (fd < 0)
         sysbail("cannot create buffer-test");
-    data = xmalloc(2049);
+    data = bmalloc(2049);
     memset(data, 'a', 2049);
     if (xwrite(fd, data, 2049) < 2049)
         sysbail("cannot write to buffer-test");
@@ -269,7 +273,7 @@ main(void)
     test_vsprintf(three, "%d testing", 8);
     is_int(9, three->left, "replacing the buffer results in the correct size");
     is_string("8 testing", three->data, "and the correct data");
-    data = xmalloc(1050);
+    data = bmalloc(1050);
     memset(data, 'a', 1049);
     data[1049] = '\0';
     is_int(1024, three->size, "size is 1024 before large vsprintf");
@@ -280,6 +284,9 @@ main(void)
     is_string(data, three->data, "and data is correct");
     free(data);
     buffer_free(three);
+
+    /* Test buffer_free with NULL and ensure it doesn't explode. */
+    buffer_free(NULL);
 
     return 0;
 }

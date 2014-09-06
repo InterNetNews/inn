@@ -27,6 +27,7 @@
 #define PORTABLE_GETNAMEINFO_H 1
 
 #include "config.h"
+#include "portable/macros.h"
 
 /* Skip this entire file if a system getaddrinfo was detected. */
 #if !HAVE_GETNAMEINFO

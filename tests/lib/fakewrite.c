@@ -1,12 +1,11 @@
-/*
- * Fake write and writev functions for testing xwrite and xwritev.
+/* $Id$
  *
- * $Id$
+ * Fake write and writev functions for testing xwrite and xwritev.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2000, 2001, 2002, 2004 Russ Allbery <rra@stanford.edu>
+ * Copyright 2000, 2001, 2002, 2004 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -31,10 +30,11 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <errno.h>
-#include <sys/uio.h>
+#include "portable/uio.h"
 
-#include "inn/libinn.h"
+#include <errno.h>
+
+#include "inn/macros.h"
 
 ssize_t fake_write(int, const void *, size_t);
 ssize_t fake_pwrite(int, const void *, size_t, off_t);

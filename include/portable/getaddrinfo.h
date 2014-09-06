@@ -28,6 +28,7 @@
 #define PORTABLE_GETADDRINFO_H 1
 
 #include "config.h"
+#include "portable/macros.h"
 
 /* Skip this entire file if a system getaddrinfo was detected. */
 #ifndef HAVE_GETADDRINFO
