@@ -37,11 +37,12 @@
 
 #include "config.h"
 #include "clibrary.h"
+
 #include <assert.h>
-#include <ctype.h>
 
 #include "inn/vector.h"
-#include "inn/libinn.h"
+#include "inn/xmalloc.h"
+
 
 /*
  * Allocate a new, empty vector.
@@ -70,9 +71,9 @@ cvector_new(void)
 
 
 /*
- * Resize a vector (using realloc to resize the table).  Maintain a minimum
- * allocated size of 1 so that the strings data element is never NULL.  This
- * simplifies other code.
+ * Resize a vector (using reallocarray to resize the table).  Maintain a
+ * minimum allocated size of 1 so that the strings data element is never NULL.
+ * This simplifies other code.
  */
 void
 vector_resize(struct vector *vector, size_t size)
@@ -87,7 +88,7 @@ vector_resize(struct vector *vector, size_t size)
     }
     if (size == 0)
         size = 1;
-    vector->strings = xrealloc(vector->strings, size * sizeof(char *));
+    vector->strings = xreallocarray(vector->strings, size, sizeof(char *));
     vector->allocated = size;
 }
 
@@ -100,7 +101,7 @@ cvector_resize(struct cvector *vector, size_t size)
     if (size == 0)
         size = 1;
     vector->strings
-        = xrealloc(vector->strings, size * sizeof(const char *));
+        = xreallocarray(vector->strings, size, sizeof(const char *));
     vector->allocated = size;
 }
 
