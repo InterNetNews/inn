@@ -36,6 +36,7 @@ main(void)
 {
     char *p, *base;
     size_t sqrt_max;
+    int oerrno;
 
     plan(15);
 
@@ -62,25 +63,31 @@ main(void)
 
     /* Test the range-checking error cases. */
     p = test_reallocarray(NULL, 2, SIZE_MAX / 2);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for 2, SIZE_MAX / 2");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
     base = malloc(10);
     p = test_reallocarray(base, 3, SIZE_MAX / 3);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for 3, SIZE_MAX / 3");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
     sqrt_max = (1UL << (sizeof(size_t) * 4));
     p = test_reallocarray(base, sqrt_max, sqrt_max);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for sqrt(SIZE_MAX), sqrt(SIZE_MAX)");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
     p = test_reallocarray(base, 1, SIZE_MAX);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for 1, SIZE_MAX");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
     p = test_reallocarray(base, SIZE_MAX, 1);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for SIZE_MAX, 1");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
     p = test_reallocarray(base, 2, SIZE_MAX);
+    oerrno = errno;
     ok(p == NULL, "reallocarray fails for 2, SIZE_MAX");
-    is_int(ENOMEM, errno, "...with correct errno");
+    is_int(ENOMEM, oerrno, "...with correct errno");
 
     /* Clean up and exit. */
     free(base);
