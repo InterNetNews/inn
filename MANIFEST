@@ -928,6 +928,8 @@ tests/tap/float.c                     Helper C library for floating point tests
 tests/tap/float.h                     Header file for floating point routines
 tests/tap/libtap.sh                   Helper shell library for writing tests
 tests/tap/macros.h                    Helpful macros for TAP header files
+tests/tap/process.c                   Subprocess manipulation utilities for TAP
+tests/tap/process.h                   Header file for subprocess manipulation
 tests/tap/string.c                    String utilities for the TAP protocol
 tests/tap/string.h                    Header file for string utilities
 tests/util                            Test suite for utilities (Directory)

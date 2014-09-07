@@ -167,8 +167,8 @@ lib/messages.o: ../lib/messages.c
 lib/messages-t.o: lib/messages-t.c
 	$(CC) $(CFLAGS) -DDEBUG -c -o $@ lib/messages-t.c
 
-lib/messages.t: lib/messages.o lib/messages-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/messages-t.o lib/messages.o tap/basic.o $(LIBINN)
+lib/messages.t: lib/messages.o lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
+	$(LINK) lib/messages-t.o lib/messages.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
 
 lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c

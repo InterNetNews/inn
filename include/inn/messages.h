@@ -1,75 +1,102 @@
-/*  $Id$
-**
-**  Logging, debugging, and error reporting functions.
-**
-**  This collection of functions facilitate logging, debugging, and error
-**  reporting in a flexible manner that can be used by libraries as well as by
-**  programs.  The functions are based around the idea of handlers, which take
-**  a message and do something appropriate with it.  The program can set the
-**  appropriate handlers for all the message reporting functions, and then
-**  library code can use them with impunity and know the right thing will
-**  happen with the messages.
-*/
+/* $Id$
+ *
+ * Prototypes for message and error reporting (possibly fatal).
+ *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Copyright 2008, 2010, 2013, 2014
+ *     The Board of Trustees of the Leland Stanford Junior University
+ * Copyright (c) 2004, 2005, 2006
+ *     by Internet Systems Consortium, Inc. ("ISC")
+ * Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+ *     2002, 2003 by The Internet Software Consortium and Rich Salz
+ *
+ * This code is derived from software contributed to the Internet Software
+ * Consortium by Rich Salz.
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
 
 #ifndef INN_MESSAGES_H
 #define INN_MESSAGES_H 1
 
-#include <inn/defines.h>
+#include "config.h"
+#include "portable/macros.h"
+
 #include <stdarg.h>
+#include <stddef.h>
 
 BEGIN_DECLS
 
-/* The reporting functions.  The ones prefaced by "sys" add a colon, a space,
-   and the results of strerror(errno) to the output and are intended for
-   reporting failures of system calls. */
-extern void notice(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void sysnotice(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void warn(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void syswarn(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-extern void die(const char *, ...)
-    __attribute__((__noreturn__, __format__(printf, 1, 2)));
-extern void sysdie(const char *, ...)
-    __attribute__((__noreturn__, __format__(printf, 1, 2)));
+/*
+ * The reporting functions.  The ones prefaced by "sys" add a colon, a space,
+ * and the results of strerror(errno) to the output and are intended for
+ * reporting failures of system calls.
+ */
+void debug(const char *, ...)
+    __attribute__((__nonnull__, __format__(printf, 1, 2)));
+void notice(const char *, ...)
+    __attribute__((__nonnull__, __format__(printf, 1, 2)));
+void sysnotice(const char *, ...)
+    __attribute__((__nonnull__, __format__(printf, 1, 2)));
+void warn(const char *, ...)
+    __attribute__((__nonnull__, __format__(printf, 1, 2)));
+void syswarn(const char *, ...)
+    __attribute__((__nonnull__, __format__(printf, 1, 2)));
+void die(const char *, ...)
+    __attribute__((__nonnull__, __noreturn__, __format__(printf, 1, 2)));
+void sysdie(const char *, ...)
+    __attribute__((__nonnull__, __noreturn__, __format__(printf, 1, 2)));
 
-/* Debug is handled specially, since we want to make the code disappear
-   completely unless we're built with -DDEBUG.  We can only do that with
-   support for variadic macros, though; otherwise, the function just won't do
-   anything. */
-#if !defined(DEBUG) && (INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS)
-# if INN_HAVE_C99_VAMACROS
-#  define debug(format, ...)            /* empty */
-# elif INN_HAVE_GNU_VAMACROS
-#  define debug(format, args...)        /* empty */
-# endif
-#else
-extern void debug(const char *, ...)
-    __attribute__((__format__(printf, 1, 2)));
-#endif
+/*
+ * Set the handlers for various message functions.  All of these functions
+ * take a count of the number of handlers and then function pointers for each
+ * of those handlers.  These functions are not thread-safe; they set global
+ * variables.
+ */
+void message_handlers_debug(unsigned int count, ...);
+void message_handlers_notice(unsigned int count, ...);
+void message_handlers_warn(unsigned int count, ...);
+void message_handlers_die(unsigned int count, ...);
 
-/* Set the handlers for various message functions.  All of these functions
-   take a count of the number of handlers and then function pointers for each
-   of those handlers.  These functions are not thread-safe; they set global
-   variables. */
-extern void message_handlers_debug(size_t count, ...);
-extern void message_handlers_notice(size_t count, ...);
-extern void message_handlers_warn(size_t count, ...);
-extern void message_handlers_die(size_t count, ...);
+/*
+ * Reset all message handlers back to the defaults and free any memory that
+ * was allocated by the other message_handlers_* functions.
+ */
+void message_handlers_reset(void);
 
-/* Some useful handlers, intended to be passed to message_handlers_*.  All
-   handlers take the length of the formatted message, the format, a variadic
-   argument list, and the errno setting if any. */
-extern void message_log_stdout(size_t, const char *, va_list, int);
-extern void message_log_stderr(size_t, const char *, va_list, int);
-extern void message_log_syslog_debug(size_t, const char *, va_list, int);
-extern void message_log_syslog_info(size_t, const char *, va_list, int);
-extern void message_log_syslog_notice(size_t, const char *, va_list, int);
-extern void message_log_syslog_warning(size_t, const char *, va_list, int);
-extern void message_log_syslog_err(size_t, const char *, va_list, int);
-extern void message_log_syslog_crit(size_t, const char *, va_list, int);
+/*
+ * Some useful handlers, intended to be passed to message_handlers_*.  All
+ * handlers take the length of the formatted message, the format, a variadic
+ * argument list, and the errno setting if any.
+ */
+void message_log_stdout(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_stderr(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_debug(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_info(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_notice(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_warning(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_err(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
+void message_log_syslog_crit(size_t, const char *, va_list, int)
+    __attribute__((__nonnull__));
 
 /* The type of a message handler. */
 typedef void (*message_handler_func)(size_t, const char *, va_list, int);
@@ -77,10 +104,12 @@ typedef void (*message_handler_func)(size_t, const char *, va_list, int);
 /* If non-NULL, called before exit and its return value passed to exit. */
 extern int (*message_fatal_cleanup)(void);
 
-/* If non-NULL, prepended (followed by ": ") to all messages printed by either
-   message_log_stdout or message_log_stderr. */
+/*
+ * If non-NULL, prepended (followed by ": ") to all messages printed by either
+ * message_log_stdout or message_log_stderr.
+ */
 extern const char *message_program_name;
 
 END_DECLS
 
-#endif /* INN_MESSAGE_H */
+#endif /* INN_MESSAGES_H */
