@@ -240,7 +240,7 @@ lib/xwrite.o: ../lib/xwrite.c
 lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o libtest.o $(LIBINN)
 
-nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o $(LIBINN)
+nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o libtest.o $(LIBINN)
 	$(LINK) nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o libtest.o $(LIBINN)
 
 overview/api.t: overview/api-t.o libtest.o $(STORAGEDEPS)
