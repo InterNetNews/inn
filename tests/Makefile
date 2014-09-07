@@ -106,8 +106,8 @@ lib/date.t: lib/date-t.o tap/basic.o $(LIBINN)
 lib/dispatch.t: lib/dispatch-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/dispatch-t.o tap/basic.o $(LIBINN)
 
-lib/fdflag.t: lib/fdflag.o lib/fdflag-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/fdflag.o lib/fdflag-t.o tap/basic.o $(LIBINN) $(LIBS)
+lib/fdflag.t: lib/fdflag-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/fdflag-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/getaddrinfo.o: ../lib/getaddrinfo.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c
@@ -165,14 +165,8 @@ lib/memcmp.o: ../lib/memcmp.c
 lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o tap/basic.o
 	$(LINK) lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
 
-lib/messages.o: ../lib/messages.c
-	$(CC) $(CFLAGS) -DDEBUG -c -o $@ ../lib/messages.c
-
-lib/messages-t.o: lib/messages-t.c
-	$(CC) $(CFLAGS) -DDEBUG -c -o $@ lib/messages-t.c
-
-lib/messages.t: lib/messages.o lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
-	$(LINK) lib/messages-t.o lib/messages.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
+lib/messages.t: lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
+	$(LINK) lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
 
 lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
