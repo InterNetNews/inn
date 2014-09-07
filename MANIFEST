@@ -878,7 +878,7 @@ tests/lib/confparse-t.c               Tests for lib/confparse.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/dispatch-t.c                Tests for lib/dispatch.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests
-tests/lib/fdflag-t-c                  Tests for lib/fdflag.c
+tests/lib/fdflag-t.c                  Tests for lib/fdflag.c
 tests/lib/getaddrinfo-t.c             Tests for lib/getaddrinfo.c
 tests/lib/getnameinfo-t.c             Tests for lib/getnameinfo.c
 tests/lib/hash-t.c                    Tests for lib/hash.c
@@ -929,6 +929,8 @@ tests/tap/float.c                     Helper C library for floating point tests
 tests/tap/float.h                     Header file for floating point routines
 tests/tap/libtap.sh                   Helper shell library for writing tests
 tests/tap/macros.h                    Helpful macros for TAP header files
+tests/tap/messages.c                  Message handling utilities for TAP
+tests/tap/messages.h                  Header file for message handling
 tests/tap/process.c                   Subprocess manipulation utilities for TAP
 tests/tap/process.h                   Header file for subprocess manipulation
 tests/tap/string.c                    String utilities for the TAP protocol

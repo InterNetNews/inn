@@ -97,8 +97,9 @@ lib/concat.t: lib/concat-t.o tap/basic.o $(LIBINN)
 lib/conffile.t: lib/conffile-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/conffile-t.o tap/basic.o $(LIBINN)
 
-lib/confparse.t: lib/confparse-t.o tap/basic.o tap/float.o $(LIBINN)
-	$(LINK) $(LIBM_LDFLAGS) lib/confparse-t.o tap/basic.o tap/float.o $(LIBINN)
+lib/confparse.t: lib/confparse-t.o tap/basic.o tap/float.o tap/messages.o tap/string.o $(LIBINN)
+	$(LINK) $(LIBM_LDFLAGS) lib/confparse-t.o tap/basic.o tap/float.o \
+	    tap/messages.o tap/string.o $(LIBINN)
 
 lib/date.t: lib/date-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/date-t.o tap/basic.o $(LIBINN)
@@ -150,8 +151,9 @@ lib/inet_ntop.o: ../lib/inet_ntop.c
 lib/inet_ntop.t: lib/inet_ntop.o lib/inet_ntop-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/inet_ntop.o lib/inet_ntop-t.o tap/basic.o $(LIBINN)
 
-lib/innconf.t: lib/innconf-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/innconf-t.o tap/basic.o $(LIBINN) $(LIBS)
+lib/innconf.t: lib/innconf-t.o tap/basic.o tap/messages.o tap/string.o $(LIBINN)
+	$(LINK) lib/innconf-t.o tap/basic.o tap/messages.o \
+	    tap/string.o $(LIBINN) $(LIBS)
 
 lib/list.t: lib/list-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/list-t.o tap/basic.o $(LIBINN) $(LIBS)
@@ -166,7 +168,8 @@ lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o tap/basic.o
 	$(LINK) lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
 
 lib/messages.t: lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
-	$(LINK) lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
+	$(LINK) lib/messages-t.o tap/basic.o tap/process.o tap/string.o \
+	    $(LIBINN)
 
 lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
@@ -241,10 +244,12 @@ lib/xwrite.o: ../lib/xwrite.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/xwrite.c
 
 lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o $(LIBINN)
-	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o $(LIBINN)
+	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o \
+	    $(LIBINN)
 
-nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o $(LIBINN)
-	$(LINK) nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o $(LIBINN)
+nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o tap/messages.o tap/string.o $(LIBINN)
+	$(LINK) nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o \
+	    tap/messages.o tap/string.o $(LIBINN)
 
 overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINK) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)

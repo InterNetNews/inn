@@ -6,6 +6,7 @@
 
 #include "inn/messages.h"
 #include "tap/basic.h"
+#include "tap/messages.h"
 
 #include "../../nnrpd/nnrpd.h"
 

@@ -10,6 +10,7 @@
 #include "inn/libinn.h"
 #include "tap/basic.h"
 #include "tap/float.h"
+#include "tap/messages.h"
 
 /* Given a FILE *, read from that file, putting the results into a newly
    allocated buffer, until encountering a line consisting solely of "===".
