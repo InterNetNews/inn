@@ -21,27 +21,9 @@
 
 #include <inn/system.h>
 #include "inn/macros.h"
+#include "portable/stdbool.h"
 
-/* Make available the bool type. */
-#if INN_HAVE_STDBOOL_H
-# include <stdbool.h>
-#else
-# if !INN_HAVE__BOOL
-#  ifdef __cplusplus
-typedef bool _Bool;
-#  else
-typedef unsigned char _Bool;
-#  endif
-# endif
-# define bool _Bool
-# define false 0
-# define true 1
-# define __bool_true_false_are_defined 1
-#endif
-
-/* Tell Perl that we have a bool type. */
-#ifndef HAS_BOOL
-# define HAS_BOOL 1
-#endif
+// TODO:  Remove this file (defines.h), now that it has been split
+//        into other headers.
 
 #endif /* !INN_DEFINES_H */

@@ -420,6 +420,7 @@ include/portable/macros.h             Set of portability macros
 include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/setproctitle.h       Portable setup for setproctitle
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
+include/portable/stdbool.h            Wrapper for <stdbool.h>
 include/portable/time.h               Wrapper for <time.h> and <sys/time.h>
 include/portable/uio.h                Wrapper for <sys/uio.h>
 include/portable/wait.h               Wrapper for <sys/wait.h>

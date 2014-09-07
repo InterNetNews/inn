@@ -32,6 +32,8 @@
 #define INN_FDFLAG_H 1
 
 #include "config.h"
+#include "portable/macros.h"
+#include "portable/stdbool.h"
 #include "portable/socket.h"
 
 BEGIN_DECLS
