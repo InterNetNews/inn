@@ -17,7 +17,8 @@ LIBM_LDFLAGS    = '-lm'
 
 TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
-	lib/dispatch.t lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
+	lib/dispatch.t lib/fdflag.t \
+	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/hex.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
 	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
@@ -104,6 +105,9 @@ lib/date.t: lib/date-t.o tap/basic.o $(LIBINN)
 
 lib/dispatch.t: lib/dispatch-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/dispatch-t.o tap/basic.o $(LIBINN)
+
+lib/fdflag.t: lib/fdflag.o lib/fdflag-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/fdflag.o lib/fdflag-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/getaddrinfo.o: ../lib/getaddrinfo.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c

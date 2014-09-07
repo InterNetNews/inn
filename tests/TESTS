@@ -11,6 +11,7 @@ lib/conffile
 lib/confparse
 lib/date
 lib/dispatch
+lib/fdflag
 lib/getaddrinfo
 lib/getnameinfo
 lib/hash

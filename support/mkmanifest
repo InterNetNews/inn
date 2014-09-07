@@ -266,6 +266,7 @@ tests/lib/conffile.t
 tests/lib/confparse.t
 tests/lib/date.t
 tests/lib/dispatch.t
+tests/lib/fdflag.t
 tests/lib/getaddrinfo.t
 tests/lib/getnameinfo.t
 tests/lib/hash.t
