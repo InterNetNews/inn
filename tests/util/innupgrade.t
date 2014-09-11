@@ -13,7 +13,7 @@ printcount () {
 
 # Run innupgrade with the given arguments and expect it to succeed.
 run () {
-    $innupgrade "$@"
+    perl -Tw ${innupgrade} "$@"
     if [ $? = 0 ] ; then
         printcount "ok"
     else
