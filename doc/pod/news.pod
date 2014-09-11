@@ -193,6 +193,12 @@ the patch.
 
 =item *
 
+Fixed how B<innupgrade> is executed during an update of an INN
+installation; on a few systems like AIX, it fails to run because its
+taint mode was unproperly declared.
+
+=item *
+
 Several improvements have been contributed to B<pullnews> by Geraint
 Edwards:  the new B<-a> flag adds the Diablo-compatible hashfeed
 ability, the new B<-B> flag triggers header-only feeding, the B<-m>
