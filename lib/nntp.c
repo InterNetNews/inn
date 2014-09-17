@@ -80,8 +80,9 @@ nntp_free(struct nntp *nntp)
 
 /*
 **  Connect to a remote NNTP server.  Allocates and returns a new nntp struct.
-**  Takes the server name, the port to connect to, and the maximum buffer size
-**  to use.  On failure to connect to the remote host, returns NULL.
+**  Takes the server name, the port to connect to, the maximum buffer size
+**  to use, and the timeout value.  On failure to connect to the remote host,
+**  returns NULL.
 */
 struct nntp *
 nntp_connect(const char *host, unsigned short port, size_t maxsize,
@@ -89,7 +90,7 @@ nntp_connect(const char *host, unsigned short port, size_t maxsize,
 {
     int fd;
 
-    fd = network_connect_host(host, port, NULL);
+    fd = network_connect_host(host, port, NULL, timeout);
     if (fd < 0)
         return NULL;
     return nntp_new(fd, fd, maxsize, timeout);

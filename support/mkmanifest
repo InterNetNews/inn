@@ -281,7 +281,10 @@ tests/lib/md5.t
 tests/lib/memcmp.t
 tests/lib/messages.t
 tests/lib/mkstemp.t
-tests/lib/network.t
+tests/lib/network/addr-ipv4.t
+tests/lib/network/addr-ipv6.t
+tests/lib/network/client.t
+tests/lib/network/server.t
 tests/lib/pread.t
 tests/lib/pwrite.t
 tests/lib/qio.t

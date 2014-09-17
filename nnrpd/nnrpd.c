@@ -24,6 +24,7 @@
 #include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/network.h"
+#include "inn/network-innbind.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
 #include "inn/version.h"
@@ -499,7 +500,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
 
     /* Get addresses for this host. */
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = NETWORK_AF_HINT;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     ret = getaddrinfo(hostname, NULL, &hints, &ai);
     if (ret != 0) {
@@ -997,7 +998,7 @@ main(int argc, char *argv[])
         /* Allocate an lfds array to hold the file descriptors
          * for IPv4 and/or IPv6 connections. */
         if (ListenAddr == NULL && ListenAddr6 == NULL) {
-            network_bind_all(ListenPort, &lfds, &lfdcount);
+            network_innbind_all(SOCK_STREAM, ListenPort, &lfds, &lfdcount);
         } else {
             if (ListenAddr != NULL && ListenAddr6 != NULL)
                 lfdcount = 2;
@@ -1005,10 +1006,14 @@ main(int argc, char *argv[])
                 lfdcount = 1;
             lfds = xmalloc(lfdcount * sizeof(int));
             i = 0;
-            if (ListenAddr6 != NULL)
-                lfds[i++] = network_bind_ipv6(ListenAddr6, ListenPort);
-            if (ListenAddr != NULL)
-                lfds[i] = network_bind_ipv4(ListenAddr, ListenPort);
+            if (ListenAddr6 != NULL) {
+                lfds[i++] = network_innbind_ipv6(SOCK_STREAM, ListenAddr6,
+                                                 ListenPort);
+            }
+            if (ListenAddr != NULL) {
+                lfds[i] = network_innbind_ipv4(SOCK_STREAM, ListenAddr,
+                                               ListenPort);
+            }
         }
 
         /* Bail if we couldn't listen on any sockets. */

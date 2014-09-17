@@ -23,7 +23,7 @@ client(const char *host)
     int fd;
     char buffer[32];
 
-    fd = network_connect_host(host, 11119, NULL);
+    fd = network_connect_host(host, 11119, NULL, DEFAULT_TIMEOUT);
     if (fd < 0)
         _exit(1);
     read(fd, buffer, sizeof(buffer));
@@ -59,7 +59,7 @@ server_ipv4(int n)
     snprintf(wanted, sizeof(wanted), "User:%s\r\n", pwd->pw_name);
 
     /* Create the network connection so ident has something to look at. */
-    fd = network_bind_ipv4("127.0.0.1", 11119);
+    fd = network_bind_ipv4(SOCK_STREAM, "127.0.0.1", 11119);
     if (fd < 0)
         sysdie("cannot bind");
     if (listen(fd, 1) < 0)

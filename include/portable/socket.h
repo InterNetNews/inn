@@ -251,7 +251,9 @@ extern const char *inet_ntop(int, const void *, char *, socklen_t);
  * When reporting errors from socket functions, use socket_errno and
  * socket_strerror instead of errno and strerror.  When setting errno to
  * something for socket errors (to preserve errors through close, for
- * example), use socket_set_errno instead of just assigning to errno.
+ * example), use socket_set_errno instead of just assigning to errno.  Use
+ * socket_set_errno_einval when setting the socket error to EINVAL (for
+ * invalid arguments), since Windows doesn't use the C errno value for this.
  *
  * Socket file descriptors must be passed and stored in variables of type
  * socket_type rather than an int.  Use INVALID_SOCKET for invalid socket file
@@ -260,24 +262,26 @@ extern const char *inet_ntop(int, const void *, char *, socklen_t);
  */
 #ifdef _WIN32
 int socket_init(void);
-# define socket_shutdown()      WSACleanup()
-# define socket_close(fd)       closesocket(fd)
-# define socket_read(fd, b, s)  recv((fd), (b), (s), 0)
-# define socket_write(fd, b, s) send((fd), (b), (s), 0)
-# define socket_errno           WSAGetLastError()
-# define socket_set_errno(e)    WSASetLastError(e)
+# define socket_shutdown()              WSACleanup()
+# define socket_close(fd)               closesocket(fd)
+# define socket_read(fd, b, s)          recv((fd), (b), (s), 0)
+# define socket_write(fd, b, s)         send((fd), (b), (s), 0)
+# define socket_errno                   WSAGetLastError()
+# define socket_set_errno(e)            WSASetLastError(e)
+# define socket_set_errno_einval()      WSASetLastError(WSAEINVAL)
 const char *socket_strerror(int);
 typedef SOCKET socket_type;
 #else
-# define socket_init()          1
-# define socket_shutdown()      /* empty */
-# define socket_close(fd)       close(fd)
-# define socket_read(fd, b, s)  read((fd), (b), (s))
-# define socket_write(fd, b, s) write((fd), (b), (s))
-# define socket_errno           errno
-# define socket_set_errno(e)    errno = (e)
-# define socket_strerror(e)     strerror(e)
-# define INVALID_SOCKET         -1
+# define socket_init()                  1
+# define socket_shutdown()              /* empty */
+# define socket_close(fd)               close(fd)
+# define socket_read(fd, b, s)          read((fd), (b), (s))
+# define socket_write(fd, b, s)         write((fd), (b), (s))
+# define socket_errno                   errno
+# define socket_set_errno(e)            errno = (e)
+# define socket_set_errno_einval()      errno = EINVAL
+# define socket_strerror(e)             strerror(e)
+# define INVALID_SOCKET                 -1
 typedef int socket_type;
 #endif
 

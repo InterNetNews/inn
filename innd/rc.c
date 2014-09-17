@@ -14,6 +14,7 @@
 #include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/network.h"
+#include "inn/network-innbind.h"
 #include "inn/vector.h"
 #include "innd.h"
 
@@ -456,11 +457,6 @@ RCreader(CHANNEL *cp)
 	if (errno != EWOULDBLOCK && errno != EAGAIN)
 	    syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
 	return;
-    }
-    if (!network_kill_options(fd, (struct sockaddr *) &remote)) {
-        if (close(fd) < 0)
-            syslog(L_ERROR, "%s cant close %d %m", LogName, fd);
-        return;
     }
 
     /* If RemoteTimer is not zero, then check the limits on incoming
@@ -1743,19 +1739,23 @@ RCsetup(void)
        descriptors.  Two is probably always sufficient, but we can't tell for
        sure how many will be returned by getaddrinfo and this only happens on
        startup so doing a bit of memory allocation won't hurt. */
-    if (innconf->bindaddress == NULL && innconf->bindaddress6 == NULL)
-        network_bind_all(innconf->port, &fds, &count);
-    else {
+    if (innconf->bindaddress == NULL && innconf->bindaddress6 == NULL) {
+        network_innbind_all(SOCK_STREAM, innconf->port, &fds, &count);
+    } else {
         if (innconf->bindaddress != NULL && innconf->bindaddress6 != NULL)
             count = 2;
         else
             count = 1;
         fds = xmalloc(count * sizeof(int));
         i = 0;
-        if (innconf->bindaddress6 != NULL)
-            fds[i++] = network_bind_ipv6(innconf->bindaddress6, innconf->port);
-        if (innconf->bindaddress != NULL)
-            fds[i] = network_bind_ipv4(innconf->bindaddress, innconf->port);
+        if (innconf->bindaddress6 != NULL) {
+            fds[i++] = network_innbind_ipv6(SOCK_STREAM, innconf->bindaddress6,
+                                            innconf->port);
+        }
+        if (innconf->bindaddress != NULL) {
+            fds[i] = network_innbind_ipv4(SOCK_STREAM, innconf->bindaddress,
+                                          innconf->port);
+        }
     }
 
     /* Make sure that the RCchan array is of the appropriate size. */

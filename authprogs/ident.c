@@ -81,7 +81,8 @@ main(int argc, char *argv[])
         die("did not get client information from nnrpd");
 
     /* Connect back to the client system. */
-    sock = network_connect_host(res->clientip, identport, res->localip);
+    sock = network_connect_host(res->clientip, identport, res->localip,
+                                DEFAULT_TIMEOUT);
     if (sock < 0) {
         if (errno != ECONNREFUSED)
             sysdie("cannot connect to ident server");

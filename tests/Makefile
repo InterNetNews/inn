@@ -21,8 +21,10 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/hex.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
-	lib/memcmp.t lib/messages.t lib/mkstemp.t lib/network.t lib/pread.t \
-	lib/pwrite.t lib/qio.t lib/reallocarray.t \
+	lib/memcmp.t lib/messages.t lib/mkstemp.t \
+	lib/network/addr-ipv4.t lib/network/addr-ipv6.t \
+	lib/network/client.t lib/network/server.t \
+	lib/pread.t lib/pwrite.t lib/qio.t lib/reallocarray.t \
 	lib/setenv.t lib/snprintf.t lib/strlcat.t \
 	lib/strlcpy.t lib/tst.t lib/uwildmat.t lib/vector.t lib/wire.t \
 	lib/xwrite.t nnrpd/auth-ext.t overview/api.t overview/buffindexed.t \
@@ -41,8 +43,9 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' build
 
 clean clobber distclean maintclean:
-	rm -f *.o *.lo */*.o */*.lo .pure */.pure $(TESTS) $(EXTRA)
-	rm -rf .libs */.libs
+	rm -f *.o *.lo */*.o */*.lo */*/*.o */*/*.o \
+	  .pure */.pure */*/.pure $(TESTS) $(EXTRA)
+	rm -rf .libs */.libs */*/.libs
 
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
@@ -177,8 +180,19 @@ lib/mkstemp.o: ../lib/mkstemp.c
 lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o tap/basic.o
 	$(LINK) lib/mkstemp.o lib/mkstemp-t.o tap/basic.o $(LIBINN)
 
-lib/network.t: lib/network-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/network-t.o tap/basic.o $(LIBINN) $(LIBS)
+lib/network/addr-ipv4.t: lib/network/addr-ipv4-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/network/addr-ipv4-t.o tap/basic.o $(LIBINN) $(LIBS)
+
+lib/network/addr-ipv6.t: lib/network/addr-ipv6-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/network/addr-ipv6-t.o tap/basic.o $(LIBINN) $(LIBS)
+
+lib/network/client.t: lib/network/client-t.o tap/basic.o tap/messages.o tap/string.o $(LIBINN)
+	$(LINK) lib/network/client-t.o tap/basic.o tap/messages.o \
+	    tap/string.o $(LIBINN) $(LIBS)
+
+lib/network/server.t: lib/network/server-t.o tap/basic.o tap/messages.o tap/string.o $(LIBINN)
+	$(LINK) lib/network/server-t.o tap/basic.o tap/messages.o \
+	    tap/string.o $(LIBINN) $(LIBS)
 
 lib/pread.o: ../lib/pread.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c

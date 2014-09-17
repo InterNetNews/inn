@@ -394,6 +394,7 @@ include/inn/macros.h                  Header file for useful macros
 include/inn/md5.h                     Header file for MD5 digests
 include/inn/messages.h                Header file for message functions
 include/inn/mmap.h                    Header file for mmap() functions
+include/inn/network-innbind.h         Header file for functions using innbind
 include/inn/network.h                 Header file for network functions
 include/inn/newsuser.h                Header file for ensuring running as news
 include/inn/nntp.h                    Header file for NNTP functions and codes
@@ -523,6 +524,7 @@ lib/messageid.c                       Functions for message-IDs
 lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
 lib/mmap.c                            mmap manipulation routines
+lib/network-innbind.c                 Network utility functions using innbind
 lib/network.c                         Network utility functions
 lib/newsuser.c                        Ensure running as news user/group
 lib/nntp.c                            NNTP utility library
@@ -893,7 +895,11 @@ tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/messages-t.c                Tests for lib/messages.c
 tests/lib/mkstemp-t.c                 Tests for lib/mkstemp.c
-tests/lib/network-t.c                 Tests for lib/network.c
+tests/lib/network                     Test suite for network (Directory)
+tests/lib/network/addr-ipv4-t.c       Tests for lib/network.c (IPv4-oriented)
+tests/lib/network/addr-ipv6-t.c       Tests for lib/network.c (IPv6-oriented)
+tests/lib/network/client-t.c          Tests for lib/network.c (client-oriented)
+tests/lib/network/server-t.c          Tests for lib/network.c (server-oriented)
 tests/lib/pread-t.c                   Tests for lib/pread.c
 tests/lib/pwrite-t.c                  Tests for lib/pwrite.c
 tests/lib/qio-t.c                     Tests for lib/qio.c

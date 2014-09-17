@@ -6,13 +6,6 @@ Notes about IPv6 support in INN:
    INN (see also the parts of the code marked FIXME):
 
 
-Things that will break if you compile with --enable-ipv6:
-
-    * IP_OPTIONS are not cleared for any incoming connections to innd even
-      over IPv4
-  
-
-
 Some comments as of the completion of the original patch:
 
     Date: Wed, 13 Feb 2002 00:10:59 -0500 (EST)

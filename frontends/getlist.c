@@ -265,7 +265,7 @@ main(int argc, char *argv[])
     /* Connect to the server. */
     if (host == NULL)
         sysdie("cannot get server name");
-    nntp = nntp_connect(host, port, 128 * 1024, 10 * 60);
+    nntp = nntp_connect(host, port, 128 * 1024, DEFAULT_TIMEOUT);
     if (nntp == NULL)
         sysdie("cannot connect to server %s:%hu", host, port);
     status = nntp_read_response(nntp, &response, &line);

@@ -35,7 +35,7 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
     }
     *buff = '\0';
 
-    fd = network_connect_host(host, port, NULL);
+    fd = network_connect_host(host, port, NULL, DEFAULT_TIMEOUT);
     if (fd < 0)
         return -1;
 

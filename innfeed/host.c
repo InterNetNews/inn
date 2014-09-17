@@ -1171,7 +1171,7 @@ struct sockaddr *hostIpAddr (Host host)
       char port[20];
 
       memset(&hints, 0, sizeof(hints));
-      hints.ai_family = NETWORK_AF_HINT;
+      hints.ai_family = AF_UNSPEC;
 #ifdef HAVE_INET6
       if (host->params->bindAddr && strcmp(host->params->bindAddr, "none") == 0)
         hints.ai_family = AF_INET6;

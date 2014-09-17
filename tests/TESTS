@@ -26,7 +26,10 @@ lib/md5
 lib/memcmp
 lib/messages
 lib/mkstemp
-lib/network
+lib/network/addr-ipv4
+lib/network/addr-ipv6
+lib/network/client
+lib/network/server
 lib/pread
 lib/pwrite
 lib/qio
