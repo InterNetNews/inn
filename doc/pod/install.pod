@@ -441,14 +441,6 @@ If the OpenSSL SSL and crypto libraries are found at configure time,
 INN will be built with TLS/SSL support unless the B<--without-openssl>
 flag is explicitly passed to configure.
 
-=item B<--enable-ipv6>
-
-Enables support for IPv6 in B<innd>, B<innfeed>, B<nnrpd>, and several of the
-supporting programs.  This option should be considered developmental at
-present.  For more information see F<doc/IPv6-info> (and if you have any
-particularly good or bad news to report, please let us know at
-<inn-workers@lists.isc.org>).
-
 =back
 
 For the most common installation, a standalone news server, a suggested

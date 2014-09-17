@@ -122,15 +122,6 @@ AC_ARG_WITH([innd-port],
     [AC_DEFINE_UNQUOTED([INND_PORT], [$with_innd_port],
         [Additional permitted low-numbered port for innbind.])])
 
-dnl Whether IPv6 support should be enabled (disabled by default).  Eventually
-dnl this will be automatically detected and always turned on, but it's not
-dnl quite mature enough yet.
-AC_ARG_ENABLE([ipv6],
-    [AS_HELP_STRING([--enable-ipv6], [Enable IPv6 support])],
-    [if test "x$enableval" = xyes ; then
-        AC_DEFINE([HAVE_INET6], [1], [Define to enable IPv6 support.])
-    fi])
-
 dnl Whether to use a different (less tested) history algorithm.  This will
 dnl eventually be a runtime option rather than a compile-time option as soon
 dnl as the #ifdefs can be untangled and put into the history API.  The output
@@ -453,6 +444,13 @@ AC_CHECK_TYPES([union semun], [], [],
     [#include <sys/types.h>
      #include <sys/ipc.h>
      #include <sys/sem.h>])
+
+dnl Enable IPv6 unconditionally if available.
+AC_CHECK_TYPES([struct sockaddr_in6],
+    [AC_DEFINE([HAVE_INET6], [1],
+        [Define to 1 if IPv6 library interfaces are available.])], [],
+    [#include <sys/types.h>
+     #include <netinet/in.h>])
 
 dnl See if struct sockaddr_storage is available, and if so, how its members
 dnl are named.

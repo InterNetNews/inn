@@ -28,6 +28,11 @@ support has been renamed to B<--with-bdb>.
 
 =item *
 
+The B<--enable-ipv6> configure flag no longer exists.  IPv6 is now
+unconditionally enabled, if available.
+
+=item *
+
 $HOME is no longer exported as an environment variable by B<innshellvars>,
 B<innshellvars.tcl> and the Perl module C<INN::Config>.  It was previously
 overriding the default user home directory with I<pathnews>.  If you use
