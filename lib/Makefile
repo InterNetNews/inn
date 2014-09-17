@@ -29,7 +29,8 @@ SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c	   \
 		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
-		inet_ntop.c memcmp.c mkstemp.c pread.c pwrite.c setenv.c   \
+		inet_ntop.c memcmp.c mkstemp.c pread.c pwrite.c            \
+	        reallocarray.c setenv.c                                    \
 		seteuid.c setproctitle.c snprintf.c strcasecmp.c strlcat.c \
 		strlcpy.c strspn.c strtok.c symlink.c
 
@@ -538,6 +539,11 @@ pread.o: pread.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/macros.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
+  ../include/inn/macros.h
+reallocarray.o: reallocarray.c ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h
