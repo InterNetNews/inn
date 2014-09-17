@@ -867,6 +867,8 @@ tests/data/upgrade/newsfeeds          newsfeeds file that needs fixing
 tests/data/upgrade/newsfeeds.ok       Fixed newsfeeds file
 tests/data/upgrade/overview.fmt       Obsolete overview.fmt config file
 tests/data/upgrade/sasl.conf          Obsolete sasl.conf config file
+tests/docs                            Test suite for documentation (Directory)
+tests/docs/pod.t                       Tests for POD formatting
 tests/innd                            Test suite for innd (Directory)
 tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd

@@ -2,6 +2,7 @@ authprogs/ckpasswd
 authprogs/domain
 authprogs/ident
 clients/getlist
+docs/pod
 innd/artparse
 innd/chan
 lib/asprintf

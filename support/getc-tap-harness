@@ -40,11 +40,11 @@ download ()
   then
     echo "File $1 does not exist in upstream package"
   else
-    if [ "$2" = "tests" ] || [ "$2" = "tests/tap" ]
+    if [ "$2" = "tests" ] || [ "$2" = "tests/docs" ] || [ "$2" = "tests/tap" ]
     then
       # Add the SVN Id keyword at the beginning of source code files,
       # and update the path of included C header files.
-      # Changes in shell scripts and C files are not the same.
+      # Changes in shell, Perl and C files are not the same.
       # Also, do not modify the README file.
       if [ "$3" = "libtap.sh" ]
       then
@@ -52,6 +52,27 @@ download ()
 # \$Id\$\\
 #" \
                ${TEMP}
+      elif [ "$3" = "pod.t" ]
+      then
+        # Apply specific changes to POD checking, so as to best suit
+        # our needs.
+        sed -i -e "3 i \\
+# \$Id\$\\
+#\\
+# This file is part of C TAP Harness.  The current version plus supporting\\
+# documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.\\
+#" \
+               -e 's/C TAP Harness/INN/g' \
+               -e '5,8d' \
+               -e '10,11d' \
+               -e '/^use warnings;$/d' \
+               -e "42 i \\
+\$Test::Pod::ignore_dirs{'.libs'} = 'Libs';\\
+" \
+               -e "s/'docs'/'.'/g" \
+               -e 's/docs/root/g' \
+               ${TEMP}
+        chmod 755 ${TEMP}
       elif [ "$3" != "README" ]
       then
         sed -i -e '1 s/$/ $Id$\n */' \
@@ -192,6 +213,9 @@ download tests/tap/float.c tests/tap float.c
 download tests/tap/float.h tests/tap float.h
 download tests/tap/libtap.sh tests/tap libtap.sh
 download tests/tap/macros.h tests/tap macros.h
+
+##  Synchronize the POD checker test suite.
+download tests/docs/pod.t tests/docs pod.t
 
 ##  Synchronize the README file from upstream.
 download docs/writing-tests tests README
