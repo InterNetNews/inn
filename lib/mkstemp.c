@@ -24,7 +24,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include "portable/time.h"
+#include <sys/time.h>
 
 /*
  * If we're running the test suite, rename mkstemp to avoid conflicts with the

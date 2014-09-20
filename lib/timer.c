@@ -39,8 +39,12 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/time.h"
 #include <syslog.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #include "inn/messages.h"
 #include "inn/timer.h"

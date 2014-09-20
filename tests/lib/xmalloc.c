@@ -37,7 +37,7 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include "portable/time.h"
+#include <sys/time.h>
 
 /* Linux requires sys/time.h be included before sys/resource.h. */
 #include <sys/resource.h>

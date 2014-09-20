@@ -73,7 +73,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/time.h"
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_LIMITS_H
@@ -88,6 +87,11 @@
 # define MAX_UNZIP_SZ 100000
 # define COMPRESS_MIN 600
 #endif
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #include "conffile.h"
 #include "inn/fdflag.h"

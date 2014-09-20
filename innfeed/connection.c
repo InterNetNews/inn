@@ -51,7 +51,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/time.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -59,6 +58,11 @@
 #include <netdb.h>
 #include <signal.h>
 #include <syslog.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #if defined (__FreeBSD__)
 # include <sys/ioctl.h>

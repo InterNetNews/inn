@@ -6,7 +6,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/mmap.h"
-#include "portable/time.h"
 #include "portable/setproctitle.h"
 #include "portable/socket.h"
 #include "portable/wait.h"
@@ -17,6 +16,11 @@
 # include <sys/select.h>
 #endif
 #include <syslog.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>

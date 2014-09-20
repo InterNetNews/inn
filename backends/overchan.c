@@ -12,10 +12,14 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/time.h"
 #include <errno.h>
 #include <syslog.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

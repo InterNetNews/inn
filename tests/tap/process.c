@@ -50,7 +50,7 @@
 # include <sys/select.h>
 #endif
 #include <sys/stat.h>
-#include "portable/time.h"
+#include <sys/time.h>
 #include "portable/wait.h"
 
 #include "tap/basic.h"

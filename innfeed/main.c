@@ -9,7 +9,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/time.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -20,6 +19,11 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <syslog.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #if defined(HAVE_UNIX_DOMAIN_SOCKETS)
 # include <sys/un.h>

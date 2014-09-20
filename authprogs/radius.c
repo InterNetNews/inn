@@ -5,12 +5,16 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/time.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <signal.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #if HAVE_SYS_SELECT_H

@@ -257,12 +257,11 @@ inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/time.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/inndcomm.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/inndcomm.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h
 list.o: list.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -346,10 +345,10 @@ nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/time.h ../include/inn/buffer.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/buffer.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/network.h ../include/inn/nntp.h \
+  ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h
 numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -419,8 +418,7 @@ timer.o: timer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/time.h \
-  ../include/inn/messages.h ../include/inn/timer.h \
+  ../include/inn/macros.h ../include/inn/messages.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 tst.o: tst.c ../include/config.h ../include/inn/defines.h \
@@ -531,7 +529,7 @@ mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/time.h
+  ../include/inn/macros.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
