@@ -126,11 +126,10 @@ actsync.o: actsync.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/wait.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/hashtab.h ../include/inn/qio.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/messages.h \
+  ../include/inn/hashtab.h ../include/inn/qio.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h
 archive.o: archive.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \

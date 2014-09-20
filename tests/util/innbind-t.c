@@ -4,11 +4,11 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/wait.h"
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD
 # include <stropts.h>
 #endif
+#include <sys/wait.h>
 
 #include "inn/messages.h"
 #include "tap/basic.h"

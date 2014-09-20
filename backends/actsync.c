@@ -63,14 +63,14 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <math.h>
-#include <sys/stat.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

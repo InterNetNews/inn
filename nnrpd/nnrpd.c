@@ -11,7 +11,6 @@
 #include "clibrary.h"
 #include "portable/setproctitle.h"
 #include "portable/socket.h"
-#include "portable/wait.h"
 #include <netdb.h>
 #include <signal.h>
 #include <netinet/tcp.h>
@@ -19,6 +18,7 @@
 #if HAVE_GETSPNAM
 # include <shadow.h>
 #endif
+#include <sys/wait.h>
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"

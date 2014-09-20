@@ -9,10 +9,10 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/setproctitle.h"
-#include "portable/wait.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <syslog.h>
+#include <sys/wait.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

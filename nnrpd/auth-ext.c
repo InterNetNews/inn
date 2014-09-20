@@ -9,9 +9,9 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <errno.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "inn/buffer.h"
 #include "inn/messages.h"

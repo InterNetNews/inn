@@ -51,7 +51,7 @@
 #endif
 #include <sys/stat.h>
 #include <sys/time.h>
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "tap/basic.h"
 #include "tap/process.h"

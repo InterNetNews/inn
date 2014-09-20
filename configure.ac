@@ -369,7 +369,6 @@ fi
 
 dnl Special checks for header files.
 AC_HEADER_STDBOOL
-AC_HEADER_SYS_WAIT
 
 dnl Generic checks for header files.
 AC_CHECK_HEADERS([crypt.h inttypes.h limits.h stddef.h \

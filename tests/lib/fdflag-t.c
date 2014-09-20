@@ -35,7 +35,7 @@
 #include "portable/socket.h"
 
 #include <errno.h>
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "tap/basic.h"
 #include "inn/fdflag.h"

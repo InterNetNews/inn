@@ -4,8 +4,8 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/wait.h"
 #include <pwd.h>
+#include <sys/wait.h>
 
 #include "inn/messages.h"
 #include "inn/network.h"

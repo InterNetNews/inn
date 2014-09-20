@@ -5,10 +5,10 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <assert.h>
 #include <errno.h>
 #include <syslog.h>
+#include <sys/wait.h>
 #include <time.h>
 
 #include "inn/buffer.h"

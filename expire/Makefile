@@ -140,8 +140,7 @@ makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/wait.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/macros.h ../include/inn/buffer.h ../include/inn/history.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \

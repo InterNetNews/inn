@@ -25,10 +25,10 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #include "inn/dispatch.h"
 #include "inn/messages.h"

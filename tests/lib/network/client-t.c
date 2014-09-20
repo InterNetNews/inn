@@ -36,7 +36,7 @@
 #include "portable/socket.h"
 
 #include <errno.h>
-#include "portable/wait.h"
+#include <sys/wait.h>
 #include <signal.h>
 
 #include "tap/basic.h"

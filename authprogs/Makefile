@@ -106,9 +106,9 @@ ident.o: ident.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/network.h ../include/inn/defines.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h libauth.h
 libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \

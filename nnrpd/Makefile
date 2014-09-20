@@ -86,11 +86,11 @@ auth-ext.o: auth-ext.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/wait.h \
-  ../include/inn/buffer.h ../include/inn/messages.h \
-  ../include/inn/vector.h nnrpd.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/qio.h ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/macros.h ../include/inn/buffer.h \
+  ../include/inn/messages.h ../include/inn/vector.h nnrpd.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/qio.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/timer.h
@@ -118,10 +118,9 @@ commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/wait.h nnrpd.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/qio.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/macros.h nnrpd.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/qio.h ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/fdflag.h \
@@ -183,9 +182,8 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/setproctitle.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/wait.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/network-innbind.h ../include/inn/newsuser.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/options.h \
@@ -209,13 +207,13 @@ perm.o: perm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/wait.h ../include/conffile.h \
-  ../include/inn/network.h ../include/portable/socket.h \
+  ../include/inn/macros.h ../include/conffile.h ../include/inn/network.h \
+  ../include/inn/defines.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/defines.h ../include/innperl.h \
-  nnrpd.h ../include/inn/qio.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/innconf.h ../include/innperl.h nnrpd.h \
+  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h
 post.o: post.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \

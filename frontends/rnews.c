@@ -9,13 +9,13 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <syslog.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include "inn/fdflag.h"
 #include "inn/innconf.h"

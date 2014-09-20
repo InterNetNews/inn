@@ -21,7 +21,7 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "tap/basic.h"
 #include "tap/string.h"

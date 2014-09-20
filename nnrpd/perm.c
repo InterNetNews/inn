@@ -6,9 +6,9 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
 #include <netdb.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "conffile.h"
 #include "inn/network.h"

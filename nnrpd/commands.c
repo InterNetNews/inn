@@ -4,7 +4,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "nnrpd.h"
 #include "inn/fdflag.h"

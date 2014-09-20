@@ -5,7 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "innd.h"
 

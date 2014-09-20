@@ -37,7 +37,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "portable/wait.h"
+#include <sys/wait.h>
 
 #include "tap/basic.h"
 #include "tap/process.h"
