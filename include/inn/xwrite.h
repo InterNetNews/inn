@@ -34,7 +34,6 @@
 #include "config.h"
 #include "portable/macros.h"
 
-#include <stddef.h>
 #include <sys/types.h>
 
 /* Forward declaration to avoid an include. */

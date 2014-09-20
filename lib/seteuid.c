@@ -28,7 +28,9 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 int
 seteuid(uid_t euid)
