@@ -37,7 +37,7 @@
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
-#ifndef HAVE_BDB
+#ifndef HAVE_DB_H
 
 int
 main(int argc UNUSED, char **argv UNUSED)
@@ -45,7 +45,7 @@ main(int argc UNUSED, char **argv UNUSED)
     die("Berkeley DB support not compiled");
 }
 
-#else /* HAVE_BDB */
+#else /* HAVE_DB_H */
 
 
 #define SELECT_TIMEOUT 15
@@ -747,4 +747,4 @@ main(int argc, char *argv[])
 }
 
 
-#endif /* HAVE_BDB */
+#endif /* HAVE_DB_H */

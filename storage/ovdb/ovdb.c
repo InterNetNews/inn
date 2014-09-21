@@ -111,7 +111,7 @@
 # include <sys/un.h>
 #endif
 
-#ifndef HAVE_BDB
+#ifndef HAVE_DB_H
 
 /* Provide stub functions if we don't have db */
 
@@ -155,7 +155,7 @@ bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
 
 void ovdb_close(void) { }
 
-#else /* HAVE_BDB */
+#else /* HAVE_DB_H */
 
 #define EXPIREGROUP_TXN_SIZE 100
 #define DELETE_TXN_SIZE 500
@@ -3061,4 +3061,4 @@ void ovdb_close(void)
     ovdb_releaselock();
 }
 
-#endif /* HAVE_BDB */
+#endif /* HAVE_DB_H */

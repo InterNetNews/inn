@@ -343,12 +343,35 @@ AS_IF([test x"$inn_use_KRB5" = xtrue],
                    [AC_MSG_ERROR([cannot find usable com_err header])])])])])
 AC_SUBST([KRB5_AUTH])
 
-dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
-dnl just use the ndbm support provided by it.  Also, do not build with zlib
-dnl support unless Berkeley DB is enabled.
+dnl If Berkeley DB is found, check the presence of its header.
+dnl Also, do not build with zlib support unless Berkeley DB is enabled.
 AS_IF([test x"$inn_use_BDB" = xtrue],
-    [INN_LIB_BDB_NDBM
-     INN_LIB_ZLIB_OPTIONAL])
+    [inn_BDB_incroot=
+     inn_BDB_header_found=
+     AS_IF([test x"$inn_BDB_includedir" != x],
+        [inn_BDB_incroot="$inn_BDB_includedir"],
+        [AS_IF([test x"$inn_BDB_root" != x],
+            [inn_BDB_incroot="${inn_BDB_root}/include"])])
+     AS_IF([test x"$inn_BDB_incroot" = x],
+        [AC_CHECK_HEADERS([db.h],
+            [inn_BDB_header_found=yes],
+            [inn_BDB_header_found=no])],
+        [AS_IF([test -f "${inn_BDB_incroot}/db.h"],
+            [inn_BDB_header_found=yes
+             AC_DEFINE([HAVE_DB_H], [1],
+                [Define if you have the <db.h> header file.])],
+            [inn_BDB_header_found=no])])
+     AS_IF([test x"${inn_BDB_header_found}" = xyes],
+        [INN_LIB_BDB_NDBM
+         INN_LIB_ZLIB_OPTIONAL],
+        [AS_IF([test x"$with_bdb" = x],
+            [BDB_CPPFLAGS=
+             BDB_LDFLAGS=
+             BDB_LIBS=],
+            [AC_MSG_ERROR([cannot find usable Berkeley DB header])])])])
+
+dnl The dbm libraries are a special case.  If we're building with Berkeley DB,
+dnl just use the ndbm support provided by it.
 AS_IF([test x"$inn_cv_lib_bdb_ndbm" != xyes],
     [INN_SEARCH_AUX_LIBS([dbm_open], [ndbm dbm gdbm "gdbm_compat -lgdbm"],
          [DBM_LIBS],
