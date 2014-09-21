@@ -757,7 +757,7 @@ and the default is false.
 
 Whether to enable the tracking system for client behavior.  Tracked
 information is recorded to I<pathlog>/tracklogs/log-I<ID>, where ID is
-determined by nnrpd's PID and launch time.)  Currently the information
+determined by nnrpd's PID and launch time.  Currently the information
 recorded includes initial connection and posting; only information about
 clients listed in F<nnrpd.track> is recorded.  In addition, every posted
 article will be saved in I<pathlog>/trackposts/track.I<message-id>, where

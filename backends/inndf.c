@@ -60,8 +60,8 @@
    df_declare declares a variable of the appropriate type to pass to df_stat
    along with a path; df_stat will return true on success, false on failure.
    df_avail gives the number of free blocks, the size of those blocks given
-   in df_bsize (which handles SysV's weird fragment vs. preferred block size
-   thing).  df_inodes returns the free inodes. */
+   in df_scale (which handles SysV's weird fragment vs. preferred block size
+   thing).  df_favail returns the free inodes. */
 #if HAVE_STATVFS
 # include <sys/statvfs.h>
 # define df_stat(p, s)  (statvfs((p), (s)) == 0)

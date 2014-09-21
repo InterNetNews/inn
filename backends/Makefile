@@ -65,7 +65,7 @@ profiled:
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
