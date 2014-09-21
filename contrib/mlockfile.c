@@ -27,6 +27,8 @@ struct mlock {
     size_t length;
 };
 
+void inn_lock_files(struct mlock *);
+
 char *progname;
 
 int flush = 0;
