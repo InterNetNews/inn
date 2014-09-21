@@ -1109,7 +1109,8 @@ Then try these commands (a variation on commands posted by Katsuhiro
 Kondou to inn-workers) on the old server:
 
     cd <pathdb in inn.conf>
-    perl -ne 'chomp; ($a,$b,$_) = split " "; print "$_\n" if $_' history \
+    perl -ne 'chomp; our ($hash, $timestamps, $_) = split " "; \
+        print "$_\n" if $_' history \
         | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
 
@@ -1117,6 +1118,25 @@ where <pathdb> is the path to the directory containing the history file
 (usually ~news/db), <pathoutgoing> is the path to the outgoing spool
 directory (usually ~news/spool/outgoing), and server is the name of the
 new news server to which you're feeding the articles.
+
+In case you wish to only feed articles arrived on the old server
+between two dates, you can adapt the previous commands.  For instance,
+the following commands will feed articles arrived between two given
+timestamps (that can be computed with the convdate utility shipped
+with INN).
+
+    convdate -n '15 Apr 2014 20:42 +0200' '16 Apr 2014 12:37 +0200'   
+
+returns the two corresponding timestamps 1397586540 and 1397644620 that
+can then be used to retrieve a subset of articles to feed:
+
+    cd <pathdb in inn.conf>
+    perl -ne 'chomp; our ($hash, $timestamps, $_) = split " "; \
+        my ($arrived, $expires, $posted) = split("~", $timestamps); \
+        print "$_\n" if $_ and $arrived >= 1397586540 \
+            and $arrived <= 1397644620' history \
+        | tr . / > <pathoutgoing in inn.conf>/list
+    innxmit server list
 
 When done, set xrefslave to false in inn.conf again if you changed it and
 then either restart INN on the new server (necessary if you changed
