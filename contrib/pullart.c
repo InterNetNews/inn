@@ -17,9 +17,7 @@ rifkin@uconn.edu
 */
 
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "clibrary.h"
 
 #define INFILE     1
 #define FILEPREFIX 2
@@ -195,7 +193,7 @@ printf ("string <%s>\n", string);
 
 		}
 
-	close (Infile);
+	fclose (Infile);
 
 	return 0;
 	}
@@ -290,7 +288,7 @@ WriteArticle
 	while (n--)
 		fprintf (outfile, "%c", *buff++);
 
-	close (outfile);
+	fclose (outfile);
 
 	/*  Return number of files written  */
 	return 1;

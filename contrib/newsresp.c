@@ -64,26 +64,34 @@
  *   0.1   0.0  <<< 205 . 
  */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
+#include "clibrary.h"
+#include "portable/socket.h"
+
 #include <errno.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 
 #define NNTPPORT 119
+
+void error(const char *);
+void fatal(const char *);
+void ierror(const char *, const char *);
+void ifatal(const char *, const char *);
+unsigned int do_time(unsigned int);
+void ptime(void);
+void massagebuff(int, char *);
+bool punt(int);
+
 struct sockaddr_in sock_in;
 int sock;
 char buf[1024];
 
-main(argc,argv)
-int argc;
-char *argv[];
+int
+main(int argc, char *argv[])
 {
   int errflg = 0, c;
-  extern char *optarg;
-  extern int optind;
+  bool status = true;
   struct hostent *host;
   unsigned long temp;
   unsigned numart = 1;
@@ -126,40 +134,46 @@ char *argv[];
     sock_in.sin_port = htons(NNTPPORT);
     printf("---------------------------------\n%s is %s port %d\n",
 	       *whoP,inet_ntoa(sock_in.sin_addr),ntohs(sock_in.sin_port));
-    punt(numart);
+    status = punt(numart);
     close(sock);
+  }
+  if (status) {
+      exit(0);
+  } else {
+      exit(1);
   }
 }
 
-error(what)
-char *what;
+void
+error(const char *what)
 {
-  ptime(); fflush(stdout);
+  ptime();
+  fflush(stdout);
   perror(what);
 }
 
-fatal(what)
-char *what;
+void
+fatal(const char *what)
 {
   error(what);
   exit(2);
 }
 
-ierror(how,what)
-char *how, *what;
+void
+ierror(const char *how, const char *what)
 {
-  printf("Expected %s, bailing out.\n",how);
+  printf("Expected %s, received %s; bailing out.\n", how, what);
 }
 
-ifatal(how,what)
-char *how, *what;
+void
+ifatal(const char *how, const char *what)
 {
-  ierror(how,what);
+  ierror(how, what);
   exit(1);
 }
 
-unsigned do_time(start)
-unsigned start;
+unsigned int
+do_time(unsigned int start)
 {
   struct timeval now;
 
@@ -167,10 +181,10 @@ unsigned start;
   return ( now.tv_sec*1000 + now.tv_usec/1000 - start );
 }
 
+unsigned int start, elapsed, diff;
 
-unsigned start, elapsed, diff;
-
-ptime()
+void
+ptime(void)
 {
   diff = elapsed;
   elapsed = do_time(start);
@@ -178,9 +192,8 @@ ptime()
   printf("%5.1f %5.1f  ",((float)elapsed)/1000.0,((float)diff)/1000.0);
 }
 
-massagebuff(bread,buf)
-int bread;
-char *buf;
+void
+massagebuff(int bread, char *buf)
 {
   char *p;
 
@@ -197,8 +210,8 @@ char *buf;
     }
 }
 
-punt(numart)
-int numart;
+bool
+punt(int numart)
 {
   static char ihave[32],
 	      dot[] = ".\r\n",
@@ -215,42 +228,42 @@ int numart;
   printf("Connecting ...\n");
   if ( connect(sock,(struct sockaddr*)&sock_in,sizeof(sock_in)) < 0 ) {
     error("connect");
-    return(-1);
+    return false;
   }
   ptime();
   printf("OK, waiting for prompt\n");
 
   if ( (bread=read(sock,buf,sizeof(buf))) < 0 ) {
     error("read socket");
-    return(-1);
+    return false;
   }
   massagebuff(bread,buf);
   ptime();
   printf("<<< %s",buf);
   if ( strncmp(buf,"200",3) != 0 && strncmp(buf,"201",3) != 0 ) {
     ierror("200 or 201",buf);
-    return(-1);
+    return false;
   }
 
   do {
     snprintf(ihave,sizeof(ihave),"ihave <%u@a>\r\n",start+numart);
     ptime();
     printf(">>> %s",ihave);
-    if ( write(sock,ihave,strlen(ihave)) != strlen(ihave) ) {
+    if ( write(sock,ihave,strlen(ihave)) != (int) strlen(ihave) ) {
       error("write socket");
-      return(-1);
+      return false;
     }
 
     if ( (bread=read(sock,buf,sizeof(buf))) < 0 ) {
       error("read socket");
-      return(-1);
+      return false;
     }
     massagebuff(bread,buf);
     ptime();
     printf("<<< %s",buf);
     if ( strncmp(buf,"335",3) != 0 && strncmp(buf,"435",3) != 0 ) {
-      ierror("335 or 435 ",buf);
-      return(-1);
+      ierror("335 or 435",buf);
+      return false;
     }
 
     if ( strncmp(buf,"335",3) == 0 ) {
@@ -258,19 +271,19 @@ int numart;
       printf(">>> %s",dot);
       if ( write(sock,dot,sizeof(dot)-1) != sizeof(dot)-1 ) {
 	error("write socket");
-	return(-1);
+	return false;
       }
 
       if ( (bread=read(sock,buf,sizeof(buf))) < 0 ) {
 	error("read socket");
-	return(-1);
+	return false;
       }
       massagebuff(bread,buf);
       ptime();
       printf("<<< %s",buf);
       if ( strncmp(buf,"437",3) != 0 && strncmp(buf,"235",3) != 0 ) {
 	ierror("437 or 235",buf);
-	return(-1);
+	return false;
       }
     }
   } while ( --numart != 0 );
@@ -279,19 +292,19 @@ int numart;
   printf(">>> %s",quit);
   if ( write(sock,quit,sizeof(quit)-1) != sizeof(quit)-1 ) {
     error("write socket");
-    return(-1);
+    return false;
   }
 
   if ( (bread=read(sock,buf,sizeof(buf))) < 0 ) {
     error("read socket");
-    return(-1);
+    return false;
   }
   massagebuff(bread,buf);
   ptime();
   printf("<<< %s",buf);
   if ( strncmp(buf,"205",3) != 0 ) {
     ierror("205",buf);
-    return(-1);
+    return false;
   }
-  return(0);
+  return true;
 }
