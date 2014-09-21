@@ -9,7 +9,8 @@ include ../Makefile.global
 top           = ..
 CFLAGS        = $(GCFLAGS)
 
-ALL	      = archivegz backlogstat cleannewsgroups delayer expirectl \
+ALL	      = archivegz auth_pass backlogstat cleannewsgroups \
+		delayer expirectl \
 		findreadgroups makeexpctl makestorconf mlockfile newsresp \
 		pullart reset-cnfs respool stathist thdexpire \
 		tunefeed
@@ -35,6 +36,7 @@ FIX		= $(FIXSCRIPT)
 
 STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
+auth_pass:	auth_pass.o	; $(LINK) auth_pass.o $(LIBINN) $(CRYPT_LIBS)
 expirectl:	expirectl.o	; $(LINK) expirectl.o
 mlockfile:	mlockfile.o	; $(LINK) mlockfile.o
 newsresp:	newsresp.o	; $(LINK) newsresp.o $(LIBS)
