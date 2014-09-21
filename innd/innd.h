@@ -28,6 +28,7 @@
 #define INND_H 1
 
 #include "config.h"
+#include "portable/macros.h"
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>
@@ -697,7 +698,8 @@ extern void		SetupListBuffer(int size, LISTBUFFER *list);
 extern char         *	MaxLength(const char *p, const char *q);
 extern pid_t		Spawn(int niceval, int fd0, int fd1, int fd2,
 			      char * const av[]);
-extern void		CleanupAndExit(int x, const char *why) __attribute__ ((noreturn));
+extern void		CleanupAndExit(int x, const char *why)
+    __attribute__ ((__noreturn__));
 extern void		JustCleanup(void);
 extern void		ThrottleIOError(const char *when);
 extern void		ThrottleNoMatchError(void);
@@ -727,7 +729,8 @@ extern CHANNEL      *	CHANfromdescriptor(int fd);
 extern char	    *   CHANname(CHANNEL *cp);
 extern int		CHANreadtext(CHANNEL *cp);
 extern void		CHANclose(CHANNEL *cp, const char *name);
-extern void		CHANreadloop(void) __attribute__ ((noreturn));
+extern void		CHANreadloop(void)
+    __attribute__ ((__noreturn__));
 extern void		CHANsetup(int i);
 extern void		CHANshutdown(void);
 extern void		CHANtracing(CHANNEL *cp, bool Flag);

@@ -11,6 +11,7 @@
 #define PORTABLE_SETPROCTITLE_H 1
 
 #include "config.h"
+#include "portable/macros.h"
 
 #if !HAVE_SETPROCTITLE || !HAVE_DECL_SETPROCTITLE
 void setproctitle(const char *format, ...)

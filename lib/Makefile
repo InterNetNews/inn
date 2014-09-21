@@ -552,8 +552,7 @@ setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
 seteuid.o: seteuid.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/options.h
 setproctitle.o: setproctitle.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \

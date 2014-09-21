@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/macros.h"
 
 #include <errno.h>
 

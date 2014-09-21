@@ -3,6 +3,7 @@
 
 /* Need the definition of HASH. */
 #include "inn/libinn.h"
+#include "portable/macros.h"
 
 BEGIN_DECLS
 
@@ -38,24 +39,17 @@ typedef struct {
     bool             nonblock;
 } dbzoptions;
 
-#ifdef __GNUC__
-#define PACKED __attribute__ ((packed))
-#else
-#if !defined(PACKED)
-#define PACKED
-#endif
-#endif
-
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack(1)
 #endif /* nor lint, nor __SUNPRO_C, nor sgi, nor _nec_ews */
-/* Leave the PACKED on there because removing it might change the layout of
- * the data structure on disk on some platform, thus invalidating old history
- * files.  It is fairly unlikely that this is a problem, though.
+/* Leave the __attribute__ ((__packed__)) on there because removing it
+ * might change the layout of the data structure on disk on some platform,
+ * thus invalidating old history files.
+ * It is fairly unlikely that this is a problem, though.
  */
 typedef struct {
     char		hash[DBZ_INTERNAL_HASH_SIZE];
-} PACKED erec;
+} __attribute__ ((__packed__)) erec;
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
 #pragma pack()
 #endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */

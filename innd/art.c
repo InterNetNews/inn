@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/macros.h"
 #include <sys/uio.h>
 
 #include "inn/innconf.h"

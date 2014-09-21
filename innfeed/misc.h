@@ -9,6 +9,7 @@
 #define misc_h__
 
 #include "config.h"
+#include "portable/macros.h"
 
 #include <stdarg.h>
 #include <sys/types.h>

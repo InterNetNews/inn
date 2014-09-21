@@ -99,7 +99,8 @@ extern char *             DDend(struct _DDHANDLE *h);
 
 /* Various checks. */
 extern bool             IsValidArticleNumber(const char *string);
-extern bool             IsValidKeyword(const char *string) __attribute__ ((pure));
+extern bool             IsValidKeyword(const char *string)
+    __attribute__ ((__pure__));
 extern bool             IsValidRange(char *string);
 
 

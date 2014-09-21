@@ -4,6 +4,7 @@
 */
 
 #include "config.h"
+#include "portable/macros.h"
 #include "portable/socket.h"
 
 #include <ctype.h>
@@ -221,7 +222,8 @@ extern int		LockPostRec(char *path);
 extern int		LockPostRec(char *path);
 extern void		UnlockPostRec(char *path);
 extern int		RateLimit(long *sleeptime, char *path);
-extern void		ExitWithStats(int x, bool readconf) __attribute__ ((noreturn));
+extern void		ExitWithStats(int x, bool readconf)
+    __attribute__ ((__noreturn__));
 extern char		*GetHeader(const char *header, bool stripspaces);
 extern void		GRPreport(void);
 extern bool		NGgetlist(char ***argvp, char *list);
@@ -250,7 +252,8 @@ extern void             CMDnewnews      (int ac, char** av);
 extern void             CMDnextlast     (int ac, char** av);
 extern void             CMDover         (int ac, char** av);
 extern void             CMDpost         (int ac, char** av);
-extern void             CMDquit         (int ac, char** av) __attribute__ ((noreturn));
+extern void             CMDquit         (int ac, char** av)
+    __attribute__ ((__noreturn__));
 extern void             CMDxgtitle      (int ac, char** av);
 extern void             CMDpat          (int ac, char** av);
 extern void             CMD_unimp       (int ac, char** av);
