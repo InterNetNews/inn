@@ -39,7 +39,12 @@
 #include <netdb.h>
 #include <pwd.h>
 
+#if HAVE_CRYPT_H
+# include <crypt.h>
+#endif
 
+
+int
 main(int argc, char** argv)
 /*+
  * Abstract:
@@ -64,7 +69,7 @@ main(int argc, char** argv)
  */
 {
     struct hostent *	hp;
-    int			length;
+    socklen_t			length;
     char		password[256];
     char		peername[1024];
     struct passwd *	pwd;

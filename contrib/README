@@ -40,6 +40,11 @@ authmysql
     database.  Could also be easily modified to check against any other
     type of database that Perl's DBI module can talk to.
 
+auth_pass
+
+    A sample authorization program for use with the (deprecated) AUTHINFO
+    GENERIC command in nnrpd.
+
 backlogstat
 
     Prints informations about the current state of innfeed's backlog, if
