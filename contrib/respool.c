@@ -29,7 +29,6 @@ ProcessLine(char *line)
     ARTHANDLE newart;
     TOKEN token, newtoken;
     char *arttmp;
-    time_t arrived;
 
     tokenptr = line;
     
@@ -47,7 +46,6 @@ ProcessLine(char *line)
     if ((art = SMretrieve(token, RETR_ALL)) == NULL) return;
 
     len = art->len;
-    arrived = art->arrived;
     arttmp = xmalloc(len);
     memcpy(arttmp, art->data, len);
     SMfreearticle(art);

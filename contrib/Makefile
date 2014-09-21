@@ -34,7 +34,7 @@ $(FIXSCRIPT):
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 FIX		= $(FIXSCRIPT)
 
-STORELIBS	= $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
+STORELIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 auth_pass:	auth_pass.o	; $(LINK) auth_pass.o $(LIBINN) $(CRYPT_LIBS)
 expirectl:	expirectl.o	; $(LINK) expirectl.o
