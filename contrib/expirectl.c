@@ -31,13 +31,51 @@
  *     will not really exercise the program for another 14 days or so :-).
  */
 
-
-#include <sys/types.h>
-#include <sys/mount.h>
+#include "config.h"
+#include "clibrary.h"
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <time.h>
+
+/* Following portability code lifted from inndf.c */
+#if HAVE_STATVFS
+# include <sys/statvfs.h>
+# define df_stat(p, s)  (statvfs((p), (s)) == 0)
+# define df_declare(s)  struct statvfs s
+# define df_total(s)    ((s).f_blocks)
+# define df_avail(s)    ((s).f_bavail)
+# define df_scale(s)    ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
+# define df_files(s)    ((s).f_files)
+# define df_favail(s)   ((s).f_favail)
+#elif HAVE_STATFS
+# if HAVE_SYS_VFS_H
+#  include <sys/vfs.h>
+# endif
+# if HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+# endif
+# if HAVE_SYS_MOUNT_H
+#  include <sys/mount.h>
+# endif
+# ifdef __ultrix__
+#  define df_stat(p, s) (statfs((p), (s)) >= 1)
+#  define df_declare(s) struct fs_data s
+#  define df_total(s)   ((s).fd_btot)
+#  define df_avail(s)   ((s).fd_bfreen)
+#  define df_scale(s)   1024
+#  define df_files(s)   ((s).fd_gtot)
+#  define df_favail(s)  ((s).fd_gfree)
+# else
+#  define df_stat(p, s) (statfs((p), (s)) == 0)
+#  define df_declare(s) struct statfs s
+#  define df_total(s)   ((s).f_blocks)
+#  define df_avail(s)   ((s).f_bavail)
+#  define df_scale(s)   ((s).f_bsize)
+#  define df_files(s)   ((s).f_files)
+#  define df_favail(s)  ((s).f_ffree)
+# endif
+#else
+# error "Platform not supported.  Neither statvfs nor statfs available."
+#endif
 
 #define EXPIRE_CTL_DIR	"/home/news"
 #define NEWS_SPOOL	"/home/news/spool/news/."
@@ -49,7 +87,7 @@
 int
 main(int ac, char **av)
 {
-    struct statfs sfs;
+    df_declare(sfs);
     long minFree = 100 * 1024 * 1024;
     long minIFree = 20 * 1024;
     long expireDays = 2;
@@ -104,7 +142,7 @@ main(int ac, char **av)
 	}
     }
 
-    if (statfs("/home/news/spool/news/.", &sfs) != 0) {
+    if (!df_stat("/home/news/spool/news/.", &sfs)) {
 	fprintf(stderr, "expirectl: couldn't fsstat /home/news/spool/news/.\n");
 	exit(1);
     }
@@ -139,8 +177,8 @@ main(int ac, char **av)
 
     if (verbose) {
 	printf("spool: %4.2lfM / %3.2lfKinode free\n",
-	    (double)sfs.f_fsize * (double)sfs.f_bavail / (1024.0 * 1024.0),
-	    (double)sfs.f_ffree / 1024.0
+	    (double)df_scale(sfs) * (double)df_avail(sfs) / (1024.0 * 1024.0),
+	    (double)df_favail(sfs) / 1024.0
 	);
 	printf("decrs: %4.2lfM / %3.2lfKinode\n",
 	    (double)(minFree) / (double)(1024*1024),
@@ -160,8 +198,8 @@ main(int ac, char **av)
 	double bytes;
 	long inodes;
 
-	bytes = (double)sfs.f_fsize * (double)sfs.f_bavail;
-	inodes = sfs.f_ffree;
+	bytes = (double)df_scale(sfs) * (double)df_avail(sfs);
+	inodes = df_favail(sfs);
 
 	if (bytes < (double)minFree || inodes < minIFree) {
 	    if (--expireDays <= 0) {
@@ -170,7 +208,7 @@ main(int ac, char **av)
 	    }
 	    if (modified >= 0)
 		modified = 1;
-	    printf("decrement expiration to %d days\n", expireDays);
+	    printf("decrement expiration to %ld days\n", expireDays);
 	} else if (bytes >= (double)minFree * 2.0 && inodes >= minIFree * 2) {
 	    long dt = (long)(time(NULL) - expireIncTime);
 
@@ -179,12 +217,12 @@ main(int ac, char **av)
 		expireIncTime = time(NULL);
 		if (modified >= 0)
 		    modified = 1;
-		printf("increment expiration to %d days\n", expireDays);
+		printf("increment expiration to %ld days\n", expireDays);
 	    } else {
 		printf("will increment expiration later\n");
 	    }
 	} else if (verbose) {
-	    printf("expiration unchanged: %d\n", expireDays);
+	    printf("expiration unchanged: %ld\n", expireDays);
 	}
     }
 
@@ -223,7 +261,7 @@ main(int ac, char **av)
 				v = 1;
 			    if (v < m)
 				v = m;
-			    sprintf(dptr, "%d", v);
+			    sprintf(dptr, "%ld", v);
 			    dptr += strlen(dptr);
 			    ++sptr;
 			}
@@ -254,7 +292,7 @@ main(int ac, char **av)
 
 	if ((fo = fopen(EXPIRE_DAYS, "w")) != NULL) {
 	    fprintf(fo, "time 0x%08lx\n", expireIncTime);
-	    fprintf(fo, "days %d\n", expireDays);
+	    fprintf(fo, "days %ld\n", expireDays);
 	    fclose(fo);
 	} else {
 	    fprintf(stderr, "unable to create %s\n", EXPIRE_DAYS);
