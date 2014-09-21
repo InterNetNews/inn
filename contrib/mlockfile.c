@@ -17,7 +17,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/stropts.h>
 
 struct mlock {
     const char *path;

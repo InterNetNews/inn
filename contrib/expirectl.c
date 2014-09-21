@@ -291,7 +291,7 @@ main(int ac, char **av)
 	FILE *fo;
 
 	if ((fo = fopen(EXPIRE_DAYS, "w")) != NULL) {
-	    fprintf(fo, "time 0x%08lx\n", expireIncTime);
+	    fprintf(fo, "time 0x%08lx\n", (unsigned long) expireIncTime);
 	    fprintf(fo, "days %ld\n", expireDays);
 	    fclose(fo);
 	} else {
