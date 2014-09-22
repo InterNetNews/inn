@@ -23,8 +23,8 @@
    (actually a caddr_t, which is a typedef for a char *) instead of void * as
    is required by the standard.  These macros add casts that silences compiler
    warnings on Solaris 8 without adversely affecting other platforms.  (ISO C
-   allows macro definitions of this sort; this macro is not recursive.) */
-#define mmap(s, l, p, f, d, o)	(void *) mmap((s), (l), (p), (f), (d), (o))
+   allows macro definitions of this sort; this macro is not recursive.)
+   Do not redefine mmap because at least AIX 7.1 redefines it to mmap64. */
 #define munmap(p, l)            munmap((void *)(p), (l))
 
 /* On some platforms, msync only takes two arguments.  (ANSI C allows macro
