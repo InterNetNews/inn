@@ -112,9 +112,11 @@ backends/sendxbatches
 backends/shlock
 backends/shrinkfile
 contrib/archivegz
+contrib/auth_pass
 contrib/backlogstat
 contrib/cleannewsgroups
 contrib/delayer
+contrib/expirectl
 contrib/findreadgroups
 contrib/makeexpctl
 contrib/makestorconf
