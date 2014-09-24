@@ -29,12 +29,13 @@ sub usage {
 Summary tool for CNFS
 
 Usage:
-	$0 [-ahpPsv] [-c class] [-l [seconds]] [-m buffer]
+	$0 [-ahpPsv] [-c class] [-i seconds] [-l [seconds]] [-m buffer]
 
 	If called without args, does a one-time status of all CNFS buffers
 	-a:           print the age of the oldest article in the cycbuff
 	-c class:     print out status of CNFS buffers in that class
 	-h:           this information
+	-i seconds:   initial sleep of that many seconds at startup
 	-l [seconds]: loop like vmstat, default seconds = 600
 	-m buffer:    print out information suitable for MRTG
 	-p:           print out an MRTG config file
@@ -54,7 +55,7 @@ my ($oclass, $obuffer);
 my %opt = (c=>\$oclass, m=>\$obuffer);
 Getopt::Long::config('no_ignore_case');
 GetOptions(\%opt,
-           "-a", "-c=s", "-h", "-l:i", "-m=s",
+           "-a", "-c=s", "-h", "-i=i", "-l:i", "-m=s",
            "-p", "-P", "-s", "-v");
 
 usage() if $opt{'h'};
@@ -95,6 +96,14 @@ unless (read_storageconf()) {
 
 mrtg($obuffer) if $obuffer;
 mrtg_config() if $opt{'p'};
+
+# Initial sleep, before starting the work.
+if(defined($opt{'i'}) && $opt{'i'} > 0) {
+    sleep($opt{'i'});
+    if (!$use_syslog) {
+        print STDOUT "$opt{'i'} seconds later:\n";
+    }
+}
 
 
 START:
