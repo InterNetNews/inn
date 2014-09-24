@@ -32,13 +32,13 @@ Xstop)
     # Stop innwatch (if running)
     if [ -f $WATCHPID ]; then
 	kill `cat $WATCHPID`
-	rm -f $WATCHPID
+	rm -f $WATCHPID ${LOCKS}/LOCK.innwatch
     fi
 
     printf "Stopping innd: "
     ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
 
-    # wait for innd to exit (up to 60 sec)
+    # Wait for innd to exit (up to 60 sec)
     pid=`cat ${SERVERPID} 2>/dev/null`
     if [ "$pid" != "" ]; then
 	waitforpid $pid
@@ -163,12 +163,12 @@ eval ${WHAT} ${RFLAG} ${INNFLAGS}
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
     echo "Scheduled start of ${INNWATCH}."
-    ( sleep 60 ; ${INNWATCH} ) > /dev/null &
+    ${INNWATCH} -i 60 > /dev/null &
 }
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ( sleep 60 ; ${PATHBIN}/cnfsstat -s -l -P ) > /dev/null &
+    ${PATHBIN}/cnfsstat -i 60 -s -l -P > /dev/null &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm
