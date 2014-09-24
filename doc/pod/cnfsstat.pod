@@ -4,13 +4,14 @@ cnfsstat - Show usage of CNFS buffers
 
 =head1 SYNOPSIS
 
-B<cnfsstat> [B<-ahpPsv>] [B<-c> I<class>] [B<-l> [I<seconds>]] [B<-m> I<buffer>]
+B<cnfsstat> [B<-ahpPsv>] [B<-c> I<class>] [B<-i> I<seconds>]
+[B<-l> [I<seconds>]] [B<-m> I<buffer>]
 
 =head1 DESCRIPTION
 
-I<cnfsstat> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
+B<cnfsstat> reads I<pathetc>/cycbuff.conf and I<pathetc>/storage.conf
 to determine which CNFS buffers are available.  It then reads the specified
-cyclic buffers and shows their usage status.  I<cnfsstat> can be invoked from
+cyclic buffers and shows their usage status.  B<cnfsstat> can be invoked from
 B<rc.news> if I<docnfsstat> is set to true in F<inn.conf>, and the result is
 written to syslog(3).
 
@@ -20,7 +21,7 @@ written to syslog(3).
 
 =item B<-a>
 
-Besides its usual output, I<cnfsstat> prints the age of the oldest article
+Besides its usual output, B<cnfsstat> prints the age of the oldest article
 in the cycbuff.  You may also want to use the B<-v> flag to see extended
 consistency checks.
 
@@ -32,11 +33,18 @@ Only information for the specified class is printed.
 
 Print usage information and exit.
 
+=item B<-i> I<seconds>
+
+With this option, B<cnfsstat> has an initial sleep of I<seconds>
+seconds at startup.  This is useful when B<cnfsstat> is started at
+the same time as INN, so that it can wait a little before beginning
+performing its checks.
+
 =item B<-l> [I<seconds>]
 
-With this option, I<cnfsstat> prints a status snapshot every I<seconds>,
-and only exits if an error occurs.  When unspecified, the default interval
-is C<600> seconds.
+With this option, B<cnfsstat> prints a status snapshot every I<seconds>
+seconds, and only exits if an error occurs.  When unspecified, the
+default interval is C<600> seconds.
 
 At each iteration, B<cnfsstat> checks whether the F<cycbuff.conf> and
 F<storage.conf> files have been modified, and loads the new configuration
