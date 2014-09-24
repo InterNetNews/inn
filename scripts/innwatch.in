@@ -17,6 +17,9 @@
 PROGNAME=innwatch
 LOCK=${LOCKS}/LOCK.${PROGNAME}
 DAILY=${LOCKS}/LOCK.news.daily
+INNWATCHINITIALSLEEPTIME=1
+CHILDPID=
+
 ##  Where to put the timestamp file (directory and filename).
 TIMESTAMP=${LOCKS}/${PROGNAME}.time
 
@@ -37,18 +40,25 @@ LOGFILE=${MOST_LOGS}/news.crit
 while [ $# -gt 0 ] ; do
     case X"$1" in
     X-f)
-	FILE=$2
+	CTLWATCH=$2
 	shift
 	;;
     X-f*)
-	FILE=`expr "$1" : '-s\(.*\)'`
+	CTLWATCH=`expr "$1" : '-f\(.*\)'`
 	;;
+    X-i)
+        INNWATCHINITIALSLEEPTIME=$2
+        shift
+        ;;
+    X-i*)
+        INNWATCHINITIALSLEEPTIME=`expr "$1" : '-i\(.*\)'`
+        ;;
     X-l)
 	LOGFILE=$2
 	shift
 	;;
     X-l*)
-	LOGFILE=`expr "$1" : '-s\(.*\)'`
+	LOGFILE=`expr "$1" : '-l\(.*\)'`
 	;;
     X-t)
 	INNWATCHSLEEPTIME=$2
@@ -74,7 +84,7 @@ done
 
 ##  Process arguments.
 if [ $# -ne 0 ] ; then
-    echo "Usage:  ${PROGNAME} [flags]" 1>&2
+    echo "Usage:  ${PROGNAME} [-f ctlfile] [-i seconds] [-l logfile] [-t seconds]" 1>&2
     exit 1
 fi
 
@@ -86,7 +96,7 @@ shlock -p $$ -f ${LOCK} || {
     exit 0
 }
 
-trap 'rm -f ${LOCK} ${WATCHPID} ; exit 1' 1 3 15
+trap 'rm -f ${LOCK} ${WATCHPID} ; test -n "${CHILDPID}" && kill ${CHILDPID} ; exit 1' 1 3 15
 echo "$$" > ${WATCHPID}
 
 ##  The reason why we turned innd off, and its, and our current state.
@@ -102,7 +112,9 @@ trap '(
 ##  We need to remember the process ID of innd, in case one exits.
 ##  But we need to wait for innd to start before we can do that.
 while PID=`cat ${SERVERPID} 2>/dev/null`; test -z "${PID}"; do
-    sleep ${INNWATCHSLEEPTIME}
+    sleep ${INNWATCHINITIALSLEEPTIME} & CHILDPID=$!
+    wait
+    CHILDPID=
 done
 
 trap '(
@@ -126,8 +138,10 @@ cd ${SPOOL}
 NEXTSLEEP=1
 HASEXITED=false
 
-while sleep ${NEXTSLEEP}
+while { sleep ${NEXTSLEEP} & CHILDPID=$! ; }
 do
+    wait
+    CHILDPID=
     NEXTSLEEP=${INNWATCHSLEEPTIME}
 
     ##  If news.daily is running, idle:  we don't want to change the

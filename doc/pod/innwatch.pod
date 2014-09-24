@@ -1,0 +1,65 @@
+=head1 NAME
+
+innwatch - Monitor the state of INN and the system
+
+=head1 SYNOPSIS
+
+B<innwatch> [B<-f> I<ctlfile>] [B<-i> I<seconds>] [B<-l> I<logfile>]
+[B<-t> I<seconds>]
+
+=head1 DESCRIPTION
+
+B<innwatch> is normally started by B<rc.news>.  Every
+I<innwatchsleeptime> seconds, as set in F<inn.conf>, it examines the load
+average, and the number of free blocks and inodes on the spool partition,
+as described by its control file, F<innwatch.ctl> in I<pathetc>.
+
+If the load gets too high, or the disk gets too full, it throttles
+the server.  When the condition restores, it unblocks the server.
+In addition, on each pass through the loop, it will check the logfile
+I<pathlog>/news.crit to see if it has been modified, and send mail to
+the news administrator if so.
+
+Upon receipt of an interrupt signal (SIGINT), B<innwatch> will report
+its status in the file F<innwatch.status> in I<pathrun>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-f> I<file>
+
+Specify the control file to use, other than the default of
+F<innwatch.ctl> in I<pathetc>.
+
+=item B<-i> I<seconds>
+
+With this option, B<innwatch> has an initial sleep of I<seconds>
+seconds at startup.  This is useful when B<innwatch> is started at
+the same time as INN, so that it can wait a little before beginning
+performing its checks.
+
+=item B<-l> I<logfile>
+
+Specify a log file to watch, other than the default of F<news.crit>.
+
+=item B<-t> I<seconds>
+
+Specify the period in seconds between checks, to override the value
+set in F<inn.conf>.
+
+=back
+
+=head1 HISTORY
+
+Written by Mike Cooper <mcooper@usc.edu>, with modifications by
+<kre@munnari.oz.au>, Steve Groom <stevo@elroy.jpl.nasa.gov> and
+Christophe Wolfhugel <wolf@pasteur.fr>.  Converted to POD by Julien Elie.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), innwatch.ctl(5), newslog(5), rc.news(8).
+
+=cut
