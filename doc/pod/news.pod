@@ -13,6 +13,11 @@ the patch.
 
 =item *
 
+Add new B<-f> flag to C<innwatch> to specify the configuration file to 
+use, in case it is not the default F<innwatch.ctl> file.
+
+=item *
+
 Fixed how B<innupgrade> is executed during an update of an INN
 installation; on a few systems like AIX, it fails to run because its
 taint mode was unproperly declared.
