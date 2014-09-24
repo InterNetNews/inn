@@ -13,6 +13,15 @@ the patch.
 
 =item *
 
+Add new B<-i> flag to both B<cnfsstat> and B<innwatch> to specify
+how many seconds they should sleep at startup.  It will especially be
+useful in B<rc.news> so that these scripts are actually started and then
+sleep by themselves, instead of being started a minute after B<innd>
+and therefore not being properly stopped if C<rc.news stop> is invoked
+during that minute.
+
+=item *
+
 Add new B<-f> flag to C<innwatch> to specify the configuration file to 
 use, in case it is not the default F<innwatch.ctl> file.
 
