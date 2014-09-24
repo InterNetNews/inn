@@ -71,7 +71,9 @@ profiled:
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
+# $(LIBSTORAGE) must be listed twice to resolve circular dependencies
+# when doing static linking.
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
