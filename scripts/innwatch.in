@@ -88,6 +88,12 @@ if [ $# -ne 0 ] ; then
     exit 1
 fi
 
+##  Check the existence of the control file.
+if [ ! -f "${CTLWATCH}" ] ; then
+    echo "Control file ${CTLWATCH} not found!" 1>&2
+    exit 1
+fi
+
 trap '' 2
 
 ##  Anyone else there?
