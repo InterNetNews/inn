@@ -4,15 +4,19 @@
  *
  * Usage:
  *
- *      runtests [-b <build-dir>] [-s <source-dir>] <test-list>
+ *      runtests [-b <build-dir>] [-s <source-dir>] -l <test-list>
+ *      runtests [-b <build-dir>] [-s <source-dir>] <test> [<test> ...]
  *      runtests -o [-b <build-dir>] [-s <source-dir>] <test>
  *
  * In the first case, expects a list of executables located in the given file,
  * one line per executable.  For each one, runs it as part of a test suite,
- * reporting results.  Test output should start with a line containing the
- * number of tests (numbered from 1 to this number), optionally preceded by
- * "1..", although that line may be given anywhere in the output.  Each
- * additional line should be in the following format:
+ * reporting results.  In the second case, use the same infrastructure, but
+ * run only the tests listed on the command line.
+ *
+ * Test output should start with a line containing the number of tests
+ * (numbered from 1 to this number), optionally preceded by "1..", although
+ * that line may be given anywhere in the output.  Each additional line should
+ * be in the following format:
  *
  *      ok <number>
  *      not ok <number>
@@ -1419,19 +1423,21 @@ main(int argc, char *argv[])
     int single = 0;
     char *source_env = NULL;
     char *build_env = NULL;
+    const char *program;
     const char *shortlist;
     const char *list = NULL;
     const char *source = SOURCE;
     const char *build = BUILD;
     struct testlist *tests;
 
+    program = argv[0];
     while ((option = getopt(argc, argv, "b:hl:os:")) != EOF) {
         switch (option) {
         case 'b':
             build = optarg;
             break;
         case 'h':
-            printf(usage_message, argv[0], argv[0], argv[0], usage_extra);
+            printf(usage_message, program, program, program, usage_extra);
             exit(0);
             break;
         case 'l':
@@ -1450,7 +1456,7 @@ main(int argc, char *argv[])
     argv += optind;
     argc -= optind;
     if ((list == NULL && argc < 1) || (list != NULL && argc > 0)) {
-        fprintf(stderr, usage_message, argv[0], argv[0], argv[0], usage_extra);
+        fprintf(stderr, usage_message, program, program, program, usage_extra);
         exit(1);
     }
 

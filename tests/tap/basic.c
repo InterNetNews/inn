@@ -71,7 +71,7 @@ ok(int n UNUSED, int success)
 void
 skip(int n UNUSED, const char *reason)
 {
-    new_skip(reason);
+    new_skip(reason, NULL);
 }
 
 void
@@ -83,7 +83,7 @@ ok_block(int n UNUSED, int count, int success)
 void
 skip_block(int n UNUSED, int count, const char *reason)
 {
-    new_skip_block(count, reason);
+    new_skip_block(count, reason, NULL);
 }
 
 void
@@ -153,7 +153,7 @@ static struct cleanup_func *cleanup_funcs = NULL;
 /*
  * Registered diag files.  Any output found in these files will be printed out
  * as if it were passed to diag() before any other output we do.  This allows
- * background processes to log to a file and have that output interleved with
+ * background processes to log to a file and have that output interleaved with
  * the test output.
  */
 struct diag_file {

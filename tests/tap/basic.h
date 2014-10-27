@@ -181,7 +181,7 @@ void test_tmpdir_free(char *path);
  * registered functions will be run during atexit handling (and are therefore
  * subject to all the same constraints and caveats as atexit functions).
  *
- * The function must return void and will be passed two argument, an int that
+ * The function must return void and will be passed two arguments: an int that
  * will be true if the test completed successfully and false otherwise, and an
  * int that will be true if the cleanup function is run in the primary process
  * (the one that called plan or plan_lazy) and false otherwise.

@@ -104,7 +104,7 @@ ok(int n UNUSED, int success)\\
 void\\
 skip(int n UNUSED, const char *reason)\\
 {\\
-    new_skip(reason);\\
+    new_skip(reason, NULL);\\
 }\\
 \\
 void\\
@@ -116,7 +116,7 @@ ok_block(int n UNUSED, int count, int success)\\
 void\\
 skip_block(int n UNUSED, int count, const char *reason)\\
 {\\
-    new_skip_block(count, reason);\\
+    new_skip_block(count, reason, NULL);\\
 }\\
 \\
 void\\
