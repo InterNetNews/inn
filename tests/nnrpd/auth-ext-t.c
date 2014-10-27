@@ -84,7 +84,7 @@ ok_external(int n, struct client *client, const char *arg, const char *user,
     ok_string(n++, user, result);
     ok_string(n++, error, errors);
     if (errors && (error == NULL || strcmp(error, errors) != 0))
-        warn(errors);
+        warn("%s", errors);
     free(errors);
     errors = NULL;
 
@@ -95,7 +95,7 @@ ok_external(int n, struct client *client, const char *arg, const char *user,
     ok_string(n++, user, result);
     ok_string(n++, error, errors);
     if (errors && (error == NULL || strcmp(error, errors) != 0))
-        warn(errors);
+        warn("%s", errors);
     free(errors);
     errors = NULL;
 
