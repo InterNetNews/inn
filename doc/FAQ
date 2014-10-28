@@ -987,9 +987,9 @@ pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
 pathdb:        /usr/local/news/db               /var/lib/news
 pathetc:       /usr/local/news/etc              /etc/news
 pathfilter:    /usr/local/news/bin/filter       /etc/news/filter
-pathhttp:      /usr/local/news/log              /var/log/news
+pathhttp:      /usr/local/news/http             /var/www/inn
 pathlog:       /usr/local/news/log              /var/log/news
-pathrun:       /usr/local/news/run              /var/run/news
+pathrun:       /usr/local/news/run              /run/news
 pathtmp:       /usr/local/news/tmp              /var/spool/news/incoming/tmp
 pathspool:     /usr/local/news/spool            /var/spool/news
 patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
@@ -999,34 +999,16 @@ pathoutgoing:  /usr/local/news/spool/outgoing   /var/spool/news/outgoing
 pathoverview:  /usr/local/news/spool/overview   /var/spool/news/overview
 
                DEFAULT                          FEDORA
-pathnews:      /usr/local/news                  /usr/lib/news
-pathbin:       /usr/local/news/bin              /usr/lib/news/bin
-pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
+pathnews:      /usr/local/news                  /usr/libexec/news
+pathbin:       /usr/local/news/bin              /usr/libexec/news
+pathcontrol:   /usr/local/news/bin/control      /usr/libexec/news/control
 pathdb:        /usr/local/news/db               /var/lib/news
 pathetc:       /usr/local/news/etc              /etc/news
-pathfilter:    /usr/local/news/bin/filter       /usr/lib/news/bin/filter
-pathhttp:      /usr/local/news/log              /var/log/news
+pathfilter:    /usr/local/news/bin/filter       /usr/libexec/news/filter
+pathhttp:      /usr/local/news/http             /var/lib/news/http
 pathlog:       /usr/local/news/log              /var/log/news
-pathrun:       /usr/local/news/run              /var/run/news
+pathrun:       /usr/local/news/run              /run/news
 pathtmp:       /usr/local/news/tmp              /var/lib/news/tmp
-pathspool:     /usr/local/news/spool            /var/spool/news
-patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
-patharticles:  /usr/local/news/spool/articles   /var/spool/news/articles
-pathincoming:  /usr/local/news/spool/incoming   /var/spool/news/incoming
-pathoutgoing:  /usr/local/news/spool/outgoing   /var/spool/news/outgoing
-pathoverview:  /usr/local/news/spool/overview   /var/spool/news/overview
-
-               DEFAULT                          MANDRAKE
-pathnews:      /usr/local/news                  /usr
-pathbin:       /usr/local/news/bin              /usr/bin
-pathcontrol:   /usr/local/news/bin/control      /usr/lib/news/bin/control
-pathdb:        /usr/local/news/db               /var/lib/news
-pathetc:       /usr/local/news/etc              /etc/news
-pathfilter:    /usr/local/news/bin/filter       /usr/lib/news/bin/filter
-pathhttp:      /usr/local/news/log              /var/log/news
-pathlog:       /usr/local/news/log              /var/log/news
-pathrun:       /usr/local/news/run              /var/run/news
-pathtmp:       /usr/local/news/tmp              /usr/tmp
 pathspool:     /usr/local/news/spool            /var/spool/news
 patharchive:   /usr/local/news/spool/archive    /var/spool/news/archive
 patharticles:  /usr/local/news/spool/articles   /var/spool/news/articles
