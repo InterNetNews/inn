@@ -85,7 +85,7 @@ ovdb_init:	ovdb_init.o    $(BOTH)   ; $(LINK) ovdb_init.o    $(STORELIBS)
 ovdb_monitor:	ovdb_monitor.o $(BOTH)   ; $(LINK) ovdb_monitor.o $(STORELIBS)
 ovdb_server:	ovdb_server.o  $(BOTH)   ; $(LINK) ovdb_server.o  $(STORELIBS)
 ovdb_stat:	ovdb_stat.o    $(BOTH)   ; $(LINK) ovdb_stat.o    $(STORELIBS)
-rnews:		rnews.o        $(LIBINN) ; $(LINK) rnews.o        $(STORELIBS)
+rnews:		rnews.o        $(BOTH)   ; $(LINK) rnews.o        $(STORELIBS)
 sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 
 ovdb_init.o: ovdb_init.c
