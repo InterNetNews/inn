@@ -1,6 +1,6 @@
-tradindexed/tdx-util.o: tradindexed/tdx-util.c
-	$(CC) $(CFLAGS) -c -o $@ tradindexed/tdx-util.c
+tradindexed/tdx-util.$(EXTOBJ): tradindexed/tdx-util.c
+	$(LIBCC) $(CFLAGS) -c -o $@ tradindexed/tdx-util.c
 
-tradindexed/tdx-util: tradindexed/tdx-util.o libstorage.$(EXTLIB) $(LIBHIST)
-	$(LIBLD) $(LDFLAGS) -o $@ tradindexed/tdx-util.o \
+tradindexed/tdx-util: tradindexed/tdx-util.$(EXTOBJ) libstorage.$(EXTLIB) $(LIBHIST)
+	$(LIBLD) $(LDFLAGS) -o $@ tradindexed/tdx-util.$(EXTOBJ) \
 	    $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
