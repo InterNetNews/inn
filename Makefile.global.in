@@ -26,9 +26,9 @@ VERSION_EXTRA	= prerelease
 ##  won't affect any of the paths compiled into INN; it's used primarily
 ##  when building a software distribution, where software has to be
 ##  installed into some file system that will later be mounted as / on the
-##  final system.  DESTDIR should have a trailing slash, as the trailing
-##  slash is not added automatically (in case someone wants to add a prefix
-##  that isn't just a parent directory).
+##  final system.  DESTDIR doesn't need a trailing slash, as all the
+##  installation paths already start with / because they're absolute paths
+##  determined by configure.
 
 DESTDIR		=
 D		= $(DESTDIR)
