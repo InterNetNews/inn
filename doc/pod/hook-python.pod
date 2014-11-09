@@ -682,6 +682,24 @@ like C<INN.syslog>, seen above.
 
 =back
 
+=head1 Available Packages
+
+This is an unofficial list of known filtering packages at the time of
+publication.  This is not an endorsement of these filters by ISC or
+the INN developers, but is included as assistance in locating packages
+which make use of this filter mechanism.
+
+=over 4
+
+=item PyClean
+
+URL:  L<https://github.com/crooks/PyClean> (maintained by Steve Crook)
+
+PyClean performs a similar role to the original Perl-based Cleanfeed,
+an extremely powerful spam filter on Usenet.  It uses F<filter_innd.py>.
+
+=back
+
 $Id$
 
 =cut
