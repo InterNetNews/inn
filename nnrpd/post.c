@@ -334,6 +334,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char		orgbuff[SMBUF];
     static char         pathidentitybuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
+    static char         postingaccountbuff[SMBUF];
     static char         postinghostbuff[SMBUF];
     static char		sendbuff[SMBUF];
     static char         injectioninfobuff[SMBUF];
@@ -544,6 +545,12 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     }
     snprintf(pathidentitybuff, sizeof(pathidentitybuff), "%s", p);
 
+    /* Set the posting-account value. */
+     if (PERMaccessconf->addinjectionpostingaccount && PERMuser[0] != '\0') {
+         snprintf(postingaccountbuff, sizeof(postingaccountbuff),
+                  "; posting-account=\"%s\"", PERMuser);
+     }
+
     /* Set the posting-host identity.
      * Check a proper definition of Client.host and Client.ip
      * (we already saw the case of "localhost:" without IP),
@@ -582,8 +589,10 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 
     /* ARTpost() will convert bare LF to CRLF.  Do not use CRLF here.*/
     snprintf(injectioninfobuff, sizeof(injectioninfobuff),
-             "%s%s;\n\tlogging-data=\"%ld\"; mail-complaints-to=\"%s\"",
+             "%s%s%s;\n\tlogging-data=\"%ld\"; mail-complaints-to=\"%s\"",
              pathidentitybuff,
+             PERMaccessconf->addinjectionpostingaccount && PERMuser[0] != '\0' ?
+                 postingaccountbuff : "",
              PERMaccessconf->addinjectionpostinghost ? postinghostbuff : "",
              (long) pid, complaintsbuff);
 

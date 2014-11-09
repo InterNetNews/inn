@@ -100,6 +100,7 @@ struct innconf {
 
     /* Posting */
     bool addinjectiondate;      /* Add Injection-Date: to posts */
+    bool addinjectionpostingaccount; /* Add posting-account attribute to Injection-Info: to posts */
     bool addinjectionpostinghost; /* Add posting-host attribute to Injection-Info: to posts */
     bool checkincludedtext;     /* Reject if too much included text */
     char *complaints;           /* Address for mail-complaints-to attribute to Injection-Info: */

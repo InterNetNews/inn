@@ -194,6 +194,7 @@ const struct config config_table[] = {
 
     /* The following settings are specific to nnrpd. */
     { K(addinjectiondate),        BOOL    (true) },
+    { K(addinjectionpostingaccount), BOOL (false) },
     { K(addinjectionpostinghost), BOOL    (true) },
     { K(allownewnews),            BOOL    (true) },
     { K(backoffauth),             BOOL   (false) },

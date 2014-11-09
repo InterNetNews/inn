@@ -71,6 +71,7 @@ typedef struct _ACCESSGROUP {
     int readertrack;
     int strippostcc;
     int addinjectiondate;
+    int addinjectionpostingaccount;
     int addinjectionpostinghost;
     char *nnrpdposthost;
     unsigned long nnrpdpostport;

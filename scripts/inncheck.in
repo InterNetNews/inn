@@ -951,6 +951,7 @@ readers_conf
                 'virtualhost'   => 'boolean',
                 # inn.conf parameters:
                 'addinjectiondate'      => 'boolean',
+                'addinjectionpostingaccount' => 'boolean',
                 'addinjectionpostinghost' => 'boolean',
                 'backoff_auth'          => 'boolean',   # careful:
                 'backoff_db'            => 'string',    # the inn.conf options

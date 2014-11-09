@@ -102,6 +102,14 @@ contains the contents of the NNTP-Posting-Host: header.
 
 =item *
 
+A new I<addinjectionpostingaccount> parameter has been added in
+F<inn.conf>.  When set to true, the Injection-Info: header field
+contains an additional posting-account attribute that mentions the
+username assigned to the user at connection time or after authentication.
+The default value for this parameter is false.
+
+=item *
+
 A few headers are now considered as obsolete by B<nnrpd> at injection
 time:  NNTP-Posting-Date:, NNTP-Posting-Host:, X-Complaints-To:, X-Trace:,
 Also-Control:, Article-Names:, Article-Updates:, and See-Also: headers.

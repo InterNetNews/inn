@@ -138,33 +138,34 @@ extern bool PerlLoaded;
 #define PERMreadertrack		36
 #define PERMstrippostcc		37
 #define PERMaddinjectiondate	38
-#define PERMaddinjectionpostinghost	39
-#define PERMnnrpdposthost	40
-#define PERMnnrpdpostport	41
-#define PERMnnrpdoverstats	42
-#define PERMbackoff_auth	43
-#define PERMbackoff_db		44
-#define PERMbackoff_k		45
-#define PERMbackoff_postfast	46
-#define PERMbackoff_postslow	47
-#define PERMbackoff_trigger	48
-#define PERMnnrpdcheckart	49
-#define PERMnnrpdauthsender	50
-#define PERMvirtualhost		51
-#define PERMnewsmaster		52
-#define PERMlocaladdress	53
-#define PERMrejectwith		54
-#define PERMmaxbytespersecond	55
-#define PERMperl_auth           56
-#define PERMpython_auth         57
-#define PERMperl_access         58
-#define PERMpython_access       59
-#define PERMpython_dynamic      60
+#define PERMaddinjectionpostingaccount 39
+#define PERMaddinjectionpostinghost	40
+#define PERMnnrpdposthost	41
+#define PERMnnrpdpostport	42
+#define PERMnnrpdoverstats	43
+#define PERMbackoff_auth	44
+#define PERMbackoff_db		45
+#define PERMbackoff_k		46
+#define PERMbackoff_postfast	47
+#define PERMbackoff_postslow	48
+#define PERMbackoff_trigger	49
+#define PERMnnrpdcheckart	50
+#define PERMnnrpdauthsender	51
+#define PERMvirtualhost		52
+#define PERMnewsmaster		53
+#define PERMlocaladdress	54
+#define PERMrejectwith		55
+#define PERMmaxbytespersecond	56
+#define PERMperl_auth           57
+#define PERMpython_auth         58
+#define PERMperl_access         59
+#define PERMpython_access       60
+#define PERMpython_dynamic      61
 #ifdef HAVE_OPENSSL
-#define PERMrequire_ssl                61
-#define PERMMAX                        62
+#define PERMrequire_ssl         62
+#define PERMMAX                 63
 #else
-#define PERMMAX			61
+#define PERMMAX			62
 #endif
 
 #define TEST_CONFIG(a, b) \
@@ -227,6 +228,7 @@ static CONFTOKEN PERMtoks[] = {
     { PERMreadertrack,          (char *) "readertrack:"         },
     { PERMstrippostcc,          (char *) "strippostcc:"         },
     { PERMaddinjectiondate,     (char *) "addinjectiondate:"    },
+    { PERMaddinjectionpostingaccount, (char *) "addinjectionpostingaccount:" },
     { PERMaddinjectionpostinghost, (char *) "addinjectionpostinghost:" },
     { PERMnnrpdposthost,        (char *) "nnrpdposthost:"       },
     { PERMnnrpdpostport,        (char *) "nnrpdpostport:"       },
@@ -492,6 +494,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->readertrack = innconf->readertrack;
     curaccess->strippostcc = innconf->strippostcc;
     curaccess->addinjectiondate = innconf->addinjectiondate;
+    curaccess->addinjectionpostingaccount = innconf->addinjectionpostingaccount;
     curaccess->addinjectionpostinghost = innconf->addinjectionpostinghost;
     curaccess->nnrpdposthost = innconf->nnrpdposthost;
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
@@ -987,6 +990,11 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
             curaccess->addinjectiondate = boolval;
 	SET_CONFIG(oldtype);
 	break;
+      case PERMaddinjectionpostingaccount:
+        if (boolval != -1)
+            curaccess->addinjectionpostingaccount = boolval;
+        SET_CONFIG(oldtype);
+        break;
       case PERMaddinjectionpostinghost:
 	if (boolval != -1)
             curaccess->addinjectionpostinghost = boolval;
@@ -1301,6 +1309,7 @@ PERMreadfile(char *filename)
 	      case PERMreadertrack:
 	      case PERMstrippostcc:
 	      case PERMaddinjectiondate:
+              case PERMaddinjectionpostingaccount:
 	      case PERMaddinjectionpostinghost:
 	      case PERMnnrpdposthost:
 	      case PERMnnrpdpostport:

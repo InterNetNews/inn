@@ -835,6 +835,14 @@ that are broken out separately after the initial alphabetized list.
 Whether to add an Injection-Date: header to all local posts.  This is a
 boolean value and the default is true.
 
+=item I<addinjectionpostingaccount>
+
+Whether to add a posting-account attribute to the Injection-Info:
+header to all local posts giving the username assigned to the user at
+connection time or after authentication.  This is a boolean value and
+the default is false. There is no intrinsic support for obfuscating the
+value.  That has to be done with a user-written Perl filter, if desired.
+
 =item I<addinjectionpostinghost>
 
 Whether to add a posting-host attribute to the Injection-Info: header to

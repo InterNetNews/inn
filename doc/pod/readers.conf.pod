@@ -555,10 +555,10 @@ In addition, all of the following parameters are valid in access groups
 and override the global setting in F<inn.conf>.  See inn.conf(5) for the
 descriptions of these parameters:
 
-    addinjectiondate, addinjectionpostinghost, backoff_auth, backoff_db,
-    backoff_k, backoff_postfast, backoff_postslow, backoff_trigger,
-    checkincludedtext, clienttimeout, complaints, domain, fromhost,
-    localmaxartsize, moderatormailer, nnrpdauthsender, nnrpdcheckart,
+    addinjectiondate, addinjectionpostingaccount, addinjectionpostinghost,
+    backoff_auth, backoff_db, backoff_k, backoff_postfast, backoff_postslow,
+    backoff_trigger, checkincludedtext, clienttimeout, complaints, domain,
+    fromhost, localmaxartsize, moderatormailer, nnrpdauthsender, nnrpdcheckart,
     nnrpdoverstats, nnrpdposthost, nnrpdpostport, organization, pathhost,
     readertrack, spoolfirst, strippostcc.
 
