@@ -231,6 +231,9 @@ Cleanfeed was originally developed by Jeremy Nixon who maintained it
 until 1998.  Then Marco d'Itri until 2002.  Steve Crook has been
 maintaining it since 2007.
 
+A Python-based variant of Cleanfeed, named PyClean, also exists and
+can be found at L<https://github.com/crooks/PyClean>.
+
 =item GUP (Group Update Program)
 
 URL:  L<ftp://ftp.debian.org/debian/pool/main/g/gup/>
