@@ -137,6 +137,10 @@ backofftrigger:              10000
 #tlscapath:                  @sysconfdir@
 #tlscertfile:                @sysconfdir@/cert.pem
 #tlskeyfile:                 @sysconfdir@/key.pem
+#tlsciphers:
+#tlscompression:             true
+#tlspreferserverciphers:     false
+#tlsprotocols:               [ SSLv2 SSLv3 TLSv1 TLSv1.1 TLSv1.2 ]
 
 # Monitoring
 

@@ -4,6 +4,14 @@
 
 =item *
 
+New F<inn.conf> parameters used by B<nnrpd> to fine-tune the SSL/TLS
+configuration have been added:  I<tlsciphers>, I<tlscompression>,
+I<tlspreferserverciphers>, and I<tlsprotocols>.  Many thanks to Christian
+Mock for his contribution that permits to tighten the level of security
+provided by TLS/SSL.
+
+=item *
+
 B<innwatch> no longer creates a child process only for sleeping and then
 waits on that process.  The forked-off process only died after it had
 done sleeping, which caused the INN service to drop into maintenance
