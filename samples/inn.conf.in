@@ -107,6 +107,7 @@ keymaxwords:                 250
 # Posting
 
 addinjectiondate:            true
+addinjectionpostingaccount:  false
 addinjectionpostinghost:     true
 checkincludedtext:           false
 #complaints:
