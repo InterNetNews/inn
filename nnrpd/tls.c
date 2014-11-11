@@ -425,7 +425,9 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 int
 tls_init_serverengine(int verifydepth, int askcert, int requirecert,
                       char *tls_CAfile, char *tls_CApath, char *tls_cert_file,
-                      char *tls_key_file)
+                      char *tls_key_file, bool prefer_server_ciphers,
+                      bool tls_compression, struct vector *tls_proto_vect,
+                      char *tls_ciphers)
 {
     int     off = 0;
     int     verify_flags = SSL_VERIFY_NONE;
@@ -434,6 +436,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     char   *s_cert_file;
     char   *s_key_file;
     struct stat buf;
+    size_t  tls_protos = 0;
+    size_t  i;
 
     if (tls_serverengine)
       return (0);				/* Already running. */
@@ -450,9 +454,6 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     };
 
     off |= SSL_OP_ALL;		/* Work around all known bugs. */
-#ifdef SSL_OP_NO_SSLv2
-    off |= SSL_OP_NO_SSLv2;     /* Too many holes in SSLv2. */
-#endif
     SSL_CTX_set_options(CTX, off);
     SSL_CTX_set_info_callback(CTX, apps_ssl_info_callback);
     SSL_CTX_sess_set_cache_size(CTX, 128);
@@ -496,6 +497,73 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
     SSL_CTX_set_options(CTX, SSL_OP_SINGLE_DH_USE);
 
+    if (prefer_server_ciphers) {
+#ifdef SSL_OP_CIPHER_SERVER_PREFERENCE
+        SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
+#endif
+    }
+
+    if ((tls_proto_vect != NULL) && (tls_proto_vect->count > 0)) {
+        for (i = 0; i < tls_proto_vect->count; i++) {
+            if (tls_proto_vect->strings[i] != NULL) {
+                if (strcmp(tls_proto_vect->strings[i], "SSLv2") == 0) {
+                    tls_protos |= INN_TLS_SSLv2;
+                } else if (strcmp(tls_proto_vect->strings[i], "SSLv3") == 0) {
+                    tls_protos |= INN_TLS_SSLv3;
+                } else if (strcmp(tls_proto_vect->strings[i], "TLSv1") == 0) {
+                    tls_protos |= INN_TLS_TLSv1;
+                } else if (strcmp(tls_proto_vect->strings[i], "TLSv1.1") == 0) {
+                    tls_protos |= INN_TLS_TLSv1_1;
+                } else if (strcmp(tls_proto_vect->strings[i], "TLSv1.2") == 0) {
+                    tls_protos |= INN_TLS_TLSv1_2;
+                } else {
+                    syslog(L_ERROR, "TLS engine: unknown protocol '%s' in tlsprotocols",
+                           tls_proto_vect->strings[i]);
+                }
+            }
+        }
+    } else {
+        /* Default value:  allow only TLS protocols. */
+        tls_protos = (INN_TLS_TLSv1 | INN_TLS_TLSv1_1 | INN_TLS_TLSv1_2);
+    }
+
+    if ((tls_protos & INN_TLS_SSLv2) == 0) {
+        SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv2);
+    }
+
+    if ((tls_protos & INN_TLS_SSLv3) == 0) {
+        SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv3);
+    }
+
+    if ((tls_protos & INN_TLS_TLSv1) == 0) {
+        SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1);
+    }
+
+    if ((tls_protos & INN_TLS_TLSv1_1) == 0) {
+#ifdef SSL_OP_NO_TLSv1_1
+        SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_1);
+#endif
+    }
+
+    if ((tls_protos & INN_TLS_TLSv1_2) == 0) {
+#ifdef SSL_OP_NO_TLSv1_2
+        SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_2);
+#endif
+    }
+
+    if (tls_ciphers != NULL) {
+        if (SSL_CTX_set_cipher_list(CTX, tls_ciphers) == 0) {
+            syslog(L_ERROR, "TLS engine: cannot set cipher list");
+            return (-1);
+        }
+    }
+
+    if (!tls_compression) {
+#ifdef SSL_OP_NO_COMPRESSION
+        SSL_CTX_set_options(CTX, SSL_OP_NO_COMPRESSION);
+#endif
+    }
+
     verify_depth = verifydepth;
     if (askcert!=0)
 	verify_flags |= SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
@@ -513,7 +581,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
 /*
 **  The function called by nnrpd to initialize the TLS support.  Calls
-**  tls_init_server_engine and checks the result.  On any sort of failure,
+**  tls_init_serverengine and checks the result.  On any sort of failure,
 **  nnrpd will exit.
 **
 **  Returns -1 on error.
@@ -532,7 +600,12 @@ tls_init(void)
 				       innconf->tlscafile,
 				       innconf->tlscapath,
 				       innconf->tlscertfile,
-				       innconf->tlskeyfile);
+				       innconf->tlskeyfile,
+                                       innconf->tlspreferserverciphers,
+                                       innconf->tlscompression,
+                                       innconf->tlsprotocols,
+                                       innconf->tlsciphers);
+
     if (ssl_result == -1) {
         Reply("%d Error initializing TLS\r\n",
               initialSSL ? NNTP_FAIL_TERMINATING : NNTP_ERR_STARTTLS);

@@ -27,6 +27,13 @@
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
 
+/* Protocol support. */
+#define INN_TLS_SSLv2 1
+#define INN_TLS_SSLv3 2
+#define INN_TLS_TLSv1 4
+#define INN_TLS_TLSv1_1 8
+#define INN_TLS_TLSv1_2 16
+
 /* Init TLS engine. */
 int tls_init_serverengine(int verifydepth, /* Depth to verify. */
 			  int askcert,     /* 1 = Verify client. */
@@ -34,7 +41,11 @@ int tls_init_serverengine(int verifydepth, /* Depth to verify. */
 			  char *tls_CAfile,
 			  char *tls_CApath,
 			  char *tls_cert_file,
-			  char *tls_key_file);
+			  char *tls_key_file,
+                          bool prefer_server_ciphers,
+                          bool tls_compression,
+                          struct vector *tls_protocols,
+                          char *tls_ciphers);
 
 /* Init TLS. */
 int tls_init(void);

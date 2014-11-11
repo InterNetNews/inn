@@ -232,6 +232,10 @@ const struct config config_table[] = {
     { K(tlscapath),               STRING  (NULL) },
     { K(tlscertfile),             STRING  (NULL) },
     { K(tlskeyfile),              STRING  (NULL) },
+    { K(tlsciphers),              STRING  (NULL) },
+    { K(tlscompression),          BOOL   (false) },
+    { K(tlspreferserverciphers),  BOOL    (true) },
+    { K(tlsprotocols),            LIST    (NULL) },
 #endif /* HAVE_OPENSSL */
 
     /* The following settings are used by nnrpd and rnews. */

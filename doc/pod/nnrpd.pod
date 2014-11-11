@@ -226,6 +226,11 @@ run B<nnrpd>.  (Change the path to B<nnrpd> to match your installation.)
 You may need to replace C<nntps> with C<563> if C<nntps> isn't
 defined in F</etc/services> on your system.
 
+Optionally, you may set the I<tlsciphers>, I<tlscompression>,
+I<tlspreferserverciphers>, and I<tlsprotocols> parameters in F<inn.conf>
+to fine-tune the behaviour of the SSL/TLS negotiation whenever a new
+attack on the TLS protocol or some supported cipher suite is discovered.
+
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in S<RFC 3977> (NNTP),

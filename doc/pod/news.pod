@@ -18,6 +18,16 @@ allows to specify another configuration file, if need be.
 
 =item *
 
+If you have been using SSL/TLS with B<nnrpd> before, be aware that the
+default value of a few F<inn.conf> parameters have changed:  SSL/TLS
+compression is now disabled by default, the server decides the preferred
+cipher, and only TLS protocols are allowed (using the flawed SSLv2
+and SSLv3 protocols is now disabled).  If you want to change these
+settings, the respective I<tlscompression>, I<tlspreferserverciphers>,
+and I<tlsprotocols> parameters can be tuned to your needs.
+
+=item *
+
 The B<--with-kerberos> configure flag used to add S<Kerberos v5>
 support has been renamed to B<--with-krb5>.
 
@@ -178,11 +188,6 @@ is of interest primarily to people building packages for distributions.
 
 =item *
 
-For security reasons, use of the flawed SSLv2 protocol is now disabled
-for TLS sessions with B<nnrpd>.
-
-=item *
-
 The INN test suite driver is now fully synchronized with the upstream
 version of the C TAP Harness package maintained by Russ Allbery.
 Keeping the INN test suite driver up-to-date will be possible thanks
@@ -194,6 +199,14 @@ automatically fetches the latest upstream changes.
 =head1 Changes in 2.5.5
 
 =over 2
+
+=item *
+
+New F<inn.conf> parameters used by B<nnrpd> to fine-tune the SSL/TLS
+configuration have been added:  I<tlsciphers>, I<tlscompression>,
+I<tlspreferserverciphers>, and I<tlsprotocols>.  Many thanks to Christian
+Mock for his contribution that permits to tighten the level of security
+provided by TLS/SSL.
 
 =item *
 

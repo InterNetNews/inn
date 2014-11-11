@@ -123,10 +123,18 @@ struct innconf {
     unsigned long backofftrigger;  /* Number of postings before triggered */
 
     /* Reading and posting -- SSL and TLS support */
+    /* Do not test HAVE_OPENSSL.  This relieves customers of /usr/include/inn
+     * from the need to guess whether INN was built with SSL/TLS support in
+     * order to get a header that matches the installed libraries.
+     */
     char *tlscafile;            /* Path to a certificate authority file */
     char *tlscapath;            /* Path to a directory of CA certificates */
     char *tlscertfile;          /* Path to the SSL certificate to use */
     char *tlskeyfile;           /* Path to the key for the certificate */
+    char *tlsciphers;           /* OpenSSL-style cipher string */
+    bool tlscompression;        /* Turn TLS compression on/off */
+    bool tlspreferserverciphers; /* Make server select the cipher */
+    struct vector *tlsprotocols; /* List of supported TLS versions */
 
     /* Monitoring */
     bool doinnwatch;            /* Start innwatch from rc.news? */

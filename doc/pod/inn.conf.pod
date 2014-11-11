@@ -1027,8 +1027,11 @@ The default value is C<10000>.
 
 =back
 
-Finally, here are the parameters used by nnrpd(8) to provide TLS/SSL
-support:
+=head2 TLS/SSL Support for Reading and Posting
+
+Here are the parameters used by nnrpd(8) to provide TLS/SSL support.
+
+The parameters related to certificates are:
 
 =over 4
 
@@ -1066,6 +1069,38 @@ I<pathetc>/key.pem.
 
 This file must only be readable by the news user or B<nnrpd> will refuse to
 use it.
+
+=back
+
+Finally, here are the parameters that can be used to tighten the level
+of security provided by TLS/SSL:
+
+=over 4
+
+=item I<tlsciphers>
+
+The string describing the cipher suites OpenSSL will support.  See
+OpenSSL's ciphers(1) command documentation for details.  The default
+is unset, which uses OpenSSL's default cipher suite list.
+
+=item I<tlscompression>
+
+Whether to enable or disable SSL/TLS compression support.  This is a
+boolean and the default is false.
+
+=item I<tlspreferserverciphers>
+
+Whether to let the client or the server decide the preferred cipher.
+This is a boolean and the default is true, that is to say the server
+decides the preferred cipher.
+
+=item I<tlsprotocols>
+
+The list of SSL/TLS protocol versions to support.  Valid protocols are
+B<SSLv2>, B<SSLv3>, B<TLSv1>, B<TLSv1.1> and B<TLSv1.2>.  The default
+value is to only allow TLS protocols:
+
+    tlsprotocols: [ TLSv1 TLSv1.1 TLSv1.2 ]
 
 =back
 
