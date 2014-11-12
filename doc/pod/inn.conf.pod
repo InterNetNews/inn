@@ -1086,7 +1086,7 @@ is unset, which uses OpenSSL's default cipher suite list.
 =item I<tlscompression>
 
 Whether to enable or disable SSL/TLS compression support.  This is a
-boolean and the default is false.
+boolean and the default is false, that is to say compression is disabled.
 
 =item I<tlspreferserverciphers>
 
@@ -1101,6 +1101,12 @@ B<SSLv2>, B<SSLv3>, B<TLSv1>, B<TLSv1.1> and B<TLSv1.2>.  The default
 value is to only allow TLS protocols:
 
     tlsprotocols: [ TLSv1 TLSv1.1 TLSv1.2 ]
+
+Note that the listed protocols will be enabled only if the OpenSSL
+library INN has been built with, supports them.  In case OpenSSL supports
+protocols more recent than TLSv1.2, they will be automatically enabled
+(which anyway is fine regarding security, as newer protocols are supposed
+to be more secure).
 
 =back
 
