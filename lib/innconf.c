@@ -235,7 +235,7 @@ const struct config config_table[] = {
     { K(tlscompression),          BOOL    (true) },
     { K(tlspreferserverciphers),  BOOL   (false) },
     { K(tlsprotocols),            LIST    (NULL) },
-#endif
+#endif /* HAVE_SSL */
 
     /* The following settings are used by nnrpd and rnews. */
     { K(nnrpdposthost),           STRING  (NULL) },
