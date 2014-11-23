@@ -302,20 +302,22 @@ ARTlog(const ARTDATA *data, char code, const char *text)
   const HDRCONTENT *hc = data->HdrContent;
   int i;
   bool Done;
+  time_t t;
 
   TMRstart(TMR_ARTLOG);
   /* We could be a bit faster by not dividing Now.usec by 1000,
    * but who really wants to log at the Microsec level? */
   Done = code == ART_ACCEPT || code == ART_JUNK;
+  t = Now.tv_sec;
   if (text)
     i = fprintf(Log, "%.15s.%03d %c %s %s %s%s",
-      ctime((const time_t *) &Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      ctime(&t) + 4, (int)(Now.tv_usec / 1000), code,
       data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       text, Done ? "" : "\n");
   else
     i = fprintf(Log, "%.15s.%03d %c %s %s%s",
-      ctime((const time_t *) &Now.tv_sec) + 4, (int)(Now.tv_usec / 1000), code,
+      ctime(&t) + 4, (int)(Now.tv_usec / 1000), code,
       data->Feedsite != NULL ? data->Feedsite : "(null)",
       HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "(null)",
       Done ? "" : "\n");

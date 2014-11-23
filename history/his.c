@@ -442,12 +442,14 @@ his_logger(const char *s, int code)
 {
     struct timeval tv;
     struct tm *tm;
+    time_t t;
 
     if (HISfdlog == NULL) /* do nothing unless HISlogto() has been called */
 	return;
 
     gettimeofday(&tv, NULL);
-    tm = localtime((const time_t *)&(tv.tv_sec));
+    t = tv.tv_sec;
+    tm = localtime(&t);
     if (HISstat_start[code].tv_sec != 0) {
 	fprintf(HISfdlog, "%d/%d/%d %02d:%02d:%02d.%06d: [%d] %s (%.6f)\n",
 		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
