@@ -19,8 +19,8 @@ AC_DEFUN([INN_PATH_SENDMAIL],
     AC_MSG_CHECKING([for sendmail])
     AC_MSG_RESULT([$SENDMAIL])
 else
-    AC_PATH_PROG([SENDMAIL], [sendmail], , [/usr/sbin:/usr/lib])
+    AC_PATH_PROG([SENDMAIL], [sendmail], [], [/usr/sbin:/usr/lib])
     if test -z "$SENDMAIL" ; then
-        AC_MSG_ERROR(sendmail not found, re-run with --with-sendmail)
+        AC_MSG_ERROR([sendmail not found, re-run with --with-sendmail])
     fi
 fi])
