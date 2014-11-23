@@ -167,7 +167,7 @@ lib/md5.t: lib/md5-t.o tap/basic.o $(LIBINN)
 lib/memcmp.o: ../lib/memcmp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/memcmp.c
 
-lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o tap/basic.o
+lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
 
 lib/messages.t: lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN)
@@ -177,7 +177,7 @@ lib/messages.t: lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN
 lib/mkstemp.o: ../lib/mkstemp.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
 
-lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o tap/basic.o
+lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/mkstemp.o lib/mkstemp-t.o tap/basic.o $(LIBINN)
 
 lib/network/addr-ipv4.t: lib/network/addr-ipv4-t.o tap/basic.o $(LIBINN)
