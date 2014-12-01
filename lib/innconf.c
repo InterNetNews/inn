@@ -234,6 +234,7 @@ const struct config config_table[] = {
     { K(tlskeyfile),              STRING  (NULL) },
     { K(tlsciphers),              STRING  (NULL) },
     { K(tlscompression),          BOOL   (false) },
+    { K(tlseccurve),              STRING  (NULL) },
     { K(tlspreferserverciphers),  BOOL    (true) },
     { K(tlsprotocols),            LIST    (NULL) },
 #endif /* HAVE_OPENSSL */

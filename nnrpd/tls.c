@@ -413,6 +413,52 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 }
 
 
+#ifdef HAVE_OPENSSL_ECC
+/*
+**  Provide an ECKEY from a curve name.
+**  Accepts a NULL pointer as the name.
+**
+**  Returns the key, or NULL on error.
+*/
+static EC_KEY *
+eckey_from_name(char *name)
+{
+    EC_KEY *eckey;
+    size_t ncurves, nitems, i;
+    EC_builtin_curve *builtin_curves;
+    const char *sname;
+
+    if (name == NULL) {
+        return (NULL);
+    }
+
+    /* See EC_GROUP_new(3) for the details of this expressive dance. */
+    ncurves = EC_get_builtin_curves(NULL, 0); /* Number of curves. */
+
+    builtin_curves = xmalloc(ncurves * sizeof(EC_builtin_curve));
+    nitems = EC_get_builtin_curves(builtin_curves, ncurves);
+    if (nitems != ncurves) {
+        syslog(L_ERROR, "got %lu curves from EC_get_builtin_curves, "
+               "expected %lu", nitems, ncurves);
+    }
+    for (i = 0; i < nitems; i++) {
+        sname = OBJ_nid2sn(builtin_curves[i].nid);
+        if (strcmp(sname, name) == 0) {
+            break;
+        }
+    }
+    if (i == nitems) {
+        syslog(L_ERROR, "tlseccurve '%s' not found", name);
+        free(builtin_curves);
+        return (NULL);
+    }
+
+    eckey = EC_KEY_new_by_curve_name(builtin_curves[i].nid);
+    free(builtin_curves);
+    return (eckey);
+}
+#endif /* HAVE_OPENSSL_ECC */
+
 /*
 **  This is the setup routine for the SSL server.  As nnrpd might be called
 **  more than once, we only want to do the initialization one time.
@@ -427,7 +473,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
                       char *tls_CAfile, char *tls_CApath, char *tls_cert_file,
                       char *tls_key_file, bool prefer_server_ciphers,
                       bool tls_compression, struct vector *tls_proto_vect,
-                      char *tls_ciphers)
+                      char *tls_ciphers, char *tls_ec_curve UNUSED)
 {
     int     off = 0;
     int     verify_flags = SSL_VERIFY_NONE;
@@ -438,6 +484,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     struct stat buf;
     size_t  tls_protos = 0;
     size_t  i;
+#ifdef HAVE_OPENSSL_ECC
+    EC_KEY *eckey;
+#endif
 
     if (tls_serverengine)
       return (0);				/* Already running. */
@@ -496,6 +545,25 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
     SSL_CTX_set_options(CTX, SSL_OP_SINGLE_DH_USE);
+
+#ifdef HAVE_OPENSSL_ECC
+    SSL_CTX_set_options(CTX, SSL_OP_SINGLE_ECDH_USE);
+
+    /* We set a curve here by name if provided
+     * or we use OpenSSL (>= 1.0.2) auto-selection
+     * or we default to NIST P-256. */
+    eckey = eckey_from_name(tls_ec_curve);
+    if (eckey != NULL) {
+        SSL_CTX_set_tmp_ecdh(CTX, eckey);
+    } else {
+# ifdef SSL_CTX_set_ecdh_auto
+        SSL_CTX_set_ecdh_auto(CTX, 1);
+# else
+        SSL_CTX_set_tmp_ecdh(CTX,
+                             EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
+# endif /* SSL_CTX_set_ecdh_auto */
+     }
+#endif /* HAVE_OPENSSL_ECC */
 
     if (prefer_server_ciphers) {
 #ifdef SSL_OP_CIPHER_SERVER_PREFERENCE
@@ -604,7 +672,8 @@ tls_init(void)
                                        innconf->tlspreferserverciphers,
                                        innconf->tlscompression,
                                        innconf->tlsprotocols,
-                                       innconf->tlsciphers);
+                                       innconf->tlsciphers,
+                                       innconf->tlseccurve);
 
     if (ssl_result == -1) {
         Reply("%d Error initializing TLS\r\n",

@@ -27,6 +27,12 @@
 #include <openssl/x509.h>
 #include <openssl/ssl.h>
 
+#if !defined(OPENSSL_NO_EC) && defined(TLSEXT_ECPOINTFORMAT_uncompressed)
+# include <openssl/ec.h>
+# include <openssl/objects.h>
+# define HAVE_OPENSSL_ECC
+#endif
+
 /* Protocol support. */
 #define INN_TLS_SSLv2 1
 #define INN_TLS_SSLv3 2
@@ -45,7 +51,8 @@ int tls_init_serverengine(int verifydepth, /* Depth to verify. */
                           bool prefer_server_ciphers,
                           bool tls_compression,
                           struct vector *tls_protocols,
-                          char *tls_ciphers);
+                          char *tls_ciphers,
+                          char *tls_ec_curve);
 
 /* Init TLS. */
 int tls_init(void);

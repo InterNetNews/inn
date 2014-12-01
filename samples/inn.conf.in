@@ -141,6 +141,7 @@ backofftrigger:              10000
 #tlskeyfile:                 @sysconfdir@/key.pem
 #tlsciphers:
 #tlscompression:             false
+#tlseccurve:
 #tlspreferserverciphers:     true
 #tlsprotocols:               [ TLSv1 TLSv1.1 TLSv1.2 ]
 

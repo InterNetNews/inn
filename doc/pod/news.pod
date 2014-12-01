@@ -204,9 +204,9 @@ automatically fetches the latest upstream changes.
 
 New F<inn.conf> parameters used by B<nnrpd> to fine-tune the SSL/TLS
 configuration have been added:  I<tlsciphers>, I<tlscompression>,
-I<tlspreferserverciphers>, and I<tlsprotocols>.  Many thanks to Christian
-Mock for his contribution that permits to tighten the level of security
-provided by TLS/SSL.
+I<tlseccurve>, I<tlspreferserverciphers>, and I<tlsprotocols>.
+Many thanks to Christian Mock for his contribution that permits to
+tighten the level of security provided by TLS/SSL.
 
 =item *
 
