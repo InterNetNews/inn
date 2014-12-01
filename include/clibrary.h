@@ -182,10 +182,6 @@ END_DECLS
     (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
 #endif
 
-/* Used to name the elements of the array passed to pipe(). */
-#define PIPE_READ       0
-#define PIPE_WRITE      1
-
 /* C99 requires va_copy.  Older versions of GCC provide __va_copy.  Per the
    Autoconf manual, memcpy is a generally portable fallback. */
 #ifndef va_copy
