@@ -1077,6 +1077,17 @@ boolean and the default is true, that is to say compression is enabled.
 (Note that the default value will be false in the next major release
 of INN.)
 
+=item I<tlseccurve>
+
+The name of the elliptic curve to use for ephemeral key exchanges.
+To see the list of curves supported by OpenSSL, use C<openssl ecparam
+-list_curves>.
+
+The default is unset, which means an appropriate curve is auto-selected
+(if your OpenSSL version supports it) or the NIST P-256 curve is used.
+
+This option is only effective if your OpenSSL version has ECDH support.
+
 =item I<tlspreferserverciphers>
 
 Whether to let the client or the server decide the preferred cipher.
@@ -1261,7 +1272,7 @@ default value.
 =item I<status>
 
 How frequently (in seconds) innd(8) should write out a status report.  The
-report is written to I<pathhttp>/inn_status.html or I<pathlog>/inn.status 
+report is written to I<pathhttp>/inn_status.html or I<pathlog>/inn.status
 depending on the value of I<htmlstatus>.  If this is set to C<0> or
 C<false>, status reporting is disabled.  The default value is C<0>.
 

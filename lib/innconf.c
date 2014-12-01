@@ -233,6 +233,7 @@ const struct config config_table[] = {
     { K(tlskeyfile),              STRING  (NULL) },
     { K(tlsciphers),              STRING  (NULL) },
     { K(tlscompression),          BOOL    (true) },
+    { K(tlseccurve),              STRING  (NULL) },
     { K(tlspreferserverciphers),  BOOL   (false) },
     { K(tlsprotocols),            LIST    (NULL) },
 #endif /* HAVE_SSL */

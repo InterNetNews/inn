@@ -129,6 +129,7 @@ struct innconf {
     char *tlskeyfile;           /* Path to the key for the certificate */
     char *tlsciphers;           /* OpenSSL-style cipher string */
     bool tlscompression;        /* Turn TLS compression on/off */
+    char *tlseccurve;           /* ECDH curve name */
     bool tlspreferserverciphers; /* Make server select the cipher */
     struct vector *tlsprotocols; /* List of supported TLS versions */
 #endif /* HAVE_SSL */
