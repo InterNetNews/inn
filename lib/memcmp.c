@@ -16,6 +16,7 @@
 /* If we're running the test suite, rename memcmp to avoid conflicts with
    the system version. */
 #if TESTING
+# undef memcmp
 # define memcmp test_memcmp
 int test_memcmp(const void *, const void *, size_t);
 #endif
