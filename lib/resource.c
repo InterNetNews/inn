@@ -8,7 +8,10 @@
 
 #ifdef HAVE_GETRUSAGE
 
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 #include <sys/resource.h>
 
 #define TIMEVALasDOUBLE(t)	\

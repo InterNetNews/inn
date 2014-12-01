@@ -4,7 +4,10 @@
 #include "config.h"
 #include "clibrary.h"
 #include <fcntl.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"

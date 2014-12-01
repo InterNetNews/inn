@@ -30,6 +30,7 @@
 # if HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # endif
+# include <time.h>
 # include <sys/resource.h>
 #endif
 
