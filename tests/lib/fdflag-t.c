@@ -1,4 +1,4 @@
-/* $Id: getrra-c-util 9660 2014-08-30 11:55:13Z iulius $
+/* $Id$
  *
  * fdflag test suite.
  *
