@@ -123,10 +123,10 @@ extern int              seteuid(uid_t);
 extern int              snprintf(char *, size_t, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
 #endif
-#if !HAVE_STRLCAT || !HAVE_DECL_STRLCAT
+#if !HAVE_DECL_STRLCAT
 extern size_t           strlcat(char *, const char *, size_t);
 #endif
-#if !HAVE_STRLCPY || !HAVE_DECL_STRLCPY
+#if !HAVE_DECL_STRLCPY
 extern size_t           strlcpy(char *, const char *, size_t);
 #endif
 #if !HAVE_SYMLINK
