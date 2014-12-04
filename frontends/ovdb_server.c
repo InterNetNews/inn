@@ -8,7 +8,6 @@
 #include "portable/mmap.h"
 #include "portable/setproctitle.h"
 #include "portable/socket.h"
-#include "portable/socket-unix.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -23,7 +22,7 @@
 #include <time.h>
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include <sys/un.h>
+# include "portable/socket-unix.h"
 #endif
 #include <sys/wait.h>
 

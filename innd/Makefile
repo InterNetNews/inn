@@ -149,14 +149,14 @@ lc.o: lc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket-unix.h \
-  ../include/inn/innconf.h ../include/inn/defines.h innd.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/macros.h ../include/inn/innconf.h \
+  ../include/inn/defines.h innd.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/buffer.h ../include/inn/history.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/portable/socket-unix.h
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \

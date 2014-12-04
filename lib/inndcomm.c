@@ -6,7 +6,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/socket-unix.h"
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -24,7 +23,7 @@
 #endif
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include <sys/un.h>
+# include "portable/socket-unix.h"
 #endif
 
 #include "inn/innconf.h"

@@ -272,10 +272,10 @@ localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket-unix.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/nntp.h ../include/inn/paths.h
+  ../include/inn/macros.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/portable/socket-unix.h
 lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \

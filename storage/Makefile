@@ -208,14 +208,14 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/socket-unix.h ../include/conffile.h \
-  ../include/inn/fdflag.h ../include/inn/innconf.h \
+  ../include/conffile.h ../include/inn/fdflag.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
-  ovinterface.h ovdb/ovdb.h ovdb/ovdb-private.h
+  ovinterface.h ovdb/ovdb.h ovdb/ovdb-private.h \
+  ../include/portable/socket-unix.h
 timecaf/caf.o: timecaf/caf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \

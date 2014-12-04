@@ -26,7 +26,7 @@
 #include <time.h>
 
 #if defined(HAVE_UNIX_DOMAIN_SOCKETS)
-# include <sys/un.h>
+# include "portable/socket-unix.h"
 #endif
 
 #include "inn/innconf.h"

@@ -184,9 +184,10 @@ main.o: main.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/version.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/version.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
   buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
   tape.h

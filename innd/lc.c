@@ -8,14 +8,13 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include "portable/socket-unix.h"
 
 #include "inn/innconf.h"
 #include "innd.h"
 
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include <sys/un.h>
+# include "portable/socket-unix.h"
 
 static char	*LCpath = NULL;
 static CHANNEL	*LCchan;

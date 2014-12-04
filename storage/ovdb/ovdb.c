@@ -73,7 +73,6 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/socket-unix.h"
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_LIMITS_H
@@ -109,7 +108,7 @@
 #include "ovdb-private.h"
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include <sys/un.h>
+# include "portable/socket-unix.h"
 #endif
 
 #ifndef HAVE_DB_H
