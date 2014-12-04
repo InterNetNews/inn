@@ -421,6 +421,7 @@ include/portable/getnameinfo.h        getnameinfo replacement header
 include/portable/macros.h             Set of portability macros
 include/portable/mmap.h               Wrapper for <sys/mman.h>
 include/portable/setproctitle.h       Portable setup for setproctitle
+include/portable/socket-unix.h        Wrapper for <sys/un.h> and SUN_LEN
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/stdbool.h            Wrapper for <stdbool.h>
 include/portable/uio.h                Wrapper for <sys/uio.h>

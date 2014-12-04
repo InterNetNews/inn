@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket-unix.h"
 #include <errno.h>
 #include <sys/socket.h>
 

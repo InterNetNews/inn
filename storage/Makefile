@@ -208,7 +208,8 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/conffile.h ../include/inn/fdflag.h ../include/inn/innconf.h \
+  ../include/portable/socket-unix.h ../include/conffile.h \
+  ../include/inn/fdflag.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h \

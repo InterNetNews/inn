@@ -44,9 +44,9 @@ BEGIN_DECLS
 
 /*
  * Create a socket of the given type and bind it to the specified address and
- * port (either IPv4 or IPv6), returning the resulting file descriptor or -1
- * on error.  Errors are reported using warn/syswarn.  To bind to all
- * interfaces, use "any" or "all" for address.
+ * port (either IPv4 or IPv6), returning the resulting file descriptor or
+ * INVALID_SOCKET on error.  Errors are reported using warn/syswarn.  To bind
+ * to all interfaces, use "any" or "all" for address.
  */
 socket_type network_bind_ipv4(int type, const char *addr, unsigned short port)
     __attribute__((__nonnull__));
@@ -96,10 +96,10 @@ socket_type network_accept_any(socket_type fds[], unsigned int count,
 /*
  * Create a socket and connect it to the remote service given by the linked
  * list of addrinfo structs.  Returns the new file descriptor on success and
- * -1 on failure, with the error left in errno.  Takes an optional source
- * address and a timeout in seconds, which may be 0 for no timeout.  (Source
- * may also be "all" or "any", which mean the same thing as NULL: do not use
- * any particular source address.)
+ * INVALID_SOCKET on failure, with the error left in errno.  Takes an optional
+ * source address and a timeout in seconds, which may be 0 for no timeout.
+ * (Source may also be "all" or "any", which mean the same thing as NULL: do
+ * not use any particular source address.)
  */
 socket_type network_connect(const struct addrinfo *, const char *source,
                             time_t)
@@ -117,7 +117,7 @@ socket_type network_connect_host(const char *host, unsigned short port,
  * Creates a socket of the specified domain and type and binds it to the
  * appropriate source address, either the one supplied or all addresses if the
  * source address is NULL, "all", or "any".  Returns the newly created file
- * descriptor or -1 on error.
+ * descriptor or INVALID_SOCKET on error.
  *
  * This is a lower-level function intended primarily for the use of clients
  * that will then go on to do a non-blocking connect.

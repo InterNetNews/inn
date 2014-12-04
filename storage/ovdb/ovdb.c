@@ -73,6 +73,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include "portable/socket-unix.h"
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_LIMITS_H

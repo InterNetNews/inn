@@ -172,16 +172,6 @@ END_DECLS
 # define STDERR_FILENO  2
 #endif
 
-/* POSIX.1g requires <sys/un.h> to define a SUN_LEN macro for determining
-   the real length of a struct sockaddr_un, but it's not available
-   everywhere yet.  If autoconf couldn't find it, define our own.  This
-   definition is from 4.4BSD by way of Stevens, Unix Network Programming
-   (2nd edition), vol. 1, pg. 917. */
-#if !HAVE_SUN_LEN
-# define SUN_LEN(sun) \
-    (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
-#endif
-
 /* C99 requires va_copy.  Older versions of GCC provide __va_copy.  Per the
    Autoconf manual, memcpy is a generally portable fallback. */
 #ifndef va_copy

@@ -14,6 +14,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket-unix.h"
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include <sys/un.h>

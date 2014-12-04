@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include "portable/socket-unix.h"
 
 #include "inn/innconf.h"
 #include "innd.h"

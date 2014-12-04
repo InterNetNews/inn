@@ -167,6 +167,7 @@ download portable/setenv.c lib setenv.c
 download portable/seteuid.c lib seteuid.c
 download portable/snprintf.c lib snprintf.c
 download portable/socket.h include/portable socket.h
+download portable/socket-unix.h include/portable socket-unix.h
 download portable/stdbool.h include/portable stdbool.h
 download portable/strlcat.c lib strlcat.c
 download portable/strlcpy.c lib strlcpy.c
