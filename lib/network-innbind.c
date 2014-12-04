@@ -26,6 +26,7 @@
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
+#include "inn/macros.h"
 #include "inn/messages.h"
 #include "inn/network.h"
 #include "inn/network-innbind.h"
@@ -69,7 +70,7 @@ network_set_reuseaddr(socket_type fd)
  * consistent and easier to understand.
  */
 #ifdef IPV6_V6ONLY
-static void
+static void UNUSED
 network_set_v6only(socket_type fd)
 {
     int flag = 1;
@@ -85,7 +86,7 @@ network_set_v6only(socket_type fd)
  * IPv6 addresses that may not have been set up yet.
  */
 #ifdef IP_FREEBIND
-static void
+static void UNUSED
 network_set_freebind(socket_type fd)
 {
     int flag = 1;
@@ -297,9 +298,13 @@ network_innbind_ipv6(int type, const char *address, unsigned short port)
      * exist on the system, but we gain the ability to bind to IPv6 addresses
      * that aren't yet configured.  Since IPv6 address configuration can take
      * unpredictable amounts of time during system setup, this is more robust.
+     *
+     * Ensure there is always a block here to avoid compiler warnings, since
+     * network_set_freebind() may expand into nothing.
      */
-    if (strcmp(address, "::") != 0)
+    if (strcmp(address, "::") != 0) {
         network_set_freebind(fd);
+    }
 
     /* Do the bind. */
     bindfd = network_innbind(fd, AF_INET6, address, port);

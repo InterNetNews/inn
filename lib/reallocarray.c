@@ -2,10 +2,10 @@
  *
  * Replacement for a missing reallocarray.
  *
- * Provides the same functionality as the OpenBSD library function reallocarray
- * for those systems that don't have it.  This function is the same as
- * realloc, but takes the size arguments in the same form as calloc and checks
- * for overflow so that the caller doesn't need to.
+ * Provides the same functionality as the OpenBSD library function
+ * reallocarray for those systems that don't have it.  This function is the
+ * same as realloc, but takes the size arguments in the same form as calloc
+ * and checks for overflow so that the caller doesn't need to.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.

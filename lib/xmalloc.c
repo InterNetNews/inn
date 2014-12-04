@@ -238,7 +238,7 @@ x_vasprintf(char **strp, const char *fmt, va_list args, const char *file,
 }
 
 
-#if INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS
+#if HAVE_C99_VAMACROS || HAVE_GNU_VAMACROS
 void
 x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
 {
@@ -260,7 +260,7 @@ x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
         va_end(args_copy);
     }
 }
-#else /* !(INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS) */
+#else /* !(HAVE_C99_VAMACROS || HAVE_GNU_VAMACROS) */
 void
 x_asprintf(char **strp, const char *fmt, ...)
 {
@@ -282,4 +282,4 @@ x_asprintf(char **strp, const char *fmt, ...)
         va_end(args_copy);
     }
 }
-#endif /* !(INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS) */
+#endif /* !(HAVE_C99_VAMACROS || HAVE_GNU_VAMACROS) */

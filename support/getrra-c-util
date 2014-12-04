@@ -73,16 +73,16 @@ dnl $Id$' \
           # and sourceaddress6 work.
           sed -i -e "61 i \\
 #include \"inn/innconf.h\"" \
-                 -e '465 s/)$/ \&\& innconf == NULL)/' \
-                 -e '466,467d' \
-                 -e "472 i \\
+                 -e '470 s/)$/ \&\& innconf == NULL)/' \
+                 -e '471,472d' \
+                 -e "477 i \\
         if (source == NULL && innconf != NULL)\\
             source = innconf->sourceaddress;\\
         if (source == NULL ||\\
             strcmp(source, \"all\") == 0 || strcmp(source, \"any\") == 0)\\
               return true;\\
 " \
-                 -e "485 i \\
+                 -e "490 i \\
         if (source == NULL && innconf != NULL)\\
             source = innconf->sourceaddress6;\\
         if (source == NULL ||\\

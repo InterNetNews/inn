@@ -20,8 +20,8 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/macros.h"
+#include "clibrary.h"
 
 #include <errno.h>
 
@@ -30,6 +30,8 @@
  * with the system versions.
  */
 #if TESTING
+# undef asprintf
+# undef vasprintf
 # define asprintf test_asprintf
 # define vasprintf test_vasprintf
 int test_asprintf(char **, const char *, ...)

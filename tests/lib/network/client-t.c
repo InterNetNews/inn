@@ -242,7 +242,7 @@ test_timeout_ipv4(void)
         sysbail("cannot fork");
     else if (child == 0) {
         alarm(10);
-        c = accept(fd, NULL, 0);
+        c = accept(fd, NULL, NULL);
         if (c == INVALID_SOCKET)
             _exit(1);
         sleep(9);
@@ -308,8 +308,6 @@ test_network_read(void)
 {
     socket_type fd, c;
     pid_t child;
-    struct sockaddr_in sin;
-    socklen_t slen;
     char buffer[4];
 
     /* Create the listening socket. */
@@ -332,8 +330,7 @@ test_network_read(void)
     alarm(10);
 
     /* Accept the client connection. */
-    slen = sizeof(sin);
-    c = accept(fd, &sin, &slen);
+    c = accept(fd, NULL, NULL);
     if (c == INVALID_SOCKET)
         sysbail("cannot accept on socket");
 
@@ -374,8 +371,6 @@ test_network_write(void)
 {
     socket_type fd, c;
     pid_t child;
-    struct sockaddr_in sin;
-    socklen_t slen;
     char *buffer;
 
     /* Create the data that we're going to send. */
@@ -402,8 +397,7 @@ test_network_write(void)
     alarm(10);
 
     /* Accept the client connection. */
-    slen = sizeof(struct sockaddr_in);
-    c = accept(fd, &sin, &slen);
+    c = accept(fd, NULL, NULL);
     if (c == INVALID_SOCKET)
         sysbail("cannot accept on socket");
 

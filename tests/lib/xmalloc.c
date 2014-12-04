@@ -37,7 +37,10 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 /* Linux requires sys/time.h be included before sys/resource.h. */
 #include <sys/resource.h>

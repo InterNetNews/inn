@@ -43,6 +43,7 @@
  * the system version.
  */
 #if TESTING
+# undef inet_ntop
 # define inet_ntop test_inet_ntop
 const char *test_inet_ntop(int, const void *, char *, socklen_t);
 #endif

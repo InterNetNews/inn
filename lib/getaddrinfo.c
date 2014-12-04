@@ -63,6 +63,9 @@ extern int h_errno;
  * constants, but that should be okay (except possibly for gai_strerror).
  */
 #if TESTING
+# undef gai_strerror
+# undef freeaddrinfo
+# undef getaddrinfo
 # define gai_strerror test_gai_strerror
 # define freeaddrinfo test_freeaddrinfo
 # define getaddrinfo  test_getaddrinfo

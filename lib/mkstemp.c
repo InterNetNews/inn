@@ -24,7 +24,10 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <sys/time.h>
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#include <time.h>
 
 /*
  * If we're running the test suite, rename mkstemp to avoid conflicts with the

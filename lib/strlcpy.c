@@ -31,6 +31,7 @@
  * the system version.
  */
 #if TESTING
+# undef strlcpy
 # define strlcpy test_strlcpy
 size_t test_strlcpy(char *, const char *, size_t);
 #endif

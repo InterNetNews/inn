@@ -29,7 +29,9 @@
  * Disable the requirement that format strings be literals.  We need variable
  * formats for easy testing.
  */
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 2)
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 
 /*
  * Intentionally don't add the printf attribute here since we pass a

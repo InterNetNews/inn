@@ -101,46 +101,46 @@ ok_xmalloc "vasprintf large"    0 "" "v" "30000000" "0"
 # We assume that there are enough miscellaneous allocations that an allocation
 # exactly as large as the limit will always fail.
 ok_xmalloc "malloc fail" 1 \
-    "failed to malloc 30000000 bytes at xmalloc.c line 38" \
+    "failed to malloc 30000000 bytes at xmalloc.c line 41" \
     "m" "30000000" "30000000"
 ok_xmalloc "realloc fail" 1 \
-    "failed to realloc 30000000 bytes at xmalloc.c line 66" \
+    "failed to realloc 30000000 bytes at xmalloc.c line 69" \
     "r" "30000000" "30000000"
 ok_xmalloc "reallocarray fail" 1 \
-    "failed to reallocarray 30000000 bytes at xmalloc.c line 96" \
+    "failed to reallocarray 30000000 bytes at xmalloc.c line 99" \
     "y" "30000000" "30000000"
 ok_xmalloc "strdup fail" 1 \
-    "failed to strdup 30000000 bytes at xmalloc.c line 127" \
+    "failed to strdup 30000000 bytes at xmalloc.c line 130" \
     "s" "30000000" "30000000"
 ok_xmalloc "strndup fail" 1 \
-    "failed to strndup 30000000 bytes at xmalloc.c line 173" \
+    "failed to strndup 30000000 bytes at xmalloc.c line 176" \
     "n" "30000000" "30000000"
 ok_xmalloc "calloc fail" 1 \
-    "failed to calloc 30000000 bytes at xmalloc.c line 197" \
+    "failed to calloc 30000000 bytes at xmalloc.c line 200" \
     "c" "30000000" "30000000"
 ok_xmalloc "asprintf fail" 1 \
-    "failed to asprintf 30000000 bytes at xmalloc.c line 221" \
+    "failed to asprintf 30000000 bytes at xmalloc.c line 224" \
     "a" "30000000" "30000000"
 ok_xmalloc "vasprintf fail" 1 \
-    "failed to vasprintf 30000000 bytes at xmalloc.c line 240" \
+    "failed to vasprintf 30000000 bytes at xmalloc.c line 243" \
     "v" "30000000" "30000000"
 
 # Check our custom error handler.
-ok_xmalloc "malloc custom"       1 "malloc 30000000 xmalloc.c 38" \
+ok_xmalloc "malloc custom"       1 "malloc 30000000 xmalloc.c 41" \
     "M" "30000000" "30000000"
-ok_xmalloc "realloc custom"      1 "realloc 30000000 xmalloc.c 66" \
+ok_xmalloc "realloc custom"      1 "realloc 30000000 xmalloc.c 69" \
     "R" "30000000" "30000000"
-ok_xmalloc "reallocarray custom" 1 "reallocarray 30000000 xmalloc.c 96" \
+ok_xmalloc "reallocarray custom" 1 "reallocarray 30000000 xmalloc.c 99" \
     "Y" "30000000" "30000000"
-ok_xmalloc "strdup custom"       1 "strdup 30000000 xmalloc.c 127" \
+ok_xmalloc "strdup custom"       1 "strdup 30000000 xmalloc.c 130" \
     "S" "30000000" "30000000"
-ok_xmalloc "strndup custom"      1 "strndup 30000000 xmalloc.c 173" \
+ok_xmalloc "strndup custom"      1 "strndup 30000000 xmalloc.c 176" \
     "N" "30000000" "30000000"
-ok_xmalloc "calloc custom"       1 "calloc 30000000 xmalloc.c 197" \
+ok_xmalloc "calloc custom"       1 "calloc 30000000 xmalloc.c 200" \
     "C" "30000000" "30000000"
-ok_xmalloc "asprintf custom"     1 "asprintf 30000000 xmalloc.c 221" \
+ok_xmalloc "asprintf custom"     1 "asprintf 30000000 xmalloc.c 224" \
     "A" "30000000" "30000000"
-ok_xmalloc "vasprintf custom"    1 "vasprintf 30000000 xmalloc.c 240" \
+ok_xmalloc "vasprintf custom"    1 "vasprintf 30000000 xmalloc.c 243" \
     "V" "30000000" "30000000"
 
 # Check the smaller ones again just for grins.

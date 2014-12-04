@@ -30,6 +30,7 @@
  * the system version.
  */
 #if TESTING
+# undef inet_ntoa
 # define inet_ntoa test_inet_ntoa
 const char *test_inet_ntoa(const struct in_addr);
 #endif

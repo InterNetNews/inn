@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#include "portable/macros.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
 
@@ -40,6 +41,7 @@
  * constants, but that should be okay (except possibly for gai_strerror).
  */
 #if TESTING
+# undef getnameinfo
 # define getnameinfo test_getnameinfo
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
                      char *, socklen_t, int);
