@@ -78,7 +78,7 @@ error message.
 =head1 HISTORY
 
 Originally written by Christopher S<P. Lindsey>.  This documentation was
-written by Russ Allbery <rra@stanford.edu> based on Christopher's original
+written by Russ Allbery <eagle@eyrie.org> based on Christopher's original
 F<README> file.
 
 $Id$

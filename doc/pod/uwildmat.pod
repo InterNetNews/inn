@@ -155,7 +155,7 @@ comp.sources.misc in April, 1991.
 Robert Elz <kre@munnari.oz.au> added minus sign and close bracket handling
 in June, 1991.
 
-Russ Allbery <rra@stanford.edu> added support for comma-separated patterns
+Russ Allbery <eagle@eyrie.org> added support for comma-separated patterns
 and the C<!> and C<@> metacharacters to the core wildmat routines in July,
 2000.  He also added support for UTF-8 characters, changed the default
 behavior to assume that both the text and the pattern are in UTF-8, and

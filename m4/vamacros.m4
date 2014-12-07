@@ -14,7 +14,7 @@ dnl    #define macro(args...) fprintf(stderr, args)
 dnl
 dnl They set HAVE_C99_VAMACROS or HAVE_GNU_VAMACROS as appropriate.
 dnl
-dnl Written by Russ Allbery <rra@stanford.edu>
+dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2008, 2009
 dnl     Board of Trustees, Leland Stanford Jr. University
 dnl

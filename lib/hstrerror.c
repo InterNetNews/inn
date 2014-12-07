@@ -2,7 +2,7 @@
 **
 **  Replacement for a missing hstrerror.
 **
-**  Written by Russ Allbery <rra@stanford.edu>
+**  Written by Russ Allbery <eagle@eyrie.org>
 **  This work is hereby placed in the public domain by its author.
 **
 **  Provides hstrerror (strerror, but for h_errno from the resolver

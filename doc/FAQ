@@ -1,6 +1,6 @@
 $Id$
 
-From: Russ Allbery <rra@stanford.edu>
+From: Russ Allbery <eagle@eyrie.org>
 Subject: INN 2.x FAQ
 Newsgroups: news.software.nntp
 Organization: The Eyrie
@@ -23,7 +23,7 @@ you can use them to navigate between sections.  In rn variants, you can
 use Ctrl-G to skip to the next section; in Gnus, press Ctrl-D to break
 each section into a separate article.
 
-Please send any comments, suggestions, or updates to rra@stanford.edu.
+Please send any comments, suggestions, or updates to <eagle@eyrie.org>.
 Bear in mind when sending me e-mail that I receive upwards of 800 mail
 messages a day and have unanswered personal e-mail dating back six months
 or more, so please don't expect an immediate response.  You may receive

@@ -6,8 +6,8 @@
 # writing test cases.  It is part of C TAP Harness, which can be found at
 # <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
-# Written by Russ Allbery <rra@stanford.edu>
-# Copyright 2009, 2010 Russ Allbery <rra@stanford.edu>
+# Written by Russ Allbery <eagle@eyrie.org>
+# Copyright 2009, 2010 Russ Allbery <eagle@eyrie.org>
 # Copyright 2006, 2007, 2008
 #     The Board of Trustees of the Leland Stanford Junior University
 #

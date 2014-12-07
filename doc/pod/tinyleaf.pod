@@ -89,7 +89,7 @@ them to the processor when starting up would be useful.
 
 =head1 HISTORY
 
-Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 $Id$
 

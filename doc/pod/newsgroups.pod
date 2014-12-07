@@ -118,7 +118,7 @@ The preferred format for a one-line newsgroup description is based on
 the policies by which the F<newsgroups> file in
 L<ftp://ftp.isc.org/pub/usenet/CONFIG/> is maintained; they were originally
 written by David Lawrence <tale@isc.org> and updated by Russ Allbery
-<rra@stanford.edu>.
+<eagle@eyrie.org>.
 
 $Id$
 

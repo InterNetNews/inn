@@ -2,7 +2,7 @@
 **
 **  Replacement implementation of getnameinfo.
 **
-**  Written by Russ Allbery <rra@stanford.edu>
+**  Written by Russ Allbery <eagle@eyrie.org>
 **  This work is hereby placed in the public domain by its author.
 **
 **  This is an implementation of the getnameinfo function for systems that

@@ -886,7 +886,7 @@ tunnel), use the localaddress: parameter.
 =head1 HISTORY
 
 Written by Aidan Cully <aidan@panix.com> for InterNetNews.  Substantially
-expanded by Russ Allbery <rra@stanford.edu>.
+expanded by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

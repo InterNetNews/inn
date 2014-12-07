@@ -64,7 +64,7 @@ implement it correctly.
 =head1 HISTORY
 
 The RADIUS authenticator was originally written by Aidan Cully.  This
-documentation was written by Russ Allbery <rra@stanford.edu>.
+documentation was written by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

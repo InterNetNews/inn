@@ -2,7 +2,7 @@
 **
 **  Replacement for a missing seteuid.
 **
-**  Written by Russ Allbery <rra@stanford.edu>
+**  Written by Russ Allbery <eagle@eyrie.org>
 **  This work is hereby placed in the public domain by its author.
 **
 **  Some systems don't have seteuid but do have setreuid.  setreuid with

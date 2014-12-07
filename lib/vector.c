@@ -2,7 +2,7 @@
 **
 **  Vector handling (counted lists of char *'s).
 **
-**  Written by Russ Allbery <rra@stanford.edu>
+**  Written by Russ Allbery <eagle@eyrie.org>
 **  This work is hereby placed in the public domain by its author.
 **
 **  A vector is a table for handling a list of strings with less overhead than

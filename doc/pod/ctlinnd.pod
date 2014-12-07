@@ -494,7 +494,7 @@ server replies are limited to S<4 KB> on some systems.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
-POD by Russ Allbery <rra@stanford.edu>.
+POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

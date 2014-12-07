@@ -69,7 +69,7 @@
  *    fixed handling of %.0f
  *    added test for HAVE_LONG_DOUBLE
  *
- *  Russ Allbery <rra@stanford.edu> 2000-08-26
+ *  Russ Allbery <eagle@eyrie.org> 2000-08-26
  *    fixed return value to comply with C99
  *    fixed handling of snprintf(NULL, ...)
  *

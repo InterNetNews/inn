@@ -92,7 +92,7 @@ determine (or at least override) the local time zone.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net>, rewritten and updated by Russ
-Allbery <rra@stanford.edu> for the B<-d> and B<-l> flags.
+Allbery <eagle@eyrie.org> for the B<-d> and B<-l> flags.
 
 $Id$
 

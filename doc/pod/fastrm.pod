@@ -179,7 +179,7 @@ general fast file removal program.
 =head1 HISTORY
 
 B<fastrm> was originally written by <kre@munnari.oz.au>.  This manual page
-was rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
+was rewritten in POD by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 $Id$
 

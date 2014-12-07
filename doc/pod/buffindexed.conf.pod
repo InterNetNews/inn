@@ -141,7 +141,7 @@ user to read and write.
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
-Converted to POD by Russ Allbery <rra@stanford.edu>.
+Converted to POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 
