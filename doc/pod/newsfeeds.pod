@@ -811,7 +811,7 @@ the standard newsfeeds entries used by most sites.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Reformatted
-and rewritten in POD by Russ Allbery <rra@stanford.edu>.
+and rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

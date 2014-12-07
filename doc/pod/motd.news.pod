@@ -31,7 +31,7 @@ to news clients.
 
 =head1 HISTORY
 
-Rewritten in POD by Russ Allbery <rra@stanford.edu> for InterNetNews.
+Rewritten in POD by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 $Id$
 

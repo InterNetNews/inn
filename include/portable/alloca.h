@@ -2,7 +2,7 @@
 **
 **  Replacement implementation of alloca.
 **
-**  Written by Russ Allbery <rra@stanford.edu>
+**  Written by Russ Allbery <eagle@eyrie.org>
 **  Taken largely from the methods in the Autoconf documentation.
 **
 **  This is the magic required to get alloca to work properly on various

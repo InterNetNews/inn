@@ -211,7 +211,7 @@ where C<ONE> will be whatever you called your cycbuff.
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
-Rewritten into POD by Russ Allbery <rra@stanford.edu>.
+Rewritten into POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

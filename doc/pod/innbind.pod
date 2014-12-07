@@ -215,7 +215,7 @@ to bind the IPv4 socket on file descriptor 6 to port 433 in the address
 
 =head1 HISTORY
 
-Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 $Id$
 

@@ -772,7 +772,7 @@ will be issued.
 
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated
 to support FTP fetching by David Lawrence <tale@isc.org>.  Converted to
-POD by Russ Allbery <rra@stanford.edu>.
+POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

@@ -100,7 +100,7 @@ to protect it from the shell.
 =head1 HISTORY
 
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Rewritten
-in POD by Russ Allbery <rra@stanford.edu>.
+in POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

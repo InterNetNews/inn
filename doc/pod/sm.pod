@@ -105,7 +105,7 @@ succeeded, you should run B<sm> on one token at a time.
 =head1 HISTORY
 
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
-Rewritten in POD by Russ Allbery <rra@stanford.edu>.
+Rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 

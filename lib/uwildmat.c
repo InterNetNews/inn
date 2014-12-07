@@ -44,7 +44,7 @@
 **  June, 1991:  Robert Elz <kre@munnari.oz.au> added minus and close bracket
 **  handling for character sets.
 **
-**  July, 2000:  Largely rewritten by Russ Allbery <rra@stanford.edu> to add
+**  July, 2000:  Largely rewritten by Russ Allbery <eagle@eyrie.org> to add
 **  support for ',', '!', and optionally '@' to the core wildmat routine.
 **  Broke the character class matching into a separate function for clarity
 **  since it's infrequently used in practice, and added some simple lookahead

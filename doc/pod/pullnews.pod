@@ -332,7 +332,7 @@ user's home directory.
 =head1 HISTORY
 
 B<pullnews> was written by James Brister for INN.  The documentation was
-rewritten in POD by Russ Allbery <rra@stanford.edu>.
+rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
 Geraint S<A. Edwards> greatly improved B<pullnews>, adding no more than S<16 new>
 recognized flags, fixing some bugs and integrating the B<backupfeed>

@@ -182,7 +182,7 @@ it will print some sort of error message and exit a non-zero status.
 
 =head1 HISTORY
 
-Written by Russ Allbery <rra@stanford.edu> for InterNetNews.
+Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 $Id$
 

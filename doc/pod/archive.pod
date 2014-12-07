@@ -120,7 +120,7 @@ Replace <pathbin> and <patharchive> with the appropriate paths.
 =head1 HISTORY
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
-POD by Russ Allbery <rra@stanford.edu>.
+POD by Russ Allbery <eagle@eyrie.org>.
 
 $Id$
 
