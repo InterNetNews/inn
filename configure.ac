@@ -394,8 +394,8 @@ dnl Special checks for header files.
 AC_HEADER_STDBOOL
 
 dnl Generic checks for header files.
-AC_CHECK_HEADERS([crypt.h inttypes.h limits.h stddef.h \
-                  stdint.h string.h sys/bitypes.h sys/filio.h sys/loadavg.h \
+AC_CHECK_HEADERS([crypt.h inttypes.h limits.h \
+                  stdint.h sys/bitypes.h sys/filio.h sys/loadavg.h \
                   sys/select.h sys/time.h sys/uio.h syslog.h unistd.h])
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.  Others have
@@ -454,7 +454,6 @@ AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
 AC_FUNC_GETGROUPS
 AC_TYPE_UID_T
-AC_CHECK_TYPES([ptrdiff_t])
 AC_CHECK_TYPES([sig_atomic_t], [], [],
     [#include <sys/types.h>
      #include <signal.h>])
@@ -496,8 +495,8 @@ INN_FUNC_INET_NTOA
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
-AC_CHECK_FUNCS(atexit getloadavg getrusage getspnam setbuffer sigaction \
-               setgroups setrlimit setsid socketpair strncasecmp strtoul \
+AC_CHECK_FUNCS(getloadavg getrusage getspnam setbuffer sigaction \
+               setgroups setrlimit setsid socketpair strncasecmp \
                sysconf)
 
 dnl Find a way to get the file descriptor limit.

@@ -41,9 +41,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stddef.h>
-#if HAVE_STRING_H
-# include <string.h>
-#endif
+#include <string.h>
 #if HAVE_STRINGS_H
 # include <strings.h>
 #endif
@@ -136,24 +134,12 @@ extern int              symlink(const char *, const char *);
 extern int              vsnprintf(char *, size_t, const char *, va_list);
 #endif
 
-/* In case <sys/types.h> does not define ptrdiff_t. */
-#if !HAVE_PTRDIFF_T
-typedef long            ptrdiff_t;
-#endif
 /* In case <signal.h> does not define sig_atomic_t. */
 #if !HAVE_SIG_ATOMIC_T
 typedef int             sig_atomic_t;
 #endif
 
 END_DECLS
-
-/* "Good enough" replacements for standard functions. */
-#if !HAVE_ATEXIT
-# define atexit(arg) on_exit((arg), 0)
-#endif
-#if !HAVE_STRTOUL
-# define strtoul(a, b, c) (unsigned long) strtol((a), (b), (c))
-#endif
 
 /* This almost certainly isn't necessary, but it's not hurting anything.
    gcc assumes that if SEEK_SET isn't defined none of the rest are either,
