@@ -2,7 +2,7 @@
 
 ovdb_init - Prepare ovdb database for use
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 ovdb_init [C<-u>|C<-r>]
 
