@@ -66,7 +66,6 @@
 
 #include "clibrary.h"
 #include "portable/socket.h"
-#include "portable/stdbool.h"
 
 #include <errno.h>
 #ifdef HAVE_SYS_TIME_H

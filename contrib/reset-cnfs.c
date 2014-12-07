@@ -2,7 +2,6 @@
  * Entire Thing from /dev/zero again. */
 #include "config.h"
 #include "clibrary.h"
-#include "portable/stdbool.h"
 
 #include <errno.h>
 #include <fcntl.h>

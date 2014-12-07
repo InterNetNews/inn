@@ -99,40 +99,44 @@ argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/buffer.h ../include/inn/xmalloc.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/buffer.h ../include/inn/xmalloc.h
 cleanfrom.o: cleanfrom.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 clientactive.o: clientactive.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h ../include/inn/paths.h
 clientlib.o: clientlib.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h
 commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 concat.o: concat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
@@ -144,37 +148,41 @@ conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/conffile.h ../include/inn/libinn.h \
-  ../include/inn/defines.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/conffile.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 confparse.o: confparse.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/confparse.h \
-  ../include/inn/defines.h ../include/inn/hashtab.h \
-  ../include/inn/messages.h ../include/inn/vector.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/confparse.h ../include/inn/defines.h \
+  ../include/inn/hashtab.h ../include/inn/messages.h \
+  ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h
 daemonize.o: daemonize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/libinn.h \
+  ../include/inn/defines.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h
 date.o: date.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 dbz.o: dbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/mmap.h ../include/inn/dbz.h \
-  ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/fdflag.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/dbz.h ../include/inn/libinn.h \
+  ../include/inn/defines.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/fdflag.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/messages.h \
   ../include/inn/innconf.h ../include/inn/mmap.h
@@ -182,280 +190,306 @@ defdist.o: defdist.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/paths.h
 dispatch.o: dispatch.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/dispatch.h \
-  ../include/inn/vector.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/dispatch.h ../include/inn/vector.h
 fdflag.o: fdflag.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/fdflag.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/fdflag.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 fdlimit.o: fdlimit.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h
 getmodaddr.o: getmodaddr.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h ../include/inn/paths.h
 hash.o: hash.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/md5.h ../include/inn/defines.h \
-  ../include/inn/utility.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/md5.h ../include/inn/defines.h ../include/inn/utility.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 hashtab.o: hashtab.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/hashtab.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/hashtab.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 headers.o: headers.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 hex.o: hex.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/utility.h \
-  ../include/inn/defines.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/utility.h ../include/inn/defines.h
 innconf.o: innconf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/confparse.h \
-  ../include/inn/defines.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/vector.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/confparse.h ../include/inn/defines.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/paths.h
 inndcomm.o: inndcomm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/socket-unix.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/inndcomm.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/inndcomm.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h
 list.o: list.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/list.h ../include/inn/defines.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/list.h ../include/inn/defines.h
 localopen.o: localopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/portable/socket-unix.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/portable/socket-unix.h
 lockfile.o: lockfile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 makedir.o: makedir.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 md5.o: md5.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/md5.h ../include/inn/defines.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/md5.h ../include/inn/defines.h
 messageid.o: messageid.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h
 messages.o: messages.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/messages.h \
-  ../include/inn/xmalloc.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/xmalloc.h
 mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/mmap.h \
-  ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/defines.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/messages.h \
+  ../include/inn/mmap.h ../include/inn/defines.h
 network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/fdflag.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/fdflag.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/network.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 network-innbind.o: network-innbind.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/network-innbind.h
 newsuser.o: newsuser.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/newsuser.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h
 nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/network.h ../include/inn/nntp.h \
-  ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/network.h ../include/inn/nntp.h ../include/inn/vector.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/qio.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/qio.h ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 radix32.o: radix32.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 readin.o: readin.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 remopen.o: remopen.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/network.h ../include/inn/nntp.h
 reservedfd.o: reservedfd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 resource.o: resource.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 sendarticle.o: sendarticle.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h
 sendpass.o: sendpass.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/nntp.h ../include/inn/paths.h
 sequence.o: sequence.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/sequence.h \
-  ../include/inn/defines.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/sequence.h ../include/inn/defines.h
 timer.o: timer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/messages.h ../include/inn/timer.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 tst.o: tst.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/tst.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/tst.h ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 uwildmat.o: uwildmat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 vector.o: vector.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/vector.h ../include/inn/xmalloc.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/vector.h ../include/inn/xmalloc.h
 wire.o: wire.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/wire.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/wire.h ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 xfopena.o: xfopena.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/messages.h \
-  ../include/inn/xmalloc.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/xmalloc.h
 xsignal.o: xsignal.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -466,8 +500,8 @@ xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/uio.h \
-  ../include/inn/xwrite.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/uio.h ../include/inn/xwrite.h
 alloca.o: alloca.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -476,29 +510,31 @@ asprintf.o: asprintf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 fseeko.o: fseeko.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 getaddrinfo.o: getaddrinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h
 getnameinfo.o: getnameinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/clibrary.h ../include/config.h ../include/inn/macros.h
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -507,20 +543,23 @@ inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h
 inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -529,27 +568,27 @@ mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 pread.o: pread.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 pwrite.o: pwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 reallocarray.o: reallocarray.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 seteuid.o: seteuid.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -558,8 +597,8 @@ setproctitle.o: setproctitle.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/setproctitle.h \
-  ../include/inn/messages.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/portable/setproctitle.h ../include/inn/messages.h
 snprintf.o: snprintf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -568,27 +607,27 @@ strcasecmp.o: strcasecmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 strlcat.o: strlcat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 strlcpy.o: strlcpy.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 strspn.o: strspn.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h
+  ../include/inn/macros.h ../include/portable/stdbool.h
 symlink.o: symlink.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -597,6 +636,7 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/defines.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/ppport.h ../include/innperl.h

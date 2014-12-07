@@ -102,11 +102,12 @@ his.o: his.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/history.h \
-  ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/storage.h \
-  ../include/inn/options.h hisinterface.h hismethods.h
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/storage.h ../include/inn/options.h hisinterface.h \
+  hismethods.h
 hismethods.o: hismethods.c hisinterface.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
@@ -115,12 +116,12 @@ hisv6/hisv6.o: hisv6/hisv6.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h hisinterface.h hisv6/hisv6.h \
-  hisv6/hisv6-private.h ../include/inn/history.h ../include/inn/defines.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/dbz.h ../include/inn/fdflag.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
-  ../include/inn/timer.h ../include/inn/qio.h ../include/inn/sequence.h \
-  ../include/inn/inndcomm.h
+  ../include/inn/macros.h ../include/portable/stdbool.h hisinterface.h \
+  hisv6/hisv6.h hisv6/hisv6-private.h ../include/inn/history.h \
+  ../include/inn/defines.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/dbz.h \
+  ../include/inn/fdflag.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/innconf.h ../include/inn/timer.h ../include/inn/qio.h \
+  ../include/inn/sequence.h ../include/inn/inndcomm.h

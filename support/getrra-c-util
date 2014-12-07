@@ -54,7 +54,7 @@ download ()
 dnl $Id$' \
              ${TEMP}
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
-      || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
+      || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
       || [ "$2" = "tests/lib/network" ] || [ "$2" = "tests/tap" ]
     then
       if [ "$3" = "xmalloc.t" ]
@@ -89,6 +89,73 @@ dnl $Id$' \
             strcmp(source, \"all\") == 0 || strcmp(source, \"any\") == 0)\\
               return true;\\
 " \
+               ${TEMP}
+        fi
+
+        if [ "$3" = "clibrary.h" ]
+        then
+          # Add INN-specific stuff.
+          sed -i -e 's/<portable\/macros\.h>/"inn\/macros.h"/g' \
+                 -e 's/PORTABLE_SYSTEM_H/CLIBRARY_H/g' \
+                 -e "8 i \\
+ *     #include \"inn/macros.h\"" \
+                 -e "101 i \\
+/*\\
+ * This almost certainly isn't necessary, but it's not hurting anything.\\
+ * gcc assumes that if SEEK_SET isn't defined none of the rest are either,\\
+ * so we certainly can as well.\\
+ */\\
+#ifndef SEEK_SET\\
+# define SEEK_SET 0\\
+# define SEEK_CUR 1\\
+# define SEEK_END 2\\
+#endif\\
+" \
+                 -e "115 i \\
+/*\\
+ * Handle defining fseeko and ftello.  If HAVE_FSEEKO is defined, the system\\
+ * header files take care of this for us.  Otherwise, see if we're building\\
+ * with large file support.  If we are, we have to provide some real fseeko\\
+ * and ftello implementation; declare them if they're not already declared and\\
+ * we'll use replacement versions in libinn.  If we're not using large files,\\
+ * we can safely just use fseek and ftell.\\
+ *\\
+ * We'd rather use fseeko and ftello unconditionally, even when we're not\\
+ * building with large file support, since they're a better interface.\\
+ * Unfortunately, they're available but not declared on some systems unless\\
+ * building with large file support, the AC_FUNC_FSEEKO Autoconf function\\
+ * always turns on large file support, and our fake declarations won't work on\\
+ * some systems (like HP_UX).  This is the best compromise we've been able to\\
+ * come up with.\\
+ */\\
+#if !HAVE_FSEEKO\\
+# if DO_LARGEFILES\\
+#  if !HAVE_DECL_FSEEKO\\
+extern int fseeko(FILE *, off_t, int);\\
+#  endif\\
+#  if !HAVE_DECL_FTELLO\\
+extern off_t ftello(FILE *);\\
+#  endif\\
+# else\\
+#  define fseeko(f, o, w) fseek((f), (long)(o), (w))\\
+#  define ftello(f) ftell(f)\\
+# endif\\
+#endif\\
+\\
+/* Other prototypes. */\\
+#if !HAVE_DECL_PREAD\\
+extern ssize_t pread(int, void *, size_t, off_t);\\
+#endif\\
+#if !HAVE_DECL_PWRITE\\
+extern ssize_t pwrite(int, const void *, size_t, off_t);\\
+#endif\\
+#if !HAVE_SYMLINK\\
+extern int symlink(const char *, const char *);\\
+#endif\\
+" \
+               -e '/#if !HAVE_DAEMON/,+2d' \
+               -e '/#if !HAVE_ISSETUGID/,+2d' \
+               -e '/#if !HAVE_STRNDUP/,+2d' \
                ${TEMP}
         fi
 
@@ -171,6 +238,7 @@ download portable/socket-unix.h include/portable socket-unix.h
 download portable/stdbool.h include/portable stdbool.h
 download portable/strlcat.c lib strlcat.c
 download portable/strlcpy.c lib strlcpy.c
+download portable/system.h include clibrary.h
 download portable/uio.h include/portable uio.h
 
 ##  Synchronize utility functions from upstream.
