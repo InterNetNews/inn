@@ -12,7 +12,8 @@ CFLAGS        = $(GCFLAGS)
 ALL	      = archivegz auth_pass backlogstat cleannewsgroups \
 		delayer expirectl \
 		findreadgroups makeexpctl makestorconf mlockfile newsresp \
-		pullart reset-cnfs respool stathist thdexpire \
+		nnrp.access2readers.conf pullart reset-cnfs respool \
+		stathist thdexpire \
 		tunefeed
 
 all: $(ALL)
@@ -51,6 +52,7 @@ delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in
 findreadgroups:  findreadgroups.in  $(FIX) ; $(FIX) findreadgroups.in
 makeexpctl:      makeexpctl.in      $(FIX) ; $(FIX) makeexpctl.in
 makestorconf:    makestorconf.in    $(FIX) ; $(FIX) makestorconf.in
+nnrp.access2readers.conf: nnrp.access2readers.conf.in $(FIX) ; $(FIX) -i nnrp.access2readers.conf.in
 stathist:        stathist.in        $(FIX) ; $(FIX) -i stathist.in
 thdexpire:       thdexpire.in       $(FIX) ; $(FIX) thdexpire.in
 tunefeed:        tunefeed.in        $(FIX) ; $(FIX) -i tunefeed.in

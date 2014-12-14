@@ -1,0 +1,143 @@
+#! /usr/bin/perl -w
+
+##  $Id$
+##
+##  Convert an old-style nnrp.access file to readers.conf format.
+##  (readers.conf replaced nnrp.access, starting with INN 2.3.0.)
+##
+##  Written by Jeffrey M. Vinocur <jeff@litech.org>.
+##
+##  This work is hereby placed in the public domain by its author.
+
+use strict;
+
+my ($src, $passwd, $dst, $debug);
+
+if (@ARGV == 1) {
+    $src = shift;
+    $passwd = 'passwd';
+    $debug = 1;
+} elsif (@ARGV == 3) {
+    ($src, $passwd, $dst) = @ARGV;
+    $debug = 0;
+} else {
+    usage();
+}
+
+my ($address, $access, $user, $pass, $groups);
+my ($noauth, $shadow);
+my %passwords;
+my @badsyntax;
+my @duplicates;
+my $OUT;
+
+open(SRC, $src) or die "Could not open $src: $!\n";
+
+if ($debug) {
+    $OUT = \*STDOUT;
+} else {
+    open(DST, ">$dst") or die "Could not open $dst: $!\n";
+    $OUT = \*DST;
+}
+
+while (<SRC>) {
+    chomp;
+    # Keep comments and blank lines.
+    if (/^\s*$/) {
+        print $OUT "\n";
+        next;
+    }
+    if (/(\#.*)/) {
+        print $OUT "$1\n";
+    }
+    s/\s*\#.*//;
+    next if /^$/;
+
+    # TODO - The following syntax is currently not recognized:
+    # host:/path/to/another/file
+    # %DEFINE0:bar.*
+    # bar.foo.net:RP:::%0
+    ($address, $access, $user, $pass, $groups) = split /:/;
+    unless (defined $groups) {
+        push (@badsyntax, $.);
+        next;
+    }
+
+    # If there is whitespace in user/pass, access is disabled.
+    $noauth = ($user =~ /\s/ or $pass =~ /\s/) ? 1 : 0;
+
+    # If user is '+', then authentication is against /etc/shadow.
+    $shadow = ($user eq '+') ? 1 : 0;
+
+    $user = '' if ($noauth or $shadow);
+
+    # Only keep R, P, N, and L for the access rights.
+    $access =~ s/[^RPNL]//g;
+
+    unless ($user eq '') {
+        push (@duplicates, $.) if defined ($passwords{$user});
+        $passwords{$user} = $pass;
+    }
+
+    print $OUT "auth \"$address\" {\n";
+    print $OUT "    hosts: \"$address\"\n";
+    print $OUT "    key: \"line$.\"\n";
+    print $OUT "    auth: \"ckpasswd -f $passwd\"\n" unless $user eq '';
+    print $OUT "    auth: \"ckpasswd -s\"\n" if $shadow;
+    print $OUT "}\n";
+    print $OUT "access \"$address\" {\n";
+    print $OUT "    key: \"line$.\"\n";
+    print $OUT "    newsgroups: \"$groups\"\n";
+    print $OUT "    access: \"$access\"\n";
+    print $OUT "    users: \"$user\"\n" unless $user eq '';
+    print $OUT "    reject_with: \"Access disabled.\"\n" if $noauth;
+    print $OUT "}\n\n";
+
+}
+close SRC;
+
+srand($$^time);
+
+if (!$debug) {
+    close $OUT;
+    open(PASSWD, ">$passwd") or die "Could not open $passwd: $!\n";
+    $OUT = \*PASSWD;
+}
+while (my ($user, $pass) = each %passwords) {
+    $pass = crypt($pass, seedchar().seedchar());
+    print $OUT "$user:$pass\n";
+}
+close PASSWD unless $debug;
+
+print STDERR "\nHad trouble with syntax on line",
+             @badsyntax > 1 ? 's ' : ' ',
+             join(", ", @badsyntax), ".\n"
+    if @badsyntax;
+
+print STDERR "\nFound username duplication on line",
+             @duplicates > 1 ? 's ' : ' ',
+             join(", ", @duplicates), ".\n"
+    if @duplicates;
+
+
+sub seedchar {  # From Randal Schwarz.
+    ('a'..'z','A'..'Z','0'..'9','.','/')[rand(64)];
+}
+
+sub usage {
+    print STDERR << "__END__";
+Usage:
+
+$0 <nnrp.access file> [<passwd file> <readers.conf file>]
+
+Use $0 to convert an old-style nnrp.access file to readers.conf format.
+All unique user/password pairs from the nnrp.access file are placed in
+the passwd file (in format suitable for ckpasswd).
+
+If the second and third arguments are missing, everything is printed
+instead to stdout for examination purposes.
+
+__END__
+
+exit 1;
+}
