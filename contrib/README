@@ -129,6 +129,11 @@ newsresp
     times.  Can check the round-trip time and the history lookup time.
     See the comments at the beginning of the source for more details.
 
+nnrp.access2readers.conf
+
+    Converts an old-style nnrp.access file to readers.conf format.
+    (readers.conf replaced nnrp.access, starting with INN 2.3.0.)
+
 pullart
 
     Attempts to pull news articles out of CNFS cycbuffs.  Useful for

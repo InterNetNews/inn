@@ -120,6 +120,7 @@ contrib/makeexpctl
 contrib/makestorconf
 contrib/mlockfile
 contrib/newsresp
+contrib/nnrp.access2readers.conf
 contrib/pullart
 contrib/reset-cnfs
 contrib/respool

@@ -75,6 +75,7 @@ contrib/mkbuf                         Create cycbuff for HP-UX
 contrib/mlockfile.c                   Lock files into memory using mlock
 contrib/mm_ckpasswd                   Check passwords against Mailman db
 contrib/newsresp.c                    Measure responsiveness of remote server
+contrib/nnrp.access2readers.conf.in   Convert nnrp.access file to readers.conf
 contrib/pullart.c                     Recover articles from cyclic buffers
 contrib/reset-cnfs.c                  Reset the state parts of a CNFS buffer
 contrib/respool.c                     Respool articles in the storage manager
