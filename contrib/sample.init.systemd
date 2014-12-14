@@ -4,6 +4,7 @@
 #
 [Unit]
 Description=InterNetNews Daemon
+Documentation=http://www.eyrie.org/~eagle/software/inn/
 After=syslog.target network.target
 ConditionPathExists=/etc/news/inn.conf
 
@@ -13,6 +14,7 @@ PermissionsStartOnly=true
 PIDFile=/run/news/innd.pid
 Type=forking
 ExecStart=/usr/libexec/news/rc.news
+ExecReload=/usr/libexec/news/ctlinnd -t 20 reload '' 'reload asked'
 ExecStop=/bin/su -m news -s /bin/sh -c '/usr/libexec/news/rc.news stop'
 KillMode=control-group
 
