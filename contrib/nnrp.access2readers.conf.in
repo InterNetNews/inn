@@ -84,6 +84,7 @@ while (<SRC>) {
     print $OUT "    key: \"line$.\"\n";
     print $OUT "    auth: \"ckpasswd -f $passwd\"\n" unless $user eq '';
     print $OUT "    auth: \"ckpasswd -s\"\n" if $shadow;
+    print $OUT "    default: \"<all>\"\n" if $user eq '' and not $shadow;
     print $OUT "}\n";
     print $OUT "access \"$address\" {\n";
     print $OUT "    key: \"line$.\"\n";
