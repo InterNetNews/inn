@@ -245,6 +245,12 @@ ability, the new B<-B> flag triggers header-only feeding, the B<-m>
 flag now permits to remove headers matching (or not) a given regexp,
 and B<rnews> reporting is improved.
 
+=item *
+
+Add the B<nnrp.access2readers.conf> contribution script written by
+Jeffrey S<M. Vinocur> to convert old-style F<nnrp.access> file to
+F<readers.conf>.
+
 =back
 
 =head1 Changes in 2.5.4
