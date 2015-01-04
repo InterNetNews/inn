@@ -87,7 +87,4 @@ $Id$
 
 ckpasswd(8), nnrpd(8), readers.conf(5).
 
-The latest version of Christopher's original B<nnrpkrb5auth> may be found
-on his web site at L<http://www.mallorn.com/tools/>.
-
 =cut
