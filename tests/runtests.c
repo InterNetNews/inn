@@ -1176,6 +1176,7 @@ read_test_list(const char *filename)
     unsigned int line;
     size_t length;
     char buffer[BUFSIZ];
+    const char *testname;
     struct testlist *listhead, *current;
 
     /* Create the initial container list that will hold our results. */
@@ -1198,6 +1199,15 @@ read_test_list(const char *filename)
             exit(1);
         }
         buffer[length] = '\0';
+
+        /* Skip comments, leading spaces, and blank lines. */
+        testname = skip_whitespace(buffer);
+        if (strlen(testname) == 0)
+            continue;
+        if (testname[0] == '#')
+            continue;
+
+        /* Allocate the new testset structure. */
         if (current == NULL)
             current = listhead;
         else {
@@ -1206,7 +1216,7 @@ read_test_list(const char *filename)
         }
         current->ts = xcalloc(1, sizeof(struct testset));
         current->ts->plan = PLAN_INIT;
-        current->ts->file = xstrdup(buffer);
+        current->ts->file = xstrdup(testname);
     }
     fclose(file);
 

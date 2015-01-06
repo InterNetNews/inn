@@ -58,15 +58,10 @@ download ()
         # our needs.
         sed -i -e "3 i \\
 # \$Id\$\\
-#\\
-# This file is part of C TAP Harness.  The current version plus supporting\\
-# documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.\\
 #" \
-               -e 's/C TAP Harness/INN/g' \
-               -e '5,8d' \
-               -e '10,11d' \
+               -e '5,9d' \
                -e '/^use warnings;$/d' \
-               -e "42 i \\
+               -e "62 i \\
 \$Test::Pod::ignore_dirs{'.libs'} = 'Libs';\\
 " \
                -e "s/'docs'/'.'/g" \
@@ -215,7 +210,7 @@ download tests/tap/libtap.sh tests/tap libtap.sh
 download tests/tap/macros.h tests/tap macros.h
 
 ##  Synchronize the POD checker test suite.
-download tests/docs/pod.t tests/docs pod.t
+download tests/docs/pod-t tests/docs pod.t
 
 ##  Synchronize the README file from upstream.
 download docs/writing-tests tests README
