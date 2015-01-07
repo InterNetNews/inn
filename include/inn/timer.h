@@ -9,7 +9,7 @@
 */
 
 #ifndef INN_TIMER_H
-#define INN_TIMER_H
+#define INN_TIMER_H 1
 
 #include <inn/defines.h>
 

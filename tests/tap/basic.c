@@ -194,7 +194,7 @@ static struct diag_file *diag_files = NULL;
  * length.  When those constraints are relaxed, this should be ripped out and
  * replaced with asprintf or a more trivial replacement with snprintf.
  */
-#ifndef LIBINN_H
+#ifndef INN_LIBINN_H
 static char *
 concat(const char *first, ...)
 {

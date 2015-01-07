@@ -76,8 +76,8 @@ art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/inn/innconf.h \
   ../include/inn/defines.h ../include/inn/md5.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/storage.h \
   ../include/inn/vector.h ../include/inn/wire.h innd.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \

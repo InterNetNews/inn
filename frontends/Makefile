@@ -185,8 +185,8 @@ ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/innconf.h ../include/inn/messages.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../storage/ovdb/ovdb.h \
   ../storage/ovdb/ovdb-private.h
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
@@ -197,8 +197,8 @@ ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../storage/ovdb/ovdb.h \
   ../storage/ovdb/ovdb-private.h
 ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
@@ -213,7 +213,7 @@ ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/defines.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/ov.h ../include/inn/storage.h ../include/inn/history.h \
+  ../include/inn/ov.h ../include/inn/history.h ../include/inn/storage.h \
   ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
@@ -223,8 +223,8 @@ ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/history.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/paths.h ../include/inn/storage.h \
   ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \

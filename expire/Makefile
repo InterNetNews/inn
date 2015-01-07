@@ -109,8 +109,8 @@ expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/history.h ../include/inn/paths.h ../include/inn/qio.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/storage.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \

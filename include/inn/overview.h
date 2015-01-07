@@ -13,6 +13,8 @@
 
 #include <stdio.h>              /* FILE */
 
+#include "inn/portable-macros.h"
+#include "inn/portable-stdbool.h"
 #include "inn/storage.h"
 
 /* Forward declarations to avoid unnecessary includes. */

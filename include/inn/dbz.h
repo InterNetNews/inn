@@ -1,5 +1,5 @@
-#ifndef __DBZ_H__
-#define __DBZ_H__
+#ifndef INN_DBZ_H
+#define INN_DBZ_H 1
 
 /* Need the definition of HASH. */
 #include "inn/libinn.h"
@@ -71,4 +71,4 @@ extern void dbzgetoptions(dbzoptions *options);
 
 END_DECLS
 
-#endif /* __DBZ_H__ */
+#endif /* INN_DBZ_H */

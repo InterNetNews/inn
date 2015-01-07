@@ -128,7 +128,7 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 #endif\\
 " \
              -e "150 i \\
-#ifndef LIBINN_H" \
+#ifndef INN_LIBINN_H" \
              -e "184 i \\
 #endif" \
              -e 's/^ok.int /new_ok(int /g' \

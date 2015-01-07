@@ -1,9 +1,12 @@
+/*  $Id$
+*/
+
 #ifndef _OVDB_H_
 #define _OVDB_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include "config.h"
+
+BEGIN_DECLS
 
 bool ovdb_open(int mode);
 bool ovdb_groupstats(const char *group, int *lo, int *hi, int *count,
@@ -22,8 +25,6 @@ bool ovdb_expiregroup(const char *group, int *lo, struct history *h);
 bool ovdb_ctl(OVCTLTYPE type, void *val);
 void ovdb_close(void);
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+END_DECLS
 
 #endif /* _OVDB_H_ */
