@@ -84,7 +84,7 @@ depend:	Makefile $(SOURCES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
@@ -92,7 +92,7 @@ convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/xwrite.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/history.h ../include/inn/defines.h \
@@ -103,7 +103,7 @@ expire.o: expire.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/storage.h ../include/inn/options.h
 expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
@@ -114,7 +114,7 @@ expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/storage.h
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
@@ -123,7 +123,7 @@ fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/storage.h ../include/inn/options.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/options.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/defines.h ../include/inn/innconf.h \
@@ -132,7 +132,7 @@ grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
   ../include/inn/storage.h ../include/inn/options.h
 makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/defines.h \
@@ -142,7 +142,7 @@ makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/storage.h ../include/inn/options.h
 makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/buffer.h ../include/inn/history.h \
@@ -154,7 +154,7 @@ makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/wire.h
 prunehistory.o: prunehistory.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/inn/history.h ../include/inn/defines.h \

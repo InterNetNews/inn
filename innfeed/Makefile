@@ -100,116 +100,121 @@ depend: Makefile $(SOURCES)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 article.o: article.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/mmap.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
-  buffer.h endpoint.h
+  ../include/portable/macros.h buffer.h endpoint.h
 buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  buffer.h misc.h
+  buffer.h misc.h ../include/portable/macros.h
 config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  configfile.h config_y.h misc.h
+  configfile.h config_y.h misc.h ../include/portable/macros.h
 config_y.o: config_y.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  configfile.h misc.h
+  configfile.h misc.h ../include/portable/macros.h
 connection.o: connection.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/fdflag.h ../include/inn/innconf.h \
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   article.h misc.h buffer.h configfile.h connection.h endpoint.h host.h
 endpoint.o: endpoint.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  buffer.h misc.h configfile.h endpoint.h host.h
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h buffer.h misc.h \
+  configfile.h endpoint.h host.h
 host.o: host.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/inn/version.h \
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/network.h \
+  ../include/inn/portable-socket.h ../include/inn/version.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   article.h misc.h buffer.h configfile.h connection.h endpoint.h host.h \
   innlistener.h tape.h
 imap_connection.o: imap_connection.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h buffer.h misc.h \
-  connection.h endpoint.h host.h innfeed.h ../include/inn/timer.h \
-  article.h configfile.h
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/messages.h ../include/inn/libinn.h \
+  ../include/inn/defines.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h buffer.h misc.h connection.h endpoint.h host.h \
+  innfeed.h ../include/inn/timer.h article.h configfile.h
 innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/nntp.h article.h misc.h \
-  buffer.h configfile.h endpoint.h host.h innlistener.h tape.h
+  ../include/portable/macros.h buffer.h configfile.h endpoint.h host.h \
+  innlistener.h tape.h
 main.o: main.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/socket-unix.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/version.h \
-  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/inn/innconf.h ../include/inn/messages.h \
+  ../include/inn/version.h ../include/inn/libinn.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h article.h misc.h \
   buffer.h configfile.h connection.h endpoint.h host.h innlistener.h \
   tape.h
 misc.o: misc.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  endpoint.h misc.h tape.h
+  endpoint.h misc.h ../include/portable/macros.h tape.h
 tape.o: tape.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h article.h misc.h \
-  configfile.h endpoint.h tape.h
+  ../include/portable/macros.h configfile.h endpoint.h tape.h
