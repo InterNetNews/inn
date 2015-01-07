@@ -155,10 +155,9 @@ getlist.o: getlist.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/paths.h
 inews.o: inews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/time.h ../include/config.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/messages.h \
-  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/time.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/nntp.h ../include/inn/paths.h
 innconfval.o: innconfval.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
@@ -175,38 +174,35 @@ ovdb_init.o: ovdb_init.c ../include/config.h ../include/inn/defines.h \
 ovdb_monitor.o: ovdb_monitor.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h \
   ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/portable/setproctitle.h ../include/config.h \
-  ../include/portable/wait.h ../include/inn/innconf.h \
-  ../include/inn/defines.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/history.h \
-  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/portable/setproctitle.h ../include/portable/wait.h \
+  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/ov.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_server.o: ovdb_server.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/mmap.h ../include/config.h \
+  ../include/config.h ../include/portable/mmap.h \
   ../include/portable/time.h ../include/portable/setproctitle.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/portable/wait.h \
   ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
+  ../include/inn/storage.h ../include/inn/history.h ../storage/ovdb/ovdb.h \
   ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/innconf.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/libinn.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/history.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../storage/ovdb/ovdb.h \
-  ../storage/ovdb/ovdb-private.h
+  ../include/inn/history.h ../include/inn/paths.h ../include/inn/storage.h \
+  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/portable/wait.h ../include/config.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
-  ../include/inn/libinn.h ../include/inn/messages.h \
-  ../include/inn/newsuser.h ../include/config.h ../include/clibrary.h \
+  ../include/config.h ../include/portable/wait.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/libinn.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/wire.h
 sm.o: sm.c ../include/config.h ../include/inn/defines.h \
