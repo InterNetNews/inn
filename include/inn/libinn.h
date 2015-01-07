@@ -3,8 +3,8 @@
 **  Here be declarations of functions in the InterNetNews library.
 */
 
-#ifndef LIBINN_H
-#define LIBINN_H 1
+#ifndef INN_LIBINN_H
+#define INN_LIBINN_H 1
 
 #include <inn/defines.h>
 
@@ -238,4 +238,4 @@ END_DECLS
 /* <ctype.h>'s isspace includes \n, which is not what we want. */
 #define ISWHITE(c)              ((c) == ' ' || (c) == '\t')
 
-#endif /* LIBINN_H */
+#endif /* INN_LIBINN_H */

@@ -1,12 +1,14 @@
+/*  $Id$
+*/
+
 #ifndef INN_OV_H
 #define INN_OV_H 1
 
+#include <inn/defines.h>
 #include "storage.h"
 #include "inn/history.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+BEGIN_DECLS
 
 #define OV_READ  1
 #define OV_WRITE 2
@@ -75,8 +77,6 @@ enum {
 };
 #endif
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+END_DECLS
 
-#endif /* !INN_OV_H */
+#endif /* INN_OV_H */

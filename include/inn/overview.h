@@ -11,6 +11,7 @@
 #ifndef INN_OVERVIEW_H
 #define INN_OVERVIEW_H 1
 
+#include <inn/defines.h>
 #include <stdio.h>              /* FILE */
 
 #include "inn/storage.h"

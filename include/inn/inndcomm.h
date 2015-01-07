@@ -1,4 +1,4 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Here be values used for communicating with the server once it is
 **  running.
@@ -7,9 +7,9 @@
 #ifndef INN_INNDCOMM_H
 #define INN_INNDCOMM_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <inn/defines.h>
+
+BEGIN_DECLS
 
 /* The header for the ICC protocol is a one-byte protocol version followed
    by a 2 byte messages length*/
@@ -21,8 +21,6 @@ typedef char ICC_PROTOCOLTYPE ;
 
 /* Values for the protocol version field of the message. 8 bits wide. */
 #define ICC_PROTOCOL_1 'a'
-
-
 
 #define SC_SEP		'\001'
 #define SC_MAXFIELDS	6
@@ -89,7 +87,6 @@ extern const char	*ICCfailure;
 # define RECVorREAD(fd, p, s)   read((fd), (p), (s))
 #endif
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-#endif /* !INN_INNDCOMM_H */
+END_DECLS
+
+#endif /* INN_INNDCOMM_H */

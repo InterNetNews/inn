@@ -10,6 +10,8 @@
 #ifndef INN_DISPATCH_H
 #define INN_DISPATCH_H 1
 
+#include <inn/defines.h>
+
 /* Forward declarations. */
 struct cvector;
 

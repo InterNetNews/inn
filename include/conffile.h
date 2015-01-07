@@ -1,11 +1,11 @@
-/*  $Revision$
+/*  $Id$
 **
 **  Data structures, functions and cetera used for config file parsing.
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <inn/defines.h>
+
+BEGIN_DECLS
 
 typedef struct {
     FILE *f;
@@ -30,6 +30,4 @@ extern void CONFfclose(CONFFILE *);
 
 extern CONFTOKEN *CONFgettoken(CONFTOKEN *, CONFFILE *);
 
-#ifdef __cplusplus
-}
-#endif
+END_DECLS
