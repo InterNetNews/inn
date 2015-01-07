@@ -168,6 +168,11 @@ frontends/sm
 history/buildconfig
 include/config.h
 include/inn/paths.h
+include/inn/portable-getaddrinfo.h
+include/inn/portable-getnameinfo.h
+include/inn/portable-macros.h
+include/inn/portable-socket.h
+include/inn/portable-stdbool.h
 include/inn/system.h
 include/inn/version.h
 innd/innd

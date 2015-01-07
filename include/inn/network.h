@@ -34,9 +34,9 @@
 #define INN_NETWORK_H 1
 
 #include <inn/defines.h>
-#include "portable/macros.h"
-#include "portable/socket.h"
-#include "portable/stdbool.h"
+#include "inn/portable-macros.h"
+#include "inn/portable-socket.h"
+#include "inn/portable-stdbool.h"
 
 #include <sys/types.h>
 

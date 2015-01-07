@@ -21,9 +21,10 @@
 
 #include <inn/system.h>
 #include "inn/macros.h"
-#include "portable/stdbool.h"
+#include "inn/portable-stdbool.h"
 
-// TODO:  Remove this file (defines.h), now that it has been split
-//        into other headers.
+/*  TODO:  Remove this file (defines.h), now that it has been split
+**         into other headers.
+*/
 
 #endif /* !INN_DEFINES_H */

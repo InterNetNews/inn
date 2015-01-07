@@ -8,7 +8,9 @@ include ../Makefile.global
 
 top	      = ..
 
-ALL	      = inn/system.h inn/version.h
+ALL	      = inn/portable-getaddrinfo.h inn/portable-getnameinfo.h \
+		inn/portable-macros.h inn/portable-socket.h \
+		inn/portable-stdbool.h inn/system.h inn/version.h
 
 EXTRA	      = config.h inn/paths.h
 
@@ -34,6 +36,26 @@ $(EXTRA) $(FIXSCRIPT):
 
 
 ##  Build rules.
+
+inn/portable-getaddrinfo.h: portable/getaddrinfo.h
+	$(SED) 's/"portable\//"inn\/portable-/g' portable/getaddrinfo.h \
+	  > inn/portable-getaddrinfo.h
+
+inn/portable-getnameinfo.h: portable/getnameinfo.h
+	$(SED) 's/"portable\//"inn\/portable-/g' portable/getnameinfo.h \
+	  > inn/portable-getnameinfo.h
+
+inn/portable-macros.h: portable/macros.h
+	$(SED) 's/"portable\//"inn\/portable-/g' portable/macros.h \
+	  > inn/portable-macros.h
+
+inn/portable-socket.h: portable/socket.h
+	$(SED) 's/"portable\//"inn\/portable-/g' portable/socket.h \
+	  > inn/portable-socket.h
+
+inn/portable-stdbool.h: portable/stdbool.h
+	$(SED) 's/"portable\//"inn\/portable-/g' portable/stdbool.h \
+	  > inn/portable-stdbool.h
 
 inn/system.h: config.h $(top)/support/mksystem
 	$(top)/support/mksystem $(AWK) config.h > $@

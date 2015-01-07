@@ -3,7 +3,7 @@
 
 /* Need the definition of HASH. */
 #include "inn/libinn.h"
-#include "portable/macros.h"
+#include "inn/portable-macros.h"
 
 BEGIN_DECLS
 

@@ -32,9 +32,9 @@
 #define INN_FDFLAG_H 1
 
 #include "config.h"
-#include "portable/macros.h"
-#include "portable/stdbool.h"
-#include "portable/socket.h"
+#include "inn/portable-macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/portable-socket.h"
 
 BEGIN_DECLS
 

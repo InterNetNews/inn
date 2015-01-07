@@ -32,7 +32,7 @@
 #define INN_XMALLOC_H 1
 
 #include "config.h"
-#include "portable/macros.h"
+#include "inn/portable-macros.h"
 
 #include <stdarg.h>
 #include <stddef.h>

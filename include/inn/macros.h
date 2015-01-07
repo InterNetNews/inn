@@ -19,7 +19,7 @@
 #ifndef INN_MACROS_H
 #define INN_MACROS_H 1
 
-#include "portable/macros.h"
+#include "inn/portable-macros.h"
 
 /*
  * Used for iterating through arrays.  ARRAY_SIZE returns the number of

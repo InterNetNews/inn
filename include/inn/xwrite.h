@@ -32,7 +32,7 @@
 #define INN_XWRITE_H 1
 
 #include "config.h"
-#include "portable/macros.h"
+#include "inn/portable-macros.h"
 
 #include <sys/types.h>
 

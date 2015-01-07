@@ -191,6 +191,7 @@ extern int symlink(const char *, const char *);\\
                  -e 's/\([^_]\)HAVE_STDBOOL_H/\1INN_HAVE_STDBOOL_H/g' \
                  -e 's/\([^_]\)HAVE_SYS_BITYPES_H/\1INN_HAVE_SYS_BITYPES_H/g' \
                  -e 's/\([^_]\)HAVE__BOOL/\1INN_HAVE__BOOL/g' \
+                 -e 's/"portable\/\(.*\)"/"inn\/portable-\1"/g' \
                  ${TEMP}
         fi
       fi
