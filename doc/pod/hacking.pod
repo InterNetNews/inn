@@ -762,12 +762,16 @@ to the IETF NNTP working group archives and copies of the latest drafts
 of the new NNTP standard.  The old archived mailing list traffic contains
 a lot of interesting discussion of why NNTP is the way it is.
 
-=item L<http://www.imc.org/ietf-usefor/>
+=item L<http://www.eyrie.org/~eagle/usefor/>
+ 
+A collection of documents about the Usenet article format, including
+most of the relevant RFCs and Internet-Drafts.
+
+=item L<http://www.ietf.org/mail-archive/web/usefor/current/maillist.html>
 
 The archives for the USEFOR IETF working group, the working group for the
 S<RFC 1036> replacement (the format of Usenet articles), now published as
-S<RFC 5536> and S<RFC 5537>.  Also contains a lot of references to other
-relevant work.  Another useful link is L<http://www.eyrie.org/~eagle/usefor/>.
+S<RFC 5536> and S<RFC 5537>.
 
 =item L<http://www.mibsoftware.com/userkt/inn/dev/>
 
