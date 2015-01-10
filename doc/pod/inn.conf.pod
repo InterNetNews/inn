@@ -1073,7 +1073,8 @@ use it.
 =back
 
 Finally, here are the parameters that can be used to tighten the level
-of security provided by TLS/SSL:
+of security provided by TLS/SSL in case new attacks exploitable in NNTP
+on the TLS protocol or some supported cipher suite are discovered:
 
 =over 4
 
@@ -1086,7 +1087,7 @@ is unset, which uses OpenSSL's default cipher suite list.
 =item I<tlscompression>
 
 Whether to enable or disable SSL/TLS compression support.  This is a
-boolean and the default is false, that is to say compression is disabled.
+boolean and the default is true, that is to say compression is enabled.
 
 =item I<tlseccurve>
 

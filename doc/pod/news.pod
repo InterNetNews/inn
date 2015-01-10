@@ -19,12 +19,12 @@ allows to specify another configuration file, if need be.
 =item *
 
 If you have been using SSL/TLS with B<nnrpd> before, be aware that the
-default value of a few F<inn.conf> parameters have changed:  SSL/TLS
-compression is now disabled by default, the server decides the preferred
-cipher, and only TLS protocols are allowed (using the flawed SSLv2
-and SSLv3 protocols is now disabled).  If you want to change these
-settings, the respective I<tlscompression>, I<tlspreferserverciphers>,
-and I<tlsprotocols> parameters can be tuned to your needs.
+default value of a few F<inn.conf> parameters have changed:  the server
+now decides the preferred cipher (instead of the client), and only TLS
+protocols are allowed (using the flawed SSLv2 and SSLv3 protocols is
+now disabled).  If you want to change these settings, the respective
+I<tlspreferserverciphers> and I<tlsprotocols> parameters can be tuned
+to your needs.
 
 =item *
 
