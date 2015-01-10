@@ -439,7 +439,7 @@ eckey_from_name(char *name)
     nitems = EC_get_builtin_curves(builtin_curves, ncurves);
     if (nitems != ncurves) {
         syslog(L_ERROR, "got %lu curves from EC_get_builtin_curves, "
-               "expected %lu", nitems, ncurves);
+               "expected %lu", (unsigned long) nitems, (unsigned long) ncurves);
     }
     for (i = 0; i < nitems; i++) {
         sname = OBJ_nid2sn(builtin_curves[i].nid);
