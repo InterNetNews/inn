@@ -370,7 +370,7 @@ TMRsummary(const char *prefix, const char *const *labels)
         off = 0;
     else
         off = snprintf(buf, len, "%s ", prefix);
-    off += snprintf(buf + off, len - off, "time %ld ", TMRgettime(true));
+    off += snprintf(buf + off, len - off, "time %lu ", TMRgettime(true));
     for (i = 0; i < timer_count; i++)
         if (timers[i] != NULL)
             off += TMRsumone(labels, timers[i], buf + off, len - off);
