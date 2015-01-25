@@ -1507,6 +1507,7 @@ sub collect($$$$$$) {
     # other logs that should not be reported as errors
     return 1 if $left =~ /^\S+ auth also-log: /o;
     return 1 if $left =~ /^\S+ res also-log: /o;
+    return 1 if $left =~ /^\S+ rejected by rule /o;
     # connect
     if ($left =~ /(\S+) (\([0-9a-fA-F:.]*\) )?connect(?: - port \d+)?$/o) {
       my $cust = $1;
