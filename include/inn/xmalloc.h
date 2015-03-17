@@ -31,7 +31,7 @@
 #ifndef INN_XMALLOC_H
 #define INN_XMALLOC_H 1
 
-#include "config.h"
+#include <inn/defines.h>
 #include "inn/portable-macros.h"
 
 #include <stdarg.h>

@@ -85,17 +85,16 @@ depend:	Makefile $(SOURCES)
 convdate.o: convdate.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/defines.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/messages.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 expire.o: expire.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/inndcomm.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
@@ -104,9 +103,9 @@ expire.o: expire.c ../include/config.h ../include/inn/defines.h \
 expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
@@ -115,38 +114,38 @@ expireover.o: expireover.c ../include/config.h ../include/inn/defines.h \
 fastrm.o: fastrm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/innconf.h ../include/inn/defines.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/qio.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h
 grephistory.o: grephistory.c ../include/clibrary.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/config.h ../include/inn/options.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/history.h \
-  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/inn/macros.h ../include/portable/stdbool.h \
+  ../include/inn/history.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h
 makedbz.o: makedbz.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/defines.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/dbz.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/storage.h ../include/inn/options.h
 makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/defines.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/buffer.h \
+  ../include/inn/history.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
@@ -155,9 +154,9 @@ makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
 prunehistory.o: prunehistory.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/inn/history.h ../include/inn/defines.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/paths.h

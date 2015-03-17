@@ -119,9 +119,10 @@ buffer.o: buffer.c innfeed.h ../include/inn/timer.h \
 config_l.o: config_l.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/options.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  configfile.h config_y.h misc.h ../include/portable/macros.h
+  configfile.h config_y.h misc.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h
 config_y.o: config_y.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -169,14 +170,14 @@ host.o: host.c innfeed.h ../include/inn/timer.h ../include/inn/defines.h \
 imap_connection.o: imap_connection.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/options.h ../include/clibrary.h ../include/config.h \
-  ../include/inn/macros.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/defines.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h buffer.h misc.h connection.h endpoint.h host.h \
-  innfeed.h ../include/inn/timer.h article.h configfile.h
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/messages.h \
+  ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  buffer.h misc.h connection.h endpoint.h host.h innfeed.h \
+  ../include/inn/timer.h article.h configfile.h
 innlistener.o: innlistener.c innfeed.h ../include/inn/timer.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

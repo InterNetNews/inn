@@ -31,7 +31,7 @@
 #ifndef INN_XWRITE_H
 #define INN_XWRITE_H 1
 
-#include "config.h"
+#include <inn/defines.h>
 #include "inn/portable-macros.h"
 
 #include <sys/types.h>
