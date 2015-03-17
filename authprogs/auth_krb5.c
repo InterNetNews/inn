@@ -23,11 +23,19 @@
 #include "libauth.h"
 #ifdef HAVE_ET_COM_ERR_H
 # include <et/com_err.h>
+#elif defined(HAVE_KERBEROSV5_COM_ERR_H)
+# include <kerberosv5/com_err.h>
 #else
 # include <com_err.h>
 #endif
 
-#include <krb5.h>
+#ifdef HAVE_KRB5_H
+# include <krb5.h>
+#elif HAVE_KERBEROSV5_KRB5_H
+# include <kerberosv5/krb5.h>
+#else
+# include <krb5/krb5.h>
+#endif
 
 #include "inn/messages.h"
 #include "inn/libinn.h"
