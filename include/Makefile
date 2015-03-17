@@ -51,10 +51,13 @@ inn/portable-macros.h: portable/macros.h
 
 inn/portable-socket.h: portable/socket.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/socket.h \
+	  | $(SED) -e 's/HAVE_INET6/INN_HAVE_INET6/g' \
 	  > inn/portable-socket.h
 
 inn/portable-stdbool.h: portable/stdbool.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/stdbool.h \
+	  | $(SED) -e 's/HAVE__BOOL/INN_HAVE__BOOL/g' \
+	           -e 's/HAVE_STDBOOL_H/INN_HAVE_STDBOOL_H/g' \
 	  > inn/portable-stdbool.h
 
 inn/system.h: config.h $(top)/support/mksystem

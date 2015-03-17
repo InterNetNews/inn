@@ -31,10 +31,10 @@
 # include "config.h"
 #endif
 
-#if INN_HAVE_STDBOOL_H
+#if HAVE_STDBOOL_H
 # include <stdbool.h>
 #else
-# if INN_HAVE__BOOL
+# if HAVE__BOOL
 #  define bool _Bool
 # else
 #  ifdef __cplusplus
