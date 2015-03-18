@@ -330,17 +330,18 @@ INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
-dnl that program.  In case neither et/com_err.h nor com_err.h can be found
-dnl and --with-krb5 is not given, do not define KRB5_AUTH and clear the
-dnl other variables set for Kerberos support.
+dnl that program.  In case neither et/com_err.h nor kerberosv5/com_err.h
+dnl nor com_err.h can be found and --with-krb5 is not given, do not define
+dnl KRB5_AUTH and clear the other variables set for Kerberos support.
 AS_IF([test x"$inn_use_KRB5" = xtrue],
     [AC_CHECK_HEADERS([et/com_err.h], [KRB5_AUTH=auth_krb5],
-         [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
-              [AS_IF([test x"$with_krb5" = x],
-                   [KRB5_CPPFLAGS=
-                    KRB5_LDFLAGS=
-                    KRB5_LIBS=],
-                   [AC_MSG_ERROR([cannot find usable com_err header])])])])])
+         [AC_CHECK_HEADERS([kerberosv5/com_err.h], [KRB5_AUTH=auth_krb5],
+              [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
+                   [AS_IF([test x"$with_krb5" = x],
+                        [KRB5_CPPFLAGS=
+                         KRB5_LDFLAGS=
+                         KRB5_LIBS=],
+                        [AC_MSG_ERROR([cannot find usable com_err header])])])])])])
 AC_SUBST([KRB5_AUTH])
 
 dnl If Berkeley DB is found, check the presence of its header.
@@ -382,6 +383,78 @@ AS_IF([test x"$inn_cv_lib_bdb_ndbm" != xyes],
      DBM_LIBS="$BDB_LDFLAGS $BDB_LIBS"
      AC_SUBST([DBM_LIBS])])
 AC_SUBST([DBM_CPPFLAGS])
+
+dnl If zlib support is found, check the presence of its header.
+AS_IF([test x"$inn_use_ZLIB" = xtrue],
+    [inn_ZLIB_incroot=
+     inn_ZLIB_header_found=
+     AS_IF([test x"$inn_ZLIB_includedir" != x],
+        [inn_ZLIB_incroot="$inn_ZLIB_includedir"],
+        [AS_IF([test x"$inn_ZLIB_root" != x],
+            [inn_ZLIB_incroot="${inn_ZLIB_root}/include"])])
+     AS_IF([test x"$inn_ZLIB_incroot" = x],
+        [AC_CHECK_HEADERS([zlib.h],
+            [inn_ZLIB_header_found=yes],
+            [inn_ZLIB_header_found=no])],
+        [AS_IF([test -f "${inn_ZLIB_incroot}/zlib.h"],
+            [inn_ZLIB_header_found=yes
+             AC_DEFINE([HAVE_ZLIB_H], [1],
+                [Define if you have the <zlib.h> header file.])],
+            [inn_ZLIB_header_found=no])])
+     AS_IF([test x"${inn_ZLIB_header_found}" = xyes], [],
+        [AS_IF([test x"$with_zlib" = x],
+            [ZLIB_CPPFLAGS=
+             ZLIB_LDFLAGS=
+             ZLIB_LIBS=],
+            [AC_MSG_ERROR([cannot find usable zlib header])])])])
+
+dnl If OpenSSL support is found, check the presence of its header.
+AS_IF([test x"$inn_use_OPENSSL" = xtrue],
+    [inn_OPENSSL_incroot=
+     inn_OPENSSL_header_found=
+     AS_IF([test x"$inn_OPENSSL_includedir" != x],
+        [inn_OPENSSL_incroot="$inn_OPENSSL_includedir"],
+        [AS_IF([test x"$inn_OPENSSL_root" != x],
+            [inn_OPENSSL_incroot="${inn_OPENSSL_root}/include"])])
+     AS_IF([test x"$inn_OPENSSL_incroot" = x],
+        [AC_CHECK_HEADERS([openssl/ssl.h],
+            [inn_OPENSSL_header_found=yes],
+            [inn_OPENSSL_header_found=no])],
+        [AS_IF([test -f "${inn_OPENSSL_incroot}/openssl/ssl.h"],
+            [inn_OPENSSL_header_found=yes
+             AC_DEFINE([HAVE_OPENSSL_SSL_H], [1],
+                [Define if you have the <openssl/ssl.h> header file.])],
+            [inn_OPENSSL_header_found=no])])
+     AS_IF([test x"${inn_OPENSSL_header_found}" = xyes], [],
+        [AS_IF([test x"$with_openssl" = x],
+            [OPENSSL_CPPFLAGS=
+             OPENSSL_LDFLAGS=
+             OPENSSL_LIBS=],
+            [AC_MSG_ERROR([cannot find usable OpenSSL header])])])])
+
+dnl If SASL support is found, check the presence of its header.
+AS_IF([test x"$inn_use_SASL" = xtrue],
+    [inn_SASL_incroot=
+     inn_SASL_header_found=
+     AS_IF([test x"$inn_SASL_includedir" != x],
+        [inn_SASL_incroot="$inn_SASL_includedir"],
+        [AS_IF([test x"$inn_SASL_root" != x],
+            [inn_SASL_incroot="${inn_SASL_root}/include"])])
+     AS_IF([test x"$inn_SASL_incroot" = x],
+        [AC_CHECK_HEADERS([sasl/sasl.h],
+            [inn_SASL_header_found=yes],
+            [inn_SASL_header_found=no])],
+        [AS_IF([test -f "${inn_SASL_incroot}/sasl/sasl.h"],
+            [inn_SASL_header_found=yes
+             AC_DEFINE([HAVE_SASL_SASL_H], [1],
+                [Define if you have the <sasl/sasl.h> header file.])],
+            [inn_SASL_header_found=no])])
+     AS_IF([test x"${inn_SASL_header_found}" = xyes], [],
+        [AS_IF([test x"$with_sasl" = x],
+            [SASL_CPPFLAGS=
+             SASL_LDFLAGS=
+             SASL_LIBS=],
+            [AC_MSG_ERROR([cannot find usable Cyrus SASL header])])])])
 
 dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.

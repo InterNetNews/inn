@@ -20,8 +20,6 @@ extern bool nnrpd_starttls_done;
 #endif /* HAVE_OPENSSL */
 
 #ifdef HAVE_SASL
-
-#include <sasl/sasl.h>
 sasl_conn_t *sasl_conn = NULL;
 int sasl_ssf = 0;
 int sasl_maxout = NNTP_MAXLEN_COMMAND;

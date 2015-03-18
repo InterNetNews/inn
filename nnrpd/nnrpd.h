@@ -26,6 +26,9 @@
 #include "inn/vector.h"
 #include "inn/timer.h"
 
+#ifndef HAVE_SASL_SASL_H
+# undef HAVE_SASL
+#endif
 #ifdef HAVE_SASL
 #include <sasl/sasl.h>
 #include <sasl/saslutil.h>

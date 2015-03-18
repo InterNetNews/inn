@@ -1,4 +1,7 @@
-#ifdef HAVE_DB_H
+#ifndef HAVE_DB_H
+# undef HAVE_BDB
+#endif
+#ifdef HAVE_BDB
 
 #include <db.h>
 
@@ -190,4 +193,4 @@ struct rs_artinfo {
 
 #define TRYAGAIN DB_LOCK_DEADLOCK
 
-#endif /* HAVE_DB_H */
+#endif /* HAVE_BDB */

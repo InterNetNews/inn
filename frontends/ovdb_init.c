@@ -17,14 +17,14 @@
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
-#ifndef HAVE_DB_H
+#ifndef HAVE_BDB
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
     die("Berkeley DB support not compiled");
 }
 
-#else /* HAVE_DB_H */
+#else /* HAVE_BDB */
 
 static int open_db(DB **db, const char *name, int type)
 {
@@ -440,5 +440,5 @@ int main(int argc, char **argv)
 
     exit(0);
 }
-#endif /* HAVE_DB_H */
+#endif /* HAVE_BDB */
 

@@ -22,14 +22,14 @@
 #include "../storage/ovdb/ovdb.h"
 #include "../storage/ovdb/ovdb-private.h"
 
-#ifndef HAVE_DB_H
+#ifndef HAVE_BDB
 
 int main(int argc UNUSED, char **argv UNUSED)
 {
     exit(0);
 }
 
-#else /* HAVE_DB_H */
+#else /* HAVE_BDB */
 
 static int signalled = 0;
 static void sigfunc(int sig UNUSED)
@@ -275,5 +275,5 @@ int main(int argc, char **argv)
     return 1;
 }
 
-#endif /* HAVE_DB_H */
+#endif /* HAVE_BDB */
 

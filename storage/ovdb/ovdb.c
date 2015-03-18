@@ -82,6 +82,9 @@
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 #endif
+#ifndef HAVE_ZLIB_H
+# undef HAVE_ZLIB
+#endif
 #ifdef HAVE_ZLIB
 # include <zlib.h>
 # define MAX_UNZIP_SZ 100000
@@ -111,7 +114,7 @@
 # include "portable/socket-unix.h"
 #endif
 
-#ifndef HAVE_DB_H
+#ifndef HAVE_BDB
 
 /* Provide stub functions if we don't have db */
 
@@ -155,7 +158,7 @@ bool ovdb_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
 
 void ovdb_close(void) { }
 
-#else /* HAVE_DB_H */
+#else /* HAVE_BDB */
 
 #define EXPIREGROUP_TXN_SIZE 100
 #define DELETE_TXN_SIZE 500
@@ -3061,4 +3064,4 @@ void ovdb_close(void)
     ovdb_releaselock();
 }
 
-#endif /* HAVE_DB_H */
+#endif /* HAVE_BDB */
