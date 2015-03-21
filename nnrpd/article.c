@@ -62,6 +62,8 @@ PushIOvHelper(struct iovec* vec, int* countp)
 {
     int result = 0;
 
+    TMRstart(TMR_NNTPWRITE);
+
 #ifdef HAVE_SASL
     if (sasl_conn && sasl_ssf) {
 	int i;
@@ -71,8 +73,6 @@ PushIOvHelper(struct iovec* vec, int* countp)
 	}
     } else {
 #endif /* HAVE_SASL */
-
-        TMRstart(TMR_NNTPWRITE);
 
 #ifdef HAVE_OPENSSL
 	if (tls_conn) {
@@ -97,11 +97,11 @@ Again:
 #endif /* HAVE_OPENSSL */
 	    result = xwritev(STDOUT_FILENO, vec, *countp);
 
-        TMRstop(TMR_NNTPWRITE);
-
 #ifdef HAVE_SASL
     }
 #endif
+
+    TMRstop(TMR_NNTPWRITE);
 
     if (result == -1) {
 	/* We can't recover, since we can't resynchronise with our
@@ -241,7 +241,8 @@ ARTinstorebytoken(TOKEN token)
     if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&stv, NULL);
     }
-    art = SMretrieve(token, RETR_STAT); /* XXX This isn't really overstats, is it? */
+    art = SMretrieve(token, RETR_STAT);
+    /* XXX This isn't really overstats, is it? */
     if (PERMaccessconf->nnrpdoverstats) {
 	gettimeofday(&etv, NULL);
 	OVERartcheck+=(etv.tv_sec - stv.tv_sec) * 1000;
