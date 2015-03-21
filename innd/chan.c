@@ -572,6 +572,21 @@ CHANresetlast(int fd)
 
 
 /*
+**  When removing a channel from the sleep mask, we want to lower the last
+**  file descriptor if we removed the highest one.  Called from SCHANremove.
+*/
+static void
+CHANresetlastsleeping(int fd)
+{
+    if (fd == channels.max_sleep_fd) {
+        while (   !FD_ISSET(channels.max_sleep_fd, &channels.sleep_set)
+               && channels.max_sleep_fd > 1)
+            channels.max_sleep_fd--;
+    }
+}
+
+
+/*
 **  Mark a channel as an active reader.
 */
 void
@@ -630,8 +645,6 @@ SCHANadd(CHANNEL *cp, time_t wake, void *event, innd_callback_func waker,
 void
 SCHANremove(CHANNEL *cp)
 {
-    int fd;
-
     if (!CHANsleeping(cp))
         return;
     FD_CLR(cp->fd, &channels.sleep_set);
@@ -639,12 +652,7 @@ SCHANremove(CHANNEL *cp)
     cp->Waketime = 0;
 
     /* If this was the highest descriptor, get a new highest. */
-    if (cp->fd == channels.max_sleep_fd) {
-        fd = channels.max_sleep_fd;
-        while (!FD_ISSET(fd, &channels.sleep_set) && fd > 1)
-            fd--;
-        channels.max_sleep_fd = fd;
-    }
+    CHANresetlastsleeping(cp->fd);
 }
 
 
@@ -1277,12 +1285,21 @@ CHANreadloop(void)
                 if (cp->Type == CTfree) {
                     warn("%s %d free but was in SMASK", CHANname(cp), fd);
                     FD_CLR(fd, &channels.sleep_set);
+                    channels.sleep_count--;
+                    CHANresetlastsleeping(fd);
                     close(fd);
                     cp->fd = -1;
                 } else {
                     cp->LastActive = Now.tv_sec;
                     SCHANremove(cp);
-                    (*cp->Waker)(cp);
+                    if (cp->Waker != NULL) {
+                        (*cp->Waker)(cp);
+                    } else {
+                        name = CHANname(cp);
+                        warn("%s %d sleeping without Waker", name, fd);
+                        SITEchanclose(cp);
+                        CHANclose(cp, name);
+                    }
                 }
             }
 
