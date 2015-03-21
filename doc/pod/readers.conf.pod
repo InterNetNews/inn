@@ -624,17 +624,23 @@ elsewhere:
 
     auth example.com {
         hosts: "*.example.com, example.com"
-        default: <LOCAL>
+        default: "<EXAMPLE>"
     }
 
     access full {
+        users: "<EXAMPLE>"
         newsgroups: *
     }
 
-Note that the access realm has no users: key and therefore applies to any
-user identity.  The only available auth realm only matches hosts in the
-"example.com" domain, though, so any connections from other hosts will be
-rejected immediately.
+Note that the above access realm could also be written without the
+users: key, in which case it applies to any user identity (though in
+this example, the user identity that will be assigned to all matching
+connections is C<< <EXAMPLE> >>).  It is however recommended to keep
+an explicit users: key so as to better view to whom the access block
+applies.
+
+As the only available auth realm only matches hosts in the "example.com"
+domain, any connections from other hosts will be rejected immediately.
 
 If you have some systems that should only have read-only access to the
 server, you can modify the example above slightly by adding an additional
