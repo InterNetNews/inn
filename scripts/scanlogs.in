@@ -19,6 +19,9 @@ LOG=${MOST_LOGS}/news
 ##  If you want to archive the active file, enable this line.
 ACTIVEFILE=${ACTIVE}
 
+##  Maximum number of lines to show from error log files.
+MAXERRLINES=50
+
 ##  Where these programs, if used, write their logs.
 ##  We also have to find innfeed's log file.
 CONTROLBATCH=${MOST_LOGS}/controlbatch.log
@@ -262,7 +265,7 @@ BASE=`basename ${SYSLOG_CRIT}`
 OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} ] ; then
     echo Syslog critical messages:
-    cat ${OLD_SYSLOG}
+    cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
     echo ---------
     echo ''
 fi
@@ -273,7 +276,7 @@ BASE=`basename ${ERRLOG}`
 OLD_ERRLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_ERRLOG} ] ; then
     echo Error log:
-    cat ${OLD_ERRLOG}
+    cat ${OLD_ERRLOG} | head -n ${MAXERRLINES}
     echo ---------
     echo ''
 fi
