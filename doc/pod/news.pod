@@ -30,7 +30,7 @@ during that minute.
 
 =item *
 
-Add new B<-f> flag to C<innwatch> to specify the configuration file to 
+Add new B<-f> flag to B<innwatch> to specify the configuration file to
 use, in case it is not the default F<innwatch.ctl> file.
 
 =item *
