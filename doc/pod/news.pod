@@ -194,6 +194,14 @@ Keeping the INN test suite driver up-to-date will be possible thanks
 to a new B<getc-tap-harness> script in the F<support> directory that
 automatically fetches the latest upstream changes.
 
+Similarly, the new B<getrra-c-util> script permits to keep most of
+the utility and portability functions synchronized with the upstream
+version of the rra-c-util package maintained by Russ Allbery.
+
+=item *
+
+Other minor bug fixes and documentation improvements.
+
 =back
 
 =head1 Changes in 2.5.5
@@ -228,7 +236,7 @@ during that minute.
 
 =item *
 
-Add new B<-f> flag to C<innwatch> to specify the configuration file to
+Add new B<-f> flag to B<innwatch> to specify the configuration file to
 use, in case it is not the default F<innwatch.ctl> file.
 
 =item *
