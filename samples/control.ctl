@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2014-04-06
+##  Last modified: 2014-06-17
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -2634,10 +2634,10 @@ newgroup:*:worldonline.*:mail
 rmgroup:*:worldonline.*:doit
 
 ## WPG (Winnipeg, Manitoba, Canada)
-# Contact: Gary Mills <mills@cc.umanitoba.ca>
-checkgroups:mills@cc.umanitoba.ca:wpg.*:doit
-newgroup:mills@cc.umanitoba.ca:wpg.*:doit
-rmgroup:mills@cc.umanitoba.ca:wpg.*:doit
+#
+# This hierarchy is still in use, but it has no active maintainer. 
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
 
 ## WPI (*LOCAL* -- Worcester Polytechnic Institute, Worcester, MA)
 # For local use only.
