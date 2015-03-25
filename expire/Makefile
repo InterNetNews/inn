@@ -35,7 +35,7 @@ clean clobber distclean maintclean:
 
 ##  Compilation rules.
 
-BOTH		= $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 
 LINK            = $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
