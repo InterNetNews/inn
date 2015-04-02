@@ -21,6 +21,13 @@ the patch.
 
 =item *
 
+B<innd> no longer crashes if a channel is supposed to sleep but does not
+define a waker callback function.  Also, the highest file descriptor of
+sleeping channels is now properly updated.  Thanks to Petr Novopashenniy
+for the bug report.
+
+=item *
+
 Add new B<-i> flag to both B<cnfsstat> and B<innwatch> to specify
 how many seconds they should sleep at startup.  It will especially be
 useful in B<rc.news> so that these scripts are actually started and then
@@ -46,6 +53,19 @@ Edwards:  the new B<-a> flag adds the Diablo-compatible hashfeed
 ability, the new B<-B> flag triggers header-only feeding, the B<-m>
 flag now permits to remove headers matching (or not) a given regexp,
 and B<rnews> reporting is improved.
+
+=item *
+
+B<innreport> now properly takes into account the time B<nnrpd> spends
+writing when using SASL.
+
+
+=item *
+
+B<scanlogs> now only shows the first 50 lines from error log files.
+Otherwise, all of them were present verbatim in the daily report,
+and the resulting e-mail could bounce owing to its length.  Thanks to
+Jeffrey S<M. Vinocur> for the bug report.
 
 =item *
 
