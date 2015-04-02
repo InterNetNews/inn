@@ -18,6 +18,7 @@ use Getopt::Std;
 use IPC::Open3;
 use IO::Select;
 use POSIX qw(setsid);
+use Sys::Hostname;
 use INN::Utils::Shlock;
 use strict;
 
@@ -69,7 +70,7 @@ my $Submit = $INN::Config::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
 my $Database = ($opt_b || $INN::Config::pathtmp) . "/mailpost-msgid" ;
 my $Maintainer = $INN::Config::newsmaster || "usenet" ; 
 my $WhereTo = $opt_o || $Submit ;
-my $Mailname = $INN::Config::fromhost ;
+my $Mailname = $INN::Config::fromhost || hostname ;
 
 # Can't use $INN::Config::pathtmp as we're usually not running as news.
 my $Tmpdir = "/var/tmp" ;	
@@ -78,9 +79,6 @@ if ($debugging || $opt_n) {
     $Sendmail = "cat" ;
     $WhereTo = "cat" ;
 }
-
-chop ($Mailname = `/bin/hostname`) if ! $Mailname ;
-
 
 #
 # Our command-line argument(s) are the list of newsgroups to post to.
