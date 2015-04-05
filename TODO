@@ -26,7 +26,7 @@ changes easier and will be *greatly* appreciated.
 Last modified $Id$.
 
 
-Scheduled for INN 2.5
+Scheduled for INN 2.6
 
 * Rework and clean up the overview API.  The major change is that the
   initialization function should return a pointer to an opaque struct
@@ -68,10 +68,9 @@ Scheduled for INN 2.5
   it to POD while checking that it's still accurate and adding any
   additional useful information that was missed.
 
-* Replace the current innshellvars.pl file with a real INN Perl module for
-  Perl programs, and include the necessary glue so that other Perl modules
-  can be added to INN's build tree and installed with INN, allowing their
-  capabilities to be available to the portions of INN written in Perl.
+* Include the necessary glue so that Perl modules can be added to INN's
+  build tree and installed with INN, allowing their capabilities to be
+  available to the portions of INN written in Perl.
 
 * Switch nnrpd over to using the new wildmat routines rather than breaking
   apart strings on commas and matching each expression separately.  This
@@ -91,7 +90,7 @@ Scheduled for INN 2.5
   into libinn.
 
 
-Scheduled for INN 2.6
+Scheduled for INN 2.7
 
 * Add a generic, modular anti-spam and anti-abuse filter, off by default,
   but coming with INN and prominently mentioned in the INSTALL
@@ -116,8 +115,8 @@ Scheduled for INN 2.6
   straight headers-only feed that only pulls articles down via NNTP from a
   remote server and a caching feed where some articles are pre-fed, some
   articles are pulled down at first read, and some articles are never
-  stored locally should be possible.  [Patches for a header-only feed have
-  already been written and submitted to inn-workers.]
+  stored locally should be possible.  [A patch for a header-only feed
+  from innfeed is included in ticket #17.]
 
 * The libinn, libstorage, and other library interfaces should be treated
   as stable libraries and properly versioned using libtool's
@@ -148,10 +147,10 @@ High Priority Projects
   reload-happy; it should be better at making incremental changes without
   reloading everything.
 
-* Add authenticated Path support, based on the current USEFOR draft or the
-  behavior of some other servers (such as Diablo).  [Andrew Gierth wrote a
-  patch for part of this a while back, which Russ has.  Marco d'Itri
-  expressed some interest in working on this.]
+* Add authenticated Path support, based on USEPRO (RFC 5537).
+  [Andrew Gierth wrote a patch for part of this a while back, which
+  is included in ticket #19.  Marco d'Itri expressed some interest in
+  working on this.]
 
 * Various parts of INN are using write or writev; they should all use
   xwrite or xwritev instead.  Even for writes that are unlikely to ever be
@@ -209,9 +208,6 @@ Documentation Projects
 * Write complete documentation for all of our extensions to RFC 3977 or RFC
   5536 and 5537, preferrably in a format that could be suitable for future
   inclusion into new revisions of the RFCs.
-
-* Audit readers.conf.5 against perm.c for missing options ("include" at
-  least is missing from the documentation).
 
 * More comprehensive documentation in texinfo would be interesting; it
   would allow for better organization, separation of specialized topics
@@ -280,7 +276,7 @@ Needed Bug Fixes
   syntax errors (particularly for long message IDs), and innfeed doesn't
   handle this particularly well at the moment.  It really should have an
   error handler for this case.  [Sven Paulus has a preliminary patch that
-  needs testing.]
+  needs testing, included in ticket #26.]
 
 * Editing the active file by hand can currently munge it fairly badly even
   if the server is throttled unless you reload active before restarting
@@ -291,15 +287,6 @@ Needed Bug Fixes
 * innreport silently discards news.notice entries about most of the errors
   innfeed generates.  It should ideally generate some summary, or at least
   note that some error has occurred and the logs should be examined.
-
-* INN's message ID parser should be more forgiving about surrounding
-  whitespace.  Right now, it will reject messages with a trailing space in
-  the Message-ID header.
-
-* nnrpd doesn't check the message ID of a posted article for syntactic
-  validity before remailing it to the moderator, since normally it relies
-  on innd to check the message ID.  The message ID checking code from
-  innd/art.c should be moved into lib so that nnrpd can use it as well.
 
 * Handling of compressed batches needs to be thoroughly reviewed by
   someone who understands how they're supposed to work.  It's not clear
@@ -398,34 +385,17 @@ Requested New Features
   <ftp://ftp.tin.org/pub/news/servers/inn/unofficial-patches/
   patch-inn-2.2.x-artstat+list+overstat>.
 
-* Lots of people encrypt X-Trace in various ways.  Should that be offered
-  as a standard option?  The first data element should probably remain
-  unencrypted so that the O flag in newsfeeds doesn't break.
+* Lots of people encrypt Injection-Info in various ways.  Should that be
+  offered as a standard option?  The first data element should probably
+  remain unencrypted so that the O flag in newsfeeds doesn't break.
 
-  Should there also be an option not to generate X-Trace?  And this whole
-  area may change if USEFOR ever standardizes poster trace information;
-  it's been proposed to put it in the path tail instead.  The current
-  USEFOR trend as of January, 2001 appears to be towards an Injector-Info
-  header with this information, allowing a token or an injecting hostname.
-  For a token, one really wants it to be hierarchically structured for
-  spam filtering even if it's encrypted (in other words, to get a "group"
-  of clients, one could just match the first n bytes of the token instead
-  of the whole thing).
+  Should there also be an option not to generate Injection-Info?
 
-  Olaf Titz suggests:
+  Olaf Titz suggests for encryption:
 
-      This can be done by formatting the (rest of) the header in a way
-      that fields are always a multiple of 8 bytes and applying a 64 bit
-      block cipher in ECB mode on it.  But then we would be better off
-      using binary fields, as the timestamp is 9 bytes and an IP address
-      10-12 bytes.
-
-      Combining the timestamp and PID into one block, adding an
-      authenticated user field and omitting the redundant formatted time
-      would give the following format:
-
-      X-Trace: g212.hadiko.de [395109AA000016FF] [AC14302A00000000] [...]
-                               time    |    pid   ip      |reserved  user
+      This can be done by formatting injection fields in a way that they
+      are always a multiple of 8 bytes and applying a 64 bit block cipher
+      in ECB mode on it (for instance "395109AA000016FF").
 
 * ctlinnd flushlogs currently renames all of the log files.  It would be
   nice to support the method of log rotation that most other daemons
@@ -516,7 +486,7 @@ Requested New Features
 
 * Somebody should look at keeping the "newsgroups" file more accurate
   (e.g. newgroups for existing groups should change description, better
-  checkgroups handling, checking for duplicates)
+  checkgroups handling, checking for duplicates).
 
 * The by-domain statistics innreport generates for nnrpd count all local
   connections (those with no "." in the hostname) in with the errors as
@@ -544,7 +514,7 @@ Requested New Features
 * When using SSL, use the server's key to generate an HMAC of the body of
   the message (and most headers?), then include that digest in the
   headers.  This allows a news administrator to determine if a complaint
-  about the content of a message is fradulent since the message was
+  about the content of a message is fraudulent since the message was
   changed after transmission.
 
 * Allow permission for posting cancels to be configured in readers.conf
@@ -559,9 +529,6 @@ Requested New Features
 
 * Add cnfsstat to innstat.  cnfsstat really needs a more succinct mode
   before doing this, since right now the output can be quite verbose.
-
-* nnrpd's Perl filter code doesn't currently permit deleting headers.  It
-  would be nice to allow this.
 
 
 General Projects
@@ -589,15 +556,10 @@ General Projects
   fixed.
 
 * More details as to why a message ID is bad would be useful to return to
-  the user, particularly for rnews, inews, etc.  innd also rejects message
-  IDs with trailing spaces, which can be hard to check.
+  the user, particularly for rnews, inews, etc.
 
 * Support putting the history file in different directory from the other
   (much smaller) db files without hand-editing a bunch of files.
-
-* nnrpd's NNTP command parsing interacts poorly with AUTHINFO and
-  passwords containing spaces.  The correct solution isn't clear; check
-  with the current NNTP RFC draft and how existing clients handle it?
 
 * frontends/pullnews and frontends/nntpget should be merged in one script.
 
@@ -620,11 +582,10 @@ Long-Term Projects
 
 * Look at turning header parsing into a library of some sort.  Lots of INN
   does this, but different parts of INN need subtly different things, so
-  the best best API is unclear.
+  the best API is unclear.
 
-* INN's header handling needs to be checked against the current USEFOR
-  draft.  This may want wait until after we have a header parsing library.
-  It should definitely wait until USEFOR gets its act together.
+* INN's header handling needs to be checked against RFC 5536 and 5537.
+  This may want wait until after we have a header parsing library.
 
 * The innd filter should be able to specify additional or replacement
   groups into which an article should be filed, or even spool the article
