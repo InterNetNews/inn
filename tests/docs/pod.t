@@ -7,7 +7,7 @@
 # This file is part of C TAP Harness.  The current version plus supporting
 # documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
-# Copyright 2009, 2010, 2013, 2014 Russ Allbery <eagle@eyrie.org>
+# Copyright 2009, 2010, 2013, 2014, 2015 Russ Allbery <eagle@eyrie.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -29,6 +29,7 @@
 
 use 5.006;
 use strict;
+use warnings;
 
 use File::Spec;
 use Test::More;
@@ -55,12 +56,15 @@ if ($dirs[-1] eq File::Spec->updir) {
 my $root = File::Spec->catpath($vol, File::Spec->catdir(@dirs), q{});
 chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
 
-$Test::Pod::ignore_dirs{'.libs'} = 'Libs';
-
-# Check spelling of everything in root if present, and any *.pod files in the
-# current directory.
-my @pod_files = glob('*.pod');
-if (-d '.') {
-    push(@pod_files, all_pod_files('.'));
+# Add some additional exclusions, useful mostly for other programs that copy
+# this test.
+## no critic (TestingAndDebugging::ProhibitNoWarnings)
+## no critic (Variables::ProhibitPackageVars)
+{
+    no warnings 'once';
+    $Test::Pod::ignore_dirs{'.libs'} = 'libraries';
 }
-all_pod_files_ok(@pod_files);
+## use critic
+
+# Check syntax of every POD file we can find.
+all_pod_files_ok(q{.});

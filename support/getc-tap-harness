@@ -60,12 +60,6 @@ download ()
 # \$Id\$\\
 #" \
                -e '5,9d' \
-               -e '/^use warnings;$/d' \
-               -e "62 i \\
-\$Test::Pod::ignore_dirs{'.libs'} = 'Libs';\\
-" \
-               -e "s/'docs'/'.'/g" \
-               -e 's/docs/root/g' \
                ${TEMP}
         chmod 755 ${TEMP}
       elif [ "$3" != "README" ]
@@ -79,7 +73,7 @@ download ()
     # Specific additions to a few files.
     if [ "$3" = "basic.c" ]
     then
-      sed -i -e "55 i \\
+      sed -i -e "57 i \\
 /* Specific to the integration of C TAP Harness in INN. */\\
 #ifndef LIBTEST_NEW_FORMAT\\
 # include \"inn/libinn.h\"\\
@@ -127,9 +121,9 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 }\\
 #endif\\
 " \
-             -e "150 i \\
+             -e "152 i \\
 #ifndef INN_LIBINN_H" \
-             -e "184 i \\
+             -e "186 i \\
 #endif" \
              -e 's/^ok.int /new_ok(int /g' \
              -e 's/^skip.const /new_skip(const /g' \
@@ -140,7 +134,7 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 
     if [ "$3" = "basic.h" ]
     then
-      sed -i -e "74 i \\
+      sed -i -e "75 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok(int n, int success);\\
@@ -148,7 +142,8 @@ int new_ok(int success, const char *format, ...)\\
         __attribute__((__format__(printf, 2, 3)));\\
 void ok_int(int n, int wanted, int seen);\\
 void ok_string(int n, const char *wanted, const char *seen);\\
-int okv(int success, const char *format, va_list args);\\
+int okv(int success, const char *format, va_list args)\\
+        __attribute__((__format__(printf, 2, 0)));\\
 void skip(int n, const char *reason);\\
 void new_skip(const char *reason, ...)\\
         __attribute__((__format__(printf, 1, 2)));\\
@@ -165,7 +160,7 @@ void test_init(int count);\\
 # define skip new_skip\\
 # define ok_block new_ok_block\\
 # define skip_block new_skip_block" \
-             -e "88 i \\
+             -e "90 i \\
 #endif" \
              ${TEMP}
     fi

@@ -60,7 +60,7 @@
  * Harness <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2000, 2001, 2004, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
- *     2014 Russ Allbery <eagle@eyrie.org>
+ *     2014, 2015 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -149,6 +149,12 @@ enum test_status {
     TEST_PASS,
     TEST_SKIP,
     TEST_INVALID
+};
+
+/* Really, just a boolean, but this is more self-documenting. */
+enum test_verbose {
+    CONCISE = 0,
+    VERBOSE = 1
 };
 
 /* Indicates the state of our plan. */
@@ -251,8 +257,10 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
  * variadic macro support.
  */
 #if !defined(__attribute__) && !defined(__alloc_size__)
-# if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
-#  define __alloc_size__(spec, args...) /* empty */
+# if defined(__GNUC__) && !defined(__clang__)
+#  if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
+#   define __alloc_size__(spec, args...) /* empty */
+#  endif
 # endif
 #endif
 
@@ -596,13 +604,28 @@ resize_results(struct testset *ts, unsigned long n)
 
 
 /*
+ * Report an invalid test number and set the appropriate flags.  Pulled into a
+ * separate function since we do this in several places.
+ */
+static void
+invalid_test_number(struct testset *ts, long n, enum test_verbose verbose)
+{
+    if (!verbose)
+        test_backspace(ts);
+    printf("ABORTED (invalid test number %ld)\n", n);
+    ts->aborted = 1;
+    ts->reported = 1;
+}
+
+
+/*
  * Read the plan line of test output, which should contain the range of test
  * numbers.  We may initialize the testset structure here if we haven't yet
  * seen a test.  Return true if initialization succeeded and the test should
  * continue, false otherwise.
  */
 static int
-test_plan(const char *line, struct testset *ts)
+test_plan(const char *line, struct testset *ts, enum test_verbose verbose)
 {
     long n;
 
@@ -659,10 +682,7 @@ test_plan(const char *line, struct testset *ts)
      * range.
      */
     if (ts->plan == PLAN_PENDING && (unsigned long) n < ts->count) {
-        test_backspace(ts);
-        printf("ABORTED (invalid test number %lu)\n", ts->count);
-        ts->aborted = 1;
-        ts->reported = 1;
+        invalid_test_number(ts, (long) ts->count, verbose);
         return 0;
     }
 
@@ -670,8 +690,8 @@ test_plan(const char *line, struct testset *ts)
      * Otherwise, allocated or resize the results if needed and update count,
      * and then record that we've seen a plan.
      */
-    resize_results(ts, n);
-    ts->count = n;
+    resize_results(ts, (unsigned long) n);
+    ts->count = (unsigned long) n;
     if (ts->plan == PLAN_INIT)
         ts->plan = PLAN_FIRST;
     else if (ts->plan == PLAN_PENDING)
@@ -687,7 +707,8 @@ test_plan(const char *line, struct testset *ts)
  * reported status.
  */
 static void
-test_checkline(const char *line, struct testset *ts)
+test_checkline(const char *line, struct testset *ts,
+               enum test_verbose verbose)
 {
     enum test_status status = TEST_PASS;
     const char *bail;
@@ -706,7 +727,8 @@ test_checkline(const char *line, struct testset *ts)
             length = strlen(bail);
             if (bail[length - 1] == '\n')
                 length--;
-            test_backspace(ts);
+            if (!verbose)
+                test_backspace(ts);
             printf("ABORTED (%.*s)\n", (int) length, bail);
             ts->reported = 1;
         }
@@ -727,14 +749,15 @@ test_checkline(const char *line, struct testset *ts)
 
     /* If we haven't yet seen a plan, look for one. */
     if (ts->plan == PLAN_INIT && isdigit((unsigned char)(*line))) {
-        if (!test_plan(line, ts))
+        if (!test_plan(line, ts, verbose))
             return;
     } else if (strncmp(line, "1..", 3) == 0) {
         if (ts->plan == PLAN_PENDING) {
-            if (!test_plan(line, ts))
+            if (!test_plan(line, ts, verbose))
                 return;
         } else {
-            test_backspace(ts);
+            if (!verbose)
+                test_backspace(ts);
             puts("ABORTED (multiple plans)");
             ts->aborted = 1;
             ts->reported = 1;
@@ -753,13 +776,14 @@ test_checkline(const char *line, struct testset *ts)
     errno = 0;
     number = strtol(line, &end, 10);
     if (errno != 0 || end == line)
-        number = ts->current + 1;
-    current = number;
-    if (number <= 0 || (current > ts->count && ts->plan == PLAN_FIRST)) {
-        test_backspace(ts);
-        printf("ABORTED (invalid test number %lu)\n", current);
-        ts->aborted = 1;
-        ts->reported = 1;
+        current = ts->current + 1;
+    else if (number <= 0) {
+        invalid_test_number(ts, number, verbose);
+        return;
+    } else
+        current = (unsigned long) number;
+    if (current > ts->count && ts->plan == PLAN_FIRST) {
+        invalid_test_number(ts, (long) current, verbose);
         return;
     }
 
@@ -788,7 +812,8 @@ test_checkline(const char *line, struct testset *ts)
 
     /* Make sure that the test number is in range and not a duplicate. */
     if (ts->results[current - 1] != TEST_INVALID) {
-        test_backspace(ts);
+        if (!verbose)
+            test_backspace(ts);
         printf("ABORTED (duplicate test number %lu)\n", current);
         ts->aborted = 1;
         ts->reported = 1;
@@ -804,13 +829,13 @@ test_checkline(const char *line, struct testset *ts)
     }
     ts->current = current;
     ts->results[current - 1] = status;
-    if (isatty(STDOUT_FILENO)) {
+    if (!verbose && isatty(STDOUT_FILENO)) {
         test_backspace(ts);
         if (ts->plan == PLAN_PENDING)
             outlen = printf("%lu/?", current);
         else
             outlen = printf("%lu/%lu", current, ts->count);
-        ts->length = (outlen >= 0) ? outlen : 0;
+        ts->length = (outlen >= 0) ? (unsigned int) outlen : 0;
         fflush(stdout);
     }
 }
@@ -826,7 +851,7 @@ test_checkline(const char *line, struct testset *ts)
  * disable this).
  */
 static unsigned int
-test_print_range(unsigned long first, unsigned long last, unsigned int chars,
+test_print_range(unsigned long first, unsigned long last, unsigned long chars,
                  unsigned int limit)
 {
     unsigned int needed = 0;
@@ -996,7 +1021,7 @@ test_analyze(struct testset *ts)
  * false otherwise.
  */
 static int
-test_run(struct testset *ts)
+test_run(struct testset *ts, enum test_verbose verbose)
 {
     pid_t testpid, child;
     int outfd, status;
@@ -1013,12 +1038,19 @@ test_run(struct testset *ts)
         sysdie("fdopen failed");
     }
 
-    /* Pass each line of output to test_checkline(). */
-    while (!ts->aborted && fgets(buffer, sizeof(buffer), output))
-        test_checkline(buffer, ts);
+    /*
+     * Pass each line of output to test_checkline(), and print the line if
+     * verbosity is requested.
+     */
+    while (!ts->aborted && fgets(buffer, sizeof(buffer), output)) {
+        if (verbose)
+            printf("%s", buffer);
+        test_checkline(buffer, ts, verbose);
+    }
     if (ferror(output) || ts->plan == PLAN_INIT)
         ts->aborted = 1;
-    test_backspace(ts);
+    if (!verbose)
+        test_backspace(ts);
 
     /*
      * Consume the rest of the test output, close the output descriptor,
@@ -1026,7 +1058,8 @@ test_run(struct testset *ts)
      * for eventual output.
      */
     while (fgets(buffer, sizeof(buffer), output))
-        ;
+        if (verbose)
+            printf("%s", buffer);
     fclose(output);
     child = waitpid(testpid, &ts->status, 0);
     if (child == (pid_t) -1) {
@@ -1134,7 +1167,7 @@ is_valid_test(const char *path)
 static char *
 find_test(const char *name, const char *source, const char *build)
 {
-    char *path;
+    char *path = NULL;
     const char *bases[3], *suffix, *base;
     unsigned int i, j;
     const char *suffixes[3] = { "-t", ".t", "" };
@@ -1278,11 +1311,11 @@ free_testset(struct testset *ts)
  * frees the test list that's passed in.
  */
 static int
-test_batch(struct testlist *tests, const char *source, const char *build)
+test_batch(struct testlist *tests, const char *source, const char *build,
+           enum test_verbose verbose)
 {
-    size_t length;
-    unsigned int i;
-    unsigned int longest = 0;
+    size_t length, i;
+    size_t longest = 0;
     unsigned int count = 0;
     struct testset *ts;
     struct timeval start, end;
@@ -1321,15 +1354,20 @@ test_batch(struct testlist *tests, const char *source, const char *build)
 
         /* Print out the name of the test file. */
         fputs(ts->file, stdout);
-        for (i = strlen(ts->file); i < longest; i++)
-            putchar('.');
+        if (verbose)
+            fputs("\n\n", stdout);
+        else
+            for (i = strlen(ts->file); i < longest; i++)
+                putchar('.');
         if (isatty(STDOUT_FILENO))
             fflush(stdout);
 
         /* Run the test. */
         ts->path = find_test(ts->file, source, build);
-        succeeded = test_run(ts);
+        succeeded = test_run(ts, verbose);
         fflush(stdout);
+        if (verbose)
+            putchar('\n');
 
         /* Record cumulative statistics. */
         aborted += ts->aborted;
@@ -1431,6 +1469,7 @@ main(int argc, char *argv[])
     int option;
     int status = 0;
     int single = 0;
+    enum test_verbose verbose = CONCISE;
     char *source_env = NULL;
     char *build_env = NULL;
     const char *program;
@@ -1441,7 +1480,7 @@ main(int argc, char *argv[])
     struct testlist *tests;
 
     program = argv[0];
-    while ((option = getopt(argc, argv, "b:hl:os:")) != EOF) {
+    while ((option = getopt(argc, argv, "b:hl:os:v")) != EOF) {
         switch (option) {
         case 'b':
             build = optarg;
@@ -1449,7 +1488,6 @@ main(int argc, char *argv[])
         case 'h':
             printf(usage_message, program, program, program, usage_extra);
             exit(0);
-            break;
         case 'l':
             list = optarg;
             break;
@@ -1458,6 +1496,9 @@ main(int argc, char *argv[])
             break;
         case 's':
             source = optarg;
+            break;
+        case 'v':
+            verbose = VERBOSE;
             break;
         default:
             exit(1);
@@ -1469,6 +1510,13 @@ main(int argc, char *argv[])
         fprintf(stderr, usage_message, program, program, program, usage_extra);
         exit(1);
     }
+
+    /*
+     * If C_TAP_VERBOSE is set in the environment, that also turns on verbose
+     * mode.
+     */
+    if (getenv("C_TAP_VERBOSE") != NULL)
+        verbose = VERBOSE;
 
     /* Set SOURCE and BUILD environment variables. */
     if (source != NULL) {
@@ -1493,10 +1541,10 @@ main(int argc, char *argv[])
             shortlist++;
         printf(banner, shortlist);
         tests = read_test_list(list);
-        status = test_batch(tests, source, build) ? 0 : 1;
+        status = test_batch(tests, source, build, verbose) ? 0 : 1;
     } else {
         tests = build_test_list(argv, argc);
-        status = test_batch(tests, source, build) ? 0 : 1;
+        status = test_batch(tests, source, build, verbose) ? 0 : 1;
     }
 
     /* For valgrind cleanliness, free all our memory. */

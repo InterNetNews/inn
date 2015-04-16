@@ -9,7 +9,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2012, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2012, 2013, 2015 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -54,8 +54,10 @@
  * variadic macro support.
  */
 #if !defined(__attribute__) && !defined(__alloc_size__)
-# if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
-#  define __alloc_size__(spec, args...) /* empty */
+# if defined(__GNUC__) && !defined(__clang__)
+#  if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
+#   define __alloc_size__(spec, args...) /* empty */
+#  endif
 # endif
 #endif
 

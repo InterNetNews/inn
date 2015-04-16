@@ -13,7 +13,8 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2009, 2010, 2011, 2012, 2013, 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009, 2010, 2011, 2012, 2013, 2014, 2015
+ *     Russ Allbery <eagle@eyrie.org>
  * Copyright 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2011, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -36,6 +37,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -242,7 +244,7 @@ check_diag_files(void)
     struct diag_file *file;
     fpos_t where;
     size_t length;
-    int incomplete;
+    int size, incomplete;
 
     /*
      * Walk through each file and read each line of output available.  The
@@ -266,7 +268,8 @@ check_diag_files(void)
         /* Continue until we get EOF or an incomplete line of data. */
         incomplete = 0;
         while (!feof(file->file) && !incomplete) {
-            if (fgets(file->buffer, file->bufsize, file->file) == NULL) {
+            size = file->bufsize > INT_MAX ? INT_MAX : (int) file->bufsize;
+            if (fgets(file->buffer, size, file->file) == NULL) {
                 if (ferror(file->file))
                     sysbail("cannot read from %s", file->name);
                 continue;
@@ -857,7 +860,7 @@ bstrndup(const char *s, size_t n)
     /* Don't assume that the source string is nul-terminated. */
     for (p = s; (size_t) (p - s) < n && *p != '\0'; p++)
         ;
-    length = p - s;
+    length = (size_t) (p - s);
     copy = malloc(length + 1);
     if (p == NULL)
         sysbail("failed to strndup %lu bytes", (unsigned long) length);
