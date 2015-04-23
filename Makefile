@@ -112,15 +112,17 @@ update:
 	    echo '' ; \
 	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
 	done
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHAUTHPASSWD)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHBIN)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHDOC)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHETC)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade ${PATHFILTER}
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN1)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN3)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN5)
-	test -z "$D" && $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN8)
+	if [ -z "$D" ] ; then \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHAUTHPASSWD) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHBIN) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHDOC) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHETC) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade ${PATHFILTER} ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN1) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN3) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN5) ; \
+	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN8) ; \
+	fi
 
 install-root:
 	@chmod +x support/install-sh

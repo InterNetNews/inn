@@ -73,7 +73,7 @@ REST		= \
 	ovdb.conf active.minimal \
 	newsgroups.minimal send-uucp.cf subscriptions
 
-ALL		= $(MOST) $(REST)
+ALL		= $(REST)
 
 REST_INSTALLED	= \
 	$D$(PATH_NEWSFEEDS) $D$(PATH_INNDHOSTS) \
@@ -100,16 +100,13 @@ REST_INSTALLED	= \
 	$D$(PATH_OVDB_CONF) \
 	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
 
-ALL_INSTALLED	= $(MOST_INSTALLED) $(REST_INSTALLED)
+ALL_INSTALLED	= $(REST_INSTALLED)
 
 SPECIAL		= $D$(PATH_ACTIVE) $D$(PATH_ACTIVE_TIMES) \
 		$D$(PATH_NEWSGROUPS) $D$(PATH_HISTORY)
 
 ##  Get new versions of everything from samples directory.
 all:		$(ALL) config
-
-##  Get only scripts, not per-host config files.
-most:		$(MOST)
 
 ##  Show changes between files here and ones in samples.
 diff:
@@ -132,10 +129,10 @@ reload-install:	all pause    install-config reload go
 install-config:		update $(REST_INSTALLED) $(SPECIAL)
 
 ##  Install scripts, not per-host config files.
-update:		all $(MOST_INSTALLED)
-	@echo "" ; echo inn.conf in site directory may have newly added parameters
-	@echo which installed inn.conf does not have.  Check those parameters
-	@echo before you run innd. ; echo ""
+update:		all
+	@echo '' ; echo 'inn.conf in site directory may have newly added parameters'
+	@echo 'which installed inn.conf does not have.  Check those parameters'
+	@echo 'before you run innd.' ; echo ''
 	date >update
 
 ##  Special rules for files that should never be overwritten if they are
@@ -153,7 +150,9 @@ $D$(PATH_HISTORY):
 	chown $(RUNASUSER) $@
 	chgrp $(RUNASGROUP) $@
 	chmod $(FILEMODE) $@
-	test -z "$D" && $(PATHBIN)/makedbz -i -o
+	if [ -z "$D" ] ; then \
+	    $(PATHBIN)/makedbz -i -o ; \
+	fi
 
 bootstrap:
 
