@@ -18,6 +18,14 @@ allows to specify another configuration file, if need be.
 
 =item *
 
+The default location of the B<mailpost> database directory has changed
+from I<pathtmp> to I<pathdb>.  If you use B<mailpost> without an
+explicitly specified database directory (using the B<-b> flag), then you
+should manually move your current database files F<mailpost-msgid.dir>
+and F<mailpost-msgid.pag> from I<pathtmp> to I<pathdb>.
+
+=item *
+
 If you have been using SSL/TLS with B<nnrpd> before, be aware that the
 default value of a few F<inn.conf> parameters have changed:  the server
 now decides the preferred cipher (instead of the client), and only TLS
@@ -245,6 +253,13 @@ during that minute.
 
 Add new B<-f> flag to B<innwatch> to specify the configuration file to
 use, in case it is not the default F<innwatch.ctl> file.
+
+=item *
+
+Add new B<-t> flag to B<mailpost> to change, if needed, the default
+directory to use to temporarily store error messages that are sent to
+the newsmaster.  Two paths are now tried by default:  I<pathtmp> as
+set in F<inn.conf>, and then F</var/tmp> if I<pathtmp> is not writable.
 
 =item *
 

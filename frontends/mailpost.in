@@ -2,7 +2,7 @@
 # fixscript will replace this line with code to load INN::Config
 
 # mailpost - Yet another mail-to-news filter
-# 
+#
 # $Id$
 #
 # 21feb00 [added "lc" to duplicate header fixer stmt to make it case-insensitive]
@@ -52,12 +52,12 @@ if ($use_syslog) {
     openlog($prog, 'pid', $INN::Config::syslog_facility);
 }
 
-$usage .= "[ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
-    " [ -m mailing-list ][ -b database ][ -o output-path ] [ -c wait-time ]" .
-    " [ -x header[:header...] ] [ -p port ] newsgroups" ;
+$usage .= "[ -h ][ -n ][ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
+    "[ -m mailing-list ][ -b database ][ -o output-path ][ -c wait-time ]" .
+    "[ -x header[:header...] ][ -p port ][ -t tempdir ] newsgroups" ;
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p) ;
-getopts("hr:f:a:d:m:b:no:c:x:p:") || die "usage: $usage\n" ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p $opt_t) ;
+getopts("hr:f:a:d:m:b:no:c:x:p:t:") || die "usage: $usage\n" ;
 die "usage: $usage\n" if $opt_h ;
 
 #
@@ -67,13 +67,19 @@ die "usage: $usage\n" if $opt_h ;
 
 my $Sendmail = $INN::Config::mta ;
 my $Submit = $INN::Config::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
-my $Database = ($opt_b || $INN::Config::pathtmp) . "/mailpost-msgid" ;
-my $Maintainer = $INN::Config::newsmaster || "usenet" ; 
+my $Maintainer = $INN::Config::newsmaster || "usenet" ;
 my $WhereTo = $opt_o || $Submit ;
 my $Mailname = $INN::Config::fromhost || hostname ;
 
-# Can't use $INN::Config::pathtmp as we're usually not running as news.
-my $Tmpdir = "/var/tmp" ;	
+my $Databasedir = $opt_b || $INN::Config::pathdb;
+die "Database path $Databasedir is not a directory\n" unless -d $Databasedir;
+die "Database directory $Databasedir is not writable\n" unless -w $Databasedir;
+my $Database = $Databasedir . "/mailpost-msgid" ;
+
+# Can't always use $INN::Config::pathtmp as we're usually not running as news.
+my $Tmpdir = $opt_t || (-w $INN::Config::pathtmp ? $INN::Config::pathtmp : "/var/tmp");
+die "Path $Tmpdir is not a directory\n" unless -d $Tmpdir;
+die "Directory $Tmpdir is not writable\n" unless -w $Tmpdir;
 
 if ($debugging || $opt_n) {
     $Sendmail = "cat" ;
@@ -187,7 +193,7 @@ for (;;) {
                 syslog("err", $msg) unless -t STDERR;
             }
 	    die "$msg\n" ;
-	}	    
+	}
 
 	$line .= "\n" . $_ ;
 	next ;
@@ -313,7 +319,7 @@ my %headers = ();
 $real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{lc$2}++?"":"$1"/ges;
 
 # inews writes error messages to stdout.  We want to capture those and mail
-# them back to the newsmaster.  Trying to write and read from a subprocess is 
+# them back to the newsmaster.  Trying to write and read from a subprocess is
 # ugly and prone to deadlock, so we use a temp file.
 $tmpfile = sprintf "%s/mailpost.%d.%d", $Tmpdir, time, $$ ;
 
@@ -333,7 +339,7 @@ Subject: mailpost failure ($newsgroups):  $msg
 
 EOF
 }
-	     
+
 print TMPFILE <<"EOF";
 Path: ${path}
 From: ${fromHdr}
@@ -341,7 +347,7 @@ Newsgroups: ${newsgroups}
 ${real_news_hdrs}Date: ${dateHdr}
 ${weird_mail_hdrs}
 EOF
-    
+
 my $rest = '';
 $rest .= $_ while (<STDIN>);
 $rest =~ s/\n*$/\n/g;		# Remove trailing \n except very last.
@@ -357,13 +363,13 @@ if ( ! $tmpfile ) {
 
 
 ##
-## We've got the article in a temp file and now we validate some of the 
+## We've got the article in a temp file and now we validate some of the
 ## data we found and update our Message-ID database.
 ##
 
 mailArtAndDie ("no From: found") unless $from;
 mailArtAndDie ("no Message-ID: found") unless $message_id;
-mailArtAndDie ("Malformed Message-ID ($message_id)") 
+mailArtAndDie ("Malformed Message-ID ($message_id)")
     if ($message_id !~ /\<(\S+)\@(\S+)\>/);
 
 
@@ -519,7 +525,7 @@ Subject: mailpost failure ($newsgroups)
 $msg
 
 EOF
-	     
+
     if ($tmpfile && -f $tmpfile) {
 	print SENDMAIL "\n-------- Article Contents\n\n" ;
 	open(FILE, "<$tmpfile") || die "open($tmpfile): $!\n" ;
@@ -609,7 +615,7 @@ mailpost - Feed an e-mail message into a newsgroup
 
 B<mailpost> [B<-hn>] [B<-a> I<addr>] [B<-b> I<database>] [B<-c> I<wait-time>]
 [B<-d> I<distribution>] [B<-f> I<addr>] [B<-m> I<mailing-list>]
-[B<-o> I<output-command>] [B<-p> I<port>] [B<-r> I<addr>]
+[B<-o> I<output-command>] [B<-p> I<port>] [B<-r> I<addr>] [B<-t> I<tempdir>]
 [B<-x> I<header>[B<:>I<header>...]] I<newsgroups>
 
 =head1 DESCRIPTION
@@ -632,7 +638,14 @@ newsmaster (selected at configure time and defaulting to C<usenet>).
 Normally, B<mailpost> is run by sendmail(8) via an alias entry:
 
     local-mail-wreck-bikes: "|<pathbin in inn.conf>/mailpost
-        -b /var/tmp -d local local.mail.rec.bicycles.racing"
+        -b /var/tmp -t /var/tmp -d local local.mail.rec.bicycles.racing"
+
+The B<-b> and B<-t> flags are useful to change the directories used by
+B<mailpost> by default.  As a matter of fact, though it is recommended to
+run B<mailpost> as the news user, it is as often as not run as another
+user, for instance the mail user.  Therefore, you should make sure to
+create and set to be writable by the user that B<mailpost> runs as the
+directories where to put the database and the temporary files.
 
 Instead of F</var/tmp>, the mail spool directory can be specified,
 or any other directory where the B<mailpost> process has write access.
@@ -643,16 +656,17 @@ or any other directory where the B<mailpost> process has write access.
 
 =item B<-a> I<addr>
 
-If the B<-a> flag is used, the value given is added to the article 
-as an Approved: header.
+If the B<-a> flag is used, the value given is added to the article as
+an Approved: header.
 
 =item B<-b> I<database>
 
-If the B<-b> flag is used, then it defines the location of the database 
-used to store the Message-IDs of articles sent on.  This is to prevent articles
-looping around if a news-to-mail gateway sends them back here.  This option may
-be required if the B<mailpost> process does not have write access to the news
-temporary directory.  The default value is I<pathtmp> as set in F<inn.conf>.
+If the B<-b> flag is used, then it defines the location of the
+persistent database used to store the Message-IDs of articles sent on.
+This is to prevent articles looping around if a news-to-mail gateway
+sends them back here.  This option may be required if the B<mailpost>
+process does not have write access to the news database directory.
+The default value is I<pathdb> as set in F<inn.conf>.
 
 =item B<-c> I<wait-time>
 
@@ -679,8 +693,8 @@ Print usage information and exit.
 
 =item B<-m> I<mailing-list>
 
-If the B<-m> flag is used, the value given is added to the article in a 
-Mailing-List: header, if such a header doesn't already exist.
+If the B<-m> flag is used, the value given is added to the article in
+a Mailing-List: header, if such a header doesn't already exist.
 
 =item B<-n>
 
@@ -702,6 +716,15 @@ If given, B<-p> is passed along to B<inews>.
 
 A heuristic is used to determine a reasonable value for the Path: header.
 The B<-r> flag indicates what to use if no other value can be determined.
+
+=item B<-t> I<tempdir>
+
+If the B<-t> flag is used, then it defines the location of the
+directory to use to temporarily store error messages that are sent to
+the newsmaster.  This option may be required if the default value refers
+to a path that does not exist or the B<mailpost> process does not have
+write access to.  Two paths are tried by default:  I<pathtmp> as set
+in F<inn.conf>, and then F</var/tmp> if I<pathtmp> is not writable.
 
 =item B<-x> I<header>[B<:>I<header>...]
 
@@ -734,7 +757,7 @@ Known headers are:
 
 The Perl script itself used to feed an e-mail message to a newsgroup.
 
-=item I<pathtmp>/mailpost-msgid.dir and I<pathtmp>/mailpost-msgid.pag
+=item I<pathdb>/mailpost-msgid.dir and I<pathdb>/mailpost-msgid.pag
 
 The default database files which record previously seen Message-IDs.
 
@@ -742,8 +765,8 @@ The default database files which record previously seen Message-IDs.
 
 =head1 HISTORY
 
-Written by Paul Vixie long ago and then hacked up by James Brister for INN 
-integration.
+Written by Paul Vixie long ago and then hacked up by James Brister for
+INN integration.
 
 $Id$
 
