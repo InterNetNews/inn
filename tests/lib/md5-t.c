@@ -7,8 +7,9 @@
 #include "inn/libinn.h"
 #include "tap/basic.h"
 
-/* Used to initialize strings of unsigned characters. */
-#define U       (const unsigned char *)
+/* Used for strings of unsigned characters (called SUC instead of U
+   because it otherwise conflicts with Unicode strings). */
+#define SUC       (const unsigned char *)
 
 /* An unsigned char version of strlen. */
 #define ustrlen(s)      strlen((const char *) s)
@@ -21,25 +22,25 @@ static const char hex[] = "0123456789abcdef";
    checked separately. */
 static const unsigned char * const testdata[] = {
     /* First five tests of the MD5 test suite from RFC 1321. */
-    U"",
-    U"a",
-    U"abc",
-    U"message digest",
-    U"abcdefghijklmnopqrstuvwxyz",
+    SUC"",
+    SUC"a",
+    SUC"abc",
+    SUC"message digest",
+    SUC"abcdefghijklmnopqrstuvwxyz",
 
     /* Three real message IDs to ensure compatibility with old INN versions;
        the corresponding MD5 hashes were taken directly out of the history
        file of a server running INN 2.3. */
-    U"<J3Ds5.931$Vg6.7556@news01.chello.no>",
-    U"<sr5v7ooea6e17@corp.supernews.com>",
-    U"<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
+    SUC"<J3Ds5.931$Vg6.7556@news01.chello.no>",
+    SUC"<sr5v7ooea6e17@corp.supernews.com>",
+    SUC"<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
 
     /* Other random stuff, including high-bit characters. */
-    U"example.test",
-    U"||",
-    U"|||",
-    U"\375\277\277\277\277\276",
-    U"\377\277\277\277\277\277"
+    SUC"example.test",
+    SUC"||",
+    SUC"|||",
+    SUC"\375\277\277\277\277\276",
+    SUC"\377\277\277\277\277\277"
 };
 
 /* The hashes corresonding to the above data. */
@@ -95,8 +96,8 @@ main(void)
 
     test_init(12 + ARRAY_SIZE(testdata));
 
-    test_md5(1, "93b885adfe0da089cdf634904fd59f71", U"\0", 1);
-    test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", U"\0ab\n", 4);
+    test_md5(1, "93b885adfe0da089cdf634904fd59f71", SUC"\0", 1);
+    test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", SUC"\0ab\n", 4);
 
     data = xmalloc(64 * 1024);
     memset(data, 0, 64 * 1024);
