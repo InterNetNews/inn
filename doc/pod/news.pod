@@ -42,6 +42,13 @@ use, in case it is not the default F<innwatch.ctl> file.
 
 =item *
 
+Add new B<-t> flag to B<mailpost> to change, if needed, the default
+directory to use to temporarily store error messages that are sent to
+the newsmaster.  Two paths are now tried by default:  I<pathtmp> as
+set in F<inn.conf>, and then F</var/tmp> if I<pathtmp> is not writable.
+
+=item *
+
 Fixed how B<innupgrade> is executed during an update of an INN
 installation; on a few systems like AIX, it fails to run because its
 taint mode was unproperly declared.
