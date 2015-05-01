@@ -90,7 +90,7 @@ Makefile.global:
 install: directories
 	@for D in $(ALLDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	    cd $$D && $(MAKE) D="$(DESTDIR)" install || exit 1 ; cd .. ; \
 	done
 	@echo ''
 	@echo 'If this is a first-time installation, a minimal active file and'
@@ -102,45 +102,46 @@ install: directories
 directories:
 	@chmod +x support/install-sh
 	for D in $(INSTDIRS) ; do \
-	    support/install-sh $(OWNER) -m 0755 -d $(D)$$D ; \
+	    support/install-sh $(OWNER) -m 0755 -d $(DESTDIR)$$D ; \
 	done
-	support/install-sh $(OWNER) -m 0750 -d $(D)$(PATHRUN)
+	support/install-sh $(OWNER) -m 0750 -d $(DESTDIR)$(PATHRUN)
 
 update: 
 	@chmod +x support/install-sh
 	@for D in $(UPDATEDIRS) ; do \
 	    echo '' ; \
-	    cd $$D && $(MAKE) install || exit 1 ; cd .. ; \
+	    cd $$D && $(MAKE) D="$(DESTDIR)" install || exit 1 ; cd .. ; \
 	done
-	if [ -z "$D" ] ; then \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHAUTHPASSWD) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHBIN) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHDOC) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(PATHETC) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade ${PATHFILTER} ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN1) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN3) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN5) ; \
-	    $(PERL) -Tw $(PATHBIN)/innupgrade $(MAN8) ; \
-	fi
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHAUTHPASSWD)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHBIN)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHDOC)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHETC)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)${PATHFILTER}
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN1)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN3)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN5)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN8)
 
 install-root:
 	@chmod +x support/install-sh
-	support/install-sh $(OWNER) -m 0755 -d $(D)$(PATHBIN)
-	cd backends && $(MAKE) install-root || exit 1 ; cd ..
+	support/install-sh $(OWNER) -m 0755 -d $(DESTDIR)$(PATHBIN)
+	cd backends && $(MAKE) D="$(DESTDIR)" install-root || exit 1 ; cd ..
 
 ##  Install a certificate for TLS/SSL support.
 cert:
 	umask 077 ; \
 	$(SSLBIN) req -new -x509 -nodes \
-	    -out $(D)$(PATHETC)/cert.pem -days 366 \
-	    -keyout $(D)$(PATHETC)/key.pem
-	chown $(RUNASUSER) $(D)$(PATHETC)/cert.pem
-	chgrp $(RUNASGROUP) $(D)$(PATHETC)/cert.pem
-	chmod 640 $(D)$(PATHETC)/cert.pem
-	chown $(RUNASUSER) $(D)$(PATHETC)/key.pem
-	chgrp $(RUNASGROUP) $(D)$(PATHETC)/key.pem
-	chmod 600 $(D)$(PATHETC)/key.pem
+	    -out $(DESTDIR)$(PATHETC)/cert.pem -days 366 \
+	    -keyout $(DESTDIR)$(PATHETC)/key.pem
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    chown $(RUNASUSER) $(DESTDIR)$(PATHETC)/cert.pem ; \
+	    chgrp $(RUNASGROUP) $(DESTDIR)$(PATHETC)/cert.pem ; \
+	    chown $(RUNASUSER) $(DESTDIR)$(PATHETC)/key.pem ; \
+	    chgrp $(RUNASGROUP) $(DESTDIR)$(PATHETC)/key.pem ; \
+	fi
+	chmod 640 $(DESTDIR)$(PATHETC)/cert.pem
+	chmod 600 $(DESTDIR)$(PATHETC)/key.pem
 
 
 ##  Cleanup targets.  clean deletes all compilation results but leaves the

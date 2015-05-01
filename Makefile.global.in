@@ -21,18 +21,6 @@
 VERSION		= 2.6.0
 VERSION_EXTRA	= prerelease
 
-##  If you want to install INN relative to a root directory other than /,
-##  set DESTDIR to the path to the root directory of the file system.  This
-##  won't affect any of the paths compiled into INN; it's used primarily
-##  when building a software distribution, where software has to be
-##  installed into some file system that will later be mounted as / on the
-##  final system.  DESTDIR doesn't need a trailing slash, as all the
-##  installation paths already start with / because they're absolute paths
-##  determined by configure.
-
-DESTDIR		=
-D		= $(DESTDIR)
-
 ##  The absolute path to the top of the build directory, used to find the
 ##  libraries built as part of INN.  Using relative paths confuses libtool
 ##  when linking the test suite.

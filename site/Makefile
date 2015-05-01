@@ -142,16 +142,25 @@ $D$(PATH_ACTIVE): 	; $(CP_DATA) active.minimal $@
 $D$(PATH_NEWSGROUPS):	; $(CP_DATA) newsgroups.minimal $@
 $D$(PATH_ACTIVE_TIMES):
 	touch $@
-	chown $(RUNASUSER) $@
-	chgrp $(RUNASGROUP) $@
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    chown $(RUNASUSER) $@ ; \
+	    chgrp $(RUNASGROUP) $@ ; \
+	fi
 	chmod $(FILEMODE) $@
 $D$(PATH_HISTORY):
 	touch $@
-	chown $(RUNASUSER) $@
-	chgrp $(RUNASGROUP) $@
+	@ME=`$(WHOAMI)` ; \
+	if [ x"$$ME" = xroot ] ; then \
+	    chown $(RUNASUSER) $@ ; \
+	    chgrp $(RUNASGROUP) $@ ; \
+	fi
 	chmod $(FILEMODE) $@
+	@ME=`$(WHOAMI)` ; \
 	if [ -z "$D" ] ; then \
-	    $(PATHBIN)/makedbz -i -o ; \
+	    if [ x"$$ME" = xroot ] || [ x"$$ME" = x"$(RUNASUSER)" ] ; then \
+	        $(PATHBIN)/makedbz -i -o ; \
+	    fi ; \
 	fi
 
 bootstrap:

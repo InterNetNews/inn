@@ -466,18 +466,53 @@ into its final home.  Type:
 
     make install
 
-Normally, you will need to run this command as root so that INN can create
-the directories it needs, change ownerships (if you did not compile as the
-news user) and install a setuid program needed to raise resource limits
-and allow B<innd> to bind to ports under 1024.  This step will install INN
-under the install directory (F</usr/local/news>, known as I<pathnews> in
-F<inn.conf>, unless you specified something else to the configure script).
+Under most circumstances, you will need to run the C<make install>
+command as root, so that INN can create the directories it needs,
+change ownerships (if you did not compile as the news user) and install
+a setuid program needed to raise resource limits and allow B<innd> to
+bind to ports under 1024.  This step will install INN under the install
+directory (F</usr/local/news>, known as I<pathnews> in F<inn.conf>,
+unless you specified something else to the configure script).
 
-Exceptionally, if you are installing INN into a directory writable by the
-news user, you can run C<make install> as the configured news user.  The
-resulting INN installation won't be able to use ports below 1024
+Exceptionally, if you are installing INN into a directory writable by
+the news user, you can run C<make install> as the configured news user.
+The resulting INN installation won't be able to use ports below 1024
 (including the default NNTP port of 119) unless you then run C<make
 install-root> as root, which will install only the setuid helper program.
+
+If you are building INN on a different system than the one on which it
+will eventually run, and you therefore want INN to install its files
+in a virtual root directory and not into the actual filesystem of the
+build machine, you can pass the virtual root directory to the install
+step via the DESTDIR variable.  You then just need to type:
+
+    make DESTDIR=/tmp/inn-root install
+
+In the above example, all of INN's directories and files would
+be installed under the F</tmp/inn-root> directory instead of
+the normal F</> (root) directory.  Just replace C</tmp/inn-root>
+with whatever directory you wish to install INN in (the result
+will be in F</tmp/inn-root/usr/local/news> if the default value of
+F</usr/local/news> for I<pathnews> has not been changed).  This won't
+affect any of the paths compiled into INN; it's used primarily in some
+situations like building a software distribution, where software has to
+be installed into some file system that will later be mounted as F</>
+on the final system.  Using DESTDIR permits to build INN, install
+it into a virtual root directory, and package the resulting files
+in a single step, without manual intervention, by a non-root user.
+It is possible to build and install INN in this way, but you must set
+a DESTDIR value for the install step, and additionally, you must tell
+the installation process that it should omit executing C<chown> and
+C<chgrp> commands (which will fail if the installation step is being
+executed by a non-root user).  To do this, type:
+
+    CHOWNPROG=set CHGRPPROG=set make DESTDIR=/tmp/inn-root install
+
+WARNING:  if you install INN in this manner, none of the resulting
+directories and files in the virtual root directory will be owned by
+the correct users and groups.  It is YOUR responsibility to ensure the
+resulting directories and files are packaged with the users, groups,
+and modes which INN wanted them to be installed with!
 
 Please note that INN's shared library interface is not stable and may
 change drastically in future releases.  For this reason, it's also not
@@ -502,6 +537,10 @@ certificate and private key at least once.  Type:
     make cert
 
 as root in order to do this.
+
+You can also type C<make DESTDIR=/tmp/inn-root cert> as either root
+(preferred) or a non-root user.  All of the warnings and caveats
+mentioned above apply.
 
 You are now ready for the really fun part:  configuring your copy of INN!
 
@@ -1386,7 +1425,7 @@ Next, you need to create an empty F<history> database.  To do this, type:
 
     cd <pathdb in inn.conf>
     touch history
-    makedbz -i
+    makedbz -i -o
 
 (Note that if you install INN with C<make install>, you do not need to
 run these commands:  the installation takes care of creating the

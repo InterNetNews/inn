@@ -163,6 +163,17 @@ option to B<configure> has been removed.
 
 =item *
 
+DESTDIR and non-root installs are now properly supported and documented
+in INSTALL.  The C<make install>, C<make update> and C<make cert>
+steps properly obey DESTDIR.  Besides, it is no longer a requirement
+that the installation step be done by the superuser, as long as the
+user executing the install has supplied a DESTDIR value that points
+to a writable directory, I<and> the person or process performing the
+install corrects the file ownerships when INN is installed on the system
+on which it's going to run.  Thanks to James Ralston for this support.
+
+=item *
+
 When building INN with S<Berkeley DB>, Cyrus SASL, S<Kerberos
 v5>, OpenSSL, or zlib support, no longer add standard locations to
 compiler and linker include flags.  Such default paths are now added
