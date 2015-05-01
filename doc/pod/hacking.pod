@@ -707,6 +707,9 @@ Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
 included in a final release.  It should not be changed for a beta or
 a release candidate.
 
+If making a major release, the revision numbers of the STABLE series
+should also be bumped at the end of subject 1.2.
+
 =item 5.
 
 Double-check that the version information in F<lib/Makefile>,
@@ -724,8 +727,8 @@ release.
     svn copy -r ZZZZ -m "Branch Y.Y.0 release." \
         file:///srv/svn/inn/trunk file:///srv/svn/inn/branches/Y.Y
 
-Then, remove the first paragraph in F<doc/pod/readme.pod> which deals
-with development versions.
+Then, in that newly created branch, remove the first paragraph in
+F<doc/pod/readme.pod> which deals with development versions.
 
 =item 7.
 
@@ -778,11 +781,11 @@ release announcement to inn-workers for proof-reading.
 
 Move the release into the public area of the ftp site and update the
 F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
-site and update the F<inn.tar.gz.md5> link.  Sign the release and update
-the F<inn.tar.gz.asc> link.  Possibly move older releases off into the
-F<OLD> directory.  Contact the ISC folks to push the release to
-ftp.isc.org and to update the ISC web site (the relevant contact is
-C<web-request> instead of C<webmaster>).
+site and update the F<inn.tar.gz.md5> link.  Sign the release (ASC,
+SHA-1, SHA-256 and SHA-512) and update the F<inn.tar.gz.asc> link.
+Possibly move older releases off into the F<OLD> directory.  Contact the
+ISC folks to push the release to ftp.isc.org and to update the ISC web
+site (the relevant contact is C<web-request> instead of C<webmaster>).
 
 =item 13.
 
@@ -801,10 +804,10 @@ release tag by copying it to F<tags> in Subversion.
 =item 15.
 
 Bump revision numbers to reflect the one of the following release,
-especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod> for major
-releases, F<configure.ac> and F<Makefile.global.in> for both minor and
-major releases.  The release versions in the Trac wiki should also be
-updated.
+especially in F<doc/pod/install.pod>, F<doc/pod/readme.pod> and F<TODO>
+for major releases, F<configure.ac> and F<Makefile.global.in> for both
+minor and major releases.  The release versions in the Trac wiki should
+also be updated.
 
 =back
 
