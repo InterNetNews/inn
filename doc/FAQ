@@ -137,7 +137,7 @@ beginner's introduction, see the news.newusers.questions home page at
 
 Subject: 1.2. What is the current version?
 
-The most recently released version of INN is 2.5.4.
+The most recently released version of INN is 2.5.5.
 
 INN development proceeds in two branches, as with many other free software
 projects.  The STABLE branch is maintenance of the most recently released
@@ -207,10 +207,6 @@ to the latter is off the INN page referenced above.
 
 Finally, the following additional links may be useful:
 
-<http://web.inter.nl.net/users/Elena.Samsonova/unix/INN/v2.3/>
-    Excellent introductory and overview documentation for INN 2.3 and
-    later.
-
 <http://aplawrence.com/Unixart/newsserver.html>
     A tutorial on setting up INN aimed at beginners using SCO Unix.  While
     it's mostly focused on SCO, it may be useful for any beginner to INN
@@ -249,7 +245,7 @@ inn-announce@lists.isc.org
     Where announcements about INN are set (no posting allowed).
 
 inn-workers@lists.isc.org
-    Discussion of INN development.   It is also where to send bug reports
+    Discussion of INN development.  It is also where to send bug reports
     and patches for consideration for inclusion into INN (postings by
     members only).  If you're an INN expert and have the time to help out
     other users, we encourage you to join this mailing list to answer
