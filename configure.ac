@@ -238,8 +238,9 @@ dnl -g on link as well as compile for debugging to work.
     fi
     ;;
 
-dnl OSX needs -multiply_defined suppress.
-*darwin*)
+dnl Mac OS X needed "-multiply_defined suppress" before this linker flag became
+dnl obsolete (darwin13 is Mavericks, OS X v10.9).
+*-darwin[[0-9]].*|*-darwin1[[0-2]].*)
     LDFLAGS="$LDFLAGS -multiply_defined suppress"
     ;;
 
