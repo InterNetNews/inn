@@ -52,8 +52,8 @@
 # include <sasl/sasl.h>
 # include <sasl/saslplug.h>
 # include <sasl/saslutil.h>
-/* For Cyrus SASL versions < 2.1.24. */
-# ifndef sasl_callback_ft
+/* For Cyrus SASL versions < 2.1.25 (in hexadecimal notation below). */
+# if !defined (SASL_VERSION_FULL) || SASL_VERSION_FULL < 0x020119
 typedef int (*sasl_callback_ft)(void);
 # endif
 #endif
