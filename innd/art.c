@@ -1691,7 +1691,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       } else if (HDR_FOUND(HDR__INJECTION_INFO)) {
         begin = (char *) skip_cfws(HDR(HDR__INJECTION_INFO));
 
-        if (begin == '\0')
+        if (*begin == '\0')
           continue;
 
         /* The path identity ends with ';' or CFWS. */
