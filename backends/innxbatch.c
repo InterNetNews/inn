@@ -58,7 +58,7 @@
 /*
 **  Global variables.
 */
-static bool		Debug = 0;
+static bool		Debug = false;
 static bool		STATprint;
 static char		*REMhost;
 static double		STATbegin;
@@ -291,7 +291,6 @@ CATCHinterrupt(int s)
 /*
 **  Mark that the alarm went off.
 */
-/* ARGSUSED0 */
 static void
 CATCHalarm(int s UNUSED)
 {
@@ -355,7 +354,7 @@ main(int ac, char *av[])
       /* NOTREACHED */
       break;
     case 'D':
-      Debug++;
+      Debug = true;
       break;
 #ifdef FROMSTDIN
     case 'i':

@@ -458,7 +458,7 @@ CCcancel(char *av[])
 **  Syntax-check the newsfeeds file.
 */
 const char *
-CCcheckfile(char *unused[])
+CCcheckfile(char *unused[] UNUSED)
 {
   char		**strings;
   char		*p;
@@ -469,7 +469,6 @@ CCcheckfile(char *unused[])
   bool		needheaders, needoverview, needpath, needstoredgroup;
   bool		needreplicdata;
 
-  unused = unused;		/* ARGSUSED */
   /* Parse all site entries. */
   strings = SITEreadfile(false);
   fake.Buffer.size = 0;
@@ -632,12 +631,11 @@ CCflush(char *av[])
 **  Flush the log files as well as exploder and process channels.
 */
 static const char *
-CCflushlogs(char *unused[])
+CCflushlogs(char *unused[] UNUSED)
 {
     SITE        *sp;
     CHANNEL     *cp;
     int         i;
-    unused = unused;		/* ARGSUSED */
 
     if (Debug)
 	return "1 In debug mode";
@@ -909,9 +907,8 @@ CCmode(char *unused[] UNUSED)
 **  Log our operating mode (via syslog).
 */
 static const char *
-CClogmode(char *unused[])
+CClogmode(char *unused[] UNUSED)
 {
-    unused = unused;		/* ARGSUSED */
     syslog(L_NOTICE, "%s servermode %s", LogName, CCcurrmode());
     return NULL;
 }
@@ -1962,9 +1959,8 @@ CCreader(CHANNEL *cp)
 **  Called when a write-in-progress is done on the channel.  Shouldn't happen.
 */
 static void
-CCwritedone(CHANNEL *unused)
+CCwritedone(CHANNEL *unused UNUSED)
 {
-    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal CCwritedone", LogName);
 }
 
@@ -2064,16 +2060,20 @@ CCclose(void)
 }
 
 
+#ifdef HAVE_SIGACTION
+#define NO_SIGACTION_UNUSED UNUSED
+#else
+#define NO_SIGACTION_UNUSED
+#endif
+
 /*
 **  Restablish the control channel.
 */
 static void
-CCresetup(int unused)
+CCresetup(int s NO_SIGACTION_UNUSED)
 {
 #ifndef HAVE_SIGACTION
     xsignal(s, CCresetup);
-#else
-    unused = unused;		/* ARGSUSED */
 #endif
     CCclose();
     CCsetup();

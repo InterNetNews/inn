@@ -758,7 +758,7 @@ OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
             keeper = true;
         if ((krps[i] == Remove) && strcmp(group, arts[i]) == 0)
             delete = true;
-        if ((krps[i] == Keep))
+        if (krps[i] == Keep)
             purge = false;
     }
     EXPprocessed++;

@@ -29,8 +29,6 @@
 #ifdef HAVE_OPENSSL
 
 /* We must keep some of the info available. */
-static const char hexcodes[] = "0123456789ABCDEF";
-
 static bool tls_initialized = false;
 
 static int verify_depth;

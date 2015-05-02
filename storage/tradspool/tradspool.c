@@ -594,7 +594,8 @@ CrackXref(char *xref, unsigned int *lenp) {
 	    return xrefs;
 	}
 	/* skip to next space or EOL */
-	for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q) ;
+        for (q=p; *q && *q != ' ' && *q != '\n' && *q != '\r' ; ++q)
+            ;
 
         xrefs[len] = xstrndup(p, q - p);
 

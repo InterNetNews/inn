@@ -51,9 +51,8 @@ LCreader(CHANNEL *cp)
 **  Write-done function.  Shouldn't happen.
 */
 static void
-LCwritedone(CHANNEL *unused)
+LCwritedone(CHANNEL *unused UNUSED)
 {
-    unused = unused;		/* ARGSUSED */
     syslog(L_ERROR, "%s internal LCwritedone", LogName);
 }
 
