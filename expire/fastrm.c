@@ -481,7 +481,7 @@ setup_dir(char *dir, int filecount)
 
        FIXME: It's too hard to figure out what this code does.  It needs to be
        rewritten. */
-    if (p != '\0' && relative_threshold > 0) {
+    if (*p != '\0' && relative_threshold > 0) {
         depth = slashcount(q);
         if (depth <= relative_threshold) {
             while (p > absolute && *--p != '/')
