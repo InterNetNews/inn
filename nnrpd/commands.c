@@ -88,8 +88,8 @@ makeGroupInvalid(void) {
 
 /*  Returns:
 **    -1 for problem (such as no such authenticator, etc.).
-**     0 for authentication succeeded.
-**     1 for authentication failed.
+**     1 for authentication succeeded.
+**     0 for authentication failed.
 */
 static char *PERMauthstring;
 
@@ -202,7 +202,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     waitpid(pid, &status, 0);
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-        return 1;
+        return 0;
 
     if ((p = strchr(path, '\n')) != NULL)
 	*p = '\0';
@@ -233,7 +233,7 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     //for (i = 0; fields[i] && i < 5; i++)
     //    syslog(L_NOTICE, "fields[%d] = %s\n", i, fields[i]);
 
-    return 0;
+    return 1;
 }
 
 
