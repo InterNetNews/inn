@@ -1312,12 +1312,15 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
  */
 static void connectionIfIpv6DeleteIpv4Addr (Connection cxn)
 {
-  struct sockaddr_storage ss;
-  socklen_t len = sizeof(ss);
+  union {
+    struct sockaddr sa;
+    struct sockaddr_storage ss;
+  } u;
+  socklen_t len = sizeof(u);
 
-  if (getpeername (endPointFd (cxn->myEp), (struct sockaddr *)&ss, &len) < 0)
+  if (getpeername (endPointFd (cxn->myEp), &u.sa, &len) < 0)
     return;
-  if (ss.ss_family == AF_INET)
+  if (u.sa.sa_family == AF_INET)
     return;
 
   hostDeleteIpv4Addr (cxn->myHost);
