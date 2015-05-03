@@ -872,14 +872,14 @@ vhost_xref(char *p)
 
     space = strchr(p, ' ');
     if (space == NULL) {
-	warn("malformed Xref: `%s'", field);
-	goto fail;
+        warn("malformed Xref: `%s'", p);
+        goto fail;
     }
     offset = space - p;
     space = strchr(p + offset, ' ');
     if (space == NULL) {
-	warn("malformed Xref: `%s'", field);
-	goto fail;
+        warn("malformed Xref: `%s'", p);
+        goto fail;
     }
     field = concat(PERMaccessconf->domain, space, NULL);
  fail:
