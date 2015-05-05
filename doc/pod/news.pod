@@ -274,6 +274,12 @@ set in F<inn.conf>, and then F</var/tmp> if I<pathtmp> is not writable.
 
 =item *
 
+When the creation of a newsgroup needed expanding the tradindexed group
+index, an already-running B<nnrpd> was not automatically noticing newly
+created newsgroups.  Richard Kettlewell fixed that issue.
+
+=item *
+
 Fixed how B<innupgrade> is executed during an update of an INN
 installation; on a few systems like AIX, it fails to run because its
 taint mode was unproperly declared.
