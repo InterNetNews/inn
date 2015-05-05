@@ -445,7 +445,7 @@ ARTstore(CHANNEL *cp)
   ARTDATA	*data = &cp->Data;
   HDRCONTENT	*hc = data->HdrContent;
   const char	*p;
-  ARTHANDLE	arth;
+  ARTHANDLE	arth = { 0 };
   int		i, j, iovcnt = 0;
   long		headersize = 0;
   TOKEN		result;
