@@ -926,15 +926,15 @@ cnfs_mapcntl(void *p, size_t length, int flags)
 
 	/* Don't thrash the system with msync()s - keep the last value
 	 * and check each time, only if the pages which we should
-	 * flush change actually flush the previous ones. Calling
+	 * flush change actually flush the previous ones.  Calling
 	 * cnfs_mapcntl(NULL, 0, MS_ASYNC) then flushes the final
-	 * piece */
+	 * piece. */
 	if (start != sstart || end != send) {
 	    if (sstart != NULL && send != NULL) {
 		msync(sstart, send - sstart, flags);
 	    }
 	    sstart = start;
-	    send = send;
+	    send = end;
 	}
     }
 }

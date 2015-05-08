@@ -280,6 +280,10 @@ created newsgroups.  Richard Kettlewell fixed that issue.
 
 =item *
 
+Fixed flushing of CNFS buffers when using NFS storage.
+
+=item *
+
 Fixed how B<innupgrade> is executed during an update of an INN
 installation; on a few systems like AIX, it fails to run because its
 taint mode was unproperly declared.
