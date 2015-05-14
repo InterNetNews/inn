@@ -1878,6 +1878,7 @@ strip_accessgroups(void)
 	}
     } else {
 	syslog(L_TRACE, "No access realms to check!");
+        return;
     }
 
     /* If there are auth realms to check... */
