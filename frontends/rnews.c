@@ -857,10 +857,7 @@ int main(int ac, char *av[])
        other setups where rnews might be setuid news or be run by other
        processes in the news group. */
     if (getuid() == 0 || geteuid() == 0) {
-        uid_t uid;
-
-        get_news_uid_gid(&uid, false, true);
-        setuid(uid);
+        ensure_news_user(true);
     }
 
     if (!innconf_read(NULL))

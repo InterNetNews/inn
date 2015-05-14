@@ -71,7 +71,9 @@ ensure_news_user(bool may_setuid)
             /* NB:  mustn't be run as root, unless "may_setuid" is true. */
             die("must be run as %s, not as root", innconf->runasuser);
         }
-        setuid(uid);
+        if (setuid(uid) < 0) {
+            sysdie("failed to setuid");
+        }
     }
     if (geteuid() != uid || getuid() != uid) {
         die("must be run as %s", innconf->runasuser);
@@ -88,7 +90,9 @@ ensure_news_grp(bool may_setgid)
 
     get_news_uid_gid(false, &gid, true);
     if (may_setgid && geteuid() == 0) {
-        setgid(gid);
+        if (setgid(gid) < 0) {
+            sysdie("failed to setgid");
+        }
     }
     if (getegid() != gid || getgid() != gid) {
         die ("must be run as %s group", innconf->runasgroup);
