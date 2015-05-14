@@ -69,7 +69,8 @@ struct loc {
 #define TDX_HASH_SIZE   (16 * 1024)
 
 /* A magic number for the group.index file so that we can later change the
-   format in a backward-compatible fashion. */
+   format in a backward-compatible fashion.
+   This magic number stands for "fifo feed". */
 #define TDX_MAGIC       (~(0xf1f0f33d))
 
 /* The header at the top of group.index.  magic contains GROUPHEADERMAGIC
