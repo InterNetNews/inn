@@ -96,6 +96,7 @@ static int
 PERMgeneric(char *av[], char *accesslist, size_t size)
 {
     char path[BIG_BUFFER], *fields[6], *p;
+    size_t j;
     int i, pan[2], status;
     pid_t pid;
     struct stat stb;
@@ -213,11 +214,24 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
 
     //syslog(L_NOTICE, "%s (%ld) returned: %d %s %d\n", av[0], (long) pid, i, path, status);
     /* Split "host:permissions:user:pass:groups" into fields. */
-    for (fields[0] = path, i = 0, p = path; *p; p++)
-	if (*p == ':') {
-	    *p = '\0';
-	    fields[++i] = p + 1;
+    for (fields[0] = path, j = 0, p = path; *p; p++)
+        if (*p == ':') {
+            *p = '\0';
+            ++j;
+            if (j < ARRAY_SIZE(fields)) {
+                fields[j] = p + 1;
+            } else {
+                Reply("%d Program error occurred\r\n", NNTP_FAIL_ACTION);
+                syslog(L_FATAL, "over-long response from %s", av[0]);
+                return -1;
+            }
 	}
+
+    if (j < 4) {
+        Reply("%d Program error occurred\r\n", NNTP_FAIL_ACTION);
+        syslog(L_FATAL, "short response from %s", av[0]);
+        return -1;
+    }
 
     PERMcanread = strchr(fields[1], 'R') != NULL;
     PERMcanpost = strchr(fields[1], 'P') != NULL;
