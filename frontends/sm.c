@@ -58,7 +58,7 @@ store_article(int fd)
     struct buffer *article;
     size_t size;
     char *text, *start, *end;
-    ARTHANDLE handle = { 0 };
+    ARTHANDLE handle = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     TOKEN token;
 
     /* Build the basic article handle. */

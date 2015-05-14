@@ -26,7 +26,7 @@ ProcessLine(char *line)
     char *tokenptr;
     int len;
     ARTHANDLE *art;
-    ARTHANDLE newart = { 0 };
+    ARTHANDLE newart = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     TOKEN token, newtoken;
     char *arttmp;
 
