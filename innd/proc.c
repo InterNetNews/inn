@@ -47,18 +47,22 @@ PROCreap(void)
 }
 
 
+#ifdef HAVE_SIGACTION
+#define NO_SIGACTION_UNUSED UNUSED
+#else
+#define NO_SIGACTION_UNUSED
+#endif
+
 /*
 **  Signal handler that collects the processes, then resets the signal.
 */
 static void
-PROCcatchsignal(int s)
+PROCcatchsignal(int s NO_SIGACTION_UNUSED)
 {
     PROCreap();
 
 #ifndef HAVE_SIGACTION
     xsignal(s, PROCcatchsignal);
-#else
-    s = s;			/* ARGSUSED */
 #endif
 }
 
