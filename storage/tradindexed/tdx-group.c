@@ -278,7 +278,8 @@ file_open_group_index(struct group_index *index, struct stat *st)
 /*
 **  Given a group location, remap the index file if our existing mapping isn't
 **  large enough to include that group.  (This can be the case when another
-**  writer is appending entries to the group index.)
+**  writer is appending entries to the group index.)  Returns true on success
+**  (which includes "did not need to remap") and false on failure.
 */
 static bool
 index_maybe_remap(struct group_index *index, long loc)
@@ -502,11 +503,18 @@ index_find(struct group_index *index, const char *group)
 	return -1;
     loc = index->header->hash[index_bucket(hash)].recno;
 
-    while (loc >= 0 && loc < index->count) {
+    while (loc >= 0) {
         struct group_entry *entry;
 
-        if (loc > index->count && !index_maybe_remap(index, loc))
-            return -1;
+        if (loc >= index->count) {
+            if (!index_maybe_remap(index, loc)) {
+                return -1;
+            }
+            if (loc >= index->count) {
+                syswarn("tradindexed: entry %ld out of range", loc);
+                return -1;
+            }
+        }
         entry = index->entries + loc;
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0)
