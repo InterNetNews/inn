@@ -358,7 +358,7 @@ index_expand(struct group_index *index)
        their next entry is entry 0.  We don't want to leave things in this
        state (particularly if this was the first expansion of the index file,
        in which case entry 0 points to entry 0 and our walking functions may
-       go into infinite loops.  Undo the file expansion. */
+       go into infinite loops).  Undo the file expansion. */
     if (!index_map(index)) {
         index->count -= 1024;
         if (ftruncate(index->fd, index_file_size(index->count)) < 0) {
@@ -557,11 +557,20 @@ index_unlink_hash(struct group_index *index, HASH hash)
     parent = &index->header->hash[index_bucket(hash)].recno;
     current = *parent;
 
-    while (current >= 0 && current < index->count) {
+    while (current >= 0) {
         struct group_entry *entry;
 
-        if (current > index->count && !index_maybe_remap(index, current))
-            return -1;
+        if (current >= index->count) {
+            if (!index_maybe_remap(index, current)) {
+                return -1;
+            }
+            parent = &index->header->hash[index_bucket(hash)].recno;
+            current = *parent;
+            if (current < 0 || current >= index->count) {
+                syswarn("tradindexed: entry %ld out of range", current);
+                return -1;
+            }
+        }
         entry = &index->entries[current];
         if (entry->deleted == 0)
             if (memcmp(&hash, &entry->hash, sizeof(hash)) == 0) {
