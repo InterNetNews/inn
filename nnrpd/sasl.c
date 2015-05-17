@@ -115,6 +115,7 @@ SASLauth(int ac, char *av[])
     const char *mech;
     const char *clientin = NULL;
     unsigned int clientinlen = 0;
+    size_t tclientinlen = 0;
     const char *serverout = NULL;
     unsigned int serveroutlen;
     char base64[BASE64_BUF_SIZE+1];
@@ -209,7 +210,8 @@ SASLauth(int ac, char *av[])
 
 	/* Get the response from the client. */
 	r1 = line_read(&NNTPline, PERMaccessconf->clienttimeout,
-		      &clientin, (size_t *) &clientinlen, NULL);
+		      &clientin, &tclientinlen, NULL);
+        clientinlen = tclientinlen;
         
         switch (r1) {
 	case RTok:
