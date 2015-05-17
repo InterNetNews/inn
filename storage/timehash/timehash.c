@@ -114,16 +114,17 @@ static char *MakePath(time_t now, int seqnum, const STORAGECLASS class) {
 
 static TOKEN *PathToToken(char *path) {
     int			n;
-    unsigned int        t1, t2, t3, seqnum;
+    unsigned int        tclass, t1, t2, t3, seqnum;
     STORAGECLASS        class;
     time_t		now;
     static TOKEN	token;
 
     n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x",
-               (unsigned int *)&class, &t1, &t2, &seqnum, &t3);
+               &tclass, &t1, &t2, &seqnum, &t3);
     if (n != 5)
 	return (TOKEN *)NULL;
     now = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
+    class = tclass;
     token = MakeToken(now, seqnum, class, (TOKEN *)NULL);
     return &token;
 }

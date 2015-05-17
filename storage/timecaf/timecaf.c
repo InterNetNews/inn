@@ -185,15 +185,16 @@ static char *MakePath(time_t now, const STORAGECLASS class) {
 
 static TOKEN *PathNumToToken(char *path, ARTNUM artnum) {
     int			n;
-    unsigned int        t1, t2;
+    unsigned int        tclass, t1, t2;
     STORAGECLASS        class;
     time_t              timestamp;
     static TOKEN	token;
 
-    n = sscanf(path, "timecaf-%02x/%02x/%04x.CF", (unsigned int *)&class, &t1, &t2);
+    n = sscanf(path, "timecaf-%02x/%02x/%04x.CF", &tclass, &t1, &t2);
     if (n != 3)
 	return (TOKEN *)NULL;
     timestamp = ((t1 << 8) & 0xff00) | ((t2 << 8) & 0xff0000) | ((t2 << 0) & 0xff);
+    class = tclass;
     token = MakeToken(timestamp, artnum, class, (TOKEN *)NULL);
     return &token;
 }
