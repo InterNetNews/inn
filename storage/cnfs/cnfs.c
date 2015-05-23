@@ -128,9 +128,13 @@ static bool CNFSBreakToken(TOKEN token, char *cycbuffname,
     uint32_t	uint32;
 
     if (cycbuffname == NULL || blk == NULL || cycnum == NULL) {
-        warn("CNFS: BreakToken: invalid argument: %s", cycbuffname);
-	SMseterror(SMERR_INTERNAL, "BreakToken: invalid argument");
-	return false;
+        if (cycbuffname == NULL) {
+            warn("CNFS: BreakToken: invalid argument");
+        } else {
+            warn("CNFS: BreakToken: invalid argument: %s", cycbuffname);
+        }
+        SMseterror(SMERR_INTERNAL, "BreakToken: invalid argument");
+        return false;
     }
     memcpy(cycbuffname, token.token, CNFSMAXCYCBUFFNAME);
     *(cycbuffname + CNFSMAXCYCBUFFNAME) = '\0';	/* Just to be paranoid */
