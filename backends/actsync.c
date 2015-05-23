@@ -703,7 +703,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
  * get_active - get an active file from a host
  *
  * given:
- *	host	host to contact or file to read, NULL => local server
+ *	host	host to contact or file to read
  *	hostid	HOST_ID of host
  *	len	pointer to length of grp return array
  *	grp	existing host array to add, or NULL
@@ -742,7 +742,9 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
     if (len == NULL)
         die("internal error #1: len is NULL");
     if (errs == NULL)
-        die("internal error #2: errs in NULL");
+        die("internal error #2: errs is NULL");
+    if (host == NULL)
+        die("internal error #10: host is NULL");
     if (D_BUG)
         warn("STATUS: obtaining active file from %s", host);
 
@@ -759,7 +761,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
     }
 
     /* check for host being a filename */
-    if (host != NULL && (host[0] == '/' || host[0] == '.')) {
+    if (host[0] == '/' || host[0] == '.') {
 
 	/* note that host is actually a file */
 	is_file = 1;
@@ -768,10 +770,10 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	if ((qp = QIOopen(host)) == NULL)
             sysdie("cannot open active file");
 
-    /* case: host is a hostname or NULL (default server) */
+    /* case: host is a hostname */
     } else {
 
-	/* note that host is actually a hostname or NULL */
+	/* note that host is actually a hostname */
 	is_file = 0;
 
         /* prepare remote host variables */
