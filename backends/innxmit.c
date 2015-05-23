@@ -684,9 +684,10 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 */
 static char *
 GetMessageID(ARTHANDLE *art) {
-    static char	*buff;
-    static int	buffsize = 0;
-    const char	*p, *q;
+    static char		*buff = NULL;
+    static size_t	buffsize = 0; /* total size of buff */
+    size_t		buffneed;
+    const char		*p, *q;
 
     p = wire_findheader(art->data, art->len, "Message-ID", true);
     if (p == NULL)
@@ -697,12 +698,11 @@ GetMessageID(ARTHANDLE *art) {
     }
     if (q == art->data + art->len)
 	return NULL;
-    if (buffsize < q - p) {
-	if (buffsize == 0)
-	    buff = xmalloc(q - p + 1);
-	else
-            buff = xrealloc(buff, q - p + 1);
-	buffsize = q - p;
+
+    buffneed = q - p + 1; /* bytes needed, including '\0' terminator */
+    if (buffsize < buffneed) {
+        buff = xrealloc(buff, buffneed);
+        buffsize = buffneed;
     }
     memcpy(buff, p, q - p);
     buff[q - p] = '\0';
