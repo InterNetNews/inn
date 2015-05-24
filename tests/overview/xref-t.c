@@ -184,7 +184,7 @@ main(void)
     bool value;
     char *article, *wire;
     size_t size;
-    ARTHANDLE handle = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    ARTHANDLE handle = ARTHANDLE_INITIALIZER;
     TOKEN token;
 
     if (access("../data/overview/xref", F_OK) == 0)

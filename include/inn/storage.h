@@ -46,6 +46,9 @@ typedef struct {
   TOKEN          *token;     /* A pointer to the article's TOKEN */
 } ARTHANDLE;
 
+/* Initializer for the ARTHANDLE structure. */
+#define ARTHANDLE_INITIALIZER { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
 #define SMERR_NOERROR          0
 #define SMERR_INTERNAL         1
 #define SMERR_UNDEFINED        2
