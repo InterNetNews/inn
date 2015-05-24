@@ -1048,7 +1048,7 @@ bool buffindexed_open(int mode) {
       close(GROUPfd);
       return false;
     }
-    GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
+    GROUPentries = (void *) &GROUPheader[1];
   } else {
     GROUPcount = 0;
     if (!GROUPexpand(mode)) {
@@ -1203,7 +1203,7 @@ static bool GROUPremapifneeded(GROUPLOC loc) {
     syswarn("buffindexed: Could not mmap group.index in GROUPremapifneeded");
     return false;
   }
-  GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
+  GROUPentries = (void *) &GROUPheader[1];
   return true;
 }
 
@@ -1238,7 +1238,7 @@ static bool GROUPexpand(int mode) {
     syswarn("buffindexed: Could not mmap group.index in GROUPexpand");
     return false;
   }
-  GROUPentries = (GROUPENTRY *)((char *)GROUPheader + sizeof(GROUPHEADER));
+  GROUPentries = (void *) &GROUPheader[1];
   if (GROUPheader->magic != GROUPHEADERMAGIC) {
     GROUPheader->magic = GROUPHEADERMAGIC;
     GROUPLOCclear(&GROUPheader->freelist);
@@ -1664,7 +1664,7 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
       ovgroupunmap();
       return false;
     }
-    ovblock = (OVBLOCK *)((char *)addr + pagefudge);
+    ovblock = (void *)((char *)addr + pagefudge);
     if (ov.index == ge->curindex.index && ov.blocknum == ge->curindex.blocknum) {
       limit = ge->curindexoffset;
     } else {
