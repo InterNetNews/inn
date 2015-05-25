@@ -53,9 +53,9 @@ main(int argc, char *argv[])
                     }
                     write(fd, buf, sizeof(buf));
                 }
+                status = true;
             }
             close(fd);
-            status = true;
         }
     }
 
