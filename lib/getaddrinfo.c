@@ -92,11 +92,12 @@ int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
 
 /*
  * Value representing all of the hint flags set.  Linux uses flags up to
- * 0x0400, so be sure not to break when testing on that platform.
+ * 0x0400, and Mac OS X up to 0x1000, so be sure not to break when testing
+ * on these platforms.
  */
 #if TESTING
 # ifdef HAVE_GETADDRINFO
-#  define AI_INTERNAL_ALL 0x04ff
+#  define AI_INTERNAL_ALL 0x1fff
 # else
 #  define AI_INTERNAL_ALL 0x01ff
 # endif

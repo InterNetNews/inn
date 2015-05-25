@@ -113,7 +113,7 @@ main(void)
     test_freeaddrinfo(ai);
 
     ok(test_getaddrinfo(NULL, NULL, NULL, &ai) == EAI_NONAME, "EAI_NONAME");
-    hints.ai_flags = 2000;
+    hints.ai_flags = 0x2000;
     ok(test_getaddrinfo(NULL, "25", &hints, &ai) == EAI_BADFLAGS,
        "EAI_BADFLAGS");
     hints.ai_flags = 0;
