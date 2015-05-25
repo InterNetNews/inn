@@ -235,6 +235,10 @@ process_free(struct process *process)
 {
     struct process **prev;
 
+    /* Do nothing if called with a NULL argument. */
+    if (process == NULL)
+        return;
+
     /* Remove the process from the global list. */
     prev = &processes;
     while (*prev != NULL && *prev != process)
