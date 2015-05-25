@@ -250,7 +250,6 @@ main(int ac, char **av)
 
 			bcopy(base, dptr, sptr - base);
 			dptr += sptr - base;
-			base = sptr;
 
 			d = strtod(sptr + 1, &sptr);
 			if (*sptr == '/')
