@@ -105,15 +105,14 @@
 #include "inn/paths.h"
 #include "inn/storage.h"
 
-#include "inn/ov.h"
-#include "ovinterface.h"
-#include "ovdb.h"
-#include "ovdb-private.h"
-
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include "portable/socket-unix.h"
 #endif
 
+#include "inn/ov.h"
+#include "ovinterface.h"
+#include "ovdb.h"
+#include "ovdb-private.h"
 #ifndef HAVE_BDB
 
 /* Provide stub functions if we don't have db */
