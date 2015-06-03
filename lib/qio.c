@@ -20,13 +20,19 @@
 /* A reasonable default buffer size to use. */
 #define QIO_BUFFERSIZE  8192
 
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+#define NO_STRUCT_STAT_ST_BLKSIZE_UNUSED
+#else
+#define NO_STRUCT_STAT_ST_BLKSIZE_UNUSED UNUSED
+#endif
+
 /*
 **  Given a file descriptor, return a reasonable buffer size to use for that
 **  file.  Uses st_blksize if available and reasonable, QIO_BUFFERSIZE
 **  otherwise.
 */
 static size_t
-buffer_size(int fd UNUSED)
+buffer_size(int fd NO_STRUCT_STAT_ST_BLKSIZE_UNUSED)
 {
     size_t size = QIO_BUFFERSIZE;
 
