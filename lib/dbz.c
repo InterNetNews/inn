@@ -112,14 +112,11 @@ static int dbzversion = 6;	/* for validating .dir file format */
 #else
 #define of_t		off_t
 #endif
+
+#ifdef DO_TAGGED_HASH
 #define	SOF		(sizeof(of_t))
 #define	NOTFOUND	((of_t)-1)
-#ifdef	DO_TAGGED_HASH
-
-#define OVERFLOW
-#ifdef OVERFLOW
 #include <limits.h>
-#endif
 
 /* MAXDROPBITS is the maximum number of bits dropped from the offset value.
    The least significant bits are dropped.  The space is used to
@@ -133,7 +130,7 @@ static int dbzversion = 6;	/* for validating .dir file format */
 /*
  * We assume that unused areas of a binary file are zeros, and that the
  * bit pattern of `(of_t)0' is all zeros.  The alternative is rather
- * painful file initialization.  Note that okayvalue(), if OVERFLOW is
+ * painful file initialization.  Note that okayvalue(), if DO_TAGGED_HASH is
  * defined, knows what value of an offset would cause overflow.
  */
 #define VACANT		((of_t)0)
@@ -887,11 +884,9 @@ static int
 okayvalue(of_t value)
 {
     if (HASTAG(value))
-	return(0);
-#ifdef OVERFLOW
+        return(0);
     if (value == LONG_MAX)	/* BIAS() and UNBIAS() will overflow */
-	return(0);
-#endif
+        return(0);
     return(1);
 }
 #endif
@@ -1597,12 +1592,12 @@ set_pag(searcher *sp, of_t value)
     of_t v = value;
 
     if (CANTAG(v)) {
-	v |= sp->tag | taghere;
-	if (v != UNBIAS(VACANT))	/* BIAS(v) won't look VACANT */
-#ifdef OVERFLOW
-	    if (v != LONG_MAX)		/* and it won't overflow */
-#endif
-		value = v;
+        v |= sp->tag | taghere;
+        if (v != UNBIAS(VACANT)) {      /* BIAS(v) won't look VACANT */
+            if (v != LONG_MAX) {        /* and it won't overflow */
+                value = v;
+            }
+        }
     } else if (canttag_warned == 0) {
 	fprintf(stderr, "dbz.c(set): can't tag value 0x%lx", v);
 	fprintf(stderr, " tagboth = 0x%lx\n", tagboth);
