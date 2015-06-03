@@ -88,6 +88,9 @@ F<readers.conf>, if these parameters are overridden in this file.
 
 =back
 
+If you are upgrading from a version prior to S<INN 2.5>, see also
+L<Upgrading from 2.4 to 2.5>.
+
 =head1 Changes in 2.6.0
 
 =over 2
