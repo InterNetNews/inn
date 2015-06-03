@@ -328,7 +328,7 @@ main(int argc, char *argv[])
        that query. */
     if (ovused) {
         used = overview_free_space(overview);
-        if (used == -1)
+        if (used < 0)
             printf("Space used is meaningless for the %s method\n",
                    innconf->ovmethod);
         else
