@@ -210,6 +210,12 @@ is of interest primarily to people building packages for distributions.
 
 =item *
 
+Building INN with Python support now requires the use of S<Python 2.2.0>
+or later as the distutils.sysconfig module used was introduced with
+S<Python 2.2.0>.
+
+=item *
+
 The INN test suite driver is now fully synchronized with the upstream
 version of the C TAP Harness package maintained by Russ Allbery.
 Keeping the INN test suite driver up-to-date will be possible thanks

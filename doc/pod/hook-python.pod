@@ -4,8 +4,10 @@ This file documents INN's built-in optional support for Python article
 filtering.  It is patterned after the Perl and (now obsolete) TCL hooks
 previously added by Bob Heiney and Christophe Wolfhugel.
 
-For this filter to work successfully, you will need to have at least
-S<Python 1.5.2> installed.  You can obtain it from L<http://www.python.org/>.
+For this filter to work successfully, you will need to have
+at least S<Python 2.2.0> installed.  You can obtain it from
+L<http://www.python.org/>.  Please note that S<Python 3.x> is currently
+not supported.
 
 The B<innd> Python interface and the original Python filtering documentation
 were written by Greg Andruk (nee Fluffy) <gerglery@usa.net>.  The Python
