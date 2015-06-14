@@ -539,7 +539,7 @@ static void
 ARTreadschema(void)
 {
     const struct cvector        *standardoverview;
-    const struct vector         *extraoverview;
+    struct vector               *extraoverview;
     ARTOVERFIELD                *fp;
     unsigned int                i;
 
@@ -566,6 +566,7 @@ ARTreadschema(void)
     }
 
     ARTfieldsize = fp - ARTfields;
+    vector_free(extraoverview);
 }
 
 /*

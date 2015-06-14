@@ -131,7 +131,7 @@ bool
 ARTreadschema(void)
 {
   const struct cvector *standardoverview;
-  const struct vector  *extraoverview;
+  struct vector        *extraoverview;
   unsigned int         i;
   ARTOVERFIELD         *fp;
   const ARTHEADER      *hp;
@@ -183,6 +183,7 @@ ARTreadschema(void)
   }
 
   fp->Header = NULL;
+  vector_free(extraoverview);
 
   return ok;
 }
