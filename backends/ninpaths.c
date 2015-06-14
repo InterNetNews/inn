@@ -218,13 +218,13 @@ readdump(FILE *f)
     long i, m, l;
     unsigned long st, et, at;
     long sit, tot;
-    struct nrec **n;
+    struct nrec **n = NULL;
     struct trec *t;
     char c[MAXHOST];
     char v[16];
 
     #define formerr(i) {\
-	fprintf(stderr, "dump file format error #%d\n", (i)); return -1; }
+        fprintf(stderr, "dump file format error #%d\n", (i)); goto error; }
 
     if (fscanf(f, "!!NINP %15s %lu %lu %ld %ld %lu\n",
 	       v, &st, &et, &sit, &tot, &at)!=6)
@@ -233,7 +233,7 @@ readdump(FILE *f)
     n=calloc(sit, sizeof(struct nrec *));
     if (!n) {
 	fprintf(stderr, "error: out of memory\n");
-	return -1;
+        goto error;
     }
     for (i=0; i<sit; i++) {
 	if (fscanf(f, HOSTF " %ld ", c, &l)!=2) {
@@ -242,7 +242,7 @@ readdump(FILE *f)
 	}
 	n[i]=hhost(c);
         if (!n[i])
-            return -1;
+            goto error;
         n[i]->sentto+=l;
     }
     if ((fscanf(f, HOSTF "\n", c)!=1) ||
@@ -254,7 +254,7 @@ readdump(FILE *f)
 	while (fscanf(f, "%d!%d!%ld ", &a, &b, &l)==3) {
 	    t=tallyrec(n[a], n[b]);
 	    if (!t)
-                return -1;
+                goto error;
             t->tally+=l;
 	    ++m;
 	}
@@ -266,7 +266,7 @@ readdump(FILE *f)
 		if (i<2)
 		    l=1;
 		if (!t)
-                    return -1;
+                    goto error;
                 t->tally+=l;
 		++m;
 	    }
@@ -298,6 +298,9 @@ readdump(FILE *f)
 #endif
     free(n);
     return 0;
+error:
+    free(n);
+    return -1;
 }
 
 /* Read dump from a file. */
