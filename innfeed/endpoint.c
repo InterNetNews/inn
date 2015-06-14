@@ -321,7 +321,7 @@ void delEndPoint (EndPoint ep)
   /* Adjust the global arrays to account for deleted endpoint. */
   endPoints [ep->myFd] = NULL ;
   if (ep->myFd == highestFd)
-    while (endPoints [highestFd] == NULL && highestFd >= 0)
+    while (highestFd >= 0 && endPoints [highestFd] == NULL)
       highestFd-- ;
 
   for (idx = 0 ; idx < priorityCount ; idx++)
