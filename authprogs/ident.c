@@ -110,7 +110,7 @@ main(int argc, char *argv[])
 		got++;
     } while (buf[got] != '\n');
     buf[got] = '\0';
-    if (buf[got-1] == '\r')
+    if (got > 0 && buf[got-1] == '\r')
 	buf[got-1] = '\0';
 
     /* buf now contains the entire ident response. */
