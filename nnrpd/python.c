@@ -26,7 +26,7 @@
 /*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
 #undef _POSIX_C_SOURCE
 
-/*  Make "s#" use Py_ssize_t rather than signed size_t. */
+/*  Make "s#" use Py_ssize_t rather than int. */
 #define PY_SSIZE_T_CLEAN
 
 /*  Python.h must be included after having defined PY_SSIZE_T_CLEAN,
@@ -37,7 +37,7 @@
 
 /*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
 #if PY_VERSION_HEX < 0x02050000
-  typedef ssize_t Py_ssize_t;
+  typedef int Py_ssize_t;
 #endif
 
 #include "clibrary.h"

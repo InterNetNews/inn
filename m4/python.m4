@@ -27,7 +27,7 @@ AC_DEFUN([INN_ARG_PYTHON],
      PYTHON_CPPFLAGS="-I$py_include"
      py_ver=`$PYTHON -c 'import sys; print(sys.version[[:3]])'`
      py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
-         print(distutils.sysconfig.get_python_lib(False, True))'`
+         print(distutils.sysconfig.get_python_lib(0, 1))'`
      py_linkage=`$PYTHON -c 'import distutils.sysconfig; \
          print(" ".join(distutils.sysconfig.get_config_vars("LIBS", \
              "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
