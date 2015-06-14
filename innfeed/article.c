@@ -668,7 +668,7 @@ static bool fillContents (Article article)
 		article->contents = NULL ;
                 warn ("ME munged article %s", article->fname) ;
 	    } else {
-		if (p[-1] == '\r') {
+                if (p > buffer && p[-1] == '\r') {
 		    article->inWireFormat = true ;
 		} else {
 		    /* we need to copy the contents into a buffer below */
@@ -740,11 +740,9 @@ static bool fillContents (Article article)
 	    if ((p = strchr(buffer, '\n')) == NULL) {                  
 		article->articleOk = false;
                 warn ("ME munged article %s", article->fname) ;
-	    }
-	    else if (p[-1] == '\r') {
-		article->inWireFormat = true ;
-	    }
-	    else {
+            } else if (p > buffer && p[-1] == '\r') {
+                article->inWireFormat = true ;
+            } else {
 		if ( nntpPrepareBuffer (article->contents) ) {
 		    size_t diff =
 			(bufferDataSize (article->contents) - articlesize) ;
