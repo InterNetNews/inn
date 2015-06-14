@@ -1155,8 +1155,9 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 	    if (modgroup)
 		snprintf(idbuff, SMBUF, "(mailed to moderator for %s)",
                          modgroup);
-	    else
-		strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+            else if (HDR(HDR__MESSAGEID) != idbuff) {
+                strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+            }
 	}
 	if (strncmp(p, "DROP", 4) == 0) {
 	    syslog(L_NOTICE, "%s post failed %s", Client.host, p);
@@ -1206,8 +1207,9 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 	return MailArticle(modgroup, article);
     }
 
-    if (idbuff)
-	strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+    if (idbuff != NULL && HDR(HDR__MESSAGEID) != idbuff) {
+        strlcpy(idbuff, HDR(HDR__MESSAGEID), SMBUF);
+    }
 
     if (PERMaccessconf->spoolfirst)
 	return Spoolit(article, Error);
