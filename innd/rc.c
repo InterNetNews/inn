@@ -1799,6 +1799,8 @@ RCsetup(void)
 
     /* Get the list of hosts we handle. */
     RCreadlist();
+
+    free(fds);
 }
 
 

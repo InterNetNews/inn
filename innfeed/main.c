@@ -366,6 +366,7 @@ int main (int argc, char **argv)
   debugFile = concatpath(innconf->pathlog, DEBUG_FILE);
   if (loggingLevel == 0 && fileExistsP (debugFile))
     loggingLevel = 1 ;
+  free(debugFile);
 
   if (logFile == NULL && ! isatty (fileno (stderr)))
     logFile = concatpath(innconf->pathlog, LOG_FILE);

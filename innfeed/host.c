@@ -2582,6 +2582,10 @@ void hostSetStatusFile (const char *filename)
   else if (*filename == '\0')
     die ("Can't set status file name with an empty string\n") ;
 
+  /* statusFile may already be initialized (several status-file: lines,
+   * reload of the config file, shutdown process). */
+  free(statusFile);
+
   if (*filename == '/')
     statusFile = xstrdup (filename) ;
   else {
