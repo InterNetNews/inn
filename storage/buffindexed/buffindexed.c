@@ -7,7 +7,7 @@
 ** Buffindexed using shared memory on ovbuff by Sang-yong Suh
 **
 ** During the recent discussions in inn-workers, Alex Kiernan found
-** that INN LockRange() is not working for MMAPed file.  This explains
+** that inn_lock_range() is not working for MMAPed file.  This explains
 ** why buffindexed has long outstanding bugs such as "could not MMAP...".
 **
 ** This version corrects the file locking error by using shared memory.

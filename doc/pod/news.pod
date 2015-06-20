@@ -161,6 +161,11 @@ the news user).
 
 =item *
 
+Fixed a leak of semaphores when using buffindexed.  Thanks to Richard
+Kettlewell for having fixed the issue.
+
+=item *
+
 Building with Libtool is no longer optional.  The B<--enable-libtool>
 option to B<configure> has been removed.
 

@@ -264,6 +264,10 @@ void smcClose( smcd_t *this )
             syswarn("cant delete shmid %d", this->shmid);
         else
             debug("shmid %d deleted", this->shmid);
+        /* Delete the semaphore too */
+        if (semctl(this->semap, 0, IPC_RMID, NULL) < 0) {
+            syswarn("can't remove semaphore %d", this->semap);
+        }
     }
     free( this );
 }
