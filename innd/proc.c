@@ -36,7 +36,7 @@ PROCreap(void)
 	    break;
 	}
 	for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
-	    if (pp->Pid == pid) {
+            if (pp->State == PSrunning && pp->Pid == pid) {
 		PROCneedscan = true;
 		pp->Status = WEXITSTATUS(status);
 		pp->State = PSdead;
