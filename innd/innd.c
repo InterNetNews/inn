@@ -387,6 +387,8 @@ main(int ac, char *av[])
        root, switch to running as the news user. */
     ensure_news_user_grp(true, true);
 
+    xsignal_enable_masking();
+
     /* Handle malloc debugging. */
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = M_HANDLE_ABORT;

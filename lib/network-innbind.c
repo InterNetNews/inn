@@ -166,6 +166,8 @@ network_innbind(int fd, int family, const char *address, unsigned short port)
         syswarn("cannot fork innbind for %s, port %hu", address, port);
         return INVALID_SOCKET;
     } else if (child == 0) {
+        /* Restore signal disposition and mask */
+        xsignal_forked();
         message_fatal_cleanup = network_child_fatal;
         socket_close(1);
         if (dup2(pipefds[1], 1) < 0)

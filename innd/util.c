@@ -212,7 +212,11 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
     if (i > 0)
         return i;
 
-    /* Child -- do any I/O redirection. */
+    /* Child. */
+    /* Restore signal disposition and mask. */
+    xsignal_forked();
+
+    /* Do any I/O redirection. */
     if (fd0 != 0) {
         if (dup2(fd0, 0) < 0) {
             syslog(L_FATAL, NODUP2, LogName, fd0, 0, av[0]);

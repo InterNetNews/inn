@@ -82,6 +82,10 @@ extern int      getfdlimit(void);
 extern int      setfdlimit(unsigned int limit);
 extern void     (*xsignal(int signum, void (*sigfunc)(int)))(int);
 extern void     (*xsignal_norestart(int signum, void (*sigfunc)(int)))(int);
+extern void     xsignal_mask(void);
+extern void     xsignal_unmask(void);
+extern void     xsignal_enable_masking(void);
+extern void     xsignal_forked(void);
 
 
 /* Headers. */

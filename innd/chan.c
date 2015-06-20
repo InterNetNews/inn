@@ -1173,8 +1173,13 @@ CHANreadloop(void)
                 tv.tv_sec = innconf->timer;
             }
         }
+
+        /* Mask signals when not in select to prevent a signal handler
+           from accessing data that the main code is mutating. */
         TMRstart(TMR_IDLE);
+        xsignal_unmask();
         count = select(channels.max_fd + 1, &rdfds, &wrfds, NULL, &tv);
+        xsignal_mask();
         TMRstop(TMR_IDLE);
 
         if (count < 0) {
