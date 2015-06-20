@@ -185,7 +185,7 @@ if ${ROTATE} ; then
 	BASE=`basename ${F}`
 	rm -f ${OLD}/${BASE}
 	case ${F} in
-	${SYSLOG_CRIT}|${ERRLOG}|${LOG}|${SYSLOG_NOTICE})
+	${SYSLOG_CRIT}|${SYSLOG_ERR}|${ERRLOG}|${LOG}|${SYSLOG_NOTICE})
 	    ##  Make a link that can be deleted (since if not rotating
 	    ##  we delete the copy that is made in ${TMPDIR}).
 	    mv ${F}.old ${OLD}/${BASE}
@@ -194,9 +194,6 @@ if ${ROTATE} ; then
 	    ;;
 	${ACTIVEFILE})
 	    mv ${BASE}.old ${OLD}/${BASE}
-	    ;;
-	${SYSLOG_ERR})
-	    mv ${F}.old ${OLD}/${BASE}
 	    ;;
 	${UNWANTED_LOG})
 	    ##  Rotate and compress the file.
@@ -248,7 +245,7 @@ else
 
     ##  Make a snapshot of what we need for below.
     ctlinnd -s pause "Snapshot log and syslog files" 2>&1
-    for F in ${SYSLOG_CRIT} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE} ; do
+    for F in ${SYSLOG_CRIT} ${SYSLOG_ERR} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE} ; do
 	BASE=`basename ${F}`
 	rm -f ${OLD}/${BASE}.0
 	cp ${F} ${OLD}/${BASE}.0
@@ -265,6 +262,17 @@ BASE=`basename ${SYSLOG_CRIT}`
 OLD_SYSLOG=${OLD}/${BASE}.0
 if [ -s ${OLD_SYSLOG} ] ; then
     echo Syslog critical messages:
+    cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
+    echo ---------
+    echo ''
+fi
+rm -f ${OLD_SYSLOG}
+
+##  Display syslog error messages.
+BASE=`basename ${SYSLOG_ERR}`
+OLD_SYSLOG=${OLD}/${BASE}.0
+if [ -s ${OLD_SYSLOG} ] ; then
+    echo Syslog error messages:
     cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
     echo ---------
     echo ''
