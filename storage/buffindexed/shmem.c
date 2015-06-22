@@ -265,9 +265,19 @@ void smcClose( smcd_t *this )
         else
             debug("shmid %d deleted", this->shmid);
         /* Delete the semaphore too */
+#ifdef HAVE_UNION_SEMUN
+        {
+            union semun semArg;
+            semArg.val = 0;
+            if (semctl(this->semap, 0, IPC_RMID, semArg) < 0) {
+                syswarn("can't remove semaphore %d", this->semap);
+            }
+        }
+#else
         if (semctl(this->semap, 0, IPC_RMID, NULL) < 0) {
             syswarn("can't remove semaphore %d", this->semap);
         }
+#endif
     }
     free( this );
 }
