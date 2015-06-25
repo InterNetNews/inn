@@ -59,6 +59,7 @@ fake_innconf(void)
         free(innconf);
     }
     innconf = xmalloc(sizeof(*innconf));
+    memset(innconf, 0, sizeof(*innconf));
     innconf->logipaddr = false;
     innconf->maxartsize = 8 * 1024;
     innconf->pathetc = xstrdup("../data/etc");

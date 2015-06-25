@@ -406,6 +406,7 @@ innconf_parse(struct config_group *group)
     struct innconf *config;
 
     config = xmalloc(sizeof(struct innconf));
+    memset(config, 0, sizeof(struct innconf));
     for (i = 0; i < ARRAY_SIZE(config_table); i++)
         switch (config_table[i].type) {
         case TYPE_BOOLEAN:

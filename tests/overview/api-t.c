@@ -74,6 +74,7 @@ fake_innconf(void)
         free(innconf);
     }
     innconf = xmalloc(sizeof(*innconf));
+    memset(innconf, 0, sizeof(*innconf));
     innconf->enableoverview = true;
     innconf->groupbaseexpiry = true;
     innconf->icdsynccount = 10;
