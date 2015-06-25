@@ -57,6 +57,9 @@ hash_size(size_t target)
     int n;
     size_t size;
 
+    if (target == 0) {
+        return 4;
+    }
     size = target - 1;
     for (n = 0; size > 0; n++)
         size >>= 1;
