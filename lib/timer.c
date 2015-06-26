@@ -114,6 +114,7 @@ static unsigned long
 TMRgettime(bool reset)
 {
     unsigned long now;
+    long usec, msec;
     struct timeval tv;
 
     /* The time of the last summary, used as a base for times returned by
@@ -125,8 +126,10 @@ TMRgettime(bool reset)
     static struct timeval base;
 
     gettimeofday(&tv, NULL);
-    now = (tv.tv_sec - base.tv_sec) * 1000;
-    now += (tv.tv_usec - base.tv_usec) / 1000;
+    now = (unsigned long)(tv.tv_sec - base.tv_sec) * 1000u;
+    usec = tv.tv_usec - base.tv_usec; /* maybe negative */
+    msec = usec / 1000;               /* still maybe negative */
+    now += (unsigned long)msec;
     if (reset)
         base = tv;
     return now;
