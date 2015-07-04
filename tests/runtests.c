@@ -4,9 +4,9 @@
  *
  * Usage:
  *
- *      runtests [-b <build-dir>] [-s <source-dir>] -l <test-list>
- *      runtests [-b <build-dir>] [-s <source-dir>] <test> [<test> ...]
- *      runtests -o [-b <build-dir>] [-s <source-dir>] <test>
+ *      runtests [-hv] [-b <build-dir>] [-s <source-dir>] -l <test-list>
+ *      runtests [-hv] [-b <build-dir>] [-s <source-dir>] <test> [<test> ...]
+ *      runtests -o [-h] [-b <build-dir>] [-s <source-dir>] <test>
  *
  * In the first case, expects a list of executables located in the given file,
  * one line per executable.  For each one, runs it as part of a test suite,
@@ -54,6 +54,10 @@
  * the source and build directory and will look for tests under both
  * directories.  These paths can also be set with the -b and -s command-line
  * options, which will override anything set at build time.
+ *
+ * If the -v option is given, or the C_TAP_VERBOSE environment variable is set,
+ * display the full output of each test as it runs rather than showing a
+ * summary of the results of each test.
  *
  * Any bug reports, bug fixes, and improvements are very much welcome and
  * should be sent to the e-mail address below.  This program is part of C TAP
@@ -203,9 +207,9 @@ struct testlist {
  * split into variables to satisfy the pedantic ISO C90 limit on strings.
  */
 static const char usage_message[] = "\
-Usage: %s [-b <build-dir>] [-s <source-dir>] <test> ...\n\
-       %s [-b <build-dir>] [-s <source-dir>] -l <test-list>\n\
-       %s -o [-b <build-dir>] [-s <source-dir>] <test>\n\
+Usage: %s [-hv] [-b <build-dir>] [-s <source-dir>] <test> ...\n\
+       %s [-hv] [-b <build-dir>] [-s <source-dir>] -l <test-list>\n\
+       %s -o [-h] [-b <build-dir>] [-s <source-dir>] <test>\n\
 \n%s";
 static const char usage_extra[] = "\
 Options:\n\
@@ -213,6 +217,7 @@ Options:\n\
     -l <list>           Take the list of tests to run from <test-list>\n\
     -o                  Run a single test rather than a list of tests\n\
     -s <source-dir>     Set the source directory to <source-dir>\n\
+    -v                  Show the full output of each test\n\
 \n\
 runtests normally runs each test listed on the command line.  With the -l\n\
 option, it instead runs every test listed in a file.  With the -o option,\n\
