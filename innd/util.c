@@ -189,6 +189,9 @@ NeedShell(char *p, const char **av, const char **end)
 }
 
 
+#define NOCLOSE "%s cant close %d in %s %m"
+#define NODUP2 "%s cant dup2 %d to %d in %s %m"
+
 /*
 **  Spawn a process, with I/O redirected as needed.  Return the PID or -1
 **  (and a syslog'd message) on error.
@@ -196,8 +199,6 @@ NeedShell(char *p, const char **av, const char **end)
 pid_t
 Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
 {
-    static char NOCLOSE[] = "%s cant close %d in %s %m";
-    static char NODUP2[] = "%s cant dup2 %d to %d in %s %m";
     pid_t       i;
 
     /* Fork; on error, give up.  If not using the patched dbz, make

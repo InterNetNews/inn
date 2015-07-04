@@ -19,14 +19,14 @@
 static bool BinaryLock;
 static bool JustChecking;
 
-static char CANTUNLINK[] = "shlock: Can't unlink \"%s\", %s";
-static char CANTOPEN[] = "shlock: Can't open \"%s\", %s";
-static char CANTCHDIR[] = "shlock: Can't chdir to \"%s\", %s";
-static char CANTWRITEPID[] = "shlock: Can't write PID to \"%s\", %s";
-static char CANTCLOSE[] = "shlock: Can't close \"%s\", %s";
-static char CANTLINK[] = "shlock: Can't link \"%s\" to \"%s\", %s";
-static char STALELOCK[] = "shlock: Stale lockfile detected \"%s\", please remove";
-static char CANTSTAT[] = "shlock: Can't stat \"%s\", %s";
+#define CANTUNLINK "shlock: Can't unlink \"%s\", %s"
+#define CANTOPEN "shlock: Can't open \"%s\", %s"
+#define CANTCHDIR "shlock: Can't chdir to \"%s\", %s"
+#define CANTWRITEPID "shlock: Can't write PID to \"%s\", %s"
+#define CANTCLOSE "shlock: Can't close \"%s\", %s"
+#define CANTLINK "shlock: Can't link \"%s\" to \"%s\", %s"
+#define STALELOCK "shlock: Stale lockfile detected \"%s\", please remove"
+#define CANTSTAT "shlock: Can't stat \"%s\", %s"
 
 /* After this time, we start to complain about an invalid locked lockfile. */
 #define LINK_TIMEOUT 30

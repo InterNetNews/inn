@@ -201,7 +201,9 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 		    if (*p == '.')
 			*p = '-';
                 if (IsValidSubmissionTemplate(save)) {
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
                     snprintf(address, sizeof(address), save, name);
+#pragma GCC diagnostic warning "-Wformat-nonliteral"
                     break;
                 }
 	    }
@@ -221,7 +223,9 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 	    *p = '-';
 
     if (IsValidSubmissionTemplate(save)) {
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
         snprintf(address, sizeof(address), save, name);
+#pragma GCC diagnostic warning "-Wformat-nonliteral"
     } else {
         return NULL;
     }

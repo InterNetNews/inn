@@ -696,7 +696,9 @@ MailArticle(char *group, char *article)
      * in case %s isn't in inconf->mta) and send the headers. */
     if ((mta = innconf->mta) == NULL)
 	return "Can't start mailer -- mta not set";
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     snprintf(buff, sizeof(buff), innconf->mta, address);
+#pragma GCC diagnostic warning "-Wformat-nonliteral"
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
     fprintf(F, "To: %s\n", address);
@@ -884,13 +886,12 @@ SendQuit(FILE *FromServer, FILE *ToServer)
 static int
 OfferArticle(char *buff, int buffsize, FILE *FromServer, FILE *ToServer)
 {
-    static char		CANTSEND[] = "Can't send %s to server, %s";
-
     /* We have a valid message-ID here (checked beforehand). */
     fprintf(ToServer, "IHAVE %s\r\n", HDR(HDR__MESSAGEID));
     if (FLUSH_ERROR(ToServer)
      || fgets(buff, buffsize, FromServer) == NULL) {
-	snprintf(buff, buffsize, CANTSEND, "IHAVE", strerror(errno));
+        snprintf(buff, buffsize, "Can't send %s to server, %s",
+                 "IHAVE", strerror(errno));
 	return -1;
     }
     return atoi(buff);
@@ -1043,7 +1044,6 @@ Towire(char *p)
 const char *
 ARTpost(char *article, char *idbuff, bool *permanent)
 {
-    static char	CANTSEND[] = "Can't send %s to server, %s";
     int		i;
     char	*p, *q;
     char	*next;
@@ -1236,9 +1236,11 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     if (i < 0) {
 	if (buff[0])
 	    strlcpy(Error, buff, sizeof(Error));
-	else
-	    snprintf(Error, sizeof(Error), CANTSEND, "connect request",
+        else {
+            snprintf(Error, sizeof(Error),
+                     "Can't send connect request to server, %s",
                      strerror(errno));
+        }
         return Spoolit(article,Error);
     }
 
@@ -1310,7 +1312,8 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
     fprintf(ToServer, "\r\n");
     if (FLUSH_ERROR(ToServer)) {
-	snprintf(Error, sizeof(Error), CANTSEND, "headers", strerror(errno));
+        snprintf(Error, sizeof(Error), "Can't send headers to server, %s",
+                 strerror(errno));
 	fclose(FromServer);
 	fclose(ToServer);
 	return Spoolit(article, Error);
@@ -1319,7 +1322,8 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     /* Send the article, get the server's reply. */
     if (NNTPsendarticle(article, ToServer, true) < 0
      || fgets(buff, sizeof buff, FromServer) == NULL) {
-	snprintf(Error, sizeof(Error), CANTSEND, "article", strerror(errno));
+        snprintf(Error, sizeof(Error), "Can't send article to server, %s",
+                 strerror(errno));
 	fclose(FromServer);
 	fclose(ToServer);
 	return Spoolit(article, Error);

@@ -323,8 +323,8 @@ NGsplit(char *p, int size, LISTBUFFER *list)
 /*
 **  Renumber a group.
 */
-static char		NORENUMBER[] = "%s cant renumber %s %s too wide";
-static char		RENUMBER[] = "%s renumber %s %s from %ld to %ld";
+#define NORENUMBER "%s cant renumber %s %s too wide"
+#define RENUMBER "%s renumber %s %s from %ld to %ld"
 
 bool
 NGrenumber(NEWSGROUP *ngp)

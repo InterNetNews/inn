@@ -58,6 +58,7 @@ CCOUTPUT	= @CCOUTPUT@
 ##
 ##    -ansi                 Requires messing with feature test macros.
 ##    -pedantic             Too much noise from embedded Perl.
+##    -Wdouble-promotion    Too much noise from using printf with floats.
 ##    -Wswitch-default      Quite annoying to enforce it.
 ##    -Wstrict-overflow=2   Gives false positives.
 ##    -Wtraditional         We assume ANSI C, so these aren't interesting.
@@ -75,13 +76,14 @@ CCOUTPUT	= @CCOUTPUT@
 ##    -Wpacked              Used by INN.
 ##    -Wpadded              Used by INN.
 ##    -Wredundant-decls     Too much noise from system headers.
+##    -Wlong-long           Too much noise from system headers.
 ##    -Woverlength-strings  Useless noise.
 ##
 ##  Some may be worth looking at again once a released version of gcc doesn't
 ##  warn on system headers.  The warnings below are in the same order as
 ##  they're listed in the gcc manual.
 ##
-##  Last checked against gcc 4.4.5 (2010-10-01).
+##  Last checked against gcc 4.7.4 (2014-06-12).
 ##  Add -g because when building with warnings, one generally also wants the
 ##  debugging information, and add -O2 because gcc won't find some warnings
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
@@ -90,16 +92,19 @@ CCOUTPUT	= @CCOUTPUT@
 ##  -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 ##  on glibc functions on Linux, as well as more object size checking,
 ##  which catches a few more issues.
-##  -Wformat=2, -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
+##  -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
 ##  "-Wconversion -Wno-sign-conversion", -Wmissing-format-attribute
 ##  -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 
-WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Winit-self \
-                  -Wsync-nand -Wendif-labels -Wpointer-arith \
+WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2 \
+		  -Winit-self -Wmissing-include-dirs \
+		  -Wsync-nand -Wendif-labels -Wtrampolines -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
-		  -Wstrict-prototypes -Wold-style-definition \
-                  -Wmissing-prototypes -Wmissing-declarations \
-                  -Wnormalized=nfc -Wnested-externs -Winline -Wvla
+		  -Wjump-misses-init -Wstrict-prototypes \
+		  -Wold-style-definition \
+		  -Wmissing-prototypes -Wmissing-declarations \
+		  -Wnormalized=nfc -Wnested-externs -Winline \
+		  -Winvalid-pch -Wvla
 
 ##  Some warnings have to be suppressed for Perl, since there's no way to work
 ##  around the Perl header problems in INN code.

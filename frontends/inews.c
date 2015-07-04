@@ -663,7 +663,6 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
 static char *
 AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
 {
-    static char	NOSIG[] = "Can't add your .signature (%s), article not posted";
     int		i;
     int		length;
     size_t      artsize;
@@ -679,7 +678,8 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     if ((F = fopen(buff, "r")) == NULL) {
 	if (errno == ENOENT)
 	    return article;
-	fprintf(stderr, NOSIG, strerror(errno));
+        fprintf(stderr, "Can't add your .signature (%s), article not posted",
+                strerror(errno));
 	QuitServer(1);
     }
 

@@ -95,19 +95,18 @@ static int logRejects = false ;  /* syslog the 437 responses. */
 /*
 **  Syslog formats - collected together so they remain consistent.
 */
-static char	STAT1[] =
-	"%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f";
-static char	STAT2[] = "%s times user %.3f system %.3f elapsed %.3f";
-static char	GOT_BADCOMMAND[] = "%s rejected %s %s";
-static char	REJECTED[] = "%s rejected %s (%s) %s";
-static char	REJ_STREAM[] = "%s rejected (%s) %s";
-static char	CANT_CONNECT[] = "%s connect failed %s";
-static char	CANT_AUTHENTICATE[] = "%s authenticate failed %s";
-static char	IHAVE_FAIL[] = "%s ihave failed %s";
+#define STAT1 "%s stats offered %lu accepted %lu refused %lu rejected %lu missing %lu accsize %.0f rejsize %.0f"
+#define STAT2 "%s times user %.3f system %.3f elapsed %.3f"
+#define GOT_BADCOMMAND "%s rejected %s %s"
+#define REJECTED "%s rejected %s (%s) %s"
+#define REJ_STREAM "%s rejected (%s) %s"
+#define CANT_CONNECT "%s connect failed %s"
+#define CANT_AUTHENTICATE "%s authenticate failed %s"
+#define IHAVE_FAIL "%s ihave failed %s"
 
-static char	CANT_FINDIT[] = "%s can't find %s";
-static char	CANT_PARSEIT[] = "%s can't parse ID %s";
-static char	UNEXPECTED[] = "%s unexpected response code %s";
+#define CANT_FINDIT "%s can't find %s"
+#define CANT_PARSEIT "%s can't parse ID %s"
+#define UNEXPECTED "%s unexpected response code %s"
 
 /*
 **  Global variables.
@@ -1006,7 +1005,6 @@ article_free(ARTHANDLE *article)
 
 
 int main(int ac, char *av[]) {
-    static char		SKIPPING[] = "Skipping \"%s\" --%s?\n";
     int	                i;
     char	        *p;
     ARTHANDLE		*art;
@@ -1339,7 +1337,7 @@ int main(int ac, char *av[]) {
 	/* Get the Message-ID from the article if we need to. */
 	if (MessageID == NULL) {
 	    if ((MessageID = GetMessageID(art)) == NULL) {
-                warn(SKIPPING, Article, "no message ID");
+                warn("Skipping \"%s\" -- %s?\n", Article, "no message ID");
                 article_free(art);
 		continue;
 	    }
