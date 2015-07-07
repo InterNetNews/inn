@@ -242,6 +242,8 @@ buffer_find_string(struct buffer *buffer, const char *string, size_t start,
     char *terminator, *data;
     size_t length;
 
+    if (buffer->data == NULL)
+        return false;
     length = strlen(string);
     do {
         data = buffer->data + buffer->used + start;
