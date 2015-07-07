@@ -70,7 +70,7 @@ network_set_reuseaddr(socket_type fd)
  * consistent and easier to understand.
  */
 #ifdef IPV6_V6ONLY
-static void UNUSED
+static void
 network_set_v6only(socket_type fd)
 {
     int flag = 1;
@@ -86,7 +86,7 @@ network_set_v6only(socket_type fd)
  * IPv6 addresses that may not have been set up yet.
  */
 #ifdef IP_FREEBIND
-static void UNUSED
+static void
 network_set_freebind(socket_type fd)
 {
     int flag = 1;
@@ -260,6 +260,7 @@ network_innbind_ipv4(int type, const char *address, unsigned short port)
  * kernel doesn't support it.
  */
 #if HAVE_INET6
+
 socket_type
 network_innbind_ipv6(int type, const char *address, unsigned short port)
 {
@@ -314,7 +315,9 @@ network_innbind_ipv6(int type, const char *address, unsigned short port)
         socket_close(fd);
     return bindfd;
 }
+
 #else /* HAVE_INET6 */
+
 socket_type
 network_innbind_ipv6(int type UNUSED, const char *address, unsigned short port)
 {
@@ -322,6 +325,7 @@ network_innbind_ipv6(int type UNUSED, const char *address, unsigned short port)
     socket_set_errno(EPROTONOSUPPORT);
     return INVALID_SOCKET;
 }
+
 #endif /* HAVE_INET6 */
 
 
@@ -333,6 +337,7 @@ network_innbind_ipv6(int type UNUSED, const char *address, unsigned short port)
  * to hold the file descriptors and stores the count in the fourth argument.
  */
 #if HAVE_INET6
+
 bool
 network_innbind_all(int type, unsigned short port, socket_type **fds,
                     unsigned int *count)
@@ -394,7 +399,9 @@ network_innbind_all(int type, unsigned short port, socket_type **fds,
     freeaddrinfo(addrs);
     return (*count > 0);
 }
+
 #else /* HAVE_INET6 */
+
 bool
 network_innbind_all(int type, unsigned short port, socket_type **fds,
                     unsigned int *count)
@@ -417,4 +424,5 @@ network_innbind_all(int type, unsigned short port, socket_type **fds,
     *count = 1;
     return true;
 }
+
 #endif /* HAVE_INET6 */

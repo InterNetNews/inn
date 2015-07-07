@@ -21,7 +21,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2011, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007, 2008
@@ -122,7 +122,7 @@ network_set_reuseaddr(socket_type fd)
  * consistent and easier to understand.
  */
 #ifdef IPV6_V6ONLY
-static void UNUSED
+static void
 network_set_v6only(socket_type fd)
 {
     int flag = 1;
@@ -138,7 +138,7 @@ network_set_v6only(socket_type fd)
  * IPv6 addresses that may not have been set up yet.
  */
 #ifdef IP_FREEBIND
-static void UNUSED
+static void
 network_set_freebind(socket_type fd)
 {
     int flag = 1;
