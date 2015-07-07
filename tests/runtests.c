@@ -210,10 +210,11 @@ static const char usage_message[] = "\
 Usage: %s [-hv] [-b <build-dir>] [-s <source-dir>] <test> ...\n\
        %s [-hv] [-b <build-dir>] [-s <source-dir>] -l <test-list>\n\
        %s -o [-h] [-b <build-dir>] [-s <source-dir>] <test>\n\
-\n%s";
-static const char usage_extra[] = "\
+\n\
 Options:\n\
     -b <build-dir>      Set the build directory to <build-dir>\n\
+%s";
+static const char usage_extra[] = "\
     -l <list>           Take the list of tests to run from <test-list>\n\
     -o                  Run a single test rather than a list of tests\n\
     -s <source-dir>     Set the source directory to <source-dir>\n\
