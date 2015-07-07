@@ -43,7 +43,7 @@ BEGIN_DECLS
 void basprintf(char **, const char *, ...)
     __attribute__((__nonnull__, __format__(printf, 2, 3)));
 void bvasprintf(char **, const char *, va_list)
-    __attribute__((__nonnull__));
+    __attribute__((__nonnull__, __format__(printf, 2, 0)));
 
 END_DECLS
 

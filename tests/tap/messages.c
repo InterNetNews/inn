@@ -9,7 +9,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2002, 2004, 2005 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004, 2005, 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2006, 2007, 2009, 2012, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -48,7 +48,7 @@ char *errors = NULL;
  * An error handler that appends all errors to the errors global.  Used by
  * error_capture.
  */
-static void
+static void __attribute__((__format__(printf, 2, 0)))
 message_log_buffer(int len UNUSED, const char *fmt, va_list args,
                    int error UNUSED)
 {

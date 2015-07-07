@@ -35,7 +35,7 @@ static const char test_string3[] = "This is a test\0 of the buffer system";
 /*
  * Test buffer_vsprintf.  Wrapper needed to generate the va_list.
  */
-static void
+static void __attribute__((__format__(printf, 2, 3)))
 test_vsprintf(struct buffer *buffer, const char *format, ...)
 {
     va_list args;
@@ -49,7 +49,7 @@ test_vsprintf(struct buffer *buffer, const char *format, ...)
 /*
  * Likewise for buffer_append_vsprintf.
  */
-static void
+static void __attribute__((__format__(printf, 2, 3)))
 test_append_vsprintf(struct buffer *buffer, const char *format, ...)
 {
     va_list args;

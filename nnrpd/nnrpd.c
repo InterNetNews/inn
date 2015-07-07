@@ -695,7 +695,7 @@ Again:
 /*
 **  Send formatted output, possibly with debugging output.
 */
-static void
+static void __attribute__((__format__(printf, 1, 0)))
 VPrintf(const char *fmt, va_list args, int dotrace)
 {
     char buff[2048], *p;

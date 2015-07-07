@@ -73,7 +73,8 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
     __attribute__((__format__(printf, 3, 4)));
 
 /* Error handling functions for use with warn and die. */
-void error_log_stderr_date(int len, const char *fmt, va_list args, int err);
+void error_log_stderr_date(int len, const char *fmt, va_list args, int err)
+    __attribute__((__format__(printf, 2, 0)));
 
 /* Do cleanup and then abort, for use with die. */
 void dump_core(void)

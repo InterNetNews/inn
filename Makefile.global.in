@@ -93,7 +93,7 @@ CCOUTPUT	= @CCOUTPUT@
 ##  on glibc functions on Linux, as well as more object size checking,
 ##  which catches a few more issues.
 ##  -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
-##  "-Wconversion -Wno-sign-conversion", -Wmissing-format-attribute
+##  "-Wconversion -Wno-sign-conversion",
 ##  -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 
 WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2 \
@@ -103,6 +103,7 @@ WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2 \
 		  -Wjump-misses-init -Wstrict-prototypes \
 		  -Wold-style-definition \
 		  -Wmissing-prototypes -Wmissing-declarations \
+		  -Wmissing-format-attribute \
 		  -Wnormalized=nfc -Wnested-externs -Winline \
 		  -Winvalid-pch -Wvla
 

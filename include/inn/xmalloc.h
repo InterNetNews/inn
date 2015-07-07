@@ -88,7 +88,7 @@ char *x_strdup(const char *, const char *, int)
 char *x_strndup(const char *, size_t, const char *, int)
     __attribute__((__malloc__, __nonnull__));
 void x_vasprintf(char **, const char *, va_list, const char *, int)
-    __attribute__((__nonnull__));
+    __attribute__((__nonnull__, __format__(printf, 2, 0)));
 
 /* asprintf special case. */
 #if INN_HAVE_C99_VAMACROS || INN_HAVE_GNU_VAMACROS

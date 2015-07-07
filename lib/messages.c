@@ -226,7 +226,7 @@ message_log_stderr(size_t len UNUSED, const char *fmt, va_list args, int err)
  * This needs further attention on Windows.  For example, it currently doesn't
  * log the errno information.
  */
-static void
+static void __attribute__((__format__(printf, 3, 0)))
 message_log_syslog(int pri, size_t len, const char *fmt, va_list args, int err)
 {
     char *buffer;

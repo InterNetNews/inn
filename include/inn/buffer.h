@@ -95,7 +95,7 @@ void buffer_set(struct buffer *, const char *data, size_t length)
 void buffer_sprintf(struct buffer *, const char *, ...)
     __attribute__((__format__(printf, 2, 3), __nonnull__));
 void buffer_vsprintf(struct buffer *, const char *, va_list)
-    __attribute__((__nonnull__));
+    __attribute__((__format__(printf, 2, 0), __nonnull__));
 
 /* Append data to the buffer. */
 void buffer_append(struct buffer *, const char *data, size_t length)
@@ -105,7 +105,7 @@ void buffer_append(struct buffer *, const char *data, size_t length)
 void buffer_append_sprintf(struct buffer *, const char *, ...)
     __attribute__((__format__(printf, 2, 3), __nonnull__));
 void buffer_append_vsprintf(struct buffer *, const char *, va_list)
-    __attribute__((__nonnull__));
+    __attribute__((__format__(printf, 2, 0), __nonnull__));
 
 /* Swap the contents of two buffers. */
 void buffer_swap(struct buffer *, struct buffer *)

@@ -267,7 +267,7 @@ test_asprintf(size_t size)
 
 
 /* Wrapper around vasprintf to do the va_list stuff. */
-static void
+static void __attribute__((__format__(printf, 2, 3)))
 xvasprintf_wrapper(char **strp, const char *format, ...)
 {
     va_list args;

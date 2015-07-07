@@ -36,7 +36,8 @@
 # define vasprintf test_vasprintf
 int test_asprintf(char **, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
-int test_vasprintf(char **, const char *, va_list);
+int test_vasprintf(char **, const char *, va_list)
+    __attribute__((__format__(printf, 2, 0)));
 #endif
 
 

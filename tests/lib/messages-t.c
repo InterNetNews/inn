@@ -6,7 +6,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002, 2004, 2005 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004, 2005, 2015 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -95,7 +95,8 @@ static void test11(void *data UNUSED) {
     sysdie("fatal");
 }
 
-static void log_msg(size_t len, const char *format, va_list args, int error) {
+static void __attribute__((__format__(printf, 2, 0)))
+log_msg(size_t len, const char *format, va_list args, int error) {
     fprintf(stderr, "%lu %d ", (unsigned long) len, error);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
