@@ -363,6 +363,10 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 	}
 	if (hp->Value) {
 	    hp->Len = TrimSpaces(hp->Value);
+            /* If the header is empty, we just remove it.  We do not reject
+             * the article, contrary to what an injecting agent is supposed
+             * to do per Section 3.5 of RFC 5537.  (A revision to RFC 5537
+             * may someday allow again that existing and useful feature.) */
 	    if (hp->Len == 0)
 		hp->Value = hp->Body = NULL;
 	}
