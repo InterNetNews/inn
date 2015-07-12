@@ -226,8 +226,10 @@ StripOffHeaders(char *article)
 		hp->Value = &p[hp->Size + 1];
 		/* '\r\n' is replaced with '\n', and unnecessary to consider
 		 * '\r'. */
-		for (q = &p[hp->Size + 1]; ISWHITE(*q) || *q == '\n'; q++)
-		    continue;
+                for (q = &p[hp->Size + 1];
+                     ISWHITE(*q) || (*q == '\n' && ISWHITE(q[1])); q++) {
+                    continue;
+                }
 		hp->Body = q;
 		break;
 	    }
