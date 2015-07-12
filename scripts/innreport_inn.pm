@@ -1068,7 +1068,7 @@ sub collect($$$$$$) {
     return 1 if $left =~ m/ hostChkCxn - now/o;
     # loading path_to_config_file/innfeed.conf
     return 1 if $left =~ m/loading /o;
-    # Finnaly, to avoid problems with strange error lines, ignore them.
+    # Finally, to avoid problems with strange error lines, ignore them.
     #return 1 if ($left =~ /ME /);
   }
   ########
