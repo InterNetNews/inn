@@ -98,6 +98,11 @@ The generation of status reports and performance timings are now also
 enabled by default:  logstatus and nnrpdoverstats parameters, with a
 frequency of 10 minutes (status and timer parameters).
 
+=item *
+
+The default value of max-queue-size has changed from 5 to 20, and
+use-mmap now defaults to true for F<innfeed.conf>.
+
 =back
 
 If you are upgrading from a version prior to S<INN 2.5>, see also

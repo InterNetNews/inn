@@ -173,13 +173,15 @@ listeners as soon as it can, even if it means dropping articles.
 
 =item I<use-mmap>
 
-This key requires a boolean value.  It specifies whether mmaping should be
-used if B<innfeed> has been built with mmap(2) support.  If article data
-on disk is not in NNTP-ready format (CR/LF at the end of each line), then
-after mmaping, the article is read into memory and fixed up, so mmaping
-has no positive effect (and possibly some negative effect depending on
-your system), and so in such a case this value should be C<false>, which
-is the default value.  This corresponds to the B<-M> command-line option.
+This key requires a boolean value and defaults to true.  When B<innfeed>
+is given file names to send (a fairly rare use case) instead of storage
+API tokens, it specifies whether mmaping should be used if B<innfeed>
+has been built with mmap(2) support.  If article data on disk is not in
+NNTP-ready format (CR/LF at the end of each line), then after mmaping,
+the article is read into memory and fixed up, so mmaping has no positive
+effect (and possibly some negative effect depending on your system),
+and so in such a case this value should be C<false>, which corresponds
+to the B<-M> command-line option.
 
 =item I<log-file>
 
@@ -495,7 +497,7 @@ lower values in faster response.
 
 =item I<max-queue-size>
 
-This key requires a positive integer value.  The default value is C<5>.
+This key requires a positive integer value.  The default value is C<20>.
 It defines the maximum number of articles to process at one time when using
 streaming to transmit to a peer.  Larger numbers mean more memory consumed as
 articles usually get pulled into memory (see the description of I<use-mmap>).

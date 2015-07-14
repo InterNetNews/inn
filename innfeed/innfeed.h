@@ -57,7 +57,7 @@
 #define RESPTOUT	 	300 		/* response-timeout */
 #define INIT_CXNS		1 		/* initial-connections */
 #define MAX_CXNS		2 		/* max-connections */
-#define MAX_Q_SIZE		5 		/* max-queue-size */
+#define MAX_Q_SIZE		20 		/* max-queue-size */
 #define STREAM			true 		/* streaming */
 #define NOCHECKHIGH 		95.0 		/* no-check-high */
 #define NOCHECKLOW 		90.0 		/* no-check-low */

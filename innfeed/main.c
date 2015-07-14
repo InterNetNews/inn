@@ -56,7 +56,7 @@ const char *InputFile ;
 char *configFile = NULL ;
 bool RollInputFile = false ;
 char *pidFile = NULL ;
-bool useMMap = false ; /* Even if HAVE_MMAP.  Only used when innfeed is given
+bool useMMap = true ;  /* Even if !HAVE_MMAP.  Only used when innfeed is given
                         * file names to send instead of storage API tokens,
                         * which is a fairly rare use case. */
 void (*gPrintInfo) (void) ;
