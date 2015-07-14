@@ -126,7 +126,7 @@ const struct config config_table[] = {
     { K(server),                  STRING  (NULL) },
     { K(sourceaddress),           STRING  (NULL) },
     { K(sourceaddress6),          STRING  (NULL) },
-    { K(timer),                   UNUMBER    (0) },
+    { K(timer),                   UNUMBER  (600) },
 
     { K(runasuser),               STRING  (RUNASUSER) },
     { K(runasgroup),              STRING  (RUNASGROUP) },
@@ -156,7 +156,7 @@ const struct config config_table[] = {
     { K(blockbackoff),            UNUMBER  (120) },
     { K(chaninacttime),           UNUMBER  (600) },
     { K(chanretrytime),           UNUMBER  (300) },
-    { K(datamovethreshold),       UNUMBER (8192) },
+    { K(datamovethreshold),       UNUMBER (16384) },
     { K(dontrejectfiltered),      BOOL   (false) },
     { K(hiscachesize),            UNUMBER  (256) },
     { K(htmlstatus),              BOOL    (true) },
@@ -168,7 +168,7 @@ const struct config config_table[] = {
     { K(logcancelcomm),           BOOL   (false) },
     { K(logipaddr),               BOOL    (true) },
     { K(logsitename),             BOOL    (true) },
-    { K(logstatus),               BOOL   (false) },
+    { K(logstatus),               BOOL    (true) },
     { K(logtrash),                BOOL    (true) },
     { K(maxartsize),              UNUMBER (1000000) },
     { K(maxconnections),          UNUMBER   (50) },
@@ -184,7 +184,7 @@ const struct config config_table[] = {
     { K(refusecybercancels),      BOOL   (false) },
     { K(remembertrash),           BOOL    (true) },
     { K(stathist),                STRING  (NULL) },
-    { K(status),                  UNUMBER    (0) },
+    { K(status),                  UNUMBER  (600) },
     { K(verifycancels),           BOOL   (false) },
     { K(verifygroups),            BOOL   (false) },
     { K(wanttrash),               BOOL   (false) },
@@ -213,7 +213,7 @@ const struct config config_table[] = {
     { K(keywords),                BOOL   (false) },
     { K(localmaxartsize),         UNUMBER (1000000) },
     { K(maxcmdreadsize),          UNUMBER (BUFSIZ) },
-    { K(msgidcachesize),          UNUMBER (16000) },
+    { K(msgidcachesize),          UNUMBER (64000) },
     { K(moderatormailer),         STRING  (NULL) },
     { K(nfsreader),               BOOL   (false) },
     { K(nfsreaderdelay),          UNUMBER   (60) },
@@ -222,7 +222,7 @@ const struct config config_table[] = {
     { K(nnrpdflags),              STRING    ("") },
     { K(nnrpdauthsender),         BOOL   (false) },
     { K(nnrpdloadlimit),          UNUMBER   (16) },
-    { K(nnrpdoverstats),          BOOL   (false) },
+    { K(nnrpdoverstats),          BOOL    (true) },
     { K(organization),            STRING  (NULL) },
     { K(readertrack),             BOOL   (false) },
     { K(spoolfirst),              BOOL   (false) },
@@ -250,12 +250,12 @@ const struct config config_table[] = {
     { K(keepmmappedthreshold),    UNUMBER (1024) },
     { K(nfswriter),               BOOL   (false) },
     { K(nnrpdcheckart),           BOOL    (true) },
-    { K(overcachesize),           UNUMBER   (64) },
+    { K(overcachesize),           UNUMBER  (128) },
     { K(ovgrouppat),              STRING  (NULL) },
     { K(storeonxref),             BOOL    (true) },
     { K(tradindexedmmap),         BOOL    (true) },
     { K(useoverchan),             BOOL   (false) },
-    { K(wireformat),              BOOL   (false) },
+    { K(wireformat),              BOOL    (true) },
 
     /* The following settings are specific to the history subsystem. */
     { K(hismethod),               STRING  (NULL) },
@@ -276,7 +276,11 @@ const struct config config_table[] = {
     { K(innwatchspoolnodes),      UNUMBER  (200) },
     { K(innwatchspoolspace),      UNUMBER (25000) },
 
-    /* The following settings are specific to scanlogs. */
+    /* The following settings are specific to scanlogs.
+     * Keep a low value by default as it has a privacy impact; three days
+     * should be enough to diagnose the most common cases of malfunction
+     * and abuse.  Where more is needed, it is easy for the news admin
+     * to increase it. */
     { K(logcycles),               UNUMBER    (3) },
 };
 

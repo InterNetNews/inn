@@ -86,6 +86,18 @@ I<addinjectionpostinghost>.  B<innupgrade> takes care of the modification
 only for F<inn.conf>; a manual change will therefore be needed for
 F<readers.conf>, if these parameters are overridden in this file.
 
+=item *
+
+The default values of a few F<inn.conf> parameters have changed to make
+use of the vastly expanded storage and RAM commonly available today:
+datamovethreshold (from 8192 to 16384), msgidcachesize (from 16000
+to 64000), overcachesize (from 64 to 128), and wireformat (now enabled
+by default).
+
+The generation of status reports and performance timings are now also
+enabled by default:  logstatus and nnrpdoverstats parameters, with a
+frequency of 10 minutes (status and timer parameters).
+
 =back
 
 If you are upgrading from a version prior to S<INN 2.5>, see also

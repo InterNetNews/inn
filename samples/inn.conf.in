@@ -69,11 +69,11 @@ extraoverviewhidden:         [ ]
 groupbaseexpiry:             true
 mergetogroups:               false
 nfswriter:                   false
-overcachesize:               64
+overcachesize:               128
 #ovgrouppat:
 storeonxref:                 true
 useoverchan:                 false
-wireformat:                  false
+wireformat:                  true
 xrefslave:                   false
 
 # Reading
@@ -82,7 +82,7 @@ allownewnews:                true
 articlemmap:                 true
 clienttimeout:               1800
 initialtimeout:              10
-msgidcachesize:              16000
+msgidcachesize:              64000
 nfsreader:                   false
 nfsreaderdelay:              60
 nnrpdcheckart:               true
@@ -167,13 +167,13 @@ logcancelcomm:               false
 logcycles:                   3
 logipaddr:                   true
 logsitename:                 true
-logstatus:                   false
+logstatus:                   true
 logtrash:                    true
-nnrpdoverstats:              false
+nnrpdoverstats:              true
 nntplinklog:                 false
 #stathist:
-status:                      0
-timer:                       0
+status:                      600
+timer:                       600
 
 # System Tuning
 
@@ -181,7 +181,7 @@ badiocount:                  5
 blockbackoff:                120
 chaninacttime:               600
 chanretrytime:               300
-datamovethreshold:           8192
+datamovethreshold:           16384
 icdsynccount:                10
 keepmmappedthreshold:        1024
 #maxcmdreadsize:

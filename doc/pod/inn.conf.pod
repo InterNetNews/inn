@@ -111,12 +111,14 @@ system.
 =item I<runasgroup>
 
 The group under which the news server will run.  The default is C<news>
-and should not normally need to be changed.
+(or the group specified at configure time) and should not normally need
+to be changed.
 
 =item I<runasuser>
 
 The user under which the news server will run.  The default is C<news>
-and should not normally need to be changed.
+(or the user specified at configure time) and should not normally need
+to be changed.
 
 =item I<server>
 
@@ -174,12 +176,13 @@ value if you set it, since IPv6 addresses contain colons.
 
 =item I<dontrejectfiltered>
 
-Normally innd(8) rejects incoming articles when directed to do so by any
-enabled article filters (Perl or Python).  However, this parameter causes
-such articles I<not> to be rejected; instead filtering can be applied on
-outbound articles.  If this parameter is set, all articles will be
-accepted on the local machine, but articles rejected by the filter will
-I<not> be fed to any peers specified in F<newsfeeds> with the C<Af> flag.
+Normally innd(8) rejects incoming articles when directed to do so by
+any enabled article filters (Perl or Python).  However, this parameter
+causes such articles I<not> to be rejected; instead filtering can be
+applied on outbound articles.  If this parameter is set, all articles
+will be accepted on the local machine, but articles rejected by the
+filter will I<not> be fed to any peers specified in F<newsfeeds> with
+the C<Af> flag.  The default value is false.
 
 =item I<hiscachesize>
 
@@ -261,8 +264,10 @@ at the leftmost side of the Path: header.
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
-This is a boolean value and the default is based on whether configure found
-pgp, pgpv, or gpgv.
+This is a boolean value and the default in the F<inn.conf> sample file
+is based on whether configure found pgp, pgpv, pgpgpg, gpgv or gpgv2.
+Note that if the parameter is not present in the configuration file,
+it defaults to false.
 
 =item I<port>
 
@@ -544,7 +549,7 @@ may be able to use the C<limit> command to see how many open file
 descriptors your operating system allows.  innd(8) also uses an open file
 descriptor for each incoming feed and outgoing channel or batch file, and
 if it runs out of open file descriptors, it may throttle and stop accepting
-new news.  The default value is C<64> (which is probably still too low if
+new news.  The default value is C<128> (which is probably still too low if
 you have a large number of file descriptors available).
 
 This setting is ignored unless I<ovmethod> is set to C<tradindexed>.
@@ -618,7 +623,7 @@ server more efficient.  The primary reason not to set this is if you have
 old existing software that looks around in the spool and doesn't
 understand how to read wire format.  Storage methods other than tradspool
 always store articles in wire format.  This is a boolean value and the
-default is false.
+default is true.
 
 =item I<xrefslave>
 
@@ -692,7 +697,7 @@ translations.  When serving overview data to clients (NEWNEWS, OVER,
 etc.), nnrpd(8) can cache the storage token associated with a message-ID
 and save the cost of looking it up in the F<history> file; for some
 configurations, setting this parameter can save more than 90% of the
-wall clock time for a session.  The default value is C<16000>.
+wall clock time for a session.  The default value is C<64000>.
 
 =item I<nfsreader>
 
@@ -837,11 +842,11 @@ boolean value and the default is true.
 
 =item I<addinjectionpostingaccount>
 
-Whether to add a posting-account attribute to the Injection-Info:
-header to all local posts giving the username assigned to the user at
-connection time or after authentication.  This is a boolean value and
-the default is false. There is no intrinsic support for obfuscating the
-value.  That has to be done with a user-written Perl filter, if desired.
+Whether to add a posting-account attribute to the Injection-Info: header
+to all local posts giving the username assigned to the user at connection
+time or after authentication.  This is a boolean value and the default
+is false.  There is no intrinsic support for obfuscating the value.
+That has to be done with a user-written Perl filter, if desired.
 
 =item I<addinjectionpostinghost>
 
@@ -1252,7 +1257,7 @@ statistics.  This is a boolean value and the default is true.
 
 Whether B<innd> should write a shortened version of its status report
 to syslog every I<status> seconds.  This is a boolean value and the default
-is false.  If set to true, see the I<status> parameter for more details
+is true.  If set to true, see the I<status> parameter for more details
 on how to enable status reporting.
 
 =item I<logtrash>
@@ -1266,7 +1271,7 @@ be useful to set it to false when I<wanttrash> is set to true.
 
 Whether nnrpd overview statistics should be logged via syslog.  This can
 be useful for measuring overview performance.  This is a boolean value and
-the default is false.
+the default is true.
 
 =item I<nntplinklog>
 
@@ -1283,19 +1288,22 @@ default value.
 
 =item I<status>
 
-How frequently (in seconds) innd(8) should write out a status report.  The
-report is written to I<pathhttp>/inn_status.html or I<pathlog>/inn.status
-depending on the value of I<htmlstatus>.  If this is set to C<0> or
-C<false>, status reporting is disabled.  The default value is C<0>.
+How frequently (in seconds) innd(8) should write out a status
+report.  The report is written to I<pathhttp>/inn_status.html or
+I<pathlog>/inn.status depending on the value of I<htmlstatus>.  If this
+is set to C<0> or C<false>, status reporting is disabled.  The default
+value is C<600> (that is to say reports are written every 10 minutes).
 
 =item I<timer>
 
-How frequently (in seconds) innd(8) should report performance timings to
-syslog.  If this is set to C<0>, performance timing is disabled.  Enabling
-this is highly recommended, and innreport(8) can produce a nice summary of
-the timings.  If set to C<0>, performance timings in nnrpd(8) are also
-disabled, although nnrpd always reports statistics on exit and therefore
-any non-zero value is equivalent for it.  The default value is C<0>.
+How frequently (in seconds) innd(8) should report performance timings
+to syslog.  If this is set to C<0>, performance timing is disabled.
+Enabling this is highly recommended, and innreport(8) can produce a nice
+summary of the timings.  If set to C<0>, performance timings in nnrpd(8)
+are also disabled, although B<nnrpd> always reports statistics on exit
+and therefore any non-zero value is equivalent for it.  The default
+value is C<600> (that is to say performance timings are reported every
+10 minutes).
 
 =back
 
@@ -1338,7 +1346,7 @@ buffer or extend the buffer.  The buffer described here is used for reading
 NNTP data.  Increasing this value may improve performance, but it should
 not be increased on Systems with insufficient memory.  Permitted values
 are between C<0> and C<1048576> (out of range values are treated as
-C<1048576>) and the default value is C<8192>.
+C<1048576>) and the default value is C<16384>.
 
 =item I<icdsynccount>
 
