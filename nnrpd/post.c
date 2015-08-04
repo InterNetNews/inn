@@ -1114,22 +1114,29 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
-    for (p = frombuf;p < frombuf + sizeof(frombuf);)
+    /* Unfold the From: header field. */
+    for (p = frombuf; p < frombuf + sizeof(frombuf); )
 	if ((p = strchr(p, '\n')) == NULL)
 	    break;
 	else
 	    *p++ = ' ';
+    /* Try to rewrite the From: header field in a cleaner format. */
     HeaderCleanFrom(frombuf);
-    p = strchr(frombuf, '@');
-    if (p) {
+    /* Now perform basic checks of the From: header field.
+     * Pass leading '@' chars because they are not part of an address. */
+    p = frombuf;
+    while (*p == '@') {
+        p++;
+    }
+    p = strchr(p, '@');
+    if (p != NULL) {
 	p = strrchr(p+1, '.');
-	if (!p) {
+	if (p == NULL) {
 	    if (modgroup)
 		free(modgroup);
 	    return "From: address not in Internet syntax";
 	}
-    }
-    else {
+    } else {
 	if (modgroup)
 	    free(modgroup);
 	return "From: address not in Internet syntax";
