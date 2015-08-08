@@ -292,7 +292,7 @@ int main (int argc, char **argv)
 
   if ( !checkConfig ) 
     {
-      notice ("ME starting at %s\n (%s)", dateString, INN_VERSION_STRING);
+      notice("ME starting at %s (%s)", dateString, INN_VERSION_STRING);
     }
 
   val = true;

@@ -4509,7 +4509,7 @@ static void delConnection (Connection cxn)
       freeTimeoutQueue () ;
 
       timeToString (now, dateString, sizeof(dateString)) ;
-      notice ("ME finishing at %s\n", dateString) ;
+      notice ("ME finishing at %s", dateString) ;
 
       exit (0) ;
     }
