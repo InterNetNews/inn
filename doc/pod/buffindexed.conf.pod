@@ -60,8 +60,8 @@ An example of F<buffindexed.conf> file can be:
 When you first start B<innd> with everything configured properly, you
 should see messages like this in I<pathlog>/news.notice:
 
-    Aug 27 00:00:00 kevlar innd: buffindexed: No magic cookie found
-        for buffindexed 0, initializing
+    Aug 27 00:00:00 kevlar innd: buffindexed: no magic cookie found
+        for ovbuff 0, initializing
 
 You MUST recreate overview completely using B<makehistory> if you remove
 or replace buffers.  However, new buffers can be added without any special

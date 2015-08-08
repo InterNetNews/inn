@@ -206,7 +206,7 @@ able to use B<sm> to retrieve articles, make sure they're world-readable.
 Once you have everything configured properly and you start B<innd>, you
 should see messages in F<news.notice> that look like:
 
-    innd: CNFS-sm No magic cookie found for cycbuff ONE, initializing
+    innd: CNFS: no magic cookie found for cycbuff ONE, initializing
 
 where C<ONE> will be whatever you called your cycbuff.
 
