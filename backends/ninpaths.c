@@ -207,7 +207,7 @@ writedumpfile(const char *n)
 	if (writedump(d)<0)
             unlink(buf);
     } else {
-	perror("writedumpfile: fopen");
+	perror("writedumpfile: fopen failed for ninpaths");
     }
 }
 
@@ -323,7 +323,7 @@ readdumpfile(const char *n)
 	fclose(d);
 	return i;
     } else {
-	perror("readdumpfile: fopen");
+	perror("readdumpfile: fopen failed for ninpaths");
 	return -1;
     }
 }
