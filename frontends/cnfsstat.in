@@ -159,6 +159,8 @@ if ($oclass) {
             } else {
                 ($gr, $cl, $min, $max) = ('', $oclass, 0, 0);
             }
+            # Remove leading and trailing double quotes, if present.
+            $gr =~ s/"?([^"]*)"?/$1/g;
 	    if ($use_syslog) {
 		if ($min || $max) {
 		    $logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $oclass, $gr, $min, $max);
@@ -196,6 +198,8 @@ if ($oclass) {
 
     foreach my $c (@storsort) {
 	($gr, $cl, $min, $max) = split(/:/, $stor{$c});
+        # Remove leading and trailing double quotes, if present.
+        $gr =~ s/"?([^"]*)"?/$1/g;
 	if ($use_syslog) {
 	    if ($min || $max) {
 		$logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $c, $gr, $min, $max);
@@ -330,10 +334,12 @@ sub print_cycbuff_head {
     if ($use_syslog) {
 	($name) = split(/\s/, $name);
 	$name =~ s/\0//g;
+	# Log only if the buffer is initialized (cyclenum is not -1).
 	syslog ('notice', '%s Buffer %s, len: %.2f  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
 		$logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
 		Math::BigFloat->new($free) / (1024 * 1024),
-		100 * Math::BigFloat->new($free) / Math::BigFloat->new($len), $cyclenum);
+		100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
+		$cyclenum) if $cyclenum >= 0;
 	return 0;
     }
 
