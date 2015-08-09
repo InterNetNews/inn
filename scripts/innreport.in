@@ -311,24 +311,32 @@ if ($GRAPH && !$::HAVE_GD) {
 }
 
 if ($HTML) {
+  $HTML_dir = "." if defined $HTML_dir && $HTML_dir eq '';
+  # Try to create the directory if it does not exist.
+  unless (-d $HTML_dir) {
+    mkdir($HTML_dir);
+  }
+  unless (-w $HTML_dir) {
+    print "WARNING: can't write in \"$HTML_dir\" as required by -html " .
+      "switch.\n         Option -html and -a removed.  Please see the " .
+      "-d switch.\n\n";
+    undef $HTML;
+    $ARCHIVE = 0;
+  }
   if ($GRAPH) {
     $IMG_dir = "." if defined $IMG_dir && $IMG_dir eq '';
     $IMG_pth .= "/" if $IMG_pth;
     $IMG_pth =~ s|/+|/|g;
     $IMG_dir =~ s|/+|/|g;
+    # Try to create the directory if it does not exist.
+    unless (-d $IMG_dir) {
+      mkdir($IMG_dir);
+    }
     unless (-w $IMG_dir) {
       print "WARNING: can't write in \"$IMG_dir\" as required by -g " .
-	"switch.\n         Option -g removed. Please see the -p switch.\n\n";
+        "switch.\n         Option -g removed.  Please see the -p switch.\n\n";
       undef $GRAPH;
     }
-  }
-  $HTML_dir = "." if defined $HTML_dir && $HTML_dir eq '';
-  unless (-w $HTML_dir) {
-    print "WARNING: can't write in \"$HTML_dir\" as required by -html " .
-      "switch.\n         Option -html and -a removed. Please see the " .
-      "-d switch.\n\n";
-    undef $HTML;
-    $ARCHIVE = 0;
   }
 }
 
