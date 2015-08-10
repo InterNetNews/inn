@@ -71,6 +71,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     char *      p;
     static char buf[256];
     bool        failure;
+    SV *        errsv;
 
     if (!PerlFilterActive) return NULL;
     filter = perl_get_cv("filter_art", 0);
@@ -114,11 +115,12 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
-    if (SvTRUE(ERRSV)) {
+    errsv = ERRSV;
+    if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_art died on article %s: %s",
                HDR_FOUND(HDR__MESSAGE_ID) ? HDR(HDR__MESSAGE_ID) : "?",
-               SvPV(ERRSV, PL_na));
+               SvPV(errsv, PL_na));
         (void) POPs;
     } else {
         failure = false;
@@ -154,6 +156,7 @@ PLmidfilter(char *messageID)
     char        *p;
     static char buf[256];
     bool        failure;
+    SV *        errsv;
 
     if (!PerlFilterActive) return NULL;
     filter = perl_get_cv("filter_messageid", 0);
@@ -170,10 +173,11 @@ PLmidfilter(char *messageID)
 
     /* Check $@, which will be set if the sub died. */
     buf[0] = '\0';
-    if (SvTRUE(ERRSV)) {
+    errsv = ERRSV;
+    if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_messageid died on id %s: %s",
-               messageID, SvPV(ERRSV, PL_na));
+               messageID, SvPV(errsv, PL_na));
         (void) POPs;
     } else {
         failure = false;
@@ -206,6 +210,7 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     HV          *mode;
     CV          *filter;
     bool        failure;
+    SV *        errsv;
 
     filter = perl_get_cv("filter_mode", 0);
     if (!filter) return;
@@ -244,10 +249,11 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     SPAGAIN;
 
     /* Check $@, which will be set if the sub died. */
-    if (SvTRUE(ERRSV)) {
+    errsv = ERRSV;
+    if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_mode died: %s",
-                SvPV(ERRSV, PL_na));
+                SvPV(errsv, PL_na));
         (void) POPs;
     } else {
         failure = false;

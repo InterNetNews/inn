@@ -66,6 +66,7 @@ PerlFilter(bool value)
 {
     dSP;
     char *argv[] = { NULL };
+    SV *errsv;
 
     if (value == PerlFilterActive)
         return true;
@@ -78,9 +79,10 @@ PerlFilter(bool value)
             /* No need for PUSHMARK(SP) with call_argv(). */
             perl_call_argv("filter_end", G_EVAL | G_DISCARD | G_NOARGS, argv);
             SPAGAIN;
-            if (SvTRUE(ERRSV)) {
+            errsv = ERRSV;
+            if (SvTRUE(errsv)) {
                 syslog (L_ERROR, "SERVER perl function filter_end died: %s",
-                        SvPV(ERRSV, PL_na));
+                        SvPV(errsv, PL_na));
                 (void) POPs;
             }
             PUTBACK;
@@ -133,6 +135,7 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
     if (startupfile != NULL && filterfile != NULL) {
         char *evalfile = NULL;
         bool failure;
+        SV *errsv;
         dSP;
 
         ENTER;
@@ -153,10 +156,11 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
         evalfile = NULL;
 
         /* Check $@. */
-        if (SvTRUE(ERRSV)) {
+        errsv = ERRSV;
+        if (SvTRUE(errsv)) {
             failure = true;
             syslog(L_ERROR,"SERVER perl loading %s failed: %s",
-                   startupfile, SvPV(ERRSV, PL_na));
+                   startupfile, SvPV(errsv, PL_na));
         } else {
             failure = false;
         }
@@ -187,6 +191,7 @@ int PERLreadfilter(char *filterfile, const char *function)
     char *argv[] = { NULL };
     char *evalfile = NULL;
     bool failure;
+    SV *errsv;
 
     if (perl_get_cv("filter_before_reload", false) != NULL) {
         ENTER;
@@ -195,10 +200,11 @@ int PERLreadfilter(char *filterfile, const char *function)
         perl_call_argv("filter_before_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         SPAGAIN;
         /* Check $@. */
-        if (SvTRUE(ERRSV)) {
+        errsv = ERRSV;
+        if (SvTRUE(errsv)) {
             failure = true;
             syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
-                    SvPV(ERRSV, PL_na));
+                    SvPV(errsv, PL_na));
             (void)POPs;
         } else {
             failure = false;
@@ -228,10 +234,11 @@ int PERLreadfilter(char *filterfile, const char *function)
     evalfile = NULL;
 
     /* Check $@. */
-    if (SvTRUE(ERRSV)) {
+    errsv = ERRSV;
+    if (SvTRUE(errsv)) {
         failure = true;
         syslog (L_ERROR,"SERVER perl loading %s failed: %s",
-                filterfile, SvPV(ERRSV, PL_na));
+                filterfile, SvPV(errsv, PL_na));
     } else {
         failure = false;
     }
@@ -258,9 +265,10 @@ int PERLreadfilter(char *filterfile, const char *function)
         evalfile = NULL;
 
         /* Check $@. */
-        if (SvTRUE(ERRSV)) {
+        errsv = ERRSV;
+        if (SvTRUE(errsv)) {
             syslog (L_ERROR,"SERVER perl undef &%s failed: %s",
-                    function, SvPV(ERRSV, PL_na)) ;
+                    function, SvPV(errsv, PL_na)) ;
         }
         PUTBACK;
         FREETMPS;
@@ -276,10 +284,11 @@ int PERLreadfilter(char *filterfile, const char *function)
         perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
         SPAGAIN;
         /* Check $@. */
-        if (SvTRUE(ERRSV)) {
+        errsv = ERRSV;
+        if (SvTRUE(errsv)) {
             failure = true;
             syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
-                    SvPV(ERRSV, PL_na));
+                    SvPV(errsv, PL_na));
             (void)POPs;
         } else {
             failure = false;
