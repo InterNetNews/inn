@@ -11,6 +11,10 @@
 
 #include "config.h"
 
+/* Suppress the float-equal gcc warning because of SvTRUE that
+   compares floats to 0.0 in Perl core code. */
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 BEGIN_DECLS
 
 /* Provide an alternate version of newXS that takes const char strings for the
