@@ -29,7 +29,7 @@
  * Disable the requirement that format strings be literals.  We need variable
  * formats for easy testing.
  */
-#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 2)
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 2) || defined(__clang__)
 # pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 

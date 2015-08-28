@@ -679,7 +679,7 @@ socket_xread(socket_type fd, void *buffer, size_t size)
 {
     size_t total;
     ssize_t status;
-    int count = 0;
+    unsigned int count = 0;
 
     /* Abort the read if we try 100 times with no forward progress. */
     for (total = 0, status = 0; total < size; total += status) {
