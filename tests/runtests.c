@@ -1205,7 +1205,8 @@ find_test(const char *name, const char *source, const char *build)
 
 /*
  * Read a list of tests from a file, returning the list of tests as a struct
- * testlist.  Reports an error to standard error and exits if the list of
+ * testlist, or NULL if there were no tests (such as a file containing only
+ * comments).  Reports an error to standard error and exits if the list of
  * tests cannot be read.
  */
 static struct testlist *
@@ -1259,6 +1260,12 @@ read_test_list(const char *filename)
     }
     fclose(file);
 
+    /* If there were no tests, current is still NULL. */
+    if (current == NULL) {
+        free(listhead);
+        return NULL;
+    }
+
     /* Return the results. */
     return listhead;
 }
@@ -1267,7 +1274,8 @@ read_test_list(const char *filename)
 /*
  * Build a list of tests from command line arguments.  Takes the argv and argc
  * representing the command line arguments and returns a newly allocated test
- * list.  The caller is responsible for freeing.
+ * list, or NULL if there were no tests.  The caller is responsible for
+ * freeing.
  */
 static struct testlist *
 build_test_list(char *argv[], int argc)
@@ -1290,6 +1298,12 @@ build_test_list(char *argv[], int argc)
         current->ts = xcalloc(1, sizeof(struct testset));
         current->ts->plan = PLAN_INIT;
         current->ts->file = xstrdup(argv[i]);
+    }
+
+    /* If there were no tests, current is still NULL. */
+    if (current == NULL) {
+        free(listhead);
+        return NULL;
     }
 
     /* Return the results. */
