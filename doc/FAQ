@@ -516,9 +516,9 @@ properly (see 3.4).
 
 The other most frequent cause of this problem is not correctly following
 the instructions in INSTALL on how to set up the initial history database.
-After running makedbz, the initial history database files will have names
-starting with history.n.  These files must be renamed to remove the ".n"
-before innd will start.
+If you run makedbz without the -o flag, the initial history database files
+will have names starting with history.n.  These files must be renamed to
+remove the ".n" before innd will start.
 
 ------------------------------
 

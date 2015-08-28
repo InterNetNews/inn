@@ -1432,9 +1432,8 @@ Next, you need to create an empty F<history> database.  To do this, type:
 run these commands:  the installation takes care of creating the
 F<history> database.)
 
-When it finishes, rename the files it created to remove the C<.n> in the
-file names and then make sure the file permissions are correct on all the
-files you've just created:
+When it finishes, make sure the file permissions are correct on all
+the files you've just created:
 
     chmod 644 *
 

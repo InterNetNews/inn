@@ -29,9 +29,10 @@ flags implies the B<-i> flag.
 
 =item B<-o>
 
-If the B<-o> flag is used, then the link is not made and any existing history
-files are overwritten.  If the old database exists, B<makedbz> will use it to
-determine the size of the new database.
+If the B<-o> flag is used, then the temporary link to C<history.n>
+(or the name specified by the B<-f> flag) is not made and any existing
+history files are overwritten.  If the old database exists, B<makedbz>
+will use it to determine the size of the new database.
 
 =item B<-s> I<size>
 
