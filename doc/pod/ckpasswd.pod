@@ -93,10 +93,13 @@ B<htpasswd> program, be sure to give it the B<-d> option so that it
 will use crypt(3).
 
 A line in I<filename> for the user C<user> with the password C<pass>
-would be C<user:LIfOpbjNaEQYE> as obtained by the following commands:
+would be C<user:LIfOpbjNaEQYE> as obtained by the following command:
 
     % htpasswd -nbd user pass
     user:LIfOpbjNaEQYE
+
+In case B<htpasswd> is not installed or if you do not want to depend
+on it, another command involving Perl does a similar job:
 
     % perl -e 'print "user:".crypt("pass", "LI")."\n";'
     user:LIfOpbjNaEQYE
