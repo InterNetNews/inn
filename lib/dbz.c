@@ -1147,7 +1147,8 @@ getconf(FILE *df, dbzconfig *cp)
 		&cp->valuesize, &cp->fillpercent, &cp->tagenb,
 		&cp->tagmask, &cp->tagshift, &cp->dropbits);
     if (i != 7) {
-	warn("dbz: bad first line in config");
+	warn("dbz: bad first line in .dir history file");
+    warn("dbz: you should consider running makedbz manually");
 	return false;
     }
     if (cp->valuesize != sizeof(of_t)) {
@@ -1169,7 +1170,7 @@ getconf(FILE *df, dbzconfig *cp)
     i = fscanf(df, "dbz 6 %ld %d %d\n", &cp->tsize,
 		&cp->valuesize, &cp->fillpercent);
     if (i != 3) {
-        warn("dbz: bad first line in config");
+        warn("dbz: bad first line in .dir history file");
 	return false;
     }
     if (cp->valuesize != (sizeof(of_t) + sizeof(erec))) {
@@ -1182,7 +1183,7 @@ getconf(FILE *df, dbzconfig *cp)
     /* second line, the usages */
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->used[i])) {
-            warn("dbz: bad usage value in config");
+            warn("dbz: bad usage value in .dir history file");
 	    return false;
 	}
     debug("used %ld %ld %ld...", cp->used[0], cp->used[1], cp->used[2]);
@@ -1191,7 +1192,7 @@ getconf(FILE *df, dbzconfig *cp)
     /* third line, the text usages */
     for (i = 0; i < NUSEDS; i++)
 	if (!fscanf(df, "%ld", &cp->vused[i])) {
-            warn("dbz: bad text usage value in config");
+            warn("dbz: bad text usage value in .dir history file");
 	    return false;
 	}
     debug("vused %ld %ld %ld...", cp->vused[0], cp->vused[1], cp->vused[2]);
