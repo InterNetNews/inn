@@ -530,7 +530,7 @@ the affected functions.
 Use a roughly BSD indentation style but with four-space indents.  This
 means no space before the parenthesis around function arguments, open brace on
 the same line as if/while/for, and close and open brace on the same line
-as else).
+as else.
 
 =item *
 
