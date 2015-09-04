@@ -4,10 +4,10 @@ inn-radius.conf - Configuration for nnrpd RADIUS authenticator
 
 =head1 DESCRIPTION
 
-This describes the format and attributes of the configuration file for the
-nnrpd RADIUS authenticator.  See radius(8) for more information about the
-authenticator program.  The default location for this file is
-F<inn-radius.conf> in I<pathetc>.
+This describes the format and attributes of the configuration file for
+the B<nnrpd> RADIUS authenticator.  See radius(8) for more information
+about the authenticator program.  The default location for this file
+is F<inn-radius.conf> in I<pathetc>.
 
 Blank lines and lines beginning with C<#> are ignored, as is anything
 after a C<#> on a line.  All other lines should begin with a parameter
@@ -19,6 +19,8 @@ section of configuration for a particular server should be enclosed in:
     }
 
 where <name> is just some convenient label for that server.
+
+=head1 SERVER GROUP PARAMETERS
 
 The available parameters are:
 
@@ -104,6 +106,6 @@ $Id$
 
 =head1 SEE ALSO
 
-radius(8)
+radius(8).
 
 =cut

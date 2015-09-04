@@ -8,17 +8,18 @@ B<radius> [B<-h>] [B<-f> I<config>]
 
 =head1 DESCRIPTION
 
-B<radius> is an nnrpd authenticator, accepting a username and password
-from nnrpd (given to nnrpd by a reader connection) and attempting to
-authenticate that username and password against a RADIUS server.  See
-readers.conf(5) for more information on how to configure an nnrpd
-authenticator.  It is useful for a site that already does user
-authentication via RADIUS and wants to authenticate news reading
+B<radius> is an B<nnrpd> authenticator, accepting a username and
+password from B<nnrpd> (given to B<nnrpd> by a reader connection) and
+attempting to authenticate that username and password against a RADIUS
+server.  See readers.conf(5) for more information on how to configure
+an B<nnrpd> authenticator.  It is useful for a site that already does
+user authentication via RADIUS and wants to authenticate news reading
 connections as well.
 
 By default, B<radius> reads I<pathetc>/inn-radius.conf for configuration
 information, but a different configuration file can be specified with
-B<-f>.  See inn-radius.conf(5) for a description of the configuration file.
+B<-f>.  See inn-radius.conf(5) for a description of the configuration
+file.
 
 =head1 OPTIONS
 
@@ -37,8 +38,8 @@ Print out a usage message and exit.
 
 =head1 EXAMPLE
 
-The following readers.conf(5) fragment tells nnrpd to authenticate all
-connections using this authenticator:
+The following readers.conf(5) fragment tells B<nnrpd> to authenticate
+all connections using this authenticator:
 
     auth radius {
         auth: radius
@@ -46,9 +47,9 @@ connections using this authenticator:
         default-domain: example.com
     }
 
-C<@example.com> will be appended to the user-supplied identity, and if
-RADIUS authentication failes, the user will be assigned an identity of
-C<E<lt>FAILE<gt>@example.com>.
+C<@example.com> will be appended to the user-supplied identity, and
+if RADIUS authentication fails, the user will be assigned an identity
+of C<E<lt>FAILE<gt>@example.com>.
 
 =head1 BUGS
 
@@ -70,8 +71,6 @@ $Id$
 
 =head1 SEE ALSO
 
-inn-radius.conf(5), nnrpd(8), readers.conf(5)
-
-S<RFC 2865>, Remote Authentication Dial In User Service.
+inn-radius.conf(5), nnrpd(8), readers.conf(5).
 
 =cut
