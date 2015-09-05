@@ -378,8 +378,8 @@ InndHisLogStats(void)
 {
     struct histstats stats = HISstats(History);
 
-    syslog(L_NOTICE, "ME HISstats %d hitpos %d hitneg %d missed %d dne",
-	   stats.hitpos, stats.hitneg, stats.misses, stats.dne);
+    notice("ME HISstats %d hitpos %d hitneg %d missed %d dne",
+           stats.hitpos, stats.hitneg, stats.misses, stats.dne);
 }
 
 

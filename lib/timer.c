@@ -377,6 +377,6 @@ TMRsummary(const char *prefix, const char *const *labels)
     for (i = 0; i < timer_count; i++)
         if (timers[i] != NULL)
             off += TMRsumone(labels, timers[i], buf + off, len - off);
-    syslog(LOG_NOTICE, "%s", buf);
+    notice("%s", buf);
     free(buf);
 }
