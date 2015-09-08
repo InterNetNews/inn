@@ -809,6 +809,11 @@ for major releases, F<configure.ac> and F<Makefile.global.in> for both
 minor and major releases.  The release versions in the Trac wiki should
 also be updated.
 
+=item 16.
+
+For major releases, update the branch used for the generation of STABLE
+snapshots.
+
 =back
 
 =head1 References
