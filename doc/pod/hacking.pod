@@ -708,7 +708,8 @@ included in a final release.  It should not be changed for a beta or
 a release candidate.
 
 If making a major release, the revision numbers of the STABLE series
-should also be bumped at the end of subject 1.2.
+should also be bumped in F<doc/FAQ> at the end of subject 1.2, as well
+as the revision numbers of scheduled versions in F<TODO>.
 
 =item 5.
 
@@ -804,7 +805,7 @@ release tag by copying it to F<tags> in Subversion.
 =item 15.
 
 Bump revision numbers to reflect the one of the following release,
-especially in F<doc/pod/install.pod>, F<doc/pod/readme.pod> and F<TODO>
+especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod>
 for major releases, F<configure.ac> and F<Makefile.global.in> for both
 minor and major releases.  The release versions in the Trac wiki should
 also be updated.

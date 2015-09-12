@@ -26,7 +26,7 @@ changes easier and will be *greatly* appreciated.
 Last modified $Id$.
 
 
-Scheduled for INN 2.6
+Scheduled for INN 2.7
 
 * Rework and clean up the overview API.  The major change is that the
   initialization function should return a pointer to an opaque struct
@@ -90,7 +90,7 @@ Scheduled for INN 2.6
   into libinn.
 
 
-Scheduled for INN 2.7
+Scheduled for INN 2.8
 
 * Add a generic, modular anti-spam and anti-abuse filter, off by default,
   but coming with INN and prominently mentioned in the INSTALL
