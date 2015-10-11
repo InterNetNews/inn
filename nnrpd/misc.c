@@ -478,6 +478,34 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         return;
     }
 
+    /* Close out any existing article, report group stats.
+     * RFC 4642 requires the reset of any knowledge about the client. */
+    if (GRPcur) {
+        ARTclose();
+        GRPreport();
+        OVctl(OVCACHEFREE, &boolval);
+        free(GRPcur);
+        GRPcur = NULL;
+        if (ARTcount) {
+            syslog(L_NOTICE, "%s exit for STARTTLS articles %ld groups %ld",
+                   Client.host, ARTcount, GRPcount);
+        }
+        GRPcount = 0;
+        PERMgroupmadeinvalid = false;
+    }
+
+    /* We can now assume a secure connection will be negotiated because
+     * nnrpd will exit if STARTTLS fails.
+     * Check the permissions the client will have after having successfully
+     * negotiated a TLS layer.  (There may be TLS-only auth blocks in
+     * readers.conf that match the connection).
+     * In case the client would no longer have access to the server, or an
+     * authentication error happens, the connection aborts after a fatal 400
+     * response code sent by PERMgetpermissions(). */
+    nnrpd_starttls_done = true;
+    PERMgetaccess(false);
+    PERMgetpermissions();
+
     Reply("%d Begin TLS negotiation now\r\n", NNTP_CONT_STARTTLS);
     fflush(stdout);
 
@@ -504,23 +532,6 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
     }
 #endif /* HAVE_SASL */
-
-    nnrpd_starttls_done = true;
-
-    /* Close out any existing article, report group stats.
-     * RFC 4642 requires the reset of any knowledge about the client. */
-    if (GRPcur) {
-        ARTclose();
-        GRPreport();
-        OVctl(OVCACHEFREE, &boolval);
-        free(GRPcur);
-        GRPcur = NULL;
-        if (ARTcount)
-            syslog(L_NOTICE, "%s exit for STARTTLS articles %ld groups %ld",
-                   Client.host, ARTcount, GRPcount);
-        GRPcount = 0;
-        PERMgroupmadeinvalid = false;
-    }
 
     /* Reset our read buffer so as to prevent plaintext command injection. */
     line_reset(&NNTPline);
