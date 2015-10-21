@@ -782,11 +782,26 @@ release announcement to inn-workers for proof-reading.
 
 Move the release into the public area of the ftp site and update the
 F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
-site and update the F<inn.tar.gz.md5> link.  Sign the release (ASC,
-SHA-1, SHA-256 and SHA-512) and update the F<inn.tar.gz.asc> link.
-Possibly move older releases off into the F<OLD> directory.  Contact the
-ISC folks to push the release to ftp.isc.org and to update the ISC web
-site (the relevant contact is C<web-request> instead of C<webmaster>).
+site and update the F<inn.tar.gz.md5> link.  Sign the release, creating a
+F<*.asc> file, using:
+
+    gpg --detach-sign --armor inn-Y.Y.Y.tar.gz
+
+Also create SHA-1, SHA-256, and SHA-512 files, with C<sha1sum>,
+C<sha256sum>, and C<sha512sum>, respectively, and then sign them to create
+corresponding F<*.asc> files.  You don't need to retain the unsigned
+checksum files.
+
+Update the F<inn.tar.gz*> links and possibly move older releases off into
+the F<OLD> directory.
+
+(Currently, this is all done by Russ by updating the files in
+L<http://archives.eyrie.org/software/inn/> and then letting ISC mirror
+them via rsync.)
+
+Contact the ISC folks to push the release to ftp.isc.org and to update the
+ISC web site (the relevant contact is C<web-request> instead of
+C<webmaster>).
 
 =item 13.
 
@@ -814,6 +829,13 @@ also be updated.
 
 For major releases, update the branch used for the generation of STABLE
 snapshots.
+
+=item 17.
+
+Ping Russ to update L<http://www.eyrie.org/~eagle/software/inn/> with the
+latest version information and, for a major release, clone the
+documentation tree for CURRENT as a new stable documentation tree for the
+stable release series.
 
 =back
 
