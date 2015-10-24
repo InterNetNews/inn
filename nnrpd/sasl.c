@@ -13,11 +13,13 @@
 /* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL)
 extern int tls_cipher_usebits;
 extern char *tls_peer_CN;
-extern bool nnrpd_starttls_done;
 #endif /* HAVE_OPENSSL */
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+extern bool encryption_layer_on;
+#endif /* HAVE_OPENSSL || HAVE_SASL */
 
 #ifdef HAVE_SASL
 sasl_conn_t *sasl_conn = NULL;
@@ -94,7 +96,7 @@ SASLnewserver(void)
         sasl_setprop(sasl_conn, SASL_SEC_PROPS, &secprops);
 #ifdef HAVE_OPENSSL
         /* Tell SASL about the negotiated TLS layer. */
-        if (nnrpd_starttls_done) {
+        if (encryption_layer_on) {
             if (sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
                              (sasl_ssf_t *) &tls_cipher_usebits) != SASL_OK) {
                 syslog(L_NOTICE, "sasl_setprop() failed:  TLS layer for SASL");
@@ -153,10 +155,10 @@ SASLauth(int ac, char *av[])
     /* Check whether STARTTLS must be used before trying to authenticate
      * with AUTHINFO SASL PLAIN, LOGIN or EXTERNAL. */
     if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
-        && !nnrpd_starttls_done && ((strcasecmp(mech, "PLAIN") == 0
+        && !encryption_layer_on && ((strcasecmp(mech, "PLAIN") == 0
                                      || strcasecmp(mech, "LOGIN") == 0
                                      || strcasecmp(mech, "EXTERNAL") == 0))) {
-        Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
+        Reply("%d Encryption layer required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
         return;
     }
 #endif
@@ -291,26 +293,19 @@ SASLauth(int ac, char *av[])
     }
 
     if (r == SASL_OK) {
-	/* Success. */
-	strlcpy(PERMuser, canon_user, sizeof(PERMuser));
-        PERMgetpermissions();
-	PERMneedauth = false;
-	PERMauthorized = true;
-        PERMcanauthenticate = false;
-
-	syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
-
-	if (serveroutlen)
-	    Reply("%d %s\r\n", NNTP_OK_SASL, base64);
-	else
-	    Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
-
-	/* Save info about the negotiated security layer for I/O functions. */
-	sasl_ssf = *ssfp;
-	sasl_maxout =
-	    (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ? NNTP_MAXLEN_COMMAND : *maxoutp;
+        /* Success!
+         * First, save info about the negotiated security layer
+         * for I/O functions. */
+        sasl_ssf = *ssfp;
+        sasl_maxout = (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ?
+            NNTP_MAXLEN_COMMAND : *maxoutp;
 
         if (sasl_ssf > 0) {
+            /* For the forthcoming check of the permissions the client now
+             * has, tell the connection is encrypted, so that TLS-only auth
+             * blocks in readers.conf are properly taken into account. */
+            encryption_layer_on = true;
+
             /* Close out any existing article, report group stats.
              * RFC 4643 requires the reset of any knowledge about the client. */
             if (GRPcur) {
@@ -320,15 +315,33 @@ SASLauth(int ac, char *av[])
                 OVctl(OVCACHEFREE, &boolval);
                 free(GRPcur);
                 GRPcur = NULL;
-                if (ARTcount)
-                    syslog(L_NOTICE, "%s exit for AUTHINFO SASL articles %ld groups %ld",
+                if (ARTcount) {
+                    syslog(L_NOTICE,
+                           "%s exit for AUTHINFO SASL articles %ld groups %ld",
                            Client.host, ARTcount, GRPcount);
+                }
                 GRPcount = 0;
                 PERMgroupmadeinvalid = false;
-            }
 
-            /* Reset our read buffer so as to prevent plaintext command injection. */
-            line_reset(&NNTPline);
+                /* Reset our read buffer so as to prevent plaintext
+                 * command injection. */
+                line_reset(&NNTPline);
+            }
+        }
+
+        PERMgetaccess(false);
+        strlcpy(PERMuser, canon_user, sizeof(PERMuser));
+        PERMgetpermissions();
+        PERMneedauth = false;
+        PERMauthorized = true;
+        PERMcanauthenticate = false;
+
+        syslog(L_NOTICE, "%s user %s", Client.host, PERMuser);
+
+        if (serveroutlen) {
+            Reply("%d %s\r\n", NNTP_OK_SASL, base64);
+        } else {
+            Reply("%d Authentication succeeded\r\n", NNTP_OK_AUTHINFO);
         }
     } else {
 	/* Failure. */

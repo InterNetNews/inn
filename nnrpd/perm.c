@@ -21,9 +21,9 @@
 # include <sys/select.h>
 #endif
 
-#ifdef HAVE_OPENSSL
-extern bool nnrpd_starttls_done;
-#endif /* HAVE_OPENSSL */
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+extern bool encryption_layer_on;
+#endif /* HAVE_OPENSSL || HAVE_SASL */
 
 /* Data types. */
 typedef struct _CONFCHAIN {
@@ -42,7 +42,7 @@ typedef struct _METHOD {
 typedef struct _AUTHGROUP {
     char *name;
     char *key;
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     int require_ssl;
 #endif
     char *hosts;
@@ -161,7 +161,7 @@ extern bool PerlLoaded;
 #define PERMperl_access         59
 #define PERMpython_access       60
 #define PERMpython_dynamic      61
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
 #define PERMrequire_ssl         62
 #define PERMMAX                 63
 #else
@@ -251,7 +251,7 @@ static CONFTOKEN PERMtoks[] = {
     { PERMperl_access,          (char *) "perl_access:"         },
     { PERMpython_access,        (char *) "python_access:"       },
     { PERMpython_dynamic,       (char *) "python_dynamic:"      },
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     { PERMrequire_ssl,          (char *) "require_ssl:"         },
 #endif
     { 0,                        (char *) NULL                   }
@@ -351,7 +351,7 @@ copy_authgroup(AUTHGROUP *orig)
     else
 	ret->hosts = 0;
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     ret->require_ssl = orig->require_ssl;
 #endif
 
@@ -453,7 +453,7 @@ copy_accessgroup(ACCESSGROUP *orig)
 static void
 SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
         curauth->require_ssl = false;
 #endif
 }
@@ -673,7 +673,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	curauth->key = xstrdup(tok->name);
 	SET_CONFIG(PERMkey);
 	break;
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
       case PERMrequire_ssl:
         if (boolval != -1)
             curauth->require_ssl = boolval;
@@ -1266,7 +1266,7 @@ PERMreadfile(char *filename)
 
 		/* Stuff that belongs to an auth group. */
 	      case PERMhost:
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
               case PERMrequire_ssl:
 #endif
 	      case PERMauthprog:
@@ -1448,12 +1448,12 @@ PERMgetinitialaccess(char *readersconf)
     }
 
     /* auth_realms are all expected to match the user.
-     * Be careful whether SSL is required, though. */
+     * Be careful whether an encryption layer is required, though. */
     for (i = 0; auth_realms[i] != NULL; i++) {
 	if (auth_realms[i]->auth_methods != NULL) {
 	    PERMcanauthenticate = true;
-#ifdef HAVE_OPENSSL
-            if (auth_realms[i]->require_ssl == false)
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+            if (!auth_realms[i]->require_ssl)
                 PERMcanauthenticatewithoutSSL = true;
 #endif
         }
@@ -1491,9 +1491,10 @@ PERMgetaccess(bool initialconnection)
 
     uname = NULL;
     while (uname == NULL && i-- > 0) {
-#ifdef HAVE_OPENSSL
-        /* If SSL is required, check that the connection is encrypted. */
-        if (auth_realms[i]->require_ssl && !nnrpd_starttls_done) {
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+        /* If an encryption layer is required, check that the connection
+         * really uses one. */
+        if (auth_realms[i]->require_ssl && !encryption_layer_on) {
             continue;
         }
 #endif
@@ -1990,9 +1991,10 @@ ResolveUser(AUTHGROUP *auth)
     if (auth->res_methods == NULL)
         return NULL;
 
-#ifdef HAVE_OPENSSL
-    /* If SSL is required, check that the connection is encrypted. */
-    if ((auth->require_ssl == true) && !nnrpd_starttls_done)
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+    /* If an encryption layer is required, check that the connection
+     * really uses one. */
+    if (auth->require_ssl && !encryption_layer_on)
         return NULL;
 #endif
 
@@ -2040,9 +2042,10 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     if (auth->auth_methods == NULL)
         return NULL;
 
-#ifdef HAVE_OPENSSL
-    /* If SSL is required, check that the connection is encrypted. */
-    if ((auth->require_ssl == true) && !nnrpd_starttls_done)
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+    /* If an encryption layer is required, check that the connection
+     * really uses one. */
+    if (auth->require_ssl && !encryption_layer_on)
         return NULL;
 #endif
 
