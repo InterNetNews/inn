@@ -1,4 +1,4 @@
-=head1 Changes in 2.5.1
+=head1 Changes in 2.6.1
 
 =over 2
 
@@ -11,6 +11,14 @@ in F<readers.conf> using the I<require_ssl> parameter are taken into
 account).  Previously, only connections on a dedicated port (usually 563)
 were taking benefit from that parameter.  Thanks to Steve Crook for
 the bug report.
+
+=item *
+
+B<nntpsend> now correctly waits until all of the child B<innxmit>
+processes exit before it does.  It was causing B<nntpsend> to fail
+to work properly on systems that use systemd, because when it exits
+prematurely, systemd kills all of the processes it launched, including
+the B<innxmit> processes.  Thanks to Jonathan Kamens for the patch.
 
 =back
 
