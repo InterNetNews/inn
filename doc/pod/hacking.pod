@@ -827,8 +827,8 @@ also be updated.
 
 =item 16.
 
-For major releases, update the branch used for the generation of STABLE
-snapshots.
+For major releases, ping Russ to update the branch used for the
+generation of STABLE snapshots.
 
 =item 17.
 
