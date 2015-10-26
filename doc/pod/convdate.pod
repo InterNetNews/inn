@@ -78,7 +78,7 @@ page dating from 1991 and were run in the EST/EDT time zone.
 ctime(3) results are in the local time zone.  Compare to:
 
     % convdate -dc 666198000
-    Sun, 10 Feb 1991 15:00:00 +0000 (UTC)
+    Sun, 10 Feb 1991 15:00:00 -0000 (UTC)
 
     % env TZ=PST8PDT convdate -dlc 666198000
     Sun, 10 Feb 1991 07:00:00 -0800 (PST)

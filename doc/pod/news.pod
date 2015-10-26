@@ -4,6 +4,15 @@
 
 =item *
 
+B<nnrpd> now uses C<-0000> as the time zone for Date: and Injection-Date:
+header fields it generates.  It was previously using C<+0000>, wrongly
+systematically indicating a local time zone at Universal Time when
+I<localtime> is set to false (which is the default) in F<readers.conf>.
+The C<+0000> time zone will now be used only if I<localtime> is set to
+true and UTC is really the local time zone of the server.
+
+=item *
+
 When an encryption layer is negotiated after a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
 mechanism which negotiates an encrypted layer, B<nnrpd> now updates

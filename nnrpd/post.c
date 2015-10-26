@@ -352,7 +352,9 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     now = time(NULL);
 
     /* datebuff is used for both Injection-Date: and Date: header fields
-     * so we have to set it now, and it has to be the UTC date. */
+     * so we have to set it now, and it has to be the UTC date (unless
+     * for the Date: header field if localtime is set to true
+     * in readers.conf). */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
         return "Can't generate Date: header";
 

@@ -510,10 +510,17 @@ is applied to the pre-encryption datastream.
 
 =item B<localtime:>
 
-If a Date: header is not included in a posted article, nnrpd(8) normally
-adds a new Date: header in UTC.  If this is set to true, the Date: header
-will be formatted in local time instead.  This is a boolean value and the
-default is false.
+If a Date: or an Injection-Date: header field is not included in a
+posted article, nnrpd(8) normally adds these header fields in UTC.
+If this is set to true, the Date: header field will be formatted in
+local time instead.  (The Injection-Date: header field will remain in
+UTC, though.)  This is a boolean value and the default is false.
+
+This parameter permits to handle a relatively unusual corner case.
+It is mostly a tool for people who I<want> to disclose their local time
+zone (it can be useful information in certain types of discussions),
+but whose clients don't for some reason, and who can arrange for the
+server to be in the same time zone as the client.
 
 =item B<newsmaster:>
 

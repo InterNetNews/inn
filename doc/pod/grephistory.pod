@@ -103,7 +103,7 @@ With B<sm>, we can retrieve the article, and get its posting date:
     Date: Mon, 08 Jun 2009 20:25:12 -0700
 
     % convdate -dc 1244517912
-    Tue, 9 Jun 2009 03:25:12 +0000 (UTC)
+    Tue, 9 Jun 2009 03:25:12 -0000 (UTC)
 
 It matches the number recorded in history as for its posting date.
 
