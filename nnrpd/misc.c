@@ -460,7 +460,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     bool boolval;
 
     if (encryption_layer_on) {
-        Reply("%d Already using an active TLS layer\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Already using a TLS layer\r\n", NNTP_ERR_ACCESS);
         return;
     }
 
@@ -519,7 +519,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         ExitWithStats(1, false);
     }
 
-#ifdef HAVE_SASL
+# if defined(HAVE_SASL)
     /* Tell SASL about the negotiated layer. */
     result = sasl_setprop(sasl_conn, SASL_SSF_EXTERNAL,
                           (sasl_ssf_t *) &tls_cipher_usebits);
@@ -531,7 +531,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     if (result != SASL_OK) {
         syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
     }
-#endif /* HAVE_SASL */
+# endif /* HAVE_SASL */
 
     /* Reset our read buffer so as to prevent plaintext command injection. */
     line_reset(&NNTPline);
