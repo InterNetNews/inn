@@ -64,6 +64,23 @@ PushIOvHelper(struct iovec* vec, int* countp)
 
     TMRstart(TMR_NNTPWRITE);
 
+#if defined(HAVE_ZLIB)
+    if (compression_layer_on) {
+        int i;
+
+        for (i = 0; i < *countp; i++) {
+            if (i+1 == *countp) {
+                /* Time to flush the compressed output stream. */
+                zstream_flush_needed = true;
+            }
+            write_buffer(vec[i].iov_base, vec[i].iov_len);
+        }
+
+        *countp = 0;
+        return;
+    }
+#endif /* HAVE_ZLIB */
+
 #ifdef HAVE_SASL
     if (sasl_conn && sasl_ssf) {
 	int i;
@@ -196,6 +213,12 @@ static int		highwater = 0;
 static void
 PushIOb(void)
 {
+#if defined(HAVE_ZLIB)
+    /* Last line of a multi-line data block response.
+     * Time to flush the compressed output stream. */
+    zstream_flush_needed = true;
+#endif /* HAVE_ZLIB */
+
     write_buffer(_IO_buffer_, highwater);
     highwater = 0;
 }

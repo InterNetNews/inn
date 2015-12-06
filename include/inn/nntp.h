@@ -55,6 +55,7 @@ enum nntp_code {
     NNTP_OK_BANNER_POST         = 200,
     NNTP_OK_BANNER_NOPOST       = 201,
     NNTP_OK_QUIT                = 205,
+    NNTP_OK_COMPRESS            = 206,
     NNTP_OK_GROUP               = 211,
     NNTP_OK_LIST                = 215,
     NNTP_OK_ARTICLE             = 220,

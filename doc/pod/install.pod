@@ -413,15 +413,21 @@ explicitly passed to configure.
 
 =item B<--with-zlib>=PATH
 
-The ovdb storage method can optionally use compression.  If B<--with-bdb>
-is set, and configure finds a suitable S<Berkeley DB> version, configure
-will by default also try to find the zlib library.  INN will then be
-built with zlib support unless the B<--without-zlib> flag is explicitly
-passed to configure.
+Enables support for compression for news reading, which means a
+compression layer can be negotiated between your server and newsreaders
+supporting that NNTP extension.
 
-In case non-standard paths to the zlib library are used, one or both
-of the options B<--with-zlib-include> and B<--with-zlib-lib> can be
-given to configure with a path.
+Also enables support for compression with the ovdb storage method.
+
+This option requires that zlib be installed on your system (including the
+header files, not just the runtime libraries).  If a path is given, it
+sets the installed directory of zlib.  In case non-standard paths to the
+zlib library are used, one or both of the options B<--with-zlib-include>
+and B<--with-zlib-lib> can be given to configure with a path.
+
+If the zlib library is found at configure time, INN will be built with
+compression support unless the B<--without-zlib> flag is explicitly
+passed to configure.
 
 =item B<--with-openssl>=PATH
 

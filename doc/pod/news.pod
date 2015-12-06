@@ -13,6 +13,14 @@ true and UTC is really the local time zone of the server.
 
 =item *
 
+Julien Elie has implemented in B<nnrpd> the new COMPRESS command
+described in draft-murchison-nntp-compress that extends the NNTP protocol
+to allow a connection to be effectively and efficiently compressed.
+News clients that also support that extension will be able to benefit
+from that bandwidth optimization and improvement in speed.
+
+=item *
+
 When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
 mechanism which negotiates an encryption layer, B<nnrpd> now updates

@@ -3,13 +3,13 @@
 include ../Makefile.global
 
 top		= ..
-CFLAGS		= $(GCFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS)
+CFLAGS		= $(GCFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(ZLIB_CPPFLAGS)
 
 ALL		= nnrpd
 
-SOURCES		= article.c auth-ext.c cache.c group.c commands.c line.c \
+SOURCES		= article.c auth-ext.c cache.c commands.c group.c line.c \
 		  list.c misc.c newnews.c nnrpd.c perl.c perm.c post.c \
-		  python.c sasl.c tls.c track.c
+		  python.c sasl.c tls.c track.c zlib.c
 
 INCLUDES	= cache.h nnrpd.h post.h tls.h
 
@@ -34,10 +34,11 @@ clean clobber distclean maintclean:
 
 NNRPDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
 		  $(PERL_LIBS) $(PYTHON_LIBS) $(SSL_LDFLAGS) $(SSL_LIBS) \
-		  $(CRYPTO_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS) $(LIBS)
+		  $(CRYPTO_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS) \
+		  $(ZLIB_LDFLAGS) $(ZLIB_LIBS) $(LIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
 python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
@@ -104,19 +105,6 @@ cache.o: cache.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/tst.h ../include/inn/list.h ../include/inn/libinn.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h cache.h
-group.o: group.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/innconf.h nnrpd.h \
-  ../include/portable/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h
 commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -132,6 +120,19 @@ commands.o: commands.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/ov.h ../include/inn/history.h ../include/inn/storage.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/version.h tls.h
+group.o: group.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h nnrpd.h \
+  ../include/portable/macros.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
+  ../include/inn/history.h ../include/inn/storage.h
 line.o: line.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -284,6 +285,18 @@ track.o: track.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h nnrpd.h \
+  ../include/portable/macros.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h ../include/inn/timer.h
+zlib.o: zlib.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/messages.h nnrpd.h \
   ../include/portable/macros.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/xmalloc.h \

@@ -34,6 +34,13 @@
 #include <sasl/saslutil.h>
 #endif
 
+#if !defined(HAVE_ZLIB_H)
+# undef HAVE_ZLIB
+#endif
+#if defined(HAVE_ZLIB)
+# include <zlib.h>
+#endif
+
 /*
 **  A range of article numbers.
 */
@@ -246,6 +253,9 @@ extern void             Printf(const char *fmt, ...)
 
 extern void             CMDauthinfo     (int ac, char** av);
 extern void             CMDcapabilities (int ac, char** av);
+#if defined(HAVE_ZLIB)
+extern void             CMDcompress     (int ac, char** av);
+#endif
 extern void             CMDdate         (int ac, char** av);
 extern void             CMDfetch        (int ac, char** av);
 extern void             CMDgroup        (int ac, char** av);
@@ -314,3 +324,21 @@ extern sasl_callback_t sasl_callbacks[];
 void SASLauth(int ac, char *av[]);
 void SASLnewserver(void);
 #endif /* HAVE_SASL */
+
+#if defined(HAVE_ZLIB)
+extern bool compression_layer_on;
+extern bool tls_compression_on;
+/* (De)compress streams and related variables. */
+extern z_stream *zstream_in;
+extern z_stream *zstream_out;
+extern bool zstream_inflate_needed;
+extern bool zstream_flush_needed;
+/* (De)compress buffers and related variables. */
+extern unsigned char *zbuf_in;
+extern size_t zbuf_in_allocated;
+extern size_t zbuf_in_size;
+extern unsigned char *zbuf_out;
+extern size_t zbuf_out_size;
+
+bool zlib_init(void);
+#endif /* HAVE_ZLIB */

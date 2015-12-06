@@ -27,6 +27,7 @@
 extern SSL *tls_conn;
 #endif
 
+
 /*
 **  Free a previously allocated line structure.
 */
@@ -86,6 +87,39 @@ line_doread(void *p, size_t len, int timeout UNUSED)
     ssize_t n;
 
     do {
+#if defined(HAVE_ZLIB)
+        /* Process data that may already be available in the zlib buffer. */
+        if (compression_layer_on &&
+            (zstream_in->avail_in > 0 || zstream_inflate_needed)) {
+            int r;
+
+            zstream_in->next_out = p;
+            zstream_in->avail_out = len;
+
+            r = inflate(zstream_in, Z_SYNC_FLUSH);
+
+            if (!(r == Z_OK || r == Z_BUF_ERROR || r == Z_STREAM_END)) {
+                sysnotice("inflate() failed: %d; %s", r,
+                          zstream_in->msg != NULL ? zstream_in->msg :
+                          "no detail");
+                n = -1;
+                break;
+            }
+
+            /* Check whether inflate() has finished to process its input.
+             * If not, we need to call it again, even though avail_in is 0. */
+            zstream_inflate_needed = (r != Z_STREAM_END);
+
+            if (zstream_in->avail_out < len) {
+                /* Some data has been uncompressed.  Treat it now. */
+                n = len - zstream_in->avail_out;
+                break;
+            }
+            /* If we reach here, then it means that inflate() needs more
+             * input, so we go on reading data on the wire. */
+        }
+#endif /* HAVE_ZLIB */
+
 #ifdef HAVE_OPENSSL
 	if (tls_conn) {
 	    int err;
@@ -129,7 +163,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
             const char *out;
             unsigned outlen;
             int r;
- 
+
             if ((r = sasl_decode(sasl_conn, p, n, &out, &outlen)) == SASL_OK) {
                 if (outlen > len) {
                     sysnotice("sasl_decode() returned too much output");
@@ -150,6 +184,48 @@ line_doread(void *p, size_t len, int timeout UNUSED)
             }
         }
 #endif /* HAVE_SASL */
+
+#if defined(HAVE_ZLIB)
+        if (compression_layer_on && n > 0) {
+            size_t zconsumed;
+
+            if (zstream_in->avail_in > 0 && zstream_in->next_in != Z_NULL) {
+                zconsumed = zstream_in->next_in - zbuf_in;
+            } else {
+                zconsumed = 0;
+                zbuf_in_allocated = 0;
+            }
+
+            /* Transfer the data we have just read to zstream_in,
+             * and loop to actually process it. */
+            if ((ssize_t) (zbuf_in_size - zbuf_in_allocated) < n) {
+                size_t newsize = zbuf_in_size * 2 + n;
+
+                /* Don't grow the buffer bigger than the maximum
+                 * article size we'll accept. */
+                if (PERMaccessconf->localmaxartsize > NNTP_MAXLEN_COMMAND) {
+                    if (newsize > PERMaccessconf->localmaxartsize) {
+                        newsize = PERMaccessconf->localmaxartsize;
+                    }
+                }
+                if (newsize == zbuf_in_size) {
+                    warn("%s overflowed our zstream_in buffer (%lu)",
+                         Client.host, newsize);
+                    n = -1;
+                    break;
+                }
+                zbuf_in = xrealloc(zbuf_in, newsize);
+                zbuf_in_size = newsize;
+            }
+            memcpy(zbuf_in + zbuf_in_allocated, p, n);
+            zstream_in->next_in = zbuf_in + zconsumed;
+            zstream_in->avail_in += n;
+            zbuf_in_allocated += n;
+            zstream_inflate_needed = true;
+            /* Loop to actually inflate the compressed data we received. */
+            n = 0;
+        }
+#endif /* HAVE_ZLIB */
     } while (n == 0); /* Split SASL blob, need to read more data. */
 
     return n;
