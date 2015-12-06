@@ -93,7 +93,7 @@ the I<require_ssl> parameter set to true only applies if the incoming
 connection is using an encryption layer, either from the beginning if
 the B<-S> flag was passed to B<nnrpd>, or after a successful use of
 STARTTLS, or after a successful authentication using a SASL mechanism
-which negotiates an encrypted layer.
+which negotiates an encryption layer.
 
 For any connection from a host that matches that wildmat expression or
 netblock, each <res-program> (multiple res: lines may be present in a
@@ -505,8 +505,8 @@ display the reason to the user.
 
 If this parameter is present (and nonzero), it is used for B<nnrpd>'s
 rate-limiting code.  The client will only be able to download at this
-speed (in bytes/second).  Note that if TLS/SSL is being used, limiting
-is applied to the pre-encryption datastream.
+speed (in bytes/second).  Note that if an encryption layer is being used,
+limiting is applied to the pre-encryption datastream.
 
 =item B<localtime:>
 

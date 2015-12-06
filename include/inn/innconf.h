@@ -129,7 +129,7 @@ struct innconf {
      */
     char *tlscafile;            /* Path to a certificate authority file */
     char *tlscapath;            /* Path to a directory of CA certificates */
-    char *tlscertfile;          /* Path to the SSL certificate to use */
+    char *tlscertfile;          /* Path to the TLS/SSL certificate to use */
     char *tlskeyfile;           /* Path to the key for the certificate */
     char *tlsciphers;           /* OpenSSL-style cipher string */
     bool tlscompression;        /* Turn TLS compression on/off */

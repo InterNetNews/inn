@@ -460,7 +460,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     bool boolval;
 
     if (encryption_layer_on) {
-        Reply("%d Already using a TLS layer\r\n", NNTP_ERR_ACCESS);
+        Reply("%d Already using a security layer\r\n", NNTP_ERR_ACCESS);
         return;
     }
 
@@ -497,8 +497,9 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     /* We can now assume a secure connection will be negotiated because
      * nnrpd will exit if STARTTLS fails.
      * Check the permissions the client will have after having successfully
-     * negotiated a TLS layer.  (There may be TLS-only auth blocks in
-     * readers.conf that match the connection).
+     * negotiated a TLS layer.  (There may be auth blocks requiring the
+     * negotiation of a security layer in readers.conf that match the
+     * connection.)
      * In case the client would no longer have access to the server, or an
      * authentication error happens, the connection aborts after a fatal 400
      * response code sent by PERMgetpermissions(). */
