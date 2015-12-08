@@ -46,7 +46,7 @@ main(int argc, char *argv[])
                  * for (512 * 8) * 512 bytes of data. */
                 numwr = (st.st_size / (512*8) / sizeof(buf)) + 50;
                 printf("File %s: %lu %u\n", argv[i],
-                       (long unsigned) st.st_size, numwr);
+                       (unsigned long) st.st_size, numwr);
                 for (j = 0; j < numwr; j++) {
                     if (!(j % 100)) {
                         printf("\t%d/%d\n", j, numwr);

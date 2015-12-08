@@ -210,7 +210,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
                 }
                 if (newsize == zbuf_in_size) {
                     warn("%s overflowed our zstream_in buffer (%lu)",
-                         Client.host, newsize);
+                         Client.host, (unsigned long) newsize);
                     n = -1;
                     break;
                 }
