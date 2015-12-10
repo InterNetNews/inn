@@ -201,7 +201,7 @@ echo "${PROGNAME}: [${PARENTPID}] start"
 export BATCH PROGNAME PARENTPID INNFLAGS
 
 ##  Loop over all sites.
-cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
+while read SITE HOST SIZE_ARG FLAGS; do
     ## Parse the input parameters.
     if [ -z "${SITE}" -o -z "${HOST}" ] ; then
 	echo "Ignoring bad line: ${SITE} ${HOST} ${SIZE_ARG} ${FLAGS}" 1>&2
@@ -445,7 +445,7 @@ cat ${INPUT} | while read SITE HOST SIZE_ARG FLAGS; do
 	fi
 	rm -f ${LOCK}
     ' &
-done
+done < ${INPUT}
 
 ##  Release the nntpsend lock and clean up before we wait on child processes.
 if [ -z "${NOLOCK}" ]; then
