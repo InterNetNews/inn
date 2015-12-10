@@ -243,10 +243,9 @@ main(int ac, char *av[])
 	    if (stat(optarg, &Sb) < 0)
                 sysdie("cannot stat %s", optarg);
 	    gt = gmtime(&Sb.st_mtime);
-	    /* Y2K: NNTP Spec currently allows only two digit years. */
-	    snprintf(tbuff, sizeof(tbuff), "%02d%02d%02d %02d%02d%02d GMT",
-		    gt->tm_year % 100, gt->tm_mon + 1, gt->tm_mday,
-		    gt->tm_hour, gt->tm_min, gt->tm_sec);
+            snprintf(tbuff, sizeof(tbuff), "%04d%02d%02d %02d%02d%02d GMT",
+                     gt->tm_year + 1900, gt->tm_mon + 1, gt->tm_mday,
+                     gt->tm_hour, gt->tm_min, gt->tm_sec);
 	    Since = tbuff;
 	    break;
 	case 'n':
