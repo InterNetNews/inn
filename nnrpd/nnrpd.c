@@ -616,7 +616,8 @@ StartConnection(unsigned short port)
 
     notice("%s (%s) connect - port %u", Client.host, Client.ip, port);
 
-    PERMgetaccess(NNRPACCESS);
+    PERMgetinitialaccess(NNRPACCESS);
+    PERMgetaccess(true);
     PERMgetpermissions();
 }
 

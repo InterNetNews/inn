@@ -1402,10 +1402,9 @@ again:
 }
 
 void
-PERMgetaccess(char *nnrpaccess)
+PERMgetinitialaccess(char *readersconf)
 {
     int i;
-    char *uname;
 
     auth_realms	    = NULL;
     access_realms   = NULL;
@@ -1426,14 +1425,18 @@ PERMgetaccess(char *nnrpaccess)
     PERMaccessconf = NULL;
 
     if (ConfigBit == NULL) {
-	if (PERMMAX % 8 == 0)
-	    ConfigBitsize = PERMMAX/8;
-	else
-	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xcalloc(ConfigBitsize, 1);
+        if (PERMMAX % 8 == 0) {
+            ConfigBitsize = PERMMAX/8;
+        } else {
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
+        }
+        ConfigBit = xcalloc(ConfigBitsize, 1);
     }
-    PERMreadfile(nnrpaccess);
 
+    /* Parse the readers.conf file. */
+    PERMreadfile(readersconf);
+
+    /* Remove unused access groups. */
     strip_accessgroups();
 
     if (auth_realms == NULL) {
@@ -1446,7 +1449,7 @@ PERMgetaccess(char *nnrpaccess)
 
     /* auth_realms are all expected to match the user.
      * Be careful whether SSL is required, though. */
-    for (i = 0; auth_realms[i]; i++) {
+    for (i = 0; auth_realms[i] != NULL; i++) {
 	if (auth_realms[i]->auth_methods != NULL) {
 	    PERMcanauthenticate = true;
 #ifdef HAVE_OPENSSL
@@ -1461,54 +1464,88 @@ PERMgetaccess(char *nnrpaccess)
             || auth_realms[i]->dynamic_script != NULL)
             PERMcanpostgreeting = true;
     }
-    uname = 0;
-    while (!uname && i--) {
+}
+
+void
+PERMgetaccess(bool initialconnection)
+{
+    char *uname;
+    int i;
+
+    if (ConfigBit == NULL) {
+        if (PERMMAX % 8 == 0) {
+            ConfigBitsize = PERMMAX/8;
+        } else {
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
+        }
+        ConfigBit = xcalloc(ConfigBitsize, 1);
+    }
+
+    if (auth_realms == NULL) {
+        return;
+    }
+
+    for (i = 0; auth_realms[i] != NULL; i++) {
+            ;
+    }
+
+    uname = NULL;
+    while (uname == NULL && i-- > 0) {
 #ifdef HAVE_OPENSSL
         /* If SSL is required, check that the connection is encrypted. */
-        if ((auth_realms[i]->require_ssl == true) && !nnrpd_starttls_done)
+        if (auth_realms[i]->require_ssl && !nnrpd_starttls_done) {
             continue;
+        }
 #endif
-	if ((uname = ResolveUser(auth_realms[i])) != NULL)
-	    PERMauthorized = true;
-	if (!uname && auth_realms[i]->default_user)
-	    uname = xstrdup(auth_realms[i]->default_user);
+        if ((uname = ResolveUser(auth_realms[i])) != NULL) {
+            PERMauthorized = true;
+        }
+        if (uname == NULL && auth_realms[i]->default_user != NULL) {
+            uname = xstrdup(auth_realms[i]->default_user);
+        }
     }
-    if (uname) {
-	strlcpy(PERMuser, uname, sizeof(PERMuser));
+    if (uname != NULL) {
+        strlcpy(PERMuser, uname, sizeof(PERMuser));
         free(uname);
-	uname = strchr(PERMuser, '@');
-	if (!uname && auth_realms[i]->default_domain) {
-	    /* Append the default domain to the username. */
-	    strlcat(PERMuser, "@", sizeof(PERMuser));
-	    strlcat(PERMuser, auth_realms[i]->default_domain,
+        uname = strchr(PERMuser, '@');
+        if (uname == NULL && auth_realms[i]->default_domain != NULL) {
+            /* Append the default domain to the username. */
+            strlcat(PERMuser, "@", sizeof(PERMuser));
+            strlcat(PERMuser, auth_realms[i]->default_domain,
                     sizeof(PERMuser));
-	}
-	PERMneedauth = false;
-	success_auth = auth_realms[i];
-	syslog(L_TRACE, "%s res %s", Client.host, PERMuser);
-    } else if (!PERMcanauthenticate) {
-	/* Couldn't resolve the user. */
-	syslog(L_NOTICE, "%s no_user", Client.host);
-	Reply("%d Could not get your access name.  Goodbye!\r\n",
-	  NNTP_ERR_ACCESS);
-	ExitWithStats(1, true);
+        }
+        PERMneedauth = false;
+        success_auth = auth_realms[i];
+        syslog(L_TRACE, "%s res %s", Client.host, PERMuser);
+    } else if (initialconnection && !PERMcanauthenticate) {
+        /* Couldn't resolve the user. */
+        syslog(L_NOTICE, "%s no_user", Client.host);
+        Reply("%d Could not get your access name.  Goodbye!\r\n",
+              NNTP_ERR_ACCESS);
+        ExitWithStats(1, true);
     } else {
-	PERMneedauth = true;
+        PERMneedauth = true;
     }
-    /* Check maximum allowed permissions for any host that matches (for
-     * the greeting string). */
-    for (i = 0; access_realms[i]; i++) {
-	if (!PERMcanread)
-	    PERMcanread = (access_realms[i]->read != NULL);
-	if (!PERMcanpost)
-	    PERMcanpost = (access_realms[i]->post != NULL);
-        if (!PERMcanpostgreeting)
-            PERMcanpostgreeting = (access_realms[i]->post != NULL);
-    }
-    if (!i) {
-	/* No applicable access groups.  Zeroing all these makes INN
-	 * return permission denied to client. */
-	PERMcanread = PERMcanpost = PERMneedauth = false;
+
+    if (initialconnection) {
+        /* Check maximum allowed permissions for any host that matches (for
+         * the greeting string). */
+        for (i = 0; access_realms[i] != NULL; i++) {
+            if (!PERMcanread) {
+                PERMcanread = (access_realms[i]->read != NULL);
+            }
+            if (!PERMcanpost) {
+                PERMcanpost = (access_realms[i]->post != NULL);
+            }
+            if (!PERMcanpostgreeting) {
+                PERMcanpostgreeting = (access_realms[i]->post != NULL);
+            }
+        }
+        if (i == 0) {
+            /* No applicable access groups.  Zeroing all these makes INN
+             * return permission denied to client. */
+            PERMcanread = PERMcanpost = PERMneedauth = false;
+        }
     }
 }
 
