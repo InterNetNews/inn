@@ -14,8 +14,8 @@
 #include "inn/version.h"
 #include "tls.h"
 
-#ifdef HAVE_OPENSSL
-extern bool nnrpd_starttls_done;
+#if defined(HAVE_OPENSSL)
+extern bool encryption_layer_on;
 #endif /* HAVE_OPENSSL */
 
 typedef struct {
@@ -326,7 +326,7 @@ CMDauthinfo(int ac, char *av[])
 #ifdef HAVE_OPENSSL
             /* Check whether STARTTLS must be used before trying to authenticate. */
             if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
-                && !nnrpd_starttls_done) {
+                && !encryption_layer_on) {
                 Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
                 return;
             }
@@ -355,7 +355,7 @@ CMDauthinfo(int ac, char *av[])
 #ifdef HAVE_OPENSSL
         /* Check whether STARTTLS must be used before trying to authenticate. */
         if (PERMcanauthenticate && !PERMcanauthenticatewithoutSSL
-            && !nnrpd_starttls_done) {
+            && !encryption_layer_on) {
              Reply("%d Encryption required\r\n", NNTP_FAIL_PRIVACY_NEEDED);
              return;
         }

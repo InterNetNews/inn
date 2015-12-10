@@ -18,12 +18,12 @@
 /* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL)
 extern SSL *tls_conn;
 extern int tls_cipher_usebits;
 extern char *tls_peer_CN;
-extern bool nnrpd_starttls_done;
-#endif 
+extern bool encryption_layer_on;
+#endif /* HAVE_OPENSSL */ 
 
 
 /*
@@ -459,7 +459,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
     int result;
     bool boolval;
 
-    if (nnrpd_starttls_done) {
+    if (encryption_layer_on) {
         Reply("%d Already using an active TLS layer\r\n", NNTP_ERR_ACCESS);
         return;
     }
@@ -502,7 +502,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
      * In case the client would no longer have access to the server, or an
      * authentication error happens, the connection aborts after a fatal 400
      * response code sent by PERMgetpermissions(). */
-    nnrpd_starttls_done = true;
+    encryption_layer_on = true;
     PERMgetaccess(false);
     PERMgetpermissions();
 

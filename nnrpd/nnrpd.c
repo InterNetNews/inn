@@ -33,9 +33,11 @@
 
 #include "tls.h"
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL)
 extern SSL *tls_conn;
-bool nnrpd_starttls_done = false;
+#endif
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+bool encryption_layer_on = false;
 #endif 
 
 
@@ -373,14 +375,14 @@ CMDcapabilities(int ac, char *av[])
          * in its current state. */
         if (PERMcanauthenticate) {
 #ifdef HAVE_OPENSSL
-            if (PERMcanauthenticatewithoutSSL || nnrpd_starttls_done) {
+            if (PERMcanauthenticatewithoutSSL || encryption_layer_on) {
 #endif
                 /* AUTHINFO USER is advertised only if a TLS layer is active,
                  * if compiled with TLS support. */
                 Printf(" USER");
 #ifdef HAVE_OPENSSL
             } else {
-#ifdef HAVE_SASL
+# ifdef HAVE_SASL
                 /* Remove unsecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
                  * if compiled with TLS support and a TLS layer is not active. */
                 if (mechlist != NULL) {
@@ -399,7 +401,7 @@ CMDcapabilities(int ac, char *av[])
                         memmove(p, p+9, strlen(p)-8);
                     }
                 }
-#endif /* HAVE_SASL */
+# endif /* HAVE_SASL */
             }
 #endif /* HAVE_OPENSSL */
 #ifdef HAVE_SASL
@@ -446,7 +448,7 @@ CMDcapabilities(int ac, char *av[])
 
 #ifdef HAVE_OPENSSL
     /* A TLS layer is not active and the client is not already authenticated. */
-    if (!nnrpd_starttls_done
+    if (!encryption_layer_on
         && (!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
         Printf("STARTTLS\r\n");
     }
@@ -970,7 +972,7 @@ main(int argc, char *argv[])
 	    Tracing = true;
 	    break;
 #ifdef HAVE_OPENSSL
-	case 'S':			/* Force SSL negotiation. */
+	case 'S':			/* Force the negotiation of an encryption layer. */
 	    initialSSL = true;
 	    break;
 #endif /* HAVE_OPENSSL */
@@ -1199,10 +1201,10 @@ main(int argc, char *argv[])
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
-            Reply("%d SSL connection failed\r\n", NNTP_FAIL_TERMINATING);
+            Reply("%d Encrypted TLS connection failed\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
-        nnrpd_starttls_done = true;
+        encryption_layer_on = true;
     }
 #endif /* HAVE_OPENSSL */
 
