@@ -13,9 +13,9 @@ true and UTC is really the local time zone of the server.
 
 =item *
 
-When an encryption layer is negotiated after a successful use of the
+When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
-mechanism which negotiates an encrypted layer, B<nnrpd> now updates
+mechanism which negotiates an encryption layer, B<nnrpd> now updates
 the permissions of the news client according to the new secure state
 of his connection (that is to say auth blocks in F<readers.conf> using
 the I<require_ssl> parameter are taken into account).  Previously,
