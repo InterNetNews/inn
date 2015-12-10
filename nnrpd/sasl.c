@@ -300,10 +300,13 @@ SASLauth(int ac, char *av[])
         sasl_maxout = (*maxoutp == 0 || *maxoutp > NNTP_MAXLEN_COMMAND) ?
             NNTP_MAXLEN_COMMAND : *maxoutp;
 
-        if (sasl_ssf > 0) {
+        if (sasl_ssf > 1) {
             /* For the forthcoming check of the permissions the client now
-             * has, tell the connection is encrypted, so that TLS-only auth
-             * blocks in readers.conf are properly taken into account. */
+             * has, tell the connection is encrypted, so that auth blocks
+             * requiring the negotiation of a security layer in readers.conf
+             * are properly taken into account.
+             * When sasl_ssf equals 1, only data integrity is provided, without
+             * any security. */
             encryption_layer_on = true;
 
             /* Close out any existing article, report group stats.

@@ -30,6 +30,13 @@ effect only when S<OpenSSL 1.0.0> or later was used.
 
 =item *
 
+When a data integrity layer was negotiated during a successful SASL
+authentication, B<nnrpd> was wrongly reseting any knowledge obtained
+from the client, such as the current newsgroup and article number.
+This behaviour now applies only when an encryption layer is negotiated.
+
+=item *
+
 B<nntpsend> now correctly waits until all of the child B<innxmit>
 processes exit before it does.  It was causing B<nntpsend> to fail
 to work properly on systems that use systemd, because when it exits
