@@ -47,7 +47,7 @@ compare "`$convdate -n '10 FEB 1991 10:00-0500' '5 may 90 00:00-0400'`" \
     '666198000
 641880000'
 compare "`$convdate -c 666198000`" 'Sun Feb 10 10:00:00 1991'
-compare "`$convdate -dc 666198000`" 'Sun, 10 Feb 1991 15:00:00 +0000 (UTC)'
+compare "`$convdate -dc 666198000`" 'Sun, 10 Feb 1991 15:00:00 -0000 (UTC)'
 compare "`env TZ=PST8PDT $convdate -dlc 666198000`" \
     'Sun, 10 Feb 1991 07:00:00 -0800 (PST)'
 compare "`env TZ=EST5EDT $convdate -dlc 666198000`" \

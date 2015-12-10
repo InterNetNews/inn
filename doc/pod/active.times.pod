@@ -33,7 +33,7 @@ The line:
 
 shows that the newsgroup news.admin.moderation was created on April 4th, 2007,
 at 20:00:03 UTC.  This date can be obtained for instance with
-C<convdate -c 1175716803> (convdate(1) is shipped with INN) or
+C<convdate -dc 1175716803> (convdate(1) is shipped with INN) or
 C<date -u -d "Jan 1, 1970 00:00:00 +0000 + 1175716803 seconds">.  It is
 when the newsgroup was locally created; in this example, it is when a
 control message sent by C<group-admin@isc.org> was received and processed

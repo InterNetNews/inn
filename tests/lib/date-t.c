@@ -185,13 +185,13 @@ main(void)
 
     status = makedate(100000000UL, false, buff, sizeof(buff));
     ok(3, status);
-    ok_string(4, "Sat, 3 Mar 1973 09:46:40 +0000 (UTC)", buff);
+    ok_string(4, "Sat, 3 Mar 1973 09:46:40 -0000 (UTC)", buff);
     status = makedate(100000000UL, true, buff, sizeof(buff));
     ok(5, status);
     ok_string(6, "Sat, 3 Mar 1973 01:46:40 -0800 (PST)", buff);
     status = makedate(300000000UL, false, buff, sizeof(buff));
     ok(7, status);
-    ok_string(8, "Thu, 5 Jul 1979 05:20:00 +0000 (UTC)", buff);
+    ok_string(8, "Thu, 5 Jul 1979 05:20:00 -0000 (UTC)", buff);
     status = makedate(300000000UL, true, buff, sizeof(buff));
     ok(9, status);
     ok_string(10, "Wed, 4 Jul 1979 22:20:00 -0700 (PDT)", buff);
@@ -200,7 +200,7 @@ main(void)
     ok(11, !status);
     status = makedate(300000000UL, false, buff, 32);
     ok(12, status);
-    ok_string(13, "Thu, 5 Jul 1979 05:20:00 +0000", buff);
+    ok_string(13, "Thu, 5 Jul 1979 05:20:00 -0000", buff);
     status = makedate(300000000UL, true, buff, 32);
     ok(14, status);
     ok_string(15, "Wed, 4 Jul 1979 22:20:00 -0700", buff);

@@ -210,7 +210,7 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
 
                     1         2         3
            1234567890123456789012345678901
-           Sat, 31 Aug 2002 23:45:18 +0000
+           Sat, 31 Aug 2002 23:45:18 -0000
 
        31 characters, plus another character for the trailing nul.  The buffer
        will need to have at least another six characters of space to get the
@@ -236,7 +236,10 @@ makedate(time_t date, bool local, char *buff, size_t buflen)
     } else {
         tmp_tm = gmtime(&realdate);
         tm = *tmp_tm;
-        tz_sign = 1;
+        /* Use "-0000" to indicate that the time was generated on a system
+           that may be in a local time zone other than Universal Time and
+           therefore contains no information about the local time zone.*/
+        tz_sign = -1;
         tz_hour_offset = 0;
         tz_min_offset = 0;
     }
