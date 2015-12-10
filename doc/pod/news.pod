@@ -39,6 +39,12 @@ This behaviour now applies only when an encryption layer is negotiated.
 
 =item *
 
+The I<tlscompression> parameter in F<inn.conf> now also permits to
+disable TLS compression with S<OpenSSL 0.9.8>.  It previously had an
+effect only when S<OpenSSL 1.0.0> or later was used.
+
+=item *
+
 B<nntpsend> now correctly waits until all of the child B<innxmit>
 processes exit before it does.  It was causing B<nntpsend> to fail
 to work properly on systems that use systemd, because when it exits

@@ -626,6 +626,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
     if (!tls_compression) {
 #ifdef SSL_OP_NO_COMPRESSION
+        /* Option implemented in OpenSSL 1.0.0. */
         SSL_CTX_set_options(CTX, SSL_OP_NO_COMPRESSION);
 #elif OPENSSL_VERSION_NUMBER >= 0x00090800fL
         /* Workaround for OpenSSL 0.9.8. */
