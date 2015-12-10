@@ -119,24 +119,36 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 	if (n <= 0)
             break; /* EOF or error. */
 
-#ifdef HAVE_SASL
-	if (sasl_conn && sasl_ssf) {
-	    /* Security layer in place, decode the data. */
-	    const char *out;
-	    unsigned outlen;
-	    int r;
+#if defined(HAVE_SASL)
+        if (sasl_conn != NULL && sasl_ssf > 0) {
+            /* Security layer in place, decode the data.
+             * The incoming data is always encoded in chunks of length
+             * inferior or equal to NNTP_MAXLEN_COMMAND (the maxbufsize value
+             * of SASL_SEC_PROPS passed as part of the SASL exchange).
+             * So there's enough data to read in the p buffer. */
+            const char *out;
+            unsigned outlen;
+            int r;
+ 
+            if ((r = sasl_decode(sasl_conn, p, n, &out, &outlen)) == SASL_OK) {
+                if (outlen > len) {
+                    sysnotice("sasl_decode() returned too much output");
+                    n = -1;
+                } else {
+                    if (outlen > 0) {
+                        memcpy(p, out, outlen);
+                    }
+                    n = outlen;
+                }
+            } else {
+                const char *ed = sasl_errdetail(sasl_conn);
 
-	    if ((r = sasl_decode(sasl_conn, p, n, &out, &outlen)) == SASL_OK) {
-		if (outlen)
-                    memcpy(p, out, outlen);
-		n = outlen;
-	    } else {
-		sysnotice("sasl_decode() failed: %s; %s",
-			  sasl_errstring(r, NULL, NULL),
-			  sasl_errdetail(sasl_conn));
-		n = -1;
-	    }
-	}
+                sysnotice("sasl_decode() failed: %s; %s",
+                          sasl_errstring(r, NULL, NULL),
+                          ed != NULL ? ed : "no detail");
+                n = -1;
+            }
+        }
 #endif /* HAVE_SASL */
     } while (n == 0); /* Split SASL blob, need to read more data. */
 

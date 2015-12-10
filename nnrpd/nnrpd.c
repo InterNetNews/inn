@@ -36,6 +36,7 @@
 #if defined(HAVE_OPENSSL)
 extern SSL *tls_conn;
 #endif
+
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
 bool encryption_layer_on = false;
 #endif 
@@ -439,12 +440,15 @@ CMDcapabilities(int ac, char *av[])
 
     Printf("READER\r\n");
 
-#ifdef HAVE_SASL
-    /* Check whether at least one SASL mechanism is available. */
+#if defined(HAVE_SASL)
+    /* Check whether at least one SASL mechanism is available.
+     * The SASL capability has to be advertised, even after authentication,
+     * so that the client can detect a possible active down-negotiation
+     * attack. */
     if (mechlist != NULL && strlen(mechlist) > 2) {
         Printf("SASL%s\r\n", mechlist);
     }
-#endif
+#endif /* HAVE_SASL */
 
 #ifdef HAVE_OPENSSL
     /* A TLS layer is not active and the client is not already authenticated. */
@@ -640,18 +644,21 @@ write_buffer(const char *buff, ssize_t len)
 	const char *out;
 	unsigned outlen;
 
-#ifdef HAVE_SASL
-	if (sasl_conn && sasl_ssf) {
+#if defined(HAVE_SASL)
+        if (sasl_conn != NULL && sasl_ssf > 0) {
             int r;
 
-	    /* Can only encode as much as the client can handle at one time. */
-	    n = (len > sasl_maxout) ? sasl_maxout : len;
-	    if ((r = sasl_encode(sasl_conn, p, n, &out, &outlen)) != SASL_OK) {
-		sysnotice("sasl_encode() failed: %s",
-			  sasl_errstring(r, NULL, NULL));
-		return;
-	    }
-	} else
+            /* Can only encode as much as the client can handle at one time. */
+            n = (len > sasl_maxout) ? sasl_maxout : len;
+            if ((r = sasl_encode(sasl_conn, p, n, &out, &outlen)) != SASL_OK) {
+                const char *ed = sasl_errdetail(sasl_conn);
+
+                sysnotice("sasl_encode() failed: %s; %s",
+                          sasl_errstring(r, NULL, NULL),
+                          ed != NULL ? ed : "no detail");
+                return;
+            }
+        } else
 #endif /* HAVE_SASL */
 	{
 	    /* Output the entire unencoded string. */
