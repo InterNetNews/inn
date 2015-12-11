@@ -88,6 +88,9 @@ static NCDISPATCH NCcommands[] = {
        READER command. */
     COMMAND_READER("ARTICLE"),
     COMMAND_READER("BODY"),
+#if defined(HAVE_ZLIB)
+    COMMAND_READER("COMPRESS"),
+#endif /* HAVE_ZLIB */
     COMMAND_READER("DATE"),
     COMMAND_READER("GROUP"),
     COMMAND_READER("HDR"),

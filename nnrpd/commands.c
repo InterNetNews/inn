@@ -264,6 +264,14 @@ CMDauthinfo(int ac, char *av[])
     char        errorstr[BIG_BUFFER];
     int         code;
 
+#if defined(HAVE_ZLIB)
+    /* If a compression layer is active, AUTHINFO is not possible. */
+    if (compression_layer_on && !tls_compression_on) {
+        Reply("%d Already using a compression layer\r\n", NNTP_ERR_ACCESS);
+        return;
+    }
+#endif
+
     if (strcasecmp(av[1], "GENERIC") == 0) {
 	char *logrec = Glom(av);
 

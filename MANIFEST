@@ -622,6 +622,7 @@ nnrpd/sasl.c                          SASL authentication for nnrpd
 nnrpd/tls.c                           Transport layer security
 nnrpd/tls.h                           Transport layer security data types
 nnrpd/track.c                         Track client behavior
+nnrpd/zlib.c                          Compression support for nnrpd
 perl                                  Perl libraries (Directory)
 perl/INN                              INN Perl modules (Directory)
 perl/INN/Config.pm.in                 INN::Config module

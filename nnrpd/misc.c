@@ -449,7 +449,46 @@ RateLimit(long *sleeptime, char *path)
      return 1;
 }
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_ZLIB)
+/*
+**  The COMPRESS command.
+*/
+void
+CMDcompress(int ac, char *av[])
+{
+    bool result;
+
+    /* Check the argument. */
+    if (ac > 1) {
+        if (strcasecmp(av[1], "DEFLATE") != 0) {
+            Reply("%d Only the DEFLATE compression algorithm is supported\r\n",
+                  NNTP_ERR_UNAVAILABLE);
+            return;
+        }
+    }
+
+    if (compression_layer_on) {
+        Reply("%d Already using a compression layer\r\n", NNTP_ERR_ACCESS);
+        return;
+    }
+
+    result = zlib_init();
+
+    if (!result) {
+        Reply("%d Impossible to activate compression\r\n", NNTP_FAIL_ACTION);
+        return;
+    }
+
+    Reply("%d Compression now active; enjoy the speed!\r\n", NNTP_OK_COMPRESS);
+
+    /* Flush any pending output, before enabling compression. */
+    fflush(stdout);
+
+    compression_layer_on = true;
+}
+#endif /* HAVE_ZLIB */
+
+#if defined(HAVE_OPENSSL)
 /*
 **  The STARTTLS command.  RFC 4642.
 */
@@ -463,6 +502,14 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         Reply("%d Already using a security layer\r\n", NNTP_ERR_ACCESS);
         return;
     }
+
+# if defined(HAVE_ZLIB)
+    /* If a compression layer is active, STARTTLS is not possible. */
+    if (compression_layer_on) {
+        Reply("%d Already using a compression layer\r\n", NNTP_ERR_ACCESS);
+        return;
+    }
+# endif /* HAVE_ZLIB */
 
     /* If the client is already authenticated, STARTTLS is not possible. */
     if (PERMauthorized && !PERMneedauth && !PERMcanauthenticate) {
@@ -533,6 +580,14 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
         syslog(L_NOTICE, "sasl_setprop() failed: CMDstarttls()");
     }
 # endif /* HAVE_SASL */
+
+# if defined(HAVE_ZLIB) && OPENSSL_VERSION_NUMBER >= 0x00090800fL
+    /* Check whether a compression layer has just been added.
+     * SSL_get_current_compression() is defined in OpenSSL versions >= 0.9.8
+     * final release. */
+    tls_compression_on = (SSL_get_current_compression(tls_conn) != NULL);
+    compression_layer_on = tls_compression_on;
+# endif /* HAVE_ZLIB && OPENSSL >= v0.9.8 */
 
     /* Reset our read buffer so as to prevent plaintext command injection. */
     line_reset(&NNTPline);

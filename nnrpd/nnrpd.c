@@ -129,6 +129,10 @@ static CMDENT	CMDtable[] = {
 	CMDfetchhelp },
     {   "CAPABILITIES", CMDcapabilities,false,  1,      2,      true,
         "[keyword]" },
+#if defined(HAVE_ZLIB)
+    {   "COMPRESS",     CMDcompress,    false,  2,      2,      true,
+        "DEFLATE" },
+#endif
     {	"DATE",		CMDdate,	false,	1,	1,      true,
 	NULL },
     {	"GROUP",	CMDgroup,	true,	2,	2,      true,
@@ -257,6 +261,17 @@ ExitWithStats(int x, bool readconf)
     sasl_done();
 #endif /* HAVE_SASL */
 
+#if defined(HAVE_ZLIB)
+    if (compression_layer_on) {
+        inflateEnd(zstream_in);
+        free(zstream_in);
+        free(zbuf_in);
+        deflateEnd(zstream_out);
+        free(zstream_out);
+        free(zbuf_out);
+    }
+#endif /* HAVE_ZLIB */
+
      if (DaemonMode) {
      	shutdown(STDIN_FILENO, 2);
      	shutdown(STDOUT_FILENO, 2);
@@ -372,9 +387,15 @@ CMDcapabilities(int ac, char *av[])
     if ((!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
         Printf("AUTHINFO");
 
-        /* No arguments if the server does not permit any authentication commands
-         * in its current state. */
-        if (PERMcanauthenticate) {
+        /* No arguments if the server does not permit any authentication
+         * commands in its current state (either a compression layer other
+         * than the one negotiated along with TLS is active, or the user
+         * has no way to authenticate successfully). */
+        if (
+#if defined(HAVE_ZLIB)
+            (!compression_layer_on || tls_compression_on) &&
+#endif /* HAVE_ZLIB */
+            PERMcanauthenticate) {
 #ifdef HAVE_OPENSSL
             if (PERMcanauthenticatewithoutSSL || encryption_layer_on) {
 #endif
@@ -415,6 +436,13 @@ CMDcapabilities(int ac, char *av[])
         Printf("\r\n");
     }
 
+#if defined(HAVE_ZLIB)
+    /* A compression layer is not active. */
+    if (!compression_layer_on) {
+        Printf("COMPRESS DEFLATE\r\n");
+    }
+#endif /* HAVE_ZLIB */
+
     if (PERMcanread) {
         Printf("HDR\r\n");
     }
@@ -450,13 +478,17 @@ CMDcapabilities(int ac, char *av[])
     }
 #endif /* HAVE_SASL */
 
-#ifdef HAVE_OPENSSL
-    /* A TLS layer is not active and the client is not already authenticated. */
+#if defined(HAVE_OPENSSL)
+    /* A TLS layer is not active, a compression layer is not active,
+     * and the client is not already authenticated. */
     if (!encryption_layer_on
+# if defined(HAVE_ZLIB)
+        && !compression_layer_on
+# endif /* HAVE_ZLIB */
         && (!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
         Printf("STARTTLS\r\n");
     }
-#endif
+#endif /* HAVE_OPENSSL */
 
     Printf(".\r\n");
 }
@@ -629,7 +661,8 @@ StartConnection(unsigned short port)
 
 
 /*
-**  Write a buffer, via SASL security layer and/or TLS if necessary.
+**  Write a buffer, via compression layer and/or SASL security layer
+**  and/or TLS if necessary.
 */
 void
 write_buffer(const char *buff, ssize_t len)
@@ -638,8 +671,44 @@ write_buffer(const char *buff, ssize_t len)
     ssize_t n;
 
     TMRstart(TMR_NNTPWRITE);
-
     p = buff;
+
+#if defined(HAVE_ZLIB)
+    if (compression_layer_on) {
+        int r;
+
+        zstream_out->next_in = (unsigned char *) p;
+        zstream_out->avail_in = len;
+        zstream_out->next_out = zbuf_out;
+        zstream_out->avail_out = zbuf_out_size;
+
+        do {
+            /* Grow the output buffer if needed. */
+            if (zstream_out->avail_out == 0) {
+                size_t newsize = zbuf_out_size * 2;
+                zbuf_out = xrealloc(zbuf_out, newsize);
+                zstream_out->next_out = zbuf_out + zbuf_out_size;
+                zstream_out->avail_out = zbuf_out_size;
+                zbuf_out_size = newsize;
+            }
+
+            r = deflate(zstream_out,
+                        zstream_flush_needed ? Z_PARTIAL_FLUSH : Z_NO_FLUSH);
+
+            if (!(r == Z_OK || r == Z_BUF_ERROR || r == Z_STREAM_END)) {
+                sysnotice("deflate() failed: %d; %s", r,
+                          zstream_out->msg != NULL ? zstream_out->msg :
+                          "no detail");
+                return;
+            }
+        } while (r == Z_OK && zstream_out->avail_out == 0);
+
+        p = (char *) zbuf_out;
+        len = zbuf_out_size - zstream_out->avail_out;
+        zstream_flush_needed = false;
+    }
+#endif /* HAVE_ZLIB */
+
     while (len > 0) {
 	const char *out;
 	unsigned outlen;
@@ -663,7 +732,7 @@ write_buffer(const char *buff, ssize_t len)
 	{
 	    /* Output the entire unencoded string. */
 	    n = len;
-	    out = buff;
+	    out = p;
 	    outlen = len;
 	}
 
@@ -739,6 +808,11 @@ Reply(const char *fmt, ...)
 {
     va_list args;
 
+#if defined(HAVE_ZLIB)
+    /* For single-line responses, immediately flush the output stream. */
+    zstream_flush_needed = true;
+#endif /* HAVE_ZLIB */
+
     va_start(args, fmt);
     VPrintf(fmt, args, 1);
     va_end(args);
@@ -748,6 +822,16 @@ void
 Printf(const char *fmt, ...)
 {
     va_list args;
+
+#if defined(HAVE_ZLIB)
+    /* Last line of a multi-line data block response.
+     * Time to flush the compressed output stream.
+     * Check that only when the compression layer is active. */
+    if (compression_layer_on &&
+        strlen(fmt) == 3 && strcasecmp(fmt, ".\r\n") == 0) {
+        zstream_flush_needed = true;
+    }
+#endif /* HAVE_ZLIB */
 
     va_start(args, fmt);
     VPrintf(fmt, args, 0);
@@ -1212,6 +1296,14 @@ main(int argc, char *argv[])
             ExitWithStats(1, false);
         }
         encryption_layer_on = true;
+
+# if defined(HAVE_ZLIB) && OPENSSL_VERSION_NUMBER >= 0x00090800fL
+        /* Check whether a compression layer has just been added.
+         * SSL_get_current_compression() is defined in OpenSSL versions >= 0.9.8
+         * final release. */
+        tls_compression_on = (SSL_get_current_compression(tls_conn) != NULL);
+        compression_layer_on = tls_compression_on;
+# endif /* HAVE_ZLIB && OPENSSL >= v0.9.8 */
     }
 #endif /* HAVE_OPENSSL */
 

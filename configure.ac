@@ -324,11 +324,12 @@ if test x"$inn_enable_keywords" = x1 ; then
 fi
 
 dnl Handle optional libraries and probing for their locations and component
-dnl libraries if needed.  Support for zlib is handled later.
+dnl libraries if needed.
 INN_LIB_BDB_OPTIONAL
 INN_LIB_KRB5_OPTIONAL
 INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
+INN_LIB_ZLIB_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
 dnl that program.  In case neither et/com_err.h nor kerberosv5/com_err.h
@@ -345,8 +346,8 @@ AS_IF([test x"$inn_use_KRB5" = xtrue],
                         [AC_MSG_ERROR([cannot find usable com_err header])])])])])])
 AC_SUBST([KRB5_AUTH])
 
-dnl If Berkeley DB is found, check the presence of its header.
-dnl Also, do not build with zlib support unless Berkeley DB is enabled.
+dnl If Berkeley DB is found, check the presence of its header and whether the
+dnl Berkeley DB library has ndbm support.
 AS_IF([test x"$inn_use_BDB" = xtrue],
     [inn_BDB_incroot=
      inn_BDB_header_found=
@@ -364,8 +365,7 @@ AS_IF([test x"$inn_use_BDB" = xtrue],
                 [Define if you have the <db.h> header file.])],
             [inn_BDB_header_found=no])])
      AS_IF([test x"${inn_BDB_header_found}" = xyes],
-        [INN_LIB_BDB_NDBM
-         INN_LIB_ZLIB_OPTIONAL],
+        [INN_LIB_BDB_NDBM],
         [AS_IF([test x"$with_bdb" = x],
             [BDB_CPPFLAGS=
              BDB_LDFLAGS=
