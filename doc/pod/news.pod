@@ -21,6 +21,11 @@ from that bandwidth optimization and improvement in speed.
 
 =item *
 
+B<rnews> no longer segfaults at startup when started setuid news.
+Thanks to Marcus Jodorf for the bug report.
+
+=item *
+
 When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
 mechanism which negotiates an encryption layer, B<nnrpd> now updates
