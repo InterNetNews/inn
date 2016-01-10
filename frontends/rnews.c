@@ -861,7 +861,14 @@ int main(int ac, char *av[])
        other setups where rnews might be setuid news or be run by other
        processes in the news group. */
     if (getuid() == 0 || geteuid() == 0) {
-        ensure_news_user(true);
+        uid_t uid;
+
+        /* Do not use ensure_news_user() because it will fail to deal
+         * with the case of rnews being setuid news. */
+        get_news_uid_gid(&uid, false, true);
+        if (setuid(uid) < 0) {
+            sysdie("failed to setuid");
+        }
     }
 
     if (!innconf_read(NULL))
