@@ -1670,7 +1670,6 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
   SITE		*sp, *funnel;
   int		i, j, Groupcount, Followcount, Crosscount;
   char	        *p, *q, *begin, savec;
-  struct buffer	*bp;
   bool		sendit;
 
   /* Work out which sites should really get it. */
@@ -1813,13 +1812,9 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       funnel = &Sites[sp->Funnel];
       funnel->Sendit = true;
       if (funnel->FNLwantsnames) {
-	bp = &funnel->FNLnames;
-	p = &bp->data[bp->used];
-	if (bp->used) {
-	  *p++ = ' ';
-	  bp->used++;
-	}
-	bp->used += strlcpy(p, sp->Name, bp->size - bp->used);
+        if (funnel->FNLnames.left != 0)
+          buffer_append(&funnel->FNLnames, " ", 1);
+        buffer_append(&funnel->FNLnames, sp->Name, strlen(sp->Name));
       }
     }
   }
@@ -2181,7 +2176,7 @@ ARTpost(CHANNEL *cp)
     sp->Poison = false;
     sp->Sendit = false;
     sp->Seenit = false;
-    sp->FNLnames.used = 0;
+    buffer_set(&sp->FNLnames, NULL, 0);
     sp->ng = NULL;
   }
 

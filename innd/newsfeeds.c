@@ -842,14 +842,7 @@ SITEfunnelpatch(void)
 	    result = false;
 	    continue;
 	}
-	if (funnel->FNLnames.data == NULL) {
-	    funnel->FNLnames.size = length;
-	    funnel->FNLnames.data = xmalloc(length);
-	}
-	else if (funnel->FNLnames.size != length) {
-	    funnel->FNLnames.size = length;
-            funnel->FNLnames.data = xrealloc(funnel->FNLnames.data, length);
-	}
+	buffer_resize(&funnel->FNLnames, length);
 	sp->Funnel = funnel - Sites;
     }
 
