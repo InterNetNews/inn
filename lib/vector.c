@@ -464,7 +464,7 @@ char *
 vector_join(const struct vector *vector, const char *separator)
 {
     char *string;
-    size_t i, size, seplen;
+    size_t i, length, offset, size, seplen;
 
     /* If the vector is empty, this is trivial. */
     assert(vector != NULL);
@@ -483,13 +483,20 @@ vector_join(const struct vector *vector, const char *separator)
     assert(SIZE_MAX - size >= (vector->count - 1) * seplen + 1);
     size += (vector->count - 1) * seplen + 1;
 
-    /* Allocate the memory and build up the string using strlcat. */
+    /* Allocate the memory and build up the string. */
     string = xmalloc(size);
-    strlcpy(string, vector->strings[0], size);
-    for (i = 1; i < vector->count; i++) {
-        strlcat(string, separator, size);
-        strlcat(string, vector->strings[i], size);
+    offset = 0;
+    for (i = 0; i < vector->count; i++) {
+        if (i != 0) {
+            memcpy(string + offset, separator, seplen);
+            offset += seplen;
+        }
+        length = strlen(vector->strings[i]);
+        memcpy(string + offset, vector->strings[i], length);
+        offset += length;
+        assert(offset < size);
     }
+    string[offset] = '\0';
     return string;
 }
 
@@ -497,7 +504,7 @@ char *
 cvector_join(const struct cvector *vector, const char *separator)
 {
     char *string;
-    size_t i, size, seplen;
+    size_t i, length, offset, size, seplen;
 
     /* If the vector is empty, this is trivial. */
     assert(vector != NULL);
@@ -516,13 +523,20 @@ cvector_join(const struct cvector *vector, const char *separator)
     assert(SIZE_MAX - size >= (vector->count - 1) * seplen + 1);
     size += (vector->count - 1) * seplen + 1;
 
-    /* Allocate the memory and build up the string using strlcat. */
+    /* Allocate the memory and build up the string. */
     string = xmalloc(size);
-    strlcpy(string, vector->strings[0], size);
-    for (i = 1; i < vector->count; i++) {
-        strlcat(string, separator, size);
-        strlcat(string, vector->strings[i], size);
+    offset = 0;
+    for (i = 0; i < vector->count; i++) {
+        if (i != 0) {
+            memcpy(string + offset, separator, seplen);
+            offset += seplen;
+        }
+        length = strlen(vector->strings[i]);
+        memcpy(string + offset, vector->strings[i], length);
+        offset += length;
+        assert(offset < size);
     }
+    string[offset] = '\0';
     return string;
 }
 
