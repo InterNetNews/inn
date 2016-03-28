@@ -26,6 +26,12 @@ Thanks to Marcus Jodorf for the bug report.
 
 =item *
 
+Fixed slow B<nnrpd> responses for a few NNTP commands.  The TCP_NODELAY
+option was unconditionally set whereas only BSD/OS systems needed it.
+Thanks to Christian Mock for having discovered that.
+
+=item *
+
 When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
 mechanism which negotiates an encryption layer, B<nnrpd> now updates

@@ -203,6 +203,12 @@ dnl (like asprintf) that we use.
         [Define if compiling on Linux to get prototypes for some functions.])
     ;;
 
+dnl Detect BSD/OS for later use in nnrpd code.
+*-bsdi*)
+    AC_DEFINE([INN_BSDI_HOST], [1],
+        [Define if compiling on BSD/OS systems.])
+    ;;
+
 dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
 dnl -g on link as well as compile for debugging to work.
 *hpux*)
