@@ -13,7 +13,9 @@
 #include "portable/socket.h"
 #include <netdb.h>
 #include <signal.h>
-#include <netinet/tcp.h>
+#if defined(INN_BSDI_HOST)
+# include <netinet/tcp.h>
+#endif
 
 #if HAVE_GETSPNAM
 # include <shadow.h>
@@ -579,7 +581,6 @@ StartConnection(unsigned short port)
     struct sockaddr *sas = (struct sockaddr *) &sss;
     socklen_t length;
     size_t size;
-    int nodelay = 1;
 
     memset(&Client, 0, sizeof(Client));
     strlcpy(Client.host, "?", sizeof(Client.host));
@@ -648,9 +649,13 @@ StartConnection(unsigned short port)
         Client.serverport = network_sockaddr_port(sas);
     }
 
+#if defined(INN_BSDI_HOST)
     /* Setting TCP_NODELAY to nnrpd fixes a problem of slow downloading
-     * of overviews and slow answers on some architectures (like BSD/OS). */
+     * of overviews and slow answers on some architectures (like BSD/OS
+     * where TCP delayed acknowledgements are enabled). */
+    int nodelay = 1;
     setsockopt(STDIN_FILENO, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+#endif
 
     notice("%s (%s) connect - port %u", Client.host, Client.ip, port);
 
