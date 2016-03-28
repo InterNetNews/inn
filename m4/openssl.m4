@@ -28,6 +28,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2010, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -71,10 +72,10 @@ AC_DEFUN([_INN_LIB_OPENSSL_INTERNAL],
         [AC_MSG_ERROR([cannot find usable OpenSSL crypto library])])],
     [$inn_openssl_extra])
  AS_IF([test x"$inn_reduced_depends" = xtrue],
-    [AC_CHECK_LIB([ssl], [SSL_library_init], [OPENSSL_LIBS=-lssl],
+    [AC_CHECK_LIB([ssl], [SSL_accept], [OPENSSL_LIBS=-lssl],
         [AS_IF([test x"$1" = xtrue],
             [AC_MSG_ERROR([cannot find usable OpenSSL library])])])],
-    [AC_CHECK_LIB([ssl], [SSL_library_init],
+    [AC_CHECK_LIB([ssl], [SSL_accept],
         [OPENSSL_LIBS="-lssl $CRYPTO_LIBS"],
         [AS_IF([test x"$1" = xtrue],
             [AC_MSG_ERROR([cannot find usable OpenSSL library])])],

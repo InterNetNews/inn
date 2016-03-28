@@ -32,6 +32,10 @@ Thanks to Christian Mock for having discovered that.
 
 =item *
 
+S<OpenSSL 1.1.0> support has been added to INN.
+
+=item *
+
 When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
 mechanism which negotiates an encryption layer, B<nnrpd> now updates

@@ -216,7 +216,10 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
 	default:
 		/* We should check current keylength vs. requested keylength
 		 * also, this is an extremely expensive operation! */
-		dh = DH_generate_parameters(keylength, DH_GENERATOR_2, NULL, NULL);
+                dh = DH_new();
+                if (dh != NULL) {
+                    DH_generate_parameters_ex(dh, keylength, DH_GENERATOR_2, NULL);
+                }
 		r = dh;
 	}
 
@@ -492,10 +495,17 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (tls_loglevel >= 2)
       Printf("starting TLS engine");
 
+/* New functions have been introduced in OpenSSL 1.1.0. */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
-
     CTX = SSL_CTX_new(SSLv23_server_method());
+#else
+    OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS
+                     | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+    CTX = SSL_CTX_new(TLS_server_method());
+#endif
+
     if (CTX == NULL) {
       return (-1);
     };
