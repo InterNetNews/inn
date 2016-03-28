@@ -22,8 +22,12 @@
 #ifndef TLS_H
 #define TLS_H
 
+/* Comment out to avoid the use of deprecated interfaces. */
+/* #define OPENSSL_API_COMPAT 0x10100000L */
+
 #include <openssl/lhash.h>
 #include <openssl/bn.h>
+#include <openssl/dh.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
