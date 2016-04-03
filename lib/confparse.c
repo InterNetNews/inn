@@ -1125,9 +1125,9 @@ parse_group(struct config_file *file, struct config_group *parent)
     }
     if (token != TOKEN_LBRACE && token != TOKEN_LANGLE) {
         free(type);
+        expected = tag != NULL ? "'{' or '<'" : "group tag, '{', or '<'";
         if (tag != NULL)
             free(tag);
-        expected = tag != NULL ? "'{' or '<'" : "group tag, '{', or '<'";
         error_unexpected_token(file, expected);
         return false;
     }
