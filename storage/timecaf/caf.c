@@ -1433,9 +1433,9 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
 	return -1;
     }
 
-    /* compute amount of  actual data in file. */
+    /* compute amount of actual data in file. */
     datasize = statbuf.st_size - head.StartDataBlock;
-    if (datasize <= 0) {
+    if (datasize == 0) {
 	/* nothing in the file, set percentfree==0 so won't bother cleaning */
 	percentfree = 0;
     } else {
