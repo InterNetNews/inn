@@ -128,7 +128,7 @@ void gPrintListenerInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sGlobal InnListener list : %p (count %d) {\n",
+  fprintf (fp,"%sGlobal InnListener list : %p (count %u) {\n",
            indent,(void *) listenerList,listenerCount) ;
   for (p = listenerList ; p != NULL ; p = p->next)
     printListenerInfo (p,fp,indentAmt + INDENT_INCR) ;

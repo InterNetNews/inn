@@ -980,7 +980,7 @@ void mainLogStatus (FILE *fp)
   fprintf (fp,"      Log file: %s\n",(logFile == NULL ? "(none)" : logFile));
   fprintf (fp,"   Debug level: %-5u        Debug shrinking: %s\n",
            loggingLevel, boolToString(debugShrinking));
-  fprintf (fp,"     Fast exit: %-5s            stdio-fdmax: %d\n",
+  fprintf (fp,"     Fast exit: %-5s            stdio-fdmax: %u\n",
            boolToString(fastExit), stdioFdMax);
   fprintf (fp,"          Mmap: %s\n", boolToString(useMMap));
   fprintf (fp,"\n") ;

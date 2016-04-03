@@ -950,7 +950,7 @@ main(int argc, char *argv[])
     char                **v;
     char		*Reject;
     int			timeout;
-    unsigned int	vid=0; 
+    unsigned int	vid=0;
     int 		count=123456789;
     struct		timeval tv;
     unsigned short	ListenPort = NNTP_PORT;
@@ -1371,7 +1371,7 @@ main(int argc, char *argv[])
 	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
 	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
 	LocalLogFileName = xmalloc(len);
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%d", innconf->pathlog, vid);
+	sprintf(LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog, vid);
 	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
             LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
 	    MakeDirectory(LocalLogDirName, false);

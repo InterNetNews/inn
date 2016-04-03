@@ -244,14 +244,14 @@ PostRecFilename(char *ip, char *user)
      for (i=0; i<4; i++)
        quads[i] = (unsigned char) (0xff & (addr>>(i*8)));
 
-     snprintf(dirbuff, sizeof(dirbuff), "%s/%03d%03d/%03d",
+     snprintf(dirbuff, sizeof(dirbuff), "%s/%03u%03u/%03u",
          postrec_dir, quads[3], quads[2], quads[1]);
      if (!MakeDirectory(dirbuff,true)) {
        syslog(L_ERROR, "%s Unable to create postrec directories '%s': %s",
                Client.host, dirbuff, strerror(errno));
        return NULL;
      }
-     snprintf(buff, sizeof(buff), "%s/%03d", dirbuff, quads[0]);
+     snprintf(buff, sizeof(buff), "%s/%03u", dirbuff, quads[0]);
      return(buff);
 }
 
@@ -275,7 +275,7 @@ LockPostRec(char *path)
     fd = open(lockname, O_WRONLY|O_EXCL|O_CREAT, 0600);
     if (fd >= 0) {
       /* We got the lock! */
-      snprintf(temp, sizeof(temp), "pid:%ld\n", (unsigned long) getpid());
+      snprintf(temp, sizeof(temp), "pid:%lu\n", (unsigned long) getpid());
       write(fd, temp, strlen(temp));
       close(fd);
       return(1);
