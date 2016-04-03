@@ -481,10 +481,9 @@ static int rad_auth(rad_config_t *radconfig, char *uname, char *pass)
 	}
 	/* FINALLY!  Got back a known-good packet.  See if we're in. */
 	close(sock);
+        done = 1;
+        req_copyfrom(sreq, &req);
 	return (req.code == PW_AUTHENTICATION_ACK) ? 0 : -1;
-	done = 1;
-	req_copyfrom(sreq, &req);
-	break;
       }
     }
     if (authtries == 0)
