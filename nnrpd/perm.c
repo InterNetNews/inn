@@ -1421,7 +1421,7 @@ PERMgetinitialaccess(char *readersconf)
     PERMgroupmadeinvalid = false;
     PERMcanpostgreeting = false;
     PERMcanread	    = PERMcanpost   = false;
-    PERMreadlist    = PERMpostlist  = false;
+    PERMreadlist    = PERMpostlist  = NULL;
     PERMaccessconf = NULL;
 
     if (ConfigBit == NULL) {
