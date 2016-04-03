@@ -83,7 +83,6 @@ main(ac, av)
     bool	PostMode;
 
     /* Set defaults. */
-    mesgid[0] = '\0';
     PostMode = false;
     message_program_name = "feedone";
 
