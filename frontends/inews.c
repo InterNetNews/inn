@@ -438,7 +438,6 @@ FormatUserName(struct passwd *pwp, char *node)
     char        *buff;
     char	*out;
     char	*p;
-    int         left;
 
 #if	!defined(DONT_MUNGE_GETENV)
     memset(outbuff, 0, SMBUF);
@@ -455,7 +454,7 @@ FormatUserName(struct passwd *pwp, char *node)
      * buffer.  Remember that on some Unix systems, the content of the GECOS
      * field is under (untrusted) user control and we could be setgid. */
     p = pwp->pw_gecos;
-    left = SMBUF - 1;
+    int left = SMBUF - 1;
     if (*p == '*')
 	p++;
     for (out = outbuff; *p && !GECOSTERM(*p) && left; p++) {
