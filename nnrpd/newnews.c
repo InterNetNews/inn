@@ -117,7 +117,7 @@ HaveSeen(bool AllGroups, char *group, char **groups, char **xrefs)
   list[1] = NULL;
   for ( ; *xrefs; xrefs++) {
     list[0] = *xrefs;
-    if ((!AllGroups && PERMmatch(groups, list)) && (!PERMspecified || (PERMspecified && PERMmatch(PERMreadlist, list)))) {
+    if ((!AllGroups && PERMmatch(groups, list)) && (!PERMspecified || PERMmatch(PERMreadlist, list))) {
       if (!strcmp(*xrefs, group))
 	return false;
       else

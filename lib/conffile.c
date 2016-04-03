@@ -70,7 +70,7 @@ static char *CONFgetword(CONFFILE *F)
   if (*p == '"') { /* double quoted string ? */
     p++;
     do {
-      for (t = p; (*t != '"' || (*t == '"' && *(t - 1) == '\\')) &&
+      for (t = p; (*t != '"' || *(t - 1) == '\\') &&
              *t != '\0'; t++);
       if (*t == '\0') {
         if (strlen(F->buf) >= F->sbuf - 2)

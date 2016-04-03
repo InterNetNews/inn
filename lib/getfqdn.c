@@ -49,10 +49,13 @@ char *GetFQDN(char *domain)
         strlcat(temp, ".", sizeof(temp));
 	hp = gethostbyname(temp);
     }
+    if (hp == NULL) {
+        return NULL;
+    }
 #endif	/* 0 */
 
     /* First, see if the main name is a FQDN.  It should be. */
-    if (hp != NULL && strchr(hp->h_name, '.') != NULL) {
+    if (strchr(hp->h_name, '.') != NULL) {
 	if (strlen(hp->h_name) < sizeof buff - 1) {
 	    strlcpy(buff, hp->h_name, sizeof(buff));
             return buff;
