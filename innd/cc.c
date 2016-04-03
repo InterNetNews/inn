@@ -209,9 +209,10 @@ CCxabort(char *av[])
 {
     syslog(L_FATAL, "%s abort %s", LogName, av[0]);
     abort();
+    /* NOTREACHED */
     syslog(L_FATAL, "%s cant abort %m", LogName);
     CleanupAndExit(1, av[0]);
-    /* NOTREACHED */
+    return "1 Abort failed";
 }
 
 

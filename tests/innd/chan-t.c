@@ -70,6 +70,7 @@ main(void)
     WCHANadd(cp);
     CHANreadloop();
     die("fell through main");
+    /* NOTREACHED */
     return 1;
 }
 
