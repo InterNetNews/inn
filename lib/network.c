@@ -21,7 +21,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2011, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007, 2008
@@ -75,21 +75,6 @@
 # define sin6_set_length(s)     /* empty */
 #endif
 
-/* If SO_REUSEADDR isn't available, make calls to set_reuseaddr go away. */
-#ifndef SO_REUSEADDR
-# define network_set_reuseaddr(fd)      /* empty */
-#endif
-
-/* If IPV6_V6ONLY isn't available, make calls to set_v6only go away. */
-#ifndef IPV6_V6ONLY
-# define network_set_v6only(fd)         /* empty */
-#endif
-
-/* If IP_FREEBIND isn't available, make calls to set_freebind go away. */
-#ifndef IP_FREEBIND
-# define network_set_freebind(fd)       /* empty */
-#endif
-
 /*
  * Windows requires a different function when sending to sockets, but can't
  * return short writes on blocking sockets.
@@ -100,53 +85,53 @@
 # define socket_xwrite(fd, b, s)        xwrite((fd), (b), (s))
 #endif
 
+
 /*
  * Set SO_REUSEADDR on a socket if possible (so that something new can listen
  * on the same port immediately if the daemon dies unexpectedly).
  */
-#ifdef SO_REUSEADDR
-static void
+void
 network_set_reuseaddr(socket_type fd)
 {
+#ifdef SO_REUSEADDR
     int flag = 1;
-    const void *flagaddr = &flag;
 
-    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, flagaddr, sizeof(flag)) < 0)
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
         syswarn("cannot mark bind address reusable");
-}
 #endif
+}
 
 
 /*
  * Set IPV6_V6ONLY on a socket if possible, since the IPv6 behavior is more
  * consistent and easier to understand.
  */
-#ifdef IPV6_V6ONLY
-static void
+void
 network_set_v6only(socket_type fd)
 {
+#ifdef IPV6_V6ONLY
     int flag = 1;
 
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) < 0)
         syswarn("cannot set IPv6 socket to v6only");
-}
 #endif
+}
 
 
 /*
  * Set IP_FREEBIND on a socket if possible, which allows binding servers to
  * IPv6 addresses that may not have been set up yet.
  */
-#ifdef IP_FREEBIND
-static void
+void
 network_set_freebind(socket_type fd)
 {
+#ifdef IP_FREEBIND
     int flag = 1;
 
     if (setsockopt(fd, IPPROTO_IP, IP_FREEBIND, &flag, sizeof(flag)) < 0)
         syswarn("cannot set IPv6 socket to free binding");
-}
 #endif
+}
 
 
 /*

@@ -6,7 +6,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -58,14 +58,16 @@ is_addr_compare(bool expected, const char *a, const char *b, const char *mask)
 int
 main(void)
 {
-    int status;
+    int flag, status;
+    socklen_t flaglen;
     struct addrinfo *ai, *ai2;
     struct addrinfo hints;
     char addr[INET6_ADDRSTRLEN];
+    socket_type fd;
     static const char *port = "119";
 
     /* Set up the plan. */
-    plan(29);
+    plan(31);
 
     /* Get a sockaddr to use for subsequent tests. */
     memset(&hints, 0, sizeof(hints));
@@ -126,5 +128,21 @@ main(void)
     is_addr_compare(0, "127.0.0.1", "127.0.0.1",   "1p");
     is_addr_compare(0, "127.0.0.1", "127.0.0.1",   "-1");
     is_addr_compare(0, "127.0.0.1", "127.0.0.1",   "33");
+
+    /* Test setting various socket options. */
+    fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_IP);
+    if (fd == INVALID_SOCKET)
+        sysbail("cannot create socket");
+    network_set_reuseaddr(fd);
+#ifdef SO_REUSEADDR
+    flag = 0;
+    flaglen = sizeof(flag);
+    is_int(0, getsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, &flaglen),
+           "Getting SO_REUSEADDR works");
+    is_int(1, flag, "...and it is set");
+#else
+    skip_block(2, "SO_REUSEADDR not supported");
+#endif
+    close(fd);
     return 0;
 }
