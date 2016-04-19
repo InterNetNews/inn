@@ -28,7 +28,7 @@ GetFromServer(buff, size, text)
     char	*text;
 {
     if (fgets(buff, size, FromServer) == NULL)
-        sysdie("s", text);
+        sysdie("%s", text);
     if (Tracing)
 	printf("S: %s", buff);
 }
