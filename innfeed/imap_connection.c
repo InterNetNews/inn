@@ -4560,7 +4560,7 @@ void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sGlobal Connection list : (count %d) {\n",
+  fprintf (fp,"%sGlobal Connection list : (count %u) {\n",
            indent,gCxnCount) ;
   for (cxn = gCxnList ; cxn != NULL ; cxn = cxn->next)
     printCxnInfo (cxn,fp,indentAmt + INDENT_INCR) ;
@@ -4583,7 +4583,7 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    endpoint (lmtp): %p\n",indent, (void *) cxn->lmtp_endpoint) ;
   fprintf (fp,"%s    state (imap) : %s\n",indent, imap_stateToString (cxn->imap_state)) ;
   fprintf (fp,"%s    state (lmtp) : %s\n",indent, lmtp_stateToString (cxn->lmtp_state)) ;
-  fprintf (fp,"%s    ident : %d\n",indent,cxn->ident) ;
+  fprintf (fp,"%s    ident : %u\n",indent,cxn->ident) ;
   fprintf (fp,"%s    ip-name (imap): %s\n", indent, cxn->ServerName) ;
   fprintf (fp,"%s    ip-name (lmtp): %s\n", indent, cxn->ServerName) ;
   fprintf (fp,"%s    port-number (imap) : %d\n",indent,cxn->imap_port) ;
@@ -4614,13 +4614,13 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
   fprintf(fp,"%s    remove:     yes: %d no: %d\n",indent,
 	  cxn->remove_succeeded, cxn->remove_failed);
 
-  fprintf (fp,"%s    response-timeout : %d\n",indent,cxn->imap_readTimeout) ;
+  fprintf (fp,"%s    response-timeout : %u\n",indent,cxn->imap_readTimeout) ;
   fprintf (fp,"%s    response-callback : %d\n",indent,cxn->imap_readBlockedTimerId) ;
 
-  fprintf (fp,"%s    write-timeout : %d\n",indent,cxn->imap_writeTimeout) ;
+  fprintf (fp,"%s    write-timeout : %u\n",indent,cxn->imap_writeTimeout) ;
   fprintf (fp,"%s    write-callback : %d\n",indent,cxn->imap_writeBlockedTimerId) ;
 
-  fprintf (fp,"%s    reopen wait : %d\n",indent,cxn->imap_sleepTimeout) ;
+  fprintf (fp,"%s    reopen wait : %u\n",indent,cxn->imap_sleepTimeout) ;
   fprintf (fp,"%s    reopen id : %d\n",indent,cxn->imap_sleepTimerId) ;
 
   fprintf (fp,"%s    IMAP queue {\n",indent) ;

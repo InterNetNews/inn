@@ -1089,7 +1089,7 @@ void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sGlobal Connection list : (count %d) {\n",
+  fprintf (fp,"%sGlobal Connection list : (count %u) {\n",
            indent,gCxnCount) ;
   for (cxn = gCxnList ; cxn != NULL ; cxn = cxn->next)
     printCxnInfo (cxn,fp,indentAmt + INDENT_INCR) ;
@@ -1117,10 +1117,10 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    host : %p\n",indent, (void *) cxn->myHost) ;
   fprintf (fp,"%s    endpoint : %p\n",indent, (void *) cxn->myEp) ;
   fprintf (fp,"%s    state : %s\n",indent, stateToString (cxn->state)) ;
-  fprintf (fp,"%s    ident : %d\n",indent,cxn->ident) ;
+  fprintf (fp,"%s    ident : %u\n",indent,cxn->ident) ;
   fprintf (fp,"%s    ip-name : %s\n", indent, cxn->ipName) ;
-  fprintf (fp,"%s    port-number : %d\n",indent,cxn->port) ;
-  fprintf (fp,"%s    max-checks : %d\n",indent,cxn->maxCheck) ;
+  fprintf (fp,"%s    port-number : %u\n",indent,cxn->port) ;
+  fprintf (fp,"%s    max-checks : %u\n",indent,cxn->maxCheck) ;
   fprintf (fp,"%s    does-streaming : %s\n",indent,
            boolToString (cxn->doesStreaming)) ;
   fprintf (fp,"%s    authenticated : %s\n",indent,
@@ -1131,14 +1131,14 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
            boolToString (cxn->needsChecks)) ;
 
   fprintf (fp,"%s    time-connected : %ld\n",indent,(long) cxn->timeCon) ;
-  fprintf (fp,"%s    articles from INN : %d\n",indent,cxn->artsTaken) ;
-  fprintf (fp,"%s    articles offered : %d\n",indent,
+  fprintf (fp,"%s    articles from INN : %u\n",indent,cxn->artsTaken) ;
+  fprintf (fp,"%s    articles offered : %u\n",indent,
            cxn->checksIssued) ;
-  fprintf (fp,"%s    articles refused : %d\n",indent,
+  fprintf (fp,"%s    articles refused : %u\n",indent,
            cxn->checksRefused) ;
-  fprintf (fp,"%s    articles rejected : %d\n",indent,
+  fprintf (fp,"%s    articles rejected : %u\n",indent,
            cxn->takesRejected) ;
-  fprintf (fp,"%s    articles accepted : %d\n",indent,
+  fprintf (fp,"%s    articles accepted : %u\n",indent,
            cxn->takesOkayed) ;
   fprintf (fp,"%s    low-pass upper limit : %0.6f\n", indent,
            cxn->onThreshold) ;
@@ -1149,19 +1149,19 @@ void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    low-pass filter : %0.6f\n", indent,
            cxn->filterValue) ;
 
-  fprintf (fp,"%s    article-timeout : %d\n",indent,cxn->articleReceiptTimeout) ;
+  fprintf (fp,"%s    article-timeout : %u\n",indent,cxn->articleReceiptTimeout) ;
   fprintf (fp,"%s    article-callback : %d\n",indent,cxn->artReceiptTimerId) ;
 
-  fprintf (fp,"%s    response-timeout : %d\n",indent,cxn->readTimeout) ;
+  fprintf (fp,"%s    response-timeout : %u\n",indent,cxn->readTimeout) ;
   fprintf (fp,"%s    response-callback : %d\n",indent,cxn->readBlockedTimerId) ;
 
-  fprintf (fp,"%s    write-timeout : %d\n",indent,cxn->writeTimeout) ;
+  fprintf (fp,"%s    write-timeout : %u\n",indent,cxn->writeTimeout) ;
   fprintf (fp,"%s    write-callback : %d\n",indent,cxn->writeBlockedTimerId) ;
 
-  fprintf (fp,"%s    flushTimeout : %d\n",indent,cxn->flushTimeout) ;
+  fprintf (fp,"%s    flushTimeout : %u\n",indent,cxn->flushTimeout) ;
   fprintf (fp,"%s    flushTimerId : %d\n",indent,cxn->flushTimerId) ;
 
-  fprintf (fp,"%s    reopen wait : %d\n",indent,cxn->sleepTimeout) ;
+  fprintf (fp,"%s    reopen wait : %u\n",indent,cxn->sleepTimeout) ;
   fprintf (fp,"%s    reopen id : %d\n",indent,cxn->sleepTimerId) ;
 
   fprintf (fp,"%s    CHECK queue {\n",indent) ;

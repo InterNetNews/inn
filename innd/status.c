@@ -292,16 +292,16 @@ STATUSsummary(void)
   fprintf (F, "global (process)\n");
   fprintf (F, "         seconds: %ld\n", (long) seconds);
   offered = accepted + refused + rejected;
-  fprintf (F, "         offered: %-9ld\n", offered);
+  fprintf (F, "         offered: %-9lu\n", offered);
   if (!offered) offered = 1; /* to avoid division by zero */
   if (!size) size = 1; /* avoid divide by zero here too */
-  fprintf (F, "        accepted: %-9ld       %%accepted: %.1f%%\n",
+  fprintf (F, "        accepted: %-9lu       %%accepted: %.1f%%\n",
 	   accepted, (float) accepted / offered * 100);
-  fprintf (F, "         refused: %-9ld        %%refused: %.1f%%\n",
+  fprintf (F, "         refused: %-9lu        %%refused: %.1f%%\n",
 	   refused, (float) refused / offered * 100);
-  fprintf (F, "        rejected: %-9ld       %%rejected: %.1f%%\n",
+  fprintf (F, "        rejected: %-9lu       %%rejected: %.1f%%\n",
 	   rejected, (float) rejected / offered * 100);
-  fprintf (F, "      duplicated: %-9ld     %%duplicated: %.1f%%\n",
+  fprintf (F, "      duplicated: %-9lu     %%duplicated: %.1f%%\n",
 	   duplicate, (float) duplicate / offered * 100);
   fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize + RejectSize, str));
   fprintf (F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
@@ -311,8 +311,8 @@ STATUSsummary(void)
   fputc ('\n', F) ;
 
   if(innconf->logstatus) {
-    notice ("%s status seconds %ld accepted %ld "
-            "refused %ld rejected %ld duplicate %ld "
+    notice ("%s status seconds %ld accepted %lu "
+            "refused %lu rejected %lu duplicate %lu "
             "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
                 "ME", (long) seconds, accepted,
                 refused, rejected, duplicate,
@@ -324,49 +324,49 @@ STATUSsummary(void)
     fprintf (F, "%s\n",                      status->name);
     fprintf (F, " ip address: %s\n",         status->ip_addr);
     fprintf (F, "    seconds: %-7ld  ",      (long) status->seconds);
-    fprintf (F, "      duplicates: %-5ld ",  status->Duplicate);
-    fprintf (F, "max allowed cxns: %d\n",    status->maxCxn);
-    fprintf (F, "    offered: %-7ld  ",
+    fprintf (F, "      duplicates: %-5lu ",  status->Duplicate);
+    fprintf (F, "max allowed cxns: %u\n",    status->maxCxn);
+    fprintf (F, "    offered: %-7lu  ",
 	     status->accepted + status->refused + status->rejected);
-    fprintf (F, "   uw newsgroups: %-7ld ",  status->Unwanted_g);
-    fprintf (F, "   active cxns: %d\n",      status->activeCxn);
-    fprintf (F, "   accepted: %-7ld  ",      status->accepted);
-    fprintf (F, "uw distributions: %-7ld ",  status->Unwanted_d);
-    fprintf (F, " sleeping cxns: %d\n",      status->sleepingCxns);
-    fprintf (F, "    refused: %-7ld  ",      status->refused);
-    fprintf (F, "      unapproved: %-7ld ",  status->Unwanted_u);
+    fprintf (F, "   uw newsgroups: %-7lu ",  status->Unwanted_g);
+    fprintf (F, "   active cxns: %u\n",      status->activeCxn);
+    fprintf (F, "   accepted: %-7lu  ",      status->accepted);
+    fprintf (F, "uw distributions: %-7lu ",  status->Unwanted_d);
+    fprintf (F, " sleeping cxns: %u\n",      status->sleepingCxns);
+    fprintf (F, "    refused: %-7lu  ",      status->refused);
+    fprintf (F, "      unapproved: %-7lu ",  status->Unwanted_u);
     fprintf (F, "want streaming: %s\n",
 	     status->can_stream ? "Yes" : "No");
-    fprintf (F, "   rejected: %-7ld  ",      status->rejected);
-    fprintf (F, "        filtered: %-7ld ",  status->Unwanted_f);
+    fprintf (F, "   rejected: %-7lu  ",      status->rejected);
+    fprintf (F, "        filtered: %-7lu ",  status->Unwanted_f);
     fprintf (F, "  is streaming: %s\n",
 	     (status->Check || status->Takethis) ? "Yes" : "No");
     fprintf (F, "       size: %-8s ",        PrettySize(status->Size, str));
-    fprintf (F, "       bad sites: %-7ld ", status->Unwanted_s);
+    fprintf (F, "       bad sites: %-7lu ", status->Unwanted_s);
     fprintf (F, "duplicate size: %s\n", PrettySize(status->DuplicateSize, str));
     fprintf (F, "reject size: %-8s\n",       PrettySize(status->RejectSize, str));
     fprintf (F, "  Protocol:\n");
-    fprintf (F, "      Ihave: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
+    fprintf (F, "      Ihave: %-6lu SendIt[%d]: %-6lu    Got[%d]: %-6lu Deferred[%d]: %lu\n",
 	     status->Ihave, NNTP_CONT_IHAVE, status->Ihave_SendIt,
 	     NNTP_FAIL_IHAVE_REFUSE, status->Ihave_Duplicate, NNTP_FAIL_IHAVE_DEFER,
 	     status->Ihave_Deferred);
-    fprintf (F, "      Check: %-6ld SendIt[%d]: %-6ld    Got[%d]: %-6ld Deferred[%d]: %ld\n",
+    fprintf (F, "      Check: %-6lu SendIt[%d]: %-6lu    Got[%d]: %-6lu Deferred[%d]: %lu\n",
 	     status->Check, NNTP_OK_CHECK, status->Check_send,
 	     NNTP_FAIL_CHECK_REFUSE, status->Check_got, NNTP_FAIL_CHECK_DEFER,
 	     status->Check_deferred);
-    fprintf (F, "   Takethis: %-6ld     Ok[%d]: %-6ld  Error[%d]: %-6ld\n",
+    fprintf (F, "   Takethis: %-6lu     Ok[%d]: %-6lu  Error[%d]: %-6lu\n",
 	     status->Takethis, NNTP_OK_TAKETHIS, status->Takethis_Ok,
 	     NNTP_FAIL_TAKETHIS_REJECT, status->Takethis_Err);
     if (innconf->refusecybercancels) {
-        fprintf (F, "   Cancelrejects:    Ihave[%d]: %-6ld  Check[%d]: %-6ld\n",
+        fprintf (F, "   Cancelrejects:    Ihave[%d]: %-6lu  Check[%d]: %-6lu\n",
 	     NNTP_FAIL_IHAVE_REFUSE, status->Ihave_Cybercan,
 	     NNTP_FAIL_CHECK_REFUSE, status->Check_cybercan);
     }
     fputc ('\n', F) ;
 
     if(innconf->logstatus) {
-      notice ("%s status seconds %ld accepted %ld "
-              "refused %ld rejected %ld duplicate %ld "
+      notice ("%s status seconds %ld accepted %lu "
+              "refused %lu rejected %lu duplicate %lu "
               "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
                   status->name, (long) status->seconds, status->accepted,
                   status->refused, status->rejected, status->Duplicate,

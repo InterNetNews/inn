@@ -184,7 +184,7 @@ void gPrintBufferInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
   
-  fprintf (fp,"%sGlobal Buffer List : (count %d) {\n",indent,bufferCount) ;
+  fprintf (fp,"%sGlobal Buffer List : (count %u) {\n",indent,bufferCount) ;
   
   for (b = gBufferList ; b != NULL ; b = b->next)
     printBufferInfo (b,fp,indentAmt + INDENT_INCR) ;

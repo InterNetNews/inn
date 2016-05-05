@@ -201,7 +201,7 @@ main(int argc, char *argv[])
         if (!OVexpiregroup(line, &low, history))
             warn("can't expire %s", line);
         else if (lowmark != NULL && low != 0)
-            fprintf(lowmark, "%s %u\n", line, low);
+            fprintf(lowmark, "%s %d\n", line, low);
         line = QIOread(qp);
     }
     if (signalled)

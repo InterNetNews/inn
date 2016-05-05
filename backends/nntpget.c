@@ -461,7 +461,7 @@ main(int ac, char *av[])
     if (Update) {
 	if ((F = fopen(Update, "w")) == NULL)
             sysdie("cannot update %s", Update);
-	fprintf(F, "got %ld offered %ld sent %ld rejected %ld\n",
+	fprintf(F, "got %lu offered %lu sent %lu rejected %lu\n",
 		STATgot, STAToffered, STATsent, STATrejected); 
 	if (ferror(F) || fclose(F) == EOF)
             sysdie("cannot update %s", Update);

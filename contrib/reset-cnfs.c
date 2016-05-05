@@ -12,14 +12,14 @@ int
 main(int argc, char *argv[])
 {
     int fd;
-    int i, j;
+    int i;
     char buf[512];
 #ifdef DO_LARGEFILES
     struct stat64 st;
 #else
     struct stat st;
 #endif
-    int numwr;
+    size_t j, numwr;
     bool status = true;
 
     bzero(buf, sizeof(buf));
@@ -45,11 +45,12 @@ main(int argc, char *argv[])
                  * fuzz.  buf has 512 bytes in it, therefore containing data
                  * for (512 * 8) * 512 bytes of data. */
                 numwr = (st.st_size / (512*8) / sizeof(buf)) + 50;
-                printf("File %s: %lu %u\n", argv[i],
-                       (unsigned long) st.st_size, numwr);
+                printf("File %s: %lu %lu\n", argv[i],
+                       (unsigned long) st.st_size, (unsigned long) numwr);
                 for (j = 0; j < numwr; j++) {
                     if (!(j % 100)) {
-                        printf("\t%d/%d\n", j, numwr);
+                        printf("\t%lu/%lu\n", (unsigned long) j,
+                               (unsigned long) numwr);
                     }
                     write(fd, buf, sizeof(buf));
                 }

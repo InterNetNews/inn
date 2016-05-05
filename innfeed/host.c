@@ -1277,7 +1277,7 @@ void gPrintHostInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
   
-  fprintf (fp,"%sGlobal Host list : (count %d) {\n",indent,gHostCount) ;
+  fprintf (fp,"%sGlobal Host list : (count %u) {\n",indent,gHostCount) ;
   
   for (h = gHostList ; h != NULL ; h = h->next)
     printHostInfo (h,fp,indentAmt + INDENT_INCR) ;
@@ -1292,31 +1292,31 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   char indent [INDENT_BUFFER_SIZE] ;
   unsigned int i ;
   ProcQElem qe ;
-  double cnt = (host->blCount) ? (host->blCount) : 1.0;
+  double cnt ;
   
   for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sHost : %p {\n",indent,(void *) host) ;
+  if (host == NULL) {
+    fprintf(fp, "%sHost : NULL {\n%s}\n", indent, indent);
+    return;
+  }
 
-  if (host == NULL)
-    {
-      fprintf (fp,"%s}\n",indent) ;
-      return ;
-    }
-  
+  cnt = (host->blCount) ? (host->blCount) : 1.0;
+
+  fprintf (fp,"%sHost : %p {\n", indent, (void *) host) ;
   fprintf (fp,"%s    peer-name : %s\n",indent,host->params->peerName) ;
   fprintf (fp,"%s    ip-name : %s\n",indent,host->params->ipName) ;
   fprintf (fp,"%s    bindaddress : %s\n",indent,
            host->params->bindAddr ? host->params->bindAddr : "any") ;
   fprintf (fp,"%s    bindaddress6 : %s\n",indent,
            host->params->bindAddr6 ? host->params->bindAddr6 : "any") ;
-  fprintf (fp,"%s    abs-max-connections : %d\n",indent,
+  fprintf (fp,"%s    abs-max-connections : %u\n",indent,
 	   host->params->absMaxConnections) ;
-  fprintf (fp,"%s    active-connections : %d\n",indent,host->activeCxns) ;
-  fprintf (fp,"%s    sleeping-connections : %d\n",indent,host->sleepingCxns) ;
-  fprintf (fp,"%s    initial-connections : %d\n",indent,
+  fprintf (fp,"%s    active-connections : %u\n",indent,host->activeCxns) ;
+  fprintf (fp,"%s    sleeping-connections : %u\n",indent,host->sleepingCxns) ;
+  fprintf (fp,"%s    initial-connections : %u\n",indent,
 	   host->params->initialConnections) ;
   fprintf (fp,"%s    want-streaming : %s\n",indent,
            boolToString (host->params->wantStreaming)) ;
@@ -1326,15 +1326,15 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
            boolToString (host->params->minQueueCxn)) ;
   fprintf (fp,"%s    remote-streams : %s\n",indent,
            boolToString (host->remoteStreams)) ;
-  fprintf (fp,"%s    max-checks : %d\n",indent,host->params->maxChecks) ;
-  fprintf (fp,"%s    article-timeout : %d\n",indent,
+  fprintf (fp,"%s    max-checks : %u\n",indent,host->params->maxChecks) ;
+  fprintf (fp,"%s    article-timeout : %u\n",indent,
 	   host->params->articleTimeout) ;
-  fprintf (fp,"%s    response-timeout : %d\n",indent,
+  fprintf (fp,"%s    response-timeout : %u\n",indent,
 	   host->params->responseTimeout) ;
-  fprintf (fp,"%s    close-period : %d\n",indent,
+  fprintf (fp,"%s    close-period : %u\n",indent,
 	   host->params->closePeriod) ;
-  fprintf (fp,"%s    port : %d\n",indent,host->params->portNum) ;
-  fprintf (fp,"%s    dynamic-method : %d\n",indent,
+  fprintf (fp,"%s    port : %u\n",indent,host->params->portNum) ;
+  fprintf (fp,"%s    dynamic-method : %u\n",indent,
 	   host->params->dynamicMethod) ;
   fprintf (fp,"%s    dynamic-backlog-filter : %2.1f\n",indent,
 	   host->params->dynBacklogFilter) ;
@@ -1348,13 +1348,13 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
 	   host->params->lowPassLow) ;
   fprintf (fp,"%s    no-check filter : %2.1f\n",indent,
 	   host->params->lowPassFilter) ;
-  fprintf (fp,"%s    backlog-limit : %d\n",indent,
+  fprintf (fp,"%s    backlog-limit : %u\n",indent,
 	   host->params->backlogLimit) ;
-  fprintf (fp,"%s    backlog-limit-highwater : %d\n",indent,
+  fprintf (fp,"%s    backlog-limit-highwater : %u\n",indent,
 	   host->params->backlogLimitHigh) ;
   fprintf (fp,"%s    backlog-factor : %2.1f\n",indent,
 	   host->params->backlogFactor) ;
-  fprintf (fp,"%s    max-connections : %d\n",indent,
+  fprintf (fp,"%s    max-connections : %u\n",indent,
 	   host->maxConnections) ;
   fprintf (fp,"%s    backlog-feed-first : %s\n",indent,
            boolToString (host->params->backlogFeedFirst)) ;
@@ -1364,8 +1364,8 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    ChkCxns-id : %d\n",indent,host->ChkCxnsId) ;
   fprintf (fp,"%s    deferred-id : %d\n",indent,host->deferredId) ;
   fprintf (fp,"%s    backed-up : %s\n",indent,boolToString (host->backedUp));
-  fprintf (fp,"%s    backlog : %d\n",indent,host->backlog) ;
-  fprintf (fp,"%s    deferLen : %d\n",indent,host->deferLen) ;
+  fprintf (fp,"%s    backlog : %u\n",indent,host->backlog) ;
+  fprintf (fp,"%s    deferLen : %u\n",indent,host->deferLen) ;
   fprintf (fp,"%s    loggedModeOn : %s\n",indent,
            boolToString (host->loggedModeOn)) ;
   fprintf (fp,"%s    loggedModeOff : %s\n",indent,
@@ -1374,47 +1374,47 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
            boolToString (host->loggedBacklog)) ;
   fprintf (fp,"%s    streaming-type changed : %s\n",indent,
            boolToString (host->notifiedChangedRemBlckd)) ;
-  fprintf (fp,"%s    articles offered : %d\n",indent,host->artsOffered) ;
-  fprintf (fp,"%s    articles accepted : %d\n",indent,host->artsAccepted) ;
-  fprintf (fp,"%s    articles not wanted : %d\n",indent,
+  fprintf (fp,"%s    articles offered : %u\n",indent,host->artsOffered) ;
+  fprintf (fp,"%s    articles accepted : %u\n",indent,host->artsAccepted) ;
+  fprintf (fp,"%s    articles not wanted : %u\n",indent,
            host->artsNotWanted) ;
-  fprintf (fp,"%s    articles rejected : %d\n",indent,host->artsRejected);
-  fprintf (fp,"%s    articles deferred : %d\n",indent,host->artsDeferred) ;
-  fprintf (fp,"%s    articles missing : %d\n",indent,host->artsMissing) ;
-  fprintf (fp,"%s    articles spooled : %d\n",indent,host->artsToTape) ;
-  fprintf (fp,"%s      because of queue overflow : %d\n",indent,
+  fprintf (fp,"%s    articles rejected : %u\n",indent,host->artsRejected);
+  fprintf (fp,"%s    articles deferred : %u\n",indent,host->artsDeferred) ;
+  fprintf (fp,"%s    articles missing : %u\n",indent,host->artsMissing) ;
+  fprintf (fp,"%s    articles spooled : %u\n",indent,host->artsToTape) ;
+  fprintf (fp,"%s      because of queue overflow : %u\n",indent,
            host->artsQueueOverflow) ;
-  fprintf (fp,"%s      when the we closed the host : %d\n",indent,
+  fprintf (fp,"%s      when the we closed the host : %u\n",indent,
            host->artsHostClose) ;
-  fprintf (fp,"%s      because the host was asleep : %d\n",indent,
+  fprintf (fp,"%s      because the host was asleep : %u\n",indent,
            host->artsHostSleep) ;
-  fprintf (fp,"%s    articles unspooled : %d\n",indent,host->artsFromTape) ;
-  fprintf (fp,"%s    articles requeued from dropped connections : %d\n",indent,
+  fprintf (fp,"%s    articles unspooled : %u\n",indent,host->artsFromTape) ;
+  fprintf (fp,"%s    articles requeued from dropped connections : %u\n",indent,
            host->artsCxnDrop) ;
 
-  fprintf (fp,"%s    process articles offered : %d\n",indent,
+  fprintf (fp,"%s    process articles offered : %u\n",indent,
            host->gArtsOffered) ;
-  fprintf (fp,"%s    process articles accepted : %d\n",indent,
+  fprintf (fp,"%s    process articles accepted : %u\n",indent,
            host->gArtsAccepted) ;
-  fprintf (fp,"%s    process articles not wanted : %d\n",indent,
+  fprintf (fp,"%s    process articles not wanted : %u\n",indent,
            host->gArtsNotWanted) ;
-  fprintf (fp,"%s    process articles rejected : %d\n",indent,
+  fprintf (fp,"%s    process articles rejected : %u\n",indent,
            host->gArtsRejected);
-  fprintf (fp,"%s    process articles deferred : %d\n",indent,
+  fprintf (fp,"%s    process articles deferred : %u\n",indent,
            host->gArtsDeferred) ;
-  fprintf (fp,"%s    process articles missing : %d\n",indent,
+  fprintf (fp,"%s    process articles missing : %u\n",indent,
            host->gArtsMissing) ;
-  fprintf (fp,"%s    process articles spooled : %d\n",indent,
+  fprintf (fp,"%s    process articles spooled : %u\n",indent,
            host->gArtsToTape) ;
-  fprintf (fp,"%s      because of queue overflow : %d\n",indent,
+  fprintf (fp,"%s      because of queue overflow : %u\n",indent,
            host->gArtsQueueOverflow) ;
-  fprintf (fp,"%s      when the we closed the host : %d\n",indent,
+  fprintf (fp,"%s      when the we closed the host : %u\n",indent,
            host->gArtsHostClose) ;
-  fprintf (fp,"%s      because the host was asleep : %d\n",indent,
+  fprintf (fp,"%s      because the host was asleep : %u\n",indent,
            host->gArtsHostSleep) ;
-  fprintf (fp,"%s    process articles unspooled : %d\n",indent,
+  fprintf (fp,"%s    process articles unspooled : %u\n",indent,
            host->gArtsFromTape) ;
-  fprintf (fp,"%s    process articles requeued from dropped connections : %d\n",
+  fprintf (fp,"%s    process articles requeued from dropped connections : %u\n",
            indent, host->gArtsCxnDrop) ;
 
   fprintf (fp,"%s    average (mean) defer length : %.1f\n", indent,
@@ -1518,13 +1518,13 @@ void printHostInfo (Host host, FILE *fp, unsigned int indentAmt)
   fprintf (fp,"%s    Active Connections {\n%s        ",indent,indent) ;
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->cxnActive[i])
-      fprintf (fp," [%d:%p]",i,(void *) host->connections[i]) ;
+      fprintf (fp," [%u:%p]",i,(void *) host->connections[i]) ;
   fprintf (fp,"\n%s    }\n",indent) ;
 
   fprintf (fp,"%s    Sleeping Connections {\n%s        ",indent,indent) ;
   for (i = 0 ; i < host->maxConnections ; i++)
     if (host->cxnSleeping[i])
-      fprintf (fp," [%d:%p]",i,(void *) host->connections[i]) ;
+      fprintf (fp," [%u:%p]",i,(void *) host->connections[i]) ;
   fprintf (fp,"\n%s    }\n",indent) ;
 
   fprintf (fp,"%s}\n",indent) ;
@@ -3297,7 +3297,7 @@ static void hostLogStatus (void)
                INN_VERSION_STRING,(int) myPid,startTime,timeString) ;
       fprintf (fp,"Stats period: %-5ld    Stats reset: %ld\n",
                (long) statsPeriod, (long) statsResetPeriod);
-      fprintf (fp,"(peers: %d active-cxns: %d sleeping-cxns: %d idle-cxns: %d)\n\n",
+      fprintf (fp,"(peers: %u active-cxns: %u sleeping-cxns: %u idle-cxns: %u)\n\n",
                peerNum, actConn, slpConn,(maxcon - (actConn + slpConn))) ;
 
       fprintf (fp,"Configuration file: %s\n\n",configFile) ;
@@ -3331,23 +3331,23 @@ Default peer configuration parameters:
 */
       fprintf(fp,"%sDefault peer configuration parameters:%s\n",
               genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
-      fprintf(fp,"    article timeout: %-5d     initial connections: %d\n",
+      fprintf(fp,"    article timeout: %-5u     initial connections: %u\n",
 	    defaultParams->articleTimeout,
 	    defaultParams->initialConnections) ;
-      fprintf(fp,"   response timeout: %-5d         max connections: %d\n",
+      fprintf(fp,"   response timeout: %-5u         max connections: %u\n",
 	    defaultParams->responseTimeout,
 	    defaultParams->absMaxConnections) ;
-      fprintf(fp,"  reconnection time: %-5d   max reconnection time: %d\n",
+      fprintf(fp,"  reconnection time: %-5u   max reconnection time: %u\n",
               init_reconnect_period, max_reconnect_period);
-      fprintf(fp,"       close period: %-5d              max checks: %d\n",
+      fprintf(fp,"       close period: %-5u              max checks: %u\n",
 	    defaultParams->closePeriod,
 	    defaultParams->maxChecks) ;
-      fprintf(fp,"   DNS retry period: %-5d       DNS expire period: %d\n", 
+      fprintf(fp,"   DNS retry period: %-5u       DNS expire period: %u\n", 
               dnsRetPeriod, dnsExpPeriod);
-      fprintf(fp,"           port num: %-5d              force IPv4: %s\n",
+      fprintf(fp,"           port num: %-5u              force IPv4: %s\n",
               defaultParams->portNum,
               defaultParams->forceIPv4 ? "true " : "false");
-      fprintf(fp,"     want streaming: %-5s          dynamic method: %d\n",
+      fprintf(fp,"     want streaming: %-5s          dynamic method: %u\n",
 	    defaultParams->wantStreaming ? "true " : "false",
 	    defaultParams->dynamicMethod) ;
       fprintf(fp,"        no-check on: %-2.1f%%     dynamic backlog low: %-2.1f%%\n",
@@ -3359,10 +3359,10 @@ Default peer configuration parameters:
       fprintf(fp,"    no-check filter: %-2.1f   dynamic backlog filter: %-2.1f\n",
 	    defaultParams->lowPassFilter,
 	    defaultParams->dynBacklogFilter) ;
-      fprintf(fp,"  backlog limit low: %-7d         drop-deferred: %s\n",
+      fprintf(fp,"  backlog limit low: %-7u         drop-deferred: %s\n",
 	    defaultParams->backlogLimit,
 	    defaultParams->dropDeferred ? "true " : "false");
-      fprintf(fp," backlog limit high: %-7d         min-queue-cxn: %s\n",
+      fprintf(fp," backlog limit high: %-7u         min-queue-cxn: %s\n",
 	    defaultParams->backlogLimitHigh,
 	    defaultParams->minQueueCxn ? "true " : "false");
       fprintf(fp," backlog feed first: %s\n",
@@ -3490,7 +3490,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   fputc ('\n',fp) ;
 
   if (host->ipAddrs) {
-    int  i;
+    size_t  i;
     char ip_addr[INET6_ADDRSTRLEN];
     const char *family;
 
@@ -3511,45 +3511,46 @@ static void hostPrintStatus (Host host, FILE *fp)
 
       network_sockaddr_sprint(ip_addr, sizeof(ip_addr),
                               host->ipAddrs[i]);
-      fprintf(fp, "   Addr %-2u: %-4.4s  %s\n", i+1, family, ip_addr);
+      fprintf(fp, "   Addr %-2lu: %-4.4s  %s\n", (unsigned long) (i+1),
+              family, ip_addr);
     }
   }
 
-  fprintf (fp, "   seconds: %-7ld   art. timeout: %-5d        ip name: %s\n",
+  fprintf (fp, "   seconds: %-7ld   art. timeout: %-5u        ip name: %s\n",
 	   host->firstConnectTime > 0 ? (long)(now - host->firstConnectTime) : 0,
 	   host->params->articleTimeout, host->params->ipName) ;
            
-  fprintf (fp, "   offered: %-7ld  resp. timeout: %-5d           port: %d\n",
+  fprintf (fp, "   offered: %-7ld  resp. timeout: %-5u           port: %u\n",
 	   (long) host->gArtsOffered, host->params->responseTimeout,
 	   host->params->portNum);
 
-  fprintf (fp, "  accepted: %-7ld want streaming: %s      active cxns: %d\n",
+  fprintf (fp, "  accepted: %-7ld want streaming: %s      active cxns: %u\n",
 	   (long) host->gArtsAccepted, 
            (host->params->wantStreaming ? "yes" : "no "),
 	   host->activeCxns) ;
 
-  fprintf (fp, "   refused: %-7ld   is streaming: %s    sleeping cxns: %d\n",
+  fprintf (fp, "   refused: %-7ld   is streaming: %s    sleeping cxns: %u\n",
 	   (long) host->gArtsNotWanted,
            (host->remoteStreams ? "yes" : "no "),
 	   host->sleepingCxns) ;
 
-  fprintf (fp, "  rejected: %-7ld     max checks: %-5d   initial cxns: %d\n",
+  fprintf (fp, "  rejected: %-7ld     max checks: %-5u   initial cxns: %u\n",
 	   (long) host->gArtsRejected, host->params->maxChecks,
 	   host->params->initialConnections) ;
 
-  fprintf (fp, "   missing: %-7ld    no-check on: %-3.1f%%      idle cxns: %d\n",
+  fprintf (fp, "   missing: %-7ld    no-check on: %-3.1f%%      idle cxns: %u\n",
 	   (long) host->gArtsMissing, host->params->lowPassHigh,
            host->maxConnections - (host->activeCxns + host->sleepingCxns)) ;
 
-  fprintf (fp, "  deferred: %-7ld   no-check off: %-3.1f%%       max cxns: %d/%d\n",
+  fprintf (fp, "  deferred: %-7ld   no-check off: %-3.1f%%       max cxns: %u/%u\n",
 	   (long) host->gArtsDeferred, host->params->lowPassLow,
 	   host->maxConnections, host->params->absMaxConnections) ;
 
-  fprintf (fp, "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: %-3.1f/%d\n",
+  fprintf (fp, "  requeued: %-7ld  no-check fltr: %-3.1f    queue length: %-3.1f/%u\n",
 	   (long) host->gArtsCxnDrop, host->params->lowPassFilter,
 	   (double)host->blAccum / cnt, hostHighwater) ;
 
-  fprintf (fp, "   spooled: %-7ld dynamic method: %-5d          empty: %-3.1f%%\n",
+  fprintf (fp, "   spooled: %-7ld dynamic method: %-5u          empty: %-3.1f%%\n",
 	   (long) host->gArtsToTape,
 	   host->params->dynamicMethod,
 	   100.0 * host->blNone / cnt) ;
@@ -3607,7 +3608,7 @@ static void hostPrintStatus (Host host, FILE *fp)
       fprintf(fp, "   refused: %5.2f art/s   rejected: %5.2f art/s, %.3g %s/s\n",
 	      rr, jr, jrs, tjrs);
   }
-  fprintf(fp, "   missing %d spooled %d\n",
+  fprintf(fp, "   missing %u spooled %u\n",
 	  host->artsMissing, host->artsToTape);
   }
 

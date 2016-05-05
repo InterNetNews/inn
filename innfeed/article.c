@@ -296,20 +296,20 @@ void gPrintArticleInfo (FILE *fp, unsigned int indentAmt)
     indent [i] = ' ' ;
   indent [i] = '\0' ;
 
-  fprintf (fp,"%sGlobal Article information : (count %d) {\n",
+  fprintf (fp,"%sGlobal Article information : (count %u) {\n",
            indent, articlesInUse) ;
 
-  fprintf (fp,"%s  missingArticleCount : %d\n",indent,missingArticleCount) ;
+  fprintf (fp,"%s  missingArticleCount : %u\n",indent,missingArticleCount) ;
   fprintf (fp,"%s  logMissingArticles : %d\n",indent,logMissingArticles) ;
-  fprintf (fp,"%s  preparedBytes : %d\n",indent,preparedBytes) ;
-  fprintf (fp,"%s  preparedNewlines : %d\n",indent,preparedNewlines) ;
-  fprintf (fp,"%s  avgCharsPerLine : %d\n",indent,avgCharsPerLine) ;
+  fprintf (fp,"%s  preparedBytes : %u\n",indent,preparedBytes) ;
+  fprintf (fp,"%s  preparedNewlines : %u\n",indent,preparedNewlines) ;
+  fprintf (fp,"%s  avgCharsPerLine : %u\n",indent,avgCharsPerLine) ;
   fprintf (fp,"%s  rolledOver : %s\n",indent,boolToString (rolledOver)) ;
-  fprintf (fp,"%s  bytesInUse : %d\n",indent,bytesInUse) ;
-  fprintf (fp,"%s  maxBytesInUse : %d\n",indent,maxBytesInUse) ;
-  fprintf (fp,"%s  articlesInUse : %d\n",indent,articlesInUse) ;
-  fprintf (fp,"%s  byteTotal : %d\n",indent,byteTotal) ;
-  fprintf (fp,"%s  articleTotal : %d\n",indent,articleTotal) ;
+  fprintf (fp,"%s  bytesInUse : %u\n",indent,bytesInUse) ;
+  fprintf (fp,"%s  maxBytesInUse : %u\n",indent,maxBytesInUse) ;
+  fprintf (fp,"%s  articlesInUse : %u\n",indent,articlesInUse) ;
+  fprintf (fp,"%s  byteTotal : %u\n",indent,byteTotal) ;
+  fprintf (fp,"%s  articleTotal : %u\n",indent,articleTotal) ;
   fprintf (fp,"%s  articleStatsId : %d\n",indent,articleStatsId) ;
   
   {
