@@ -102,8 +102,10 @@ main(void)
     }
     ok(37, !reported);
 
-    if (fseek(words, 0, SEEK_SET) < 0)
+    if (fseek(words, 0, SEEK_SET) < 0) {
+        fclose(words);
         sysdie("Unable to rewind words file");
+    }
     reported = false;
     if (tst == NULL)
         reported = true;
@@ -130,6 +132,7 @@ main(void)
         }
     }
     tst_cleanup(tst);
+    fclose(words);
     ok(38, !reported);
 
     return 0;

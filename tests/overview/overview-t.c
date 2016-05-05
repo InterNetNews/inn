@@ -151,7 +151,7 @@ overview_data_parse(char *data, unsigned long *artnum)
     *start = '\0';
     start++;
     *artnum = strtoul(start, NULL, 10);
-    if (artnum == 0)
+    if (*artnum == 0)
         die("Cannot parse article number in input data");
     return start;
 }
@@ -377,8 +377,10 @@ overview_verify_search(const char *data)
     if (overview == NULL)
         sysdie("Cannot open %s for reading", data);
     expected = vector_new();
-    if (fgets(buffer, sizeof(buffer), overview) == NULL)
+    if (fgets(buffer, sizeof(buffer), overview) == NULL) {
+        fclose(overview);
         die("Unexpected end of file in %s", data);
+    }
     overview_data_parse(buffer, &artnum);
     group = xstrdup(buffer);
     while (fgets(buffer, sizeof(buffer), overview) != NULL) {
@@ -396,6 +398,7 @@ overview_verify_search(const char *data)
         warn("Unable to open search for %s:%lu", buffer, start);
         free(group);
         vector_free(expected);
+        fclose(overview);
         return false;
     }
     i = 0;
@@ -421,6 +424,7 @@ overview_verify_search(const char *data)
     }
     free(group);
     vector_free(expected);
+    fclose(overview);
     return status;
 }
 
@@ -461,6 +465,7 @@ overview_verify_full_search(const char *data)
         warn("Unable to open full search for %s", group);
         free(group);
         vector_free(expected);
+        fclose(overview);
         return false;
     }
     i = 0;
@@ -486,6 +491,7 @@ overview_verify_full_search(const char *data)
     }
     free(group);
     vector_free(expected);
+    fclose(overview);
     return status;
 }
 
