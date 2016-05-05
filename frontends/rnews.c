@@ -499,7 +499,6 @@ UnpackOne(int *fdp, size_t *countp)
     int		gzip = 0;
     bool	HadCount;
     bool	SawCunbatch;
-    int		len;
 
     *countp = 0;
     for (SawCunbatch = false, HadCount = false; ; ) {
@@ -581,6 +580,8 @@ UnpackOne(int *fdp, size_t *countp)
 	}
 
 #if	defined(DO_RNEWSPROGS)
+        int len;
+
 	cargv[0] = UNPACK;
 	cargv[1] = NULL;
 	/* Ignore any possible leading pathnames, to avoid trouble. */
