@@ -18,7 +18,7 @@
 static char *
 read_section(FILE *file)
 {
-    char buf[1024] = "";
+    char buf[1024];
     char *data = NULL;
     char *status;
 
