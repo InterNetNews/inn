@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top		= ..
-RUNTESTS_CFLAGS	= -DSOURCE='"$(abs_builddir)/tests"' -DBUILD='"$(abs_builddir)/tests"'
+RUNTESTS_CFLAGS	= -DC_TAP_SOURCE='"$(abs_builddir)/tests"' -DC_TAP_BUILD='"$(abs_builddir)/tests"'
 CFLAGS		= $(GCFLAGS) $(BDB_CPPFLAGS) $(DBM_CPPFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
 
 ##  On some platforms, linking with libm is needed as the test suite uses

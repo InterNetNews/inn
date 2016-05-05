@@ -8,7 +8,7 @@
 # which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
 #
 # Written by Russ Allbery <eagle@eyrie.org>
-# Copyright 2000, 2001, 2006, 2014 Russ Allbery <eagle@eyrie.org>
+# Copyright 2000, 2001, 2006, 2014, 2016 Russ Allbery <eagle@eyrie.org>
 # Copyright 2008, 2009, 2010, 2012
 #     The Board of Trustees of the Leland Stanford Junior University
 #
@@ -30,8 +30,8 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-. "$SOURCE/tap/libtap.sh"
-cd "$BUILD/lib"
+. "$C_TAP_SOURCE/tap/libtap.sh"
+cd "$C_TAP_BUILD/lib"
 
 # Run an xmalloc test.  Takes the description, the expectd exit status, the
 # output, and the arguments.

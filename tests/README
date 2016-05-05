@@ -70,18 +70,20 @@ Writing TAP Tests
 
     One of the special features of C TAP Harness is the environment that
     it sets up for your test cases.  If your test program is called under
-    the runtests driver, the environment variables SOURCE and BUILD will
-    be set to the top of the test directory in the source tree and the top
-    of the build tree, respectively.  You can use those environment
-    variables to locate additional test data, programs and libraries built
-    as part of your software build, and other supporting information
-    needed by tests.
+    the runtests driver, the environment variables C_TAP_SOURCE and
+    C_TAP_BUILD will be set to the top of the test directory in the source
+    tree and the top of the build tree, respectively.  You can use those
+    environment variables to locate additional test data, programs and
+    libraries built as part of your software build, and other supporting
+    information needed by tests.
 
     The C and shell TAP libraries support a test_file_path() function,
     which looks for a file under the build tree and then under the source
-    tree, using the BUILD and SOURCE environment variables, and return the
-    full path to the file.  This can be used to locate supporting data
-    files.
+    tree, using the C_TAP_BUILD and C_TAP_SOURCE environment variables,
+    and return the full path to the file.  This can be used to locate
+    supporting data files.  They also support a test_tmpdir() function
+    that returns a directory that can be used for temporary files during
+    tests.
 
   Perl
 
@@ -190,15 +192,15 @@ Writing TAP Tests
     your test suite area.  It can then be loaded by tests written in shell
     using the environment set up by runtests with:
 
-        . "$SOURCE"/tap/libtap.sh
+        . "$C_TAP_SOURCE"/tap/libtap.sh
 
     Here is a complete test case written in shell which produces the same
     output as the TAP sample above:
 
         #!/bin/sh
 
-        . "$SOURCE"/tap/libtap.sh
-        cd "$BUILD"
+        . "$C_TAP_SOURCE"/tap/libtap.sh
+        cd "$C_TAP_BUILD"
 
         plan 4
         ok 'the first test' true
@@ -240,7 +242,7 @@ License
     This file is part of the documentation of C TAP Harness, which can be
     found at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
 
-    Copyright 2010 Russ Allbery <eagle@eyrie.org>
+    Copyright 2010, 2016 Russ Allbery <eagle@eyrie.org>
 
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright

@@ -7,7 +7,7 @@
 # This file is part of C TAP Harness.  The current version plus supporting
 # documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
-# Copyright 2009, 2010, 2013, 2014, 2015 Russ Allbery <eagle@eyrie.org>
+# Copyright 2009, 2010, 2013, 2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -34,9 +34,9 @@ use warnings;
 use File::Spec;
 use Test::More;
 
-# Abort if SOURCE isn't set.
-if (!$ENV{SOURCE}) {
-    BAIL_OUT('SOURCE environment variable not set');
+# Abort if C_TAP_SOURCE isn't set.
+if (!$ENV{C_TAP_SOURCE}) {
+    BAIL_OUT('C_TAP_SOURCE environment variable not set');
 }
 
 # Load the Test::Pod module.
@@ -45,8 +45,8 @@ if (!eval { require Test::Pod }) {
 }
 Test::Pod->import;
 
-# SOURCE will be the test directory.  Change to the parent.
-my ($vol, $dirs) = File::Spec->splitpath($ENV{SOURCE}, 1);
+# C_TAP_SOURCE will be the test directory.  Change to the parent.
+my ($vol, $dirs) = File::Spec->splitpath($ENV{C_TAP_SOURCE}, 1);
 my @dirs = File::Spec->splitdir($dirs);
 pop(@dirs);
 if ($dirs[-1] eq File::Spec->updir) {

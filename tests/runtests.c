@@ -49,11 +49,11 @@
  * output.  This is intended for use with failing tests so that the person
  * running the test suite can get more details about what failed.
  *
- * If built with the C preprocessor symbols SOURCE and BUILD defined, C TAP
- * Harness will export those values in the environment so that tests can find
- * the source and build directory and will look for tests under both
- * directories.  These paths can also be set with the -b and -s command-line
- * options, which will override anything set at build time.
+ * If built with the C preprocessor symbols C_TAP_SOURCE and C_TAP_BUILD
+ * defined, C TAP Harness will export those values in the environment so that
+ * tests can find the source and build directory and will look for tests under
+ * both directories.  These paths can also be set with the -b and -s
+ * command-line options, which will override anything set at build time.
  *
  * If the -v option is given, or the C_TAP_VERBOSE environment variable is set,
  * display the full output of each test as it runs rather than showing a
@@ -64,7 +64,7 @@
  * Harness <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2000, 2001, 2004, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
- *     2014, 2015 Russ Allbery <eagle@eyrie.org>
+ *     2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -136,15 +136,17 @@
 
 /*
  * The source and build versions of the tests directory.  This is used to set
- * the SOURCE and BUILD environment variables and find test programs, if set.
- * Normally, this should be set as part of the build process to the test
- * subdirectories of $(abs_top_srcdir) and $(abs_top_builddir) respectively.
+ * the C_TAP_SOURCE and C_TAP_BUILD environment variables (and the SOURCE and
+ * BUILD environment variables set for backward compatibility) and find test
+ * programs, if set.  Normally, this should be set as part of the build
+ * process to the test subdirectories of $(abs_top_srcdir) and
+ * $(abs_top_builddir) respectively.
  */
-#ifndef SOURCE
-# define SOURCE NULL
+#ifndef C_TAP_SOURCE
+# define C_TAP_SOURCE NULL
 #endif
-#ifndef BUILD
-# define BUILD NULL
+#ifndef C_TAP_BUILD
+# define C_TAP_BUILD NULL
 #endif
 
 /* Test status codes. */
@@ -1480,8 +1482,9 @@ test_single(const char *program, const char *source, const char *build)
 
 
 /*
- * Main routine.  Set the SOURCE and BUILD environment variables and then,
- * given a file listing tests, run each test listed.
+ * Main routine.  Set the C_TAP_SOURCE, C_TAP_BUILD, SOURCE, and BUILD
+ * environment variables and then, given a file listing tests, run each test
+ * listed.
  */
 int
 main(int argc, char *argv[])
@@ -1490,13 +1493,15 @@ main(int argc, char *argv[])
     int status = 0;
     int single = 0;
     enum test_verbose verbose = CONCISE;
+    char *c_tap_source_env = NULL;
+    char *c_tap_build_env = NULL;
     char *source_env = NULL;
     char *build_env = NULL;
     const char *program;
     const char *shortlist;
     const char *list = NULL;
-    const char *source = SOURCE;
-    const char *build = BUILD;
+    const char *source = C_TAP_SOURCE;
+    const char *build = C_TAP_BUILD;
     struct testlist *tests;
 
     program = argv[0];
@@ -1538,13 +1543,23 @@ main(int argc, char *argv[])
     if (getenv("C_TAP_VERBOSE") != NULL)
         verbose = VERBOSE;
 
-    /* Set SOURCE and BUILD environment variables. */
+    /*
+     * Set C_TAP_SOURCE and C_TAP_BUILD environment variables.  Also set
+     * SOURCE and BUILD for backward compatibility, although we're trying to
+     * migrate to the ones with a C_TAP_* prefix.
+     */
     if (source != NULL) {
+        c_tap_source_env = concat("C_TAP_SOURCE=", source, (const char *) 0);
+        if (putenv(c_tap_source_env) != 0)
+            sysdie("cannot set C_TAP_SOURCE in the environment");
         source_env = concat("SOURCE=", source, (const char *) 0);
         if (putenv(source_env) != 0)
             sysdie("cannot set SOURCE in the environment");
     }
     if (build != NULL) {
+        c_tap_build_env = concat("C_TAP_BUILD=", build, (const char *) 0);
+        if (putenv(c_tap_build_env) != 0)
+            sysdie("cannot set C_TAP_BUILD in the environment");
         build_env = concat("BUILD=", build, (const char *) 0);
         if (putenv(build_env) != 0)
             sysdie("cannot set BUILD in the environment");
@@ -1569,11 +1584,15 @@ main(int argc, char *argv[])
 
     /* For valgrind cleanliness, free all our memory. */
     if (source_env != NULL) {
+        putenv((char *) "C_TAP_SOURCE=");
         putenv((char *) "SOURCE=");
+        free(c_tap_source_env);
         free(source_env);
     }
     if (build_env != NULL) {
+        putenv((char *) "C_TAP_BUILD=");
         putenv((char *) "BUILD=");
+        free(c_tap_build_env);
         free(build_env);
     }
     exit(status);
