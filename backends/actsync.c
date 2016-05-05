@@ -2536,7 +2536,6 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
     if (mode == OUTPUT_IEXEC) {
 
 	/* ask the question */
-	fflush(stdin);
 	fflush(stdout);
 	fflush(stderr);
 	if (type == NULL) {
