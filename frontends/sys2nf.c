@@ -313,8 +313,15 @@ main(ac, av)
 	else
 	    fprintf(F, "\t:HELP%s\\\n", f3);
 	fprintf(F, "\t:%s\n", f4);
-	if (ferror(F) || fclose(F) == EOF)
-	    perror(TEMPFILE), exit(1);
+        if (ferror(F) != 0) {
+            perror(TEMPFILE);
+            fclose(F);
+            exit(1);
+        }
+       if (fclose(F) == EOF) {
+            perror(TEMPFILE);
+            exit(1);
+        }
 
 	free(site);
 
