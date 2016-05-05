@@ -153,6 +153,13 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
+               -e "154 i \\
+#if !HAVE_DECL_STRLCAT\\
+extern size_t strlcat(char *, const char *, size_t);\\
+#endif\\
+#if !HAVE_DECL_STRLCPY\\
+extern size_t strlcpy(char *, const char *, size_t);\\
+#endif" \
                -e '/#if !HAVE_DAEMON/,+2d' \
                -e '/#if !HAVE_ISSETUGID/,+2d' \
                -e '/#if !HAVE_STRNDUP/,+2d' \
@@ -239,8 +246,6 @@ download portable/snprintf.c lib snprintf.c
 download portable/socket.h include/portable socket.h
 download portable/socket-unix.h include/portable socket-unix.h
 download portable/stdbool.h include/portable stdbool.h
-download portable/strlcat.c lib strlcat.c
-download portable/strlcpy.c lib strlcpy.c
 download portable/system.h include clibrary.h
 download portable/uio.h include/portable uio.h
 
@@ -272,8 +277,6 @@ download tests/portable/mkstemp-t.c tests/lib mkstemp-t.c
 download tests/portable/reallocarray-t.c tests/lib reallocarray-t.c
 download tests/portable/setenv-t.c tests/lib setenv-t.c
 download tests/portable/snprintf-t.c tests/lib snprintf-t.c
-download tests/portable/strlcat-t.c tests/lib strlcat-t.c
-download tests/portable/strlcpy-t.c tests/lib strlcpy-t.c
 
 ##  Synchronize test suite files for utility functions from upstream.
 download tests/util/buffer-t.c tests/lib buffer-t.c

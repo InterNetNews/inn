@@ -6,7 +6,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -40,6 +40,7 @@
 #include <signal.h>
 
 #include "tap/basic.h"
+#include "inn/fdflag.h"
 #include "inn/macros.h"
 #include "inn/messages.h"
 #include "inn/network.h"
@@ -57,21 +58,41 @@
 static bool
 ipv6_works(void)
 {
-    socket_type fd;
+    socket_type fd, client, server;
 
-    /* Create the socket.  If this works, ipv6 is supported. */
+    /*
+     * Create the socket and then try to connect to it with a short timeout
+     * and accept it on the server side.  If this works, IPv6 is supported.
+     */
     fd = network_bind_ipv6(SOCK_STREAM, "::1", 11119);
     if (fd != INVALID_SOCKET) {
-        close(fd);
-        return true;
+        fdflag_nonblocking(fd, true);
+        client = network_connect_host("::1", 11119, NULL, 1);
+        if (client == INVALID_SOCKET) {
+            close(fd);
+            if (socket_errno == ETIMEDOUT || socket_errno == ENETUNREACH)
+                return false;
+        } else {
+            server = accept(fd, NULL, NULL);
+            close(fd);
+            if (server == INVALID_SOCKET) {
+                close(client);
+                if (socket_errno == EAGAIN || socket_errno == EWOULDBLOCK)
+                    return false;
+            } else {
+                close(server);
+                close(client);
+                return true;
+            }
+        }
     }
 
     /* IPv6 not recognized, indicating no support. */
-    if (errno == EAFNOSUPPORT || errno == EPROTONOSUPPORT)
+    if (socket_errno == EAFNOSUPPORT || socket_errno == EPROTONOSUPPORT)
         return false;
 
     /* IPv6 is recognized but we can't actually use it. */
-    if (errno == EADDRNOTAVAIL)
+    if (socket_errno == EADDRNOTAVAIL)
         return false;
 
     /*
@@ -190,9 +211,16 @@ test_server_accept(socket_type fd)
 {
     socket_type client;
 
+    /* If there are firewalls that block connections, we could hang here. */
+    alarm(5);
+
+    /* Accept the connection and writes from the client. */
     client = accept(fd, NULL, NULL);
     test_server_connection(client);
     socket_close(fd);
+
+    /* Cancel the alarm. */
+    alarm(0);
 }
 
 
@@ -215,6 +243,10 @@ test_server_accept_any(socket_type fds[], unsigned int count)
     struct sockaddr *saddr;
     socklen_t slen;
 
+    /* If there are firewalls that block connections, we could hang here. */
+    alarm(5);
+
+    /* Accept the connection and writes from the client. */
     slen = sizeof(struct sockaddr_storage);
     saddr = bcalloc(1, slen);
     client = network_accept_any(fds, count, saddr, &slen);
@@ -226,6 +258,9 @@ test_server_accept_any(socket_type fds[], unsigned int count)
     free(saddr);
     for (i = 0; i < count; i++)
         socket_close(fds[i]);
+
+    /* Cancel the alarm. */
+    alarm(0);
 }
 
 
