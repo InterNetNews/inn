@@ -51,7 +51,7 @@ download ()
       sed -i -e 's/RRA_/INN_/g' \
              -e 's/rra_/inn_/g' \
              -e '1 a\
-dnl $Id$' \
+dnl \$Id\$' \
              ${TEMP}
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
       || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
@@ -174,7 +174,7 @@ extern size_t strlcpy(char *, const char *, size_t);\\
                -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
                -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
                -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
-               -e '1 s/$/ $Id$\n */' \
+               -e '1 s/$/ \$Id\$\n */' \
                ${TEMP}
 
         # For compatibility with the integration of C TAP Harness in INN.

@@ -64,7 +64,7 @@ download ()
         chmod 755 ${TEMP}
       elif [ "$3" != "README" ]
       then
-        sed -i -e '1 s/$/ $Id$\n */' \
+        sed -i -e '1 s/$/ \$Id\$\n */' \
                -e 's/^#include <tests\/tap\//#include <tap\//g' \
                ${TEMP}
       fi
