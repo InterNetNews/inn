@@ -689,7 +689,6 @@ MailArticle(char *group, char *article)
     int		i;
     char	*address;
     char	buff[SMBUF];
-    char	*mta;
 
     /* Try to get the address first. */
     if ((address = GetModeratorAddress(NULL, NULL, group, PERMaccessconf->moderatormailer)) == NULL) {
@@ -702,7 +701,7 @@ MailArticle(char *group, char *article)
 
     /* Now build up the command (ignore format/argument mismatch errors,
      * in case %s isn't in inconf->mta) and send the headers. */
-    if ((mta = innconf->mta) == NULL)
+    if (innconf->mta == NULL)
 	return "Can't start mailer -- mta not set";
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
     snprintf(buff, sizeof(buff), innconf->mta, address);

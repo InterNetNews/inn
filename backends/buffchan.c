@@ -122,10 +122,8 @@ SITEcloseall(void)
 */
 static void SITEopen(SITE *sp)
 {
-    int			e;
-
     if ((sp->F = xfopena(sp->Filename)) == NULL
-     && ((e = errno) != EACCES || chmod(sp->Filename, 0644) < 0
+     && (errno != EACCES || chmod(sp->Filename, 0644) < 0
       || (sp->F = xfopena(sp->Filename)) == NULL)) {
         syswarn("%s cannot fopen %s", sp->Name, sp->Filename);
 	if ((sp->F = fopen("/dev/null", "w")) == NULL)
