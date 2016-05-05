@@ -144,11 +144,11 @@ QIOread(QIOSTATE *qp)
     while (1) {
         nleft = qp->_end - qp->_start;
 
-        /* If nleft <= 0, the buffer currently contains no data that hasn't
-           previously been returned by QIOread, so we can overwrite the
+        /* If (unsigned) nleft = 0, the buffer currently contains no data that
+           hasn't previously been returned by QIOread, so we can overwrite the
            buffer with new data.  Otherwise, first check the existing data
            to see if we have a full line. */
-        if (nleft <= 0) {
+        if (nleft == 0) {
             qp->_start = qp->_buffer;
             qp->_end = qp->_buffer;
         } else {

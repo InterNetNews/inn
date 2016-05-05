@@ -237,8 +237,9 @@ main(int argc, char *argv[])
             break;
         case 'p':
             port = atoi(optarg);
-            if (port <= 0)
+            if (port == 0) {
                 die("%s is not a valid port number", optarg);
+            }
             break;
         case 'R':
             reader = true;
