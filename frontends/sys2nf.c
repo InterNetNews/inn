@@ -309,7 +309,7 @@ main(ac, av)
 	DoSub(F, f2);
 	fprintf(F, "\\\n");
 	if (strcmp(f3, "n") == 0)
-	    fprintf(F, "\t:Tf,Wnm\\\n", f3);
+	    fprintf(F, "\t:Tf,Wnm\\\n");
 	else
 	    fprintf(F, "\t:HELP%s\\\n", f3);
 	fprintf(F, "\t:%s\n", f4);
