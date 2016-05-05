@@ -46,6 +46,7 @@
 
 #include <tap/basic.h>
 #include <tap/float.h>
+
 #ifndef LIBTEST_NEW_FORMAT
 /* Specific to the integration of C TAP Harness in INN. */
 void
@@ -54,7 +55,6 @@ ok_double(int n UNUSED, double wanted, double seen)
     is_double(wanted, seen, 0.01, NULL);
 }
 #endif
-
 
 /*
  * Takes an expected double and a seen double and assumes the test passes if
