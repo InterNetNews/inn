@@ -6,6 +6,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include <errno.h>
+#include <time.h>
 
 #include "inn/libinn.h"
 #include "inn/messages.h"
