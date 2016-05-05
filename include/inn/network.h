@@ -6,7 +6,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007, 2008, 2010
@@ -123,6 +123,22 @@ socket_type network_connect_host(const char *host, unsigned short port,
  * that will then go on to do a non-blocking connect.
  */
 socket_type network_client_create(int domain, int type, const char *source);
+
+/*
+ * Set various socket flags if possible, but do nothing, silently, if that
+ * option is not supported.  If the option is supported but setting the flag
+ * fails, log a warning with syswarn.
+ *
+ * network_set_freebind sets IP_FREEBIND, which allows binding IPv6 addresses
+ * that may not have been set up yet.  network_set_reuseaddr sets SO_REUSEADDR
+ * so that something new can listen on the same port immediately if the daemon
+ * dies unexpectedly.  network_set_v6only sets IP_V6ONLY, which avoids binding
+ * to the backward-compatibility IPv4 address when binding an IPv6 socket
+ * (generally preferred since the behavior is more predictable).
+ */
+void network_set_freebind(socket_type fd);
+void network_set_reuseaddr(socket_type fd);
+void network_set_v6only(socket_type fd);
 
 /*
  * Read or write the specified number of bytes to the network, enforcing a

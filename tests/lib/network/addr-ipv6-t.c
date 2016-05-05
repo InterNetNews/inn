@@ -6,7 +6,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -60,11 +60,13 @@ is_addr_compare(bool expected, const char *a, const char *b, const char *mask)
 int
 main(void)
 {
-    int status;
+    int flag, status;
+    socklen_t flaglen;
     struct addrinfo *ai4, *ai6;
     struct addrinfo hints;
     char addr[INET6_ADDRSTRLEN];
     char *p;
+    socket_type fd;
     static const char *port = "119";
     static const char *ipv6_addr = "FEDC:BA98:7654:3210:FEDC:BA98:7654:3210";
 
@@ -73,7 +75,7 @@ main(void)
 #endif
 
     /* Set up the plan. */
-    plan(28);
+    plan(34);
 
     /* Get IPv4 and IPv6 sockaddrs to use for subsequent tests. */
     memset(&hints, 0, sizeof(hints));
@@ -145,5 +147,42 @@ main(void)
     is_addr_compare(0, "ffff::1",   "7fff::1",     "-1");
     is_addr_compare(0, "ffff::1",   "ffff::1",     "-1");
     is_addr_compare(0, "ffff::1",   "ffff::1",     "129");
+
+    /* Test setting various socket options. */
+    fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_IP);
+    if (fd == INVALID_SOCKET)
+        sysbail("cannot create socket");
+    network_set_reuseaddr(fd);
+#ifdef SO_REUSEADDR
+    flag = 0;
+    flaglen = sizeof(flag);
+    is_int(0, getsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, &flaglen),
+           "Getting SO_REUSEADDR works");
+    is_int(1, flag, "...and it is set");
+#else
+    skip_block(2, "SO_REUSEADDR not supported");
+#endif
+    network_set_v6only(fd);
+#ifdef IPV6_V6ONLY
+    flag = 0;
+    flaglen = sizeof(flag);
+    is_int(0, getsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, &flaglen),
+           "Getting IPV6_V6ONLY works");
+    is_int(1, flag, "...and it is set");
+#else
+    skip_block(2, "IPV6_V6ONLY not supported");
+#endif
+    network_set_freebind(fd);
+#ifdef IP_FREEBIND
+    flag = 0;
+    flaglen = sizeof(flag);
+    is_int(0, getsockopt(fd, IPPROTO_IP, IP_FREEBIND, &flag, &flaglen),
+           "Getting IP_FREEBIND works");
+    is_int(1, flag, "...and it is set");
+#else
+    skip_block(2, "IP_FREEBIND not supported");
+#endif
+    close(fd);
+
     return 0;
 }
