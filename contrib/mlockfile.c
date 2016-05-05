@@ -151,6 +151,7 @@ main(int argc, char *argv[])
 	    if (errno != 0) {
 		fprintf(stderr, "%s: can't parse offset `%s' - %s\n",
 			progname, at, strerror(errno));
+                free(ml);
 		return EX_USAGE;
 	    }
 	    if (*end == ':') {
@@ -160,12 +161,14 @@ main(int argc, char *argv[])
 		if (errno != 0) {
 		    fprintf(stderr, "%s: can't parse length `%s' - %s\n",
 			    progname, at, strerror(errno));
+                    free(ml);
 		    return EX_USAGE;
 		}
 	    }
 	    if (*end != '\0') {
 		fprintf(stderr, "%s: unrecognised separator `%c'\n",
 			progname, *end);
+                free(ml);
 		return EX_USAGE;
 	    }
 	}
@@ -179,5 +182,6 @@ main(int argc, char *argv[])
 	inn_lock_files(ml);
 	poll(NULL, 0, interval);
     }
+    free(ml);
     return EX_OSERR;
 }

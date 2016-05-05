@@ -105,20 +105,25 @@ int main (int argc, char *argv[])
 	if (Infile==NULL)
 		{
 		printf ("Cannot open input file.\n");
+                free(obuffer);
 		return 1;
 		}
 
 
 if (argc>=4) header = argv[HEADER];
 if (argc>=5) string = argv[STRING];
-if (*header=='\0') header=NULL;
-if (*string=='\0') string=NULL;
+if (header != NULL && *header == '\0') {
+    header = NULL;
+}
+if (string != NULL && *string == '\0') {
+    string = NULL;
+}
 
 /*test*/
 printf ("filename <%s>\n", argv[INFILE]);
 printf ("fileprefix <%s>\n", argv[FILEPREFIX]);
-printf ("header <%s>\n", header);
-printf ("string <%s>\n", string);
+printf ("header <%s>\n", header != NULL ? header : NULL);
+printf ("string <%s>\n", string != NULL ? string : NULL);
 
 
 	/*  Skip first 0x38000 16byte buffers  */
@@ -194,6 +199,7 @@ printf ("string <%s>\n", string);
 		}
 
 	fclose (Infile);
+        free(obuffer);
 
 	return 0;
 	}

@@ -607,7 +607,7 @@ static bool ovbuffinit_disks(void) {
   */
   for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
     if (ovbuff->fd < 0) {
-      if ((fd = open(ovbuff->path, ovbuffmode & OV_WRITE ? O_RDWR : O_RDONLY)) < 0) {
+      if ((fd = open(ovbuff->path, (ovbuffmode & OV_WRITE) ? O_RDWR : O_RDONLY)) < 0) {
 	syswarn("buffindexed: ERROR opening '%s'", ovbuff->path);
 	return false;
       } else {
@@ -633,7 +633,7 @@ static bool ovbuffinit_disks(void) {
     rpx = (OVBUFFHEAD *)ovbuff->bitfield;
 
     /* lock the buffer */
-    ovlock(ovbuff, ovbuffmode & OV_WRITE ? INN_LOCK_WRITE : INN_LOCK_READ);
+    ovlock(ovbuff, (ovbuffmode & OV_WRITE) ? INN_LOCK_WRITE : INN_LOCK_READ);
 
     if (pread(ovbuff->fd, &dpx, sizeof(OVBUFFHEAD), 0) < 0) {
       syswarn("buffindexed: cant read from %s", ovbuff->path);
@@ -1016,7 +1016,7 @@ bool buffindexed_open(int mode) {
   if (Needunlink && unlink(groupfn) == 0) {
     notice("buffindexed: all buffers are brandnew, unlink '%s'", groupfn);
   }
-  GROUPfd = open(groupfn, ovbuffmode & OV_WRITE ? O_RDWR | O_CREAT : O_RDONLY, 0660);
+  GROUPfd = open(groupfn, (ovbuffmode & OV_WRITE) ? O_RDWR | O_CREAT : O_RDONLY, 0660);
   if (GROUPfd < 0) {
     syswarn("buffindexed: Could not create %s", groupfn);
     free(groupfn);
