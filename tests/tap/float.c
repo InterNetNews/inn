@@ -11,7 +11,8 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2010, 2012, 2013, 2014, 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2010, 2012, 2013, 2014, 2015, 2016
+ *     Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -45,7 +46,6 @@
 
 #include <tap/basic.h>
 #include <tap/float.h>
-
 #ifndef LIBTEST_NEW_FORMAT
 /* Specific to the integration of C TAP Harness in INN. */
 void
@@ -54,6 +54,7 @@ ok_double(int n UNUSED, double wanted, double seen)
     is_double(wanted, seen, 0.01, NULL);
 }
 #endif
+
 
 /*
  * Takes an expected double and a seen double and assumes the test passes if
@@ -78,5 +79,6 @@ is_double(double wanted, double seen, double epsilon, const char *format, ...)
         diag("  seen: %g", seen);
         okv(0, format, args);
     }
+    va_end(args);
     return success;
 }
