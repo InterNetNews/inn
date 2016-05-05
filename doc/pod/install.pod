@@ -343,6 +343,9 @@ filters are written in Perl.  See F<doc/hook-perl> for all the details.
 Even if you do not use this option, INN still requires Perl as mentioned
 above.
 
+If the C<$PERL> environment variable is set, it will be used as the path
+to Perl.
+
 =item B<--with-python>
 
 Enables support for Python, allowing you to install filter and

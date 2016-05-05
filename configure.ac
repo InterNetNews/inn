@@ -168,8 +168,61 @@ if test x"$inn_enable_tagged_hash" = xyes \
     AC_MSG_ERROR([--enable-tagged-hash conflicts with --enable-largefiles.])
 fi
 
-dnl Checks for embedded interpreters.
-INN_ARG_PERL
+dnl Checks for a recent enough Perl interpreter.
+dnl Embedded Perl requires 5.004.  controlchan requires 5.004_03.  Other
+dnl things may work with 5.003, but make 5.004_03 the minimum level; anyone
+dnl should really have at least that these days.
+dnl We also check for useful Perl modules.
+INN_PROG_PERL([5.004_03])
+INN_PERL_CHECK_MODULE([Encode], [],
+    [inn_perl_mod_warn="$inn_perl_mod_warn Encode (for controlchan)"])
+INN_PERL_CHECK_MODULE([GD], [],
+    [inn_perl_mod_warn="$inn_perl_mod_warn GD (for innreport's HTML output)"])
+INN_PERL_CHECK_MODULE([MIME::Parser], [],
+    [inn_perl_mod_warn="$inn_perl_mod_warn MIME::Parser (for controlchan)"])
+
+dnl Support for embedded Perl.
+AC_ARG_WITH([perl],
+    [AS_HELP_STRING([--with-perl], [Embedded Perl script support @<:@no@:>@])],
+    [AS_CASE([$withval],
+        [yes],
+            [DO_PERL=DO
+             AC_DEFINE([DO_PERL], [1],
+                 [Define to compile in Perl script support.])],
+        [no],
+            [DO_PERL=DONT],
+        [AC_MSG_ERROR([invalid argument to --with-perl])])],
+    [DO_PERL=DONT])
+
+dnl If we aren't compiling with large-file support, strip out the large file
+dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
+dnl disagree over the size of an off_t.  Since none of our calls into Perl
+dnl use variables of type off_t, this should be harmless; in any event, it's
+dnl going to be better than the innd/cc.c breakage.
+dnl
+dnl Also check to see if the compiler supports -Wno-extra and, if so, add it
+dnl to PERL_WARNINGS.  This has to be conditional since -Wno-extra is only
+dnl supported in gcc 4.0 and later.
+AS_IF([test x"$DO_PERL" = xDO],
+    [INN_LIB_PERL
+     inn_perl_core_flags=" $inn_perl_core_flags "
+     AS_IF([test x"$inn_enable_largefiles" != xyes],
+        [for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
+            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f / /"`
+         done])
+     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
+     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/  *$//'`
+     INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
+        [PERL_WARNINGS=''])
+     AC_SUBST([PERL_WARNINGS])],
+    [PERL_CPPFLAGS=''
+     PERL_LIBS=''
+     PERL_WARNINGS=''
+     AC_SUBST([PERL_CPPFLAGS])
+     AC_SUBST([PERL_LIBS])
+     AC_SUBST([PERL_WARNINGS])])
+
+dnl Check for embedded Python interpreter.
 INN_ARG_PYTHON
 
 dnl Set some configuration file defaults from the machine hostname.
@@ -660,9 +713,9 @@ everything was set correctly.
 EOM
 
 dnl Write a warning for missing Perl modules at the end of the output.
-dnl $inn_perl_module_warning already has a leading space.
-if test x"$inn_perl_module_warning" != x ; then
-    echo "Missing Perl modules: $inn_perl_module_warning."
+dnl $inn_perl_mod_warn already has a leading space.
+if test x"$inn_perl_mod_warn" != x ; then
+    echo "Missing Perl module(s): $inn_perl_mod_warn."
     echo "You should install them for these programs to work fine."
 fi
 

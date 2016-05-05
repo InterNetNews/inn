@@ -1,114 +1,100 @@
-dnl perl.m4 -- Probe for the details needed to embed Perl.
+dnl Probe for Perl properties and, optionally, flags for embedding Perl.
 dnl $Id$
 dnl
-dnl Defines INN_ARG_PERL, which sets up the --with-perl command line argument
-dnl and also sets various flags needed for embedded Perl if it is requested
-dnl and ensures that Perl is the appropriate version.
+dnl Provides the following macros:
+dnl
+dnl INN_PROG_PERL
+dnl     Checks for a specific Perl version and sets the PERL environment
+dnl     variable to the full path, or aborts the configure run if the version
+dnl     of Perl is not new enough or couldn't be found.
+dnl
+dnl INN_PERL_CHECK_MODULE
+dnl     Checks for the existence of a Perl module and runs provided code based
+dnl     on whether or not it was found.
+dnl
+dnl INN_LIB_PERL
+dnl     Determines the flags required for embedding Perl and sets
+dnl     PERL_CPPFLAGS and PERL_LIBS.
+dnl
+dnl The canonical version of this file is maintained in the rra-c-util
+dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl
+dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
+dnl Copyright (c) 2006, 2009, 2011
+dnl     by Internet Systems Consortium, Inc. ("ISC")
+dnl Copyright (c) 1998, 1999, 2000, 2001, 2002, 2003
+dnl     by The Internet Software Consortium
+dnl
+dnl Permission to use, copy, modify, and distribute this software for any
+dnl purpose with or without fee is hereby granted, provided that the above
+dnl copyright notice and this permission notice appear in all copies.
+dnl
+dnl THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH
+dnl REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+dnl MERCHANTABILITY AND FITNESS.  IN NO EVENT SHALL ISC BE LIABLE FOR ANY
+dnl SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-dnl Check for a required version of Perl.
-AC_DEFUN([_INN_PERL_VERSION],
-[AC_CACHE_CHECK([for Perl version], [inn_cv_perl_version],
-    [if $PERL -e 'require $1;' > /dev/null 2>&1 ; then
-        inn_cv_perl_version=`$PERL -e 'print [$]@:>@'`
-    else
-        AC_MSG_ERROR([Perl $1 or greater is required])
-    fi])])
-
-dnl Check for Perl modules used by scripts shipped with INN.
-AC_DEFUN([INN_PERL_MODULE],
-[AC_MSG_CHECKING([for $1])
-    if $PERL -e 'require $1;' > /dev/null 2>&1 ; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_RESULT([no])
-        AC_MSG_WARN([$1 Perl module is required by $2])
-        inn_perl_module_warning="$inn_perl_module_warning $1 (for $2)"
-    fi])
-
-dnl Check to see if Perl embedding was requested.  Regardless of whether it
-dnl was or not, determine the path to Perl.  If it was requested, make sure
-dnl that we have the right version and then set PERL_CPPFLAGS and PERL_LIBS as
-dnl appropriate for embedded Perl.
-AC_DEFUN([INN_ARG_PERL],
+dnl Check for the path to Perl and ensure it meets our minimum version
+dnl requirement (given as the argument).  Honor the $PERL environment
+dnl variable, if set.
+AC_DEFUN([INN_PROG_PERL],
 [AC_ARG_VAR([PERL], [Location of Perl interpreter])
-AC_ARG_WITH([perl],
-    [AS_HELP_STRING([--with-perl], [Embedded Perl script support [no]])],
-    [case $withval in
-    yes) DO_PERL=DO
-         AC_DEFINE(DO_PERL, 1, [Define to compile in Perl script support.])
-         ;;
-    no)  DO_PERL=DONT ;;
-    *)   AC_MSG_ERROR([invalid argument to --with-perl]) ;;
-    esac],
-    DO_PERL=DONT)
+ AS_IF([test x"$PERL" != x],
+    [AS_IF([! test -x "$PERL"],
+        [AC_MSG_ERROR([Perl binary $PERL not found])])
+     AS_IF([! "$PERL" -e 'use $1' >/dev/null 2>&1],
+        [AC_MSG_ERROR([Perl $1 or greater is required])])],
+    [AC_CACHE_CHECK([for Perl version $1 or later], [ac_cv_path_PERL],
+        [AC_PATH_PROGS_FEATURE_CHECK([PERL], [perl],
+            [AS_IF(["$ac_path_PERL" -e 'require $1' >/dev/null 2>&1],
+                [ac_cv_path_PERL="$ac_path_PERL"
+                 ac_path_PERL_found=:])])])
+     AS_IF([test x"$ac_cv_path_PERL" = x],
+         [AC_MSG_ERROR([Perl $1 or greater is required])])
+     PERL="$ac_cv_path_PERL"])])
 
-dnl Embedded Perl requires 5.004.  controlchan requires 5.004_03.  Other
-dnl things may work with 5.003, but make 5.004_03 the minimum level; anyone
-dnl should really have at least that these days.
-dnl We also check for useful Perl modules.
-INN_PATH_PROG_ENSURE([PERL], [perl])
-_INN_PERL_VERSION(5.004_03)
-INN_PERL_MODULE([Encode], [controlchan])
-INN_PERL_MODULE([GD], [innreport's HTML output])
-INN_PERL_MODULE([MIME::Parser], [controlchan])
+dnl Check whether a given Perl module can be loaded.  Runs the second argument
+dnl if it can, and the third argument if it cannot.
+AC_DEFUN([INN_PERL_CHECK_MODULE],
+[AS_LITERAL_IF([$1], [], [m4_fatal([$0: requires literal arguments])])dnl
+ AS_VAR_PUSHDEF([ac_Module], [inn_cv_perl_module_$1])dnl
+ AC_CACHE_CHECK([for Perl module $1], [ac_Module],
+    [AS_IF(["$PERL" -e 'use $1' >/dev/null 2>&1],
+        [AS_VAR_SET([ac_Module], [yes])],
+        [AS_VAR_SET([ac_Module], [no])])])
+ AS_VAR_IF([ac_Module], [yes], [$2], [$3])
+ AS_VAR_POPDEF([ac_Module])])
 
-dnl Libraries and flags for embedded Perl.  Some distributions of Linux have
-dnl Perl linked with gdbm but don't normally have gdbm installed, so on that
-dnl platform only strip -lgdbm out of the Perl libraries.  Leave it in on
-dnl other platforms where it may be necessary (it isn't on Linux; Linux
-dnl shared libraries can manage their own dependencies).  Strip -lc out, which
-dnl is added on some platforms, is unnecessary, and breaks compiles with
-dnl -pthread (which may be added by Python).
+dnl Determine the flags used for embedding Perl.
 dnl
-dnl If we aren't compiling with large-file support, strip out the large file
-dnl flags from inn_perl_core_flags; otherwise, innd/cc.c and lib/qio.c
-dnl disagree over the size of an off_t.  Since none of our calls into Perl
-dnl use variables of type off_t, this should be harmless; in any event, it's
-dnl going to be better than the innd/cc.c breakage.
-dnl
-dnl Also check to see if the complier supports -Wno-extra and, if so, add it
-dnl to PERL_WARNING.  This has to be conditional since -Wno-extra is only
-dnl supported in gcc 4.0 and later.
-if test x"$DO_PERL" = xDO ; then
-    AC_MSG_CHECKING([for Perl linkage])
-    inn_perl_core_path=`$PERL -MConfig -e 'print $Config{archlibexp}'`
-    inn_perl_core_flags=`$PERL -MExtUtils::Embed -e ccopts`
-    inn_perl_core_libs=`$PERL -MExtUtils::Embed -e ldopts 2>&1 | tail -n 1`
-    inn_perl_core_libs=" $inn_perl_core_libs "
-    inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lc / /'`
-    for i in $LIBS ; do
-        inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed "s/ $i / /"`
-    done
-    case $host in
-    *-linux*)
-        inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm / /'`
-        ;;
-    *-cygwin*)
-        inn_perl_libname=`$PERL -MConfig -e 'print $Config{libperl}'`
-        inn_perl_libname=`echo "$inn_perl_libname" | sed 's/^lib//; s/\.a$//'`
-        inn_perl_core_libs="${inn_perl_core_libs}-l$inn_perl_libname"
-        ;;
-    esac
-    inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
-    inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/  *$//'`
-    inn_perl_core_flags=" $inn_perl_core_flags "
-    if test x"$inn_enable_largefiles" != xyes ; then
-        for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
-            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f / /"`
-        done
-    fi
-    inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
-    inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/  *$//'`
-    PERL_CPPFLAGS="$inn_perl_core_flags"
-    PERL_LIBS="$inn_perl_core_libs"
-    AC_MSG_RESULT([$inn_perl_core_path])
-    INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
-        [PERL_WARNINGS=''])
-else
-    PERL_CPPFLAGS=''
-    PERL_LIBS=''
-    PERL_WARNINGS=''
-fi
-AC_SUBST([PERL_CPPFLAGS])
-AC_SUBST([PERL_LIBS])
-AC_SUBST([PERL_WARNINGS])])
+dnl Some distributions of Linux have Perl linked with gdbm but don't normally
+dnl have gdbm installed, so on that platform only strip -lgdbm out of the Perl
+dnl libraries.  Leave it in on other platforms where it may be necessary (it
+dnl isn't on Linux; Linux shared libraries can manage their own dependencies).
+dnl Strip -lc out, which is added on some platforms, is unnecessary, and
+dnl breaks compiles with -pthread (which may be added by Python).
+AC_DEFUN([INN_LIB_PERL],
+[AC_REQUIRE([AC_CANONICAL_HOST])
+ AC_SUBST([PERL_CPPFLAGS])
+ AC_SUBST([PERL_LIBS])
+ AC_MSG_CHECKING([for flags to link with Perl])
+ inn_perl_core_path=`"$PERL" -MConfig -e 'print $Config{archlibexp}'`
+ inn_perl_core_flags=`"$PERL" -MExtUtils::Embed -e ccopts`
+ inn_perl_core_libs=`"$PERL" -MExtUtils::Embed -e ldopts 2>&1 | tail -n 1`
+ inn_perl_core_libs=" $inn_perl_core_libs "
+ inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lc / /'`
+ AS_CASE([$host],
+    [*-linux*],
+        [inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm / /'`],
+    [*-cygwin*],
+        [inn_perl_libname=`"$PERL" -MConfig -e 'print $Config{libperl}'`
+         inn_perl_libname=`echo "$inn_perl_libname" | sed 's/^lib//; s/\.a$//'`
+         inn_perl_core_libs="${inn_perl_core_libs}-l$inn_perl_libname"])
+ inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
+ inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/  *$//'`
+ PERL_CPPFLAGS="$inn_perl_core_flags"
+ PERL_LIBS="$inn_perl_core_libs"
+ AC_MSG_RESULT([$PERL_LIBS])])
