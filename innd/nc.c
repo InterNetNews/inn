@@ -622,6 +622,11 @@ NCcapabilities(CHANNEL *cp)
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
+    if (cp->IsAuthenticated) {
+        WCHANappend(cp, "XBATCH", 6);
+        WCHANappend(cp, NCterm, strlen(NCterm));
+    }
+
     NCwritereply(cp, NCdot);
 }
 
