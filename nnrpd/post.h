@@ -53,6 +53,6 @@ typedef struct _HEADER {
 #define HDR__MESSAGEID	     15
 #define HDR__INJECTION_DATE  26
 #define HDR__INJECTION_INFO  27
-#define HDR__CC		     36
-#define HDR__BCC	     37
-#define HDR__TO		     38
+#define HDR__CC		     34
+#define HDR__BCC	     35
+#define HDR__TO		     36

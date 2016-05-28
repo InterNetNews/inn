@@ -27,6 +27,10 @@ static const char * const BadDistribs[] = {
 /*
 **  Do not modify the table without also looking at post.h for potential
 **  changes in the order of the fields.
+**
+**  The table should reflect the status of the fields in the "Permanent
+**  Message Header Field Names" registry:
+**    http://www.iana.org/assignments/message-headers/
 */
 HEADER Table[] = {
     /*  Name                    CanSet  Type    Size  Value */
@@ -62,8 +66,6 @@ HEADER Table[] = {
     {   "Keywords",             true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "User-Agent",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Date-Received",        false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Received",             false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Posted",               false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Posting-Version",      false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Relay-Version",        false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Cc",                   true,   HTstd,  0,    NULL,    NULL, 0 },
