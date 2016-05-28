@@ -205,13 +205,14 @@ dnl to PERL_WARNINGS.  This has to be conditional since -Wno-extra is only
 dnl supported in gcc 4.0 and later.
 AS_IF([test x"$DO_PERL" = xDO],
     [INN_LIB_PERL
-     inn_perl_core_flags=" $inn_perl_core_flags "
+     inn_perl_core_flags=" $PERL_CPPFLAGS "
      AS_IF([test x"$inn_enable_largefiles" != xyes],
         [for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
             inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f / /"`
          done])
      inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
      inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/  *$//'`
+     PERL_CPPFLAGS="$inn_perl_core_flags"
      INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
         [PERL_WARNINGS=''])
      AC_SUBST([PERL_WARNINGS])],
