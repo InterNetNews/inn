@@ -492,6 +492,10 @@ CMDcapabilities(int ac, char *av[])
     }
 #endif /* HAVE_OPENSSL */
 
+    if (PERMcanread) {
+        Printf("XPAT\r\n");
+    }
+
     Printf(".\r\n");
 }
 
