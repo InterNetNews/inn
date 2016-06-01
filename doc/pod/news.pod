@@ -32,6 +32,11 @@ Thanks to Christian Mock for having discovered that.
 
 =item *
 
+If an article contains a Received: or a Posted: header field, it is no
+longer rejected by B<nnrpd>.
+
+=item *
+
 S<OpenSSL 1.1.0> support has been added to INN.
 
 =item *
