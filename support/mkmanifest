@@ -152,6 +152,7 @@ frontends/cnfsstat
 frontends/ctlinnd
 frontends/decode
 frontends/encode
+frontends/feedone
 frontends/getlist
 frontends/gunbatch
 frontends/inews
@@ -165,6 +166,7 @@ frontends/pullnews
 frontends/rnews
 frontends/scanspool
 frontends/sm
+frontends/sys2nf
 history/buildconfig
 include/config.h
 include/inn/paths.h
