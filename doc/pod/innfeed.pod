@@ -152,7 +152,7 @@ Upon receipt of a SIGUSR1, B<innfeed> will increment the debugging level
 by one; receipt of a SIGUSR2 will decrement it by one.  The debugging
 level starts at zero (unless the B<-d> option it used), in which case no
 debugging information is emitted.  A larger value for the level means more
-debugging information. Numbers up to 5 are currently useful.
+debugging information.  Numbers up to 5 are currently useful.
 
 =head1 SYSLOG ENTRIES
 

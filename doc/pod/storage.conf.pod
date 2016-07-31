@@ -167,7 +167,7 @@ or not.  This is used to run expireover(8).
 The C<cnfs> storage method stores articles in large cyclic buffers (CNFS
 stands for Cyclic News File System).  Articles are stored in CNFS buffers
 in arrival order, and when the buffer fills, it wraps around to the beginning
-and stores new articles over the top of the oldest articles in the buffer. The
+and stores new articles over the top of the oldest articles in the buffer.  The
 expire time of articles stored in CNFS buffers is therefore entirely
 determined by how long it takes the buffer to wrap around, which depends
 on how quickly data is being stored in it.  (This method is therefore said

@@ -39,7 +39,7 @@ and B<--with-bdb-lib> can be given to configure with a path.
 The ovdb database may take up more disk space for a given spool than the
 other overview methods.  Plan on needing at least S<1.1 KB> for every article
 in your spool (not counting crossposts).  So, if you have 5 million
-articles, you'll need at least S<5.5 GB> of disk space for ovdb. With compression
+articles, you'll need at least S<5.5 GB> of disk space for ovdb.  With compression
 enabled, this estimate changes to S<0.7 KB> per article.  See the L<COMPRESSION>
 section below.
 Plus, you'll need additional space for transaction logs: at least S<100 MB>.
@@ -75,7 +75,7 @@ servers.  Large servers will probably need at least 20000.
 =item compress
 
 If INN was compiled with zlib, and this compress parameter is true, OVDB
-will compress overview records that are longer than 600 bytes. See
+will compress overview records that are longer than 600 bytes.  See
 the L<COMPRESSION> section below.
 
 =item numdbfiles
@@ -192,7 +192,7 @@ before it is stored into the database.  In addition to consuming less disk
 space, compression keeps the average size of the database keys smaller.
 This in turn increases the average number of keys per page, which can
 significantly improve performance and also helps keep the database more
-compact.  This feature requires that INN be built with zlib. Only records
+compact.  This feature requires that INN be built with zlib.  Only records
 larger than 600 bytes get compressed, because that is the point at which
 compression starts to become significant.
 

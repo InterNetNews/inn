@@ -65,10 +65,10 @@ B<list_pred> returns the previous (predecessor) node on the list before
 I<node> or B<NULL> if I<node> was the first node.
 
 B<list_remhead> removes the first node from I<list> and returns it to
-the caller. If the list is empty B<NULL> is returned.
+the caller.  If the list is empty B<NULL> is returned.
 
 B<list_remtail> removes the last node from I<list> and returns it to
-the caller. If the list is empty B<NULL> is returned.
+the caller.  If the list is empty B<NULL> is returned.
 
 B<list_remove> removes I<node> from the list it is on and returns it
 to the caller.

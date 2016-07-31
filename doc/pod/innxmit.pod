@@ -123,7 +123,7 @@ If the B<-v> flag is used, they will also be printed on the standard output.
 
 =head1 HISTORY
 
-Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews. Converted to POD
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to POD
 by Julien Elie.
 
 $Id$

@@ -21,20 +21,20 @@ tst - ternary search trie functions
 =head1 DESCRIPTION
 
 B<tst_init> allocates memory for members of I<struct tst>, and
-allocates the first I<node_line_width> nodes. A NULL pointer is
-returned by B<tst_init> if any part of the memory allocation fails. On
+allocates the first I<node_line_width> nodes.  A NULL pointer is
+returned by B<tst_init> if any part of the memory allocation fails.  On
 success, a pointer to a I<struct tst> is returned.
 
-The value for I<node_line_width> must be chosen very carefully. One
-node is required for every character in the tree. If you choose a
+The value for I<node_line_width> must be chosen very carefully.  One
+node is required for every character in the tree.  If you choose a
 value that is too small, your application will spend too much time
-calling malloc(3) and your node space will be too spread out. Too large
+calling malloc(3) and your node space will be too spread out.  Too large
 a value is just a waste of space.
 
 B<tst_cleanup> frees all memory allocated to nodes, internal structures,
 as well as I<tst> itself.
 
-B<tst_insert> inserts the string I<key> into the tree. Behavior when a
+B<tst_insert> inserts the string I<key> into the tree.  Behavior when a
 duplicate key is inserted is controlled by I<option>. If I<key> is
 already in the tree then B<TST_DUPLICATE_KEY> is returned, and the
 data pointer for the existing key is placed in I<exist_ptr>.  If
@@ -43,15 +43,15 @@ the existing key is replaced by I<data>.  Note that the old data
 pointer will still be placed in I<exist_ptr>.
 
 If a duplicate key is encountered and I<option> is not set to
-B<TST_REPLACE> then B<TST_DUPLICATE_KEY> is returned. If I<key> is
-zero length then B<TST_NULL_KEY> is returned. A successful insert or
+B<TST_REPLACE> then B<TST_DUPLICATE_KEY> is returned.  If I<key> is
+zero length then B<TST_NULL_KEY> is returned.  A successful insert or
 replace returns B<TST_OK>. A return value of B<TST_ERROR> indicates
 that a memory allocation error occurred while trying to grow the node
 free.
 
 Note that the I<data> argument must never be B<NULL>. If it is, then
 calls to B<tst_search> will fail for a key that exists because the
-data value was set to B<NULL>, which is what B<tst_search> returns. If
+data value was set to B<NULL>, which is what B<tst_search> returns.  If
 you just want a simple existence tree, use the B<tst> pointer as the
 data pointer.
 

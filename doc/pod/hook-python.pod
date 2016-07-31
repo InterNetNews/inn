@@ -663,7 +663,7 @@ Also, remember to try importing your module interactively before loading
 it, to ensure there are no obvious errors.  One typo can ruin your whole
 filter.  A dummy F<nnrpd.py> module is provided to facilitate testing outside
 the server.  It is not actually used by B<nnrpd> but provides the same set
-of functions as built-in B<nnrpd> module. This stub module may be used
+of functions as built-in B<nnrpd> module.  This stub module may be used
 when debugging your own module.  To test, change into your filter directory
 and use a command like:
 
