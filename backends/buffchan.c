@@ -177,9 +177,7 @@ SITEfind(char *Name, bool CanCreate)
 
     /* Fill in the structure for the new site. */
     sp->Name = xstrdup(Name);
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     snprintf(buff, sizeof(buff), Format, Map ? MAPname(Name) : sp->Name);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
     sp->Filename = xstrdup(buff);
     if (BufferMode == 'u')
 	sp->Buffer = NULL;

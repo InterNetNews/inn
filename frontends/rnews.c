@@ -170,14 +170,10 @@ Reject(const char *article, size_t length UNUSED, const char *reason,
     int fd;
 #endif	/* defined(DO_RNEWS_SAVE_BAD) */
 
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     notice(reason, arg);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
     if (Verbose) {
 	fprintf(stderr, "%s: ", InputFile);
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 	fprintf(stderr, reason, arg);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
 	fprintf(stderr, " [%.40s...]\n", article);
     }
 

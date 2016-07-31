@@ -593,10 +593,8 @@ char* timeToString(time_t t, char* buffer, size_t size)
 {
   static const char defaultFormat[] = "%a %b %d %H:%M:%S %Y" ;
   const struct tm *const tm = localtime(&t);
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
   strftime (buffer, size,
     timeToStringFormat == 0 ? defaultFormat : timeToStringFormat, tm);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
   return buffer;
 }
 

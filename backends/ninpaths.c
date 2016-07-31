@@ -199,9 +199,7 @@ writedumpfile(const char *n)
 	writedump(stdout);
 	return;
     }
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     snprintf(buf, sizeof(buf), n, time(0));
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
     d=fopen(buf, "w");
     if (d) {
 	if (writedump(d)<0)

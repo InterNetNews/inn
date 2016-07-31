@@ -530,14 +530,10 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    strlcat(temp, sp->FNLnames.data, i + 1);
 	    strlcat(temp, &p[1], i + 1);
 	    *p = '*';
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 	    snprintf(buff, sizeof(buff), temp, Data->TokenText);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
 	    free(temp);
 	} else {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 	    snprintf(buff, sizeof(buff), sp->Param, Data->TokenText);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
         }
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ARRAY_END(argv))) {

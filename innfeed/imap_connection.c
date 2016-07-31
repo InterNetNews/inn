@@ -3650,9 +3650,7 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     size += snprintf((*out) + size, newsize - size, deliver_rcpt_to, newrcpt);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
     newrcpt[newrcptlen] = c;
 
     strlcpy((*out) + size, ">\r\n", newsize - size);
@@ -3727,9 +3725,7 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
     size += snprintf((*out) + size, newsize - size, deliver_to_header,newrcpt);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
     newrcpt[newrcptlen] = c;
 
     strlcpy((*out) + size, ">", newsize - size);

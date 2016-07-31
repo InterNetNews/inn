@@ -92,11 +92,11 @@ CCOUTPUT	= @CCOUTPUT@
 ##  -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 ##  on glibc functions on Linux, as well as more object size checking,
 ##  which catches a few more issues.
-##  -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
+##  -Wformat=2, -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
 ##  "-Wconversion -Wno-sign-conversion",
 ##  -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 
-WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2 \
+WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra \
 		  -Winit-self -Wmissing-include-dirs \
 		  -Wsync-nand -Wendif-labels -Wtrampolines -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
