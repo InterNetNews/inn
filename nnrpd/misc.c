@@ -449,6 +449,45 @@ RateLimit(long *sleeptime, char *path)
      return 1;
 }
 
+#if defined(HAVE_SASL) || defined(HAVE_ZLIB)
+/*
+**  Check if the argument has a valid syntax.
+**
+**  Currently used for both SASL mechanisms (RFC 4643) and compression
+**  algorithms.
+**
+**    algorithm = 1*20alg-char
+**    alg-char = UPPER / DIGIT / "-" / "_"
+*/
+bool
+IsValidAlgorithm(const char *string)
+{
+    size_t len = 0;
+    const unsigned char *p;
+
+    /* Not NULL. */
+    if (string == NULL) {
+        return false;
+    }
+
+    p = (const unsigned char *) string;
+
+    for (; *p != '\0'; p++) {
+        len++;
+
+        if (!isalnum((unsigned char) *p) && *p != '-' && *p != '_') {
+            return false;
+        }
+    }
+
+    if (len > 0 && len < 21) {
+        return true;
+    } else {
+        return false;
+    }
+}
+#endif /* HAVE_SASL || HAVE_ZLIB */
+
 #if defined(HAVE_ZLIB)
 /*
 **  The COMPRESS command.
@@ -460,6 +499,11 @@ CMDcompress(int ac, char *av[])
 
     /* Check the argument. */
     if (ac > 1) {
+        if (!IsValidAlgorithm(av[1])) {
+            Reply("%d Syntax error in compression algorithm\r\n",
+                  NNTP_ERR_SYNTAX);
+            return;
+        }
         if (strcasecmp(av[1], "DEFLATE") != 0) {
             Reply("%d Only the DEFLATE compression algorithm is supported\r\n",
                   NNTP_ERR_UNAVAILABLE);
