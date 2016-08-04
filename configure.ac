@@ -651,7 +651,7 @@ dnl If we can't find any of the following, we have replacements for them.
 AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize \
                  inet_aton inet_ntop mkstemp pread pwrite reallocarray \
                  setenv seteuid strcasecmp \
-                 strlcat strlcpy strspn symlink)
+                 strlcat strlcpy strspn strtok symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
 if test x"$inn_enable_largefiles" = xyes ; then

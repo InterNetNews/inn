@@ -201,6 +201,22 @@ extern size_t strlcat(char *, const char *, size_t);
 #if !HAVE_DECL_STRLCPY
 extern size_t strlcpy(char *, const char *, size_t);
 #endif
+#if !HAVE_GETPAGESIZE
+extern int getpagesize(void);
+#endif
+#if !HAVE_STRCASECMP
+extern int strcasecmp(const char *, const char *);
+extern int strncasecmp(const char *, const char *, size_t);
+#endif
+#if !HAVE_STRSPN
+extern size_t strspn(const char *, const char *);
+#endif
+#if !HAVE_STRTOK
+extern char * strtok(char *, const char *);
+#endif
+#if !HAVE_MEMCMP
+extern int memcmp(const void *, const void *, size_t);
+#endif
 
 END_DECLS
 
