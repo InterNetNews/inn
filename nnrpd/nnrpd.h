@@ -325,6 +325,10 @@ void SASLauth(int ac, char *av[]);
 void SASLnewserver(void);
 #endif /* HAVE_SASL */
 
+#if defined(HAVE_SASL) || defined(HAVE_ZLIB)
+bool IsValidAlgorithm(const char *);
+#endif /* HAVE_SASL || HAVE_ZLIB */
+
 #if defined(HAVE_ZLIB)
 extern bool compression_layer_on;
 extern bool tls_compression_on;

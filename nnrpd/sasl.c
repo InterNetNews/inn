@@ -35,38 +35,6 @@ sasl_callback_t sasl_callbacks[] = {
 #define BASE64_BUF_SIZE 21848   /* Per RFC 4422:  (floor(n/3) + 1) * 4
                                    where n = 16 kB = 16384 bytes. */
 
-
-/*
-**  Check if the argument is a valid mechanism according to RFC 4643:
-**
-**    mechanism = 1*20mech-char
-**    mech-char = UPPER / DIGIT / "-" / "_"
-*/
-static bool
-IsValidMechanism(const char *string)
-{
-    int len = 0;
-    const unsigned char *p;
- 
-    /* Not NULL. */
-    if (string == NULL)
-        return false;
-
-    p = (const unsigned char *) string;
-
-    for (; *p != '\0'; p++) {
-        len++;
-        if (!isalnum((unsigned char) *p) && *p != '-' && *p != '_')
-            return false;
-    }
-
-    if (len > 0 && len < 21)
-        return true;
-    else
-        return false;
-}
-
-
 /*
 **  Create a new SASL server authentication object.
 */
@@ -137,7 +105,7 @@ SASLauth(int ac, char *av[])
 
     mech = av[2];
 
-    if (!IsValidMechanism(mech)) {
+    if (!IsValidAlgorithm(mech)) {
         Reply("%d Syntax error in mechanism\r\n", NNTP_ERR_SYNTAX);
         return;
     }
