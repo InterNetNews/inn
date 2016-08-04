@@ -22,10 +22,6 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static const char sccsid[] = "@(#)strcasecmp.c	5.9 (Berkeley) 6/1/90";
-#endif /* LIBC_SCCS and not lint */
-
 typedef unsigned char u_char;
 
 /*
@@ -69,8 +65,7 @@ static const u_char charmap[] = {
 };
 
 int
-strcasecmp(s1, s2)
-	const char *s1, *s2;
+strcasecmp(const char *s1, const char *s2)
 {
 	const u_char *cm = charmap,
 			*us1 = (const u_char *)s1,
@@ -83,9 +78,7 @@ strcasecmp(s1, s2)
 }
 
 int
-strncasecmp(s1, s2, n)
-	const char *s1, *s2;
-	size_t n;
+strncasecmp(const char *s1, const char *s2, size_t n)
 {
 	if (n != 0) {
 		const u_char *cm = charmap,

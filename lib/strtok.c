@@ -27,20 +27,11 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#if 0
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strtok.c	5.7 (Berkeley) 6/1/90";
-#endif /* LIBC_SCCS and not lint */
-
-#include <stddef.h>
-#include <string.h>
-#endif
 
 char *
-strtok(s, delim)
-	char *s, *delim;
+strtok(char *s, const char *delim)
 {
-	char *spanp;
+	const char *spanp;
 	int c, sc;
 	char *tok;
 	static char *last;

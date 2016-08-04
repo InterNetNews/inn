@@ -11,7 +11,7 @@
 */
 
 #include "config.h"
-#include <sys/types.h>
+#include "clibrary.h"
 
 /* If we're running the test suite, rename memcmp to avoid conflicts with
    the system version. */

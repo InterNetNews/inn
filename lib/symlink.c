@@ -8,6 +8,7 @@
 */
 
 #include "config.h"
+#include "clibrary.h"
 #include <errno.h>
 
 int

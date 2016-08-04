@@ -27,22 +27,12 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#if 0
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)strspn.c	5.7 (Berkeley) 6/1/90";
-#endif /* LIBC_SCCS and not lint */
-
-#include <sys/stdc.h>
-#include <string.h>
-#endif
 
 /*
  * Span the string s2 (skip characters that are in s2).
- */
+ */ 
 size_t
-strspn(s1, s2)
-	const char *s1;
-	const char *s2;
+strspn(const char *s1, const char *s2)
 {
 	const char *p = s1, *spanp;
 	char c, sc;

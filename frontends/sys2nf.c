@@ -21,13 +21,13 @@
 #define TEMPFILE	":tmp"
 static char		**Groups;
 
+char ** ReadSys(const char *);
 
 /*
 **  Fill in the Groups array with the names of all active newsgroups.
 */
 static void
-ReadActive(act)
-    char	*act;
+ReadActive(char *act)
 {
     FILE	*F;
     int		i;
@@ -60,8 +60,7 @@ ReadActive(act)
 **  per continued line.
 */
 char **
-ReadSys(sys)
-    char		*sys;
+ReadSys(const char *sys)
 {
     char	*p;
     char	*to;
@@ -104,33 +103,11 @@ ReadSys(sys)
 
 
 /*
-**  Is this the name of a top-level group?  We want a simple name, "foo",
-**  and should find a "foo." in the group list.
-*/
-static bool
-Toplevel(p)
-    char	*p;
-{
-    char	**gp;
-    char	*g;
-    int		i;
-
-    if (strchr(p, '.') != NULL)
-	return false;
-    for (i = strlen(p) - 1, gp = Groups; (g = *gp++) != NULL; )
-	if (strncmp(p, g, i) == 0 && g[i + 1] == '.')
-	    return true;
-    return false;
-}
-
-
-/*
 **  Do we have a name that's a prefix for more then one newsgroup?
 **  For "foo.bar", we must find more then one "foo.bar" or "foo.bar."
 */
 static bool
-GroupPrefix(p)
-    char	*p;
+GroupPrefix(const char *p)
 {
     char	**gp;
     char	*g;
@@ -151,12 +128,10 @@ GroupPrefix(p)
 **  turn.
 */
 static void
-DoSub(F, p)
-    FILE	*F;
-    char		*p;
+DoSub(FILE *F, char *p)
 {
-    char	*s;
-    int	len, i;
+    const char	*s;
+    size_t	len, i;
     bool matched;
     bool	SawBang;
     bool	SawAll;
@@ -238,9 +213,7 @@ DoSub(F, p)
 
 
 int
-main(ac, av)
-    int		 ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     FILE	*F;
     FILE	*out;
@@ -253,9 +226,10 @@ main(ac, av)
     char	*site;
     char	buff[256];
     char	*act;
-    char	*dir;
-    char	*sys;
+    const char	*dir;
+    const char	*sys;
     int		i;
+    size_t j;
 
     if (!innconf_read(NULL))
         exit(1);
@@ -291,15 +265,15 @@ main(ac, av)
 	}
 	site = xstrdup(p);
 	if ((f2 = strchr(site, ':')) == NULL)
-	    f2 = "HELP";
+	    f2 = (char *) "HELP";
 	else
 	    *f2++ = '\0';
 	if ((f3 = strchr(f2, ':')) == NULL)
-	    f3 = "HELP";
+	    f3 = (char *) "HELP";
 	else
 	    *f3++ = '\0';
 	if ((f4 = strchr(f3, ':')) == NULL)
-	    f4 = "HELP";
+	    f4 = (char *) "HELP";
 	else
 	    *f4++ = '\0';
 
@@ -335,8 +309,8 @@ main(ac, av)
 	    perror(TEMPFILE), exit(1);
 	if ((out = xfopena(p)) == NULL)
 	    perror(p), exit(1);
-	while ((i = fread(buff, 1, sizeof buff, F)) > 0)
-	    if (fwrite(buff, 1, i, out) != i)
+	while ((j = fread(buff, 1, sizeof buff, F)) > 0)
+	    if (fwrite(buff, 1, j, out) != j)
 		perror(p), exit(1);
 	fclose(F);
 	if (fclose(out) == EOF)
@@ -347,5 +321,7 @@ main(ac, av)
     }
 
     exit(0);
+
     /* NOTREACHED */
+    return 1;
 }

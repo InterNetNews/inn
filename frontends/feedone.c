@@ -22,10 +22,7 @@ static int	Tracing;
 **  Read a line from the server or die trying.
 */
 static void
-GetFromServer(buff, size, text)
-    char	*buff;
-    int		size;
-    char	*text;
+GetFromServer(char *buff, int size, const char *text)
 {
     if (fgets(buff, size, FromServer) == NULL)
         sysdie("%s", text);
@@ -38,8 +35,7 @@ GetFromServer(buff, size, text)
 **  Flush a stdio FILE; exit if there are any errors.
 */
 static void
-SafeFlush(F)
-    FILE	*F;
+SafeFlush(FILE *F)
 {
     if (fflush(F) == EOF || ferror(F))
         sysdie("cannot send text to server");
@@ -47,8 +43,7 @@ SafeFlush(F)
 
 
 static void
-SendQuit(x)
-    int		x;
+SendQuit(int x)
 {
     char	buff[BUFSIZ];
 
@@ -62,7 +57,7 @@ SendQuit(x)
 
 
 static void
-Usage()
+Usage(void)
 {
     fprintf(stderr, "Usage: feedone [-r|-m msgid] [-p] [-t] articlefile\n");
     exit(1);
@@ -70,9 +65,7 @@ Usage()
 
 
 int
-main(ac, av)
-    int		ac;
-    char	*av[];
+main(int ac, char *av[])
 {
     static char	MESGIDHDR[] = "Message-ID:";
     int		i;
@@ -185,5 +178,7 @@ main(ac, av)
         sysdie("cannot send article to the server: %s", buff);
 
     SendQuit(0);
+
     /* NOTREACHED */
+    return 1;
 }
