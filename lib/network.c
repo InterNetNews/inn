@@ -91,7 +91,7 @@
  * on the same port immediately if the daemon dies unexpectedly).
  */
 void
-network_set_reuseaddr(socket_type fd)
+network_set_reuseaddr(socket_type fd UNUSED)
 {
 #ifdef SO_REUSEADDR
     int flag = 1;
@@ -107,7 +107,7 @@ network_set_reuseaddr(socket_type fd)
  * consistent and easier to understand.
  */
 void
-network_set_v6only(socket_type fd)
+network_set_v6only(socket_type fd UNUSED)
 {
 #ifdef IPV6_V6ONLY
     int flag = 1;
@@ -123,7 +123,7 @@ network_set_v6only(socket_type fd)
  * IPv6 addresses that may not have been set up yet.
  */
 void
-network_set_freebind(socket_type fd)
+network_set_freebind(socket_type fd UNUSED)
 {
 #ifdef IP_FREEBIND
     int flag = 1;
