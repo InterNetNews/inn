@@ -21,6 +21,13 @@ from that bandwidth optimization and improvement in speed.
 
 =item *
 
+The default value for the I<tlscompression> parameter in F<inn.conf>
+has changed.  TLS-level compression is now disabled by default, to comply
+with the best current practices for a secure use of TLS in application
+protocols like NNTP.  Using the new COMPRESS command is recommended.
+
+=item *
+
 B<rnews> no longer segfaults at startup when started setuid news.
 Thanks to Marcus Jodorf for the bug report.
 

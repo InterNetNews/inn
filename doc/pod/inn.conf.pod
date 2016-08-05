@@ -1096,8 +1096,10 @@ interoperate (see RFC 4642 for more details).
 
 =item I<tlscompression>
 
-Whether to enable or disable SSL/TLS compression support.  This is a
-boolean and the default is true, that is to say compression is enabled.
+Whether to enable or disable SSL/TLS-level compression support.
+This is a boolean and the default is false, that is to say compression
+is disabled, so as to follow the best current practices for a secure
+use of TLS in application protocols like NNTP.
 
 =item I<tlseccurve>
 
@@ -1112,9 +1114,10 @@ This option is only effective if your OpenSSL version has ECDH support.
 
 =item I<tlspreferserverciphers>
 
-Whether to let the client or the server decide the preferred cipher.
-This is a boolean and the default is true, that is to say the server
-decides the preferred cipher.
+Whether to let the client or the server decide the preferred cipher
+suite, signature algorithm or elliptic curve to use for an incoming
+connection.  This is a boolean and the default is true, that is to say
+the server will choose following its own preferences.
 
 =item I<tlsprotocols>
 
