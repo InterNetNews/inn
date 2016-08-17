@@ -77,7 +77,16 @@ ipv6_works(void)
             close(fd);
             if (server == INVALID_SOCKET) {
                 close(client);
-                if (socket_errno == EAGAIN || socket_errno == EWOULDBLOCK)
+
+                /*
+                 * Written as two separate if statements because gcc with
+                 * -Werror=logical-op warns about identical expressions, and
+                 * EAGAIN and EWOULDBLOCK are the same number on Linux (but
+                 * not on some other platforms).
+                 */
+                if (socket_errno == EAGAIN)
+                    return false;
+                if (socket_errno == EWOULDBLOCK)
                     return false;
             } else {
                 close(server);
