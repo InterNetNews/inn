@@ -17,9 +17,9 @@ static char     *tmpPtr ;
 static char	Error[SMBUF];
 static char	NGSEPS[] = NG_SEPARATOR;
 char	**OtherHeaders;
-int	OtherCount;
+size_t	        OtherCount;
 bool   HeadersModified;
-static int	OtherSize;
+static size_t   OtherSize;
 static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
@@ -185,8 +185,8 @@ NextHeader(char *p)
             q = p + 1;
             continue;
         }
-	*p = '\0';
-	return p + 1;
+        *p = '\0';
+        return p + 1;
     }
     strlcpy(Error, "Article has no body -- just headers",
             sizeof(Error));
@@ -239,7 +239,7 @@ StripOffHeaders(char *article)
 
 	/* No; add it to the set of other headers. */
 	if (hp == ARRAY_END(Table)) {
-	    if (OtherCount >= OtherSize - 1) {
+	    if (OtherCount + 1 >= OtherSize) {
 		OtherSize += HEADER_DELTA;
                 OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
 	    }
@@ -688,7 +688,8 @@ MailArticle(char *group, char *article)
     static char	CANTSEND[] = "Can't send text to mailer";
     FILE	*F;
     HEADER	*hp;
-    int		i;
+    size_t      i;
+    int         status;
     char	*address;
     char	buff[SMBUF];
 
@@ -743,10 +744,10 @@ MailArticle(char *group, char *article)
 	pclose(F);
 	return CANTSEND;
     }
-    i = pclose(F);
-    if (i) {
+    status = pclose(F);
+    if (status != 0) {
 	snprintf(Error, sizeof(Error), "Mailer exited with status %d -- %s",
-                 i, "Article might not have been mailed");
+                 status, "Article might not have been mailed");
 	return Error;
     }
     return NULL;
@@ -916,7 +917,8 @@ SpoolitTo(char *article, char *err, char *SpoolDir)
     static char	CANTSPOOL[NNTP_MAXLEN_COMMAND+2];
     HEADER *hp;
     FILE *F = NULL;
-    int	i, fd;
+    size_t i;
+    int fd;
     char *tmpspool = NULL;
     char *spoolfile = NULL;
     char *q;
@@ -1053,7 +1055,8 @@ Towire(char *p)
 const char *
 ARTpost(char *article, char *idbuff, bool *permanent)
 {
-    int		i;
+    int         i;
+    size_t      j;
     char	*p, *q;
     char	*next;
     HEADER	*hp;
@@ -1316,14 +1319,14 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 	    }
 	    free(q);
 	}
-    for (i = 0; i < OtherCount; i++) {
-	if (strchr(OtherHeaders[i], '\n') != NULL) {
-	    if ((p = Towire(OtherHeaders[i])) != NULL) {
+    for (j = 0; j < OtherCount; j++) {
+	if (strchr(OtherHeaders[j], '\n') != NULL) {
+	    if ((p = Towire(OtherHeaders[j])) != NULL) {
 		fprintf(ToServer, "%s\r\n", p);
 		free(p);
 	    }
 	} else {
-	    fprintf(ToServer, "%s\r\n", OtherHeaders[i]);
+	    fprintf(ToServer, "%s\r\n", OtherHeaders[j]);
 	}
     }
     fprintf(ToServer, "\r\n");
@@ -1397,14 +1400,14 @@ ARTpost(char *article, char *idbuff, bool *permanent)
 		}
 		free(q);
 	    }
-	for (i = 0 ; i < OtherCount ; i++) {
-	    if (strchr(OtherHeaders[i], '\n') != NULL) {
-	        if ((p = Towire(OtherHeaders[i])) != NULL) {
+	for (j = 0 ; j < OtherCount ; j++) {
+	    if (strchr(OtherHeaders[j], '\n') != NULL) {
+	        if ((p = Towire(OtherHeaders[j])) != NULL) {
 		    fprintf(ftd, "%s\r\n", p);
 		    free(p);
 	        }
 	    } else {
-	        fprintf(ftd, "%s\r\n", OtherHeaders[i]);
+	        fprintf(ftd, "%s\r\n", OtherHeaders[j]);
 	    }
 	}
 	fprintf(ftd,"\r\n");
