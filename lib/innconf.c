@@ -378,7 +378,7 @@ innconf_set_defaults(void)
     if (innconf->extraoverviewhidden == NULL)
         innconf->extraoverviewhidden = vector_new();
 
-    /* Defaults used only if TLS (SSL) is supported. */
+    /* Defaults used only if TLS/SSL is supported. */
 #ifdef HAVE_OPENSSL
     if (innconf->tlscapath == NULL)
         innconf->tlscapath = xstrdup(innconf->pathetc);

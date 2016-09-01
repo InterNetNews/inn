@@ -578,11 +578,13 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
      }
 #endif /* HAVE_OPENSSL_ECC */
 
-    if (prefer_server_ciphers) {
 #ifdef SSL_OP_CIPHER_SERVER_PREFERENCE
+    if (prefer_server_ciphers) {
         SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
-#endif
+    } else {
+        SSL_CTX_clear_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
     }
+#endif
 
     if ((tls_proto_vect != NULL) && (tls_proto_vect->count > 0)) {
         for (i = 0; i < tls_proto_vect->count; i++) {
@@ -639,7 +641,11 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     }
 
-    if (!tls_compression) {
+    if (tls_compression) {
+#ifdef SSL_OP_NO_COMPRESSION
+        SSL_CTX_clear_options(CTX, SSL_OP_NO_COMPRESSION);
+#endif
+    } else {
 #ifdef SSL_OP_NO_COMPRESSION
         /* Option implemented in OpenSSL 1.0.0. */
         SSL_CTX_set_options(CTX, SSL_OP_NO_COMPRESSION);
