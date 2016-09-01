@@ -7,7 +7,7 @@ dnl third argument are run.
 
 dnl Used to build the result cache name.
 AC_DEFUN([_INN_PROG_CC_FLAG_CACHE],
-[translit([inn_cv_compiler_c_$1], [-], [_])])
+[translit([inn_cv_compiler_c_$1], [-=], [__])])
 
 AC_DEFUN([INN_PROG_CC_FLAG],
 [AC_REQUIRE([AC_PROG_CC])

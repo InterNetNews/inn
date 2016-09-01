@@ -678,6 +678,67 @@ INN_SYS_STREAMS_SENDFD
 INN_SYS_UNIX_SOCKETS
 INN_LOG_FACILITY
 
+dnl Probes for flags recognized by the compiler when building with warnings.
+dnl Default to including all of the generally useful warnings unless there's
+dnl something that makes them unsuitable.  In particular, the following
+dnl warnings are *not* included:
+dnl
+dnl   -ansi                 Requires messing with feature test macros.
+dnl   -pedantic             Too much noise from embedded Perl.
+dnl   -Wdouble-promotion    Too much noise from using printf with floats.
+dnl   -Wswitch-default      Quite annoying to enforce it.
+dnl   -Wstrict-overflow=2   Gives false positives.
+dnl   -Wtraditional         We assume ANSI C, so these aren't interesting.
+dnl   -Wtraditional-conversion
+dnl                         Warns about problems when upgrading from K&R to
+dnl                         ANSI C, so these aren't interesting.
+dnl   -Wundef               We need portability code.
+dnl   -Wshadow              Names like log or index are too convenient.
+dnl   -Wunsafe-loop-optimizations
+dnl                         Too much noise.
+dnl   -Wcast-qual           Used for a while, but some casts are unavoidable.
+dnl   -Wconversion          Too much unsigned to signed noise.
+dnl   -Waggregate-return    Syntax allowed in C.
+dnl   -Wmissing-noreturn    Not necessary (unless for optimization).
+dnl   -Wpacked              Used by INN.
+dnl   -Wpadded              Used by INN.
+dnl   -Wredundant-decls     Too much noise from system headers.
+dnl   -Wlong-long           Too much noise from system headers.
+dnl   -Woverlength-strings  Useless noise.
+dnl
+dnl Some may be worth looking at again once a released version of gcc doesn't
+dnl warn on system headers.  The warnings below are in the same order as
+dnl they're listed in the gcc manual.
+dnl
+dnl Last checked against gcc 4.7.4 (2014-06-12).
+dnl
+dnl Add -g because when building with warnings, one generally also wants the
+dnl debugging information, and add -O2 because gcc won't find some warnings
+dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
+dnl compile all debugging code and check it as well.
+dnl
+dnl It would be worthwhile trying to enforce the following checks:
+dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
+dnl on glibc functions on Linux, as well as more object size checking,
+dnl which catches a few more issues.
+dnl -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
+dnl "-Wconversion -Wno-sign-conversion",
+dnl -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
+m4_foreach_w(
+    [flag],
+    [-g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2
+     -Winit-self -Wmissing-include-dirs
+     -Wsync-nand -Wendif-labels -Wtrampolines -Wpointer-arith
+     -Wbad-function-cast -Wcast-align -Wwrite-strings
+     -Wjump-misses-init -Wstrict-prototypes
+     -Wold-style-definition
+     -Wmissing-prototypes -Wmissing-declarations
+     -Wmissing-format-attribute
+     -Wnormalized=nfc -Wnested-externs -Winline
+     -Winvalid-pch -Wvla],
+    [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
+AC_SUBST([CC_WARNINGS])
+
 dnl Clean up our LIBS, just for grins.
 LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
