@@ -340,9 +340,31 @@ output as soon as it is possible to do so.
 If this flag is specified, an article will only be sent to this site if
 the number of groups it is posted to, plus the square of the number of
 groups followups would appear in, is no more than I<count>.  C<30> is a
-good value for this flag, allowing crossposts to up to 29 groups when
-followups are set to a single group or poster and only allowing crossposts
-to 5 groups when followups aren't set.
+good value for this flag, allowing for instance:
+
+=over 3
+
+=item *
+
+crossposts to only 5 groups when followups aren't set;
+
+=item *
+
+crossposts to up to 26 groups when followups are set to two groups;
+
+=item *
+
+crossposts to up to 29 groups when followups are set to a single group;
+
+=item *
+
+crossposts to up to 30 groups when followups are set to poster.
+
+=back
+
+Note that if an article does not contain a Followup-To: header field,
+the number of groups followups would appear in is the number of groups
+it is posted to.
 
 =item B<F> I<name>
 
