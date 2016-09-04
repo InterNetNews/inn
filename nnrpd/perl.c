@@ -97,7 +97,7 @@ HandleHeaders(char *article)
     hdr = perl_get_hv("hdr", true);
     for (hp = Table; hp < EndOfTable; hp++) {
         if (hp->Body)
-            (void) hv_store(hdr, (char *) hp->Name, strlen(hp->Name),
+            (void) hv_store(hdr, (char *) hp->Name, hp->Size,
                      newSVpv(hp->Body, 0), 0);
     }
 
