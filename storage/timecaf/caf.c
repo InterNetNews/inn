@@ -692,6 +692,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     head.High = artnum;
     head.NumSlots = tocsize;
     head.Free = 0;
+    head.LastCleaned = time(NULL);
     head.BlockSize = CAFFindOptimalBlocksize(tocsize, estcfsize);
     head.FreeZoneIndexSize = head.BlockSize - sizeof(CAFHEADER);
     head.FreeZoneTabSize = head.FreeZoneIndexSize
@@ -979,7 +980,7 @@ CAFFinishArtWrite(int fd)
     }
     tocentry.Offset = CAF_startoffset_write;
     tocentry.Size = curpos - CAF_startoffset_write;
-    tocentry.ModTime = time((time_t *)NULL);
+    tocentry.ModTime = time(NULL);
     if (OurWrite(fd, &tocentry, sizeof(CAFTOCENT)) < 0) {
 	CAF_fd_write = 0;
 	return -1;
@@ -1776,7 +1777,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* Change what we need in new file's header. */
     newhead.Low = newlow;
     newhead.High = head.High;
-    newhead.LastCleaned = time((time_t *) NULL);
+    newhead.LastCleaned = time(NULL);
 /*    newhead.NumSlots = newtocsize; */
 /*    newhead.Free = 0; */
 
