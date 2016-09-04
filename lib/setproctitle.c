@@ -35,6 +35,8 @@ setproctitle(const char *format, ...)
         delta = snprintf(title, sizeof(title), "%s: ", message_program_name);
         if (delta < 0)
             delta = 0;
+        else if ((size_t)delta >= sizeof(title))
+            delta = sizeof(title);
     }
     va_start(args, format);
     vsnprintf(title + delta, sizeof(title) - delta, format, args);
@@ -82,7 +84,7 @@ setproctitle(const char *format, ...)
        message_program_name if it's set. */
     if (message_program_name != NULL) {
         delta = snprintf(title, length, "%s: ", message_program_name);
-        if (delta < 0 || (size_t) delta > length)
+        if (delta < 0 || (size_t) delta >= length)
             return;
         if (delta > 0) {
             title += delta;
@@ -92,7 +94,7 @@ setproctitle(const char *format, ...)
     va_start(args, format);
     delta = vsnprintf(title, length, format, args);
     va_end(args);
-    if (delta < 0 || (size_t) delta > length)
+    if (delta < 0 || (size_t) delta >= length)
         return;
     if (delta > 0) {
         title += delta;

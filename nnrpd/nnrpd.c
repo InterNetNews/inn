@@ -790,6 +790,10 @@ VPrintf(const char *fmt, va_list args, int dotrace)
     ssize_t len;
 
     len = vsnprintf(buff, sizeof(buff), fmt, args);
+    if (len < 0)
+        len = 0;
+    else if ((size_t)len >= sizeof(buff))
+        len = sizeof(buff) - 1;
     write_buffer(buff, len);
 
     if (dotrace && Tracing) {

@@ -322,17 +322,35 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
 {
     struct timer *node;
     size_t off = 0;
+    int rc;
 
     /* This results in "child/parent nn(nn)" instead of the arguably more
        intuitive "parent/child" but it's easy.  Since we ensure sane snprintf 
        semantics, it's safe to defer checking for overflow until after
        formatting all of the timer data. */
-    for (node = timer; node != NULL; node = node->parent)
-        off += snprintf(buf + off, len - off, "%s/",
+    for (node = timer; node != NULL; node = node->parent) {
+        rc = snprintf(buf + off, len - off, "%s/",
                         TMRlabel(labels, node->id));
-    off--;
-    off += snprintf(buf + off, len - off, " %lu(%lu) ", timer->total,
+        if (rc < 0) {
+            /* Do nothing. */
+        } else if ((size_t)rc >= len - off) {
+            off = len;
+        } else {
+            off += rc;
+        }
+    }
+    if (off > 0)
+        off--;
+
+    rc = snprintf(buf + off, len - off, " %lu(%lu) ", timer->total,
                     timer->count);
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if ((size_t)rc >= len - off) {
+        off = len;
+    } else {
+        off += rc;
+    }
     if (off == len) {
         warn("timer log too long while processing %s",
              TMRlabel(labels, timer->id));
@@ -359,6 +377,7 @@ TMRsummary(const char *prefix, const char *const *labels)
     char *buf;
     unsigned int i;
     size_t len, off;
+    int rc;
 
     /* To find the needed buffer size, note that a 64-bit unsigned number can 
        be up to 20 digits long, so each timer can be 52 characters.  We also
@@ -369,14 +388,33 @@ TMRsummary(const char *prefix, const char *const *labels)
        buffer isn't large enough it will just result in logged errors. */
     len = 52 * timer_count + 27 + (prefix == NULL ? 0 : strlen(prefix)) + 1;
     buf = xmalloc(len);
+    off = 0;
     if (prefix == NULL)
-        off = 0;
+        rc = 0;
     else
-        off = snprintf(buf, len, "%s ", prefix);
-    off += snprintf(buf + off, len - off, "time %lu ", TMRgettime(true));
-    for (i = 0; i < timer_count; i++)
-        if (timers[i] != NULL)
+        rc = snprintf(buf, len, "%s ", prefix);
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if ((size_t)rc >= len) {
+        off = len;
+    } else {
+        off += rc;
+    }
+
+    rc = snprintf(buf + off, len - off, "time %lu ", TMRgettime(true));
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if ((size_t)rc >= len - off) {
+        off = len;
+    } else {
+        off += rc;
+    }
+
+    for (i = 0; i < timer_count; i++) {
+        if (timers[i] != NULL) {
             off += TMRsumone(labels, timers[i], buf + off, len - off);
+        }
+    }
     notice("%s", buf);
     free(buf);
 }
