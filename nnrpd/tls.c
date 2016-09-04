@@ -501,7 +501,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
       Printf("starting TLS engine");
 
 /* New functions have been introduced in OpenSSL 1.1.0. */
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#if OPENSSL_VERSION_NUMBER < 0x010100000L
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
     CTX = SSL_CTX_new(SSLv23_server_method());
@@ -582,7 +582,10 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (prefer_server_ciphers) {
         SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
     } else {
+#if OPENSSL_VERSION_NUMBER >= 0x0009080dfL
+        /* Function first added in OpenSSL 0.9.8m. */
         SSL_CTX_clear_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
+#endif
     }
 #endif
 
@@ -642,7 +645,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     }
 
     if (tls_compression) {
-#ifdef SSL_OP_NO_COMPRESSION
+#if defined(SSL_OP_NO_COMPRESSION) && OPENSSL_VERSION_NUMBER >= 0x0009080dfL
+        /* Function first added in OpenSSL 0.9.8m. */
         SSL_CTX_clear_options(CTX, SSL_OP_NO_COMPRESSION);
 #endif
     } else {
