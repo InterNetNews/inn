@@ -1096,10 +1096,13 @@ interoperate (see RFC 4642 for more details).
 
 =item I<tlscompression>
 
-Whether to enable or disable SSL/TLS-level compression support.
+Whether to enable or disable TLS/SSL-level compression support.
 This is a boolean and the default is false, that is to say compression
 is disabled, so as to follow the best current practices for a secure
 use of TLS in application protocols like NNTP.
+
+Note that enabling TLS/SSL-level compression will be possible only if
+the OpenSSL library INN has been built with, supports that feature.
 
 =item I<tlseccurve>
 
@@ -1121,7 +1124,7 @@ the server will choose following its own preferences.
 
 =item I<tlsprotocols>
 
-The list of SSL/TLS protocol versions to support.  Valid protocols are
+The list of TLS/SSL protocol versions to support.  Valid protocols are
 B<SSLv2>, B<SSLv3>, B<TLSv1>, B<TLSv1.1> and B<TLSv1.2>.  The default
 value is to only allow TLS protocols:
 

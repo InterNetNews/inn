@@ -122,9 +122,9 @@ struct innconf {
     unsigned long backoffpostslow; /* Lower time limit for slow posting */
     unsigned long backofftrigger;  /* Number of postings before triggered */
 
-    /* Reading and posting -- SSL and TLS support */
+    /* Reading and posting -- TLS/SSL support */
     /* Do not test HAVE_OPENSSL.  This relieves customers of /usr/include/inn
-     * from the need to guess whether INN was built with SSL/TLS support in
+     * from the need to guess whether INN was built with TLS/SSL support in
      * order to get a header that matches the installed libraries.
      */
     char *tlscafile;            /* Path to a certificate authority file */
