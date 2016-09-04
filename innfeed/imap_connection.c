@@ -3637,6 +3637,7 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
     int size = strlen(*out);
     int fsize = size;
     int newsize = size + 9+strlen(deliver_rcpt_to)+newrcptlen+3;
+    int rc;
     char c;
 
     /* see if we need to grow the string */
@@ -3650,7 +3651,14 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-    size += snprintf((*out) + size, newsize - size, deliver_rcpt_to, newrcpt);
+    rc = snprintf((*out) + size, newsize - size, deliver_rcpt_to, newrcpt);
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if (rc >= newsize - size) {
+        size = newsize;
+    } else {
+        size += rc;
+    }
     newrcpt[newrcptlen] = c;
 
     strlcpy((*out) + size, ">\r\n", newsize - size);
@@ -3713,6 +3721,7 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
 {
     int size = strlen(*out);
     int newsize = size + strlen(sep)+1+strlen(deliver_to_header)+newrcptlen+1;
+    int rc;
     char c;
 
     /* see if we need to grow the string */
@@ -3721,11 +3730,25 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
 	(*out) = xrealloc(*out, *outalloc);
     }
 
-    size += snprintf((*out) + size, newsize - size, "%s<", sep);
+    rc = snprintf((*out) + size, newsize - size, "%s<", sep);
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if (rc >= newsize - size) {
+        size = newsize;
+    } else {
+        size += rc;
+    }
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-    size += snprintf((*out) + size, newsize - size, deliver_to_header,newrcpt);
+    rc = snprintf((*out) + size, newsize - size, deliver_to_header,newrcpt);
+    if (rc < 0) {
+        /* Do nothing. */
+    } else if (rc >= newsize - size) {
+        size = newsize;
+    } else {
+        size += rc;
+    }
     newrcpt[newrcptlen] = c;
 
     strlcpy((*out) + size, ">", newsize - size);
