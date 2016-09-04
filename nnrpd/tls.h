@@ -22,8 +22,11 @@
 #ifndef TLS_H
 #define TLS_H
 
-/* Comment out to avoid the use of deprecated interfaces. */
-/* #define OPENSSL_API_COMPAT 0x10100000L */
+/* When building with "make warnings", ensure that INN does not
+ * use deprecated interfaces from OpenSSL. */
+#if defined(DEBUG)
+# define OPENSSL_API_COMPAT 0x010100000L
+#endif
 
 #include <openssl/lhash.h>
 #include <openssl/bn.h>
