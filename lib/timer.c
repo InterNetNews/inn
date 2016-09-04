@@ -354,7 +354,7 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
     if (off == len) {
         warn("timer log too long while processing %s",
              TMRlabel(labels, timer->id));
-        return 0;
+        return off;
     }
 
     timer->total = 0;
