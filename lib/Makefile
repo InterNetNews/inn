@@ -582,7 +582,9 @@ inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
 memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -661,7 +663,9 @@ strtok.o: strtok.c ../include/config.h ../include/inn/defines.h \
 symlink.o: symlink.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
