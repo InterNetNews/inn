@@ -11,24 +11,19 @@
 
 
 /*
-**  We currently only check the requirements for RFC 3977:
+**  Check whether the argument is a valid header field name.
+**
+**  We currently assume the maximal line length has already been checked.
+**  Only ensure the requirements for RFC 3977:
 **
 **    o  The name [of a header] consists of one or more printable
 **       US-ASCII characters other than colon.
 */
 bool
-IsValidHeaderName(const char *string)
+IsValidHeaderName(const char *p)
 {
-    const unsigned char *p;
-
-    /* Not NULL. */
-    if (string == NULL)
-        return false;
-
-    p = (const unsigned char *) string;
-   
-    /* Not empty. */
-    if (*p == '\0')
+    /* Not NULL and not empty. */
+    if (p == NULL || *p == '\0')
         return false;
 
     for (; *p != '\0'; p++) {
@@ -39,6 +34,90 @@ IsValidHeaderName(const char *string)
     }
 
     return true;
+}
+
+
+/*
+**  Check whether the argument is a valid header field body.  It starts
+**  after the space following the header field name and its colon.
+**
+**  We currently assume the maximal line length has already been checked.
+*/
+bool
+IsValidHeaderBody(const char *p)
+{
+    bool emptycontentline = true;
+
+    /* Not NULL and not empty. */
+    if (p == NULL || *p == '\0')
+        return false;
+
+    for (; *p != '\0'; p++) {
+        if (isgraph((unsigned char) *p)) {
+            /* Current header content line contains a (non-whitespace)
+             * printable char. */
+            emptycontentline = false;
+            continue;
+        } else if (ISWHITE(*p)) {
+            /* Skip SP and TAB. */
+            continue;
+        } else if (*p == '\n' || (*p == '\r' && *++p == '\n')) {
+            /* Folding detected.  We expect CRLF or lone LF as some parts
+             * of INN code internally remove CR.
+             * Check that the line that has just been processed is not
+             * "empty" and that the following character marks the beginning
+             * of a continuation line. */
+            if (emptycontentline || !ISWHITE(p[1])) {
+                return false;
+            }
+            /* A continuation line begins.  This new line should also have
+             * at least one printable octet other than SP or TAB, so we
+             * re-initialize emptycontentline to true. */
+            emptycontentline = true;
+            continue;
+        } else {
+            /* Invalid character found. */
+            return false;
+        }
+    }
+
+    return (!emptycontentline);
+}
+
+
+/*
+**  Check whether the argument is a valid header field.
+**
+**  We currently assume the maximal line length has already been checked.
+*/
+bool
+IsValidHeaderField(const char *p)
+{
+    /* Not NULL, not empty, and does not begin with a colon. */
+    if (p == NULL || *p == '\0' || *p == ':')
+        return false;
+
+    for (; *p != '\0'; p++) {
+        /* Header field names contain only printable US-ASCII characters
+         * other than colon.  A colon terminates the header field name. */
+        if (!isgraph((unsigned char) *p))
+            return false;
+        if (*p == ':') {
+            p++;
+            break;
+        }
+    }
+
+    /* Empty body or no colon found in header field. */
+    if (*p == '\0')
+        return false;
+
+    /* Missing space after colon. */
+    if (*p != ' ')
+        return false;
+
+    p++;
+    return IsValidHeaderBody(p);
 }
 
 

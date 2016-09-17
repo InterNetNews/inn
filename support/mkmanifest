@@ -279,6 +279,7 @@ tests/lib/getaddrinfo.t
 tests/lib/getnameinfo.t
 tests/lib/hash.t
 tests/lib/hashtab.t
+tests/lib/headers.t
 tests/lib/hex.t
 tests/lib/inet_aton.t
 tests/lib/inet_ntoa.t

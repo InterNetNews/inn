@@ -349,6 +349,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     const char          *error;
     pid_t               pid;
     bool		addvirtual = false;
+    int                 i;
 
     /* Get the current time, used for creating and checking dates. */
     now = time(NULL);
@@ -367,15 +368,22 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 		     "Can't set system %s: header", hp->Name);
 	    return Error;
 	}
-	if (hp->Value) {
-	    hp->Len = TrimSpaces(hp->Value);
+        if (hp->Value) {
+            hp->Len = TrimSpaces(hp->Value);
             /* If the header is empty, we just remove it.  We do not reject
              * the article, contrary to what an injecting agent is supposed
              * to do per Section 3.5 of RFC 5537.  (A revision to RFC 5537
              * may someday allow again that existing and useful feature.) */
-	    if (hp->Len == 0)
-		hp->Value = hp->Body = NULL;
-	}
+            if (hp->Len == 0) {
+                hp->Value = hp->Body = NULL;
+            } else if (!IsValidHeaderBody(hp->Value)) {
+                snprintf(Error, sizeof(Error),
+                         "Invalid syntax encountered in %s: header field "
+                         "body (unexpected byte or empty content line)",
+                         hp->Name);
+                return Error;
+            }
+        }
     }
 
     /* Set the Injection-Date: header. */
@@ -624,6 +632,16 @@ ProcessHeaders(char *idbuff, bool needmoderation)
                      "Missing required %s: header", hp->Name);
 	    return Error;
 	}
+
+    /* Check that all other header fields are valid. */
+    for (i = 0; i < OtherCount; i++) {
+        if (!IsValidHeaderField(OtherHeaders[i])) {
+            snprintf(Error, sizeof(Error),
+                     "Invalid syntax encountered in headers (unexpected "
+                     "byte, no colon-space, or empty content line)");
+            return Error;
+        }
+    }
 
     return NULL;
 }
@@ -1160,7 +1178,9 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
 
 #if defined(DO_PERL)
-    /* Calls the Perl subroutine for headers management. */
+    /* Calls the Perl subroutine for headers management.
+     * The article may be modified, and its syntax may become invalid
+     * but well... that's the news admin choice! */
     p = PERMaccessconf->nnrpdperlfilter ? HandleHeaders(article) : NULL;
     if (p != NULL) {
         char SDir[255];

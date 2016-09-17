@@ -17,6 +17,7 @@ lib/getaddrinfo
 lib/getnameinfo
 lib/hash
 lib/hashtab
+lib/headers
 lib/hex
 lib/inet_aton
 lib/inet_ntoa
