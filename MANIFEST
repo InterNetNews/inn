@@ -889,6 +889,7 @@ tests/lib/getaddrinfo-t.c             Tests for lib/getaddrinfo.c
 tests/lib/getnameinfo-t.c             Tests for lib/getnameinfo.c
 tests/lib/hash-t.c                    Tests for lib/hash.c
 tests/lib/hashtab-t.c                 Tests for lib/hashtab.c
+tests/lib/headers-t.c                 Tests for lib/headers.c
 tests/lib/hex-t.c                     Tests for lib/hex.c
 tests/lib/inet_aton-t.c               Tests for lib/inet_aton.c
 tests/lib/inet_ntoa-t.c               Tests for lib/inet_ntoa.c

@@ -93,6 +93,8 @@ extern char *           GenerateMessageID(char *domain);
 extern void             InitializeMessageIDcclass(void);
 extern bool             IsValidMessageID(const char *string, bool stripspaces);
 extern bool             IsValidHeaderName(const char *string);
+extern bool             IsValidHeaderBody(const char *string);
+extern bool             IsValidHeaderField(const char *string);
 extern const char *     skip_cfws(const char *p);
 extern const char *     skip_fws(const char *p);
 extern void             HeaderCleanFrom(char *from);

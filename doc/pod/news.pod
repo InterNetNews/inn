@@ -39,8 +39,13 @@ Thanks to Christian Mock for having discovered that.
 
 =item *
 
-If an article contains a Received: or a Posted: header field, it is no
-longer rejected by B<nnrpd>.
+Articles containing a Received: or a Posted: header field are no longer
+rejected by B<nnrpd> at injection time.
+
+=item *
+
+Articles containing control characters or whitespace-only content lines
+in their headers are now rejected by B<nnrpd> at injection time.
 
 =item *
 
