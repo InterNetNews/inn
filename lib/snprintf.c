@@ -80,6 +80,7 @@
  *  Russ Allbery <eagle@eyrie.org> 2000-08-26
  *    fixed return value to comply with C99
  *    fixed handling of snprintf(NULL, ...)
+ *    added explicit casts for double to long long int conversion
  *
  *  Hrvoje Niksic <hniksic@arsdigita.com> 2000-11-04
  *    include <stdio.h> for NULL.
@@ -613,7 +614,7 @@ static LDOUBLE abs_val (LDOUBLE value)
   return result;
 }
 
-static LDOUBLE pow10_int (int exp)
+static LLONG pow10_int (int exp)
 {
   LDOUBLE result = 1;
 
@@ -623,14 +624,14 @@ static LDOUBLE pow10_int (int exp)
     exp--;
   }
   
-  return result;
+  return (LLONG) result;
 }
 
 static LLONG round_int (LDOUBLE value)
 {
   LLONG intpart;
 
-  intpart = value;
+  intpart = (LLONG) value;
   value = value - intpart;
   if (value >= 0.5)
     intpart++;
@@ -679,7 +680,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
   if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
 #endif
 
-  intpart = ufvalue;
+  intpart = (LLONG) ufvalue;
 
   /* With %g precision is the number of significant digits, which
      includes the digits in intpart. */

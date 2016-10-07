@@ -68,7 +68,7 @@ inet_ntop(int af, const void *src, char *dst, socklen_t size)
                       (unsigned int) (p[1] & 0xff),
                       (unsigned int) (p[2] & 0xff),
                       (unsigned int) (p[3] & 0xff));
-    if (status < 0)
+    if (status < 0 || (size_t) status >= (size_t) size)
         return NULL;
     return dst;
 }

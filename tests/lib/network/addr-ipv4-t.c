@@ -130,7 +130,7 @@ main(void)
     is_addr_compare(0, "127.0.0.1", "127.0.0.1",   "33");
 
     /* Test setting various socket options. */
-    fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_IP);
+    fd = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
     if (fd == INVALID_SOCKET)
         sysbail("cannot create socket");
     network_set_reuseaddr(fd);
@@ -139,7 +139,7 @@ main(void)
     flaglen = sizeof(flag);
     is_int(0, getsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, &flaglen),
            "Getting SO_REUSEADDR works");
-    is_int(1, flag, "...and it is set");
+    ok(flag, "...and it is set");
 #else
     skip_block(2, "SO_REUSEADDR not supported");
 #endif

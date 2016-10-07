@@ -158,7 +158,7 @@ main(void)
     flaglen = sizeof(flag);
     is_int(0, getsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, &flaglen),
            "Getting SO_REUSEADDR works");
-    is_int(1, flag, "...and it is set");
+    ok(flag, "...and it is set");
 #else
     skip_block(2, "SO_REUSEADDR not supported");
 #endif
@@ -168,7 +168,7 @@ main(void)
     flaglen = sizeof(flag);
     is_int(0, getsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, &flaglen),
            "Getting IPV6_V6ONLY works");
-    is_int(1, flag, "...and it is set");
+    ok(flag, "...and it is set");
 #else
     skip_block(2, "IPV6_V6ONLY not supported");
 #endif
@@ -178,7 +178,7 @@ main(void)
     flaglen = sizeof(flag);
     is_int(0, getsockopt(fd, IPPROTO_IP, IP_FREEBIND, &flag, &flaglen),
            "Getting IP_FREEBIND works");
-    is_int(1, flag, "...and it is set");
+    ok(flag, "...and it is set");
 #else
     skip_block(2, "IP_FREEBIND not supported");
 #endif

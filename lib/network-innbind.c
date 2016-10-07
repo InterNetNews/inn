@@ -297,7 +297,7 @@ network_innbind_all(int type, unsigned short port, socket_type **fds,
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = type;
     status = snprintf(service, sizeof(service), "%hu", port);
-    if (status < 0 || (size_t) status > sizeof(service)) {
+    if (status < 0 || (size_t) status >= sizeof(service)) {
         warn("cannot convert port %hu to string", port);
         socket_set_errno_einval();
         return false;

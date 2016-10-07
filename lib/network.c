@@ -294,7 +294,7 @@ network_bind_all(int type, unsigned short port, socket_type **fds,
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = type;
     status = snprintf(service, sizeof(service), "%hu", port);
-    if (status < 0 || (size_t) status > sizeof(service)) {
+    if (status < 0 || (size_t) status >= sizeof(service)) {
         warn("cannot convert port %hu to string", port);
         socket_set_errno_einval();
         return false;
@@ -612,7 +612,7 @@ network_connect_host(const char *host, unsigned short port,
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     status = snprintf(portbuf, sizeof(portbuf), "%hu", port);
-    if (status > 0 && (size_t) status > sizeof(portbuf)) {
+    if (status > 0 && (size_t) status >= sizeof(portbuf)) {
         status = -1;
         socket_set_errno_einval();
     }

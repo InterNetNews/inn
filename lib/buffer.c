@@ -17,6 +17,7 @@
  * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011, 2012, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006
@@ -156,13 +157,13 @@ buffer_append_vsprintf(struct buffer *buffer, const char *format, va_list args)
     va_end(args_copy);
     if (status < 0)
         return;
-    if ((size_t) status + 1 <= avail) {
+    if ((size_t) status < avail) {
         buffer->left += status;
     } else {
         buffer_resize(buffer, total + status + 1);
         avail = buffer->size - total;
         status = vsnprintf(buffer->data + total, avail, format, args);
-        if (status < 0 || (size_t) status + 1 > avail)
+        if (status < 0 || (size_t) status >= avail)
             return;
         buffer->left += status;
     }
