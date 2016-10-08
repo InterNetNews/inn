@@ -53,7 +53,7 @@ my $use_syslog = 0;
 eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 
 if ($use_syslog) {
-    if ($Sys::Syslog::VERSION < 0.15) {
+    if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
         Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
     }
