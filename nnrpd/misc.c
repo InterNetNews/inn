@@ -475,7 +475,8 @@ IsValidAlgorithm(const char *string)
     for (; *p != '\0'; p++) {
         len++;
 
-        if (!isalnum((unsigned char) *p) && *p != '-' && *p != '_') {
+        if (!isupper((unsigned char) *p) && !isdigit((unsigned char) *p)
+            && *p != '-' && *p != '_') {
             return false;
         }
     }
@@ -500,7 +501,7 @@ CMDcompress(int ac, char *av[])
     /* Check the argument. */
     if (ac > 1) {
         if (!IsValidAlgorithm(av[1])) {
-            Reply("%d Syntax error in compression algorithm\r\n",
+            Reply("%d Syntax error in compression algorithm name\r\n",
                   NNTP_ERR_SYNTAX);
             return;
         }

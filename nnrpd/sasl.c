@@ -106,7 +106,7 @@ SASLauth(int ac, char *av[])
     mech = av[2];
 
     if (!IsValidAlgorithm(mech)) {
-        Reply("%d Syntax error in mechanism\r\n", NNTP_ERR_SYNTAX);
+        Reply("%d Syntax error in mechanism name\r\n", NNTP_ERR_SYNTAX);
         return;
     }
 
