@@ -2853,7 +2853,7 @@ the old spool.  It's more reliable and ensures that everything gets put
 into the right place.  The easiest way to do this is to generate, on your
 old server, a list of all of your existing article files and then feed
 that list to B<innxmit>.  Further details can be found in the FAQ at
-L<http://www.eyrie.org/~eagle/faqs/inn.html>.
+L<https://www.eyrie.org/~eagle/faqs/inn.html>.
 
 If you are using a version of Cleanfeed that still has a line in it like:
 

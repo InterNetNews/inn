@@ -7,7 +7,7 @@
 ##  This script downloads the latest version of the files maintained
 ##  in the C TAP Harness package that INN uses for its test driver suite.
 ##  These files are available at
-##  <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+##  <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
 ##
 ##  Running this script permits to keep up-to-date the INN test driver suite
 ##  by automatically fetching the latest version of the upstream files, and
@@ -17,7 +17,7 @@
 ##  if all looks right, commit the changes.
 
 ##  URL where the files can be downloaded.
-URL_START="http://git.eyrie.org/?p=devel/c-tap-harness.git;a=blob_plain;hb=HEAD;f="
+URL_START="https://git.eyrie.org/?p=devel/c-tap-harness.git;a=blob_plain;hb=HEAD;f="
 
 ##  This function downloads the files and copies them to the expected
 ##  location in the INN source code, after having performed a few minimal

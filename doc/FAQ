@@ -7,7 +7,7 @@ Organization: The Eyrie
 Expires: 35d
 
 Archive-name: usenet/software/inn2-faq
-URL: http://www.eyrie.org/~eagle/faqs/inn.html
+URL: https://www.eyrie.org/~eagle/faqs/inn.html
 Posting-frequency: monthly
 
 This FAQ is intended to answer frequently asked questions concerning the
@@ -31,7 +31,7 @@ quicker responses by posting to news.software.nntp (even, due to the
 quirky way in which I read mail and news, from me).
 
 This FAQ is posted monthly to news.software.nntp, and is available on the
-web at <http://www.eyrie.org/~eagle/faqs/inn.html>.
+web at <https://www.eyrie.org/~eagle/faqs/inn.html>.
 
 ------------------------------
 
@@ -192,7 +192,7 @@ and reading their individual man pages.
 There are HTML conversions of the documentation that comes with recent
 versions of INN available at:
 
-    <http://www.eyrie.org/~eagle/software/inn/>
+    <https://www.eyrie.org/~eagle/software/inn/>
 
 For additional documentation beyond what is distributed with INN, follow
 the links suggested in the above page.
@@ -333,7 +333,7 @@ that you have a relatively current source base to work from.  You may want
 to check out the current source from Subversion; just point a Subversion
 client at:
 
-    http://inn.eyrie.org/svn/
+    https://inn.eyrie.org/svn/
 
 This repository is a read-only mirror that can lag up to an hour behind
 the working repository.  Read the HACKING file at the top of the INN

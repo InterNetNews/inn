@@ -126,7 +126,7 @@ If you want to enable support for authenticated control messages (this is
 not required, but is highly recommended for systems carrying public Usenet
 hierarchies) then you will need to install some version of PGP.  The
 recommended version is B<GnuPG>, since it's actively developed, supports
-OpenPGP, is freely available from L<http://www.gnupg.org/> and free to use
+OpenPGP, is freely available from L<https://www.gnupg.org/> and free to use
 for any purpose (in the US and elsewhere), and (as of version 1.0.4 at
 least) supports the RSA signatures used by most current control message
 senders.
@@ -157,7 +157,7 @@ If any of these libraries (other than Perl or Python) are built shared and
 installed in locations where your system doesn't search for shared
 libraries by default, you may need to encode the paths to those shared
 libraries in the INN binaries.  For more information on shared library
-paths, see L<http://www.eyrie.org/~eagle/notes/rpath.html>.
+paths, see L<https://www.eyrie.org/~eagle/notes/rpath.html>.
 
 For most systems, setting the environment variable LD_RUN_PATH to a
 colon-separated list of additional directories in which to look for shared

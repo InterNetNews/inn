@@ -11,7 +11,7 @@ previous full release, so starting from development sources will make it
 considerably easier to integrate your work.  You can check out the current
 development tree using Subversion from:
 
-    <http://inn.eyrie.org/svn/>
+    <https://inn.eyrie.org/svn/>
 
 or view it with Trac source browser at:
 
@@ -661,7 +661,7 @@ L<"Configuring and Portability"> for details on how to update these files.
 
 Make sure that the latest upstream version of the C TAP Harness
 package is used for the test suite driver.  It is available at
-L<http://www.eyrie.org/~eagle/software/c-tap-harness/>, and can be
+L<https://www.eyrie.org/~eagle/software/c-tap-harness/>, and can be
 easily synchronized with the script F<support/getc-tap-harness>; just
 run it, have a look at the resulting changes in INN source code and,
 if everything seems all right, commit these changes.
@@ -675,7 +675,7 @@ yet been fully updated to use the new format of C TAP Harness).
 Make sure that the latest upstream version of the files
 maintained in the rra-c-util package that INN uses are the
 ones shipped with the release.  These files are available at
-L<http://www.eyrie.org/~eagle/software/rra-c-util/> and can be easily
+L<https://www.eyrie.org/~eagle/software/rra-c-util/> and can be easily
 synchronized with the script F<support/getrra-c-util>; just run it, have
 a look at the resulting changes in INN source code and, if everything
 seems all right, commit these changes.
@@ -796,7 +796,7 @@ Update the F<inn.tar.gz*> links and possibly move older releases off into
 the F<OLD> directory.
 
 (Currently, this is all done by Russ by updating the files in
-L<http://archives.eyrie.org/software/inn/> and then letting ISC mirror
+L<https://archives.eyrie.org/software/inn/> and then letting ISC mirror
 them via rsync.)
 
 Contact the ISC folks to push the release to ftp.isc.org and to update the
@@ -832,7 +832,7 @@ generation of STABLE snapshots.
 
 =item 17.
 
-Ping Russ to update L<http://www.eyrie.org/~eagle/software/inn/> with the
+Ping Russ to update L<https://www.eyrie.org/~eagle/software/inn/> with the
 latest version information and, for a major release, clone the
 documentation tree for CURRENT as a new stable documentation tree for the
 stable release series.
@@ -846,14 +846,14 @@ people working on INN:
 
 =over 4
 
-=item L<http://www.eyrie.org/~eagle/nntp/>
+=item L<https://www.eyrie.org/~eagle/nntp/>
 
 The home page for the IETF NNTP standardization effort, including links
 to the IETF NNTP working group archives and copies of the latest drafts
 of the new NNTP standard.  The old archived mailing list traffic contains
 a lot of interesting discussion of why NNTP is the way it is.
 
-=item L<http://www.eyrie.org/~eagle/usefor/>
+=item L<https://www.eyrie.org/~eagle/usefor/>
 
 A collection of documents about the Usenet article format, including
 most of the relevant RFCs and Internet-Drafts.

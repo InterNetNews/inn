@@ -4,7 +4,7 @@
 #
 [Unit]
 Description=InterNetNews Daemon
-Documentation=http://www.eyrie.org/~eagle/software/inn/
+Documentation=https://www.eyrie.org/~eagle/software/inn/
 After=syslog.target network.target
 ConditionPathExists=/etc/news/inn.conf
 
