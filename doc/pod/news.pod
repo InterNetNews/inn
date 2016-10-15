@@ -83,6 +83,10 @@ to work properly on systems that use systemd, because when it exits
 prematurely, systemd kills all of the processes it launched, including
 the B<innxmit> processes.  Thanks to Jonathan Kamens for the patch.
 
+=item *
+
+Update from GNU Libtool 2.4.2 to 2.4.6.
+
 =back
 
 =head1 Upgrading from 2.5 to 2.6
