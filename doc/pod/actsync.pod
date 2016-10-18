@@ -56,8 +56,8 @@ If either I<host> argument begins with C<.> or C</>, it is assumed to be
 the name of a file containing information in the active(5) format.  The
 getlist(1) utility may be used to obtain a copy of a remote system's F<active>
 file via its NNTP server, or an FTP client program can retrieve such a
-file from an FTP archive (such as
-L<ftp://ftp.isc.org/pub/usenet/CONFIG/active>; see more about this below).
+file from an FTP archive (such as ftp.isc.org available in both FTP and HTTPS
+L<https://ftp.isc.org/pub/usenet/CONFIG/active>; see more about this below).
 Newsgroup information from a file may be treated as if it was obtained
 from a host.  In this man page, the I<host> arguments on the command line
 are called hosts, even though they may be file names.
@@ -139,7 +139,7 @@ C<-o a1> format.
 INN comes with default values of C<ftp.isc.org> for <host> and
 C</pub/usenet/CONFIG/active.gz> for <path-to-active>.  You can read about the
 policies used for maintaining that F<active> file at
-L<ftp://ftp.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
+L<https://ftp.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
 from this file on a daily basis by using B<cron>.
 
 =head1 OPTIONS

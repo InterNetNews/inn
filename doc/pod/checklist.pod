@@ -79,8 +79,8 @@ F</usr/man> or F</usr/share/man>).
 =item *
 
 Download the INN tarball and unpack.  Make sure that you download
-the last release from L<ftp://ftp.isc.org/isc/inn/> or a snapshot
-from L<ftp://ftp.isc.org/isc/inn/snapshots/>.
+the last release from L<https://ftp.isc.org/isc/inn/> or a snapshot
+from L<https://ftp.isc.org/isc/inn/snapshots/>.
 
 =item *
 
@@ -177,10 +177,10 @@ that.
 =item *
 
 You can now import an F<active> file (I<pathdb in inn.conf>/active) and run B<inncheck>
-again.  You may want to look at L<ftp://ftp.isc.org/pub/usenet/CONFIG/active>
+again.  You may want to look at L<https://ftp.isc.org/pub/usenet/CONFIG/active>
 and only keep the lines corresponding to the newsgroups you are interested in.
 Also import a F<newsgroups> file which contains the descriptions of these
-newsgroups (see for instance L<ftp://ftp.isc.org/pub/usenet/CONFIG/newsgroups>).
+newsgroups (see for instance L<https://ftp.isc.org/pub/usenet/CONFIG/newsgroups>).
 
 Note that it is not necessary to do that now.  INN is shipped with minimal
 F<active> and F<newsgroups> files and you can add newsgroups later with
