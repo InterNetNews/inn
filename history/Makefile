@@ -105,7 +105,7 @@ his.o: his.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h hisinterface.h \
   hismethods.h
 hismethods.o: hismethods.c hisinterface.h ../include/config.h \
@@ -120,7 +120,7 @@ hisv6/hisv6.o: hisv6/hisv6.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h hisinterface.h hisv6/hisv6.h \
   hisv6/hisv6-private.h ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/libinn.h \
+  ../include/inn/options.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/dbz.h \
   ../include/inn/fdflag.h ../include/inn/portable-socket.h \
   ../include/inn/portable-getaddrinfo.h \
