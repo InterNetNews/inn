@@ -61,7 +61,7 @@
  *
  * Any bug reports, bug fixes, and improvements are very much welcome and
  * should be sent to the e-mail address below.  This program is part of C TAP
- * Harness <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ * Harness <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2000, 2001, 2004, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
  *     2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>

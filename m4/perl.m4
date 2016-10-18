@@ -17,7 +17,7 @@ dnl     Determines the flags required for embedding Perl and sets
 dnl     PERL_CPPFLAGS and PERL_LIBS.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
 dnl Copyright (c) 2006, 2009, 2011

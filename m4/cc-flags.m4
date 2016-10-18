@@ -6,7 +6,7 @@ dnl given flag.  If it does, the commands in the second argument are run.  If
 dnl not, the commands in the third argument are run.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016

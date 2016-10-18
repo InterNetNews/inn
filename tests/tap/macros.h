@@ -7,7 +7,7 @@
  * everyone can pull them in.
  *
  * This file is part of C TAP Harness.  The current version plus supporting
- * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2008, 2012, 2013, 2015 Russ Allbery <eagle@eyrie.org>
  *

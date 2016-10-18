@@ -6,7 +6,7 @@
  * because they rely on additional portability code from rra-c-util.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
- * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Copyright 2011, 2012 Russ Allbery <eagle@eyrie.org>
  *

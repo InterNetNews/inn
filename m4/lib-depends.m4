@@ -11,7 +11,7 @@ dnl This macro doesn't do much but is defined separately so that other macros
 dnl can require it with AC_REQUIRE.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2005, 2006, 2007

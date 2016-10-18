@@ -3,7 +3,7 @@
  * Floating point check function for the TAP protocol.
  *
  * This file is part of C TAP Harness.  The current version plus supporting
- * documentation is at <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Copyright 2008, 2010, 2012, 2014 Russ Allbery <eagle@eyrie.org>
  *
