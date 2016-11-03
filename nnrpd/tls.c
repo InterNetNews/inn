@@ -391,15 +391,13 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 	    return (0);
 	}
 
-        /* Check that the key file is a real file, not readable by
-         * everyone.  If the mode is 440 or 640, make sure the group owner
-         * is the news group (to prevent the failure case of having news:users
-         * as the owner and group. */
-	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0137) != 0
-            || ((buf.st_mode & 0040) != 0 && buf.st_gid != getegid())) {
+        /* Check that the key file is a real file, isn't world-readable, and
+         * that we can read it. */
+	if (!S_ISREG(buf.st_mode) || (buf.st_mode & 0007) != 0
+            || access(key_file, R_OK) < 0) {
 	    syslog(L_ERROR, "bad ownership or permissions on private key"
-                   " '%s':  private key must be mode 640 at most, and readable"
-                   " by the news group only", key_file);
+                   " '%s': private key must be a regular file, readable by"
+                   " nnrpd, and not world-readable", key_file);
 	    return (0);
 	}
 
