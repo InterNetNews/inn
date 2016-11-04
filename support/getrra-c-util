@@ -7,7 +7,7 @@
 ##  This script downloads the latest version of the files maintained
 ##  in the rra-c-util package that INN uses for most of its utility and
 ##  portability functions.  These files are available at
-##  <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+##  <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 ##
 ##  Running this script permits to keep up-to-date most of INN utility and
 ##  portability functions by automatically fetching the latest version of
@@ -18,7 +18,7 @@
 ##  if all looks right, commit the changes.
 
 ##  URL where the files can be downloaded.
-URL_START="http://git.eyrie.org/?p=devel/rra-c-util.git;a=blob_plain;hb=HEAD;f="
+URL_START="https://git.eyrie.org/?p=devel/rra-c-util.git;a=blob_plain;hb=HEAD;f="
 
 ##  This function downloads the files and copies them to the expected
 ##  location in the INN source code, after having performed a few minimal
