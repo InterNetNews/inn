@@ -3,7 +3,7 @@
  * Prototypes for write and writev replacements to handle partial writes.
  *
  * The canonical version of this file is maintained in the rra-c-util package,
- * which can be found at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+ * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Copyright 2008, 2010, 2013
  *     The Board of Trustees of the Leland Stanford Junior University

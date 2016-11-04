@@ -9,7 +9,7 @@ dnl
 dnl Depends on INN_ENABLE_REDUCED_DEPENDS.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2011, 2012

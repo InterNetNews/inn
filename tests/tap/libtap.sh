@@ -9,7 +9,7 @@
 #
 # This file provides a TAP-compatible shell function library useful for
 # writing test cases.  It is part of C TAP Harness, which can be found at
-# <http://www.eyrie.org/~eagle/software/c-tap-harness/>.
+# <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
 #
 # Written by Russ Allbery <eagle@eyrie.org>
 # Copyright 2009, 2010, 2011, 2012, 2016 Russ Allbery <eagle@eyrie.org>

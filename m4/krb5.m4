@@ -48,7 +48,7 @@ dnl Also provides INN_INCLUDES_KRB5, which are the headers to include when
 dnl probing the Kerberos library properties.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014

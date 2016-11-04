@@ -15,7 +15,7 @@ dnl
 dnl They set HAVE_C99_VAMACROS or HAVE_GNU_VAMACROS as appropriate.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2008, 2009
