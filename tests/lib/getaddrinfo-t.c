@@ -262,7 +262,7 @@ main(void)
     is_int(0, saddr->sin_port, "...port is 0");
     first = ai;
     for (found = 0; ai != NULL; ai = ai->ai_next) {
-        if (!strcmp(ai->ai_canonname, first->ai_canonname) == 0) {
+        if (strcmp(ai->ai_canonname, first->ai_canonname) != 0) {
             ok(0, "...canonname matches");
             break;
         }
