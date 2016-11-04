@@ -53,6 +53,14 @@ download ()
              -e '1 a\
 dnl \$Id\$' \
              ${TEMP}
+
+      # Remove useless function for INN.
+      if [ "$3" = "cc-flags.m4" ]
+      then
+        sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
+               -e '/dnl Determine the full set/,$d' \
+             ${TEMP}
+      fi
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
       || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
       || [ "$2" = "tests/lib/network" ] || [ "$2" = "tests/tap" ]
@@ -228,6 +236,7 @@ extern int memcmp(const void *, const void *, size_t);\\
 
 ##  Synchronize Autoconf macros from upstream.
 download m4/bdb.m4 m4 bdb.m4
+download m4/cc-flags.m4 m4 cc-flags.m4
 download m4/inet-ntoa.m4 m4 inet-ntoa.m4
 download m4/krb5-config.m4 m4 krb5-config.m4
 download m4/krb5.m4 m4 krb5.m4
