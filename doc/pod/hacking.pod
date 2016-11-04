@@ -70,13 +70,13 @@ The supporting files for B<autoconf> are in the F<support>
 subdirectory, including the files F<config.guess> and F<config.sub>
 to determine the system name and F<ltmain.sh> for libtool support.
 The latter file comes from the Debian package of Libtool, available
-from L<https://packages.debian.org/libtool> (F<ltmain.sh> is in the
-F<libltdl/config> subdirectory created after building the package
-with for instance B<debuild>); the canonical version of the former two
-are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
+from L<https://packages.debian.org/libtool> (F<ltmain.sh> is generated
+in the F<build-aux> subdirectory after building the package with
+for instance B<debuild -us -uc>); the canonical versions of the former two
+files are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
 redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
-In addition, F<m4/libtool.m4> and a few others m4 files are just a
-copy of the corresponding files in the F<libltdl/m4> subdirectory
+In addition, F<m4/libtool.m4> and a few others m4 files used by INN are
+just a copy of the corresponding files in the F<m4> subdirectory
 of the Debian package of the libtool distribution.  (Using libtool
 without using B<automake> requires a few odd hacks.)  New versions
 should be checked in periodically when available.  There are no
