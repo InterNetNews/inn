@@ -23,7 +23,7 @@ files.
 
 Nightly snapshots can be found at:
 
-    <ftp://ftp.isc.org/isc/inn/snapshots/>
+    <https://ftp.isc.org/isc/inn/snapshots/>
 
 =head1 Configuring and Portability
 
@@ -684,7 +684,7 @@ seems all right, commit these changes.
 
 Make sure that F<samples/control.ctl> and F<samples/nocem.ctl> are in sync
 with the master version at
-L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
+L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
 L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 
 =back

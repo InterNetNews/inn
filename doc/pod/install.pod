@@ -167,12 +167,12 @@ libraries before building INN will be sufficient.
 
 =head1 Unpacking the Distribution
 
-Released versions of INN are available from L<ftp://ftp.isc.org/isc/inn/>.
+Released versions of INN are available from L<https://ftp.isc.org/isc/inn/>.
 New major releases will be announced on <inn-announce@lists.isc.org> (see
 F<README>) when they're made.
 
 If you want a more cutting-edge version, you can obtain current
-snapshots from L<ftp://ftp.isc.org/isc/inn/snapshots/>.  These
+snapshots from L<https://ftp.isc.org/isc/inn/snapshots/>.  These
 are snapshots of the INN Subversion tree taken daily; there are two snapshots
 made each night (one of the current development branch, and one of the
 stable branch consisting of bug fixes to the previous major release).
@@ -1416,7 +1416,7 @@ new server based on an existing server), copy F<active> and F<newsgroups>
 from that server into I<pathdb>.  Otherwise, you'll need to figure out
 what newsgroups you want to carry and create new active and newsgroups
 files for them.  If you plan to carry a full feed, or something close to
-that, go to L<ftp://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
+that, go to L<https://ftp.isc.org/pub/usenet/CONFIG/> and download F<active>
 and F<newsgroups> from there; that will start you off with reasonably
 complete files.  If you plan to only carry a small set of groups, the
 default minimal F<active> file installed by INN is a good place to start;
@@ -1655,7 +1655,7 @@ F<control.ctl> file that processes control messages in most major public
 hierarchies; if you don't want to act on all those control messages, you
 should remove from that file all entries for hierarchies you don't want to
 carry.  The last version of that file is available from
-L<ftp://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.
+L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.
 
 You can tell INN to just authenticate control messages based on the From:
 header of the message, but this is obviously perilous and control messages
@@ -1688,7 +1688,7 @@ trust, or certify keys.  And you may afterwards do:
     cp <pathetc in inn.conf>/pgp/pubring.gpg <pathetc in inn.conf>/pgp/trustedkeys.gpg
 
 The URLs from which you can get hierarchy keys are noted in comments in
-F<control.ctl>.  L<ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
+F<control.ctl>.  L<https://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
 collect the major hierarchy keys and you can just import the whole file.
 
 If you want to make sure that the keys have been correcly imported, use:

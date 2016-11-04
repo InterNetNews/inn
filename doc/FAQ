@@ -158,7 +158,7 @@ a STABLE snapshot before September 12th, 2015 to one dated after that.
 
 Subject: 1.3. Where can I get INN?
 
-The download site for INN is <ftp://ftp.isc.org/isc/inn/>.  In that
+The download site for INN is <https://ftp.isc.org/isc/inn/>.  In that
 directory are the various releases of INN, some additional documentation
 (particularly of security holes), the original INN Usenix paper.
 
