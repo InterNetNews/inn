@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2014-06-17
+##  Last modified: 2016-01-03
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -97,6 +97,14 @@
 ##
 ##  Names used in this file that cannot be encoded in 7bit ASCII are in
 ##  UTF-8.  The only non-7bit-ASCII content is in comments.
+##
+##  Information in this file has been contributed by many different people
+##  and has been based on numerous historical revisions of this file.  A
+##  full, detailed history of contributions and copyright holders probably
+##  does not exist.  So far as the current maintainers are aware, copying
+##  and distribution of this file, with or without modification, are
+##  permitted in any medium without royalty.  This file is offered as-is,
+##  without any warranty.
 
 ## -------------------------------------------------------------------------
 ##	DEFAULT
@@ -138,6 +146,10 @@ version:*:*:log=version
 ## Default (for any group)
 newgroup:*:*:mail
 rmgroup:*:*:mail
+
+## Special reserved groups
+newgroup:*:control|general|junk|test|to:drop
+rmgroup:*:control|general|junk|test|to:drop
 
 ## A.BSU (*DEFUNCT* -- Ball State University, USA)
 # This hierarchy is defunct.  Please remove it.
@@ -629,6 +641,17 @@ checkgroups:news@newsflash.concordia.ca:concordia.*:doit
 newgroup:news@newsflash.concordia.ca:concordia.*:doit
 rmgroup:news@newsflash.concordia.ca:concordia.*:doit
 
+## CONTROL (*RESERVED* -- Special hierarchy for control messages)
+#
+# The control.* hierarchy is reserved by RFC 5536 and MUST NOT be used
+# for regular newsgroups.  It is used by some news implementations, such
+# as INN, as a local, special hierarchy that shows all control messages
+# posted to any group.
+#
+checkgroups:*:control.*:drop
+newgroup:*:control.*:drop
+rmgroup:*:control.*:drop
+
 ## COURTS (*DEFUNCT* -- Court discussion)
 # Contact: trier@ins.cwru.edu
 # This hierarchy is defunct.  Please remove it.
@@ -706,13 +729,13 @@ rmgroup:eric@*cirr.com:dfw.*:doit
 # URL: http://dictatorshandbook.net/usenet/usenetadmin.html
 # Admin group: dictator.announce
 # Key URL: http://www.dictatorshandbook.net/usenet/news-public.key
-# Key fingerprint: 5C0A 741A F931 D79A D9E9  BBB7 4406 4481 91ED C5F2
+# Key fingerprint: 6FCA 1263 3947 C2BA 9F15  998F 5B1B 7FF9 4B1A 460A
 # *PGP*   See comment at top of file.
 newgroup:*:dictator.*:drop
 rmgroup:*:dictator.*:drop
-checkgroups:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
-newgroup:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
-rmgroup:news@dictatorshandbook.net:dictator.*:verify-news@dictatorshandbook.net
+checkgroups:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
+newgroup:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
+rmgroup:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
 
 ## DK (Denmark)
 # URL: http://www.usenet.dk/dk-admin/
@@ -847,6 +870,7 @@ rmgroup:group-admin@usenet.eu.org:europa.*:verify-group-admin@usenet.eu.org
 # documents, and similar places to avoid clashes with real newsgroup
 # names.
 #
+checkgroups:*:example.*:drop
 newgroup:*:example.*:drop
 rmgroup:*:example.*:drop
 
@@ -982,6 +1006,17 @@ rmgroup:news@picard.cs.osakafu-u.ac.jp:fudai.*:doit
 # For private use only, contact the above address for information.
 newgroup:*:fur.*:mail
 rmgroup:*:fur.*:doit
+
+## GENERAL (*RESERVED* -- Sometimes used as a local catch-all)
+#
+# There is some history of using a newsgroup named general as a local
+# catch-all discussion group.  That newsgroup name and hierarchy should
+# be avoided on production servers since it may occur at many
+# disconnected sites.
+#
+checkgroups:*:general.*:drop
+newgroup:*:general.*:drop
+rmgroup:*:general.*:drop
 
 ## GER & HANNOVER & HANNET & HILDESHEIM & HISS (Hannover, Germany)
 checkgroups:fifi@hiss.han.de:ger.*|hannover.*|hannet.*|hildesheim.*|hiss.*:doit
@@ -1326,6 +1361,19 @@ checkgroups:news@linux.or.jp:jlug.*:verify-news@linux.or.jp
 newgroup:news@linux.or.jp:jlug.*:verify-news@linux.or.jp
 rmgroup:news@linux.or.jp:jlug.*:verify-news@linux.or.jp
 
+## JUNK (*RESERVED* -- Used for unwanted newsgroups)
+#
+# The junk newsgroup is reserved by RFC 5536 and MUST NOT be used.  It is
+# used by some implementations to store messages to unwanted newsgroups. 
+# The junk.* hierarchy is not reserved by RFC 5536, but it's marked
+# reserved here because, given the special meaning of the junk group,
+# using it for any other purpose would be confusing and might trigger
+# implementation bugs.
+#
+checkgroups:*:junk.*:drop
+newgroup:*:junk.*:drop
+rmgroup:*:junk.*:drop
+
 ## K12 (US Educational Network)
 # URL: http://www.k12groups.org/
 checkgroups:braultr@*csmanoirs.qc.ca:k12.*:doit
@@ -1425,6 +1473,7 @@ rmgroup:linux-admin@bofh.it:linux.*:verify-linux-admin@bofh.it
 # unconnected sites and may confuse news readers that read at multiple
 # sites.
 #
+checkgroups:*:local.*:drop
 newgroup:*:local.*:drop
 rmgroup:*:local.*:drop
 
@@ -2035,6 +2084,16 @@ rmgroup:*:planet.*:doit
 newgroup:*:prima.*:mail
 rmgroup:*:prima.*:doit
 
+## PRIVATE (*RESERVED* -- Server-local newsgroups)
+#
+# Sometimes used for groups intended to be private to a specific server.
+# It is not a good idea to use this hierarchy name on any production
+# server since they may occur on many unconnected sites.
+#
+checkgroups:*:private.*:drop
+newgroup:*:private.*:drop
+rmgroup:*:private.*:drop
+
 ## PSU (*LOCAL* -- Penn State University, USA)
 # Contact: Dave Barr (barr@math.psu.edu)
 # For local use only, contact the above address for information.
@@ -2343,6 +2402,7 @@ rmgroup:*:termvakt.*:doit
 # use this hierarchy name on any production server since they may occur
 # on many unconnected sites.
 #
+checkgroups:*:test.*:drop
 newgroup:*:test.*:drop
 rmgroup:*:test.*:drop
 
@@ -2365,6 +2425,17 @@ newgroup:netnews@news.iij.ad.jp:tnn.*:mail
 newgroup:tnn@iij-mc.co.jp:tnn.*:mail
 rmgroup:netnews@news.iij.ad.jp:tnn.*:doit
 rmgroup:tnn@iij-mc.co.jp:tnn.*:doit
+
+## TO (*RESERVED* -- Special hierarchy for UUCP point-to-point messages)
+#
+# Historically, the to.* hierarchy was used with UUCP to send special
+# control messages to a particular peer.  This usage is very obsolete,
+# but the hierarchy is still special-cased in some news software and
+# should not be used.
+#
+checkgroups:*:to.*:drop
+newgroup:*:to.*:drop
+rmgroup:*:to.*:drop
 
 ## TRIANGLE (Research Triangle, Central North Carolina, USA)
 checkgroups:jfurr@acpub.duke.edu:triangle.*:doit
