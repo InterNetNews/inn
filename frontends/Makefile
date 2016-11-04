@@ -10,6 +10,8 @@ ALL	      = bunbatch c7unbatch cnfsheadconf cnfsstat ctlinnd decode encode \
 		ovdb_init ovdb_monitor ovdb_server ovdb_stat rnews \
 		scanspool sm
 
+OPTIONAL      = feedone sys2nf
+
 MAN	      = ../doc/man/mailpost.8
 
 SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
@@ -45,7 +47,7 @@ install: all
 bootstrap: $(MAN)
 
 clean clobber distclean:
-	rm -f *.o $(ALL)
+	rm -f *.o $(ALL) $(OPTIONAL)
 	rm -rf .libs
 
 maintclean: distclean
