@@ -7,6 +7,7 @@
 #define INN_LIBINN_H 1
 
 #include <inn/defines.h>
+#include "inn/concat.h"
 #include "inn/xmalloc.h"
 #include "inn/xwrite.h"
 
@@ -75,8 +76,6 @@ extern bool     inn_lock_range(int fd, enum inn_locktype type, bool block,
 /*
 **  MISCELLANEOUS UTILITY FUNCTIONS
 */
-extern char *   concat(const char *first, ...);
-extern char *   concatpath(const char *base, const char *name);
 extern void     daemonize(const char *path);
 extern int      getfdlimit(void);
 extern int      setfdlimit(unsigned int limit);
