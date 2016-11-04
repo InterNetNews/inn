@@ -910,7 +910,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 gpgv(1), pgp(1).
 
-L<ftp://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
+L<https://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
 B<signcontrol> and B<pgpverify> live, along with PGP public keys used for
 hierarchy administration.
 

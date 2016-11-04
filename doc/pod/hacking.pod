@@ -682,6 +682,11 @@ seems all right, commit these changes.
 
 =item *
 
+Make sure that F<control/pgpverify> and F<control/signcontrol> are in
+sync with the master version at L<https://ftp.isc.org/pub/pgpcontrol/>.
+
+=item *
+
 Make sure that F<samples/control.ctl> and F<samples/nocem.ctl> are in sync
 with the master version at
 L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and

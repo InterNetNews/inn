@@ -1,7 +1,12 @@
 #! /usr/bin/perl -w
 # written April 1996, <tale@isc.org> (David C Lawrence)
 # Currently maintained by Russ Allbery <eagle@eyrie.org>
-# Version 1.8, 2003-07-06
+# Version 1.9, 2016-10-17
+#
+# Changes from 1.8 -> 1.9
+# -- Add use strict and explicitly import LOCK_EX.
+# -- Fix error reporting around lock files with PGP.
+# -- Use https for pgpcontrol URLs.
 #
 # Changes from 1.6 -> 1.8
 # -- Added support for GnuPG.
@@ -80,9 +85,9 @@ my %force;
 $force{'Path'} = 'bounce-back';
 $force{'From'} = 'YOUR_ADDRESS_AND_NAME';
 $force{'Approved'} = 'ADDRESS_FOR_Approved_HEADER';
-$force{'X-Info'}='ftp://ftp.isc.org/pub/pgpcontrol/README.html'
+$force{'X-Info'}='https://ftp.isc.org/pub/pgpcontrol/README.html'
                . "\n\t"
-               . 'ftp://ftp.isc.org/pub/pgpcontrol/README';
+               . 'https://ftp.isc.org/pub/pgpcontrol/README';
 
 # these headers are acceptable in input, or if not present then will be
 # created with the given value.  None are enabled by default, because they
