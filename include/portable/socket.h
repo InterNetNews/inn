@@ -218,10 +218,10 @@ extern int inet_aton(const char *, struct in_addr *);
 #endif
 #if !HAVE_DECL_INET_NTOA
 # if !HAVE_INET_NTOA
-extern const char *inet_ntoa(const struct in_addr)
+extern char *inet_ntoa(struct in_addr)
     __attribute__((__visibility__("hidden")));
 # else
-extern const char *inet_ntoa(const struct in_addr);
+extern char *inet_ntoa(struct in_addr);
 # endif
 #endif
 
