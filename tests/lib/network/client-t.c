@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013, 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2014, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -373,9 +373,15 @@ test_network_write(void)
     pid_t child;
     char *buffer;
 
+    /*
+     * 15MB chosen because it's larger than the default TCP buffer size of
+     * 12MB used by Debian cloud images (see https://bugs.debian.org/830353).
+     */
+    const size_t bufsize = 15 * 1024 * 1024;
+
     /* Create the data that we're going to send. */
-    buffer = bmalloc(8192 * 1024);
-    memset(buffer, 'a', 8192 * 1024);
+    buffer = bmalloc(bufsize);
+    memset(buffer, 'a', bufsize);
 
     /* Create the listening socket. */
     fd = network_bind_ipv4(SOCK_STREAM, "127.0.0.1", 11119);
@@ -401,7 +407,10 @@ test_network_write(void)
     if (c == INVALID_SOCKET)
         sysbail("cannot accept on socket");
 
-    /* Test some successful writes with and without a timeout. */
+    /*
+     * Test some successful writes with and without a timeout.  Don't send
+     * the whole giant buffer here to make the test run a bit faster.
+     */
     socket_set_errno(0);
     ok(network_write(c, buffer, 32 * 1024, 0), "network_write");
     ok(network_write(c, buffer, 32 * 1024, 1),
@@ -411,7 +420,7 @@ test_network_write(void)
      * A longer write cannot be completely absorbed before the client sleep,
      * so should fail with a timeout.
      */
-    ok(!network_write(c, buffer, 8192 * 1024, 1),
+    ok(!network_write(c, buffer, bufsize, 1),
        "network_write aborted with timeout");
     is_int(ETIMEDOUT, socket_errno, "...with correct error");
     alarm(0);

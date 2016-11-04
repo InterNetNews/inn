@@ -55,7 +55,8 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2008, 2009, 2010, 2013
+ * Copyright 2015, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2009, 2010, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006
  *     by Internet Systems Consortium, Inc. ("ISC")
@@ -239,7 +240,7 @@ message_log_syslog(int pri, size_t len, const char *fmt, va_list args, int err)
         exit(message_fatal_cleanup ? (*message_fatal_cleanup)() : 1);
     }
     status = vsnprintf(buffer, len + 1, fmt, args);
-    if (status < 0) {
+    if (status < 0 || (size_t) status >= len + 1) {
         warn("failed to format output with vsnprintf in syslog handler");
         free(buffer);
         return;
