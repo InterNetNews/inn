@@ -34,7 +34,9 @@ AC_DEFUN([INN_PROG_CC_FLAG],
  AC_MSG_CHECKING([if $CC supports $1])
  AC_CACHE_VAL([_INN_PROG_CC_FLAG_CACHE([$1])],
     [save_CFLAGS=$CFLAGS
-     CFLAGS="$CFLAGS $1"
+     AS_CASE([$1],
+        [-Wno-*], [CFLAGS="$CFLAGS `echo "$1" | sed 's/-Wno-/-W/'`"],
+        [*],      [CFLAGS="$CFLAGS $1"])
      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [int foo = 0;])],
         [_INN_PROG_CC_FLAG_CACHE([$1])=yes],
         [_INN_PROG_CC_FLAG_CACHE([$1])=no])

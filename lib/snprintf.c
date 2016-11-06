@@ -182,7 +182,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
   char *strvalue;
   int min;
   int max;
-  int state;
+  unsigned int state;
   int flags;
   int cflags;
   int total;
