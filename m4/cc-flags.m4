@@ -6,7 +6,7 @@ dnl given flag.  If it does, the commands in the second argument are run.  If
 dnl not, the commands in the third argument are run.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <http://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016
@@ -26,7 +26,7 @@ dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 dnl Used to build the result cache name.
 AC_DEFUN([_INN_PROG_CC_FLAG_CACHE],
-[translit([inn_cv_compiler_c_$1], [-], [_])])
+[translit([inn_cv_compiler_c_$1], [-=], [__])])
 
 dnl Check whether a given flag is supported by the complier.
 AC_DEFUN([INN_PROG_CC_FLAG],
@@ -34,7 +34,9 @@ AC_DEFUN([INN_PROG_CC_FLAG],
  AC_MSG_CHECKING([if $CC supports $1])
  AC_CACHE_VAL([_INN_PROG_CC_FLAG_CACHE([$1])],
     [save_CFLAGS=$CFLAGS
-     CFLAGS="$CFLAGS $1"
+     AS_CASE([$1],
+        [-Wno-*], [CFLAGS="$CFLAGS `echo "$1" | sed 's/-Wno-/-W/'`"],
+        [*],      [CFLAGS="$CFLAGS $1"])
      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [int foo = 0;])],
         [_INN_PROG_CC_FLAG_CACHE([$1])=yes],
         [_INN_PROG_CC_FLAG_CACHE([$1])=no])

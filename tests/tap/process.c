@@ -15,7 +15,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002, 2004, 2005, 2013 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004, 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -137,6 +137,8 @@ run_child_function(test_function_type function, void *data, int *status,
         count = 0;
         do {
             ret = read(fds[0], buf + count, buflen - count - 1);
+            if (SSIZE_MAX - count <= ret)
+                bail("maximum output size exceeded in run_child_function");
             if (ret > 0)
                 count += ret;
             if (count >= buflen - 1) {
@@ -144,7 +146,7 @@ run_child_function(test_function_type function, void *data, int *status,
                 buf = brealloc(buf, buflen);
             }
         } while (ret > 0);
-        buf[count < 0 ? 0 : count] = '\0';
+        buf[count] = '\0';
         if (waitpid(child, &rval, 0) == (pid_t) -1)
             sysbail("waitpid failed");
         close(fds[0]);
