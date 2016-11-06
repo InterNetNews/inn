@@ -717,6 +717,9 @@ dnl debugging information, and add -O2 because gcc won't find some warnings
 dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
 dnl compile all debugging code and check it as well.
 dnl
+dnl -Wno-unknown-warning-option is used to prevent Clang from complaining
+dnl with unknown parameters.
+dnl
 dnl It would be worthwhile trying to enforce the following checks:
 dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 dnl on glibc functions on Linux, as well as more object size checking,
@@ -735,7 +738,7 @@ m4_foreach_w(
      -Wmissing-prototypes -Wmissing-declarations
      -Wmissing-format-attribute
      -Wnormalized=nfc -Wnested-externs -Winline
-     -Winvalid-pch -Wvla],
+     -Winvalid-pch -Wvla -Wno-unknown-warning-option],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
 
