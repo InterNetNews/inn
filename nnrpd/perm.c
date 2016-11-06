@@ -15,6 +15,7 @@
 #include "inn/innconf.h"
 #include "innperl.h"
 #include "nnrpd.h"
+#include "tls.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
@@ -633,7 +634,7 @@ static void
 authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 {
     int oldtype;
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     int boolval;
 #endif
     METHOD *m;
@@ -655,7 +656,7 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 	ReportError(f, buff);
     }
 
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     if (strcasecmp(tok->name, "on") == 0
         || strcasecmp(tok->name, "true") == 0
         || strcasecmp(tok->name, "yes") == 0)
@@ -1415,7 +1416,7 @@ PERMgetinitialaccess(char *readersconf)
 #else
     PERMcanauthenticate = false;
 #endif
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     PERMcanauthenticatewithoutSSL = false;
 #endif
     PERMgroupmadeinvalid = false;

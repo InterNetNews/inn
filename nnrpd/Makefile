@@ -233,7 +233,7 @@ perm.o: perm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/timer.h
+  ../include/inn/vector.h ../include/inn/timer.h tls.h
 post.o: post.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -271,7 +271,7 @@ sasl.o: sasl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h
+  ../include/inn/history.h ../include/inn/storage.h tls.h
 tls.o: tls.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
