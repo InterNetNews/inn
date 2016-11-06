@@ -12,6 +12,7 @@
 
 /* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
+#include "tls.h"
 
 #if defined(HAVE_OPENSSL)
 extern int tls_cipher_usebits;
