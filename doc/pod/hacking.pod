@@ -720,7 +720,9 @@ as the revision numbers of scheduled versions in F<TODO>.
 
 Double-check that the version information in F<lib/Makefile>,
 F<storage/Makefile>, and F<history/Makefile> has been updated if there has
-been any change in the library sources since the previous release.
+been any change in the library sources since the previous release.  Follow
+the rules given at
+L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
 
 =item 6.
 

@@ -87,6 +87,10 @@ the B<innxmit> processes.  Thanks to Jonathan Kamens for the patch.
 
 Update from GNU Libtool 2.4.2 to 2.4.6.
 
+=item *
+
+Other minor bug fixes and documentation improvements.
+
 =back
 
 =head1 Upgrading from 2.5 to 2.6
