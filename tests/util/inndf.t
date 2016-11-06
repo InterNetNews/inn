@@ -50,9 +50,9 @@ else
 fi
 
 # Make sure df -i works, or we have to just skip this test.  Also accept a
-# return value of 2^32 - 1 from inndf regardless of what df says, since this
-# is what Reiser and some other file systems return in some versions of
-# Linux.
+# return value of 2^31 - 1 or 2^32 - 1 from inndf regardless of what df says,
+# since this is what Reiser and some other file systems return in some
+# versions of Linux.
 if df -i . > /dev/null 2>&1 ; then
     if [ -z "${UNAME_SYSTEM##IRIX[[:alnum:]]*}" ] ; then
         real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $8 }'`
@@ -64,7 +64,7 @@ if df -i . > /dev/null 2>&1 ; then
         real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $4 }'`
     fi
     try=`$inndf -i .`
-    if [ "$try" = 4294967295 ] ; then
+    if [ "$try" = 2147483647 ] || [ "$try" = 4294967295 ] ; then
         printcount "ok"
     else
         diff=`expr "$real" - "$try"`
