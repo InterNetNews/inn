@@ -1731,7 +1731,7 @@ main(int argc, char *argv[])
     if (initialize) {
 	RemoveDBZ(history);
 	gettimeofday(&start, NULL);
-	if (dbzfresh(history, dbzsize(size)) < 0) {
+	if (!dbzfresh(history, dbzsize(size))) {
 	    fprintf(stderr, "cant dbzfresh %s\n", history);
 	    exit(1);
 	}
@@ -1739,7 +1739,7 @@ main(int argc, char *argv[])
 	printf("dbzfresh: %d msec\n", timediffms(start, end));
     } else {
 	gettimeofday(&start, NULL);
-	if (dbzinit(history) < 0) {
+	if (!dbzinit(history)) {
 	    fprintf(stderr, "cant dbzinit %s\n", history);
 	    exit(1);
 	}
