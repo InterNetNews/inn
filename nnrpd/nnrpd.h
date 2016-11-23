@@ -167,7 +167,7 @@ enum timer {
 
 EXTERN bool	PERMauthorized;
 EXTERN bool     PERMcanauthenticate;
-#ifdef HAVE_OPENSSL
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
 EXTERN bool     PERMcanauthenticatewithoutSSL;
 #endif
 EXTERN bool	PERMcanpost;
