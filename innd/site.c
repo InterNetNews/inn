@@ -447,11 +447,11 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 	    buffer_append(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
 	    break;
 	case FEED_FNLNAMES:
-	    if (sp->FNLnames.data) {
+	    if (sp->FNLnames.left != 0) {
 		/* Funnel; write names of our sites that got it. */
 		if (Dirty)
 		    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-		buffer_append(bp, sp->FNLnames.data, sp->FNLnames.used);
+		buffer_append(bp, sp->FNLnames.data, sp->FNLnames.left);
 	    }
 	    else {
 		/* Not funnel; write names of all sites that got it. */
@@ -516,19 +516,17 @@ SITEsend(SITE *sp, ARTDATA *Data)
     case FTprogram:
 	/* Set up the argument vector. */
 	if (sp->FNLwantsnames) {
-	    i = strlen(sp->Param) + sp->FNLnames.used;
+	    i = strlen(sp->Param) + sp->FNLnames.left;
 	    if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
 		syslog(L_ERROR, "%s toolong need %lu for %s",
 		    sp->Name, (unsigned long) (i + (sizeof(TOKEN) * 2) + 3),
 		    sp->Name);
 		break;
 	    }
-	    temp = xmalloc(i + 1);
 	    p = strchr(sp->Param, '*');
 	    *p = '\0';
-	    strlcpy(temp, sp->Param, i + 1);
-	    strlcat(temp, sp->FNLnames.data, i + 1);
-	    strlcat(temp, &p[1], i + 1);
+	    xasprintf(&temp, "%s%.*s%s", sp->Param, (int) sp->FNLnames.left,
+		      sp->FNLnames.data, &p[1]);
 	    *p = '*';
 	    snprintf(buff, sizeof(buff), temp, Data->TokenText);
 	    free(temp);
@@ -1067,6 +1065,8 @@ SITEfree(SITE *sp)
 	free(sp->FNLnames.data);
 	sp->FNLnames.data = NULL;
 	sp->FNLnames.size = 0;
+	sp->FNLnames.left = 0;
+	sp->FNLnames.used = 0;
     }
     if (sp->HashFeedList) {
         for (hf = sp->HashFeedList; hf; hf = hn) {
