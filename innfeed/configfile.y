@@ -151,7 +151,7 @@ char *addInteger (scope *s, const char *name, long val)
   if ((error = checkName (currScope,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = intval ;
   v->v.int_val = val ;
@@ -169,7 +169,7 @@ char *addChar (scope *s, const char *name, char val)
   if ((error = checkName (currScope,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = charval ;
   v->v.char_val = val ;
@@ -187,7 +187,7 @@ char *addBoolean (scope *s, const char *name, int val)
   if ((error = checkName (currScope,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = boolval ;
   v->v.bool_val = val ;
@@ -205,7 +205,7 @@ char *addReal (scope *s, const char *name, double val)
   if ((error = checkName (currScope,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = realval ;
   v->v.real_val = val ;
@@ -223,7 +223,7 @@ char *addString (scope *s, const char *name, const char *val)
   if ((error = checkName (currScope,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = stringval ;
   v->v.charp_val = xstrdup (val) ;
@@ -404,13 +404,13 @@ static void addValue (scope *s, value *v)
     {
       if (s->values == 0)
         {
-          s->values = (value **) calloc (10,sizeof (value *)) ;
+          s->values = (value **) xcalloc (10,sizeof (value *)) ;
           s->value_count = 10 ;
         }
       else
         {
           s->value_count += 10 ;
-          s->values = (value **) realloc (s->values,
+          s->values = (value **) xrealloc (s->values,
                                           sizeof (value *) * s->value_count);
         }
     }
@@ -428,7 +428,7 @@ static char *addScope (scope *s, const char *name, scope *val)
   if ((error = checkName (s,name)) != NULL)
     return error ;
 
-  v = (value *) calloc (1,sizeof (value)) ;
+  v = (value *) xcalloc (1,sizeof (value)) ;
   v->name = xstrdup (name) ;
   v->type = scopeval ;
   v->v.scope_val = val ;
@@ -525,7 +525,7 @@ static scope *newScope (const char *type)
   scope *t ;
   int i ;
   
-  t = (scope *) calloc (1,sizeof (scope)) ;
+  t = (scope *) xcalloc (1,sizeof (scope)) ;
   t->parent = NULL ;
   t->scope_type = xstrdup (type) ;
 
