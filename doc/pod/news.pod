@@ -17,7 +17,9 @@ Julien Elie has implemented in B<nnrpd> the new COMPRESS command
 described in draft-murchison-nntp-compress that extends the NNTP protocol
 to allow a connection to be effectively and efficiently compressed.
 News clients that also support that extension will be able to benefit
-from that bandwidth optimization and improvement in speed.
+from that bandwidth optimization and improvement in speed.  Moreover,
+using COMPRESS is more secure than TLS-level compression, as far as
+authentication credentials are concerned.
 
 =item *
 
@@ -25,6 +27,12 @@ The default value for the I<tlscompression> parameter in F<inn.conf>
 has changed.  TLS-level compression is now disabled by default, to comply
 with the best current practices for a secure use of TLS in application
 protocols like NNTP.  Using the new COMPRESS command is recommended.
+
+=item *
+
+The I<tlscompression> parameter in F<inn.conf> now also permits to
+disable TLS-level compression with S<OpenSSL 0.9.8>.  It previously
+had an effect only when S<OpenSSL 1.0.0> or later was used.
 
 =item *
 
@@ -55,7 +63,7 @@ S<OpenSSL 1.1.0> support has been added to INN.
 
 When an encryption layer is negotiated during a successful use of the
 STARTTLS command, or after a successful authentication using a SASL
-mechanism which negotiates an encryption layer, B<nnrpd> now updates
+mechanism that negotiates an encryption layer, B<nnrpd> now updates
 the permissions of the news client according to the new secure state
 of his connection (that is to say auth blocks in F<readers.conf> using
 the I<require_ssl> parameter are taken into account).  Previously,
@@ -68,12 +76,6 @@ When a data integrity layer was negotiated during a successful SASL
 authentication, B<nnrpd> was wrongly reseting any knowledge obtained
 from the client, such as the current newsgroup and article number.
 This behaviour now applies only when an encryption layer is negotiated.
-
-=item *
-
-The I<tlscompression> parameter in F<inn.conf> now also permits to
-disable TLS-level compression with S<OpenSSL 0.9.8>.  It previously
-had an effect only when S<OpenSSL 1.0.0> or later was used.
 
 =item *
 
