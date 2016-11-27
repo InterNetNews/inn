@@ -217,6 +217,7 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
     else {
         ai->ai_canonname = strdup(canonical);
         if (ai->ai_canonname == NULL) {
+            /* sin will be freed by freeaddrinfo. */
             freeaddrinfo(ai);
             return NULL;
         }

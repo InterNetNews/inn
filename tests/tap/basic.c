@@ -539,6 +539,32 @@ new_skip_block(unsigned long count, const char *reason, ...)
 
 
 /*
+ * Takes an expected boolean value and a seen boolean value and assumes the
+ * test passes if the truth value of both match.
+ */
+int
+is_bool(int wanted, int seen, const char *format, ...)
+{
+    int success;
+
+    fflush(stderr);
+    check_diag_files();
+    success = (!!wanted == !!seen);
+    if (success)
+        printf("ok %lu", testnum++);
+    else {
+        diag("wanted: %s", !!wanted ? "true" : "false");
+        diag("  seen: %s", !!seen ? "true" : "false");
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    PRINT_DESC(" - ", format);
+    putchar('\n');
+    return success;
+}
+
+
+/*
  * Takes an expected integer and a seen integer and assumes the test passes
  * if those two numbers match.
  */

@@ -116,8 +116,12 @@ void skip_block(unsigned long count, const char *reason, ...)
 
 /*
  * Check an expected value against a seen value.  Returns true if the test
- * passes and false if it fails.
+ * passes and false if it fails.  is_bool takes an int since the bool type
+ * isn't fully portable yet, but interprets both arguments for their truth
+ * value, not for their numeric value.
  */
+int is_bool(int wanted, int seen, const char *format, ...)
+    __attribute__((__format__(printf, 3, 4)));
 int is_int(long wanted, long seen, const char *format, ...)
     __attribute__((__format__(printf, 3, 4)));
 int is_string(const char *wanted, const char *seen, const char *format, ...)
