@@ -1,6 +1,6 @@
 /*  $Id$
 **
-**  COMPRESS functionality.
+**  COMPRESS functionality.  RFC 8054.
 */
 
 #include "config.h"

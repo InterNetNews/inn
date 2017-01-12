@@ -240,8 +240,9 @@ suite is discovered.
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in S<RFC 3977> (NNTP),
-S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication) and S<RFC 6048>
-(NNTP LIST additions) with the following differences:
+S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication), S<RFC 6048>
+(NNTP LIST additions) and S<RFC 8054> (NNTP compression) with the
+following differences:
 
 =over 4
 
