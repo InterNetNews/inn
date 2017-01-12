@@ -113,8 +113,9 @@ The README that comes with INN has this to say (in part):
     flexible and configurable Usenet / Netnews news server.  For a complete
     description of the protocols behind Usenet and Netnews, see RFC 3977
     (NNTP), RFC 4642 (TLS/NNTP), RFC 4643 (NNTP authentication), RFC 4644
-    (streaming NNTP feeds), RFC 5536 (USEFOR), RFC 5537 (USEPRO) and RFC
-    6048 (NNTP LIST additions) or their replacements.
+    (streaming NNTP feeds), RFC 5536 (USEFOR), RFC 5537 (USEPRO),
+    RFC 6048 (NNTP LIST additions) and RFC 8054 (NNTP compression) or their
+    replacements.
 
     In brief, Netnews is a set of protocols for exchanging messages between
     a decentralized network of news servers.  News articles are organized

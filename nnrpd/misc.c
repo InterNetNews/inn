@@ -491,7 +491,7 @@ IsValidAlgorithm(const char *string)
 
 #if defined(HAVE_ZLIB)
 /*
-**  The COMPRESS command.
+**  The COMPRESS command.  RFC 8054.
 */
 void
 CMDcompress(int ac, char *av[])
