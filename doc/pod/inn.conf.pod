@@ -1089,17 +1089,12 @@ The string describing the cipher suites OpenSSL will support.  See
 OpenSSL's ciphers(1) command documentation for details.  The default
 is unset, which uses OpenSSL's default cipher suite list.
 
-Formally, keeping the TLS_RSA_WITH_RC4_128_MD5 and
-TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA cipher suites is important, as it
-assures that any two compliant implementations can be configured to
-interoperate (see RFC 4642 for more details).
-
 =item I<tlscompression>
 
 Whether to enable or disable TLS/SSL-level compression support.
 This is a boolean and the default is false, that is to say compression
 is disabled, so as to follow the best current practices for a secure
-use of TLS in application protocols like NNTP.
+use of TLS in application protocols (see S<RFC 8143> for NNTP).
 
 Note that enabling TLS/SSL-level compression will be possible only if
 the OpenSSL library INN has been built with, supports that feature.

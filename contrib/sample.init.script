@@ -13,8 +13,6 @@ start () {
     # Start INN.
     su news -s /bin/sh -c '<pathbin>/rc.news' >> <pathlog>/rc.news 2>&1
     # Start another nnrpd daemon, handling initial TLS connections, on port 563.
-    # (The preferred way would be to use port 119 and STARTTLS but not all news
-    # readers support it yet.)
     #su news -s /bin/sh -c '<pathbin>/nnrpd -D -p 563 -S' >> <pathlog>/rc.news 2>&1
 }
 
