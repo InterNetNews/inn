@@ -31,6 +31,9 @@ bool		ThrottledbyIOError = false;
 
 static char	*PID = NULL;
 
+/* Default values for the syntaxchecks parameter in inn.conf. */
+bool laxmid = false;
+
 /* Signal handling.  If we receive a signal that should kill the server,
    killer_signal is set to the signal number that we received.  This isn't
    what indicates that we should terminate; that's the separate global
@@ -351,6 +354,7 @@ main(int ac, char *av[])
     bool flag;
     static char		WHEN[] = "PID file";
     int			i;
+    size_t              j;
     char		buff[SMBUF];
     FILE		*F;
     bool		ShouldFork;
@@ -526,6 +530,24 @@ main(int ac, char *av[])
 	    exit(0);
 	fprintf(stderr, "%s\n", p + 2);
 	exit(1);
+    }
+
+    /* Initialize the checks to perform or not on article syntax. */
+    if ((innconf->syntaxchecks != NULL) && (innconf->syntaxchecks->count > 0)) {
+        for (j = 0; j < innconf->syntaxchecks->count; j++) {
+            if (innconf->syntaxchecks->strings[j] != NULL) {
+                if (strcmp(innconf->syntaxchecks->strings[j], "laxmid") == 0) {
+                    laxmid = true;
+                } else if (strcmp(innconf->syntaxchecks->strings[j],
+                                  "no-laxmid") == 0) {
+                    laxmid = false;
+                } else {
+                    syslog(L_NOTICE, "Unknown \"%s\" value in syntaxchecks "
+                           "parameter in inn.conf",
+                           innconf->syntaxchecks->strings[j]);
+                }
+            }
+        }
     }
 
     /* Get the Path entry. */

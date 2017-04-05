@@ -97,7 +97,8 @@ cc.o: cc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/inndcomm.h ../include/innperl.h
+  ../include/inn/options.h ../include/inn/vector.h \
+  ../include/inn/inndcomm.h ../include/innperl.h
 chan.o: chan.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -111,7 +112,8 @@ chan.o: chan.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h
 icd.o: icd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -127,7 +129,7 @@ icd.o: icd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/vector.h ../include/inn/ov.h ../include/inn/storage.h
 innd.o: innd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -140,8 +142,8 @@ innd.o: innd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/buffer.h ../include/inn/history.h ../include/inn/timer.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
-  ../include/inn/storage.h
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h ../include/inn/ov.h ../include/inn/storage.h
 keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -154,7 +156,8 @@ keywords.o: keywords.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h
 lc.o: lc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -167,7 +170,8 @@ lc.o: lc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/portable/socket-unix.h
+  ../include/inn/options.h ../include/inn/vector.h \
+  ../include/portable/socket-unix.h
 nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -181,7 +185,7 @@ nc.o: nc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/options.h ../include/inn/vector.h
 newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -194,7 +198,7 @@ newsfeeds.o: newsfeeds.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/options.h ../include/inn/vector.h
 ng.o: ng.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -207,7 +211,8 @@ ng.o: ng.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/options.h ../include/inn/vector.h ../include/inn/ov.h \
+  ../include/inn/storage.h
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -220,7 +225,7 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h \
+  ../include/inn/options.h ../include/inn/vector.h \
   ../include/ppport.h \
   ../include/innperl.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
@@ -234,7 +239,8 @@ proc.o: proc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h
 python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -247,7 +253,8 @@ python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -276,7 +283,7 @@ site.o: site.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/options.h ../include/inn/vector.h
 status.o: status.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -291,7 +298,7 @@ status.o: status.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/innperl.h
+  ../include/inn/vector.h ../include/innperl.h
 util.o: util.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -305,7 +312,8 @@ util.o: util.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket.h ../include/inn/buffer.h \
   ../include/inn/history.h ../include/inn/messages.h \
   ../include/inn/timer.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h
 wip.o: wip.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -318,7 +326,7 @@ wip.o: wip.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/options.h ../include/inn/vector.h
 tinyleaf.o: tinyleaf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

@@ -126,6 +126,7 @@ const struct config config_table[] = {
     { K(server),                  STRING  (NULL) },
     { K(sourceaddress),           STRING  (NULL) },
     { K(sourceaddress6),          STRING  (NULL) },
+    { K(syntaxchecks),            LIST    (NULL) },
     { K(timer),                   UNUMBER  (600) },
 
     { K(runasuser),               STRING  (RUNASUSER) },

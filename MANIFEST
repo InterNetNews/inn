@@ -899,6 +899,7 @@ tests/lib/innconf-t.c                 Tests for lib/innconf.c
 tests/lib/list-t.c                    Tests for lib/list.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
 tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
+tests/lib/messageid-t.c               Tests for lib/messageid.c
 tests/lib/messages-t.c                Tests for lib/messages.c
 tests/lib/mkstemp-t.c                 Tests for lib/mkstemp.c
 tests/lib/network                     Test suite for network (Directory)

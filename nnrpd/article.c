@@ -20,6 +20,7 @@
 #include "tls.h"
 #include "cache.h"
 
+extern bool laxmid;
 #ifdef HAVE_OPENSSL
 extern SSL *tls_conn;
 #endif 
@@ -636,7 +637,7 @@ CMDfetch(int ac, char *av[])
     ARTNUM		tart;
     bool                final = false;
 
-    mid = (ac > 1 && IsValidMessageID(av[1], true));
+    mid = (ac > 1 && IsValidMessageID(av[1], true, laxmid));
 
     /* Check the syntax of the arguments first. */
     if (ac > 1 && !IsValidArticleNumber(av[1])) {
@@ -931,7 +932,7 @@ CMDover(int ac, char *av[])
     bool                xover, mid;
 
     xover = (strcasecmp(av[0], "XOVER") == 0);
-    mid = (ac > 1 && IsValidMessageID(av[1], true));
+    mid = (ac > 1 && IsValidMessageID(av[1], true, laxmid));
 
     if (mid && !xover) {
         /* FIXME:  We still do not support OVER MSGID, sorry! */
@@ -1151,7 +1152,7 @@ CMDpat(int ac, char *av[])
     bool                hdr, mid;
 
     hdr = (strcasecmp(av[0], "HDR") == 0);
-    mid = (ac > 2 && IsValidMessageID(av[2], true));
+    mid = (ac > 2 && IsValidMessageID(av[2], true, laxmid));
 
     /* Check the syntax of the arguments first. */
     if (ac > 2 && !IsValidRange(av[2])) {

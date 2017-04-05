@@ -23,6 +23,7 @@ static size_t   OtherSize;
 static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
+extern bool laxmid;
 
 /*
 **  Do not modify the table without also looking at post.h for potential
@@ -459,7 +460,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     if (HDR(HDR__MESSAGEID) == NULL) {
 	HDR_SET(HDR__MESSAGEID, idbuff);
     }
-    if (!IsValidMessageID(HDR(HDR__MESSAGEID), true)) {
+    if (!IsValidMessageID(HDR(HDR__MESSAGEID), true, laxmid)) {
         return "Can't parse Message-ID: header";
     }
 

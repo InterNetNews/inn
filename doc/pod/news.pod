@@ -1,3 +1,22 @@
+=head1 Changes in 2.6.2
+
+=over 2
+
+=item *
+
+A new I<syntaxchecks> parameter has been added in F<inn.conf>.
+It permits to control the level of checks performed by B<innd> and
+B<nnrpd>.  Up to now, only one check can be enabled/disabled:  when
+I<laxmid> is mentioned in the values of this new parameter, INN accepts
+Message-IDs that contain C<..> in the left part, as well as Message-IDs
+with two C<@> (such Message-IDs would otherwise be considered as
+syntactically invalid).  See the inn.conf(5) man page for more details.
+
+The default value (I<no-laxmid>) corresponds to the legacy behaviour
+(the one of S<INN 2.6.1> and earlier).
+
+=back
+
 =head1 Changes in 2.6.1
 
 =over 2

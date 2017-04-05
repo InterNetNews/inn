@@ -16,7 +16,7 @@
 **  This structure is organized in the same order as the variables contained
 **  in it are mentioned in the inn.conf documentation, and broken down into
 **  the same sections.  Note that due to the implementation, only three types
-**  of variables are permissible here:  char *, bool, struc vector *, long
+**  of variables are permissible here:  char *, bool, struct vector *, long
 **  and unsigned long.
 */
 struct innconf {
@@ -26,9 +26,10 @@ struct innconf {
     char *mailcmd;              /* Command to send report/control type mail */
     char *mta;                  /* MTA for mailing to moderators, innmail */
     char *pathhost;             /* Entry for the Path: line */
-    char *server;               /* Default server to connect to */
     char *runasuser;            /* User to run under */
     char *runasgroup;           /* Group to run under */
+    char *server;               /* Default server to connect to */
+    struct vector *syntaxchecks; /* List of syntax checks to perform or not */
 
     /* Feed Configuration */
     unsigned long artcutoff;    /* Max accepted article age */
@@ -161,8 +162,8 @@ struct innconf {
     bool logtrash;              /* Log unwanted newsgroups? */
     bool nnrpdoverstats;        /* Log overview statistics? */
     bool nntplinklog;           /* Put storage token into the log? */
-    unsigned long status;       /* Status file update interval */
     char *stathist;             /* Filename for history profiler outputs */
+    unsigned long status;       /* Status file update interval */
     unsigned long timer;        /* Performance monitoring interval */
 
     /* System Tuning */

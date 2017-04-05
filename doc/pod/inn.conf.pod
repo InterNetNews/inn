@@ -130,6 +130,30 @@ server to connect to.  In the latter cases, the value of the NNTPSERVER
 environment variable, if it exists, overrides this.  The default value is
 unset.
 
+=item I<syntaxchecks>
+
+A list of values controlling the level of checks performed by B<innd>
+and B<nnrpd>.  For instance:
+
+    syntaxchecks: [ no-laxmid ]
+
+The last occurrence of a given value takes precedence, that is to say
+if C<no-laxmid laxmid> is listed, I<laxmid> takes precedence.
+
+Only one check can currently be enabled/disabled:
+
+=over 4
+
+=item I<laxmid> / I<no-laxmid>
+
+When I<laxmid> is set, Message-IDs containing C<..> in the left part
+are accepted, as well as Message-IDs with two C<@>.  Some non-compliant
+news posters generate such syntactically invalid Message-IDs, especially
+in binary newsgroups.  The default is I<no-laxmid>, that is to say INN
+strictly follows the standard regarding syntax checks.
+
+=back
+
 =back
 
 =head2 Feed Configuration

@@ -101,6 +101,9 @@ static const char 	*HostErrorStr;
 bool GetHostByAddr = true;      /* Formerly DO_NNRP_GETHOSTBYADDR. */
 const char *NNRPinstance = "";
 
+/* Default values for the syntaxchecks parameter in inn.conf. */
+bool laxmid = false;
+
 #ifdef DO_PERL
 bool   PerlLoaded = false;
 #endif
@@ -1100,6 +1103,23 @@ main(int argc, char *argv[])
     else
         NNRPACCESS = concatpath(innconf->pathetc,INN_PATH_NNRPACCESS);
 
+    /* Initialize the checks to perform or not on article syntax. */
+    if ((innconf->syntaxchecks != NULL) && (innconf->syntaxchecks->count > 0)) {
+        for (j = 0; j < innconf->syntaxchecks->count; j++) {
+            if (innconf->syntaxchecks->strings[j] != NULL) {
+                if (strcmp(innconf->syntaxchecks->strings[j], "laxmid") == 0) {
+                    laxmid = true;
+                } else if (strcmp(innconf->syntaxchecks->strings[j], 
+                                  "no-laxmid") == 0) {
+                    laxmid = false;
+                } else {
+                    syslog(L_NOTICE, "Unknown \"%s\" value in syntaxchecks "
+                           "parameter in inn.conf",
+                           innconf->syntaxchecks->strings[j]);
+                }
+            }
+        }
+    }
 
     if (DaemonMode) {
         /* Allocate an lfds array to hold the file descriptors
