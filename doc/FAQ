@@ -1107,12 +1107,19 @@ articles older than artcutoff in inn.conf) and disable your filtering:
 
 You may also want to set xrefslave to true in inn.conf and then restart
 INN on the new server if you want to keep the same article numbers as you
-had on the old server.
+had on the old server.  (It is notably helpful for news clients because
+they otherwise get confused by an article renumbering in newsgroups they
+are subscribed to.)
 
 Next, make sure that the old server is listed in incoming.conf of the new
 server, and reload incoming.conf with ctlinnd to pick up that change.
 Also make sure that the new server carries exactly the same set of
 newsgroups as the old server.
+
+You may also want the new server not to propagate the articles it will
+receive during this feeding operation, by checking that the newsfeeds
+file of the new server is not configured to propagate articles to other
+peers or controlchan (otherwise old control articles may be reprocessed).
 
 Then try these commands (a variation on commands posted by Katsuhiro
 Kondou to inn-workers) on the old server:
@@ -1146,6 +1153,9 @@ can then be used to retrieve a subset of articles to feed:
             and $arrived <= 1397644620' history \
         | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
+
+If innxmit stops transferring articles (with for instance an error like
+"rewriting batch file and exiting"), just re-execute it.
 
 When done, set xrefslave to false in inn.conf again if you changed it and
 then either restart INN on the new server (necessary if you changed
