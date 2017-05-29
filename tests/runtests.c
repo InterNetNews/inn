@@ -546,6 +546,7 @@ test_start(const char *path, int *fd)
         /* Now, exec our process. */
         if (execl(path, path, (char *) 0) == -1)
             _exit(CHILDERR_EXEC);
+        break;
 
     /* In parent.  Close the extra file descriptor. */
     default:
