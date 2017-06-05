@@ -336,10 +336,10 @@ to NNTPS port 563 and put something like that in your init scripts:
 
     su news -s /bin/sh -c '<pathbin>/nnrpd -D -c <pathetc>/readers-ssl.conf -p 563 -S'
 
-Note that a news client which supports the STARTTLS command can also
-use the conventional NNTP port 119 to initiate a TLS connection.
-However, as such clients are not widespread yet, using the separate
-port 563 is still common practice (though discouraged).  See nnrpd(8)
+Note that a news client which supports the STARTTLS command can also use
+the conventional NNTP port 119 to dynamically upgrade from unencrypted
+to TLS-protected traffic during an NNTP session.  However, this practice
+is discouraged in favour of using the separate port 563.  See nnrpd(8)
 for more information about TLS support.
 
 =back

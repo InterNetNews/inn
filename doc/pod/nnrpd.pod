@@ -208,14 +208,12 @@ In case you have a certificate authority root certificate, you can also
 set I<tlscafile> to its path.
 
 There are two common ways for a news client to negotiate a TLS
-connection:  either via the use of the STARTTLS command on the usual NNTP
-port (119) or via the now discouraged way (per RFC 4642) to immediately
-negotiate an encrypted session upon connection on a dedicated port
-(usually 563).  As most news clients currently do not use the STARTTLS
-command, and instead expect to connect to a separate port (563) and start
-a TLS negotiation immediately, it is still useful to provide a legacy
-way for these news clients to encrypt the NNTP session.  B<innd> does
-not, however, know how to listen for connections to that separate port.
+connection:  either via the use of a dedicated port (usually 563)
+on which TLS is immediately negotiated upon connection, or via the
+now discouraged way (per S<RFC 8143>) to use the STARTTLS command on
+the usual NNTP port (119) to dynamically upgrade from unencrypted
+to TLS-protected traffic during an NNTP session.  B<innd> does not,
+however, know how to listen for connections to that separate port (563).
 You will therefore need to arrange for B<nnrpd> to listen on that port
 through some other means.  This can be done with the B<-D> flag along
 with C<-p 563> and put into your init scripts:
@@ -240,9 +238,9 @@ suite is discovered.
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in S<RFC 3977> (NNTP),
-S<RFC 4642> (TLS/NNTP), S<RFC 4643> (NNTP authentication), S<RFC 6048>
-(NNTP LIST additions) and S<RFC 8054> (NNTP compression) with the
-following differences:
+S<RFC 4642> updated by S<RFC 8143> (TLS/NNTP), S<RFC 4643> (NNTP
+authentication), S<RFC 6048> (NNTP LIST additions) and S<RFC 8054>
+(NNTP compression) with the following differences:
 
 =over 4
 
