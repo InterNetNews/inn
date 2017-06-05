@@ -36,6 +36,8 @@
 
 #define MAX_SIZE	0x7fffffffUL
 
+static void Usage(void) __attribute__ ((__noreturn__));
+
 
 /*
 **  Open a safe unique temporary file that will go away when closed.

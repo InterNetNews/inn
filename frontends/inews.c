@@ -64,6 +64,8 @@ static const char * const BadDistribs[] = {
     BAD_DISTRIBS
 };
 
+static void Usage(void) __attribute__ ((__noreturn__));
+
 static HEADER	Table[] = {
     /* 	Name			Canset	Type	*/
     {	"Path",			true,	HTstd,  0, NULL },

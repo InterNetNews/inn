@@ -112,6 +112,9 @@ static COMMAND	Commands[] = {
 };
 
 
+static void Usage(const char *) __attribute__ ((__noreturn__));
+static void WrongArgs(COMMAND *) __attribute__ ((__noreturn__));
+
 
 /*
 **  Print a help summary.

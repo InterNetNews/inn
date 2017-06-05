@@ -43,6 +43,7 @@ extern SSL *tls_conn;
 bool encryption_layer_on = false;
 #endif 
 
+static void Usage(void) __attribute__ ((__noreturn__));
 
 /*
 **  If we have getloadavg, include the appropriate header file.  Otherwise,

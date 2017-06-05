@@ -18,6 +18,7 @@
 
 static bool BinaryLock;
 static bool JustChecking;
+static void Usage(void) __attribute__ ((__noreturn__));
 
 #define CANTUNLINK "shlock: Can't unlink \"%s\", %s"
 #define CANTOPEN "shlock: Can't open \"%s\", %s"

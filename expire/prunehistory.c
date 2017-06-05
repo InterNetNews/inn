@@ -14,6 +14,7 @@
 #include "inn/libinn.h"
 #include "inn/paths.h"
 
+static void Usage(void) __attribute__ ((__noreturn__));
 
 /*
 **  Print usage message and exit.

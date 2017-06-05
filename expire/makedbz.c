@@ -26,6 +26,8 @@ char *TextFile = NULL;
 char *HistoryDir = NULL;
 char *HISTORY = NULL;
 
+static void Usage(void) __attribute__ ((__noreturn__));
+
 /*
 **  Remove the DBZ files for the specified base text file.
 */

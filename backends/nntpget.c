@@ -55,6 +55,12 @@ static unsigned long	STATrejected;
 static struct history	*History;
 
 
+/*
+**  Prototypes.
+*/
+static void             Usage(const char *) __attribute__ ((__noreturn__));
+
+
 
 /*
 **  Read a line of input, with timeout.

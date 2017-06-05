@@ -1634,7 +1634,7 @@ void hostChkCxns(TimeoutId tid UNUSED, void *data) {
 	 * and concentrate on queue sizes
 	 */
         ratio = percentTaken * percentTaken;
-	/* nobreak; */
+	/* fallthrough */
       case METHOD_QUEUE:
         /* backlogFilter is an IIR filtered version of the backlogRatio.
 	 */
