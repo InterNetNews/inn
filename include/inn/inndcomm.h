@@ -25,6 +25,8 @@ typedef char ICC_PROTOCOLTYPE ;
 #define SC_SEP		'\001'
 #define SC_MAXFIELDS	6
 
+/* When modifying this list, the innreport_inn.pm file should be updated
+ * at the same time. */
 #define SC_ADDHIST	'a'
 #define SC_ALLOW	'D'
 #define SC_BEGIN	'b'
