@@ -87,7 +87,8 @@ cnfs_explaintoken(const TOKEN token)
     uint32_t            block;
     uint32_t            cycnum;
 
-    snprintf(cycbuffname, sizeof(cycbuffname), "%s", token.token);
+    snprintf(cycbuffname, sizeof(cycbuffname), "%.*s",
+             (int) sizeof(cycbuffname)-1, token.token);
 
     if ((cycbuff = CNFSgetcycbuffbyname(cycbuffname)) == NULL) {
         blksz = CNFS_DFL_BLOCKSIZE;

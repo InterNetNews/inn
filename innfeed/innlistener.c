@@ -669,7 +669,8 @@ static void giveArticleToPeer (InnListener lis,
 
 static void writeCheckPoint (int offsetAdjust)
 {
-  char offsetString[16], *writePointer ;
+  char offsetString[21]; /* size of long long may be 20 */
+  char *writePointer;
   off_t offset ;
   int writeBytes, writeReturn, mainFd ;
 	      

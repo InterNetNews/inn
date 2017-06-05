@@ -3473,7 +3473,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
   double size;
   char *tsize;
-  char buf[]="1234.1 MB";
+  char buf[]="1.23e+5 TB"; /* usual length is shorter, like "12.3 MB" */
 
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
@@ -3580,12 +3580,12 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   (double) host->gCxnQueue / (host->gArtsOffered ? host->gArtsOffered :1) ,
 	   100.0 * host->blFull / cnt) ;
   size=convsize(host->gArtsSizeAccepted, &tsize);
-  snprintf(buf,sizeof(buf),"%.3g %s", size, tsize);
+  snprintf(buf, sizeof(buf), "%.3g %s", size, tsize);
   fprintf (fp, "accpt size: %-8s drop-deferred: %-5s   defer length: %-3.1f\n",
 	   buf, host->params->dropDeferred ? "true " : "false",
            (double)host->dlAccum / cnt) ;
   size=convsize(host->gArtsSizeRejected, &tsize);
-  snprintf(buf,sizeof(buf),"%.3g %s", size, tsize);
+  snprintf(buf, sizeof(buf), "%.3g %s", size, tsize);
   fprintf (fp, "rejct size: %-8s min-queue-cxn: %s\n",
 	   buf, host->params->minQueueCxn ? "true " : "false");
 
