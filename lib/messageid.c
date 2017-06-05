@@ -52,6 +52,8 @@ GenerateMessageID(char *domain)
 
 /*
 **  Initialize the character class tables.
+**  See Section 3.2.3 of RFC 5322 (atext) and Section 3.1.3 of RFC 5536
+**  (mdtext).
 */
 void
 InitializeMessageIDcclass(void)
@@ -62,12 +64,12 @@ InitializeMessageIDcclass(void)
     /* Set up the character class tables.  These are written a
      * little strangely to work around a GCC2.0 bug. */
     memset(midcclass, 0, sizeof(midcclass));
-        
+
     p = (const unsigned char*) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     while ((i = *p++) != 0) {
         midcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
     }
-      
+
     p = (const unsigned char*) "!#$%&'*+-/=?^_`{|}~";
     while ((i = *p++) != 0) {
         midcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
@@ -98,11 +100,18 @@ InitializeMessageIDcclass(void)
 **  in <#*tyo2'~n@twinsun.com>, with additional e-mail discussion.
 **  Thanks, Paul, for the original implementation based upon RFC 1036.
 **  Updated to RFC 5536 by Julien Elie.
+**
+**  When stripspaces is true, whitespace at the beginning and at the end
+**  of MessageID are discarded.
+**
+**  When laxsyntax is true, '@' can occur twice in MessageID, and '..' is
+**  also accepted in the left part of MessageID.
 */
 bool
-IsValidMessageID(const char *MessageID, bool stripspaces)
+IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 {
     int c;
+    bool atfound = false;
     const unsigned char *p;
 
     /* Check the length of the message-ID. */
@@ -125,10 +134,27 @@ IsValidMessageID(const char *MessageID, bool stripspaces)
         } else {
             return false;
         }
-        if (*p != '.')
-            break;
+        if (*p != '.') {
+            if (laxsyntax && *p == '@') {
+                /* The domain part begins at the second '@', if it exists. */
+                if (atfound || (p[1] == '[')
+                    || (strchr((char *) p+1, '@') == NULL)) {
+                    break;
+                }
+                atfound = true;
+                continue;
+            } else {
+                break;
+            }
+        }
+        /* Dot found. */
+        if (laxsyntax) {
+            if (*p != '\0' && p[1] == '.') {
+                p++;
+            }
+        }
     }
-    
+
     /* Scan domain part:  "@ dot-atom-text|no-fold-literal > \0" */
     if (*p++ != '@')
         return false;

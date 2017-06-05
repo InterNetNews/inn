@@ -21,6 +21,7 @@ typedef struct iovec	IOVEC;
 #define	ARTIOVCNT	16
 
 extern bool DoCancels;
+extern bool laxmid;
 
 /* Characters used in log messages indicating the disposition of messages. */
 #define ART_ACCEPT              '+'
@@ -1014,7 +1015,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   }
 
   /* Assumes the Message-ID: header is a required header. */
-  if (!IsValidMessageID(HDR(HDR__MESSAGE_ID), true)) {
+  if (!IsValidMessageID(HDR(HDR__MESSAGE_ID), true, laxmid)) {
     HDR_LEN(HDR__MESSAGE_ID) = 0;
     sprintf(buff, "%d Bad \"Message-ID\" header",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
@@ -1239,7 +1240,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     return;
   }
 
-  if (!IsValidMessageID(MessageID, true)) {
+  if (!IsValidMessageID(MessageID, true, laxmid)) {
     syslog(L_NOTICE, "%s bad cancel Message-ID %s", data->Feedsite,
            MaxLength(MessageID, MessageID));
     TMRstop(TMR_ARTCNCL);
@@ -1298,7 +1299,7 @@ ARTcontrol(ARTDATA *data, char *Control, CHANNEL *cp UNUSED)
   if ((c == 'c' || c == 'C') && strncasecmp(Control, "cancel", 6) == 0) {
     for (p = &Control[6]; ISWHITE(*p); p++)
       continue;
-    if (*p && IsValidMessageID(p, true))
+    if (*p && IsValidMessageID(p, true, laxmid))
       ARTcancel(data, p, false);
     return;
   }
@@ -2627,7 +2628,7 @@ ARTpost(CHANNEL *cp)
       ARTcontrol(data, HDR(HDR__CONTROL), cp);
     }
     if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
-      if (IsValidMessageID(HDR(HDR__SUPERSEDES), true))
+      if (IsValidMessageID(HDR(HDR__SUPERSEDES), true, laxmid))
 	ARTcancel(data, HDR(HDR__SUPERSEDES), false);
     }
   }

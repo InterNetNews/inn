@@ -15,6 +15,8 @@
 #define BAD_COMMAND_COUNT	10
 
 
+extern bool laxmid;
+
 /*
 **  An entry in the dispatch table.  The name, and implementing function,
 **  of every command we support.
@@ -358,7 +360,7 @@ NChead(CHANNEL *cp)
         return;
     }
 
-    if (!IsValidMessageID(cp->av[1], true)) {
+    if (!IsValidMessageID(cp->av[1], true, laxmid)) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
@@ -424,7 +426,7 @@ NCstat(CHANNEL *cp)
         return;
     }
 
-    if (!IsValidMessageID(cp->av[1], true)) {
+    if (!IsValidMessageID(cp->av[1], true, laxmid)) {
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
         free(buff);
@@ -647,7 +649,7 @@ NCihave(CHANNEL *cp)
     cp->Ihave++;
     cp->Start = cp->Next;
 
-    if (!IsValidMessageID(cp->av[1], false)) {
+    if (!IsValidMessageID(cp->av[1], false, laxmid)) {
         /* Return 435 here instead of 501 for compatibility reasons. */
         xasprintf(&buff, "%d Syntax error in message-ID", NNTP_FAIL_IHAVE_REFUSE);
         NCwritereply(cp, buff);
@@ -1816,7 +1818,7 @@ NCcheck(CHANNEL *cp)
             cp->Sendid.size = MED_BUFFER;
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
-    if (!IsValidMessageID(cp->av[1], false)) {
+    if (!IsValidMessageID(cp->av[1], false, laxmid)) {
 	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
                  NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
@@ -1930,7 +1932,7 @@ NCtakethis(CHANNEL *cp)
     idlen = strlen(mid);
     msglen = idlen + 5; /* 3 digits + space + id + null. */
 
-    if (!IsValidMessageID(mid, false)) {
+    if (!IsValidMessageID(mid, false, laxmid)) {
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
                MaxLength(mid, mid));
         returncode = NNTP_FAIL_TAKETHIS_REJECT;

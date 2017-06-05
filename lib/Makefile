@@ -681,4 +681,5 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/ppport.h ../include/innperl.h
+  ../include/ppport.h \
+  ../include/innperl.h

@@ -90,7 +90,8 @@ extern void     xsignal_forked(void);
 /* Headers. */
 extern char *           GenerateMessageID(char *domain);
 extern void             InitializeMessageIDcclass(void);
-extern bool             IsValidMessageID(const char *string, bool stripspaces);
+extern bool             IsValidMessageID(const char *string,
+                                         bool stripspaces, bool laxsyntax);
 extern bool             IsValidHeaderName(const char *string);
 extern bool             IsValidHeaderBody(const char *string);
 extern bool             IsValidHeaderField(const char *string);

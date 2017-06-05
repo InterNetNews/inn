@@ -33,6 +33,7 @@ pathnews:                    @prefix@
 #innflags:
 mailcmd:                     @bindir@/innmail
 #server:
+#syntaxchecks:               [ no-laxmid ]
 
 # Feed Configuration
 
