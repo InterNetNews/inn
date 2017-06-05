@@ -431,18 +431,28 @@ hash_lookup2(const char *key, size_t length, unsigned long partial)
     c += length;
     switch (len) {
     case 11: c += S3(key[10]);
+             /* fallthrough */
     case 10: c += S2(key[9]);
+             /* fallthrough */
     case  9: c += S1(key[8]);
-        /* The first byte of c is reserved for the length. */
+             /* The first byte of c is reserved for the length. */
+             /* fallthrough */
     case  8: b += S3(key[7]);
+             /* fallthrough */
     case  7: b += S2(key[6]);
+             /* fallthrough */
     case  6: b += S1(key[5]);
+             /* fallthrough */
     case  5: b += S0(key[4]);
+             /* fallthrough */
     case  4: a += S3(key[3]);
+             /* fallthrough */
     case  3: a += S2(key[2]);
+             /* fallthrough */
     case  2: a += S1(key[1]);
+             /* fallthrough */
     case  1: a += S0(key[0]);
-        /* case 0: nothing left to add. */
+             /* case 0: nothing left to add. */
     }
     MIX(a, b, c);
     return c;

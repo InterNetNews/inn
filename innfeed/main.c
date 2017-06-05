@@ -93,7 +93,7 @@ static void sigquit (int sig) ;
 static void sighup (int sig) ;
 static void sigterm (int sig) ;
 static void sigusr (int sig) ;
-static void usage (int) ;
+static void usage (int) __attribute__ ((__noreturn__)) ;
 static void gprintinfo (void) ;
 static void openLogFile (void) ;
 static void writePidFile (void) ;

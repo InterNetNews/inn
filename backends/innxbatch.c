@@ -76,6 +76,11 @@ static unsigned long	STATrefused;
 static unsigned long	STATrejected;
 
 /*
+**  Prototypes.
+*/
+static void             ExitWithStats(int) __attribute__ ((__noreturn__));
+
+/*
 **  Send a line to the server. \r\n will be appended
 */
 static bool

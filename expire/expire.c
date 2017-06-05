@@ -54,7 +54,9 @@ static long		EXPstillhere;
 static struct history	*History;
 static char		*NHistory;
 
-static void CleanupAndExit(bool Server, bool Paused, int x);
+static void CleanupAndExit(bool Server, bool Paused, int x)
+    __attribute__ ((__noreturn__));
+static void Usage(void) __attribute__ ((__noreturn__));
 
 static int EXPsplit(char *p, char sep, char **argv, int count);
 

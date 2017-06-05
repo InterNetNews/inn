@@ -61,6 +61,7 @@ FILE *Errlog = NULL;
 static void             catch_terminate(int sig);
 static void             xmalloc_abort(const char *what, size_t size,
                                       const char *file, int line);
+static void             Usage(void) __attribute__ ((__noreturn__));
 
 /* header table initialization */
 #define ARTHEADERINIT(name, type) {name, type, sizeof(name) - 1}

@@ -1019,6 +1019,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 		if (cur->type[1] == 'g') {
 			cur->type[1] = '\0';
 		}
+                /* fallthrough */
 	case NF_FLAG_MODERATED:
 	case NF_FLAG_JUNK:
 	case NF_FLAG_NOLOCAL:

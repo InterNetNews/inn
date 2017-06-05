@@ -938,6 +938,7 @@ mk_temp_groupinfo(int whichdb, group_id_t gno, DB_TXN *tid)
         break;
     default:
         warn("OVDB: mk_temp_groupinfo: groupinfo->put: %s", db_strerror(ret));
+        /* fallthrough */
     case TRYAGAIN:
         return ret;
     }
@@ -2606,6 +2607,7 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
     default:
         warn("OVDB: expiregroup: ovdb_getgroupinfo failed: %s",
              db_strerror(ret));
+        /* fallthrough */
     case DB_NOTFOUND:
 	TXN_ABORT(t_expgroup_1, tid);
 	return false;

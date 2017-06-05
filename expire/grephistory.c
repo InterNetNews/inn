@@ -14,6 +14,8 @@
 #include "inn/paths.h"
 #include "inn/storage.h"
 
+static void Usage(void) __attribute__ ((__noreturn__));
+
 /*
 **  Read stdin for list of Message-ID's, output list of ones we
 **  don't have.  Or, output list of files for ones we DO have.

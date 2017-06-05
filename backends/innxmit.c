@@ -148,6 +148,9 @@ static double		STATrejectedsize;
 */
 static ARTHANDLE *article_open(const char *path, const char *id);
 static void article_free(ARTHANDLE *);
+static void Usage(void) __attribute__ ((__noreturn__));
+static void RequeueRestAndExit(char *, char *) __attribute__ ((__noreturn__));
+static void ExitWithStats(int) __attribute__ ((__noreturn__));
 
 
 /*
