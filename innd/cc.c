@@ -126,7 +126,7 @@ static CCDISPATCH	CCcommands[] = {
     {	SC_XEXEC,	1, CCxexec	}
 };
 
-static void CCresetup(int unused);
+static void CCresetup(int s);
 
 
 void
@@ -459,7 +459,7 @@ CCcancel(char *av[])
 **  Syntax-check the newsfeeds file.
 */
 const char *
-CCcheckfile(char *unused[] UNUSED)
+CCcheckfile(char *av[] UNUSED)
 {
   char		**strings;
   char		*p;

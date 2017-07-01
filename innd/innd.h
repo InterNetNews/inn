@@ -699,7 +699,7 @@ extern void		SetupListBuffer(int size, LISTBUFFER *list);
 extern char         *	MaxLength(const char *p, const char *q);
 extern pid_t		Spawn(int niceval, int fd0, int fd1, int fd2,
 			      char * const av[]);
-extern void		CleanupAndExit(int x, const char *why)
+extern void		CleanupAndExit(int status, const char *why)
     __attribute__ ((__noreturn__));
 extern void		JustCleanup(void);
 extern void		ThrottleIOError(const char *when);
@@ -711,7 +711,7 @@ extern bool		ARTreadschema(void);
 extern const char   *	ARTreadarticle(char *files);
 extern char	    *   ARTreadheader(char *files);
 extern bool		ARTpost(CHANNEL *cp);
-extern void		ARTcancel(const ARTDATA *Data,
+extern void		ARTcancel(const ARTDATA *data,
 				  const char *MessageID, bool Trusted);
 extern void		ARTclose(void);
 extern void		ARTsetup(void);
@@ -721,29 +721,29 @@ extern void             ARTlogreject(CHANNEL *cp, const char *text);
 extern void		ARTreject(Reject_type, CHANNEL *);
 
 extern bool		CHANsleeping(CHANNEL *cp);
-extern CHANNEL      *	CHANcreate(int fd, enum channel_type Type,
-				   enum channel_state State,
-				   innd_callback_func Reader,
-				   innd_callback_func WriteDone);
-extern CHANNEL      *	CHANiter(int *cp, enum channel_type Type);
+extern CHANNEL      *	CHANcreate(int fd, enum channel_type type,
+				   enum channel_state state,
+				   innd_callback_func reader,
+				   innd_callback_func write_done);
+extern CHANNEL      *	CHANiter(int *ip, enum channel_type type);
 extern CHANNEL      *	CHANfromdescriptor(int fd);
 extern char	    *   CHANname(CHANNEL *cp);
 extern int		CHANreadtext(CHANNEL *cp);
 extern void		CHANclose(CHANNEL *cp, const char *name);
 extern void		CHANreadloop(void)
     __attribute__ ((__noreturn__));
-extern void		CHANsetup(int i);
+extern void		CHANsetup(int count);
 extern void		CHANshutdown(void);
-extern void		CHANtracing(CHANNEL *cp, bool Flag);
+extern void		CHANtracing(CHANNEL *cp, bool flag);
 extern void		CHANcount_active(CHANNEL *cp);
 
 extern void		RCHANadd(CHANNEL *cp);
 extern void		RCHANremove(CHANNEL *cp);
 
-extern void		SCHANadd(CHANNEL *cp, time_t Waketime, void *Event,
-				 innd_callback_func Waker, void *Argument);
+extern void		SCHANadd(CHANNEL *cp, time_t wake, void *event,
+				 innd_callback_func waker, void *arg);
 extern void		SCHANremove(CHANNEL *cp);
-extern void		SCHANwakeup(void *Event);
+extern void		SCHANwakeup(void *event);
 
 extern bool		WCHANflush(CHANNEL *cp);
 extern void		WCHANadd(CHANNEL *cp);
@@ -769,12 +769,12 @@ extern void		ICDwriteactive(void);
 extern void		CCclose(void);
 extern void		CCsetup(void);
 
-extern void             KEYgenerate(HDRCONTENT *, const char *body, size_t bodylen);
+extern void             KEYgenerate(HDRCONTENT *, const char *, size_t);
 
 extern void		LCclose(void);
 extern void		LCsetup(void);
 
-extern int		NGsplit(char *p, int size, LISTBUFFER *List);
+extern int		NGsplit(char *p, int size, LISTBUFFER *list);
 extern NEWSGROUP    *	NGfind(const char *Name);
 extern void		NGclose(void);
 extern CHANNEL	    *	NCcreate(int fd, bool MustAuthorize, bool IsLocal);
@@ -842,8 +842,8 @@ extern WIP	    *	WIPnew(const char *messageid, CHANNEL *cp);
 extern void		WIPprecomfree(CHANNEL *cp);
 extern void		WIPfree(WIP *wp);
 extern bool		WIPinprogress(const char *msgid, CHANNEL *cp,
-				      bool Add);
-extern WIP	    *	WIPbyid(const char *mesageid);
+				      bool Precommit);
+extern WIP	    *	WIPbyid(const char *messageid);
 extern WIP	    *	WIPbyhash(const HASH hash);
 
 /*

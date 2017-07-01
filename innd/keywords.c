@@ -26,7 +26,7 @@
 */
 #if !DO_KEYWORDS
 void
-KEYgenerate(HDRCONTENT *header UNUSED, const char *body UNUSED,
+KEYgenerate(HDRCONTENT *hc UNUSED, const char *body UNUSED,
             size_t bodylen UNUSED)
 {
 }

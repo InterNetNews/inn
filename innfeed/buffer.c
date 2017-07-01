@@ -376,9 +376,9 @@ bool copyBuffer (Buffer dest, Buffer src)
 }
 
 
-unsigned int bufferRefCount (Buffer buf)
+unsigned int bufferRefCount (Buffer buff)
 {
-  return buf->refCount ;
+  return buff->refCount ;
 }
 
 

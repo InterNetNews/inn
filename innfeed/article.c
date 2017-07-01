@@ -87,7 +87,7 @@ static Buffer artGetContents (Article article) ;  /* Return the buffer that
                                                      up. */
 
   /* Log statistics on article memory usage. */
-static void logArticleStats (TimeoutId id, void *data) ;
+static void logArticleStats (TimeoutId, void *) ;
 
 static bool fillContents (Article article) ;  /* Read the article's bits
                                                  off the disk. */
@@ -102,7 +102,7 @@ static bool artFreeContents (Article art) ;  /* Tell the Article to release
                                                 its contents buffer if
                                                 possible. */
 
-static void artUnmap (Article art) ; /* munmap an mmap()ed
+static void artUnmap (Article article) ; /* munmap an mmap()ed
                                                      article */
 
 
