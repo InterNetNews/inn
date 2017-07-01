@@ -84,6 +84,8 @@ die "Directory $Tmpdir is not writable\n" unless -w $Tmpdir;
 if ($debugging || $opt_n) {
     $Sendmail = "cat" ;
     $WhereTo = "cat" ;
+} else {
+    $Sendmail = sprintf($Sendmail, $Maintainer);
 }
 
 #
@@ -150,6 +152,8 @@ my $hdr = undef;
 my $txt = undef;
 my $message_id ;
 my $subject = "(NONE)";
+my @emptyHdrs = ();
+my $emptyHdrsString;
 
 $_ = <STDIN>;
 if (!$_) {
@@ -212,6 +216,13 @@ for (;;) {
 
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
+
+    # Collect empty header field names.
+    if (/^([^:]+):\s*$/) {
+        # 975 = 998 - length("X-Mailpost-Empty-Hdrs: ")
+        push(@emptyHdrs, $1) if length($1) < 975;
+        next;
+    }
 
     if (/^($exclude):\s*/sio) {
 	$real_news_hdrs .= "$_\n";
@@ -314,6 +325,11 @@ $real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
 $real_news_hdrs .= "Approved: ${approved}\n"         if defined($approved);
 $real_news_hdrs .= "References: ${references}\n"     if defined($references);
 
+# Keep trace of empty header fields.
+$emptyHdrsString = join("\n\t", @emptyHdrs);
+$real_news_hdrs .= "X-Mailpost-Empty-Hdrs: $emptyHdrsString\n"
+    if (length($emptyHdrsString) > 0);
+
 # Remove duplicate headers.
 my %headers = ();
 $real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{lc$2}++?"":"$1"/ges;
@@ -329,7 +345,7 @@ if (!open TMPFILE,">$tmpfile") {
     if ($use_syslog) {
         syslog("err", "$msg") unless $debugging || -t STDERR;
     }
-    open(TMPFILE, "|" . sprintf ($Sendmail, $Maintainer)) ||
+    open(TMPFILE, "|" . $Sendmail) ||
 	die "die(no tmpfile): sendmail: $!\n" ;
     print TMPFILE <<"EOF";
 To: $Maintainer
@@ -516,7 +532,7 @@ sub mailArtAndDie {
     syslog("err", "$msg") if $use_syslog;
     print STDERR $msg,"\n" if -t STDERR ;
     
-    open(SENDMAIL, "|" . sprintf ($Sendmail,$Maintainer)) ||
+    open(SENDMAIL, "|" . $Sendmail) ||
 	die "die($msg): sendmail: $!\n" ;
     print SENDMAIL <<"EOF" ;
 To: $Maintainer
