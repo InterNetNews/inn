@@ -407,11 +407,14 @@ report(const char *hostname, int verbose)
 {
     double avgAge;
     int i, columns, needHost;
-    long nhosts=0, nlinks=0;
     struct nrec *list, *relay;
     struct trec *rlist;
     char hostString[MAXHOST];
     time_t t0=time(0);
+
+#ifdef DEBUG
+    long nhosts=0, nlinks=0;
+#endif
 
     if (!total) {
 	fprintf(stderr, "report: no traffic\n");
@@ -466,13 +469,17 @@ report(const char *hostname, int verbose)
 			    }
 			}
 			rlist = rlist->rlink;
+#ifdef DEBUG
                         ++nlinks;
+#endif
 		    }
 		    if (!needHost) printf("\n");
 		}
 	    }
 	    list = list->link;
+#ifdef DEBUG
             ++nhosts;
+#endif
 	}
     }
     printf("ZCZC end inpaths %s\n",hostname);
