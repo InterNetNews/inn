@@ -15,6 +15,12 @@ syntactically invalid).  See the inn.conf(5) man page for more details.
 The default value (I<no-laxmid>) corresponds to the legacy behaviour
 (the one of S<INN 2.6.1> and earlier).
 
+=item *
+
+B<mailpost> now removes empty header fields before attempting to post
+articles, and keeps trace of them in the X-Mailpost-Empty-Hdrs: header
+field body.  Thanks to Kamil Jonca for the bug report.
+
 =back
 
 =head1 Changes in 2.6.1
