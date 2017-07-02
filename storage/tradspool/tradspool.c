@@ -23,6 +23,7 @@
 #include "inn/wire.h"
 #include "inn/libinn.h"
 #include "inn/paths.h"
+#include "inn/xmalloc.h"
 
 #include "methods.h"
 #include "tradspool.h"
@@ -1050,25 +1051,16 @@ FindDir(DIR *dir, char *dirname) {
     bool flag;
     char *path;
     struct stat sb;
-    size_t length;
-    unsigned char namelen;
 
     while ((de = readdir(dir)) != NULL) {
-	namelen = strlen(de->d_name);
-	for (i = 0, flag = true ; i < namelen ; ++i) {
+	for (i = 0, flag = true; de->d_name[i] != '\0'; i++) {
 	    if (!isdigit((unsigned char) de->d_name[i])) {
 		flag = false;
 		break;
 	    }
 	}
 	if (!flag) continue; /* if not all digits, skip this entry. */
-
-        length = strlen(dirname) + namelen + 2;
-	path = xmalloc(length);
-        strlcpy(path, dirname, length);
-        strlcat(path, "/", length);
-        strlcat(path, de->d_name, length);
-
+        xasprintf(&path, "%s/%s", dirname, de->d_name);
 	if (lstat(path, &sb) < 0) {
 	    free(path);
 	    continue;
