@@ -180,8 +180,7 @@ password_dbm(char *name, const char *file)
         dbm_close(database);
         return NULL;
     }
-    password = xmalloc(value.dsize + 1);
-    strlcpy(password, value.dptr, value.dsize + 1);
+    password = xstrndup(value.dptr, value.dsize);
     dbm_close(database);
     return password;
 }
