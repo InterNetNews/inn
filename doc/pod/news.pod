@@ -18,8 +18,10 @@ The default value (I<no-laxmid>) corresponds to the legacy behaviour
 =item *
 
 B<mailpost> now removes empty header fields before attempting to post
-articles, and keeps trace of them in the X-Mailpost-Empty-Hdrs: header
-field body.  Thanks to Kamil Jonca for the bug report.
+articles, and keeps trace of them in the X-Mailpost-Empty-Hdrs: newly
+generated header field body.  Also, B<mailpost> now sanitizes header
+fields with regards to empty continuation header lines.  Thanks to
+Kamil Jonca for these bug reports.
 
 =item *
 
