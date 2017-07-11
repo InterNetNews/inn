@@ -217,6 +217,11 @@ for (;;) {
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
 
+    # Remove empty header lines within header body.
+    s/\n[ \t]+\n/\n/g;          # middle lines in header field
+    s/\n[ \t]+$//;              # last line in header field
+    s/^([^:]+:[ \t]+)\n/$1/;    # first line in header field
+
     # Collect empty header field names.
     if (/^([^:]+):\s*$/) {
         # 975 = 998 - length("X-Mailpost-Empty-Hdrs: ")
