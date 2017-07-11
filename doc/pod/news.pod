@@ -21,6 +21,12 @@ B<mailpost> now removes empty header fields before attempting to post
 articles, and keeps trace of them in the X-Mailpost-Empty-Hdrs: header
 field body.  Thanks to Kamil Jonca for the bug report.
 
+=item *
+
+A few commands listed in the "Control commands to INND" section in
+daily Usenet reports were appearing as a mere letter; all of them are
+now properly converted to meaningful words.
+
 =back
 
 =head1 Changes in 2.6.1

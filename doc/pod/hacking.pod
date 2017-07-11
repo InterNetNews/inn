@@ -800,7 +800,8 @@ corresponding F<*.asc> files.  You don't need to retain the unsigned
 checksum files.
 
 Update the F<inn.tar.gz*> links and possibly move older releases off into
-the F<OLD> directory.
+the F<OLD> directory.  Also remove testing versions from the F<testing>
+directory.
 
 (Currently, this is all done by Russ by updating the files in
 L<https://archives.eyrie.org/software/inn/> and then letting ISC mirror
