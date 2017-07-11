@@ -23,6 +23,13 @@ field body.  Thanks to Kamil Jonca for the bug report.
 
 =item *
 
+Fixed a bug in B<inews> that was rejecting articles containing header
+fields whose length exceeded 998 bytes.  This limitation is for the
+length of a single line of a header field, not for the whole header
+field.
+
+=item *
+
 A few commands listed in the "Control commands to INND" section in
 daily Usenet reports were appearing as a mere letter; all of them are
 now properly converted to meaningful words.

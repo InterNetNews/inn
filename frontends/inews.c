@@ -34,7 +34,6 @@
 #define HEADER_DELTA		20
 #define GECOSTERM(c)		\
 	    ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
-#define HEADER_STRLEN		998
 
 typedef enum _HEADERTYPE {
     HTobs,
@@ -124,7 +123,7 @@ static HEADER	Table[] = {
 static void
 QuitServer(int x)
 {
-    char	buff[HEADER_STRLEN];
+    char	buff[MED_BUFFER];
     char	*p;
 
     if (Spooling)
@@ -198,13 +197,22 @@ TrimSpaces(char *p)
 static char *
 NextHeader(char *p)
 {
-    for ( ; ; p++) {
-	if ((p = strchr(p, '\n')) == NULL)
+    char *q;
+    for (q = p; ; p++) {
+        if ((p = strchr(p, '\n')) == NULL) {
             die("article is all headers");
-	if (!ISWHITE(p[1])) {
-	    *p = '\0';
-	    return p + 1;
-	}
+        }
+        /* Check the maximum length of a single line. */
+        if (p - q + 1 > MAXARTLINELENGTH) {
+            die("header line too long");
+        }
+        /* Check if there is a continuation line for the header. */
+        if (ISWHITE(p[1])) {
+            q = p + 1;
+            continue;
+        }
+        *p = '\0';
+        return p + 1;
     }
 }
 
@@ -798,7 +806,7 @@ OfferArticle(char *buff, bool Authorized)
 {
     fprintf(ToServer, "post\r\n");
     SafeFlush(ToServer);
-    if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
+    if (fgets(buff, MED_BUFFER, FromServer) == NULL)
         sysdie(Authorized ? "Can't offer article to server (authorized)"
                           : "Can't offer article to server");
     return atoi(buff);
@@ -868,8 +876,8 @@ main(int ac, char *av[])
     struct passwd	*pwp;
     char		*article;
     char		*deadfile;
-    char		buff[HEADER_STRLEN];
-    char		SpoolMessage[HEADER_STRLEN];
+    char		buff[MED_BUFFER];
+    char		SpoolMessage[MED_BUFFER];
     bool		DoSignature;
     bool		AddOrg;
     size_t		Length;
@@ -989,7 +997,7 @@ main(int ac, char *av[])
 	setbuf(ToServer, xmalloc(BUFSIZ));
 	fprintf(ToServer, "mode reader\r\n");
 	SafeFlush(ToServer);
-	if (fgets(buff, HEADER_STRLEN, FromServer) == NULL)
+	if (fgets(buff, MED_BUFFER, FromServer) == NULL)
             sysdie("cannot tell server we're reading");
 	if ((j = atoi(buff)) != NNTP_ERR_COMMAND)
 	    i = j;
@@ -1026,13 +1034,6 @@ main(int ac, char *av[])
     /* Do final checks. */
     if (i == 0 && HDR(_control) == NULL)
         die("article is empty");
-    for (hp = Table; hp < ARRAY_END(Table); hp++)
-	if (hp->Value && (int)strlen(hp->Value) + hp->Size > HEADER_STRLEN)
-            die("%s header is too long", hp->Name);
-    for (i = 0; i < OtherCount; i++)
-	if ((int)strlen(OtherHeaders[i]) > HEADER_STRLEN)
-            die("header too long (maximum length is %d): %.40s...",
-                HEADER_STRLEN, OtherHeaders[i]);
 
     if (Dump) {
 	/* Write the headers and a blank line. */
