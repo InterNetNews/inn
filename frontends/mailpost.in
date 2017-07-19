@@ -54,10 +54,11 @@ if ($use_syslog) {
 
 $usage .= "[ -h ][ -n ][ -r addr ][ -f addr ][ -a approved ][ -d distribution ]" .
     "[ -m mailing-list ][ -b database ][ -o output-path ][ -c wait-time ]" .
-    "[ -x header[:header...] ][ -p port ][ -t tempdir ] newsgroups" ;
+    "[ -x header[:header...] ][ -z header[:header...] ][ -p port ]" .
+    "[ -t tempdir ] newsgroups";
 
-use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_p $opt_t) ;
-getopts("hr:f:a:d:m:b:no:c:x:p:t:") || die "usage: $usage\n" ;
+use vars qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c $opt_x $opt_z $opt_p $opt_t);
+getopts("hr:f:a:d:m:b:no:c:x:z:p:t:") || die "usage: $usage\n";
 die "usage: $usage\n" if $opt_h ;
 
 #
@@ -70,6 +71,10 @@ my $Submit = $INN::Config::inews . " -S -h" . ($opt_p ? " -p $opt_p" : '');
 my $Maintainer = $INN::Config::newsmaster || "usenet" ;
 my $WhereTo = $opt_o || $Submit ;
 my $Mailname = $INN::Config::fromhost || hostname ;
+
+my $Gateway = $INN::Config::fromhost || hostname;
+$Gateway .= '|' . $INN::Config::pathhost if $INN::Config::pathhost;
+$Gateway .= '|(.+\.)?' . $INN::Config::domain if $INN::Config::domain;
 
 my $Databasedir = $opt_b || $INN::Config::pathdb;
 die "Database path $Databasedir is not a directory\n" unless -d $Databasedir;
@@ -131,10 +136,17 @@ if ($opt_x) {
     $exclude .= '|' . join('|', split(/:/, $opt_x));
 }
 
+# Strip out news X-Complaints-To: and X-Trace: header fields since otherwise
+# posting may fail.  Other trace header fields will be renamed later on
+# to add 'X-' so we don't have to worry about them.
+my $skip = 'X-Complaints-To|X-Trace';
+if ($opt_z) {
+    $skip .= '|' . join('|', split(/:/, $opt_z));
+}
+
 $newsgroups = join ",", @ARGV ;
 
 die "usage:  $0 newsgroup [newsgroup ...]\n" unless $newsgroups;
-
 
 #
 # Do the header.  Our input is a mail message, with or without the From.
@@ -214,6 +226,7 @@ for (;;) {
 
     push @errorText, "($_)\n";
 
+    next if (/^($skip):\s/sio);
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
 
@@ -302,11 +315,17 @@ for (;;) {
 	next ;
     }
 
-    # Strip out news X-Trace: and X-Complaints-To: headers since otherwise posting
-    # may fail.  Other trace headers will be renamed to add 'X-' so we don't have
-    # to worry about them.
-    if (/^X-(Trace|Complaints-To):\s*/sio) {
-        next ;
+    # Strip out any Received: header fields for clause to prevent spamming
+    # the gateway.
+    if (/^Received:\s*/sio) {
+        s/\s+for\s.+\@($Gateway)>?\s*//sio;
+        # FALLTHROUGH
+    }
+
+    # Strip out any header fields with gateway mailbox to prevent spamming
+    # the gateway.
+    if (/^[A-Z]+-To:\s*/sio) {
+        next if /[@%=]($Gateway)/sio;
     }
 
     # Random unknown header.  Prepend 'X-' if it is not already there.
@@ -637,7 +656,8 @@ mailpost - Feed an e-mail message into a newsgroup
 B<mailpost> [B<-hn>] [B<-a> I<addr>] [B<-b> I<database>] [B<-c> I<wait-time>]
 [B<-d> I<distribution>] [B<-f> I<addr>] [B<-m> I<mailing-list>]
 [B<-o> I<output-command>] [B<-p> I<port>] [B<-r> I<addr>] [B<-t> I<tempdir>]
-[B<-x> I<header>[B<:>I<header>...]] I<newsgroups>
+[B<-x> I<header>[B<:>I<header>...]] [B<-z> I<header>[B<:>I<header>...]]
+I<newsgroups>
 
 =head1 DESCRIPTION
 
@@ -646,10 +666,12 @@ and feeds it to B<inews> for posting to a news server.  I<newsgroups> is a
 whitespace-separated list of group names to which to post the article
 (at least one newsgroup must be specified).
 
-Before feeding the article to B<inews>, it checks that the article has not
-been seen before, and it changes some headers (cleans up some address
-headers, removes X-Trace: and X-Complaints-To:, and puts C<X-> in front
-of unknown headers).
+Before feeding the article to B<inews>, it checks that the article has
+not been seen before, and it changes some header fields (cleans up some
+address headers, removes a few ones like X-Complaints-To: and X-Trace:,
+and puts C<X-> in front of unknown header fields).  The Received: and
+*-To: header fields are also altered to prevent spamming the gateway (the
+name of the news server or the domain name from F<inn.conf> are removed).
 
 If the article has been seen before (B<mailpost> records the Message-ID of
 each article it handles), then the article will be dropped with a non-zero
@@ -767,6 +789,15 @@ Known headers are:
     Return-Path
     Sender
     Subject
+
+=item B<-z> I<header>[B<:>I<header>...]
+
+A colon-separated list of additional header fields which should be removed.
+
+Removed header fields are:
+
+    X-Trace
+    X-Complaints-To
 
 =back
 

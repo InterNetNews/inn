@@ -25,6 +25,12 @@ Kamil Jonca for these bug reports.
 
 =item *
 
+A new B<-z> parameter has been added to B<mailpost> to mention a list
+of header fields to remove from the gated message.  Thanks to Dieter
+Stussy for the patch.
+
+=item *
+
 Fixed a bug in B<inews> that was rejecting articles containing header
 fields whose length exceeded 998 bytes.  This limitation is for the
 length of a single line of a header field, not for the whole header
