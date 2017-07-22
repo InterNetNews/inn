@@ -123,7 +123,7 @@ if ($opt_m) {
     push @errorText, "((mailing_list: $mailing_list))\n";
 }
 
-my $exclude = 'Organization|Distribution';
+my $exclude = 'Archive|Archived-At|Comments|Distribution|Injection-Date|Keywords|Organization|Summary';
 if ($opt_x) {
     $exclude .= '|' . join('|', split(/:/, $opt_x));
 }
@@ -763,24 +763,30 @@ in F<inn.conf>, and then F</var/tmp> if I<pathtmp> is not writable.
 
 =item B<-x> I<header>[B<:>I<header>...]
 
-A colon-separated list of additional headers which should be treated as
-known headers; these headers will be passed through to B<inews> without
-having C<X-> prepended.
+A colon-separated list of additional header fields which should be
+treated as known header fields; these header fields will be passed
+through to B<inews> without having C<X-> prepended.
 
-Known headers are:
+Known header fields are:
 
-    Approved
+    Archive
+    Archived-At
+    Comments
     Content-*
     Date
     Distribution
     From
+    Injection-Date
+    Keywords
     Mailing-List
     Message-ID
     MIME-*
+    Organization
     References
     Return-Path
     Sender
     Subject
+    Summary
 
 =item B<-z> I<header>[B<:>I<header>...]
 
