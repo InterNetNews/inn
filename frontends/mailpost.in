@@ -2,17 +2,9 @@
 # fixscript will replace this line with code to load INN::Config
 
 # mailpost - Yet another mail-to-news filter
+# vixie 14jun92 [original]
 #
 # $Id$
-#
-# 21feb00 [added "lc" to duplicate header fixer stmt to make it case-insensitive]
-# doka 11may99 [fixed duplicate headers problem]
-# brister 19oct98 [cleaned up somewhat for Perl v. 5. and made a little more robust]
-# vixie 29jan95 [RCS'd]
-# vixie 15jun93 [added -m]
-# vixie 30jun92 [added -a and -d]
-# vixie 17jun92 [attempt simple-minded fixup to $path]
-# vixie 14jun92 [original]
 
 use Getopt::Std;
 use IPC::Open3;
@@ -404,16 +396,16 @@ if ( ! $tmpfile ) {
 
 ##
 ## We've got the article in a temp file and now we validate some of the
-## data we found and update our Message-ID database.
+## data we found and update our message-ID database.
 ##
 
 mailArtAndDie ("no From: found") unless $from;
 mailArtAndDie ("no Message-ID: found") unless $message_id;
-mailArtAndDie ("Malformed Message-ID ($message_id)")
+mailArtAndDie ("Malformed message-ID ($message_id)")
     if ($message_id !~ /\<(\S+)\@(\S+)\>/);
 
 
-# Update (with locking) our Message-ID database.  This is used to make sure we
+# Update (with locking) our message-ID database.  This is used to make sure we
 # don't loop our own gatewayed articles back through the mailing list.
 
 my ($lhs, $rhs) = ($1, $2);	# Of message_id matched above.
@@ -673,7 +665,7 @@ and puts C<X-> in front of unknown header fields).  The Received: and
 *-To: header fields are also altered to prevent spamming the gateway (the
 name of the news server or the domain name from F<inn.conf> are removed).
 
-If the article has been seen before (B<mailpost> records the Message-ID of
+If the article has been seen before (B<mailpost> records the message-ID of
 each article it handles), then the article will be dropped with a non-zero
 error status.  Other errors will cause the article to be mailed to the
 newsmaster (selected at configure time and defaulting to C<usenet>).
@@ -705,7 +697,7 @@ an Approved: header.
 =item B<-b> I<database>
 
 If the B<-b> flag is used, then it defines the location of the
-persistent database used to store the Message-IDs of articles sent on.
+persistent database used to store the message-IDs of articles sent on.
 This is to prevent articles looping around if a news-to-mail gateway
 sends them back here.  This option may be required if the B<mailpost>
 process does not have write access to the news database directory.
@@ -811,7 +803,7 @@ The Perl script itself used to feed an e-mail message to a newsgroup.
 
 =item I<pathdb>/mailpost-msgid.dir and I<pathdb>/mailpost-msgid.pag
 
-The default database files which record previously seen Message-IDs.
+The default database files which record previously seen message-IDs.
 
 =back
 
