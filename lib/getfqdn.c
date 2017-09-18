@@ -11,7 +11,8 @@
 
 
 /*
-**  Get the fully-qualified domain name for this host.
+**  Get the fully qualified domain name for this host, as reported
+**  by the system.
 */
 char *GetFQDN(char *domain)
 {

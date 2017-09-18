@@ -110,10 +110,11 @@ of zero specifies immediate close.  The default is C<0>.
 =item I<hostname>
 
 This key requires a string value.  It is a list of hostnames separated
-by a comma.  A hostname is the host's fully qualified domain name, or
-the dotted-quad IP address of the peer for IPv4, or the colon-separated IP
-address of the peer for IPv6.  If this key is not present in
-a peer block, the hostname defaults to the label of the peer.
+by a comma.  A hostname is either a fully qualified domain name that
+resolves to the IPv4 or IPv6 address of the peer, or the dotted-quad
+IP address of the peer for IPv4, or the colon-separated IP address
+of the peer for IPv6.  If this key is not present in a peer block,
+the hostname defaults to the label of the peer.
 
 =item I<identd>
 

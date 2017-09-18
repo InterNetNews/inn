@@ -818,13 +818,14 @@ will be added to posts which lack one.
 
 =item pathhost
 
-This is the name of your news server as you wish it to appear in the Path:
-header of all postings which travel through your server (this includes
-local posts and incoming posts that you forward out to other sites).  If
-this parameter is unspecified, the fully-qualified domain name (FQDN) of
-the machine will be used instead.  Please use the FQDN of your server or
-an alias for your server unless you have a very good reason not to; a
-future version of the news RFCs may require this.
+This is the name of your news server as you wish it to appear in
+the Path: header of all postings which travel through your server
+(this includes local posts and incoming posts that you forward out to
+other sites).  If this parameter is unspecified, the fully qualified
+domain name (FQDN) of the machine, as reported by the operating system,
+will be used instead.  Please use the canonical FQDN of your server or
+an alias unless you have a very good reason not to; a future version
+of the news RFCs may require this.
 
 =item rlimitnofile
 

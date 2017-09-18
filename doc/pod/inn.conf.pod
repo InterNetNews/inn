@@ -60,7 +60,7 @@ INN.
 
 This should be the domain name of the local host.  It should not have a
 leading period, and it should not be a full host address.  It is used only
-if the GetFQDN() routine in libinn(3) cannot get the fully-qualified
+if the GetFQDN() routine in libinn(3) cannot get the fully qualified
 domain name by using either the gethostname(3) or gethostbyname(3) calls.
 The check is very simple; if either routine returns a name with a period
 in it, then it is assumed to have the full domain name.  As this parameter
@@ -105,7 +105,7 @@ added to the Path: header of all articles that pass through the system,
 including locally posted articles, and is also used when processing some
 control messages and when naming the server in status reports.  There is
 no default value; this parameter must be set in F<inn.conf> or INN will
-not start.  A good value to use is the fully-qualified hostname of the
+not start.  A good value to use is the fully qualified hostname of the
 system.
 
 =item I<runasgroup>
@@ -881,15 +881,17 @@ That has to be done with a user-written Perl filter, if desired.
 
 =item I<addinjectionpostinghost>
 
-Whether to add a posting-host attribute to the Injection-Info: header to
-all local posts giving the FQDN (when known) and IP address of the system
-from which the post was received.  This is a boolean value and the default
-is true.  Note that INN either does not add this attribute or adds the name
-(when known) and IP address of the client.  There is no intrinsic support for
-obfuscating the name of the client.  That has to be done with a user-written
-Perl filter, if desired.
+Whether to add a posting-host attribute to the Injection-Info: header
+to all local posts giving an FQDN (when known, by reverse lookup of
+the client IP address) and IP address of the system from which the
+post was received.  This is a boolean value and the default is true.
+Note that INN either does not add this attribute or adds the name (when
+known) and IP address of the client.  There is no intrinsic support
+for obfuscating the name of the client.  That has to be done with a
+user-written Perl filter, if desired.
 
-When this parameter is set to true, the FQDN (or, if unknown, the IP address)
+When this parameter is set to true, an FQDN (obtained by reverse
+lookup of the client IP address or, if unknown, the IP address itself)
 of the client is also added to the Path: header, after the C<!.POSTED>
 diagnostic.
 
@@ -916,7 +918,7 @@ is the newsmaster user set at compile time (C<usenet> by default).  This
 setting will also be used by mailpost(8) to fully qualify addresses and by
 inews(1) to generate the Sender: header (and From: header if missing).
 The value of the FROMHOST environment variable, if set, overrides this
-setting.  The default is the fully-qualified domain name of the local
+setting.  The default is the fully qualified domain name of the local
 host.
 
 =item I<localmaxartsize>

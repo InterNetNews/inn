@@ -680,9 +680,11 @@ to a peer definition.
 
 =item I<ip-name>
 
-This key requires a word value.  The word is the host's FQDN, or the dotted
-quad IP-address.  If this value is not specified, then the name of the
-peer in the enclosing I<peer> block is taken to also be its I<ip-name>.
+This key requires a word value.  The word is either one of the host's FQDNs,
+or the dotted-quad IP address of the peer for IPv4, or the colon-separated
+IP address of the peer for IPv6.  If this value is not specified, then
+the name of the peer in the enclosing I<peer> block is taken to also
+be its I<ip-name>.
 
 =back
 

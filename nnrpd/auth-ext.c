@@ -30,7 +30,7 @@ struct process {
 /*
 **  Given the client information struct, a string indicating the program to
 **  run (possibly including arguments) and the directory in which to look for
-**  the command if it's not fully-qualified, start that program and return a
+**  the command if it's not fully qualified, start that program and return a
 **  struct process providing the PID and file descriptors.
 */
 static struct process *
