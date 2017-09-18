@@ -387,10 +387,11 @@ ProcessHeaders(char *idbuff, bool needmoderation)
         }
     }
 
-    /* Set the Injection-Date: header. */
-    /* Start with this header because it MUST NOT be added in case
+    /* Set the Injection-Date: header field. */
+    /* Start with this header field because it MUST NOT be added in case
      * the article already contains both Message-ID: and Date:
-     * header fields (possibility of multiple injections). */
+     * header fields (possibility of multiple injection, see Sections 3.4.2
+     * and 3.5 of RFC 5537). */
     if (HDR(HDR__INJECTION_DATE) == NULL) {
         /* If moderation is needed, do not add an Injection-Date: header field. */
         if (!needmoderation && PERMaccessconf->addinjectiondate) {

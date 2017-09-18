@@ -512,9 +512,11 @@ limiting is applied to the pre-encryption datastream.
 
 If a Date: or an Injection-Date: header field is not included in a
 posted article, nnrpd(8) normally adds these header fields in UTC.
-If this is set to true, the Date: header field will be formatted in
-local time instead.  (The Injection-Date: header field will remain in
-UTC, though.)  This is a boolean value and the default is false.
+If this is set to true, the Date: header field will be formatted in local
+time instead.  (The Injection-Date: header field is added according to
+the behaviour of the I<addinjectiondate> parameter in F<inn.conf>, and
+will remain in UTC, though.)  This is a boolean value and the default
+is false.
 
 This parameter permits to handle a relatively unusual corner case.
 It is mostly a tool for people who I<want> to disclose their local time
