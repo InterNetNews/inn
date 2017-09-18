@@ -529,7 +529,7 @@ AC_HEADER_STDBOOL
 
 dnl Generic checks for header files.
 AC_CHECK_HEADERS([crypt.h inttypes.h limits.h \
-                  stdint.h sys/bitypes.h sys/filio.h sys/loadavg.h \
+                  stdint.h strings.h sys/bitypes.h sys/filio.h sys/loadavg.h \
                   sys/select.h sys/time.h sys/uio.h syslog.h unistd.h])
 
 dnl Some Linux systems have db1/ndbm.h instead of ndbm.h.  Others have

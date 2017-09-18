@@ -53,5 +53,11 @@ reallocarray(void *ptr, size_t nmemb, size_t size)
             errno = ENOMEM;
             return NULL;
         }
+
+    /* Avoid a zero-size allocation. */
+    if (nmemb == 0 || size == 0) {
+        nmemb = 1;
+        size = 1;
+    }
     return realloc(ptr, nmemb * size);
 }
