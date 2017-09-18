@@ -194,9 +194,10 @@ installing INN, or by running the following commands:
 
 Replace the paths with something appropriate to your INN installation.
 This will create a self-signed certificate that will expire in a year.
-The B<openssl> program will ask you a variety of questions about your
-organization.  Enter the fully qualified domain name of the server as the
-name the certificate is for.
+The B<openssl> program will ask you a variety of questions about
+your organization.  Enter the fully qualified domain name of your news
+service (either the server canonical name or a dedicated alias for the
+news service) as the name the certificate is for.
 
 You then have to set these F<inn.conf> parameters with the right paths:
 

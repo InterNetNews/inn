@@ -1171,7 +1171,7 @@ Thanks to Andrew Gierth for the patch.
 =item *
 
 Fixed a bug in B<innreport> leading to incorrect summing of B<innd> stats
-when I<hostname> was set to an IPv6 address instead of a fully-qualified
+when I<hostname> was set to an IPv6 address instead of a fully qualified
 domain name.  Thanks to Petr Novopashenniy for the bug report.
 
 =item *
