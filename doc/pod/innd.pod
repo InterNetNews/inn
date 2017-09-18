@@ -287,7 +287,9 @@ the sites with the following subscription patterns will receive it:
     news.*,!control,!control.*
     control,control.*
 
-but the sites with the following subscription patterns will not receive it:
+As a matter of fact, for the first pattern, C<control.newgroup> (or
+C<control>) is included in C<*>.  However, the sites with the following
+subscription patterns will not receive it:
 
     *,@news.*,!control,!control.*
     comp.*,@news.*
