@@ -205,10 +205,11 @@ later in the file.  A line starting with C<$> sets a variable.  For
 example:
 
     $LOCALGROUPS=local.*,example.*
+    $CONTROLGROUPS=control,control.*
 
-This sets the variable C<LOCALGROUPS> to C<local.*,example.*>.  This
-variable can later be used elsewhere in the file, such as in a site entry
-like:
+This sets the variable C<LOCALGROUPS> to C<local.*,example.*> and the
+variable C<CONTROLGROUPS> to C<control,control.*>.  They can later be
+used elsewhere in the file, such as in a site entry like:
 
     news.example.com:$LOCALGROUPS:Tf,Wnm:
 
@@ -223,14 +224,14 @@ somewhat odd-sounding behavior is designed to make it easier to use
 variables to construct feed patterns.  The utility becomes more obvious
 when you observe that the line:
 
-    news.example.net:*,@$LOCALGROUPS:Tf,Wnm:
+    news.example.net:*,@$LOCALGROUPS,!$CONTROLGROUPS:Tf,Wnm:
 
 is therefore equivalent to:
 
-    news.example.net:*,@local.*,@example.*:Tf,Wnm:
+    news.example.net:*,@local.*,@example.*,!control,!control.*:Tf,Wnm:
 
-which (as explained below) excludes all of the groups in $LOCALGROUPS from
-the feed to that site.
+which (as explained below) excludes all of the groups in $LOCALGROUPS
+and unwanted control articles from the feed to that site.
 
 =head1 FLAG VALUES
 
