@@ -861,8 +861,15 @@ that are broken out separately after the initial alphabetized list.
 
 =item I<addinjectiondate>
 
-Whether to add an Injection-Date: header to all local posts.  This is a
-boolean value and the default is true.
+Whether to add an Injection-Date: header field to all local posts.
+This is a boolean value and the default is true.
+
+Note that no Injection-Date: header fields will be added to local posts
+already containing both a Message-ID: header field and a Date: header
+field.  This is done in conformance with standards, to help minimize
+the possibility of a loop in e-mail gatewaying and ensure that a newly
+injected article is not treated as a new, separate article in case of
+multiple injection of the same article to different injecting agents.
 
 =item I<addinjectionpostingaccount>
 
