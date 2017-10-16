@@ -23,6 +23,11 @@
 #error "You must use FLEX to process the lex input file."
 #endif
 
+/* Some versions of flex (such as 2.6.1-1.3 in Debian stretch) declare a
+   variable as int that should be size_t.  We can't really do much about
+   that, and it's fixed in current flex, so just suppress the warning. */
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
 #if defined (FLEX_DEBUG)
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
