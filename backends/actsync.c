@@ -2579,10 +2579,11 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
 
     /* pause if in non-interactive mode so as to not busy-out the server */
     if (mode == OUTPUT_EXEC && z_flag > 0) {
-	if (D_BUG)
+	if (D_BUG) {
             warn("sleeping %d seconds before fork/exec", z_flag);
 	    /* be sure they know what we are stalling */
 	    fflush(stderr);
+        }
 	sleep(z_flag);
     }
 
