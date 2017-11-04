@@ -42,6 +42,10 @@ A few commands listed in the "Control commands to INND" section in
 daily Usenet reports were appearing as a mere letter; all of them are
 now properly converted to meaningful words.
 
+=item *
+
+Other minor bug fixes and documentation improvements.
+
 =back
 
 =head1 Changes in 2.6.1

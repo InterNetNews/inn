@@ -83,9 +83,9 @@ CCOUTPUT	= @CCOUTPUT@
 ##  warn on system headers.  The warnings below are in the same order as
 ##  they're listed in the gcc manual.
 ##
-##  Last checked against gcc 4.7.4 (2014-06-12).
+##  Last checked against gcc 6.3.0 (2017-11-04).
 ##  Add -g because when building with warnings, one generally also wants the
-##  debugging information, and add -O2 because gcc won't find some warnings
+##  debugging information, and add -O3 because gcc won't find some warnings
 ##  without optimization turned on.  Add -DDEBUG=1 so that we'll also
 ##  compile all debugging code and check it as well.
 ##  It would be worthwhile trying to enforce the following checks:
@@ -96,9 +96,11 @@ CCOUTPUT	= @CCOUTPUT@
 ##  "-Wconversion -Wno-sign-conversion",
 ##  -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 
-WARNINGS	= -g -O2 -DDEBUG=1 -Werror -Wall -Wextra \
-		  -Winit-self -Wmissing-include-dirs \
-		  -Wsync-nand -Wendif-labels -Wtrampolines -Wpointer-arith \
+WARNINGS	= -g -O3 -DDEBUG=1 -Werror -Wall -Wextra \
+		  -Wnull-dereference -Winit-self -Wmissing-include-dirs \
+		  -Wshift-overflow=2 \
+		  -Wsync-nand -Wmissing-format-attribute -Wduplicated-cond \
+		  -Wtrampolines -Wpointer-arith \
 		  -Wbad-function-cast -Wcast-align -Wwrite-strings \
 		  -Wjump-misses-init -Wstrict-prototypes \
 		  -Wold-style-definition \

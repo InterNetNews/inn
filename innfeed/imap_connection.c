@@ -1249,7 +1249,7 @@ static int getsimple(void *context UNUSED,
     *result = authid;
     if (len)
       *len = authid ? strlen(authid) : 0;
-      break;
+    break;
   case SASL_CB_LANGUAGE:
     *result = NULL;
     if (len)
