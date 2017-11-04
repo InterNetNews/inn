@@ -1724,6 +1724,12 @@ ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
     for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
       ov = gdb->datablk;
       ovbuff = getovbuff(ov);
+      if (ovbuff == NULL) {
+          warn("buffindexed: ovgroupmmap could not get ovbuff block for new, %d, %d", ov.index, ov.blocknum);
+          free(gdb);
+          ovgroupunmap();
+          return false;
+      }
       offset = ovbuff->base + OV_OFFSET(ov.blocknum);
       pagefudge = offset % pagesize;
       mmapoffset = offset - pagefudge;
@@ -1860,6 +1866,10 @@ static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN 
 	    search->gdb.datablk.blocknum = srchov.blocknum;
 	    search->gdb.datablk.index = srchov.index;
 	    ovbuff = getovbuff(srchov);
+            if (ovbuff == NULL) {
+                warn("buffindexed: ovsearch could not get ovbuff block for new, %d, %d, %ld", srchov.index, srchov.blocknum, *artnum);
+                return false;
+            }
 	    offset = ovbuff->base + OV_OFFSET(srchov.blocknum);
 	    pagefudge = offset % pagesize;
 	    mmapoffset = offset - pagefudge;

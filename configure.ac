@@ -710,10 +710,10 @@ dnl Some may be worth looking at again once a released version of gcc doesn't
 dnl warn on system headers.  The warnings below are in the same order as
 dnl they're listed in the gcc manual.
 dnl
-dnl Last checked against gcc 4.7.4 (2014-06-12).
+dnl Last checked against gcc 6.3.0 (2017-11-04).
 dnl
 dnl Add -g because when building with warnings, one generally also wants the
-dnl debugging information, and add -O2 because gcc won't find some warnings
+dnl debugging information, and add -O3 because gcc won't find some warnings
 dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
 dnl compile all debugging code and check it as well.
 dnl
@@ -729,14 +729,15 @@ dnl "-Wconversion -Wno-sign-conversion",
 dnl -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 m4_foreach_w(
     [flag],
-    [-g -O2 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2
-     -Winit-self -Wmissing-include-dirs
-     -Wsync-nand -Wendif-labels -Wtrampolines -Wpointer-arith
+    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2
+     -Wnull-dereference -Winit-self -Wmissing-include-dirs
+     -Wshift-overflow=2
+     -Wsync-nand -Wmissing-format-attribute -Wduplicated-cond
+     -Wtrampolines -Wpointer-arith
      -Wbad-function-cast -Wcast-align -Wwrite-strings
      -Wjump-misses-init -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
-     -Wmissing-format-attribute
      -Wnormalized=nfc -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wno-unknown-warning-option],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])

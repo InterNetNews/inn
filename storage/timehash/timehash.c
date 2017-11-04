@@ -121,8 +121,9 @@ static TOKEN *PathToToken(char *path) {
 
     n = sscanf(path, "time-%02x/%02x/%02x/%04x-%04x",
                &tclass, &t1, &t2, &seqnum, &t3);
-    if (n != 5)
-	return (TOKEN *)NULL;
+    if (n != 5) {
+        return (TOKEN *)NULL;
+    }
     now = ((t1 << 16) & 0xff0000) | ((t2 << 8) & 0xff00) | ((t3 << 16) & 0xff000000) | (t3 & 0xff);
     class = tclass;
     token = MakeToken(now, seqnum, class, (TOKEN *)NULL);
@@ -435,6 +436,7 @@ timehash_next(ARTHANDLE *article, const RETRTYPE amount)
     ARTHANDLE           *art;
     int                 seqnum;
     size_t              length;
+    TOKEN               *nexttoken;
 
     length = strlen(innconf->patharticles) + 32;
     path = xmalloc(length);
@@ -529,7 +531,12 @@ timehash_next(ARTHANDLE *article, const RETRTYPE amount)
     newpriv->secde = priv.secde;
     newpriv->terde = priv.terde;
     snprintf(path, length, "%s/%s/%s/%s", priv.topde->d_name, priv.secde->d_name, priv.terde->d_name, de->d_name);
-    art->token = PathToToken(path);
+    nexttoken = PathToToken(path);
+    if (nexttoken == (TOKEN *)NULL) {
+        free(path);
+        return NULL;
+    }
+    art->token = nexttoken;
     BreakToken(*art->token, &(art->arrived), &seqnum);
     free(path);
     return art;
