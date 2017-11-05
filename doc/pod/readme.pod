@@ -236,7 +236,7 @@ can be found at L<https://github.com/crooks/PyClean>.
 
 =item GUP (Group Update Program)
 
-URL:  L<ftp://ftp.debian.org/debian/pool/main/g/gup/>
+URL:  L<https://tracker.debian.org/pkg/gup>
 
 GUP provides a way for your peers to update their F<newsfeeds> entries as
 they want without having to ask you to edit the configuration file all the
