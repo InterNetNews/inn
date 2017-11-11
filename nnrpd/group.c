@@ -125,23 +125,23 @@ CMDgroup(int ac, char *av[])
 	     * don't report them as we don't want them to appear too
 	     * soon. */
 	    if (innconf->nfsreader != 0) {
-		ARTNUM low, prev;
+		ARTNUM nfslow, prev;
 		time_t now, arrived;
 
 		time(&now);
                 /* We assume that during the last nfsreaderdelay seconds,
                  * we did not receive more than 1 article per second. */
 		if (ARTlow + innconf->nfsreaderdelay > ARThigh)
-		    low = ARTlow;
+		    nfslow = ARTlow;
 		else
-		    low = ARThigh - innconf->nfsreaderdelay;
-		handle = OVopensearch(group, low, ARThigh);
+		    nfslow = ARThigh - innconf->nfsreaderdelay;
+		handle = OVopensearch(group, nfslow, ARThigh);
 		if (!handle) {
 		    Reply("%d group disappeared\r\n", NNTP_FAIL_ACTION);
 		    free(group);
 		    return;
 		}
-		prev = low;
+		prev = nfslow;
 		while (OVsearch(handle, &i, NULL, NULL, NULL, &arrived)) {
 		    if ((time_t) (arrived + innconf->nfsreaderdelay) > now) {
 			ARThigh = prev;

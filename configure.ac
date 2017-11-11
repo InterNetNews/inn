@@ -684,7 +684,7 @@ dnl something that makes them unsuitable.  In particular, the following
 dnl warnings are *not* included:
 dnl
 dnl   -ansi                 Requires messing with feature test macros.
-dnl   -pedantic             Too much noise from embedded Perl.
+dnl   -Wpedantic             Too much noise from embedded Perl.
 dnl   -Wdouble-promotion    Too much noise from using printf with floats.
 dnl   -Wswitch-default      Quite annoying to enforce it.
 dnl   -Wstrict-overflow=2   Gives false positives.
@@ -693,7 +693,6 @@ dnl   -Wtraditional-conversion
 dnl                         Warns about problems when upgrading from K&R to
 dnl                         ANSI C, so these aren't interesting.
 dnl   -Wundef               We need portability code.
-dnl   -Wshadow              Names like log or index are too convenient.
 dnl   -Wunsafe-loop-optimizations
 dnl                         Too much noise.
 dnl   -Wcast-qual           Used for a while, but some casts are unavoidable.
@@ -733,8 +732,8 @@ m4_foreach_w(
      -Wnull-dereference -Winit-self -Wmissing-include-dirs
      -Wshift-overflow=2
      -Wsync-nand -Wmissing-format-attribute -Wduplicated-cond
-     -Wtrampolines -Wpointer-arith
-     -Wbad-function-cast -Wcast-align -Wwrite-strings
+     -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat -Wc++-compat
+     -Wbad-function-cast -Wcast-align -Wwrite-strings -Wdate-time
      -Wjump-misses-init -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations

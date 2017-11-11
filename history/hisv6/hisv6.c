@@ -1147,7 +1147,6 @@ hisv6_expirecb(struct hisv6 *h, void *cookie, const HASH *hash,
 				 HashToText(*hash), "] in history ",
 				 hiscookie->new->histpath, NULL));
     } else {
-	struct hisv6_walkstate *hiscookie = cookie;
 	TOKEN ltoken, *t;
 
 	/* if we have a token pass it to the discrimination function */
