@@ -2124,7 +2124,7 @@ bool hostCxnGone (Host host, Connection cxn)
 
       if (hostsLeft == 0) {
         snprintf(msgstr, sizeof(msgstr), "accsize %.0f rejsize %.0f",
-                 procArtsSizeAccepted, procArtsSizeRejected);
+                 (double) procArtsSizeAccepted, (double) procArtsSizeRejected);
         notice ("ME global seconds %ld offered %ld accepted %ld refused %ld"
                 " rejected %ld missing %ld %s spooled %ld unspooled %ld",
                 (long) (now - start),
@@ -3473,7 +3473,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
   double size;
   char *tsize;
-  char buf[]="1.23e+5 TB"; /* usual length is shorter, like "12.3 MB" */
+  char buf[]="1.234e+5 TB"; /* usual length is shorter, like "12.34 MB" */
 
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;
@@ -3614,19 +3614,20 @@ static void hostPrintStatus (Host host, FILE *fp)
 
 #ifdef        XXX_STATSHACK
   {
-  time_t      now = time(NULL), sec = (long) (now - host->connectTime);
-  float               or, ar, rr, jr;
+  time_t      now2 = time(NULL);
+  time_t      sec2 = (long) (now2 - host->connectTime);
+  double      or, ar, rr, jr;
 
-  if (sec != 0) {
-      or = (float) host->artsOffered / (float) sec;
-      ar = (float) host->artsAccepted / (float) sec;
-      rr = (float) host->artsNotWanted / (float) sec;
-      jr = (float) host->artsRejected / (float) sec;
-      fprintf(fp, "\t\tor %02.2f ar %02.2f rr %02.2f jr %02.2f\n",
+  if (sec2 != 0) {
+      or = (double) host->artsOffered / (double) sec2;
+      ar = (double) host->artsAccepted / (double) sec2;
+      rr = (double) host->artsNotWanted / (double) sec2;
+      jr = (double) host->artsRejected / (double) sec2;
+      fprintf(fp, "   or %02.2f ar %02.2f rr %02.2f jr %02.2f\n",
               or, ar, rr, jr);
   }
-  fprintf(fp, "\tmissing %d spooled %d\n",
-      host->artsMissing,host->backlogSpooled);
+  fprintf(fp, "   missing %u spooled %u\n",
+          host->artsMissing, host->artsToTape);
   }
 #endif        /* XXX_STATSHACK */
   

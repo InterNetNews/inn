@@ -18,9 +18,14 @@
 #include "inn/messages.h"
 #include "inn/libinn.h"
 #include "shmem.h"
-  
+
+#ifdef _TEST_
+# include <syslog.h> /* for openlog */
+# include <sys/file.h> /* for flock */
+#endif
+
 #ifndef MAP_FAILED
-  #define MAP_FAILED ((caddr_t)-1)
+# define MAP_FAILED ((caddr_t)-1)
 #endif
 
 static int smcGetSemaphore(const char *name)
@@ -285,10 +290,10 @@ void smcClose( smcd_t *this )
 #ifdef	_TEST_
 
 /* Check if the testfile exists.
-   If the file is absent
-       create one with size 1M, and fill the contents with all zero.
-   for (i=0; i<100; i++)
-       add 1 to the content;
+** If the file is absent, create one with size 1M, and fill the contents
+** with all zero.
+** for (i=0; i<100; i++)
+**   add 1 to the content;
 */
 static const char* testfile = "testfile";
 #define TESTSIZE	( 1024 * 1024 )
@@ -302,13 +307,11 @@ static void myexit( void )
     }
 }
 
-int main( int argc, char** argv )
+int main(int argc UNUSED, char** argv UNUSED)
 {
-    struct stat st;
     int fd, i, k;
     int *x;
     int len, xmin, xmax;
-    struct flock fl;
 
     atexit( myexit );
     openlog( "shmemtest", LOG_PID, LOG_DAEMON );
@@ -352,7 +355,7 @@ int main( int argc, char** argv )
         }
         for( i=0; i<len; i++)
             x[i] += 1;
-        if( write(fd, this->addr, this->size) != this->size ) {
+        if( write(fd, this->addr, this->size) != (signed int) this->size ) {
             printf( "cant write" );
             exit(1);
         }

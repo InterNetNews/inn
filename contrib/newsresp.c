@@ -190,19 +190,19 @@ ptime(void)
   diff = elapsed;
   elapsed = do_time(start);
   diff = elapsed - diff;
-  printf("%5.1f %5.1f  ",((float)elapsed)/1000.0,((float)diff)/1000.0);
+  printf("%5.1f %5.1f  ", ((double)elapsed)/1000.0, ((double)diff)/1000.0);
 }
 
 void
-massagebuff(int bread, char *buf)
+massagebuff(int bread, char *buffer)
 {
   char *p;
 
   if ( bread > 55 )
-    strcpy(buf+55," [...]\n");
+    strcpy(buffer+55," [...]\n");
   else
-    buf[bread] = '\0';
-  for ( p = buf; *p != '\0'; )
+    buffer[bread] = '\0';
+  for ( p = buffer; *p != '\0'; )
     if ( *p != '\r' )  /* We like to do it RISC style. */
       p++;
     else {

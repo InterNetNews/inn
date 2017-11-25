@@ -69,6 +69,11 @@ extern long dbzsize(off_t contents);
 extern void dbzsetoptions(const dbzoptions options);
 extern void dbzgetoptions(dbzoptions *options);
 
+#ifdef DBZTEST
+extern int timediffms(struct timeval start, struct timeval end);
+extern void RemoveDBZ(char *filename);
+#endif /* DBZTEST */
+
 END_DECLS
 
 #endif /* INN_DBZ_H */

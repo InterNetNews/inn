@@ -296,14 +296,15 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
                cp->Refused - cp->Refused_checkpoint,
                cp->Rejected - cp->Rejected_checkpoint,
                cp->Duplicate - cp->Duplicate_checkpoint,
-               cp->Size - cp->Size_checkpoint,
-               cp->DuplicateSize - cp->DuplicateSize_checkpoint,
-               cp->RejectSize - cp->RejectSize_checkpoint);
+               (double) (cp->Size - cp->Size_checkpoint),
+               (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
+               (double) (cp->RejectSize - cp->RejectSize_checkpoint));
         notice("%s closed seconds %ld accepted %ld refused %ld rejected %ld"
                " duplicate %ld accepted size %.0f duplicate size %.0f"
                " rejected size %.0f", name, (long)(Now.tv_sec - cp->Started),
                cp->Received, cp->Refused, cp->Rejected, cp->Duplicate,
-               cp->Size, cp->DuplicateSize, cp->RejectSize);
+               (double) cp->Size, (double) cp->DuplicateSize,
+               (double) cp->RejectSize);
     }
     if (cp->Data.Newsgroups.Data != NULL) {
         free(cp->Data.Newsgroups.Data);

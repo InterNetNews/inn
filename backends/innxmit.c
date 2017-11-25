@@ -602,7 +602,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 	return false;
     if (HeadersFeed) {
 	struct iovec vec[3];
-	char buf[20];
+        char buf[32];
 	int iscmsg = 0;
 	int len = HeadersLen(art, &iscmsg);
 

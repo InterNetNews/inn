@@ -684,7 +684,7 @@ dnl something that makes them unsuitable.  In particular, the following
 dnl warnings are *not* included:
 dnl
 dnl   -ansi                 Requires messing with feature test macros.
-dnl   -Wpedantic             Too much noise from embedded Perl.
+dnl   -Wpedantic            Too much noise from embedded Perl.
 dnl   -Wdouble-promotion    Too much noise from using printf with floats.
 dnl   -Wswitch-default      Quite annoying to enforce it.
 dnl   -Wstrict-overflow=2   Gives false positives.
@@ -693,6 +693,9 @@ dnl   -Wtraditional-conversion
 dnl                         Warns about problems when upgrading from K&R to
 dnl                         ANSI C, so these aren't interesting.
 dnl   -Wundef               We need portability code.
+dnl   -Wformat-truncation=2 Gives false positives with GCC 7.2.0
+dnl                         https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83011
+dnl   -Wduplicated-branches Gives noise because of SA_LEN
 dnl   -Wunsafe-loop-optimizations
 dnl                         Too much noise.
 dnl   -Wcast-qual           Used for a while, but some casts are unavoidable.
@@ -704,12 +707,13 @@ dnl   -Wpadded              Used by INN.
 dnl   -Wredundant-decls     Too much noise from system headers.
 dnl   -Wlong-long           Too much noise from system headers.
 dnl   -Woverlength-strings  Useless noise.
+dnl   -Wunused-function     Noise from embedded Perl (at least with Perl 5.20).
 dnl
 dnl Some may be worth looking at again once a released version of gcc doesn't
 dnl warn on system headers.  The warnings below are in the same order as
 dnl they're listed in the gcc manual.
 dnl
-dnl Last checked against gcc 6.3.0 (2017-11-04).
+dnl Last checked against gcc 7.2.0 (2017-11-25).
 dnl
 dnl Add -g because when building with warnings, one generally also wants the
 dnl debugging information, and add -O3 because gcc won't find some warnings
@@ -728,17 +732,20 @@ dnl "-Wconversion -Wno-sign-conversion",
 dnl -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 m4_foreach_w(
     [flag],
-    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wformat=2
-     -Wnull-dereference -Winit-self -Wmissing-include-dirs
-     -Wshift-overflow=2
-     -Wsync-nand -Wmissing-format-attribute -Wduplicated-cond
-     -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat -Wc++-compat
-     -Wbad-function-cast -Wcast-align -Wwrite-strings -Wdate-time
+    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
+     -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
+     -Wmissing-include-dirs -Wshift-overflow=2
+     -Wsync-nand -Wstringop-overflow=4 -Wmissing-format-attribute
+     -Walloc-zero -Walloca -Wduplicated-cond
+     -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat
+     -Wbad-function-cast -Wcast-align -Wwrite-strings
+     -Wdangling-else -Wdate-time
      -Wjump-misses-init -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
-     -Wnormalized=nfc -Wnested-externs -Winline
-     -Winvalid-pch -Wvla -Wno-unknown-warning-option],
+     -Wnormalized=nfc -Wrestrict -Wnested-externs -Winline
+     -Winvalid-pch -Wvla -Wno-unknown-warning-option
+     -Wno-unused-function],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
 

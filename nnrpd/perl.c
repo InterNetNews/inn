@@ -44,7 +44,7 @@ extern bool PerlLoaded;
 /* #define DEBUG_MODIFY only if you want to see verbose output. */
 #ifdef DEBUG_MODIFY
 static FILE *flog;
-void dumpTable(char *msg);
+void dumpTable(const char *msg);
 #endif /* DEBUG_MODIFY */
 
 char *
@@ -434,7 +434,7 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
 
 #ifdef DEBUG_MODIFY
 void
-dumpTable (char *msg)
+dumpTable (const char *msg)
 {
     HEADER *hp;
     int i;

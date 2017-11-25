@@ -1389,7 +1389,7 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	*(CNFSARTHEADER *)&cahh = cah;
 	if(pread(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER), offset+sizeof(cah)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
             SMseterror(SMERR_UNDEFINED, "read2 failed");
-            syswarn("CNFS: could not read2 token %s %s:0x%s:%ld: %m",
+            syswarn("CNFS: could not read2 token %s %s:0x%s:%u: %m",
                     TokenToText(token), cycbuffname,
                     CNFSofft2hex(offset, false), cycnum);
             free(art);

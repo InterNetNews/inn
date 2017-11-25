@@ -724,7 +724,7 @@ static bool ovbuffinit_disks(void) {
       ovflushhead(ovbuff);
     }
 #ifdef OV_DEBUG
-    ovbuff->trace = xcalloc(ovbuff->totalblk, sizeof(ov_trace_array));
+    ovbuff->trace = xcalloc(ovbuff->totalblk, sizeof(struct ov_trace_array));
 #endif /* OV_DEBUG */
     ovlock(ovbuff, INN_LOCK_UNLOCK);
   }
@@ -1377,9 +1377,6 @@ static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int
   OVBUFF	*ovbuff;
   OVINDEXHEAD	ovindexhead;
   bool		needupdate = false;
-#ifdef OV_DEBUG
-  int		recno;
-#endif /* OV_DEBUG */
 
   Nospace = false;
   if (OV_BLOCKSIZE < len) {
@@ -1867,7 +1864,7 @@ static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN 
 	    search->gdb.datablk.index = srchov.index;
 	    ovbuff = getovbuff(srchov);
             if (ovbuff == NULL) {
-                warn("buffindexed: ovsearch could not get ovbuff block for new, %d, %d, %ld", srchov.index, srchov.blocknum, *artnum);
+                warn("buffindexed: ovsearch could not get ovbuff block for new, %d, %d", srchov.index, srchov.blocknum);
                 return false;
             }
 	    offset = ovbuff->base + OV_OFFSET(srchov.blocknum);
@@ -2058,15 +2055,18 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
   void		*handle;
   GROUPENTRY	newge, *ge;
   GROUPLOC	gloc, next;
-  char		*data;
-  int		i, len;
+  char          *data = NULL;
+  int		i;
+  int           len = 0;
   TOKEN		token;
-  ARTNUM	artnum, low, high;
+  ARTNUM        artnum = 0;
+  ARTNUM        low, high;
   ARTHANDLE	*ah;
   char		flag;
   HASH		hash;
-  time_t	arrived, expires;
-  OVSEARCH	search;
+  time_t        arrived = 0;
+  time_t        expires = 0;
+  OVSEARCH      search = { 0 };
 
   if (group == NULL) {
     for (i = 0 ; i < GROUPheader->freelist.recno ; i++) {
@@ -2162,7 +2162,11 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
         warn("buffindexed: cannot prepare free operation");
         return false;
       }
+#ifdef OV_DEBUG
+      freegroupblock(ge);
+#else
       freegroupblock();
+#endif /* OV_DEBUG */
       ovgroupunmap();
 
       return false;
@@ -2253,7 +2257,8 @@ void buffindexed_close(void) {
   FILE		*F = NULL;
   pid_t		pid;
   char		*path = NULL;
-  int		i,j;
+  size_t        i;
+  int           j;
   struct ov_trace_array *trace;
   struct ov_name_table	*ntp;
   size_t length;
@@ -2279,7 +2284,7 @@ void buffindexed_close(void) {
 	      break;
 	    }
 	  }
-	  fprintf(F, "%d: % 6d, % 2d: 0x%08x, % 10d, % 10d\n", ovbuff->index, i, j,
+	  fprintf(F, "%d: % 6ld, % 2d: 0x%08x, % 10ld, % 10ld\n", ovbuff->index, i, j,
 	  trace->ov_trace[j].gloc.recno,
 	  trace->ov_trace[j].occupied,
 	  trace->ov_trace[j].freed);
@@ -2292,7 +2297,7 @@ void buffindexed_close(void) {
       length = strlen(innconf->pathtmp) + 11;
       path = xmalloc(length);
       pid = getpid();
-      sprintf(path, length, "%s/%d", innconf->pathtmp, pid);
+      snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
       if ((F = fopen(path, "w")) == NULL) {
 	syswarn("buffindexed: could not open %s", path);
       }

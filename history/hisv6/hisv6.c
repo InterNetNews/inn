@@ -79,9 +79,9 @@ hisv6_errloc(char *s, size_t line, off_t offset)
 {
     if (offset != -1) {
 	/* really we want an autoconf test for %ll/%L/%I64, sigh */
-	sprintf(s, "@%.0f", (double)offset);
+        snprintf(s, HISV6_MAX_LOCATION, "@%lu", (unsigned long)offset);
     } else {
-	sprintf(s, ":%lu", (unsigned long)line);
+        snprintf(s, HISV6_MAX_LOCATION, ":%lu", (unsigned long)line);
     }
 }
 

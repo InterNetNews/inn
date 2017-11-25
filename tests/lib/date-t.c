@@ -105,18 +105,20 @@ check_nntp(int *n, time_t timestamp)
 
     tmp_tm = localtime(&timestamp);
     tm = *tmp_tm;
-    sprintf(date, "%02d%02d%02d", tm.tm_year % 100, tm.tm_mon + 1,
-            tm.tm_mday);
-    sprintf(hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
+    snprintf(date, sizeof(date), "%02d%02d%02d",
+             tm.tm_year % 100, tm.tm_mon + 1, tm.tm_mday);
+    snprintf(hour, sizeof(hour), "%02d%02d%02d",
+             tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, true);
-    sprintf(date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
-            tm.tm_mday);
+    snprintf(date, sizeof(date), "%04d%02d%02d",
+            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
     ok_nntp((*n)++, timestamp, date, hour, true);
     tmp_tm = gmtime(&timestamp);
     tm = *tmp_tm;
-    sprintf(date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
-            tm.tm_mday);
-    sprintf(hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
+    snprintf(date, sizeof(date), "%04d%02d%02d",
+             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    snprintf(hour, sizeof(hour), "%02d%02d%02d",
+             tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, false);
 }
 

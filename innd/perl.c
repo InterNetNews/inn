@@ -204,7 +204,7 @@ PLmidfilter(char *messageID)
 **  mode and the reason.
 */
 void
-PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
+PLmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
 {
     dSP;
     HV          *mode;
@@ -219,13 +219,13 @@ PLmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
        the reason in $mode{reason}. */
     mode = perl_get_hv("mode", 1);
 
-    if (Mode == OMrunning)
+    if (CurrentMode == OMrunning)
         (void) hv_store(mode, "Mode", 4, newSVpv("running", 7), 0);
-    if (Mode == OMpaused)
+    if (CurrentMode == OMpaused)
         (void) hv_store(mode, "Mode", 4, newSVpv("paused", 6), 0);
-    if (Mode == OMthrottled)
+    if (CurrentMode == OMthrottled)
         (void) hv_store(mode, "Mode", 4, newSVpv("throttled", 9), 0);
-    if (Mode == OMshutdown)
+    if (CurrentMode == OMshutdown)
         (void) hv_store(mode, "Mode", 4, newSVpv("shutdown", 8), 0);
 
     if (NewMode == OMrunning)

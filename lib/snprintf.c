@@ -83,10 +83,20 @@
  *    added explicit casts for double to long long int conversion
  *    fixed various warnings with GCC 7
  *
- *  Hrvoje Niksic <hniksic@arsdigita.com> 2000-11-04
+ *  Hrvoje Niksic <hniksic@xemacs.org> 2000-11-04
+ *    include <config.h> instead of "config.h".
+ *    moved TEST_SNPRINTF stuff out of HAVE_SNPRINTF ifdef.
  *    include <stdio.h> for NULL.
- *    added support for long long.
+ *    added support and test cases for long long.
  *    don't declare argument types to (v)snprintf if stdarg is not used.
+ *    use int instead of short int as 2nd arg to va_arg.
+ *
+ *  alexk (INN) 2002-08-21
+ *    use LLONG in fmtfp to handle more characters during floating
+ *    point conversion.
+ *
+ *  herb (Samba) 2002-12-19
+ *    actually print args for %g and %e
  *
  *  Hrvoje Niksic <hniksic@xemacs.org> 2005-04-15
  *    use the PARAMS macro to handle prototypes.
@@ -104,6 +114,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include "inn/messages.h"
 
 #ifndef NULL
 # define NULL 0
@@ -112,11 +123,6 @@
 /* varargs declarations: */
 
 #include <stdarg.h>
-#define HAVE_STDARGS    /* let's hope that works everywhere (mj) */
-#define VA_LOCAL_DECL   va_list ap
-#define VA_START(f)     va_start(ap, f)
-#define VA_SHIFT(v,t)  ;   /* no-op for ANSI */
-#define VA_END          va_end(ap)
 
 /* Assume all compilers support long double, per Autoconf documentation. */
 #define LDOUBLE long double
@@ -130,15 +136,15 @@
 int snprintf (char *str, size_t count, const char *fmt, ...);
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 
-static int dopr (char *buffer, size_t maxlen, const char *format, 
+static int dopr (char *buffer, size_t maxlen, const char *format,
                  va_list args);
 static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
-		   const char *value, int flags, int min, int max);
+                   const char *value, int flags, int min, int max);
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-		   LLONG value, int base, int min, int max, int flags);
+                   LLONG value, int base, int min, int max, int flags);
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
-		  LDOUBLE fvalue, int min, int max, int flags);
-static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
+                  LDOUBLE fvalue, int min, int max, int flags);
+static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c);
 
 /*
  * dopr(): poor man's version of doprintf
@@ -514,7 +520,7 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-		   LLONG value, int base, int min, int max, int flags)
+                   LLONG value, int base, int min, int max, int flags)
 {
   int signvalue = 0;
   unsigned LLONG uvalue;
@@ -570,8 +576,8 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
     spadlen = -spadlen; /* Left Justifty */
 
 #ifdef DEBUG_SNPRINTF
-  dprint (1, (debugfile, "zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
-      zpadlen, spadlen, min, max, place));
+  debug("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
+        zpadlen, spadlen, min, max, place);
 #endif
 
   /* Spaces */
@@ -652,7 +658,7 @@ static LLONG round_int (LDOUBLE value)
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
 
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
-		  LDOUBLE fvalue, int min, int max, int flags)
+                  LDOUBLE fvalue, int min, int max, int flags)
 {
   int signvalue = 0;
   LDOUBLE ufvalue;
@@ -760,7 +766,11 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
       }
 
 #ifdef DEBUG_SNPRINTF
-  dprint (1, (debugfile, "fmtfp: %f =? %d.%d\n", fvalue, intpart, fracpart));
+# ifdef HAVE_LONG_LONG_INT
+  debug("fmtfp: %Lf =? %lld.%lld\n", fvalue, intpart, fracpart);
+# else
+  debug("fmtfp: %Lf =? %ld.%ld\n", fvalue, intpart, fracpart);
+# endif
 #endif
 
   /* Convert integer part */
@@ -861,27 +871,14 @@ int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
   return dopr(str, count, fmt, args);
 }
 
-/* VARARGS3 */
-#ifdef HAVE_STDARGS
-int snprintf (char *str,size_t count,const char *fmt,...)
-#else
-int snprintf (va_alist) va_dcl
-#endif
+int snprintf (char *str, size_t count, const char *fmt,...)
 {
-#ifndef HAVE_STDARGS
-  char *str;
-  size_t count;
-  char *fmt;
-#endif
-  VA_LOCAL_DECL;
+  va_list ap;
   int total;
     
-  VA_START (fmt);
-  VA_SHIFT (str, char *);
-  VA_SHIFT (count, size_t );
-  VA_SHIFT (fmt, char *);
+  va_start(ap, fmt);
   total = vsnprintf(str, count, fmt, ap);
-  VA_END;
+  va_end(ap);
   return total;
 }
 
@@ -958,5 +955,6 @@ int main (void)
       num++;
     }
   printf ("%d tests failed out of %d.\n", fail, num);
+  return 0;
 }
-#endif /* SNPRINTF_TEST */
+#endif /* TEST_SNPRINTF */
