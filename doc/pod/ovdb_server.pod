@@ -1,31 +1,34 @@
 =head1 NAME
 
-ovdb_server - overview 'helper' server
+ovdb_server - Overview helper server for B<nnrpd>
 
 =head1 SYNOPSIS
 
-Use C<ovdb_init> to start ovdb_server
+Use B<ovdb_init> to start B<ovdb_server>
 
 =head1 DESCRIPTION
 
-If the C<readserver> parameter in F<ovdb.conf> is true,
-C<ovdb_init> will start C<ovdb_server>.
+If the I<readserver> parameter in F<ovdb.conf> is true, B<ovdb_init>
+(if not invoked with the B<-r> flag) will start as many B<ovdb_server>
+processes as the I<numrsprocs> parameter states.
 
-C<ovdb_server> opens the overview database, and accesses it
-on behalf of the nnrpd reader processes.
+B<ovdb_server> opens the overview database, and accesses it on behalf
+of the B<nnrpd> reader processes.
 
-To shut down ovdb_server, send a TERM signal to the process ID
-in F<I<pathrun>/ovdb_server.pid> .  The parent process will shut
-down its children and wait for their exit before exiting itself.
+To shut down B<ovdb_server>, send a TERM signal to the process ID
+mentioned in F<ovdb_server.pid> in I<pathrun> (note that the B<rc.news>
+script already does that if used to shut down INN).  The parent
+process will shut down its children and wait for their exit before
+exiting itself.
 
 =head1 HISTORY
 
-Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
 $Id$
 
 =head1 SEE ALSO
 
-ovdb(5), ovdb_init(8)
+ovdb(5), ovdb_init(8), rc.news(8).
 
 =cut
