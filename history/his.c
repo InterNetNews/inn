@@ -454,8 +454,8 @@ his_logger(const char *s, int code)
 	fprintf(HISfdlog, "%d/%d/%d %02d:%02d:%02d.%06d: [%d] %s (%.6f)\n",
 		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
 		tm->tm_min, tm->tm_sec, (int)tv.tv_usec, code, s, (double) tv.tv_sec +
-        (double) tv.tv_usec / 1000000 - (double) HISstat_start[code].tv_sec -
-        (double) HISstat_start[code].tv_usec / 1000000);
+                (double) tv.tv_usec / 1000000 - (double) HISstat_start[code].tv_sec -
+                (double) HISstat_start[code].tv_usec / 1000000);
 	if (tv.tv_usec < HISstat_start[code].tv_usec) {
 	    HISstat_total[code].tv_sec++;
 	    HISstat_total[code].tv_usec +=
