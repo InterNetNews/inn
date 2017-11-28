@@ -30,8 +30,15 @@ ctlinnd mode 2>&1
 ##  Show disk usage.  You might have to change this.
 echo ''
 echo 'Disk usage:'
-${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} \
-	${PATHDB} ${MOST_LOGS} | ${SORT} -u
+DISKUSAGE="${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH}"
+DISKUSAGE="${DISKUSAGE} ${PATHDB} ${TMPDIR} ${MOST_LOGS}"
+if [ -d "${PATHARCHIVE}" ]; then
+    DISKUSAGE="${DISKUSAGE} ${PATHARCHIVE}"
+fi
+if [ -d "${PATHHTTP}" ]; then
+    DISKUSAGE="${DISKUSAGE} ${PATHHTTP}"
+fi
+${INNDF} ${DISKUSAGE} | ${SORT} -u
 
 ##  Show overview usage for buffindexed.
 [ ${OVMETHOD} = 'buffindexed' ] && {
@@ -42,12 +49,12 @@ ${INNDF} ${SPOOL} ${OVERVIEWDIR} ${PATHETC} ${INCOMING} ${BATCH} \
 
 ##  Show size of batch files.
 echo ''
-echo 'Batch file sizes:'
+echo 'Batch file sizes (in Kbytes):'
 ( cd ${BATCH}; ls -Cs | sed 1d )
 
 ##  Show size of log files.
 echo ''
-echo 'Log file sizes:'
+echo 'Log file sizes (in Kbytes):'
 ( cd ${MOST_LOGS}; ls -Cs ${LOGS} *.log 2>&1 )
 
 ##  Show the lock files
@@ -71,7 +78,7 @@ ctlinnd -t60 name '' 2>&1 \
      m/^(\S+):(\d+)$/;
      $c{$1} = [] unless $c{$1};
      @l = @{$c{$1}};
-     push @l, $2;
+     push(@l, $2);
      $c{$1} = [@l];
      $m++;
  
