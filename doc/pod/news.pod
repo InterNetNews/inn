@@ -44,6 +44,12 @@ now properly converted to meaningful words.
 
 =item *
 
+The I<tlsprotocols> parameter in F<inn.conf> now recognizes the
+C<TLSv1.3> value (for OpenSSL versions implementing S<TLS 1.3>, that
+is to say starting from S<OpenSSL 1.1.1>).
+
+=item *
+
 Other minor bug fixes and documentation improvements.
 
 =back

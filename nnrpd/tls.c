@@ -81,20 +81,20 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
     if (where & SSL_CB_LOOP) {
 	if (tls_serverengine && (tls_loglevel >= 2))
-	    Printf("%s:%s", str, SSL_state_string_long(s));
+            syslog(L_NOTICE, "%s:%s", str, SSL_state_string_long(s));
     } else if (where & SSL_CB_ALERT) {
 	str = (where & SSL_CB_READ) ? "read" : "write";
 	if ((tls_serverengine && (tls_loglevel >= 2)) ||
 	    ((ret & 0xff) != SSL3_AD_CLOSE_NOTIFY))
-	  Printf("SSL3 alert %s:%s:%s", str,
+            syslog(L_NOTICE, "SSL3 alert %s:%s:%s", str,
 		 SSL_alert_type_string_long(ret),
 		 SSL_alert_desc_string_long(ret));
     } else if (where & SSL_CB_EXIT) {
 	if (ret == 0)
-	    Printf("%s:failed in %s",
+            syslog(L_ERROR, "%s:failed in %s",
 		     str, SSL_state_string_long(s));
 	else if (ret < 0) {
-	    Printf("%s:error in %s",
+            syslog(L_ERROR, "%s:error in %s",
 		     str, SSL_state_string_long(s));
 	}
     }
@@ -244,10 +244,12 @@ verify_callback(int ok, X509_STORE_CTX * ctx)
     err = X509_STORE_CTX_get_error(ctx);
     depth = X509_STORE_CTX_get_error_depth(ctx);
 
-    if (err_cert != NULL) {
-        X509_NAME_oneline(X509_get_subject_name(err_cert), buf, sizeof(buf));
-        if ((tls_serveractive) && (tls_loglevel >= 1)) {
-            Printf("Peer cert verify depth=%d %s", depth, buf);
+    if ((tls_serveractive) && (tls_loglevel >= 1)) {
+        if (err_cert != NULL) {
+            X509_NAME_oneline(X509_get_subject_name(err_cert), buf, sizeof(buf));
+            syslog(L_NOTICE, "Peer cert verify depth=%d %s", depth, buf);
+        } else {
+            syslog(L_NOTICE, "Peer cert verify depth=%d <no cert>", depth);
         }
     }
     
@@ -280,7 +282,7 @@ verify_callback(int ok, X509_STORE_CTX * ctx)
 	break;
     }
     if ((tls_serveractive) && (tls_loglevel >= 1))
-      Printf("verify return:%d", ok);
+        syslog(L_NOTICE, "verify return:%d", ok);
 
     return (ok);
 }
@@ -348,14 +350,14 @@ tls_dump(const char *s, int len)
 	/* If this is the last call, then update the ddt_dump thing so that
          * we will move the selection point in the debug window. */
 	if (tls_loglevel>0)
-	  Printf("%s", buf);
+            syslog(L_NOTICE, "%s", buf);
 	ret += strlen(buf);
     }
 #ifdef TRUNCATE
     if (trunc > 0) {
 	snprintf(buf, sizeof(buf), "%04x - <SPACES/NULS>\n", len+ trunc);
 	if (tls_loglevel>0)
-	  Printf("%s", buf);
+            syslog(L_NOTICE, "%s", buf);
 	ret += strlen(buf);
     }
 #endif
@@ -496,7 +498,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
       return (0);				/* Already running. */
 
     if (tls_loglevel >= 2)
-      Printf("starting TLS engine");
+      syslog(L_NOTICE, "starting TLS engine");
 
 /* New functions have been introduced in OpenSSL 1.1.0. */
 #if OPENSSL_VERSION_NUMBER < 0x010100000L
@@ -530,7 +532,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if ((!SSL_CTX_load_verify_locations(CTX, CAfile, CApath)) ||
 	(!SSL_CTX_set_default_verify_paths(CTX))) {
       if (tls_loglevel >= 2)
-	Printf("TLS engine: cannot load CA data\n");
+          syslog(L_ERROR, "TLS engine: cannot load CA data");
       return (-1);
     }
     
@@ -545,7 +547,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     
     if (!set_cert_stuff(CTX, s_cert_file, s_key_file)) {
       if (tls_loglevel >= 2)
-	Printf("TLS engine: cannot load cert/key data\n");
+          syslog(L_ERROR, "TLS engine: cannot load cert/key data");
       return (-1);
     }
 
@@ -600,6 +602,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
                     tls_protos |= INN_TLS_TLSv1_1;
                 } else if (strcmp(tls_proto_vect->strings[i], "TLSv1.2") == 0) {
                     tls_protos |= INN_TLS_TLSv1_2;
+                } else if (strcmp(tls_proto_vect->strings[i], "TLSv1.3") == 0) {
+                    tls_protos |= INN_TLS_TLSv1_3;
                 } else {
                     syslog(L_ERROR, "TLS engine: unknown protocol '%s' in tlsprotocols",
                            tls_proto_vect->strings[i]);
@@ -608,7 +612,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     } else {
         /* Default value:  allow only TLS protocols. */
-        tls_protos = (INN_TLS_TLSv1 | INN_TLS_TLSv1_1 | INN_TLS_TLSv1_2);
+        tls_protos = (INN_TLS_TLSv1 | INN_TLS_TLSv1_1 | INN_TLS_TLSv1_2
+                      | INN_TLS_TLSv1_3);
     }
 
     if ((tls_protos & INN_TLS_SSLv2) == 0) {
@@ -632,6 +637,12 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if ((tls_protos & INN_TLS_TLSv1_2) == 0) {
 #ifdef SSL_OP_NO_TLSv1_2
         SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_2);
+#endif
+    }
+
+    if ((tls_protos & INN_TLS_TLSv1_3) == 0) {
+#ifdef SSL_OP_NO_TLSv1_3
+        SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1_3);
 #endif
     }
 
@@ -728,15 +739,15 @@ bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
 	return (ret);
 
     if (cmd == (BIO_CB_READ | BIO_CB_RETURN)) {
-        Printf("read from %08lX [%08lX] (%d bytes => %ld (0x%X))",
+        syslog(L_NOTICE, "read from %08lX [%08lX] (%d bytes => %ld (0x%lX))",
                (unsigned long) bio, (unsigned long) argp,
-               argi, ret, (unsigned int) ret);
+               argi, ret, (unsigned long) ret);
 	tls_dump(argp, (int) ret);
 	return (ret);
     } else if (cmd == (BIO_CB_WRITE | BIO_CB_RETURN)) {
-        Printf("write to %08lX [%08lX] (%d bytes => %ld (0x%X))",
+        syslog(L_NOTICE, "write to %08lX [%08lX] (%d bytes => %ld (0x%lX))",
                (unsigned long) bio, (unsigned long) argp,
-               argi, ret, (unsigned int) ret);
+               argi, ret, (unsigned long) ret);
 	tls_dump(argp, (int) ret);
     }
     return (ret);
@@ -767,7 +778,7 @@ tls_start_servertls(int readfd, int writefd)
       return (-1);
     }
     if (tls_loglevel >= 1)
-	Printf("setting up TLS connection");
+	syslog(L_NOTICE, "setting up TLS connection");
 
     if (tls_conn == NULL)
     {

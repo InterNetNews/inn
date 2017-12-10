@@ -692,6 +692,13 @@ with the master version at
 L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
 L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 
+=item *
+
+Check whether patches from OpenSSL (F<apps/s_cb.c>, F<apps/s_server.c>
+and F<crypto/bio/b_dump.c>) could be merged into F<nnrpd/tls.c>, as
+well as support for new TLS versions in the F<tlsprotocols> parameter
+in F<inn.conf>.
+
 =back
 
 =item 2.
