@@ -49,6 +49,7 @@
 #define INN_TLS_TLSv1 4
 #define INN_TLS_TLSv1_1 8
 #define INN_TLS_TLSv1_2 16
+#define INN_TLS_TLSv1_3 32
 
 /* Init TLS engine. */
 int tls_init_serverengine(int verifydepth, /* Depth to verify. */
