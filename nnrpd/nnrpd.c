@@ -531,7 +531,7 @@ CMDquit(int ac UNUSED, char *av[] UNUSED)
 **  since anyone can fake reverse DNS entries.
 */
 static bool
-Address2Name(struct sockaddr *sa, char *hostname, size_t size)
+Address2Name(struct sockaddr *sa, socklen_t len, char *hostname, size_t size)
 {
     static const char MISMATCH[] = "reverse lookup validation failed";
     struct addrinfo hints, *ai, *host;
@@ -540,7 +540,7 @@ Address2Name(struct sockaddr *sa, char *hostname, size_t size)
     bool valid = false;
 
     /* Get the official hostname, store it away. */
-    ret = getnameinfo(sa, SA_LEN(sa), hostname, size, NULL, 0, NI_NAMEREQD);
+    ret = getnameinfo(sa, len, hostname, size, NULL, 0, NI_NAMEREQD);
     if (ret != 0) {
 	HostErrorStr = gai_strerror(ret);
 	return false;
@@ -613,7 +613,7 @@ StartConnection(unsigned short port)
 	}
 	if (GetHostByAddr) {
             HostErrorStr = default_host_error;
-            if (!Address2Name(sac, Client.host, sizeof(Client.host))) {
+            if (!Address2Name(sac, length, Client.host, sizeof(Client.host))) {
                 notice("? reverse lookup for %s failed: %s -- using IP"
                        " address for access", Client.ip, HostErrorStr);
 	        strlcpy(Client.host, Client.ip, sizeof(Client.host));
@@ -641,7 +641,7 @@ StartConnection(unsigned short port)
 	if (GetHostByAddr) {
 	    HostErrorStr = default_host_error;
             size = sizeof(Client.serverhost);
-            if (!Address2Name(sas, Client.serverhost, size)) {
+            if (!Address2Name(sas, length, Client.serverhost, size)) {
                 notice("? reverse lookup for %s failed: %s -- using IP"
                        " address for access", Client.serverip, HostErrorStr);
 	        strlcpy(Client.serverhost, Client.serverip,

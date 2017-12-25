@@ -490,6 +490,7 @@ Connection newConnection (Host host,
 bool cxnConnect (Connection cxn)
 {
   struct sockaddr *cxnAddr;
+  socklen_t len;
   int fd, rval;
   const char *src;
   const char *peerName = hostPeerName (cxn->myHost) ;
@@ -524,9 +525,20 @@ bool cxnConnect (Connection cxn)
     }
 
   if (cxnAddr->sa_family == AF_INET)
-    src = hostBindAddr(cxn->myHost);
+    {
+      src = hostBindAddr(cxn->myHost) ;
+      len = sizeof(struct sockaddr_in) ;
+    }
   else
-    src = hostBindAddr6(cxn->myHost);
+    {
+      src = hostBindAddr6(cxn->myHost) ;
+#if HAVE_INET6
+      len = sizeof(struct sockaddr_in6) ;
+#else
+      /* This should never happen, but the compiler doesn't know that. */
+      len = sizeof(struct sockaddr) ;
+#endif
+    }
   if (src && strcmp(src, "none") == 0)
     src = NULL;
 
@@ -553,7 +565,7 @@ bool cxnConnect (Connection cxn)
       return false ;
     }
 
-  rval = connect (fd, cxnAddr, SA_LEN(cxnAddr)) ;
+  rval = connect (fd, cxnAddr, len) ;
   if (rval < 0 && errno != EINPROGRESS)
     {
       syswarn ("%s:%d connect", peerName, cxn->ident) ;

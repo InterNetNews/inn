@@ -128,7 +128,7 @@ GoodIdent(int fd, char *identd)
     struct sockaddr *s_local;
     struct sockaddr *s_distant = NULL;
     int ident_fd;
-    socklen_t len;
+    socklen_t local_len, distant_len;
     int port1,port2;
     ssize_t lu;
     char buf[80], *buf2;
@@ -137,14 +137,14 @@ GoodIdent(int fd, char *identd)
          return true;
 
     s_local = xmalloc(sizeof(struct sockaddr_storage));
-    len = sizeof(struct sockaddr_storage);
-    if ((getsockname(fd, s_local, &len)) < 0) {
+    local_len = sizeof(struct sockaddr_storage);
+    if ((getsockname(fd, s_local, &local_len)) < 0) {
 	syslog(L_ERROR, "can't do getsockname for identd");
         goto fail;
     }
     s_distant = xmalloc(sizeof(struct sockaddr_storage));
-    len = sizeof(struct sockaddr_storage);
-    if ((getpeername(fd, s_distant, &len)) < 0) {
+    distant_len = sizeof(struct sockaddr_storage);
+    if ((getpeername(fd, s_distant, &distant_len)) < 0) {
 	syslog(L_ERROR, "can't do getpeername for identd");
         goto fail;
     }
@@ -174,12 +174,12 @@ GoodIdent(int fd, char *identd)
 	syslog(L_ERROR, "can't open socket for identd (%m)");
         goto fail;
     }
-    if (bind(ident_fd, s_local, SA_LEN(s_local)) < 0) {
+    if (bind(ident_fd, s_local, local_len) < 0) {
 	syslog(L_ERROR, "can't bind socket for identd (%m)");
         close(ident_fd);
         goto fail;
     }
-    if (connect(ident_fd, s_distant, SA_LEN(s_distant)) < 0) {
+    if (connect(ident_fd, s_distant, distant_len) < 0) {
 	syslog(L_ERROR, "can't connect to identd (%m)");
         close(ident_fd);
         goto fail;
