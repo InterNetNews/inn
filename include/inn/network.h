@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2016, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007, 2008, 2010
@@ -158,7 +158,7 @@ bool network_write(socket_type, const void *, size_t, time_t)
  * Put an ASCII representation of the address in a sockaddr into the provided
  * buffer, which should hold at least INET6_ADDRSTRLEN characters.
  */
-bool network_sockaddr_sprint(char *, size_t, const struct sockaddr *)
+bool network_sockaddr_sprint(char *, socklen_t, const struct sockaddr *)
     __attribute__((__nonnull__));
 
 /*

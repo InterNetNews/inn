@@ -26,6 +26,11 @@
 # define vsnprintf test_vsnprintf
 #endif
 
+/* Specific to rra-c-util, but only when debugging is enabled. */
+#ifdef DEBUG_SNPRINTF
+# include "inn/messages.h"
+#endif
+
 /*
  * Copyright Patrick Powell 1995
  * This code is based on code written by Patrick Powell (papowell@astart.com)
@@ -82,6 +87,7 @@
  *    fixed handling of snprintf(NULL, ...)
  *    added explicit casts for double to long long int conversion
  *    fixed various warnings with GCC 7
+ *    fixed various warnings with Clang
  *
  *  Hrvoje Niksic <hniksic@xemacs.org> 2000-11-04
  *    include <config.h> instead of "config.h".
@@ -114,7 +120,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
-#include "inn/messages.h"
 
 #ifndef NULL
 # define NULL 0
@@ -136,15 +141,15 @@
 int snprintf (char *str, size_t count, const char *fmt, ...);
 int vsnprintf (char *str, size_t count, const char *fmt, va_list arg);
 
-static int dopr (char *buffer, size_t maxlen, const char *format,
+static int dopr (char *buffer, size_t maxlen, const char *format, 
                  va_list args);
 static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
-                   const char *value, int flags, int min, int max);
+		   const char *value, int flags, int min, int max);
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-                   LLONG value, int base, int min, int max, int flags);
+		   LLONG value, int base, int min, int max, int flags);
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
-                  LDOUBLE fvalue, int min, int max, int flags);
-static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c);
+		  LDOUBLE fvalue, int min, int max, int flags);
+static int dopr_outch (char *buffer, size_t *currlen, size_t maxlen, char c );
 
 /*
  * dopr(): poor man's version of doprintf
@@ -377,7 +382,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
 	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'E':
@@ -387,7 +392,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
         total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'G':
@@ -398,14 +403,15 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
 	if (max == 0)
 	  /* C99 says: if precision [for %g] is zero, it is taken as one */
 	  max = 1;
 	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'c':
-	total += dopr_outch (buffer, &currlen, maxlen, va_arg (args, int));
+	total += dopr_outch (buffer, &currlen, maxlen,
+			     (char) va_arg (args, int));
 	break;
       case 's':
 	strvalue = va_arg (args, char *);
@@ -421,7 +427,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	{
 	  short int *num;
 	  num = va_arg (args, short int *);
-	  *num = currlen;
+	  *num = (short) currlen;
         } 
 	else if (cflags == DP_C_LONG) 
 	{
@@ -439,7 +445,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	{
 	  int *num;
 	  num = va_arg (args, int *);
-	  *num = currlen;
+	  *num = (int) currlen;
         }
 	break;
       case '%':
@@ -488,7 +494,7 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
   }
 
   if (max < 0)
-    strln = strlen (value);
+    strln = (int) strlen (value);
   else
     /* When precision is specified, don't read VALUE past precision. */
     /*strln = strnlen (value, max);*/
@@ -520,9 +526,9 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
-                   LLONG value, int base, int min, int max, int flags)
+		   LLONG value, int base, int min, int max, int flags)
 {
-  int signvalue = 0;
+  char signvalue = 0;
   unsigned LLONG uvalue;
   char convert[24];
   unsigned int place = 0;
@@ -576,8 +582,8 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
     spadlen = -spadlen; /* Left Justifty */
 
 #ifdef DEBUG_SNPRINTF
-  debug("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
-        zpadlen, spadlen, min, max, place);
+  debug ("zpad: %d, spad: %d, min: %d, max: %d, place: %u\n",
+         zpadlen, spadlen, min, max, place);
 #endif
 
   /* Spaces */
@@ -643,7 +649,7 @@ static LLONG round_int (LDOUBLE value)
 
   intpart = (LLONG) value;
   value = value - intpart;
-  if (value >= 0.5)
+  if (value >= (LDOUBLE) 0.5)
     intpart++;
 
   return intpart;
@@ -658,16 +664,16 @@ static LLONG round_int (LDOUBLE value)
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
 
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
-                  LDOUBLE fvalue, int min, int max, int flags)
+		  LDOUBLE fvalue, int min, int max, int flags)
 {
-  int signvalue = 0;
+  char signvalue = 0;
   LDOUBLE ufvalue;
   char iconvert[24];
   char fconvert[24];
   size_t iplace = 0;
   size_t fplace = 0;
-  int padlen = 0; /* amount to pad */
-  int zpadlen = 0; 
+  long padlen = 0; /* amount to pad */
+  long zpadlen = 0; 
   int total = 0;
   LLONG intpart;
   LLONG fracpart;
@@ -719,7 +725,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 	     fractional digit. */
 	  LDOUBLE temp;
 	  if (ufvalue > 0)
-	    for (temp = ufvalue; temp < 0.1; temp *= 10)
+	    for (temp = ufvalue; temp < (LDOUBLE) 0.1; temp *= 10)
 	      ++max;
 	}
     }
@@ -767,9 +773,9 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
 #ifdef DEBUG_SNPRINTF
 # ifdef HAVE_LONG_LONG_INT
-  debug("fmtfp: %Lf =? %lld.%lld\n", fvalue, intpart, fracpart);
+  debug ("fmtfp: %Lf =? %lld.%lld\n", fvalue, intpart, fracpart);
 # else
-  debug("fmtfp: %Lf =? %ld.%ld\n", fvalue, intpart, fracpart);
+  debug ("fmtfp: %Lf =? %ld.%ld\n", fvalue, intpart, fracpart);
 # endif
 #endif
 

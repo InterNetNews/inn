@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -148,7 +148,7 @@ client_writer(const char *host, const char *source, bool succeed)
  * localhost, from the given source address, containing a constant string.
  * This also verifies that network_client_create works properly.
  */
-static void
+static void __attribute__((__noreturn__))
 client_udp_writer(const char *source)
 {
     socket_type fd;

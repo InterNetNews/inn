@@ -8,7 +8,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016, 2017 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016
 dnl     by Internet Systems Consortium, Inc. ("ISC")
 dnl
@@ -26,7 +26,7 @@ dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 dnl Used to build the result cache name.
 AC_DEFUN([_INN_PROG_CC_FLAG_CACHE],
-[translit([inn_cv_compiler_c_$1], [-=], [__])])
+[translit([inn_cv_compiler_c_$1], [-=+], [___])])
 
 dnl Check whether a given flag is supported by the complier.
 AC_DEFUN([INN_PROG_CC_FLAG],

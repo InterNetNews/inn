@@ -28,7 +28,7 @@ char *test_inet_ntoa(struct in_addr);
 
 
 static void
-test_addr(const char *expected, unsigned long addr)
+test_addr(const char *expected, uint32_t addr)
 {
     struct in_addr in;
 
@@ -43,10 +43,10 @@ main(void)
     plan(5);
 
     test_addr(        "0.0.0.0", 0x0);
-    test_addr(      "127.0.0.0", 0x7f000000UL);
-    test_addr("255.255.255.255", 0xffffffffUL);
-    test_addr("172.200.232.199", 0xacc8e8c7UL);
-    test_addr(        "1.2.3.4", 0x01020304UL);
+    test_addr(      "127.0.0.0", 0x7f000000U);
+    test_addr("255.255.255.255", 0xffffffffU);
+    test_addr("172.200.232.199", 0xacc8e8c7U);
+    test_addr(        "1.2.3.4", 0x01020304U);
 
     return 0;
 }

@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -93,7 +93,7 @@ main(void)
        "sprint of IPv6 address");
     for (p = addr; *p != '\0'; p++)
         if (islower((unsigned char) *p))
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
     is_string(ipv6_addr, addr, "...with right results");
 
     /* Test network_sockaddr_port. */

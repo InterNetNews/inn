@@ -618,7 +618,6 @@ AC_CHECK_TYPES([struct sockaddr_storage],
 dnl Checks for macros.
 INN_MACRO_IN6_ARE_ADDR_EQUAL
 INN_MACRO_IOV_MAX
-INN_MACRO_SA_LEN
 INN_MACRO_SUN_LEN
 
 dnl Checks for library functions.
@@ -695,7 +694,6 @@ dnl                         ANSI C, so these aren't interesting.
 dnl   -Wundef               We need portability code.
 dnl   -Wformat-truncation=2 Gives false positives with GCC 7.2.0
 dnl                         https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83011
-dnl   -Wduplicated-branches Gives noise because of SA_LEN
 dnl   -Wunsafe-loop-optimizations
 dnl                         Too much noise.
 dnl   -Wcast-qual           Used for a while, but some casts are unavoidable.
@@ -736,7 +734,7 @@ m4_foreach_w(
      -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
      -Wmissing-include-dirs -Wshift-overflow=2
      -Wsync-nand -Wstringop-overflow=4 -Wmissing-format-attribute
-     -Walloc-zero -Walloca -Wduplicated-cond
+     -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond
      -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat
      -Wbad-function-cast -Wcast-align -Wwrite-strings
      -Wdangling-else -Wdate-time

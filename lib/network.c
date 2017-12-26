@@ -21,7 +21,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2015, 2016, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2011, 2012, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007, 2008
@@ -824,7 +824,7 @@ fail:
  * it should always be as large as the latter.  Returns success or failure.
  */
 bool
-network_sockaddr_sprint(char *dst, size_t size, const struct sockaddr *addr)
+network_sockaddr_sprint(char *dst, socklen_t size, const struct sockaddr *addr)
 {
     const char *result;
 
@@ -944,7 +944,7 @@ network_addr_match(const char *a, const char *b, const char *mask)
     unsigned long cidr;
     char *end;
     unsigned int i;
-    unsigned long bits, addr_mask;
+    uint32_t bits, addr_mask;
 #ifdef HAVE_INET6
     struct in6_addr a6, b6;
 #endif
