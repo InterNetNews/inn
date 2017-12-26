@@ -699,6 +699,12 @@ and F<crypto/bio/b_dump.c>) could be merged into F<nnrpd/tls.c>, as
 well as support for new TLS versions in the F<tlsprotocols> parameter
 in F<inn.conf>.
 
+=item *
+
+Check whether a new version of the ternary search trie implementation
+(available at L<http://www.octavian.org/cs/software.html>) could be
+merged into F<lib/tst.c>.
+
 =back
 
 =item 2.
