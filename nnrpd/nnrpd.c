@@ -29,6 +29,7 @@
 #include "inn/network-innbind.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "inn/version.h"
 #define MAINLINE
 #include "nnrpd.h"
@@ -91,7 +92,6 @@ char	*NNRPACCESS = NULL;
 static char 	*LocalLogFileName = NULL;
 static char 	*LocalLogDirName;
 
-struct history *History;
 static double	STATstart;
 static double	STATfinish;
 static char	*PushedBack;

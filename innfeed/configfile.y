@@ -47,9 +47,11 @@ static scope *newScope (const char *type) ;
 static int strNCaseCmp (const char *a, const char *b, size_t len) ;
 #endif 
 
+/* Interface between lexer and parser. */
+int yylex (void) ; 
+
 int yyerror (const char *s) ;
 int yywrap (void) ;
-int yyparse (void) ;
 
 
 #if 0

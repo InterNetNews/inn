@@ -13,6 +13,7 @@
 #include "inn/buffer.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
+#include "inn/overview.h"
 #include "inn/wire.h"
 #include "inn/vector.h"
 #include "inn/libinn.h"

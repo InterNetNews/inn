@@ -18,6 +18,7 @@
 #include "inn/messages.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "inn/paths.h"
 #include "inn/qio.h"
 #include "inn/storage.h"

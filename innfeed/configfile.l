@@ -34,10 +34,6 @@
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
 
-/* We never use this function but flex always defines it, so silence the
-   warnings about it. */
-static void yyunput(int, char *) UNUSED;
-
 char *strPtr = 0 ;
 int strPtrLen = 0 ;
 int strIdx = 0 ;

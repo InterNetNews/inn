@@ -8,6 +8,7 @@
 
 #include "nnrpd.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "inn/innconf.h"
 #include "inn/messages.h"
 

@@ -622,7 +622,6 @@ INN_MACRO_SUN_LEN
 
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
-AC_FUNC_MEMCMP
 INN_FUNC_GETADDRINFO_ADDRCONFIG
 INN_FUNC_INET_NTOA
 INN_FUNC_SNPRINTF
@@ -702,7 +701,6 @@ dnl   -Waggregate-return    Syntax allowed in C.
 dnl   -Wmissing-noreturn    Not necessary (unless for optimization).
 dnl   -Wpacked              Used by INN.
 dnl   -Wpadded              Used by INN.
-dnl   -Wredundant-decls     Too much noise from system headers.
 dnl   -Wlong-long           Too much noise from system headers.
 dnl   -Woverlength-strings  Useless noise.
 dnl   -Wunused-function     Noise from embedded Perl (at least with Perl 5.20).
@@ -741,7 +739,7 @@ m4_foreach_w(
      -Wjump-misses-init -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
-     -Wnormalized=nfc -Wrestrict -Wnested-externs -Winline
+     -Wnormalized=nfc -Wrestrict -Wredundant-decls -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wno-unknown-warning-option
      -Wno-unused-function],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])

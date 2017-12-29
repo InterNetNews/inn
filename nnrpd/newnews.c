@@ -10,6 +10,7 @@
 #include "inn/wire.h"
 #include "nnrpd.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "cache.h"
 
 #define GROUP_LIST_DELTA	10

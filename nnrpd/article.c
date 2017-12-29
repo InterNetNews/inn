@@ -17,6 +17,7 @@
 #include "inn/wire.h"
 #include "nnrpd.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "tls.h"
 #include "cache.h"
 

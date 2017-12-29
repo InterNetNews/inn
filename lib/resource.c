@@ -17,8 +17,6 @@
 #define TIMEVALasDOUBLE(t)	\
     ((double)(t).tv_sec + ((double)(t).tv_usec) / 1000000.0)
 
-int getrusage(int who, struct rusage *rusage);
-
 int GetResourceUsage(double *usertime, double *systime)
 {
     struct rusage	R;

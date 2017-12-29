@@ -21,6 +21,7 @@
 #include "inn/messages.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "inn/paths.h"
 #include "inn/vector.h"
 #include "inn/wire.h"

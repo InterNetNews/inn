@@ -79,8 +79,6 @@ extern bool debugShrinking;
 extern bool fastExit;
 extern unsigned int stdioFdMax;
 
-extern void openInputFile (void);
-
 /* privates */
 static char *logFile ;
 static char *newsspool ;

@@ -11,6 +11,7 @@
 #include "inn/innconf.h"
 #include "inn/md5.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "inn/storage.h"
 #include "inn/vector.h"
 #include "inn/wire.h"

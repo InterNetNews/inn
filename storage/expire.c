@@ -16,6 +16,7 @@
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "ovinterface.h"
 #include "inn/paths.h"
 #include "inn/storage.h"

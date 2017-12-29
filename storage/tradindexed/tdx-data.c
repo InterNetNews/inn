@@ -29,6 +29,7 @@
 #include "inn/mmap.h"
 #include "inn/libinn.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
 #include "ovinterface.h"
 #include "inn/storage.h"
 #include "tdx-private.h"

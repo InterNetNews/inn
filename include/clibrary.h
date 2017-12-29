@@ -214,9 +214,6 @@ extern size_t strspn(const char *, const char *);
 #if !HAVE_STRTOK
 extern char * strtok(char *, const char *);
 #endif
-#if !HAVE_MEMCMP
-extern int memcmp(const void *, const void *, size_t);
-#endif
 
 END_DECLS
 

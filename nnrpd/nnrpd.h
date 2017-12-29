@@ -230,7 +230,6 @@ extern int		TrimSpaces(char *line);
 extern void		InitBackoffConstants(void);
 extern char		*PostRecFilename(char *ip, char *user);
 extern int		LockPostRec(char *path);
-extern int		LockPostRec(char *path);
 extern void		UnlockPostRec(char *path);
 extern int		RateLimit(long *sleeptime, char *path);
 extern void		ExitWithStats(int x, bool readconf)
