@@ -32,7 +32,9 @@
  *  and before any standard headers are included (because Python may
  *  define some pre-processor definitions which affect the standard
  *  headers on some systems). */
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 #include "Python.h"
+#pragma GCC diagnostic warning "-Wredundant-decls"
 
 /*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
 #if PY_VERSION_HEX < 0x02050000
