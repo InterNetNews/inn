@@ -454,8 +454,10 @@ RCreader(CHANNEL *cp)
     /* Get the connection. */
     size = sizeof remote;
     if ((fd = accept(cp->fd, (struct sockaddr *)&remote, &size)) < 0) {
-	if (errno != EWOULDBLOCK && errno != EAGAIN)
-	    syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
+	/* Avoid -Wlogical-op warnings if EWOULDBLOCK == EAGAIN. */
+	if (errno != EWOULDBLOCK)
+	    if (errno != EAGAIN)
+		syslog(L_ERROR, "%s cant accept RCreader %m", LogName);
 	return;
     }
 

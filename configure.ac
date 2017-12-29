@@ -723,7 +723,7 @@ dnl It would be worthwhile trying to enforce the following checks:
 dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 dnl on glibc functions on Linux, as well as more object size checking,
 dnl which catches a few more issues.
-dnl -Wswitch-enum, -Wfloat-equal, -Wlogical-op,
+dnl -Wswitch-enum, -Wfloat-equal,
 dnl "-Wconversion -Wno-sign-conversion",
 dnl -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
 m4_foreach_w(
@@ -736,7 +736,7 @@ m4_foreach_w(
      -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat
      -Wbad-function-cast -Wcast-align -Wwrite-strings
      -Wdangling-else -Wdate-time
-     -Wjump-misses-init -Wstrict-prototypes
+     -Wjump-misses-init -Wlogical-op -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
      -Wnormalized=nfc -Wrestrict -Wredundant-decls -Wnested-externs -Winline
