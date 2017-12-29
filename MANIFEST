@@ -521,7 +521,6 @@ lib/localopen.c                       Open a local NNTP connection
 lib/lockfile.c                        Try to lock a file descriptor
 lib/makedir.c                         Make directory recursively
 lib/md5.c                             MD5 checksum calculation
-lib/memcmp.c                          memcmp replacement
 lib/messageid.c                       Functions for message-IDs
 lib/messages.c                        Error reporting and debug output
 lib/mkstemp.c                         mkstemp replacement
@@ -899,7 +898,6 @@ tests/lib/inet_ntop-t.c               Tests for lib/inet_ntop.c
 tests/lib/innconf-t.c                 Tests for lib/innconf.c
 tests/lib/list-t.c                    Tests for lib/list.c
 tests/lib/md5-t.c                     Tests for lib/md5.c
-tests/lib/memcmp-t.c                  Tests for lib/memcmp.c
 tests/lib/messageid-t.c               Tests for lib/messageid.c
 tests/lib/messages-t.c                Tests for lib/messages.c
 tests/lib/mkstemp-t.c                 Tests for lib/mkstemp.c
