@@ -77,9 +77,9 @@ art.o: art.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/inn/innconf.h ../include/inn/md5.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/storage.h \
-  ../include/inn/vector.h ../include/inn/wire.h innd.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/inn/options.h ../include/inn/overview.h \
+  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/wire.h \
+  innd.h ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/buffer.h \
   ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
@@ -216,18 +216,7 @@ ng.o: ng.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/wire.h innd.h \
-  ../include/portable/macros.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/buffer.h ../include/inn/history.h \
-  ../include/inn/messages.h ../include/inn/timer.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/vector.h \
-  ../include/ppport.h \
-  ../include/innperl.h
+  ../include/inn/defines.h ../include/inn/options.h
 proc.o: proc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -244,17 +233,7 @@ proc.o: proc.c ../include/config.h ../include/inn/defines.h \
 python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/innconf.h \
-  ../include/inn/wire.h innd.h ../include/portable/macros.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
-  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h
+  ../include/inn/defines.h ../include/inn/options.h
 rc.o: rc.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

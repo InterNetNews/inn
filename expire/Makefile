@@ -151,8 +151,9 @@ makehistory.o: makehistory.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/paths.h ../include/inn/qio.h \
-  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/wire.h
+  ../include/inn/options.h ../include/inn/overview.h \
+  ../include/inn/storage.h ../include/inn/paths.h ../include/inn/qio.h \
+  ../include/inn/vector.h ../include/inn/wire.h
 prunehistory.o: prunehistory.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
