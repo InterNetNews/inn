@@ -50,6 +50,11 @@ is to say starting from S<OpenSSL 1.1.1>).
 
 =item *
 
+The buffindexed overview method will now hopefully work properly on
+systems with a native page size larger than 16KB.
+
+=item *
+
 Other minor bug fixes and documentation improvements.
 
 =back
