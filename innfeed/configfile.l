@@ -30,6 +30,9 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wnull-dereference"
 
+/* flex always declares yyunput, but we don't use it. */
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 #if defined (FLEX_DEBUG)
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
