@@ -35,7 +35,6 @@
 #include "innperl.h"
 
 extern HEADER Table[], *EndOfTable;
-extern char PERMuser[];
 
 extern char **OtherHeaders;
 extern int OtherCount;
