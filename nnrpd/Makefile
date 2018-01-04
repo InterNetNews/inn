@@ -220,7 +220,9 @@ perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/timer.h post.h
+  ../include/inn/vector.h ../include/inn/timer.h post.h \
+  ../include/ppport.h \
+  ../include/innperl.h
 perm.o: perm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -252,7 +254,16 @@ post.o: post.c ../include/config.h ../include/inn/defines.h \
 python.o: python.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h nnrpd.h \
+  ../include/portable/macros.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/inn/qio.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/vector.h ../include/inn/timer.h \
+  ../include/inn/hashtab.h
 sasl.o: sasl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

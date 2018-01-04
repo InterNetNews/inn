@@ -675,4 +675,9 @@ symlink.o: symlink.c ../include/config.h ../include/inn/defines.h \
 perl.o: perl.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/ppport.h \
+  ../include/innperl.h
