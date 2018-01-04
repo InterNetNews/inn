@@ -724,8 +724,7 @@ dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 dnl on glibc functions on Linux, as well as more object size checking,
 dnl which catches a few more issues.
 dnl -Wswitch-enum, -Wfloat-equal,
-dnl "-Wconversion -Wno-sign-conversion",
-dnl -Wunreachable-code, -Wstack-protector, -Wdeclaration-after-statement
+dnl "-Wconversion -Wno-sign-conversion", -Wunreachable-code, -Wstack-protector
 m4_foreach_w(
     [flag],
     [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
@@ -733,13 +732,14 @@ m4_foreach_w(
      -Wmissing-include-dirs -Wshift-overflow=2
      -Wsync-nand -Wstringop-overflow=4 -Wmissing-format-attribute
      -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond
-     -Wtrampolines -Wshadow -Wpointer-arith -Wc99-c11-compat
+     -Wtrampolines -Wdeclaration-after-statement -Wshadow -Wpointer-arith
+     -Wc99-c11-compat
      -Wbad-function-cast -Wcast-align -Wwrite-strings
      -Wdangling-else -Wdate-time
      -Wjump-misses-init -Wlogical-op -Wstrict-prototypes
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
-     -Wnormalized=nfc -Wrestrict -Wredundant-decls -Wnested-externs -Winline
+     -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wno-unknown-warning-option
      -Wno-unused-function],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])

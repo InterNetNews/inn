@@ -370,6 +370,10 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
 void
 CMDcapabilities(int ac, char *av[])
 {
+#ifdef HAVE_SASL
+    const char *mechlist = NULL;
+#endif
+
     if (ac == 2 && !IsValidKeyword(av[1])) {
         Reply("%d Syntax error in keyword\r\n", NNTP_ERR_SYNTAX);
         return;
@@ -382,8 +386,6 @@ CMDcapabilities(int ac, char *av[])
     Printf("IMPLEMENTATION %s\r\n", INN_VERSION_STRING);
 
 #ifdef HAVE_SASL
-    const char *mechlist = NULL;
-
     /* Check for available SASL mechanisms.
      * Start the string with a space for the strstr() calls afterwards. */
     sasl_listmech(sasl_conn, NULL, " ", " ", "", &mechlist, NULL, NULL);

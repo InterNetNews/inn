@@ -491,6 +491,7 @@ UnpackOne(int *fdp, size_t *countp)
 #if	defined(DO_RNEWSPROGS)
     char	path[(SMBUF * 2) + 1];
     char	*p;
+    int         len;
 #endif	/* defined(DO_RNEWSPROGS) */
     char	buff[SMBUF];
     const char *cargv[4];
@@ -580,8 +581,6 @@ UnpackOne(int *fdp, size_t *countp)
 	}
 
 #if	defined(DO_RNEWSPROGS)
-        int len;
-
 	cargv[0] = UNPACK;
 	cargv[1] = NULL;
 	/* Ignore any possible leading pathnames, to avoid trouble. */
