@@ -781,7 +781,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Convert integer part */
   do {
-    iconvert[iplace++] = '0' + intpart % 10;
+    iconvert[iplace++] = (char) ('0' + (intpart % 10));
     intpart = (intpart / 10);
   } while(intpart && (iplace < sizeof(iconvert)));
   if (iplace == sizeof(iconvert)) iplace--;
@@ -789,7 +789,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Convert fractional part */
   do {
-    fconvert[fplace++] = '0' + fracpart % 10;
+    fconvert[fplace++] = (char) ('0' + (fracpart % 10));
     fracpart = (fracpart / 10);
   } while(fracpart && (fplace < sizeof(fconvert)));
   while (leadingfrac0s-- > 0 && fplace < sizeof(fconvert))

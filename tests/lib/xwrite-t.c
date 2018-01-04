@@ -70,10 +70,10 @@ main(void)
     test_write(xwrite(0, data, 256), 256, "xwrite interrupted");
     write_offset = 0;
     for (i = 0; i < 32; i++)
-        data[i] = (char) i * 2;
+        data[i] = (char) (i * 2);
     test_write(xwrite(0, data, 32), 32, "xwrite first block");
     for (i = 32; i < 65; i++)
-        data[i] = (char) i * 2;
+        data[i] = (char) (i * 2);
     test_write(xwrite(0, data + 32, 33), 33, "xwrite second block");
     write_offset = 0;
     write_interrupt = 0;
@@ -100,11 +100,11 @@ main(void)
     iov[1].iov_len = 224;
     test_write(xwritev(0, iov, 2), 256, "xwritev interrupted");
     for (i = 0; i < 32; i++)
-        data[i] = (char) i * 2;
+        data[i] = (char) (i * 2);
     write_offset = 0;
     test_write(xwritev(0, iov, 1), 32, "xwritev first block");
     for (i = 32; i < 65; i++)
-        data[i] = (char) i * 2;
+        data[i] = (char) (i * 2);
     iov[0].iov_base = &data[32];
     iov[0].iov_len = 16;
     iov[1].iov_base = &data[48];
@@ -135,10 +135,10 @@ main(void)
     memset(data + 1, 0, 255);
     test_write(xpwrite(0, data + 1, 255, 1), 255, "xpwrite interrupted");
     for (i = 0; i < 32; i++)
-        data[i + 32] = (char) i * 2;
+        data[i + 32] = (char) (i * 2);
     test_write(xpwrite(0, data + 32, 32, 32), 32, "xpwrite first block");
     for (i = 32; i < 65; i++)
-        data[i + 32] = (char) i * 2;
+        data[i + 32] = (char) (i * 2);
     test_write(xpwrite(0, data + 64, 33, 64), 33, "xpwrite second block");
     write_interrupt = 0;
 

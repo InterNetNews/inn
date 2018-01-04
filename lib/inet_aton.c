@@ -37,7 +37,7 @@ int test_inet_aton(const char *, struct in_addr *);
 int
 inet_aton(const char *s, struct in_addr *addr)
 {
-    unsigned long octet[4];
+    unsigned octet[4];
     uint32_t address;
     const char *p;
     int base, i;

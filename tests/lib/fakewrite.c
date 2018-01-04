@@ -117,8 +117,8 @@ fake_pwrite(int fd UNUSED, const void *data, size_t n, off_t offset)
 ssize_t
 fake_writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
 {
-    int total, i;
-    size_t left, n;
+    int i;
+    size_t left, n, total;
 
     if (write_fail)
         return 0;

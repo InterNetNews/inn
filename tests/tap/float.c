@@ -11,7 +11,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2010, 2012, 2013, 2014, 2015, 2016
+ * Copyright 2008, 2010, 2012, 2013, 2014, 2015, 2016, 2017
  *     Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -54,6 +54,15 @@ ok_double(int n UNUSED, double wanted, double seen)
 {
     is_double(wanted, seen, 0.01, NULL);
 }
+#endif
+
+/*
+ * Clang 4.0.1 gets very confused by this file and produces warnings about
+ * floating point implicit conversion from the isnan() and isinf() macros.
+ */
+#if defined(__llvm__) || defined(__clang__)
+# pragma clang diagnostic ignored "-Wconversion"
+# pragma clang diagnostic ignored "-Wdouble-promotion"
 #endif
 
 /*

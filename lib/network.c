@@ -971,7 +971,7 @@ network_addr_match(const char *a, const char *b, const char *mask)
             if (cidr > 32 || *end != '\0')
                 return false;
             for (bits = 0, i = 0; i < cidr; i++)
-                bits |= (1UL << (31 - i));
+                bits |= (1U << (31 - i));
             addr_mask = htonl(bits);
         } else if (inet_aton(mask, &tmp))
             addr_mask = tmp.s_addr;
@@ -1000,7 +1000,7 @@ network_addr_match(const char *a, const char *b, const char *mask)
                 return false;
         } else {
             for (addr_mask = 0, bits = 0; bits < cidr % 8; bits++)
-                addr_mask |= (1UL << (7 - bits));
+                addr_mask |= (1U << (7 - bits));
             if ((a6.s6_addr[i] & addr_mask) != (b6.s6_addr[i] & addr_mask))
                 return false;
         }
