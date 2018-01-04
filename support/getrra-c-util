@@ -180,9 +180,6 @@ extern size_t strspn(const char *, const char *);\\
 #endif\\
 #if !HAVE_STRTOK\\
 extern char * strtok(char *, const char *);\\
-#endif\\
-#if !HAVE_MEMCMP\\
-extern int memcmp(const void *, const void *, size_t);\\
 #endif" \
                -e '/#if !HAVE_DAEMON/,+2d' \
                -e '/#if !HAVE_ISSETUGID/,+2d' \

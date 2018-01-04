@@ -289,7 +289,6 @@ tests/lib/inet_ntop.t
 tests/lib/innconf.t
 tests/lib/list.t
 tests/lib/md5.t
-tests/lib/memcmp.t
 tests/lib/messageid.t
 tests/lib/messages.t
 tests/lib/mkstemp.t
