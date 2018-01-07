@@ -66,7 +66,13 @@
 
 #define	OVMAXCYCBUFFNAME	8
 
-#define OV_HDR_PAGESIZE 16384
+/*
+** Default and minimum size of the header.  If the system default page size is
+** larger than this, we'll use the system page size instead.  The page size in
+** use is stored in the global hdr_pagesize variable.
+*/
+#define OV_HDR_MIN_PAGESIZE 16384
+
 #define OV_BEFOREBITF   (1 * OV_BLOCKSIZE)
 #define	OV_BLOCKSIZE	8192
 #define	OV_FUDGE	1024
@@ -252,6 +258,7 @@ typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
 #define	_PATH_OVBUFFCONFIG	"buffindexed.conf"
 
 static long		pagesize = 0;
+static long		hdr_pagesize = OV_HDR_MIN_PAGESIZE;
 static OVBUFF		*ovbufftab = NULL;
 static OVBUFF           *ovbuffnext = NULL;
 static int              GROUPfd;
@@ -363,7 +370,7 @@ static bool ovparse_part_line(char *l) {
   ** external header occupies ... then round up to the next block.
   */
   base = len / (OV_BLOCKSIZE * 8) + OV_BEFOREBITF;
-  tonextblock = OV_HDR_PAGESIZE - (base & (OV_HDR_PAGESIZE - 1));
+  tonextblock = hdr_pagesize - (base & (hdr_pagesize - 1));
   ovbuff->base = base + tonextblock;
   if (S_ISREG(sb.st_mode) && (len != sb.st_size || ovbuff->base > sb.st_size)) {
     if (len != sb.st_size)
@@ -992,14 +999,17 @@ bool buffindexed_open(int mode) {
   }
   ovbuffmode = mode;
   if (pagesize == 0) {
-    pagesize = getpagesize();
+    pagesize = sysconf(_SC_PAGESIZE);
     if (pagesize == -1) {
-      syswarn("buffindexed: getpagesize failed");
+      syswarn("buffindexed: sysconf(_SC_PAGESIZE) failed");
       pagesize = 0;
       return false;
     }
-    if ((pagesize > OV_HDR_PAGESIZE) || (OV_HDR_PAGESIZE % pagesize)) {
-      warn("buffindexed: OV_HDR_PAGESIZE (%d) is not a multiple of pagesize (%ld)", OV_HDR_PAGESIZE, pagesize);
+    if (pagesize > OV_HDR_MIN_PAGESIZE)
+      hdr_pagesize = pagesize;
+    if ((hdr_pagesize % pagesize) != 0) {
+      warn("buffindexed: hdr_pagesize (%ld) is not a multiple of pagesize"
+           " (%ld)", hdr_pagesize, pagesize);
       return false;
     }
   }
