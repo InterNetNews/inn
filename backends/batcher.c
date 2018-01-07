@@ -54,9 +54,13 @@ BATCHstart(void)
     char	buff[SMBUF];
 
     if (Processor && *Processor) {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 	snprintf(buff, sizeof(buff), Processor, Host);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 	F = popen(buff, "w");
 	if (F == NULL)
 	    return NULL;
@@ -372,9 +376,13 @@ main(int ac, char *av[])
     SendIt:
 	/* Now we can start to send the article! */
 	if (Separator && *Separator) {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 	    snprintf(buff, sizeof(buff), Separator, BytesInArt);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 	    BytesInCB += strlen(buff) + 1;
 	    BytesWritten += strlen(buff) + 1;
 	    if (fprintf(F, "%s\n", buff) == EOF || ferror(F)) {

@@ -726,9 +726,13 @@ MailArticle(char *group, char *article)
      * in case %s isn't in inconf->mta) and send the headers. */
     if (innconf->mta == NULL)
 	return "Can't start mailer -- mta not set";
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     snprintf(buff, sizeof(buff), innconf->mta, address);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
     if ((F = popen(buff, "w")) == NULL)
 	return "Can't start mailer";
     fprintf(F, "To: %s\n", address);

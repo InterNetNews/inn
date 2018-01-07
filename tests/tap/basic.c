@@ -72,9 +72,13 @@ ok(int n UNUSED, int success)
 void
 skip(int n UNUSED, const char *reason)
 {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     new_skip(reason, NULL);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 }
 
 void
@@ -86,9 +90,13 @@ ok_block(int n UNUSED, int count, int success)
 void
 skip_block(int n UNUSED, int count, const char *reason)
 {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     new_skip_block(count, reason, NULL);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 }
 
 void

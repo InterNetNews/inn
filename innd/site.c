@@ -528,15 +528,23 @@ SITEsend(SITE *sp, ARTDATA *Data)
 	    xasprintf(&temp, "%s%.*s%s", sp->Param, (int) sp->FNLnames.left,
 		      sp->FNLnames.data, &p[1]);
 	    *p = '*';
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 	    snprintf(buff, sizeof(buff), temp, Data->TokenText);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 	    free(temp);
 	} else {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 	    snprintf(buff, sizeof(buff), sp->Param, Data->TokenText);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
-        }
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
+    }
 
 	if (NeedShell(buff, (const char **)argv, (const char **)ARRAY_END(argv))) {
 	    argv[0] = SITEshell;

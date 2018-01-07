@@ -201,9 +201,13 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 		    if (*p == '.')
 			*p = '-';
                 if (IsValidSubmissionTemplate(save)) {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
                     snprintf(address, sizeof(address), save, name);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
                     break;
                 }
 	    }
@@ -223,9 +227,13 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 	    *p = '-';
 
     if (IsValidSubmissionTemplate(save)) {
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
         snprintf(address, sizeof(address), save, name);
-#pragma GCC diagnostic warning "-Wformat-nonliteral"
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
     } else {
         return NULL;
     }
