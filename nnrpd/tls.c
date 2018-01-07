@@ -582,8 +582,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (prefer_server_ciphers) {
         SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
     } else {
-#if OPENSSL_VERSION_NUMBER >= 0x0009080dfL
-        /* Function first added in OpenSSL 0.9.8m. */
+#if OPENSSL_VERSION_NUMBER >= 0x0009080dfL && OPENSSL_VERSION_NUMBER != 0x000909000L
+        /* Function first added in OpenSSL 0.9.8m and not present
+         * in OpenSSL 0.9.9-dev. */
         SSL_CTX_clear_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
 #endif
     }
@@ -654,8 +655,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     }
 
     if (tls_compression) {
-#if defined(SSL_OP_NO_COMPRESSION) && OPENSSL_VERSION_NUMBER >= 0x0009080dfL
-        /* Function first added in OpenSSL 0.9.8m. */
+#if defined(SSL_OP_NO_COMPRESSION) && OPENSSL_VERSION_NUMBER >= 0x0009080dfL && OPENSSL_VERSION_NUMBER != 0x000909000L
+        /* Function first added in OpenSSL 0.9.8m, and not present
+         * in OpenSSL 0.9.9-dev. */
         SSL_CTX_clear_options(CTX, SSL_OP_NO_COMPRESSION);
 #endif
     } else {
