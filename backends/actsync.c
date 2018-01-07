@@ -320,7 +320,7 @@ static struct grp *get_active(char *host, int hostid, int *len, struct grp *,
                               int *errs);
 static int bad_grpname(char *name, int num_chk);
 static struct pat *get_ignore(char *filename, int *len);
-static void ignore(struct grp *, int grplen, struct pat *, int iglen);
+static void ignore_grps(struct grp *, int grplen, struct pat *, int iglen);
 static int merge_cmp(const void *, const void *);
 static void merge_grps(struct grp *, int grplen, char *host1, char *host2);
 static int active_cmp(const void *, const void *);
@@ -364,7 +364,7 @@ main(int argc, char *argv[])
 	ignor = get_ignore(ign_file, &iglen);
 
 	/* ignore groups */
-	ignore(grp, grplen, ignor, iglen);
+	ignore_grps(grp, grplen, ignor, iglen);
     }
 
     /* compare groups from both hosts */
@@ -1410,7 +1410,7 @@ get_ignore(char *filename, int *len)
 }
 
 /*
- * ignore - ignore newsgroups given an ignore list
+ * ignore_grps - ignore newsgroups given an ignore list
  *
  * given:
  *	grp	array of groups
@@ -1419,7 +1419,7 @@ get_ignore(char *filename, int *len)
  *	iglen	length of igcl array in elements
  */
 static void
-ignore(struct grp *grp, int grplen, struct pat *igcl, int iglen)
+ignore_grps(struct grp *grp, int grplen, struct pat *igcl, int iglen)
 {
     struct grp *gp;		/* current group element being examined */
     struct pat *pp;		/* current pattern element being examined */

@@ -92,20 +92,20 @@ mkpath(const char *file)
 **  to concatenate the message to the end of an existing file if any.
 */
 static bool
-write_article(ARTHANDLE *article, const char *file, bool concat)
+write_article(ARTHANDLE *article, const char *file, bool concatenate)
 {
     FILE *out;
     char *text = NULL;
     size_t length = 0;
 
     /* Open the output file. */
-    out = fopen(file, concat ? "a" : "w");
+    out = fopen(file, concatenate ? "a" : "w");
     if (out == NULL && errno == ENOENT) {
         if (!mkpath(file)) {
             syswarn("cannot mkdir for %s", file);
             return false;
         }
-        out = fopen(file, concat ? "a" : "w");
+        out = fopen(file, concatenate ? "a" : "w");
     }
     if (out == NULL) {
         syswarn("cannot open %s for writing", file);
@@ -114,12 +114,12 @@ write_article(ARTHANDLE *article, const char *file, bool concat)
 
     /* Get the data in wire format and write it out to the file. */
     text = wire_to_native(article->data, article->len, &length);
-    if (concat)
+    if (concatenate)
         fprintf(out, "-----------\n");
     if (fwrite(text, length, 1, out) != 1) {
         syswarn("cannot write to %s", file);
         fclose(out);
-        if (!concat)
+        if (!concatenate)
             unlink(file);
         free(text);
         return false;
@@ -130,13 +130,13 @@ write_article(ARTHANDLE *article, const char *file, bool concat)
     if (ferror(out) || fflush(out) == EOF) {
         syswarn("cannot flush %s", file);
         fclose(out);
-        if (!concat)
+        if (!concatenate)
             unlink(file);
         return false;
     }
     if (fclose(out) == EOF) {
         syswarn("cannot close %s", file);
-        if (!concat)
+        if (!concatenate)
             unlink(file);
         return false;
     }

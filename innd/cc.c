@@ -822,7 +822,7 @@ CClowmark(char *av[])
 static const char *
 CCmode(char *unused[] UNUSED)
 {
-    int count, index;
+    int count, i;
 
 #ifdef DO_PERL
     char *stats;
@@ -851,7 +851,7 @@ CCmode(char *unused[] UNUSED)
         buffer_append_sprintf(&CCreply, "Allowing remote connections\n");
 
     /* Server parameters. */
-    for (count = 0, index = 0; CHANiter(&index, CTnntp) != NULL; )
+    for (count = 0, i = 0; CHANiter(&i, CTnntp) != NULL; )
 	count++;
     buffer_append_sprintf(&CCreply, "Parameters c %lu i %lu (%d) l %lu o %d"
                    " t %ld H %d T %d X %ld %s %s\n",

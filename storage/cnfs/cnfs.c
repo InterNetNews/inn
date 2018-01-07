@@ -927,20 +927,20 @@ cnfs_mapcntl(void *p, size_t length, int flags)
     if (flags == MS_INVALIDATE) {
 	msync(start, end - start, flags);
     } else {
-	static char *sstart, *send;
+        static char *start2, *end2;
 
 	/* Don't thrash the system with msync()s - keep the last value
 	 * and check each time, only if the pages which we should
 	 * flush change actually flush the previous ones.  Calling
 	 * cnfs_mapcntl(NULL, 0, MS_ASYNC) then flushes the final
 	 * piece. */
-	if (start != sstart || end != send) {
-	    if (sstart != NULL && send != NULL) {
-		msync(sstart, send - sstart, flags);
-	    }
-	    sstart = start;
-	    send = end;
-	}
+        if (start != start2 || end != end2) {
+            if (start2 != NULL && end2 != NULL) {
+                msync(start2, end2 - start2, flags);
+            }
+            start2 = start;
+            end2 = end;
+        }
     }
 }
 

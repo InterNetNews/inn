@@ -51,11 +51,11 @@ network_child_fatal(void)
  */
 #ifdef HAVE_STREAMS_SENDFD
 static socket_type
-network_recvfd(int pipe)
+network_recvfd(int streams_pipe)
 {
     struct strrecvfd fdrec;
 
-    if (ioctl(pipe, I_RECVFD, &fdrec) < 0) {
+    if (ioctl(streams_pipe, I_RECVFD, &fdrec) < 0) {
         syswarn("cannot receive file descriptor from innbind");
         return INVALID_SOCKET;
     } else
@@ -63,7 +63,7 @@ network_recvfd(int pipe)
 }
 #else /* !HAVE_STREAMS_SENDFD */
 static socket_type
-network_recvfd(int pipe UNUSED)
+network_recvfd(int streams_pipe UNUSED)
 {
     return INVALID_SOCKET;
 }
