@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2016-01-03
+##  Last modified: 2018-01-14
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -85,6 +85,11 @@
 ##     aren't entirely defunct, but they are very low-traffic, not widely
 ##     read or carried, and may not be worth carrying.  If you don't intend
 ##     to carry them, comment out their entries.
+##
+##   * Some hierarchies are marked as *RESERVED*.  These are used for
+##     special purposes by news software and should not be managed by
+##     control messages.  This config file drops all control messages for
+##     those hierarchies.
 ##
 ##  The comments of this file aren't in any formal or well-defined syntax,
 ##  but they are meant to use a consistent syntax to allow eventual parsing
@@ -1048,15 +1053,6 @@ newgroup:*:gnuu.*:drop
 rmgroup:*:gnuu.*:drop
 newgroup:news@gnuu.de:gnuu.*:mail
 rmgroup:news@gnuu.de:gnuu.*:verify-news@gnuu.de
-
-## GOV (Government Information)
-# Admin group: gov.usenet.announce
-# *PGP*   See comment at top of file.
-newgroup:*:gov.*:drop
-rmgroup:*:gov.*:drop
-checkgroups:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
-newgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
-rmgroup:gov-usenet-announce-moderator@govnews.org:gov.*:verify-gov.usenet.announce
 
 ## GRISBI (Grisbi Personal Finance Manager software)
 # Contact: newsmaster@grisbi.org
