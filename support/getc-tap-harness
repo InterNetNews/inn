@@ -73,7 +73,7 @@ download ()
     # Specific additions to a few files.
     if [ "$3" = "basic.c" ]
     then
-      sed -i -e "56 i \\
+      sed -i -e "58 i \\
 /* Specific to the integration of C TAP Harness in INN. */\\
 #ifndef LIBTEST_NEW_FORMAT\\
 # include \"inn/libinn.h\"\\
@@ -133,9 +133,9 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 }\\
 #endif\\
 " \
-             -e "151 i \\
+             -e "152 i \\
 #ifndef INN_LIBINN_H" \
-             -e "185 i \\
+             -e "186 i \\
 #endif" \
              -e 's/^ok.int /new_ok(int /g' \
              -e 's/^skip.const /new_skip(const /g' \
@@ -146,7 +146,7 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 
     if [ "$3" = "basic.h" ]
     then
-      sed -i -e "75 i \\
+      sed -i -e "77 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok(int n, int success);\\
@@ -172,14 +172,14 @@ void test_init(int count);\\
 # define skip new_skip\\
 # define ok_block new_ok_block\\
 # define skip_block new_skip_block" \
-             -e "90 i \\
+             -e "92 i \\
 #endif" \
              ${TEMP}
     fi
 
     if [ "$3" = "float.c" ]
     then
-      sed -i -e "50 i \\
+      sed -i -e "52 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void\\
@@ -194,7 +194,7 @@ ok_double(int n UNUSED, double wanted, double seen)\\
 
     if [ "$3" = "float.h" ]
     then
-      sed -i -e "37 i \\
+      sed -i -e "39 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok_double(int n, double wanted, double seen);\\

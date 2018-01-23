@@ -6,8 +6,8 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013, 2016, 2017 Russ Allbery <eagle@eyrie.org>
- * Copyright 2009, 2010, 2011, 2012, 2013
+ * Copyright 2005, 2013, 2016-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -237,8 +237,13 @@ test_server_accept(socket_type fd)
  * A varient version of the server portion of the test.  Takes an array of
  * sockets and the size of the sockets and accepts a connection on any of
  * those sockets.  Ensures that the client address information is stored
- * correctly by checking that it is set to IPv4 localhost.  For skipping
- * purposes, this produces four tests.
+ * correctly by checking that it is an IPv4 address.  For skipping purposes,
+ * this produces three tests.
+ *
+ * Normally, the client address should be 127.0.0.1, but hosts with odd local
+ * networking setups may rewrite client IP addresses so that they appear to
+ * come from other addresses.  Avoid checking if the client IP is 127.0.0.1
+ * for that reason.  Hopefully this won't hide bugs.
  *
  * saddr is allocated from the heap instead of using a local struct
  * sockaddr_storage to work around a misdiagnosis of strict aliasing
@@ -261,9 +266,6 @@ test_server_accept_any(socket_type fds[], unsigned int count)
     client = network_accept_any(fds, count, saddr, &slen);
     test_server_connection(client);
     is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
-    is_int(htonl(0x7f000001UL),
-           ((struct sockaddr_in *) (void *) saddr)->sin_addr.s_addr,
-           "...and client address is 127.0.0.1");
     free(saddr);
     for (i = 0; i < count; i++)
         socket_close(fds[i]);
@@ -526,9 +528,17 @@ test_any_udp(void)
         is_int(13, length, "...of correct length");
         sin.sin_family = AF_INET;
         sin.sin_port = htons(11119);
-        sin.sin_addr.s_addr = htonl(0x7f000001UL);
+
+        /*
+         * We'd prefer to check that the client IP address is 127.0.0.1 here,
+         * but hosts with odd local networking setups may rewrite the client
+         * IP address to something else.  To avoid false positives, just
+         * blindly trust the client IP address is correct, since it seems
+         * unlikely we'll have a server code bug here.
+         */
+        sin.sin_addr = ((struct sockaddr_in *) &addr)->sin_addr;
         ok(network_sockaddr_equal((struct sockaddr *) &sin, saddr),
-           "...from correct address");
+           "...from correct family and port");
         buffer[13] = '\0';
         is_string("socket test\r\n", buffer, "...and correct contents");
     }
@@ -548,7 +558,7 @@ int
 main(void)
 {
     /* Set up the plan. */
-    plan(43);
+    plan(42);
 
     /* Test network_bind functions. */
     test_ipv4(NULL);

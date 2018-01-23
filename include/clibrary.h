@@ -174,14 +174,16 @@ extern int symlink(const char *, const char *);
 #if !HAVE_ASPRINTF
 extern int asprintf(char **, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
-extern int vasprintf(char **, const char *, va_list);
+extern int vasprintf(char **, const char *, va_list)
+    __attribute__((__format__(printf, 2, 0)));
 #endif
 #if !HAVE_DECL_SNPRINTF
 extern int snprintf(char *, size_t, const char *, ...)
     __attribute__((__format__(printf, 3, 4)));
 #endif
 #if !HAVE_DECL_VSNPRINTF
-extern int vsnprintf(char *, size_t, const char *, va_list);
+extern int vsnprintf(char *, size_t, const char *, va_list)
+    __attribute__((__format__(printf, 3, 0)));
 #endif
 #if !HAVE_MKSTEMP
 extern int mkstemp(char *);

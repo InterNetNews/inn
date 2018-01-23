@@ -161,7 +161,7 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-               -e "154 i \\
+               -e "156 i \\
 #if !HAVE_DECL_STRLCAT\\
 extern size_t strlcat(char *, const char *, size_t);\\
 #endif\\
