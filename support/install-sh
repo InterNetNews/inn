@@ -1,7 +1,7 @@
 #!/bin/sh
 # install - install a program, script, or datafile
 
-scriptversion=2016-01-11.22; # UTC
+scriptversion=2017-09-23.17; # UTC
 
 #############################
 # NOTICE TO INN MAINTAINERS #
@@ -300,15 +300,18 @@ do
     fi
     dst=$dst_arg
 
-    # If destination is a directory, append the input filename; won't work
-    # if double slashes aren't ignored.
+    # If destination is a directory, append the input filename.
     if test -d "$dst"; then
       if test "$is_target_a_directory" = never; then
         echo "$0: $dst_arg: Is a directory" >&2
         exit 1
       fi
       dstdir=$dst
-      dst=$dstdir/`basename "$src"`
+      dstbase=`basename "$src"`
+      case $dst in
+       */) dst=$dst$dstbase;;
+       *)  dst=$dst/$dstbase;;
+      esac
       dstdir_status=0
     else
       dstdir=`dirname "$dst"`
@@ -316,6 +319,11 @@ do
       dstdir_status=$?
     fi
   fi
+
+  case $dstdir in
+    */) dstdirslash=$dstdir;;
+    *)  dstdirslash=$dstdir/;;
+  esac
 
   obsolete_mkdir_used=false
 
@@ -456,8 +464,8 @@ do
   else
 
     # Make a couple of temp file names in the proper directory.
-    dsttmp=$dstdir/_inst.$$_
-    rmtmp=$dstdir/_rm.$$_
+    dsttmp=${dstdirslash}_inst.$$_
+    rmtmp=${dstdirslash}_rm.$$_
 
     # Trap to clean up those temp files at exit.
     trap 'ret=$?; rm -f "$dsttmp" "$rmtmp" && exit $ret' 0
