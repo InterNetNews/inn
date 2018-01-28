@@ -171,7 +171,10 @@ and stores new articles over the top of the oldest articles in the buffer. The
 expire time of articles stored in CNFS buffers is therefore entirely
 determined by how long it takes the buffer to wrap around, which depends
 on how quickly data is being stored in it.  (This method is therefore said
-to have self-expire functionality.)  EXPENSIVESTAT is false for this method.
+to have self-expire functionality.  It also means that when an article is
+cancelled, the cycbuff doesn't go back and use space until it rolls over and
+the whole cycbuff starts being reused.)  EXPENSIVESTAT is false for this
+method.
 
 CNFS has its own configuration file, F<cycbuff.conf>, which describes some
 subtleties to the basic description given above.  Storage method entries
@@ -205,7 +208,8 @@ hardcoded extension.  (The arrival time, in seconds since the epoch,
 is converted to hexadecimal and interpreted as C<0xaabbccdd>, with
 C<aa>, C<bb>, and C<cc> used to build the path.)  This method does not
 have self-expire functionality (meaning B<expire> has to run periodically
-to delete old articles).  EXPENSIVESTAT is false for this method.
+to delete old articles, as well as cancelled articles if I<immediatecancel>
+is not set to true in F<inn.conf>).  EXPENSIVESTAT is false for this method.
 
 Advantages:  It is roughly four times faster than C<timehash> for article
 writes, since much of the file system overhead is bypassed, while still
@@ -228,7 +232,8 @@ where C<nn> is the hexadecimal value of <storage_class>, C<yyyy> is a
 hexadecimal sequence number, and C<bb>, C<cc>, and C<aadd> are components
 of the arrival time in hexadecimal (the arrival time is interpreted as
 documented above under C<timecaf>).  This method does not have self-expire
-functionality.  EXPENSIVESTAT is true for this method.
+functionality.  Cancelled articles are removed immediately.  EXPENSIVESTAT
+is true for this method.
 
 Advantages:  Heavy traffic groups do not cause bottlenecks, and a fine control
 of article retention time is still possible.
@@ -252,7 +257,8 @@ the article is linked into each newsgroup to which it is crossposted
 (using either hard or symbolic links).  This is the way versions of INN
 prior to 2.0 stored all articles, as well as being the article storage format
 used by C News and earlier news systems.  This method does not have
-self-expire functionality.  EXPENSIVESTAT is true for this method.
+self-expire functionality.  Cancelled articles are removed immediately.
+EXPENSIVESTAT is true for this method.
 
 Advantages:  It is widely used and well-understood; it can read article
 spools written by older versions of INN and it is compatible with all
