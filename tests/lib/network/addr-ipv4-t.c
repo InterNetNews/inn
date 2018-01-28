@@ -58,8 +58,11 @@ is_addr_compare(bool expected, const char *a, const char *b, const char *mask)
 int
 main(void)
 {
-    int flag, status;
+#ifdef SO_REUSEADDR
+    int flag;
     socklen_t flaglen;
+#endif
+    int status;
     struct addrinfo *ai, *ai2;
     struct addrinfo hints;
     char addr[INET6_ADDRSTRLEN];

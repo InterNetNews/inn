@@ -26,6 +26,11 @@
 # define vsnprintf test_vsnprintf
 #endif
 
+/* Specific to rra-c-util, but only when debugging is enabled. */
+#ifdef DEBUG_SNPRINTF
+# include "inn/messages.h"
+#endif
+
 /*
  * Copyright Patrick Powell 1995
  * This code is based on code written by Patrick Powell (papowell@astart.com)
@@ -81,11 +86,23 @@
  *    fixed return value to comply with C99
  *    fixed handling of snprintf(NULL, ...)
  *    added explicit casts for double to long long int conversion
+ *    fixed various warnings with GCC 7
+ *    fixed various warnings with Clang
  *
- *  Hrvoje Niksic <hniksic@arsdigita.com> 2000-11-04
+ *  Hrvoje Niksic <hniksic@xemacs.org> 2000-11-04
+ *    include <config.h> instead of "config.h".
+ *    moved TEST_SNPRINTF stuff out of HAVE_SNPRINTF ifdef.
  *    include <stdio.h> for NULL.
- *    added support for long long.
+ *    added support and test cases for long long.
  *    don't declare argument types to (v)snprintf if stdarg is not used.
+ *    use int instead of short int as 2nd arg to va_arg.
+ *
+ *  alexk (INN) 2002-08-21
+ *    use LLONG in fmtfp to handle more characters during floating
+ *    point conversion.
+ *
+ *  herb (Samba) 2002-12-19
+ *    actually print args for %g and %e
  *
  *  Hrvoje Niksic <hniksic@xemacs.org> 2005-04-15
  *    use the PARAMS macro to handle prototypes.
@@ -111,11 +128,6 @@
 /* varargs declarations: */
 
 #include <stdarg.h>
-#define HAVE_STDARGS    /* let's hope that works everywhere (mj) */
-#define VA_LOCAL_DECL   va_list ap
-#define VA_START(f)     va_start(ap, f)
-#define VA_SHIFT(v,t)  ;   /* no-op for ANSI */
-#define VA_END          va_end(ap)
 
 /* Assume all compilers support long double, per Autoconf documentation. */
 #define LDOUBLE long double
@@ -353,6 +365,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	break;
       case 'X':
 	flags |= DP_F_UP;
+        /* fallthrough */
       case 'x':
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
@@ -369,33 +382,36 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
 	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'E':
 	flags |= DP_F_UP;
+        /* fallthrough */
       case 'e':
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
         total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'G':
 	flags |= DP_F_UP;
+        /* fallthrough */
       case 'g':
         flags |= DP_F_FP_G;
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
-	  fvalue = va_arg (args, double);
+	  fvalue = (LDOUBLE) va_arg (args, double);
 	if (max == 0)
 	  /* C99 says: if precision [for %g] is zero, it is taken as one */
 	  max = 1;
 	total += fmtfp (buffer, &currlen, maxlen, fvalue, min, max, flags);
 	break;
       case 'c':
-	total += dopr_outch (buffer, &currlen, maxlen, va_arg (args, int));
+	total += dopr_outch (buffer, &currlen, maxlen,
+			     (char) va_arg (args, int));
 	break;
       case 's':
 	strvalue = va_arg (args, char *);
@@ -411,7 +427,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	{
 	  short int *num;
 	  num = va_arg (args, short int *);
-	  *num = currlen;
+	  *num = (short) currlen;
         } 
 	else if (cflags == DP_C_LONG) 
 	{
@@ -429,7 +445,7 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	{
 	  int *num;
 	  num = va_arg (args, int *);
-	  *num = currlen;
+	  *num = (int) currlen;
         }
 	break;
       case '%':
@@ -478,7 +494,7 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
   }
 
   if (max < 0)
-    strln = strlen (value);
+    strln = (int) strlen (value);
   else
     /* When precision is specified, don't read VALUE past precision. */
     /*strln = strnlen (value, max);*/
@@ -512,7 +528,7 @@ static int fmtstr (char *buffer, size_t *currlen, size_t maxlen,
 static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
 		   LLONG value, int base, int min, int max, int flags)
 {
-  int signvalue = 0;
+  char signvalue = 0;
   unsigned LLONG uvalue;
   char convert[24];
   unsigned int place = 0;
@@ -566,8 +582,8 @@ static int fmtint (char *buffer, size_t *currlen, size_t maxlen,
     spadlen = -spadlen; /* Left Justifty */
 
 #ifdef DEBUG_SNPRINTF
-  dprint (1, (debugfile, "zpad: %d, spad: %d, min: %d, max: %d, place: %d\n",
-      zpadlen, spadlen, min, max, place));
+  debug ("zpad: %d, spad: %d, min: %d, max: %d, place: %u\n",
+         zpadlen, spadlen, min, max, place);
 #endif
 
   /* Spaces */
@@ -614,7 +630,7 @@ static LDOUBLE abs_val (LDOUBLE value)
   return result;
 }
 
-static LLONG pow10_int (int exp)
+static LLONG pow10_int (unsigned int exp)
 {
   LDOUBLE result = 1;
 
@@ -633,23 +649,31 @@ static LLONG round_int (LDOUBLE value)
 
   intpart = (LLONG) value;
   value = value - intpart;
-  if (value >= 0.5)
+  if (value >= (LDOUBLE) 0.5)
     intpart++;
 
   return intpart;
 }
 
+/*
+ * GCC 7.1 issues this warning at the point of the function definition header
+ * (not in any actual code), and I can't figure out what's triggering it since
+ * the comparison form doesn't appear anywhere in this code.  Since this is
+ * rarely-used portability code, suppress the warning.
+ */
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+
 static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 		  LDOUBLE fvalue, int min, int max, int flags)
 {
-  int signvalue = 0;
+  char signvalue = 0;
   LDOUBLE ufvalue;
   char iconvert[24];
   char fconvert[24];
   size_t iplace = 0;
   size_t fplace = 0;
-  int padlen = 0; /* amount to pad */
-  int zpadlen = 0; 
+  long padlen = 0; /* amount to pad */
+  long zpadlen = 0; 
   int total = 0;
   LLONG intpart;
   LLONG fracpart;
@@ -701,7 +725,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 	     fractional digit. */
 	  LDOUBLE temp;
 	  if (ufvalue > 0)
-	    for (temp = ufvalue; temp < 0.1; temp *= 10)
+	    for (temp = ufvalue; temp < (LDOUBLE) 0.1; temp *= 10)
 	      ++max;
 	}
     }
@@ -748,12 +772,16 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
       }
 
 #ifdef DEBUG_SNPRINTF
-  dprint (1, (debugfile, "fmtfp: %f =? %d.%d\n", fvalue, intpart, fracpart));
+# ifdef HAVE_LONG_LONG_INT
+  debug ("fmtfp: %Lf =? %lld.%lld\n", fvalue, intpart, fracpart);
+# else
+  debug ("fmtfp: %Lf =? %ld.%ld\n", fvalue, intpart, fracpart);
+# endif
 #endif
 
   /* Convert integer part */
   do {
-    iconvert[iplace++] = '0' + intpart % 10;
+    iconvert[iplace++] = (char) ('0' + (intpart % 10));
     intpart = (intpart / 10);
   } while(intpart && (iplace < sizeof(iconvert)));
   if (iplace == sizeof(iconvert)) iplace--;
@@ -761,7 +789,7 @@ static int fmtfp (char *buffer, size_t *currlen, size_t maxlen,
 
   /* Convert fractional part */
   do {
-    fconvert[fplace++] = '0' + fracpart % 10;
+    fconvert[fplace++] = (char) ('0' + (fracpart % 10));
     fracpart = (fracpart / 10);
   } while(fracpart && (fplace < sizeof(fconvert)));
   while (leadingfrac0s-- > 0 && fplace < sizeof(fconvert))
@@ -849,27 +877,14 @@ int vsnprintf (char *str, size_t count, const char *fmt, va_list args)
   return dopr(str, count, fmt, args);
 }
 
-/* VARARGS3 */
-#ifdef HAVE_STDARGS
-int snprintf (char *str,size_t count,const char *fmt,...)
-#else
-int snprintf (va_alist) va_dcl
-#endif
+int snprintf (char *str, size_t count, const char *fmt,...)
 {
-#ifndef HAVE_STDARGS
-  char *str;
-  size_t count;
-  char *fmt;
-#endif
-  VA_LOCAL_DECL;
+  va_list ap;
   int total;
     
-  VA_START (fmt);
-  VA_SHIFT (str, char *);
-  VA_SHIFT (count, size_t );
-  VA_SHIFT (fmt, char *);
+  va_start(ap, fmt);
   total = vsnprintf(str, count, fmt, ap);
-  VA_END;
+  va_end(ap);
   return total;
 }
 
@@ -946,5 +961,6 @@ int main (void)
       num++;
     }
   printf ("%d tests failed out of %d.\n", fail, num);
+  return 0;
 }
-#endif /* SNPRINTF_TEST */
+#endif /* TEST_SNPRINTF */

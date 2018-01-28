@@ -25,7 +25,6 @@ lib/inet_ntop
 lib/innconf
 lib/list
 lib/md5
-lib/memcmp
 lib/messageid
 lib/messages
 lib/mkstemp

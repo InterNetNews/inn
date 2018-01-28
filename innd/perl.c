@@ -39,7 +39,9 @@
 #include "innd.h"
 
 #include <EXTERN.h>
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 #include <perl.h>
+#pragma GCC diagnostic warning "-Wredundant-decls"
 #include <XSUB.h>
 #include "ppport.h"
 

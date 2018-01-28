@@ -26,9 +26,10 @@
 
 int test_asprintf(char **, const char *, ...)
     __attribute__((__format__(printf, 2, 3)));
-int test_vasprintf(char **, const char *, va_list);
+int test_vasprintf(char **, const char *, va_list)
+    __attribute__((__format__(printf, 2, 0)));
 
-static int
+static int __attribute__((__format__(printf, 2, 3)))
 vatest(char **result, const char *format, ...)
 {
     va_list args;

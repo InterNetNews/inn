@@ -13,9 +13,9 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016
- *     Russ Allbery <eagle@eyrie.org>
- * Copyright 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2011, 2012, 2013, 2014
+ * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2001-2002, 2004-2008, 2011-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -35,6 +35,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ *
+ * SPDX-License-Identifier: MIT
  */
 
 #include <errno.h>
@@ -72,7 +74,13 @@ ok(int n UNUSED, int success)
 void
 skip(int n UNUSED, const char *reason)
 {
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     new_skip(reason, NULL);
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 }
 
 void
@@ -84,7 +92,13 @@ ok_block(int n UNUSED, int count, int success)
 void
 skip_block(int n UNUSED, int count, const char *reason)
 {
+#if __GNUC__ > 4
+# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     new_skip_block(count, reason, NULL);
+#if __GNUC__ > 4
+# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#endif
 }
 
 void
@@ -176,8 +190,7 @@ static struct diag_file *diag_files = NULL;
     do {                                        \
         if (format != NULL) {                   \
             va_list args;                       \
-            if (prefix != NULL)                 \
-                printf("%s", prefix);           \
+            printf("%s", prefix);               \
             va_start(args, format);             \
             vprintf(format, args);              \
             va_end(args);                       \
@@ -647,6 +660,41 @@ is_hex(unsigned long wanted, unsigned long seen, const char *format, ...)
 
 
 /*
+ * Takes pointers to an expected region of memory and a seen region of memory
+ * and assumes the test passes if the len bytes onwards from them match.
+ * Otherwise reports any bytes which didn't match.
+ */
+int
+is_blob(const void *wanted, const void *seen, size_t len, const char *format,
+        ...)
+{
+    int success;
+    size_t i;
+
+    fflush(stderr);
+    check_diag_files();
+    success = (memcmp(wanted, seen, len) == 0);
+    if (success)
+        printf("ok %lu", testnum++);
+    else {
+        const unsigned char *wanted_c = wanted;
+        const unsigned char *seen_c = seen;
+
+        for (i = 0; i < len; i++) {
+            if (wanted_c[i] != seen_c[i])
+                diag("offset %lu: wanted %02x, seen %02x", (unsigned long) i,
+                     wanted_c[i], seen_c[i]);
+        }
+        printf("not ok %lu", testnum++);
+        _failed++;
+    }
+    PRINT_DESC(" - ", format);
+    putchar('\n');
+    return success;
+}
+
+
+/*
  * Bail out with an error.
  */
 void
@@ -845,6 +893,8 @@ breallocarray(void *p, size_t n, size_t size)
 {
     if (n > 0 && UINT_MAX / n <= size)
         bail("reallocarray too large");
+    if (n == 0)
+        n = 1;
     p = realloc(p, n * size);
     if (p == NULL)
         sysbail("failed to realloc %lu bytes", (unsigned long) (n * size));

@@ -108,7 +108,7 @@ typedef void (*xmalloc_handler_type)(const char *, size_t, const char *, int);
 
 /* The default error handler. */
 void xmalloc_fail(const char *, size_t, const char *, int)
-    __attribute__((__nonnull__));
+    __attribute__((__nonnull__, __noreturn__));
 
 /*
  * Assign to this variable to choose a handler other than the default, which

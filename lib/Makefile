@@ -29,7 +29,7 @@ SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 # Sources for additional functions only built to replace missing system ones.
 EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c	   \
 		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
-		inet_ntop.c memcmp.c mkstemp.c pread.c pwrite.c            \
+		inet_ntop.c mkstemp.c pread.c pwrite.c            \
 	        reallocarray.c setenv.c                                    \
 		seteuid.c setproctitle.c snprintf.c strcasecmp.c strlcat.c \
 		strlcpy.c strspn.c strtok.c symlink.c
@@ -591,10 +591,6 @@ inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/macros.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h
-memcmp.o: memcmp.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

@@ -1,11 +1,11 @@
 /* $Id$
  *
- * Floating point check function for the TAP protocol.
+ * Testing interface to fake write functions.
  *
- * This file is part of C TAP Harness.  The current version plus supporting
- * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ * This header defines the interfaces to fake write functions used to test
+ * error handling wrappers around system write functions.
  *
- * Copyright 2008, 2010, 2012, 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000, 2001, 2002, 2004, 2017 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,26 +24,36 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
- * SPDX-License-Identifier: MIT
  */
 
-#ifndef TAP_FLOAT_H
-#define TAP_FLOAT_H 1
+#define LIBTEST_NEW_FORMAT 1
 
-#include <tap/macros.h>
+#ifndef TESTS_INN_FAKEWRITE_H
+#define TESTS_INN_FAKEWRITE_H 1
+
+#include "config.h"
+#include "portable/macros.h"
+#include "portable/stdbool.h"
+
+#include <sys/types.h>
 
 BEGIN_DECLS
 
-/* Check an expected value against a seen value within epsilon. */
-#ifndef LIBTEST_NEW_FORMAT
-/* Specific to the integration of C TAP Harness in INN. */
-void ok_double(int n, double wanted, double seen);
-#endif
-int is_double(double wanted, double seen, double epsilon,
-               const char *format, ...)
-    __attribute__((__format__(printf, 4, 5)));
+/* Replacement functions called instead of C library calls. */
+extern ssize_t fake_write(int, const void *, size_t);
+extern ssize_t fake_pwrite(int, const void *, size_t, off_t);
+extern ssize_t fake_writev(int, const struct iovec *, int);
+
+/* The data written and how many bytes have been written. */
+extern char write_buffer[256];
+extern size_t write_offset;
+
+/* If true, half the calls to write or writev will fail with EINTR. */
+extern int write_interrupt;
+
+/* If true, all write or writev calls will return 0. */
+extern bool write_fail;
 
 END_DECLS
 
-#endif /* TAP_FLOAT_H */
+#endif /* !TESTS_INN_FAKEWRITE_H */

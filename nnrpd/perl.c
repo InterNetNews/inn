@@ -26,14 +26,15 @@
 #ifdef DO_PERL
 
 #include <EXTERN.h>
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 #include <perl.h>
+#pragma GCC diagnostic warning "-Wredundant-decls"
 #include <XSUB.h>
 #include "ppport.h"
 
 #include "innperl.h"
 
 extern HEADER Table[], *EndOfTable;
-extern char PERMuser[];
 
 extern char **OtherHeaders;
 extern int OtherCount;

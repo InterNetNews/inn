@@ -6,13 +6,13 @@ dnl and socket properties.  The macros provided are:
 dnl
 dnl     INN_FUNC_GETADDRINFO_ADDRCONFIG
 dnl     INN_MACRO_IN6_ARE_ADDR_EQUAL
-dnl     INN_MACRO_SA_LEN
 dnl
 dnl They use a separate internal source macro to make the code easier to read.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
+dnl Copyright 2017 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2008, 2009, 2011
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl Copyright (c) 2004, 2005, 2006, 2007, 2008, 2009
@@ -99,27 +99,3 @@ AC_DEFUN([INN_MACRO_IN6_ARE_ADDR_EQUAL],
  AS_IF([test x"$inn_cv_in6_are_addr_equal_broken" = xyes],
     [AC_DEFINE([HAVE_BROKEN_IN6_ARE_ADDR_EQUAL], 1,
         [Define if your IN6_ARE_ADDR_EQUAL macro is broken.])])])
-
-dnl Source used by INN_MACRO_SA_LEN.
-AC_DEFUN([_INN_MACRO_SA_LEN_SOURCE], [[
-#include <sys/types.h>
-#include <sys/socket.h>
-
-int
-main(void)
-{
-    struct sockaddr sa;
-    int x = SA_LEN(&sa);
-}
-]])
-
-dnl Check whether the SA_LEN macro is available.  This should give the length
-dnl of a struct sockaddr regardless of type.
-AC_DEFUN([INN_MACRO_SA_LEN],
-[AC_CACHE_CHECK([for SA_LEN macro], [inn_cv_sa_len_macro],
-    [AC_LINK_IFELSE([AC_LANG_SOURCE([_INN_MACRO_SA_LEN_SOURCE])],
-        [inn_cv_sa_len_macro=yes],
-        [inn_cv_sa_len_macro=no])])
- AS_IF([test x"$inn_cv_sa_len_macro" = xyes],
-    [AC_DEFINE([HAVE_SA_LEN], 1,
-        [Define if <sys/socket.h> defines the SA_LEN macro.])])])

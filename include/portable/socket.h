@@ -17,7 +17,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2009, 2011, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright (c) 2004, 2005, 2006, 2007
@@ -126,28 +126,6 @@ struct sockaddr_storage {
 # define IN6_ARE_ADDR_EQUAL(a, b) \
     (memcmp((a), (b), sizeof(struct in6_addr)) == 0)
 #endif
-
-/* Define an SA_LEN macro that gives us the length of a sockaddr. */
-#if !HAVE_SA_LEN
-# if HAVE_STRUCT_SOCKADDR_SA_LEN
-#  define SA_LEN(s)     ((s)->sa_len)
-# else
-/* Hack courtesy of the USAGI project. */
-#  if HAVE_INET6
-#   define SA_LEN(s) \
-    ((((const struct sockaddr *)(s))->sa_family == AF_INET6)            \
-        ? sizeof(struct sockaddr_in6)                                   \
-        : ((((const struct sockaddr *)(s))->sa_family == AF_INET)       \
-            ? sizeof(struct sockaddr_in)                                \
-            : sizeof(struct sockaddr)))
-#  else
-#   define SA_LEN(s) \
-    ((((const struct sockaddr *)(s))->sa_family == AF_INET)             \
-        ? sizeof(struct sockaddr_in)                                    \
-        : sizeof(struct sockaddr))
-#  endif
-# endif /* HAVE_SOCKADDR_LEN */
-#endif /* !HAVE_SA_LEN_MACRO */
 
 /*
  * AI_ADDRCONFIG results in an error from getaddrinfo on BSD/OS and possibly

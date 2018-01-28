@@ -161,7 +161,7 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-               -e "154 i \\
+               -e "156 i \\
 #if !HAVE_DECL_STRLCAT\\
 extern size_t strlcat(char *, const char *, size_t);\\
 #endif\\
@@ -180,9 +180,6 @@ extern size_t strspn(const char *, const char *);\\
 #endif\\
 #if !HAVE_STRTOK\\
 extern char * strtok(char *, const char *);\\
-#endif\\
-#if !HAVE_MEMCMP\\
-extern int memcmp(const void *, const void *, size_t);\\
 #endif" \
                -e '/#if !HAVE_DAEMON/,+2d' \
                -e '/#if !HAVE_ISSETUGID/,+2d' \
@@ -193,11 +190,12 @@ extern int memcmp(const void *, const void *, size_t);\\
         sed -i -e 's/UTIL_/INN_/g' \
                -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
                -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
-               -e 's/<config\.h>/"config.h"/g' \
+               -e 's/<config\.h>$/"config.h"/g' \
                -e 's/<portable\/system\.h>/"clibrary.h"/g' \
                -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
                -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
                -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
+               -e 's/<tests\/util\/\(.*\)>/"lib\/\1"/g' \
                -e '1 s/$/ \$Id\$\n */' \
                ${TEMP}
 
@@ -306,6 +304,7 @@ download tests/portable/snprintf-t.c tests/lib snprintf-t.c
 ##  Synchronize test suite files for utility functions from upstream.
 download tests/util/buffer-t.c tests/lib buffer-t.c
 download tests/util/fakewrite.c tests/lib fakewrite.c
+download tests/util/fakewrite.h tests/lib fakewrite.h
 download tests/util/fdflag-t.c tests/lib fdflag-t.c
 download tests/util/messages-t.c tests/lib messages-t.c
 download tests/util/vector-t.c tests/lib vector-t.c

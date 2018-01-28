@@ -15,7 +15,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002, 2004, 2005, 2013, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004, 2005, 2013, 2016, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2013, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -369,7 +369,7 @@ process_stop_all(int success UNUSED, int primary)
  * Read the PID of a process from a file.  This is necessary when running
  * under fakeroot to get the actual PID of the remctld process.
  */
-static long
+static pid_t
 read_pidfile(const char *path)
 {
     FILE *file;
@@ -385,7 +385,7 @@ read_pidfile(const char *path)
     pid = strtol(buffer, NULL, 10);
     if (pid <= 0)
         bail("cannot read PID from %s", path);
-    return pid;
+    return (pid_t) pid;
 }
 
 

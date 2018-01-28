@@ -21,7 +21,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/headers.t lib/hex.t lib/inet_aton.t \
 	lib/inet_ntoa.t lib/inet_ntop.t lib/innconf.t lib/list.t lib/md5.t \
-	lib/memcmp.t lib/messageid.t lib/messages.t lib/mkstemp.t \
+	lib/messageid.t lib/messages.t lib/mkstemp.t \
 	lib/network/addr-ipv4.t lib/network/addr-ipv6.t \
 	lib/network/client.t lib/network/server.t \
 	lib/pread.t lib/pwrite.t lib/qio.t lib/reallocarray.t \
@@ -166,12 +166,6 @@ lib/list.t: lib/list-t.o tap/basic.o $(LIBINN)
 
 lib/md5.t: lib/md5-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/md5-t.o tap/basic.o $(LIBINN)
-
-lib/memcmp.o: ../lib/memcmp.c
-	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/memcmp.c
-
-lib/memcmp.t: lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/memcmp.o lib/memcmp-t.o tap/basic.o $(LIBINN)
 
 lib/messageid.t: lib/messageid-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/messageid-t.o tap/basic.o $(LIBINN)

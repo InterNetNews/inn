@@ -78,6 +78,7 @@ CCOUTPUT	= @CCOUTPUT@
 ##    -Wredundant-decls     Too much noise from system headers.
 ##    -Wlong-long           Too much noise from system headers.
 ##    -Woverlength-strings  Useless noise.
+##    -Wunused-function     Noise from embedded Perl (at least with Perl 5.20).
 ##
 ##  Some may be worth looking at again once a released version of gcc doesn't
 ##  warn on system headers.  The warnings below are in the same order as
@@ -107,7 +108,7 @@ WARNINGS	= -g -O3 -DDEBUG=1 -Werror -Wall -Wextra \
 		  -Wmissing-prototypes -Wmissing-declarations \
 		  -Wmissing-format-attribute \
 		  -Wnormalized=nfc -Wnested-externs -Winline \
-		  -Winvalid-pch -Wvla
+		  -Winvalid-pch -Wvla -Wno-unused-function
 
 ##  Some warnings have to be suppressed for Perl, since there's no way to work
 ##  around the Perl header problems in INN code.

@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002, 2004, 2005, 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004, 2005, 2015, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2010, 2011, 2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -49,45 +49,87 @@
 /*
  * Test functions.
  */
-static void test1(void *data UNUSED) { warn("warning"); }
-static void test2(void *data UNUSED) { die("fatal"); }
-static void test3(void *data UNUSED) { errno = EPERM; syswarn("permissions"); }
-static void test4(void *data UNUSED) {
+static void
+test1(void *data UNUSED)
+{
+    warn("warning");
+}
+
+static void __attribute__((__noreturn__))
+test2(void *data UNUSED)
+{
+    die("fatal");
+}
+
+static void
+test3(void *data UNUSED)
+{
+    errno = EPERM;
+    syswarn("permissions");
+}
+
+static void __attribute__((__noreturn__))
+test4(void *data UNUSED)
+{
     errno = EACCES;
     sysdie("fatal access");
 }
-static void test5(void *data UNUSED) {
+
+static void
+test5(void *data UNUSED)
+{
     message_program_name = "test5";
     warn("warning");
 }
-static void test6(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test6(void *data UNUSED)
+{
     message_program_name = "test6";
     die("fatal");
 }
-static void test7(void *data UNUSED) {
+
+static void
+test7(void *data UNUSED)
+{
     message_program_name = "test7";
     errno = EPERM;
     syswarn("perms %d", 7);
 }
-static void test8(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test8(void *data UNUSED)
+{
     message_program_name = "test8";
     errno = EACCES;
     sysdie("%st%s", "fa", "al");
 }
 
-static int return10(void) { return 10; }
+static int
+return10(void)
+{
+    return 10;
+}
 
-static void test9(void *data UNUSED) {
+static void __attribute__((__noreturn__))
+test9(void *data UNUSED)
+{
     message_fatal_cleanup = return10;
     die("fatal");
 }
-static void test10(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test10(void *data UNUSED)
+{
     message_program_name = 0;
     message_fatal_cleanup = return10;
     errno = EPERM;
     sysdie("fatal perm");
 }
-static void test11(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test11(void *data UNUSED)
+{
     message_program_name = "test11";
     message_fatal_cleanup = return10;
     errno = EPERM;
@@ -96,61 +138,104 @@ static void test11(void *data UNUSED) {
 }
 
 static void __attribute__((__format__(printf, 2, 0)))
-log_msg(size_t len, const char *format, va_list args, int error) {
+log_msg(size_t len, const char *format, va_list args, int error)
+{
     fprintf(stderr, "%lu %d ", (unsigned long) len, error);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
 }
 
-static void test12(void *data UNUSED) {
+static void
+test12(void *data UNUSED)
+{
     message_handlers_warn(1, log_msg);
     warn("warning");
 }
-static void test13(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test13(void *data UNUSED)
+{
     message_handlers_die(1, log_msg);
     die("fatal");
 }
-static void test14(void *data UNUSED) {
+
+static void
+test14(void *data UNUSED)
+{
     message_handlers_warn(2, log_msg, log_msg);
     errno = EPERM;
     syswarn("warning");
 }
-static void test15(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test15(void *data UNUSED)
+{
     message_handlers_die(2, log_msg, log_msg);
     message_fatal_cleanup = return10;
     errno = EPERM;
     sysdie("fatal");
 }
-static void test16(void *data UNUSED) {
+
+static void
+test16(void *data UNUSED)
+{
     message_handlers_warn(2, message_log_stderr, log_msg);
     message_program_name = "test16";
     errno = EPERM;
     syswarn("warning");
 }
-static void test17(void *data UNUSED) { notice("notice"); }
-static void test18(void *data UNUSED) {
+
+static void
+test17(void *data UNUSED)
+{
+    notice("notice");
+}
+
+static void
+test18(void *data UNUSED)
+{
     message_program_name = "test18";
     notice("notice");
 }
-static void test19(void *data UNUSED) { debug("debug"); }
-static void test20(void *data UNUSED) {
+
+static void
+test19(void *data UNUSED)
+{
+    debug("debug");
+}
+
+static void
+test20(void *data UNUSED)
+{
     message_handlers_notice(1, log_msg);
     notice("foo");
 }
-static void test21(void *data UNUSED) {
+
+static void
+test21(void *data UNUSED)
+{
     message_handlers_debug(1, message_log_stdout);
     message_program_name = "test23";
     debug("baz");
 }
-static void test22(void *data UNUSED) {
+
+static void __attribute__((__noreturn__))
+test22(void *data UNUSED)
+{
     message_handlers_die(0);
     die("hi mom!");
 }
-static void test23(void *data UNUSED) {
+
+static
+void test23(void *data UNUSED)
+{
     message_handlers_warn(0);
     warn("this is a test");
 }
-static void test24(void *data UNUSED) {
+
+static
+void test24(void *data UNUSED)
+{
     notice("first");
     message_handlers_notice(0);
     notice("second");

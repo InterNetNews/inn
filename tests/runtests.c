@@ -2,6 +2,37 @@
  *
  * Run a set of tests, reporting results.
  *
+ * Test suite driver that runs a set of tests implementing a subset of the
+ * Test Anything Protocol (TAP) and reports the results.
+ *
+ * Any bug reports, bug fixes, and improvements are very much welcome and
+ * should be sent to the e-mail address below.  This program is part of C TAP
+ * Harness <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
+ *
+ * Copyright 2000-2001, 2004, 2006-2018 Russ Allbery <eagle@eyrie.org>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/*
  * Usage:
  *
  *      runtests [-hv] [-b <build-dir>] [-s <source-dir>] -l <test-list>
@@ -58,32 +89,7 @@
  * If the -v option is given, or the C_TAP_VERBOSE environment variable is set,
  * display the full output of each test as it runs rather than showing a
  * summary of the results of each test.
- *
- * Any bug reports, bug fixes, and improvements are very much welcome and
- * should be sent to the e-mail address below.  This program is part of C TAP
- * Harness <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
- *
- * Copyright 2000, 2001, 2004, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013,
- *     2014, 2015, 2016 Russ Allbery <eagle@eyrie.org>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
-*/
+ */
 
 /* Required for fdopen(), getopt(), and putenv(). */
 #if defined(__STRICT_ANSI__) || defined(PEDANTIC)
@@ -450,7 +456,7 @@ concat(const char *first, ...)
 static double
 tv_seconds(const struct timeval *tv)
 {
-    return difftime(tv->tv_sec, 0) + tv->tv_usec * 1e-6;
+    return difftime(tv->tv_sec, 0) + (double) tv->tv_usec * 1e-6;
 }
 
 
@@ -546,6 +552,7 @@ test_start(const char *path, int *fd)
         /* Now, exec our process. */
         if (execl(path, path, (char *) 0) == -1)
             _exit(CHILDERR_EXEC);
+        break;
 
     /* In parent.  Close the extra file descriptor. */
     default:
@@ -1100,6 +1107,7 @@ test_fail_summary(const struct testlist *fails)
     struct testset *ts;
     unsigned int chars;
     unsigned long i, first, last, total;
+    double failed;
 
     puts(header);
 
@@ -1108,8 +1116,9 @@ test_fail_summary(const struct testlist *fails)
     for (; fails; fails = fails->next) {
         ts = fails->ts;
         total = ts->count - ts->skipped;
+        failed = (double) ts->failed;
         printf("%-26.26s %4lu/%-4lu %3.0f%% %4lu ", ts->file, ts->failed,
-               total, total ? (ts->failed * 100.0) / total : 0,
+               total, total ? (failed * 100.0) / (double) total : 0,
                ts->skipped);
         if (WIFEXITED(ts->status))
             printf("%4d  ", WEXITSTATUS(ts->status));
@@ -1449,7 +1458,7 @@ test_batch(struct testlist *tests, const char *source, const char *build,
         fputs("All tests successful", stdout);
     else
         printf("Failed %lu/%lu tests, %.2f%% okay", failed, total,
-               (total - failed) * 100.0 / total);
+               (double) (total - failed) * 100.0 / (double) total);
     if (skipped != 0) {
         if (skipped == 1)
             printf(", %lu test skipped", skipped);
