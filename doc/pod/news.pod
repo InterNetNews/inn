@@ -12,8 +12,8 @@ Message-IDs that contain C<..> in the left part, as well as Message-IDs
 with two C<@> (such Message-IDs would otherwise be considered as
 syntactically invalid).  See the inn.conf(5) man page for more details.
 
-The default value (I<no-laxmid>) corresponds to the legacy behaviour
-(the one of S<INN 2.6.1> and earlier).
+The check is disabled by default (I<no-laxmid>), which corresponds to
+the legacy behaviour of S<INN 2.6.1> and earlier.
 
 =item *
 
@@ -33,8 +33,8 @@ Stussy for the patch.
 
 Fixed a bug in B<inews> that was rejecting articles containing header
 fields whose length exceeded 998 bytes.  This limitation is for the
-length of a single line of a header field, not for the whole header
-field.
+length of a single line of a header field (and not for the length of
+the whole header field, as it was wrongly the case).
 
 =item *
 
