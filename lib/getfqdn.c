@@ -35,9 +35,13 @@ char *GetFQDN(char *domain)
     if (strchr(buff, '.') != NULL)
 	return buff;
 
-    /* See if DNS (or /etc/hosts) gives us a full domain name. */
+    /*
+    ** See if DNS (or /etc/hosts) gives us a full domain name.  If the host
+    ** doesn't exist in DNS at all but we were given a domain name, use the
+    ** fallback of appending that domain to the hostname.
+    */
     if ((hp = gethostbyname(buff)) == NULL)
-	return NULL;
+	goto fallback;
 #if	0
     /* This code is a "feature" that allows multiple domains (NIS or
      * DNS, I'm not sure) to work with a single INN server.  However,
@@ -80,6 +84,7 @@ char *GetFQDN(char *domain)
 	    }
 
     /* Give up:  Get the domain config param and append it. */
+fallback:
     if ((p = domain) == NULL || *p == '\0')
 	return NULL;
     if (strlen(buff) + 1 + strlen(p) > sizeof buff - 1)
