@@ -17,7 +17,8 @@
 **  responsible for freeing.  If the host's domain cannot be found in DNS, use
 **  the domain argument as a fallback.
 */
-char *inn_getfqdn(const char *domain)
+char *
+inn_getfqdn(const char *domain)
 {
     char hostname[BUFSIZ];
     struct addrinfo hints, *res;
