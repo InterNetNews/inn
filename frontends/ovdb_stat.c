@@ -64,7 +64,7 @@ struct datatab {
 static void display_heading(const char *str)
 {
     if(html)
-	printf("<h2>%s<h2>\n", str);
+	printf("<h2>%s</h2>\n", str);
     else
 	printf("%s\n", str);
 }
@@ -728,14 +728,14 @@ int main(int argc, char *argv[])
     if(err) {
 	fprintf(stderr, "\
 Usage:\n\
-   ovdb_stat -Hgci [-r artnum] newsgroup [newsgroup ...]\n\
+   ovdb_stat [-Hgci] [-r artnum] newsgroup [newsgroup ...]\n\
       -H              : output in HTML\n\
       -g              : show groupstats info\n\
       -c              : show groupstats info by counting actual records\n\
       -i              : show additional group info\n\
       -r artnum-range : retrieve OV records for article number range\n\
 \n\
-   ovdb_stat -Hklmtv [-d <database>]\n\
+   ovdb_stat [-HklmMtv] [-d <database>]\n\
       -H          : output in HTML\n\
       -k          : Display lock region statistics\n\
       -l          : Display log region statistics\n\
@@ -891,8 +891,8 @@ Usage:\n\
 	    puts("</pre>");
     }
 out:
-    if(html)
-	puts("<p></body></html>");
+    if((html == 1) && (err == 0))
+        puts("<p></body></html>");
     ovdb_close();
     return 0;
 }
