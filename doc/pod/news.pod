@@ -17,6 +17,14 @@ the legacy behaviour of S<INN 2.6.1> and earlier.
 
 =item *
 
+Use of the B<ovdb_server> helper server is now the default when
+using the ovdb overview method, that is to say the default value
+for the I<readserver> parameter in F<ovdb.conf> is now set to true.
+It improves stability and avoids deadlocks, timing issues and corrupted
+ovdb databases.
+
+=item *
+
 B<mailpost> now removes empty header fields before attempting to post
 articles, and keeps trace of them in the X-Mailpost-Empty-Hdrs: newly
 generated header field body.  Also, B<mailpost> now sanitizes header
