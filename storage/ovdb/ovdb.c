@@ -413,7 +413,7 @@ void read_ovdb_conf(void)
     ovdb_conf.minkey = 0;
     ovdb_conf.maxlocks = 4000;
     ovdb_conf.nocompact = 1;
-    ovdb_conf.readserver = 0;
+    ovdb_conf.readserver = 1;
     ovdb_conf.numrsprocs = 5;
     ovdb_conf.maxrsconn = 0;
     ovdb_conf.useshm = 0;

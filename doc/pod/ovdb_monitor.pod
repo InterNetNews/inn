@@ -4,29 +4,33 @@ ovdb_monitor - Database maintenance
 
 =head1 SYNOPSIS
 
-Use C<ovdb_init> to start ovdb_monitor
+Use B<ovdb_init> to start B<ovdb_monitor>
 
 =head1 DESCRIPTION
 
-When started (by C<ovdb_init>), C<ovdb_monitor> forks three processes
-that perform routine database maintenance tasks.  These are:
-transaction checkpointing, deadlock detection, and transaction log
-removal.  The process ID of the parent is written to
-F<I<pathrun>/ovdb_monitor.pid>.  This PID is used by other INN
-commands to verify that ovdb_monitor is running.
+When started (normally by B<ovdb_init> that is invoked by B<rc.news>),
+B<ovdb_monitor> forks three processes that perform routine database
+maintenance tasks.  These are transaction checkpointing, deadlock
+detection, and transaction log removal.
 
-To shut down ovdb_monitor, send a TERM signal to the process ID
-in F<I<pathrun>/ovdb_monitor.pid> .  The parent process will shut
-down the three children and wait for their exit before exiting itself.
+The process ID of the parent is written to F<ovdb_monitor.pid> in the
+I<pathrun> directory.  This PID is used by other INN commands to verify
+that B<ovdb_monitor> is running.
+
+To shut down B<ovdb_monitor>, send a TERM signal to the process ID
+in F<ovdb_monitor.pid>.  The parent process will shut down the three
+children and wait for their exit before exiting itself.  Note that when
+running the C<rc.news stop> command to stop the news system, B<rc.news>
+automatically takes care of stopping B<ovdb_monitor>.
 
 =head1 HISTORY
 
-Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
 $Id$
 
 =head1 SEE ALSO
 
-ovdb(5), ovdb_init(8)
+ovdb(5), ovdb_init(8), rc.news(8).
 
 =cut

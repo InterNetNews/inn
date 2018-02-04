@@ -4,66 +4,67 @@ ovdb_init - Prepare ovdb database for use
 
 =head1 SYNOPSIS
 
-ovdb_init [C<-u>|C<-r>]
+B<ovdb_init> [B<-r>|B<-u>]
 
 =head1 DESCRIPTION
 
 This command must be run before any other process can access the
-overview database.  It performs the following steps:
+overview database.  B<ovdb_init> is normally invoked automatically by
+B<rc.news> when starting the news system.
+
+B<ovdb_init> performs the following steps:
 
 =over 4
 
 =item 1
 
-Creates the database environment, if necessary
+Creates the database environment, if necessary.
 
 =item 2
 
-If the database is idle (and if the C<-u> option is not specified),
+If the database is idle (and if the B<-u> option is not specified),
 it performs a normal recovery.  The recovery will remove stale locks,
 recreate the memory pool cache, and repair any damage caused by a system
 crash or improper shutdown.
 
 =item 3
 
-If the C<-u> option is specified, it performs any necessary upgrades
-to the database.  See the UPGRADING section below.
+If the B<-u> option is specified, it performs any necessary upgrades
+to the database.  See the L<UPGRADING> section below.
 
 =item 4
 
-Starts the DB housekeeping processes (ovdb_monitor) if they're not
-already running. (Unless the C<-r> option is specified).
+Starts the database housekeeping processes (B<ovdb_monitor>) if they are
+not already running.  (Unless the B<-r> option is specified).
 
 =item 5
 
-Starts the ovdb readserver (ovdb_server) processes if I<readserver>
+Starts the ovdb readserver processes (B<ovdb_server>) if I<readserver>
 in F<ovdb.conf> is true, and if they are not already running.  (Unless
-the C<-r> option is specified).
+the B<-r> option is specified).
 
 =back
 
-Returns exit status of 0 if all steps were completed successfully.
+Returns exit status of C<0> if all steps were completed successfully.
 In the event of an error, messages are written to syslog and/or stderr.
 
-If a recovery was attempted but it failed, the database may be
-damaged beyond repair, requiring a rebuild with makehistory(8).
+If a recovery was attempted but failed, the database may be
+damaged beyond repair, requiring a rebuild with B<makehistory>.
 
-This command is normally invoked automatically by rc.news(8).
-
-It is OK to run this command multiple times.
+This command can be run multiple times.
 
 =head1 OPTIONS
 
 =over 4
 
-=item C<-r>
+=item B<-r>
 
-Perform recovery only.  C<ovdb_monitor> is not started.
+Perform recovery only.  B<ovdb_monitor> is not started.
 
-=item C<-u>
+=item B<-u>
 
 Perform any needed upgrades.  Recovery is not attempted.
-C<ovdb_monitor> is started if the upgrade succeeded.
+B<ovdb_monitor> is started if the upgrade succeeded.
 
 =back
 
@@ -82,12 +83,13 @@ method is used.
 
 =item *
 
-You upgrade ovdb to a newer major version; i.e., ovdb-1.0 to ovdb-2.0.
+You upgrade ovdb to a newer major version; i.e., ovdb-1.0 (shipped with
+S<INN 2.3.0> up to S<INN 2.3.5>) to ovdb-2.0 (since S<INN 2.4.0>).
 
 =back
 
 In both of these cases, the database is upgraded in-place; and the
-upgrade can not be undone.  Do not interrupt the upgrade process once
+upgrade cannot be undone.  Do not interrupt the upgrade process once
 it has started, because there is a risk of irrepairable corruption.
 The upgrade may take several minutes to complete.
 If an upgrade does get interrupted, try running the upgrade again.
@@ -99,7 +101,7 @@ S<Berkeley DB 2.7.7> to use S<Berkeley DB 3.1.17>:
 
 =item 1
 
-Build and install the S<Berkeley DB 3.1.17>;
+Build and install the S<Berkeley DB 3.1.17> version;
 
 =item 2
 
@@ -125,20 +127,20 @@ Run C<ovdb_init -u> as the news user;
 
 =item 7
 
-Start INN with C<rc.news>.
+Start INN with the C<rc.news> command.
 
 =back
 
-It is OK to specify C<-u> even if no upgrades are needed.
+Note that the B<-u> option can be used even if no upgrades are needed.
 
 =head1 HISTORY
 
-Written by Heath Kehoe E<lt>hakehoe@avalon.netE<gt> for InterNetNews.
+Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
 $Id$
 
 =head1 SEE ALSO
 
-ovdb(5), makehistory(8)
+ovdb(5), makehistory(8), rc.news(8).
 
 =cut
