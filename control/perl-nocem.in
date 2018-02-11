@@ -63,8 +63,8 @@ if ($use_syslog) {
     openlog('nocem', '', $INN::Config::syslog_facility);
 }
 
-if (not $INN::Config::gpgv) {
-    logmsg('cannot find the gpgv binary', 'err');
+if (not $INN::Config::gpgv and not $INN::Config::gpg) {
+    logmsg('cannot find the gpgv or gpg binary', 'err');
     sleep 5;
     exit 1;
 }
@@ -286,8 +286,14 @@ sub pgp_check {
     }
     if ($pid == 0) {
         open(STDERR, '>&STDOUT');
-        exec($INN::Config::gpgv, '--status-fd=1',
-            $keyring ? '--keyring=' . $keyring : '', $art);
+        if ($INN::Config::gpg) {
+            exec($INN::Config::gpg, '--status-fd=1',
+                '--verify', '--allow-weak-digest-algos',
+                $keyring ? '--keyring=' . $keyring : '', $art);
+        } else {
+            exec($INN::Config::gpgv, '--status-fd=1',
+                $keyring ? '--keyring=' . $keyring : '', $art);
+        }
         exit 126;
     }
 
@@ -298,7 +304,11 @@ sub pgp_check {
         if ($? >> 8) {
             $status = $? >> 8;
         } else {
-            logmsg("Article $msgid: $INN::Config::gpgv killed by signal " . ($? & 255));
+            if ($INN::Config::gpg) {
+                logmsg("Article $msgid: $INN::Config::gpg killed by signal " . ($? & 255));
+            } else {
+                logmsg("Article $msgid: $INN::Config::gpgv killed by signal " . ($? & 255));
+            }
             return 0;
         }
     }
@@ -322,8 +332,13 @@ sub pgp_check {
         # some other error we don't know about happened.
         # 126 is returned by the child if exec fails.
         s/ at \S+ line \d+\.\n$//; s/\n/_/;
-        logmsg("Article $msgid: $INN::Config::gpgv exited "
-            . (($status == 126) ? "($_)" : "with status $status"), 'err');
+        if ($INN::Config::gpg) {
+            logmsg("Article $msgid: $INN::Config::gpg exited "
+                . (($status == 126) ? "($_)" : "with status $status"), 'err');
+        } else {
+            logmsg("Article $msgid: $INN::Config::gpgv exited "
+                . (($status == 126) ? "($_)" : "with status $status"), 'err');
+        }
     }
     return 0;
 }
@@ -632,6 +647,6 @@ $Id$
 
 =head1 SEE ALSO
 
-gpgv(1), grephistory(1), inn.conf(5), newsfeeds(5), pgp(1).
+gpg(1), gpgv(1), grephistory(1), inn.conf(5), newsfeeds(5), pgp(1).
 
 =cut

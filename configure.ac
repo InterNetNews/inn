@@ -315,10 +315,12 @@ dnl have pgpgpg and not gpgv, but it doesn't hurt).  Separately look for
 dnl GnuPG (which we prefer).
 DO_PGPVERIFY=true
 AC_ARG_VAR([GPGV], [Location of GnuPG gpgv program])
+AC_ARG_VAR([GPG], [Location of GnuPG gpg program])
 AC_ARG_VAR([PGP], [Location of PGP verification program])
-AC_PATH_PROGS([GPGV], [gpgv2 gpgv])
+AC_PATH_PROGS([GPGV], [gpgv1 gpgv gpgv2])
+AC_PATH_PROGS([GPG], [gpg1 gpg gpg2])
 AC_PATH_PROGS([PGP], [pgpv pgp pgpgpg])
-if test -z "$PGP" && test -z "$GPGV" ; then
+if test -z "$PGP" && test -z "$GPGV" && test -z "$GPG" ; then
     DO_PGPVERIFY=false
 fi
 AC_SUBST([DO_PGPVERIFY])
