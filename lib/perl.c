@@ -24,8 +24,10 @@
 
 #include <EXTERN.h>
 #pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic ignored "-Wshadow"
 #include <perl.h>
 #pragma GCC diagnostic warning "-Wredundant-decls"
+#pragma GCC diagnostic warning "-Wshadow"
 #include <XSUB.h>
 #include "ppport.h"
 
