@@ -20,10 +20,8 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
-dnl Copyright (c) 2006, 2009, 2011
-dnl     by Internet Systems Consortium, Inc. ("ISC")
-dnl Copyright (c) 1998, 1999, 2000, 2001, 2002, 2003
-dnl     by The Internet Software Consortium
+dnl Copyright 2006, 2009, 2011 Internet Systems Consortium, Inc. ("ISC")
+dnl Copyright 1998-2003 The Internet Software Consortium
 dnl
 dnl Permission to use, copy, modify, and distribute this software for any
 dnl purpose with or without fee is hereby granted, provided that the above
@@ -36,6 +34,8 @@ dnl SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+dnl
+dnl SPDX-License-Identifier: ISC
 
 dnl Check for the path to Perl and ensure it meets our minimum version
 dnl requirement (given as the argument).  Honor the $PERL environment

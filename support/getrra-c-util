@@ -107,7 +107,7 @@ dnl \$Id\$' \
                  -e 's/PORTABLE_SYSTEM_H/CLIBRARY_H/g' \
                  -e "8 i \\
  *     #include \"inn/macros.h\"" \
-                 -e "101 i \\
+                 -e "103 i \\
 /*\\
  * This almost certainly isn't necessary, but it's not hurting anything.\\
  * gcc assumes that if SEEK_SET isn't defined none of the rest are either,\\
@@ -119,7 +119,7 @@ dnl \$Id\$' \
 # define SEEK_END 2\\
 #endif\\
 " \
-                 -e "115 i \\
+                 -e "117 i \\
 /*\\
  * Handle defining fseeko and ftello.  If HAVE_FSEEKO is defined, the system\\
  * header files take care of this for us.  Otherwise, see if we're building\\
@@ -161,7 +161,7 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-               -e "156 i \\
+               -e "158 i \\
 #if !HAVE_DECL_STRLCAT\\
 extern size_t strlcat(char *, const char *, size_t);\\
 #endif\\
