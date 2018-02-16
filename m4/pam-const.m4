@@ -11,17 +11,18 @@ dnl
 dnl Since this is just for compiler warnings, it's not horribly important if
 dnl we guess wrong.  This test is ugly, but it seems to work.
 dnl
-dnl Contributed by Markus Moeller.
-dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
+dnl Written by Markus Moeller
 dnl Copyright 2007, 2015 Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2007, 2008 Markus Moeller
+dnl Copyright 2007-2008 Markus Moeller
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
+dnl
+dnl SPDX-License-Identifier: FSFULLR
 
 dnl Source used by INN_HEADER_PAM_CONST.
 AC_DEFUN([_INN_HEADER_PAM_CONST_SOURCE],

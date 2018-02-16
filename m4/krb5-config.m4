@@ -12,12 +12,14 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2011, 2012
+dnl Copyright 2011-2012
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
 dnl notice is preserved.
+dnl
+dnl SPDX-License-Identifier: FSFULLR
 
 dnl Check for krb5-config in the user's path and set PATH_KRB5_CONFIG.  This
 dnl is moved into a separate macro so that it can be loaded via AC_REQUIRE,

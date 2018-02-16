@@ -6,13 +6,11 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2016, 2017 Russ Allbery <eagle@eyrie.org>
- * Copyright 2009, 2010, 2011, 2012, 2013
+ * Copyright 2014, 2016-2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
- * Copyright (c) 2004, 2005, 2006, 2007, 2008, 2010
- *     by Internet Systems Consortium, Inc. ("ISC")
- * Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
- *     2002, 2003 by The Internet Software Consortium and Rich Salz
+ * Copyright 2004-2010 Internet Systems Consortium, Inc. ("ISC")
+ * Copyright 1991, 1994-2003 The Internet Software Consortium and Rich Salz
  *
  * This code is derived from software contributed to the Internet Software
  * Consortium by Rich Salz.
@@ -28,6 +26,8 @@
  * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
  * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * SPDX-License-Identifier: ISC
  */
 
 #ifndef INN_NETWORK_H

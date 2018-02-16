@@ -5,7 +5,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2000, 2001, 2002, 2004, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2002, 2004, 2017 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -26,6 +26,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ *
+ * SPDX-License-Identifier: MIT
  */
 
 #define LIBTEST_NEW_FORMAT 1

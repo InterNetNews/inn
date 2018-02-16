@@ -13,12 +13,10 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2017 Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2008, 2009, 2011
+dnl Copyright 2008-2009, 2011
 dnl     The Board of Trustees of the Leland Stanford Junior University
-dnl Copyright (c) 2004, 2005, 2006, 2007, 2008, 2009
-dnl     by Internet Systems Consortium, Inc. ("ISC")
-dnl Copyright (c) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-dnl     2002, 2003 by The Internet Software Consortium and Rich Salz
+dnl Copyright 2004-2009 Internet Systems Consortium, Inc. ("ISC")
+dnl Copyright 1991, 1994-2003 The Internet Software Consortium and Rich Salz
 dnl
 dnl This code is derived from software contributed to the Internet Software
 dnl Consortium by Rich Salz.
@@ -34,6 +32,8 @@ dnl SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+dnl
+dnl SPDX-License-Identifier: ISC
 
 dnl Source used by INN_FUNC_GETADDRINFO_ADDRCONFIG.
 AC_DEFUN([_INN_FUNC_GETADDRINFO_ADDRCONFIG_SOURCE], [[

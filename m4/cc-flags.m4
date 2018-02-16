@@ -8,11 +8,11 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016, 2017 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016-2018 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016
 dnl     by Internet Systems Consortium, Inc. ("ISC")
 dnl
-dnl Permission to use, copy, modify, and distribute this software for any
+dnl Permission to use, copy, modify, and/or distribute this software for any
 dnl purpose with or without fee is hereby granted, provided that the above
 dnl copyright notice and this permission notice appear in all copies.
 dnl
@@ -23,6 +23,8 @@ dnl SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 dnl WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 dnl ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 dnl IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+dnl
+dnl SPDX-License-Identifier: ISC
 
 dnl Used to build the result cache name.
 AC_DEFUN([_INN_PROG_CC_FLAG_CACHE],

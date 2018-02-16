@@ -36,6 +36,8 @@
  * This code is based on code written by Patrick Powell (papowell@astart.com)
  * It may be used for any purpose as long as this notice remains intact
  * on all source code distributions
+ *
+ * There is no SPDX-License-Identifier registered for this license.
  */
 
 /**************************************************************
