@@ -4,7 +4,7 @@
 #
 # Written April 1996, <tale@isc.org> (David C Lawrence)
 # Currently maintained by Russ Allbery <eagle@eyrie.org>
-# Version 1.29, 2014-04-15
+# Version 1.30, 2018-01-21
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,11 @@
 # and your Perl is too old, please contact me (eagle@eyrie.org) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.29 -> 1.30
+# -- Support for GnuPG's gpg binary (in addition to gpgv).  Indeed, gpg
+#    still validates signatures made with weak digest algorithms like MD5
+#    whereas current versions of gpgv no longer do.
 #
 # Changes from 1.28 -> 1.29
 # -- Disambiguate numbered lists from description lists in POD to silent
@@ -129,6 +134,12 @@
 # -- Checks to ensure that the temporary file is really a file, and
 #    not a link or some other weirdness.
 
+# Path to the GnuPG gpg binary, if you have GnuPG and don't want to use
+# gpgv.  This will be used in preference to gpgv and PGP.  If you have INN
+# and the script is able to successfully include your INN::Config module,
+# the value of $INN::Config::gpg will override this.
+# $gpg = '/usr/local/bin/gpg';
+
 # Path to the GnuPG gpgv binary, if you have GnuPG.  If you do, this will
 # be used in preference to PGP.  For most current control messages, you
 # need a version of GnuPG that can handle RSA signatures.  If you have INN
@@ -203,7 +214,7 @@ $log_date = -t STDOUT; # Do it if STDOUT is to a terminal.
 require 5;
 
 use strict;
-use vars qw($gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
+use vars qw($gpg $gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
             $syslog_facility $syslog_level $log_date $findid $test $messageid);
 
 use Fcntl qw(O_WRONLY O_CREAT O_EXCL);
@@ -225,6 +236,7 @@ GetOptions(
 $pgp = $INN::Config::pgp
     if $INN::Config::pgp && $INN::Config::pgp ne "no-pgp-found-during-configure";
 $gpgv = $INN::Config::gpgv if $INN::Config::gpgv;
+$gpg = $INN::Config::gpg if $INN::Config::gpg;
 $tmp = ($INN::Config::pathtmp ? $INN::Config::pathtmp : $tmpdir) . "/pgp$$";
 $lockdir = $INN::Config::locks if $INN::Config::locks;
 $syslog_facility = $INN::Config::syslog_facility if $INN::Config::syslog_facility;
@@ -236,7 +248,11 @@ if (! $keyring && $INN::Config::newsetc) {
 $0 =~ s%^.*/%%;
 
 # Make sure that the signature verification program can be executed.
-if ($gpgv) {
+if ($gpg) {
+  if (! -x $gpg) {
+    &fail("$0: $gpg: " . (-e _ ? "cannot execute" : "no such file") . "\n");
+  }
+} elsif ($gpgv) {
   if (! -x $gpgv) {
     &fail("$0: $gpgv: " . (-e _ ? "cannot execute" : "no such file") . "\n");
   }
@@ -259,7 +275,7 @@ if ($test) {
 # should, and the consequences of a multiprocess conflict is failure to
 # verify.
 my $lock;
-unless ($gpgv) {
+unless ($gpg or $gpgv) {
   $lock = "$lockdir/LOCK.$0";
   until (&shlock($lock) > 0) {
     sleep(2);
@@ -268,7 +284,7 @@ unless ($gpgv) {
 
 # Verify the message.
 my ($ok, $signer) = pgp_verify($signature, $version, $message);
-unless ($gpgv) {
+unless ($gpg or $gpgv) {
   unlink ($lock) or &errmsg("$0: unlink $lock: $!\n");
 }
 print "$signer\n" if $signer;
@@ -388,8 +404,8 @@ sub pgp_verify {
   # Ignore SIGPIPE, since we're going to be talking to PGP.
   local $SIG{PIPE} = 'IGNORE';
 
-  # Set the PGP style based on whether $gpgv is set.
-  my $pgpstyle = ($gpgv ? 'GPG' : 'PGP2');
+  # Set the PGP style based on whether $gpg or $gpgv is set.
+  my $pgpstyle = ($gpg || $gpgv ? 'GPG' : 'PGP2');
 
   # Because this is a detached signature, we actually need to save both
   # the signature and the data to files and then run PGP on the signature
@@ -439,7 +455,12 @@ sub pgp_verify {
   # Figure out what command line we'll be using.
   my @command;
   if ($pgpstyle eq 'GPG') {
-    @command = ($gpgv, qw/--quiet --status-fd=1 --logger-fd=1/);
+    if ($gpg) {
+      @command = ($gpg, qw/--verify --allow-weak-digest-algos/);
+      push (@command, qw/--quiet --status-fd=1 --logger-fd=1/);
+    } else {
+      @command = ($gpgv, qw/--quiet --status-fd=1 --logger-fd=1/);
+    }
   } else {
     @command = ($pgp, '+batchmode', '+language=en');
   }
@@ -733,8 +754,8 @@ signatures).  If that directory doesn't exist, it will fall back on using
 the default key ring, which is in a F<.pgp> or F<.gnupg> subdirectory of
 the running user's home directory.
 
-INN, when using GnuPG, configures B<pgpverify> to use B<gpgv>, which by
-default expects keys to be in a keyring named F<trustedkeys.gpg>, since it
+INN, when using GnuPG, configures B<pgpverify> to use B<gpg> or B<gpgv>, which
+by default expects keys to be in a keyring named F<trustedkeys.gpg>, since it
 doesn't implement trust checking directly.  B<pgpverify> uses that file if
 present but falls back to F<pubring.gpg> if it's not found.  This bypasses
 the trust model for checking keys, but is compatible with the way that
@@ -801,12 +822,12 @@ A problem occurred not directly related to PGP analysis of signature.
 =head1 ENVIRONMENT
 
 B<pgpverify> does not modify or otherwise alter the environment before
-invoking the B<pgp> or B<gpgv> program.  It is the responsibility of the
-person who installs B<pgpverify> to ensure that when B<pgp> or B<gpgv>
-runs, it has the ability to locate and read a PGP key file that contains
-the PGP public keys for the appropriate Usenet hierarchy administrators.
-B<pgpverify> can be pointed to an appropriate key ring by editing
-variables at the beginning of this script.
+invoking the B<pgp>, B<gpgv> or B<gpg> program.  It is the responsibility of
+the person who installs B<pgpverify> to ensure that when B<pgp>, B<gpgv> or
+B<gpg> runs, it has the ability to locate and read a PGP key file that
+contains the PGP public keys for the appropriate Usenet hierarchy
+administrators.  B<pgpverify> can be pointed to an appropriate key ring by
+editing variables at the beginning of this script.
 
 =head1 NOTES
 
@@ -908,7 +929,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =head1 SEE ALSO
 
-gpgv(1), pgp(1).
+gpg(1), gpgv(1), pgp(1).
 
 L<https://ftp.isc.org/pub/pgpcontrol/> is where the most recent versions of
 B<signcontrol> and B<pgpverify> live, along with PGP public keys used for

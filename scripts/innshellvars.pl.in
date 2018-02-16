@@ -91,6 +91,7 @@ $inndf = "${newsbin}/inndf" ;
 $egrep = '@EGREP@' ;
 $perl = '@PERL@' ;
 $gpgv = '@GPGV@' ;
+$gpg = '@GPG@' ;
 $pgp = '@PGP@' ;
 $sort = '@SORT@' ;
 $getftp = "@PATH_GETFTP@" ;

@@ -288,10 +288,10 @@ at the leftmost side of the Path: header.
 =item I<pgpverify>
 
 Whether to enable PGP verification of control messages other than cancel.
-This is a boolean value and the default in the F<inn.conf> sample file
-is based on whether configure found pgp, pgpv, pgpgpg, gpgv or gpgv2.
-Note that if the parameter is not present in the configuration file,
-it defaults to false.
+This is a boolean value and the default in the F<inn.conf> sample file is
+based on whether configure found B<pgp>, B<pgpv>, B<pgpgpg>, B<gpgv>,
+B<gpgv1>, B<gpgv2>, B<gpg>, B<gpg1> or B<gpg2>.  Note that if the
+parameter is not present in the configuration file, it defaults to false.
 
 =item I<port>
 

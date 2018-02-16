@@ -46,6 +46,19 @@ the whole header field, as it was wrongly the case).
 
 =item *
 
+Added support for GnuPG's B<gpg> binary (in addition to B<gpgv>)
+in B<pgpverify>.  Indeed, B<gpg> still validates signatures made
+with weak digest algorithms like MD5 whereas B<gpgv> no longer do.
+Thanks to Thomas Hochstein for the patch, which permits to validate
+control articles for hierarchies that are still using old PGP keys.
+
+=item *
+
+Added similar support for GnuPG's B<gpg> binary in B<perl-nocem> to
+validate NoCeM notices from issuers who are still using old PGP keys.
+
+=item *
+
 A few commands listed in the "Control commands to INND" section in
 daily Usenet reports were appearing as a mere letter; all of them are
 now properly converted to meaningful words.
