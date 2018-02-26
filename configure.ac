@@ -398,14 +398,46 @@ dnl that program.  In case neither et/com_err.h nor kerberosv5/com_err.h
 dnl nor com_err.h can be found and --with-krb5 is not given, do not define
 dnl KRB5_AUTH and clear the other variables set for Kerberos support.
 AS_IF([test x"$inn_use_KRB5" = xtrue],
-    [AC_CHECK_HEADERS([et/com_err.h], [KRB5_AUTH=auth_krb5],
-         [AC_CHECK_HEADERS([kerberosv5/com_err.h], [KRB5_AUTH=auth_krb5],
-              [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
-                   [AS_IF([test x"$with_krb5" = x],
-                        [KRB5_CPPFLAGS=
-                         KRB5_LDFLAGS=
-                         KRB5_LIBS=],
-                        [AC_MSG_ERROR([cannot find usable com_err header])])])])])])
+    [inn_KRB5_incroot=
+     inn_KRB5_header_found=
+     AS_IF([test x"$inn_krb5_includedir" != x],
+        [inn_KRB5_incroot="$inn_krb5_includedir"],
+        [AS_IF([test x"$inn_krb5_root" != x],
+            [inn_KRB5_incroot="${inn_krb5_root}/include"])])
+     AS_IF([test x"$inn_KRB5_incroot" = x],
+        [AC_CHECK_HEADERS([et/com_err.h], 
+            [inn_KRB5_header_found=yes],
+            [inn_KRB5_header_found=no])],
+        [AS_IF([test -f "${inn_KRB5_incroot}/et/com_err.h"],
+            [inn_KRB5_header_found=yes
+             AC_DEFINE([HAVE_ET_COM_ERR_H], [1],
+                [Define if you have the <et/com_err.h> header file.])],
+            [inn_KRB5_header_found=no])])
+     AS_IF([test x"$inn_KRB5_incroot" = x],
+        [AC_CHECK_HEADERS([kerberosv5/com_err.h], 
+            [inn_KRB5_header_found=yes],
+            [inn_KRB5_header_found=no])],
+        [AS_IF([test -f "${inn_KRB5_incroot}/kerberosv5/com_err.h"],
+            [inn_KRB5_header_found=yes
+             AC_DEFINE([HAVE_KERBEROSV5_COM_ERR_H], [1],
+                [Define if you have the <kerberosv5/com_err.h> header file.])],
+            [inn_KRB5_header_found=no])])
+     AS_IF([test x"$inn_KRB5_incroot" = x],
+        [AC_CHECK_HEADERS([com_err.h], 
+            [inn_KRB5_header_found=yes],
+            [inn_KRB5_header_found=no])],
+        [AS_IF([test -f "${inn_KRB5_incroot}/com_err.h"],
+            [inn_KRB5_header_found=yes
+             AC_DEFINE([HAVE_COM_ERR_H], [1],
+                [Define if you have the <com_err.h> header file.])],
+            [inn_KRB5_header_found=no])])
+     AS_IF([test x"${inn_KRB5_header_found}" = xyes],
+        [KRB5_AUTH=auth_krb5],
+        [AS_IF([test x"$with_krb5" = x],
+            [KRB5_CPPFLAGS=
+             KRB5_LDFLAGS=
+             KRB5_LIBS=],
+            [AC_MSG_ERROR([cannot find usable com_err header])])])])
 AC_SUBST([KRB5_AUTH])
 
 dnl If Berkeley DB is found, check the presence of its header and whether the
