@@ -114,7 +114,7 @@ krb5_free_error_message(krb5_context ctx UNUSED, const char *msg)
 /*
 **  Report a Kerberos error to standard error.
 */
-static void __attribute__((__format__(printf, 3, 0)))
+static void __attribute__((__format__(printf, 3, 4)))
 warn_krb5(krb5_context ctx, krb5_error_code code, const char *format, ...)
 {
     const char *k5_msg;
