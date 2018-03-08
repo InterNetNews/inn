@@ -703,9 +703,25 @@ in F<inn.conf>.
 
 =item 2.
 
-Update copyright years in F<LICENSE>.
+If possible, on a news server running the forthcoming release, run the
+following commands to make sure they do not produce any errors:
+
+    cnfsstat -a -v
+    ctlinnd checkfile
+    inncheck -a --perm --pedantic
+    ovdb_stat -klmMtv
+    scanlogs norotate
+    scanspool -n -v
+    tdx-util -A
+
+Also build INN (including the F<contrib> and F<tests> directories) with
+warnings on (C<make warnings>) and run the test suite (C<make tests>).
 
 =item 3.
+
+Update copyright years in F<LICENSE>.
+
+=item 4.
 
 Update F<doc/pod/news.pod> and regenerate F<NEWS>.  Be more detailed for
 a minor release than for a major release.  For a major release, also add
@@ -713,7 +729,7 @@ information on how to upgrade from the last major release, including
 anything special to be aware of.  (Minor releases shouldn't require any
 special care when upgrading.)
 
-=item 4.
+=item 5.
 
 Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
 included in a final release.  It should not be changed for a beta or
@@ -723,7 +739,7 @@ If making a major release, the revision numbers of the STABLE series
 should also be bumped in F<doc/FAQ> at the end of subject 1.2, as well
 as the revision numbers of scheduled versions in F<TODO>.
 
-=item 5.
+=item 6.
 
 Double-check that the version information in F<lib/Makefile>,
 F<storage/Makefile>, and F<history/Makefile> has been updated if there has
@@ -731,7 +747,7 @@ been any change in the library sources since the previous release.  Follow
 the rules given at
 L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
 
-=item 6.
+=item 7.
 
 If making a major release, branch the source tree by creating a new
 directory under F<branches> in Subversion named after the major release.
@@ -745,7 +761,7 @@ release.
 Then, in that newly created branch, remove the first paragraph in
 F<doc/pod/readme.pod> which deals with development versions.
 
-=item 7.
+=item 8.
 
 Check out a copy of the release branch.  It's currently necessary to run
 C<autogen> and C<configure> to generate F<Makefile.global>.  Then, run
@@ -753,7 +769,7 @@ C<make warnings> to generate all necessary files.  Afterwards, run
 C<make check-manifest>.  There shouldn't be any differences; otherwise,
 fix the F<MANIFEST> file.
 
-=item 8.
+=item 9.
 
 Run C<make release> for a final release, C<support/mksnapshot BETA b1> for
 the first beta version of a new release, or C<support/mksnapshot RC rc1>
@@ -767,13 +783,13 @@ Check that the F<ChangeLog> file is correct; otherwise, regenerate it or
 manually edit it.  Then run again C<make release> or any other command
 you used.
 
-=item 9.
+=item 10.
 
 Generate an MD5 checksum of the release tarball.
 
     md5sum inn-Y.Y.Y.tar.gz > inn-Y.Y.Y.tar.gz.md5
 
-=item 10.
+=item 11.
 
 Generate a diff between this release and the previous release if feasible
 (always for minor releases, possibly not a good idea due to the length of
@@ -783,7 +799,7 @@ release for the comparison.
     diff -Nurp inn-X.X.X inn-Y.Y.Y > inn-X.X.X-Y.Y.Y.diff
     gzip inn-X.X.X-Y.Y.Y.diff
 
-=item 11.
+=item 12.
 
 Make the resulting tar file, along with its MD5 checksum and the possible
 diff from the previous release, available for testing in the F<testing>
@@ -792,7 +808,7 @@ Install it on at least one system and make sure that system runs fine for
 at least a few days.  This is also a good time to send out a draft of the
 release announcement to inn-workers for proof-reading.
 
-=item 12.
+=item 13.
 
 Move the release into the public area of the ftp site and update the
 F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
@@ -818,13 +834,13 @@ Contact the ISC folks to push the release to ftp.isc.org and to update the
 ISC web site (the relevant contact is C<web-request> instead of
 C<webmaster>).
 
-=item 13.
+=item 14.
 
 After the ISC web site has been updated with links towards the new
 release, send an announce on inn-announce and in news.software.nntp
 (with a possible crosspost to news.admin.announce).
 
-=item 14.
+=item 15.
 
 Tag the checked-out tree that was used for generating the release with a
 release tag by copying it to F<tags> in Subversion.
@@ -832,7 +848,7 @@ release tag by copying it to F<tags> in Subversion.
     svn copy -r ZZZZ -m "Tag Y.Y.Y release." \
         file:///srv/svn/inn/branches/Y.Y file:///srv/svn/inn/tags/Y.Y.Y
 
-=item 15.
+=item 16.
 
 Bump revision numbers to reflect the one of the following release,
 especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod>
@@ -840,12 +856,12 @@ for major releases, F<configure.ac> and F<Makefile.global.in> for both
 minor and major releases.  The release versions in the Trac wiki should
 also be updated.
 
-=item 16.
+=item 17.
 
 For major releases, ping Russ to update the branch used for the
 generation of STABLE snapshots.
 
-=item 17.
+=item 18.
 
 Ping Russ to update L<https://www.eyrie.org/~eagle/software/inn/> with the
 latest version information and, for a major release, clone the
