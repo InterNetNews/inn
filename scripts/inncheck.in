@@ -398,8 +398,12 @@ control_ctl
 
 	##  Perhaps check for conflicting rules, or warn about the last-match
 	##  rule?  Maybe later...
+
+        ##  Warn if newsgroup pattern is not "*", do not contain a dot
+        ##  and is not the generic line for reserved groups in the
+        ##  sample control.ctl file.
 	eprint "$file:$line: may not match groups properly.\n"
-	    if $ng ne "*" && $ng !~ /\./;
+	    if $ng ne "*" && $ng !~ /\./ && $ng !~ /^control\|/;
 	if ( $act !~ /([^=]+)(=.+)?/ ) {
 	    eprint "$file:$line: malformed line.\n";
 	    next input;
