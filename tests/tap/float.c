@@ -11,8 +11,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2010, 2012, 2013, 2014, 2015, 2016, 2017
- *     Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2010, 2012-2018 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -68,26 +67,25 @@ ok_double(int n UNUSED, double wanted, double seen)
 #endif
 
 /*
- * Takes an expected double and a seen double and assumes the test passes if
- * those two numbers are within delta of each other.
+ * Takes two doubles and requires they be within epsilon of each other.
  */
 int
-is_double(double wanted, double seen, double epsilon, const char *format, ...)
+is_double(double left, double right, double epsilon, const char *format, ...)
 {
     va_list args;
     int success;
 
     va_start(args, format);
     fflush(stderr);
-    if ((isnan(wanted) && isnan(seen))
-        || (isinf(wanted) && isinf(wanted) == isinf(seen))
-        || fabs(wanted - seen) <= epsilon) {
+    if ((isnan(left) && isnan(right))
+        || (isinf(left) && isinf(left) == isinf(right))
+        || fabs(left - right) <= epsilon) {
         success = 1;
         okv(1, format, args);
     } else {
         success = 0;
-        diag("wanted: %g", wanted);
-        diag("  seen: %g", seen);
+        diag(" left: %g", left);
+        diag("right: %g", right);
         okv(0, format, args);
     }
     va_end(args);

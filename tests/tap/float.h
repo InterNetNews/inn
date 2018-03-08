@@ -5,7 +5,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2010, 2012, 2014 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2010, 2012, 2014, 2018 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -35,13 +35,12 @@
 
 BEGIN_DECLS
 
-/* Check an expected value against a seen value within epsilon. */
+/* Compare two values within epsilon. */
 #ifndef LIBTEST_NEW_FORMAT
 /* Specific to the integration of C TAP Harness in INN. */
 void ok_double(int n, double wanted, double seen);
 #endif
-int is_double(double wanted, double seen, double epsilon,
-               const char *format, ...)
+int is_double(double, double, double epsilon, const char *format, ...)
     __attribute__((__format__(printf, 4, 5)));
 
 END_DECLS

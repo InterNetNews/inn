@@ -179,7 +179,7 @@ void test_init(int count);\\
 
     if [ "$3" = "float.c" ]
     then
-      sed -i -e "52 i \\
+      sed -i -e "51 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void\\
