@@ -392,7 +392,8 @@ sub check_spool
 	next if (defined $opt{'c'});
 
 	# don't open a control or junk, they can be from anywhere
-	next if ($artgrp eq "control" || $artgrp eq "junk");
+	next if ($artgrp eq "control" || $artgrp =~ /^control\./
+                 || $artgrp eq "junk");
 
 	# try open the file
 	if (!open $ARTICLE, '<', $filename) {
