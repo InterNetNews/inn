@@ -6,8 +6,8 @@
 **  See <http://www.mallorn.com/tools/nnrpkrb5auth>
 **
 **  This program takes a username and password pair from nnrpd and checks
-**  checks their validity against a Kerberos KDC by attempting to obtain a
-**  TGT.  With the -i <instance> command line option, appends /<instance> to
+**  their validity against a Kerberos KDC by attempting to obtain a TGT.
+**  With the -i <instance> command line option, appends /<instance> to
 **  the username prior to authentication.
 **
 **  Special thanks to Von Welch <vwelch@vwelch.com> for giving me the initial

@@ -12,7 +12,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2011-2012
+dnl Copyright 2011-2012, 2018
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -78,12 +78,12 @@ dnl argument if that option was requested and not supported.  Old versions of
 dnl krb5-config didn't take an argument to specify the library type, but
 dnl always returned the flags for libkrb5.
 AC_DEFUN([INN_KRB5_CONFIG],
-[AC_REQUIRE([_INN_KRB5_CONFIG_PATH])
- inn_krb5_config_$3=
+[inn_krb5_config_$3=
  inn_krb5_config_$3[]_ok=
  AS_IF([test x"$1" != x && test -x "$1/bin/krb5-config"],
     [inn_krb5_config_$3="$1/bin/krb5-config"],
-    [inn_krb5_config_$3="$PATH_KRB5_CONFIG"])
+    [_INN_KRB5_CONFIG_PATH
+     inn_krb5_config_$3="$PATH_KRB5_CONFIG"])
  AS_IF([test x"$inn_krb5_config_$3" != x && test -x "$inn_krb5_config_$3"],
     [AC_CACHE_CHECK([for $2 support in krb5-config], [inn_cv_lib_$3[]_config],
          [AS_IF(["$inn_krb5_config_$3" 2>&1 | grep $2 >/dev/null 2>&1],
