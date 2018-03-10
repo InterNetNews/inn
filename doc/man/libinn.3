@@ -429,23 +429,20 @@ returns hashed message-id using MD5.
 .RS
 .nf
 char	*p;
-char	*Article;
-char	buff[256], errbuff[256];
+char	frombuff[256], errbuff[256];
 FILE	*F;
 FILE	*ToServer;
 FILE	*FromServer;
 int	port = 119;
 
-if ((p = HeaderFind(Article, "From", 4)) == NULL)
-    Fatal("Can't find From line");
-(void)strcpy(buff, p);
-HeaderCleanFrom(buff);
+strlcpy(frombuff, HDR(HDR__FROM), sizeof(frombuff));
+HeaderCleanFrom(frombuff);
 
 if ((F = CAopen(FromServer, ToServer)) == NULL)
     Fatal("Can't open active file");
 
 /* Don't pass the file on to our children. */
-fdflag_close_exec(fileno(F), 1);
+fdflag_close_exec(fileno(F), true);
 
 /* Make a local copy. */
 p = ReadInDescriptor(fileno(F), (struct stat *)NULL);
@@ -453,10 +450,11 @@ p = ReadInDescriptor(fileno(F), (struct stat *)NULL);
 /* Close the file. */
 CAclose();
 
-if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff) < 0)
+if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff, sizeof(errbuff)) < 0)
     Fatal("Can't connect to server");
 
-if ((p = GetModeratorAddress("comp.sources.unix")) == NULL)
+if ((p = GetModeratorAddress(NULL, NULL, "comp.sources.unix",
+                             "%s@example.com")) == NULL)
     Fatal("Can't find moderator's address");
 .fi
 .RE
