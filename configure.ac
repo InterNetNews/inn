@@ -394,18 +394,8 @@ INN_LIB_SASL_OPTIONAL
 INN_LIB_ZLIB_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
-dnl that program.  In case neither et/com_err.h nor kerberosv5/com_err.h
-dnl nor com_err.h can be found and --with-krb5 is not given, do not define
-dnl KRB5_AUTH and clear the other variables set for Kerberos support.
-AS_IF([test x"$inn_use_KRB5" = xtrue],
-    [AC_CHECK_HEADERS([et/com_err.h], [KRB5_AUTH=auth_krb5],
-         [AC_CHECK_HEADERS([kerberosv5/com_err.h], [KRB5_AUTH=auth_krb5],
-              [AC_CHECK_HEADERS([com_err.h], [KRB5_AUTH=auth_krb5],
-                   [AS_IF([test x"$with_krb5" = x],
-                        [KRB5_CPPFLAGS=
-                         KRB5_LDFLAGS=
-                         KRB5_LIBS=],
-                        [AC_MSG_ERROR([cannot find usable com_err header])])])])])])
+dnl that program.
+AS_IF([test x"$inn_use_KRB5" = xtrue], [KRB5_AUTH=auth_krb5])
 AC_SUBST([KRB5_AUTH])
 
 dnl If Berkeley DB is found, check the presence of its header and whether the

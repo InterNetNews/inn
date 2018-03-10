@@ -1,13 +1,13 @@
 /*  $Id$
 **
-**  Check an username and password against Kerberos v5.
+**  Check an username and password against Kerberos.
 **
 **  Based on nnrpkrb5auth by Christopher P. Lindsey <lindsey@mallorn.com>
 **  See <http://www.mallorn.com/tools/nnrpkrb5auth>
 **
 **  This program takes a username and password pair from nnrpd and checks
-**  checks their validity against a Kerberos v5 KDC by attempting to obtain a
-**  TGT.  With the -i <instance> command line option, appends /<instance> to
+**  their validity against a Kerberos KDC by attempting to obtain a TGT.
+**  With the -i <instance> command line option, appends /<instance> to
 **  the username prior to authentication.
 **
 **  Special thanks to Von Welch <vwelch@vwelch.com> for giving me the initial
@@ -21,28 +21,123 @@
 #include "config.h"
 #include "clibrary.h"
 #include "libauth.h"
-#ifdef HAVE_ET_COM_ERR_H
-# include <et/com_err.h>
-#elif defined(HAVE_KERBEROSV5_COM_ERR_H)
-# include <kerberosv5/com_err.h>
-#else
-# include <com_err.h>
-#endif
 
-#ifdef HAVE_KRB5_H
+#if defined(HAVE_KRB5_H)
 # include <krb5.h>
-#elif HAVE_KERBEROSV5_KRB5_H
+#elif defined(HAVE_KERBEROSV5_KRB5_H)
 # include <kerberosv5/krb5.h>
 #else
 # include <krb5/krb5.h>
 #endif
 
+/* Figure out what header files to include for error reporting. */
+#if !defined(HAVE_KRB5_GET_ERROR_MESSAGE) && !defined(HAVE_KRB5_GET_ERR_TEXT)
+# if !defined(HAVE_KRB5_GET_ERROR_STRING)
+#  if defined(HAVE_IBM_SVC_KRB5_SVC_H)
+#   include <ibm_svc/krb5_svc.h>
+#  elif defined(HAVE_ET_COM_ERR_H)
+#   include <et/com_err.h>
+#  elif defined(HAVE_KERBEROSV5_COM_ERR_H)
+#   include <kerberosv5/com_err.h>
+#  else
+#   include <com_err.h>
+#  endif
+# endif
+#endif
+
 #include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/xmalloc.h"
+
+/*
+ * This string is returned for unknown error messages.  We use a static
+ * variable so that we can be sure not to free it.
+ */
+#if !defined(HAVE_KRB5_GET_ERROR_MESSAGE) \
+    || !defined(HAVE_KRB5_FREE_ERROR_MESSAGE)
+static const char error_unknown[] = "unknown error";
+#endif
+
+
+#ifndef HAVE_KRB5_GET_ERROR_MESSAGE
+/*
+ * Given a Kerberos error code, return the corresponding error.  Prefer the
+ * Kerberos interface if available since it will provide context-specific
+ * error information, whereas the error_message() call will only provide a
+ * fixed message.
+ */
+const char *
+krb5_get_error_message(krb5_context ctx UNUSED, krb5_error_code code UNUSED)
+{
+    const char *msg;
+
+# if defined(HAVE_KRB5_GET_ERROR_STRING)
+    msg = krb5_get_error_string(ctx);
+# elif defined(HAVE_KRB5_GET_ERR_TEXT)
+    msg = krb5_get_err_text(ctx, code);
+# elif defined(HAVE_KRB5_SVC_GET_MSG)
+    krb5_svc_get_msg(code, (char **) &msg);
+# else
+    msg = error_message(code);
+# endif
+    if (msg == NULL)
+        return error_unknown;
+    else
+        return msg;
+}
+#endif /* !HAVE_KRB5_GET_ERROR_MESSAGE */
+
+
+#ifndef HAVE_KRB5_FREE_ERROR_MESSAGE
+/*
+ * Free an error string if necessary.  If we returned a static string, make
+ * sure we don't free it.
+ *
+ * This code assumes that the set of implementations that have
+ * krb5_free_error_message is a subset of those with krb5_get_error_message.
+ * If this assumption ever breaks, we may call the wrong free function.
+ */
+void
+krb5_free_error_message(krb5_context ctx UNUSED, const char *msg)
+{
+    if (msg == error_unknown)
+        return;
+# if defined(HAVE_KRB5_GET_ERROR_STRING)
+    krb5_free_error_string(ctx, (char *) msg);
+# elif defined(HAVE_KRB5_SVC_GET_MSG)
+    krb5_free_string(ctx, (char *) msg);
+# endif
+}
+#endif /* !HAVE_KRB5_FREE_ERROR_MESSAGE */
+
+
+/*
+**  Report a Kerberos error to standard error.
+*/
+static void __attribute__((__format__(printf, 3, 4)))
+warn_krb5(krb5_context ctx, krb5_error_code code, const char *format, ...)
+{
+    const char *k5_msg;
+    char *message;
+    va_list args;
+
+    k5_msg = krb5_get_error_message(ctx, code);
+    va_start(args, format);
+    xvasprintf(&message, format, args);
+    va_end(args);
+    if (k5_msg == NULL)
+        warn("%s", message);
+    else
+        warn("%s: %s", message, k5_msg);
+    free(message);
+    if (k5_msg != NULL)
+        krb5_free_error_message(ctx, k5_msg);
+}
+
 
 /*
 **  Check the username and password by attempting to get a TGT.  Returns 1 on
-**  success and 0 on failure.  Errors are reported via com_err.
+**  success and 0 on failure.
 */
 static int
 krb5_check_password(const char *principal, const char *password)
@@ -57,13 +152,12 @@ krb5_check_password(const char *principal, const char *password)
 
     code = krb5_init_context(&ctx);
     if (code != 0) {
-        com_err(message_program_name, code, "initializing krb5 context");
+        warn_krb5(NULL, code, "cannot initialize Kerberos");
         return 0;
     }
     code = krb5_parse_name(ctx, principal, &princ);
     if (code != 0) {
-        com_err(message_program_name, code, "parsing principal name %.100s",
-                principal);
+        warn_krb5(ctx, code, "cannot parse principal %.100s", principal);
         goto cleanup;
     }
     memset(&opts, 0, sizeof(opts));
@@ -85,16 +179,15 @@ krb5_check_password(const char *principal, const char *password)
     else {
         switch (code) {
         case KRB5KRB_AP_ERR_BAD_INTEGRITY:
-            com_err(message_program_name, 0, "bad password for %.100s",
-                    principal);
+            warn("bad password for %.100s", principal);
             break;
         case KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN:
-            com_err(message_program_name, 0, "unknown user %.100s",
-                    principal);
+            warn("unknown user %.100s", principal);
             break;
         default:
-            com_err(message_program_name, code,
-                    "checking Kerberos password for %.100s", principal);
+            warn_krb5(ctx, code, "Kerberos authentication for %.100s failed",
+                      principal);
+            break;
         }
     }
    
@@ -132,7 +225,7 @@ main (int argc, char *argv[])
     /* May need to prepend instance name if -i option was given. */
     if (argc > 1) {
         if (argc == 3 && strcmp(argv[1], "-i") == 0) {
-            new_user = concat(authinfo->username, "/", argv[2], (char *) 0);
+            xasprintf(&new_user, "%s/%s", authinfo->username, argv[2]);
             free(authinfo->username);
             authinfo->username = new_user;
         } else {

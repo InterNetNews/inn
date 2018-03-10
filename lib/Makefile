@@ -225,9 +225,10 @@ getfqdn.o: getfqdn.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/paths.h
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 getmodaddr.o: getmodaddr.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
