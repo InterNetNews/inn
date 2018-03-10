@@ -34,7 +34,7 @@ extern bool laxmid;
 **    http://www.iana.org/assignments/message-headers/
 */
 HEADER Table[] = {
-    /*  Name                    CanSet  Type    Size  Value */
+    /*  Name                    CanSet  Type    Size  Value    Body  Len */
     {   "Path",                 true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "From",                 true,   HTreq,  0,    NULL,    NULL, 0 },
     {   "Newsgroups",           true,   HTreq,  0,    NULL,    NULL, 0 },
@@ -56,7 +56,7 @@ HEADER Table[] = {
     {   "NNTP-Posting-Host",    false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Mime-Version",         true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Content-Type",         true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Content-Transfer-Encoding", true, HTstd,  0,    NULL,    NULL, 0 },
+    {   "Content-Transfer-Encoding", true, HTstd, 0,  NULL,    NULL, 0 },
     {   "X-Trace",              false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "X-Complaints-To",      false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "NNTP-Posting-Date",    false,  HTobs,  0,    NULL,    NULL, 0 },
@@ -77,6 +77,8 @@ HEADER Table[] = {
     {   "Article-Names",        false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Article-Updates",      false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "See-Also",             false,  HTobs,  0,    NULL,    NULL, 0 },
+    {   "Cancel-Key",           true,   HTstd,  0,    NULL,    NULL, 0 },
+    {   "Cancel-Lock",          true,   HTstd,  0,    NULL,    NULL, 0 },
 /* The Comments: and Original-Sender: header fields can appear more than once
  * in the headers of an article.  Consequently, we MUST NOT put them here. */
 };
