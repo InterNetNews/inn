@@ -85,7 +85,7 @@ standard headers are:
     Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
     Content-Type, Control, Date, Date-Received, Distribution, Expires,
     Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
-    Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
+    Jabber-ID, Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
     NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
     Organization, Original-Sender, Originator,
     Path, Posted, Posting-Version, Received, References, Relay-Version,

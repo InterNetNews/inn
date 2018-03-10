@@ -215,10 +215,12 @@ const ARTHEADER ARTheaders[] = {
 /* #define HDR__ARCHIVED_AT                     72 */
   ARTHEADERINIT("Summary",              HTstd),
 /* #define HDR__SUMMARY                         73 */
-  ARTHEADERINIT("Comments",             HTstd)
+  ARTHEADERINIT("Comments",             HTstd),
 /* #define HDR__COMMENTS                        74 */
+  ARTHEADERINIT("Jabber-ID",            HTstd),
+/* #define HDR__JABBER_ID                       75 */
 };
-/* #define MAX_ARTHEADER                        75 */
+/* #define MAX_ARTHEADER                        76 */
 
 
 /*

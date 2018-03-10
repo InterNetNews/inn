@@ -108,7 +108,8 @@ const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("Archive",               HTstd),
     ARTHEADERINIT("Archived-At",           HTstd),
     ARTHEADERINIT("Summary",               HTstd),
-    ARTHEADERINIT("Comments",              HTstd)
+    ARTHEADERINIT("Comments",              HTstd),
+    ARTHEADERINIT("Jabber-ID",             HTstd),
 };
 
 /* Dummy functions that innd.c provides. */
