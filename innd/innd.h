@@ -220,8 +220,9 @@ typedef struct _HDRCONTENT {
 #define HDR__ARCHIVED_AT        72
 #define HDR__SUMMARY            73
 #define HDR__COMMENTS           74
+#define HDR__JABBER_ID          75
 
-#define MAX_ARTHEADER           75
+#define MAX_ARTHEADER           76
 
 /*
 **  Miscellaneous data we want to keep on an article.  All the fields
