@@ -48,7 +48,6 @@
 #include <tap/basic.h>
 #include <tap/float.h>
 
-/*
 #ifndef LIBTEST_NEW_FORMAT
 /* Specific to the integration of C TAP Harness in INN. */
 void
@@ -58,6 +57,7 @@ ok_double(int n UNUSED, double wanted, double seen)
 }
 #endif
 
+/*
  * Clang 4.0.1 gets very confused by this file and produces warnings about
  * floating point implicit conversion from the isnan() and isinf() macros.
  */
