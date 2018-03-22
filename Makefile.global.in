@@ -18,7 +18,7 @@
 ##      keep their length reasonable; otherwise, your news server will not
 ##      be complying with the NNTP protocol.
 
-VERSION		= 2.6.2
+VERSION		= 2.6.3
 VERSION_EXTRA	= prerelease
 
 ##  The absolute path to the top of the build directory, used to find the
