@@ -297,7 +297,7 @@ more information.
 
 A path to a perl script for authentication.  The perl_auth: parameter
 works exactly like auth:, except that it calls the named script using
-the perl hook rather then an external program.  Multiple/mixed use of
+the perl hook rather than an external program.  Multiple/mixed use of
 the auth, perl_auth, and python_auth parameters is permitted within any
 auth group; each line is tried in the order it appears.  perl_auth:
 has more power than auth: in that it provides the authentication
@@ -310,7 +310,7 @@ configure).  More information may be found in F<doc/hook-perl>.
 
 A Python script for authentication.  The I<python_auth> parameter works
 exactly like I<auth>, except that it calls the named script (without its
-C<.py> extension) using the Python hook rather then an external program.
+C<.py> extension) using the Python hook rather than an external program.
 Multiple/mixed use of the I<auth>, I<perl_auth>, and I<python_auth>
 parameters is permitted within any auth group; each line is tried
 in the order it appears.  I<python_auth> has more power than I<auth>

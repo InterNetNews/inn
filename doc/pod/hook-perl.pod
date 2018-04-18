@@ -464,7 +464,7 @@ Support for authentication via Perl is provided in nnrpd by the
 inclusion of a perl_auth: parameter in a F<readers.conf> auth
 group. perl_auth: works exactly like the auth: parameter in
 F<readers.conf>, except that it calls the script given as argument using
-the Perl hook rather then treating it as an external program.
+the Perl hook rather than treating it as an external program.
 
 If the processing of readers.conf requires that a perl_auth: statement
 be used for authentication, Perl is loaded (if it has yet to be) and
