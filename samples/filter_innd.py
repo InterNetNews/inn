@@ -18,11 +18,11 @@
 
 import re
 from string import *
+import sys
 
 
 ##  The built-in intern() method has been in the sys module
 ##  since Python 3.0.
-import sys
 if sys.version_info[0] >= 3:
     def intern(headerName):
         return sys.intern(headerName)
@@ -157,6 +157,8 @@ class InndFilter:
         """
         return ""               # Deactivate the samples.
 
+        syslog('notice', "just seen %s" % msgid)
+
         if self.re_none44.search(msgid):
             return "But I don't like spam!"
         if msgid[0:8] == '<cancel.':
@@ -173,10 +175,10 @@ class InndFilter:
         innd/art.c.  At this writing, they are:
 
             Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
-            Content-Base, Content-Disposition, Content-Transfer-Encoding,
+            Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
             Content-Type, Control, Date, Date-Received, Distribution, Expires,
             Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
-            Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
+            Jabber-ID, Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
             NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
             Organization, Original-Sender, Originator,
             Path, Posted, Posting-Version, Received, References, Relay-Version,
@@ -202,7 +204,24 @@ class InndFilter:
         """
         return ""               # Deactivate the samples.
 
-        # Catch bad Message-IDs from articles fed with TAKETHIS but no CHECK.
+        # Example of decoding the Newsgroups: header field with Python 3.x
+        # using bytes object.
+        #  header = art[Newsgroups].tobytes().decode("utf-8")
+        #  syslog('notice', "Newsgroups: %s" % header)
+        #
+        # Another example with the Distribution: header field, that may not
+        # be present in the headers, and also not in UTF-8.
+        #  if art[Distribution]:
+        #      header = art[Distribution].tobytes()
+        #      syslog('notice', "Distribution: %s" % header)
+        #
+        # Other examples:
+        #  syslog('notice', "Article body: %s" % art[__BODY__].tobytes())
+        #  syslog('notice', "Number of lines: %lu" % art[__LINES__])
+
+        # Catch bad Message-IDs from articles (in case Message-IDs provided
+        # as arguments to the IHAVE or TAKETHIS commands are not the real
+        # ones present in article headers).
         idcheck = self.filter_messageid(art[Message_ID])
         if idcheck:
             return idcheck
@@ -217,9 +236,11 @@ class InndFilter:
                     # Python 3.x uses memoryview(b'mxyzptlk') because buffers
                     # do not exist any longer.  Note that the argument is
                     # a bytes object.
-                    # if art[Distribution] == memoryview(b'mxyzptlk'):
-                    if art[Distribution] == buffer('mxyzptlk'):
-                        return "Evil control message from the 10th dimension"
+                    #  if art[Distribution] == memoryview(b'mxyzptlk'):
+                    #      return "Evil control message from the 10th dimension"
+                    # whereas in Python 2.x:
+                    #  if art[Distribution] == buffer('mxyzptlk'):
+                    #      return "Evil control message from the 10th dimension"
                 if self.re_obsctl.match(art[Control]):
                     return "Obsolete control message"
 
@@ -268,15 +289,7 @@ from INN import *
 ##  INN's.  Oh yeah -- you may notice that stdout and stderr have been
 ##  redirected to /dev/null -- if you want to print stuff, open your
 ##  own files.
-
-try:
-    import sys
-
-except Exception, errmsg:    # Syntax for Python 2.x.
-#except Exception as errmsg: # Syntax for Python 3.x.
-    syslog('Error', "import boo-boo: " + errmsg[0])
-
-
+##
 ##  If you want to do something special when the server first starts
 ##  up, this is how to find out when it's time.
 
@@ -296,6 +309,6 @@ spamfilter = InndFilter()
 try:
     set_filter_hook(spamfilter)
     syslog('n', "spamfilter successfully hooked into INN")
-except Exception, errmsg:    # Syntax for Python 2.x.
-#except Exception as errmsg: # Syntax for Python 3.x.
-    syslog('e', "Cannot obtain INN hook for spamfilter: %s" % errmsg[0])
+except Exception: # Syntax valid in both Python 2.x and 3.x.
+    e = sys.exc_info()[1]
+    syslog('e', "Cannot obtain INN hook for spamfilter: %s" % e.args[0])

@@ -1,3 +1,30 @@
+=head1 Changes in 2.6.3
+
+=over 2
+
+=item *
+
+Support for S<Python 3> has been added to INN.  Embedded Python filtering
+and authentication hooks for B<innd> and B<nnrpd> can now use S<version
+3.3.0> or later of the Python interpreter.  In the 2.x series, S<version
+2.3.0> or later is still supported.
+
+When configuring INN with the B<--with-python> flag, the C<PYTHON>
+environment variable, when set, is used to select the interpreter
+to embed.  Otherwise, it is searched in standard paths.
+
+In case you change the Python interpreter to embed, make sure that
+the Python scripts you use are written in the expected syntax for that
+version of the Python interpreter.  Notably, buffer objects have been
+replaced with memoryview objects in S<Python 3>, and UTF-8 encoding
+now really matters for string literals (S<Python 3> uses bytes and
+Unicode objects).
+
+INN documentation and samples of Python hooks have been updated to
+provide more examples.
+
+=back
+
 =head1 Changes in 2.6.2
 
 =over 2

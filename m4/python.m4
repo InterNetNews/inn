@@ -1,5 +1,20 @@
-dnl python.m4 -- Probe for the details needed to embed Python.
+dnl Probe for Python properties and, optionally, flags for embedding Python.
 dnl $Id$
+dnl
+dnl Provides the following macros:
+dnl
+dnl INN_PROG_PYTHON
+dnl     Checks for a specific Python version and sets the PYTHON environment
+dnl     variable to the full path, or aborts the configure run if the version
+dnl     of Python is not new enough or couldn't be found.
+dnl
+dnl INN_PYTHON_CHECK_MODULE
+dnl     Checks for the existence of a Python module and runs provided code
+dnl     based on whether or not it was found.
+dnl
+dnl INN_LIB_PYTHON
+dnl     Determines the flags required for embedding Python and sets
+dnl     PYTHON_CPPFLAGS and PYTHON_LIBS.
 dnl
 dnl Defines INN_ARG_PYTHON, which sets up the --with-python command line
 dnl argument and also sets various flags needed for embedded Python if it is
@@ -7,37 +22,58 @@ dnl requested.
 dnl
 dnl We use the distutils.sysconfig module shipped with Python 2.2.0 and later
 dnl to find the compiler and linker flags to use to embed Python.
+dnl We also select libpython in the main library location (a shared library
+dnl is present there in Python 2.3.0 and later).
 
-AC_DEFUN([INN_ARG_PYTHON],
+dnl Check for the path to Python and ensure it meets our minimum version
+dnl requirement (given as the argument).  Honor the $PYTHON environment
+dnl variable, if set.
+AC_DEFUN([INN_PROG_PYTHON],
 [AC_ARG_VAR([PYTHON], [Location of Python interpreter])
- AC_ARG_WITH([python],
-    [AS_HELP_STRING([--with-python], [Embedded Python module support [no]])],
-    [AS_CASE([$withval],
-     [yes], [DO_PYTHON=DO
-             AC_DEFINE([DO_PYTHON], [1],
-                [Define to compile in Python module support.])],
-     [no], [DO_PYTHON=DONT],
-     [AC_MSG_ERROR([invalid argument to --with-python])])],
-    [DO_PYTHON=DONT])
- AS_IF([test x"$DO_PYTHON" = xDO],
-    [INN_PATH_PROG_ENSURE([PYTHON], [python])
-     AC_MSG_CHECKING([for Python linkage])
-     py_include=`$PYTHON -c 'import distutils.sysconfig; \
-         print(distutils.sysconfig.get_python_inc())'`
-     PYTHON_CPPFLAGS="-I$py_include"
-     py_ver=`$PYTHON -c 'import sys; print(sys.version[[:3]])'`
-     py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
-         print(distutils.sysconfig.get_python_lib(0, 1))'`
-     py_linkage=`$PYTHON -c 'import distutils.sysconfig; \
-         print(" ".join(distutils.sysconfig.get_config_vars("LIBS", \
-             "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
-             "LINKFORSHARED", "LDFLAGS")))'`
-     py_configdir=`$PYTHON -c 'import distutils.sysconfig; \
-         print(distutils.sysconfig.get_config_var("LIBPL"))'`
-     PYTHON_LIBS="-L$py_configdir -lpython$py_ver $py_linkage"
-     PYTHON_LIBS=`echo $PYTHON_LIBS | sed -e 's/[ \\t]*/ /g'`
-     AC_MSG_RESULT([$py_libdir])],
-    [PYTHON_CPPFLAGS=
-     PYTHON_LIBS=])
- AC_SUBST([PYTHON_CPPFLAGS])
- AC_SUBST([PYTHON_LIBS])])
+ AS_IF([test x"$PYTHON" != x],
+    [AS_IF([! test -x "$PYTHON"],
+        [AC_MSG_ERROR([Python binary $PYTHON not found])])
+     AS_IF([! "$PYTHON" -c 'import sys; assert(sys.version_info >= tuple(int(i) for i in "$1".split(".")))' >/dev/null 2>&1],
+        [AC_MSG_ERROR([Python $1 or greater is required])])],
+    [AC_CACHE_CHECK([for Python version $1 or later], [ac_cv_path_PYTHON],
+        [AC_PATH_PROGS_FEATURE_CHECK([PYTHON], [python],
+            [AS_IF(["$ac_path_PYTHON" -c 'import sys; assert(sys.version_info >= tuple(int(i) for i in "$1".split(".")))' >/dev/null 2>&1],
+                [ac_cv_path_PYTHON="$ac_path_PYTHON"
+                 ac_path_PYTHON_found=:])])])
+     AS_IF([test x"$ac_cv_path_PYTHON" = x],
+         [AC_MSG_ERROR([Python $1 or greater is required])])
+     PYTHON="$ac_cv_path_PYTHON"
+     AC_SUBST([PYTHON])])])
+
+dnl Check whether a given Python module can be loaded.  Runs the second argument
+dnl if it can, and the third argument if it cannot.
+AC_DEFUN([INN_PYTHON_CHECK_MODULE],
+[AS_LITERAL_IF([$1], [], [m4_fatal([$0: requires literal arguments])])dnl
+ AS_VAR_PUSHDEF([ac_Module], [inn_cv_python_module_$1])dnl
+ AC_CACHE_CHECK([for Python module $1], [ac_Module],
+    [AS_IF(["$PYTHON" -c 'import $1' >/dev/null 2>&1],
+        [AS_VAR_SET([ac_Module], [yes])],
+        [AS_VAR_SET([ac_Module], [no])])])
+ AS_VAR_IF([ac_Module], [yes], [$2], [$3])
+ AS_VAR_POPDEF([ac_Module])])
+
+dnl Determine the flags used for embedding Python.
+AC_DEFUN([INN_LIB_PYTHON],
+[AC_SUBST([PYTHON_CPPFLAGS])
+ AC_SUBST([PYTHON_LIBS])
+ AC_MSG_CHECKING([for flags to link with Python])
+ py_include=`$PYTHON -c 'import distutils.sysconfig; \
+     print(distutils.sysconfig.get_python_inc())'`
+ PYTHON_CPPFLAGS="-I$py_include"
+ py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
+     print(" -L".join(distutils.sysconfig.get_config_vars("LIBDIR")))'`
+ py_ldlibrary=`$PYTHON -c 'import distutils.sysconfig; \
+     print(distutils.sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
+ py_linkage=`$PYTHON -c 'import distutils.sysconfig; \
+     print(" ".join(distutils.sysconfig.get_config_vars("LIBS", \
+         "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
+         "LINKFORSHARED", "LDFLAGS")))'`
+ py_libpython=`echo $py_ldlibrary | sed "s/^lib//" | sed "s/\.@<:@a-z@:>@*$//"`
+ PYTHON_LIBS="-L$py_libdir -l$py_libpython $py_linkage"
+ PYTHON_LIBS=`echo $PYTHON_LIBS | sed -e 's/[ \\t]*/ /g'`
+ AC_MSG_RESULT([$PYTHON_LIBS])])

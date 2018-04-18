@@ -38,8 +38,8 @@ class MYDYNACCESS:
         (self.old).close()
 
 
-##  The rest is used to hook up the dynamic access module on nnrpd.  It is unlikely
-##  you will ever need to modify this.
+##  The rest is used to hook up the dynamic access module on nnrpd.
+##  It is unlikely you will ever need to modify this.
 
 ##  Import functions exposed by nnrpd.  This import must succeed, or nothing
 ##  will work!
@@ -50,9 +50,10 @@ mydynaccess = MYDYNACCESS()
 
 ##  ...and try to hook up on nnrpd.  This would make auth object methods visible
 ##  to nnrpd.
+import sys
 try:
     set_auth_hook(mydynaccess)
     syslog('notice', "dynamic access module successfully hooked into nnrpd")
-except Exception, errmsg:    # Syntax for Python 2.x.
-#except Exception as errmsg: # Syntax for Python 3.x.
-    syslog('error', "Cannot obtain nnrpd hook for dynamic access method: %s" % errmsg[0])
+except Exception: # Syntax valid in both Python 2.x and 3.x.
+    e = sys.exc_info()[1]
+    syslog('error', "Cannot obtain nnrpd hook for dynamic access method: %s" % e.args[0])

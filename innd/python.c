@@ -41,6 +41,18 @@
   typedef int Py_ssize_t;
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+# define PyInt_FromLong PyLong_FromLong
+# define PyString_AS_STRING PyUnicode_AsUTF8
+# define PyString_FromStringAndSize PyBytes_FromStringAndSize
+# define PyString_InternFromString PyUnicode_InternFromString
+# define PYBUFF_FROMMEMORY(str, len) \
+      PyMemoryView_FromMemory((str), (len), PyBUF_WRITE)
+#else
+# define PYBUFF_FROMMEMORY(str, len) \
+      PyBuffer_FromMemory((str), (len))
+#endif
+
 #include "clibrary.h"
 
 #include "inn/innconf.h"
@@ -56,7 +68,7 @@ PyObject	*PYFilterModule = NULL;
 PyObject	*PYheaders = NULL;
 PyObject	**PYheaditem;
 PyObject	**PYheadkey;
-PyObject	*PYpathkey, *PYlineskey, *PYbodykey;
+PyObject	*PYlineskey, *PYbodykey;
 
 /*  External functions. */
 PyObject	*msgid_method = NULL;
@@ -126,7 +138,7 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     hdrnum = 0;
     for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
-	    PYheaditem[hdrnum] = PyBuffer_FromMemory(HDR(i), HDR_LEN(i));
+            PYheaditem[hdrnum] = PYBUFF_FROMMEMORY(HDR(i), HDR_LEN(i));
 	} else
 	    PYheaditem[hdrnum] = Py_None;
 	PyDict_SetItem(PYheaders, PYheadkey[hdrnum], PYheaditem[hdrnum]);
@@ -135,7 +147,7 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 
     /* ...then the body... */
     if (artLen && artBody != NULL)
-        PYheaditem[hdrnum] = PyBuffer_FromMemory(artBody, --artLen);
+        PYheaditem[hdrnum] = PYBUFF_FROMMEMORY(artBody, --artLen);
     else
         PYheaditem[hdrnum] = Py_None;
     PyDict_SetItem(PYheaders, PYbodykey, PYheaditem[hdrnum++]);
@@ -565,6 +577,36 @@ static PyMethodDef INNPyMethods[] = {
     METHOD(NULL,              NULL,               0,            "")
 };
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef INNPyModule = {
+    PyModuleDef_HEAD_INIT,                /* m_base */
+    (char *) "INN",                       /* m_name */
+    (char *) "innd Python filter hook",   /* m_doc */
+    -1,                                   /* m_size */
+    INNPyMethods,                         /* m_methods */
+    NULL,                                 /* m_slots */
+    NULL,                                 /* m_traverse */
+    NULL,                                 /* m_clear */
+    NULL,                                 /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit_INN(void) {
+    PyObject *module = PyModule_Create(&INNPyModule);
+
+    if (module == NULL)
+        syslog(L_ERROR, "failed to create innd python module");
+
+    return module;
+}
+#else
+void
+PyInit_INN(void) {
+    if (Py_InitModule3((char *) "INN", INNPyMethods,
+                       (char *) "innd Python filter hook") == NULL)
+        syslog(L_ERROR, "failed to initialize innd python module");
+}
+#endif
 
 
 /*
@@ -700,10 +742,13 @@ PYsetup(void)
     const ARTHEADER *hp;
     size_t hdrcount;
 
-    /* Add path for nnrpd module.  The environment variable PYTHONPATH
+    /* Add path for innd module.  The environment variable PYTHONPATH
      * does it; one can also append innconf->pathfilter to sys.path once
      * Python has been initialized. */
     setenv("PYTHONPATH", innconf->pathfilter, 1);
+
+    /* Build a module interface to certain INN functions. */
+    PyImport_AppendInittab("INN", &PyInit_INN);
 
     /* Load up the interpreter ;-O */
     Py_Initialize();
@@ -719,12 +764,10 @@ PYsetup(void)
 	return;
     }
 
-    /* Build a module interface to certain INN functions. */
-    Py_InitModule((char *) "INN", INNPyMethods);
-
     PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL)
-	syslog(L_ERROR, "failed to import external python module");
+	syslog(L_ERROR, "failed to import external %s python module",
+           INN_PATH_PYTHON_STARTUP_M);
 
     if (PYFilterObject == NULL) {
 	syslog(L_ERROR, "python filter object is not defined");
@@ -743,10 +786,9 @@ PYsetup(void)
     PYheaditem = xmalloc((hdrcount + 2) * sizeof(PyObject *));
     PYheadkey = xmalloc(hdrcount * sizeof(PyObject *));
 
-    /* Preallocate keys for the article dictionary */
+    /* Preallocate keys for the article dictionary. */
     for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++)
 	PYheadkey[hp - ARTheaders] = PyString_InternFromString(hp->Name);
-    PYpathkey = PyString_InternFromString("Path");
     PYlineskey = PyString_InternFromString("__LINES__");
     PYbodykey = PyString_InternFromString("__BODY__");
 

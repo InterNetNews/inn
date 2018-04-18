@@ -35,13 +35,17 @@ class MYAUTH:
         # Python 3.x uses memoryview(b'authinfo') because buffers
         # do not exist any longer.  Note that the argument is
         # a bytes object.
-        # attributes['type'] = memoryview(b'authinfo')
-        attributes['type'] = buffer('authinfo')
-        perm = (self.old).authenticate(attributes)
+        #  attributes['type'] = memoryview(b'authinfo')
+        #  perm = (self.old).authenticate(attributes)
+        # whereas in Python 2.x:
+        #  attributes['type'] = buffer('authinfo')
+        #  perm = (self.old).authenticate(attributes)
+        response = 281
         err_str = "No error"
-        if perm[0] == 481:
-            err_str = "Python authentication error!"
-        return (perm[0], err_str)
+        #  if perm[0] == 481:
+        #      response = perm[0]
+        #      err_str = "Python authentication error!"
+        return (response, err_str)
 
     def authen_close(self):
         (self.old).close()
@@ -59,9 +63,10 @@ myauth = MYAUTH()
 
 ##  ...and try to hook up on nnrpd.  This would make auth object methods visible
 ##  to nnrpd.
+import sys
 try:
     set_auth_hook(myauth)
     syslog('notice', "authentication module successfully hooked into nnrpd")
-except Exception, errmsg:    # Syntax for Python 2.x.
-#except Exception as errmsg: # Syntax for Python 3.x.
-    syslog('error', "Cannot obtain nnrpd hook for authentication method: %s" % errmsg[0])
+except Exception: # Syntax valid in both Python 2.x and 3.x.
+    e = sys.exc_info()[1]
+    syslog('error', "Cannot obtain nnrpd hook for authentication method: %s" % e.args[0])

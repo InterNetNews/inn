@@ -308,6 +308,11 @@ void PY_access(char* path, struct vector *access_vec, char *Username);
 void PY_close_python(void);
 int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message);
 void PY_dynamic_init (char* file);
+# if PY_MAJOR_VERSION >= 3
+extern PyMODINIT_FUNC   PyInit_nnrpd(void);
+# else
+extern void             PyInit_nnrpd(void);
+# endif
 #endif	/* DO_PYTHON */
 
 void line_free(struct line *);
