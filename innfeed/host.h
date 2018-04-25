@@ -40,7 +40,7 @@ extern void mainLogStatus (FILE *fp) ;
  * ARTTIMEOUT is the max amount of time we'll wait for a new article
  *    from INN before considering the connection unused and we'll close
  *    down.
- * RESPTIMEOUT is the max amount of time we'll wait for any reponse
+ * RESPTIMEOUT is the max amount of time we'll wait for any response
  *    from a remote. Past this we'll close down the network connection.
  * INITIALCXNS is the number of Connections to create at Host creation time.
  * MAXCXNS is the maximum number of parallel connections to the

@@ -279,7 +279,7 @@ process_cmd(struct reader *r)
 	case CMD_ARTINFO:
 	    r->state = STATE_READGROUP;
 	    if(cmd->grouplen == 0) {
-		/* shoudn't happen... */
+		/* shouldn't happen... */
 		r->mode = MODE_CLOSED;
 		close(r->fd);
 		free(r->buf);

@@ -716,7 +716,7 @@ main(int ac, char *av[])
     if (!SMsetup(SM_RDWR, &flag) || !SMsetup(SM_PREOPEN, &flag))
         die("SERVER cant set up storage manager");
     if (!SMinit())
-        die("SERVER cant initalize storage manager: %s", SMerrorstr);
+        die("SERVER cant initialize storage manager: %s", SMerrorstr);
 
 #if	defined(_DEBUG_MALLOC_INC)
     m.i = 1;

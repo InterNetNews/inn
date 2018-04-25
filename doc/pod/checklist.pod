@@ -146,7 +146,7 @@ Name the metacycbuff, then configure F<storage.conf>.
 =item *
 
 In F<storage.conf>, be sure that all sizes of articles can be
-accomodated.  If you want to throw away large articles, do it explicitly
+accommodated.  If you want to throw away large articles, do it explicitly
 by using the C<trash> storage method (you can also set a lower I<maxartsize>
 in F<inn.conf>).
 

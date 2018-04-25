@@ -249,7 +249,7 @@ One auth group can have multiple res: parameters, and they will be tried
 in the order they're listed.  The results of the first successful one
 will be used.
 
-Alternatively, a res block can be used instead of a res: paramater.
+Alternatively, a res block can be used instead of a res: parameter.
 The recognized parameters in such res blocks are:
 
 =over 3
@@ -518,7 +518,7 @@ the behaviour of the I<addinjectiondate> parameter in F<inn.conf>, and
 will remain in UTC, though.)  This is a boolean value and the default
 is false.
 
-This parameter permits to handle a relatively unusual corner case.
+This parameter permits handling a relatively unusual corner case.
 It is mostly a tool for people who I<want> to disclose their local time
 zone (it can be useful information in certain types of discussions),
 but whose clients don't for some reason, and who can arrange for the

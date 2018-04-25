@@ -838,7 +838,7 @@ static bool CNFSread_config(void) {
     for (ctab_i = 0; ctab_i < ctab_free; ctab_i++) {
 	if (strncmp(ctab[ctab_i], "cycbuff:", 8) == 0) {
 	    if (metacycbufffound) {
-                warn("CNFS: all cycbuff entries shoud be before metacycbuff"
+                warn("CNFS: all cycbuff entries should be before metacycbuff"
                      " entries");
 		free(config);
 		free(ctab);

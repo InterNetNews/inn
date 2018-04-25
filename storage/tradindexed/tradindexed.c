@@ -365,7 +365,7 @@ tradindexed_expiregroup(const char *group, int *low, struct history *history)
 
 
 /*
-**  Set various options or query various paramaters for the overview method.
+**  Set various options or query various parameters for the overview method.
 **  The interface is, at present, not particularly sane.
 */
 bool

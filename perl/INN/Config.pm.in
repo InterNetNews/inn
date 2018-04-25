@@ -209,7 +209,7 @@ INN::Config - Export all the variables an INN Perl script might need
 =head1 DESCRIPTION
 
 This Perl module sets up any and all the variables that an INN Perl script
-might need.  More particularly, it allows to use F<inn.conf> variables:
+might need.  More particularly, it allows using F<inn.conf> variables:
 they are all provided by B<innconfval>, as well as the version of INN
 (in the variable C<$INN::Config::VERSION> for its short number form, on in
 C<$INN::Config::version> for its complete form).  Other useful variables

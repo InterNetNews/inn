@@ -509,8 +509,8 @@ F</usr/local/news> for I<pathnews> has not been changed).  This won't
 affect any of the paths compiled into INN; it's used primarily in some
 situations like building a software distribution, where software has to
 be installed into some file system that will later be mounted as F</>
-on the final system.  Using DESTDIR permits to build INN, install
-it into a virtual root directory, and package the resulting files
+on the final system.  Using DESTDIR permits building INN, installing
+it into a virtual root directory, and packaging the resulting files
 in a single step, without manual intervention, by a non-root user.
 It is possible to build and install INN in this way, but you must set
 a DESTDIR value for the install step, and additionally, you must tell

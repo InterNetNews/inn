@@ -94,7 +94,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
        since it could potentially be quite large.  In testing, this produced
        a 17% speed improvement over making a copy of the article body
        for a fairly heavy filter.
-       Available since Perl 5.7.1, newSVpvn_share allows to avoid such
+       Available since Perl 5.7.1, newSVpvn_share allows avoiding such
        a copy (getting round its use for older versions of Perl leads
        to unreliable SV * bodies as for regexps).  And for Perl not to
        compute a hash for artBody, we give it "42". */

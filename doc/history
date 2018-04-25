@@ -109,7 +109,7 @@ control messages are not supported.  Also the philosophy is that that
 invalid articles are dropped, rather than filed into "junk."  (A log
 message is written with the reason, and also sent back to the upstream
 feed as part of the NNTP reject reply.)  The active file is taken to be
-the definitive list of groups that an article wants to recieve, and if
+the definitive list of groups that an article wants to receive, and if
 none of an article's newsgroups are mentioned in the active file, then the
 article is invalid, logged, and dropped.
 

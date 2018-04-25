@@ -101,7 +101,7 @@ those of the shell's I<case> statement; see sh(1) for more details.
 If the control message is a newgroup or rmgroup, the third field,
 <newsgroups>, is a shell-style pattern matching the newsgroup affected
 by the control message (especially C<?> matches exactly one character,
-C<*> matches zero or more characters and C<|> permits to match several
+C<*> matches zero or more characters and C<|> permits matching several
 patterns on the same line S<-- for> instance C<comp.*|humanities.*>
 matches every newsgroup whose name begins with C<comp.> or C<humanities.>).
 If the control message is a checkgroups, the third field is a shell-style
@@ -310,7 +310,7 @@ The newsgroup foo.bar4 is silently created on the news server, with
 the description "A newsgroup you want." added to the F<newsgroups>
 file.  In the absence of encoding values (either in the checkgroups
 message or in B</encoding/> and B</localencoding>), the default is
-to decode the sentence as CP1242 and reencode it as UTF-8.
+to decode the sentence as CP1242 and re-encode it as UTF-8.
 
 If C<doit=mail> was used, a mail would be sent to the news administrator
 to inform him that foo.bar4 was successfully created.

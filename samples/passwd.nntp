@@ -2,7 +2,7 @@
 ##
 ##  Sample passwd.nntp configuration file.
 ##
-##  It permits to authenticate on remote NNTP servers.
+##  It permits authenticating on remote NNTP servers.
 ##
 ##  Format:
 ##      <host>:<name>:<pass>[:<style>]

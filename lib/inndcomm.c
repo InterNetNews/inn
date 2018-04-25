@@ -96,7 +96,7 @@ ICCopen(void)
 	return -1;
     }
 
-    /* Adjust the socket buffer size to accomodate large responses.  Ignore
+    /* Adjust the socket buffer size to accommodate large responses.  Ignore
        failure; the message may fit anyway, and if not, we'll fail below. */
     setsockopt(ICCfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size));
 

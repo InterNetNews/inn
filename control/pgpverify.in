@@ -31,7 +31,7 @@
 #
 # Changes from 1.27 -> 1.28
 # -- Use the INN::Config Perl module instead of innshellvars.pl to
-#    accomodate the new build process of INN 2.5.
+#    accommodate the new build process of INN 2.5.
 #
 # Changes from 1.26 -> 1.27
 # -- Default to pubring.gpg when trustedkeys.gpg is not found in the
@@ -72,7 +72,7 @@
 #
 # Changes from 1.13 -> 1.13.1
 # -- Nothing functional, just moved the innshellvars.pl line to the head of
-#    the script, to accomodate the build process of INN.
+#    the script, to accommodate the build process of INN.
 #
 # Changes from 1.12 -> 1.13
 # -- Use INN's syslog_facility if available.

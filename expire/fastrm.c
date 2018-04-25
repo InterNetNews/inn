@@ -622,7 +622,7 @@ bad_path(const char *p)
 
 /*
 **  Main routine.  Parse options, initialize the storage manager, and
-**  initalize various global variables, and then go into a loop calling
+**  initialize various global variables, and then go into a loop calling
 **  process_line and unlink_filelist as needed.
 */
 int

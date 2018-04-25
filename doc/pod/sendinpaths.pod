@@ -48,7 +48,7 @@ older than I<keep-days> days.  The default is C<0>, that is to say to
 remove all dump files.
 
 Setting I<keep-days> to another value can be useful for debugging purpose
-because it permits to keep a few dump files.
+because it permits keeping a few dump files.
 
 =item B<-n>
 
