@@ -10,29 +10,22 @@ clientlib \- NNTP clientlib part of InterNetNews library
 .B "extern char	ser_line[];"
 
 .B "char *"
-.B "getserverbyfile(file)"
-.B "    char	*file;"
+.B "getserverbyfile(char *file UNUSED);"
 
 .B "int"
-.B "server_init(host)"
-.B "    char	*host;"
+.B "server_init(char *host, int port);"
 
 .B "int"
-.B "handle_server_response(response, host)"
-.B "    int	reponse;"
-.B "    char	*host;"
+.B "handle_server_response(int response, char *host);"
 
 .B "void"
-.B "put_server(text)"
-.B "    char	*text;"
+.B "put_server(const char *buff);"
 
 .B "int"
-.B "get_server(buff, buffsize)"
-.B "    char	*buff;"
-.B "    int	buffsize;"
+.B "get_server(char *buff, int buffsize);"
 
 .B "void"
-.B "close_server()"
+.B "close_server(void);"
 .fi
 .SH DESCRIPTION
 The routines described in this manual page are part of the InterNetNews
