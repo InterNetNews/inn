@@ -7,6 +7,10 @@ dnl INN_PROG_PYTHON
 dnl     Checks for a specific Python version and sets the PYTHON environment
 dnl     variable to the full path, or aborts the configure run if the version
 dnl     of Python is not new enough or couldn't be found.
+dnl     The first argument is a Python version related to the 2.x series (if
+dnl     empty, it means that Python 2 is not supported).  The second argument
+dnl     is a Python version related to at least the 3.x series (if empty,
+dnl     it means that Python 3 or later is not supported).
 dnl
 dnl INN_PYTHON_CHECK_MODULE
 dnl     Checks for the existence of a Python module and runs provided code
@@ -30,18 +34,23 @@ dnl requirement (given as the argument).  Honor the $PYTHON environment
 dnl variable, if set.
 AC_DEFUN([INN_PROG_PYTHON],
 [AC_ARG_VAR([PYTHON], [Location of Python interpreter])
+ AS_IF([test x"$1" != x], [py_expected_ver="$1 (in the 2.x series)"],
+     [py_expected_ver=""])
+ AS_IF([test x"$2" != x],
+     [AS_IF([test x"$1" != x], [py_expected_ver="$py_expected_ver or "])
+      py_expected_ver="${py_expected_ver}$2"])
  AS_IF([test x"$PYTHON" != x],
     [AS_IF([! test -x "$PYTHON"],
         [AC_MSG_ERROR([Python binary $PYTHON not found])])
-     AS_IF([! "$PYTHON" -c 'import sys; assert(sys.version_info >= tuple(int(i) for i in "$1".split(".")))' >/dev/null 2>&1],
-        [AC_MSG_ERROR([Python $1 or greater is required])])],
-    [AC_CACHE_CHECK([for Python version $1 or later], [ac_cv_path_PYTHON],
+     AS_IF([! "$PYTHON" -c 'import sys; assert((False if "$2" == "" else (sys.version_info.major > 2 and sys.version_info >= tuple(int(i) for i in "$2".split(".")))) if "$1" == "" else ((sys.version_info.major == 2 and sys.version_info >= tuple(int(i) for i in "$1".split("."))) if "$2" == "" else ((sys.version_info.major == 2 and sys.version_info >= tuple(int(i) for i in "$1".split("."))) or sys.version_info >= tuple(int(i) for i in "$2".split(".")))))' >/dev/null 2>&1],
+        [AC_MSG_ERROR([Python $py_expected_ver or greater is required])])],
+    [AC_CACHE_CHECK([for Python version $py_expected_ver or later], [ac_cv_path_PYTHON],
         [AC_PATH_PROGS_FEATURE_CHECK([PYTHON], [python],
-            [AS_IF(["$ac_path_PYTHON" -c 'import sys; assert(sys.version_info >= tuple(int(i) for i in "$1".split(".")))' >/dev/null 2>&1],
+            [AS_IF(["$ac_path_PYTHON" -c 'import sys; assert((False if "$2" == "" else (sys.version_info.major > 2 and sys.version_info >= tuple(int(i) for i in "$2".split(".")))) if "$1" == "" else ((sys.version_info.major == 2 and sys.version_info >= tuple(int(i) for i in "$1".split("."))) if "$2" == "" else ((sys.version_info.major == 2 and sys.version_info >= tuple(int(i) for i in "$1".split("."))) or sys.version_info >= tuple(int(i) for i in "$2".split(".")))))' >/dev/null 2>&1],
                 [ac_cv_path_PYTHON="$ac_path_PYTHON"
                  ac_path_PYTHON_found=:])])])
      AS_IF([test x"$ac_cv_path_PYTHON" = x],
-         [AC_MSG_ERROR([Python $1 or greater is required])])
+         [AC_MSG_ERROR([Python $py_expected_ver or greater is required])])
      PYTHON="$ac_cv_path_PYTHON"
      AC_SUBST([PYTHON])])])
 

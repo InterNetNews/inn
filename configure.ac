@@ -242,7 +242,7 @@ dnl Requires 2.3.0 because configure looks for a shared Python library,
 dnl installed in the main library location in Python 2.3.0 and later.
 dnl Python 3.3.0 and later is also supported.
 AS_IF([test x"$DO_PYTHON" = xDO],
-    [INN_PROG_PYTHON([2.3.0])
+    [INN_PROG_PYTHON([2.3.0], [3.3.0])
      INN_LIB_PYTHON])
 
 dnl Set some configuration file defaults from the machine hostname.
