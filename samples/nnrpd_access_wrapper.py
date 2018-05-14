@@ -35,14 +35,16 @@ class MYACCESS:
         # Python 3.x uses memoryview(b'connect') because buffers
         # do not exist any longer.  Note that the argument is
         # a bytes object.
-        # attributes['type'] = memoryview(b'connect')
-        attributes['type'] = buffer('connect')
-        perm = (self.old).authenticate(attributes)
+        #  attributes['type'] = memoryview(b'connect')
+        #  perm = (self.old).authenticate(attributes)
+        # whereas in Python 2.x:
+        #  attributes['type'] = buffer('connect')
+        #  perm = (self.old).authenticate(attributes)
         result = dict({'users': '*'})
-        if perm[1] == 1:
-            result['read'] = perm[3]
-        if perm[2] == 1:
-            result['post'] = perm[3]
+        #if perm[1] == 1:
+        #    result['read'] = perm[3]
+        #if perm[2] == 1:
+        #    result['post'] = perm[3]
         return result
 
     def access_close(self):
@@ -59,11 +61,12 @@ from nnrpd import *
 ##  Create a class instance.
 myaccess = MYACCESS()
 
-##  ...and try to hook up on nnrpd.  This would make access object methods visible
-##  to nnrpd.
+##  ...and try to hook up on nnrpd.  This would make access object methods
+##  visible to nnrpd.
+import sys
 try:
     set_auth_hook(myaccess)
     syslog('notice', "access module successfully hooked into nnrpd")
-except Exception, errmsg:    # Syntax for Python 2.x.
-#except Exception as errmsg: # Syntax for Python 3.x.
-    syslog('error', "Cannot obtain nnrpd hook for access method: %s" % errmsg[0])
+except Exception: # Syntax valid in both Python 2.x and 3.x.
+    e = sys.exc_info()[1]
+    syslog('error', "Cannot obtain nnrpd hook for access method: %s" % e.args[0])

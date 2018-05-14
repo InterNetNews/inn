@@ -4,10 +4,9 @@ This file documents INN's built-in optional support for Python article
 filtering.  It is patterned after the Perl and (now obsolete) TCL hooks
 previously added by Bob Heiney and Christophe Wolfhugel.
 
-For this filter to work successfully, you will need to have
-at least S<Python 2.2.0> installed.  You can obtain it from
-L<http://www.python.org/>.  Please note that S<Python 3.x> is currently
-not supported.
+For this filter to work successfully, you will need to have at least
+S<Python 2.3.0> (in the 2.x series) or S<Python 3.3.0> (in the 3.x
+series) installed.  You can obtain it from L<http://www.python.org/>.
 
 The B<innd> Python interface and the original Python filtering documentation
 were written by Greg Andruk (nee Fluffy) <gerglery@usa.net>.  The Python
@@ -93,14 +92,16 @@ Note that all the above values are as they arrived, not modified
 by your INN (especially, the Xref: header, if present, is the one
 of the remote site which sent you the article, and not yours).
 
-These values will be buffer objects holding the contents of the
-same named article headers, except for the special C<__BODY__> and C<__LINES__>
+These values will be buffer objects (for S<Python 2.x>) or memoryview
+objects (for S<Python 3.x>) holding the contents of the same named
+article headers, except for the special C<__BODY__> and C<__LINES__>
 items.  Items not present in the article will contain C<None>.
 
-C<art['__BODY__']> is a buffer object containing the article's entire body, and
-C<art['__LINES__']> is an int holding B<innd>'s reckoning of the number of lines
-in the article.  All the other elements will be buffers with the contents
-of the same-named article headers.
+C<art['__BODY__']> is a buffer/memoryview object containing the article's
+entire body, and C<art['__LINES__']> is a long integer holding B<innd>'s
+reckoning of the number of lines in the article.  All the other elements
+will be buffer/memoryview objects with the contents of the same-named
+article headers.
 
 The Newsgroups: header of the article is accessible inside the Python
 filter as C<art['Newsgroups']>.
@@ -111,13 +112,13 @@ C<art[Newsgroups]> are faster:
     # Syntax for Python 2.x.
     Newsgroups = intern("Newsgroups")
     if art[Newsgroups] == buffer("misc.test"):
-        print("Test group")
+        syslog("n", "Test group")
 
     # Syntax for Python 3.x.
     import sys
     Newsgroups = sys.intern("Newsgroups")
     if art[Newsgroups] == memoryview(b"misc.test"):
-        print("Test group")
+        syslog("n", "Test group")
 
 If you want to accept an article, return C<None> or an empty string.  To
 reject, return a non-empty string.  The rejection strings will be shown to
@@ -127,10 +128,11 @@ in UTF-8 so as to comply with the NNTP protocol.
 
 =item filter_messageid(I<self>, I<msgid>)
 
-I<msgid> is a buffer object containing the ID of an article being offered by
-CHECK, IHAVE or TAKETHIS.  Like with C<filter_art>, the message will be refused if
-you return a non-empty string.  If you use this feature, keep it light
-because it is called at a rather busy place in B<innd>'s main loop.
+I<msgid> is a string containing the ID of an article being offered
+by CHECK, IHAVE or TAKETHIS.  Like with C<filter_art>, the message will
+be refused if you return a non-empty string (properly encoded in UTF-8).
+If you use this feature, keep it light because it is called at a rather
+busy place in B<innd>'s main loop.
 
 =item filter_mode(I<self>, I<oldmode>, I<newmode>, I<reason>)
 
@@ -185,13 +187,13 @@ methods, GET THE PARAMETER COUNTS RIGHT.  There are checks in B<innd> to see
 whether the methods exist and are callable, but if you define one and get the
 parameter counts wrong, B<innd> WILL DIE.  You have been warned.  Be careful
 with your return values, too.  The C<filter_art> and C<filter_messageid>
-methods have to return strings, or C<None>.  If you return something like an
-int, B<innd> will I<not> be happy.
+methods have to return strings (encoded in UTF-8), or C<None>.  If you return
+something like an int, B<innd> will I<not> be happy.
 
 =head2 A Note regarding Buffer Objects
 
 This section is not applicable to S<Python 3.x> where buffer objects have
-been replaced with memory views.
+been replaced with memoryview objects.
 
 Buffer objects are cousins of strings, new in S<Python 1.5.2>.  Using buffer
 objects may take some getting used to, but we can create buffers much faster
@@ -304,23 +306,26 @@ with the previously listed functions.
     # We can look at the header or all of an article already on spool,
     # too.  Might be useful for long-memory despamming or
     # authentication things.  Each is returned (if present) as a
-    # string object; otherwise you'll end up with an empty string.
+    # string object (in Python 2.x) or a bytes object (in Python 3.x);
+    # otherwise you'll end up with an empty string.
     artbody = INN.article('<foo$bar.baz@bungmunch.edu>')
     artheader = INN.head('<foo$bar.baz@bungmunch.edu>')
 
     # As we can compute a hash digest for a string, we can obtain one
-    # for artbody.  It might be of help to detect spam.
+    # for artbody.  It might be of help to detect spam.  The digest is a
+    # string object (in Python 2.x) or a bytes object (in Python 3.x).
     digest = INN.hashstring(artbody)
 
     # Finally, do you want to see if a given newsgroup is moderated or
     # whatever?  INN.newsgroup returns the last field of a group's
-    # entry in active as a string.
+    # entry in active as a string object (in Python 2.x) or a bytes
+    # object (in Python 3.x).
     groupstatus = INN.newsgroup('alt.fan.karl-malden.nose')
-    if groupstatus == '':
+    if groupstatus == '':     # Compare to b'' for Python 3.x.
         moderated = 'no such newsgroup'
-    elif groupstatus == 'y':
+    elif groupstatus == 'y':  # Compare to b'y' for Python 3.x.
         moderated = "nope"
-    elif groupstatus == 'm':
+    elif groupstatus == 'm':  # Compare to b'm' for Python 3.x.
         moderated = "yep"
     else:
         moderated = "something else"
@@ -334,11 +339,12 @@ combined with the new F<readers.conf> mechanism by Erik Klavon
 <erik@eriq.org>; bug reports should however go to <inn-workers@lists.isc.org>,
 not Erik.
 
-The remainder of this section is an introduction to the new mechanism
-(which uses the I<python_auth>, I<python_access>, and I<python_dynamic>
-F<readers.conf> parameters) with porting/migration suggestions for
-people familiar with the old mechanism (identifiable by the now
-deprecated I<nnrpperlauth> parameter in F<inn.conf>).
+The remainder of this section is an introduction to the new
+mechanism introduced in S<INN 2.4.0> (which uses the I<python_auth>,
+I<python_access>, and I<python_dynamic> F<readers.conf> parameters)
+with porting/migration suggestions for people familiar with the
+old mechanism (identifiable by the now deprecated I<nnrppythonauth>
+parameter in F<inn.conf>).
 
 Other people should skip this section.
 
@@ -423,7 +429,7 @@ Support for authentication via Python is provided in B<nnrpd> by the
 inclusion of a I<python_auth> parameter in a F<readers.conf> auth
 group.  I<python_auth> works exactly like the I<auth> parameter in
 F<readers.conf>, except that it calls the script given as argument
-using the Python hook rather then treating it as an external
+using the Python hook rather than treating it as an external
 program.  Multiple, mixed use of I<python_auth> with other I<auth>
 statements including I<perl_auth> is permitted.  Each I<auth> statement
 will be tried in the order they appear in the auth group until either
@@ -521,9 +527,10 @@ omitted.
 
 Called when a I<python_auth> statement is reached in the processing of
 F<readers.conf>.  Connection attributes are passed in the I<attributes>
-dictionary.  Returns a response code, an error string, and an optional
-string to be used in place of the client-supplied username (both for
-logging and for matching the connection with an access group).
+dictionary.  Returns a response code (as an integer), an error string
+(encoded in UTF-8), and an optional string (encoded in UTF-8) to be
+used in place of the client-supplied username (both for logging and
+for matching the connection with an access group).
 
 The NNTP response code should be 281 (authentication successful),
 481 (authentication unsuccessful), or 403 (server failure).  If the
@@ -550,8 +557,8 @@ method may be omitted.
 
 Called when a I<python_access> statement is reached in the processing of
 F<readers.conf>.  Connection attributes are passed in the I<attributes>
-dictionary.  Returns a dictionary of values representing statements to
-be included in an access group.
+dictionary.  Returns a dictionary of values (encoded in UTF-8) representing
+statements to be included in an access group.
 
 =item access_close(I<self>)
 
@@ -567,8 +574,10 @@ method may be omitted.
 
 Called when a client requests a newsgroup, an article or attempts to
 post.  Connection attributes are passed in the I<attributes> dictionary.
-Returns C<None> to grant access, or a non-empty string (which will be
-reported back to the client) otherwise.
+Returns C<None> to grant access, or a non-empty string encoded in UTF-8
+(which will be reported back to the client in response to GROUP or POST,
+and in any case logged in news logs files for all relevant NNTP commands)
+otherwise.
 
 =item dynamic_close(I<self>)
 
@@ -631,8 +640,9 @@ only valid for the C<dynamic> method.
 
 =back
 
-All the above values are buffer objects (see the notes above on what
-buffer objects are).
+All the above values are buffer objects (see the notes above on
+what buffer objects are) for S<Python 2.x> or memoryview objects for
+S<Python 3.x>.
 
 =head2 How to Use these Methods with B<nnrpd>
 

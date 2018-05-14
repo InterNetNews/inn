@@ -42,6 +42,20 @@
   typedef int Py_ssize_t;
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+# define PyInt_AS_LONG PyLong_AS_LONG
+# define PyInt_Check PyLong_Check
+# define PyInt_FromLong PyLong_FromLong
+# define PyString_AS_STRING PyUnicode_AsUTF8
+# define PyString_AsString PyUnicode_AsUTF8
+# define PyString_Check PyUnicode_Check
+# define PYBUFF_FROMMEMORY(str, len) \
+      PyMemoryView_FromMemory((str), (len), PyBUF_WRITE)
+#else
+# define PYBUFF_FROMMEMORY(str, len) \
+      PyBuffer_FromMemory((str), (len))
+#endif
+
 #include "clibrary.h"
 
 #include "inn/innconf.h"
@@ -137,11 +151,11 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
     authnum = 0;
 
     /* Client hostname. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
+    PYauthitem[authnum] =PYBUFF_FROMMEMORY(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number. */
@@ -149,11 +163,13 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverhost,
+                                            strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverip,
+                                            strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number. */
@@ -164,7 +180,7 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
     if (Username == NULL) {
         PYauthitem[authnum] = Py_None;
     } else {
-        PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
+        PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
     }
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
 
@@ -172,7 +188,7 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
     if (Password == NULL) {
         PYauthitem[authnum] = Py_None;
     } else {
-        PYauthitem[authnum] = PyBuffer_FromMemory(Password, strlen(Password));
+        PYauthitem[authnum] = PYBUFF_FROMMEMORY(Password, strlen(Password));
     }
     PyDict_SetItemString(PYauthinfo, PYTHONpass, PYauthitem[authnum++]);
 
@@ -281,11 +297,11 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     authnum = 0;
 
     /* Client hostname. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number. */
@@ -293,11 +309,13 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverhost,
+                                            strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverip,
+                                            strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number. */
@@ -305,7 +323,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
 
     /* Username. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
  
     /* Password is not known. */
@@ -410,11 +428,11 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     authnum = 0;
 
     /* Client hostname. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.host, strlen(Client.host));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.host, strlen(Client.host));
     PyDict_SetItemString(PYauthinfo, PYTHONhostname, PYauthitem[authnum++]);
 
     /* Client IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.ip, strlen(Client.ip));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.ip, strlen(Client.ip));
     PyDict_SetItemString(PYauthinfo, PYTHONipaddress, PYauthitem[authnum++]);
 
     /* Client port number. */
@@ -422,11 +440,13 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     PyDict_SetItemString(PYauthinfo, PYTHONport, PYauthitem[authnum++]);
 
     /* Server interface the connection comes to. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverhost, strlen(Client.serverhost));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverhost,
+                                            strlen(Client.serverhost));
     PyDict_SetItemString(PYauthinfo, PYTHONinterface, PYauthitem[authnum++]);
 
     /* Server IP number. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Client.serverip, strlen(Client.serverip));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Client.serverip,
+                                            strlen(Client.serverip));
     PyDict_SetItemString(PYauthinfo, PYTHONintipaddr, PYauthitem[authnum++]);
 
     /* Server port number. */
@@ -434,7 +454,7 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
     
     /* Username. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(Username, strlen(Username));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
     
     /* Password is not known. */
@@ -443,11 +463,11 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
 
     /* Assign authentication type. */
     PYauthitem[authnum] =
-        PyBuffer_FromMemory((char *)(PostFlag ? "post" : "read"), 4);
+        PYBUFF_FROMMEMORY((char *)(PostFlag ? "post" : "read"), 4);
     PyDict_SetItemString(PYauthinfo, PYTHONtype, PYauthitem[authnum++]);
  
     /* Newsgroup user tries to access. */
-    PYauthitem[authnum] = PyBuffer_FromMemory(NewsGroup, strlen(NewsGroup));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(NewsGroup, strlen(NewsGroup));
     PyDict_SetItemString(PYauthinfo, PYTHONnewsgroup,  PYauthitem[authnum++]);
     
     /*
@@ -548,10 +568,10 @@ static PyObject *
 PY_syslog(PyObject *self UNUSED, PyObject *args)
 {
     char        *loglevel;
-    int         levellen;
+    Py_ssize_t   levellen;
     char        *logmsg;
-    int         msglen;
-    int         priority;
+    Py_ssize_t   msglen;
+    int          priority;
 
     /* Get loglevel and message. */
     if (!PyArg_ParseTuple(args, (char *) "s#s#", &loglevel, &levellen,
@@ -595,6 +615,36 @@ static PyMethodDef nnrpdPyMethods[] = {
     METHOD(NULL,            NULL,             0,            "")
 };
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef nnrpdPyModule = {
+    PyModuleDef_HEAD_INIT,                /* m_base */
+    (char *) "nnrpd",                     /* m_name */
+    (char *) "nnrpd Python filter hook",  /* m_doc */
+    -1,                                   /* m_size */
+    nnrpdPyMethods,                       /* m_methods */
+    NULL,                                 /* m_slots */
+    NULL,                                 /* m_traverse */
+    NULL,                                 /* m_clear */
+    NULL,                                 /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit_nnrpd(void) {
+    PyObject *module = PyModule_Create(&nnrpdPyModule);
+
+    if (module == NULL)
+        syslog(L_ERROR, "failed to create nnrpd python module");
+
+    return module;
+}
+#else
+void
+PyInit_nnrpd(void) {
+    if (Py_InitModule3((char *) "nnrpd", nnrpdPyMethods,
+                       (char *) "nnrpd Python filter hook") == NULL)
+        syslog(L_ERROR, "failed to initialize nnrpd python module");
+}
+#endif
 
 
 /*
@@ -635,6 +685,9 @@ PY_load_python(void)
         */
         setenv("PYTHONPATH", innconf->pathfilter, 1);
 
+        /* Build a module interface to certain nnrpd functions. */
+        PyImport_AppendInittab("nnrpd", &PyInit_nnrpd);
+
         /* Load up the interpreter ;-O */
         Py_Initialize();
     
@@ -647,9 +700,6 @@ PY_load_python(void)
             syslog(L_ERROR, "python interpreter NOT initialized");
             return;
         }
-
-        /* Build a module interface to certain nnrpd functions. */
-        Py_InitModule((char *) "nnrpd", nnrpdPyMethods);
 
         /*
         ** Grab space for authinfo dictionary so we aren't forever

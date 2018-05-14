@@ -862,6 +862,11 @@ extern void		PYmode(OPERATINGMODE mode, OPERATINGMODE newmode,
 			       char *reason);
 extern void		PYsetup(void);
 extern void		PYclose(void);
+# if PY_MAJOR_VERSION >= 3
+extern PyMODINIT_FUNC   PyInit_INN(void);
+# else
+extern void             PyInit_INN(void);
+# endif
 #endif /* DO_PYTHON */
 
 END_DECLS

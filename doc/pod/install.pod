@@ -146,7 +146,7 @@ of configure options enabling optional features and the software and
 versions you'll need:
 
     --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
-    --with-python       Python 2.2.0 or higher, 2.5.0+ recommended (3.x versions currently not supported)
+    --with-python       Python 2.3.0 or higher, 2.5.0+ recommended (in the 2.x series); Python 3.3.0 or higher (in the 3.x series)
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
@@ -350,9 +350,12 @@ to Perl.
 
 Enables support for Python, allowing you to install filter and
 authentication scripts written in Python.  You will need S<Python
-2.2.0> or later installed on your system to enable this option.
-See F<doc/hook-python> for all the details.  Please note that S<Python
-3.x> is currently not supported.
+2.3.0> or later (in the 2.x series), or S<Python 3.3.0> or later
+(in the 3.x series) installed on your system to enable this option.
+See F<doc/hook-python> for all the details.
+
+If the C<$PYTHON> environment variable is set, it will be used as the path
+to Python.
 
 =item B<--with-innd-port>=PORT
 

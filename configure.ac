@@ -223,8 +223,27 @@ AS_IF([test x"$DO_PERL" = xDO],
      AC_SUBST([PERL_LIBS])
      AC_SUBST([PERL_WARNINGS])])
 
-dnl Check for embedded Python interpreter.
-INN_ARG_PYTHON
+dnl Support for embedded Python.
+AC_ARG_WITH([python],
+    [AS_HELP_STRING([--with-python],
+                    [Embedded Python module support @<:@no@:>@])],
+    [AS_CASE([$withval],
+        [yes],
+            [DO_PYTHON=DO
+             AC_DEFINE([DO_PYTHON], [1],
+                 [Define to compile in Python module support.])],
+        [no],
+            [DO_PYTHON=DONT],
+        [AC_MSG_ERROR([invalid argument to --with-python])])],
+    [DO_PYTHON=DONT])
+
+dnl Checks for a recent enough Python interpreter for embedded Python.
+dnl Requires 2.3.0 because configure looks for a shared Python library,
+dnl installed in the main library location in Python 2.3.0 and later.
+dnl Python 3.3.0 and later is also supported.
+AS_IF([test x"$DO_PYTHON" = xDO],
+    [INN_PROG_PYTHON([2.3.0], [3.3.0])
+     INN_LIB_PYTHON])
 
 dnl Set some configuration file defaults from the machine hostname.
 HOSTNAME=`hostname 2> /dev/null || uname -n`
