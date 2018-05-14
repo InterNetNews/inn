@@ -9,7 +9,7 @@
 ##  These files are available at
 ##  <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
 ##
-##  Running this script permits to keep up-to-date the INN test driver suite
+##  Running this script permits keeping up-to-date the INN test driver suite
 ##  by automatically fetching the latest version of the upstream files, and
 ##  putting them in the expected location in the INN source code.
 ##  The name of the files that have been modified since the last run of the

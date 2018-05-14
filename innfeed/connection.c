@@ -2150,7 +2150,7 @@ static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    }
           }
 
-        /* Now handle possible remaining partial reponse and set up for
+        /* Now handle possible remaining partial response and set up for
            next read. */
         if (*response != '\0')
           {                       /* partial response */
@@ -2497,7 +2497,7 @@ static void writeProgress (EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED,
  */
 
 /*
- * This is called when the timeout for the reponse from the remote
+ * This is called when the timeout for the response from the remote
  * goes off. We tear down the connection and notify our host.
  */
 static void responseTimeoutCbk (TimeoutId id, void *data)
@@ -2727,7 +2727,7 @@ static void cxnWorkProc (EndPoint ep UNUSED, void *data)
 
 /****************************************************************************
  *
- * REPONSE CODE PROCESSING.
+ * RESPONSE CODE PROCESSING.
  *
  ***************************************************************************/
 
@@ -3226,7 +3226,7 @@ static void processResponse235 (Connection cxn, char *response UNUSED)
 
 
 /*
- * process the "send article to be transfered" reponse to the IHAVE.
+ * process the "send article to be transfered" response to the IHAVE.
  */
 static void processResponse335 (Connection cxn, char *response UNUSED)
 {
@@ -3326,7 +3326,7 @@ static void processResponse400 (Connection cxn, char *response)
 
 
 /*
- * process the "not wanted" reponse to the IHAVE.
+ * process the "not wanted" response to the IHAVE.
  */
 static void processResponse435 (Connection cxn, char *response UNUSED)
 {
@@ -3588,7 +3588,7 @@ static void processResponse503 (Connection cxn, char *response UNUSED)
 
 /****************************************************************************
  *
- * END REPONSE CODE PROCESSING.
+ * END RESPONSE CODE PROCESSING.
  *
  ***************************************************************************/
 
@@ -3677,10 +3677,10 @@ static void noSuchMessageId (Connection cxn, unsigned int responseCode,
   const char *peerName = hostPeerName (cxn->myHost) ;
 
   if (msgid == NULL || strlen (msgid) == 0)
-    warn ("%s:%d cxnsleep message-id missing in reponse code %d: %s",
+    warn ("%s:%d cxnsleep message-id missing in response code %d: %s",
           peerName, cxn->ident, responseCode, response) ;
   else
-    warn ("%s:%d cxnsleep message-id invalid message-id in reponse code"
+    warn ("%s:%d cxnsleep message-id invalid message-id in response code"
           " %d: %s", peerName, cxn->ident, responseCode, msgid) ;
 
   cxnLogStats (cxn,true) ;
@@ -4434,7 +4434,7 @@ static int prepareWriteWithTimeout (EndPoint endp,
 {
   /* Clear the read timer, since we can't expect a response until everything
      is sent.
-     XXX - would be nice to have a timeout for reponses if we're sending a
+     XXX - would be nice to have a timeout for responses if we're sending a
      string of commands. */
   clearTimer (cxn->readBlockedTimerId) ;
 

@@ -56,7 +56,7 @@ void d_printf (unsigned int level, const char *fmt, ...)
 /* for the gethostbyname() error code */
 const char *host_err_str (void) ;
 
-/* parse a reponse line into it's code and body. *rest will end up pointing
+/* parse a response line into it's code and body. *rest will end up pointing
    into the middle of p */
 bool getNntpResponse (char *p, int *code, char **rest) ;
 

@@ -67,7 +67,7 @@ they're posted to.
 
 Report the percentage usage of the overview database space.  This is only
 meaningful for overview methods that pre-allocate a certain amount of
-space rather than grow to accomodate more records.  Currently, this flag
+space rather than grow to accommodate more records.  Currently, this flag
 is only useful for the buffindexed overview method.
 
 =back

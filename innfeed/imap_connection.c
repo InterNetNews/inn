@@ -1792,7 +1792,7 @@ static void imap_writeTimeoutCbk (TimeoutId id UNUSED, void *data)
 }
 
 /*
- * This is called when the timeout for the reponse from the remote
+ * This is called when the timeout for the response from the remote
  * goes off. We tear down the connection and notify our host.
  */
 static void imap_readTimeoutCbk (TimeoutId id, void *data)
@@ -1994,7 +1994,7 @@ static void prepareReopenCbk (Connection cxn, int type)
 }
 
 /*
- * This is called when the timeout for the reponse from the remote
+ * This is called when the timeout for the response from the remote
  * goes off. We tear down the connection and notify our host.
  */
 static void lmtp_readTimeoutCbk (TimeoutId id, void *data)
@@ -3293,7 +3293,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 	    break;
 
 	case LMTP_READING_LHLO:
-	    /* recieve the response(s) */
+	    /* receive the response(s) */
 	    response_code = ask_code(str);
 
 	    if (response_code != 250) /* was none */
@@ -3479,7 +3479,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		return;
 	    }
 
-	    /* we pipelined so next we recieve the mail from response */
+	    /* we pipelined so next we receive the mail from response */
 	    cxn->lmtp_state = LMTP_READING_MAILFROM;
 	    goto reset;
 
@@ -3495,7 +3495,7 @@ static void lmtp_readCB (EndPoint e, IoStatus i, Buffer *b, void *d)
 		return;
 	    }
 
-	    /* we pipelined so next we recieve the rcpt's */
+	    /* we pipelined so next we receive the rcpt's */
 	    cxn->lmtp_state = LMTP_READING_RCPTTO;
 	    goto reset;
 	    break;

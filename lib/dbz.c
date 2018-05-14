@@ -283,7 +283,7 @@ static hash_table etab;         /* existance hash table, used for existance chec
 #endif
 static bool dirty;		/* has a store() been done? */
 static erec empty_rec;          /* empty rec to compare against
-				   initalized in dbzinit */
+				   initialized in dbzinit */
 
 /* misc. forwards */
 static bool getcore(hash_table *tab);

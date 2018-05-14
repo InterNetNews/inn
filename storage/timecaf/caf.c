@@ -629,7 +629,7 @@ static unsigned int CAF_numblks_write;
 ** default FreeZoneTabSize can cover the entire file in order not to "lose"
 ** free space and not be able to reuse it.
 ** (Currently only returns the first multiple of CAF_DEFAULT_BLOCKSIZE that
-** allows to have at least CAF_MIN_FZSIZE bytes of index, as with the new 2-level
+** allows having at least CAF_MIN_FZSIZE bytes of index, as with the new 2-level
 ** bitmaps, the FreeZoneTabSize that results from a 512-byte blocksize can
 ** handle any file with <7.3G of data.  Yow!)
 */

@@ -66,7 +66,7 @@ who may be interested in writing your own...
    unsuccessful authentication is indicated by a non-zero exit status.
 
 4) Need I say it (again)...these programs can be a security hole unless care is
-   taken to avoid SUID programs and those that transmit/recieve passwords in
+   taken to avoid SUID programs and those that transmit/receive passwords in
    the clear (especially those that use login passwords).  We should give some
    thought to doing a similiar program for Kerberos authentication (what sort
    of instance should we use???) and other authentication methods such as

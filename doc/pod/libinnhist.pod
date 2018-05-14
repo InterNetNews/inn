@@ -122,7 +122,7 @@ B<HIScheck> returns B<true>, else B<false>.
 B<HISwrite> writes a new entry to the database I<history> associated
 with I<key>. I<arrived>, I<posted>, and I<expired> specify the arrival,
 posting, and expiry time respectively; I<posted> and I<expired> may be
-specifed as <= 0 in which case that component shall be treated as
+specified as <= 0 in which case that component shall be treated as
 absent in the database. I<token> is associated with the specified
 I<key>. B<HISwrite> returns B<true> on success, or B<false> on
 failure. The behaviour when I<key> is not unique with respect to the
@@ -139,7 +139,7 @@ respect to the existing entries in I<history> is unspecified.
 B<HISreplace> replaces an existing entry in the database I<history>,
 associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
 arrival, posting and expiry time respectively; I<posted> and
-I<expired> may be specifed as <= 0 in which case that component shall
+I<expired> may be specified as <= 0 in which case that component shall
 be treated as absent in the database. I<token> is associated with the
 specified I<key>; if B<NULL> then the history database merely
 remembers that this I<key> has been seen, together with its arrival
@@ -178,7 +178,7 @@ posting and/or expiry may be zero, but that the token will never be
 B<NULL> (such entries are handled solely via the threshold
 mechanism). The storage token passed to the discrimination function
 may be updated if required (for example, as might be needed by a
-hierachical storage management implementation).
+hierarchical storage management implementation).
 
 Entries in the database with a posting time less than I<threshold>
 with no token associated with them are deleted from the database.

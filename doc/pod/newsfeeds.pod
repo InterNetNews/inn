@@ -461,7 +461,7 @@ and thirteen overlapping values from C<_0> to C<_12> can be used.
 Only up to four totally independent values exist:  C<_0>, C<_4>,
 C<_8> and C<_12>.
 
-Therefore, it allows to a generate a second level of deterministic
+Therefore, it allows generating a second level of deterministic
 distribution.  Indeed, if a news server is fed C<Q1/2>, it can go on
 splitting thanks to C<Q1-3/9_4> for instance.  Up to four levels of
 deterministic distribution can be used.

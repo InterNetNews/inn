@@ -216,7 +216,7 @@ static CONFTOKEN toks[] = {
 
 static int clientfd = -1;
 
-/* read client send and recieve functions. */
+/* read client send and receive functions. */
 
 static int
 csend(const void *data, int n)

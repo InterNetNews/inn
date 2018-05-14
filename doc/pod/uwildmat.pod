@@ -167,7 +167,7 @@ and the like rather than B<wildmat> to distinguish them from the
 B<wildmat> function provided by Rich $alz's original implementation.
 While this code is heavily based on Rich's original code, it has
 substantial differences, including the extension to support UTF-8
-characters, and has noticable functionality changes.  Any bugs present in
+characters, and has noticeable functionality changes.  Any bugs present in
 it aren't Rich's fault.
 
 $Id$

@@ -404,7 +404,7 @@ CheckControl(char *ctrl)
     for (ctrl = p; *p && !ISWHITE(*p); p++)
 	continue;
     if (p == ctrl)
-        die("emtpy control message");
+        die("empty control message");
     save = *p;
     *p = '\0';
 
