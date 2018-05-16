@@ -40,9 +40,10 @@
  *      runtests -o [-h] [-b <build-dir>] [-s <source-dir>] <test>
  *
  * In the first case, expects a list of executables located in the given file,
- * one line per executable.  For each one, runs it as part of a test suite,
- * reporting results.  In the second case, use the same infrastructure, but
- * run only the tests listed on the command line.
+ * one line per executable, possibly followed by a space-separated list of
+ * options.  For each one, runs it as part of a test suite, reporting results.
+ * In the second case, use the same infrastructure, but run only the tests
+ * listed on the command line.
  *
  * Test output should start with a line containing the number of tests
  * (numbered from 1 to this number), optionally preceded by "1..", although
@@ -186,7 +187,7 @@ enum plan_status {
 /* Structure to hold data for a set of tests. */
 struct testset {
     char *file;                 /* The file name of the test. */
-    char *path;                 /* The path to the test program. */
+    char **command;             /* The argv vector to run the command. */
     enum plan_status plan;      /* The status of our plan. */
     unsigned long count;        /* Expected count of tests. */
     unsigned long current;      /* The last seen test number. */
@@ -197,7 +198,7 @@ struct testset {
     unsigned long allocated;    /* The size of the results table. */
     enum test_status *results;  /* Table of results by test number. */
     unsigned int aborted;       /* Whether the set was aborted. */
-    int reported;               /* Whether the results were reported. */
+    unsigned int reported;      /* Whether the results were reported. */
     int status;                 /* The exit status of the test. */
     unsigned int all_skipped;   /* Whether all tests were skipped. */
     char *reason;               /* Why all tests were skipped. */
@@ -249,6 +250,7 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 #define xcalloc(n, size)      x_calloc((n), (size), __FILE__, __LINE__)
 #define xmalloc(size)         x_malloc((size), __FILE__, __LINE__)
 #define xstrdup(p)            x_strdup((p), __FILE__, __LINE__)
+#define xstrndup(p, size)     x_strndup((p), (size), __FILE__, __LINE__)
 #define xreallocarray(p, n, size) \
     x_reallocarray((p), (n), (size), __FILE__, __LINE__)
 
@@ -289,6 +291,8 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 #endif
 
 /* Declare internal functions that benefit from compiler attributes. */
+static void die(const char *, ...)
+    __attribute__((__nonnull__, __noreturn__, __format__(printf, 1, 2)));
 static void sysdie(const char *, ...)
     __attribute__((__nonnull__, __noreturn__, __format__(printf, 1, 2)));
 static void *x_calloc(size_t, size_t, const char *, int)
@@ -299,6 +303,26 @@ static void *x_reallocarray(void *, size_t, size_t, const char *, int)
     __attribute__((__alloc_size__(2, 3), __malloc__, __nonnull__(4)));
 static char *x_strdup(const char *, const char *, int)
     __attribute__((__malloc__, __nonnull__));
+static char *x_strndup(const char *, size_t, const char *, int)
+    __attribute__((__malloc__, __nonnull__));
+
+
+/*
+ * Report a fatal error and exit.
+ */
+static void
+die(const char *format, ...)
+{
+    va_list args;
+
+    fflush(stdout);
+    fprintf(stderr, "runtests: ");
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
+    exit(1);
+}
 
 
 /*
@@ -401,6 +425,35 @@ x_strdup(const char *s, const char *file, int line)
 
 
 /*
+ * Copy the first n characters of a string, reporting a fatal error and
+ * existing on failure.
+ *
+ * Avoid using the system strndup function since it may not exist (on Mac OS
+ * X, for example), and there's no need to introduce another portability
+ * requirement.
+ */
+char *
+x_strndup(const char *s, size_t size, const char *file, int line)
+{
+    const char *p;
+    size_t len;
+    char *copy;
+
+    /* Don't assume that the source string is nul-terminated. */
+    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
+        ;
+    len = (size_t) (p - s);
+    copy = malloc(len + 1);
+    if (copy == NULL)
+        sysdie("failed to strndup %lu bytes at %s line %d",
+               (unsigned long) len, file, line);
+    memcpy(copy, s, len);
+    copy[len] = '\0';
+    return copy;
+}
+
+
+/*
  * Form a new string by concatenating multiple strings.  The arguments must be
  * terminated by (const char *) 0.
  *
@@ -494,12 +547,25 @@ skip_whitespace(const char *p)
 
 
 /*
+ * Given a pointer to a string, skip any non-whitespace characters and return
+ * a pointer to the first whitespace character, or to the end of the string.
+ */
+static const char *
+skip_non_whitespace(const char *p)
+{
+    while (*p != '\0' && !isspace((unsigned char)(*p)))
+        p++;
+    return p;
+}
+
+
+/*
  * Start a program, connecting its stdout to a pipe on our end and its stderr
  * to /dev/null, and storing the file descriptor to read from in the two
  * argument.  Returns the PID of the new process.  Errors are fatal.
  */
 static pid_t
-test_start(const char *path, int *fd)
+test_start(char *const *command, int *fd)
 {
     int fds[2], infd, errfd;
     pid_t child;
@@ -550,7 +616,7 @@ test_start(const char *path, int *fd)
         }
 
         /* Now, exec our process. */
-        if (execl(path, path, (char *) 0) == -1)
+        if (execv(command[0], command) == -1)
             _exit(CHILDERR_EXEC);
         break;
 
@@ -1045,7 +1111,7 @@ test_run(struct testset *ts, enum test_verbose verbose)
     char buffer[BUFSIZ];
 
     /* Run the test program. */
-    testpid = test_start(ts->path, &outfd);
+    testpid = test_start(ts->command, &outfd);
     output = fdopen(outfd, "r");
     if (!output) {
         puts("ABORTED");
@@ -1215,19 +1281,111 @@ find_test(const char *name, const char *source, const char *build)
 
 
 /*
+ * Parse a single line of a test list and store the test name and command to
+ * execute it in the given testset struct.
+ *
+ * Normally, each line is just the name of the test, which is located in the
+ * test directory and turned into a command to run.  However, each line may
+ * have whitespace-separated options, which change the command that's run.
+ * Current supported options are:
+ *
+ * valgrind
+ *     Run the test under valgrind if C_TAP_VALGRIND is set.  The contents
+ *     of that environment variable are taken as the valgrind command (with
+ *     options) to run.  The command is parsed with a simple split on
+ *     whitespace and no quoting is supported.
+ *
+ * libtool
+ *     If running under valgrind, use libtool to invoke valgrind.  This avoids
+ *     running valgrind on the wrapper shell script generated by libtool.  If
+ *     set, C_TAP_LIBTOOL must be set to the full path to the libtool program
+ *     to use to run valgrind and thus the test.  Ignored if the test isn't
+ *     being run under valgrind.
+ */
+static void
+parse_test_list_line(const char *line, struct testset *ts, const char *source,
+                     const char *build)
+{
+    const char *p, *end, *option, *libtool;
+    const char *valgrind = NULL;
+    unsigned int use_libtool = 0;
+    unsigned int use_valgrind = 0;
+    size_t len, i;
+
+    /* Determine the name of the test. */
+    p = skip_non_whitespace(line);
+    ts->file = xstrndup(line, p - line);
+
+    /* Check if any test options are set. */
+    p = skip_whitespace(p);
+    while (*p != '\0') {
+        end = skip_non_whitespace(p);
+        if (strncmp(p, "libtool", end - p) == 0) {
+            use_libtool = 1;
+            p = end;
+        } else if (strncmp(p, "valgrind", end - p) == 0) {
+            valgrind = getenv("C_TAP_VALGRIND");
+            use_valgrind = (valgrind != NULL);
+            p = end;
+        } else {
+            option = xstrndup(p, end - p);
+            die("unknown test list option %s", option);
+        }
+        p = skip_whitespace(end);
+    }
+
+    /* Construct the argv to run the test.  First, find the length. */
+    len = 1;
+    if (use_valgrind && valgrind != NULL) {
+        p = skip_whitespace(valgrind);
+        while (*p != '\0') {
+            len++;
+            p = skip_whitespace(skip_non_whitespace(p));
+        }
+        if (use_libtool)
+            len += 2;
+    }
+
+    /* Now, build the command. */
+    ts->command = xcalloc(len + 1, sizeof(char *));
+    i = 0;
+    if (use_valgrind && valgrind != NULL) {
+        if (use_libtool) {
+            libtool = getenv("C_TAP_LIBTOOL");
+            if (libtool == NULL)
+                die("valgrind with libtool requested, but C_TAP_LIBTOOL is not"
+                    " set");
+            ts->command[i++] = xstrdup(libtool);
+            ts->command[i++] = xstrdup("--mode=execute");
+        }
+        p = skip_whitespace(valgrind);
+        while (*p != '\0') {
+            end = skip_non_whitespace(p);
+            ts->command[i++] = xstrndup(p, end - p);
+            p = skip_whitespace(end);
+        }
+    }
+    if (i != len - 1)
+        die("internal error while constructing command line");
+    ts->command[i++] = find_test(ts->file, source, build);
+    ts->command[i] = NULL;
+}
+
+
+/*
  * Read a list of tests from a file, returning the list of tests as a struct
  * testlist, or NULL if there were no tests (such as a file containing only
  * comments).  Reports an error to standard error and exits if the list of
  * tests cannot be read.
  */
 static struct testlist *
-read_test_list(const char *filename)
+read_test_list(const char *filename, const char *source, const char *build)
 {
     FILE *file;
     unsigned int line;
     size_t length;
     char buffer[BUFSIZ];
-    const char *testname;
+    const char *start;
     struct testlist *listhead, *current;
 
     /* Create the initial container list that will hold our results. */
@@ -1252,10 +1410,10 @@ read_test_list(const char *filename)
         buffer[length] = '\0';
 
         /* Skip comments, leading spaces, and blank lines. */
-        testname = skip_whitespace(buffer);
-        if (strlen(testname) == 0)
+        start = skip_whitespace(buffer);
+        if (strlen(start) == 0)
             continue;
-        if (testname[0] == '#')
+        if (start[0] == '#')
             continue;
 
         /* Allocate the new testset structure. */
@@ -1267,7 +1425,9 @@ read_test_list(const char *filename)
         }
         current->ts = xcalloc(1, sizeof(struct testset));
         current->ts->plan = PLAN_INIT;
-        current->ts->file = xstrdup(testname);
+
+        /* Parse the line and store the results in the testset struct. */
+        parse_test_list_line(start, current->ts, source, build);
     }
     fclose(file);
 
@@ -1289,7 +1449,7 @@ read_test_list(const char *filename)
  * freeing.
  */
 static struct testlist *
-build_test_list(char *argv[], int argc)
+build_test_list(char *argv[], int argc, const char *source, const char *build)
 {
     int i;
     struct testlist *listhead, *current;
@@ -1309,6 +1469,9 @@ build_test_list(char *argv[], int argc)
         current->ts = xcalloc(1, sizeof(struct testset));
         current->ts->plan = PLAN_INIT;
         current->ts->file = xstrdup(argv[i]);
+        current->ts->command = xcalloc(2, sizeof(char *));
+        current->ts->command[0] = find_test(current->ts->file, source, build);
+        current->ts->command[1] = NULL;
     }
 
     /* If there were no tests, current is still NULL. */
@@ -1326,8 +1489,12 @@ build_test_list(char *argv[], int argc)
 static void
 free_testset(struct testset *ts)
 {
+    size_t i;
+
     free(ts->file);
-    free(ts->path);
+    for (i = 0; ts->command[i] != NULL; i++)
+        free(ts->command[i]);
+    free(ts->command);
     free(ts->results);
     free(ts->reason);
     free(ts);
@@ -1342,8 +1509,7 @@ free_testset(struct testset *ts)
  * frees the test list that's passed in.
  */
 static int
-test_batch(struct testlist *tests, const char *source, const char *build,
-           enum test_verbose verbose)
+test_batch(struct testlist *tests, enum test_verbose verbose)
 {
     size_t length, i;
     size_t longest = 0;
@@ -1394,7 +1560,6 @@ test_batch(struct testlist *tests, const char *source, const char *build,
             fflush(stdout);
 
         /* Run the test. */
-        ts->path = find_test(ts->file, source, build);
         succeeded = test_run(ts, verbose);
         fflush(stdout);
         if (verbose)
@@ -1584,11 +1749,11 @@ main(int argc, char *argv[])
         else
             shortlist++;
         printf(banner, shortlist);
-        tests = read_test_list(list);
-        status = test_batch(tests, source, build, verbose) ? 0 : 1;
+        tests = read_test_list(list, source, build);
+        status = test_batch(tests, verbose) ? 0 : 1;
     } else {
-        tests = build_test_list(argv, argc);
-        status = test_batch(tests, source, build, verbose) ? 0 : 1;
+        tests = build_test_list(argv, argc, source, build);
+        status = test_batch(tests, verbose) ? 0 : 1;
     }
 
     /* For valgrind cleanliness, free all our memory. */

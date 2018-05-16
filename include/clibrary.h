@@ -77,6 +77,11 @@
 /* Get the bool type. */
 #include "portable/stdbool.h"
 
+/* In case uint32_t and associated limits weren't defined. */
+#ifndef UINT32_MAX
+# define UINT32_MAX 4294967295UL
+#endif
+
 /* Windows provides snprintf under a different name. */
 #ifdef _WIN32
 # define snprintf _snprintf
