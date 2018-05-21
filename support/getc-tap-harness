@@ -217,7 +217,8 @@ download tests/tap/libtap.sh tests/tap libtap.sh
 download tests/tap/macros.h tests/tap macros.h
 
 ##  Synchronize the POD checker test suite.
-download tests/docs/pod-t tests/docs pod.t
+##  Disabled since Test::RRA became a dependency.
+#download tests/docs/pod-t tests/docs pod.t
 
 ##  Synchronize the README file from upstream.
 download docs/writing-tests tests README

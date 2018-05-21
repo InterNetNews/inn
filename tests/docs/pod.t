@@ -2,12 +2,14 @@
 #
 # $Id$
 #
-# Test POD formatting.
+# Check all POD documents in the tree for POD formatting errors.
+#
+# Copyright 2016 Russ Allbery <eagle@eyrie.org>
+# Copyright 2012-2014
+#     The Board of Trustees of the Leland Stanford Junior University
 #
 # This file is part of C TAP Harness.  The current version plus supporting
 # documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
-#
-# Copyright 2009-2010, 2013-2016 Russ Allbery <eagle@eyrie.org>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),

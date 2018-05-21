@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013-2014, 2016-2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013-2014, 2016-2018 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -381,10 +381,6 @@ test_network_write(void)
      */
     const size_t bufsize = 15 * 1024 * 1024;
 
-    /* Create the data that we're going to send. */
-    buffer = bmalloc(bufsize);
-    memset(buffer, 'a', bufsize);
-
     /* Create the listening socket. */
     fd = network_bind_ipv4(SOCK_STREAM, "127.0.0.1", 11119);
     if (fd == INVALID_SOCKET)
@@ -400,6 +396,10 @@ test_network_write(void)
         socket_close(fd);
         client_delay_reader("127.0.0.1");
     }
+
+    /* Create the data that we're going to send. */
+    buffer = bmalloc(bufsize);
+    memset(buffer, 'a', bufsize);
 
     /* Set an alarm just in case our timeouts don't work. */
     alarm(10);
