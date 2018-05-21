@@ -23,6 +23,12 @@ Unicode objects).
 INN documentation and samples of Python hooks have been updated to
 provide more examples.
 
+=item *
+
+When a Python or Perl filter hook rejects an article, B<innd> now mentions
+the reason in response to CHECK and TAKETHIS commands.  Previously,
+the reason was given only for the IHAVE command.
+
 =back
 
 =head1 Changes in 2.6.2

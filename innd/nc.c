@@ -642,7 +642,7 @@ NCihave(CHANNEL *cp)
 {
     char        *buff = NULL;
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char	*filterrc;
+    char	*filterrc = NULL;
     size_t	msglen;
 #endif /*defined(DO_PERL) || defined(DO_PYTHON) */
 
@@ -1801,7 +1801,7 @@ NCcheck(CHANNEL *cp)
     char                *buff = NULL;
     size_t		idlen, msglen;
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char		*filterrc;
+    char		*filterrc = NULL;
 #endif /* DO_PERL || DO_PYTHON */
 
     cp->Check++;
@@ -1819,7 +1819,8 @@ NCcheck(CHANNEL *cp)
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
     if (!IsValidMessageID(cp->av[1], false, laxmid)) {
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	snprintf(cp->Sendid.data, cp->Sendid.size,
+                 "%d %s Syntax error in message-ID",
                  NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
 	syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
@@ -1830,7 +1831,7 @@ NCcheck(CHANNEL *cp)
     if ((innconf->refusecybercancels) && (strncmp(cp->av[1], "<cancel.", 8) == 0)) {
 	cp->Refused++;
 	cp->Check_cybercan++;
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Cyberspam cancel",
                  NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
@@ -1853,8 +1854,8 @@ NCcheck(CHANNEL *cp)
     filterrc = PLmidfilter(cp->av[1]);
     if (filterrc) {
 	cp->Refused++;
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s %.200s",
+                 NNTP_FAIL_CHECK_REFUSE, cp->av[1], filterrc);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1865,8 +1866,8 @@ NCcheck(CHANNEL *cp)
     filterrc = PYmidfilter(cp->av[1], idlen);
     if (filterrc) {
 	cp->Refused++;
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
-                 NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s %.200s",
+                 NNTP_FAIL_CHECK_REFUSE, cp->av[1], filterrc);
 	NCwritereply(cp, cp->Sendid.data);
 	return;
     }
@@ -1875,23 +1876,23 @@ NCcheck(CHANNEL *cp)
     if (HIScheck(History, cp->av[1]) || cp->Ignore) {
 	cp->Refused++;
 	cp->Check_got++;
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Duplicate",
                  NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
     } else if (WIPinprogress(cp->av[1], cp, true)) {
 	cp->Check_deferred++;
 	if (cp->NoResendId) {
 	    cp->Refused++;
-	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Do not resend",
                      NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
 	} else {
-	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	    snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Retry later",
                      NNTP_FAIL_CHECK_DEFER, cp->av[1]);
 	}
 	NCwritereply(cp, cp->Sendid.data);
     } else {
 	cp->Check_send++;
-	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+	snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Send it",
                  NNTP_OK_CHECK, cp->av[1]);
 	NCwritereply(cp, cp->Sendid.data);
     }
@@ -1912,7 +1913,7 @@ NCtakethis(CHANNEL *cp)
     size_t  idlen, msglen;
     WIP     *wp;
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    char    *filterrc;
+    char    *filterrc = NULL;
 #endif /* DO_PERL || DO_PYTHON */
 
     cp->Takethis++;
@@ -1969,9 +1970,20 @@ NCtakethis(CHANNEL *cp)
             cp->Sendid.size = MED_BUFFER;
         cp->Sendid.data = xmalloc(cp->Sendid.size);
     }
+
     /* Save ID for later NACK or ACK. */
+#if defined(DO_PERL) || defined(DO_PYTHON)
+    if (filterrc != NULL) {
+        snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s %.200s",
+                 returncode, mid, filterrc);
+    } else {
+        snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
+                 returncode, mid);
+    }
+#else
     snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s",
              returncode, mid);
+#endif /* defined(DO_PERL) || defined(DO_PYTHON) */
 
     cp->ArtBeg = Now.tv_sec;
     cp->State = CSgetheader;
