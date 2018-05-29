@@ -6,20 +6,27 @@ dnl
 dnl INN_PROG_PERL
 dnl     Checks for a specific Perl version and sets the PERL environment
 dnl     variable to the full path, or aborts the configure run if the version
-dnl     of Perl is not new enough or couldn't be found.
+dnl     of Perl is not new enough or couldn't be found.  Marks PERL as a
+dnl     substitution variable.
 dnl
 dnl INN_PERL_CHECK_MODULE
-dnl     Checks for the existence of a Perl module and runs provided code based
-dnl     on whether or not it was found.
+dnl     Checks for the existence of a Perl module.  Runs the second argument
+dnl     if it is present and the third if it is not.
 dnl
 dnl INN_LIB_PERL
 dnl     Determines the flags required for embedding Perl and sets
 dnl     PERL_CPPFLAGS and PERL_LIBS.
 dnl
+dnl INN_PROG_PERL should generally be called before the other two macros.  If
+dnl it isn't, the PERL environment variable must be set in some other way.
+dnl (It cannot be run automatically via dependencies because it takes a
+dnl mandatory minimum version argument, which should be provided by the
+dnl calling configure script.)
+dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016, 2018 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2011 Internet Systems Consortium, Inc. ("ISC")
 dnl Copyright 1998-2003 The Internet Software Consortium
 dnl
@@ -54,7 +61,8 @@ AC_DEFUN([INN_PROG_PERL],
                  ac_path_PERL_found=:])])])
      AS_IF([test x"$ac_cv_path_PERL" = x],
          [AC_MSG_ERROR([Perl $1 or greater is required])])
-     PERL="$ac_cv_path_PERL"])])
+     PERL="$ac_cv_path_PERL"
+     AC_SUBST([PERL])])])
 
 dnl Check whether a given Perl module can be loaded.  Runs the second argument
 dnl if it can, and the third argument if it cannot.
@@ -97,4 +105,14 @@ AC_DEFUN([INN_LIB_PERL],
  inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/  *$//'`
  PERL_CPPFLAGS="$inn_perl_core_flags"
  PERL_LIBS="$inn_perl_core_libs"
- AC_MSG_RESULT([$PERL_LIBS])])
+ AC_MSG_RESULT([$PERL_LIBS])
+ inn_perl_save_CPPFLAGS="$CPPFLAGS"
+ inn_perl_save_LIBS="$LIBS"
+ CPPFLAGS="$PERL_CPPFLAGS $CPPFLAGS"
+ LIBS="$PERL_LIBS $LIBS"
+ AC_CHECK_HEADER([EXTERN.h], [],
+    [AC_MSG_FAILURE([unable to compile with EXTERN.h])])
+ AC_CHECK_FUNC([perl_alloc], [],
+    [AC_MSG_FAILURE([unable to link with Perl library])])
+ CPPFLAGS="$inn_perl_save_CPPFLAGS"
+ LIBS="$inn_perl_save_LIBS"])
