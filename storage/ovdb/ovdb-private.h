@@ -1,6 +1,6 @@
-#ifndef HAVE_DB_H
-# undef HAVE_BDB
-#endif
+/*  $Id$
+*/
+
 #ifdef HAVE_BDB
 
 #include <db.h>

@@ -13,6 +13,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2011, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -90,6 +91,14 @@ AC_DEFUN([INN_LIB_HELPER_VAR_INIT],
  AC_SUBST([$1][_CPPFLAGS])
  AC_SUBST([$1][_LDFLAGS])
  AC_SUBST([$1][_LIBS])])
+
+dnl Unset all of the variables used by a library probe.  Used with the
+dnl _OPTIONAL versions of header probes when a header or library wasn't found
+dnl and therefore the library isn't usable.
+AC_DEFUN([INN_LIB_HELPER_VAR_CLEAR],
+[$1[]_CPPFLAGS=
+ $1[]_LDFLAGS=
+ $1[]_LIBS=])
 
 dnl Handles --with options for a non-optional library.  First argument is the
 dnl base for the switch names.  Second argument is the short description.
