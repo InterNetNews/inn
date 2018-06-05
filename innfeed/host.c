@@ -3473,7 +3473,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   double cnt = (host->blCount) ? (host->blCount) : 1.0;
   double size;
   char *tsize;
-  char buf[]="1.234e+5 TB"; /* usual length is shorter, like "12.34 MB" */
+  char buf[]="1.234e+05 TB"; /* usual length is shorter, like "12.34 MB" */
 
   ASSERT (host != NULL) ;
   ASSERT (fp != NULL) ;

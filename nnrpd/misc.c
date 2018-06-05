@@ -217,7 +217,7 @@ char *
 PostRecFilename(char *ip, char *user) 
 {
      static char                   buff[SPOOLNAMEBUFF];
-     char                          dirbuff[SPOOLNAMEBUFF];
+     char                          dirbuff[SMBUF+2+3*3];
      struct in_addr                inaddr;
      unsigned long int             addr;
      unsigned char                 quads[4];

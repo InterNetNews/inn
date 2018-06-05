@@ -1289,6 +1289,9 @@ getsecret(sasl_conn_t *conn,
   return SASL_OK;
 }
 
+#if __GNUC__ > 7
+# pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
 
 /* callbacks we support */
 static sasl_callback_t saslcallbacks[] = {
@@ -1304,6 +1307,10 @@ static sasl_callback_t saslcallbacks[] = {
     SASL_CB_LIST_END, NULL, NULL
   }
 };
+
+#if __GNUC__ > 7
+# pragma GCC diagnostic warning "-Wcast-function-type"
+#endif
 
 static sasl_security_properties_t *make_secprops(int min,int max)
 {
@@ -1353,7 +1360,8 @@ static conn_ret SetSASLProperties(sasl_conn_t *conn, int sock, int minssf, int m
 {
   sasl_security_properties_t *secprops=NULL;
   socklen_t addrsize = sizeof(struct sockaddr_in);
-  char localip[60], remoteip[60];
+  char localip[NI_MAXHOST+NI_MAXSERV+1];
+  char remoteip[NI_MAXHOST+NI_MAXSERV+1];
   struct sockaddr_in saddr_l;
   struct sockaddr_in saddr_r;
 

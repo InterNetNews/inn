@@ -341,10 +341,10 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char		orgbuff[SMBUF];
     static char         pathidentitybuff[SMBUF];
     static char 	complaintsbuff[SMBUF];
-    static char         postingaccountbuff[SMBUF];
-    static char         postinghostbuff[SMBUF*2]; /* Allocate enough room. */
+    static char         postingaccountbuff[SMBUF*2]; /* Allocate enough room. */
+    static char         postinghostbuff[SMBUF*2];
     static char		sendbuff[SMBUF*2];
-    static char         injectioninfobuff[SMBUF];
+    static char         injectioninfobuff[SMBUF*7];
     static char		*newpath = NULL;
     HEADER		*hp;
     char		*p;

@@ -720,7 +720,7 @@ dnl Some may be worth looking at again once a released version of gcc doesn't
 dnl warn on system headers.  The warnings below are in the same order as
 dnl they're listed in the gcc manual.
 dnl
-dnl Last checked against gcc 7.2.0 (2017-11-25).
+dnl Last checked against gcc 8.1.0 (2018-06-05).
 dnl
 dnl Add -g because when building with warnings, one generally also wants the
 dnl debugging information, and add -O3 because gcc won't find some warnings
@@ -741,11 +741,12 @@ m4_foreach_w(
     [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
      -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
      -Wmissing-include-dirs -Wshift-overflow=2
-     -Wsync-nand -Wstringop-overflow=4 -Wmissing-format-attribute
+     -Wsync-nand -Wstringop-overflow=4 -Wstringop-truncation
+     -Wmissing-format-attribute
      -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond
      -Wtrampolines -Wdeclaration-after-statement -Wshadow -Wpointer-arith
      -Wc99-c11-compat
-     -Wbad-function-cast -Wcast-align -Wwrite-strings
+     -Wbad-function-cast -Wcast-align=strict -Wwrite-strings
      -Wdangling-else -Wdate-time
      -Wjump-misses-init -Wlogical-op -Wstrict-prototypes
      -Wold-style-definition
