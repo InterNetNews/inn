@@ -30,6 +30,9 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wnull-dereference"
 
+/* Some versions of flex (such as 2.5.35) declare twice isatty. */
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+
 /* flex always declares yyunput, but we don't use it. */
 #pragma GCC diagnostic ignored "-Wunused-function"
 

@@ -23,9 +23,11 @@
 #include "inn/libinn.h"
 
 #include <EXTERN.h>
+#pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wredundant-decls"
 #pragma GCC diagnostic ignored "-Wshadow"
 #include <perl.h>
+#pragma GCC diagnostic warning "-Wcast-align"
 #pragma GCC diagnostic warning "-Wredundant-decls"
 #pragma GCC diagnostic warning "-Wshadow"
 #include <XSUB.h>
