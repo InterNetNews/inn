@@ -26,12 +26,19 @@ main(void)
     struct innconf *standard;
     FILE *config;
 
-    if (access("../data/config/valid", F_OK) == 0)
-        chdir("../data");
-    else if (access("data/config/valid", F_OK) == 0)
-        chdir("data");
-    else if (access("tests/data/config/valid", F_OK) == 0)
-        chdir("tests/data");
+    if (access("../data/config/valid", F_OK) == 0) {
+        if (chdir("../data") < 0) {
+            sysbail("cannot chdir to ../data");
+        }
+    } else if (access("data/config/valid", F_OK) == 0) {
+        if (chdir("data") < 0) {
+            sysbail("cannot chdir to data");
+        }
+    } else if (access("tests/data/config/valid", F_OK) == 0) {
+        if (chdir("tests/data") < 0) {
+            sysbail("cannot chdir to tests/data");
+        }
+    }
 
     test_init(9);
 

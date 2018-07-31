@@ -123,7 +123,8 @@ overview_init_buffindexed(void)
 static bool
 overview_init(void)
 {
-    system("/bin/rm -rf ov-tmp");
+    if (system("/bin/rm -rf ov-tmp") < 0)
+        sysdie("Cannot rm ov-tmp");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
     if (strcmp(innconf->ovmethod, "buffindexed") == 0)
@@ -503,12 +504,19 @@ main(void)
 
     test_init(21);
 
-    if (access("../data/overview/basic", F_OK) == 0)
-        chdir("../data");
-    else if (access("data/overview/basic", F_OK) == 0)
-        chdir("data");
-    else if (access("tests/data/overview/basic", F_OK) == 0)
-        chdir("tests/data");
+    if (access("../data/overview/basic", F_OK) == 0) {
+        if (chdir("../data") < 0) {
+            sysbail("cannot chdir to ../data");
+        }
+    } else if (access("data/overview/basic", F_OK) == 0) {
+        if (chdir("data") < 0) {
+            sysbail("cannot chdir to data");
+        }
+    } else if (access("tests/data/overview/basic", F_OK) == 0) {
+        if (chdir("tests/data") < 0) {
+            sysbail("cannot chdir to tests/data");
+        }
+    }
 
     fake_innconf();
     if (!overview_init())
@@ -562,7 +570,8 @@ main(void)
     ok(20, overview_verify_data("overview/bogus"));
     hash_free(groups);
     OVclose();
-    system("/bin/rm -rf ov-tmp");
+    if (system("/bin/rm -rf ov-tmp") <0)
+        sysdie("Cannot rm ov-tmp");
     ok(21, true);
 
     return 0;

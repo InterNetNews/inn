@@ -108,9 +108,13 @@ main(void)
     struct client *client;
     int n = 1;
 
-    if (access("auth-test", F_OK) < 0)
-        if (access("nnrpd/auth-test", F_OK) == 0)
-            chdir("nnrpd");
+    if (access("auth-test", F_OK) < 0) {
+        if (access("nnrpd/auth-test", F_OK) == 0) {
+            if (chdir("nnrpd") < 0) {
+                sysbail("cannot chdir to nnrpd");
+            }
+        }
+    }
     client = client_new();
 
     test_init(11 * 6);
