@@ -1948,9 +1948,9 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
     /* Hmm...  Berkeley DB needs something like a 'struct iovec' so that we don't
        have to make a new buffer and copy everything in to it. */
 
-    ((struct ovdata *)databuf)->token = token;
-    ((struct ovdata *)databuf)->arrived = arrived;
-    ((struct ovdata *)databuf)->expires = expires;
+    ((struct ovdata *)(void *)databuf)->token = token;
+    ((struct ovdata *)(void *)databuf)->arrived = arrived;
+    ((struct ovdata *)(void *)databuf)->expires = expires;
 
 #ifdef HAVE_ZLIB
     if(ovdb_conf.compress && len > COMPRESS_MIN) {

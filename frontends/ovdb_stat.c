@@ -154,7 +154,7 @@ print_value(int i, void *p, struct datatab *tab, const char *sep)
 	}
 	break;
     case LSN:	/* 'a' points to DB_LSN */
-	dl = (DB_LSN *)(cp + tab[i].a);
+	dl = (DB_LSN *)(void *)(cp + tab[i].a);
 	if (dl->file == 0) {
             printf("%16s%s", "none", sep);
 	} else {
