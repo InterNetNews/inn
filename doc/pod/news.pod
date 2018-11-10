@@ -4,6 +4,11 @@
 
 =item *
 
+Fixed the selection of the elliptic curve to use with S<OpenSSL 1.1.0>
+or later; NIST P-256 was enforced instead of using the most secure curve.
+
+=item *
+
 Support for S<Python 3> has been added to INN.  Embedded Python filtering
 and authentication hooks for B<innd> and B<nnrpd> can now use S<version
 3.3.0> or later of the Python interpreter.  In the 2.x series, S<version

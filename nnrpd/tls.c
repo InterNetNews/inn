@@ -569,12 +569,17 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (eckey != NULL) {
         SSL_CTX_set_tmp_ecdh(CTX, eckey);
     } else {
-# ifdef SSL_CTX_set_ecdh_auto
+# if OPENSSL_VERSION_NUMBER < 0x010100000L
+#  if OPENSSL_VERSION_NUMBER >= 0x01000200fL
+        /* Function supported since OpenSSL 1.0.2.
+         * Removed since OpenSSL 1.1.0, supporting ECDH by default with
+         * the most appropriate parameters. */
         SSL_CTX_set_ecdh_auto(CTX, 1);
-# else
+#  else
         SSL_CTX_set_tmp_ecdh(CTX,
                              EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
-# endif /* SSL_CTX_set_ecdh_auto */
+#  endif /* SSL_CTX_set_ecdh_auto */
+# endif /* OpenSSL version < 1.1.0 */
      }
 #endif /* HAVE_OPENSSL_ECC */
 
