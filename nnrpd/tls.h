@@ -53,6 +53,7 @@ int tls_init_serverengine(int verifydepth, /* Depth to verify. */
                           bool tls_compression,
                           struct vector *tls_protocols,
                           char *tls_ciphers,
+                          char *tls_ciphers13,
                           char *tls_ec_curve);
 
 /* Init TLS. */
