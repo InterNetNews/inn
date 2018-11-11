@@ -133,6 +133,7 @@ struct innconf {
     char *tlscertfile;          /* Path to the TLS/SSL certificate to use */
     char *tlskeyfile;           /* Path to the key for the certificate */
     char *tlsciphers;           /* OpenSSL-style cipher string */
+    char *tlsciphers13;         /* OpenSSL-style cipher string for TLS 1.3 */
     bool tlscompression;        /* Turn TLS compression on/off */
     char *tlseccurve;           /* ECDH curve name */
     bool tlspreferserverciphers; /* Make server select the cipher */

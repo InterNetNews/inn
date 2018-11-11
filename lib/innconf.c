@@ -234,6 +234,7 @@ const struct config config_table[] = {
     { K(tlscertfile),             STRING  (NULL) },
     { K(tlskeyfile),              STRING  (NULL) },
     { K(tlsciphers),              STRING  (NULL) },
+    { K(tlsciphers13),            STRING  (NULL) },
     { K(tlscompression),          BOOL   (false) },
     { K(tlseccurve),              STRING  (NULL) },
     { K(tlspreferserverciphers),  BOOL    (true) },

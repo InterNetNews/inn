@@ -1118,9 +1118,24 @@ on the TLS protocol or some supported cipher suite are discovered:
 
 =item I<tlsciphers>
 
-The string describing the cipher suites OpenSSL will support.  See
-OpenSSL's ciphers(1) command documentation for details.  The default
-is unset, which uses OpenSSL's default cipher suite list.
+The string describing the cipher suites OpenSSL will support for S<TLS
+1.2> and below.  See OpenSSL's ciphers(1) command documentation for
+details.  The default is unset, which uses OpenSSL's default cipher
+suite list.
+
+=item I<tlsciphers13>
+
+The string describing the cipher suites OpenSSL will support for S<TLS
+1.3>.  See OpenSSL's ciphers(1) command documentation for
+details.  The default is unset, which uses OpenSSL's default cipher
+suite list.
+
+Note that a separate cipher suite configuration parameter is needed for
+S<TLS 1.3> because S<TLS 1.3> cipher suites are not compatible with
+S<TLS 1.2>, and vice-versa.  In order to avoid issues where legacy
+S<TLS 1.2> cipher suite configuration configured in the I<tlsciphers>
+parameter would inadvertently disable all S<TLS 1.3> cipher suites,
+the F<inn.conf> configuration has been separated out.
 
 =item I<tlscompression>
 

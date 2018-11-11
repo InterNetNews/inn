@@ -479,7 +479,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
                       char *tls_CAfile, char *tls_CApath, char *tls_cert_file,
                       char *tls_key_file, bool prefer_server_ciphers,
                       bool tls_compression, struct vector *tls_proto_vect,
-                      char *tls_ciphers, char *tls_ec_curve UNUSED)
+                      char *tls_ciphers, char *tls_ciphers13 UNUSED,
+                      char *tls_ec_curve UNUSED)
 {
     int     off = 0;
     int     verify_flags = SSL_VERIFY_NONE;
@@ -658,6 +659,16 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     }
 
+#if OPENSSL_VERSION_NUMBER >= 0x01010100fL
+    /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites. */
+    if (tls_ciphers13 != NULL) {
+        if (SSL_CTX_set_ciphersuites(CTX, tls_ciphers13) == 0) {
+            syslog(L_ERROR, "TLS engine: cannot set ciphersuites");
+            return (-1);
+        }
+    }
+#endif
+
     if (tls_compression) {
 #if defined(SSL_OP_NO_COMPRESSION) && OPENSSL_VERSION_NUMBER >= 0x0009080dfL
         /* Function first added in OpenSSL 0.9.8m. */
@@ -714,6 +725,7 @@ tls_init(void)
                                        innconf->tlscompression,
                                        innconf->tlsprotocols,
                                        innconf->tlsciphers,
+                                       innconf->tlsciphers13,
                                        innconf->tlseccurve);
 
     if (ssl_result == -1) {

@@ -9,6 +9,17 @@ or later; NIST P-256 was enforced instead of using the most secure curve.
 
 =item *
 
+A new F<inn.conf> parameter has been added to fine-tune the cipher suites
+to use with S<TLS 1.3>:  the I<tlsciphers13> now permits configuring
+them.  A separate cipher suite configuration parameter is needed for
+S<TLS 1.3> because S<TLS 1.3> cipher suites are not compatible with
+S<TLS 1.2>, and vice-versa.  In order to avoid issues where legacy
+S<TLS 1.2> cipher suite configuration configured in the I<tlsciphers>
+parameter would inadvertently disable all S<TLS 1.3> cipher suites,
+the F<inn.conf> configuration has been separated out.
+
+=item *
+
 Support for S<Python 3> has been added to INN.  Embedded Python filtering
 and authentication hooks for B<innd> and B<nnrpd> can now use S<version
 3.3.0> or later of the Python interpreter.  In the 2.x series, S<version
