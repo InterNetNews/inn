@@ -1139,10 +1139,11 @@ the F<inn.conf> configuration has been separated out.
 
 =item I<tlscompression>
 
-Whether to enable or disable TLS/SSL-level compression support.
-This is a boolean and the default is false, that is to say compression
-is disabled, so as to follow the best current practices for a secure
-use of TLS in application protocols (see S<RFC 8143> for NNTP).
+Whether to enable or disable TLS/SSL-level compression support, if
+the negotiated protocol supports it (notably, S<TLS 1.3> no longer
+supports it).  This is a boolean and the default is false, that is to say
+compression is disabled, so as to follow the best current practices for
+a secure use of TLS in application protocols (see S<RFC 8143> for NNTP).
 
 Note that enabling TLS/SSL-level compression will be possible only if
 the OpenSSL library INN has been built with, supports that feature.
