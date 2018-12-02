@@ -1,17 +1,10 @@
 /*  $Id$
 **
-**  tls.h -- TLSv1 functions.
+**  tls.h -- TLS functions.
 **  Copyright (C) 2000 Kenichi Okada <okada@opaopa.org>.
 **
 **  Author:  Kenichi Okada <okada@opaopa.org>
 **  Created:  2000-02-22
-**
-**  [RFC 2246] "The TLS Protocol Version 1.0"
-**      by Christopher Allen <callen@certicom.com> and
-**      Tim Dierks <tdierks@certicom.com> (1999/01)
-**
-**  [RFC 2595] "Using TLS with IMAP, POP3 and ACAP"
-**      by Chris Newman <chris.newman@innosoft.com> (1999/06)
 */
 
 #ifdef HAVE_OPENSSL
