@@ -49,7 +49,8 @@ fake_innconf(void)
 static struct overview *
 overview_init(void)
 {
-    system("/bin/rm -rf ov-tmp spool");
+    if (system("/bin/rm -rf ov-tmp spool") < 0)
+        sysdie("Cannot rm ov-tmp spool");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
     if (mkdir("spool", 0755))
@@ -188,12 +189,19 @@ main(void)
     ARTHANDLE handle = ARTHANDLE_INITIALIZER;
     TOKEN token;
 
-    if (access("../data/overview/xref", F_OK) == 0)
-        chdir("../data");
-    else if (access("data/overview/xref", F_OK) == 0)
-        chdir("data");
-    else if (access("tests/data/overview/xref", F_OK) == 0)
-        chdir("tests/data");
+    if (access("../data/overview/xref", F_OK) == 0) {
+        if (chdir("../data") < 0) {
+            sysbail("cannot chdir to ../data");
+        }
+    } else if (access("data/overview/xref", F_OK) == 0) {
+        if (chdir("data") < 0) {
+            sysbail("cannot chdir to data");
+        }
+    } else if (access("tests/data/overview/xref", F_OK) == 0) {
+        if (chdir("tests/data") < 0) {
+            sysbail("cannot chdir to tests/data");
+        }
+    }
 
     /* 7 group/article pairs plus one check for each insert plus the final
        check for the count. */
@@ -244,6 +252,7 @@ main(void)
     ok(n++, !overview_token(overview, "example.test3", 2, &token));
     ok(n++, overview_token(overview, "example.test3", 3, &token));
 
-    system("/bin/rm -rf ov-tmp spool");
+    if (system("/bin/rm -rf ov-tmp spool") < 0)
+        sysdie("Cannot rm ov-tmp spool");
     return 0;
 }

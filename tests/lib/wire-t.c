@@ -60,12 +60,19 @@ main(void)
     ok(9, wire_findbody(p, 1) == NULL);
     ok(10, wire_findbody(p, 0) == NULL);
 
-    if (access("../data/articles/wire-strange", F_OK) == 0)
-        chdir("../data");
-    else if (access("data/articles/wire-strange", F_OK) == 0)
-        chdir("data");
-    else if (access("tests/data/articles/wire-strange", F_OK) == 0)
-        chdir("tests/data");
+    if (access("../data/articles/wire-strange", F_OK) == 0) {
+        if (chdir("../data") < 0) {
+            sysbail("cannot chdir to ../data");
+        }
+    } else if (access("data/articles/wire-strange", F_OK) == 0) {
+        if (chdir("data") < 0) {
+            sysbail("cannot chdir to data");
+        }
+    } else if (access("tests/data/articles/wire-strange", F_OK) == 0) {
+        if (chdir("tests/data") < 0) {
+            sysbail("cannot chdir to tests/data");
+        }
+    }
     article = read_file("articles/wire-strange", &st);
 
     p = wire_findbody(article, st.st_size);

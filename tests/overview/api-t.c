@@ -109,7 +109,8 @@ overview_init_buffindexed(void)
 static struct overview *
 overview_init(void)
 {
-    system("/bin/rm -rf ov-tmp");
+    if (system("/bin/rm -rf ov-tmp") < 0)
+        sysdie("Cannot rm ov-tmp");
     if (mkdir("ov-tmp", 0755))
         sysdie("Cannot mkdir ov-tmp");
     if (strcmp(innconf->ovmethod, "buffindexed") == 0)
@@ -583,7 +584,8 @@ overview_tests(int n)
     ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
-    system("/bin/rm -rf ov-tmp");
+    if (system("/bin/rm -rf ov-tmp") < 0)
+        sysdie("Cannot rm ov-tmp");
     ok(n++, true);
     return n;
 }
@@ -679,7 +681,8 @@ overview_mmap_tests(int n)
     ok(n++, overview_verify_data("overview/bogus", overview));
     hash_free(groups);
     overview_close(overview);
-    system("/bin/rm -rf ov-tmp");
+    if (system("/bin/rm -rf ov-tmp") < 0)
+        sysdie("Cannot rm ov-tmp");
     ok(n++, true);
     return n;
 }
@@ -689,12 +692,19 @@ main(void)
 {
     int n = 1;
 
-    if (access("../data/overview/basic", F_OK) == 0)
-        chdir("../data");
-    else if (access("data/overview/basic", F_OK) == 0)
-        chdir("data");
-    else if (access("tests/data/overview/basic", F_OK) == 0)
-        chdir("tests/data");
+    if (access("../data/overview/basic", F_OK) == 0) {
+        if (chdir("../data") < 0) {
+            sysbail("cannot chdir to ../data");
+        }
+    } else if (access("data/overview/basic", F_OK) == 0) {
+        if (chdir("data") < 0) {
+            sysbail("cannot chdir to data");
+        }
+    } else if (access("tests/data/overview/basic", F_OK) == 0) {
+        if (chdir("tests/data") < 0) {
+            sysbail("cannot chdir to tests/data");
+        }
+    }
 
     /* Cancels can't be tested with mmap, so there are only 21 tests there. */
     test_init(27 * 2 + 21);

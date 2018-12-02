@@ -317,7 +317,8 @@ main(void)
 
     if (access("innbind.t", F_OK) < 0)
         if (access("util/innbind.t", F_OK) == 0)
-            chdir("util");
+            if (chdir("util") < 0)
+                sysbail("cannot chdir to util");
 
     test_init(15);
 

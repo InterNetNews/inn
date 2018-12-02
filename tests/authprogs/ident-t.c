@@ -26,7 +26,8 @@ client(const char *host)
     fd = network_connect_host(host, 11119, NULL, DEFAULT_TIMEOUT);
     if (fd < 0)
         _exit(1);
-    read(fd, buffer, sizeof(buffer));
+    if (read(fd, buffer, sizeof(buffer)) < 0)
+        sysbail("cannot read");
     close(fd);
 }
 
@@ -135,9 +136,13 @@ server_ipv4(int n)
 int
 main(void)
 {
-    if (access("ident.t", F_OK) < 0)
-        if (access("authprogs/ident.t", F_OK) == 0)
-            chdir("authprogs");
+    if (access("ident.t", F_OK) < 0) {
+        if (access("authprogs/ident.t", F_OK) == 0) {
+            if (chdir("authprogs") < 0) {
+                sysbail("cannot chdir to authprogs");
+            }
+        }
+    }
 
     test_init(4);
     server_ipv4(1);
