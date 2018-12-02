@@ -137,9 +137,14 @@ extern FILE *   CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
 			    const char *request);
 extern void     CAclose(void);
 
-extern char *    GetFQDN(char *domain);
-extern char *    GetModeratorAddress(FILE *FromServer, FILE *ToServer,
-                                     char *group, char *moderatormailer); 
+/* Return the fully-qualified domain name of the local system in
+   newly-allocated memory, or NULL if it cannot be discovered.  The caller is
+   responsible for freeing.  If the host's domain cannot be found in DNS, use
+   the domain argument as a fallback. */
+extern char *   inn_getfqdn(const char *domain);
+
+extern char *   GetModeratorAddress(FILE *FromServer, FILE *ToServer,
+                                    char *group, char *moderatormailer); 
 
 #define TEMPORARYOPEN   0
 #define INND_HISTORY    1

@@ -332,9 +332,9 @@ innconf_set_defaults(void)
 
     /* Some parameters have defaults that depend on other parameters. */
     if (innconf->fromhost == NULL)
-        innconf->fromhost = xstrdup(GetFQDN(innconf->domain));
+        innconf->fromhost = inn_getfqdn(innconf->domain);
     if (innconf->pathhost == NULL)
-        innconf->pathhost = xstrdup(GetFQDN(innconf->domain));
+        innconf->pathhost = inn_getfqdn(innconf->domain);
     if (innconf->pathtmp == NULL)
         innconf->pathtmp = xstrdup(INN_PATH_TMP);
 
@@ -472,11 +472,14 @@ static bool
 innconf_validate(struct config_group *group)
 {
     bool okay = true;
+    char *fqdn;
 
-    if (GetFQDN(innconf->domain) == NULL) {
+    fqdn = inn_getfqdn(innconf->domain);
+    if (fqdn == NULL) {
         warn("hostname does not resolve or domain not set in inn.conf");
         okay = false;
     }
+    free(fqdn);
     if (innconf->mta == NULL) {
         warn("must set mta in inn.conf");
         okay = false;

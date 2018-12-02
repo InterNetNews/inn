@@ -61,8 +61,8 @@ libinn \- InterNetNews library routines
 .B "    bool	block;"
 
 .B "char *"
-.B "GetFQDN(domain)"
-.B "    char    *domain;"
+.B "inn_getfqdn(domain)"
+.B "    const char *domain;"
 
 .B "char *"
 .B "GetModeratorAddress(FromServer, ToServer, group, moderatormailer)"
@@ -276,11 +276,13 @@ it will return false if the file cannot be locked.
 is one of: INN_LOCK_READ, INN_LOCK_WRITE, or INN_LOCK_UNLOCK.
 It returns false on failure or true on success.
 .PP
-.I GetFQDN
+.I inn_getfqdn
 returns the fully qualified domain name of the local host.
 .I Domain
-is used if local host can not be resolved.
-The returned value points to static space that is reused on subsequent calls,
+is used to qualify the local host name if local host can not be resolved
+in DNS.
+The returned value points to newly-allocated memory that the caller is
+responsible for freeing,
 or NULL on error.
 .PP
 .I GetModeratorAddress

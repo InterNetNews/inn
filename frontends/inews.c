@@ -608,9 +608,11 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
                 HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
 	}
 	else if (innconf->server != NULL) {
-	    if ((p = GetFQDN(innconf->domain)) == NULL)
-                sysdie("cannot get hostname");
+	    p = inn_getfqdn(innconf->domain);
+	    if (p == NULL)
+		sysdie("cannot get hostname");
 	    HDR(_path) = concat(Exclusions, p, "!", PATHFLUFF, (char *) 0);
+	    free(p);
 	}
 	else {
 	    HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);

@@ -348,6 +348,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char		*newpath = NULL;
     HEADER		*hp;
     char		*p;
+    char		*fqdn = NULL;
     time_t		t, now;
     const char          *error;
     pid_t               pid;
@@ -561,11 +562,15 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     if (VirtualPathlen > 0) {
         p = PERMaccessconf->domain;
     } else {
-        if ((p = GetFQDN(PERMaccessconf->domain)) == NULL) {
-            p = (char *) "unknown";
-        }
+	fqdn = inn_getfqdn(PERMaccessconf->domain);
+	if (fqdn == NULL)
+	    p = (char *) "unknown";
+	else
+	    p = fqdn;
     }
     snprintf(pathidentitybuff, sizeof(pathidentitybuff), "%s", p);
+    free(fqdn);
+    p = NULL;
 
     /* Set the posting-account value. */
      if (PERMaccessconf->addinjectionpostingaccount && PERMuser[0] != '\0') {

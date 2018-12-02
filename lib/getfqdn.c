@@ -1,96 +1,54 @@
 /*  $Id$
 **
+**  Discover the fully-qualified domain name of the local host.
 */
 
 #include "config.h"
 #include "clibrary.h"
-#include <netdb.h>
+#include "portable/socket.h"
 
 #include "inn/libinn.h"
-#include "inn/paths.h"
+#include "inn/xmalloc.h"
 
 
 /*
-**  Get the fully qualified domain name for this host, as reported
-**  by the system.
+**  Return the fully-qualified domain name of the local system in
+**  newly-allocated memory, or NULL if it cannot be discovered.  The caller is
+**  responsible for freeing.  If the host's domain cannot be found in DNS, use
+**  the domain argument as a fallback.
 */
-char *GetFQDN(char *domain)
+char *
+inn_getfqdn(const char *domain)
 {
-    static char		buff[SMBUF];
-    struct hostent	*hp;
-    char		*p;
-    char		**ap;
-#if	0
-    /* See comments below. */
-    char		temp[SMBUF + 2];
-#endif	/* 0 */
+    char hostname[BUFSIZ];
+    struct addrinfo hints, *res;
+    char *fqdn, *canon;
 
-    /* Return any old results. */
-    if (buff[0])
-	return buff;
-
-    /* Try gethostname. */
-    if (gethostname(buff, (int)sizeof buff) < 0)
-	return NULL;
-    if (strchr(buff, '.') != NULL)
-	return buff;
-
-    /*
-    ** See if DNS (or /etc/hosts) gives us a full domain name.  If the host
-    ** doesn't exist in DNS at all but we were given a domain name, use the
-    ** fallback of appending that domain to the hostname.
-    */
-    if ((hp = gethostbyname(buff)) == NULL)
-	goto fallback;
-#if	0
-    /* This code is a "feature" that allows multiple domains (NIS or
-     * DNS, I'm not sure) to work with a single INN server.  However,
-     * it turns out to cause more problems for people, and they have to
-     * use hacks like __switch_gethostbyname, etc.  So if you need this,
-     * turn it on, but don't complain to me. */
-    if (strchr(hp->h_name, '.') == NULL) {
-	/* Try to force DNS lookup if NIS/whatever gets in the way. */
-        strlcpy(temp, buff, sizeof(temp));
-        strlcat(temp, ".", sizeof(temp));
-	hp = gethostbyname(temp);
-    }
-    if (hp == NULL) {
+    /* If gethostname fails, there's nothing we can do. */
+    if (gethostname(hostname, sizeof(hostname)) < 0)
         return NULL;
-    }
-#endif	/* 0 */
 
-    /* First, see if the main name is a FQDN.  It should be. */
-    if (strchr(hp->h_name, '.') != NULL) {
-	if (strlen(hp->h_name) < sizeof buff - 1) {
-	    strlcpy(buff, hp->h_name, sizeof(buff));
-            return buff;
+    /* If the local hostname is already fully qualified, just return it. */
+    if (strchr(hostname, '.') != NULL)
+        return xstrdup(hostname);
+
+    /* Attempt to canonicalize with DNS. */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(hostname, NULL, &hints, &res) == 0) {
+        canon = res->ai_canonname;
+        if (canon != NULL && strchr(canon, '.') != NULL) {
+            fqdn = xstrdup(canon);
+            freeaddrinfo(res);
+            return fqdn;
         }
-	/* Doesn't fit; make sure we don't return bad data next time. */
-	buff[0] = '\0';
-	return hp->h_name;
+        freeaddrinfo(res);
     }
 
-    /* Second, see if any aliases are. */
-    if ((ap = hp->h_aliases) != NULL)
-	while ((p = *ap++) != NULL)
-	    if (strchr(p, '.') != NULL) {
-		/* Deja-vous all over again. */
-		if (strlen(p) < sizeof buff - 1) {
-		    strlcpy(buff, p, sizeof(buff));
-                    return buff;
-                }
-		buff[0] = '\0';
-		return p ;
-	    }
-
-    /* Give up:  Get the domain config param and append it. */
-fallback:
-    if ((p = domain) == NULL || *p == '\0')
-	return NULL;
-    if (strlen(buff) + 1 + strlen(p) > sizeof buff - 1)
-	/* Doesn't fit. */
-	return NULL;
-    strlcat(buff, ".", sizeof(buff));
-    strlcat(buff, p, sizeof(buff));
-    return buff;
+    /* Fall back on canonicalizing with a provided domain. */
+    if (domain == NULL || domain[0] == '\0')
+        return NULL;
+    xasprintf(&fqdn, "%s.%s", hostname, domain);
+    return fqdn;
 }

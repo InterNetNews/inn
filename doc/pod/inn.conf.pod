@@ -60,8 +60,8 @@ INN.
 
 This should be the domain name of the local host.  It should not have a
 leading period, and it should not be a full host address.  It is used only
-if the GetFQDN() routine in libinn(3) cannot get the fully qualified
-domain name by using either the gethostname(3) or gethostbyname(3) calls.
+if the inn_getfqdn() routine in libinn(3) cannot get the fully qualified
+domain name by using either the gethostname(3) or getaddrinfo(3) calls.
 The check is very simple; if either routine returns a name with a period
 in it, then it is assumed to have the full domain name.  As this parameter
 is rarely used, do not use it to affect the righthand side of

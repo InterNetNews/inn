@@ -30,6 +30,7 @@ GenerateMessageID(char *domain)
     static char		buff[SMBUF];
     static int		count;
     char		*p;
+    char		*fqdn = NULL;
     char		sec32[10];
     char		pid32[10];
     time_t		now;
@@ -42,10 +43,13 @@ GenerateMessageID(char *domain)
          && strcmp(domain, innconf->domain) != 0)) {
 	p = domain;
     } else {
-	if ((p = GetFQDN(domain)) == NULL)
-	    return NULL;
+        fqdn = inn_getfqdn(domain);
+        if (fqdn == NULL)
+            return NULL;
+        p = fqdn;
     }
     snprintf(buff, sizeof(buff), "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
+    free(fqdn);
     return buff;
 }
 
