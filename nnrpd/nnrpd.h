@@ -26,17 +26,11 @@
 #include "inn/vector.h"
 #include "inn/timer.h"
 
-#ifndef HAVE_SASL_SASL_H
-# undef HAVE_SASL
-#endif
 #ifdef HAVE_SASL
 #include <sasl/sasl.h>
 #include <sasl/saslutil.h>
 #endif
 
-#if !defined(HAVE_ZLIB_H)
-# undef HAVE_ZLIB
-#endif
 #if defined(HAVE_ZLIB)
 # include <zlib.h>
 #endif

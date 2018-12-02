@@ -45,9 +45,6 @@
 #include "article.h"
 #include "configfile.h"
 
-#ifndef HAVE_SASL_SASL_H
-# undef HAVE_SASL
-#endif
 #ifdef HAVE_SASL
 # include <sasl/sasl.h>
 # include <sasl/saslplug.h>

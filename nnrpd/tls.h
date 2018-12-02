@@ -14,9 +14,6 @@
 **      by Chris Newman <chris.newman@innosoft.com> (1999/06)
 */
 
-#ifndef HAVE_OPENSSL_SSL_H
-# undef HAVE_OPENSSL
-#endif
 #ifdef HAVE_OPENSSL
 
 #ifndef TLS_H

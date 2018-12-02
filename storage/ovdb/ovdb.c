@@ -1,4 +1,5 @@
-/*
+/* $Id$
+ *
  * ovdb.c
  * ovdb 2.00
  * Overview storage using Berkeley DB 4.4 or higher
@@ -81,9 +82,6 @@
 #include <signal.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
-#endif
-#ifndef HAVE_ZLIB_H
-# undef HAVE_ZLIB
 #endif
 #ifdef HAVE_ZLIB
 # include <zlib.h>

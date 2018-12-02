@@ -51,7 +51,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2005-2011, 2013-2014
+dnl Copyright 2005-2011, 2013-2014, 2018
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -140,26 +140,27 @@ dnl linkage.  The single argument, if true, says to fail if Kerberos could not
 dnl be found.
 AC_DEFUN([_INN_LIB_KRB5_REDUCED],
 [INN_LIB_KRB5_SWITCH
- AC_CHECK_LIB([krb5], [krb5_init_context], [KRB5_LIBS="-lkrb5"],
+ AC_CHECK_LIB([krb5], [krb5_init_context],
+    [KRB5_LIBS="-lkrb5"
+     LIBS="$KRB5_LIBS $LIBS"
+     _INN_LIB_KRB5_CHECK_HEADER_KRB5
+     AC_CHECK_FUNCS([krb5_get_error_message],
+        [AC_CHECK_FUNCS([krb5_free_error_message])],
+        [AC_CHECK_FUNCS([krb5_get_error_string], [],
+            [AC_CHECK_FUNCS([krb5_get_err_txt], [],
+                [AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
+                    [KRB5_LIBS="$KRB5_LIBS -lksvc"
+                     AC_DEFINE([HAVE_KRB5_SVC_GET_MSG], [1])
+                     AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
+                        [INN_INCLUDES_KRB5])],
+                    [AC_CHECK_LIB([com_err], [com_err],
+                        [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
+                        [AS_IF([test x"$1" = xtrue],
+                            [AC_MSG_ERROR([cannot find usable com_err library])],
+                            [KRB5_LIBS=""])])
+                     _INN_LIB_KRB5_CHECK_HEADER_COM_ERR])])])])],
      [AS_IF([test x"$1" = xtrue],
          [AC_MSG_ERROR([cannot find usable Kerberos library])])])
- LIBS="$KRB5_LIBS $LIBS"
- _INN_LIB_KRB5_CHECK_HEADER_KRB5
- AC_CHECK_FUNCS([krb5_get_error_message],
-     [AC_CHECK_FUNCS([krb5_free_error_message])],
-     [AC_CHECK_FUNCS([krb5_get_error_string], [],
-         [AC_CHECK_FUNCS([krb5_get_err_txt], [],
-             [AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
-                 [KRB5_LIBS="$KRB5_LIBS -lksvc"
-                  AC_DEFINE([HAVE_KRB5_SVC_GET_MSG], [1])
-                  AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
-                     [INN_INCLUDES_KRB5])],
-                 [AC_CHECK_LIB([com_err], [com_err],
-                     [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
-                     [AS_IF([test x"$1" = xtrue],
-                         [AC_MSG_ERROR([cannot find usable com_err library])],
-                         [KRB5_LIBS=""])])
-                  _INN_LIB_KRB5_CHECK_HEADER_COM_ERR])])])])
  INN_LIB_KRB5_RESTORE])
 
 dnl Does the appropriate library checks for Kerberos linkage when we don't
