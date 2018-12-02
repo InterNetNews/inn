@@ -131,7 +131,7 @@ main(int ac, char *av[])
   char *p;
   int fd;
   char tmp[BUFSIZ];
-  char tmp2[BUFSIZ];
+  char tmp2[BUFSIZ+1];
   char buff[BUFSIZ];
   char *name;
   pid_t pid;

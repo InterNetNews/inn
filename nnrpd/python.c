@@ -132,7 +132,7 @@ char* dynamic_file;
 **  or -1 if method is not defined.
 */
 void
-PY_authenticate(char* file, char *Username, char *Password, int *code,
+PY_authenticate(char* file, char *User, char *Password, int *code,
                 char *errorstring, char *newUser)
 {
     PyObject    *result, *item, *proc;
@@ -177,10 +177,10 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
 
     /* Username if known. */
-    if (Username == NULL) {
+    if (User == NULL) {
         PYauthitem[authnum] = Py_None;
     } else {
-        PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
+        PYauthitem[authnum] = PYBUFF_FROMMEMORY(User, strlen(User));
     }
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
 
@@ -275,7 +275,7 @@ PY_authenticate(char* file, char *Username, char *Password, int *code,
 **  If the access group cannot be generated, the connection is closed.
 */
 void
-PY_access(char* file, struct vector *access_vec, char *Username)
+PY_access(char* file, struct vector *access_vec, char *User)
 {
     PyObject	*result, *key, *value, *proc;
     char        *buffer;
@@ -323,7 +323,7 @@ PY_access(char* file, struct vector *access_vec, char *Username)
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
 
     /* Username. */
-    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(User, strlen(User));
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
  
     /* Password is not known. */
@@ -410,7 +410,7 @@ PY_dynamic_init (char* file)
 **  Return negative value if dynamic method is not defined.
 */
 int
-PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
+PY_dynamic(char *User, char *NewsGroup, int PostFlag, char **reply_message)
 {
     PyObject	*result, *proc;
     char	*string, *temp;
@@ -454,7 +454,7 @@ PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message)
     PyDict_SetItemString(PYauthinfo, PYTHONintport, PYauthitem[authnum++]);
     
     /* Username. */
-    PYauthitem[authnum] = PYBUFF_FROMMEMORY(Username, strlen(Username));
+    PYauthitem[authnum] = PYBUFF_FROMMEMORY(User, strlen(User));
     PyDict_SetItemString(PYauthinfo, PYTHONuser, PYauthitem[authnum++]);
     
     /* Password is not known. */

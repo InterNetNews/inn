@@ -60,6 +60,9 @@
 */
 static bool		Debug = false;
 static bool		STATprint;
+#ifdef FROMSTDIN
+static bool             FromStdin = false;
+#endif
 static char		*REMhost;
 static double		STATbegin;
 static double		STATend;

@@ -289,9 +289,9 @@ NCpostit(CHANNEL *cp)
            cp->Refused - cp->Refused_checkpoint,
            cp->Rejected - cp->Rejected_checkpoint,
            cp->Duplicate - cp->Duplicate_checkpoint,
-           cp->Size - cp->Size_checkpoint,
-           cp->DuplicateSize - cp->DuplicateSize_checkpoint,
-           cp->RejectSize - cp->RejectSize_checkpoint);
+           (double) (cp->Size - cp->Size_checkpoint),
+           (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
+           (double) (cp->RejectSize - cp->RejectSize_checkpoint));
     cp->Reported = 0;
     cp->Started_checkpoint = Now.tv_sec;
     cp->Received_checkpoint = cp->Received;

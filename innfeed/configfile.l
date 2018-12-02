@@ -25,8 +25,10 @@
 
 /* Some versions of flex (such as 2.6.1-1.3 in Debian stretch) declare a
    variable as int that should be size_t.  We can't really do much about
-   that, and it's fixed in current flex, so just suppress the warning. */
+   that, and it's fixed in current flex, so just suppress the warning.
+   Same thing for a possible NULL pointer dereference. */
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wnull-dereference"
 
 #if defined (FLEX_DEBUG)
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)

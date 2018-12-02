@@ -599,7 +599,7 @@ static u_int32_t _db_flags = 0;
 static int open_db_file(int which)
 {
     int ret;
-    char name[10];
+    char name[16];
     DB_TXN *tid;
 
     if(dbs[which] != NULL)

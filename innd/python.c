@@ -210,7 +210,7 @@ PYmidfilter(char *messageID, int msglen)
 **  Tell the external module about innd's state.
 */
 void
-PYmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
+PYmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
 {
     PyObject	*result;
     char	oldmode[10], newmode[10];
@@ -218,7 +218,7 @@ PYmode(OPERATINGMODE Mode, OPERATINGMODE NewMode, char *reason)
     if (!PythonFilterActive || PYFilterObject == NULL || mode_method == NULL)
 	return;
 
-    switch (Mode) {
+    switch (CurrentMode) {
     default:		strlcpy(oldmode, "unknown", 10);	break;
     case OMrunning:	strlcpy(oldmode, "running", 10);	break;
     case OMpaused:	strlcpy(oldmode, "paused", 10);		break;
@@ -316,7 +316,7 @@ PY_addhist(PyObject *self UNUSED, PyObject *args)
     char	*msgid;
     Py_ssize_t  msgidlen;
     char	*articlepaths = (char *) "";
-    char	tbuff[12];
+    char	tbuff[32];
     char	*parambuf[6];
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
@@ -526,7 +526,8 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 	/* Compress out multiple whitespace in the trimmed string.  We
 	 * do a copy because this is probably an original art
 	 * buffer. */
-	workstring =  memcpy(xmalloc(worksize), wpos, worksize);
+        workstring = xmalloc(worksize + 1);
+        memcpy(workstring, wpos, worksize);
         wasspace = false;
 	p = wpos;
 	q = workstring;

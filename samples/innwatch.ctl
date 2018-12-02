@@ -4,13 +4,13 @@
 ##
 ##  Indicates what to run to test the state of the news system, and what
 ##  to do about it.  Format:
-##	!state!when!command!test!limit!command!reason/comment
+##	!state!when!condition!test!limit!command!reason/comment
 ##  where
-##	<!>		Delimiter; pick from [,:@;?!].
+##	<!>		Delimiter; pick from [!,:@;?].
 ##	<state>		State to enter if true.
 ##	<when>		States we must be in to match.
-##	<command>	Command to run to test condition.
-##	<test>		Operator to use in test(1) command.
+##	<condition>	Command to run to test condition.
+##	<test>		Operator to use in test(1) condition.
 ##	<limit>		Value to test against.
 ##	<command>	Command for innwatch to perform; use exit,
 ##			flush, go, pause, shutdown, skip, or throttle.

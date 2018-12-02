@@ -197,7 +197,7 @@ int
 main(int ac, char *av[])
 {
     char	buff[NNTP_MAXLEN_COMMAND];
-    char	mesgid[NNTP_MAXLEN_COMMAND];
+    char	mesgid[NNTP_MAXLEN_MSGID+10];
     char	tbuff[SMBUF];
     char	*msgidfile = NULL;
     int         msgidfd;

@@ -381,7 +381,7 @@ void deadBeef (void *base, size_t byteCount)
 bool lockFile (const char *fileName)
 {
   char buff [20] ;
-  char tmpName [PATH_MAX], realName [PATH_MAX] ;
+  char tmpName [PATH_MAX+sizeof(long)+10], realName [PATH_MAX] ;
   char *p ;
   int fd, i ;
   pid_t pid = getpid () ;

@@ -85,12 +85,12 @@ static char *
 PrettySize(float size, char *str)
 {
   if (size > 1073741824) /* 1024*1024*1024 */
-    sprintf (str, "%.1fGb", size / 1073741824.);
+    sprintf (str, "%.1fGb", (double) size / 1073741824.);
   else
     if (size > 1048576) /* 1024*1024 */
-      sprintf (str, "%.1fMb", size / 1048576.);
+      sprintf (str, "%.1fMb", (double) size / 1048576.);
     else
-      sprintf (str, "%.1fkb", size / 1024.);
+      sprintf (str, "%.1fkb", (double) size / 1024.);
   return (str);
 }
 
@@ -117,7 +117,7 @@ STATUSsummary(void)
   char                  other_ip_addr[INET6_ADDRSTRLEN];
   char                  *p;
   STATUS		*head, *status, *tmp;
-  char			str[9];
+  char                  str[315]; /* Maximum buffer size for PrettySize() */
   time_t		now;
  
   if (innconf->htmlstatus) {
@@ -296,18 +296,18 @@ STATUSsummary(void)
   if (!offered) offered = 1; /* to avoid division by zero */
   if (!size) size = 1; /* avoid divide by zero here too */
   fprintf (F, "        accepted: %-9lu       %%accepted: %.1f%%\n",
-	   accepted, (float) accepted / offered * 100);
+	   accepted, (double) accepted / offered * 100);
   fprintf (F, "         refused: %-9lu        %%refused: %.1f%%\n",
-	   refused, (float) refused / offered * 100);
+	   refused, (double) refused / offered * 100);
   fprintf (F, "        rejected: %-9lu       %%rejected: %.1f%%\n",
-	   rejected, (float) rejected / offered * 100);
+	   rejected, (double) rejected / offered * 100);
   fprintf (F, "      duplicated: %-9lu     %%duplicated: %.1f%%\n",
-	   duplicate, (float) duplicate / offered * 100);
+	   duplicate, (double) duplicate / offered * 100);
   fprintf (F, "           bytes: %-7s\n", PrettySize (size + DuplicateSize + RejectSize, str));
   fprintf (F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
-	   PrettySize(DuplicateSize, str), (float) DuplicateSize / size * 100);
+	   PrettySize(DuplicateSize, str), (double) (DuplicateSize / size * 100));
   fprintf (F, "   rejected size: %-7s    %%rejected size: %.1f%%\n",
-	   PrettySize(RejectSize, str), (float) RejectSize / size * 100);
+	   PrettySize(RejectSize, str), (double) (RejectSize / size * 100));
   fputc ('\n', F) ;
 
   if(innconf->logstatus) {
@@ -316,7 +316,7 @@ STATUSsummary(void)
             "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
                 "ME", (long) seconds, accepted,
                 refused, rejected, duplicate,
-                size, DuplicateSize, RejectSize);
+                (double) size, (double) DuplicateSize, (double) RejectSize);
   }
 
   /* Incoming Feeds */
@@ -370,7 +370,8 @@ STATUSsummary(void)
               "accepted size %.0f duplicate size %.0f rejected size %.0f\n",
                   status->name, (long) status->seconds, status->accepted,
                   status->refused, status->rejected, status->Duplicate,
-                  status->Size, status->DuplicateSize, status->RejectSize);
+                  (double) status->Size, (double) status->DuplicateSize,
+                  (double) status->RejectSize);
     }
 
     tmp = status->next;

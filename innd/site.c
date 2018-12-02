@@ -334,7 +334,7 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
     HDRCONTENT		*hc = Data->HdrContent;
     static char		ITEMSEP[] = " ";
     static char		NL[] = "\n";
-    char		pbuff[12];
+    char		pbuff[32];
     char	        *p;
     bool	        Dirty;
     struct buffer       *bp;

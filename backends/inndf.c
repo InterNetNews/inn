@@ -332,7 +332,7 @@ main(int argc, char *argv[])
             printf("Space used is meaningless for the %s method\n",
                    innconf->ovmethod);
         else
-            printf("%.2f%% overview space used\n", used);
+            printf("%.2f%% overview space used\n", (double) used);
     }
     if (overview != NULL)
         overview_close(overview);
