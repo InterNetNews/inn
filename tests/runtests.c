@@ -1322,11 +1322,9 @@ parse_test_list_line(const char *line, struct testset *ts, const char *source,
         end = skip_non_whitespace(p);
         if (strncmp(p, "libtool", end - p) == 0) {
             use_libtool = 1;
-            p = end;
         } else if (strncmp(p, "valgrind", end - p) == 0) {
             valgrind = getenv("C_TAP_VALGRIND");
             use_valgrind = (valgrind != NULL);
-            p = end;
         } else {
             option = xstrndup(p, end - p);
             die("unknown test list option %s", option);

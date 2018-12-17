@@ -391,7 +391,7 @@ test_all(const char *source_ipv4, const char *source_ipv6 UNUSED)
     unsigned int count, i;
     pid_t child;
     struct sockaddr *saddr;
-    int status;
+    int status, family;
 
     /* Bind sockets for all available local addresses. */
     if (!network_bind_all(SOCK_STREAM, 11119, &fds, &count))
@@ -415,6 +415,8 @@ test_all(const char *source_ipv4, const char *source_ipv6 UNUSED)
 
         /* Get the socket type to determine what type of client to run. */
         saddr = get_sockaddr(fd);
+        family = saddr->sa_family;
+        free(saddr);
 
         /*
          * Fork off a child writer and test the server accept.  If IPV6_V6ONLY
@@ -425,23 +427,24 @@ test_all(const char *source_ipv4, const char *source_ipv6 UNUSED)
         if (child < 0)
             sysbail("cannot fork");
         else if (child == 0) {
-            if (saddr->sa_family == AF_INET) {
+            if (family == AF_INET) {
                 client_writer("::1", source_ipv6, false);
                 client_writer("127.0.0.1", source_ipv4, true);
 #ifdef HAVE_INET6
-            } else if (saddr->sa_family == AF_INET6) {
+            } else if (family == AF_INET6) {
 # ifdef IPV6_V6ONLY
                 client_writer("127.0.0.1", source_ipv4, false);
 # endif
                 client_writer("::1", source_ipv6, true);
 #endif
+            } else {
+                die("unknown socket family %d", family);
             }
         } else {
             test_server_accept(fd);
             waitpid(child, &status, 0);
             is_int(0, status, "client made correct connections");
         }
-        free(saddr);
     }
     network_bind_all_free(fds);
 

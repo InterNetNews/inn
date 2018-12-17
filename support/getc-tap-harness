@@ -133,9 +133,9 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 }\\
 #endif\\
 " \
-             -e "152 i \\
+             -e "154 i \\
 #ifndef INN_LIBINN_H" \
-             -e "186 i \\
+             -e "188 i \\
 #endif" \
              -e 's/^ok.int /new_ok(int /g' \
              -e 's/^skip.const /new_skip(const /g' \
