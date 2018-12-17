@@ -36,7 +36,19 @@ use strict;
 use warnings;
 
 use File::Spec;
-use Test::More;
+
+# Red Hat's base perl package doesn't include Test::More (one has to install
+# the perl-core package in addition).  Try to detect this and skip any Perl
+# tests if Test::More is not present.
+eval {
+    require Test::More;
+    Test::More->import();
+};
+if ($@) {
+    print "1..0 # SKIP Test::More required for test\n"
+      or croak('Cannot write to stdout');
+    exit 0;
+}
 
 # Abort if C_TAP_SOURCE isn't set.
 if (!$ENV{C_TAP_SOURCE}) {
@@ -45,7 +57,7 @@ if (!$ENV{C_TAP_SOURCE}) {
 
 # Load the Test::Pod module.
 if (!eval { require Test::Pod }) {
-    plan skip_all => 'Test::Pod required for testing POD';
+    plan(skip_all => 'Test::Pod required for testing POD');
 }
 Test::Pod->import;
 

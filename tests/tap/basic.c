@@ -161,6 +161,8 @@ static int _aborted = 0;
  */
 struct cleanup_func {
     test_cleanup_func func;
+    test_cleanup_func_with_data func_with_data;
+    void *data;
     struct cleanup_func *next;
 };
 static struct cleanup_func *cleanup_funcs = NULL;
@@ -367,7 +369,13 @@ finish(void)
      */
     primary = (_process == 0 || getpid() == _process);
     while (cleanup_funcs != NULL) {
-        cleanup_funcs->func(success, primary);
+        if (cleanup_funcs->func_with_data) {
+            void *data = cleanup_funcs->data;
+
+            cleanup_funcs->func_with_data(success, primary, data);
+        } else {
+            cleanup_funcs->func(success, primary);
+        }
         current = cleanup_funcs;
         cleanup_funcs = cleanup_funcs->next;
         free(current);
@@ -939,7 +947,7 @@ bstrndup(const char *s, size_t n)
         ;
     length = (size_t) (p - s);
     copy = malloc(length + 1);
-    if (p == NULL)
+    if (copy == NULL)
         sysbail("failed to strndup %lu bytes", (unsigned long) length);
     memcpy(copy, s, length);
     copy[length] = '\0';
@@ -1027,6 +1035,22 @@ test_tmpdir_free(char *path)
     free(path);
 }
 
+static void
+register_cleanup(test_cleanup_func func,
+                 test_cleanup_func_with_data func_with_data, void *data)
+{
+    struct cleanup_func *cleanup, **last;
+
+    cleanup = bmalloc(sizeof(struct cleanup_func));
+    cleanup->func = func;
+    cleanup->func_with_data = func_with_data;
+    cleanup->data = data;
+    cleanup->next = NULL;
+    last = &cleanup_funcs;
+    while (*last != NULL)
+        last = &(*last)->next;
+    *last = cleanup;
+}
 
 /*
  * Register a cleanup function that is called when testing ends.  All such
@@ -1035,13 +1059,15 @@ test_tmpdir_free(char *path)
 void
 test_cleanup_register(test_cleanup_func func)
 {
-    struct cleanup_func *cleanup, **last;
+    register_cleanup(func, NULL, NULL);
+}
 
-    cleanup = bmalloc(sizeof(struct cleanup_func));
-    cleanup->func = func;
-    cleanup->next = NULL;
-    last = &cleanup_funcs;
-    while (*last != NULL)
-        last = &(*last)->next;
-    *last = cleanup;
+/*
+ * Same as above, but also allows an opaque pointer to be passed to the cleanup
+ * function.
+ */
+void
+test_cleanup_register_with_data(test_cleanup_func_with_data func, void *data)
+{
+    register_cleanup(NULL, func, data);
 }
