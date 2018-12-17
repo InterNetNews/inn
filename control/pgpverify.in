@@ -17,9 +17,9 @@
 # practice.
 #
 # Changes from 1.29 -> 1.30
-# -- Support for GnuPG's gpg binary (in addition to gpgv).  Indeed, gpg
-#    still validates signatures made with weak digest algorithms like MD5
-#    whereas current versions of gpgv no longer do.
+# -- Support for GnuPG's gpg binary (in addition to gpgv).  gpg (from
+#    GnuPG 1.x) still validates signatures made with weak digest
+#    algorithms like MD5 whereas current versions of gpgv no longer do.
 #
 # Changes from 1.28 -> 1.29
 # -- Disambiguate numbered lists from description lists in POD to silent
@@ -137,7 +137,9 @@
 # Path to the GnuPG gpg binary, if you have GnuPG and don't want to use
 # gpgv.  This will be used in preference to gpgv and PGP.  If you have INN
 # and the script is able to successfully include your INN::Config module,
-# the value of $INN::Config::gpg will override this.
+# the value of $INN::Config::gpg will override this.  On a recent Debian
+# variant, use /usr/bin/gpg1 (from the gnupg1 package) if you want to
+# support old signatures with MD5 digest algorithms.
 # $gpg = '/usr/local/bin/gpg';
 
 # Path to the GnuPG gpgv binary, if you have GnuPG.  If you do, this will
