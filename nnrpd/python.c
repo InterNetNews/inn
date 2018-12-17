@@ -138,7 +138,7 @@ PY_authenticate(char* file, char *User, char *Password, int *code,
     PyObject    *result, *item, *proc;
     int         authnum;
     int         i;
-    char        *temp;
+    const char  *temp;
 
     PY_load_python();
     proc = PY_setup(PYTHONauthen, PYTHONmain, file);
@@ -413,7 +413,8 @@ int
 PY_dynamic(char *User, char *NewsGroup, int PostFlag, char **reply_message)
 {
     PyObject	*result, *proc;
-    char	*string, *temp;
+    char        *string;
+    const char  *temp;
     int		authnum;
     int		i;
 
