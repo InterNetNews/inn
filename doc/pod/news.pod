@@ -45,6 +45,12 @@ When a Python or Perl filter hook rejects an article, B<innd> now mentions
 the reason in response to CHECK and TAKETHIS commands.  Previously,
 the reason was given only for the IHAVE command.
 
+=item *
+
+B<nnrpd> now properly logs the hostname of clients whose connection
+failed owing to an issue during the negotiation of a TLS session or
+high load average.
+
 =back
 
 =head1 Changes in 2.6.2

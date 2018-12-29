@@ -580,10 +580,10 @@ Address2Name(struct sockaddr *sa, socklen_t len, char *hostname, size_t size)
 
 
 /*
-**  Determine access rights of the client.
+**  Determine hostname and IP of the client, amongst other information.
 */
 static void
-StartConnection(unsigned short port)
+GetClientInfo(unsigned short port)
 {
     static const char *default_host_error = "unknown error";
     struct sockaddr_storage ssc, sss;
@@ -668,10 +668,6 @@ StartConnection(unsigned short port)
 #endif
 
     notice("%s (%s) connect - port %u", Client.host, Client.ip, port);
-
-    PERMgetinitialaccess(NNRPACCESS);
-    PERMgetaccess(true);
-    PERMgetpermissions();
 }
 
 
@@ -1328,7 +1324,10 @@ main(int argc, char *argv[])
     if (initialSSL) {
         tls_init();
         if (tls_start_servertls(0, 1) == -1) {
-            Reply("%d Encrypted TLS connection failed\r\n", NNTP_FAIL_TERMINATING);
+            GetClientInfo(ListenPort);
+            notice("%s failure to negotiate TLS session", Client.host);
+            Reply("%d Encrypted TLS connection failed\r\n",
+                  NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
         }
         encryption_layer_on = true;
@@ -1351,7 +1350,9 @@ main(int argc, char *argv[])
             warn("cannot obtain system load");
         else {
             if ((unsigned long)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
-                syslog(L_NOTICE, "load %.2f > %lu", load[0], innconf->nnrpdloadlimit);
+                GetClientInfo(ListenPort);
+                notice("%s load %.2f > %lu", Client.host,
+                       load[0], innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_FAIL_TERMINATING,
                       load[0]);
                 ExitWithStats(1, true);
@@ -1363,7 +1364,11 @@ main(int argc, char *argv[])
     xsignal(SIGPIPE, CatchPipe);
 
     /* Get permissions and see if we can talk to this client. */
-    StartConnection(ListenPort);
+    GetClientInfo(ListenPort);
+    PERMgetinitialaccess(NNRPACCESS);
+    PERMgetaccess(true);
+    PERMgetpermissions();
+
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
 	syslog(L_NOTICE, "%s no_permission", Client.host);
 	Reply("%d You have no permission to talk.  Goodbye!\r\n",
