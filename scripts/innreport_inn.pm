@@ -1705,12 +1705,13 @@ sub collect($$$$$$) {
     }
     # can't getpeername
     if ($left =~ /\? can\'t getpeername/o) {
-      # $nnrpd_getpeername++;
       $nnrpd_gethostbyaddr{"? (can't getpeername)"}++;
       return 1;
     }
     # can't getsockname
     return 1 if $left =~ /^\S+ can\'t getsockname$/o;
+    # can't initialize TLS session
+    return 1 if $left =~ /^\S+ failure to negotiate TLS session$/o;
     # reverse lookup failed
     return 1 if $left =~ /^\? reverse lookup for \S+ failed: .* -- using IP address for access$/o;
     # profile timer
