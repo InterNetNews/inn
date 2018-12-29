@@ -8,7 +8,7 @@ include ../Makefile.global
 # recover from make update.  We can't use .OLD extensions for the shared
 # library since ldconfig will think .OLD sorts after the regular library and
 # will point the binaries at the old library.
-LTVERSION     = 3:2:0
+LTVERSION     = 3:3:0
 
 top	      = ..
 CFLAGS	      = $(GCFLAGS) -I. $(BDB_CPPFLAGS)
