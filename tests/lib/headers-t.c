@@ -12,7 +12,7 @@
 int
 main(void)
 {
-    plan(9+3+9+7+12+5);
+    plan(9+3+11+8+14+7);
 
     ok(!IsValidHeaderName(NULL), "bad header name 1");
     ok(!IsValidHeaderName(""), "bad header name 2");
@@ -38,6 +38,8 @@ main(void)
     ok(!IsValidHeaderBody("\r\n b"), "bad header body 7");
     ok(!IsValidHeaderBody("a\r\n b\r\n"), "bad header body 8");
     ok(!IsValidHeaderBody("a\n\tb\n \t\n c"), "bad header body 9");
+    ok(!IsValidHeaderBody("a\003b"), "bad header body 10");
+    ok(!IsValidHeaderBody("a\r b"), "bad header body 11");
 
     ok(IsValidHeaderBody(":"), "good header body 1");
     ok(IsValidHeaderBody("a b"), "good header body 2");
@@ -46,6 +48,7 @@ main(void)
     ok(IsValidHeaderBody("a\r\n\tb"), "good header body 5");
     ok(IsValidHeaderBody("a\n   b"), "good header body 6");
     ok(IsValidHeaderBody("a\n\tb\n \tc\n d"), "good header body 7");
+    ok(IsValidHeaderBody("\317\205\317\204\317\2068"), "good header body 8");
 
     ok(!IsValidHeaderField(NULL), "bad header field 1");
     ok(!IsValidHeaderField(""), "bad header field 2");
@@ -59,12 +62,18 @@ main(void)
     ok(!IsValidHeaderField("\177Subject: a"), "bad header field 10");
     ok(!IsValidHeaderField("Subject: a\177b"), "bad header field 11");
     ok(!IsValidHeaderField("Subject: a\nb"), "bad header field 12");
+    ok(!IsValidHeaderField("UT\317\2068: a"), "bad header field 13");
+    ok(!IsValidHeaderField("Control\004: a"), "bad header field 14");
 
     ok(IsValidHeaderField("Subject: a"), "good header field 1");
     ok(IsValidHeaderField("Subject: a\n\tb"), "good header field 2");
     ok(IsValidHeaderField("Sub: ject"), "good header field 3");
     ok(IsValidHeaderField("X-#%-T`?!: yeah"), "good header field 4");
     ok(IsValidHeaderField("Subject: a\r\n\tb"), "good header field 5");
+    ok(IsValidHeaderField("Newsgroups: local.\317\205\317\204\317\2068"),
+       "good header field 6");
+    ok(IsValidHeaderField("Subject: \317\205\317\204\317\2068\r\n testing"),
+       "good header field 7");
 
     return 0;
 }

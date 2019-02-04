@@ -58,7 +58,7 @@ test_v(int n, const char *text, bool matches)
 int
 main(void)
 {
-    test_init(187);
+    test_init(188);
 
     /* Basic wildmat features. */
     test_r(  1, "foo",            "foo",               true);
@@ -276,6 +276,7 @@ main(void)
                                                        false);
     test_v(186, "",                                    true);
     test_v(187, "a\303\251b\303\0c",                   false);
+    test_v(188, "two words",                           true);
     
     return 0;
 }

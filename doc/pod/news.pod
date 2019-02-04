@@ -20,6 +20,12 @@ the F<inn.conf> configuration has been separated out.
 
 =item *
 
+Fixed a regression since S<INN 2.6.1> that prevented articles with
+internationalized header fields (that is to say encoded in UTF-8)
+from being posted.
+
+=item *
+
 Support for S<Python 3> has been added to INN.  Embedded Python filtering
 and authentication hooks for B<innd> and B<nnrpd> can now use S<version
 3.3.0> or later of the Python interpreter.  In the 2.x series, S<version
