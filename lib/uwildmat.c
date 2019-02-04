@@ -63,6 +63,8 @@
 
 #include "config.h"
 #include "clibrary.h"
+#include <ctype.h>
+
 #include "inn/libinn.h"
 
 #define ABORT -1
@@ -100,7 +102,8 @@ utf8_length(const unsigned char *start, const unsigned char *end)
 
 
 /*
-**  Check whether a string contains only valid UTF-8 characters.
+**  Check whether a string contains only valid UTF-8 characters, without
+**  any ASCII control characters except for \r, \n and \t.
 */
 bool
 is_valid_utf8(const char *text)
@@ -120,10 +123,16 @@ is_valid_utf8(const char *text)
 
         p++;
 
-        /* Valid ASCII. */
-        if (length == 0)
-            continue;
-        
+        /* Valid printable ASCII character or CR, LF or HTAB. */
+        if (length == 0) {
+            if(isprint((unsigned char) p[-1])
+               || p[-1] == '\r' || p[-1] == '\n' || p[-1] == '\t') {
+                continue;
+            } else {
+                return false;
+            }
+        }
+
         /* Invalid length. */
         if (length < 2 || length > 6)
             return false;
@@ -350,7 +359,7 @@ match_expression(const unsigned char *text, const unsigned char *start,
         return !*text ? UWILDMAT_MATCH : UWILDMAT_FAIL;
     end = start + strlen((const char *) start) - 1;
 
-    /* Main match loop.  Find each comma that separates patterns, and attempt 
+    /* Main match loop.  Find each comma that separates patterns, and attempt
        to match the text with each pattern in order.  The last matching
        pattern determines whether the whole expression matches. */
     for (; p <= end + 1; p = split + 1) {

@@ -40,6 +40,7 @@ IsValidHeaderName(const char *p)
 /*
 **  Check whether the argument is a valid header field body.  It starts
 **  after the space following the header field name and its colon.
+**  Internationalized header fields encoded in UTF-8 are allowed.
 **
 **  We currently assume the maximal line length has already been checked.
 */
@@ -52,13 +53,11 @@ IsValidHeaderBody(const char *p)
     if (p == NULL || *p == '\0')
         return false;
 
+    if (!is_valid_utf8(p))
+        return false;
+
     for (; *p != '\0'; p++) {
-        if (isgraph((unsigned char) *p)) {
-            /* Current header content line contains a (non-whitespace)
-             * printable char. */
-            emptycontentline = false;
-            continue;
-        } else if (ISWHITE(*p)) {
+        if (ISWHITE(*p)) {
             /* Skip SP and TAB. */
             continue;
         } else if (*p == '\n' || (*p == '\r' && *++p == '\n')) {
@@ -75,9 +74,15 @@ IsValidHeaderBody(const char *p)
              * re-initialize emptycontentline to true. */
             emptycontentline = true;
             continue;
-        } else {
-            /* Invalid character found. */
+        } else if (p[-1] == '\r') {
+            /* Case of CR not followed by LF (handled at the previous
+             * if statement). */
             return false;
+        } else {
+            /* Current header content line contains a (non-whitespace)
+             * character. */
+            emptycontentline = false;
+            continue;
         }
     }
 
