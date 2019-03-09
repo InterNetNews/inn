@@ -276,23 +276,13 @@ only, unfortunately.
 
 =item suck
 
-URL:  L<http://packages.debian.org/suck>
+URL:  L<https://github.com/lazarus-pkgs/suck>
 
 B<suck> is a separate package for downloading a news feed via a reading
 connection (rather than via a direct NNTP or UUCP feed) and sending
 outgoing local posts via POST.  It's intended primarily for personal or
 small-organization news servers who get their news via an ISP and are too
 small to warrant setting up a regular news feed.
-
-=item newsx
-
-URL:  L<http://packages.debian.org/newsx>
-
-Serving the same purpose as B<suck>, B<newsx> is a separate package for
-downloading a news feed via a reading connection and sending outgoing
-local posts via POST.  Some people find B<suck> easier to configure and use,
-and some people find B<newsx> easier.  If you have problems with one, try the
-other.
 
 =back
 
