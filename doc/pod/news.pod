@@ -1,3 +1,15 @@
+=head1 Changes in 2.6.4
+
+=over 2
+
+=item *
+
+B<nnrpd> now always uses 4096-bit parameters for DH keys.  When OpenSSL
+is configured with a security level beyond 1, shorter parameters might not
+be accepted.  Thanks to Michael Baeuerle for the patch.
+
+=back
+
 =head1 Changes in 2.6.3
 
 =over 2

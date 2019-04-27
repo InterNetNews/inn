@@ -95,34 +95,11 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
 
 /*
-**  Hardcoded DH parameter files, from OpenSSL.
-**  For information on how these files were generated, see
+**  Hardcoded DH parameter file, from OpenSSL.
+**  For information on how that file was generated, see
 **  "Assigned Number for SKIP Protocols" 
 **  <http://www.skip-vpn.org/spec/numbers.html>.
 */
-static const char file_dh512[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MEYCQQD1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6ypUM2Zafq9AKUJsCRtMIPWak\n\
-XUGfnHy9iUsiGSa6q6Jew1XpKgVfAgEC\n\
------END DH PARAMETERS-----\n";
-
-static const char file_dh1024[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MIGHAoGBAPSI/VhOSdvNILSd5JEHNmszbDgNRR0PfIizHHxbLY7288kjwEPwpVsY\n\
-jY67VYy4XTjTNP18F1dDox0YbN4zISy1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6\n\
-ypUM2Zafq9AKUJsCRtMIPWakXUGfnHy9iUsiGSa6q6Jew1XpL3jHAgEC\n\
------END DH PARAMETERS-----\n";
-
-static const char file_dh2048[] =
-"-----BEGIN DH PARAMETERS-----\n\
-MIIBCAKCAQEA9kJXtwh/CBdyorrWqULzBej5UxE5T7bxbrlLOCDaAadWoxTpj0BV\n\
-89AHxstDqZSt90xkhkn4DIO9ZekX1KHTUPj1WV/cdlJPPT2N286Z4VeSWc39uK50\n\
-T8X8dryDxUcwYc58yWb/Ffm7/ZFexwGq01uejaClcjrUGvC/RgBYK+X0iP1YTknb\n\
-zSC0neSRBzZrM2w4DUUdD3yIsxx8Wy2O9vPJI8BD8KVbGI2Ou1WMuF040zT9fBdX\n\
-Q6MdGGzeMyEstSr/POGxKUAYEY18hKcKctaGxAMZyAcpesqVDNmWn6vQClCbAkbT\n\
-CD1mpF1Bn5x8vYlLIhkmuquiXsNV6TILOwIBAg==\n\
------END DH PARAMETERS-----\n";
-
 static const char file_dh4096[] =
 "-----BEGIN DH PARAMETERS-----\n\
 MIICCAKCAgEA+hRyUsFN4VpJ1O8JLcCo/VWr19k3BCgJ4uk+d+KhehjdRqNDNyOQ\n\
@@ -161,8 +138,10 @@ load_dh_buffer (const char *buffer, size_t len)
 
 /*
 **  Generate empheral DH key.  Because this can take a long
-**  time to compute, we use precomputed parameters of the
-**  common key sizes.
+**  time to compute, we use a precomputed parameter of 4096 bits.
+**  Shorter DH parameters are considered less secure, and no longer
+**  allowed by OpenSSL with Security Level 2:
+**  <https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_security_level.html>
 **
 **  These values can be static (once loaded or computed) since
 **  the OpenSSL library can effectively generate random keys
@@ -175,48 +154,17 @@ load_dh_buffer (const char *buffer, size_t len)
 **  "small group" attacks.
 */
 static DH *
-tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
+tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
 {
-	DH *r = NULL;
-	static DH *dh = NULL;
-	static DH *dh512 = NULL;
-	static DH *dh1024 = NULL;
-	static DH *dh2048 = NULL;
-	static DH *dh4096 = NULL;
+    DH *r = NULL;
+    static DH *dh4096 = NULL;
 
-	switch (keylength)
-	{
-	case 512:
-		if (dh512 == NULL)
-			dh512 = load_dh_buffer(file_dh512, sizeof file_dh512);
-		r = dh512;
-		break;
-	case 1024:
-		if (dh1024 == NULL)
-			dh1024 = load_dh_buffer(file_dh1024, sizeof file_dh1024);
-		r = dh1024;
-		break;
-	case 2048:
-		if (dh2048 == NULL)
-			dh2048 = load_dh_buffer(file_dh2048, sizeof file_dh2048);
-		r = dh2048;
-		break;
-	case 4096:
-		if (dh4096 == NULL)
-			dh4096 = load_dh_buffer(file_dh4096, sizeof file_dh4096);
-		r = dh4096;
-		break;
-	default:
-		/* We should check current keylength vs. requested keylength
-		 * also, this is an extremely expensive operation! */
-                dh = DH_new();
-                if (dh != NULL) {
-                    DH_generate_parameters_ex(dh, keylength, DH_GENERATOR_2, NULL);
-                }
-		r = dh;
-	}
+    if (dh4096 == NULL) {
+        dh4096 = load_dh_buffer(file_dh4096, sizeof(file_dh4096));
+        r = dh4096;
+    }
 
-	return r;
+    return r;
 }
 
 
