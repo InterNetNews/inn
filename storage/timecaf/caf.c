@@ -687,7 +687,7 @@ CAFCreateCAFFile(char *cfpath, ARTNUM artnum, ARTNUM tocsize,
     }
 
     /* Initialize the header. */
-    strncpy(head.Magic, CAF_MAGIC, CAF_MAGIC_LEN);
+    memcpy(head.Magic, CAF_MAGIC, CAF_MAGIC_LEN);
     head.Low = artnum;
     head.High = artnum;
     head.NumSlots = tocsize;

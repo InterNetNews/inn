@@ -552,15 +552,22 @@ static void ovflushhead(OVBUFF *ovbuff) {
  
   memset(&rpx, 0, sizeof(OVBUFFHEAD));
   ovbuff->updated = time(NULL);
+  /* Don't use sprintf() or strlcat() directly...
+   * The terminating '\0' causes grief. */
+#if __GNUC__ > 7
+# pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
   strncpy(rpx.magic, OVBUFF_MAGIC, strlen(OVBUFF_MAGIC));
   strncpy(rpx.path, ovbuff->path, OVBUFFPASIZ);
-  /* Don't use sprintf() directly ... the terminating '\0' causes grief */
   strncpy(rpx.indexa, offt2hex(ovbuff->index, true), OVBUFFLASIZ);
   strncpy(rpx.lena, offt2hex(ovbuff->len, true), OVBUFFLASIZ);
   strncpy(rpx.totala, offt2hex(ovbuff->totalblk, true), OVBUFFLASIZ);
   strncpy(rpx.useda, offt2hex(ovbuff->usedblk, true), OVBUFFLASIZ);
   strncpy(rpx.freea, offt2hex(ovbuff->freeblk, true), OVBUFFLASIZ);
   strncpy(rpx.updateda, offt2hex(ovbuff->updated, true), OVBUFFLASIZ);
+#if __GNUC__ > 7
+# pragma GCC diagnostic warning "-Wstringop-truncation"
+#endif
   rpx.version = OVBUFF_VERSION;
   rpx.freeblk = ovbuff->freeblk;
   rpx.usedblk = ovbuff->usedblk;

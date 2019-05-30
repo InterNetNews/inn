@@ -241,7 +241,9 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     PERMaccessconf->locpost = strchr(fields[1], 'L') != NULL;
     PERMaccessconf->allowihave = strchr(fields[1], 'I') != NULL;
     PERMaccessconf->allownewnews = strchr(fields[1], 'N') != NULL;
-    snprintf(PERMuser, sizeof(PERMuser), "%s@%s", fields[2], fields[0]);
+    strlcpy(PERMuser, fields[2], sizeof(PERMuser));
+    strlcat(PERMuser, "@", sizeof(PERMuser));
+    strlcat(PERMuser, fields[0], sizeof(PERMuser));
     //strlcpy(PERMpass, fields[3], sizeof(PERMpass));
     strlcpy(accesslist, fields[4], size);
 
