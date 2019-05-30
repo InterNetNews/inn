@@ -462,7 +462,7 @@ main(int argc, char *argv[])
 
     /* Write the rest of stdin to the spool file. */
     status = 0;
-    if (fprintf(spool, "%s\n", line) == EOF) {
+    if (fprintf(spool, "%s\n", line != NULL ? line : "") == EOF) {
         syswarn("cannot start spool");
         status = 1;
     }

@@ -234,13 +234,17 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
   memset(&rpx, 0, sizeof(CYCBUFFEXTERN));
   if (cycbuff->magicver == 3 || cycbuff->magicver == 4) {
     cycbuff->updated = time(NULL);
+    /* Don't use sprintf() or strlcat() directly...
+     * The terminating '\0' causes grief. */
+#if __GNUC__ > 7
+# pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
     if (cycbuff->magicver == 3)
 	strncpy(rpx.magic, CNFS_MAGICV3, strlen(CNFS_MAGICV3));
     else
 	strncpy(rpx.magic, CNFS_MAGICV4, strlen(CNFS_MAGICV4));
     strncpy(rpx.name, cycbuff->name, CNFSNASIZ);
     strncpy(rpx.path, cycbuff->path, CNFSPASIZ);
-    /* Don't use sprintf() directly ... the terminating '\0' causes grief */
     strncpy(rpx.lena, CNFSofft2hex(cycbuff->len, true), CNFSLASIZ);
     strncpy(rpx.freea, CNFSofft2hex(cycbuff->free, true), CNFSLASIZ);
     strncpy(rpx.cyclenuma, CNFSofft2hex(cycbuff->cyclenum, true), CNFSLASIZ);
@@ -253,6 +257,9 @@ static bool CNFSflushhead(CYCBUFF *cycbuff) {
 	strncpy(rpx.currentbuff, "FALSE", CNFSMASIZ);
     }
     strncpy(rpx.blksza, CNFSofft2hex(cycbuff->blksz, true), CNFSLASIZ);
+#if __GNUC__ > 7
+# pragma GCC diagnostic warning "-Wstringop-truncation"
+#endif
     memcpy(cycbuff->bitfield, &rpx, sizeof(CYCBUFFEXTERN));
     msync(cycbuff->bitfield, cycbuff->minartoffset, MS_ASYNC);
     cycbuff->needflush = false;

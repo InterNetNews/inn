@@ -831,8 +831,9 @@ SSL_writev (SSL *ssl, const struct iovec *vector, int count)
     bytes += vector[i].iov_len;
   /* Allocate a buffer to hold the data. */
   if (NULL == buffer) {
-    buffer = (char *) xmalloc(bytes);
-    allocsize = bytes;
+    size_t to_alloc = (bytes > 0 ? bytes : 1);
+    buffer = (char *) xmalloc(to_alloc);
+    allocsize = to_alloc;
   } else if (bytes > allocsize) {
     buffer = (char *) xrealloc (buffer, bytes);
     allocsize = bytes;
