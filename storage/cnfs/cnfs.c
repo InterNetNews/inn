@@ -667,7 +667,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	strncpy(buf, rpx->cyclenuma, CNFSLASIZ);
         buf[CNFSLASIZ] = '\0';
 	cycbuff->cyclenum = CNFShex2offt(buf);
-	strncpy(cycbuff->metaname, rpx->metaname, CNFSLASIZ);
+	strncpy(cycbuff->metaname, rpx->metaname, CNFSNASIZ);
 	strncpy(buf, rpx->orderinmeta, CNFSLASIZ);
 	cycbuff->order = CNFShex2offt(buf);
 	if (strncmp(rpx->currentbuff, "TRUE", CNFSMASIZ) == 0) {
@@ -697,7 +697,7 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
 	cycbuff->needflush = true;
 	cycbuff->blksz = CNFS_DFL_BLOCKSIZE;
 	cycbuff->free = 0;
-	memset(cycbuff->metaname, '\0', CNFSLASIZ);
+	memset(cycbuff->metaname, '\0', CNFSNASIZ);
     }
     /*
     ** The minimum article offset will be the size of the bitfield itself,
@@ -741,7 +741,15 @@ static bool CNFS_setcurrent(METACYCBUFF *metacycbuff) {
       /* this cycbuff is moved from other metacycbuff , or is new */
       cycbuff->order = i + 1;
       cycbuff->currentbuff = false;
-      strncpy(cycbuff->metaname, metacycbuff->name, CNFSLASIZ);
+      /* Don't use sprintf() or strlcat() directly...
+       * The terminating '\0' causes grief. */
+#if __GNUC__ > 7
+# pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+      strncpy(cycbuff->metaname, metacycbuff->name, CNFSNASIZ);
+#if __GNUC__ > 7
+# pragma GCC diagnostic warning "-Wstringop-truncation"
+#endif
       cycbuff->needflush = true;
       continue;
     }
