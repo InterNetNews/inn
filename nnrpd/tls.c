@@ -601,8 +601,11 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x01010100fL
-    /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites. */
+#if OPENSSL_VERSION_NUMBER >= 0x01010100fL && defined(SSL_OP_NO_TLSv1_3)
+    /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites.
+     * Also check that SSL_OP_NO_TLSv1_3 is defined (to fix a build
+     * issue with LibreSSL considered as version 2, but without the
+     * same API as OpenSSL). */
     if (tls_ciphers13 != NULL) {
         if (SSL_CTX_set_ciphersuites(CTX, tls_ciphers13) == 0) {
             syslog(L_ERROR, "TLS engine: cannot set ciphersuites");
