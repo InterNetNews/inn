@@ -95,47 +95,60 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
 
 /*
-**  Hardcoded DH parameter files, from OpenSSL.
-**  For information on how these files were generated, see
-**  "Assigned Number for SKIP Protocols" 
-**  <http://www.skip-vpn.org/spec/numbers.html>.
+**  Hardcoded DH parameter files.
+**  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
+**  that have been audited and therefore supposed to be more
+**  resistant to attacks than ones randomly generated.
 */
-static const char file_dh512[] =
+static const char file_ffdhe2048[] = \
 "-----BEGIN DH PARAMETERS-----\n\
-MEYCQQD1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6ypUM2Zafq9AKUJsCRtMIPWak\n\
-XUGfnHy9iUsiGSa6q6Jew1XpKgVfAgEC\n\
+MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz\n\
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a\n\
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7\n\
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi\n\
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD\n\
+ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==\n\
 -----END DH PARAMETERS-----\n";
 
-static const char file_dh1024[] =
+static const char file_ffdhe4096[] = \
 "-----BEGIN DH PARAMETERS-----\n\
-MIGHAoGBAPSI/VhOSdvNILSd5JEHNmszbDgNRR0PfIizHHxbLY7288kjwEPwpVsY\n\
-jY67VYy4XTjTNP18F1dDox0YbN4zISy1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6\n\
-ypUM2Zafq9AKUJsCRtMIPWakXUGfnHy9iUsiGSa6q6Jew1XpL3jHAgEC\n\
+MIICCAKCAgEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz\n\
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a\n\
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7\n\
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi\n\
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD\n\
+ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3\n\
+7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32\n\
+nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZp4e\n\
+8W5vUsMWTfT7eTDp5OWIV7asfV9C1p9tGHdjzx1VA0AEh/VbpX4xzHpxNciG77Qx\n\
+iu1qHgEtnmgyqQdgCpGBMMRtx3j5ca0AOAkpmaMzy4t6Gh25PXFAADwqTs6p+Y0K\n\
+zAqCkc3OyX3Pjsm1Wn+IpGtNtahR9EGC4caKAH5eZV9q//////////8CAQI=\n\
 -----END DH PARAMETERS-----\n";
 
-static const char file_dh2048[] =
+static const char file_ffdhe8192[] = \
 "-----BEGIN DH PARAMETERS-----\n\
-MIIBCAKCAQEA9kJXtwh/CBdyorrWqULzBej5UxE5T7bxbrlLOCDaAadWoxTpj0BV\n\
-89AHxstDqZSt90xkhkn4DIO9ZekX1KHTUPj1WV/cdlJPPT2N286Z4VeSWc39uK50\n\
-T8X8dryDxUcwYc58yWb/Ffm7/ZFexwGq01uejaClcjrUGvC/RgBYK+X0iP1YTknb\n\
-zSC0neSRBzZrM2w4DUUdD3yIsxx8Wy2O9vPJI8BD8KVbGI2Ou1WMuF040zT9fBdX\n\
-Q6MdGGzeMyEstSr/POGxKUAYEY18hKcKctaGxAMZyAcpesqVDNmWn6vQClCbAkbT\n\
-CD1mpF1Bn5x8vYlLIhkmuquiXsNV6TILOwIBAg==\n\
------END DH PARAMETERS-----\n";
-
-static const char file_dh4096[] =
-"-----BEGIN DH PARAMETERS-----\n\
-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\n\
+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\n\
+TgEeKpSDj/iM1oyLt8XGQkz//////////wIBAg==\n\
 -----END DH PARAMETERS-----\n";
 
 
@@ -160,9 +173,12 @@ load_dh_buffer (const char *buffer, size_t len)
 
 
 /*
-**  Generate empheral DH key.  Because this can take a long
-**  time to compute, we use precomputed parameters of the
-**  common key sizes.
+**  Generate ephemeral DH key.  Because this can take a long
+**  time to compute, we use precomputed parameters of the common
+**  key sizes.
+**  Depending on OpenSSL Security Level, a minimal length for
+**  DH parameters is required:
+**  <https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_security_level.html>
 **
 **  These values can be static (once loaded or computed) since
 **  the OpenSSL library can effectively generate random keys
@@ -175,48 +191,50 @@ load_dh_buffer (const char *buffer, size_t len)
 **  "small group" attacks.
 */
 static DH *
-tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength)
+tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
 {
-	DH *r = NULL;
-	static DH *dh = NULL;
-	static DH *dh512 = NULL;
-	static DH *dh1024 = NULL;
-	static DH *dh2048 = NULL;
-	static DH *dh4096 = NULL;
+    DH *r = NULL;
 
-	switch (keylength)
-	{
-	case 512:
-		if (dh512 == NULL)
-			dh512 = load_dh_buffer(file_dh512, sizeof file_dh512);
-		r = dh512;
-		break;
-	case 1024:
-		if (dh1024 == NULL)
-			dh1024 = load_dh_buffer(file_dh1024, sizeof file_dh1024);
-		r = dh1024;
-		break;
-	case 2048:
-		if (dh2048 == NULL)
-			dh2048 = load_dh_buffer(file_dh2048, sizeof file_dh2048);
-		r = dh2048;
-		break;
-	case 4096:
-		if (dh4096 == NULL)
-			dh4096 = load_dh_buffer(file_dh4096, sizeof file_dh4096);
-		r = dh4096;
-		break;
-	default:
-		/* We should check current keylength vs. requested keylength
-		 * also, this is an extremely expensive operation! */
-                dh = DH_new();
-                if (dh != NULL) {
-                    DH_generate_parameters_ex(dh, keylength, DH_GENERATOR_2, NULL);
-                }
-		r = dh;
-	}
+    static DH *ffdhe2048 = NULL;
+    static DH *ffdhe4096 = NULL;
+    static DH *ffdhe8192 = NULL;
+    int level = 2; /* Default security level. */
 
-	return r;
+    /* Security levels have been introduced in OpenSSL 1.1.0. */
+#if OPENSSL_VERSION_NUMBER >= 0x010100000L && !defined(LIBRESSL_VERSION_NUMBER)
+    level = SSL_get_security_level(s);
+#endif
+
+    switch(level)
+    {
+        case 0: /* Everything is permitted. */
+        case 1: /* DH keys shorter than 1024 bits are prohibited. */
+        case 2: /* DH keys shorter than 2048 bits are prohibited. */
+            if (ffdhe2048 == NULL) {
+                ffdhe2048 = load_dh_buffer(file_ffdhe2048,
+                                           sizeof(file_ffdhe2048));
+                r = ffdhe2048;
+            }
+            break;
+
+        case 3: /* DH keys shorter than 3072 bits are prohibited. */
+            if (ffdhe4096 == NULL) {
+                ffdhe4096 = load_dh_buffer(file_ffdhe4096,
+                                           sizeof(file_ffdhe4096));
+                r = ffdhe4096;
+            }
+            break;
+
+        case 4: /* DH keys shorter than 7680 bits are prohibited. */
+        default:
+            if (ffdhe8192 == NULL) {
+                ffdhe8192 = load_dh_buffer(file_ffdhe8192,
+                                           sizeof(file_ffdhe8192));
+                r = ffdhe8192;
+            }
+    }
+
+    return r;
 }
 
 

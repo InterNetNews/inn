@@ -1,3 +1,15 @@
+=head1 Changes in 2.6.4
+
+=over 2
+
+=item *
+
+B<nnrpd> now adapts the length of the DH parameter used during a DHE
+key exchange so as to comply with the security level S<OpenSSL 1.1.0>
+or later expects.  Thanks to Michael Baeuerle for the bug report.
+
+=back
+
 =head1 Changes in 2.6.3
 
 =over 2
