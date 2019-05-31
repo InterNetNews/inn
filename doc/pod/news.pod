@@ -4,9 +4,9 @@
 
 =item *
 
-B<nnrpd> now always uses 4096-bit parameters for DH keys.  When OpenSSL
-is configured with a security level beyond 1, shorter parameters might not
-be accepted.  Thanks to Michael Baeuerle for the patch.
+B<nnrpd> now adapts the length of the DH parameter used during a DHE
+key exchange so that to comply with the security level S<OpenSSL 1.1.0>
+or later expects.   Thanks to Michael Baeuerle for the bug report.
 
 =back
 
