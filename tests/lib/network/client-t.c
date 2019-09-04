@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013-2014, 2016-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013-2014, 2016-2019 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -224,7 +224,8 @@ test_timeout_ipv4(void)
     socket_type fd, c;
     pid_t child;
     socket_type block[20];
-    int i, err;
+    unsigned int conn, i;
+    int err;
 
     /*
      * Create the listening socket.  We set the listening queue size to 1,
@@ -261,9 +262,9 @@ test_timeout_ipv4(void)
      * actually timing out, and sometimes they never do.
      */
     alarm(20);
-    for (i = 0; i < (int) ARRAY_SIZE(block); i++) {
-        block[i] = network_connect_host("127.0.0.1", 11119, NULL, 1);
-        if (block[i] == INVALID_SOCKET)
+    for (conn = 0; conn < ARRAY_SIZE(block); conn++) {
+        block[conn] = network_connect_host("127.0.0.1", 11119, NULL, 1);
+        if (block[conn] == INVALID_SOCKET)
             break;
     }
     err = socket_errno;
@@ -276,11 +277,11 @@ test_timeout_ipv4(void)
      * expect a failure due to timeout in a reasonable amount of time (less
      * than our 20-second alarm).
      */
-    if (i == ARRAY_SIZE(block))
+    if (conn == ARRAY_SIZE(block))
         skip_block(2, "short listen queue does not prevent connections");
     else {
-        diag("Finally timed out on socket %d", i);
-        ok(block[i] == INVALID_SOCKET, "Later connection timed out");
+        diag("Finally timed out on socket %u", conn);
+        ok(block[conn] == INVALID_SOCKET, "Later connection timed out");
         if (err == ECONNRESET || err == ECONNREFUSED)
             skip("connections rejected without timeout");
         else
@@ -292,7 +293,7 @@ test_timeout_ipv4(void)
     kill(child, SIGTERM);
     waitpid(child, NULL, 0);
     socket_close(c);
-    for (i--; i >= 0; i--)
+    for (i = 0; i < conn; i++)
         if (block[i] != INVALID_SOCKET)
             socket_close(block[i]);
     socket_close(fd);

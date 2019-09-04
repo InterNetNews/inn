@@ -6,7 +6,7 @@
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2009-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2019 Russ Allbery <eagle@eyrie.org>
  * Copyright 2001-2002, 2004-2008, 2011-2012, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -170,6 +170,14 @@ char *bstrdup(const char *)
     __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
 char *bstrndup(const char *, size_t)
     __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
+
+/*
+ * Macros that cast the return value from b* memory functions, making them
+ * usable in C++ code and providing some additional type safety.
+ */
+#define bcalloc_type(n, type) ((type *) bcalloc((n), sizeof(type)))
+#define breallocarray_type(p, n, type) \
+    ((type *) breallocarray((p), (n), sizeof(type)))
 
 /*
  * Find a test file under C_TAP_BUILD or C_TAP_SOURCE, returning the full

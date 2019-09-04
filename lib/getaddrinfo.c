@@ -21,7 +21,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2003-2005, 2016-2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2003-2005, 2016-2017, 2019 Russ Allbery <eagle@eyrie.org>
  * Copyright 2015 Julien ÉLIE <julien@trigofacile.com>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -213,15 +213,14 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
         free(ai);
         return NULL;
     }
-    ai->ai_addr = (struct sockaddr *) sin;
     ai->ai_next = NULL;
     if (canonical == NULL)
         ai->ai_canonname = NULL;
     else {
         ai->ai_canonname = strdup(canonical);
         if (ai->ai_canonname == NULL) {
-            /* sin will be freed by freeaddrinfo. */
-            freeaddrinfo(ai);
+            free(sin);
+            free(ai);
             return NULL;
         }
     }
@@ -229,11 +228,12 @@ gai_addrinfo_new(int socktype, const char *canonical, struct in_addr addr,
     ai->ai_family = AF_INET;
     ai->ai_socktype = socktype;
     ai->ai_protocol = (socktype == SOCK_DGRAM) ? IPPROTO_UDP : IPPROTO_TCP;
-    ai->ai_addrlen = sizeof(struct sockaddr_in);
     sin->sin_family = AF_INET;
     sin->sin_addr = addr;
     sin->sin_port = htons(port);
     sin_set_length(sin);
+    ai->ai_addr = (struct sockaddr *) sin;
+    ai->ai_addrlen = sizeof(struct sockaddr_in);
     return ai;
 }
 

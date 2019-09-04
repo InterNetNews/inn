@@ -9,7 +9,7 @@
  * should be sent to the e-mail address below.  This program is part of C TAP
  * Harness <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2000-2001, 2004, 2006-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2001, 2004, 2006-2019 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -247,12 +247,13 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 -------------------------- -------------- ---- ----  ------------------------";
 
 /* Include the file name and line number in malloc failures. */
-#define xcalloc(n, size)      x_calloc((n), (size), __FILE__, __LINE__)
-#define xmalloc(size)         x_malloc((size), __FILE__, __LINE__)
+#define xcalloc(n, type) \
+    ((type *) x_calloc((n), sizeof(type), __FILE__, __LINE__))
+#define xmalloc(size)         ((char *) x_malloc((size), __FILE__, __LINE__))
 #define xstrdup(p)            x_strdup((p), __FILE__, __LINE__)
 #define xstrndup(p, size)     x_strndup((p), (size), __FILE__, __LINE__)
-#define xreallocarray(p, n, size) \
-    x_reallocarray((p), (n), (size), __FILE__, __LINE__)
+#define xreallocarray(p, n, type) \
+    ((type *) x_reallocarray((p), (n), sizeof(type), __FILE__, __LINE__))
 
 /*
  * __attribute__ is available in gcc 2.5 and later, but only with gcc 2.7
@@ -415,7 +416,7 @@ x_strdup(const char *s, const char *file, int line)
     size_t len;
 
     len = strlen(s) + 1;
-    p = malloc(len);
+    p = (char *) malloc(len);
     if (p == NULL)
         sysdie("failed to strdup %lu bytes at %s line %d",
                (unsigned long) len, file, line);
@@ -443,7 +444,7 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
         ;
     len = (size_t) (p - s);
-    copy = malloc(len + 1);
+    copy = (char *) malloc(len + 1);
     if (copy == NULL)
         sysdie("failed to strndup %lu bytes at %s line %d",
                (unsigned long) len, file, line);
@@ -671,10 +672,10 @@ resize_results(struct testset *ts, unsigned long n)
      */
     if (ts->allocated == 0) {
         s = (n > 32) ? n : 32;
-        ts->results = xcalloc(s, sizeof(enum test_status));
+        ts->results = xcalloc(s, enum test_status);
     } else {
         s = (n > ts->allocated + 1024) ? n : ts->allocated + 1024;
-        ts->results = xreallocarray(ts->results, s, sizeof(enum test_status));
+        ts->results = xreallocarray(ts->results, s, enum test_status);
     }
 
     /* Set the results for the newly-allocated test array. */
@@ -1345,7 +1346,7 @@ parse_test_list_line(const char *line, struct testset *ts, const char *source,
     }
 
     /* Now, build the command. */
-    ts->command = xcalloc(len + 1, sizeof(char *));
+    ts->command = xcalloc(len + 1, char *);
     i = 0;
     if (use_valgrind && valgrind != NULL) {
         if (use_libtool) {
@@ -1387,7 +1388,7 @@ read_test_list(const char *filename, const char *source, const char *build)
     struct testlist *listhead, *current;
 
     /* Create the initial container list that will hold our results. */
-    listhead = xcalloc(1, sizeof(struct testlist));
+    listhead = xcalloc(1, struct testlist);
     current = NULL;
 
     /*
@@ -1418,10 +1419,10 @@ read_test_list(const char *filename, const char *source, const char *build)
         if (current == NULL)
             current = listhead;
         else {
-            current->next = xcalloc(1, sizeof(struct testlist));
+            current->next = xcalloc(1, struct testlist);
             current = current->next;
         }
-        current->ts = xcalloc(1, sizeof(struct testset));
+        current->ts = xcalloc(1, struct testset);
         current->ts->plan = PLAN_INIT;
 
         /* Parse the line and store the results in the testset struct. */
@@ -1453,7 +1454,7 @@ build_test_list(char *argv[], int argc, const char *source, const char *build)
     struct testlist *listhead, *current;
 
     /* Create the initial container list that will hold our results. */
-    listhead = xcalloc(1, sizeof(struct testlist));
+    listhead = xcalloc(1, struct testlist);
     current = NULL;
 
     /* Walk the list of arguments and create test sets for them. */
@@ -1461,13 +1462,13 @@ build_test_list(char *argv[], int argc, const char *source, const char *build)
         if (current == NULL)
             current = listhead;
         else {
-            current->next = xcalloc(1, sizeof(struct testlist));
+            current->next = xcalloc(1, struct testlist);
             current = current->next;
         }
-        current->ts = xcalloc(1, sizeof(struct testset));
+        current->ts = xcalloc(1, struct testset);
         current->ts->plan = PLAN_INIT;
         current->ts->file = xstrdup(argv[i]);
-        current->ts->command = xcalloc(2, sizeof(char *));
+        current->ts->command = xcalloc(2, char *);
         current->ts->command[0] = find_test(current->ts->file, source, build);
         current->ts->command[1] = NULL;
     }
@@ -1574,10 +1575,10 @@ test_batch(struct testlist *tests, enum test_verbose verbose)
         /* If the test fails, we shuffle it over to the fail list. */
         if (!succeeded) {
             if (failhead == NULL) {
-                failhead = xmalloc(sizeof(struct testset));
+                failhead = xcalloc(1, struct testlist);
                 failtail = failhead;
             } else {
-                failtail->next = xmalloc(sizeof(struct testset));
+                failtail->next = xcalloc(1, struct testlist);
                 failtail = failtail->next;
             }
             failtail->ts = ts;

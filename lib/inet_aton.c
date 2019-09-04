@@ -10,7 +10,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2000-2001, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2001, 2017, 2019 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -42,8 +42,8 @@ inet_aton(const char *s, struct in_addr *addr)
     unsigned octet[4];
     uint32_t address;
     const char *p;
-    int base, i;
-    int part = 0;
+    unsigned int base, i;
+    unsigned int part = 0;
 
     if (s == NULL)
         return 0;

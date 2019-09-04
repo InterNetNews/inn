@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2003-2005, 2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2003-2005, 2016, 2019 Russ Allbery <eagle@eyrie.org>
  * Copyright 2015 Julien ÉLIE <julien@trigofacile.com>
  * Copyright 2007-2009, 2011-2013
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -198,14 +198,14 @@ main(void)
     }
 
     /* Hopefully this will always resolve. */
-    host = gethostbyname("www.isc.org");
+    host = gethostbyname("www.eyrie.org");
     if (host == NULL)
-        skip_block(9, "cannot look up www.isc.org");
+        skip_block(9, "cannot look up www.eyrie.org");
     else {
         hints.ai_flags = 0;
         hints.ai_socktype = SOCK_STREAM;
-        ok(test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0,
-           "lookup of www.isc.org");
+        ok(test_getaddrinfo("www.eyrie.org", "80", &hints, &ai) == 0,
+           "lookup of www.eyrie.org");
         is_int(SOCK_STREAM, ai->ai_socktype, "...right socktype");
         is_string(NULL, ai->ai_canonname, "...no canonname");
         saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
@@ -215,8 +215,8 @@ main(void)
         test_freeaddrinfo(ai);
 
         hints.ai_flags = AI_CANONNAME;
-        ok(test_getaddrinfo("www.isc.org", "80", &hints, &ai) == 0,
-           "lookup of www.isc.org with A_CANONNAME");
+        ok(test_getaddrinfo("www.eyrie.org", "80", &hints, &ai) == 0,
+           "lookup of www.eyrie.org with A_CANONNAME");
         ok(ai->ai_canonname != NULL, "...canonname isn't null");
         saddr = (struct sockaddr_in *) (void *) ai->ai_addr;
         is_int(htons(80), saddr->sin_port, "...right port");
