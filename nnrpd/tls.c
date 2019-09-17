@@ -213,16 +213,16 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
             if (ffdhe2048 == NULL) {
                 ffdhe2048 = load_dh_buffer(file_ffdhe2048,
                                            sizeof(file_ffdhe2048));
-                r = ffdhe2048;
             }
+            r = ffdhe2048;
             break;
 
         case 3: /* DH keys shorter than 3072 bits are prohibited. */
             if (ffdhe4096 == NULL) {
                 ffdhe4096 = load_dh_buffer(file_ffdhe4096,
                                            sizeof(file_ffdhe4096));
-                r = ffdhe4096;
             }
+            r = ffdhe4096;
             break;
 
         case 4: /* DH keys shorter than 7680 bits are prohibited. */
@@ -230,8 +230,8 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
             if (ffdhe8192 == NULL) {
                 ffdhe8192 = load_dh_buffer(file_ffdhe8192,
                                            sizeof(file_ffdhe8192));
-                r = ffdhe8192;
             }
+            r = ffdhe8192;
     }
 
     return r;
