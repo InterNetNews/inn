@@ -8,6 +8,11 @@ B<nnrpd> now adapts the length of the DH parameter used during a DHE
 key exchange so as to comply with the security level S<OpenSSL 1.1.0>
 or later expects.  Thanks to Michael Baeuerle for the bug report.
 
+=item *
+
+B<cnfsstat> now also returns information about retired CNFS buffers
+(mentioned in F<cycbuff.conf> as a cycbuff but not in a metacycbuff).
+
 =back
 
 =head1 Changes in 2.6.3

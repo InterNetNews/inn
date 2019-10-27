@@ -195,7 +195,7 @@ if ($oclass) {
 	print STDERR "Class $oclass not found ...\n";
     }
 } else { # Print all Classes
-
+    my %buffDone;
     foreach my $c (@storsort) {
 	($gr, $cl, $min, $max) = split(/:/, $stor{$c});
         # Remove leading and trailing double quotes, if present.
@@ -226,10 +226,26 @@ if ($oclass) {
 		next;
 	    }
 	    print_cycbuff_head($buff{$b});
+            $buffDone{$b}++;
 	}
 	if (!$use_syslog) {
 	    print STDOUT "\n";
 	}
+    }
+
+    if (!$use_syslog) {
+        # Finally, print all retired cyclic buffers, still active but no longer
+        # mentioned in a class.
+        my $buffRetired = 0;
+        foreach my $b (sort keys(%buff)) {
+            if(! exists($buffDone{$b})) {
+                if (!$buffRetired) {
+                    print STDOUT "Retired cyclic buffers\n";
+                }
+                print_cycbuff_head($buff{$b});
+                $buffRetired++;
+            }
+        }
     }
 }
 
