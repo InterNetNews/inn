@@ -38,12 +38,9 @@ main ()
   FILE *f = fopen ("conftestval", "w");
   if (f == NULL)
     return 1;
-#ifdef IOV_MAX
-  fprintf (f, "set in limits.h\n");
-#else
-# ifdef UIO_MAXIOV
+#ifdef UIO_MAXIOV
   fprintf (f, "%d\n", UIO_MAXIOV);
-# else
+#else
   fd = open ("/dev/null", O_WRONLY, 0666);
   if (fd < 0)
     return 1;
@@ -60,25 +57,31 @@ main ()
         }
     }
   fprintf (f, "1024\n");
-# endif /* UIO_MAXIOV */
-#endif /* IOV_MAX */
+#endif /* UIO_MAXIOV */
   return 0;
 }
 ]])])
 
+dnl Headers to use for checking for an IOV_MAX definition.
+define([_INN_MACRO_IOV_MAX_HEADERS],
+[AC_INCLUDES_DEFAULT
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
+])
+
 dnl Do the actual check.
 AC_DEFUN([INN_MACRO_IOV_MAX],
-[AC_CACHE_CHECK([value of IOV_MAX],
-    [inn_cv_macro_iov_max],
-    [AC_RUN_IFELSE([_INN_MACRO_IOV_MAX_SOURCE],
-        inn_cv_macro_iov_max=`cat conftestval`,
-        inn_cv_macro_iov_max=error,
-        16)
-     if test x"$inn_cv_macro_iov_max" = xerror ; then
-         AC_MSG_WARN([probe failure, assuming 16])
-         inn_cv_macro_iov_max=16
-     fi])
- if test x"$inn_cv_macro_iov_max" != x"set in limits.h" ; then
-    AC_DEFINE_UNQUOTED(IOV_MAX, $inn_cv_macro_iov_max,
-                       [Define to the max vectors in an iovec.])
- fi])
+[AC_CHECK_DECL([IOV_MAX], [],
+    [AC_CACHE_CHECK([value of IOV_MAX],
+        [inn_cv_macro_iov_max],
+        [AC_RUN_IFELSE([_INN_MACRO_IOV_MAX_SOURCE],
+            inn_cv_macro_iov_max=`cat conftestval`,
+            inn_cv_macro_iov_max=error,
+            16)
+         AS_IF([test x"$inn_cv_macro_iov_max" = xerror],
+            [AC_MSG_WARN([probe failure, assuming 16])
+             inn_cv_macro_iov_max=16])])
+     AC_DEFINE_UNQUOTED([IOV_MAX], [$inn_cv_macro_iov_max],
+         [Define to the max vectors in an iovec.])],
+    [_INN_MACRO_IOV_MAX_HEADERS])])
