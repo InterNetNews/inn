@@ -2474,9 +2474,9 @@ main(int argc, char **argv) {
     }
   }
   {
-    ARTNUM artnum;
-    char *data;
-    int len;
+    ARTNUM artnum = 0;
+    char *data = NULL;
+    int len = 0;
     TOKEN token;
     while (buffindexed_search((void *)search, &artnum, &data, &len, &token, NULL)) {
       if (len == 0)
