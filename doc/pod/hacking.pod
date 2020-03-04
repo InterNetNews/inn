@@ -615,7 +615,7 @@ to put in a space between a dereference of a function pointer and the
 arguments to the called function, misidentifies some macro calls as being
 type declarations, and fouls up long but simple case statements).  It
 would be excellent if someday we could just run all of INN's code through
-B<indent> routinely to enforce a consistant coding style, but B<indent>
+B<indent> routinely to enforce a consistent coding style, but B<indent>
 isn't quite ready for that.
 
 For users of emacs cc-mode, use the "bsd" style but with:
