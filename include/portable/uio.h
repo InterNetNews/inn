@@ -28,7 +28,7 @@
 
 /* remctl.h provides its own definition of this struct on Windows. */
 #if defined(HAVE_SYS_UIO_H)
-# include <sys/uio.h>
+#    include <sys/uio.h>
 #elif !defined(REMCTL_H)
 struct iovec {
     void *iov_base;

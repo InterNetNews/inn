@@ -63,8 +63,7 @@ void is_function_output(test_function_type, void *data, int status,
  * successfully, call bail, with the error message being the output from the
  * program.
  */
-void run_setup(const char *const argv[])
-    __attribute__((__nonnull__));
+void run_setup(const char *const argv[]) __attribute__((__nonnull__));
 
 /*
  * process_start starts a process in the background, returning an opaque data

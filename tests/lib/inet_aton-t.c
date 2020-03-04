@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2000-2001, 2004, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2001, 2004, 2017, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2007-2009, 2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -21,8 +21,8 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include "tap/basic.h"
 
@@ -58,6 +58,8 @@ int
 main(void)
 {
     plan(92);
+
+    /* clang-format off */
 
     test_addr(            "0.0.0.0", 0);
     test_addr(     "127.0.0.000000", 0x7f000000U);
@@ -109,6 +111,8 @@ main(void)
     test_fail(         "127.127.");
     test_fail(         "127..127");
     test_fail(      "de.ad.be.ef");
+
+    /* clang-format on */
 
     return 0;
 }

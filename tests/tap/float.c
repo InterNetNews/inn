@@ -36,9 +36,9 @@
 
 /* Required for isnan() and isinf(). */
 #if defined(__STRICT_ANSI__) || defined(PEDANTIC)
-# ifndef _XOPEN_SOURCE
-#  define _XOPEN_SOURCE 600
-# endif
+#    ifndef _XOPEN_SOURCE
+#        define _XOPEN_SOURCE 600
+#    endif
 #endif
 
 #include <math.h>
@@ -62,8 +62,8 @@ ok_double(int n UNUSED, double wanted, double seen)
  * floating point implicit conversion from the isnan() and isinf() macros.
  */
 #if defined(__llvm__) || defined(__clang__)
-# pragma clang diagnostic ignored "-Wconversion"
-# pragma clang diagnostic ignored "-Wdouble-promotion"
+#    pragma clang diagnostic ignored "-Wconversion"
+#    pragma clang diagnostic ignored "-Wdouble-promotion"
 #endif
 
 /*
@@ -91,8 +91,7 @@ is_double(double left, double right, double epsilon, const char *format, ...)
 
     va_start(args, format);
     fflush(stderr);
-    if ((isnan(left) && isnan(right))
-        || is_equal_infinity(left, right)
+    if ((isnan(left) && isnan(right)) || is_equal_infinity(left, right)
         || fabs(left - right) <= epsilon) {
         success = 1;
         okv(1, format, args);

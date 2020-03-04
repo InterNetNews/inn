@@ -17,7 +17,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2014, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2017, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008-2009, 2011, 2013
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2007 Internet Systems Consortium, Inc. ("ISC")
@@ -51,15 +51,17 @@
 #include <sys/types.h>
 
 /* BSDI needs <netinet/in.h> before <arpa/inet.h>. */
+/* clang-format off */
 #ifdef _WIN32
-# include <winsock2.h>
-# include <ws2tcpip.h>
+#    include <winsock2.h>
+#    include <ws2tcpip.h>
 #else
-# include <netinet/in.h>
-# include <arpa/inet.h>
-# include <netdb.h>
-# include <sys/socket.h>
+#    include <netinet/in.h>
+#    include <arpa/inet.h>
+#    include <netdb.h>
+#    include <sys/socket.h>
 #endif
+/* clang-format on */
 
 /*
  * Pick up definitions of getaddrinfo and getnameinfo if not otherwise
@@ -79,18 +81,19 @@ typedef int socklen_t;
  * platforms that may require 64-bit alignment for the embedded addresses.
  */
 #if !HAVE_STRUCT_SOCKADDR_STORAGE
-# define SS_MAXSIZE_ 128
-# ifdef HAVE_LONG_LONG_INT
-#  define SS_ALIGNSIZE_ sizeof(long long)
-#  define SS_ALIGNTYPE_ long long
-# else
-#  define SS_ALIGNSIZE_ sizeof(long)
-#  define SS_ALIGNTYPE_ long
-# endif
-# if HAVE_STRUCT_SOCKADDR_SA_LEN
-#  define SS_PAD1SIZE_ (SS_ALIGNSIZE_ - 2 * sizeof(unsigned char))
-#  define SS_PAD2SIZE_ \
-    (SS_MAXSIZE_ - (2 * sizeof(unsigned char) + SS_PAD1SIZE_ + SS_ALIGNSIZE_))
+#    define SS_MAXSIZE_ 128
+#    ifdef HAVE_LONG_LONG_INT
+#        define SS_ALIGNSIZE_ sizeof(long long)
+#        define SS_ALIGNTYPE_ long long
+#    else
+#        define SS_ALIGNSIZE_ sizeof(long)
+#        define SS_ALIGNTYPE_ long
+#    endif
+#    if HAVE_STRUCT_SOCKADDR_SA_LEN
+#        define SS_PAD1SIZE_ (SS_ALIGNSIZE_ - 2 * sizeof(unsigned char))
+#        define SS_PAD2SIZE_ \
+            (SS_MAXSIZE_     \
+             - (2 * sizeof(unsigned char) + SS_PAD1SIZE_ + SS_ALIGNSIZE_))
 struct sockaddr_storage {
     unsigned char ss_len;
     unsigned char ss_family;
@@ -98,17 +101,18 @@ struct sockaddr_storage {
     SS_ALIGNTYPE_ __ss_align;
     char __ss_pad2[SS_PAD2SIZE_];
 };
-# else
-#  define SS_PAD1SIZE_ (SS_ALIGNSIZE_ - sizeof(unsigned char))
-#  define SS_PAD2SIZE_ \
-    (SS_MAXSIZE_ - (sizeof(unsigned char) + SS_PAD1SIZE_ + SS_ALIGNSIZE_))
+#    else
+#        define SS_PAD1SIZE_ (SS_ALIGNSIZE_ - sizeof(unsigned char))
+#        define SS_PAD2SIZE_ \
+            (SS_MAXSIZE_     \
+             - (sizeof(unsigned char) + SS_PAD1SIZE_ + SS_ALIGNSIZE_))
 struct sockaddr_storage {
     unsigned short ss_family;
     char __ss_pad1[SS_PAD1SIZE_];
     SS_ALIGNTYPE_ __ss_align;
     char __ss_pad2[SS_PAD2SIZE_];
 };
-# endif
+#    endif
 #endif
 
 /*
@@ -116,15 +120,15 @@ struct sockaddr_storage {
  * instead of the non-uglified names from RFC 3493.
  */
 #if HAVE_STRUCT_SOCKADDR_STORAGE && !HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY
-# define ss_family __ss_family
-# define ss_len    __ss_len
+#    define ss_family __ss_family
+#    define ss_len    __ss_len
 #endif
 
 /* Fix IN6_ARE_ADDR_EQUAL if required. */
 #ifdef HAVE_BROKEN_IN6_ARE_ADDR_EQUAL
-# undef IN6_ARE_ADDR_EQUAL
-# define IN6_ARE_ADDR_EQUAL(a, b) \
-    (memcmp((a), (b), sizeof(struct in6_addr)) == 0)
+#    undef IN6_ARE_ADDR_EQUAL
+#    define IN6_ARE_ADDR_EQUAL(a, b) \
+        (memcmp((a), (b), sizeof(struct in6_addr)) == 0)
 #endif
 
 /*
@@ -133,7 +137,7 @@ struct sockaddr_storage {
  * doesn't exist.
  */
 #if !defined(HAVE_GETADDRINFO_ADDRCONFIG) && defined(AI_ADDRCONFIG)
-# undef AI_ADDRCONFIG
+#    undef AI_ADDRCONFIG
 #endif
 
 /*
@@ -143,10 +147,10 @@ struct sockaddr_storage {
  * them harmlessly go away.
  */
 #ifndef AI_ADDRCONFIG
-# define AI_ADDRCONFIG 0
+#    define AI_ADDRCONFIG 0
 #endif
 #ifndef AI_NUMERICSERV
-# define AI_NUMERICSERV 0
+#    define AI_NUMERICSERV 0
 #endif
 
 /*
@@ -154,10 +158,10 @@ struct sockaddr_storage {
  * nul-terminated text representation of the given address type.
  */
 #ifndef INET_ADDRSTRLEN
-# define INET_ADDRSTRLEN 16
+#    define INET_ADDRSTRLEN 16
 #endif
 #ifndef INET6_ADDRSTRLEN
-# define INET6_ADDRSTRLEN 46
+#    define INET6_ADDRSTRLEN 46
 #endif
 
 /*
@@ -165,7 +169,7 @@ struct sockaddr_storage {
  * available on systems too old to have that function.
  */
 #ifndef EAFNOSUPPORT
-# define EAFNOSUPPORT EDOM
+#    define EAFNOSUPPORT EDOM
 #endif
 
 /*
@@ -175,7 +179,7 @@ struct sockaddr_storage {
  * unconditionally.
  */
 #ifndef EAI_ADDRFAMILY
-# define EAI_ADDRFAMILY EAI_FAMILY
+#    define EAI_ADDRFAMILY EAI_FAMILY
 #endif
 
 BEGIN_DECLS
@@ -187,28 +191,28 @@ BEGIN_DECLS
  * accordingly.
  */
 #if !HAVE_DECL_INET_ATON
-# if !HAVE_INET_ATON
+#    if !HAVE_INET_ATON
 extern int inet_aton(const char *, struct in_addr *)
     __attribute__((__visibility__("hidden")));
-# else
+#    else
 extern int inet_aton(const char *, struct in_addr *);
-# endif
+#    endif
 #endif
 #if !HAVE_DECL_INET_NTOA
-# if !HAVE_INET_NTOA
+#    if !HAVE_INET_NTOA
 extern char *inet_ntoa(struct in_addr)
     __attribute__((__visibility__("hidden")));
-# else
+#    else
 extern char *inet_ntoa(struct in_addr);
-# endif
+#    endif
 #endif
 
 #if !HAVE_INET_NTOP
-# ifdef _WIN32
+#    ifdef _WIN32
 extern const char *inet_ntop(int, const void *, char *, int);
-# else
+#    else
 extern const char *inet_ntop(int, const void *, char *, socklen_t);
-# endif
+#    endif
 #endif
 
 /*
@@ -240,26 +244,26 @@ extern const char *inet_ntop(int, const void *, char *, socklen_t);
  */
 #ifdef _WIN32
 int socket_init(void);
-# define socket_shutdown()              WSACleanup()
-# define socket_close(fd)               closesocket(fd)
-# define socket_read(fd, b, s)          recv((fd), (b), (s), 0)
-# define socket_write(fd, b, s)         send((fd), (b), (s), 0)
-# define socket_errno                   WSAGetLastError()
-# define socket_set_errno(e)            WSASetLastError(e)
-# define socket_set_errno_einval()      WSASetLastError(WSAEINVAL)
+#    define socket_shutdown()         WSACleanup()
+#    define socket_close(fd)          closesocket(fd)
+#    define socket_read(fd, b, s)     recv((fd), (b), (s), 0)
+#    define socket_write(fd, b, s)    send((fd), (b), (s), 0)
+#    define socket_errno              WSAGetLastError()
+#    define socket_set_errno(e)       WSASetLastError(e)
+#    define socket_set_errno_einval() WSASetLastError(WSAEINVAL)
 const char *socket_strerror(int);
 typedef SOCKET socket_type;
 #else
-# define socket_init()                  1
-# define socket_shutdown()              /* empty */
-# define socket_close(fd)               close(fd)
-# define socket_read(fd, b, s)          read((fd), (b), (s))
-# define socket_write(fd, b, s)         write((fd), (b), (s))
-# define socket_errno                   errno
-# define socket_set_errno(e)            errno = (e)
-# define socket_set_errno_einval()      errno = EINVAL
-# define socket_strerror(e)             strerror(e)
-# define INVALID_SOCKET                 -1
+#    define socket_init()             1
+#    define socket_shutdown()         /* empty */
+#    define socket_close(fd)          close(fd)
+#    define socket_read(fd, b, s)     read((fd), (b), (s))
+#    define socket_write(fd, b, s)    write((fd), (b), (s))
+#    define socket_errno              errno
+#    define socket_set_errno(e)       errno = (e)
+#    define socket_set_errno_einval() errno = EINVAL
+#    define socket_strerror(e)        strerror(e)
+#    define INVALID_SOCKET            -1
 typedef int socket_type;
 #endif
 

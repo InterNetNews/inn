@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2000-2006, 2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2006, 2018-2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2010
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 1995 Patrick Powell
@@ -31,7 +31,7 @@
  * formats for easy testing.
  */
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 2) || defined(__clang__)
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
 /*
@@ -43,20 +43,12 @@ int test_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 
 static const char string[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-static const char *const fp_formats[] = {
-    "%-1.5f",   "%1.5f",    "%31.9f",   "%10.5f",   "% 10.5f",  "%+22.9f",
-    "%+4.9f",   "%01.3f",   "%3.1f",    "%3.2f",    "%.0f",     "%.1f",
-    "%f",
+/* clang-format off */
 
-    /* %e and %g formats aren't really implemented yet. */
-#if 0
-    "%-1.5e",   "%1.5e",    "%31.9e",   "%10.5e",   "% 10.5e",  "%+22.9e",
-    "%+4.9e",   "%01.3e",   "%3.1e",    "%3.2e",    "%.0e",     "%.1e",
-    "%e",
-    "%-1.5g",   "%1.5g",    "%31.9g",   "%10.5g",   "% 10.5g",  "%+22.9g",
-    "%+4.9g",   "%01.3g",   "%3.1g",    "%3.2g",    "%.0g",     "%.1g",
-    "%g",
-#endif
+static const char *const fp_formats[] = {
+    "%-1.5f",   "%1.5f",    "%31.6f",   "%10.5f",   "% 10.5f",  "%+22.6f",
+    "%+4.6f",   "%01.3f",   "%3.1f",    "%3.2f",    "%.0f",     "%.1f",
+    "%f",
     NULL
 };
 static const char *const int_formats[] = {
@@ -102,10 +94,12 @@ static unsigned long long ullong_nums[] = {
     0
 };
 
+/* clang-format on */
+
 
 static void
-test_format(bool trunc, const char *expected, int count,
-            const char *format, ...)
+test_format(bool trunc, const char *expected, int count, const char *format,
+            ...)
 {
     char buf[128];
     int result;
@@ -127,12 +121,13 @@ main(void)
     long lcount;
     char lgbuf[128];
 
-    plan(8 +
-         (18 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
-          + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
-          + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
-          + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
-          + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums)) * 2);
+    plan(8
+         + (18 + (ARRAY_SIZE(fp_formats) - 1) * ARRAY_SIZE(fp_nums)
+            + (ARRAY_SIZE(int_formats) - 1) * ARRAY_SIZE(int_nums)
+            + (ARRAY_SIZE(uint_formats) - 1) * ARRAY_SIZE(uint_nums)
+            + (ARRAY_SIZE(llong_formats) - 1) * ARRAY_SIZE(llong_nums)
+            + (ARRAY_SIZE(ullong_formats) - 1) * ARRAY_SIZE(ullong_nums))
+               * 2);
 
     is_int(4, test_snprintf(NULL, 0, "%s", "abcd"), "simple string length");
     is_int(2, test_snprintf(NULL, 0, "%d", 20), "number length");
@@ -159,8 +154,8 @@ main(void)
                 string, -2.5);
     test_format(true, "abcdefghij4444", 14, "%.10s%n%d", string, &count, 4444);
     is_int(10, count, "correct output from %%n");
-    test_format(true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%n%s%ln",
-                &count, string, &lcount);
+    test_format(true, "abcdefghijklmnopqrstuvwxyz01234", 36, "%n%s%ln", &count,
+                string, &lcount);
     is_int(0, count, "correct output from two %%n");
     is_int(31, lcount, "correct output from long %%ln");
     test_format(true, "(null)", 6, "%s", (char *) NULL);

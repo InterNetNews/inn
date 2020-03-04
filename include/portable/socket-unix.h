@@ -33,8 +33,8 @@
  * (2nd edition), vol. 1, pg. 917.
  */
 #if !HAVE_SUN_LEN
-# define SUN_LEN(sun) \
-    (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
+#    define SUN_LEN(sun) \
+        (sizeof(*(sun)) - sizeof((sun)->sun_path) + strlen((sun)->sun_path))
 #endif
 
 #endif /* !PORTABLE_SOCKET_UNIX_H */

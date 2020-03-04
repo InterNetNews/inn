@@ -46,9 +46,9 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-# include <direct.h>
+#    include <direct.h>
 #else
-# include <sys/stat.h>
+#    include <sys/stat.h>
 #endif
 #include <sys/types.h>
 #include <unistd.h>
@@ -116,8 +116,8 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)
 
 /* Windows provides mkdir and rmdir under different names. */
 #ifdef _WIN32
-# define mkdir(p, m) _mkdir(p)
-# define rmdir(p)    _rmdir(p)
+#    define mkdir(p, m) _mkdir(p)
+#    define rmdir(p)    _rmdir(p)
 #endif
 
 /*
@@ -132,7 +132,7 @@ unsigned long testnum = 1;
  * We can get the highest test count from testnum.
  */
 static unsigned long _planned = 0;
-static unsigned long _failed  = 0;
+static unsigned long _failed = 0;
 
 /*
  * Store the PID of the process that called plan() and only summarize
@@ -188,15 +188,15 @@ static struct diag_file *diag_files = NULL;
  * print_desc, which has to be done in a macro.  Assumes that format is the
  * argument immediately before the variadic arguments.
  */
-#define PRINT_DESC(prefix, format)              \
-    do {                                        \
-        if (format != NULL) {                   \
-            va_list args;                       \
-            printf("%s", prefix);               \
-            va_start(args, format);             \
-            vprintf(format, args);              \
-            va_end(args);                       \
-        }                                       \
+#define PRINT_DESC(prefix, format)  \
+    do {                            \
+        if (format != NULL) {       \
+            va_list args;           \
+            printf("%s", prefix);   \
+            va_start(args, format); \
+            vprintf(format, args);  \
+            va_end(args);           \
+        }                           \
     } while (0)
 
 
@@ -290,8 +290,8 @@ handle_diag_file_line(struct diag_file *file, fpos_t where)
             incomplete = 1;
         else {
             file->bufsize += BUFSIZ;
-            file->buffer
-                = breallocarray_type(file->buffer, file->bufsize, char);
+            file->buffer =
+                breallocarray_type(file->buffer, file->bufsize, char);
         }
 
         /*
@@ -591,7 +591,7 @@ is_bool(int left, int right, const char *format, ...)
     if (success)
         printf("ok %lu", testnum++);
     else {
-        diag(" left: %s", !!left  ? "true" : "false");
+        diag(" left: %s", !!left ? "true" : "false");
         diag("right: %s", !!right ? "true" : "false");
         printf("not ok %lu", testnum++);
         _failed++;
@@ -651,7 +651,7 @@ is_string(const char *left, const char *right, const char *format, ...)
     if (success)
         printf("ok %lu", testnum++);
     else {
-        diag(" left: %s", left  == NULL ? "(null)" : left);
+        diag(" left: %s", left == NULL ? "(null)" : left);
         diag("right: %s", right == NULL ? "(null)" : right);
         printf("not ok %lu", testnum++);
         _failed++;
@@ -705,7 +705,7 @@ is_blob(const void *left, const void *right, size_t len, const char *format,
     if (success)
         printf("ok %lu", testnum++);
     else {
-        const unsigned char *left_c  = (const unsigned char *) left;
+        const unsigned char *left_c = (const unsigned char *) left;
         const unsigned char *right_c = (const unsigned char *) right;
 
         for (i = 0; i < len; i++) {
@@ -869,7 +869,7 @@ bcalloc(size_t n, size_t size)
 
     p = calloc(n, size);
     if (p == NULL)
-        sysbail("failed to calloc %lu", (unsigned long)(n * size));
+        sysbail("failed to calloc %lu", (unsigned long) (n * size));
     return p;
 }
 
@@ -961,9 +961,9 @@ bstrndup(const char *s, size_t n)
     size_t length;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t) (p - s) < n && *p != '\0'; p++)
+    for (p = s; (size_t)(p - s) < n && *p != '\0'; p++)
         ;
-    length = (size_t) (p - s);
+    length = (size_t)(p - s);
     copy = (char *) malloc(length + 1);
     if (copy == NULL)
         sysbail("failed to strndup %lu bytes", (unsigned long) length);
@@ -984,7 +984,7 @@ test_file_path(const char *file)
 {
     char *base;
     char *path = NULL;
-    const char *envs[] = { "C_TAP_BUILD", "C_TAP_SOURCE", NULL };
+    const char *envs[] = {"C_TAP_BUILD", "C_TAP_SOURCE", NULL};
     int i;
 
     for (i = 0; envs[i] != NULL; i++) {

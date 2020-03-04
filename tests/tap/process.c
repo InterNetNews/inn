@@ -49,11 +49,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#    include <sys/select.h>
 #endif
 #include <sys/stat.h>
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <sys/wait.h>
 #include <time.h>
@@ -64,7 +64,7 @@
 
 /* May be defined by the build system. */
 #ifndef PATH_FAKEROOT
-# define PATH_FAKEROOT ""
+#    define PATH_FAKEROOT ""
 #endif
 
 /* How long to wait for the process to start in seconds. */
@@ -75,12 +75,12 @@
  * everything required to stop the process and clean up after it.
  */
 struct process {
-    pid_t pid;                  /* PID of child process */
-    char *pidfile;              /* PID file to delete on process stop */
-    char *tmpdir;               /* Temporary directory for log file */
-    char *logfile;              /* Log file of process output */
-    bool is_child;              /* Whether we can waitpid for process */
-    struct process *next;       /* Next process in global list */
+    pid_t pid;            /* PID of child process */
+    char *pidfile;        /* PID file to delete on process stop */
+    char *tmpdir;         /* Temporary directory for log file */
+    char *logfile;        /* Log file of process output */
+    bool is_child;        /* Whether we can waitpid for process */
+    struct process *next; /* Next process in global list */
 };
 
 /*

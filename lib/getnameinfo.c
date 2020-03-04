@@ -3,7 +3,7 @@
  * Replacement for a missing getnameinfo.
  *
  * This is an implementation of getnameinfo for systems that don't have one so
- * that networking code can use a consistant interface without #ifdef.  It is
+ * that networking code can use a consistent interface without #ifdef.  It is
  * a fairly minimal implementation, with the following limitations:
  *
  *   - IPv4 support only.  IPv6 is not supported.
@@ -18,7 +18,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -43,19 +43,19 @@
  * constants, but that should be okay (except possibly for gai_strerror).
  */
 #if TESTING
-# undef getnameinfo
-# define getnameinfo test_getnameinfo
+#    undef getnameinfo
+#    define getnameinfo test_getnameinfo
 int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
                      char *, socklen_t, int);
 
 /* Linux doesn't provide EAI_OVERFLOW, so make up our own for testing. */
-# ifndef EAI_OVERFLOW
-#  define EAI_OVERFLOW 10
-# endif
+#    ifndef EAI_OVERFLOW
+#        define EAI_OVERFLOW 10
+#    endif
 #endif
 
 /* Used for unused parameters to silence gcc warnings. */
-#define UNUSED  __attribute__((__unused__))
+#define UNUSED __attribute__((__unused__))
 
 
 /*

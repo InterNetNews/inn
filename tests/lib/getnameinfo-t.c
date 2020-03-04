@@ -21,8 +21,8 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include "tap/basic.h"
 #include "inn/xmalloc.h"
@@ -32,7 +32,7 @@ int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
 
 /* Linux doesn't provide EAI_OVERFLOW, so make up our own for testing. */
 #ifndef EAI_OVERFLOW
-# define EAI_OVERFLOW 10
+#    define EAI_OVERFLOW 10
 #endif
 
 int
@@ -107,14 +107,14 @@ main(void)
     is_int(0, status, "lookup with NI_NUMERICHOST");
     is_string("10.20.30.40", node, "...and found correct IP address");
     node[0] = '\0';
-    status = test_getnameinfo(sa, sizeof(sin), node, 1, NULL, 0,
-                              NI_NUMERICHOST);
+    status =
+        test_getnameinfo(sa, sizeof(sin), node, 1, NULL, 0, NI_NUMERICHOST);
     is_int(EAI_OVERFLOW, status, "EAI_OVERFLOW with one character");
-    status = test_getnameinfo(sa, sizeof(sin), node, 11, NULL, 0,
-                              NI_NUMERICHOST);
+    status =
+        test_getnameinfo(sa, sizeof(sin), node, 11, NULL, 0, NI_NUMERICHOST);
     is_int(EAI_OVERFLOW, status, "EAI_OVERFLOW with 11 characters");
-    status = test_getnameinfo(sa, sizeof(sin), node, 12, NULL, 0,
-                              NI_NUMERICHOST);
+    status =
+        test_getnameinfo(sa, sizeof(sin), node, 12, NULL, 0, NI_NUMERICHOST);
     is_int(0, status, "fits into 12 characters");
     is_string("10.20.30.40", node, "...and found correct IP address");
 

@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002-2004, 2006, 2014-2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002-2004, 2006, 2014-2015, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -65,8 +65,8 @@ test_append_vsprintf(struct buffer *buffer, const char *format, ...)
 int
 main(void)
 {
-    struct buffer one = { 0, 0, 0, NULL };
-    struct buffer two = { 0, 0, 0, NULL };
+    struct buffer one = {0, 0, 0, NULL};
+    struct buffer two = {0, 0, 0, NULL};
     struct buffer *three;
     int fd;
     char *data;
@@ -80,7 +80,7 @@ main(void)
     is_int(1024, one.size, "minimum size is 1024");
     is_int(0, one.used, "used starts at 0");
     is_int(sizeof(test_string1), one.left, "left is correct");
-    is_string(test_string1, one.data, "data is corect");
+    is_string(test_string1, one.data, "data is correct");
     buffer_append(&one, test_string2, sizeof(test_string2));
     is_int(1024, one.size, "appended data doesn't change size");
     is_int(0, one.used, "or used");
@@ -96,7 +96,9 @@ main(void)
     ok(memcmp(one.data + one.used, test_string2, sizeof(test_string2)) == 0,
        "and the middle data is unchanged");
     ok(memcmp(one.data + one.used + sizeof(test_string2), test_string1,
-              sizeof(test_string1)) == 0, "and the final data is correct");
+              sizeof(test_string1))
+           == 0,
+       "and the final data is correct");
     buffer_set(&one, test_string1, sizeof(test_string1));
     buffer_set(&two, test_string2, sizeof(test_string2));
     buffer_swap(&one, &two);

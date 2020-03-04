@@ -67,8 +67,7 @@ void vector_addn(struct vector *, const char *string, size_t length)
  * Resize the array of strings to hold size entries.  Saves reallocation work
  * in vector_add if it's known in advance how many entries there will be.
  */
-void vector_resize(struct vector *, size_t size)
-    __attribute__((__nonnull__));
+void vector_resize(struct vector *, size_t size) __attribute__((__nonnull__));
 void cvector_resize(struct cvector *, size_t size)
     __attribute__((__nonnull__));
 
@@ -77,10 +76,8 @@ void cvector_resize(struct cvector *, size_t size)
  * regular vector, but not freeing the strings array (to cut down on memory
  * allocations if the vector will be reused).
  */
-void vector_clear(struct vector *)
-    __attribute__((__nonnull__));
-void cvector_clear(struct cvector *)
-    __attribute__((__nonnull__));
+void vector_clear(struct vector *) __attribute__((__nonnull__));
+void cvector_clear(struct cvector *) __attribute__((__nonnull__));
 
 /*
  * Free the vector and all resources allocated for it.  NULL may be passed in

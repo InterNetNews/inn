@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2002, 2004-2005, 2015, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2002, 2004-2005, 2015, 2017, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -57,7 +57,7 @@ test1(void *data UNUSED)
     warn("warning");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test2(void *data UNUSED)
 {
     die("fatal");
@@ -70,7 +70,7 @@ test3(void *data UNUSED)
     syswarn("permissions");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test4(void *data UNUSED)
 {
     errno = EACCES;
@@ -84,7 +84,7 @@ test5(void *data UNUSED)
     warn("warning");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test6(void *data UNUSED)
 {
     message_program_name = "test6";
@@ -99,7 +99,7 @@ test7(void *data UNUSED)
     syswarn("perms %d", 7);
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test8(void *data UNUSED)
 {
     message_program_name = "test8";
@@ -113,14 +113,14 @@ return10(void)
     return 10;
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test9(void *data UNUSED)
 {
     message_fatal_cleanup = return10;
     die("fatal");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test10(void *data UNUSED)
 {
     message_program_name = 0;
@@ -129,7 +129,7 @@ test10(void *data UNUSED)
     sysdie("fatal perm");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test11(void *data UNUSED)
 {
     message_program_name = "test11";
@@ -139,7 +139,7 @@ test11(void *data UNUSED)
     sysdie("fatal");
 }
 
-static void __attribute__((__format__(printf, 2, 0)))
+__attribute__((__format__(printf, 2, 0))) static void
 log_msg(size_t len, const char *format, va_list args, int error)
 {
     fprintf(stderr, "%lu %d ", (unsigned long) len, error);
@@ -154,7 +154,7 @@ test12(void *data UNUSED)
     warn("warning");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test13(void *data UNUSED)
 {
     message_handlers_die(1, log_msg);
@@ -169,7 +169,7 @@ test14(void *data UNUSED)
     syswarn("warning");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test15(void *data UNUSED)
 {
     message_handlers_die(2, log_msg, log_msg);
@@ -221,22 +221,22 @@ test21(void *data UNUSED)
     debug("baz");
 }
 
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 test22(void *data UNUSED)
 {
     message_handlers_die(0);
     die("hi mom!");
 }
 
-static
-void test23(void *data UNUSED)
+static void
+test23(void *data UNUSED)
 {
     message_handlers_warn(0);
     warn("this is a test");
 }
 
-static
-void test24(void *data UNUSED)
+static void
+test24(void *data UNUSED)
 {
     notice("first");
     message_handlers_notice(0);
@@ -308,7 +308,7 @@ main(void)
     is_function_output(test20, NULL, 0, "3 0 foo\n", "test20");
     is_function_output(test21, NULL, 0, "test23: baz\n", "test21");
 
-    /* Make sure that it's possible to turn off a message type entirely. */ 
+    /* Make sure that it's possible to turn off a message type entirely. */
     is_function_output(test22, NULL, 1, "", "test22");
     is_function_output(test23, NULL, 0, "", "test23");
     is_function_output(test24, NULL, 0, "first\nthird\n", "test24");

@@ -33,8 +33,8 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
 #include <sys/wait.h>

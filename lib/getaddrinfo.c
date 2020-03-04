@@ -3,7 +3,7 @@
  * Replacement for a missing getaddrinfo.
  *
  * This is an implementation of getaddrinfo for systems that don't have one so
- * that networking code can use a consistant interface without #ifdef.  It is
+ * that networking code can use a consistent interface without #ifdef.  It is
  * a fairly minimal implementation, with the following limitations:
  *
  *   - IPv4 support only.  IPv6 is not supported.
@@ -21,7 +21,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2003-2005, 2016-2017, 2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2003-2005, 2016-2017, 2019-2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2015 Julien ÉLIE <julien@trigofacile.com>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
@@ -35,8 +35,8 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
 
@@ -51,13 +51,13 @@ extern int h_errno;
  * defined so that we can deal with them in case statements.
  */
 #ifndef HOST_NOT_FOUND
-# define HOST_NOT_FOUND 1
-# define TRY_AGAIN      2
-# define NO_RECOVERY    3
-# define NO_DATA        4
+#    define HOST_NOT_FOUND 1
+#    define TRY_AGAIN      2
+#    define NO_RECOVERY    3
+#    define NO_DATA        4
 #endif
 #ifndef NETDB_INTERNAL
-# define NETDB_INTERNAL -1
+#    define NETDB_INTERNAL -1
 #endif
 
 /*
@@ -66,12 +66,12 @@ extern int h_errno;
  * constants, but that should be okay (except possibly for gai_strerror).
  */
 #if TESTING
-# undef gai_strerror
-# undef freeaddrinfo
-# undef getaddrinfo
-# define gai_strerror test_gai_strerror
-# define freeaddrinfo test_freeaddrinfo
-# define getaddrinfo  test_getaddrinfo
+#    undef gai_strerror
+#    undef freeaddrinfo
+#    undef getaddrinfo
+#    define gai_strerror test_gai_strerror
+#    define freeaddrinfo test_freeaddrinfo
+#    define getaddrinfo  test_getaddrinfo
 const char *test_gai_strerror(int);
 void test_freeaddrinfo(struct addrinfo *);
 int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
@@ -83,14 +83,14 @@ int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
  * pick some other values for them.
  */
 #if TESTING
-# if AI_NUMERICSERV == 0
-#  undef AI_NUMERICSERV
-#  define AI_NUMERICSERV 0x0080
-# endif
-# if AI_NUMERICHOST == 0
-#  undef AI_NUMERICHOST
-#  define AI_NUMERICHOST 0x0100
-# endif
+#    if AI_NUMERICSERV == 0
+#        undef AI_NUMERICSERV
+#        define AI_NUMERICSERV 0x0080
+#    endif
+#    if AI_NUMERICHOST == 0
+#        undef AI_NUMERICHOST
+#        define AI_NUMERICHOST 0x0100
+#    endif
 #endif
 
 /*
@@ -99,17 +99,17 @@ int test_getaddrinfo(const char *, const char *, const struct addrinfo *,
  * on these platforms.
  */
 #if TESTING
-# ifdef HAVE_GETADDRINFO
-#  define AI_INTERNAL_ALL 0x1fff
-# else
-#  define AI_INTERNAL_ALL 0x01ff
-# endif
+#    ifdef HAVE_GETADDRINFO
+#        define AI_INTERNAL_ALL 0x1fff
+#    else
+#        define AI_INTERNAL_ALL 0x01ff
+#    endif
 #else
-# define AI_INTERNAL_ALL 0x007f
+#    define AI_INTERNAL_ALL 0x007f
 #endif
 
 /* Table of strings corresponding to the EAI_* error codes. */
-static const char * const gai_errors[] = {
+static const char *const gai_errors[] = {
     "Host name lookup failure",         /*  1 EAI_AGAIN */
     "Invalid flag value",               /*  2 EAI_BADFLAGS */
     "Unknown server error",             /*  3 EAI_FAIL */
@@ -124,9 +124,9 @@ static const char * const gai_errors[] = {
 
 /* Macro to set the len attribute of sockaddr_in. */
 #if HAVE_STRUCT_SOCKADDR_SA_LEN
-# define sin_set_length(s) ((s)->sin_len  = sizeof(struct sockaddr_in))
+#    define sin_set_length(s) ((s)->sin_len = sizeof(struct sockaddr_in))
 #else
-# define sin_set_length(s) /* empty */
+#    define sin_set_length(s) /* empty */
 #endif
 
 /*
@@ -332,8 +332,8 @@ gai_lookup(const char *nodename, int flags, int socktype, unsigned short port,
         if (host->h_addr_list[0] == NULL)
             return EAI_FAIL;
         canonical = (flags & AI_CANONNAME)
-            ? ((host->h_name != NULL) ? host->h_name : nodename)
-            : NULL;
+                        ? ((host->h_name != NULL) ? host->h_name : nodename)
+                        : NULL;
         first = NULL;
         prev = NULL;
         for (i = 0; host->h_addr_list[i] != NULL; i++) {

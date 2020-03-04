@@ -50,28 +50,28 @@
 
 /* A set of standard ANSI C headers.  We don't care about pre-ANSI systems. */
 #if HAVE_INTTYPES_H
-# include <inttypes.h>
+#    include <inttypes.h>
 #endif
 #include <limits.h>
 #include <stdarg.h>
 #include <stddef.h>
 #if HAVE_STDINT_H
-# include <stdint.h>
+#    include <stdint.h>
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_STRINGS_H
-# include <strings.h>
+#    include <strings.h>
 #endif
 #include <sys/types.h>
 #if HAVE_UNISTD_H
-# include <unistd.h>
+#    include <unistd.h>
 #endif
 
 /* SCO OpenServer gets int32_t from here. */
 #if HAVE_SYS_BITYPES_H
-# include <sys/bitypes.h>
+#    include <sys/bitypes.h>
 #endif
 
 /* Get the bool type. */
@@ -79,12 +79,12 @@
 
 /* In case uint32_t and associated limits weren't defined. */
 #ifndef UINT32_MAX
-# define UINT32_MAX 4294967295UL
+#    define UINT32_MAX 4294967295UL
 #endif
 
 /* Windows provides snprintf under a different name. */
 #ifdef _WIN32
-# define snprintf _snprintf
+#    define snprintf _snprintf
 #endif
 
 /* Define sig_atomic_t if it's not available in signal.h. */
@@ -102,9 +102,9 @@ typedef ptrdiff_t ssize_t;
  * been defined, all the rest almost certainly have.
  */
 #ifndef STDIN_FILENO
-# define STDIN_FILENO  0
-# define STDOUT_FILENO 1
-# define STDERR_FILENO 2
+#    define STDIN_FILENO  0
+#    define STDOUT_FILENO 1
+#    define STDERR_FILENO 2
 #endif
 
 /*
@@ -123,11 +123,11 @@ typedef ptrdiff_t ssize_t;
  * Autoconf manual, memcpy is a generally portable fallback.
  */
 #ifndef va_copy
-# ifdef __va_copy
-#  define va_copy(d, s) __va_copy((d), (s))
-# else
-#  define va_copy(d, s) memcpy(&(d), &(s), sizeof(va_list))
-# endif
+#    ifdef __va_copy
+#        define va_copy(d, s) __va_copy((d), (s))
+#    else
+#        define va_copy(d, s) memcpy(&(d), &(s), sizeof(va_list))
+#    endif
 #endif
 
 BEGIN_DECLS

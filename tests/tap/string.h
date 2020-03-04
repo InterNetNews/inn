@@ -37,7 +37,7 @@
 #include "config.h"
 #include "tap/macros.h"
 
-#include <stdarg.h>             /* va_list */
+#include <stdarg.h> /* va_list */
 
 BEGIN_DECLS
 

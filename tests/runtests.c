@@ -94,9 +94,9 @@
 
 /* Required for fdopen(), getopt(), and putenv(). */
 #if defined(__STRICT_ANSI__) || defined(PEDANTIC)
-# ifndef _XOPEN_SOURCE
-#  define _XOPEN_SOURCE 500
-# endif
+#    ifndef _XOPEN_SOURCE
+#        define _XOPEN_SOURCE 500
+#    endif
 #endif
 
 #include <ctype.h>
@@ -121,7 +121,7 @@
 
 /* AIX 6.1 (and possibly later) doesn't have WCOREDUMP. */
 #ifndef WCOREDUMP
-# define WCOREDUMP(status) ((unsigned)(status) & 0x80)
+#    define WCOREDUMP(status) ((unsigned) (status) &0x80)
 #endif
 
 /*
@@ -130,9 +130,9 @@
  * have.
  */
 #ifndef STDIN_FILENO
-# define STDIN_FILENO  0
-# define STDOUT_FILENO 1
-# define STDERR_FILENO 2
+#    define STDIN_FILENO  0
+#    define STDOUT_FILENO 1
+#    define STDERR_FILENO 2
 #endif
 
 /*
@@ -150,58 +150,50 @@
  * $(abs_top_builddir) respectively.
  */
 #ifndef C_TAP_SOURCE
-# define C_TAP_SOURCE NULL
+#    define C_TAP_SOURCE NULL
 #endif
 #ifndef C_TAP_BUILD
-# define C_TAP_BUILD NULL
+#    define C_TAP_BUILD NULL
 #endif
 
 /* Test status codes. */
-enum test_status {
-    TEST_FAIL,
-    TEST_PASS,
-    TEST_SKIP,
-    TEST_INVALID
-};
+enum test_status { TEST_FAIL, TEST_PASS, TEST_SKIP, TEST_INVALID };
 
 /* Really, just a boolean, but this is more self-documenting. */
-enum test_verbose {
-    CONCISE = 0,
-    VERBOSE = 1
-};
+enum test_verbose { CONCISE = 0, VERBOSE = 1 };
 
 /* Indicates the state of our plan. */
 enum plan_status {
-    PLAN_INIT,                  /* Nothing seen yet. */
-    PLAN_FIRST,                 /* Plan seen before any tests. */
-    PLAN_PENDING,               /* Test seen and no plan yet. */
-    PLAN_FINAL                  /* Plan seen after some tests. */
+    PLAN_INIT,    /* Nothing seen yet. */
+    PLAN_FIRST,   /* Plan seen before any tests. */
+    PLAN_PENDING, /* Test seen and no plan yet. */
+    PLAN_FINAL    /* Plan seen after some tests. */
 };
 
 /* Error exit statuses for test processes. */
-#define CHILDERR_DUP    100     /* Couldn't redirect stderr or stdout. */
-#define CHILDERR_EXEC   101     /* Couldn't exec child process. */
-#define CHILDERR_STDIN  102     /* Couldn't open stdin file. */
-#define CHILDERR_STDERR 103     /* Couldn't open stderr file. */
+#define CHILDERR_DUP    100 /* Couldn't redirect stderr or stdout. */
+#define CHILDERR_EXEC   101 /* Couldn't exec child process. */
+#define CHILDERR_STDIN  102 /* Couldn't open stdin file. */
+#define CHILDERR_STDERR 103 /* Couldn't open stderr file. */
 
 /* Structure to hold data for a set of tests. */
 struct testset {
-    char *file;                 /* The file name of the test. */
-    char **command;             /* The argv vector to run the command. */
-    enum plan_status plan;      /* The status of our plan. */
-    unsigned long count;        /* Expected count of tests. */
-    unsigned long current;      /* The last seen test number. */
-    unsigned int length;        /* The length of the last status message. */
-    unsigned long passed;       /* Count of passing tests. */
-    unsigned long failed;       /* Count of failing lists. */
-    unsigned long skipped;      /* Count of skipped tests (passed). */
-    unsigned long allocated;    /* The size of the results table. */
-    enum test_status *results;  /* Table of results by test number. */
-    unsigned int aborted;       /* Whether the set was aborted. */
-    unsigned int reported;      /* Whether the results were reported. */
-    int status;                 /* The exit status of the test. */
-    unsigned int all_skipped;   /* Whether all tests were skipped. */
-    char *reason;               /* Why all tests were skipped. */
+    char *file;                /* The file name of the test. */
+    char **command;            /* The argv vector to run the command. */
+    enum plan_status plan;     /* The status of our plan. */
+    unsigned long count;       /* Expected count of tests. */
+    unsigned long current;     /* The last seen test number. */
+    unsigned int length;       /* The length of the last status message. */
+    unsigned long passed;      /* Count of passing tests. */
+    unsigned long failed;      /* Count of failing lists. */
+    unsigned long skipped;     /* Count of skipped tests (passed). */
+    unsigned long allocated;   /* The size of the results table. */
+    enum test_status *results; /* Table of results by test number. */
+    unsigned int aborted;      /* Whether the set was aborted. */
+    unsigned int reported;     /* Whether the results were reported. */
+    int status;                /* The exit status of the test. */
+    unsigned int all_skipped;  /* Whether all tests were skipped. */
+    char *reason;              /* Why all tests were skipped. */
 };
 
 /* Structure to hold a linked list of test sets. */
@@ -249,9 +241,9 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 /* Include the file name and line number in malloc failures. */
 #define xcalloc(n, type) \
     ((type *) x_calloc((n), sizeof(type), __FILE__, __LINE__))
-#define xmalloc(size)         ((char *) x_malloc((size), __FILE__, __LINE__))
-#define xstrdup(p)            x_strdup((p), __FILE__, __LINE__)
-#define xstrndup(p, size)     x_strndup((p), (size), __FILE__, __LINE__)
+#define xmalloc(size)     ((char *) x_malloc((size), __FILE__, __LINE__))
+#define xstrdup(p)        x_strdup((p), __FILE__, __LINE__)
+#define xstrndup(p, size) x_strndup((p), (size), __FILE__, __LINE__)
 #define xreallocarray(p, n, type) \
     ((type *) x_reallocarray((p), (n), sizeof(type), __FILE__, __LINE__))
 
@@ -261,9 +253,9 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
  * (to avoid confusion with other macros).
  */
 #ifndef __attribute__
-# if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#  define __attribute__(spec)   /* empty */
-# endif
+#    if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#        define __attribute__(spec) /* empty */
+#    endif
 #endif
 
 /*
@@ -274,11 +266,11 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
  * variadic macro support.
  */
 #if !defined(__attribute__) && !defined(__alloc_size__)
-# if defined(__GNUC__) && !defined(__clang__)
-#  if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
-#   define __alloc_size__(spec, args...) /* empty */
-#  endif
-# endif
+#    if defined(__GNUC__) && !defined(__clang__)
+#        if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)
+#            define __alloc_size__(spec, args...) /* empty */
+#        endif
+#    endif
 #endif
 
 /*
@@ -288,7 +280,7 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
  * compilation context, but there's no push and pop available.
  */
 #if !defined(__attribute__) && (defined(__llvm__) || defined(__clang__))
-# pragma GCC diagnostic ignored "-Wattributes"
+#    pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
 /* Declare internal functions that benefit from compiler attributes. */
@@ -418,8 +410,8 @@ x_strdup(const char *s, const char *file, int line)
     len = strlen(s) + 1;
     p = (char *) malloc(len);
     if (p == NULL)
-        sysdie("failed to strdup %lu bytes at %s line %d",
-               (unsigned long) len, file, line);
+        sysdie("failed to strdup %lu bytes at %s line %d", (unsigned long) len,
+               file, line);
     memcpy(p, s, len);
     return p;
 }
@@ -441,9 +433,9 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     char *copy;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
+    for (p = s; (size_t)(p - s) < size && *p != '\0'; p++)
         ;
-    len = (size_t) (p - s);
+    len = (size_t)(p - s);
     copy = (char *) malloc(len + 1);
     if (copy == NULL)
         sysdie("failed to strndup %lu bytes at %s line %d",
@@ -541,7 +533,7 @@ tv_sum(const struct timeval *tv1, const struct timeval *tv2)
 static const char *
 skip_whitespace(const char *p)
 {
-    while (isspace((unsigned char)(*p)))
+    while (isspace((unsigned char) (*p)))
         p++;
     return p;
 }
@@ -554,7 +546,7 @@ skip_whitespace(const char *p)
 static const char *
 skip_non_whitespace(const char *p)
 {
-    while (*p != '\0' && !isspace((unsigned char)(*p)))
+    while (*p != '\0' && !isspace((unsigned char) (*p)))
         p++;
     return p;
 }
@@ -789,8 +781,7 @@ test_plan(const char *line, struct testset *ts, enum test_verbose verbose)
  * reported status.
  */
 static void
-test_checkline(const char *line, struct testset *ts,
-               enum test_verbose verbose)
+test_checkline(const char *line, struct testset *ts, enum test_verbose verbose)
 {
     enum test_status status = TEST_PASS;
     const char *bail;
@@ -830,7 +821,7 @@ test_checkline(const char *line, struct testset *ts,
         return;
 
     /* If we haven't yet seen a plan, look for one. */
-    if (ts->plan == PLAN_INIT && isdigit((unsigned char)(*line))) {
+    if (ts->plan == PLAN_INIT && isdigit((unsigned char) (*line))) {
         if (!test_plan(line, ts, verbose))
             return;
     } else if (strncmp(line, "1..", 3) == 0) {
@@ -881,7 +872,7 @@ test_checkline(const char *line, struct testset *ts,
      * Handle directives.  We should probably do something more interesting
      * with unexpected passes of todo tests.
      */
-    while (isdigit((unsigned char)(*line)))
+    while (isdigit((unsigned char) (*line)))
         line++;
     line = skip_whitespace(line);
     if (*line == '#') {
@@ -904,10 +895,17 @@ test_checkline(const char *line, struct testset *ts,
 
     /* Good results.  Increment our various counters. */
     switch (status) {
-        case TEST_PASS: ts->passed++;   break;
-        case TEST_FAIL: ts->failed++;   break;
-        case TEST_SKIP: ts->skipped++;  break;
-        case TEST_INVALID:              break;
+    case TEST_PASS:
+        ts->passed++;
+        break;
+    case TEST_FAIL:
+        ts->failed++;
+        break;
+    case TEST_SKIP:
+        ts->skipped++;
+        break;
+    case TEST_INVALID:
+        break;
     }
     ts->current = current;
     ts->results[current - 1] = status;
@@ -1254,7 +1252,7 @@ find_test(const char *name, const char *source, const char *build)
     char *path = NULL;
     const char *bases[3], *suffix, *base;
     unsigned int i, j;
-    const char *suffixes[3] = { "-t", ".t", "" };
+    const char *suffixes[3] = {"-t", ".t", ""};
 
     /* Possible base directories. */
     bases[0] = ".";
@@ -1617,8 +1615,7 @@ test_batch(struct testlist *tests, enum test_verbose verbose)
         else
             printf("Aborted %lu test sets", aborted);
         printf(", passed %lu/%lu tests", passed, total);
-    }
-    else if (failed == 0)
+    } else if (failed == 0)
         fputs("All tests successful", stdout);
     else
         printf("Failed %lu/%lu tests, %.2f%% okay", failed, total,
@@ -1632,8 +1629,8 @@ test_batch(struct testlist *tests, enum test_verbose verbose)
     puts(".");
     printf("Files=%u,  Tests=%lu", count, total);
     printf(",  %.2f seconds", tv_diff(&end, &start));
-    printf(" (%.2f usr + %.2f sys = %.2f CPU)\n",
-           tv_seconds(&stats.ru_utime), tv_seconds(&stats.ru_stime),
+    printf(" (%.2f usr + %.2f sys = %.2f CPU)\n", tv_seconds(&stats.ru_utime),
+           tv_seconds(&stats.ru_stime),
            tv_sum(&stats.ru_utime, &stats.ru_stime));
     return (failed == 0 && aborted == 0);
 }

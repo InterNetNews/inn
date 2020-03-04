@@ -65,12 +65,12 @@
  * and it's possible the other functions may be similarly affected.
  */
 #if TESTING
-# undef pwrite
-# undef write
-# undef writev
-# define pwrite fake_pwrite
-# define write  fake_write
-# define writev fake_writev
+#    undef pwrite
+#    undef write
+#    undef writev
+#    define pwrite fake_pwrite
+#    define write  fake_write
+#    define writev fake_writev
 ssize_t fake_pwrite(int, const void *, size_t, off_t);
 ssize_t fake_write(int, const void *, size_t);
 ssize_t fake_writev(int, const struct iovec *, int);
@@ -85,7 +85,7 @@ xwrite(int fd, const void *buffer, size_t size)
     unsigned int count = 0;
 
     if (size == 0)
-	return 0;
+        return 0;
 
     /* Abort the write if we try ten times with no forward progress. */
     for (total = 0; total < size; total += status) {
@@ -113,7 +113,7 @@ xpwrite(int fd, const void *buffer, size_t size, off_t offset)
     unsigned int count = 0;
 
     if (size == 0)
-	return 0;
+        return 0;
 
     /* Abort the write if we try ten times with no forward progress. */
     for (total = 0; total < size; total += status) {
@@ -148,7 +148,7 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
      * writev to fail with an error we'll return.
      */
     if (iovcnt == 0)
-	return 0;
+        return 0;
     if (iovcnt < 0 || (size_t) iovcnt > SIZE_MAX / sizeof(struct iovec)) {
         errno = EINVAL;
         return -1;
@@ -158,7 +158,7 @@ xwritev(int fd, const struct iovec iov[], int iovcnt)
     for (total = 0, i = 0; i < (unsigned int) iovcnt; i++)
         total += iov[i].iov_len;
     if (total == 0)
-	return 0;
+        return 0;
 
     /*
      * First, try just writing it all out.  Most of the time this will succeed

@@ -34,8 +34,8 @@
 
 #include <inn/defines.h>
 #include "inn/portable-macros.h"
-#include "inn/portable-stdbool.h"
 #include "inn/portable-socket.h"
+#include "inn/portable-stdbool.h"
 
 BEGIN_DECLS
 
