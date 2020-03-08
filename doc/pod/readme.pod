@@ -223,7 +223,7 @@ answer questions about it.
 
 =item CleanFeed
 
-URL: <http://www.bofh.it/~md/cleanfeed/>
+URL: <https://www.mixmin.net/cleanfeed/>
 
 CleanFeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
@@ -240,17 +240,9 @@ they want without having to ask you to edit the configuration file all the
 time.  It's useful when feeding peers who take limited and very specific
 feeds that change periodically.
 
-=item inflow
-
-URL: <http://www.switch.ch/netnews/wg/netnews-wg.html>
-
-inflow generates graphs of news flow statistics in real time from INN's
-logs (things like articles accepted per peer, volume accepted per peer,
-and the like).
-
 =item News-Portal
 
-URL: <http://floh.gartenhaus.net/newsportal/>
+URL: <https://amrhein.eu/newsportal/doc/>
 
 A PHP-based web news reader that works as a front-end to a regular news
 server such as INN and lets people read and post without learning a news
