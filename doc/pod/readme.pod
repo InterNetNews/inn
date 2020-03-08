@@ -224,7 +224,7 @@ answer questions about it.
 
 =item Cleanfeed
 
-URL:  L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+URL:  L<https://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
 
 Cleanfeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
@@ -250,7 +250,7 @@ feeds that change periodically.
 
 =item innduct
 
-URL:  L<http://www.chiark.greenend.org.uk/ucgi/~ian/git-manpage/innduct.git/innduct.8> (maintained by Ian Jackson)
+URL:  L<https://www.chiark.greenend.org.uk/ucgi/~ian/git-manpage/innduct.git/innduct.8> (maintained by Ian Jackson)
 
 A possible replacement for B<innfeed>, B<innxmit> and B<nntpsend>
 that quickly and reliably streams Usenet article to a remote site.
@@ -260,7 +260,7 @@ It also permits a realtime feed, contrary to B<innxmit> or B<nntpsend>.
 
 =item NewsPortal
 
-URL:  L<http://amrhein.eu/newsportal/doc/>
+URL:  L<https://amrhein.eu/newsportal/doc/>
 
 A PHP-based web news reader that works as a front-end to a regular news
 server such as INN and lets people read and post without learning a news
