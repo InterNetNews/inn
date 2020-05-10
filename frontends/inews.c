@@ -685,7 +685,7 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     *linesp = 0;
     if (strlen(homedir) > sizeof(buff) - 14)
         die("home directory path too long");
-    sprintf(buff, "%s/.signature", homedir);
+    snprintf(buff, sizeof(buff), "%s/.signature", homedir);
     if ((F = fopen(buff, "r")) == NULL) {
 	if (errno == ENOENT)
 	    return article;

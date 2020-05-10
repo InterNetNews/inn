@@ -83,19 +83,22 @@ handle_server_response(int response, char *host)
     default:
 	printf("Unknown response code %d from %s.\n", response, host);
 	return -1;
-     case NNTP_FAIL_TERMINATING:
-	if (atoi(ser_line) == response) {
-	    p = &ser_line[strlen(ser_line) - 1];
-	    if (*p == '\n' && *--p == '\r')
-		*p = '\0';
-	    if (p > &ser_line[3]) {
-		printf("News server %s unavailable: %s\n", host,
-			&ser_line[4]);
-		return -1;
-	    }
-	}
-	printf("News server %s unavailable, try later.\n", host);
-	return -1;
+    case NNTP_FAIL_TERMINATING:
+        if (atoi(ser_line) == response) {
+            size_t ser_line_len = strlen(ser_line);
+            if (ser_line_len > 4) {
+                p = &ser_line[ser_line_len - 1];
+                if (*p == '\n' && *--p == '\r')
+                    *p = '\0';
+                if (p > &ser_line[3]) {
+                    printf("News server %s unavailable: %s\n", host,
+                           &ser_line[4]);
+                    return -1;
+                }
+            }
+        }
+        printf("News server %s unavailable, try later.\n", host);
+        return -1;
     case NNTP_ERR_ACCESS:
 	printf(CANTUSE, host);
 	return -1;
