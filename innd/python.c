@@ -60,7 +60,6 @@
 #include "innd.h"
 
 bool		PythonFilterActive;
-char		*filterPath;	/* This gets set in art.c. */
 PyObject	*PYFilterObject = NULL;
 PyObject	*PYFilterModule = NULL;
 
