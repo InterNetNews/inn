@@ -78,10 +78,6 @@ static char	ARTjnk[] = "junk";
 static char             hostcclass[256];
 #define ARThostchar(c)  ((hostcclass[(unsigned char)(c)]) != 0)
 
-#if defined(DO_PERL) || defined(DO_PYTHON)
-const char	*filterPath;
-#endif /* DO_PERL || DO_PYTHON */
-
 /* Prototypes. */
 static void ARTerror(CHANNEL *cp, const char *format, ...)
     __attribute__((__format__(printf, 2, 3)));
@@ -2072,10 +2068,6 @@ ARTpost(CHANNEL *cp)
       return false;
     }
   }
-
-#if defined(DO_PERL) || defined(DO_PYTHON)
-  filterPath = HDR(HDR__PATH);
-#endif /* DO_PERL || DO_PYHTON */
 
 #if defined(DO_PYTHON)
   TMRstart(TMR_PYTHON);
