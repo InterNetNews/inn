@@ -51,7 +51,7 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
-.c.o: $*.c
+.c.o:
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
 LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
