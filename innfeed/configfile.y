@@ -668,25 +668,19 @@ static char *key ;
 
 %token PEER
 %token GROUP
-%token IVAL
-%token RVAL
+%token <integer> IVAL
+%token <real> RVAL
 %token NAME
-%token XSTRING
+%token <string> XSTRING
 %token SCOPE
 %token COLON
 %token LBRACE
 %token RBRACE
-%token TRUEBVAL
-%token FALSEBVAL
-%token CHAR
-%token WORD
+%token <name> TRUEBVAL
+%token <name> FALSEBVAL
+%token <chr> CHAR
+%token <name> WORD
 %token IP_ADDRESS
-
-%type <integer> IVAL
-%type <real> RVAL
-%type <string> XSTRING
-%type <chr> CHAR
-%type <name> TRUEBVAL FALSEBVAL WORD
 
 %%
 input: { 	
