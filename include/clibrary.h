@@ -27,7 +27,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2016, 2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2016, 2018, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2006-2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -128,6 +128,16 @@ typedef ptrdiff_t ssize_t;
 #    else
 #        define va_copy(d, s) memcpy(&(d), &(s), sizeof(va_list))
 #    endif
+#endif
+
+/*
+ * If explicit_bzero is not available, fall back on memset.  This does NOT
+ * provide any of the security guarantees of explicit_bzero and will probably
+ * be optimized away by the compiler.  It just ensures that code will compile
+ * and function on systems without explicit_bzero.
+ */
+#if !HAVE_EXPLICIT_BZERO
+#    define explicit_bzero(s, n) memset((s), 0, (n))
 #endif
 
 BEGIN_DECLS
