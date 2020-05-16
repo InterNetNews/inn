@@ -8,8 +8,6 @@
 #
 # $Id$
 #
-# Version 3.1.0.
-#
 # Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
 #
 # Checkpoints tracking was improved by Jim Dutton in 2006.
@@ -148,7 +146,6 @@ my $NOT_DAILY = "DONT";
 ## THERE'S NOTHING TO CHANGE AFTER THIS LINE ##
 ###############################################
 
-my $version = "3.1.0";
 my %output; # content of the configuration file.
 my $DEBUG = 0; # set to 1 to verify the structure/content of the conf file.
 my $start_time = time;
@@ -993,7 +990,7 @@ EOF
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=$encoding"/>
 <title>$title</title>
-<!-- innreport $version -->
+<!-- innreport from $INN::Config::version -->
 $style_sheet
 </head><body$body>
 $HTML_header
@@ -1014,9 +1011,9 @@ sub GetHTMLFooter() {
 
   return <<EOF;
 <div class="ir-pageFooter">
-  <div class="ir-versionNotice">innreport $version (c) 1996-1999
-  by Fabien Tassin &lt;<a href="mailto:fta\@sofaraway.org"
-  >fta\@sofaraway.org</a>&gt;$footer
+  <div class="ir-versionNotice">innreport from $INN::Config::version
+  based on work (c) 1996-1999 by Fabien Tassin
+  &lt;<a href="mailto:fta\@sofaraway.org">fta\@sofaraway.org</a>&gt;$footer
   </div>
 </div>
 $HTML_footer
@@ -2933,8 +2930,9 @@ sub Usage {
 }
 
 sub Version {
-  print "\nThis is innreport version $version\n\n";
+  print "\nThis is innreport from $INN::Config::version\n\n";
   print "Copyright 1996-1999, Fabien Tassin <fta\@sofaraway.org>\n";
+  print "Enhanced by several contributors since then\n";
   exit 0;
 }
 
@@ -2949,7 +2947,8 @@ sub Summary {
   }
 
   # Display the summary
-  print "\nSummary of my innreport (version $version) configuration:\n";
+  print "\nSummary of my innreport configuration:\n";
+  print "  Version shipped with $INN::Config::version\n";
   print "  General options:\n";
   print "    command line='@old_argv' (please, check this value)\n";
   print "    html=" . ($HTML?"yes":"no") . ", graph=" .
