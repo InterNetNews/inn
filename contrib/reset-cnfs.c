@@ -22,7 +22,7 @@ main(int argc, char *argv[])
     size_t j, numwr;
     bool status = true;
 
-    bzero(buf, sizeof(buf));
+    memset(buf, 0, sizeof(buf));
     for (i = 1; i < argc; i++) {
 #ifdef DO_LARGEFILES
         if ((fd = open(argv[i], O_LARGEFILE | O_RDWR, 0664)) < 0) {
