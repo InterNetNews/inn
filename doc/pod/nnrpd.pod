@@ -205,8 +205,9 @@ You then have to set these F<inn.conf> parameters with the right paths:
     tlscertfile:    <pathetc>/cert.pem
     tlskeyfile:     <pathetc>/key.pem
 
-In case you have a certificate authority root certificate, you can also
-set I<tlscafile> to its path.
+Note that unlike Apache's I<SSLCertificateFile> directive, I<tlscertfile>
+should not contain a concatenation of certificates.  Instead, if you have
+a certificate authority root certificate, set I<tlscafile> to its path.
 
 There are two common ways for a news client to negotiate a TLS
 connection:  either via the use of a dedicated port (usually 563)
