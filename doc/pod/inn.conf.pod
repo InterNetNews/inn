@@ -1095,6 +1095,10 @@ The path to a file containing the server certificate to present to
 TLS clients.  This parameter is only used if B<nnrpd> is built with TLS/SSL
 support.  The default value is I<pathetc>/cert.pem.
 
+Note that unlike Apache's I<SSLCertificateFile> directive, I<tlscertfile>
+should not contain a concatenation of certificates.  Instead, if you have
+a certificate authority root certificate, set I<tlscafile> to its path.
+
 =item I<tlskeyfile>
 
 The path to a file containing the encryption key for the server
