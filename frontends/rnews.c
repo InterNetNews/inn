@@ -34,7 +34,7 @@ typedef struct _HEADER {
 } HEADER;
 
 
-static bool     addtionalUnpackers = true;
+static bool     additionalUnpackers = true;
 static bool     backupBad = false;
 static bool     Verbose = false;
 static const char	*InputFile = "stdin";
