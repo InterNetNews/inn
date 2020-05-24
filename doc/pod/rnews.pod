@@ -4,7 +4,7 @@ rnews - Inject individual articles and UUCP batches into INN
 
 =head1 SYNOPSIS
 
-B<rnews> [B<-NUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
+B<rnews> [B<-bNUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
 [I<file>]
 
 =head1 DESCRIPTION
@@ -15,10 +15,11 @@ injecting articles received from other sources; local postings should
 generally use inews(1) instead.  It is also used to process spooled
 messages created by, for example, B<nnrpd> while B<innd> is not available.
 
-The message is read from I<file> if given, or standard input if no file is
-given.  Articles are sent to the server given in the B<-r> or B<-S>
-command line options if given, otherwise to the server set via
-I<nnrpdposthost> in F<inn.conf>, otherwise to the local server.
+The message is read from I<file> if given, spooled files (with the B<-U>
+flag) or standard input if no file is given.  Articles are sent to
+the server given in the B<-r> or B<-S> command line options if given,
+otherwise to the server set via I<nnrpdposthost> in F<inn.conf>,
+otherwise to the local server.
 
 When sent over UUCP, Usenet articles are typically collected in a single
 batch to reduce the UUCP overhead.  Batches can also be compressed to
@@ -71,15 +72,17 @@ It invokes B<gzip> and should be used for batches compressed with B<gzip>.
 
 =back
 
-By default, B<rnews> will log and discard any articles that are rejected
-by the server or cannot be parsed by B<rnews> for some reason (such as a
-missing header).  This default can be changed when compiling INN by
-setting DO_RNEWS_SAVE_BAD in F<include/inn/options.h>.  There is no way to
-change it at runtime, unfortunately.
-
 =head1 OPTIONS
 
 =over 4
+
+=item B<-b>
+
+By default, B<rnews> will log and discard any articles that are rejected
+by the server or cannot be parsed by B<rnews> for some reason (such
+as a missing header).  If B<-b> is given, rejected articles will also
+be backed up in the F<bad> sub-directory of I<pathincoming> (as set
+in F<inn.conf>).
 
 =item B<-h> I<host>
 
@@ -120,6 +123,11 @@ that directory and processes all spooled messages found there whose
 filenames do not begin with C<.>, attempting to send them to the server
 again.  It's a good idea to run this periodically out of cron to pick up
 any articles spooled due to temporary server unavailability.
+
+=item B<-v>
+
+Enable verbose mode, with more traces, notably logging the reason why
+articles are rejected by the server.
 
 =back
 

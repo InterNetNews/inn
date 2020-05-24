@@ -24,6 +24,13 @@ reports are kept untouched, though, and will still contain inline CSS
 if you had not already set the I<html_css_url> parameter in previous
 INN versions.  Thanks to Richard Kettlewell for the patch.
 
+=item *
+
+Added new B<-b> flag to B<rnews> to save rejected articles in the F<bad>
+sub-directory of I<pathincoming> (as set in F<inn.conf>).  Otherwise,
+B<rnews> just logs and discards any articles that are rejected or cannot
+be parsed for some reason.
+
 =back
 
 =head1 Changes in 2.6.3
