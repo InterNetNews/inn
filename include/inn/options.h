@@ -50,9 +50,6 @@
    for the full algorithm. */
 #define DO_MUNGE_GECOS
 
-/* Define if rnews should syslog articles rejected as duplicates. */
-/* #undef DO_RNEWS_LOG_DUPS */
-
 /* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
    circumstance, you may want this not to be 1, but normally you always want
    to load the full history indexes into innd's memory.  Has no effect if

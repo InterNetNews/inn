@@ -86,7 +86,6 @@
 
 /* Absolute paths. */
 #define INN_PATH_TMP                    "@PATH_TMP@"
-#define INN_PATH_RNEWS_DUP_LOG          "/dev/null"
 
 /* Always relative to pathtmp. */
 #define INN_PATH_TEMPACTIVE             "activeXXXXXX"

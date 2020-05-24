@@ -4,7 +4,7 @@ rnews - Inject individual articles and UUCP batches into INN
 
 =head1 SYNOPSIS
 
-B<rnews> [B<-bNUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
+B<rnews> [B<-abdNUv>] [B<-h> I<host>] [B<-P> I<port>] [B<-rS> I<server>]
 [I<file>]
 
 =head1 DESCRIPTION
@@ -90,6 +90,11 @@ by the server or cannot be parsed by B<rnews> for some reason (such
 as a missing header).  If B<-b> is given, rejected articles will also
 be backed up in the F<bad> sub-directory of I<pathincoming> (as set
 in F<inn.conf>).
+
+=item B<-d>
+
+If B<-d> is given, B<rnews> will log via syslog the message-ID and the
+Path header value of each article rejected as a duplicate by the server.
 
 =item B<-h> I<host>
 

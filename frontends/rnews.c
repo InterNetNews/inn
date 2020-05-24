@@ -36,6 +36,7 @@ typedef struct _HEADER {
 
 static bool     additionalUnpackers = true;
 static bool     backupBad = false;
+static bool     logDuplicates = false;
 static bool     Verbose = false;
 static const char	*InputFile = "stdin";
 static char	*UUCPHost;
@@ -227,12 +228,7 @@ Process(char *article, size_t artlen)
     const char		*id = NULL;
     char                *msgid;
     char		buff[SMBUF];
-#if	defined(FILE_RNEWS_LOG_DUPS)
-    FILE		*F;
-#endif	/* defined(FILE_RNEWS_LOG_DUPS) */
-#if	!defined(DONT_RNEWS_LOG_DUPS)
     char		path[40];
-#endif	/* !defined(DONT_RNEWS_LOG_DUPS) */
 
     /* Empty article? */
     if (*article == '\0')
@@ -253,13 +249,13 @@ Process(char *article, size_t artlen)
 	    id = p;
 	    continue;
 	}
-#if	!defined(DONT_RNEWS_LOG_DUPS)
-	if (IS_PATH(hp)) {
-	    strlcpy(path, p, sizeof(path));
-	    if ((q = strchr(path, '\r')) != NULL)
-		*q = '\0';
-	}
-#endif	/* !defined(DONT_RNEWS_LOG_DUPS) */
+        if (logDuplicates) {
+            if (IS_PATH(hp)) {
+                strlcpy(path, p, sizeof(path));
+                if ((q = strchr(path, '\r')) != NULL)
+                    *q = '\0';
+            }
+        }
     }
 
     /* Send the NNTP "ihave" message. */
@@ -302,17 +298,9 @@ Process(char *article, size_t artlen)
     case NNTP_CONT_IHAVE:
 	break;
     case NNTP_FAIL_IHAVE_REFUSE:
-#if	defined(SYSLOG_RNEWS_LOG_DUPS)
-	*p = '\0';
-        notice("duplicate %s %s", id, path);
-#endif	/* defined(SYSLOG_RNEWS_LOG_DUPS) */
-#if	defined(FILE_RNEWS_LOG_DUPS)
-	if ((F = fopen(INN_PATH_RNEWS_DUP_LOG, "a")) != NULL) {
-	    *p = '\0';
-	    fprintf(F, "duplicate %s %s\n", id, path);
-	    fclose(F);
-	}
-#endif	/* defined(FILE_RNEWS_LOG_DUPS) */
+        if (logDuplicates) {
+            notice("duplicate %s %s", msgid, path);
+        }
         free(wirefmt);
 	return true;
     }
@@ -893,7 +881,7 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN_FILENO;
     mode = '\0';
-    while ((i = getopt(ac, av, "abh:NP:r:S:Uv")) != EOF)
+    while ((i = getopt(ac, av, "abdh:NP:r:S:Uv")) != EOF)
 	switch (i) {
 	default:
 	    die("usage error");
@@ -903,6 +891,9 @@ int main(int ac, char *av[])
             break;
         case 'b':
             backupBad = true;
+            break;
+        case 'd':
+            logDuplicates = true;
             break;
 	case 'h':
 	    UUCPHost = *optarg ? optarg : NULL;
