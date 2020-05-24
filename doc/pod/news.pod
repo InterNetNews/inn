@@ -15,6 +15,13 @@ B<cnfsstat> now also returns information about retired CNFS buffers
 
 =item *
 
+Added new B<-a> flag to B<rnews> to disallow, if needed, the use
+of additional unpackers from the F<rnews.libexec> sub-directory of
+I<pathbin> (as set in F<inn.conf>); only C<rnews> and C<cunbatch>
+will then be recognized as valid batch commands.
+
+=item *
+
 Added new B<-b> flag to B<rnews> to save rejected articles in the F<bad>
 sub-directory of I<pathincoming> (as set in F<inn.conf>).  Otherwise,
 B<rnews> just logs and discards any articles that are rejected or cannot
