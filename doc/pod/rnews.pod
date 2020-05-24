@@ -48,12 +48,12 @@ instead use C<gunbatch> as the batch command; INN just uses B<gzip> rather
 than B<compress> because it can handle B<compress>-style compression but
 is more widely available, due to old patent issues, than B<compress>.)
 
-Otherwise, if the command is any other word, then B<rnews> will try to
-execute a program with that name, looking for it in the directory
-I<pathbin>/rnews.libexec.  The rest of the batch will be fed to that
-program's standard input, and the standard output from the program will be
-treated as if it were the original input to B<rnews>.  INN comes with three
-such standard batch processors:
+Otherwise, if the command is any other word and the B<-a> flag is not
+given, B<rnews> will try to execute a program with that name, looking
+for it in the directory I<pathbin>/rnews.libexec.  The rest of the
+batch will be fed to that program's standard input, and the standard
+output from the program will be treated as if it were the original
+input to B<rnews>.  INN comes with three such standard batch processors:
 
 =over 2
 
@@ -75,6 +75,13 @@ It invokes B<gzip> and should be used for batches compressed with B<gzip>.
 =head1 OPTIONS
 
 =over 4
+
+=item B<-a>
+
+By default, B<rnews> looks for additional unpackers in the
+F<rnews.libexec> sub-directory of I<pathbin> (as set in F<inn.conf>).
+If B<-a> is given, no additional batch processor will be used; only
+C<rnews> and C<cunbatch> will be recognized as valid batch commands.
 
 =item B<-b>
 

@@ -53,12 +53,6 @@
 /* Define if rnews should syslog articles rejected as duplicates. */
 /* #undef DO_RNEWS_LOG_DUPS */
 
-/* Define if rnews should look in INN_PATH_RNEWSPROGS for batch unpackers. */
-#define DO_RNEWSPROGS
-
-/* Define if rnews should save articles rejected by the server. */
-/* #undef DO_RNEWS_SAVE_BAD */
-
 /* Value to pass to dbzincore() inside innd.  Under some bizarre low memory
    circumstance, you may want this not to be 1, but normally you always want
    to load the full history indexes into innd's memory.  Has no effect if

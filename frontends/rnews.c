@@ -34,8 +34,9 @@ typedef struct _HEADER {
 } HEADER;
 
 
-static bool     Verbose = false;
+static bool     addtionalUnpackers = true;
 static bool     backupBad = false;
+static bool     Verbose = false;
 static const char	*InputFile = "stdin";
 static char	*UUCPHost;
 static char	*PathBadNews = NULL;
@@ -497,11 +498,9 @@ ReadLine(char *p, int size, int fd)
 static bool
 UnpackOne(int *fdp, size_t *countp)
 {
-#if	defined(DO_RNEWSPROGS)
     char	path[(SMBUF * 2) + 1];
     char	*p;
     int         len;
-#endif	/* defined(DO_RNEWSPROGS) */
     char	buff[SMBUF];
     const char *cargv[4];
     int		artsize;
@@ -589,36 +588,39 @@ UnpackOne(int *fdp, size_t *countp)
 	    continue;
 	}
 
-#if	defined(DO_RNEWSPROGS)
-	cargv[0] = UNPACK;
-	cargv[1] = NULL;
-	/* Ignore any possible leading pathnames, to avoid trouble. */
-	if ((p = strrchr(&buff[3], '/')) != NULL)
-	    p++;
-	else
-	    p = &buff[3];
-	if (strchr(INN_PATH_RNEWSPROGS, '/') == NULL) {
-	    snprintf(path, sizeof(path), "%s/%s/%s", innconf->pathbin,
-                     INN_PATH_RNEWSPROGS, p);
-	    len = strlen(innconf->pathbin) + 1 + sizeof INN_PATH_RNEWSPROGS;
-	} else {
-	    snprintf(path, sizeof(path), "%s/%s", INN_PATH_RNEWSPROGS, p);
-	    len = sizeof INN_PATH_RNEWSPROGS;
-	}
-	for (p = &path[len]; *p; p++)
-	    if (ISWHITE(*p)) {
-		*p = '\0';
-		break;
-	    }
-	*fdp = StartChild(*fdp, path, cargv);
-	if (*fdp < 0)
-	    return false;
-	(*countp)++;
-	continue;
-#else
-        warn("bad_format unknown command %s", buff);
-	return false;
-#endif	/* defined(DO_RNEWSPROGS) */
+        if (additionalUnpackers) {
+            cargv[0] = UNPACK;
+            cargv[1] = NULL;
+            /* Ignore any possible leading pathnames, to avoid trouble. */
+            if ((p = strrchr(&buff[3], '/')) != NULL) {
+                p++;
+            } else {
+                p = &buff[3];
+            }
+            if (strchr(INN_PATH_RNEWSPROGS, '/') == NULL) {
+                snprintf(path, sizeof(path), "%s/%s/%s", innconf->pathbin,
+                         INN_PATH_RNEWSPROGS, p);
+                len = strlen(innconf->pathbin) + 1
+                    + sizeof(INN_PATH_RNEWSPROGS);
+            } else {
+                snprintf(path, sizeof(path), "%s/%s", INN_PATH_RNEWSPROGS, p);
+                len = sizeof(INN_PATH_RNEWSPROGS);
+            }
+            for (p = &path[len]; *p; p++)
+                if (ISWHITE(*p)) {
+                    *p = '\0';
+                    break;
+                }
+            *fdp = StartChild(*fdp, path, cargv);
+            if (*fdp < 0) {
+                return false;
+            }
+            (*countp)++;
+            continue;
+        } else {
+            warn("bad_format unknown command %s", buff);
+            return false;
+        }
     }
     return true;
 }
@@ -891,11 +893,14 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN_FILENO;
     mode = '\0';
-    while ((i = getopt(ac, av, "bh:NP:r:S:Uv")) != EOF)
+    while ((i = getopt(ac, av, "abh:NP:r:S:Uv")) != EOF)
 	switch (i) {
 	default:
 	    die("usage error");
 	    /* NOTRTEACHED */
+        case 'a':
+            additionalUnpackers = false;
+            break;
         case 'b':
             backupBad = true;
             break;
