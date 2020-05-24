@@ -34,7 +34,8 @@ typedef struct _HEADER {
 } HEADER;
 
 
-static bool	Verbose;
+static bool     Verbose = false;
+static bool     backupBad = false;
 static const char	*InputFile = "stdin";
 static char	*UUCPHost;
 static char	*PathBadNews = NULL;
@@ -164,11 +165,9 @@ static void
 Reject(const char *article, size_t length UNUSED, const char *reason,
        const char *arg)
 {
-#if	defined(DO_RNEWS_SAVE_BAD)
     char *filename;
     FILE *F;
     int fd;
-#endif	/* defined(DO_RNEWS_SAVE_BAD) */
 
     notice(reason, arg);
     if (Verbose) {
@@ -177,24 +176,26 @@ Reject(const char *article, size_t length UNUSED, const char *reason,
 	fprintf(stderr, " [%.40s...]\n", article);
     }
 
-#if	defined(DO_RNEWS_SAVE_BAD)
-    filename = concat(PathBadNews, "/XXXXXX", (char *) 0);
-    fd = mkstemp(filename);
-    if (fd < 0) {
-        warn("cannot create temporary file");
-        return;
+    if (backupBad) {
+        filename = concat(PathBadNews, "/XXXXXX", (char *) 0);
+        fd = mkstemp(filename);
+        if (fd < 0) {
+            warn("cannot create temporary file");
+            free(filename);
+            return;
+        }
+        F = fdopen(fd, "w");
+        if (F == NULL) {
+            warn("cannot fdopen %s", filename);
+            free(filename);
+            return;
+        }
+        if (fwrite(article, 1, length, F) != length)
+            warn("cannot fwrite to %s", filename);
+        if (fclose(F) == EOF)
+            warn("cannot close %s", filename);
+        free(filename);
     }
-    F = fdopen(fd, "w");
-    if (F == NULL) {
-        warn("cannot fdopen %s", filename);
-	return;
-    }
-    if (fwrite(article, 1, length, F) != length)
-        warn("cannot fwrite to %s", filename);
-    if (fclose(F) == EOF)
-        warn("cannot close %s", filename);
-    free(filename);
-#endif	/* defined(DO_RNEWS_SAVE_BAD) */
 }
 
 
@@ -879,11 +880,14 @@ int main(int ac, char *av[])
     /* Parse JCL. */
     fd = STDIN_FILENO;
     mode = '\0';
-    while ((i = getopt(ac, av, "h:P:NUvr:S:")) != EOF)
+    while ((i = getopt(ac, av, "bh:NP:r:S:Uv")) != EOF)
 	switch (i) {
 	default:
 	    die("usage error");
 	    /* NOTRTEACHED */
+        case 'b':
+            backupBad = true;
+            break;
 	case 'h':
 	    UUCPHost = *optarg ? optarg : NULL;
 	    break;
