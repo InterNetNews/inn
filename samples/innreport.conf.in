@@ -45,7 +45,7 @@ section default {
       # Character set used in XML and Content-Type declaration.
       # html_encoding	"ISO-8859-1";
 
-      # URL to CSS file.  If undefined, a style sheet is embedded in HTML instead.
+      # URL to CSS file.  If undefined, a default style sheet is generated.
       # html_css_url    "innreport.css";
 
       # URL to XSL file.  See <http://www.w3.org/MarkUp/2004/xhtml-faq#ie>.

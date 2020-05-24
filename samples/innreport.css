@@ -4,6 +4,9 @@
 **  innreport.css -- for parameter html_css_url in innreport.conf
 **
 **  Style created by Alexander Bartolich, 2008.
+**
+**  In case you modify this file, please keep old definitions for backward
+**  compatibility with previously generated reports.
 */
 div.ir-pageTitle {
    border-bottom:4px double black;
@@ -84,6 +87,3 @@ tr.ir-oddRow td,
 td.ir-primaryKey {
    background-color:#F8E0E0;
 }
-
-
-
