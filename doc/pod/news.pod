@@ -15,6 +15,17 @@ B<cnfsstat> now also returns information about retired CNFS buffers
 
 =item *
 
+Switch default B<innreport> behaviour to common practice of externalizing
+CSS into a separate file.  Its name can be configured with the
+I<html_css_url> parameter in F<innreport.conf>.  If this parameter
+is unset, the default F<innreport.css> file name will be used and
+B<innreport> will generate this CSS file for you.  Previously generated
+reports are kept untouched, though, and will still contain inline CSS
+if you had not already set the I<html_css_url> parameter in previous
+INN versions.  Thanks to Richard Kettlewell for the patch.
+
+=item *
+
 Added new B<-a> flag to B<rnews> to disallow, if needed, the use
 of additional unpackers from the F<rnews.libexec> sub-directory of
 I<pathbin> (as set in F<inn.conf>); only C<rnews> and C<cunbatch>
