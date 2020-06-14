@@ -1877,22 +1877,12 @@ sub collect($$$$$$) {
       $rnews_host{$host}++;
       return 1;
     }
-    # rejected 437 ECP rejected
-    return 1 if $left =~ m/rejected (?:437|439) ECP rejected/o;
     # rejected 437 "Subject" header too long
     return 1 if $left =~ m/header too long/o;
-    # rejected 437 Too long line in header 1163 bytes
-    return 1 if $left =~ m/rejected (?:437|439) Too long line in header/o;
-    # rejected 437 Too many newsgroups (meow)
-    return 1 if $left =~ m/rejected (?:437|439) Too many newsgroups/o;
-    # rejected 437 Space before colon in "<a" header
-    return 1 if $left =~ m/rejected (?:437|439) Space before colon in/o;
-    # rejected 437 EMP (phl)
-    return 1 if $left =~ m/rejected (?:437|439) EMP/o;
-    # rejected 437 Scoring filter (8)
-    return 1 if $left =~ m/rejected (?:437|439) Scoring filter/o;
-    # bad_article missing Message-ID
-    return 1 if $left =~ m/bad_article missing Message-ID/o;
+    # rejected 437 Reason...
+    return 1 if $left =~ m/rejected (?:437|439)/o;
+    # bad_article missing (Message-ID|Path|...)
+    return 1 if $left =~ m/bad_article missing /o;
     # cant unspool saving to xxx
     return 1 if $left =~ m/cant unspool saving to/o;
   }
