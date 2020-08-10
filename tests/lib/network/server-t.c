@@ -151,13 +151,13 @@ client_writer(const char *host, const char *source, bool succeed)
  * This also verifies that network_client_create works properly.
  */
 __attribute__((__noreturn__)) static void
-client_udp_writer(const char *source)
+client_ipv4_udp_writer(const char *source)
 {
     socket_type fd;
     struct sockaddr_in sin;
 
     /* Create and bind the socket. */
-    fd = network_client_create(PF_INET, SOCK_DGRAM, source);
+    fd = network_client_create(AF_INET, SOCK_DGRAM, source);
     if (fd == INVALID_SOCKET)
         _exit(1);
 
@@ -173,6 +173,42 @@ client_udp_writer(const char *source)
     if (send(fd, "socket test\r\n", 13, 0) < 13)
         _exit(1);
     _exit(0);
+}
+
+
+/*
+ * The same as client_ipv4_udp_writer, but sents the packet via IPv6 instead.
+ * If somehow this was called without IPv6 being available (which should be
+ * impossible), do nothing and exit with a non-zero status.
+ */
+__attribute__((__noreturn__)) static void
+client_ipv6_udp_writer(const char *source)
+{
+#ifdef HAVE_INET6
+    socket_type fd;
+    struct sockaddr_in6 sin6;
+
+    /* Create and bind the socket. */
+    fd = network_client_create(AF_INET6, SOCK_DGRAM, source);
+    if (fd == INVALID_SOCKET)
+        _exit(1);
+
+    /* Connect to localhost port 11119. */
+    memset(&sin6, 0, sizeof(sin6));
+    sin6.sin6_family = AF_INET6;
+    sin6.sin6_port = htons(11119);
+    if (inet_pton(AF_INET6, "::1", &sin6.sin6_addr) < 1)
+        sysbail("cannot convert ::1 to an in6_addr");
+    if (connect(fd, (struct sockaddr *) &sin6, sizeof(sin6)) < 0)
+        _exit(1);
+
+    /* Send our fixed UDP packet. */
+    if (send(fd, "socket test\r\n", 13, 0) < 13)
+        _exit(1);
+    _exit(0);
+#else
+    _exit(1);
+#endif
 }
 
 
@@ -239,13 +275,14 @@ test_server_accept(socket_type fd)
  * A variant version of the server portion of the test.  Takes an array of
  * sockets and the size of the sockets and accepts a connection on any of
  * those sockets.  Ensures that the client address information is stored
- * correctly by checking that it is an IPv4 address.  For skipping purposes,
- * this produces three tests.
+ * correctly by checking that it is an IPv4 or IPv6 address.  For skipping
+ * purposes, this produces three tests.
  *
  * Normally, the client address should be 127.0.0.1, but hosts with odd local
  * networking setups may rewrite client IP addresses so that they appear to
- * come from other addresses.  Avoid checking if the client IP is 127.0.0.1
- * for that reason.  Hopefully this won't hide bugs.
+ * come from other addresses.  Hosts that only have IPv6 interfaces will see a
+ * client connection on ::1 instead.  Avoid checking if the client IP is
+ * 127.0.0.1 for that reason.  Hopefully this won't hide bugs.
  *
  * saddr is allocated from the heap instead of using a local struct
  * sockaddr_storage to work around a misdiagnosis of strict aliasing
@@ -267,7 +304,10 @@ test_server_accept_any(socket_type fds[], unsigned int count)
     saddr = bcalloc(1, slen);
     client = network_accept_any(fds, count, saddr, &slen);
     test_server_connection(client);
-    is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
+    if (saddr->sa_family == AF_INET)
+        is_int(AF_INET, saddr->sa_family, "...address family is IPv4");
+    else
+        is_int(AF_INET6, saddr->sa_family, "...address family is IPv6");
     free(saddr);
     for (i = 0; i < count; i++)
         socket_close(fds[i]);
@@ -465,20 +505,37 @@ test_any(void)
     socket_type *fds;
     unsigned int count, i;
     pid_t child;
-    int status;
+    int status, family;
+    struct sockaddr *saddr;
 
+    /* Bind our socket.
+     *
+     * If the host has no IPv4 addresses, we may have only an IPv6 socket and
+     * thus can't us an IPv4 client.  Determine the address family of the
+     * first socket so that we can use an appropriate client.
+     */
     if (!network_bind_all(SOCK_STREAM, 11119, &fds, &count))
         sysbail("cannot create or bind socket");
+    saddr = get_sockaddr(fds[0]);
+    family = saddr->sa_family;
+    free(saddr);
     ok(1, "network_accept_any test");
+
+    /* Listen on all bound sockets. */
     for (i = 0; i < count; i++)
         if (listen(fds[i], 1) < 0)
             sysbail("cannot listen to socket %d", fds[i]);
+
+    /* Write a packet from a client and receive it on the server. */
     child = fork();
     if (child < 0)
         sysbail("cannot fork");
-    else if (child == 0)
-        client_writer("127.0.0.1", NULL, true);
-    else {
+    else if (child == 0) {
+        if (family == AF_INET)
+            client_writer("127.0.0.1", NULL, true);
+        else
+            client_writer("::1", NULL, true);
+    } else {
         test_server_accept_any(fds, count);
         waitpid(child, &status, 0);
         is_int(0, status, "client made correct connections");
@@ -501,22 +558,34 @@ test_any_udp(void)
     pid_t child;
     char buffer[BUFSIZ];
     ssize_t length;
-    int status;
+    int status, family;
     struct sockaddr_storage addr;
     struct sockaddr *saddr;
-    struct sockaddr_in sin;
     socklen_t addrlen;
 
-    /* Bind our UDP socket. */
+    /*
+     * Bind our UDP socket.
+     *
+     * If the host has no IPv4 addresses, we may have only an IPv6 socket and
+     * thus can't us an IPv4 client.  Determine the address family of the
+     * first socket so that we can use an appropriate client.
+     */
     if (!network_bind_all(SOCK_DGRAM, 11119, &fds, &count))
         sysbail("cannot create or bind socket");
+    saddr = get_sockaddr(fds[0]);
+    family = saddr->sa_family;
+    free(saddr);
 
     /* Create a child that writes a single UDP packet to the server. */
     child = fork();
     if (child < 0)
         sysbail("cannot fork");
-    else if (child == 0)
-        client_udp_writer("127.0.0.1");
+    else if (child == 0) {
+        if (family == AF_INET)
+            client_ipv4_udp_writer("127.0.0.1");
+        else
+            client_ipv6_udp_writer("::1");
+    }
 
     /* Set an alarm, since if the client malfunctions, nothing happens. */
     alarm(5);
@@ -531,19 +600,7 @@ test_any_udp(void)
         addrlen = sizeof(addr);
         length = recvfrom(fd, buffer, sizeof(buffer), 0, saddr, &addrlen);
         is_int(13, length, "...of correct length");
-        sin.sin_family = AF_INET;
-        sin.sin_port = htons(11119);
-
-        /*
-         * We'd prefer to check that the client IP address is 127.0.0.1 here,
-         * but hosts with odd local networking setups may rewrite the client
-         * IP address to something else.  To avoid false positives, just
-         * blindly trust the client IP address is correct, since it seems
-         * unlikely we'll have a server code bug here.
-         */
-        sin.sin_addr = ((struct sockaddr_in *) &addr)->sin_addr;
-        ok(network_sockaddr_equal((struct sockaddr *) &sin, saddr),
-           "...from correct family and port");
+        is_int(family, saddr->sa_family, "...from correct family");
         buffer[13] = '\0';
         is_string("socket test\r\n", buffer, "...and correct contents");
     }

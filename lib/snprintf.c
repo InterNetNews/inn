@@ -11,8 +11,9 @@
  * that later merges with the original source are easy.  Bug fixes and
  * improvements should be sent back to the original author.
  *
- * The canonical version of this file is maintained in the rra-c-util package,
- * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+ * The canonical version of this file was maintained (until 2020) in the
+ * rra-c-util package, which can be found at
+ * <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  */
 
 /*

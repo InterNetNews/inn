@@ -2,8 +2,9 @@
  *
  * snprintf test suite.
  *
- * The canonical version of this file is maintained in the rra-c-util package,
- * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+ * The canonical version of this file was maintained (until 2020) in the
+ * rra-c-util package, which can be found at
+ * <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
  * Copyright 2000-2006, 2018-2020 Russ Allbery <eagle@eyrie.org>
