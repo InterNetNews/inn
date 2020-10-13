@@ -32,7 +32,7 @@ TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
 
 ##  Extra stuff that needs to be built before tests can be run.
 
-EXTRA	= runtests clients/server-list lib/xmalloc
+EXTRA	= runtests clients/server-list docs/pod.t lib/xmalloc
 
 all check test tests: $(TESTS) $(EXTRA)
 	./runtests -l TESTS
@@ -74,6 +74,9 @@ runtests: runtests.o
 
 clients/server-list: clients/server-list.in $(FIXSCRIPT)
 	$(FIXSCRIPT) -i clients/server-list.in
+
+docs/pod.t: docs/pod.t.in $(FIXSCRIPT)
+	$(FIXSCRIPT) -i docs/pod.t.in
 
 authprogs/ident.t: authprogs/ident-t.o tap/basic.o $(LIBINN)
 	$(LINK) authprogs/ident-t.o tap/basic.o $(LIBINN) $(LIBS)
