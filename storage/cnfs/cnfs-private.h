@@ -7,7 +7,9 @@
 #define CNFS_PRIVATE_H 1
 
 #include <sys/types.h>
-#include <unistd.h>
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 #define _PATH_CYCBUFFCONFIG	"cycbuff.conf"
 

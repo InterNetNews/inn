@@ -26,8 +26,12 @@ dnl Source used by INN_FUNC_MMAP.
 define([_INN_FUNC_MMAP_SOURCE],
 [AC_LANG_SOURCE([[
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 int
 main()
@@ -87,10 +91,14 @@ AC_DEFUN([INN_FUNC_MMAP],
 dnl Source used by INN_FUNC_MMAP_NEEDS_MSYNC.
 define([_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE],
 [AC_LANG_SOURCE([[
-#include <sys/types.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 int
 main()
