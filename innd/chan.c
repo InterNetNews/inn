@@ -1195,7 +1195,13 @@ CHANreadloop(void)
 
         STATUSmainloophook();
         if (GotTerminate) {
-            warn("%s exiting due to signal", LogName);
+#ifdef DO_PERL
+            PLmode(Mode, OMshutdown, (char *) "exiting due to signal");
+#endif
+#ifdef DO_PYTHON
+            PYmode(Mode, OMshutdown, (char *) "exiting due to signal");
+#endif
+            notice("%s exiting due to signal", LogName);
             CleanupAndExit(0, NULL);
         }
 
