@@ -267,6 +267,7 @@ support/fixscript
 tests/runtests
 tests/authprogs/ident.t
 tests/clients/server-list
+tests/docs/pod.t
 tests/innd/artparse.t
 tests/innd/chan.t
 tests/lib/asprintf.t
