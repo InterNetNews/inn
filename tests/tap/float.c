@@ -11,7 +11,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2010, 2012-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2010, 2012-2019 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -36,9 +36,9 @@
 
 /* Required for isnan() and isinf(). */
 #if defined(__STRICT_ANSI__) || defined(PEDANTIC)
-# ifndef _XOPEN_SOURCE
-#  define _XOPEN_SOURCE 600
-# endif
+#    ifndef _XOPEN_SOURCE
+#        define _XOPEN_SOURCE 600
+#    endif
 #endif
 
 #include <math.h>
@@ -62,9 +62,23 @@ ok_double(int n UNUSED, double wanted, double seen)
  * floating point implicit conversion from the isnan() and isinf() macros.
  */
 #if defined(__llvm__) || defined(__clang__)
-# pragma clang diagnostic ignored "-Wconversion"
-# pragma clang diagnostic ignored "-Wdouble-promotion"
+#    pragma clang diagnostic ignored "-Wconversion"
+#    pragma clang diagnostic ignored "-Wdouble-promotion"
 #endif
+
+/*
+ * Returns true if the two doubles are equal infinities, false otherwise.
+ * This requires a bit of machination since isinf is not required to return
+ * different values for positive and negative infinity, and we're trying to
+ * avoid direct comparisons between floating point numbers.
+ */
+static int
+is_equal_infinity(double left, double right)
+{
+    if (!isinf(left) || !isinf(right))
+        return 0;
+    return !!(left < 0) == !!(right < 0);
+}
 
 /*
  * Takes two doubles and requires they be within epsilon of each other.
@@ -77,8 +91,7 @@ is_double(double left, double right, double epsilon, const char *format, ...)
 
     va_start(args, format);
     fflush(stderr);
-    if ((isnan(left) && isnan(right))
-        || (isinf(left) && isinf(left) == isinf(right))
+    if ((isnan(left) && isnan(right)) || is_equal_infinity(left, right)
         || fabs(left - right) <= epsilon) {
         success = 1;
         okv(1, format, args);

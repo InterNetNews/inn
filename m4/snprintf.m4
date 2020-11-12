@@ -10,8 +10,9 @@ dnl
 dnl Provides INN_FUNC_SNPRINTF, which adds snprintf.o to LIBOBJS unless a
 dnl fully working snprintf is found.
 dnl
-dnl The canonical version of this file is maintained in the rra-c-util
-dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+dnl The canonical version of this file was maintained (until 2020) in the
+dnl rra-c-util package, available at
+dnl <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2008-2009

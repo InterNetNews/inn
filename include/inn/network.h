@@ -65,8 +65,7 @@ socket_type network_bind_ipv6(int type, const char *addr, unsigned short port)
  * array of file descriptors when no longer needed.
  */
 bool network_bind_all(int type, unsigned short port, socket_type **fds,
-                      unsigned int *count)
-    __attribute__((__nonnull__));
+                      unsigned int *count) __attribute__((__nonnull__));
 void network_bind_all_free(socket_type *fds);
 
 /*
@@ -102,8 +101,7 @@ socket_type network_accept_any(socket_type fds[], unsigned int count,
  * not use any particular source address.)
  */
 socket_type network_connect(const struct addrinfo *, const char *source,
-                            time_t)
-    __attribute__((__nonnull__(1)));
+                            time_t) __attribute__((__nonnull__(1)));
 
 /*
  * Like network_connect but takes a host and port instead.  If host lookup

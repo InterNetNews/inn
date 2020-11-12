@@ -8,7 +8,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016-2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016-2020 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016
 dnl     by Internet Systems Consortium, Inc. ("ISC")
 dnl
@@ -28,9 +28,9 @@ dnl SPDX-License-Identifier: ISC
 
 dnl Used to build the result cache name.
 AC_DEFUN([_INN_PROG_CC_FLAG_CACHE],
-[translit([inn_cv_compiler_c_$1], [-=+], [___])])
+[translit([inn_cv_compiler_c_$1], [-=+,], [____])])
 
-dnl Check whether a given flag is supported by the complier.
+dnl Check whether a given flag is supported by the compiler.
 AC_DEFUN([INN_PROG_CC_FLAG],
 [AC_REQUIRE([AC_PROG_CC])
  AC_MSG_CHECKING([if $CC supports $1])

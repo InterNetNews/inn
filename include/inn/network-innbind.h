@@ -39,8 +39,7 @@ socket_type network_innbind_ipv6(int type, const char *addr, unsigned short port
  * count holding the count returned.
  */
 bool network_innbind_all(int type, unsigned short port, socket_type **fds,
-                         unsigned int *count)
-    __attribute__((__nonnull__));
+                         unsigned int *count) __attribute__((__nonnull__));
 
 END_DECLS
 

@@ -15,8 +15,8 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD

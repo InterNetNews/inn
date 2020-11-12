@@ -6,7 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013-2014, 2016-2018 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013-2014, 2016-2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -34,12 +34,12 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
-#include <sys/wait.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "tap/basic.h"
 #include "inn/macros.h"
@@ -52,7 +52,7 @@
  * and expects to always succeed on the connection, taking the source address
  * to pass into network_client_create.
  */
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 client_create_writer(const char *source)
 {
     socket_type fd;
@@ -82,7 +82,7 @@ client_create_writer(const char *source)
  * sleeps for 10 seconds before sending another string so that timeouts can be
  * tested.  Meant to be run in a child process.
  */
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 client_delay_writer(const char *host)
 {
     socket_type fd;
@@ -105,7 +105,7 @@ client_delay_writer(const char *host)
  * Used to test network_write.  Connects, reads 64KB from the network, then
  * sleeps before reading another 64KB.  Meant to be run in a child process.
  */
-static void __attribute__((__noreturn__))
+__attribute__((__noreturn__)) static void
 client_delay_reader(const char *host)
 {
     char *buffer;
@@ -224,7 +224,8 @@ test_timeout_ipv4(void)
     socket_type fd, c;
     pid_t child;
     socket_type block[20];
-    int i, err;
+    unsigned int conn, i;
+    int err;
 
     /*
      * Create the listening socket.  We set the listening queue size to 1,
@@ -261,9 +262,9 @@ test_timeout_ipv4(void)
      * actually timing out, and sometimes they never do.
      */
     alarm(20);
-    for (i = 0; i < (int) ARRAY_SIZE(block); i++) {
-        block[i] = network_connect_host("127.0.0.1", 11119, NULL, 1);
-        if (block[i] == INVALID_SOCKET)
+    for (conn = 0; conn < ARRAY_SIZE(block); conn++) {
+        block[conn] = network_connect_host("127.0.0.1", 11119, NULL, 1);
+        if (block[conn] == INVALID_SOCKET)
             break;
     }
     err = socket_errno;
@@ -276,11 +277,11 @@ test_timeout_ipv4(void)
      * expect a failure due to timeout in a reasonable amount of time (less
      * than our 20-second alarm).
      */
-    if (i == ARRAY_SIZE(block))
+    if (conn == ARRAY_SIZE(block))
         skip_block(2, "short listen queue does not prevent connections");
     else {
-        diag("Finally timed out on socket %d", i);
-        ok(block[i] == INVALID_SOCKET, "Later connection timed out");
+        diag("Finally timed out on socket %u", conn);
+        ok(block[conn] == INVALID_SOCKET, "Later connection timed out");
         if (err == ECONNRESET || err == ECONNREFUSED)
             skip("connections rejected without timeout");
         else
@@ -292,7 +293,7 @@ test_timeout_ipv4(void)
     kill(child, SIGTERM);
     waitpid(child, NULL, 0);
     socket_close(c);
-    for (i--; i >= 0; i--)
+    for (i = 0; i < conn; i++)
         if (block[i] != INVALID_SOCKET)
             socket_close(block[i]);
     socket_close(fd);
@@ -415,8 +416,7 @@ test_network_write(void)
      */
     socket_set_errno(0);
     ok(network_write(c, buffer, 32 * 1024, 0), "network_write");
-    ok(network_write(c, buffer, 32 * 1024, 1),
-       "network_write with timeout");
+    ok(network_write(c, buffer, 32 * 1024, 1), "network_write with timeout");
 
     /*
      * A longer write cannot be completely absorbed before the client sleep,

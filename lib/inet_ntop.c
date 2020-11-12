@@ -12,7 +12,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -25,19 +25,19 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
+#include "clibrary.h"
 
 #include <errno.h>
 
 /* This may already be defined by the system headers. */
 #ifndef INET_ADDRSTRLEN
-# define INET_ADDRSTRLEN 16
+#    define INET_ADDRSTRLEN 16
 #endif
 
 /* Systems old enough to not support inet_ntop may not have this either. */
 #ifndef EAFNOSUPPORT
-# define EAFNOSUPPORT EDOM
+#    define EAFNOSUPPORT EDOM
 #endif
 
 /*
@@ -45,8 +45,8 @@
  * the system version.
  */
 #if TESTING
-# undef inet_ntop
-# define inet_ntop test_inet_ntop
+#    undef inet_ntop
+#    define inet_ntop test_inet_ntop
 const char *test_inet_ntop(int, const void *, char *, socklen_t);
 #endif
 
@@ -65,11 +65,13 @@ inet_ntop(int af, const void *src, char *dst, socklen_t size)
         return NULL;
     }
     p = src;
+    /* clang-format off */
     status = snprintf(dst, size, "%u.%u.%u.%u",
                       (unsigned int) (p[0] & 0xff),
                       (unsigned int) (p[1] & 0xff),
                       (unsigned int) (p[2] & 0xff),
                       (unsigned int) (p[3] & 0xff));
+    /* clang-format on */
     if (status < 0 || (size_t) status >= (size_t) size)
         return NULL;
     return dst;

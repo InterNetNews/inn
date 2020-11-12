@@ -8,7 +8,8 @@
 # which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 #
 # Written by Russ Allbery <eagle@eyrie.org>
-# Copyright 2000-2001, 2006, 2014, 2016 Russ Allbery <eagle@eyrie.org>
+# Copyright 2000-2001, 2006, 2014, 2016, 2019-2020
+#     Russ Allbery <eagle@eyrie.org>
 # Copyright 2008-2010, 2012
 #     The Board of Trustees of the Leland Stanford Junior University
 #
@@ -35,7 +36,7 @@
 . "$C_TAP_SOURCE/tap/libtap.sh"
 cd "$C_TAP_BUILD/lib"
 
-# Run an xmalloc test.  Takes the description, the expectd exit status, the
+# Run an xmalloc test.  Takes the description, the expected exit status, the
 # output, and the arguments.
 ok_xmalloc () {
     local desc w_status w_output output status
@@ -103,46 +104,46 @@ ok_xmalloc "vasprintf large"    0 "" "v" "30000000" "0"
 # We assume that there are enough miscellaneous allocations that an allocation
 # exactly as large as the limit will always fail.
 ok_xmalloc "malloc fail" 1 \
-    "failed to malloc 30000000 bytes at xmalloc.c line 41" \
+    "failed to malloc 30000000 bytes at xmalloc.c line 42" \
     "m" "30000000" "30000000"
 ok_xmalloc "realloc fail" 1 \
-    "failed to realloc 30000000 bytes at xmalloc.c line 69" \
+    "failed to realloc 30000000 bytes at xmalloc.c line 71" \
     "r" "30000000" "30000000"
 ok_xmalloc "reallocarray fail" 1 \
-    "failed to reallocarray 30000000 bytes at xmalloc.c line 99" \
+    "failed to reallocarray 30000000 bytes at xmalloc.c line 100" \
     "y" "30000000" "30000000"
 ok_xmalloc "strdup fail" 1 \
-    "failed to strdup 30000000 bytes at xmalloc.c line 130" \
+    "failed to strdup 30000000 bytes at xmalloc.c line 131" \
     "s" "30000000" "30000000"
 ok_xmalloc "strndup fail" 1 \
-    "failed to strndup 30000000 bytes at xmalloc.c line 176" \
+    "failed to strndup 30000000 bytes at xmalloc.c line 177" \
     "n" "30000000" "30000000"
 ok_xmalloc "calloc fail" 1 \
-    "failed to calloc 30000000 bytes at xmalloc.c line 200" \
+    "failed to calloc 30000000 bytes at xmalloc.c line 201" \
     "c" "30000000" "30000000"
 ok_xmalloc "asprintf fail" 1 \
-    "failed to asprintf 30000000 bytes at xmalloc.c line 224" \
+    "failed to asprintf 30000000 bytes at xmalloc.c line 225" \
     "a" "30000000" "30000000"
 ok_xmalloc "vasprintf fail" 1 \
-    "failed to vasprintf 30000000 bytes at xmalloc.c line 243" \
+    "failed to vasprintf 30000000 bytes at xmalloc.c line 244" \
     "v" "30000000" "30000000"
 
 # Check our custom error handler.
-ok_xmalloc "malloc custom"       1 "malloc 30000000 xmalloc.c 41" \
+ok_xmalloc "malloc custom"       1 "malloc 30000000 xmalloc.c 42" \
     "M" "30000000" "30000000"
-ok_xmalloc "realloc custom"      1 "realloc 30000000 xmalloc.c 69" \
+ok_xmalloc "realloc custom"      1 "realloc 30000000 xmalloc.c 71" \
     "R" "30000000" "30000000"
-ok_xmalloc "reallocarray custom" 1 "reallocarray 30000000 xmalloc.c 99" \
+ok_xmalloc "reallocarray custom" 1 "reallocarray 30000000 xmalloc.c 100" \
     "Y" "30000000" "30000000"
-ok_xmalloc "strdup custom"       1 "strdup 30000000 xmalloc.c 130" \
+ok_xmalloc "strdup custom"       1 "strdup 30000000 xmalloc.c 131" \
     "S" "30000000" "30000000"
-ok_xmalloc "strndup custom"      1 "strndup 30000000 xmalloc.c 176" \
+ok_xmalloc "strndup custom"      1 "strndup 30000000 xmalloc.c 177" \
     "N" "30000000" "30000000"
-ok_xmalloc "calloc custom"       1 "calloc 30000000 xmalloc.c 200" \
+ok_xmalloc "calloc custom"       1 "calloc 30000000 xmalloc.c 201" \
     "C" "30000000" "30000000"
-ok_xmalloc "asprintf custom"     1 "asprintf 30000000 xmalloc.c 224" \
+ok_xmalloc "asprintf custom"     1 "asprintf 30000000 xmalloc.c 225" \
     "A" "30000000" "30000000"
-ok_xmalloc "vasprintf custom"    1 "vasprintf 30000000 xmalloc.c 243" \
+ok_xmalloc "vasprintf custom"    1 "vasprintf 30000000 xmalloc.c 244" \
     "V" "30000000" "30000000"
 
 # Check the smaller ones again just for grins.

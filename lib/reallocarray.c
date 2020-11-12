@@ -34,8 +34,8 @@
  * it to another name.
  */
 #if TESTING
-# undef reallocarray
-# define reallocarray test_reallocarray
+#    undef reallocarray
+#    define reallocarray test_reallocarray
 void *test_reallocarray(void *, size_t, size_t);
 #endif
 

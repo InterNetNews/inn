@@ -52,10 +52,10 @@
 #include <sys/types.h>
 
 struct buffer {
-    size_t size;                /* Total allocated length. */
-    size_t used;                /* Data already used. */
-    size_t left;                /* Remaining unused data. */
-    char *data;                 /* Pointer to allocated memory. */
+    size_t size; /* Total allocated length. */
+    size_t used; /* Data already used. */
+    size_t left; /* Remaining unused data. */
+    char *data;  /* Pointer to allocated memory. */
 };
 
 BEGIN_DECLS
@@ -71,15 +71,13 @@ void buffer_free(struct buffer *);
  * Resize a buffer to be at least as large as the provided size.  Invalidates
  * pointers into the buffer.
  */
-void buffer_resize(struct buffer *, size_t)
-    __attribute__((__nonnull__));
+void buffer_resize(struct buffer *, size_t) __attribute__((__nonnull__));
 
 /*
  * Compact a buffer, removing all used data and moving unused data to the
  * beginning of the buffer.  Invalidates pointers into the buffer.
  */
-void buffer_compact(struct buffer *)
-    __attribute__((__nonnull__));
+void buffer_compact(struct buffer *) __attribute__((__nonnull__));
 
 /*
  * Set the buffer contents, ignoring anything currently there.  If length is
@@ -120,8 +118,7 @@ void buffer_swap(struct buffer *, struct buffer *)
  * the fourth argument.  Returns false if the terminator isn't found.
  */
 bool buffer_find_string(struct buffer *, const char *, size_t start,
-                        size_t *offset)
-    __attribute__((__nonnull__));
+                        size_t *offset) __attribute__((__nonnull__));
 
 /*
  * Read from a file descriptor into a buffer, up to the available space in the
@@ -130,23 +127,20 @@ bool buffer_find_string(struct buffer *, const char *, size_t start,
  * error or after any successful read.  Returns -1 on an error reading from
  * the file descriptor and sets errno.
  */
-ssize_t buffer_read(struct buffer *, int fd)
-    __attribute__((__nonnull__));
+ssize_t buffer_read(struct buffer *, int fd) __attribute__((__nonnull__));
 
 /*
  * Read from a file descriptor into a buffer until end of file is reached.
  * Returns true on success and false (setting errno) on error.
  */
-bool buffer_read_all(struct buffer *, int fd)
-    __attribute__((__nonnull__));
+bool buffer_read_all(struct buffer *, int fd) __attribute__((__nonnull__));
 
 /*
  * Read the contents of a file into a buffer.  This should be used instead of
  * buffer_read_all when fstat can be called on the file descriptor.  Returns
  * true on success and false (setting errno) on error.
  */
-bool buffer_read_file(struct buffer *, int fd)
-    __attribute__((__nonnull__));
+bool buffer_read_file(struct buffer *, int fd) __attribute__((__nonnull__));
 
 END_DECLS
 

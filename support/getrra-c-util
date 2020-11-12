@@ -119,7 +119,7 @@ dnl \$Id\$' \
 # define SEEK_END 2\\
 #endif\\
 " \
-                 -e "122 i \\
+                 -e "135 i \\
 /*\\
  * Handle defining fseeko and ftello.  If HAVE_FSEEKO is defined, the system\\
  * header files take care of this for us.  Otherwise, see if we're building\\
@@ -161,7 +161,16 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-               -e "163 i \\
+               -e "147 i \\
+#if !HAVE_DECL_SNPRINTF\\
+extern int snprintf(char *, size_t, const char *, ...)\\
+    __attribute__((__format__(printf, 3, 4)));\\
+#endif\\
+#if !HAVE_DECL_VSNPRINTF\\
+extern int vsnprintf(char *, size_t, const char *, va_list)\\
+    __attribute__((__format__(printf, 3, 0)));\\
+#endif" \
+               -e "164 i \\
 #if !HAVE_DECL_STRLCAT\\
 extern size_t strlcat(char *, const char *, size_t);\\
 #endif\\
@@ -246,7 +255,6 @@ download m4/pam-const.m4 m4 pam-const.m4
 download m4/perl.m4 m4 perl.m4
 download m4/python.m4 m4 python.m4
 download m4/sasl.m4 m4 sasl.m4
-download m4/snprintf.m4 m4 snprintf.m4
 download m4/socket-unix.m4 m4 socket-unix.m4
 download m4/socket.m4 m4 socket.m4
 download m4/vamacros.m4 m4 vamacros.m4
@@ -266,7 +274,6 @@ download portable/mkstemp.c lib mkstemp.c
 download portable/reallocarray.c lib reallocarray.c
 download portable/setenv.c lib setenv.c
 download portable/seteuid.c lib seteuid.c
-download portable/snprintf.c lib snprintf.c
 download portable/socket.h include/portable socket.h
 download portable/socket-unix.h include/portable socket-unix.h
 download portable/stdbool.h include/portable stdbool.h
@@ -300,7 +307,6 @@ download tests/portable/inet_ntop-t.c tests/lib inet_ntop-t.c
 download tests/portable/mkstemp-t.c tests/lib mkstemp-t.c
 download tests/portable/reallocarray-t.c tests/lib reallocarray-t.c
 download tests/portable/setenv-t.c tests/lib setenv-t.c
-download tests/portable/snprintf-t.c tests/lib snprintf-t.c
 
 ##  Synchronize test suite files for utility functions from upstream.
 download tests/util/buffer-t.c tests/lib buffer-t.c

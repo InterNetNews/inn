@@ -43,12 +43,12 @@
  * number information for debugging error messages without the user having to
  * pass those in every time.
  */
-#define xcalloc(n, size)        x_calloc((n), (size), __FILE__, __LINE__)
-#define xmalloc(size)           x_malloc((size), __FILE__, __LINE__)
-#define xrealloc(p, size)       x_realloc((p), (size), __FILE__, __LINE__)
-#define xstrdup(p)              x_strdup((p), __FILE__, __LINE__)
-#define xstrndup(p, size)       x_strndup((p), (size), __FILE__, __LINE__)
-#define xvasprintf(p, f, a)     x_vasprintf((p), (f), (a), __FILE__, __LINE__)
+#define xcalloc(n, size)    x_calloc((n), (size), __FILE__, __LINE__)
+#define xmalloc(size)       x_malloc((size), __FILE__, __LINE__)
+#define xrealloc(p, size)   x_realloc((p), (size), __FILE__, __LINE__)
+#define xstrdup(p)          x_strdup((p), __FILE__, __LINE__)
+#define xstrndup(p, size)   x_strndup((p), (size), __FILE__, __LINE__)
+#define xvasprintf(p, f, a) x_vasprintf((p), (f), (a), __FILE__, __LINE__)
 #define xreallocarray(p, n, size) \
     x_reallocarray((p), (n), (size), __FILE__, __LINE__)
 
@@ -61,13 +61,13 @@
  * are supported.
  */
 #ifdef INN_HAVE_C99_VAMACROS
-# define xasprintf(p, f, ...) \
-    x_asprintf((p), __FILE__, __LINE__, (f), __VA_ARGS__)
+#    define xasprintf(p, f, ...) \
+        x_asprintf((p), __FILE__, __LINE__, (f), __VA_ARGS__)
 #elif INN_HAVE_GNU_VAMACROS
-# define xasprintf(p, f, args...) \
-    x_asprintf((p), __FILE__, __LINE__, (f), args)
+#    define xasprintf(p, f, args...) \
+        x_asprintf((p), __FILE__, __LINE__, (f), args)
 #else
-# define xasprintf x_asprintf
+#    define xasprintf x_asprintf
 #endif
 
 BEGIN_DECLS

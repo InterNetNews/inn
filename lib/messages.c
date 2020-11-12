@@ -55,7 +55,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2015-2016 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015-2016, 2020 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008-2010, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -84,17 +84,17 @@
 
 #include <errno.h>
 #ifdef HAVE_SYSLOG_H
-# include <syslog.h>
+#    include <syslog.h>
 #endif
 
 #ifdef _WIN32
-# include <windows.h>
-# define LOG_DEBUG      EVENTLOG_SUCCESS
-# define LOG_INFO       EVENTLOG_INFORMATION_TYPE
-# define LOG_NOTICE     EVENTLOG_INFORMATION_TYPE
-# define LOG_WARNING    EVENTLOG_WARNING_TYPE
-# define LOG_ERR        EVENTLOG_ERROR_TYPE
-# define LOG_CRIT       EVENTLOG_ERROR_TYPE
+#    include <windows.h>
+#    define LOG_DEBUG   EVENTLOG_SUCCESS
+#    define LOG_INFO    EVENTLOG_INFORMATION_TYPE
+#    define LOG_NOTICE  EVENTLOG_INFORMATION_TYPE
+#    define LOG_WARNING EVENTLOG_WARNING_TYPE
+#    define LOG_ERR     EVENTLOG_ERROR_TYPE
+#    define LOG_CRIT    EVENTLOG_ERROR_TYPE
 #endif
 
 #include "inn/macros.h"
@@ -102,18 +102,14 @@
 #include "inn/xmalloc.h"
 
 /* The default handler lists. */
-static message_handler_func stdout_handlers[2] = {
-    message_log_stdout, NULL
-};
-static message_handler_func stderr_handlers[2] = {
-    message_log_stderr, NULL
-};
+static message_handler_func stdout_handlers[2] = {message_log_stdout, NULL};
+static message_handler_func stderr_handlers[2] = {message_log_stderr, NULL};
 
 /* The list of logging functions currently in effect. */
-static message_handler_func *debug_handlers  = NULL;
+static message_handler_func *debug_handlers = NULL;
 static message_handler_func *notice_handlers = stdout_handlers;
-static message_handler_func *warn_handlers   = stderr_handlers;
-static message_handler_func *die_handlers    = stderr_handlers;
+static message_handler_func *warn_handlers = stderr_handlers;
+static message_handler_func *die_handlers = stderr_handlers;
 
 /* If non-NULL, called before exit and its return value passed to exit. */
 int (*message_fatal_cleanup)(void) = NULL;
@@ -145,16 +141,18 @@ message_handlers(message_handler_func **list, unsigned int count, va_list args)
  * duplication since we can't assume variadic macros, but I can at least make
  * it easier to write and keep them consistent.
  */
-#define HANDLER_FUNCTION(type)                                  \
-    void                                                        \
-    message_handlers_ ## type(unsigned int count, ...)          \
-    {                                                           \
-        va_list args;                                           \
-                                                                \
-        va_start(args, count);                                  \
-        message_handlers(& type ## _handlers, count, args);     \
-        va_end(args);                                           \
+/* clang-format off */
+#define HANDLER_FUNCTION(type)                              \
+    void                                                    \
+    message_handlers_ ## type(unsigned int count, ...)      \
+    {                                                       \
+        va_list args;                                       \
+                                                            \
+        va_start(args, count);                              \
+        message_handlers(& type ## _handlers, count, args); \
+        va_end(args);                                       \
     }
+/* clang-format on */
 HANDLER_FUNCTION(debug)
 HANDLER_FUNCTION(notice)
 HANDLER_FUNCTION(warn)
@@ -255,7 +253,7 @@ message_log_syslog(int pri, size_t len, const char *fmt, va_list args, int err)
             CloseEventLog(eventlog);
         }
     }
-#else /* !_WIN32 */
+#else  /* !_WIN32 */
     if (err == 0)
         syslog(pri, "%s", buffer);
     else
@@ -269,6 +267,7 @@ message_log_syslog(int pri, size_t len, const char *fmt, va_list args, int err)
  * Do the same sort of wrapper to generate all of the separate syslog logging
  * functions.
  */
+/* clang-format off */
 #define SYSLOG_FUNCTION(name, type)                                        \
     void                                                                   \
     message_log_syslog_ ## name(size_t l, const char *f, va_list a, int e) \
@@ -281,6 +280,7 @@ SYSLOG_FUNCTION(notice,  NOTICE)
 SYSLOG_FUNCTION(warning, WARNING)
 SYSLOG_FUNCTION(err,     ERR)
 SYSLOG_FUNCTION(crit,    CRIT)
+/* clang-format on */
 
 
 /*

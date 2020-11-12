@@ -102,8 +102,8 @@ void
 xmalloc_fail(const char *function, size_t size, const char *file, int line)
 {
     if (size == 0)
-        sysdie("failed to format output with %s at %s line %d", function,
-               file, line);
+        sysdie("failed to format output with %s at %s line %d", function, file,
+               line);
     else
         sysdie("failed to %s %lu bytes at %s line %d", function,
                (unsigned long) size, file, line);
@@ -203,7 +203,7 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     char *copy;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
+    for (p = s; (size_t)(p - s) < size && *p != '\0'; p++)
         ;
     length = p - s;
     copy = malloc(length + 1);
@@ -263,7 +263,7 @@ x_asprintf(char **strp, const char *file, int line, const char *fmt, ...)
     }
     va_end(args);
 }
-#else /* !(HAVE_C99_VAMACROS || HAVE_GNU_VAMACROS) */
+#else  /* !(HAVE_C99_VAMACROS || HAVE_GNU_VAMACROS) */
 void
 x_asprintf(char **strp, const char *fmt, ...)
 {
