@@ -39,6 +39,7 @@ dnl Source used by INN_FUNC_GETADDRINFO_ADDRCONFIG.
 AC_DEFUN([_INN_FUNC_GETADDRINFO_ADDRCONFIG_SOURCE], [[
 #include <netdb.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
