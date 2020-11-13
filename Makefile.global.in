@@ -258,7 +258,7 @@ FILEMODE	= @FILEMODE@
 OWNER		= -o $(RUNASUSER) -g $(RUNASGROUP)
 ROWNER		= -o $(RUNASUSER) -g $(RNEWSGROUP)
 
-INSTALL		= $(top)/support/install-sh -c
+INSTALL		= $(top)/support/install-sh -p
 
 ##  Installation commands.  These commands are used by the installation
 ##  rules of each separate subdirectory.  The naming scheme is as follows:
@@ -281,7 +281,7 @@ INSTALL		= $(top)/support/install-sh -c
 ##  files like active and newsgroups that should have the same permissions as
 ##  article files.
 
-BACKUP_OPTION	= -B .OLD
+BACKUP_OPTION	= -S .OLD
 
 LI_SPRI		= $(LIBTOOLINST) $(INSTALL) -o root -g $(RUNASGROUP) -m 4550 $(BACKUP_OPTION)
 LI_XPRI		= $(LIBTOOLINST) $(INSTALL) $(OWNER) -m 0550 $(BACKUP_OPTION)

@@ -77,17 +77,16 @@ are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
 redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
 In addition, F<m4/libtool.m4> and a few others m4 files used
 by INN are just a copy of the corresponding files in the
-F<debian/libtool/usr/share/aclocal> subdirectory of the Debian
+F<debian/tmp/usr/share/aclocal> subdirectory of the Debian
 package of the libtool distribution.  (Using libtool without
 using B<automake> requires a few odd hacks.)  New versions
 should be checked in periodically when available.  There are no
 INN-specific modifications to those files except for F<ltmain.sh>
-which recognizes the additional B<-B> flag that INN's B<install-sh>
+which recognizes the additional B<-S> flag that INN's B<install-sh>
 script uses.  This script should also be updated at the same time from
 L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
-it similarly contains local modifications in order to support the
-additional B<-B> flag, as well as a few other changes mentioned in a
-comment at the beginning of the file.
+it similarly contains local modifications mentioned in a comment
+at the beginning of the file.
 
 =head1 Autobuilds
 
