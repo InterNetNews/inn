@@ -1,6 +1,8 @@
 /* $Id$ */
 /* Test suite for auth_external. */
 
+#define LIBTEST_NEW_FORMAT 1
+
 #include "config.h"
 #include "clibrary.h"
 
@@ -41,10 +43,10 @@ client_new(void)
     return client;
 }
 
-/* Validate the input file against the expected data.  Takes the current test
-   number and a flag indicating whether we ran an authenticator. */
+/* Validate the input file against the expected data.  Takes a flag indicating
+   whether we ran an authenticator. */
 static void
-validate_input(int n, bool auth)
+validate_input(bool auth)
 {
     char *wanted, *seen;
 
@@ -55,34 +57,36 @@ validate_input(int n, bool auth)
     seen = ReadInFile("input", NULL);
     if (seen == NULL) {
         syswarn("unable to read input");
-        ok(n, false);
+        ok(false, "no input");
     } else {
-        ok_string(n, wanted, seen);
+        is_string(wanted, seen, "input is as expected");
         free(seen);
     }
     unlink("input");
     free(wanted);
 }
 
-/* Run the test authenticator, checking its input and output.  Takes the test
-   number, the fake client struct, the argument to pass to the authenticator,
-   the expected username, and the expected error output.  Tries it both as a
-   resolver and an authenticator to be sure there are no surprises.  Returns
-   the next test number. */
-static int
-ok_external(int n, struct client *client, const char *arg, const char *user,
-            const char *error)
+/* Run the test authenticator, checking its input and output.  Takes the fake
+   client struct, the argument to pass to the authenticator, the expected
+   username, and the expected error output.  Tries it both as a resolver and
+   an authenticator to be sure there are no surprises.  Returns the next test
+   number. */
+static void
+test_external(struct client *client, const char *arg, const char *user,
+              const char *error)
 {
     char *result;
     char *command;
+
+    diag("mode %s", arg);
 
     command = concat("auth-test ", arg, (char *) 0);
     errors_capture();
     result = auth_external(client, command, ".", NULL, NULL);
     errors_uncapture();
-    validate_input(n++, false);
-    ok_string(n++, user, result);
-    ok_string(n++, error, errors);
+    validate_input(false);
+    is_string(user, result, "user");
+    is_string(error, errors, "errors");
     if (errors && (error == NULL || strcmp(error, errors) != 0))
         warn("%s", errors);
     free(errors);
@@ -91,22 +95,19 @@ ok_external(int n, struct client *client, const char *arg, const char *user,
     errors_capture();
     result = auth_external(client, command, ".", "tester", "s0pers3cret");
     errors_uncapture();
-    validate_input(n++, true);
-    ok_string(n++, user, result);
-    ok_string(n++, error, errors);
+    validate_input(true);
+    is_string(user, result, "user with username and password");
+    is_string(error, errors, "errors with username and password");
     if (errors && (error == NULL || strcmp(error, errors) != 0))
         warn("%s", errors);
     free(errors);
     errors = NULL;
-
-    return n;
 }
 
 int
 main(void)
 {
     struct client *client;
-    int n = 1;
 
     if (access("auth-test", F_OK) < 0) {
         if (access("nnrpd/auth-test", F_OK) == 0) {
@@ -117,25 +118,25 @@ main(void)
     }
     client = client_new();
 
-    test_init(11 * 6);
+    plan(11 * 6);
 
-    n = ok_external(n, client, "okay", "tester", NULL);
-    n = ok_external(n, client, "garbage", "tester", NULL);
-    n = ok_external(n, client, "error", NULL,
-                    "example.com auth: program error: This is an error\n");
-    n = ok_external(n, client, "interspersed", "tester",
-                    "example.com auth: program error: This is an error\n");
-    n = ok_external(n, client, "empty", NULL, NULL);
-    n = ok_external(n, client, "empty-error", NULL,
-                    "example.com auth: program exited with status 1\n");
-    n = ok_external(n, client, "okay-error", NULL,
-                    "example.com auth: program exited with status 1\n");
-    n = ok_external(n, client, "signal", NULL,
-                    "example.com auth: program caught signal 1\n");
-    n = ok_external(n, client, "newline", "tester", NULL);
-    n = ok_external(n, client, "partial", "tester", NULL);
-    ok_external(n, client, "partial-error", NULL,
-                    "example.com auth: program error: This is an error\n");
+    test_external(client, "okay", "tester", NULL);
+    test_external(client, "garbage", "tester", NULL);
+    test_external(client, "error", NULL,
+                  "example.com auth: program error: This is an error\n");
+    test_external(client, "interspersed", "tester",
+                  "example.com auth: program error: This is an error\n");
+    test_external(client, "empty", NULL, NULL);
+    test_external(client, "empty-error", NULL,
+                  "example.com auth: program exited with status 1\n");
+    test_external(client, "okay-error", NULL,
+                  "example.com auth: program exited with status 1\n");
+    test_external(client, "signal", NULL,
+                  "example.com auth: program caught signal 1\n");
+    test_external(client, "newline", "tester", NULL);
+    test_external(client, "partial", "tester", NULL);
+    test_external(client, "partial-error", NULL,
+                  "example.com auth: program error: This is an error\n");
 
     return 0;
 }
