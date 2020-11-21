@@ -91,11 +91,11 @@ static ARTOVERFIELD *   ARTfields;
 static int              ARTfieldsize;
 static bool             ReadOverviewfmt = false;
 
+static char *           ACTIVE;
 
 /* FIXME: The following variables are shared between this file and ov.c.
    This should be cleaned up with a better internal interface. */
 time_t   OVnow;
-char *   ACTIVE;
 FILE *   EXPunlinkfile;
 bool     OVignoreselfexpire;
 bool     OVusepost;

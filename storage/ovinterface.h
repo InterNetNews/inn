@@ -42,7 +42,6 @@ void OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups);
 void OVEXPcleanup(void);
 
 extern time_t OVnow;
-extern char *ACTIVE;
 extern FILE *EXPunlinkfile;
 extern bool OVignoreselfexpire;
 extern bool OVusepost;
