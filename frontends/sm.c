@@ -15,6 +15,8 @@
 #include "inn/libinn.h"
 #include "inn/storage.h"
 
+#define WIRE_CHUNK_SIZE 0x10000
+
 static const char usage[] = "\
 Usage: sm [-cdHiqrRSs] [token ...]\n\
 \n\
@@ -29,8 +31,9 @@ line.\n\
     -i          Translate tokens into newsgroup names and article numbers\n\
     -q          Suppress all error messages except usage\n\
     -R          Display the raw article rather than undoing wire format\n\
+                or consume wire format articles when storing\n\
     -S          Output articles in rnews batch file format\n\
-    -s          Store the article provided on stdin.\n";
+    -s          Store the article provided on stdin\n";
 
 /* The options that can be set on the command line, used to determine what to
    do with each token. */
@@ -39,33 +42,26 @@ struct options {
     bool clearinfo;             /* Show clear information about a token. */
     bool delete;                /* Delete articles instead of showing them. */
     bool header;                /* Display article headers only. */
-    bool raw;                   /* Show the raw wire-format articles. */
+    bool raw;                   /* Display or consume wire-format articles. */
     bool rnews;                 /* Output articles as rnews batch files. */
 };
 
 
 /*
-**  Given a file descriptor, read a post from that file descriptor and then
-**  store it.  This basically duplicates what INN does, except that INN has to
+**  This basically duplicates what INN does, except that INN has to
 **  do more complex things to add the Path header.
 **
 **  Note that we make no attempt to add history or overview information, at
 **  least right now.
 */
 static bool
-store_article(int fd)
+store_article_common(char *text, size_t size)
 {
-    struct buffer *article;
-    size_t size;
-    char *text, *start, *end;
+    char *start, *end;
     ARTHANDLE handle = ARTHANDLE_INITIALIZER;
     TOKEN token;
 
     /* Build the basic article handle. */
-    article = buffer_new();
-    if (!buffer_read_file(article, fd))
-        sysdie("cannot read article");
-    text = wire_from_native(article->data, article->left, &size);
     handle.type = TOKEN_EMPTY;
     handle.data = text;
     handle.iov = xmalloc(sizeof(struct iovec));
@@ -75,7 +71,6 @@ store_article(int fd)
     handle.len = size;
     handle.arrived = 0;
     handle.expires = 0;
-    buffer_free(article);
 
     /* Find the expiration time, if any. */
     start = wire_findheader(text, size, "Expires", true);
@@ -118,8 +113,8 @@ store_article(int fd)
 
     /* Store the article. */
     token = SMstore(handle);
-    free(text);
     free(handle.iov);
+
     if (token.type == TOKEN_EMPTY) {
         warn("failed to store article: %s", SMerrorstr);
         return false;
@@ -127,6 +122,104 @@ store_article(int fd)
         printf("%s\n", TokenToText(token));
         return true;
     }
+}
+
+
+/*
+**  Given a file descriptor, read a post from that file descriptor and then
+**  store it.
+*/
+static bool
+store_article(int fd)
+{
+    struct buffer *article;
+    size_t size;
+    char *text;
+    bool result;
+
+    article = buffer_new();
+    if (!buffer_read_file(article, fd)) {
+        sysdie("cannot read article");
+    }
+    text = wire_from_native(article->data, article->left, &size);
+    buffer_free(article);
+    result = store_article_common(text, size);
+    free(text);
+    return result;
+}
+
+
+/*
+**  Given a file descriptor, read any number of posts in wire format
+**  from that file descriptor and store them.
+*/
+static bool
+store_wire_articles(int fd)
+{
+    bool result = true;
+    bool skipping = false;
+    struct buffer *input;
+    size_t offset;
+    ssize_t got;
+
+    input = buffer_new();
+    buffer_resize(input, WIRE_CHUNK_SIZE);
+    offset = 0;
+    for (;;) {
+        got = buffer_read(input, fd);
+        if (got < 0) {
+            result = false;
+            syswarn("article read failed");
+            break;
+        }
+        if (got == 0)
+            break;
+
+        while (buffer_find_string(input, "\r\n.\r\n", offset, &offset)) {
+            size_t size;
+
+            size = offset + 5;
+            if (skipping) {
+                skipping = false;
+            } else {
+                char *text;
+ 
+                text = input->data + input->used;
+                if (!store_article_common(text, size))
+                    result = false;
+            }
+            input->used += size;
+            input->left -= size;
+            offset = 0;
+        }
+
+        if (!skipping && input->used <= 0 && input->left >= input->size) {
+            if (input->size >= innconf->maxartsize) {
+                skipping = true;
+                result = false;
+                warn("article too large, skipping");
+            } else {
+                buffer_resize(input, input->size + WIRE_CHUNK_SIZE);
+            }
+        }
+        if (skipping && input->left > 4) {
+            input->used += input->left - 4;
+            input->left = 4;
+        }
+        if (input->left >= 4) {
+            offset = input->left - 4;
+        } else {
+            offset = 0;
+        }
+        if (input->used > 0)
+            buffer_compact(input);
+    }
+
+    if (input->left > 0)
+        warn("trailing garbage at end of input");
+
+    buffer_free(input);
+    return result;
 }
 
 
@@ -251,12 +344,12 @@ main(int argc, char *argv[])
         die("-R cannot be used with -S");
     if (options.header && options.rnews)
         die("-H cannot be used with -S");
-    if (store && (options.artinfo || options.delete || options.header))
-        die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
-    if (store && (options.raw || options.rnews))
-        die("-s cannot be used with -i, -r, -d, -H, -R, or -S");
-    if (options.clearinfo && (options.artinfo || options.delete || options.header
-                              || options.raw || options.rnews || store))
+    if (store && (options.artinfo || options.delete
+                  || options.header || options.rnews))
+        die("-s cannot be used with -i, -r, -d, -H, or -S");
+    if (options.clearinfo && (options.artinfo || options.delete
+                              || options.header || options.raw
+                              || options.rnews || store))
         die("-c cannot be used with -i, -r, -d, -H, -R, -S, or -s");
 
     /* Initialize the storage manager.  If we're doing article deletions, we
@@ -270,9 +363,13 @@ main(int argc, char *argv[])
     if (!SMinit())
         die("cannot initialize storage manager: %s", SMerrorstr);
 
-    /* If we're storing an article, do that and then exit. */
+    /* If we're storing articles, do that and then exit. */
     if (store) {
-        status = store_article(fileno(stdin));
+        if (options.raw) {
+            status = store_wire_articles(fileno(stdin));
+        } else {
+            status = store_article(fileno(stdin));
+        }
         exit(status ? 0 : 1);
     }
 

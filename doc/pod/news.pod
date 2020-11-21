@@ -26,6 +26,12 @@ INN versions.  Thanks to Richard Kettlewell for the patch.
 
 =item *
 
+B<sm> can now read and store any number of articles given in wire format
+on its standard input when both B<-s> and B<-R> are used.  Only native
+format was previously possible.  Thanks to Bo Lindbergh for the patch.
+
+=item *
+
 Added new B<-a> flag to B<rnews> to disallow, if needed, the use
 of additional unpackers from the F<rnews.libexec> sub-directory of
 I<pathbin> (as set in F<inn.conf>); only C<rnews> and C<cunbatch>
