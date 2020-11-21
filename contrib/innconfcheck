@@ -50,7 +50,7 @@ INNCONFMAN=/usr/local/news/man/man5/inn.conf.5
 # INNCONFPOD=/usr/local/src/inn-2.3.0/doc/pod/inn.conf.pod
 INNCONFPOD=/usr/local/news/man/man5/inn.conf.pod
 
-# NROFF should be set to an approbate program for formating the man page
+# NROFF should be set to an approbate program for formatting the man page
 # this could be the vendor provided nroff, the FSF's groff (which could be
 # used for producing PostScript output) or Earl Hood's man2html from
 # http://www.oac.uci.edu/indiv/ehood/man2html.html
@@ -70,7 +70,7 @@ PAGER=less
 # approach is that if the format of the inn.conf man page ever changes
 # assumptions about the format that this script makes will probably break.
 # Presently, the base/orginal format of the inn.conf man page is in perl
-# POD documentation.  The formating of this file is less likely to change
+# POD documentation.  The formatting of this file is less likely to change
 # in the future and is a cleaner format for automated editing.  However, 
 # their is some disadvantages to using this file.  First disadvantage, 
 # the POD file is not installed by INN 2.3.0 by default (see INNCONFPOD 
@@ -98,7 +98,7 @@ EDITPOD=0
 #   s#^.Ip "\fIvarifycancels\f$" 4#.Ip "\verifycancels: false\f$" 4#
 # once piped to sed, this expression will replace the man page item to
 # include the setting from the inn.conf file.  The nroff and pager
-# applications then polish the script off to provide a documented formated
+# applications then polish the script off to provide a documented formatted
 # in a way that is easier to find incorrect setting withen.
 
 if [ $EDITPOD -eq 0 ] ; then

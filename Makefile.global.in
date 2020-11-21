@@ -356,7 +356,7 @@ CP_DATA		= $(INSTALL) $(OWNER) -m $(FILEMODE) $(BACKUP_OPTION)
 CP_MAN		= $(INSTALL) $(OWNER) -m 0444
 
 ##  Some additional definitions needed by some versions of make, to ensure a
-##  consistant set of variables are available.
+##  consistent set of variables are available.
 
 SHELL		= @SHELL@
 
