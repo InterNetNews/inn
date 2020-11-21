@@ -97,12 +97,14 @@ LIBTOOL='$(top)/libtool'
 LIBTOOLCC='$(top)/libtool --mode=compile'
 LIBTOOLINST='$(top)/libtool --mode=install'
 LIBTOOLLD='$(top)/libtool --mode=link'
+LIBTOOLLDDEPS='$(top)/libtool --mode=link --preserve-dup-deps'
 CCOUTPUT='-c -o $@ $<'
 AC_SUBST(EXTLIB)
 AC_SUBST(EXTOBJ)
 AC_SUBST(LIBTOOLCC)
 AC_SUBST(LIBTOOLINST)
 AC_SUBST(LIBTOOLLD)
+AC_SUBST(LIBTOOLLDDEPS)
 AC_SUBST(CCOUTPUT)
 
 dnl Command-line options.  Many of these macros just do the command-line
