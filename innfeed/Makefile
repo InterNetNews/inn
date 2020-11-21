@@ -64,7 +64,7 @@ config_l.c: configfile.l
 	mv lex.yy.c config_l.c
 
 imap_connection.o: imap_connection.c
-	$(CC) $(CFLAGS) $(SASL_CPPFLAGS) -c $<
+	$(LIBCC) $(CFLAGS) $(SASL_CPPFLAGS) -c $<
 
 innfeed: $(OBJECTS) connection.o $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) connection.o $(INNFEEDLIBS)

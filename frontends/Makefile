@@ -92,16 +92,16 @@ rnews:		rnews.o        $(BOTH)   ; $(LINK) rnews.o        $(STORELIBS)
 sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 
 ovdb_init.o: ovdb_init.c
-	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_monitor.o: ovdb_monitor.c
-	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_server.o: ovdb_server.c
-	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_stat.o: ovdb_stat.c
-	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in

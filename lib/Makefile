@@ -67,7 +67,7 @@ libinn.a: $(OBJECTS)
 	$(LIBCC) $(CFLAGS) -c $*.c
 
 perl.o: perl.c
-	$(CC) $(CFLAGS) $(PERL_CPPFLAGS) $(LDFLAGS) -c perl.c
+	$(LIBCC) $(CFLAGS) $(PERL_CPPFLAGS) $(LDFLAGS) -c perl.c
 
 ../include/inn/system.h:
 	(cd ../include && $(MAKE))

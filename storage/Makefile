@@ -79,7 +79,7 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
 
 ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
-	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
+	$(LIBCC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
 	    libstorage.$(EXTLIB) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
