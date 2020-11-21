@@ -65,9 +65,12 @@ profiled:
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
+# $(LIBSTORAGE) must be listed twice to resolve circular dependencies
+# when doing static linking.
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
+LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
@@ -82,12 +85,12 @@ archive:	archive.o    $(BOTH)	; $(LINK) archive.o    $(STORELIBS)
 batcher:	batcher.o    $(BOTH)	; $(LINK) batcher.o    $(STORELIBS)
 cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
 innbind:	innbind.o    $(LIBINN)	; $(LINK) innbind.o    $(INNLIBS)
-inndf:		inndf.o      $(BOTH)	; $(LINK) inndf.o      $(STORELIBS)
+inndf:		inndf.o      $(BOTH)	; $(LINKDEPS) inndf.o  $(STORELIBS)
 innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)
 innxmit:	innxmit.o    $(BOTH)	; $(LINK) innxmit.o    $(STORELIBS)
 ninpaths:	ninpaths.o		; $(LINK) ninpaths.o
 nntpget:	nntpget.o    $(BOTH)	; $(LINK) nntpget.o    $(STORELIBS)
-overchan:	overchan.o   $(BOTH)	; $(LINK) overchan.o   $(STORELIBS)
+overchan:	overchan.o   $(BOTH)	; $(LINKDEPS) overchan.o $(STORELIBS)
 shlock:		shlock.o     $(LIBINN)	; $(LINK) shlock.o     $(INNLIBS)
 shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)
 

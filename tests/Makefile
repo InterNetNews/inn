@@ -55,6 +55,7 @@ $(FIXSCRIPT):
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
 LINK		= $(LIBTOOLLD) $(CC) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
+LINKDEPS	= $(LIBTOOLLDDEPS) $(CC) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
@@ -269,22 +270,22 @@ nnrpd/auth-ext.t: nnrpd/auth-ext-t.o ../nnrpd/auth-ext.o tap/basic.o tap/message
 	    tap/messages.o tap/string.o $(LIBINN)
 
 overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
-	$(LINK) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+	$(LINKDEPS) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/buffindexed-t.o: overview/overview-t.c
 	$(CC) $(CFLAGS) -DOVTYPE=buffindexed -c -o $@ overview/overview-t.c
 
 overview/buffindexed.t: overview/buffindexed-t.o tap/basic.o $(STORAGEDEPS)
-	$(LINK) overview/buffindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+	$(LINKDEPS) overview/buffindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/tradindexed-t.o: overview/overview-t.c
 	$(CC) $(CFLAGS) -DOVTYPE=tradindexed -c -o $@ overview/overview-t.c
 
 overview/tradindexed.t: overview/tradindexed-t.o tap/basic.o $(STORAGEDEPS)
-	$(LINK) overview/tradindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+	$(LINKDEPS) overview/tradindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/xref.t: overview/xref-t.o tap/basic.o $(STORAGEDEPS)
-	$(LINK) overview/xref-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
+	$(LINKDEPS) overview/xref-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 util/innbind.t: util/innbind-t.o tap/basic.o $(LIBINN)
 	$(LINK) util/innbind-t.o tap/basic.o $(LIBINN) $(LIBS)

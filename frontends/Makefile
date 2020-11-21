@@ -63,9 +63,12 @@ $(FIXSCRIPT):
 
 ##  Compilation rules.
 
-BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
+# $(LIBSTORAGE) must be listed twice to resolve circular dependencies
+# when doing static linking.
+BOTH		= $(LIBSTORAGE) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
+LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
@@ -77,10 +80,14 @@ encode:		encode.o                 ; $(LINK) encode.o
 getlist:	getlist.o      $(LIBINN) ; $(LINK) getlist.o      $(INNLIBS)
 inews:		inews.o        $(LIBINN) ; $(LINK) inews.o        $(INNLIBS)
 innconfval:	innconfval.o   $(LIBINN) ; $(LINK) innconfval.o   $(INNLIBS)
-ovdb_init:	ovdb_init.o    $(BOTH)   ; $(LINK) ovdb_init.o    $(STORELIBS)
-ovdb_monitor:	ovdb_monitor.o $(BOTH)   ; $(LINK) ovdb_monitor.o $(STORELIBS)
-ovdb_server:	ovdb_server.o  $(BOTH)   ; $(LINK) ovdb_server.o  $(STORELIBS)
-ovdb_stat:	ovdb_stat.o    $(BOTH)   ; $(LINK) ovdb_stat.o    $(STORELIBS)
+ovdb_init:	ovdb_init.o    $(BOTH)
+	$(LINKDEPS) ovdb_init.o    $(STORELIBS)
+ovdb_monitor:	ovdb_monitor.o $(BOTH)
+	$(LINKDEPS) ovdb_monitor.o $(STORELIBS)
+ovdb_server:	ovdb_server.o  $(BOTH)
+	$(LINKDEPS) ovdb_server.o  $(STORELIBS)
+ovdb_stat:	ovdb_stat.o    $(BOTH)
+	$(LINKDEPS) ovdb_stat.o    $(STORELIBS)
 rnews:		rnews.o        $(BOTH)   ; $(LINK) rnews.o        $(STORELIBS)
 sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
 

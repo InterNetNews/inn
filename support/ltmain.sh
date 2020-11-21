@@ -5,9 +5,9 @@
 #############################
 # This file has been modified from the standard libtool version to
 # recognize the additional -S flag that INN's install-sh program
-# recognizes; apart from that, it is identical to the stock libtool
-# distribution.
-# Only one part of the code is modified; search for the comment below
+# supports, and fix a bug when using --preserve-dup-deps Libtool flag;
+# apart from that, it is identical to the stock libtool distribution.
+# Only two parts of the code are modified; search for the comments below
 # containing "INN".
 
 # libtool (GNU libtool) 2.4.6
@@ -8686,41 +8686,46 @@ func_mode_link ()
 	  eval tmp_libs=\"\$$var\"
 	  new_libs=
 	  for deplib in $tmp_libs; do
-	    # FIXME: Pedantically, this is the right thing to do, so
-	    #        that some nasty dependency loop isn't accidentally
-	    #        broken:
-	    #new_libs="$deplib $new_libs"
-	    # Pragmatically, this seems to cause very few problems in
-	    # practice:
-	    case $deplib in
-	    -L*) new_libs="$deplib $new_libs" ;;
-	    -R*) ;;
-	    *)
-	      # And here is the reason: when a library appears more
-	      # than once as an explicit dependence of a library, or
-	      # is implicitly linked in more than once by the
-	      # compiler, it is considered special, and multiple
-	      # occurrences thereof are not removed.  Compare this
-	      # with having the same library being listed as a
-	      # dependency of multiple other libraries: in this case,
-	      # we know (pedantically, we assume) the library does not
-	      # need to be listed more than once, so we keep only the
-	      # last copy.  This is not always right, but it is rare
-	      # enough that we require users that really mean to play
-	      # such unportable linking tricks to link the library
-	      # using -Wl,-lname, so that libtool does not consider it
-	      # for duplicate removal.
-	      case " $specialdeplibs " in
-	      *" $deplib "*) new_libs="$deplib $new_libs" ;;
+            # Modification for INN in the loop (fix --preserve-dup-deps).
+            if $opt_preserve_dup_deps; then
+	      # Pedantically, this is the right thing to do, so
+	      # that some nasty dependency loop isn't accidentally
+	      # broken.
+	      new_libs="$deplib $new_libs"
+            else
+	      # Pragmatically, this seems to cause very few problems in
+	      # practice:
+	      case $deplib in
+	      -L*) new_libs="$deplib $new_libs" ;;
+	      -R*) ;;
 	      *)
-		case " $new_libs " in
-		*" $deplib "*) ;;
-		*) new_libs="$deplib $new_libs" ;;
-		esac
-		;;
-	      esac
-	      ;;
-	    esac
+	        # And here is the reason: when a library appears more
+	        # than once as an explicit dependence of a library, or
+	        # is implicitly linked in more than once by the
+	        # compiler, it is considered special, and multiple
+	        # occurrences thereof are not removed.  Compare this
+	        # with having the same library being listed as a
+	        # dependency of multiple other libraries: in this case,
+	        # we know (pedantically, we assume) the library does not
+	        # need to be listed more than once, so we keep only the
+	        # last copy.  This is not always right, but it is rare
+	        # enough that we require users that really mean to play
+	        # such unportable linking tricks to link the library
+	        # using -Wl,-lname, so that libtool does not consider it
+	        # for duplicate removal.  And if not possible for portability
+                # reasons, then --preserve-dup-deps should be used.
+	        case " $specialdeplibs " in
+	        *" $deplib "*) new_libs="$deplib $new_libs" ;;
+	        *)
+		  case " $new_libs " in
+		  *" $deplib "*) ;;
+		  *) new_libs="$deplib $new_libs" ;;
+		  esac
+		  ;;
+	        esac
+	        ;;
+             esac
+            fi
 	  done
 	  tmp_libs=
 	  for deplib in $new_libs; do

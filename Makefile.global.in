@@ -69,11 +69,13 @@ LIBTOOL		= @LIBTOOL@
 LIBTOOLCC	= @LIBTOOLCC@
 LIBTOOLINST	= @LIBTOOLINST@
 LIBTOOLLD	= @LIBTOOLLD@
+LIBTOOLLDDEPS	= @LIBTOOLLDDEPS@
 EXTOBJ		= @EXTOBJ@
 EXTLIB		= @EXTLIB@
 
 LIBCC		= $(LIBTOOLCC) $(CC)
 LIBLD		= $(LIBTOOLLD) $(CC)
+LIBLDDEPS	= $(LIBTOOLLDDEPS) $(CC)
 
 ##  zlib support.  Additional flags and libraries used when compiling or
 ##  linking code that contains compression support.
