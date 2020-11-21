@@ -77,8 +77,8 @@ chdir($root) or BAIL_OUT("cannot chdir to $root: $!");
 ## no critic (TestingAndDebugging::ProhibitNoWarnings)
 ## no critic (Variables::ProhibitPackageVars)
 {
-    no warnings 'once';
     $Test::Pod::ignore_dirs{'.libs'} = 'libraries';
+    $Test::Pod::ignore_dirs{'tests'} = 'test suite';
 }
 ## use critic
 
