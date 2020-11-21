@@ -43,7 +43,6 @@ void OVEXPcleanup(void);
 
 extern bool OVstatall;
 extern time_t OVnow;
-extern char *ACTIVE;
 extern FILE *EXPunlinkfile;
 extern bool OVignoreselfexpire;
 extern bool OVusepost;
