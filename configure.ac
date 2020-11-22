@@ -308,7 +308,17 @@ dnl the bison-generated parser for innfeed.conf.
         CFLAGS="$CFLAGS -Kalloca"
     fi
 esac
-  
+
+dnl Whether to add hardening flags to the build.  Ideally, this should just
+dnl always be turned on wherever possible, but depending on the compiler and
+dnl the platform, it might be useful to easily remove them at configure time.
+inn_enable_hardening_flags=yes
+AC_ARG_ENABLE([hardening-flags],
+    [AS_HELP_STRING([--enable-hardening-flags],
+        [Add hardening build flags like -fPIE @<:@default=yes@:>@])],
+    [AS_IF([test x"$enableval" != xyes],
+        [inn_enable_hardening_flags=no])])
+
 dnl Checks for pathnames.  If AC_PROG_* does not manage to find a working
 dnl program, INN_PATH_PROG_ENSURE will output an error.
 AC_ARG_VAR([AWK], [Location of awk])
@@ -595,6 +605,20 @@ INN_SYS_STREAMS_SENDFD
 INN_SYS_UNIX_SOCKETS
 INN_LOG_FACILITY
 
+dnl Add hardening build flags, if supported by the compiler.
+AS_IF([test x"$inn_enable_hardening_flags" = xyes],
+    [INN_PROG_CC_FLAG([-fPIE], [CFLAGS="${CFLAGS} -fPIE"
+                                CC_WARNINGS="${CC_WARNINGS} -fPIE"
+                                LDFLAGS="${LDFLAGS} -fPIE -pie"], [])
+     INN_PROG_CC_FLAG([-fstack-protector-strong],
+                      [CFLAGS="${CFLAGS} -fstack-protector-strong"
+                       CC_WARNINGS="${CC_WARNINGS} -fstack-protector-strong"],
+                      [])
+     INN_PROG_CC_FLAG([-Wl,-z,relro],
+                      [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
+     INN_PROG_CC_FLAG([-Wl,-z,now],
+                      [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
+
 dnl Clean up our LIBS, just for grins.
 LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
@@ -619,7 +643,7 @@ AC_OUTPUT
 dnl Print out some additional information on what to check.
 cat <<EOM
 
-Please check the following files before running make, to ensure that 
+Please check the following files before running make, to ensure that
 everything was set correctly.
 
         Makefile.global
