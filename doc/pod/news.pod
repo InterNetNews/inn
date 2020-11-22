@@ -49,6 +49,14 @@ be parsed for some reason.
 Added new B<-d> flag to B<rnews> to log via syslog the message-ID and the
 Path header value of each article rejected as a duplicate.
 
+=item *
+
+Added new B<--enable-hardening-flags> configure-time option,
+enabled by default, to use hardening build flags like C<-fPIE> and
+C<-fstack-protector-strong>.  This option can easily be disabled if the
+compiler or the platform does not support them well.  More hardening
+build flags will eventually be added in future releases.
+
 =back
 
 =head1 Changes in 2.6.3
