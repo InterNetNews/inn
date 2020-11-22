@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2018-01-14
+##  Last modified: 2020-05-03
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -728,19 +728,6 @@ rmgroup:newsmaster@demon.net:demon.*:verify-demon.news
 checkgroups:eric@*cirr.com:dfw.*:doit
 newgroup:eric@*cirr.com:dfw.*:doit
 rmgroup:eric@*cirr.com:dfw.*:doit
-
-## DICTATOR (Dictator's Handbook)
-# Contact: news@dictatorshandbook.net
-# URL: http://dictatorshandbook.net/usenet/usenetadmin.html
-# Admin group: dictator.announce
-# Key URL: http://www.dictatorshandbook.net/usenet/news-public.key
-# Key fingerprint: 6FCA 1263 3947 C2BA 9F15  998F 5B1B 7FF9 4B1A 460A
-# *PGP*   See comment at top of file.
-newgroup:*:dictator.*:drop
-rmgroup:*:dictator.*:drop
-checkgroups:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
-newgroup:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
-rmgroup:randito@dictatorshandbook.net:dictator.*:verify-randito@dictatorshandbook.net
 
 ## DK (Denmark)
 # URL: http://www.usenet.dk/dk-admin/
@@ -2123,6 +2110,19 @@ rmgroup:*:relcom.*:drop
 checkgroups:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
 newgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
 rmgroup:coord@*.relcom.ru:relcom.*:verify-relcom.newsgroups
+
+## ROCKSOLID (Rocksolid network - novabbs.com)
+# Contact: usenet@novabbs.com
+# URL: http://news.novabbs.com/hierarchy/
+# Admin group: rocksolid.shared.rocksolid
+# Key URL: http://news.novabbs.com/hierarchy/rocksolid.txt
+# Key fingerprint: FF84 6D73 0B72 CC0C B69B  6480 2A1C 655B F6D1 0B13
+# *PGP*   See comment at top of file.
+newgroup:*:rocksolid.*:drop
+rmgroup:*:rocksolid.*:drop
+checkgroups:usenet@novabbs.com:rocksolid.*:verify-usenet@novabbs.com
+newgroup:usenet@novabbs.com:rocksolid.*:verify-usenet@novabbs.com
+rmgroup:usenet@novabbs.com:rocksolid.*:verify-usenet@novabbs.com
 
 ## RPI (*LOCAL* -- Rensselaer Polytechnic Institute, Troy, NY, USA)
 # Contact: sofkam@rpi.edu
