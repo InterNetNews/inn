@@ -107,6 +107,13 @@ AC_SUBST(LIBTOOLLD)
 AC_SUBST(LIBTOOLLDDEPS)
 AC_SUBST(CCOUTPUT)
 
+dnl If PIC objects are not wanted (--with-pic=no), an error occurs during
+dnl the build of shared libraries.  Unfortunately, $pic_mode is set after
+dnl calling LT_INIT whereas AC_DISABLE_SHARED must be given before, so we
+dnl cannot automatically disable it.  Just bail out with an error.
+AS_IF([test x"$pic_mode" = xno && test x"$enable_shared" = xyes],
+    [AC_MSG_ERROR([Incompatible use of --without-pic and --enable-shared])])
+
 dnl Command-line options.  Many of these macros just do the command-line
 dnl component of a set of macros that have additional parts called later.
 INN_ARG_PATHS
