@@ -714,8 +714,8 @@ static bool CNFSinit_disks(CYCBUFF *cycbuff) {
                            SMopenmode ? (PROT_READ | PROT_WRITE) : PROT_READ,
                            MAP_SHARED, cycbuff->fd, 0);
      if (cycbuff->bitfield == MAP_FAILED || errno != 0) {
-      warn("CNFS: CNFSinitdisks: mmap for %s offset %d len %ld failed: %m",
-           cycbuff->path, 0, (long) cycbuff->minartoffset);
+      warn("CNFS: CNFSinitdisks: mmap for %s offset %d len %ld failed: %s",
+           cycbuff->path, 0, (long) cycbuff->minartoffset, strerror(errno));
       cycbuff->bitfield = NULL;
       return false;
     }
@@ -1404,9 +1404,9 @@ ARTHANDLE *cnfs_retrieve(const TOKEN token, const RETRTYPE amount) {
 	*(CNFSARTHEADER *)&cahh = cah;
 	if(pread(cycbuff->fd, ((char *)&cahh)+sizeof(CNFSARTHEADER), sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER), offset+sizeof(cah)) != sizeof(oldCNFSARTHEADER)-sizeof(CNFSARTHEADER)) {
             SMseterror(SMERR_UNDEFINED, "read2 failed");
-            syswarn("CNFS: could not read2 token %s %s:0x%s:%u: %m",
+            syswarn("CNFS: could not read2 token %s %s:0x%s:%u: %s",
                     TokenToText(token), cycbuffname,
-                    CNFSofft2hex(offset, false), cycnum);
+                    CNFSofft2hex(offset, false), cycnum, strerror(errno));
             free(art);
             if (!SMpreopen) CNFSshutdowncycbuff(cycbuff);
             return NULL;
