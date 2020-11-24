@@ -81,9 +81,9 @@ $(FIXSCRIPT):
 	@exit 1
 
 actsync:	actsync.o    $(LIBINN)	; $(LINK) actsync.o    $(INNLIBS)
-archive:	archive.o    $(BOTH)	; $(LINK) archive.o    $(STORELIBS)
-batcher:	batcher.o    $(BOTH)	; $(LINK) batcher.o    $(STORELIBS)
-cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINK) cvtbatch.o   $(STORELIBS)
+archive:	archive.o    $(BOTH)	; $(LINKDEPS) archive.o  $(STORELIBS)
+batcher:	batcher.o    $(BOTH)	; $(LINKDEPS) batcher.o  $(STORELIBS)
+cvtbatch:	cvtbatch.o   $(BOTH)	; $(LINKDEPS) cvtbatch.o $(STORELIBS)
 innbind:	innbind.o    $(LIBINN)	; $(LINK) innbind.o    $(INNLIBS)
 inndf:		inndf.o      $(BOTH)	; $(LINKDEPS) inndf.o  $(STORELIBS)
 innxbatch:	innxbatch.o  $(LIBINN)	; $(LINK) innxbatch.o  $(INNLIBS)

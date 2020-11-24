@@ -89,7 +89,8 @@ ovdb_server:	ovdb_server.o  $(BOTH)
 ovdb_stat:	ovdb_stat.o    $(BOTH)
 	$(LINKDEPS) ovdb_stat.o    $(STORELIBS)
 rnews:		rnews.o        $(BOTH)   ; $(LINK) rnews.o        $(STORELIBS)
-sm:		sm.o           $(BOTH)   ; $(LINK) sm.o           $(STORELIBS)
+sm:		sm.o           $(BOTH)
+	$(LINKDEPS) sm.o           $(STORELIBS)
 
 ovdb_init.o: ovdb_init.c
 	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
