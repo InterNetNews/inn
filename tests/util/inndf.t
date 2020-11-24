@@ -58,6 +58,7 @@ if df -i . > /dev/null 2>&1 ; then
         real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $8 }'`
     elif [ "${UNAME_SYSTEM}" = "FreeBSD" ] \
       || [ "${UNAME_SYSTEM}" = "NetBSD" ] \
+      || [ "${UNAME_SYSTEM}" = "OpenBSD" ] \
       || [ "${UNAME_SYSTEM}" = "Darwin" ] ; then
         real=`df -i . | sed 1d | tr -d '\r\n' | awk '{ print $7 }'`
     else
