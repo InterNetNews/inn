@@ -54,11 +54,48 @@ elif [ "$tree" = "RC" ] ; then
 else
     exec > snapshot.log 2>&1
 
+    # Run a first build (Perl and Python are the only optional packages
+    # that need being explicitly passed to configure so as to be used,
+    # even though libraries are installed on the system).
     ./autogen
     ./configure --with-perl --with-python
     make warnings
-    make test
+    cd contrib
+    make warnings
+    cd ../tests
+    make warnings
+    make
+    cd ..
     make check-manifest
+
+    # Run another build, with other configure options.
+    make distclean
+    ./autogen
+    ./configure --disable-shared
+    make warnings
+    make test
+
+    # Run a third build, with other configure options.
+    make distclean
+    ./autogen
+    ./configure --enable-tagged-hash
+    make warnings
+    make test
+
+    # Run yet another build, with other configure options.
+    make distclean
+    ./autogen
+    ./configure --enable-keywords --without-bdb --without-krb5 \
+        --without-openssl --without-sasl --without-zlib
+    make warnings
+    make test
+
+    # Run a last build, with other configure options.
+    make distclean
+    ./autogen
+    ./configure --enable-largefiles
+    make warnings
+    make test
 fi
 
 if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
