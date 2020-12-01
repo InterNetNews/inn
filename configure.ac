@@ -616,14 +616,15 @@ dnl Add hardening build flags, if supported by the compiler.
 AS_IF([test x"$inn_enable_hardening_flags" = xyes],
     [INN_PROG_CC_FLAG([-fPIE], [CFLAGS="${CFLAGS} -fPIE"
                                 CC_WARNINGS="${CC_WARNINGS} -fPIE"
-                                LDFLAGS="${LDFLAGS} -fPIE -pie"], [])
+                                INN_PROG_LD_FLAG([-pie],
+                                    [LDFLAGS="${LDFLAGS} -pie"], [])])
      INN_PROG_CC_FLAG([-fstack-protector-strong],
                       [CFLAGS="${CFLAGS} -fstack-protector-strong"
                        CC_WARNINGS="${CC_WARNINGS} -fstack-protector-strong"],
                       [])
-     INN_PROG_CC_FLAG([-Wl,-z,relro],
+     INN_PROG_LD_FLAG([-Wl,-z,relro],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
-     INN_PROG_CC_FLAG([-Wl,-z,now],
+     INN_PROG_LD_FLAG([-Wl,-z,now],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
 
 dnl Clean up our LIBS, just for grins.
