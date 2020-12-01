@@ -3,20 +3,34 @@
 # This is a simple, bare-bones example of a systemd-style init script for INN.
 #
 [Unit]
-Description=InterNetNews Daemon
+Description=InterNetNews News Server
 Documentation=https://www.eyrie.org/~eagle/software/inn/
-After=syslog.target network.target
+After=network.target
 ConditionPathExists=/etc/news/inn.conf
 
 [Service]
-User=news
-PermissionsStartOnly=true
-PIDFile=/run/news/innd.pid
 Type=forking
-ExecStart=/usr/libexec/news/rc.news
-ExecReload=/usr/libexec/news/ctlinnd -t 20 reload '' 'reload asked'
-ExecStop=/bin/su -m news -s /bin/sh -c '/usr/libexec/news/rc.news stop'
-KillMode=control-group
+ExecStart=/usr/lib/news/bin/rc.news
+ExecReload=/usr/sbin/ctlinnd -t 20 reload '' 'systemd unit reload'
+ExecStop=/bin/su -m news -s /bin/sh -c '/usr/lib/news/bin/rc.news stop'
+PIDFile=/run/news/innd.pid
+User=news
+Group=news
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+PrivateDevices=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectHome=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectSystem=full
+RuntimeDirectory=news
+# Setting NoNewPrivileges will break most local sendmail implementations
+# because they're setuid or setgid to drop off mail in the mail queue.  With
+# this configuration, one can use mSMTP as the configured mta, set to forward
+# mail via SMTP to localhost.  Nevertheless, one can probably do better than
+# this by adding some syscall filtering.
+#NoNewPrivileges=true
 
 [Install]
 WantedBy=multi-user.target
