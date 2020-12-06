@@ -658,7 +658,7 @@ maintaining it since 2007.
 
 =item Postfilter
 
-URL:  L<http://code.google.com/p/postfilter/> (by Paolo Amoroso)
+URL:  L<https://github.com/Aioe/postfilter> (by Paolo Amoroso)
 
 Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all
 messages sent by local users in order to block abuses.  Postfilter can limit
