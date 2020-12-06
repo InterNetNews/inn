@@ -260,7 +260,7 @@ AC_SUBST(HOSTNAME)
 
 dnl Checks for programs.
 AC_PROG_GCC_TRADITIONAL
-AC_PROG_LEX
+AC_PROG_LEX([noyywrap])
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
@@ -713,7 +713,7 @@ AH_TOP([#include "inn/defines.h"
         #include "inn/options.h"])
 
 dnl Most configuration information goes here.
-AC_CONFIG_HEADER([include/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 
 dnl Generate the configure output.
 AC_OUTPUT
