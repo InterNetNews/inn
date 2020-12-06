@@ -487,7 +487,7 @@ AS_IF([test x"$ac_cv_header_gdbm_ndbm_h" != xno],
               [Define if you have the <gdbm-ndbm.h> header file.])])])
 
 dnl Check for whether various symbols are declared.
-AC_CHECK_DECLS([pread, pwrite, snprintf, setproctitle, strlcat,
+AC_CHECK_DECLS([pread, pwrite, reallocarray, snprintf, setproctitle, strlcat,
                 strlcpy, vsnprintf])
 AC_CHECK_DECLS([h_errno], [], [], [#include <netdb.h>])
 AC_CHECK_DECLS([inet_aton, inet_ntoa], [], [],

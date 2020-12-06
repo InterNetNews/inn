@@ -35,6 +35,7 @@
 #include "portable/socket.h"
 #include "clibrary.h"
 
+#include <ctype.h>
 #include <errno.h>
 
 /*
@@ -62,14 +63,33 @@ int test_getnameinfo(const struct sockaddr *, socklen_t, char *, socklen_t,
  * Check to see if a name is fully qualified by seeing if it contains a
  * period.  If it does, try to copy it into the provided node buffer and set
  * status accordingly, returning true.  If not, return false.
+ *
+ * musl libc returns the text form of the IP address rather than NULL when the
+ * IP address doesn't resolve.  Reject such names here so that NI_NAMEREQD is
+ * emulated correctly.
  */
 static bool
 try_name(const char *name, char *node, socklen_t nodelen, int *status)
 {
     size_t namelen;
+    const char *p;
+    bool found_nondigit = false;
 
+    /* Reject unqualified names. */
     if (strchr(name, '.') == NULL)
         return false;
+
+    /*
+     * Reject names consisting entirely of digits and period, since these are
+     * converted IP addresses rather than resolved names.
+     */
+    for (p = name; *p != '\0'; p++)
+        if (!isdigit((unsigned char) *p) && *p != '.')
+            found_nondigit = true;
+    if (!found_nondigit)
+        return false;
+
+    /* Copy the name if it's not too long and return success. */
     namelen = strlen(name);
     if (namelen + 1 > (size_t) nodelen)
         *status = EAI_OVERFLOW;
