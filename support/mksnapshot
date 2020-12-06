@@ -70,21 +70,18 @@ else
 
     # Run another build, with other configure options.
     make distclean
-    ./autogen
     ./configure --disable-shared
     make warnings
     make test
 
     # Run a third build, with other configure options.
     make distclean
-    ./autogen
     ./configure --enable-tagged-hash
     make warnings
     make test
 
     # Run yet another build, with other configure options.
     make distclean
-    ./autogen
     ./configure --enable-keywords --without-bdb --without-krb5 \
         --without-openssl --without-sasl --without-zlib
     make warnings
@@ -92,7 +89,6 @@ else
 
     # Run a last build, with other configure options.
     make distclean
-    ./autogen
     ./configure --enable-largefiles
     make warnings
     make test
