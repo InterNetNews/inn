@@ -75,7 +75,7 @@ Subject: Contents
     5.2.  Using raw devices on Solaris destroys the partition table
     5.3.  Will INN run on Windows?
     5.4.  Why aren't INN's files where the documentation says they are?
-    5.5.  Running INN on Mac OS X
+    5.5.  Running INN on macOS
 
 6.  How Do I...
     6.1.  Set up a server with no external feeds, just local groups
@@ -1023,7 +1023,7 @@ directory under news's home directory.
 
 ------------------------------
 
-Subject: 5.5. Running INN on Mac OS X
+Subject: 5.5. Running INN on macOS
 
 Richard Tobin provided the following advice in news.software.nntp on
 2013-06-29 based on experience with running INN on Snow Leopard:
@@ -1052,8 +1052,8 @@ Richard Tobin provided the following advice in news.software.nntp on
     function related to "vprocmgr".  Running from launchd shouldn't have
     this problem, and it appears to be fixed in Mountain Lion.
 
-The Perl flags come from the Perl configuration, so this problem may be
-fixed with newer builds of Mac OS X.
+The Perl flags come from the Perl configuration; this problem is fixed
+with current builds of macOS.
 
 ------------------------------
 
