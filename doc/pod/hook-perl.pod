@@ -348,7 +348,10 @@ supplied headers (like Message-ID: and Date:) are filled in.  Deleting
 required headers or modifying headers that need to follow a strict format
 can result in nnrpd trying to post nonsense articles (which will probably
 then be rejected by innd).  If $modify_headers is set, I<everything> in
-the %hdr hash is taken to be article headers and added to the article.
+the %hdr hash is taken to be article headers and added to the article.  If
+a header field body contains several lines, they are separated from each
+other by a mere LF (B<nnrpd> will properly rewrite them as CRLF when
+posting).
 
 To modify the contents of the Organization: header, you can use:
 
