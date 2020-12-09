@@ -392,12 +392,16 @@ PY_access(char* file, struct vector *access_vec, char *User)
 /*
 **  Initialize dynamic access control code.
 */
-
 void
 PY_dynamic_init (char* file)
 {
-  dynamic_file = xstrdup(file);
-  PY_use_dynamic = true;
+    if (!access(file, R_OK)) {
+        syslog(L_NOTICE, "pyfilter %s not installed", path);
+        return;
+    }
+
+    dynamic_file = xstrdup(file);
+    PY_use_dynamic = true;
 }
 
 

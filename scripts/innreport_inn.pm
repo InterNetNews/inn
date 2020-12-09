@@ -473,6 +473,8 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^reloading pyfilter$/o;
     return 1 if $left =~ /^reloaded pyfilter OK$/o;
     return 1 if $left =~ /^python interpreter initialized OK$/o;
+    return 1 if $left =~ /^python is not initialized$/o;
+    return 1 if $left =~ /^pyfilter .+ not installed$/o;
     return 1 if $left =~ /^python method \w+ not found$/o; 
     return 1 if $left =~ /^python: First load, so I can do initialization stuff\.$/o;
     return 1 if $left =~ /^python: filter_before_reload executing\.\.\.$/o;
