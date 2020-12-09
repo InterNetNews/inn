@@ -205,7 +205,7 @@ extern int vsnprintf(char *, size_t, const char *, va_list)
 #if !HAVE_MKSTEMP
 extern int mkstemp(char *);
 #endif
-#if !HAVE_REALLOCARRAY
+#if !HAVE_DECL_REALLOCARRAY
 extern void *reallocarray(void *, size_t, size_t);
 #endif
 #if !HAVE_SETENV
