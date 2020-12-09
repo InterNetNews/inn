@@ -163,6 +163,12 @@ For most systems, setting the environment variable LD_RUN_PATH to a
 colon-separated list of additional directories in which to look for shared
 libraries before building INN will be sufficient.
 
+If you build your own libraries, make sure to generate them as either
+shared libraries or static libraries built with B<-fPIC> amongst
+the options given to the compiler (to obtain position-independent
+code).  Otherwise, building INN will fail, unless you pass
+B<--disable-hardening-flags> to B<configure>.
+
 =back
 
 =head1 Unpacking the Distribution
