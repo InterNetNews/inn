@@ -396,7 +396,7 @@ void
 PY_dynamic_init (char* file)
 {
     if (!access(file, R_OK)) {
-        syslog(L_NOTICE, "pyfilter %s not installed", path);
+        syslog(L_NOTICE, "pyfilter %s not installed", file);
         return;
     }
 
