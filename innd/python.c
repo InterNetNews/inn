@@ -684,8 +684,8 @@ PYreadfilter(void)
     PyObject	*result;
 
     if (!Py_IsInitialized()) {
-	syslog(L_ERROR, "python is not initialized");
-	return 0;
+        syslog(L_NOTICE, "python is not initialized");
+        return 0;
     }
 
     /* If there is a filter running, let it clean up first. */
@@ -740,6 +740,16 @@ PYsetup(void)
 {
     const ARTHEADER *hp;
     size_t hdrcount;
+    char *path;
+
+    path = concatpath(innconf->pathfilter, INN_PATH_PYTHON_STARTUP);
+    if (access(path, R_OK) < 0) {
+        syslog(L_NOTICE, "pyfilter %s not installed", path);
+        PYfilter(false);
+        free(path);
+        return;
+    }
+    free(path);
 
     /* Add path for innd module.  The environment variable PYTHONPATH
      * does it; one can also append innconf->pathfilter to sys.path once

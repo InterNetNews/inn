@@ -1356,8 +1356,8 @@ CCreload(char *av[])
 #endif
 #ifdef DO_PYTHON
 	syslog(L_NOTICE, "reloading pyfilter");
-        PYreadfilter();
-	syslog(L_NOTICE, "reloaded pyfilter OK");
+        if (PYreadfilter())
+            syslog(L_NOTICE, "reloaded pyfilter OK");
 #endif
 	p = "all";
     }
