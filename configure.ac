@@ -267,11 +267,12 @@ AC_PROG_MKDIR_P
 AC_PROG_RANLIB
 AC_PROG_YACC
 
-dnl On MacOS X Server, -traditional-cpp is needed for gcc for compiling as
+dnl On Mac OS X Server, -traditional-cpp is needed for gcc for compiling as
 dnl well as preprocessing according to Miro Jurisic <meeroh@meeroh.org>.
 case "$CPP" in
 *-traditional-cpp*)
-    CFLAGS="-traditional-cpp $CFLAGS"
+    CFLAGS="-traditional-cpp ${CFLAGS}"
+    CC_WARNINGS="-traditional-cpp ${CC_WARNINGS}"
     ;;
 esac
 
@@ -295,7 +296,8 @@ dnl HP-UX's native compiler needs a special flag to turn on ANSI, and needs
 dnl -g on link as well as compile for debugging to work.
 *hpux*)
     if test x"$GCC" != xyes ; then
-        CFLAGS="$CFLAGS -Ae"
+        CFLAGS="${CFLAGS} -Ae"
+        CC_WARNINGS="${CC_WARNINGS} -Ae"
         case "$CFLAGS" in
         *-g*) LDFLAGS="$LDFLAGS -g" ;;
         esac
@@ -303,7 +305,7 @@ dnl -g on link as well as compile for debugging to work.
     ;;
 
 dnl Mac OS X needed "-multiply_defined suppress" before this linker flag became
-dnl obsolete (darwin13 is Mavericks, OS X v10.9).
+dnl obsolete (darwin13 is Mavericks, OS X 10.9).
 *-darwin[[0-9]].*|*-darwin1[[0-2]].*)
     LDFLAGS="$LDFLAGS -multiply_defined suppress"
     ;;
@@ -312,7 +314,8 @@ dnl From Boyd Gerber <gerberb@zenez.com>, needed in some cases to compile
 dnl the bison-generated parser for innfeed.conf.
 *UnixWare*|*unixware*|*-sco3*)
     if test x"$GCC" != xyes ; then
-        CFLAGS="$CFLAGS -Kalloca"
+        CFLAGS="${CFLAGS} -Kalloca"
+        CC_WARNINGS="${CC_WARNINGS} -Kalloca"
     fi
 esac
 
