@@ -27,6 +27,9 @@
 
 set -e
 
+# Show detailed testing results.
+export C_TAP_VERBOSE=1
+
 date=`date -u +%Y%m%d`
 tree="$1"
 
