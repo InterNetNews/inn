@@ -41,14 +41,19 @@ library: libstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)
 
-clean clobber distclean:
+clean:
 	rm -f *.o *.lo */*.o */*.lo libstorage.la libstorage.a
 	rm -f $(PROGRAMS) libstorage_pure_*.a .pure
 	rm -f buildconfig libstorage$(PROFSUFFIX).a
 	rm -rf .libs */.libs
+	rm -f $(RM_CLEAN)
+
+clobber distclean: clean
+	rm -f $(RM_DISTCLEAN)
 
 maintclean: distclean
 	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
+	rm -f $(RM_MAINTCLEAN)
 
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
