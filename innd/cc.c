@@ -924,11 +924,18 @@ CCname(char *av[])
     CHANNEL *cp;
     int i, count;
     const char *mode;
+    char *p;
 
     if (av[0][0] != '\0') {
+        for (p = av[0]; *p != '\0'; p++) {
+            if (!isdigit((unsigned char) *p)) {
+                return "1 Bad channel number";
+            }
+        }
         cp = CHANfromdescriptor(atoi(av[0]));
-        if (cp == NULL)
+        if (cp == NULL || cp->Type == CTfree) {
             return xstrdup(CCnochannel);
+        }
         buffer_sprintf(&CCreply, "0 %s", CHANname(cp));
 	return CCreply.data;
     }
