@@ -17,44 +17,6 @@
 #include "inn/qio.h"
 #include "inn/libinn.h"
 
-/* A reasonable default buffer size to use. */
-#define QIO_BUFFERSIZE  8192
-
-#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
-#define NO_STRUCT_STAT_ST_BLKSIZE_UNUSED
-#else
-#define NO_STRUCT_STAT_ST_BLKSIZE_UNUSED UNUSED
-#endif
-
-/*
-**  Given a file descriptor, return a reasonable buffer size to use for that
-**  file.  Uses st_blksize if available and reasonable, QIO_BUFFERSIZE
-**  otherwise.
-*/
-static size_t
-buffer_size(int fd NO_STRUCT_STAT_ST_BLKSIZE_UNUSED)
-{
-    size_t size = QIO_BUFFERSIZE;
-
-#if HAVE_STRUCT_STAT_ST_BLKSIZE
-    struct stat st;
-
-    /* The Solaris 2.6 man page says that st_blksize is not defined for
-       block or character special devices (and could contain garbage), so
-       only use this value for regular files. */
-    if (fstat(fd, &st) == 0 && S_ISREG(st.st_mode)) {
-        size = st.st_blksize;
-        if (size > (4 * QIO_BUFFERSIZE) || size == 0)
-            size = QIO_BUFFERSIZE;
-	else
-	    while(size < QIO_BUFFERSIZE)
-		size += st.st_blksize;
-    }
-#endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
-
-    return size;
-}
-
 
 /*
 **  Open a quick file from a descriptor.
@@ -67,7 +29,7 @@ QIOfdopen(const int fd)
     qp = xmalloc(sizeof(*qp));
     qp->_fd = fd;
     qp->_length = 0;
-    qp->_size = buffer_size(fd);
+    qp->_size = QIO_BUFFERSIZE;
     qp->_buffer = xmalloc(qp->_size);
     qp->_start = qp->_buffer;
     qp->_end = qp->_buffer;

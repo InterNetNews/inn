@@ -39,13 +39,10 @@ The QIOSTATE structure returned by B<QIOopen> and B<QIOfdopen> is the
 analog to stdio's FILE structure and should be treated as a black box by
 all users of these routines.  Only the above API should be used.
 
-B<QIOopen> opens the given file for reading.  For regular files, if your
-system provides that information and the size is reasonable, QIO will use
-the block size of the underlying file system as its buffer size;
-otherwise, it will default to a buffer of S<8 KB>.  Returns a pointer to use
-for subsequent calls, or NULL on error.  B<QIOfdopen> performs the same
-operation except on an already-open file descriptor (I<fd> must designate
-a file open for reading).
+B<QIOopen> opens the given file for reading with a buffer size of 32KiB.
+Returns a pointer to use for subsequent calls, or NULL on error.
+B<QIOfdopen> performs the same operation except on an already-open file
+descriptor (I<fd> must designate a file open for reading).
 
 B<QIOclose> closes the open file and releases any resources used by the
 QIOSTATE structure.  The QIOSTATE pointer should not be used again after
@@ -55,9 +52,9 @@ B<QIOread> reads the next newline-terminated line in the file and returns
 a pointer to it, with the trailing newline replaced by nul.  The returned
 pointer is a pointer into a buffer in the QIOSTATE object and therefore
 will remain valid until B<QIOclose> is called on that object.  If EOF is
-reached, an error occurs, or if the line is longer than the buffer size,
-NULL is returned instead.  To distinguish between the error cases, use
-B<QIOerror> and B<QIOtoolong>.
+reached, an error occurs, or if the line is longer than the buffer size
+(32KiB), NULL is returned instead.  To distinguish between the error
+cases, use B<QIOerror> and B<QIOtoolong>.
 
 B<QIOfileno> returns the descriptor of the open file.
 
