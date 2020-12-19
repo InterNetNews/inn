@@ -12,6 +12,11 @@
 
 #include <inn/defines.h>
 
+/* This is the maximum line length that can be read by a QIO operation.  Since
+   QIO is used by some overview manipulation tools, it must therefore be
+   larger than the longest overview line INN supports. */
+#define QIO_BUFFERSIZE  (32 * 1024)
+
 BEGIN_DECLS
 
 /*

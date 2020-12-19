@@ -504,7 +504,6 @@ INN_C_GNU_VAMACROS
 
 dnl Checks for structures.
 AC_STRUCT_TIMEZONE
-AC_CHECK_MEMBERS([struct stat.st_blksize])
 AC_CHECK_MEMBERS([struct tm.tm_gmtoff])
 AC_CHECK_MEMBERS([struct sockaddr.sa_len], [], [],
     [#include <sys/types.h>
