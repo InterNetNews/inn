@@ -16,7 +16,7 @@
 #include "inn/messages.h"
 #include "inn/libinn.h"
 
-#define CAF_INNARDS
+#define CAF_INNARDS 1
 #include "caf.h"
 
 /* following code lifted from inndf.c */

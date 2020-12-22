@@ -4,7 +4,7 @@
 */
 
 #ifndef __TRADSPOOL_H__
-#define __TRADSPOOL_H__
+#define __TRADSPOOL_H__ 1
 
 #include "config.h"
 #include "interface.h"

@@ -10,7 +10,7 @@
 #ifdef HAVE_OPENSSL
 
 #ifndef TLS_H
-#define TLS_H
+#define TLS_H 1
 
 /* When building with "make warnings", ensure that INN does not
  * use deprecated interfaces from OpenSSL. */

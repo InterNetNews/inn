@@ -4,7 +4,7 @@
 */
 
 #ifndef HISV6_H
-#define HISV6_H
+#define HISV6_H 1
 
 struct token;
 struct histopts;

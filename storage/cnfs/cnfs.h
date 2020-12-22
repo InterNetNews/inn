@@ -4,7 +4,7 @@
 */
 
 #ifndef __CNFS_H__
-#define __CNFS_H__
+#define __CNFS_H__ 1
 
 bool cnfs_init(SMATTRIBUTE *attr);
 TOKEN cnfs_store(const ARTHANDLE article, const STORAGECLASS class);

@@ -4,7 +4,7 @@
 */
 
 #ifndef __INTERFACE_H__
-#define __INTERFACE_H__
+#define __INTERFACE_H__ 1
 
 #include "config.h"
 #include "inn/storage.h"

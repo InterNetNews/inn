@@ -1,5 +1,5 @@
 #ifndef HISV6_PRIVATE_H
-#define HISV6_PRIVATE_H
+#define HISV6_PRIVATE_H 1
 
 #include "config.h"
 #include <stdio.h>
