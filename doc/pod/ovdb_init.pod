@@ -16,32 +16,32 @@ B<ovdb_init> performs the following steps:
 
 =over 4
 
-=item 1
+=item 1.
 
 Creates the database environment, if necessary.
 
-=item 2
+=item 2.
 
 If the database is idle (and if the B<-u> option is not specified),
 it performs a normal recovery.  The recovery will remove stale locks,
 recreate the memory pool cache, and repair any damage caused by a system
 crash or improper shutdown.
 
-=item 3
+=item 3.
 
 If the B<-u> option is specified, it performs any necessary upgrades
 to the database.  See the L<UPGRADING> section below.
 
-=item 4
+=item 4.
 
 Starts the database housekeeping processes (B<ovdb_monitor>) if they are
-not already running.  (Unless the B<-r> option is specified).
+not already running.  (Unless the B<-r> option is specified.)
 
-=item 5
+=item 5.
 
 Starts the ovdb readserver processes (B<ovdb_server>) if I<readserver>
 in F<ovdb.conf> is true, and if they are not already running.  (Unless
-the B<-r> option is specified).
+the B<-r> option is specified.)
 
 =back
 
@@ -66,6 +66,8 @@ Perform recovery only.  B<ovdb_monitor> is not started.
 Perform any needed upgrades.  Recovery is not attempted.
 B<ovdb_monitor> is started if the upgrade succeeded.
 
+This option can be used even if no upgrades are needed.
+
 =back
 
 =head1 UPGRADING
@@ -78,7 +80,7 @@ upgraded:
 =item *
 
 You upgrade the S<Berkeley DB> library to a newer version, for example
-from 2.7.7 to 3.1.17.  In this case, the S<Berkeley DB> db->upgrade()
+from 2.7.7 to 3.1.17.  In this case, the S<Berkeley DB> C<db->upgrade()>
 method is used.
 
 =item *
@@ -99,39 +101,37 @@ S<Berkeley DB 2.7.7> to use S<Berkeley DB 3.1.17>:
 
 =over 4
 
-=item 1
+=item 1.
 
 Build and install the S<Berkeley DB 3.1.17> version;
 
-=item 2
+=item 2.
 
-Run configure in the INN source tree and make sure it picks up the
+Run B<configure> in the INN source tree and make sure it picks up the
 right S<Berkeley DB> directory (e.g., F</usr/local/BerkeleyDB.3.1>);
 
-=item 3
+=item 3.
 
 Do a C<make>;
 
-=item 4
+=item 4.
 
 Shut down INN (e.g., with C<rc.news stop>) and be sure to kill all
 instances of B<nnrpd> as well;
 
-=item 5
+=item 5.
 
 Do a C<make update> to install the new binaries;
 
-=item 6
+=item 6.
 
 Run C<ovdb_init -u> as the news user;
 
-=item 7
+=item 7.
 
 Start INN with the C<rc.news> command.
 
 =back
-
-Note that the B<-u> option can be used even if no upgrades are needed.
 
 =head1 HISTORY
 
