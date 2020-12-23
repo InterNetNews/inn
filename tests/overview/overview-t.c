@@ -21,7 +21,6 @@
 #include "inn/storage.h"
 
 #include "../storage/buffindexed/buffindexed.h"
-#include "../storage/ovdb/ovdb.h"
 #include "../storage/tradindexed/tradindexed.h"
 
 /* Used to set ovmethod to the value of OVTYPE. */
