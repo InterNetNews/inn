@@ -7,6 +7,7 @@
 
 #include "inn/libinn.h"
 #include "tap/basic.h"
+#include "tap/string.h"
 
 static const time_t test_times[] = {
     28800UL,                    /* Thu,  1 Jan 1970 00:00:00 -0800 (PST) */
@@ -100,26 +101,29 @@ ok_nntp(int n, time_t right, const char *date, const char *hour, bool local)
 static void
 check_nntp(int *n, time_t timestamp)
 {
-    char date[9], hour[7];
+    char *date, *hour;
     struct tm *tmp_tm, tm;
 
     tmp_tm = localtime(&timestamp);
     tm = *tmp_tm;
-    snprintf(date, sizeof(date), "%02d%02d%02d",
-             tm.tm_year % 100, tm.tm_mon + 1, tm.tm_mday);
-    snprintf(hour, sizeof(hour), "%02d%02d%02d",
-             tm.tm_hour, tm.tm_min, tm.tm_sec);
+    basprintf(&date, "%02d%02d%02d",
+              tm.tm_year % 100, tm.tm_mon + 1, tm.tm_mday);
+    basprintf(&hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, true);
-    snprintf(date, sizeof(date), "%04d%02d%02d",
-            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    free(date);
+    basprintf(&date, "%04d%02d%02d",
+              tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
     ok_nntp((*n)++, timestamp, date, hour, true);
+    free(date);
+    free(hour);
     tmp_tm = gmtime(&timestamp);
     tm = *tmp_tm;
-    snprintf(date, sizeof(date), "%04d%02d%02d",
-             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
-    snprintf(hour, sizeof(hour), "%02d%02d%02d",
-             tm.tm_hour, tm.tm_min, tm.tm_sec);
+    basprintf(&date, "%04d%02d%02d",
+              tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    basprintf(&hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, false);
+    free(date);
+    free(hour);
 }
 
 static void

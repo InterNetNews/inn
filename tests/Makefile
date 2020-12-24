@@ -108,8 +108,8 @@ lib/confparse.t: lib/confparse-t.o tap/basic.o tap/float.o tap/messages.o tap/st
 	$(LINK) $(LIBM_LDFLAGS) lib/confparse-t.o tap/basic.o tap/float.o \
 	    tap/messages.o tap/string.o $(LIBINN)
 
-lib/date.t: lib/date-t.o tap/basic.o $(LIBINN)
-	$(LINK) lib/date-t.o tap/basic.o $(LIBINN)
+lib/date.t: lib/date-t.o tap/basic.o tap/string.o $(LIBINN)
+	$(LINK) lib/date-t.o tap/basic.o tap/string.o $(LIBINN)
 
 lib/dispatch.t: lib/dispatch-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/dispatch-t.o tap/basic.o $(LIBINN)
