@@ -9,6 +9,7 @@
 #include "inn/messages.h"
 #include "tap/basic.h"
 #include "tap/messages.h"
+#include "tap/string.h"
 
 #include "../../nnrpd/nnrpd.h"
 
@@ -75,12 +76,15 @@ static void
 test_external(struct client *client, const char *arg, const char *user,
               const char *error)
 {
-    char *result;
-    char *command;
+    char *auth_test_path, *result, *command;
 
     diag("mode %s", arg);
 
-    command = concat("auth-test ", arg, (char *) 0);
+    auth_test_path = test_file_path("nnrpd/auth-test");
+    if (auth_test_path == NULL)
+        bail("cannot find nnrpd/auth-test helper");
+
+    basprintf(&command, "%s %s", auth_test_path, arg);
     errors_capture();
     result = auth_external(client, command, ".", NULL, NULL);
     errors_uncapture();
@@ -102,6 +106,8 @@ test_external(struct client *client, const char *arg, const char *user,
         warn("%s", errors);
     free(errors);
     errors = NULL;
+
+    test_file_path_free(auth_test_path);
 }
 
 int
@@ -109,16 +115,9 @@ main(void)
 {
     struct client *client;
 
-    if (access("auth-test", F_OK) < 0) {
-        if (access("nnrpd/auth-test", F_OK) == 0) {
-            if (chdir("nnrpd") < 0) {
-                sysbail("cannot chdir to nnrpd");
-            }
-        }
-    }
-    client = client_new();
+    plan(12 * 6);
 
-    plan(11 * 6);
+    client = client_new();
 
     test_external(client, "okay", "tester", NULL);
     test_external(client, "garbage", "tester", NULL);
@@ -135,6 +134,7 @@ main(void)
                   "example.com auth: program caught signal 1\n");
     test_external(client, "newline", "tester", NULL);
     test_external(client, "partial", "tester", NULL);
+    test_external(client, "partial-close", "tester", NULL);
     test_external(client, "partial-error", NULL,
                   "example.com auth: program error: This is an error\n");
 
