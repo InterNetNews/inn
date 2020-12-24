@@ -53,6 +53,10 @@ newline)
 partial)
     printf 'User:tester'
     ;;
+partial-close)
+    exec 2>&-
+    printf 'User:tester'
+    ;;
 partial-error)
     printf 'User:tester'
     echo 'This is an error' >&2

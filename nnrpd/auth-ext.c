@@ -134,8 +134,10 @@ output(struct client *client, int fd, struct buffer *buffer,
     count = buffer_read(buffer, fd);
     if (buffer->left >= buffer->size - 1)
         return -1;
-    if (count < 0)
+    if (count < 0) {
+        syswarn("%s auth: read error", client->host);
         return count;
+    }
 
     /* If reached end of file, process anything left as a line. */
     if (count == 0) {
@@ -185,7 +187,8 @@ handle_output(struct client *client, struct process *process)
     struct buffer *readbuf;
     struct buffer *errorbuf;
     double start, end;
-    bool found;
+    bool done;
+    bool error_done = false;
     bool killed = false;
     bool errored = false;
     char *user = NULL;
@@ -209,6 +212,8 @@ handle_output(struct client *client, struct process *process)
         status = select(maxfd + 1, &rfds, NULL, NULL, &tv);
         end = TMRnow_double();
         IDLEtime += end - start;
+
+        /* Check for select timeout or errors. */
         if (status <= 0) {
             if (status == 0)
                 syswarn("%s auth: program timeout", client->host);
@@ -221,23 +226,31 @@ handle_output(struct client *client, struct process *process)
             kill(process->pid, SIGTERM);
             break;
         }
-        found = false;
+
+        /* Read from the read and error file descriptors.  If we see EOF or an
+         * error from the read file descriptor, we're done.  If we see EOF or
+         * an error from the error file descriptor, remove it from the set but
+         * continue waiting for output from the read file descriptor .*/
+        done = false;
         count = 0;
         if (FD_ISSET(process->read_fd, &rfds)) {
             fd = process->read_fd;
             count = output(client, fd, readbuf, handle_result, &user);
-            if (count > 0)
-                found = true;
+            if (count <= 0)
+                done = true;
         }
-        if (count >= 0 && FD_ISSET(process->error_fd, &rfds)) {
+        if (!error_done && FD_ISSET(process->error_fd, &rfds)) {
             fd = process->error_fd;
             count = output(client, fd, errorbuf, handle_error, &user);
-            if (count > 0) {
-                found = true;
-                errored = true;
+            if (count <= 0) {
+                error_done = true;
+                FD_CLR(fd, &fds);
+                maxfd = process->read_fd;
             }
+            if (count > 0)
+                errored = true;
         }
-        if (!found) {
+        if (done) {
             close(process->read_fd);
             close(process->error_fd);
             if (count < 0) {
@@ -259,6 +272,9 @@ handle_output(struct client *client, struct process *process)
         syswarn("%s auth: cannot wait for program", client->host);
         goto fail;
     }
+
+    /* Check the exit status and fall through to fail if the external
+     * authentication program didn't exit successfully. */
     if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
         return user;
     else {
@@ -331,6 +347,8 @@ auth_external(struct client *client, const char *command,
 
     /* Get the results. */
     user = handle_output(client, process);
+    close(process->read_fd);
+    close(process->error_fd);
     free(process);
     return user;
 }
