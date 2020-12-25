@@ -359,7 +359,7 @@ therefore not done as it is extremely easy to spoof.
 
 In order not to actually process any cancel or supersedes messages,
 you can start B<innd> with the B<-C> flag, or add this flag to the
-F<innflags> parameter.
+I<innflags> parameter.
 
 =item I<verifygroups>
 

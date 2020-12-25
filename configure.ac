@@ -594,6 +594,8 @@ AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize \
                  strlcat strlcpy strspn strtok symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
+dnl The logic in clibrary.h is based on the presence of fseeko, and then
+dnl for large file support, so keep that order here too.
 AC_FUNC_FSEEKO
 if test x"$inn_enable_largefiles" = xyes ; then
     AC_CHECK_DECLS([fseeko, ftello])
