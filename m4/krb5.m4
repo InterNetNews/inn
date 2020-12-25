@@ -18,9 +18,9 @@ dnl
 dnl If KRB5_CPPFLAGS, KRB5_LDFLAGS, or KRB5_LIBS are set before calling these
 dnl macros, their values will be added to whatever the macros discover.
 dnl
-dnl KRB5_CPPFLAGS_GCC will be set to the same value as KRB5_CPPFLAGS but with
-dnl any occurrences of -I changed to -isystem.  This may be useful to suppress
-dnl warnings from the Kerberos header files when building with GCC and
+dnl KRB5_CPPFLAGS_WARNINGS will be set to the same value as KRB5_CPPFLAGS but
+dnl with any occurrences of -I changed to -isystem.  This may be useful to
+dnl suppress warnings from the Kerberos header files when building with and
 dnl aggressive warning flags.  Be aware that this change will change the
 dnl compiler header file search order as well.
 dnl
@@ -51,7 +51,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2020 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2005-2011, 2013-2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -261,7 +261,7 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
 [AC_REQUIRE([INN_ENABLE_REDUCED_DEPENDS])
  inn_krb5_incroot=
  AC_SUBST([KRB5_CPPFLAGS])
- AC_SUBST([KRB5_CPPFLAGS_GCC])
+ AC_SUBST([KRB5_CPPFLAGS_WARNINGS])
  AC_SUBST([KRB5_LDFLAGS])
  AC_SUBST([KRB5_LIBS])
  AS_IF([test x"$inn_krb5_includedir" != x],
@@ -279,7 +279,7 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
  AS_CASE([$KRB5_LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
  AM_CONDITIONAL([KRB5_USES_COM_ERR],
     [test x"$inn_krb5_uses_com_err" = xtrue])
- KRB5_CPPFLAGS_GCC=`echo "$KRB5_CPPFLAGS" | sed -e 's/-I/-isystem /g'`])
+ KRB5_CPPFLAGS_WARNINGS=`echo "$KRB5_CPPFLAGS" | sed -e 's/-I/-isystem /g'`])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([INN_LIB_KRB5],

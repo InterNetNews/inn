@@ -3,10 +3,10 @@ dnl $Id$
 dnl
 dnl Linux marks several PAM arguments const, including the argument to
 dnl pam_get_item and some arguments to conversation functions, which Solaris
-dnl doesn't.  Mac OS X, OS X and macOS mark the first argument to pam_strerror
-dnl const, and other platforms don't.  This test tries to determine which
-dnl style is in use to select whether to declare variables const and how
-dnl to prototype functions in order to avoid compiler warnings.
+dnl doesn't.  Mac OS X, OS X, and macOS mark the first argument to
+dnl pam_strerror const, and other platforms don't.  This test tries to
+dnl determine which style is in use to select whether to declare variables
+dnl const and how to prototype functions in order to avoid compiler warnings.
 dnl
 dnl Since this is just for compiler warnings, it's not horribly important if
 dnl we guess wrong.  This test is ugly, but it seems to work.
