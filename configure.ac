@@ -594,16 +594,14 @@ AC_REPLACE_FUNCS(asprintf getaddrinfo getnameinfo getpagesize \
                  strlcat strlcpy strspn strtok symlink)
 
 dnl Probe for fseeko and ftello, which take off_t instead of int.
+AC_FUNC_FSEEKO
 if test x"$inn_enable_largefiles" = xyes ; then
-    AC_FUNC_FSEEKO
+    AC_CHECK_DECLS([fseeko, ftello])
     if test x"$ac_cv_sys_largefile_source" = xunknown ; then
         INN_TYPE_FPOS_T_LARGE
-        AC_CHECK_DECLS([fseeko, ftello])
         AC_LIBOBJ([fseeko])
         AC_LIBOBJ([ftello])
     fi
-else
-    AC_CHECK_DECLS([fseeko])
 fi
 
 dnl Probe for mmap properties.
