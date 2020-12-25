@@ -57,6 +57,7 @@ m4_include([m4/openssl.m4])
 m4_include([m4/pam-const.m4])
 m4_include([m4/paths.m4])
 m4_include([m4/perl.m4])
+m4_include([m4/pkg.m4])
 m4_include([m4/prog-ensure.m4])
 m4_include([m4/python.m4])
 m4_include([m4/sasl.m4])
@@ -67,6 +68,7 @@ m4_include([m4/socket-unix.m4])
 m4_include([m4/socket.m4])
 m4_include([m4/sqlite3.m4])
 m4_include([m4/syslog.m4])
+m4_include([m4/systemd.m4])
 m4_include([m4/users.m4])
 m4_include([m4/vamacros.m4])
 m4_include([m4/zlib.m4])
@@ -434,6 +436,7 @@ INN_LIB_KRB5_OPTIONAL
 INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
 INN_LIB_SQLITE3_OPTIONAL
+INN_LIB_SYSTEMD_DAEMON_OPTIONAL
 INN_LIB_ZLIB_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build

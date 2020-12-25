@@ -29,6 +29,7 @@
 
 #include "config.h"
 #include "portable/macros.h"
+#include "portable/sd-daemon.h"
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>

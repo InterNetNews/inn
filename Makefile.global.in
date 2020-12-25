@@ -154,6 +154,11 @@ KRB5_CPPFLAGS	= @KRB5_CPPFLAGS@
 KRB5_LDFLAGS	= @KRB5_LDFLAGS@
 KRB5_LIBS	= @KRB5_LIBS@
 
+##  Systemd support.  Additional flags and libraries used when compiling or
+##  linking code that contains systemd support.
+SYSTEMD_CFLAGS	= @SYSTEMD_CFLAGS@
+SYSTEMD_LIBS	= @SYSTEMD_LIBS@
+
 ##  Missing functions.	If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.

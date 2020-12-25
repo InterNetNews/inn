@@ -75,7 +75,8 @@ F<build-aux> subdirectory after building the package with for instance
 B<debuild -us -uc>); the canonical versions of the former two files
 are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
 redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
-In addition, F<m4/libtool.m4> and a few others m4 files used
+
+In addition, F<m4/libtool.m4> and a few other m4 files used
 by INN are just a copy of the corresponding files in the
 F<debian/tmp/usr/share/aclocal> subdirectory of the Debian
 package of the libtool distribution.  (Using libtool without
@@ -84,10 +85,14 @@ should be checked in periodically when available.  There are no
 INN-specific modifications to those files except for F<ltmain.sh>
 which recognizes the additional B<-S> flag that INN's B<install-sh>
 script uses, and a fix for a proper handling of circular dependencies.
-This script should also be updated at the same time from
+
+This B<install-sh> script should also be updated at the same time from
 L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
 it similarly contains a local modification mentioned in a comment
 at the beginning of the file.
+
+Finally, the F<m4/pkg.m4> macro should be updated from
+L<https://cgit.freedesktop.org/pkg-config/tree/>.
 
 =head1 Autobuilds
 
@@ -653,10 +658,11 @@ projects.
 =item *
 
 Make sure that F<support/config.guess>, F<support/config.sub>,
-F<support/install-sh>, F<support/ltmain.sh> and libtool m4 files
+F<support/install-sh>, F<support/ltmain.sh>, libtool m4 files
 (F<libtool.m4>, F<ltoptions.m4>, F<ltsugar.m4>, F<ltversion.m4> and
-F<lt~obsolete.m4>) are the latest versions.  See the instructions in
-L<"Configuring and Portability"> for details on how to update these files.
+F<lt~obsolete.m4>) and F<m4/pkg.m4> are the latest versions.  See the
+instructions in L<"Configuring and Portability"> for details on how to
+update these files.
 
 =item *
 

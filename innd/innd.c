@@ -774,6 +774,7 @@ main(int ac, char *av[])
             die("SERVER cant renumber");
     }
     syslog(LOG_NOTICE, "SERVER starting");
+    sd_notify(0, "READY=1");
     CHANreadloop();
 
     /* CHANreadloop should never return. */
