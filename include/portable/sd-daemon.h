@@ -30,8 +30,8 @@
 #    include <systemd/sd-daemon.h>
 #else
 #    define SD_LISTEN_FDS_START 3
-#    define sd_listen_fds(u)    0
-#    define sd_notify(u, s)     0
+#    define sd_listen_fds(u)    /* empty */
+#    define sd_notify(u, s)     /* empty */
 #endif
 
 #endif /* !PORTABLE_SD_DAEMON_H */
