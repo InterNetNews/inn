@@ -60,6 +60,37 @@ dnl \$Id\$' \
         sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
                -e '/dnl Determine the full set/,$d' \
              ${TEMP}
+      elif [ "$3" = "sqlite3.m4" ]
+      then
+        sed -i -e "43 i \\
+dnl Ensures SQLite v3 meets our minimum version requirement.\\
+AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\\
+#include <sqlite3.h>\\
+\\
+int main(void) {\\
+    return sqlite3_libversion_number() < 3008002;\\
+}\\
+]])\\
+\\
+dnl Checks if SQLite v3 is present.  The single argument, if \"true\", says to\\
+dnl fail if the SQLite library could not be found.\\
+AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
+[AC_CACHE_CHECK([for a sufficiently recent SQLite],\\
+    [inn_cv_have_sqlite3],\\
+    [INN_LIB_HELPER_PATHS([SQLITE3])\\
+     INN_LIB_SQLITE3_SWITCH\\
+     LIBS=\"-lsqlite3 \$LIBS\"\\
+     AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_LIB_SQLITE3_SOURCE])],\\
+        [inn_cv_have_sqlite3=yes],\\
+        [inn_cv_have_sqlite3=no])\\
+     INN_LIB_SQLITE3_RESTORE])\\
+ AS_IF([test x\"\$inn_cv_have_sqlite3\" = xyes],\\
+    [SQLITE3_LIBS=\"-lsqlite3\"],\\
+    [AS_IF([test x\"\$1\" = xtrue],\\
+        [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\\
+" \
+               -e '43,63d' \
+             ${TEMP}
       fi
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
       || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
@@ -257,6 +288,7 @@ download m4/python.m4 m4 python.m4
 download m4/sasl.m4 m4 sasl.m4
 download m4/socket-unix.m4 m4 socket-unix.m4
 download m4/socket.m4 m4 socket.m4
+download m4/sqlite3.m4 m4 sqlite3.m4
 download m4/vamacros.m4 m4 vamacros.m4
 download m4/zlib.m4 m4 zlib.m4
 

@@ -1,0 +1,107 @@
+=head1 NAME
+
+ovsqlite - SQLite-based overview storage method for INN
+
+=head1 DESCRIPTION
+
+This method uses SQLite to store overview data.  It requires version
+3.8.2 or later of the SQLite library (3.20.0+ recommended).
+
+SQLite source, documentation, etc. are available at
+L<https://www.sqlite.org/>.  Ones of the stated goals of the SQLite
+file format are long-term stability and compatibility, which make that
+storage method a perfect choice to store overview data.
+
+Only one protocol version of the ovsqlite storage method currently
+exists, implemented since S<INN 2.7.0>.
+
+=head1 INSTALLATION
+
+The configure script will automatically enable ovsqlite support if it finds
+the SQLite library.  If the library isn't installed in a standard
+location, you may have to specify the B<--with-sqlite3> option to help
+configure find it.  For complicated cases, you can use separate
+B<--with-sqlite3-include> and B<--with-sqlite3-lib> options.  Finally, if
+you I<don't> want ovsqlite support even when your system has the SQLite
+library, you can use the B<--without-sqlite3> option.
+
+If you have a recent Linux installation, SQLite is most likely already
+installed.  You may have to install a separate package with a name similar
+to C<libsqlite3-dev> to get the required header files.
+
+=head1 CONFIGURATION
+
+To select ovsqlite as your overview method, set the I<ovmethod> parameter
+in F<inn.conf> to C<ovsqlite>.  The database file will be created in
+the directory specified by the I<pathoverview> parameter in F<inn.conf>.
+Restart INN to take the change into account (after having rebuilt your
+existing overview with B<makehistory>, if needed).
+
+These additional parameters are read from the F<ovsqlite.conf>
+configuration file:
+
+=over 4
+
+=item I<cachesize>
+
+The SQLite in-memory page cache size in kilobytes.  The default value is
+left up to the SQLite library and seems to be stable at S<2000 KB>.
+
+=item I<compress>
+
+If INN was built with zlib support and this parameter is true, ovsqlite
+will compress overview records whenever this saves space.  This parameter
+is consulted only when creating a new database.  Enabling compression
+saves about S<70 %> of disk space on typical overview data. The default
+value is false.
+
+=item I<pagesize>
+
+The SQLite database page size in bytes.  Must be a power of 2, minimum 512,
+maximum 65536.  Appropriate values include the virtual memory page size and
+the filesystem allocation block size.  This parameter is consulted only
+when creating a new database.  The default value is left up to the SQLite
+library and varies between versions.
+
+=item I<transrowlimit>
+
+The maximum number of article rows that can be inserted or deleted in a
+single SQL transaction.  The default value is 10000 articles.
+
+=item I<transtimelimit>
+
+The maximum SQL transaction lifetime in seconds.  The default value is
+10 seconds.
+
+=back
+
+A transaction occurs every I<transrowlimit> articles or I<transtimelimit>
+seconds, whichever is smaller.  You are encouraged to keep the default
+value for row limits and, instead, adjust the time limit according to
+how many articles your news server usually accepts per second during
+normal operation (you can find statistics about incoming articles in
+your daily Usenet reports).  Inserting or deleting a database row within
+a transaction is very fast whereas committing a transaction is slow,
+especially on rotating storage.  Setting transaction limits too low
+leads to poor performance.  When rebuilding overview data, it may be
+worth temporarily raising these values, though.
+
+=head1 RUNNING
+
+All overview database access goes through the B<sqlite-server> daemon.  For
+ordinary operation, B<rc.news> will start and stop it automatically.  If
+you want to touch the overview database while B<innd> isn't running, you'll
+have to start B<sqlite-server> manually first.  See sqlite-server(8).
+
+=head1 HISTORY
+
+Initial implementation of ovsqlite written by Bo Lindbergh
+<2bfjdsla52kztwejndzdstsxl9athp@gmail.com> for InterNetNews.
+
+$Id$
+
+=head1 SEE ALSO
+
+inn.conf(5), makehistory(8), rc.news(8), sqlite-server(8).
+
+=cut

@@ -200,6 +200,8 @@ doc/man/ovdb_monitor.8                Manpage for ovdb_monitor
 doc/man/ovdb_server.8                 Manpage for ovdb_server
 doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
+doc/man/ovsqlite-server.8             Manpage for ovsqlite-server
+doc/man/ovsqlite.5                    Manpage for the ovsqlite overview module
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
 doc/man/perl-nocem.8                  Manpage for perl-nocem
 doc/man/pgpverify.1                   Manpage for pgpverify
@@ -305,6 +307,8 @@ doc/pod/ovdb_monitor.pod              Master file for ovdb_monitor.8
 doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/overchan.pod                  Master file for overchan.8
+doc/pod/ovsqlite-server.pod           Master file for ovsqlite-server.8
+doc/pod/ovsqlite.pod                  Master file for ovsqlite.5
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/procbatch.pod                 Master file for procbatch.8
 doc/pod/prunehistory.pod              Master file for prunehistory.8
@@ -595,6 +599,7 @@ m4/sendmail.m4                        Autoconf macro for finding sendmail
 m4/snprintf.m4                        Autoconf macro to check snprintf
 m4/socket-unix.m4                     Autoconf macros to check UNIX domain sockets
 m4/socket.m4                          Autoconf macros to check socket support
+m4/sqlite3.m4                         Autoconf macros for SQLite v3 support
 m4/syslog.m4                          Autoconf macro for syslog facility
 m4/users.m4                           Autoconf macro for INN users
 m4/vamacros.m4                        Autoconf macro to check variadic macros
@@ -677,6 +682,7 @@ samples/nnrpd_dynamic_wrapper.py      Wrapper around old Python dynamic hooks
 samples/nntpsend.ctl                  Outgoing nntpsend feed configuration
 samples/nocem.ctl                     Config file for perl-nocem
 samples/ovdb.conf                     Berkeley DB overview configuration
+samples/ovsqlite.conf                 SQLite overview configuration
 samples/passwd.nntp                   Passwords for remote connections
 samples/readers.conf                  Reader connection configuration
 samples/send-uucp.cf                  send-uucp configuration file
@@ -736,6 +742,23 @@ storage/overview.c                    Overview API glue implementation
 storage/ovinterface.h                 Overview API interface
 storage/ovmethods.c                   Generated table of overview methods
 storage/ovmethods.h                   Generated interface to overview methods
+storage/ovsqlite                      ovsqlite overview method (Directory)
+storage/ovsqlite/ovmethod.config      buildconfig definitions for ovsqlite
+storage/ovsqlite/ovmethod.mk          Make rules for ovsqlite
+storage/ovsqlite/ovsqlite-private.c   Private code for ovsqlite
+storage/ovsqlite/ovsqlite-private.h   Private header for ovsqlite
+storage/ovsqlite/ovsqlite-server.c    SQLite database exclusive owner
+storage/ovsqlite/ovsqlite.c           ovsqlite implementation
+storage/ovsqlite/ovsqlite.h           ovsqlite interface
+storage/ovsqlite/sql-init.c           Generated database setup implementation
+storage/ovsqlite/sql-init.h           Generated database setup interface
+storage/ovsqlite/sql-init.sql         SQLite code for database setup
+storage/ovsqlite/sql-main.c           Generated daily operation implementation
+storage/ovsqlite/sql-main.h           Generated daily operation interface
+storage/ovsqlite/sql-main.sql         SQLite code for daily operation
+storage/ovsqlite/sqlite-helper-gen.in Package SQLite code for convenient use
+storage/ovsqlite/sqlite-helper.c      SQLite code package implementation
+storage/ovsqlite/sqlite-helper.h      SQLite code package interface
 storage/timecaf                       timecaf storage method (Directory)
 storage/timecaf/README.CAF            README the CAF file format
 storage/timecaf/caf.c                 CAF file implementation

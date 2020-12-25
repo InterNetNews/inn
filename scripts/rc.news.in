@@ -46,23 +46,38 @@ Xstop)
 	printf "\n"
     fi
 
-    # Turn off ovdb support procs, and close the DB environment
-    if [ "$OVMETHOD" = "ovdb" -a -f ${PATHRUN}/ovdb_server.pid ]; then
-	pid=`cat ${PATHRUN}/ovdb_server.pid 2>/dev/null`
-	if [ "$pid" != "" ]; then
-	    printf "Stopping ovdb_server: "
-	    kill $pid
-	    waitforpid $pid
+    case "$OVMETHOD" in
+    ovdb)
+	# Turn off ovdb support procs, and close the DB environment
+	if [ -f ${PATHRUN}/ovdb_server.pid ]; then
+	    pid=`cat ${PATHRUN}/ovdb_server.pid 2>/dev/null`
+	    if [ "$pid" != "" ]; then
+		printf "Stopping ovdb_server: "
+		kill $pid
+		waitforpid $pid
+	    fi
 	fi
-    fi
-    if [ "$OVMETHOD" = "ovdb" -a -f ${PATHRUN}/ovdb_monitor.pid ]; then
-	pid=`cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null`
-	if [ "$pid" != "" ]; then
-	    printf "Stopping ovdb_monitor: "
-	    kill $pid
-	    waitforpid $pid
+	if [ -f ${PATHRUN}/ovdb_monitor.pid ]; then
+	    pid=`cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null`
+	    if [ "$pid" != "" ]; then
+		printf "Stopping ovdb_monitor: "
+		kill $pid
+		waitforpid $pid
+	    fi
 	fi
-    fi
+	;;
+    ovsqlite)
+        # Turn off ovsqlite support proc, and close the DB environment
+	if [ -f "${PATHRUN}"/ovsqlite.pid ]; then
+	    pid=`cat "${PATHRUN}"/ovsqlite.pid 2>/dev/null`
+	    if [ "$pid" != "" ]; then
+		printf "Stopping ovsqlite-server: "
+		kill $pid
+		waitforpid $pid
+	    fi
+	fi
+	;;
+    esac
 
     if [ -f ${PATHBIN}/rc.news.local ]; then
         ${PATHBIN}/rc.news.local stop
@@ -72,6 +87,7 @@ Xstop)
     # stick around after a fresh start.
     rm -f ${PATHRUN}/cnfsstat.pid $WATCHPID $SERVERPID
     rm -f ${PATHRUN}/ovdb_server.pid ${PATHRUN}/ovdb_monitor.pid
+    rm -f ${PATHRUN}/ovsqlite.pid
 
     exit 0
 ;;
@@ -146,15 +162,23 @@ fi
 ( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
 rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID} ${PATHRUN}/.rebuildoverview
 
-## Initialize ovdb.  Must be done before starting innd.
-if [ "$OVMETHOD" = "ovdb" ]; then
+case "$OVMETHOD" in
+ovdb)
+    # Initialize ovdb.  Must be done before starting innd.
     echo 'Starting ovdb.'
     ovdb_init || {
 	echo "Can't initialize ovdb (check news.err for OVDB messages)"
 	exit 1
     }
     sleep 1
-fi
+    ;;
+ovsqlite)
+    # Start ovsqlite-server.  Must be done before starting innd.
+    echo 'Starting ovsqlite-server.'
+    ovsqlite-server
+    sleep 1
+    ;;
+esac
 
 ##  Start the show.
 echo 'Starting innd.'

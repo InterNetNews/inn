@@ -251,6 +251,7 @@ site/nnrpd_dynamic.py
 site/nntpsend.ctl
 site/nocem.ctl
 site/ovdb.conf
+site/ovsqlite.conf
 site/passwd.nntp
 site/readers.conf
 site/send-uucp.cf
@@ -259,8 +260,10 @@ site/storage.conf
 site/subscriptions
 site/update
 snapshot.log
-storage/buildconfig
 storage/buffindexed/buffindexed_d
+storage/buildconfig
+storage/ovsqlite/ovsqlite-server
+storage/ovsqlite/sqlite-helper-gen
 storage/tradindexed/tdx-util
 support/fixconfig
 support/fixscript

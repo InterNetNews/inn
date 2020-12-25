@@ -86,10 +86,17 @@ ZLIB_LIBS	= @ZLIB_LIBS@
 
 ##  Berkeley DB support.  If this support is configured, anything linking
 ##  against libstorage also needs to link against BDB_LDFLAGS and BDB_LIBS.
- 
+
 BDB_CPPFLAGS   = @BDB_CPPFLAGS@ $(ZLIB_CPPFLAGS)
 BDB_LDFLAGS    = @BDB_LDFLAGS@ $(ZLIB_LDFLAGS)
 BDB_LIBS       = @BDB_LIBS@ $(ZLIB_LIBS)
+
+##  SQLite support.  Additional flags and libraries used when compiling or
+##  linking code that contains SQLite support.
+
+SQLITE3_CPPFLAGS = @SQLITE3_CPPFLAGS@
+SQLITE3_LDFLAGS  = @SQLITE3_LDFLAGS@
+SQLITE3_LIBS     = @SQLITE3_LIBS@
 
 ##  INN libraries.  Nearly all INN programs are linked with libinn, and any
 ##  INN program that reads from or writes to article storage or overview is

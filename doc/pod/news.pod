@@ -1,3 +1,22 @@
+=head1 Changes in 2.7.0
+
+=over 2
+
+=item *
+
+Bo Lindbergh has implemented a new overview storage method based
+on SQLite, known for its long-term stability and compatibility.
+Robust and faster at reading ranges of overview data, but somewhat
+slower at writing, this new SQLite-based method is a perfect choice to
+store overview data.
+
+To select it as your overview method, set the I<ovmethod> parameter in
+F<inn.conf> to C<ovsqlite>.  Details about ovsqlite and how to switch to
+that new modern overview storage method can be found in the ovsqlite(5)
+and makehistory(8) man pages.
+
+=back
+
 =head1 Changes in 2.6.4
 
 =over 2

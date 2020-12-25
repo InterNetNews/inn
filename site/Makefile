@@ -48,6 +48,7 @@ PATH_INNFEEDCTL		= ${PATHETC}/innfeed.conf
 PATH_BUFFINDEXED	= ${PATHETC}/buffindexed.conf
 PATH_RADIUS_CONF	= ${PATHETC}/inn-radius.conf
 PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
+PATH_OVSQLITE_CONF	= ${PATHETC}/ovsqlite.conf
 PATH_SENDUUCP_CF	= ${PATHETC}/send-uucp.cf
 PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
 
@@ -70,7 +71,7 @@ REST		= \
 	nnrpd_auth.pl nnrpd_access.pl nocem.ctl \
         news2mail.cf readers.conf \
 	inn-radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
-	ovdb.conf active.minimal \
+	ovdb.conf ovsqlite.conf active.minimal \
 	newsgroups.minimal send-uucp.cf subscriptions
 
 ALL		= $(REST)
@@ -96,8 +97,8 @@ REST_INSTALLED	= \
 	$D$(PATHETC)/innshellvars.tcl.local \
 	$D$(PATHETC)/nocem.ctl \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
-	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_NNRPYACCESS) $D$(PATH_NNRPYDYNAMIC) \
-	$D$(PATH_OVDB_CONF) \
+	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_NNRPYACCESS) \
+	$D$(PATH_NNRPYDYNAMIC) $D$(PATH_OVDB_CONF) $D$(PATH_OVSQLITE_CONF) \
 	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
 
 ALL_INSTALLED	= $(REST_INSTALLED)
@@ -212,6 +213,7 @@ $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_BUFFINDEXED): buffindexed.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_OVDB_CONF): ovdb.conf		; $(COPY_RPUB) $? $@
+$D$(PATH_OVSQLITE_CONF): ovsqlite.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_STARTUP_INND): startup_innd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_FILTER_INND): filter_innd.pl ; $(COPY_RPUB) $? $@
 $D$(PATH_PERL_FILTER_NNRPD): filter_nnrpd.pl ; $(COPY_RPUB) $? $@
@@ -272,6 +274,7 @@ storage.conf:	../samples/storage.conf		; $(COPY) $? $@
 cycbuff.conf:	../samples/cycbuff.conf		; $(COPY) $? $@
 buffindexed.conf: ../samples/buffindexed.conf	; $(COPY) $? $@
 ovdb.conf:	../samples/ovdb.conf		; $(COPY) $? $@
+ovsqlite.conf:	../samples/ovsqlite.conf	; $(COPY) $? $@
 innwatch.ctl:	../samples/innwatch.ctl		; $(COPY) $? $@
 innfeed.conf:	../samples/innfeed.conf		; $(COPY) $? $@
 moderators:	../samples/moderators		; $(COPY) $? $@

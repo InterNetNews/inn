@@ -41,6 +41,11 @@ B<ovdb_server> and B<ovdb_monitor> are stopped.
 
 =item *
 
+If I<ovmethod> is set to C<ovsqlite> in F<inn.conf>:  B<ovsqlite-server>
+is started and stopped.
+
+=item *
+
 If F<rc.news.local> exists in I<pathbin>:  B<rc.news.local> is run with
 argument C<start> or C<stop> (to perform site-specific startup or shutdown
 tasks).
@@ -103,6 +108,7 @@ $Id$
 
 =head1 SEE ALSO
 
-ctlinnd(8), cnfsstat(8), expirerm(8), inn.conf(5), innwatch(8), ovdb(5).
+ctlinnd(8), cnfsstat(8), expirerm(8), inn.conf(5), innwatch(8), ovdb(5),
+ovsqlite(5).
 
 =cut

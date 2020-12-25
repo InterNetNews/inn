@@ -11,7 +11,7 @@ include ../Makefile.global
 LTVERSION     = 3:4:0
 
 top	      = ..
-CFLAGS	      = $(GCFLAGS) -I. $(BDB_CPPFLAGS)
+CFLAGS	      = $(GCFLAGS) -I. $(BDB_CPPFLAGS) $(SQLITE3_CPPFLAGS)
 
 SOURCES	      = expire.c interface.c methods.c ov.c overdata.c overview.c \
 		ovmethods.c $(METHOD_SOURCES)
@@ -179,7 +179,8 @@ ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h \
   ../include/inn/history.h ../include/inn/ov.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/storage.h \
-  buffindexed/buffindexed.h ovdb/ovdb.h tradindexed/tradindexed.h
+  buffindexed/buffindexed.h ovdb/ovdb.h ovsqlite/ovsqlite.h \
+  tradindexed/tradindexed.h
 buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -233,6 +234,31 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/socket-unix.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h ovinterface.h \
   ovdb/ovdb.h ovdb/ovdb-private.h
+ovsqlite/ovsqlite-private.o: ovsqlite/ovsqlite-private.c \
+  ovsqlite/ovsqlite-private.h ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/inn/buffer.h ../include/inn/xmalloc.h
+ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/inn/storage.h ../include/inn/options.h ../include/inn/ov.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/messages.h ovsqlite/ovsqlite-private.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/inn/buffer.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/portable/socket-unix.h ../include/conffile.h \
+  ../include/portable/macros.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/innconf.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/newsuser.h ../include/inn/paths.h \
+  ovsqlite/../ovinterface.h
 timecaf/caf.o: timecaf/caf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -337,6 +363,37 @@ trash/trash.o: trash/trash.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   methods.h interface.h ../include/inn/storage.h ../include/inn/options.h \
   trash/trash.h interface.h
+ovsqlite/ovsqlite-server.o: ovsqlite/ovsqlite-server.c ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/inn/messages.h ovsqlite/ovsqlite-private.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/inn/buffer.h ../include/portable/setproctitle.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/innconf.h \
+  ../include/inn/confparse.h ../include/inn/storage.h \
+  ../include/inn/options.h ovsqlite/sql-main.h ovsqlite/sqlite-helper.h \
+  ovsqlite/sql-init.h
+ovsqlite/sql-init.o: ovsqlite/sql-init.c ovsqlite/sql-init.h \
+  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h
+ovsqlite/sql-main.o: ovsqlite/sql-main.c ovsqlite/sql-main.h \
+  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h
+ovsqlite/sqlite-helper.o: ovsqlite/sqlite-helper.c ovsqlite/sqlite-helper.h \
+  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
+  ../include/inn/options.h
 tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

@@ -65,6 +65,7 @@ m4_include([m4/sendmail.m4])
 m4_include([m4/snprintf.m4])
 m4_include([m4/socket-unix.m4])
 m4_include([m4/socket.m4])
+m4_include([m4/sqlite3.m4])
 m4_include([m4/syslog.m4])
 m4_include([m4/users.m4])
 m4_include([m4/vamacros.m4])
@@ -432,6 +433,7 @@ INN_LIB_BDB_OPTIONAL
 INN_LIB_KRB5_OPTIONAL
 INN_LIB_OPENSSL_OPTIONAL
 INN_LIB_SASL_OPTIONAL
+INN_LIB_SQLITE3_OPTIONAL
 INN_LIB_ZLIB_OPTIONAL
 
 dnl If Kerberos is found, define KRB5_AUTH to auth_krb5 so as to build
@@ -516,9 +518,11 @@ dnl Checks for types.
 AC_TYPE_INT8_T
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
+AC_TYPE_INT64_T
 AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 AC_TYPE_LONG_LONG_INT
 AC_TYPE_OFF_T
 AC_TYPE_PID_T

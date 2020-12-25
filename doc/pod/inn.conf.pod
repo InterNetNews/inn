@@ -590,8 +590,9 @@ The default is unset.
 =item I<ovmethod>
 
 Which overview storage method to use.  Currently supported values are
-C<tradindexed>, C<buffindexed>, and C<ovdb>.  There is no default value;
-this parameter must be set if I<enableoverview> is true (the default).
+C<buffindexed>, C<ovdb>, C<ovsqlite> and C<tradindexed>.  There is no
+default value; this parameter must be set if I<enableoverview> is true
+(the default).
 
 =over 4
 
@@ -601,14 +602,18 @@ Stores overview data and index information into buffers, which are
 preconfigured files defined in F<buffindexed.conf>.  C<buffindexed> never
 consumes additional disk space beyond that allocated to these buffers.
 
+=item C<ovdb>
+
+Stores data into a S<Berkeley DB> database.  See the ovdb(5) man page.
+
+=item C<ovsqlite>
+
+Stores data into an SQLite database.  See the ovsqlite(5) man page.
+
 =item C<tradindexed>
 
 Uses two files per newsgroup, one containing the overview data and one
 containing the index.  Fast for readers, but slow to write to.
-
-=item C<ovdb>
-
-Stores data into a S<Berkeley DB> database.  See the ovdb(5) man page.
 
 =back
 

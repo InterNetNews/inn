@@ -452,12 +452,18 @@ for a particular group will generally be requested many times by different
 clients.
 
 Any INN server that supports readers must therefore have an overview
-method configured.  There are three different methods to choose from:
-tradindexed, which is the slowest but the best tested and most reliable
-and the method with the best recovery tools; buffindexed, which is fast at
-writing because it uses preconfigured large buffers like CNFS, but which
-is harder to recover; and the experimental ovdb overview method, which
-stores overview information in a BerkeleyDB database.
+method configured.  There are four different methods to choose from:
+
+  - buffindexed, which is fast at writing because it uses preconfigured
+    large buffers like CNFS, but which is hard to recover;
+  - ovdb, which stores overview information in a Berkeley DB database
+    and supports compression;
+  - ovsqlite, implemented in INN 2.7.0, which stores overview information
+    in an SQLite database and supports compression, but still not as
+    widely tested as the other overview mechanisms (all introduced with
+    INN 2.3.0);
+  - tradindexed, which is the slowest but the best tested, the most
+    reliable and the method with the best recovery tools.
 
 ------------------------------
 

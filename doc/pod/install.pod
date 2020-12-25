@@ -148,6 +148,7 @@ versions you'll need:
     --with-perl         Perl 5.004_03 or higher, 5.8.0+ recommended
     --with-python       Python 2.3.0 or higher, 2.5.0+ recommended (in the 2.x series); Python 3.3.0 or higher (in the 3.x series)
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
+    --with-sqlite3      SQLite 3.8.2 or higher, 3.20.0+ recommended
     --with-zlib         zlib 1.x or higher
     --with-openssl      OpenSSL 0.9.6 or higher
     --with-sasl         Cyrus SASL 2.x or higher
@@ -423,13 +424,30 @@ If the S<Berkeley DB> library is found at configure time, INN will be
 built with S<Berkeley DB> support unless the B<--without-bdb> flag is
 explicitly passed to configure.
 
+=item B<--with-sqlite3>=PATH
+
+Enables support for SQLite (3.8.2 or higher), which means that it
+will then be possible to use the ovsqlite overview method if you wish.
+Enabling this configure option doesn't mean you'll be required to use
+ovsqlite, but it does require that SQLite be installed on your system
+(including the header files, not just the runtime libraries).  If a
+path is given, it sets the installed directory of SQLite.  In case
+non-standard paths to the SQLite library is used, one or both of the
+options B<--with-sqlite3-include> and B<--with-sqlite3-lib> can be given
+to configure with a path.
+
+If the SQLite library is found at configure time, INN will be built
+with SQLite support unless the B<--without-sqlite3> flag is explicitly
+passed to configure.
+
 =item B<--with-zlib>=PATH
 
 Enables support for compression for news reading, which means a
 compression layer can be negotiated between your server and newsreaders
 supporting that NNTP extension.
 
-Also enables support for compression with the ovdb storage method.
+Also enables support for compression with the ovdb and ovsqlite overview
+storage methods.
 
 This option requires that zlib be installed on your system (including the
 header files, not just the runtime libraries).  If a path is given, it
@@ -666,11 +684,6 @@ There are three overview mechanisms to choose from:
 
 =over 4
 
-=item tradindexed
-
-It is very fast for readers, but it has to update two files for each
-incoming article and can be quite slow to write.
-
 =item buffindexed
 
 It can keep up with a large feed more easily, since it uses large buffers
@@ -682,9 +695,23 @@ buffindexed.conf(5) for more information.
 
 =item ovdb
 
-It stores overview data in a S<Berkeley DB> database; it's fast and very robust,
-but may require more disk space.  See the ovdb(5) man page for more
-information on it.
+It stores overview data in a S<Berkeley DB> database; it is fast and very
+robust, but may require more disk space, unless compression is enabled.
+See the ovdb(5) man page for more information on it.
+
+=item ovsqlite
+
+It stores overview data in an SQLite database, known for its long-term
+stability and compatibility.  It is robust and faster at reading ranges
+of overview data, but somewhat slower at writing.  It may also require
+more disk space, unless compression is enabled.  See the ovsqlite(5)
+man page for more information on it.
+
+=item tradindexed
+
+It is very fast for readers, but it has to update two files for each
+incoming article and can be quite slow to write.  Robust and well-tested,
+with the best recovery tools.
 
 =back
 

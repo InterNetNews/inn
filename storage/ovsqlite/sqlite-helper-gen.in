@@ -1,0 +1,209 @@
+#! /usr/bin/perl
+
+# $Id$
+#
+# The sqlite-helper-gen script reads SQL text from its input and splits it
+# into sections using lines starting with a comment ("--") as delimiters.
+# 
+# If the comment is followed by a period (".") and a valid C identifier and
+# nothing else but whitespace, succeeding lines go into the prepared
+# statement section named by the identifier.
+# 
+# If the comment is followed by nothing but whitespace, succeeding lines go
+# into the unnamed initialisation section.
+# 
+# Otherwise, the destination section remains unchanged.
+# 
+# After the entire input is read, sqlite-helper-gen writes two output
+# files: a C header file and a C source file.
+# 
+# The header file contains this:
+#   * a struct type definition with a prepared statement pointer
+#     for each named statement found in the input
+#   * a declaration of a sqlite-helper variable
+# 
+# The source file contains this:
+#   * the definition for the sqlite-helper variable, initialised
+#     with the processed SQL text from the input
+# 
+# This allows application code to do all this with a single call to the
+# sqlite-helper code:
+#   * execute the statements in the initialisation section
+#   * prepare each named statement
+#
+# Original implementation written by Bo Lindbergh (2020-12-17).
+# <2bfjdsla52kztwejndzdstsxl9athp@gmail.com>
+
+use strict;
+use warnings;
+
+sub parse
+{
+    my($path, $state) = @_;
+    my($fh, %sections, @names, $cursect, @cursect);
+    my $donesect=sub
+    {
+        while (@cursect && $cursect[-1] !~ /\S/) {
+            pop(@cursect);
+        }
+        while (@cursect && $cursect[0] !~ /\S/) {
+            shift(@cursect);
+        }
+        push(@{$cursect}, splice(@cursect));
+    };
+
+    open($fh, "<", $path)
+        or die "$path: open: $!\n";
+    binmode($fh);
+    $state->{sections} = \%sections;
+    $state->{names} = \@names;
+    $cursect = \@{$sections{""}};
+    while (defined(my $line = readline($fh))) {
+        $line =~ tr/\0//d;
+        if ($line =~ /^\s*--\s*/g) {
+            if ($line =~ /\G\.\s*([_a-zA-Z][_a-zA-Z0-9]*)\s*$/gc) {
+                $donesect->();
+                if (!exists($sections{$1})) {
+                    push(@names, $1);
+                }
+                $cursect = \@{$sections{$1}};
+            } elsif ($line =~ /\G$/gc) {
+                $donesect->();
+                $cursect = \@{$sections{""}};
+            }
+        } else {
+            push(@cursect, $line);
+        }
+    }
+    $donesect->();
+    close($fh);
+    $state->{preamble} = <<"__PREAMBLE__"
+/*
+ * DO NOT EDIT DIRECTLY.
+ *
+ * This file was generated automatically by sqlite-helper-gen
+ * from $path.
+ *
+ * DO NOT EDIT DIRECTLY.
+ */
+__PREAMBLE__
+        ;
+}
+
+sub generate_head
+{
+    my($path, $state) = @_;
+    my($fh, $names, $name, $preamble, $guard, $stmts);
+
+    open($fh, ">", $path)
+        or die "$path: open: $!\n";
+    binmode($fh);
+    $names = $state->{names};
+    $name = $state->{name};
+    $preamble = $state->{preamble};
+    $guard = "\U$name\E_H";
+    unless (@{$names}) {
+        $names=["unused"];
+    }
+    $stmts = join("\n    ", map("sqlite3_stmt *$_;", @{$names}));
+    print $fh <<"__HEAD__"
+$preamble
+#ifndef $guard
+#define $guard 1
+
+#include "sqlite-helper.h"
+
+#ifdef HAVE_SQLITE3
+
+typedef struct ${name}_t {
+    $stmts
+} ${name}_t;
+
+extern sqlite_helper_t const ${name}_helper;
+
+#endif /* HAVE_SQLITE3 */
+
+#endif /* ! $guard */
+__HEAD__
+        or die "$path: print: $!\n";
+    close($fh)
+        or die "$path: close: $!\n";
+}
+
+my(%escape, $escapevals);
+
+BEGIN {
+    %escape = (
+        "\\"    => "\\\\",
+        "\""    => "\\\"",
+        "\r"    => "\\r",
+        "\n"    => "\\n",
+        "\t"    => "\\t",
+    );
+    $escapevals = join("", values(%escape));
+}
+
+sub generate_body
+{
+    my($path, $state) = @_;
+    my($fh, $sections, $names, $name, $base, $preamble);
+    my($stmt_count, @lines, $text);
+
+    open($fh, ">", $path)
+        or die "$path: open: $!\n";
+    binmode($fh);
+    $sections = $state->{sections};
+    $names = $state->{names};
+    $name = $state->{name};
+    $base = $state->{base};
+    $preamble = $state->{preamble};
+    push(@lines, splice(@{$sections->{""}}));
+    push(@lines, "\0");
+    $stmt_count = @{$names};
+    foreach my $name (@{$names}) {
+        push(@lines, "$name\0");
+        push(@lines, splice(@{$sections->{$name}}));
+        push(@lines, "\0");
+    }
+    foreach my $line (@lines) {
+        $line =~ s/([$escapevals]|[^ -~])/
+            $escape{$1} || sprintf("\\%.3o", ord($1))/ge;
+        $line="\"$line\"";
+    }
+    $text = join("\n    ",@lines);
+    print $fh <<"__BODY__"
+$preamble
+
+#include "$base.h"
+
+#ifdef HAVE_SQLITE3
+
+sqlite_helper_t const ${name}_helper =
+{
+    $stmt_count,
+
+    $text
+};
+
+#endif /* HAVE_SQLITE3 */
+
+__BODY__
+        or die "$path: print: $!\n";
+    close($fh)
+        or die "$path: close: $!\n";
+}
+
+foreach my $src (@ARGV) {
+    my($dir, $base, $name, %state);
+
+    ($dir,$base) = $src =~ m,^((?:.*/)?)([-_a-zA-Z][-_a-zA-Z0-9]*)[^/]*$,
+        or die "$src: Bad input filename\n";
+    $name = $base;
+    $name =~ tr/-/_/;
+    $state{name} = $name;
+    $state{base} = $base;
+    parse($src, \%state);
+    generate_head("$dir$base.h", \%state);
+    generate_body("$dir$base.c", \%state);
+}
+

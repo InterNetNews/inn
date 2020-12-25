@@ -24,14 +24,15 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/distributions.5 ../man/expire.ctl.5 ../man/incoming.conf.5 \
 	../man/inn.conf.5 ../man/innfeed.conf.5 ../man/moderators.5 \
 	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
-	../man/newslog.5 ../man/nntpsend.ctl.5 ../man/ovdb.5 \
+	../man/newslog.5 ../man/nntpsend.ctl.5 ../man/ovdb.5 ../man/ovsqlite.5 \
 	../man/passwd.nntp.5 ../man/inn-radius.conf.5 ../man/readers.conf.5 \
 	../man/storage.conf.5 ../man/subscriptions.5
 
 MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/batcher.8 ../man/buffchan.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
-	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 ../man/docheckgroups.8 \
+	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 \
+	../man/docheckgroups.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
 	../man/expirerm.8 ../man/ident.8 \
 	../man/innbind.8 ../man/inncheck.8 ../man/innd.8 ../man/inndf.8 \
@@ -41,8 +42,8 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/news.daily.8 ../man/news2mail.8 ../man/ninpaths.8 \
 	../man/nnrpd.8 ../man/nntpsend.8 \
 	../man/ovdb_init.8 ../man/ovdb_monitor.8 ../man/ovdb_server.8 \
-	../man/ovdb_stat.8 ../man/overchan.8 \
-        ../man/procbatch.8 ../man/prunehistory.8 ../man/radius.8 \
+	../man/ovdb_stat.8 ../man/overchan.8 ../man/ovsqlite-server.8 \
+	../man/procbatch.8 ../man/prunehistory.8 ../man/radius.8 \
 	../man/rc.news.8 ../man/scanlogs.8 ../man/scanspool.8 \
 	../man/sendinpaths.8 \
 	../man/tally.control.8 ../man/tdx-util.8 \
@@ -105,6 +106,7 @@ maintclean: distclean
 ../man/newslog.5:	newslog.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/nntpsend.ctl.5:	nntpsend.ctl.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/ovdb.5:		ovdb.pod		; $(POD2MAN) -s 5 $? > $@
+../man/ovsqlite.5:	ovsqlite.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/passwd.nntp.5:	passwd.nntp.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/inn-radius.conf.5: inn-radius.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/readers.conf.5:	readers.conf.pod	; $(POD2MAN) -s 5 $? > $@
@@ -149,6 +151,7 @@ maintclean: distclean
 ../man/ovdb_server.8:	ovdb_server.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ovdb_stat.8:	ovdb_stat.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/overchan.8:	overchan.pod		; $(POD2MAN) -s 8 $? > $@
+../man/ovsqlite-server.8: ovsqlite-server.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/procbatch.8:	procbatch.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/prunehistory.8:	prunehistory.pod	; $(POD2MAN) -s 8 $? > $@
 ../man/radius.8:	radius.pod		; $(POD2MAN) -s 8 $? > $@

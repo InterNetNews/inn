@@ -15,10 +15,11 @@ SEC3PM	= INN__Config.3pm \
 	INN__Utils__Shlock.3pm
 
 SEC5	= active.5 active.times.5 buffindexed.conf.5 control.ctl.5 \
-	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 history.5 incoming.conf.5 \
+	cycbuff.conf.5 distrib.pats.5 distributions.5 expire.ctl.5 \
+	history.5 incoming.conf.5 \
 	inn.conf.5 innfeed.conf.5 innwatch.ctl.5 moderators.5 motd.news.5 \
 	newsfeeds.5 newsgroups.5 newslog.5 nnrpd.track.5 nntpsend.ctl.5 ovdb.5 \
-	passwd.nntp.5 inn-radius.conf.5 readers.conf.5 \
+	ovsqlite.5 passwd.nntp.5 inn-radius.conf.5 readers.conf.5 \
 	storage.conf.5 subscriptions.5
 
 SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
@@ -29,7 +30,8 @@ SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	innupgrade.8 innwatch.8 innxbatch.8 innxmit.8 mailpost.8 makedbz.8 \
 	makehistory.8 mod-active.8 news.daily.8 news2mail.8 ninpaths.8 \
 	nnrpd.8 nntpsend.8 ovdb_init.8 ovdb_monitor.8 ovdb_server.8 \
-	ovdb_stat.8 overchan.8 perl-nocem.8 procbatch.8 prunehistory.8 radius.8 \
+	ovdb_stat.8 overchan.8 ovsqlite-server.8 perl-nocem.8 procbatch.8 \
+	prunehistory.8 radius.8 \
 	rc.news.8 scanlogs.8 scanspool.8 send-nntp.8 send-uucp.8 sendinpaths.8 \
 	tally.control.8 tdx-util.8 tinyleaf.8 writelog.8
 

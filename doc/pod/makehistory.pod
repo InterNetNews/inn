@@ -24,7 +24,9 @@ By default, B<makehistory> will scan the entire spool, using the storage
 manager, and write a history line for every article.  To also generate
 overview information, use the B<-O> flag.
 
-WARNING:  If you're trying to rebuild the overview database, be sure to
+=head1 OVERVIEW REBUILD
+
+I<WARNING>:  If you're trying to rebuild the overview database, be sure to
 stop innd(8) and delete or zero out the existing database before you start
 for the best results.  An overview rebuild should not be done while the
 server is running.  Unless the existing overview is deleted, you may end
@@ -36,6 +38,55 @@ running while rebuilding overview.  ovdb needs them available while
 writing overview entries.  You can start them by hand separate from the
 rest of the server by running B<ovdb_init>; see ovdb_init(8) for more
 details.
+
+Similarly, if I<ovmethod> in F<inn.conf> is C<ovsqlite>, you must
+have the B<ovsqlite-server> process running while rebuilding overview.
+See ovsqlite-server(8) for more details and how to start it by hand.
+
+Rebuilding overview data is as straight-forward as:
+
+=over 4
+
+=item 1.
+
+Setting the new overview storage method in the I<ovmethod> parameter
+in F<inn.conf>.
+
+=item 2.
+
+Checking that its configuration file is correctly installed in
+I<pathetc> and fits your needs (F<buffindexed.conf>, F<ovdb.conf> or
+F<ovsqlite.conf>).  Note that the tradindexed overview storage method
+does not have a configuration file.
+
+=item 3.
+
+Making sure that INN is stopped.
+
+=item 4.
+
+Making sure that the directory specified by the I<pathoverview> parameter
+in F<inn.conf> exists and is empty.  Otherwise, rename the current one
+(to backup existing overview data) and re-create I<pathoverview> as
+the news user.
+
+=item 5.
+
+Starting B<ovdb_init> or B<ovsqlite-server> as the news user if the
+new overview storage method is respectively ovdb or ovsqlite.
+
+=item 6.
+
+Running C<makehistory -O -x -F> and waiting for the command to finish.
+
+=item 7.
+
+Starting INN and checking the logs to make sure everything is fine.
+You will normally notice that the F<active> file is renumbered
+(B<rc.news> takes care of that when run after an overview rebuild;
+otherwise, manually run C<ctlinnd renumber ''>).
+
+=back
 
 =head1 OPTIONS
 
@@ -201,6 +252,6 @@ $Id$
 =head1 SEE ALSO
 
 active(5), ctlinnd(8), dbz(3), history(5), inn.conf(5), innd(8),
-makedbz(8), ovdb_init(8), overchan(8).
+makedbz(8), ovdb_init(8), overchan(8), ovsqlite-server(8).
 
 =cut
