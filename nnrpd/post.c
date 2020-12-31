@@ -348,6 +348,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char		*newpath = NULL;
     HEADER		*hp;
     char		*p;
+    char		*bad_header;
     char		*fqdn = NULL;
     time_t		t, now;
     const char          *error;
@@ -645,9 +646,16 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Check that all other header fields are valid. */
     for (i = 0; i < OtherCount; i++) {
         if (!IsValidHeaderField(OtherHeaders[i])) {
+            p = strchr(OtherHeaders[i], ':');
+            if (p == NULL || p == OtherHeaders[i])
+                bad_header = xstrdup(OtherHeaders[i]);
+            else
+                bad_header = xstrndup(OtherHeaders[i], p - OtherHeaders[i]);
             snprintf(Error, sizeof(Error),
-                     "Invalid syntax encountered in headers (unexpected "
-                     "byte, no colon-space, or empty content line)");
+                     "Invalid syntax encountered in header (unexpected "
+                     "byte, no colon-space, or empty content line): %s",
+                     bad_header);
+            free(bad_header);
             return Error;
         }
     }
