@@ -357,6 +357,10 @@ target message.  This requirement only encouraged cancel issuers to
 conceal their identity and provided no security".  This check is
 therefore not done as it is extremely easy to spoof.
 
+In order not to actually process any cancel or supersedes messages,
+you can start B<innd> with the B<-C> flag, or add this flag to the
+F<innflags> parameter.
+
 =item I<verifygroups>
 
 Set this to true to reject incoming articles which contain an unknown
