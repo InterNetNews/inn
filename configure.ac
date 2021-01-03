@@ -32,6 +32,10 @@ AC_PREREQ([2.64])
 AC_REVISION([$Revision$])
 AC_CONFIG_AUX_DIR([support])
 
+dnl Ignore Automake conditionals (called in a few m4 macros) as INN does not
+dnl uses Automake yet.
+m4_define_default([AM_CONDITIONAL], [:])
+
 dnl Lots of our macros are stored in separate files for ease of maintenance.
 m4_include([m4/aux-libs.m4])
 m4_include([m4/bdb.m4])
