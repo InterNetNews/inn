@@ -180,6 +180,8 @@ static void
 CCsdnotify(void)
 {
 #ifdef HAVE_SD_NOTIFY
+    int status;
+
     buffer_sprintf(&CCreply, "STATUS=Server ");
 
     /* Server's mode. */
@@ -212,7 +214,9 @@ CCsdnotify(void)
         buffer_append_sprintf(&CCreply, "disabled %s.", NNRPReason);
 
     buffer_append(&CCreply, "", 1);
-    sd_notify(0, CCreply.data);
+    status = sd_notify(false, CCreply.data);
+    if (status < 0)
+        warn("cannot notify systemd of new status: %s", strerror(-status));
 #endif
 }
 

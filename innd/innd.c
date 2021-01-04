@@ -364,6 +364,7 @@ main(int ac, char *av[])
     bool		ShouldRenumber;
     bool		ShouldSyntaxCheck;
     pid_t		pid;
+    int                 status;
 #if defined(_DEBUG_MALLOC_INC)
     union malloptarg	m;
 #endif	/* defined(_DEBUG_MALLOC_INC) */
@@ -773,8 +774,12 @@ main(int ac, char *av[])
         if (!ICDrenumberactive())
             die("SERVER cant renumber");
     }
+
     syslog(LOG_NOTICE, "SERVER starting");
-    sd_notify(0, "READY=1");
+    status = sd_notify(false, "READY=1");
+    if (status < 0)
+        warn("cannot notify systemd of startup: %s", strerror(-status));
+
     CHANreadloop();
 
     /* CHANreadloop should never return. */
