@@ -2162,6 +2162,7 @@ int main(
     close_db();
     if (pidfile)
         unlink(pidfile);
+    return 0;
 }
 
 #else /* ! HAVE_SQLITE3 */
