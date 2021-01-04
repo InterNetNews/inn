@@ -70,10 +70,6 @@ const char *deliver_rcpt_to   = "+%s";
 char *deliver_to_header = NULL;
 
 /* imports */
-#if defined (sun)
-extern char *optarg ;           /* needed for Solaris */
-extern int optind;
-#endif
 extern bool genHtml ;
 extern bool debugShrinking;
 extern bool fastExit;
