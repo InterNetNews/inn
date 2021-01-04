@@ -27,9 +27,6 @@ dnl notice is preserved.
 dnl
 dnl SPDX-License-Identifier: FSFULLR
 
-dnl Ignore Automake conditionals if not using Automake.
-m4_define_default([AM_CONDITIONAL], [:])
-
 dnl Determine the systemd system unit directory, along with a configure flag
 dnl to override, and sets @systemdsystemunitdir@.  Provides the Automake
 dnl HAVE_SYSTEMD Automake conditional.

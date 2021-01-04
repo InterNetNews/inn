@@ -61,9 +61,6 @@ dnl notice is preserved.
 dnl
 dnl SPDX-License-Identifier: FSFULLR
 
-dnl Ignore Automake conditionals if not using Automake.
-m4_define_default([AM_CONDITIONAL], [:])
-
 dnl Headers to include when probing for Kerberos library properties.
 AC_DEFUN([INN_INCLUDES_KRB5], [[
 #if HAVE_KRB5_H
