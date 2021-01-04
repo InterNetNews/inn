@@ -705,6 +705,8 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                       [CFLAGS="${CFLAGS} -fstack-protector-strong"
                        CC_WARNINGS="${CC_WARNINGS} -fstack-protector-strong"],
                       [])
+     INN_PROG_LD_FLAG([-fstack-protector-strong],
+                      [LDFLAGS="${LDFLAGS} -fstack-protector-strong"], [])
      INN_PROG_LD_FLAG([-Wl,-z,relro],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
      INN_PROG_LD_FLAG([-Wl,-z,now],
