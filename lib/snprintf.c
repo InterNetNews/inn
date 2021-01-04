@@ -38,17 +38,6 @@
 #    endif
 #endif
 
-/*
- * Older Clang doesn't support __attribute__((fallthrough)) properly and
- * complains about the empty statement that it is decorating.  Suppress that
- * warning.  Also suppress warnings about unknown attributes to handle older
- * Clang versions.
- */
-#if !defined(__attribute__) && (defined(__llvm__) || defined(__clang__))
-#    pragma GCC diagnostic ignored "-Wattributes"
-#    pragma GCC diagnostic ignored "-Wmissing-declarations"
-#endif
-
 /* Specific to rra-c-util, but only when debugging is enabled. */
 #ifdef DEBUG_SNPRINTF
 # include "inn/messages.h"
@@ -390,9 +379,9 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	break;
       case 'X':
 	flags |= DP_F_UP;
-        __attribute__((fallthrough));
-        /* fall through */
+        goto fallthrough1;
       case 'x':
+      fallthrough1:
 	flags |= DP_F_UNSIGNED;
 	if (cflags == DP_C_SHORT)
 	  value = (unsigned short int) va_arg (args, unsigned int);
@@ -413,9 +402,9 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	break;
       case 'E':
 	flags |= DP_F_UP;
-        __attribute__((fallthrough));
-        /* fall through */
+        goto fallthrough2;
       case 'e':
+      fallthrough2:
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);
 	else
@@ -424,9 +413,9 @@ static int dopr (char *buffer, size_t maxlen, const char *format, va_list args)
 	break;
       case 'G':
 	flags |= DP_F_UP;
-        __attribute__((fallthrough));
-        /* fall through */
+        goto fallthrough3;
       case 'g':
+      fallthrough3:
         flags |= DP_F_FP_G;
 	if (cflags == DP_C_LDOUBLE)
 	  fvalue = va_arg (args, LDOUBLE);

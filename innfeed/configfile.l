@@ -28,7 +28,9 @@
    that, and it's fixed in current flex, so just suppress the warning.
    Same thing for a possible NULL pointer dereference. */
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wnull-dereference"
+#if __GNUC__ > 5
+# pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
 
 /* Some versions of flex (such as 2.5.35) declare twice isatty. */
 #pragma GCC diagnostic ignored "-Wredundant-decls"

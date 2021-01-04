@@ -50,7 +50,7 @@ static int putpid(const char *path)
         syswarn("cannot open %s", path);
 	return -1;
     }
-    snprintf(buf, sizeof(buf), "%d\n", getpid());
+    snprintf(buf, sizeof(buf), "%ld\n", (long) getpid());
     if(write(fd, buf, strlen(buf)) < 0) {
         syswarn("cannot write to %s", path);
 	close(fd);
