@@ -108,7 +108,7 @@ WARNINGS	= -g -O3 -DDEBUG=1 -Werror -Wall -Wextra \
 		  -Wmissing-prototypes -Wmissing-declarations \
 		  -Wmissing-format-attribute \
 		  -Wnormalized=nfc -Wnested-externs -Winline \
-		  -Winvalid-pch -Wvla -Wno-unused-function
+		  -Winvalid-pch -Wvla -Wno-unused-function @CC_WARNINGS@
 
 ##  Some warnings have to be suppressed for Perl, since there's no way to work
 ##  around the Perl header problems in INN code.
