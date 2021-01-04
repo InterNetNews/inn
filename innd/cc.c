@@ -174,6 +174,54 @@ CCcurrmode(void)
 
 
 /*
+**  Notify systemd of the current operating modes.
+*/
+static void
+CCsdnotify(void)
+{
+#ifdef HAVE_SD_NOTIFY
+    int status;
+
+    buffer_sprintf(&CCreply, "STATUS=Server ");
+
+    /* Server's mode. */
+    switch (Mode) {
+    default:
+        buffer_append_sprintf(&CCreply, "Unknown %d", Mode);
+        break;
+    case OMrunning:
+        buffer_append_sprintf(&CCreply, "running");
+        break;
+    case OMpaused:
+        buffer_append_sprintf(&CCreply, "paused %s", ModeReason);
+        break;
+    case OMthrottled:
+        buffer_append_sprintf(&CCreply, "throttled %s", ModeReason);
+        break;
+    }
+    if (RejectReason)
+        buffer_append_sprintf(&CCreply, ". Rejecting %s", RejectReason);
+
+    /* Newsreaders. */
+    buffer_append_sprintf(&CCreply, ". Readers ");
+    if (innconf->readerswhenstopped)
+        buffer_append_sprintf(&CCreply, "independent ");
+    else
+        buffer_append_sprintf(&CCreply, "follow ");
+    if (NNRPReason == NULL)
+        buffer_append_sprintf(&CCreply, "enabled.");
+    else
+        buffer_append_sprintf(&CCreply, "disabled %s.", NNRPReason);
+
+    buffer_append(&CCreply, "", 1);
+    status = sd_notify(false, CCreply.data);
+    if (status < 0)
+        warn("cannot notify systemd of new status: %s", strerror(-status));
+#endif
+}
+
+
+/*
 **  Add <> around Message-ID if needed.
 */
 static const char *
@@ -292,6 +340,7 @@ CCallow(char *av[])
 	return "1 Wrong reason";
     free(RejectReason);
     RejectReason = NULL;
+    CCsdnotify();
     return NULL;
 }
 
@@ -702,6 +751,7 @@ CCgo(char *av[])
 	ErrorCount = IO_ERROR_COUNT;
     InndHisOpen();
     syslog(L_NOTICE, "%s running", LogName);
+    CCsdnotify();
     if (ICDneedsetup)
 	ICDsetup(true);
     SCHANwakeup(&Mode);
@@ -1116,6 +1166,7 @@ CCparam(char *av[])
     case 'n':
 	if (!CCparsebool('n', (bool *)&innconf->readerswhenstopped, *p))
 	    return BADVAL;
+        CCsdnotify();
 	break;
     case 'o':
 	MaxOutgoing = atoi(p);
@@ -1198,6 +1249,7 @@ CCblock(OPERATINGMODE NewMode, char *reason)
     }
     syslog(L_NOTICE, "%s %s %s",
 	LogName, NewMode == OMpaused ? "paused" : "throttled", reason);
+    CCsdnotify();
     return NULL;
 }
 
@@ -1255,6 +1307,7 @@ CCreaders(char *av[])
 	NNRPReason = xstrdup(p);
 	break;
     }
+    CCsdnotify();
     return NULL;
 }
 
@@ -1313,6 +1366,7 @@ CCreject(char *av[])
     if (!is_valid_utf8(av[0]))
         return "1 Invalid UTF-8 reason";
     RejectReason = xstrdup(av[0]);
+    CCsdnotify();
     return NULL;
 }
 
@@ -2033,6 +2087,8 @@ CCsetup(void)
 #if     defined(SIGUSR1)
     xsignal(SIGUSR1, CCresetup);
 #endif  /* defined(SIGUSR1) */
+
+    CCsdnotify();
 }
 
 

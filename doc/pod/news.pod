@@ -51,6 +51,13 @@ Path header value of each article rejected as a duplicate.
 
 =item *
 
+Added preliminary support for systemd notifications.  Use of more
+features provided by systemd, including more notifications, will come
+in future releases.  Thanks to Marco d'Itri for this first systemd
+integration into INN.
+
+=item *
+
 Added new B<--enable-hardening-flags> configure-time option,
 enabled by default, to use hardening build flags like C<-fPIE> and
 C<-fstack-protector-strong>.  This option can easily be disabled if the

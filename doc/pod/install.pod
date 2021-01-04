@@ -139,6 +139,13 @@ information.
 
 =item *
 
+If you want to use systemd notifications, you'll need to have
+B<pkg-config> and B<libsystemd> (along with its F<libsystemd.pc>
+configuration) installed so that this feature is enabled at configure
+time.
+
+=item *
+
 Many of INN's optional features require other packages (primarily
 libraries) be installed.  If you wish to use any of these optional
 features, you will need to install those packages first.  Here is a table

@@ -422,6 +422,7 @@ include/portable/getaddrinfo.h        getaddrinfo replacement header
 include/portable/getnameinfo.h        getnameinfo replacement header
 include/portable/macros.h             Set of portability macros
 include/portable/mmap.h               Wrapper for <sys/mman.h>
+include/portable/sd-daemon.h          Portable setup for systemd-daemon
 include/portable/setproctitle.h       Portable setup for setproctitle
 include/portable/socket-unix.h        Wrapper for <sys/un.h> and SUN_LEN
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
@@ -587,6 +588,7 @@ m4/openssl.m4                         Autoconf macro for OpenSSL
 m4/pam-const.m4                       Autoconf macro for PAM using const
 m4/paths.m4                           Autoconf macro for installation paths
 m4/perl.m4                            Autoconf macro for Perl support
+m4/pkg.m4                             Autoconf macro to use pkg-config
 m4/prog-ensure.m4                     Autoconf macro for finding programs
 m4/python.m4                          Autoconf macro for Python support
 m4/sasl.m4                            Autoconf macro for SASL libraries
@@ -596,6 +598,7 @@ m4/snprintf.m4                        Autoconf macro to check snprintf
 m4/socket-unix.m4                     Autoconf macros to check UNIX domain sockets
 m4/socket.m4                          Autoconf macros to check socket support
 m4/syslog.m4                          Autoconf macro for syslog facility
+m4/systemd.m4                         Autoconf macros for systemd support
 m4/users.m4                           Autoconf macro for INN users
 m4/vamacros.m4                        Autoconf macro to check variadic macros
 m4/zlib.m4                            Autoconf macro for zlib

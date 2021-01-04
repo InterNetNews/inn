@@ -257,6 +257,7 @@ download m4/python.m4 m4 python.m4
 download m4/sasl.m4 m4 sasl.m4
 download m4/socket-unix.m4 m4 socket-unix.m4
 download m4/socket.m4 m4 socket.m4
+download m4/systemd.m4 m4 systemd.m4
 download m4/vamacros.m4 m4 vamacros.m4
 download m4/zlib.m4 m4 zlib.m4
 
@@ -272,6 +273,7 @@ download portable/inet_ntop.c lib inet_ntop.c
 download portable/macros.h include/portable macros.h
 download portable/mkstemp.c lib mkstemp.c
 download portable/reallocarray.c lib reallocarray.c
+download portable/sd-daemon.h include/portable sd-daemon.h
 download portable/setenv.c lib setenv.c
 download portable/seteuid.c lib seteuid.c
 download portable/socket.h include/portable socket.h
