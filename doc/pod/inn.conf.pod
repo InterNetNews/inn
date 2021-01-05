@@ -602,22 +602,40 @@ default value; this parameter must be set if I<enableoverview> is true
 
 =item C<buffindexed>
 
-Stores overview data and index information into buffers, which are
-preconfigured files defined in F<buffindexed.conf>.  C<buffindexed> never
+It stores overview data and index information into preconfigured
+large files like CNFS.  Fast at writing, the C<buffindexed> overview
+storage method can keep up with a large feed more easily and never
 consumes additional disk space beyond that allocated to these buffers.
+The downside is that these buffers are hard to recover in case of
+corruption and somewhat slower for readers and the expiry process.
+See the buffindexed.conf(5) man page for more details, and notably how
+to create the buffers.
 
 =item C<ovdb>
 
-Stores data into a S<Berkeley DB> database.  See the ovdb(5) man page.
+It stores overview information into a S<Berkeley DB> database, whose
+development pace has stalled these last years.  This method is fast
+and very robust, but may require more disk space, unless compression
+is enabled.  Overview data is fetched one article at a time, which makes
+this method a bit slower than C<ovsqlite> for readers.  See the ovdb(5)
+man page for more details.
 
 =item C<ovsqlite>
 
-Stores data into an SQLite database.  See the ovsqlite(5) man page.
+It stores overview information into an SQLite database, known for its
+long-term stability and compatibility.  Robust and faster than C<ovdb>
+at reading ranges of overview data (since overview data is transferred in
+128-kilobyte chunks between B<ovsqlite-server> and B<nnrpd>) but somewhat
+slower at writing, this method may require more disk space, unless
+compression is enabled.  See the ovsqlite(5) man page for more details.
 
 =item C<tradindexed>
 
-Uses two files per newsgroup, one containing the overview data and one
-containing the index.  Fast for readers, but slow to write to.
+It uses two files per newsgroup, one containing the overview data
+and one containing the index.  Fast for readers, but slow to write to
+because it has to update two files for each incoming article.  Its main
+advantage is to be the best tested, the most reliable and the method
+with the best recovery tools.
 
 =back
 

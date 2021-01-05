@@ -454,16 +454,32 @@ clients.
 Any INN server that supports readers must therefore have an overview
 method configured.  There are four different methods to choose from:
 
-  - buffindexed, which is fast at writing because it uses preconfigured
-    large buffers like CNFS, but which is hard to recover;
-  - ovdb, which stores overview information in a Berkeley DB database
-    and supports compression;
-  - ovsqlite, implemented in INN 2.7.0, which stores overview information
-    in an SQLite database and supports compression, but still not as
-    widely tested as the other overview mechanisms (all introduced with
-    INN 2.3.0);
-  - tradindexed, which is the slowest but the best tested, the most
-    reliable and the method with the best recovery tools.
+  - buffindexed, which stores overview data and index information
+    into preconfigured large files like CNFS.  Fast at writing, the
+    buffindexed overview storage method can keep up with a large feed
+    more easily and never consumes additional disk space beyond that
+    allocated to these buffers.  The downside is that these buffers
+    are hard to recover in case of corruption and somewhat slower for
+    readers and the expiry process;
+
+  - ovdb, which stores overview information into a Berkeley DB database,
+    whose ddevelopment pace has stalled these last years.  This method
+    is fast and very robust, but may require more disk space, unless
+    compression is enabled.  Overview data is fetched one article at a
+    time, which makes this method a bit slower than ovsqlite for readers;
+
+  - ovsqlite, which stores overview information into an SQLite database,
+    known for its long-term stability and compatibility.  Robust and
+    faster than ovdb at reading ranges of overview data (since overview
+    data is transferred in 128-kilobyte chunks between ovsqlite-server
+    and nnrpd) but somewhat slower at writing, this method may require
+    more disk space, unless compression is enabled;
+
+  - tradindexed, which uses two files per newsgroup, one containing
+    the overview data and one containing the index.  Fast for readers,
+    but slow to write to because it has to update two files for each
+    incoming article.  Its main advantage is to be the best tested,
+    the most reliable and the method with the best recovery tools.
 
 ------------------------------
 
