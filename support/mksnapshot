@@ -65,6 +65,8 @@ else
     make warnings
     cd contrib
     make warnings
+    cd ../frontends
+    make warnings feedone sys2nf
     cd ../tests
     make warnings
     make
