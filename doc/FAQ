@@ -453,11 +453,25 @@ clients.
 
 Any INN server that supports readers must therefore have an overview
 method configured.  There are three different methods to choose from:
-tradindexed, which is the slowest but the best tested and most reliable
-and the method with the best recovery tools; buffindexed, which is fast at
-writing because it uses preconfigured large buffers like CNFS, but which
-is harder to recover; and the experimental ovdb overview method, which
-stores overview information in a BerkeleyDB database.
+
+  - buffindexed, which stores overview data and index information
+    into preconfigured large files like CNFS.  Fast at writing, the
+    buffindexed overview storage method can keep up with a large feed
+    more easily and never consumes additional disk space beyond that
+    allocated to these buffers.  The downside is that these buffers
+    are hard to recover in case of corruption and somewhat slower for
+    readers and the expiry process;
+
+  - ovdb, which stores overview information into a Berkeley DB database,
+    whose development pace has stalled these last years.  This method
+    is fast and very robust, but may require more disk space, unless
+    compression is enabled;
+
+  - tradindexed, which uses two files per newsgroup, one containing
+    the overview data and one containing the index.  Fast for readers,
+    but slow to write to because it has to update two files for each
+    incoming article.  Its main advantage is to be the best tested,
+    the most reliable and the method with the best recovery tools.
 
 ------------------------------
 

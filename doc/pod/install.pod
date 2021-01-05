@@ -673,25 +673,30 @@ There are three overview mechanisms to choose from:
 
 =over 4
 
-=item tradindexed
-
-It is very fast for readers, but it has to update two files for each
-incoming article and can be quite slow to write.
-
 =item buffindexed
 
-It can keep up with a large feed more easily, since it uses large buffers
-to store all overview information, but it's somewhat slower for readers
-(although not as slow as the unified overview in S<INN 2.2>).  You will need
-to create the buffers for it to use (very similar to creating CNFS buffers)
-and list the available buffers in F<buffindexed.conf>.  See
-buffindexed.conf(5) for more information.
+It stores overview data and index information into preconfigured large files
+like CNFS.  Fast at writing, the C<buffindexed> overview storage method
+can keep up with a large feed more easily and never consumes additional
+disk space beyond that allocated to these buffers.  The downside is that
+these buffers are hard to recover in case of corruption and somewhat
+slower for readers and the expiry process.  See the buffindexed.conf(5)
+man page for more details, and notably how to create the buffers.
 
 =item ovdb
 
-It stores overview data in a S<Berkeley DB> database; it's fast and very robust,
-but may require more disk space.  See the ovdb(5) man page for more
-information on it.
+It stores overview information into a S<Berkeley DB> database, whose
+development pace has stalled these last years.  This method is fast
+and very robust, but may require more disk space, unless compression
+is enabled.  See the ovdb(5) man page for more details.
+
+=item tradindexed
+
+It uses two files per newsgroup, one containing the overview data
+and one containing the index.  Fast for readers, but slow to write to
+because it has to update two files for each incoming article.  Its main
+advantage is to be the best tested, the most reliable and the method
+with the best recovery tools.
 
 =back
 
