@@ -2049,11 +2049,11 @@ buffindexed_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
       }
     }
   }
+  gloc = GROUPfind(group, false);
+  if (GROUPLOCempty(gloc)) {
+    return false;
+  }
   if (!grouplocked) {
-    gloc = GROUPfind(group, false);
-    if (GROUPLOCempty(gloc)) {
-      return false;
-    }
     GROUPlock(gloc, INN_LOCK_WRITE);
   }
   if (!(handle = ovopensearch(group, artnum, artnum, false))) {
