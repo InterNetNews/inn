@@ -695,6 +695,11 @@ m4_foreach_w(
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
 
+dnl On OpenBSD, the system headers contain many redundant declarations.
+AS_CASE([$host],
+    [*-openbsd*],
+        [CC_WARNINGS=`echo "$CC_WARNINGS" | sed 's/-Wredundant-decls //'`])
+
 dnl Add hardening build flags, if supported by the compiler.
 AS_IF([test x"$inn_enable_hardening_flags" = xyes],
     [INN_PROG_CC_FLAG([-fPIE], [CFLAGS="${CFLAGS} -fPIE"
