@@ -59,10 +59,10 @@ radius: radius.o $(LIBAUTH) $(LIBINN)
 	$(LINK) radius.o $(AUTH_LIBS)
 
 auth_krb5.o: auth_krb5.c
-	$(LIBCC) $(CFLAGS) $(KRB5_CPPFLAGS) -c auth_krb5.c
+	$(CC) $(CFLAGS) $(KRB5_CPPFLAGS) -c auth_krb5.c
 
 ckpasswd.o: ckpasswd.c
-	$(LIBCC) $(CFLAGS) $(DBM_CPPFLAGS) -c ckpasswd.c
+	$(CC) $(CFLAGS) $(DBM_CPPFLAGS) -c ckpasswd.c
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE))

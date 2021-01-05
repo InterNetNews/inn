@@ -3,7 +3,7 @@
 include ../Makefile.global
 
 top	        = ..
-CFLAGS		= $(GCFLAGS) $(TCLINC) $(SYSTEMD_CFLAGS)
+CFLAGS		= $(GCFLAGS) $(SYSTEMD_CFLAGS)
 
 ALL		= innd tinyleaf
 
@@ -37,8 +37,8 @@ INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
 		  $(SYSTEMD_LIBS) \
 		  $(PERL_LIBS) $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS)
 
-perl.o:		perl.c   ; $(LIBCC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
-python.o:	python.c ; $(LIBCC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
+perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
+python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 innd: $(OBJECTS) $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(INNDLIBS)

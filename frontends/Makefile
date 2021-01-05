@@ -93,16 +93,16 @@ sm:		sm.o           $(BOTH)
 	$(LINKDEPS) sm.o           $(STORELIBS)
 
 ovdb_init.o: ovdb_init.c
-	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_monitor.o: ovdb_monitor.c
-	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_server.o: ovdb_server.c
-	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 ovdb_stat.o: ovdb_stat.c
-	$(LIBCC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
+	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
 cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
 cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in

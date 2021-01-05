@@ -38,10 +38,10 @@ NNRPDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
 		  $(ZLIB_LDFLAGS) $(ZLIB_LIBS) $(LIBS)
 
 .c.o:
-	$(LIBCC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
-perl.o:		perl.c   ; $(LIBCC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
-python.o:	python.c ; $(LIBCC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
+perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
+python.o:	python.c ; $(CC) $(CFLAGS) $(PYTHON_CPPFLAGS) -c python.c
 
 nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)

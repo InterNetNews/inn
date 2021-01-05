@@ -52,7 +52,7 @@ $(FIXSCRIPT):
 	@exit 1
 
 .c.o:
-	$(LIBCC) $(CFLAGS) -c -o $@ $*.c
+	$(CC) $(CFLAGS) -c -o $@ $*.c
 
 LINK		= $(LIBLD) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
 LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
@@ -91,7 +91,7 @@ innd/chan.t: innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 	$(LINK) innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS) $(INNDLIBS)
 
 lib/asprintf.o: ../lib/asprintf.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/asprintf.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/asprintf.c
 
 lib/asprintf.t: lib/asprintf.o lib/asprintf-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/asprintf.o lib/asprintf-t.o tap/basic.o $(LIBINN) $(LIBS)
@@ -119,14 +119,14 @@ lib/fdflag.t: lib/fdflag-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/fdflag-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/getaddrinfo.o: ../lib/getaddrinfo.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getaddrinfo.c
 
 lib/getaddrinfo.t: lib/getaddrinfo.o lib/getaddrinfo-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/getaddrinfo.o lib/getaddrinfo-t.o tap/basic.o \
 	    $(LIBINN) $(LIBS)
 
 lib/getnameinfo.o: ../lib/getnameinfo.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getnameinfo.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/getnameinfo.c
 
 lib/getnameinfo.t: lib/getnameinfo.o lib/getnameinfo-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/getnameinfo.o lib/getnameinfo-t.o tap/basic.o \
@@ -145,19 +145,19 @@ lib/hex.t: lib/hex-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/hex-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/inet_aton.o: ../lib/inet_aton.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_aton.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_aton.c
 
 lib/inet_aton.t: lib/inet_aton.o lib/inet_aton-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/inet_aton.o lib/inet_aton-t.o tap/basic.o $(LIBINN)
 
 lib/inet_ntoa.o: ../lib/inet_ntoa.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_ntoa.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_ntoa.c
 
 lib/inet_ntoa.t: lib/inet_ntoa.o lib/inet_ntoa-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/inet_ntoa.o lib/inet_ntoa-t.o tap/basic.o $(LIBINN)
 
 lib/inet_ntop.o: ../lib/inet_ntop.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_ntop.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/inet_ntop.c
 
 lib/inet_ntop.t: lib/inet_ntop.o lib/inet_ntop-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/inet_ntop.o lib/inet_ntop-t.o tap/basic.o $(LIBINN)
@@ -180,7 +180,7 @@ lib/messages.t: lib/messages-t.o tap/basic.o tap/process.o tap/string.o $(LIBINN
 	    $(LIBINN)
 
 lib/mkstemp.o: ../lib/mkstemp.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/mkstemp.c
 
 lib/mkstemp.t: lib/mkstemp.o lib/mkstemp-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/mkstemp.o lib/mkstemp-t.o tap/basic.o $(LIBINN)
@@ -200,13 +200,13 @@ lib/network/server.t: lib/network/server-t.o tap/basic.o tap/messages.o tap/stri
 	    tap/string.o $(LIBINN) $(LIBS)
 
 lib/pread.o: ../lib/pread.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pread.c
 
 lib/pread.t: lib/pread.o lib/pread-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/pread.o lib/pread-t.o tap/basic.o $(LIBINN)
 
 lib/pwrite.o: ../lib/pwrite.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pwrite.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/pwrite.c
 
 lib/pwrite.t: lib/pwrite.o lib/pwrite-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/pwrite.o lib/pwrite-t.o tap/basic.o $(LIBINN)
@@ -215,31 +215,31 @@ lib/qio.t: lib/qio-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/qio-t.o tap/basic.o $(LIBINN)
 
 lib/reallocarray.o: ../lib/reallocarray.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/reallocarray.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/reallocarray.c
 
 lib/reallocarray.t: lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/reallocarray.o lib/reallocarray-t.o tap/basic.o $(LIBINN)
 
 lib/setenv.o: ../lib/setenv.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/setenv.c
 
 lib/setenv.t: lib/setenv.o lib/setenv-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/setenv.o lib/setenv-t.o tap/basic.o $(LIBINN)
 
 lib/snprintf.o: ../lib/snprintf.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/snprintf.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/snprintf.c
 
 lib/snprintf.t: lib/snprintf.o lib/snprintf-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/snprintf.o lib/snprintf-t.o tap/basic.o $(LIBINN)
 
 lib/strlcat.o: ../lib/strlcat.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcat.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcat.c
 
 lib/strlcat.t: lib/strlcat.o lib/strlcat-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/strlcat.o lib/strlcat-t.o tap/basic.o $(LIBINN)
 
 lib/strlcpy.o: ../lib/strlcpy.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcpy.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/strlcpy.c
 
 lib/strlcpy.t: lib/strlcpy.o lib/strlcpy-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/strlcpy.o lib/strlcpy-t.o tap/basic.o $(LIBINN)
@@ -260,7 +260,7 @@ lib/xmalloc: lib/xmalloc.o $(LIBINN)
 	$(LINK) lib/xmalloc.o $(LIBINN)
 
 lib/xwrite.o: ../lib/xwrite.c
-	$(LIBCC) $(CFLAGS) -DTESTING -c -o $@ ../lib/xwrite.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/xwrite.c
 
 lib/xwrite.t: lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o $(LIBINN)
 	$(LINK) lib/xwrite-t.o lib/xwrite.o lib/fakewrite.o tap/basic.o \
@@ -274,13 +274,13 @@ overview/api.t: overview/api-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/api-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/buffindexed-t.o: overview/overview-t.c
-	$(LIBCC) $(CFLAGS) -DOVTYPE=buffindexed -c -o $@ overview/overview-t.c
+	$(CC) $(CFLAGS) -DOVTYPE=buffindexed -c -o $@ overview/overview-t.c
 
 overview/buffindexed.t: overview/buffindexed-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/buffindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
 
 overview/tradindexed-t.o: overview/overview-t.c
-	$(LIBCC) $(CFLAGS) -DOVTYPE=tradindexed -c -o $@ overview/overview-t.c
+	$(CC) $(CFLAGS) -DOVTYPE=tradindexed -c -o $@ overview/overview-t.c
 
 overview/tradindexed.t: overview/tradindexed-t.o tap/basic.o $(STORAGEDEPS)
 	$(LINKDEPS) overview/tradindexed-t.o tap/basic.o $(STORAGELIBS) $(LIBS)
