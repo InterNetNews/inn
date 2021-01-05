@@ -622,6 +622,10 @@ INN_SYS_UNIX_SOCKETS
 INN_LOG_FACILITY
 
 dnl Add hardening build flags, if supported by the compiler.
+dnl Solaris has a separate libssp, so -fstack-protector-strong also has
+dnl to be passed to the linker.  And we assume that if the linker does not
+dnl accept -fstack-protector-strong, the build is likely to fail (like on AIX
+dnl where libssp_nonshared may not be present).
 AS_IF([test x"$inn_enable_hardening_flags" = xyes],
     [INN_PROG_CC_FLAG([-fPIE], [CFLAGS="${CFLAGS} -fPIE"
                                 CC_WARNINGS="${CC_WARNINGS} -fPIE"
@@ -631,6 +635,10 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                       [CFLAGS="${CFLAGS} -fstack-protector-strong"
                        CC_WARNINGS="${CC_WARNINGS} -fstack-protector-strong"],
                       [])
+     INN_PROG_LD_FLAG([-fstack-protector-strong],
+                      [LDFLAGS="${LDFLAGS} -fstack-protector-strong"],
+                      [CFLAGS=`echo "${CFLAGS}" | sed 's/ -fstack-protector-strong//'`
+                       CC_WARNINGS=`echo "${CC_WARNINGS}" | sed 's/ -fstack-protector-strong//'`])
      INN_PROG_LD_FLAG([-Wl,-z,relro],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
      INN_PROG_LD_FLAG([-Wl,-z,now],
