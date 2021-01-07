@@ -1,9 +1,10 @@
 OVSQLITEOBJECTS = ovsqlite/ovsqlite-server.o ovsqlite/sql-main.o \
 	ovsqlite/sql-init.o ovsqlite/sqlite-helper.o \
 	ovsqlite/ovsqlite-private.o
+OVSQLITELOBJECTS = $(OVSQLITEOBJECTS:.o=.lo)
 
-ovsqlite/ovsqlite-server: ${OVSQLITEOBJECTS}
-	$(LIBLD) $(LDFLAGS) $(SQLITE3_LDFLAGS) -o $@ ${OVSQLITEOBJECTS} \
+ovsqlite/ovsqlite-server: $(OVSQLITEOBJECTS) $(OVSQLITELOBJECTS)
+	$(LIBLD) $(LDFLAGS) $(SQLITE3_LDFLAGS) -o $@ $(OVSQLITELOBJECTS) \
 	$(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(SQLITE3_LIBS) \
 	$(LIBS)
 
