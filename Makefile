@@ -116,7 +116,7 @@ update:
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHBIN)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHDOC)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHETC)
-	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)${PATHFILTER}
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHFILTER)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN1)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN3)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(MAN5)

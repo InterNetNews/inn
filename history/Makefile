@@ -50,7 +50,7 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
-libinnhist.la: $(OBJECTS) $(LIBSTORAGE) $(LIBINN)
+libinnhist.la: $(OBJECTS) $(LOBJECTS) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info $(LTVERSION)

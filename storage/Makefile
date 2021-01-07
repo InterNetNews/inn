@@ -59,7 +59,7 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
-libstorage.la: $(OBJECTS) $(LIBINN)
+libstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info $(LTVERSION)
