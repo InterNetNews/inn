@@ -5,32 +5,39 @@
 [Unit]
 Description=InterNetNews News Server
 Documentation=https://www.eyrie.org/~eagle/software/inn/
-After=network.target
+After=network-online.target
+Wants=network-online.target
 ConditionPathExists=/etc/news/inn.conf
 
 [Service]
-Type=forking
+Type=notify
+Restart=on-abort
 ExecStart=/usr/lib/news/bin/rc.news
 ExecReload=/usr/sbin/ctlinnd -t 20 reload '' 'systemd unit reload'
-ExecStop=/bin/su -m news -s /bin/sh -c '/usr/lib/news/bin/rc.news stop'
+ExecStop=/usr/lib/news/bin/rc.news stop
 PIDFile=/run/news/innd.pid
 User=news
 Group=news
 AmbientCapabilities=CAP_NET_BIND_SERVICE
-PrivateDevices=true
 PrivateTmp=true
 ProtectControlGroups=true
 ProtectHome=true
-ProtectKernelModules=true
-ProtectKernelTunables=true
 ProtectSystem=full
 RuntimeDirectory=news
+LimitNOFILE=infinity
+ReadWritePaths=/var/spool/news/
 # Setting NoNewPrivileges will break most local sendmail implementations
 # because they're setuid or setgid to drop off mail in the mail queue.  With
 # this configuration, one can use mSMTP as the configured mta, set to forward
 # mail via SMTP to localhost.  Nevertheless, one can probably do better than
 # this by adding some syscall filtering.
 #NoNewPrivileges=true
+#
+# These directives automatically enable NoNewPrivileges, and are therefore
+# incompatible:
+#PrivateDevices=true
+#ProtectKernelModules=true
+#ProtectKernelTunables=true
 
 [Install]
 WantedBy=multi-user.target
