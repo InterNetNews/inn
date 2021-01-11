@@ -18,6 +18,8 @@ SOURCES	      = ctlinnd.c decode.c encode.c getlist.c inews.c innconfval.c \
 		ovdb_init.c ovdb_monitor.c ovdb_server.c ovdb_stat.c rnews.c \
 		sm.c
 
+EXTRA_SOURCES = feedone.c sys2nf.c
+
 PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
 all: $(ALL) $(MAN)
@@ -137,8 +139,8 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend:	Makefile $(SOURCES)
-	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
+depend:	Makefile $(SOURCES) $(EXTRA_SOURCES)
+	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 ctlinnd.o: ctlinnd.c ../include/config.h ../include/inn/defines.h \
@@ -261,3 +263,19 @@ sm.o: sm.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/wire.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h
+feedone.o: feedone.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/nntp.h
+sys2nf.o: sys2nf.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h
