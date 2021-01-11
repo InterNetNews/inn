@@ -181,8 +181,12 @@ ovsqlite)
 esac
 
 ##  Start the show.
-echo 'Starting innd.'
-eval ${WHAT} ${RFLAG} ${INNFLAGS}
+##  When using systemd, the daemon must be started last with exec to keep
+##  the same PID of this script.
+if [ "x$NOTIFY_SOCKET" = "x" ] && [ "x$LISTEN_PID" = "x" ]; then
+    echo 'Starting innd.'
+    eval ${WHAT} ${RFLAG} ${INNFLAGS}
+fi
 
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
@@ -197,7 +201,7 @@ ${DOCNFSSTAT} && {
 
 RMFILE=${MOST_LOGS}/expire.rm
 for F in ${RMFILE} ${RMFILE}.*; do
-    if [ -f $F -a -s $F ] ; then
+    if [ -f $F ] && [ -s $F ]; then
 	echo "Removing articles from pre-downtime expire run (${F})."
 	(
 	    echo 'System shut down during expire.' \
@@ -211,4 +215,10 @@ done &
 # Run any additional local startup commands.
 if [ -f ${PATHBIN}/rc.news.local ] ; then
     ${PATHBIN}/rc.news.local start
+fi
+
+##  Start innd last when using systemd.
+if [ "x$NOTIFY_SOCKET" != "x" ] || [ "x$LISTEN_PID" != "x" ]; then
+    echo 'Starting innd.'
+    eval exec ${WHAT} -f ${RFLAG} ${INNFLAGS}
 fi
