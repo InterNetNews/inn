@@ -59,6 +59,10 @@ if (!$ENV{C_TAP_SOURCE}) {
 if (!eval { require Test::Pod }) {
     plan(skip_all => 'Test::Pod required for testing POD');
 }
+# Support for %Test::Pod::ignore_dirs has been fixed in version 1.50.
+if ($Test::Pod::VERSION < '1.50') {
+    plan(skip_all => 'Test::Pod 1.50 required for testing POD');
+}
 Test::Pod->import;
 
 # C_TAP_SOURCE will be the test directory.  Change to the parent.
