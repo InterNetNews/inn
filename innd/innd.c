@@ -260,12 +260,19 @@ xmalloc_abort(const char *what, size_t size, const char *file, int line)
 void
 CleanupAndExit(int status, const char *why)
 {
+    int result;
+
+    result = sd_notify(false, "STOPPING=1");
+    if (result < 0)
+        warn("cannot notify systemd of stopping: %s", strerror(-result));
+
     JustCleanup();
     if (why)
         syslog(LOG_WARNING, "SERVER shutdown %s", why);
     else
         syslog(LOG_WARNING, "SERVER shutdown received signal %lu",
                (unsigned long) killer_signal);
+
     exit(status);
 }
 
