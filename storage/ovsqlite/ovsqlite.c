@@ -970,7 +970,7 @@ bool ovsqlite_ctl(
     }
     switch (type) {
     case OVSPACE:
-        *(int *)val = -1;
+        *(float *)val = -1.0f;
         return true;
     case OVSORT:
         *(OVSORTTYPE *)val = OVNEWSGROUP;

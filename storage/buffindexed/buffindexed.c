@@ -2210,6 +2210,7 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
 
 bool buffindexed_ctl(OVCTLTYPE type, void *val) {
   int			total, used, *i, j;
+  float                 *f;
   OVBUFF		*ovbuff = ovbufftab;
   OVSORTTYPE		*sorttype;
   bool			*boolval;
@@ -2224,8 +2225,8 @@ bool buffindexed_ctl(OVCTLTYPE type, void *val) {
       used += ovbuff->usedblk;
       ovlock(ovbuff, INN_LOCK_UNLOCK);
     }
-    i = (int *)val;
-    *i = (used * 100) / total;
+    f = (float *)val;
+    *f = ((float)used / total) * 100;
     return true;
   case OVSORT:
     sorttype = (OVSORTTYPE *)val;

@@ -2987,13 +2987,14 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
 bool ovdb_ctl(OVCTLTYPE type, void *val)
 {
     int *i;
+    float *f;
     OVSORTTYPE *sorttype;
     bool *boolval;
 
     switch (type) {
     case OVSPACE:
-        i = (int *)val;
-        *i = -1;
+        f = (float *)val;
+        *f = -1.0f;
         return true;
     case OVSORT:
         sorttype = (OVSORTTYPE *)val;
