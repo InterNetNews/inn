@@ -409,10 +409,10 @@ overview_config_set(struct overview *overview, struct overview_config *config)
 float
 overview_free_space(struct overview *overview)
 {
-    int space;
+    float space;
 
     if (overview->method->ctl(OVSPACE, &space))
         return space;
     else
-        return -1;
+        return -1.0f;
 }

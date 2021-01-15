@@ -1938,6 +1938,7 @@ ARTpost(CHANNEL *cp)
 {
   char		*p, **groups, ControlWord[SMBUF], **hops, *controlgroup;
   int		i, j, *isp, hopcount, oerrno, canpost;
+  float         f;
   size_t        n;
   NEWSGROUP	*ngp, **ngptr;
   NEWSGROUP     *ngpjunk;
@@ -2531,7 +2532,7 @@ ARTpost(CHANNEL *cp)
     if (innconf->enableoverview && !innconf->useoverchan) {
       if ((result = OVadd(token, data->Overview.data, data->Overview.left,
 	data->Arrived, data->Expires)) == OVADDFAILED) {
-	if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE)
+	if (OVctl(OVSPACE, (void *)&f) && (int)(f+0.01f) == OV_NOSPACE)
 	  IOError("creating overview", ENOSPC);
 	else
 	  IOError("creating overview", 0);

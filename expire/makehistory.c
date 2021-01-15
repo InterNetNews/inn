@@ -153,6 +153,7 @@ FlushOverTmpFile(void)
     char temp[SMBUF];
     char *SortedTmpPath;
     int i, pid, fd;
+    float f;
     TOKEN token;
     QIOSTATE *qp;
     int count;
@@ -278,7 +279,7 @@ FlushOverTmpFile(void)
 	}
 	token = TextToToken(q);
 	if (OVadd(token, r, strlen(r), arrived, expires) == OVADDFAILED) {
-	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+	    if (OVctl(OVSPACE, (void *)&f) && (int)(f+0.01f) == OV_NOSPACE) {
                 warn("no space left for overview");
 		OVclose();
 		Fork ? _exit(1) : exit(1);
@@ -314,7 +315,8 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
 {
     char temp[SMBUF];
     const char *p, *q, *r;
-    int i, fd;
+    int fd;
+    float f;
 
     /* If WriteStdout is set, just print the overview information to standard
        output and return. */
@@ -336,7 +338,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen,
                 sysdie("writing overview failed");
 	    fputc('\n', Overchan);
 	} else if (OVadd(*token, overdata, overlen, arrived, expires) == OVADDFAILED) {
-	    if (OVctl(OVSPACE, (void *)&i) && i == OV_NOSPACE) {
+	    if (OVctl(OVSPACE, (void *)&f) && (int)(f+0.01f) == OV_NOSPACE) {
                 warn("no space left for overview");
 		OVclose();
 		exit(1);

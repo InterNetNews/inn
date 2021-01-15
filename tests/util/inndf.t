@@ -129,7 +129,7 @@ else
     printcount "not ok"
 fi
 out=`$inndf -o`
-if [ "$out" = "3.00% overview space used" ] ; then
+if [ "$out" = "3.17% overview space used" ] ; then
     printcount "ok"
 else
     echo "$out"
