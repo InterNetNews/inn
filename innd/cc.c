@@ -1321,6 +1321,7 @@ CCxexec(char *av[])
     char	*innd;
     char	*p;
     int		i;
+    int         status;
 
     if (CCargv == NULL)
 	return "1 no argv!";
@@ -1341,6 +1342,9 @@ CCxexec(char *av[])
 #endif
     JustCleanup();
     syslog(L_NOTICE, "%s execv %s", LogName, CCargv[0]);
+    status = sd_notify(false, "RELOADING=1");
+    if (status < 0)
+        warn("cannot notify systemd of reloading: %s", strerror(-status));
 
     /* Close all fds to protect possible fd leaking accross successive innds. */
     for (i=3; i<30; i++)
