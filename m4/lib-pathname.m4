@@ -54,7 +54,7 @@ AC_DEFUN([INN_SET_LDFLAGS],
     [AS_IF([test x"$3" = x],
         [$1="[$]$1 -L$2/lib"],
         [$1="[$]$1 -L$2/lib/$3"])])
- $1=`echo "[$]$1" | sed -e 's/^ *//'`])
+ $1=`AS_ECHO(["[$]$1"]) | sed -e 's/^ *//'`])
 
 dnl Set libdir to PREFIX/lib{,32,64} as appropriate.
 AC_DEFUN([INN_SET_LIBDIR],

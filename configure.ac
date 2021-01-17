@@ -223,10 +223,10 @@ AS_IF([test x"$DO_PERL" = xDO],
      inn_perl_core_flags=" $PERL_CPPFLAGS "
      AS_IF([test x"$inn_enable_largefiles" != xyes],
         [for f in -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES ; do
-            inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed "s/ $f / /"`
+            inn_perl_core_flags=`AS_ECHO(["$inn_perl_core_flags"]) | sed "s/ $f / /"`
          done])
-     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/^  *//'`
-     inn_perl_core_flags=`echo "$inn_perl_core_flags" | sed 's/  *$//'`
+     inn_perl_core_flags=`AS_ECHO(["$inn_perl_core_flags"]) | sed 's/^  *//'`
+     inn_perl_core_flags=`AS_ECHO(["$inn_perl_core_flags"]) | sed 's/  *$//'`
      PERL_CPPFLAGS="$inn_perl_core_flags"
      INN_PROG_CC_FLAG([-Wno-extra], [PERL_WARNINGS=-Wno-extra],
         [PERL_WARNINGS=''])
@@ -637,8 +637,8 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                       [])
      INN_PROG_LD_FLAG([-fstack-protector-strong],
                       [LDFLAGS="${LDFLAGS} -fstack-protector-strong"],
-                      [CFLAGS=`echo "${CFLAGS}" | sed 's/ -fstack-protector-strong//'`
-                       CC_WARNINGS=`echo "${CC_WARNINGS}" | sed 's/ -fstack-protector-strong//'`])
+                      [CFLAGS=`AS_ECHO(["${CFLAGS}"]) | sed 's/ -fstack-protector-strong//'`
+                       CC_WARNINGS=`AS_ECHO(["${CC_WARNINGS}"]) | sed 's/ -fstack-protector-strong//'`])
      INN_PROG_LD_FLAG([-Wl,-z,relro],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
      INN_PROG_LD_FLAG([-Wl,-z,now],
@@ -646,7 +646,7 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
 AC_SUBST([CC_WARNINGS])
 
 dnl Clean up our LIBS, just for grins.
-LIBS=`echo "$LIBS" | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
+LIBS=`AS_ECHO(["$LIBS"]) | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
 
 dnl Configure our output files.  Try to keep this as limited as possible,
 dnl since it directly affects how long it takes configure to complete.

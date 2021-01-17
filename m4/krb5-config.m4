@@ -99,7 +99,7 @@ AC_DEFUN([INN_KRB5_CONFIG],
              $3[]_LIBS=`"$inn_krb5_config_$3" --libs $2 2>/dev/null`
              inn_krb5_config_$3[]_ok=yes])])])
  AS_IF([test x"$inn_krb5_config_$3[]_ok" = xyes],
-    [$3[]_CPPFLAGS=`echo "$$3[]_CPPFLAGS" | sed 's%-I/usr/include %%'`
-     $3[]_CPPFLAGS=`echo "$$3[]_CPPFLAGS" | sed 's%-I/usr/include$%%'`
+    [$3[]_CPPFLAGS=`AS_ECHO(["$$3[]_CPPFLAGS"]) | sed 's%-I/usr/include %%'`
+     $3[]_CPPFLAGS=`AS_ECHO(["$$3[]_CPPFLAGS"]) | sed 's%-I/usr/include$%%'`
      $4],
     [$5])])

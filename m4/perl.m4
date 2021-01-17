@@ -93,16 +93,16 @@ AC_DEFUN([INN_LIB_PERL],
  inn_perl_core_flags=`"$PERL" -MExtUtils::Embed -e ccopts`
  inn_perl_core_libs=`"$PERL" -MExtUtils::Embed -e ldopts 2>&1 | tail -n 1`
  inn_perl_core_libs=" $inn_perl_core_libs "
- inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lc / /'`
+ inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/ -lc / /'`
  AS_CASE([$host],
     [*-linux*],
-        [inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/ -lgdbm / /'`],
+        [inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/ -lgdbm / /'`],
     [*-cygwin*],
         [inn_perl_libname=`"$PERL" -MConfig -e 'print $Config{libperl}'`
-         inn_perl_libname=`echo "$inn_perl_libname" | sed 's/^lib//; s/\.a$//'`
+         inn_perl_libname=`AS_ECHO(["$inn_perl_libname"]) | sed 's/^lib//; s/\.a$//'`
          inn_perl_core_libs="${inn_perl_core_libs}-l$inn_perl_libname"])
- inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/^  *//'`
- inn_perl_core_libs=`echo "$inn_perl_core_libs" | sed 's/  *$//'`
+ inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/^  *//'`
+ inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/  *$//'`
  PERL_CPPFLAGS="$inn_perl_core_flags"
  PERL_LIBS="$inn_perl_core_libs"
  AC_MSG_RESULT([$PERL_LIBS])
