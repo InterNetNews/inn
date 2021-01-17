@@ -723,11 +723,12 @@ extern void             ARTlogreject(CHANNEL *cp, const char *text);
 extern void		ARTreject(Reject_type, CHANNEL *);
 
 extern bool		CHANsleeping(CHANNEL *cp);
-extern CHANNEL      *	CHANcreate(int fd, enum channel_type Type,
-				   enum channel_state State,
-				   innd_callback_func Reader,
-				   innd_callback_func WriteDone);
-extern CHANNEL      *	CHANiter(int *cp, enum channel_type Type);
+extern bool             CHANsystemdsa(CHANNEL *cp);
+extern CHANNEL      *	CHANcreate(int fd, enum channel_type type,
+				   enum channel_state state,
+				   innd_callback_func reader,
+				   innd_callback_func write_done);
+extern CHANNEL      *	CHANiter(int *ip, enum channel_type type);
 extern CHANNEL      *	CHANfromdescriptor(int fd);
 extern char	    *   CHANname(CHANNEL *cp);
 extern int		CHANreadtext(CHANNEL *cp);

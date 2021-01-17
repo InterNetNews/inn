@@ -51,7 +51,7 @@ Path header value of each article rejected as a duplicate.
 
 =item *
 
-Added preliminary support for systemd notifications.  Use of more
+Added support for systemd notifications and socket activation.  Use of more
 features provided by systemd, including more notifications, will come
 in future releases.  Thanks to Marco d'Itri for this first systemd
 integration into INN.

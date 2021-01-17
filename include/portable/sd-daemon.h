@@ -29,9 +29,10 @@
 #ifdef HAVE_SD_NOTIFY
 #    include <systemd/sd-daemon.h>
 #else
-#    define SD_LISTEN_FDS_START 3
-#    define sd_listen_fds(u)    0
-#    define sd_notify(u, s)     0
+#    define SD_LISTEN_FDS_START        3
+#    define sd_is_socket(fd, f, t, l)  0
+#    define sd_listen_fds(u)           0
+#    define sd_notify(u, s)            0
 #endif
 
 #endif /* !PORTABLE_SD_DAEMON_H */

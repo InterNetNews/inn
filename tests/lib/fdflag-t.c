@@ -116,8 +116,10 @@ main(void)
         if (read(data, buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer))
             sysbail("read failed");
         fclose(stderr);
+        /* Use of echo 'ok 7' does not display it on Solaris 11. */
         execlp("sh", "sh", "-c",
-               "printf 'not ' >&8; echo ok 7; echo 'ok 8' >&9", (char *) 0);
+               "printf 'not ' >&8; printf 'ok 7\n'; echo 'ok 8' >&9",
+               (char *) 0);
         sysbail("exec failed");
     }
     waitpid(child, NULL, 0);

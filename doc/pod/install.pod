@@ -139,10 +139,10 @@ information.
 
 =item *
 
-If you want to use systemd notifications, you'll need to have
-B<pkg-config> and B<libsystemd> (along with its F<libsystemd.pc>
-configuration) installed so that this feature is enabled at configure
-time.
+If you want to use systemd notifications and socket activation,
+you'll need to have B<pkg-config> and B<libsystemd> (along with its
+F<libsystemd.pc> configuration) installed so that these features are
+enabled at configure time.
 
 =item *
 
