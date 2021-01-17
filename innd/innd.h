@@ -723,6 +723,7 @@ extern void             ARTlogreject(CHANNEL *cp, const char *text);
 extern void		ARTreject(Reject_type, CHANNEL *);
 
 extern bool		CHANsleeping(CHANNEL *cp);
+extern bool             CHANsystemdsa(CHANNEL *cp);
 extern CHANNEL      *	CHANcreate(int fd, enum channel_type type,
 				   enum channel_state state,
 				   innd_callback_func reader,

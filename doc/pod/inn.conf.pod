@@ -185,6 +185,8 @@ defaults to listening on all interfaces.  The value of the
 INND_BIND_ADDRESS environment variable, if set, overrides this setting.
 The default value is unset.
 
+This parameter has no effect when systemd socket activation is used.
+
 =item I<bindaddress6>
 
 Like I<bindaddress> but for IPv6 sockets.  If only one of the I<bindaddress>
@@ -197,6 +199,8 @@ overrides this setting.  The default value is unset.
 
 Note that you will generally need to put double quotes ("") around this
 value if you set it, since IPv6 addresses contain colons.
+
+This parameter has no effect when systemd socket activation is used.
 
 =item I<dontrejectfiltered>
 

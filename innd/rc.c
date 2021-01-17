@@ -1735,6 +1735,64 @@ RCsetup(void)
     unsigned int count, i, start;
     int *fds;
     bool okay;
+    const char *s;
+
+    /* If systemd socket activation is used, backup its environment variables,
+       which are unset by sd_listen_fds(), to be able to restore them later in
+       CCxexec() before starting a new innd process. */
+    s = getenv("LISTEN_FDS");
+    if (s != NULL) {
+        if (setenv("INN_BACKUP_LISTEN_FDS", s, true) != 0)
+            die("setenv failed for INN_BACKUP_LISTEN_FDS");
+    }
+    s = getenv("LISTEN_PID");
+    if (s != NULL) {
+        if (setenv("INN_BACKUP_LISTEN_PID", s, true) != 0)
+            die("setenv failed for INN_BACKUP_LISTEN_PID");
+    }
+
+    /* Ignore any configured ports if socket activation is being used. */
+    count = sd_listen_fds(true);
+    if (count > 0) {
+        char *p;
+
+        xasprintf(&p, "%u", count);
+        if (setenv("INN_SD_LISTEN_FDS_COUNT", p, true) != 0)
+            die("setenv failed for INN_SD_LISTEN_FDS_COUNT");
+
+        free(p);
+
+        /* Make sure that the RCchan array is of the appropriate size. */
+        if (chanlimit == 0) {
+            chanlimit = count;
+            RCchan = xmalloc(chanlimit * sizeof(CHANNEL *));
+            start = 0;
+        } else {
+            for (start = 0; start < chanlimit; start++) {
+                if (RCchan[start] == NULL)
+                    break;
+                 if (chanlimit - start < count) {
+                     chanlimit += count - (chanlimit - start);
+                     RCchan = xrealloc(RCchan, chanlimit * sizeof(CHANNEL *));
+                 }
+            }
+        }
+
+        for (i = SD_LISTEN_FDS_START; i < SD_LISTEN_FDS_START + count; i++) {
+            if (sd_is_socket(i, AF_UNSPEC, SOCK_STREAM, 1) <= 0)
+                die("SERVER can't use socket-activated non-AF_INET socket %u",
+                    i);
+            rc = CHANcreate(i, CTremconn, CSwaiting, RCreader, RCwritedone);
+            notice("%s rcsetup %s", LogName, CHANname(rc));
+            RCHANadd(rc);
+            RCchan[start + i - SD_LISTEN_FDS_START] = rc;
+        }
+
+        /* Get the list of hosts we handle. */
+        RCreadlist();
+
+        return;
+    }
 
     /* If neither bindaddress or bindaddress6 are set, we have to do this the
        hard way.  Either way, allocate an fds array to hold the file
@@ -1817,8 +1875,13 @@ RCclose(void)
     unsigned int j;
 
     for (j = 0 ; j < chanlimit ; j++) {
-	if (RCchan[j] != NULL) {
-	    CHANclose(RCchan[j], CHANname(RCchan[j]));
+        if (RCchan[j] != NULL) {
+            /* Do not close the listening sockets if socket activation is being
+               used because they need to be passed as-is by CCxexec() to the
+               next innd process. */
+            if (CHANsystemdsa(RCchan[j]))
+                continue;
+            CHANclose(RCchan[j], CHANname(RCchan[j]));
 	} else {
 	    break;
 	}

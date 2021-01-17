@@ -19,6 +19,7 @@
 # include "portable/socket-unix.h"
 #endif
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
 #include "inn/qio.h"
 #include "innd.h"
@@ -1329,6 +1330,8 @@ CCxexec(char *av[])
     char	*innd;
     char	*p;
     int		i;
+    const char  *s;
+    int         count;
     int         status;
 
     if (CCargv == NULL)
@@ -1354,8 +1357,37 @@ CCxexec(char *av[])
     if (status < 0)
         warn("cannot notify systemd of reloading: %s", strerror(-status));
 
-    /* Close all fds to protect possible fd leaking accross successive innds. */
-    for (i=3; i<30; i++)
+    /* Restore the systemd variables which were backed up in RCsetup()
+       if socket activation was set. */
+    s = getenv("INN_BACKUP_LISTEN_FDS");
+    if (s != NULL) {
+        if (setenv("LISTEN_FDS", s, true) != 0)
+            die("setenv failed for LISTEN_FDS");
+        if (unsetenv("INN_BACKUP_LISTEN_FDS") != 0)
+            die("unsetenv failed for INN_BACKUP_LISTEN_FDS");
+    }
+    s = getenv("INN_BACKUP_LISTEN_PID");
+    if (s != NULL) {
+        if (setenv("LISTEN_PID", s, true) != 0)
+            die("setenv failed for LISTEN_PID");
+        if (unsetenv("INN_BACKUP_LISTEN_PID") != 0)
+            die("unsetenv failed for INN_BACKUP_LISTEN_PID");
+    }
+
+    /* Clear the close-on-exec flag on the socket activation file descriptors.
+       This is needed because we need to pass them to the new innd process
+       and sd_listen_fds(), which was called in RCsetup(), set it on all
+       passed file descriptors. */
+    s = getenv("INN_SD_LISTEN_FDS_COUNT");
+    if (s == NULL)
+        count = 0;
+    else
+        count = atoi(s);
+    for (i = SD_LISTEN_FDS_START; i < SD_LISTEN_FDS_START + count; i++)
+        fdflag_close_exec(i, false);
+
+    /* Close all fds to protect possible fd leaking across successive innds. */
+    for (i = SD_LISTEN_FDS_START + count; i < 30; i++)
         close(i);
 
     execv(CCargv[0], CCargv);

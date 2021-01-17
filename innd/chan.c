@@ -78,6 +78,29 @@ static CHANNEL CHANnull;
 
 
 /*
+**  Returns true if socket activation is used and the channel given as
+**  as argument is used for socket activation.  Returns false otherwise.
+*/
+bool
+CHANsystemdsa(CHANNEL *cp)
+{
+    const char *s;
+    int count;
+
+    s = getenv("INN_SD_LISTEN_FDS_COUNT");
+    if (s == NULL)
+        return false;
+
+    count = atoi(s);
+
+    if (cp->fd >= SD_LISTEN_FDS_START && cp->fd < SD_LISTEN_FDS_START + count)
+        return true;
+
+    return false;
+}
+
+
+/*
 **  Tear down our world.  Free all of the allocated channels and clear all
 **  global state data.  This function can also be used to initialize the
 **  channels structure to a known empty state.
@@ -98,6 +121,8 @@ CHANshutdown(void)
     if (channels.table != NULL) {
         cp = channels.table;
         for (i = channels.table_size; --i >= 0; cp++) {
+            if (CHANsystemdsa(cp))
+                continue;
             if (cp->Type != CTfree)
                 CHANclose(cp, CHANname(cp));
             if (cp->In.data)

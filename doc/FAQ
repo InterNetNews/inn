@@ -463,7 +463,7 @@ method configured.  There are four different methods to choose from:
     readers and the expiry process;
 
   - ovdb, which stores overview information into a Berkeley DB database,
-    whose ddevelopment pace has stalled these last years.  This method
+    whose development pace has stalled these last years.  This method
     is fast and very robust, but may require more disk space, unless
     compression is enabled.  Overview data is fetched one article at a
     time, which makes this method a bit slower than ovsqlite for readers;
