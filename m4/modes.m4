@@ -16,7 +16,7 @@ DIRMODE=0775
 RUNDIRMODE=0770
 AC_ARG_WITH([news-umask],
     [AS_HELP_STRING([--with-news-umask=UMASK], [umask for news files [002]])],
-    with_news_umask=`echo "$with_news_umask" | sed 's/^0*//'`
+    with_news_umask=`AS_ECHO(["$with_news_umask"]) | sed 's/^0*//'`
     if test "x$with_news_umask" = x22 ; then
         NEWSUMASK=022
         FILEMODE=0644

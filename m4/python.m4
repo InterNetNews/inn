@@ -129,9 +129,9 @@ AC_DEFUN([INN_LIB_PYTHON],
      print(" ".join(distutils.sysconfig.get_config_vars(        \
          "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
          "LINKFORSHARED", "LDFLAGS")))'`
- py_libpython=`echo $py_ldlibrary | sed "s/^lib//" | sed "s/\.@<:@a-z@:>@*$//"`
+ py_libpython=`AS_ECHO(["$py_ldlibrary"]) | sed "s/^lib//" | sed "s/\.@<:@a-z@:>@*$//"`
  PYTHON_LIBS="-L$py_libdir -l$py_libpython $py_linkage"
- PYTHON_LIBS=`echo $PYTHON_LIBS | sed -e 's/[ \\t]*/ /g'`
+ PYTHON_LIBS=`AS_ECHO(["$PYTHON_LIBS"]) | sed -e 's/[ \\t]*/ /g'`
  AC_MSG_RESULT([$PYTHON_LIBS])
  inn_python_save_CPPFLAGS="$CPPFLAGS"
  inn_python_save_LIBS="$LIBS"
