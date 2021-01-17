@@ -59,13 +59,13 @@ AC_DEFUN([_INN_PROG_PYTHON_CMD], [[
 import sys
 two_okay = False
 three_okay = False
-if sys.argv[1]:
-    two_tuple = tuple(int(i) for i in sys.argv[1].split("."))
-    if sys.version_info.major == 2 and sys.version_info >= two_tuple:
+if len(sys.argv) > 1 and sys.argv[1]:
+    two_tuple = tuple(map(int, sys.argv[1].split(".")))
+    if sys.version_info[0] == 2 and sys.version_info >= two_tuple:
         two_okay = True
-if sys.argv[2]:
-    three_tuple = tuple(int(i) for i in sys.argv[2].split("."))
-    if sys.version_info.major > 2 and sys.version_info >= three_tuple:
+if len(sys.argv) > 2 and sys.argv[2]:
+    three_tuple = tuple(map(int, sys.argv[2].split(".")))
+    if sys.version_info[0] > 2 and sys.version_info >= three_tuple:
         three_okay = True
 assert(two_okay or three_okay)
 ]])
