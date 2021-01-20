@@ -60,16 +60,17 @@ the library itself.  In case non-standard paths to the S<Berkeley DB>
 libraries are used, one or both of the options B<--with-bdb-include>
 and B<--with-bdb-lib> can be given to configure with a path.
 
-The ovdb database may take up more disk space for a given spool
-than the other overview methods.  Plan on needing at least S<1.1 KB>
-for every article in your spool (not counting crossposts).  So, if
-you have 5 million articles, you'll need at least S<5.5 GB> of disk
-space for ovdb.  With compression enabled, this estimate changes to
-S<0.7 KB> per article.  See the L<COMPRESSION> section below.  Plus,
-you'll need additional space for transaction logs: at least S<100 MB>.
-By default, the transaction logs go in the same directory as the database.
-To improve performance, they can be placed on a different disk S<--
-see> the L<DB_CONFIG> section.
+The ovdb database may take up more disk space for a given spool than the
+other overview methods.  Plan on needing at least S<1.1 KB> for every
+article in your spool (not counting crossposts).  So, if you have 5
+million articles, you'll need at least S<5.5 GB> of disk space for ovdb.
+With compression enabled, this estimate changes to S<0.9 KB> per article,
+so you'll need at least S<4.5 GB> of disk space for 5 million articles.
+See the L<COMPRESSION> section below.  Plus, you'll need additional space
+for transaction logs: at least S<100 MB>.  By default, the transaction
+logs go in the same directory as the database.  To improve performance,
+they can be placed on a different disk S<-- see> the L<DB_CONFIG>
+section.
 
 =head1 CONFIGURATION
 
