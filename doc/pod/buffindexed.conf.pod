@@ -68,6 +68,13 @@ or replace buffers.  However, new buffers can be added without any special
 care (other than restarting B<innd> after modifying F<buffindexed.conf>).
 If you need to rebuild overview, you should zero all of the buffers first.
 
+We recommend not to reserve too much spare space in existing buffers, so
+that to minimize the duration of the B<expireover> process, and to just
+add new buffers when space left is low (see the result of C<inndf -no>).
+Plan on needing at least S<0.65 KB> for every article in your spool
+(not counting crossposts).  So, if you have 5 million articles, you'll
+need at least S<3.25 GB> of disk space for buffindexed.
+
 =head1 CREATING BUFFERS
 
 There are two methods to create a new buffindexed buffer:

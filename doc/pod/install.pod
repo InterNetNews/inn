@@ -729,6 +729,22 @@ with the best recovery tools.
 
 =back
 
+Here are a few elements that can be helpful in choosing the right
+overview method for your needs and estimating the associated storage
+size.  In 2020, the volume for a full-text Usenet feed is about 18,000
+articles per day, with peaks to 1,200 articles per hour.  Article storage
+size is about S<65 MB> per day.
+
+As for overview storage size, if you have 5 million articles, you'll
+need at least S<3.25 GB> of disk space for buffindexed, S<5.5 GB> for ovdb
+(S<4.5 GB> if compressed), S<4.65 GB> for ovsqlite (S<2 GB> if compressed),
+and S<3.10 GB> for tradindexed.
+
+If you store more header fields in overview data than the standard
+ones, the space needed to store overview data will be superior
+than these estimates.  (This is configured in F<inn.conf>, via the
+I<extraoverviewadvertised> and I<extraoverviewhidden> parameters.)
+
 =head1 Configuring INN
 
 All documentation from this point on assumes that you have set up the news

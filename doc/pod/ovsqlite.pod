@@ -29,6 +29,13 @@ If you have a recent Linux installation, SQLite is most likely already
 installed.  You may have to install a separate package with a name similar
 to C<libsqlite3-dev> to get the required header files.
 
+Plan on needing at least S<0.93 KB> for every article in your spool
+(not counting crossposts).  So, if you have 5 million articles, you'll
+need at least S<4.65 GB> of disk space for ovsqlite.  With compression
+enabled, this estimate changes to S<0.4 KB> per article, so you'll
+need at least S<2 GB> of disk space for 5 million articles.  Plus,
+you'll need additional space for transaction logs (a few MB).
+
 =head1 CONFIGURATION
 
 To select ovsqlite as your overview method, set the I<ovmethod> parameter
@@ -52,7 +59,7 @@ left up to the SQLite library and seems to be stable at S<2000 KB>.
 If INN was built with zlib support and this parameter is true, ovsqlite
 will compress overview records whenever this saves space.  This parameter
 is consulted only when creating a new database.  Enabling compression
-saves about S<70 %> of disk space on typical overview data. The default
+saves about S<55 %> of disk space on standard overview data.  The default
 value is false.
 
 =item I<pagesize>

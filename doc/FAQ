@@ -481,6 +481,22 @@ method configured.  There are four different methods to choose from:
     incoming article.  Its main advantage is to be the best tested,
     the most reliable and the method with the best recovery tools.
 
+Here are a few elements that can be helpful in choosing the right
+overview method for your needs and estimating the associated storage
+size.  In 2020, the volume for a full-text Usenet feed is about 18,000
+articles per day, with peaks to 1,200 articles per hour.  Article storage
+size is about 65 MB per day.
+
+As for overview storage size, if you have 5 million articles, you'll
+need at least 3.25 GB of disk space for buffindexed, 5.5 GB for ovdb
+(4.5 GB if compressed), 4.65 GB for ovsqlite (2 GB if compressed),
+and 3.10 GB for tradindexed.
+
+If you store more header fields in overview data than the standard
+ones, the space needed to store overview data will be superior than
+these estimates.  (This is configured in the extraoverviewadvertised
+and extraoverviewhidden inn.conf parameters.)
+
 ------------------------------
 
 Subject: 2.5. What are deferrals (NNTP code 431)?
