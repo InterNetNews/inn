@@ -21,7 +21,7 @@
 #    GnuPG 1.x before 1.4.20, and GnuPG 2.0.x) still validates signatures
 #    made with weak digest algorithms like MD5 whereas current versions
 #    of gpgv no longer do.
-#    This new release of pgpverify requires at least GnuPG 1.4.20 or 2.1.0.
+# -- This new release of pgpverify requires at least GnuPG 1.4.20 or 2.1.0.
 #    If you're using an older version of GnuPG, you have to keep using
 #    pgpverify 1.29.
 #
