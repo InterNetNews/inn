@@ -86,9 +86,10 @@ else
     make test
 
     # Run yet another build, with other configure options.
+    # This one is without features requiring external libraries.
     make distclean
     ./configure --enable-keywords --without-bdb --without-krb5 \
-        --without-openssl --without-sasl --without-zlib
+        --without-openssl --without-sasl --without-sqlite3 --without-zlib
     make warnings
     make test
 
