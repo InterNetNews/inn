@@ -74,7 +74,7 @@ L<https://packages.debian.org/libtool> (F<ltmain.sh> is generated in the
 F<build-aux> subdirectory after building the package with for instance
 B<debuild -us -uc>); the canonical versions of the former two files
 are available from L<ftp://ftp.gnu.org/gnu/config/> (which currently
-redirects to L<http://git.savannah.gnu.org/gitweb/?p=config.git;a=tree>).
+redirects to L<https://git.savannah.gnu.org/cgit/config.git/tree/>).
 
 In addition, F<m4/libtool.m4> and a few other m4 files used
 by INN are just a copy of the corresponding files in the
@@ -87,12 +87,12 @@ which recognizes the additional B<-S> flag that INN's B<install-sh>
 script uses, and a fix for a proper handling of circular dependencies.
 
 This B<install-sh> script should also be updated at the same time from
-L<http://git.savannah.gnu.org/gitweb/?p=automake.git;a=tree;f=lib>;
+L<https://git.savannah.gnu.org/cgit/automake.git/tree/>;
 it similarly contains a local modification mentioned in a comment
 at the beginning of the file.
 
 Finally, the F<m4/pkg.m4> macro should be updated from
-L<https://cgit.freedesktop.org/pkg-config/tree/>.
+L<https://gitlab.freedesktop.org/pkg-config/pkg-config/>.
 
 =head1 Autobuilds
 
