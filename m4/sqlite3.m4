@@ -12,7 +12,7 @@ dnl SQLITE3_LIBS.  Also provides INN_LIB_SQLITE3_SWITCH to set CPPFLAGS,
 dnl LDFLAGS, and LIBS to include the SQLite libraries, saving the current
 dnl values first, and INN_LIB_SQLITE3_RESTORE to restore those settings to
 dnl before the last INN_LIB_SQLITE3_SWITCH.  Defines HAVE_SQLITE3 and sets
-dnl inn_use_SQLITE3 to true if SQLite 3 is found.  If it isn't found, the
+dnl inn_use_SQLITE3 to true if libsqlite3 is found.  If it isn't found, the
 dnl substitution variables will be empty.
 dnl
 dnl Depends on the lib-helper.m4 framework.
@@ -32,7 +32,7 @@ dnl
 dnl SPDX-License-Identifier: FSFULLR
 
 dnl Save the current CPPFLAGS, LDFLAGS, and LIBS settings and switch to
-dnl versions that include the libevent flags.  Used as a wrapper, with
+dnl versions that include the SQLite 3 flags.  Used as a wrapper, with
 dnl INN_LIB_SQLITE3_RESTORE, around tests.
 AC_DEFUN([INN_LIB_SQLITE3_SWITCH], [INN_LIB_HELPER_SWITCH([SQLITE3])])
 
@@ -72,7 +72,7 @@ AC_DEFUN([INN_LIB_SQLITE3],
  INN_LIB_HELPER_WITH([sqlite3], [SQLite v3], [SQLITE3])
  _INN_LIB_SQLITE3_INTERNAL([true])
  inn_use_SQLITE3=true
- AC_DEFINE([HAVE_SQLITE3], 1, [Define if SQLite v3 is available.])])
+ AC_DEFINE([HAVE_SQLITE3], 1, [Define if libsqlite3 is available.])])
 
 dnl The main macro for packages with optional SQLite v3 support.
 AC_DEFUN([INN_LIB_SQLITE3_OPTIONAL],
@@ -82,6 +82,7 @@ AC_DEFUN([INN_LIB_SQLITE3_OPTIONAL],
     [AS_IF([test x"$inn_use_SQLITE3" = xtrue],
         [_INN_LIB_SQLITE3_INTERNAL([true])],
         [_INN_LIB_SQLITE3_INTERNAL([false])])])
- AS_IF([test x"$SQLITE3_LIBS" != x],
+ AS_IF([test x"$SQLITE3_LIBS" = x],
+    [INN_LIB_HELPER_VAR_CLEAR([SQLITE3])],
     [inn_use_SQLITE3=true
-     AC_DEFINE([HAVE_SQLITE3], 1, [Define if SQLite v3 is available.])])])
+     AC_DEFINE([HAVE_SQLITE3], 1, [Define if libsqlite3 is available.])])])

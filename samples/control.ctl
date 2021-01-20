@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2020-05-03
+##  Last modified: 2020-12-24
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -962,9 +962,10 @@ newgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 rmgroup:news@flora.ottawa.on.ca:flora.*:verify-flora-news
 
 ## FR (French language)
-# URL: http://www.usenet-fr.net/
+# URL: https://www.usenet-fr.net/
 # Admin group: fr.usenet.forums.annonces
-# Key URL: http://www.usenet-fr.net/fur/usenet/presentation-fr.html
+# Key URL: https://www.usenet-fr.net/pgp-fr-2020.txt
+# Key fingerprint: D5F3 69B2 9757 3622 0153  54E7 FA42 3E89 970E B10B
 # *PGP*   See comment at top of file.
 newgroup:*:fr.*:drop
 rmgroup:*:fr.*:drop
