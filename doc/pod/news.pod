@@ -23,14 +23,22 @@ and makehistory(8) man pages.
 
 =item *
 
+Added support for systemd notifications and socket activation.  Use of more
+features provided by systemd, including more notifications, will come
+in future releases.  Thanks to Marco d'Itri for this first systemd
+integration into INN.
+
+=item *
+
 B<nnrpd> now adapts the length of the DH parameter used during a DHE
 key exchange so as to comply with the security level S<OpenSSL 1.1.0>
 or later expects.  Thanks to Michael Baeuerle for the bug report.
 
 =item *
 
-B<cnfsstat> now also returns information about retired CNFS buffers
-(mentioned in F<cycbuff.conf> as a cycbuff but not in a metacycbuff).
+B<cnfsstat> now also returns information about retired CNFS buffers,
+that is to say buffers mentioned in F<cycbuff.conf> as a cycbuff but
+not declared in a metacycbuff.
 
 =item *
 
@@ -67,13 +75,6 @@ be parsed for some reason.
 
 Added new B<-d> flag to B<rnews> to log via syslog the message-ID and the
 Path header value of each article rejected as a duplicate.
-
-=item *
-
-Added support for systemd notifications and socket activation.  Use of more
-features provided by systemd, including more notifications, will come
-in future releases.  Thanks to Marco d'Itri for this first systemd
-integration into INN.
 
 =item *
 
