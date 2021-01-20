@@ -34,7 +34,7 @@
  * ovdata', but is followed by a uint32_t in network byteorder (which is
  * the length of the uncompressed data), and then followed by the compressed
  * data.  Since overview data never starts with a null byte, a compressed
- * record is identified by the presense of a null byte immediately after
+ * record is identified by the presence of a null byte immediately after
  * the struct ovdata (which is part of the uint32_t).
  */ 
 
