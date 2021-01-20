@@ -26,8 +26,7 @@ configure INN with the same options that you used previously if you take
 this approach (in particular, INN compiled with B<--enable-largefiles>
 can't read the data structures written by INN compiled without that flag,
 and vice versa).  If you don't remember what options you used but you have
-your old build tree, look at the comments at the beginning of
-F<config.status>.
+your old build tree, look at the beginning of F<config.log>.
 
 If you made B<ckpasswd> setuid root so that you could use system passwords,
 you'll have to do that again after C<make update>.  (It's much better to use
@@ -46,19 +45,22 @@ Unix platform.  It does, however, make extensive use of mmap(2) and
 certain other constructs that may be poorly or incompletely implemented,
 particularly on very old operating systems.
 
-INN has been confirmed to work on the following operating systems:
+INN has been confirmed to work on recent versions of the following
+operating systems:
 
-    AIX 4.3
-    FreeBSD 2.2.x and up
-    HP-UX 10.20 and up
-    Linux 2.x (tested with libc 5.4, glibc 2.0 and up)
-    Mac OS X 10.2 and up
-    NetBSD 1.6 and up
-    OpenBSD 2.8 and up
-    SCO 5.0.4 (tested with gcc 2.8.1, cc)
-    Solaris 2.5.x and up
-    UnixWare 7.1
-    UX/4800 R11 and up
+    AIX (including 7.2)
+    FreeBSD (including 12.1)
+    Linux (including 3.16, 4.19 and 5.10 kernels, glibc 2.19, 2.28 and 2.31)
+    macOS (including 11)
+    NetBSD (including 9.0)
+    OpenBSD (including 6.8)
+    Oracle Solaris (including 10 and 11)
+
+Current versions of INN may also work on other operating systems like
+HP-UX, OpenServer, SCO, UnixWare or UX/4800, as well as old versions of
+the above list of operating systems, but have not been confirmed to.
+Old versions of INN used to, but current ones have not been tested on
+such systems or ancient specific versions.
 
 If you have gotten INN working on an operating system other than the ones
 listed above, please let us know at <inn-workers@lists.isc.org>.
@@ -96,7 +98,8 @@ INN is tested primarily with newer versions of Perl, so it's generally
 recommended that you install the latest stable distribution of Perl before
 compiling INN.  For instructions on obtaining and installing Perl, see
 L<https://www.perl.org/get.html>.  Note that you may need to use the same
-compiler and options (particularly large file support) for Perl and INN.
+compiler and options (particularly large file supporti and shared libraries)
+for Perl and INN.
 
 If you're using a version of Perl prior to 5.6.0, you may need to make
 sure that the Perl versions of your system header files have been
@@ -190,8 +193,8 @@ are snapshots of the INN Subversion tree taken daily; there are two snapshots
 made each night (one of the current development branch, and one of the
 stable branch consisting of bug fixes to the previous major release).
 They are stored in date format; in other words the snapshots from April
-6th, 2000, would be named F<inn-CURRENT-20000406.tar.gz> and
-F<inn-STABLE-20000406.tar.gz>.  Choose the newest file of whichever branch
+6th, 2020, would be named F<inn-CURRENT-20200406.tar.gz> and
+F<inn-STABLE-20200406.tar.gz>.  Choose the newest file of whichever branch
 you prefer.  (Note that the downloading, configuring, and compiling steps
 can be done while logged in as any user.)
 
@@ -471,13 +474,13 @@ flag is explicitly passed to configure.
 For the most common installation, a standalone news server, a suggested
 set of options is:
 
-    ./configure --with-perl
+    ./configure --with-perl --with-python
 
-provided that you have the necessary version of Perl installed.
-(Compiling with an embedded Perl interpreter will allow you to use one of
-the available excellent spam filters if you so choose.)
+provided that you have the necessary versions of Perl and Python installed.
+(Compiling with embedded Perl and Python interpreters will allow you
+to use one of the available excellent spam filters if you so choose.)
 
-If the configure program runs successfully, then you are ready to build
+If the B<configure> program runs successfully, then you are ready to build
 the distribution.  From the root of the INN source tree, type:
 
     make
@@ -539,12 +542,10 @@ the correct users and groups.  It is YOUR responsibility to ensure the
 resulting directories and files are packaged with the users, groups,
 and modes which INN wanted them to be installed with!
 
-Please note that INN's shared library interface is not stable and may
-change drastically in future releases.  For this reason, it's also not
-properly versioned and won't be until some degree of stability is
-guaranteed, and the relevant header files are not installed.  Only INN
-should use INN's shared libraries, and you should only use the shared
-libraries corresponding to the version of INN that you're installing.
+Please note that INN's shared library interface is not stable and
+may change drastically in future major releases.  Only INN should use
+INN's shared libraries, and you should only use the shared libraries
+corresponding to the version of INN that you're installing.
 
 Also, when updating an existing version of INN, INN tries to save
 backup copies of all files but man pages and shared libraries so that
@@ -554,7 +555,7 @@ are not backed up because this confuses B<ldconfig> on some systems
 the C<.OLD> versions.  Nonetheless, reverting to a previous version of
 INN should work fine for official releases (that is to say releases
 that are not daily STABLE or CURRENT snapshots) because a proper
-versioning is done, if needed, during the release of a new version.
+versioning is done, during the release of a new version.
 
 If you are configuring TLS/SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:
@@ -723,11 +724,11 @@ your INN installation is F<~news> (I<pathnews> in F<inn.conf>).  If you've
 moved things around by using options with C<configure>, you'll need to adjust
 the instructions to account for that.
 
-All of INN's configuration files are located in I<pathetc in inn.conf>.  Unless
-noted otherwise, any files referred to below are in this directory.  When
-you first install INN, a sample of each file (containing lots of comments)
-is installed in I<pathetc>; refer to these for concrete examples of
-everything discussed in this section.
+All of INN's configuration files are located in I<pathetc> as set in
+F<inn.conf>.  Unless noted otherwise, any files referred to below are
+in this directory.  When you first install INN, a sample of each file
+(containing lots of comments) is installed in I<pathetc>; refer to
+these for concrete examples of everything discussed in this section.
 
 All of INN's configuration files, all of the programs that come with it,
 and some of its library routines have documentation in the form of man
