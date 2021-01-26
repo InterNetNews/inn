@@ -26,7 +26,7 @@ dnl bother checking for it.  Compile-time errors often produce a lot more
 dnl useful information for someone debugging a problem than configure-time
 dnl errors.
 
-AC_INIT([INN], [2.6.4], [inn-workers@lists.isc.org],
+AC_INIT([INN], [2.6.5], [inn-workers@lists.isc.org],
     [inn], [https://www.isc.org/downloads/projects/])
 AC_PREREQ([2.64])
 AC_REVISION([$Revision$])
