@@ -128,8 +128,8 @@ else
     echo "$out"
     printcount "not ok"
 fi
-out=`$inndf -o`
-if [ "$out" = "3.17% overview space used" ] ; then
+out=`$inndf -o | sed 's/\...%/\.00%/'`
+if [ "$out" = "3.00% overview space used" ] ; then
     printcount "ok"
 else
     echo "$out"
