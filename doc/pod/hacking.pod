@@ -868,10 +868,6 @@ directory.
 L<https://archives.eyrie.org/software/inn/> and then letting ISC mirror
 them via rsync.)
 
-Contact the ISC folks to push the release to ftp.isc.org and to update the
-ISC web site (the relevant contact is C<web-request> instead of
-C<webmaster>).
-
 =item 14.
 
 After the ISC web site has been updated with links towards the new
