@@ -315,6 +315,7 @@ main(int argc, char *argv[])
     enum authtype { AUTH_NONE, AUTH_SHADOW, AUTH_FILE, AUTH_DBM };
 
     int opt;
+    const char *hash;
     enum authtype type = AUTH_NONE;
     bool wantgroup = false;
     const char *filename = NULL;
@@ -409,7 +410,8 @@ main(int argc, char *argv[])
 
     if (password == NULL)
         die("user %s unknown", authinfo->username);
-    if (strcmp(password, crypt(authinfo->password, password)) != 0)
+    hash = crypt(authinfo->password, password);
+    if (hash == NULL || strcmp(password, hash) != 0)
         die("invalid password for user %s", authinfo->username);
 
     /* The password matched. */
