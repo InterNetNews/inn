@@ -545,6 +545,7 @@ lib/reallocarray.c                    reallocarray replacement
 lib/remopen.c                         Open a remote NNTP connection
 lib/reservedfd.c                      File descriptor reservation
 lib/resource.c                        Get process CPU usage
+lib/sd-daemon.c                       Stubs for systemd library functions
 lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
 lib/sequence.c                        Sequence space arithmetic routines
