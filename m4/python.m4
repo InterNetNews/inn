@@ -36,7 +36,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2021 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2009, 2011, 2015, 2018 Julien ÉLIE <julien@trigofacile.com>
 dnl Copyright 1998-2003 The Internet Software Consortium
 dnl
@@ -129,9 +129,10 @@ AC_DEFUN([INN_LIB_PYTHON],
      print(" ".join(distutils.sysconfig.get_config_vars(        \
          "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
          "LINKFORSHARED", "LDFLAGS")))'`
- py_libpython=`AS_ECHO(["$py_ldlibrary"]) | sed "s/^lib//" | sed "s/\.@<:@a-z@:>@*$//"`
+ py_libpython=`AS_ECHO(["$py_ldlibrary"]) \
+    | sed -e 's/^lib//' -e 's/\.@<:@a-z@:>@*$//'`
  PYTHON_LIBS="-L$py_libdir -l$py_libpython $py_linkage"
- PYTHON_LIBS=`AS_ECHO(["$PYTHON_LIBS"]) | sed -e 's/[ \\t]*/ /g'`
+ PYTHON_LIBS=`AS_ECHO(["$PYTHON_LIBS"]) | sed 's/ @<:@ \\t@:>@*/ /g'`
  AC_MSG_RESULT([$PYTHON_LIBS])
  inn_python_save_CPPFLAGS="$CPPFLAGS"
  inn_python_save_LIBS="$LIBS"

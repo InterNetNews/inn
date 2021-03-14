@@ -26,7 +26,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016, 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016, 2018, 2021 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2011 Internet Systems Consortium, Inc. ("ISC")
 dnl Copyright 1998-2003 The Internet Software Consortium
 dnl
@@ -96,10 +96,12 @@ AC_DEFUN([INN_LIB_PERL],
  inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/ -lc / /'`
  AS_CASE([$host],
     [*-linux*],
-        [inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/ -lgdbm / /'`],
+        [inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) \
+            | sed 's/ -lgdbm / /'`],
     [*-cygwin*],
         [inn_perl_libname=`"$PERL" -MConfig -e 'print $Config{libperl}'`
-         inn_perl_libname=`AS_ECHO(["$inn_perl_libname"]) | sed 's/^lib//; s/\.a$//'`
+         inn_perl_libname=`AS_ECHO(["$inn_perl_libname"]) \
+            | sed 's/^lib//; s/\.a$//'`
          inn_perl_core_libs="${inn_perl_core_libs}-l$inn_perl_libname"])
  inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/^  *//'`
  inn_perl_core_libs=`AS_ECHO(["$inn_perl_core_libs"]) | sed 's/  *$//'`

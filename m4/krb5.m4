@@ -1,4 +1,5 @@
 dnl Find the compiler and linker flags for Kerberos.
+dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with Kerberos libraries.
 dnl Provides the --with-krb5, --with-krb5-include, and --with-krb5-lib
@@ -106,134 +107,130 @@ dnl Check for a header using a file existence check rather than using
 dnl AC_CHECK_HEADERS.  This is used if there were arguments to configure
 dnl specifying the Kerberos header path, since we may have one header in the
 dnl default include path and another under our explicitly-configured Kerberos
-dnl location.  Sets inn_krb5_header_found to true if the header is found.
+dnl location.  The second argument is run if the header was found.
 AC_DEFUN([_INN_LIB_KRB5_CHECK_HEADER],
 [AC_MSG_CHECKING([for $1])
  AS_IF([test -f "${inn_krb5_incroot}/$1"],
-    [inn_krb5_header_found=true
-     AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_$1]), [1],
+    [AC_DEFINE_UNQUOTED(AS_TR_CPP([HAVE_$1]), [1],
         [Define to 1 if you have the <$1> header file.])
-     AC_MSG_RESULT([yes])],
+     AC_MSG_RESULT([yes])
+     $2],
     [AC_MSG_RESULT([no])])])
 
 dnl Check for the com_err header.  Internal helper macro since we need
-dnl to do the same checks in multiple places.  Sets inn_krb5_header_found
-dnl to true if one header is found.
+dnl to do the same checks in multiple places.
 AC_DEFUN([_INN_LIB_KRB5_CHECK_HEADER_COM_ERR],
 [AS_IF([test x"$inn_krb5_incroot" = x],
-   [AC_CHECK_HEADERS([et/com_err.h kerberosv5/com_err.h],
-                     [inn_krb5_header_found=true])],
-       [_INN_LIB_KRB5_CHECK_HEADER([et/com_err.h])
-        _INN_LIB_KRB5_CHECK_HEADER([kerberosv5/com_err.h])])])
+    [AC_CHECK_HEADERS([et/com_err.h kerberosv5/com_err.h])],
+        [_INN_LIB_KRB5_CHECK_HEADER([et/com_err.h])
+         _INN_LIB_KRB5_CHECK_HEADER([kerberosv5/com_err.h])])])
 
 dnl Check for the main Kerberos header.  Internal helper macro since we need
-dnl to do the same checks in multiple places.  Sets inn_krb5_header_found
-dnl to true if one header is found.
+dnl to do the same checks in multiple places.  The first argument is run if
+dnl some header was found, and the second if no header was found.
+dnl header could not be found.
 AC_DEFUN([_INN_LIB_KRB5_CHECK_HEADER_KRB5],
-[AS_IF([test x"$inn_krb5_incroot" = x],
+[inn_krb5_found_header=
+ AS_IF([test x"$inn_krb5_incroot" = x],
      [AC_CHECK_HEADERS([krb5.h kerberosv5/krb5.h krb5/krb5.h],
-                       [inn_krb5_header_found=true])],
-     [_INN_LIB_KRB5_CHECK_HEADER([krb5.h])
-      _INN_LIB_KRB5_CHECK_HEADER([kerberosv5/krb5.h])
-      _INN_LIB_KRB5_CHECK_HEADER([krb5/krb5.h])])])
+         [inn_krb5_found_header=true])],
+     [_INN_LIB_KRB5_CHECK_HEADER([krb5.h],
+         [inn_krb5_found_header=true])
+      _INN_LIB_KRB5_CHECK_HEADER([kerberosv5/krb5.h],
+         [inn_krb5_found_header=true])
+      _INN_LIB_KRB5_CHECK_HEADER([krb5/krb5.h],
+         [inn_krb5_found_header=true])])
+ AS_IF([test x"$inn_krb5_found_header" = xtrue], [$1], [$2])])
 
 dnl Does the appropriate library checks for reduced-dependency Kerberos
 dnl linkage.  The single argument, if true, says to fail if Kerberos could not
 dnl be found.
 AC_DEFUN([_INN_LIB_KRB5_REDUCED],
-[inn_krb5_header_found=false
- _INN_LIB_KRB5_CHECK_HEADER_KRB5
- AS_IF([test x"$inn_krb5_header_found" = xtrue],
-     [INN_LIB_KRB5_SWITCH
-      AC_CHECK_LIB([krb5], [krb5_init_context],
-         [KRB5_LIBS="-lkrb5"
-          LIBS="$KRB5_LIBS $LIBS"
-          AC_CHECK_FUNCS([krb5_get_error_message],
-             [AC_CHECK_FUNCS([krb5_free_error_message])],
-             [AC_CHECK_FUNCS([krb5_get_error_string], [],
-                 [AC_CHECK_FUNCS([krb5_get_err_txt], [],
-                     [AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
-                         [KRB5_LIBS="$KRB5_LIBS -lksvc"
-                          AC_DEFINE([HAVE_KRB5_SVC_GET_MSG], [1])
-                          AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
-                             [INN_INCLUDES_KRB5])],
-                         [inn_krb5_header_found=false
-                          _INN_LIB_KRB5_CHECK_HEADER_COM_ERR
-                          AS_IF([test x"$inn_krb5_header_found" = xtrue],
-                             [AC_CHECK_LIB([com_err], [com_err],
-                                 [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
-                                 [AS_IF([test x"$1" = xtrue],
-                                     [AC_MSG_ERROR([cannot find usable com_err library])],
-                                     [KRB5_LIBS=""])])],
-                             [AS_IF([test x"$1" = xtrue],
-                                 [AC_MSG_ERROR([cannot find usable com_err header])])])])])])])],
-         [AS_IF([test x"$1" = xtrue],
-             [AC_MSG_ERROR([cannot find usable Kerberos library])])])],
-     [AS_IF([test x"$1" = xtrue],
-         [AC_MSG_ERROR([cannot find usable Kerberos header])])])
+[INN_LIB_KRB5_SWITCH
+ AC_CHECK_LIB([krb5], [krb5_init_context],
+    [KRB5_LIBS="-lkrb5"
+     LIBS="$KRB5_LIBS $LIBS"
+     AC_CHECK_FUNCS([krb5_get_error_message],
+        [AC_CHECK_FUNCS([krb5_free_error_message])],
+        [AC_CHECK_FUNCS([krb5_get_error_string], [],
+            [AC_CHECK_FUNCS([krb5_get_err_txt], [],
+                [AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
+                    [KRB5_LIBS="$KRB5_LIBS -lksvc"
+                     AC_DEFINE([HAVE_KRB5_SVC_GET_MSG], [1])
+                     AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
+                        [INN_INCLUDES_KRB5])],
+                    [AC_CHECK_LIB([com_err], [com_err],
+                        [KRB5_LIBS="$KRB5_LIBS -lcom_err"],
+                        [AS_IF([test x"$1" = xtrue],
+                            [AC_MSG_ERROR([cannot find usable com_err library])],
+                            [KRB5_LIBS=""])])
+                     _INN_LIB_KRB5_CHECK_HEADER_COM_ERR])])])])
+     _INN_LIB_KRB5_CHECK_HEADER_KRB5([],
+        [KRB5_CPPFLAGS=
+         KRB5_LIBS=
+         AS_IF([test x"$1" = xtrue],
+            [AC_MSG_ERROR([cannot find usable Kerberos header])])])],
+    [AS_IF([test x"$1" = xtrue],
+        [AC_MSG_ERROR([cannot find usable Kerberos library])])])
  INN_LIB_KRB5_RESTORE])
 
 dnl Does the appropriate library checks for Kerberos linkage when we don't
 dnl have krb5-config or reduced dependencies.  The single argument, if true,
 dnl says to fail if Kerberos could not be found.
 AC_DEFUN([_INN_LIB_KRB5_MANUAL],
-[inn_krb5_header_found=false
- _INN_LIB_KRB5_CHECK_HEADER_KRB5
- AS_IF([test x"$inn_krb5_header_found" = xtrue],
-    [INN_LIB_KRB5_SWITCH
-     inn_krb5_extra=
-     LIBS=
-     AC_SEARCH_LIBS([res_search], [resolv], [],
-        [AC_SEARCH_LIBS([__res_search], [resolv])])
-     AC_SEARCH_LIBS([gethostbyname], [nsl])
-     AC_SEARCH_LIBS([socket], [socket], [],
-        [AC_CHECK_LIB([nsl], [socket], [LIBS="-lnsl -lsocket $LIBS"], [],
-            [-lsocket])])
-     AC_SEARCH_LIBS([crypt], [crypt])
-     AC_SEARCH_LIBS([roken_concat], [roken])
-     inn_krb5_extra="$LIBS"
-     LIBS="$inn_krb5_save_LIBS"
-     AC_CHECK_LIB([krb5], [krb5_init_context],
-        [KRB5_LIBS="-lkrb5 -lasn1 -lcom_err -lcrypto $inn_krb5_extra"],
-        [AC_CHECK_LIB([krb5support], [krb5int_getspecific],
-            [inn_krb5_extra="-lkrb5support $inn_krb5_extra"],
-            [AC_CHECK_LIB([pthreads], [pthread_setspecific],
-                [inn_krb5_pthread="-lpthreads"],
-                [AC_CHECK_LIB([pthread], [pthread_setspecific],
-                    [inn_krb5_pthread="-lpthread"])])
-             AC_CHECK_LIB([krb5support], [krb5int_setspecific],
-                [inn_krb5_extra="-lkrb5support $inn_krb5_extra $inn_krb5_pthread"],
-                [], [$inn_krb5_pthread $inn_krb5_extra])],
-            [$inn_krb5_extra])
-         AC_CHECK_LIB([com_err], [error_message],
-            [inn_krb5_extra="-lcom_err $inn_krb5_extra"], [], [$inn_krb5_extra])
-         AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
-            [inn_krb5_extra="-lksvc $inn_krb5_extra"], [], [$inn_krb5_extra])
-         AC_CHECK_LIB([k5crypto], [krb5int_hash_md5],
-            [inn_krb5_extra="-lk5crypto $inn_krb5_extra"], [], [$inn_krb5_extra])
-         AC_CHECK_LIB([k5profile], [profile_get_values],
-            [inn_krb5_extra="-lk5profile $inn_krb5_extra"], [], [$inn_krb5_extra])
-         AC_CHECK_LIB([krb5], [krb5_cc_default],
-            [KRB5_LIBS="-lkrb5 $inn_krb5_extra"],
-            [AS_IF([test x"$1" = xtrue],
-                [AC_MSG_ERROR([cannot find usable Kerberos library])])],
-            [$inn_krb5_extra])],
-        [-lasn1 -lcom_err -lcrypto $inn_krb5_extra])
-     LIBS="$KRB5_LIBS $LIBS"
-     AC_CHECK_FUNCS([krb5_get_error_message],
-        [AC_CHECK_FUNCS([krb5_free_error_message])],
-        [AC_CHECK_FUNCS([krb5_get_error_string], [],
-            [AC_CHECK_FUNCS([krb5_get_err_txt], [],
-                [AC_CHECK_FUNCS([krb5_svc_get_msg],
-                    [AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
-                        [INN_INCLUDES_KRB5])],
-                    [inn_krb5_header_found=false
-                     _INN_LIB_KRB5_CHECK_HEADER_COM_ERR
-                     AS_IF([test x"$inn_krb5_header_found" != xtrue],
-                        [AS_IF([test x"$1" = xtrue],
-                            [AC_MSG_ERROR([cannot find usable com_err header])])])])])])])],
-     [AS_IF([test x"$1" = xtrue],
-         [AC_MSG_ERROR([cannot find usable Kerberos header])])])
+[INN_LIB_KRB5_SWITCH
+ inn_krb5_extra=
+ LIBS=
+ AC_SEARCH_LIBS([res_search], [resolv], [],
+    [AC_SEARCH_LIBS([__res_search], [resolv])])
+ AC_SEARCH_LIBS([gethostbyname], [nsl])
+ AC_SEARCH_LIBS([socket], [socket], [],
+    [AC_CHECK_LIB([nsl], [socket], [LIBS="-lnsl -lsocket $LIBS"], [],
+        [-lsocket])])
+ AC_SEARCH_LIBS([crypt], [crypt])
+ AC_SEARCH_LIBS([roken_concat], [roken])
+ inn_krb5_extra="$LIBS"
+ LIBS="$inn_krb5_save_LIBS"
+ AC_CHECK_LIB([krb5], [krb5_init_context],
+    [KRB5_LIBS="-lkrb5 -lasn1 -lcom_err -lcrypto $inn_krb5_extra"],
+    [AC_CHECK_LIB([krb5support], [krb5int_getspecific],
+        [inn_krb5_extra="-lkrb5support $inn_krb5_extra"],
+        [AC_CHECK_LIB([pthreads], [pthread_setspecific],
+            [inn_krb5_pthread="-lpthreads"],
+            [AC_CHECK_LIB([pthread], [pthread_setspecific],
+                [inn_krb5_pthread="-lpthread"])])
+         AC_CHECK_LIB([krb5support], [krb5int_setspecific],
+            [inn_krb5_extra="-lkrb5support $inn_krb5_extra $inn_krb5_pthread"],
+            [], [$inn_krb5_pthread $inn_krb5_extra])],
+        [$inn_krb5_extra])
+     AC_CHECK_LIB([com_err], [error_message],
+        [inn_krb5_extra="-lcom_err $inn_krb5_extra"], [], [$inn_krb5_extra])
+     AC_CHECK_LIB([ksvc], [krb5_svc_get_msg],
+        [inn_krb5_extra="-lksvc $inn_krb5_extra"], [], [$inn_krb5_extra])
+     AC_CHECK_LIB([k5crypto], [krb5int_hash_md5],
+        [inn_krb5_extra="-lk5crypto $inn_krb5_extra"], [], [$inn_krb5_extra])
+     AC_CHECK_LIB([k5profile], [profile_get_values],
+        [inn_krb5_extra="-lk5profile $inn_krb5_extra"], [], [$inn_krb5_extra])
+     AC_CHECK_LIB([krb5], [krb5_cc_default],
+        [KRB5_LIBS="-lkrb5 $inn_krb5_extra"],
+        [AS_IF([test x"$1" = xtrue],
+            [AC_MSG_ERROR([cannot find usable Kerberos library])])],
+        [$inn_krb5_extra])],
+    [-lasn1 -lcom_err -lcrypto $inn_krb5_extra])
+ LIBS="$KRB5_LIBS $LIBS"
+ AC_CHECK_FUNCS([krb5_get_error_message],
+     [AC_CHECK_FUNCS([krb5_free_error_message])],
+     [AC_CHECK_FUNCS([krb5_get_error_string], [],
+         [AC_CHECK_FUNCS([krb5_get_err_txt], [],
+             [AC_CHECK_FUNCS([krb5_svc_get_msg],
+                 [AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
+                     [INN_INCLUDES_KRB5])],
+                 [_INN_LIB_KRB5_CHECK_HEADER_COM_ERR])])])])
+ _INN_LIB_KRB5_CHECK_HEADER_KRB5([],
+    [KRB5_CPPFLAGS=
+     KRB5_LIBS=
+     AS_IF([test x"$1" = xtrue],
+        [AC_MSG_ERROR([cannot find usable Kerberos header])])])
  INN_LIB_KRB5_RESTORE])
 
 dnl Sanity-check the results of krb5-config and be sure we can really link a
@@ -243,7 +240,12 @@ dnl check.
 AC_DEFUN([_INN_LIB_KRB5_CHECK],
 [INN_LIB_KRB5_SWITCH
  AC_CHECK_FUNC([krb5_init_context],
-    [INN_LIB_KRB5_RESTORE],
+    [_INN_LIB_KRB5_CHECK_HEADER_KRB5([INN_LIB_KRB5_RESTORE],
+        [INN_LIB_KRB5_RESTORE
+         KRB5_CPPFLAGS=
+         KRB5_LIBS=
+         _INN_LIB_KRB5_PATHS
+         _INN_LIB_KRB5_MANUAL([$1])])],
     [INN_LIB_KRB5_RESTORE
      KRB5_CPPFLAGS=
      KRB5_LIBS=
@@ -255,26 +257,17 @@ dnl additional probing we need to do to uncover error handling features, and
 dnl falls back on the manual checks.
 AC_DEFUN([_INN_LIB_KRB5_CONFIG],
 [INN_KRB5_CONFIG([${inn_krb5_root}], [krb5], [KRB5],
-    [inn_krb5_header_found=false
-     _INN_LIB_KRB5_CHECK_HEADER_KRB5
-     AS_IF([test x"$inn_krb5_header_found" = xtrue],
-        [_INN_LIB_KRB5_CHECK([$1])
-         INN_LIB_KRB5_SWITCH
-         AC_CHECK_FUNCS([krb5_get_error_message],
-             [AC_CHECK_FUNCS([krb5_free_error_message])],
-             [AC_CHECK_FUNCS([krb5_get_error_string], [],
-                 [AC_CHECK_FUNCS([krb5_get_err_txt], [],
-                     [AC_CHECK_FUNCS([krb5_svc_get_msg],
-                         [AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
-                             [INN_INCLUDES_KRB5])],
-                         [inn_krb5_header_found=false
-                          _INN_LIB_KRB5_CHECK_HEADER_COM_ERR
-                          AS_IF([test x"$inn_krb5_header_found" != xtrue],
-                             [AS_IF([test x"$1" = xtrue],
-                                 [AC_MSG_ERROR([cannot find usable com_err header])])])])])])])
-         INN_LIB_KRB5_RESTORE],
-         [AS_IF([test x"$1" = xtrue],
-             [AC_MSG_ERROR([cannot find usable Kerberos header])])])],
+    [_INN_LIB_KRB5_CHECK([$1])
+     INN_LIB_KRB5_SWITCH
+     AC_CHECK_FUNCS([krb5_get_error_message],
+         [AC_CHECK_FUNCS([krb5_free_error_message])],
+         [AC_CHECK_FUNCS([krb5_get_error_string], [],
+             [AC_CHECK_FUNCS([krb5_get_err_txt], [],
+                 [AC_CHECK_FUNCS([krb5_svc_get_msg],
+                     [AC_CHECK_HEADERS([ibm_svc/krb5_svc.h], [], [],
+                         [INN_INCLUDES_KRB5])],
+                     [_INN_LIB_KRB5_CHECK_HEADER_COM_ERR])])])])
+     INN_LIB_KRB5_RESTORE],
     [_INN_LIB_KRB5_PATHS
      _INN_LIB_KRB5_MANUAL([$1])])])
 
@@ -304,7 +297,7 @@ AC_DEFUN([_INN_LIB_KRB5_INTERNAL],
  AS_CASE([$KRB5_LIBS], [*-lcom_err*], [inn_krb5_uses_com_err=true])
  AM_CONDITIONAL([KRB5_USES_COM_ERR],
     [test x"$inn_krb5_uses_com_err" = xtrue])
- KRB5_CPPFLAGS_WARNINGS=`AS_ECHO(["$KRB5_CPPFLAGS"]) | sed -e 's/-I/-isystem /g'`])
+ KRB5_CPPFLAGS_WARNINGS=`AS_ECHO(["$KRB5_CPPFLAGS"]) | sed 's/-I/-isystem /g'`])
 
 dnl The main macro for packages with mandatory Kerberos support.
 AC_DEFUN([INN_LIB_KRB5],
