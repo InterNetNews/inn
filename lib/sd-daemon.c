@@ -7,6 +7,9 @@
  * run under systemd.  Unsetting the environment (the first argument) is not
  * supported.
  *
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
  * Copyright 2021 Russ Allbery <eagle@eyrie.org>
  *
  * Copying and distribution of this file, with or without modification, are

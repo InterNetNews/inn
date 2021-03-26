@@ -34,6 +34,11 @@
 #ifndef PORTABLE_SD_DAEMON_H
 #define PORTABLE_SD_DAEMON_H 1
 
+#include "config.h"
+#include "portable/macros.h"
+
+BEGIN_DECLS
+
 #ifdef HAVE_SD_NOTIFY
 #    include <systemd/sd-daemon.h>
 #else
@@ -43,5 +48,7 @@
 int sd_notify(int, const char *);
 int sd_notifyf(int, const char *, ...);
 #endif
+
+END_DECLS
 
 #endif /* !PORTABLE_SD_DAEMON_H */

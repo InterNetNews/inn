@@ -617,7 +617,10 @@ reallocarray.o: reallocarray.c ../include/config.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h
 sd-daemon.o: sd-daemon.c ../include/portable/macros.h \
-  ../include/portable/sd-daemon.h
+  ../include/portable/sd-daemon.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
