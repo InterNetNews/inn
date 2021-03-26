@@ -17,6 +17,17 @@ and makehistory(8) man pages.
 
 =back
 
+=head1 Changes in 2.6.5
+
+=over 2
+
+=item *
+
+The F<inn.conf> default value for I<tlsprotocols> no longer contains
+TLS versions 1.0 and 1.1, which have been deprecated by S<RFC 8996>.
+
+=back
+
 =head1 Changes in 2.6.4
 
 =over 2

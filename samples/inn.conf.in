@@ -145,7 +145,7 @@ backofftrigger:              10000
 #tlscompression:             false
 #tlseccurve:
 #tlspreferserverciphers:     true
-#tlsprotocols:               [ TLSv1 TLSv1.1 TLSv1.2 TLSv1.3 ]
+#tlsprotocols:               [ TLSv1.2 TLSv1.3 ]
 
 # Monitoring
 
