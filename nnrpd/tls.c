@@ -628,21 +628,26 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
             }
         }
     } else {
-        /* Default value:  allow only TLS protocols. */
-        tls_protos = (INN_TLS_TLSv1 | INN_TLS_TLSv1_1 | INN_TLS_TLSv1_2
-                      | INN_TLS_TLSv1_3);
+        /* Default value:  allow only secure TLS protocols. */
+        tls_protos = (INN_TLS_TLSv1_2 | INN_TLS_TLSv1_3);
     }
 
     if ((tls_protos & INN_TLS_SSLv2) == 0) {
+#ifdef SSL_OP_NO_SSLv2
         SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv2);
+#endif
     }
 
     if ((tls_protos & INN_TLS_SSLv3) == 0) {
+#ifdef SSL_OP_NO_SSLv3
         SSL_CTX_set_options(CTX, SSL_OP_NO_SSLv3);
+#endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1) == 0) {
+#ifdef SSL_OP_NO_TLSv1
         SSL_CTX_set_options(CTX, SSL_OP_NO_TLSv1);
+#endif
     }
 
     if ((tls_protos & INN_TLS_TLSv1_1) == 0) {
