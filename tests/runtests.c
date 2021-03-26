@@ -1140,13 +1140,11 @@ test_run(struct testset *ts, enum test_verbose verbose)
      * retrieve the exit status, and pass that information to test_analyze()
      * for eventual output.
      */
-    if (!ts->aborted) {
-        while (fgets(buffer, sizeof(buffer), output))
-            if (verbose)
-                printf("%s", buffer);
-    }
+    while (fgets(buffer, sizeof(buffer), output))
+        if (verbose)
+            printf("%s", buffer);
     fclose(output);
-    child = waitpid(testpid, &ts->status, WNOHANG);
+    child = waitpid(testpid, &ts->status, 0);
     if (child == (pid_t) -1) {
         if (!ts->reported) {
             puts("ABORTED");

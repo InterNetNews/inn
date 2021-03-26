@@ -6,6 +6,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2021 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008-2009
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -37,6 +38,7 @@
 #include "clibrary.h"
 
 #include <errno.h>
+#include <signal.h>
 #include <sys/wait.h>
 
 #include "tap/basic.h"
@@ -58,6 +60,7 @@ main(void)
     /* Parent will create the socket first to get the port number. */
     memset(&sin, '\0', sizeof(sin));
     sin.sin_family = AF_INET;
+    inet_pton(AF_INET, "127.0.0.1", &sin.sin_addr);
     master = socket(AF_INET, SOCK_STREAM, 0);
     if (master == -1)
         sysbail("socket creation failed");
@@ -109,16 +112,23 @@ main(void)
         testnum += 2;
     } else {
         data = socket(AF_INET, SOCK_STREAM, 0);
-        if (data < 0)
+        if (data < 0) {
+            kill(child, SIGTERM);
             sysbail("child socket failed");
-        if (connect(data, (struct sockaddr *) &sin, sizeof(sin)) < 0)
+        }
+        if (connect(data, (struct sockaddr *) &sin, sizeof(sin)) < 0) {
+            kill(child, SIGTERM);
             sysbail("child connect failed");
-        if (read(data, buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer))
+        }
+        if (read(data, buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer)) {
+            kill(child, SIGTERM);
             sysbail("read failed");
+        }
         fclose(stderr);
-        /* Use of echo 'ok 7' does not display it on Solaris 11. */
+
+        /* For some reason, echo doesn't work on Solaris 11 but printf does. */
         execlp("sh", "sh", "-c",
-               "printf 'not ' >&8; printf 'ok 7\n'; echo 'ok 8' >&9",
+               "printf 'not ' >&8; printf 'ok 7\n'; printf 'ok 8\n' >&9",
                (char *) 0);
         sysbail("exec failed");
     }
