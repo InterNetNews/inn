@@ -273,6 +273,7 @@ download portable/inet_ntop.c lib inet_ntop.c
 download portable/macros.h include/portable macros.h
 download portable/mkstemp.c lib mkstemp.c
 download portable/reallocarray.c lib reallocarray.c
+download portable/sd-daemon.c lib sd-daemon.c
 download portable/sd-daemon.h include/portable sd-daemon.h
 download portable/setenv.c lib setenv.c
 download portable/seteuid.c lib seteuid.c

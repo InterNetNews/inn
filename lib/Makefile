@@ -30,7 +30,7 @@ SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
 EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c	   \
 		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
 		inet_ntop.c mkstemp.c pread.c pwrite.c            \
-	        reallocarray.c setenv.c                                    \
+	        reallocarray.c sd-daemon.c setenv.c                        \
 		seteuid.c setproctitle.c snprintf.c strcasecmp.c strlcat.c \
 		strlcpy.c strspn.c strtok.c symlink.c
 
@@ -346,22 +346,22 @@ mmap.o: mmap.c ../include/config.h ../include/inn/defines.h \
 network.o: network.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/fdflag.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/fdflag.h \
   ../include/inn/portable-socket.h ../include/inn/innconf.h \
   ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
 network-innbind.o: network-innbind.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h \
   ../include/inn/network.h ../include/inn/portable-socket.h \
@@ -551,11 +551,11 @@ ftello.o: ftello.c ../include/config.h ../include/inn/defines.h \
 getaddrinfo.o: getaddrinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 getnameinfo.o: getnameinfo.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -571,27 +571,27 @@ getpagesize.o: getpagesize.c ../include/config.h ../include/inn/defines.h \
 inet_aton.o: inet_aton.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 inet_ntoa.o: inet_ntoa.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 inet_ntop.o: inet_ntop.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/socket.h ../include/portable/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/clibrary.h ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h
 mkstemp.o: mkstemp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -616,6 +616,11 @@ reallocarray.o: reallocarray.c ../include/config.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h
+sd-daemon.o: sd-daemon.c ../include/portable/macros.h \
+  ../include/portable/sd-daemon.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h
 setenv.o: setenv.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

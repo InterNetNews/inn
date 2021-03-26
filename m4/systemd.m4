@@ -7,9 +7,10 @@ dnl substitution variable, and provides the HAVE_SYSTEMD Automake conditional
 dnl to use to control whether to install unit files.
 dnl
 dnl Provides the INN_LIB_SYSTEMD_DAEMON_OPTIONAL macro, which sets
-dnl SYSTEMD_CFLAGS and SYSTEMD_LIBS substitution variables if
-dnl libsystemd-daemon is available and defines HAVE_SD_NOTIFY.  pkg-config
-dnl support for libsystemd-daemon is required for it to be detected.
+dnl SYSTEMD_CFLAGS and SYSTEMD_LIBS substitution variables if libsystemd is
+dnl available and defines HAVE_SD_NOTIFY.  Adds sd-daemon.c to LIBOBJS if
+dnl libsystemd is not available.  pkg-config support for libsystemd-daemon is
+dnl required for it to be detected.
 dnl
 dnl Depends on the Autoconf macros that come with pkg-config.
 dnl
@@ -17,7 +18,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2015 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2015, 2021 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2013-2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -55,4 +56,5 @@ AC_DEFUN([INN_LIB_SYSTEMD_DAEMON_OPTIONAL],
     [PKG_CHECK_EXISTS([libsystemd-daemon],
         [PKG_CHECK_MODULES([SYSTEMD], [libsystemd-daemon])
          AC_DEFINE([HAVE_SD_NOTIFY], 1,
-            [Define if sd_notify is available.])])])])
+            [Define if sd_notify is available.])],
+        [AC_LIBOBJ([sd-daemon])])])])
