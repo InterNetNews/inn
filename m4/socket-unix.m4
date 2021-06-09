@@ -12,6 +12,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
+dnl Copyright 2021 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2009
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl Copyright 2004-2009 Internet Systems Consortium, Inc. ("ISC")
@@ -36,6 +37,7 @@ dnl SPDX-License-Identifier: ISC
 
 dnl Source used by INN_MACRO_SUN_LEN.
 AC_DEFUN([_INN_MACRO_SUN_LEN_SOURCE], [[
+#include <string.h>
 #include <sys/types.h>
 #include <sys/un.h>
 
