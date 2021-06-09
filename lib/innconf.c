@@ -118,6 +118,7 @@ const struct config config_table[] = {
     { K(groupbaseexpiry),         BOOL    (true) },
     { K(mailcmd),                 STRING  (NULL) },
     { K(maxforks),                UNUMBER   (10) },
+    { K(maxlisten),               UNUMBER  (128) },
     { K(mta),                     STRING  (NULL) },
     { K(nicekids),                NUMBER     (4) },
     { K(ovmethod),                STRING  (NULL) },

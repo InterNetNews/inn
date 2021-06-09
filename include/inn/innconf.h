@@ -177,6 +177,7 @@ struct innconf {
     unsigned long keepmmappedthreshold; /* Threshold for keeping mmap in buffindexed */
     unsigned long maxcmdreadsize; /* Max NNTP command read size used by innd */
     unsigned long maxforks;     /* Give up after this many fork failure. */
+    unsigned long maxlisten;    /* Max listen() backlog */
     long nicekids;              /* Child processes get niced to this */
     unsigned long nicenewnews;  /* If NEWNEWS command is used, nice to this */
     unsigned long nicennrpd;    /* nnrpd is niced to this */

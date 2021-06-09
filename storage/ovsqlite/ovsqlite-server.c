@@ -342,7 +342,7 @@ static void make_listener(void)
 #else
     make_inet_listener();
 #endif
-    if (listen(listensock, MAXLISTEN)==-1)
+    if (listen(listensock, innconf->maxlisten)==-1)
         sysdie("cannot listen on socket");
     fdflag_nonblocking(listensock, 1);
     FD_SET(listensock, &read_fds);

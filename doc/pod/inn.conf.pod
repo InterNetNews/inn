@@ -1467,6 +1467,13 @@ environments, see setbuf(3)).
 How many times to attempt a fork(2) before giving up.  The default value
 is C<10>.
 
+=item I<maxlisten>
+
+How many incoming connections can queue up in the listen backlog
+for B<innd>, B<nnrpd> and two overview storage methods (C<ovdb> and
+C<ovsqlite>).  The default value is C<128> and should be raised in case
+you notice that some connection requests get dropped.
+
 =item I<nicekids>
 
 If set to anything other than C<0>, all child processes of innd(8) will
