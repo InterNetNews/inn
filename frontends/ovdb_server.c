@@ -678,7 +678,7 @@ main(int argc, char *argv[])
 
     if(ret != 0)
         sysdie("cannot bind socket");
-    if(listen(listensock, MAXLISTEN) < 0)
+    if(listen(listensock, innconf->maxlisten) < 0)
         sysdie("cannot listen on socket");
 
     pidfile = concatpath(innconf->pathrun, OVDB_SERVER_PIDFILE);

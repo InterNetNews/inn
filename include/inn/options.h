@@ -66,9 +66,6 @@
    throttle.) */
 #define IO_ERROR_COUNT          50
 
-/* Length of listen queue for innd. */
-#define MAXLISTEN               25
-
 /* The standard NNTP port. */
 #define NNTP_PORT               119
 

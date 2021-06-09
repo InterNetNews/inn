@@ -1190,7 +1190,7 @@ main(int argc, char *argv[])
         FD_ZERO(&lfdset);
 
         for (j = 0; j < lfdcount; j++) {
-            if (listen(lfds[j], 128) < 0) {
+            if (listen(lfds[j], innconf->maxlisten) < 0) {
                 if (j != 0 && errno == EADDRINUSE)
                     continue;
                 syslog(L_ERROR, "can't listen to socket");

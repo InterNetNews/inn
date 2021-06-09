@@ -91,7 +91,7 @@ LCsetup(void)
     }
 
     /* Set it up to wait for connections. */
-    if (listen(i, MAXLISTEN) < 0) {
+    if (listen(i, innconf->maxlisten) < 0) {
 	syslog(L_FATAL, "%s cant listen %s %m", LogName, LCpath);
 	exit(1);
     }

@@ -1839,7 +1839,7 @@ RCsetup(void)
     for (i = 0; i < count; i++) {
         if (fds[i] < 0)
             continue;
-        if (listen(fds[i], MAXLISTEN) < 0) {
+        if (listen(fds[i], innconf->maxlisten) < 0) {
             if (i != 0 && errno == EADDRINUSE)
                 continue;
             syswarn("SERVER cant listen to socket");

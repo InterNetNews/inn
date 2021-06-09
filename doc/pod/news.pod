@@ -7,6 +7,16 @@
 The F<inn.conf> default value for I<tlsprotocols> no longer contains
 TLS versions 1.0 and 1.1, which have been deprecated by S<RFC 8996>.
 
+=item *
+
+A new F<inn.conf> parameter has been added to tune the length of the
+queue of pending connections to B<innd>, B<nnrpd> and the C<ovdb>
+overview storage method:  the I<maxlisten> parameter now permits
+configuring their listen backlog, whose previously hard-coded values
+were C<128> for B<nnrpd> and C<25> for the others, which was not high
+enough for some uses.  The default value is now C<128> for all of them,
+and configurable in F<inn.conf>.  Thanks to Kevin Bowling for the patch.
+
 =back
 
 =head1 Changes in 2.6.4

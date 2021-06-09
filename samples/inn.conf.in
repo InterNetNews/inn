@@ -188,6 +188,7 @@ icdsynccount:                10
 keepmmappedthreshold:        1024
 #maxcmdreadsize:
 maxforks:                    10
+maxlisten:                   128
 nicekids:                    4
 nicenewnews:                 0
 nicennrpd:                   0
