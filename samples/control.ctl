@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2020-12-24
+##  Last modified: 2021-06-27
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -623,9 +623,9 @@ rmgroup:news@supernews.net:codewarrior.*:doit
 
 ## COMP, HUMANITIES, MISC, NEWS, REC, SCI, SOC, TALK (The Big Eight)
 # Contact: board@big-8.org
-# URL: http://www.big-8.org/
+# URL: https://www.big-8.org/
 # Admin group: news.announce.newgroups
-# Key fingerprint: F5 35 58 D3 55 64 10 14  07 C6 95 53 13 6F D4 07
+# Key fingerprint: 8E18 1BEF 0BE6 3896 2C1A  5C98 FAFE 7B55 0C18 C8B7
 # *PGP*   See comment at top of file.
 newgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
 rmgroup:*:comp.*|humanities.*|misc.*|news.*|rec.*|sci.*|soc.*|talk.*:drop
@@ -1662,24 +1662,14 @@ rmgroup:*:ncu.*:doit
 ## NET (*HISTORIC* -- Usenet 2)
 #
 # This was a failed experiment in a different newsgroup creation policy and
-# administrative policy which has now been almost entirely abandoned.  The
-# information is retained here for the few sites still using it, but sites
-# not already carrying the groups probably won't be interested.
+# administrative policy which has now been abandoned.
 #
 # (This was also the original unmoderated Usenet hierarchy from before the
 # Great Renaming.  The groups that used to be in net.* in the 1980s are now
 # in the Big Eight hierarchies.)
 #
-# URL: http://www.usenet2.org
-# Admin group: net.config
-# Key URL: http://www.usenet2.org/control@usenet2.org.asc
-# Key fingerprint: D7 D3 5C DB 18 6A 29 79  BF 74 D4 58 A3 78 9D 22
-# *PGP*   See comment at top of file.
 newgroup:*:net.*:drop
 rmgroup:*:net.*:drop
-#checkgroups:control@usenet2.org:net.*:verify-control@usenet2.org
-#newgroup:control@usenet2.org:net.*:verify-control@usenet2.org
-#rmgroup:control@usenet2.org:net.*:verify-control@usenet2.org
 
 ## NETINS (*LOCAL* -- netINS, Inc)
 # Contact: news@netins.net
