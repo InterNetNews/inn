@@ -1,6 +1,5 @@
 # Ignore list for Git.  -*- conf -*-
 
-/BOOTSTRAP
 /ChangeLog
 /CHANGES
 /config.cache
