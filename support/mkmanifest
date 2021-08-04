@@ -17,10 +17,12 @@ use vars qw(@FILES %IGNORE @IGNORE);
 use File::Find qw(find);
 
 # The following regex patterns match files to be ignored wherever they are in
-# the tree.  This is intended to handle files that CVS or Subversion ignores
-# by default.
-@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr/\.l?[ao]\Z/, qr%(\A|/)CVS(/|\Z)%,
-           qr%(\A|/)\.svn(/|\Z)%, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
+# the tree.  This is intended to handle files that CVS, Subversion or Git
+# ignores by default.
+@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr%(\A|/)CVS(/|\Z)%,
+           qr%(\A|/)\.svn(/|\Z)%,
+           qr%(\A|/)\.gitignore\Z%, qr%(\A|/)\.git(/|\Z)%,
+           qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
            qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
            qr%(\A|/)\.libs(/|\Z)%);
 
@@ -42,8 +44,8 @@ sub load_exclusions {
     }
 }
 
-# Build a list of all files in the tree that aren't ignored by .cvsignore
-# files or listed in ignore regexes.
+# Build a list of all files in the tree that aren't ignored by the version
+# control software or listed in ignore regexes.
 sub find_files {
     return if $_ eq '.';
     my $name = $File::Find::name;
@@ -182,7 +184,6 @@ innd/tinyleaf
 innfeed/imapfeed
 innfeed/innfeed
 innfeed/procbatch
-innfeed/version.c
 nnrpd/nnrpd
 perl/INN/Config.pm
 perl/INN/Utils/Shlock.pm
@@ -258,7 +259,6 @@ site/startup_innd.pl
 site/storage.conf
 site/subscriptions
 site/update
-snapshot.log
 storage/buildconfig
 storage/buffindexed/buffindexed_d
 storage/tradindexed/tdx-util
