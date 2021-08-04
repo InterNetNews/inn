@@ -268,7 +268,7 @@ extern char * strtok(char *, const char *);\\
     fi
 
     mv -f ${TEMP} ../$2/$3
-    svn status ../$2/$3
+    git status ../$2/$3
   fi
 }
 

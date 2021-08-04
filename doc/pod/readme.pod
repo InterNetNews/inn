@@ -179,12 +179,12 @@ which gets a lot of INN-related questions.)
 
 =item inn-committers@lists.isc.org
 
-Subversion commit messages for INN are sent to this list (only the automated
+Git commit messages for INN are sent to this list (only the automated
 messages are sent here, no regular posting).
 
 =item inn-bugs@lists.isc.org
 
-Trac tickets for INN are sent to this list (only the automated messages
+GitHub issues for INN are sent to this list (only the automated messages
 are sent here, no regular posting).  Bug reports should be sent to
 the inn-workers mailing list.
 

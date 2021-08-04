@@ -164,7 +164,7 @@ directory are the various releases of INN, some additional documentation
 (particularly of security holes), the original INN Usenix paper.
 
 There is also a snapshots subdirectory, in which you will find daily
-snapshots of the INN Subversion repository for the last seven days.  The
+snapshots of the INN Git repository for the last seven days.  The
 snapshots with STABLE in the name are the latest versions of the STABLE
 branch and may have some additional bug fixes over the current released
 version.  The snapshots with CURRENT in the name are of the current
@@ -255,11 +255,11 @@ inn-workers@lists.isc.org
     news.software.nntp, which gets a lot of INN-related questions.)
 
 inn-committers@lists.isc.org
-    Subversion commit messages for INN are sent to this list (only the
+    Git commit messages for INN are sent to this list (only the
     automated messages are sent here, no regular posting).
 
 inn-bugs@lists.isc.org
-    Trac tickets for INN are sent to this list (only the automated
+    GitHub issues for INN are sent to this list (only the automated
     messages are sent here, no regular posting).  Bug reports should be
     sent to the inn-workers mailing list.
 
@@ -273,8 +273,8 @@ address.  The addresses for the above lists are:
 
 inn-workers tends to be moderate volume (3-5 messages a day, but varying a
 lot depending on what's being discussed).  inn-bugs and inn-committers are
-occasionally higher volume but entirely automatically generated Trac
-or Subversion notifications.  inn-announce is a low-volume moderated list
+occasionally higher volume but entirely automatically generated GitHub bug
+tracker and push notifications.  inn-announce is a low-volume moderated list
 containing only major announcements.
 
 ------------------------------
@@ -331,25 +331,25 @@ takes place.  The traffic isn't that high.
 
 Next, download a snapshot of the INN CURRENT branch as described above so
 that you have a relatively current source base to work from.  You may want
-to check out the current source from Subversion; just point a Subversion
+to check out or clone the current source from GitHub; just point a Git
 client at:
 
-    https://inn.eyrie.org/svn/
+    https://github.com/InterNetNews/inn.git
 
-This repository is a read-only mirror that can lag up to an hour behind
-the working repository.  Read the HACKING file at the top of the INN
-source tree for some general information and tips for working on INN.
+Read the HACKING file at the top of the INN source tree for some general
+information and tips for working on INN.
 
 Then pick something that looks interesting to you, mention what you're
 doing on inn-workers if it's likely to affect other parts of the
-development, and have at it!  The TODO file in the CURRENT tree has a
-pretty comprehensive list of things that could be done.  Best to start
-with something small (getting INN to work correctly on a platform where it
-doesn't currently and which you have available is often a great start, or
-working on one of the supporting programs or scripts that's a bit easier
-to wrap one's mind around than the core INN daemons).  Patches to INN
-should be sent to inn-workers@lists.isc.org, or put on an ftp or web site
-somewhere and the URL sent to inn-workers if they're extremely large.
+development, and have at it!  The GitHub bug tracker and the TODO file in
+the CURRENT tree have a pretty comprehensive list of things that could be
+done.  Best to start with something small (getting INN to work correctly
+on a platform where it doesn't currently and which you have available is
+often a great start, or working on one of the supporting programs or
+scripts that's a bit easier to wrap one's mind around than the core INN
+daemons).  Patches to INN should be sent to inn-workers@lists.isc.org,
+or put on an ftp or web site somewhere and the URL sent to inn-workers
+if they're extremely large.
 
 ------------------------------
 

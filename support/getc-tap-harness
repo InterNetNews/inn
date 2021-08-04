@@ -203,7 +203,7 @@ void ok_double(int n, double wanted, double seen);\\
     fi
 
     mv -f ${TEMP} ../$2/$3
-    svn status ../$2/$3
+    git status ../$2/$3
   fi
 }
 

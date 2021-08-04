@@ -9,7 +9,7 @@
 # RCSId:        $Id$
 #
 # History:
-#               Full changelog can be found in the Subversion repository of the
+#               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:
 #
 #               January 2010:  Geraint A. Edwards added header-only feeding (-B);
