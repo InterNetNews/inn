@@ -925,9 +925,9 @@ S<RFC 5536> and S<RFC 5537>.
 
 =item L<http://www.mibsoftware.com/userkt/userkt.html>
 
-Forrest Cavalier provides several tools related to earlier versions of
-INN (like 2.0).  His web site is a great source of information about
-Usenet in general.
+Forrest Cavalier provides several tools related to earlier versions
+of INN (2.0 to 2.3.x).  His web site is a great source of information
+about Usenet in general.
 
 =item L<http://tools.ietf.org/html/draft-lutchann-ipv6-intro-00>
 
