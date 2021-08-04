@@ -11,7 +11,7 @@ EXTRA         = INN/Config.pm
 ##  The double underscore '__' will be converted into two colons '::'
 ##  during the install process (otherwise, make would complain in this
 ##  file, and we cannot generate the right file with '::' in the
-##  Subversion man directory because it would always be regenerated:
+##  doc/man directory because it would always be regenerated:
 ##  the file containing '__' would indeed not be found).
 MAN           = ../doc/man/INN__Config.3pm \
 		../doc/man/INN__Utils__Shlock.3pm

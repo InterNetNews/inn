@@ -4,10 +4,10 @@
 ##
 ##  Build a snapshot of the current tree.
 ##
-##  Meant to be run on a fresh Subversion checkout, this script does the
-##  necessary work to generate a snapshot.  It expects to be invoked from the
-##  top level of the source tree and leaves the generated snapshot in that
-##  same directory as a .tar.gz file.
+##  Meant to be run on a fresh Git checkout, this script does the necessary
+##  work to generate a snapshot.  It expects to be invoked from the top level
+##  of the source tree and leaves the generated snapshot in that same
+##  directory as a .tar.gz file.
 ##
 ##  Snapshot generation will fail if the tree will not compile or if make test
 ##  fails.  In either case, the output is left in snapshot.log.
@@ -81,7 +81,7 @@ else
 
     cat > README.snapshot <<EOF
 This is a snapshot of the current development version of INN, pulled
-automatically from the Subversion repository.  It was made on:
+automatically from the Git repository.  It was made on:
 
     `date -u +"%B %e, %Y @ %I:%M %p %Z"`
 

@@ -9,7 +9,7 @@
 ##      <http://usenet.trigofacile.com/hierarchies/>
 ##
 ##  Please copy usenet-config@isc.org on any updates to this file so that
-##  it can be updated in the INN Subversion repository and on ftp.isc.org.
+##  it can be updated in the INN Git repository and on ftp.isc.org.
 ##  For changes to a public hierarchy, please also post the changes to
 ##  news.admin.hierarchies.
 ##

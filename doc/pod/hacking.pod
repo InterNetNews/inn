@@ -8,14 +8,14 @@ contributors, and secondarily as documentation of some of INN's internals.
 First of all, if you plan on working on INN source, please start from the
 current development tree.  There may be significant changes from the
 previous full release, so starting from development sources will make it
-considerably easier to integrate your work.  You can check out the current
-development tree using Subversion from:
+considerably easier to integrate your work.  You can check out or clone
+the current development tree using Git from:
 
-    <https://inn.eyrie.org/svn/>
+    <https://github.com/InterNetNews/inn.git>
 
-or view it with Trac source browser at:
+or browse the current development source on Github at:
 
-    <https://inn.eyrie.org/trac/browser/>
+    <https://github.com/InterNetNews/inn>
 
 You will need S<autoconf 2.64> or later to use the development tree.  After
 checking out the tree, run C<./autogen> to generate the necessary autoconf
@@ -62,7 +62,7 @@ F<include/config.h.in>, run C<autoheader>.  Alternately, to regenerate
 both, you can run C<./autogen>.  Please don't include patches to either
 F<configure> or F<include/config.h.in> when sending patches to INN;
 instead, note in your patch that those files must be regenerated.  These
-(and all other) generated files should not be checked into Subversion.
+(and all other) generated files should not be checked into Git.
 
 At the time of this writing, S<autoconf 2.64> or later is required.
 
@@ -551,9 +551,7 @@ Other multiline comments in the source are generally written as:
     /* This is a
        multiline comment. */
 
-Comments before functions saying what they do are nice to have.  In
-general, the RCS/SVN C<Id> tag is on the first line of each source file
-since it's useful to know when a file was last modified.
+Comments before functions saying what they do are nice to have.
 
 =item *
 
@@ -768,14 +766,12 @@ L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.ht
 
 =item 7.
 
-If making a major release, branch the source tree by creating a new
-directory under F<branches> in Subversion named after the major release.
-This branch will be used for minor releases based on that major release
-and can be done a little while before the C<.0> release of that major
-release.
+If making a major release, create a new branch in Git named after the
+major release.  This branch will be used for minor releases based on
+that major release and can be done a little while before the C<.0>
+release of that major release.
 
-    svn copy -r ZZZZ -m "Branch Y.Y.0 release." \
-        file:///srv/svn/inn/trunk file:///srv/svn/inn/branches/Y.Y
+    git checkout -b Y.Y
 
 Then, in that newly created branch, remove the first paragraph in
 F<doc/pod/readme.pod> which deals with development versions.
@@ -811,11 +807,10 @@ differences; otherwise, fix the F<MANIFEST> file.
 
 Run C<make release> for a final release, C<support/mksnapshot BETA b1> for
 the first beta version of a new release, or C<support/mksnapshot RC rc1>
-for the first release candidate version of a new release.  Note that you
-need to have a copy of B<svn2cl> from L<https://arthurdejong.org/svn2cl/>
-to do this; at least version 0.7 is required.  Start the F<ChangeLog> at
-the time of the previous release.  (Eventually, the script will be smart
-enough to do this for you.)
+for the first release candidate version of a new release.
+
+Start the F<ChangeLog> at the time of the previous release.  (Eventually,
+the script will be smart enough to do this for you.)
 
 Check that the F<ChangeLog> file is correct; otherwise, regenerate it or
 manually edit it.  Then run again C<make release> or any other command
@@ -880,19 +875,18 @@ release, send an announce on inn-announce and in news.software.nntp
 
 =item 15.
 
-Tag the checked-out tree that was used for generating the release with a
-release tag by copying it to F<tags> in Subversion.
+Tag the commit that was used for generating the release with an annotated
+tag in Git:
 
-    svn copy -r ZZZZ -m "Tag Y.Y.Y release." \
-        file:///srv/svn/inn/branches/Y.Y file:///srv/svn/inn/tags/Y.Y.Y
+    git tag -a Y.Y.Y -m "Tag Y.Y.Y release."
 
 =item 16.
 
 Bump revision numbers to reflect the one of the following release,
 especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod>
 for major releases, F<configure.ac> and F<Makefile.global.in> for both
-minor and major releases.  The release versions in the Trac wiki should
-also be updated.
+minor and major releases.  The release versions in the GitHub bug tracker
+should also be updated.
 
 =item 17.
 
@@ -927,18 +921,17 @@ a lot of interesting discussion of why NNTP is the way it is.
 A collection of documents about the Usenet article format, including
 most of the relevant RFCs and Internet-Drafts.
 
-=item L<http://www.ietf.org/mail-archive/web/usefor/current/maillist.html>
+=item L<https://mailarchive.ietf.org/arch/browse/usefor/>
 
 The archives for the USEFOR IETF working group, the working group for the
 S<RFC 1036> replacement (the format of Usenet articles), now published as
 S<RFC 5536> and S<RFC 5537>.
 
-=item L<http://www.mibsoftware.com/userkt/inn/dev/>
+=item L<http://www.mibsoftware.com/userkt/userkt.html>
 
-Forrest Cavalier provides several tools for following INN development at
-this page and elsewhere in the Usenet RKT.  Under here is a web-accessible
-checked-out copy of the current INN source tree and pointers to how to use
-CVSup.  However, please note that INN development now uses Subversion.
+Forrest Cavalier provides several tools related to earlier versions
+of INN (2.0 to 2.3.x).  His web site is a great source of information
+about Usenet in general.
 
 =item L<http://tools.ietf.org/html/draft-lutchann-ipv6-intro-00>
 
