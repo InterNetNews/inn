@@ -1,8 +1,6 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-$ID='$Id$$';
-
 use POSIX ":fcntl_h";
 use SDBM_File;
 use Getopt::Std;
@@ -266,14 +264,13 @@ $opt_M=0;      # install man page
 getopts("rt:f:i:m:x:Nv:M");
 
 $sfile="$INN::Config::pathdb/thdexpstat";
-$ID=~/ ([^,]+,v [^ ]+)/; $ID=$1;
 
 if ($opt_M) {
     print "Installing thdexpire(8) man page\n";
     $0=~m:^(.*)/([^/]+)$:;
     chdir $1 || die "chdir $1";
     exec "pod2man --section=8 --center='Contributed News Software'" .
-      " --release='$ID' $2 >$INN::Config::pathnews/man/man8/thdexpire.8";
+      " --release='$INN::Config::version' $2 >$INN::Config::pathnews/man/man8/thdexpire.8";
 }
 
 if ($opt_r) {
@@ -289,7 +286,7 @@ INN::Utils::Shlock::lock($lockfile, 5) or die ("cannot create lockfile $lockfile
 tie(%S, SDBM_File, $sfile, O_RDWR|O_CREAT, 0664) || die "open $sfile: $!";
 $SIG{'TERM'}=$SIG{'INT'}='finish';
 $|=1;
-printf "%s starting at %s\n", $ID, &wtime(time) if ($opt_v>0);
+printf "starting at %s\n", &wtime(time) if ($opt_v>0);
 
 undef @c;
 $NOW=time; $ac=$cc=0;
@@ -307,7 +304,6 @@ foreach $c (@classes) {
 
 $S{"classes"}=join(",", @classes);
 $S{"inittime"}=time;
-$S{"ID"}=$ID;
 printf "Checked %d articles, %d CAFs in %d seconds\n", $ac, $cc, time-$NOW
   if ($ac+$cc>0 && $opt_v>0);
 
@@ -606,7 +602,6 @@ sub report
 	print "Not initialized.\n";
 	return;
     }
-    printf "Version: %s (this: %s)\n", $S{"ID"}, $ID;
     printf "Started at: %s\n", &xtime($S{"inittime"}) if ($S{"inittime"});
     printf "Last run: %s\n", &xtime($S{"lastrun"}) if ($S{"lastrun"});
     printf "Classes: %s\n", $cc;

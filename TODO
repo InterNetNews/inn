@@ -23,7 +23,7 @@ suite, which is currently very minimal.  Any work done on the test suite
 to allow more portions of INN to be automatically tested will make all
 changes easier and will be *greatly* appreciated.
 
-Last modified $Id$.
+Last modified on 2021-08-05.
 
 
 Scheduled for INN 2.7

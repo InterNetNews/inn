@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-$version = q$Id$;
+$version = '1.0';
 #
 # tunefeed -- Compare active files with a remote site to tune a feed.
 #             Copyright 1998 by Russ Allbery <eagle@eyrie.org>

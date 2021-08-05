@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for the remote connect channel.  Create an Internet stream
 **  socket that processes connect to.  If the incoming site is not one of
 **  our feeds, then we optionally pass the connection off to the standard
@@ -1513,8 +1512,6 @@ RCwritelist(char *filename)
         if (*p == '/')
 	   q = p + 1;
 
-    fprintf (F, "##  $Id$\n");
-    fprintf (F, "##\n");
     fprintf (F, "##  %s -- Configuration of incoming news feeds\n", q);
     free(r);
     fprintf (F, "##\n\n");

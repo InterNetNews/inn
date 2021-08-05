@@ -5,9 +5,6 @@
 # Filename: archivegz.pl
 # Author: Stephen M. Benoit (benoits@servicepro.com)
 # Created: Wed Apr 14 13:56:01 1999
-# Version: $Id$
-#
-$RCSID='$Id$ ';
 
 # Specify command line options, and decode the command line.
 
@@ -16,7 +13,6 @@ require 'newusage.pl';
 @opts =
   (
    "help|usage;;print this message",
-   "version;;print version",
    "a=s;;directory to archive in instead of the default",
    "f;;directory names will be flattened out",
    "i=s;;append one line to the index file for each article (Destination name, Message ID, Subject)",
@@ -42,7 +38,6 @@ if ($badarg || $badopt || $opt_help)
     &NUsage($0,0,'',@opts);
     exit ($badopt||$badarg);
   } 
-if ($opt_version) {print STDERR "$RCSID\n"; exit 0}
 
 # --------------------------------------------------------------------
 

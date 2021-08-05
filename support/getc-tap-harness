@@ -1,7 +1,5 @@
 #!/bin/sh
 
-##  $Id$
-##
 ##  Synchronize INN files maintained in c-tap-harness with upstream.
 ##
 ##  This script downloads the latest version of the files maintained
@@ -42,30 +40,19 @@ download ()
   else
     if [ "$2" = "tests" ] || [ "$2" = "tests/docs" ] || [ "$2" = "tests/tap" ]
     then
-      # Add the SVN Id keyword at the beginning of source code files,
-      # and update the path of included C header files.
+      # Update the path of included C header files.
       # Changes in shell, Perl and C files are not the same.
       # Also, do not modify the README file.
-      if [ "$3" = "libtap.sh" ]
-      then
-        sed -i -e "1 i \\
-# \$Id\$\\
-#" \
-               ${TEMP}
-      elif [ "$3" = "pod.t" ]
+      if [ "$3" = "pod.t" ]
       then
         # Apply specific changes to POD checking, so as to best suit
         # our needs.
-        sed -i -e "3 i \\
-# \$Id\$\\
-#" \
-               -e '5,9d' \
+        sed -i -e '5,9d' \
                ${TEMP}
         chmod 755 ${TEMP}
       elif [ "$3" != "README" ]
       then
-        sed -i -e '1 s/$/ \$Id\$\n */' \
-               -e 's/^#include <tests\/tap\//#include <tap\//g' \
+        sed -i -e 's/^#include <tests\/tap\//#include <tap\//g' \
                ${TEMP}
       fi
     fi
@@ -73,7 +60,7 @@ download ()
     # Specific additions to a few files.
     if [ "$3" = "basic.c" ]
     then
-      sed -i -e "58 i \\
+      sed -i -e "57 i \\
 /* Specific to the integration of C TAP Harness in INN. */\\
 #ifndef LIBTEST_NEW_FORMAT\\
 # include \"inn/libinn.h\"\\
@@ -133,9 +120,9 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 }\\
 #endif\\
 " \
-             -e "154 i \\
+             -e "153 i \\
 #ifndef INN_LIBINN_H" \
-             -e "188 i \\
+             -e "187 i \\
 #endif" \
              -e 's/^ok.int /new_ok(int /g' \
              -e 's/^skip.const /new_skip(const /g' \
@@ -146,7 +133,7 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 
     if [ "$3" = "basic.h" ]
     then
-      sed -i -e "77 i \\
+      sed -i -e "76 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok(int n, int success);\\
@@ -172,14 +159,14 @@ void test_init(int count);\\
 # define skip new_skip\\
 # define ok_block new_ok_block\\
 # define skip_block new_skip_block" \
-             -e "92 i \\
+             -e "91 i \\
 #endif" \
              ${TEMP}
     fi
 
     if [ "$3" = "float.c" ]
     then
-      sed -i -e "51 i \\
+      sed -i -e "50 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void\\
@@ -194,7 +181,7 @@ ok_double(int n UNUSED, double wanted, double seen)\\
 
     if [ "$3" = "float.h" ]
     then
-      sed -i -e "39 i \\
+      sed -i -e "38 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok_double(int n, double wanted, double seen);\\
@@ -203,7 +190,7 @@ void ok_double(int n, double wanted, double seen);\\
     fi
 
     mv -f ${TEMP} ../$2/$3
-    git status ../$2/$3
+    git status --short ../$2/$3
   fi
 }
 
