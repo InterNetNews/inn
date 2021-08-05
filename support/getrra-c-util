@@ -1,7 +1,5 @@
 #!/bin/sh
 
-##  $Id$
-##
 ##  Synchronize INN files maintained in rra-c-util with upstream.
 ##
 ##  This script downloads the latest version of the files maintained
@@ -41,8 +39,7 @@ download ()
   then
     echo "File $1 does not exist in upstream package"
   else
-    # Add the SVN Id keyword at the beginning of source code files,
-    # and update the path of included C header files.
+    # Update the path of included C header files.
     # Change "RRA_" to "INN_", "rra_" to "inn_", and "UTIL_" to "INN_"
     # so as to keep a homogeneous naming convention in INN source code.
     # Changes in shell, m4 and C files are not the same.
@@ -50,8 +47,6 @@ download ()
     then
       sed -i -e 's/RRA_/INN_/g' \
              -e 's/rra_/inn_/g' \
-             -e '1 a\
-dnl \$Id\$' \
              ${TEMP}
 
       # Remove useless function for INN.
@@ -62,7 +57,7 @@ dnl \$Id\$' \
              ${TEMP}
       elif [ "$3" = "sqlite3.m4" ]
       then
-        sed -i -e "43 i \\
+        sed -i -e "42 i \\
 dnl Ensures SQLite v3 meets our minimum version requirement.\\
 AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\\
 #include <sqlite3.h>\\
@@ -89,7 +84,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
     [AS_IF([test x\"\$1\" = xtrue],\\
         [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\\
 " \
-               -e '43,63d' \
+               -e '42,62d' \
              ${TEMP}
       fi
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
@@ -99,10 +94,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
       if [ "$3" = "xmalloc.t" ]
       then
         # Path should be updated in this shell script.
-        sed -i -e "3 i \\
-# \$Id\$\\
-#" \
-               -e 's/\$C_TAP_BUILD\/util/\$C_TAP_BUILD\/lib/g' \
+        sed -i -e 's/\$C_TAP_BUILD\/util/\$C_TAP_BUILD\/lib/g' \
                ${TEMP}
         chmod 755 ${TEMP}
       else
@@ -236,7 +228,6 @@ extern char * strtok(char *, const char *);\\
                -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
                -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
                -e 's/<tests\/util\/\(.*\)>/"lib\/\1"/g' \
-               -e '1 s/$/ \$Id\$\n */' \
                ${TEMP}
 
         # For compatibility with the integration of C TAP Harness in INN.
@@ -268,7 +259,7 @@ extern char * strtok(char *, const char *);\\
     fi
 
     mv -f ${TEMP} ../$2/$3
-    git status ../$2/$3
+    git status --short ../$2/$3
   fi
 }
 

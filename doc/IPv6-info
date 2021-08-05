@@ -1,6 +1,6 @@
 Notes about IPv6 support in INN:
 
-   This is $Revision$, dated $Date$.
+   These notes were last updated on 2014-09-17.
 
    Note that starting from INN 2.6.0, IPv6 is unconditionally enabled, when
    available.  The --enable-ipv6 configure flag no longer exists.

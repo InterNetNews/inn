@@ -6,7 +6,6 @@
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
 # Project:      INN
 # File:         pullnews
-# RCSId:        $Id$
 #
 # History:
 #               Full changelog can be found in the Git commit history of the
@@ -65,10 +64,6 @@ my $pathdb = $ENV{HOME};
 require 5.004;
 
 $0 =~ s!.*/!!;
-
-my $rcsID =<<'EOM';
-$Id$
-EOM
 
 $SIG{INT} = \&outtaHere;
 $SIG{QUIT} = \&bail;
