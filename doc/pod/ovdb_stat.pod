@@ -92,8 +92,6 @@ because it may leave stale locks in the database environment.
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 ovdb(5).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for the control channel.
 **
 **  Create a Unix-domain datagram socket that processes on the local server

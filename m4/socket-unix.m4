@@ -1,5 +1,4 @@
 dnl Various checks for UNIX domain socket support and macros.
-dnl $Id$
 dnl
 dnl This is a collection of various Autoconf macros for checking UNIX domain
 dnl socket properties.  The macros provided are:

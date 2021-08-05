@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for setting or clearing file descriptor flags.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

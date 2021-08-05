@@ -1,7 +1,3 @@
-/*  $Id$
-**
-*/
-
 #ifndef INN_LIST_H
 #define INN_LIST_H 1
 

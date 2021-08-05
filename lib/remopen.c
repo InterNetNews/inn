@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Open a connection to a remote NNTP server.
 */
 

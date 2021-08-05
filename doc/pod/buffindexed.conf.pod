@@ -150,8 +150,6 @@ user to read and write.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 Converted to POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 expireover(8), inn.conf(5), inndf(8), makehistory(8).

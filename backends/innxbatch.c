@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Transmit batches to remote site, using the XBATCH command
 **  Modelled after innxmit.c and nntpbatch.c
 **

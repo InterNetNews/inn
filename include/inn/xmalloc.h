@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for malloc routines with failure handling.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

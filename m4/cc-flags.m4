@@ -1,5 +1,4 @@
 dnl Check whether the compiler supports particular flags.
-dnl $Id$
 dnl
 dnl Provides INN_PROG_CC_FLAG and INN_PROG_LD_FLAG, which checks whether a
 dnl compiler supports a given flag for either compilation or linking,

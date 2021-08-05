@@ -1,5 +1,4 @@
 dnl aux-libs.m4 -- Search for libraries and store them a variable.
-dnl $Id$
 dnl
 dnl Search for a particular library, and if found, add that library to the
 dnl specified variable (the third argument) and run the commands given in the

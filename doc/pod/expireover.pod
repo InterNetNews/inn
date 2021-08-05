@@ -145,8 +145,6 @@ Written by Rob Robertson <rob@violet.berkeley.edu> and Rich $alz
 <rsalz@uunet.uu.net> (with help from Dave Lawrence <tale@uunet.uu.net>)
 for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), ctlinnd(8), expire(8), expire.ctl(5), inn.conf(5),

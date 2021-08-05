@@ -1,5 +1,4 @@
 dnl mmap.m4 -- Probe for mmap properties.
-dnl $Id$
 dnl
 dnl The mmap macro that comes with Autoconf doesn't do anything useful.
 dnl Define a new INN_FUNC_MMAP that probes for a working mmap that supports

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  An extremely lightweight receive-only NNTP server.
 **
 **  Copyright 2003, 2004 Russ Allbery <eagle@eyrie.org>

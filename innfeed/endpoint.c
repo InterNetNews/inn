@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the innfeed EndPoint object class.
 **
 **  Written by James Brister <brister@vix.com>

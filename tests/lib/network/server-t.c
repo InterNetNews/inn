@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Test suite for network server functions.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

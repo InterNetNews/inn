@@ -1,4 +1,3 @@
-/* $Id$ */
 /* pwrite test suite. */
 
 #include "config.h"

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview API for storing and retrieving overview information.
 **
 **  This header defines the overview API, which consists of a set of functions

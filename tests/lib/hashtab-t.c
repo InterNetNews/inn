@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for lib/hashtab.c. */
 
 #include "config.h"

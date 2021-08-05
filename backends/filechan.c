@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  An InterNetNews channel process that splits a funnel entry into
 **  separate files.  Originally from Robert Elz <kre@munnari.oz.au>.
 */

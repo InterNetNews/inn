@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  INN utility functions.
 **
 **  This is a collection of miscellaneous utility functions that aren't

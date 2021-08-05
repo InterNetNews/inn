@@ -1,5 +1,4 @@
 #! /bin/sh 
-##  $Revision$
 ##
 ##  Safely get a file from the samples directory.  Usage:
 ##	getsafe <sample> <localfile>

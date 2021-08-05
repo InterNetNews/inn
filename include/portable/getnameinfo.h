@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement implementation of getnameinfo.
  *
  * This is an implementation of the getnameinfo function for systems that lack

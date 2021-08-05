@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Authenticate a user against a remote radius server.
 */
 

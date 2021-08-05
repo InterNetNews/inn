@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Here be declarations of functions in the InterNetNews library.
 */
 

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability wrapper around <sys/un.h>.
  *
  * This wrapper exists primarily to define SUN_LEN if not defined by the

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Discover the fully-qualified domain name of the local host.
 */
 

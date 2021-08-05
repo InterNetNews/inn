@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-# $Id$ 
 # By petri@ibr.cs.tu-bs.de with mods by libove@jerry.alf.dec.com
 #
 #  Script to send xbatches for a site, wrapped around innxbatch

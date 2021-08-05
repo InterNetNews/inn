@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Data structures for the tradindexed overview method.
 **
 **  This header defines the data structures used by the tradindexed overview

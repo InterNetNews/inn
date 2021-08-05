@@ -1,4 +1,3 @@
-/* $Id$ */
 /* innbind test suite. */
 
 #include "config.h"

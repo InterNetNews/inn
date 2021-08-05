@@ -169,8 +169,6 @@ B<scanspool> was written by Landon Curt Noll (chongo was here  /\../\).
 This manual page was written by Florian Schlichting, largely based on
 comments in the script.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5).

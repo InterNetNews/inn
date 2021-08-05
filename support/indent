@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Run indent on source files with INN options.
 ##
 ##  This is a simple wrapper around GNU indent to call it with all of the

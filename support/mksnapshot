@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Build a snapshot of the current tree.
 ##
 ##  Meant to be run on a fresh Git checkout, this script does the necessary

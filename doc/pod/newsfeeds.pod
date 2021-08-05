@@ -836,8 +836,6 @@ the standard newsfeeds entries used by most sites.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Reformatted
 and rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), buffchan(8), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),

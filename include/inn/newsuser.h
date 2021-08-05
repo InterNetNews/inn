@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Declarations of functions to ensure running as "news" user/group.
 **
 **  By Ivan Shmakov, 2007.

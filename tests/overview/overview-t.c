@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Overview test suite, usable for any of the overview methods. */
 
 /* Compile this program with OVTYPE defined to one of the valid overview

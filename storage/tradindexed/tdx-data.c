@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview data file handling for the tradindexed overview method.
 **
 **  Implements the handling of the .IDX and .DAT files for the tradindexed

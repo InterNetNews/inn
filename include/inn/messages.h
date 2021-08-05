@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for message and error reporting (possibly fatal).
  *
  * The canonical version of this file is maintained in the rra-c-util package,

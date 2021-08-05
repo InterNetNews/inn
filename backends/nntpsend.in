@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Id$
 ##  Send news via NNTP by running several innxmit processes in the background.
 ##  Usage:
 ##	nntpsend [-acDdlNnpr] [-P portnum] [-s size] [-T limit] [-t timeout]

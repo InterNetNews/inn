@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for overview API. */
 
 #include "config.h"

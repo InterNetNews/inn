@@ -1,7 +1,5 @@
 #!/usr/bin/perl -w
 
-##  $Id$
-##
 ##  Miniature server that just answers LIST queries.
 ##
 ##  This is a miniature NNTP server that listens to port 11119 on the IPv4

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Reports free kilobytes (not disk blocks) or free inodes.
 **
 **  Written by Ian Dickinson <idickins@fore.com>

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Line by line reading support from sockets/pipes.
 **
 **  Written by Alex Kiernan <alex.kiernan@thus.net>.

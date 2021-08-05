@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef _OVDB_H_
 #define _OVDB_H_
 

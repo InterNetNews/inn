@@ -1,5 +1,3 @@
-##  $Id$
-
 include ../Makefile.global
 
 # This version number should be increased with every change to the library

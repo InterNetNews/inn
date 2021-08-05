@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Date parsing and conversion routines.
 **
 **  Provides various date parsing and conversion routines, including

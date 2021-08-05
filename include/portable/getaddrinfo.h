@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement implementation of getaddrinfo.
  *
  * This is an implementation of the getaddrinfo family of functions for

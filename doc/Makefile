@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  The only target that this Makefile need support is install.  Everything
 ##  else is a null target (and the top level Makefile shouldn't even attempt
 ##  them in this directory).

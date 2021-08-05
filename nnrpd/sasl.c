@@ -1,7 +1,5 @@
 /*
 ** AUTHINFO SASL functionality.
-**
-** $Id$
 */
 
 #include "config.h"

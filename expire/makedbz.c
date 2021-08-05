@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Rebuild dbz file for history db.
 */
 

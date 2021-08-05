@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Group index handling for the tradindexed overview method.
 **
 **  Implements the handling of the group.index file for the tradindexed

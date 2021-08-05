@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing mkstemp.
  *
  * Provides the same functionality as the library function mkstemp for those

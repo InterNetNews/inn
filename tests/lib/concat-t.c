@@ -1,8 +1,6 @@
 /*
  * concat test suite.
  *
- * $Id$
- *
  * The canonical version of this file *used to be* maintained in the
  * rra-c-util package, which can be found at
  * <https://www.eyrie.org/~eagle/software/rra-c-util/>.

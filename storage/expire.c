@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Code for overview-driven expiration.
 **
 **  In order to expire on a per-newsgroup (instead of per-storage-class)

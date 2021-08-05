@@ -219,8 +219,6 @@ where C<ONE> will be whatever you called your cycbuff.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 Rewritten into POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 ctlinnd(8), innd(8), nnrpd(8), sm(1), storage.conf(5).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Interface implementation for the tradindexed overview method.
 **
 **  This code converts between the internal interface used by the tradindexed

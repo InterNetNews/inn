@@ -1,4 +1,3 @@
-/* $Id$ */
 /* confparse test suite. */
 
 #include "config.h"

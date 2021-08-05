@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Get data from history database.
 */
 

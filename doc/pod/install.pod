@@ -1739,6 +1739,4 @@ listed in F<control.ctl>.  If a hierarchy key has multiple user IDs, you
 may have to remove all the user IDs except the one that matches the
 F<control.ctl> entry using C<gpg --edit-key> and the C<delkey> command.
 
-$Id$
-
 =cut

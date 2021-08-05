@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the innfeed Connection class.
 **
 **  Written by James Brister <brister@vix.com>

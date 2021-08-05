@@ -774,8 +774,6 @@ Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Updated
 to support FTP fetching by David Lawrence <tale@isc.org>.  Converted to
 POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 By Landon Curt Noll <chongo@toad.com> (chongo was here /\../\).
 
 Copyright (c) Landon Curt Noll, 1993.  All rights reserved.

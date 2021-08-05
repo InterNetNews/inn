@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement implementation of alloca.
 **
 **  Written by Russ Allbery <eagle@eyrie.org>

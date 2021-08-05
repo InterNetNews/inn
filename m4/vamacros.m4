@@ -1,5 +1,4 @@
 dnl Check for support for variadic macros.
-dnl $Id$
 dnl
 dnl This file defines two macros for probing for compiler support for variadic
 dnl macros.  Provided are INN_C_C99_VAMACROS, which checks for support for the

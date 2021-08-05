@@ -121,8 +121,6 @@ B<docheckgroups> called with the B<-u> flag.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
 POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 active.times(5), actsync(8), controlchan(8), ctlinnd(8), docheckgroups(8),

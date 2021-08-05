@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Delete a list of filenames or tokens from stdin.
 **
 **  Originally written by <kre@munnari.oz.au> (to only handle files).

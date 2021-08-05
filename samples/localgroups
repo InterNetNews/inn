@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Put your local newsgroups, along with their descriptions,
 ##  in this file (formatted like the newsgroups file) if you want
 ##  them to be recognized by docheckgroups.  They would otherwise

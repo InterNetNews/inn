@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability macros used in include files.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

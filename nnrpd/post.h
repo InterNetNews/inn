@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  NetNews Reading Protocol server.
 */
 

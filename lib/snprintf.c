@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing snprintf or vsnprintf.
  *
  * The following implementation of snprintf was taken mostly verbatim from

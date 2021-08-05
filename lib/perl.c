@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Embedded Perl support for INN.
 **
 **  Originally written by Christophe Wolfhugel <wolf@pasteur.fr> (although

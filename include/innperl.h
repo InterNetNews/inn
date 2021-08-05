@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Declarations for embedded Perl.
 */
 

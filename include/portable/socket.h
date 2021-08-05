@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability wrapper around <sys/socket.h> and friends.
  *
  * This header file is the equivalent of:

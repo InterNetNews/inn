@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Various miscellaneous utility functions for innd internal use.
 */
 

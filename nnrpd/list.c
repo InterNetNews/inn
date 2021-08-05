@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  LIST commands.
 */
 

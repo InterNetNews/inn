@@ -101,8 +101,6 @@ Print INN's version.  This is equivalent to C<innconfval version>.
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), INN::Config(3pm).

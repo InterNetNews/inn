@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Utility functions to test message handling.
  *
  * These functions set up a message handler to trap warn and notice output

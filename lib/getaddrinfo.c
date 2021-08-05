@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing getaddrinfo.
  *
  * This is an implementation of getaddrinfo for systems that don't have one so

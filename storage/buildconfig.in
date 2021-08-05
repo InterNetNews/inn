@@ -1,7 +1,5 @@
 #! /usr/bin/perl
 
-##  $Id$
-##
 ##  Generate linkage code and makefiles for storage and overview methods.
 ##
 ##  Goes through all subdirectories of the current directory and finds

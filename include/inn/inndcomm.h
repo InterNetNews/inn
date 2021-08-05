@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Here be values used for communicating with the server once it is
 **  running.
 */

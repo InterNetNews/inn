@@ -1,8 +1,4 @@
-/*
-** $Id$
-*/
-
-/* shared memory control utility */
+/* Shared memory control utility. */
 
 #include "config.h"
 #include "clibrary.h"

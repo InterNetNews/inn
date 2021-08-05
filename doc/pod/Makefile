@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This Makefile contains rules to generate the files derived from POD
 ##  source.  Normal make commands at the top level of the source tree don't
 ##  recurse into this directory.  These targets are only used by

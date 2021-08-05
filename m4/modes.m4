@@ -1,5 +1,4 @@
 dnl modes.m4 -- Setting file and installation modes.
-dnl $Id$
 dnl
 dnl INN defaults to a umask of 002 for historical reasons, but offers an
 dnl option to change them.  It also has some programs that are occasionally

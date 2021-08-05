@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * actsync - sync or merge two active files
  *
  * usage:
@@ -51,7 +50,7 @@
  *	host1		host to be changed 	            (def: local server)
  *	host2		reference host used in merge
  */
-/* 
+/*
  * By: Landon Curt Noll  	chongo@toad.com		(chongo was here /\../\)
  *
  * Copyright (c) Landon Curt Noll, 1996.

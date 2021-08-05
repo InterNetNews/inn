@@ -137,8 +137,6 @@ Note that the B<-u> option can be used even if no upgrades are needed.
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 ovdb(5), makehistory(8), rc.news(8).

@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for general channel handling. */
 
 #include "config.h"

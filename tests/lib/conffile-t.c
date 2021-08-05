@@ -1,4 +1,3 @@
-/* $Id$ */
 /* conffile test suite. */
 
 #include "config.h"

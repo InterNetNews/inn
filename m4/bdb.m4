@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for the Berkeley DB library.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with the Berkeley DB
 dnl library.  Provides the --with-bdb, --with-bdb-lib, and --with-bdb-include

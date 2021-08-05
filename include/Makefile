@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Currently just handles creation of the automatically generated header
 ##  files.  Eventually, rules for installing INN's header files will go
 ##  here.

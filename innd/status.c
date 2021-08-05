@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Periodic status reporting.
 */
 #include "config.h"

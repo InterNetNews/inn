@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Set things up for setproctitle portably.
 **
 **  If the system supports setproctitle, we need to define away

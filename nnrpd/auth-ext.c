@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  External authenticator support.
 **
 **  Run an external resolver or authenticator to determine the username of the

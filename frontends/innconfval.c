@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Get a config value from INN.
 */
 

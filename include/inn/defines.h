@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Portable defines used by other INN header files.
 **
 **  In order to make the libraries built by INN usable by other software,

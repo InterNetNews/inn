@@ -940,6 +940,4 @@ technical details as needed, useful when working on IPv6 support in INN.
 
 =back
 
-$Id$
-
 =cut

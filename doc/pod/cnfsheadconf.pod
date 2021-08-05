@@ -37,8 +37,6 @@ Prompt for modifications to make to cycbuff header.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted
 to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 cycbuff.conf(5), inn.conf(5), storage.conf(5).

@@ -1,6 +1,5 @@
 %{
-/*  $Id$
-**
+/*
 **  A flex input file for the innfeed config file.
 **
 **  Written by James Brister <brister@vix.com>

@@ -1,5 +1,4 @@
 dnl Test for a working C99 snprintf.
-dnl $Id$
 dnl
 dnl Check for a working snprintf.  Some systems have an snprintf that doesn't
 dnl nul-terminate if the buffer isn't large enough.  Others return -1 if the

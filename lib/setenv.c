@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing setenv.
  *
  * Provides the same functionality as the standard library routine setenv for

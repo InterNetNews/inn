@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for auth_external. */
 
 #define LIBTEST_NEW_FORMAT 1

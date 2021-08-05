@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Utility functions for speaking the NNTP protocol.
 **
 **  These functions speak the NNTP protocol over stdio FILEs.  So far, only

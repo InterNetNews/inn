@@ -27,8 +27,6 @@ automatically takes care of stopping B<ovdb_monitor>.
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 ovdb(5), ovdb_init(8), rc.news(8).

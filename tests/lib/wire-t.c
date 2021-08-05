@@ -1,4 +1,3 @@
-/* $Id$ */
 /* wire test suite. */
 
 #include "config.h"

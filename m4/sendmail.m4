@@ -1,5 +1,4 @@
 dnl sendmail.m4 -- Checks for the path to sendmail.
-dnl $Id$
 dnl
 dnl We have a custom probe for sendmail since we want to look in non-standard
 dnl locations for it, and another custom macro to allow users to override the

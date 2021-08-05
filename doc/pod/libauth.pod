@@ -64,8 +64,6 @@ respectively?
 
 Written by Jeffrey S<M. Vinocur> <jeff@litech.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 nnrpd(8), readers.conf(5), F<doc/external-auth>

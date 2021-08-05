@@ -1,7 +1,5 @@
 /*
 ** messageid test suite.
-**
-** $Id$
 */
 
 #define LIBTEST_NEW_FORMAT 1

@@ -1,4 +1,3 @@
-/* $Id$ */
 /* ident test suite. */
 
 #include "config.h"

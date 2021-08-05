@@ -1,4 +1,4 @@
-/*  $Id$
+/*
 **  Read file list on standard input and spew out batch files.
 */
 

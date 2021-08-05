@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Dispatch cvectors of commands to functions.
 **
 **  This is a generic command dispatching system designed primary to handle

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Helpful macros for TAP header files.
  *
  * This is not, strictly speaking, related to TAP, but any TAP add-on is

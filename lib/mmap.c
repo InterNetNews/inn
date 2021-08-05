@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Manipulation routines for memory-mapped pages.
 **
 **  Written by Alex Kiernan (alex.kiernan@thus.net)

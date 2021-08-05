@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Ternary search trie implementation.
 **
 **  A ternary search trie stores key/value pairs where the key is a

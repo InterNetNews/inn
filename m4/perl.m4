@@ -1,5 +1,4 @@
 dnl Probe for Perl properties and, optionally, flags for embedding Perl.
-dnl $Id$
 dnl
 dnl Provides the following macros:
 dnl

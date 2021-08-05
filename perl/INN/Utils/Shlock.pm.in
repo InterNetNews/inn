@@ -1,11 +1,9 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-##  $Id$
 ##
 ##  Perl module for wrapping the shlock program shipped with INN.
 ##
-
 package INN::Utils::Shlock;
 
 use strict;
@@ -180,8 +178,6 @@ This function returns C<1> on success, C<0> on failure.
 =head1 HISTORY
 
 Documentation written by Julien Elie for InterNetNews.
-
-$Id$
 
 =head1 SEE ALSO
 

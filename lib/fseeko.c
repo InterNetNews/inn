@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement for a missing fseeko.
 **
 **  fseeko is a version of fseek that takes an off_t instead of a long.  For

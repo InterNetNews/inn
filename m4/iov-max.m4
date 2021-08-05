@@ -1,5 +1,4 @@
 dnl iov-max.m4 -- Probe for the maximum number of iovecs accepted by writev.
-dnl $Id$
 dnl
 dnl Check for the maximum number of elements in an iovec (IOV_MAX).  SVr4
 dnl systems appear to use that name for this limit (checked Solaris 2.6, IRIX

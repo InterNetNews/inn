@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Here be declarations related to the storage subsystem.
 */
 

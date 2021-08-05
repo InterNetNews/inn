@@ -3296,6 +3296,4 @@ directory, for now).
 
 =back
 
-$Id$
-
 =cut

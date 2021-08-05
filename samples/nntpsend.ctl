@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Sample nntpsend configuration file.
 ##
 ##  Format:

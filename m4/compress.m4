@@ -1,5 +1,4 @@
 dnl compress.m4 -- Log compression handling.
-dnl $Id$
 dnl
 dnl By default, INN compresses logs with gzip, but some people may want to use
 dnl compress instead, and others may want to use bzip2, or even not compress

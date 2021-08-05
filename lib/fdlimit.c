@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Portably determine or set the limit on open file descriptors.
 **
 **  Pretty much all platforms these days have getrlimit and setrlimit, so

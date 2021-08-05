@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview data processing.
 **
 **  Here be routines for creating and checking the overview data, the

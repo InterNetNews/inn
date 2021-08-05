@@ -338,8 +338,6 @@ Geraint S<A. Edwards> greatly improved B<pullnews>, adding no more than S<16 new
 recognized flags, fixing some bugs and integrating the B<backupfeed>
 contrib script by Kai Henningsen, adding again S<6 other> flags.
 
-$Id$
-
 =head1 SEE ALSO
 
 incoming.conf(5), rnews(1).

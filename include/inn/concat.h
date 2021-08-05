@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for string concatenation with dynamic memory allocation.
  *
  * The canonical version of this file *used to be* maintained in the

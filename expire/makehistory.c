@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Rebuild history/overview databases.
 */
 

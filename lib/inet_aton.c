@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing inet_aton.
  *
  * Provides the same functionality as the standard library routine

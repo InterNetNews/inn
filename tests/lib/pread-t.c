@@ -1,4 +1,3 @@
-/* $Id$ */
 /* pread test suite. */
 
 #include "config.h"

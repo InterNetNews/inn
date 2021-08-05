@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Storage manager module header for Cyclic News File System method.
 */
 

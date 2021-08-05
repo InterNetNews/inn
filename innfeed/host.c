@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the innfeed Host class.
 **
 **  Written by James Brister <brister@vix.com>

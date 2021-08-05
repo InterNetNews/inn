@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Miscellaneous commands.
 */
 #include "config.h"

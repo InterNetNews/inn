@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Utility functions for tests that use subprocesses.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

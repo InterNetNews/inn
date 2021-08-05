@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Sample control file for innwatch.
 ##
 ##  Indicates what to run to test the state of the news system, and what

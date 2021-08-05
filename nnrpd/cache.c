@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Message-ID to storage token cache.
 **
 **  Written by Alex Kiernan (alex.kiernan@thus.net).

@@ -81,8 +81,6 @@ Originally written by Christopher S<P. Lindsey>.  This documentation was
 written by Russ Allbery <eagle@eyrie.org> based on Christopher's original
 F<README> file.
 
-$Id$
-
 =head1 SEE ALSO
 
 ckpasswd(8), nnrpd(8), readers.conf(5).

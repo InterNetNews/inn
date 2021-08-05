@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * malloc routines with failure handling.
  *
  * Usage:

@@ -1,5 +1,4 @@
 dnl Check for a working inet_ntoa.
-dnl $Id$
 dnl
 dnl Check whether inet_ntoa is present and working.  Since calling inet_ntoa
 dnl involves passing small structs on the stack, present and working versions

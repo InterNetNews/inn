@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for ARTparse. */
 
 #include "config.h"

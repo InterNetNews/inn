@@ -45,8 +45,6 @@ the time is not necessarily the same on every news server.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
 POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), convdate(1), ctlinnd(8), getlist(1), inn.conf(5), innd(8),

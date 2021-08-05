@@ -1,5 +1,3 @@
-/* $Id$ */
-
 /* Locks the files given on the command line into memory using mlock.
    This code has only been tested on Solaris and may not work on other
    platforms.

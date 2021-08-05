@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * ovdb.c
  * ovdb 2.00
  * Overview storage using Berkeley DB 4.4 or higher

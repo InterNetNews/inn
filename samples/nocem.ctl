@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Configuration file for perl-nocem(8).
 ##  This file specifies the NoCeM issuers and notices you want to follow.
 ##

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  tls.c -- TLS functions.
 **  Copyright (C) 2000 Kenichi Okada <okada@opaopa.org>.
 **

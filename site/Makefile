@@ -1,4 +1,3 @@
-##  $Revision$
 include ../Makefile.global
 top = ..
 

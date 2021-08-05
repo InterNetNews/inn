@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Cache functions for open overview data files.
 **
 **  This code maintains a cache of open overview data files to avoid some of

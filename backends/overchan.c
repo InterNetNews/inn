@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Add entries to the overview database.
 **
 **  overchan is intended to run as a channel feed to store data into the

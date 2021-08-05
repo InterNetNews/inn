@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability wrapper around <sys/uio.h>.
  *
  * Provides a definition of the iovec struct for platforms that don't have it

@@ -1,7 +1,5 @@
 #! /bin/sh
 #
-# $Id$
-#
 # Test suite for xmalloc and friends.
 #
 # The canonical version of this file is maintained in the rra-c-util package,

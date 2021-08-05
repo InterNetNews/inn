@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Compile-time INN configuration.
 **
 **  This header contains all the definitions of compile-time constants that

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Send a LIST command to an NNTP server and print the results.
 */
 

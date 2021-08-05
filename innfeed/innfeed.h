@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  innfeed's configuration values.
 **
 **  Written by James Brister <brister@vix.com>

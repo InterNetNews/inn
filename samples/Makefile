@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  All the actual installation work of any files in the samples directory
 ##  is done via the site directory, so that one can maintain one's news
 ##  configuration in the site directory and use make commands to update the

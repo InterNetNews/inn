@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Test suite for error handling routines.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

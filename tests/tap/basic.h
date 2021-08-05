@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Basic utility routines for the TAP protocol.
  *
  * This file is part of C TAP Harness.  The current version plus supporting

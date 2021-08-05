@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing asprintf and vasprintf.
  *
  * Provides the same functionality as the standard GNU library routines

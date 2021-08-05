@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for vector handling.
  *
  * A vector is a list of strings, with dynamic resizing of the list as new

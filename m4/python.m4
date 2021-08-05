@@ -1,5 +1,4 @@
 dnl Probe for Python properties and, optionally, flags for embedding Python.
-dnl $Id$
 dnl
 dnl Provides the following macros:
 dnl

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Ensure running as "news" user/group.
  *
  * By Ivan Shmakov, 2007.

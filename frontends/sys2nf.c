@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Read a C news "sys" file and split it up into a set of INN
 **  newsfeeds entries.  Also works with B news.
 **

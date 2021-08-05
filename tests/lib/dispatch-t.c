@@ -1,4 +1,3 @@
-/* $Id$ */
 /* dispatch test suite. */
 
 #include "config.h"

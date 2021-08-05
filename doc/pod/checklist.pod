@@ -1,7 +1,5 @@
 =head1 Introduction
 
-$Id$
-
 This is an installation checklist written by Rebecca Ore, intended to be
 the beginning of a different presentation of the information in F<INSTALL>,
 since getting started with installing INN can be complex.  Further

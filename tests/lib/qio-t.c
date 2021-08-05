@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for the Quick I/O library */
 
 #define LIBTEST_NEW_FORMAT 1

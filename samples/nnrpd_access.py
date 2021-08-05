@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This is a sample access module for the Python nnrpd hook.
 ##
 ##  See the INN Python Filtering and Authentication Hooks documentation

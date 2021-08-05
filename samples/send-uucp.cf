@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Configuration file for send-uucp(8).
 ##
 ##  It specifies to which remote UUCP sites news batches from the outgoing

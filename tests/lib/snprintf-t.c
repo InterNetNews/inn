@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * snprintf test suite.
  *
  * The canonical version of this file was maintained (until 2020) in the

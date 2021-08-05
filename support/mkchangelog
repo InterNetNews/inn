@@ -1,7 +1,5 @@
 #! /usr/bin/perl -w
 
-##  $Id$
-##
 ##  Generate a ChangeLog from svn log using svn2cl.
 ##
 ##  This script prompts the user for a date from which to pull log entries

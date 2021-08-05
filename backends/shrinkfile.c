@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Shrink files on line boundaries.
 **
 **  Written by Landon Curt Noll <chongo@toad.com>, and placed in the

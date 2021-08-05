@@ -1,7 +1,5 @@
 #! /usr/bin/perl -w
 
-##  $Id$
-##
 ##  Convert an old-style nnrp.access file to readers.conf format.
 ##  (readers.conf replaced nnrp.access, starting with INN 2.3.0.)
 ##

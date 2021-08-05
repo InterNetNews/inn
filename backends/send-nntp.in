@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
 ##  SH script to send NNTP news out.
 
 PROGNAME=`basename $0`

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Library routines to let other programs control innd.
 */
 

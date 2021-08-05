@@ -113,6 +113,4 @@ you write, and F<ident.c> as an example for any resolvers.
 Written by Aidan Cully for InterNetNews.  This documentation was rewritten
 in POD by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
-$Id$
-
 =cut

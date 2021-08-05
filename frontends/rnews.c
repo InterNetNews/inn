@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  A front-end for InterNetNews.
 **
 **  Read UUCP batches and offer them up NNTP-style.  Because we may end

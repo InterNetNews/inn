@@ -1638,8 +1638,6 @@ values for reference.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews and since
 modified, updated, and reorganized by innumerable other people.
 
-$Id$
-
 =head1 SEE ALSO
 
 inews(1), innd(8), innwatch(8), makehistory(8), nnrpd(8), rnews(1).

@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Id$
 ##  Watch the state of the system relative to the news subsystem.
 ##  As controlled by the control file, when space or inodes are almost
 ##  exhausted, innd is throttled or paused, similarly if the load is

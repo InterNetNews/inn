@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Configuration file parsing interface.
 */
 

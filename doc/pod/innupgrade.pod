@@ -120,6 +120,4 @@ alternate file.
 
 Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =cut

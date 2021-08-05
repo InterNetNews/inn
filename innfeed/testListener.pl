@@ -4,7 +4,6 @@
 # Start Date:   Wed Jan  3 00:09:01 1996
 # Project:      INN -- innfeed
 # File:         testListener.pl
-# RCSId:        $Id$
 # Description:  Generate news files for testing the innfeed feeder.
 #
 #               Run like this:

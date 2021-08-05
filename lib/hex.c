@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Convert data to or from an ASCII hex representation.
 **
 **  Converts arbitrary binary data to or from a representation as an ASCII

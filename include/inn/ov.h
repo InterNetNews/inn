@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef INN_OV_H
 #define INN_OV_H 1
 

@@ -102,8 +102,6 @@ to protect it from the shell.
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Rewritten
 in POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), active.times(5), distrib.pats(5), distributions(5), inn.conf(5),

@@ -1,4 +1,3 @@
-##  $Revision$    
 ##  nnrpd.track - file to specify which hosts to be tracked by nnrpd
 ##  Format:
 ##      <host>:<identity>

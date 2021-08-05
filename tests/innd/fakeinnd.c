@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Global symbols and tables required for innd-related files to link. */
 
 /* This file is required in order to test various portions of innd from

@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This is a sample filter for the Perl nnrpd hook.
 ##
 ##  See the INN Perl Filtering and Authentication Hooks documentation

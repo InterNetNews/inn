@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Read batchfiles on standard input and archive them.
 */
 

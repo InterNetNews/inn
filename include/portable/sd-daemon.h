@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability wrapper around systemd-daemon headers.
  *
  * Currently, only sd_is_socket, sd_listen_fds, sd_notify, and sd_notifyf are

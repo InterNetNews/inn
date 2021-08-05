@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement for a missing getpagesize.
 **
 **  Provides getpagesize implemented in terms of sysconf for those systems

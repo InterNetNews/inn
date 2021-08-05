@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Timer functions, to gather profiling data.
 **
 **  These functions log profiling information about where the server spends

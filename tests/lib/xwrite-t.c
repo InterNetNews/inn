@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Test suite for xwrite, xwritev, and xpwrite.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

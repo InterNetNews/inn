@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  COMPRESS functionality.  RFC 8054.
 */
 

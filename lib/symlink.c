@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement symlink that always fails for systems without it.
 **
 **  This is basically a hack to make code in INN simpler and more

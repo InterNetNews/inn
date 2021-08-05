@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Expire the overview database.
 **
 **  This program handles the nightly expiration of overview information.  If

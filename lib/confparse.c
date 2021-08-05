@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Parse a standard block-structured configuration file syntax.
 **
 **  Herein are all the parsing and access functions for the configuration

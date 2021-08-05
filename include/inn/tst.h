@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Ternary search trie implementation.
 **
 **  This implementation is based on the implementation by Peter A. Friend

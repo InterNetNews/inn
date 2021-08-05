@@ -1,4 +1,3 @@
-/* $Id$ */
 /* hash test suite. */
 
 #include "config.h"

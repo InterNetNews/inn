@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Connect to the NNTP server and feed one article.
 */
 

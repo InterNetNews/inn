@@ -56,8 +56,6 @@ Written by Mike Cooper <mcooper@usc.edu>, with modifications by
 <kre@munnari.oz.au>, Steve Groom <stevo@elroy.jpl.nasa.gov> and
 Christophe Wolfhugel <wolf@pasteur.fr>.  Converted to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), innwatch.ctl(5), newslog(5), rc.news(8).

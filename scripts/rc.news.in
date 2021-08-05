@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
 ##  News boot script.  Runs as "news" user.  Run from rc.whatever as:
 ##     su news -s /bin/sh -c /path/to/rc.news >/dev/console
 ##
