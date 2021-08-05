@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for SQLite v3.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with the SQLite library.
 dnl Provides the --with-sqlite3, --with-sqlite3-lib, and

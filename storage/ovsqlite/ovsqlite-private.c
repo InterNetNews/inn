@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #include "ovsqlite-private.h"
 
 #ifdef HAVE_SQLITE3

@@ -1,5 +1,3 @@
-# 
-# RCSId:        $Id$
 # Description:	Sample startup code for Perl hooks in INN. This file, after
 #		it's installed in the right spot, will be loaded when
 #		innd starts up. The following functions should be defined

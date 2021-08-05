@@ -120,8 +120,6 @@ L<https://ftp.isc.org/pub/usenet/CONFIG/> is maintained; they were originally
 written by David Lawrence <tale@isc.org> and updated by Russ Allbery
 <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), controlchan(8), ctlinnd(8), getlist(1), nnrpd(8).

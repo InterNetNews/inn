@@ -105,8 +105,6 @@ have to start B<sqlite-server> manually first.  See sqlite-server(8).
 Initial implementation of ovsqlite written by Bo Lindbergh
 <2bfjdsla52kztwejndzdstsxl9athp@gmail.com> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), makehistory(8), rc.news(8), sqlite-server(8).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Utility for managing a tradindexed overview spool.
 **
 **  This utility can manipulate a tradindexed overview spool in various ways,

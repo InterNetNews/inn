@@ -1,4 +1,3 @@
-/* $Id$ */
 /* makedate test suite */
 
 #include "config.h"

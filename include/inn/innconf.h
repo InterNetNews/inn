@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  inn.conf parser interface.
 **
 **  The interface to reading inn.conf configuration files and managing the

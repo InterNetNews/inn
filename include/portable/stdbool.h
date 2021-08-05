@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Portability wrapper around <stdbool.h>.
  *
  * Provides the bool and _Bool types and the true and false constants,

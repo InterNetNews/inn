@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Standard system includes and portability adjustments.
  *
  * Declarations of routines and variables in the C library.  Including this

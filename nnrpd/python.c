@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  python.c:  Embed Python in the style of nnrpd's Perl stuff
 **             (authentication, authorization and dynamic hooks
 **             only at this point).

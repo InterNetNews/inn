@@ -229,8 +229,6 @@ using the tradspool article storage method.
 
 Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 makehistory(8), nnrpd(8).

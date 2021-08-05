@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Generate dependencies for INN makefiles
 ##
 ##  This shell script automates the process of updating the dependencies in

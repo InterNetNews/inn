@@ -6,7 +6,6 @@
 # Start Date:   Sat, 24 Aug 1996 22:08:19 +0200
 # Project:      INN 
 # File:         innshellvars.pl
-# RCSId:        $Id$
 # Description:  Set up any and all variables that an INN perl script
 #               might need.  Also sets umask.
 #

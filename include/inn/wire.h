@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Wire format article utilities.
 **
 **  Originally written by Alex Kiernan (alex.kiernan@thus.net)

@@ -1,8 +1,5 @@
-##  $Id$
-##
 ##  Perl module which sets up any and all variables that an
 ##  INN Perl script might need.
-##
 
 package INN::Config;
 
@@ -276,8 +273,6 @@ module.
 F<innshellvars.pl> was written by James Brister <brister@vix.com>
 for InterNetNews in 1996.  It was converted to the INN::Config Perl
 module by Julien Elie in 2007.
-
-$Id$
 
 =head1 SEE ALSO
 

@@ -1,5 +1,4 @@
 #! /bin/sh
-##  $Id$
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
 

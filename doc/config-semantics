@@ -1,5 +1,3 @@
-$Id$
-
 Groups in a configuration file have a well-defined order, namely the order
 in which the groups would be encountered in a depth-first traversal of the
 parse tree.

@@ -137,8 +137,6 @@ Start INN with the C<rc.news> command.
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 ovdb(5), makehistory(8), rc.news(8).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  API to history routines 
 **
 **  Copyright (c) 2001, Thus plc 

@@ -187,8 +187,6 @@ it will print some sort of error message and exit a non-zero status.
 
 Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 crypt(3), nnrpd(8), pam(7), readers.conf(5).

@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef SQLITE_HELPER_H
 #define SQLITE_HELPER_H 1
 

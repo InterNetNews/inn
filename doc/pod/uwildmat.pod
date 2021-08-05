@@ -170,8 +170,6 @@ substantial differences, including the extension to support UTF-8
 characters, and has noticeable functionality changes.  Any bugs present in
 it aren't Rich's fault.
 
-$Id$
-
 =head1 SEE ALSO
 
 grep(1), fnmatch(3), regex(3), regexp(3).

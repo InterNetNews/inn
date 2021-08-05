@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for ternary search tries. */
 
 #include "config.h"

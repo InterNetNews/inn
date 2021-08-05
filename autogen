@@ -1,6 +1,5 @@
 #!/bin/sh
 # autogen -- Run the appropriate commands to bootstrap a Git checkout.
-# $Id$
 
 set -e
 autoconf

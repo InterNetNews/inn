@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id$
 #
 # Test resolver and authenticator, used for testing nnrpd external auth.
 # Saves all of its input into a file named input in the current directory, as

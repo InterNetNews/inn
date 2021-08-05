@@ -1,4 +1,3 @@
-/* $Id$ */
 /* Test suite for storing overview data based on the Xref: header. */
 
 #include "config.h"

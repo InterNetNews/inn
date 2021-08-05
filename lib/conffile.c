@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for reading in incoming.conf-style config files.
 */
 

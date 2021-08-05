@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines compatible with the NNTP "clientlib" routines.
 */
 #include "config.h"

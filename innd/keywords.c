@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Optional keyword generation code.
 **
 **  Additional code for sake of manufacturing Keywords: headers out of air in

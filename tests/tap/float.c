@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Utility routines for writing floating point tests.
  *
  * Currently provides only one function, which checks whether a double is

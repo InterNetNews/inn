@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Concatenate strings with dynamic memory allocation.
  *
  * Usage:

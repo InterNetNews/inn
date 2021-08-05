@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id$
 #
 # Test suite for inndf.
 

@@ -185,8 +185,6 @@ This key requires a boolean value.  It defines whether streaming commands
 Written by Fabien Tassin <fta@sofaraway.org> for InterNetNews.  Converted to
 POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), innd(8), newsfeeds(5), uwildmat(3).

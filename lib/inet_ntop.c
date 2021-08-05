@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing inet_ntop.
  *
  * Provides an implementation of inet_ntop that only supports IPv4 addresses

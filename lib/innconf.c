@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Manage the global innconf struct.
 **
 **  The functions in this file collapse the parse tree for inn.conf into the

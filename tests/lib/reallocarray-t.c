@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * reallocarray test suite.
  *
  * This does some simple sanity checks and checks some of the overflow

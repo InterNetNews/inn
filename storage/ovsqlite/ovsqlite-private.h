@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef OVSQLITE_PRIVATE_H
 #define OVSQLITE_PRIVATE_H 1
 

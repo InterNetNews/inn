@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Timer library interface.
 **
 **  An interface to a simple profiling library.  An application can declare

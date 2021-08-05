@@ -1,7 +1,5 @@
-# $Id$
-#
 # This is a simple, bare-bones example of a systemd-style init script for INN.
-#
+
 [Unit]
 Description=InterNetNews News Server
 Documentation=https://www.eyrie.org/~eagle/software/inn/

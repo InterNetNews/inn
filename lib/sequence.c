@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Sequence space arithmetic routines.
 **
 **  This is a set of routines for implementing so called sequence

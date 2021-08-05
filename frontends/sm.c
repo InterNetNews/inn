@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Provide a command line interface to the storage manager.
 */
 

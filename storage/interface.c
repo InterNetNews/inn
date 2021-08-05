@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Storage Manager interface.
 */
 #include "config.h"

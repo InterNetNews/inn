@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The Buffer class for innfeed.
 **
 **  Written by James Brister <brister@vix.com>

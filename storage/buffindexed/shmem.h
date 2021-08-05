@@ -1,5 +1,5 @@
 /*
-** shared memory control utility
+** Shared memory control utility.
 */
 
 #ifndef SHMEM_H

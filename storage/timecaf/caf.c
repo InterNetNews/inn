@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Library routines needed for handling CAF (Crunched Article Files)
 **  Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96,
 **  modified extensively since then.  Altered to work with storage manager

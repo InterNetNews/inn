@@ -1,5 +1,3 @@
-##  $Id$
-
 include Makefile.global
 
 ##  All installation directories except for $(PATHRUN), which has a

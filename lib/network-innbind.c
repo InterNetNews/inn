@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Utility functions for network connections using innbind.
  *
  * This is a collection of utility functions for network connections and

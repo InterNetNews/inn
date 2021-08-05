@@ -51,8 +51,6 @@ If so, the example above should reflect this functionality.
 
 This documentation was written by Jeffrey S<M. Vinocur> <jeff@litech.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 nnrpd(8), readers.conf(5)

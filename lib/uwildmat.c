@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  wildmat pattern matching with Unicode UTF-8 extensions.
 **
 **  Do shell-style pattern matching for ?, \, [], and * characters.  Might not

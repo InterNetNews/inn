@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Message and error reporting (possibly fatal).
  *
  * Usage:

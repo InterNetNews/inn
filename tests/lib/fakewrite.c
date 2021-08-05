@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Fake write and writev functions for testing xwrite and xwritev.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

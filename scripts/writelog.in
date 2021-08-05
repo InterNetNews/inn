@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Revision$
 ##  Write a log file entry, by either mailing it or writing it safely.
 ##  Usage:
 ##	writelog name text... <input

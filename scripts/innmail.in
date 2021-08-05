@@ -5,7 +5,6 @@
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
 # Project:      INN
 # File:         innmail.pl
-# RCSId:        $Id$
 # Description:  A simple replacement for UCB Mail to avoid nasty security
 #		problems. 
 # 

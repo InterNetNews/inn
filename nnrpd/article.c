@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Article-related routines.
 */
 

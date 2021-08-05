@@ -1,4 +1,3 @@
-/* $Id$ */
 /* hex test suite. */
 
 #include "config.h"

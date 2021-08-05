@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Quick I/O package.
 **
 **  A set of routines optimized for reading through files line by line.

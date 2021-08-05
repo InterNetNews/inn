@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  wildmat test suite.
 **
 **  As of March 11, 2001, this test suite achieves 100% coverage of the

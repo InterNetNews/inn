@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * inet_ntoa test suite.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

@@ -507,8 +507,6 @@ disables source routing.
 
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), ctlinnd(8), dbz(3), history(5), incoming.conf(5), inn.conf(5),

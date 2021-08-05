@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  History v6 implementation against the history API.
 **
 **  Copyright (c) 2001, Thus plc 

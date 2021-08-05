@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Buffered file exploder for innd.
 */
 

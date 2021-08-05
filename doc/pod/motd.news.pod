@@ -33,8 +33,6 @@ to news clients.
 
 Rewritten in POD by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5).

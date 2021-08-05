@@ -1,5 +1,3 @@
-$Id$
-
 This file documents the standardized syntax for INN configuration files.
 This is the syntax that the parsing code in libinn will understand and the
 syntax towards which all configuration files should move.

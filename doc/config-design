@@ -1,5 +1,3 @@
-$Id$
-
 This file is documentation of the design principles that went into INN's
 configuration file syntax, and some rationale for why those principles
 were chosen.

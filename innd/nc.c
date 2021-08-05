@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for the NNTP channel.  Other channels get the descriptors which
 **  we turn into NNTP channels, and over which we speak NNTP.
 */

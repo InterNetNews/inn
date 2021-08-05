@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This is a sample filter for the Python innd hook.
 ##
 ##  See the INN Python Filtering and Authentication Hooks documentation

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Some utility functions for writing authenticators and resolvers.
 */
 

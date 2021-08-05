@@ -304,6 +304,4 @@ L<https://www.isc.org/>.
                                         Katsuhiro Kondou
                                         <inn@isc.org>
 
-$Id$
-
 =cut

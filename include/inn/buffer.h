@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Counted, reusable memory buffer.
  *
  * A buffer is an allocated block of memory with a known size and a separate

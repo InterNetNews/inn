@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Create version.h from INN version information.
 ##
 ##  Makefile.global contains the INN version number and extra version

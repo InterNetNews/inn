@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  sendsys control message handler.
 ##
 ##  Copyright 2001 by Marco d'Itri <md@linux.it>

@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #include "sqlite-helper.h"
 
 #ifdef HAVE_SQLITE3

@@ -33,8 +33,6 @@ See nntpsend(8) for an example of F<nntpsend.ctl> config file.
 Written by Landon Curt Noll <chongo@toad.com> for InterNetNews.  Converted to
 POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 innxmit(1), newsfeeds(5), nntpsend(8), shrinkfile(1).

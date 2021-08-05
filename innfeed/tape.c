@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the innfeed Tape class.
 **
 **  Written by James Brister <brister@vix.com>

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for write and writev replacements to handle partial writes.
  *
  * The canonical version of this file is maintained in the rra-c-util package,

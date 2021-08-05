@@ -122,8 +122,6 @@ Replace <pathbin> and <patharchive> with the appropriate paths.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted to
 POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), newsfeeds(5).

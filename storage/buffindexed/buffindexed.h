@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef _BUFFINDEXED_H_
 #define _BUFFINDEXED_H_ 1
 

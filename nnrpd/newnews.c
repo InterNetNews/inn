@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The NEWNEWS command.
 */
 #include "config.h"

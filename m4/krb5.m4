@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for Kerberos.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with Kerberos libraries.
 dnl Provides the --with-krb5, --with-krb5-include, and --with-krb5-lib

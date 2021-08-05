@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Private APIs for the tradindexed overview method.
 */
 

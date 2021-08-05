@@ -1,7 +1,5 @@
 #! /usr/bin/perl -w
 
-##  $Id$
-##
 ##  Generate a filename-only manifest from an INN tree.
 ##
 ##  This script generates a filename-only manifest from an INN tree, excluding

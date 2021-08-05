@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Fix interpreter paths and INN variable load paths.
 ##
 ##  Scripts shipped with INN always have the invocation path for the

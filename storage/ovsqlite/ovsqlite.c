@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview storage method based on SQLite.
 **
 **  Original implementation written by Bo Lindbergh (2020-12-17).

@@ -81,8 +81,6 @@ Gives usage information.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted to
 POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 control.ctl(5), inn.conf(5).

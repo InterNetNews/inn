@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Perl filtering support for innd.
 **
 **  Originally written by Christophe Wolfhugel <wolf@pasteur.fr> (although

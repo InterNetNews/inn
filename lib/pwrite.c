@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement for a missing pwrite.
 **
 **  Written by Russ Allbery <eagle@eyrie.org>

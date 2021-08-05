@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Miscellaneous utility functions for innfeed.
 **
 **  Written by James Brister <brister@vix.com>

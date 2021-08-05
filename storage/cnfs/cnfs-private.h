@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  CNFS disk/file mode header file.
 */
 

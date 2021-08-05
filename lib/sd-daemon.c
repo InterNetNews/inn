@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Stubs for systemd library functions.
  *
  * Provides empty stubs for sd_notify and sd_notifyf that do nothing and

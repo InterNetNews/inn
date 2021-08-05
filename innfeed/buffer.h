@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The public interface to the Buffer class.
 **
 **  Written by James Brister <brister@vix.com>

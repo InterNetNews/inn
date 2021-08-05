@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Send control messages to the InterNetNews daemon.
 */
 

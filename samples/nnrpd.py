@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This module supplies stub Python functions corresponding to the ones
 ##  provided by nnrpd.  It is not used by the server; it is only here so
 ##  that you can test your filter scripts before loading.

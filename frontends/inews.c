@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Send an article (prepared by someone on the local site) to the
 **  master news server.
 */

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Testing interface to fake write functions.
  *
  * This header defines the interfaces to fake write functions used to test

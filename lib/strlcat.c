@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing strlcat.
  *
  * Provides the same functionality as the *BSD function strlcat, originally

@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for Cyrus SASL.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with the Cyrus SASL
 dnl library.  Provides the --with-sasl, --with-sasl-lib, and

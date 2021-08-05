@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Become a long-running daemon.
 **
 **  Usage:

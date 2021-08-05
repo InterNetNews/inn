@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Vector handling (counted lists of char *'s).
  *
  * A vector is a table for handling a list of strings with less overhead than

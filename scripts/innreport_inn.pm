@@ -1,8 +1,6 @@
 ##########################################################################
 # INN module for innreport (3.*).
 #
-# $Id$
-#
 # Sample file tested with INN 2.5, 2.4, 2.3, 2.2, 1.7.2 and 1.5.1.
 #
 # (c) 1997-2001 by Fabien Tassin <fta@sofaraway.org>.

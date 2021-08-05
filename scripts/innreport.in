@@ -6,8 +6,6 @@
 #   innreport:  Perl script to summarize news log files
 #               (with optional HTML output and graphs).
 #
-# $Id$
-#
 # Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
 #
 # Checkpoints tracking was improved by Jim Dutton in 2006.

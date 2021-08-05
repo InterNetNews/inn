@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing reallocarray.
  *
  * Provides the same functionality as the OpenBSD library function

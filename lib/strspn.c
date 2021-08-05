@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  This file has been modified to get it to compile more easily
 **  on pre-4.4BSD systems.  Rich $alz, June 1991.
 */

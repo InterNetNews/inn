@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Expire news articles.
 */
 

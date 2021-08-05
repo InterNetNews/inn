@@ -1,7 +1,5 @@
 #! /usr/bin/perl
 
-# $Id$
-#
 # The sqlite-helper-gen script reads SQL text from its input and splits it
 # into sections using lines starting with a comment ("--") as delimiters.
 # 

@@ -142,8 +142,6 @@ relevant lines yourself, or merge the value into a single line.
 Written by Brendan Kehoe <brendan@cygnus.com> and Rich Salz
 <rsalz@uunet.uu.net> for InterNetNews.  Converted to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), control.ctl(5), expire.ctl(5), history(5), incoming.conf(5),

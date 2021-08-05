@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Interface to history API
 */
 

@@ -1,5 +1,4 @@
 dnl Process this file with Autoconf to produce a configure script.
-dnl $Id$
 dnl
 dnl Please try to follow GNU conventions and Autoconf manual conventions as
 dnl much as possible in this file so that any macros we develop can be easily
@@ -29,7 +28,6 @@ dnl errors.
 AC_INIT([INN], [2.7.0], [inn-workers@lists.isc.org],
     [inn], [https://www.isc.org/downloads/projects/])
 AC_PREREQ([2.64])
-AC_REVISION([$Revision$])
 AC_CONFIG_AUX_DIR([support])
 
 dnl Ignore Automake conditionals (called in a few m4 macros) as INN does not

@@ -1,4 +1,3 @@
-/* $Id$ */
 /* MD5 hashing test suite. */
 
 #include "config.h"

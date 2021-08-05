@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Interface to innfeed's configuration file parser.
 **
 **  Written by James Brister <brister@vix.com>

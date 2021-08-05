@@ -476,8 +476,6 @@ POD by Julien Elie.
 Earlier versions of B<innfeed> (up to 0.10.1) were shipped separately;
 B<innfeed> is now part of INN and shares the same version number.
 
-$Id$
-
 =head1 SEE ALSO
 
 ctlinnd(8), inn.conf(5), innfeed.conf(5), innd(8), procbatch(8).

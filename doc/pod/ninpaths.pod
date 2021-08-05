@@ -178,8 +178,6 @@ The idea and some implementation details for B<ninpaths> come from the
 original B<inpaths> program, but most of the code has been rewritten for
 clarity.  This program is in the public domain.
 
-$Id$
-
 =head1 SEE ALSO
 
 newsfeeds(5), sendinpaths(8).

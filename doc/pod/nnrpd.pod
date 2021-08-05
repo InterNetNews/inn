@@ -308,8 +308,6 @@ support added by Rob Robertston <rob@violet.berkeley.edu> and Rich in
 January, 1993.  Exponential backoff (for posting) added by Dave Hayes in
 Febuary 1998.
 
-$Id$
-
 =head1 SEE ALSO
 
 ctlinnd(8), innd(8), inn.conf(5), readers.conf(5), signal(2), uwildmat(3).

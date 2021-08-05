@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Many of the data types used here have abbreviations, such as CT for a
 **  channel type.  Here are a list of the conventions and meanings:
 **

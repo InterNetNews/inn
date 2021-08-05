@@ -1,5 +1,3 @@
-# $Id$
-#
 # Shell function library for test cases.
 #
 # Note that while many of the functions in this library could benefit from

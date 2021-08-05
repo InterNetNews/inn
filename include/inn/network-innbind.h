@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Prototypes for network connection utility functions using innbind.
  *
  * This file is heavily based on include/inn/network.h.

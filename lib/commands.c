@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for NNTP commands:  manipulation and checks.
 */
 

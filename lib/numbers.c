@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for numbers:  manipulation and checks.
 */
 

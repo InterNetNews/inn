@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Embed Python in the style of innd's Perl stuff.
 **
 **  Written by G.J. Andruk <meowing@banet.net> patterned after Tcl/Perl work

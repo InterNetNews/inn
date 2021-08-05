@@ -181,8 +181,6 @@ general fast file removal program.
 B<fastrm> was originally written by <kre@munnari.oz.au>.  This manual page
 was rewritten in POD by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 expirerm(8).

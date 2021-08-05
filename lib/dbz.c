@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  dbz database implementation V6.1.1
 **
 **  Copyright 1988 Jon Zeeff (zeeff@b-tech.ann-arbor.mi.us)

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for headers:  manipulation and checks.
 */
 

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Connect to a remote site, and get news from it to offer to our local
 **  server.  Read list on stdin, or get it via NEWNEWS command.  Writes
 **  list of articles still needed to stdout.

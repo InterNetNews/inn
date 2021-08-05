@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Process control routines.
 */
 

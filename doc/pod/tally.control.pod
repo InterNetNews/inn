@@ -48,8 +48,6 @@ Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
 <rsalz@uunet.uu.net> for InterNetNews.  Rewritten and converted
 to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 control.ctl(5), news.daily(8), newslog(5), scanlogs(8).

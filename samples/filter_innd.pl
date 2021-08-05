@@ -1,9 +1,5 @@
-#
-# $Id$
-#
 # Sample Perl filtering file for the innd hooks.
 # 
-
 # This file gets loaded at innd process startup, and everytime a
 # "ctlinnd reload filter.perl 'reason'" or a
 # "ctlinnd reload all 'reason'" is done.

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Radix-32 strings divide a number into five-bit nibbles and use the
 **  alphabet 0..9a..v to represent 0..32.
 */

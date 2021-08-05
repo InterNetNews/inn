@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Feed articles to an IMAP server via LMTP and IMAP.
 **
 **  Written by Tim Martin.

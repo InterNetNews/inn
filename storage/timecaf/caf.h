@@ -1,5 +1,4 @@
-/* $Id$
-**
+/*
 ** Declarations needed for handling CAF (Crunched Article Files)
 ** Written by Richard Todd (rmtodd@mailhost.ecn.uoknor.edu) 3/24/96
 */

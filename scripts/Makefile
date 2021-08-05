@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Files that can be handled by fixscript (and need to be so handled) need
 ##  a rule to build them from the .in version, and then all files need an
 ##  installation rule.  Do the installation rules individually so as to

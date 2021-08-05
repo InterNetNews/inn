@@ -679,6 +679,4 @@ Usenet daily.  It uses F<filter_nnrpd.pl>.
 
 =back
 
-$Id$
-
 =cut

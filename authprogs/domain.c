@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Domain authenticator.
 **
 **  Compares the domain of the client connection to the first argument given

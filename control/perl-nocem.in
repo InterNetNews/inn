@@ -645,8 +645,6 @@ Copyright 2000 by Miquel van Smoorenburg <miquels@cistron.nl>.
 
 Copyright 2001 by Marco d'Itri <md@linux.it>.
 
-$Id$
-
 =head1 SEE ALSO
 
 gpg(1), gpgv(1), grephistory(1), inn.conf(5), newsfeeds(5), pgp(1).

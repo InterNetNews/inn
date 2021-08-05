@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Lock a file or a range in a file.
 **
 **  Provides inn_lock_file and inn_lock_range functions to lock or unlock a

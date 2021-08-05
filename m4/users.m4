@@ -1,5 +1,4 @@
 dnl users.m4 -- The usernames built into INN at compile time.
-dnl $Id$
 dnl
 dnl INN allows the user and group INN will run as to be specified, as well as
 dnl the user to receive nightly reports and the like.

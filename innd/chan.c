@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  I/O channel (and buffer) processing.
 **
 **  This file is the heart of innd.  Everything innd does is represented by

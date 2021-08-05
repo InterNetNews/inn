@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement for a missing ftello.
 **
 **  ftello is a version of ftell that returns an off_t instead of a long.

@@ -186,8 +186,6 @@ The list of local newsgroups along with their descriptions.
 
 Documentation written by Julien Elie for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 active(5), controlchan(8), ctlinnd(8), mod-active(8), newsgroups(5).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  NNTP codes and utility functions for speaking the NNTP protocol.
 **
 **  The nntp_code enum defines NNTP codes for every response supported by INN.

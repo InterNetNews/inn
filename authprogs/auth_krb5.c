@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Check an username and password against Kerberos.
 **
 **  Based on nnrpkrb5auth by Christopher P. Lindsey <lindsey@mallorn.com>

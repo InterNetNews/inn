@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifdef HAVE_BDB
 
 #include <db.h>

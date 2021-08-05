@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 #
-# $Id$
-#
 # Check all POD documents in the tree for POD formatting errors.
 #
 # Copyright 2016 Russ Allbery <eagle@eyrie.org>

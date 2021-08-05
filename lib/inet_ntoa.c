@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing or broken inet_ntoa.
  *
  * Provides the same functionality as the standard library routine inet_ntoa

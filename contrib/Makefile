@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  There are no installation rules or other top-level rules for this
 ##  directory as it's not properly part of INN.  Installation should be
 ##  done by the user by hand for those files that they're interested in.

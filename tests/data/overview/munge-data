@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-##  $Id$
-##
 ##  Munge .overview data into something suitable for test data.
 ##
 ##  This script isn't used regularly and is here only for the use of INN

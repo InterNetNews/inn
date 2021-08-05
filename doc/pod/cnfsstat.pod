@@ -78,8 +78,6 @@ storage and the F<history> file.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted
 to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 cycbuff.conf(5), history(5), inn.conf(5), rc.news(8), storage.conf(5).

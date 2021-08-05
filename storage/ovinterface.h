@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview interface header
 */
 

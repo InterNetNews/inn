@@ -1,5 +1,4 @@
-/* $Id$
-**
+/*
 ** Routines for keeping track of incoming articles, articles that haven't
 ** acked from a duplex channel feed, and history caching.
 **

@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Example wrapper for support of old Python authentication scripts,
 ##  by Erik Klavon.
 ##

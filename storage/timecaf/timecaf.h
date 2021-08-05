@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  timecaf -- like the timehash storage method (and heavily inspired
 **  by it), but uses the CAF library to store multiple articles in a
 **  single file.

@@ -66,8 +66,6 @@ stores the port number in this file.
 Initial implementation of ovsqlite written by Bo Lindbergh
 <2bfjdsla52kztwejndzdstsxl9athp@gmail.com> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 ovsqlite(5), rc.news(8).

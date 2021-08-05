@@ -1,5 +1,4 @@
 dnl Helper functions to manage compiler variables.
-dnl $Id$
 dnl
 dnl These are a wide variety of helper macros to make it easier to construct
 dnl standard macros to probe for a library and to set library-specific

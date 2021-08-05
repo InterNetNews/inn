@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for parsing arguments.
 */
 

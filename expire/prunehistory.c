@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Prune file names from history file.
 */
 

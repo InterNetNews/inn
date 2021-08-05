@@ -1,5 +1,4 @@
 dnl Use krb5-config to get link paths for Kerberos libraries.
-dnl $Id$
 dnl
 dnl Provides one macro, INN_KRB5_CONFIG, which attempts to get compiler and
 dnl linker flags for a library via krb5-config and sets the appropriate shell

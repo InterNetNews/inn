@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Utility functions for tests that use subprocesses.
  *
  * Provides utility functions for subprocess manipulation.  Specifically,

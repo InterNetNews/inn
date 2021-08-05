@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for OpenSSL.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with both the OpenSSL SSL
 dnl library and its crypto library.  Provides the --with-openssl,

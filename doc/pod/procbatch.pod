@@ -135,8 +135,6 @@ Clayton O'Neill.
 This manual page was written by Florian Schlichting, with the help of a
 memo by Russ Allbery.
 
-$Id$
-
 =head1 SEE ALSO
 
 filechan(8), innfeed(8), innxmit(8), news.daily(8).

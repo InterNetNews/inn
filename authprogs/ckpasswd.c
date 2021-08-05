@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The default username/password authenticator.
 **
 **  This program is intended to be run by nnrpd and handle usernames and

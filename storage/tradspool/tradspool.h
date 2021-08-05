@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Storage manager module header for traditional spool format.
 */
 

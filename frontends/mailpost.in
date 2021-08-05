@@ -3,8 +3,6 @@
 
 # mailpost - Yet another mail-to-news filter
 # vixie 14jun92 [original]
-#
-# $Id$
 
 use Getopt::Std;
 use IPC::Open3;
@@ -817,8 +815,6 @@ The default database files which record previously seen message-IDs.
 
 Written by Paul Vixie long ago and then hacked up by James Brister for
 INN integration.
-
-$Id$
 
 =head1 SEE ALSO
 

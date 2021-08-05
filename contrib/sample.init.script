@@ -1,7 +1,5 @@
 #! /bin/sh
 
-# $Id$
-#
 # This is a simple, bare-bones example of a SysV-style init.d script for INN.
 # It tries to increase the file descriptor limits to the maximum allowed by
 # the system since INN and related programs can be file descriptor hogs.

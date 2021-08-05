@@ -1,7 +1,6 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  $Id$
 ##  Display status of INN.
 ##  Written by Landon Curt Noll <chongo@toad.com>.
 

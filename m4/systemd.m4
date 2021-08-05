@@ -1,5 +1,4 @@
 dnl Probe for systemd libraries and installation paths.
-dnl $Id$
 dnl
 dnl Provides the INN_WITH_SYSTEMD_UNITDIR macro, which adds the
 dnl --with-systemdsystemunitdir configure flag, sets the systemdsystemunitdir

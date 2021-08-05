@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Public interface for the tradindexed overview method.
 **
 **  The exact API specified here must match the expectations of the overview

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Set or clear file descriptor flags.
  *
  * Simple functions (wrappers around fcntl) to set or clear file descriptor

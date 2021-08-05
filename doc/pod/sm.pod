@@ -112,8 +112,6 @@ succeeded, you should run B<sm> on one token at a time.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.
 Rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 ctlinnd(8), grephistory(1), history(5), rnews(1), storage.conf(5).

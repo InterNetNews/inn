@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Daemon server to access overview database based on SQLite.
 **
 **  Original implementation written by Bo Lindbergh (2020-12-17).

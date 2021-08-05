@@ -73,8 +73,6 @@ a description of HDB UUCP locking given by Peter Honeyman, and
 improved by Berend Reitsma to solve a race condition.
 Converted to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 INN::Utils::Shlock(3pm).

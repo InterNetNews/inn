@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * strlcpy test suite.
  *
  * The canonical version of this file *used to be* maintained in the

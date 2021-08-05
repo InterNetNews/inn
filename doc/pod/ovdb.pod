@@ -370,8 +370,6 @@ legacy F<ov3.c> file.
 
 Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), innd(8), makehistory(8), nnrpd(8), ovdb_init(8),

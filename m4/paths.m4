@@ -1,5 +1,4 @@
 dnl paths.m4 -- Configure various paths used by INN.
-dnl $Id$
 dnl
 dnl INN has quite a few more configurable paths than autoconf supports by
 dnl default.  The regular --*dir options are honored where appropriate, but

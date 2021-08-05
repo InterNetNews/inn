@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  Sample configuration file for article expiration.
 ##
 ##  Format:

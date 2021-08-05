@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Storage manager module for trash method.
 */
 #include "config.h"

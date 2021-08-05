@@ -53,8 +53,6 @@ in dbz(3).
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Converted to
 POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 dbz(3), history(5).

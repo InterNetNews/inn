@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Quick I/O package.
 **
 **  The interface to the Quick I/O package, optimized for reading through

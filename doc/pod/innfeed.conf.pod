@@ -729,8 +729,6 @@ B<innfeed> is now part of INN and shares the same version number.
 Please note that the F<innfeed.conf> format has changed dramatically since
 S<version 0.9.3>.
 
-$Id$
-
 =head1 SEE ALSO
 
 inn.conf(5), innfeed(8), newsfeeds(5).

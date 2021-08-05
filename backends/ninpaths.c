@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  New inpaths reporting program.
 **
 **  Idea, data structures and part of code based on inpaths 2.5

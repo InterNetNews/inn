@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  A reliable implementation of signal for System V systems.
 **
 **  Two functions are provided, xsignal and xsignal_norestart.  The former

@@ -1,7 +1,5 @@
 #! /bin/sh
 
-##  $Id$
-##
 ##  Make variable substitutions in configuration files.
 ##
 ##  This script does something very similar to what config.status does, but

@@ -217,8 +217,6 @@ to bind the IPv4 socket on file descriptor 6 to port 433 in the address
 
 Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 inet_aton(3), inet_pton(3), innd(8), nnrpd(8).

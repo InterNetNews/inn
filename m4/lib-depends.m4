@@ -1,5 +1,4 @@
 dnl Provides option to change library probes.
-dnl $Id$
 dnl
 dnl This file provides INN_ENABLE_REDUCED_DEPENDS, which adds the configure
 dnl option --enable-reduced-depends to request that library probes assume

@@ -4,7 +4,6 @@
 # Start Date:   Sat, 24 Aug 1996 23:45:34 +0200
 # Project:      INN
 # File:         innshellvars.tcl
-# RCSId:        $Id$
 # Description:  Set up any and all variables that an INN tcl script
 #               might need.  Also sets umask.
 

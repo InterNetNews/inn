@@ -112,8 +112,6 @@ It matches the number recorded in history as for its posting date.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten in
 POD by Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =head1 SEE ALSO
 
 history(5), inn.conf(5), sm(1).

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines to implement site-feeding.  Mainly working with channels to
 **  do buffering and determine what to send.
 */

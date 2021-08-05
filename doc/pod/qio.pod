@@ -105,6 +105,4 @@ printing out each line preceded by its offset in the file.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Updated by
 Russ Allbery <eagle@eyrie.org>.
 
-$Id$
-
 =cut

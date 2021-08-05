@@ -102,8 +102,6 @@ The shared secret with the RADIUS server is C<IamARADIUSsecRET>.
 This documentation was written by Russ Allbery <eagle@eyrie.org> based on
 the comments in the sample F<inn-radius.conf> file by Yury S<B. Razbegin>.
 
-$Id$
-
 =head1 SEE ALSO
 
 radius(8).

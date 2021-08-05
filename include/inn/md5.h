@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  RSA Data Security, Inc. MD5 Message-Digest Algorithm
 **
 **  LANDON CURT NOLL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,

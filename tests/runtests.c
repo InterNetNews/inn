@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Run a set of tests, reporting results.
  *
  * Test suite driver that runs a set of tests implementing a subset of the

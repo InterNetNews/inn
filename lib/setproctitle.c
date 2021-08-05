@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Replacement for a missing setproctitle.
 **
 **  Provides the same functionality as the BSD function setproctitle on hosts

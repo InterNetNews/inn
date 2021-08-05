@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing strlcpy.
  *
  * Provides the same functionality as the *BSD function strlcpy, originally

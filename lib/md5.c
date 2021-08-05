@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  RSA Data Security, Inc. MD5 Message-Digest Algorithm
 **
 **  The standard MD5 message digest routines, from RSA Data Security, Inc.

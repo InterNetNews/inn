@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Portability wrapper around <sys/mman.h>.
 **
 **  This header file includes <sys/mman.h> and then sets up various

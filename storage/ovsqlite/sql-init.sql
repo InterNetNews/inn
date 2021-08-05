@@ -1,5 +1,4 @@
 -- ovsqlite schema version 1
--- $Id$
 
 
 create table misc (

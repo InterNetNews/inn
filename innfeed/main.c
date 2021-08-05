@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Main routines for the innfeed program.
 **
 **  Written by James Brister <brister@vix.com>

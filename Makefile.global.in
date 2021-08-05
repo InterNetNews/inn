@@ -1,5 +1,3 @@
-##  $Id$
-##
 ##  This file is meant to be the central Makefile that configure works with
 ##  and that all other Makefiles include.  No Makefile other than this one
 ##  should have to be a configure substitution target.

@@ -1,5 +1,4 @@
 dnl Find the compiler and linker flags for the zlib library.
-dnl $Id$
 dnl
 dnl Finds the compiler and linker flags for linking with the zlib library.
 dnl Provides the --with-zlib, --with-zlib-lib, and --with-zlib-include

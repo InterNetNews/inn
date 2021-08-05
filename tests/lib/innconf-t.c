@@ -1,4 +1,3 @@
-/* $Id$ */
 /* innconf test suite. */
 
 #include "config.h"

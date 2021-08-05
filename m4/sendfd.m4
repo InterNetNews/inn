@@ -1,5 +1,4 @@
 dnl sendfd.m4 -- Check whether I_SENDFD/I_RECVFD is supported.
-dnl $Id$
 dnl
 dnl Check whether the system supports STREAMS and can send and receive file
 dnl descriptors via the I_SENDFD and I_RECVFD ioctls.  Provides

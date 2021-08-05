@@ -1,5 +1,4 @@
 dnl cc-c-o.m4 -- Checks whether -o can be used with -c.
-dnl $Id$
 dnl
 dnl Used to check whether -o can be provided with -c with the chosen compiler.
 dnl We need this if we're not using libtool so that object files can be built

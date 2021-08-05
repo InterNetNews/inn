@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Produce a seven-bit printable encoding of stdin on stdout.
 **  From @(#)encode.c 1.3 5/15/85, distributed with B2.11 News.
 **

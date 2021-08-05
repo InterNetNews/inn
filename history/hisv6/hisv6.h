@@ -1,5 +1,4 @@
-/* $Id$
-**
+/*
 ** Internal history API interface exposed to HISxxx
 */
 

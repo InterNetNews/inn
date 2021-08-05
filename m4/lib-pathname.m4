@@ -1,5 +1,4 @@
 dnl Determine the library path name.
-dnl $Id$
 dnl
 dnl Red Hat systems and some other Linux systems use lib64 and lib32 rather
 dnl than just lib in some circumstances.  This file provides an Autoconf

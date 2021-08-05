@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Data structures, functions and cetera used for config file parsing.
 */
 

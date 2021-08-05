@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the innfeed InnListener class.
 **
 **  Written by James Brister <brister@vix.com>

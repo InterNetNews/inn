@@ -1,7 +1,6 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-# $Id$
 # batch-active-update
 # Author: David Lawrence <tale@isc.org>
 

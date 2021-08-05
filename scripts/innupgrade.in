@@ -1,7 +1,5 @@
 #! /usr/bin/perl -w -T
 
-##  $Id$
-##
 ##  Convert INN configuration files to the current syntax.
 ##
 ##  Intended to be run during a major version upgrade, this script tries to

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Message-ID to storage token cache.
 */
 

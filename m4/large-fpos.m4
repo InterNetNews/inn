@@ -1,5 +1,4 @@
 dnl large-fpos.m4 -- Check for an off_t-compatible fpos_t.
-dnl $Id$
 dnl
 dnl Some operating systems (most notably BSDI) support large files but don't
 dnl have the fseeko and ftello functions.  However, fseeko and ftello can be

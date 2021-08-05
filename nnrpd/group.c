@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Newsgroups and the active file.
 */
 

@@ -2,8 +2,6 @@
 
 # simpleftp - Rudimentary FTP client.
 #
-# $Id$
-#
 # Author: David Lawrence <tale@isc.org>.
 #         Rewritten by Julien Elie to use Net::FTP.
 #

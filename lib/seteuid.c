@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Replacement for a missing seteuid.
  *
  * Some systems don't have seteuid but do have setreuid.  setreuid with -1

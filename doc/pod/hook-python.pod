@@ -712,6 +712,4 @@ an extremely powerful spam filter on Usenet.  It uses F<filter_innd.py>.
 
 =back
 
-$Id$
-
 =cut

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * write and writev replacements to handle partial writes.
  *
  * Usage:

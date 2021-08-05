@@ -48,8 +48,6 @@ followed by the message-ID of the article.
 Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Converted
 to POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 grephistory(1), newsfeeds(5).

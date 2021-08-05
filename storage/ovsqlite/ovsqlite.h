@@ -1,6 +1,3 @@
-/*  $Id$
-*/
-
 #ifndef OVSQLITE_H
 #define OVSQLITE_H 1
 

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Produce reliable locks for shell scripts, by Peter Honeyman as told
 **  to Rich $alz.
 **

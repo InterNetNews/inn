@@ -1,7 +1,3 @@
-/*  $Id$
-**
-*/
-
 #include "config.h"
 #include "clibrary.h"
 

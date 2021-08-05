@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-   - $Id$
-   -
    - This is a filter to copy individual sections from innreport's HTML
    - files.  Actually only news.notice.* files are changed, index.html
    - is not modified.

@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  NNTP server for readers (NNRP) for InterNetNews.
 **
 **  This server doesn't do any real load-limiting, except for what has

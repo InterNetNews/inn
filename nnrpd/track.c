@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  User and post tracking database.
 */
 

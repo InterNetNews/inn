@@ -73,6 +73,4 @@ Converted to POD from Peter S<A. Friend>'s ternary search trie
 documentation by Alex Kiernan <alex.kiernan@thus.net> for
 S<InterNetNews 2.4.0>.
 
-$Id$
-
 =cut

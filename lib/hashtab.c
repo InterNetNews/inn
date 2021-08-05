@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Generic hash table implementation.
 **
 **  Written by Russ Allbery <eagle@eyrie.org>

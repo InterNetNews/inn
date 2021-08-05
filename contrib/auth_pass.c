@@ -1,5 +1,5 @@
 /*
- *      auth_pass.c  ( $Revision$ )
+ *      auth_pass.c
  *
  * Abstract: 
  *

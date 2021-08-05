@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Common code for authenticators and resolvers.
 **
 **  Collects common code to read information from nnrpd that should be done

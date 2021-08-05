@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Convert date strings and numbers to numbers and strings.
 */
 

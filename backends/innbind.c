@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Helper program to bind a socket to a low-numbered port.
 **
 **  Written by Russ Allbery <eagle@eyrie.org>

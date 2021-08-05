@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Routines for message-IDs:  generation and checks.
 */
 

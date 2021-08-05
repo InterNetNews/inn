@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  The implementation of the overview API.
 **
 **  This code handles calls to the overview API by passing them along to the

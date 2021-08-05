@@ -40,8 +40,6 @@ if distrib.pats(5) is correctly configured.
 
 Written by Julien Elie for InterNetNews.
 
-$Id$
-
 =head1 SEE ALSO
 
 distrib.pats(5), newsfeeds(5), nnrpd(8).

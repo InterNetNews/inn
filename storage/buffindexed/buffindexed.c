@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Overview buffer and index method.
 */
 

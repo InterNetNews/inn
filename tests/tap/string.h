@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * String utilities for the TAP protocol.
  *
  * Additional string utilities that can't be included with C TAP Harness

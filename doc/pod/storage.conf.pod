@@ -349,8 +349,6 @@ should never expire or through the spool of which you need to go manually.
 Written by Katsuhiro Kondou <kondou@nec.co.jp> for InterNetNews.  Rewritten
 into POD by Julien Elie.
 
-$Id$
-
 =head1 SEE ALSO
 
 cycbuff.conf(5), expire.ctl(5), expireover(8), inn.conf(5), innd(8),

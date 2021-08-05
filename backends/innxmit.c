@@ -1,5 +1,4 @@
-/*  $Id$
-**
+/*
 **  Transmit articles to remote site.
 **  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre.
 */
