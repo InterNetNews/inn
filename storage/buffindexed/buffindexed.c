@@ -314,7 +314,7 @@ static off_t mmapwrite(int fd, void *buf, off_t nbyte, off_t offset) {
   if ((addr = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmapoffset)) == MAP_FAILED) {
     return -1;
   }
-  memcpy(addr+pagefudge, buf, nbyte);
+  memcpy((char *)addr+pagefudge, buf, nbyte);
   munmap(addr, len);
   return nbyte;
 }
