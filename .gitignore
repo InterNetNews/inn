@@ -15,8 +15,6 @@
 /LIST.*
 /Makefile.global
 /NEWS
-/README
-/README.*
 /snapshot.log
 /authprogs/auth_krb5
 /authprogs/ckpasswd
