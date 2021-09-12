@@ -22,6 +22,7 @@
  *	2	Entry not found in password file.
  *	3	No permission to read passwords, or password field is '*'.
  *	4	Bad password match.
+ *	5	Cannot read username or password.
  *
  * Environment:
  *	Run by nnrpd with stdin/stdout connected to the reader and stderr
@@ -36,6 +37,7 @@
 #include "config.h"
 #include "clibrary.h"
 #include "portable/socket.h"
+#include <errno.h>
 #include <netdb.h>
 #include <pwd.h>
 
@@ -81,13 +83,19 @@ main(int argc, char** argv)
      */
     if (argc<2) {
         fprintf(stdout, "Username: "); fflush(stdout);
-        fgets(username, sizeof(username), stdin);
+        if (fgets(username, sizeof(username), stdin) == NULL) {
+            fprintf(stderr, "cannot read username: %s", strerror(errno));
+            exit(5);
+        }
     } else {
         strlcpy(username, argv[1], sizeof(username));
     }
     if (argc<3) {
         fprintf(stdout, "Password: "); fflush(stdout);
-        fgets(password, sizeof(password), stdin);
+        if (fgets(password, sizeof(password), stdin) == NULL) {
+            fprintf(stderr, "cannot read username: %s", strerror(errno));
+            exit(5);
+        }
     } else {
         strlcpy(password, argv[2], sizeof(password));
     }

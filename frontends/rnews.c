@@ -970,7 +970,9 @@ int main(int ac, char *av[])
     /* Tell the server we're quitting, get his okay message. */
     fprintf(ToServer, "quit\r\n");
     fflush(ToServer);
-    fgets(buff, sizeof buff, FromServer);
+    if (fgets(buff, sizeof buff, FromServer) == NULL) {
+        /* ignore: we don't care if we don't get the server reply */
+    }
 
     /* Return the appropriate status. */
     exit(0);

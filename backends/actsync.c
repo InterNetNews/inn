@@ -1095,7 +1095,9 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 	CAclose();
 	fprintf(ToServer, "QUIT\r\n");
 	fclose(ToServer);
-	fgets(buff, sizeof buff, FromServer);
+	if (fgets(buff, sizeof buff, FromServer) == NULL) {
+	    /* ignore: we don't care if we don't get the server reply */
+	}
 	fclose(FromServer);
     }
     return ret;

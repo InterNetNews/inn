@@ -664,7 +664,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
   *toolong = false;
   if (*RCbuff == '\0') {
     if (feof (F)) return (NULL);
-    fgets(RCbuff, sizeof RCbuff, F);
+    if (fgets(RCbuff, sizeof RCbuff, F) == NULL) return (NULL);
     (*num)++;
     if (strlen (RCbuff) == sizeof RCbuff) {
       *toolong = true;
@@ -681,7 +681,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
      }
      for (p = RCbuff; *p == ' ' || *p == '\t' ; p++);
      if (*p == '\0' && !feof (F)) {
-       fgets(RCbuff, sizeof RCbuff, F);
+       if (fgets(RCbuff, sizeof RCbuff, F) == NULL) return (NULL);
        (*num)++;
        if (strlen (RCbuff) == sizeof RCbuff) {
            *toolong = true;
@@ -699,7 +699,8 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 	     *t != '\0'; t++);
       if (*t == '\0') {
 	*t++ = '\n';
-	fgets(t, sizeof RCbuff - strlen (RCbuff), F);
+	if (fgets(t, sizeof RCbuff - strlen (RCbuff), F) == NULL)
+	  return (NULL);
 	(*num)++;
 	if (strlen (RCbuff) == sizeof RCbuff) {
 	  *toolong = true;

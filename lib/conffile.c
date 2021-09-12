@@ -9,7 +9,9 @@
 
 static int getconfline(CONFFILE *F, char *buffer, int length) {
   if (F->f) {
-    fgets(buffer, length, F->f);
+    if (fgets(buffer, length, F->f) == NULL) {
+      return 1;
+    }
     if (ferror(F->f)) {
       return 1;
     }
