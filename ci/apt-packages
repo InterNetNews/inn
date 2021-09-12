@@ -1,0 +1,18 @@
+##  Debian packages to install for testing.  -*- conf -*-
+##
+##  This file is read by ci/install and used as a list of packages, one per
+##  line, to install for testing.
+
+default-mta
+libdb5.3-dev
+libgd-perl
+libkrb5-dev
+libmime-tools-perl
+libperl-dev
+libsasl2-dev
+libsqlite3-dev
+libssl-dev
+libtest-pod-perl
+perl
+python3-dev
+zlib1g-dev

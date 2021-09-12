@@ -1,0 +1,37 @@
+#!/bin/sh
+
+##  Run tests for continuous integration.
+## 
+##  This script is normally run in a test container, such as via GitHub
+##  Actions.
+
+set -eux
+
+# Default to gcc if no compiler was specified.
+COMPILER="${COMPILER:-gcc}"
+
+# Generate Autotools files.
+./autogen
+
+# Run an initial build trying to build everything.  We don't test
+# --enable-largefiles because GitHub Actions (and most CI frameworks) run on a
+# 64-bit system where that does nothing.
+./configure CC="$COMPILER" --with-perl --with-python
+make warnings
+(cd contrib && make warnings)
+(cd frontends && make feedone sys2nf)
+(cd tests && make warnings && make)
+make check-manifest
+
+# Test --disable-shared.
+make distclean
+./configure CC="$COMPILER" --disable-shared
+make warnings
+make test
+
+# Test --enable-keywords and disabling optional dependencies.
+make distclean
+./configure CC="$COMPILER" --enable-keywords --without-bdb --without-krb5 \
+    --without-openssl --without-sasl --without-sqlite3 --without-zlib
+make warnings
+make test
