@@ -3,6 +3,7 @@
 */
 #include "config.h"
 #include "clibrary.h"
+#include <errno.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -286,7 +287,10 @@ CMDnewnews(int ac, char *av[])
 
   /* Make other processes happier if someone uses NEWNEWS. */
   if (innconf->nicenewnews != 0) {
-      nice(innconf->nicenewnews);
+      errno = 0;
+      if (nice(innconf->nicenewnews) < 0 && errno != 0)
+          syswarn("%s can't nice to %ld for NEWNEWS", Client.host,
+                  innconf->nicenewnews);
       innconf->nicenewnews = 0;
   }
 

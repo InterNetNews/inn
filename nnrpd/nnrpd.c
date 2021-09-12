@@ -1089,8 +1089,11 @@ main(int argc, char *argv[])
     /* Make other processes happier if someone is reading.  This allows other
      * processes like overchan to keep up when there are lots of readers.
      * Note that this is cumulative with nicekids. */
-    if (innconf->nicennrpd != 0)
-	nice(innconf->nicennrpd);
+    if (innconf->nicennrpd != 0) {
+        errno = 0;
+        if (nice(innconf->nicennrpd) < 0 && errno != 0)
+            syswarn("could not nice to %ld", innconf->nicennrpd);
+    }
 
     HISTORY = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
