@@ -275,7 +275,12 @@ LockPostRec(char *path)
     if (fd >= 0) {
       /* We got the lock! */
       snprintf(temp, sizeof(temp), "pid:%lu\n", (unsigned long) getpid());
-      write(fd, temp, strlen(temp));
+      if (write(fd, temp, strlen(temp)) < (ssize_t) strlen(temp)) {
+          syslog(L_ERROR, "%s cannot write to lock file %s", Client.host,
+                 strerror(errno));
+          close(fd);
+          return(0);
+      }
       close(fd);
       return(1);
     }

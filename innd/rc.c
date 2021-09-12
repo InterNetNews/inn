@@ -187,7 +187,11 @@ GoodIdent(int fd, char *identd)
     free(s_distant);
 
     snprintf(buf,sizeof(buf),"%d,%d\r\n",port2, port1);
-    write(ident_fd,buf, strlen(buf));
+    if (write(ident_fd,buf, strlen(buf)) < (ssize_t) strlen(buf)) {
+	syslog(L_ERROR, "error writing to ident server: %m");
+	close(ident_fd);
+	return false;
+    }
     memset( buf, 0, 80 );
     lu=read(ident_fd, buf, 79); /* pas encore parfait ("not yet perfect"?) */
     if (lu<0)

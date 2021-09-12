@@ -319,10 +319,12 @@ main(int argc, char *argv[])
         done = false;
         if (!force_sendfd)
             done = bind_address(&binding, argv[i]);
-        if (done)
-            write(STDOUT_FILENO, "ok\n", 3);
-        else {
-            write(STDOUT_FILENO, "no\n", 3);
+        if (done) {
+            if (write(STDOUT_FILENO, "ok\n", 3) < 3)
+                sysdie("cannot write status");
+        } else {
+            if (write(STDOUT_FILENO, "no\n", 3) < 3)
+                sysdie("cannot write status");
             create_socket(&binding, argv[i]);
             if (!bind_address(&binding, argv[i]))
                 sysdie("cannot bind socket for %s", argv[i]);

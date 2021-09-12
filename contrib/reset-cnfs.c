@@ -47,14 +47,19 @@ main(int argc, char *argv[])
                 numwr = (st.st_size / (512*8) / sizeof(buf)) + 50;
                 printf("File %s: %lu %lu\n", argv[i],
                        (unsigned long) st.st_size, (unsigned long) numwr);
+                status = true;
                 for (j = 0; j < numwr; j++) {
                     if (!(j % 100)) {
                         printf("\t%lu/%lu\n", (unsigned long) j,
                                (unsigned long) numwr);
                     }
-                    write(fd, buf, sizeof(buf));
+                    if (write(fd, buf, sizeof(buf)) < (ssize_t) sizeof(buf)) {
+                        fprintf(stderr, "Could not write to file %s: %s\n",
+                                argv[i], strerror(errno));
+                        status = false;
+                        break;
+                    }
                 }
-                status = true;
             }
             close(fd);
         }
