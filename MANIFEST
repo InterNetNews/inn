@@ -1,8 +1,8 @@
 File Name                             Description
 -------------------------------------------------------------------------------
-.github                               GitHub configuration
+.github                               GitHub configuration (Directory)
 .github/dependabot.yml                Configuration for GitHub dependabot
-.github/workflows                     GitHub Actions workflows
+.github/workflows                     GitHub Actions workflows (Directory)
 .github/workflows/build.yaml          Default GitHub Actions testing workflow
 CONTRIBUTORS                          List of contributors
 HACKING                               Docs for INN coders and maintainers
@@ -53,7 +53,7 @@ backends/sendinpaths.in               Send accumulated Path statistics
 backends/sendxbatches.in              Shell wrapper around innxbatch
 backends/shlock.c                     Program to make lockfiles in scripts
 backends/shrinkfile.c                 Shrink file from beginning
-ci                                    Scripts to drive integration testing
+ci                                    Integration testing (Directory)
 ci/README.md                          Documentation for the ci directory
 ci/apt-packages                       Debian packages to install for tests
 ci/install                            Script to set up the test environment
