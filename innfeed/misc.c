@@ -64,25 +64,6 @@ error_log_stderr_date(int len UNUSED, const char *fmt, va_list args, int err)
     fprintf(stderr, "\n");
 }
 
-/* If desired, print out the state of innfeed, call a cleanup function, and
-   then dump core.  Used as an exit handler for die. */
-void
-dump_core(void)
-{
-#if SNAPSHOT_ON_DIE
-    if (debuggingDump && gPrintInfo != NULL)
-        (*gPrintInfo)();
-#endif
-
-    if (gCleanUp != NULL)
-        (*gCleanUp)();
-  
-    chdir(getTapeDirectory());
-  
-    sleep(5);
-    abort();
-}
-
 /* An alternate version of die, used when we don't want to dump core.  This
    should somehow eventually be phased out to simplify things; it's
    basically a copy of die() from lib/error.c that ignores the cleanup

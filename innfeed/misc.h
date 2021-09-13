@@ -75,10 +75,6 @@ void logOrPrint (int level, FILE *fp, const char *fmt, ...)
 void error_log_stderr_date(int len, const char *fmt, va_list args, int err)
     __attribute__((__format__(printf, 2, 0)));
 
-/* Do cleanup and then abort, for use with die. */
-void dump_core(void)
-    __attribute__ ((noreturn));
-
 /* Alternate die that doesn't invoke an error handler. */
 void logAndExit (int exitVal, const char *fmt, ...)
     __attribute__((noreturn, __format__(printf, 2, 3)));
