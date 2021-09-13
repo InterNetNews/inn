@@ -11,13 +11,14 @@
 ##  fails.  In either case, the output is left in snapshot.log.
 ##
 ##  This script takes one argument, a string representing what tree the
-##  snapshot is being taken from.  Generally this string is either CURRENT or
+##  snapshot is being taken from.  Generally this string is GIT, CURRENT, or
 ##  STABLE.  If this argument is BETA or RC, a second argument is needed: the
 ##  number of the beta version (for instance b1 or b2) or the release
 ##  candidate.
 ##
 ##  Examples of use:
 ##
+##    support/mksnapshot GIT
 ##    support/mksnapshot CURRENT
 ##    support/mksnapshot STABLE
 ##    support/mksnapshot BETA b1
@@ -135,6 +136,17 @@ fi
 
 if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
     make release RELEASENUMBER="$number" RELEASEEXTENSION="$extension"
+elif [ "$tree" = "GIT" ] ; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$BRANCH" = main ] ; then
+        VERSION=$(grep -w '^VERSION' Makefile.global.in | awk '{ print $3 }')
+        VERSION=$(echo "$VERSION" | sed 's/.[0-9]*$//')
+        date=$(git log -1 --pretty=%cs | sed 's/-//g')
+        SNAPDIR=inn-"$VERSION"-"$date"
+    else
+        SNAPDIR=inn-"$(git describe --tags)"
+    fi
+    make snapshot SNAPDIR="$SNAPDIR" SNAPDATE="$date"
 else
     make snapshot SNAPSHOT="$tree" SNAPDATE="$date"
 fi
