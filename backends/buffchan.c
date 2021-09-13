@@ -416,8 +416,10 @@ main(int ac, char *av[])
 	die("usage error");
 
     /* Do some basic set-ups. */
-    if (Redirect)
-	freopen(ERRLOG, "a", stderr);
+    if (Redirect) {
+        if (freopen(ERRLOG, "a", stderr) == NULL)
+            sysdie("cannot open %s for error output", ERRLOG);
+    }
     if (Format == NULL) {
         Format = concatpath(innconf->pathoutgoing, "%s");
     }
