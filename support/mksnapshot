@@ -102,7 +102,7 @@ elif [ "$tree" = "GIT" ] ; then
     if [ "$BRANCH" = main ] ; then
         VERSION=$(grep -w '^VERSION' Makefile.global.in | awk '{ print $3 }')
         VERSION=$(echo "$VERSION" | sed 's/.[0-9]*$//')
-        date=$(git log -1 --pretty=%cs | sed 's/-//g')
+        date=$(git log -1 --pretty=format:%cd --date=format:%Y%m%d)
         SNAPDIR=inn-"$VERSION"-"$date"
     else
         SNAPDIR=inn-"$(git describe --tags)"
