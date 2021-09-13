@@ -101,10 +101,6 @@ typedef struct timerqelem_s
 
 
 
-  /* set to 1 elsewhere if you want stderr to get what's also being written
-     in doWrite. */
-int debugWrites ;
-
 extern const char *InputFile ;
 
 static EndPoint mainEndPoint ;
@@ -1081,17 +1077,6 @@ static IoStatus doWrite (EndPoint endp)
           vp [idx].iov_len = bufferDataSize (buffers [idx + currIdx]) ;
           amt += vp[idx].iov_len ;
         }
-
-#if 1
-      if (debugWrites) 
-        {
-          /* nasty mixing, but stderr is unbuffered usually. It's debugging only */
-          d_printf (5,"About to write this:================================\n") ;
-          writev (2,vp,bCount) ;
-          d_printf (5,"end=================================================\n") ;
-        }
-      
-#endif
 
       ASSERT (endp->myFd >= 0) ;
       ASSERT (vp != 0) ;

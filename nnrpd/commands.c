@@ -199,7 +199,10 @@ PERMgeneric(char *av[], char *accesslist, size_t size)
     }
 
     close(pan[PIPE_WRITE]);
-    read(pan[PIPE_READ], path, sizeof(path));
+    if (read(pan[PIPE_READ], path, sizeof(path)) < 0) {
+        syslog(L_FATAL, "can't read %s %m", path);
+        return 0;
+    }
 
     waitpid(pid, &status, 0);
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)

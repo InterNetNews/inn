@@ -49,7 +49,6 @@
 
 /* exports */
 bool talkToSelf ;
-extern int debugWrites ;
 bool sigFlag = false ;
 const char *InputFile ;
 char *configFile = NULL ;

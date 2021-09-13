@@ -1,0 +1,12 @@
+#!/bin/sh
+
+##  Install packages for integration tests.
+##
+##  This script is normally run via sudo in a test container or VM, such as
+##  via GitHub Actions.
+
+set -eux
+
+# Install apt packages.
+apt-get update
+apt-get install $(grep -v '^#' ci/apt-packages)

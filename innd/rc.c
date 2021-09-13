@@ -187,7 +187,11 @@ GoodIdent(int fd, char *identd)
     free(s_distant);
 
     snprintf(buf,sizeof(buf),"%d,%d\r\n",port2, port1);
-    write(ident_fd,buf, strlen(buf));
+    if (write(ident_fd,buf, strlen(buf)) < (ssize_t) strlen(buf)) {
+	syslog(L_ERROR, "error writing to ident server: %m");
+	close(ident_fd);
+	return false;
+    }
     memset( buf, 0, 80 );
     lu=read(ident_fd, buf, 79); /* pas encore parfait ("not yet perfect"?) */
     if (lu<0)
@@ -664,7 +668,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
   *toolong = false;
   if (*RCbuff == '\0') {
     if (feof (F)) return (NULL);
-    fgets(RCbuff, sizeof RCbuff, F);
+    if (fgets(RCbuff, sizeof RCbuff, F) == NULL) return (NULL);
     (*num)++;
     if (strlen (RCbuff) == sizeof RCbuff) {
       *toolong = true;
@@ -681,7 +685,7 @@ RCreaddata(int *num, FILE *F, bool *toolong)
      }
      for (p = RCbuff; *p == ' ' || *p == '\t' ; p++);
      if (*p == '\0' && !feof (F)) {
-       fgets(RCbuff, sizeof RCbuff, F);
+       if (fgets(RCbuff, sizeof RCbuff, F) == NULL) return (NULL);
        (*num)++;
        if (strlen (RCbuff) == sizeof RCbuff) {
            *toolong = true;
@@ -699,7 +703,8 @@ RCreaddata(int *num, FILE *F, bool *toolong)
 	     *t != '\0'; t++);
       if (*t == '\0') {
 	*t++ = '\n';
-	fgets(t, sizeof RCbuff - strlen (RCbuff), F);
+	if (fgets(t, sizeof RCbuff - strlen (RCbuff), F) == NULL)
+	  return (NULL);
 	(*num)++;
 	if (strlen (RCbuff) == sizeof RCbuff) {
 	  *toolong = true;

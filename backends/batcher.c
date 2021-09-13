@@ -268,8 +268,10 @@ main(int ac, char *av[])
             sysdie("%s cannot open %s", Host, Input);
     }
 
-    if (Redirect)
-	freopen(ERRLOG, "a", stderr);
+    if (Redirect) {
+        if (freopen(ERRLOG, "a", stderr) == NULL)
+            sysdie("cannot open %s for error output", ERRLOG);
+    }
 
     /* Set initial counters, etc. */
     BytesInCB = 0;

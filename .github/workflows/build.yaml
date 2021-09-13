@@ -1,0 +1,21 @@
+##  Workflow for GitHub Actions testing.
+
+name: build
+
+"on": [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      AUTHOR_TESTING: 1
+      C_TAP_VERBOSE: 1
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: install
+        run: sudo -E ci/install
+      - name: test
+        run: ci/test

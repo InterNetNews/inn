@@ -333,7 +333,8 @@ int main(int argc, char **argv)
     if(!ovdb_check_user())
         die("command must be run as runasuser user");
 
-    chdir(innconf->pathtmp);
+    if (chdir(innconf->pathtmp) < 0)
+        sysdie("chdir to %s failed", innconf->pathtmp);
 
     while((c = getopt(argc, argv, "ru")) != -1) {
 	switch(c) {

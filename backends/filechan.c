@@ -111,8 +111,10 @@ main(int ac, char *av[])
 	    if (fd >= 0) {
 		/* Try to lock it and set the ownership right. */
 		inn_lock_file(fd, INN_LOCK_WRITE, true);
-		if (myuid == 0 && uid != 0)
-		    chown(p, uid, gid);
+		if (myuid == 0 && uid != 0) {
+		    if (chown(p, uid, gid) < 1)
+			sysdie("chown of %s failed", p);
+		}
 
 		/* Just in case, seek to the end. */
 		lseek(fd, 0, SEEK_END);

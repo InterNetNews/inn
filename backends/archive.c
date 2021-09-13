@@ -402,7 +402,8 @@ main(int argc, char *argv[])
         die("usage error");
     if (redirect) {
         file = concatpath(innconf->pathlog, INN_PATH_ERRLOG);
-        freopen(file, "a", stderr);
+        if (freopen(file, "a", stderr) == NULL)
+            sysdie("cannot open %s for error output", file);
     }
     if (argc == 1)
         if (freopen(argv[0], "r", stdin) == NULL)

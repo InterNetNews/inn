@@ -923,7 +923,9 @@ SendQuit(FILE *FromServer, FILE *ToServer)
     fprintf(ToServer, "QUIT\r\n");
     fflush(ToServer);
     fclose(ToServer);
-    fgets(buff, sizeof buff, FromServer);
+    if (fgets(buff, sizeof buff, FromServer) == NULL) {
+        /* ignore: we don't care if we don't get the server reply */
+    }
     fclose(FromServer);
 }
 
