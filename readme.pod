@@ -14,6 +14,9 @@ This work is sponsored by Internet Systems Consortium.
 The official homepage of the project is
 L<https://www.isc.org/othersoftware/>.
 
+You'll also find very useful information about INN on L<Russ Allbery's
+web site|https://www.eyrie.org/~eagle/software/inn/>.
+
 Please see:
 
 =over 4
@@ -35,13 +38,14 @@ at top-level.
 
 =head1 What is INN?
 
-INN (InterNetNews), originally written by Rich Salz, is an extremely
-flexible and configurable Usenet / Netnews news server.  For a complete
-description of the protocols behind Usenet and Netnews, see S<RFC 3977>
-(NNTP), S<RFC 4642> updated by S<RFC 8143> (TLS/NNTP), S<RFC 4643>
-(NNTP authentication), S<RFC 4644> (streaming NNTP feeds), S<RFC 5536>
-(USEFOR), S<RFC 5537> (USEPRO), S<RFC 6048> (NNTP LIST additions)
-and S<RFC 8054> (NNTP compression) or their replacements.
+INN (InterNetNews), originally written by Rich Salz, is a very
+full-featured and extremely flexible and configurable Usenet / Netnews
+news server.  For a complete description of the protocols behind Usenet
+and Netnews, see S<RFC 3977> (NNTP), S<RFC 4642> updated by S<RFC 8143>
+(TLS/NNTP), S<RFC 4643> (NNTP authentication), S<RFC 4644> (streaming
+NNTP feeds), S<RFC 5536> (USEFOR), S<RFC 5537> (USEPRO), S<RFC 6048>
+(NNTP LIST additions) and S<RFC 8054> (NNTP compression) or their
+replacements.
 
 In brief, Netnews is a set of protocols for exchanging messages between
 a decentralized network of news servers.  News articles are organized
@@ -117,15 +121,30 @@ compiling or running INN, or if you successfully run INN on a platform
 that isn't listed in F<INSTALL>, please let us know (see L<"Reporting
 Bugs"> below).
 
-S<Perl 5.004_03> or later is required to build INN and use the embedded Perl
-filter support (which is highly recommended; some excellent spam filters
-have been written for INN).  Since all versions of Perl previous to 5.004
-are buggy (including security problems) and have fewer features, installing
-S<Perl 5.004_03> or later (like at least S<Perl 5.8.0>) is recommended.
+S<Perl 5.004_03> or later is required to build INN and use the embedded
+Perl filtering and authentication hook support (which is highly
+recommended; some excellent spam filters have been written for INN).
+Since all versions of Perl previous to 5.004 are buggy (including
+security problems) and have fewer features, installing S<Perl 5.004_03>
+or later (like at least S<Perl 5.8.0>) is recommended.  Depending on
+what language you want to write your filters and authentication hooks in,
+you may also want to install S<Python 2.3.0> or later, or S<Python 3.3.0>
+or later.
 
-If you want to enable PGP verification of control messages (highly
-recommended), you will need to have a PGP implementation installed.  See
-F<INSTALL> for more details.
+For support for authenticated control messages, you will need either PGP
+or GnuPG, the latter being recommended.  See F<INSTALL> for more details.
+
+For the C<ovdb> overview storage method, you'll need S<Berkeley
+DB 4.4> or later (4.7 or later recommended).  For the C<ovsqlite>
+overview storage method, you'll need S<SQLite 3.8.2> or later (3.20.0
+or later recommended).  If you have zlib available, you can also compress
+overview before it's stored into C<ovdb> or C<ovsqlite>, and enable the
+COMPRESS capability, an NNTP extension.  For support for news reading
+over TLS, you'll need OpenSSL.  To support SASL authentication
+to B<nnrpd> or to feed newsgroups to an IMAP server with SASL
+authentication, you'll need the Cyrus SASL libraries.  INN can also
+check passwords against a Kerberos KDC; for this, you will need Kerberos
+libraries.
 
 =head1 Getting Started
 
