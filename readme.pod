@@ -1,10 +1,18 @@
-=head1 Welcome to S<INN 2.6>!
+=head1 Welcome to the InterNetNews project!
 
 This work is sponsored by Internet Systems Consortium.
 
-Please see F<INSTALL> for installation instructions, F<NEWS> for what's
-changed from the previous release, and F<LICENSE> for the copyright,
-license, and distribution terms.
+The official homepage of the project is
+L<https://www.isc.org/othersoftware/>.
+
+Please see
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.6/install.html>
+for installation instructions,
+L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs-2.6/news.html>
+for what's changed from the previous release, and
+L<LICENSE|https://www.eyrie.org/~eagle/software/inn/docs-2.6/license.html>
+for the copyright, license, and distribution terms.  These files can
+also be found in the F<doc/pod> directory if not present at top-level.
 
 =head1 What is INN?
 
@@ -47,9 +55,9 @@ News Transport Protocol).
 INN supports accepting articles via either NNTP connections or via UUCP.
 B<innd>, the heart of INN, handles NNTP feeding connections directly;
 UUCP newsfeeds use B<rnews> (included in INN) to hand articles off to
-innd.  Other parts of INN handle feeding articles out to other news
+B<innd>.  Other parts of INN handle feeding articles out to other news
 servers, most commonly B<innfeed> (for real-time outgoing feeds) or
-B<nntpsend> and B<innxmit> (used to send batches of news created by innd
+B<nntpsend> and B<innxmit> (used to send batches of news created by B<innd>
 to a remote site via TCP/IP).  INN can also handle outgoing UUCP feeds.
 
 The part of INN that handles connections from newsreaders is B<nnrpd>.
@@ -69,24 +77,26 @@ volunteers around the world.  See L<"Supporting the INN Effort"> below.
 
 =head1 Prerequisites
 
-Compiling INN requires an S<ANSI C> compiler (gcc is recommended).  INN was
+Compiling INN requires an S<ANSI C> compiler (B<gcc> is recommended).  INN was
 originally written in S<K&R C>, but supporting pre-ANSI compilers has become
 enough of a headache that a lot of the newer parts of INN will no longer
-compile with a non-ANSI compiler.  gcc itself will compile with most
+compile with a non-ANSI compiler.  B<gcc> itself will compile with most
 vendor non-ANSI compilers, however, so if you're stuck with one,
-installing gcc is highly recommended.  Not only will it let you build INN,
+installing B<gcc> is highly recommended.  Not only will it let you build INN,
 it will make installing lots of other software much easier.  You may also
-need GNU make (particularly if your system make is BSD-derived), although
-most SysV make programs should work fine.  Compiling INN also currently
-requires a yacc implementation (bison will do fine).
+need GNU B<make> (particularly if your system B<make> is BSD-derived), although
+most SysV B<make> programs should work fine.  Compiling INN also currently
+requires a B<yacc> implementation (B<bison> will do fine).
 
-INN uses GNU autoconf to probe the capabilities of your system, and
-therefore should compile on nearly any Unix system.  It does, however,
-make extensive use of mmap(), which can cause problems on some older
-operating systems.  See F<INSTALL> for a list of systems it is known to
-work on.  If you encounter problems compiling or running INN, or if you
-successfully run INN on a platform that isn't listed in F<INSTALL>, please
-let us know (see L<"Reporting Bugs"> below).
+INN uses GNU B<autoconf> to probe the capabilities of your
+system, and therefore should compile on nearly any Unix
+system.  It does, however, make extensive use of mmap(),
+which can cause problems on some older operating systems.  See
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.6/install.html>
+for a list of systems it is known to work on.  If you encounter problems
+compiling or running INN, or if you successfully run INN on a platform
+that isn't listed in F<INSTALL>, please let us know (see L<"Reporting
+Bugs"> below).
 
 S<Perl 5.004_03> or later is required to build INN and use the embedded Perl
 filter support (which is highly recommended; some excellent spam filters
@@ -111,8 +121,21 @@ If you have any specific suggestions for documentation, or comments about
 things that are unclear, please send them to the INN maintainers (see
 L<"Reporting Bugs"> below).
 
-See F<INSTALL> for step-by-step instructions for setting up and
-configuring a news server.
+=head2 Download
+
+Source code tarballs of the official releases can be downloaded from
+L<https://downloads.isc.org/isc/inn/>.  The InterNetNews project does
+not distribute releases in binary form.  Yet, precompiled versions may
+exist on your operating system.
+
+=head2 Build and Install
+
+See
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.6/install.html>
+for step-by-step instructions for setting up and configuring a news
+server.
+
+=head2 Documentation
 
 INN also comes with a very complete set of man pages; there is a man page
 for every configuration file and program that comes with INN.  (If you
@@ -120,10 +143,14 @@ find one that doesn't have a man page, that's a bug.  Please do report
 it.)  When trying to figure out some specific problem, reading the man
 pages for all of the configuration files involved is a very good start.
 
+URL:  L<https://www.eyrie.org/~eagle/software/inn/docs-2.6/> (online
+documentation)
+
 =head1 Reporting Bugs
 
 We're interested in all bug reports.  Not just on the programs, but on the
-documentation too.  Please send I<all> such reports to
+documentation too.  Please use the GitHub issue tracker to send such bug
+reports, or alternatively send them to
 
     inn-workers@lists.isc.org
 
@@ -141,13 +168,18 @@ have time to answer general questions.
 =head1 Contributing Code
 
 If you have a patch or a utility that you'd like to be considered for
-inclusion into INN, please mail it to
+inclusion into INN, please make a GitHub pull request, or alternatively
+mail it to
 
     inn-workers@lists.isc.org
 
 in the body of the message (not as an attachment because the mailing-list
 might strip it), or put it on a webpage and send a link.  Patches included
 with a bug report as described above should follow the same procedure.
+
+Also please take a look at
+L<HACKING|https://www.eyrie.org/~eagle/software/inn/docs-2.6/hacking.html>
+for information about development and coding style.
 
 Have fun!
 
@@ -164,25 +196,34 @@ read-only (no postings allowed).
 
 Where announcements about INN are set (only maintainers may post).
 
+URL:  L<https://lists.isc.org/mailman/listinfo/inn-announce>
+
 =item inn-workers@lists.isc.org
 
-Discussion of INN development.  It is also where to send bug reports
-and patches for consideration for inclusion into INN (postings by
-members only).  If you're an INN expert and have the time to help
-out other users, we encourage you to join this mailing list to answer
-questions.  (You may also want to read the newsgroup news.software.nntp,
-which gets a lot of INN-related questions.)
+Discussion of INN development.  If you prefer not to use GitHub to create
+an issue or a pull request, it is also where to send bug reports and
+patches for consideration for inclusion into INN (postings by members
+only).  If you're an INN expert and have the time to help out other
+users, we encourage you to join this mailing list to answer questions.
+(You may also want to read the newsgroup news.software.nntp, which gets
+a lot of INN-related questions.)
+
+URL:  L<https://lists.isc.org/mailman/listinfo/inn-workers>
 
 =item inn-committers@lists.isc.org
 
 Git commit messages for INN are sent to this list (only the automated
 messages are sent here, no regular posting).
 
+URL:  L<https://lists.isc.org/mailman/listinfo/inn-committers>
+
 =item inn-bugs@lists.isc.org
 
 GitHub issues for INN are sent to this list (only the automated messages
 are sent here, no regular posting).  Bug reports should be sent to
-the inn-workers mailing list.
+the inn-workers mailing list, or a GitHub issue created.
+
+URL:  L<https://lists.isc.org/mailman/listinfo/inn-bugs>
 
 =back
 
@@ -194,12 +235,17 @@ address.  The addresses for the above lists are:
    inn-committers-request@lists.isc.org
    inn-bugs-request@lists.isc.org
 
+You can alternatively join them from the subscription form in their
+public web pages.
+
 =head1 Who's Responsible / Who to Thank
 
-See F<CONTRIBUTORS> for a long list of past contributors as well as people
-from the inn-workers mailing list who have dedicated a lot of time and
-effort to getting this new version together.  They deserve a big round of
-applause.  They've certainly got our thanks.
+See
+L<CONTRIBUTORS|https://www.eyrie.org/~eagle/software/inn/docs-2.6/contributors.html>
+for a long list of past contributors as well as people from the
+inn-workers mailing list who have dedicated a lot of time and effort to
+getting this new version together.  They deserve a big round of applause.
+They've certainly got our thanks.
 
 This product includes software developed by UUNET Technologies, Inc. and
 by the University of California, Berkeley and its contributors.
