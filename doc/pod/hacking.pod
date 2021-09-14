@@ -774,7 +774,7 @@ release of that major release.
     git checkout -b Y.Y
 
 Then, in that newly created branch, remove the first paragraph in
-F<doc/pod/readme.pod> which deals with development versions.
+F<readme.pod> which deals with development versions.
 
 =item 8.
 
@@ -879,7 +879,7 @@ tag in Git:
 =item 16.
 
 Bump revision numbers to reflect the one of the following release,
-especially in F<doc/pod/install.pod> and F<doc/pod/readme.pod>
+especially in F<doc/pod/install.pod> and F<readme.pod>
 for major releases, F<configure.ac> and F<Makefile.global.in> for both
 minor and major releases.  The release versions in the GitHub bug tracker
 should also be updated.
