@@ -1,18 +1,40 @@
 =head1 Welcome to the InterNetNews project!
 
+=head2 INN 2.6
+
+Our C<2.6> branch is for the maintenance of the most recently released
+stable version.  Head to the C<main> branch for the current development
+of the next major release of INN.
+
 This work is sponsored by Internet Systems Consortium.
 
 The official homepage of the project is
 L<https://www.isc.org/othersoftware/>.
 
-Please see
+Please see:
+
+=over 4
+
+=item *
+
 L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.6/install.html>
 for installation instructions,
+
+=item *
+
 L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs-2.6/news.html>
-for what's changed from the previous release, and
+for what's changed from the previous release,
+
+=item *
+
+and
 L<LICENSE|https://www.eyrie.org/~eagle/software/inn/docs-2.6/license.html>
-for the copyright, license, and distribution terms.  These files can
-also be found in the F<doc/pod> directory if not present at top-level.
+for the copyright, license, and distribution terms.
+
+=back
+
+These files can also be found in the F<doc/pod> directory if not present
+at top-level.
 
 =head1 What is INN?
 
@@ -128,6 +150,10 @@ L<https://downloads.isc.org/isc/inn/>.  The InterNetNews project does
 not distribute releases in binary form.  Yet, precompiled versions may
 exist on your operating system.
 
+When installing a new INN server, you may wish to download the latest
+snapshot of the stable branch rather than the last official release,
+so that to pick up possible bug fixes.
+
 =head2 Build and Install
 
 See
@@ -165,7 +191,24 @@ Please don't send general questions to the above addresses; those
 addresses are specifically for INN, and the INN maintainers usually won't
 have time to answer general questions.
 
-=head1 Contributing Code
+=head1 Testing and Development
+
+=head2 Source Code
+
+INN is maintained using the Git version control system.
+The official InterNetNews Git repository is located at
+L<https://github.com/InterNetNews/inn>.  A local copy of the current
+development source can be obtained by cloning it using a Git client:
+
+    git clone https://github.com/InterNetNews/inn.git
+
+You can also download L<daily
+snapshots|https://archives.eyrie.org/software/inn/snapshots/> produced
+only if the current code compiles and passes the test suite, so they
+have undergone at least some basic validation, although they've not
+been tested by a human.
+
+=head2 Contributing Code
 
 If you have a patch or a utility that you'd like to be considered for
 inclusion into INN, please make a GitHub pull request, or alternatively
@@ -176,6 +219,10 @@ mail it to
 in the body of the message (not as an attachment because the mailing-list
 might strip it), or put it on a webpage and send a link.  Patches included
 with a bug report as described above should follow the same procedure.
+
+Please submit all patches against the current main branch, not against a
+stable release.  The development version of INN is often much different
+than the last stable release.
 
 Also please take a look at
 L<HACKING|https://www.eyrie.org/~eagle/software/inn/docs-2.6/hacking.html>
@@ -190,7 +237,7 @@ to if you like.  Some of them you must be a member of before you can send
 mail to them (thank the spammers for that policy), and one of them is
 read-only (no postings allowed).
 
-=over 24
+=over 8
 
 =item inn-announce@lists.isc.org
 
