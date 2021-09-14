@@ -21,13 +21,19 @@ Please see:
 
 =over 4
 
-=item L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
+=item *
+
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
 for installation instructions,
 
-=item L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs/news.html>
-for what's changed from the previous release,
+=item *
 
-=item and
+L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs/news.html> for
+what's changed from the previous release,
+
+=item *
+
+and
 L<LICENSE|https://www.eyrie.org/~eagle/software/inn/docs/license.html>
 for the copyright, license, and distribution terms.
 
