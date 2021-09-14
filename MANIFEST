@@ -313,7 +313,6 @@ doc/pod/qio.pod                       Master file for qio.3
 doc/pod/radius.pod                    Master file for radius.8
 doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
-doc/pod/readme.pod                    Master file for README
 doc/pod/rnews.pod                     Master file for rnews.1
 doc/pod/scanlogs.pod                  Master file for scanlogs.8
 doc/pod/scanspool.pod                 Master file for scanspool.8
@@ -633,6 +632,7 @@ perl/INN/Config.pm.in                 INN::Config module
 perl/INN/Utils                        INN::Utils Perl modules (Directory)
 perl/INN/Utils/Shlock.pm.in           INN::Utils::Shlock module
 perl/Makefile                         Makefile for perl libraries
+readme.pod                            Master file for README
 samples                               Prototype INN config files (Directory)
 samples/INN.py                        Stub Python functions
 samples/Makefile                      Makefile for samples
