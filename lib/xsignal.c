@@ -18,6 +18,24 @@ typedef void (*sig_handler_type)(int);
 
 #ifdef HAVE_SIGACTION
 
+/* We mask signals when not in select().
+ *
+ * This excludes the possibility of a signal handler accessing data that
+ * the main code is mutating.
+ * 
+ * signals_masked is signal mask we run with outside select(). It is
+ * initialised to the signal mask that held on entry, with the signals
+ * we handle added.
+ * 
+ * signals_unmasked is signal mask we run with during select(). It is
+ * initialised to the signal mask that held on entry, with the signals
+ * we handle removed.
+ * 
+ * Both sets are intended to be arguments to SIG_SETMASK, not
+ * to SIG_BLOCK or SIG_UNBLOCK.
+ * 
+ * Signals that are ignored or set to SIG_DFL are never masked.
+ */
 static bool signal_masking = false;
 static int signal_max;
 static sigset_t signals_masked, signals_unmasked;
@@ -30,12 +48,20 @@ set_signal_handled(int signum, sig_handler_type sigfunc)
 {
     if (signal_masking) {
         if (signum > signal_max) {
+            /* We track the maximum handled signal so that
+             * we can efficiently reconfigure signals in
+             * xsignal_forked(). */
             signal_max = signum;
         }
         if (sigfunc != SIG_IGN && sigfunc != SIG_DFL) {
+            /* Block handled signals except during select, when
+             * we permit them. */
             sigaddset(&signals_masked, signum);
+            sigdelset(&signals_unmasked, signum);
         } else {
+            /* Never block ignored/defaulted signals. */
             sigdelset(&signals_masked, signum);
+            sigdelset(&signals_unmasked, signum);
         }
         xsignal_mask();
     }
