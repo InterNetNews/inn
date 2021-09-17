@@ -5,6 +5,7 @@ clients/getlist
 docs/pod
 innd/artparse
 innd/chan
+lib/artnumber
 lib/asprintf
 lib/buffer
 lib/concat
