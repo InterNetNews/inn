@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 Welcome to the InterNetNews project!
 
 =head2 INN 2.6
@@ -366,11 +368,16 @@ It also permits a realtime feed, contrary to B<innxmit> or B<nntpsend>.
 
 =item NewsPortal
 
-URL:  L<https://amrhein.eu/newsportal/doc/>
+URL:  L<https://gitlab.com/yamo-nntp/newsportal>
 
 A PHP-based web news reader that works as a front-end to a regular news
 server such as INN and lets people read and post without learning a news
 reader.
+
+NewsPortal was originally written by Florian Amrhein
+L<https://amrhein.eu/newsportal/doc/> and is now maintained by Stéphane
+Grégoire who notably did a great job fixing a few bugs and adapting
+it for use on smartphones.
 
 =item PersonalINN
 
