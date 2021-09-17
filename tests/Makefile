@@ -13,7 +13,7 @@ LIBM_LDFLAGS    = '-lm'
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/asprintf.t \
+TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t lib/asprintf.t \
 	lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
@@ -87,6 +87,9 @@ innd/artparse.t: innd/artparse-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 
 innd/chan.t: innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS)
 	$(LINK) innd/chan-t.o innd/fakeinnd.o tap/basic.o $(INNOBJS) $(INNDLIBS)
+
+lib/artnumber.t: lib/artnumber-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/artnumber-t.o tap/basic.o $(LIBINN)
 
 lib/asprintf.o: ../lib/asprintf.c
 	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/asprintf.c
