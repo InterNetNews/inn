@@ -11,13 +11,15 @@
 
 /*
 **  Check if the argument is a valid article number according to RFC 3977,
-**  that is to say it contains from 1 to 16 digits.
+**  that is to say it contains from 1 to 16 digits and must lie in the range
+**  0-2,147,483,647.
 */
 bool
 IsValidArticleNumber(const char *string)
 {
-    int len = 0;
+    int len = 0, digit;
     const unsigned char *p;
+    unsigned long v = 0;
 
     /* Not NULL. */
     if (string == NULL)
@@ -29,6 +31,10 @@ IsValidArticleNumber(const char *string)
         len++;
         if (!isdigit((unsigned char) *p))
             return false;
+        digit = *p - '0';
+        if(v > (0x7FFFFFFFul - digit) / 10)
+            return false;
+        v = 10 * v + digit;
     }
 
     if (len > 0 && len < 17)
