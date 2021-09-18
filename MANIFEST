@@ -484,6 +484,7 @@ lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
 lib/alloca.c                          alloca replacement
 lib/argparse.c                        Functions for parsing arguments
+lib/artnumber.c                       Manipulation of article numbers
 lib/asprintf.c                        asprintf replacement
 lib/buffer.c                          Reusable counted buffer
 lib/cleanfrom.c                       Clean out a From line
@@ -529,7 +530,6 @@ lib/network-innbind.c                 Network utility functions using innbind
 lib/network.c                         Network utility functions
 lib/newsuser.c                        Ensure running as news user/group
 lib/nntp.c                            NNTP utility library
-lib/numbers.c                         Manipulation of numbers
 lib/perl.c                            Perl hook support for nnrpd and innd
 lib/pread.c                           pread replacement
 lib/pwrite.c                          pwrite replacement
@@ -880,7 +880,7 @@ tests/innd/artparse-t.c               Tests for ARTparse in innd
 tests/innd/chan-t.c                   Tests for CHAN functions in innd
 tests/innd/fakeinnd.c                 Provide symbols defined by innd/innd.c
 tests/lib                             Test suite for libinn (Directory)
-tests/lib/artnumber-t.c               Tests for lib/numbers.c
+tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
 tests/lib/concat-t.c                  Tests for lib/concat.c

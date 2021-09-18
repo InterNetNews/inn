@@ -1,5 +1,5 @@
 /*
-**  Routines for numbers:  manipulation and checks.
+**  Routines for article numbers:  manipulation and checks.
 */
 
 #include "config.h"
