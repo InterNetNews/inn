@@ -38,6 +38,7 @@
 
 #include "inn/concat.h"
 #include "inn/xmalloc.h"
+#include "inn/messages.h"
 
 /* Abbreviation for cleaner code. */
 #define VA_NEXT(var, type) ((var) = (type) va_arg(args, type))
@@ -58,9 +59,17 @@ concat(const char *first, ...)
 
     /* Find the total memory required. */
     va_start(args, first);
-    for (string = first; string != NULL; VA_NEXT(string, const char *))
+    for (string = first; string != NULL; VA_NEXT(string, const char *)) {
+        /*
+         * Prevent overflow.  We limit the size to INT_MAX so that
+         * downstream conversions to int don't generate a vulnerability.
+         */
+        if(length >= INT_MAX - strlen(string))
+            sysdie("concat input too long");
         length += strlen(string);
+    }
     va_end(args);
+    /* We will need a 0 terminator as well. */
     length++;
 
     /*
