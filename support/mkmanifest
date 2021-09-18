@@ -19,6 +19,7 @@ use File::Find qw(find);
 # ignores by default.
 @IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr%(\A|/)CVS(/|\Z)%,
            qr%(\A|/)\.svn(/|\Z)%,
+           qr%(\A|/)\.vscode(/|\Z)%,
            qr%(\A|/)\.gitignore\Z%, qr%(\A|/)\.git(/|\Z)%,
            qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
            qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,

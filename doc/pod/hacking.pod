@@ -21,6 +21,9 @@ You will need S<autoconf 2.64> or later to use the development tree.  After
 checking out the tree, run C<./autogen> to generate the necessary autoconf
 files.
 
+Pull requests must complete an automatic build/test cycle with warnings enabled.
+You can run an equivalent build with C<./ci/test>.
+
 Nightly snapshots can be found at:
 
     <https://ftp.isc.org/isc/inn/snapshots/>
