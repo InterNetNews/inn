@@ -5,7 +5,8 @@
 =head2 INN 2.7
 
 Our C<main> branch is for the current development of the next S<INN 2.7>
-major release.  Head to the C<2.6> branch for the current stable release.
+major release.  Head to the C<2.6> branch for the maintenance of the
+most recently released stable release.
 
 This code is under active development and may or may not be
 stable at any given time.  Contributions and bug reports are welcome
@@ -173,6 +174,10 @@ Source code tarballs of the official releases can be downloaded from
 L<https://downloads.isc.org/isc/inn/>.  The InterNetNews project does
 not distribute releases in binary form.  Yet, precompiled versions may
 exist on your operating system.
+
+When installing a new INN server, you may wish to download the latest
+snapshot of the stable branch rather than the last official release,
+so that to pick up possible bug fixes.
 
 =head2 Build and Install
 
