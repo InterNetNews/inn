@@ -19,7 +19,7 @@ COMPILER="${COMPILER:-gcc}"
 ./configure CC="$COMPILER" --with-perl --with-python
 make warnings
 (cd contrib && make warnings)
-(cd frontends && make feedone sys2nf)
+(cd frontends && make warnings feedone sys2nf)
 (cd tests && make warnings && make)
 make check-manifest
 
