@@ -12,13 +12,14 @@ top	= ..
 CFLAGS  = $(GCFLAGS)
 
 # The base library files that are always compiled and included.
-SOURCES       = argparse.c buffer.c cleanfrom.c clientactive.c clientlib.c \
+SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
+	        clientlib.c                                                \
 	      	commands.c concat.c conffile.c confparse.c daemonize.c	   \
 	      	date.c dbz.c defdist.c dispatch.c fdflag.c fdlimit.c	   \
 	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \
 	      	innconf.c inndcomm.c list.c localopen.c lockfile.c	   \
 	      	makedir.c md5.c messageid.c messages.c mmap.c network.c	   \
-	      	network-innbind.c newsuser.c nntp.c numbers.c qio.c        \
+	        network-innbind.c newsuser.c nntp.c qio.c                  \
 		radix32.c readin.c					   \
 	      	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
 	      	sequence.c timer.c tst.c uwildmat.c vector.c wire.c	   \
@@ -101,6 +102,13 @@ argparse.o: argparse.c ../include/config.h ../include/inn/defines.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h
+artnumber.o: artnumber.c ../include/config.h ../include/inn/defines.h \
+  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 buffer.o: buffer.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -144,7 +152,7 @@ concat.o: concat.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h
+  ../include/inn/xmalloc.h ../include/inn/messages.h
 conffile.o: conffile.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
@@ -383,13 +391,6 @@ nntp.o: nntp.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/portable-socket.h ../include/inn/nntp.h \
   ../include/inn/vector.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
-numbers.o: numbers.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
 qio.o: qio.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
