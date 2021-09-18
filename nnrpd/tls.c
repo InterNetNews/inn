@@ -98,6 +98,12 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 **  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
 **  that have been audited and therefore supposed to be more
 **  resistant to attacks than ones randomly generated.
+**  They are FIPS-140 compliant and impractical to attack by construction.
+**
+**  There isn't any need to support user-specific files because of the
+**  safe choice of these domain parameters from RFC 7919.
+**  In case they appear to no longer be secure in the future, they'll
+**  be changed in a future INN release.
 */
 static const char file_ffdhe2048[] = \
 "-----BEGIN DH PARAMETERS-----\n\
@@ -185,9 +191,6 @@ load_dh_buffer (const char *buffer, size_t len)
 **
 **  EDH keying is slightly less efficient than static RSA keying,
 **  but it offers Perfect Forward Secrecy (PFS).
-**
-**  FIXME:  support user-specified files, to eliminate risk of
-**  "small group" attacks.
 */
 static DH *
 tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
