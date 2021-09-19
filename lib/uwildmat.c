@@ -23,22 +23,22 @@
 **  the ABORT code, it takes 22310 calls to fail.  Ugh.  The following
 **  explanation is from Lars:
 **
-**  The precondition that must be fulfilled is that DoMatch will consume at
-**  least one character in text.  This is true if *p is neither '*' nor '\0'.)
-**  The last return has ABORT instead of false to avoid quadratic behaviour in
-**  cases like pattern "*a*b*c*d" with text "abcxxxxx".  With false, each
-**  star-loop has to run to the end of the text; with ABORT only the last one
-**  does.
+**  The precondition that must be fulfilled is that match_pattern will consume
+**  at least one character in text.  (This is true if *p is neither '*' nor
+**  '\0'.)  The last return has ABORT instead of false to avoid quadratic
+**  behaviour in cases like pattern "*a*b*c*d" with text "abcxxxxx".
+**  With false, each star-loop has to run to the end of the text; with ABORT
+**  only the last one does.
 **
-**  Once the control of one instance of DoMatch enters the star-loop, that
-**  instance will return either true or ABORT, and any calling instance will
-**  therefore return immediately after (without calling recursively again).
-**  In effect, only one star-loop is ever active.  It would be possible to
-**  modify the code to maintain this context explicitly, eliminating all
-**  recursive calls at the cost of some complication and loss of clarity (and
-**  the ABORT stuff seems to be unclear enough by itself).  I think it would
-**  be unwise to try to get this into a released version unless you have a
-**  good test data base to try it out on.
+**  Once the control of one instance of match_pattern enters the star-loop,
+**  that instance will return either true or ABORT, and any calling instance
+**  will therefore return immediately after (without calling recursively
+**  again).  In effect, only one star-loop is ever active.  It would be
+**  possible to modify the code to maintain this context explicitly,
+**  eliminating all recursive calls at the cost of some complication and loss
+**  of clarity (and the ABORT stuff seems to be unclear enough by itself).
+**  I think it would be unwise to try to get this into a released version
+**  unless you have a good test data base to try it out on.
 **
 **  June, 1991:  Robert Elz <kre@munnari.oz.au> added minus and close bracket
 **  handling for character sets.
