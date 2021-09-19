@@ -1264,10 +1264,10 @@ bool ovdb_getlock(int mode)
 	lockfd = open(lockfn,
 		mode == OVDB_LOCK_NORMAL ? O_RDWR : O_CREAT|O_RDWR, 0660);
 	if(lockfd == -1) {
-	    free(lockfn);
 	    if(errno == ENOENT)
                 warn("OVDB: can not open database unless ovdb_monitor is"
-                     " running");
+                     " running; %s not found", lockfn);
+            free(lockfn);
 	    return false;
 	}
 	fdflag_close_exec(lockfd, true);
