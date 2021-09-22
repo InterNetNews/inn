@@ -14,7 +14,6 @@
 ##
 ##  See the perl-nocem man page for more information.
 
-alba-nocem@albasani.net:spam,Content-Based.Detlef-B,Content-Based.Selzer-M
 bleachbot@httrack.com:spam,site
 news@uni-berlin.de:Admincancel
 nl-cancel@a3.xs4all.nl:spam,mmf,binary
