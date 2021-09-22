@@ -20,7 +20,7 @@
 !!! test -f ${LOCKS}/innd.pid && echo 0 || echo 1 ! eq ! 1 ! exit ! innd dead
 
 ##  If another innwatch has started, exit.
-!!! cat ${LOCKS}/LOCK.${PROGNAME} ! ne ! $$ ! exit ! innwatch replaced
+!!! test -f ${LOCKS}/LOCK.${PROGNAME} && cat ${LOCKS}/LOCK.${PROGNAME} || echo 0 ! ne ! $$ ! exit ! innwatch replaced
 
 ##  Next test the load average.  Above first threshold pause, above higher
 ##  threshold throttle, below restart limit undo whatever was done.
