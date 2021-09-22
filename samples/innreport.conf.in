@@ -2386,12 +2386,12 @@ section nnrpd_timeout {
 };
 
 section nnrpd_hierarchy {
-        title   "Newsgroup request counts (by category):";
+        title   "Newsgroup request counts (by hierarchy):";
 	data    "%nnrpd_hierarchy";
 	sort    "$nnrpd_hierarchy{$b} <=> $nnrpd_hierarchy{$a}";
 	numbering true;
         column {
-                name          "Category";
+                name          "Hierarchy";
                 format        "%-64.64s";
 		value         "$key";
 		format_total  "TOTAL: %-57.57s";
