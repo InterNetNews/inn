@@ -73,13 +73,13 @@
 **  Only used in streaming mode.
 */
 struct stbufs {         /* for each article we are procesing */
-    char *st_fname;         /* file name */
-    char *st_id;            /* message ID */
-    int   st_retry;         /* retry count */
-    int   st_age;           /* age count */
-    ARTHANDLE *art;         /* arthandle to read article contents */
-    int   st_hash;          /* hash value to speed searches */
-    long  st_size;          /* article size */
+    char st_fname[SPOOLNAMEBUFF];    /* file name */
+    char st_id[NNTP_MAXLEN_COMMAND]; /* message ID */
+    int   st_retry;                  /* retry count */
+    int   st_age;                    /* age count */
+    ARTHANDLE *art;                  /* arthandle to read article contents */
+    int   st_hash;                   /* hash value to speed searches */
+    long  st_size;                   /* article size */
 };
 static struct stbufs stbuf[STNBUF]; /* we keep track of this many articles */
 static int stnq;        /* current number of active entries in stbuf */
@@ -189,7 +189,7 @@ stindex(char *MessageID, int hash) {
     int i;
 
     for (i = 0; i < STNBUF; i++) { /* linear search for ID */
-        if ((stbuf[i].st_id) && (stbuf[i].st_id[0])
+        if (stbuf[i].st_id[0]
          && (stbuf[i].st_hash == hash)) {
             int n;
 
@@ -237,7 +237,7 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     int i;
 
     for (i = 0; i < STNBUF; i++) {
-        if ((!stbuf[i].st_fname) || (stbuf[i].st_fname[0] == '\0')) break;
+        if (stbuf[i].st_fname[0] == '\0') break;
     }
     if (i >= STNBUF) { /* stnq says not full but can not find unused */
         syslog(L_ERROR, "stalloc: Internal error");
@@ -247,14 +247,6 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
         syslog(L_ERROR, "stalloc: filename longer than %d", SPOOLNAMEBUFF);
         return (-1);
     }
-    /* allocate buffers on first use.
-    ** If filename ever is longer than SPOOLNAMEBUFF then code will abort.
-    ** If ID is ever longer than NNTP_MAXLEN_COMMAND then other code would break.
-    */
-    if (!stbuf[i].st_fname)
-        stbuf[i].st_fname = xmalloc(SPOOLNAMEBUFF);
-    if (!stbuf[i].st_id)
-        stbuf[i].st_id = xmalloc(NNTP_MAXLEN_COMMAND);
     strlcpy(stbuf[i].st_fname, Article, SPOOLNAMEBUFF);
     strlcpy(stbuf[i].st_id, MessageID, NNTP_MAXLEN_COMMAND);
     stbuf[i].art = art;
@@ -272,8 +264,8 @@ strel(int i) {
         article_free(stbuf[i].art);
         stbuf[i].art = NULL;
     }
-    if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
-    if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
+    stbuf[i].st_id[0] = '\0';
+    stbuf[i].st_fname[0] = '\0';
     stnq--;
 }
 
@@ -435,7 +427,7 @@ RequeueRestAndExit(char *Article, char *MessageID) {
         int i;
 
         for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
-            if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
+            if (stbuf[i].st_fname[0] != '\0') {
                 if (Debug)
                     fprintf(stderr, "stbuf[%d]= %s, %s\n",
                             i, stbuf[i].st_fname, stbuf[i].st_id);
@@ -803,7 +795,7 @@ takethis(int i) {
         return true;
     stbuf[i].st_size = stbuf[i].art->len;
     article_free(stbuf[i].art); /* should not need file again */
-    stbuf[i].art = 0;           /* so close to free descriptor */
+    stbuf[i].art = NULL;        /* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
     return false;
@@ -1231,9 +1223,9 @@ int main(int ac, char *av[]) {
             }
             if (CanStream) {
                 for (i = 0; i < STNBUF; i++) { /* reset buffers */
-                    stbuf[i].st_fname = 0;
-                    stbuf[i].st_id = 0;
-                    stbuf[i].art = 0;
+                    stbuf[i].st_fname[0] = 0;
+                    stbuf[i].st_id[0] = 0;
+                    stbuf[i].art = NULL;
                 }
                 stnq = 0;
             }
@@ -1414,7 +1406,7 @@ int main(int ac, char *av[]) {
             }
             /* check for need to resend any IDs */
             for (i = 0; i < STNBUF; i++) {
-                if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
+                if (stbuf[i].st_fname[0] != '\0') {
                     if (stbuf[i].st_age++ > stnq) {
                         /* This should not happen but just in case ... */
                         if (stbuf[i].st_retry < STNRETRY) {
