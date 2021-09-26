@@ -38,7 +38,7 @@
 #include "inn/paths.h"
 #include "inn/storage.h"
 
-#define OUTPUT_BUFFER_SIZE	(16 * 1024)
+#define OUTPUT_BUFFER_SIZE      (16 * 1024)
 
 /*
 **  Streaming extensions to NNTP.  This extension removes the lock-step
@@ -68,22 +68,22 @@
 */
 #define STNRETRY 5
 
-struct stbufs {		/* for each article we are procesing */
-	char *st_fname;		/* file name */
-	char *st_id;		/* message ID */
-	int   st_retry;		/* retry count */
-	int   st_age;		/* age count */
-	ARTHANDLE *art;		/* arthandle to read article contents */
-	int   st_hash;		/* hash value to speed searches */
-	long  st_size;		/* article size */
+struct stbufs {         /* for each article we are procesing */
+        char *st_fname;         /* file name */
+        char *st_id;            /* message ID */
+        int   st_retry;         /* retry count */
+        int   st_age;           /* age count */
+        ARTHANDLE *art;         /* arthandle to read article contents */
+        int   st_hash;          /* hash value to speed searches */
+        long  st_size;          /* article size */
 };
 static struct stbufs stbuf[STNBUF]; /* we keep track of this many articles */
-static int stnq;	/* current number of active entries in stbuf */
-static long stnofail;	/* Count of consecutive successful sends */
+static int stnq;        /* current number of active entries in stbuf */
+static long stnofail;   /* Count of consecutive successful sends */
 
-static int TryStream = true;	/* Should attempt stream negotation? */
-static int CanStream = false;	/* Result of stream negotation */
-static int DoCheck   = true;	/* Should check before takethis? */
+static int TryStream = true;    /* Should attempt stream negotation? */
+static int CanStream = false;   /* Result of stream negotation */
+static int DoCheck   = true;    /* Should check before takethis? */
 static char modestream[] = "mode stream";
 static char modeheadfeed[] = "mode headfeed";
 static long retries = 0;
@@ -110,36 +110,36 @@ static int logRejects = false ;  /* syslog the 437 responses. */
 /*
 **  Global variables.
 */
-static bool		AlwaysRewrite;
-static bool		Debug;
-static bool		DoRequeue = true;
-static bool		Purging;
-static bool		STATprint;
-static bool		HeadersFeed;
-static char		*BATCHname;
-static char		*BATCHtemp;
-static char		*REMhost;
-static double		STATbegin;
-static double		STATend;
-static FILE		*BATCHfp;
-static int		FromServer;
-static int		ToServer;
-static struct history	*History;
-static QIOSTATE		*BATCHqp;
-static sig_atomic_t	GotAlarm;
-static sig_atomic_t	GotInterrupt;
-static sig_atomic_t	JMPyes;
-static jmp_buf		JMPwhere;
-static char		*REMbuffer;
-static char		*REMbuffptr;
-static char		*REMbuffend;
-static unsigned long	STATaccepted;
-static unsigned long	STAToffered;
-static unsigned long	STATrefused;
-static unsigned long	STATrejected;
-static unsigned long	STATmissing;
-static double		STATacceptedsize;
-static double		STATrejectedsize;
+static bool             AlwaysRewrite;
+static bool             Debug;
+static bool             DoRequeue = true;
+static bool             Purging;
+static bool             STATprint;
+static bool             HeadersFeed;
+static char             *BATCHname;
+static char             *BATCHtemp;
+static char             *REMhost;
+static double           STATbegin;
+static double           STATend;
+static FILE             *BATCHfp;
+static int              FromServer;
+static int              ToServer;
+static struct history   *History;
+static QIOSTATE         *BATCHqp;
+static sig_atomic_t     GotAlarm;
+static sig_atomic_t     GotInterrupt;
+static sig_atomic_t     JMPyes;
+static jmp_buf          JMPwhere;
+static char             *REMbuffer;
+static char             *REMbuffptr;
+static char             *REMbuffend;
+static unsigned long    STATaccepted;
+static unsigned long    STAToffered;
+static unsigned long    STATrefused;
+static unsigned long    STATrejected;
+static unsigned long    STATmissing;
+static double           STATacceptedsize;
+static double           STATrejectedsize;
 
 
 /*
@@ -167,7 +167,7 @@ Expired(char *MessageID) {
 static bool
 REMflush(void)
 {
-    int		i;
+    int         i;
 
     if (REMbuffptr == REMbuffer) return true; /* nothing buffered */
     i = xwrite(ToServer, REMbuffer, (int)(REMbuffptr - REMbuffer));
@@ -185,19 +185,19 @@ stindex(char *MessageID, int hash) {
     int i;
 
     for (i = 0; i < STNBUF; i++) { /* linear search for ID */
-	if ((stbuf[i].st_id) && (stbuf[i].st_id[0])
-	 && (stbuf[i].st_hash == hash)) {
-	    int n;
+        if ((stbuf[i].st_id) && (stbuf[i].st_id[0])
+         && (stbuf[i].st_hash == hash)) {
+            int n;
 
-	    if (strcmp(MessageID, stbuf[i].st_id))
+            if (strcmp(MessageID, stbuf[i].st_id))
                 continue;
 
-	    for (n = 0; (MessageID[n] != '@') && (MessageID[n] != '\0'); n++) ;
-	    if (strncmp(MessageID, stbuf[i].st_id, n))
+            for (n = 0; (MessageID[n] != '@') && (MessageID[n] != '\0'); n++) ;
+            if (strncmp(MessageID, stbuf[i].st_id, n))
                 continue;
-	    else
-                break;	/* found a match */
-	}
+            else
+                break;  /* found a match */
+        }
     }
     if (i >= STNBUF) i = -1;  /* no match found ? */
     return (i);
@@ -206,17 +206,17 @@ stindex(char *MessageID, int hash) {
 /*  stidhash(): calculate a hash value for message IDs to speed comparisons */
 static int
 stidhash(char *MessageID) {
-    char	*p;
-    int		hash;
+    char        *p;
+    int         hash;
 
     hash = 0;
     for (p = MessageID + 1; *p && (*p != '>'); p++) {
-	hash <<= 1;
-	if (isupper((unsigned char) *p)) {
-	    hash += tolower((unsigned char) *p);
-	} else {
-	    hash += *p;
-	}
+        hash <<= 1;
+        if (isupper((unsigned char) *p)) {
+            hash += tolower((unsigned char) *p);
+        } else {
+            hash += *p;
+        }
     }
     return hash;
 }
@@ -227,15 +227,15 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     int i;
 
     for (i = 0; i < STNBUF; i++) {
-	if ((!stbuf[i].st_fname) || (stbuf[i].st_fname[0] == '\0')) break;
+        if ((!stbuf[i].st_fname) || (stbuf[i].st_fname[0] == '\0')) break;
     }
     if (i >= STNBUF) { /* stnq says not full but can not find unused */
-	syslog(L_ERROR, "stalloc: Internal error");
-	return (-1);
+        syslog(L_ERROR, "stalloc: Internal error");
+        return (-1);
     }
     if ((int)strlen(Article) >= SPOOLNAMEBUFF) {
-	syslog(L_ERROR, "stalloc: filename longer than %d", SPOOLNAMEBUFF);
-	return (-1);
+        syslog(L_ERROR, "stalloc: filename longer than %d", SPOOLNAMEBUFF);
+        return (-1);
     }
     /* allocate buffers on first use.
     ** If filename ever is longer than SPOOLNAMEBUFF then code will abort.
@@ -258,13 +258,13 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
 /* strel(): release for reuse one of the streaming mode entries */
 static void
 strel(int i) {
-	if (stbuf[i].art) {
+        if (stbuf[i].art) {
             article_free(stbuf[i].art);
-	    stbuf[i].art = NULL;
-	}
-	if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
-	if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
-	stnq--;
+            stbuf[i].art = NULL;
+        }
+        if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
+        if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
+        stnq--;
 }
 
 /*
@@ -272,23 +272,23 @@ strel(int i) {
 */
 static bool
 REMwrite(char *p, int i, bool escdot) {
-    int	size;
+    int size;
 
     /* Buffer too full? */
     if (REMbuffend - REMbuffptr < i + 3) {
-	if (!REMflush())
-	    return false;
-	if (REMbuffend - REMbuffer < i + 3) {
-	    /* Line too long -- grow buffer. */
-	    size = i * 2;
+        if (!REMflush())
+            return false;
+        if (REMbuffend - REMbuffer < i + 3) {
+            /* Line too long -- grow buffer. */
+            size = i * 2;
             REMbuffer = xrealloc(REMbuffer, size);
-	    REMbuffend = &REMbuffer[size];
-	}
+            REMbuffend = &REMbuffer[size];
+        }
     }
 
     /* Dot escape, text of the line, line terminator. */
     if (escdot && (*p == '.'))
-	*REMbuffptr++ = '.';
+        *REMbuffptr++ = '.';
     memcpy(REMbuffptr, p, i);
     REMbuffptr += i;
     *REMbuffptr++ = '\r';
@@ -304,33 +304,33 @@ REMwrite(char *p, int i, bool escdot) {
 static void
 ExitWithStats(int x)
 {
-    static char		QUIT[] = "QUIT";
-    double		usertime;
-    double		systime;
+    static char         QUIT[] = "QUIT";
+    double              usertime;
+    double              systime;
 
     if (!Purging) {
-	REMwrite(QUIT, strlen(QUIT), false);
-	REMflush();
+        REMwrite(QUIT, strlen(QUIT), false);
+        REMflush();
     }
     STATend = TMRnow_double();
     if (GetResourceUsage(&usertime, &systime) < 0) {
-	usertime = 0;
-	systime = 0;
+        usertime = 0;
+        systime = 0;
     }
 
     if (STATprint) {
-	printf(STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
-		STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
-	printf("\n");
-	printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
-	printf("\n");
+        printf(STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
+                STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
+        printf("\n");
+        printf(STAT2, REMhost, usertime, systime, STATend - STATbegin);
+        printf("\n");
     }
 
     syslog(L_NOTICE, STAT1, REMhost, STAToffered, STATaccepted, STATrefused,
-		STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
+                STATrejected, STATmissing, STATacceptedsize, STATrejectedsize);
     syslog(L_NOTICE, STAT2, REMhost, usertime, systime, STATend - STATbegin);
     if (retries)
-	syslog(L_NOTICE, "%s %lu Streaming retries", REMhost, retries);
+        syslog(L_NOTICE, "%s %lu Streaming retries", REMhost, retries);
 
     if (BATCHfp != NULL && unlink(BATCHtemp) < 0 && errno != ENOENT)
         syswarn("cannot remove %s", BATCHtemp);
@@ -351,19 +351,19 @@ CloseAndRename(void)
 {
     /* Close the files, rename the temporary. */
     if (BATCHqp) {
-	QIOclose(BATCHqp);
-	BATCHqp = NULL;
+        QIOclose(BATCHqp);
+        BATCHqp = NULL;
     }
     if (ferror(BATCHfp)
      || fflush(BATCHfp) == EOF
      || fclose(BATCHfp) == EOF) {
-	unlink(BATCHtemp);
+        unlink(BATCHtemp);
         syswarn("cannot close %s", BATCHtemp);
-	ExitWithStats(1);
+        ExitWithStats(1);
     }
     if (rename(BATCHtemp, BATCHname) < 0) {
         syswarn("cannot rename %s", BATCHtemp);
-	ExitWithStats(1);
+        ExitWithStats(1);
     }
 }
 
@@ -393,15 +393,15 @@ Requeue(const char *Article, const char *MessageID)
 
     /* Called only to get the file open? */
     if (Article == NULL)
-	return;
+        return;
 
     if (MessageID != NULL)
-	fprintf(BATCHfp, "%s %s\n", Article, MessageID);
+        fprintf(BATCHfp, "%s %s\n", Article, MessageID);
     else
-	fprintf(BATCHfp, "%s\n", Article);
+        fprintf(BATCHfp, "%s\n", Article);
     if (fflush(BATCHfp) == EOF || ferror(BATCHfp)) {
         syswarn("cannot requeue %s", Article);
-	ExitWithStats(1);
+        ExitWithStats(1);
     }
 }
 
@@ -411,52 +411,52 @@ Requeue(const char *Article, const char *MessageID)
 */
 static void
 RequeueRestAndExit(char *Article, char *MessageID) {
-    char	*p;
+    char        *p;
 
     if (!AlwaysRewrite
      && STATaccepted == 0 && STATrejected == 0 && STATrefused == 0
      && STATmissing == 0) {
         warn("nothing sent -- leaving batchfile alone");
-	ExitWithStats(1);
+        ExitWithStats(1);
     }
 
     warn("rewriting batch file and exiting");
-    if (CanStream) {	/* streaming mode has a buffer of articles */
-	int i;
+    if (CanStream) {    /* streaming mode has a buffer of articles */
+        int i;
 
-	for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
-	    if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
-		if (Debug)
-		    fprintf(stderr, "stbuf[%d]= %s, %s\n",
-			    i, stbuf[i].st_fname, stbuf[i].st_id);
-		Requeue(stbuf[i].st_fname, stbuf[i].st_id);
-		if (Article == stbuf[i].st_fname) Article = NULL;
-		strel(i); /* release entry */
-	    }
-	}
+        for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
+            if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
+                if (Debug)
+                    fprintf(stderr, "stbuf[%d]= %s, %s\n",
+                            i, stbuf[i].st_fname, stbuf[i].st_id);
+                Requeue(stbuf[i].st_fname, stbuf[i].st_id);
+                if (Article == stbuf[i].st_fname) Article = NULL;
+                strel(i); /* release entry */
+            }
+        }
     }
     Requeue(Article, MessageID);
 
     for ( ; BATCHqp; ) {
-	if ((p = QIOread(BATCHqp)) == NULL) {
-	    if (QIOtoolong(BATCHqp)) {
+        if ((p = QIOread(BATCHqp)) == NULL) {
+            if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		continue;
-	    }
-	    if (QIOerror(BATCHqp)) {
+                continue;
+            }
+            if (QIOerror(BATCHqp)) {
                 syswarn("cannot read %s", BATCHname);
-		ExitWithStats(1);
-	    }
+                ExitWithStats(1);
+            }
 
-	    /* Normal EOF. */
-	    break;
-	}
+            /* Normal EOF. */
+            break;
+        }
 
-	if (fprintf(BATCHfp, "%s\n", p) == EOF
-	 || ferror(BATCHfp)) {
+        if (fprintf(BATCHfp, "%s\n", p) == EOF
+         || ferror(BATCHfp)) {
             syswarn("cannot requeue %s", p);
-	    ExitWithStats(1);
-	}
+            ExitWithStats(1);
+        }
     }
 
     CloseAndRename();
@@ -469,12 +469,12 @@ RequeueRestAndExit(char *Article, char *MessageID) {
 */
 static char *
 REMclean(char *buff) {
-    char	*p;
+    char        *p;
 
     if ((p = strchr(buff, '\r')) != NULL)
-	*p = '\0';
+        *p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
-	*p = '\0';
+        *p = '\0';
 
     /* The dot-escape is only in text, not command responses. */
     return buff;
@@ -487,67 +487,67 @@ REMclean(char *buff) {
 */
 static bool
 REMread(char *start, int size) {
-    static int		count;
-    static char		buffer[BUFSIZ];
-    static char		*bp;
-    char		*p;
-    char		*q;
-    char		*end;
-    struct timeval	t;
-    fd_set		rmask;
-    int			i;
-    char		c;
+    static int          count;
+    static char         buffer[BUFSIZ];
+    static char         *bp;
+    char                *p;
+    char                *q;
+    char                *end;
+    struct timeval      t;
+    fd_set              rmask;
+    int                 i;
+    char                c;
 
     if (!REMflush())
-	return false;
+        return false;
 
     for (p = start, end = &start[size - 1]; ; ) {
-	if (count == 0) {
-	    /* Fill the buffer. */
+        if (count == 0) {
+            /* Fill the buffer. */
     Again:
-	    FD_ZERO(&rmask);
-	    FD_SET(FromServer, &rmask);
-	    t.tv_sec = 10 * 60;
-	    t.tv_usec = 0;
-	    i = select(FromServer + 1, &rmask, NULL, NULL, &t);
-	    if (GotInterrupt)
-		return true;
-	    if (i < 0) {
-		if (errno == EINTR)
-		    goto Again;
-		return false;
-	    }
-	    if (i == 0 || !FD_ISSET(FromServer, &rmask))
-		return false;
-	    count = read(FromServer, buffer, sizeof buffer);
-	    if (GotInterrupt)
-		return true;
-	    if (count <= 0)
-		return false;
-	    bp = buffer;
-	}
+            FD_ZERO(&rmask);
+            FD_SET(FromServer, &rmask);
+            t.tv_sec = 10 * 60;
+            t.tv_usec = 0;
+            i = select(FromServer + 1, &rmask, NULL, NULL, &t);
+            if (GotInterrupt)
+                return true;
+            if (i < 0) {
+                if (errno == EINTR)
+                    goto Again;
+                return false;
+            }
+            if (i == 0 || !FD_ISSET(FromServer, &rmask))
+                return false;
+            count = read(FromServer, buffer, sizeof buffer);
+            if (GotInterrupt)
+                return true;
+            if (count <= 0)
+                return false;
+            bp = buffer;
+        }
 
-	/* Process next character. */
-	count--;
-	c = *bp++;
-	if (c == '\n')
-	    break;
-	if (p < end)
-	    *p++ = c;
+        /* Process next character. */
+        count--;
+        c = *bp++;
+        if (c == '\n')
+            break;
+        if (p < end)
+            *p++ = c;
     }
 
     /* We know we got \n; if previous char was \r, turn it into \n. */
     if (p > start && p < end && p[-1] == '\r')
-	p[-1] = '\n';
+        p[-1] = '\n';
     *p = '\0';
 
     /* Handle the dot escape. */
     if (*p == '.') {
-	if (p[1] == '\n' && p[2] == '\0')
-	    /* EOF. */
-	    return false;
-	for (q = &start[1]; (*p++ = *q++) != '\0'; )
-	    continue;
+        if (p[1] == '\n' && p[2] == '\0')
+            /* EOF. */
+            return false;
+        for (q = &start[1]; (*p++ = *q++) != '\0'; )
+            continue;
     }
     return true;
 }
@@ -568,23 +568,23 @@ Interrupted(char *Article, char *MessageID) {
 */
 static int
 HeadersLen(ARTHANDLE *art, int *iscmsg) {
-    const char	*p;
-    char	lastchar = -1;
+    const char  *p;
+    char        lastchar = -1;
 
     /* from nnrpd/article.c ARTsendmmap() */
     for (p = art->data; p < (art->data + art->len); p++) {
-	if (*p == '\r')
-	    continue;
-	if (*p == '\n') {
-	    if (lastchar == '\n') {
-		if (*(p-1) == '\r')
-		    p--;
-		break;
-	    }
-	    if ((*(p + 1) == 'C' || *(p + 1) == 'c') && strncasecmp(p + 1, "Control: ", 9) == 0)
-		*iscmsg = 1;
-	}
-	lastchar = *p;
+        if (*p == '\r')
+            continue;
+        if (*p == '\n') {
+            if (lastchar == '\n') {
+                if (*(p-1) == '\r')
+                    p--;
+                break;
+            }
+            if ((*(p + 1) == 'C' || *(p + 1) == 'c') && strncasecmp(p + 1, "Control: ", 9) == 0)
+                *iscmsg = 1;
+        }
+        lastchar = *p;
     }
     return (p - art->data);
 }
@@ -595,61 +595,61 @@ HeadersLen(ARTHANDLE *art, int *iscmsg) {
 */
 static bool
 REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
-    char	buff[NNTP_MAXLEN_COMMAND];
+    char        buff[NNTP_MAXLEN_COMMAND];
 
     if (!REMflush())
-	return false;
+        return false;
     if (HeadersFeed) {
-	struct iovec vec[3];
+        struct iovec vec[3];
         char buf[32];
-	int iscmsg = 0;
-	int len = HeadersLen(art, &iscmsg);
+        int iscmsg = 0;
+        int len = HeadersLen(art, &iscmsg);
 
-	vec[0].iov_base = (char *) art->data;
-	vec[0].iov_len = len;
-	/* Add 14 bytes, which maybe will be the length of the Bytes header */
-	snprintf(buf, sizeof(buf), "Bytes: %lu\r\n",
+        vec[0].iov_base = (char *) art->data;
+        vec[0].iov_len = len;
+        /* Add 14 bytes, which maybe will be the length of the Bytes header */
+        snprintf(buf, sizeof(buf), "Bytes: %lu\r\n",
                  (unsigned long) art->len + 14);
-	vec[1].iov_base = buf;
-	vec[1].iov_len = strlen(buf);
-	if (iscmsg) {
-	    vec[2].iov_base = (char *) art->data + len;
-	    vec[2].iov_len = art->len - len;
-	} else {
-	    vec[2].iov_base = (char *) "\r\n.\r\n";
-	    vec[2].iov_len = 5;
-	}
-	if (xwritev(ToServer, vec, 3) < 0)
-	    return false;
+        vec[1].iov_base = buf;
+        vec[1].iov_len = strlen(buf);
+        if (iscmsg) {
+            vec[2].iov_base = (char *) art->data + len;
+            vec[2].iov_len = art->len - len;
+        } else {
+            vec[2].iov_base = (char *) "\r\n.\r\n";
+            vec[2].iov_len = 5;
+        }
+        if (xwritev(ToServer, vec, 3) < 0)
+            return false;
     } else
-	if (xwrite(ToServer, art->data, art->len) < 0)
-	    return false;
+        if (xwrite(ToServer, art->data, art->len) < 0)
+            return false;
     if (GotInterrupt)
-	Interrupted(Article, MessageID);
+        Interrupted(Article, MessageID);
     if (Debug) {
-	fprintf(stderr, "> [ article %lu ]\n", (unsigned long) art->len);
-	fprintf(stderr, "> .\n");
+        fprintf(stderr, "> [ article %lu ]\n", (unsigned long) art->len);
+        fprintf(stderr, "> .\n");
     }
 
-    if (CanStream) return true;	/* streaming mode does not wait for ACK */
+    if (CanStream) return true; /* streaming mode does not wait for ACK */
 
     /* What did the remote site say? */
     if (!REMread(buff, (int)sizeof buff)) {
         syswarn("no reply after sending %s", Article);
-	return false;
+        return false;
     }
     if (GotInterrupt)
-	Interrupted(Article, MessageID);
+        Interrupted(Article, MessageID);
     if (Debug)
-	fprintf(stderr, "< %s", buff);
+        fprintf(stderr, "< %s", buff);
 
     /* Parse the reply. */
     switch (atoi(buff)) {
     default:
         warn("unknown reply after %s -- %s", Article, buff);
-	if (DoRequeue)
-	    Requeue(Article, MessageID);
-	break;
+        if (DoRequeue)
+            Requeue(Article, MessageID);
+        break;
     case NNTP_ERR_COMMAND:
     case NNTP_ERR_ACCESS:
         /* The receiving server is likely confused... no point in continuing! */
@@ -659,20 +659,20 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
     case NNTP_FAIL_IHAVE_DEFER:
     case NNTP_FAIL_TERMINATING:
     case NNTP_FAIL_ACTION:
-	Requeue(Article, MessageID);
-	break;
+        Requeue(Article, MessageID);
+        break;
     case NNTP_OK_IHAVE:
-	STATaccepted++;
-	STATacceptedsize += (double)art->len;
-	break;
+        STATaccepted++;
+        STATacceptedsize += (double)art->len;
+        break;
     case NNTP_FAIL_IHAVE_REJECT:
     case NNTP_ERR_SYNTAX:
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
-	STATrejected++;
-	STATrejectedsize += (double)art->len;
-	break;
+        STATrejected++;
+        STATrejectedsize += (double)art->len;
+        break;
     }
 
     /* Article sent, or we requeued it. */
@@ -685,20 +685,20 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 */
 static char *
 GetMessageID(ARTHANDLE *art) {
-    static char		*buff = NULL;
-    static size_t	buffsize = 0; /* total size of buff */
-    size_t		buffneed;
-    const char		*p, *q;
+    static char         *buff = NULL;
+    static size_t       buffsize = 0; /* total size of buff */
+    size_t              buffneed;
+    const char          *p, *q;
 
     p = wire_findheader(art->data, art->len, "Message-ID", true);
     if (p == NULL)
-	return NULL;
+        return NULL;
     for (q = p; q < art->data + art->len; q++) {
         if (*q == '\r' || *q == '\n')
             break;
     }
     if (q == art->data + art->len)
-	return NULL;
+        return NULL;
 
     buffneed = q - p + 1; /* bytes needed, including '\0' terminator */
     if (buffsize < buffneed) {
@@ -731,7 +731,7 @@ CATCHalarm(int s UNUSED)
 {
     GotAlarm = true;
     if (JMPyes)
-	longjmp(JMPwhere, 1);
+        longjmp(JMPwhere, 1);
 }
 
 /* check articles in streaming NNTP mode
@@ -739,23 +739,23 @@ CATCHalarm(int s UNUSED)
 */
 static bool
 check(int i) {
-    char	buff[NNTP_MAXLEN_COMMAND];
+    char        buff[NNTP_MAXLEN_COMMAND];
 
     /* Send "CHECK <mid>" to the other system. */
     snprintf(buff, sizeof(buff), "CHECK %s", stbuf[i].st_id);
     if (!REMwrite(buff, (int)strlen(buff), false)) {
         syswarn("cannot check article");
-	return true;
+        return true;
     }
     STAToffered++;
     if (Debug) {
-	if (stbuf[i].st_retry)
-	    fprintf(stderr, "> %s (retry %d)\n", buff, stbuf[i].st_retry);
-	else
-	    fprintf(stderr, "> %s\n", buff);
+        if (stbuf[i].st_retry)
+            fprintf(stderr, "> %s (retry %d)\n", buff, stbuf[i].st_retry);
+        else
+            fprintf(stderr, "> %s\n", buff);
     }
     if (GotInterrupt)
-	Interrupted(stbuf[i].st_fname, stbuf[i].st_id);
+        Interrupted(stbuf[i].st_fname, stbuf[i].st_id);
 
     /* That all.  Response is checked later by strlisten() */
     return false;
@@ -766,7 +766,7 @@ check(int i) {
 */
 static bool
 takethis(int i) {
-    char	buff[NNTP_MAXLEN_COMMAND];
+    char        buff[NNTP_MAXLEN_COMMAND];
 
     if (!stbuf[i].art) {
         warn("internal error: null article for %s in takethis",
@@ -787,7 +787,7 @@ takethis(int i) {
         return true;
     stbuf[i].st_size = stbuf[i].art->len;
     article_free(stbuf[i].art); /* should not need file again */
-    stbuf[i].art = 0;		/* so close to free descriptor */
+    stbuf[i].art = 0;           /* so close to free descriptor */
     stbuf[i].st_age = 0;
     /* That all.  Response is checked later by strlisten() */
     return false;
@@ -801,111 +801,111 @@ takethis(int i) {
 static bool
 strlisten(void)
 {
-    int		resp;
-    int		i;
-    char	*id, *p;
-    char	buff[NNTP_MAXLEN_COMMAND];
-    int		hash;
+    int         resp;
+    int         i;
+    char        *id, *p;
+    char        buff[NNTP_MAXLEN_COMMAND];
+    int         hash;
 
     while(true) {
-	if (!REMread(buff, (int)sizeof buff)) {
+        if (!REMread(buff, (int)sizeof buff)) {
             syswarn("no reply to CHECK");
-	    return true;
-	}
-	if (GotInterrupt)
-	    Interrupted((char *)0, (char *)0);
-	if (Debug)
-	    fprintf(stderr, "< %s", buff);
+            return true;
+        }
+        if (GotInterrupt)
+            Interrupted((char *)0, (char *)0);
+        if (Debug)
+            fprintf(stderr, "< %s", buff);
 
-	/* Parse the reply. */
-	resp =  atoi(buff);
+        /* Parse the reply. */
+        resp =  atoi(buff);
 
-	/* Skip the 1XX informational messages. */
-	if ((resp >= 100) && (resp < 200))
+        /* Skip the 1XX informational messages. */
+        if ((resp >= 100) && (resp < 200))
             continue;
 
-	switch (resp) { /* first time is to verify it */
+        switch (resp) { /* first time is to verify it */
         case NNTP_ERR_SYNTAX:
             /* Nothing we can check here. */
             /* FALLTHROUGH (and hope the message-ID is given after 501). */
-	case NNTP_FAIL_CHECK_REFUSE:
-	case NNTP_OK_CHECK:
-	case NNTP_OK_TAKETHIS:
-	case NNTP_FAIL_TAKETHIS_REJECT:
-	case NNTP_FAIL_CHECK_DEFER:
-	    if ((id = strchr(buff, '<')) != NULL) {
-		p = strchr(id, '>');
-		if (p) *(p+1) = '\0';
-		hash = stidhash(id);
-		i = stindex(id, hash);	/* find table entry */
-		if (i < 0) { /* should not happen */
-		    syslog(L_NOTICE, CANT_FINDIT, REMhost, REMclean(buff));
-		    return (true); /* can't find it! */
-		}
-	    } else {
-		syslog(L_NOTICE, CANT_PARSEIT, REMhost, REMclean(buff));
-		return (true);
-	    }
-	    break;
-	case NNTP_FAIL_TERMINATING:
+        case NNTP_FAIL_CHECK_REFUSE:
+        case NNTP_OK_CHECK:
+        case NNTP_OK_TAKETHIS:
+        case NNTP_FAIL_TAKETHIS_REJECT:
+        case NNTP_FAIL_CHECK_DEFER:
+            if ((id = strchr(buff, '<')) != NULL) {
+                p = strchr(id, '>');
+                if (p) *(p+1) = '\0';
+                hash = stidhash(id);
+                i = stindex(id, hash);  /* find table entry */
+                if (i < 0) { /* should not happen */
+                    syslog(L_NOTICE, CANT_FINDIT, REMhost, REMclean(buff));
+                    return (true); /* can't find it! */
+                }
+            } else {
+                syslog(L_NOTICE, CANT_PARSEIT, REMhost, REMclean(buff));
+                return (true);
+            }
+            break;
+        case NNTP_FAIL_TERMINATING:
         case NNTP_FAIL_ACTION:
-	    /* Most likely out of space -- no point in continuing. */
-	    syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
-	    return true;
-	    /* NOTREACHED */
-	default:
-	    syslog(L_NOTICE, UNEXPECTED, REMhost, REMclean(buff));
-	    if (Debug)
-		fprintf(stderr, "Unknown reply \"%s\"",
-						    buff);
-	    return (true);
-	}
+            /* Most likely out of space -- no point in continuing. */
+            syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
+            return true;
+            /* NOTREACHED */
+        default:
+            syslog(L_NOTICE, UNEXPECTED, REMhost, REMclean(buff));
+            if (Debug)
+                fprintf(stderr, "Unknown reply \"%s\"",
+                                                    buff);
+            return (true);
+        }
 
-	switch (resp) { /* now we take some action */
-	case NNTP_FAIL_CHECK_DEFER:	/* remote wants it later */
-	    /* try again now because time has passed */
-	    if (stbuf[i].st_retry < STNRETRY) {
-		if (check(i)) return true;
-		stbuf[i].st_retry++;
-		stbuf[i].st_age = 0;
-	    } else { /* requeue to disk for later */
-		Requeue(stbuf[i].st_fname, stbuf[i].st_id);
-		strel(i); /* release entry */
-	    }
-	    break;
+        switch (resp) { /* now we take some action */
+        case NNTP_FAIL_CHECK_DEFER:     /* remote wants it later */
+            /* try again now because time has passed */
+            if (stbuf[i].st_retry < STNRETRY) {
+                if (check(i)) return true;
+                stbuf[i].st_retry++;
+                stbuf[i].st_age = 0;
+            } else { /* requeue to disk for later */
+                Requeue(stbuf[i].st_fname, stbuf[i].st_id);
+                strel(i); /* release entry */
+            }
+            break;
 
         case NNTP_ERR_SYNTAX:
-	case NNTP_FAIL_CHECK_REFUSE:	/* remote doesn't want it */
-	    strel(i); /* release entry */
-	    STATrefused++;
-	    stnofail = 0;
-	    break;
-		
-	case NNTP_OK_CHECK:	/* remote wants article */
-	    if (takethis(i)) return true;
-	    stnofail++;
-	    break;
+        case NNTP_FAIL_CHECK_REFUSE:    /* remote doesn't want it */
+            strel(i); /* release entry */
+            STATrefused++;
+            stnofail = 0;
+            break;
+                
+        case NNTP_OK_CHECK:     /* remote wants article */
+            if (takethis(i)) return true;
+            stnofail++;
+            break;
 
-	case NNTP_OK_TAKETHIS:	/* remote received it OK */
-	    STATacceptedsize += (double) stbuf[i].st_size;
-	    strel(i); /* release entry */
-	    STATaccepted++;
-	    break;
-		
-	case NNTP_FAIL_TAKETHIS_REJECT:
-	    STATrejectedsize += (double) stbuf[i].st_size;
-	    if (logRejects)
-		syslog(L_NOTICE, REJ_STREAM, REMhost,
-		    stbuf[i].st_fname, REMclean(buff));
+        case NNTP_OK_TAKETHIS:  /* remote received it OK */
+            STATacceptedsize += (double) stbuf[i].st_size;
+            strel(i); /* release entry */
+            STATaccepted++;
+            break;
+                
+        case NNTP_FAIL_TAKETHIS_REJECT:
+            STATrejectedsize += (double) stbuf[i].st_size;
+            if (logRejects)
+                syslog(L_NOTICE, REJ_STREAM, REMhost,
+                    stbuf[i].st_fname, REMclean(buff));
 /* XXXXX Caution THERE BE DRAGONS, I don't think this logs properly
    The message ID is returned in the peer response... so this is redundant
-		    stbuf[i].st_id, stbuf[i].st_fname, REMclean(buff)); */
-	    strel(i); /* release entry */
-	    STATrejected++;
-	    stnofail = 0;
-	    break;
-	}
-	break;
+                    stbuf[i].st_id, stbuf[i].st_fname, REMclean(buff)); */
+            strel(i); /* release entry */
+            STATrejected++;
+            stnofail = 0;
+            break;
+        }
+        break;
     }
     return (false);
 }
@@ -1007,20 +1007,20 @@ article_free(ARTHANDLE *article)
 
 
 int main(int ac, char *av[]) {
-    int	                i;
-    char	        *p;
-    ARTHANDLE		*art;
-    FILE		*From;
-    FILE		*To;
-    char		buff[8192+128];
-    char		*Article;
-    char		*MessageID;
-    void		(*volatile old)(int) = NULL;
+    int                 i;
+    char                *p;
+    ARTHANDLE           *art;
+    FILE                *From;
+    FILE                *To;
+    char                buff[8192+128];
+    char                *Article;
+    char                *MessageID;
+    void                (*volatile old)(int) = NULL;
     volatile int        port = NNTP_PORT;
-    bool		val;
+    bool                val;
     char                *path;
-    volatile unsigned int	ConnectTimeout;
-    volatile unsigned int	TotalTimeout;
+    volatile unsigned int       ConnectTimeout;
+    volatile unsigned int       TotalTimeout;
 
     openlog("innxmit", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
     message_program_name = "innxmit";
@@ -1036,54 +1036,54 @@ int main(int ac, char *av[]) {
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "acdHlpP:rst:T:v")) != EOF)
-	switch (i) {
-	default:
-	    Usage();
-	    /* NOTREACHED */
-	case 'a':
-	    AlwaysRewrite = true;
-	    break;
-	case 'c':
-	    DoCheck = false;
-	    break;
-	case 'd':
-	    Debug = true;
-	    break;
-	case 'H':
-	    HeadersFeed = true;
-	    break;
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+        case 'a':
+            AlwaysRewrite = true;
+            break;
+        case 'c':
+            DoCheck = false;
+            break;
+        case 'd':
+            Debug = true;
+            break;
+        case 'H':
+            HeadersFeed = true;
+            break;
         case 'l':
             logRejects = true ;
             break ;
-	case 'p':
-	    AlwaysRewrite = true;
-	    Purging = true;
-	    break;
+        case 'p':
+            AlwaysRewrite = true;
+            Purging = true;
+            break;
         case 'P':
             port = atoi(optarg);
             break;
-	case 'r':
-	    DoRequeue = false;
-	    break;
-	case 's':
-	    TryStream = false;
-	    break;
-	case 't':
-	    ConnectTimeout = atoi(optarg);
-	    break;
-	case 'T':
-	    TotalTimeout = atoi(optarg);
-	    break;
-	case 'v':
-	    STATprint = true;
-	    break;
-	}
+        case 'r':
+            DoRequeue = false;
+            break;
+        case 's':
+            TryStream = false;
+            break;
+        case 't':
+            ConnectTimeout = atoi(optarg);
+            break;
+        case 'T':
+            TotalTimeout = atoi(optarg);
+            break;
+        case 'v':
+            STATprint = true;
+            break;
+        }
     ac -= optind;
     av += optind;
 
     /* Parse arguments; host and filename. */
     if (ac != 2)
-	Usage();
+        Usage();
     REMhost = av[0];
     BATCHname = av[1];
 
@@ -1102,19 +1102,19 @@ int main(int ac, char *av[]) {
     }
     if (((i = open(BATCHname, O_RDWR)) < 0) || ((BATCHqp = QIOfdopen(i)) == NULL)) {
         syswarn("cannot open %s", BATCHname);
-	SMshutdown();
-	exit(1);
+        SMshutdown();
+        exit(1);
     }
     if (!inn_lock_file(QIOfileno(BATCHqp), INN_LOCK_WRITE, true)) {
-#if	defined(EWOULDBLOCK)
-	if (errno == EWOULDBLOCK) {
-	    SMshutdown();
-	    exit(0);
-	}
-#endif	/* defined(EWOULDBLOCK) */
+#if     defined(EWOULDBLOCK)
+        if (errno == EWOULDBLOCK) {
+            SMshutdown();
+            exit(0);
+        }
+#endif  /* defined(EWOULDBLOCK) */
         syswarn("cannot lock %s", BATCHname);
-	SMshutdown();
-	exit(1);
+        SMshutdown();
+        exit(1);
     }
 
     /* Get a temporary name in the same directory as the batch file. */
@@ -1132,114 +1132,114 @@ int main(int ac, char *av[]) {
     STATbegin = TMRnow_double();
 
     if (!Purging) {
-	/* Open a connection to the remote server. */
-	if (ConnectTimeout) {
-	    GotAlarm = false;
-	    old = xsignal(SIGALRM, CATCHalarm);
+        /* Open a connection to the remote server. */
+        if (ConnectTimeout) {
+            GotAlarm = false;
+            old = xsignal(SIGALRM, CATCHalarm);
             if (setjmp(JMPwhere)) {
                 warn("cannot connect to %s: timed out", REMhost);
                 SMshutdown();
                 exit(1);
             }
-	    JMPyes = true;
-	    alarm(ConnectTimeout);
-	}
-	if (NNTPconnect(REMhost, port, &From, &To, buff, sizeof(buff)) < 0
+            JMPyes = true;
+            alarm(ConnectTimeout);
+        }
+        if (NNTPconnect(REMhost, port, &From, &To, buff, sizeof(buff)) < 0
             || GotAlarm) {
-	    i = errno;
+            i = errno;
             warn("cannot connect to %s: %s", REMhost,
                  buff[0] ? REMclean(buff) : strerror(errno));
-	    if (GotAlarm)
-		syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
-	    else 
-		syslog(L_NOTICE, CANT_CONNECT, REMhost,
-		    buff[0] ? REMclean(buff) : strerror(i));
-	    SMshutdown();
-	    exit(1);
-	}
-	if (Debug)
-	    fprintf(stderr, "< %s\n", REMclean(buff));
-	if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
-	    i = errno;
+            if (GotAlarm)
+                syslog(L_NOTICE, CANT_CONNECT, REMhost, "timeout");
+            else 
+                syslog(L_NOTICE, CANT_CONNECT, REMhost,
+                    buff[0] ? REMclean(buff) : strerror(i));
+            SMshutdown();
+            exit(1);
+        }
+        if (Debug)
+            fprintf(stderr, "< %s\n", REMclean(buff));
+        if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
+            i = errno;
             syswarn("cannot authenticate with %s", REMhost);
-	    syslog(L_ERROR, CANT_AUTHENTICATE,
-		REMhost, GotAlarm ? "timeout" : strerror(i));
-	    /* Don't send quit; we want the remote to print a message. */
-	    SMshutdown();
-	    exit(1);
-	}
-	if (ConnectTimeout) {
-	    alarm(0);
-	    xsignal(SIGALRM, old);
-	    JMPyes = false;
-	}
+            syslog(L_ERROR, CANT_AUTHENTICATE,
+                REMhost, GotAlarm ? "timeout" : strerror(i));
+            /* Don't send quit; we want the remote to print a message. */
+            SMshutdown();
+            exit(1);
+        }
+        if (ConnectTimeout) {
+            alarm(0);
+            xsignal(SIGALRM, old);
+            JMPyes = false;
+        }
 
-	/* We no longer need standard I/O. */
-	FromServer = fileno(From);
-	ToServer = fileno(To);
+        /* We no longer need standard I/O. */
+        FromServer = fileno(From);
+        ToServer = fileno(To);
 
-	if (TryStream) {
-	    if (!REMwrite(modestream, (int)strlen(modestream), false)) {
+        if (TryStream) {
+            if (!REMwrite(modestream, (int)strlen(modestream), false)) {
                 syswarn("cannot negotiate %s", modestream);
-	    }
-	    if (Debug)
-		fprintf(stderr, ">%s\n", modestream);
-	    /* Does he understand mode stream? */
-	    if (!REMread(buff, (int)sizeof buff)) {
+            }
+            if (Debug)
+                fprintf(stderr, ">%s\n", modestream);
+            /* Does he understand mode stream? */
+            if (!REMread(buff, (int)sizeof buff)) {
                 syswarn("no reply to %s", modestream);
-	    } else {
-		if (Debug)
-		    fprintf(stderr, "< %s", buff);
+            } else {
+                if (Debug)
+                    fprintf(stderr, "< %s", buff);
 
-		/* Parse the reply. */
-		switch (atoi(buff)) {
-		default:
+                /* Parse the reply. */
+                switch (atoi(buff)) {
+                default:
                     warn("unknown reply to %s -- %s", modestream, buff);
-		    CanStream = false;
-		    break;
-		case NNTP_OK_STREAM:	/* YES! */
-		    CanStream = true;
-		    break;
+                    CanStream = false;
+                    break;
+                case NNTP_OK_STREAM:    /* YES! */
+                    CanStream = true;
+                    break;
                 case NNTP_FAIL_AUTH_NEEDED: /* authentication refusal */
-		case NNTP_ERR_COMMAND: /* unknown MODE command */
+                case NNTP_ERR_COMMAND: /* unknown MODE command */
                 case NNTP_ERR_SYNTAX:  /* unknown STREAM keyword */
-		    CanStream = false;
-		    break;
-		}
-	    }
-	    if (CanStream) {
-		for (i = 0; i < STNBUF; i++) { /* reset buffers */
-		    stbuf[i].st_fname = 0;
-		    stbuf[i].st_id = 0;
-		    stbuf[i].art = 0;
-		}
-		stnq = 0;
-	    }
-	}
-	if (HeadersFeed) {
-	    if (!REMwrite(modeheadfeed, strlen(modeheadfeed), false))
+                    CanStream = false;
+                    break;
+                }
+            }
+            if (CanStream) {
+                for (i = 0; i < STNBUF; i++) { /* reset buffers */
+                    stbuf[i].st_fname = 0;
+                    stbuf[i].st_id = 0;
+                    stbuf[i].art = 0;
+                }
+                stnq = 0;
+            }
+        }
+        if (HeadersFeed) {
+            if (!REMwrite(modeheadfeed, strlen(modeheadfeed), false))
                 syswarn("cannot negotiate %s", modeheadfeed);
-	    if (Debug)
-		fprintf(stderr, ">%s\n", modeheadfeed);
-	    if (!REMread(buff, sizeof buff)) {
+            if (Debug)
+                fprintf(stderr, ">%s\n", modeheadfeed);
+            if (!REMread(buff, sizeof buff)) {
                 syswarn("no reply to %s", modeheadfeed);
-	    } else {
-		if (Debug)
-		    fprintf(stderr, "< %s", buff);
+            } else {
+                if (Debug)
+                    fprintf(stderr, "< %s", buff);
 
-		/* Parse the reply. */
-		switch (atoi(buff)) {
-		case 250:		/* YES! */
-		    break;
+                /* Parse the reply. */
+                switch (atoi(buff)) {
+                case 250:               /* YES! */
+                    break;
                 case NNTP_FAIL_AUTH_NEEDED: /* authentication refusal */
-		case NNTP_ERR_COMMAND: /* unknown MODE command */
+                case NNTP_ERR_COMMAND: /* unknown MODE command */
                 case NNTP_ERR_SYNTAX:  /* unknown STREAM keyword */
                     die("%s not allowed -- %s", modeheadfeed, buff);
-		default:
+                default:
                     die("unknown reply to %s -- %s", modeheadfeed, buff);
-		}
-	    }
-	}
+                }
+            }
+        }
     }
 
     /* Set up signal handlers. */
@@ -1248,8 +1248,8 @@ int main(int ac, char *av[]) {
     xsignal(SIGTERM, CATCHinterrupt);
     xsignal(SIGPIPE, SIG_IGN);
     if (TotalTimeout) {
-	xsignal(SIGALRM, CATCHalarm);
-	alarm(TotalTimeout);
+        xsignal(SIGALRM, CATCHalarm);
+        alarm(TotalTimeout);
     }
 
     path = concatpath(innconf->pathdb, INN_PATH_HISTORY);
@@ -1260,62 +1260,62 @@ int main(int ac, char *av[]) {
     GotInterrupt = false;
     GotAlarm = false;
     for (Article = NULL, MessageID = NULL; ; ) {
-	if (GotAlarm) {
+        if (GotAlarm) {
             warn("timed out");
-	    /* Don't resend the current article. */
-	    RequeueRestAndExit((char *)NULL, (char *)NULL);
-	}
-	if (GotInterrupt)
-	    Interrupted(Article, MessageID);
+            /* Don't resend the current article. */
+            RequeueRestAndExit((char *)NULL, (char *)NULL);
+        }
+        if (GotInterrupt)
+            Interrupted(Article, MessageID);
 
-	if ((Article = QIOread(BATCHqp)) == NULL) {
-	    if (QIOtoolong(BATCHqp)) {
+        if ((Article = QIOread(BATCHqp)) == NULL) {
+            if (QIOtoolong(BATCHqp)) {
                 warn("skipping long line in %s", BATCHname);
-		continue;
-	    }
-	    if (QIOerror(BATCHqp)) {
+                continue;
+            }
+            if (QIOerror(BATCHqp)) {
                 syswarn("cannot read %s", BATCHname);
-		ExitWithStats(1);
-	    }
+                ExitWithStats(1);
+            }
 
-	    /* Normal EOF -- we're done. */
-	    QIOclose(BATCHqp);
-	    BATCHqp = NULL;
-	    break;
-	}
+            /* Normal EOF -- we're done. */
+            QIOclose(BATCHqp);
+            BATCHqp = NULL;
+            break;
+        }
 
-	/* Ignore blank lines. */
-	if (*Article == '\0')
-	    continue;
+        /* Ignore blank lines. */
+        if (*Article == '\0')
+            continue;
 
-	/* Split the line into possibly two fields. */
-	if (Article[0] == '/'
-	 && Article[strlen(innconf->patharticles)] == '/'
-	 && strncmp(Article, innconf->patharticles, strlen(innconf->patharticles)) == 0)
-	    Article += strlen(innconf->patharticles) + 1;
-	if ((MessageID = strchr(Article, ' ')) != NULL) {
-	    *MessageID++ = '\0';
-	    if (*MessageID != '<'
-		|| (p = strrchr(MessageID, '>')) == NULL
-		|| *++p != '\0') {
+        /* Split the line into possibly two fields. */
+        if (Article[0] == '/'
+         && Article[strlen(innconf->patharticles)] == '/'
+         && strncmp(Article, innconf->patharticles, strlen(innconf->patharticles)) == 0)
+            Article += strlen(innconf->patharticles) + 1;
+        if ((MessageID = strchr(Article, ' ')) != NULL) {
+            *MessageID++ = '\0';
+            if (*MessageID != '<'
+                || (p = strrchr(MessageID, '>')) == NULL
+                || *++p != '\0') {
                 warn("ignoring line %s %s...", Article, MessageID);
-		continue;
-	    }
-	}
+                continue;
+            }
+        }
 
-	if (*Article == '\0') {
-	    if (MessageID)
+        if (*Article == '\0') {
+            if (MessageID)
                 warn("empty file name for %s in %s", MessageID, BATCHname);
-	    else
+            else
                 warn("empty file name, no message ID in %s", BATCHname);
-	    /* We could do a history lookup. */
-	    continue;
-	}
+            /* We could do a history lookup. */
+            continue;
+        }
 
-	if (Purging && MessageID != NULL && !Expired(MessageID)) {
-	    Requeue(Article, MessageID);
-	    continue;
-	}
+        if (Purging && MessageID != NULL && !Expired(MessageID)) {
+            Requeue(Article, MessageID);
+            continue;
+        }
 
         /* Drop articles with a message ID longer than NNTP_MAXLEN_MSGID to
            avoid overrunning buffers and throwing the server on the
@@ -1328,155 +1328,155 @@ int main(int ac, char *av[]) {
 
         art = article_open(Article, MessageID);
         if (art == NULL)
-	    continue;
+            continue;
 
-	if (Purging) {
+        if (Purging) {
             article_free(art);
-	    Requeue(Article, MessageID);
-	    continue;
-	}
+            Requeue(Article, MessageID);
+            continue;
+        }
 
-	/* Get the Message-ID from the article if we need to. */
-	if (MessageID == NULL) {
-	    if ((MessageID = GetMessageID(art)) == NULL) {
+        /* Get the Message-ID from the article if we need to. */
+        if (MessageID == NULL) {
+            if ((MessageID = GetMessageID(art)) == NULL) {
                 warn("Skipping \"%s\" -- %s?\n", Article, "no message ID");
                 article_free(art);
-		continue;
-	    }
-	}
-	if (GotInterrupt)
-	    Interrupted(Article, MessageID);
+                continue;
+            }
+        }
+        if (GotInterrupt)
+            Interrupted(Article, MessageID);
 
-	/* Offer the article. */
-	if (CanStream) {
-	    int lim;
-	    int hash;
+        /* Offer the article. */
+        if (CanStream) {
+            int lim;
+            int hash;
 
-	    hash = stidhash(MessageID);
-	    if (stindex(MessageID, hash) >= 0) { /* skip duplicates in queue */
-		if (Debug)
-		    fprintf(stderr, "Skipping duplicate ID %s\n",
-							    MessageID);
+            hash = stidhash(MessageID);
+            if (stindex(MessageID, hash) >= 0) { /* skip duplicates in queue */
+                if (Debug)
+                    fprintf(stderr, "Skipping duplicate ID %s\n",
+                                                            MessageID);
                 article_free(art);
-		continue;
-	    }
-	    /* This code tries to optimize by sending a burst of "check"
-	     * commands before flushing the buffer.  This should result
-	     * in several being sent in one packet reducing the network
-	     * overhead.
-	     */
-	    if (DoCheck && (stnofail < STNC)) lim = STNBUF;
-	    else                              lim = STNBUFL;
-	    if (stnq >= lim) { /* need to empty a buffer */
-		while (stnq >= STNBUFL) { /* or several */
-		    if (strlisten()) {
-			RequeueRestAndExit(Article, MessageID);
-		    }
-		}
-	    }
-	    /* save new article in the buffer */
-	    i = stalloc(Article, MessageID, art, hash);
-	    if (i < 0) {
+                continue;
+            }
+            /* This code tries to optimize by sending a burst of "check"
+             * commands before flushing the buffer.  This should result
+             * in several being sent in one packet reducing the network
+             * overhead.
+             */
+            if (DoCheck && (stnofail < STNC)) lim = STNBUF;
+            else                              lim = STNBUFL;
+            if (stnq >= lim) { /* need to empty a buffer */
+                while (stnq >= STNBUFL) { /* or several */
+                    if (strlisten()) {
+                        RequeueRestAndExit(Article, MessageID);
+                    }
+                }
+            }
+            /* save new article in the buffer */
+            i = stalloc(Article, MessageID, art, hash);
+            if (i < 0) {
                 article_free(art);
-		RequeueRestAndExit(Article, MessageID);
-	    }
-	    if (DoCheck && (stnofail < STNC)) {
-		if (check(i)) {
-		    RequeueRestAndExit((char *)NULL, (char *)NULL);
-		}
-	    } else {
+                RequeueRestAndExit(Article, MessageID);
+            }
+            if (DoCheck && (stnofail < STNC)) {
+                if (check(i)) {
+                    RequeueRestAndExit((char *)NULL, (char *)NULL);
+                }
+            } else {
                 STAToffered++ ;
-		if (takethis(i)) {
-		    RequeueRestAndExit((char *)NULL, (char *)NULL);
-		}
-	    }
-	    /* check for need to resend any IDs */
-	    for (i = 0; i < STNBUF; i++) {
-		if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
-		    if (stbuf[i].st_age++ > stnq) {
-			/* This should not happen but just in case ... */
-			if (stbuf[i].st_retry < STNRETRY) {
-			    if (check(i)) /* resend check */
-				RequeueRestAndExit((char *)NULL, (char *)NULL);
-			    retries++;
-			    stbuf[i].st_retry++;
-			    stbuf[i].st_age = 0;
-			} else { /* requeue to disk for later */
-			    Requeue(stbuf[i].st_fname, stbuf[i].st_id);
-			    strel(i); /* release entry */
-			}
-		    }
-		}
-	    }
-	    continue; /* next article */
-	}
-	snprintf(buff, sizeof(buff), "IHAVE %s", MessageID);
-	if (!REMwrite(buff, (int)strlen(buff), false)) {
+                if (takethis(i)) {
+                    RequeueRestAndExit((char *)NULL, (char *)NULL);
+                }
+            }
+            /* check for need to resend any IDs */
+            for (i = 0; i < STNBUF; i++) {
+                if ((stbuf[i].st_fname) && (stbuf[i].st_fname[0] != '\0')) {
+                    if (stbuf[i].st_age++ > stnq) {
+                        /* This should not happen but just in case ... */
+                        if (stbuf[i].st_retry < STNRETRY) {
+                            if (check(i)) /* resend check */
+                                RequeueRestAndExit((char *)NULL, (char *)NULL);
+                            retries++;
+                            stbuf[i].st_retry++;
+                            stbuf[i].st_age = 0;
+                        } else { /* requeue to disk for later */
+                            Requeue(stbuf[i].st_fname, stbuf[i].st_id);
+                            strel(i); /* release entry */
+                        }
+                    }
+                }
+            }
+            continue; /* next article */
+        }
+        snprintf(buff, sizeof(buff), "IHAVE %s", MessageID);
+        if (!REMwrite(buff, (int)strlen(buff), false)) {
             syswarn("cannot offer article");
             article_free(art);
-	    RequeueRestAndExit(Article, MessageID);
-	}
-	STAToffered++;
-	if (Debug)
-	    fprintf(stderr, "> %s\n", buff);
-	if (GotInterrupt)
-	    Interrupted(Article, MessageID);
+            RequeueRestAndExit(Article, MessageID);
+        }
+        STAToffered++;
+        if (Debug)
+            fprintf(stderr, "> %s\n", buff);
+        if (GotInterrupt)
+            Interrupted(Article, MessageID);
 
-	/* Does he want it? */
-	if (!REMread(buff, (int)sizeof buff)) {
+        /* Does he want it? */
+        if (!REMread(buff, (int)sizeof buff)) {
             syswarn("no reply to IHAVE");
             article_free(art);
-	    RequeueRestAndExit(Article, MessageID);
-	}
-	if (GotInterrupt)
-	    Interrupted(Article, MessageID);
-	if (Debug)
-	    fprintf(stderr, "< %s", buff);
+            RequeueRestAndExit(Article, MessageID);
+        }
+        if (GotInterrupt)
+            Interrupted(Article, MessageID);
+        if (Debug)
+            fprintf(stderr, "< %s", buff);
 
-	/* Parse the reply. */
-	switch (atoi(buff)) {
-	default:
+        /* Parse the reply. */
+        switch (atoi(buff)) {
+        default:
             warn("unknown reply to %s -- %s", Article, buff);
-	    if (DoRequeue)
-		Requeue(Article, MessageID);
-	    break;
+            if (DoRequeue)
+                Requeue(Article, MessageID);
+            break;
         case NNTP_ERR_COMMAND:
         case NNTP_ERR_ACCESS:
             /* The receiving server is likely confused... no point in continuing! */
             syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
-	    RequeueRestAndExit(Article, MessageID);
-	    /* NOTREACHED */
+            RequeueRestAndExit(Article, MessageID);
+            /* NOTREACHED */
         case NNTP_FAIL_ACTION:
         case NNTP_FAIL_AUTH_NEEDED:
-	case NNTP_FAIL_IHAVE_DEFER:
-	case NNTP_FAIL_TERMINATING:
-	    /* Most likely out of space -- no point in continuing. */
-	    syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
-	    RequeueRestAndExit(Article, MessageID);
-	    /* NOTREACHED */
-	case NNTP_CONT_IHAVE:
-	    if (!REMsendarticle(Article, MessageID, art))
-		RequeueRestAndExit(Article, MessageID);
-	    break;
-	case NNTP_FAIL_IHAVE_REFUSE:
+        case NNTP_FAIL_IHAVE_DEFER:
+        case NNTP_FAIL_TERMINATING:
+            /* Most likely out of space -- no point in continuing. */
+            syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
+            RequeueRestAndExit(Article, MessageID);
+            /* NOTREACHED */
+        case NNTP_CONT_IHAVE:
+            if (!REMsendarticle(Article, MessageID, art))
+                RequeueRestAndExit(Article, MessageID);
+            break;
+        case NNTP_FAIL_IHAVE_REFUSE:
         case NNTP_ERR_SYNTAX:
-	    STATrefused++;
-	    break;
-	}
+            STATrefused++;
+            break;
+        }
 
         article_free(art);
     }
     if (CanStream) { /* need to wait for rest of ACKs */
-	while (stnq > 0) {
-	    if (strlisten()) {
-		RequeueRestAndExit((char *)NULL, (char *)NULL);
-	    }
-	}
+        while (stnq > 0) {
+            if (strlisten()) {
+                RequeueRestAndExit((char *)NULL, (char *)NULL);
+            }
+        }
     }
 
     if (BATCHfp != NULL)
-	/* We requeued something, so close the temp file. */
-	CloseAndRename();
+        /* We requeued something, so close the temp file. */
+        CloseAndRename();
     else if (unlink(BATCHname) < 0 && errno != ENOENT)
         syswarn("cannot remove %s", BATCHtemp);
     ExitWithStats(0);
