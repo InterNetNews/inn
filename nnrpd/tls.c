@@ -46,7 +46,7 @@ const char   *tls_cipher_name = NULL;
 int	tls_cipher_usebits = 0;
 int	tls_cipher_algbits = 0;
 
-
+/* Set this value higher (from 1 to 4) to obtain more logs. */
 int tls_loglevel = 0;
 
 
@@ -784,8 +784,12 @@ tls_init(void)
 
 
 /*
-**  Taken from OpenSSL apps/s_cb.c.
+**  Taken from OpenSSL apps/lib/s_cb.c.
+**
+**  The prototype of the callback function changed with BIO_set_callback_ex()
+**  introduced in OpenSSL 1.1.1
 */
+#if OPENSSL_VERSION_NUMBER < 0x01010100fL
 static long
 bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -807,7 +811,40 @@ bio_dump_cb(BIO * bio, int cmd, const char *argp, int argi, long argl UNUSED,
     }
     return (ret);
 }
+#else
+static long
+bio_dump_cb(BIO * bio, int cmd, const char *argp, size_t len, int argi UNUSED,
+            long argl UNUSED, int ret, size_t *processed)
+{
+    if (!do_dump)
+	return (ret);
 
+    if (cmd == (BIO_CB_READ | BIO_CB_RETURN)) {
+        if (ret > 0 && processed != NULL) {
+            syslog(L_NOTICE, "read from %08lX [%08lX] (%lu bytes => %lu (0x%lX))",
+                   (unsigned long) bio, (unsigned long) argp,
+                   len, *processed, *processed);
+            tls_dump(argp, (int) *processed);
+        } else {
+            syslog(L_NOTICE, "read from %08lX [%08lX] (%lu bytes => %d (0x%lX))",
+                   (unsigned long) bio, (unsigned long) argp,
+                   len, ret, (unsigned long) ret);
+        }
+    } else if (cmd == (BIO_CB_WRITE | BIO_CB_RETURN)) {
+        if (ret > 0 && processed != NULL) {
+            syslog(L_NOTICE, "write to %08lX [%08lX] (%lu bytes => %lu (0x%lX))",
+                   (unsigned long) bio, (unsigned long) argp,
+                   len, *processed, *processed);
+            tls_dump(argp, (int) *processed);
+        } else {
+            syslog(L_NOTICE, "write to %08lX [%08lX] (%lu bytes => %d (0x%lX))",
+                   (unsigned long) bio, (unsigned long) argp,
+                   len, ret, (unsigned long) ret);
+        }
+    }
+    return (ret);
+}
+#endif
 
 /*
 **  This is the actual startup routine for the connection.  We expect
@@ -872,8 +909,15 @@ tls_start_servertls(int readfd, int writefd)
     /* We do have an SSL_set_fd() and now suddenly a BIO_ routine is called?
      * Well there is a BIO below the SSL routines that is automatically
      * created for us, so we can use it for debugging purposes. */
-    if (tls_loglevel >= 3)
-	BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
+    if (tls_loglevel >= 3) {
+        /* BIO_set_callback() was deprecated in OpenSSL 3.0.0.
+         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1. */
+#if OPENSSL_VERSION_NUMBER < 0x01010100fL
+        BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
+#else
+        BIO_set_callback_ex(SSL_get_rbio(tls_conn), bio_dump_cb);
+#endif
+    }
 
     /* Dump the negotiation for loglevels 3 and 4. */
     if (tls_loglevel >= 3)
