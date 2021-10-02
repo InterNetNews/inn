@@ -24,7 +24,7 @@ files.
 Pull requests must complete an automatic build/test cycle with warnings enabled.
 You can run an equivalent build with C<./ci/test>.
 
-Nightly snapshots can be found at:
+Daily snapshots can be found at:
 
     <https://ftp.isc.org/isc/inn/snapshots/>
 
