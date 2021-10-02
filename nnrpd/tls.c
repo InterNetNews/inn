@@ -94,6 +94,12 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
 
 /*
+**  Now that safe prime groups have been supported since OpenSSL 1.1.0,
+**  these groups and the following functions to deal with them are only kept
+**  for older OpenSSL versions.
+*/
+#if OPENSSL_VERSION_NUMBER < 0x010100000L
+/*
 **  Hardcoded DH parameter files.
 **  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
 **  that have been audited and therefore supposed to be more
@@ -202,7 +208,9 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
     static DH *ffdhe8192 = NULL;
     int level = 2; /* Default security level. */
 
-    /* Security levels have been introduced in OpenSSL 1.1.0. */
+    /* Security levels have been introduced in OpenSSL 1.1.0.
+     * Well, as this part of code is no longer active for that version,
+     * only keep it for possible future re-use. */
 #if OPENSSL_VERSION_NUMBER >= 0x010100000L && !defined(LIBRESSL_VERSION_NUMBER)
     level = SSL_get_security_level(s);
 #endif
@@ -238,6 +246,7 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
 
     return r;
 }
+#endif /* OpenSSL < 1.1.0 */
 
 
 /*
@@ -570,7 +579,13 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (stat("/dev/urandom", &buf) == 0)
       RAND_load_file("/dev/urandom", 16 * 1024);
 
+/* Safe prime groups were introduced in OpenSSL 1.1.0. */
+#if OPENSSL_VERSION_NUMBER < 0x010100000L
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
+#else
+    SSL_CTX_set_dh_auto(CTX, 1);
+#endif
+
     SSL_CTX_set_options(CTX, SSL_OP_SINGLE_DH_USE);
 
 #ifdef HAVE_OPENSSL_ECC
