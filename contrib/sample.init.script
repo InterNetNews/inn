@@ -26,6 +26,8 @@ stop)
     # Stop possible other nnrpd daemons.  One of the two following commands is enough.
     #start-stop-daemon --stop --name nnrpd --quiet --oknodo
     #su news -s /bin/sh -c 'killall nnrpd' >> <pathlog>/rc.news 2>&1
+    # Clean the PID file of the nnrpd daemon we started on port 563.
+    #rm -f <pathrun>/nnrpd-563.pid
     ;;
 
 reload|force-reload)

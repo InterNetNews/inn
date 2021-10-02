@@ -1674,6 +1674,12 @@ or if you do not have a B<start-stop-daemon> utility:
 
     su news -s /bin/sh -c 'killall nnrpd'
 
+And also, an additional cleaning if a separate TLS B<nnrpd> daemon was
+started as explained above:
+
+    # Clean the PID file of the nnrpd daemon we started on port 563.
+    #rm -f <pathrun>/nnrpd-563.pid
+
 =head1 Processing Newsgroup Control Messages
 
 Control messages are specially-formatted messages that tell news servers
