@@ -52,7 +52,7 @@ END {
 my $usage = "usage: $0 [-ch]\n\n" .
     "Reads stdin for file names or tokens.\n\n" .
     "  -c   Disables cutoff on dates.\n" .
-    "  -h   Giveis this usage information.\n";
+    "  -h   Gives this usage information.\n";
 
 my %opt;
 getopts("ch", \%opt) || die $usage;
