@@ -187,25 +187,31 @@ Released versions of INN are available from L<https://ftp.isc.org/isc/inn/>.
 New major releases will be announced on <inn-announce@lists.isc.org> (see
 F<README>) when they're made.
 
-If you want a more cutting-edge version, you can obtain current
-snapshots from L<https://ftp.isc.org/isc/inn/snapshots/>.  These
-are snapshots of the INN Git tree taken daily; there are two snapshots
-made each night (one of the current development branch, and one of the
-stable branch consisting of bug fixes to the previous major release).
-They are stored in date format; in other words the snapshots from April
-6th, 2020, would be named F<inn-CURRENT-20200406.tar.gz> and
-F<inn-STABLE-20200406.tar.gz>.  Choose the newest file of whichever branch
-you prefer.  (Note that the downloading, configuring, and compiling steps
-can be done while logged in as any user.)
+If you want a more cutting-edge version, you can obtain current snapshots
+from L<https://ftp.isc.org/isc/inn/snapshots/>.  These are snapshots
+of the INN Git tree taken daily; there are two snapshots made each
+night in the F<daily> subdirectory (one of the current development
+branch, and one of the stable branch consisting of bug fixes to the
+previous major release), and also daily snapshots at the top level of
+the directory, updated only when the code changes in one of the two
+branches.  They are stored in date format in the F<daily> subdirectory;
+in other words the snapshots from April 6th, 2020, would be named
+F<inn-CURRENT-20200406.tar.gz> and F<inn-STABLE-20200406.tar.gz>.
+At the top level of the directory, the INN version number is used
+followed with either the C<git describe> version number for the stable
+branch or the date for the main branch.  Choose the newest file of
+whichever branch you prefer.  (Note that the downloading, configuring,
+and compiling steps can be done while logged in as any user.)
 
 The distribution is in gzip compressed tar archive format.  To extract it,
 execute:
 
     gunzip -c <inn-src-file> | tar -xf -
 
-Extracting the source distribution will create a directory named
-F<< inn-<version> >> or F<< inn-<BRANCH>-<date> >> where the source
-resides.
+Extracting the source distribution will create a directory named F<<
+inn-<version> >>, F<< inn-<BRANCH>-<date> >>, F<< inn-<stable branch
+version>-<git version> >> or F<< inn-<main branch version>-<date> >>
+where the source resides.
 
 =head1 Installing INN
 
@@ -554,8 +560,8 @@ are not backed up because this confuses B<ldconfig> on some systems
 (such as Linux) and the symbolic links for the libraries may point to
 the C<.OLD> versions.  Nonetheless, reverting to a previous version of
 INN should work fine for official releases (that is to say releases
-that are not daily STABLE or CURRENT snapshots) because a proper
-versioning is done, during the release of a new version.
+that are not daily snapshots) because a proper versioning is done during
+the release of a new version.
 
 If you are configuring TLS/SSL support for newsreaders, you must make a
 certificate and private key at least once.  Type:
