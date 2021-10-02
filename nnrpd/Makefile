@@ -45,7 +45,7 @@ nnrpd: $(OBJECTS) $(LIBHIST) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(OBJECTS) $(NNRPDLIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 

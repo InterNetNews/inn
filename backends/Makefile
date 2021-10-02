@@ -110,7 +110,7 @@ sendinpaths:	sendinpaths.in   $(FIX) ; $(FIX) sendinpaths.in
 sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 ../doc/man/send-uucp.8: send-uucp.in

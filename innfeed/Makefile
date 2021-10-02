@@ -77,6 +77,10 @@ procbatch: procbatch.in $(FIXSCRIPT)
 tst: config_y.c config_l.c
 	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
 
+$(LIBINN):	; (cd ../lib ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
+$(LIBHIST):	; (cd ../history ; $(MAKE))
+
 
 ##  Profiling.  These rules have not been checked for a while and may need
 ##  some work.

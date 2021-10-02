@@ -127,7 +127,7 @@ feedone:	feedone.o     $(LIBINN)	; $(LINK) feedone.o $(INNLIBS)
 sys2nf:		sys2nf.o      $(LIBINN)	; $(LINK) sys2nf.o  $(INNLIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 

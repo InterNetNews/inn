@@ -45,7 +45,7 @@ tinyleaf: tinyleaf.o $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ tinyleaf.o $(LIBINN) $(LIBS)
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
+$(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)
 $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 

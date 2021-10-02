@@ -50,16 +50,15 @@ all: all-include all-libraries all-programs
 
 all-include:			; cd include   && $(MAKE) all
 
-all-libraries:	all-lib all-storage all-history all-perl
+all-libraries:	all-lib all-storage all-history
 
 all-lib:	all-include	; cd lib       && $(MAKE) all
 all-storage:	all-lib		; cd storage   && $(MAKE) library
 all-history:	all-storage	; cd history   && $(MAKE) all
-all-perl:	all-history	; cd perl      && $(MAKE) all
 
 all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
 		all-frontends all-backends all-authprogs all-scripts \
-		all-store-util
+		all-perl all-store-util
 
 all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
 all-backends:	all-libraries	; cd backends  && $(MAKE) all
@@ -69,6 +68,7 @@ all-frontends:	all-libraries	; cd frontends && $(MAKE) all
 all-innd:	all-libraries	; cd innd      && $(MAKE) all
 all-innfeed:	all-libraries	; cd innfeed   && $(MAKE) all
 all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
+all-perl:			; cd perl      && $(MAKE) all
 all-scripts:			; cd scripts   && $(MAKE) all
 all-store-util:	all-libraries	; cd storage   && $(MAKE) programs
 

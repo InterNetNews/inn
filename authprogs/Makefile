@@ -63,7 +63,6 @@ ckpasswd.o: ckpasswd.c
 	$(CC) $(CFLAGS) $(DBM_CPPFLAGS) -c ckpasswd.c
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBSTORAGE):	; (cd ../storage ; $(MAKE))
 $(LIBAUTH): 	libauth.h libauth.c
 
 
