@@ -84,6 +84,12 @@ MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
 
+##  Be sure ${PATHRUN} exists and is writable.
+if [ ! -w ${PATHRUN} ] ; then
+    echo "No ${PATHRUN} directory writable by the news user found!"
+    exit 1
+fi
+
 ##  Clean shutdown or already running?
 if [ -f ${SERVERPID} ] ; then
     if kill -0 `cat ${SERVERPID}` 2>/dev/null; then

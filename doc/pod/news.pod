@@ -10,6 +10,13 @@ Thanks to Richard Kettlewell for the patch.
 
 =item *
 
+Added a check in B<rc.news> for the existence of the I<pathrun>
+directory.  INN won't start until this directory is writable.
+Previously, it bailed out quickly after starting, without clear logs
+about why it failed.
+
+=item *
+
 The F<inn.conf> default value for I<tlsprotocols> no longer contains
 TLS versions 1.0 and 1.1, which have been deprecated by S<RFC 8996>.
 
