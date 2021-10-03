@@ -821,23 +821,25 @@ bio_dump_cb(BIO * bio, int cmd, const char *argp, size_t len, int argi UNUSED,
         if (ret > 0 && processed != NULL) {
             syslog(L_NOTICE, "read from %08lX [%08lX] (%lu bytes => %lu (0x%lX))",
                    (unsigned long) bio, (unsigned long) argp,
-                   len, *processed, *processed);
+                   (unsigned long) len, (unsigned long) *processed,
+                   (unsigned long) *processed);
             tls_dump(argp, (int) *processed);
         } else {
             syslog(L_NOTICE, "read from %08lX [%08lX] (%lu bytes => %d (0x%lX))",
                    (unsigned long) bio, (unsigned long) argp,
-                   len, ret, (unsigned long) ret);
+                   (unsigned long) len, ret, (unsigned long) ret);
         }
     } else if (cmd == (BIO_CB_WRITE | BIO_CB_RETURN)) {
         if (ret > 0 && processed != NULL) {
             syslog(L_NOTICE, "write to %08lX [%08lX] (%lu bytes => %lu (0x%lX))",
                    (unsigned long) bio, (unsigned long) argp,
-                   len, *processed, *processed);
+                   (unsigned long) len, (unsigned long) *processed,
+                   (unsigned long) *processed);
             tls_dump(argp, (int) *processed);
         } else {
             syslog(L_NOTICE, "write to %08lX [%08lX] (%lu bytes => %d (0x%lX))",
                    (unsigned long) bio, (unsigned long) argp,
-                   len, ret, (unsigned long) ret);
+                   (unsigned long) len, ret, (unsigned long) ret);
         }
     }
     return (ret);
