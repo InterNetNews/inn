@@ -71,19 +71,31 @@
 /*
 **  Tracking information for an article in flight
 **  Only used in streaming mode.
+**
+**  stbuf functions as a ring buffer, each entry
+**  representing an article we've sent a request
+**  for but not yet received the response for.
+**
+**  stnq is the number of articles "in flight" and
+**  stoldest is the oldest one in flight, i.e. the
+**  next response received corresponds to stdoldest.
+**
+**  We always require:
+**     0 <= stnq <= STNBUF
+**     0 <= stoldest < STNBUF
 */
 struct stbufs {         /* for each article we are procesing */
     char st_fname[SPOOLNAMEBUFF];    /* file name */
     char st_id[NNTP_MAXLEN_COMMAND]; /* message ID */
-    int   st_retry;                  /* retry count */
-    int   st_age;                    /* age count */
-    ARTHANDLE *art;                  /* arthandle to read article contents */
+    int   st_retry;                  /* retry count (0 for the first try) */
+    ARTHANDLE *st_art;               /* arthandle to read article contents */
     int   st_hash;                   /* hash value to speed searches */
     long  st_size;                   /* article size */
 };
 static struct stbufs stbuf[STNBUF]; /* we keep track of this many articles */
 static int stnq;        /* current number of active entries in stbuf */
 static long stnofail;   /* Count of consecutive successful sends */
+static int stoldest;    /* Oldest allocated entry to stbuf (if stnq!=0) */
 
 static int TryStream = true;    /* Should attempt stream negotation? */
 static int CanStream = false;   /* Result of stream negotation */
@@ -182,7 +194,6 @@ REMflush(void)
 /*
 **  Return index to entry matching this message ID.  Else return -1.
 **  The hash is to speed up the search.
-**  the protocol.
 */
 static int
 stindex(char *MessageID, int hash) {
@@ -226,47 +237,55 @@ stidhash(char *MessageID) {
 }
 
 /*
-**  stalloc(): save path, ID, and qp into one of the streaming mode entries
+**  stalloc(): save path, ID, and qp into the ring buffer.
 **
 **  Called just before issuing a CHECK (or TAKETHIS, if we're not doing CHECK)
 **  i.e. in streaming mode only. Should only be called if there are free slots,
 **  i.e. if sntq<STNBUF.
 **/
 static int
-stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
+stalloc(const char *Article, const char *MessageID, ARTHANDLE *art, int hash, int retry) {
     int i;
 
-    for (i = 0; i < STNBUF; i++) {
-        if (stbuf[i].st_fname[0] == '\0') break;
-    }
-    if (i >= STNBUF) { /* stnq says not full but can not find unused */
+    if (stnq >= STNBUF) { /* shouldn't be called if stnq>=STNBUF */
         syslog(L_ERROR, "stalloc: Internal error");
         return (-1);
     }
+    /* Find the next free slot */
+    i = (stoldest + stnq) % STNBUF;
     if ((int)strlen(Article) >= SPOOLNAMEBUFF) {
         syslog(L_ERROR, "stalloc: filename longer than %d", SPOOLNAMEBUFF);
         return (-1);
     }
     strlcpy(stbuf[i].st_fname, Article, SPOOLNAMEBUFF);
     strlcpy(stbuf[i].st_id, MessageID, NNTP_MAXLEN_COMMAND);
-    stbuf[i].art = art;
+    stbuf[i].st_art = art;
     stbuf[i].st_hash = hash;
-    stbuf[i].st_retry = 0;
-    stbuf[i].st_age = 0;
+    stbuf[i].st_retry = retry;
     stnq++;
     return i;
 }
 
-/* strel(): release for reuse one of the streaming mode entries */
-static void
+/*
+** strel(): release for reuse one of the streaming mode entries
+**
+** Returns 0 on success an non-0 on error (which probably means
+** the peer got the reply order wrong).
+**/
+static int
 strel(int i) {
-    if (stbuf[i].art) {
-        article_free(stbuf[i].art);
-        stbuf[i].art = NULL;
+    /* Consistency check */
+    if(i != stoldest) {
+        syslog(L_ERROR, "strel: Ordering error");
+        return (-1);
     }
+    article_free(stbuf[i].st_art);
+    stbuf[i].st_art = NULL;
     stbuf[i].st_id[0] = '\0';
     stbuf[i].st_fname[0] = '\0';
+    stoldest = (stoldest + 1) % STNBUF;
     stnq--;
+    return 0;
 }
 
 /*
@@ -426,7 +445,8 @@ RequeueRestAndExit(char *Article, char *MessageID) {
     if (CanStream) {    /* streaming mode has a buffer of articles */
         int i;
 
-        for (i = 0; i < STNBUF; i++) {    /* requeue unacknowledged articles */
+        while(stnq > 0) {    /* requeue unacknowledged articles */
+            i = stoldest;    /* strel is picky about order */
             if (stbuf[i].st_fname[0] != '\0') {
                 if (Debug)
                     fprintf(stderr, "stbuf[%d]= %s, %s\n",
@@ -434,6 +454,9 @@ RequeueRestAndExit(char *Article, char *MessageID) {
                 Requeue(stbuf[i].st_fname, stbuf[i].st_id);
                 if (Article == stbuf[i].st_fname) Article = NULL;
                 strel(i); /* release entry */
+                /* We ignore errors from strel here; the only
+                 * possible error is an ordering violation and
+                 * we take care to avoid that anyway. */
             }
         }
     }
@@ -637,7 +660,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
 
     if (CanStream) return true; /* streaming mode does not wait for ACK */
 
-    /* What did the remote site say? */
+    /* What did the remote site say? (IHAVE only) */
     if (!REMread(buff, (int)sizeof buff)) {
         syswarn("no reply after sending %s", Article);
         return false;
@@ -776,7 +799,7 @@ static bool
 takethis(int i) {
     char        buff[NNTP_MAXLEN_COMMAND];
 
-    if (!stbuf[i].art) {
+    if (!stbuf[i].st_art) {
         warn("internal error: null article for %s in takethis",
              stbuf[i].st_fname);
         return true;
@@ -791,12 +814,14 @@ takethis(int i) {
         fprintf(stderr, "> %s\n", buff);
     if (GotInterrupt)
         Interrupted((char *)0, (char *)0);
-    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id, stbuf[i].art))
+    if (!REMsendarticle(stbuf[i].st_fname, stbuf[i].st_id, stbuf[i].st_art))
         return true;
-    stbuf[i].st_size = stbuf[i].art->len;
-    article_free(stbuf[i].art); /* should not need file again */
-    stbuf[i].art = NULL;        /* so close to free descriptor */
-    stbuf[i].st_age = 0;
+    stbuf[i].st_size = stbuf[i].st_art->len;
+    /* We won't need st_art again, since we never do a fast retry of TAKETHIS,
+     * we so close it straight away. It would get free (from strel) anyway,
+     * but we can keep memory usage down by freeing it straight away. */
+    article_free(stbuf[i].st_art);
+    stbuf[i].st_art = NULL;
     /* That all.  Response is checked later by strlisten() */
     return false;
 }
@@ -820,6 +845,8 @@ strlisten(void)
     char        *id, *p;
     char        buff[NNTP_MAXLEN_COMMAND];
     int         hash;
+    struct stbufs st;
+    bool        (*submit)(int) = NULL;
 
     while(true) {
         if (!REMread(buff, (int)sizeof buff)) {
@@ -840,13 +867,20 @@ strlisten(void)
 
         switch (resp) { /* first time is to verify it */
         case NNTP_ERR_SYNTAX: /* 501 */
-            /* Nothing we can check here. */
-            /* FALLTHROUGH (and hope the message-ID is given after 501). */
+            /* Assume replies are in order (per RFC3977 s3.5) */
+            i = stoldest;
+            break;
         case NNTP_FAIL_CHECK_REFUSE: /* 438 */
         case NNTP_OK_CHECK: /* 238 */
         case NNTP_OK_TAKETHIS: /* 239 */
         case NNTP_FAIL_TAKETHIS_REJECT: /* 439 */
         case NNTP_FAIL_CHECK_DEFER: /* 431 */
+            /* Looking for the message ID reflects the historical
+             * design in which we didn't track the order of commands,
+             * and so needed to match replies back to commands by
+             * parsing out the message ID. Since we track order
+             * carefully now that's no longer necessary, and it
+             * functions as a correctness check on the peer only. */
             if ((id = strchr(buff, '<')) != NULL) {
                 p = strchr(id, '>');
                 if (p) *(p+1) = '\0';
@@ -855,6 +889,10 @@ strlisten(void)
                 if (i < 0) { /* should not happen */
                     syslog(L_NOTICE, CANT_FINDIT, REMhost, REMclean(buff));
                     return (true); /* can't find it! */
+                }
+                if (i != stoldest) { /* also should not happen */
+                    syslog(L_NOTICE, "%s: response for %s out of order (should be %s)", REMhost, p, stbuf[i].st_id);
+                    return true; /* too broken, can't go on */
                 }
             } else {
                 syslog(L_NOTICE, CANT_PARSEIT, REMhost, REMclean(buff));
@@ -875,50 +913,68 @@ strlisten(void)
             return (true);
         }
 
+        /* Steal the article details for (re-)submission */
+        st = stbuf[i];
+        stbuf[i].st_art = NULL; /* steal pointer */
+        /* We must always release, to maintain the ring buffer */
+        if(strel(i)) { /* release entry */
+            return true;
+        }
+        i = INT_MAX; /* invalid now */
+        /* Resubmission callback, if needed */
+        submit = NULL;
+
         switch (resp) { /* now we take some action */
         case NNTP_FAIL_CHECK_DEFER:     /* 431; remote wants it later */
             /* try again now because time has passed */
-            if (stbuf[i].st_retry < STNRETRY) {
-                if (check(i)) return true;
-                stbuf[i].st_retry++;
-                stbuf[i].st_age = 0;
+            if (st.st_retry < STNRETRY) {
+                /* fast retry */
+                st.st_retry++;
+                submit = check;
             } else { /* requeue to disk for later */
-                Requeue(stbuf[i].st_fname, stbuf[i].st_id);
-                strel(i); /* release entry */
+                Requeue(st.st_fname, st.st_id);
             }
             break;
 
         case NNTP_ERR_SYNTAX: /* 501 */
         case NNTP_FAIL_CHECK_REFUSE:    /* 438 remote doesn't want it */
-            strel(i); /* release entry */
             STATrefused++;
             stnofail = 0;
             break;
                 
         case NNTP_OK_CHECK:     /* 238 remote wants article */
-            if (takethis(i)) return true;
+            st.st_retry = 0;
+            submit = takethis;
             stnofail++;
             break;
 
         case NNTP_OK_TAKETHIS:  /* 239 remote received it OK */
-            STATacceptedsize += (double) stbuf[i].st_size;
-            strel(i); /* release entry */
+            STATacceptedsize += (double) st.st_size;
             STATaccepted++;
             break;
                 
         case NNTP_FAIL_TAKETHIS_REJECT: /* 439 */
-            STATrejectedsize += (double) stbuf[i].st_size;
+            STATrejectedsize += (double) st.st_size;
             if (logRejects)
                 syslog(L_NOTICE, REJ_STREAM, REMhost,
-                    stbuf[i].st_fname, REMclean(buff));
+                    st.st_fname, REMclean(buff));
 /* XXXXX Caution THERE BE DRAGONS, I don't think this logs properly
    The message ID is returned in the peer response... so this is redundant
-                    stbuf[i].st_id, stbuf[i].st_fname, REMclean(buff)); */
-            strel(i); /* release entry */
+                    stb.st_id, st.st_fname, REMclean(buff)); */
             STATrejected++;
             stnofail = 0;
             break;
         }
+        if (submit != NULL) {
+            if ((i = stalloc(st.st_fname, st.st_id, st.st_art, st.st_hash, st.st_retry)) < 0)
+                return true;
+            st.st_art = NULL; /* stalloc takes ownership of st_art */
+            if (submit(i))
+                return true;
+        }
+        /* Free the article handle if it's still live */
+        article_free(st.st_art);
+        st.st_art = NULL;
         break;
     }
     return (false);
@@ -1012,6 +1068,8 @@ article_open(const char *path, const char *id)
 static void
 article_free(ARTHANDLE *article)
 {
+    if (!article)
+        return; /* article_free(NULL) is always safe */
     if (article->type == TOKEN_EMPTY) {
         free((char *)article->data);
         free(article);
@@ -1225,7 +1283,7 @@ int main(int ac, char *av[]) {
                 for (i = 0; i < STNBUF; i++) { /* reset buffers */
                     stbuf[i].st_fname[0] = 0;
                     stbuf[i].st_id[0] = 0;
-                    stbuf[i].art = NULL;
+                    stbuf[i].st_art = NULL;
                 }
                 stnq = 0;
             }
@@ -1389,7 +1447,7 @@ int main(int ac, char *av[]) {
                 }
             }
             /* save new article in the buffer */
-            i = stalloc(Article, MessageID, art, hash);
+            i = stalloc(Article, MessageID, art, hash, 0);
             if (i < 0) {
                 article_free(art);
                 RequeueRestAndExit(Article, MessageID);
@@ -1402,24 +1460,6 @@ int main(int ac, char *av[]) {
                 STAToffered++ ;
                 if (takethis(i)) {
                     RequeueRestAndExit((char *)NULL, (char *)NULL);
-                }
-            }
-            /* check for need to resend any IDs */
-            for (i = 0; i < STNBUF; i++) {
-                if (stbuf[i].st_fname[0] != '\0') {
-                    if (stbuf[i].st_age++ > stnq) {
-                        /* This should not happen but just in case ... */
-                        if (stbuf[i].st_retry < STNRETRY) {
-                            if (check(i)) /* resend check */
-                                RequeueRestAndExit((char *)NULL, (char *)NULL);
-                            retries++;
-                            stbuf[i].st_retry++;
-                            stbuf[i].st_age = 0;
-                        } else { /* requeue to disk for later */
-                            Requeue(stbuf[i].st_fname, stbuf[i].st_id);
-                            strel(i); /* release entry */
-                        }
-                    }
                 }
             }
             continue; /* next article */
