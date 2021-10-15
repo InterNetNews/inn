@@ -1556,15 +1556,15 @@ main(int argc, char *argv[])
 
         /* If no command has been recognized. */
 	if (cp->Name == NULL) {
-	    if ((int)strlen(buff) > 40)
-		syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
-	    else
-		syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
 	    if (strcasecmp(av[0], "XYZZY") == 0) {
                 /* Acknowledge the magic word from the Colossal Cave Adventure computer game. */
                 Reply("%d Nothing happens\r\n", NNTP_ERR_COMMAND);
             } else {
                 Reply("%d What?\r\n", NNTP_ERR_COMMAND);
+                if ((int)strlen(buff) > 40)
+                    syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
+                else
+                    syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
             }
 	    continue;
 	}
