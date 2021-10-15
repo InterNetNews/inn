@@ -4,6 +4,15 @@
 
 =item *
 
+A new step in INN development has been achieved with the migration of the
+INN project to GitHub.  We now make use of the features GitHub provides:
+issue tracker, pull requests, continuous integration, a user-friendly
+interface to browse the code, etc.  Our Subversion repository has
+therefore been migrated to Git, and our Trac tickets to the GitHub
+issue tracker.
+
+=item *
+
 Added a stricter validation of article numbers given in NNTP commands
 so that numbers superior to 2^31 are correctly considered invalid.
 Thanks to Richard Kettlewell for the patch.
