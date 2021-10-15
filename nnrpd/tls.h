@@ -11,12 +11,6 @@
 #ifndef TLS_H
 #define TLS_H 1
 
-/* When building with "make warnings", ensure that INN does not
- * use deprecated interfaces from OpenSSL. */
-#if defined(DEBUG)
-# define OPENSSL_API_COMPAT 0x010100000L
-#endif
-
 /* OpenSSL uses _Noreturn when C11 features are recognized. */
 #pragma GCC diagnostic ignored "-Wc99-c11-compat"
 #include <openssl/lhash.h>
