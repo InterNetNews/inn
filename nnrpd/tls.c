@@ -400,9 +400,8 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
     struct stat buf;
 
     if (cert_file != NULL) {
-	if (SSL_CTX_use_certificate_file(ctx, cert_file,
-					 SSL_FILETYPE_PEM) <= 0) {
-	    syslog(L_ERROR, "unable to get certificate from '%s'", cert_file);
+	if (SSL_CTX_use_certificate_chain_file(ctx, cert_file) <= 0) {
+	    syslog(L_ERROR, "unable to get certificates from '%s'", cert_file);
 	    return (0);
 	}
 	if (key_file == NULL)

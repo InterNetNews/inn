@@ -1126,9 +1126,25 @@ The path to a file containing the server certificate to present to
 TLS clients.  This parameter is only used if B<nnrpd> is built with TLS/SSL
 support.  The default value is I<pathetc>/cert.pem.
 
-Note that unlike Apache's I<SSLCertificateFile> directive, I<tlscertfile>
-should not contain a concatenation of certificates.  Instead, if you have
-a certificate authority root certificate, set I<tlscafile> to its path.
+If you want to use a complete certificate chain, you can directly put
+it in I<tlscertfile> (like Apache's I<SSLCertificateFile> directive).
+Alternately, you can put a single certificate in I<tlscertfile> and use
+I<tlscafile> for additional certificates needed to complete the chain,
+like a separate authority root certificate.
+
+More concretly, when using S<Let's Encrypt> certificates, Certbot's
+files can be installed as follows:
+
+    tlscapath:      <pathetc>
+    tlscertfile:    <pathetc>/fullchain.pem
+    tlskeyfile:     <pathetc>/privkey.pem
+
+or:
+
+    tlscapath:      <pathetc>
+    tlscafile:      <pathetc>/chain.pem
+    tlscertfile:    <pathetc>/cert.pem
+    tlskeyfile:     <pathetc>/privkey.pem
 
 =item I<tlskeyfile>
 

@@ -36,6 +36,12 @@ about why it failed.
 
 =item *
 
+The I<tlscertfile> parameter in F<inn.conf> now permits the use of
+a complete certificate chain, instead of necessarily having to use
+I<tlscafile> for additional certificates.
+
+=item *
+
 The F<inn.conf> default value for I<tlsprotocols> no longer contains
 TLS versions 1.0 and 1.1, which have been deprecated by S<RFC 8996>.
 
