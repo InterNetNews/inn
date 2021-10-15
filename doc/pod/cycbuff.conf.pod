@@ -70,6 +70,8 @@ device, it should be S<< <size> * 1024 bytes >> long.
 
 If you're trying to stay under S<2 GB>, keep your sizes below C<2097152>.
 
+Note that CNFSv4 supports files and partitions up to S<16 TB>.
+
 =item I<metacycbuff>:<name>:<buffer>[,<buffer>,...][:<mode>]
 
 Specifies a collection of CNFS buffers that make up a single logical
