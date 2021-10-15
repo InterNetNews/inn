@@ -500,7 +500,7 @@ client is closed, the method C<access_close> is called if it exists.
 
 =head2 Writing a Python B<nnrpd> Authentication Module
 
-You need to create a F<nnrpd_auth.py> module in INN's filter directory
+You need to create an F<nnrpd_auth.py> module in INN's filter directory
 (see the I<pathfilter> setting in F<inn.conf>) where you should define a
 class holding certain methods depending on which hooks you want to use.
 
