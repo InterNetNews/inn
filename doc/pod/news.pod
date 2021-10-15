@@ -4,6 +4,20 @@
 
 =item *
 
+Upgrading to a major release is a good time to ensure that your
+configuration files, that are usually kept untouched during normal
+updates, are up-to-date: notably F<control.ctl> (with your local changes
+in a separate F<control.ctl.local> file), new better default values in
+F<inn.conf> and F<innfeed.conf>, improvements in F<innreport.conf> along
+with F<innreport.css>, fixes in F<innwatch.ctl>, updated F<moderators>
+and F<nocem.ctl> files.
+
+You may also want to check that the PGP keys used to verify the signature
+of control articles and NoCeM notices are still up-to-date and working.
+The keys of a few hierarchies and NoCeM issuers have recently changed.
+
+=item *
+
 Bo Lindbergh has implemented a new overview storage method based
 on SQLite, known for its long-term stability and compatibility.
 Robust and faster at reading ranges of overview data, but somewhat
@@ -15,11 +29,25 @@ F<inn.conf> to C<ovsqlite>.  Details about ovsqlite and how to switch to
 that new modern overview storage method can be found in the ovsqlite(5)
 and makehistory(8) man pages.
 
+=item *
+
+All of the applicable bug fixes from the S<INN 2.6> STABLE series are
+also included in S<INN 2.7>.
+
 =back
 
 =head1 Changes in 2.6.5
 
 =over 2
+
+=item *
+
+A new step in INN development has been achieved with the migration of the
+INN project to GitHub.  We now make use of the features GitHub provides:
+issue tracker, pull requests, continuous integration, a user-friendly
+interface to browse the code, etc.  Our Subversion repository has
+therefore been migrated to Git, and our Trac tickets to the GitHub
+issue tracker.
 
 =item *
 
