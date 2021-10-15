@@ -8,7 +8,7 @@
  *	(supplied either as arguments or as responses to prompts) and
  *	validates them against the contents of the password database.  
  *
- *	If the user properly authenticates themselves, a nnrp.auth style
+ *	If the user properly authenticates themselves, an nnrp.auth style
  *	record indicating the user's authenticated login and permitting
  *	reading and posting to all groups is output on stderr (for reading by
  *	nnrpd) and the program exits with a 0 status.  If the user fails to
