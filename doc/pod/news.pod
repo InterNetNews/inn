@@ -64,6 +64,13 @@ about why it failed.
 
 =item *
 
+Fixed the detection of library paths at configure time: multilib
+directories (F<lib32> or F<lib64>) are now also used if they exist,
+even it the system does not use multilib.  It will notably fix the
+detection of the S<OpenSSL 3.0.0> library.
+
+=item *
+
 The I<tlscertfile> parameter in F<inn.conf> now permits the use of
 a complete certificate chain, instead of necessarily having to use
 I<tlscafile> for additional certificates.

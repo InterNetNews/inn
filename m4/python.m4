@@ -27,16 +27,21 @@ dnl way.  (It cannot be run automatically via dependencies because it takes a
 dnl mandatory minimum version argument, which should be provided by the
 dnl calling configure script.)
 dnl
-dnl This macro uses the distutils.sysconfig module shipped with Python 2.2.0
-dnl and later to find the compiler and linker flags to use to embed Python.
-dnl It also expects libpython to be in the main library location, which it is
-dnl since Python 2.3.0.
+dnl This macro uses the sysconfig module shipped with Python 2.7.0 and later,
+dnl as well as Python 3.2.0 and later, to find the compiler and linker flags
+dnl to use to embed Python.  If the sysconfig module is not present, fall back
+dnl on using the distutils.sysconfig module shipped with Python 2.2.0 and
+dnl later until its removal in Python 3.12.0.
+dnl
+dnl This macro also expects libpython to be in the main library location,
+dnl which it is since Python 2.3.0.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Copyright 2018, 2021 Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2009, 2011, 2015, 2018 Julien ÉLIE <julien@trigofacile.com>
+dnl Copyright 2009, 2011, 2015, 2018, 2021
+dnl     Julien ÉLIE <julien@trigofacile.com>
 dnl Copyright 1998-2003 The Internet Software Consortium
 dnl
 dnl Permission to use, copy, modify, and distribute this software for any
@@ -68,7 +73,7 @@ if len(sys.argv) > 2 and sys.argv[2]:
         three_okay = True
 assert(two_okay or three_okay)
 ]])
-        
+
 dnl Check for the path to Python and ensure it meets our minimum version
 dnl requirement.  The first argument specifies the minimum Python 2 version
 dnl and the second argument specifies the minimum Python 3 (or later) version.
@@ -117,17 +122,28 @@ AC_DEFUN([INN_LIB_PYTHON],
 [AC_SUBST([PYTHON_CPPFLAGS])
  AC_SUBST([PYTHON_LIBS])
  AC_MSG_CHECKING([for flags to link with Python])
- py_include=`$PYTHON -c 'import distutils.sysconfig; \
-     print(distutils.sysconfig.get_python_inc())'`
+ AS_IF(["$PYTHON" -c 'import sysconfig' >/dev/null 2>&1],
+     [py_include=`$PYTHON -c 'import sysconfig; \
+          print(sysconfig.get_paths().get("include", ""))'`
+      py_libdir=`$PYTHON -c 'import sysconfig; \
+          print(" -L".join(sysconfig.get_config_vars("LIBDIR")))'`
+      py_ldlibrary=`$PYTHON -c 'import sysconfig; \
+          print(sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
+      py_linkage=`$PYTHON -c 'import sysconfig;                      \
+          print(" ".join(sysconfig.get_config_vars(                  \
+              "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
+              "LINKFORSHARED", "LDFLAGS")))'`],
+     [py_include=`$PYTHON -c 'import distutils.sysconfig; \
+          print(distutils.sysconfig.get_python_inc())'`
+      py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
+          print(" -L".join(distutils.sysconfig.get_config_vars("LIBDIR")))'`
+      py_ldlibrary=`$PYTHON -c 'import distutils.sysconfig; \
+          print(distutils.sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
+      py_linkage=`$PYTHON -c 'import distutils.sysconfig;            \
+          print(" ".join(distutils.sysconfig.get_config_vars(        \
+              "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
+              "LINKFORSHARED", "LDFLAGS")))'`])
  PYTHON_CPPFLAGS="-I$py_include"
- py_libdir=`$PYTHON -c 'import distutils.sysconfig; \
-     print(" -L".join(distutils.sysconfig.get_config_vars("LIBDIR")))'`
- py_ldlibrary=`$PYTHON -c 'import distutils.sysconfig; \
-     print(distutils.sysconfig.get_config_vars("LDLIBRARY")@<:@0@:>@)'`
- py_linkage=`$PYTHON -c 'import distutils.sysconfig;            \
-     print(" ".join(distutils.sysconfig.get_config_vars(        \
-         "LIBS", "LIBC", "LIBM", "LOCALMODLIBS", "BASEMODLIBS", \
-         "LINKFORSHARED", "LDFLAGS")))'`
  py_libpython=`AS_ECHO(["$py_ldlibrary"]) \
     | sed -e 's/^lib//' -e 's/\.@<:@a-z@:>@*$//'`
  PYTHON_LIBS="-L$py_libdir -l$py_libpython $py_linkage"
