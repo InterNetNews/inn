@@ -40,11 +40,11 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "tap/basic.h"
 #include "inn/fdflag.h"
 #include "inn/macros.h"
 #include "inn/messages.h"
 #include "inn/network.h"
+#include "tap/basic.h"
 
 
 /*

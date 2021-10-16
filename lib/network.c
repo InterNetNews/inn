@@ -460,9 +460,9 @@ network_source(socket_type fd, int family, const char *source)
 
         if (source == NULL && innconf != NULL)
             source = innconf->sourceaddress;
-        if (source == NULL ||
-            strcmp(source, "all") == 0 || strcmp(source, "any") == 0)
-              return true;
+        if (source == NULL || strcmp(source, "all") == 0
+            || strcmp(source, "any") == 0)
+            return true;
 
         memset(&saddr, 0, sizeof(saddr));
         saddr.sin_family = AF_INET;
@@ -479,9 +479,9 @@ network_source(socket_type fd, int family, const char *source)
         memset(&saddr, 0, sizeof(saddr));
         if (source == NULL && innconf != NULL)
             source = innconf->sourceaddress6;
-        if (source == NULL ||
-            strcmp(source, "all") == 0 || strcmp(source, "any") == 0)
-              return true;
+        if (source == NULL || strcmp(source, "all") == 0
+            || strcmp(source, "any") == 0)
+            return true;
 
         saddr.sin6_family = AF_INET6;
         if (inet_pton(AF_INET6, source, &saddr.sin6_addr) < 1) {

@@ -40,11 +40,11 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#include "tap/basic.h"
-#include "tap/process.h"
 #include "inn/macros.h"
 #include "inn/messages.h"
 #include "inn/xmalloc.h"
+#include "tap/basic.h"
+#include "tap/process.h"
 
 
 /*

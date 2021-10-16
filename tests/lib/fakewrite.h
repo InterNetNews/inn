@@ -30,13 +30,13 @@
 #define LIBTEST_NEW_FORMAT 1
 
 #ifndef TESTS_INN_FAKEWRITE_H
-#define TESTS_INN_FAKEWRITE_H 1
+#    define TESTS_INN_FAKEWRITE_H 1
 
-#include "config.h"
-#include "portable/macros.h"
-#include "portable/stdbool.h"
+#    include "config.h"
+#    include "portable/macros.h"
+#    include "portable/stdbool.h"
 
-#include <sys/types.h>
+#    include <sys/types.h>
 
 BEGIN_DECLS
 

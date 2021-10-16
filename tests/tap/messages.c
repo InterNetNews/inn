@@ -37,10 +37,10 @@
 #include "config.h"
 #include "clibrary.h"
 
+#include "inn/messages.h"
 #include "tap/macros.h"
 #include "tap/messages.h"
 #include "tap/string.h"
-#include "inn/messages.h"
 
 /* A global buffer into which message_log_buffer stores error messages. */
 char *errors = NULL;

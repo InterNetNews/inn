@@ -37,9 +37,9 @@
 
 #include <errno.h>
 
-#include "tap/basic.h"
-#include "lib/fakewrite.h"
 #include "inn/xwrite.h"
+#include "lib/fakewrite.h"
+#include "tap/basic.h"
 
 /* The data array we'll use to do testing. */
 static char data[256];

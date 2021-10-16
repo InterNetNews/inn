@@ -32,8 +32,8 @@
 #ifndef INN_MESSAGES_H
 #define INN_MESSAGES_H 1
 
-#include <inn/defines.h>
 #include "inn/portable-macros.h"
+#include <inn/system.h>
 
 #include <stdarg.h>
 #include <stddef.h>

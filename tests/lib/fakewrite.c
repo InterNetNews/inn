@@ -35,8 +35,8 @@
 
 #include <errno.h>
 
-#include "lib/fakewrite.h"
 #include "inn/macros.h"
+#include "lib/fakewrite.h"
 
 
 /*

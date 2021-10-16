@@ -36,8 +36,8 @@
 #include "portable/socket.h"
 #include "clibrary.h"
 
-#include "tap/basic.h"
 #include "inn/network.h"
+#include "tap/basic.h"
 
 
 /*

@@ -40,8 +40,8 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "tap/basic.h"
 #include "inn/fdflag.h"
+#include "tap/basic.h"
 
 
 int

@@ -27,8 +27,8 @@
 #ifndef INN_VECTOR_H
 #define INN_VECTOR_H 1
 
-#include <inn/defines.h>
 #include "inn/portable-macros.h"
+#include <inn/system.h>
 
 #include <stddef.h>
 

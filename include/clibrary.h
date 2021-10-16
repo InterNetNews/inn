@@ -112,9 +112,9 @@ typedef ptrdiff_t ssize_t;
  * so we certainly can as well.
  */
 #ifndef SEEK_SET
-# define SEEK_SET 0
-# define SEEK_CUR 1
-# define SEEK_END 2
+#    define SEEK_SET 0
+#    define SEEK_CUR 1
+#    define SEEK_END 2
 #endif
 
 /*
@@ -158,17 +158,17 @@ BEGIN_DECLS
  * come up with.
  */
 #if !HAVE_FSEEKO
-# if DO_LARGEFILES
-#  if !HAVE_DECL_FSEEKO
+#    if DO_LARGEFILES
+#        if !HAVE_DECL_FSEEKO
 extern int fseeko(FILE *, off_t, int);
-#  endif
-#  if !HAVE_DECL_FTELLO
+#        endif
+#        if !HAVE_DECL_FTELLO
 extern off_t ftello(FILE *);
-#  endif
-# else
-#  define fseeko(f, o, w) fseek((f), (long)(o), (w))
-#  define ftello(f) ftell(f)
-# endif
+#        endif
+#    else
+#        define fseeko(f, o, w) fseek((f), (long) (o), (w))
+#        define ftello(f)       ftell(f)
+#    endif
 #endif
 
 /* Other prototypes. */
@@ -230,7 +230,7 @@ extern int strncasecmp(const char *, const char *, size_t);
 extern size_t strspn(const char *, const char *);
 #endif
 #if !HAVE_STRTOK
-extern char * strtok(char *, const char *);
+extern char *strtok(char *, const char *);
 #endif
 
 END_DECLS

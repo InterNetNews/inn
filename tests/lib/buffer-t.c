@@ -24,9 +24,9 @@
 
 #include <fcntl.h>
 
-#include "tap/basic.h"
 #include "inn/buffer.h"
 #include "inn/xwrite.h"
+#include "tap/basic.h"
 
 static const char test_string1[] = "This is a test";
 static const char test_string2[] = " of the buffer system";

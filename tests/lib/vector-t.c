@@ -24,10 +24,10 @@
 
 #include <sys/wait.h>
 
-#include "tap/basic.h"
-#include "tap/string.h"
 #include "inn/vector.h"
 #include "inn/xmalloc.h"
+#include "tap/basic.h"
+#include "tap/string.h"
 
 
 int
