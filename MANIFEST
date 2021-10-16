@@ -1,5 +1,6 @@
 File Name                             Description
 -------------------------------------------------------------------------------
+.clang-format                         Configuration for clang-format
 .github                               GitHub configuration (Directory)
 .github/dependabot.yml                Configuration for GitHub dependabot
 .github/workflows                     GitHub Actions workflows (Directory)

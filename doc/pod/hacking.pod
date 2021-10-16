@@ -460,6 +460,12 @@ file.  (Over time we're trying to standardize on one coding style, so
 changing the region you worked on to fit the general coding style is also
 acceptable).
 
+When modifying or writing new code in C, it should conform to the
+B<clang-format> style of the project.  Just run a command like the
+following one to properly reformat the file:
+
+    clang-format --style=file -i source.c
+
 If you're writing a substantial new piece of code, the prevailing
 "standard" INN coding style is the following:
 

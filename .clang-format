@@ -1,0 +1,20 @@
+# Configuration for clang-format automated reformatting.  -*- yaml -*-
+
+---
+Language: Cpp
+BasedOnStyle: LLVM
+# When available (in clang-format 13), use AcrossEmptyLinesAndComments
+# as the value of AlignConsecutiveMacros. 
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Left
+AllowShortEnumsOnASingleLine: false
+AlwaysBreakAfterReturnType: AllDefinitions
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: WebKit
+ColumnLimit: 79
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+MaxEmptyLinesToKeep: 2
+SpaceAfterCStyleCast: true
+---
