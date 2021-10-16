@@ -68,14 +68,18 @@
 */
 #define STNRETRY 5
 
+/*
+**  Tracking information for an article in flight
+**  Only used in streaming mode.
+*/
 struct stbufs {         /* for each article we are procesing */
-        char *st_fname;         /* file name */
-        char *st_id;            /* message ID */
-        int   st_retry;         /* retry count */
-        int   st_age;           /* age count */
-        ARTHANDLE *art;         /* arthandle to read article contents */
-        int   st_hash;          /* hash value to speed searches */
-        long  st_size;          /* article size */
+    char *st_fname;         /* file name */
+    char *st_id;            /* message ID */
+    int   st_retry;         /* retry count */
+    int   st_age;           /* age count */
+    ARTHANDLE *art;         /* arthandle to read article contents */
+    int   st_hash;          /* hash value to speed searches */
+    long  st_size;          /* article size */
 };
 static struct stbufs stbuf[STNBUF]; /* we keep track of this many articles */
 static int stnq;        /* current number of active entries in stbuf */
@@ -221,7 +225,13 @@ stidhash(char *MessageID) {
     return hash;
 }
 
-/* stalloc(): save path, ID, and qp into one of the streaming mode entries */
+/*
+**  stalloc(): save path, ID, and qp into one of the streaming mode entries
+**
+**  Called just before issuing a CHECK (or TAKETHIS, if we're not doing CHECK)
+**  i.e. in streaming mode only. Should only be called if there are free slots,
+**  i.e. if sntq<STNBUF.
+**/
 static int
 stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
     int i;
@@ -258,13 +268,13 @@ stalloc(char *Article, char *MessageID, ARTHANDLE *art, int hash) {
 /* strel(): release for reuse one of the streaming mode entries */
 static void
 strel(int i) {
-        if (stbuf[i].art) {
-            article_free(stbuf[i].art);
-            stbuf[i].art = NULL;
-        }
-        if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
-        if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
-        stnq--;
+    if (stbuf[i].art) {
+        article_free(stbuf[i].art);
+        stbuf[i].art = NULL;
+    }
+    if (stbuf[i].st_id) stbuf[i].st_id[0] = '\0';
+    if (stbuf[i].st_fname) stbuf[i].st_fname[0] = '\0';
+    stnq--;
 }
 
 /*
@@ -592,6 +602,8 @@ HeadersLen(ARTHANDLE *art, int *iscmsg) {
 
 /*
 **  Send a whole article to the server.
+**  Called from the takethis(), i.e. when sending a TAKETHIS
+**  and when we get a 335 response to IHAVE.
 */
 static bool
 REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
@@ -650,7 +662,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
         if (DoRequeue)
             Requeue(Article, MessageID);
         break;
-    case NNTP_ERR_COMMAND:
+    case NNTP_ERR_COMMAND: /* 500 */
     case NNTP_ERR_ACCESS:
         /* The receiving server is likely confused... no point in continuing! */
         syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
@@ -666,7 +678,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art) {
         STATacceptedsize += (double)art->len;
         break;
     case NNTP_FAIL_IHAVE_REJECT:
-    case NNTP_ERR_SYNTAX:
+    case NNTP_ERR_SYNTAX: /* 501 */
         if (logRejects)
             syslog(L_NOTICE, REJECTED, REMhost,
                    MessageID, Article, REMclean(buff));
@@ -763,6 +775,10 @@ check(int i) {
 
 /* Send article in "takethis <id> streaming NNTP mode.
 ** return true on failure.
+**
+** Called when a get a 238 response to CHECK, or from the
+** main processing loop when we are streaming and are not
+** using CHECK (i.e. when DoCheck=false).
 */
 static bool
 takethis(int i) {
@@ -795,8 +811,14 @@ takethis(int i) {
 
 
 /* listen for responses.  Process acknowledgments to remove items from
-** the queue.  Also sends the articles on request.  Returns true on error.
-** return true on failure.
+** the queue.  Also sends the articles on request.
+**
+** Called from the main processing loop when there are enough commands
+** in flight to be worth waiting for responses, and after the main processing
+** loop to reap all remaining responses.
+**
+** Returns false on success and true on error. The callers respond to
+** errors by rewriting the batch file and exiting. 
 */
 static bool
 strlisten(void)
@@ -825,14 +847,14 @@ strlisten(void)
             continue;
 
         switch (resp) { /* first time is to verify it */
-        case NNTP_ERR_SYNTAX:
+        case NNTP_ERR_SYNTAX: /* 501 */
             /* Nothing we can check here. */
             /* FALLTHROUGH (and hope the message-ID is given after 501). */
-        case NNTP_FAIL_CHECK_REFUSE:
-        case NNTP_OK_CHECK:
-        case NNTP_OK_TAKETHIS:
-        case NNTP_FAIL_TAKETHIS_REJECT:
-        case NNTP_FAIL_CHECK_DEFER:
+        case NNTP_FAIL_CHECK_REFUSE: /* 438 */
+        case NNTP_OK_CHECK: /* 238 */
+        case NNTP_OK_TAKETHIS: /* 239 */
+        case NNTP_FAIL_TAKETHIS_REJECT: /* 439 */
+        case NNTP_FAIL_CHECK_DEFER: /* 431 */
             if ((id = strchr(buff, '<')) != NULL) {
                 p = strchr(id, '>');
                 if (p) *(p+1) = '\0';
@@ -847,8 +869,8 @@ strlisten(void)
                 return (true);
             }
             break;
-        case NNTP_FAIL_TERMINATING:
-        case NNTP_FAIL_ACTION:
+        case NNTP_FAIL_TERMINATING: /* 400 */
+        case NNTP_FAIL_ACTION: /* 403 */
             /* Most likely out of space -- no point in continuing. */
             syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
             return true;
@@ -862,7 +884,7 @@ strlisten(void)
         }
 
         switch (resp) { /* now we take some action */
-        case NNTP_FAIL_CHECK_DEFER:     /* remote wants it later */
+        case NNTP_FAIL_CHECK_DEFER:     /* 431; remote wants it later */
             /* try again now because time has passed */
             if (stbuf[i].st_retry < STNRETRY) {
                 if (check(i)) return true;
@@ -874,25 +896,25 @@ strlisten(void)
             }
             break;
 
-        case NNTP_ERR_SYNTAX:
-        case NNTP_FAIL_CHECK_REFUSE:    /* remote doesn't want it */
+        case NNTP_ERR_SYNTAX: /* 501 */
+        case NNTP_FAIL_CHECK_REFUSE:    /* 438 remote doesn't want it */
             strel(i); /* release entry */
             STATrefused++;
             stnofail = 0;
             break;
                 
-        case NNTP_OK_CHECK:     /* remote wants article */
+        case NNTP_OK_CHECK:     /* 238 remote wants article */
             if (takethis(i)) return true;
             stnofail++;
             break;
 
-        case NNTP_OK_TAKETHIS:  /* remote received it OK */
+        case NNTP_OK_TAKETHIS:  /* 239 remote received it OK */
             STATacceptedsize += (double) stbuf[i].st_size;
             strel(i); /* release entry */
             STATaccepted++;
             break;
                 
-        case NNTP_FAIL_TAKETHIS_REJECT:
+        case NNTP_FAIL_TAKETHIS_REJECT: /* 439 */
             STATrejectedsize += (double) stbuf[i].st_size;
             if (logRejects)
                 syslog(L_NOTICE, REJ_STREAM, REMhost,
@@ -1440,26 +1462,26 @@ int main(int ac, char *av[]) {
             if (DoRequeue)
                 Requeue(Article, MessageID);
             break;
-        case NNTP_ERR_COMMAND:
-        case NNTP_ERR_ACCESS:
+        case NNTP_ERR_COMMAND: /* 500 */
+        case NNTP_ERR_ACCESS: /* 502 */
             /* The receiving server is likely confused... no point in continuing! */
             syslog(L_FATAL, GOT_BADCOMMAND, REMhost, MessageID, REMclean(buff));
             RequeueRestAndExit(Article, MessageID);
             /* NOTREACHED */
-        case NNTP_FAIL_ACTION:
-        case NNTP_FAIL_AUTH_NEEDED:
-        case NNTP_FAIL_IHAVE_DEFER:
-        case NNTP_FAIL_TERMINATING:
+        case NNTP_FAIL_ACTION: /* 403 */
+        case NNTP_FAIL_AUTH_NEEDED: /* 480 */
+        case NNTP_FAIL_IHAVE_DEFER: /* 436 */
+        case NNTP_FAIL_TERMINATING: /* 400 */
             /* Most likely out of space -- no point in continuing. */
             syslog(L_NOTICE, IHAVE_FAIL, REMhost, REMclean(buff));
             RequeueRestAndExit(Article, MessageID);
             /* NOTREACHED */
-        case NNTP_CONT_IHAVE:
+        case NNTP_CONT_IHAVE: /* 335 */
             if (!REMsendarticle(Article, MessageID, art))
                 RequeueRestAndExit(Article, MessageID);
             break;
-        case NNTP_FAIL_IHAVE_REFUSE:
-        case NNTP_ERR_SYNTAX:
+        case NNTP_FAIL_IHAVE_REFUSE: /* 435 */
+        case NNTP_ERR_SYNTAX: /* 501 e.g. peer disagrees about valid message-ids */
             STATrefused++;
             break;
         }
