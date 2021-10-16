@@ -31,6 +31,15 @@ and makehistory(8) man pages.
 
 =item *
 
+Improved the robustness of B<innxmit> when receiving C<500> or C<501>
+response codes from peers, indicating they do not understand the NNTP
+command or (wrongly) think there is a syntax error.  Richard Kettlewell
+added a proper handling of these responses, making B<innxmit> dropping
+the refused article instead of keeping sending it over and over (and
+thus receiving each time the same error in response codes).
+
+=item *
+
 All of the applicable bug fixes from the S<INN 2.6> STABLE series are
 also included in S<INN 2.7>.
 
