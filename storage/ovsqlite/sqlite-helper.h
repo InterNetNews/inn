@@ -5,13 +5,13 @@
 
 #ifdef HAVE_SQLITE3
 
-#include <stddef.h>
-#include <sqlite3.h>
+#    include <sqlite3.h>
+#    include <stddef.h>
 
 /* SQLITE_PREPARE_PERSISTENT is defined in SQLite 3.20.0 and above. */
-#ifndef SQLITE_PREPARE_PERSISTENT
-# define SQLITE_PREPARE_PERSISTENT 0x00
-#endif
+#    ifndef SQLITE_PREPARE_PERSISTENT
+#        define SQLITE_PREPARE_PERSISTENT 0x00
+#    endif
 
 typedef struct sqlite_helper_t {
     size_t stmt_count;
@@ -29,24 +29,19 @@ BEGIN_DECLS
  * the returned error message with sqlite3_free.
  */
 
-extern int sqlite_helper_init(
-    sqlite_helper_t const *helper,
-    sqlite3_stmt **stmts,
-    sqlite3 *connection,
-    unsigned int prepare_flags,
-    char **errmsg);
+extern int sqlite_helper_init(sqlite_helper_t const *helper,
+                              sqlite3_stmt **stmts, sqlite3 *connection,
+                              unsigned int prepare_flags, char **errmsg);
 
 /*
  * Deallocate all the prepared statements.
  */
 
-extern void sqlite_helper_term(
-    sqlite_helper_t const *helper,
-    sqlite3_stmt **stmts);
+extern void sqlite_helper_term(sqlite_helper_t const *helper,
+                               sqlite3_stmt **stmts);
 
 END_DECLS
 
 #endif /* HAVE_SQLITE3 */
 
 #endif /* ! SQLITE_HELPER_H */
-

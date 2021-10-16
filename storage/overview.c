@@ -18,12 +18,12 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/overview.h"
-#include "inn/wire.h"
-#include "inn/vector.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/ov.h"
+#include "inn/overview.h"
+#include "inn/vector.h"
+#include "inn/wire.h"
 #include "ovinterface.h"
 #include "ovmethods.h"
 
@@ -170,10 +170,9 @@ overview_add(struct overview *overview, const char *group,
     buffer_append(overview->overdata, "\r\n", 2);
 
     /* Call the underlying method. */
-    return overview->method->add(group, data->number, data->token,
-                                 overview->overdata->data,
-                                 overview->overdata->left,
-                                 data->arrived, data->expires);
+    return overview->method->add(
+        group, data->number, data->token, overview->overdata->data,
+        overview->overdata->left, data->arrived, data->expires);
 }
 
 

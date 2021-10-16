@@ -23,9 +23,9 @@ trash_init(SMATTRIBUTE *attr)
 TOKEN
 trash_store(const ARTHANDLE article, const STORAGECLASS class)
 {
-    TOKEN               token;
+    TOKEN token;
 
-    if (article.token == (TOKEN *)NULL)
+    if (article.token == (TOKEN *) NULL)
         memset(&token, '\0', sizeof(token));
     else {
         memcpy(&token, article.token, sizeof(token));
@@ -41,10 +41,10 @@ trash_retrieve(const TOKEN token, const RETRTYPE amount UNUSED)
 {
     if (token.type != TOKEN_TRASH) {
         SMseterror(SMERR_INTERNAL, NULL);
-        return (ARTHANDLE *)NULL;
+        return (ARTHANDLE *) NULL;
     }
     SMseterror(SMERR_NOENT, NULL);
-    return (ARTHANDLE *)NULL;
+    return (ARTHANDLE *) NULL;
 }
 
 void

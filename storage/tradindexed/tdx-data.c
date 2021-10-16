@@ -24,13 +24,13 @@
 #include "inn/fdflag.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
-#include "inn/libinn.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
-#include "ovinterface.h"
 #include "inn/storage.h"
+#include "ovinterface.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -248,7 +248,7 @@ tdx_data_open_files(struct group_data *data)
         goto fail;
     return true;
 
- fail:
+fail:
     if (data->indexfd >= 0)
         close(data->indexfd);
     if (data->datafd >= 0)
@@ -302,14 +302,14 @@ map_index(struct group_data *data)
 
     r = fstat(data->indexfd, &st);
     if (r == -1) {
-	if (errno == ESTALE) {
-	    r = file_open_index(data, NULL);
-	} else {
-	    syswarn("tradindexed: cannot stat %s.IDX", data->path);
-	}
+        if (errno == ESTALE) {
+            r = file_open_index(data, NULL);
+        } else {
+            syswarn("tradindexed: cannot stat %s.IDX", data->path);
+        }
     }
     if (r == -1)
-	return false;
+        return false;
     data->indexlen = st.st_size;
     data->index = map_file(data->indexfd, data->indexlen, data->path, "IDX");
     return (data->index == NULL && data->indexlen > 0) ? false : true;
@@ -327,14 +327,14 @@ map_data(struct group_data *data)
 
     r = fstat(data->datafd, &st);
     if (r == -1) {
-	if (errno == ESTALE) {
-	    r = file_open_data(data, NULL);
-	} else {
-	    syswarn("tradindexed: cannot stat %s.DAT", data->path);
-	}
+        if (errno == ESTALE) {
+            r = file_open_data(data, NULL);
+        } else {
+            syswarn("tradindexed: cannot stat %s.DAT", data->path);
+        }
     }
     if (r == -1)
-	return false;
+        return false;
     data->datalen = st.st_size;
     data->data = map_file(data->datafd, data->datalen, data->path, "DAT");
     return (data->data == NULL && data->indexlen > 0) ? false : true;
@@ -474,12 +474,12 @@ tdx_search_open(struct group_data *data, ARTNUM start, ARTNUM end, ARTNUM high)
         return NULL;
 
     if (innconf->nfsreader && stale_index(data))
-	unmap_index(data);
+        unmap_index(data);
     if (data->index == NULL)
         if (!map_index(data))
             return NULL;
     if (innconf->nfsreader && stale_data(data))
-	unmap_data(data);
+        unmap_data(data);
     if (data->data == NULL)
         if (!map_data(data))
             return NULL;
@@ -601,8 +601,7 @@ tdx_data_store(struct group_data *data, const struct article *article)
     memset(&entry, 0, sizeof(entry));
     if (xwrite(data->datafd, article->overview, article->overlen) < 0) {
         syswarn("tradindexed: cannot append %lu of data for %lu to %s.DAT",
-                (unsigned long) article->overlen, article->number,
-                data->path);
+                (unsigned long) article->overlen, article->number, data->path);
         return false;
     }
     entry.offset = lseek(data->datafd, 0, SEEK_CUR);
@@ -711,7 +710,7 @@ tdx_data_pack_start(struct group_data *data, ARTNUM artnum)
     data->indexinode = st.st_ino;
     return true;
 
- fail:
+fail:
     if (fd >= 0) {
         close(fd);
         idxfile = concat(data->path, ".IDX-NEW", (char *) 0);
@@ -773,7 +772,7 @@ tdx_data_rebuild_start(const char *group)
         goto fail;
     return data;
 
- fail:
+fail:
     tdx_data_delete(group, "-NEW");
     tdx_data_close(data);
     return NULL;
@@ -820,7 +819,7 @@ tdx_data_rebuild_finish(const char *group)
     free(newdat);
     return true;
 
- fail:
+fail:
     if (saved && rename(bakidx, idx) < 0)
         syswarn("tradindexed: cannot restore old index %s", bakidx);
     free(idx);
@@ -896,7 +895,7 @@ tdx_data_expire_start(const char *group, struct group_data *data,
     tdx_data_close(new_data);
     return true;
 
- fail:
+fail:
     tdx_data_delete(group, "-NEW");
     tdx_data_close(new_data);
     return false;
@@ -970,8 +969,8 @@ tdx_data_index_dump(struct group_data *data, FILE *output)
     for (entry = data->index; entry < end; entry++) {
         fprintf(output, "%lu %lu %lu %lu %lu %s\n", current,
                 (unsigned long) entry->offset, (unsigned long) entry->length,
-                (unsigned long) entry->arrived,
-                (unsigned long) entry->expires, TokenToText(entry->token));
+                (unsigned long) entry->arrived, (unsigned long) entry->expires,
+                TokenToText(entry->token));
         current++;
     }
 }
@@ -990,8 +989,8 @@ entry_audit(struct group_data *data, struct index_entry *entry,
     off_t offset;
 
     if (entry->length < 0) {
-        warn("tradindexed: negative length %d in %s:%lu", entry->length,
-             group, article);
+        warn("tradindexed: negative length %d in %s:%lu", entry->length, group,
+             article);
         if (fix)
             goto clear;
         return;
@@ -1006,8 +1005,9 @@ entry_audit(struct group_data *data, struct index_entry *entry,
     }
     if (entry->offset + entry->length > data->datalen) {
         warn("tradindexed: offset %lu plus length %lu out of bounds for"
-             " %s:%lu", (unsigned long) entry->offset,
-             (unsigned long) entry->length, group, article);
+             " %s:%lu",
+             (unsigned long) entry->offset, (unsigned long) entry->length,
+             group, article);
         if (fix)
             goto clear;
         return;
@@ -1020,7 +1020,7 @@ entry_audit(struct group_data *data, struct index_entry *entry,
     }
     return;
 
- clear:
+clear:
     new_entry = *entry;
     new_entry.offset = 0;
     new_entry.length = 0;
@@ -1070,7 +1070,7 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     expected = entries * sizeof(struct index_entry);
     if (data->indexlen != expected) {
         warn("tradindexed: %lu bytes of trailing trash in %s.IDX",
-             (unsigned long)(data->indexlen - expected), data->path);
+             (unsigned long) (data->indexlen - expected), data->path);
         if (fix) {
             unmap_index(data);
             if (ftruncate(data->indexfd, expected) < 0)
@@ -1096,8 +1096,8 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
         }
     }
     if (index->low != low && entries != 0) {
-        warn("tradindexed: low water mark incorrect for %s: %lu != %lu",
-             group, low, index->low);
+        warn("tradindexed: low water mark incorrect for %s: %lu != %lu", group,
+             low, index->low);
         if (fix) {
             index->low = low;
             changed = true;
@@ -1117,6 +1117,6 @@ tdx_data_audit(const char *group, struct group_entry *index, bool fix)
     if (changed)
         inn_msync_page(index, sizeof(*index), MS_ASYNC);
 
- end:
+end:
     tdx_data_close(data);
 }

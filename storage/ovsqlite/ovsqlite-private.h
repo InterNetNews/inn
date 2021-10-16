@@ -1,39 +1,39 @@
 #ifndef OVSQLITE_PRIVATE_H
-#define OVSQLITE_PRIVATE_H 1
+#    define OVSQLITE_PRIVATE_H 1
 
-#include "config.h"
-#include "clibrary.h"
+#    include "config.h"
+#    include "clibrary.h"
 
-#ifdef HAVE_SQLITE3
+#    ifdef HAVE_SQLITE3
 
-#include "portable/macros.h"
-#include "inn/buffer.h"
+#        include "inn/buffer.h"
 
-#define OVSQLITE_SCHEMA_VERSION         1
-#define OVSQLITE_PROTOCOL_VERSION       1
+#        define OVSQLITE_SCHEMA_VERSION   1
+#        define OVSQLITE_PROTOCOL_VERSION 1
 
-#define OVSQLITE_SERVER_SOCKET          "ovsqlite.sock"
-#define OVSQLITE_SERVER_PIDFILE         "ovsqlite.pid"
+#        define OVSQLITE_SERVER_SOCKET  "ovsqlite.sock"
+#        define OVSQLITE_SERVER_PIDFILE "ovsqlite.pid"
 
-#ifndef HAVE_UNIX_DOMAIN_SOCKETS
+#        ifndef HAVE_UNIX_DOMAIN_SOCKETS
 
-#define OVSQLITE_SERVER_PORT            "ovsqlite.port"
+#            define OVSQLITE_SERVER_PORT "ovsqlite.port"
 
-#define OVSQLITE_COOKIE_LENGTH          16
+#            define OVSQLITE_COOKIE_LENGTH 16
 
 typedef struct ovsqlite_port {
-    uint16_t port;                      /* in network byte order */
+    uint16_t port; /* in network byte order */
     uint8_t cookie[OVSQLITE_COOKIE_LENGTH];
 } ovsqlite_port;
 
-#endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
+#        endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
 
 /*
  * This needs to stay in sync with the dispatch array
  * in ovsqlite-server.c or things will explode.
  */
 
-enum {
+enum
+{
     request_hello,
     request_set_cutofflow,
     request_add_group,
@@ -51,8 +51,9 @@ enum {
     count_request_codes
 };
 
-enum {
-    response_ok                         = 0x00,
+enum
+{
+    response_ok = 0x00,
     response_done,
     response_groupinfo,
     response_grouplist,
@@ -61,7 +62,7 @@ enum {
     response_artlist,
     response_artlist_done,
 
-    response_error                      = 0x80,
+    response_error = 0x80,
     response_sequence_error,
     response_sql_error,
     response_corrupted,
@@ -70,7 +71,7 @@ enum {
     response_dup_article,
     response_old_article,
 
-    response_fatal                      = 0xC0,
+    response_fatal = 0xC0,
     response_bad_request,
     response_oversized,
     response_wrong_state,
@@ -78,46 +79,38 @@ enum {
     response_failed_auth
 };
 
-enum {
-    search_flag_high                    = 0x01,
+enum
+{
+    search_flag_high = 0x01,
 
-    search_flags_all                    = 0x01
+    search_flags_all = 0x01
 };
 
-enum {
-    search_col_arrived                  = 0x01,
-    search_col_expires                  = 0x02,
-    search_col_token                    = 0x04,
-    search_col_overview                 = 0x08,
+enum
+{
+    search_col_arrived = 0x01,
+    search_col_expires = 0x02,
+    search_col_token = 0x04,
+    search_col_overview = 0x08,
 
-    search_cols_all                     = 0x0F
+    search_cols_all = 0x0F
 };
 
 typedef struct buffer buffer_t;
 
 BEGIN_DECLS
 
-extern bool unpack_now(
-    buffer_t *src,
-    void *bytes,
-    size_t count);
+extern bool unpack_now(buffer_t *src, void *bytes, size_t count);
 
-extern void *unpack_later(
-    buffer_t *src,
-    size_t count);
+extern void *unpack_later(buffer_t *src, size_t count);
 
-extern size_t pack_now(
-    buffer_t *dst,
-    void const *bytes,
-    size_t count);
+extern size_t pack_now(buffer_t *dst, void const *bytes, size_t count);
 
-extern size_t pack_later(
-    buffer_t *dst,
-    size_t count);
+extern size_t pack_later(buffer_t *dst, size_t count);
 
 END_DECLS
 
-#endif /* HAVE_SQLITE3 */
+#    endif /* HAVE_SQLITE3 */
 
 #endif /* ! OVSQLITE_PRIVATE_H */
 
@@ -478,4 +471,3 @@ Returned from a request_hello with the wrong cookie.
 
 
 ****************************************************************************/
-

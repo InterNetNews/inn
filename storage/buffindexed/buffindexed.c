@@ -23,47 +23,47 @@
 #include <errno.h>
 #include <fcntl.h>
 #if HAVE_LIMITS_H
-# include <limits.h>
+#    include <limits.h>
 #endif
 #include <sys/stat.h>
 #include <time.h>
 
+#include "inn/fdflag.h"
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/ov.h"
 #include "inn/paths.h"
-#include "ovinterface.h"
 #include "inn/storage.h"
-#include "inn/fdflag.h"
+#include "ovinterface.h"
 
 /* Yes. I know that it violates INN coding style. However, this allows
  * me to compile this new version without reconfiguring INN.
  * If all goes well, shmem.c should go to $INN/lib, and shmem.h should
- * go to $INN/include.
+ * go to $INN/include.  (FIXME)
  */
 #include "shmem.h"
 
 #include "buffindexed.h"
 
-#define	OVBUFF_MAGIC	"ovbuff"
-#define OVBUFF_VERSION	2
+#define OVBUFF_MAGIC   "ovbuff"
+#define OVBUFF_VERSION 2
 
 /*
 ** Because ovbuff bitfields are residing in memory, we don't have to
 ** do file write for each update.  Instead we'll do it at every
 ** OVBUFF_SYNC_COUNT updates.
 */
-#define OVBUFF_SYNC_COUNT	(innconf->icdsynccount * 10 + 1)
+#define OVBUFF_SYNC_COUNT (innconf->icdsynccount * 10 + 1)
 /* #define OVBUFF_SYNC_COUNT	1 */
 
 /* ovbuff header */
-#define	OVBUFFMASIZ	8
-#define	OVBUFFNASIZ	16
-#define	OVBUFFLASIZ	16
-#define	OVBUFFPASIZ	64
+#define OVBUFFMASIZ 8
+#define OVBUFFNASIZ 16
+#define OVBUFFLASIZ 16
+#define OVBUFFPASIZ 64
 
-#define	OVMAXCYCBUFFNAME	8
+#define OVMAXCYCBUFFNAME 8
 
 /*
 ** Default and minimum size of the header.  If the system default page size is
@@ -72,117 +72,112 @@
 */
 #define OV_HDR_MIN_PAGESIZE 16384
 
-#define OV_BEFOREBITF   (1 * OV_BLOCKSIZE)
-#define	OV_BLOCKSIZE	8192
-#define	OV_FUDGE	1024
-#define OV_OFFSET(block) (block*(off_t) OV_BLOCKSIZE)
+#define OV_BEFOREBITF    (1 * OV_BLOCKSIZE)
+#define OV_BLOCKSIZE     8192
+#define OV_FUDGE         1024
+#define OV_OFFSET(block) (block * (off_t) OV_BLOCKSIZE)
 
 /* ovblock pointer */
 typedef struct _OV {
-  unsigned int	blocknum;
-  short		index;
+    unsigned int blocknum;
+    short index;
 } OV;
 
 /* ovbuff header */
 typedef struct {
-  char	magic[OVBUFFMASIZ];
-  char	path[OVBUFFPASIZ];
-  char	indexa[OVBUFFLASIZ];	/* ASCII version of index */
-  char	lena[OVBUFFLASIZ];	/* ASCII version of len */
-  char	totala[OVBUFFLASIZ];	/* ASCII version of total */
-  char	useda[OVBUFFLASIZ];	/* ASCII version of used */
-  char	freea[OVBUFFLASIZ];	/* ASCII version of free */
-  char	updateda[OVBUFFLASIZ];	/* ASCII version of updated */
-  /*
-   * The following parts will be synced to the bitfield
-   */
-  int          version;         /* magic version number */
-  unsigned int freeblk;         /* next free block number */
-  unsigned int usedblk;         /* number of used blocks */
+    char magic[OVBUFFMASIZ];
+    char path[OVBUFFPASIZ];
+    char indexa[OVBUFFLASIZ];   /* ASCII version of index */
+    char lena[OVBUFFLASIZ];     /* ASCII version of len */
+    char totala[OVBUFFLASIZ];   /* ASCII version of total */
+    char useda[OVBUFFLASIZ];    /* ASCII version of used */
+    char freea[OVBUFFLASIZ];    /* ASCII version of free */
+    char updateda[OVBUFFLASIZ]; /* ASCII version of updated */
+    /*
+     * The following parts will be synced to the bitfield
+     */
+    int version;          /* magic version number */
+    unsigned int freeblk; /* next free block number */
+    unsigned int usedblk; /* number of used blocks */
 } OVBUFFHEAD;
 
 /* ovbuff info */
 typedef struct _OVBUFF {
-  unsigned int		index;			/* ovbuff (partition or file) */
-  char			path[OVBUFFPASIZ];	/* Path to file */
-  int			fd;			/* file descriptor for this
-						   ovbuff */
-  off_t 		len;			/* Length of writable area, in
-						   bytes */
-  off_t 		base;			/* Offset (relative to byte
-						   0 of file) to base block */
-  unsigned int		freeblk;		/* next free block number no
-						   freeblk left if equals
-						   totalblk */
-  unsigned int		totalblk;		/* number of total blocks */
-  unsigned int		usedblk;		/* number of used blocks */
-  time_t		updated;		/* Time of last update to
-						   header */
-  void *		bitfield;		/* Bitfield for ovbuff block in
-						   use */
-  unsigned long         dirty;                  /* OVBUFFHEAD dirty count */
-  struct _OVBUFF	*next;			/* next ovbuff */
-  int			nextchunk;		/* next chunk */
-  smcd_t		*smc;			/* shared mem control data */
+    unsigned int index;     /* ovbuff (partition or file) */
+    char path[OVBUFFPASIZ]; /* Path to file */
+    int fd;                 /* file descriptor for this ovbuff */
+    off_t len;              /* Length of writable area, in bytes */
+    off_t base;             /* Offset (relative to byte
+                               0 of file) to base block */
+    unsigned int freeblk;   /* next free block number no
+                               freeblk left if equals totalblk */
+    unsigned int totalblk;  /* number of total blocks */
+    unsigned int usedblk;   /* number of used blocks */
+    time_t updated;         /* Time of last update to header */
+    void *bitfield;         /* Bitfield for ovbuff block in use */
+    unsigned long dirty;    /* OVBUFFHEAD dirty count */
+    struct _OVBUFF *next;   /* next ovbuff */
+    int nextchunk;          /* next chunk */
+    smcd_t *smc;            /* shared mem control data */
 #ifdef OV_DEBUG
-  struct ov_trace_array	*trace;
+    struct ov_trace_array *trace;
 #endif /* OV_DEBUG */
 } OVBUFF;
 
 typedef struct _OVINDEXHEAD {
-  OV		next;		/* next block */
-  ARTNUM	low;		/* lowest article number in the index */
-  ARTNUM	high;		/* highest article number in the index */
+    OV next;     /* next block */
+    ARTNUM low;  /* lowest article number in the index */
+    ARTNUM high; /* highest article number in the index */
 } OVINDEXHEAD;
 
 typedef struct _OVINDEX {
-  ARTNUM	artnum;		/* article number */
-  unsigned int	blocknum;	/* overview data block number */
-  short		index;		/* overview data block index */
-  TOKEN		token;		/* token for this article */
-  off_t         offset;		/* offset from the top in the block */
-  int		len;		/* length of the data */
-  time_t	arrived;	/* arrived time of article */
-  time_t	expires;	/* expire time of article */
+    ARTNUM artnum;         /* article number */
+    unsigned int blocknum; /* overview data block number */
+    short index;           /* overview data block index */
+    TOKEN token;           /* token for this article */
+    off_t offset;          /* offset from the top in the block */
+    int len;               /* length of the data */
+    time_t arrived;        /* arrived time of article */
+    time_t expires;        /* expire time of article */
 } OVINDEX;
 
-#define OVINDEXMAX	((OV_BLOCKSIZE-sizeof(OVINDEXHEAD))/sizeof(OVINDEX))
+#define OVINDEXMAX ((OV_BLOCKSIZE - sizeof(OVINDEXHEAD)) / sizeof(OVINDEX))
 
 typedef struct _OVBLOCK {
-  OVINDEXHEAD	ovindexhead;		/* overview index header */
-  OVINDEX	ovindex[OVINDEXMAX];	/* overview index */
+    OVINDEXHEAD ovindexhead;     /* overview index header */
+    OVINDEX ovindex[OVINDEXMAX]; /* overview index */
 } OVBLOCK;
 
 typedef struct _OVBLKS {
-  OVBLOCK	*ovblock;
-  void *	addr;
-  int		len;
-  OV		indexov;
+    OVBLOCK *ovblock;
+    void *addr;
+    int len;
+    OV indexov;
 } OVBLKS;
 
 /* Data structure for specifying a location in the group index */
 typedef struct {
-    int                 recno;             /* Record number in group index */
+    int recno; /* Record number in group index */
 } GROUPLOC;
 
 #ifdef OV_DEBUG
-struct ov_trace	{
-  time_t	occupied;
-  time_t	freed;
-  GROUPLOC	gloc;
+struct ov_trace {
+    time_t occupied;
+    time_t freed;
+    GROUPLOC gloc;
 };
 
-#define	OV_TRACENUM 10
+#    define OV_TRACENUM 10
 struct ov_trace_array {
-  int			max;
-  int			cur;
-  struct ov_trace	*ov_trace;
+    int max;
+    int cur;
+    struct ov_trace *ov_trace;
 };
 
 struct ov_name_table {
-  char			*name;
-  int			recno;
-  struct ov_name_table	*next;
+    char *name;
+    int recno;
+    struct ov_name_table *next;
 };
 
 static struct ov_name_table *name_table = NULL;
@@ -192,9 +187,9 @@ static struct ov_name_table *name_table = NULL;
 #define GROUPHEADERMAGIC    (~(0xf1f0f33d))
 
 typedef struct {
-  int		magic;
-  GROUPLOC	hash[GROUPHEADERHASHSIZE];
-  GROUPLOC	freelist;
+    int magic;
+    GROUPLOC hash[GROUPHEADERHASHSIZE];
+    GROUPLOC freelist;
 } GROUPHEADER;
 
 /* The group is matched based on the MD5 of the grouname. This may prove to
@@ -203,78 +198,86 @@ typedef struct {
    benefit from this being fixed length, we should try to keep it that way.
 */
 typedef struct {
-  HASH		hash;		/* MD5 hash of the group name */
-  HASH		alias;		/* If not empty then this is the hash of the
-				   group that this group is an alias for */
-  ARTNUM	high;		/* High water mark in group */
-  ARTNUM	low;		/* Low water mark in group */
-  int		count;		/* Number of articles in group */
-  int		flag;		/* Posting/Moderation Status */
-  time_t	expired;	/* When last expiry */
-  time_t	deleted;	/* When this was deleted, 0 otherwise */
-  GROUPLOC	next;		/* Next block in this chain */
-  OV		baseindex;	/* base index buff */
-  OV		curindex;	/* current index buff */
-  int		curindexoffset;	/* current index offset for this ovbuff */
-  ARTNUM	curhigh;	/* High water mark in group */
-  ARTNUM	curlow;		/* Low water mark in group */
-  OV		curdata;	/* current offset for this ovbuff */
-  off_t         curoffset;	/* current offset for this ovbuff */
+    HASH hash;          /* MD5 hash of the group name */
+    HASH alias;         /* If not empty then this is the hash of the
+                           group that this group is an alias for */
+    ARTNUM high;        /* High water mark in group */
+    ARTNUM low;         /* Low water mark in group */
+    int count;          /* Number of articles in group */
+    int flag;           /* Posting/Moderation Status */
+    time_t expired;     /* When last expiry */
+    time_t deleted;     /* When this was deleted, 0 otherwise */
+    GROUPLOC next;      /* Next block in this chain */
+    OV baseindex;       /* base index buff */
+    OV curindex;        /* current index buff */
+    int curindexoffset; /* current index offset for this ovbuff */
+    ARTNUM curhigh;     /* High water mark in group */
+    ARTNUM curlow;      /* Low water mark in group */
+    OV curdata;         /* current offset for this ovbuff */
+    off_t curoffset;    /* current offset for this ovbuff */
 } GROUPENTRY;
 
 typedef struct _GIBLIST {
-  OV			ov;
-  struct _GIBLIST	*next;
+    OV ov;
+    struct _GIBLIST *next;
 } GIBLIST;
 
 typedef struct _GDB {
-  OV		datablk;
-  void *	addr;
-  void *	data;
-  int		len;
-  bool		mmapped;
-  struct _GDB	*next;
+    OV datablk;
+    void *addr;
+    void *data;
+    int len;
+    bool mmapped;
+    struct _GDB *next;
 } GROUPDATABLOCK;
 
 typedef struct {
-  char			*group;
-  ARTNUM		lo;
-  ARTNUM		hi;
-  int			cur;
-  bool			needov;
-  GROUPLOC		gloc;
-  int			count;
-  GROUPDATABLOCK	gdb;	/* used for caching current block */
+    char *group;
+    ARTNUM lo;
+    ARTNUM hi;
+    int cur;
+    bool needov;
+    GROUPLOC gloc;
+    int count;
+    GROUPDATABLOCK gdb; /* used for caching current block */
 } OVSEARCH;
 
-#define GROUPDATAHASHSIZE	25
+#define GROUPDATAHASHSIZE 25
 
-static GROUPDATABLOCK	*groupdatablock[GROUPDATAHASHSIZE];
+static GROUPDATABLOCK *groupdatablock[GROUPDATAHASHSIZE];
 
-typedef enum {PREPEND_BLK, APPEND_BLK} ADDINDEX;
-typedef enum {SRCH_FRWD, SRCH_BKWD} SRCH;
+typedef enum
+{
+    PREPEND_BLK,
+    APPEND_BLK
+} ADDINDEX;
+typedef enum
+{
+    SRCH_FRWD,
+    SRCH_BKWD
+} SRCH;
 
-#define	_PATH_OVBUFFCONFIG	"buffindexed.conf"
+#define _PATH_OVBUFFCONFIG "buffindexed.conf"
 
-static long		pagesize = 0;
-static long		hdr_pagesize = OV_HDR_MIN_PAGESIZE;
-static OVBUFF		*ovbufftab = NULL;
-static OVBUFF           *ovbuffnext = NULL;
-static int              GROUPfd;
-static GROUPHEADER      *GROUPheader = NULL;
-static GROUPENTRY       *GROUPentries = NULL;
-static int              GROUPcount = 0;
-static GROUPLOC         GROUPemptyloc = { -1 };
-#define	NULLINDEX	(-1)
-static OV 	        ovnull = { 0, NULLINDEX };
-typedef unsigned long	ULONG;
-static ULONG		onarray[64], offarray[64];
-static int		longsize = sizeof(long);
-static bool		Nospace;
-static bool		Needunlink;
-static bool		Cutofflow;
-static bool		Cache;
-static OVSEARCH		*Cachesearch;
+static long pagesize = 0;
+static long hdr_pagesize = OV_HDR_MIN_PAGESIZE;
+static OVBUFF *ovbufftab = NULL;
+static OVBUFF *ovbuffnext = NULL;
+static int GROUPfd;
+static GROUPHEADER *GROUPheader = NULL;
+static GROUPENTRY *GROUPentries = NULL;
+static int GROUPcount = 0;
+static GROUPLOC GROUPemptyloc = {-1};
+#define NULLINDEX (-1)
+static OV ovnull = {0, NULLINDEX};
+typedef unsigned long ULONG;
+static ULONG onarray[64], offarray[64];
+static int longsize = sizeof(long);
+static bool Nospace;
+static bool Needunlink;
+static bool Cutofflow;
+static bool Cache;
+static OVSEARCH *Cachesearch;
 
 static int ovbuffmode;
 
@@ -289,2205 +292,2420 @@ static bool GROUPexpand(int mode);
 static void *ovopensearch(const char *group, ARTNUM low, ARTNUM high,
                           bool needov);
 static void ovclosesearch(void *handle, bool freeblock);
-static OVINDEX	*Gib;
-static GIBLIST	*Giblist;
-static int	Gibcount;
+static OVINDEX *Gib;
+static GIBLIST *Giblist;
+static int Gibcount;
 
 #ifdef MMAP_MISSES_WRITES
-#define PWRITE(fd, buf, nbyte, offset)  mmapwrite(fd, buf, nbyte, offset)
+#    define PWRITE(fd, buf, nbyte, offset) mmapwrite(fd, buf, nbyte, offset)
 #else
-#define PWRITE(fd, buf, nbyte, offset)  pwrite(fd, buf, nbyte, offset)
+#    define PWRITE(fd, buf, nbyte, offset) pwrite(fd, buf, nbyte, offset)
 #endif
 
 #ifdef MMAP_MISSES_WRITES
 /* With HP/UX, you definitely do not want to mix mmap-accesses of
    a file with read()s and write()s of the same file */
-static off_t mmapwrite(int fd, void *buf, off_t nbyte, off_t offset) {
-  int		pagefudge, len;
-  off_t         mmapoffset;
-  void *	addr;
+static off_t
+mmapwrite(int fd, void *buf, off_t nbyte, off_t offset)
+{
+    int pagefudge, len;
+    off_t mmapoffset;
+    void *addr;
 
-  pagefudge = offset % pagesize;
-  mmapoffset = offset - pagefudge;
-  len = pagefudge + nbyte;
+    pagefudge = offset % pagesize;
+    mmapoffset = offset - pagefudge;
+    len = pagefudge + nbyte;
 
-  if ((addr = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmapoffset)) == MAP_FAILED) {
-    return -1;
-  }
-  memcpy((char *)addr+pagefudge, buf, nbyte);
-  munmap(addr, len);
-  return nbyte;
+    if ((addr = mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARED, fd,
+                     mmapoffset))
+        == MAP_FAILED) {
+        return -1;
+    }
+    memcpy((char *) addr + pagefudge, buf, nbyte);
+    munmap(addr, len);
+    return nbyte;
 }
 #endif /* MMAP_MISSES_WRITES */
 
-static bool ovparse_part_line(char *l) {
-  char		*p;
-  struct stat	sb;
-  off_t         len, base;
-  int		tonextblock;
-  OVBUFF	*ovbuff, *tmp = ovbufftab;
+static bool
+ovparse_part_line(char *l)
+{
+    char *p;
+    struct stat sb;
+    off_t len, base;
+    int tonextblock;
+    OVBUFF *ovbuff, *tmp = ovbufftab;
 
-  /* ovbuff partition name */
-  if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > OVMAXCYCBUFFNAME - 1) {
-    warn("buffindexed: bad index in line '%s'", l);
-    return false;
-  }
-  *p = '\0';
-  ovbuff = xmalloc(sizeof(OVBUFF));
-  ovbuff->index = strtoul(l, NULL, 10);
-  for (; tmp != (OVBUFF *)NULL; tmp = tmp->next) {
-    if (tmp->index == ovbuff->index) {
-      warn("buffindexed: dupulicate index in line '%s'", l);
-      free(ovbuff);
-      return false;
+    /* ovbuff partition name */
+    if ((p = strchr(l, ':')) == NULL || p - l <= 0
+        || p - l > OVMAXCYCBUFFNAME - 1) {
+        warn("buffindexed: bad index in line '%s'", l);
+        return false;
     }
-  }
-  l = ++p;
+    *p = '\0';
+    ovbuff = xmalloc(sizeof(OVBUFF));
+    ovbuff->index = strtoul(l, NULL, 10);
+    for (; tmp != (OVBUFF *) NULL; tmp = tmp->next) {
+        if (tmp->index == ovbuff->index) {
+            warn("buffindexed: dupulicate index in line '%s'", l);
+            free(ovbuff);
+            return false;
+        }
+    }
+    l = ++p;
 
-  /* Path to ovbuff partition */
-  if ((p = strchr(l, ':')) == NULL || p - l <= 0 || p - l > OVBUFFPASIZ - 1) {
-    warn("buffindexed: bad pathname in line '%s'", l);
-    free(ovbuff);
-    return false;
-  }
-  *p = '\0';
-  memset(ovbuff->path, '\0', OVBUFFPASIZ);
-  strlcpy(ovbuff->path, l, OVBUFFPASIZ);
-  if (stat(ovbuff->path, &sb) < 0) {
-    warn("buffindexed: file '%s' does not exist, ignoring '%d'",
-	   ovbuff->path, ovbuff->index);
-    free(ovbuff);
-    return false;
-  }
-  l = ++p;
+    /* Path to ovbuff partition */
+    if ((p = strchr(l, ':')) == NULL || p - l <= 0
+        || p - l > OVBUFFPASIZ - 1) {
+        warn("buffindexed: bad pathname in line '%s'", l);
+        free(ovbuff);
+        return false;
+    }
+    *p = '\0';
+    memset(ovbuff->path, '\0', OVBUFFPASIZ);
+    strlcpy(ovbuff->path, l, OVBUFFPASIZ);
+    if (stat(ovbuff->path, &sb) < 0) {
+        warn("buffindexed: file '%s' does not exist, ignoring '%d'",
+             ovbuff->path, ovbuff->index);
+        free(ovbuff);
+        return false;
+    }
+    l = ++p;
 
-  /* Length/size of symbolic partition in KB */
-  len = strtoul(l, NULL, 10) * (off_t) 1024;
-  /*
-  ** The minimum article offset will be the size of the bitfield itself,
-  ** len / (blocksize * 8), plus however many additional blocks the OVBUFFHEAD
-  ** external header occupies ... then round up to the next block.
-  */
-  base = len / (OV_BLOCKSIZE * 8) + OV_BEFOREBITF;
-  tonextblock = hdr_pagesize - (base & (hdr_pagesize - 1));
-  ovbuff->base = base + tonextblock;
-  if (S_ISREG(sb.st_mode) && (len != sb.st_size || ovbuff->base > sb.st_size)) {
-    if (len != sb.st_size)
-      notice("buffindexed: length mismatch '%lu' for index '%d' (%lu bytes)",
-	(unsigned long) len, ovbuff->index,
-	(unsigned long) sb.st_size);
-    if (ovbuff->base > sb.st_size)
-      notice("buffindexed: length must be at least '%lu' for index '%d' (%lu bytes)", 
-	(unsigned long) ovbuff->base, ovbuff->index,
-	(unsigned long) sb.st_size);
-    free(ovbuff);
-    return false;
-  }
-  ovbuff->len = len;
-  ovbuff->fd = -1;
-  ovbuff->next = (OVBUFF *)NULL;
-  ovbuff->dirty = 0;
-  ovbuff->bitfield = NULL;
-  ovbuff->nextchunk = 1;
+    /* Length/size of symbolic partition in KB */
+    len = strtoul(l, NULL, 10) * (off_t) 1024;
+    /*
+    ** The minimum article offset will be the size of the bitfield itself,
+    ** len / (blocksize * 8), plus however many additional blocks the
+    *OVBUFFHEAD
+    ** external header occupies ... then round up to the next block.
+    */
+    base = len / (OV_BLOCKSIZE * 8) + OV_BEFOREBITF;
+    tonextblock = hdr_pagesize - (base & (hdr_pagesize - 1));
+    ovbuff->base = base + tonextblock;
+    if (S_ISREG(sb.st_mode)
+        && (len != sb.st_size || ovbuff->base > sb.st_size)) {
+        if (len != sb.st_size)
+            notice("buffindexed: length mismatch '%lu' for index '%d' (%lu "
+                   "bytes)",
+                   (unsigned long) len, ovbuff->index,
+                   (unsigned long) sb.st_size);
+        if (ovbuff->base > sb.st_size)
+            notice("buffindexed: length must be at least '%lu' for index '%d' "
+                   "(%lu bytes)",
+                   (unsigned long) ovbuff->base, ovbuff->index,
+                   (unsigned long) sb.st_size);
+        free(ovbuff);
+        return false;
+    }
+    ovbuff->len = len;
+    ovbuff->fd = -1;
+    ovbuff->next = (OVBUFF *) NULL;
+    ovbuff->dirty = 0;
+    ovbuff->bitfield = NULL;
+    ovbuff->nextchunk = 1;
 
-  if (ovbufftab == (OVBUFF *)NULL)
-    ovbufftab = ovbuff;
-  else {
-    for (tmp = ovbufftab; tmp->next != (OVBUFF *)NULL; tmp = tmp->next);
-    tmp->next = ovbuff;
-  }
-  return true;
+    if (ovbufftab == (OVBUFF *) NULL)
+        ovbufftab = ovbuff;
+    else {
+        for (tmp = ovbufftab; tmp->next != (OVBUFF *) NULL; tmp = tmp->next)
+            ;
+        tmp->next = ovbuff;
+    }
+    return true;
 }
 
 /*
 ** ovbuffread_config() -- Read the overview partition/file configuration file.
 */
 
-static bool ovbuffread_config(void) {
-  char		*path, *config, *from, *to, **ctab = (char **)NULL;
-  int		ctab_free = 0;  /* Index to next free slot in ctab */
-  int		ctab_i;
+static bool
+ovbuffread_config(void)
+{
+    char *path, *config, *from, *to, **ctab = (char **) NULL;
+    int ctab_free = 0; /* Index to next free slot in ctab */
+    int ctab_i;
 
-  path = concatpath(innconf->pathetc, _PATH_OVBUFFCONFIG);
-  config = ReadInFile(path, NULL);
-  if (config == NULL) {
-    warn("buffindexed: cannot read %s", path);
-    free(config);
+    path = concatpath(innconf->pathetc, _PATH_OVBUFFCONFIG);
+    config = ReadInFile(path, NULL);
+    if (config == NULL) {
+        warn("buffindexed: cannot read %s", path);
+        free(config);
+        free(path);
+        return false;
+    }
     free(path);
-    return false;
-  }
-  free(path);
-  for (from = to = config; *from; ) {
-    if (*from == '#') {	/* Comment line? */
-      while (*from && *from != '\n')
-	from++;	/* Skip past it */
-      from++;
-      continue;	/* Back to top of loop */
+    for (from = to = config; *from;) {
+        if (*from == '#') { /* Comment line? */
+            while (*from && *from != '\n')
+                from++; /* Skip past it */
+            from++;
+            continue; /* Back to top of loop */
+        }
+        if (*from == '\n') { /* End or just a blank line? */
+            from++;
+            continue; /* Back to top of loop */
+        }
+        if (ctab_free == 0)
+            ctab = xmalloc(sizeof(char *));
+        else
+            ctab = xrealloc(ctab, (ctab_free + 1) * sizeof(char *));
+        /* If we're here, we've got the beginning of a real entry */
+        ctab[ctab_free++] = to = from;
+        while (1) {
+            if (*from && *from == '\\' && *(from + 1) == '\n') {
+                from += 2; /* Skip past backslash+newline */
+                while (*from && isspace((unsigned char) *from))
+                    from++;
+                continue;
+            }
+            if (*from && *from != '\n')
+                *to++ = *from++;
+            if (*from == '\n') {
+                *to++ = '\0';
+                from++;
+                break;
+            }
+            if (!*from)
+                break;
+        }
     }
-    if (*from == '\n') {	/* End or just a blank line? */
-      from++;
-      continue;		/* Back to top of loop */
+    for (ctab_i = 0; ctab_i < ctab_free; ctab_i++) {
+        if (!ovparse_part_line(ctab[ctab_i])) {
+            free(config);
+            free(ctab);
+            return false;
+        }
     }
-    if (ctab_free == 0)
-      ctab = xmalloc(sizeof(char *));
-    else
-      ctab = xrealloc(ctab, (ctab_free + 1) * sizeof(char *));
-    /* If we're here, we've got the beginning of a real entry */
-    ctab[ctab_free++] = to = from;
-    while (1) {
-      if (*from && *from == '\\' && *(from + 1) == '\n') {
-	from += 2;	/* Skip past backslash+newline */
-	while (*from && isspace((unsigned char) *from))
-	  from++;
-	continue;
-      }
-      if (*from && *from != '\n')
-	*to++ = *from++;
-      if (*from == '\n') {
-	*to++ = '\0';
-	from++;
-	break;
-      }
-      if (! *from)
-	break;
+    free(config);
+    free(ctab);
+    if (ovbufftab == (OVBUFF *) NULL) {
+        warn("buffindexed: no buffindexed defined");
+        return false;
     }
-  }
-  for (ctab_i = 0; ctab_i < ctab_free; ctab_i++) {
-    if (!ovparse_part_line(ctab[ctab_i])) {
-      free(config);
-      free(ctab);
-      return false;
-    }
-  }
-  free(config);
-  free(ctab);
-  if (ovbufftab == (OVBUFF *)NULL) {
-    warn("buffindexed: no buffindexed defined");
-    return false;
-  }
-  return true;
+    return true;
 }
 
-static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-			'a', 'b', 'c', 'd', 'e', 'f'};
+static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-static char *offt2hex(off_t offset, bool leadingzeros) {
-  static char	buf[24];
-  char	*p;
+static char *
+offt2hex(off_t offset, bool leadingzeros)
+{
+    static char buf[24];
+    char *p;
 
-  if (sizeof(off_t) <= sizeof(unsigned long)) {
-    snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx",
-	     (unsigned long) offset);
-  } else {
-    int	i;
+    if (sizeof(off_t) <= sizeof(unsigned long)) {
+        snprintf(buf, sizeof(buf), (leadingzeros) ? "%016lx" : "%lx",
+                 (unsigned long) offset);
+    } else {
+        int i;
 
-    for (i = 0; i < OVBUFFLASIZ; i++)
-      buf[i] = '0';	/* Pad with zeros to start */
-    for (i = OVBUFFLASIZ - 1; i >= 0; i--) {
-      buf[i] = hextbl[offset & 0xf];
-      offset >>= 4;
+        for (i = 0; i < OVBUFFLASIZ; i++)
+            buf[i] = '0'; /* Pad with zeros to start */
+        for (i = OVBUFFLASIZ - 1; i >= 0; i--) {
+            buf[i] = hextbl[offset & 0xf];
+            offset >>= 4;
+        }
     }
-  }
-  if (!leadingzeros) {
-    for (p = buf; *p == '0'; p++)
-	    ;
-    if (*p != '\0')
-      return p;
-    else
-      return p - 1;	/* We converted a "0" and then bypassed all the zeros */
-  } else
-    return buf;
+    if (!leadingzeros) {
+        for (p = buf; *p == '0'; p++)
+            ;
+        if (*p != '\0')
+            return p;
+        else
+            return p - 1; /* We converted a "0" and then bypassed all the zeros
+                           */
+    } else
+        return buf;
 }
 
-static off_t hex2offt(char *hex) {
-  if (sizeof(off_t) <= 4) {
-    unsigned long rpofft;
+static off_t
+hex2offt(char *hex)
+{
+    if (sizeof(off_t) <= 4) {
+        unsigned long rpofft;
 
-    sscanf(hex, "%lx", &rpofft);
-    return rpofft;
-  } else {
-    char		diff;
-    off_t	n = 0;
+        sscanf(hex, "%lx", &rpofft);
+        return rpofft;
+    } else {
+        char diff;
+        off_t n = 0;
 
-    for (; *hex != '\0'; hex++) {
-      if (*hex >= '0' && *hex <= '9')
-	diff = '0';
-      else if (*hex >= 'a' && *hex <= 'f')
-	diff = 'a' - 10;
-      else if (*hex >= 'A' && *hex <= 'F')
-	diff = 'A' - 10;
-      else {
-	/*
-	** We used to have a syslog() message here, but the case
-	** where we land here because of a ":" happens, er, often.
-	*/
-	break;
-      }
-      n += (*hex - diff);
-      if (isalnum((unsigned char) *(hex + 1)))
-	n <<= 4;
+        for (; *hex != '\0'; hex++) {
+            if (*hex >= '0' && *hex <= '9')
+                diff = '0';
+            else if (*hex >= 'a' && *hex <= 'f')
+                diff = 'a' - 10;
+            else if (*hex >= 'A' && *hex <= 'F')
+                diff = 'A' - 10;
+            else {
+                /*
+                ** We used to have a syslog() message here, but the case
+                ** where we land here because of a ":" happens, er, often.
+                */
+                break;
+            }
+            n += (*hex - diff);
+            if (isalnum((unsigned char) *(hex + 1)))
+                n <<= 4;
+        }
+        return n;
     }
-    return n;
-  }
 }
 
-static void ovreadhead(OVBUFF *ovbuff) {
-  OVBUFFHEAD *x = (OVBUFFHEAD *)ovbuff->bitfield;
-  ovbuff->freeblk = x->freeblk;
-  ovbuff->usedblk = x->usedblk;
-  return;
-}
-
-static void ovflushhead(OVBUFF *ovbuff) {
-  OVBUFFHEAD	rpx;
-
-  /* skip time consuming data conversion and write call */
-  if (ovbuff->dirty < OVBUFF_SYNC_COUNT) {
-    OVBUFFHEAD *x = (OVBUFFHEAD *)ovbuff->bitfield;
-    x->freeblk = ovbuff->freeblk;
-    x->usedblk = ovbuff->usedblk;
+static void
+ovreadhead(OVBUFF *ovbuff)
+{
+    OVBUFFHEAD *x = (OVBUFFHEAD *) ovbuff->bitfield;
+    ovbuff->freeblk = x->freeblk;
+    ovbuff->usedblk = x->usedblk;
     return;
-  }
- 
-  memset(&rpx, 0, sizeof(OVBUFFHEAD));
-  ovbuff->updated = time(NULL);
-  /* Don't use sprintf() or strlcat() directly...
-   * The terminating '\0' causes grief. */
-#if __GNUC__ > 7
-# pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-  strncpy(rpx.magic, OVBUFF_MAGIC, strlen(OVBUFF_MAGIC));
-  strncpy(rpx.path, ovbuff->path, OVBUFFPASIZ);
-  strncpy(rpx.indexa, offt2hex(ovbuff->index, true), OVBUFFLASIZ);
-  strncpy(rpx.lena, offt2hex(ovbuff->len, true), OVBUFFLASIZ);
-  strncpy(rpx.totala, offt2hex(ovbuff->totalblk, true), OVBUFFLASIZ);
-  strncpy(rpx.useda, offt2hex(ovbuff->usedblk, true), OVBUFFLASIZ);
-  strncpy(rpx.freea, offt2hex(ovbuff->freeblk, true), OVBUFFLASIZ);
-  strncpy(rpx.updateda, offt2hex(ovbuff->updated, true), OVBUFFLASIZ);
-#if __GNUC__ > 7
-# pragma GCC diagnostic warning "-Wstringop-truncation"
-#endif
-  rpx.version = OVBUFF_VERSION;
-  rpx.freeblk = ovbuff->freeblk;
-  rpx.usedblk = ovbuff->usedblk;
-  memcpy(ovbuff->bitfield, &rpx, sizeof(OVBUFFHEAD));
-
-  if (pwrite(ovbuff->fd, ovbuff->bitfield, ovbuff->base, 0) != ovbuff->base)
-    syswarn("buffindexed: ovflushhead: cant flush on %s", ovbuff->path);
-  ovbuff->dirty = 0;
-  return;
 }
 
-static bool ovlock(OVBUFF *ovbuff, enum inn_locktype type) {
-  int		ret;
-  smcd_t	*smc = ovbuff->smc;
- 
-  if (type == INN_LOCK_WRITE) {
-    ret = smcGetExclusiveLock(smc);
-    smc->locktype = (int)INN_LOCK_WRITE;
-  } else if (type == INN_LOCK_READ) {
-    ret = smcGetSharedLock(smc);
-    smc->locktype = (int)INN_LOCK_READ;
-  } else if (smc->locktype == (int)INN_LOCK_WRITE) {
-    ret = smcReleaseExclusiveLock(smc);
-  } else {
-    ret = smcReleaseSharedLock(smc);
-  }
-  return (ret == 0);
+static void
+ovflushhead(OVBUFF *ovbuff)
+{
+    OVBUFFHEAD rpx;
+
+    /* skip time consuming data conversion and write call */
+    if (ovbuff->dirty < OVBUFF_SYNC_COUNT) {
+        OVBUFFHEAD *x = (OVBUFFHEAD *) ovbuff->bitfield;
+        x->freeblk = ovbuff->freeblk;
+        x->usedblk = ovbuff->usedblk;
+        return;
+    }
+
+    memset(&rpx, 0, sizeof(OVBUFFHEAD));
+    ovbuff->updated = time(NULL);
+    /* Don't use sprintf() or strlcat() directly...
+     * The terminating '\0' causes grief. */
+#if __GNUC__ > 7
+#    pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+    strncpy(rpx.magic, OVBUFF_MAGIC, strlen(OVBUFF_MAGIC));
+    strncpy(rpx.path, ovbuff->path, OVBUFFPASIZ);
+    strncpy(rpx.indexa, offt2hex(ovbuff->index, true), OVBUFFLASIZ);
+    strncpy(rpx.lena, offt2hex(ovbuff->len, true), OVBUFFLASIZ);
+    strncpy(rpx.totala, offt2hex(ovbuff->totalblk, true), OVBUFFLASIZ);
+    strncpy(rpx.useda, offt2hex(ovbuff->usedblk, true), OVBUFFLASIZ);
+    strncpy(rpx.freea, offt2hex(ovbuff->freeblk, true), OVBUFFLASIZ);
+    strncpy(rpx.updateda, offt2hex(ovbuff->updated, true), OVBUFFLASIZ);
+#if __GNUC__ > 7
+#    pragma GCC diagnostic warning "-Wstringop-truncation"
+#endif
+    rpx.version = OVBUFF_VERSION;
+    rpx.freeblk = ovbuff->freeblk;
+    rpx.usedblk = ovbuff->usedblk;
+    memcpy(ovbuff->bitfield, &rpx, sizeof(OVBUFFHEAD));
+
+    if (pwrite(ovbuff->fd, ovbuff->bitfield, ovbuff->base, 0) != ovbuff->base)
+        syswarn("buffindexed: ovflushhead: cant flush on %s", ovbuff->path);
+    ovbuff->dirty = 0;
+    return;
 }
 
-static bool ovbuffinit_disks(void) {
-  OVBUFF	*ovbuff = ovbufftab;
-  char		buf[64];
-  OVBUFFHEAD	*rpx, dpx;
-  int		fd;
-  unsigned int	i;
-  off_t		tmpo;
-  smcd_t	*smc;
-  static bool	atexit_registered = false;
+static bool
+ovlock(OVBUFF *ovbuff, enum inn_locktype type)
+{
+    int ret;
+    smcd_t *smc = ovbuff->smc;
 
-  /*
-   * Register the exit callback to sync the bitfield to the disk
-   */
-  if (!atexit_registered) {
-    atexit(buffindexed_close);
-    atexit_registered = true;
-  }
-
-  /*
-  ** Discover the state of our ovbuffs.  If any of them are in icky shape,
-  ** duck shamelessly & return false.
-  */
-  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
-    if (ovbuff->fd < 0) {
-      if ((fd = open(ovbuff->path, (ovbuffmode & OV_WRITE) ? O_RDWR : O_RDONLY)) < 0) {
-	syswarn("buffindexed: ERROR opening '%s'", ovbuff->path);
-	return false;
-      } else {
-	fdflag_close_exec(fd, true);
-	ovbuff->fd = fd;
-      }
+    if (type == INN_LOCK_WRITE) {
+        ret = smcGetExclusiveLock(smc);
+        smc->locktype = (int) INN_LOCK_WRITE;
+    } else if (type == INN_LOCK_READ) {
+        ret = smcGetSharedLock(smc);
+        smc->locktype = (int) INN_LOCK_READ;
+    } else if (smc->locktype == (int) INN_LOCK_WRITE) {
+        ret = smcReleaseExclusiveLock(smc);
+    } else {
+        ret = smcReleaseSharedLock(smc);
     }
+    return (ret == 0);
+}
 
-    /* get shared memory buffer */
-    smc = smcGetShmemBuffer(ovbuff->path, ovbuff->base);
-    if (!smc) {
-      /* No shared memory exists, create one. */
-      smc = smcCreateShmemBuffer(ovbuff->path, ovbuff->base);
-      if (!smc) {
-	syswarn("buffindexed: ovinitdisks: cant create shmem for %s len %lu",
-                ovbuff->path, (unsigned long) ovbuff->base);
-	return false;
-      }
-    }
+static bool
+ovbuffinit_disks(void)
+{
+    OVBUFF *ovbuff = ovbufftab;
+    char buf[64];
+    OVBUFFHEAD *rpx, dpx;
+    int fd;
+    unsigned int i;
+    off_t tmpo;
+    smcd_t *smc;
+    static bool atexit_registered = false;
 
-    ovbuff->smc = smc;
-    ovbuff->bitfield = smc->addr;
-    rpx = (OVBUFFHEAD *)ovbuff->bitfield;
-
-    /* lock the buffer */
-    ovlock(ovbuff, (ovbuffmode & OV_WRITE) ? INN_LOCK_WRITE : INN_LOCK_READ);
-
-    if (pread(ovbuff->fd, &dpx, sizeof(OVBUFFHEAD), 0) < 0) {
-      syswarn("buffindexed: cant read from %s", ovbuff->path);
-      ovlock(ovbuff, INN_LOCK_UNLOCK);
-      return false;
+    /*
+     * Register the exit callback to sync the bitfield to the disk
+     */
+    if (!atexit_registered) {
+        atexit(buffindexed_close);
+        atexit_registered = true;
     }
 
     /*
-     * check validity of the disk data
-     */
-    if (strncmp(dpx.magic, OVBUFF_MAGIC, strlen(OVBUFF_MAGIC)) == 0 &&
-      strncmp(dpx.path, ovbuff->path, OVBUFFPASIZ) == 0 ) {
-      strncpy(buf, dpx.indexa, OVBUFFLASIZ);
-      buf[OVBUFFLASIZ] = '\0';
-      i = hex2offt(buf);
-      if (i != ovbuff->index) {
-	warn("buffindexed: Mismatch: index '%d' for buffindexed %s",
-	  i, ovbuff->path);
-	ovlock(ovbuff, INN_LOCK_UNLOCK);
-	return false;
-      }
-      strncpy(buf, dpx.lena, OVBUFFLASIZ);
-      buf[OVBUFFLASIZ] = '\0';
-      tmpo = hex2offt(buf);
-      if (tmpo != ovbuff->len) {
-	warn("buffindexed: Mismatch: read 0x%s length for buffindexed %s",
-	  offt2hex(tmpo, false), ovbuff->path);
-	ovlock(ovbuff, INN_LOCK_UNLOCK);
-	return false;
-      }
+    ** Discover the state of our ovbuffs.  If any of them are in icky shape,
+    ** duck shamelessly & return false.
+    */
+    for (; ovbuff != (OVBUFF *) NULL; ovbuff = ovbuff->next) {
+        if (ovbuff->fd < 0) {
+            if ((fd = open(ovbuff->path,
+                           (ovbuffmode & OV_WRITE) ? O_RDWR : O_RDONLY))
+                < 0) {
+                syswarn("buffindexed: ERROR opening '%s'", ovbuff->path);
+                return false;
+            } else {
+                fdflag_close_exec(fd, true);
+                ovbuff->fd = fd;
+            }
+        }
 
-      /*
-       * compare shared memory with disk data.
-       */
-      if (strncmp(dpx.magic, rpx->magic, strlen(OVBUFF_MAGIC)) != 0 ||
-	strncmp(dpx.path, rpx->path, OVBUFFPASIZ) != 0 ||
-	strncmp(dpx.indexa, rpx->indexa, OVBUFFLASIZ) != 0 ||
-	strncmp(dpx.lena, rpx->lena, OVBUFFLASIZ) != 0 ) {
-	/*
-	 * Load shared memory with disk data.
-	 */
-	if (pread(ovbuff->fd, rpx, ovbuff->base, 0) < 0) {
-	  syswarn("buffindexed: cant read from %s", ovbuff->path);
-	  ovlock(ovbuff, INN_LOCK_UNLOCK);
-	  return false;
-	}
-      }
-      strncpy(buf, dpx.totala, OVBUFFLASIZ);
-      buf[OVBUFFLASIZ] = '\0';
-      ovbuff->totalblk = hex2offt(buf);
+        /* get shared memory buffer */
+        smc = smcGetShmemBuffer(ovbuff->path, ovbuff->base);
+        if (!smc) {
+            /* No shared memory exists, create one. */
+            smc = smcCreateShmemBuffer(ovbuff->path, ovbuff->base);
+            if (!smc) {
+                syswarn("buffindexed: ovinitdisks: cant create shmem for %s "
+                        "len %lu",
+                        ovbuff->path, (unsigned long) ovbuff->base);
+                return false;
+            }
+        }
 
-      if (rpx->version == 0) {
-	/* no binary data available. use character data */
-	strncpy(buf, rpx->useda, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
-	ovbuff->usedblk = hex2offt(buf);
-	strncpy(buf, rpx->freea, OVBUFFLASIZ);
-	buf[OVBUFFLASIZ] = '\0';
-	ovbuff->freeblk = hex2offt(buf);
-      } else {
-	/* use binary data. The first reason is the speed.
-	   and the second reason is the other partner is not
-	   synced.
-	 */
-	ovbuff->usedblk = rpx->usedblk;
-	ovbuff->freeblk = rpx->freeblk;
-      }
-      Needunlink = false;
-    } else {
-      /*
-       * Initialize the contents of the shared memory
-       */
-      memset(rpx, 0, ovbuff->base);
+        ovbuff->smc = smc;
+        ovbuff->bitfield = smc->addr;
+        rpx = (OVBUFFHEAD *) ovbuff->bitfield;
 
-      ovbuff->totalblk = (ovbuff->len - ovbuff->base)/OV_BLOCKSIZE;
-      if (ovbuff->totalblk < 1) {
-	warn("buffindexed: too small length '%lu' for buffindexed %s",
-	    (unsigned long) ovbuff->len, ovbuff->path);
-	ovlock(ovbuff, INN_LOCK_UNLOCK);
-	return false;
-      }
-      ovbuff->usedblk = 0;
-      ovbuff->freeblk = 0;
-      ovbuff->updated = 0;
-      ovbuff->dirty   = OVBUFF_SYNC_COUNT + 1;
-      notice("buffindexed: no magic cookie found for ovbuff %d, initializing",
-             ovbuff->index);
-      ovflushhead(ovbuff);
-    }
+        /* lock the buffer */
+        ovlock(ovbuff,
+               (ovbuffmode & OV_WRITE) ? INN_LOCK_WRITE : INN_LOCK_READ);
+
+        if (pread(ovbuff->fd, &dpx, sizeof(OVBUFFHEAD), 0) < 0) {
+            syswarn("buffindexed: cant read from %s", ovbuff->path);
+            ovlock(ovbuff, INN_LOCK_UNLOCK);
+            return false;
+        }
+
+        /*
+         * check validity of the disk data
+         */
+        if (strncmp(dpx.magic, OVBUFF_MAGIC, strlen(OVBUFF_MAGIC)) == 0
+            && strncmp(dpx.path, ovbuff->path, OVBUFFPASIZ) == 0) {
+            strncpy(buf, dpx.indexa, OVBUFFLASIZ);
+            buf[OVBUFFLASIZ] = '\0';
+            i = hex2offt(buf);
+            if (i != ovbuff->index) {
+                warn("buffindexed: Mismatch: index '%d' for buffindexed %s", i,
+                     ovbuff->path);
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                return false;
+            }
+            strncpy(buf, dpx.lena, OVBUFFLASIZ);
+            buf[OVBUFFLASIZ] = '\0';
+            tmpo = hex2offt(buf);
+            if (tmpo != ovbuff->len) {
+                warn("buffindexed: Mismatch: read 0x%s length for buffindexed "
+                     "%s",
+                     offt2hex(tmpo, false), ovbuff->path);
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                return false;
+            }
+
+            /*
+             * compare shared memory with disk data.
+             */
+            if (strncmp(dpx.magic, rpx->magic, strlen(OVBUFF_MAGIC)) != 0
+                || strncmp(dpx.path, rpx->path, OVBUFFPASIZ) != 0
+                || strncmp(dpx.indexa, rpx->indexa, OVBUFFLASIZ) != 0
+                || strncmp(dpx.lena, rpx->lena, OVBUFFLASIZ) != 0) {
+                /*
+                 * Load shared memory with disk data.
+                 */
+                if (pread(ovbuff->fd, rpx, ovbuff->base, 0) < 0) {
+                    syswarn("buffindexed: cant read from %s", ovbuff->path);
+                    ovlock(ovbuff, INN_LOCK_UNLOCK);
+                    return false;
+                }
+            }
+            strncpy(buf, dpx.totala, OVBUFFLASIZ);
+            buf[OVBUFFLASIZ] = '\0';
+            ovbuff->totalblk = hex2offt(buf);
+
+            if (rpx->version == 0) {
+                /* no binary data available. use character data */
+                strncpy(buf, rpx->useda, OVBUFFLASIZ);
+                buf[OVBUFFLASIZ] = '\0';
+                ovbuff->usedblk = hex2offt(buf);
+                strncpy(buf, rpx->freea, OVBUFFLASIZ);
+                buf[OVBUFFLASIZ] = '\0';
+                ovbuff->freeblk = hex2offt(buf);
+            } else {
+                /* use binary data. The first reason is the speed.
+                   and the second reason is the other partner is not
+                   synced.
+                 */
+                ovbuff->usedblk = rpx->usedblk;
+                ovbuff->freeblk = rpx->freeblk;
+            }
+            Needunlink = false;
+        } else {
+            /*
+             * Initialize the contents of the shared memory
+             */
+            memset(rpx, 0, ovbuff->base);
+
+            ovbuff->totalblk = (ovbuff->len - ovbuff->base) / OV_BLOCKSIZE;
+            if (ovbuff->totalblk < 1) {
+                warn("buffindexed: too small length '%lu' for buffindexed %s",
+                     (unsigned long) ovbuff->len, ovbuff->path);
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                return false;
+            }
+            ovbuff->usedblk = 0;
+            ovbuff->freeblk = 0;
+            ovbuff->updated = 0;
+            ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
+            notice("buffindexed: no magic cookie found for ovbuff %d, "
+                   "initializing",
+                   ovbuff->index);
+            ovflushhead(ovbuff);
+        }
 #ifdef OV_DEBUG
-    ovbuff->trace = xcalloc(ovbuff->totalblk, sizeof(struct ov_trace_array));
+        ovbuff->trace =
+            xcalloc(ovbuff->totalblk, sizeof(struct ov_trace_array));
 #endif /* OV_DEBUG */
-    ovlock(ovbuff, INN_LOCK_UNLOCK);
-  }
-  return true;
-}
-
-static int ovusedblock(OVBUFF *ovbuff, int blocknum, bool set_operation, bool setbitvalue) {
-  off_t         longoffset;
-  int		bitoffset;	/* From the 'left' side of the long */
-  ULONG		bitlong, mask;
-
-  longoffset = blocknum / (sizeof(long) * 8);
-  bitoffset = blocknum % (sizeof(long) * 8);
-  bitlong = *((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long))
-		+ longoffset);
-  if (set_operation) {
-    if (setbitvalue) {
-      mask = onarray[bitoffset];
-      bitlong |= mask;
-    } else {
-      mask = offarray[bitoffset];
-      bitlong &= mask;
+        ovlock(ovbuff, INN_LOCK_UNLOCK);
     }
-    *((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long))
-      + longoffset) = bitlong;
-    return 2;	/* XXX Clean up return semantics */
-  }
-  /* It's a read operation */
-  mask = onarray[bitoffset];
-  /* return bitlong & mask; doesn't work if sizeof(ulong) > sizeof(int) */
-  if (bitlong & mask) return 1; else return 0;
+    return true;
 }
 
-static void ovnextblock(OVBUFF *ovbuff) {
-  int		i, j, last, lastbit, left;
-  ULONG		*table;
+static int
+ovusedblock(OVBUFF *ovbuff, int blocknum, bool set_operation, bool setbitvalue)
+{
+    off_t longoffset;
+    int bitoffset; /* From the 'left' side of the long */
+    ULONG bitlong, mask;
 
-  last = ovbuff->totalblk/(sizeof(long) * 8);
-  if ((left = ovbuff->totalblk % (sizeof(long) * 8)) != 0) {
-    last++;
-  }
-
-  table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
-
-  /* For tighter placement look for unused block from the beginning on
-   * every run. */
-  for (i = 0 ; i < last ; i++) {
-    if ((table[i] ^ ~0) != 0)
-      break;
-  }
-  if (i == last) {
-    ovbuff->freeblk = ovbuff->totalblk;
-    return;
-  }
-
-  if ((i - 1) >= 0 && (last - 1 == i) && left != 0) {
-    lastbit = left;
-  } else {
-    lastbit = sizeof(long) * 8;
-  }
-  for (j = 0 ; j < lastbit ; j++) {
-    if ((table[i] & onarray[j]) == 0)
-      break;
-  }
-  if (j == lastbit) {
-    ovbuff->freeblk = ovbuff->totalblk;
-    return;
-  }
-  ovbuff->freeblk = i * sizeof(long) * 8 + j;
-  ovbuff->nextchunk = i + 1;
-  if (i == last)
-    ovbuff->nextchunk = 0;
-  return;
+    longoffset = blocknum / (sizeof(long) * 8);
+    bitoffset = blocknum % (sizeof(long) * 8);
+    bitlong = *((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long))
+                + longoffset);
+    if (set_operation) {
+        if (setbitvalue) {
+            mask = onarray[bitoffset];
+            bitlong |= mask;
+        } else {
+            mask = offarray[bitoffset];
+            bitlong &= mask;
+        }
+        *((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long))
+          + longoffset) = bitlong;
+        return 2; /* XXX Clean up return semantics */
+    }
+    /* It's a read operation */
+    mask = onarray[bitoffset];
+    /* return bitlong & mask; doesn't work if sizeof(ulong) > sizeof(int) */
+    if (bitlong & mask)
+        return 1;
+    else
+        return 0;
 }
 
-static OVBUFF *getovbuff(OV ov) {
-  OVBUFF	*ovbuff = ovbufftab;
-  for (; ovbuff != NULL; ovbuff = ovbuff->next) {
-    if (ovbuff->index == (unsigned int) ov.index)
-      return ovbuff;
-  }
-  return NULL;
+static void
+ovnextblock(OVBUFF *ovbuff)
+{
+    int i, j, last, lastbit, left;
+    ULONG *table;
+
+    last = ovbuff->totalblk / (sizeof(long) * 8);
+    if ((left = ovbuff->totalblk % (sizeof(long) * 8)) != 0) {
+        last++;
+    }
+
+    table = ((ULONG *) ovbuff->bitfield + (OV_BEFOREBITF / sizeof(long)));
+
+    /* For tighter placement look for unused block from the beginning on
+     * every run. */
+    for (i = 0; i < last; i++) {
+        if ((table[i] ^ ~0) != 0)
+            break;
+    }
+    if (i == last) {
+        ovbuff->freeblk = ovbuff->totalblk;
+        return;
+    }
+
+    if ((i - 1) >= 0 && (last - 1 == i) && left != 0) {
+        lastbit = left;
+    } else {
+        lastbit = sizeof(long) * 8;
+    }
+    for (j = 0; j < lastbit; j++) {
+        if ((table[i] & onarray[j]) == 0)
+            break;
+    }
+    if (j == lastbit) {
+        ovbuff->freeblk = ovbuff->totalblk;
+        return;
+    }
+    ovbuff->freeblk = i * sizeof(long) * 8 + j;
+    ovbuff->nextchunk = i + 1;
+    if (i == last)
+        ovbuff->nextchunk = 0;
+    return;
+}
+
+static OVBUFF *
+getovbuff(OV ov)
+{
+    OVBUFF *ovbuff = ovbufftab;
+    for (; ovbuff != NULL; ovbuff = ovbuff->next) {
+        if (ovbuff->index == (unsigned int) ov.index)
+            return ovbuff;
+    }
+    return NULL;
 }
 
 #ifdef OV_DEBUG
-static OV ovblocknew(GROUPENTRY *ge) {
+static OV
+ovblocknew(GROUPENTRY *ge)
+{
 #else
-static OV ovblocknew(void) {
+static OV
+ovblocknew(void)
+{
 #endif /* OV_DEBUG */
-  OVBUFF	*ovbuff;
-  OV		ov;
-  bool          done = false;
+    OVBUFF *ovbuff;
+    OV ov;
+    bool done = false;
 #ifdef OV_DEBUG
-  int		recno;
-  struct ov_trace_array *trace;
+    int recno;
+    struct ov_trace_array *trace;
 #endif /* OV_DEBUG */
 
-  if (ovbuffnext == NULL)
-    ovbuffnext = ovbufftab;
+    if (ovbuffnext == NULL)
+        ovbuffnext = ovbufftab;
 
-  /*
-   * We will try to recover broken overview possibly due to unsync.
-   * The recovering is inactive for OV_DEBUG mode.
-   */
+    /*
+     * We will try to recover broken overview possibly due to unsync.
+     * The recovering is inactive for OV_DEBUG mode.
+     */
 
 retry:
-  for (ovbuff = ovbuffnext ; ovbuff != (OVBUFF *)NULL ; ovbuff = ovbuff->next) {
-    ovlock(ovbuff, INN_LOCK_WRITE);
-    ovreadhead(ovbuff);
-    if (ovbuff->totalblk != ovbuff->usedblk && ovbuff->freeblk == ovbuff->totalblk) {
-      ovnextblock(ovbuff);
+    for (ovbuff = ovbuffnext; ovbuff != (OVBUFF *) NULL;
+         ovbuff = ovbuff->next) {
+        ovlock(ovbuff, INN_LOCK_WRITE);
+        ovreadhead(ovbuff);
+        if (ovbuff->totalblk != ovbuff->usedblk
+            && ovbuff->freeblk == ovbuff->totalblk) {
+            ovnextblock(ovbuff);
+        }
+        if (ovbuff->totalblk == ovbuff->usedblk
+            || ovbuff->freeblk == ovbuff->totalblk) {
+            /* no space left for this ovbuff */
+            ovlock(ovbuff, INN_LOCK_UNLOCK);
+            continue;
+        }
+        break;
     }
-    if (ovbuff->totalblk == ovbuff->usedblk || ovbuff->freeblk == ovbuff->totalblk) {
-      /* no space left for this ovbuff */
-      ovlock(ovbuff, INN_LOCK_UNLOCK);
-      continue;
+    if (ovbuff == NULL) {
+        for (ovbuff = ovbufftab; ovbuff != ovbuffnext; ovbuff = ovbuff->next) {
+            ovlock(ovbuff, INN_LOCK_WRITE);
+            ovreadhead(ovbuff);
+            if (ovbuff->totalblk == ovbuff->usedblk
+                || ovbuff->freeblk == ovbuff->totalblk) {
+                /* no space left for this ovbuff */
+                ovlock(ovbuff, INN_LOCK_UNLOCK);
+                continue;
+            }
+            break;
+        }
+        if (ovbuff == ovbuffnext) {
+            Nospace = true;
+            return ovnull;
+        }
     }
-    break;
-  }
-  if (ovbuff == NULL) {
-    for (ovbuff = ovbufftab ; ovbuff != ovbuffnext ; ovbuff = ovbuff->next) {
-      ovlock(ovbuff, INN_LOCK_WRITE);
-      ovreadhead(ovbuff);
-      if (ovbuff->totalblk == ovbuff->usedblk || ovbuff->freeblk == ovbuff->totalblk) {
-	/* no space left for this ovbuff */
-	ovlock(ovbuff, INN_LOCK_UNLOCK);
-	continue;
-      }
-      break;
-    }
-    if (ovbuff == ovbuffnext) {
-      Nospace = true;
-      return ovnull;
-    }
-  }
 #ifdef OV_DEBUG
-  recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
-  if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
-    warn("buffindexed: 0x%08x trying to occupy new block(%d, %d), but already occupied", recno, ovbuff->index, ovbuff->freeblk);
-    buffindexed_close();
-    abort();
-  }
-  trace = &ovbuff->trace[ovbuff->freeblk];
-  if (trace->ov_trace == NULL) {
-    trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
-    trace->max = OV_TRACENUM;
-  } else if (trace->cur + 1 == trace->max) {
-    trace->max += OV_TRACENUM;
-    trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
-    memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
-  }
-  if (trace->ov_trace[trace->cur].occupied != 0) {
-    trace->cur++;
-  }
-  trace->ov_trace[trace->cur].gloc.recno = recno;
-  trace->ov_trace[trace->cur].occupied = time(NULL);
+    recno = ((char *) ge - (char *) &GROUPentries[0]) / sizeof(GROUPENTRY);
+    if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
+        warn("buffindexed: 0x%08x trying to occupy new block(%d, %d), but "
+             "already occupied",
+             recno, ovbuff->index, ovbuff->freeblk);
+        buffindexed_close();
+        abort();
+    }
+    trace = &ovbuff->trace[ovbuff->freeblk];
+    if (trace->ov_trace == NULL) {
+        trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
+        trace->max = OV_TRACENUM;
+    } else if (trace->cur + 1 == trace->max) {
+        trace->max += OV_TRACENUM;
+        trace->ov_trace =
+            xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
+        memset(&trace->ov_trace[trace->cur], '\0',
+               sizeof(struct ov_trace) * (trace->max - trace->cur));
+    }
+    if (trace->ov_trace[trace->cur].occupied != 0) {
+        trace->cur++;
+    }
+    trace->ov_trace[trace->cur].gloc.recno = recno;
+    trace->ov_trace[trace->cur].occupied = time(NULL);
 #endif /* OV_DEBUG */
 
-  ov.index = ovbuff->index;
-  ov.blocknum = ovbuff->freeblk;
- 
+    ov.index = ovbuff->index;
+    ov.blocknum = ovbuff->freeblk;
+
 #ifndef OV_DEBUG
-  if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
-      notice("buffindexed: fixing invalid free block(%d, %d).",
-	     ovbuff->index, ovbuff->freeblk);
-  } else
-      done = true;
+    if (ovusedblock(ovbuff, ovbuff->freeblk, false, true)) {
+        notice("buffindexed: fixing invalid free block(%d, %d).",
+               ovbuff->index, ovbuff->freeblk);
+    } else
+        done = true;
 #endif /* OV_DEBUG */
 
-  /* mark it as allocated */
-  ovusedblock(ovbuff, ov.blocknum, true, true);
+    /* mark it as allocated */
+    ovusedblock(ovbuff, ov.blocknum, true, true);
 
-  ovnextblock(ovbuff);
-  ovbuff->usedblk++;
-  ovbuff->dirty++;
-  ovflushhead(ovbuff);
-  ovlock(ovbuff, INN_LOCK_UNLOCK);
-  ovbuffnext = ovbuff->next;
-  if (ovbuffnext == NULL)
-    ovbuffnext = ovbufftab;
+    ovnextblock(ovbuff);
+    ovbuff->usedblk++;
+    ovbuff->dirty++;
+    ovflushhead(ovbuff);
+    ovlock(ovbuff, INN_LOCK_UNLOCK);
+    ovbuffnext = ovbuff->next;
+    if (ovbuffnext == NULL)
+        ovbuffnext = ovbufftab;
 
-  if (!done)
-    goto retry;
+    if (!done)
+        goto retry;
 
-  return ov;
+    return ov;
 }
 
 #ifdef OV_DEBUG
-static void ovblockfree(OV ov, GROUPENTRY *ge) {
+static void
+ovblockfree(OV ov, GROUPENTRY *ge)
+{
 #else
-static void ovblockfree(OV ov) {
+static void
+ovblockfree(OV ov)
+{
 #endif /* OV_DEBUG */
-  OVBUFF	*ovbuff;
+    OVBUFF *ovbuff;
 #ifdef OV_DEBUG
-  int		recno;
-  struct ov_trace_array *trace;
+    int recno;
+    struct ov_trace_array *trace;
 #endif /* OV_DEBUG */
 
-  if (ov.index == NULLINDEX)
-    return;
-  if ((ovbuff = getovbuff(ov)) == NULL)
-    return;
-  ovlock(ovbuff, INN_LOCK_WRITE);
+    if (ov.index == NULLINDEX)
+        return;
+    if ((ovbuff = getovbuff(ov)) == NULL)
+        return;
+    ovlock(ovbuff, INN_LOCK_WRITE);
 #ifdef OV_DEBUG
-  recno = ((char *)ge - (char *)&GROUPentries[0])/sizeof(GROUPENTRY);
-  if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
-    warn("buffindexed: 0x%08x trying to free block(%d, %d), but already freed", recno, ov.index, ov.blocknum);
-    buffindexed_close();
-    abort();
-  }
-  trace = &ovbuff->trace[ov.blocknum];
-  if (trace->ov_trace == NULL) {
-    trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
-    trace->max = OV_TRACENUM;
-  } else if (trace->cur + 1 == trace->max) {
-    trace->max += OV_TRACENUM;
-    trace->ov_trace = xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
-    memset(&trace->ov_trace[trace->cur], '\0', sizeof(struct ov_trace) * (trace->max - trace->cur));
-  }
-  if (trace->ov_trace[trace->cur].freed != 0) {
+    recno = ((char *) ge - (char *) &GROUPentries[0]) / sizeof(GROUPENTRY);
+    if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
+        warn("buffindexed: 0x%08x trying to free block(%d, %d), but already "
+             "freed",
+             recno, ov.index, ov.blocknum);
+        buffindexed_close();
+        abort();
+    }
+    trace = &ovbuff->trace[ov.blocknum];
+    if (trace->ov_trace == NULL) {
+        trace->ov_trace = xcalloc(OV_TRACENUM, sizeof(struct ov_trace));
+        trace->max = OV_TRACENUM;
+    } else if (trace->cur + 1 == trace->max) {
+        trace->max += OV_TRACENUM;
+        trace->ov_trace =
+            xrealloc(trace->ov_trace, trace->max * sizeof(struct ov_trace));
+        memset(&trace->ov_trace[trace->cur], '\0',
+               sizeof(struct ov_trace) * (trace->max - trace->cur));
+    }
+    if (trace->ov_trace[trace->cur].freed != 0) {
+        trace->cur++;
+    }
+    trace->ov_trace[trace->cur].freed = time(NULL);
+    trace->ov_trace[trace->cur].gloc.recno = recno;
     trace->cur++;
-  }
-  trace->ov_trace[trace->cur].freed = time(NULL);
-  trace->ov_trace[trace->cur].gloc.recno = recno;
-  trace->cur++;
 #endif /* OV_DEBUG */
 
 #ifndef OV_DEBUG
-  if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
-    notice("buffindexed: trying to free block(%d, %d), but already freed.",
-	   ov.index, ov.blocknum);
-  }
+    if (!ovusedblock(ovbuff, ov.blocknum, false, false)) {
+        notice("buffindexed: trying to free block(%d, %d), but already freed.",
+               ov.index, ov.blocknum);
+    }
 #endif
 
-  ovusedblock(ovbuff, ov.blocknum, true, false);
-  ovreadhead(ovbuff);
-  if (ovbuff->freeblk == ovbuff->totalblk)
-    ovbuff->freeblk = ov.blocknum;
-  ovbuff->usedblk--;
-  ovbuff->dirty++;
-  ovflushhead(ovbuff);
-  ovlock(ovbuff, INN_LOCK_UNLOCK);
-  return;
+    ovusedblock(ovbuff, ov.blocknum, true, false);
+    ovreadhead(ovbuff);
+    if (ovbuff->freeblk == ovbuff->totalblk)
+        ovbuff->freeblk = ov.blocknum;
+    ovbuff->usedblk--;
+    ovbuff->dirty++;
+    ovflushhead(ovbuff);
+    ovlock(ovbuff, INN_LOCK_UNLOCK);
+    return;
 }
 
-bool buffindexed_open(int mode) {
-  char		*groupfn;
-  struct stat	sb;
-  int		i, flag = 0;
-  static int	uninitialized = 1;
-  ULONG		on, off;
+bool
+buffindexed_open(int mode)
+{
+    char *groupfn;
+    struct stat sb;
+    int i, flag = 0;
+    static int uninitialized = 1;
+    ULONG on, off;
 
-  if (uninitialized) {
-    on = 1;
-    off = on;
-    off ^= ULONG_MAX;
-    for (i = (longsize * 8) - 1; i >= 0; i--) {
-      onarray[i] = on;
-      offarray[i] = off;
-      on <<= 1;
-      off = on;
-      off ^= ULONG_MAX;
+    if (uninitialized) {
+        on = 1;
+        off = on;
+        off ^= ULONG_MAX;
+        for (i = (longsize * 8) - 1; i >= 0; i--) {
+            onarray[i] = on;
+            offarray[i] = off;
+            on <<= 1;
+            off = on;
+            off ^= ULONG_MAX;
+        }
+        uninitialized = 0;
     }
-    uninitialized = 0;
-  }
-  ovbuffmode = mode;
-  if (pagesize == 0) {
-    pagesize = sysconf(_SC_PAGESIZE);
-    if (pagesize == -1) {
-      syswarn("buffindexed: sysconf(_SC_PAGESIZE) failed");
-      pagesize = 0;
-      return false;
+    ovbuffmode = mode;
+    if (pagesize == 0) {
+        pagesize = sysconf(_SC_PAGESIZE);
+        if (pagesize == -1) {
+            syswarn("buffindexed: sysconf(_SC_PAGESIZE) failed");
+            pagesize = 0;
+            return false;
+        }
+        if (pagesize > OV_HDR_MIN_PAGESIZE)
+            hdr_pagesize = pagesize;
+        if ((hdr_pagesize % pagesize) != 0) {
+            warn(
+                "buffindexed: hdr_pagesize (%ld) is not a multiple of pagesize"
+                " (%ld)",
+                hdr_pagesize, pagesize);
+            return false;
+        }
     }
-    if (pagesize > OV_HDR_MIN_PAGESIZE)
-      hdr_pagesize = pagesize;
-    if ((hdr_pagesize % pagesize) != 0) {
-      warn("buffindexed: hdr_pagesize (%ld) is not a multiple of pagesize"
-           " (%ld)", hdr_pagesize, pagesize);
-      return false;
+    memset(&groupdatablock, '\0', sizeof(groupdatablock));
+    if (!ovbuffread_config()) {
+        return false;
     }
-  }
-  memset(&groupdatablock, '\0', sizeof(groupdatablock));
-  if (!ovbuffread_config()) {
-    return false;
-  }
-  Needunlink = true;
-  if (!ovbuffinit_disks()) {
-    return false;
-  }
+    Needunlink = true;
+    if (!ovbuffinit_disks()) {
+        return false;
+    }
 
-  groupfn = concatpath(innconf->pathdb, "group.index");
-  if (Needunlink && unlink(groupfn) == 0) {
-    notice("buffindexed: all buffers are brandnew, unlink '%s'", groupfn);
-  }
-  GROUPfd = open(groupfn, (ovbuffmode & OV_WRITE) ? O_RDWR | O_CREAT : O_RDONLY, 0660);
-  if (GROUPfd < 0) {
-    syswarn("buffindexed: Could not create %s", groupfn);
+    groupfn = concatpath(innconf->pathdb, "group.index");
+    if (Needunlink && unlink(groupfn) == 0) {
+        notice("buffindexed: all buffers are brandnew, unlink '%s'", groupfn);
+    }
+    GROUPfd = open(
+        groupfn, (ovbuffmode & OV_WRITE) ? O_RDWR | O_CREAT : O_RDONLY, 0660);
+    if (GROUPfd < 0) {
+        syswarn("buffindexed: Could not create %s", groupfn);
+        free(groupfn);
+        return false;
+    }
+
+    if (fstat(GROUPfd, &sb) < 0) {
+        syswarn("buffindexed: Could not fstat %s", groupfn);
+        free(groupfn);
+        close(GROUPfd);
+        return false;
+    }
+    if (sb.st_size > (off_t) sizeof(GROUPHEADER)) {
+        if (mode & OV_READ)
+            flag |= PROT_READ;
+        if (mode & OV_WRITE) {
+            /*
+             * Note: below mapping of groupheader won't work unless we have
+             * both PROT_READ and PROT_WRITE perms.
+             */
+            flag |= PROT_WRITE | PROT_READ;
+        }
+        GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
+        GROUPheader =
+            mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED, GROUPfd, 0);
+        if (GROUPheader == MAP_FAILED) {
+            syswarn("buffindexed: Could not mmap %s in buffindexed_open",
+                    groupfn);
+            free(groupfn);
+            close(GROUPfd);
+            return false;
+        }
+        GROUPentries = (void *) &GROUPheader[1];
+    } else {
+        GROUPcount = 0;
+        if (!GROUPexpand(mode)) {
+            free(groupfn);
+            close(GROUPfd);
+            return false;
+        }
+    }
+    fdflag_close_exec(GROUPfd, true);
+
     free(groupfn);
-    return false;
-  }
+    Cutofflow = false;
 
-  if (fstat(GROUPfd, &sb) < 0) {
-    syswarn("buffindexed: Could not fstat %s", groupfn);
-    free(groupfn);
-    close(GROUPfd);
-    return false;
-  }
-  if (sb.st_size > (off_t) sizeof(GROUPHEADER)) {
-    if (mode & OV_READ)
-      flag |= PROT_READ;
-    if (mode & OV_WRITE) {
-      /*
-       * Note: below mapping of groupheader won't work unless we have
-       * both PROT_READ and PROT_WRITE perms.
-       */
-      flag |= PROT_WRITE|PROT_READ;
-    }
-    GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-    GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
-		       GROUPfd, 0);
-    if (GROUPheader == MAP_FAILED) {
-      syswarn("buffindexed: Could not mmap %s in buffindexed_open", groupfn);
-      free(groupfn);
-      close(GROUPfd);
-      return false;
-    }
-    GROUPentries = (void *) &GROUPheader[1];
-  } else {
-    GROUPcount = 0;
-    if (!GROUPexpand(mode)) {
-      free(groupfn);
-      close(GROUPfd);
-      return false;
-    }
-  }
-  fdflag_close_exec(GROUPfd, true);
-
-  free(groupfn);
-  Cutofflow = false;
-
-  return true;
+    return true;
 }
 
 static GROUPLOC
 GROUPfind(const char *group, bool Ignoredeleted)
 {
-  HASH		grouphash;
-  unsigned int	i;
-  GROUPLOC	loc;
+    HASH grouphash;
+    unsigned int i;
+    GROUPLOC loc;
 
-  grouphash = Hash(group, strlen(group));
-  memcpy(&i, &grouphash, sizeof(i));
+    grouphash = Hash(group, strlen(group));
+    memcpy(&i, &grouphash, sizeof(i));
 
-  loc = GROUPheader->hash[i % GROUPHEADERHASHSIZE];
-  GROUPremapifneeded(loc);
+    loc = GROUPheader->hash[i % GROUPHEADERHASHSIZE];
+    GROUPremapifneeded(loc);
 
-  while (!GROUPLOCempty(loc)) {
-    if (GROUPentries[loc.recno].deleted == 0 || Ignoredeleted) {
-      if (memcmp(&grouphash, &GROUPentries[loc.recno].hash, sizeof(HASH)) == 0) {
-	return loc;
-      }
+    while (!GROUPLOCempty(loc)) {
+        if (GROUPentries[loc.recno].deleted == 0 || Ignoredeleted) {
+            if (memcmp(&grouphash, &GROUPentries[loc.recno].hash, sizeof(HASH))
+                == 0) {
+                return loc;
+            }
+        }
+        loc = GROUPentries[loc.recno].next;
     }
-    loc = GROUPentries[loc.recno].next;
-  }
-  return GROUPemptyloc;
+    return GROUPemptyloc;
 }
 
 bool
 buffindexed_groupstats(const char *group, int *lo, int *hi, int *count,
                        int *flag)
 {
-  GROUPLOC	gloc;
+    GROUPLOC gloc;
 
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return false;
-  }
-  GROUPlock(gloc, INN_LOCK_READ);
-  if (lo != NULL)
-    *lo = GROUPentries[gloc.recno].low;
-  if (hi != NULL)
-    *hi = GROUPentries[gloc.recno].high;
-  if (count != NULL)
-    *count = GROUPentries[gloc.recno].count;
-  if (flag != NULL)
-    *flag = GROUPentries[gloc.recno].flag;
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
-  return true;
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        return false;
+    }
+    GROUPlock(gloc, INN_LOCK_READ);
+    if (lo != NULL)
+        *lo = GROUPentries[gloc.recno].low;
+    if (hi != NULL)
+        *hi = GROUPentries[gloc.recno].high;
+    if (count != NULL)
+        *count = GROUPentries[gloc.recno].count;
+    if (flag != NULL)
+        *flag = GROUPentries[gloc.recno].flag;
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
+    return true;
 }
 
-static void setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next, ARTNUM lo, ARTNUM hi) {
-  ge->hash = grouphash;
-  if (lo != 0)
-    ge->low = lo;
-  ge->high = hi;
-  ge->expired = ge->deleted = ge->count = 0;
-  ge->flag = *flag;
-  ge->baseindex = ge->curindex = ge->curdata = ovnull;
-  ge->curindexoffset = ge->curoffset = 0;
-  ge->next = next;
+static void
+setinitialge(GROUPENTRY *ge, HASH grouphash, char *flag, GROUPLOC next,
+             ARTNUM lo, ARTNUM hi)
+{
+    ge->hash = grouphash;
+    if (lo != 0)
+        ge->low = lo;
+    ge->high = hi;
+    ge->expired = ge->deleted = ge->count = 0;
+    ge->flag = *flag;
+    ge->baseindex = ge->curindex = ge->curdata = ovnull;
+    ge->curindexoffset = ge->curoffset = 0;
+    ge->next = next;
 }
 
 bool
 buffindexed_groupadd(const char *group, ARTNUM lo, ARTNUM hi, char *flag)
 {
-  unsigned int	i;
-  HASH		grouphash;
-  GROUPLOC	gloc;
-  GROUPENTRY	*ge;
+    unsigned int i;
+    HASH grouphash;
+    GROUPLOC gloc;
+    GROUPENTRY *ge;
 #ifdef OV_DEBUG
-  struct ov_name_table	*ntp;
+    struct ov_name_table *ntp;
 #endif /* OV_DEBUG */
 
-  gloc = GROUPfind(group, true);
-  if (!GROUPLOCempty(gloc)) {
-    ge = &GROUPentries[gloc.recno];
-    if (GROUPentries[gloc.recno].deleted != 0) {
-      grouphash = Hash(group, strlen(group));
-      setinitialge(ge, grouphash, flag, ge->next, lo, hi);
-    } else {
-      ge->flag = *flag;
+    gloc = GROUPfind(group, true);
+    if (!GROUPLOCempty(gloc)) {
+        ge = &GROUPentries[gloc.recno];
+        if (GROUPentries[gloc.recno].deleted != 0) {
+            grouphash = Hash(group, strlen(group));
+            setinitialge(ge, grouphash, flag, ge->next, lo, hi);
+        } else {
+            ge->flag = *flag;
+        }
+        return true;
     }
-    return true;
-  }
-  grouphash = Hash(group, strlen(group));
-  memcpy(&i, &grouphash, sizeof(i));
-  i = i % GROUPHEADERHASHSIZE;
-  GROUPlockhash(INN_LOCK_WRITE);
-  gloc = GROUPnewnode();
-  ge = &GROUPentries[gloc.recno];
-  setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
-  GROUPheader->hash[i] = gloc;
+    grouphash = Hash(group, strlen(group));
+    memcpy(&i, &grouphash, sizeof(i));
+    i = i % GROUPHEADERHASHSIZE;
+    GROUPlockhash(INN_LOCK_WRITE);
+    gloc = GROUPnewnode();
+    ge = &GROUPentries[gloc.recno];
+    setinitialge(ge, grouphash, flag, GROUPheader->hash[i], lo, hi);
+    GROUPheader->hash[i] = gloc;
 #ifdef OV_DEBUG
-  ntp = xmalloc(sizeof(struct ov_name_table));
-  memset(ntp, '\0', sizeof(struct ov_name_table));
-  ntp->name = xstrdup(group);
-  ntp->recno = gloc.recno;
-  if (name_table == NULL)
-    name_table = ntp;
-  else {
-    ntp->next = name_table;
-    name_table = ntp;
-  }
+    ntp = xmalloc(sizeof(struct ov_name_table));
+    memset(ntp, '\0', sizeof(struct ov_name_table));
+    ntp->name = xstrdup(group);
+    ntp->recno = gloc.recno;
+    if (name_table == NULL)
+        name_table = ntp;
+    else {
+        ntp->next = name_table;
+        name_table = ntp;
+    }
 #endif /* OV_DEBUG */
-  GROUPlockhash(INN_LOCK_UNLOCK);
-  return true;
+    GROUPlockhash(INN_LOCK_UNLOCK);
+    return true;
 }
 
-static off_t GROUPfilesize(int count) {
-  return ((off_t) count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
+static off_t
+GROUPfilesize(int count)
+{
+    return ((off_t) count * sizeof(GROUPENTRY)) + sizeof(GROUPHEADER);
 }
 
 /* Check if the given GROUPLOC refers to GROUPENTRY that we don't have mmap'ed,
 ** if so then see if the file has been grown by another writer and remmap
 */
-static bool GROUPremapifneeded(GROUPLOC loc) {
-  struct stat	sb;
+static bool
+GROUPremapifneeded(GROUPLOC loc)
+{
+    struct stat sb;
 
-  if (loc.recno < GROUPcount)
-    return true;
+    if (loc.recno < GROUPcount)
+        return true;
 
-  if (fstat(GROUPfd, &sb) < 0)
-    return false;
+    if (fstat(GROUPfd, &sb) < 0)
+        return false;
 
-  if (GROUPfilesize(GROUPcount) >= sb.st_size)
-    return true;
+    if (GROUPfilesize(GROUPcount) >= sb.st_size)
+        return true;
 
-  if (GROUPheader) {
-    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syswarn("buffindexed: Could not munmap group.index in GROUPremapifneeded");
-      return false;
+    if (GROUPheader) {
+        if (munmap((void *) GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+            syswarn("buffindexed: Could not munmap group.index in "
+                    "GROUPremapifneeded");
+            return false;
+        }
     }
-  }
 
-  GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
-  GROUPheader = mmap(0, GROUPfilesize(GROUPcount), PROT_READ | PROT_WRITE,
-		     MAP_SHARED, GROUPfd, 0);
-  if (GROUPheader == MAP_FAILED) {
-    syswarn("buffindexed: Could not mmap group.index in GROUPremapifneeded");
-    return false;
-  }
-  GROUPentries = (void *) &GROUPheader[1];
-  return true;
+    GROUPcount = (sb.st_size - sizeof(GROUPHEADER)) / sizeof(GROUPENTRY);
+    GROUPheader = mmap(0, GROUPfilesize(GROUPcount), PROT_READ | PROT_WRITE,
+                       MAP_SHARED, GROUPfd, 0);
+    if (GROUPheader == MAP_FAILED) {
+        syswarn(
+            "buffindexed: Could not mmap group.index in GROUPremapifneeded");
+        return false;
+    }
+    GROUPentries = (void *) &GROUPheader[1];
+    return true;
 }
 
-/* This function does not need to lock because it's callers are expected to do so */
-static bool GROUPexpand(int mode) {
-  int	i;
-  int	flag = 0;
+/* This function does not need to lock because it's callers are expected to do
+ * so */
+static bool
+GROUPexpand(int mode)
+{
+    int i;
+    int flag = 0;
 
-  if (GROUPheader) {
-    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syswarn("buffindexed: Could not munmap group.index in GROUPexpand");
-      return false;
+    if (GROUPheader) {
+        if (munmap((void *) GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+            syswarn(
+                "buffindexed: Could not munmap group.index in GROUPexpand");
+            return false;
+        }
     }
-  }
-  GROUPcount += 1024;
-  if (ftruncate(GROUPfd, GROUPfilesize(GROUPcount)) < 0) {
-    syswarn("buffindexed: Could not extend group.index");
-    return false;
-  }
-  if (mode & OV_READ)
-    flag |= PROT_READ;
-  if (mode & OV_WRITE) {
-    /*
-     * Note: below check of magic won't work unless we have both PROT_READ
-     * and PROT_WRITE perms.
-     */
-    flag |= PROT_WRITE|PROT_READ;
-  }
-  GROUPheader = mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED,
-		     GROUPfd, 0);
-  if (GROUPheader == MAP_FAILED) {
-    syswarn("buffindexed: Could not mmap group.index in GROUPexpand");
-    return false;
-  }
-  GROUPentries = (void *) &GROUPheader[1];
-  if (GROUPheader->magic != GROUPHEADERMAGIC) {
-    GROUPheader->magic = GROUPHEADERMAGIC;
-    GROUPLOCclear(&GROUPheader->freelist);
-    for (i = 0; i < GROUPHEADERHASHSIZE; i++)
-      GROUPLOCclear(&GROUPheader->hash[i]);
-  }
-  /* Walk the new entries from the back to the front, adding them to the freelist */
-  for (i = GROUPcount - 1; (GROUPcount - 1024) <= i; i--) {
-    GROUPentries[i].next = GROUPheader->freelist;
-    GROUPheader->freelist.recno = i;
-  }
-  return true;
+    GROUPcount += 1024;
+    if (ftruncate(GROUPfd, GROUPfilesize(GROUPcount)) < 0) {
+        syswarn("buffindexed: Could not extend group.index");
+        return false;
+    }
+    if (mode & OV_READ)
+        flag |= PROT_READ;
+    if (mode & OV_WRITE) {
+        /*
+         * Note: below check of magic won't work unless we have both PROT_READ
+         * and PROT_WRITE perms.
+         */
+        flag |= PROT_WRITE | PROT_READ;
+    }
+    GROUPheader =
+        mmap(0, GROUPfilesize(GROUPcount), flag, MAP_SHARED, GROUPfd, 0);
+    if (GROUPheader == MAP_FAILED) {
+        syswarn("buffindexed: Could not mmap group.index in GROUPexpand");
+        return false;
+    }
+    GROUPentries = (void *) &GROUPheader[1];
+    if (GROUPheader->magic != GROUPHEADERMAGIC) {
+        GROUPheader->magic = GROUPHEADERMAGIC;
+        GROUPLOCclear(&GROUPheader->freelist);
+        for (i = 0; i < GROUPHEADERHASHSIZE; i++)
+            GROUPLOCclear(&GROUPheader->hash[i]);
+    }
+    /* Walk the new entries from the back to the front, adding them to the
+     * freelist */
+    for (i = GROUPcount - 1; (GROUPcount - 1024) <= i; i--) {
+        GROUPentries[i].next = GROUPheader->freelist;
+        GROUPheader->freelist.recno = i;
+    }
+    return true;
 }
 
-static GROUPLOC GROUPnewnode(void) {
-  GROUPLOC	loc;
+static GROUPLOC
+GROUPnewnode(void)
+{
+    GROUPLOC loc;
 
-  /* If we didn't find any free space, then make some */
-  if (GROUPLOCempty(GROUPheader->freelist)) {
-    if (!GROUPexpand(ovbuffmode)) {
-      return GROUPemptyloc;
+    /* If we didn't find any free space, then make some */
+    if (GROUPLOCempty(GROUPheader->freelist)) {
+        if (!GROUPexpand(ovbuffmode)) {
+            return GROUPemptyloc;
+        }
     }
-  }
-  assert(!GROUPLOCempty(GROUPheader->freelist));
-  loc = GROUPheader->freelist;
-  GROUPheader->freelist = GROUPentries[GROUPheader->freelist.recno].next;
-  return loc;
+    assert(!GROUPLOCempty(GROUPheader->freelist));
+    loc = GROUPheader->freelist;
+    GROUPheader->freelist = GROUPentries[GROUPheader->freelist.recno].next;
+    return loc;
 }
 
 bool
 buffindexed_groupdel(const char *group)
 {
-  GROUPLOC	gloc;
-  GROUPENTRY	*ge;
+    GROUPLOC gloc;
+    GROUPENTRY *ge;
 
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return true;
-  }
-  GROUPlock(gloc, INN_LOCK_WRITE);
-  ge = &GROUPentries[gloc.recno];
-  ge->deleted = time(NULL);
-  HashClear(&ge->hash);
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
-  return true;
-}
-
-static void GROUPLOCclear(GROUPLOC *loc) {
-  loc->recno = -1;
-}
-
-static bool GROUPLOCempty(GROUPLOC loc) {
-  return (loc.recno < 0);
-}
-
-static bool GROUPlockhash(enum inn_locktype type) {
-  return inn_lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
-}
-
-static bool GROUPlock(GROUPLOC gloc, enum inn_locktype type) {
-  return inn_lock_range(GROUPfd,
-	     type,
-	     true,
-	     sizeof(GROUPHEADER) + (sizeof(GROUPENTRY) * gloc.recno),
-	     sizeof(GROUPENTRY));
-}
-
-#ifdef OV_DEBUG
-static bool ovsetcurindexblock(GROUPENTRY *ge, GROUPENTRY *georig) {
-#else
-static bool ovsetcurindexblock(GROUPENTRY *ge) {
-#endif /* OV_DEBUG */
-  OVBUFF	*ovbuff;
-  OV		ov;
-  OVINDEXHEAD	ovindexhead;
-
-  /* there is no index */
-#ifdef OV_DEBUG
-  ov = ovblocknew(georig ? georig : ge);
-#else
-  ov = ovblocknew();
-#endif /* OV_DEBUG */
-  if (ov.index == NULLINDEX) {
-    warn("buffindexed: ovsetcurindexblock could not get new block");
-    return false;
-  }
-  if ((ovbuff = getovbuff(ov)) == NULL) {
-    warn("buffindexed: ovsetcurindexblock could not get ovbuff block for new, %d, %d", ov.index, ov.blocknum);
-    return false;
-  }
-  ovindexhead.next = ovnull;
-  ovindexhead.low = 0;
-  ovindexhead.high = 0;
-  if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ov.blocknum)) != sizeof(OVINDEXHEAD)) {
-    syswarn("buffindexed: could not write index record index '%d', blocknum"
-            " '%d'", ge->curindex.index, ge->curindex.blocknum);
-    return true;
-  }
-  if (ge->baseindex.index == NULLINDEX) {
-    ge->baseindex = ov;
-  } else {
-    if ((ovbuff = getovbuff(ge->curindex)) == NULL)
-      return false;
-    if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-      warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index, ge->curindex.blocknum);
-#ifdef OV_DEBUG
-      abort();
-#else	/* OV_DEBUG */
-      /* fix it */
-      ovusedblock(ovbuff, ge->curindex.blocknum, true, true);
-#endif /* OV_DEBUG */
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        return true;
     }
-    ovindexhead.next = ov;
-    ovindexhead.low = ge->curlow;
-    ovindexhead.high = ge->curhigh;
-    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ge->curindex.blocknum)) != sizeof(OVINDEXHEAD)) {
-      syswarn("buffindexed: could not write index record index '%d', blocknum"
-              " '%d'", ge->curindex.index, ge->curindex.blocknum);
-      return false;
-    }
-  }
-  ge->curindex = ov;
-  ge->curindexoffset = 0;
-  ge->curlow = 0;
-  ge->curhigh = 0;
-  return true;
+    GROUPlock(gloc, INN_LOCK_WRITE);
+    ge = &GROUPentries[gloc.recno];
+    ge->deleted = time(NULL);
+    HashClear(&ge->hash);
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
+    return true;
+}
+
+static void
+GROUPLOCclear(GROUPLOC *loc)
+{
+    loc->recno = -1;
+}
+
+static bool
+GROUPLOCempty(GROUPLOC loc)
+{
+    return (loc.recno < 0);
+}
+
+static bool
+GROUPlockhash(enum inn_locktype type)
+{
+    return inn_lock_range(GROUPfd, type, true, 0, sizeof(GROUPHEADER));
+}
+
+static bool
+GROUPlock(GROUPLOC gloc, enum inn_locktype type)
+{
+    return inn_lock_range(GROUPfd, type, true,
+                          sizeof(GROUPHEADER)
+                              + (sizeof(GROUPENTRY) * gloc.recno),
+                          sizeof(GROUPENTRY));
 }
 
 #ifdef OV_DEBUG
-static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires, GROUPENTRY *georig) {
+static bool
+ovsetcurindexblock(GROUPENTRY *ge, GROUPENTRY *georig)
+{
 #else
-static bool ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len, time_t arrived, time_t expires) {
+static bool
+ovsetcurindexblock(GROUPENTRY *ge)
+{
 #endif /* OV_DEBUG */
-  OV		ov;
-  OVINDEX	ie;
-  OVBUFF	*ovbuff;
-  OVINDEXHEAD	ovindexhead;
-  bool		needupdate = false;
+    OVBUFF *ovbuff;
+    OV ov;
+    OVINDEXHEAD ovindexhead;
 
-  Nospace = false;
-  if (OV_BLOCKSIZE < len) {
-    warn("buffindexed: overview data must be under %d (%d)", OV_BLOCKSIZE, len);
-    return false;
-  }
-  if (ge->curdata.index == NULLINDEX) {
-    /* no data block allocated */
+    /* there is no index */
 #ifdef OV_DEBUG
     ov = ovblocknew(georig ? georig : ge);
 #else
     ov = ovblocknew();
 #endif /* OV_DEBUG */
     if (ov.index == NULLINDEX) {
-      warn("buffindexed: ovaddrec could not get new block");
-      return false;
+        warn("buffindexed: ovsetcurindexblock could not get new block");
+        return false;
     }
     if ((ovbuff = getovbuff(ov)) == NULL) {
-      warn("buffindexed: ovaddrec could not get ovbuff block for new, %d, %d, %ld", ov.index, ov.blocknum, artnum);
-      return false;
+        warn("buffindexed: ovsetcurindexblock could not get ovbuff block for "
+             "new, %d, %d",
+             ov.index, ov.blocknum);
+        return false;
     }
-    ge->curdata = ov;
-    ge->curoffset = 0;
-  } else if ((ovbuff = getovbuff(ge->curdata)) == NULL)
-    return false;
-  else if (OV_BLOCKSIZE - ge->curoffset < len) {
-    /* too short to store data, allocate new block */
-#ifdef OV_DEBUG
-    ov = ovblocknew(georig ? georig : ge);
-#else
-    ov = ovblocknew();
-#endif /* OV_DEBUG */
-    if (ov.index == NULLINDEX) {
-      warn("buffindexed: ovaddrec could not get new block");
-      return false;
-    }
-    if ((ovbuff = getovbuff(ov)) == NULL) {
-      warn("buffindexed: ovaddrec could not get ovbuff block for new, %d, %d, %ld", ov.index, ov.blocknum, artnum);
-      return false;
-    }
-    ge->curdata = ov;
-    ge->curoffset = 0;
-  }
-  if (!ovusedblock(ovbuff, ge->curdata.blocknum, false, false)) {
-    warn("buffindexed: block(%d, %d) not occupied", ovbuff->index, ge->curdata.blocknum);
-#ifdef OV_DEBUG
-    buffindexed_close();
-    abort();
-#else  /* OV_DEBUG */
-    /* fix it */
-    ovusedblock(ovbuff, ge->curdata.blocknum, true, true);
-#endif /* OV_DEBUG */
-  }
-
-  if (PWRITE(ovbuff->fd, data, len, ovbuff->base + OV_OFFSET(ge->curdata.blocknum) + ge->curoffset) != len) {
-    syswarn("buffindexed: could not append overview record index '%d',"
-            " blocknum '%d'", ge->curdata.index, ge->curdata.blocknum);
-    return false;
-  }
-  memset(&ie, '\0', sizeof(ie));
-  ie.artnum = artnum;
-  ie.len = len;
-  ie.index = ge->curdata.index;
-  ie.blocknum = ge->curdata.blocknum;
-  ie.offset = ge->curoffset;
-  ie.token = token;
-  ie.arrived = arrived;
-  ie.expires = expires;
-
-  if (ge->baseindex.index == NULLINDEX || ge->curindexoffset == OVINDEXMAX) {
-#ifdef OV_DEBUG
-    if (!ovsetcurindexblock(ge, georig)) {
-#else
-    if (!ovsetcurindexblock(ge)) {
-#endif /* OV_DEBUG */
-      warn("buffindexed: could not set current index");
-      return false;
-    }
-  }
-  if ((ovbuff = getovbuff(ge->curindex)) == NULL)
-    return false;
-  if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
-    warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index, ge->curindex.blocknum);
-#ifdef OV_DEBUG
-    buffindexed_close();
-    abort();
-#else  /* OV_DEBUG */
-    /* fix this */
-    ovusedblock(ovbuff, ge->curindex.blocknum, true, true);
-#endif /* OV_DEBUG */
-  }
-  if (PWRITE(ovbuff->fd, &ie, sizeof(ie), ovbuff->base + OV_OFFSET(ge->curindex.blocknum) + sizeof(OVINDEXHEAD) + sizeof(ie) * ge->curindexoffset) != sizeof(ie)) {
-    syswarn("buffindexed: could not write index record index '%d', blocknum"
-            " '%d'", ge->curindex.index, ge->curindex.blocknum);
-    return true;
-  }
-  if ((ge->curlow <= 0) || (ge->curlow > artnum)) {
-    ge->curlow = artnum;
-    needupdate = true;
-  }
-  if ((ge->curhigh <= 0) || (ge->curhigh < artnum)) {
-    ge->curhigh = artnum;
-    needupdate = true;
-  }
-  if (needupdate) {
     ovindexhead.next = ovnull;
-    ovindexhead.low = ge->curlow;
-    ovindexhead.high = ge->curhigh;
-    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD), ovbuff->base + OV_OFFSET(ge->curindex.blocknum)) != sizeof(OVINDEXHEAD)) {
-      syswarn("buffindexed: could not write index record index '%d', blocknum"
-              " '%d'", ge->curindex.index, ge->curindex.blocknum);
-      return true;
+    ovindexhead.low = 0;
+    ovindexhead.high = 0;
+    if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD),
+               ovbuff->base + OV_OFFSET(ov.blocknum))
+        != sizeof(OVINDEXHEAD)) {
+        syswarn(
+            "buffindexed: could not write index record index '%d', blocknum"
+            " '%d'",
+            ge->curindex.index, ge->curindex.blocknum);
+        return true;
     }
-  }
-  if ((ge->low <= 0) || (ge->low > artnum))
-    ge->low = artnum;
-  if ((ge->high <= 0) || (ge->high < artnum))
-    ge->high = artnum;
-  ge->curindexoffset++;
-  ge->curoffset += len;
-  ge->count++;
-  return true;
+    if (ge->baseindex.index == NULLINDEX) {
+        ge->baseindex = ov;
+    } else {
+        if ((ovbuff = getovbuff(ge->curindex)) == NULL)
+            return false;
+        if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
+            warn("buffindexed: block(%d, %d) not occupied (index)",
+                 ovbuff->index, ge->curindex.blocknum);
+#ifdef OV_DEBUG
+            abort();
+#else  /* OV_DEBUG */
+            /* fix it */
+            ovusedblock(ovbuff, ge->curindex.blocknum, true, true);
+#endif /* OV_DEBUG */
+        }
+        ovindexhead.next = ov;
+        ovindexhead.low = ge->curlow;
+        ovindexhead.high = ge->curhigh;
+        if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD),
+                   ovbuff->base + OV_OFFSET(ge->curindex.blocknum))
+            != sizeof(OVINDEXHEAD)) {
+            syswarn("buffindexed: could not write index record index '%d', "
+                    "blocknum"
+                    " '%d'",
+                    ge->curindex.index, ge->curindex.blocknum);
+            return false;
+        }
+    }
+    ge->curindex = ov;
+    ge->curindexoffset = 0;
+    ge->curlow = 0;
+    ge->curhigh = 0;
+    return true;
+}
+
+#ifdef OV_DEBUG
+static bool
+ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
+         time_t arrived, time_t expires, GROUPENTRY *georig)
+{
+#else
+static bool
+ovaddrec(GROUPENTRY *ge, ARTNUM artnum, TOKEN token, char *data, int len,
+         time_t arrived, time_t expires)
+{
+#endif /* OV_DEBUG */
+    OV ov;
+    OVINDEX ie;
+    OVBUFF *ovbuff;
+    OVINDEXHEAD ovindexhead;
+    bool needupdate = false;
+
+    Nospace = false;
+    if (OV_BLOCKSIZE < len) {
+        warn("buffindexed: overview data must be under %d (%d)", OV_BLOCKSIZE,
+             len);
+        return false;
+    }
+    if (ge->curdata.index == NULLINDEX) {
+        /* no data block allocated */
+#ifdef OV_DEBUG
+        ov = ovblocknew(georig ? georig : ge);
+#else
+        ov = ovblocknew();
+#endif /* OV_DEBUG */
+        if (ov.index == NULLINDEX) {
+            warn("buffindexed: ovaddrec could not get new block");
+            return false;
+        }
+        if ((ovbuff = getovbuff(ov)) == NULL) {
+            warn("buffindexed: ovaddrec could not get ovbuff block for new, "
+                 "%d, %d, %ld",
+                 ov.index, ov.blocknum, artnum);
+            return false;
+        }
+        ge->curdata = ov;
+        ge->curoffset = 0;
+    } else if ((ovbuff = getovbuff(ge->curdata)) == NULL)
+        return false;
+    else if (OV_BLOCKSIZE - ge->curoffset < len) {
+        /* too short to store data, allocate new block */
+#ifdef OV_DEBUG
+        ov = ovblocknew(georig ? georig : ge);
+#else
+        ov = ovblocknew();
+#endif /* OV_DEBUG */
+        if (ov.index == NULLINDEX) {
+            warn("buffindexed: ovaddrec could not get new block");
+            return false;
+        }
+        if ((ovbuff = getovbuff(ov)) == NULL) {
+            warn("buffindexed: ovaddrec could not get ovbuff block for new, "
+                 "%d, %d, %ld",
+                 ov.index, ov.blocknum, artnum);
+            return false;
+        }
+        ge->curdata = ov;
+        ge->curoffset = 0;
+    }
+    if (!ovusedblock(ovbuff, ge->curdata.blocknum, false, false)) {
+        warn("buffindexed: block(%d, %d) not occupied", ovbuff->index,
+             ge->curdata.blocknum);
+#ifdef OV_DEBUG
+        buffindexed_close();
+        abort();
+#else  /* OV_DEBUG */
+        /* fix it */
+        ovusedblock(ovbuff, ge->curdata.blocknum, true, true);
+#endif /* OV_DEBUG */
+    }
+
+    if (PWRITE(ovbuff->fd, data, len,
+               ovbuff->base + OV_OFFSET(ge->curdata.blocknum) + ge->curoffset)
+        != len) {
+        syswarn("buffindexed: could not append overview record index '%d',"
+                " blocknum '%d'",
+                ge->curdata.index, ge->curdata.blocknum);
+        return false;
+    }
+    memset(&ie, '\0', sizeof(ie));
+    ie.artnum = artnum;
+    ie.len = len;
+    ie.index = ge->curdata.index;
+    ie.blocknum = ge->curdata.blocknum;
+    ie.offset = ge->curoffset;
+    ie.token = token;
+    ie.arrived = arrived;
+    ie.expires = expires;
+
+    if (ge->baseindex.index == NULLINDEX || ge->curindexoffset == OVINDEXMAX) {
+#ifdef OV_DEBUG
+        if (!ovsetcurindexblock(ge, georig)) {
+#else
+        if (!ovsetcurindexblock(ge)) {
+#endif /* OV_DEBUG */
+            warn("buffindexed: could not set current index");
+            return false;
+        }
+    }
+    if ((ovbuff = getovbuff(ge->curindex)) == NULL)
+        return false;
+    if (!ovusedblock(ovbuff, ge->curindex.blocknum, false, false)) {
+        warn("buffindexed: block(%d, %d) not occupied (index)", ovbuff->index,
+             ge->curindex.blocknum);
+#ifdef OV_DEBUG
+        buffindexed_close();
+        abort();
+#else  /* OV_DEBUG */
+        /* fix this */
+        ovusedblock(ovbuff, ge->curindex.blocknum, true, true);
+#endif /* OV_DEBUG */
+    }
+    if (PWRITE(ovbuff->fd, &ie, sizeof(ie),
+               ovbuff->base + OV_OFFSET(ge->curindex.blocknum)
+                   + sizeof(OVINDEXHEAD) + sizeof(ie) * ge->curindexoffset)
+        != sizeof(ie)) {
+        syswarn(
+            "buffindexed: could not write index record index '%d', blocknum"
+            " '%d'",
+            ge->curindex.index, ge->curindex.blocknum);
+        return true;
+    }
+    if ((ge->curlow <= 0) || (ge->curlow > artnum)) {
+        ge->curlow = artnum;
+        needupdate = true;
+    }
+    if ((ge->curhigh <= 0) || (ge->curhigh < artnum)) {
+        ge->curhigh = artnum;
+        needupdate = true;
+    }
+    if (needupdate) {
+        ovindexhead.next = ovnull;
+        ovindexhead.low = ge->curlow;
+        ovindexhead.high = ge->curhigh;
+        if (PWRITE(ovbuff->fd, &ovindexhead, sizeof(OVINDEXHEAD),
+                   ovbuff->base + OV_OFFSET(ge->curindex.blocknum))
+            != sizeof(OVINDEXHEAD)) {
+            syswarn("buffindexed: could not write index record index '%d', "
+                    "blocknum"
+                    " '%d'",
+                    ge->curindex.index, ge->curindex.blocknum);
+            return true;
+        }
+    }
+    if ((ge->low <= 0) || (ge->low > artnum))
+        ge->low = artnum;
+    if ((ge->high <= 0) || (ge->high < artnum))
+        ge->high = artnum;
+    ge->curindexoffset++;
+    ge->curoffset += len;
+    ge->count++;
+    return true;
 }
 
 bool
 buffindexed_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
                 int len, time_t arrived, time_t expires)
 {
-  GROUPLOC	gloc;
-  GROUPENTRY	*ge;
+    GROUPLOC gloc;
+    GROUPENTRY *ge;
 
-  if (len > OV_BLOCKSIZE) {
-    warn("buffindexed: overview data is too large %d", len);
-    return true;
-  }
+    if (len > OV_BLOCKSIZE) {
+        warn("buffindexed: overview data is too large %d", len);
+        return true;
+    }
 
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return true;
-  }
-  GROUPlock(gloc, INN_LOCK_WRITE);
-  /* prepend block(s) if needed. */
-  ge = &GROUPentries[gloc.recno];
-  if (Cutofflow && ge->low > artnum) {
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        return true;
+    }
+    GROUPlock(gloc, INN_LOCK_WRITE);
+    /* prepend block(s) if needed. */
+    ge = &GROUPentries[gloc.recno];
+    if (Cutofflow && ge->low > artnum) {
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+        return true;
+    }
+#ifdef OV_DEBUG
+    if (!ovaddrec(ge, artnum, token, data, len, arrived, expires, NULL)) {
+#else
+    if (!ovaddrec(ge, artnum, token, data, len, arrived, expires)) {
+#endif /* OV_DEBUG */
+        if (Nospace) {
+            GROUPlock(gloc, INN_LOCK_UNLOCK);
+            warn("buffindexed: no space left for buffer, adding '%s'", group);
+            return false;
+        }
+        warn("buffindexed: could not add overview for '%s'", group);
+    }
     GROUPlock(gloc, INN_LOCK_UNLOCK);
-    return true;
-  }
-#ifdef OV_DEBUG
-  if (!ovaddrec(ge, artnum, token, data, len, arrived, expires, NULL)) {
-#else
-  if (!ovaddrec(ge, artnum, token, data, len, arrived, expires)) {
-#endif /* OV_DEBUG */
-    if (Nospace) {
-      GROUPlock(gloc, INN_LOCK_UNLOCK);
-      warn("buffindexed: no space left for buffer, adding '%s'", group);
-      return false;
-    }
-    warn("buffindexed: could not add overview for '%s'", group);
-  }
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
 
-  return true;
+    return true;
 }
 
-bool buffindexed_cancel(const char *group UNUSED, ARTNUM artnum UNUSED) {
+bool
+buffindexed_cancel(const char *group UNUSED, ARTNUM artnum UNUSED)
+{
     return true;
 }
 
 #ifdef OV_DEBUG
-static void freegroupblock(GROUPENTRY *ge) {
+static void
+freegroupblock(GROUPENTRY *ge)
+{
 #else
-static void freegroupblock(void) {
+static void
+freegroupblock(void)
+{
 #endif /* OV_DEBUG */
-  GROUPDATABLOCK	*gdb;
-  int			i;
-  GIBLIST		*giblist;
+    GROUPDATABLOCK *gdb;
+    int i;
+    GIBLIST *giblist;
 
-  for (giblist = Giblist ; giblist != NULL ; giblist = giblist->next) {
+    for (giblist = Giblist; giblist != NULL; giblist = giblist->next) {
 #ifdef OV_DEBUG
-    ovblockfree(giblist->ov, ge);
+        ovblockfree(giblist->ov, ge);
 #else
-    ovblockfree(giblist->ov);
+        ovblockfree(giblist->ov);
 #endif /* OV_DEBUG */
-  }
-  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
-    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
+    }
+    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
+        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next) {
 #ifdef OV_DEBUG
-      ovblockfree(gdb->datablk, ge);
+            ovblockfree(gdb->datablk, ge);
 #else
-      ovblockfree(gdb->datablk);
+            ovblockfree(gdb->datablk);
 #endif /* OV_DEBUG */
+        }
     }
-  }
 }
 
-static void ovgroupunmap(void) {
-  GROUPDATABLOCK	*gdb, *gdbnext;
-  int			i;
-  GIBLIST		*giblist, *giblistnext;
+static void
+ovgroupunmap(void)
+{
+    GROUPDATABLOCK *gdb, *gdbnext;
+    int i;
+    GIBLIST *giblist, *giblistnext;
 
-  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
-    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdbnext) {
-      gdbnext = gdb->next;
-      free(gdb);
+    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
+        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdbnext) {
+            gdbnext = gdb->next;
+            free(gdb);
+        }
+        groupdatablock[i] = NULL;
     }
-    groupdatablock[i] = NULL;
-  }
-  for (giblist = Giblist ; giblist != NULL ; giblist = giblistnext) {
-    giblistnext = giblist->next;
-    free(giblist);
-  }
-  Giblist = NULL;
-  if (!Cache && (Gib != NULL)) {
-    free(Gib);
-    Gib = NULL;
-    if (Cachesearch != NULL) {
-      free(Cachesearch->group);
-      free(Cachesearch);
-      Cachesearch = NULL;
+    for (giblist = Giblist; giblist != NULL; giblist = giblistnext) {
+        giblistnext = giblist->next;
+        free(giblist);
     }
-  }
+    Giblist = NULL;
+    if (!Cache && (Gib != NULL)) {
+        free(Gib);
+        Gib = NULL;
+        if (Cachesearch != NULL) {
+            free(Cachesearch->group);
+            free(Cachesearch);
+            Cachesearch = NULL;
+        }
+    }
 }
 
-static void insertgdb(OV *ov, GROUPDATABLOCK *gdb) {
-  gdb->next = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
-  groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE] = gdb;
-  return;
+static void
+insertgdb(OV *ov, GROUPDATABLOCK *gdb)
+{
+    gdb->next = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
+    groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE] = gdb;
+    return;
 }
 
-static GROUPDATABLOCK *searchgdb(OV *ov) {
-  GROUPDATABLOCK	*gdb;
+static GROUPDATABLOCK *
+searchgdb(OV *ov)
+{
+    GROUPDATABLOCK *gdb;
 
-  gdb = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
-  for (; gdb != NULL ; gdb = gdb->next) {
-    if (ov->index == gdb->datablk.index && ov->blocknum == gdb->datablk.blocknum)
-      break;
-  }
-  return gdb;
+    gdb = groupdatablock[(ov->index + ov->blocknum) % GROUPDATAHASHSIZE];
+    for (; gdb != NULL; gdb = gdb->next) {
+        if (ov->index == gdb->datablk.index
+            && ov->blocknum == gdb->datablk.blocknum)
+            break;
+    }
+    return gdb;
 }
 
-static int INDEXcompare(const void *p1, const void *p2) {
-  const OVINDEX *oi1 = p1;
-  const OVINDEX *oi2 = p2;
+static int
+INDEXcompare(const void *p1, const void *p2)
+{
+    const OVINDEX *oi1 = p1;
+    const OVINDEX *oi2 = p2;
 
-  return oi1->artnum - oi2->artnum;
+    return oi1->artnum - oi2->artnum;
 }
 
 static bool
 ovgroupmmap(GROUPENTRY *ge, ARTNUM low, ARTNUM high, bool needov)
 {
-  OV			ov = ge->baseindex;
-  OVBUFF		*ovbuff;
-  GROUPDATABLOCK	*gdb;
-  int			pagefudge, limit, i, count, len;
-  off_t                 offset, mmapoffset;
-  OVBLOCK		*ovblock;
-  void *		addr;
-  GIBLIST		*giblist;
+    OV ov = ge->baseindex;
+    OVBUFF *ovbuff;
+    GROUPDATABLOCK *gdb;
+    int pagefudge, limit, i, count, len;
+    off_t offset, mmapoffset;
+    OVBLOCK *ovblock;
+    void *addr;
+    GIBLIST *giblist;
 
-  if (low > high) {
-    Gibcount = 0;
+    if (low > high) {
+        Gibcount = 0;
+        return true;
+    }
+    Gibcount = ge->count;
+    if (Gibcount == 0)
+        return true;
+    Gib = xmalloc(Gibcount * sizeof(OVINDEX));
+    count = 0;
+    while (ov.index != NULLINDEX) {
+        ovbuff = getovbuff(ov);
+        if (ovbuff == NULL) {
+            warn("buffindexed: ovgroupmmap ovbuff is null(ovindex is %d, "
+                 "ovblock is %d",
+                 ov.index, ov.blocknum);
+            ovgroupunmap();
+            return false;
+        }
+        offset = ovbuff->base + OV_OFFSET(ov.blocknum);
+        pagefudge = offset % pagesize;
+        mmapoffset = offset - pagefudge;
+        len = pagefudge + OV_BLOCKSIZE;
+        if ((addr = mmap(NULL, len, PROT_READ, MAP_SHARED, ovbuff->fd,
+                         mmapoffset))
+            == MAP_FAILED) {
+            syswarn("buffindexed: ovgroupmmap could not mmap index block");
+            ovgroupunmap();
+            return false;
+        }
+        ovblock = (void *) ((char *) addr + pagefudge);
+        if (ov.index == ge->curindex.index
+            && ov.blocknum == ge->curindex.blocknum) {
+            limit = ge->curindexoffset;
+        } else {
+            limit = OVINDEXMAX;
+        }
+        for (i = 0; i < limit; i++) {
+            if (Gibcount == count) {
+                Gibcount += OV_FUDGE;
+                Gib = xrealloc(Gib, Gibcount * sizeof(OVINDEX));
+            }
+            Gib[count++] = ovblock->ovindex[i];
+        }
+        giblist = xmalloc(sizeof(GIBLIST));
+        giblist->ov = ov;
+        giblist->next = Giblist;
+        Giblist = giblist;
+        ov = ovblock->ovindexhead.next;
+        munmap(addr, len);
+    }
+    Gibcount = count;
+    qsort(Gib, Gibcount, sizeof(OVINDEX), INDEXcompare);
+    /* Remove duplicates. */
+    for (i = 0; i < Gibcount - 1; i++) {
+        if (Gib[i].artnum == Gib[i + 1].artnum) {
+            /* lower position is removed */
+            Gib[i].artnum = 0;
+        }
+    }
+    if (!needov)
+        return true;
+    count = 0;
+    for (i = 0; i < Gibcount; i++) {
+        if (Gib[i].artnum == 0 || Gib[i].artnum < low || Gib[i].artnum > high)
+            continue;
+        ov.index = Gib[i].index;
+        ov.blocknum = Gib[i].blocknum;
+        gdb = searchgdb(&ov);
+        if (gdb != NULL)
+            continue;
+        ovbuff = getovbuff(ov);
+        if (ovbuff == NULL)
+            continue;
+        gdb = xmalloc(sizeof(GROUPDATABLOCK));
+        gdb->datablk = ov;
+        gdb->next = NULL;
+        gdb->mmapped = false;
+        insertgdb(&ov, gdb);
+        count++;
+    }
+    if (count == 0)
+        return true;
+    if ((unsigned) count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
+        /* large retrieval, mmap is done in ovsearch() */
+        return true;
+    /* Data blocks are being mmapped, not copied. */
+    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
+        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next) {
+            ov = gdb->datablk;
+            ovbuff = getovbuff(ov);
+            if (ovbuff == NULL) {
+                warn("buffindexed: ovgroupmmap could not get ovbuff block for "
+                     "new, %d, %d",
+                     ov.index, ov.blocknum);
+                free(gdb);
+                ovgroupunmap();
+                return false;
+            }
+            offset = ovbuff->base + OV_OFFSET(ov.blocknum);
+            pagefudge = offset % pagesize;
+            mmapoffset = offset - pagefudge;
+            gdb->len = pagefudge + OV_BLOCKSIZE;
+            if ((gdb->addr = mmap(NULL, gdb->len, PROT_READ, MAP_SHARED,
+                                  ovbuff->fd, mmapoffset))
+                == MAP_FAILED) {
+                syswarn("buffindexed: ovgroupmmap could not mmap data block");
+                free(gdb);
+                ovgroupunmap();
+                return false;
+            }
+            gdb->data = (char *) gdb->addr + pagefudge;
+            gdb->mmapped = true;
+        }
+    }
     return true;
-  }
-  Gibcount = ge->count;
-  if (Gibcount == 0)
-    return true;
-  Gib = xmalloc(Gibcount * sizeof(OVINDEX));
-  count = 0;
-  while (ov.index != NULLINDEX) {
-    ovbuff = getovbuff(ov);
-    if (ovbuff == NULL) {
-      warn("buffindexed: ovgroupmmap ovbuff is null(ovindex is %d, ovblock is %d", ov.index, ov.blocknum);
-      ovgroupunmap();
-      return false;
-    }
-    offset = ovbuff->base + OV_OFFSET(ov.blocknum);
-    pagefudge = offset % pagesize;
-    mmapoffset = offset - pagefudge;
-    len = pagefudge + OV_BLOCKSIZE;
-    if ((addr = mmap(NULL, len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-      syswarn("buffindexed: ovgroupmmap could not mmap index block");
-      ovgroupunmap();
-      return false;
-    }
-    ovblock = (void *)((char *)addr + pagefudge);
-    if (ov.index == ge->curindex.index && ov.blocknum == ge->curindex.blocknum) {
-      limit = ge->curindexoffset;
-    } else {
-      limit = OVINDEXMAX;
-    }
-    for (i = 0 ; i < limit ; i++) {
-      if (Gibcount == count) {
-	Gibcount += OV_FUDGE;
-	Gib = xrealloc(Gib, Gibcount * sizeof(OVINDEX));
-      }
-      Gib[count++] = ovblock->ovindex[i];
-    }
-    giblist = xmalloc(sizeof(GIBLIST));
-    giblist->ov = ov;
-    giblist->next = Giblist;
-    Giblist = giblist;
-    ov = ovblock->ovindexhead.next;
-    munmap(addr, len);
-  }
-  Gibcount = count;
-  qsort(Gib, Gibcount, sizeof(OVINDEX), INDEXcompare);
-  /* Remove duplicates. */
-  for (i = 0; i < Gibcount - 1; i++) {
-    if (Gib[i].artnum == Gib[i+1].artnum) {
-      /* lower position is removed */
-      Gib[i].artnum = 0;
-    }
-  }
-  if (!needov)
-    return true;
-  count = 0;
-  for (i = 0 ; i < Gibcount ; i++) {
-    if (Gib[i].artnum == 0 || Gib[i].artnum < low || Gib[i].artnum > high)
-      continue;
-    ov.index = Gib[i].index;
-    ov.blocknum = Gib[i].blocknum;
-    gdb = searchgdb(&ov);
-    if (gdb != NULL)
-      continue;
-    ovbuff = getovbuff(ov);
-    if (ovbuff == NULL)
-      continue;
-    gdb = xmalloc(sizeof(GROUPDATABLOCK));
-    gdb->datablk = ov;
-    gdb->next = NULL;
-    gdb->mmapped = false;
-    insertgdb(&ov, gdb);
-    count++;
-  }
-  if (count == 0)
-    return true;
-  if ((unsigned) count * OV_BLOCKSIZE > innconf->keepmmappedthreshold * 1024)
-    /* large retrieval, mmap is done in ovsearch() */
-    return true;
-  /* Data blocks are being mmapped, not copied. */
-  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
-    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
-      ov = gdb->datablk;
-      ovbuff = getovbuff(ov);
-      if (ovbuff == NULL) {
-          warn("buffindexed: ovgroupmmap could not get ovbuff block for new, %d, %d", ov.index, ov.blocknum);
-          free(gdb);
-          ovgroupunmap();
-          return false;
-      }
-      offset = ovbuff->base + OV_OFFSET(ov.blocknum);
-      pagefudge = offset % pagesize;
-      mmapoffset = offset - pagefudge;
-      gdb->len = pagefudge + OV_BLOCKSIZE;
-      if ((gdb->addr = mmap(NULL, gdb->len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-	syswarn("buffindexed: ovgroupmmap could not mmap data block");
-	free(gdb);
-	ovgroupunmap();
-	return false;
-      }
-      gdb->data = (char *)gdb->addr + pagefudge;
-      gdb->mmapped = true;
-    }
-  }
-  return true;
 }
 
 static void *
 ovopensearch(const char *group, ARTNUM low, ARTNUM high, bool needov)
 {
-  GROUPLOC		gloc;
-  GROUPENTRY		*ge;
-  OVSEARCH		*search;
+    GROUPLOC gloc;
+    GROUPENTRY *ge;
+    OVSEARCH *search;
 
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc))
-    return NULL;
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc))
+        return NULL;
 
-  ge = &GROUPentries[gloc.recno];
-  if (low < ge->low)
-    low = ge->low;
-  if (high > ge->high)
-    high = ge->high;
+    ge = &GROUPentries[gloc.recno];
+    if (low < ge->low)
+        low = ge->low;
+    if (high > ge->high)
+        high = ge->high;
 
-  if (!ovgroupmmap(ge, low, high, needov)) {
-    return NULL;
-  }
+    if (!ovgroupmmap(ge, low, high, needov)) {
+        return NULL;
+    }
 
-  search = xmalloc(sizeof(OVSEARCH));
-  search->hi = high;
-  search->lo = low;
-  search->cur = 0;
-  search->group = xstrdup(group);
-  search->needov = needov;
-  search->gloc = gloc;
-  search->count = ge->count;
-  search->gdb.mmapped = false;
-  return (void *)search;
+    search = xmalloc(sizeof(OVSEARCH));
+    search->hi = high;
+    search->lo = low;
+    search->cur = 0;
+    search->group = xstrdup(group);
+    search->needov = needov;
+    search->gloc = gloc;
+    search->count = ge->count;
+    search->gdb.mmapped = false;
+    return (void *) search;
 }
 
 void *
 buffindexed_opensearch(const char *group, int low, int high)
 {
-  GROUPLOC		gloc;
-  void			*handle;
+    GROUPLOC gloc;
+    void *handle;
 
-  if (Gib != NULL) {
-    free(Gib);
-    Gib = NULL;
-    if (Cachesearch != NULL) {
-      free(Cachesearch->group);
-      free(Cachesearch);
-      Cachesearch = NULL;
+    if (Gib != NULL) {
+        free(Gib);
+        Gib = NULL;
+        if (Cachesearch != NULL) {
+            free(Cachesearch->group);
+            free(Cachesearch);
+            Cachesearch = NULL;
+        }
     }
-  }
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return NULL;
-  }
-  GROUPlock(gloc, INN_LOCK_WRITE);
-  if ((handle = ovopensearch(group, low, high, true)) == NULL)
-    GROUPlock(gloc, INN_LOCK_UNLOCK);
-  return(handle);
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        return NULL;
+    }
+    GROUPlock(gloc, INN_LOCK_WRITE);
+    if ((handle = ovopensearch(group, low, high, true)) == NULL)
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+    return (handle);
 }
 
-static bool ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived, time_t *expires) {
-  OVSEARCH		*search = (OVSEARCH *)handle;
-  OV			srchov;
-  GROUPDATABLOCK	*gdb;
-  off_t			offset, mmapoffset;
-  OVBUFF		*ovbuff;
-  int			pagefudge;
-  bool			newblock;
+static bool
+ovsearch(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token,
+         time_t *arrived, time_t *expires)
+{
+    OVSEARCH *search = (OVSEARCH *) handle;
+    OV srchov;
+    GROUPDATABLOCK *gdb;
+    off_t offset, mmapoffset;
+    OVBUFF *ovbuff;
+    int pagefudge;
+    bool newblock;
 
-  if (search->cur == Gibcount) {
-    return false;
-  }
-  while (Gib[search->cur].artnum == 0 || Gib[search->cur].artnum < search->lo) {
-    search->cur++;
-    if (search->cur == Gibcount)
-      return false;
-  }
-  if (Gib[search->cur].artnum > search->hi)
-      return false;
+    if (search->cur == Gibcount) {
+        return false;
+    }
+    while (Gib[search->cur].artnum == 0
+           || Gib[search->cur].artnum < search->lo) {
+        search->cur++;
+        if (search->cur == Gibcount)
+            return false;
+    }
+    if (Gib[search->cur].artnum > search->hi)
+        return false;
 
-  if (search->needov) {
-    if (Gib[search->cur].index == NULLINDEX) {
-      if (len)
-	*len = 0;
-      if (artnum)
-	*artnum = Gib[search->cur].artnum;
-    } else {
-      if (artnum)
-	*artnum = Gib[search->cur].artnum;
-      if (len)
-	*len = Gib[search->cur].len;
-      if (arrived)
-	*arrived = Gib[search->cur].arrived;
-      if (expires)
-	*expires = Gib[search->cur].expires;
-      if (data) {
-	srchov.index = Gib[search->cur].index;
-	srchov.blocknum = Gib[search->cur].blocknum;
-	gdb = searchgdb(&srchov);
-	if (gdb == NULL) {
-	  if (len)
-	    *len = 0;
-	  search->cur++;
-	  return true;
-	}
-	if (!gdb->mmapped) {
-	  /* block needs to be mmapped */
-	  if (search->gdb.mmapped) {
-	    /* check previous mmapped area */
-	    if (search->gdb.datablk.blocknum != srchov.blocknum || search->gdb.datablk.index != srchov.index) {
-	      /* different one, release previous one */
-	      munmap(search->gdb.addr, search->gdb.len);
-	      newblock = true;
-	    } else
-	      newblock = false;
-	  } else
-	    newblock = true;
-	  if (newblock) {
-	    search->gdb.datablk.blocknum = srchov.blocknum;
-	    search->gdb.datablk.index = srchov.index;
-	    ovbuff = getovbuff(srchov);
-            if (ovbuff == NULL) {
-                warn("buffindexed: ovsearch could not get ovbuff block for new, %d, %d", srchov.index, srchov.blocknum);
-                return false;
+    if (search->needov) {
+        if (Gib[search->cur].index == NULLINDEX) {
+            if (len)
+                *len = 0;
+            if (artnum)
+                *artnum = Gib[search->cur].artnum;
+        } else {
+            if (artnum)
+                *artnum = Gib[search->cur].artnum;
+            if (len)
+                *len = Gib[search->cur].len;
+            if (arrived)
+                *arrived = Gib[search->cur].arrived;
+            if (expires)
+                *expires = Gib[search->cur].expires;
+            if (data) {
+                srchov.index = Gib[search->cur].index;
+                srchov.blocknum = Gib[search->cur].blocknum;
+                gdb = searchgdb(&srchov);
+                if (gdb == NULL) {
+                    if (len)
+                        *len = 0;
+                    search->cur++;
+                    return true;
+                }
+                if (!gdb->mmapped) {
+                    /* block needs to be mmapped */
+                    if (search->gdb.mmapped) {
+                        /* check previous mmapped area */
+                        if (search->gdb.datablk.blocknum != srchov.blocknum
+                            || search->gdb.datablk.index != srchov.index) {
+                            /* different one, release previous one */
+                            munmap(search->gdb.addr, search->gdb.len);
+                            newblock = true;
+                        } else
+                            newblock = false;
+                    } else
+                        newblock = true;
+                    if (newblock) {
+                        search->gdb.datablk.blocknum = srchov.blocknum;
+                        search->gdb.datablk.index = srchov.index;
+                        ovbuff = getovbuff(srchov);
+                        if (ovbuff == NULL) {
+                            warn("buffindexed: ovsearch could not get ovbuff "
+                                 "block for new, %d, %d",
+                                 srchov.index, srchov.blocknum);
+                            return false;
+                        }
+                        offset = ovbuff->base + OV_OFFSET(srchov.blocknum);
+                        pagefudge = offset % pagesize;
+                        mmapoffset = offset - pagefudge;
+                        search->gdb.len = pagefudge + OV_BLOCKSIZE;
+                        if ((search->gdb.addr =
+                                 mmap(NULL, search->gdb.len, PROT_READ,
+                                      MAP_SHARED, ovbuff->fd, mmapoffset))
+                            == MAP_FAILED) {
+                            syswarn("buffindexed: ovsearch could not mmap "
+                                    "data block");
+                            return false;
+                        }
+                        gdb->data = search->gdb.data =
+                            (char *) search->gdb.addr + pagefudge;
+                        search->gdb.mmapped = true;
+                    }
+                }
+                *data = (char *) gdb->data + Gib[search->cur].offset;
             }
-	    offset = ovbuff->base + OV_OFFSET(srchov.blocknum);
-	    pagefudge = offset % pagesize;
-	    mmapoffset = offset - pagefudge;
-	    search->gdb.len = pagefudge + OV_BLOCKSIZE;
-	    if ((search->gdb.addr = mmap(NULL, search->gdb.len, PROT_READ, MAP_SHARED, ovbuff->fd, mmapoffset)) == MAP_FAILED) {
-	      syswarn("buffindexed: ovsearch could not mmap data block");
-	      return false;
-	    }
-	    gdb->data = search->gdb.data = (char *)search->gdb.addr + pagefudge;
-	    search->gdb.mmapped = true;
-	  }
-	}
-	*data = (char *)gdb->data + Gib[search->cur].offset;
-      }
+        }
     }
-  }
-  if (token) {
-    if (Gib[search->cur].index == NULLINDEX && !search->needov) {
-      search->cur++;
-      return false;
+    if (token) {
+        if (Gib[search->cur].index == NULLINDEX && !search->needov) {
+            search->cur++;
+            return false;
+        }
+        *token = Gib[search->cur].token;
     }
-    *token = Gib[search->cur].token;
-  }
-  search->cur++;
-  return true;
+    search->cur++;
+    return true;
 }
 
-bool buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len, TOKEN *token, time_t *arrived) {
-  return(ovsearch(handle, artnum, data, len, token, arrived, NULL));
+bool
+buffindexed_search(void *handle, ARTNUM *artnum, char **data, int *len,
+                   TOKEN *token, time_t *arrived)
+{
+    return (ovsearch(handle, artnum, data, len, token, arrived, NULL));
 }
 
-static void ovclosesearch(void *handle, bool freeblock) {
-  OVSEARCH		*search = (OVSEARCH *)handle;
-  GROUPDATABLOCK	*gdb;
-  int			i;
+static void
+ovclosesearch(void *handle, bool freeblock)
+{
+    OVSEARCH *search = (OVSEARCH *) handle;
+    GROUPDATABLOCK *gdb;
+    int i;
 #ifdef OV_DEBUG
-  GROUPENTRY	*ge;
-  GROUPLOC	gloc;
+    GROUPENTRY *ge;
+    GROUPLOC gloc;
 #endif /* OV_DEBUG */
 
-  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
-    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next) {
-      if (gdb->mmapped)
-	munmap(gdb->addr, gdb->len);
+    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
+        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next) {
+            if (gdb->mmapped)
+                munmap(gdb->addr, gdb->len);
+        }
     }
-  }
-  if (search->gdb.mmapped)
-    munmap(search->gdb.addr, search->gdb.len);
-  if (freeblock) {
+    if (search->gdb.mmapped)
+        munmap(search->gdb.addr, search->gdb.len);
+    if (freeblock) {
 #ifdef OV_DEBUG
-    gloc = GROUPfind(search->group, false);
-    if (!GROUPLOCempty(gloc)) {
-      ge = &GROUPentries[gloc.recno];
-      freegroupblock(ge);
-    }
+        gloc = GROUPfind(search->group, false);
+        if (!GROUPLOCempty(gloc)) {
+            ge = &GROUPentries[gloc.recno];
+            freegroupblock(ge);
+        }
 #else
-    freegroupblock();
+        freegroupblock();
 #endif /* OV_DEBUG */
-  }
-  ovgroupunmap();
-  if (Cache) {
-    Cachesearch = search;
-  } else {
-    free(search->group);
-    free(search);
-  }
-  return;
+    }
+    ovgroupunmap();
+    if (Cache) {
+        Cachesearch = search;
+    } else {
+        free(search->group);
+        free(search);
+    }
+    return;
 }
 
-void buffindexed_closesearch(void *handle) {
-  OVSEARCH	*search = (OVSEARCH *)handle;
-  GROUPLOC	gloc;
+void
+buffindexed_closesearch(void *handle)
+{
+    OVSEARCH *search = (OVSEARCH *) handle;
+    GROUPLOC gloc;
 
-  gloc = search->gloc;
-  ovclosesearch(handle, false);
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
+    gloc = search->gloc;
+    ovclosesearch(handle, false);
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
 }
 
 /* get token from sorted index */
-static bool gettoken(ARTNUM artnum, TOKEN *token) {
-  int	i, j, offset, limit;
-  offset = 0;
-  limit = Gibcount;
-  for (i = (limit - offset) / 2 ; i > 0 ; i = (limit - offset) / 2) {
-    if (Gib[offset + i].artnum == artnum) {
-      *token = Gib[offset + i].token;
-      return true;
-    } else if (Gib[offset + i].artnum == 0) {
-      /* case for duplicated index */
-      for (j = offset + i - 1; j >= offset ; j --) {
-	if (Gib[j].artnum != 0)
-	  break;
-      }
-      if (j < offset) {
-	/* article not found */
-	return false;
-      }
-      if (Gib[j].artnum == artnum) {
-	*token = Gib[j].token;
-	return true;
-      } else if (Gib[j].artnum < artnum) {
-	/* limit is not changed */
-	offset += i + 1;
-      } else {
-	/* offset is not changed */
-	limit = j;
-      }
-    } else if (Gib[offset + i].artnum < artnum) {
-      /* limit is unchanged */
-      offset += i + 1;
-    } else {
-      /* offset is unchanged */
-      limit = offset + i;
+static bool
+gettoken(ARTNUM artnum, TOKEN *token)
+{
+    int i, j, offset, limit;
+    offset = 0;
+    limit = Gibcount;
+    for (i = (limit - offset) / 2; i > 0; i = (limit - offset) / 2) {
+        if (Gib[offset + i].artnum == artnum) {
+            *token = Gib[offset + i].token;
+            return true;
+        } else if (Gib[offset + i].artnum == 0) {
+            /* case for duplicated index */
+            for (j = offset + i - 1; j >= offset; j--) {
+                if (Gib[j].artnum != 0)
+                    break;
+            }
+            if (j < offset) {
+                /* article not found */
+                return false;
+            }
+            if (Gib[j].artnum == artnum) {
+                *token = Gib[j].token;
+                return true;
+            } else if (Gib[j].artnum < artnum) {
+                /* limit is not changed */
+                offset += i + 1;
+            } else {
+                /* offset is not changed */
+                limit = j;
+            }
+        } else if (Gib[offset + i].artnum < artnum) {
+            /* limit is unchanged */
+            offset += i + 1;
+        } else {
+            /* offset is unchanged */
+            limit = offset + i;
+        }
     }
-  }
-  /* i == 0 */
-  if (Gib[offset].artnum != artnum) {
-    /* article not found */
-    return false;
-  }
-  *token = Gib[offset].token;
-  return true;
+    /* i == 0 */
+    if (Gib[offset].artnum != artnum) {
+        /* article not found */
+        return false;
+    }
+    *token = Gib[offset].token;
+    return true;
 }
 
 bool
 buffindexed_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
 {
-  GROUPLOC	gloc;
-  void		*handle;
-  bool		retval, grouplocked = false;
+    GROUPLOC gloc;
+    void *handle;
+    bool retval, grouplocked = false;
 
-  if (Gib != NULL) {
-    if (Cachesearch != NULL && strcmp(Cachesearch->group, group) != 0) {
-      free(Gib);
-      Gib = NULL;
-      free(Cachesearch->group);
-      free(Cachesearch);
-      Cachesearch = NULL;
-    } else {
-      if (gettoken(artnum, token))
-	return true;
-      else {
-	/* examine to see if overview index are increased */
-	gloc = GROUPfind(group, false);
-	if (GROUPLOCempty(gloc)) {
-	  return false;
-	}
-	GROUPlock(gloc, INN_LOCK_WRITE);
-	if ((Cachesearch != NULL) && (GROUPentries[gloc.recno].count == Cachesearch->count)) {
-	  /* no new overview data is stored */
-	  GROUPlock(gloc, INN_LOCK_UNLOCK);
-	  return false;
-	} else {
-	  grouplocked = true;
-	  free(Gib);
-	  Gib = NULL;
-	  if (Cachesearch != NULL) {
-	    free(Cachesearch->group);
-	    free(Cachesearch);
-	    Cachesearch = NULL;
-	  }
-	}
-      }
+    if (Gib != NULL) {
+        if (Cachesearch != NULL && strcmp(Cachesearch->group, group) != 0) {
+            free(Gib);
+            Gib = NULL;
+            free(Cachesearch->group);
+            free(Cachesearch);
+            Cachesearch = NULL;
+        } else {
+            if (gettoken(artnum, token))
+                return true;
+            else {
+                /* examine to see if overview index are increased */
+                gloc = GROUPfind(group, false);
+                if (GROUPLOCempty(gloc)) {
+                    return false;
+                }
+                GROUPlock(gloc, INN_LOCK_WRITE);
+                if ((Cachesearch != NULL)
+                    && (GROUPentries[gloc.recno].count
+                        == Cachesearch->count)) {
+                    /* no new overview data is stored */
+                    GROUPlock(gloc, INN_LOCK_UNLOCK);
+                    return false;
+                } else {
+                    grouplocked = true;
+                    free(Gib);
+                    Gib = NULL;
+                    if (Cachesearch != NULL) {
+                        free(Cachesearch->group);
+                        free(Cachesearch);
+                        Cachesearch = NULL;
+                    }
+                }
+            }
+        }
     }
-  }
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return false;
-  }
-  if (!grouplocked) {
-    GROUPlock(gloc, INN_LOCK_WRITE);
-  }
-  if (!(handle = ovopensearch(group, artnum, artnum, false))) {
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        return false;
+    }
+    if (!grouplocked) {
+        GROUPlock(gloc, INN_LOCK_WRITE);
+    }
+    if (!(handle = ovopensearch(group, artnum, artnum, false))) {
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+        return false;
+    }
+    retval = buffindexed_search(handle, NULL, NULL, NULL, token, NULL);
+    ovclosesearch(handle, false);
     GROUPlock(gloc, INN_LOCK_UNLOCK);
-    return false;
-  }
-  retval = buffindexed_search(handle, NULL, NULL, NULL, token, NULL);
-  ovclosesearch(handle, false);
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
-  return retval;
+    return retval;
 }
 
 bool
 buffindexed_expiregroup(const char *group, int *lo, struct history *h)
 {
-  void		*handle;
-  GROUPENTRY	newge, *ge;
-  GROUPLOC	gloc, next;
-  char          *data = NULL;
-  int		i;
-  int           len = 0;
-  TOKEN		token;
-  ARTNUM        artnum = 0;
-  ARTNUM        low, high;
-  ARTHANDLE	*ah;
-  char		flag;
-  HASH		hash;
-  time_t        arrived = 0;
-  time_t        expires = 0;
-  OVSEARCH      search = { 0 };
+    void *handle;
+    GROUPENTRY newge, *ge;
+    GROUPLOC gloc, next;
+    char *data = NULL;
+    int i;
+    int len = 0;
+    TOKEN token;
+    ARTNUM artnum = 0;
+    ARTNUM low, high;
+    ARTHANDLE *ah;
+    char flag;
+    HASH hash;
+    time_t arrived = 0;
+    time_t expires = 0;
+    OVSEARCH search = {0};
 
-  if (group == NULL) {
-    for (i = 0 ; i < GROUPheader->freelist.recno ; i++) {
-      gloc.recno = i;
-      GROUPlock(gloc, INN_LOCK_WRITE);
-      ge = &GROUPentries[gloc.recno];
-      if (ge->expired >= OVrealnow || ge->count == 0) {
-	GROUPlock(gloc, INN_LOCK_UNLOCK);
-	continue;
-      }
-      if (!ovgroupmmap(ge, ge->low, ge->high, true)) {
-	GROUPlock(gloc, INN_LOCK_UNLOCK);
-	warn("buffindexed: could not mmap overview for hidden groups(%d)", i);
-	continue;
-      }
-      search.hi = ge->high;
-      search.lo = ge->low;
-      search.cur = 0;
-      search.needov = true;
-      while (ovsearch((void *)&search, NULL, &data, &len, &token, &arrived, &expires)) {
-	if (innconf->groupbaseexpiry)
-	  /* assuming "." is not real newsgroup */
-	  OVgroupbasedexpire(token, ".", data, len, arrived, expires);
-      }
+    if (group == NULL) {
+        for (i = 0; i < GROUPheader->freelist.recno; i++) {
+            gloc.recno = i;
+            GROUPlock(gloc, INN_LOCK_WRITE);
+            ge = &GROUPentries[gloc.recno];
+            if (ge->expired >= OVrealnow || ge->count == 0) {
+                GROUPlock(gloc, INN_LOCK_UNLOCK);
+                continue;
+            }
+            if (!ovgroupmmap(ge, ge->low, ge->high, true)) {
+                GROUPlock(gloc, INN_LOCK_UNLOCK);
+                warn("buffindexed: could not mmap overview for hidden "
+                     "groups(%d)",
+                     i);
+                continue;
+            }
+            search.hi = ge->high;
+            search.lo = ge->low;
+            search.cur = 0;
+            search.needov = true;
+            while (ovsearch((void *) &search, NULL, &data, &len, &token,
+                            &arrived, &expires)) {
+                if (innconf->groupbaseexpiry)
+                    /* assuming "." is not real newsgroup */
+                    OVgroupbasedexpire(token, ".", data, len, arrived,
+                                       expires);
+            }
 #ifdef OV_DEBUG
-      freegroupblock(ge);
+            freegroupblock(ge);
 #else
-      freegroupblock();
+            freegroupblock();
 #endif
-      ovgroupunmap();
-      ge->expired = time(NULL);
-      ge->count = 0;
-      ge->baseindex = ge->curindex = ge->curdata = ovnull;
-      GROUPlock(gloc, INN_LOCK_UNLOCK);
+            ovgroupunmap();
+            ge->expired = time(NULL);
+            ge->count = 0;
+            ge->baseindex = ge->curindex = ge->curdata = ovnull;
+            GROUPlock(gloc, INN_LOCK_UNLOCK);
+        }
+        return true;
     }
-    return true;
-  }
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    return false;
-  }
-  GROUPlock(gloc, INN_LOCK_WRITE);
-  ge = &GROUPentries[gloc.recno];
-  if (ge->count == 0) {
-    ge->low = ge->high + 1;
-    if (lo != NULL)
-      *lo = ge->low;
-    ge->expired = time(NULL);
-    GROUPlock(gloc, INN_LOCK_UNLOCK);
-    return true;
-  }
-  flag = ge->flag;
-  hash = ge->hash;
-  next = ge->next;
-  low = ge->low;
-  high = ge->high;
-
-  newge.low = 0;
-  setinitialge(&newge, hash, &flag, next, 0, high);
-  if ((handle = ovopensearch(group, low, high, true)) == NULL) {
-    ge->expired = time(NULL);
-    GROUPlock(gloc, INN_LOCK_UNLOCK);
-    warn("buffindexed: could not open overview for '%s'", group);
-    return false;
-  }
-  while (ovsearch(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
-    ah = NULL;
-    if (len == 0)
-      continue; 
-    if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
-      if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
-	continue; 
-      SMfreearticle(ah);
-    } else {
-      if (!OVhisthasmsgid(h, data))
-	continue; 
-    }
-    if (innconf->groupbaseexpiry && OVgroupbasedexpire(token, group, data, len, arrived, expires))
-      continue;
-#ifdef OV_DEBUG
-    if (!ovaddrec(&newge, artnum, token, data, len, arrived, expires, ge)) {
-#else
-    if (!ovaddrec(&newge, artnum, token, data, len, arrived, expires)) {
-#endif /* OV_DEBUG */
-      /* Old group cannot be freed. */
-      ovclosesearch(handle, false);
-      ge->expired = time(NULL);
-      GROUPlock(gloc, INN_LOCK_UNLOCK);
-      warn("buffindexed: not enough room to expire overview for group '%s'",
-           group);
-      /* Clean just reserved overview entries. */
-      if (!ovgroupmmap(&newge, newge.low, newge.high, true)) {
-        warn("buffindexed: cannot prepare free operation");
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
         return false;
-      }
+    }
+    GROUPlock(gloc, INN_LOCK_WRITE);
+    ge = &GROUPentries[gloc.recno];
+    if (ge->count == 0) {
+        ge->low = ge->high + 1;
+        if (lo != NULL)
+            *lo = ge->low;
+        ge->expired = time(NULL);
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+        return true;
+    }
+    flag = ge->flag;
+    hash = ge->hash;
+    next = ge->next;
+    low = ge->low;
+    high = ge->high;
+
+    newge.low = 0;
+    setinitialge(&newge, hash, &flag, next, 0, high);
+    if ((handle = ovopensearch(group, low, high, true)) == NULL) {
+        ge->expired = time(NULL);
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+        warn("buffindexed: could not open overview for '%s'", group);
+        return false;
+    }
+    while (
+        ovsearch(handle, &artnum, &data, &len, &token, &arrived, &expires)) {
+        ah = NULL;
+        if (len == 0)
+            continue;
+        if (!SMprobe(EXPENSIVESTAT, &token, NULL) || OVstatall) {
+            if ((ah = SMretrieve(token, RETR_STAT)) == NULL)
+                continue;
+            SMfreearticle(ah);
+        } else {
+            if (!OVhisthasmsgid(h, data))
+                continue;
+        }
+        if (innconf->groupbaseexpiry
+            && OVgroupbasedexpire(token, group, data, len, arrived, expires))
+            continue;
 #ifdef OV_DEBUG
-      freegroupblock(ge);
+        if (!ovaddrec(&newge, artnum, token, data, len, arrived, expires,
+                      ge)) {
 #else
-      freegroupblock();
+        if (!ovaddrec(&newge, artnum, token, data, len, arrived, expires)) {
 #endif /* OV_DEBUG */
-      ovgroupunmap();
+            /* Old group cannot be freed. */
+            ovclosesearch(handle, false);
+            ge->expired = time(NULL);
+            GROUPlock(gloc, INN_LOCK_UNLOCK);
+            warn("buffindexed: not enough room to expire overview for group "
+                 "'%s'",
+                 group);
+            /* Clean just reserved overview entries. */
+            if (!ovgroupmmap(&newge, newge.low, newge.high, true)) {
+                warn("buffindexed: cannot prepare free operation");
+                return false;
+            }
+#ifdef OV_DEBUG
+            freegroupblock(ge);
+#else
+            freegroupblock();
+#endif /* OV_DEBUG */
+            ovgroupunmap();
 
-      return false;
+            return false;
+        }
     }
-  }
-  if (newge.low == 0) {
-    /* No article for the group. */
-    newge.low = newge.high;
-  }
-  if (newge.count == 0) {
-    /* The low water mark should be one more than the high water mark
-     * when there is no article in the group. */
-    newge.low = newge.high + 1;
-  }
-  *ge = newge;
-  if (lo != NULL) {
-    *lo = ge->low;
-  }
-  ovclosesearch(handle, true);
-  ge->expired = time(NULL);
-  GROUPlock(gloc, INN_LOCK_UNLOCK);
-  return true;
+    if (newge.low == 0) {
+        /* No article for the group. */
+        newge.low = newge.high;
+    }
+    if (newge.count == 0) {
+        /* The low water mark should be one more than the high water mark
+         * when there is no article in the group. */
+        newge.low = newge.high + 1;
+    }
+    *ge = newge;
+    if (lo != NULL) {
+        *lo = ge->low;
+    }
+    ovclosesearch(handle, true);
+    ge->expired = time(NULL);
+    GROUPlock(gloc, INN_LOCK_UNLOCK);
+    return true;
 }
 
-bool buffindexed_ctl(OVCTLTYPE type, void *val) {
-  int			total, used, *i, j;
-  float                 *f;
-  OVBUFF		*ovbuff = ovbufftab;
-  OVSORTTYPE		*sorttype;
-  bool			*boolval;
-  GROUPDATABLOCK	*gdb;
+bool
+buffindexed_ctl(OVCTLTYPE type, void *val)
+{
+    int total, used, *i, j;
+    float *f;
+    OVBUFF *ovbuff = ovbufftab;
+    OVSORTTYPE *sorttype;
+    bool *boolval;
+    GROUPDATABLOCK *gdb;
 
-  switch (type) {
-  case OVSPACE:
-    for (total = used = 0 ; ovbuff != (OVBUFF *)NULL ; ovbuff = ovbuff->next) {
-      ovlock(ovbuff, INN_LOCK_READ);
-      ovreadhead(ovbuff);
-      total += ovbuff->totalblk;
-      used += ovbuff->usedblk;
-      ovlock(ovbuff, INN_LOCK_UNLOCK);
+    switch (type) {
+    case OVSPACE:
+        for (total = used = 0; ovbuff != (OVBUFF *) NULL;
+             ovbuff = ovbuff->next) {
+            ovlock(ovbuff, INN_LOCK_READ);
+            ovreadhead(ovbuff);
+            total += ovbuff->totalblk;
+            used += ovbuff->usedblk;
+            ovlock(ovbuff, INN_LOCK_UNLOCK);
+        }
+        f = (float *) val;
+        *f = ((float) used / total) * 100;
+        return true;
+    case OVSORT:
+        sorttype = (OVSORTTYPE *) val;
+        *sorttype = OVNOSORT;
+        return true;
+    case OVCUTOFFLOW:
+        Cutofflow = *(bool *) val;
+        return true;
+    case OVSTATICSEARCH:
+        i = (int *) val;
+        *i = true;
+        for (j = 0; j < GROUPDATAHASHSIZE; j++) {
+            for (gdb = groupdatablock[j]; gdb != NULL; gdb = gdb->next) {
+                if (gdb->mmapped) {
+                    *i = false;
+                    return true;
+                }
+            }
+        }
+        return true;
+    case OVCACHEKEEP:
+        Cache = *(bool *) val;
+        return true;
+    case OVCACHEFREE:
+        boolval = (bool *) val;
+        *boolval = true;
+        if (Gib != NULL) {
+            free(Gib);
+            Gib = NULL;
+            if (Cachesearch != NULL) {
+                free(Cachesearch->group);
+                free(Cachesearch);
+                Cachesearch = NULL;
+            }
+        }
+        return true;
+    default:
+        return false;
     }
-    f = (float *)val;
-    *f = ((float)used / total) * 100;
-    return true;
-  case OVSORT:
-    sorttype = (OVSORTTYPE *)val;
-    *sorttype = OVNOSORT;
-    return true;
-  case OVCUTOFFLOW:
-    Cutofflow = *(bool *)val;
-    return true;
-  case OVSTATICSEARCH:
-    i = (int *)val;
-    *i = true;
-    for (j = 0 ; j < GROUPDATAHASHSIZE ; j++) {
-      for (gdb = groupdatablock[j] ; gdb != NULL ; gdb = gdb->next) {
-	if  (gdb->mmapped) {
-	  *i = false;
-	  return true;
-	}
-      }
+}
+
+void
+buffindexed_close(void)
+{
+    struct stat sb;
+    OVBUFF *ovbuff = NULL;
+#ifdef OV_DEBUG
+    FILE *F = NULL;
+    pid_t pid;
+    char *path = NULL;
+    size_t i;
+    int j;
+    struct ov_trace_array *trace;
+    struct ov_name_table *ntp;
+    size_t length;
+#endif /* OV_DEBUG */
+
+#ifdef OV_DEBUG
+    ovbuff = ovbufftab;
+    for (; ovbuff != (OVBUFF *) NULL; ovbuff = ovbuff->next) {
+        for (i = 0; i < ovbuff->totalblk; i++) {
+            trace = &ovbuff->trace[i];
+            if (trace->ov_trace == NULL)
+                continue;
+            for (j = 0; j <= trace->cur && j < trace->max; j++) {
+                if (trace->ov_trace[j].occupied != 0
+                    || trace->ov_trace[j].freed != 0) {
+                    if (F == NULL) {
+                        length = strlen(innconf->pathtmp) + 11;
+                        path = xmalloc(length);
+                        pid = getpid();
+                        snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
+                        if ((F = fopen(path, "w")) == NULL) {
+                            syswarn("buffindexed: could not open %s", path);
+                            break;
+                        }
+                    }
+                    fprintf(F, "%d: % 6ld, % 2d: 0x%08x, % 10ld, % 10ld\n",
+                            ovbuff->index, i, j, trace->ov_trace[j].gloc.recno,
+                            trace->ov_trace[j].occupied,
+                            trace->ov_trace[j].freed);
+                }
+            }
+        }
     }
-    return true;
-  case OVCACHEKEEP:
-    Cache = *(bool *)val;
-    return true;
-  case OVCACHEFREE:
-    boolval = (bool *)val;
-    *boolval = true;
+    if ((ntp = name_table) != NULL) {
+        if (F == NULL) {
+            length = strlen(innconf->pathtmp) + 11;
+            path = xmalloc(length);
+            pid = getpid();
+            snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
+            if ((F = fopen(path, "w")) == NULL) {
+                syswarn("buffindexed: could not open %s", path);
+            }
+        }
+        if (F != NULL) {
+            while (ntp) {
+                fprintf(F, "0x%08x: %s\n", ntp->recno, ntp->name);
+                ntp = ntp->next;
+            }
+        }
+    }
+    if (F != NULL)
+        fclose(F);
+    if (path != NULL)
+        free(path);
+#endif /* OV_DEBUG */
     if (Gib != NULL) {
-      free(Gib);
-      Gib = NULL;
-      if (Cachesearch != NULL) {
-	free(Cachesearch->group);
-	free(Cachesearch);
-	Cachesearch = NULL;
-      }
+        free(Gib);
+        Gib = NULL;
+        if (Cachesearch != NULL) {
+            free(Cachesearch->group);
+            free(Cachesearch);
+            Cachesearch = NULL;
+        }
     }
-    return true;
-  default:
-    return false;
-  }
-}
+    if (fstat(GROUPfd, &sb) < 0)
+        return;
+    close(GROUPfd);
 
-void buffindexed_close(void) {
-  struct stat	sb;
-  OVBUFF	*ovbuff = NULL;
-#ifdef OV_DEBUG
-  FILE		*F = NULL;
-  pid_t		pid;
-  char		*path = NULL;
-  size_t        i;
-  int           j;
-  struct ov_trace_array *trace;
-  struct ov_name_table	*ntp;
-  size_t length;
-#endif /* OV_DEBUG */
+    if (GROUPheader) {
+        if (munmap((void *) GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
+            syswarn("buffindexed: could not munmap group.index in "
+                    "buffindexed_close");
+            return;
+        }
+        GROUPheader = NULL;
+    }
 
-#ifdef OV_DEBUG
-  ovbuff = ovbufftab;
-  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuff->next) {
-    for (i = 0 ; i < ovbuff->totalblk ; i++) {
-      trace = &ovbuff->trace[i];
-      if (trace->ov_trace == NULL)
-	continue;
-      for (j = 0 ; j <= trace->cur && j < trace->max ; j++) {
-	if (trace->ov_trace[j].occupied != 0 ||
-	  trace->ov_trace[j].freed != 0) {
-	  if (F == NULL) {
-	    length = strlen(innconf->pathtmp) + 11;
-	    path = xmalloc(length);
-	    pid = getpid();
-	    snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
-	    if ((F = fopen(path, "w")) == NULL) {
-	      syswarn("buffindexed: could not open %s", path);
-	      break;
-	    }
-	  }
-	  fprintf(F, "%d: % 6ld, % 2d: 0x%08x, % 10ld, % 10ld\n", ovbuff->index, i, j,
-	  trace->ov_trace[j].gloc.recno,
-	  trace->ov_trace[j].occupied,
-	  trace->ov_trace[j].freed);
-	}
-      }
+    /* sync the bit field */
+    ovbuff = ovbufftab;
+    for (; ovbuff != (OVBUFF *) NULL; ovbuff = ovbuffnext) {
+        if (ovbuff->dirty != 0) {
+            ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
+            ovflushhead(ovbuff);
+        }
+        ovbuffnext = ovbuff->next;
+        if (ovbuff->smc != NULL)
+            smcClose(ovbuff->smc);
+        if (ovbuff->fd >= 0)
+            close(ovbuff->fd);
+        free(ovbuff);
     }
-  }
-  if ((ntp = name_table) != NULL) {
-    if (F == NULL) {
-      length = strlen(innconf->pathtmp) + 11;
-      path = xmalloc(length);
-      pid = getpid();
-      snprintf(path, length, "%s/%d", innconf->pathtmp, pid);
-      if ((F = fopen(path, "w")) == NULL) {
-	syswarn("buffindexed: could not open %s", path);
-      }
-    }
-    if (F != NULL) {
-      while(ntp) {
-	fprintf(F, "0x%08x: %s\n", ntp->recno, ntp->name);
-	ntp = ntp->next;
-      }
-    }
-  }
-  if (F != NULL)
-    fclose(F);
-  if (path != NULL)
-    free(path);
-#endif /* OV_DEBUG */
-  if (Gib != NULL) {
-    free(Gib);
-    Gib = NULL;
-    if (Cachesearch != NULL) {
-      free(Cachesearch->group);
-      free(Cachesearch);
-      Cachesearch = NULL;
-    }
-  }
-  if (fstat(GROUPfd, &sb) < 0)
-    return;
-  close(GROUPfd);
-
-  if (GROUPheader) {
-    if (munmap((void *)GROUPheader, GROUPfilesize(GROUPcount)) < 0) {
-      syswarn("buffindexed: could not munmap group.index in buffindexed_close");
-      return;
-    }
-    GROUPheader = NULL;
-  }
-
-  /* sync the bit field */
-  ovbuff = ovbufftab;
-  for (; ovbuff != (OVBUFF *)NULL; ovbuff = ovbuffnext) {
-    if (ovbuff->dirty != 0) {
-      ovbuff->dirty = OVBUFF_SYNC_COUNT + 1;
-      ovflushhead(ovbuff);
-    }
-    ovbuffnext = ovbuff->next;
-    if (ovbuff->smc != NULL)
-      smcClose(ovbuff->smc);
-    if (ovbuff->fd >= 0)
-      close(ovbuff->fd);
-    free(ovbuff);
-  }
-  ovbufftab = NULL;
-  ovbuffnext = NULL;
+    ovbufftab = NULL;
+    ovbuffnext = NULL;
 }
 
 #ifdef BUFF_DEBUG
-static int countgdb(void) {
-  int			i, count = 0;
-  GROUPDATABLOCK	*gdb;
+static int
+countgdb(void)
+{
+    int i, count = 0;
+    GROUPDATABLOCK *gdb;
 
-  for (i = 0 ; i < GROUPDATAHASHSIZE ; i++) {
-    for (gdb = groupdatablock[i] ; gdb != NULL ; gdb = gdb->next)
-      count++;
-  }
-  return count;
+    for (i = 0; i < GROUPDATAHASHSIZE; i++) {
+        for (gdb = groupdatablock[i]; gdb != NULL; gdb = gdb->next)
+            count++;
+    }
+    return count;
 }
 
-int 
-main(int argc, char **argv) {
-  char			*group, flag[2], buff[OV_BLOCKSIZE];
-  int			lo, hi, count, flags, i;
-  OVSEARCH		*search;
-  GROUPENTRY		*ge;
-  GROUPLOC		gloc;
-  GIBLIST		*giblist;
+int
+main(int argc, char **argv)
+{
+    char *group, flag[2], buff[OV_BLOCKSIZE];
+    int lo, hi, count, flags, i;
+    OVSEARCH *search;
+    GROUPENTRY *ge;
+    GROUPLOC gloc;
+    GIBLIST *giblist;
 
-  if (argc != 2) {
-    fprintf(stderr, "only one argument can be specified\n");
-    exit(1);
-  }
-  /* if innconf isn't already read in, do so. */
-  if (innconf == NULL) {
-    if (!innconf_read(NULL)) {
-      fprintf(stderr, "reading inn.conf failed\n");
-      exit(1);
+    if (argc != 2) {
+        fprintf(stderr, "only one argument can be specified\n");
+        exit(1);
     }
-  }
-  if (!buffindexed_open(OV_READ)) {
-    fprintf(stderr, "buffindexed_open failed\n");
-    exit(1);
-  }
-  fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n", GROUPheader->freelist.recno, GROUPheader->freelist.recno);
-  group = argv[1];
-  if (isdigit((unsigned char) *group)) {
-    gloc.recno = atoi(group);
+    /* if innconf isn't already read in, do so. */
+    if (innconf == NULL) {
+        if (!innconf_read(NULL)) {
+            fprintf(stderr, "reading inn.conf failed\n");
+            exit(1);
+        }
+    }
+    if (!buffindexed_open(OV_READ)) {
+        fprintf(stderr, "buffindexed_open failed\n");
+        exit(1);
+    }
+    fprintf(stdout, "GROUPheader->freelist.recno is %d(0x%08x)\n",
+            GROUPheader->freelist.recno, GROUPheader->freelist.recno);
+    group = argv[1];
+    if (isdigit((unsigned char) *group)) {
+        gloc.recno = atoi(group);
+        ge = &GROUPentries[gloc.recno];
+        fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n",
+                ge->count, gloc.recno, (long) ge->expired);
+        if (ge->count == 0) {
+            GROUPlock(gloc, INN_LOCK_UNLOCK);
+            exit(0);
+        }
+        if (!ovgroupmmap(ge, ge->low, ge->high, true)) {
+            fprintf(stderr, "ovgroupmmap failed\n");
+            GROUPlock(gloc, INN_LOCK_UNLOCK);
+        }
+        for (giblist = Giblist, i = 0; giblist != NULL;
+             giblist = giblist->next, i++)
+            ;
+        fprintf(stdout, "%d index block(s)\n", i);
+        fprintf(stdout, "%d data block(s)\n", countgdb());
+        for (giblist = Giblist; giblist != NULL; giblist = giblist->next) {
+            fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum,
+                    giblist->ov.index);
+        }
+        for (i = 0; i < Gibcount; i++) {
+            if (Gib[i].artnum == 0)
+                continue;
+            if (Gib[i].index == NULLINDEX)
+                fprintf(stdout, "    %lu empty\n",
+                        (unsigned long) Gib[i].offset);
+            else {
+                fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset,
+                        Gib[i].len);
+            }
+        }
+        ovgroupunmap();
+        GROUPlock(gloc, INN_LOCK_UNLOCK);
+        exit(0);
+    }
+    gloc = GROUPfind(group, false);
+    if (GROUPLOCempty(gloc)) {
+        fprintf(stderr, "gloc is null\n");
+    }
+    GROUPlock(gloc, INN_LOCK_READ);
     ge = &GROUPentries[gloc.recno];
-    fprintf(stdout, "left articles are %d for %d, last expiry is %ld\n", ge->count, gloc.recno, (long) ge->expired);
-    if (ge->count == 0) {
-      GROUPlock(gloc, INN_LOCK_UNLOCK);
-      exit(0);
+    fprintf(stdout, "base %d(%d), cur %d(%d), expired at %s\n",
+            ge->baseindex.blocknum, ge->baseindex.index, ge->curindex.blocknum,
+            ge->curindex.index,
+            ge->expired == 0 ? "none\n" : ctime(&ge->expired));
+    if (!buffindexed_groupstats(group, &lo, &hi, &count, &flags)) {
+        fprintf(stderr, "buffindexed_groupstats failed for group %s\n", group);
+        exit(1);
     }
-    if (!ovgroupmmap(ge, ge->low, ge->high, true)) {
-      fprintf(stderr, "ovgroupmmap failed\n");
-      GROUPlock(gloc, INN_LOCK_UNLOCK);
+    flag[0] = (char) flags;
+    flag[1] = '\0';
+    fprintf(stdout, "%s: low is %d, high is %d, count is %d, flag is '%s'\n",
+            group, lo, hi, count, flag);
+    if ((search = (OVSEARCH *) ovopensearch(group, lo, hi, true)) == NULL) {
+        fprintf(stderr, "ovopensearch failed for group %s\n", group);
+        exit(1);
     }
-    for (giblist = Giblist, i = 0 ; giblist != NULL ; giblist = giblist->next, i++);
+    fprintf(stdout, "  gloc is %d(0x%08x)\n", search->gloc.recno,
+            search->gloc.recno);
+    for (giblist = Giblist, i = 0; giblist != NULL;
+         giblist = giblist->next, i++)
+        ;
     fprintf(stdout, "%d index block(s)\n", i);
     fprintf(stdout, "%d data block(s)\n", countgdb());
-    for (giblist = Giblist ; giblist != NULL ; giblist = giblist->next) {
-      fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum, giblist->ov.index);
+    for (giblist = Giblist; giblist != NULL; giblist = giblist->next) {
+        fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum,
+                giblist->ov.index);
     }
-    for (i = 0 ; i < Gibcount ; i++) {
-      if (Gib[i].artnum == 0)
-	continue;
-      if (Gib[i].index == NULLINDEX)
-	fprintf(stdout, "    %lu empty\n", (unsigned long) Gib[i].offset);
-      else {
-	fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset, Gib[i].len);
-      }
+    for (i = 0; i < Gibcount; i++) {
+        if (Gib[i].artnum == 0)
+            continue;
+        if (Gib[i].index == NULLINDEX)
+            fprintf(stdout, "    %lu empty\n", (unsigned long) Gib[i].offset);
+        else {
+            fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset,
+                    Gib[i].len);
+        }
     }
-    ovgroupunmap();
-    GROUPlock(gloc, INN_LOCK_UNLOCK);
-    exit(0);
-  }
-  gloc = GROUPfind(group, false);
-  if (GROUPLOCempty(gloc)) {
-    fprintf(stderr, "gloc is null\n");
-  }
-  GROUPlock(gloc, INN_LOCK_READ);
-  ge = &GROUPentries[gloc.recno];
-  fprintf(stdout, "base %d(%d), cur %d(%d), expired at %s\n", ge->baseindex.blocknum, ge->baseindex.index, ge->curindex.blocknum, ge->curindex.index, ge->expired == 0 ? "none\n" : ctime(&ge->expired));
-  if (!buffindexed_groupstats(group, &lo, &hi, &count, &flags)) {
-    fprintf(stderr, "buffindexed_groupstats failed for group %s\n", group);
-    exit(1);
-  }
-  flag[0] = (char)flags;
-  flag[1] = '\0';
-  fprintf(stdout, "%s: low is %d, high is %d, count is %d, flag is '%s'\n", group, lo, hi, count, flag);
-  if ((search = (OVSEARCH *)ovopensearch(group, lo, hi, true)) == NULL) {
-    fprintf(stderr, "ovopensearch failed for group %s\n", group);
-    exit(1);
-  }
-  fprintf(stdout, "  gloc is %d(0x%08x)\n", search->gloc.recno, search->gloc.recno);
-  for (giblist = Giblist, i = 0 ; giblist != NULL ; giblist = giblist->next, i++);
-  fprintf(stdout, "%d index block(s)\n", i);
-  fprintf(stdout, "%d data block(s)\n", countgdb());
-  for (giblist = Giblist ; giblist != NULL ; giblist = giblist->next) {
-    fprintf(stdout, "  % 8d(% 5d)\n", giblist->ov.blocknum, giblist->ov.index);
-  }
-  for (i = 0 ; i < Gibcount ; i++) {
-    if (Gib[i].artnum == 0)
-      continue;
-    if (Gib[i].index == NULLINDEX)
-      fprintf(stdout, "    %lu empty\n", (unsigned long) Gib[i].offset);
-    else {
-      fprintf(stdout, "    %lu %d\n", (unsigned long) Gib[i].offset, Gib[i].len);
+    {
+        ARTNUM artnum = 0;
+        char *data = NULL;
+        int len = 0;
+        TOKEN token;
+        while (buffindexed_search((void *) search, &artnum, &data, &len,
+                                  &token, NULL)) {
+            if (len == 0)
+                fprintf(stdout, "%lu: len is 0\n", artnum);
+            else {
+                memcpy(buff, data, len);
+                buff[len] = '\0';
+                fprintf(stdout, "%lu: %s\n", artnum, buff);
+            }
+        }
     }
-  }
-  {
-    ARTNUM artnum = 0;
-    char *data = NULL;
-    int len = 0;
-    TOKEN token;
-    while (buffindexed_search((void *)search, &artnum, &data, &len, &token, NULL)) {
-      if (len == 0)
-	fprintf(stdout, "%lu: len is 0\n", artnum);
-      else {
-	memcpy(buff, data, len);
-	buff[len] = '\0';
-	fprintf(stdout, "%lu: %s\n", artnum, buff);
-      }
-    }
-  }
-  return 0;
+    return 0;
 }
 #endif /* BUFF_DEBUG */

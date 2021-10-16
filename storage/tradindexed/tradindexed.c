@@ -14,8 +14,8 @@
 #include "clibrary.h"
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/ov.h"
 #include "inn/storage.h"
 #include "tdx-private.h"
@@ -99,7 +99,8 @@ tradindexed_open(int mode)
     if (fdlimit > 0 && fdlimit < cache_size * 2) {
         warn("tradindexed: not enough file descriptors for an overview cache"
              " size of %lu; increase rlimitnofile or decrease overcachesize"
-             " to at most %lu", cache_size, fdlimit / 2);
+             " to at most %lu",
+             cache_size, fdlimit / 2);
         cache_size = (fdlimit > 2) ? fdlimit / 2 : 1;
     }
     tradindexed->cache = tdx_cache_create(cache_size);

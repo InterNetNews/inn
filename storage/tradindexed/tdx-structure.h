@@ -65,21 +65,21 @@ struct loc {
    not be a power of two and has no special constraints.  Changing this at
    present will break backward compatibility with group.index files written by
    previous versions of the code. */
-#define TDX_HASH_SIZE   (16 * 1024)
+#define TDX_HASH_SIZE (16 * 1024)
 
 /* A magic number for the group.index file so that we can later change the
    format in a backward-compatible fashion.
    This magic number stands for "fifo feed". */
-#define TDX_MAGIC       (~(0xf1f0f33d))
+#define TDX_MAGIC (~(0xf1f0f33d))
 
 /* The header at the top of group.index.  magic contains GROUPHEADERMAGIC
    always; hash contains pointers to the heads of the entry chains, and
    freelist points to a linked list of free entries (entries that were used
    for groups that have since been deleted). */
 struct group_header {
-    int         magic;
-    struct loc  hash[TDX_HASH_SIZE];
-    struct loc  freelist;
+    int magic;
+    struct loc hash[TDX_HASH_SIZE];
+    struct loc freelist;
 };
 
 /* An entry for a particular group.  Note that a good bit of active file
@@ -99,30 +99,30 @@ struct group_header {
    cannot be changed until the whole format of the group.index file is changed
    since it's currently read as binary structs directly from disk. */
 struct group_entry {
-    HASH        hash;           /* MD5 hash of the group name. */
-    HASH        alias;          /* Intended to point to the group this group
-                                   is an alias for.  Not currently used. */
-    ARTNUM      high;           /* High article number in the group. */
-    ARTNUM      low;            /* Low article number in the group. */
-    ARTNUM      base;           /* Article number of the first entry in the
-                                   .IDX index file for the group. */
-    int         count;          /* Number of articles in group. */
-    int         flag;           /* Posting/moderation status. */
-    time_t      deleted;        /* When this group was deleted, or 0 if the
-                                   group is still valid. */    
-    ino_t       indexinode;     /* The inode of the index file for the group,
-                                   used to detect when the file has been
-                                   recreated and swapped out. */
-    struct loc  next;           /* Next block in this chain. */
+    HASH hash;        /* MD5 hash of the group name. */
+    HASH alias;       /* Intended to point to the group this group
+                         is an alias for.  Not currently used. */
+    ARTNUM high;      /* High article number in the group. */
+    ARTNUM low;       /* Low article number in the group. */
+    ARTNUM base;      /* Article number of the first entry in the
+                         .IDX index file for the group. */
+    int count;        /* Number of articles in group. */
+    int flag;         /* Posting/moderation status. */
+    time_t deleted;   /* When this group was deleted, or 0 if the
+                         group is still valid. */
+    ino_t indexinode; /* The inode of the index file for the group,
+                         used to detect when the file has been
+                         recreated and swapped out. */
+    struct loc next;  /* Next block in this chain. */
 };
 
 /* An entry in the per-group .IDX index file. */
 struct index_entry {
-    off_t       offset;
-    int         length;
-    time_t      arrived;
-    time_t      expires;        /* Expiration time from Expires: header. */
-    TOKEN       token;
+    off_t offset;
+    int length;
+    time_t arrived;
+    time_t expires; /* Expiration time from Expires: header. */
+    TOKEN token;
 };
 
 #endif /* INN_TDX_STRUCTURE_H */

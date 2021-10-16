@@ -92,12 +92,12 @@
 #include "inn/fdflag.h"
 #include "inn/hashtab.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/mmap.h"
+#include "inn/paths.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
-#include "inn/paths.h"
 #include "tdx-private.h"
 #include "tdx-structure.h"
 
@@ -238,9 +238,10 @@ index_map(struct group_index *index)
             syswarn("tradindexed: cannot mmap %s", index->path);
             return false;
         }
-        index->header = (struct group_header *)(void *) data;
-        index->entries = (struct group_entry *)
-            (void *)(data + sizeof(struct group_header));
+        index->header = (struct group_header *) (void *) data;
+        index->entries =
+            (struct group_entry *) (void *) (data
+                                             + sizeof(struct group_header));
         return true;
     }
 }
@@ -266,7 +267,7 @@ file_open_group_index(struct group_index *index, struct stat *st)
     fdflag_close_exec(index->fd, true);
     return true;
 
- fail:
+fail:
     if (index->fd >= 0) {
         close(index->fd);
         index->fd = -1;
@@ -294,14 +295,14 @@ index_maybe_remap(struct group_index *index, long loc)
     /* Don't remap if remapping wouldn't actually help. */
     r = fstat(index->fd, &st);
     if (r == -1) {
-	if (errno == ESTALE) {
-	    index_unmap(index);
-	    if (!file_open_group_index(index, &st))
-		return false;
-	} else {
-	    syswarn("tradindexed: cannot stat %s", index->path);
-	    return false;
-	}
+        if (errno == ESTALE) {
+            index_unmap(index);
+            if (!file_open_group_index(index, &st))
+                return false;
+        } else {
+            syswarn("tradindexed: cannot stat %s", index->path);
+            return false;
+        }
     }
     count = index_entry_count(st.st_size);
     if (count < loc && index->header != NULL)
@@ -401,7 +402,7 @@ tdx_index_open(bool writable)
     index->path = concatpath(innconf->pathoverview, "group.index");
     index->writable = writable;
     if (!file_open_group_index(index, &st)) {
-	goto fail;
+        goto fail;
     }
     if ((size_t) st.st_size > sizeof(struct group_header)) {
         index->count = index_entry_count(st.st_size);
@@ -421,7 +422,7 @@ tdx_index_open(bool writable)
     }
     return index;
 
- fail:
+fail:
     tdx_index_close(index);
     return NULL;
 }
@@ -475,8 +476,8 @@ index_add(struct group_index *index, struct group_entry *entry)
     bucket = index_bucket(entry->hash);
     loc = entry_loc(index, entry);
     if (loc == index->header->hash[bucket].recno) {
-        warn("tradindexed: refusing to add a loop for %ld in bucket %ld",
-             loc, bucket);
+        warn("tradindexed: refusing to add a loop for %ld in bucket %ld", loc,
+             bucket);
         return;
     }
     entry->next.recno = index->header->hash[bucket].recno;
@@ -500,7 +501,7 @@ index_find(struct group_index *index, const char *group)
         return -1;
     hash = Hash(group, strlen(group));
     if (innconf->nfsreader && !index_maybe_remap(index, LONG_MAX))
-	return -1;
+        return -1;
     loc = index->header->hash[index_bucket(hash)].recno;
 
     while (loc >= 0) {
@@ -617,7 +618,7 @@ tdx_index_entry(struct group_index *index, const char *group)
         return NULL;
     entry = index->entries + loc;
     if (innconf->tradindexedmmap && innconf->nfsreader)
-	inn_msync_page(entry, sizeof *entry, MS_INVALIDATE);
+        inn_msync_page(entry, sizeof *entry, MS_INVALIDATE);
     return entry;
 }
 
@@ -792,7 +793,7 @@ tdx_data_open(struct group_index *index, const char *group,
     data->base = base;
     return data;
 
- fail:
+fail:
     tdx_data_close(data);
     return NULL;
 }
@@ -867,7 +868,7 @@ tdx_data_add(struct group_index *index, struct group_entry *entry,
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return true;
 
- fail:
+fail:
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     return false;
 }
@@ -974,7 +975,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     tdx_index_close(index);
     return true;
 
- fail:
+fail:
     offset = entry - index->entries;
     index_lock_group(index->fd, offset, INN_LOCK_UNLOCK);
     if (data != NULL)
@@ -1114,9 +1115,8 @@ tdx_index_print(const char *name, const struct group_entry *entry,
                 FILE *output)
 {
     fprintf(output, "%s %lu %lu %lu %lu %c %lu %lu\n", name, entry->high,
-            entry->low, entry->base, (unsigned long) entry->count,
-            entry->flag, (unsigned long) entry->deleted,
-            (unsigned long) entry->indexinode);
+            entry->low, entry->base, (unsigned long) entry->count, entry->flag,
+            (unsigned long) entry->deleted, (unsigned long) entry->indexinode);
 }
 
 
@@ -1178,13 +1178,13 @@ index_audit_loc(struct group_index *index, int *loc, long number,
     bool error = false;
 
     if (*loc >= index->count) {
-        warn("tradindexed: out of range index %d in %s %ld",
-             *loc, (entry == NULL ? "bucket" : "entry"), number);
+        warn("tradindexed: out of range index %d in %s %ld", *loc,
+             (entry == NULL ? "bucket" : "entry"), number);
         error = true;
     }
     if (*loc < 0 && *loc != -1) {
-        warn("tradindexed: invalid negative index %d in %s %ld",
-             *loc, (entry == NULL ? "bucket" : "entry"), number);
+        warn("tradindexed: invalid negative index %d in %s %ld", *loc,
+             (entry == NULL ? "bucket" : "entry"), number);
         error = true;
     }
     if (entry != NULL && *loc == number) {
@@ -1248,8 +1248,8 @@ index_audit_header(struct group_index *index, bool fix)
             next = &entry->next.recno;
             if (entry->deleted == 0 && bucket != index_bucket(entry->hash)) {
                 warn("tradindexed: entry %ld is in bucket %ld instead of its"
-                     " correct bucket %ld", current, bucket,
-                     index_bucket(entry->hash));
+                     " correct bucket %ld",
+                     current, bucket, index_bucket(entry->hash));
                 if (fix) {
                     entry_splice(entry, parent);
                     next = parent;
@@ -1257,14 +1257,16 @@ index_audit_header(struct group_index *index, bool fix)
             } else {
                 if (reachable[current])
                     warn("tradindexed: entry %ld is reachable from multiple"
-                         " paths", current);
+                         " paths",
+                         current);
                 reachable[current] = true;
             }
             index_audit_deleted(entry, current, fix);
             index_audit_loc(index, &entry->next.recno, current, entry, fix);
             if (entry->deleted != 0) {
                 warn("tradindexed: entry %ld is deleted but not in the free"
-                     " list", current);
+                     " list",
+                     current);
                 if (fix) {
                     entry_splice(entry, parent);
                     next = parent;

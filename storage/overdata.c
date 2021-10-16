@@ -11,18 +11,17 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
-#include "inn/wire.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
+#include "inn/wire.h"
 #include "ovinterface.h"
 
 
 /* The standard overview fields.  The order of these fields is important. */
-static const char * const fields[] = {
-    "Subject", "From", "Date", "Message-ID", "References", "Bytes", "Lines"
-};
+static const char *const fields[] = {
+    "Subject", "From", "Date", "Message-ID", "References", "Bytes", "Lines"};
 
 
 /*
@@ -35,14 +34,14 @@ overview_fields(void)
     static struct cvector *list = NULL;
 
     if (list == NULL) {
-	unsigned int field;
+        unsigned int field;
 
-	list = cvector_new();
-	cvector_resize(list, ARRAY_SIZE(fields));
+        list = cvector_new();
+        cvector_resize(list, ARRAY_SIZE(fields));
 
-	for (field = 0; field < ARRAY_SIZE(fields); ++field) {
-	    cvector_add(list, fields[field]);
-	}
+        for (field = 0; field < ARRAY_SIZE(fields); ++field) {
+            cvector_add(list, fields[field]);
+        }
     }
     return list;
 }
@@ -66,7 +65,7 @@ overview_extra_fields(bool hidden)
 
     if (hidden) {
         vector_resize(list, innconf->extraoverviewadvertised->count
-                            + innconf->extraoverviewhidden->count + 1);
+                                + innconf->extraoverviewhidden->count + 1);
     } else {
         vector_resize(list, innconf->extraoverviewadvertised->count + 1);
     }
@@ -124,7 +123,8 @@ build_header(const char *article, size_t length, const char *header,
         const char *next = end + 1;
 
         while (next != NULL) {
-            next = wire_findheader(next, length - (next - article), header, false);
+            next = wire_findheader(next, length - (next - article), header,
+                                   false);
             if (next != NULL) {
                 data = next;
                 end = wire_endheader(data, article + length - 1);
@@ -245,11 +245,11 @@ valid_overview_string(const char *string, bool full)
 
 /*
 **  Check the given overview data and make sure it's well-formed.  Extension
-**  headers are not checked against LIST OVERVIEW.FMT (having a different set of
-**  extension headers doesn't make the data invalid), but the presence of the
-**  standard fields is checked.  Also checked is whether the article number in
-**  the data matches the passed article number.  Returns true if the data is
-**  okay, false otherwise.
+**  headers are not checked against LIST OVERVIEW.FMT (having a different set
+**  of extension headers doesn't make the data invalid), but the presence of
+**  the standard fields is checked.  Also checked is whether the article
+**  number in the data matches the passed article number.
+**  Returns true if the data is okay, false otherwise.
 */
 bool
 overview_check(const char *data, size_t length, ARTNUM article)
@@ -286,7 +286,7 @@ overview_check(const char *data, size_t length, ARTNUM article)
     free(copy);
     return true;
 
- fail:
+fail:
     cvector_free(overview);
     free(copy);
     return false;
@@ -304,11 +304,11 @@ overview_index(const char *field, const struct vector *extra)
     size_t i;
 
     for (i = 0; i < ARRAY_SIZE(fields); i++)
-	if (strcasecmp(field, fields[i]) == 0)
-	    return i;
+        if (strcasecmp(field, fields[i]) == 0)
+            return i;
     for (i = 0; i < extra->count; i++)
-	if (strcasecmp(field, extra->strings[i]) == 0)
-	    return i + ARRAY_SIZE(fields);
+        if (strcasecmp(field, extra->strings[i]) == 0)
+            return i + ARRAY_SIZE(fields);
     return -1;
 }
 
@@ -325,38 +325,38 @@ overview_index(const char *field, const struct vector *extra)
 */
 struct cvector *
 overview_split(const char *line, size_t length, ARTNUM *number,
-	       struct cvector *vector)
+               struct cvector *vector)
 {
     const char *p = NULL;
 
     if (vector == NULL) {
-	vector = cvector_new();
+        vector = cvector_new();
     } else {
-	cvector_clear(vector);
+        cvector_clear(vector);
     }
     while (line != NULL) {
-	/* The first field is the article number. */
-	if (p == NULL) {
-	    if (number != NULL) {
-		*number = atoi(line);
-	    }
-	} else {
-	    cvector_add(vector, line);
-	}
-	p = memchr(line, '\t', length);
-	if (p != NULL) {
-	    /* Skip over the tab. */
-	    ++p;
-	    /* And calculate the remaining length. */
-	    length -= (p - line);
-	} else {
-	    /* Add in a pointer to beyond the end of the final
-	       component, so you can always calculate the length;
-	       overview lines are always terminated with \r\n, so the
-	       -1 ends up chopping those off. */
-	    cvector_add(vector, line + length - 1);
-	}
-	line = p;
+        /* The first field is the article number. */
+        if (p == NULL) {
+            if (number != NULL) {
+                *number = atoi(line);
+            }
+        } else {
+            cvector_add(vector, line);
+        }
+        p = memchr(line, '\t', length);
+        if (p != NULL) {
+            /* Skip over the tab. */
+            ++p;
+            /* And calculate the remaining length. */
+            length -= (p - line);
+        } else {
+            /* Add in a pointer to beyond the end of the final
+               component, so you can always calculate the length;
+               overview lines are always terminated with \r\n, so the
+               -1 ends up chopping those off. */
+            cvector_add(vector, line + length - 1);
+        }
+        line = p;
     }
     return vector;
 }
@@ -368,7 +368,8 @@ overview_split(const char *line, size_t length, ARTNUM *number,
 **  can request them by their index.
 */
 char *
-overview_get_standard_header(const struct cvector *vector, unsigned int element)
+overview_get_standard_header(const struct cvector *vector,
+                             unsigned int element)
 {
     char *field = NULL;
     size_t len;
@@ -421,4 +422,3 @@ overview_get_extra_header(const struct cvector *vector, const char *header)
     /* The required header was not found in the extra overview fields. */
     return NULL;
 }
-

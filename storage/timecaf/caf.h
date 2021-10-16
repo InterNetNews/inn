@@ -10,21 +10,24 @@
 */
 
 typedef struct _CAFHEADER {
-    char        Magic[4]; /* Magic Number "CRMT" */
-    ARTNUM      Low; /* lowest article in the file */
-    ARTNUM      NumSlots; /* number of articles there are room for in the TOC */
-    ARTNUM      High; /* last article actually present in the file */
-    size_t	Free; /* amount of space currently unused (freed by cancels/expires) */
-    off_t       StartDataBlock; /* offset of first article data block. */
+    char Magic[4];   /* Magic Number "CRMT" */
+    ARTNUM Low;      /* lowest article in the file */
+    ARTNUM NumSlots; /* number of articles there are room for in the TOC */
+    ARTNUM High;     /* last article actually present in the file */
+    size_t
+        Free; /* amount of space currently unused (freed by cancels/expires) */
+    off_t StartDataBlock;   /* offset of first article data block. */
     unsigned int BlockSize; /* unit of allocation for CAF files. */
-    size_t      FreeZoneTabSize; /* amount of space taken up by the free zone table. */
-    size_t      FreeZoneIndexSize; /* size taken up by the "index" part of the free zone table. */
-    time_t      LastCleaned; /* note time of last cleaning. */
-    int         spare[3];
+    size_t
+        FreeZoneTabSize; /* amount of space taken up by the free zone table. */
+    size_t FreeZoneIndexSize; /* size taken up by the "index" part of the free
+                                 zone table. */
+    time_t LastCleaned;       /* note time of last cleaning. */
+    int spare[3];
 } CAFHEADER;
 
-#define CAF_MAGIC "CRMT"
-#define CAF_MAGIC_LEN 4
+#define CAF_MAGIC             "CRMT"
+#define CAF_MAGIC_LEN         4
 #define CAF_DEFAULT_BLOCKSIZE 512
 
 /*
@@ -55,8 +58,8 @@ typedef struct _CAFHEADER {
 ** extend the CAF file instead.
 */
 
-#define CAF_DEFAULT_FZSIZE (CAF_DEFAULT_BLOCKSIZE-sizeof(CAFHEADER))
-#define CAF_MIN_FZSIZE 128
+#define CAF_DEFAULT_FZSIZE (CAF_DEFAULT_BLOCKSIZE - sizeof(CAFHEADER))
+#define CAF_MIN_FZSIZE     128
 
 /*
 ** (Note: the CAFBITMAP structure isn't what's actually stored on disk
@@ -73,7 +76,8 @@ typedef struct _CAFBITMAP {
     off_t MaxDataBlock; /* can only handle offsets < this with this bitmap. */
     size_t FreeZoneTabSize;
     size_t FreeZoneIndexSize;
-    size_t BytesPerBMB; /* size of chunk, in bytes, that any given BMBLK can map. */
+    size_t BytesPerBMB; /* size of chunk, in bytes, that any given BMBLK can
+                           map. */
     unsigned int BlockSize;
     unsigned int NumBMB; /* size of Blocks array. */
     struct _CAFBMB **Blocks;
@@ -93,7 +97,7 @@ typedef struct _CAFBMB {
 */
 
 typedef struct _CAFTOCENT {
-    off_t  Offset;
+    off_t Offset;
     size_t Size;
     time_t ModTime;
 } CAFTOCENT;
@@ -116,11 +120,14 @@ typedef struct _CAFTOCENT {
 #define CAF_NAME "CF"
 
 extern int CAFOpenArtRead(const char *cfpath, ARTNUM art, size_t *len);
-extern int CAFOpenArtWrite(char *cfpath, ARTNUM *art, int WaitLock, size_t size);
+extern int CAFOpenArtWrite(char *cfpath, ARTNUM *art, int WaitLock,
+                           size_t size);
 extern int CAFStartWriteFd(int fd, ARTNUM *art, size_t size);
 extern int CAFFinishWriteFd(int fd);
 extern int CAFFinishArtWrite(int fd);
-extern int CAFCreateCAFFile(char *cfpath, ARTNUM lowart, ARTNUM tocsize, size_t cfsize, int nolink, char *temppath, size_t pathlen);
+extern int CAFCreateCAFFile(char *cfpath, ARTNUM lowart, ARTNUM tocsize,
+                            size_t cfsize, int nolink, char *temppath,
+                            size_t pathlen);
 extern const char *CAFErrorStr(void);
 extern CAFTOCENT *CAFReadTOC(char *cfpath, CAFHEADER *ch);
 extern int CAFRemoveMultArts(char *cfpath, unsigned int narts, ARTNUM *arts);
@@ -134,7 +141,7 @@ extern int CAFStatArticle(char *path, ARTNUM art, struct stat *st);
 extern int CAFOpenReadTOC(char *cfpath, CAFHEADER *ch, CAFTOCENT **tocpp);
 extern int CAFReadHeader(int fd, CAFHEADER *h);
 extern off_t CAFRoundOffsetUp(off_t offt, unsigned int bsize);
-extern CAFBITMAP * CAFReadFreeBM(int fd, CAFHEADER *h);
+extern CAFBITMAP *CAFReadFreeBM(int fd, CAFHEADER *h);
 extern void CAFDisposeBitmap(CAFBITMAP *cbm);
 
 /*
@@ -147,11 +154,12 @@ extern int CAFIsBlockFree(CAFBITMAP *bm, int fd, off_t block);
 extern int caf_error; /* last error encountered by library. */
 extern int caf_errno; /* saved value of errno here if I/O error hit by lib. */
 
-#define CAF_ERR_IO 1 		/* generic I/O error, check caf_errno for details */
-#define CAF_ERR_BADFILE 2 	/* corrupt file */
-#define CAF_ERR_ARTNOTHERE 3 	/* article not in the database */
-#define	CAF_ERR_CANTCREATECAF 4 /* can't create the CAF file, see errno. */
-#define CAF_ERR_FILEBUSY 5      /* file locked by someone else. */
-#define CAF_ERR_ARTWONTFIT 6 	/* outside the range in the TOC */
-#define CAF_ERR_ARTALREADYHERE 7 /* tried to create an article that was already here. */
-#define CAF_ERR_BOGUSPATH 8	/* pathname not parseable. */
+#define CAF_ERR_IO            1 /* generic I/O error, check caf_errno for details */
+#define CAF_ERR_BADFILE       2 /* corrupt file */
+#define CAF_ERR_ARTNOTHERE    3 /* article not in the database */
+#define CAF_ERR_CANTCREATECAF 4 /* can't create the CAF file, see errno. */
+#define CAF_ERR_FILEBUSY      5 /* file locked by someone else. */
+#define CAF_ERR_ARTWONTFIT    6 /* outside the range in the TOC */
+#define CAF_ERR_ARTALREADYHERE \
+    7 /* tried to create an article that was already here. */
+#define CAF_ERR_BOGUSPATH 8 /* pathname not parseable. */

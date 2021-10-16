@@ -16,91 +16,97 @@
 #include "inn/libinn.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
-#include "ovinterface.h"
 #include "inn/paths.h"
 #include "inn/storage.h"
 #include "inn/vector.h"
+#include "ovinterface.h"
 
-enum KRP {Keep, Remove, Poison};
+enum KRP
+{
+    Keep,
+    Remove,
+    Poison
+};
 
 /* Statistics */
-long             EXPprocessed;
-long             EXPunlinked;
-long             EXPoverindexdrop;
+long EXPprocessed;
+long EXPunlinked;
+long EXPoverindexdrop;
 
-#define NGH_HASH(Name, p, j)    \
-        for (p = Name, j = 0; *p; ) j = (j << 5) + j + *p++
-#define NGH_SIZE        2048
-#define NGH_BUCKET(j)   &NGHtable[j & (NGH_SIZE - 1)]
+#define NGH_HASH(Name, p, j)   \
+    for (p = Name, j = 0; *p;) \
+    j = (j << 5) + j + *p++
+#define NGH_SIZE      2048
+#define NGH_BUCKET(j) &NGHtable[j & (NGH_SIZE - 1)]
 
-#define OVFMT_UNINIT    -2
-#define OVFMT_NODATE    -1
-#define OVFMT_NOXREF    -1
+#define OVFMT_UNINIT -2
+#define OVFMT_NODATE -1
+#define OVFMT_NOXREF -1
 
-static int              Dateindex = OVFMT_UNINIT; 
-static int              Xrefindex = OVFMT_UNINIT;
-static int              Messageidindex = OVFMT_UNINIT;
+static int Dateindex = OVFMT_UNINIT;
+static int Xrefindex = OVFMT_UNINIT;
+static int Messageidindex = OVFMT_UNINIT;
 
 typedef struct _NEWSGROUP {
-    char                *Name;
-    char                *Rest;
-    unsigned long       Last;
-    unsigned long       Lastpurged;
-        /* These fields are new. */
-    time_t              Keep;
-    time_t              Default;
-    time_t              Purge;
+    char *Name;
+    char *Rest;
+    unsigned long Last;
+    unsigned long Lastpurged;
+    /* These fields are new. */
+    time_t Keep;
+    time_t Default;
+    time_t Purge;
     /* X flag => remove entire article when it expires in this group */
-    bool                Poison;
+    bool Poison;
 } NEWSGROUP;
 
 typedef struct _NGHASH {
-    int         Size;
-    int         Used;
-    NEWSGROUP   **Groups;
+    int Size;
+    int Used;
+    NEWSGROUP **Groups;
 } NGHASH;
 
-#define MAGIC_TIME      49710.
+#define MAGIC_TIME 49710.
 
 typedef struct _BADGROUP {
-    struct _BADGROUP    *Next;
-    char                *Name;
+    struct _BADGROUP *Next;
+    char *Name;
 } BADGROUP;
 
 /*
 **  Information about the schema of the news overview files.
 */
-typedef struct _ARTOVERFIELD {  
-    char        *Header;
-    int         Length;
-    bool        HasHeader;
-    bool        NeedsHeader;
+typedef struct _ARTOVERFIELD {
+    char *Header;
+    int Length;
+    bool HasHeader;
+    bool NeedsHeader;
 } ARTOVERFIELD;
 
-static BADGROUP         *EXPbadgroups;
-static int              nGroups;
-static NEWSGROUP        *Groups;
-static NEWSGROUP        EXPdefault;
-static NGHASH           NGHtable[NGH_SIZE];
+static BADGROUP *EXPbadgroups;
+static int nGroups;
+static NEWSGROUP *Groups;
+static NEWSGROUP EXPdefault;
+static NGHASH NGHtable[NGH_SIZE];
 
-static char             **arts;
-static enum KRP         *krps;
+static char **arts;
+static enum KRP *krps;
 
-static ARTOVERFIELD *   ARTfields;
-static int              ARTfieldsize;
-static bool             ReadOverviewfmt = false;
+static ARTOVERFIELD *ARTfields;
+static int ARTfieldsize;
+static bool ReadOverviewfmt = false;
 
-static char *           ACTIVE;
+static char *ACTIVE;
 
 /* FIXME: The following variables are shared between this file and ov.c.
    This should be cleaned up with a better internal interface. */
-time_t   OVnow;
-FILE *   EXPunlinkfile;
-bool     OVignoreselfexpire;
-bool     OVusepost;
-bool     OVkeep;
-bool     OVearliest;
-bool     OVquiet;
+time_t OVnow;
+FILE *EXPunlinkfile;
+bool OVignoreselfexpire;
+bool OVusepost;
+bool OVkeep;
+bool OVearliest;
+bool OVquiet;
 
 
 /*
@@ -109,12 +115,12 @@ bool     OVquiet;
 static NEWSGROUP *
 NGfind(char *Name)
 {
-    char                *p;
-    int                 i;
-    unsigned int        j;
-    NEWSGROUP           **ngp;
-    char                c;
-    NGHASH              *htp;
+    char *p;
+    int i;
+    unsigned int j;
+    NEWSGROUP **ngp;
+    char c;
+    NGHASH *htp;
 
     NGH_HASH(Name, p, j);
     htp = NGH_BUCKET(j);
@@ -130,8 +136,8 @@ NGfind(char *Name)
 static int
 NGcompare(const void *p1, const void *p2)
 {
-    const NEWSGROUP * const * ng1 = p1;
-    const NEWSGROUP * const * ng2 = p2;
+    const NEWSGROUP *const *ng1 = p1;
+    const NEWSGROUP *const *ng2 = p2;
 
     return ng1[0]->Last - ng2[0]->Last;
 }
@@ -146,18 +152,19 @@ EXPsplit(char *p, char sep, char **argv, int count)
     int i;
 
     if (!p)
-      return 0;
+        return 0;
 
     while (*p == sep)
-      ++p;
+        ++p;
 
     if (*p == '\0')
-      return 0;
+        return 0;
 
-    for (i = 1, *argv++ = p; *p; )
+    for (i = 1, *argv++ = p; *p;)
         if (*p++ == sep) {
             p[-1] = '\0';
-            for (; *p == sep; p++);
+            for (; *p == sep; p++)
+                ;
             if (!*p)
                 return i;
             if (++i == count)
@@ -174,15 +181,15 @@ EXPsplit(char *p, char sep, char **argv, int count)
 static void
 BuildGroups(char *active)
 {
-    NGHASH              *htp;
-    NEWSGROUP           *ngp;
-    char                *p;
-    char                *q;
-    int                 i;
-    unsigned            j;
-    int                 lines;
-    int                 NGHbuckets;
-    char                *fields[5];
+    NGHASH *htp;
+    NEWSGROUP *ngp;
+    char *p;
+    char *q;
+    int i;
+    unsigned j;
+    int lines;
+    int NGHbuckets;
+    char *fields[5];
 
     /* Count the number of groups. */
     for (p = active, i = 0; (p = strchr(p, '\n')) != NULL; p++, i++)
@@ -208,11 +215,12 @@ BuildGroups(char *active)
             fprintf(stderr, "%s: line %d missing newline\n", ACTIVE, lines);
             exit(1);
         }
-	if (*p == '.')
-	     continue;
+        if (*p == '.')
+            continue;
         *q = '\0';
         if (EXPsplit(p, ' ', fields, ARRAY_SIZE(fields)) != 4) {
-            fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE, lines);
+            fprintf(stderr, "%s: line %d wrong number of fields\n", ACTIVE,
+                    lines);
             exit(1);
         }
         ngp->Name = fields[0];
@@ -224,20 +232,21 @@ BuildGroups(char *active)
         htp = NGH_BUCKET(j);
         if (htp->Used >= htp->Size) {
             htp->Size += NGHbuckets;
-            htp->Groups = xrealloc(htp->Groups, htp->Size * sizeof(NEWSGROUP *));
+            htp->Groups =
+                xrealloc(htp->Groups, htp->Size * sizeof(NEWSGROUP *));
         }
         htp->Groups[htp->Used++] = ngp;
     }
 
     /* Sort each hash bucket. */
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++)
-    if (htp->Used > 1)
-        qsort(htp->Groups, htp->Used, sizeof htp->Groups[0], NGcompare);
+        if (htp->Used > 1)
+            qsort(htp->Groups, htp->Used, sizeof htp->Groups[0], NGcompare);
 
     /* Ok, now change our use of the Last field.  Set them all to maxint. */
     for (i = NGH_SIZE, htp = NGHtable; --i >= 0; htp++) {
-        NEWSGROUP       **ngpa;
-        int             k;
+        NEWSGROUP **ngpa;
+        int k;
 
         for (ngpa = htp->Groups, k = htp->Used; --k >= 0; ngpa++) {
             ngpa[0]->Last = ~(unsigned long) 0;
@@ -255,12 +264,12 @@ BuildGroups(char *active)
 static bool
 EXPgetnum(int line, char *word, time_t *v, const char *name)
 {
-    char                *p;
-    bool                SawDot;
-    double              d;
+    char *p;
+    bool SawDot;
+    double d;
 
     if (strcasecmp(word, "never") == 0) {
-        *v = (time_t)0;
+        *v = (time_t) 0;
         return true;
     }
 
@@ -274,17 +283,16 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
             if (SawDot)
                 break;
             SawDot = true;
-        }
-        else if (!isdigit((unsigned char) *p))
+        } else if (!isdigit((unsigned char) *p))
             break;
     if (*p) {
-        fprintf(stderr, "Line %d, bad `%c' character in %s field\n",
-                line, *p, name);
+        fprintf(stderr, "Line %d, bad `%c' character in %s field\n", line, *p,
+                name);
         return false;
     }
     d = atof(word);
     if (d > MAGIC_TIME)
-        *v = (time_t)0;
+        *v = (time_t) 0;
     else
         *v = OVnow - (time_t)(d * 86400.);
     return true;
@@ -296,22 +304,21 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
 static void
 EXPmatch(char *p, NEWSGROUP *v, char mod)
 {
-    NEWSGROUP           *ngp;
-    int                 i;
-    bool                negate;
+    NEWSGROUP *ngp;
+    int i;
+    bool negate;
 
     negate = *p == '!';
     if (negate)
         p++;
     for (ngp = Groups, i = nGroups; --i >= 0; ngp++)
         if (negate ? !uwildmat(ngp->Name, p) : uwildmat(ngp->Name, p))
-            if (mod == 'a'
-             || (mod == 'm' && ngp->Rest[0] == NF_FLAG_MODERATED)
-             || (mod == 'u' && ngp->Rest[0] != NF_FLAG_MODERATED)) {
-                ngp->Keep      = v->Keep;
-                ngp->Default   = v->Default;
-                ngp->Purge     = v->Purge;
-                ngp->Poison    = v->Poison;
+            if (mod == 'a' || (mod == 'm' && ngp->Rest[0] == NF_FLAG_MODERATED)
+                || (mod == 'u' && ngp->Rest[0] != NF_FLAG_MODERATED)) {
+                ngp->Keep = v->Keep;
+                ngp->Default = v->Default;
+                ngp->Purge = v->Purge;
+                ngp->Poison = v->Poison;
             }
 }
 
@@ -321,21 +328,21 @@ EXPmatch(char *p, NEWSGROUP *v, char mod)
 static bool
 EXPreadfile(FILE *F)
 {
-    char                *p;
-    int                 i;
-    int                 j;
-    int                 k;
-    char                mod;
-    NEWSGROUP           v;
-    bool                SawDefault;
-    char                buff[BUFSIZ];
-    char                *fields[7];
-    char                **patterns;
+    char *p;
+    int i;
+    int j;
+    int k;
+    char mod;
+    NEWSGROUP v;
+    bool SawDefault;
+    char buff[BUFSIZ];
+    char *fields[7];
+    char **patterns;
 
     /* Scan all lines. */
     SawDefault = false;
     patterns = xmalloc(nGroups * sizeof(char *));
-    
+
     for (i = 1; fgets(buff, sizeof buff, F) != NULL; i++) {
         if ((p = strchr(buff, '\n')) == NULL) {
             fprintf(stderr, "Line %d too long\n", i);
@@ -387,9 +394,9 @@ EXPreadfile(FILE *F)
             return false;
         }
         v.Poison = (strchr(fields[1], 'X') != NULL);
-        if (!EXPgetnum(i, fields[2], &v.Keep,    "keep")
-         || !EXPgetnum(i, fields[3], &v.Default, "default")
-         || !EXPgetnum(i, fields[4], &v.Purge,   "purge")) {
+        if (!EXPgetnum(i, fields[2], &v.Keep, "keep")
+            || !EXPgetnum(i, fields[3], &v.Default, "default")
+            || !EXPgetnum(i, fields[4], &v.Purge, "purge")) {
             free(patterns);
             return false;
         }
@@ -417,10 +424,10 @@ EXPreadfile(FILE *F)
                 free(patterns);
                 return false;
             }
-            EXPdefault.Keep    = v.Keep;
+            EXPdefault.Keep = v.Keep;
             EXPdefault.Default = v.Default;
-            EXPdefault.Purge   = v.Purge;
-            EXPdefault.Poison  = v.Poison;
+            EXPdefault.Purge = v.Purge;
+            EXPdefault.Poison = v.Poison;
             SawDefault = true;
         }
 
@@ -444,8 +451,8 @@ EXPreadfile(FILE *F)
 static NEWSGROUP *
 EXPnotfound(char *Entry)
 {
-    static NEWSGROUP    Removeit;
-    BADGROUP            *bg;
+    static NEWSGROUP Removeit;
+    BADGROUP *bg;
 
     /* See if we already know about this group. */
     for (bg = EXPbadgroups; bg; bg = bg->Next)
@@ -472,8 +479,8 @@ EXPnotfound(char *Entry)
 static enum KRP
 EXPkeepit(char *Entry, time_t when, time_t expires)
 {
-    NEWSGROUP           *ngp;
-    enum KRP            retval = Remove;
+    NEWSGROUP *ngp;
+    enum KRP retval = Remove;
 
     if ((ngp = NGfind(Entry)) == NULL)
         ngp = EXPnotfound(Entry);
@@ -489,8 +496,8 @@ EXPkeepit(char *Entry, time_t when, time_t expires)
         if (when >= ngp->Default)
             retval = Keep;
 
-    /* Make sure it's not posted before the purge cut-off and
-     * that it's not due to expire. */
+        /* Make sure it's not posted before the purge cut-off and
+         * that it's not due to expire. */
     } else {
         if (when >= ngp->Purge && (expires >= OVnow || when >= ngp->Keep))
             retval = Keep;
@@ -535,10 +542,10 @@ OVEXPremove(TOKEN token, bool deletedgroups, char **xref, int ngroups)
 static void
 ARTreadschema(void)
 {
-    const struct cvector        *standardoverview;
-    struct vector               *extraoverview;
-    ARTOVERFIELD                *fp;
-    unsigned int                i;
+    const struct cvector *standardoverview;
+    struct vector *extraoverview;
+    ARTOVERFIELD *fp;
+    unsigned int i;
 
     /* Count the number of overview fields and allocate ARTfields. */
     standardoverview = overview_fields();
@@ -573,11 +580,11 @@ ARTreadschema(void)
 static char *
 OVERGetHeader(const char *p, int field)
 {
-    static char         *buff;
-    static int          buffsize;
-    int                 i;
-    ARTOVERFIELD        *fp;
-    char                *next;
+    static char *buff;
+    static int buffsize;
+    int i;
+    ARTOVERFIELD *fp;
+    char *next;
 
     fp = &ARTfields[field];
 
@@ -591,13 +598,13 @@ OVERGetHeader(const char *p, int field)
     if (fp->HasHeader)
         p += fp->Length + 2;
 
-    if (fp->NeedsHeader) {              /* find an exact match */
-         while (strncmp(fp->Header, p, fp->Length) != 0) {
-              if ((p = strchr(p, '\t')) == NULL) 
+    if (fp->NeedsHeader) { /* find an exact match */
+        while (strncmp(fp->Header, p, fp->Length) != 0) {
+            if ((p = strchr(p, '\t')) == NULL)
                 return NULL;
-              p++;
-         }
-         p += fp->Length + 2;
+            p++;
+        }
+        p += fp->Length + 2;
     }
 
     /* Figure out length; get space. */
@@ -609,8 +616,7 @@ OVERGetHeader(const char *p, int field)
     if (buffsize == 0) {
         buffsize = i;
         buff = xmalloc(buffsize + 1);
-    }
-    else if (buffsize < i) {
+    } else if (buffsize < i) {
         buffsize = i;
         buff = xrealloc(buff, buffsize + 1);
     }
@@ -626,18 +632,17 @@ OVERGetHeader(const char *p, int field)
 static void
 OVfindheaderindex(void)
 {
-    FILE        *F;
-    char        *active;
-    char        *path;
-    int         i;
+    FILE *F;
+    char *active;
+    char *path;
+    int i;
 
     if (ReadOverviewfmt)
         return;
     if (innconf->groupbaseexpiry) {
         ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
-        if ((active = ReadInFile(ACTIVE, (struct stat *)NULL)) == NULL) {
-            fprintf(stderr, "Can't read %s, %s\n",
-            ACTIVE, strerror(errno));
+        if ((active = ReadInFile(ACTIVE, (struct stat *) NULL)) == NULL) {
+            fprintf(stderr, "Can't read %s, %s\n", ACTIVE, strerror(errno));
             exit(1);
         }
         BuildGroups(active);
@@ -677,16 +682,16 @@ bool
 OVgroupbasedexpire(TOKEN token, const char *group, const char *data,
                    int len UNUSED, time_t arrived, time_t expires)
 {
-    static char         *Group = NULL;
-    char                *p;
-    int                 i;
-    int                 count;
-    time_t              when;
-    bool                poisoned;
-    bool                keeper;
-    bool                delete;
-    bool                purge;
-    char                *Xref;
+    static char *Group = NULL;
+    char *p;
+    int i;
+    int count;
+    time_t when;
+    bool poisoned;
+    bool keeper;
+    bool delete;
+    bool purge;
+    char *Xref;
 
     if (SMprobe(SELFEXPIRE, &token, NULL)) {
         if (!OVignoreselfexpire)
@@ -824,7 +829,7 @@ OVEXPcleanup(void)
         free(bg->Name);
         free(bg);
     }
-    for (fp = ARTfields, i = 0; i < ARTfieldsize ; i++, fp++) {
+    for (fp = ARTfields, i = 0; i < ARTfieldsize; i++, fp++) {
         free(fp->Header);
     }
     free(ARTfields);
@@ -836,7 +841,7 @@ OVEXPcleanup(void)
         free(Groups);
         Groups = NULL;
     }
-    for (i = 0, htp = NGHtable ; i < NGH_SIZE ; i++, htp++) {
+    for (i = 0, htp = NGHtable; i < NGH_SIZE; i++, htp++) {
         if (htp->Groups != NULL) {
             free(htp->Groups);
             htp->Groups = NULL;

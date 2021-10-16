@@ -14,9 +14,9 @@
 #include <sys/stat.h>
 
 #include "inn/buffer.h"
-#include "inn/libinn.h"
 #include "inn/history.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
@@ -209,8 +209,8 @@ extract_messageid(const char *overview)
 static int
 file_compare(const void *p1, const void *p2)
 {
-    const char *file1 = *((const char * const *) p1);
-    const char *file2 = *((const char * const *) p2);
+    const char *file1 = *((const char *const *) p1);
+    const char *file2 = *((const char *const *) p2);
     ARTNUM n1, n2;
 
     n1 = strtoul(file1, NULL, 10);
@@ -348,8 +348,8 @@ group_rebuild(const char *group, const char *path)
         if (artdata.number < info.low || info.low == 0)
             info.low = artdata.number;
         info.count++;
-        overview = overview_build(artdata.number, article, size, extra,
-                                  overview);
+        overview =
+            overview_build(artdata.number, article, size, extra, overview);
         artdata.overview = overview->data;
         artdata.overlen = overview->left;
         p = extract_messageid(overview->data);

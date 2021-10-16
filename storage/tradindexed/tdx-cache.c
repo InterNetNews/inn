@@ -12,8 +12,8 @@
 #include <time.h>
 
 #include "inn/hashtab.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/storage.h"
 #include "tdx-private.h"
 

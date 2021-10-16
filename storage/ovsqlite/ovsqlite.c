@@ -11,23 +11,23 @@
 
 #ifdef HAVE_SQLITE3
 
-#include <fcntl.h>
+#    include <fcntl.h>
 
-#include "portable/socket.h"
-#ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include "portable/socket-unix.h"
-#endif
+#    include "portable/socket.h"
+#    ifdef HAVE_UNIX_DOMAIN_SOCKETS
+#        include "portable/socket-unix.h"
+#    endif
 
-#include "conffile.h"
-#include "inn/fdflag.h"
-#include "inn/innconf.h"
-#include "inn/libinn.h"
-#include "inn/newsuser.h"
-#include "inn/paths.h"
+#    include "conffile.h"
+#    include "inn/fdflag.h"
+#    include "inn/innconf.h"
+#    include "inn/libinn.h"
+#    include "inn/newsuser.h"
+#    include "inn/paths.h"
 
-#include "../ovinterface.h"
+#    include "../ovinterface.h"
 
-#define SEARCHSPACE 0x20000
+#    define SEARCHSPACE 0x20000
 
 typedef struct handle_t {
     uint8_t buffer[SEARCHSPACE];
@@ -49,21 +49,22 @@ static int sock = -1;
 static buffer_t *request;
 static buffer_t *response;
 
-#ifndef HAVE_UNIX_DOMAIN_SOCKETS
+#    ifndef HAVE_UNIX_DOMAIN_SOCKETS
 static ovsqlite_port port;
-#endif
+#    endif
 
-static bool server_connect(void)
+static bool
+server_connect(void)
 {
     char *path;
     int ret;
 
-#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+#    ifdef HAVE_UNIX_DOMAIN_SOCKETS
 
     struct sockaddr_un sa;
 
     sock = socket(PF_UNIX, SOCK_STREAM, 0);
-    if (sock==-1) {
+    if (sock == -1) {
         syswarn("ovsqlite: socket");
         return false;
     }
@@ -73,9 +74,9 @@ static bool server_connect(void)
     strlcpy(sa.sun_path, path, sizeof(sa.sun_path));
     free(path);
 
-    ret = connect(sock, (struct sockaddr *)&sa, SUN_LEN(&sa));
+    ret = connect(sock, (struct sockaddr *) &sa, SUN_LEN(&sa));
 
-#else /* ! HAVE_UNIX_DOMAIN_SOCKETS */
+#    else  /* ! HAVE_UNIX_DOMAIN_SOCKETS */
 
     struct sockaddr_in sa;
     int fd;
@@ -83,24 +84,24 @@ static bool server_connect(void)
 
     path = concatpath(innconf->pathrun, OVSQLITE_SERVER_PORT);
     fd = open(path, O_RDONLY);
-    if (fd==-1) {
+    if (fd == -1) {
         syswarn("ovsqlite: cannot open port file %s", path);
         return false;
     }
     free(path);
     got = read(fd, &port, sizeof port);
-    if (got==-1) {
+    if (got == -1) {
         syswarn("ovsqlite: cannot read port file");
         close(fd);
         return false;
     }
     close(fd);
-    if (got<sizeof port) {
+    if (got < sizeof port) {
         warn("ovsqlite: unexpected EOF while reading port file");
         return false;
     }
     sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (sock==-1) {
+    if (sock == -1) {
         syswarn("ovsqlite: socket");
         return false;
     }
@@ -108,10 +109,10 @@ static bool server_connect(void)
     sa.sin_family = AF_INET;
     sa.sin_port = port.port;
     sa.sin_addr.s_addr = htonl(0x7f000001UL);
-    ret = connect(sock, (struct sockaddr *)&sa, sizeof sa);
-#endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
+    ret = connect(sock, (struct sockaddr *) &sa, sizeof sa);
+#    endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
 
-    if (ret==-1) {
+    if (ret == -1) {
         syswarn("ovsqlite: connect");
         close(sock);
         sock = -1;
@@ -126,8 +127,8 @@ static bool server_connect(void)
     return true;
 }
 
-static void start_request(
-    unsigned int code)
+static void
+start_request(unsigned int code)
 {
     uint8_t code_r;
 
@@ -137,12 +138,14 @@ static void start_request(
     pack_now(request, &code_r, sizeof code_r);
 }
 
-static void finish_request(void)
+static void
+finish_request(void)
 {
-    *(uint32_t *)(void *)request->data = request->left;
+    *(uint32_t *) (void *) request->data = request->left;
 }
 
-static unsigned int start_response(void)
+static unsigned int
+start_response(void)
 {
     uint8_t code;
 
@@ -151,24 +154,26 @@ static unsigned int start_response(void)
     return code;
 }
 
-static bool finish_response(void)
+static bool
+finish_response(void)
 {
-    return response->left==0;
+    return response->left == 0;
 }
 
-static bool write_request(void)
+static bool
+write_request(void)
 {
     char *data;
     size_t left;
 
-    data = request->data+request->used;
+    data = request->data + request->used;
     left = request->left;
-    while (left>0) {
+    while (left > 0) {
         ssize_t got;
 
         got = write(sock, request->data, request->left);
-        if (got==-1) {
-            if (errno==EINTR)
+        if (got == -1) {
+            if (errno == EINTR)
                 continue;
             syswarn("ovsqlite: cannot write request");
             close(sock);
@@ -182,7 +187,8 @@ static bool write_request(void)
     return true;
 }
 
-static bool read_response(void)
+static bool
+read_response(void)
 {
     char *data;
     size_t size, response_size;
@@ -196,20 +202,20 @@ static bool read_response(void)
         ssize_t got;
 
         if (response_size) {
-            wanted = response_size-size;
+            wanted = response_size - size;
         } else {
-            wanted = 5-size;
+            wanted = 5 - size;
         }
         got = read(sock, data, wanted);
-        if (got==-1) {
-            if (errno==EINTR)
+        if (got == -1) {
+            if (errno == EINTR)
                 continue;
             syswarn("ovsqlite: cannot read response");
             close(sock);
             sock = -1;
             return false;
         }
-        if (got==0) {
+        if (got == 0) {
             warn("ovsqlite: unexpected EOF while reading response");
             close(sock);
             sock = -1;
@@ -217,29 +223,29 @@ static bool read_response(void)
         }
         response->left = size += got;
         data += got;
-        if ((size_t)got==wanted) {
+        if ((size_t) got == wanted) {
             if (response_size) {
                 break;
             } else {
-                response_size = *(uint32_t *)(void *)response->data;
-                if (response_size<5 || response_size>0x100000) {
+                response_size = *(uint32_t *) (void *) response->data;
+                if (response_size < 5 || response_size > 0x100000) {
                     warn("ovsqlite: invalid response size");
                     close(sock);
                     sock = -1;
                     return false;
                 }
-                if (size>=response_size)
+                if (size >= response_size)
                     break;
                 buffer_resize(response, response_size);
-                data = response->data+size;
+                data = response->data + size;
             }
         }
     }
     return true;
 }
 
-static bool server_handshake(
-    uint32_t mode)
+static bool
+server_handshake(uint32_t mode)
 {
     uint32_t version;
     unsigned int code;
@@ -248,9 +254,9 @@ static bool server_handshake(
     start_request(request_hello);
     pack_now(request, &version, sizeof version);
     pack_now(request, &mode, sizeof mode);
-#ifndef HAVE_UNIX_DOMAIN_SOCKETS
+#    ifndef HAVE_UNIX_DOMAIN_SOCKETS
     pack_now(request, port.cookie, OVSQLITE_COOKIE_LENGTH);
-#endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
+#    endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
     finish_request();
     if (!write_request())
         return false;
@@ -258,7 +264,7 @@ static bool server_handshake(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_ok) {
+    if (code != response_ok) {
         close(sock);
         sock = -1;
         warn("ovsqlite: server handshake failed (%u)", code);
@@ -273,10 +279,10 @@ static bool server_handshake(
     return true;
 }
 
-bool ovsqlite_open(
-    int mode)
+bool
+ovsqlite_open(int mode)
 {
-    if (sock!=-1) {
+    if (sock != -1) {
         warn("ovsqlite_open called more than once");
         return false;
     }
@@ -287,12 +293,9 @@ bool ovsqlite_open(
     return true;
 }
 
-bool ovsqlite_groupstats(
-    const char *group,
-    int *low,
-    int *high,
-    int *count,
-    int *flag)
+bool
+ovsqlite_groupstats(const char *group, int *low, int *high, int *count,
+                    int *flag)
 {
     uint16_t groupname_len;
     unsigned int code;
@@ -302,7 +305,7 @@ bool ovsqlite_groupstats(
     uint16_t flag_alias_len;
     uint8_t *flag_alias;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -317,7 +320,7 @@ bool ovsqlite_groupstats(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_groupinfo)
+    if (code != response_groupinfo)
         return false;
     if (!unpack_now(response, &r_low, sizeof r_low))
         return false;
@@ -343,11 +346,8 @@ bool ovsqlite_groupstats(
     return true;
 }
 
-bool ovsqlite_groupadd(
-    const char *group,
-    ARTNUM low,
-    ARTNUM high,
-    char *flag)
+bool
+ovsqlite_groupadd(const char *group, ARTNUM low, ARTNUM high, char *flag)
 {
     uint16_t groupname_len;
     uint16_t flag_alias_len;
@@ -355,7 +355,7 @@ bool ovsqlite_groupadd(
     uint64_t r_high;
     unsigned int code;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -377,20 +377,20 @@ bool ovsqlite_groupadd(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_ok)
+    if (code != response_ok)
         return false;
     if (!finish_response())
         return false;
     return true;
 }
 
-bool ovsqlite_groupdel(
-    const char *group)
+bool
+ovsqlite_groupdel(const char *group)
 {
     uint16_t groupname_len;
     unsigned int code;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -405,21 +405,16 @@ bool ovsqlite_groupdel(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_ok)
+    if (code != response_ok)
         return false;
     if (!finish_response())
         return false;
     return true;
 }
 
-bool ovsqlite_add(
-    const char *group,
-    ARTNUM artnum,
-    TOKEN token,
-    char *data,
-    int len,
-    time_t arrived,
-    time_t expires)
+bool
+ovsqlite_add(const char *group, ARTNUM artnum, TOKEN token, char *data,
+             int len, time_t arrived, time_t expires)
 {
     uint16_t groupname_len;
     uint64_t r_artnum;
@@ -428,7 +423,7 @@ bool ovsqlite_add(
     uint64_t r_expires;
     unsigned int code;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -467,15 +462,14 @@ bool ovsqlite_add(
     }
 }
 
-bool ovsqlite_cancel(
-    const char *group,
-    ARTNUM artnum)
+bool
+ovsqlite_cancel(const char *group, ARTNUM artnum)
 {
     uint16_t groupname_len;
     uint64_t r_artnum;
     unsigned int code;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -492,27 +486,25 @@ bool ovsqlite_cancel(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_ok)
+    if (code != response_ok)
         return false;
     if (!finish_response())
         return false;
     return true;
 }
 
-void *ovsqlite_opensearch(
-    const char *group,
-    int low,
-    int high)
+void *
+ovsqlite_opensearch(const char *group, int low, int high)
 {
     handle_t *rh;
     uint16_t groupname_len;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return NULL;
     }
     groupname_len = strlen(group);
-    rh = xmalloc(offsetof(handle_t, groupname)+groupname_len);
+    rh = xmalloc(offsetof(handle_t, groupname) + groupname_len);
     rh->low = low;
     rh->high = high;
     rh->count = 0;
@@ -524,8 +516,8 @@ void *ovsqlite_opensearch(
     return rh;
 }
 
-static bool fill_search_buffer(
-    handle_t *rh)
+static bool
+fill_search_buffer(handle_t *rh)
 {
     unsigned int cols;
     uint32_t space;
@@ -540,22 +532,22 @@ static bool fill_search_buffer(
     rh->index = 0;
     storespace = SEARCHSPACE;
     wiresize = 8;
-    storesize = sizeof (ARTNUM);
+    storesize = sizeof(ARTNUM);
     cols = rh->cols;
     if (cols & search_col_arrived) {
         wiresize += 8;
-        storesize += sizeof (time_t);
+        storesize += sizeof(time_t);
     }
     if (cols & search_col_token) {
-        wiresize += sizeof (TOKEN);
-        storesize += sizeof (TOKEN);
+        wiresize += sizeof(TOKEN);
+        storesize += sizeof(TOKEN);
     }
     if (cols & search_col_overview) {
         wiresize += 4;
-        storesize += sizeof (char *);
-        storespace -= sizeof (char *);
+        storesize += sizeof(char *);
+        storespace -= sizeof(char *);
     }
-    space = storespace/storesize*wiresize+10;
+    space = storespace / storesize * wiresize + 10;
     flags = search_flag_high;
 
     start_request(request_search_group);
@@ -584,27 +576,27 @@ static bool fill_search_buffer(
     }
     if (!unpack_now(response, &resp_cols, sizeof resp_cols))
         return false;
-    if (resp_cols!=cols)
+    if (resp_cols != cols)
         return false;
     if (!unpack_now(response, &count, sizeof count))
         return false;
     store = rh->buffer;
-    rh->overview = (char **)(void *)store;
+    rh->overview = (char **) (void *) store;
     if (cols & search_col_overview)
-        store += (count+1)*sizeof (char **);
-    rh->arrived = (time_t *)(void *)store;
+        store += (count + 1) * sizeof(char **);
+    rh->arrived = (time_t *) (void *) store;
     if (cols & search_col_arrived)
-        store += count*sizeof (time_t);
-    rh->artnum = (ARTNUM *)(void *)store;
-    store += count*sizeof (ARTNUM);
-    rh->token = (TOKEN *)store;
+        store += count * sizeof(time_t);
+    rh->artnum = (ARTNUM *) (void *) store;
+    store += count * sizeof(ARTNUM);
+    rh->token = (TOKEN *) store;
     if (cols & search_col_token)
-        store += count*sizeof (TOKEN);
-    if (store > rh->buffer+SEARCHSPACE) {
+        store += count * sizeof(TOKEN);
+    if (store > rh->buffer + SEARCHSPACE) {
         warn("ovsqlite: server returned excessive result count");
         return false;
     }
-    for (ix=0; ix<count; ix++) {
+    for (ix = 0; ix < count; ix++) {
         uint64_t artnum;
 
         if (!unpack_now(response, &artnum, sizeof artnum))
@@ -618,7 +610,7 @@ static bool fill_search_buffer(
             rh->arrived[ix] = arrived;
         }
         if (cols & search_col_token) {
-            if (!unpack_now(response, rh->token+ix, sizeof (TOKEN)))
+            if (!unpack_now(response, rh->token + ix, sizeof(TOKEN)))
                 return false;
         }
         if (cols & search_col_overview) {
@@ -626,35 +618,31 @@ static bool fill_search_buffer(
 
             if (!unpack_now(response, &overview_len, sizeof overview_len))
                 return false;
-            if (store+overview_len > rh->buffer+SEARCHSPACE)
+            if (store + overview_len > rh->buffer + SEARCHSPACE)
                 return false;
             if (!unpack_now(response, store, overview_len))
                 return false;
-            rh->overview[ix] = (char *)store;
+            rh->overview[ix] = (char *) store;
             store += overview_len;
         }
     }
     if (!finish_response())
         return false;
     if (cols & search_col_overview)
-        rh->overview[count] = (char *)store;
+        rh->overview[count] = (char *) store;
     rh->count = count;
     return true;
 }
 
-bool ovsqlite_search(
-    void *handle,
-    ARTNUM *artnum,
-    char **data,
-    int *len,
-    TOKEN *token,
-    time_t *arrived)
+bool
+ovsqlite_search(void *handle, ARTNUM *artnum, char **data, int *len,
+                TOKEN *token, time_t *arrived)
 {
     handle_t *rh;
     unsigned int cols;
     unsigned int ix;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -662,7 +650,7 @@ bool ovsqlite_search(
     if (!rh)
         return false;
     ix = rh->index;
-    if (rh->done && ix>=rh->count)
+    if (rh->done && ix >= rh->count)
         return false;
     cols = 0;
     if (arrived)
@@ -671,12 +659,12 @@ bool ovsqlite_search(
         cols |= search_col_token;
     if (data || len)
         cols |= search_col_overview;
-    if (cols & ~rh->cols || ix>=rh->count) {
+    if (cols & ~rh->cols || ix >= rh->count) {
         rh->cols = cols;
         if (!fill_search_buffer(rh))
             return false;
         ix = rh->index;
-        if (ix>=rh->count)
+        if (ix >= rh->count)
             return false;
     }
     if (artnum)
@@ -684,36 +672,34 @@ bool ovsqlite_search(
     if (data)
         *data = rh->overview[ix];
     if (len)
-        *len = rh->overview[ix+1]-rh->overview[ix];
+        *len = rh->overview[ix + 1] - rh->overview[ix];
     if (token)
         *token = rh->token[ix];
     if (arrived)
         *arrived = rh->arrived[ix];
-    rh->low = rh->artnum[ix]+1;
-    rh->index = ix+1;
+    rh->low = rh->artnum[ix] + 1;
+    rh->index = ix + 1;
     return true;
 }
 
-void ovsqlite_closesearch(
-    void *handle)
+void
+ovsqlite_closesearch(void *handle)
 {
-    if (sock==-1)
+    if (sock == -1)
         warn("ovsqlite: not connected to server");
     if (!handle)
         return;
     free(handle);
 }
 
-bool ovsqlite_getartinfo(
-    const char *group,
-    ARTNUM artnum,
-    TOKEN *token)
+bool
+ovsqlite_getartinfo(const char *group, ARTNUM artnum, TOKEN *token)
 {
     uint16_t groupname_len;
     uint64_t r_artnum;
     unsigned int code;
 
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -730,19 +716,17 @@ bool ovsqlite_getartinfo(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_artinfo)
+    if (code != response_artinfo)
         return false;
-    if (!unpack_now(response, token, sizeof (TOKEN)))
+    if (!unpack_now(response, token, sizeof(TOKEN)))
         return false;
     if (!finish_response())
         return false;
     return true;
 }
 
-static bool expire_one(
-    char const *group,
-    int *low,
-    struct history *h)
+static bool
+expire_one(char const *group, int *low, struct history *h)
 {
     unsigned int code;
     uint32_t space = SEARCHSPACE;
@@ -806,7 +790,7 @@ static bool expire_one(
         }
         if (!unpack_now(response, &resp_cols, sizeof resp_cols))
             return false;
-        if (resp_cols!=cols)
+        if (resp_cols != cols)
             return false;
         if (!unpack_now(response, &count, sizeof count))
             return false;
@@ -817,7 +801,7 @@ static bool expire_one(
         delcount = 0;
         off_count = pack_later(request, sizeof delcount);
 
-        for (ix=0; ix<count; ix++) {
+        for (ix = 0; ix < count; ix++) {
             uint64_t artnum;
             uint64_t arrived;
             uint64_t expires;
@@ -853,9 +837,9 @@ static bool expire_one(
             } else {
                 delete = !OVhisthasmsgid(h, overview);
             }
-            if (!delete && innconf->groupbaseexpiry) {
-                delete = OVgroupbasedexpire(
-                    token, group, overview, overview_len, arrived, expires);
+            if (!delete &&innconf->groupbaseexpiry) {
+                delete = OVgroupbasedexpire(token, group, overview,
+                                            overview_len, arrived, expires);
             }
             if (delete) {
                 pack_now(request, &artnum, sizeof artnum);
@@ -865,13 +849,13 @@ static bool expire_one(
                     new_low = artnum;
             }
             new_high = artnum;
-            r_low = artnum+1;
+            r_low = artnum + 1;
         }
         if (!finish_response())
             return false;
 
-        if (delcount>0) {
-            memcpy(request->data+off_count, &delcount, sizeof delcount);
+        if (delcount > 0) {
+            memcpy(request->data + off_count, &delcount, sizeof delcount);
             finish_request();
             if (!write_request())
                 return false;
@@ -879,20 +863,21 @@ static bool expire_one(
             if (!read_response())
                 return false;
             code = start_response();
-            if (code!=response_ok)
+            if (code != response_ok)
                 return false;
             if (!finish_response())
                 return false;
         }
     } while (!done);
     if (!new_low)
-        new_low = new_high+1;
+        new_low = new_high + 1;
     if (low)
         *low = new_low;
     return true;
 }
 
-static bool expire_finish(void)
+static bool
+expire_finish(void)
 {
     bool done = false;
 
@@ -922,12 +907,10 @@ static bool expire_finish(void)
     return true;
 }
 
-bool ovsqlite_expiregroup(
-    char const *group,
-    int *low,
-    struct history *h)
+bool
+ovsqlite_expiregroup(char const *group, int *low, struct history *h)
 {
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
@@ -938,8 +921,8 @@ bool ovsqlite_expiregroup(
     }
 }
 
-static bool set_cutofflow(
-    uint8_t cutofflow)
+static bool
+set_cutofflow(uint8_t cutofflow)
 {
     unsigned int code;
 
@@ -952,45 +935,45 @@ static bool set_cutofflow(
     if (!read_response())
         return false;
     code = start_response();
-    if (code!=response_ok)
+    if (code != response_ok)
         return false;
     if (!finish_response())
         return false;
     return true;
 }
 
-bool ovsqlite_ctl(
-    OVCTLTYPE type,
-    void *val)
+bool
+ovsqlite_ctl(OVCTLTYPE type, void *val)
 {
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return false;
     }
     switch (type) {
     case OVSPACE:
-        *(float *)val = -1.0f;
+        *(float *) val = -1.0f;
         return true;
     case OVSORT:
-        *(OVSORTTYPE *)val = OVNEWSGROUP;
+        *(OVSORTTYPE *) val = OVNEWSGROUP;
         return true;
     case OVCUTOFFLOW:
-        return set_cutofflow(*(bool *)val);
+        return set_cutofflow(*(bool *) val);
     case OVSTATICSEARCH:
-        *(int *)val = true;
+        *(int *) val = true;
         return true;
     case OVCACHEKEEP:
     case OVCACHEFREE:
-        *(bool *)val = false;
+        *(bool *) val = false;
         return true;
     default:
         return false;
     }
 }
 
-void ovsqlite_close(void)
+void
+ovsqlite_close(void)
 {
-    if (sock==-1) {
+    if (sock == -1) {
         warn("ovsqlite: not connected to server");
         return;
     }
@@ -1000,107 +983,88 @@ void ovsqlite_close(void)
 
 #else /* ! HAVE_SQLITE3 */
 
-bool ovsqlite_open(
-    int mode UNUSED)
+bool
+ovsqlite_open(int mode UNUSED)
 {
     warn("ovsqlite: SQLite support not enabled");
     return false;
 }
 
-bool ovsqlite_groupstats(
-    const char *group UNUSED,
-    int *lo UNUSED,
-    int *hi UNUSED,
-    int *count UNUSED,
-    int *flag UNUSED)
+bool
+ovsqlite_groupstats(const char *group UNUSED, int *lo UNUSED, int *hi UNUSED,
+                    int *count UNUSED, int *flag UNUSED)
 {
     return false;
 }
 
-bool ovsqlite_groupadd(
-    const char *group UNUSED,
-    ARTNUM lo UNUSED,
-    ARTNUM hi UNUSED,
-    char *flag UNUSED)
+bool
+ovsqlite_groupadd(const char *group UNUSED, ARTNUM lo UNUSED, ARTNUM hi UNUSED,
+                  char *flag UNUSED)
 {
     return false;
 }
 
-bool ovsqlite_groupdel(
-    const char *group UNUSED)
+bool
+ovsqlite_groupdel(const char *group UNUSED)
 {
     return false;
 }
 
-bool ovsqlite_add(
-    const char *group UNUSED,
-    ARTNUM artnum UNUSED,
-    TOKEN token UNUSED,
-    char *data UNUSED,
-    int len UNUSED,
-    time_t arrived UNUSED,
-    time_t expires UNUSED)
+bool
+ovsqlite_add(const char *group UNUSED, ARTNUM artnum UNUSED,
+             TOKEN token UNUSED, char *data UNUSED, int len UNUSED,
+             time_t arrived UNUSED, time_t expires UNUSED)
 {
     return false;
 }
 
-bool ovsqlite_cancel(
-    const char *group UNUSED,
-    ARTNUM artnum UNUSED)
+bool
+ovsqlite_cancel(const char *group UNUSED, ARTNUM artnum UNUSED)
 {
     return false;
 }
 
-void *ovsqlite_opensearch(
-    const char *group UNUSED,
-    int low UNUSED,
-    int high UNUSED)
+void *
+ovsqlite_opensearch(const char *group UNUSED, int low UNUSED, int high UNUSED)
 {
     return NULL;
 }
 
-bool ovsqlite_search(
-    void *handle UNUSED,
-    ARTNUM *artnum UNUSED,
-    char **data UNUSED,
-    int *len UNUSED,
-    TOKEN *token UNUSED,
-    time_t *arrived UNUSED)
+bool
+ovsqlite_search(void *handle UNUSED, ARTNUM *artnum UNUSED, char **data UNUSED,
+                int *len UNUSED, TOKEN *token UNUSED, time_t *arrived UNUSED)
 {
     return false;
 }
 
-void ovsqlite_closesearch(
-    void *handle UNUSED)
+void
+ovsqlite_closesearch(void *handle UNUSED)
 {
 }
 
-bool ovsqlite_getartinfo(
-    const char *group UNUSED,
-    ARTNUM artnum UNUSED,
-    TOKEN *token UNUSED)
-{
-    return false;
-}
-
-bool ovsqlite_expiregroup(
-    const char *group UNUSED,
-    int *lo UNUSED,
-    struct history *h UNUSED)
+bool
+ovsqlite_getartinfo(const char *group UNUSED, ARTNUM artnum UNUSED,
+                    TOKEN *token UNUSED)
 {
     return false;
 }
 
-bool ovsqlite_ctl(
-    OVCTLTYPE type UNUSED,
-    void *val UNUSED)
+bool
+ovsqlite_expiregroup(const char *group UNUSED, int *lo UNUSED,
+                     struct history *h UNUSED)
 {
     return false;
 }
 
-void ovsqlite_close(void)
+bool
+ovsqlite_ctl(OVCTLTYPE type UNUSED, void *val UNUSED)
+{
+    return false;
+}
+
+void
+ovsqlite_close(void)
 {
 }
 
 #endif /* ! HAVE_SQLITE3 */
-
