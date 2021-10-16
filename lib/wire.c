@@ -79,10 +79,10 @@ wire_nextline(const char *article, const char *end)
 
 
 /*
-**  Returns true if line is the beginning of a valid header for header, also
-**  taking the length of the header name as a third argument.  Assumes that
-**  there is at least length + 2 bytes of data at line, and that the header
-**  name doesn't contain nul.
+**  Returns true if line is the beginning of a valid header field for header,
+**  also taking the length of the header field name as a third argument.
+**  Assumes that there is at least length + 2 bytes of data at line, and that
+**  the header field name doesn't contain nul.
 */
 static bool
 isheader(const char *line, const char *header, size_t length)
@@ -116,10 +116,11 @@ skip_fws_bounded(char *text, const char *end)
 
 /*
 **  Given a pointer to the start of the article, the article length, and the
-**  header to look for, find the first occurrence of that header in the
-**  article.  Skip over headers with no content, but allow for headers that
-**  are folded before the first text in the header.  If no matching headers
-**  with content other than spaces and tabs are found, return NULL.
+**  header field to look for, find the first occurrence of that header field
+**  name in the article.  Skip over header fields with no content, but allow
+**  for header fields that are folded before the first text in the header
+**  field body.  If no matching header fields with content other than spaces
+**  and tabs are found, return NULL.
 */
 char *
 wire_findheader(const char *article, size_t length, const char *header,
@@ -133,9 +134,9 @@ wire_findheader(const char *article, size_t length, const char *header,
     end = article + length - 1;
 
     /* There has to be enough space left in the article for at least the
-       header, the colon, whitespace, and one non-whitespace character, hence
-       3, minus 1 since the character pointed to by end is part of the
-       article. */
+       header field name, the colon, whitespace, and one non-whitespace
+       character, hence 3, minus 1 since the character pointed to by end
+       is part of the article. */
     p = (char *) article;
     while (p != NULL && end - p > headerlen + 2) {
         if (p[0] == '\r' && p[1] == '\n')
@@ -156,9 +157,10 @@ wire_findheader(const char *article, size_t length, const char *header,
 
 
 /*
-**  Given a pointer to a header and a pointer to the last octet of the
-**  article, find the end of the header (a pointer to the final \n of the
-**  header value).  If the header contents don't end in \r\n, return NULL.
+**  Given a pointer to a header field and a pointer to the last octet of the
+**  article, find the end of the header field (a pointer to the final \n of
+**  the header field body).  If the header field body doesn't end in \r\n,
+**  return NULL.
 */
 char *
 wire_endheader(const char *header, const char *end)

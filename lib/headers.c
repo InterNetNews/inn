@@ -1,5 +1,5 @@
 /*
-**  Routines for headers:  manipulation and checks.
+**  Routines for headers: manipulation and checks.
 */
 
 #include "config.h"

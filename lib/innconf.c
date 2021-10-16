@@ -527,8 +527,8 @@ innconf_validate(struct config_group *group)
 
         if (!found) {
             config_error_param(group, "keywords",
-                               "keyword generation is useless if the Keywords:"
-                               " header is not stored in the overview");
+                               "keyword generation is useless if the Keywords"
+                               " header field is not stored in the overview");
             innconf->keywords = false;
         }
     }

@@ -21,7 +21,7 @@ void HeaderCleanFrom(char *from)
 
     if ((len = strlen(from)) == 0)
 	return;
-    /* concatenate folded header */
+    /* concatenate folded header field body */
     for (p = end = from ; p < from + len ;) {
 	if (*p == '\n') {
 	    if ((p + 1 < from + len) && ISWHITE(p[1])) {

@@ -2,7 +2,7 @@
 **  Date parsing and conversion routines.
 **
 **  Provides various date parsing and conversion routines, including
-**  generating Date headers for posted articles.
+**  generating Date header fields for posted articles.
 */
 
 #include "config.h"
@@ -188,10 +188,10 @@ local_tz_offset(time_t date, bool current UNUSED)
 /*
 **  Given a time_t, a flag saying whether to use local time, a buffer, and
 **  the length of the buffer, write the contents of a valid RFC 5322 / RFC
-**  5536 Date header into the buffer (provided it's long enough).  Returns
-**  true on success, false if the buffer is too long.  Use snprintf rather
-**  than strftime to be absolutely certain that locales don't result in the
-**  wrong output.  If the time is -1, obtain and use the current time.
+**  5536 Date header field into the buffer (provided it's long enough).
+**  Returns true on success, false if the buffer is too long.  Use snprintf
+**  rather than strftime to be absolutely certain that locales don't result
+**  in the wrong output.  If the time is -1, obtain and use the current time.
 */
 bool
 makedate(time_t date, bool local, char *buff, size_t buflen)
