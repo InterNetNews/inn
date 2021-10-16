@@ -173,10 +173,21 @@ lookup_service(unsigned short port, char *service, socklen_t servicelen,
         }
     }
 
-    /* Just convert the port number to ASCII. */
+    /*
+     * Just convert the port number to ASCII.  Suppress warnings here because
+     * GCC 10 isn't smart enough to realize that the return status is checked
+     * for truncation.
+     */
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
     status = snprintf(service, servicelen, "%hu", port);
     if (status < 0 || (socklen_t) status >= servicelen)
         return EAI_OVERFLOW;
+#if defined(__GNUC__) && !defined(__clang__)
+#    pragma GCC diagnostic pop
+#endif
     return 0;
 }
 

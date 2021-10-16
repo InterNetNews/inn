@@ -574,7 +574,8 @@ INN_FUNC_INET_NTOA
 INN_FUNC_SNPRINTF
 
 dnl Check for various other functions.
-AC_CHECK_FUNCS(getloadavg getrusage getspnam setbuffer sigaction \
+AC_CHECK_FUNCS(explicit_bzero getloadavg getrusage getspnam \
+               setbuffer sigaction \
                setgroups setrlimit setsid socketpair strncasecmp \
                sysconf)
 
