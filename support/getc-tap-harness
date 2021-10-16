@@ -63,7 +63,7 @@ download ()
       sed -i -e "57 i \\
 /* Specific to the integration of C TAP Harness in INN. */\\
 #ifndef LIBTEST_NEW_FORMAT\\
-# include \"inn/libinn.h\"\\
+#    include \"inn/libinn.h\"\\
 \\
 void\\
 test_init(int count)\\
@@ -80,13 +80,13 @@ ok(int n UNUSED, int success)\\
 void\\
 skip(int n UNUSED, const char *reason)\\
 {\\
-#if __GNUC__ > 4\\
-# pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
-#endif\\
+#    if __GNUC__ > 4\\
+#        pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
+#    endif\\
     new_skip(reason, NULL);\\
-#if __GNUC__ > 4\\
-# pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
-#endif\\
+#    if __GNUC__ > 4\\
+#        pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
+#    endif\\
 }\\
 \\
 void\\
@@ -98,13 +98,13 @@ ok_block(int n UNUSED, int count, int success)\\
 void\\
 skip_block(int n UNUSED, int count, const char *reason)\\
 {\\
-#if __GNUC__ > 4\\
-# pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
-#endif\\
+#    if __GNUC__ > 4\\
+#        pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
+#    endif\\
     new_skip_block(count, reason, NULL);\\
-#if __GNUC__ > 4\\
-# pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
-#endif\\
+#    if __GNUC__ > 4\\
+#        pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
+#    endif\\
 }\\
 \\
 void\\
@@ -138,27 +138,27 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok(int n, int success);\\
 int new_ok(int success, const char *format, ...)\\
-        __attribute__((__format__(printf, 2, 3)));\\
+    __attribute__((__format__(printf, 2, 3)));\\
 void ok_int(int n, int wanted, int seen);\\
 void ok_string(int n, const char *wanted, const char *seen);\\
 int okv(int success, const char *format, va_list args)\\
-        __attribute__((__format__(printf, 2, 0)));\\
+    __attribute__((__format__(printf, 2, 0)));\\
 void skip(int n, const char *reason);\\
 void new_skip(const char *reason, ...)\\
-        __attribute__((__format__(printf, 1, 2)));\\
+    __attribute__((__format__(printf, 1, 2)));\\
 void ok_block(int n, int count, int success);\\
 int new_ok_block(unsigned long count, int success, const char *format, ...)\\
-        __attribute__((__format__(printf, 3, 4)));\\
+    __attribute__((__format__(printf, 3, 4)));\\
 void skip_block(int n, int count, const char *reason);\\
 void new_skip_block(unsigned long count, const char *reason, ...)\\
-        __attribute__((__format__(printf, 2, 3)));\\
+    __attribute__((__format__(printf, 2, 3)));\\
 \\
 void test_init(int count);\\
 #else\\
-# define ok new_ok\\
-# define skip new_skip\\
-# define ok_block new_ok_block\\
-# define skip_block new_skip_block" \
+#    define ok         new_ok\\
+#    define skip       new_skip\\
+#    define ok_block   new_ok_block\\
+#    define skip_block new_skip_block" \
              -e "91 i \\
 #endif" \
              ${TEMP}
@@ -190,6 +190,11 @@ void ok_double(int n, double wanted, double seen);\\
     fi
 
     mv -f ${TEMP} ../$2/$3
+
+    case "$3" in *.c|*.h)
+        clang-format --style=file -i ../$2/$3
+    esac
+
     git status --short ../$2/$3
   fi
 }

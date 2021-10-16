@@ -56,7 +56,7 @@
 
 /* Specific to the integration of C TAP Harness in INN. */
 #ifndef LIBTEST_NEW_FORMAT
-# include "inn/libinn.h"
+#    include "inn/libinn.h"
 
 void
 test_init(int count)
@@ -73,13 +73,13 @@ ok(int n UNUSED, int success)
 void
 skip(int n UNUSED, const char *reason)
 {
-#if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+#    if __GNUC__ > 4
+#        pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    endif
     new_skip(reason, NULL);
-#if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
-#endif
+#    if __GNUC__ > 4
+#        pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    endif
 }
 
 void
@@ -91,13 +91,13 @@ ok_block(int n UNUSED, int count, int success)
 void
 skip_block(int n UNUSED, int count, const char *reason)
 {
-#if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+#    if __GNUC__ > 4
+#        pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    endif
     new_skip_block(count, reason, NULL);
-#if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
-#endif
+#    if __GNUC__ > 4
+#        pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    endif
 }
 
 void

@@ -77,27 +77,27 @@ void skip_all(const char *format, ...)
 /* Specific to the integration of C TAP Harness in INN. */
 void ok(int n, int success);
 int new_ok(int success, const char *format, ...)
-        __attribute__((__format__(printf, 2, 3)));
+    __attribute__((__format__(printf, 2, 3)));
 void ok_int(int n, int wanted, int seen);
 void ok_string(int n, const char *wanted, const char *seen);
 int okv(int success, const char *format, va_list args)
-        __attribute__((__format__(printf, 2, 0)));
+    __attribute__((__format__(printf, 2, 0)));
 void skip(int n, const char *reason);
 void new_skip(const char *reason, ...)
-        __attribute__((__format__(printf, 1, 2)));
+    __attribute__((__format__(printf, 1, 2)));
 void ok_block(int n, int count, int success);
 int new_ok_block(unsigned long count, int success, const char *format, ...)
-        __attribute__((__format__(printf, 3, 4)));
+    __attribute__((__format__(printf, 3, 4)));
 void skip_block(int n, int count, const char *reason);
 void new_skip_block(unsigned long count, const char *reason, ...)
-        __attribute__((__format__(printf, 2, 3)));
+    __attribute__((__format__(printf, 2, 3)));
 
 void test_init(int count);
 #else
-# define ok new_ok
-# define skip new_skip
-# define ok_block new_ok_block
-# define skip_block new_skip_block
+#    define ok         new_ok
+#    define skip       new_skip
+#    define ok_block   new_ok_block
+#    define skip_block new_skip_block
 int ok(int success, const char *format, ...)
     __attribute__((__format__(printf, 2, 3)));
 int okv(int success, const char *format, va_list args)
