@@ -42,22 +42,23 @@ Radix32(unsigned long l, char *buff)
 }
 
 
-#if 0
+#if defined(DEBUG)
+extern unsigned long DecodeRadix32(char *p);
+
 /*
 **  Return a Radix-32 string as a number, or ~0 on error.
 */
 unsigned long
-Decode32(p)
-    char		*p;
+DecodeRadix32(char *p)
 {
-    unsigned long	l;
-    char		*cp;
+    unsigned long l;
+    char *cp;
 
     for (l = 0; *p; p++) {
-	if ((cp = strchr(ALPHABET, *p)) == NULL)
-	    return ~0;
-	l = (l << 6) + cp - ALPHABET;
+        if ((cp = strchr(ALPHABET, *p)) == NULL)
+            return ~0;
+        l = (l << 6) + cp - ALPHABET;
     }
     return l;
 }
-#endif /* 0 */
+#endif /* DEBUG */
