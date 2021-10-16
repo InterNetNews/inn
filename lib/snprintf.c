@@ -697,7 +697,8 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, LDOUBLE fvalue, int min,
         signvalue = ' ';
 
 #if 0
-  if (flags & DP_F_UP) caps = 1; /* Should characters be upper case? */
+    if (flags & DP_F_UP)
+        caps = 1; /* Should characters be upper case? */
 #endif
 
     intpart = (LLONG) ufvalue;
