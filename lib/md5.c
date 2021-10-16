@@ -59,11 +59,12 @@
 
 #include "config.h"
 #include "clibrary.h"
+
 #include "inn/md5.h"
 
 /* Rotate a 32-bit value left, used by both the MD5 mathematics and by the
    routine below to byteswap data on big-endian machines. */
-#define ROT(X, n)       (((X) << (n)) | ((X) >> (32 - (n))))
+#define ROT(X, n) (((X) << (n)) | ((X) >> (32 - (n))))
 
 /* Almost zero fill padding, used by md5_final.  The 0x80 is part of the MD5
    hash algorithm, from RFC 1321 section 3.1:
@@ -75,7 +76,7 @@
 
    Let the compiler zero the remainder of the array for us, guaranteed by
    ISO C99 6.7.8 paragraph 21.  */
-static const unsigned char padding[MD5_CHUNKSIZE] = { 0x80, 0 /* 0, ... */ };
+static const unsigned char padding[MD5_CHUNKSIZE] = {0x80, 0 /* 0, ... */};
 
 /* Internal prototypes. */
 static void md5_transform(uint32_t *, const uint32_t *);
@@ -94,8 +95,8 @@ static void md5_update_block(struct md5_context *, const unsigned char *,
    data anyway to ensure alignment for 4-byte access, we can byteswap it in
    place. */
 #if !WORDS_BIGENDIAN
-# define decode(data)           /* empty */
-# define encode(data, out)      memcpy((out), (data), MD5_DIGESTSIZE)
+#    define decode(data)      /* empty */
+#    define encode(data, out) memcpy((out), (data), MD5_DIGESTSIZE)
 #else
 
 /* The obvious way to do this is to pull single bytes at a time out of the
@@ -105,15 +106,15 @@ static void md5_update_block(struct md5_context *, const unsigned char *,
    alignment for the input data, use this optimized routine from J. Touch,
    USC/ISI.  This requires four shifts, two ands, and two ors, but only one
    memory read per word. */
-#define swap(word)              \
-    do {                        \
-        htmp = ROT((word), 16); \
-        ltmp = htmp >> 8;       \
-        htmp &= 0x00ff00ff;     \
-        ltmp &= 0x00ff00ff;     \
-        htmp <<= 8;             \
-        (word) = htmp | ltmp;   \
-    } while (0)
+#    define swap(word)              \
+        do {                        \
+            htmp = ROT((word), 16); \
+            ltmp = htmp >> 8;       \
+            htmp &= 0x00ff00ff;     \
+            ltmp &= 0x00ff00ff;     \
+            htmp <<= 8;             \
+            (word) = htmp | ltmp;   \
+        } while (0)
 
 /* We process 16 words of data (one MD5 block) of data at a time, completely
    unrolling the loop manually since it should allow the compiler to take
@@ -123,10 +124,22 @@ decode(uint32_t *data)
 {
     uint32_t ltmp, htmp;
 
-    swap(data[ 0]); swap(data[ 1]); swap(data[ 2]); swap(data[ 3]);
-    swap(data[ 4]); swap(data[ 5]); swap(data[ 6]); swap(data[ 7]);
-    swap(data[ 8]); swap(data[ 9]); swap(data[10]); swap(data[11]);
-    swap(data[12]); swap(data[13]); swap(data[14]); swap(data[15]);
+    swap(data[0]);
+    swap(data[1]);
+    swap(data[2]);
+    swap(data[3]);
+    swap(data[4]);
+    swap(data[5]);
+    swap(data[6]);
+    swap(data[7]);
+    swap(data[8]);
+    swap(data[9]);
+    swap(data[10]);
+    swap(data[11]);
+    swap(data[12]);
+    swap(data[13]);
+    swap(data[14]);
+    swap(data[15]);
 }
 
 /* Used by md5_final to generate the final digest.  The digest is not
@@ -163,7 +176,7 @@ md5_init(struct md5_context *context)
 
     context->count[0] = 0;
     context->count[1] = 0;
-    context->datalen  = 0;
+    context->datalen = 0;
 }
 
 
@@ -368,10 +381,10 @@ md5_hash(const unsigned char *data, size_t length, unsigned char *digest)
 **  F: (((x) & (y)) | (~(x) & (z))) == ((z) ^ ((x) & ((y) ^ (z))))
 **  G: (((x) & (z)) | ((y) & ~(z))) == ((y) ^ ((z) & ((x) ^ (y))))
 */
-#define F(x, y, z)      ((z) ^ ((x) & ((y) ^ (z))))
-#define G(x, y, z)      ((y) ^ ((z) & ((x) ^ (y))))
-#define H(x, y, z)      ((x) ^ (y) ^ (z))
-#define I(x, y, z)      ((y) ^ ((x) | (~z)))
+#define F(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
+#define G(x, y, z) ((y) ^ ((z) & ((x) ^ (y))))
+#define H(x, y, z) ((x) ^ (y) ^ (z))
+#define I(x, y, z) ((y) ^ ((x) | (~z)))
 
 /*
 **  FF, GG, HH, and II transformations for rounds 1, 2, 3, and 4.  Rotation
@@ -382,44 +395,44 @@ md5_hash(const unsigned char *data, size_t length, unsigned char *digest)
 #define S12 12
 #define S13 17
 #define S14 22
-#define FF(a, b, c, d, x, s, ac)                                \
-    {                                                           \
-        (a) += F((b), (c), (d)) + (x) + (uint32_t) (ac);        \
-        (a) = ROT((a), (s));                                    \
-        (a) += (b);                                             \
+#define FF(a, b, c, d, x, s, ac)                        \
+    {                                                   \
+        (a) += F((b), (c), (d)) + (x) + (uint32_t)(ac); \
+        (a) = ROT((a), (s));                            \
+        (a) += (b);                                     \
     }
 
 #define S21 5
 #define S22 9
 #define S23 14
 #define S24 20
-#define GG(a, b, c, d, x, s, ac)                                \
-    {                                                           \
-        (a) += G((b), (c), (d)) + (x) + (uint32_t) (ac);        \
-        (a) = ROT((a), (s));                                    \
-        (a) += (b);                                             \
+#define GG(a, b, c, d, x, s, ac)                        \
+    {                                                   \
+        (a) += G((b), (c), (d)) + (x) + (uint32_t)(ac); \
+        (a) = ROT((a), (s));                            \
+        (a) += (b);                                     \
     }
 
 #define S31 4
 #define S32 11
 #define S33 16
 #define S34 23
-#define HH(a, b, c, d, x, s, ac)                                \
-    {                                                           \
-        (a) += H((b), (c), (d)) + (x) + (uint32_t) (ac);        \
-        (a) = ROT((a), (s));                                    \
-        (a) += (b);                                             \
+#define HH(a, b, c, d, x, s, ac)                        \
+    {                                                   \
+        (a) += H((b), (c), (d)) + (x) + (uint32_t)(ac); \
+        (a) = ROT((a), (s));                            \
+        (a) += (b);                                     \
     }
 
 #define S41 6
 #define S42 10
 #define S43 15
 #define S44 21
-#define II(a, b, c, d, x, s, ac)                                \
-    {                                                           \
-        (a) += I((b), (c), (d)) + (x) + (uint32_t) (ac);        \
-        (a) = ROT((a), (s));                                    \
-        (a) += (b);                                             \
+#define II(a, b, c, d, x, s, ac)                        \
+    {                                                   \
+        (a) += I((b), (c), (d)) + (x) + (uint32_t)(ac); \
+        (a) = ROT((a), (s));                            \
+        (a) += (b);                                     \
     }
 
 /*
@@ -433,6 +446,7 @@ md5_transform(uint32_t *buf, const uint32_t *in)
     uint32_t c = buf[2];
     uint32_t d = buf[3];
 
+    /* clang-format off */
     /* Round 1 */
     FF(a, b, c, d, in[ 0], S11, 3614090360UL); /*  1 */
     FF(d, a, b, c, in[ 1], S12, 3905402710UL); /*  2 */
@@ -504,6 +518,7 @@ md5_transform(uint32_t *buf, const uint32_t *in)
     II(d, a, b, c, in[11], S42, 3174756917UL); /* 62 */
     II(c, d, a, b, in[ 2], S43,  718787259UL); /* 63 */
     II(b, c, d, a, in[ 9], S44, 3951481745UL); /* 64 */
+    /* clang-format on */
 
     buf[0] += a;
     buf[1] += b;

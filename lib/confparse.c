@@ -61,13 +61,14 @@
 
 #include "inn/confparse.h"
 #include "inn/hashtab.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
 
 
 /* The types of tokens seen in configuration files. */
-enum token_type {
+enum token_type
+{
     TOKEN_CRLF,
     TOKEN_STRING,
     TOKEN_QSTRING,
@@ -88,12 +89,12 @@ enum token_type {
    variables are marked by what functions are responsible for maintaining
    them. */
 struct config_file {
-    int fd;                     /* Internal */
-    char *buffer;               /* Internal */
-    size_t bufsize;             /* Internal */
-    const char *filename;       /* file_open */
-    unsigned int line;          /* token_newline and token_quoted_string */
-    bool error;                 /* Everyone */
+    int fd;               /* Internal */
+    char *buffer;         /* Internal */
+    size_t bufsize;       /* Internal */
+    const char *filename; /* file_open */
+    unsigned int line;    /* token_newline and token_quoted_string */
+    bool error;           /* Everyone */
 
     /* Set by file_* and token_*.  current == NULL indicates we've not yet
        read from the file. */
@@ -110,7 +111,8 @@ struct config_file {
 
 /* The types of parameters, used to distinguish the values of the union in the
    config_parameter_s struct. */
-enum value_type {
+enum value_type
+{
     VALUE_UNKNOWN,
     VALUE_BOOL,
     VALUE_NUMBER,
@@ -130,7 +132,7 @@ enum value_type {
 struct config_parameter {
     char *key;
     char *raw_value;
-    unsigned int line;          /* For error reporting. */
+    unsigned int line; /* For error reporting. */
     enum value_type type;
     union {
         bool boolean;
@@ -153,9 +155,9 @@ typedef bool (*convert_func)(struct config_parameter *, const char *, void *);
 struct config_group {
     char *type;
     char *tag;
-    char *file;                 /* File in which the group starts. */
-    unsigned int line;          /* Line number where the group starts. */
-    char *included;             /* For group <file>, the included file. */
+    char *file;        /* File in which the group starts. */
+    unsigned int line; /* Line number where the group starts. */
+    char *included;    /* For group <file>, the included file. */
     struct hash *params;
 
     struct config_group *parent;
@@ -182,8 +184,10 @@ static bool group_parameter_get(struct config_group *group, const char *key,
 /* Parameter type conversion functions.  All take the parameter, the file, and
    a pointer to where the result can be placed. */
 static bool convert_boolean(struct config_parameter *, const char *, void *);
-static bool convert_signed_number(struct config_parameter *, const char *, void *);
-static bool convert_unsigned_number(struct config_parameter *, const char *, void *);
+static bool convert_signed_number(struct config_parameter *, const char *,
+                                  void *);
+static bool convert_unsigned_number(struct config_parameter *, const char *,
+                                    void *);
 static bool convert_real(struct config_parameter *, const char *, void *);
 static bool convert_string(struct config_parameter *, const char *, void *);
 static bool convert_list(struct config_parameter *, const char *, void *);
@@ -217,8 +221,8 @@ static char *token_unquote_string(const char *, const char *file,
                                   unsigned int line);
 
 /* Parser functions to parse the named syntactic element. */
-static enum token_type parse_list(struct config_group *,
-                                  struct config_file *, char *key);
+static enum token_type parse_list(struct config_group *, struct config_file *,
+                                  char *key);
 static enum token_type parse_parameter(struct config_group *,
                                        struct config_file *, char *key);
 static bool parse_group_contents(struct config_group *, struct config_file *);
@@ -306,6 +310,7 @@ error_unexpected_token(struct config_file *file, const char *expecting)
        string associated with the token to avoid a memory leak. */
     if (file->token.type != TOKEN_ERROR) {
         switch (file->token.type) {
+        /* clang-format off */
         case TOKEN_STRING:      name = "string";        string = true; break;
         case TOKEN_QSTRING:     name = "quoted string"; string = true; break;
         case TOKEN_PARAM:       name = "parameter";     string = true; break;
@@ -320,6 +325,8 @@ error_unexpected_token(struct config_file *file, const char *expecting)
         case TOKEN_EOF:         name = "end of file";   break;
         default:                name = "unknown token"; break;
         }
+        /* clang-format on */
+
         warn("%s:%u: parse error: saw %s, expecting %s", file->filename,
              file->line, name, expecting);
     }
@@ -412,12 +419,21 @@ token_string(struct config_file *file)
     i = 0;
     while (!done) {
         switch (file->current[i]) {
-        case '\t':  case '\r':  case '\n':  case ' ':
-        case ';':   case '>':   case '}':
+        case '\t':
+        case '\r':
+        case '\n':
+        case ' ':
+        case ';':
+        case '>':
+        case '}':
             done = true;
             break;
-        case '"':   case '<':   case '[':   case '\\':
-        case ']':   case '{':
+        case '"':
+        case '<':
+        case '[':
+        case '\\':
+        case ']':
+        case '{':
             error_bad_unquoted_char(file, file->current[i]);
             return;
         case ':':
@@ -504,7 +520,8 @@ token_quoted_string(struct config_file *file)
                 i--;
             else {
                 warn("%s:%u: end of file encountered while parsing quoted"
-                     " string", file->filename, file->line);
+                     " string",
+                     file->filename, file->line);
                 file->token.type = TOKEN_ERROR;
                 file->error = true;
                 return;
@@ -552,6 +569,7 @@ token_unquote_string(const char *raw, const char *file, unsigned int line)
 
             /* This should implement precisely the semantics of backslash
                escapes in quoted strings in C. */
+            /* clang-format off */
             switch (*src) {
             case 'a':   *dest++ = '\a'; break;
             case 'b':   *dest++ = '\b'; break;
@@ -584,6 +602,7 @@ token_unquote_string(const char *raw, const char *file, unsigned int line)
                 warn("%s:%u: unrecognized escape '\\%c'", file, line, *src);
                 goto fail;
             }
+            /* clang-format on */
         }
     }
     *dest = '\0';
@@ -595,7 +614,7 @@ token_unquote_string(const char *raw, const char *file, unsigned int line)
     }
     return string;
 
- fail:
+fail:
     free(string);
     return NULL;
 }
@@ -702,6 +721,7 @@ token_next(struct config_file *file)
        only exception is telling strings from parameters.  token_string
        handles both of those and sets file->token.type appropriately.
        Comments are handled by token_newline. */
+    /* clang-format off */
     switch (*file->current) {
     case '{':   token_simple(file, TOKEN_LBRACE);       break;
     case '}':   token_simple(file, TOKEN_RBRACE);       break;
@@ -715,6 +735,7 @@ token_next(struct config_file *file)
     case '"':   token_quoted_string(file);              break;
     default:    token_string(file);                     break;
     }
+    /* clang-format on */
 
     return file->token.type;
 }
@@ -1169,8 +1190,8 @@ group_new(const char *file, unsigned int line, char *type, char *tag)
     group->file = xstrdup(file);
     group->included = NULL;
     group->line = line;
-    group->params = hash_create(4, hash_string, parameter_key,
-                                parameter_equal, parameter_free);
+    group->params = hash_create(4, hash_string, parameter_key, parameter_equal,
+                                parameter_free);
     group->parent = NULL;
     group->child = NULL;
     group->next = NULL;
@@ -1268,11 +1289,10 @@ config_free(struct config_group *group)
 **  and false otherwise.
 */
 static bool
-convert_boolean(struct config_parameter *param, const char *file,
-                void *result)
+convert_boolean(struct config_parameter *param, const char *file, void *result)
 {
-    static const char *const truevals[] = { "yes", "on", "true", NULL };
-    static const char *const falsevals[] = { "no", "off", "false", NULL };
+    static const char *const truevals[] = {"yes", "on", "true", NULL};
+    static const char *const falsevals[] = {"no", "off", "false", NULL};
     bool *value = result;
     int i;
 
@@ -1371,7 +1391,8 @@ convert_unsigned_number(struct config_parameter *param, const char *file,
      * since otherwise some syntax errors may go silently undetected. */
     p = param->raw_value;
     if (*p == '-') {
-        warn("%s:%u: %s is not a positive integer", file, param->line, param->key);
+        warn("%s:%u: %s is not a positive integer", file, param->line,
+             param->key);
         return false;
     }
     for (; *p != '\0'; p++)
@@ -1386,8 +1407,8 @@ convert_unsigned_number(struct config_parameter *param, const char *file,
     errno = 0;
     param->value.unsigned_number = strtoul(param->raw_value, NULL, 10);
     if (errno != 0) {
-        warn("%s:%u: %s doesn't convert to a positive integer", file, param->line,
-             param->key);
+        warn("%s:%u: %s doesn't convert to a positive integer", file,
+             param->line, param->key);
         return false;
     }
     *value = param->value.unsigned_number;
@@ -1573,8 +1594,7 @@ group_parameter_get(struct config_group *group, const char *key, void *result,
 **  error), and report errors via warn.
 */
 bool
-config_param_boolean(struct config_group *group, const char *key,
-                     bool *result)
+config_param_boolean(struct config_group *group, const char *key, bool *result)
 {
     return group_parameter_get(group, key, result, convert_boolean);
 }

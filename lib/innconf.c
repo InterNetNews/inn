@@ -28,10 +28,10 @@
 
 #include "inn/confparse.h"
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/vector.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/paths.h"
+#include "inn/vector.h"
 
 /* Instantiation of the global innconf variable. */
 struct innconf *innconf = NULL;
@@ -39,7 +39,8 @@ struct innconf *innconf = NULL;
 /* Data types used to express the mappings from the configuration parse into
    the innconf struct. */
 
-enum type {
+enum type
+{
     TYPE_BOOLEAN,
     TYPE_NUMBER,
     TYPE_UNUMBER,
@@ -63,8 +64,9 @@ struct config {
 /* The following macros are helpers to make it easier to define the table that
    specifies how to convert the configuration file into a struct. */
 
-#define K(name)         (#name), offsetof(struct innconf, name)
+#define K(name) (#name), offsetof(struct innconf, name)
 
+/* clang-format off */
 #define BOOL(def)       TYPE_BOOLEAN,   { (def),     0,     0,  NULL,  NULL }
 #define NUMBER(def)     TYPE_NUMBER,    {     0, (def),     0,  NULL,  NULL }
 #define UNUMBER(def)    TYPE_UNUMBER,   {     0,     0, (def),  NULL,  NULL }
@@ -72,11 +74,16 @@ struct config {
 #define LIST(def)       TYPE_LIST,      {     0,     0,     0,  NULL, (def) }
 
 /* Accessor macros to get a pointer to a value inside a struct. */
-#define CONF_BOOL(conf, offset)     (bool *)          (void *)((char *) (conf) + (offset))
-#define CONF_NUMBER(conf, offset)   (long *)          (void *)((char *) (conf) + (offset))
-#define CONF_UNUMBER(conf, offset)  (unsigned long *) (void *)((char *) (conf) + (offset))
-#define CONF_STRING(conf, offset)   (char **)         (void *)((char *) (conf) + (offset))
-#define CONF_LIST(conf, offset)     (struct vector **)(void *)((char *) (conf) + (offset))
+#define CONF_BOOL(conf, offset) \
+    (bool *)          (void *)((char *) (conf) + (offset))
+#define CONF_NUMBER(conf, offset) \
+    (long *)          (void *)((char *) (conf) + (offset))
+#define CONF_UNUMBER(conf, offset) \
+    (unsigned long *) (void *)((char *) (conf) + (offset))
+#define CONF_STRING(conf, offset) \
+    (char **)         (void *)((char *) (conf) + (offset))
+#define CONF_LIST(conf, offset) \
+    (struct vector **)(void *)((char *) (conf) + (offset))
 
 /* Special notes:
 
@@ -285,6 +292,7 @@ const struct config config_table[] = {
      * to increase it. */
     { K(logcycles),               UNUMBER    (3) },
 };
+/* clang-format on */
 
 
 /*
@@ -380,7 +388,7 @@ innconf_set_defaults(void)
     if (innconf->extraoverviewhidden == NULL)
         innconf->extraoverviewhidden = vector_new();
 
-    /* Defaults used only if TLS/SSL is supported. */
+        /* Defaults used only if TLS/SSL is supported. */
 #ifdef HAVE_OPENSSL
     if (innconf->tlscapath == NULL)
         innconf->tlscapath = xstrdup(innconf->pathetc);
@@ -422,13 +430,17 @@ innconf_parse(struct config_group *group)
             break;
         case TYPE_NUMBER:
             signed_number_ptr = CONF_NUMBER(config, config_table[i].location);
-            if (!config_param_signed_number(group, config_table[i].name, signed_number_ptr))
+            if (!config_param_signed_number(group, config_table[i].name,
+                                            signed_number_ptr))
                 *signed_number_ptr = config_table[i].defaults.signed_number;
             break;
         case TYPE_UNUMBER:
-            unsigned_number_ptr = CONF_UNUMBER(config, config_table[i].location);
-            if (!config_param_unsigned_number(group, config_table[i].name, unsigned_number_ptr))
-                *unsigned_number_ptr = config_table[i].defaults.unsigned_number;
+            unsigned_number_ptr =
+                CONF_UNUMBER(config, config_table[i].location);
+            if (!config_param_unsigned_number(group, config_table[i].name,
+                                              unsigned_number_ptr))
+                *unsigned_number_ptr =
+                    config_table[i].defaults.unsigned_number;
             break;
         case TYPE_STRING:
             if (!config_param_string(group, config_table[i].name, &char_ptr))
@@ -508,8 +520,11 @@ innconf_validate(struct config_group *group)
         unsigned int i;
         if (innconf->extraoverviewadvertised->strings != NULL) {
             for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
-                if (innconf->extraoverviewadvertised->strings[i] != NULL &&
-                    (strcasecmp(innconf->extraoverviewadvertised->strings[i], "Keywords") == 0)) {
+                if (innconf->extraoverviewadvertised->strings[i] != NULL
+                    && (strcasecmp(
+                            innconf->extraoverviewadvertised->strings[i],
+                            "Keywords")
+                        == 0)) {
                     found = true;
                     break;
                 }
@@ -517,8 +532,10 @@ innconf_validate(struct config_group *group)
         }
         if (innconf->extraoverviewhidden->strings != NULL) {
             for (i = 0; i < innconf->extraoverviewhidden->count; i++) {
-                if (innconf->extraoverviewhidden->strings[i] != NULL &&
-                    (strcasecmp(innconf->extraoverviewhidden->strings[i], "Keywords") == 0)) {
+                if (innconf->extraoverviewhidden->strings[i] != NULL
+                    && (strcasecmp(innconf->extraoverviewhidden->strings[i],
+                                   "Keywords")
+                        == 0)) {
                     found = true;
                     break;
                 }
@@ -737,22 +754,22 @@ print_unsigned_number(FILE *file, const char *key, unsigned long value,
     char *upper, *p;
 
     switch (quoting) {
-        case INNCONF_QUOTE_NONE:
-            fprintf(file, "%lu\n", value);
-            break;
-        case INNCONF_QUOTE_SHELL:
-            upper = xstrdup(key);
-            for (p = upper; *p != '\0'; p++)
-                *p = toupper((unsigned char) *p);
-            fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
-            free(upper);
-            break;
-        case INNCONF_QUOTE_PERL:
-            fprintf(file, "$%s = %lu;\n", key, value);
-            break;
-        case INNCONF_QUOTE_TCL:
-            fprintf(file, "set inn_%s %lu\n", key, value);
-            break;
+    case INNCONF_QUOTE_NONE:
+        fprintf(file, "%lu\n", value);
+        break;
+    case INNCONF_QUOTE_SHELL:
+        upper = xstrdup(key);
+        for (p = upper; *p != '\0'; p++)
+            *p = toupper((unsigned char) *p);
+        fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
+        free(upper);
+        break;
+    case INNCONF_QUOTE_PERL:
+        fprintf(file, "$%s = %lu;\n", key, value);
+        break;
+    case INNCONF_QUOTE_TCL:
+        fprintf(file, "set inn_%s %lu\n", key, value);
+        break;
     }
 }
 
@@ -869,8 +886,8 @@ print_list(FILE *file, const char *key, const struct vector *value,
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
                 fprintf(file, "\"");
-                for (letter = value->strings[i]; letter != NULL
-                     && *letter != '\0'; letter++) {
+                for (letter = value->strings[i];
+                     letter != NULL && *letter != '\0'; letter++) {
                     if (*letter == '\'')
                         fputs("'\\''", file);
                     else if (*letter == '"')
@@ -895,13 +912,13 @@ print_list(FILE *file, const char *key, const struct vector *value,
         if (value == NULL || value->strings == NULL) {
             fprintf(file, "@%s = undef;\n", key);
             return;
-        }   
+        }
         fprintf(file, "@%s = ( ", key);
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
                 fprintf(file, "'");
-                for (letter = value->strings[i]; letter != NULL
-                     && *letter != '\0'; letter++) {
+                for (letter = value->strings[i];
+                     letter != NULL && *letter != '\0'; letter++) {
                     if (*letter == '\'' || *letter == '\\')
                         fputc('\\', file);
                     fputc(*letter, file);
@@ -919,13 +936,13 @@ print_list(FILE *file, const char *key, const struct vector *value,
         /* Do not output NULL values.  They are not empty lists. */
         if (value == NULL || value->strings == NULL) {
             return;
-        }   
+        }
         fprintf(file, "set inn_%s { ", key);
         if (value != NULL && value->strings != NULL) {
             for (i = 0; i < value->count; i++) {
                 fprintf(file, "\"");
-                for (letter = value->strings[i]; letter != NULL
-                     && *letter != '\0'; letter++) {
+                for (letter = value->strings[i];
+                     letter != NULL && *letter != '\0'; letter++) {
                     if (strchr(tcl_unsafe, *letter) != NULL)
                         fputc('\\', file);
                     fputc(*letter, file);
@@ -937,7 +954,6 @@ print_list(FILE *file, const char *key, const struct vector *value,
         break;
     }
 }
-
 
 
 /*
@@ -960,11 +976,13 @@ print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
         break;
     case TYPE_NUMBER:
         signed_number_val = *CONF_NUMBER(innconf, config_table[i].location);
-        print_signed_number(file, config_table[i].name, signed_number_val, quoting);
+        print_signed_number(file, config_table[i].name, signed_number_val,
+                            quoting);
         break;
     case TYPE_UNUMBER:
         unsigned_number_val = *CONF_UNUMBER(innconf, config_table[i].location);
-        print_unsigned_number(file, config_table[i].name, unsigned_number_val, quoting);
+        print_unsigned_number(file, config_table[i].name, unsigned_number_val,
+                              quoting);
         break;
     case TYPE_STRING:
         string_val = *CONF_STRING(innconf, config_table[i].location);
@@ -1083,21 +1101,22 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
             list2 = *CONF_LIST(conf2, config_table[i].location);
             /* Vectors are not resized when created in inn.conf.
              * Therefore, we can compare their length. */
-            if (  (list1 == NULL && list2 != NULL)
-               || (list1 != NULL && list2 == NULL)) {
-                 warn("list variable %s differs: one is NULL",
-                      config_table[i].name);
-                 okay = false;
+            if ((list1 == NULL && list2 != NULL)
+                || (list1 != NULL && list2 == NULL)) {
+                warn("list variable %s differs: one is NULL",
+                     config_table[i].name);
+                okay = false;
             } else if (list1 != NULL && list2 != NULL) {
-                if (  (list1->strings == NULL && list2->strings != NULL)
-                   || (list1->strings != NULL && list2->strings == NULL)) {
+                if ((list1->strings == NULL && list2->strings != NULL)
+                    || (list1->strings != NULL && list2->strings == NULL)) {
                     warn("list strings variable %s differs: one is NULL",
                          config_table[i].name);
                     okay = false;
                 } else if (list1->strings != NULL && list2->strings != NULL) {
                     if (list1->count != list2->count) {
                         warn("list variable %s differs in length: %lu != %lu",
-                             config_table[i].name, (unsigned long) list1->count,
+                             config_table[i].name,
+                             (unsigned long) list1->count,
                              (unsigned long) list2->count);
                         okay = false;
                     } else {
@@ -1116,9 +1135,12 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
                                 break;
                             } else if (list1->strings[j] != NULL
                                        && list2->strings[j] != NULL) {
-                                if (strcmp(list1->strings[j], list2->strings[j]) != 0) {
-                                    warn("list variable %s differs at element %u: %s != %s",
-                                         config_table[i].name, j+1,
+                                if (strcmp(list1->strings[j],
+                                           list2->strings[j])
+                                    != 0) {
+                                    warn("list variable %s differs at element "
+                                         "%u: %s != %s",
+                                         config_table[i].name, j + 1,
                                          list1->strings[j], list2->strings[j]);
                                     okay = false;
                                     break;

@@ -21,6 +21,7 @@
 **  interference.
 */
 
+/* clang-format off */
 static const char WEEKDAY[7][4] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
 };
@@ -100,6 +101,7 @@ static const struct {
     { "NZST",  12 * 60 * 60 },       /* New Zealand Standard */
     { "NZST",  13 * 60 * 60 },       /* New Zealand Daylight */
 };
+/* clang-format on */
 
 
 /*
@@ -121,7 +123,8 @@ static const struct {
    and find that string in the provided table (with size elements).  For
    DELIM, just make sure that we see the character stored in delimiter. */
 struct rule {
-    enum {
+    enum
+    {
         TYPE_NUMBER,
         TYPE_LOOKUP,
         TYPE_OBS_MONTH,
@@ -374,12 +377,12 @@ parsedate_nntp(const char *date, const char *hour, bool local)
     tm.tm_isdst = -1;
     p = date + datelen - 6;
     tm.tm_year = (p[0] - '0') * 10 + p[1] - '0';
-    tm.tm_mon  = (p[2] - '0') * 10 + p[3] - '0' - 1;
+    tm.tm_mon = (p[2] - '0') * 10 + p[3] - '0' - 1;
     tm.tm_mday = (p[4] - '0') * 10 + p[5] - '0';
     p = hour;
     tm.tm_hour = (p[0] - '0') * 10 + p[1] - '0';
-    tm.tm_min  = (p[2] - '0') * 10 + p[3] - '0';
-    tm.tm_sec  = (p[4] - '0') * 10 + p[5] - '0';
+    tm.tm_min = (p[2] - '0') * 10 + p[3] - '0';
+    tm.tm_sec = (p[4] - '0') * 10 + p[5] - '0';
 
     /* Four-digit years are the easy case.
 
@@ -604,6 +607,7 @@ parsedate_rfc5322(const char *date)
     int values[8];
     time_t result;
 
+    /* clang-format off */
     /* The basic rules.  Note that we don't bother to check whether the day of
        the week is accurate or not. */
     static const struct rule base_rule[] = {
@@ -628,6 +632,7 @@ parsedate_rfc5322(const char *date)
         { TYPE_NUMBER, 0,   NULL,     0, 2, 2 },
         { TYPE_NUMBER, 0,   NULL,     0, 2, 2 }
     };
+    /* clang-format on */
 
     /* Start with a clean slate. */
     memset(&tm, 0, sizeof(struct tm));
@@ -713,6 +718,7 @@ parsedate_rfc5322_lax(const char *date)
     long zone_offset;
     time_t result;
 
+    /* clang-format off */
     /* The basic rules.  Allow one or two digits in time components, since
        some broken software omits the leading zero and parsedate didn't
        care. */
@@ -738,6 +744,7 @@ parsedate_rfc5322_lax(const char *date)
     static const struct rule zone_rule[] = {
         { TYPE_NUMBER,    0,   NULL,  0, 1, 5 }
     };
+    /* clang-format on */
 
     /* Start with a clean slate. */
     memset(&tm, 0, sizeof(struct tm));

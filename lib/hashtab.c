@@ -16,29 +16,30 @@
 
 #include "config.h"
 #include "clibrary.h"
+
 #include "inn/hashtab.h"
 #include "inn/libinn.h"
 
 /* Magic values for empty and deleted hash table slots. */
-#define HASH_EMPTY      ((void *) 0)
-#define HASH_DELETED    ((void *) 1)
+#define HASH_EMPTY   ((void *) 0)
+#define HASH_DELETED ((void *) 1)
 
 struct hash {
-    size_t size;                /* Allocated size. */
-    size_t mask;                /* Used to resolve a hash to an index. */
-    size_t nelements;           /* Total elements, including deleted. */
-    size_t ndeleted;            /* Number of deleted elements. */
+    size_t size;      /* Allocated size. */
+    size_t mask;      /* Used to resolve a hash to an index. */
+    size_t nelements; /* Total elements, including deleted. */
+    size_t ndeleted;  /* Number of deleted elements. */
 
-    unsigned long searches;     /* Count of lookups (for debugging). */
-    unsigned long collisions;   /* Count of collisions (for debugging). */
-    unsigned long expansions;   /* Count of hash resizes needed. */
+    unsigned long searches;   /* Count of lookups (for debugging). */
+    unsigned long collisions; /* Count of collisions (for debugging). */
+    unsigned long expansions; /* Count of hash resizes needed. */
 
-    hash_func hash;             /* Return hash of a key. */
-    hash_key_func key;          /* Given an element, returns its key. */
-    hash_equal_func equal;      /* Whether a key matches an element. */
-    hash_delete_func delete;    /* Called when a hash element is deleted. */
+    hash_func hash;          /* Return hash of a key. */
+    hash_key_func key;       /* Given an element, returns its key. */
+    hash_equal_func equal;   /* Whether a key matches an element. */
+    hash_delete_func delete; /* Called when a hash element is deleted. */
 
-    void **table;               /* The actual elements. */
+    void **table; /* The actual elements. */
 };
 
 
@@ -121,7 +122,7 @@ hash_find_empty(struct hash *hash, const void *key)
 {
     size_t slot;
 
-    slot = (*hash->hash)(key) & hash->mask;
+    slot = (*hash->hash)(key) &hash->mask;
     while (1) {
         if (hash->table[slot] == HASH_EMPTY)
             return &hash->table[slot];
@@ -189,7 +190,7 @@ hash_find_slot(struct hash *hash, const void *key, bool insert)
 
     hash->searches++;
 
-    slot = (*hash->hash)(key) & hash->mask;
+    slot = (*hash->hash)(key) &hash->mask;
     while (1) {
         entry = hash->table[slot];
         if (entry == HASH_EMPTY) {
@@ -356,6 +357,7 @@ hash_expansions(struct hash *hash)
 **  hashes to choose from.  I (Bob Jenkins) only tested about a billion of
 **  those.
 */
+/* clang-format off */
 #define MIX(a, b, c)                                    \
     {                                                   \
         (a) -= (b); (a) -= (c); (a) ^= ((c) >> 13);     \
@@ -368,7 +370,7 @@ hash_expansions(struct hash *hash)
         (b) -= (c); (b) -= (a); (b) ^= ((a) << 10);     \
         (c) -= (a); (c) -= (b); (c) ^= ((b) >> 15);     \
     }
-
+/* clang-format on */
 
 /*
 **  Hash a variable-length key into a 32-bit value.
@@ -411,47 +413,58 @@ hash_lookup2(const char *key, size_t length, unsigned long partial)
     a = b = 0x9e3779b9;
     c = partial;
 
-#define S0(c)   ((uint32_t)(c))
-#define S1(c)   ((uint32_t)(c) << 8)
-#define S2(c)   ((uint32_t)(c) << 16)
-#define S3(c)   ((uint32_t)(c) << 24)
+#define S0(c) ((uint32_t)(c))
+#define S1(c) ((uint32_t)(c) << 8)
+#define S2(c) ((uint32_t)(c) << 16)
+#define S3(c) ((uint32_t)(c) << 24)
 
     /* Handle most of the key. */
     while (len >= 12) {
-        a += S0(key[0]) + S1(key[1]) + S2(key[2])  + S3(key[3]);
-        b += S0(key[4]) + S1(key[5]) + S2(key[6])  + S3(key[7]);
+        a += S0(key[0]) + S1(key[1]) + S2(key[2]) + S3(key[3]);
+        b += S0(key[4]) + S1(key[5]) + S2(key[6]) + S3(key[7]);
         c += S0(key[8]) + S1(key[9]) + S2(key[10]) + S3(key[11]);
         MIX(a, b, c);
         key += 12;
         len -= 12;
-   }
+    }
 
     /* Handle the last 11 bytes.  All of the cases fall through. */
     c += length;
     switch (len) {
-    case 11: c += S3(key[10]);
-             /* fallthrough */
-    case 10: c += S2(key[9]);
-             /* fallthrough */
-    case  9: c += S1(key[8]);
-             /* The first byte of c is reserved for the length. */
-             /* fallthrough */
-    case  8: b += S3(key[7]);
-             /* fallthrough */
-    case  7: b += S2(key[6]);
-             /* fallthrough */
-    case  6: b += S1(key[5]);
-             /* fallthrough */
-    case  5: b += S0(key[4]);
-             /* fallthrough */
-    case  4: a += S3(key[3]);
-             /* fallthrough */
-    case  3: a += S2(key[2]);
-             /* fallthrough */
-    case  2: a += S1(key[1]);
-             /* fallthrough */
-    case  1: a += S0(key[0]);
-             /* case 0: nothing left to add. */
+    case 11:
+        c += S3(key[10]);
+        /* fallthrough */
+    case 10:
+        c += S2(key[9]);
+        /* fallthrough */
+    case 9:
+        c += S1(key[8]);
+        /* The first byte of c is reserved for the length. */
+        /* fallthrough */
+    case 8:
+        b += S3(key[7]);
+        /* fallthrough */
+    case 7:
+        b += S2(key[6]);
+        /* fallthrough */
+    case 6:
+        b += S1(key[5]);
+        /* fallthrough */
+    case 5:
+        b += S0(key[4]);
+        /* fallthrough */
+    case 4:
+        a += S3(key[3]);
+        /* fallthrough */
+    case 3:
+        a += S2(key[2]);
+        /* fallthrough */
+    case 2:
+        a += S1(key[1]);
+        /* fallthrough */
+    case 1:
+        a += S0(key[0]);
+        /* case 0: nothing left to add. */
     }
     MIX(a, b, c);
     return c;
