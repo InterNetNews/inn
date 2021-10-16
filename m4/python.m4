@@ -27,14 +27,15 @@ dnl way.  (It cannot be run automatically via dependencies because it takes a
 dnl mandatory minimum version argument, which should be provided by the
 dnl calling configure script.)
 dnl
-dnl This macro uses the sysconfig module shipped with Python 2.7.0 and later,
-dnl as well as Python 3.2.0 and later, to find the compiler and linker flags
-dnl to use to embed Python.  If the sysconfig module is not present, fall back
-dnl on using the distutils.sysconfig module shipped with Python 2.2.0 and
-dnl later until its removal in Python 3.12.0.
+dnl For Python 3, this macro uses the sysconfig module to find the compiler
+dnl and linker flags to use to embed Python.  If the sysconfig module is not
+dnl present, it falls back on using the distutils.sysconfig module shipped
+dnl with Python 2.2.0 and later until its removal in Python 3.12.0.
 dnl
-dnl This macro also expects libpython to be in the main library location,
-dnl which it is since Python 2.3.0.
+dnl sysconfig.get_paths() in Python 2.7 as packaged in Debian buster returns
+dnl an include path in /usr/local/include, suitable for user-built extensions,
+dnl not the path in /usr/include required for including Python.h.  Therefore,
+dnl always use distutils.sysconfig for Python 2.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
@@ -124,7 +125,7 @@ AC_DEFUN([INN_LIB_PYTHON],
  AC_MSG_CHECKING([for flags to link with Python])
  AS_IF(["$PYTHON" -c 'import sysconfig' >/dev/null 2>&1],
      [py_include=`$PYTHON -c 'import sysconfig; \
-          print(sysconfig.get_paths().get("include", ""))'`
+          print(sysconfig.get_paths("posix_prefix").get("include", ""))'`
       py_libdir=`$PYTHON -c 'import sysconfig; \
           print(" -L".join(sysconfig.get_config_vars("LIBDIR")))'`
       py_ldlibrary=`$PYTHON -c 'import sysconfig; \
