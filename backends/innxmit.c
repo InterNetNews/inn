@@ -911,7 +911,7 @@ strlisten(void)
                     return (true); /* can't find it! */
                 }
                 if (i != stoldest) { /* also should not happen */
-                    syslog(L_NOTICE,
+                    syslog(L_ERROR,
                            "%s: response for %s out of order (should be %s)",
                            REMhost, p, stbuf[i].st_id);
                     return true; /* too broken, can't go on */
