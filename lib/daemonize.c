@@ -16,8 +16,8 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 
 void
 daemonize(const char *path)
@@ -33,10 +33,10 @@ daemonize(const char *path)
     else if (status > 0)
         _exit(0);
 
-    /* setsid() should take care of disassociating from the controlling
-       terminal, and FreeBSD at least doesn't like TIOCNOTTY if you don't
-       already have a controlling terminal.  So only use the older TIOCNOTTY
-       method if setsid() isn't available. */
+        /* setsid() should take care of disassociating from the controlling
+           terminal, and FreeBSD at least doesn't like TIOCNOTTY if you don't
+           already have a controlling terminal.  So only use the older
+           TIOCNOTTY method if setsid() isn't available. */
 #if HAVE_SETSID
     if (setsid() < 0)
         syswarn("cant become session leader");
@@ -54,10 +54,10 @@ daemonize(const char *path)
 
     fd = open("/dev/null", O_RDWR, 0);
     if (fd != -1) {
-	dup2(fd, STDIN_FILENO);
-	dup2(fd, STDOUT_FILENO);
-	dup2(fd, STDERR_FILENO);
-	if (fd > 2)
-	    close(fd);
+        dup2(fd, STDIN_FILENO);
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+        if (fd > 2)
+            close(fd);
     }
 }

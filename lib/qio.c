@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "inn/qio.h"
 #include "inn/libinn.h"
+#include "inn/qio.h"
 
 
 /*

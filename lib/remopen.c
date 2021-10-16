@@ -56,7 +56,7 @@ NNTPconnect(const char *host, int port, FILE **FromServerp, FILE **ToServerp,
         goto fail;
     return 0;
 
- fail:
+fail:
     oerrno = errno;
     if (F != NULL)
         fclose(F);
@@ -71,12 +71,12 @@ int
 NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff,
                size_t len)
 {
-    char		*p;
+    char *p;
 
     if ((p = innconf->server) == NULL) {
-	if (errbuff)
-	    strlcpy(errbuff, "What server?", len);
-	return -1;
+        if (errbuff)
+            strlcpy(errbuff, "What server?", len);
+        return -1;
     }
     return NNTPconnect(p, port, FromServerp, ToServerp, errbuff, len);
 }

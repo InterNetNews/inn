@@ -1,5 +1,5 @@
 /*
-**  Routines for message-IDs:  generation and checks.
+**  Routines for message-IDs: generation and checks.
 */
 
 #include "config.h"
@@ -12,35 +12,35 @@
 #include "inn/nntp.h"
 
 /*  Scale time back a bit, for shorter message-IDs. */
-#define OFFSET	673416000L
+#define OFFSET 673416000L
 
 /*
 **  Flag array, indexed by character.  Character classes for message-IDs.
 */
-static char             midcclass[256];
-#define CC_MSGID_ATOM   01
-#define CC_MSGID_NORM   02
-#define midnormchar(c)  ((midcclass[(unsigned char)(c)] & CC_MSGID_NORM) != 0)
-#define midatomchar(c)  ((midcclass[(unsigned char)(c)] & CC_MSGID_ATOM) != 0)
+static char midcclass[256];
+#define CC_MSGID_ATOM  01
+#define CC_MSGID_NORM  02
+#define midnormchar(c) ((midcclass[(unsigned char) (c)] & CC_MSGID_NORM) != 0)
+#define midatomchar(c) ((midcclass[(unsigned char) (c)] & CC_MSGID_ATOM) != 0)
 
 char *
 GenerateMessageID(char *domain)
 {
-    static char		buff[SMBUF];
-    static int		count;
-    char		*p;
-    char		*fqdn = NULL;
-    char		sec32[10];
-    char		pid32[10];
-    time_t		now;
+    static char buff[SMBUF];
+    static int count;
+    char *p;
+    char *fqdn = NULL;
+    char sec32[10];
+    char pid32[10];
+    time_t now;
 
     now = time(NULL);
     Radix32(now - OFFSET, sec32);
     Radix32(getpid(), pid32);
-    if ((domain != NULL && innconf->domain == NULL) ||
-	(domain != NULL && innconf->domain != NULL
-         && strcmp(domain, innconf->domain) != 0)) {
-	p = domain;
+    if ((domain != NULL && innconf->domain == NULL)
+        || (domain != NULL && innconf->domain != NULL
+            && strcmp(domain, innconf->domain) != 0)) {
+        p = domain;
     } else {
         fqdn = inn_getfqdn(domain);
         if (fqdn == NULL)
@@ -68,17 +68,18 @@ InitializeMessageIDcclass(void)
      * little strangely to work around a GCC2.0 bug. */
     memset(midcclass, 0, sizeof(midcclass));
 
-    p = (const unsigned char*) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    p = (const unsigned char *) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS"
+                                "TUVWXYZ0123456789";
     while ((i = *p++) != 0) {
         midcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
     }
 
-    p = (const unsigned char*) "!#$%&'*+-/=?^_`{|}~";
+    p = (const unsigned char *) "!#$%&'*+-/=?^_`{|}~";
     while ((i = *p++) != 0) {
         midcclass[i] = CC_MSGID_ATOM | CC_MSGID_NORM;
     }
 
-    p = (const unsigned char*) "\"(),.:;<@";
+    p = (const unsigned char *) "\"(),.:;<@";
     while ((i = *p++) != 0) {
         midcclass[i] = CC_MSGID_NORM;
     }
@@ -124,13 +125,14 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
     p = (const unsigned char *) MessageID;
 
     if (stripspaces) {
-        for (; ISWHITE(*p); p++);
+        for (; ISWHITE(*p); p++)
+            ;
     }
 
-    /* Scan local-part:  "< dot-atom-text". */
+    /* Scan local-part: "< dot-atom-text". */
     if (*p++ != '<')
         return false;
-    for (; ; p++) {
+    for (;; p++) {
         if (midatomchar(*p)) {
             while (midatomchar(*++p))
                 continue;
@@ -141,7 +143,7 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
             if (laxsyntax && *p == '@') {
                 /* The domain part begins at the second '@', if it exists. */
                 if (atfound || (p[1] == '[')
-                    || (strchr((char *) p+1, '@') == NULL)) {
+                    || (strchr((char *) p + 1, '@') == NULL)) {
                     break;
                 }
                 atfound = true;
@@ -158,10 +160,10 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
         }
     }
 
-    /* Scan domain part:  "@ dot-atom-text|no-fold-literal > \0" */
+    /* Scan domain part: "@ dot-atom-text|no-fold-literal > \0" */
     if (*p++ != '@')
         return false;
-    for ( ; ; p++) {
+    for (;; p++) {
         if (midatomchar(*p)) {
             while (midatomchar(*++p))
                 continue;
@@ -169,16 +171,16 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
             /* no-fold-literal only */
             if (p[-1] != '@' || *p++ != '[')
                 return false;
-            for ( ; ; ) {
+            for (;;) {
                 switch (c = *p++) {
-                    default:
-                        if (midnormchar(c)) {
-                            continue;
-                        } else {
-                            return false;
-                        }
-                    case ']':
-                        break;
+                default:
+                    if (midnormchar(c)) {
+                        continue;
+                    } else {
+                        return false;
+                    }
+                case ']':
+                    break;
                 }
                 break;
             }
@@ -192,7 +194,8 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
         return false;
 
     if (stripspaces) {
-        for (; ISWHITE(*p); p++);
+        for (; ISWHITE(*p); p++)
+            ;
     }
 
     return (*p == '\0');

@@ -15,24 +15,24 @@
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if DO_PERL
 
-#include "clibrary.h"
-#include <fcntl.h>
-#include <syslog.h>
+#    include "clibrary.h"
+#    include <fcntl.h>
+#    include <syslog.h>
 
-#include "inn/libinn.h"
+#    include "inn/libinn.h"
 
-#include <EXTERN.h>
-#pragma GCC diagnostic ignored "-Wcast-align"
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-#pragma GCC diagnostic ignored "-Wshadow"
-#include <perl.h>
-#pragma GCC diagnostic warning "-Wcast-align"
-#pragma GCC diagnostic warning "-Wredundant-decls"
-#pragma GCC diagnostic warning "-Wshadow"
-#include <XSUB.h>
-#include "ppport.h"
+#    include <EXTERN.h>
+#    pragma GCC diagnostic ignored "-Wcast-align"
+#    pragma GCC diagnostic ignored "-Wredundant-decls"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    include <perl.h>
+#    pragma GCC diagnostic warning "-Wcast-align"
+#    pragma GCC diagnostic warning "-Wredundant-decls"
+#    pragma GCC diagnostic warning "-Wshadow"
+#    include "ppport.h"
+#    include <XSUB.h>
 
-#include "innperl.h"
+#    include "innperl.h"
 
 /* Provided by DynaLoader but not declared in Perl's header files. */
 XS(boot_DynaLoader);
@@ -55,9 +55,11 @@ CV *perl_filter_cv;
 static PerlInterpreter *PerlCode = NULL;
 
 
-static void LogPerl(void)
+static void
+LogPerl(void)
 {
-   syslog(L_NOTICE, "SERVER perl filtering %s", PerlFilterActive ? "enabled" : "disabled");
+    syslog(L_NOTICE, "SERVER perl filtering %s",
+           PerlFilterActive ? "enabled" : "disabled");
 }
 
 
@@ -70,7 +72,7 @@ bool
 PerlFilter(bool value)
 {
     dSP;
-    char *argv[] = { NULL };
+    char *argv[] = {NULL};
     SV *errsv;
 
     if (value == PerlFilterActive)
@@ -86,8 +88,8 @@ PerlFilter(bool value)
             SPAGAIN;
             errsv = ERRSV;
             if (SvTRUE(errsv)) {
-                syslog (L_ERROR, "SERVER perl function filter_end died: %s",
-                        SvPV(errsv, PL_na));
+                syslog(L_ERROR, "SERVER perl function filter_end died: %s",
+                       SvPV(errsv, PL_na));
                 (void) POPs;
             }
             PUTBACK;
@@ -99,7 +101,7 @@ PerlFilter(bool value)
         return true;
     } else {
         if (perl_filter_cv == NULL) {
-            syslog (L_ERROR, "SERVER perl filter not defined");
+            syslog(L_ERROR, "SERVER perl filter not defined");
             return false;
         } else {
             PerlFilterActive = value;
@@ -110,7 +112,6 @@ PerlFilter(bool value)
 }
 
 
-
 /*
 ** Loads a setup Perl module.  startupfile is the name of the file loaded
 ** one-time at startup.  filterfile is the file containing the filter
@@ -118,23 +119,24 @@ PerlFilter(bool value)
 ** function name that must be defined after the filterfile file is loaded for
 ** filtering to be turned on to start with.
 */
-void PERLsetup (char *startupfile, char *filterfile, const char *function)
+void
+PERLsetup(char *startupfile, char *filterfile, const char *function)
 {
     if (PerlCode == NULL) {
         /* Perl waits on standard input if not called with '-e'. */
         int argc = 3;
-        const char *argv_innd[] = { "innd", "-e", "0", NULL };
-        char **argv = (char **)argv_innd; /* Cast required by Perl 5.10. */
-        char **env  = { NULL };
-#ifdef PERL_SYS_INIT3
+        const char *argv_innd[] = {"innd", "-e", "0", NULL};
+        char **argv = (char **) argv_innd; /* Cast required by Perl 5.10. */
+        char **env = {NULL};
+#    ifdef PERL_SYS_INIT3
         PERL_SYS_INIT3(&argc, &argv, &env);
-#endif
+#    endif
         PerlCode = perl_alloc();
         perl_construct(PerlCode);
-#ifdef PERL_EXIT_DESTRUCT_END
+#    ifdef PERL_EXIT_DESTRUCT_END
         PL_exit_flags |= PERL_EXIT_DESTRUCT_END;
-#endif
-        perl_parse(PerlCode, xs_init, argc, argv, env) ;
+#    endif
+        perl_parse(PerlCode, xs_init, argc, argv, env);
     }
 
     if (startupfile != NULL && filterfile != NULL) {
@@ -164,8 +166,8 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
         errsv = ERRSV;
         if (SvTRUE(errsv)) {
             failure = true;
-            syslog(L_ERROR,"SERVER perl loading %s failed: %s",
-                   startupfile, SvPV(errsv, PL_na));
+            syslog(L_ERROR, "SERVER perl loading %s failed: %s", startupfile,
+                   SvPV(errsv, PL_na));
         } else {
             failure = false;
         }
@@ -175,12 +177,12 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
         LEAVE;
 
         if (failure) {
-            PerlFilter (false);
+            PerlFilter(false);
         } else {
-            PERLreadfilter (filterfile, function);
+            PERLreadfilter(filterfile, function);
         }
     } else {
-        PERLreadfilter (filterfile, function);
+        PERLreadfilter(filterfile, function);
     }
 }
 
@@ -190,10 +192,11 @@ void PERLsetup (char *startupfile, char *filterfile, const char *function)
    off. We remember whether the filter function was defined properly so
    that we can catch when the user tries to turn filtering on without the
    function there. */
-int PERLreadfilter(char *filterfile, const char *function)
+int
+PERLreadfilter(char *filterfile, const char *function)
 {
     dSP;
-    char *argv[] = { NULL };
+    char *argv[] = {NULL};
     char *evalfile = NULL;
     bool failure;
     SV *errsv;
@@ -202,15 +205,17 @@ int PERLreadfilter(char *filterfile, const char *function)
         ENTER;
         SAVETMPS;
         /* No need for PUSHMARK(SP) with call_argv(). */
-        perl_call_argv("filter_before_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
+        perl_call_argv("filter_before_reload", G_EVAL | G_DISCARD | G_NOARGS,
+                       argv);
         SPAGAIN;
         /* Check $@. */
         errsv = ERRSV;
         if (SvTRUE(errsv)) {
             failure = true;
-            syslog (L_ERROR,"SERVER perl function filter_before_reload died: %s",
-                    SvPV(errsv, PL_na));
-            (void)POPs;
+            syslog(L_ERROR,
+                   "SERVER perl function filter_before_reload died: %s",
+                   SvPV(errsv, PL_na));
+            (void) POPs;
         } else {
             failure = false;
         }
@@ -218,7 +223,7 @@ int PERLreadfilter(char *filterfile, const char *function)
         FREETMPS;
         LEAVE;
         if (failure)
-            PerlFilter (false);
+            PerlFilter(false);
     }
 
     ENTER;
@@ -242,8 +247,8 @@ int PERLreadfilter(char *filterfile, const char *function)
     errsv = ERRSV;
     if (SvTRUE(errsv)) {
         failure = true;
-        syslog (L_ERROR,"SERVER perl loading %s failed: %s",
-                filterfile, SvPV(errsv, PL_na));
+        syslog(L_ERROR, "SERVER perl loading %s failed: %s", filterfile,
+               SvPV(errsv, PL_na));
     } else {
         failure = false;
     }
@@ -251,7 +256,7 @@ int PERLreadfilter(char *filterfile, const char *function)
     FREETMPS;
     LEAVE;
     if (failure) {
-        PerlFilter (false);
+        PerlFilter(false);
 
         /* If the reload failed we don't want the old definition hanging
            around. */
@@ -272,29 +277,31 @@ int PERLreadfilter(char *filterfile, const char *function)
         /* Check $@. */
         errsv = ERRSV;
         if (SvTRUE(errsv)) {
-            syslog (L_ERROR,"SERVER perl undef &%s failed: %s",
-                    function, SvPV(errsv, PL_na)) ;
+            syslog(L_ERROR, "SERVER perl undef &%s failed: %s", function,
+                   SvPV(errsv, PL_na));
         }
         PUTBACK;
         FREETMPS;
         LEAVE;
     } else if ((perl_filter_cv = perl_get_cv(function, false)) == NULL) {
-        PerlFilter (false);
+        PerlFilter(false);
     }
 
     if (perl_get_cv("filter_after_reload", false) != NULL) {
         ENTER;
         SAVETMPS;
         /* No need for PUSHMARK(SP) with call_argv(). */
-        perl_call_argv("filter_after_reload", G_EVAL|G_DISCARD|G_NOARGS, argv);
+        perl_call_argv("filter_after_reload", G_EVAL | G_DISCARD | G_NOARGS,
+                       argv);
         SPAGAIN;
         /* Check $@. */
         errsv = ERRSV;
         if (SvTRUE(errsv)) {
             failure = true;
-            syslog (L_ERROR,"SERVER perl function filter_after_reload died: %s",
-                    SvPV(errsv, PL_na));
-            (void)POPs;
+            syslog(L_ERROR,
+                   "SERVER perl function filter_after_reload died: %s",
+                   SvPV(errsv, PL_na));
+            (void) POPs;
         } else {
             failure = false;
         }
@@ -302,7 +309,7 @@ int PERLreadfilter(char *filterfile, const char *function)
         FREETMPS;
         LEAVE;
         if (failure) {
-            PerlFilter (false);
+            PerlFilter(false);
         }
     }
 
@@ -321,23 +328,24 @@ int PERLreadfilter(char *filterfile, const char *function)
         }
     }
 
-    return (perl_filter_cv != NULL) ;
+    return (perl_filter_cv != NULL);
 }
 
 
 /*
 **  Stops using the Perl filter.
 */
-void PerlClose(void)
+void
+PerlClose(void)
 {
-   if (PerlCode !=  NULL) {
-      perl_destruct(PerlCode);
-      perl_free(PerlCode);
-#ifdef PERL_SYS_TERM
-      PERL_SYS_TERM();
-#endif
-   }
-   PerlFilterActive = false;
+    if (PerlCode != NULL) {
+        perl_destruct(PerlCode);
+        perl_free(PerlCode);
+#    ifdef PERL_SYS_TERM
+        PERL_SYS_TERM();
+#    endif
+    }
+    PerlFilterActive = false;
 }
 
 /*
@@ -346,62 +354,65 @@ void PerlClose(void)
 */
 static int savestdout = 0;
 static int savestderr = 0;
-void PerlSilence(void)
+void
+PerlSilence(void)
 {
-  int newfd;
+    int newfd;
 
-  /* Save the descriptors */
-  if ( (savestdout = dup(1)) < 0) {
-    syslog(L_ERROR,"SERVER perl silence cant redirect stdout: %m");
-    savestdout = 0;
-    return;
-  }
-  if ( (savestderr = dup(2)) < 0) {
-    syslog(L_ERROR,"SERVER perl silence cant redirect stderr: %m");
-    savestdout = 0;
-    savestderr = 0;
-    return;
-  }
+    /* Save the descriptors */
+    if ((savestdout = dup(1)) < 0) {
+        syslog(L_ERROR, "SERVER perl silence cant redirect stdout: %m");
+        savestdout = 0;
+        return;
+    }
+    if ((savestderr = dup(2)) < 0) {
+        syslog(L_ERROR, "SERVER perl silence cant redirect stderr: %m");
+        savestdout = 0;
+        savestderr = 0;
+        return;
+    }
 
-  /* Open /dev/null */
-  if ((newfd = open("/dev/null",O_WRONLY)) < 0) {
-    syslog(L_ERROR,"SERVER perl silence cant open /dev/null: %m");
-    savestdout = 0;
-    savestderr = 0;
-    return;
-  }
+    /* Open /dev/null */
+    if ((newfd = open("/dev/null", O_WRONLY)) < 0) {
+        syslog(L_ERROR, "SERVER perl silence cant open /dev/null: %m");
+        savestdout = 0;
+        savestderr = 0;
+        return;
+    }
 
-  /* Redirect descriptors */
-  if (dup2(newfd,1) < 0) {
-    syslog(L_ERROR,"SERVER perl silence cant redirect stdout: %m");
-    savestdout = 0;
-    return;
-  }
+    /* Redirect descriptors */
+    if (dup2(newfd, 1) < 0) {
+        syslog(L_ERROR, "SERVER perl silence cant redirect stdout: %m");
+        savestdout = 0;
+        return;
+    }
 
-  if (dup2(newfd,2) < 0) {
-    syslog(L_ERROR,"SERVER perl silence cant redirect stderr: %m");
-    savestderr = 0;
-    return;
-  }
-  close(newfd);
+    if (dup2(newfd, 2) < 0) {
+        syslog(L_ERROR, "SERVER perl silence cant redirect stderr: %m");
+        savestderr = 0;
+        return;
+    }
+    close(newfd);
 }
 
-void PerlUnSilence(void) {
-  if (savestdout != 0) {
-    if (dup2(savestdout,1) < 0) {
-      syslog(L_ERROR,"SERVER perl silence cant restore stdout: %m");
+void
+PerlUnSilence(void)
+{
+    if (savestdout != 0) {
+        if (dup2(savestdout, 1) < 0) {
+            syslog(L_ERROR, "SERVER perl silence cant restore stdout: %m");
+        }
+        close(savestdout);
+        savestdout = 0;
     }
-    close(savestdout);
-    savestdout = 0;
-  }
 
-  if (savestderr != 0) {
-    if (dup2(savestderr,2) < 0) {
-      syslog(L_ERROR,"SERVER perl silence cant restore stderr: %m");
+    if (savestderr != 0) {
+        if (dup2(savestderr, 2) < 0) {
+            syslog(L_ERROR, "SERVER perl silence cant restore stderr: %m");
+        }
+        close(savestderr);
+        savestderr = 0;
     }
-    close(savestderr);
-    savestderr = 0;
-  }
 }
 
 /*
@@ -433,21 +444,42 @@ XS(XS_INN_syslog)
     logmsg = (const char *) SvPV(ST(1), PL_na);
 
     switch (*loglevel) {
-        case 'a': case 'A':     priority = LOG_ALERT;           break;
-        case 'c': case 'C':     priority = LOG_CRIT;            break;
-        case 'e': case 'E':     priority = LOG_ERR;             break;
-        case 'w': case 'W':     priority = LOG_WARNING;         break;
-        case 'n': case 'N':     priority = LOG_NOTICE;          break;
-        case 'i': case 'I':     priority = LOG_INFO;            break;
-        case 'd': case 'D':     priority = LOG_DEBUG;           break;
-        default:                priority = LOG_NOTICE;
+    case 'a':
+    case 'A':
+        priority = LOG_ALERT;
+        break;
+    case 'c':
+    case 'C':
+        priority = LOG_CRIT;
+        break;
+    case 'e':
+    case 'E':
+        priority = LOG_ERR;
+        break;
+    case 'w':
+    case 'W':
+        priority = LOG_WARNING;
+        break;
+    case 'n':
+    case 'N':
+        priority = LOG_NOTICE;
+        break;
+    case 'i':
+    case 'I':
+        priority = LOG_INFO;
+        break;
+    case 'd':
+    case 'D':
+        priority = LOG_DEBUG;
+        break;
+    default:
+        priority = LOG_NOTICE;
     }
     syslog(priority, "filter: %s", logmsg);
     XSRETURN_UNDEF;
 }
 
-void
-xs_init(pTHX)
+void xs_init(pTHX)
 {
     dXSUB_SYS;
     inn_newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");

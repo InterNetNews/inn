@@ -173,10 +173,10 @@ skip_cfws(const char *p)
 
 /*
 **  Skip any amount of FWS (folding whitespace), the RFC 5322 grammar term
-**  for whitespace and CRLF pairs.  We also allow simple newlines since we don't
-**  always deal with wire-format messages.  Note that we do not attempt to
-**  ensure that CRLF or a newline is followed by whitespace.  Returns the new
-**  position of the pointer.
+**  for whitespace and CRLF pairs.  We also allow simple newlines since we
+**  don't always deal with wire-format messages.  Note that we do not attempt
+**  to ensure that CRLF or a newline is followed by whitespace.  Returns the
+**  new position of the pointer.
 */
 const char *
 skip_fws(const char *p)
@@ -197,4 +197,3 @@ skip_fws(const char *p)
     }
     return p;
 }
-

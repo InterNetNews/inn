@@ -13,14 +13,15 @@
 
 #include "config.h"
 #include "clibrary.h"
+
 #include "portable/setproctitle.h"
 
 #include "inn/messages.h"
 
 #if HAVE_PSTAT
 
-#include <sys/param.h>
-#include <sys/pstat.h>
+#    include <sys/param.h>
+#    include <sys/pstat.h>
 
 void
 setproctitle(const char *format, ...)
@@ -34,7 +35,7 @@ setproctitle(const char *format, ...)
         delta = snprintf(title, sizeof(title), "%s: ", message_program_name);
         if (delta < 0)
             delta = 0;
-        else if ((size_t)delta >= sizeof(title))
+        else if ((size_t) delta >= sizeof(title))
             delta = sizeof(title);
     }
     va_start(args, format);

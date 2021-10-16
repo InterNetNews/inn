@@ -1,5 +1,5 @@
 /*
-**  Routines for article numbers:  manipulation and checks.
+**  Routines for article numbers: manipulation and checks.
 */
 
 #include "config.h"
@@ -26,13 +26,13 @@ IsValidArticleNumber(const char *string)
         return false;
 
     p = (const unsigned char *) string;
-   
+
     for (; *p != '\0'; p++) {
         len++;
         if (!isdigit((unsigned char) *p))
             return false;
         digit = *p - '0';
-        if(v > (0x7FFFFFFFul - digit) / 10)
+        if (v > (0x7FFFFFFFul - digit) / 10)
             return false;
         v = 10 * v + digit;
     }
@@ -46,7 +46,7 @@ IsValidArticleNumber(const char *string)
 
 /*
 **  Return true if the provided string is a valid range, that is to say:
-** 
+**
 **    - An article number.
 **    - An article number followed by a dash to indicate all following.
 **    - An article number followed by a dash followed by another article

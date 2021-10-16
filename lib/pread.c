@@ -19,8 +19,8 @@
    system version.  #undef first because large file support may define a
    macro pread (pointing to pread64) on some platforms (e.g. Solaris). */
 #if TESTING
-# undef pread
-# define pread test_pread
+#    undef pread
+#    define pread test_pread
 ssize_t test_pread(int, void *, size_t, off_t);
 #endif
 

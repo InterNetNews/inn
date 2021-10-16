@@ -47,8 +47,8 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include "inn/tst.h"
 #include "inn/libinn.h"
+#include "inn/tst.h"
 
 
 /* A single node in the ternary search trie.  Stores a character, which is
@@ -221,7 +221,6 @@ tst_insert(struct tst *tst, const unsigned char *key, void *data, int option,
             else
                 current_node = current_node->right;
         }
-
     }
 
     *root_node = tst_get_free_node(tst, key[key_index]);

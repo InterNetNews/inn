@@ -29,7 +29,7 @@ inn_encode_hex(const unsigned char *data, size_t length, char *buffer,
     if (buflen == 0)
         return;
     for (p = data, i = 0; i < length && (i * 2) < (buflen - 1); p++, i++) {
-        buffer[i * 2]       = hex[(*p & 0xf0) >> 4];
+        buffer[i * 2] = hex[(*p & 0xf0) >> 4];
         buffer[(i * 2) + 1] = hex[(*p & 0x0f)];
     }
     if (length * 2 > buflen - 1)

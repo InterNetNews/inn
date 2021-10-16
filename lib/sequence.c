@@ -8,8 +8,9 @@
 
 #include "config.h"
 #include "clibrary.h"
-#include <limits.h>
+
 #include "inn/sequence.h"
+#include <limits.h>
 
 
 /*
@@ -25,12 +26,12 @@ int
 seq_lcompare(unsigned long i1, unsigned long i2)
 {
     if (i1 == i2)
-	return 0;
-    else if ((i1 < i2 && i2 - i1 < (1 + ULONG_MAX / 2)) ||
-	     (i1 > i2 && i1 - i2 > (1 + ULONG_MAX / 2)))
-	return -1;
-    else if ((i1 < i2 && i2 - i1 > (1 + ULONG_MAX / 2)) ||
-	     (i1 > i2 && i1 - i2 < (1 + ULONG_MAX / 2)))
-	return 1;
+        return 0;
+    else if ((i1 < i2 && i2 - i1 < (1 + ULONG_MAX / 2))
+             || (i1 > i2 && i1 - i2 > (1 + ULONG_MAX / 2)))
+        return -1;
+    else if ((i1 < i2 && i2 - i1 > (1 + ULONG_MAX / 2))
+             || (i1 > i2 && i1 - i2 < (1 + ULONG_MAX / 2)))
+        return 1;
     return INT_MAX;
 }

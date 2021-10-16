@@ -19,8 +19,8 @@
    system version.  #undef first because large file support may define a
    macro pwrite (pointing to pwrite64) on some platforms (e.g. Solaris). */
 #if TESTING
-# undef pwrite
-# define pwrite test_pwrite
+#    undef pwrite
+#    define pwrite test_pwrite
 ssize_t test_pwrite(int, const void *, size_t, off_t);
 #endif
 

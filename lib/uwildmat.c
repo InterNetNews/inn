@@ -9,7 +9,7 @@
 **  Original by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.
 **  Rich $alz is now <rsalz@osf.org>.
 **
-**  April, 1991:  Replaced mutually-recursive calls with in-line code for the
+**  April, 1991: Replaced mutually-recursive calls with in-line code for the
 **  star character.
 **
 **  Special thanks to Lars Mathiesen <thorinn@diku.dk> for the ABORT code.
@@ -40,10 +40,10 @@
 **  I think it would be unwise to try to get this into a released version
 **  unless you have a good test data base to try it out on.
 **
-**  June, 1991:  Robert Elz <kre@munnari.oz.au> added minus and close bracket
+**  June, 1991: Robert Elz <kre@munnari.oz.au> added minus and close bracket
 **  handling for character sets.
 **
-**  July, 2000:  Largely rewritten by Russ Allbery <eagle@eyrie.org> to add
+**  July, 2000: Largely rewritten by Russ Allbery <eagle@eyrie.org> to add
 **  support for ',', '!', and optionally '@' to the core wildmat routine.
 **  Broke the character class matching into a separate function for clarity
 **  since it's infrequently used in practice, and added some simple lookahead
@@ -69,7 +69,7 @@
 #define ABORT -1
 
 /* Whether or not an octet looks like the start of a UTF-8 character. */
-#define ISUTF8(c)       (((c) & 0xc0) == 0xc0)
+#define ISUTF8(c) (((c) &0xc0) == 0xc0)
 
 
 /*
@@ -112,7 +112,7 @@ is_valid_utf8(const char *text)
     int length;
     int left;
 
-    for (p = (const unsigned char *)text; *p != '\0';) {
+    for (p = (const unsigned char *) text; *p != '\0';) {
         mask = 0x80;
         length = 0;
 
@@ -124,8 +124,8 @@ is_valid_utf8(const char *text)
 
         /* Valid printable ASCII character or CR, LF or HTAB. */
         if (length == 0) {
-            if(isprint((unsigned char) p[-1])
-               || p[-1] == '\r' || p[-1] == '\n' || p[-1] == '\t') {
+            if (isprint((unsigned char) p[-1]) || p[-1] == '\r'
+                || p[-1] == '\n' || p[-1] == '\t') {
                 continue;
             } else {
                 return false;
@@ -315,7 +315,7 @@ match_pattern(const unsigned char *text, const unsigned char *start,
             q = p + (*p == '^') + 1;
             if (q > end)
                 return ABORT;
-            endclass = memchr(q, ']', (size_t) (end - q + 1));
+            endclass = memchr(q, ']', (size_t)(end - q + 1));
             if (!endclass)
                 return ABORT;
 

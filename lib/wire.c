@@ -21,8 +21,8 @@
 #include "clibrary.h"
 #include <assert.h>
 
-#include "inn/wire.h"
 #include "inn/libinn.h"
+#include "inn/wire.h"
 
 /*
 **  Given a pointer to the start of an article, locate the first octet of the
@@ -183,7 +183,7 @@ wire_endheader(const char *header, const char *end)
 **  Given an article and length in non-wire format, return a malloced region
 **  containing the article in wire format.  Set *newlen to the length of the
 **  new article.  The caller is responsible for freeing the allocated memory.
-*/ 
+*/
 char *
 wire_from_native(const char *article, size_t len, size_t *newlen)
 {
@@ -255,7 +255,7 @@ wire_to_native(const char *article, size_t len, size_t *newlen)
     /* First go thru article and count number of bytes we need.  Once we reach
        .\r\n, we're done.  We'll remove one . from .. at the start of a line
        and change CRLF to just LF. */
-    for (bytes = 0, p = article; p < article + len; ) {
+    for (bytes = 0, p = article; p < article + len;) {
         if (p == end && p[0] == '.' && p[1] == '\r' && p[2] == '\n')
             break;
         if (at_start && p < article + len - 1 && p[0] == '.' && p[1] == '.') {
@@ -277,7 +277,7 @@ wire_to_native(const char *article, size_t len, size_t *newlen)
     newart = xmalloc(bytes + 1);
     *newlen = bytes;
     at_start = true;
-    for (p = article, dest = newart; p < article + len; ) {
+    for (p = article, dest = newart; p < article + len;) {
         if (p == end && p[0] == '.' && p[1] == '\r' && p[2] == '\n')
             break;
         if (at_start && p < article + len - 1 && p[0] == '.' && p[1] == '.') {

@@ -14,12 +14,12 @@
  */
 
 #include "config.h"
-#include "portable/socket.h"
 #include "clibrary.h"
+#include "portable/socket.h"
 
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD
-# include <stropts.h>
+#    include <stropts.h>
 #endif
 #include <sys/wait.h>
 
@@ -27,8 +27,8 @@
 #include "inn/libinn.h"
 #include "inn/macros.h"
 #include "inn/messages.h"
-#include "inn/network.h"
 #include "inn/network-innbind.h"
+#include "inn/network.h"
 #include "inn/xmalloc.h"
 
 

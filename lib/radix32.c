@@ -10,39 +10,39 @@
 #include "inn/libinn.h"
 
 
-static char	ALPHABET[] =
-    "0123456789abcdefghijklmnopqrstuv";
+static char ALPHABET[] = "0123456789abcdefghijklmnopqrstuv";
 
 
 /*
 **  Turn a number into a Radix-32 string.  Assume the number fits into
 **  32 bits.
 */
-void Radix32(unsigned long l, char *buff)
+void
+Radix32(unsigned long l, char *buff)
 {
-    char		        *p;
-    int		                i;
-    char			temp[10];
+    char *p;
+    int i;
+    char temp[10];
 
     /* Simple sanity checks. */
     if ((l &= 0xFFFFFFFFL) == 0) {
-	*buff++ = ALPHABET[0];
-	*buff = '\0';
-	return;
+        *buff++ = ALPHABET[0];
+        *buff = '\0';
+        return;
     }
 
     /* Format the string, in reverse. */
     for (p = temp; l; l >>= 5)
-	*p++ = ALPHABET[(int)(l & 037)];
+        *p++ = ALPHABET[(int) (l & 037)];
 
     /* Reverse it. */
-    for (i = p - temp; --i >= 0; )
-	*buff++ = *--p;
+    for (i = p - temp; --i >= 0;)
+        *buff++ = *--p;
     *buff = '\0';
 }
 
 
-#if	0
+#if 0
 /*
 **  Return a Radix-32 string as a number, or ~0 on error.
 */
@@ -60,4 +60,4 @@ Decode32(p)
     }
     return l;
 }
-#endif	/* 0 */
+#endif /* 0 */

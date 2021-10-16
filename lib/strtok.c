@@ -14,7 +14,7 @@
  * Redistribution and use in source and binary forms are permitted
  * provided that: (1) source distributions retain this entire copyright
  * notice and comment, and (2) distributions including binaries display
- * the following acknowledgement:  ``This product includes software
+ * the following acknowledgement: ``This product includes software
  * developed by the University of California, Berkeley and its contributors''
  * in the documentation or other materials provided with the distribution
  * and in all advertising materials mentioning features or use of this
@@ -30,48 +30,48 @@
 char *
 strtok(char *s, const char *delim)
 {
-	const char *spanp;
-	int c, sc;
-	char *tok;
-	static char *last;
+    const char *spanp;
+    int c, sc;
+    char *tok;
+    static char *last;
 
 
-	if (s == NULL && (s = last) == NULL)
-		return (NULL);
+    if (s == NULL && (s = last) == NULL)
+        return (NULL);
 
-	/*
-	 * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
-	 */
+    /*
+     * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
+     */
 cont:
-	c = *s++;
-	for (spanp = delim; (sc = *spanp++) != 0;) {
-		if (c == sc)
-			goto cont;
-	}
+    c = *s++;
+    for (spanp = delim; (sc = *spanp++) != 0;) {
+        if (c == sc)
+            goto cont;
+    }
 
-	if (c == 0) {		/* no non-delimiter characters */
-		last = NULL;
-		return (NULL);
-	}
-	tok = s - 1;
+    if (c == 0) { /* no non-delimiter characters */
+        last = NULL;
+        return (NULL);
+    }
+    tok = s - 1;
 
-	/*
-	 * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
-	 * Note that delim must have one NUL; we stop if we see that, too.
-	 */
-	for (;;) {
-		c = *s++;
-		spanp = delim;
-		do {
-			if ((sc = *spanp++) == c) {
-				if (c == 0)
-					s = NULL;
-				else
-					s[-1] = 0;
-				last = s;
-				return (tok);
-			}
-		} while (sc != 0);
-	}
-	/* NOTREACHED */
+    /*
+     * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
+     * Note that delim must have one NUL; we stop if we see that, too.
+     */
+    for (;;) {
+        c = *s++;
+        spanp = delim;
+        do {
+            if ((sc = *spanp++) == c) {
+                if (c == 0)
+                    s = NULL;
+                else
+                    s[-1] = 0;
+                last = s;
+                return (tok);
+            }
+        } while (sc != 0);
+    }
+    /* NOTREACHED */
 }

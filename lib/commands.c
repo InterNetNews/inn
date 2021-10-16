@@ -1,5 +1,5 @@
 /*
-**  Routines for NNTP commands:  manipulation and checks.
+**  Routines for NNTP commands: manipulation and checks.
 */
 
 #include "config.h"
@@ -30,7 +30,8 @@ IsValidKeyword(const char *string)
         return false;
 
     for (; *string != '\0'; string++) {
-        if (isalnum((unsigned char) *string) || *string == '.' || *string == '-')
+        if (isalnum((unsigned char) *string) || *string == '.'
+            || *string == '-')
             len++;
         else
             return false;

@@ -14,7 +14,7 @@
  * Redistribution and use in source and binary forms are permitted
  * provided that: (1) source distributions retain this entire copyright
  * notice and comment, and (2) distributions including binaries display
- * the following acknowledgement:  ``This product includes software
+ * the following acknowledgement: ``This product includes software
  * developed by the University of California, Berkeley and its contributors''
  * in the documentation or other materials provided with the distribution
  * and in all advertising materials mentioning features or use of this
@@ -29,20 +29,20 @@
 
 /*
  * Span the string s2 (skip characters that are in s2).
- */ 
+ */
 size_t
 strspn(const char *s1, const char *s2)
 {
-	const char *p = s1, *spanp;
-	char c, sc;
+    const char *p = s1, *spanp;
+    char c, sc;
 
-	/*
-	 * Skip any characters in s2, excluding the terminating \0.
-	 */
+    /*
+     * Skip any characters in s2, excluding the terminating \0.
+     */
 cont:
-	c = *p++;
-	for (spanp = s2; (sc = *spanp++) != 0;)
-		if (sc == c)
-			goto cont;
-	return (p - 1 - s1);
+    c = *p++;
+    for (spanp = s2; (sc = *spanp++) != 0;)
+        if (sc == c)
+            goto cont;
+    return (p - 1 - s1);
 }

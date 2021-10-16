@@ -22,18 +22,18 @@ typedef void (*sig_handler_type)(int);
  *
  * This excludes the possibility of a signal handler accessing data that
  * the main code is mutating.
- * 
+ *
  * signals_masked is signal mask we run with outside select(). It is
  * initialised to the signal mask that held on entry, with the signals
  * we handle added.
- * 
+ *
  * signals_unmasked is signal mask we run with during select(). It is
  * initialised to the signal mask that held on entry, with the signals
  * we handle removed.
- * 
+ *
  * Both sets are intended to be arguments to SIG_SETMASK, not
  * to SIG_BLOCK or SIG_UNBLOCK.
- * 
+ *
  * Signals that are ignored or set to SIG_DFL are never masked.
  */
 static bool signal_masking = false;
@@ -76,11 +76,11 @@ xsignal(int signum, sig_handler_type sigfunc)
     sigemptyset(&act.sa_mask);
 
     /* Try to restart system calls if possible. */
-#ifdef SA_RESTART
+#    ifdef SA_RESTART
     act.sa_flags = SA_RESTART;
-#else
+#    else
     act.sa_flags = 0;
-#endif
+#    endif
 
     if (sigaction(signum, &act, &oact) < 0)
         return SIG_ERR;
@@ -97,11 +97,11 @@ xsignal_norestart(int signum, sig_handler_type sigfunc)
     sigemptyset(&act.sa_mask);
 
     /* Try not to restart system calls. */
-#ifdef SA_INTERRUPT
+#    ifdef SA_INTERRUPT
     act.sa_flags = SA_INTERRUPT;
-#else
+#    else
     act.sa_flags = 0;
-#endif
+#    endif
 
     if (sigaction(signum, &act, &oact) < 0)
         return SIG_ERR;

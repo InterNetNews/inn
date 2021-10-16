@@ -21,16 +21,16 @@
 #include "clibrary.h"
 #include <errno.h>
 #if HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#    include <sys/select.h>
 #endif
 
 /* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
 #if HAVE_GETRLIMIT || HAVE_SETRLIMIT
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# endif
-# include <time.h>
-# include <sys/resource.h>
+#    if HAVE_SYS_TIME_H
+#        include <sys/time.h>
+#    endif
+#    include <sys/resource.h>
+#    include <time.h>
 #endif
 
 #include "inn/libinn.h"
@@ -42,22 +42,22 @@ setfdlimit(unsigned int limit)
 {
     struct rlimit rl;
 
-#ifdef FD_SETSIZE
+#    ifdef FD_SETSIZE
     if (limit > FD_SETSIZE) {
         errno = EINVAL;
         return -1;
     }
-#endif
+#    endif
 
     rl.rlim_cur = 0;
     rl.rlim_max = 0;
 
-#if HAVE_GETRLIMIT
+#    if HAVE_GETRLIMIT
     if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
         rl.rlim_cur = 0;
         rl.rlim_max = 0;
     }
-#endif
+#    endif
 
     rl.rlim_cur = limit;
     if (limit > rl.rlim_max)
@@ -110,27 +110,27 @@ getfdlimit(void)
 int
 getfdlimit(void)
 {
-# ifdef UL_GDESLIM
+#    ifdef UL_GDESLIM
     return ulimit(UL_GDESLIM, 0);
-# else
+#    else
     return ulimit(4, 0);
-# endif
+#    endif
 }
 
 #else /* no function mechanism available */
-# if HAVE_LIMITS_H
-#  include <limits.h>
-# endif
-# include <sys/param.h>
+#    if HAVE_LIMITS_H
+#        include <limits.h>
+#    endif
+#    include <sys/param.h>
 
 int
 getfdcount(void)
 {
-# ifdef NOFILE
+#    ifdef NOFILE
     return NOFILE;
-# else
+#    else
     return 20;
-# endif
+#    endif
 }
 
 #endif

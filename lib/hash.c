@@ -6,12 +6,11 @@
 #include "clibrary.h"
 #include <ctype.h>
 
+#include "inn/libinn.h"
 #include "inn/md5.h"
 #include "inn/utility.h"
-#include "inn/libinn.h"
 
-static HASH empty= { { 0, 0, 0, 0, 0, 0, 0, 0,
-		       0, 0, 0, 0, 0, 0, 0, 0 }};
+static HASH empty = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 /* cipoint - where in this message-ID does it become case-insensitive?
  *
@@ -33,11 +32,11 @@ cipoint(const char *s, size_t size)
     static const char post[] = "postmaster";
     static int plen = sizeof(post) - 1;
 
-    if ((p = memchr(s, '@', size))== NULL)	/* no local/domain split */
-	return NULL;				/* assume all local */
-    if ((p - (s + 1) == plen) && !strncasecmp(post, s+1, plen)) {
-	/* crazy -- "postmaster" is case-insensitive */
-	return s;
+    if ((p = memchr(s, '@', size)) == NULL) /* no local/domain split */
+        return NULL;                        /* assume all local */
+    if ((p - (s + 1) == plen) && !strncasecmp(post, s + 1, plen)) {
+        /* crazy -- "postmaster" is case-insensitive */
+        return s;
     }
     return p;
 }
@@ -51,20 +50,20 @@ Hash(const void *value, const size_t len)
     md5_init(&context);
     md5_update(&context, value, len);
     md5_final(&context);
-    memcpy(&hash,
-	   &context.digest,
-	   (sizeof(hash) < sizeof(context.digest)) ? sizeof(hash) : sizeof(context.digest));
+    memcpy(&hash, &context.digest,
+           (sizeof(hash) < sizeof(context.digest)) ? sizeof(hash)
+                                                   : sizeof(context.digest));
     return hash;
 }
 
 HASH
 HashMessageID(const char *MessageID)
 {
-    char                *new = NULL;
-    const char          *cip, *p = NULL;
-    char                *q;
-    int                 len;
-    HASH                hash;
+    char *new = NULL;
+    const char *cip, *p = NULL;
+    char *q;
+    int len;
+    HASH hash;
 
     len = strlen(MessageID);
     cip = cipoint(MessageID, len);
@@ -81,7 +80,7 @@ HashMessageID(const char *MessageID)
             *q = tolower((unsigned char) *q);
     hash = Hash(new ? new : MessageID, len);
     if (new != NULL)
-	free(new);
+        free(new);
     return hash;
 }
 
@@ -96,7 +95,7 @@ HashEmpty(const HASH h)
 }
 
 /*
-**  Set the hash to all zeros.  Using all zeros as the value for empty 
+**  Set the hash to all zeros.  Using all zeros as the value for empty
 **  introduces the possibility of colliding w/a value that actually hashes
 **  to all zeros, but that's fairly unlikely.
 */
@@ -113,7 +112,7 @@ HashClear(HASH *hash)
 char *
 HashToText(const HASH hash)
 {
-    static char	hashstr[(sizeof(HASH) * 2) + 1];
+    static char hashstr[(sizeof(HASH) * 2) + 1];
 
     inn_encode_hex((unsigned char *) hash.hash, sizeof(HASH), hashstr,
                    sizeof(hashstr));
@@ -136,11 +135,14 @@ TextToHash(const char *text)
 /* This is rather gross, we compare like the last 4 bytes of the
    hash are at the beginning because dbz considers them to be the
    most significant bytes */
-int HashCompare(const HASH *h1, const HASH *h2) {
+int
+HashCompare(const HASH *h1, const HASH *h2)
+{
     int i;
     int tocomp = sizeof(HASH) - sizeof(unsigned long);
-    
-    if ((i = memcmp(&h1->hash[tocomp], &h1->hash[tocomp], sizeof(unsigned long))))
-	return i;
+
+    if ((i = memcmp(&h1->hash[tocomp], &h1->hash[tocomp],
+                    sizeof(unsigned long))))
+        return i;
     return memcmp(h1, h2, sizeof(HASH));
 }

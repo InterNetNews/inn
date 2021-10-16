@@ -37,8 +37,8 @@
 #include "clibrary.h"
 
 #include "inn/concat.h"
-#include "inn/xmalloc.h"
 #include "inn/messages.h"
+#include "inn/xmalloc.h"
 
 /* Abbreviation for cleaner code. */
 #define VA_NEXT(var, type) ((var) = (type) va_arg(args, type))
@@ -64,7 +64,7 @@ concat(const char *first, ...)
          * Prevent overflow.  We limit the size to INT_MAX so that
          * downstream conversions to int don't generate a vulnerability.
          */
-        if(length >= INT_MAX - strlen(string))
+        if (length >= INT_MAX - strlen(string))
             sysdie("concat input too long");
         length += strlen(string);
     }

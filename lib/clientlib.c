@@ -9,9 +9,9 @@
 #include "inn/nntp.h"
 
 
-FILE	*ser_rd_fp = NULL;
-FILE	*ser_wr_fp = NULL;
-char	ser_line[NNTP_MAXLEN_COMMAND + 2];
+FILE *ser_rd_fp = NULL;
+FILE *ser_wr_fp = NULL;
+char ser_line[NNTP_MAXLEN_COMMAND + 2];
 
 
 /*
@@ -21,7 +21,7 @@ char	ser_line[NNTP_MAXLEN_COMMAND + 2];
 char *
 getserverbyfile(char *file UNUSED)
 {
-    static char	buff[256];
+    static char buff[256];
 
     strlcpy(buff, innconf->server, sizeof(buff));
     return buff;
@@ -35,7 +35,7 @@ getserverbyfile(char *file UNUSED)
 int
 server_init(char *host, int port)
 {
-    char	line2[NNTP_MAXLEN_COMMAND];
+    char line2[NNTP_MAXLEN_COMMAND];
 
     /* This interface may be used by clients that assume C News behavior and
        won't read inn.conf themselves. */
@@ -44,31 +44,32 @@ server_init(char *host, int port)
             return -1;
 
     if (NNTPconnect(host, port, &ser_rd_fp, &ser_wr_fp, ser_line,
-                    sizeof(ser_line)) < 0) {
-	if (ser_line[0] == '\0')
-	    /* I/O problem. */
-	    return -1;
+                    sizeof(ser_line))
+        < 0) {
+        if (ser_line[0] == '\0')
+            /* I/O problem. */
+            return -1;
 
-	/* Server rejected connection; return it's reply code. */
-	return atoi(ser_line);
+        /* Server rejected connection; return its reply code. */
+        return atoi(ser_line);
     }
 
     /* Send the INN command; if understood, use that reply. */
     put_server("MODE READER");
-    if (get_server(line2, (int)sizeof line2) < 0)
-	return -1;
+    if (get_server(line2, (int) sizeof line2) < 0)
+        return -1;
     if (atoi(line2) != NNTP_ERR_COMMAND)
-	strlcpy(ser_line, line2, sizeof(ser_line));
+        strlcpy(ser_line, line2, sizeof(ser_line));
 
     /* Connected; return server's reply code. */
     return atoi(ser_line);
 }
 
 
-#define CANTPOST	\
-    "NOTE:  This machine does not have permission to post articles"
-#define CANTUSE		\
-	"This machine does not have permission to use the %s news server.\n"
+#define CANTPOST \
+    "NOTE: This machine does not have permission to post articles"
+#define CANTUSE \
+    "This machine does not have permission to use the %s news server.\n"
 /*
 **  Print a message based on the the server's initial response.
 **  Return -1 if server wants us to go away.
@@ -76,12 +77,12 @@ server_init(char *host, int port)
 int
 handle_server_response(int response, char *host)
 {
-    char	*p;
+    char *p;
 
     switch (response) {
     default:
-	printf("Unknown response code %d from %s.\n", response, host);
-	return -1;
+        printf("Unknown response code %d from %s.\n", response, host);
+        return -1;
     case NNTP_FAIL_TERMINATING:
         if (atoi(ser_line) == response) {
             size_t ser_line_len = strlen(ser_line);
@@ -99,13 +100,13 @@ handle_server_response(int response, char *host)
         printf("News server %s unavailable, try later.\n", host);
         return -1;
     case NNTP_ERR_ACCESS:
-	printf(CANTUSE, host);
-	return -1;
+        printf(CANTUSE, host);
+        return -1;
     case NNTP_OK_BANNER_NOPOST:
-	printf("%s.\n", CANTPOST);
-	/* FALLTHROUGH */
+        printf("%s.\n", CANTPOST);
+        /* FALLTHROUGH */
     case NNTP_OK_BANNER_POST:
-	break;
+        break;
     }
     return 0;
 }
@@ -129,13 +130,13 @@ put_server(const char *buff)
 int
 get_server(char *buff, int buffsize)
 {
-    char	*p;
+    char *p;
 
     if (fgets(buff, buffsize, ser_rd_fp) == NULL)
-	return -1;
+        return -1;
     p = &buff[strlen(buff)];
     if (p >= &buff[2] && p[-2] == '\r' && p[-1] == '\n')
-	p[-2] = '\0';
+        p[-2] = '\0';
     return 0;
 }
 
@@ -146,15 +147,15 @@ get_server(char *buff, int buffsize)
 void
 close_server(void)
 {
-    char	buff[NNTP_MAXLEN_COMMAND];
+    char buff[NNTP_MAXLEN_COMMAND];
 
     if (ser_wr_fp != NULL && ser_rd_fp != NULL) {
-	put_server("QUIT");
-	fclose(ser_wr_fp);
-	ser_wr_fp = NULL;
+        put_server("QUIT");
+        fclose(ser_wr_fp);
+        ser_wr_fp = NULL;
 
-	get_server(buff, (int)sizeof buff);
-	fclose(ser_rd_fp);
-	ser_rd_fp = NULL;
+        get_server(buff, (int) sizeof buff);
+        fclose(ser_rd_fp);
+        ser_rd_fp = NULL;
     }
 }

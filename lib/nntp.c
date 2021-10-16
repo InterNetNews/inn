@@ -12,16 +12,16 @@
 #include <errno.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/network.h"
 #include "inn/nntp.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
 
 /* State for an NNTP connection. */
 struct nntp {

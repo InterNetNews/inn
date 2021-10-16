@@ -8,8 +8,8 @@
 #include "inn/paths.h"
 
 
-static char	*CApathname;
-static FILE	*CAfp;
+static char *CApathname;
+static FILE *CAfp;
 
 
 /*
@@ -27,12 +27,12 @@ CAopen(FILE *FromServer, FILE *ToServer)
     CAfp = fopen(path, "r");
     free(path);
     if (CAfp != NULL) {
-	CApathname = NULL;
-	return CAfp;
+        CApathname = NULL;
+        return CAfp;
     }
 
     /* Use the active file from the server */
-    return CAlistopen(FromServer, ToServer, (char *)NULL);
+    return CAlistopen(FromServer, ToServer, (char *) NULL);
 }
 
 
@@ -43,49 +43,49 @@ FILE *
 CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
             const char *request)
 {
-    char	buff[BUFSIZ];
-    char        expectedanswer[BUFSIZ];
-    char	*p;
-    int		oerrno;
-    FILE	*F;
+    char buff[BUFSIZ];
+    char expectedanswer[BUFSIZ];
+    char *p;
+    int oerrno;
+    FILE *F;
 
     F = fopen(pathname, "w");
     if (F == NULL)
-	return NULL;
+        return NULL;
 
     /* Send a LIST command and capture the output. */
     if (request == NULL)
-	fprintf(ToServer, "LIST\r\n");
+        fprintf(ToServer, "LIST\r\n");
     else
-	fprintf(ToServer, "LIST %s\r\n", request);
+        fprintf(ToServer, "LIST %s\r\n", request);
     fflush(ToServer);
 
     snprintf(expectedanswer, sizeof(expectedanswer), "%d", NNTP_OK_LIST);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
-	oerrno = errno;
-	/* Only call CAclose() if opened through CAopen(). */
-	if (strcmp(CApathname, pathname) == 0)
+        || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
+        oerrno = errno;
+        /* Only call CAclose() if opened through CAopen(). */
+        if (strcmp(CApathname, pathname) == 0)
             CAclose();
-	errno = oerrno;
+        errno = oerrno;
         fclose(F);
-	return NULL;
+        return NULL;
     }
 
     /* Slurp up the rest of the response. */
     while (fgets(buff, sizeof buff, FromServer) != NULL) {
-	if ((p = strchr(buff, '\r')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if (buff[0] == '.' && buff[1] == '\0') {
-	    if (ferror(F) || fflush(F) == EOF || fclose(F) == EOF)
-		break;
-	    return fopen(pathname, "r");
-	}
-	fprintf(F, "%s\n", buff);
+        if ((p = strchr(buff, '\r')) != NULL)
+            *p = '\0';
+        if ((p = strchr(buff, '\n')) != NULL)
+            *p = '\0';
+        if (buff[0] == '.' && buff[1] == '\0') {
+            if (ferror(F) || fflush(F) == EOF || fclose(F) == EOF)
+                break;
+            return fopen(pathname, "r");
+        }
+        fprintf(F, "%s\n", buff);
     }
 
     /* Ran out of input before finding the terminator; quit. */
@@ -108,8 +108,8 @@ CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 
     /* Gotta talk to the server -- see if we can. */
     if (FromServer == NULL || ToServer == NULL) {
-	errno = EBADF;
-	return NULL;
+        errno = EBADF;
+        return NULL;
     }
 
     CApathname = concatpath(innconf->pathtmp, INN_PATH_TEMPACTIVE);
@@ -126,7 +126,6 @@ CAlistopen(FILE *FromServer, FILE *ToServer, const char *request)
 }
 
 
-
 /*
 **  Close the file opened by CAopen or CAlistopen.
 */
@@ -134,11 +133,11 @@ void
 CAclose(void)
 {
     if (CAfp) {
-	fclose(CAfp);
-	CAfp = NULL;
+        fclose(CAfp);
+        CAfp = NULL;
     }
     if (CApathname != NULL) {
-	unlink(CApathname);
-	CApathname = NULL;
+        unlink(CApathname);
+        CApathname = NULL;
     }
 }

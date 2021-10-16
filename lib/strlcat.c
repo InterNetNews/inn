@@ -32,8 +32,8 @@
  * the system version.
  */
 #if TESTING
-# undef strlcat
-# define strlcat test_strlcat
+#    undef strlcat
+#    define strlcat test_strlcat
 size_t test_strlcat(char *, const char *, size_t);
 #endif
 

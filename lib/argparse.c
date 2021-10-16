@@ -33,7 +33,7 @@ Argify(char *line, char ***argvp)
 int
 nArgify(char *line, char ***argvp, int n)
 {
-    char        *p;
+    char *p;
 
     if (*argvp != NULL) {
         free(*argvp[0]);
@@ -81,14 +81,14 @@ reArgify(char *p, char **argv, int n, bool stripspaces)
             p++;
     }
 
-    for ( ; *p; ) {
+    for (; *p;) {
         if (n == 0) {
             *argv++ = p;
             break;
         }
 
         /* Decrement limit, mark start of this word, find its end. */
-        for (n--, *argv++ = p; *p && !ISWHITE(*p); )
+        for (n--, *argv++ = p; *p && !ISWHITE(*p);)
             p++;
 
         if (*p == '\0')
@@ -96,7 +96,7 @@ reArgify(char *p, char **argv, int n, bool stripspaces)
 
         /* Nip off word. */
         *p++ = '\0';
-        
+
         /* Skip whitespace. */
         if (stripspaces) {
             while (ISWHITE(*p))
@@ -117,9 +117,9 @@ reArgify(char *p, char **argv, int n, bool stripspaces)
 char *
 Glom(char **av)
 {
-    char        **v;
+    char **v;
     int i;
-    char                *save;
+    char *save;
 
     /* Get space. */
     for (i = 0, v = av; *v; v++)

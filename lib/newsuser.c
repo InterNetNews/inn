@@ -9,8 +9,8 @@
 #include "config.h"
 #include "clibrary.h"
 
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
 
 #include "inn/innconf.h"
 #include "inn/messages.h"
@@ -22,9 +22,10 @@
 int
 get_news_uid_gid(uid_t *uid, gid_t *gid, bool may_die)
 {
-    /* NB:  get_news_uid_gid() may be called before innconf_read(). */
+    /* NB: get_news_uid_gid() may be called before innconf_read(). */
     const char *runasuser = innconf != NULL ? innconf->runasuser : RUNASUSER;
-    const char *runasgroup  = innconf != NULL ? innconf->runasgroup  : RUNASGROUP;
+    const char *runasgroup =
+        innconf != NULL ? innconf->runasgroup : RUNASGROUP;
     bool fail = false;
     struct passwd *pwd;
     struct group *grp;
@@ -35,20 +36,22 @@ get_news_uid_gid(uid_t *uid, gid_t *gid, bool may_die)
     } else if ((pwd = getpwnam(runasuser)) != 0) {
         *uid = pwd->pw_uid;
     } else if (may_die) {
-        die ("can't resolve %s to a UID"
-              " (account doesn't exist?)", runasuser);
+        die("can't resolve %s to a UID"
+            " (account doesn't exist?)",
+            runasuser);
     } else {
         fail = true;
     }
-    
+
     /* Resolve runasgroup to a GID. */
     if (!gid) {
         /* Do nothing. */
     } else if ((grp = getgrnam(runasgroup)) != 0) {
         *gid = grp->gr_gid;
     } else if (may_die) {
-        die ("can't resolve %s to a GID"
-              " (group doesn't exist?)", runasgroup);
+        die("can't resolve %s to a GID"
+            " (group doesn't exist?)",
+            runasgroup);
     } else {
         fail = true;
     }
@@ -66,8 +69,8 @@ ensure_news_user(bool may_setuid)
 
     get_news_uid_gid(&uid, false, true);
     if (geteuid() == 0) {
-        if (! may_setuid) {
-            /* NB:  mustn't be run as root, unless "may_setuid" is true. */
+        if (!may_setuid) {
+            /* NB: mustn't be run as root, unless "may_setuid" is true. */
             die("must be run as %s, not as root",
                 innconf != NULL ? innconf->runasuser : RUNASUSER);
         }
@@ -96,8 +99,8 @@ ensure_news_grp(bool may_setgid)
         }
     }
     if (getegid() != gid || getgid() != gid) {
-        die ("must be run as %s group",
-             innconf != NULL ? innconf->runasgroup : RUNASGROUP);
+        die("must be run as %s group",
+            innconf != NULL ? innconf->runasgroup : RUNASGROUP);
     }
 }
 
@@ -107,8 +110,7 @@ ensure_news_grp(bool may_setgid)
 void
 ensure_news_user_grp(bool may_setuid, bool may_setgid)
 {
-  /* NB:  changing the group first to lose root privileges last. */
-  ensure_news_grp(may_setgid);
-  ensure_news_user(may_setuid);
+    /* NB: changing the group first to lose root privileges last. */
+    ensure_news_grp(may_setgid);
+    ensure_news_user(may_setuid);
 }
-

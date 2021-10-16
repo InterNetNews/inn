@@ -8,8 +8,8 @@
 #include "inn/paths.h"
 
 
-static char	*GMApathname = NULL;
-static FILE	*GMAfp = NULL;
+static char *GMApathname = NULL;
+static FILE *GMAfp = NULL;
 
 
 /*
@@ -19,13 +19,13 @@ static void
 GMAclose(void)
 {
     if (GMAfp) {
-	fclose(GMAfp);
-	GMAfp = NULL;
+        fclose(GMAfp);
+        GMAfp = NULL;
     }
     if (GMApathname != NULL) {
-	unlink(GMApathname);
+        unlink(GMApathname);
         free(GMApathname);
-	GMApathname = NULL;
+        GMApathname = NULL;
     }
 }
 
@@ -35,11 +35,11 @@ GMAclose(void)
 static FILE *
 GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 {
-    char	buff[BUFSIZ];
-    char        expectedanswer[BUFSIZ];
-    char	*p;
-    int		oerrno;
-    FILE	*F;
+    char buff[BUFSIZ];
+    char expectedanswer[BUFSIZ];
+    char *p;
+    int oerrno;
+    FILE *F;
 
     F = fdopen(fd, "r+");
     if (F == NULL)
@@ -47,35 +47,35 @@ GMA_listopen(int fd, FILE *FromServer, FILE *ToServer, const char *request)
 
     /* Send a LIST command to and capture the output. */
     if (request == NULL)
-	fprintf(ToServer, "LIST MODERATORS\r\n");
+        fprintf(ToServer, "LIST MODERATORS\r\n");
     else
-	fprintf(ToServer, "LIST %s\r\n", request);
+        fprintf(ToServer, "LIST %s\r\n", request);
     fflush(ToServer);
 
     snprintf(expectedanswer, sizeof(expectedanswer), "%d", NNTP_OK_LIST);
 
     /* Get the server's reply to our command. */
     if (fgets(buff, sizeof buff, FromServer) == NULL
-     || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
-	oerrno = errno;
+        || strncmp(buff, expectedanswer, strlen(expectedanswer)) != 0) {
+        oerrno = errno;
         fclose(F);
-	GMAclose();
-	errno = oerrno;
-	return NULL;
+        GMAclose();
+        errno = oerrno;
+        return NULL;
     }
 
     /* Slurp up the rest of the response. */
     while (fgets(buff, sizeof buff, FromServer) != NULL) {
-	if ((p = strchr(buff, '\r')) != NULL)
-	    *p = '\0';
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	if (buff[0] == '.' && buff[1] == '\0') {
-	    if (ferror(F) || fflush(F) == EOF || fseeko(F, 0, SEEK_SET) != 0)
-		break;
-	    return F;
-	}
-	fprintf(F, "%s\n", buff);
+        if ((p = strchr(buff, '\r')) != NULL)
+            *p = '\0';
+        if ((p = strchr(buff, '\n')) != NULL)
+            *p = '\0';
+        if (buff[0] == '.' && buff[1] == '\0') {
+            if (ferror(F) || fflush(F) == EOF || fseeko(F, 0, SEEK_SET) != 0)
+                break;
+            return F;
+        }
+        fprintf(F, "%s\n", buff);
     }
 
     /* Ran out of input before finding the terminator; quit. */
@@ -109,8 +109,8 @@ IsValidSubmissionTemplate(const char *string)
 
         /* Skip "%%". */
         if (*p == '%') {
-           p++;
-           continue;
+            p++;
+            continue;
         }
 
         /* Invalid template if not "%s". */
@@ -133,29 +133,29 @@ IsValidSubmissionTemplate(const char *string)
 */
 char *
 GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
-		    char *moderatormailer)
+                    char *moderatormailer)
 {
-    static char		address[SMBUF];
-    char	        *p;
-    char		*save;
-    char                *path;
-    char		buff[BUFSIZ];
-    char		name[SMBUF];
-    int                 fd;
+    static char address[SMBUF];
+    char *p;
+    char *save;
+    char *path;
+    char buff[BUFSIZ];
+    char name[SMBUF];
+    int fd;
 
     strlcpy(name, group, sizeof(name));
     address[0] = '\0';
 
-    if (FromServer==NULL || ToServer==NULL){
+    if (FromServer == NULL || ToServer == NULL) {
 
         /*
          *  This should be part of nnrpd or the like running on the server.
          *  Open the server copy of the moderators file.
          */
         path = concatpath(innconf->pathetc, INN_PATH_MODERATORS);
-	GMAfp = fopen(path, "r");
+        GMAfp = fopen(path, "r");
         free(path);
-    }else{
+    } else {
         /*
          *  Get a local copy of the moderators file from the server.
          */
@@ -166,69 +166,69 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
         else
             GMAfp = NULL;
 
-	/* Fallback to the local copy if the server doesn't have it */
-	if (GMAfp == NULL) {
+        /* Fallback to the local copy if the server doesn't have it */
+        if (GMAfp == NULL) {
             path = concatpath(innconf->pathetc, INN_PATH_MODERATORS);
-	    GMAfp = fopen(path, "r");
+            GMAfp = fopen(path, "r");
             free(path);
         }
     }
 
     if (GMAfp != NULL) {
-	while (fgets(buff, sizeof buff, GMAfp) != NULL) {
-	    /* Skip blank and comment lines. */
-	    if ((p = strchr(buff, '\n')) != NULL)
-		*p = '\0';
-	    if (buff[0] == '\0' || buff[0] == '#')
-		continue;
+        while (fgets(buff, sizeof buff, GMAfp) != NULL) {
+            /* Skip blank and comment lines. */
+            if ((p = strchr(buff, '\n')) != NULL)
+                *p = '\0';
+            if (buff[0] == '\0' || buff[0] == '#')
+                continue;
 
-	    /* Snip off the first word. */
-	    if ((p = strchr(buff, ':')) == NULL)
-		/* Malformed line... */
-		continue;
-	    *p++ = '\0';
+            /* Snip off the first word. */
+            if ((p = strchr(buff, ':')) == NULL)
+                /* Malformed line... */
+                continue;
+            *p++ = '\0';
 
-	    /* If it pattern-matches the newsgroup, the second field is a
-	     * format for mailing, with periods changed to dashes. */
-	    if (uwildmat(name, buff)) {
-		for (save = p; ISWHITE(*save); save++)
-		    continue;
-		for (p = name; *p; p++)
-		    if (*p == '.')
-			*p = '-';
+            /* If it pattern-matches the newsgroup, the second field is a
+             * format for mailing, with periods changed to dashes. */
+            if (uwildmat(name, buff)) {
+                for (save = p; ISWHITE(*save); save++)
+                    continue;
+                for (p = name; *p; p++)
+                    if (*p == '.')
+                        *p = '-';
                 if (IsValidSubmissionTemplate(save)) {
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
                     snprintf(address, sizeof(address), save, name);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
                     break;
                 }
-	    }
-	}
+            }
+        }
 
-	GMAclose();
-	if (address[0])
-	    return address;
+        GMAclose();
+        if (address[0])
+            return address;
     }
 
     /* If we don't have an address, see if the config file has a default. */
     if ((save = moderatormailer) == NULL)
-	return NULL;
+        return NULL;
 
     for (p = name; *p; p++)
-	if (*p == '.')
-	    *p = '-';
+        if (*p == '.')
+            *p = '-';
 
     if (IsValidSubmissionTemplate(save)) {
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
         snprintf(address, sizeof(address), save, name);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     } else {
         return NULL;

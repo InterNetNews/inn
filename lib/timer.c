@@ -41,13 +41,13 @@
 #include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/timer.h"
-#include "inn/libinn.h"
 
 /* Timer values are stored in a series of trees.  This allows use to use
    nested timers.  Each nested timer node is linked to three of its
@@ -84,7 +84,10 @@ unsigned int timer_count = 0;
 /* Names for all of the timers.  These must be given in the same order
    as the definition of the enum in timer.h. */
 static const char *const timer_name[TMR_APPLICATION] = {
-    "hishave", "hisgrep", "hiswrite", "hissync",
+    "hishave",
+    "hisgrep",
+    "hiswrite",
+    "hissync",
 };
 
 
@@ -120,15 +123,15 @@ TMRgettime(bool reset)
        TMRnow.  Formerly, times were relative to the last call to TMRinit,
        which was only called once when innd was starting up; with that
        approach, times may overflow a 32-bit unsigned long about 50 days
-       after the server starts up.  While this may still work due to unsigned 
+       after the server starts up.  While this may still work due to unsigned
        arithmetic, this approach is less confusing to follow. */
     static struct timeval base;
 
     gettimeofday(&tv, NULL);
-    now = (unsigned long)(tv.tv_sec - base.tv_sec) * 1000u;
+    now = (unsigned long) (tv.tv_sec - base.tv_sec) * 1000u;
     usec = tv.tv_usec - base.tv_usec; /* maybe negative */
     msec = usec / 1000;               /* still maybe negative */
-    now += (unsigned long)msec;
+    now += (unsigned long) msec;
     if (reset)
         base = tv;
     return now;
@@ -225,8 +228,8 @@ TMRstart(unsigned int timer)
         return;
     }
     if (timer >= timer_count) {
-        warn("timer %u is larger than the maximum timer %u, ignored",
-             timer, timer_count - 1);
+        warn("timer %u is larger than the maximum timer %u, ignored", timer,
+             timer_count - 1);
         return;
     }
 
@@ -310,7 +313,6 @@ TMRlabel(const char *const *labels, unsigned int id)
 }
 
 
-
 /*
 **  Recursively summarize a single timer tree into the supplied buffer,
 **  returning the number of characters added to the buffer.
@@ -324,15 +326,14 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
     int rc;
 
     /* This results in "child/parent nn(nn)" instead of the arguably more
-       intuitive "parent/child" but it's easy.  Since we ensure sane snprintf 
+       intuitive "parent/child" but it's easy.  Since we ensure sane snprintf
        semantics, it's safe to defer checking for overflow until after
        formatting all of the timer data. */
     for (node = timer; node != NULL; node = node->parent) {
-        rc = snprintf(buf + off, len - off, "%s/",
-                        TMRlabel(labels, node->id));
+        rc = snprintf(buf + off, len - off, "%s/", TMRlabel(labels, node->id));
         if (rc < 0) {
             /* Do nothing. */
-        } else if ((size_t)rc >= len - off) {
+        } else if ((size_t) rc >= len - off) {
             off = len;
         } else {
             off += rc;
@@ -342,10 +343,10 @@ TMRsumone(const char *const *labels, struct timer *timer, char *buf,
         off--;
 
     rc = snprintf(buf + off, len - off, " %lu(%lu) ", timer->total,
-                    timer->count);
+                  timer->count);
     if (rc < 0) {
         /* Do nothing. */
-    } else if ((size_t)rc >= len - off) {
+    } else if ((size_t) rc >= len - off) {
         off = len;
     } else {
         off += rc;
@@ -378,7 +379,7 @@ TMRsummary(const char *prefix, const char *const *labels)
     size_t len, off;
     int rc;
 
-    /* To find the needed buffer size, note that a 64-bit unsigned number can 
+    /* To find the needed buffer size, note that a 64-bit unsigned number can
        be up to 20 digits long, so each timer can be 52 characters.  We also
        allow another 27 characters for the introductory timestamp, plus some
        for the prefix.  We may have timers recurring at multiple points in
@@ -394,7 +395,7 @@ TMRsummary(const char *prefix, const char *const *labels)
         rc = snprintf(buf, len, "%s ", prefix);
     if (rc < 0) {
         /* Do nothing. */
-    } else if ((size_t)rc >= len) {
+    } else if ((size_t) rc >= len) {
         off = len;
     } else {
         off += rc;
@@ -403,7 +404,7 @@ TMRsummary(const char *prefix, const char *const *labels)
     rc = snprintf(buf + off, len - off, "time %lu ", TMRgettime(true));
     if (rc < 0) {
         /* Do nothing. */
-    } else if ((size_t)rc >= len - off) {
+    } else if ((size_t) rc >= len - off) {
         off = len;
     } else {
         off += rc;

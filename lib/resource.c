@@ -4,21 +4,23 @@
 
 #ifdef HAVE_GETRUSAGE
 
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
-#include <time.h>
-#include <sys/resource.h>
+/* FreeBSD 3.4 RELEASE needs <sys/time.h> before <sys/resource.h>. */
+#    ifdef HAVE_SYS_TIME_H
+#        include <sys/time.h>
+#    endif
+#    include <sys/resource.h>
+#    include <time.h>
 
-#define TIMEVALasDOUBLE(t)	\
-    ((double)(t).tv_sec + ((double)(t).tv_usec) / 1000000.0)
+#    define TIMEVALasDOUBLE(t) \
+        ((double) (t).tv_sec + ((double) (t).tv_usec) / 1000000.0)
 
-int GetResourceUsage(double *usertime, double *systime)
+int
+GetResourceUsage(double *usertime, double *systime)
 {
-    struct rusage	R;
+    struct rusage R;
 
     if (getrusage(RUSAGE_SELF, &R) < 0)
-	return -1;
+        return -1;
     *usertime = TIMEVALasDOUBLE(R.ru_utime);
     *systime = TIMEVALasDOUBLE(R.ru_stime);
     return 0;
@@ -26,21 +28,22 @@ int GetResourceUsage(double *usertime, double *systime)
 
 #else /* HAVE_GETRUSAGE */
 
-#include <sys/param.h>
-#include <sys/times.h>
+#    include <sys/param.h>
+#    include <sys/times.h>
 
-#if	!defined(HZ)
-#define HZ	60
-#endif	/* !defined(HZ) */
+#    if !defined(HZ)
+#        define HZ 60
+#    endif /* !defined(HZ) */
 
-#define CPUTIMEasDOUBLE(t1, t2)		((double)(t1 + t2) / (double)HZ)
+#    define CPUTIMEasDOUBLE(t1, t2) ((double) (t1 + t2) / (double) HZ)
 
-int GetResourceUsage(double *usertime, double *systime)
+int
+GetResourceUsage(double *usertime, double *systime)
 {
-    struct tms	T;
+    struct tms T;
 
     if (times(&T) == -1)
-	return -1;
+        return -1;
     *usertime = CPUTIMEasDOUBLE(T.tms_utime, T.tms_cutime);
     *systime = CPUTIMEasDOUBLE(T.tms_stime, T.tms_cstime);
     return 0;
