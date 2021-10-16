@@ -69,7 +69,7 @@
 #define STNRETRY 5
 
 /*
-**  Tracking information for an article in flight
+**  Tracking information for an article in flight.
 **  Only used in streaming mode.
 **
 **  stbuf functions as a ring buffer, each entry
@@ -86,7 +86,7 @@
 */
 struct stbufs {         /* for each article we are procesing */
     char st_fname[SPOOLNAMEBUFF];    /* file name */
-    char st_id[NNTP_MAXLEN_COMMAND]; /* message ID */
+    char st_id[NNTP_MAXLEN_COMMAND]; /* Message-ID */
     int   st_retry;                  /* retry count (0 for the first try) */
     ARTHANDLE *st_art;               /* arthandle to read article contents */
     int   st_hash;                   /* hash value to speed searches */
@@ -192,7 +192,7 @@ REMflush(void)
 }
 
 /*
-**  Return index to entry matching this message ID.  Else return -1.
+**  Return index to entry matching this Message-ID.  Else return -1.
 **  The hash is to speed up the search.
 */
 static int
@@ -218,7 +218,7 @@ stindex(char *MessageID, int hash) {
     return (i);
 }
 
-/*  stidhash(): calculate a hash value for message IDs to speed comparisons */
+/*  stidhash(): calculate a hash value for Message-IDs to speed comparisons */
 static int
 stidhash(char *MessageID) {
     char        *p;
@@ -240,8 +240,8 @@ stidhash(char *MessageID) {
 **  stalloc(): save path, ID, and qp into the ring buffer.
 **
 **  Called just before issuing a CHECK (or TAKETHIS, if we're not doing CHECK)
-**  i.e. in streaming mode only. Should only be called if there are free slots,
-**  i.e. if sntq<STNBUF.
+**  i.e. in streaming mode only.
+**  Should only be called if there are free slots, i.e. if sntq<STNBUF.
 **/
 static int
 stalloc(const char *Article, const char *MessageID, ARTHANDLE *art, int hash, int retry) {
@@ -267,7 +267,7 @@ stalloc(const char *Article, const char *MessageID, ARTHANDLE *art, int hash, in
 }
 
 /*
-** strel(): release for reuse one of the streaming mode entries
+** strel(): release for reuse one of the streaming mode entries.
 **
 ** Returns 0 on success an non-0 on error (which probably means
 ** the peer got the reply order wrong).
@@ -791,7 +791,7 @@ check(int i) {
 /* Send article in "takethis <id> streaming NNTP mode.
 ** return true on failure.
 **
-** Called when a get a 238 response to CHECK, or from the
+** Called when we get a 238 response to CHECK, or from the
 ** main processing loop when we are streaming and are not
 ** using CHECK (i.e. when DoCheck=false).
 */
@@ -818,7 +818,7 @@ takethis(int i) {
         return true;
     stbuf[i].st_size = stbuf[i].st_art->len;
     /* We won't need st_art again, since we never do a fast retry of TAKETHIS,
-     * we so close it straight away. It would get free (from strel) anyway,
+     * we so close it straight away.  It would get free (from strel) anyway,
      * but we can keep memory usage down by freeing it straight away. */
     article_free(stbuf[i].st_art);
     stbuf[i].st_art = NULL;
@@ -834,7 +834,7 @@ takethis(int i) {
 ** in flight to be worth waiting for responses, and after the main processing
 ** loop to reap all remaining responses.
 **
-** Returns false on success and true on error. The callers respond to
+** Returns false on success and true on error.  The callers respond to
 ** errors by rewriting the batch file and exiting. 
 */
 static bool
@@ -875,11 +875,11 @@ strlisten(void)
         case NNTP_OK_TAKETHIS: /* 239 */
         case NNTP_FAIL_TAKETHIS_REJECT: /* 439 */
         case NNTP_FAIL_CHECK_DEFER: /* 431 */
-            /* Looking for the message ID reflects the historical
+            /* Looking for the Message-ID reflects the historical
              * design in which we didn't track the order of commands,
              * and so needed to match replies back to commands by
-             * parsing out the message ID. Since we track order
-             * carefully now that's no longer necessary, and it
+             * parsing out the Message-ID.  Since we track order
+             * carefully now, that's no longer necessary, and it
              * functions as a correctness check on the peer only. */
             if ((id = strchr(buff, '<')) != NULL) {
                 p = strchr(id, '>');
@@ -925,7 +925,7 @@ strlisten(void)
         submit = NULL;
 
         switch (resp) { /* now we take some action */
-        case NNTP_FAIL_CHECK_DEFER:     /* 431; remote wants it later */
+        case NNTP_FAIL_CHECK_DEFER:     /* 431 remote wants it later */
             /* try again now because time has passed */
             if (st.st_retry < STNRETRY) {
                 /* fast retry */
@@ -959,7 +959,7 @@ strlisten(void)
                 syslog(L_NOTICE, REJ_STREAM, REMhost,
                     st.st_fname, REMclean(buff));
 /* XXXXX Caution THERE BE DRAGONS, I don't think this logs properly
-   The message ID is returned in the peer response... so this is redundant
+   The Message-ID is returned in the peer response... so this is redundant
                     stb.st_id, st.st_fname, REMclean(buff)); */
             STATrejected++;
             stnofail = 0;
@@ -1379,7 +1379,7 @@ int main(int ac, char *av[]) {
             if (MessageID)
                 warn("empty file name for %s in %s", MessageID, BATCHname);
             else
-                warn("empty file name, no message ID in %s", BATCHname);
+                warn("empty file name, no Message-ID in %s", BATCHname);
             /* We could do a history lookup. */
             continue;
         }
@@ -1389,11 +1389,11 @@ int main(int ac, char *av[]) {
             continue;
         }
 
-        /* Drop articles with a message ID longer than NNTP_MAXLEN_MSGID to
+        /* Drop articles with a Message-ID longer than NNTP_MAXLEN_MSGID to
            avoid overrunning buffers and throwing the server on the
            receiving end a blow from behind. */
         if (MessageID != NULL && strlen(MessageID) > NNTP_MAXLEN_MSGID) {
-            warn("dropping article in %s: long message ID %s", BATCHname,
+            warn("dropping article in %s: long Message-ID %s", BATCHname,
                  MessageID);
             continue;
         }
@@ -1411,7 +1411,7 @@ int main(int ac, char *av[]) {
         /* Get the Message-ID from the article if we need to. */
         if (MessageID == NULL) {
             if ((MessageID = GetMessageID(art)) == NULL) {
-                warn("Skipping \"%s\" -- %s?\n", Article, "no message ID");
+                warn("Skipping \"%s\" -- %s?\n", Article, "no Message-ID");
                 article_free(art);
                 continue;
             }
@@ -1513,7 +1513,7 @@ int main(int ac, char *av[]) {
                 RequeueRestAndExit(Article, MessageID);
             break;
         case NNTP_FAIL_IHAVE_REFUSE: /* 435 */
-        case NNTP_ERR_SYNTAX: /* 501 e.g. peer disagrees about valid message-ids */
+        case NNTP_ERR_SYNTAX: /* 501 e.g. peer disagrees about valid Message-IDs */
             STATrefused++;
             break;
         }
