@@ -273,7 +273,7 @@ are over dial-up connections).
 
 Any arguments provided to the program are interpreted as a list of sites
 specified in F<send-uucp.cf> for which batches should be generated.  If no
-arguments are supplied then batches will be generated for all sites listed
+arguments are supplied, then batches will be generated for all sites listed
 in that configuration file.
 
 =head1 CONFIGURATION
@@ -363,6 +363,182 @@ is kept between S<4 KB> and S<1 KB>:
         :*,!junk,!control,!control.*/!foo\
         :Tf,Wnb,B4096/1024:
 
+=head1 SETTING UP UUCP FEEDS
+
+Here are the steps to follow to set up a UUCP feed over SSH between
+two news servers, using the UUCP implementation available in Debian
+as the C<uucp> package.  The mechanisms described below should be
+transposed if you use another UUCP implementation.  (And if you do,
+please inform the INN maintainers about how to set up a feed with another
+UUCP implementation, so that it can be added to this documentation.)
+
+=over 4
+
+=item 1.
+
+First of all, make sure B<rnews> is correctly installed setuid C<news>,
+owned by group C<uucp>, and mode C<4550>.  This will allow the UUCP
+subsystem to run B<rnews> to process UUCP batches of news articles.
+The C<configure> flag B<--enable-uucp-rnews> takes care of it when
+installing INN.  Otherwise, you'll have to manually change the
+permissions on B<rnews>.
+
+=item 2.
+
+Install the C<uucp> package.  It will notably provide uucico(8)
+and uux(1).
+
+=item 3.
+
+Configure in F</etc/uucp/Poll> the remote news servers to poll, and
+the hours during which they are to be polled.  For instance, if you
+send to C<news.server.to.feed> UUCP batches every 4 hours, you can use:
+
+    schedule news.server.to.feed 00
+    poll news.server.to.feed 00 04 08 12 16 20
+
+If sending is hourly, just list all the hours.
+
+=item 4.
+
+Configure in F</etc/uucp/call> the credentials (usernames and passwords)
+to use when authenticating against remote news servers, one per line.
+For instance:
+
+    news.server.to.feed login password
+
+=item 5.
+
+Configure in F</etc/uucp/config> the UUCP name of the local news server.
+For instance:
+
+    nodename my.news.server
+
+=item 6.
+
+Check that F</etc/uucp/expire> fits your needs as for the number of days
+batches are retained as well as the configuration of daily reports.
+Default values are normally fine, though you may want to receive a
+daily report only if unusual things happen (and in that case, just set
+C<$important_only> to C<1>).
+
+=item 7.
+
+Configure in F</etc/uucp/passwd> the credentials (usernames and passwords
+separated by a tabulation) remote news servers use when authenticating
+against the local news server, one per line.  For instance:
+
+    login<TAB>password
+
+=item 8.
+
+Configure in F</etc/uucp/sys> how remote news servers connect to the
+local news server.  A typical entry to set an SSH connection is the
+following one where I<pathbin> should be changed to the real path
+to B<rnews>:
+
+    system news.server.to.feed
+    call-login *
+    call-password *
+    commands <pathbin>/rnews
+    time any
+    chat "" \d\d\r\c ogin: \d\L word: \P
+    chat-timeout 120
+    protocol i
+    port ssh.news.server.to.feed
+
+=item 9.
+
+Configure in F</etc/uucp/port> how to connect to remote news servers.
+A typical entry to set an SSH connection using a private key is:
+
+    port ssh.news.server.to.feed
+    type pipe
+    command /usr/bin/ssh -a -x -q -i <key_file> -l uucp news.server.to.feed
+    reliable true
+    protocol etyig
+
+where I<key_file> is the private key to use for the SSH connection,
+like for instance F</var/spool/uucp/.ssh/id_private_key>.
+
+=item 10.
+
+Make sure the administrators of remote news servers have added the
+public key related to F<id_private_key> for connections to the C<uucp>
+user of the remote news servers.
+
+=item 11.
+
+Supposing the home directory of the C<uucp> user is F</var/spool/uucp>,
+you need to configure the SSH keys in the F<.ssh> subdirectory.  First,
+add the public keys of all remote news servers in F<authorized_keys>.
+A typical entry is:
+
+    no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command="/usr/sbin/uucico -l",from="news.server.to.feed" ssh-rsa xxxyyyzzz uucp@news.server.to.feed
+
+This ensures the SSH connection will not be used for another goal than
+exchanging UUCP batches.
+
+=item 12.
+
+Make sure F<id_private_key> is correctly present, as set in
+F</etc/uucp/port>, and only readable by the C<uucp> user.
+
+=item 13.
+
+Manually run as the C<uucp> user the command set in F</etc/uucp/port>
+so as to create the F<known_hosts> file so as to make sure the SSH
+setting is fine.
+
+   /usr/bin/ssh -a -x -q -i <key_file> -l uucp news.server.to.feed
+
+=item 14.
+
+Parameter the feed to send to the remote servers.  A typical entry in
+F<newsfeeds> to generate batches in I<pathoutgoing> is:
+
+    news.server.to.feed/pathname:*:Tf,Wnb,B4096/1024:
+
+=item 15.
+
+Set up the compression method, batch sizes and when to generate them
+in F<send-uucp.cf> located in I<pathetc>, as described earlier in this
+documentation.
+
+    news.server.to.feed   bzip2      1048576   3,7,11,15,19,23
+
+=item 16.
+
+Check that B<send-uucp> is started hourly in crontab by the C<news> user.
+For instance in F</etc/cron.d/inn2>:
+
+    52 * * * * news <pathbin>/send-uucp
+
+=item 17.
+
+Check that UUCP programs are automatically started in crontab (usually,
+B<uudemon.hr> is called hourly in F</etc/cron.d/uucp> to poll remote
+news servers, and B<uudemon.day> daily in F</etc/cron.daily/uucp>).
+
+It can be useful to set up a different launch time than your remote
+servers.  For instance, it you connect every hour at minute 10, a remote
+peer may do the same at minute 40.  This way, you will exchange articles
+more frequently.
+
+=item 18.
+
+Check the logs in F</var/log/uucp> to ensure everything works fine,
+both polling and sending.
+
+You will see that B<send-uucp> prepares B<rnews> batches named like
+F<D.0I8Y>, which are then sent by B<uucico>.  At the same time, B<uucico>
+takes available batches from the remote sites, which are then locally
+injected by B<uuxqt> through B<rnews>.
+
+That's all!
+
+=back
+
 =head1 FILES
 
 =over 4
@@ -374,6 +550,10 @@ The Perl script itself used to create news batches from the outgoing files.
 =item I<pathetc>/send-uucp.cf
 
 The configuration file which specifies a list of sites to be processed.
+
+=item I<pathlog>/send-uucp.log
+
+The log file used if the syslog facility is not available.
 
 =back
 

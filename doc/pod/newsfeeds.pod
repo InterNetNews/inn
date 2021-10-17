@@ -330,7 +330,7 @@ If a site is being fed by a file, channel, or exploder (see below), the
 server will normally start trying to write the information as soon as
 possible.  Providing a buffer may give better system performance and help
 smooth out overall load if a large batch of news comes in.  The value of
-the this flag should be two numbers separated by a slash.  I<high>
+this flag should be two numbers separated by a slash.  I<high>
 specifies the point at which the server can start draining the feed's I/O
 buffer, and I<low> specifies when to stop writing and begin buffering
 again; the units are bytes.  The default is to do no buffering, sending
