@@ -1,31 +1,31 @@
 #ifndef OVSQLITE_PRIVATE_H
-#    define OVSQLITE_PRIVATE_H 1
+#define OVSQLITE_PRIVATE_H
 
-#    include "config.h"
-#    include "clibrary.h"
+#include "clibrary.h"
+#include "config.h"
 
-#    ifdef HAVE_SQLITE3
+#ifdef HAVE_SQLITE3
 
-#        include "inn/buffer.h"
+#    include "inn/buffer.h"
 
-#        define OVSQLITE_SCHEMA_VERSION   1
-#        define OVSQLITE_PROTOCOL_VERSION 1
+#    define OVSQLITE_SCHEMA_VERSION   1
+#    define OVSQLITE_PROTOCOL_VERSION 1
 
-#        define OVSQLITE_SERVER_SOCKET  "ovsqlite.sock"
-#        define OVSQLITE_SERVER_PIDFILE "ovsqlite.pid"
+#    define OVSQLITE_SERVER_SOCKET  "ovsqlite.sock"
+#    define OVSQLITE_SERVER_PIDFILE "ovsqlite.pid"
 
-#        ifndef HAVE_UNIX_DOMAIN_SOCKETS
+#    ifndef HAVE_UNIX_DOMAIN_SOCKETS
 
-#            define OVSQLITE_SERVER_PORT "ovsqlite.port"
+#        define OVSQLITE_SERVER_PORT "ovsqlite.port"
 
-#            define OVSQLITE_COOKIE_LENGTH 16
+#        define OVSQLITE_COOKIE_LENGTH 16
 
 typedef struct ovsqlite_port {
     uint16_t port; /* in network byte order */
     uint8_t cookie[OVSQLITE_COOKIE_LENGTH];
 } ovsqlite_port;
 
-#        endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
+#    endif /* ! HAVE_UNIX_DOMAIN_SOCKETS */
 
 /*
  * This needs to stay in sync with the dispatch array
@@ -110,9 +110,7 @@ extern size_t pack_later(buffer_t *dst, size_t count);
 
 END_DECLS
 
-#    endif /* HAVE_SQLITE3 */
-
-#endif /* ! OVSQLITE_PRIVATE_H */
+#endif /* HAVE_SQLITE3 */
 
 
 /****************************************************************************
@@ -471,3 +469,5 @@ Returned from a request_hello with the wrong cookie.
 
 
 ****************************************************************************/
+
+#endif /* ! OVSQLITE_PRIVATE_H */
