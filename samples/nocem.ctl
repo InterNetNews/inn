@@ -16,7 +16,7 @@
 
 bleachbot@httrack.com:spam,site
 news@uni-berlin.de:Admincancel
-nl-cancel@a3.xs4all.nl:spam,mmf,binary
 nocem@aioe.org:aioe-spam
 nocem@arcor.de:spam
+nocem@novabbs.com:spam
 pgpmoose@killfile.org:pgpmoose-forged-moderation

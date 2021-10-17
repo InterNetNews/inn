@@ -60,6 +60,13 @@ issue tracker.
 
 =item *
 
+An up-to-date F<nocem.ctl> file is provided with this release.
+You should manually update your F<nocem.ctl> file with the new
+information recorded about NoCeM issuers, and make sure the right PGP
+keys are present on your system.
+
+=item *
+
 Added a stricter validation of article numbers given in NNTP commands
 so that numbers superior to 2^31 are correctly considered invalid.
 Thanks to Richard Kettlewell for the patch.
