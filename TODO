@@ -188,10 +188,6 @@ Documentation Projects
   as libinn_<section>.3 seems to make the most sense (so, for example,
   error handling routines would be documented in libinn_error.3).
 
-* Better documentation of and support for UUCP feeds.  send-uucp is now
-  easier to use, but there's still a paucity of documentation covering the
-  whole theory and mechanisms of UUCP feeding.
-
 * Everything installed by INN should have a man page.  Currently, there
   are several binaries and configuration files that don't have man pages.
   (In some cases, the best thing to do with the configuration file may be
