@@ -4,7 +4,10 @@
  * This header defines the interfaces to fake write functions used to test
  * error handling wrappers around system write functions.
  *
- * Copyright 2000-2002, 2004, 2017 Russ Allbery <eagle@eyrie.org>
+ * The canonical version of this file is maintained in the rra-c-util package,
+ * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
+ *
+ * Copyright 2000-2002, 2004, 2017, 2021 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -26,8 +29,6 @@
  *
  * SPDX-License-Identifier: MIT
  */
-
-#define LIBTEST_NEW_FORMAT 1
 
 #ifndef TESTS_INN_FAKEWRITE_H
 #define TESTS_INN_FAKEWRITE_H 1

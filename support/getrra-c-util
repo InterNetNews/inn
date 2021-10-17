@@ -203,8 +203,10 @@ extern char * strtok(char *, const char *);\\
         if [ "$2" = "tests/lib" ] || [ "$2" = "tests/lib/network" ] \
           || [ "$3" = "process.c" ]
         then
-          sed -i -e "0,/^$/{s/^$/\n#define LIBTEST_NEW_FORMAT 1\n/}" \
-                 ${TEMP}
+          case "$3" in *.c)
+              sed -i -e "0,/^$/{s/^$/\n#define LIBTEST_NEW_FORMAT 1\n/}" \
+                     ${TEMP}
+          esac
         fi
 
         # Rename a few symbols defined by autoconf since they're too likely
