@@ -108,135 +108,150 @@ depend:	Makefile $(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 expire.o: expire.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/overview.h \
-  ../include/inn/paths.h ../include/inn/vector.h ovinterface.h
+  ../include/inn/storage.h ../include/inn/paths.h ../include/inn/vector.h \
+  ovinterface.h
 interface.o: interface.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/conffile.h ../include/portable/macros.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/conffile.h \
+  ../include/portable/macros.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/wire.h \
   interface.h ../include/inn/storage.h ../include/inn/options.h methods.h
 methods.o: methods.c interface.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/inn/storage.h ../include/inn/options.h methods.h cnfs/cnfs.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/inn/storage.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/options.h methods.h cnfs/cnfs.h \
   timecaf/timecaf.h interface.h timehash/timehash.h tradspool/tradspool.h \
   trash/trash.h
 ov.o: ov.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h ovmethods.h
+  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h \
+  ../include/inn/storage.h ovmethods.h
 overdata.o: overdata.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/buffer.h ../include/inn/innconf.h ../include/inn/libinn.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/buffer.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/innconf.h ../include/inn/macros.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/overview.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/wire.h ovinterface.h \
-  ../include/inn/history.h ../include/inn/ov.h
+  ../include/inn/history.h ../include/inn/ov.h ../include/inn/storage.h
 overview.o: overview.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/buffer.h ../include/inn/innconf.h ../include/inn/libinn.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/buffer.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/innconf.h ../include/inn/macros.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/vector.h ../include/inn/wire.h \
-  ovinterface.h ovmethods.h
+  ../include/inn/overview.h ../include/inn/storage.h \
+  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h ovmethods.h
 ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/inn/history.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h buffindexed/buffindexed.h ovdb/ovdb.h \
-  ovsqlite/ovsqlite.h tradindexed/tradindexed.h
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/inn/history.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/ov.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/storage.h \
+  buffindexed/buffindexed.h ovdb/ovdb.h ovsqlite/ovsqlite.h \
+  tradindexed/tradindexed.h
 buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
-  ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/paths.h ovinterface.h \
-  buffindexed/shmem.h buffindexed/buffindexed.h
-buffindexed/shmem.o: buffindexed/shmem.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/messages.h buffindexed/shmem.h
-cnfs/cnfs.o: cnfs/cnfs.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/portable/mmap.h ../include/inn/fdflag.h \
   ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
-  ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
+  ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/ov.h \
+  ../include/inn/history.h ../include/inn/storage.h \
+  ../include/inn/options.h ../include/inn/paths.h ../include/inn/storage.h \
+  ovinterface.h buffindexed/shmem.h buffindexed/buffindexed.h
+buffindexed/shmem.o: buffindexed/shmem.c ../include/portable/system.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h buffindexed/shmem.h
+cnfs/cnfs.o: cnfs/cnfs.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/mmap.h \
+  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
+  ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/macros.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/mmap.h \
   ../include/inn/paths.h ../include/inn/wire.h interface.h \
   ../include/inn/storage.h ../include/inn/options.h methods.h interface.h \
   cnfs/cnfs-private.h cnfs/cnfs.h
 ovdb/ovdb.o: ovdb/ovdb.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h ../include/conffile.h \
-  ../include/portable/macros.h ../include/inn/fdflag.h \
-  ../include/inn/portable-socket.h ../include/inn/innconf.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h \
-  ../include/inn/newsuser.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/portable/socket.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
+  ../include/conffile.h ../include/portable/macros.h \
+  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/innconf.h ../include/inn/macros.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h \
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/portable/socket-unix.h ../include/inn/ov.h \
-  ../include/inn/history.h ovdb/ovdb-private.h ovdb/ovdb.h ovinterface.h
+  ../include/inn/history.h ../include/inn/storage.h ovdb/ovdb-private.h \
+  ovdb/ovdb.h ovinterface.h
 ovsqlite/ovsqlite-private.o: ovsqlite/ovsqlite-private.c \
   ovsqlite/ovsqlite-private.h ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/buffer.h \
-  ../include/inn/xmalloc.h
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/buffer.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/xmalloc.h
 ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/messages.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/inn/ov.h \
+  ../include/inn/history.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/storage.h ../include/inn/messages.h \
   ovsqlite/ovsqlite-private.h ../include/portable/system.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/buffer.h ../include/portable/socket.h \
@@ -248,70 +263,73 @@ ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h
   ../include/inn/xwrite.h ../include/inn/newsuser.h ../include/inn/paths.h \
   ovsqlite/../ovinterface.h
 timecaf/caf.o: timecaf/caf.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h timecaf/caf.h
 timecaf/timecaf.o: timecaf/timecaf.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h timecaf/caf.h \
-  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
-  ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h timecaf/caf.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/macros.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/paths.h \
   ../include/inn/wire.h methods.h interface.h ../include/inn/storage.h \
   ../include/inn/options.h timecaf/timecaf.h interface.h
 timehash/timehash.o: timehash/timehash.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/wire.h \
   methods.h interface.h ../include/inn/storage.h ../include/inn/options.h \
   timehash/timehash.h interface.h
 tradindexed/tdx-cache.o: tradindexed/tdx-cache.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/hashtab.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/hashtab.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h \
   ../include/inn/storage.h ../include/inn/options.h \
   tradindexed/tdx-private.h
 tradindexed/tdx-data.o: tradindexed/tdx-data.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
-  ../include/inn/portable-getnameinfo.h ../include/inn/history.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/history.h ../include/inn/macros.h \
   ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ovinterface.h tradindexed/tdx-private.h \
-  tradindexed/tdx-structure.h
+  ../include/inn/overview.h ../include/inn/storage.h ovinterface.h \
+  tradindexed/tdx-private.h tradindexed/tdx-structure.h
 tradindexed/tdx-group.o: tradindexed/tdx-group.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
-  ../include/inn/portable-getnameinfo.h ../include/inn/hashtab.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/hashtab.h ../include/inn/macros.h \
   ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/paths.h \
@@ -319,75 +337,78 @@ tradindexed/tdx-group.o: tradindexed/tdx-group.c ../include/portable/system.h \
   ../include/inn/storage.h ../include/inn/options.h \
   tradindexed/tdx-structure.h
 tradindexed/tradindexed.o: tradindexed/tradindexed.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/innconf.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h tradindexed/tdx-private.h \
-  tradindexed/tdx-structure.h tradindexed/tradindexed.h
+  ../include/inn/options.h ../include/inn/storage.h \
+  tradindexed/tdx-private.h tradindexed/tdx-structure.h \
+  tradindexed/tradindexed.h
 tradspool/tradspool.o: tradspool/tradspool.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/mmap.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/wire.h methods.h interface.h ../include/inn/storage.h \
   ../include/inn/options.h tradspool/tradspool.h interface.h
 trash/trash.o: trash/trash.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h methods.h interface.h ../include/inn/storage.h \
   ../include/inn/options.h trash/trash.h interface.h
 ovsqlite/ovsqlite-server.o: ovsqlite/ovsqlite-server.c ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/inn/messages.h ovsqlite/ovsqlite-private.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/inn/messages.h \
+  ../include/inn/system.h ovsqlite/ovsqlite-private.h \
   ../include/portable/system.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/buffer.h \
-  ../include/portable/setproctitle.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/socket-unix.h ../include/inn/concat.h \
+  ../include/inn/portable-stdbool.h ../include/portable/setproctitle.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/confparse.h ../include/inn/fdflag.h \
   ../include/inn/portable-socket.h ../include/inn/innconf.h \
   ../include/inn/libinn.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/storage.h ../include/inn/options.h ovsqlite/sql-init.h \
   ovsqlite/sqlite-helper.h ovsqlite/sql-main.h
 ovsqlite/sql-init.o: ovsqlite/sql-init.c ovsqlite/sql-init.h \
-  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
 ovsqlite/sql-main.o: ovsqlite/sql-main.c ovsqlite/sql-main.h \
-  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
+  ovsqlite/sqlite-helper.h ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
 ovsqlite/sqlite-helper.o: ovsqlite/sqlite-helper.c ovsqlite/sqlite-helper.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h
 tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/defines.h ../include/inn/system.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/defines.h \
-  ../include/inn/options.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/buffer.h \
-  ../include/inn/history.h ../include/inn/innconf.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h \
-  ../include/inn/newsuser.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/overview.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/buffer.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/history.h ../include/inn/macros.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/overview.h ../include/inn/storage.h \
   ../include/inn/paths.h ../include/inn/vector.h ../include/inn/wire.h \
   ovinterface.h tradindexed/tdx-private.h tradindexed/tdx-structure.h

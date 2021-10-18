@@ -5,7 +5,9 @@
 #ifndef INN_HISTORY_H
 #define INN_HISTORY_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 #include <sys/types.h>
 
 BEGIN_DECLS

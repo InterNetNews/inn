@@ -10,7 +10,9 @@
 #ifndef INN_WIRE_H
 #define INN_WIRE_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 #include <sys/types.h>          /* size_t */
 
 BEGIN_DECLS

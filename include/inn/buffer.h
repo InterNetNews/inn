@@ -45,7 +45,7 @@
 
 #include "inn/portable-macros.h"
 #include "inn/portable-stdbool.h"
-#include <inn/system.h>
+#include "inn/system.h"
 
 #include <stdarg.h>
 #include <sys/types.h>

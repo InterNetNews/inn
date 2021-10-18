@@ -97,31 +97,30 @@ depend:	$(SOURCES) $(EXTRA_SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 his.o: his.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/history.h ../include/inn/messages.h \
-  ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/storage.h ../include/inn/options.h hisinterface.h \
-  hismethods.h
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/history.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/messages.h ../include/inn/timer.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/storage.h \
+  ../include/inn/options.h hisinterface.h hismethods.h
 hismethods.o: hismethods.c hisinterface.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h hismethods.h \
-  hisv6/hisv6.h
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h hismethods.h hisv6/hisv6.h
 hisv6/hisv6.o: hisv6/hisv6.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  hisinterface.h hisv6/hisv6.h hisv6/hisv6-private.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/dbz.h \
-  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h hisinterface.h hisv6/hisv6.h \
+  hisv6/hisv6-private.h ../include/inn/history.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/storage.h ../include/inn/options.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/dbz.h ../include/inn/fdflag.h \
+  ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
   ../include/inn/timer.h ../include/inn/qio.h ../include/inn/sequence.h \
   ../include/inn/inndcomm.h

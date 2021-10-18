@@ -396,7 +396,6 @@ include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/concat.h                  Header file for string concatenation
 include/inn/confparse.h               Header file for configuration parser
 include/inn/dbz.h                     Header file for DBZ
-include/inn/defines.h                 Portable defs for installed headers
 include/inn/dispatch.h                Header file for command dispatching
 include/inn/fdflag.h                  Header file for file descriptor flags
 include/inn/hashtab.h                 Header file for generic hash table

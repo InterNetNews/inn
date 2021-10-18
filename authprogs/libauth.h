@@ -9,7 +9,7 @@
 
 #include "portable/socket.h"
 #include <stdio.h>
-#include <inn/defines.h>
+
 
 /* Holds the resolver information from nnrpd. */
 struct res_info {

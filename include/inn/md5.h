@@ -33,7 +33,9 @@
 #ifndef INN_MD5_H
 #define INN_MD5_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 
 /* Make sure we have uint32_t. */
 #include <sys/types.h>

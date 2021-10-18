@@ -10,7 +10,9 @@
 #ifndef INN_TIMER_H
 #define INN_TIMER_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 
 BEGIN_DECLS
 

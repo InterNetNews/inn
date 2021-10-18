@@ -20,7 +20,9 @@
 #ifndef INN_HASHTAB_H
 #define INN_HASHTAB_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 
 BEGIN_DECLS
 

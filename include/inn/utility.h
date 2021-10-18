@@ -5,13 +5,15 @@
 **  logically part of a larger package of routines.  All functions defined in
 **  this file must be prefixed with inn_ (and constants and macros, if any,
 **  must be prefixed with INN_).  The only exception are the macros handled by
-**  <inn/defines.h>.
+**  headers included below.
 */
 
 #ifndef INN_UTILITY_H
 #define INN_UTILITY_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 #include <sys/types.h>          /* size_t */
 
 BEGIN_DECLS

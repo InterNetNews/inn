@@ -5,7 +5,9 @@
 #ifndef INN_LIBINN_H
 #define INN_LIBINN_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 #include "inn/concat.h"
 #include "inn/xmalloc.h"
 #include "inn/xwrite.h"

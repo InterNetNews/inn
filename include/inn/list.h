@@ -1,7 +1,9 @@
 #ifndef INN_LIST_H
 #define INN_LIST_H 1
 
-#include <inn/defines.h>
+#include "inn/macros.h"
+#include "inn/portable-stdbool.h"
+#include "inn/system.h"
 
 struct node {
     struct node *succ;

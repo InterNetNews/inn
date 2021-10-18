@@ -725,8 +725,11 @@ AC_CONFIG_FILES([support/fixconfig], [chmod +x support/fixconfig])
 AC_CONFIG_FILES([support/fixscript], [chmod +x support/fixscript])
 
 dnl Include some additional files at the beginning of config.h.
-AH_TOP([#include "inn/defines.h"
-        #include "inn/options.h"])
+AH_TOP([/* Include a few useful functions and macros. */
+#include "inn/macros.h"
+#include "inn/options.h"
+#include "inn/system.h"
+#include "portable/stdbool.h"])
 
 dnl Most configuration information goes here.
 AC_CONFIG_HEADERS([include/config.h])

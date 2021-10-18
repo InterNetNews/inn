@@ -37,12 +37,12 @@ $(EXTRA) $(FIXSCRIPT):
 
 inn/portable-getaddrinfo.h: portable/getaddrinfo.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/getaddrinfo.h \
-	  | $(SED) -e 's/"config\.h"/<inn\/defines.h>/g' \
+	  | $(SED) -e '/"config\.h"/d' \
 	  > inn/portable-getaddrinfo.h
 
 inn/portable-getnameinfo.h: portable/getnameinfo.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/getnameinfo.h \
-	  | $(SED) -e 's/"config\.h"/<inn\/defines.h>/g' \
+	  | $(SED) -e '/"config\.h"/d' \
 	  > inn/portable-getnameinfo.h
 
 inn/portable-macros.h: portable/macros.h
@@ -51,15 +51,13 @@ inn/portable-macros.h: portable/macros.h
 
 inn/portable-socket.h: portable/socket.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/socket.h \
-	  | $(SED) -e 's/HAVE_INET6/INN_HAVE_INET6/g' \
-	           -e 's/"config\.h"/<inn\/defines.h>/g' \
+	  | $(SED) -e '/"config\.h"/d' \
 	  > inn/portable-socket.h
 
 inn/portable-stdbool.h: portable/stdbool.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/stdbool.h \
 	  | $(SED) -e 's/HAVE__BOOL/INN_HAVE__BOOL/g' \
 	           -e 's/HAVE_STDBOOL_H/INN_HAVE_STDBOOL_H/g' \
-	           -e 's/"config\.h"/<inn\/defines.h>/g' \
 	  > inn/portable-stdbool.h
 
 inn/system.h: config.h $(top)/support/mksystem
