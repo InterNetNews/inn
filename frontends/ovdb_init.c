@@ -5,8 +5,8 @@
  *  Starts ovdb_monitor, if needed
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include <errno.h>
 #include <syslog.h>

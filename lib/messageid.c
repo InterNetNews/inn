@@ -2,8 +2,8 @@
 **  Routines for message-IDs: generation and checks.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <time.h>
 

@@ -42,8 +42,7 @@
 **          Jeff Garzik <jeff.garzik@spinne.com>
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

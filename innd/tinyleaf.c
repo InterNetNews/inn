@@ -22,8 +22,8 @@
 **  DEALINGS IN THE SOFTWARE.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>

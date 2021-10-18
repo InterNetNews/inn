@@ -2,8 +2,8 @@
 **  Discover the fully-qualified domain name of the local host.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 
 #include "inn/libinn.h"

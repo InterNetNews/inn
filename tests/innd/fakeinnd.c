@@ -7,7 +7,7 @@
 
 #define DEFINE_DATA 1
 #include "../../innd/innd.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 /* Global variables defined in innd.c. */
 bool Debug = false;

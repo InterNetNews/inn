@@ -36,8 +36,8 @@
 **  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <fcntl.h>
 #include <limits.h>
 #include <errno.h>

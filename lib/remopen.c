@@ -2,8 +2,8 @@
 **  Open a connection to a remote NNTP server.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <errno.h>
 

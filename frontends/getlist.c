@@ -2,8 +2,8 @@
 **  Send a LIST command to an NNTP server and print the results.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 
 #include "inn/innconf.h"

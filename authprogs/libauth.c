@@ -6,8 +6,8 @@
 **  the incoming connection.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 
 #include "inn/messages.h"

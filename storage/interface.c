@@ -1,8 +1,9 @@
 /*
 **  Storage Manager interface.
 */
-#include "config.h"
-#include "clibrary.h"
+
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>

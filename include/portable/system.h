@@ -5,7 +5,6 @@
  * file is the equivalent of including all of the following headers,
  * portably:
  *
- *     #include "inn/macros.h"
  *     #include <inttypes.h>
  *     #include <limits.h>
  *     #include <stdarg.h>
@@ -38,14 +37,14 @@
  * SPDX-License-Identifier: FSFAP
  */
 
-#ifndef CLIBRARY_H
-#define CLIBRARY_H 1
+#ifndef PORTABLE_SYSTEM_H
+#define PORTABLE_SYSTEM_H 1
 
 /* Make sure we have our configuration information. */
 #include "config.h"
 
 /* BEGIN_DECL and __attribute__. */
-#include "inn/macros.h"
+#include "portable/macros.h"
 
 /* A set of standard ANSI C headers.  We don't care about pre-ANSI systems. */
 #if HAVE_INTTYPES_H
@@ -235,4 +234,4 @@ extern char *strtok(char *, const char *);
 
 END_DECLS
 
-#endif /* !CLIBRARY_H */
+#endif /* !PORTABLE_SYSTEM_H */

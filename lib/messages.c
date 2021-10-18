@@ -79,7 +79,7 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include <errno.h>
 #ifdef HAVE_SYSLOG_H

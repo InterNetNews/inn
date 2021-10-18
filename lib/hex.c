@@ -7,8 +7,8 @@
 **  are used for hex digits > 9.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "inn/utility.h"
 
 /*

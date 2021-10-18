@@ -15,8 +15,8 @@
 ** The locking problem is handled by semaphore.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include <assert.h>
 #include <ctype.h>

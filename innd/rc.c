@@ -4,8 +4,9 @@
 **  our feeds, then we optionally pass the connection off to the standard
 **  NNTP daemon.
 */
-#include "config.h"
-#include "clibrary.h"
+
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <errno.h>
 #include <netdb.h>

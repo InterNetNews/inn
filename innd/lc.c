@@ -5,8 +5,7 @@
 **  by rnews to feed in articles from the UUCP sites.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "innd.h"

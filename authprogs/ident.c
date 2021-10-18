@@ -2,8 +2,8 @@
 **  Ident authenticator.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <netdb.h>
 #include <signal.h>

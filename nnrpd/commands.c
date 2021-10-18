@@ -1,8 +1,9 @@
 /*
 **  Miscellaneous commands.
 */
-#include "config.h"
-#include "clibrary.h"
+
+#include "portable/system.h"
+
 #include <sys/wait.h>
 
 #include "nnrpd.h"

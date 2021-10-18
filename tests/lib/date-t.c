@@ -1,7 +1,7 @@
 /* makedate test suite */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <time.h>
 
 #include "inn/libinn.h"

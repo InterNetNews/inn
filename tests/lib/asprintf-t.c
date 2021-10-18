@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "portable/macros.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "tap/basic.h"
 

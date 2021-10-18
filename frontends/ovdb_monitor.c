@@ -6,8 +6,8 @@
  *   + Transaction log removal
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/setproctitle.h"
 #include <fcntl.h>
 #include <signal.h>

@@ -1,8 +1,9 @@
 /*
 **  Periodic status reporting.
 */
-#include "config.h"
-#include "clibrary.h"
+
+#include "portable/system.h"
+
 #include "portable/socket.h"
 
 #include "inn/network.h"

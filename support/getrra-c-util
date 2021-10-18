@@ -123,14 +123,10 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
                ${TEMP}
         fi
 
-        if [ "$3" = "clibrary.h" ]
+        if [ "$3" = "system.h" ]
         then
           # Add INN-specific stuff.
-          sed -i -e 's/<portable\/macros\.h>/"inn\/macros.h"/g' \
-                 -e 's/PORTABLE_SYSTEM_H/CLIBRARY_H/g' \
-                 -e "8 i \\
- *     #include \"inn/macros.h\"" \
-                 -e "108 i \\
+          sed -i -e "108 i \\
 /*\\
  * This almost certainly isn't necessary, but it's not hurting anything.\\
  * gcc assumes that if SEEK_SET isn't defined none of the rest are either,\\
@@ -223,7 +219,6 @@ extern char *strtok(char *, const char *);\\
                -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
                -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
                -e 's/<config\.h>$/"config.h"/g' \
-               -e 's/<portable\/system\.h>/"clibrary.h"/g' \
                -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
                -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
                -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
@@ -310,7 +305,7 @@ download portable/seteuid.c lib seteuid.c
 download portable/socket.h include/portable socket.h
 download portable/socket-unix.h include/portable socket-unix.h
 download portable/stdbool.h include/portable stdbool.h
-download portable/system.h include clibrary.h
+download portable/system.h include/portable system.h
 download portable/uio.h include/portable uio.h
 
 ##  Synchronize utility functions from upstream.

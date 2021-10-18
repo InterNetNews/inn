@@ -12,8 +12,8 @@
 **  files in a single directory.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>

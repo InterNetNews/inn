@@ -10,8 +10,8 @@
 ** 
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <assert.h>
 #ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>

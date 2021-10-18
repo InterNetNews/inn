@@ -2,8 +2,8 @@
 **  Routines for NNTP commands: manipulation and checks.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 
 #include "inn/libinn.h"

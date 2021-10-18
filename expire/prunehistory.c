@@ -2,8 +2,8 @@
 **  Prune file names from history file.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <syslog.h>
 

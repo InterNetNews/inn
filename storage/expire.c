@@ -7,8 +7,8 @@
 **  for the use of various overview methods.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <errno.h>
 

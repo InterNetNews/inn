@@ -49,7 +49,7 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 #include "portable/uio.h"
 
 #include <assert.h>

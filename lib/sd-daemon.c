@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: FSFAP
  */
 
-#include "portable/macros.h"
 #include "portable/sd-daemon.h"
+#include "portable/macros.h"
 
 /* Used for unused parameters to silence gcc warnings. */
 #define UNUSED __attribute__((__unused__))

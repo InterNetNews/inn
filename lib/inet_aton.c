@@ -23,7 +23,7 @@
 
 #include "config.h"
 #include "portable/socket.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 /*
  * If we're running the test suite, rename inet_aton to avoid conflicts with

@@ -2,8 +2,8 @@
 **  Library routines to let other programs control innd.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>

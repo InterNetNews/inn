@@ -3,8 +3,8 @@
 **  alphabet 0..9a..v to represent 0..32.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <time.h>
 
 #include "inn/libinn.h"

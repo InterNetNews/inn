@@ -1,7 +1,7 @@
 /* Test suite for lib/hashtab.c. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <sys/stat.h>
 
 #include "inn/hashtab.h"

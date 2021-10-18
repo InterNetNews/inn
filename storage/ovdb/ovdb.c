@@ -70,8 +70,8 @@
  * 1999-12-06 : First Release -- H. Kehoe <hakehoe@avalon.net>
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <errno.h>
 #include <fcntl.h>

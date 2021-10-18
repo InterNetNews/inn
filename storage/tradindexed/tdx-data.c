@@ -14,8 +14,8 @@
 **  consumers of the overview API.)
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include <errno.h>
 #include <fcntl.h>

@@ -5,7 +5,8 @@
 **  wildmat source code at that time.
 */
 
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include "tap/basic.h"
 

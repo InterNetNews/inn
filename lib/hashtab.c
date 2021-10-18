@@ -14,8 +14,7 @@
 **  seen in many places but it produces fewer collisions.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/hashtab.h"
 #include "inn/libinn.h"

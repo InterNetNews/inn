@@ -1,7 +1,7 @@
 /* Test suite for general channel handling. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <fcntl.h>
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>

@@ -3,8 +3,7 @@
 **  we turn into NNTP channels, and over which we speak NNTP.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "inn/qio.h"

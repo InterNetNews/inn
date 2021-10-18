@@ -13,8 +13,8 @@
  * This file is heavily based on lib/network.c.
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 
 #include <errno.h>

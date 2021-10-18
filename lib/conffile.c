@@ -2,8 +2,7 @@
 **  Routines for reading in incoming.conf-style config files.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "conffile.h"
 #include "inn/libinn.h"

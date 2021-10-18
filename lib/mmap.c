@@ -4,8 +4,8 @@
 **  Written by Alex Kiernan (alex.kiernan@thus.net)
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 
 #include "inn/messages.h"

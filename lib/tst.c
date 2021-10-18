@@ -44,8 +44,7 @@
 **  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/libinn.h"
 #include "inn/tst.h"

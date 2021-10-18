@@ -33,8 +33,7 @@
  * work.
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/concat.h"
 #include "inn/messages.h"

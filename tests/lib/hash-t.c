@@ -1,7 +1,6 @@
 /* hash test suite. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/libinn.h"
 #include "tap/basic.h"

@@ -1,7 +1,7 @@
 /* conffile test suite. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <fcntl.h>
 #include <sys/stat.h>
 

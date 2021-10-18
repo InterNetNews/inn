@@ -2,8 +2,8 @@
 **  Authenticate a user against a remote radius server.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>

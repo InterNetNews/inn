@@ -7,9 +7,9 @@
 **  objects that abstract memory regions in a way similar to struct iovec.
 */
 
+#include "portable/system.h"
+
 #include "innfeed.h"
-#include "config.h"
-#include "clibrary.h"
 #include <assert.h>
 
 #include "inn/messages.h"

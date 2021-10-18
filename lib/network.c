@@ -46,7 +46,7 @@
 
 #include "config.h"
 #include "portable/socket.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include <errno.h>
 #ifdef HAVE_SYS_SELECT_H

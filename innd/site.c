@@ -3,8 +3,7 @@
 **  do buffering and determine what to send.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/fdflag.h"
 #include "inn/innconf.h"

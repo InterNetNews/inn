@@ -1,5 +1,4 @@
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 /*
  * Copyright (c) 1987 Regents of the University of California.

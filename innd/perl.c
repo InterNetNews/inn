@@ -28,12 +28,11 @@
 **     active.
 */
 
-#include "config.h"
+#include "portable/system.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if DO_PERL
 
-#include "clibrary.h"
 #include "inn/wire.h"
 #include "innd.h"
 

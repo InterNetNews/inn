@@ -1,7 +1,6 @@
 /* Test suite for ternary search tries. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/messages.h"
 #include "inn/tst.h"

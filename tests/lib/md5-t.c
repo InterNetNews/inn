@@ -1,7 +1,7 @@
 /* MD5 hashing test suite. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "inn/md5.h"
 #include "inn/libinn.h"
 #include "tap/basic.h"

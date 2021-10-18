@@ -4,8 +4,8 @@
    methods (not surrounded in quotes) to generate a binary that tests that
    overview method. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>

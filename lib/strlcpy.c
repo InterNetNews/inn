@@ -23,8 +23,7 @@
  * work.
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 /*
  * If we're running the test suite, rename strlcpy to avoid conflicts with

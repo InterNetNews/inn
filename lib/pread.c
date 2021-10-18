@@ -11,8 +11,8 @@
 **  pointer and then moving it back.  This may break threaded programs.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 
 /* If we're running the test suite, rename pread to avoid conflicts with the

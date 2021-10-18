@@ -10,12 +10,11 @@
 **  assumes Perl 5.004 or later.
 */
 
-#include "config.h"
+#include "portable/system.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if DO_PERL
 
-#    include "clibrary.h"
 #    include <fcntl.h>
 #    include <syslog.h>
 

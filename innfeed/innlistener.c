@@ -4,9 +4,9 @@
 **  Written by James Brister <brister@vix.com>
 */
 
+#include "portable/system.h"
+
 #include "innfeed.h"
-#include "config.h"
-#include "clibrary.h"
 
 #include <assert.h>
 #include <ctype.h>

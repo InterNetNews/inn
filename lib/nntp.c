@@ -5,8 +5,8 @@
 **  the server functions are implemented; there is no client support as yet.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>

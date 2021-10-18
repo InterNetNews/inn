@@ -2,8 +2,8 @@
 **  Send control messages to the InterNetNews daemon.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <sys/stat.h>

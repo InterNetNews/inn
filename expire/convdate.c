@@ -2,8 +2,8 @@
 **  Convert date strings and numbers to numbers and strings.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <time.h>
 

@@ -11,8 +11,7 @@
 **  stubbed out on those platforms that don't need it.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "portable/setproctitle.h"
 

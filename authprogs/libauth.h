@@ -6,6 +6,7 @@
 #define LIBAUTH_H 1
 
 #include "config.h"
+
 #include "portable/socket.h"
 #include <stdio.h>
 #include <inn/defines.h>

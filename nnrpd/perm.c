@@ -3,8 +3,8 @@
 **  we know who sie is.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <netdb.h>
 #include <signal.h>
 #include <sys/wait.h>

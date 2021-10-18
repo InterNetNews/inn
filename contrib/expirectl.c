@@ -31,8 +31,8 @@
  *     will not really exercise the program for another 14 days or so :-).
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <time.h>
 

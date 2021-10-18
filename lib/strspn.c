@@ -3,9 +3,7 @@
 **  on pre-4.4BSD systems.  Rich $alz, June 1991.
 */
 
-#include "config.h"
-#include "clibrary.h"
-
+#include "portable/system.h"
 
 /*
  * Copyright (c) 1989 The Regents of the University of California.

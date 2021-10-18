@@ -6,8 +6,8 @@
 **  Created:  2000-02-22
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <syslog.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

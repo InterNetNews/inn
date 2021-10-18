@@ -4,8 +4,8 @@
 **  Written by Russ Allbery <eagle@eyrie.org>
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD

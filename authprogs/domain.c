@@ -6,8 +6,7 @@
 **  as the user if it matches.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/messages.h"
 #include "inn/libinn.h"

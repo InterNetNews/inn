@@ -57,8 +57,7 @@
 **  file contains the infrastructure around the mathematics.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/md5.h"
 

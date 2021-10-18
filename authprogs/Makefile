@@ -72,66 +72,60 @@ depend: Makefile $(SOURCES)
 	$(MAKEDEPEND) '$(CFLAGS)' $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-auth_krb5.o: auth_krb5.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
+auth_krb5.o: auth_krb5.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h libauth.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h libauth.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h
-ckpasswd.o: ckpasswd.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
+ckpasswd.o: ckpasswd.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/messages.h \
-  ../include/inn/qio.h ../include/inn/vector.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  libauth.h ../include/portable/socket.h ../include/portable/macros.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
-domain.o: domain.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/messages.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/vector.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h libauth.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
-  ../include/portable/getnameinfo.h
-ident.o: ident.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
+  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
+domain.o: domain.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/messages.h \
-  ../include/inn/network.h ../include/inn/portable-socket.h \
-  ../include/inn/portable-getaddrinfo.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  libauth.h ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h
+ident.o: ident.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/messages.h ../include/inn/network.h \
+  ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   libauth.h ../include/portable/socket.h
-libauth.o: libauth.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
+libauth.o: libauth.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/messages.h libauth.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h
-radius.o: radius.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
+radius.o: radius.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/defines.h ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h ../include/clibrary.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/portable/stdbool.h ../include/inn/innconf.h \
-  ../include/inn/md5.h ../include/inn/messages.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/conffile.h \
-  ../include/portable/macros.h libauth.h ../include/portable/socket.h \
-  ../include/portable/macros.h ../include/portable/getaddrinfo.h \
+  ../include/inn/defines.h ../include/inn/options.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/innconf.h ../include/inn/md5.h ../include/inn/messages.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/conffile.h ../include/portable/macros.h libauth.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h

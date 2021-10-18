@@ -18,8 +18,7 @@
 
 #define LIBTEST_NEW_FORMAT 1
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "tap/basic.h"
 

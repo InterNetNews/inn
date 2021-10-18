@@ -3,8 +3,8 @@
 **  Modified for NNTP streaming: 1996-01-03 Jerry Aguirre.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>

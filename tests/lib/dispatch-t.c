@@ -1,7 +1,6 @@
 /* dispatch test suite. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/dispatch.h"
 #include "inn/vector.h"

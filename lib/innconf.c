@@ -22,8 +22,8 @@
 **  of parameters into separate configuration groups for each INN subsystem.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 
 #include "inn/confparse.h"

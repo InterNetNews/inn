@@ -10,8 +10,8 @@
 **  core dumps will go on most systems).
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>

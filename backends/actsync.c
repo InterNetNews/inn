@@ -60,8 +60,8 @@
  * notice remains.  Use at your own risk.  No warranty is implied.
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>

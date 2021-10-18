@@ -1,7 +1,6 @@
 /* Test suite for list routines. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/messages.h"
 #include "inn/list.h"

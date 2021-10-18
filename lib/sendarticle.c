@@ -1,5 +1,5 @@
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include "inn/nntp.h"
 

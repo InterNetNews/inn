@@ -1,8 +1,7 @@
 #ifndef OVSQLITE_PRIVATE_H
 #define OVSQLITE_PRIVATE_H
 
-#include "clibrary.h"
-#include "config.h"
+#include "portable/system.h"
 
 #ifdef HAVE_SQLITE3
 

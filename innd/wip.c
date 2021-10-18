@@ -5,8 +5,7 @@
 ** WIP stands for work-in-progress
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "innd.h"

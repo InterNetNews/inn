@@ -15,9 +15,7 @@
 **  terminating conditions!
 */
 
-#include "config.h"
-#include "clibrary.h"
-
+#include "portable/system.h"
 
 /*
 **  These characters can't appear in normal output, so we use them to

@@ -16,8 +16,7 @@ rifkin@uconn.edu
 (4) print subsequent bytes until \r\n.\r\n found
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #define INFILE     1
 #define FILEPREFIX 2

@@ -6,8 +6,8 @@
 **  this replacement that just always fails after setting errno to ENOSYS.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 
 int

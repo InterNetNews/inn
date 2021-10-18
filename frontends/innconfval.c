@@ -2,8 +2,7 @@
 **  Get a config value from INN.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

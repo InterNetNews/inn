@@ -6,8 +6,8 @@
 **  Assume that fcntl is available.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <fcntl.h>
 

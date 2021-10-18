@@ -2,8 +2,8 @@
 **  Rebuild history/overview databases.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <syslog.h>

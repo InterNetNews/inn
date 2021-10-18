@@ -3,8 +3,8 @@
  * print information about ovdb database
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <signal.h>
 #include <syslog.h>

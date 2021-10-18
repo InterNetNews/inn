@@ -46,9 +46,9 @@
 **  not handled properly everywhere yet.
 */
 
+#include "portable/system.h"
+
 #include "innfeed.h"
-#include "config.h"
-#include "clibrary.h"
 #include "portable/socket.h"
 
 #include <assert.h>

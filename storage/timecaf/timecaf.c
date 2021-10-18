@@ -3,8 +3,8 @@
 **  the CAF library to store multiple articles in a single file.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include <ctype.h>
 #include <dirent.h>

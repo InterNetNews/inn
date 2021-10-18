@@ -5,8 +5,8 @@
 **  in INN1.8 by rmtodd 3/27/98.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>

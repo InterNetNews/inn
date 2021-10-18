@@ -11,8 +11,7 @@
 **  This module completely rips away all pretense of software layering.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
 # include "portable/socket-unix.h"

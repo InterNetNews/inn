@@ -6,8 +6,7 @@
 **  implementation here is taken from RFC 1982.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/sequence.h"
 #include <limits.h>

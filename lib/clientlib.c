@@ -1,8 +1,7 @@
 /*
 **  Routines compatible with the NNTP "clientlib" routines.
 */
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"

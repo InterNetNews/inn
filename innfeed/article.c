@@ -13,9 +13,9 @@
 **  to wait for a disk read to be done again.
 */
 
+#include "portable/system.h"
+
 #include "innfeed.h"
-#include "config.h"
-#include "clibrary.h"
 #include "portable/mmap.h"
 
 #include <assert.h>

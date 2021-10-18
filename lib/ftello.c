@@ -9,8 +9,7 @@
 **  2GB).
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #if HAVE_LARGE_FPOS_T
 

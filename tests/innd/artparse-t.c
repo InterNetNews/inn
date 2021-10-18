@@ -1,7 +1,6 @@
 /* Test suite for ARTparse. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"

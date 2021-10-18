@@ -2,8 +2,8 @@
 **  Routines to read and write the active file.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include <sys/uio.h>
 

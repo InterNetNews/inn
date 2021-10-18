@@ -2,8 +2,7 @@
 ** AUTHINFO SASL functionality.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/messages.h"
 #include "nnrpd.h"

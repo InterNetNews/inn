@@ -17,7 +17,7 @@
 **      PyObject_HasAttrString(PyObject *o, const char *attr_name).
 */
 
-#include "config.h"
+#include "portable/system.h"
 
 #ifdef DO_PYTHON
 
@@ -51,8 +51,6 @@
 # define PYBUFF_FROMMEMORY(str, len) \
       PyBuffer_FromMemory((str), (len))
 #endif
-
-#include "clibrary.h"
 
 #include "inn/innconf.h"
 #include "inn/wire.h"

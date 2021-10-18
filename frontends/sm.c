@@ -2,8 +2,8 @@
 **  Provide a command line interface to the storage manager.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <sys/uio.h>
 
 #include "inn/buffer.h"

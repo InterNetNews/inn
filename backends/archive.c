@@ -2,8 +2,8 @@
 **  Read batchfiles on standard input and archive them.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #include <sys/stat.h>
 #include <time.h>

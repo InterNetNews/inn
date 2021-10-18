@@ -2,8 +2,7 @@
 **  LIST commands.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "nnrpd.h"
 #include "inn/ov.h"

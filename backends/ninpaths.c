@@ -7,8 +7,8 @@
 **  This version written by Olaf Titz, Feb. 1997.  Public domain.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <time.h>
 

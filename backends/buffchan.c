@@ -2,8 +2,8 @@
 **  Buffered file exploder for innd.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>

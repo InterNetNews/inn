@@ -66,8 +66,8 @@
 **  Limited can't tag warnings once per dbzinit() by Sang-yong Suh (May, 1998)
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include <ctype.h>
 #include <errno.h>

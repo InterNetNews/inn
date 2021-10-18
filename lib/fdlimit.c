@@ -17,8 +17,8 @@
 **  so always prefer it.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <errno.h>
 #if HAVE_SYS_SELECT_H
 #    include <sys/select.h>

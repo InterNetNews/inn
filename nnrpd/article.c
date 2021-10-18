@@ -2,8 +2,8 @@
 **  Article-related routines.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <assert.h>
 #if HAVE_LIMITS_H
 # include <limits.h>

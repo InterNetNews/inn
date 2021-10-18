@@ -17,8 +17,8 @@
 **  through the pamckpasswd program.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "libauth.h"
 
 #if defined(HAVE_KRB5_H)

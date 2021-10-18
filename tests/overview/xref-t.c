@@ -1,7 +1,7 @@
 /* Test suite for storing overview data based on the Xref: header. */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/uio.h>

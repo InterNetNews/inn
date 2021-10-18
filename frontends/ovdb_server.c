@@ -3,8 +3,8 @@
  * ovdb read server
  */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/mmap.h"
 #include "portable/setproctitle.h"
 #include "portable/socket.h"

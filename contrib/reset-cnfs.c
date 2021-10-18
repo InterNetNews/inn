@@ -1,7 +1,6 @@
 /* Quick and Dirty Hack to reset a CNFS buffer without having to DD the
  * Entire Thing from /dev/zero again. */
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include <errno.h>
 #include <fcntl.h>

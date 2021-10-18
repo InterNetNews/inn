@@ -2,8 +2,7 @@
 **  Read file list on standard input and spew out batch files.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "inn/messages.h"

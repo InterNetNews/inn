@@ -1,8 +1,9 @@
 /*
 **  Storage manager module for trash method.
 */
-#include "config.h"
-#include "clibrary.h"
+
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include "methods.h"
 

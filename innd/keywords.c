@@ -12,8 +12,7 @@
 **  separator and then the sorted list of words.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/libinn.h"
 

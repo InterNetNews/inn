@@ -27,8 +27,8 @@
 **  shlock(1) to achieve mutual exclusion.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include "portable/socket.h"
 #include <ctype.h>
 #include <errno.h>

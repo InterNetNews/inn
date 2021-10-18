@@ -12,8 +12,7 @@
 **  We are assuming Perl 5.004 or later.
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "inn/innconf.h"
 #include "nnrpd.h"

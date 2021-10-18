@@ -389,7 +389,6 @@ history/hisv6/hisv6.c                 hisv6 history method
 history/hisv6/hisv6.h                 Header for hisv6 history
 include                               Header files (Directory)
 include/Makefile                      Makefile for header files
-include/clibrary.h                    C library portability
 include/conffile.h                    Header file for reading *.conf files
 include/config.h.in                   Template configuration data 
 include/inn                           Installed header files (Directory)
@@ -439,6 +438,7 @@ include/portable/setproctitle.h       Portable setup for setproctitle
 include/portable/socket-unix.h        Wrapper for <sys/un.h> and SUN_LEN
 include/portable/socket.h             Wrapper for <sys/socket.h> and friends
 include/portable/stdbool.h            Wrapper for <stdbool.h>
+include/portable/system.h             C library portability
 include/portable/uio.h                Wrapper for <sys/uio.h>
 include/ppport.h                      Header file for Perl support
 innd                                  Server (Directory)

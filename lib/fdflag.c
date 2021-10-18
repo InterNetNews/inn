@@ -32,7 +32,7 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #ifdef _WIN32
 #    include <winsock2.h>

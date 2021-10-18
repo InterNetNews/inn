@@ -36,8 +36,8 @@
 **  done in different threads).
 */
 
-#include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
+
 #include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H

@@ -4,9 +4,10 @@
 
 #define LIBTEST_NEW_FORMAT 1
 
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include "tap/basic.h"
-#include "clibrary.h"
 #include <assert.h>
 
 static void

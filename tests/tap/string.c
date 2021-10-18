@@ -31,7 +31,7 @@
  */
 
 #include "config.h"
-#include "clibrary.h"
+#include "portable/system.h"
 
 #include "tap/basic.h"
 #include "tap/string.h"
