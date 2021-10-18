@@ -110,7 +110,7 @@ expireover.o: expireover.c ../include/portable/system.h \
   ../include/inn/xwrite.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
-  ../include/inn/qio.h ../include/inn/storage.h
+  ../include/inn/qio.h
 fastrm.o: fastrm.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -154,9 +154,8 @@ makehistory.o: makehistory.c ../include/portable/system.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/storage.h \
-  ../include/inn/paths.h ../include/inn/qio.h ../include/inn/vector.h \
-  ../include/inn/wire.h
+  ../include/inn/overview.h ../include/inn/paths.h ../include/inn/qio.h \
+  ../include/inn/vector.h ../include/inn/wire.h
 prunehistory.o: prunehistory.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \

@@ -77,8 +77,8 @@ art.o: art.c ../include/portable/system.h ../include/config.h \
   ../include/inn/system.h ../include/inn/md5.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/overview.h \
-  ../include/inn/storage.h ../include/inn/vector.h ../include/inn/wire.h \
-  innd.h ../include/portable/sd-daemon.h ../include/portable/socket.h \
+  ../include/inn/vector.h ../include/inn/wire.h innd.h \
+  ../include/portable/sd-daemon.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/buffer.h ../include/inn/messages.h ../include/inn/timer.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
@@ -130,7 +130,7 @@ icd.o: icd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/vector.h ../include/inn/ov.h
 innd.o: innd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -145,7 +145,7 @@ innd.o: innd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/vector.h ../include/inn/ov.h
 keywords.o: keywords.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -215,7 +215,7 @@ ng.o: ng.c ../include/portable/system.h ../include/config.h \
   ../include/inn/timer.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/vector.h ../include/inn/ov.h
 perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

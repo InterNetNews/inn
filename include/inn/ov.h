@@ -4,7 +4,7 @@
 #include "inn/history.h"
 #include "inn/portable-macros.h"
 #include "inn/portable-stdbool.h"
-#include "storage.h"
+#include "inn/storage.h"
 
 BEGIN_DECLS
 

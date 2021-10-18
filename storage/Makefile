@@ -117,8 +117,7 @@ expire.o: expire.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/overview.h \
-  ../include/inn/storage.h ../include/inn/paths.h ../include/inn/vector.h \
-  ovinterface.h
+  ../include/inn/paths.h ../include/inn/vector.h ovinterface.h
 interface.o: interface.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -148,8 +147,7 @@ ov.o: ov.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h \
-  ../include/inn/storage.h ovmethods.h
+  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h ovmethods.h
 overdata.o: overdata.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -161,7 +159,7 @@ overdata.o: overdata.c ../include/portable/system.h ../include/config.h \
   ../include/inn/messages.h ../include/inn/overview.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/wire.h ovinterface.h \
-  ../include/inn/history.h ../include/inn/ov.h ../include/inn/storage.h
+  ../include/inn/history.h ../include/inn/ov.h
 overview.o: overview.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -172,17 +170,16 @@ overview.o: overview.c ../include/portable/system.h ../include/config.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/storage.h \
-  ../include/inn/vector.h ../include/inn/wire.h ovinterface.h ovmethods.h
+  ../include/inn/overview.h ../include/inn/vector.h ../include/inn/wire.h \
+  ovinterface.h ovmethods.h
 ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/system.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/storage.h \
-  buffindexed/buffindexed.h ovdb/ovdb.h ovsqlite/ovsqlite.h \
-  tradindexed/tradindexed.h
+  ../include/inn/options.h buffindexed/buffindexed.h ovdb/ovdb.h \
+  ovsqlite/ovsqlite.h tradindexed/tradindexed.h
 buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -195,8 +192,8 @@ buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/paths.h ../include/inn/storage.h \
-  ovinterface.h buffindexed/shmem.h buffindexed/buffindexed.h
+  ../include/inn/options.h ../include/inn/paths.h ovinterface.h \
+  buffindexed/shmem.h buffindexed/buffindexed.h
 buffindexed/shmem.o: buffindexed/shmem.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -234,8 +231,7 @@ ovdb/ovdb.o: ovdb/ovdb.c ../include/portable/system.h ../include/config.h \
   ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/portable/socket-unix.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h ovdb/ovdb-private.h \
-  ovdb/ovdb.h ovinterface.h
+  ../include/inn/history.h ovdb/ovdb-private.h ovdb/ovdb.h ovinterface.h
 ovsqlite/ovsqlite-private.o: ovsqlite/ovsqlite-private.c \
   ovsqlite/ovsqlite-private.h ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
@@ -251,16 +247,16 @@ ovsqlite/ovsqlite.o: ovsqlite/ovsqlite.c ovsqlite/ovsqlite.h ../include/config.h
   ../include/inn/history.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/storage.h ../include/inn/messages.h \
-  ovsqlite/ovsqlite-private.h ../include/portable/system.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/buffer.h ../include/portable/socket.h \
-  ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/portable/socket-unix.h ../include/conffile.h \
-  ../include/portable/macros.h ../include/inn/fdflag.h \
-  ../include/inn/portable-socket.h ../include/inn/innconf.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/newsuser.h ../include/inn/paths.h \
+  ../include/inn/messages.h ovsqlite/ovsqlite-private.h \
+  ../include/portable/system.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/buffer.h \
+  ../include/portable/socket.h ../include/portable/getaddrinfo.h \
+  ../include/portable/getnameinfo.h ../include/portable/socket-unix.h \
+  ../include/conffile.h ../include/portable/macros.h \
+  ../include/inn/fdflag.h ../include/inn/portable-socket.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/newsuser.h ../include/inn/paths.h \
   ovsqlite/../ovinterface.h
 timecaf/caf.o: timecaf/caf.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -319,8 +315,8 @@ tradindexed/tdx-data.o: tradindexed/tdx-data.c ../include/portable/system.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/mmap.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/storage.h ovinterface.h \
-  tradindexed/tdx-private.h tradindexed/tdx-structure.h
+  ../include/inn/overview.h ovinterface.h tradindexed/tdx-private.h \
+  tradindexed/tdx-structure.h
 tradindexed/tdx-group.o: tradindexed/tdx-group.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -346,9 +342,8 @@ tradindexed/tradindexed.o: tradindexed/tradindexed.c ../include/portable/system.
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/ov.h \
   ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/options.h ../include/inn/storage.h \
-  tradindexed/tdx-private.h tradindexed/tdx-structure.h \
-  tradindexed/tradindexed.h
+  ../include/inn/options.h tradindexed/tdx-private.h \
+  tradindexed/tdx-structure.h tradindexed/tradindexed.h
 tradspool/tradspool.o: tradspool/tradspool.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -409,6 +404,6 @@ tradindexed/tdx-util.o: tradindexed/tdx-util.c ../include/portable/system.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h ../include/inn/ov.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/storage.h \
-  ../include/inn/paths.h ../include/inn/vector.h ../include/inn/wire.h \
-  ovinterface.h tradindexed/tdx-private.h tradindexed/tdx-structure.h
+  ../include/inn/overview.h ../include/inn/paths.h ../include/inn/vector.h \
+  ../include/inn/wire.h ovinterface.h tradindexed/tdx-private.h \
+  tradindexed/tdx-structure.h

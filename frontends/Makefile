@@ -229,8 +229,8 @@ ovdb_server.o: ovdb_server.c ../include/portable/system.h \
   ../include/inn/messages.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/ov.h ../include/inn/history.h ../include/inn/storage.h \
-  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
+  ../include/inn/ov.h ../include/inn/history.h ../storage/ovdb/ovdb.h \
+  ../storage/ovdb/ovdb-private.h
 ovdb_stat.o: ovdb_stat.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -241,8 +241,7 @@ ovdb_stat.o: ovdb_stat.c ../include/portable/system.h ../include/config.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../storage/ovdb/ovdb.h \
-  ../storage/ovdb/ovdb-private.h
+  ../storage/ovdb/ovdb.h ../storage/ovdb/ovdb-private.h
 rnews.o: rnews.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

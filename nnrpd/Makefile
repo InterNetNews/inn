@@ -81,8 +81,7 @@ article.o: article.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/overview.h tls.h cache.h
+  ../include/inn/history.h ../include/inn/overview.h tls.h cache.h
 auth-ext.o: auth-ext.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -119,9 +118,8 @@ commands.o: commands.c ../include/portable/system.h ../include/config.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/fdflag.h \
   ../include/inn/portable-socket.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/version.h tls.h
+  ../include/inn/history.h ../include/inn/innconf.h \
+  ../include/inn/messages.h ../include/inn/version.h tls.h
 group.o: group.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -134,7 +132,7 @@ group.o: group.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h
+  ../include/inn/history.h
 line.o: line.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -160,9 +158,8 @@ list.o: list.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/overview.h ../include/inn/innconf.h \
-  ../include/inn/messages.h
+  ../include/inn/history.h ../include/inn/overview.h \
+  ../include/inn/innconf.h ../include/inn/messages.h
 misc.o: misc.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -175,7 +172,7 @@ misc.o: misc.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h tls.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h
+  ../include/inn/history.h
 newnews.o: newnews.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -189,8 +186,7 @@ newnews.o: newnews.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h \
-  ../include/inn/overview.h cache.h
+  ../include/inn/history.h ../include/inn/overview.h cache.h
 nnrpd.o: nnrpd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -205,10 +201,9 @@ nnrpd.o: nnrpd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/portable-socket.h ../include/inn/network-innbind.h \
   ../include/inn/newsuser.h ../include/inn/ov.h ../include/inn/history.h \
   ../include/inn/storage.h ../include/inn/options.h \
-  ../include/inn/overview.h ../include/inn/storage.h \
-  ../include/inn/version.h nnrpd.h ../include/inn/qio.h \
-  ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/vector.h \
-  ../include/inn/timer.h tls.h
+  ../include/inn/overview.h ../include/inn/version.h nnrpd.h \
+  ../include/inn/qio.h ../include/inn/nntp.h ../include/inn/paths.h \
+  ../include/inn/vector.h ../include/inn/timer.h tls.h
 perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -250,7 +245,7 @@ post.o: post.c ../include/portable/system.h ../include/config.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h \
   ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/timer.h ../include/inn/ov.h \
-  ../include/inn/history.h ../include/inn/storage.h post.h
+  ../include/inn/history.h post.h
 python.o: python.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -276,8 +271,7 @@ sasl.o: sasl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/vector.h ../include/inn/timer.h \
-  ../include/inn/ov.h ../include/inn/history.h ../include/inn/storage.h \
-  tls.h
+  ../include/inn/ov.h ../include/inn/history.h tls.h
 tls.o: tls.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
