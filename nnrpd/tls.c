@@ -440,10 +440,13 @@ set_cert_stuff(SSL_CTX * ctx, char *cert_file, char *key_file)
 }
 
 
-#ifdef HAVE_OPENSSL_ECC
+#if defined(HAVE_OPENSSL_ECC) && OPENSSL_VERSION_NUMBER < 0x01010100fL
 /*
 **  Provide an ECKEY from a curve name.
 **  Accepts a NULL pointer as the name.
+**  The EC_KEY_new_ey_curve_name() function has been deprecated in
+**  OpenSSL 3.0.0; another mechanism to select groups has been available
+**  since OpenSSL 1.1.1.
 **
 **  Returns the key, or NULL on error.
 */
@@ -512,9 +515,6 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     struct stat buf;
     size_t  tls_protos = 0;
     size_t  i;
-#ifdef HAVE_OPENSSL_ECC
-    EC_KEY *eckey;
-#endif
 
     if (tls_serverengine)
       return (0);				/* Already running. */
@@ -593,9 +593,19 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     /* We set a curve here by name if provided
      * or we use OpenSSL (>= 1.0.2) auto-selection
      * or we default to NIST P-256. */
-    eckey = eckey_from_name(tls_ec_curve);
-    if (eckey != NULL) {
-        SSL_CTX_set_tmp_ecdh(CTX, eckey);
+    if (tls_ec_curve != NULL) {
+# if OPENSSL_VERSION_NUMBER < 0x01010100fL
+        /* A new mechanism to select groups has been introduced
+         * in OpenSSL 1.1.1. */
+        EC_KEY *eckey;
+        eckey = eckey_from_name(tls_ec_curve);
+        if (eckey != NULL) {
+            SSL_CTX_set_tmp_ecdh(CTX, eckey);
+        }
+# else
+        if (!SSL_CTX_set1_groups_list(CTX, tls_ec_curve))
+            syslog(L_ERROR, "tlseccurve '%s' not found", tls_ec_curve);
+# endif
     } else {
 # if OPENSSL_VERSION_NUMBER < 0x010100000L
 #  if OPENSSL_VERSION_NUMBER >= 0x01000200fL
