@@ -514,16 +514,19 @@ For instance in F</etc/cron.d/inn2>:
 
     52 * * * * news <pathbin>/send-uucp
 
+It can be useful to set up a different launch time than your remote
+servers.  For instance, if you generate batches every hour at minute 52,
+a remote peer may do the same at minute 22.  This way, you may exchange
+articles more frequently, depending on when each other connects.
+
 =item 17.
 
 Check that UUCP programs are automatically started in crontab (usually,
 B<uudemon.hr> is called hourly in F</etc/cron.d/uucp> to poll remote
 news servers, and B<uudemon.day> daily in F</etc/cron.daily/uucp>).
 
-It can be useful to set up a different launch time than your remote
-servers.  For instance, it you connect every hour at minute 10, a remote
-peer may do the same at minute 40.  This way, you will exchange articles
-more frequently.
+Like for B<send-uucp>, adjust the launch time to maximize the number
+and the freshness of batches to exchanges.
 
 =item 18.
 
@@ -531,9 +534,10 @@ Check the logs in F</var/log/uucp> to ensure everything works fine,
 both polling and sending.
 
 You will see that B<send-uucp> prepares B<rnews> batches named like
-F<D.0I8Y>, which are then sent by B<uucico>.  At the same time, B<uucico>
-takes available batches from the remote sites, which are then locally
-injected by B<uuxqt> through B<rnews>.
+F<D.0I8Y>, that are queued by B<uux>.  When B<uucico> is afterwards
+started from cron to transfer these batches, B<uucico> takes available
+batches from the remote sites at the same time.  These received batches
+are then processed by B<uuxqt> which calls B<rnews> to inject them.
 
 That's all!
 
