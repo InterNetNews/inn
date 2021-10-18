@@ -31,10 +31,10 @@ files.  Specifically (but possibly not comprehensively):
    General Public License version 2 or later.  See doc/GPL for a copy of
    the GPL v2.
 
-   backends/shrinkfile.c, frontends/scanspool.in, lib/alloca.c,
-   lib/concat.c, lib/inet_aton.c, lib/inet_ntoa.c, lib/pread.c,
-   lib/pwrite.c, lib/setenv.c, lib/seteuid.c, lib/strlcat.c and
-   lib/strlcpy.c are in the public domain.
+   backends/shrinkfile.c, frontends/scanspool.in, lib/concat.c,
+   lib/inet_aton.c, lib/inet_ntoa.c, lib/pread.c, lib/pwrite.c,
+   lib/setenv.c, lib/seteuid.c, lib/strlcat.c and lib/strlcpy.c are in
+   the public domain.
 
    lib/snprintf.c may be used for any purpose as long as the author's
    notice remains intact in all source code distributions.

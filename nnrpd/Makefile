@@ -193,7 +193,7 @@ nnrpd.o: nnrpd.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/defines.h ../include/inn/options.h \
-  ../include/portable/alloca.h ../include/clibrary.h ../include/config.h \
+  ../include/clibrary.h ../include/config.h \
   ../include/inn/macros.h ../include/portable/stdbool.h \
   ../include/portable/setproctitle.h ../include/portable/macros.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \

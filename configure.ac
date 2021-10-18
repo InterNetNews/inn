@@ -314,14 +314,6 @@ dnl obsolete (darwin13 is Mavericks, OS X 10.9).
 *-darwin[[0-9]].*|*-darwin1[[0-2]].*)
     LDFLAGS="$LDFLAGS -multiply_defined suppress"
     ;;
-
-dnl From Boyd Gerber <gerberb@zenez.com>, needed in some cases to compile
-dnl the bison-generated parser for innfeed.conf.
-*UnixWare*|*unixware*|*-sco3*)
-    if test x"$GCC" != xyes ; then
-        CFLAGS="${CFLAGS} -Kalloca"
-        CC_WARNINGS="${CC_WARNINGS} -Kalloca"
-    fi
 esac
 
 dnl Whether to add hardening flags to the build.  Ideally, this should just
@@ -568,7 +560,6 @@ INN_MACRO_IOV_MAX
 INN_MACRO_SUN_LEN
 
 dnl Checks for library functions.
-AC_FUNC_ALLOCA
 INN_FUNC_GETADDRINFO_ADDRCONFIG
 INN_FUNC_INET_NTOA
 INN_FUNC_SNPRINTF

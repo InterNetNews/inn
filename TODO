@@ -674,12 +674,6 @@ Long-Term Projects
   should be possible once we have a history API that allows changing the
   storage location of an article in-place.
 
-* Set up the infrastructure required so that INN can use alloca.  This
-  would significantly decrease the number of calls to malloc needed and
-  would be a lot more convenient.  alloca is now available, but most
-  programs still need to call alloca_free in their main loops before we
-  can use it in the various libraries.
-
 * Support building in a separate directory than the source tree.  It may
   be best to just support this via lndir rather than try to do it in
   configure, but it would be ideal to add support for this to the autoconf

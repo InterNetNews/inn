@@ -933,35 +933,13 @@ having trouble compiling INN in the first place.
 
 Subject: 5.1. INN won't compile on SCO OpenServer
 
-On SCO OpenServer, the default cc requires -O be given when -Kalloca is
-given (which is added by default by configure since the parsers generated
-by bison need it).  However, there appears to be a bug in the compiler
-that causes it to miscompile nnrpd/commands.c under -O, generating the
-error:
-
-    Assembler: commands.c
-            aline 1505      : Syntax error
-
-I had to get around this by cd'ing into nnrpd, running:
-
-    make COPT=-g commands.o
-
-and then cd'ing back to the top level and running make again.  On
-OpenServer, to build with cc, you have to use:
-
-    env CC=cc CFLAGS=-O ./configure --with-sendmail=/usr/lib/sendmail
-
-Building under gcc is cleaner, but of course if you want to use
---with-perl you want to build with the same compiler that you built Perl
-with.
-
-It's also worth noting that with a shared Perl library, Perl on this
-platform doesn't apparently generate the right link magic to include the
-path to the dynamic Perl libraries.  You need to either set LD_RUN_PATH
-before building or LD_LIBRARY_PATH before running any binaries so that
-they can find the Perl libraries.  (The former is preferred, since then
-the path is encoded into the binaries and you don't have to remember to
-set LD_LIBRARY_PATH later.)
+On SCO OpenServer, it's worth noting that with a shared Perl library,
+Perl on this platform doesn't apparently generate the right link magic
+to include the path to the dynamic Perl libraries.  You need to either
+set LD_RUN_PATH before building or LD_LIBRARY_PATH before running any
+binaries so that they can find the Perl libraries.  (The former is
+preferred, since then the path is encoded into the binaries and you
+don't have to remember to set LD_LIBRARY_PATH later.)
 
 ------------------------------
 

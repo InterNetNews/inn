@@ -15,10 +15,6 @@
 #include <ctype.h>
 #include <syslog.h>
 
-#if defined(_HPUX_SOURCE)
-# include <alloca.h>
-#endif
-  
 #include "inn/messages.h"
 #include "inn/libinn.h"
 

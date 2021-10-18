@@ -6,7 +6,6 @@
 */
 
 #include "config.h"
-#include "portable/alloca.h"
 #include "clibrary.h"
 #include "portable/setproctitle.h"
 #include "portable/socket.h"
@@ -1450,7 +1449,6 @@ main(int argc, char *argv[])
     /* Main dispatch loop. */
     for (timeout = innconf->initialtimeout, av = NULL, ac = 0; ;
 			timeout = clienttimeout) {
-        alloca_free();
 	TMRstart(TMR_NNTPWRITE);
 	fflush(stdout);
 	TMRstop(TMR_NNTPWRITE);

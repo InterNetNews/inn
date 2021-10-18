@@ -26,14 +26,14 @@ SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
 	      	xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = alloca.c asprintf.c fseeko.c ftello.c getaddrinfo.c	   \
+EXTRA_SOURCES = asprintf.c fseeko.c ftello.c getaddrinfo.c		   \
 		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
 		inet_ntop.c mkstemp.c pread.c pwrite.c                     \
 	        reallocarray.c sd-daemon.c setenv.c                        \
 		seteuid.c setproctitle.c snprintf.c strcasecmp.c strlcat.c \
 		strlcpy.c strspn.c strtok.c symlink.c
 
-OBJECTS       = $(LIBOBJS) $(ALLOCA) $(SOURCES:.c=.o)
+OBJECTS       = $(LIBOBJS) $(SOURCES:.c=.o)
 LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
@@ -525,10 +525,6 @@ xwrite.o: xwrite.c ../include/config.h ../include/inn/defines.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/portable/stdbool.h ../include/portable/uio.h \
   ../include/inn/xwrite.h
-alloca.o: alloca.c ../include/config.h ../include/inn/defines.h \
-  ../include/inn/system.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/defines.h ../include/inn/options.h
 asprintf.o: asprintf.c ../include/config.h ../include/inn/defines.h \
   ../include/inn/system.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/portable-stdbool.h \

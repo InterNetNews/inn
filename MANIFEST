@@ -430,7 +430,6 @@ include/inn/xmalloc.h                 Header file for allocation functions
 include/inn/xwrite.h                  Header file for partial write functions
 include/innperl.h                     Header file for embedded Perl
 include/portable                      Portability wrappers (Directory)
-include/portable/alloca.h             alloca replacement header
 include/portable/getaddrinfo.h        getaddrinfo replacement header
 include/portable/getnameinfo.h        getnameinfo replacement header
 include/portable/macros.h             Set of portability macros
@@ -496,7 +495,6 @@ innfeed/tape.h                        Public interface to the Tape class
 innfeed/testListener.pl               Script to hand articles to innfeed
 lib                                   INN library routines (Directory)
 lib/Makefile                          Makefile for library
-lib/alloca.c                          alloca replacement
 lib/argparse.c                        Functions for parsing arguments
 lib/artnumber.c                       Manipulation of article numbers
 lib/asprintf.c                        asprintf replacement
