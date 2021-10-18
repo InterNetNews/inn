@@ -46,6 +46,11 @@ I<tlscafile> for additional certificates.
 
 =item *
 
+Added support for the new S<OpenSSL 3.0.0> API, which deprecated a
+few functions.
+
+=item *
+
 The F<inn.conf> default value for I<tlsprotocols> no longer contains
 TLS versions 1.0 and 1.1, which have been deprecated by S<RFC 8996>.
 
