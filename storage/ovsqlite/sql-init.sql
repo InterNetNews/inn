@@ -72,7 +72,7 @@ create table groupinfo (
 create table artinfo (
     groupid integer
         references groupinfo (groupid)
-	    on update cascade
+            on update cascade
             on delete restrict,
     artnum integer,
     arrived integer

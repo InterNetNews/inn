@@ -55,7 +55,6 @@
 ** OVBUFF_SYNC_COUNT updates.
 */
 #define OVBUFF_SYNC_COUNT (innconf->icdsynccount * 10 + 1)
-/* #define OVBUFF_SYNC_COUNT	1 */
 
 /* ovbuff header */
 #define OVBUFFMASIZ 8

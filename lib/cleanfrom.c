@@ -9,9 +9,9 @@
 
 /*
 **  Clean up a from line, making the following transformations:
-**	address			address
-**	address (stuff)		address
-**	stuff <address>		address
+**    address          address
+**    address (stuff)  address
+**    stuff <address>  address
 */
 void
 HeaderCleanFrom(char *from)

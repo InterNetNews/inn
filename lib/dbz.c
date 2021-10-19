@@ -94,10 +94,10 @@
 /*
  * "LIA" = "leave it alone unless you know what you're doing".
  *
- * DBZTEST      Generate a standalone program for testing and benchmarking
- * DEFSIZE	default table size (not as critical as in old dbz)
- * NMEMORY	number of days of memory for use in sizing new table (LIA)
- * MAXRUN	length of run which shifts to next table (see below) (LIA)
+ * DBZTEST    Generate a standalone program for testing and benchmarking
+ * DEFSIZE    Default table size (not as critical as in old dbz)
+ * NMEMORY    Number of days of memory for use in sizing new table (LIA)
+ * MAXRUN     Length of run which shifts to next table (see below) (LIA)
  */
 
 static int dbzversion = 6; /* for validating .dir file format */

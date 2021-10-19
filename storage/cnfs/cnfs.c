@@ -156,9 +156,9 @@ static char hextbl[] = {'0', '1', '2', '3', '4', '5', '6', '7',
 
 /*
 ** CNFSofft2hex -- Given an argument of type off_t, return
-**	a static ASCII string representing its value in hexadecimal.
+** a static ASCII string representing its value in hexadecimal.
 **
-**	If "leadingzeros" is true, the number returned will have leading 0's.
+** If "leadingzeros" is true, the number returned will have leading 0's.
 */
 
 static char *
@@ -388,7 +388,7 @@ CNFSflushallheads(void)
 
 /*
 ** CNFSReadFreeAndCycle() -- Read from disk the current values of CYCBUFF's
-**	free pointer and cycle number.  Return 1 on success, 0 otherwise.
+** free pointer and cycle number.  Return 1 on success, 0 otherwise.
 */
 
 static void
@@ -627,8 +627,8 @@ CNFSparse_groups_line(void)
 
 /*
 ** CNFSinit_disks -- Finish initializing cycbufftab
-**	Called by "innd" only -- we open (and keep) a read/write
-**	file descriptor for each CYCBUFF.
+** Called by "innd" only -- we open (and keep) a read/write
+** file descriptor for each CYCBUFF.
 **
 ** Calling this function repeatedly shouldn't cause any harm
 ** speed-wise or bug-wise, as long as the caller is accessing the
@@ -1028,9 +1028,9 @@ cnfs_mapcntl(void *p, size_t length, int flags)
 }
 
 /*
-**	Bit arithmetic by brute force.
+** Bit arithmetic by brute force.
 **
-**	XXXYYYXXX WARNING: the code below is not endian-neutral!
+** FIXME: the code below is not endian-neutral!
 */
 
 typedef unsigned long ULONG;
