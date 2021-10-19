@@ -983,7 +983,7 @@ CAFStartWriteFd(int fd, ARTNUM *artp, size_t size)
 }
 
 /*
-** write out TOC entries for the previous article.  Note that we do *not*
+** Write out TOC entries for the previous article.  Note that we do *not*
 ** (as was previously done) close the fd; this allows reuse of the fd to write
 ** another article to this CAF file w/o an (soemwhat expensive) open().
 */
@@ -1068,13 +1068,13 @@ CAFFinishArtWrite(int fd)
             return -1;
         }
     }
-#if 0
-    if (close(fd) < 0) {
-	CAFError(CAF_ERR_IO);
-	CAF_fd_write =0;
-	return -1;
-    }
-#endif
+    /* Do not close the fd().  See comment above.
+     *   if (close(fd) < 0) {
+     *       CAFError(CAF_ERR_IO);
+     *       CAF_fd_write =0;
+     *       return -1;
+     *   } */
+
     CAF_fd_write = 0;
     return 0;
 }

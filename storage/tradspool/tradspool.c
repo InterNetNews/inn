@@ -121,20 +121,6 @@ HashNGName(char *ng)
     return return_hash;
 }
 
-#if 0 /* XXX */
-/* compare two hashes */
-static int
-CompareHash(HASHEDNG *h1, HASHEDNG *h2) {
-    int i;
-    for (i = 0 ; i < HASHEDNGLEN ; ++i) {
-	if (h1->hash[i] != h2->hash[i]) {
-	    return h1->hash[i] - h2->hash[i];
-	}
-    }
-    return 0;
-}
-#endif
-
 /* Add a new newsgroup name to the NG table. */
 static void
 AddNG(char *ng, unsigned long number)
@@ -210,13 +196,6 @@ AddNG(char *ng, unsigned long number)
             /* entry in table already, so return */
             free(p);
             return;
-#if 0 /* XXX */
-	} else if (CompareHash(&ngtp->hash, &hash) == 0) {
-	    /* eep! we hit a hash collision. */
-            warn("tradspool: AddNG: hash collision %s/%s", ngtp->ngname, p);
-	    free(p);
-	    return;
-#endif
         } else {
             /* not found yet, so advance to next entry in chain */
             ngtpp = &(ngtp->next);

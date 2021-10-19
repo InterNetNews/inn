@@ -44,11 +44,6 @@ rifkin@uconn.edu
 	printf ("FILE %s LINE %i \"%s\"\n", __FILE__, __LINE__, TEXT); \
 	fflush(stdout);
 
-#if 0
-#define WRITEMSG
-#define WRITEVAR(X,Y)
-#endif
-
 
 int WriteArticle (char *, int, char *, char *, char *, int);
 
