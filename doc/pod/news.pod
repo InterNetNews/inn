@@ -80,6 +80,12 @@ about why it failed.
 
 =item *
 
+Fixed a bug in the buffindexed overview that prevented it from working
+on several systems, amongst them FreeBSD.  Unsupported, and useless,
+permission bits were given to semaphores.
+
+=item *
+
 Fixed the detection of library paths at configure time: multilib
 directories (F<lib32> or F<lib64>) are now also used if they exist,
 even it the system does not use multilib.  It will notably fix the
