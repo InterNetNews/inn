@@ -8,9 +8,9 @@
 #include "nnrpd.h"
 
 #if defined(HAVE_ZLIB)
-# define ZBUFSIZE 65536
-# define MEM_LEVEL 9
-# define WINDOW_BITS (-15)      /* Raw deflate. */
+#    define ZBUFSIZE    65536
+#    define MEM_LEVEL   9
+#    define WINDOW_BITS (-15) /* Raw deflate. */
 bool compression_layer_on = false;
 bool tls_compression_on = false;
 z_stream *zstream_in = NULL;
@@ -19,21 +19,23 @@ bool zstream_inflate_needed = false;
 bool zstream_flush_needed = false;
 unsigned char *zbuf_in = NULL;
 unsigned char *zbuf_out = NULL;
-size_t zbuf_in_size = NNTP_MAXLEN_COMMAND;  /* Initial size of the input
-                                             * buffer.  Can be reallocated. */
+size_t zbuf_in_size = NNTP_MAXLEN_COMMAND; /* Initial size of the input
+                                            * buffer.  Can be reallocated. */
 size_t zbuf_in_allocated = 0;
-size_t zbuf_out_size = ZBUFSIZE;  /* Initial size of the output buffer.
-                                   * Can be reallocated, when needed. */
+size_t zbuf_out_size = ZBUFSIZE; /* Initial size of the output buffer.
+                                  * Can be reallocated, when needed. */
 
 /*
 **  Wrappers for our memory management functions.
 */
-static voidpf zalloc(voidpf opaque UNUSED, uInt items, uInt size)
+static voidpf
+zalloc(voidpf opaque UNUSED, uInt items, uInt size)
 {
     return (voidpf) xcalloc(items, size);
 }
 
-static void zfree(voidpf opaque UNUSED, voidpf address)
+static void
+zfree(voidpf opaque UNUSED, voidpf address)
 {
     free(address);
 }

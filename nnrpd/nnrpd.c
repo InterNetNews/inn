@@ -12,19 +12,19 @@
 #include <netdb.h>
 #include <signal.h>
 #if defined(INN_BSDI_HOST)
-# include <netinet/tcp.h>
+#    include <netinet/tcp.h>
 #endif
 
 #if HAVE_GETSPNAM
-# include <shadow.h>
+#    include <shadow.h>
 #endif
 #include <sys/wait.h>
 
 #include "inn/innconf.h"
 #include "inn/libinn.h"
 #include "inn/messages.h"
-#include "inn/network.h"
 #include "inn/network-innbind.h"
+#include "inn/network.h"
 #include "inn/newsuser.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
@@ -40,18 +40,18 @@ extern SSL *tls_conn;
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
 bool encryption_layer_on = false;
-#endif 
+#endif
 
-static void Usage(void) __attribute__ ((__noreturn__));
+static void Usage(void) __attribute__((__noreturn__));
 
 /*
 **  If we have getloadavg, include the appropriate header file.  Otherwise,
 **  just assume that we always have a load of 0.
 */
 #if HAVE_GETLOADAVG
-# if HAVE_SYS_LOADAVG_H
-#  include <sys/loadavg.h>
-# endif
+#    if HAVE_SYS_LOADAVG_H
+#        include <sys/loadavg.h>
+#    endif
 #else
 static int
 getloadavg(double loadavg[], int nelem)
@@ -65,59 +65,60 @@ getloadavg(double loadavg[], int nelem)
 #endif
 
 
-#define MAXPATTERNDEFINE	10
+#define MAXPATTERNDEFINE 10
 
-#define CMDany		-1
+#define CMDany -1
 
 
 typedef struct _CMDENT {
-    const char *        Name;
-    void                (*Function)(int, char **);
-    bool                Needauth;
-    int                 Minac;
-    int                 Maxac;
-    bool                Stripspaces;
-    const char *        Help;
+    const char *Name;
+    void (*Function)(int, char **);
+    bool Needauth;
+    int Minac;
+    int Maxac;
+    bool Stripspaces;
+    const char *Help;
 } CMDENT;
 
 
-char	*ACTIVE = NULL;
-char	*ACTIVETIMES = NULL;
-char	*HISTORY = NULL;
-char	*NEWSGROUPS = NULL;
-char	*NNRPACCESS = NULL;
+char *ACTIVE = NULL;
+char *ACTIVETIMES = NULL;
+char *HISTORY = NULL;
+char *NEWSGROUPS = NULL;
+char *NNRPACCESS = NULL;
 
-static char 	*LocalLogFileName = NULL;
-static char 	*LocalLogDirName;
+static char *LocalLogFileName = NULL;
+static char *LocalLogDirName;
 
-static double	STATstart;
-static double	STATfinish;
-static char	*PushedBack;
-static sig_atomic_t	ChangeTrace;
-bool	DaemonMode = false;
-bool	ForeGroundMode = false;
-static const char 	*HostErrorStr;
-bool GetHostByAddr = true;      /* Formerly DO_NNRP_GETHOSTBYADDR. */
+static double STATstart;
+static double STATfinish;
+static char *PushedBack;
+static sig_atomic_t ChangeTrace;
+bool DaemonMode = false;
+bool ForeGroundMode = false;
+static const char *HostErrorStr;
+bool GetHostByAddr = true; /* Formerly DO_NNRP_GETHOSTBYADDR. */
 const char *NNRPinstance = "";
 
 /* Default values for the syntaxchecks parameter in inn.conf. */
 bool laxmid = false;
 
 #ifdef DO_PERL
-bool   PerlLoaded = false;
+bool PerlLoaded = false;
 #endif
 
 #ifdef DO_PYTHON
 bool PY_use_dynamic = false;
 #endif
 
-static char	CMDfetchhelp[] = "[message-ID|number]";
+static char CMDfetchhelp[] = "[message-ID|number]";
 
 
 /*
 **  { command base name, function to call, need authentication,
 **    min args, max args, strip spaces, help string }
 */
+/* clang-format off */
 static CMDENT	CMDtable[] = {
     {	"ARTICLE",	CMDfetch,	true,	1,	2,      true,
 	CMDfetchhelp },
@@ -192,15 +193,10 @@ static CMDENT	CMDtable[] = {
     {	NULL,           CMD_unimp,      false,  0,      0,      true,
         NULL }
 };
-
+/* clang-format on */
 
 static const char *const timer_name[] = {
-    "idle",
-    "newnews",
-    "readart",
-    "checkart",
-    "nntpread",
-    "nntpwrite",
+    "idle", "newnews", "readart", "checkart", "nntpread", "nntpwrite",
 };
 
 
@@ -210,57 +206,63 @@ static const char *const timer_name[] = {
 void
 ExitWithStats(int x, bool readconf)
 {
-    double		usertime;
-    double		systime;
+    double usertime;
+    double systime;
 
     line_free(&NNTPline);
     fflush(stdout);
     STATfinish = TMRnow_double();
     if (GetResourceUsage(&usertime, &systime) < 0) {
-	usertime = 0;
-	systime = 0;
+        usertime = 0;
+        systime = 0;
     }
 
     GRPreport();
     if (ARTcount)
-        syslog(L_NOTICE, "%s exit articles %ld groups %ld", 
-    	    Client.host, ARTcount, GRPcount);
+        syslog(L_NOTICE, "%s exit articles %ld groups %ld", Client.host,
+               ARTcount, GRPcount);
     if (POSTreceived || POSTrejected)
-	syslog(L_NOTICE, "%s posts received %ld rejected %ld",
-	   Client.host, POSTreceived, POSTrejected);
+        syslog(L_NOTICE, "%s posts received %ld rejected %ld", Client.host,
+               POSTreceived, POSTrejected);
     syslog(L_NOTICE, "%s times user %.3f system %.3f idle %.3f elapsed %.3f",
-	Client.host, usertime, systime, IDLEtime, STATfinish - STATstart);
+           Client.host, usertime, systime, IDLEtime, STATfinish - STATstart);
     /* Tracking code - Make entries in the logfile(s) to show that we have
      * finished with this session. */
     if (!readconf && PERMaccessconf && PERMaccessconf->readertrack) {
-	syslog(L_NOTICE, "%s Tracking Disabled (%s)", Client.host, Username);
-	if (LLOGenable) {
-		fprintf(locallog, "%s Tracking Disabled (%s)\n", Client.host, Username);
-		fclose(locallog);
-		syslog(L_NOTICE,"%s Local Logging ends (%s) %s", Client.host, Username, LocalLogFileName);
-	}
+        syslog(L_NOTICE, "%s Tracking Disabled (%s)", Client.host, Username);
+        if (LLOGenable) {
+            fprintf(locallog, "%s Tracking Disabled (%s)\n", Client.host,
+                    Username);
+            fclose(locallog);
+            syslog(L_NOTICE, "%s Local Logging ends (%s) %s", Client.host,
+                   Username, LocalLogFileName);
+        }
     }
     if (ARTget)
         syslog(L_NOTICE, "%s artstats get %ld time %ld size %ld", Client.host,
-            ARTget, ARTgettime, ARTgetsize);
-    if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats && OVERcount)
-        syslog(L_NOTICE, "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz %ld seek %ld get %ld artcheck %ld", Client.host,
-            OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize, OVERdbz, OVERseek, OVERget, OVERartcheck);
+               ARTget, ARTgettime, ARTgetsize);
+    if (!readconf && PERMaccessconf && PERMaccessconf->nnrpdoverstats
+        && OVERcount)
+        syslog(L_NOTICE,
+               "%s overstats count %ld hit %ld miss %ld time %ld size %ld dbz "
+               "%ld seek %ld get %ld artcheck %ld",
+               Client.host, OVERcount, OVERhit, OVERmiss, OVERtime, OVERsize,
+               OVERdbz, OVERseek, OVERget, OVERartcheck);
 
 #ifdef HAVE_OPENSSL
-     if (tls_conn) {
+    if (tls_conn) {
         SSL_shutdown(tls_conn);
         SSL_free(tls_conn);
         tls_conn = NULL;
-     } 
+    }
 #endif
 
 #ifdef HAVE_SASL
     if (sasl_conn) {
-	sasl_dispose(&sasl_conn);
-	sasl_conn = NULL;
-	sasl_ssf = 0;
-	sasl_maxout = NNTP_MAXLEN_COMMAND;
+        sasl_dispose(&sasl_conn);
+        sasl_conn = NULL;
+        sasl_ssf = 0;
+        sasl_maxout = NNTP_MAXLEN_COMMAND;
     }
     sasl_done();
 #endif /* HAVE_SASL */
@@ -276,15 +278,15 @@ ExitWithStats(int x, bool readconf)
     }
 #endif /* HAVE_ZLIB */
 
-     if (DaemonMode) {
-     	shutdown(STDIN_FILENO, 2);
-     	shutdown(STDOUT_FILENO, 2);
-     	shutdown(STDERR_FILENO, 2);
- 	close(STDIN_FILENO);
- 	close(STDOUT_FILENO);
- 	close(STDERR_FILENO);
-     }
-    
+    if (DaemonMode) {
+        shutdown(STDIN_FILENO, 2);
+        shutdown(STDOUT_FILENO, 2);
+        shutdown(STDERR_FILENO, 2);
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+
     OVclose();
     SMshutdown();
 
@@ -293,7 +295,7 @@ ExitWithStats(int x, bool readconf)
 #endif /* DO_PYTHON */
 
     if (History)
-	HISclose(History);
+        HISclose(History);
 
     if (innconf->timer != 0) {
         TMRsummary(Client.host, timer_name);
@@ -301,7 +303,7 @@ ExitWithStats(int x, bool readconf)
     }
 
     if (LocalLogFileName != NULL)
-	free(LocalLogFileName);
+        free(LocalLogFileName);
     closelog();
     exit(x);
 }
@@ -313,47 +315,46 @@ ExitWithStats(int x, bool readconf)
 void
 CMDhelp(int ac UNUSED, char *av[] UNUSED)
 {
-    CMDENT	*cp;
-    char	*p, *q;
+    CMDENT *cp;
+    char *p, *q;
     static const char *newsmaster = NEWSMASTER;
 
     Reply("%d Legal commands\r\n", NNTP_INFO_HELP);
     for (cp = CMDtable; cp->Name; cp++) {
         if (cp->Function == CMD_unimp)
             continue;
-	if (cp->Help == NULL)
-	    Printf("  %s\r\n", cp->Name);
-	else
-	    Printf("  %s %s\r\n", cp->Name, cp->Help);
+        if (cp->Help == NULL)
+            Printf("  %s\r\n", cp->Name);
+        else
+            Printf("  %s %s\r\n", cp->Name, cp->Help);
     }
     if (PERMaccessconf && (VirtualPathlen > 0)) {
-	if (PERMaccessconf->newsmaster) {
-	    if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
-		Printf("Report problems to <%s@%s>.\r\n",
-		    PERMaccessconf->newsmaster, PERMaccessconf->domain);
-	    } else {
-		Printf("Report problems to <%s>.\r\n",
-		    PERMaccessconf->newsmaster);
-	    }
-	} else {
-	    /* Sigh, pickup from newsmaster anyway. */
-	    if ((p = strchr(newsmaster, '@')) == NULL)
-		Printf("Report problems to <%s@%s>.\r\n",
-		    newsmaster, PERMaccessconf->domain);
-	    else {
+        if (PERMaccessconf->newsmaster) {
+            if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
+                Printf("Report problems to <%s@%s>.\r\n",
+                       PERMaccessconf->newsmaster, PERMaccessconf->domain);
+            } else {
+                Printf("Report problems to <%s>.\r\n",
+                       PERMaccessconf->newsmaster);
+            }
+        } else {
+            /* Sigh, pickup from newsmaster anyway. */
+            if ((p = strchr(newsmaster, '@')) == NULL)
+                Printf("Report problems to <%s@%s>.\r\n", newsmaster,
+                       PERMaccessconf->domain);
+            else {
                 q = xstrndup(newsmaster, p - newsmaster);
-		Printf("Report problems to <%s@%s>.\r\n",
-		    q, PERMaccessconf->domain);
-		free(q);
-	    }
-	}
+                Printf("Report problems to <%s@%s>.\r\n", q,
+                       PERMaccessconf->domain);
+                free(q);
+            }
+        }
     } else {
-	if (strchr(newsmaster, '@') == NULL)
-	    Printf("Report problems to <%s@%s>.\r\n",
-		newsmaster, innconf->fromhost);
-	else
-	    Printf("Report problems to <%s>.\r\n",
-		newsmaster);
+        if (strchr(newsmaster, '@') == NULL)
+            Printf("Report problems to <%s@%s>.\r\n", newsmaster,
+                   innconf->fromhost);
+        else
+            Printf("Report problems to <%s>.\r\n", newsmaster);
     }
     Printf(".\r\n");
 }
@@ -410,26 +411,27 @@ CMDcapabilities(int ac, char *av[])
                 Printf(" USER");
 #ifdef HAVE_OPENSSL
             } else {
-# ifdef HAVE_SASL
+#    ifdef HAVE_SASL
                 /* Remove unsecure PLAIN, LOGIN and EXTERNAL SASL mechanisms,
-                 * if compiled with TLS support and a TLS layer is not active. */
+                 * if compiled with TLS support and a TLS layer is not active.
+                 */
                 if (mechlist != NULL) {
                     char *p;
 
                     if ((p = strstr(mechlist, " PLAIN")) != NULL
                         && (p[6] == '\0' || p[6] == ' ')) {
-                        memmove(p, p+6, strlen(p)-5);
+                        memmove(p, p + 6, strlen(p) - 5);
                     }
                     if ((p = strstr(mechlist, " LOGIN")) != NULL
                         && (p[6] == '\0' || p[6] == ' ')) {
-                        memmove(p, p+6, strlen(p)-5);
+                        memmove(p, p + 6, strlen(p) - 5);
                     }
                     if ((p = strstr(mechlist, " EXTERNAL")) != NULL
                         && (p[9] == '\0' || p[9] == ' ')) {
-                        memmove(p, p+9, strlen(p)-8);
+                        memmove(p, p + 9, strlen(p) - 8);
                     }
                 }
-# endif /* HAVE_SASL */
+#    endif /* HAVE_SASL */
             }
 #endif /* HAVE_OPENSSL */
 #ifdef HAVE_SASL
@@ -452,14 +454,15 @@ CMDcapabilities(int ac, char *av[])
     if (PERMcanread) {
         Printf("HDR\r\n");
     }
-    
+
     if (PERMaccessconf->allowihave && PERMcanpost) {
         Printf("IHAVE\r\n");
     }
 
-    Printf("LIST ACTIVE ACTIVE.TIMES COUNTS DISTRIB.PATS DISTRIBUTIONS"
-           " HEADERS MODERATORS MOTD NEWSGROUPS OVERVIEW.FMT SUBSCRIPTIONS\r\n");
-    
+    Printf(
+        "LIST ACTIVE ACTIVE.TIMES COUNTS DISTRIB.PATS DISTRIBUTIONS"
+        " HEADERS MODERATORS MOTD NEWSGROUPS OVERVIEW.FMT SUBSCRIPTIONS\r\n");
+
     if (PERMaccessconf->allownewnews && PERMcanread) {
         Printf("NEWNEWS\r\n");
     }
@@ -488,9 +491,9 @@ CMDcapabilities(int ac, char *av[])
     /* A TLS layer is not active, a compression layer is not active,
      * and the client is not already authenticated. */
     if (!encryption_layer_on
-# if defined(HAVE_ZLIB)
+#    if defined(HAVE_ZLIB)
         && !compression_layer_on
-# endif /* HAVE_ZLIB */
+#    endif /* HAVE_ZLIB */
         && (!PERMauthorized || PERMneedauth || PERMcanauthenticate)) {
         Printf("STARTTLS\r\n");
     }
@@ -510,8 +513,8 @@ CMDcapabilities(int ac, char *av[])
 void
 CMD_unimp(int ac UNUSED, char *av[])
 {
-    Reply("%d \"%s\" not implemented; try \"HELP\"\r\n",
-        NNTP_ERR_COMMAND, av[0]);
+    Reply("%d \"%s\" not implemented; try \"HELP\"\r\n", NNTP_ERR_COMMAND,
+          av[0]);
 }
 
 
@@ -542,8 +545,8 @@ Address2Name(struct sockaddr *sa, socklen_t len, char *hostname, size_t size)
     /* Get the official hostname, store it away. */
     ret = getnameinfo(sa, len, hostname, size, NULL, 0, NI_NAMEREQD);
     if (ret != 0) {
-	HostErrorStr = gai_strerror(ret);
-	return false;
+        HostErrorStr = gai_strerror(ret);
+        return false;
     }
 
     /* Get addresses for this host. */
@@ -552,8 +555,8 @@ Address2Name(struct sockaddr *sa, socklen_t len, char *hostname, size_t size)
     hints.ai_socktype = SOCK_STREAM;
     ret = getaddrinfo(hostname, NULL, &hints, &ai);
     if (ret != 0) {
-	HostErrorStr = gai_strerror(ret);
-	return false;
+        HostErrorStr = gai_strerror(ret);
+        return false;
     }
 
     /* Make sure one of those addresses is the address we got. */
@@ -571,8 +574,8 @@ Address2Name(struct sockaddr *sa, socklen_t len, char *hostname, size_t size)
                 *p = tolower((unsigned char) *p);
         return true;
     } else {
-	HostErrorStr = MISMATCH;
-	return false;
+        HostErrorStr = MISMATCH;
+        return false;
     }
 }
 
@@ -597,62 +600,64 @@ GetClientInfo(unsigned short port)
     length = sizeof(ssc);
     if (getpeername(STDIN_FILENO, sac, &length) < 0) {
         if (!isatty(STDIN_FILENO)) {
-	    sysnotice("? can't getpeername");
-	    Reply("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
-	    ExitWithStats(1, true);
-	}
+            sysnotice("? can't getpeername");
+            Reply("%d Can't get your name.  Goodbye!\r\n", NNTP_ERR_ACCESS);
+            ExitWithStats(1, true);
+        }
         strlcpy(Client.host, "localhost", sizeof(Client.host));
     } else {
-	/* Figure out client's IP address/hostname. */
-	HostErrorStr = default_host_error;
+        /* Figure out client's IP address/hostname. */
+        HostErrorStr = default_host_error;
         if (!network_sockaddr_sprint(Client.ip, sizeof(Client.ip), sac)) {
             notice("? can't get client numeric address: %s", HostErrorStr);
             Reply("%d Can't get your numeric address.  Goodbye!\r\n",
-                   NNTP_ERR_ACCESS);
-	    ExitWithStats(1, true);
-	}
-	if (GetHostByAddr) {
+                  NNTP_ERR_ACCESS);
+            ExitWithStats(1, true);
+        }
+        if (GetHostByAddr) {
             HostErrorStr = default_host_error;
             if (!Address2Name(sac, length, Client.host, sizeof(Client.host))) {
                 notice("? reverse lookup for %s failed: %s -- using IP"
-                       " address for access", Client.ip, HostErrorStr);
-	        strlcpy(Client.host, Client.ip, sizeof(Client.host));
-	    }
-	} else {
+                       " address for access",
+                       Client.ip, HostErrorStr);
+                strlcpy(Client.host, Client.ip, sizeof(Client.host));
+            }
+        } else {
             strlcpy(Client.host, Client.ip, sizeof(Client.host));
         }
 
-	/* Figure out server's IP address/hostname. */
+        /* Figure out server's IP address/hostname. */
         length = sizeof(sss);
-	if (getsockname(STDIN_FILENO, sas, &length) < 0) {
-	    sysnotice("%s can't getsockname", Client.host);
-	    Reply("%d Can't figure out where you connected to.  Goodbye!\r\n",
-                   NNTP_ERR_ACCESS);
-	    ExitWithStats(1, true);
-	}
-	HostErrorStr = default_host_error;
+        if (getsockname(STDIN_FILENO, sas, &length) < 0) {
+            sysnotice("%s can't getsockname", Client.host);
+            Reply("%d Can't figure out where you connected to.  Goodbye!\r\n",
+                  NNTP_ERR_ACCESS);
+            ExitWithStats(1, true);
+        }
+        HostErrorStr = default_host_error;
         size = sizeof(Client.serverip);
         if (!network_sockaddr_sprint(Client.serverip, size, sas)) {
             notice("? can't get server numeric address: %s", HostErrorStr);
             Reply("%d Can't get my own numeric address.  Goodbye!\r\n",
-                   NNTP_ERR_ACCESS);
-	    ExitWithStats(1, true);
-	}
-	if (GetHostByAddr) {
-	    HostErrorStr = default_host_error;
+                  NNTP_ERR_ACCESS);
+            ExitWithStats(1, true);
+        }
+        if (GetHostByAddr) {
+            HostErrorStr = default_host_error;
             size = sizeof(Client.serverhost);
             if (!Address2Name(sas, length, Client.serverhost, size)) {
                 notice("? reverse lookup for %s failed: %s -- using IP"
-                       " address for access", Client.serverip, HostErrorStr);
-	        strlcpy(Client.serverhost, Client.serverip,
+                       " address for access",
+                       Client.serverip, HostErrorStr);
+                strlcpy(Client.serverhost, Client.serverip,
                         sizeof(Client.serverhost));
-	    }
-	} else {
+            }
+        } else {
             strlcpy(Client.serverhost, Client.serverip,
                     sizeof(Client.serverhost));
         }
 
-	/* Get port numbers. */
+        /* Get port numbers. */
         Client.port = network_sockaddr_port(sac);
         Client.serverport = network_sockaddr_port(sas);
     }
@@ -662,7 +667,8 @@ GetClientInfo(unsigned short port)
      * of overviews and slow answers on some architectures (like BSD/OS
      * where TCP delayed acknowledgements are enabled). */
     int nodelay = 1;
-    setsockopt(STDIN_FILENO, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+    setsockopt(STDIN_FILENO, IPPROTO_TCP, TCP_NODELAY, &nodelay,
+               sizeof(nodelay));
 #endif
 
     notice("%s (%s) connect - port %u", Client.host, Client.ip, port);
@@ -706,8 +712,8 @@ write_buffer(const char *buff, ssize_t len)
 
             if (!(r == Z_OK || r == Z_BUF_ERROR || r == Z_STREAM_END)) {
                 sysnotice("deflate() failed: %d; %s", r,
-                          zstream_out->msg != NULL ? zstream_out->msg :
-                          "no detail");
+                          zstream_out->msg != NULL ? zstream_out->msg
+                                                   : "no detail");
                 return;
             }
         } while (r == Z_OK && zstream_out->avail_out == 0);
@@ -719,8 +725,8 @@ write_buffer(const char *buff, ssize_t len)
 #endif /* HAVE_ZLIB */
 
     while (len > 0) {
-	const char *out;
-	unsigned outlen;
+        const char *out;
+        unsigned outlen;
 
 #if defined(HAVE_SASL)
         if (sasl_conn != NULL && sasl_ssf > 0) {
@@ -738,42 +744,42 @@ write_buffer(const char *buff, ssize_t len)
             }
         } else
 #endif /* HAVE_SASL */
-	{
-	    /* Output the entire unencoded string. */
-	    n = len;
-	    out = p;
-	    outlen = len;
-	}
+        {
+            /* Output the entire unencoded string. */
+            n = len;
+            out = p;
+            outlen = len;
+        }
 
-	len -= n;
-	p += n;
+        len -= n;
+        p += n;
 
 #ifdef HAVE_OPENSSL
-	if (tls_conn) {
+        if (tls_conn) {
             int r;
 
-Again:
-	    r = SSL_write(tls_conn, out, outlen);
-	    switch (SSL_get_error(tls_conn, r)) {
-	    case SSL_ERROR_NONE:
-	    case SSL_ERROR_SYSCALL:
-		break;
-	    case SSL_ERROR_WANT_WRITE:
-		goto Again;
-		break;
-	    case SSL_ERROR_SSL:
-		SSL_shutdown(tls_conn);
-		tls_conn = NULL;
-		errno = ECONNRESET;
-		break;
-	    case SSL_ERROR_ZERO_RETURN:
-		break;
-	    }
-	} else
+        Again:
+            r = SSL_write(tls_conn, out, outlen);
+            switch (SSL_get_error(tls_conn, r)) {
+            case SSL_ERROR_NONE:
+            case SSL_ERROR_SYSCALL:
+                break;
+            case SSL_ERROR_WANT_WRITE:
+                goto Again;
+                break;
+            case SSL_ERROR_SSL:
+                SSL_shutdown(tls_conn);
+                tls_conn = NULL;
+                errno = ECONNRESET;
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                break;
+            }
+        } else
 #endif /* HAVE_OPENSSL */
-	    do {
-		n = write(STDIN_FILENO, out, outlen);
-	    } while (n == -1 && errno == EINTR);
+            do {
+                n = write(STDIN_FILENO, out, outlen);
+            } while (n == -1 && errno == EINTR);
     }
 
     TMRstop(TMR_NNTPWRITE);
@@ -792,12 +798,12 @@ VPrintf(const char *fmt, va_list args, int dotrace)
     len = vsnprintf(buff, sizeof(buff), fmt, args);
     if (len < 0)
         len = 0;
-    else if ((size_t)len >= sizeof(buff))
+    else if ((size_t) len >= sizeof(buff))
         len = sizeof(buff) - 1;
     write_buffer(buff, len);
 
     if (dotrace && Tracing) {
-	int oerrno = errno;
+        int oerrno = errno;
 
         /* Copy output, but strip trailing CR-LF.  Note we're assuming here
          * that no output line can ever be longer than 2045 characters. */
@@ -840,8 +846,8 @@ Printf(const char *fmt, ...)
     /* Last line of a multi-line data block response.
      * Time to flush the compressed output stream.
      * Check that only when the compression layer is active. */
-    if (compression_layer_on &&
-        strlen(fmt) == 3 && strcasecmp(fmt, ".\r\n") == 0) {
+    if (compression_layer_on && strlen(fmt) == 3
+        && strcasecmp(fmt, ".\r\n") == 0) {
         zstream_flush_needed = true;
     }
 #endif /* HAVE_ZLIB */
@@ -853,9 +859,9 @@ Printf(const char *fmt, ...)
 
 
 #ifdef HAVE_SIGACTION
-#define NO_SIGACTION_UNUSED UNUSED
+#    define NO_SIGACTION_UNUSED UNUSED
 #else
-#define NO_SIGACTION_UNUSED
+#    define NO_SIGACTION_UNUSED
 #endif
 
 
@@ -890,9 +896,9 @@ WaitChild(int s NO_SIGACTION_UNUSED)
     int pid;
 
     for (;;) {
-       pid = waitpid(-1, NULL, WNOHANG);
-       if (pid <= 0)
-       	    break;
+        pid = waitpid(-1, NULL, WNOHANG);
+        if (pid <= 0)
+            break;
     }
 #ifndef HAVE_SIGACTION
     xsignal(s, WaitChild);
@@ -903,32 +909,36 @@ WaitChild(int s NO_SIGACTION_UNUSED)
 static void
 SetupDaemon(void)
 {
-    bool                val;
+    bool val;
 
     val = true;
-    if (SMsetup(SM_PREOPEN, (void *)&val) && !SMinit()) {
-	syslog(L_NOTICE, "can't initialize storage method, %s", SMerrorstr);
-	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-	ExitWithStats(1, true);
+    if (SMsetup(SM_PREOPEN, (void *) &val) && !SMinit()) {
+        syslog(L_NOTICE, "can't initialize storage method, %s", SMerrorstr);
+        Reply("%d NNTP server unavailable.  Try later!\r\n",
+              NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
     }
     OVextra = overview_extra_fields(false);
     if (OVextra == NULL) {
-	/* overview_extra_fields() should already have logged something
-	 * useful. */
-	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-	ExitWithStats(1, true);
+        /* overview_extra_fields() should already have logged something
+         * useful. */
+        Reply("%d NNTP server unavailable.  Try later!\r\n",
+              NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
     }
     overhdr_xref = overview_index("Xref", OVextra);
     if (!OVopen(OV_READ)) {
-	/* This shouldn't really happen. */
-	syslog(L_NOTICE, "can't open overview %m");
-	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-	ExitWithStats(1, true);
+        /* This shouldn't really happen. */
+        syslog(L_NOTICE, "can't open overview %m");
+        Reply("%d NNTP server unavailable.  Try later!\r\n",
+              NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
     }
     if (!OVctl(OVCACHEKEEP, &val)) {
-	syslog(L_NOTICE, "can't enable overview cache %m");
-	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-	ExitWithStats(1, true);
+        syslog(L_NOTICE, "can't enable overview cache %m");
+        Reply("%d NNTP server unavailable.  Try later!\r\n",
+              NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
     }
 }
 
@@ -948,35 +958,35 @@ int
 main(int argc, char *argv[])
 {
     const char *name;
-    CMDENT		*cp;
-    char		buff[NNTP_MAXLEN_COMMAND];
-    char		**av;
-    int			ac;
-    READTYPE		r;
-    int                 i;
-    unsigned int        j;
-    char                **v;
-    char		*Reject;
-    int			timeout;
-    unsigned int	vid=0;
-    int 		count=123456789;
-    struct		timeval tv;
-    unsigned short	ListenPort = NNTP_PORT;
-    char                *ListenAddr = NULL;
-    char                *ListenAddr6 = NULL;
-    int			*lfds;
-    fd_set              lfdset, lfdsetread;
-    unsigned int        lfdcount;
-    int                 lfdreadcount;
-    bool                lfdokay;
-    int                 lfdmax = 0;
-    int                 fd = -1;
-    pid_t		pid = -1;
-    FILE                *pidfile;
-    int			clienttimeout;
-    char		*ConfFile = NULL;
-    char                *path;
-    bool                validcommandtoolong;
+    CMDENT *cp;
+    char buff[NNTP_MAXLEN_COMMAND];
+    char **av;
+    int ac;
+    READTYPE r;
+    int i;
+    unsigned int j;
+    char **v;
+    char *Reject;
+    int timeout;
+    unsigned int vid = 0;
+    int count = 123456789;
+    struct timeval tv;
+    unsigned short ListenPort = NNTP_PORT;
+    char *ListenAddr = NULL;
+    char *ListenAddr6 = NULL;
+    int *lfds;
+    fd_set lfdset, lfdsetread;
+    unsigned int lfdcount;
+    int lfdreadcount;
+    bool lfdokay;
+    int lfdmax = 0;
+    int fd = -1;
+    pid_t pid = -1;
+    FILE *pidfile;
+    int clienttimeout;
+    char *ConfFile = NULL;
+    char *path;
+    bool validcommandtoolong;
 
     int respawn = 0;
 
@@ -994,14 +1004,14 @@ main(int argc, char *argv[])
      * the name of the program. */
     name = argv[0];
     if (name == NULL || *name == '\0')
-	name = "nnrpd";
+        name = "nnrpd";
     else {
-	const char *p;
+        const char *p;
 
         /* We take the last "/" in the path. */
-	p = strrchr(name, '/');
-	if (p != NULL)
-	    name = p + 1;
+        p = strrchr(name, '/');
+        if (p != NULL)
+            name = p + 1;
     }
     message_program_name = xstrdup(name);
     openlog(message_program_name, L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
@@ -1017,8 +1027,8 @@ main(int argc, char *argv[])
 
 #ifdef HAVE_SASL
     if (sasl_server_init(sasl_callbacks, "INN") != SASL_OK) {
-	syslog(L_FATAL, "sasl_server_init() failed");
-	exit(1);
+        syslog(L_FATAL, "sasl_server_init() failed");
+        exit(1);
     }
 #endif /* HAVE_SASL */
 
@@ -1027,63 +1037,63 @@ main(int argc, char *argv[])
 #else
     while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:t")) != EOF)
 #endif /* HAVE_OPENSSL */
-	switch (i) {
-	default:
-	    Usage();
-	    /* NOTREACHED */
-        case '4':                       /* Bind to a certain IPv4 address. */
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+        case '4': /* Bind to a certain IPv4 address. */
         case 'b':
             if (ListenAddr != NULL)
                 die("-b and -4 are the same and both may not be given");
             ListenAddr = xstrdup(optarg);
             break;
-        case '6':                       /* Bind to a certain IPv6 address. */
+        case '6': /* Bind to a certain IPv6 address. */
             ListenAddr6 = xstrdup(optarg);
             break;
-	case 'c':                       /* Use alternate readers.conf. */
-	    ConfFile = concatpath(innconf->pathetc, optarg);
-	    break;
- 	case 'D':			/* Standalone daemon mode. */
- 	    DaemonMode = true;
- 	    break;
-        case 'P':                       /* Prespawn count in daemon mode. */
-	    respawn = atoi(optarg);
-	    break;
- 	case 'f':			/* Don't fork on daemon mode. */
- 	    ForeGroundMode = true;
- 	    break;
-	case 'i':			/* Initial command. */
-	    PushedBack = xstrdup(optarg);
-	    break;
-	case 'I':			/* Instance. */
-	    NNRPinstance = xstrdup(optarg);
-	    break;
-	case 'n':			/* No DNS lookups. */
-	    GetHostByAddr = false;
-	    break;
-	case 'o':
-	    Offlinepost = true;		/* Offline posting only. */
-	    break;
- 	case 'p':			/* TCP port for daemon mode. */
- 	    ListenPort = atoi(optarg);
- 	    break;
-	case 'r':			/* Reject connection message. */
-	    Reject = xstrdup(optarg);
-	    break;
-	case 's':			/* Unused title string. */
-	    break;
-	case 't':			/* Tracing. */
-	    Tracing = true;
-	    break;
+        case 'c': /* Use alternate readers.conf. */
+            ConfFile = concatpath(innconf->pathetc, optarg);
+            break;
+        case 'D': /* Standalone daemon mode. */
+            DaemonMode = true;
+            break;
+        case 'P': /* Prespawn count in daemon mode. */
+            respawn = atoi(optarg);
+            break;
+        case 'f': /* Don't fork on daemon mode. */
+            ForeGroundMode = true;
+            break;
+        case 'i': /* Initial command. */
+            PushedBack = xstrdup(optarg);
+            break;
+        case 'I': /* Instance. */
+            NNRPinstance = xstrdup(optarg);
+            break;
+        case 'n': /* No DNS lookups. */
+            GetHostByAddr = false;
+            break;
+        case 'o': /* Offline posting only. */
+            Offlinepost = true;
+            break;
+        case 'p': /* TCP port for daemon mode. */
+            ListenPort = atoi(optarg);
+            break;
+        case 'r': /* Reject connection message. */
+            Reject = xstrdup(optarg);
+            break;
+        case 's': /* Unused title string. */
+            break;
+        case 't': /* Tracing. */
+            Tracing = true;
+            break;
 #ifdef HAVE_OPENSSL
-	case 'S':			/* Force the negotiation of an encryption layer. */
-	    initialSSL = true;
-	    break;
+        case 'S': /* Force the negotiation of an encryption layer. */
+            initialSSL = true;
+            break;
 #endif /* HAVE_OPENSSL */
-	}
+        }
     argc -= optind;
     if (argc)
-	Usage();
+        Usage();
 
     /* Make other processes happier if someone is reading.  This allows other
      * processes like overchan to keep up when there are lots of readers.
@@ -1098,22 +1108,25 @@ main(int argc, char *argv[])
     ACTIVE = concatpath(innconf->pathdb, INN_PATH_ACTIVE);
     ACTIVETIMES = concatpath(innconf->pathdb, INN_PATH_ACTIVETIMES);
     NEWSGROUPS = concatpath(innconf->pathdb, INN_PATH_NEWSGROUPS);
-    if(ConfFile)
+    if (ConfFile)
         NNRPACCESS = ConfFile;
     else
-        NNRPACCESS = concatpath(innconf->pathetc,INN_PATH_NNRPACCESS);
+        NNRPACCESS = concatpath(innconf->pathetc, INN_PATH_NNRPACCESS);
 
     /* Initialize the checks to perform or not on article syntax. */
-    if ((innconf->syntaxchecks != NULL) && (innconf->syntaxchecks->count > 0)) {
+    if ((innconf->syntaxchecks != NULL)
+        && (innconf->syntaxchecks->count > 0)) {
         for (j = 0; j < innconf->syntaxchecks->count; j++) {
             if (innconf->syntaxchecks->strings[j] != NULL) {
                 if (strcmp(innconf->syntaxchecks->strings[j], "laxmid") == 0) {
                     laxmid = true;
-                } else if (strcmp(innconf->syntaxchecks->strings[j], 
-                                  "no-laxmid") == 0) {
+                } else if (strcmp(innconf->syntaxchecks->strings[j],
+                                  "no-laxmid")
+                           == 0) {
                     laxmid = false;
                 } else {
-                    syslog(L_NOTICE, "Unknown \"%s\" value in syntaxchecks "
+                    syslog(L_NOTICE,
+                           "Unknown \"%s\" value in syntaxchecks "
                            "parameter in inn.conf",
                            innconf->syntaxchecks->strings[j]);
                 }
@@ -1134,12 +1147,12 @@ main(int argc, char *argv[])
             lfds = xmalloc(lfdcount * sizeof(int));
             i = 0;
             if (ListenAddr6 != NULL) {
-                lfds[i++] = network_innbind_ipv6(SOCK_STREAM, ListenAddr6,
-                                                 ListenPort);
+                lfds[i++] =
+                    network_innbind_ipv6(SOCK_STREAM, ListenAddr6, ListenPort);
             }
             if (ListenAddr != NULL) {
-                lfds[i] = network_innbind_ipv4(SOCK_STREAM, ListenAddr,
-                                               ListenPort);
+                lfds[i] =
+                    network_innbind_ipv4(SOCK_STREAM, ListenAddr, ListenPort);
             }
         }
 
@@ -1153,42 +1166,42 @@ main(int argc, char *argv[])
         if (!lfdokay)
             die("can't bind to any addresses");
 
-        /* If started as root, switch to news uid.  Unlike other parts of INN, we
-         * don't die if we can't become the news user.  As long as we're not
+        /* If started as root, switch to news uid.  Unlike other parts of INN,
+         * we don't die if we can't become the news user.  As long as we're not
          * running as root, everything's fine; it's okay to write the things we
          * write as a member of the news group. */
         if (getuid() == 0) {
             ensure_news_user_grp(true, true);
         }
 
-	/* Detach. */
-	if (!ForeGroundMode) {
-	    daemonize("/");
-	}
+        /* Detach. */
+        if (!ForeGroundMode) {
+            daemonize("/");
+        }
 
-	if (ListenPort == NNTP_PORT)
-	    strlcpy(buff, "nnrpd.pid", sizeof(buff));
-	else
-	    snprintf(buff, sizeof(buff), "nnrpd-%d.pid", ListenPort);
+        if (ListenPort == NNTP_PORT)
+            strlcpy(buff, "nnrpd.pid", sizeof(buff));
+        else
+            snprintf(buff, sizeof(buff), "nnrpd-%d.pid", ListenPort);
         path = concatpath(innconf->pathrun, buff);
         pidfile = fopen(path, "w");
         free(path);
-	if (pidfile == NULL) {
-	    syslog(L_ERROR, "cannot write %s %m", buff);
+        if (pidfile == NULL) {
+            syslog(L_ERROR, "cannot write %s %m", buff);
             exit(1);
-	}
-	fprintf(pidfile,"%lu\n", (unsigned long) getpid());
-	fclose(pidfile);
+        }
+        fprintf(pidfile, "%lu\n", (unsigned long) getpid());
+        fclose(pidfile);
 
-	/* Set signal handle to care for dead children. */
-	if (!respawn)
-	    xsignal(SIGCHLD, WaitChild);
+        /* Set signal handle to care for dead children. */
+        if (!respawn)
+            xsignal(SIGCHLD, WaitChild);
 
-	/* Arrange to toggle tracing. */
-	xsignal(SIGHUP, ToggleTrace);
- 
-	setproctitle("accepting connections");
- 	
+        /* Arrange to toggle tracing. */
+        xsignal(SIGHUP, ToggleTrace);
+
+        setproctitle("accepting connections");
+
         /* Initialize the listener file descriptors set. */
         FD_ZERO(&lfdset);
 
@@ -1206,14 +1219,14 @@ main(int argc, char *argv[])
             }
         }
 
-	if (respawn) {
-	    /* Pre-forked mode. */
-	    for (;;) {
-		if (respawn > 0) {
-		    --respawn;
-		    pid = fork();
-		    if (pid == 0) {
-			do {
+        if (respawn) {
+            /* Pre-forked mode. */
+            for (;;) {
+                if (respawn > 0) {
+                    --respawn;
+                    pid = fork();
+                    if (pid == 0) {
+                        do {
                             fd = -1;
 
                             /* Copy the master set because lfdsetread
@@ -1227,98 +1240,103 @@ main(int argc, char *argv[])
                                     if (FD_ISSET(lfds[j], &lfdsetread)) {
                                         fd = accept(lfds[j], NULL, NULL);
                                         /* Only handle the first match.  Future
-                                         * calls to select() will handle possible
-                                         * other matches. */
+                                         * calls to select() will handle
+                                         * possible other matches. */
                                         if (fd >= 0)
                                             break;
                                     }
                                 }
                             }
-			} while (fd < 0);
-			break;
-		    }
-		}
-		for (;;) {
-		    if (respawn == 0)
-			pid = wait(NULL);
-		    else
-			pid = waitpid(-1, NULL, WNOHANG);
-		    if (pid <= 0)
-			break;
-		    ++respawn;
-		}
-	    }
-	} else {
-	    /* Fork on demand. */
-	    do {
+                        } while (fd < 0);
+                        break;
+                    }
+                }
+                for (;;) {
+                    if (respawn == 0)
+                        pid = wait(NULL);
+                    else
+                        pid = waitpid(-1, NULL, WNOHANG);
+                    if (pid <= 0)
+                        break;
+                    ++respawn;
+                }
+            }
+        } else {
+            /* Fork on demand. */
+            do {
                 fd = -1;
-                
+
                 /* Copy the master set because lfdsetread will be modified. */
                 lfdsetread = lfdset;
-                lfdreadcount = select(lfdmax + 1, &lfdsetread, NULL, NULL, NULL);
+                lfdreadcount =
+                    select(lfdmax + 1, &lfdsetread, NULL, NULL, NULL);
 
                 if (lfdreadcount > 0) {
                     for (j = 0; j < lfdcount; j++) {
                         if (FD_ISSET(lfds[j], &lfdsetread)) {
                             fd = accept(lfds[j], NULL, NULL);
                             /* Only handle the first match.  Future calls
-                             * to select() will handle possible other matches. */
+                             * to select() will handle possible other matches.
+                             */
                             if (fd >= 0)
                                 break;
                         }
                     }
                 }
-		if (fd < 0)
-		    continue;
+                if (fd < 0)
+                    continue;
 
-		for (j = 0; j <= innconf->maxforks && (pid = fork()) < 0; j++) {
-		    if (j == innconf->maxforks) {
-			syslog(L_FATAL, "can't fork (dropping connection): %m");
-			continue;
-		    }
-		    syslog(L_NOTICE, "can't fork (waiting): %m");
-		    sleep(1);
-		}
-		if (ChangeTrace) {
-		    Tracing = Tracing ? false : true;
-		    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
-		    ChangeTrace = false;
-		}
-		if (pid != 0)
-		    close(fd);
-	    } while (pid != 0);
-	}
+                for (j = 0; j <= innconf->maxforks && (pid = fork()) < 0;
+                     j++) {
+                    if (j == innconf->maxforks) {
+                        syslog(L_FATAL,
+                               "can't fork (dropping connection): %m");
+                        continue;
+                    }
+                    syslog(L_NOTICE, "can't fork (waiting): %m");
+                    sleep(1);
+                }
+                if (ChangeTrace) {
+                    Tracing = Tracing ? false : true;
+                    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
+                    ChangeTrace = false;
+                }
+                if (pid != 0)
+                    close(fd);
+            } while (pid != 0);
+        }
 
-	/* Child process starts here. */
-	setproctitle("connected");
+        /* Child process starts here. */
+        setproctitle("connected");
         for (j = 0; j < lfdcount; j++) {
             close(lfds[j]);
         }
-	dup2(fd, 0);
-	close(fd);
-	dup2(0, 1);
-	dup2(0, 2);
+        dup2(fd, 0);
+        close(fd);
+        dup2(0, 1);
+        dup2(0, 2);
         if (innconf->timer != 0)
             TMRinit(TMR_MAX);
         STATstart = TMRnow_double();
-	SetupDaemon();
+        SetupDaemon();
 
-	/* If we are a daemon, innd didn't make us nice, so be nice kids. */
-	if (innconf->nicekids) {
-	    if (nice(innconf->nicekids) < 0)
-		syslog(L_ERROR, "Could not nice child to %ld: %m", innconf->nicekids);
-	}
+        /* If we are a daemon, innd didn't make us nice, so be nice kids. */
+        if (innconf->nicekids) {
+            if (nice(innconf->nicekids) < 0)
+                syslog(L_ERROR, "Could not nice child to %ld: %m",
+                       innconf->nicekids);
+        }
 
-	/* Only automatically reap children in the listening process. */
-	xsignal(SIGCHLD, SIG_DFL);
- 
+        /* Only automatically reap children in the listening process. */
+        xsignal(SIGCHLD, SIG_DFL);
+
     } else {
         if (innconf->timer != 0)
             TMRinit(TMR_MAX);
         STATstart = TMRnow_double();
-	SetupDaemon();
-	/* Arrange to toggle tracing. */
-	xsignal(SIGHUP, ToggleTrace);
+        SetupDaemon();
+        /* Arrange to toggle tracing. */
+        xsignal(SIGHUP, ToggleTrace);
     } /* DaemonMode */
 
 #ifdef HAVE_OPENSSL
@@ -1333,13 +1351,13 @@ main(int argc, char *argv[])
         }
         encryption_layer_on = true;
 
-# if defined(HAVE_ZLIB) && OPENSSL_VERSION_NUMBER >= 0x00090800fL
+#    if defined(HAVE_ZLIB) && OPENSSL_VERSION_NUMBER >= 0x00090800fL
         /* Check whether a compression layer has just been added.
-         * SSL_get_current_compression() is defined in OpenSSL versions >= 0.9.8
-         * final release. */
+         * SSL_get_current_compression() is defined in OpenSSL versions >=
+         * 0.9.8 final release. */
         tls_compression_on = (SSL_get_current_compression(tls_conn) != NULL);
         compression_layer_on = tls_compression_on;
-# endif /* HAVE_ZLIB && OPENSSL >= v0.9.8 */
+#    endif /* HAVE_ZLIB && OPENSSL >= v0.9.8 */
     }
 #endif /* HAVE_OPENSSL */
 
@@ -1350,10 +1368,10 @@ main(int argc, char *argv[])
         if (getloadavg(load, 1) < 0)
             warn("cannot obtain system load");
         else {
-            if ((unsigned long)(load[0] + 0.5) > innconf->nnrpdloadlimit) {
+            if ((unsigned long) (load[0] + 0.5) > innconf->nnrpdloadlimit) {
                 GetClientInfo(ListenPort);
-                notice("%s load %.2f > %lu", Client.host,
-                       load[0], innconf->nnrpdloadlimit);
+                notice("%s load %.2f > %lu", Client.host, load[0],
+                       innconf->nnrpdloadlimit);
                 Reply("%d load at %.2f, try later\r\n", NNTP_FAIL_TERMINATING,
                       load[0]);
                 ExitWithStats(1, true);
@@ -1371,10 +1389,10 @@ main(int argc, char *argv[])
     PERMgetpermissions();
 
     if (!PERMcanread && !PERMcanpost && !PERMneedauth) {
-	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Reply("%d You have no permission to talk.  Goodbye!\r\n",
-	       NNTP_ERR_ACCESS);
-	ExitWithStats(1, false);
+        syslog(L_NOTICE, "%s no_permission", Client.host);
+        Reply("%d You have no permission to talk.  Goodbye!\r\n",
+              NNTP_ERR_ACCESS);
+        ExitWithStats(1, false);
     }
 
     /* Proceed with initialization. */
@@ -1382,46 +1400,51 @@ main(int argc, char *argv[])
 
     /* Were we told to reject connections? */
     if (Reject) {
-	syslog(L_NOTICE, "%s rejected %s", Client.host, Reject);
-	Reply("%d %s\r\n", NNTP_FAIL_TERMINATING,
+        syslog(L_NOTICE, "%s rejected %s", Client.host, Reject);
+        Reply("%d %s\r\n", NNTP_FAIL_TERMINATING,
               is_valid_utf8(Reject) ? Reject : "Connection rejected");
-	ExitWithStats(0, false);
+        ExitWithStats(0, false);
     }
 
     if (PERMaccessconf) {
-	if (PERMaccessconf->readertrack)
-	    PERMaccessconf->readertrack =
+        if (PERMaccessconf->readertrack)
+            PERMaccessconf->readertrack =
                 TrackClient(Client.host, Username, sizeof(Username));
     } else {
-	if (innconf->readertrack)
-	    innconf->readertrack =
+        if (innconf->readertrack)
+            innconf->readertrack =
                 TrackClient(Client.host, Username, sizeof(Username));
     }
 
     if ((PERMaccessconf && PERMaccessconf->readertrack)
         || (!PERMaccessconf && innconf->readertrack)) {
-	int len;
-	syslog(L_NOTICE, "%s Tracking Enabled (%s)", Client.host, Username);
-	pid=getpid();
-	gettimeofday(&tv,NULL);
-	count += pid;
-	vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
-	len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
-	LocalLogFileName = xmalloc(len);
-	sprintf(LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog, vid);
-	if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
+        int len;
+        syslog(L_NOTICE, "%s Tracking Enabled (%s)", Client.host, Username);
+        pid = getpid();
+        gettimeofday(&tv, NULL);
+        count += pid;
+        vid = tv.tv_sec ^ tv.tv_usec ^ pid ^ count;
+        len = strlen("innconf->pathlog") + strlen("/tracklogs/log-") + BUFSIZ;
+        LocalLogFileName = xmalloc(len);
+        sprintf(LocalLogFileName, "%s/tracklogs/log-%u", innconf->pathlog,
+                vid);
+        if ((locallog = fopen(LocalLogFileName, "w")) == NULL) {
             LocalLogDirName = concatpath(innconf->pathlog, "tracklogs");
-	    MakeDirectory(LocalLogDirName, false);
-	    free(LocalLogDirName);
-	}
-	if (locallog == NULL && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
-	    syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", Client.host, Username, LocalLogFileName);
-	} else {
-	    syslog(L_NOTICE, "%s Local Logging begins (%s) %s",Client.host, Username, LocalLogFileName);
-	    fprintf(locallog, "%s Tracking Enabled (%s)\n", Client.host, Username);
-	    fflush(locallog);
-	    LLOGenable = true;
-	}
+            MakeDirectory(LocalLogDirName, false);
+            free(LocalLogDirName);
+        }
+        if (locallog == NULL
+            && (locallog = fopen(LocalLogFileName, "w")) == NULL) {
+            syslog(L_ERROR, "%s Local Logging failed (%s) %s: %m", Client.host,
+                   Username, LocalLogFileName);
+        } else {
+            syslog(L_NOTICE, "%s Local Logging begins (%s) %s", Client.host,
+                   Username, LocalLogFileName);
+            fprintf(locallog, "%s Tracking Enabled (%s)\n", Client.host,
+                    Username);
+            fflush(locallog);
+            LLOGenable = true;
+        }
     }
 
 #ifdef HAVE_SASL
@@ -1430,84 +1453,89 @@ main(int argc, char *argv[])
 
     if (PERMaccessconf) {
         Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
-	   (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
-               NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
-           PERMaccessconf->pathhost, INN_VERSION_STRING,
-	   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
-	clienttimeout = PERMaccessconf->clienttimeout;
+              (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting))
+                  ? NNTP_OK_BANNER_POST
+                  : NNTP_OK_BANNER_NOPOST,
+              PERMaccessconf->pathhost, INN_VERSION_STRING,
+              (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
+        clienttimeout = PERMaccessconf->clienttimeout;
     } else {
         Reply("%d %s InterNetNews NNRP server %s ready (%s)\r\n",
-	   (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting)) ?
-               NNTP_OK_BANNER_POST : NNTP_OK_BANNER_NOPOST,
-           innconf->pathhost, INN_VERSION_STRING,
-	   (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
-	clienttimeout = innconf->clienttimeout;
+              (PERMcanpost || (PERMcanauthenticate && PERMcanpostgreeting))
+                  ? NNTP_OK_BANNER_POST
+                  : NNTP_OK_BANNER_NOPOST,
+              innconf->pathhost, INN_VERSION_STRING,
+              (!PERMneedauth && PERMcanpost) ? "posting ok" : "no posting");
+        clienttimeout = innconf->clienttimeout;
     }
 
     line_init(&NNTPline);
 
     /* Main dispatch loop. */
-    for (timeout = innconf->initialtimeout, av = NULL, ac = 0; ;
-			timeout = clienttimeout) {
-	TMRstart(TMR_NNTPWRITE);
-	fflush(stdout);
-	TMRstop(TMR_NNTPWRITE);
-	if (ChangeTrace) {
-	    Tracing = Tracing ? false : true;
-	    syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
-	    ChangeTrace = false;
-	}
-	if (PushedBack) {
-	    if (PushedBack[0] == '\0')
-		continue;
-	    if (Tracing)
-		syslog(L_TRACE, "%s < %s", Client.host, PushedBack);
-	    ac = nArgify(PushedBack, &av, 1);
-	    r = RTok;
-	}
-	else {
-	    size_t len;
+    for (timeout = innconf->initialtimeout, av = NULL, ac = 0;;
+         timeout = clienttimeout) {
+        TMRstart(TMR_NNTPWRITE);
+        fflush(stdout);
+        TMRstop(TMR_NNTPWRITE);
+        if (ChangeTrace) {
+            Tracing = Tracing ? false : true;
+            syslog(L_TRACE, "trace %sabled", Tracing ? "en" : "dis");
+            ChangeTrace = false;
+        }
+        if (PushedBack) {
+            if (PushedBack[0] == '\0')
+                continue;
+            if (Tracing)
+                syslog(L_TRACE, "%s < %s", Client.host, PushedBack);
+            ac = nArgify(PushedBack, &av, 1);
+            r = RTok;
+        } else {
+            size_t len;
             size_t lenstripped = 0;
-	    const char *p;
+            const char *p;
             char *q;
 
-	    r = line_read(&NNTPline, timeout, &p, &len, &lenstripped);
-	    switch (r) {
-	    default:
-		syslog(L_ERROR, "%s internal %d in main", Client.host, r);
-		/* FALLTHROUGH */
-	    case RTtimeout:
-		if (timeout < clienttimeout)
-		    syslog(L_NOTICE, "%s timeout short", Client.host);
-		else
-		    syslog(L_NOTICE, "%s timeout", Client.host);
-		ExitWithStats(1, false);
-		break;
-	    case RTok:
+            r = line_read(&NNTPline, timeout, &p, &len, &lenstripped);
+            switch (r) {
+            default:
+                syslog(L_ERROR, "%s internal %d in main", Client.host, r);
+                /* FALLTHROUGH */
+            case RTtimeout:
+                if (timeout < clienttimeout)
+                    syslog(L_NOTICE, "%s timeout short", Client.host);
+                else
+                    syslog(L_NOTICE, "%s timeout", Client.host);
+                ExitWithStats(1, false);
+                break;
+            case RTok:
                 /* len does not count CRLF. */
-		if (len + lenstripped <= sizeof(buff)) {
-		    /* line_read guarantees null termination. */
-		    memcpy(buff, p, len + 1);
-		    /* Do some input processing, check for blank line. */
+                if (len + lenstripped <= sizeof(buff)) {
+                    /* line_read guarantees null termination. */
+                    memcpy(buff, p, len + 1);
+                    /* Do some input processing, check for blank line. */
                     if (buff[0] != '\0')
                         ac = nArgify(buff, &av, 1);
-		    if (Tracing) {
+                    if (Tracing) {
                         /* Do not log passwords if AUTHINFO PASS,
                          * AUTHINFO SASL PLAIN or AUTHINFO SASL EXTERNAL
                          * are used.  (Only one space between SASL and
                          * PLAIN/EXTERNAL should be put; otherwise, the
                          * whole command will be logged).
-                         * AUTHINFO SASL LOGIN does not use an initial response;
+                         * AUTHINFO SASL LOGIN does not use an initial
+                         * response;
                          * therefore, there is nothing to hide here. */
                         if (ac > 1 && strcasecmp(av[0], "AUTHINFO") == 0) {
                             if (strncasecmp(av[1], "PASS", 4) == 0)
                                 syslog(L_TRACE, "%s < AUTHINFO PASS ********",
                                        Client.host);
                             else if (strncasecmp(av[1], "SASL PLAIN", 10) == 0)
-                                syslog(L_TRACE, "%s < AUTHINFO SASL PLAIN ********",
+                                syslog(L_TRACE,
+                                       "%s < AUTHINFO SASL PLAIN ********",
                                        Client.host);
-                            else if (strncasecmp(av[1], "SASL EXTERNAL", 13) == 0)
-                                syslog(L_TRACE, "%s < AUTHINFO SASL EXTERNAL ********",
+                            else if (strncasecmp(av[1], "SASL EXTERNAL", 13)
+                                     == 0)
+                                syslog(L_TRACE,
+                                       "%s < AUTHINFO SASL EXTERNAL ********",
                                        Client.host);
                             else
                                 syslog(L_TRACE, "%s < %s", Client.host, buff);
@@ -1515,57 +1543,60 @@ main(int argc, char *argv[])
                             syslog(L_TRACE, "%s < %s", Client.host, buff);
                         }
                     }
-		    if (buff[0] == '\0')
-			continue;
-		    break;
-		}
-		/* FALLTHROUGH */		
-	    case RTlong:
+                    if (buff[0] == '\0')
+                        continue;
+                    break;
+                }
+                /* FALLTHROUGH */
+            case RTlong:
                 /* The line is too long but we have to make sure that
                  * no recognized command has been sent. */
-                q = (char *)p;
+                q = (char *) p;
                 ac = nArgify(q, &av, 1);
                 validcommandtoolong = false;
                 for (cp = CMDtable; cp->Name; cp++) {
-                    if ((cp->Function != CMD_unimp) &&
-                        (ac > 0 && strcasecmp(cp->Name, av[0]) == 0)) {
+                    if ((cp->Function != CMD_unimp)
+                        && (ac > 0 && strcasecmp(cp->Name, av[0]) == 0)) {
                         validcommandtoolong = true;
                         break;
                     }
                 }
-                Reply("%d Line too long\r\n",
-                      validcommandtoolong ? NNTP_ERR_SYNTAX : NNTP_ERR_COMMAND);
-		continue;
-	    case RTeof:
-		/* Handled below. */
-		break;
-	    }
-	}
-	/* Client gone? */
-	if (r == RTeof)
-	    break;
-	if (ac == 0)
-	    continue;
+                Reply("%d Line too long\r\n", validcommandtoolong
+                                                  ? NNTP_ERR_SYNTAX
+                                                  : NNTP_ERR_COMMAND);
+                continue;
+            case RTeof:
+                /* Handled below. */
+                break;
+            }
+        }
+        /* Client gone? */
+        if (r == RTeof)
+            break;
+        if (ac == 0)
+            continue;
 
-	/* Find command. */
-	for (cp = CMDtable; cp->Name; cp++)
-	    if (strcasecmp(cp->Name, av[0]) == 0)
-		break;
+        /* Find command. */
+        for (cp = CMDtable; cp->Name; cp++)
+            if (strcasecmp(cp->Name, av[0]) == 0)
+                break;
 
         /* If no command has been recognized. */
-	if (cp->Name == NULL) {
-	    if (strcasecmp(av[0], "XYZZY") == 0) {
-                /* Acknowledge the magic word from the Colossal Cave Adventure computer game. */
+        if (cp->Name == NULL) {
+            if (strcasecmp(av[0], "XYZZY") == 0) {
+                /* Acknowledge the magic word from the Colossal Cave Adventure
+                 * computer game. */
                 Reply("%d Nothing happens\r\n", NNTP_ERR_COMMAND);
             } else {
                 Reply("%d What?\r\n", NNTP_ERR_COMMAND);
-                if ((int)strlen(buff) > 40)
-                    syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host, buff);
+                if ((int) strlen(buff) > 40)
+                    syslog(L_NOTICE, "%s unrecognized %.40s...", Client.host,
+                           buff);
                 else
                     syslog(L_NOTICE, "%s unrecognized %s", Client.host, buff);
             }
-	    continue;
-	}
+            continue;
+        }
 
         /* Go on parsing the command. */
         ac--;
@@ -1586,30 +1617,30 @@ main(int argc, char *argv[])
                 continue;
         }
 
-	/* Check usage. */
-	if ((cp->Minac != CMDany && ac < cp->Minac)
-	 || (cp->Maxac != CMDany && ac > cp->Maxac)) {
-	    Reply("%d Syntax is:  %s %s\r\n",
-		NNTP_ERR_SYNTAX, cp->Name, cp->Help ? cp->Help : "(no argument allowed)");
-	    continue;
-	}
+        /* Check usage. */
+        if ((cp->Minac != CMDany && ac < cp->Minac)
+            || (cp->Maxac != CMDany && ac > cp->Maxac)) {
+            Reply("%d Syntax is:  %s %s\r\n", NNTP_ERR_SYNTAX, cp->Name,
+                  cp->Help ? cp->Help : "(no argument allowed)");
+            continue;
+        }
 
-	/* Check permissions and dispatch. */
-	if (cp->Needauth && PERMneedauth) {
-	    Reply("%d Authentication required for command\r\n",
-		NNTP_FAIL_AUTH_NEEDED);
-	    continue;
-	}
-	setproctitle("%s %s", Client.host, av[0]);
+        /* Check permissions and dispatch. */
+        if (cp->Needauth && PERMneedauth) {
+            Reply("%d Authentication required for command\r\n",
+                  NNTP_FAIL_AUTH_NEEDED);
+            continue;
+        }
+        setproctitle("%s %s", Client.host, av[0]);
 
         (*cp->Function)(ac, av);
 
         if (PushedBack)
-	    break;
-	if (PERMaccessconf)
-	    clienttimeout = PERMaccessconf->clienttimeout;
-	else
-	    clienttimeout = innconf->clienttimeout;
+            break;
+        if (PERMaccessconf)
+            clienttimeout = PERMaccessconf->clienttimeout;
+        else
+            clienttimeout = innconf->clienttimeout;
     }
 
     ExitWithStats(0, false);

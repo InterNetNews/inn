@@ -9,37 +9,37 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <sys/stat.h>
+#include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
-#include "inn/qio.h"
 #include "inn/libinn.h"
 #include "inn/nntp.h"
 #include "inn/paths.h"
+#include "inn/qio.h"
 #include "inn/storage.h"
-#include "inn/vector.h"
 #include "inn/timer.h"
+#include "inn/vector.h"
 
 #ifdef HAVE_SASL
-#include <sasl/sasl.h>
-#include <sasl/saslutil.h>
+#    include <sasl/sasl.h>
+#    include <sasl/saslutil.h>
 #endif
 
 #if defined(HAVE_ZLIB)
-# include <zlib.h>
+#    include <zlib.h>
 #endif
 
 /*
 **  A range of article numbers.
 */
 typedef struct _ARTRANGE {
-    ARTNUM	Low;
-    ARTNUM	High;
+    ARTNUM Low;
+    ARTNUM High;
 } ARTRANGE;
 
 /*
@@ -95,7 +95,8 @@ typedef struct _ACCESSGROUP {
 /*
 **  What line_read returns.
 */
-typedef enum _READTYPE {
+typedef enum _READTYPE
+{
     RTeof,
     RTok,
     RTlong,
@@ -133,16 +134,17 @@ struct client {
 **  Information about the schema of the news overview files.
 */
 typedef struct _ARTOVERFIELD {
-    char	*Header;
-    int		Length;
-    bool	NeedsHeader;
+    char *Header;
+    int Length;
+    bool NeedsHeader;
 } ARTOVERFIELD;
 
 /*
 **  Supported timers.  If you add new timers to this list, also add them to
 **  the list of tags in nnrpd.c.
 */
-enum timer {
+enum timer
+{
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
     TMR_NEWNEWS,                /* Executing NEWNEWS command. */
     TMR_READART,                /* Reading an article (SMretrieve). */
@@ -152,120 +154,119 @@ enum timer {
     TMR_MAX
 };
 
-#if	defined(MAINLINE)
-#define EXTERN	/* NULL */
+#if defined(MAINLINE)
+#    define EXTERN /* NULL */
 #else
-#define EXTERN	extern
-#endif	/* defined(MAINLINE) */
+#    define EXTERN extern
+#endif /* defined(MAINLINE) */
 
-EXTERN bool	PERMauthorized;
-EXTERN bool     PERMcanauthenticate;
+EXTERN bool PERMauthorized;
+EXTERN bool PERMcanauthenticate;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-EXTERN bool     PERMcanauthenticatewithoutSSL;
+EXTERN bool PERMcanauthenticatewithoutSSL;
 #endif
-EXTERN bool	PERMcanpost;
-EXTERN bool     PERMcanpostgreeting;
-EXTERN bool	PERMcanread;
-EXTERN bool	PERMneedauth;
-EXTERN bool	PERMspecified;
-EXTERN bool     PERMgroupmadeinvalid;
-EXTERN ACCESSGROUP	*PERMaccessconf;
-EXTERN bool	Tracing;
-EXTERN bool 	Offlinepost;
-EXTERN bool 	initialSSL;
-EXTERN char	**PERMreadlist;
-EXTERN char	**PERMpostlist;
+EXTERN bool PERMcanpost;
+EXTERN bool PERMcanpostgreeting;
+EXTERN bool PERMcanread;
+EXTERN bool PERMneedauth;
+EXTERN bool PERMspecified;
+EXTERN bool PERMgroupmadeinvalid;
+EXTERN ACCESSGROUP *PERMaccessconf;
+EXTERN bool Tracing;
+EXTERN bool Offlinepost;
+EXTERN bool initialSSL;
+EXTERN char **PERMreadlist;
+EXTERN char **PERMpostlist;
 EXTERN struct client Client;
-EXTERN char	Username[SMBUF];
-extern char	*ACTIVETIMES;
-extern char	*HISTORY;
-extern char	*ACTIVE;
-extern char	*NEWSGROUPS;
-extern char	*NNRPACCESS;
-EXTERN char	PERMuser[SMBUF];
-EXTERN FILE	*locallog;
-EXTERN ARTNUM	ARTnumber;	/* Current article number. */
-EXTERN ARTNUM	ARThigh;	/* Current high number for group. */
-EXTERN ARTNUM	ARTlow;		/* Current low number for group. */
-EXTERN unsigned long	ARTcount;	/* Number of articles in group. */
-EXTERN long	MaxBytesPerSecond; /* Maximum bytes per sec a client can use, defaults to 0. */
-EXTERN long	ARTget;
-EXTERN long	ARTgettime;
-EXTERN long	ARTgetsize;
-EXTERN long	OVERcount;	/* Number of (X)OVER commands. */
-EXTERN long	OVERhit;	/* Number of (X)OVER records found in overview. */
-EXTERN long	OVERmiss;	/* Number of (X)OVER records found in articles. */
-EXTERN long	OVERtime;	/* Number of ms spent sending (X)OVER data. */
-EXTERN long	OVERsize;	/* Number of bytes of (X)OVER data sent. */
-EXTERN long	OVERdbz;	/* Number of ms spent reading dbz data. */
-EXTERN long	OVERseek;	/* Number of ms spent seeking history. */
-EXTERN long	OVERget;	/* Number of ms spent reading history. */
-EXTERN long	OVERartcheck;	/* Number of ms spent article check. */
-EXTERN double	IDLEtime;
-EXTERN unsigned long	GRParticles;
-EXTERN long	GRPcount;
-EXTERN char	*GRPcur;
-EXTERN long	POSTreceived;
-EXTERN long	POSTrejected;
+EXTERN char Username[SMBUF];
+extern char *ACTIVETIMES;
+extern char *HISTORY;
+extern char *ACTIVE;
+extern char *NEWSGROUPS;
+extern char *NNRPACCESS;
+EXTERN char PERMuser[SMBUF];
+EXTERN FILE *locallog;
+EXTERN ARTNUM ARTnumber;       /* Current article number. */
+EXTERN ARTNUM ARThigh;         /* Current high number for group. */
+EXTERN ARTNUM ARTlow;          /* Current low number for group. */
+EXTERN unsigned long ARTcount; /* Number of articles in group. */
+EXTERN long MaxBytesPerSecond; /* Maximum bytes per sec a client can use,
+                                  defaults to 0. */
+EXTERN long ARTget;
+EXTERN long ARTgettime;
+EXTERN long ARTgetsize;
+EXTERN long OVERcount;    /* Number of (X)OVER commands. */
+EXTERN long OVERhit;      /* Number of (X)OVER records found in overview. */
+EXTERN long OVERmiss;     /* Number of (X)OVER records found in articles. */
+EXTERN long OVERtime;     /* Number of ms spent sending (X)OVER data. */
+EXTERN long OVERsize;     /* Number of bytes of (X)OVER data sent. */
+EXTERN long OVERdbz;      /* Number of ms spent reading dbz data. */
+EXTERN long OVERseek;     /* Number of ms spent seeking history. */
+EXTERN long OVERget;      /* Number of ms spent reading history. */
+EXTERN long OVERartcheck; /* Number of ms spent article check. */
+EXTERN double IDLEtime;
+EXTERN unsigned long GRParticles;
+EXTERN long GRPcount;
+EXTERN char *GRPcur;
+EXTERN long POSTreceived;
+EXTERN long POSTrejected;
 
-EXTERN bool     BACKOFFenabled;
-EXTERN char	*VirtualPath;
-EXTERN int	VirtualPathlen;
+EXTERN bool BACKOFFenabled;
+EXTERN char *VirtualPath;
+EXTERN int VirtualPathlen;
 EXTERN struct history *History;
 EXTERN struct line NNTPline;
 EXTERN struct vector *OVextra;
-EXTERN int	overhdr_xref;
-EXTERN bool     LLOGenable;
+EXTERN int overhdr_xref;
+EXTERN bool LLOGenable;
 
-extern const char	*ARTpost(char *article, char *idbuff, bool *permanent);
-extern void		ARTclose(void);
-extern int		TrimSpaces(char *line);
-extern void		InitBackoffConstants(void);
-extern char		*PostRecFilename(char *ip, char *user);
-extern int		LockPostRec(char *path);
-extern void		UnlockPostRec(char *path);
-extern int		RateLimit(long *sleeptime, char *path);
-extern void		ExitWithStats(int x, bool readconf)
-    __attribute__ ((__noreturn__));
-extern char		*GetHeader(const char *header, bool stripspaces);
-extern void		GRPreport(void);
-extern bool		NGgetlist(char ***argvp, char *list);
-extern bool		PERMartok(void);
-extern void             PERMgetinitialaccess(char *readersconf);
-extern void             PERMgetaccess(bool initialconnection);
-extern void		PERMgetpermissions(void);
-extern void		PERMlogin(char *uname, char *pass, int* code, char *errorstr);
-extern bool		PERMmatch(char **Pats, char **list);
-extern bool		ParseDistlist(char ***argvp, char *list);
-extern void 		SetDefaultAccess(ACCESSGROUP*);
-extern void		Reply(const char *fmt, ...)
+extern const char *ARTpost(char *article, char *idbuff, bool *permanent);
+extern void ARTclose(void);
+extern int TrimSpaces(char *line);
+extern void InitBackoffConstants(void);
+extern char *PostRecFilename(char *ip, char *user);
+extern int LockPostRec(char *path);
+extern void UnlockPostRec(char *path);
+extern int RateLimit(long *sleeptime, char *path);
+extern void ExitWithStats(int x, bool readconf) __attribute__((__noreturn__));
+extern char *GetHeader(const char *header, bool stripspaces);
+extern void GRPreport(void);
+extern bool NGgetlist(char ***argvp, char *list);
+extern bool PERMartok(void);
+extern void PERMgetinitialaccess(char *readersconf);
+extern void PERMgetaccess(bool initialconnection);
+extern void PERMgetpermissions(void);
+extern void PERMlogin(char *uname, char *pass, int *code, char *errorstr);
+extern bool PERMmatch(char **Pats, char **list);
+extern bool ParseDistlist(char ***argvp, char *list);
+extern void SetDefaultAccess(ACCESSGROUP *);
+extern void Reply(const char *fmt, ...)
     __attribute__((__format__(printf, 1, 2)));
-extern void             Printf(const char *fmt, ...)
+extern void Printf(const char *fmt, ...)
     __attribute__((__format__(printf, 1, 2)));
 
-extern void             CMDauthinfo     (int ac, char** av);
-extern void             CMDcapabilities (int ac, char** av);
+extern void CMDauthinfo(int ac, char **av);
+extern void CMDcapabilities(int ac, char **av);
 #if defined(HAVE_ZLIB)
-extern void             CMDcompress     (int ac, char** av);
+extern void CMDcompress(int ac, char **av);
 #endif
-extern void             CMDdate         (int ac, char** av);
-extern void             CMDfetch        (int ac, char** av);
-extern void             CMDgroup        (int ac, char** av);
-extern void             CMDhelp         (int ac, char** av);
-extern void             CMDlist         (int ac, char** av);
-extern void             CMDmode         (int ac, char** av);
-extern void             CMDnewgroups    (int ac, char** av);
-extern void             CMDnewnews      (int ac, char** av);
-extern void             CMDnextlast     (int ac, char** av);
-extern void             CMDover         (int ac, char** av);
-extern void             CMDpost         (int ac, char** av);
-extern void             CMDquit         (int ac, char** av)
-    __attribute__ ((__noreturn__));
-extern void             CMDxgtitle      (int ac, char** av);
-extern void             CMDpat          (int ac, char** av);
-extern void             CMD_unimp       (int ac, char** av);
+extern void CMDdate(int ac, char **av);
+extern void CMDfetch(int ac, char **av);
+extern void CMDgroup(int ac, char **av);
+extern void CMDhelp(int ac, char **av);
+extern void CMDlist(int ac, char **av);
+extern void CMDmode(int ac, char **av);
+extern void CMDnewgroups(int ac, char **av);
+extern void CMDnewnews(int ac, char **av);
+extern void CMDnextlast(int ac, char **av);
+extern void CMDover(int ac, char **av);
+extern void CMDpost(int ac, char **av);
+extern void CMDquit(int ac, char **av) __attribute__((__noreturn__));
+extern void CMDxgtitle(int ac, char **av);
+extern void CMDpat(int ac, char **av);
+extern void CMD_unimp(int ac, char **av);
 #ifdef HAVE_OPENSSL
-extern void             CMDstarttls     (int ac, char** av);
+extern void CMDstarttls(int ac, char **av);
 #endif
 
 extern bool CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply);
@@ -284,29 +285,32 @@ void write_buffer(const char *buff, ssize_t len);
 extern char *HandleHeaders(char *article);
 extern bool ARTinstorebytoken(TOKEN token);
 
-extern int TrackClient(char *client, char* user, size_t len);
+extern int TrackClient(char *client, char *user, size_t len);
 
-#ifdef  DO_PERL
+#ifdef DO_PERL
 extern void loadPerl(void);
 extern void perlAccess(char *user, struct vector *access_vec);
-extern void perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char*newUser);
+extern void perlAuthenticate(char *user, char *passwd, int *code,
+                             char *errorstring, char *newUser);
 extern void perlAuthInit(void);
 #endif /* DO_PERL */
 
-#ifdef	DO_PYTHON
+#ifdef DO_PYTHON
 extern bool PY_use_dynamic;
 
-void PY_authenticate(char *path, char *Username, char *Password, int *code, char *errorstring, char *newUser);
-void PY_access(char* path, struct vector *access_vec, char *Username);
+void PY_authenticate(char *path, char *Username, char *Password, int *code,
+                     char *errorstring, char *newUser);
+void PY_access(char *path, struct vector *access_vec, char *Username);
 void PY_close_python(void);
-int PY_dynamic(char *Username, char *NewsGroup, int PostFlag, char **reply_message);
-void PY_dynamic_init (char* file);
-# if PY_MAJOR_VERSION >= 3
-extern PyMODINIT_FUNC   PyInit_nnrpd(void);
-# else
-extern void             PyInit_nnrpd(void);
-# endif
-#endif	/* DO_PYTHON */
+int PY_dynamic(char *Username, char *NewsGroup, int PostFlag,
+               char **reply_message);
+void PY_dynamic_init(char *file);
+#    if PY_MAJOR_VERSION >= 3
+extern PyMODINIT_FUNC PyInit_nnrpd(void);
+#    else
+extern void PyInit_nnrpd(void);
+#    endif
+#endif /* DO_PYTHON */
 
 void line_free(struct line *);
 void line_init(struct line *);

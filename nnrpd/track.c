@@ -27,43 +27,47 @@
 int
 TrackClient(char *client, char *user, size_t len)
 {
-	int RARTon;
-	FILE *fd;
-	char line[MAX_LEN],*p,*pp,*lp;
-        char *dbfile;
+    int RARTon;
+    FILE *fd;
+    char line[MAX_LEN], *p, *pp, *lp;
+    char *dbfile;
 
-        dbfile = concatpath(innconf->pathetc, "nnrpd.track");
+    dbfile = concatpath(innconf->pathetc, "nnrpd.track");
 
-	RARTon=false;
-	strlcpy(user, "unknown", len);
+    RARTon = false;
+    strlcpy(user, "unknown", len);
 
-	if ((fd=fopen(dbfile,"r"))!=NULL) {
-		while((fgets(line,(MAX_LEN - 1),fd))!=NULL) {
-			if (line[0] == '#' || line[0] == '\n') continue;
-			if ((p=strchr(line,' ')) != NULL) *p='\0';
-			if ((p=strchr(line,'\n')) != NULL) *p='\0';
-			if ((p=strchr(line,':')) != NULL) {
-				*p++='\0';
-			} else {
-				p=NULL;
-			}
-			pp=line;
-			if ((lp=strchr(pp,'*')) != NULL) {
-				pp=++lp;
-			}
-			if (strstr(client,pp)!=NULL) {
-				RARTon=true;
-				if (p != NULL) 
-                                    strlcpy(user,p,len);
-				break;
-			}
-		}
-		fclose(fd);
-	} else {
-		RARTon=false;
-		syslog(L_NOTICE, "%s No logging -- can't read %s", Client.host, dbfile);
-	}
+    if ((fd = fopen(dbfile, "r")) != NULL) {
+        while ((fgets(line, (MAX_LEN - 1), fd)) != NULL) {
+            if (line[0] == '#' || line[0] == '\n')
+                continue;
+            if ((p = strchr(line, ' ')) != NULL)
+                *p = '\0';
+            if ((p = strchr(line, '\n')) != NULL)
+                *p = '\0';
+            if ((p = strchr(line, ':')) != NULL) {
+                *p++ = '\0';
+            } else {
+                p = NULL;
+            }
+            pp = line;
+            if ((lp = strchr(pp, '*')) != NULL) {
+                pp = ++lp;
+            }
+            if (strstr(client, pp) != NULL) {
+                RARTon = true;
+                if (p != NULL)
+                    strlcpy(user, p, len);
+                break;
+            }
+        }
+        fclose(fd);
+    } else {
+        RARTon = false;
+        syslog(L_NOTICE, "%s No logging -- can't read %s", Client.host,
+               dbfile);
+    }
 
-        free(dbfile);
-	return RARTon;
+    free(dbfile);
+    return RARTon;
 }

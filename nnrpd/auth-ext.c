@@ -20,8 +20,8 @@
 /* Holds the details about a running child process. */
 struct process {
     pid_t pid;
-    int read_fd;                /* Read from child. */
-    int write_fd;               /* Write to child. */
+    int read_fd;  /* Read from child. */
+    int write_fd; /* Write to child. */
     int error_fd;
 };
 
@@ -56,9 +56,12 @@ start_process(struct client *client, const char *command, const char *dir)
     pid = fork();
     switch (pid) {
     case -1:
-        close(rd[0]); close(rd[1]);
-        close(wr[0]); close(wr[1]);
-        close(er[0]); close(er[1]);
+        close(rd[0]);
+        close(rd[1]);
+        close(wr[0]);
+        close(wr[1]);
+        close(er[0]);
+        close(er[1]);
         syswarn("%s auth: cannot fork", client->host);
         return NULL;
     case 0:
@@ -66,9 +69,12 @@ start_process(struct client *client, const char *command, const char *dir)
             syswarn("%s auth: cannot set up file descriptors", client->host);
             _exit(1);
         }
-        close(rd[0]); close(rd[1]);
-        close(wr[0]); close(wr[1]);
-        close(er[0]); close(er[1]);
+        close(rd[0]);
+        close(rd[1]);
+        close(wr[0]);
+        close(wr[1]);
+        close(er[0]);
+        close(er[1]);
         if (vector_exec(path, args) < 0) {
             syswarn("%s auth: cannot exec %s", client->host, path);
             _exit(1);
@@ -195,8 +201,8 @@ handle_output(struct client *client, struct process *process)
     FD_ZERO(&fds);
     FD_SET(process->read_fd, &fds);
     FD_SET(process->error_fd, &fds);
-    maxfd = process->read_fd > process->error_fd
-        ? process->read_fd : process->error_fd;
+    maxfd = process->read_fd > process->error_fd ? process->read_fd
+                                                 : process->error_fd;
     readbuf = buffer_new();
     buffer_resize(readbuf, 1024);
     errorbuf = buffer_new();

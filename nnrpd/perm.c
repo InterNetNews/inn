@@ -10,15 +10,15 @@
 #include <sys/wait.h>
 
 #include "conffile.h"
-#include "inn/network.h"
 #include "inn/innconf.h"
+#include "inn/network.h"
 #include "innperl.h"
 #include "nnrpd.h"
 #include "tls.h"
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#    include <sys/select.h>
 #endif
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
@@ -34,8 +34,8 @@ typedef struct _CONFCHAIN {
 typedef struct _METHOD {
     char *name;
     char *program;
-    int  type;          /* Type of auth (perl, python or external)/ */
-    char *users;	/* Only used for auth_methods, not for res_methods. */
+    int type;    /* Type of auth (perl, python or external)/ */
+    char *users; /* Only used for auth_methods, not for res_methods. */
     char **extra_logs;
 } METHOD;
 
@@ -52,9 +52,9 @@ typedef struct _AUTHGROUP {
     char *default_domain;
     char *localaddress;
     char *access_script;
-    int  access_type; /* Type of access (Perl or Python). */
+    int access_type; /* Type of access (Perl or Python). */
     char *dynamic_script;
-    int  dynamic_type; /* Type of dynamic authorization (Python only). */
+    int dynamic_type; /* Type of dynamic authorization (Python only). */
 } AUTHGROUP;
 
 typedef struct _GROUP {
@@ -66,130 +66,133 @@ typedef struct _GROUP {
 
 /* Function declarations. */
 static void PERMreadfile(char *filename);
-static void authdecl_parse(AUTHGROUP*, CONFFILE*, CONFTOKEN*);
-static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok);
-static void method_parse(METHOD*, CONFFILE*, CONFTOKEN*, int);
+static void authdecl_parse(AUTHGROUP *, CONFFILE *, CONFTOKEN *);
+static void accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f,
+                             CONFTOKEN *tok);
+static void method_parse(METHOD *, CONFFILE *, CONFTOKEN *, int);
 
-static void add_authgroup(AUTHGROUP*);
-static void add_accessgroup(ACCESSGROUP*);
+static void add_authgroup(AUTHGROUP *);
+static void add_accessgroup(ACCESSGROUP *);
 static void strip_accessgroups(void);
 
-static METHOD *copy_method(METHOD*);
-static void free_method(METHOD*);
-static AUTHGROUP *copy_authgroup(AUTHGROUP*);
-static void free_authgroup(AUTHGROUP*);
-static ACCESSGROUP *copy_accessgroup(ACCESSGROUP*);
-static void free_accessgroup(ACCESSGROUP*);
+static METHOD *copy_method(METHOD *);
+static void free_method(METHOD *);
+static AUTHGROUP *copy_authgroup(AUTHGROUP *);
+static void free_authgroup(AUTHGROUP *);
+static ACCESSGROUP *copy_accessgroup(ACCESSGROUP *);
+static void free_accessgroup(ACCESSGROUP *);
 
-static void CompressList(char*);
-static bool MatchHost(char*, char*, char*);
-static int MatchUser(char*, char*);
-static char *ResolveUser(AUTHGROUP*);
-static char *AuthenticateUser(AUTHGROUP*, char*, char*, int*, char*);
+static void CompressList(char *);
+static bool MatchHost(char *, char *, char *);
+static int MatchUser(char *, char *);
+static char *ResolveUser(AUTHGROUP *);
+static char *AuthenticateUser(AUTHGROUP *, char *, char *, int *, char *);
 
-static void GrowArray(void*, void*);
-static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name, struct vector *acccess_vec) UNUSED;
+static void GrowArray(void *, void *);
+static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
+                               struct vector *acccess_vec) UNUSED;
 
 /* Global variables. */
 static AUTHGROUP **auth_realms;
 static AUTHGROUP *success_auth;
 static ACCESSGROUP **access_realms;
 
-static char	*ConfigBit;
-static int	ConfigBitsize;
+static char *ConfigBit;
+static int ConfigBitsize;
 
 extern bool PerlLoaded;
 
-#define PERMlbrace		1
-#define PERMrbrace		2
-#define PERMgroup		3
-#define PERMauth		4
-#define PERMaccess		5
-#define PERMhost		6
-#define PERMauthprog		7
-#define PERMresolv		8
-#define PERMresprog		9
-#define PERMdefuser		10
-#define PERMdefdomain		11
-#define PERMusers		12
-#define PERMnewsgroups		13
-#define PERMread		14
-#define PERMpost		15
-#define PERMaccessrp		16
+#define PERMlbrace     1
+#define PERMrbrace     2
+#define PERMgroup      3
+#define PERMauth       4
+#define PERMaccess     5
+#define PERMhost       6
+#define PERMauthprog   7
+#define PERMresolv     8
+#define PERMresprog    9
+#define PERMdefuser    10
+#define PERMdefdomain  11
+#define PERMusers      12
+#define PERMnewsgroups 13
+#define PERMread       14
+#define PERMpost       15
+#define PERMaccessrp   16
 
-#define PERMalsolog		18
-#define PERMprogram		19
-#define PERMinclude		20
-#define PERMkey			21
-#define PERMlocaltime		22
-#define PERMstrippath		23
-#define PERMnnrpdperlfilter	24
-#define PERMnnrpdpythonfilter	25
-#define PERMfromhost		26
-#define PERMpathhost		27
-#define PERMorganization	28
-#define PERMmoderatormailer	29
-#define PERMdomain		30
-#define PERMcomplaints		31
-#define PERMspoolfirst		32
-#define PERMcheckincludedtext	33
-#define PERMclienttimeout	34
-#define PERMlocalmaxartsize	35
-#define PERMreadertrack		36
-#define PERMstrippostcc		37
-#define PERMaddinjectiondate	38
+#define PERMalsolog                    18
+#define PERMprogram                    19
+#define PERMinclude                    20
+#define PERMkey                        21
+#define PERMlocaltime                  22
+#define PERMstrippath                  23
+#define PERMnnrpdperlfilter            24
+#define PERMnnrpdpythonfilter          25
+#define PERMfromhost                   26
+#define PERMpathhost                   27
+#define PERMorganization               28
+#define PERMmoderatormailer            29
+#define PERMdomain                     30
+#define PERMcomplaints                 31
+#define PERMspoolfirst                 32
+#define PERMcheckincludedtext          33
+#define PERMclienttimeout              34
+#define PERMlocalmaxartsize            35
+#define PERMreadertrack                36
+#define PERMstrippostcc                37
+#define PERMaddinjectiondate           38
 #define PERMaddinjectionpostingaccount 39
-#define PERMaddinjectionpostinghost	40
-#define PERMnnrpdposthost	41
-#define PERMnnrpdpostport	42
-#define PERMnnrpdoverstats	43
-#define PERMbackoff_auth	44
-#define PERMbackoff_db		45
-#define PERMbackoff_k		46
-#define PERMbackoff_postfast	47
-#define PERMbackoff_postslow	48
-#define PERMbackoff_trigger	49
-#define PERMnnrpdcheckart	50
-#define PERMnnrpdauthsender	51
-#define PERMvirtualhost		52
-#define PERMnewsmaster		53
-#define PERMlocaladdress	54
-#define PERMrejectwith		55
-#define PERMmaxbytespersecond	56
-#define PERMperl_auth           57
-#define PERMpython_auth         58
-#define PERMperl_access         59
-#define PERMpython_access       60
-#define PERMpython_dynamic      61
+#define PERMaddinjectionpostinghost    40
+#define PERMnnrpdposthost              41
+#define PERMnnrpdpostport              42
+#define PERMnnrpdoverstats             43
+#define PERMbackoff_auth               44
+#define PERMbackoff_db                 45
+#define PERMbackoff_k                  46
+#define PERMbackoff_postfast           47
+#define PERMbackoff_postslow           48
+#define PERMbackoff_trigger            49
+#define PERMnnrpdcheckart              50
+#define PERMnnrpdauthsender            51
+#define PERMvirtualhost                52
+#define PERMnewsmaster                 53
+#define PERMlocaladdress               54
+#define PERMrejectwith                 55
+#define PERMmaxbytespersecond          56
+#define PERMperl_auth                  57
+#define PERMpython_auth                58
+#define PERMperl_access                59
+#define PERMpython_access              60
+#define PERMpython_dynamic             61
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-#define PERMrequire_ssl         62
-#define PERMMAX                 63
+#    define PERMrequire_ssl 62
+#    define PERMMAX         63
 #else
-#define PERMMAX			62
+#    define PERMMAX 62
 #endif
 
-#define TEST_CONFIG(a, b) \
-    { \
-	int byte, offset; \
-	offset = a % 8; \
-	byte = (a - offset) / 8; \
-	b = ((ConfigBit[byte] & (1 << offset)) != 0) ? true : false; \
+#define TEST_CONFIG(a, b)                                            \
+    {                                                                \
+        int byte, offset;                                            \
+        offset = a % 8;                                              \
+        byte = (a - offset) / 8;                                     \
+        b = ((ConfigBit[byte] & (1 << offset)) != 0) ? true : false; \
     }
-#define SET_CONFIG(a) \
-    { \
-	int byte, offset; \
-	offset = a % 8; \
-	byte = (a - offset) / 8; \
-	ConfigBit[byte] |= (1 << offset); \
+#define SET_CONFIG(a)                     \
+    {                                     \
+        int byte, offset;                 \
+        offset = a % 8;                   \
+        byte = (a - offset) / 8;          \
+        ConfigBit[byte] |= (1 << offset); \
     }
-#define CLEAR_CONFIG(a) \
-    { \
-	int byte, offset; \
-	offset = a % 8; \
-	byte = (a - offset) / 8; \
-	ConfigBit[byte] &= ~(1 << offset); \
+#define CLEAR_CONFIG(a)                    \
+    {                                      \
+        int byte, offset;                  \
+        offset = a % 8;                    \
+        byte = (a - offset) / 8;           \
+        ConfigBit[byte] &= ~(1 << offset); \
     }
 
+/* clang-format off */
 static CONFTOKEN PERMtoks[] = {
     { PERMlbrace,               (char *) "{"                    },
     { PERMrbrace,               (char *) "}"                    },
@@ -256,6 +259,7 @@ static CONFTOKEN PERMtoks[] = {
 #endif
     { 0,                        (char *) NULL                   }
 };
+/* clang-format on */
 
 /* Function definitions. */
 static void
@@ -265,12 +269,12 @@ GrowArray(void *data, void *el)
     void ***array = data;
 
     if (*array == NULL) {
-	*array = xmalloc(2 * sizeof(void *));
-	i = 0;
+        *array = xmalloc(2 * sizeof(void *));
+        i = 0;
     } else {
-	for (i = 0; (*array)[i]; i++)
-	    ;
-	*array = xrealloc(*array, (i + 2) * sizeof(void *));
+        for (i = 0; (*array)[i]; i++)
+            ;
+        *array = xrealloc(*array, (i + 2) * sizeof(void *));
     }
     (*array)[i++] = el;
     (*array)[i] = 0;
@@ -292,19 +296,19 @@ copy_method(METHOD *orig)
         ret->program = NULL;
     }
     if (orig->users)
-	ret->users = xstrdup(orig->users);
+        ret->users = xstrdup(orig->users);
     else
-	ret->users = 0;
+        ret->users = 0;
 
     ret->extra_logs = 0;
     if (orig->extra_logs) {
-	for (i = 0; orig->extra_logs[i]; i++)
-	    GrowArray(&ret->extra_logs, xstrdup(orig->extra_logs[i]));
+        for (i = 0; orig->extra_logs[i]; i++)
+            GrowArray(&ret->extra_logs, xstrdup(orig->extra_logs[i]));
     }
 
     ret->type = orig->type;
 
-    return(ret);
+    return (ret);
 }
 
 static void
@@ -313,14 +317,14 @@ free_method(METHOD *del)
     int j;
 
     if (del->extra_logs) {
-	for (j = 0; del->extra_logs[j]; j++)
-	    free(del->extra_logs[j]);
-	free(del->extra_logs);
+        for (j = 0; del->extra_logs[j]; j++)
+            free(del->extra_logs[j]);
+        free(del->extra_logs);
     }
     if (del->program)
-	free(del->program);
+        free(del->program);
     if (del->users)
-	free(del->users);
+        free(del->users);
     free(del->name);
     free(del);
 }
@@ -332,24 +336,24 @@ copy_authgroup(AUTHGROUP *orig)
     int i;
 
     if (!orig)
-	return(0);
+        return (0);
     ret = xmalloc(sizeof(AUTHGROUP));
     memset(ConfigBit, '\0', ConfigBitsize);
 
     if (orig->name)
-	ret->name = xstrdup(orig->name);
+        ret->name = xstrdup(orig->name);
     else
-	ret->name = 0;
+        ret->name = 0;
 
     if (orig->key)
-	ret->key = xstrdup(orig->key);
+        ret->key = xstrdup(orig->key);
     else
-	ret->key = 0;
+        ret->key = 0;
 
     if (orig->hosts)
-	ret->hosts = xstrdup(orig->hosts);
+        ret->hosts = xstrdup(orig->hosts);
     else
-	ret->hosts = 0;
+        ret->hosts = 0;
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     ret->require_ssl = orig->require_ssl;
@@ -357,30 +361,31 @@ copy_authgroup(AUTHGROUP *orig)
 
     ret->res_methods = 0;
     if (orig->res_methods) {
-	for (i = 0; orig->res_methods[i]; i++)
-	    GrowArray(&ret->res_methods, copy_method(orig->res_methods[i]));;
+        for (i = 0; orig->res_methods[i]; i++)
+            GrowArray(&ret->res_methods, copy_method(orig->res_methods[i]));
+        ;
     }
 
     ret->auth_methods = 0;
     if (orig->auth_methods) {
-	for (i = 0; orig->auth_methods[i]; i++)
-	    GrowArray(&ret->auth_methods, copy_method(orig->auth_methods[i]));
+        for (i = 0; orig->auth_methods[i]; i++)
+            GrowArray(&ret->auth_methods, copy_method(orig->auth_methods[i]));
     }
 
     if (orig->default_user)
-	ret->default_user = xstrdup(orig->default_user);
+        ret->default_user = xstrdup(orig->default_user);
     else
-	ret->default_user = 0;
+        ret->default_user = 0;
 
     if (orig->default_domain)
-	ret->default_domain = xstrdup(orig->default_domain);
+        ret->default_domain = xstrdup(orig->default_domain);
     else
-	ret->default_domain = 0;
+        ret->default_domain = 0;
 
     if (orig->localaddress)
-	ret->localaddress = xstrdup(orig->localaddress);
+        ret->localaddress = xstrdup(orig->localaddress);
     else
-	ret->localaddress = 0;
+        ret->localaddress = 0;
 
     if (orig->access_script)
         ret->access_script = xstrdup(orig->access_script);
@@ -402,7 +407,7 @@ copy_authgroup(AUTHGROUP *orig)
     else
         ret->dynamic_type = 0;
 
-    return(ret);
+    return (ret);
 }
 
 static ACCESSGROUP *
@@ -411,57 +416,58 @@ copy_accessgroup(ACCESSGROUP *orig)
     ACCESSGROUP *ret;
 
     if (!orig)
-	return(0);
+        return (0);
     ret = xmalloc(sizeof(ACCESSGROUP));
     memset(ConfigBit, '\0', ConfigBitsize);
     /* Copy all anyway, and update for local strings. */
     *ret = *orig;
 
     if (orig->name)
-	ret->name = xstrdup(orig->name);
+        ret->name = xstrdup(orig->name);
     if (orig->key)
-	ret->key = xstrdup(orig->key);
+        ret->key = xstrdup(orig->key);
     if (orig->read)
-	ret->read = xstrdup(orig->read);
+        ret->read = xstrdup(orig->read);
     if (orig->post)
-	ret->post = xstrdup(orig->post);
+        ret->post = xstrdup(orig->post);
     if (orig->users)
-	ret->users = xstrdup(orig->users);
+        ret->users = xstrdup(orig->users);
     if (orig->rejectwith)
-	ret->rejectwith = xstrdup(orig->rejectwith);
+        ret->rejectwith = xstrdup(orig->rejectwith);
     if (orig->fromhost)
-	ret->fromhost = xstrdup(orig->fromhost);
+        ret->fromhost = xstrdup(orig->fromhost);
     if (orig->pathhost)
-	ret->pathhost = xstrdup(orig->pathhost);
+        ret->pathhost = xstrdup(orig->pathhost);
     if (orig->organization)
-	ret->organization = xstrdup(orig->organization);
+        ret->organization = xstrdup(orig->organization);
     if (orig->moderatormailer)
-	ret->moderatormailer = xstrdup(orig->moderatormailer);
+        ret->moderatormailer = xstrdup(orig->moderatormailer);
     if (orig->domain)
-	ret->domain = xstrdup(orig->domain);
+        ret->domain = xstrdup(orig->domain);
     if (orig->complaints)
-	ret->complaints = xstrdup(orig->complaints);
+        ret->complaints = xstrdup(orig->complaints);
     if (orig->nnrpdposthost)
-	ret->nnrpdposthost = xstrdup(orig->nnrpdposthost);
+        ret->nnrpdposthost = xstrdup(orig->nnrpdposthost);
     if (orig->backoff_db)
-	ret->backoff_db = xstrdup(orig->backoff_db);
+        ret->backoff_db = xstrdup(orig->backoff_db);
     if (orig->newsmaster)
-	ret->newsmaster = xstrdup(orig->newsmaster);
-    return(ret);
+        ret->newsmaster = xstrdup(orig->newsmaster);
+    return (ret);
 }
 
 static void
 SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-        curauth->require_ssl = false;
+    curauth->require_ssl = false;
 #endif
 }
 
 void
 SetDefaultAccess(ACCESSGROUP *curaccess)
 {
-    curaccess->allownewnews = innconf->allownewnews;;
+    curaccess->allownewnews = innconf->allownewnews;
+    ;
     curaccess->allowihave = false;
     curaccess->locpost = false;
     curaccess->allowapproved = false;
@@ -471,22 +477,22 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->nnrpdpythonfilter = true;
     curaccess->fromhost = NULL;
     if (innconf->fromhost)
-	curaccess->fromhost = xstrdup(innconf->fromhost);
+        curaccess->fromhost = xstrdup(innconf->fromhost);
     curaccess->pathhost = NULL;
     if (innconf->pathhost)
-	curaccess->pathhost = xstrdup(innconf->pathhost);
+        curaccess->pathhost = xstrdup(innconf->pathhost);
     curaccess->organization = NULL;
     if (innconf->organization)
-	curaccess->organization = xstrdup(innconf->organization);
+        curaccess->organization = xstrdup(innconf->organization);
     curaccess->moderatormailer = NULL;
     if (innconf->moderatormailer)
-	curaccess->moderatormailer = xstrdup(innconf->moderatormailer);
+        curaccess->moderatormailer = xstrdup(innconf->moderatormailer);
     curaccess->domain = NULL;
     if (innconf->domain)
-	curaccess->domain = xstrdup(innconf->domain);
+        curaccess->domain = xstrdup(innconf->domain);
     curaccess->complaints = NULL;
     if (innconf->complaints)
-	curaccess->complaints = xstrdup(innconf->complaints);
+        curaccess->complaints = xstrdup(innconf->complaints);
     curaccess->spoolfirst = innconf->spoolfirst;
     curaccess->checkincludedtext = innconf->checkincludedtext;
     curaccess->clienttimeout = innconf->clienttimeout;
@@ -494,7 +500,8 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->readertrack = innconf->readertrack;
     curaccess->strippostcc = innconf->strippostcc;
     curaccess->addinjectiondate = innconf->addinjectiondate;
-    curaccess->addinjectionpostingaccount = innconf->addinjectionpostingaccount;
+    curaccess->addinjectionpostingaccount =
+        innconf->addinjectionpostingaccount;
     curaccess->addinjectionpostinghost = innconf->addinjectionpostinghost;
     curaccess->nnrpdposthost = innconf->nnrpdposthost;
     curaccess->nnrpdpostport = innconf->nnrpdpostport;
@@ -502,7 +509,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->backoff_auth = innconf->backoffauth;
     curaccess->backoff_db = NULL;
     if (innconf->backoffdb && *innconf->backoffdb != '\0')
-	curaccess->backoff_db = xstrdup(innconf->backoffdb);
+        curaccess->backoff_db = xstrdup(innconf->backoffdb);
     curaccess->backoff_k = innconf->backoffk;
     curaccess->backoff_postfast = innconf->backoffpostfast;
     curaccess->backoff_postslow = innconf->backoffpostslow;
@@ -520,27 +527,27 @@ free_authgroup(AUTHGROUP *del)
     int i;
 
     if (del->name)
-	free(del->name);
+        free(del->name);
     if (del->key)
-	free(del->key);
+        free(del->key);
     if (del->hosts)
-	free(del->hosts);
+        free(del->hosts);
     if (del->res_methods) {
-	for (i = 0; del->res_methods[i]; i++)
-	    free_method(del->res_methods[i]);
-	free(del->res_methods);
+        for (i = 0; del->res_methods[i]; i++)
+            free_method(del->res_methods[i]);
+        free(del->res_methods);
     }
     if (del->auth_methods) {
-	for (i = 0; del->auth_methods[i]; i++)
-	    free_method(del->auth_methods[i]);
-	free(del->auth_methods);
+        for (i = 0; del->auth_methods[i]; i++)
+            free_method(del->auth_methods[i]);
+        free(del->auth_methods);
     }
     if (del->default_user)
-	free(del->default_user);
+        free(del->default_user);
     if (del->default_domain)
-	free(del->default_domain);
+        free(del->default_domain);
     if (del->localaddress)
-	free(del->localaddress);
+        free(del->localaddress);
     if (del->access_script)
         free(del->access_script);
     if (del->dynamic_script)
@@ -552,44 +559,45 @@ static void
 free_accessgroup(ACCESSGROUP *del)
 {
     if (del->name)
-	free(del->name);
+        free(del->name);
     if (del->key)
-	free(del->key);
+        free(del->key);
     if (del->read)
-	free(del->read);
+        free(del->read);
     if (del->post)
-	free(del->post);
+        free(del->post);
     if (del->users)
-	free(del->users);
+        free(del->users);
     if (del->rejectwith)
-	free(del->rejectwith);
+        free(del->rejectwith);
     if (del->fromhost)
-	free(del->fromhost);
+        free(del->fromhost);
     if (del->pathhost)
-	free(del->pathhost);
+        free(del->pathhost);
     if (del->organization)
-	free(del->organization);
+        free(del->organization);
     if (del->moderatormailer)
-	free(del->moderatormailer);
+        free(del->moderatormailer);
     if (del->domain)
-	free(del->domain);
+        free(del->domain);
     if (del->complaints)
-	free(del->complaints);
+        free(del->complaints);
     if (del->nnrpdposthost)
-	free(del->nnrpdposthost);
+        free(del->nnrpdposthost);
     if (del->backoff_db)
-	free(del->backoff_db);
+        free(del->backoff_db);
     if (del->newsmaster)
-	free(del->newsmaster);
+        free(del->newsmaster);
     free(del);
 }
 
 static void
 ReportError(CONFFILE *f, const char *err)
 {
-    syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host,
-      f->filename, f->lineno, err);
-    Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
+    syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host, f->filename,
+           f->lineno, err);
+    Reply("%d NNTP server unavailable.  Try later!\r\n",
+          NNTP_FAIL_TERMINATING);
     ExitWithStats(1, true);
 }
 
@@ -602,30 +610,31 @@ method_parse(METHOD *method, CONFFILE *f, CONFTOKEN *tok, int auth)
     tok = CONFgettoken(0, f);
 
     if (tok == NULL) {
-	ReportError(f, "Expected value.");
+        ReportError(f, "Expected value.");
     }
 
     switch (oldtype) {
-      case PERMalsolog:
-	GrowArray(&method->extra_logs, xstrdup(tok->name));
-	break;
-      case PERMusers:
+    case PERMalsolog:
+        GrowArray(&method->extra_logs, xstrdup(tok->name));
+        break;
+    case PERMusers:
 
-	if (!auth) {
-	    ReportError(f, "Unexpected users: directive in file.");
-	} else if (method->users) {
-	    ReportError(f, "Multiple users: directive in file.");
-	}
+        if (!auth) {
+            ReportError(f, "Unexpected users: directive in file.");
+        } else if (method->users) {
+            ReportError(f, "Multiple users: directive in file.");
+        }
 
-	method->users = xstrdup(tok->name);
-	break;
-      case PERMprogram:
-	if (method->program) {
-	    ReportError(f, "Multiple program: directives in auth/res declaration.");
-	}
+        method->users = xstrdup(tok->name);
+        break;
+    case PERMprogram:
+        if (method->program) {
+            ReportError(
+                f, "Multiple program: directives in auth/res declaration.");
+        }
 
-	method->program = xstrdup(tok->name);
-	break;
+        method->program = xstrdup(tok->name);
+        break;
     }
 }
 
@@ -646,44 +655,43 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     tok = CONFgettoken(PERMtoks, f);
 
     if (tok == NULL) {
-	ReportError(f, "Expected value.");
+        ReportError(f, "Expected value.");
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	snprintf(buff, sizeof(buff), "Duplicated '%s' field in auth group.",
+        snprintf(buff, sizeof(buff), "Duplicated '%s' field in auth group.",
                  oldname);
-	ReportError(f, buff);
+        ReportError(f, buff);
     }
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    if (strcasecmp(tok->name, "on") == 0
-        || strcasecmp(tok->name, "true") == 0
+    if (strcasecmp(tok->name, "on") == 0 || strcasecmp(tok->name, "true") == 0
         || strcasecmp(tok->name, "yes") == 0)
-	boolval = true;
+        boolval = true;
     else if (strcasecmp(tok->name, "off") == 0
              || strcasecmp(tok->name, "false") == 0
              || strcasecmp(tok->name, "no") == 0)
-	boolval = false;
+        boolval = false;
     else
-	boolval = -1;
+        boolval = -1;
 #endif
 
     switch (oldtype) {
-      case PERMkey:
-	curauth->key = xstrdup(tok->name);
-	SET_CONFIG(PERMkey);
-	break;
+    case PERMkey:
+        curauth->key = xstrdup(tok->name);
+        SET_CONFIG(PERMkey);
+        break;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-      case PERMrequire_ssl:
+    case PERMrequire_ssl:
         if (boolval != -1)
             curauth->require_ssl = boolval;
         SET_CONFIG(PERMrequire_ssl);
         break;
 #endif
-      case PERMhost:
-	curauth->hosts = xstrdup(tok->name);
-	CompressList(curauth->hosts);
-	SET_CONFIG(PERMhost);
+    case PERMhost:
+        curauth->hosts = xstrdup(tok->name);
+        CompressList(curauth->hosts);
+        SET_CONFIG(PERMhost);
 
         /* nnrpd.c downcases the names of connecting hosts.  We should
          * therefore also downcase the wildmat patterns to make sure there
@@ -692,123 +700,128 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
             if (isupper((unsigned char) *p))
                 *p = tolower((unsigned char) *p);
 
-	break;
-      case PERMdefdomain:
-	curauth->default_domain = xstrdup(tok->name);
-	SET_CONFIG(PERMdefdomain);
-	break;
-      case PERMdefuser:
-	curauth->default_user = xstrdup(tok->name);
-	SET_CONFIG(PERMdefuser);
-	break;
-      case PERMresolv:
-      case PERMresprog:
+        break;
+    case PERMdefdomain:
+        curauth->default_domain = xstrdup(tok->name);
+        SET_CONFIG(PERMdefdomain);
+        break;
+    case PERMdefuser:
+        curauth->default_user = xstrdup(tok->name);
+        SET_CONFIG(PERMdefuser);
+        break;
+    case PERMresolv:
+    case PERMresprog:
         m = xcalloc(1, sizeof(METHOD));
-	memset(ConfigBit, '\0', ConfigBitsize);
-	GrowArray(&curauth->res_methods, m);
+        memset(ConfigBit, '\0', ConfigBitsize);
+        GrowArray(&curauth->res_methods, m);
 
-	if (oldtype == PERMresprog)
-	    m->program = xstrdup(tok->name);
-	else {
-	    m->name = xstrdup(tok->name);
-	    tok = CONFgettoken(PERMtoks, f);
-	    if (tok == NULL || tok->type != PERMlbrace) {
-		ReportError(f, "Expected '{' after 'res'.");
-	    }
+        if (oldtype == PERMresprog)
+            m->program = xstrdup(tok->name);
+        else {
+            m->name = xstrdup(tok->name);
+            tok = CONFgettoken(PERMtoks, f);
+            if (tok == NULL || tok->type != PERMlbrace) {
+                ReportError(f, "Expected '{' after 'res'.");
+            }
 
-	    tok = CONFgettoken(PERMtoks, f);
+            tok = CONFgettoken(PERMtoks, f);
 
-	    while (tok != NULL && tok->type != PERMrbrace) {
-		method_parse(m, f, tok, 0);
-		tok = CONFgettoken(PERMtoks, f);
-	    }
+            while (tok != NULL && tok->type != PERMrbrace) {
+                method_parse(m, f, tok, 0);
+                tok = CONFgettoken(PERMtoks, f);
+            }
 
-        if (m->program == NULL) {
-            ReportError(f, "Missing 'program:' key.");
+            if (m->program == NULL) {
+                ReportError(f, "Missing 'program:' key.");
+            }
+
+            if (tok == NULL) {
+                ReportError(f, "Unexpected EOF.");
+            }
         }
-
-	    if (tok == NULL) {
-		ReportError(f, "Unexpected EOF.");
-	    }
-	}
-	break;
-      case PERMauth:
-      case PERMperl_auth:
-      case PERMpython_auth:
-      case PERMauthprog:
+        break;
+    case PERMauth:
+    case PERMperl_auth:
+    case PERMpython_auth:
+    case PERMauthprog:
         m = xcalloc(1, sizeof(METHOD));
-	memset(ConfigBit, '\0', ConfigBitsize);
-	GrowArray(&curauth->auth_methods, m);
-	if (oldtype == PERMauthprog) {
+        memset(ConfigBit, '\0', ConfigBitsize);
+        GrowArray(&curauth->auth_methods, m);
+        if (oldtype == PERMauthprog) {
             m->type = PERMauthprog;
-	    m->program = xstrdup(tok->name);
-	} else if (oldtype == PERMperl_auth) {
+            m->program = xstrdup(tok->name);
+        } else if (oldtype == PERMperl_auth) {
 #ifdef DO_PERL
             m->type = PERMperl_auth;
-	    m->program = xstrdup(tok->name);
+            m->program = xstrdup(tok->name);
 #else
-            ReportError(f, "perl_auth can not be used in readers.conf: INN not compiled with Perl support enabled.");
+            ReportError(f, "perl_auth can not be used in readers.conf: INN "
+                           "not compiled with Perl support enabled.");
 #endif
         } else if (oldtype == PERMpython_auth) {
 #ifdef DO_PYTHON
             m->type = PERMpython_auth;
             m->program = xstrdup(tok->name);
 #else
-            ReportError(f, "python_auth can not be used in readers.conf: INN not compiled with Python support enabled.");
+            ReportError(f, "python_auth can not be used in readers.conf: INN "
+                           "not compiled with Python support enabled.");
 #endif
         } else {
-	    m->name = xstrdup(tok->name);
-	    tok = CONFgettoken(PERMtoks, f);
+            m->name = xstrdup(tok->name);
+            tok = CONFgettoken(PERMtoks, f);
 
-	    if (tok == NULL || tok->type != PERMlbrace) {
-		ReportError(f, "Expected '{' after 'auth'.");
-	    }
+            if (tok == NULL || tok->type != PERMlbrace) {
+                ReportError(f, "Expected '{' after 'auth'.");
+            }
 
-	    tok = CONFgettoken(PERMtoks, f);
+            tok = CONFgettoken(PERMtoks, f);
 
-	    while (tok != NULL && tok->type != PERMrbrace) {
-		method_parse(m, f, tok, 1);
-		tok = CONFgettoken(PERMtoks, f);
-	    }
+            while (tok != NULL && tok->type != PERMrbrace) {
+                method_parse(m, f, tok, 1);
+                tok = CONFgettoken(PERMtoks, f);
+            }
 
-	    if (tok == NULL) {
-		ReportError(f, "Unexpected EOF.");
-	    }
-	}
-	break;
-      case PERMperl_access:
+            if (tok == NULL) {
+                ReportError(f, "Unexpected EOF.");
+            }
+        }
+        break;
+    case PERMperl_access:
 #ifdef DO_PERL
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMperl_access;
 #else
-        ReportError(f, "perl_access can not be used in readers.conf: INN not compiled with Perl support enabled.");
+        ReportError(f, "perl_access can not be used in readers.conf: INN not "
+                       "compiled with Perl support enabled.");
 #endif
         break;
-      case PERMpython_access:
+    case PERMpython_access:
 #ifdef DO_PYTHON
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMpython_access;
 #else
-        ReportError(f, "python_access can not be used in readers.conf: INN not compiled with Python support enabled.");
+        ReportError(f, "python_access can not be used in readers.conf: INN "
+                       "not compiled with Python support enabled.");
 #endif
         break;
-      case PERMpython_dynamic:
+    case PERMpython_dynamic:
 #ifdef DO_PYTHON
         curauth->dynamic_script = xstrdup(tok->name);
         curauth->dynamic_type = PERMpython_dynamic;
 #else
-        ReportError(f, "python_dynamic can not be used in readers.conf: INN not compiled with Python support enabled.");
+        ReportError(f, "python_dynamic can not be used in readers.conf: INN "
+                       "not compiled with Python support enabled.");
 #endif
-       break;
-      case PERMlocaladdress:
-	curauth->localaddress = xstrdup(tok->name);
-	CompressList(curauth->localaddress);
-	SET_CONFIG(PERMlocaladdress);
-	break;
-      default:
-	snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
-	ReportError(f, buff);
-	break;
+        break;
+    case PERMlocaladdress:
+        curauth->localaddress = xstrdup(tok->name);
+        CompressList(curauth->localaddress);
+        SET_CONFIG(PERMlocaladdress);
+        break;
+    default:
+        snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
+        ReportError(f, buff);
+        break;
     }
 }
 
@@ -825,247 +838,259 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
     tok = CONFgettoken(0, f);
 
     if (tok == NULL) {
-	ReportError(f, "Expected value.");
+        ReportError(f, "Expected value.");
     }
     TEST_CONFIG(oldtype, bit);
     if (bit) {
-	snprintf(buff, sizeof(buff), "Duplicated '%s' field in access group.",
+        snprintf(buff, sizeof(buff), "Duplicated '%s' field in access group.",
                  oldname);
-	ReportError(f, buff);
+        ReportError(f, buff);
     }
-    if (strcasecmp(tok->name, "on") == 0
-        || strcasecmp(tok->name, "true") == 0
+    if (strcasecmp(tok->name, "on") == 0 || strcasecmp(tok->name, "true") == 0
         || strcasecmp(tok->name, "yes") == 0)
-	boolval = true;
+        boolval = true;
     else if (strcasecmp(tok->name, "off") == 0
              || strcasecmp(tok->name, "false") == 0
              || strcasecmp(tok->name, "no") == 0)
-	boolval = false;
+        boolval = false;
     else
-	boolval = -1;
+        boolval = -1;
 
     switch (oldtype) {
-      case PERMkey:
-	curaccess->key = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMusers:
-	curaccess->users = xstrdup(tok->name);
-	CompressList(curaccess->users);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMrejectwith:
-	curaccess->rejectwith = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnewsgroups:
-	TEST_CONFIG(PERMread, bit);
-	if (bit) {
-	    /* Syntax error...  can't set read: or post: _and_ use
-	     * newsgroups:. */
-	    ReportError(f, "read: newsgroups already set.");
-	}
-	TEST_CONFIG(PERMpost, bit);
-	if (bit) {
-	    /* Syntax error...  can't set read: or post: _and_ use
-	     * newsgroups:. */
-	    ReportError(f, "post: newsgroups already set.");
-	}
+    case PERMkey:
+        curaccess->key = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMusers:
+        curaccess->users = xstrdup(tok->name);
+        CompressList(curaccess->users);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMrejectwith:
+        curaccess->rejectwith = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnewsgroups:
+        TEST_CONFIG(PERMread, bit);
+        if (bit) {
+            /* Syntax error...  can't set read: or post: _and_ use
+             * newsgroups:. */
+            ReportError(f, "read: newsgroups already set.");
+        }
+        TEST_CONFIG(PERMpost, bit);
+        if (bit) {
+            /* Syntax error...  can't set read: or post: _and_ use
+             * newsgroups:. */
+            ReportError(f, "post: newsgroups already set.");
+        }
 
-	curaccess->read = xstrdup(tok->name);
-	CompressList(curaccess->read);
-	curaccess->post = xstrdup(tok->name);
-	CompressList(curaccess->post);
-	SET_CONFIG(oldtype);
-	SET_CONFIG(PERMread);
-	SET_CONFIG(PERMpost);
-	break;
-      case PERMread:
-	curaccess->read = xstrdup(tok->name);
-	CompressList(curaccess->read);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMpost:
-	curaccess->post = xstrdup(tok->name);
-	CompressList(curaccess->post);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMaccessrp:
-	TEST_CONFIG(PERMread, bit);
-	if (bit && strchr(tok->name, 'R') == NULL) {
-	    free(curaccess->read);
-	    curaccess->read = 0;
-	    CLEAR_CONFIG(PERMread);
-	}
-	TEST_CONFIG(PERMpost, bit);
-	if (bit && strchr(tok->name, 'P') == NULL) {
-	    free(curaccess->post);
-	    curaccess->post = 0;
-	    CLEAR_CONFIG(PERMpost);
-	}
-	curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
-	curaccess->allownewnews = (strchr(tok->name, 'N') != NULL);
-	curaccess->allowihave = (strchr(tok->name, 'I') != NULL);
-	curaccess->locpost = (strchr(tok->name, 'L') != NULL);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMlocaltime:
-	if (boolval != -1) curaccess->localtime = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMstrippath:
-	if (boolval != -1) curaccess->strippath = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdperlfilter:
-	if (boolval != -1) curaccess->nnrpdperlfilter = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdpythonfilter:
-	if (boolval != -1) curaccess->nnrpdpythonfilter = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMfromhost:
-	if (curaccess->fromhost)
-	    free(curaccess->fromhost);
-	curaccess->fromhost = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMpathhost:
-	if (curaccess->pathhost)
-	    free(curaccess->pathhost);
-	curaccess->pathhost = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMorganization:
-	if (curaccess->organization)
-	    free(curaccess->organization);
-	curaccess->organization = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMmoderatormailer:
-	if (curaccess->moderatormailer)
-	    free(curaccess->moderatormailer);
-	curaccess->moderatormailer = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMdomain:
-	if (curaccess->domain)
-	    free(curaccess->domain);
-	curaccess->domain = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMcomplaints:
-	if (curaccess->complaints)
-	    free(curaccess->complaints);
-	curaccess->complaints = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMspoolfirst:
-	if (boolval != -1) curaccess->spoolfirst = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMcheckincludedtext:
-	if (boolval != -1) curaccess->checkincludedtext = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMclienttimeout:
-	curaccess->clienttimeout = atoi(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMlocalmaxartsize:
-	curaccess->localmaxartsize = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMreadertrack:
-	if (boolval != -1) curaccess->readertrack = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMstrippostcc:
-	if (boolval != -1) curaccess->strippostcc = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMaddinjectiondate:
-	if (boolval != -1)
+        curaccess->read = xstrdup(tok->name);
+        CompressList(curaccess->read);
+        curaccess->post = xstrdup(tok->name);
+        CompressList(curaccess->post);
+        SET_CONFIG(oldtype);
+        SET_CONFIG(PERMread);
+        SET_CONFIG(PERMpost);
+        break;
+    case PERMread:
+        curaccess->read = xstrdup(tok->name);
+        CompressList(curaccess->read);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMpost:
+        curaccess->post = xstrdup(tok->name);
+        CompressList(curaccess->post);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMaccessrp:
+        TEST_CONFIG(PERMread, bit);
+        if (bit && strchr(tok->name, 'R') == NULL) {
+            free(curaccess->read);
+            curaccess->read = 0;
+            CLEAR_CONFIG(PERMread);
+        }
+        TEST_CONFIG(PERMpost, bit);
+        if (bit && strchr(tok->name, 'P') == NULL) {
+            free(curaccess->post);
+            curaccess->post = 0;
+            CLEAR_CONFIG(PERMpost);
+        }
+        curaccess->allowapproved = (strchr(tok->name, 'A') != NULL);
+        curaccess->allownewnews = (strchr(tok->name, 'N') != NULL);
+        curaccess->allowihave = (strchr(tok->name, 'I') != NULL);
+        curaccess->locpost = (strchr(tok->name, 'L') != NULL);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMlocaltime:
+        if (boolval != -1)
+            curaccess->localtime = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMstrippath:
+        if (boolval != -1)
+            curaccess->strippath = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdperlfilter:
+        if (boolval != -1)
+            curaccess->nnrpdperlfilter = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdpythonfilter:
+        if (boolval != -1)
+            curaccess->nnrpdpythonfilter = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMfromhost:
+        if (curaccess->fromhost)
+            free(curaccess->fromhost);
+        curaccess->fromhost = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMpathhost:
+        if (curaccess->pathhost)
+            free(curaccess->pathhost);
+        curaccess->pathhost = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMorganization:
+        if (curaccess->organization)
+            free(curaccess->organization);
+        curaccess->organization = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMmoderatormailer:
+        if (curaccess->moderatormailer)
+            free(curaccess->moderatormailer);
+        curaccess->moderatormailer = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMdomain:
+        if (curaccess->domain)
+            free(curaccess->domain);
+        curaccess->domain = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMcomplaints:
+        if (curaccess->complaints)
+            free(curaccess->complaints);
+        curaccess->complaints = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMspoolfirst:
+        if (boolval != -1)
+            curaccess->spoolfirst = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMcheckincludedtext:
+        if (boolval != -1)
+            curaccess->checkincludedtext = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMclienttimeout:
+        curaccess->clienttimeout = atoi(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMlocalmaxartsize:
+        curaccess->localmaxartsize = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMreadertrack:
+        if (boolval != -1)
+            curaccess->readertrack = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMstrippostcc:
+        if (boolval != -1)
+            curaccess->strippostcc = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMaddinjectiondate:
+        if (boolval != -1)
             curaccess->addinjectiondate = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMaddinjectionpostingaccount:
+        SET_CONFIG(oldtype);
+        break;
+    case PERMaddinjectionpostingaccount:
         if (boolval != -1)
             curaccess->addinjectionpostingaccount = boolval;
         SET_CONFIG(oldtype);
         break;
-      case PERMaddinjectionpostinghost:
-	if (boolval != -1)
+    case PERMaddinjectionpostinghost:
+        if (boolval != -1)
             curaccess->addinjectionpostinghost = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdposthost:
-	if (curaccess->nnrpdposthost)
-	    free(curaccess->nnrpdposthost);
-	curaccess->nnrpdposthost = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdpostport:
-	curaccess->nnrpdpostport = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdoverstats:
-	if (boolval != -1) curaccess->nnrpdoverstats = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_auth:
-	if (boolval != -1) curaccess->backoff_auth = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_db:
-	if (curaccess->backoff_db)
-	    free(curaccess->backoff_db);
-	curaccess->backoff_db = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_k:
-	curaccess->backoff_k = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_postfast:
-	curaccess->backoff_postfast = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_postslow:
-	curaccess->backoff_postslow = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMbackoff_trigger:
-	curaccess->backoff_trigger = strtoul(tok->name, NULL, 10);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdcheckart:
-	if (boolval != -1) curaccess->nnrpdcheckart = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnnrpdauthsender:
-	if (boolval != -1) curaccess->nnrpdauthsender = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMvirtualhost:
-	if (boolval != -1) curaccess->virtualhost = boolval;
-	SET_CONFIG(oldtype);
-	break;
-      case PERMnewsmaster:
-	if (curaccess->newsmaster)
-	    free(curaccess->newsmaster);
-	curaccess->newsmaster = xstrdup(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      case PERMmaxbytespersecond:
-	curaccess->maxbytespersecond = atol(tok->name);
-	SET_CONFIG(oldtype);
-	break;
-      default:
-	snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
-	ReportError(f, buff);
-	break;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdposthost:
+        if (curaccess->nnrpdposthost)
+            free(curaccess->nnrpdposthost);
+        curaccess->nnrpdposthost = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdpostport:
+        curaccess->nnrpdpostport = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdoverstats:
+        if (boolval != -1)
+            curaccess->nnrpdoverstats = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_auth:
+        if (boolval != -1)
+            curaccess->backoff_auth = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_db:
+        if (curaccess->backoff_db)
+            free(curaccess->backoff_db);
+        curaccess->backoff_db = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_k:
+        curaccess->backoff_k = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_postfast:
+        curaccess->backoff_postfast = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_postslow:
+        curaccess->backoff_postslow = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMbackoff_trigger:
+        curaccess->backoff_trigger = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdcheckart:
+        if (boolval != -1)
+            curaccess->nnrpdcheckart = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnnrpdauthsender:
+        if (boolval != -1)
+            curaccess->nnrpdauthsender = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMvirtualhost:
+        if (boolval != -1)
+            curaccess->virtualhost = boolval;
+        SET_CONFIG(oldtype);
+        break;
+    case PERMnewsmaster:
+        if (curaccess->newsmaster)
+            free(curaccess->newsmaster);
+        curaccess->newsmaster = xstrdup(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    case PERMmaxbytespersecond:
+        curaccess->maxbytespersecond = atol(tok->name);
+        SET_CONFIG(oldtype);
+        break;
+    default:
+        snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
+        ReportError(f, buff);
+        break;
     }
 }
 
@@ -1073,9 +1098,9 @@ static void
 PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
                    struct vector *access_vec)
 {
-    CONFTOKEN	*tok	    = NULL;
-    CONFFILE    *file;
-    char        *str;
+    CONFTOKEN *tok = NULL;
+    CONFFILE *file;
+    char *str;
     unsigned int i;
 
     file = xcalloc(1, sizeof(CONFFILE));
@@ -1090,11 +1115,11 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
     file->filename = str;
 
     for (i = 0; i <= access_vec->count; i++) {
-      tok = CONFgettoken(PERMtoks, file);
+        tok = CONFgettoken(PERMtoks, file);
 
-      if (tok != NULL) {
-        accessdecl_parse(acc, file, tok);
-      }
+        if (tok != NULL) {
+            accessdecl_parse(acc, file, tok);
+        }
     }
 
     /* No need to free str here; it is used by acc, and will be
@@ -1106,296 +1131,302 @@ PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
 static void
 PERMreadfile(char *filename)
 {
-    CONFCHAIN	*cf	    = NULL,
-		*hold	    = NULL;
-    CONFTOKEN	*tok	    = NULL;
-    int		inwhat;
-    GROUP	*curgroup   = NULL,
-		*newgroup   = NULL;
-    ACCESSGROUP *curaccess  = NULL;
-    AUTHGROUP	*curauth    = NULL;
-    int		oldtype;
-    char	*str	    = NULL;
-    char        *path       = NULL;
+    CONFCHAIN *cf = NULL, *hold = NULL;
+    CONFTOKEN *tok = NULL;
+    int inwhat;
+    GROUP *curgroup = NULL, *newgroup = NULL;
+    ACCESSGROUP *curaccess = NULL;
+    AUTHGROUP *curauth = NULL;
+    int oldtype;
+    char *str = NULL;
+    char *path = NULL;
     char buff[SMBUF];
 
-    if(filename != NULL) {
-	syslog(L_TRACE, "Reading access from %s",
-	       filename == NULL ? "(NULL)" : filename);
+    if (filename != NULL) {
+        syslog(L_TRACE, "Reading access from %s",
+               filename == NULL ? "(NULL)" : filename);
     }
 
-    cf		= xmalloc(sizeof(CONFCHAIN));
+    cf = xmalloc(sizeof(CONFCHAIN));
     if ((cf->f = CONFfopen(filename)) == NULL) {
-	syslog(L_ERROR, "%s cannot open %s: %m", Client.host, filename);
-	Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-	ExitWithStats(1, true);
+        syslog(L_ERROR, "%s cannot open %s: %m", Client.host, filename);
+        Reply("%d NNTP server unavailable.  Try later!\r\n",
+              NNTP_FAIL_TERMINATING);
+        ExitWithStats(1, true);
     }
-    cf->parent	= 0;
+    cf->parent = 0;
 
     /* Are we editing an auth or access group? */
 
-    inwhat	= 0;
+    inwhat = 0;
     curgroup = 0;
 
-    tok		= CONFgettoken(PERMtoks, cf->f);
+    tok = CONFgettoken(PERMtoks, cf->f);
 
     while (tok != NULL) {
-	if (inwhat == 0) {
-	    /* Top-level parser. */
+        if (inwhat == 0) {
+            /* Top-level parser. */
 
-	    switch (tok->type) {
-		/* Include a child file. */
+            switch (tok->type) {
+                /* Include a child file. */
 
-	      case PERMinclude:
-		tok = CONFgettoken(0, cf->f);
+            case PERMinclude:
+                tok = CONFgettoken(0, cf->f);
 
-		if (tok == NULL) {
-		    ReportError(cf->f, "Expected filename after 'include'.");
-		}
+                if (tok == NULL) {
+                    ReportError(cf->f, "Expected filename after 'include'.");
+                }
 
-		hold		= xmalloc(sizeof(CONFCHAIN));
-		hold->parent	= cf;
+                hold = xmalloc(sizeof(CONFCHAIN));
+                hold->parent = cf;
 
-		/* Unless the filename's path is fully qualified, open it
-		 * relative to <pathetc>. */
+                /* Unless the filename's path is fully qualified, open it
+                 * relative to <pathetc>. */
                 path = concatpath(innconf->pathetc, tok->name);
                 hold->f = CONFfopen(path);
                 free(path);
 
-		if (hold->f == NULL) {
-		    ReportError(cf->f, "Could not open 'include' filename.");
-		}
+                if (hold->f == NULL) {
+                    ReportError(cf->f, "Could not open 'include' filename.");
+                }
 
-		cf = hold;
-		goto again;
-		break;
+                cf = hold;
+                goto again;
+                break;
 
-		/* Nested group declaration. */
-	      case PERMgroup:
-		tok = CONFgettoken(PERMtoks, cf->f);
+                /* Nested group declaration. */
+            case PERMgroup:
+                tok = CONFgettoken(PERMtoks, cf->f);
 
-		if (tok == NULL) {
-		    ReportError(cf->f, "Unexpected EOF at group name.");
-		}
+                if (tok == NULL) {
+                    ReportError(cf->f, "Unexpected EOF at group name.");
+                }
 
-		newgroup	= xmalloc(sizeof(GROUP));
-		newgroup->above = curgroup;
-		newgroup->name	= xstrdup(tok->name);
-		memset(ConfigBit, '\0', ConfigBitsize);
+                newgroup = xmalloc(sizeof(GROUP));
+                newgroup->above = curgroup;
+                newgroup->name = xstrdup(tok->name);
+                memset(ConfigBit, '\0', ConfigBitsize);
 
-		tok = CONFgettoken(PERMtoks, cf->f);
+                tok = CONFgettoken(PERMtoks, cf->f);
 
-		if (tok == NULL || tok->type != PERMlbrace) {
-		    ReportError(cf->f, "Expected '{' after group name.");
-		}
+                if (tok == NULL || tok->type != PERMlbrace) {
+                    ReportError(cf->f, "Expected '{' after group name.");
+                }
 
-		/* Nested group declaration. */
-		if (curgroup) {
-		    newgroup->auth = copy_authgroup(curgroup->auth);
-		    newgroup->access = copy_accessgroup(curgroup->access);
-		} else {
-		    newgroup->auth = 0;
-		    newgroup->access = 0;
-		}
+                /* Nested group declaration. */
+                if (curgroup) {
+                    newgroup->auth = copy_authgroup(curgroup->auth);
+                    newgroup->access = copy_accessgroup(curgroup->access);
+                } else {
+                    newgroup->auth = 0;
+                    newgroup->access = 0;
+                }
 
-		curgroup = newgroup;
-		break;
+                curgroup = newgroup;
+                break;
 
-		/* Beginning of an auth or access group declaration. */
-	      case PERMauth:
-	      case PERMaccess:
-		oldtype = tok->type;
+                /* Beginning of an auth or access group declaration. */
+            case PERMauth:
+            case PERMaccess:
+                oldtype = tok->type;
 
-		if ((tok = CONFgettoken(PERMtoks, cf->f)) == NULL) {
-		    ReportError(cf->f, "Expected identifier.");
-		}
+                if ((tok = CONFgettoken(PERMtoks, cf->f)) == NULL) {
+                    ReportError(cf->f, "Expected identifier.");
+                }
 
-		str = xstrdup(tok->name);
+                str = xstrdup(tok->name);
 
-		tok = CONFgettoken(PERMtoks, cf->f);
+                tok = CONFgettoken(PERMtoks, cf->f);
 
-		if (tok == NULL || tok->type != PERMlbrace) {
-		    ReportError(cf->f, "Expected '{'.");
-		}
+                if (tok == NULL || tok->type != PERMlbrace) {
+                    ReportError(cf->f, "Expected '{'.");
+                }
 
-		switch (oldtype) {
-		  case PERMauth:
-		    if (curgroup && curgroup->auth) {
-			curauth = copy_authgroup(curgroup->auth);
+                switch (oldtype) {
+                case PERMauth:
+                    if (curgroup && curgroup->auth) {
+                        curauth = copy_authgroup(curgroup->auth);
                     } else {
-			curauth = xcalloc(1, sizeof(AUTHGROUP));
-			memset(ConfigBit, '\0', ConfigBitsize);
+                        curauth = xcalloc(1, sizeof(AUTHGROUP));
+                        memset(ConfigBit, '\0', ConfigBitsize);
                         SetDefaultAuth(curauth);
-		    }
+                    }
 
-		    curauth->name = str;
-		    inwhat = 1;
-		    break;
+                    curauth->name = str;
+                    inwhat = 1;
+                    break;
 
-		  case PERMaccess:
-		    if (curgroup && curgroup->access)
-			curaccess = copy_accessgroup(curgroup->access);
-		    else {
-			curaccess = xcalloc(1, sizeof(ACCESSGROUP));
-			memset(ConfigBit, '\0', ConfigBitsize);
-			SetDefaultAccess(curaccess);
-		    }
-		    curaccess->name = str;
-		    inwhat = 2;
-		    break;
-		}
+                case PERMaccess:
+                    if (curgroup && curgroup->access)
+                        curaccess = copy_accessgroup(curgroup->access);
+                    else {
+                        curaccess = xcalloc(1, sizeof(ACCESSGROUP));
+                        memset(ConfigBit, '\0', ConfigBitsize);
+                        SetDefaultAccess(curaccess);
+                    }
+                    curaccess->name = str;
+                    inwhat = 2;
+                    break;
+                }
 
-		break;
+                break;
 
-		/* End of a group declaration. */
+                /* End of a group declaration. */
 
-	      case PERMrbrace:
-		if (curgroup == NULL) {
-		    ReportError(cf->f, "Unmatched '}'.");
-		}
+            case PERMrbrace:
+                if (curgroup == NULL) {
+                    ReportError(cf->f, "Unmatched '}'.");
+                }
 
-		newgroup = curgroup;
-		curgroup = curgroup->above;
-		if (newgroup->auth)
-		    free_authgroup(newgroup->auth);
-		if (newgroup->access)
-		    free_accessgroup(newgroup->access);
-		free(newgroup->name);
-		free(newgroup);
-		break;
+                newgroup = curgroup;
+                curgroup = curgroup->above;
+                if (newgroup->auth)
+                    free_authgroup(newgroup->auth);
+                if (newgroup->access)
+                    free_accessgroup(newgroup->access);
+                free(newgroup->name);
+                free(newgroup);
+                break;
 
-		/* Stuff that belongs to an auth group. */
-	      case PERMhost:
+                /* Stuff that belongs to an auth group. */
+            case PERMhost:
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-              case PERMrequire_ssl:
+            case PERMrequire_ssl:
 #endif
-	      case PERMauthprog:
-	      case PERMresprog:
-	      case PERMdefuser:
-	      case PERMdefdomain:
-		if (curgroup == NULL) {
-		    curgroup = xcalloc(1, sizeof(GROUP));
-		    memset(ConfigBit, '\0', ConfigBitsize);
-		}
-		if (curgroup->auth == NULL) {
-		    curgroup->auth = xcalloc(1, sizeof(AUTHGROUP));
-		    memset(ConfigBit, '\0', ConfigBitsize);
+            case PERMauthprog:
+            case PERMresprog:
+            case PERMdefuser:
+            case PERMdefdomain:
+                if (curgroup == NULL) {
+                    curgroup = xcalloc(1, sizeof(GROUP));
+                    memset(ConfigBit, '\0', ConfigBitsize);
+                }
+                if (curgroup->auth == NULL) {
+                    curgroup->auth = xcalloc(1, sizeof(AUTHGROUP));
+                    memset(ConfigBit, '\0', ConfigBitsize);
                     SetDefaultAuth(curgroup->auth);
-		}
-		authdecl_parse(curgroup->auth, cf->f, tok);
-		break;
+                }
+                authdecl_parse(curgroup->auth, cf->f, tok);
+                break;
 
-		/* Stuff that belongs to an access group. */
-	      case PERMusers:
-	      case PERMrejectwith:
-	      case PERMnewsgroups:
-	      case PERMread:
-	      case PERMpost:
-	      case PERMaccessrp:
-	      case PERMlocaltime:
-	      case PERMstrippath:
-	      case PERMnnrpdperlfilter:
-	      case PERMnnrpdpythonfilter:
-	      case PERMfromhost:
-	      case PERMpathhost:
-	      case PERMorganization:
-	      case PERMmoderatormailer:
-	      case PERMdomain:
-	      case PERMcomplaints:
-	      case PERMspoolfirst:
-	      case PERMcheckincludedtext:
-	      case PERMclienttimeout:
-	      case PERMlocalmaxartsize:
-	      case PERMreadertrack:
-	      case PERMstrippostcc:
-	      case PERMaddinjectiondate:
-              case PERMaddinjectionpostingaccount:
-	      case PERMaddinjectionpostinghost:
-	      case PERMnnrpdposthost:
-	      case PERMnnrpdpostport:
-	      case PERMnnrpdoverstats:
-	      case PERMbackoff_auth:
-	      case PERMbackoff_db:
-	      case PERMbackoff_k:
-	      case PERMbackoff_postfast:
-	      case PERMbackoff_postslow:
-	      case PERMbackoff_trigger:
-	      case PERMnnrpdcheckart:
-	      case PERMnnrpdauthsender:
-	      case PERMvirtualhost:
-	      case PERMnewsmaster:
-		if (!curgroup) {
-		    curgroup = xcalloc(1, sizeof(GROUP));
-		    memset(ConfigBit, '\0', ConfigBitsize);
-		}
-		if (!curgroup->access) {
-		    curgroup->access = xcalloc(1, sizeof(ACCESSGROUP));
-		    memset(ConfigBit, '\0', ConfigBitsize);
-		    SetDefaultAccess(curgroup->access);
-		}
-		accessdecl_parse(curgroup->access, cf->f, tok);
-		break;
-	      default:
-		snprintf(buff, sizeof(buff), "Unexpected token: %s", tok->name);
-		ReportError(cf->f, buff);
-		break;
-	    }
-	} else if (inwhat == 1) {
-	    /* Auth group parser. */
-	    if (tok->type == PERMrbrace) {
-		inwhat = 0;
+                /* Stuff that belongs to an access group. */
+            case PERMusers:
+            case PERMrejectwith:
+            case PERMnewsgroups:
+            case PERMread:
+            case PERMpost:
+            case PERMaccessrp:
+            case PERMlocaltime:
+            case PERMstrippath:
+            case PERMnnrpdperlfilter:
+            case PERMnnrpdpythonfilter:
+            case PERMfromhost:
+            case PERMpathhost:
+            case PERMorganization:
+            case PERMmoderatormailer:
+            case PERMdomain:
+            case PERMcomplaints:
+            case PERMspoolfirst:
+            case PERMcheckincludedtext:
+            case PERMclienttimeout:
+            case PERMlocalmaxartsize:
+            case PERMreadertrack:
+            case PERMstrippostcc:
+            case PERMaddinjectiondate:
+            case PERMaddinjectionpostingaccount:
+            case PERMaddinjectionpostinghost:
+            case PERMnnrpdposthost:
+            case PERMnnrpdpostport:
+            case PERMnnrpdoverstats:
+            case PERMbackoff_auth:
+            case PERMbackoff_db:
+            case PERMbackoff_k:
+            case PERMbackoff_postfast:
+            case PERMbackoff_postslow:
+            case PERMbackoff_trigger:
+            case PERMnnrpdcheckart:
+            case PERMnnrpdauthsender:
+            case PERMvirtualhost:
+            case PERMnewsmaster:
+                if (!curgroup) {
+                    curgroup = xcalloc(1, sizeof(GROUP));
+                    memset(ConfigBit, '\0', ConfigBitsize);
+                }
+                if (!curgroup->access) {
+                    curgroup->access = xcalloc(1, sizeof(ACCESSGROUP));
+                    memset(ConfigBit, '\0', ConfigBitsize);
+                    SetDefaultAccess(curgroup->access);
+                }
+                accessdecl_parse(curgroup->access, cf->f, tok);
+                break;
+            default:
+                snprintf(buff, sizeof(buff), "Unexpected token: %s",
+                         tok->name);
+                ReportError(cf->f, buff);
+                break;
+            }
+        } else if (inwhat == 1) {
+            /* Auth group parser. */
+            if (tok->type == PERMrbrace) {
+                inwhat = 0;
 
-		if (curauth->name
-		    && MatchHost(curauth->hosts, Client.host, Client.ip)) {
-		    if (!MatchHost(curauth->localaddress, Client.serverhost, Client.serverip)) {
-			syslog(L_TRACE, "Auth strategy '%s' does not match localhost.  Removing.",
-			   curauth->name == NULL ? "(NULL)" : curauth->name);
-			free_authgroup(curauth);
-		    } else
-			add_authgroup(curauth);
-		} else {
-		    syslog(L_TRACE, "Auth strategy '%s' does not match client.  Removing.",
-			   curauth->name == NULL ? "(NULL)" : curauth->name);
-		    free_authgroup(curauth);
-		}
+                if (curauth->name
+                    && MatchHost(curauth->hosts, Client.host, Client.ip)) {
+                    if (!MatchHost(curauth->localaddress, Client.serverhost,
+                                   Client.serverip)) {
+                        syslog(L_TRACE,
+                               "Auth strategy '%s' does not match localhost.  "
+                               "Removing.",
+                               curauth->name == NULL ? "(NULL)"
+                                                     : curauth->name);
+                        free_authgroup(curauth);
+                    } else
+                        add_authgroup(curauth);
+                } else {
+                    syslog(
+                        L_TRACE,
+                        "Auth strategy '%s' does not match client.  Removing.",
+                        curauth->name == NULL ? "(NULL)" : curauth->name);
+                    free_authgroup(curauth);
+                }
                 curauth = NULL;
-		goto again;
-	    }
+                goto again;
+            }
 
-	    authdecl_parse(curauth, cf->f, tok);
-	} else if (inwhat == 2) {
-	    /* Access group parser. */
-	    if (tok->type == PERMrbrace) {
-		inwhat = 0;
+            authdecl_parse(curauth, cf->f, tok);
+        } else if (inwhat == 2) {
+            /* Access group parser. */
+            if (tok->type == PERMrbrace) {
+                inwhat = 0;
 
-		if (curaccess->name)
-		    add_accessgroup(curaccess);
-		else
-		    free_accessgroup(curaccess);
-		curaccess = NULL;
-		goto again;
-	    }
+                if (curaccess->name)
+                    add_accessgroup(curaccess);
+                else
+                    free_accessgroup(curaccess);
+                curaccess = NULL;
+                goto again;
+            }
 
-	    accessdecl_parse(curaccess, cf->f, tok);
-	} else {
-	    /* Should never happen. */
-	    syslog(L_TRACE, "SHOULD NEVER HAPPEN!");
-	}
-again:
+            accessdecl_parse(curaccess, cf->f, tok);
+        } else {
+            /* Should never happen. */
+            syslog(L_TRACE, "SHOULD NEVER HAPPEN!");
+        }
+    again:
 
 
         /* Go back up the 'include' chain. */
-	tok = CONFgettoken(PERMtoks, cf->f);
+        tok = CONFgettoken(PERMtoks, cf->f);
 
-	while (tok == NULL && cf) {
-	    hold = cf;
-	    cf = hold->parent;
-	    CONFfclose(hold->f);
-	    free(hold);
-	    if (cf) {
-		tok = CONFgettoken(PERMtoks, cf->f);
-	    }
-	}
+        while (tok == NULL && cf) {
+            hold = cf;
+            cf = hold->parent;
+            CONFfclose(hold->f);
+            free(hold);
+            if (cf) {
+                tok = CONFgettoken(PERMtoks, cf->f);
+            }
+        }
     }
 
     return;
@@ -1406,9 +1437,9 @@ PERMgetinitialaccess(char *readersconf)
 {
     int i;
 
-    auth_realms	    = NULL;
-    access_realms   = NULL;
-    success_auth    = NULL;
+    auth_realms = NULL;
+    access_realms = NULL;
+    success_auth = NULL;
 
 #ifdef HAVE_SASL
     PERMcanauthenticate = true;
@@ -1420,15 +1451,15 @@ PERMgetinitialaccess(char *readersconf)
 #endif
     PERMgroupmadeinvalid = false;
     PERMcanpostgreeting = false;
-    PERMcanread	    = PERMcanpost   = false;
-    PERMreadlist    = PERMpostlist  = NULL;
+    PERMcanread = PERMcanpost = false;
+    PERMreadlist = PERMpostlist = NULL;
     PERMaccessconf = NULL;
 
     if (ConfigBit == NULL) {
         if (PERMMAX % 8 == 0) {
-            ConfigBitsize = PERMMAX/8;
+            ConfigBitsize = PERMMAX / 8;
         } else {
-            ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8)) / 8 + 1;
         }
         ConfigBit = xcalloc(ConfigBitsize, 1);
     }
@@ -1440,18 +1471,18 @@ PERMgetinitialaccess(char *readersconf)
     strip_accessgroups();
 
     if (auth_realms == NULL) {
-	/* No one can talk, empty file. */
-	syslog(L_NOTICE, "%s no_permission", Client.host);
-	Reply("%d You have no permission to talk.  Goodbye!\r\n",
-	  NNTP_ERR_ACCESS);
-	ExitWithStats(1, true);
+        /* No one can talk, empty file. */
+        syslog(L_NOTICE, "%s no_permission", Client.host);
+        Reply("%d You have no permission to talk.  Goodbye!\r\n",
+              NNTP_ERR_ACCESS);
+        ExitWithStats(1, true);
     }
 
     /* auth_realms are all expected to match the user.
      * Be careful whether an encryption layer is required, though. */
     for (i = 0; auth_realms[i] != NULL; i++) {
-	if (auth_realms[i]->auth_methods != NULL) {
-	    PERMcanauthenticate = true;
+        if (auth_realms[i]->auth_methods != NULL) {
+            PERMcanauthenticate = true;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
             if (!auth_realms[i]->require_ssl)
                 PERMcanauthenticatewithoutSSL = true;
@@ -1474,9 +1505,9 @@ PERMgetaccess(bool initialconnection)
 
     if (ConfigBit == NULL) {
         if (PERMMAX % 8 == 0) {
-            ConfigBitsize = PERMMAX/8;
+            ConfigBitsize = PERMMAX / 8;
         } else {
-            ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8)) / 8 + 1;
         }
         ConfigBit = xcalloc(ConfigBitsize, 1);
     }
@@ -1486,7 +1517,7 @@ PERMgetaccess(bool initialconnection)
     }
 
     for (i = 0; auth_realms[i] != NULL; i++) {
-            ;
+        ;
     }
 
     uname = NULL;
@@ -1553,45 +1584,45 @@ PERMgetaccess(bool initialconnection)
 void
 PERMlogin(char *uname, char *pass, int *code, char *errorstr)
 {
-    int i   = 0;
+    int i = 0;
     char *runame;
 
     if (ConfigBit == NULL) {
-	if (PERMMAX % 8 == 0)
-	    ConfigBitsize = PERMMAX/8;
-	else
-	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xcalloc(ConfigBitsize, 1);
+        if (PERMMAX % 8 == 0)
+            ConfigBitsize = PERMMAX / 8;
+        else
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8)) / 8 + 1;
+        ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     /* The check in CMDauthinfo uses the value of PERMneedauth to know if
      * authentication succeeded or not.  By default, authentication doesn't
      * succeed. */
     PERMneedauth = true;
 
-    if(auth_realms != NULL) {
-	for (i = 0; auth_realms[i]; i++) {
-	    ;
-	}
+    if (auth_realms != NULL) {
+        for (i = 0; auth_realms[i]; i++) {
+            ;
+        }
     }
 
-    runame  = NULL;
+    runame = NULL;
 
     while (runame == NULL && i--)
-	runame = AuthenticateUser(auth_realms[i], uname, pass, code, errorstr);
+        runame = AuthenticateUser(auth_realms[i], uname, pass, code, errorstr);
     if (runame) {
-	strlcpy(PERMuser, runame, sizeof(PERMuser));
+        strlcpy(PERMuser, runame, sizeof(PERMuser));
         free(runame);
-	uname = strchr(PERMuser, '@');
-	if (!uname && auth_realms[i]->default_domain) {
-	    /* Append the default domain to the username. */
-	    strlcat(PERMuser, "@", sizeof(PERMuser));
-	    strlcat(PERMuser, auth_realms[i]->default_domain,
+        uname = strchr(PERMuser, '@');
+        if (!uname && auth_realms[i]->default_domain) {
+            /* Append the default domain to the username. */
+            strlcat(PERMuser, "@", sizeof(PERMuser));
+            strlcat(PERMuser, auth_realms[i]->default_domain,
                     sizeof(PERMuser));
-	}
-	PERMneedauth = false;
-	PERMauthorized = true;
+        }
+        PERMneedauth = false;
+        PERMauthorized = true;
         PERMcanauthenticate = false;
-	success_auth = auth_realms[i];
+        success_auth = auth_realms[i];
     }
 }
 
@@ -1603,9 +1634,9 @@ MatchUser(char *pat, char *user)
     int ret;
 
     if (!pat)
-	return(1);
+        return (1);
     if (!user || !*user)
-	return(0);
+        return (0);
     cp = xstrdup(pat);
     list = 0;
     NGgetlist(&list, cp);
@@ -1615,7 +1646,7 @@ MatchUser(char *pat, char *user)
     free(cp);
     free(list[0]);
     free(list);
-    return(ret);
+    return (ret);
 }
 
 void
@@ -1627,61 +1658,65 @@ PERMgetpermissions(void)
     static ACCESSGROUP *noaccessconf;
 
     if (ConfigBit == NULL) {
-	if (PERMMAX % 8 == 0)
-	    ConfigBitsize = PERMMAX/8;
-	else
-	    ConfigBitsize = (PERMMAX - (PERMMAX % 8))/8 + 1;
-	ConfigBit = xcalloc(ConfigBitsize, 1);
+        if (PERMMAX % 8 == 0)
+            ConfigBitsize = PERMMAX / 8;
+        else
+            ConfigBitsize = (PERMMAX - (PERMMAX % 8)) / 8 + 1;
+        ConfigBit = xcalloc(ConfigBitsize, 1);
     }
     if (!success_auth) {
-	/* If we haven't successfully authenticated, we can't do anything. */
-	syslog(L_TRACE, "%s no_success_auth", Client.host);
-	if (!noaccessconf)
-	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
-	PERMaccessconf = noaccessconf;
-	SetDefaultAccess(PERMaccessconf);
-	return;
+        /* If we haven't successfully authenticated, we can't do anything. */
+        syslog(L_TRACE, "%s no_success_auth", Client.host);
+        if (!noaccessconf)
+            noaccessconf = xmalloc(sizeof(ACCESSGROUP));
+        PERMaccessconf = noaccessconf;
+        SetDefaultAccess(PERMaccessconf);
+        return;
 #ifdef DO_PERL
-    } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMperl_access)) {
-      char *uname;
-      char *cpp, *script_path;
-      char **args;
-      struct vector *access_vec;
+    } else if ((success_auth->access_script != NULL)
+               && (success_auth->access_type == PERMperl_access)) {
+        char *uname;
+        char *cpp, *script_path;
+        char **args;
+        struct vector *access_vec;
 
-      i = 0;
-      cpp = xstrdup(success_auth->access_script);
-      args = 0;
-      Argify(cpp, &args);
-      script_path = concat(args[0], (char *) 0);
-      if ((script_path != NULL) && (strlen(script_path) > 0)) {
-        if(!PerlLoaded) {
-          loadPerl();
+        i = 0;
+        cpp = xstrdup(success_auth->access_script);
+        args = 0;
+        Argify(cpp, &args);
+        script_path = concat(args[0], (char *) 0);
+        if ((script_path != NULL) && (strlen(script_path) > 0)) {
+            if (!PerlLoaded) {
+                loadPerl();
+            }
+            PERLsetup(NULL, script_path, "access");
+            free(script_path);
+
+            uname = xstrdup(PERMuser);
+
+            access_vec = vector_new();
+
+            perlAccess(uname, access_vec);
+            free(uname);
+
+            access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
+
+            PERMvectortoaccess(access_realms[0], "perl_access-block",
+                               access_vec);
+
+            vector_free(access_vec);
+        } else {
+            syslog(L_ERROR, "No script specified in perl_access method.\n");
+            Reply("%d NNTP server unavailable.  Try later!\r\n",
+                  NNTP_FAIL_TERMINATING);
+            ExitWithStats(1, true);
         }
-        PERLsetup(NULL, script_path, "access");
-        free(script_path);
-
-        uname = xstrdup(PERMuser);
-
-        access_vec = vector_new();
-
-        perlAccess(uname, access_vec);
-        free(uname);
-
-        access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
-
-        PERMvectortoaccess(access_realms[0], "perl_access-block", access_vec);
-
-        vector_free(access_vec);
-      } else {
-        syslog(L_ERROR, "No script specified in perl_access method.\n");
-        Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-        ExitWithStats(1, true);
-      }
-      free(cpp);
-      free(args);
+        free(cpp);
+        free(args);
 #endif /* DO_PERL */
 #ifdef DO_PYTHON
-    } else if ((success_auth->access_script != NULL) && (success_auth->access_type == PERMpython_access)) {
+    } else if ((success_auth->access_script != NULL)
+               && (success_auth->access_type == PERMpython_access)) {
         char *uname;
         char *cpp, *script_path;
         char **args;
@@ -1704,114 +1739,126 @@ PERMgetpermissions(void)
             access_realms[0] = xcalloc(1, sizeof(ACCESSGROUP));
             memset(access_realms[0], 0, sizeof(ACCESSGROUP));
 
-            PERMvectortoaccess(access_realms[0], "python_access-block", access_vec);
+            PERMvectortoaccess(access_realms[0], "python_access-block",
+                               access_vec);
 
             vector_free(access_vec);
         } else {
             syslog(L_ERROR, "No script specified in python_access method.\n");
-            Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
+            Reply("%d NNTP server unavailable.  Try later!\r\n",
+                  NNTP_FAIL_TERMINATING);
             ExitWithStats(1, true);
         }
         free(cpp);
 #endif /* DO_PYTHON */
     } else {
-      for (i = 0; access_realms[i]; i++)
-        ;
-      user[0] = PERMuser;
-      user[1] = 0;
-      while (i--) {
-        if ((!success_auth->key && !access_realms[i]->key) ||
-            (access_realms[i]->key && success_auth->key &&
-             strcmp(access_realms[i]->key, success_auth->key) == 0)) {
-          if (!access_realms[i]->users)
-            break;
-          else if (!*PERMuser)
-            continue;
-          cp = xstrdup(access_realms[i]->users);
-          list = 0;
-          NGgetlist(&list, cp);
-          if (PERMmatch(list, user)) {
-            syslog(L_TRACE, "%s match_user %s %s", Client.host,
-                   PERMuser, access_realms[i]->users);
-            free(cp);
-            free(list[0]);
-            free(list);
-            break;
-          } else
-            syslog(L_TRACE, "%s no_match_user %s %s", Client.host,
-                   PERMuser, access_realms[i]->users);
-          free(cp);
-	  free(list[0]);
-          free(list);
-	}
-      }
+        for (i = 0; access_realms[i]; i++)
+            ;
+        user[0] = PERMuser;
+        user[1] = 0;
+        while (i--) {
+            if ((!success_auth->key && !access_realms[i]->key)
+                || (access_realms[i]->key && success_auth->key
+                    && strcmp(access_realms[i]->key, success_auth->key)
+                           == 0)) {
+                if (!access_realms[i]->users)
+                    break;
+                else if (!*PERMuser)
+                    continue;
+                cp = xstrdup(access_realms[i]->users);
+                list = 0;
+                NGgetlist(&list, cp);
+                if (PERMmatch(list, user)) {
+                    syslog(L_TRACE, "%s match_user %s %s", Client.host,
+                           PERMuser, access_realms[i]->users);
+                    free(cp);
+                    free(list[0]);
+                    free(list);
+                    break;
+                } else
+                    syslog(L_TRACE, "%s no_match_user %s %s", Client.host,
+                           PERMuser, access_realms[i]->users);
+                free(cp);
+                free(list[0]);
+                free(list);
+            }
+        }
     }
     if (i >= 0) {
-	/* Found the right access group. */
-	if (access_realms[i]->rejectwith) {
-	    syslog(L_NOTICE, "%s rejected by rule (%s)",
-		Client.host, access_realms[i]->rejectwith);
-	    Reply("%d Permission denied:  %s\r\n",
-		NNTP_FAIL_TERMINATING, access_realms[i]->rejectwith);
-	    ExitWithStats(1, true);
-	}
-	if (access_realms[i]->read) {
-	    cp = xstrdup(access_realms[i]->read);
-	    PERMspecified = NGgetlist(&PERMreadlist, cp);
-	    free(cp);
-	    PERMcanread = true;
-	} else {
-	    syslog(L_TRACE, "%s no_read %s", Client.host, access_realms[i]->name);
-	    PERMcanread = false;
-	}
-	if (access_realms[i]->post) {
-	    cp = xstrdup(access_realms[i]->post);
-	    NGgetlist(&PERMpostlist, cp);
-	    free(cp);
-	    PERMcanpost = true;
-	} else {
-	    syslog(L_TRACE, "%s no_post %s", Client.host, access_realms[i]->name);
-	    PERMcanpost = false;
-	}
-	PERMaccessconf = access_realms[i];
-	MaxBytesPerSecond = PERMaccessconf->maxbytespersecond;
-	if (PERMaccessconf->virtualhost) {
-	    if (PERMaccessconf->domain == NULL) {
-		syslog(L_ERROR, "%s virtualhost needs domain parameter (%s).",
-		    Client.host, PERMaccessconf->name);
-		Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-		ExitWithStats(1, true);
-	    }
-	    if (VirtualPath)
-		free(VirtualPath);
-	    if (strcasecmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
-		/* Use domain, if pathhost in access realm matches one in
-		 * inn.conf to differentiate virtual host. */
-		if (innconf->domain != NULL && strcasecmp(innconf->domain, PERMaccessconf->domain) == 0) {
-		    syslog(L_ERROR, "%s domain parameter (%s) in readers.conf must be different from the one in inn.conf.",
-			Client.host, PERMaccessconf->name);
-		    Reply("%d NNTP server unavailable.  Try later!\r\n", NNTP_FAIL_TERMINATING);
-		    ExitWithStats(1, true);
-		}
+        /* Found the right access group. */
+        if (access_realms[i]->rejectwith) {
+            syslog(L_NOTICE, "%s rejected by rule (%s)", Client.host,
+                   access_realms[i]->rejectwith);
+            Reply("%d Permission denied:  %s\r\n", NNTP_FAIL_TERMINATING,
+                  access_realms[i]->rejectwith);
+            ExitWithStats(1, true);
+        }
+        if (access_realms[i]->read) {
+            cp = xstrdup(access_realms[i]->read);
+            PERMspecified = NGgetlist(&PERMreadlist, cp);
+            free(cp);
+            PERMcanread = true;
+        } else {
+            syslog(L_TRACE, "%s no_read %s", Client.host,
+                   access_realms[i]->name);
+            PERMcanread = false;
+        }
+        if (access_realms[i]->post) {
+            cp = xstrdup(access_realms[i]->post);
+            NGgetlist(&PERMpostlist, cp);
+            free(cp);
+            PERMcanpost = true;
+        } else {
+            syslog(L_TRACE, "%s no_post %s", Client.host,
+                   access_realms[i]->name);
+            PERMcanpost = false;
+        }
+        PERMaccessconf = access_realms[i];
+        MaxBytesPerSecond = PERMaccessconf->maxbytespersecond;
+        if (PERMaccessconf->virtualhost) {
+            if (PERMaccessconf->domain == NULL) {
+                syslog(L_ERROR, "%s virtualhost needs domain parameter (%s).",
+                       Client.host, PERMaccessconf->name);
+                Reply("%d NNTP server unavailable.  Try later!\r\n",
+                      NNTP_FAIL_TERMINATING);
+                ExitWithStats(1, true);
+            }
+            if (VirtualPath)
+                free(VirtualPath);
+            if (strcasecmp(innconf->pathhost, PERMaccessconf->pathhost) == 0) {
+                /* Use domain, if pathhost in access realm matches one in
+                 * inn.conf to differentiate virtual host. */
+                if (innconf->domain != NULL
+                    && strcasecmp(innconf->domain, PERMaccessconf->domain)
+                           == 0) {
+                    syslog(L_ERROR,
+                           "%s domain parameter (%s) in readers.conf must be "
+                           "different from the one in inn.conf.",
+                           Client.host, PERMaccessconf->name);
+                    Reply("%d NNTP server unavailable.  Try later!\r\n",
+                          NNTP_FAIL_TERMINATING);
+                    ExitWithStats(1, true);
+                }
                 VirtualPath = concat(PERMaccessconf->domain, "!", (char *) 0);
-	    } else {
-                VirtualPath = concat(PERMaccessconf->pathhost, "!",
-                                     (char *) 0);
-	    }
+            } else {
+                VirtualPath =
+                    concat(PERMaccessconf->pathhost, "!", (char *) 0);
+            }
             VirtualPathlen = strlen(VirtualPath);
-	} else
-	    VirtualPathlen = 0;
+        } else
+            VirtualPathlen = 0;
     } else {
-	if (!noaccessconf)
-	    noaccessconf = xmalloc(sizeof(ACCESSGROUP));
-	PERMaccessconf = noaccessconf;
-	SetDefaultAccess(PERMaccessconf);
-	syslog(L_TRACE, "%s no_access_realm", Client.host);
+        if (!noaccessconf)
+            noaccessconf = xmalloc(sizeof(ACCESSGROUP));
+        PERMaccessconf = noaccessconf;
+        SetDefaultAccess(PERMaccessconf);
+        syslog(L_TRACE, "%s no_access_realm", Client.host);
     }
     /* Check if dynamic access control is enabled; if so, init it. */
 #ifdef DO_PYTHON
-    if ((success_auth->dynamic_type == PERMpython_dynamic) && success_auth->dynamic_script) {
-      PY_dynamic_init(success_auth->dynamic_script);
+    if ((success_auth->dynamic_type == PERMpython_dynamic)
+        && success_auth->dynamic_script) {
+        PY_dynamic_init(success_auth->dynamic_script);
     }
 #endif /* DO_PYTHON */
 }
@@ -1823,17 +1870,17 @@ CompressList(char *list)
     char *cpto;
     bool inword = false;
 
-    for (cpto = list; *list; ) {
-	if (strchr("\n \t,", *list) != NULL) {
-	    list++;
-	    if(inword) {
-		*cpto++ = ',';
-		inword = false;
-	    }
-	} else {
-	    *cpto++ = *list++;
-	    inword = true;
-	}
+    for (cpto = list; *list;) {
+        if (strchr("\n \t,", *list) != NULL) {
+            list++;
+            if (inword) {
+                *cpto++ = ',';
+                inword = false;
+            }
+        } else {
+            *cpto++ = *list++;
+            inword = true;
+        }
     }
     *cpto = '\0';
 }
@@ -1883,15 +1930,15 @@ add_authgroup(AUTHGROUP *group)
     int i;
 
     if (auth_realms == NULL) {
-	i = 0;
-	auth_realms = xmalloc(2 * sizeof(AUTHGROUP *));
+        i = 0;
+        auth_realms = xmalloc(2 * sizeof(AUTHGROUP *));
     } else {
-	for (i = 0; auth_realms[i]; i++)
-	    ;
+        for (i = 0; auth_realms[i]; i++)
+            ;
         auth_realms = xrealloc(auth_realms, (i + 2) * sizeof(AUTHGROUP *));
     }
     auth_realms[i] = group;
-    auth_realms[i+1] = 0;
+    auth_realms[i + 1] = 0;
 }
 
 static void
@@ -1900,15 +1947,16 @@ add_accessgroup(ACCESSGROUP *group)
     int i;
 
     if (access_realms == NULL) {
-	i = 0;
-	access_realms = xmalloc(2 * sizeof(ACCESSGROUP *));
+        i = 0;
+        access_realms = xmalloc(2 * sizeof(ACCESSGROUP *));
     } else {
-	for (i = 0; access_realms[i]; i++)
-	    ;
-        access_realms = xrealloc(access_realms, (i + 2) * sizeof(ACCESSGROUP *));
+        for (i = 0; access_realms[i]; i++)
+            ;
+        access_realms =
+            xrealloc(access_realms, (i + 2) * sizeof(ACCESSGROUP *));
     }
     access_realms[i] = group;
-    access_realms[i+1] = 0;
+    access_realms[i + 1] = 0;
 }
 
 
@@ -1921,55 +1969,57 @@ strip_accessgroups(void)
     int i, j;
 
     /* Flag the access group as used or not. */
-    if(access_realms != NULL) {
-	for (j = 0; access_realms[j] != NULL; j++) {
-	    access_realms[j]->used = 0;
-	}
+    if (access_realms != NULL) {
+        for (j = 0; access_realms[j] != NULL; j++) {
+            access_realms[j]->used = 0;
+        }
     } else {
-	syslog(L_TRACE, "No access realms to check!");
+        syslog(L_TRACE, "No access realms to check!");
         return;
     }
 
     /* If there are auth realms to check... */
-    if(auth_realms != NULL) {
-	/* ... Then for each auth realm... */
-	for (i = 0; auth_realms[i] != NULL; i++) {
-	    /* ... for each access realm... */
-	    for (j = 0; access_realms[j] != NULL; j++) {
-		/* If the access realm isn't already in use... */
-		if (! access_realms[j]->used) {
-		    /* Check to see if both the access_realm key and
+    if (auth_realms != NULL) {
+        /* ... Then for each auth realm... */
+        for (i = 0; auth_realms[i] != NULL; i++) {
+            /* ... for each access realm... */
+            for (j = 0; access_realms[j] != NULL; j++) {
+                /* If the access realm isn't already in use... */
+                if (!access_realms[j]->used) {
+                    /* Check to see if both the access_realm key and
                      * auth_realm key are NULL... */
-		    if (!access_realms[j]->key && !auth_realms[i]->key) {
-			/* If so, mark the realm in use and continue on... */
-			access_realms[j]->used = 1;
-		    } else {
-			/* If not, check to see if both the access_realm and
-			   auth_realm are NOT _both_ NULL, and see if they are
-			   equal... */
-			if (access_realms[j]->key && auth_realms[i]->key &&
-			    strcmp(access_realms[j]->key, auth_realms[i]->key) == 0) {
-			    /* And if so, mark the realm in use. */
-			    access_realms[j]->used = 1;
-			}
-		    }
-		}
-	    }
-	}
+                    if (!access_realms[j]->key && !auth_realms[i]->key) {
+                        /* If so, mark the realm in use and continue on... */
+                        access_realms[j]->used = 1;
+                    } else {
+                        /* If not, check to see if both the access_realm and
+                           auth_realm are NOT _both_ NULL, and see if they are
+                           equal... */
+                        if (access_realms[j]->key && auth_realms[i]->key
+                            && strcmp(access_realms[j]->key,
+                                      auth_realms[i]->key)
+                                   == 0) {
+                            /* And if so, mark the realm in use. */
+                            access_realms[j]->used = 1;
+                        }
+                    }
+                }
+            }
+        }
     } else {
-	syslog(L_TRACE, "No auth realms to check!");
+        syslog(L_TRACE, "No auth realms to check!");
     }
 
     /* Strip out unused access groups. */
     i = j = 0;
 
     while (access_realms[i] != NULL) {
-	if (access_realms[i]->used)
-	    access_realms[j++] = access_realms[i];
-	else
-	    syslog(L_TRACE, "%s removing irrelevant access group %s",
-		   Client.host, access_realms[i]->name);
-	i++;
+        if (access_realms[i]->used)
+            access_realms[j++] = access_realms[i];
+        else
+            syslog(L_TRACE, "%s removing irrelevant access group %s",
+                   Client.host, access_realms[i]->name);
+        i++;
     }
     access_realms[j] = 0;
 }
@@ -2004,18 +2054,18 @@ ResolveUser(AUTHGROUP *auth)
 
     for (i = 0; auth->res_methods[i]; i++) {
         command = auth->res_methods[i]->program;
-	syslog(L_TRACE, "%s res starting resolver %s", Client.host, command);
-	if (auth->res_methods[i]->extra_logs) {
-	    for (j = 0; auth->res_methods[i]->extra_logs[j]; j++)
-		syslog(L_NOTICE, "%s res also-log: %s", Client.host,
+        syslog(L_TRACE, "%s res starting resolver %s", Client.host, command);
+        if (auth->res_methods[i]->extra_logs) {
+            for (j = 0; auth->res_methods[i]->extra_logs[j]; j++)
+                syslog(L_NOTICE, "%s res also-log: %s", Client.host,
                        auth->res_methods[i]->extra_logs[j]);
-	}
+        }
         user = auth_external(&Client, command, resdir, NULL, NULL);
         if (user == NULL)
             syslog(L_TRACE, "%s res resolver failed", Client.host);
         else {
-            syslog(L_TRACE, "%s res resolver successful, user %s",
-                   Client.host, user);
+            syslog(L_TRACE, "%s res resolver successful, user %s", Client.host,
+                   user);
             break;
         }
     }
@@ -2090,7 +2140,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
             } else {
                 syslog(L_ERROR, "no script specified in auth method");
             }
-#endif	/* DO_PERL */
+#endif /* DO_PERL */
         } else if (auth->auth_methods[i]->type == PERMpython_auth) {
 #ifdef DO_PYTHON
             char *script_path, *cp;
@@ -2103,8 +2153,8 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
             script_path = concat(args[0], (char *) 0);
             if ((script_path != NULL) && (strlen(script_path) > 0)) {
                 newUser[0] = '\0';
-                PY_authenticate(script_path, username, password,
-                                code, errorstr, newUser);
+                PY_authenticate(script_path, username, password, code,
+                                errorstr, newUser);
                 free(script_path);
                 if (*code == NNTP_OK_AUTHINFO) {
                     if (newUser[0] != '\0')
@@ -2118,7 +2168,9 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                     }
                     break;
                 } else if (*code < 0) {
-                    syslog(L_NOTICE, "PY_authenticate(): authentication skipped due to no Python authentication method defined.");
+                    syslog(L_NOTICE,
+                           "PY_authenticate(): authentication skipped due to "
+                           "no Python authentication method defined.");
                 } else {
                     syslog(L_NOTICE, "%s bad_auth", Client.host);
                 }
@@ -2126,9 +2178,9 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
                 syslog(L_ERROR, "no script specified in auth method");
             }
 #endif /* DO_PYTHON */
-      } else {
-            if (auth->auth_methods[i]->users &&
-                !MatchUser(auth->auth_methods[i]->users, username))
+        } else {
+            if (auth->auth_methods[i]->users
+                && !MatchUser(auth->auth_methods[i]->users, username))
                 continue;
 
             command = auth->auth_methods[i]->program;

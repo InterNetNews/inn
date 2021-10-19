@@ -15,26 +15,26 @@
 #include "portable/system.h"
 
 #include "inn/innconf.h"
-#include "nnrpd.h"
 #include "inn/nntp.h"
 #include "inn/paths.h"
+#include "nnrpd.h"
 #include "post.h"
 
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #ifdef DO_PERL
 
-#include <EXTERN.h>
-#pragma GCC diagnostic ignored "-Wcast-align"
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-#pragma GCC diagnostic ignored "-Wshadow"
-#include <perl.h>
-#pragma GCC diagnostic warning "-Wcast-align"
-#pragma GCC diagnostic warning "-Wredundant-decls"
-#pragma GCC diagnostic warning "-Wshadow"
-#include <XSUB.h>
-#include "ppport.h"
+#    include <EXTERN.h>
+#    pragma GCC diagnostic ignored "-Wcast-align"
+#    pragma GCC diagnostic ignored "-Wredundant-decls"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    include <perl.h>
+#    pragma GCC diagnostic warning "-Wcast-align"
+#    pragma GCC diagnostic warning "-Wredundant-decls"
+#    pragma GCC diagnostic warning "-Wshadow"
+#    include "ppport.h"
+#    include <XSUB.h>
 
-#include "innperl.h"
+#    include "innperl.h"
 
 extern HEADER Table[], *EndOfTable;
 
@@ -45,10 +45,10 @@ extern bool HeadersModified;
 extern bool PerlLoaded;
 
 /* #define DEBUG_MODIFY only if you want to see verbose output. */
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
 static FILE *flog;
 void dumpTable(const char *msg);
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
 
 char *
 HandleHeaders(char *article)
@@ -63,26 +63,26 @@ HandleHeaders(char *article)
     static char buf[256];
     int i;
     size_t len;
-    char *s,*t;
+    char *s, *t;
     HE *scan;
     SV *modswitch;
     int OtherSize;
-    char *argv[] = { NULL };
+    char *argv[] = {NULL};
     bool failure;
     SV *errsv;
 
-    if(!PerlLoaded) {
+    if (!PerlLoaded) {
         loadPerl();
     }
 
     if (!PerlFilterActive)
         return NULL; /* Not really necessary. */
 
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
     if ((flog = fopen("/var/news/log/nnrpdperlerrror", "a+")) == NULL) {
-        syslog(L_ERROR,"Whoops.  Can't open error log: %m");
+        syslog(L_ERROR, "Whoops.  Can't open error log: %m");
     }
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
 
     ENTER;
     SAVETMPS;
@@ -101,7 +101,7 @@ HandleHeaders(char *article)
     for (hp = Table; hp < EndOfTable; hp++) {
         if (hp->Body)
             (void) hv_store(hdr, (char *) hp->Name, hp->Size,
-                     newSVpv(hp->Body, 0), 0);
+                            newSVpv(hp->Body, 0), 0);
     }
 
     /* Also store other headers. */
@@ -109,7 +109,8 @@ HandleHeaders(char *article)
     for (i = 0; i < OtherCount; i++) {
         p = OtherHeaders[i];
         if (p == NULL) {
-            syslog(L_ERROR, "Null header number %d copying headers for Perl", i);
+            syslog(L_ERROR, "Null header number %d copying headers for Perl",
+                   i);
             continue;
         }
         s = strchr(p, ':');
@@ -131,7 +132,7 @@ HandleHeaders(char *article)
 
     /* Call the filtering function. */
     /* No need for PUSHMARK(SP) with call_argv(). */
-    rc = perl_call_argv("filter_post", G_EVAL|G_SCALAR, argv);
+    rc = perl_call_argv("filter_post", G_EVAL | G_SCALAR, argv);
 
     SPAGAIN;
 
@@ -142,9 +143,9 @@ HandleHeaders(char *article)
         HeadersModified = true;
         i = 0;
 
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
         dumpTable("Before mod");
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
 
         hv_iterinit(hdr);
         while ((scan = hv_iternext(hdr)) != NULL) {
@@ -152,9 +153,9 @@ HandleHeaders(char *article)
              * new values. */
             p = HePV(scan, len);
             s = SvPV(HeVAL(scan), PL_na);
-#ifdef DEBUG_MODIFY
-            fprintf(flog,"Hash iter: '%s','%s'\n", p, s);
-#endif /* DEBUG_MODIFY */
+#    ifdef DEBUG_MODIFY
+            fprintf(flog, "Hash iter: '%s','%s'\n", p, s);
+#    endif /* DEBUG_MODIFY */
 
             /* See if it is a table header. */
             for (hp = Table; hp < EndOfTable; hp++) {
@@ -162,7 +163,7 @@ HandleHeaders(char *article)
                     char *copy = xstrdup(s);
                     HDR_SET(hp - Table, copy);
                     hp->Len = TrimSpaces(hp->Value);
-                    for (q = hp->Value ; ISWHITE(*q) || *q == '\n' ; q++)
+                    for (q = hp->Value; ISWHITE(*q) || *q == '\n'; q++)
                         continue;
                     hp->Body = q;
                     if (hp->Len == 0) {
@@ -179,16 +180,17 @@ HandleHeaders(char *article)
             if (TrimSpaces(s) > 0) {
                 if (i >= OtherSize - 1) {
                     OtherSize += 20;
-                    OtherHeaders = xrealloc(OtherHeaders, OtherSize * sizeof(char *));
+                    OtherHeaders =
+                        xrealloc(OtherHeaders, OtherSize * sizeof(char *));
                 }
                 t = concat(p, ": ", s, (char *) 0);
                 OtherHeaders[i++] = t;
             }
         }
         OtherCount = i;
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
         dumpTable("After mod");
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
     }
 
     hv_undef(attribs);
@@ -203,7 +205,7 @@ HandleHeaders(char *article)
         failure = true;
         syslog(L_ERROR, "Perl function filter_post died: %s",
                SvPV(errsv, PL_na));
-        (void)POPs;
+        (void) POPs;
     } else {
         failure = false;
         if (rc == 1) {
@@ -223,9 +225,9 @@ HandleHeaders(char *article)
     if (buf[0] != '\0')
         return buf;
 
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
     fclose(flog);
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
 
     return NULL;
 }
@@ -278,20 +280,21 @@ perlAccess(char *user, struct vector *access_vec)
         ExitWithStats(1, true);
     }
 
-    rc = perl_call_pv("access", G_EVAL|G_ARRAY);
+    rc = perl_call_pv("access", G_EVAL | G_ARRAY);
 
     SPAGAIN;
 
     if (rc == 0) { /* Error occured, same as checking $@. */
         errsv = ERRSV;
-        syslog(L_ERROR, "Perl function access died: %s",
-               SvPV(errsv, PL_na));
+        syslog(L_ERROR, "Perl function access died: %s", SvPV(errsv, PL_na));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
 
     if ((rc % 2) != 0) {
-        syslog(L_ERROR, "Perl function access returned an odd number of arguments: %i", rc);
+        syslog(L_ERROR,
+               "Perl function access returned an odd number of arguments: %i",
+               rc);
         Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, true);
     }
@@ -342,12 +345,12 @@ perlAuthInit(void)
     PUSHMARK(SP);
     PUTBACK;
 
-    rc = perl_call_pv("auth_init", G_EVAL|G_DISCARD);
+    rc = perl_call_pv("auth_init", G_EVAL | G_DISCARD);
 
     SPAGAIN;
 
     errsv = ERRSV;
-    if (SvTRUE(errsv)) {    /* Check $@. */
+    if (SvTRUE(errsv)) { /* Check $@. */
         syslog(L_ERROR, "Perl function authenticate died: %s",
                SvPV(errsv, PL_na));
         Reply("%d Internal error (1).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
@@ -355,7 +358,7 @@ perlAuthInit(void)
     }
 
     while (rc--) {
-        (void)POPs;
+        (void) POPs;
     }
 
     PUTBACK;
@@ -365,7 +368,8 @@ perlAuthInit(void)
 
 
 void
-perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *newUser)
+perlAuthenticate(char *user, char *passwd, int *code, char *errorstring,
+                 char *newUser)
 {
     dSP;
     HV *attribs;
@@ -396,11 +400,11 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
 
     PUSHMARK(SP);
     PUTBACK;
-    rc = perl_call_pv("authenticate", G_EVAL|G_ARRAY);
+    rc = perl_call_pv("authenticate", G_EVAL | G_ARRAY);
 
     SPAGAIN;
 
-    if (rc == 0 ) { /* Error occurred, same as checking $@. */
+    if (rc == 0) { /* Error occurred, same as checking $@. */
         errsv = ERRSV;
         syslog(L_ERROR, "Perl function authenticate died: %s",
                SvPV(errsv, PL_na));
@@ -409,7 +413,10 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
     }
 
     if ((rc != 3) && (rc != 2)) {
-        syslog(L_ERROR, "Perl function authenticate returned wrong number of results: %d", rc);
+        syslog(
+            L_ERROR,
+            "Perl function authenticate returned wrong number of results: %d",
+            rc);
         Reply("%d Internal error (2).  Goodbye!\r\n", NNTP_FAIL_TERMINATING);
         ExitWithStats(1, false);
     }
@@ -435,9 +442,9 @@ perlAuthenticate(char *user, char *passwd, int *code, char *errorstring, char *n
 }
 
 
-#ifdef DEBUG_MODIFY
+#    ifdef DEBUG_MODIFY
 void
-dumpTable (const char *msg)
+dumpTable(const char *msg)
 {
     HEADER *hp;
     int i;
@@ -445,19 +452,20 @@ dumpTable (const char *msg)
     fprintf(flog, "===BEGIN TABLE DUMP: %s\n", msg);
 
     for (hp = Table; hp < EndOfTable; hp++) {
-        fprintf(flog, " Name: '%s'",hp->Name);
+        fprintf(flog, " Name: '%s'", hp->Name);
         fflush(flog);
         fprintf(flog, " Size: '%d'", hp->Size);
         fflush(flog);
-        fprintf(flog, " Value: '%s'\n", ((hp->Value == NULL) ? "(NULL)" : hp->Value));
+        fprintf(flog, " Value: '%s'\n",
+                ((hp->Value == NULL) ? "(NULL)" : hp->Value));
         fflush(flog);
     }
 
-    for (i=0; i<OtherCount; i++) {
+    for (i = 0; i < OtherCount; i++) {
         fprintf(flog, "Extra[%02d]: %s\n", i, OtherHeaders[i]);
     }
     fprintf(flog, "===END TABLE DUMP: %s\n", msg);
 }
-#endif /* DEBUG_MODIFY */
+#    endif /* DEBUG_MODIFY */
 
 #endif /* DO_PERL */
