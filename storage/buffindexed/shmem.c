@@ -24,11 +24,15 @@
 #    define MAP_FAILED ((caddr_t) -1)
 #endif
 
+/* Only use these 6 useful and portable symbolic constants.
+ * Setting the executable bit does not work on all systems, like FreeBSD. */
+#define SEM_RWPERMS (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+
 static int
 smcGetSemaphore(const char *name)
 {
     key_t kt = ftok((char *) name, 0);
-    int id = semget(kt, 0, S_IRWXU | S_IRWXG | S_IRWXO);
+    int id = semget(kt, 0, SEM_RWPERMS);
 
     if (id < 0) {
         syswarn("semget failed to get semaphore for %s", name);
@@ -40,12 +44,12 @@ static int
 smcCreateSemaphore(const char *name)
 {
     key_t kt = ftok((char *) name, 0);
-    int id = semget(kt, 2, IPC_CREAT | S_IRWXU | S_IRWXG | S_IRWXO);
+    int id = semget(kt, 2, IPC_CREAT | SEM_RWPERMS);
 
     if (id < 0) {
         if (errno == EACCES || errno == EINVAL) {
             /* looks like a wrong semaphore exists. remove it. */
-            id = semget(kt, 0, S_IRWXU | S_IRWXG | S_IRWXO);
+            id = semget(kt, 0, SEM_RWPERMS);
             if (id < 0) {
                 /* couldn't even retrieve it. */
                 syswarn("cant get semaphore using %s", name);
@@ -68,7 +72,7 @@ smcCreateSemaphore(const char *name)
             }
 #endif
             /* and retry creating it */
-            id = semget(kt, 2, IPC_CREAT | S_IRWXU | S_IRWXG | S_IRWXO);
+            id = semget(kt, 2, IPC_CREAT | SEM_RWPERMS);
         }
     }
     if (id < 0)
@@ -149,7 +153,7 @@ smcGetShmemBuffer(const char *name, int size)
     key_t fk = ftok((char *) name, 0);
 
     /* create shared memory buffer */
-    shmid = shmget(fk, size, S_IRWXU | S_IRGRP | S_IROTH);
+    shmid = shmget(fk, size, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (shmid < 0) {
         /* this is normal */
         return NULL;
@@ -198,10 +202,11 @@ smcCreateShmemBuffer(const char *name, int size)
     key_t fk = ftok((char *) name, 0);
 
     /* create shared memory buffer */
-    shmid = shmget(fk, size, IPC_CREAT | S_IRWXU | S_IRGRP | S_IROTH);
+    shmid =
+        shmget(fk, size, IPC_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (shmid < 0) {
         /* try to get existing segment */
-        shmid = shmget(fk, 4, S_IRWXU | S_IRGRP | S_IROTH);
+        shmid = shmget(fk, 4, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         if (shmid >= 0) {
             syswarn("shmem segment already exists name %s", name);
             /* try to delete old segment */
@@ -210,7 +215,8 @@ smcCreateShmemBuffer(const char *name, int size)
                 return NULL;
             }
             notice("recreating another shmem segment");
-            shmid = shmget(fk, size, IPC_CREAT | S_IRWXU | S_IRGRP | S_IROTH);
+            shmid = shmget(fk, size,
+                           IPC_CREAT | S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         }
     }
     if (shmid < 0) {
