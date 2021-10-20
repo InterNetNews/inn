@@ -1,0 +1,41 @@
+=head1 NAME
+
+nnrpd.track - Specify hosts to be tracked by nnrpd
+
+=head1 DESCRIPTION
+
+This file, which is located in I<pathetc>, specifies which hosts are to
+have their activities recorded during an B<nnrpd> session.  The B<nnrpd>
+server reads it when first spawned by B<innd>, provided I<readertrack>
+in F<inn.conf> is true; otherwise this file is not used.
+
+Entries consist of one host specification per line, each line having
+two fields, separated by a colon:
+
+    host:identity
+
+The first field is either one of the FQDNs of a host, or a domain name
+(in the form C<*.domain.com>).
+
+The second field is simply a segment of text which may be used to
+more easily identify the client, typically an e-mail address or
+other identifying mark.  Each post of tracked hosts will have an
+entry associated with I<identity> in the log message recorded to the
+I<pathlog>/tracklogs directory, and every posted article will be saved
+in the I<pathlog>/trackposts directory.
+
+An example of F<nnrpd.track> file is:
+
+    nasty.foo.com:nasty@foo.com
+    *.bar.com:VeryNastyClient
+
+=head1 HISTORY
+
+Written by Steve Carrie <stephenc@uk.uu.net> for InterNetNews.
+Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+inn.conf(5), nnrpd(8).
+
+=cut

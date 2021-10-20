@@ -1,0 +1,206 @@
+=head1 NAME
+
+innwatch.ctl - List of supervisory actions taken by innwatch
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/innwatch.ctl is used to determine what actions are
+taken during the periodic supervisions by B<innwatch>.
+
+The file consists of a series of lines; blank lines and lines beginning
+with a number sign (C<#>) are ignored.  All other lines consist of
+seven fields, each preceded by a delimiting character, for example:
+
+    !state!when!condition!test!limit!command!reason
+
+or:
+
+    @state@when@condition@test@limit@command@reason
+
+The delimiter can be any one of several non-alphanumeric characters that
+does not appear elsewhere in the line; there is no way to quote it to
+include it in any of the fields.  Any of C<!>, C<,>, C<:>, C<@>, C<;>,
+or C<?> is a good choice.  Each line can have a different delimiter; the
+first character on each line is the delimiter for that line.  White space
+surrounding delimiters, except before the first, is ignored, and does
+not form part of the fields; white space within fields is permitted.
+All delimiters must be present.
+
+The first field is the state to enter if the condition for this
+control line is true.  It is used as an internal state indicator and
+in B<ctlinnd> messages to control the server.  If this field is empty,
+the line number is used.
+
+The second field specifies when this control line should be used.
+It consists of a list of states and special indicators, separated by
+whitespace.  If the current state matches against any of the states in
+this field, this line will be used as described below.  The values that
+may be used are:
+
+=over 4
+
+=item C<->
+
+This line matches if the current state is the same as the label on this
+line, or if the current state is C<run>, the initial state.  This is
+also the default state if this field is empty.
+
+=item C<+>
+
+This line matches if the current state is C<run>.
+
+=item C<*>
+
+This line always matches.
+
+=item C<label>
+
+This line matches if the current state is the specified C<label>.
+
+=item C<-label>
+
+This line matches if the current state is not the specified C<label>.
+
+=back
+
+The third field specifies a shell command that is invoked if this
+line matches.  Do not use any shell filename expansion characters
+such as C<*>, C<?>, or C<[> (even quoted, they're not likely to work
+as intended).  The command is executed with its current directory set
+to the news spool articles directory (I<patharticles>).
+
+If the command succeeds, as indicated by its exit status, it is expected
+to have printed a single integer to standard output.  This gives the
+value of this control line, to be used below.  If the command fails,
+the line is ignored.
+
+The fourth field specifies the operator to use to test the value returned
+above.  It should be one of the two letter numeric test operators defined
+in test(1) such as C<eq>, C<lt> and the like.  The leading dash (C<->)
+should not be included.
+
+The fifth field specifies a constant with which to compare the value
+using the operator just defined.  This is done by invoking the command:
+
+    test value -operator constant
+
+The line is said to I<succeed> if it returns true.
+
+The sixth field specifies what should be done if the line succeeds,
+and in some cases if it fails.  Any of the following words may be used:
+
+=over 4
+
+=item C<throttle>
+
+Causes B<innwatch> to throttle the server if this line succeeds.  It also
+sets the state to the value of the line's label.  If the line fails,
+and the state was previously equal to the label on this line (that is,
+this line had previously succeeded), then a C<ctlinnd go> command will
+be sent to the server, and B<innwatch> will return to the C<run> state.
+The C<ctlinnd throttle> command is only performed if the current state
+is C<run> or a state other than the label of this line, regardless of
+whether the command succeeds.
+
+=item C<pause>
+
+Is identical to C<throttle> except that the server is paused via the
+C<ctlinnd pause> command.
+
+=item C<shutdown>
+
+Sends a C<ctlinnd shutdown> command to the server.  It is for emergency
+use only.
+
+=item C<flush>
+
+Sends a C<ctlinnd flush> command to the server.
+
+=item C<go>
+
+Causes B<innwatch> to send a C<ctlinnd go> command to the server and
+to set the state to C<run>.
+
+=item C<exit>
+
+Causes B<innwatch> to exit.
+
+=item C<skip>
+
+The remainder of the control file is skipped for the current pass.
+
+=back
+
+The last field specifies the reason that is used in those C<ctlinnd>
+commands that require one.  More strictly, it is part of the reason,
+as B<innwatch> appends some information to it.
+
+In order to enable other sites to recognize the state of the local
+B<innd> server, this field should usually be set to one of several
+standard values.  Use for instance C<No space> if the server is
+rejecting articles because of a lack of filesystem resources, or
+C<loadav> if the server is rejecting articles because of a lack of
+CPU resources.
+
+Once B<innwatch> has taken some action as a consequence of its control
+line, it skips the rest of the control file for this pass.  If the action
+was to restart the server (that is, issue a C<ctlinnd go> command),
+then the next pass will commence almost immediately, so that B<innwatch>
+can discover any other condition that may mean that the server should
+be suspended again.
+
+=head1 EXAMPLES
+
+    !!! inndf . ! lt ! 10000 ! throttle ! No space (spool)
+    !!! inndf -i . ! lt ! 1000 ! throttle ! No space (inodes)
+
+The first line causes the server to be throttled if the free space drops
+below 10000 units (using whatever units B<inndf> uses), and restarted
+again when free space increases above the threshold.
+
+The second line does the same for inodes.
+
+The next three lines act as a group and should appear in the following
+order.  It is easier to explain them, however, if they are described
+from the last up.
+
+    ! load ! load hiload ! loadavg ! lt ! 5 ! go ! loadav
+    : hiload : + load : loadavg : gt : 8 : throttle : loadav
+    / load / + / loadavg / gt / 6 / pause / loadav
+
+The final line causes the server to be paused if B<innwatch> is in the
+C<run> state and the load average rises to, or above, six.  The state is
+set to C<load> when this happens.  The previous line causes the server
+to be throttled when B<innwatch> is in the C<run> or C<load> state,
+and the load average rises above eight.  The state is set to C<hiload>
+when this happens.  Note that B<innwatch> can switch the server from
+C<pause> to C<throttle> if the load average rises from below six to
+between six and seven, and then to above eight.  The first line causes
+the server to be sent a C<ctlinnd go> command if B<innwatch> is in the
+C<load> or C<hiload> state, and the load average drops below five.
+
+Note that all three lines assume a mythical command C<loadavg> that
+is assumed to print the current load average as an integer.  In more
+practical circumstances, a pipe of B<uptime> into AWK is more likely
+to be useful.
+
+=head1 BUGS
+
+The C<run> state is not actually identified by the label with that
+three letter name, and using it will not work as expected (C<go> is
+the wanted state in that case).
+
+Using an I<unusual> character for the delimiter such as C<(>, C<*>,
+C<&>, C<`>, C<'>, and the like, is likely to lead to obscure and hard
+to locate bugs.
+
+=head1 HISTORY
+
+Written by <kre@munnari.oz.au> for InterNetNews.  Rewritten into POD
+by Julien Elie.
+
+=head1 SEE ALSO
+
+ctlinnd(8), inndf(8), news.daily(8), rc.news(8).
+
+=cut
