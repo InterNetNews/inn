@@ -334,7 +334,7 @@ Aliased to a newsgroup that has an error of some kind.
 However, a newsgroup that is equivalent to an ignored newsgroup is not a
 problem.
 
-The default is C<-l 12>:  problem newsgroups from both hosts are marked
+The default is C<-l 12>: problem newsgroups from both hosts are marked
 as errors.
 
 =item B<-m>

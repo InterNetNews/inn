@@ -42,7 +42,7 @@ Only one option is currently accepted:
 =item B<norotate>
 
 Using this option disables the rotating and cleaning aspect of the log
-processing:  the logs files are only scanned for information and no contents
+processing: the logs files are only scanned for information and no contents
 are altered.  If B<scanlogs> is invoked more than once a day, the B<norotate>
 option should be used to prevent premature log cleaning.
 

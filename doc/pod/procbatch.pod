@@ -83,7 +83,7 @@ Directly append to tape files in B<innfeed>'s backlog directory.
 
 =item B<-q>
 
-Quiet mode:  only display error messages.
+Quiet mode: only display error messages.
 
 =item B<-s> I<spooldir>
 

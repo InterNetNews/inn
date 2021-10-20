@@ -200,11 +200,12 @@ be removed.  Using this keyword disables this function.
 
 =item B<norotate>
 
-By default, log processing includes rotating and cleaning out log files.  Using
-this keyword disables the rotating and cleaning aspect of the log processing:  the
-logs files are only scanned for information and no contents are altered.  This
-keyword has no effect if the B<nologs> keyword is used.  The B<norotate> keyword
-is passed on to B<scanlogs> if it is invoked.
+By default, log processing includes rotating and cleaning out log files.
+Using this keyword disables the rotating and cleaning aspect of the
+log processing: the logs files are only scanned for information and
+no contents are altered.  This keyword has no effect if the B<nologs>
+keyword is used.  The B<norotate> keyword is passed on to B<scanlogs>
+if it is invoked.
 
 =item B<nostat>
 

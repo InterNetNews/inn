@@ -21,7 +21,7 @@ processed.
 
 =head1 CONFIGURATION FILE
 
-The configuration file format is simple:  comments (starting with a hash sign
+The configuration file format is simple: comments (starting with a hash sign
 C<#>) and blank lines are ignored.  All other lines have two or three fields
 on them.  The first is the list name and is what B<innd> uses (i.e. the site
 field of the entry in the F<newsfeeds> file).  The second field is the

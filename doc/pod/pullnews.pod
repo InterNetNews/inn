@@ -29,7 +29,7 @@ otherwise, this file is looked for in the running user's home directory.
 
 By default, B<pullnews> connects to all servers listed in the configuration
 file, but you can limit B<pullnews> to specific servers by listing them
-on the command line:  a whitespace-separated list of server names can be
+on the command line: a whitespace-separated list of server names can be
 specified, like I<from-server> for one of them.  For each server it connects
 to, it pulls over articles and feeds them to the destination server via
 the IHAVE or POST commands.  This means that the system B<pullnews> is
@@ -70,7 +70,7 @@ C<:> is also recognized).  As MD5 generates a 128-bit return value,
 it is possible to specify from which byte-offset the 32-bit integer
 used by hashfeed starts.  The default value for C<offset> is C<:0> and
 thirteen overlapping values from C<:0> to C<:12> can be used.  Only up to
-four totally independent values exist:  C<:0>, C<:4>, C<:8> and C<:12>.
+four totally independent values exist: C<:0>, C<:4>, C<:8> and C<:12>.
 
 Therefore, it allows generating a second level of deterministic
 distribution.  Indeed, if B<pullnews> feeds C<1/2>, it can go on
@@ -185,7 +185,7 @@ when establishing an NNTP connection.
 
 =item B<-O>
 
-Use an optimized mode:  B<pullnews> checks whether the article already
+Use an optimized mode: B<pullnews> checks whether the article already
 exists on the downstream server, before downloading it.  It may help
 for huge articles or a slow link to upstream hosts.
 

@@ -18,7 +18,7 @@ In addition to the buffers, buffindexed also stores information in a file
 named F<group.index> in I<pathdb>.  (This file should not be mistaken for
 the one named F<group.index> in I<pathoverview> which is used by the
 tradindexed overview method.)  It contains information about each
-newsgroup:  the pointer to the index block for the newsgroup, the high
+newsgroup: the pointer to the index block for the newsgroup, the high
 mark, the low mark, the flag of the group, the number of articles, and so
 forth.  This file is created automatically when all buffers are
 initialized and should not be manually edited.

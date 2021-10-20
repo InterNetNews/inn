@@ -504,9 +504,9 @@ You need to create an F<nnrpd_auth.py> module in INN's filter directory
 (see the I<pathfilter> setting in F<inn.conf>) where you should define a
 class holding certain methods depending on which hooks you want to use.
 
-Note that you will have to use different Python scripts for authentication
-and access:  the values of I<python_auth>, I<python_access> and I<python_dynamic>
-have to be distinct for your scripts to work.
+Note that you will have to use different Python scripts for
+authentication and access: the values of I<python_auth>, I<python_access>
+and I<python_dynamic> have to be distinct for your scripts to work.
 
 The following methods are known to B<nnrpd>:
 
@@ -705,7 +705,7 @@ which make use of this filter mechanism.
 
 =item PyClean
 
-URL:  L<https://github.com/crooks/PyClean> (maintained by Steve Crook)
+URL: L<https://github.com/crooks/PyClean> (maintained by Steve Crook)
 
 PyClean performs a similar role to the original Perl-based Cleanfeed,
 an extremely powerful spam filter on Usenet.  It uses F<filter_innd.py>.

@@ -176,7 +176,7 @@ syswarn or sysdie was called.  The length of the formatted message is
 obtained by calling vsnprintf with the provided format and arguments, and
 therefore is reliable to use as the size of a buffer to malloc to hold the
 result of formatting the message provided that vsnprintf is used to format
-it (warning:  the system vsprintf may produce more output under some
+it (warning: the system vsprintf may produce more output under some
 circumstances, so always use vsnprintf).
 
 The error handler can do anything it wishes; each error handler is called
@@ -251,7 +251,7 @@ all of the output.  For shell script tests, F<tests/tap/libtap.sh>
 contains helpful shell functions.  See the existing tests for some
 hints about how to write new tests, as well as the F<tests/README> guide.
 
-One naming convention:  to distinguish more easily between for example
+One naming convention: to distinguish more easily between for example
 F<lib/error.c> (the implementation) and F<tests/lib/error-t.c> (the test
 suite), we add F<-t> to the end of the test file names.  So
 F<tests/lib/error-t.c> is the source that compiles into an executable
@@ -588,7 +588,7 @@ and not:
 
     if (p != NULL) return p;
 
-This is in part for a practical reason:  some code coverage analysis tools
+This is in part for a practical reason: some code coverage analysis tools
 like B<purecov> will count the second example above as a single line and
 won't notice if the condition always evaluates the same way.
 

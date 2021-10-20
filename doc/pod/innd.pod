@@ -24,7 +24,7 @@ to control its activities, commands that can be sent using ctlinnd(8).  The
 current status of B<innd> can be obtained by running C<ctlinnd mode>, or
 for more detailed output, innstat(8).
 
-B<innd> can be in one of three operating modes:  running, paused, or
+B<innd> can be in one of three operating modes: running, paused, or
 throttled.  Running is the normal mode; when the server is throttled, it
 closes connections and rejects new ones.  Paused is like a temporary
 throttle, suspending B<innd>'s activities but not causing the server to

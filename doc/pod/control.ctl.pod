@@ -300,7 +300,7 @@ Then, as F<control.ctl> is processed from bottom, here is what happens:
 =item 1.
 
 The newsgroups foo.bar5 and foo.bar5.first are marked as unwanted.  But
-nothing is done yet:  other F<control.ctl> entries have to be processed
+nothing is done yet: other F<control.ctl> entries have to be processed
 with a real action and a set of newsgroups containing foo.bar5 and
 foo.bar5.first.
 

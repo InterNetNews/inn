@@ -95,7 +95,7 @@ started.  Any output from that program is then written, indented by four
 spaces.  Then, the name of the program is written, followed by C<end> and
 the time it has ended.
 
-Programs called, if needed, are in order:  B<expireover>, B<ctlinnd>
+Programs called, if needed, are in order: B<expireover>, B<ctlinnd>
 (with the C<lowmark> option), B<expirerm> and B<expire>.  Removed articles
 are listed in F<expire.list> and low marks for each newsgroup (that
 is to say the number of the oldest article available in the newsgroup) in

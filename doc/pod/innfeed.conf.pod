@@ -6,7 +6,7 @@ innfeed.conf - Configuration file for innfeed
 
 The configuration file F<innfeed.conf> in I<pathetc> is used to control
 the innfeed(8) program.  It is a fairly free-format file that consists
-of three types of entries:  I<key>:I<value>, I<peer> and I<group>.
+of three types of entries: I<key>:I<value>, I<peer> and I<group>.
 Comments are from the hash character C<#> to the end of the line.
 
 I<key>:I<value> entries are a keyword and a value separated by a colon

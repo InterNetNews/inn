@@ -21,7 +21,7 @@ example, controlchan(8), a daemon that processes incoming control
 messages, runs out of F<newsfeeds>, as could a news to mail gateway.
 
 The file is interpreted as a set of lines, parsed according to the
-following rules:  If a line ends with a backslash, the backslash, the
+following rules: if a line ends with a backslash, the backslash, the
 newline, and any whitespace at the start of the next line is deleted.
 This is repeated until the entire "logical" line is collected.  If the
 logical line is blank or starts with a number sign (C<#>), it is ignored.
@@ -458,7 +458,7 @@ C<start-end/mod_offset>.  As MD5 generates a 128-bit return value,
 it is possible to specify from which byte-offset the 32-bit integer
 used by hashfeed starts.  The default value for C<offset> is C<_0>
 and thirteen overlapping values from C<_0> to C<_12> can be used.
-Only up to four totally independent values exist:  C<_0>, C<_4>,
+Only up to four totally independent values exist: C<_0>, C<_4>,
 C<_8> and C<_12>.
 
 Therefore, it allows generating a second level of deterministic
@@ -628,7 +628,7 @@ B<Tm> feeds.
 
 =head1 FEED TYPES
 
-B<innd> provides four basic types of feeds:  log, file, program, and
+B<innd> provides four basic types of feeds: log, file, program, and
 channel.  An exploder is a special type of channel.  In addition, several
 entries can feed into the same feed; these are funnel feeds, which refer
 to an entry that is one of the other types.  Funnel feeds are partially
@@ -810,7 +810,7 @@ at the C<mailer!> site and end up executing the command line:
 
 which will mail the article to both Peter and Sue.
 
-Finally, another very useful example of a channel feed:  the standard
+Finally, another very useful example of a channel feed: the standard
 entry for controlchan(8).  Make sure its path is properly set.
 
     controlchan!\

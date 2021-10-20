@@ -158,7 +158,7 @@ given to restrict the dump to the information for a single article.
 
 Dump the overview information for a newsgroup, in the same format as it
 would be returned to clients but with one modification.  Appended to the
-end of each entry will be four additional pieces of data:  the article
+end of each entry will be four additional pieces of data: the article
 number according to the index file for that group labelled with
 C<Article:>, the storage API token for that article labelled with
 C<Token:>, the arrival date for that article on the server in S<RFC 5322> date

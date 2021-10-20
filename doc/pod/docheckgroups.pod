@@ -11,7 +11,7 @@ B<docheckgroups> [B<-u>] [I<include-pattern> [I<exclude-pattern>]]
 B<docheckgroups> is usually run by B<controlchan> in order to process
 checkgroups control messages.  It reads a list of newsgroups along
 with their descriptions on its standard input.  That list should
-be formatted like the newsgroups(5) file:  each line contains the
+be formatted like the newsgroups(5) file: each line contains the
 name of a newsgroup followed by one or more tabulations and its
 description.
 

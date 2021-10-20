@@ -6,7 +6,7 @@ expire.ctl - Configuration file for article expiration
 
 The file I<pathetc>/expire.ctl is the default configuration file for
 B<expire> and B<expireover>, which read it at start-up.  It serves two
-purposes:  it defines how long history entries for expired or rejected
+purposes: it defines how long history entries for expired or rejected
 articles are remembered, and it determines how long articles stored on the
 server are retained.
 

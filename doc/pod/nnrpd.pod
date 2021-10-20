@@ -226,7 +226,7 @@ or:
     tlskeyfile:     <pathetc>/privkey.pem
 
 There are two common ways for a news client to negotiate a TLS
-connection:  either via the use of a dedicated port (usually 563)
+connection: either via the use of a dedicated port (usually 563)
 on which TLS is immediately negotiated upon connection, or via the
 now discouraged way (per S<RFC 8143>) to use the STARTTLS command on
 the usual NNTP port (119) to dynamically upgrade from unencrypted

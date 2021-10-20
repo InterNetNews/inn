@@ -234,7 +234,7 @@ B<--with-news-master> option to configure (see below).  There is also
 the I<mailto> keyword which can be given to B<news.daily> in order to
 modify the mail address to which these reports are sent.
 
-WARNING:  By default, INN installs various configuration files as
+WARNING: By default, INN installs various configuration files as
 group-writeable, and in general INN is not hardened from a security
 standpoint against an attack by someone who is already in the C<news> group.
 In general, you should consider membership in the news group as equivalent
@@ -349,13 +349,13 @@ following formula:
 
     ram > 10 * tablesize
 
-          ram:  Amount of system RAM (in bytes)
-    tablesize:  3rd field on the 1st line of history.dir (bytes)
+          ram: Amount of system RAM (in bytes)
+    tablesize: 3rd field on the 1st line of history.dir (bytes)
 
 If you don't have at least that much RAM, try rebuilding INN with tagged
 hash enabled.
 
-NOTE:  B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
+NOTE: B<--enable-largefiles> cannot be used with B<--enable-tagged-hash>.
 
 =item B<--with-perl>
 
@@ -560,7 +560,7 @@ executed by a non-root user).  To do this, type:
 
     CHOWNPROG=set CHGRPPROG=set make DESTDIR=/tmp/inn-root install
 
-WARNING:  if you install INN in this manner, none of the resulting
+WARNING: if you install INN in this manner, none of the resulting
 directories and files in the virtual root directory will be owned by
 the correct users and groups.  It is YOUR responsibility to ensure the
 resulting directories and files are packaged with the users, groups,
@@ -592,7 +592,7 @@ You can also type C<make DESTDIR=/tmp/inn-root cert> as either root
 (preferred) or a non-root user.  All of the warnings and caveats
 mentioned above apply.
 
-You are now ready for the really fun part:  configuring your copy of INN!
+You are now ready for the really fun part: configuring your copy of INN!
 
 =head1 Choosing an Article Storage Format
 
@@ -615,13 +615,13 @@ the newsgroup name.  For example, article 12345 in news.software.nntp
 would be stored as F<news/software/nntp/12345> relative to the root of the
 article spool.
 
-Advantages:  Widely used and well-understood storage mechanism, can read
+Advantages: Widely used and well-understood storage mechanism, can read
 article spools written by older versions of INN, compatible with all
 third-party INN add-ons, provides easy and direct access to the articles
 stored on your server and makes writing programs that fiddle with the news
 spool very easy, and gives you fine control over article retention times.
 
-Disadvantages:  Takes a very fast file system and I/O system to keep up
+Disadvantages: Takes a very fast file system and I/O system to keep up
 with current Usenet traffic volumes due to file system overhead.  Groups
 with heavy traffic tend to create a bottleneck because of inefficiencies
 in storing large numbers of article files in a single directory.  Requires
@@ -634,10 +634,10 @@ Articles are stored as individual files as in tradspool, but are divided
 into directories based on the arrival time to ensure that no single
 directory contains so many files as to cause a bottleneck.
 
-Advantages:  Heavy traffic groups do not cause bottlenecks, and fine
+Advantages: Heavy traffic groups do not cause bottlenecks, and fine
 control of article retention time is still possible.
 
-Disadvantages:  The ability to easily find all articles in a given
+Disadvantages: The ability to easily find all articles in a given
 newsgroup and manually fiddle with the article spool is lost, and INN
 still suffers from speed degradation due to file system overhead (creating
 and deleting individual files is a slow operation).
@@ -648,11 +648,11 @@ Similar to timehash, articles are stored by arrival time, but instead of
 writing a separate file for each article, multiple articles are put in the
 same file.
 
-Advantages:  Roughly four times faster than timehash for article writes,
+Advantages: Roughly four times faster than timehash for article writes,
 since much of the file system overhead is bypassed, while still retaining
 the same fine control over article retention time.
 
-Disadvantages:  Even worse than timehash, and similar to CNFS (below),
+Disadvantages: Even worse than timehash, and similar to CNFS (below),
 using this method means giving up all but the most careful manually
 fiddling with your article spool.  As one of the newer and least widely
 used storage types, timecaf has not been as thoroughly tested as the other
@@ -664,7 +664,7 @@ CNFS stores articles sequentially in pre-configured buffer files.  When
 the end of the buffer is reached, new articles are stored from the
 beginning of the buffer, overwriting older articles.
 
-Advantages:  Blazingly fast because no file creations or deletions are
+Advantages: Blazingly fast because no file creations or deletions are
 necessary to store an article.  Unlike all other storage methods, does not
 require manual article expiration; old articles are deleted to make room
 for new ones when the buffers get too full.  Also, with CNFS your server
@@ -672,14 +672,14 @@ will never throttle itself due to a full spool disk, and groups are
 restricted to just the buffer files you give them so that they can never
 use more than the amount of disk space you allocate to them.
 
-Disadvantages:  Article retention times are more difficult to control
+Disadvantages: Article retention times are more difficult to control
 because old articles are overwritten automatically.  Attacks on Usenet,
 such as flooding or massive amounts of spam, can result in wanted articles
 expiring much faster than you intended (with no warning).
 
 =back
 
-Some general recommendations:  If you are installing a transit news server
+Some general recommendations: If you are installing a transit news server
 (one that just accepts news and sends it out again to other servers and
 doesn't support any readers), use CNFS exclusively and don't worry about
 any of the other storage methods.  Otherwise, put high-volume groups and
@@ -971,7 +971,7 @@ references to articles.
 
 Now that you have a rough idea of the file layout, we'll begin to add the
 actual feed entries.  First, we'll set up the special C<ME> entry.  This entry
-is required and serves two purposes:  the newsgroup pattern specified here
+is required and serves two purposes: the newsgroup pattern specified here
 is prepended to the newsgroup list of all other feeds, and the
 distribution pattern for this entry determines what distributions (from
 the Distribution: header of incoming articles) are accepted from remote
@@ -983,7 +983,7 @@ somewhat difficult to use right so you may want to just exclude it
 specifically from every feed instead.
 
 The C<ME> entry tends to confuse a lot of people, so this point is worth
-repeating:  the newsgroup patterns set the default subscription for
+repeating: the newsgroup patterns set the default subscription for
 I<outgoing> feeds, and the distribution patterns set the acceptable
 Distribution: header entries for I<incoming> articles.  This is confusing
 enough that it may change in later versions of INN.
@@ -1093,7 +1093,7 @@ and neither of those programs is necessary.  Although B<crosspost> is no
 longer shipped with INN (and will not be working if used), you can
 still use B<overchan> if you make sure to set I<useoverchan> to true in
 F<inn.conf> so that B<innd> doesn't write overview data itself, but be
-careful:  B<innd> may accept articles faster than B<overchan> can process the
+careful: B<innd> may accept articles faster than B<overchan> can process the
 data.
 
 =head2 F<incoming.conf>
@@ -1143,7 +1143,7 @@ There are various other things you can set, including the maximum number
 of connections the remote host will be allowed.  See incoming.conf(5) for
 all the details.
 
-Note for those familiar with older versions of INN:  this file replaces
+Note for those familiar with older versions of INN: this file replaces
 the old F<hosts.nntp> configuration file.
 
 =head2 F<cycbuff.conf>
@@ -1301,7 +1301,7 @@ The fifth parameter is the options parameter.  Currently only CNFS uses
 this field; it should contain the name of the metacycbuff used to store
 articles in this storage class.
 
-The sixth parameter is a boolean which is false by default:  any non-zero
+The sixth parameter is a boolean which is false by default: any non-zero
 number of matching newsgroups is sufficient, provided no newsgroup matches
 a poison wildmat.  If it is set to true, all the newsgroups in the
 Newsgroups: header of incoming articles will be examined to see if they
@@ -1457,7 +1457,7 @@ F</dev>.  There's a small shell script in cycbuff.conf(5) that may help
 with this.  Make sure to create the device files in the location INN
 expects them (specified in F<cycbuff.conf>).
 
-Solaris users please note:  on Solaris, do not use block devices that
+Solaris users please note: on Solaris, do not use block devices that
 include the first cylinder of the disk.  Solaris doesn't protect the
 superblock from being overwritten by an application writing to block
 devices and includes it in the first cylinder of the disk, so unless you
@@ -1512,7 +1512,7 @@ Next, you need to create an empty F<history> database.  To do this, type:
     makedbz -i -o
 
 (Note that if you install INN with C<make install>, you do not need to
-run these commands:  the installation takes care of creating the
+run these commands: the installation takes care of creating the
 F<history> database.)
 
 When it finishes, make sure the file permissions are correct on all
@@ -1683,9 +1683,9 @@ option:
 
     su news -s /bin/sh -c '<pathbin in inn.conf>/rc.news stop'
 
-In the F<contrib> directory of this source tree, two sample init scripts are provided:  one
-for people using System V-style init.d directories, and another for people
-using systemd-style init scripts.
+In the F<contrib> directory of this source tree, two sample init scripts
+are provided: one for people using System V-style F<init.d> directories,
+and another for people using systemd-style init scripts.
 
 If you wish to use TLS/SSL for your readers, you need to start a second
 B<nnrpd> to listen to these connections to NNTPS port 563 and put something

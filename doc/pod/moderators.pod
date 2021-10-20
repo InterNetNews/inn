@@ -22,7 +22,7 @@ which this line applies.  The first matching line is used, so more
 specific patterns should be listed before general patterns.
 
 The second field, the submission address, should be a simple e-mail
-address with one exception:  at most one C<%s> may occur anywhere in the
+address with one exception: at most one C<%s> may occur anywhere in the
 address.  If present, it will be replaced by the name of the newsgroup,
 with all periods in the name changed to dashes (C<->).  If there is a
 literal C<%> in the submission address, it must be written as C<%%>, even

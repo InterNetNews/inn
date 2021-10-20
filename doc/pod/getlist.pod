@@ -72,7 +72,7 @@ Connect to the port I<port>, which is by default C<119>.
 
 Try to switch to B<nnrpd> with a MODE READER command before issuing the
 LIST request.  It can be useful in case a feeding access exists for
-the news server:  more information can be retrieved from B<nnrpd>,
+the news server: more information can be retrieved from B<nnrpd>,
 compared with B<innd>.
 
 =back

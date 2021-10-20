@@ -310,7 +310,7 @@ the string returned by filter_post() is returned to the client as the
 error message (with some exceptions; see below).
 
 filter_post() has access to a global hash %attributes which contains
-information about the connection as follows:  C<$attributes{'hostname'}>
+information about the connection as follows: C<$attributes{'hostname'}>
 will contain the hostname (or the IP address if it does not resolve)
 of the client machine, C<$attributes{'ipaddress'}> will contain its IP
 address (as a string), C<$attributes{'port'}> will contain the client
@@ -648,7 +648,7 @@ which make use of this filter mechanism.
 
 =item Cleanfeed
 
-URL:  L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
+URL: L<http://www.mixmin.net/cleanfeed/> (maintained by Steve Crook)
 
 Cleanfeed is an extremely powerful spam filter, probably the most widely
 used spam filter on Usenet currently.  It catches excessive multiposting
@@ -661,7 +661,7 @@ maintaining it since 2007.
 
 =item Postfilter
 
-URL:  L<https://github.com/Aioe/postfilter> (by Paolo Amoroso)
+URL: L<https://github.com/Aioe/postfilter> (by Paolo Amoroso)
 
 Postfilter is an B<nnrpd> Perl filter (F<filter_nnrpd.pl>) which scans all
 messages sent by local users in order to block abuses.  Postfilter can limit
@@ -671,7 +671,7 @@ TOR and is able to deeply modify the headers.  It's designed for large sites.
 
 =item News Shogun
 
-URL:  L<http://www.panix.com/shogun/> (by Aidan Cully)
+URL: L<http://www.panix.com/shogun/> (by Aidan Cully)
 
 A posting filter for helping a site enforce Usenet-II soundness,
 and for quotaing the number of messages any user can post to

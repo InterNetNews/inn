@@ -158,7 +158,7 @@ strictly follows the standard regarding syntax checks.
 
 =head2 Feed Configuration
 
-These parameters govern incoming and outgoing feeds:  what size of
+These parameters govern incoming and outgoing feeds: what size of
 articles are accepted, what filtering and verification is performed on
 them, whether articles in groups not carried by the server are still
 stored and propagated, and other similar settings.
@@ -416,7 +416,7 @@ be set.
 
 =item C<hisv6>
 
-Stores history data in the INN history v6 format:  history(5) text
+Stores history data in the INN history v6 format: history(5) text
 file and a number of dbz(3) database files; this may be in true history
 v6 format, or tagged hash format, depending on the build
 options.  Separation of these two is a project which has not yet been
@@ -1029,7 +1029,7 @@ default is false.
 nnrpd(8) has support for controlling high-volume posters via an
 exponential backoff algorithm, as configured by the following parameters.
 
-Exponential posting backoff works as follows:  news clients are indexed
+Exponential posting backoff works as follows: news clients are indexed
 by IP address (or username, see I<backoffauth> below).  Each time a post
 is received from an IP address, the time of posting is stored (along
 with the previous sleep time, see below).  After a configurable number

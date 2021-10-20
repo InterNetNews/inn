@@ -23,30 +23,30 @@ Programs run and stopped by this script include:
 
 =item *
 
-Always:  B<innd> is started or stopped.
+Always: B<innd> is started or stopped.
 
 =item *
 
-If I<doinnwatch> is true in F<inn.conf>:  B<innwatch> is started and
+If I<doinnwatch> is true in F<inn.conf>: B<innwatch> is started and
 stopped.
 
 =item *
 
-If I<docnfsstat> is true in F<inn.conf>:  B<cnfsstat> is started and stopped.
+If I<docnfsstat> is true in F<inn.conf>: B<cnfsstat> is started and stopped.
 
 =item *
 
-If I<ovmethod> is set to C<ovdb> in F<inn.conf>:  B<ovdb_init> is run;
+If I<ovmethod> is set to C<ovdb> in F<inn.conf>: B<ovdb_init> is run;
 B<ovdb_server> and B<ovdb_monitor> are stopped.
 
 =item *
 
-If I<ovmethod> is set to C<ovsqlite> in F<inn.conf>:  B<ovsqlite-server>
+If I<ovmethod> is set to C<ovsqlite> in F<inn.conf>: B<ovsqlite-server>
 is started and stopped.
 
 =item *
 
-If F<rc.news.local> exists in I<pathbin>:  B<rc.news.local> is run with
+If F<rc.news.local> exists in I<pathbin>: B<rc.news.local> is run with
 argument C<start> or C<stop> (to perform site-specific startup or shutdown
 tasks).
 
@@ -99,7 +99,7 @@ user ID.
 
 =head1 HISTORY
 
-// FIXME:  any attribution for F<rc.news> itself?
+// FIXME: any attribution for F<rc.news> itself?
 
 This manual page written by Jeffrey S<M. Vinocur> <jeff@litech.org> for
 InterNetNews.

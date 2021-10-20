@@ -13,7 +13,7 @@ followed by a colon, at least one blank and a value.  For example:
     max-connections: 10
 
 A legal key does not contains blanks, colons, nor C<#>. There are three
-different types of values:  integers, booleans, and strings.  Integers are
+different types of values: integers, booleans, and strings.  Integers are
 as to be expected.  A boolean value is either C<true> or C<false>
 (case is significant).  A string value is any other sequence of characters.
 If the string needs to contain whitespace, then it must be quoted
@@ -152,7 +152,7 @@ to IHAVE in non-streaming mode) responses instead of C<431> (response
 to CHECK) or C<436> (response to IHAVE) if a message is offered that
 is already received from another peer.  The deferral feature can be
 useful for peers that resend messages right away, as B<innfeed> does.
-The default is false:  the deferral feature is used so that the peer
+The default is false: the deferral feature is used so that the peer
 receives C<431> and C<436> codes, and therefore resends the article
 later.
 

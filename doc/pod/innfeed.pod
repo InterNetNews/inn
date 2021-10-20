@@ -21,12 +21,12 @@ file descriptors and memory.
 As an alternative to using NNTP, INN may also be fed to an IMAP server.
 This is done by using an executable called B<imapfeed>, which is identical
 to B<innfeed> except for the delivery process.  The new version has two
-types of connections:  an LMTP connection to deliver regular messages and
+types of connections: an LMTP connection to deliver regular messages and
 an IMAP connection to handle control messages.
 
 =head1 MODES
 
-B<innfeed> has three modes of operation:  channel, funnel-file and batch.
+B<innfeed> has three modes of operation: channel, funnel-file and batch.
 
 Channel mode is used when no filename is given on the command line,
 the I<input-file> keyword is I<not> given in the config file, I<and>
@@ -69,7 +69,7 @@ B<innfeed> will take care of backlog processing.
 
 =head1 CONFIGURATION
 
-B<innfeed> expects a couple of things to be able to run correctly:  a
+B<innfeed> expects a couple of things to be able to run correctly: a
 directory where it can store backlog files and a configuration file to
 describe which peers it should handle.
 
@@ -156,7 +156,7 @@ debugging information.  Numbers up to 5 are currently useful.
 
 =head1 SYSLOG ENTRIES
 
-There are 3 different categories of syslog entries for statistics:  host,
+There are 3 different categories of syslog entries for statistics: host,
 connection and global.
 
 The host statistics are generated for a given peer at regular intervals
@@ -445,7 +445,7 @@ B<innduct>, maintained by Ian Jackson and available at
 L<http://www.chiark.greenend.org.uk/ucgi/~ian/git-manpage/innduct.git/innduct.8>.
 It is intended to solve a design issue in the way B<innfeed> works.
 As a matter of fact, the program feed protocol spoken between B<innd>
-and B<innfeed> is lossy:  if B<innfeed> dies unexpectedly, articles
+and B<innfeed> is lossy: if B<innfeed> dies unexpectedly, articles
 which B<innd> has written to the pipe to B<innfeed> will be skipped.
 B<innd> has no way of telling which articles those are, no useful
 records, and no attempts to resend these articles.

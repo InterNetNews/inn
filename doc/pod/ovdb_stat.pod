@@ -10,7 +10,7 @@ B<ovdb_stat> B<-HklmMtv> [B<-d> I<database>]
 
 =head1 DESCRIPTION
 
-B<ovdb_stat> displays information from the ovdb database:  S<Berkeley DB>
+B<ovdb_stat> displays information from the ovdb database: S<Berkeley DB>
 statistics, newsgroup data, and overview records.  The output can
 optionally be in HTML format.
 

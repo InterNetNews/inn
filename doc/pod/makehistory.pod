@@ -26,7 +26,7 @@ overview information, use the B<-O> flag.
 
 =head1 OVERVIEW REBUILD
 
-I<WARNING>:  If you're trying to rebuild the overview database, be sure to
+I<WARNING>: If you're trying to rebuild the overview database, be sure to
 stop innd(8) and delete or zero out the existing database before you start
 for the best results.  An overview rebuild should not be done while the
 server is running.  Unless the existing overview is deleted, you may end

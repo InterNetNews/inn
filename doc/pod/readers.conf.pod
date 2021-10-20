@@ -12,7 +12,7 @@ subsequent connections, but B<nnrpd> may have to be restarted if you use
 the B<-D> option.  (The location I<pathetc>/readers.conf is only the
 default; the same format applies to any file specified with C<nnrpd -c>.)
 
-There are two types of entries in F<readers.conf>:  parameter/value pairs
+There are two types of entries in F<readers.conf>: parameter/value pairs
 and configuration groups.  Blank lines and anything after a number sign
 (C<#>) are ignored, unless the character C<#> is escaped with C<\>.  The
 maximum number of characters on each line is 8,191.

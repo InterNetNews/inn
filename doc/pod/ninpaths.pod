@@ -12,7 +12,7 @@ I<level>
 =head1 DESCRIPTION
 
 This is an efficient and space-saving B<inpaths> reporting program.  It works
-as follows:  you feed it the Path: lines via an INN channel feed or some
+as follows: you feed it the Path: lines via an INN channel feed or some
 other similar method, and from time to time the program writes all its
 internal counters accumulated so far to a dump file.  Another instance of
 the program picks up all the dump files, adds them up and formats them
