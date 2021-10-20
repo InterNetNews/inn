@@ -1,13 +1,17 @@
-##  nnrpd.track - file to specify which hosts to be tracked by nnrpd
+##  Configuration file to specify which hosts nnrpd has to track
+##
 ##  Format:
 ##      <host>:<identity>
 ##  Where:
 ##      <host>          Wildcard name or IP address
 ##      <identity>      String to be displayed in the logs
 ##
-## By adding a host to this file, it will be tracked using the
-## nnrpd tracking system if enabled in inn.conf(5). Each read/post
-## will have an entry logged with the <identity> in the log message
+##  By adding a host to this file, it will be tracked using the
+##  nnrpd tracking system if readertrack is set to true in inn.conf(5).
+##  Each post will have an entry associated with <identity> in the log
+##  message recorded to the <pathlog>/tracklogs directory.
 ##
+##  See the nnrpd.track man page for more information.
+
 # nasty.foo.com:nasty@foo.com
 # *.bar.com:VeryNastyClient
