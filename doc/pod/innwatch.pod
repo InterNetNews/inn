@@ -9,10 +9,12 @@ B<innwatch> [B<-f> I<ctlfile>] [B<-i> I<seconds>] [B<-l> I<logfile>]
 
 =head1 DESCRIPTION
 
-B<innwatch> is normally started by B<rc.news>.  Every
-I<innwatchsleeptime> seconds, as set in F<inn.conf>, it examines the load
-average, and the number of free blocks and inodes on the spool partition,
-as described by its control file, F<innwatch.ctl> in I<pathetc>.
+B<innwatch> is normally started and stopped by B<rc.news> when
+I<doinnwatch> is set to true in F<inn.conf>.  Every I<innwatchsleeptime>
+seconds, as set in F<inn.conf> as well as other parameters tuning its
+behaviour, B<innwatch> examines the load average, and the number of
+free blocks and inodes on the spool partition, as described by its
+control file, F<innwatch.ctl> in I<pathetc>.
 
 If the load gets too high, or the disk gets too full, it throttles
 the server.  When the condition restores, it unblocks the server.

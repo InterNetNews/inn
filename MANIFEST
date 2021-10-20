@@ -273,6 +273,7 @@ doc/pod/fastrm.pod                    Master file for fastrm.1
 doc/pod/getlist.pod                   Master file for getlist.1
 doc/pod/grephistory.pod               Master file for grephistory.1
 doc/pod/hacking.pod                   Master file for HACKING
+doc/pod/history.pod                   Master file for history.5
 doc/pod/hook-perl.pod                 Master file for doc/hook-perl
 doc/pod/hook-python.pod               Master file for doc/hook-python
 doc/pod/ident.pod                     Master file for ident.8
@@ -289,6 +290,7 @@ doc/pod/innfeed.conf.pod              Master file for innfeed.conf.5
 doc/pod/innfeed.pod                   Master file for innfeed.8
 doc/pod/innmail.pod                   Master file for innmail.1
 doc/pod/innupgrade.pod                Master file for innupgrade.8
+doc/pod/innwatch.ctl.pod              Master file for innwatch.ctl.5
 doc/pod/innwatch.pod                  Master file for innwatch.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
@@ -309,6 +311,7 @@ doc/pod/newsgroups.pod                Master file for newsgroups.5
 doc/pod/newslog.pod                   Master file for newslog.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/nnrpd.pod                     Master file for nnrpd.8
+doc/pod/nnrpd.track.pod               Master file for nnrpd.track.5
 doc/pod/nntpsend.ctl.pod              Master file for nntpsend.ctl.5
 doc/pod/nntpsend.pod                  Master file for nntpsend.8
 doc/pod/ovdb.pod                      Master file for ovdb.5

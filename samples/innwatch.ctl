@@ -2,17 +2,17 @@
 ##
 ##  Indicates what to run to test the state of the news system, and what
 ##  to do about it.  Format:
-##	!state!when!condition!test!limit!command!reason/comment
+##      !state!when!condition!test!limit!command!reason/comment
 ##  where
-##	<!>		Delimiter; pick from [!,:@;?].
-##	<state>		State to enter if true.
-##	<when>		States we must be in to match.
-##	<condition>	Command to run to test condition.
-##	<test>		Operator to use in test(1) condition.
-##	<limit>		Value to test against.
-##	<command>	Command for innwatch to perform; use exit,
-##			flush, go, pause, shutdown, skip, or throttle.
-##	<reason>	Used in ctlinnd command (if needed).
+##      <!>             Delimiter; pick from [!,:@;?].
+##      <state>         State to enter if true.
+##      <when>          States we must be in to match.
+##      <condition>     Command to run to test condition.
+##      <test>          Operator to use in test(1) condition.
+##      <limit>         Value to test against.
+##      <command>       Command for innwatch to perform; use exit,
+##                      flush, go, pause, shutdown, skip, or throttle.
+##      <reason>        Used in ctlinnd command (if needed).
 ##
 ##  See the innwatch.ctl man page for more information.
 
@@ -28,8 +28,8 @@
 !hiload!+ load! uptime | tr -d ,. | awk '{ print $(NF - 2) }' ! gt ! ${INNWATCHHILOAD} ! throttle ! loadav
 !load!+! uptime | tr -d ,. | awk '{ print $(NF - 2) }' ! gt ! ${INNWATCHPAUSELOAD} ! pause ! loadav
 
-## Uncomment these to keep overchan backlog in check.  Assumes your overchan
-## feed is named 'overview!'.
+##  Uncomment these to keep overchan backlog in check.  Assumes your overchan
+##  feed is named 'overview!'.
 #::overblog:ctlinnd feedinfo overview!|awk 'NR==1{print $7}':lt:100000:go:overviewbacklog
 #:overblog:+:ctlinnd feedinfo overview!|awk 'NR==1{print $7}':gt:400000:throttle:overviewbacklog
 
