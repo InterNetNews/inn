@@ -113,9 +113,9 @@ Dump the index of a particular group.  The fields are, in order, the
 article number, the offset of the data for that article in the overview
 data file for that group, the length of the overview data, the time (in
 seconds since epoch) when the article arrived on the server, the time (in
-seconds since epoch) when the article should expire based on its Expires:
-header (or 0 if there is no Expires: header), and the storage API token of
-the article.
+seconds since epoch) when the article should expire based on its Expires
+header field (or 0 if there is no Expires header field), and the storage API
+token of the article.
 
 If this option is given, the B<-n> option must also be given to specify
 the newsgroup on which to act.
@@ -146,7 +146,7 @@ B<-R> options.
 Dump the overview information for a newsgroup in the format used by
 B<overchan> as input.  Each line will start with the storage API token,
 the arrival timestamp in seconds since epoch, the expires timestamp in the
-same format (or 0 if there is no Expires: header), and then the overview
+same format (or 0 if there is no Expires header field), and then the overview
 data.
 
 If this option is given, the B<-n> option must also be given to specify
@@ -163,8 +163,8 @@ number according to the index file for that group labelled with
 C<Article:>, the storage API token for that article labelled with
 C<Token:>, the arrival date for that article on the server in S<RFC 5322> date
 format labelled with C<Arrived:>, and the expiration date for that article
-(from the Expires: header) in S<RFC 5322> date format if there is any, labelled
-with C<Expires:>.
+(from the Expires header field) in S<RFC 5322> date format if there is any,
+labelled with C<Expires:>.
 
 If this option is given, the B<-n> option must also be given to specify
 the newsgroup on which to act.  By default, all of the overview

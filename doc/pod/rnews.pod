@@ -94,7 +94,7 @@ in F<inn.conf>).
 =item B<-d>
 
 If B<-d> is given, B<rnews> will log via syslog the message-ID and the
-Path header value of each article rejected as a duplicate by the server.
+Path header field body of each article rejected as a duplicate by the server.
 
 =item B<-h> I<host>
 

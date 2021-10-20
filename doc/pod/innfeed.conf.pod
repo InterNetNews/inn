@@ -348,10 +348,10 @@ with the newgroup (e.g. C<bb+%s>).  The default is C<+%s>.
 
 =item I<deliver-to-header>
 
-An optional printf(3)-style format string for creating a To: header field
+An optional printf(3)-style format string for creating a To header field
 to be prepended to the article.  The pattern MUST include a single string
 specifier which will be replaced with the newgroup (e.g. C<post+%s@domain>).
-If not specified, the To: header field will not be prepended.
+If not specified, the To header field will not be prepended.
 
 =back
 

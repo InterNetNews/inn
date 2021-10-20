@@ -241,7 +241,7 @@ is normally buffered.  This option changes the log to be unbuffered.
 
 =head1 CONTROL MESSAGES
 
-Arriving articles that have a Control: header are called "control
+Arriving articles that have a Control header field are called "control
 messages".  Except for cancel messages, these messages are handled by
 controlchan(8) via a feed set up in F<newsfeeds>.
 
@@ -288,7 +288,7 @@ not actually improve their propagation to sites that want such control
 messages, but it will also cause sites that do not want those control
 messages to receive them.  Therefore, assuming that a newgroup control
 message is sent to the group C<news.admin.meow> (specified in the
-Newsgroups: header) in order to create the group C<news.admin.meow>,
+Newsgroups header field body) in order to create the group C<news.admin.meow>,
 the sites with the following subscription patterns will receive it:
 
     *,@news.*
@@ -367,16 +367,16 @@ Empty headers and headers that consist of nothing but whitespace are
 dropped.
 
 The local site's name (as set with the I<pathhost> parameter in
-F<inn.conf>) and an exclamation point are prepended to the Path: header,
-provided the first site name in the Path: header is different from the
-local one.  In addition, I<pathalias> and I<pathcluster> may be similarly
-respectively prepended and appended to the Path: header; see inn.conf(5)
-for the details.
+F<inn.conf>) and an exclamation point are prepended to the Path header
+field body, provided the first site name in the Path header field
+body is different from the local one.  In addition, I<pathalias> and
+I<pathcluster> may be similarly respectively prepended and appended to
+the Path header field body; see inn.conf(5) for the details.
 
-The Xref: header is removed and a new one created.
+The Xref header field is removed and a new one created.
 
 B<innd> does not rewrite incorrect headers.  For example, it will not
-replace an incorrect Lines: header, though it may reject such an article
+replace an incorrect Lines header field, though it may reject such an article
 depending on the value of I<linecountfuzz> in F<inn.conf>.
 
 =head1 CANCEL FEEDS
@@ -412,9 +412,9 @@ depending on the settings of I<nntplinklog> and I<logartsize> in
 F<inn.conf>.
 
 The first three fields are the date and time to millisecond resolution.
-The fifth field is the site that sent the article (based on the Path:
-header) and the sixth field is the article's message-ID; they will be a
-question mark if the information is not available.
+The fifth field is the site that sent the article (based on the Path
+header field body) and the sixth field is the article's Message-ID;
+they will be a question mark if the information is not available.
 
 The fourth field indicates whether the article was accepted or not.  If it
 is a plus sign, then the article was accepted.  If it is the letter C<j>,

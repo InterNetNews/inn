@@ -1,6 +1,6 @@
 =head1 NAME
 
-sendinpaths - Send Usenet Path: statistics via e-mail
+sendinpaths - Send Usenet Path header field statistics via e-mail
 
 =head1 SYNOPSIS
 

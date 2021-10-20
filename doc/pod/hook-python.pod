@@ -89,7 +89,7 @@ defined:
     __BODY__, __LINES__.
 
 Note that all the above values are as they arrived, not modified
-by your INN (especially, the Xref: header, if present, is the one
+by your INN (especially, the Xref header field, if present, is the one
 of the remote site which sent you the article, and not yours).
 
 These values will be buffer objects (for S<Python 2.x>) or memoryview
@@ -103,8 +103,8 @@ reckoning of the number of lines in the article.  All the other elements
 will be buffer/memoryview objects with the contents of the same-named
 article headers.
 
-The Newsgroups: header of the article is accessible inside the Python
-filter as C<art['Newsgroups']>.
+The Newsgroups header field body of the article is accessible inside
+the Python filter as C<art['Newsgroups']>.
 
 If interned strings are used in the filter, calls to C<art[__BODY__]> or
 C<art[Newsgroups]> are faster:

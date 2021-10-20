@@ -102,19 +102,19 @@ normally once a day by B<news.daily>) or the word C<never>.
 
 The middle field, <default>, will be used as the expiration period for
 most articles.  The other two fields, <min> and <max>, only come into
-play if the article requests a particular expiration date with an Expires:
-header.  Articles with an Expires: header will be expired at the date given
-in that header, subject to the constraints that they will be retained at
-least <min> days and no longer than <max> days.
+play if the article requests a particular expiration date with an Expires
+header field.  Articles with an Expires header field will be expired
+at the date given in that header field, subject to the constraints that
+they will be retained at least <min> days and no longer than <max> days.
 
 If <min> is set to C<never>, no article matching that line will ever be
 expired.  If <default> is set to C<never>, no article matching that line
-without an explicit Expires: header will ever be expired.  If <max> is
-set to C<never>, Expires: headers will be honored no matter how far into
+without an explicit Expires header field will ever be expired.  If <max> is
+set to C<never>, Expires header fields will be honored no matter how far into
 the future they are.
 
 One should think of the fields as a lower bound, the default, and an upper
-bound.  Since most articles do not have an Expires: header, the second
+bound.  Since most articles do not have an Expires header field, the second
 field is the most important and most commonly applied.
 
 Articles that do not match any expiration rule will not be expired, but
@@ -126,12 +126,12 @@ configuration.  The default line should generally be the first line of the
 file (except for C</remember/>) so that other expiration rules can
 override it.
 
-It is often useful to honor the Expires: header in articles, especially
+It is often useful to honor the Expires header field in articles, especially
 those in moderated groups.  To do this, set <min> to zero, <default> to
 whatever normal expiration you wish, and <max> to C<never> or some large
 number, like C<365> days for a maximum article life of a year.
 
-To ignore any Expires: header, set all three fields to the same value.
+To ignore any Expires header field, set all three fields to the same value.
 
 =head1 EXAMPLES
 
@@ -140,10 +140,10 @@ When I<groupbaseexpiry> is true (the default):
     # Keep expired article history for 11 days, matching artcutoff plus one.
     /remember/:11
 
-    # Most articles stay for two weeks, ignoring Expires: headers.
+    # Most articles stay for two weeks, ignoring Expires header fields.
     *:A:14:14:14
 
-    # Accept Expires: headers in moderated groups for up to a year and
+    # Accept Expires header fields in moderated groups for up to a year and
     # retain moderated groups for a bit longer.
     *:M:1:30:365
 
@@ -156,11 +156,11 @@ When I<groupbaseexpiry> is false, for class-based expiration:
     # Keep expired article history for 11 days, matching artcutoff plus one.
     /remember/:11
 
-    # Set a default expiration of seven days and honour Expires: headers
+    # Set a default expiration of seven days and honour Expires header fields
     # within reasonable limits.
     *:1:7:35
 
-    # Class 0 is retained for two weeks and honor Expires: headers
+    # Class 0 is retained for two weeks and honor Expires header fields
     # within reasonable limits.
     0:1:14:65
 

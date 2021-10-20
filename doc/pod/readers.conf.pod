@@ -61,7 +61,7 @@ address; in other words, it's in the form "<username>@<domain>" (or
 sometimes just "<username>" if no domain is specified.
 
 If I<nnrpdauthsender> is set in F<inn.conf>, the user identity is also put
-into the Sender: header of posts made by that user.  See the documentation
+into the Sender header field of posts made by that user.  See the documentation
 of that option in inn.conf(5) for more details.
 
 An auth group definition looks like:
@@ -453,12 +453,12 @@ The client may inject articles with IHAVE.  Note that in order to inject
 articles with the IHAVE command, the user must also have POST permission
 (the C<P> option).  Articles injected with IHAVE are treated as though
 they were injected with POST, that is to say such articles must not
-have been previously injected (they must not contain headers like
-Injection-Info:).
+have been previously injected (they must not contain header fields like
+Injection-Info).
 
 =item A
 
-The client may post articles with Approved: headers (in other words, may
+The client may post articles with Approved header fields (in other words, may
 approve articles for moderated newsgroups).  By default, this is not
 allowed.
 
@@ -510,10 +510,10 @@ limiting is applied to the pre-encryption datastream.
 
 =item B<localtime:>
 
-If a Date: or an Injection-Date: header field is not included in a
+If a Date or an Injection-Date header field is not included in a
 posted article, nnrpd(8) normally adds these header fields in UTC.
-If this is set to true, the Date: header field will be formatted in local
-time instead.  (The Injection-Date: header field is added according to
+If this is set to true, the Date header field will be formatted in local
+time instead.  (The Injection-Date header field is added according to
 the behaviour of the I<addinjectiondate> parameter in F<inn.conf>, and
 will remain in UTC, though.)  This is a boolean value and the default
 is false.
@@ -531,8 +531,8 @@ the virtualhost: parameter is set to true.
 
 =item B<strippath:>
 
-If set to true, any Path: header provided by a user in a post is stripped
-rather than used as the beginning of the Path: header of the article.
+If set to true, any Path header field provided by a user in a post is stripped
+rather than used as the beginning of the Path header field body of the article.
 This is a boolean value and the default is false.
 
 =item B<perlfilter:>
@@ -551,12 +551,13 @@ default is true.
 
 Set this parameter to true in order to make B<nnrpd> behave as if it is
 running on a server with a different name than it actually is.  If you
-set this parameter to true, you must also set either pathhost: or domain:
+set this parameter to true, you must also set either I<pathhost> or I<domain>
 in the relevant access group in F<readers.conf> to something different
 than is set in F<inn.conf>.  All articles displayed to clients will then have
-their Path: and Xref: headers altered to appear to be from the server
-named in pathhost: or domain: (whichever is set), and posted articles will
-use that server name in the Path:, Message-ID:, and Injection-Info: headers.
+their Path and Xref header field bodies altered to appear to be from the server
+named in I<pathhost> or I<domain> (whichever is set), and posted articles will
+use that server name in the Path, Message-ID, and Injection-Info header
+field bodies.
 
 Note that setting this parameter requires the server modify all posts
 before presenting them to the client and therefore may decrease
@@ -753,11 +754,11 @@ have to use a username and password that's checked against a database on
 the news server.  Finally, the admin staff (users "joe" and "jane") can
 post anywhere (including the "example.admin.*" groups that are read-only
 for everyone else), and are exempted from the Perl filter.  For an
-additional twist, posts from dialup users have their Sender: header
+additional twist, posts from dialup users have their Sender header field
 replaced by their authenticated identity.
 
 Since this organization has some internal moderated newsgroups, the admin
-staff can also post messages with Approved: headers, but other users
+staff can also post messages with Approved header fields, but other users
 cannot.
 
     auth default {
@@ -852,7 +853,7 @@ messages, just as a precaution.  When running a public server like this,
 be aware that many public hierarchies will later be pulled down and
 reinjected into the main Usenet, so it's highly recommended that you also
 run a Perl or Python filter to reject any messages crossposted out of your
-local hierarchy and any messages containing a Supersedes: header.  This
+local hierarchy and any messages containing a Supersedes header field.  This
 will keep messages posted to your public hierarchy from hurting any of the
 rest of Usenet if they leak out.
 

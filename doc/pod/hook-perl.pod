@@ -78,8 +78,8 @@ that such a message is properly encoded in UTF-8 so as to comply with the
 NNTP protocol).
 
 filter_art() has access to a global hash named %hdr, which contains all of
-the standard headers present in the article and their values.  The
-standard headers are:
+the standard header fields present in the article and their bodies.  The
+standard header field names are:
 
     Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
     Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
@@ -97,11 +97,11 @@ standard headers are:
     X-PGP-Key, X-PGP-Sig, X-Poster-Trace, X-Postfilter, X-Proxy-User,
     X-Submissions-To, X-Trace, X-Usenet-Provider, X-User-ID, Xref.
 
-Note that all the above headers are as they arrived, not modified by
-your INN (especially, the Xref: header, if present, is the one of
+Note that all the above header fields are as they arrived, not modified by
+your INN (especially, the Xref header field, if present, is the one of
 the remote site which sent you the article, and not yours).
 
-For example, the Newsgroups: header of the article is accessible
+For example, the Newsgroups header field body of the article is accessible
 inside the Perl filter as C<$hdr{'Newsgroups'}>.  In addition,
 C<$hdr{'__BODY__'}> will contain the full body of the article and
 C<$hdr{'__LINES__'}> will contain the number of lines in the body of the
@@ -123,10 +123,10 @@ something like this:
         __LINES__    => 5
     );
 
-Note that the value of C<$hdr{Lines}> is the contents of the Lines: header
-of the article and may bear no resemblence to the actual length of the
-article.  C<$hdr{__LINES__}> is the line count calculated by INN, and is
-guaranteed to be accurate.
+Note that the value of C<$hdr{Lines}> is the body of the Lines header
+field of the article and may bear no resemblence to the actual length
+of the article.  C<$hdr{__LINES__}> is the line count calculated by INN,
+and is guaranteed to be accurate.
 
 The %hdr hash should not be modified inside filter_art().  Instead, if any
 of the contents need to be modified temporarily during filtering (smashing
@@ -209,13 +209,13 @@ Those are:
 
 Adds I<messageid> to the history database.  All of the arguments except
 the first one are optional; the times default to the current time and the
-paths field defaults to the empty string.  (For those unfamiliar with the
-fields of a history(5) database entry, the I<arrival> is normally the time at
-which the server accepts the article, the I<articledate> is from the Date
-header of the article, the I<expire> is from the Expires header of the
-article, and the I<paths> field is the storage API token.  All three times
-as measured as a time_t since the epoch.)  Returns true on success, false
-otherwise.
+paths field defaults to the empty string.  (For those unfamiliar with
+the fields of a history(5) database entry, the I<arrival> is normally
+the time at which the server accepts the article, the I<articledate>
+is from the Date header field of the article, the I<expire> is from
+the Expires header field of the article, and the I<paths> field is
+the storage API token.  All three times as measured as a time_t since
+the epoch.)  Returns true on success, false otherwise.
 
 =item INN::article(I<messageid>)
 
@@ -321,12 +321,12 @@ connected on, and C<$attributes{'intport'}> contains the port (as an
 integer) on the interface the client connected on.
 
 filter_post() also has access to a global hash C<%hdr>, which contains all
-of the headers of the article.  (Unlike the B<innd> Perl filter, C<%hdr>
-for the B<nnrpd> Perl filter contains *all* of the headers, not just the
-standard ones.  If any of the headers are duplicated, though, C<%hdr>
-will contain only the value of the last occurrence of the header, whereas
+of the header fields of the article.  (Unlike the B<innd> Perl filter, C<%hdr>
+for the B<nnrpd> Perl filter contains *all* of the header fields, not just the
+standard ones.  If any of the header fields are duplicated, though, C<%hdr>
+will contain only the body of the last occurrence of the header field, whereas
 it is the first occurrence with the B<innd> Perl filter.  B<nnrpd> will
-reject the article before the filter runs if any of the standard headers
+reject the article before the filter runs if any of the standard header fields
 are duplicated.)  It also has access to the full body of the article in
 the variable C<$body>, and if the poster authenticated via AUTHINFO (or
 if either Perl authentication or a F<readers.conf> authentication method
@@ -336,31 +336,31 @@ username of the poster in the variable C<$user>.
 Unlike the innd Perl filter, the nnrpd Perl filter can modify the %hdr
 hash.  In fact, if the Perl variable $modify_headers is set to true after
 filter_post() returns, the contents of the %hdr hash will be written back
-to the article replacing the original headers.  filter_post() can
+to the article replacing the original header fields.  filter_post() can
 therefore make any modifications it wishes to the headers and those
 modifications will be reflected in the article as it's finally posted.
 The article body cannot be modified in this way; any changes to $body will
 just be ignored.
 
-Be careful when using the ability to modify headers.  filter_post() runs
-after all the normal consistency checks on the headers and after server
-supplied headers (like Message-ID: and Date:) are filled in.  Deleting
-required headers or modifying headers that need to follow a strict format
-can result in nnrpd trying to post nonsense articles (which will probably
-then be rejected by innd).  If $modify_headers is set, I<everything> in
-the %hdr hash is taken to be article headers and added to the article.  If
-a header field body contains several lines, they are separated from each
-other by a mere LF (B<nnrpd> will properly rewrite them as CRLF when
-posting).
+Be careful when using the ability to modify header fields.  filter_post()
+runs after all the normal consistency checks on the header fields
+and after server supplied header fields (like Message-ID and Date)
+are filled in.  Deleting required header fields or modifying header
+fields that need to follow a strict format can result in nnrpd trying to
+post nonsense articles (which will probably then be rejected by innd).
+If $modify_headers is set, I<everything> in the %hdr hash is taken to
+be article header fields and added to the article.  If a header field
+body contains several lines, they are separated from each other by a
+mere LF (B<nnrpd> will properly rewrite them as CRLF when posting).
 
-To modify the contents of the Organization: header, you can use:
+To modify the contents of the Organization header field body, you can use:
 
   $hdr{'Organization'} = 'My new organization';
   $modify_headers = 1;
 
-To delete the Organization: header, you should not use
+To delete the Organization header field, you should not use
 C<delete $hdr{'Organization'}> (this syntax may work with
-some headers, and not with other headers).  Instead, you are
+some header fields, and not with other header fields).  Instead, you are
 encouraged to use:
 
   $hdr{'Organization'} = undef;

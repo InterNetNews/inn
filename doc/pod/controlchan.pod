@@ -63,8 +63,8 @@ If you run FreeBSD, you will need to run the following in addition:
 
 =item B<-c>
 
-By default, B<controlchan> does not process articles whose Date:
-or Injection-Date: header fields are too far in the past (more than
+By default, B<controlchan> does not process articles whose Date
+or Injection-Date header fields are too far in the past (more than
 I<artcutoff> days, as set in F<inn.conf>) or one day in the future.
 It allows preventing a malicious replay of old control articles.
 

@@ -32,8 +32,8 @@ Gives usage information.
 
 =item B<-s> I<subject>
 
-Sets the Subject: header of the message.  A warning is issued if this
-option is omitted.
+Sets the Subject header field body of the message.  A warning is issued
+if this option is omitted.
 
 =back
 

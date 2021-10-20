@@ -1,6 +1,6 @@
 =head1 NAME
 
-ninpaths - Report Usenet Path: statistics (new inpaths)
+ninpaths - Report Usenet Path header field statistics (new inpaths)
 
 =head1 SYNOPSIS
 
@@ -12,16 +12,16 @@ I<level>
 =head1 DESCRIPTION
 
 This is an efficient and space-saving B<inpaths> reporting program.  It works
-as follows: you feed it the Path: lines via an INN channel feed or some
+as follows: you feed it the Path header fields via an INN channel feed or some
 other similar method, and from time to time the program writes all its
 internal counters accumulated so far to a dump file.  Another instance of
 the program picks up all the dump files, adds them up and formats them
 into the report.  The purpose of the final report is to summarize the
-frequency of occurrence of sites in the Path: headers of articles.
+frequency of occurrence of sites in the Path header fields of articles.
 
-Some central sites accumulate the Path: data from many news servers
+Some central sites accumulate the Path header field data from many news servers
 running this program or one like it, and then report statistics on
-the most frequently seen news servers in Usenet article Path: lines.
+the most frequently seen news servers in Usenet article Path header fields.
 The B<sendinpaths> script can be run daily to mail the accumulated
 statistics to such a site and remove the old dump files.
 
@@ -94,7 +94,7 @@ The format of these dump files is described below.
 
 =item B<-p>
 
-Read Path: lines from standard input.
+Read Path header fields from standard input.
 
 =item B<-r> I<site>
 
@@ -126,7 +126,7 @@ The format of the generated dump files is:
 where times are UNIX timestamps.  Then, I<nb-sites> records follow.
 Each record is separated by a space or a new line, and consists of a host
 name I<site_n> followed by a number of appearances I<count_n>.  The number
-of processed Path: header lines is I<nb-articles>.
+of processed Path header fields is I<nb-articles>.
 
 Afterwards, I<nb-relations> relations follow.  In 3.0.x versions, the
 relations are separated by a space or a new line, and their syntax is
@@ -149,7 +149,7 @@ For instance:
     :3!2:2!1,2:4!0:0!2
     !!NLEND 4
 
-where the two processed Path: headers are:
+where the two processed Path header fields are:
 
     Path: news.trigofacile.com!news.ecp.fr!usenet.stanford.edu!not-for-mail
     Path: news.trigofacile.com!news.ecp.fr!newsgate.cistron.nl!bleachbot!not-for-mail

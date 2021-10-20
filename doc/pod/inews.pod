@@ -49,10 +49,10 @@ status if posting was successful.
 =head1 OPTIONS
 
 Most of the options to B<inews> take a single value and set the
-corresponding header in the message that is posted.  If the value is more
-than one word or contains any shell metacharacters, it must be quoted to
-protect it from the shell.  Here are all the options that set header
-fields and the corresponding header:
+corresponding header field body in the message that is posted.  If the
+value is more than one word or contains any shell metacharacters, it
+must be quoted to protect it from the shell.  Here are all the options
+that set header fields and the corresponding header:
 
     -a  Approved
     -c  Control

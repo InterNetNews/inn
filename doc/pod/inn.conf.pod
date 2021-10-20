@@ -85,11 +85,11 @@ need to be changed.
 =item I<mta>
 
 The command to use when mailing postings to moderators and for the use of
-innmail(1).  The message, with headers and an added To: header, will be
+innmail(1).  The message, with headers and an added To header field, will be
 piped into this program.  The string C<%s>, if present, will be replaced
 by the e-mail address of the moderator.  It's strongly recommended for
 this command to include C<%s> on the command line rather than use the
-addresses in the To: and Cc: headers of the message, since the latter
+addresses in the To and Cc header fields of the message, since the latter
 approach allows the news server to be abused as a mechanism to send mail
 to arbitrary addresses and will result in unexpected behavior.  There is
 no default value for this parameter; it must be set in F<inn.conf> or a
@@ -100,13 +100,13 @@ correct path to B<sendmail>, and between double quotes) is a good choice.
 
 =item I<pathhost>
 
-What to put into the Path: header to represent the local site.  This is
-added to the Path: header of all articles that pass through the system,
-including locally posted articles, and is also used when processing some
-control messages and when naming the server in status reports.  There is
-no default value; this parameter must be set in F<inn.conf> or INN will
-not start.  A good value to use is the fully qualified hostname of the
-system.
+What to put into the Path header field to represent the local site.
+This is added to the Path header field body of all articles that pass
+through the system, including locally posted articles, and is also
+used when processing some control messages and when naming the server
+in status reports.  There is no default value; this parameter must be
+set in F<inn.conf> or INN will not start.  A good value to use is the
+fully qualified hostname of the system.
 
 =item I<runasgroup>
 
@@ -229,10 +229,10 @@ value is C<256>.
 
 Whether newsgroup creation control messages (newgroup and rmgroup) should
 be fed as if they were posted to the newsgroup they are creating or
-deleting rather than to the newsgroups listed in the Newsgroups: header.
+deleting rather than to the newsgroups listed in the Newsgroups header field.
 If this parameter is set, the newsgroup affected by the control message
-will be extracted from the Control: header and the article will be fed as
-if its Newsgroups: header contained solely that newsgroup.  This is useful
+will be extracted from the Control header field and the article will be fed as
+if its Newsgroups header field contained solely that newsgroup.  This is useful
 for routing control messages to peers when they are posted to irrelevant
 newsgroups that shouldn't be matched against the peer's desired newsgroups
 in F<newsfeeds>.  This is a boolean value and the default is false.
@@ -249,12 +249,12 @@ This setting is ignored unless the timecaf storage method is used.
 =item I<linecountfuzz>
 
 If set to something other than C<0>, the line count of the article is
-checked against the Lines: header of the article (if present) and the
+checked against the Lines header field body of the article (if present) and the
 article is rejected if the values differ by more than this amount.  A
 reasonable setting is C<5>, which is the standard maximum signature length
-plus one (some injection software calculates the Lines: header before
+plus one (some injection software calculates the Lines header field before
 adding the signature).  The default value is C<0>, which tells INN not to
-check the Lines: header of incoming articles.
+check the Lines header field of incoming articles.
 
 =item I<maxartsize>
 
@@ -273,21 +273,21 @@ default value is C<50>.
 
 =item I<pathalias>
 
-If set, this value is prepended to the Path: header of accepted posts
-(before I<pathhost>) if it doesn't already appear in the Path: header.
+If set, this value is prepended to the Path header field body of accepted posts
+(before I<pathhost>) if it doesn't already appear in the Path header field.
 The main purpose of this parameter is to configure all news servers within
 a particular organization to add a common identity string to the
-Path: header.  The default value is unset.
+Path header field body.  The default value is unset.
 
 =item I<pathcluster>
 
-If set, this value is appended to the Path: header of accepted posts
+If set, this value is appended to the Path header field body of accepted posts
 (after I<pathhost>) if it isn't already present as the last element
-of the Path: header.  The main purpose of this parameter is to make
+of the Path header field body.  The main purpose of this parameter is to make
 several news servers appear as one server.  The default value is unset.
 
-Note that the Path: header reads right to left, so appended means inserted
-at the leftmost side of the Path: header.
+Note that the Path header field body reads right to left, so appended
+means inserted at the leftmost side of the Path header field body.
 
 =item I<pgpverify>
 
@@ -311,13 +311,13 @@ This check, if enabled, is done before the history check and the message
 ID is not written to the history file.  This is a boolean value and the
 default is false.
 
-This is a somewhat messy, inefficient, and inexact way of refusing spam
-cancels.  A much better way is to ask all of your upstream peers to not
-send to you any articles with C<cyberspam> in the Path: header (usually
-accomplished by having them mark C<cyberspam> as an alias for your machine
-in their feed configuration).  The filtering enabled by this parameter is
-hard-coded; general filtering of message IDs can be done via the embedded
-filtering support.
+This is a somewhat messy, inefficient, and inexact way of refusing
+spam cancels.  A much better way is to ask all of your upstream peers
+to not send to you any articles with C<cyberspam> in the Path header
+field body (usually accomplished by having them mark C<cyberspam> as
+an alias for your machine in their feed configuration).  The filtering
+enabled by this parameter is hard-coded; general filtering of message
+IDs can be done via the embedded filtering support.
 
 =item I<remembertrash>
 
@@ -350,13 +350,13 @@ addresses contain colons.
 =item I<verifycancels>
 
 Set this to true to enable a simplistic check on all cancel messages,
-attempting to verify (by simple header comparison) that at least one newsgroup
-in the cancel message can be found in the article to be cancelled.  This
-check can't be done if the cancel arrives before the article does.  This
-is a boolean value, and the default is false.
+attempting to verify (by simple header field body comparison) that at
+least one newsgroup in the cancel message can be found in the article
+to be cancelled.  This check can't be done if the cancel arrives before
+the article does.  This is a boolean value, and the default is false.
 
 Note that RFC 5537 (USEPRO) mentions that "cancel control messages are
-not required to contain From: and Sender: header fields matching the
+not required to contain From and Sender header fields matching the
 target message.  This requirement only encouraged cancel issuers to
 conceal their identity and provided no security".  This check is
 therefore not done as it is extremely easy to spoof.
@@ -450,25 +450,25 @@ default is true.
 
 =item I<extraoverviewadvertised>
 
-Besides the seven standard overview fields (which are in order C<Subject:>,
-C<From:>, C<Date:>, C<Message-ID:>, C<References:>, C<:bytes> and
+Besides the seven standard overview fields (which are in order C<Subject>,
+C<From>, C<Date>, C<Message-ID>, C<References>, C<:bytes> and
 C<:lines>) and the eighth C<Xref:full> field required by INN in order
 to handle crossposts, it is possible to add other fields in the
-overview database.  This parameter expects a list of such header
-names.  Overview data for these additional headers will be generated
+overview database.  This parameter expects a list of such header field
+names.  Overview data for these additional header fields will be generated
 for each new article at the time of arrival.  For instance, if you specify:
 
     extraoverviewadvertised: [ Path Injection-Info ]
 
 it implies that B<nnrpd> will advertise C<Path:full> and
-C<Injection-Info:full> as the ninth and tenth fields in response
-to LIST OVERVIEW.FMT and that these two headers will be stored in the
-overview database for each new article.
+C<Injection-Info:full> as the ninth and tenth fields in response to LIST
+OVERVIEW.FMT and that these two header field bodies will be stored in
+the overview database for each new article.
 
 The default value is an empty list (no additional fields are stored).
-Owing to optimizations when B<innd> parses the articles it receives,
-it is possible that all the values in the list are not recognized by
-B<innd> as standard headers.  In such cases, B<innd> will log an error
+Owing to optimizations when B<innd> parses the articles it receives, it
+is possible that all the values in the list are not recognized by B<innd>
+as standard header field names.  In such cases, B<innd> will log an error
 in F<news.err> at startup and the unrecognized fields will be discarded.
 
 You should advertise only fields for which the overview database
@@ -483,8 +483,8 @@ a transition period by first using I<extraoverviewhidden> as described below.
 Use of a transition period can accommodate most overview reconfigurations,
 but certain drastic changes may still require a complete overview rebuild.
 
-If for instance you want to store the content of the To: header in addition
-to the fields already stored above, you should use:
+If for instance you want to store the content of the To header field
+body in addition to the fields already stored above, you should use:
 
     extraoverviewadvertised: [ Path Injection-Info ]
     extraoverviewhidden:     [ To ]
@@ -504,12 +504,13 @@ The C<To> value must be added at the end of the list because
 order matters and fields mentioned in I<extraoverviewhidden>
 are generated after those mentioned in I<extraoverviewadvertised>.
 B<nnrpd> will now advertise C<To:full> in response to the LIST
-OVERVIEW.FMT command (C<full> indicates that the header appears
+OVERVIEW.FMT command (C<full> indicates that the header field name appears
 followed by its value).
 
-Now suppose you want to remove the content of the Injection-Info:
-header from the overview.  As order matters, the overview database will
-no longer be consistent for the To: header.  Therefore, you need to specify:
+Now suppose you want to remove the content of the Injection-Info header
+field from the overview.  As order matters, the overview database will
+no longer be consistent for the To header field.  Therefore, you need
+to specify:
 
     extraoverviewadvertised: [ Path ]
     extraoverviewhidden:     [ To ]
@@ -527,7 +528,7 @@ C<ctlinnd xexec innd> is not enough.
 
 This parameter should be used in conjunction with
 I<extraoverviewadvertised> (see above for more details).  It expects
-a list of headers names.  Overview data for these headers will be
+a list of header field names.  Overview data for these header fields will be
 generated for each new article at the time of arrival but, contrary
 to the fields mentioned in I<extraoverviewadvertised>, B<nnrpd> will
 not advertise them in response to the LIST OVERVIEW.FMT command.  It
@@ -538,9 +539,9 @@ of the requested articles in the news spool, which is slower than
 directly querying the overview database.
 
 The default value is an empty list (no additional fields are stored).
-Owing to optimizations when B<innd> parses the articles it receives,
-it is possible that all the values in the list are not recognized by
-B<innd> as standard headers.  In such cases, B<innd> will log an error
+Owing to optimizations when B<innd> parses the articles it receives, it
+is possible that all the values in the list are not recognized by B<innd>
+as standard header field names.  In such cases, B<innd> will log an error
 in F<news.err> at startup and the unrecognized fields will be discarded.
 
 =item I<groupbaseexpiry>
@@ -645,13 +646,14 @@ with the best recovery tools.
 
 =item I<storeonxref>
 
-If set to true, articles will be stored based on the newsgroup names in
-the Xref: header rather than in the Newsgroups: header.  This affects what
-the patterns in F<storage.conf> apply to.  The primary interesting effect
-of setting this to true is to enable filing of all control messages
-according to what storage class the control pseudogroups are filed in
-rather than according to the newsgroups the control messages are posted
-to.  This is a boolean value and the default is true.
+If set to true, articles will be stored based on the newsgroup
+names in the Xref header field body rather than in the Newsgroups
+header field body.  This affects what the patterns in F<storage.conf>
+apply to.  The primary interesting effect of setting this to true is
+to enable filing of all control messages according to what storage
+class the control pseudogroups are filed in rather than according to
+the newsgroups the control messages are posted to.  This is a boolean
+value and the default is true.
 
 If the tradspool article storage method is used, I<storeonxref> must
 be true.
@@ -682,18 +684,19 @@ default is true.
 
 =item I<xrefslave>
 
-Whether to act as the slave of another server.  If set, INN attempts to
-duplicate exactly the article numbering of the server feeding it by
-looking at the Xref: header of incoming articles and assigning the same
-article numbers to articles as was noted in the Xref: header from the
-upstream server.  The result is that clients should be able to point at
-either server interchangeably (using some load balancing scheme, for
-example) and see the same internal article numbering.  Servers with this
-parameter set should generally only have one upstream feed, and should
-always have I<nnrpdposthost> set to hand locally posted articles off to
-the master server.  The upstream should be careful to always feed articles
-in order (innfeed(8) can have problems with this in the event of a
-backlog).  This is a boolean value and the default is false.
+Whether to act as the slave of another server.  If set, INN attempts
+to duplicate exactly the article numbering of the server feeding
+it by looking at the Xref header field body of incoming articles and
+assigning the same article numbers to articles as was noted in the Xref
+header field body from the upstream server.  The result is that clients
+should be able to point at either server interchangeably (using some
+load balancing scheme, for example) and see the same internal article
+numbering.  Servers with this parameter set should generally only have
+one upstream feed, and should always have I<nnrpdposthost> set to hand
+locally posted articles off to the master server.  The upstream should be
+careful to always feed articles in order (innfeed(8) can have problems
+with this in the event of a backlog).  This is a boolean value and the
+default is false.
 
 =back
 
@@ -851,14 +854,14 @@ it.
 Whether the keyword generation support should be enabled.  This is a
 boolean value and the default is false.
 
-If an article already contains a Keywords: header, no keyword
-generation is done and the original Keywords: header is kept untouched.
+If an article already contains a Keywords header field, no keyword
+generation is done and the original Keywords header field is kept untouched.
 
 In order to use this feature, the regex library should be available
 and INN configured with the B<--enable-keywords> flag.  Otherwise,
 no keywords will be generated, even though this boolean value is set
-to true.  You also have to add the integration of the Keywords: header
-into the overview with I<extraoverviewadvertised> or I<extraoverviewhidden>.
+to true.  You also have to add the Keywords header field into the
+overview with I<extraoverviewadvertised> or I<extraoverviewhidden>.
 
 =item I<keyartlimit>
 
@@ -892,11 +895,11 @@ that are broken out separately after the initial alphabetized list.
 
 =item I<addinjectiondate>
 
-Whether to add an Injection-Date: header field to all local posts.
+Whether to add an Injection-Date header field to all local posts.
 This is a boolean value and the default is true.
 
-Note that no Injection-Date: header fields will be added to local posts
-already containing both a Message-ID: header field and a Date: header
+Note that no Injection-Date header fields will be added to local posts
+already containing both a Message-ID header field and a Date header
 field.  This is done in conformance with standards, to help minimize
 the possibility of a loop in e-mail gatewaying and ensure that a newly
 injected article is not treated as a new, separate article in case of
@@ -904,18 +907,18 @@ multiple injection of the same article to different injecting agents.
 
 =item I<addinjectionpostingaccount>
 
-Whether to add a posting-account attribute to the Injection-Info: header
-to all local posts giving the username assigned to the user at connection
-time or after authentication.  This is a boolean value and the default
-is false.  There is no intrinsic support for obfuscating the value.
-That has to be done with a user-written Perl filter, if desired.
+Whether to add a posting-account attribute to the Injection-Info header
+field body to all local posts giving the username assigned to the user
+at connection time or after authentication.  This is a boolean value and
+the default is false.  There is no intrinsic support for obfuscating the
+value.  That has to be done with a user-written Perl filter, if desired.
 
 =item I<addinjectionpostinghost>
 
-Whether to add a posting-host attribute to the Injection-Info: header
-to all local posts giving an FQDN (when known, by reverse lookup of
-the client IP address) and IP address of the system from which the
-post was received.  This is a boolean value and the default is true.
+Whether to add a posting-host attribute to the Injection-Info header
+field body to all local posts giving an FQDN (when known, by reverse
+lookup of the client IP address) and IP address of the system from which
+the post was received.  This is a boolean value and the default is true.
 Note that INN either does not add this attribute or adds the name (when
 known) and IP address of the client.  There is no intrinsic support
 for obfuscating the name of the client.  That has to be done with a
@@ -923,8 +926,8 @@ user-written Perl filter, if desired.
 
 When this parameter is set to true, an FQDN (obtained by reverse
 lookup of the client IP address or, if unknown, the IP address itself)
-of the client is also added to the Path: header, after the C<!.POSTED>
-diagnostic.
+of the client is also added to the Path header field body, after the
+C<!.POSTED> diagnostic.
 
 =item I<checkincludedtext>
 
@@ -935,11 +938,11 @@ boolean value and the default is false.
 
 =item I<complaints>
 
-The value of the mail-complaints-to attribute of the Injection-Info: header
-added to all local posts.  The default is the newsmaster's e-mail address.
-(If the newsmaster, selected at configure time and defaulting to C<usenet>,
-doesn't contain C<@>, the address will consist of the newsmaster, a C<@>,
-and the value of I<fromhost>.)
+The value of the mail-complaints-to attribute of the Injection-Info
+header field added to all local posts.  The default is the newsmaster's
+e-mail address.  (If the newsmaster, selected at configure time and
+defaulting to C<usenet>, doesn't contain C<@>, the address will consist
+of the newsmaster, a C<@>, and the value of I<fromhost>.)
 
 =item I<fromhost>
 
@@ -947,10 +950,10 @@ Contains a domain used to construct e-mail addresses.  The address of the
 local news administrator will be given as <user>@I<fromhost>, where <user>
 is the newsmaster user set at compile time (C<usenet> by default).  This
 setting will also be used by mailpost(8) to fully qualify addresses and by
-inews(1) to generate the Sender: header (and From: header if missing).
-The value of the FROMHOST environment variable, if set, overrides this
-setting.  The default is the fully qualified domain name of the local
-host.
+inews(1) to generate the Sender header field (and the From header field
+if missing).  The value of the FROMHOST environment variable, if set,
+overrides this setting.  The default is the fully qualified domain name
+of the local host.
 
 =item I<localmaxartsize>
 
@@ -975,11 +978,11 @@ with an error.
 
 =item I<nnrpdauthsender>
 
-Whether to generate a Sender: header based on reader authentication.  If
-this parameter is set, a Sender: header will be added to local posts
+Whether to generate a Sender header field based on reader authentication.  If
+this parameter is set, a Sender header field will be added to local posts
 containing the identity assigned by F<readers.conf>.  If the assigned
 identity does not include an C<@>, the reader's hostname is used.  If this
-parameter is set but no identity is assigned, the Sender: header will
+parameter is set but no identity is assigned, the Sender header field will
 be removed from all posts even if the poster includes one.  This is a
 boolean value and the default is false.
 
@@ -997,10 +1000,10 @@ is used.  The default value is C<119>.
 
 =item I<organization>
 
-What to put in the Organization: header if it is left blank by the poster.
-The value of the ORGANIZATION environment variable, if set, overrides this
-setting.  The default is unset, which tells INN not to insert an
-Organization: header.
+What to put in the Organization header field body if it is left blank
+by the poster.  The value of the ORGANIZATION environment variable,
+if set, overrides this setting.  The default is unset, which tells INN
+not to insert an Organization header field.
 
 =item I<spoolfirst>
 
@@ -1015,10 +1018,10 @@ is false.
 
 =item I<strippostcc>
 
-Whether to strip To:, Cc:, and Bcc: headers out of all local posts via
+Whether to strip To, Cc, and Bcc header fields out of all local posts via
 nnrpd(8).  The primary purpose of this setting is to prevent abuse of the
-news server by posting to a moderated group and including To: or Cc:
-headers in the post so that the news server will send the article to
+news server by posting to a moderated group and including To or Cc
+header fields in the post so that the news server will send the article to
 arbitrary addresses.  INN now protects against this abuse in other ways
 provided I<mta> is set to a command that includes C<%s> and honors it, so
 this is generally no longer needed.  This is a boolean value and the
@@ -1348,8 +1351,8 @@ of old logs.  The default value is C<3>.
 
 Whether the verified name of the remote feeding host should be logged to
 the article log for incoming articles rather than the last entry in the
-Path: header.  The only reason to ever set this to false is due to some
-interactions with F<newsfeeds> flags; see newsfeeds(5) for more
+Path header field body.  The only reason to ever set this to false is due
+to some interactions with F<newsfeeds> flags; see newsfeeds(5) for more
 information.  This is a boolean value and the default is true.
 
 =item I<logsitename>

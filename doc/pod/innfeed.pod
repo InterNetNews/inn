@@ -202,7 +202,7 @@ a CHECK command.
 
 The number of articles transferred to the host that it did not accept because
 it determined either that it already had the article or it did not want it
-because of the article's Newsgroups: or Distribution: header fields, etc.
+because of the article's Newsgroups or Distribution header fields, etc.
 The remote host indicates that it is rejecting the article by sending a
 437 or 439 response after B<innfeed> sent the entire article.
 

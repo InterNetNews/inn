@@ -1,16 +1,16 @@
 =head1 NAME
 
-distributions - Recommended values for the Distribution: header
+distributions - Recommended values for the Distribution header field
 
 =head1 DESCRIPTION
 
 The file I<pathetc>/distributions contains a list of relevant
 distributions and their descriptions.  It provides local information
-for posters who wish to add a Distribution: header to their articles
+for posters who wish to add a Distribution header field to their articles
 so as to restrict their propagation, although it does not guarantee
 that such articles will not leak elsewhere because of a misconfiguration
 of a news server to which they are fed.  See newsfeeds(5) for more
-information about how a news server handles the Distribution: header.
+information about how a news server handles the Distribution header field.
 
 Each line of this file consists of a distribution area followed by
 its description (encoded in UTF-8) after at least a whitespace.  For
@@ -33,7 +33,7 @@ the client an empty response.  And if the file is missing, the server
 will also send the client an appropriate response to indicate that
 the distributions list is not maintained on the server.
 
-The Distribution: header can also be automatically set by B<nnrpd>
+The Distribution header field can also be automatically set by B<nnrpd>
 if distrib.pats(5) is correctly configured.
 
 =head1 HISTORY

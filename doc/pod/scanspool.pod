@@ -46,7 +46,7 @@ have a basename that is out of range according to the F<active> file;
 
 =item *
 
-do not contain a Newsgroups: header line;
+do not contain a Newsgroups header field;
 
 =item *
 
@@ -87,7 +87,7 @@ The F<active> file to use; I<pathdb>/active is the default.
 =item B<-c>
 
 Only check article filenames.  B<scanspool> will therefore not actually
-scan the Newsgroups: header field of the articles.
+scan the Newsgroups header field of the articles.
 
 =item B<-n>
 
@@ -159,7 +159,7 @@ other than tradspool.  However, if the files that store your articles
 are named other than just all-digits, they will simply be skipped
 (and your F<active> is still checked).
 
-B<scanspool> only considers the first line of the Newsgroups: header field.
+B<scanspool> only considers the first line of the Newsgroups header field.
 Continuation lines are not taken into account.
 
 =head1 HISTORY

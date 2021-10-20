@@ -1,11 +1,11 @@
 =head1 NAME
 
-distrib.pats - Default values for the Distribution: header
+distrib.pats - Default values for the Distribution header field
 
 =head1 DESCRIPTION
 
 The file I<pathetc>/distrib.pats is used by B<nnrpd> to determine the
-default value of the Distribution: header.  Blank lines and lines beginning
+default body of the Distribution header field.  Blank lines and lines beginning
 with a number sign (C<#>) are ignored.  All other lines consist of three
 fields separated by a colon:
 
@@ -20,17 +20,17 @@ first matching line will be used).
 The second field is either the name of a newsgroup or a uwildmat(3)-style
 pattern to specify a set of newsgroups.
 
-The third field is the value that should be used for the Distribution:
-header of a posted article, if this line was picked as the best match and
-no Distribution: header was supplied by the user.  It can be an empty
-string, specifying that no Distribution: header should be added.  If it
+The third field is the body that should be used for the Distribution
+header field of a posted article, if this line was picked as the best match and
+no Distribution header field was supplied by the user.  It can be an empty
+string, specifying that no Distribution header field should be added.  If it
 is not empty, it is better to only use US-ASCII characters for that field;
 otherwise, make sure it is encoded in UTF-8.
 
 When a post is received by B<nnrpd> that does not already contain a
-Distribution: header, each newsgroup to which an article is posted will be
+Distribution header field, each newsgroup to which an article is posted will be
 checked against this file in turn, and the matching line with the highest
-weight will be used as the value of the Distribution: header.  If no lines
+weight will be used as the body of the Distribution header field.  If no lines
 match, or if the matching line has an empty string for its third field, no
 header will be added.  In case a distribution is added by B<nnrpd>, make
 sure it is not rejected by the F<newsfeeds> C<ME> entry.

@@ -40,40 +40,42 @@ significant.  The format of an entry is:
 
 Each field is described below.
 
-The I<sitename> is the name of the site to which a news article can be
-sent.  It is used for writing log entries and for determining if an
-article should be forwarded to a site.  (A "site" is the generic term for
-some destination of newsfeed data; it often corresponds to a remote news
-peer, but doesn't have to.  For example, a local archiving program run
-from F<newsfeeds> is also a "site".)  If I<sitename> already appears in
-the article's Path: header, then the article will not be sent to the site.
-The name is usually whatever the remote site uses to identify itself in
-the Path: header, but can be almost any word.
+The I<sitename> is the name of the site to which a news article can
+be sent.  It is used for writing log entries and for determining if an
+article should be forwarded to a site.  (A "site" is the generic term
+for some destination of newsfeed data; it often corresponds to a remote
+news peer, but doesn't have to.  For example, a local archiving program
+run from F<newsfeeds> is also a "site".)  If I<sitename> already appears
+in the article's Path header field body, then the article will not be
+sent to the site.  The name is usually whatever the remote site uses
+to identify itself in the Path header field body, but can be almost
+any word.
 
 Be careful, though, to avoid having the I<sitename> accidentally match a
-Path: header entry unintentionally.  For this reason, special local
-entries (such as archivers or gateways) should probably end with an
-exclamation point to make sure that they do not have the same name as any
-real site.  For example, C<gateway> is an obvious name for the local entry
-that forwards articles out to a mailing list.  If a site with the name
-C<gateway> posts an article, when the local site receives the article it
-will see the name in the Path and not send the article to its own
-C<gateway> entry.  Since C<gateway!> can't appear as an individual Path:
-entry since C<!> is a delimiter in the Path: header, that would be a
-better thing to use for I<sitename>.
+Path header field body entry unintentionally.  For this reason, special
+local entries (such as archivers or gateways) should probably end with
+an exclamation point to make sure that they do not have the same name
+as any real site.  For example, C<gateway> is an obvious name for the
+local entry that forwards articles out to a mailing list.  If a site with
+the name C<gateway> posts an article, when the local site receives the
+article it will see the name in the Path and not send the article to its
+own C<gateway> entry.  Since C<gateway!> can't appear as an individual
+Path header field body entry since C<!> is a delimiter in the Path
+header field body, that would be a better thing to use for I<sitename>.
 
 (Another way to avoid this problem is with the C<Ap> flag; see the
 description below.)
 
-If an entry has an exclusion sub-field, the article will not be sent to
-that site if any of I<exclude> appear in the Path: header.  (It's
-sometimes convenient to have the I<sitename> be an abbreviated form of the
-name of the remote site, since all the I<sitename>s to which an article
-is sent are written to the log and using shorter I<sitename>s can
-therefore improve performance for large servers.  In this case, the Path:
-header entries of those sites should be given as I<exclude> entries and
-the C<Ap> flag used so that the abbreviated I<sitename> doesn't
-accidentally match some other Path: header entry.)
+If an entry has an exclusion sub-field, the article will not be sent
+to that site if any of I<exclude> appear in the Path header field body.
+(It's sometimes convenient to have the I<sitename> be an abbreviated form
+of the name of the remote site, since all the I<sitename>s to which an
+article is sent are written to the log and using shorter I<sitename>s
+can therefore improve performance for large servers.  In this case,
+the Path header field body entries of those sites should be given as
+I<exclude> entries and the C<Ap> flag used so that the abbreviated
+I<sitename> doesn't accidentally match some other Path header field
+body entry.)
 
 The same I<sitename> can be used more than once and the appropriate action
 will be taken for each entry that should receive the article, but this is
@@ -131,7 +133,7 @@ the best way to keep control messages local to a site is with a distribution.
 A subscription can be further modified by specifying distributions that
 the site should or should not receive.  The default is to send all
 articles to all sites that subscribe to any of the groups where it has
-been posted, but if an article has a Distribution: header and any
+been posted, but if an article has a Distribution header field and any
 I<distribution>s are specified, then they are checked according to the
 following rules:
 
@@ -139,22 +141,22 @@ following rules:
 
 =item 1.
 
-If the Distribution: header matches any of the values in the sub-field,
+If the Distribution header field matches any of the values in the sub-field,
 the article is sent.
 
 =item 2.
 
 If a I<distribution> starts with an exclamation point, and it matches the
-Distribution: header, the article is not sent.
+Distribution header field, the article is not sent.
 
 =item 3.
 
-If the Distribution: header does not match any I<distribution> in the
+If the Distribution header field does not match any I<distribution> in the
 site's entry and no negations were used, the article is not sent.
 
 =item 4.
 
-If the Distribution: header does not match any I<distribution> in the
+If the Distribution header field does not match any I<distribution> in the
 site's entry and any I<distribution> started with an exclamation point,
 the article is sent.
 
@@ -178,16 +180,17 @@ more detail in L<"FEED TYPES">.  It can be omitted for some types of
 feeds.
 
 The site named C<ME> is special.  There must be exactly one such entry,
-and it should be the first entry in the file.  If the C<ME> entry has an
-exclusion sub-field, incoming articles are rejected completely if any of
-the names specified in that exclusion sub-field appear in their Path:
-headers.  If the C<ME> entry has a subscription list, that list is
-prepended to the subscription list of all other entries.  For example,
-C<*,!control,!control.*,!junk,!foo.*> could be used to set the default subscription
-list for all other feeds so that local postings are not propagated unless
-C<foo.*> explicitly appears in the site's subscription list.  This feature
-tends to be somewhat confusing since the default subscription is prepended
-and can be overridden by other patterns.
+and it should be the first entry in the file.  If the C<ME> entry has
+an exclusion sub-field, incoming articles are rejected completely if
+any of the names specified in that exclusion sub-field appear in their
+Path header field bodies.  If the C<ME> entry has a subscription list,
+that list is prepended to the subscription list of all other entries.
+For example, C<*,!control,!control.*,!junk,!foo.*> could be used to
+set the default subscription list for all other feeds so that local
+postings are not propagated unless C<foo.*> explicitly appears in the
+site's subscription list.  This feature tends to be somewhat confusing
+since the default subscription is prepended and can be overridden by
+other patterns.
 
 If the C<ME> entry has a distribution sub-field, only articles that
 match that distribution list are accepted and all other articles with a
@@ -275,15 +278,15 @@ Only send control messages, not regular articles.
 
 =item d
 
-Only send articles with a Distribution: header.  Combined with a particular
-distribution value in the I<distribution> part of the site entry, this can
-be used to limit articles sent to a site to just those with a particuliar
-distribution.
+Only send articles with a Distribution header field.  Combined with a
+particular distribution value in the I<distribution> part of the site
+entry, this can be used to limit articles sent to a site to just those
+with a particuliar distribution.
 
 =item e
 
-Only send articles where every newsgroup listed in the Newsgroups: header
-exists in the F<active> file.
+Only send articles where every newsgroup listed in the Newsgroups header
+field body exists in the F<active> file.
 
 =item f
 
@@ -294,11 +297,11 @@ some sites.
 
 =item j
 
-Propagate articles according to their Newsgroups: header.  This is only
+Propagate articles according to their Newsgroups header field.  This is only
 useful when I<wanttrash> is set to true in F<inn.conf>.  With that variable
 set, articles accepted and filed in C<junk> (due to I<wanttrash>) are fed to
-peers based on their subscription pattern applied to the Newsgroups: header
-as though they were accepted and all those groups were locally carried.
+peers based on their subscription pattern applied to the Newsgroups header
+field as though they were accepted and all those groups were locally carried.
 Otherwise, they are propagated to sites that receive the C<junk> newsgroup.
 
 This variable is useful if you want to run INN with a minimal F<active>
@@ -310,15 +313,16 @@ Only send articles for which overview data was stored.
 
 =item O
 
-Send articles to this site that don't have an Injection-Info: or X-Trace:
-header, even if the C<O> flag is also given.
+Send articles to this site that don't have an Injection-Info or X-Trace
+header field, even if the C<O> flag is also given.
 
 =item p
 
-Only check the exclusions against the Path: header of articles; don't
-check the site name.  This is useful if your site names aren't the same as
-the Path: entries added by those remote sites, or for program feeds where
-the site name is arbitrary and unrelated to the Path: header.
+Only check the exclusions against the Path header field of articles;
+don't check the site name.  This is useful if your site names aren't the
+same as the Path header field body entries added by those remote sites,
+or for program feeds where the site name is arbitrary and unrelated to
+the Path header field body.
 
 =back
 
@@ -363,7 +367,7 @@ crossposts to up to 30 groups when followups are set to poster.
 
 =back
 
-Note that if an article does not contain a Followup-To: header field,
+Note that if an article does not contain a Followup-To header field,
 the number of groups followups would appear in is the number of groups
 it is posted to.
 
@@ -385,14 +389,15 @@ flag is a better solution.
 
 =item B<H> I<count>
 
-If this flag is specified, an article will only be sent to this site if it
-has I<count> or fewer sites in its Path: line.  This flag should only be
-used as a rough guide because of the loose interpretation of the Path:
-header; some sites put the poster's name in the header, and some sites
-that might logically be considered to be one hop become two because they
-put the posting workstation's name in the header.  The default value for
-I<count> if not specified is one.  (Also see the B<O> flag, which is
-sometimes more appropriate for some uses of this flag.)
+If this flag is specified, an article will only be sent to this site
+if it has I<count> or fewer sites in its Path header field body.
+This flag should only be used as a rough guide because of the loose
+interpretation of the Path header field; some sites put the poster's
+name in the header, and some sites that might logically be considered
+to be one hop become two because they put the posting workstation's name
+in the header.  The default value for I<count> if not specified is one.
+(Also see the B<O> flag, which is sometimes more appropriate for some
+uses of this flag.)
 
 =item B<I> I<size>
 
@@ -411,15 +416,16 @@ unmoderated groups are sent.
 
 =item B<O> I<originator>
 
-If this flag is specified, an article will only be sent to this site if it
-contains an Injection-Info: header (or an X-Trace: header if no
-Injection-Info: header is found) and the first field of this header matches
-I<originator>.  I<originator> is a uwildmat(3) expression without commas
-or a list of such expressions, separated by C</>.  The article is never
-sent if the first character of the pattern begins with C<@> and the rest
-of the pattern matches.  One use of this flag is to restrict the feed to
-locally generated posts by using an I<originator> pattern that matches
-the Injection-Info: header added by the local server.
+If this flag is specified, an article will only be sent to this site
+if it contains an Injection-Info header field (or an X-Trace header
+field if no Injection-Info header field is found) and the first
+field of this header field matches I<originator>.  I<originator> is a
+uwildmat(3) expression without commas or a list of such expressions,
+separated by C</>.  The article is never sent if the first character
+of the pattern begins with C<@> and the rest of the pattern matches.
+One use of this flag is to restrict the feed to locally generated posts
+by using an I<originator> pattern that matches the Injection-Info
+header field added by the local server.
 
 =item B<P> I<priority>
 
@@ -519,7 +525,7 @@ a single period) in bytes.
 =item e
 
 The time the article will expire as seconds since epoch if it has an
-Expires: header, C<0> otherwise.
+Expires header field, C<0> otherwise.
 
 =item f
 
@@ -552,11 +558,12 @@ The time the article was posted a seconds since epoch.
 
 =item s
 
-The site that fed the article to the server.  This is taken from either
-the Path: header or the IP address of the sending site depending on the
-value of I<logipaddr> in F<inn.conf>.  If I<logipaddr> is true and the IP
-address is C<0.0.0.0> (meaning that the article was fed from localhost by
-a program like rnews(8)), the Path: header value will be sent instead.
+The site that fed the article to the server.  This is taken from
+either the Path header field body or the IP address of the sending site
+depending on the value of I<logipaddr> in F<inn.conf>.  If I<logipaddr>
+is true and the IP address is C<0.0.0.0> (meaning that the article was
+fed from localhost by a program like rnews(8)), the Path header field body
+will be sent instead.
 
 =item t
 
@@ -569,8 +576,8 @@ article (see below for more details).
 
 =item D
 
-The value of the Distribution: header of the article, or C<?> if there is
-no such header in the article.
+The body of the Distribution header field of the article, or C<?>
+if there is no such header in the article.
 
 =item G
 
@@ -588,11 +595,11 @@ should be the only item in the list.
 
 =item N
 
-The value of the Newsgroups: header.
+The body of the Newsgroups header field.
 
 =item P
 
-The value of the Path: header.
+The body of the Path header field.
 
 =item O
 
@@ -752,10 +759,10 @@ C<innfeed!>.  One could also write this as:
 
     example/feed.example.com:*,!control,!control.*,!junk:Ap,Tm:innfeed!
 
-(note the B<Ap> so that articles that contain just C<example> in the Path:
-header will still be sent), which is completely equivalent except that
-this will be logged in I<pathlog>/news as going to the site C<example>
-rather than C<feed.example.com>.
+(note the B<Ap> so that articles that contain just C<example> in the Path
+header field body will still be sent), which is completely equivalent
+except that this will be logged in I<pathlog>/news as going to the site
+C<example> rather than C<feed.example.com>.
 
 The typical feed entry for innfeed(8) is a good example of a channel feed
 that's the target of various funnel feeds (make sure the path to B<innfeed>

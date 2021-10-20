@@ -67,11 +67,11 @@ brackets around the message-ID are optional.  It should normally be
 protected from the shell with single quotes.
 
 I<arrival>, I<expires>, and I<posted> should be the number of seconds
-since epoch and indicate when the article arrived, when it expires (via
-the Expires: header), and when it was posted (given in the Date: header),
-respectively.  I<expires> should be C<0> if the article doesn't have an
-Expires: header.  I<token> is the storage API token for the article, and
-may be empty.
+since epoch and indicate when the article arrived, when it expires
+(via the Expires header field), and when it was posted (given in the
+Date header field), respectively.  I<expires> should be C<0> if the
+article doesn't have an Expires header field.  I<token> is the storage
+API token for the article, and may be empty.
 
 This command can only be used while the server is running, and will be
 rejected if the server is paused or throttled.
@@ -261,8 +261,8 @@ I<creator>, encoded in UTF-8 if given, may be omitted; if so, it will
 default to the newsmaster (as specified at configure time, normally
 C<usenet>).  I<status> may also be omitted; if so, it will default to C<y>
 (a normal, unmoderated group).  The combination of defaults make it possible
-to use the text of the Control: header directly (although don't do this
-without checking the syntactic validity of the header first).
+to use the text of the Control header field directly (although don't do this
+without checking the syntactic validity of the header field first).
 
 This command can only be done while the server is running or throttled
 manually.  It will update its internal state when a C<go> command is

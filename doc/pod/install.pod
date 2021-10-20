@@ -856,7 +856,7 @@ readers.conf(5) for more details.)
 =item complaints
 
 Used to set the value of the mail-complaints-to attribute of
-the Injection-Info: header, which is added to all articles posted
+the Injection-Info header field, which is added to all articles posted
 locally.  The usual value would be something like C<abuse@example.com>
 or C<postmaster@example.com>.  If not specified, the newsmaster e-mail
 address will be used.
@@ -871,28 +871,28 @@ default choice.
 
 =item logipaddr
 
-If set to true (the default), INN will log the IP address (or hostname, if
-the host is listed in F<incoming.conf> with a hostname) of the remote host
-from which it received an article.  If set to false, the trailing Path:
-header entry is logged instead.  If you are using B<controlchan> (see below)
-and need to process ihave/sendme control messages (this is very, very
-unlikely, so if you don't know what this means, don't worry about it),
-make sure you set this to false, since B<controlchan> needs a site name, not
-an IP address.
+If set to true (the default), INN will log the IP address (or hostname,
+if the host is listed in F<incoming.conf> with a hostname) of the
+remote host from which it received an article.  If set to false,
+the trailing Path header field body entry is logged instead.  If you
+are using B<controlchan> (see below) and need to process ihave/sendme
+control messages (this is very, very unlikely, so if you don't know
+what this means, don't worry about it), make sure you set this to false,
+since B<controlchan> needs a site name, not an IP address.
 
 =item organization
 
 Set this to the name of your organization as you want it to appear in the
-Organization: header of all articles posted locally and not already
+Organization header field of all articles posted locally and not already
 containing that header.  This will be overridden by the value of the
 ORGANIZATION environment variable (if it exists).  If neither this
-parameter nor the environment variable is set, no Organization: header
+parameter nor the environment variable is set, no Organization header field
 will be added to posts which lack one.
 
 =item pathhost
 
 This is the name of your news server as you wish it to appear in
-the Path: header of all postings which travel through your server
+the Path header field body of all postings which travel through your server
 (this includes local posts and incoming posts that you forward out to
 other sites).  If this parameter is unspecified, the fully qualified
 domain name (FQDN) of the machine, as reported by the operating system,
@@ -937,14 +937,15 @@ of continuation lines.)
 
 The first field in an entry is the name of the feed.  It must be unique,
 and for feeds to other news servers it is usually set to the actual
-hostname of the remote server (this makes things easier).  The name can
-optionally be followed by a slash (C</>) and a comma-separated exclude list.
-If the feed name or any of the names in the exclude list appear in the Path:
-header of an article, then that article will not be forwarded to the feed as
-it is assumed that it has passed through that site once already.  The
-exclude list is useful when a news server's hostname is not the same as
-what it puts in the Path: header of its articles, or when you don't want a
-feed to receive articles from a certain source.
+hostname of the remote server (this makes things easier).  The name
+can optionally be followed by a slash (C</>) and a comma-separated
+exclude list.  If the feed name or any of the names in the exclude list
+appear in the Path header field body of an article, then that article
+will not be forwarded to the feed as it is assumed that it has passed
+through that site once already.  The exclude list is useful when a news
+server's hostname is not the same as what it puts in the Path header
+field body of its articles, or when you don't want a feed to receive
+articles from a certain source.
 
 The second field specifies a set of desired newsgroups and distribution
 lists, given as newsgroup-pattern/distribution-list.  The distribution
@@ -974,7 +975,7 @@ actual feed entries.  First, we'll set up the special C<ME> entry.  This entry
 is required and serves two purposes: the newsgroup pattern specified here
 is prepended to the newsgroup list of all other feeds, and the
 distribution pattern for this entry determines what distributions (from
-the Distribution: header of incoming articles) are accepted from remote
+the Distribution header field of incoming articles) are accepted from remote
 sites by your server.  The example in the sample F<newsfeeds> file is a good
 starting point.  If you are going to create a local hierarchy that should
 not be distributed off of your system, it may be useful to exclude it from
@@ -985,7 +986,7 @@ specifically from every feed instead.
 The C<ME> entry tends to confuse a lot of people, so this point is worth
 repeating: the newsgroup patterns set the default subscription for
 I<outgoing> feeds, and the distribution patterns set the acceptable
-Distribution: header entries for I<incoming> articles.  This is confusing
+Distribution header field entries for I<incoming> articles.  This is confusing
 enough that it may change in later versions of INN.
 
 There are two basic ways to feed articles to remote sites.  The most
@@ -1006,11 +1007,11 @@ newsfeeds that looks like:
         :<newsgroups>\
         :Tf,Wnm:
 
-where <newsgroups> is the wildmat pattern for the newsgroups that site
-wants.  In this example, the actual name of the remote site is
-C<remote.example.com>, but it puts C<news.example.com> in the Path: header.
-If the remote site puts its actual hostname in the Path: header, you won't
-need the C</news.example.com> part.
+where <newsgroups> is the wildmat pattern for the newsgroups that
+site wants.  In this example, the actual name of the remote site is
+C<remote.example.com>, but it puts C<news.example.com> in the Path
+header field body.  If the remote site puts its actual hostname in the
+Path header field body, you won't need the C</news.example.com> part.
 
 This entry will cause B<innd> to write out a file in I<pathspool>/outgoing
 named F<remote.example.com> and containing the Message-ID and storage
@@ -1041,7 +1042,7 @@ the funnel feeds:
 we don't feed this entry any articles directly (its newsgroup pattern is
 C<!*>).  Note also that the name of this entry ends in an exclamation
 point.  This is a standard convention for all special feeds; since the
-delimiter for the Path: header is C<!>, no site name containing that
+delimiter for the Path header field body is C<!>, no site name containing that
 character can ever match the name of a real site.
 
 Next, set up entries for each remote site to which you will be feeding
@@ -1051,11 +1052,11 @@ articles.  All of these entries should be of the form:
         :<newsgroups>\
         :Tm:innfeed!
 
-specifying that they funnel into the C<innfeed!> feed.  As in the previous
-example for batching, C<remote.example.com> is the actual name of the
-remote peer, C<news.example.com> is what it puts in the Path: header (if
-different than the actual name of the server), and <newsgroups> is the
-wildmat pattern of newsgroups to be sent.
+specifying that they funnel into the C<innfeed!> feed.  As in the
+previous example for batching, C<remote.example.com> is the actual name
+of the remote peer, C<news.example.com> is what it puts in the Path
+header field body (if different than the actual name of the server),
+and <newsgroups> is the wildmat pattern of newsgroups to be sent.
 
 As an alternative to NNTP, INN may also feed news out to an IMAP server,
 by using imapfeed(8), which is almost identical to B<innfeed>.  The feed
@@ -1292,7 +1293,7 @@ If you don't want to limit the size of articles accepted by this storage
 class, leave this parameter out entirely.
 
 The fourth parameter you probably don't want to use lets you assign
-storage classes based on the Expires: header of incoming articles.  The
+storage classes based on the Expires header field of incoming articles.  The
 exact details are in storage.conf(5).  It's very easy to use this
 parameter incorrectly; leave it out entirely unless you've read the man
 page and know what you're doing.
@@ -1302,10 +1303,10 @@ this field; it should contain the name of the metacycbuff used to store
 articles in this storage class.
 
 The sixth parameter is a boolean which is false by default: any non-zero
-number of matching newsgroups is sufficient, provided no newsgroup matches
-a poison wildmat.  If it is set to true, all the newsgroups in the
-Newsgroups: header of incoming articles will be examined to see if they
-match the newsgroups wildmat pattern.
+number of matching newsgroups is sufficient, provided no newsgroup
+matches a poison wildmat.  If it is set to true, all the newsgroups in
+the Newsgroups header field body of incoming articles will be examined
+to see if they match the newsgroups wildmat pattern.
 
 If you're using CNFS exclusively, just create one storage class for each
 metacycbuff that you have defined in F<cycbuff.conf> and set the
@@ -1358,21 +1359,21 @@ to false, F<expire.ctl> takes entries of the form:
 <storage_class> is the number assigned to a storage class in
 F<storage.conf>.  <default> is the number of days to keep normal articles
 in that storage class (decimal values are allowed).  For articles that
-don't have an Expires: header, those are the only two values that matter.
-For articles with an Expires: header, the other two values come into play;
-the date given in the Expires: header of an article will be honored,
+don't have an Expires header field, those are the only two values that matter.
+For articles with an Expires header field, the other two values come into play;
+the date given in the Expires header field of an article will be honored,
 subject to the constraints set by <keep> and <purge>.  All articles in this
 storage class will be kept for at least <keep> days, regardless of their
-Expires: headers, and all articles in this storage class will be expired
-after <purge> days, even if their Expires: headers specify a longer life.
+Expires header fields, and all articles in this storage class will be expired
+after <purge> days, even if their Expires header fields specify a longer life.
 
 All three of these fields can also contain the special keyword C<never>.
-If <default> is C<never>, only articles with explicit Expires: headers
+If <default> is C<never>, only articles with explicit Expires header fields
 will ever be expired.  If <keep> is C<never>, articles with explicit
-Expires: headers will be kept forever.  Setting <purge> to C<never> says
-to honor Expires: headers even if they specify dates far into the future.
-(Note that if <keep> is set to C<never>, all articles with Expires:
-headers are kept forever and the value of <purge> is not used.)
+Expires header fields will be kept forever.  Setting <purge> to C<never> says
+to honor Expires header fields even if they specify dates far into the future.
+(Note that if <keep> is set to C<never>, all articles with Expires
+header fields are kept forever and the value of <purge> is not used.)
 
 If the value of I<groupbaseexpiry> is true, F<expire.ctl> takes entries of
 the form:
@@ -1737,8 +1738,8 @@ should remove from that file all entries for hierarchies you don't want to
 carry.  The last version of that file is available from
 L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.
 
-You can tell INN to just authenticate control messages based on the From:
-header of the message, but this is obviously perilous and control messages
+You can tell INN to just authenticate control messages based on the From
+header field of the message, but this is obviously perilous and control messages
 are widely forged.  Many hierarchies sign all of their control messages
 with PGP, allowing news servers to verify their authenticity, and checking
 those signatures for hierarchies that use them is highly recommended.

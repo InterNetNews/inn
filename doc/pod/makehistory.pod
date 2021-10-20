@@ -100,8 +100,8 @@ running, or you can corrupt the history.
 
 =item B<-b>
 
-Delete any messages found in the spool that do not have valid Message-ID:
-headers in them.
+Delete any messages found in the spool that do not have valid Message-ID
+header fields in them.
 
 =item B<-F>
 

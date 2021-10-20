@@ -122,7 +122,7 @@ the default).
 
 =item B<-F> I<fakehop>
 
-Prepend I<fakehop> as a host to the Path: header of articles fed.
+Prepend I<fakehop> as a host to the Path header field body of articles fed.
 
 =item B<-g> I<groups>
 
@@ -197,10 +197,11 @@ news servers.
 
 =item B<-P> I<hop_limit>
 
-Restrict feeding an article based on the number of hops it has already made.
-Count the hops in the Path: header (I<hop_count>), feeding the article only
-when I<hop_limit> is C<+num> and I<hop_count> is more than I<num>;
-or I<hop_limit> is C<-num> and I<hop_count> is less than I<num>.
+Restrict feeding an article based on the number of hops it has already
+made.  Count the hops in the Path header field body (I<hop_count>),
+feeding the article only when I<hop_limit> is C<+num> and I<hop_count>
+is more than I<num>; or I<hop_limit> is C<-num> and I<hop_count> is
+less than I<num>.
 
 =item B<-q>
 
@@ -253,7 +254,7 @@ water mark to I<Current> (the most recent article on the server).
 
 =item B<-x>
 
-If the B<-x> flag is used, an Xref: header is added to any article
+If the B<-x> flag is used, an Xref header field is added to any article
 that lacks one.  It can be useful for instance if articles are fed
 to a news server which has I<xrefslave> set in F<inn.conf>.
 

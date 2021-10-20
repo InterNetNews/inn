@@ -29,7 +29,7 @@ actual e-mail address to send the article to.  The third field is optional:
 it sets the envelope-from address (for instance a list member's address;
 if not set, it defaults to the C<news> user).
 
-In e-mail messages, the To: header will have the mailing-list address
+In e-mail messages, the To header field body will have the mailing-list address
 (i.e. the second field).  Besides, B<news2mail> strips most article headers
 from the article before mailing.
 

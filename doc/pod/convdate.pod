@@ -13,7 +13,8 @@ outputting the results one to a line.  The input can either be a date in
 S<RFC 5322> format (accepting the variations on that format that innd(8) is
 willing to accept), or the number of seconds since epoch (if B<-c> is
 given).  The output is either ctime(3) results, the number of seconds
-since epoch, or a Usenet Date: header, depending on the options given.
+since epoch, or a Usenet Date header field body, depending on the options
+given.
 
 If I<date> is not given, B<convdate> outputs the current date.
 
@@ -28,10 +29,10 @@ rather than a date.
 
 =item B<-d>
 
-Output a valid Usenet Date: header instead of the results of ctime(3) for
-each date given on the command line.  This is useful for testing the
-algorithm used to generate Date: headers for local posts.  Normally, the
-date will be in UTC, but see the B<-l> option.
+Output a valid Usenet Date header field body instead of the results of
+ctime(3) for each date given on the command line.  This is useful for
+testing the algorithm used to generate Date header field bodies for local
+posts.  Normally, the date will be in UTC, but see the B<-l> option.
 
 =item B<-h>
 
@@ -39,19 +40,19 @@ Print usage information and exit.
 
 =item B<-l>
 
-Only makes sense in combination with B<-d>.  If given, Date: headers
-generated will use the local time zone instead of UTC.
+Only makes sense in combination with B<-d>.  If given, Date header
+field bodies generated will use the local time zone instead of UTC.
 
 =item B<-n>
 
-Rather than outputting the results of ctime(3) or a Date: header, output
-each date given as the number of seconds since epoch (a time_t).  This
-option doesn't make sense in combination with B<-d>.
+Rather than outputting the results of ctime(3) or a Date header field
+body, output each date given as the number of seconds since epoch
+(a time_t).  This option doesn't make sense in combination with B<-d>.
 
 =item B<-s>
 
 Pass each given date to the S<RFC 5322> date parser and print the results of
-ctime(3) (or a Date: header if B<-d> is given).  This is the default
+ctime(3) (or a Date header field body if B<-d> is given).  This is the default
 behavior.
 
 =back

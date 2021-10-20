@@ -24,7 +24,7 @@ single line will be sent to standard input of I<processor>.  That line
 will consist of the file name of the received article (relative to
 I<spool>), a single space, and the message-ID of the received article.
 Note that the message-ID will be taken from the argument to the IHAVE
-command and may not match the Message-ID: header in the article.  When
+command and may not match the Message-ID header field in the article.  When
 B<tinyleaf> shuts down, standard input to I<processor> will be closed.
 
 B<tinyleaf> does no syntax verification of received articles whatsoever;

@@ -71,15 +71,17 @@ for instance numbered sequentially in F<storage.conf>.
 
 =item I<newsgroups>: <wildmat>
 
-What newsgroups are stored using this storage method.  <wildmat> is a uwildmat(3)
-pattern which is matched against the newsgroups an article is posted to.
-If I<storeonxref> in F<inn.conf> is true, this pattern will be matched against
-the newsgroup names in the Xref: header; otherwise, it will be matched against
-the newsgroup names in the Newsgroups: header (see inn.conf(5) for discussion
-of the differences between these possibilities).  Poison wildmat expressions
-(expressions starting with C<@>) are allowed and can be used to exclude certain
-group patterns: articles crossposted to poisoned newsgroups will not be stored
-using this storage method.  The <wildmat> pattern is matched in order.
+What newsgroups are stored using this storage method.  <wildmat> is a
+uwildmat(3) pattern which is matched against the newsgroups an article
+is posted to.  If I<storeonxref> in F<inn.conf> is true, this pattern
+will be matched against the newsgroup names in the Xref header field
+body; otherwise, it will be matched against the newsgroup names in the
+Newsgroups header field body (see inn.conf(5) for discussion of the
+differences between these possibilities).  Poison wildmat expressions
+(expressions starting with C<@>) are allowed and can be used to exclude
+certain group patterns: articles crossposted to poisoned newsgroups
+will not be stored using this storage method.  The <wildmat> pattern
+is matched in order.
 
 There is no default newsgroups pattern; if an entry should match all
 newsgroups, use an explicit C<newsgroups: *>.
@@ -96,16 +98,17 @@ to C<0>.
 
 =item I<expires>: <mintime>[,<maxtime>]
 
-A range of article expiration times which should be stored using this storage
-method.  Be careful; this is less useful than it may appear at first.  This
-is based B<only> on the Expires: header of the article, not on any local
-expiration policies or anything in F<expire.ctl>!  If <mintime> is non-zero,
-then this entry B<will not match> any article without an Expires: header.
-This key is therefore only really useful for assigning articles with requested
-longer expire times to a separate storage method.  Articles only match if the
-time until expiration (that is to say, the amount of time into the future
-that the Expires: header of the article requests that it remain around) falls
-in the interval specified by <mintime> and <maxtime>.
+A range of article expiration times which should be stored using this
+storage method.  Be careful; this is less useful than it may appear at
+first.  This is based B<only> on the Expires header field of the article,
+not on any local expiration policies or anything in F<expire.ctl>!
+If <mintime> is non-zero, then this entry B<will not match> any article
+without an Expires header field.  This key is therefore only really
+useful for assigning articles with requested longer expire times to
+a separate storage method.  Articles only match if the time until
+expiration (that is to say, the amount of time into the future that
+the Expires header field of the article requests that it remain around)
+falls in the interval specified by <mintime> and <maxtime>.
 
 The format of these parameters is C<0d0h0m0s> (days, hours, minutes, and seconds
 into the future).  If <maxtime> is C<0s> or is not specified, there is no upper
@@ -113,10 +116,10 @@ bound on expire times falling into this entry (note that this key has no effect
 on when the article will actually be expired, but only on whether or not the
 article will be stored using this storage method).  This field is also optional
 and may be omitted entirely if you do not want to store articles according
-to their Expires: header, if any.
+to their Expires header field, if any.
 
 A <mintime> value greater than C<0s> implies that this storage method won't
-match any article without an Expires: header.
+match any article without an Expires header field.
 
 =item I<options>: <options>
 
@@ -126,12 +129,13 @@ a description of its use.
 
 =item I<exactmatch>: <bool>
 
-If this key is set to true, all the newsgroups in the Newsgroups: header of
-incoming articles will be examined to see if they match newsgroups patterns.
-(Normally, any non-zero number of matching newsgroups is sufficient, provided
-no newsgroup matches a poison wildmat as described above.)  This is a boolean
-value; C<true>, C<yes> and C<on> are usable to enable this key.  The case of
-these values is not significant.  The default is false.
+If this key is set to true, all the newsgroups in the Newsgroups header
+field body of incoming articles will be examined to see if they match
+newsgroups patterns.  (Normally, any non-zero number of matching
+newsgroups is sufficient, provided no newsgroup matches a poison
+wildmat as described above.)  This is a boolean value; C<true>, C<yes>
+and C<on> are usable to enable this key.  The case of these values is
+not significant.  The default is false.
 
 =back
 
