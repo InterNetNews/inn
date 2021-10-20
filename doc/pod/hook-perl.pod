@@ -550,18 +550,18 @@ list of newsgroups based on the client's username and domain.
      sub access {
         %return_hash = (
            "max_rate" => "10000",
-	   "addinjectionpostinghost" => "true",
+           "addinjectionpostinghost" => "true",
      #     ...
         );
         if( defined $attributes{username} &&
             $attributes{username} =~ /.*@(.*)/ )
         {
            $return_hash{"virtualhost"} = "true";
-	   $return_hash{"path"} = $1;
+           $return_hash{"path"} = $1;
            $return_hash{"newsgroups"} = $hosts{$1};
         } else {
            $return_hash{"read"} = "*";
-	   $return_hash{"post"} = "local.*"
+           $return_hash{"post"} = "local.*"
         }
         return %return_hash;
      }

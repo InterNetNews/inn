@@ -19,7 +19,7 @@ and the C<_> and C<-> characters.  There are 5 different types of values:
 integers, floating-point numbers, characters, booleans, and strings.
 
 Integer and floating-point numbers are as to be expected, except that
-exponents in floating-point numbers are not supported.	A boolean value
+exponents in floating-point numbers are not supported.  A boolean value
 is either C<true> or C<false> (case is not significant).  A character
 value is a single-quoted character as defined by the C-language.  A string
 value is any other sequence of characters.  If the string needs to contain
@@ -87,7 +87,7 @@ A small example could be:
         }
 
         peer bb.home.vix.com {
-            max-connections: 20	  # He can really cook.
+            max-connections: 20   # He can really cook.
         }
     }
 
@@ -96,7 +96,7 @@ following values for the I<max-connections> key:
 
     uunet                  5
     vixie                 10
-    data.ramona.vix.com	  15
+    data.ramona.vix.com   15
     bb.home.vix.com       20
 
 B<innfeed> ignores I<key>:I<value> pairs it is not interested in.

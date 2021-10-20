@@ -24,7 +24,7 @@ internal domain names:
 
     auth internal {
         res: "domain .internal"
-	default-domain: "example.com"
+        default-domain: "example.com"
     }
 
     access internal {

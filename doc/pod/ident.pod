@@ -44,9 +44,9 @@ information for hosts on a local network, but to replace the domain
 returned from the ident query:
 
     auth LAN {
-	hosts: "192.168/16"
+        hosts: "192.168/16"
         res: "ident -t"
-	default-domain: "internal.example.com"
+        default-domain: "internal.example.com"
     }
 
     access LAN {
