@@ -101,6 +101,12 @@ libstorage$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)
 
 
+# TODO bodge in missing dependency. This isn't a full solution
+# but it works for now.
+#
+# See https://github.com/InterNetNews/inn/issues/206
+ovsqlite/ovsqlite-server.lo: ovsqlite/sql-init.h
+
 ##  Dependencies.  Default list, below, is probably good enough.
 
 depend:	Makefile $(SOURCES) $(EXTRA_SOURCES)

@@ -38,40 +38,30 @@ SNAPDIRS    = -e 1,2d -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(SNAPDIR)/;'
 DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 
 
-##  Major target -- build everything.  Rather than just looping through
-##  all the directories, use a set of parallel rules so that make -j can
-##  work on more than one directory at a time.
-##  Be careful of a non-GNU make:  after a completed command, it does not
-##  necessarily return the script back to the starting directory.
-all: all-include all-libraries all-programs
-	cd doc     && $(MAKE) all || exit 1 ; cd ..
-	cd samples && $(MAKE) all || exit 1 ; cd ..
-	cd site    && $(MAKE) all || exit 1 ; cd ..
-
-all-include:			; cd include   && $(MAKE) all
-
-all-libraries:	all-lib all-storage all-history
-
-all-lib:	all-include	; cd lib       && $(MAKE) all
-all-storage:	all-lib		; cd storage   && $(MAKE) library
-all-history:	all-storage	; cd history   && $(MAKE) all
-
-all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
-		all-frontends all-backends all-authprogs all-scripts \
-		all-perl all-store-util
-
-all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
-all-backends:	all-libraries	; cd backends  && $(MAKE) all
-all-control:			; cd control   && $(MAKE) all
-all-expire:	all-libraries	; cd expire    && $(MAKE) all
-all-frontends:	all-libraries	; cd frontends && $(MAKE) all
-all-innd:	all-libraries	; cd innd      && $(MAKE) all
-all-innfeed:	all-libraries	; cd innfeed   && $(MAKE) all
-all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
-all-perl:			; cd perl      && $(MAKE) all
-all-scripts:			; cd scripts   && $(MAKE) all
-all-store-util:	all-libraries	; cd storage   && $(MAKE) programs
-
+##  Major target -- build everything.
+##
+## libstorage depends on libinnhist, but some of the storage/...
+## programs depend on libinnhist, hence the two calls into
+## storage.
+all:
+	$(MAKE) -C include
+	$(MAKE) -C lib
+	$(MAKE) -C storage library
+	$(MAKE) -C history
+	$(MAKE) -C innd
+	$(MAKE) -C nnrpd
+	$(MAKE) -C innfeed
+	$(MAKE) -C control
+	$(MAKE) -C expire
+	$(MAKE) -C frontends
+	$(MAKE) -C backends
+	$(MAKE) -C authprogs
+	$(MAKE) -C scripts
+	$(MAKE) -C perl
+	$(MAKE) -C storage programs
+	$(MAKE) -C doc
+	$(MAKE) -C samples
+	$(MAKE) -C site
 
 ##  If someone tries to run make before running configure, tell them to run
 ##  configure first.
