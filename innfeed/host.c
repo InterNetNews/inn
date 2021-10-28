@@ -3441,7 +3441,7 @@ Default peer configuration parameters:
  * format of the output is:
  *
  * sitename
- *    Addr 1: IPv4  12.0.0.42
+ *   Addr 1 : IPv4  12.0.0.42
  *   seconds: 351       art. timeout: 400          ip name: foo.bar
  *   offered: 1194     resp. timeout: 240             port: 119
  *  accepted: 178     want streaming: yes      active cxns: 6
@@ -3459,7 +3459,7 @@ Default peer configuration parameters:
  *accpt size: 121.1 MB drop-deferred: false   defer length: 0
  *rejct size: 27.1 MB  min-queue-cxn: false
  *                 backlog low limit: 1000000
- *                backlog high limit: 2000000     (factor 2.0)
+ *                backlog high limit: 2000000 (factor 2.0)
  *                 backlog shrinkage: 0 bytes (from current file)
  *   offered:  1.13 art/s   accepted:  0.69 art/s (101.71 KB/s)
  *   refused:  0.01 art/s   rejected:  0.42 art/s (145.11 KB/s)
