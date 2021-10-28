@@ -1789,7 +1789,7 @@ PERMgetpermissions(void)
         if (access_realms[i]->rejectwith) {
             syslog(L_NOTICE, "%s rejected by rule (%s)", Client.host,
                    access_realms[i]->rejectwith);
-            Reply("%d Permission denied:  %s\r\n", NNTP_FAIL_TERMINATING,
+            Reply("%d Permission denied: %s\r\n", NNTP_FAIL_TERMINATING,
                   access_realms[i]->rejectwith);
             ExitWithStats(1, true);
         }

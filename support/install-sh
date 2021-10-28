@@ -277,7 +277,7 @@ do
     -* | [=\(\)!]) src=./$src;;
   esac
 
-  # INN addition:  Cygwin compatibility.
+  # INN addition: Cygwin compatibility.
   if [ -x "$src".exe ]; then
     src=${src}.exe
   fi

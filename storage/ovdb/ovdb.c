@@ -1293,7 +1293,7 @@ count_records(struct groupinfo *gi)
 
 
 /*
- * Locking:  OVopen() calls ovdb_getlock(OVDB_LOCK_NORMAL).  This
+ * Locking: OVopen() calls ovdb_getlock(OVDB_LOCK_NORMAL).  This
  * aquires a read (shared) lock on the lockfile.  Multiple processes
  * can have this file locked at the same time.  That way, if there
  * are any processes that are using the database, the lock file will
@@ -2630,7 +2630,7 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
         delete_old_stuff(0); /* remove deleted groups first */
     }
 
-    /* Special case:  when called with NULL group, we're to clean out
+    /* Special case: when called with NULL group, we're to clean out
      * records for forgotton groups (groups removed from the active file
      * but not from overview).
      * This happens at the end of the expireover run, and only if all

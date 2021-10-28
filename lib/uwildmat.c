@@ -16,8 +16,8 @@
 **  This can greatly speed up failing wildcard patterns.  For example:
 **
 **    pattern: -*-*-*-*-*-*-12-*-*-*-m-*-*-*
-**    text 1:  -adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1
-**    text 2:  -adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1
+**    text 1: -adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1
+**    text 2: -adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1
 **
 **  Text 1 matches with 51 calls, while text 2 fails with 54 calls.  Without
 **  the ABORT code, it takes 22310 calls to fail.  Ugh.  The following

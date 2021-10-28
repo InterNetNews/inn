@@ -4,7 +4,7 @@
 ########################################################################
 # controlbatch - Run controlchan against a batch file.
 #
-# Command usage:  controlbatch [feedsite batchfile]
+# Command usage: controlbatch [feedsite batchfile]
 # Defaults are feedsite: controlchan!, batchfile: ${BATCH}/controlchan!
 ########################################################################
 #

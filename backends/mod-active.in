@@ -103,7 +103,7 @@ if (!rename "$oldact", "$oldact.old") {
 }
 
 if (!rename "$newact", "$oldact") {
-  # Do not restart INN here:  we no longer have a valid active file!
+  # Do not restart INN here: we no longer have a valid active file!
   die "$0: rename $newact $oldact: $!\n";
 }
 

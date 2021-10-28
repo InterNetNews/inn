@@ -47,7 +47,7 @@ Usage:
   -d               enables debug messages
   -h               prints this help message
   -k keep-days     specifies how many days to keep processed dump files
-  -n               nomail:  gathers stats, but does not auto-submit e-mails
+  -n               nomail: gathers stats, but does not auto-submit e-mails
   -r report-days   specifies how many days of dump files should be processed
 
   Current default submit address: [$emaildef].
@@ -80,11 +80,11 @@ sub main {
   $debug = 1 if defined $opt{'d'};
 
   # Scan the ninpaths directory.
-  opendir(my $DIR, $ninpathsdir) || die "cannot open $ninpathsdir:  $!\n";
+  opendir(my $DIR, $ninpathsdir) || die "cannot open $ninpathsdir: $!\n";
   @files = readdir($DIR);
   closedir($DIR);
 
-  chdir($ninpathsdir) || die "cannot chdir $ninpathsdir:  $!\n";
+  chdir($ninpathsdir) || die "cannot chdir $ninpathsdir: $!\n";
 
   foreach my $file (@files) {
     # Process only inpaths files.
@@ -115,9 +115,9 @@ sub main {
     printf("exec'ing %s\n", join(' ', @cmd)) if $debug;
 
     $pid = open(my $NINPATHS, '-|');
-    die "cannot fork:  $!\n" if $pid < 0;
+    die "cannot fork: $!\n" if $pid < 0;
     if ($pid == 0) {
-      exec(@cmd) || die "cannot exec ninpaths:  $!\n";
+      exec(@cmd) || die "cannot exec ninpaths: $!\n";
     } else {
       while (<$NINPATHS>) {
         ;
@@ -141,14 +141,14 @@ sub main {
   printf("exec'ing %s\n", join(' ', @cmd)) if $debug;
 
   $pid = open(my $NINPATHS, '-|');
-  die "cannot fork:  $!\n" if $pid < 0;
+  die "cannot fork: $!\n" if $pid < 0;
   if ($pid == 0) {
-    exec(@cmd) || die "cannot exec ninpaths:  $!\n";
+    exec(@cmd) || die "cannot exec ninpaths: $!\n";
   } else {
     while (<$NINPATHS>) {
       $sendout .= $_;
     }
-    close($NINPATHS) || die "execution of ninpaths failed:  $!\n";
+    close($NINPATHS) || die "execution of ninpaths failed: $!\n";
   }
 
   if (defined $opt{'n'}) {
@@ -165,16 +165,16 @@ sub main {
 
     # Fork and spawn the MTA without using the shell.
     $pid = open(my $MTA, '|-');
-    die "cannot fork:  $!\n" if $pid < 0;
+    die "cannot fork: $!\n" if $pid < 0;
     if ($pid == 0) {
-      exec(split(/\s+/, $sm)) || die "cannot exec $sm:  $!";
+      exec(split(/\s+/, $sm)) || die "cannot exec $sm: $!";
     } else {
 
     print $MTA 'To: ' . join(",\n\t", @emailto);
     print $MTA "\nSubject: inpaths $pathhost\n\n";
     print $MTA $sendout;
     print $MTA "\n";
-    close($MTA) || die "execution of $sm failed:  $!\n";
+    close($MTA) || die "execution of $sm failed: $!\n";
     }
 
     # Remove old dumps.

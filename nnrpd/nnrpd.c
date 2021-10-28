@@ -1620,7 +1620,7 @@ main(int argc, char *argv[])
         /* Check usage. */
         if ((cp->Minac != CMDany && ac < cp->Minac)
             || (cp->Maxac != CMDany && ac > cp->Maxac)) {
-            Reply("%d Syntax is:  %s %s\r\n", NNTP_ERR_SYNTAX, cp->Name,
+            Reply("%d Syntax is: %s %s\r\n", NNTP_ERR_SYNTAX, cp->Name,
                   cp->Help ? cp->Help : "(no argument allowed)");
             continue;
         }

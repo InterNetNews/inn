@@ -35,7 +35,7 @@ my $usage = "$0 [-hquv] [-c [-s dir]] [-d dir] [-e host] [-m [-t dir]] inn-batch
   -e host    to process on entries for only that host
   -h         display a short help screen
   -m         to have $0 move the new files to the backlog directory
-  -q         quiet mode:  only display error messages; good for cron jobs
+  -q         quiet mode: only display error messages; good for cron jobs
   -s dir     to specify where the news articles are
              ($spoolArts)
   -t dir     to specify the backlog directory ($tapeDir)

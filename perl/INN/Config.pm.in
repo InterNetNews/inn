@@ -264,7 +264,7 @@ if you specify what you want to import:
 Note that a legacy F<innshellvars.pl> is also provided in I<pathnews>/lib
 for compatibility reasons with old Perl scripts not shipped with INN.
 It was used by versions of INN anterior to 2.5.0.  The corresponding
-scripts for Shell and Tcl are, however, still in use:  F<innshellvars>
+scripts for Shell and Tcl are, however, still in use: F<innshellvars>
 and F<innshellvars.tcl>.  They offer the same capabilities as this
 module.
 

@@ -668,7 +668,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 **  but reasonably effective for catching neophyte's mistakes.  Son-of-1036
 **  says:
 **
-**      NOTE:  While encouraging trimming is desirable, the 50% rule imposed
+**      NOTE: While encouraging trimming is desirable, the 50% rule imposed
 **      by some old posting agents is both inadequate and counterproductive.
 **      Posters do not respond to it by being more selective about quoting;
 **      they respond by padding short responses, or by using different
@@ -677,7 +677,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 **      useful forms of automatic analysis that reading agents might wish to
 **      do.
 **
-**      NOTE:  At the very least, if a minimum-unquoted quota is being set,
+**      NOTE: At the very least, if a minimum-unquoted quota is being set,
 **      article bodies shorter than (say) 20 lines, or perhaps articles
 **      which exceed the quota by only a few lines, should be exempt.  This
 **      avoids the ridiculous situation of complaining about a 5-line

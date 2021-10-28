@@ -148,7 +148,7 @@ NNTPLOCK=${LOCKS}/LOCK.nntpsend
 if [ -z "${NOLOCK}" ]; then
     shlock -p $$ -f ${NNTPLOCK} || {
         # Nothing to do.
-        echo "${PROGNAME}:  Lock found" 1>&2
+        echo "${PROGNAME}: Lock found" 1>&2
         exit 0
     }
 fi
@@ -158,7 +158,7 @@ INPUT=${TMPDIR}/nntpsend$$
 cp /dev/null ${INPUT}
 while [ $# -gt 0 ]; do
     if [ $# -lt 2 ]; then
-	echo "${PROGNAME}:  Bad host/fqdn pair" 1>&2
+	echo "${PROGNAME}: Bad host/fqdn pair" 1>&2
 	rm -f ${NNTPLOCK}
 	exit 1
     fi

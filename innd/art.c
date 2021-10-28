@@ -2437,7 +2437,7 @@ ARTpost(CHANNEL *cp)
       } else {
         /* if !GroupMissing, then all the groups the article was posted
          * to have a flag of "x" in our active file, and therefore
-         * we should throw the article away:  if you have set
+         * we should throw the article away: if you have set
          * innconf->remembertrash true, then you want all trash except that
          * which you explicitly excluded in your active file. */
   	if (!GroupMissing) {
@@ -2627,7 +2627,7 @@ ARTpost(CHANNEL *cp)
   }
 
   /* And finally, send to everyone who should get it.
-   * sp->Sendit is false for funnel sites:  ARTpropagate()
+   * sp->Sendit is false for funnel sites: ARTpropagate()
    * transferred it to the corresponding funnel. */
   for (sp = Sites, i = nSites; --i >= 0; sp++) {
     if (sp->Sendit) {

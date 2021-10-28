@@ -37,7 +37,7 @@ typedef struct _CAFHEADER {
 ** block, i.e. FreeZoneIndexSize.  The rest of the table is a big bitmap
 ** listing free blocks in the 'data' portion of the CAF file.
 **
-** In the "index" bitmap:  LSB of bitmap byte 0 is 1 if there are any 1s
+** In the "index" bitmap: LSB of bitmap byte 0 is 1 if there are any 1s
 ** (free blocks) listed in the first block of the big bitmap, and 0 if there
 ** are no 1s in that block.  The remaining bits of the index bitmap
 ** correspond to the remaining blocks of the big bitmap accordingly.
@@ -145,7 +145,7 @@ extern CAFBITMAP *CAFReadFreeBM(int fd, CAFHEADER *h);
 extern void CAFDisposeBitmap(CAFBITMAP *cbm);
 
 /*
-** Note:  CAFIsBlockFree needs the fd, since blocks of the free bitmap may
+** Note: CAFIsBlockFree needs the fd, since blocks of the free bitmap may
 ** need to be fetched from disk.
 */
 extern int CAFIsBlockFree(CAFBITMAP *bm, int fd, off_t block);

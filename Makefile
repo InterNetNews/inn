@@ -41,7 +41,7 @@ DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 ##  Major target -- build everything.  Rather than just looping through
 ##  all the directories, use a set of parallel rules so that make -j can
 ##  work on more than one directory at a time.
-##  Be careful of a non-GNU make:  after a completed command, it does not
+##  Be careful of a non-GNU make: after a completed command, it does not
 ##  necessarily return the script back to the starting directory.
 all: all-include all-libraries all-programs
 	cd doc     && $(MAKE) all || exit 1 ; cd ..

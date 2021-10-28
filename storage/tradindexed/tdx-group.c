@@ -31,7 +31,7 @@
 **     even in strange Unix file formats, since the files are all in the same
 **     directory).
 **
-**  We therefore use the following procedure to update the data:  The high
+**  We therefore use the following procedure to update the data: The high
 **  water mark may be changed at any time but surrounded in a write lock.  The
 **  base may only be changed as part of an index rebuild.  To do an index
 **  rebuild, we follow the following procedure:

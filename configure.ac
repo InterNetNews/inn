@@ -18,7 +18,7 @@ dnl reasonable; obviously, makefile things like library paths and so forth and
 dnl paths to programs have to use AC_SUBST, but any compile-time parameters
 dnl are easier to handle with AC_DEFINE.  (And AC_SUBST is slower.)
 dnl
-dnl And remember:  If you don't have any alternative available if your check
+dnl And remember: If you don't have any alternative available if your check
 dnl for something fails, and there's no purpose served in aborting configure
 dnl instead of the compile if what you're checking for is missing, don't
 dnl bother checking for it.  Compile-time errors often produce a lot more

@@ -71,7 +71,7 @@ while [ $# -gt 0 ] ; do
 	break
 	;;
     X-*)
-	echo "${PROGNAME}:  Unknown flag $1" 1>&2
+	echo "${PROGNAME}: Unknown flag $1" 1>&2
 	exit 1
 	;;
     *)
@@ -83,7 +83,7 @@ done
 
 ##  Process arguments.
 if [ $# -ne 0 ] ; then
-    echo "Usage:  ${PROGNAME} [-f ctlfile] [-i seconds] [-l logfile] [-t seconds]" 1>&2
+    echo "Usage: ${PROGNAME} [-f ctlfile] [-i seconds] [-l logfile] [-t seconds]" 1>&2
     exit 1
 fi
 
@@ -149,7 +149,7 @@ do
     CHILDPID=
     NEXTSLEEP=${INNWATCHSLEEPTIME}
 
-    ##  If news.daily is running, idle:  we don't want to change the
+    ##  If news.daily is running, idle: we don't want to change the
     ##  status of anything while news.daily may be depending on what we
     ##  have done.
     test -f "${DAILY}" && continue

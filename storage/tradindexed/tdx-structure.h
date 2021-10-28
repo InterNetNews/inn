@@ -7,7 +7,7 @@
 **  architecture-dependent due to structure padding).  This will eventually be
 **  fixed.
 **
-**  The structure of a tradindexed overview spool is as follows:  At the root
+**  The structure of a tradindexed overview spool is as follows: At the root
 **  of the spool is a group.index file composed of a struct group_header
 **  followed by some number of struct group_entry's, one for each group plus
 **  possibly some number of free entries linked to a free list that's headed

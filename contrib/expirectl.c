@@ -16,7 +16,7 @@
  * 
  * [...]
  *     Oh, while I'm at it, I also wrote a cute program that builds the 
- *     expire.ctl file dynamically based on available space.   Feel free
+ *     expire.ctl file dynamically based on available space.  Feel free
  *     to include this in the dist (or not) as you please.
  * 
  *     Basically, the expirectl programs determines the amount of disk blocks

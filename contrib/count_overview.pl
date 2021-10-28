@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-# count_overview.pl:  Count the groups in a bunch of xref records.
+# count_overview.pl: Count the groups in a bunch of xref records.
 
 while (<>) {
 

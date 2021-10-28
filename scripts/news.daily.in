@@ -223,7 +223,7 @@ test -n "${RMFILE}" && {
 test -n "${LOWMARKFILE}" && {
         EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
         if [ "${DOEXPIREOVER}" != "true" ] ; then
-            echo "warning:  lowmark requires expireover"
+            echo "warning: lowmark requires expireover"
         fi
 }
 
@@ -340,7 +340,7 @@ if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
     DOEXPIREOVER=false
 fi
 
-##  The heart of the matter:  prologs, expire, epilogs.
+##  The heart of the matter: prologs, expire, epilogs.
 if ${DOEXPIRE} ; then
 
     ##  Wait to be fairly certain innwatch is not in the middle of a pass.

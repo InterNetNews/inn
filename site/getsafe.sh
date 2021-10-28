@@ -6,7 +6,7 @@ case $# in
 2)
     ;;
 *)
-    echo "Can't get INN sample file:  wrong number of arguments." 1>&2
+    echo "Can't get INN sample file: wrong number of arguments." 1>&2
     exit 1
     ;;
 esac

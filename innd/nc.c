@@ -1345,7 +1345,7 @@ NCproc(CHANNEL *cp)
               snprintf(buff, sizeof(buff), "%d %s", syntaxerrorcode,
                        cp->ac > 1 ? cp->av[1] : "");
           } else {
-              snprintf(buff, sizeof(buff), "%d Syntax is:  %s %s",
+              snprintf(buff, sizeof(buff), "%d Syntax is: %s %s",
                        syntaxerrorcode, dp->Name, dp->Help ? dp->Help : "(no argument allowed)");
           }
           /* If TAKETHIS, we have to read the entire multi-line response

@@ -5,7 +5,7 @@
 **  order to provide better (scorable) OVER data, containing bits of article
 **  body content which have a reasonable expectation of utility.
 **
-**  Basic idea:  simple word-counting.  We find words in the article body,
+**  Basic idea: simple word-counting.  We find words in the article body,
 **  separated by whitespace.  Remove punctuation.  Sort words, count unique
 **  words, sort those counts.  Write the resulting Keywords: header containing
 **  the poster's original Keywords: (if any) followed by a magic cookie
@@ -104,7 +104,7 @@ KEYgenerate(
     static char		**word;
     static const char	*whitespace  = " \t\r\n";
 
-    /* Prototype setup:  regex match preparation. */
+    /* Prototype setup: regex match preparation. */
     static	int	regex_lib_init = 0;
     static	regex_t	preg;
     static const char	*elim_regexp = "^\\([-+/0-9][-+/0-9]*\\|.*1st\\|.*2nd\\|.*3rd\\|.*[04-9]th\\|about\\|after\\|ago\\|all\\|already\\|also\\|among\\|and\\|any\\|anybody\\|anyhow\\|anyone\\|anywhere\\|are\\|bad\\|because\\|been\\|before\\|being\\|between\\|but\\|can\\|could\\|did\\|does\\|doing\\|done\\|dont\\|during\\|eight\\|eighth\\|eleven\\|else\\|elsewhere\\|every\\|everywhere\\|few\\|five\\|fifth\\|first\\|for\\|four\\|fourth\\|from\\|get\\|going\\|gone\\|good\\|got\\|had\\|has\\|have\\|having\\|he\\|her\\|here\\|hers\\|herself\\|him\\|himself\\|his\\|how\\|ill\\|into\\|its\\|ive\\|just\\|kn[eo]w\\|least\\|less\\|let\\|like\\|look\\|many\\|may\\|more\\|m[ou]st\\|myself\\|next\\|nine\\|ninth\\|not\\|now\\|off\\|one\\|only\\|onto\\|our\\|out\\|over\\|really\\|said\\|saw\\|says\\|second\\|see\\|set\\|seven\\|seventh\\|several\\|shall\\|she\\|should\\|since\\|six\\|sixth\\|some\\|somehow\\|someone\\|something\\|somewhere\\|such\\|take\\|ten\\|tenth\\|than\\|that\\|the\\|their\\!|them\\|then\\|there\\|therell\\|theres\\|these\\|they\\|thing\\|things\\|third\\|this\\|those\\|three\\|thus\\|together\\|told\\|too\\|twelve\\|two\\|under\\|upon\\|very\\|via\\|want\\|wants\\|was\\|wasnt\\|way\\|were\\|weve\\|what\\|whatever\\|when\\|where\\|wherell\\|wheres\\|whether\\|which\\|while\\|who\\|why\\|will\\|with\\|would\\|write\\|writes\\|wrote\\|yes\\|yet\\|you\\|your\\|youre\\|yourself\\)$";
@@ -136,7 +136,7 @@ KEYgenerate(
     hc->Length = 0;
 
     /* Now figure acceptable extents, and copy body to working string.
-     * (Memory-intensive for hefty articles:  limit to non-ABSURD articles.) */
+     * (Memory-intensive for hefty articles: limit to non-ABSURD articles.) */
     if ((bodylen < 100) || (bodylen > innconf->keyartlimit)) /* Too small/big to bother. */
 	return;
 
@@ -148,7 +148,7 @@ KEYgenerate(
 
     text_end = text + bodylen;
 
-    /* Abusive punctuation stripping:  turn it all into spaces. */
+    /* Abusive punctuation stripping: turn it all into spaces. */
     for (punc = text; *punc; punc++)
 	if (!isalpha((unsigned char) *punc))
 	    *punc = ' ';

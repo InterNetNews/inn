@@ -67,7 +67,7 @@ convert_string(const char *string, long *result)
 
 /*
 **  Parse a command-line argument into a struct binding.  The command line
-**  argument is four comma-separated values:  the file descriptor, the family,
+**  argument is four comma-separated values: the file descriptor, the family,
 **  the listening address, and the port number.  The caller is responsible for
 **  freeing the address attribute of the supplied binding struct, although if
 **  a binding struct is passed in for use and has a non-NULL address, it will

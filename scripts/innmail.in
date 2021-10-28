@@ -54,18 +54,18 @@ if ($sm =~ m!%s!) {
 my @smarr = split(/\s+/, $sm);
 
 (my $t = $INN::Config::mta) =~ s!\s.*!!;
-die "$0:  MTA variable definition is changed after substitution\n" 
+die "$0: MTA variable definition is changed after substitution\n" 
     if ($t ne $smarr[0]);
 
-die "$0:  MTA excutable doesn't appear to exist:  $smarr[0]\n"
+die "$0: MTA excutable doesn't appear to exist: $smarr[0]\n"
     if ! -x $smarr[0];
 
 # Startup MTA without using the shell.
 my $pid = open my $MTA, '|-';
 if ($pid == 0) {
-    exec (@smarr) || die "$0:  exec of $sm failed:  $!\n";
+    exec (@smarr) || die "$0: exec of $sm failed: $!\n";
 } elsif ($pid < 0) {
-    die "$0:  Fork failed:  $!\n";
+    die "$0: Fork failed: $!\n";
 }
 
 print $MTA "To: ", join (",\n\t", @addrs), "\n";

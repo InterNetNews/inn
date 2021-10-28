@@ -258,7 +258,7 @@ int main (int argc, char **argv)
     whatever has aquired the stdio descriptors, such as the socket
     to syslogd.
     
-    XXX possible problems:  what if fd 0 is closed but no inputFile,
+    XXX possible problems: what if fd 0 is closed but no inputFile,
     XXX subProgram or talkToSelf is true?  it will not be freopen()ed, so
     XXX innfeed won't have any fresh data (besides, fd 0 is only writable
     XXX here).  perhaps a warning should be issued.

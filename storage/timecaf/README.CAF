@@ -94,7 +94,7 @@ article's position in the TOC.  [Given the way the CAF code is currently
 used by the timecaf storage manager, it's almost always the case that we're
 appending to the end of the file.]
 
-  A note on the free bitmap portion of the CAF file:  it's not just a simple
+  A note on the free bitmap portion of the CAF file: it's not just a simple
 bitmap (each bit of the bitmap tells whether a data block is in use or free).
 First there is an 'index' bitmap which tells which blocks of the 'main' bitmap
 have free blocks listed in them, and then a 'main' bitmap which tells whether

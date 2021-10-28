@@ -3,8 +3,8 @@
 
 ##########################################################################
 #
-#   innreport:  Perl script to summarize news log files
-#               (with optional HTML output and graphs).
+#   innreport: Perl script to summarize news log files
+#              (with optional HTML output and graphs).
 #
 # Copyright (c) 1996-2001, Fabien Tassin <fta@sofaraway.org>.
 #
@@ -14,7 +14,7 @@
 #
 ##########################################################################
 #
-# Usage:  innreport -f config_file [-[no]options] logfile [logfile2 [...]]
+# Usage: innreport -f config_file [-[no]options] logfile [logfile2 [...]]
 #   where options are:
 #     -h (or -help)      : this help page
 #     -html              : HTML output
@@ -50,13 +50,13 @@
 #
 # ABSOLUTELY NO WARRANTY WITH THIS PACKAGE.  USE IT AT YOUR OWN RISKS.
 #
-# Note:  You need the Perl graphic library GD.pm if you want the graphs.
-#        GD is available on all good CPAN ftp sites.  For instance:
-#            <http://search.cpan.org/dist/GD/GD.pm>.
-#        Note:  innreport will create PNG or GIF files depending upon
-#               the GD version.
+# Note: You need the Perl graphic library GD.pm if you want the graphs.
+#       GD is available on all good CPAN ftp sites.  For instance:
+#           <http://search.cpan.org/dist/GD/GD.pm>.
+#       Note: innreport will create PNG or GIF files depending upon
+#             the GD version.
 #
-# Documentation:  for a short explanation of the different options, you
+# Documentation: for a short explanation of the different options, you
 #        can read the usage (obtained with the -h or -help switch).
 #
 # Install: - check the Perl location (first line). Require Perl 5.002
@@ -71,17 +71,17 @@
 # ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
 #
 #
-# Report:  Please report bugs (preferably) to the INN mailing list
-#          (see README) or directly to the author (do not forget to
-#          include the result of the "-config" switch, the parameters
-#          passed on the command line and the INN version).
-#          Please also report unknown entries.
-#          Be sure your are using the latest version of this script before
-#          any report.
+# Report: Please report bugs (preferably) to the INN mailing list
+#         (see README) or directly to the author (do not forget to
+#         include the result of the "-config" switch, the parameters
+#         passed on the command line and the INN version).
+#         Please also report unknown entries.
+#         Be sure your are using the latest version of this script before
+#         any report.
 #
 ##########################################################################
 
-# Note:  References to <ftp://ftp.sofaraway.org/pub/innreport/> have been
+# Note: References to <ftp://ftp.sofaraway.org/pub/innreport/> have been
 # removed from the output because this site appears to no longer exist.  It
 # used to be the upstream source for innreport.  If there is a new site for
 # innreport releases, please notify the INN maintainers.
@@ -362,7 +362,7 @@ $transparent = (defined $transparent && $transparent eq 'true') ? 1 : 0;
 
 my $repeated = 1;
 
-# 1E30 is a very large number:  digit '1' followed by thirty zeroes.
+# 1E30 is a very large number: digit '1' followed by thirty zeroes.
 # With binary radix the number has 100 digits.
 # On contemporary hardware, Perl converts it to the maximum value of
 # an unsigned integer (either 32 or 64 bit).
@@ -654,7 +654,7 @@ if (!$NOT_DAILY && defined $output{'default'}{'unwanted_log'}) {
 # Misc...
 
 # Compare two time stamps.
-# Example input:  "May 12 06" for May 12, 6:00am.
+# Example input: "May 12 06" for May 12, 6:00am.
 # - Only month, day of month and hour are checked; minutes and seconds
 #   are ignored.
 # - Used with perl's sort function, arguments are passed as $a and $b.
@@ -664,7 +664,7 @@ sub DateCompare {
   # can cheat to determine the order. It is only important if one date
   # is in January and the other in December.
   #
-  # Assume that every month has 36 days:  36 * 24 / 3 = 288.
+  # Assume that every month has 36 days: 36 * 24 / 3 = 288.
   # If dates differ for more than 300 days, they are assumed to be in
   # different years.  However, this limit of 300 is based on a year of
   # 12 * 36 = 432 days.  Mapped to a year of 365 days, the limit is

@@ -21,7 +21,7 @@ static void Usage(void) __attribute__ ((__noreturn__));
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage:  prunehistory [-p] [-f file]\n");
+    fprintf(stderr, "Usage: prunehistory [-p] [-f file]\n");
     exit(1);
 }
 

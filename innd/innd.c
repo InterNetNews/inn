@@ -659,8 +659,8 @@ main(int ac, char *av[])
     /* There is no file descriptor limit on some hosts; for those, cap at
        MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger. 
        Otherwise, we use insane amounts of memory for the channel table.
-       FIXME:  Get rid of this hard-coded constant.
-       (TODO:  Consider implementing libevent.) */
+       FIXME: Get rid of this hard-coded constant.
+       (TODO: Consider implementing libevent.) */
     if (i > 5000) {
         unsigned long max;
 

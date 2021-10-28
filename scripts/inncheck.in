@@ -68,7 +68,7 @@ my %checklist = (
 );
 
 ##  The modes of the config files we can check.
-##  Min and max values, by bit:  between 0400 and 0640,
+##  Min and max values, by bit: between 0400 and 0640,
 ##  0600 is allowed, but not 0500 for instance (not executable).
 ##  0660 is used when the file can contain passwords.
 my %modes = (
@@ -173,7 +173,7 @@ my $ipv6 = "[$ip6]+(?:$ipv4)?"; # e.g. ::ffff:192.168.0.10
 my $ipv6_cidr = "[$ip6]+\\/1?\\d?\\d";
 my $ipv6_wildmat = "[$ip6$wildmat]+";
 my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}'; # hostname, FQDN
-my $hostname_wildmat = '(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)"; # Assumption:  wildmat chars only in leftmost subdomain part
+my $hostname_wildmat = '(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)"; # Assumption: wildmat chars only in leftmost subdomain part
 my $hostnameRE = "(?:$hostname|$ipv4|$ipv6)";
 my $hostblockRE = "(?:$hostname_wildmat|$ipv4_cidr|$ipv4_wildmat|$ipv6|$ipv6_cidr|$ipv6_wildmat)";
 my %type_regex = (
@@ -208,7 +208,7 @@ parse_config
 
     while (my $word = get_config_word()) {
         if (defined $options->{$word}) {
-            # $word starts a new group definition:  "peer news.example.com {"
+            # $word starts a new group definition: "peer news.example.com {"
             my ($name, $curly);
             $parse_error = 0;
 
@@ -250,7 +250,7 @@ parse_config
             next;
         }
 
-        # include-file hack:  ignore; user needs to check it separately
+        # include-file hack: ignore; user needs to check it separately
         if (defined $options->{'<include>'}->{$word}) {
             $parse_error = 0;
             my $includefile = get_config_word();
@@ -1016,7 +1016,7 @@ storage_conf
             },
         }
     );
-    # allowed method names include:  cnfs timecaf timehash tradspool trash
+    # allowed method names include: cnfs timecaf timehash tradspool trash
     foreach my $method (keys %groups) {
         eprint "$file:$groups{$method}->{'line'}: not a valid storage method: $method.\n"
             unless $method =~ /^(?:cnfs|timecaf|timehash|tradspool|trash|<global scope>)$/;

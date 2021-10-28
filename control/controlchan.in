@@ -585,11 +585,11 @@ sub convdate {
     my $result = 0;
 
     my $pid = open(my $CONVDATE, '-|');
-    logdie("Cannot fork:  $!") if $pid < 0;
+    logdie("Cannot fork: $!") if $pid < 0;
     if ($pid == 0) {
         # exec() properly escapes its arguments to prevent shell injection.
         exec("$INN::Config::pathbin/convdate", @args) or
-             logdie("Cannot exec convdate:  $!");
+             logdie("Cannot exec convdate: $!");
     } else {
         $result = <$CONVDATE>;
         close($CONVDATE);

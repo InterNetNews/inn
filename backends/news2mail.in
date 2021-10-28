@@ -16,7 +16,7 @@
 #
 # where the first token is the name fed to us from the INN's newsfeeds file.
 # The second token is the actual address sendmail ships the article to.
-# The third token is optional:  it sets the envelope-from address.
+# The third token is optional: it sets the envelope-from address.
 #
 # In the INN's newsfeeds file, you need to have a channel feed:
 #     news2mail!:!*:Ac,Tc,Wn*:<pathbin>/news2mail
@@ -84,12 +84,12 @@ while (<STDIN>) {
     my @bad  = grep { !defined($maddr{$_}) } @addrs;
 
     if (!@good) {
-        syslog('notice', "unknown list(s):  $lnames") if ($use_syslog);
+        syslog('notice', "unknown list(s): $lnames") if ($use_syslog);
         next;
     }
 
     if (@bad) {
-        syslog('info', 'skipping list(s):  ', join(' ', @bad)) if ($use_syslog);
+        syslog('info', 'skipping list(s): ', join(' ', @bad)) if ($use_syslog);
     }
 
     my $sa = $INN::Config::newsuser;

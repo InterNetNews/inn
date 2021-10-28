@@ -53,5 +53,5 @@ say not using TLS) will be rejected.
 Example 4
 ---------
 
-Support for a new SASL mechanism has been added:  OPENID20 can now be
+Support for a new SASL mechanism has been added: OPENID20 can now be
 used to authenticate.  Feel free to use it!

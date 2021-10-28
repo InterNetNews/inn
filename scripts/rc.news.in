@@ -112,7 +112,7 @@ if [ -f ${SERVERPID} ] ; then
 	echo 'INND is running'
 	exit 0
     fi
-    echo 'INND:  PID file exists -- unclean shutdown!'
+    echo 'INND: PID file exists -- unclean shutdown!'
     RFLAG="-r"
 fi
 
@@ -142,7 +142,7 @@ if [ ! -s ${ACTIVE} ] ; then
 	if [ -s ${OLDACTIVE} ] ; then
 	    cp ${OLDACTIVE} ${ACTIVE}
 	else
-	    echo 'INND:  No active file!'
+	    echo 'INND: No active file!'
 	    exit 1
 	fi
     fi
@@ -157,7 +157,7 @@ fi
 
 ##  Overview data was rebuilt, and also active needs to be renumbered
 if [ -f ${PATHRUN}/.rebuildoverview ] ; then
-    echo 'INND:  overview was rebuilt, and active needs to be renumbered!'
+    echo 'INND: overview was rebuilt, and active needs to be renumbered!'
     RFLAG="-r"
 fi
 

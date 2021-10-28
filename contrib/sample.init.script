@@ -46,7 +46,7 @@ restart)
     ;;
 
 *)
-    echo "Recognized arguments:  start|stop|reload|force-reload|restart" >&2
+    echo "Recognized arguments: start|stop|reload|force-reload|restart" >&2
     exit 1
     ;;
 

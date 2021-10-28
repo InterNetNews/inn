@@ -20,7 +20,7 @@ dnl Source used by INN_LOG_FACILITY.
 AC_DEFUN([_INN_LOG_FACILITY], [[
 #include <syslog.h>
 #ifndef LOG_NEWS
-error:  LOG_NEWS not available!
+error: LOG_NEWS not available!
 #endif
 ]])
 

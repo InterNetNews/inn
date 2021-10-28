@@ -303,7 +303,7 @@ Needed Bug Fixes
 * ctlinnd begin <site-name> was causing innd to core dump.
 
 * Handling of innfeed's dropped batches needs looking at.  There are three
-  places where articles can fall between the cracks:  an innfeed.togo file
+  places where articles can fall between the cracks: an innfeed.togo file
   written by innd when the feed can't be spawned, a batch file named after
   the feed name which can be created under similar circumstances, and the
   dropped files written by innfeed itself.  procbatch can clean these up,
@@ -425,7 +425,7 @@ Requested New Features
   articles, you'll then also reject the correct versions of the articles
   from other peers.  This should probably be rethought.
 
-* Additional limits for readers.conf:  Limit on concurrent parallel reader
+* Additional limits for readers.conf: Limit on concurrent parallel reader
   streams, limit on KB/second download (preliminary support for this is
   already in), and a limit on maximum posted articles per day (tied in
   with the backoff stuff?).  These should be per-IP or per-user, but
@@ -649,7 +649,7 @@ Long-Term Projects
   accessible via ctlinnd.
 
 * There is a fundamental problem with the current design of the
-  control.ctl file.  It combines two things:  A database of hierarchies,
+  control.ctl file.  It combines two things: A database of hierarchies,
   their maintainers, and related information, and a list of which
   hierarchies the local server should honor.  These should be separated
   out into the database (which could mostly be updated from a remote
@@ -658,7 +658,7 @@ Long-Term Projects
   that control messages should be honored for.  This should be reasonably
   simple although correct handling of checkgroups could get a mite tricky.
 
-* Possible NNTP extension:  Compression of the protocol, using gzip,
+* Possible NNTP extension: Compression of the protocol, using gzip,
   bzip2, or some other technique.  Particularly useful for long lists like
   the active file information or the overview information, but possibly
   useful in general for other things.

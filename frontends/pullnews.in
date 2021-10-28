@@ -11,26 +11,27 @@
 #               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:
 #
-#               January 2010:  Geraint A. Edwards added header-only feeding (-B);
+#               January 2010: Geraint A. Edwards added header-only feeding (-B);
 #               added ability to hashfeed (-a) - uses MD5 - Diablo-compatible;
 #               enabled -m to remove headers matching (or not) a given regexp;
 #               minor bug fix to rnews when -O; improved rnews reporting.
 #
-#               December 2008:  Matija Nalis added -O (optimized mode, checking
-#               whether the downstream server already has the article to download).
-#               Bug fixes too.
+#               December 2008: Matija Nalis added -O (optimized mode, checking
+#               whether the downstream server already has the article to
+#               download).  Bug fixes too.
 #
-#               May 2008:  Geraint A. Edwards greatly improved pullnews, adding
-#               -b, -C, -d, -G, -H, -k, -l, -m, -M, -n, -P, -Q, -R, -t, -T, -w and
-#               improving -s as well as fixing some bugs.
-#               He also integrated the backupfeed contrib script by Kai Henningsen,
-#               adding -f, -F, -N, -S, -z and -Z to pullnews.
+#               May 2008: Geraint A. Edwards greatly improved pullnews, adding
+#               -b, -C, -d, -G, -H, -k, -l, -m, -M, -n, -P, -Q, -R, -t, -T, -w
+#               and improving -s as well as fixing some bugs.
+#               He also integrated the backupfeed contrib script by Kai
+#               Henningsen, adding -f, -F, -N, -S, -z and -Z to pullnews.
 #
 # Description:  A simple pull feeder.  Connects to multiple upstream 
 #               machines (in the guise of a reader), and pulls over articles 
-#               and feeds them to a downstream server (in the guise of a feeder).
+#               and feeds them to a downstream server (in the guise of a
+#               feeder).
 #
-#               Uses a simple configuration file:  <pathdb>/pullnews.marks when
+#               Uses a simple configuration file: <pathdb>/pullnews.marks when
 #               run as the news user, or otherwise ~/pullnews.marks, to define
 #               which machines to pull articles from and which groups at each
 #               machine to pull over.  There is also support for more specific

@@ -558,7 +558,7 @@ to process NoCeM notices.  Various legacy options in command-line
 (like in the example above) should however still be used.
 
 The keys of NoCeM issuers can be found in the web site of I<The NoCeM
-Registry>:  L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
+Registry>: L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 You can even download there a unique file which contains all the keys.
 
 =item 2.

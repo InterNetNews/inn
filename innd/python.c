@@ -8,7 +8,7 @@
 **  The astute reader may notice the commission of blatant atrocities against
 **  Python's OO model here.  Don't tell Guido.
 **
-**  A quick note regarding Python exceptions:  functions like
+**  A quick note regarding Python exceptions: functions like
 **      PyObject_GetAttrString(PyObject *o, const char *attr_name)
 **  raise an exception when they fail, even though they return NULL.
 **  And as exceptions accumulate from caller to caller and so on,

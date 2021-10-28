@@ -170,7 +170,7 @@ may have some additional bug fixes over the current released version.
 The daily snapshots with CURRENT in the name are of the current
 development version.
 
-Please note:  There is no guarantee that a snapshot will even compile, let
+Please note: There is no guarantee that a snapshot will even compile, let
 alone function well as a news server.  In particular, the CURRENT branch
 is under active development, and all sorts of things may be broken at any
 given point in time.  Use snapshots with caution, and don't use snapshots
