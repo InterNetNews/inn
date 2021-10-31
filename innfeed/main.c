@@ -20,19 +20,19 @@
 #include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
 #if defined(HAVE_UNIX_DOMAIN_SOCKETS)
-# include "portable/socket-unix.h"
+#    include "portable/socket-unix.h"
 #endif
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/version.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/storage.h"
+#include "inn/version.h"
 
 #include "article.h"
 #include "buffer.h"
@@ -44,781 +44,787 @@
 #include "misc.h"
 #include "tape.h"
 
-#define INHERIT 1
+#define INHERIT    1
 #define NO_INHERIT 0
 
 /* exports */
-bool talkToSelf ;
-bool sigFlag = false ;
-const char *InputFile ;
-char *configFile = NULL ;
-bool RollInputFile = false ;
-char *pidFile = NULL ;
-bool useMMap = true ;  /* Even if !HAVE_MMAP.  Only used when innfeed is given
-                        * file names to send instead of storage API tokens,
-                        * which is a fairly rare use case. */
-void (*gPrintInfo) (void) ;
+bool talkToSelf;
+bool sigFlag = false;
+const char *InputFile;
+char *configFile = NULL;
+bool RollInputFile = false;
+char *pidFile = NULL;
+bool useMMap = true; /* Even if !HAVE_MMAP.  Only used when innfeed is given
+                      * file names to send instead of storage API tokens,
+                      * which is a fairly rare use case. */
+void (*gPrintInfo)(void);
 char *dflTapeDir;
 /* these are used by imapfeed */
-char *deliver_username  = NULL;
-char *deliver_authname  = NULL;
-char *deliver_password  = NULL;
-char *deliver_realm     = NULL;
-const char *deliver_rcpt_to   = "+%s";
+char *deliver_username = NULL;
+char *deliver_authname = NULL;
+char *deliver_password = NULL;
+char *deliver_realm = NULL;
+const char *deliver_rcpt_to = "+%s";
 char *deliver_to_header = NULL;
 
 /* imports */
-extern bool genHtml ;
+extern bool genHtml;
 extern bool debugShrinking;
 extern bool fastExit;
 extern unsigned int stdioFdMax;
 
 /* privates */
-static char *logFile ;
-static char *newsspool ;
+static char *logFile;
+static char *newsspool;
 
-static void sigemt (int sig) ;
-static void sigalrm (int sig) ;
-static void sigchld (int sig) ;
-static void sigint (int sig) ;
-static void sigquit (int sig) ;
-static void sighup (int sig) ;
-static void sigterm (int sig) ;
-static void sigusr (int sig) ;
-static void usage (int) __attribute__ ((__noreturn__)) ;
-static void gprintinfo (void) ;
-static void openLogFile (void) ;
-static void writePidFile (void) ;
-static int mainOptionsProcess (void *data) ;
-static int mainConfigLoadCbk (void *data) ;
-static void mainCleanup (void) ;
+static void sigemt(int sig);
+static void sigalrm(int sig);
+static void sigchld(int sig);
+static void sigint(int sig);
+static void sigquit(int sig);
+static void sighup(int sig);
+static void sigterm(int sig);
+static void sigusr(int sig);
+static void usage(int) __attribute__((__noreturn__));
+static void gprintinfo(void);
+static void openLogFile(void);
+static void writePidFile(void);
+static int mainOptionsProcess(void *data);
+static int mainConfigLoadCbk(void *data);
+static void mainCleanup(void);
 
-static char *bopt = NULL ;
-static char *aopt = NULL ;
-static char *popt = NULL ;
-static bool Mopt = false ;
-static bool Zopt = false ;
-static bool Dopt = false ;
-static int debugLevel = 0 ;
-static unsigned int initialSleep = 2 ;
-static char *sopt = NULL ;
-static char *lopt = NULL ;
-static bool eopt = false ;
-static int elimit = 0 ;
+static char *bopt = NULL;
+static char *aopt = NULL;
+static char *popt = NULL;
+static bool Mopt = false;
+static bool Zopt = false;
+static bool Dopt = false;
+static int debugLevel = 0;
+static unsigned int initialSleep = 2;
+static char *sopt = NULL;
+static char *lopt = NULL;
+static bool eopt = false;
+static int elimit = 0;
 
-int main (int argc, char **argv)
+int
+main(int argc, char **argv)
 {
-  EndPoint ep ;
-  InnListener listener ;
-  int optVal, fd, rval ;
-  const char *subProgram = NULL ;
-  bool seenV = false ;
-  bool dynamicPeers = false ;
-  time_t now = theTime() ;
-  char dateString [30] ;
-  char *copt = NULL ;
-  char *debugFile;
-  bool checkConfig = false ;
-  bool val;
+    EndPoint ep;
+    InnListener listener;
+    int optVal, fd, rval;
+    const char *subProgram = NULL;
+    bool seenV = false;
+    bool dynamicPeers = false;
+    time_t now = theTime();
+    char dateString[30];
+    char *copt = NULL;
+    char *debugFile;
+    bool checkConfig = false;
+    bool val;
 
-  timeToString (now, dateString, sizeof (dateString)) ;
+    timeToString(now, dateString, sizeof(dateString));
 
-  message_program_name = strrchr (argv [0],'/');
-  if (message_program_name == NULL)
-    message_program_name = argv [0] ;
-  else
-    message_program_name++;
+    message_program_name = strrchr(argv[0], '/');
+    if (message_program_name == NULL)
+        message_program_name = argv[0];
+    else
+        message_program_name++;
 
-  gPrintInfo = gprintinfo ;
+    gPrintInfo = gprintinfo;
 
-  openlog (message_program_name,(int)(L_OPENLOG_FLAGS|LOG_PID),LOG_INN_PROG) ;
-  if (!innconf_read(NULL)) {
-      syslog(LOG_ERR, "cant read inn.conf\n");
-      exit(1);
-  }
+    openlog(message_program_name, (int) (L_OPENLOG_FLAGS | LOG_PID),
+            LOG_INN_PROG);
+    if (!innconf_read(NULL)) {
+        syslog(LOG_ERR, "cant read inn.conf\n");
+        exit(1);
+    }
 
-  message_handlers_die (2, error_log_stderr_date, message_log_syslog_err) ;
-  message_handlers_warn (1, message_log_syslog_warning);
-  message_handlers_notice (1, message_log_syslog_notice) ;
+    message_handlers_die(2, error_log_stderr_date, message_log_syslog_err);
+    message_handlers_warn(1, message_log_syslog_warning);
+    message_handlers_notice(1, message_log_syslog_notice);
 
 #define OPT_STRING "a:b:c:Cd:e:hl:mMo:p:S:s:vxyz"
 
-  while ((optVal = getopt (argc,argv,OPT_STRING)) != EOF)
-    {
-      switch (optVal) 
-        {
-          case 'a':
-            aopt = optarg ;
-            break ;
+    while ((optVal = getopt(argc, argv, OPT_STRING)) != EOF) {
+        switch (optVal) {
+        case 'a':
+            aopt = optarg;
+            break;
 
-          case 'b':
-            if ( !isDirectory (optarg) )
-              logAndExit (1,"Not a directory: %s\n",optarg) ;
-            bopt = optarg ;
-            break ;
+        case 'b':
+            if (!isDirectory(optarg))
+                logAndExit(1, "Not a directory: %s\n", optarg);
+            bopt = optarg;
+            break;
 
-          case 'C':
-            checkConfig = true ;
-            break ;
+        case 'C':
+            checkConfig = true;
+            break;
 
-          case 'c':
-            copt = optarg ;
-            break ;
+        case 'c':
+            copt = optarg;
+            break;
 
-          case 'd':
-            loggingLevel = atoi (optarg) ;
-            debugLevel = loggingLevel ;
-            Dopt = true ;
-            break ;
+        case 'd':
+            loggingLevel = atoi(optarg);
+            debugLevel = loggingLevel;
+            Dopt = true;
+            break;
 
-          case 'e':
-            eopt = true ;
-            elimit = atoi (optarg) ;
-            if (elimit <= 0)
-              {
-                fprintf (stderr,"Illegal value for -e option\n") ;
-                usage (1) ;
-              }
-            break ;
+        case 'e':
+            eopt = true;
+            elimit = atoi(optarg);
+            if (elimit <= 0) {
+                fprintf(stderr, "Illegal value for -e option\n");
+                usage(1);
+            }
+            break;
 
-          case 'h':
-            usage (0) ;
+        case 'h':
+            usage(0);
 
-          case 'l':
-            lopt = optarg ;
-            break ;
+        case 'l':
+            lopt = optarg;
+            break;
 
-          case 'M':
-            Mopt = true ;
-            useMMap = false ;
-            break ;
+        case 'M':
+            Mopt = true;
+            useMMap = false;
+            break;
 
-          case 'm':
-            artLogMissingArticles (true) ;
-            break ;
+        case 'm':
+            artLogMissingArticles(true);
+            break;
 
-          case 'o':
-            artSetMaxBytesInUse (atoi (optarg)) ;
-            break ;
+        case 'o':
+            artSetMaxBytesInUse(atoi(optarg));
+            break;
 
-          case 'p':
-            popt = optarg ;
-            break ;
+        case 'p':
+            popt = optarg;
+            break;
 
-          case 's':
-            subProgram = optarg ;
-            break ;
+        case 's':
+            subProgram = optarg;
+            break;
 
-          case 'S':
-            sopt = optarg ;
-            break ;
+        case 'S':
+            sopt = optarg;
+            break;
 
-          case 'v':
-            seenV = true ;
-            break ;
+        case 'v':
+            seenV = true;
+            break;
 
-          case 'x':
-            talkToSelf = true ;
-            break ;
+        case 'x':
+            talkToSelf = true;
+            break;
 
-          case 'y':
-            dynamicPeers = true ;
-            break ;
+        case 'y':
+            dynamicPeers = true;
+            break;
 
-          case 'z':
-            Zopt = true ;
-            break ;
+        case 'z':
+            Zopt = true;
+            break;
 
-          default:
-            usage (1) ;	
+        default:
+            usage(1);
         }
     }
 
-  argc -= optind;
-  argv += optind;
+    argc -= optind;
+    argv += optind;
 
-  if (argc > 1)
-    usage (1) ;
-  else if (argc == 1)
-    InputFile = *argv;
+    if (argc > 1)
+        usage(1);
+    else if (argc == 1)
+        InputFile = *argv;
 
-  if (seenV)
-    {
-      printf ("%s version: %s\n", message_program_name, INN_VERSION_STRING);
-      exit (0) ;
+    if (seenV) {
+        printf("%s version: %s\n", message_program_name, INN_VERSION_STRING);
+        exit(0);
     }
 
-  /* make sure we have valid fds 0, 1 & 2 so it is not taken by
-    something else, probably openlog().  fd 0 will be freopen()ed on the
-    inputFile, the subProgram, or ourself.  fd 1 and fd 2 will
-    be freopen()ed on the log file (or will stay pointed at /dev/null).
-    
-    without doing this, if the descriptors were closed then the
-    freopen calls on some systems (like BSDI 2.1) will really close
-    whatever has aquired the stdio descriptors, such as the socket
-    to syslogd.
-    
-    XXX possible problems: what if fd 0 is closed but no inputFile,
-    XXX subProgram or talkToSelf is true?  it will not be freopen()ed, so
-    XXX innfeed won't have any fresh data (besides, fd 0 is only writable
-    XXX here).  perhaps a warning should be issued.
-    */
-  do
-    {
-      fd = open("/dev/null", O_WRONLY);
-      switch (fd)
-        {
-          case -1:
-            logAndExit (1,"open(\"/dev/null\", O_WRONLY): %s",
-                        strerror (errno));
+    /* make sure we have valid fds 0, 1 & 2 so it is not taken by
+      something else, probably openlog().  fd 0 will be freopen()ed on the
+      inputFile, the subProgram, or ourself.  fd 1 and fd 2 will
+      be freopen()ed on the log file (or will stay pointed at /dev/null).
+
+      without doing this, if the descriptors were closed then the
+      freopen calls on some systems (like BSDI 2.1) will really close
+      whatever has aquired the stdio descriptors, such as the socket
+      to syslogd.
+
+      XXX possible problems: what if fd 0 is closed but no inputFile,
+      XXX subProgram or talkToSelf is true?  it will not be freopen()ed, so
+      XXX innfeed won't have any fresh data (besides, fd 0 is only writable
+      XXX here).  perhaps a warning should be issued.
+      */
+    do {
+        fd = open("/dev/null", O_WRONLY);
+        switch (fd) {
+        case -1:
+            logAndExit(1, "open(\"/dev/null\", O_WRONLY): %s",
+                       strerror(errno));
             break;
-          case 0:
-          case 1:
-          case 2:
+        case 0:
+        case 1:
+        case 2:
             /* good, we saved an fd from being trounced */
             break;
-          default:
+        default:
             close(fd);
         }
     } while (fd < 2);
 
-  if ( !checkConfig ) 
-    {
-      notice("ME starting at %s (%s)", dateString, INN_VERSION_STRING);
+    if (!checkConfig) {
+        notice("ME starting at %s (%s)", dateString, INN_VERSION_STRING);
     }
 
-  val = true;
-  if (!SMsetup(SM_PREOPEN, (void *)&val)) {
-      syslog(LOG_ERR, "cant setup the storage subsystem\n");
-      exit(1);
-  }
-  if (!SMinit()) {
-      d_printf(0, "Storage manager initialization failed -- it is OK after a change in storage methods\n");
-      syslog(LOG_ERR, "Storage manager initialization failed -- it is OK after a change in storage methods\n");
-      exit(1);
-  }
-
-  if (subProgram == NULL && talkToSelf == false)
-    {
-      struct stat buf ;
-
-      if (fstat (0,&buf) < 0)
-        logAndExit (1,"ME oserr fstat stdin: %s", strerror (errno)) ;
-      else if (S_ISREG (buf.st_mode))
-        InputFile = "";
+    val = true;
+    if (!SMsetup(SM_PREOPEN, (void *) &val)) {
+        syslog(LOG_ERR, "cant setup the storage subsystem\n");
+        exit(1);
+    }
+    if (!SMinit()) {
+        d_printf(0, "Storage manager initialization failed -- it is OK after "
+                    "a change in storage methods\n");
+        syslog(LOG_ERR, "Storage manager initialization failed -- it is OK "
+                        "after a change in storage methods\n");
+        exit(1);
     }
 
-  /*
-   * set up the config file name and then read the file in. Order is important.
-   */
-  configAddLoadCallback (mainOptionsProcess,(checkConfig ? stderr : NULL)) ;
-  configAddLoadCallback (tapeConfigLoadCbk,(checkConfig ? stderr : NULL)) ;
+    if (subProgram == NULL && talkToSelf == false) {
+        struct stat buf;
 
-  configAddLoadCallback (endpointConfigLoadCbk,(checkConfig ? stderr : NULL));
-  configAddLoadCallback (hostConfigLoadCbk,(checkConfig ? stderr : NULL)) ;
-  configAddLoadCallback (cxnConfigLoadCbk,(checkConfig ? stderr : NULL)) ;
-  configAddLoadCallback (mainConfigLoadCbk,(checkConfig ? stderr : NULL)) ;
-  configAddLoadCallback (listenerConfigLoadCbk,(checkConfig ? stderr : NULL));
-
-  if (copt != NULL && *copt == '\0')
-    {
-      logOrPrint (LOG_CRIT,(checkConfig ? stderr : NULL),
-                  "Empty pathname for ``-c'' option") ;
-      exit (1) ;
-    }
-  configFile = concatpath(innconf->pathetc, copt ? copt : CONFIG_FILE);
-  dflTapeDir = concatpath(innconf->pathspool, TAPE_DIRECTORY);
-
-  rval = readConfig (configFile,(checkConfig ? stderr : NULL),
-                     checkConfig,loggingLevel > 0);
-
-  if (subProgram != NULL && (talkToSelf == true || InputFile))
-    {
-      d_printf (0,"Cannot specify '-s' with '-x' or an input file\n") ;
-      syslog (LOG_ERR,"Incorrect arguments: '-s' with '-x' or an input file\n");
-      usage (1) ;
+        if (fstat(0, &buf) < 0)
+            logAndExit(1, "ME oserr fstat stdin: %s", strerror(errno));
+        else if (S_ISREG(buf.st_mode))
+            InputFile = "";
     }
 
-  if (checkConfig)
-    {
-      if (!rval)
-        {
-          fprintf (stderr,"config loading failed.\n") ;
-          exit (1) ;
+    /*
+     * set up the config file name and then read the file in. Order is
+     * important.
+     */
+    configAddLoadCallback(mainOptionsProcess, (checkConfig ? stderr : NULL));
+    configAddLoadCallback(tapeConfigLoadCbk, (checkConfig ? stderr : NULL));
+
+    configAddLoadCallback(endpointConfigLoadCbk,
+                          (checkConfig ? stderr : NULL));
+    configAddLoadCallback(hostConfigLoadCbk, (checkConfig ? stderr : NULL));
+    configAddLoadCallback(cxnConfigLoadCbk, (checkConfig ? stderr : NULL));
+    configAddLoadCallback(mainConfigLoadCbk, (checkConfig ? stderr : NULL));
+    configAddLoadCallback(listenerConfigLoadCbk,
+                          (checkConfig ? stderr : NULL));
+
+    if (copt != NULL && *copt == '\0') {
+        logOrPrint(LOG_CRIT, (checkConfig ? stderr : NULL),
+                   "Empty pathname for ``-c'' option");
+        exit(1);
+    }
+    configFile = concatpath(innconf->pathetc, copt ? copt : CONFIG_FILE);
+    dflTapeDir = concatpath(innconf->pathspool, TAPE_DIRECTORY);
+
+    rval = readConfig(configFile, (checkConfig ? stderr : NULL), checkConfig,
+                      loggingLevel > 0);
+
+    if (subProgram != NULL && (talkToSelf == true || InputFile)) {
+        d_printf(0, "Cannot specify '-s' with '-x' or an input file\n");
+        syslog(LOG_ERR,
+               "Incorrect arguments: '-s' with '-x' or an input file\n");
+        usage(1);
+    }
+
+    if (checkConfig) {
+        if (!rval) {
+            fprintf(stderr, "config loading failed.\n");
+            exit(1);
+        } else {
+            fprintf(stderr, "config loading succeeded.\n");
+            exit(0);
         }
-      else
-        {
-          fprintf (stderr,"config loading succeeded.\n") ;
-          exit (0) ;
+    } else if (!rval)
+        exit(1);
+
+    debugFile = concatpath(innconf->pathlog, DEBUG_FILE);
+    if (loggingLevel == 0 && fileExistsP(debugFile))
+        loggingLevel = 1;
+    free(debugFile);
+
+    if (logFile == NULL && !isatty(fileno(stderr)))
+        logFile = concatpath(innconf->pathlog, LOG_FILE);
+
+    if (logFile)
+        openLogFile();
+
+    openfds = 4; /* stdin, stdout, stderr and syslog */
+
+    writePidFile();
+
+    if (subProgram != NULL) {
+        int fds[2];
+        int pid;
+
+        if (pipe(fds) < 0)
+            sysdie("ME fatal pipe");
+
+        if ((pid = fork()) < 0) {
+            sysdie("ME fatal fork");
+        } else if (pid == 0) { /* child */
+            close(fds[0]);
+            close(0);
+            close(1);
+            close(2);
+            dup2(fds[1], 1);
+            dup2(fds[1], 2);
+            execlp("sh", "sh", "-c", subProgram, (char *) 0);
+            perror("execlp");
+            exit(1);
+        } else { /* parent */
+            close(0);
+            dup2(fds[0], 0);
+            close(fds[1]);
+            xsignal(SIGCHLD, sigchld);
+            openfds++;
         }
-    }
-  else if (!rval)
-    exit (1) ;
-
-  debugFile = concatpath(innconf->pathlog, DEBUG_FILE);
-  if (loggingLevel == 0 && fileExistsP (debugFile))
-    loggingLevel = 1 ;
-  free(debugFile);
-
-  if (logFile == NULL && ! isatty (fileno (stderr)))
-    logFile = concatpath(innconf->pathlog, LOG_FILE);
-
-  if (logFile)
-    openLogFile () ;
-
-  openfds = 4 ;                 /* stdin, stdout, stderr and syslog */
-
-  writePidFile ();
-
-  if (subProgram != NULL)
-    {
-      int fds [2] ;
-      int pid ;
-
-      if (pipe (fds) < 0)
-        sysdie ("ME fatal pipe") ;
-
-      if ((pid = fork ()) < 0)
-        {
-          sysdie ("ME fatal fork") ;
-        }
-      else if (pid == 0)
-        {                       /* child */
-          close (fds[0]) ;
-          close (0) ;
-          close (1) ;
-          close (2) ;
-          dup2 (fds[1],1) ;
-          dup2 (fds[1],2) ;
-          execlp ("sh", "sh", "-c", subProgram, (char *) 0) ;
-          perror ("execlp") ;
-          exit (1) ;
-        }
-      else
-        {                       /* parent */
-          close (0) ;
-          dup2 (fds[0],0) ;
-          close (fds[1]) ;
-          xsignal(SIGCHLD,sigchld) ;
-          openfds++ ;
-        }
-    }
-  else  if (talkToSelf)
-    {
+    } else if (talkToSelf) {
         /* We're not really getting information from innd or a subprogram,
            but are just processing backlog files. We set up a pipe to ourself
            that we never write to, to simulate an idle innd. */
-      int pipefds [2] ;
+        int pipefds[2];
 
-      if (pipe (pipefds) != 0)
-        sysdie ("ME fatal pipe") ;
+        if (pipe(pipefds) != 0)
+            sysdie("ME fatal pipe");
 
-      close (0) ;
-      dup2 (pipefds [0], 0) ;
+        close(0);
+        dup2(pipefds[0], 0);
 
-      openfds++ ;
-      openfds++ ;
+        openfds++;
+        openfds++;
     }
 
-  if (chdir (newsspool) != 0)
-    sysdie ("ME fatal chdir %s", newsspool) ;
+    if (chdir(newsspool) != 0)
+        sysdie("ME fatal chdir %s", newsspool);
 
     /* hook up the endpoint to the source of new article information (usually
        innd). */
-  ep = newEndPoint (0) ;        /* fd 0, i.e. stdin */
+    ep = newEndPoint(0); /* fd 0, i.e. stdin */
 
     /* now arrange for this endpoint to always be the first one checked for
        possible activity. */
-  setMainEndPoint (ep) ;
+    setMainEndPoint(ep);
 
-  listener = newListener (ep, talkToSelf,dynamicPeers) ;
-  mainListener = listener ;
+    listener = newListener(ep, talkToSelf, dynamicPeers);
+    mainListener = listener;
 
-  sleep (initialSleep) ;
+    sleep(initialSleep);
 
-  if (innconf->rlimitnofile >= 0)
-    if (setfdlimit (innconf->rlimitnofile) < 0)
-      syswarn ("ME oserr setrlimit(RLIM_NOFILE,%ld)", innconf->rlimitnofile) ;
+    if (innconf->rlimitnofile >= 0)
+        if (setfdlimit(innconf->rlimitnofile) < 0)
+            syswarn("ME oserr setrlimit(RLIM_NOFILE,%ld)",
+                    innconf->rlimitnofile);
 
-  if (innconf->timer != 0)
-    TMRinit (TMR_MAX) ;
+    if (innconf->timer != 0)
+        TMRinit(TMR_MAX);
 
-  configHosts (talkToSelf) ;
+    configHosts(talkToSelf);
 
-  if (InputFile && *InputFile) {
-    openInputFile () ;
-  }
+    if (InputFile && *InputFile) {
+        openInputFile();
+    }
 
-  /* handle signal to shutdown */
-  setSigHandler (SIGTERM,sigterm) ;
-  setSigHandler (SIGQUIT,sigquit) ;
+    /* handle signal to shutdown */
+    setSigHandler(SIGTERM, sigterm);
+    setSigHandler(SIGQUIT, sigquit);
 
-  /* handle signal to reload config */
-  setSigHandler (SIGHUP,sighup) ;
+    /* handle signal to reload config */
+    setSigHandler(SIGHUP, sighup);
 
-  /* handle signal to print snapshot. */
-  setSigHandler (SIGINT,sigint) ;
+    /* handle signal to print snapshot. */
+    setSigHandler(SIGINT, sigint);
 
-  /* handle signal to roll input file */
-  setSigHandler (SIGALRM,sigalrm) ;
+    /* handle signal to roll input file */
+    setSigHandler(SIGALRM, sigalrm);
 
-  /* handle signal to flush all the backlog files */
-  setSigHandler (SIGCHLD,sigemt) ;
+    /* handle signal to flush all the backlog files */
+    setSigHandler(SIGCHLD, sigemt);
 
-  /* we can increment and decrement logging levels by sending SIGUSR{1,2} */
-  setSigHandler (SIGUSR1,sigusr) ;
-  setSigHandler (SIGUSR2,sigusr) ;
+    /* we can increment and decrement logging levels by sending SIGUSR{1,2} */
+    setSigHandler(SIGUSR1, sigusr);
+    setSigHandler(SIGUSR2, sigusr);
 
-  atexit (mainCleanup) ;
-  
-  Run () ;
+    atexit(mainCleanup);
 
-  exit (0) ;
+    Run();
+
+    exit(0);
 }
 
-static void usage (int val)
+static void
+usage(int val)
 {
-  fprintf (stderr,"usage: %s [ options ] [ file ]\n\n",
-           message_program_name) ;
-  fprintf (stderr,"Version: %s\n\n",INN_VERSION_STRING) ;
-  fprintf (stderr,"Config file: %s\n",CONFIG_FILE) ;
-  fprintf (stderr,"Backlog directory: %s/%s\n", innconf->pathspool, TAPE_DIRECTORY) ;
-  fprintf (stderr,"\nLegal options are:\n") ;
-  fprintf (stderr,"\t-a dir      Use the given directory as the top of the article spool\n") ;
+    fprintf(stderr, "usage: %s [ options ] [ file ]\n\n",
+            message_program_name);
+    fprintf(stderr, "Version: %s\n\n", INN_VERSION_STRING);
+    fprintf(stderr, "Config file: %s\n", CONFIG_FILE);
+    fprintf(stderr, "Backlog directory: %s/%s\n", innconf->pathspool,
+            TAPE_DIRECTORY);
+    fprintf(stderr, "\nLegal options are:\n");
+    fprintf(stderr, "\t-a dir      Use the given directory as the top of the "
+                    "article spool\n");
 
-  fprintf (stderr,"\t-b dir      Use the given directory as the the storage\n");
-  fprintf (stderr,"\t            place for backlog files and lock files\n");
+    fprintf(stderr,
+            "\t-b dir      Use the given directory as the the storage\n");
+    fprintf(stderr, "\t            place for backlog files and lock files\n");
 
-  fprintf (stderr,"\t-c file     Use the given file as the config file instead of the\n");
-  fprintf (stderr,"\t            default of %s\n",CONFIG_FILE);
+    fprintf(stderr, "\t-c file     Use the given file as the config file "
+                    "instead of the\n");
+    fprintf(stderr, "\t            default of %s\n", CONFIG_FILE);
 
-  fprintf (stderr,"\t-C          Check the config file and then exit\n") ;
-  fprintf (stderr,"\t-d num      Set the logging level to num (an integer).\n");
-  fprintf (stderr,"\t            Larger value means more logging.  0 means no\n");
-  fprintf (stderr,"\t            logging.  The default is 0\n");
+    fprintf(stderr, "\t-C          Check the config file and then exit\n");
+    fprintf(stderr,
+            "\t-d num      Set the logging level to num (an integer).\n");
+    fprintf(stderr,
+            "\t            Larger value means more logging.  0 means no\n");
+    fprintf(stderr, "\t            logging.  The default is 0\n");
 
-  fprintf (stderr,"\t-e bytes    Keep the output backlog files to no bigger\n");
-  fprintf (stderr,"\t            than %.2f times this number\n",LIMIT_FUDGE);
+    fprintf(stderr,
+            "\t-e bytes    Keep the output backlog files to no bigger\n");
+    fprintf(stderr, "\t            than %.2f times this number\n",
+            LIMIT_FUDGE);
 
-  fprintf (stderr,"\t-h          Print this message\n");
+    fprintf(stderr, "\t-h          Print this message\n");
 
-  fprintf (stderr,"\t-l file     Redirect stderr and stdout to the given file.\n");
-  fprintf (stderr,"\t            When run under INN, they normally are redirected to\n");
-  fprintf (stderr,"\t            /dev/null.  This is needed if using '-d'\n");
+    fprintf(stderr,
+            "\t-l file     Redirect stderr and stdout to the given file.\n");
+    fprintf(
+        stderr,
+        "\t            When run under INN, they normally are redirected to\n");
+    fprintf(stderr,
+            "\t            /dev/null.  This is needed if using '-d'\n");
 
-  fprintf (stderr,"\t-m          Log information on all missing articles\n");
+    fprintf(stderr, "\t-m          Log information on all missing articles\n");
 
-  fprintf (stderr,"\t-M          Turn *off* use of mmap\n") ;
-#if ! defined (HAVE_MMAP)
-  fprintf (stderr,"\t            (a no-op as this excutable has been built without mmap support)\n") ;
+    fprintf(stderr, "\t-M          Turn *off* use of mmap\n");
+#if !defined(HAVE_MMAP)
+    fprintf(stderr, "\t            (a no-op as this excutable has been built "
+                    "without mmap support)\n");
 #endif
-  fprintf (stderr,"\t-o bytes    Set a limit for the maximum number of bytes of article\n");
-  fprintf (stderr,"\t            data innfeed is supposed to keep in memory\n");
+    fprintf(stderr, "\t-o bytes    Set a limit for the maximum number of "
+                    "bytes of article\n");
+    fprintf(stderr,
+            "\t            data innfeed is supposed to keep in memory\n");
 
-  fprintf (stderr,"\t-p file     Write the process id to the given file\n") ;
-  fprintf (stderr,"\t            instead of the default of %s;\n",PID_FILE);
-  fprintf (stderr,"\t            a relative path is relative to %s\n", innconf->pathrun) ;
+    fprintf(stderr, "\t-p file     Write the process id to the given file\n");
+    fprintf(stderr, "\t            instead of the default of %s;\n", PID_FILE);
+    fprintf(stderr, "\t            a relative path is relative to %s\n",
+            innconf->pathrun);
 
-  fprintf (stderr,"\t-s command  Run the given command in a subprocess and use\n");
-  fprintf (stderr,"\t            its output as article information instead of\n");
-  fprintf (stderr,"\t            running under innd\n");
+    fprintf(stderr,
+            "\t-s command  Run the given command in a subprocess and use\n");
+    fprintf(stderr,
+            "\t            its output as article information instead of\n");
+    fprintf(stderr, "\t            running under innd\n");
 
-  fprintf (stderr,"\t-S file     Use the given filename instead of innfeed.status;\n") ;
-  fprintf (stderr,"\t            relative path names start from %s\n", innconf->pathlog) ;
+    fprintf(
+        stderr,
+        "\t-S file     Use the given filename instead of innfeed.status;\n");
+    fprintf(stderr, "\t            relative path names start from %s\n",
+            innconf->pathlog);
 
-  fprintf (stderr,"\t-v          Print version information\n");
+    fprintf(stderr, "\t-v          Print version information\n");
 
-  fprintf (stderr,"\t-x          Do not read any article information off stdin,\n");
-  fprintf (stderr,"\t            but simply process backlog files and then exit\n");
-  fprintf (stderr,"\t            when done\n");
+    fprintf(stderr,
+            "\t-x          Do not read any article information off stdin,\n");
+    fprintf(stderr,
+            "\t            but simply process backlog files and then exit\n");
+    fprintf(stderr, "\t            when done\n");
 
-  fprintf (stderr,"\t-y          Add peers dynamically.  If an unrecognized peer name\n");
-  fprintf (stderr,"\t            is received from innd, then it is presumed to also\n");
-  fprintf (stderr,"\t            be the IP name and a new peer binding is set up\n");
+    fprintf(stderr, "\t-y          Add peers dynamically.  If an unrecognized "
+                    "peer name\n");
+    fprintf(
+        stderr,
+        "\t            is received from innd, then it is presumed to also\n");
+    fprintf(stderr,
+            "\t            be the IP name and a new peer binding is set up\n");
 
-  fprintf (stderr,"\t-z          Have each of the connections issue their own stats\n");
-  fprintf (stderr,"\t            whenever they close, or whenever their controller\n");
-  fprintf (stderr,"\t            issues its own stats\n");
+    fprintf(
+        stderr,
+        "\t-z          Have each of the connections issue their own stats\n");
+    fprintf(
+        stderr,
+        "\t            whenever they close, or whenever their controller\n");
+    fprintf(stderr, "\t            issues its own stats\n");
 
-  exit (val) ;
+    exit(val);
 }
 
-static void sigterm (int sig UNUSED)
+static void
+sigterm(int sig UNUSED)
 {
-  notice ("ME received shutdown signal") ;
-  shutDown (mainListener) ;
+    notice("ME received shutdown signal");
+    shutDown(mainListener);
 }
 
-static void sigquit (int sig UNUSED)
+static void
+sigquit(int sig UNUSED)
 {
-  sigterm (0) ;
+    sigterm(0);
 }
 
-static void sigint (int sig UNUSED)
+static void
+sigint(int sig UNUSED)
 {
-  gprintinfo () ;
+    gprintinfo();
 }
 
-static void sighup (int sig UNUSED)
+static void
+sighup(int sig UNUSED)
 {
-  notice ("ME reloading config file %s", configFile) ;
+    notice("ME reloading config file %s", configFile);
 
-  if (!readConfig (configFile,NULL,false,loggingLevel > 0))
-    {
-      die ("ME config aborting, error parsing config file") ;
+    if (!readConfig(configFile, NULL, false, loggingLevel > 0)) {
+        die("ME config aborting, error parsing config file");
     }
 
-  configHosts (talkToSelf) ;
+    configHosts(talkToSelf);
 
-  notice ("ME reloading log file %s", logFile) ;
-  openLogFile() ;
+    notice("ME reloading log file %s", logFile);
+    openLogFile();
 }
 
-static void sigemt (int sig UNUSED)
+static void
+sigemt(int sig UNUSED)
 {
-  gFlushTapes () ;
+    gFlushTapes();
 }
 
-static void sigalrm (int sig UNUSED)
+static void
+sigalrm(int sig UNUSED)
 {
-  if (InputFile == NULL)
-    warn ("ME signal SIGALRM in non-funnel-file mode ignored") ;
-  else 
-    {
-      RollInputFile = true;
-      syslog(LOG_NOTICE, "ME preparing to roll %s", InputFile);
+    if (InputFile == NULL)
+        warn("ME signal SIGALRM in non-funnel-file mode ignored");
+    else {
+        RollInputFile = true;
+        syslog(LOG_NOTICE, "ME preparing to roll %s", InputFile);
     }
 }
 
-static void sigchld (int sig UNUSED)
+static void
+sigchld(int sig UNUSED)
 {
 #if 0
   wait (&status) ;              /* we don't care */
 #endif
 
-  xsignal (sig,sigchld) ;
+    xsignal(sig, sigchld);
 }
 
-  /* SIGUSR1 increments logging level. SIGUSR2 decrements. */
-static void sigusr (int sig)
+/* SIGUSR1 increments logging level. SIGUSR2 decrements. */
+static void
+sigusr(int sig)
 {
-  if (sig == SIGUSR1) {
-    loggingLevel++ ;
-    notice ("ME increasing logging level to %d", loggingLevel) ;
-  } else if (sig == SIGUSR2 && loggingLevel > 0) {
-    loggingLevel-- ;
-    notice ("ME decreasing logging level to %d", loggingLevel) ;
-  }    
+    if (sig == SIGUSR1) {
+        loggingLevel++;
+        notice("ME increasing logging level to %d", loggingLevel);
+    } else if (sig == SIGUSR2 && loggingLevel > 0) {
+        loggingLevel--;
+        notice("ME decreasing logging level to %d", loggingLevel);
+    }
 }
 
-static void openLogFile (void)
+static void
+openLogFile(void)
 {
-  FILE *fpr ;
+    FILE *fpr;
 
-  if (logFile)
-    {
-      fpr = freopen (logFile,"a",stdout) ;
-      if (fpr != stdout)
-        logAndExit (1,"freopen (%s, \"a\", stdout): %s",
-                    logFile, strerror (errno)) ;
-      
-      fpr = freopen (logFile,"a",stderr) ;
-      if (fpr != stderr)
-        logAndExit (1,"freopen (%s, \"a\", stderr): %s",
-                    logFile, strerror (errno)) ;
-      
-#if defined (HAVE_SETBUFFER)
-      setbuffer (stdout, NULL, 0) ;
-      setbuffer (stderr, NULL, 0) ;
+    if (logFile) {
+        fpr = freopen(logFile, "a", stdout);
+        if (fpr != stdout)
+            logAndExit(1, "freopen (%s, \"a\", stdout): %s", logFile,
+                       strerror(errno));
+
+        fpr = freopen(logFile, "a", stderr);
+        if (fpr != stderr)
+            logAndExit(1, "freopen (%s, \"a\", stderr): %s", logFile,
+                       strerror(errno));
+
+#if defined(HAVE_SETBUFFER)
+        setbuffer(stdout, NULL, 0);
+        setbuffer(stderr, NULL, 0);
 #else
-      setbuf (stdout, NULL) ;
-      setbuf (stderr, NULL) ;
+        setbuf(stdout, NULL);
+        setbuf(stderr, NULL);
 #endif
     }
 }
 
-static void writePidFile (void)
+static void
+writePidFile(void)
 {
-  FILE *F;
-  int pid;
+    FILE *F;
+    int pid;
 
-  if (pidFile == NULL)
-    logAndExit (1,"NULL pidFile\n") ;
+    if (pidFile == NULL)
+        logAndExit(1, "NULL pidFile\n");
 
-  /* Record our PID. */
-  pid = getpid();
-  if ((F = fopen(pidFile, "w")) == NULL)
-    {
-      syslog(LOG_ERR, "ME cant fopen %s %m", pidFile);
-    }
-  else
-    {
-      if (fprintf(F, "%ld\n", (long)pid) == EOF || ferror(F))
-	{
-	  syslog(LOG_ERR, "ME cant fprintf %s %m", pidFile);
+    /* Record our PID. */
+    pid = getpid();
+    if ((F = fopen(pidFile, "w")) == NULL) {
+        syslog(LOG_ERR, "ME cant fopen %s %m", pidFile);
+    } else {
+        if (fprintf(F, "%ld\n", (long) pid) == EOF || ferror(F)) {
+            syslog(LOG_ERR, "ME cant fprintf %s %m", pidFile);
         }
-      if (fclose(F) == EOF)
-	{
-	  syslog(LOG_ERR, "ME cant fclose %s %m", pidFile);
+        if (fclose(F) == EOF) {
+            syslog(LOG_ERR, "ME cant fclose %s %m", pidFile);
         }
-      if (chmod(pidFile, 0664) < 0)
-	{
-	  syslog(LOG_ERR, "ME cant chmod %s %m", pidFile);
+        if (chmod(pidFile, 0664) < 0) {
+            syslog(LOG_ERR, "ME cant chmod %s %m", pidFile);
         }
     }
 }
 
-static void gprintinfo (void)
+static void
+gprintinfo(void)
 {
-  char *snapshotFile;
-  FILE *fp;
-  char nowString[30];
-  time_t now = theTime() ;
+    char *snapshotFile;
+    FILE *fp;
+    char nowString[30];
+    time_t now = theTime();
 
-  snapshotFile = concatpath(innconf->pathlog, SNAPSHOT_FILE);
-  fp = fopen (snapshotFile,"a") ;
-  if (fp == NULL)
-    {
-      syswarn ("ME fopen %s", snapshotFile) ;
-      free(snapshotFile);
-      return ;
+    snapshotFile = concatpath(innconf->pathlog, SNAPSHOT_FILE);
+    fp = fopen(snapshotFile, "a");
+    if (fp == NULL) {
+        syswarn("ME fopen %s", snapshotFile);
+        free(snapshotFile);
+        return;
     }
-  free(snapshotFile);
+    free(snapshotFile);
 
-#if defined (HAVE_SETBUFFER)
-  setbuffer (fp, NULL, 0) ;
+#if defined(HAVE_SETBUFFER)
+    setbuffer(fp, NULL, 0);
 #else
-  setbuf (fp, NULL) ;
+    setbuf(fp, NULL);
 #endif
 
-  timeToString (now, nowString, sizeof (nowString)) ;
-  fprintf (fp,"----------------------------System snaphot taken at: %s\n\n",
-           nowString) ;
-  gPrintListenerInfo (fp,0) ;
-  fprintf (fp,"\n\n\n\n") ;
-  gPrintHostInfo (fp,0) ;
-  fprintf (fp,"\n\n\n\n") ;
-  gPrintCxnInfo (fp,0) ;
-  fprintf (fp,"\n\n\n\n") ;
-  gPrintArticleInfo (fp,0) ;
-  fprintf (fp,"\n\n\n\n") ;
-  gPrintBufferInfo (fp,0) ;
-  fprintf (fp,"\n\n\n\n") ;
-  fclose (fp) ;
+    timeToString(now, nowString, sizeof(nowString));
+    fprintf(fp, "----------------------------System snaphot taken at: %s\n\n",
+            nowString);
+    gPrintListenerInfo(fp, 0);
+    fprintf(fp, "\n\n\n\n");
+    gPrintHostInfo(fp, 0);
+    fprintf(fp, "\n\n\n\n");
+    gPrintCxnInfo(fp, 0);
+    fprintf(fp, "\n\n\n\n");
+    gPrintArticleInfo(fp, 0);
+    fprintf(fp, "\n\n\n\n");
+    gPrintBufferInfo(fp, 0);
+    fprintf(fp, "\n\n\n\n");
+    fclose(fp);
 }
 
 /* called after the config file is loaded and after the config data has
   been updated with command line options. */
-static int mainConfigLoadCbk (void *data)
+static int
+mainConfigLoadCbk(void *data)
 {
-  FILE *fp = (FILE *) data ;
-  char *p ;
-  long ival ;
-  int bval ;
+    FILE *fp = (FILE *) data;
+    char *p;
+    long ival;
+    int bval;
 
-  if (getString (topScope,"news-spool", &p,NO_INHERIT))
-    {
-      if ( !isDirectory (p) && isDirectory (innconf->patharticles) )
-        {
-          logOrPrint (LOG_WARNING,fp,
-                      "ME config: definition of news-spool (%s) is a"
-                      " non-existant directory. Using %s",p,
-                      innconf->patharticles) ;
-          p = xstrdup (innconf->patharticles) ;
-        }
-      else if (!isDirectory (p))
-        logAndExit (1,"Bad spool directories: %s, %s\n",p,innconf->patharticles) ;
-    }
-  else if (!isDirectory (innconf->patharticles))
-    logAndExit (1,"ME config: no definition of news-spool, and %s is no good",
-                innconf->patharticles);
-  else
-    p = xstrdup (innconf->patharticles) ;
-  newsspool = p ;
+    if (getString(topScope, "news-spool", &p, NO_INHERIT)) {
+        if (!isDirectory(p) && isDirectory(innconf->patharticles)) {
+            logOrPrint(LOG_WARNING, fp,
+                       "ME config: definition of news-spool (%s) is a"
+                       " non-existant directory. Using %s",
+                       p, innconf->patharticles);
+            p = xstrdup(innconf->patharticles);
+        } else if (!isDirectory(p))
+            logAndExit(1, "Bad spool directories: %s, %s\n", p,
+                       innconf->patharticles);
+    } else if (!isDirectory(innconf->patharticles))
+        logAndExit(1,
+                   "ME config: no definition of news-spool, and %s is no good",
+                   innconf->patharticles);
+    else
+        p = xstrdup(innconf->patharticles);
+    newsspool = p;
 
-  /***************************************************/
-  
-  if (getString (topScope,"input-file",&p,NO_INHERIT))
-    {
-      if (*p != '\0')
-	InputFile = concatpath(getTapeDirectory(), p);
-      else
-	InputFile = "" ;
-      free (p) ;
-    }
-  
-  if (getString (topScope,"pid-file",&p,NO_INHERIT))
-    {
-      pidFile = concatpath(innconf->pathrun, p);
-      free (p) ;
-    }
-  else
-    pidFile = concatpath(innconf->pathrun, PID_FILE);
-  
-  if (getInteger (topScope,"debug-level",&ival,NO_INHERIT))
-    loggingLevel = (unsigned int) ival ;
-  
-  
-  if (getInteger (topScope,"initial-sleep",&ival,NO_INHERIT))
-    initialSleep = (unsigned int) ival ;
-  
-  
-  if (getBool (topScope,"use-mmap",&bval,NO_INHERIT))
-    useMMap = (bval ? true : false) ;
+    /***************************************************/
 
-  
-  if (getString (topScope,"log-file",&p,NO_INHERIT))
-    {
-      logFile = concatpath(innconf->pathlog, p);
-      free (p) ;
+    if (getString(topScope, "input-file", &p, NO_INHERIT)) {
+        if (*p != '\0')
+            InputFile = concatpath(getTapeDirectory(), p);
+        else
+            InputFile = "";
+        free(p);
     }
 
-  if (getString (topScope,"log-time-format",&p,NO_INHERIT))
-    {
-      free(timeToStringFormat);
-      timeToStringFormat = p;
+    if (getString(topScope, "pid-file", &p, NO_INHERIT)) {
+        pidFile = concatpath(innconf->pathrun, p);
+        free(p);
+    } else
+        pidFile = concatpath(innconf->pathrun, PID_FILE);
+
+    if (getInteger(topScope, "debug-level", &ival, NO_INHERIT))
+        loggingLevel = (unsigned int) ival;
+
+
+    if (getInteger(topScope, "initial-sleep", &ival, NO_INHERIT))
+        initialSleep = (unsigned int) ival;
+
+
+    if (getBool(topScope, "use-mmap", &bval, NO_INHERIT))
+        useMMap = (bval ? true : false);
+
+
+    if (getString(topScope, "log-file", &p, NO_INHERIT)) {
+        logFile = concatpath(innconf->pathlog, p);
+        free(p);
     }
 
-   /* For imap/lmtp delivering */
-  if (getString (topScope,"deliver-username",&p, NO_INHERIT))
-    {   
+    if (getString(topScope, "log-time-format", &p, NO_INHERIT)) {
+        free(timeToStringFormat);
+        timeToStringFormat = p;
+    }
+
+    /* For imap/lmtp delivering */
+    if (getString(topScope, "deliver-username", &p, NO_INHERIT)) {
         deliver_username = p;
-      /* don't need to free */
+        /* don't need to free */
     }
 
-  if (getString (topScope,"deliver-authname",&p, NO_INHERIT))
-    {
-      deliver_authname = p;
-      /* don't need to free */
+    if (getString(topScope, "deliver-authname", &p, NO_INHERIT)) {
+        deliver_authname = p;
+        /* don't need to free */
     }
 
-  if (getString (topScope,"deliver-password",&p, NO_INHERIT))
-    {
-      deliver_password = p;
-      /* don't need to free */
+    if (getString(topScope, "deliver-password", &p, NO_INHERIT)) {
+        deliver_password = p;
+        /* don't need to free */
     }
 
-  if (getString (topScope,"deliver-realm",&p, NO_INHERIT))
-    {
-      deliver_realm = p;
-      /* don't need to free */
+    if (getString(topScope, "deliver-realm", &p, NO_INHERIT)) {
+        deliver_realm = p;
+        /* don't need to free */
     }
 
-  if (getString (topScope,"deliver-rcpt-to",&p, NO_INHERIT))
-    {
-      deliver_rcpt_to = p;
-      /* don't need to free */
+    if (getString(topScope, "deliver-rcpt-to", &p, NO_INHERIT)) {
+        deliver_rcpt_to = p;
+        /* don't need to free */
     }
 
-  if (getString (topScope,"deliver-to-header",&p, NO_INHERIT))
-    {
-      deliver_to_header = p;
-      /* don't need to free */
+    if (getString(topScope, "deliver-to-header", &p, NO_INHERIT)) {
+        deliver_to_header = p;
+        /* don't need to free */
     }
 
-  
 
-  return 1 ;
+    return 1;
 }
 
 /*
@@ -826,154 +832,136 @@ static int mainConfigLoadCbk (void *data)
  * can adjust config file values from options. They will be validated in the
  * second callback.
  */
-static int mainOptionsProcess (void *data UNUSED)
+static int
+mainOptionsProcess(void *data UNUSED)
 {
-  value *v ;
+    value *v;
 
-  if (bopt != NULL)
-    {
-      if ((v = findValue (topScope,"backlog-directory",NO_INHERIT)) != NULL) 
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (bopt) ;
-        }
-      else
-        addString (topScope,"backlog-directory",xstrdup (bopt)) ;
+    if (bopt != NULL) {
+        if ((v = findValue(topScope, "backlog-directory", NO_INHERIT))
+            != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(bopt);
+        } else
+            addString(topScope, "backlog-directory", xstrdup(bopt));
     }
 
-  if (aopt != NULL)
-    {
-      if ((v = findValue (topScope,"news-spool",NO_INHERIT)) != NULL)
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (aopt) ;
-        }
-      else
-        addString (topScope,"news-spool",xstrdup (aopt)) ;
+    if (aopt != NULL) {
+        if ((v = findValue(topScope, "news-spool", NO_INHERIT)) != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(aopt);
+        } else
+            addString(topScope, "news-spool", xstrdup(aopt));
     }
 
-  if (sopt != NULL)
-    {
-      if ((v = findValue (topScope,"status-file",NO_INHERIT)) != NULL)
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (sopt) ;
-        }
-      else
-        addString (topScope,"status-file",xstrdup (sopt)) ;
+    if (sopt != NULL) {
+        if ((v = findValue(topScope, "status-file", NO_INHERIT)) != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(sopt);
+        } else
+            addString(topScope, "status-file", xstrdup(sopt));
     }
 
 
-  if (Dopt)
-    {
-      if ((v = findValue (topScope,"debug-level",NO_INHERIT)) != NULL)
-        v->v.int_val = debugLevel ;
-      else
-        addInteger (topScope,"debug-level",debugLevel) ;
+    if (Dopt) {
+        if ((v = findValue(topScope, "debug-level", NO_INHERIT)) != NULL)
+            v->v.int_val = debugLevel;
+        else
+            addInteger(topScope, "debug-level", debugLevel);
     }
 
-  
-  if (eopt || talkToSelf)
-    {
-      if (talkToSelf)
-        elimit = 0 ;
-      
-      if ((v = findValue (topScope,"backlog-limit",NO_INHERIT)) != NULL)
-        v->v.int_val = elimit ;
-      else
-        addInteger (topScope,"backlog-limit",elimit) ;
+
+    if (eopt || talkToSelf) {
+        if (talkToSelf)
+            elimit = 0;
+
+        if ((v = findValue(topScope, "backlog-limit", NO_INHERIT)) != NULL)
+            v->v.int_val = elimit;
+        else
+            addInteger(topScope, "backlog-limit", elimit);
     }
 
-  
-  if (Mopt)
-    {
-      if ((v = findValue (topScope,"use-mmap",NO_INHERIT)) != NULL)
-        v->v.bool_val = 0 ;
-      else
-        addBoolean (topScope,"use-mmap",0) ;
-    }
-  
 
-  if (popt != NULL)
-    {
-      if ((v = findValue (topScope,"pid-file",NO_INHERIT)) != NULL)
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (popt) ;
-        }
-      else
-        addString (topScope,"pid-file",xstrdup (popt)) ;
+    if (Mopt) {
+        if ((v = findValue(topScope, "use-mmap", NO_INHERIT)) != NULL)
+            v->v.bool_val = 0;
+        else
+            addBoolean(topScope, "use-mmap", 0);
     }
 
-  if (Zopt)
-    {
-      if ((v = findValue (topScope,"connection-stats",NO_INHERIT)) != NULL)
-        v->v.bool_val = 1 ;
-      else
-        addBoolean (topScope,"connection-stats",1) ;
+
+    if (popt != NULL) {
+        if ((v = findValue(topScope, "pid-file", NO_INHERIT)) != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(popt);
+        } else
+            addString(topScope, "pid-file", xstrdup(popt));
     }
 
-  if (lopt != NULL)
-    {
-      if ((v = findValue (topScope,"log-file",NO_INHERIT)) != NULL)
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (lopt) ;
-        }
-      else
-        addString (topScope,"log-file",xstrdup (lopt)) ;
+    if (Zopt) {
+        if ((v = findValue(topScope, "connection-stats", NO_INHERIT)) != NULL)
+            v->v.bool_val = 1;
+        else
+            addBoolean(topScope, "connection-stats", 1);
     }
 
-  if (InputFile != NULL)
-    {
-      if ((v = findValue (topScope,"input-file",NO_INHERIT)) != NULL)
-        {
-          free (v->v.charp_val) ;
-          v->v.charp_val = xstrdup (InputFile) ;
-        }
-      else
-        addString (topScope,"input-file",xstrdup (InputFile)) ;
+    if (lopt != NULL) {
+        if ((v = findValue(topScope, "log-file", NO_INHERIT)) != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(lopt);
+        } else
+            addString(topScope, "log-file", xstrdup(lopt));
     }
 
-  return 1 ;
+    if (InputFile != NULL) {
+        if ((v = findValue(topScope, "input-file", NO_INHERIT)) != NULL) {
+            free(v->v.charp_val);
+            v->v.charp_val = xstrdup(InputFile);
+        } else
+            addString(topScope, "input-file", xstrdup(InputFile));
+    }
+
+    return 1;
 }
 
 
-
-static void mainCleanup (void)
+static void
+mainCleanup(void)
 {
-  free ((void *)configFile) ;
-  free ((void *)pidFile) ;
-  free (logFile) ;
-  free (newsspool) ;
-  configFile = NULL ;
-  pidFile = NULL ;
-  logFile = NULL ;
-  newsspool = NULL ;
+    free((void *) configFile);
+    free((void *) pidFile);
+    free(logFile);
+    free(newsspool);
+    configFile = NULL;
+    pidFile = NULL;
+    logFile = NULL;
+    newsspool = NULL;
 }
 
 
-void mainLogStatus (FILE *fp)
+void
+mainLogStatus(FILE *fp)
 {
-  fprintf (fp,"%sGlobal configuration parameters:%s\n",
-           genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
-  fprintf (fp,"          Mode: ") ;
-  if (InputFile != NULL)
-    fprintf (fp,"Funnel file") ;
-  else if (talkToSelf)
-    fprintf (fp,"Batch") ;
-  else
-    fprintf (fp,"Channel") ;
-  if (InputFile != NULL)
-    fprintf (fp,"   (%s)",(*InputFile == '\0' ? "stdin" : InputFile)) ;
-  fprintf (fp,"\n") ;
-  fprintf (fp,"    News spool: %s\n",newsspool) ;
-  fprintf (fp,"      Pid file: %s\n",pidFile) ;
-  fprintf (fp,"      Log file: %s\n",(logFile == NULL ? "(none)" : logFile));
-  fprintf (fp,"   Debug level: %-5u        Debug shrinking: %s\n",
-           loggingLevel, boolToString(debugShrinking));
-  fprintf (fp,"     Fast exit: %-5s            stdio-fdmax: %u\n",
-           boolToString(fastExit), stdioFdMax);
-  fprintf (fp,"          Mmap: %s\n", boolToString(useMMap));
-  fprintf (fp,"\n") ;
+    fprintf(fp, "%sGlobal configuration parameters:%s\n", genHtml ? "<B>" : "",
+            genHtml ? "</B>" : "");
+    fprintf(fp, "          Mode: ");
+    if (InputFile != NULL)
+        fprintf(fp, "Funnel file");
+    else if (talkToSelf)
+        fprintf(fp, "Batch");
+    else
+        fprintf(fp, "Channel");
+    if (InputFile != NULL)
+        fprintf(fp, "   (%s)", (*InputFile == '\0' ? "stdin" : InputFile));
+    fprintf(fp, "\n");
+    fprintf(fp, "    News spool: %s\n", newsspool);
+    fprintf(fp, "      Pid file: %s\n", pidFile);
+    fprintf(fp, "      Log file: %s\n",
+            (logFile == NULL ? "(none)" : logFile));
+    fprintf(fp, "   Debug level: %-5u        Debug shrinking: %s\n",
+            loggingLevel, boolToString(debugShrinking));
+    fprintf(fp, "     Fast exit: %-5s            stdio-fdmax: %u\n",
+            boolToString(fastExit), stdioFdMax);
+    fprintf(fp, "          Mmap: %s\n", boolToString(useMMap));
+    fprintf(fp, "\n");
 }

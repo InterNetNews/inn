@@ -13,36 +13,35 @@
 **  needed.
 */
 
-#if ! defined ( tape_h__ )
-#define tape_h__
-
-#include <stdio.h>
+#ifndef TAPE_H
+#define TAPE_H 1
 
 #include "misc.h"
+#include <stdio.h>
 
 
 /* If dontRotate is true, then any articles that get written to the tape
    will never be read back in again. This is for the batch-mode-only case
    where articles written to tape were done so 'cause the remote
    temporarily rejected them. */
-Tape newTape (const char *peerName, bool dontRotate) ;
+Tape newTape(const char *peerName, bool dontRotate);
 
-void gPrintTapeInfo (FILE *fp, unsigned int inedntAmt) ;
-void printTapeInfo (Tape tape, FILE *fp, unsigned int indentAmt) ;
+void gPrintTapeInfo(FILE *fp, unsigned int inedntAmt);
+void printTapeInfo(Tape tape, FILE *fp, unsigned int indentAmt);
 
 /* deletes the tape objects. If it has any articles cached then it dumps
    them to the disk. */
-void delTape (Tape tape) ;
+void delTape(Tape tape);
 
 /* give an article to the Tape for storage */
-void tapeTakeArticle (Tape tape, Article article) ;
+void tapeTakeArticle(Tape tape, Article article);
 
 /* get a new article from an Input tape. */
-Article getArticle (Tape tape) ;
+Article getArticle(Tape tape);
 
 /* close the input and output files and reopen them. */
-void gFlushTapes (void) ;
-void tapeFlush (Tape tape) ;
+void gFlushTapes(void);
+void tapeFlush(Tape tape);
 
 
 /**************************************************/
@@ -50,18 +49,18 @@ void tapeFlush (Tape tape) ;
 /**************************************************/
 
 /* get all the active input tapes to checkpoint their current positions */
-void checkPointTapes (void) ;
+void checkPointTapes(void);
 
 /* get the name of the directory tapes are being stored in. */
-const char *getTapeDirectory (void) ;
+const char *getTapeDirectory(void);
 
 /* set the size limit of the output tapes. Default is zero which is no
    limit. */
-void setOutputSizeLimit (long limit) ;
+void setOutputSizeLimit(long limit);
 
-int tapeConfigLoadCbk (void *data) ;
+int tapeConfigLoadCbk(void *data);
 
-void tapeLogGlobalStatus (FILE *fp) ;
-void tapeLogStatus (Tape tape, FILE *fp) ;
+void tapeLogGlobalStatus(FILE *fp);
+void tapeLogStatus(Tape tape, FILE *fp);
 
-#endif /* tape_h__ */
+#endif /* TAPE_H */

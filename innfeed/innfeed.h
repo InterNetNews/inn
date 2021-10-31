@@ -8,8 +8,8 @@
 **  the compiler defines.
 */
 
-#if ! defined ( innfeed_h__ )
-#define innfeed_h__
+#ifndef INNFEED_H
+#define INNFEED_H 1
 
 #include "inn/timer.h"
 
@@ -30,53 +30,48 @@
  */
 
 /* in tape.c */
-#define TAPE_DIRECTORY 	        "innfeed"   /* [pathspool]/backlog-directory */
-#define TAPE_HIGHWATER 		5 		/* backlog-highwater */
-#define TAPE_ROTATE_PERIOD 	60 		/* backlog-rotate-period */
-#define TAPE_CHECKPOINT_PERIOD 	30 		/* backlog-ckpt-period */
-#define TAPE_NEWFILE_PERIOD 	600 		/* backlog-newfile-period */
-#define TAPE_DISABLE		false		/* no-backlog */
+#define TAPE_DIRECTORY         "innfeed" /* [pathspool]/backlog-directory */
+#define TAPE_HIGHWATER         5         /* backlog-highwater */
+#define TAPE_ROTATE_PERIOD     60        /* backlog-rotate-period */
+#define TAPE_CHECKPOINT_PERIOD 30        /* backlog-ckpt-period */
+#define TAPE_NEWFILE_PERIOD    600       /* backlog-newfile-period */
+#define TAPE_DISABLE           false     /* no-backlog */
 
 /* in main.c */
-#define PID_FILE 		"innfeed.pid" 	/* [pathrun]/pid-file */
-#define LOG_FILE 		"innfeed.log"	/* [pathlog]/log-file */
+#define PID_FILE "innfeed.pid" /* [pathrun]/pid-file */
+#define LOG_FILE "innfeed.log" /* [pathlog]/log-file */
 
 /* in host.c */
-#define DNS_RETRY_PERIOD 	900 		/* dns-retry */
-#define DNS_EXPIRE_PERIOD 	86400 		/* dns-expire */
-#define CLOSE_PERIOD 		(60 * 60 * 24) 	/* close-period */
-#define GEN_HTML		false 		/* gen-html */
-#define INNFEED_STATUS 		"innfeed.status" /* status-file */
-#define LOG_CONNECTION_STATS 	0 		/* connection-stats */
-#define HOST_HIGHWATER 		10 		/* host-queue-highwater */
-#define STATS_PERIOD 		(60 * 10) 	/* stats-period */
-#define STATS_RESET_PERIOD 	(60 * 60 * 12) 	/* stats-reset-period */
+#define DNS_RETRY_PERIOD     900              /* dns-retry */
+#define DNS_EXPIRE_PERIOD    86400            /* dns-expire */
+#define CLOSE_PERIOD         (60 * 60 * 24)   /* close-period */
+#define GEN_HTML             false            /* gen-html */
+#define INNFEED_STATUS       "innfeed.status" /* status-file */
+#define LOG_CONNECTION_STATS 0                /* connection-stats */
+#define HOST_HIGHWATER       10               /* host-queue-highwater */
+#define STATS_PERIOD         (60 * 10)        /* stats-period */
+#define STATS_RESET_PERIOD   (60 * 60 * 12)   /* stats-reset-period */
 
-#define ARTTOUT		 	600 		/* article-timeout */
-#define RESPTOUT	 	300 		/* response-timeout */
-#define INIT_CXNS		1 		/* initial-connections */
-#define MAX_CXNS		2 		/* max-connections */
-#define MAX_Q_SIZE		20 		/* max-queue-size */
-#define STREAM			true 		/* streaming */
-#define NOCHECKHIGH 		95.0 		/* no-check-high */
-#define NOCHECKLOW 		90.0 		/* no-check-low */
-#define PORTNUM 		119 		/* port-number */
-#define FORCE_IPv4		false		/* force using IPv4 */
-#define BLOGLIMIT		0 		/* backlog-limit */
-#define LIMIT_FUDGE 		1.10 		/* backlog-factor */
-#define BLOGLIMIT_HIGH		0 		/* backlog-limit-high */
+#define ARTTOUT        600   /* article-timeout */
+#define RESPTOUT       300   /* response-timeout */
+#define INIT_CXNS      1     /* initial-connections */
+#define MAX_CXNS       2     /* max-connections */
+#define MAX_Q_SIZE     20    /* max-queue-size */
+#define STREAM         true  /* streaming */
+#define NOCHECKHIGH    95.0  /* no-check-high */
+#define NOCHECKLOW     90.0  /* no-check-low */
+#define PORTNUM        119   /* port-number */
+#define FORCE_IPv4     false /* force using IPv4 */
+#define BLOGLIMIT      0     /* backlog-limit */
+#define LIMIT_FUDGE    1.10  /* backlog-factor */
+#define BLOGLIMIT_HIGH 0     /* backlog-limit-high */
 
-#define INIT_RECON_PER 30 	/* initial-reconnect-time */
-#define MAX_RECON_PER (60 * 60 * 1)/* max-reconnect-time */
-
-
-
-
-
+#define INIT_RECON_PER 30            /* initial-reconnect-time */
+#define MAX_RECON_PER  (60 * 60 * 1) /* max-reconnect-time */
 
 
 /****************************************************************************/
-/* 
+/*
  * The rest below are not run-time configurable.
  */
 
@@ -98,8 +93,8 @@
    backlog file names.  A peername cannot end in any of these string
    (e.g. having a peer called 'mypeer.input' will not work) */
 #define OUTPUT_TAIL ".output"
-#define INPUT_TAIL ".input"
-#define LOCK_TAIL ".lock"
+#define INPUT_TAIL  ".input"
+#define LOCK_TAIL   ".lock"
 
 /* rough estimate of average article line length (including
    headers).  Smaller number means more efficient article preparation (for
@@ -119,7 +114,7 @@
 #define BUFFER_SIZE 256
 
 /* amount we expand buffers on partial reads */
-#define BUFFER_EXPAND_AMOUNT 128 
+#define BUFFER_EXPAND_AMOUNT 128
 
 /* minimum number of seconds between log messages for starting
    spooling. i.e. if the connection bounces up and down this will prevent
@@ -127,9 +122,9 @@
 #define SPOOL_LOG_PERIOD 600
 
 /* some big numbers just for sanity checking */
-#define MAX_MAXCHECKS 10000     /* no more than 10000 articles at a time */
-#define MAX_MAXART_TOUT 86400   /* one day max between articles from inn */
-#define MAX_RESP_TOUT 3600      /* one hour max to wait for response */
+#define MAX_MAXCHECKS   10000 /* no more than 10000 articles at a time */
+#define MAX_MAXART_TOUT 86400 /* one day max between articles from inn */
+#define MAX_RESP_TOUT   3600  /* one hour max to wait for response */
 
 /* the check / no-check filter value, i.e. roughly how many past
    articles we take into account whilst doing the average for
@@ -149,21 +144,21 @@
 #define SELECT_RATIO 3
 
 
-#if defined (DBTIMES)
+#if defined(DBTIMES)
 
-  /* some small values for testing things. */
+/* some small values for testing things. */
 
-#undef STATS_PERIOD
-#define STATS_PERIOD 30   /* 30 seconds */
+#    undef STATS_PERIOD
+#    define STATS_PERIOD 30 /* 30 seconds */
 
-#undef STATS_RESET_PERIOD
-#define STATS_RESET_PERIOD (6 * 60) /* 6 minutes */
+#    undef STATS_RESET_PERIOD
+#    define STATS_RESET_PERIOD (6 * 60) /* 6 minutes */
 
-#undef ARTICLE_STATS_PERIOD
-#define ARTICLE_STATS_PERIOD (6 * 60) /* 7 minutes */
+#    undef ARTICLE_STATS_PERIOD
+#    define ARTICLE_STATS_PERIOD (6 * 60) /* 7 minutes */
 
-#undef CLOSE_PERIOD
-#define CLOSE_PERIOD (3 * 60)   /* 5 minutes */
+#    undef CLOSE_PERIOD
+#    define CLOSE_PERIOD (3 * 60) /* 5 minutes */
 
 #endif /* DBTIMES */
 
@@ -176,21 +171,30 @@
    file the OS will let you have. If this value is > 0 (and ``stdio-fdmax''
    is *not* used in the config file), then all non-stdio file descriptors
    will be kept above this value (by dup'ing them). */
-#if defined (sun)
-# if defined (__SVR4)
-#  define MAX_STDIO_FD 256
-# else
-#  define MAX_STDIO_FD 128
-# endif
+#if defined(sun)
+#    if defined(__SVR4)
+#        define MAX_STDIO_FD 256
+#    else
+#        define MAX_STDIO_FD 128
+#    endif
 #else
-# define MAX_STDIO_FD 0
+#    define MAX_STDIO_FD 0
 #endif
 
 /* some timer constants */
 
-typedef enum { TMR_IDLE = TMR_APPLICATION, TMR_BACKLOGSTATS,
-  TMR_STATUSFILE, TMR_NEWARTICLE, TMR_READART, TMR_PREPART, TMR_READ,
-  TMR_WRITE, TMR_CALLBACK, TMR_MAX
+typedef enum
+{
+    TMR_IDLE = TMR_APPLICATION,
+    TMR_BACKLOGSTATS,
+    TMR_STATUSFILE,
+    TMR_NEWARTICLE,
+    TMR_READART,
+    TMR_PREPART,
+    TMR_READ,
+    TMR_WRITE,
+    TMR_CALLBACK,
+    TMR_MAX
 } TMRTYPE;
 
-#endif /* innfeed_h__ */
+#endif /* INNFEED_H */

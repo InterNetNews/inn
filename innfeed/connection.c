@@ -59,19 +59,19 @@
 #include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
-#if defined (__FreeBSD__)
-# include <sys/ioctl.h>
+#if defined(__FreeBSD__)
+#    include <sys/ioctl.h>
 #endif
 
 #include "inn/fdflag.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/network.h"
-#include "inn/libinn.h"
 
 #include "article.h"
 #include "buffer.h"
@@ -80,69 +80,69 @@
 #include "endpoint.h"
 #include "host.h"
 
-#if defined (NDEBUG)
-#define VALIDATE_CONNECTION(x) ((void) 0)
+#if defined(NDEBUG)
+#    define VALIDATE_CONNECTION(x) ((void) 0)
 #else
-#define VALIDATE_CONNECTION(x) validateConnection (x)
+#    define VALIDATE_CONNECTION(x) validateConnection(x)
 #endif
 
-extern char **PointersFreedOnExit ;
-extern const char *pidFile ;
+extern char **PointersFreedOnExit;
+extern const char *pidFile;
 
 /*
  * Private types.
  */
 
 /* We keep a linked list of articles the connection is trying to transmit */
-typedef struct art_holder_s
+typedef struct art_holder_s {
+    Article article;
+    struct art_holder_s *next;
+} * ArtHolder;
+
+
+typedef enum
 {
-    Article article ;
-    struct art_holder_s *next ;
-} *ArtHolder ;
-
-
-typedef enum {
-  cxnStartingS,                 /* the connection's start state. */
-  cxnWaitingS,                  /* not connected. Waiting for an article. */
-  cxnConnectingS,               /* in the middle of connecting */
-  cxnIdleS,			/* open and ready to feed, has empty queues */
-  cxnIdleTimeoutS,	        /* timed out in the idle state */
-  cxnFeedingS,                  /* in the processes of feeding articles */
-  cxnSleepingS,                 /* blocked on reestablishment timer */
-  cxnFlushingS,                 /* am waiting for queues to drain to bounce connection. */
-  cxnClosingS,                  /* have been told to close down permanently when queues drained */
-  cxnDeadS                      /* connection is dead. */
-} CxnState ;
+    cxnStartingS,    /* the connection's start state. */
+    cxnWaitingS,     /* not connected. Waiting for an article. */
+    cxnConnectingS,  /* in the middle of connecting */
+    cxnIdleS,        /* open and ready to feed, has empty queues */
+    cxnIdleTimeoutS, /* timed out in the idle state */
+    cxnFeedingS,     /* in the processes of feeding articles */
+    cxnSleepingS,    /* blocked on reestablishment timer */
+    cxnFlushingS,    /* am waiting for queues to drain to bounce connection. */
+    cxnClosingS,     /* have been told to close down permanently when queues
+                        drained */
+    cxnDeadS         /* connection is dead. */
+} CxnState;
 
 /* The Connection class */
-struct connection_s
-{
-    Host myHost ;               /* the host who owns the connection */
-    EndPoint myEp ;             /* the endpoint the connection talks through */
-    unsigned int ident ;               /* an identifier for syslogging. */
-    CxnState state ;            /* the state the connection is in */
+struct connection_s {
+    Host myHost;        /* the host who owns the connection */
+    EndPoint myEp;      /* the endpoint the connection talks through */
+    unsigned int ident; /* an identifier for syslogging. */
+    CxnState state;     /* the state the connection is in */
 
 
     /*
      * The Connection maintains 4 queue of articles.
      */
-    ArtHolder checkHead ;       /* head of article list to do CHECK/IHAVE */
-    ArtHolder checkRespHead ;   /* head of list waiting on CHECK/IHAVE
+    ArtHolder checkHead;        /* head of article list to do CHECK/IHAVE */
+    ArtHolder checkRespHead;    /* head of list waiting on CHECK/IHAVE
                                    response */
-    ArtHolder takeHead ;        /* head of list of articles to send
+    ArtHolder takeHead;         /* head of list of articles to send
                                    TAKETHIS/IHAVE-body */
-    ArtHolder takeRespHead ;    /* list of articles waiting on
+    ArtHolder takeRespHead;     /* list of articles waiting on
                                    TAKETHIS/IHAVE-body response */
-    unsigned int articleQTotal ;       /* number of articles in all four queues */
-    ArtHolder missing ;         /* head of missing list */
+    unsigned int articleQTotal; /* number of articles in all four queues */
+    ArtHolder missing;          /* head of missing list */
 
 
-    Buffer respBuffer ;         /* buffer all responses are read into */
+    Buffer respBuffer; /* buffer all responses are read into */
 
-    char *ipName ;              /* the ip name (possibly quad) of the remote */
+    char *ipName; /* the ip name (possibly quad) of the remote */
 
-    unsigned int maxCheck ;            /* the max number of CHECKs to send */
-    unsigned short port ;              /* the port number to use */
+    unsigned int maxCheck; /* the max number of CHECKs to send */
+    unsigned short port;   /* the port number to use */
 
     /*
      * Timeout values and their callback IDs
@@ -150,59 +150,59 @@ struct connection_s
 
     /* Timer for max amount of time between receiving articles from the
        Host */
-    unsigned int articleReceiptTimeout ;
-    TimeoutId artReceiptTimerId ;
+    unsigned int articleReceiptTimeout;
+    TimeoutId artReceiptTimerId;
 
     /* Timer for the max amount of time to wait for a response from the
        remote */
-    unsigned int readTimeout ;
-    TimeoutId readBlockedTimerId ;
+    unsigned int readTimeout;
+    TimeoutId readBlockedTimerId;
 
     /* Timer for the max amount of time to wait for a any amount of data
        to be written to the remote */
-    unsigned int writeTimeout ;
-    TimeoutId writeBlockedTimerId ;
+    unsigned int writeTimeout;
+    TimeoutId writeBlockedTimerId;
 
     /* Timer for the max number of seconds to keep the network connection
        up (long lasting connections give older nntp servers problems). */
-    unsigned int flushTimeout ;
-    TimeoutId flushTimerId ;
+    unsigned int flushTimeout;
+    TimeoutId flushTimerId;
 
     /* Timer for the number of seconds to sleep before attempting a
        reconnect. */
-    unsigned int sleepTimeout ;
-    TimeoutId sleepTimerId ;
+    unsigned int sleepTimeout;
+    TimeoutId sleepTimerId;
 
 
-    bool loggedNoCr ;           /* true if we logged the NOCR_MSG */
-    bool immedRecon ;           /* true if we recon immediately after flushing. */
-    bool doesStreaming ;        /* true if remote will handle streaming */
-    bool authenticated ;        /* true if remote authenticated */
-    bool quitWasIssued ;          /* true if QUIT command was sent. */
-    bool needsChecks ;          /* true if we issue CHECK commands in
-                                   streaming mode (rather than just sending
-                                   TAKETHIS commands) */
+    bool loggedNoCr;    /* true if we logged the NOCR_MSG */
+    bool immedRecon;    /* true if we recon immediately after flushing. */
+    bool doesStreaming; /* true if remote will handle streaming */
+    bool authenticated; /* true if remote authenticated */
+    bool quitWasIssued; /* true if QUIT command was sent. */
+    bool needsChecks;   /* true if we issue CHECK commands in
+                           streaming mode (rather than just sending
+                           TAKETHIS commands) */
 
-    time_t timeCon;             /* the time the connect happened (including
-                                   the MODE STREAM command) */
+    time_t timeCon; /* the time the connect happened (including
+                       the MODE STREAM command) */
     time_t timeCon_checkpoint;
 
     /*
      * STATISTICS
      */
-    unsigned int artsTaken;           /* the number of articles INN gave this cxn */
+    unsigned int artsTaken; /* the number of articles INN gave this cxn */
 
-    unsigned int checksIssued;        /* the number of CHECKs/IHAVEs we
-                                          sent.  Note that if we're running in
-                                          no-CHECK mode, then we add in the
-                                          TAKETHIS commands too */
+    unsigned int checksIssued; /* the number of CHECKs/IHAVEs we
+                                   sent.  Note that if we're running in
+                                   no-CHECK mode, then we add in the
+                                   TAKETHIS commands too */
     unsigned int checksIssued_checkpoint;
 
-    unsigned int checksRefused;       /* the number of response 435/438 */
+    unsigned int checksRefused; /* the number of response 435/438 */
     unsigned int checksRefused_checkpoint;
-    unsigned int takesRejected;       /* the number of response 437/439 received */
+    unsigned int takesRejected; /* the number of response 437/439 received */
     unsigned int takesRejected_checkpoint;
-    unsigned int takesOkayed;         /* the number of response 235/239 received */
+    unsigned int takesOkayed; /* the number of response 235/239 received */
     unsigned int takesOkayed_checkpoint;
 
     double takesSizeRejected;
@@ -210,24 +210,24 @@ struct connection_s
     double takesSizeOkayed;
     double takesSizeOkayed_checkpoint;
 
-    double onThreshold ;        /* for no-CHECK mode */
-    double offThreshold ;       /* for no-CHECK mode */
-    double filterValue ;        /* current value of IIR filter */
-    double lowPassFilter ;      /* time constant for IIR filter */
+    double onThreshold;   /* for no-CHECK mode */
+    double offThreshold;  /* for no-CHECK mode */
+    double filterValue;   /* current value of IIR filter */
+    double lowPassFilter; /* time constant for IIR filter */
 
-    Connection next ;           /* for global list */
+    Connection next; /* for global list */
 };
 
-static Connection gCxnList = NULL ;
-static unsigned int gCxnCount = 0 ;
-unsigned int max_reconnect_period = MAX_RECON_PER ;
-unsigned int init_reconnect_period = INIT_RECON_PER ;
+static Connection gCxnList = NULL;
+static unsigned int gCxnCount = 0;
+unsigned int max_reconnect_period = MAX_RECON_PER;
+unsigned int init_reconnect_period = INIT_RECON_PER;
 #if 0
 static bool inited = false ;
 #endif
-static Buffer dotFirstBuffer ;
-static Buffer dotBuffer ;
-static Buffer crlfBuffer ;
+static Buffer dotFirstBuffer;
+static Buffer dotBuffer;
+static Buffer crlfBuffer;
 
 
 /***************************************************
@@ -238,95 +238,94 @@ static Buffer crlfBuffer ;
 
 
 /* I/O Callbacks */
-static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void getAuthUserResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void authUserIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void authPassIssued (EndPoint e, IoStatus i, Buffer *b, void *d) ;
-static void writeProgress (EndPoint e, IoStatus i, Buffer *b, void *d) ;
+static void connectionDone(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void getBanner(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void getAuthUserResponse(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void getAuthPassResponse(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void getModeResponse(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void responseIsRead(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void quitWritten(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void ihaveBodyDone(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void commandWriteDone(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void modeCmdIssued(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void authUserIssued(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void authPassIssued(EndPoint e, IoStatus i, Buffer *b, void *d);
+static void writeProgress(EndPoint e, IoStatus i, Buffer *b, void *d);
 
 
 /* Timer callbacks */
-static void responseTimeoutCbk (TimeoutId id, void *data) ;
-static void writeTimeoutCbk (TimeoutId id, void *data) ;
-static void reopenTimeoutCbk (TimeoutId id, void *data) ;
-static void flushCxnCbk (TimeoutId, void *data) ;
-static void articleTimeoutCbk (TimeoutId id, void *data) ;
+static void responseTimeoutCbk(TimeoutId id, void *data);
+static void writeTimeoutCbk(TimeoutId id, void *data);
+static void reopenTimeoutCbk(TimeoutId id, void *data);
+static void flushCxnCbk(TimeoutId, void *data);
+static void articleTimeoutCbk(TimeoutId id, void *data);
 
 /* Work callbacks */
-static void cxnWorkProc (EndPoint ep, void *data) ;
+static void cxnWorkProc(EndPoint ep, void *data);
 
 
-static void cxnSleepOrDie (Connection cxn) ;
+static void cxnSleepOrDie(Connection cxn);
 
 /* Response processing. */
-static void processResponse205 (Connection cxn, char *response) ;
-static void processResponse238 (Connection cxn, char *response) ;
-static void processResponse431 (Connection cxn, char *response) ;
-static void processResponse438 (Connection cxn, char *response) ;
-static void processResponse239 (Connection cxn, char *response) ;
-static void processResponse439 (Connection cxn, char *response) ;
-static void processResponse235 (Connection cxn, char *response) ;
-static void processResponse335 (Connection cxn, char *response) ;
-static void processResponse400 (Connection cxn, char *response) ;
-static void processResponse435 (Connection cxn, char *response) ;
-static void processResponse436 (Connection cxn, char *response) ;
-static void processResponse437 (Connection cxn, char *response) ;
-static void processResponse480 (Connection cxn, char *response) ;
-static void processResponse503 (Connection cxn, char *response) ;
+static void processResponse205(Connection cxn, char *response);
+static void processResponse238(Connection cxn, char *response);
+static void processResponse431(Connection cxn, char *response);
+static void processResponse438(Connection cxn, char *response);
+static void processResponse239(Connection cxn, char *response);
+static void processResponse439(Connection cxn, char *response);
+static void processResponse235(Connection cxn, char *response);
+static void processResponse335(Connection cxn, char *response);
+static void processResponse400(Connection cxn, char *response);
+static void processResponse435(Connection cxn, char *response);
+static void processResponse436(Connection cxn, char *response);
+static void processResponse437(Connection cxn, char *response);
+static void processResponse480(Connection cxn, char *response);
+static void processResponse503(Connection cxn, char *response);
 
 
 /* Misc functions */
-static void cxnSleep (Connection cxn) ;
-static void cxnDead (Connection cxn) ;
-static void cxnIdle (Connection cxn) ;
-static void noSuchMessageId (Connection cxn, unsigned int responseCode,
-                           const char *msgid, const char *response) ;
-static void abortConnection (Connection cxn) ;
-static void resetConnection (Connection cxn) ;
-static void deferAllArticles (Connection cxn) ;
-static void deferQueuedArticles (Connection cxn) ;
-static void doSomeWrites (Connection cxn) ;
-static bool issueIHAVE (Connection cxn) ;
-static void issueIHAVEBody (Connection cxn) ;
-static bool issueStreamingCommands (Connection cxn) ;
-static Buffer buildCheckBuffer (Connection cxn) ;
-static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer) ;
-static void issueQUIT (Connection cxn) ;
-static void initReadBlockedTimeout (Connection cxn) ;
-static int prepareWriteWithTimeout (EndPoint endp, Buffer *buffers,
-                                    EndpRWCB done, Connection cxn) ;
-static void delConnection (Connection cxn) ;
-static void incrFilter (Connection cxn) ;
-static void decrFilter (Connection cxn) ;
-static bool writesNeeded (Connection cxn) ;
-static void validateConnection (Connection cxn) ;
-static const char *stateToString (CxnState state) ;
+static void cxnSleep(Connection cxn);
+static void cxnDead(Connection cxn);
+static void cxnIdle(Connection cxn);
+static void noSuchMessageId(Connection cxn, unsigned int responseCode,
+                            const char *msgid, const char *response);
+static void abortConnection(Connection cxn);
+static void resetConnection(Connection cxn);
+static void deferAllArticles(Connection cxn);
+static void deferQueuedArticles(Connection cxn);
+static void doSomeWrites(Connection cxn);
+static bool issueIHAVE(Connection cxn);
+static void issueIHAVEBody(Connection cxn);
+static bool issueStreamingCommands(Connection cxn);
+static Buffer buildCheckBuffer(Connection cxn);
+static Buffer *buildTakethisBuffers(Connection cxn, Buffer checkBuffer);
+static void issueQUIT(Connection cxn);
+static void initReadBlockedTimeout(Connection cxn);
+static int prepareWriteWithTimeout(EndPoint endp, Buffer *buffers,
+                                   EndpRWCB done, Connection cxn);
+static void delConnection(Connection cxn);
+static void incrFilter(Connection cxn);
+static void decrFilter(Connection cxn);
+static bool writesNeeded(Connection cxn);
+static void validateConnection(Connection cxn);
+static const char *stateToString(CxnState state);
 
-static void issueModeStream (EndPoint e, Connection cxn) ;
-static void issueAuthUser (EndPoint e, Connection cxn) ;
-static void issueAuthPass (EndPoint e, Connection cxn) ;
+static void issueModeStream(EndPoint e, Connection cxn);
+static void issueAuthUser(EndPoint e, Connection cxn);
+static void issueAuthPass(EndPoint e, Connection cxn);
 
-static void prepareReopenCbk (Connection cxn) ;
+static void prepareReopenCbk(Connection cxn);
 
 
 /* Article queue management routines. */
-static ArtHolder newArtHolder (Article art) ;
-static void delArtHolder (ArtHolder artH) ;
-static bool remArtHolder (ArtHolder art, ArtHolder *head, unsigned int *count) ;
-static void appendArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count) ;
-static ArtHolder artHolderByMsgId (const char *msgid, ArtHolder head) ;
+static ArtHolder newArtHolder(Article art);
+static void delArtHolder(ArtHolder artH);
+static bool remArtHolder(ArtHolder art, ArtHolder *head, unsigned int *count);
+static void appendArtHolder(ArtHolder artH, ArtHolder *head,
+                            unsigned int *count);
+static ArtHolder artHolderByMsgId(const char *msgid, ArtHolder head);
 
-static int fudgeFactor (int initVal) ;
-
-
+static int fudgeFactor(int initVal);
 
 
 /***************************************************
@@ -336,137 +335,121 @@ static int fudgeFactor (int initVal) ;
  ***************************************************/
 
 
-int cxnConfigLoadCbk (void *data UNUSED)
+int
+cxnConfigLoadCbk(void *data UNUSED)
 {
-  long iv ;
-  int rval = 1 ;
-  FILE *fp = (FILE *) data ;
+    long iv;
+    int rval = 1;
+    FILE *fp = (FILE *) data;
 
-  if (getInteger (topScope,"max-reconnect-time",&iv,NO_INHERIT))
-    {
-      if (iv < 1)
-        {
-          rval = 0 ;
-          logOrPrint (LOG_ERR,fp,
-                      "ME config: value of %s (%ld) in %s cannot be less"
-                      " than 1. Using %ld", "max-reconnect-time",
-                      iv,"global scope",(long) MAX_RECON_PER);
-          iv = MAX_RECON_PER ;
+    if (getInteger(topScope, "max-reconnect-time", &iv, NO_INHERIT)) {
+        if (iv < 1) {
+            rval = 0;
+            logOrPrint(LOG_ERR, fp,
+                       "ME config: value of %s (%ld) in %s cannot be less"
+                       " than 1. Using %ld",
+                       "max-reconnect-time", iv, "global scope",
+                       (long) MAX_RECON_PER);
+            iv = MAX_RECON_PER;
         }
-    }
-  else
-    iv = MAX_RECON_PER ;
-  max_reconnect_period = (unsigned int) iv ;
+    } else
+        iv = MAX_RECON_PER;
+    max_reconnect_period = (unsigned int) iv;
 
-  if (getInteger (topScope,"initial-reconnect-time",&iv,NO_INHERIT))
-    {
-      if (iv < 1)
-        {
-          rval = 0 ;
-          logOrPrint (LOG_ERR,fp,
-                      "ME config: value of %s (%ld) in %s cannot be less"
-                      " than 1. Using %ld", "initial-reconnect-time",
-                      iv,"global scope",(long)INIT_RECON_PER);
-          iv = INIT_RECON_PER ;
+    if (getInteger(topScope, "initial-reconnect-time", &iv, NO_INHERIT)) {
+        if (iv < 1) {
+            rval = 0;
+            logOrPrint(LOG_ERR, fp,
+                       "ME config: value of %s (%ld) in %s cannot be less"
+                       " than 1. Using %ld",
+                       "initial-reconnect-time", iv, "global scope",
+                       (long) INIT_RECON_PER);
+            iv = INIT_RECON_PER;
         }
-    }
-  else
-    iv = INIT_RECON_PER ;
-  init_reconnect_period = (unsigned int) iv ;
+    } else
+        iv = INIT_RECON_PER;
+    init_reconnect_period = (unsigned int) iv;
 
-  return rval ;
+    return rval;
 }
-  
-
-
 
 
 /*
  * Create a new Connection object and return it. All fields are
  * initialized to reasonable values.
  */
-Connection newConnection (Host host,
-                          unsigned int id,
-                          const char *ipname,
-                          unsigned int articleReceiptTimeout,
-                          unsigned int portNum,
-                          unsigned int respTimeout,
-                          unsigned int flushTimeout,
-                          double lowPassLow,
-                          double lowPassHigh,
-			  double lowPassFilter)
+Connection
+newConnection(Host host, unsigned int id, const char *ipname,
+              unsigned int articleReceiptTimeout, unsigned int portNum,
+              unsigned int respTimeout, unsigned int flushTimeout,
+              double lowPassLow, double lowPassHigh, double lowPassFilter)
 {
-  Connection cxn ;
-  bool croak = false ;
+    Connection cxn;
+    bool croak = false;
 
-  if (ipname == NULL)
-    {
-      d_printf (1,"NULL ipname in newConnection\n") ;
-      croak = true ;
+    if (ipname == NULL) {
+        d_printf(1, "NULL ipname in newConnection\n");
+        croak = true;
     }
 
-  if (ipname && strlen (ipname) == 0)
-    {
-      d_printf (1,"Empty ipname in newConnection\n") ;
-      croak = true ;
+    if (ipname && strlen(ipname) == 0) {
+        d_printf(1, "Empty ipname in newConnection\n");
+        croak = true;
     }
 
-  if (croak)
-    return NULL ;
+    if (croak)
+        return NULL;
 
-  cxn = xcalloc (1, sizeof(struct connection_s));
+    cxn = xcalloc(1, sizeof(struct connection_s));
 
-  cxn->myHost = host ;
-  cxn->myEp = NULL ;
-  cxn->ident = id ;
+    cxn->myHost = host;
+    cxn->myEp = NULL;
+    cxn->ident = id;
 
-  cxn->checkHead = NULL ;
-  cxn->checkRespHead = NULL ;
-  cxn->takeHead = NULL ;
-  cxn->takeRespHead = NULL ;
+    cxn->checkHead = NULL;
+    cxn->checkRespHead = NULL;
+    cxn->takeHead = NULL;
+    cxn->takeRespHead = NULL;
 
-  cxn->articleQTotal = 0 ;
-  cxn->missing = NULL ;
+    cxn->articleQTotal = 0;
+    cxn->missing = NULL;
 
-  cxn->respBuffer = newBuffer (BUFFER_SIZE) ;
-  ASSERT (cxn->respBuffer != NULL) ;
+    cxn->respBuffer = newBuffer(BUFFER_SIZE);
+    ASSERT(cxn->respBuffer != NULL);
 
-  cxn->ipName = xstrdup (ipname) ;
-  cxn->port = portNum ;
+    cxn->ipName = xstrdup(ipname);
+    cxn->port = portNum;
 
-  /* Time out the higher numbered connections faster */
-  cxn->articleReceiptTimeout = articleReceiptTimeout * 10.0 / (10.0 + id) ;
-  cxn->artReceiptTimerId = 0 ;
+    /* Time out the higher numbered connections faster */
+    cxn->articleReceiptTimeout = articleReceiptTimeout * 10.0 / (10.0 + id);
+    cxn->artReceiptTimerId = 0;
 
-  cxn->readTimeout = respTimeout ;
-  cxn->readBlockedTimerId = 0 ;
+    cxn->readTimeout = respTimeout;
+    cxn->readBlockedTimerId = 0;
 
-  cxn->writeTimeout = respTimeout ; /* XXX should be a separate value */
-  cxn->writeBlockedTimerId = 0 ;
+    cxn->writeTimeout = respTimeout; /* XXX should be a separate value */
+    cxn->writeBlockedTimerId = 0;
 
-  cxn->flushTimeout = fudgeFactor (flushTimeout) ;
-  cxn->flushTimerId = 0 ;
+    cxn->flushTimeout = fudgeFactor(flushTimeout);
+    cxn->flushTimerId = 0;
 
-  cxn->onThreshold = lowPassHigh * lowPassFilter / 100.0 ;
-  cxn->offThreshold = lowPassLow * lowPassFilter / 100.0 ;
-  cxn->lowPassFilter = lowPassFilter;
+    cxn->onThreshold = lowPassHigh * lowPassFilter / 100.0;
+    cxn->offThreshold = lowPassLow * lowPassFilter / 100.0;
+    cxn->lowPassFilter = lowPassFilter;
 
-  cxn->sleepTimerId = 0 ;
-  cxn->sleepTimeout = init_reconnect_period ;
+    cxn->sleepTimerId = 0;
+    cxn->sleepTimeout = init_reconnect_period;
 
-  resetConnection (cxn) ;
+    resetConnection(cxn);
 
-  cxn->next = gCxnList ;
-  gCxnList = cxn ;
-  gCxnCount++ ;
+    cxn->next = gCxnList;
+    gCxnList = cxn;
+    gCxnCount++;
 
-  cxn->state = cxnStartingS ;
+    cxn->state = cxnStartingS;
 
-  return cxn ;
+    return cxn;
 }
-
-
-
 
 
 /* Create a new endpoint hooked to a non-blocking socket that is trying to
@@ -486,117 +469,103 @@ Connection newConnection (Host host,
  * cxnConnecting	side effect of cxnFlush() call
  * cxnSleepingS		side effect of reopenTimeoutCbk() call.
  */
-bool cxnConnect (Connection cxn)
+bool
+cxnConnect(Connection cxn)
 {
-  struct sockaddr *cxnAddr;
-  socklen_t len;
-  int fd, rval;
-  const char *src;
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    struct sockaddr *cxnAddr;
+    socklen_t len;
+    int fd, rval;
+    const char *src;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  ASSERT (cxn->myEp == NULL) ;
+    ASSERT(cxn->myEp == NULL);
 
-  if (!(cxn->state == cxnStartingS ||
-        cxn->state == cxnWaitingS ||
-        cxn->state == cxnFlushingS ||
-        cxn->state == cxnSleepingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return false;
-    }
-  
-  if (cxn->state == cxnWaitingS)
-    ASSERT (cxn->articleQTotal == 1) ;
-  else
-    ASSERT (cxn->articleQTotal == 0) ;
-
-  cxn->state = cxnConnectingS ;
-
-  cxnAddr = hostIpAddr (cxn->myHost) ;
-
-  if (cxnAddr == NULL)
-    {
-      cxnSleepOrDie (cxn) ;
-      return false ;
+    if (!(cxn->state == cxnStartingS || cxn->state == cxnWaitingS
+          || cxn->state == cxnFlushingS || cxn->state == cxnSleepingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return false;
     }
 
-  if (cxnAddr->sa_family == AF_INET)
-    {
-      src = hostBindAddr(cxn->myHost) ;
-      len = sizeof(struct sockaddr_in) ;
+    if (cxn->state == cxnWaitingS)
+        ASSERT(cxn->articleQTotal == 1);
+    else
+        ASSERT(cxn->articleQTotal == 0);
+
+    cxn->state = cxnConnectingS;
+
+    cxnAddr = hostIpAddr(cxn->myHost);
+
+    if (cxnAddr == NULL) {
+        cxnSleepOrDie(cxn);
+        return false;
     }
-  else
-    {
-      src = hostBindAddr6(cxn->myHost) ;
+
+    if (cxnAddr->sa_family == AF_INET) {
+        src = hostBindAddr(cxn->myHost);
+        len = sizeof(struct sockaddr_in);
+    } else {
+        src = hostBindAddr6(cxn->myHost);
 #if HAVE_INET6
-      len = sizeof(struct sockaddr_in6) ;
+        len = sizeof(struct sockaddr_in6);
 #else
-      /* This should never happen, but the compiler doesn't know that. */
-      len = sizeof(struct sockaddr) ;
+        /* This should never happen, but the compiler doesn't know that. */
+        len = sizeof(struct sockaddr);
 #endif
     }
-  if (src && strcmp(src, "none") == 0)
-    src = NULL;
+    if (src && strcmp(src, "none") == 0)
+        src = NULL;
 
-  fd = network_client_create (cxnAddr->sa_family, SOCK_STREAM, src);
-  if (fd < 0)
-    {
-      syswarn ("%s:%d cxnsleep can't create socket", peerName, cxn->ident) ;
-      d_printf (1,"Can't get a socket: %s\n", strerror (errno)) ;
+    fd = network_client_create(cxnAddr->sa_family, SOCK_STREAM, src);
+    if (fd < 0) {
+        syswarn("%s:%d cxnsleep can't create socket", peerName, cxn->ident);
+        d_printf(1, "Can't get a socket: %s\n", strerror(errno));
 
-      hostIpFailed (cxn->myHost) ;
-      cxnSleepOrDie (cxn) ;
+        hostIpFailed(cxn->myHost);
+        cxnSleepOrDie(cxn);
 
-      return false ;
+        return false;
     }
 
-  if (!fdflag_nonblocking (fd, true))
-    {
-      syswarn ("%s:%d cxnsleep can't set socket non-blocking", peerName,
-               cxn->ident) ;
-      close (fd) ;
+    if (!fdflag_nonblocking(fd, true)) {
+        syswarn("%s:%d cxnsleep can't set socket non-blocking", peerName,
+                cxn->ident);
+        close(fd);
 
-      cxnSleepOrDie (cxn) ;
+        cxnSleepOrDie(cxn);
 
-      return false ;
+        return false;
     }
 
-  rval = connect (fd, cxnAddr, len) ;
-  if (rval < 0 && errno != EINPROGRESS)
-    {
-      syswarn ("%s:%d connect", peerName, cxn->ident) ;
-      hostIpFailed (cxn->myHost) ;
-      close (fd) ;
+    rval = connect(fd, cxnAddr, len);
+    if (rval < 0 && errno != EINPROGRESS) {
+        syswarn("%s:%d connect", peerName, cxn->ident);
+        hostIpFailed(cxn->myHost);
+        close(fd);
 
-      cxnSleepOrDie (cxn) ;
+        cxnSleepOrDie(cxn);
 
-      return false ;
+        return false;
     }
 
-  if ((cxn->myEp = newEndPoint (fd)) == NULL)
-    {
-      /* If this happens, then fd was bigger than what select could handle,
-         so endpoint.c refused to create the new object. */
-      close (fd) ;
-      cxnSleepOrDie (cxn) ;
-      return false ;
+    if ((cxn->myEp = newEndPoint(fd)) == NULL) {
+        /* If this happens, then fd was bigger than what select could handle,
+           so endpoint.c refused to create the new object. */
+        close(fd);
+        cxnSleepOrDie(cxn);
+        return false;
     }
-  
-  if (rval < 0)
-    /* when the write callback gets done the connection went through */
-    prepareWrite (cxn->myEp, NULL, NULL, connectionDone, cxn) ;
-  else
-    connectionDone (cxn->myEp, IoDone, NULL, cxn) ;
 
-  /* connectionDone() could set state to sleeping */
-  return (cxn->state == cxnConnectingS ? true : false) ;
+    if (rval < 0)
+        /* when the write callback gets done the connection went through */
+        prepareWrite(cxn->myEp, NULL, NULL, connectionDone, cxn);
+    else
+        connectionDone(cxn->myEp, IoDone, NULL, cxn);
+
+    /* connectionDone() could set state to sleeping */
+    return (cxn->state == cxnConnectingS ? true : false);
 }
-
-
-
 
 
 /* Put the Connection into the wait state.
@@ -613,24 +582,20 @@ bool cxnConnect (Connection cxn)
  * 			- I/O failed.
  *
  */
-void cxnWait (Connection cxn)
+void
+cxnWait(Connection cxn)
 {
-  ASSERT (cxn->state == cxnStartingS ||
-          cxn->state == cxnSleepingS ||
-          cxn->state == cxnConnectingS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnFlushingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->state == cxnStartingS || cxn->state == cxnSleepingS
+           || cxn->state == cxnConnectingS || cxn->state == cxnFeedingS
+           || cxn->state == cxnFlushingS);
+    VALIDATE_CONNECTION(cxn);
 
-  abortConnection (cxn) ;
+    abortConnection(cxn);
 
-  cxn->state = cxnWaitingS ;
+    cxn->state = cxnWaitingS;
 
-  hostCxnWaiting (cxn->myHost,cxn) ;   /* tell our Host we're waiting */
+    hostCxnWaiting(cxn->myHost, cxn); /* tell our Host we're waiting */
 }
-
-
-
 
 
 /* Tells the Connection to flush itself (i.e. push out all articles,
@@ -644,64 +609,62 @@ void cxnWait (Connection cxn)
  *  and cxnStartingS)
  * cxnFeedingS		- side effect of flushCxnCbk() call.
  */
-void cxnFlush (Connection cxn)
+void
+cxnFlush(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state != cxnStartingS) ;
-  ASSERT (cxn->state != cxnDeadS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state != cxnStartingS);
+    ASSERT(cxn->state != cxnDeadS);
+    VALIDATE_CONNECTION(cxn);
 
-  switch (cxn->state)
-    {
-      case cxnSleepingS:
-        cxnWait (cxn) ;
-        break ;
+    switch (cxn->state) {
+    case cxnSleepingS:
+        cxnWait(cxn);
+        break;
 
-      case cxnConnectingS:
-        cxnWait (cxn) ;
-        cxnConnect (cxn) ;
-        break ;
+    case cxnConnectingS:
+        cxnWait(cxn);
+        cxnConnect(cxn);
+        break;
 
-      case cxnIdleTimeoutS:
-      case cxnIdleS:
-        ASSERT (cxn->articleQTotal == 0) ;
+    case cxnIdleTimeoutS:
+    case cxnIdleS:
+        ASSERT(cxn->articleQTotal == 0);
         if (cxn->state != cxnIdleTimeoutS)
-          clearTimer (cxn->artReceiptTimerId) ;
-        clearTimer (cxn->flushTimerId) ;
-        cxn->state = cxnFlushingS ;
-        issueQUIT (cxn) ;
-        break ;
+            clearTimer(cxn->artReceiptTimerId);
+        clearTimer(cxn->flushTimerId);
+        cxn->state = cxnFlushingS;
+        issueQUIT(cxn);
+        break;
 
-      case cxnClosingS:
-      case cxnFlushingS:
-      case cxnWaitingS:
-        if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-          issueQUIT (cxn) ;
-        break ;
+    case cxnClosingS:
+    case cxnFlushingS:
+    case cxnWaitingS:
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            issueQUIT(cxn);
+        break;
 
-      case cxnFeedingS:
+    case cxnFeedingS:
         /* we only reconnect immediately if we're not idle when cxnFlush()
            is called. */
-        if (!cxn->immedRecon)
-          {
-            cxn->immedRecon = (cxn->articleQTotal > 0 ? true : false) ;
-            d_printf (1,"%s:%d immediate reconnect for a cxnFlush()\n",
-                     hostPeerName (cxn->myHost), cxn->ident) ;
-          }
-        
-        clearTimer (cxn->flushTimerId) ;
+        if (!cxn->immedRecon) {
+            cxn->immedRecon = (cxn->articleQTotal > 0 ? true : false);
+            d_printf(1, "%s:%d immediate reconnect for a cxnFlush()\n",
+                     hostPeerName(cxn->myHost), cxn->ident);
+        }
 
-        cxn->state = cxnFlushingS ;
+        clearTimer(cxn->flushTimerId);
 
-        if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-          issueQUIT (cxn) ;
-        break ;
+        cxn->state = cxnFlushingS;
 
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            issueQUIT(cxn);
+        break;
+
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
     }
 }
-
 
 
 /*
@@ -709,72 +672,70 @@ void cxnFlush (Connection cxn)
  * QUIT as quickly as possible. Much like cxnClose, except queued articles
  * are not sent, but are given back to the Host.
  */
-void cxnTerminate (Connection cxn)
+void
+cxnTerminate(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state != cxnDeadS) ;
-  ASSERT (cxn->state != cxnStartingS) ;
-  VALIDATE_CONNECTION (cxn) ;
-  
-  switch (cxn->state)
-    {
-      case cxnFeedingS:
-        d_printf (1,"%s:%d Issuing terminate\n",
-                 hostPeerName (cxn->myHost), cxn->ident) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state != cxnDeadS);
+    ASSERT(cxn->state != cxnStartingS);
+    VALIDATE_CONNECTION(cxn);
 
-        clearTimer (cxn->flushTimerId) ;
+    switch (cxn->state) {
+    case cxnFeedingS:
+        d_printf(1, "%s:%d Issuing terminate\n", hostPeerName(cxn->myHost),
+                 cxn->ident);
 
-        cxn->state = cxnClosingS ;
+        clearTimer(cxn->flushTimerId);
 
-        deferQueuedArticles (cxn) ;
+        cxn->state = cxnClosingS;
+
+        deferQueuedArticles(cxn);
         if (cxn->articleQTotal == 0)
-          issueQUIT (cxn) ; /* send out the QUIT if we can */
-        break ;
+            issueQUIT(cxn); /* send out the QUIT if we can */
+        break;
 
-      case cxnIdleTimeoutS:
-      case cxnIdleS:
-        ASSERT (cxn->articleQTotal == 0) ;
+    case cxnIdleTimeoutS:
+    case cxnIdleS:
+        ASSERT(cxn->articleQTotal == 0);
         if (cxn->state != cxnIdleTimeoutS)
-          clearTimer (cxn->artReceiptTimerId) ;
-        clearTimer (cxn->flushTimerId) ;
-        cxn->state = cxnClosingS ;
-        issueQUIT (cxn) ;
-        break ;
+            clearTimer(cxn->artReceiptTimerId);
+        clearTimer(cxn->flushTimerId);
+        cxn->state = cxnClosingS;
+        issueQUIT(cxn);
+        break;
 
-      case cxnFlushingS: /* we are in the middle of a periodic close. */
-        d_printf (1,"%s:%d Connection already being flushed\n",
-                 hostPeerName (cxn->myHost),cxn->ident);
-        cxn->state = cxnClosingS ;
+    case cxnFlushingS: /* we are in the middle of a periodic close. */
+        d_printf(1, "%s:%d Connection already being flushed\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        cxn->state = cxnClosingS;
         if (cxn->articleQTotal == 0)
-          issueQUIT (cxn) ; /* send out the QUIT if we can */
-        break ;
+            issueQUIT(cxn); /* send out the QUIT if we can */
+        break;
 
-      case cxnClosingS:
-        d_printf (1,"%s:%d Connection already closing\n",
-                 hostPeerName (cxn->myHost),cxn->ident) ;
-        break ;
+    case cxnClosingS:
+        d_printf(1, "%s:%d Connection already closing\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        break;
 
-      case cxnWaitingS:
-      case cxnConnectingS:
-      case cxnSleepingS:
-        cxnDead (cxn) ;
-        break ;
+    case cxnWaitingS:
+    case cxnConnectingS:
+    case cxnSleepingS:
+        cxnDead(cxn);
+        break;
 
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
     }
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  if (cxn->state == cxnDeadS)
-    {
-      d_printf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
-               cxn->ident) ;
+    if (cxn->state == cxnDeadS) {
+        d_printf(1, "%s:%d Deleting connection\n", hostPeerName(cxn->myHost),
+                 cxn->ident);
 
-      delConnection (cxn) ;
+        delConnection(cxn);
     }
 }
-
 
 
 /* Tells the Connection to do a disconnect and then when it is
@@ -785,73 +746,69 @@ void cxnTerminate (Connection cxn)
  * ALL (except cxnDeadS	- Connecton owner called directly.
  * and cxnStartingS).
  */
-void cxnClose (Connection cxn)
+void
+cxnClose(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state != cxnDeadS) ;
-  ASSERT (cxn->state != cxnStartingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state != cxnDeadS);
+    ASSERT(cxn->state != cxnStartingS);
+    VALIDATE_CONNECTION(cxn);
 
-  switch (cxn->state)
-    {
-      case cxnFeedingS:
-        d_printf (1,"%s:%d Issuing disconnect\n",
-                 hostPeerName (cxn->myHost), cxn->ident) ;
+    switch (cxn->state) {
+    case cxnFeedingS:
+        d_printf(1, "%s:%d Issuing disconnect\n", hostPeerName(cxn->myHost),
+                 cxn->ident);
 
-        clearTimer (cxn->flushTimerId) ;
+        clearTimer(cxn->flushTimerId);
 
-        cxn->state = cxnClosingS ;
+        cxn->state = cxnClosingS;
 
         if (cxn->articleQTotal == 0)
-          issueQUIT (cxn) ; /* send out the QUIT if we can */
-        break ;
+            issueQUIT(cxn); /* send out the QUIT if we can */
+        break;
 
-      case cxnIdleS:
-      case cxnIdleTimeoutS:
-        ASSERT (cxn->articleQTotal == 0) ;
+    case cxnIdleS:
+    case cxnIdleTimeoutS:
+        ASSERT(cxn->articleQTotal == 0);
         if (cxn->state != cxnIdleTimeoutS)
-          clearTimer (cxn->artReceiptTimerId) ;
-        clearTimer (cxn->flushTimerId) ;
-        cxn->state = cxnClosingS ;
-        issueQUIT (cxn) ;
-        break ;
+            clearTimer(cxn->artReceiptTimerId);
+        clearTimer(cxn->flushTimerId);
+        cxn->state = cxnClosingS;
+        issueQUIT(cxn);
+        break;
 
-      case cxnFlushingS: /* we are in the middle of a periodic close. */
-        d_printf (1,"%s:%d Connection already being flushed\n",
-                 hostPeerName (cxn->myHost),cxn->ident);
-        cxn->state = cxnClosingS ;
+    case cxnFlushingS: /* we are in the middle of a periodic close. */
+        d_printf(1, "%s:%d Connection already being flushed\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        cxn->state = cxnClosingS;
         if (cxn->articleQTotal == 0)
-          issueQUIT (cxn) ; /* send out the QUIT if we can */
-        break ;
+            issueQUIT(cxn); /* send out the QUIT if we can */
+        break;
 
-      case cxnClosingS:
-        d_printf (1,"%s:%d Connection already closing\n",
-                 hostPeerName (cxn->myHost),cxn->ident) ;
-        break ;
+    case cxnClosingS:
+        d_printf(1, "%s:%d Connection already closing\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        break;
 
-      case cxnWaitingS:
-      case cxnConnectingS:
-      case cxnSleepingS:
-        cxnDead (cxn) ;
-        break ;
+    case cxnWaitingS:
+    case cxnConnectingS:
+    case cxnSleepingS:
+        cxnDead(cxn);
+        break;
 
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
     }
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  if (cxn->state == cxnDeadS)
-    {
-      d_printf (1,"%s:%d Deleting connection\n",hostPeerName (cxn->myHost),
-               cxn->ident) ;
+    if (cxn->state == cxnDeadS) {
+        d_printf(1, "%s:%d Deleting connection\n", hostPeerName(cxn->myHost),
+                 cxn->ident);
 
-      delConnection (cxn) ;
+        delConnection(cxn);
     }
 }
-
-
-
 
 
 /* This is what the Host calls to get us to tranfer an article. If
@@ -860,371 +817,346 @@ void cxnClose (Connection cxn)
  * sequence, then we'll take as many as we can (up to our MAXCHECK
  * limit).
  */
-bool cxnTakeArticle (Connection cxn, Article art)
+bool
+cxnTakeArticle(Connection cxn, Article art)
 {
-  bool rval = true ;
+    bool rval = true;
 
-  ASSERT (cxn != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  if ( !cxnQueueArticle (cxn,art) ) /* might change cxnIdleS to cxnFeedingS */
-    return false ;
+    if (!cxnQueueArticle(cxn, art)) /* might change cxnIdleS to cxnFeedingS */
+        return false;
 
-  if (!(cxn->state == cxnConnectingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnWaitingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return false ;
-    }
-  
-  if (cxn->state != cxnWaitingS) /* because articleQTotal == 1 */
-    VALIDATE_CONNECTION (cxn) ;
-  else
-    ASSERT (cxn->articleQTotal == 1) ;
-
-  switch (cxn->state)
-    {
-      case cxnWaitingS:
-        cxnConnect (cxn) ;
-        break ;
-
-      case cxnFeedingS:
-        doSomeWrites (cxn) ;
-        break ;
-
-      case cxnConnectingS:
-        break ;
-
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+    if (!(cxn->state == cxnConnectingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnWaitingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return false;
     }
 
-  return rval ;
+    if (cxn->state != cxnWaitingS) /* because articleQTotal == 1 */
+        VALIDATE_CONNECTION(cxn);
+    else
+        ASSERT(cxn->articleQTotal == 1);
+
+    switch (cxn->state) {
+    case cxnWaitingS:
+        cxnConnect(cxn);
+        break;
+
+    case cxnFeedingS:
+        doSomeWrites(cxn);
+        break;
+
+    case cxnConnectingS:
+        break;
+
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
+    }
+
+    return rval;
 }
-
-
-
 
 
 /* if there's room in the Connection then stick the article on the
  * queue, otherwise return false.
  */
-bool cxnQueueArticle (Connection cxn, Article art)
+bool
+cxnQueueArticle(Connection cxn, Article art)
 {
-  ArtHolder newArt ;
-  bool rval = false ;
+    ArtHolder newArt;
+    bool rval = false;
 
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state != cxnStartingS) ;
-  ASSERT (cxn->state != cxnDeadS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state != cxnStartingS);
+    ASSERT(cxn->state != cxnDeadS);
+    VALIDATE_CONNECTION(cxn);
 
-  switch (cxn->state)
-    {
-      case cxnClosingS:
-        d_printf (5,"%s:%d Refusing article due to closing\n",
-                 hostPeerName (cxn->myHost),cxn->ident) ;
-        break ;
+    switch (cxn->state) {
+    case cxnClosingS:
+        d_printf(5, "%s:%d Refusing article due to closing\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        break;
 
-      case cxnFlushingS:
-        d_printf (5,"%s:%d Refusing article due to flushing\n",
-                 hostPeerName (cxn->myHost),cxn->ident) ;
-        break ;
+    case cxnFlushingS:
+        d_printf(5, "%s:%d Refusing article due to flushing\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        break;
 
-      case cxnSleepingS:
-        d_printf (5,"%s:%d Refusing article due to sleeping\n",
-                 hostPeerName (cxn->myHost),cxn->ident) ;
-        break ;
+    case cxnSleepingS:
+        d_printf(5, "%s:%d Refusing article due to sleeping\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+        break;
 
-      case cxnWaitingS:
-        rval = true ;
-        newArt = newArtHolder (art) ;
-        appendArtHolder (newArt, &cxn->checkHead, &cxn->articleQTotal) ;
-        break ;
+    case cxnWaitingS:
+        rval = true;
+        newArt = newArtHolder(art);
+        appendArtHolder(newArt, &cxn->checkHead, &cxn->articleQTotal);
+        break;
 
-      case cxnConnectingS:
+    case cxnConnectingS:
         if (cxn->articleQTotal != 0)
-          break ;
-        rval = true ;
-        newArt = newArtHolder (art) ;
-        appendArtHolder (newArt, &cxn->checkHead, &cxn->articleQTotal) ;
-        break ;
+            break;
+        rval = true;
+        newArt = newArtHolder(art);
+        appendArtHolder(newArt, &cxn->checkHead, &cxn->articleQTotal);
+        break;
 
-      case cxnIdleS:
-      case cxnFeedingS:
+    case cxnIdleS:
+    case cxnFeedingS:
         if (cxn->articleQTotal >= cxn->maxCheck)
-          d_printf (5, "%s:%d Refusing article due to articleQTotal >= maxCheck (%d > %d)\n",
-                   hostPeerName (cxn->myHost), cxn->ident,
-                   cxn->articleQTotal, cxn->maxCheck) ;
-        else
-          {
-            rval = true ;
-            newArt = newArtHolder (art) ;
+            d_printf(5,
+                     "%s:%d Refusing article due to articleQTotal >= maxCheck "
+                     "(%d > %d)\n",
+                     hostPeerName(cxn->myHost), cxn->ident, cxn->articleQTotal,
+                     cxn->maxCheck);
+        else {
+            rval = true;
+            newArt = newArtHolder(art);
             if (cxn->needsChecks)
-              appendArtHolder (newArt, &cxn->checkHead, &cxn->articleQTotal) ;
+                appendArtHolder(newArt, &cxn->checkHead, &cxn->articleQTotal);
             else
-              appendArtHolder (newArt, &cxn->takeHead, &cxn->articleQTotal) ;
-            if (cxn->state == cxnIdleS)
-              {
-                cxn->state = cxnFeedingS ;
-                clearTimer (cxn->artReceiptTimerId) ;
-              }
-          }
-        break ;
+                appendArtHolder(newArt, &cxn->takeHead, &cxn->articleQTotal);
+            if (cxn->state == cxnIdleS) {
+                cxn->state = cxnFeedingS;
+                clearTimer(cxn->artReceiptTimerId);
+            }
+        }
+        break;
 
-      default:
-        die ("Invalid state: %s\n", stateToString (cxn->state)) ;
+    default:
+        die("Invalid state: %s\n", stateToString(cxn->state));
     }
 
-  if (rval)
-    {
-      d_printf (5,"%s:%d accepting article %s\n",hostPeerName (cxn->myHost),
-               cxn->ident,artMsgId (art)) ;
+    if (rval) {
+        d_printf(5, "%s:%d accepting article %s\n", hostPeerName(cxn->myHost),
+                 cxn->ident, artMsgId(art));
 
-      cxn->artsTaken++ ;
+        cxn->artsTaken++;
     }
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /*
  * Generate a log message for activity.  Usually called by the Connection's
  * owner.
  */
-void cxnLogStats (Connection cxn, bool final)
+void
+cxnLogStats(Connection cxn, bool final)
 {
-  const char *peerName ;
-  time_t now = theTime() ;
+    const char *peerName;
+    time_t now = theTime();
 
-  ASSERT (cxn != NULL) ;
+    ASSERT(cxn != NULL);
 
-  /* Only log stats when in one of these three states. */
-  switch (cxn->state)
-    {
-      case cxnFeedingS:
-      case cxnFlushingS:
-      case cxnClosingS:
-        break ;
+    /* Only log stats when in one of these three states. */
+    switch (cxn->state) {
+    case cxnFeedingS:
+    case cxnFlushingS:
+    case cxnClosingS:
+        break;
 
-      default:
-        return ;
+    default:
+        return;
     }
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  /* Log a checkpoint in any case. */
-  notice("%s:%d checkpoint seconds %ld offered %d accepted %d refused %d"
-         " rejected %d accsize %.0f rejsize %.0f",
-         peerName, cxn->ident,
-         (long) (now - cxn->timeCon_checkpoint),
-         cxn->checksIssued - cxn->checksIssued_checkpoint,
-         cxn->takesOkayed - cxn->takesOkayed_checkpoint,
-         cxn->checksRefused - cxn->checksRefused_checkpoint,
-         cxn->takesRejected - cxn->takesRejected_checkpoint,
-         cxn->takesSizeOkayed - cxn->takesSizeOkayed_checkpoint,
-         cxn->takesSizeRejected - cxn->takesSizeRejected_checkpoint);
-
-  if (final) {
-    notice("%s:%d final seconds %ld offered %d accepted %d refused %d"
+    /* Log a checkpoint in any case. */
+    notice("%s:%d checkpoint seconds %ld offered %d accepted %d refused %d"
            " rejected %d accsize %.0f rejsize %.0f",
-           peerName, cxn->ident, (long) (now - cxn->timeCon),
-           cxn->checksIssued, cxn->takesOkayed, cxn->checksRefused,
-           cxn->takesRejected, cxn->takesSizeOkayed, cxn->takesSizeRejected);
+           peerName, cxn->ident, (long) (now - cxn->timeCon_checkpoint),
+           cxn->checksIssued - cxn->checksIssued_checkpoint,
+           cxn->takesOkayed - cxn->takesOkayed_checkpoint,
+           cxn->checksRefused - cxn->checksRefused_checkpoint,
+           cxn->takesRejected - cxn->takesRejected_checkpoint,
+           cxn->takesSizeOkayed - cxn->takesSizeOkayed_checkpoint,
+           cxn->takesSizeRejected - cxn->takesSizeRejected_checkpoint);
 
-    cxn->artsTaken = 0;
-    cxn->checksIssued = 0;
-    cxn->checksRefused = 0;
-    cxn->takesRejected = 0;
-    cxn->takesOkayed = 0;
-    cxn->takesSizeRejected = 0;
-    cxn->takesSizeOkayed = 0;
+    if (final) {
+        notice("%s:%d final seconds %ld offered %d accepted %d refused %d"
+               " rejected %d accsize %.0f rejsize %.0f",
+               peerName, cxn->ident, (long) (now - cxn->timeCon),
+               cxn->checksIssued, cxn->takesOkayed, cxn->checksRefused,
+               cxn->takesRejected, cxn->takesSizeOkayed,
+               cxn->takesSizeRejected);
 
-      if (cxn->timeCon > 0) {
-        cxn->timeCon = theTime();
-      }
-  }
+        cxn->artsTaken = 0;
+        cxn->checksIssued = 0;
+        cxn->checksRefused = 0;
+        cxn->takesRejected = 0;
+        cxn->takesOkayed = 0;
+        cxn->takesSizeRejected = 0;
+        cxn->takesSizeOkayed = 0;
 
-  cxn->timeCon_checkpoint = now;
-  cxn->checksIssued_checkpoint = cxn->checksIssued;
-  cxn->takesOkayed_checkpoint = cxn->takesOkayed;
-  cxn->checksRefused_checkpoint = cxn->checksRefused;
-  cxn->takesRejected_checkpoint = cxn->takesRejected;
-  cxn->takesSizeOkayed_checkpoint = cxn->takesSizeOkayed;
-  cxn->takesSizeRejected_checkpoint = cxn->takesSizeRejected;
+        if (cxn->timeCon > 0) {
+            cxn->timeCon = theTime();
+        }
+    }
+
+    cxn->timeCon_checkpoint = now;
+    cxn->checksIssued_checkpoint = cxn->checksIssued;
+    cxn->takesOkayed_checkpoint = cxn->takesOkayed;
+    cxn->checksRefused_checkpoint = cxn->checksRefused;
+    cxn->takesRejected_checkpoint = cxn->takesRejected;
+    cxn->takesSizeOkayed_checkpoint = cxn->takesSizeOkayed;
+    cxn->takesSizeRejected_checkpoint = cxn->takesSizeRejected;
 }
-
-
-
 
 
 /*
  * return the number of articles the connection will accept.
  */
-size_t cxnQueueSpace (Connection cxn)
+size_t
+cxnQueueSpace(Connection cxn)
 {
-  int rval = 0 ;
+    int rval = 0;
 
-  ASSERT (cxn != NULL) ;
+    ASSERT(cxn != NULL);
 
-  if (cxn->state == cxnFeedingS ||
-      cxn->state == cxnIdleS ||
-      cxn->state == cxnConnectingS ||
-      cxn->state == cxnWaitingS)
-    rval = cxn->maxCheck - cxn->articleQTotal ;
+    if (cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+        || cxn->state == cxnConnectingS || cxn->state == cxnWaitingS)
+        rval = cxn->maxCheck - cxn->articleQTotal;
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /*
  * Print info on all the connections that currently exist.
  */
-void gPrintCxnInfo (FILE *fp, unsigned int indentAmt)
+void
+gPrintCxnInfo(FILE *fp, unsigned int indentAmt)
 {
-  char indent [INDENT_BUFFER_SIZE] ;
-  unsigned int i ;
-  Connection cxn ;
+    char indent[INDENT_BUFFER_SIZE];
+    unsigned int i;
+    Connection cxn;
 
-  for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
-    indent [i] = ' ' ;
-  indent [i] = '\0' ;
+    for (i = 0; i < MIN(INDENT_BUFFER_SIZE - 1, indentAmt); i++)
+        indent[i] = ' ';
+    indent[i] = '\0';
 
-  fprintf (fp,"%sGlobal Connection list : (count %u) {\n",
-           indent,gCxnCount) ;
-  for (cxn = gCxnList ; cxn != NULL ; cxn = cxn->next)
-    printCxnInfo (cxn,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s}\n",indent) ;
+    fprintf(fp, "%sGlobal Connection list : (count %u) {\n", indent,
+            gCxnCount);
+    for (cxn = gCxnList; cxn != NULL; cxn = cxn->next)
+        printCxnInfo(cxn, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s}\n", indent);
 }
-
-
-
 
 
 /*
  * Print the info about the given connection.
  */
-void printCxnInfo (Connection cxn, FILE *fp, unsigned int indentAmt)
+void
+printCxnInfo(Connection cxn, FILE *fp, unsigned int indentAmt)
 {
-  char indent [INDENT_BUFFER_SIZE] ;
-  unsigned int i ;
-  ArtHolder artH ;
+    char indent[INDENT_BUFFER_SIZE];
+    unsigned int i;
+    ArtHolder artH;
 
-  for (i = 0 ; i < MIN(INDENT_BUFFER_SIZE - 1,indentAmt) ; i++)
-    indent [i] = ' ' ;
-  indent [i] = '\0' ;
+    for (i = 0; i < MIN(INDENT_BUFFER_SIZE - 1, indentAmt); i++)
+        indent[i] = ' ';
+    indent[i] = '\0';
 
-  fprintf (fp,"%sConnection : %p {\n",indent, (void *) cxn) ;
-  fprintf (fp,"%s    host : %p\n",indent, (void *) cxn->myHost) ;
-  fprintf (fp,"%s    endpoint : %p\n",indent, (void *) cxn->myEp) ;
-  fprintf (fp,"%s    state : %s\n",indent, stateToString (cxn->state)) ;
-  fprintf (fp,"%s    ident : %u\n",indent,cxn->ident) ;
-  fprintf (fp,"%s    ip-name : %s\n", indent, cxn->ipName) ;
-  fprintf (fp,"%s    port-number : %u\n",indent,cxn->port) ;
-  fprintf (fp,"%s    max-checks : %u\n",indent,cxn->maxCheck) ;
-  fprintf (fp,"%s    does-streaming : %s\n",indent,
-           boolToString (cxn->doesStreaming)) ;
-  fprintf (fp,"%s    authenticated : %s\n",indent,
-           boolToString (cxn->authenticated)) ;
-  fprintf (fp,"%s    quitWasIssued : %s\n",indent,
-           boolToString (cxn->quitWasIssued)) ;
-  fprintf (fp,"%s    needs-checks : %s\n",indent,
-           boolToString (cxn->needsChecks)) ;
+    fprintf(fp, "%sConnection : %p {\n", indent, (void *) cxn);
+    fprintf(fp, "%s    host : %p\n", indent, (void *) cxn->myHost);
+    fprintf(fp, "%s    endpoint : %p\n", indent, (void *) cxn->myEp);
+    fprintf(fp, "%s    state : %s\n", indent, stateToString(cxn->state));
+    fprintf(fp, "%s    ident : %u\n", indent, cxn->ident);
+    fprintf(fp, "%s    ip-name : %s\n", indent, cxn->ipName);
+    fprintf(fp, "%s    port-number : %u\n", indent, cxn->port);
+    fprintf(fp, "%s    max-checks : %u\n", indent, cxn->maxCheck);
+    fprintf(fp, "%s    does-streaming : %s\n", indent,
+            boolToString(cxn->doesStreaming));
+    fprintf(fp, "%s    authenticated : %s\n", indent,
+            boolToString(cxn->authenticated));
+    fprintf(fp, "%s    quitWasIssued : %s\n", indent,
+            boolToString(cxn->quitWasIssued));
+    fprintf(fp, "%s    needs-checks : %s\n", indent,
+            boolToString(cxn->needsChecks));
 
-  fprintf (fp,"%s    time-connected : %ld\n",indent,(long) cxn->timeCon) ;
-  fprintf (fp,"%s    articles from INN : %u\n",indent,cxn->artsTaken) ;
-  fprintf (fp,"%s    articles offered : %u\n",indent,
-           cxn->checksIssued) ;
-  fprintf (fp,"%s    articles refused : %u\n",indent,
-           cxn->checksRefused) ;
-  fprintf (fp,"%s    articles rejected : %u\n",indent,
-           cxn->takesRejected) ;
-  fprintf (fp,"%s    articles accepted : %u\n",indent,
-           cxn->takesOkayed) ;
-  fprintf (fp,"%s    low-pass upper limit : %0.6f\n", indent,
-           cxn->onThreshold) ;
-  fprintf (fp,"%s    low-pass lower limit : %0.6f\n", indent,
-           cxn->offThreshold) ;
-  fprintf (fp,"%s    low-pass filter tc : %0.6f\n", indent,
-           cxn->lowPassFilter) ;
-  fprintf (fp,"%s    low-pass filter : %0.6f\n", indent,
-           cxn->filterValue) ;
+    fprintf(fp, "%s    time-connected : %ld\n", indent, (long) cxn->timeCon);
+    fprintf(fp, "%s    articles from INN : %u\n", indent, cxn->artsTaken);
+    fprintf(fp, "%s    articles offered : %u\n", indent, cxn->checksIssued);
+    fprintf(fp, "%s    articles refused : %u\n", indent, cxn->checksRefused);
+    fprintf(fp, "%s    articles rejected : %u\n", indent, cxn->takesRejected);
+    fprintf(fp, "%s    articles accepted : %u\n", indent, cxn->takesOkayed);
+    fprintf(fp, "%s    low-pass upper limit : %0.6f\n", indent,
+            cxn->onThreshold);
+    fprintf(fp, "%s    low-pass lower limit : %0.6f\n", indent,
+            cxn->offThreshold);
+    fprintf(fp, "%s    low-pass filter tc : %0.6f\n", indent,
+            cxn->lowPassFilter);
+    fprintf(fp, "%s    low-pass filter : %0.6f\n", indent, cxn->filterValue);
 
-  fprintf (fp,"%s    article-timeout : %u\n",indent,cxn->articleReceiptTimeout) ;
-  fprintf (fp,"%s    article-callback : %d\n",indent,cxn->artReceiptTimerId) ;
+    fprintf(fp, "%s    article-timeout : %u\n", indent,
+            cxn->articleReceiptTimeout);
+    fprintf(fp, "%s    article-callback : %d\n", indent,
+            cxn->artReceiptTimerId);
 
-  fprintf (fp,"%s    response-timeout : %u\n",indent,cxn->readTimeout) ;
-  fprintf (fp,"%s    response-callback : %d\n",indent,cxn->readBlockedTimerId) ;
+    fprintf(fp, "%s    response-timeout : %u\n", indent, cxn->readTimeout);
+    fprintf(fp, "%s    response-callback : %d\n", indent,
+            cxn->readBlockedTimerId);
 
-  fprintf (fp,"%s    write-timeout : %u\n",indent,cxn->writeTimeout) ;
-  fprintf (fp,"%s    write-callback : %d\n",indent,cxn->writeBlockedTimerId) ;
+    fprintf(fp, "%s    write-timeout : %u\n", indent, cxn->writeTimeout);
+    fprintf(fp, "%s    write-callback : %d\n", indent,
+            cxn->writeBlockedTimerId);
 
-  fprintf (fp,"%s    flushTimeout : %u\n",indent,cxn->flushTimeout) ;
-  fprintf (fp,"%s    flushTimerId : %d\n",indent,cxn->flushTimerId) ;
+    fprintf(fp, "%s    flushTimeout : %u\n", indent, cxn->flushTimeout);
+    fprintf(fp, "%s    flushTimerId : %d\n", indent, cxn->flushTimerId);
 
-  fprintf (fp,"%s    reopen wait : %u\n",indent,cxn->sleepTimeout) ;
-  fprintf (fp,"%s    reopen id : %d\n",indent,cxn->sleepTimerId) ;
+    fprintf(fp, "%s    reopen wait : %u\n", indent, cxn->sleepTimeout);
+    fprintf(fp, "%s    reopen id : %d\n", indent, cxn->sleepTimerId);
 
-  fprintf (fp,"%s    CHECK queue {\n",indent) ;
-  for (artH = cxn->checkHead ; artH != NULL ; artH = artH->next)
-    printArticleInfo (artH->article,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    CHECK queue {\n", indent);
+    for (artH = cxn->checkHead; artH != NULL; artH = artH->next)
+        printArticleInfo(artH->article, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 
-  fprintf (fp,"%s    CHECK Response queue {\n",indent) ;
-  for (artH = cxn->checkRespHead ; artH != NULL ; artH = artH->next)
-    printArticleInfo (artH->article,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    CHECK Response queue {\n", indent);
+    for (artH = cxn->checkRespHead; artH != NULL; artH = artH->next)
+        printArticleInfo(artH->article, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 
-  fprintf (fp,"%s    TAKE queue {\n",indent) ;
-  for (artH = cxn->takeHead ; artH != NULL ; artH = artH->next)
-    printArticleInfo (artH->article,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    TAKE queue {\n", indent);
+    for (artH = cxn->takeHead; artH != NULL; artH = artH->next)
+        printArticleInfo(artH->article, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 
-  fprintf (fp,"%s    TAKE response queue {\n",indent) ;
-  for (artH = cxn->takeRespHead ; artH != NULL ; artH = artH->next)
-    printArticleInfo (artH->article,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    TAKE response queue {\n", indent);
+    for (artH = cxn->takeRespHead; artH != NULL; artH = artH->next)
+        printArticleInfo(artH->article, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 
-  fprintf (fp,"%s    response buffer {\n",indent) ;
-  printBufferInfo (cxn->respBuffer,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    response buffer {\n", indent);
+    printBufferInfo(cxn->respBuffer, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 
-  fprintf (fp,"%s}\n",indent) ;
+    fprintf(fp, "%s}\n", indent);
 }
-
-
-
 
 
 /*
  * Return whether the connection will accept articles.
  */
-bool cxnCheckstate (Connection cxn)
+bool
+cxnCheckstate(Connection cxn)
 {
-  bool rval = false ;
+    bool rval = false;
 
-  ASSERT (cxn != NULL) ;
+    ASSERT(cxn != NULL);
 
-  if (cxn->state == cxnFeedingS ||
-      cxn->state == cxnIdleS ||
-      cxn->state == cxnConnectingS)
-    rval = true ;
+    if (cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+        || cxn->state == cxnConnectingS)
+        rval = true;
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /**********************************************************************/
@@ -1248,71 +1180,63 @@ bool cxnCheckstate (Connection cxn)
  * something broken, in which case it probably went into the
  * cxnSleepingS state.
  */
-static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+connectionDone(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Buffer *readBuffers ;
-  Connection cxn = (Connection) d ;
-  const char *peerName ;
-  int optval;
-  socklen_t size ;
+    Buffer *readBuffers;
+    Connection cxn = (Connection) d;
+    const char *peerName;
+    int optval;
+    socklen_t size;
 
-  ASSERT (b == NULL) ;
-  ASSERT (cxn->state == cxnConnectingS) ;
-  ASSERT (!writeIsPending (cxn->myEp)) ;
+    ASSERT(b == NULL);
+    ASSERT(cxn->state == cxnConnectingS);
+    ASSERT(!writeIsPending(cxn->myEp));
 
-  size = sizeof (optval) ;
-  peerName = hostPeerName (cxn->myHost) ;
+    size = sizeof(optval);
+    peerName = hostPeerName(cxn->myHost);
 
-  if (i != IoDone)
-    {
-      errno = endPointErrno (e) ;
-      syswarn ("%s:%d cxnsleep i/o failed", peerName, cxn->ident) ;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syswarn("%s:%d cxnsleep i/o failed", peerName, cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (getsockopt (endPointFd (e), SOL_SOCKET, SO_ERROR,
-                       (char *) &optval, &size) != 0)
-    {
-      /* This is bad. Can't even get the SO_ERROR value out of the socket */
-      syswarn ("%s:%d cxnsleep internal getsockopt", peerName, cxn->ident) ;
+        cxnSleepOrDie(cxn);
+    } else if (getsockopt(endPointFd(e), SOL_SOCKET, SO_ERROR,
+                          (char *) &optval, &size)
+               != 0) {
+        /* This is bad. Can't even get the SO_ERROR value out of the socket */
+        syswarn("%s:%d cxnsleep internal getsockopt", peerName, cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (optval != 0)
-    {
-      /* if the connect failed then the only way to know is by getting
-         the SO_ERROR value out of the socket. */
-      errno = optval ;
-      syswarn ("%s:%d cxnsleep connect", peerName, cxn->ident) ;
-      hostIpFailed (cxn->myHost) ;
+        cxnSleepOrDie(cxn);
+    } else if (optval != 0) {
+        /* if the connect failed then the only way to know is by getting
+           the SO_ERROR value out of the socket. */
+        errno = optval;
+        syswarn("%s:%d cxnsleep connect", peerName, cxn->ident);
+        hostIpFailed(cxn->myHost);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else
-    {
-      readBuffers = makeBufferArray (bufferTakeRef (cxn->respBuffer), NULL) ;
+        cxnSleepOrDie(cxn);
+    } else {
+        readBuffers = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
 
-      if ( !prepareRead (e, readBuffers, getBanner, cxn, 1) )
-        {
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
+        if (!prepareRead(e, readBuffers, getBanner, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
 
-          cxnSleepOrDie (cxn) ;
-        }
-      else
-        {
-          initReadBlockedTimeout (cxn) ;
+            cxnSleepOrDie(cxn);
+        } else {
+            initReadBlockedTimeout(cxn);
 
-          /* set up the callback for closing down the connection at regular
-             intervals (due to problems with long running nntpd). */
-          if (cxn->flushTimeout > 0)
-            cxn->flushTimerId = prepareSleep (flushCxnCbk,
-                                              cxn->flushTimeout,cxn) ;
+            /* set up the callback for closing down the connection at regular
+               intervals (due to problems with long running nntpd). */
+            if (cxn->flushTimeout > 0)
+                cxn->flushTimerId =
+                    prepareSleep(flushCxnCbk, cxn->flushTimeout, cxn);
 
-          /* The state doesn't change yet until we've read the banner and
-             tried the MODE STREAM command. */
+            /* The state doesn't change yet until we've read the banner and
+               tried the MODE STREAM command. */
         }
     }
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 }
 
 
@@ -1321,20 +1245,21 @@ static void connectionDone (EndPoint e, IoStatus i, Buffer *b, void *d)
  * we're confident it'll work.  If the connection is IPv6, remove
  * the IPv4 addresses from the address list.
  */
-static void connectionIfIpv6DeleteIpv4Addr (Connection cxn)
+static void
+connectionIfIpv6DeleteIpv4Addr(Connection cxn)
 {
-  union {
-    struct sockaddr sa;
-    struct sockaddr_storage ss;
-  } u;
-  socklen_t len = sizeof(u);
+    union {
+        struct sockaddr sa;
+        struct sockaddr_storage ss;
+    } u;
+    socklen_t len = sizeof(u);
 
-  if (getpeername (endPointFd (cxn->myEp), &u.sa, &len) < 0)
-    return;
-  if (u.sa.sa_family == AF_INET)
-    return;
+    if (getpeername(endPointFd(cxn->myEp), &u.sa, &len) < 0)
+        return;
+    if (u.sa.sa_family == AF_INET)
+        return;
 
-  hostDeleteIpv4Addr (cxn->myHost);
+    hostDeleteIpv4Addr(cxn->myHost);
 }
 
 
@@ -1344,421 +1269,361 @@ static void connectionIfIpv6DeleteIpv4Addr (Connection cxn)
  * Connection will still be cxnConnectingS unless something broken,
  * in which case it probably went into the cxnSleepiongS state.
  */
-static void getBanner (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+getBanner(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Buffer *readBuffers ;
-  Connection cxn = (Connection) d ;
-  char *p = bufferBase (b[0]) ;
-  int code ;
-  bool isOk = false ;
-  const char *peerName ;
-  char *rest ;
+    Buffer *readBuffers;
+    Connection cxn = (Connection) d;
+    char *p = bufferBase(b[0]);
+    int code;
+    bool isOk = false;
+    const char *peerName;
+    char *rest;
 
-  ASSERT (e == cxn->myEp) ;
-  ASSERT (b[0] == cxn->respBuffer) ;
-  ASSERT (b[1] == NULL) ;
-  ASSERT (cxn->state == cxnConnectingS) ;
-  ASSERT (!writeIsPending (cxn->myEp));
+    ASSERT(e == cxn->myEp);
+    ASSERT(b[0] == cxn->respBuffer);
+    ASSERT(b[1] == NULL);
+    ASSERT(cxn->state == cxnConnectingS);
+    ASSERT(!writeIsPending(cxn->myEp));
 
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  bufferAddNullByte (b[0]) ;
+    bufferAddNullByte(b[0]);
 
-  if (i != IoDone)
-    {
-      errno = endPointErrno (cxn->myEp) ;
-      syswarn ("%s:%d cxnsleep can't read banner", peerName, cxn->ident) ;
-      hostIpFailed (cxn->myHost) ;
+    if (i != IoDone) {
+        errno = endPointErrno(cxn->myEp);
+        syswarn("%s:%d cxnsleep can't read banner", peerName, cxn->ident);
+        hostIpFailed(cxn->myHost);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (strchr (p, '\n') == NULL)
-    {                           /* partial read. expand buffer and retry */
-      expandBuffer (b[0], BUFFER_EXPAND_AMOUNT) ;
-      readBuffers = makeBufferArray (bufferTakeRef (b[0]), NULL) ;
+        cxnSleepOrDie(cxn);
+    } else if (strchr(p, '\n')
+               == NULL) { /* partial read. expand buffer and retry */
+        expandBuffer(b[0], BUFFER_EXPAND_AMOUNT);
+        readBuffers = makeBufferArray(bufferTakeRef(b[0]), NULL);
 
-      if ( !prepareRead (e, readBuffers, getBanner, cxn, 1) )
-        {
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
+        if (!prepareRead(e, readBuffers, getBanner, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
 
-          cxnSleepOrDie (cxn) ;
+            cxnSleepOrDie(cxn);
         }
-    }
-  else if ( !getNntpResponse (p, &code, &rest) )
-    {
-      trim_ws (p) ;
+    } else if (!getNntpResponse(p, &code, &rest)) {
+        trim_ws(p);
 
-      warn ("%s:%d cxnsleep response format: %s", peerName, cxn->ident, p) ;
+        warn("%s:%d cxnsleep response format: %s", peerName, cxn->ident, p);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else
-    {
-      trim_ws (p) ;
+        cxnSleepOrDie(cxn);
+    } else {
+        trim_ws(p);
 
-      switch (code)
-        {
-          case 200:             /* normal */
-          case 201:             /* can transfer but not post -- old nntpd */
-            isOk = true ;
-            break ;
+        switch (code) {
+        case 200: /* normal */
+        case 201: /* can transfer but not post -- old nntpd */
+            isOk = true;
+            break;
 
-          case 400:
-            cxnSleepOrDie (cxn) ;
-            hostIpFailed (cxn->myHost) ;
-            hostCxnBlocked (cxn->myHost, cxn, rest) ;
-            break ;
+        case 400:
+            cxnSleepOrDie(cxn);
+            hostIpFailed(cxn->myHost);
+            hostCxnBlocked(cxn->myHost, cxn, rest);
+            break;
 
-          case 502:
-            warn ("%s:%d cxnsleep no permission to talk: %s", peerName,
-                  cxn->ident, p) ;
-            cxnSleepOrDie (cxn) ;
-            hostIpFailed (cxn->myHost) ;
-            hostCxnBlocked (cxn->myHost, cxn, rest) ;
-            break ;
+        case 502:
+            warn("%s:%d cxnsleep no permission to talk: %s", peerName,
+                 cxn->ident, p);
+            cxnSleepOrDie(cxn);
+            hostIpFailed(cxn->myHost);
+            hostCxnBlocked(cxn->myHost, cxn, rest);
+            break;
 
-          default:
-            warn ("%s:%d cxnsleep response unknown banner: %d %s", peerName,
-                  cxn->ident, code, p) ;
-            d_printf (1,"%s:%d Unknown response code: %d: %s\n",
-                     hostPeerName (cxn->myHost),cxn->ident, code, p) ;
-            cxnSleepOrDie (cxn) ;
-            hostIpFailed (cxn->myHost) ;
-            hostCxnBlocked (cxn->myHost, cxn, rest) ;
-            break ;
+        default:
+            warn("%s:%d cxnsleep response unknown banner: %d %s", peerName,
+                 cxn->ident, code, p);
+            d_printf(1, "%s:%d Unknown response code: %d: %s\n",
+                     hostPeerName(cxn->myHost), cxn->ident, code, p);
+            cxnSleepOrDie(cxn);
+            hostIpFailed(cxn->myHost);
+            hostCxnBlocked(cxn->myHost, cxn, rest);
+            break;
         }
 
-      if ( isOk )
-	{
-          /* If we got this far and the connection is IPv6, remove
-             the IPv4 addresses from the address list. */
-          connectionIfIpv6DeleteIpv4Addr (cxn);
+        if (isOk) {
+            /* If we got this far and the connection is IPv6, remove
+               the IPv4 addresses from the address list. */
+            connectionIfIpv6DeleteIpv4Addr(cxn);
 
-	  if (hostUsername (cxn->myHost) != NULL
-	      && hostPassword (cxn->myHost) != NULL)
-	    issueAuthUser (e,cxn);
-	  else
-	    issueModeStream (e,cxn);
-	}
+            if (hostUsername(cxn->myHost) != NULL
+                && hostPassword(cxn->myHost) != NULL)
+                issueAuthUser(e, cxn);
+            else
+                issueModeStream(e, cxn);
+        }
     }
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 }
 
 
-
-
-
-static void issueAuthUser (EndPoint e, Connection cxn)
+static void
+issueAuthUser(EndPoint e, Connection cxn)
 {
-  Buffer authUserBuffer;
-  Buffer *authUserCmdBuffers,*readBuffers;
-  size_t lenBuff = 0 ;
-  char *t ;
+    Buffer authUserBuffer;
+    Buffer *authUserCmdBuffers, *readBuffers;
+    size_t lenBuff = 0;
+    char *t;
 
-  /* 17 == strlen("AUTHINFO USER \r\n\0") */
-  lenBuff = (17 + strlen (hostUsername (cxn->myHost))) ;
-  authUserBuffer = newBuffer (lenBuff) ;
-  t = bufferBase (authUserBuffer) ;
+    /* 17 == strlen("AUTHINFO USER \r\n\0") */
+    lenBuff = (17 + strlen(hostUsername(cxn->myHost)));
+    authUserBuffer = newBuffer(lenBuff);
+    t = bufferBase(authUserBuffer);
 
-  sprintf (t, "AUTHINFO USER %s\r\n", hostUsername (cxn->myHost)) ;
-  bufferSetDataSize (authUserBuffer, strlen (t)) ;
+    sprintf(t, "AUTHINFO USER %s\r\n", hostUsername(cxn->myHost));
+    bufferSetDataSize(authUserBuffer, strlen(t));
 
-  authUserCmdBuffers = makeBufferArray (authUserBuffer, NULL) ;
+    authUserCmdBuffers = makeBufferArray(authUserBuffer, NULL);
 
-  if ( !prepareWriteWithTimeout (e, authUserCmdBuffers, authUserIssued,
-				 cxn) )
-    {
-      die ("%s:%d fatal prepare write for authinfo user failed",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    if (!prepareWriteWithTimeout(e, authUserCmdBuffers, authUserIssued, cxn)) {
+        die("%s:%d fatal prepare write for authinfo user failed",
+            hostPeerName(cxn->myHost), cxn->ident);
     }
 
-  bufferSetDataSize (cxn->respBuffer, 0) ;
+    bufferSetDataSize(cxn->respBuffer, 0);
 
-  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+    readBuffers = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
 
-  if ( !prepareRead (e, readBuffers, getAuthUserResponse, cxn, 1) )
-    {
-      warn ("%s:%d cxnsleep prepare read failed", hostPeerName (cxn->myHost),
-            cxn->ident) ;
-      freeBufferArray (readBuffers) ;
-      cxnSleepOrDie (cxn) ;
+    if (!prepareRead(e, readBuffers, getAuthUserResponse, cxn, 1)) {
+        warn("%s:%d cxnsleep prepare read failed", hostPeerName(cxn->myHost),
+             cxn->ident);
+        freeBufferArray(readBuffers);
+        cxnSleepOrDie(cxn);
     }
-
 }
 
 
-
-
-
-
-static void issueAuthPass (EndPoint e, Connection cxn)
+static void
+issueAuthPass(EndPoint e, Connection cxn)
 {
-  Buffer authPassBuffer;
-  Buffer *authPassCmdBuffers,*readBuffers;
-  size_t lenBuff = 0 ;
-  char *t ;
+    Buffer authPassBuffer;
+    Buffer *authPassCmdBuffers, *readBuffers;
+    size_t lenBuff = 0;
+    char *t;
 
-  /* 17 == strlen("AUTHINFO PASS \r\n\0") */
-  lenBuff = (17 + strlen (hostPassword (cxn->myHost))) ;
-  authPassBuffer = newBuffer (lenBuff) ;
-  t = bufferBase (authPassBuffer) ;
+    /* 17 == strlen("AUTHINFO PASS \r\n\0") */
+    lenBuff = (17 + strlen(hostPassword(cxn->myHost)));
+    authPassBuffer = newBuffer(lenBuff);
+    t = bufferBase(authPassBuffer);
 
-  sprintf (t, "AUTHINFO PASS %s\r\n", hostPassword (cxn->myHost)) ;
-  bufferSetDataSize (authPassBuffer, strlen (t)) ;
+    sprintf(t, "AUTHINFO PASS %s\r\n", hostPassword(cxn->myHost));
+    bufferSetDataSize(authPassBuffer, strlen(t));
 
-  authPassCmdBuffers = makeBufferArray (authPassBuffer, NULL) ;
+    authPassCmdBuffers = makeBufferArray(authPassBuffer, NULL);
 
-  if ( !prepareWriteWithTimeout (e, authPassCmdBuffers, authPassIssued,
-				 cxn) )
-    {
-      die ("%s:%d fatal prepare write for authinfo pass failed",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    if (!prepareWriteWithTimeout(e, authPassCmdBuffers, authPassIssued, cxn)) {
+        die("%s:%d fatal prepare write for authinfo pass failed",
+            hostPeerName(cxn->myHost), cxn->ident);
     }
 
-  bufferSetDataSize (cxn->respBuffer, 0) ;
+    bufferSetDataSize(cxn->respBuffer, 0);
 
-  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+    readBuffers = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
 
-  if ( !prepareRead (e, readBuffers, getAuthPassResponse, cxn, 1) )
-    {
-      warn ("%s:%d cxnsleep prepare read failed", hostPeerName (cxn->myHost),
-            cxn->ident) ;
-      freeBufferArray (readBuffers) ;
-      cxnSleepOrDie (cxn) ;
+    if (!prepareRead(e, readBuffers, getAuthPassResponse, cxn, 1)) {
+        warn("%s:%d cxnsleep prepare read failed", hostPeerName(cxn->myHost),
+             cxn->ident);
+        freeBufferArray(readBuffers);
+        cxnSleepOrDie(cxn);
     }
-
 }
 
 
-
-
-
-
-static void issueModeStream (EndPoint e, Connection cxn)
+static void
+issueModeStream(EndPoint e, Connection cxn)
 {
-  Buffer *modeCmdBuffers,*readBuffers ;
-  Buffer modeBuffer ;
-  char *p;
+    Buffer *modeCmdBuffers, *readBuffers;
+    Buffer modeBuffer;
+    char *p;
 
-#define  MODE_CMD "MODE STREAM\r\n"
+#define MODE_CMD "MODE STREAM\r\n"
 
-  modeBuffer = newBuffer (strlen (MODE_CMD) + 1) ;
-  p = bufferBase (modeBuffer) ;
+    modeBuffer = newBuffer(strlen(MODE_CMD) + 1);
+    p = bufferBase(modeBuffer);
 
-  /* now issue the MODE STREAM command */
-  d_printf (1, "%s:%d Issuing the streaming command\n",
-            hostPeerName (cxn->myHost), cxn->ident) ;
+    /* now issue the MODE STREAM command */
+    d_printf(1, "%s:%d Issuing the streaming command\n",
+             hostPeerName(cxn->myHost), cxn->ident);
 
-  strlcpy (p, MODE_CMD, bufferSize (modeBuffer)) ;
+    strlcpy(p, MODE_CMD, bufferSize(modeBuffer));
 
-  bufferSetDataSize (modeBuffer, strlen (p)) ;
+    bufferSetDataSize(modeBuffer, strlen(p));
 
-  modeCmdBuffers = makeBufferArray (modeBuffer, NULL) ;
+    modeCmdBuffers = makeBufferArray(modeBuffer, NULL);
 
-  if ( !prepareWriteWithTimeout (e, modeCmdBuffers, modeCmdIssued,
-				 cxn) )
-    {
-      die ("%s:%d fatal prepare write for mode stream failed",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    if (!prepareWriteWithTimeout(e, modeCmdBuffers, modeCmdIssued, cxn)) {
+        die("%s:%d fatal prepare write for mode stream failed",
+            hostPeerName(cxn->myHost), cxn->ident);
     }
 
-  bufferSetDataSize (cxn->respBuffer, 0) ;
+    bufferSetDataSize(cxn->respBuffer, 0);
 
-  readBuffers = makeBufferArray (bufferTakeRef(cxn->respBuffer),NULL);
+    readBuffers = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
 
-  if ( !prepareRead (e, readBuffers, getModeResponse, cxn, 1) )
-    {
-      warn ("%s:%d cxnsleep prepare read failed", hostPeerName (cxn->myHost),
-            cxn->ident) ;
-      freeBufferArray (readBuffers) ;
-      cxnSleepOrDie (cxn) ;
+    if (!prepareRead(e, readBuffers, getModeResponse, cxn, 1)) {
+        warn("%s:%d cxnsleep prepare read failed", hostPeerName(cxn->myHost),
+             cxn->ident);
+        freeBufferArray(readBuffers);
+        cxnSleepOrDie(cxn);
     }
 }
-
-
-
 
 
 /*
  *
  */
-static void getAuthUserResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+getAuthUserResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  int code ;
-  char *p = bufferBase (b[0]) ;
-  Buffer *buffers ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    int code;
+    char *p = bufferBase(b[0]);
+    Buffer *buffers;
+    const char *peerName;
 
-  ASSERT (e == cxn->myEp) ;
-  ASSERT (b [0] == cxn->respBuffer) ;
-  ASSERT (b [1] == NULL) ;      /* only ever one buffer on this read */
-  ASSERT (cxn->state == cxnConnectingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(e == cxn->myEp);
+    ASSERT(b[0] == cxn->respBuffer);
+    ASSERT(b[1] == NULL); /* only ever one buffer on this read */
+    ASSERT(cxn->state == cxnConnectingS);
+    VALIDATE_CONNECTION(cxn);
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  bufferAddNullByte (b[0]) ;
+    bufferAddNullByte(b[0]);
 
-  d_printf (1,"%s:%d Processing authinfo user response: %s", /* no NL */
-	    hostPeerName (cxn->myHost), cxn->ident, p) ;
+    d_printf(1, "%s:%d Processing authinfo user response: %s", /* no NL */
+             hostPeerName(cxn->myHost), cxn->ident, p);
 
-  if (i == IoDone && writeIsPending (cxn->myEp))
-    {
-      /* badness. should never happen */
-      warn ("%s:%d cxnsleep authinfo command still pending", peerName,
-            cxn->ident) ;
+    if (i == IoDone && writeIsPending(cxn->myEp)) {
+        /* badness. should never happen */
+        warn("%s:%d cxnsleep authinfo command still pending", peerName,
+             cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (i != IoDone)
-    {
-      if (i != IoEOF)
-	{
-	  errno = endPointErrno (e) ;
-          syswarn ("%s:%d cxnsleep can't read response", peerName, cxn->ident);
-	}
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (strchr (p, '\n') == NULL)
-    {
-      /* partial read */
-      expandBuffer (b [0], BUFFER_EXPAND_AMOUNT) ;
+        cxnSleepOrDie(cxn);
+    } else if (i != IoDone) {
+        if (i != IoEOF) {
+            errno = endPointErrno(e);
+            syswarn("%s:%d cxnsleep can't read response", peerName,
+                    cxn->ident);
+        }
+        cxnSleepOrDie(cxn);
+    } else if (strchr(p, '\n') == NULL) {
+        /* partial read */
+        expandBuffer(b[0], BUFFER_EXPAND_AMOUNT);
 
-      buffers = makeBufferArray (bufferTakeRef (b [0]), NULL) ;
-      if ( !prepareRead (e, buffers, getAuthUserResponse, cxn, 1) )
-	{
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
-	  freeBufferArray (buffers) ;
-	  cxnSleepOrDie (cxn) ;
-	}
-    }
-  else
-    {
-      clearTimer (cxn->readBlockedTimerId) ;
+        buffers = makeBufferArray(bufferTakeRef(b[0]), NULL);
+        if (!prepareRead(e, buffers, getAuthUserResponse, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
+            freeBufferArray(buffers);
+            cxnSleepOrDie(cxn);
+        }
+    } else {
+        clearTimer(cxn->readBlockedTimerId);
 
-      if ( !getNntpResponse (p, &code, NULL) )
-	{
-          warn ("%s:%d cxnsleep response to AUTHINFO USER: %s", peerName,
-                cxn->ident, p) ;
+        if (!getNntpResponse(p, &code, NULL)) {
+            warn("%s:%d cxnsleep response to AUTHINFO USER: %s", peerName,
+                 cxn->ident, p);
 
-	  cxnSleepOrDie (cxn) ;
-	}
-      else
-	{
-          notice ("%s:%d connected", peerName, cxn->ident) ;
+            cxnSleepOrDie(cxn);
+        } else {
+            notice("%s:%d connected", peerName, cxn->ident);
 
-	  switch (code)
-	    {
-	    case 381:
-	      issueAuthPass (e,cxn);
-	      break ;
+            switch (code) {
+            case 381:
+                issueAuthPass(e, cxn);
+                break;
 
-	    default:
-              warn ("%s:%d cxnsleep response to AUTHINFO USER: %s", peerName,
-                    cxn->ident, p) ;
-	      cxn->authenticated = true;
-	      issueModeStream (e,cxn);
-	      break ;
-	    }
-
-	}
+            default:
+                warn("%s:%d cxnsleep response to AUTHINFO USER: %s", peerName,
+                     cxn->ident, p);
+                cxn->authenticated = true;
+                issueModeStream(e, cxn);
+                break;
+            }
+        }
     }
 }
-
-
-
 
 
 /*
  *
  */
-static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+getAuthPassResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  int code ;
-  char *p = bufferBase (b[0]) ;
-  Buffer *buffers ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    int code;
+    char *p = bufferBase(b[0]);
+    Buffer *buffers;
+    const char *peerName;
 
-  ASSERT (e == cxn->myEp) ;
-  ASSERT (b [0] == cxn->respBuffer) ;
-  ASSERT (b [1] == NULL) ;      /* only ever one buffer on this read */
-  ASSERT (cxn->state == cxnConnectingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(e == cxn->myEp);
+    ASSERT(b[0] == cxn->respBuffer);
+    ASSERT(b[1] == NULL); /* only ever one buffer on this read */
+    ASSERT(cxn->state == cxnConnectingS);
+    VALIDATE_CONNECTION(cxn);
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  bufferAddNullByte (b[0]) ;
+    bufferAddNullByte(b[0]);
 
-  d_printf (1,"%s:%d Processing authinfo pass response: %s", /* no NL */
-	    hostPeerName (cxn->myHost), cxn->ident, p) ;
+    d_printf(1, "%s:%d Processing authinfo pass response: %s", /* no NL */
+             hostPeerName(cxn->myHost), cxn->ident, p);
 
-  if (i == IoDone && writeIsPending (cxn->myEp))
-    {
-      /* badness. should never happen */
-      warn ("%s:%d cxnsleep authinfo command still pending", peerName,
-            cxn->ident) ;
+    if (i == IoDone && writeIsPending(cxn->myEp)) {
+        /* badness. should never happen */
+        warn("%s:%d cxnsleep authinfo command still pending", peerName,
+             cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (i != IoDone)
-    {
-      if (i != IoEOF)
-	{
-	  errno = endPointErrno (e) ;
-          syswarn ("%s:%d cxnsleep can't read response", peerName, cxn->ident);
-	}
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (strchr (p, '\n') == NULL)
-    {
-      /* partial read */
-      expandBuffer (b [0], BUFFER_EXPAND_AMOUNT) ;
+        cxnSleepOrDie(cxn);
+    } else if (i != IoDone) {
+        if (i != IoEOF) {
+            errno = endPointErrno(e);
+            syswarn("%s:%d cxnsleep can't read response", peerName,
+                    cxn->ident);
+        }
+        cxnSleepOrDie(cxn);
+    } else if (strchr(p, '\n') == NULL) {
+        /* partial read */
+        expandBuffer(b[0], BUFFER_EXPAND_AMOUNT);
 
-      buffers = makeBufferArray (bufferTakeRef (b [0]), NULL) ;
-      if ( !prepareRead (e, buffers, getAuthPassResponse, cxn, 1) )
-	{
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
-	  freeBufferArray (buffers) ;
-	  cxnSleepOrDie (cxn) ;
-	}
-    }
-  else
-    {
-      clearTimer (cxn->readBlockedTimerId) ;
+        buffers = makeBufferArray(bufferTakeRef(b[0]), NULL);
+        if (!prepareRead(e, buffers, getAuthPassResponse, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
+            freeBufferArray(buffers);
+            cxnSleepOrDie(cxn);
+        }
+    } else {
+        clearTimer(cxn->readBlockedTimerId);
 
-      if ( !getNntpResponse (p, &code, NULL) )
-	{
-          warn ("%s:%d cxnsleep response to AUTHINFO PASS: %s", peerName,
-                cxn->ident, p) ;
+        if (!getNntpResponse(p, &code, NULL)) {
+            warn("%s:%d cxnsleep response to AUTHINFO PASS: %s", peerName,
+                 cxn->ident, p);
 
-	  cxnSleepOrDie (cxn) ;
-	}
-      else
-	{
-	  switch (code)
-	    {
-	    case 281:
-              notice ("%s:%d authenticated", peerName, cxn->ident) ;
-	      cxn->authenticated = true ;
-	      issueModeStream (e,cxn);
-	      break ;
+            cxnSleepOrDie(cxn);
+        } else {
+            switch (code) {
+            case 281:
+                notice("%s:%d authenticated", peerName, cxn->ident);
+                cxn->authenticated = true;
+                issueModeStream(e, cxn);
+                break;
 
-	    default:
-              warn ("%s:%d cxnsleep response to AUTHINFO PASS: %s", peerName,
-                    cxn->ident, p) ;
-	      cxnSleepOrDie (cxn) ;
-	      break ;
-	    }
-
-	}
+            default:
+                warn("%s:%d cxnsleep response to AUTHINFO PASS: %s", peerName,
+                     cxn->ident, p);
+                cxnSleepOrDie(cxn);
+                break;
+            }
+        }
     }
 }
-
-
-
 
 
 /*
@@ -1767,728 +1632,646 @@ static void getAuthPassResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
  * us a good welcome banner, but then immediately dropped the connection,
  * we'll arrive here with the MODE STREAM command still queued up.
  */
-static void getModeResponse (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+getModeResponse(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  int code ;
-  char *p = bufferBase (b[0]) ;
-  Buffer *buffers ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    int code;
+    char *p = bufferBase(b[0]);
+    Buffer *buffers;
+    const char *peerName;
 
-  ASSERT (e == cxn->myEp) ;
-  ASSERT (b [0] == cxn->respBuffer) ;
-  ASSERT (b [1] == NULL) ;      /* only ever one buffer on this read */
-  ASSERT (cxn->state == cxnConnectingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(e == cxn->myEp);
+    ASSERT(b[0] == cxn->respBuffer);
+    ASSERT(b[1] == NULL); /* only ever one buffer on this read */
+    ASSERT(cxn->state == cxnConnectingS);
+    VALIDATE_CONNECTION(cxn);
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  bufferAddNullByte (b[0]) ;
+    bufferAddNullByte(b[0]);
 
-  d_printf (1,"%s:%d Processing mode response: %s", /* no NL */
-           hostPeerName (cxn->myHost), cxn->ident, p) ;
+    d_printf(1, "%s:%d Processing mode response: %s", /* no NL */
+             hostPeerName(cxn->myHost), cxn->ident, p);
 
-  if (i == IoDone && writeIsPending (cxn->myEp))
-    {                           /* badness. should never happen */
-      warn ("%s:%d cxnsleep mode stream command still pending", peerName,
-            cxn->ident) ;
+    if (i == IoDone
+        && writeIsPending(cxn->myEp)) { /* badness. should never happen */
+        warn("%s:%d cxnsleep mode stream command still pending", peerName,
+             cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (i != IoDone)
-    {
-      if (i != IoEOF)
-        {
-          errno = endPointErrno (e) ;
-          syswarn ("%s:%d cxnsleep can't read response", peerName, cxn->ident);
+        cxnSleepOrDie(cxn);
+    } else if (i != IoDone) {
+        if (i != IoEOF) {
+            errno = endPointErrno(e);
+            syswarn("%s:%d cxnsleep can't read response", peerName,
+                    cxn->ident);
         }
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (strchr (p, '\n') == NULL)
-    {                           /* partial read */
-      expandBuffer (b [0], BUFFER_EXPAND_AMOUNT) ;
+        cxnSleepOrDie(cxn);
+    } else if (strchr(p, '\n') == NULL) { /* partial read */
+        expandBuffer(b[0], BUFFER_EXPAND_AMOUNT);
 
-      buffers = makeBufferArray (bufferTakeRef (b [0]), NULL) ;
-      if ( !prepareRead (e, buffers, getModeResponse, cxn, 1) )
-        {
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
-          freeBufferArray (buffers) ;
-          cxnSleepOrDie (cxn) ;
+        buffers = makeBufferArray(bufferTakeRef(b[0]), NULL);
+        if (!prepareRead(e, buffers, getModeResponse, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
+            freeBufferArray(buffers);
+            cxnSleepOrDie(cxn);
         }
-    }
-  else
-    {
-      clearTimer (cxn->readBlockedTimerId) ;
+    } else {
+        clearTimer(cxn->readBlockedTimerId);
 
-      if ( !getNntpResponse (p, &code, NULL) )
-        {
-          warn ("%s:%d cxnsleep response to MODE STREAM: %s", peerName,
-                cxn->ident, p) ;
+        if (!getNntpResponse(p, &code, NULL)) {
+            warn("%s:%d cxnsleep response to MODE STREAM: %s", peerName,
+                 cxn->ident, p);
 
-          cxnSleepOrDie (cxn) ;
-        }
-      else
-        {
-	  if (!cxn->authenticated)
-            notice ("%s:%d connected", peerName, cxn->ident) ;
-          
-          switch (code)
-            {
-              case 203:             /* will do streaming */
-                hostRemoteStreams (cxn->myHost, cxn, true) ;
+            cxnSleepOrDie(cxn);
+        } else {
+            if (!cxn->authenticated)
+                notice("%s:%d connected", peerName, cxn->ident);
 
-                if (hostWantsStreaming (cxn->myHost))
-                  {
-                    cxn->doesStreaming = true ;
-                    cxn->maxCheck = hostMaxChecks (cxn->myHost) ;
-                  }
-                else
-                  cxn->maxCheck = 1 ;
-            
-                break ;
-                
-              default:                      /* won't do it */
-                hostRemoteStreams (cxn->myHost, cxn, false) ;
-                cxn->maxCheck = 1 ;
-                break ;
+            switch (code) {
+            case 203: /* will do streaming */
+                hostRemoteStreams(cxn->myHost, cxn, true);
+
+                if (hostWantsStreaming(cxn->myHost)) {
+                    cxn->doesStreaming = true;
+                    cxn->maxCheck = hostMaxChecks(cxn->myHost);
+                } else
+                    cxn->maxCheck = 1;
+
+                break;
+
+            default: /* won't do it */
+                hostRemoteStreams(cxn->myHost, cxn, false);
+                cxn->maxCheck = 1;
+                break;
             }
-          
-          /* now we consider ourselves completly connected. */
-          cxn->timeCon = theTime();
-          cxn->timeCon_checkpoint = theTime();
 
-          if (cxn->articleQTotal == 0)
-            cxnIdle (cxn) ;
-          else
-            cxn->state = cxnFeedingS ;
-          
-              /* one for the connection and one for the buffer array */
-          ASSERT (cxn->authenticated || bufferRefCount (cxn->respBuffer) == 2) ;
-          
-          /* there was only one line in there, right? */
-          bufferSetDataSize (cxn->respBuffer, 0) ;
-          buffers = makeBufferArray (bufferTakeRef (cxn->respBuffer), NULL) ;
-          
-              /* sleepTimeout get changed at each failed attempt, so reset. */
-          cxn->sleepTimeout = init_reconnect_period ;
-          
-          if ( !prepareRead (cxn->myEp, buffers, responseIsRead, cxn, 1) )
-            {
-              freeBufferArray (buffers) ;
-              
-              cxnSleepOrDie (cxn) ;
-            }
-          else
-            {
-              /* now we wait for articles from our Host, or we have some
-                 articles already. On infrequently used connections, the
-                 network link is torn down and rebuilt as needed. So we may
-                 be rebuilding the connection here in which case we have an
-                 article to send. */
-              if (writesNeeded (cxn) || hostGimmeArticle (cxn->myHost,cxn))
-                doSomeWrites (cxn) ;
+            /* now we consider ourselves completly connected. */
+            cxn->timeCon = theTime();
+            cxn->timeCon_checkpoint = theTime();
+
+            if (cxn->articleQTotal == 0)
+                cxnIdle(cxn);
+            else
+                cxn->state = cxnFeedingS;
+
+            /* one for the connection and one for the buffer array */
+            ASSERT(cxn->authenticated || bufferRefCount(cxn->respBuffer) == 2);
+
+            /* there was only one line in there, right? */
+            bufferSetDataSize(cxn->respBuffer, 0);
+            buffers = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
+
+            /* sleepTimeout get changed at each failed attempt, so reset. */
+            cxn->sleepTimeout = init_reconnect_period;
+
+            if (!prepareRead(cxn->myEp, buffers, responseIsRead, cxn, 1)) {
+                freeBufferArray(buffers);
+
+                cxnSleepOrDie(cxn);
+            } else {
+                /* now we wait for articles from our Host, or we have some
+                   articles already. On infrequently used connections, the
+                   network link is torn down and rebuilt as needed. So we may
+                   be rebuilding the connection here in which case we have an
+                   article to send. */
+                if (writesNeeded(cxn) || hostGimmeArticle(cxn->myHost, cxn))
+                    doSomeWrites(cxn);
             }
         }
     }
-  
-  freeBufferArray (b) ;
+
+    freeBufferArray(b);
 }
-
-
-
 
 
 /*
  * called when a response has been read from the socket. This is
  * where the bulk of the processing starts.
  */
-static void responseIsRead (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+responseIsRead(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  char *response ;
-  char *endr ;
-  char *bufBase ;
-  unsigned int respSize ;
-  int code ;
-  char *rest = NULL ;
-  Buffer buf ;
-  Buffer *bArr ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    char *response;
+    char *endr;
+    char *bufBase;
+    unsigned int respSize;
+    int code;
+    char *rest = NULL;
+    Buffer buf;
+    Buffer *bArr;
+    const char *peerName;
 
-  ASSERT (e == cxn->myEp) ;
-  ASSERT (b != NULL) ;
-  ASSERT (b [1] == NULL) ;
-  ASSERT (b [0] == cxn->respBuffer) ;
-  ASSERT (cxn->state == cxnFeedingS ||
-          cxn->state == cxnIdleS    ||
-          cxn->state == cxnClosingS ||
-          cxn->state == cxnFlushingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(e == cxn->myEp);
+    ASSERT(b != NULL);
+    ASSERT(b[1] == NULL);
+    ASSERT(b[0] == cxn->respBuffer);
+    ASSERT(cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+           || cxn->state == cxnClosingS || cxn->state == cxnFlushingS);
+    VALIDATE_CONNECTION(cxn);
 
-  bufferAddNullByte (b [0]) ;
+    bufferAddNullByte(b[0]);
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  if (i != IoDone)
-    {                           /* uh oh. */
-      if (i != IoEOF)
-        {
-          errno = endPointErrno (e) ;
-          syswarn ("%s:%d cxnsleep can't read response", peerName, cxn->ident);
+    if (i != IoDone) { /* uh oh. */
+        if (i != IoEOF) {
+            errno = endPointErrno(e);
+            syswarn("%s:%d cxnsleep can't read response", peerName,
+                    cxn->ident);
         }
-      freeBufferArray (b) ;
+        freeBufferArray(b);
 
-      cxnLogStats (cxn,true) ;
+        cxnLogStats(cxn, true);
 
-      if (cxn->state == cxnClosingS)
-        {
-          cxnDead (cxn) ;
-          delConnection (cxn) ;
-        }
-      else
-        cxnSleep (cxn) ;
+        if (cxn->state == cxnClosingS) {
+            cxnDead(cxn);
+            delConnection(cxn);
+        } else
+            cxnSleep(cxn);
 
-      return ;
+        return;
     }
 
-  buf = b [0] ;
-  bufBase = bufferBase (buf) ;
+    buf = b[0];
+    bufBase = bufferBase(buf);
 
-  /* check that we have (at least) a full line response. If not expand
-     the buffer and resubmit the read. */
-  if (strchr (bufBase, '\n') == 0)
-    {
-      if (!expandBuffer (buf, BUFFER_EXPAND_AMOUNT))
-        {
-          warn ("%s:%d cxnsleep can't expand input buffer", peerName,
-                cxn->ident) ;
-          freeBufferArray (b) ;
+    /* check that we have (at least) a full line response. If not expand
+       the buffer and resubmit the read. */
+    if (strchr(bufBase, '\n') == 0) {
+        if (!expandBuffer(buf, BUFFER_EXPAND_AMOUNT)) {
+            warn("%s:%d cxnsleep can't expand input buffer", peerName,
+                 cxn->ident);
+            freeBufferArray(b);
 
-          cxnSleepOrDie (cxn) ;
-        }
-      else if ( !prepareRead (cxn->myEp, b, responseIsRead, cxn, 1))
-        {
-          warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
-          freeBufferArray (b) ;
+            cxnSleepOrDie(cxn);
+        } else if (!prepareRead(cxn->myEp, b, responseIsRead, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
+            freeBufferArray(b);
 
-          cxnSleepOrDie (cxn) ;
+            cxnSleepOrDie(cxn);
         }
 
-      return ;
+        return;
     }
 
 
-  freeBufferArray (b) ; /* connection still has reference to buffer */
+    freeBufferArray(b); /* connection still has reference to buffer */
 
-  
-  /*
-   * Now process all the full responses that we have.
-   */
-  response = bufBase ;
-  respSize = bufferDataSize (cxn->respBuffer) ;
 
-  while ((endr = strchr (response, '\n')) != NULL)
-    {
-      char *next = endr + 1 ;
+    /*
+     * Now process all the full responses that we have.
+     */
+    response = bufBase;
+    respSize = bufferDataSize(cxn->respBuffer);
 
-      if (*next == '\r')
-        next++ ;
+    while ((endr = strchr(response, '\n')) != NULL) {
+        char *next = endr + 1;
 
-      endr-- ;
-      if (*endr != '\r')
-        endr++ ;
+        if (*next == '\r')
+            next++;
 
-      if (next - endr != 2 && !cxn->loggedNoCr)
-        {
-          /* only a newline there. we'll live with it */
-          warn ("%s:%d remote not giving out CR characters", peerName,
-                cxn->ident) ;
-          cxn->loggedNoCr = true ;
+        endr--;
+        if (*endr != '\r')
+            endr++;
+
+        if (next - endr != 2 && !cxn->loggedNoCr) {
+            /* only a newline there. we'll live with it */
+            warn("%s:%d remote not giving out CR characters", peerName,
+                 cxn->ident);
+            cxn->loggedNoCr = true;
         }
 
-      *endr = '\0' ;
+        *endr = '\0';
 
-      if ( !getNntpResponse (response, &code, &rest) )
-        {
-          warn ("%s:%d cxnsleep response format: %s", peerName, cxn->ident,
-                response) ;
-          cxnSleepOrDie (cxn) ;
+        if (!getNntpResponse(response, &code, &rest)) {
+            warn("%s:%d cxnsleep response format: %s", peerName, cxn->ident,
+                 response);
+            cxnSleepOrDie(cxn);
 
-          return ;
+            return;
         }
-      
-      d_printf (5,"%s:%d Response %d: %s\n", peerName, cxn->ident, code, response) ;
 
-      /* now handle the response code. I'm not using symbolic names on
-         purpose--the numbers are all you see in the RFC's. */
-      switch (code)
-        {
-          case 205:             /* OK response to QUIT. */
-            processResponse205 (cxn, response) ;
-            break ;
+        d_printf(5, "%s:%d Response %d: %s\n", peerName, cxn->ident, code,
+                 response);
 
+        /* now handle the response code. I'm not using symbolic names on
+           purpose--the numbers are all you see in the RFC's. */
+        switch (code) {
+        case 205: /* OK response to QUIT. */
+            processResponse205(cxn, response);
+            break;
 
 
             /* These three are from the CHECK command */
-          case 238:             /* no such article found */
-	    /* Do not incrFilter (cxn) now, wait till after
-	       subsequent TAKETHIS */
-            processResponse238 (cxn, response) ;
-            break ;
+        case 238: /* no such article found */
+                  /* Do not incrFilter (cxn) now, wait till after
+                     subsequent TAKETHIS */
+            processResponse238(cxn, response);
+            break;
 
-          case 431:             /* try again later (also for TAKETHIS) */
-            decrFilter (cxn) ;
-            if (hostDropDeferred (cxn->myHost))
-                processResponse438 (cxn, response) ;
+        case 431: /* try again later (also for TAKETHIS) */
+            decrFilter(cxn);
+            if (hostDropDeferred(cxn->myHost))
+                processResponse438(cxn, response);
             else
-                processResponse431 (cxn, response) ;
-            break ;
+                processResponse431(cxn, response);
+            break;
 
-          case 438:             /* already have it */
-            decrFilter (cxn) ;
-            processResponse438 (cxn, response) ;
-            break ;
-
+        case 438: /* already have it */
+            decrFilter(cxn);
+            processResponse438(cxn, response);
+            break;
 
 
             /* These are from the TAKETHIS command */
-          case 239:             /* article transferred OK */
-            incrFilter (cxn) ;
-            processResponse239 (cxn, response) ;
-            break ;
+        case 239: /* article transferred OK */
+            incrFilter(cxn);
+            processResponse239(cxn, response);
+            break;
 
-          case 439:             /* article rejected */
-            decrFilter (cxn) ;
-            processResponse439 (cxn, response) ;
-            break ;
-
+        case 439: /* article rejected */
+            decrFilter(cxn);
+            processResponse439(cxn, response);
+            break;
 
 
             /* These are from the IHAVE command */
-          case 335:             /* send article */
-            processResponse335 (cxn, response) ;
-            break ;
+        case 335: /* send article */
+            processResponse335(cxn, response);
+            break;
 
-          case 435:             /* article not wanted */
-            processResponse435 (cxn, response) ;
-            break ;
+        case 435: /* article not wanted */
+            processResponse435(cxn, response);
+            break;
 
-          case 436:             /* transfer failed try again later */
-            if (cxn->takeRespHead == NULL && hostDropDeferred (cxn->myHost))
-                processResponse435 (cxn, response) ;
+        case 436: /* transfer failed try again later */
+            if (cxn->takeRespHead == NULL && hostDropDeferred(cxn->myHost))
+                processResponse435(cxn, response);
             else
-                processResponse436 (cxn, response) ;
-            break ;
+                processResponse436(cxn, response);
+            break;
 
-          case 437:             /* article rejected */
-            processResponse437 (cxn, response) ;
-            break ;
+        case 437: /* article rejected */
+            processResponse437(cxn, response);
+            break;
 
-          case 400:             /* has stopped accepting articles */
-            processResponse400 (cxn, response) ;
-            break ;
-
-            
-
-          case 235:             /* article transfered OK (IHAVE-body) */
-            processResponse235 (cxn, response) ;
-            break ;
+        case 400: /* has stopped accepting articles */
+            processResponse400(cxn, response);
+            break;
 
 
-          case 480:             /* Transfer permission denied. */
-            processResponse480  (cxn,response) ;
-            break ;
-            
-          case 503:             /* remote timeout. */
-            processResponse503  (cxn,response) ;
-            break ;
+        case 235: /* article transfered OK (IHAVE-body) */
+            processResponse235(cxn, response);
+            break;
 
-          default:
-            warn ("%s:%d cxnsleep response unknown: %d %s", peerName,
-                  cxn->ident, code, response) ;
-            cxnSleepOrDie (cxn) ;
-            break ;
+
+        case 480: /* Transfer permission denied. */
+            processResponse480(cxn, response);
+            break;
+
+        case 503: /* remote timeout. */
+            processResponse503(cxn, response);
+            break;
+
+        default:
+            warn("%s:%d cxnsleep response unknown: %d %s", peerName,
+                 cxn->ident, code, response);
+            cxnSleepOrDie(cxn);
+            break;
         }
 
-      VALIDATE_CONNECTION (cxn) ;
+        VALIDATE_CONNECTION(cxn);
 
-      if (cxn->state != cxnFeedingS && cxn->state != cxnClosingS &&
-          cxn->state != cxnFlushingS && cxn->state != cxnIdleS /* XXX */)
-        break ;                 /* connection is terminated */
+        if (cxn->state != cxnFeedingS && cxn->state != cxnClosingS
+            && cxn->state != cxnFlushingS && cxn->state != cxnIdleS /* XXX */)
+            break; /* connection is terminated */
 
-      response = next ;
+        response = next;
     }
 
-  d_printf (5,"%s:%d done with responses\n",hostPeerName (cxn->myHost),
-           cxn->ident) ;
+    d_printf(5, "%s:%d done with responses\n", hostPeerName(cxn->myHost),
+             cxn->ident);
 
-  switch (cxn->state)
-    {
-      case cxnIdleS:
-      case cxnFeedingS:
-      case cxnClosingS:
-      case cxnFlushingS:
+    switch (cxn->state) {
+    case cxnIdleS:
+    case cxnFeedingS:
+    case cxnClosingS:
+    case cxnFlushingS:
         /* see if we need to drop in to or out of no-CHECK mode */
-        if (cxn->state == cxnFeedingS && cxn->doesStreaming)
-          {
+        if (cxn->state == cxnFeedingS && cxn->doesStreaming) {
             if ((cxn->filterValue > cxn->onThreshold) && cxn->needsChecks) {
-	      cxn->needsChecks = false;
-              hostLogNoCheckMode (cxn->myHost, true,
-				  cxn->offThreshold/cxn->lowPassFilter,
-				  cxn->filterValue/cxn->lowPassFilter,
-				  cxn->onThreshold/cxn->lowPassFilter) ;
-	      /* on and log */
-            } else if ((cxn->filterValue < cxn->offThreshold) &&
-                     !cxn->needsChecks) {
-	      cxn->needsChecks = true;
-              hostLogNoCheckMode (cxn->myHost, false,
-				  cxn->offThreshold/cxn->lowPassFilter,
-				  cxn->filterValue/cxn->lowPassFilter,
-				  cxn->onThreshold/cxn->lowPassFilter) ;
-	      /* off and log */
-	    }
-          }
+                cxn->needsChecks = false;
+                hostLogNoCheckMode(cxn->myHost, true,
+                                   cxn->offThreshold / cxn->lowPassFilter,
+                                   cxn->filterValue / cxn->lowPassFilter,
+                                   cxn->onThreshold / cxn->lowPassFilter);
+                /* on and log */
+            } else if ((cxn->filterValue < cxn->offThreshold)
+                       && !cxn->needsChecks) {
+                cxn->needsChecks = true;
+                hostLogNoCheckMode(cxn->myHost, false,
+                                   cxn->offThreshold / cxn->lowPassFilter,
+                                   cxn->filterValue / cxn->lowPassFilter,
+                                   cxn->onThreshold / cxn->lowPassFilter);
+                /* off and log */
+            }
+        }
 
         /* Now handle possible remaining partial response and set up for
            next read. */
-        if (*response != '\0')
-          {                       /* partial response */
-            unsigned int leftAmt = respSize - (response - bufBase) ;
+        if (*response != '\0') { /* partial response */
+            unsigned int leftAmt = respSize - (response - bufBase);
 
-            d_printf (2,"%s:%d handling a partial response\n",
-                     hostPeerName (cxn->myHost),cxn->ident) ;
+            d_printf(2, "%s:%d handling a partial response\n",
+                     hostPeerName(cxn->myHost), cxn->ident);
 
             /* first we shift what's left in the buffer down to the
                bottom, if needed, or just expand the buffer */
-            if (response != bufBase)
-              {
+            if (response != bufBase) {
                 /* so next read appends */
-                memmove (bufBase, response, leftAmt) ;
-                bufferSetDataSize (cxn->respBuffer, leftAmt) ;
-              }
-            else if (!expandBuffer (cxn->respBuffer, BUFFER_EXPAND_AMOUNT))
-              die ("%s:%d cxnsleep can't expand input buffer", peerName,
-                   cxn->ident) ;
-          }
-        else
-          bufferSetDataSize (cxn->respBuffer, 0) ;
+                memmove(bufBase, response, leftAmt);
+                bufferSetDataSize(cxn->respBuffer, leftAmt);
+            } else if (!expandBuffer(cxn->respBuffer, BUFFER_EXPAND_AMOUNT))
+                die("%s:%d cxnsleep can't expand input buffer", peerName,
+                    cxn->ident);
+        } else
+            bufferSetDataSize(cxn->respBuffer, 0);
 
-        bArr = makeBufferArray (bufferTakeRef (cxn->respBuffer), NULL) ;
+        bArr = makeBufferArray(bufferTakeRef(cxn->respBuffer), NULL);
 
-        if ( !prepareRead (e, bArr, responseIsRead, cxn, 1) )
-          {
-            warn ("%s:%d cxnsleep prepare read failed", peerName, cxn->ident) ;
-            freeBufferArray (bArr) ;
-            cxnWait (cxn) ;
-            return ;
-          }
-        else
-          {
+        if (!prepareRead(e, bArr, responseIsRead, cxn, 1)) {
+            warn("%s:%d cxnsleep prepare read failed", peerName, cxn->ident);
+            freeBufferArray(bArr);
+            cxnWait(cxn);
+            return;
+        } else {
             /* only setup the timer if we're still waiting for a response
                to something. There's not necessarily a 1-to-1 mapping
                between reads and writes in streaming mode. May have been
                set already above (that would be unlikely I think). */
-            VALIDATE_CONNECTION (cxn) ;
+            VALIDATE_CONNECTION(cxn);
 
-            d_printf (5,"%s:%d about to do some writes\n",
-                     hostPeerName (cxn->myHost),cxn->ident) ;
+            d_printf(5, "%s:%d about to do some writes\n",
+                     hostPeerName(cxn->myHost), cxn->ident);
 
-            doSomeWrites (cxn) ;
+            doSomeWrites(cxn);
 
             /* If the read timer is (still) running, update it to give
                those terminally slow hosts that take forever to drain
                the network buffers and just dribble out responses the
                benefit of the doubt.  XXX - maybe should just increase
-	       timeout for these! */
+               timeout for these! */
             if (cxn->readBlockedTimerId)
-              cxn->readBlockedTimerId = updateSleep (cxn->readBlockedTimerId,
-                                                     responseTimeoutCbk,
-                                                     cxn->readTimeout,
-                                                     cxn) ;
-          }
-        VALIDATE_CONNECTION (cxn) ;
-        break ;
+                cxn->readBlockedTimerId =
+                    updateSleep(cxn->readBlockedTimerId, responseTimeoutCbk,
+                                cxn->readTimeout, cxn);
+        }
+        VALIDATE_CONNECTION(cxn);
+        break;
 
-      case cxnWaitingS:         /* presumably after a code 205 or 400 */
-      case cxnConnectingS:      /* presumably after a code 205 or 400 */
-      case cxnSleepingS:        /* probably after a 480 */
-        break ;
+    case cxnWaitingS:    /* presumably after a code 205 or 400 */
+    case cxnConnectingS: /* presumably after a code 205 or 400 */
+    case cxnSleepingS:   /* probably after a 480 */
+        break;
 
-      case cxnDeadS:
-        delConnection (cxn) ;
-        break ;
+    case cxnDeadS:
+        delConnection(cxn);
+        break;
 
-      case cxnStartingS:
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+    case cxnStartingS:
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
     }
 }
-
-
-
 
 
 /*
  * called when the write of the QUIT command has completed.
  */
-static void quitWritten (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+quitWritten(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    const char *peerName;
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  ASSERT (cxn->myEp == e) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->myEp == e);
+    VALIDATE_CONNECTION(cxn);
 
-  if (i != IoDone)
-    {
-      errno = endPointErrno (e) ;
-      syswarn ("%s:%d cxnsleep can't write QUIT", peerName, cxn->ident) ;
-      if (cxn->state == cxnClosingS)
-        {
-          cxnDead (cxn) ;
-          delConnection (cxn) ;
-        }
-      else
-        cxnWait (cxn) ;
-    }
-  else
-    /* The QUIT command has been sent, so start the response timer. */
-    initReadBlockedTimeout (cxn) ;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syswarn("%s:%d cxnsleep can't write QUIT", peerName, cxn->ident);
+        if (cxn->state == cxnClosingS) {
+            cxnDead(cxn);
+            delConnection(cxn);
+        } else
+            cxnWait(cxn);
+    } else
+        /* The QUIT command has been sent, so start the response timer. */
+        initReadBlockedTimeout(cxn);
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 }
-
-
-
 
 
 /*
  * called when the write of the IHAVE-body data is finished
  */
-static void ihaveBodyDone (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+ihaveBodyDone(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
+    Connection cxn = (Connection) d;
 
-  ASSERT (e == cxn->myEp) ;
+    ASSERT(e == cxn->myEp);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  if (i != IoDone)
-    {
-      errno = endPointErrno (e) ;
-      syswarn ("%s:%d cxnsleep can't write IHAVE body",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syswarn("%s:%d cxnsleep can't write IHAVE body",
+                hostPeerName(cxn->myHost), cxn->ident);
 
-      cxnLogStats (cxn,true) ;
+        cxnLogStats(cxn, true);
 
-      if (cxn->state == cxnClosingS)
-        {
-          cxnDead (cxn) ;
-          delConnection (cxn) ;
-        }
-      else
-        cxnSleep (cxn) ;
-    }
-  else
-    {
-      /* Some hosts return a response even before we're done sending, so don't
-         go idle until here. */
-      if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
-        cxnIdle (cxn) ;
-      else
-        /* The command set has been sent, so start the response timer. */
-        initReadBlockedTimeout (cxn) ;
+        if (cxn->state == cxnClosingS) {
+            cxnDead(cxn);
+            delConnection(cxn);
+        } else
+            cxnSleep(cxn);
+    } else {
+        /* Some hosts return a response even before we're done sending, so
+           don't go idle until here. */
+        if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
+            cxnIdle(cxn);
+        else
+            /* The command set has been sent, so start the response timer. */
+            initReadBlockedTimeout(cxn);
     }
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 
-  return ;
+    return;
 }
-
-
-
 
 
 /*
  * Called when a command set (IHAVE, CHECK, TAKETHIS) has been
  * written to the remote.
  */
-static void commandWriteDone (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+commandWriteDone(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
-  const char *peerName ;
+    Connection cxn = (Connection) d;
+    const char *peerName;
 
-  ASSERT (e == cxn->myEp) ;
+    ASSERT(e == cxn->myEp);
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  if (i != IoDone)
-    {
-      errno = endPointErrno (e) ;
-      syswarn ("%s:%d cxnsleep can't write command", peerName, cxn->ident) ;
+    if (i != IoDone) {
+        errno = endPointErrno(e);
+        syswarn("%s:%d cxnsleep can't write command", peerName, cxn->ident);
 
-      cxnLogStats (cxn,true) ;
+        cxnLogStats(cxn, true);
 
-      if (cxn->state == cxnClosingS)
-        {
-          cxnDead (cxn) ;
-          delConnection (cxn) ;
+        if (cxn->state == cxnClosingS) {
+            cxnDead(cxn);
+            delConnection(cxn);
+        } else {
+            /* XXX - so cxnSleep() doesn't die in VALIDATE_CONNECTION () */
+            deferAllArticles(cxn);
+            cxnIdle(cxn);
+
+            cxnSleep(cxn);
         }
-      else
-        {
-	  /* XXX - so cxnSleep() doesn't die in VALIDATE_CONNECTION () */
-          deferAllArticles (cxn) ;
-          cxnIdle (cxn) ;
+    } else {
+        /* Some hosts return a response even before we're done sending, so
+           don't go idle until here */
+        if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
+            cxnIdle(cxn);
+        else
+            /* The command set has been sent, so start the response timer.
+               XXX - we'd like finer grained control */
+            initReadBlockedTimeout(cxn);
 
-          cxnSleep (cxn) ;
-        }
-    }
-  else
-    {
-      /* Some hosts return a response even before we're done sending, so don't
-         go idle until here */
-      if (cxn->state == cxnFeedingS && cxn->articleQTotal == 0)
-        cxnIdle (cxn) ;
-      else
-        /* The command set has been sent, so start the response timer.
-           XXX - we'd like finer grained control */
-        initReadBlockedTimeout (cxn) ;
-
-      if ( cxn->doesStreaming )
-        doSomeWrites (cxn) ;        /* pump data as fast as possible */
-                                    /* XXX - will clear the read timeout */
+        if (cxn->doesStreaming)
+            doSomeWrites(cxn); /* pump data as fast as possible */
+                               /* XXX - will clear the read timeout */
     }
 }
-
-
-
 
 
 /*
  * Called when the MODE STREAM command has been written down the pipe.
  */
-static void modeCmdIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+modeCmdIssued(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
+    Connection cxn = (Connection) d;
 
-  ASSERT (e == cxn->myEp) ;
+    ASSERT(e == cxn->myEp);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  /* The mode command has been sent, so start the response timer */
-  initReadBlockedTimeout (cxn) ;
+    /* The mode command has been sent, so start the response timer */
+    initReadBlockedTimeout(cxn);
 
-  if (i != IoDone)
-    {
-      d_printf (1,"%s:%d MODE STREAM command failed to write\n",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    if (i != IoDone) {
+        d_printf(1, "%s:%d MODE STREAM command failed to write\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 
-      syswarn ("%s:%d cxnsleep can't write MODE STREAM",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+        syswarn("%s:%d cxnsleep can't write MODE STREAM",
+                hostPeerName(cxn->myHost), cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
+        cxnSleepOrDie(cxn);
     }
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 }
-
-
-
 
 
 /*
  * Called when the AUTHINFO USER command has been written down the pipe.
  */
-static void authUserIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+authUserIssued(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
+    Connection cxn = (Connection) d;
 
-  ASSERT (e == cxn->myEp) ;
+    ASSERT(e == cxn->myEp);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  /* The authinfo user command has been sent, so start the response timer */
-  initReadBlockedTimeout (cxn) ;
+    /* The authinfo user command has been sent, so start the response timer */
+    initReadBlockedTimeout(cxn);
 
-  if (i != IoDone)
-    {
-      d_printf (1,"%s:%d AUTHINFO USER command failed to write\n",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    if (i != IoDone) {
+        d_printf(1, "%s:%d AUTHINFO USER command failed to write\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 
-      syswarn ("%s:%d cxnsleep can't write AUTHINFO USER",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+        syswarn("%s:%d cxnsleep can't write AUTHINFO USER",
+                hostPeerName(cxn->myHost), cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
+        cxnSleepOrDie(cxn);
     }
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 }
-
-
-
-
 
 
 /*
  * Called when the AUTHINFO USER command has been written down the pipe.
  */
-static void authPassIssued (EndPoint e, IoStatus i, Buffer *b, void *d)
+static void
+authPassIssued(EndPoint e, IoStatus i, Buffer *b, void *d)
 {
-  Connection cxn = (Connection) d ;
+    Connection cxn = (Connection) d;
 
-  ASSERT (e == cxn->myEp) ;
+    ASSERT(e == cxn->myEp);
 
-  clearTimer (cxn->writeBlockedTimerId) ;
+    clearTimer(cxn->writeBlockedTimerId);
 
-  /* The authinfo pass command has been sent, so start the response timer */
-  initReadBlockedTimeout (cxn) ;
+    /* The authinfo pass command has been sent, so start the response timer */
+    initReadBlockedTimeout(cxn);
 
-  if (i != IoDone)
-    {
-      d_printf (1,"%s:%d AUTHINFO PASS command failed to write\n",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    if (i != IoDone) {
+        d_printf(1, "%s:%d AUTHINFO PASS command failed to write\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 
-      syswarn ("%s:%d cxnsleep can't write AUTHINFO PASS",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+        syswarn("%s:%d cxnsleep can't write AUTHINFO PASS",
+                hostPeerName(cxn->myHost), cxn->ident);
 
-      cxnSleepOrDie (cxn) ;
+        cxnSleepOrDie(cxn);
     }
 
-  freeBufferArray (b) ;
+    freeBufferArray(b);
 }
-
-
-
-
 
 
 /*
  * Called whenever some amount of data has been written to the pipe but
  * more data remains to be written
  */
-static void writeProgress (EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED,
-                           void *d)
+static void
+writeProgress(EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED, void *d)
 {
-  Connection cxn = (Connection) d ;
+    Connection cxn = (Connection) d;
 
-  ASSERT (i == IoProgress) ;
+    ASSERT(i == IoProgress);
 
-  if (cxn->writeTimeout > 0)
-    cxn->writeBlockedTimerId = updateSleep (cxn->writeBlockedTimerId,
-                                            writeTimeoutCbk, cxn->writeTimeout,
-                                            cxn) ;
+    if (cxn->writeTimeout > 0)
+        cxn->writeBlockedTimerId = updateSleep(
+            cxn->writeBlockedTimerId, writeTimeoutCbk, cxn->writeTimeout, cxn);
 }
-
-
-
 
 
 /*
@@ -2499,141 +2282,118 @@ static void writeProgress (EndPoint e UNUSED, IoStatus i, Buffer *b UNUSED,
  * This is called when the timeout for the response from the remote
  * goes off. We tear down the connection and notify our host.
  */
-static void responseTimeoutCbk (TimeoutId id, void *data)
+static void
+responseTimeoutCbk(TimeoutId id, void *data)
 {
-  Connection cxn = (Connection) data ;
-  const char *peerName ;
+    Connection cxn = (Connection) data;
+    const char *peerName;
 
-  ASSERT (id == cxn->readBlockedTimerId) ;
-  ASSERT (cxn->state == cxnConnectingS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnFlushingS ||
-          cxn->state == cxnClosingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(id == cxn->readBlockedTimerId);
+    ASSERT(cxn->state == cxnConnectingS || cxn->state == cxnFeedingS
+           || cxn->state == cxnFlushingS || cxn->state == cxnClosingS);
+    VALIDATE_CONNECTION(cxn);
 
-  /* XXX - let abortConnection clear readBlockedTimerId, otherwise
-     VALIDATE_CONNECTION() will croak */
+    /* XXX - let abortConnection clear readBlockedTimerId, otherwise
+       VALIDATE_CONNECTION() will croak */
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  warn ("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident) ;
-  d_printf (1,"%s:%d shutting down non-responsive connection\n",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    warn("%s:%d cxnsleep non-responsive connection", peerName, cxn->ident);
+    d_printf(1, "%s:%d shutting down non-responsive connection\n",
+             hostPeerName(cxn->myHost), cxn->ident);
 
-  cxnLogStats (cxn,true) ;
+    cxnLogStats(cxn, true);
 
-  if (cxn->state == cxnClosingS)
-    {
-      abortConnection (cxn) ;
-      delConnection (cxn) ;
-    }
-  else  
-    cxnSleep (cxn) ;              /* will notify the Host */
+    if (cxn->state == cxnClosingS) {
+        abortConnection(cxn);
+        delConnection(cxn);
+    } else
+        cxnSleep(cxn); /* will notify the Host */
 }
-
-
-
 
 
 /*
  * This is called when the data write timeout for the remote
  * goes off. We tear down the connection and notify our host.
  */
-static void writeTimeoutCbk (TimeoutId id, void *data)
+static void
+writeTimeoutCbk(TimeoutId id, void *data)
 {
-  Connection cxn = (Connection) data ;
-  const char *peerName ;
+    Connection cxn = (Connection) data;
+    const char *peerName;
 
-  ASSERT (id == cxn->writeBlockedTimerId) ;
-  ASSERT (cxn->state == cxnConnectingS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnFlushingS ||
-          cxn->state == cxnClosingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(id == cxn->writeBlockedTimerId);
+    ASSERT(cxn->state == cxnConnectingS || cxn->state == cxnFeedingS
+           || cxn->state == cxnFlushingS || cxn->state == cxnClosingS);
+    VALIDATE_CONNECTION(cxn);
 
-  /* XXX - let abortConnection clear writeBlockedTimerId, otherwise
-     VALIDATE_CONNECTION() will croak */
+    /* XXX - let abortConnection clear writeBlockedTimerId, otherwise
+       VALIDATE_CONNECTION() will croak */
 
-  peerName = hostPeerName (cxn->myHost) ;
+    peerName = hostPeerName(cxn->myHost);
 
-  warn ("%s:%d cxnsleep write timeout", peerName, cxn->ident) ;
-  d_printf (1,"%s:%d shutting down non-responsive connection\n",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    warn("%s:%d cxnsleep write timeout", peerName, cxn->ident);
+    d_printf(1, "%s:%d shutting down non-responsive connection\n",
+             hostPeerName(cxn->myHost), cxn->ident);
 
-  cxnLogStats (cxn,true) ;
+    cxnLogStats(cxn, true);
 
-  if (cxn->state == cxnClosingS)
-    {
-      abortConnection (cxn) ;
-      delConnection (cxn) ;
-    }
-  else  
-    cxnSleep (cxn) ;              /* will notify the Host */
+    if (cxn->state == cxnClosingS) {
+        abortConnection(cxn);
+        delConnection(cxn);
+    } else
+        cxnSleep(cxn); /* will notify the Host */
 }
-
-
-
 
 
 /*
  * Called by the EndPoint class when the timer goes off
  */
-static void reopenTimeoutCbk (TimeoutId id, void *data)
+static void
+reopenTimeoutCbk(TimeoutId id, void *data)
 {
-  Connection cxn = (Connection) data ;
+    Connection cxn = (Connection) data;
 
-  ASSERT (id == cxn->sleepTimerId) ;
+    ASSERT(id == cxn->sleepTimerId);
 
-  cxn->sleepTimerId = 0 ;
-  
-  if (cxn->state != cxnSleepingS)
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else
-    cxnConnect (cxn) ;
+    cxn->sleepTimerId = 0;
+
+    if (cxn->state != cxnSleepingS) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+    } else
+        cxnConnect(cxn);
 }
-
-
-
 
 
 /*
  * timeout callback to close down long running connection.
  */
-static void flushCxnCbk (TimeoutId id, void *data)
+static void
+flushCxnCbk(TimeoutId id, void *data)
 {
-  Connection cxn = (Connection) data ;
+    Connection cxn = (Connection) data;
 
-  ASSERT (id == cxn->flushTimerId) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(id == cxn->flushTimerId);
+    VALIDATE_CONNECTION(cxn);
 
-  cxn->flushTimerId = 0 ;
+    cxn->flushTimerId = 0;
 
-  if (!(cxn->state == cxnFeedingS || cxn->state == cxnConnectingS ||
-        cxn->state == cxnIdleS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else
-    {
-      d_printf (1,"%s:%d Handling periodic connection close.\n",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    if (!(cxn->state == cxnFeedingS || cxn->state == cxnConnectingS
+          || cxn->state == cxnIdleS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+    } else {
+        d_printf(1, "%s:%d Handling periodic connection close.\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 
-      notice ("%s:%d periodic close", hostPeerName (cxn->myHost), cxn->ident) ;
+        notice("%s:%d periodic close", hostPeerName(cxn->myHost), cxn->ident);
 
-      cxnFlush (cxn) ;
+        cxnFlush(cxn);
     }
 }
-
-
-
 
 
 /*
@@ -2641,42 +2401,35 @@ static void flushCxnCbk (TimeoutId id, void *data)
  * article from INN. When that happens we tear down the network
  * connection to help recycle fds
  */
-static void articleTimeoutCbk (TimeoutId id, void *data)
+static void
+articleTimeoutCbk(TimeoutId id, void *data)
 {
-  Connection cxn = (Connection) data ;
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    Connection cxn = (Connection) data;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  ASSERT (cxn->artReceiptTimerId == id) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->artReceiptTimerId == id);
+    VALIDATE_CONNECTION(cxn);
 
-  cxn->artReceiptTimerId = 0 ;
+    cxn->artReceiptTimerId = 0;
 
-  if (cxn->state != cxnIdleS)
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
+    if (cxn->state != cxnIdleS) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
 
-      return ;
+        return;
     }
 
-  /* it's doubtful (right?) that this timer could go off and there'd
-     still be articles in the queue. */
-  if (cxn->articleQTotal > 0)
-    {
-      warn ("%s:%d idle connection still has articles", peerName, cxn->ident) ;
-    }
-  else
-    {
-      notice ("%s:%d idle tearing down connection", peerName, cxn->ident) ;
-      cxn->state = cxnIdleTimeoutS ;
-      cxnFlush (cxn) ;
+    /* it's doubtful (right?) that this timer could go off and there'd
+       still be articles in the queue. */
+    if (cxn->articleQTotal > 0) {
+        warn("%s:%d idle connection still has articles", peerName, cxn->ident);
+    } else {
+        notice("%s:%d idle tearing down connection", peerName, cxn->ident);
+        cxn->state = cxnIdleTimeoutS;
+        cxnFlush(cxn);
     }
 }
-
-
-
 
 
 /*
@@ -2693,25 +2446,23 @@ static void articleTimeoutCbk (TimeoutId id, void *data)
  * connection when we got a response to the body of an IHAVE command before we
  * finished sending the body.
  */
-static void cxnWorkProc (EndPoint ep UNUSED, void *data)
+static void
+cxnWorkProc(EndPoint ep UNUSED, void *data)
 {
-  Connection cxn = (Connection) data ;
+    Connection cxn = (Connection) data;
 
-  d_printf (2,"%s:%d calling work proc\n",
-           hostPeerName (cxn->myHost),cxn->ident) ;
+    d_printf(2, "%s:%d calling work proc\n", hostPeerName(cxn->myHost),
+             cxn->ident);
 
-  if (writesNeeded (cxn))
-    doSomeWrites (cxn) ;        /* may re-register the work proc... */
-  else if (cxn->state == cxnFlushingS || cxn->state == cxnClosingS)
-    {
-      if (cxn->articleQTotal == 0)
-        issueQUIT (cxn) ;
-    }
-  else
-    d_printf (2,"%s:%d no writes were needed...\n",
-             hostPeerName (cxn->myHost), cxn->ident) ;
+    if (writesNeeded(cxn))
+        doSomeWrites(cxn); /* may re-register the work proc... */
+    else if (cxn->state == cxnFlushingS || cxn->state == cxnClosingS) {
+        if (cxn->articleQTotal == 0)
+            issueQUIT(cxn);
+    } else
+        d_printf(2, "%s:%d no writes were needed...\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 }
-
 
 
 /****************************************************************************
@@ -2719,9 +2470,6 @@ static void cxnWorkProc (EndPoint ep UNUSED, void *data)
  * END EndPoint callback area.
  *
  ****************************************************************************/
-
-
-
 
 
 /****************************************************************************
@@ -2734,12 +2482,13 @@ static void cxnWorkProc (EndPoint ep UNUSED, void *data)
 /*
  * A connection needs to sleep, but if it's closing it needs to die instead.
  */
-static void cxnSleepOrDie (Connection cxn)
+static void
+cxnSleepOrDie(Connection cxn)
 {
-  if (cxn->state == cxnClosingS)
-    cxnDead (cxn) ;
-  else
-    cxnSleep (cxn) ;
+    if (cxn->state == cxnClosingS)
+        cxnDead(cxn);
+    else
+        cxnSleep(cxn);
 }
 
 
@@ -2747,338 +2496,304 @@ static void cxnSleepOrDie (Connection cxn)
  * Handle the response 205 to our QUIT command, which means the
  * remote is going away and we can happily cleanup
  */
-static void processResponse205 (Connection cxn, char *response UNUSED)
+static void
+processResponse205(Connection cxn, char *response UNUSED)
 {
-  bool immedRecon ;
+    bool immedRecon;
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  if (!(cxn->state == cxnFeedingS ||
-        cxn->state == cxnIdleS ||
-        cxn->state == cxnFlushingS ||
-        cxn->state == cxnClosingS)) 
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+          || cxn->state == cxnFlushingS || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  switch (cxn->state)
-    {
-      case cxnFlushingS:
-      case cxnClosingS:
-        ASSERT (cxn->articleQTotal == 0) ;
+    switch (cxn->state) {
+    case cxnFlushingS:
+    case cxnClosingS:
+        ASSERT(cxn->articleQTotal == 0);
 
-        cxnLogStats (cxn,true) ;
+        cxnLogStats(cxn, true);
 
-        immedRecon = cxn->immedRecon ;
+        immedRecon = cxn->immedRecon;
 
-        hostCxnDead (cxn->myHost,cxn) ;
+        hostCxnDead(cxn->myHost, cxn);
 
-        if (cxn->state == cxnFlushingS && immedRecon)
-          {
-            abortConnection (cxn) ;
-            if (!cxnConnect (cxn))
-              notice ("%s:%d flush re-connect failed",
-                      hostPeerName (cxn->myHost), cxn->ident) ;
-          }
-        else if (cxn->state == cxnFlushingS)
-          cxnWait (cxn) ;
+        if (cxn->state == cxnFlushingS && immedRecon) {
+            abortConnection(cxn);
+            if (!cxnConnect(cxn))
+                notice("%s:%d flush re-connect failed",
+                       hostPeerName(cxn->myHost), cxn->ident);
+        } else if (cxn->state == cxnFlushingS)
+            cxnWait(cxn);
         else
-          cxnDead (cxn) ;
-        break ;
+            cxnDead(cxn);
+        break;
 
-      case cxnIdleS:
-      case cxnFeedingS:
+    case cxnIdleS:
+    case cxnFeedingS:
         /* this shouldn't ever happen... */
-        warn ("%s:%d cxnsleep response unexpected: %d",
-              hostPeerName (cxn->myHost), cxn->ident, 205) ;
-        cxnSleepOrDie (cxn) ;
-        break ;
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 205);
+        cxnSleepOrDie(cxn);
+        break;
 
-      default:
-        die ("Bad connection state: %s\n",stateToString (cxn->state)) ;
+    default:
+        die("Bad connection state: %s\n", stateToString(cxn->state));
     }
 }
-
-
-
 
 
 /*
  * Handle a response code of 238 which is the "no such article"
  * reply to the CHECK command (i.e. remote wants it).
  */
-static void processResponse238 (Connection cxn, char *response)
+static void
+processResponse238(Connection cxn, char *response)
 {
-  char *msgid ;
-  ArtHolder artHolder ;
+    char *msgid;
+    ArtHolder artHolder;
 
-  if (!cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected streaming response for non-streaming"
-            " connection: %s", hostPeerName (cxn->myHost), cxn->ident,
-            response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected streaming response for non-streaming"
+             " connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  VALIDATE_CONNECTION (cxn) ;
-
-  msgid = getMsgId (response) ;
-
-  if (cxn->checkRespHead == NULL) /* peer is confused */
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,238) ;
-      cxnSleepOrDie (cxn) ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
-  else if (msgid == NULL || strlen (msgid) == 0 ||
-           (artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
-    noSuchMessageId (cxn,238,msgid,response) ;
-  else
+
+    VALIDATE_CONNECTION(cxn);
+
+    msgid = getMsgId(response);
+
+    if (cxn->checkRespHead == NULL) /* peer is confused */
     {
-      /* now remove the article from the check queue and move it onto the
-         transmit queue. Another function wil take care of transmitting */
-      remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      if (cxn->state != cxnClosingS)
-        appendArtHolder (artHolder, &cxn->takeHead, &cxn->articleQTotal) ;
-      else
-        {
-          hostTakeBackArticle (cxn->myHost, cxn, artHolder->article) ;
-          delArtHolder (artHolder) ;
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 238);
+        cxnSleepOrDie(cxn);
+    } else if (msgid == NULL || strlen(msgid) == 0
+               || (artHolder = artHolderByMsgId(msgid, cxn->checkRespHead))
+                      == NULL)
+        noSuchMessageId(cxn, 238, msgid, response);
+    else {
+        /* now remove the article from the check queue and move it onto the
+           transmit queue. Another function wil take care of transmitting */
+        remArtHolder(artHolder, &cxn->checkRespHead, &cxn->articleQTotal);
+        if (cxn->state != cxnClosingS)
+            appendArtHolder(artHolder, &cxn->takeHead, &cxn->articleQTotal);
+        else {
+            hostTakeBackArticle(cxn->myHost, cxn, artHolder->article);
+            delArtHolder(artHolder);
         }
     }
 
-  if (msgid != NULL)
-    free (msgid) ;
+    if (msgid != NULL)
+        free(msgid);
 }
-
-
-
 
 
 /*
  * process the response "try again later" to the CHECK command If this
  * returns true then the connection is still usable.
  */
-static void processResponse431 (Connection cxn, char *response)
+static void
+processResponse431(Connection cxn, char *response)
 {
-  char *msgid ;
-  ArtHolder artHolder ;
+    char *msgid;
+    ArtHolder artHolder;
 
-  if (!cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected streaming response for non-streaming"
-            " connection: %s", hostPeerName (cxn->myHost), cxn->ident,
-            response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  VALIDATE_CONNECTION (cxn) ;
-
-  msgid = getMsgId (response) ;
-
-  if (cxn->checkRespHead == NULL) /* peer is confused */
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,431) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (msgid == NULL || strlen (msgid) == 0 ||
-           (artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
-    noSuchMessageId (cxn,431,msgid,response) ;
-  else
-    {
-      remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-        cxnIdle (cxn) ;
-      hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
-      delArtHolder (artHolder) ;
+    if (!cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected streaming response for non-streaming"
+             " connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (msgid != NULL)
-    free (msgid) ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
+    }
+
+    VALIDATE_CONNECTION(cxn);
+
+    msgid = getMsgId(response);
+
+    if (cxn->checkRespHead == NULL) /* peer is confused */
+    {
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 431);
+        cxnSleepOrDie(cxn);
+    } else if (msgid == NULL || strlen(msgid) == 0
+               || (artHolder = artHolderByMsgId(msgid, cxn->checkRespHead))
+                      == NULL)
+        noSuchMessageId(cxn, 431, msgid, response);
+    else {
+        remArtHolder(artHolder, &cxn->checkRespHead, &cxn->articleQTotal);
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            cxnIdle(cxn);
+        hostArticleDeferred(cxn->myHost, cxn, artHolder->article);
+        delArtHolder(artHolder);
+    }
+
+    if (msgid != NULL)
+        free(msgid);
 }
-
-
-
 
 
 /*
  * process the "already have it" response to the CHECK command.  If this
  * returns true then the connection is still usable.
  */
-static void processResponse438 (Connection cxn, char *response)
+static void
+processResponse438(Connection cxn, char *response)
 {
-  char *msgid ;
-  ArtHolder artHolder ;
+    char *msgid;
+    ArtHolder artHolder;
 
-  if (!cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected streaming response for non-streaming"
-            " connection: %s", hostPeerName (cxn->myHost), cxn->ident,
-            response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  VALIDATE_CONNECTION (cxn) ;
-
-  msgid = getMsgId (response) ;
-
-  if (cxn->checkRespHead == NULL) /* peer is confused */
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,438) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (msgid == NULL || strlen (msgid) == 0 ||
-           (artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
-    noSuchMessageId (cxn,438,msgid,response) ;
-  else
-    {
-      cxn->checksRefused++ ;
-
-      remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-        cxnIdle (cxn) ;
-      hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
-      delArtHolder (artHolder) ;
+    if (!cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected streaming response for non-streaming"
+             " connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (msgid != NULL)
-    free (msgid) ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
+    }
+
+    VALIDATE_CONNECTION(cxn);
+
+    msgid = getMsgId(response);
+
+    if (cxn->checkRespHead == NULL) /* peer is confused */
+    {
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 438);
+        cxnSleepOrDie(cxn);
+    } else if (msgid == NULL || strlen(msgid) == 0
+               || (artHolder = artHolderByMsgId(msgid, cxn->checkRespHead))
+                      == NULL)
+        noSuchMessageId(cxn, 438, msgid, response);
+    else {
+        cxn->checksRefused++;
+
+        remArtHolder(artHolder, &cxn->checkRespHead, &cxn->articleQTotal);
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            cxnIdle(cxn);
+        hostArticleNotWanted(cxn->myHost, cxn, artHolder->article);
+        delArtHolder(artHolder);
+    }
+
+    if (msgid != NULL)
+        free(msgid);
 }
-
-
-
 
 
 /*
  * process the "article transferred ok" response to the TAKETHIS.
  */
-static void processResponse239 (Connection cxn, char *response)
+static void
+processResponse239(Connection cxn, char *response)
 {
-  char *msgid ;
-  ArtHolder artHolder ;
+    char *msgid;
+    ArtHolder artHolder;
 
-  if (!cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected streaming response for non-streaming"
-            " connection: %s", hostPeerName (cxn->myHost), cxn->ident,
-            response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected streaming response for non-streaming"
+             " connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  VALIDATE_CONNECTION (cxn) ;
-
-  msgid = getMsgId (response) ;
-
-  if (cxn->takeRespHead == NULL) /* peer is confused */
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,239) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else if (msgid == NULL || strlen (msgid) == 0 ||
-           (artHolder = artHolderByMsgId (msgid, cxn->takeRespHead)) == NULL)
-    noSuchMessageId (cxn,239,msgid,response) ;
-  else
-    {
-      cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += artSize(artHolder->article);
-
-      remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-        cxnIdle (cxn) ;
-      hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
-      delArtHolder (artHolder) ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (msgid != NULL)
-    free (msgid) ;
+    VALIDATE_CONNECTION(cxn);
+
+    msgid = getMsgId(response);
+
+    if (cxn->takeRespHead == NULL) /* peer is confused */
+    {
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 239);
+        cxnSleepOrDie(cxn);
+    } else if (msgid == NULL || strlen(msgid) == 0
+               || (artHolder = artHolderByMsgId(msgid, cxn->takeRespHead))
+                      == NULL)
+        noSuchMessageId(cxn, 239, msgid, response);
+    else {
+        cxn->takesOkayed++;
+        cxn->takesSizeOkayed += artSize(artHolder->article);
+
+        remArtHolder(artHolder, &cxn->takeRespHead, &cxn->articleQTotal);
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            cxnIdle(cxn);
+        hostArticleAccepted(cxn->myHost, cxn, artHolder->article);
+        delArtHolder(artHolder);
+    }
+
+    if (msgid != NULL)
+        free(msgid);
 }
-
 
 
 /*
  *  Set the thresholds for no-CHECK mode; negative means leave existing value
  */
 
-void cxnSetCheckThresholds (Connection cxn,
-			    double lowFilter, double highFilter,
-			    double lowPassFilter)
+void
+cxnSetCheckThresholds(Connection cxn, double lowFilter, double highFilter,
+                      double lowPassFilter)
 {
-  /* Adjust current value for new scaling */
-  if (cxn->lowPassFilter > 0.0)
-    cxn->filterValue = cxn->filterValue / cxn->lowPassFilter * lowPassFilter;
+    /* Adjust current value for new scaling */
+    if (cxn->lowPassFilter > 0.0)
+        cxn->filterValue =
+            cxn->filterValue / cxn->lowPassFilter * lowPassFilter;
 
-  /* Stick in new values */
-  if (highFilter >= 0)
-    cxn->onThreshold = highFilter * lowPassFilter / 100.0;
-  if (lowFilter >= 0)
-    cxn->offThreshold = lowFilter * lowPassFilter / 100.0;
-  cxn->lowPassFilter = lowPassFilter;
+    /* Stick in new values */
+    if (highFilter >= 0)
+        cxn->onThreshold = highFilter * lowPassFilter / 100.0;
+    if (lowFilter >= 0)
+        cxn->offThreshold = lowFilter * lowPassFilter / 100.0;
+    cxn->lowPassFilter = lowPassFilter;
 }
 
 
 /*
  *  Blow away the connection gracelessly and immedately clean up
  */
-void cxnNuke (Connection cxn)
+void
+cxnNuke(Connection cxn)
 {
-  abortConnection (cxn) ;
-  hostCxnDead (cxn->myHost,cxn) ;
-  delConnection(cxn) ;
+    abortConnection(cxn);
+    hostCxnDead(cxn->myHost, cxn);
+    delConnection(cxn);
 }
 
 
@@ -3086,188 +2801,162 @@ void cxnNuke (Connection cxn)
  * process a "article rejected do not try again" response to the
  * TAKETHIS.
  */
-static void processResponse439 (Connection cxn, char *response)
+static void
+processResponse439(Connection cxn, char *response)
 {
-  char *msgid ;
-  ArtHolder artHolder ;
+    char *msgid;
+    ArtHolder artHolder;
 
-  if (!cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected streaming response for non-streaming"
-            " connection: %s", hostPeerName (cxn->myHost), cxn->ident,
-            response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
-    }
-  
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected streaming response for non-streaming"
+             " connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  VALIDATE_CONNECTION (cxn) ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
+    }
 
-  msgid = getMsgId (response) ;
+    VALIDATE_CONNECTION(cxn);
 
-  if (cxn->takeRespHead == NULL) /* peer is confused */
+    msgid = getMsgId(response);
+
+    if (cxn->takeRespHead == NULL) /* peer is confused */
     {
-      /* NNTPRelay return 439 for check <messid> if messid is bad */
-      if (cxn->checkRespHead == NULL) /* peer is confused */
+        /* NNTPRelay return 439 for check <messid> if messid is bad */
+        if (cxn->checkRespHead == NULL) /* peer is confused */
         {
-          warn ("%s:%d cxnsleep response unexpected: %d",
-                hostPeerName (cxn->myHost),cxn->ident,439) ;
-          cxnSleepOrDie (cxn) ;
-        }
-      else
-        {
-          if ((artHolder = artHolderByMsgId (msgid, cxn->checkRespHead)) == NULL)
-            noSuchMessageId (cxn,439,msgid,response) ;
-          else
-            {
-              cxn->checksRefused++ ;
-              remArtHolder (artHolder, &cxn->checkRespHead, &cxn->articleQTotal) ;
-              if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-                cxnIdle (cxn) ;
-              hostArticleNotWanted (cxn->myHost, cxn, artHolder->article);
-              delArtHolder (artHolder) ;
+            warn("%s:%d cxnsleep response unexpected: %d",
+                 hostPeerName(cxn->myHost), cxn->ident, 439);
+            cxnSleepOrDie(cxn);
+        } else {
+            if ((artHolder = artHolderByMsgId(msgid, cxn->checkRespHead))
+                == NULL)
+                noSuchMessageId(cxn, 439, msgid, response);
+            else {
+                cxn->checksRefused++;
+                remArtHolder(artHolder, &cxn->checkRespHead,
+                             &cxn->articleQTotal);
+                if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+                    cxnIdle(cxn);
+                hostArticleNotWanted(cxn->myHost, cxn, artHolder->article);
+                delArtHolder(artHolder);
             }
         }
-    }
-  else if (msgid == NULL || strlen (msgid) == 0 ||
-           (artHolder = artHolderByMsgId (msgid, cxn->takeRespHead)) == NULL)
-    noSuchMessageId (cxn,439,msgid,response) ;
-  else
-    {
-      cxn->takesRejected++ ;
-      cxn->takesSizeRejected += artSize(artHolder->article);
+    } else if (msgid == NULL || strlen(msgid) == 0
+               || (artHolder = artHolderByMsgId(msgid, cxn->takeRespHead))
+                      == NULL)
+        noSuchMessageId(cxn, 439, msgid, response);
+    else {
+        cxn->takesRejected++;
+        cxn->takesSizeRejected += artSize(artHolder->article);
 
-      remArtHolder (artHolder, &cxn->takeRespHead, &cxn->articleQTotal) ;
-      /* Some hosts return the 439 response even before we're done sending */
-      if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
-        cxnIdle (cxn) ;
-      hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
-      delArtHolder (artHolder) ;
+        remArtHolder(artHolder, &cxn->takeRespHead, &cxn->articleQTotal);
+        /* Some hosts return the 439 response even before we're done sending */
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            cxnIdle(cxn);
+        hostArticleRejected(cxn->myHost, cxn, artHolder->article);
+        delArtHolder(artHolder);
     }
 
-  if (msgid != NULL)
-    free (msgid) ;
+    if (msgid != NULL)
+        free(msgid);
 }
-
-
-
-
 
 
 /*
  * process the "article transferred ok" response to the IHAVE-body.
  */
-static void processResponse235 (Connection cxn, char *response UNUSED)
+static void
+processResponse235(Connection cxn, char *response UNUSED)
 {
-  ArtHolder artHolder ;
+    ArtHolder artHolder;
 
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->takeRespHead != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->articleQTotal == 1);
+    ASSERT(cxn->takeRespHead != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  if (cxn->takeRespHead == NULL) /* peer is confused */
+    if (cxn->takeRespHead == NULL) /* peer is confused */
     {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,235) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else
-    {
-      /* now remove the article from the queue and tell the Host to forget
-         about it. */
-      artHolder = cxn->takeRespHead ;
-      
-      cxn->takeRespHead = NULL ;
-      cxn->articleQTotal = 0 ;
-      cxn->takesOkayed++ ;
-      cxn->takesSizeOkayed += artSize(artHolder->article);
-      
-      if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-        cxnIdle (cxn) ;
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 235);
+        cxnSleepOrDie(cxn);
+    } else {
+        /* now remove the article from the queue and tell the Host to forget
+           about it. */
+        artHolder = cxn->takeRespHead;
 
-      hostArticleAccepted (cxn->myHost, cxn, artHolder->article) ;
-      delArtHolder (artHolder) ;
+        cxn->takeRespHead = NULL;
+        cxn->articleQTotal = 0;
+        cxn->takesOkayed++;
+        cxn->takesSizeOkayed += artSize(artHolder->article);
+
+        if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+            cxnIdle(cxn);
+
+        hostArticleAccepted(cxn->myHost, cxn, artHolder->article);
+        delArtHolder(artHolder);
     }
 }
-
-
-
 
 
 /*
  * process the "send article to be transfered" response to the IHAVE.
  */
-static void processResponse335 (Connection cxn, char *response UNUSED)
+static void
+processResponse335(Connection cxn, char *response UNUSED)
 {
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (cxn->checkRespHead == NULL)
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost),cxn->ident,335) ;
-      cxnSleepOrDie (cxn) ;
-    }
-  else 
-    {
-      VALIDATE_CONNECTION (cxn) ;
-      /* now move the article into the third queue */
-      cxn->takeHead = cxn->checkRespHead ;
-      cxn->checkRespHead = NULL ;
-      
-      issueIHAVEBody (cxn) ;
+    if (cxn->checkRespHead == NULL) {
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 335);
+        cxnSleepOrDie(cxn);
+    } else {
+        VALIDATE_CONNECTION(cxn);
+        /* now move the article into the third queue */
+        cxn->takeHead = cxn->checkRespHead;
+        cxn->checkRespHead = NULL;
+
+        issueIHAVEBody(cxn);
     }
 }
-
-
-
 
 
 /*
@@ -3275,107 +2964,96 @@ static void processResponse335 (Connection cxn, char *response UNUSED)
  * the IHAVE/CHECK/TAKETHIS command, but not the banner--that's handled
  * elsewhere.
  */
-static void processResponse400 (Connection cxn, char *response)
+static void
+processResponse400(Connection cxn, char *response)
 {
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnIdleS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnIdleS || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  /* We may get a response 400 multiple times when in streaming mode. */
-  notice ("%s:%d remote cannot accept articles: %s",
-          hostPeerName(cxn->myHost), cxn->ident, response) ;
-  
-  /* right here there may still be data queued to write and so we'll fail
-     trying to issue the quit ('cause a write will be pending). Furthermore,
-     the data pending may be half way through an command, and so just
-     tossing the buffer is nt sufficient. But figuring out where we are and
-     doing a tidy job is hard */
-  if (writeIsPending (cxn->myEp))
-    cxnSleepOrDie (cxn) ;
-  else
-    {
-      if (cxn->articleQTotal > 0)
-        {
-          /* Defer the articles here so that cxnFlush() doesn't set up an
-             immediate reconnect. */
-          deferAllArticles (cxn) ;
-          clearTimer (cxn->readBlockedTimerId) ;
-	  /* XXX - so cxnSleep() doesn't die when it validates the connection */
-          cxnIdle (cxn) ;
+    /* We may get a response 400 multiple times when in streaming mode. */
+    notice("%s:%d remote cannot accept articles: %s",
+           hostPeerName(cxn->myHost), cxn->ident, response);
+
+    /* right here there may still be data queued to write and so we'll fail
+       trying to issue the quit ('cause a write will be pending). Furthermore,
+       the data pending may be half way through an command, and so just
+       tossing the buffer is nt sufficient. But figuring out where we are and
+       doing a tidy job is hard */
+    if (writeIsPending(cxn->myEp))
+        cxnSleepOrDie(cxn);
+    else {
+        if (cxn->articleQTotal > 0) {
+            /* Defer the articles here so that cxnFlush() doesn't set up an
+               immediate reconnect. */
+            deferAllArticles(cxn);
+            clearTimer(cxn->readBlockedTimerId);
+            /* XXX - so cxnSleep() doesn't die when it validates the connection
+             */
+            cxnIdle(cxn);
         }
-      /* XXX - it would be nice if we QUIT first, but we'd have to go
-         into a state where we just search for the 205 response, and
-         only go into the sleep state at that point */
-      cxnSleepOrDie (cxn) ;
+        /* XXX - it would be nice if we QUIT first, but we'd have to go
+           into a state where we just search for the 205 response, and
+           only go into the sleep state at that point */
+        cxnSleepOrDie(cxn);
     }
 }
-
-
-
 
 
 /*
  * process the "not wanted" response to the IHAVE.
  */
-static void processResponse435 (Connection cxn, char *response UNUSED)
+static void
+processResponse435(Connection cxn, char *response UNUSED)
 {
-  ArtHolder artHolder ;
+    ArtHolder artHolder;
 
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  /* Some servers, such as early versions of Diablo, had a bug where they'd
-     respond with a 435 code (which should only be used for refusing an
-     article before it was offered) after an article has been sent. */
-  if (cxn->checkRespHead == NULL)
-    {
-      warn ("%s:%d cxnsleep response unexpected: %d",
-            hostPeerName (cxn->myHost), cxn->ident, 435) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    /* Some servers, such as early versions of Diablo, had a bug where they'd
+       respond with a 435 code (which should only be used for refusing an
+       article before it was offered) after an article has been sent. */
+    if (cxn->checkRespHead == NULL) {
+        warn("%s:%d cxnsleep response unexpected: %d",
+             hostPeerName(cxn->myHost), cxn->ident, 435);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  ASSERT (cxn->articleQTotal == 1) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->articleQTotal == 1);
+    VALIDATE_CONNECTION(cxn);
 
-  cxn->articleQTotal-- ;
-  cxn->checksRefused++ ;
+    cxn->articleQTotal--;
+    cxn->checksRefused++;
 
-  artHolder = cxn->checkRespHead ;
-  cxn->checkRespHead = NULL ;
+    artHolder = cxn->checkRespHead;
+    cxn->checkRespHead = NULL;
 
-  if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
-    cxnIdle (cxn) ;
+    if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+        cxnIdle(cxn);
 
-  hostArticleNotWanted (cxn->myHost, cxn, artHolder->article) ;
-  delArtHolder (artHolder) ;
+    hostArticleNotWanted(cxn->myHost, cxn, artHolder->article);
+    delArtHolder(artHolder);
 
 #if 0
   d_printf (1,"%s:%d On exiting 435 article queue total is %d (%d %d %d %d)\n",
@@ -3389,200 +3067,172 @@ static void processResponse435 (Connection cxn, char *response UNUSED)
 }
 
 
-
-
-
 /*
  * process the "transfer failed" response to the IHAVE-body, (seems this
  * can come from the IHAVE too).
  */
-static void processResponse436 (Connection cxn, char *response UNUSED)
+static void
+processResponse436(Connection cxn, char *response UNUSED)
 {
-  ArtHolder artHolder ;
+    ArtHolder artHolder;
 
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->takeRespHead != NULL || cxn->checkRespHead != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->articleQTotal == 1);
+    ASSERT(cxn->takeRespHead != NULL || cxn->checkRespHead != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  cxn->articleQTotal-- ;
+    cxn->articleQTotal--;
 
-  if (cxn->takeRespHead != NULL) /* IHAVE-body command barfed */
+    if (cxn->takeRespHead != NULL) /* IHAVE-body command barfed */
     {
-      artHolder = cxn->takeRespHead ;
-      cxn->takeRespHead = NULL ;
-    }
-  else                          /* IHAVE command barfed */
+        artHolder = cxn->takeRespHead;
+        cxn->takeRespHead = NULL;
+    } else /* IHAVE command barfed */
     {
-      artHolder = cxn->checkRespHead ;
-      cxn->checkRespHead = NULL ;
+        artHolder = cxn->checkRespHead;
+        cxn->checkRespHead = NULL;
     }
 
-  if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
-    cxnIdle (cxn) ;
-  
-  hostArticleDeferred (cxn->myHost, cxn, artHolder->article) ;
-  delArtHolder (artHolder) ;
+    if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+        cxnIdle(cxn);
+
+    hostArticleDeferred(cxn->myHost, cxn, artHolder->article);
+    delArtHolder(artHolder);
 }
-
-
-
 
 
 /*
  * Process the "article rejected do not try again" response to the
  * IHAVE-body.
  */
-static void processResponse437 (Connection cxn, char *response UNUSED)
+static void
+processResponse437(Connection cxn, char *response UNUSED)
 {
-  ArtHolder artHolder ;
+    ArtHolder artHolder;
 
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->takeRespHead != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->articleQTotal == 1);
+    ASSERT(cxn->takeRespHead != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  cxn->articleQTotal-- ;
-  cxn->takesRejected++ ;
+    cxn->articleQTotal--;
+    cxn->takesRejected++;
 
-  artHolder = cxn->takeRespHead ;
-  cxn->takeRespHead = NULL ;
-  cxn->takesSizeRejected += artSize(artHolder->article);
+    artHolder = cxn->takeRespHead;
+    cxn->takeRespHead = NULL;
+    cxn->takesSizeRejected += artSize(artHolder->article);
 
-  /* Some servers return the 437 response before we're done sending. */
-  if (cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-    cxnIdle (cxn) ;
+    /* Some servers return the 437 response before we're done sending. */
+    if (cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+        cxnIdle(cxn);
 
-  hostArticleRejected (cxn->myHost, cxn, artHolder->article) ;
-  delArtHolder (artHolder) ;
+    hostArticleRejected(cxn->myHost, cxn, artHolder->article);
+    delArtHolder(artHolder);
 }
 
 
 /* Process the response 480 Transfer permission defined. We're probably
    talking to a remote nnrpd on a system that forgot to put us in
    the hosts.nntp */
-static void processResponse480 (Connection cxn, char *response UNUSED)
+static void
+processResponse480(Connection cxn, char *response UNUSED)
 {
-  if (cxn->doesStreaming)
-    {
-      warn ("%s:%d cxnsleep unexpected non-streaming response for"
-            " streaming connection: %s", hostPeerName (cxn->myHost),
-            cxn->ident,response) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (cxn->doesStreaming) {
+        warn("%s:%d cxnsleep unexpected non-streaming response for"
+             " streaming connection: %s",
+             hostPeerName(cxn->myHost), cxn->ident, response);
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (!(cxn->state == cxnFlushingS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+          || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  warn ("%s:%d cxnsleep transfer permission denied",
-        hostPeerName (cxn->myHost), cxn->ident) ;
-  
-  if (cxn->state == cxnClosingS)
-    cxnDead (cxn) ;
-  else
-    cxnSleep (cxn) ;
+    warn("%s:%d cxnsleep transfer permission denied",
+         hostPeerName(cxn->myHost), cxn->ident);
+
+    if (cxn->state == cxnClosingS)
+        cxnDead(cxn);
+    else
+        cxnSleep(cxn);
 }
-
-
-
 
 
 /*
  * Handle the response 503, which means the timeout of nnrpd.
  */
-static void processResponse503 (Connection cxn, char *response UNUSED)
+static void
+processResponse503(Connection cxn, char *response UNUSED)
 {
-  bool immedRecon ;
+    bool immedRecon;
 
-  VALIDATE_CONNECTION (cxn) ;
+    VALIDATE_CONNECTION(cxn);
 
-  if (!(cxn->state == cxnFeedingS ||
-	cxn->state == cxnIdleS ||
-	cxn->state == cxnFlushingS ||
-	cxn->state == cxnClosingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+          || cxn->state == cxnFlushingS || cxn->state == cxnClosingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  if (cxn->articleQTotal != 0)
-    notice ("%s:%d flush re-connect failed", hostPeerName (cxn->myHost),
-            cxn->ident) ;
+    if (cxn->articleQTotal != 0)
+        notice("%s:%d flush re-connect failed", hostPeerName(cxn->myHost),
+               cxn->ident);
 
-  cxnLogStats (cxn,true) ;
+    cxnLogStats(cxn, true);
 
-  immedRecon = cxn->immedRecon ;
+    immedRecon = cxn->immedRecon;
 
-  hostCxnDead (cxn->myHost,cxn) ;
+    hostCxnDead(cxn->myHost, cxn);
 
-  if (cxn->state == cxnFlushingS && immedRecon)
-    {
-      abortConnection (cxn) ;
-      if (!cxnConnect (cxn))
-        notice ("%s:%d flush re-connect failed", hostPeerName (cxn->myHost),
-                cxn->ident) ;
-    }
-  else if (cxn->state == cxnFlushingS)
-    cxnWait (cxn) ;
-  else
-    cxnDead (cxn) ;
-
+    if (cxn->state == cxnFlushingS && immedRecon) {
+        abortConnection(cxn);
+        if (!cxnConnect(cxn))
+            notice("%s:%d flush re-connect failed", hostPeerName(cxn->myHost),
+                   cxn->ident);
+    } else if (cxn->state == cxnFlushingS)
+        cxnWait(cxn);
+    else
+        cxnDead(cxn);
 }
-
-
-
 
 
 /****************************************************************************
@@ -3592,77 +3242,67 @@ static void processResponse503 (Connection cxn, char *response UNUSED)
  ***************************************************************************/
 
 
-
-
-
 /*
  * puts the Connection into the sleep state.
  */
-static void cxnSleep (Connection cxn)
+static void
+cxnSleep(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state == cxnFlushingS ||
-          cxn->state == cxnIdleS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnConnectingS) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state == cxnFlushingS || cxn->state == cxnIdleS
+           || cxn->state == cxnFeedingS || cxn->state == cxnConnectingS);
+    VALIDATE_CONNECTION(cxn);
 
-  abortConnection (cxn) ;
+    abortConnection(cxn);
 
-  prepareReopenCbk (cxn) ;  /* XXX - we don't want to reopen if idle */
-  cxn->state = cxnSleepingS ;
+    prepareReopenCbk(cxn); /* XXX - we don't want to reopen if idle */
+    cxn->state = cxnSleepingS;
 
-  /* tell our Host we're asleep so it doesn't try to give us articles */
-  hostCxnSleeping (cxn->myHost,cxn) ;
+    /* tell our Host we're asleep so it doesn't try to give us articles */
+    hostCxnSleeping(cxn->myHost, cxn);
 }
 
 
-
-static void cxnDead (Connection cxn)
+static void
+cxnDead(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  abortConnection (cxn) ;
-  cxn->state = cxnDeadS ;
+    abortConnection(cxn);
+    cxn->state = cxnDeadS;
 }
-
 
 
 /*
  * Sets the idle timer. If no articles arrive before the timer expires, the
  * connection will be closed.
  */
-static void cxnIdle (Connection cxn)
+static void
+cxnIdle(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS ||
-          cxn->state == cxnFlushingS || cxn->state == cxnClosingS) ;
-  ASSERT (cxn->articleQTotal == 0) ;
-  ASSERT (cxn->writeBlockedTimerId == 0) ;
-  ASSERT (!writeIsPending (cxn->myEp)) ;
-  ASSERT (cxn->sleepTimerId == 0) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state == cxnFeedingS || cxn->state == cxnConnectingS
+           || cxn->state == cxnFlushingS || cxn->state == cxnClosingS);
+    ASSERT(cxn->articleQTotal == 0);
+    ASSERT(cxn->writeBlockedTimerId == 0);
+    ASSERT(!writeIsPending(cxn->myEp));
+    ASSERT(cxn->sleepTimerId == 0);
 
-  if (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS)
-    {
-      if (cxn->articleReceiptTimeout > 0)
-        {
-          clearTimer (cxn->artReceiptTimerId) ;
-          cxn->artReceiptTimerId = prepareSleep (articleTimeoutCbk,
-                                                 cxn->articleReceiptTimeout,
-                                                 cxn) ;
+    if (cxn->state == cxnFeedingS || cxn->state == cxnConnectingS) {
+        if (cxn->articleReceiptTimeout > 0) {
+            clearTimer(cxn->artReceiptTimerId);
+            cxn->artReceiptTimerId = prepareSleep(
+                articleTimeoutCbk, cxn->articleReceiptTimeout, cxn);
         }
 
-      if (cxn->readTimeout > 0 && cxn->state == cxnFeedingS)
-        clearTimer (cxn->readBlockedTimerId) ;
+        if (cxn->readTimeout > 0 && cxn->state == cxnFeedingS)
+            clearTimer(cxn->readBlockedTimerId);
 
-      cxn->state = cxnIdleS ;
-ASSERT (cxn->readBlockedTimerId == 0) ;
+        cxn->state = cxnIdleS;
+        ASSERT(cxn->readBlockedTimerId == 0);
     }
 }
-
-
-
 
 
 /*
@@ -3670,223 +3310,204 @@ ASSERT (cxn->readBlockedTimerId == 0) ;
  * message-id. The network connection is aborted and the Connection
  * object goes into sleep mode.
  */
-static void noSuchMessageId (Connection cxn, unsigned int responseCode,
-                             const char *msgid, const char *response)
+static void
+noSuchMessageId(Connection cxn, unsigned int responseCode, const char *msgid,
+                const char *response)
 {
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  if (msgid == NULL || strlen (msgid) == 0)
-    warn ("%s:%d cxnsleep message-id missing in response code %d: %s",
-          peerName, cxn->ident, responseCode, response) ;
-  else
-    warn ("%s:%d cxnsleep message-id invalid message-id in response code"
-          " %d: %s", peerName, cxn->ident, responseCode, msgid) ;
+    if (msgid == NULL || strlen(msgid) == 0)
+        warn("%s:%d cxnsleep message-id missing in response code %d: %s",
+             peerName, cxn->ident, responseCode, response);
+    else
+        warn("%s:%d cxnsleep message-id invalid message-id in response code"
+             " %d: %s",
+             peerName, cxn->ident, responseCode, msgid);
 
-  cxnLogStats (cxn,true) ;
+    cxnLogStats(cxn, true);
 
-  if (cxn->state != cxnClosingS)
-    cxnSleep (cxn) ;
-  else
-    cxnDead (cxn) ;
+    if (cxn->state != cxnClosingS)
+        cxnSleep(cxn);
+    else
+        cxnDead(cxn);
 }
-
-
-
 
 
 /*
  * a processing error has occured (for example in parsing a response), or
  * we're at the end of the FSM and we're cleaning up.
  */
-static void abortConnection (Connection cxn)
+static void
+abortConnection(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  /* cxn->myEp could be NULL if we get here during cxnConnect (via
-     cxnWait()) */
-  if (cxn->myEp != NULL)
-    {
+    /* cxn->myEp could be NULL if we get here during cxnConnect (via
+       cxnWait()) */
+    if (cxn->myEp != NULL) {
 
-      delEndPoint (cxn->myEp) ;
-      cxn->myEp = NULL ;
+        delEndPoint(cxn->myEp);
+        cxn->myEp = NULL;
     }
 
-  clearTimer (cxn->sleepTimerId) ;
-  clearTimer (cxn->artReceiptTimerId) ;
-  clearTimer (cxn->readBlockedTimerId) ;
-  clearTimer (cxn->writeBlockedTimerId) ;
-  clearTimer (cxn->flushTimerId) ;
+    clearTimer(cxn->sleepTimerId);
+    clearTimer(cxn->artReceiptTimerId);
+    clearTimer(cxn->readBlockedTimerId);
+    clearTimer(cxn->writeBlockedTimerId);
+    clearTimer(cxn->flushTimerId);
 
-  deferAllArticles (cxn) ;      /* give any articles back to Host */
+    deferAllArticles(cxn); /* give any articles back to Host */
 
-  bufferSetDataSize (cxn->respBuffer,0) ;
+    bufferSetDataSize(cxn->respBuffer, 0);
 
-  resetConnection (cxn) ;
-  
-  if (cxn->state == cxnFeedingS ||
-      cxn->state == cxnIdleS ||
-      cxn->state == cxnFlushingS ||
-      cxn->state == cxnClosingS)
-    hostCxnDead (cxn->myHost,cxn) ;
+    resetConnection(cxn);
+
+    if (cxn->state == cxnFeedingS || cxn->state == cxnIdleS
+        || cxn->state == cxnFlushingS || cxn->state == cxnClosingS)
+        hostCxnDead(cxn->myHost, cxn);
 }
-
-
 
 
 /*
  * Set up the callback used when the Connection is sleeping (i.e. will try
  * to reopen the connection).
  */
-static void prepareReopenCbk (Connection cxn)
+static void
+prepareReopenCbk(Connection cxn)
 {
-  ASSERT (cxn->sleepTimerId == 0) ;
+    ASSERT(cxn->sleepTimerId == 0);
 
-  if (!(cxn->state == cxnConnectingS ||
-        cxn->state == cxnIdleS ||
-        cxn->state == cxnFeedingS ||
-        cxn->state == cxnFlushingS ||
-        cxn->state == cxnStartingS))
-    {
-      warn ("%s:%d cxnsleep connection in bad state: %s",
-            hostPeerName (cxn->myHost), cxn->ident,
-            stateToString (cxn->state)) ;
-      cxnSleepOrDie (cxn) ;
-      return ;
+    if (!(cxn->state == cxnConnectingS || cxn->state == cxnIdleS
+          || cxn->state == cxnFeedingS || cxn->state == cxnFlushingS
+          || cxn->state == cxnStartingS)) {
+        warn("%s:%d cxnsleep connection in bad state: %s",
+             hostPeerName(cxn->myHost), cxn->ident, stateToString(cxn->state));
+        cxnSleepOrDie(cxn);
+        return;
     }
 
-  d_printf (1,"%s:%d Setting up a reopen callback\n",
-           hostPeerName (cxn->myHost), cxn->ident) ;
+    d_printf(1, "%s:%d Setting up a reopen callback\n",
+             hostPeerName(cxn->myHost), cxn->ident);
 
-  cxn->sleepTimerId = prepareSleep (reopenTimeoutCbk, cxn->sleepTimeout, cxn) ;
+    cxn->sleepTimerId = prepareSleep(reopenTimeoutCbk, cxn->sleepTimeout, cxn);
 
-  /* bump the sleep timer amount each time to wait longer and longer. Gets
-     reset in resetConnection() */
-  cxn->sleepTimeout *= 2 ;
-  if (cxn->sleepTimeout > max_reconnect_period)
-    cxn->sleepTimeout = max_reconnect_period ;
+    /* bump the sleep timer amount each time to wait longer and longer. Gets
+       reset in resetConnection() */
+    cxn->sleepTimeout *= 2;
+    if (cxn->sleepTimeout > max_reconnect_period)
+        cxn->sleepTimeout = max_reconnect_period;
 }
-
-
-
 
 
 /*
  * (re)set all state variables to inital condition.
  */
-static void resetConnection (Connection cxn)
+static void
+resetConnection(Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
+    ASSERT(cxn != NULL);
 
-  bufferSetDataSize (cxn->respBuffer,0) ;
+    bufferSetDataSize(cxn->respBuffer, 0);
 
-  cxn->loggedNoCr = false ;
-  cxn->maxCheck = 1 ;
-  cxn->immedRecon = false ;
-  cxn->doesStreaming = false ;  /* who knows, next time around maybe... */
-  cxn->authenticated = false ;
-  cxn->quitWasIssued = false ;
-  cxn->needsChecks = true ;
-  cxn->timeCon = 0 ;
+    cxn->loggedNoCr = false;
+    cxn->maxCheck = 1;
+    cxn->immedRecon = false;
+    cxn->doesStreaming = false; /* who knows, next time around maybe... */
+    cxn->authenticated = false;
+    cxn->quitWasIssued = false;
+    cxn->needsChecks = true;
+    cxn->timeCon = 0;
 
-  cxn->artsTaken = 0 ;
-  cxn->checksIssued = 0 ;
-  cxn->checksRefused = 0 ;
-  cxn->takesRejected = 0 ;
-  cxn->takesOkayed = 0 ;
-  cxn->takesSizeRejected = 0 ;
-  cxn->takesSizeOkayed = 0 ;
+    cxn->artsTaken = 0;
+    cxn->checksIssued = 0;
+    cxn->checksRefused = 0;
+    cxn->takesRejected = 0;
+    cxn->takesOkayed = 0;
+    cxn->takesSizeRejected = 0;
+    cxn->takesSizeOkayed = 0;
 
-  cxn->timeCon_checkpoint = 0;
-  cxn->checksIssued_checkpoint = 0;
-  cxn->checksRefused_checkpoint = 0;
-  cxn->takesRejected_checkpoint = 0;
-  cxn->takesOkayed_checkpoint = 0;
-  cxn->takesSizeRejected_checkpoint = 0;
-  cxn->takesSizeOkayed_checkpoint = 0;
+    cxn->timeCon_checkpoint = 0;
+    cxn->checksIssued_checkpoint = 0;
+    cxn->checksRefused_checkpoint = 0;
+    cxn->takesRejected_checkpoint = 0;
+    cxn->takesOkayed_checkpoint = 0;
+    cxn->takesSizeRejected_checkpoint = 0;
+    cxn->takesSizeOkayed_checkpoint = 0;
 
-  cxn->filterValue = 0.0 ;
+    cxn->filterValue = 0.0;
 }
-
 
 
 /*
  * Give back all articles that are queued, but not actually in progress.
  * XXX merge come of this with deferAllArticles
  */
-static void deferQueuedArticles (Connection cxn)
+static void
+deferQueuedArticles(Connection cxn)
 {
-  ArtHolder p, q ;
+    ArtHolder p, q;
 
-  for (q = NULL, p = cxn->checkHead ; p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->checkHead; p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->checkHead = NULL ;
+    cxn->checkHead = NULL;
 
-  for (q = NULL, p = cxn->takeHead ; cxn->doesStreaming && p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->takeHead; cxn->doesStreaming && p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->takeHead = NULL ;
+    cxn->takeHead = NULL;
 }
-
 
 
 /*
  * Give back any articles we have to the Host for later retrys.
  */
-static void deferAllArticles (Connection cxn)
+static void
+deferAllArticles(Connection cxn)
 {
-  ArtHolder p, q ;
+    ArtHolder p, q;
 
-  for (q = NULL, p = cxn->checkHead ; p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->checkHead; p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->checkHead = NULL ;
+    cxn->checkHead = NULL;
 
-  for (q = NULL, p = cxn->checkRespHead ; p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->checkRespHead; p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->checkRespHead = NULL ;
+    cxn->checkRespHead = NULL;
 
-  for (q = NULL, p = cxn->takeHead ; p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->takeHead; p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->takeHead = NULL ;
+    cxn->takeHead = NULL;
 
-  for (q = NULL, p = cxn->takeRespHead ; p != NULL ; p = q)
-    {
-      q = p->next ;
-      hostTakeBackArticle (cxn->myHost, cxn, p->article) ;
-      delArtHolder (p) ;
-      cxn->articleQTotal-- ;
+    for (q = NULL, p = cxn->takeRespHead; p != NULL; p = q) {
+        q = p->next;
+        hostTakeBackArticle(cxn->myHost, cxn, p->article);
+        delArtHolder(p);
+        cxn->articleQTotal--;
     }
-  cxn->takeRespHead = NULL ;
+    cxn->takeRespHead = NULL;
 
-  ASSERT (cxn->articleQTotal == 0) ;
+    ASSERT(cxn->articleQTotal == 0);
 }
-
-
-
 
 
 /*
@@ -3894,48 +3515,42 @@ static void deferAllArticles (Connection cxn)
  * the Connection has an article it's possible that nothing will be written
  * (e.g. if the article on the queue doesn't exist any more)
  */
-static void doSomeWrites (Connection cxn)
+static void
+doSomeWrites(Connection cxn)
 {
-  bool doneSome = false ;
+    bool doneSome = false;
 
-  /* If there's a write pending we can't do anything now.
-   * No addWorkCallback here (otherwise innfeed consumes too much CPU). */
-  if ( writeIsPending (cxn->myEp) )
+    /* If there's a write pending we can't do anything now.
+     * No addWorkCallback here (otherwise innfeed consumes too much CPU). */
+    if (writeIsPending(cxn->myEp)) {
+        return;
+    } else if (writesNeeded(cxn)) /* something on a queue. */
     {
-      return ;
-    }
-  else if ( writesNeeded (cxn) ) /* something on a queue. */
-    {
-      if (cxn->doesStreaming)
-        doneSome = issueStreamingCommands (cxn) ;
-      else
-        doneSome = issueIHAVE (cxn) ;
+        if (cxn->doesStreaming)
+            doneSome = issueStreamingCommands(cxn);
+        else
+            doneSome = issueIHAVE(cxn);
 
-      /* doneSome will be false if article(s) were gone, but if the Host
-         has something available, then it would have been put on the queue
-         for next time around. */
-      if (!doneSome)
-        {
-          if (writesNeeded (cxn)) /* Host gave us something */
-            addWorkCallback (cxn->myEp,cxnWorkProc,cxn) ; /* for next time. */
-          else if (cxn->articleQTotal == 0)
-            {
-              /* if we were in cxnFeedingS, then issueStreamingCommands
-                 already called cxnIdle(). */
-              if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
-                issueQUIT (cxn) ; /* and nothing to wait for... */
+        /* doneSome will be false if article(s) were gone, but if the Host
+           has something available, then it would have been put on the queue
+           for next time around. */
+        if (!doneSome) {
+            if (writesNeeded(cxn)) /* Host gave us something */
+                addWorkCallback(cxn->myEp, cxnWorkProc,
+                                cxn); /* for next time. */
+            else if (cxn->articleQTotal == 0) {
+                /* if we were in cxnFeedingS, then issueStreamingCommands
+                   already called cxnIdle(). */
+                if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
+                    issueQUIT(cxn); /* and nothing to wait for... */
             }
         }
-    }
-  else if (cxn->state == cxnClosingS || cxn->state == cxnFlushingS)
-    {                           /* nothing to do... */
-      if (cxn->articleQTotal == 0)
-        issueQUIT (cxn) ;       /* and nothing to wait for before closing */
+    } else if (cxn->state == cxnClosingS
+               || cxn->state == cxnFlushingS) { /* nothing to do... */
+        if (cxn->articleQTotal == 0)
+            issueQUIT(cxn); /* and nothing to wait for before closing */
     }
 }
-
-
-
 
 
 /* Queue up a buffer with the IHAVE command in it for the article at
@@ -3946,133 +3561,120 @@ static void doSomeWrites (Connection cxn)
  * article is ignored for now, but a work callback is registered so
  * that it can be looked at later.
  */
-static bool issueIHAVE (Connection cxn)
+static bool
+issueIHAVE(Connection cxn)
 {
-  Buffer ihaveBuff, *writeArr ;
-  ArtHolder artH ;
-  Article article ;
-  const char *msgid ;
-  char *p ;
-  unsigned int tmp ;
-  size_t bufLen = 256 ;
-  bool rval = false ;
+    Buffer ihaveBuff, *writeArr;
+    ArtHolder artH;
+    Article article;
+    const char *msgid;
+    char *p;
+    unsigned int tmp;
+    size_t bufLen = 256;
+    bool rval = false;
 
-  ASSERT (!cxn->doesStreaming) ;
-  ASSERT (cxn->state == cxnFlushingS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnClosingS) ;
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->checkHead != NULL) ;
-  ASSERT (writeIsPending (cxn->myEp) == false) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(!cxn->doesStreaming);
+    ASSERT(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+           || cxn->state == cxnClosingS);
+    ASSERT(cxn->articleQTotal == 1);
+    ASSERT(cxn->checkHead != NULL);
+    ASSERT(writeIsPending(cxn->myEp) == false);
+    VALIDATE_CONNECTION(cxn);
 
-  artH = cxn->checkHead ;
-  article = cxn->checkHead->article ;
-  msgid = artMsgId (artH->article) ;
+    artH = cxn->checkHead;
+    article = cxn->checkHead->article;
+    msgid = artMsgId(artH->article);
 
-  ASSERT (msgid != NULL) ;
-  ASSERT (article != NULL) ;
-  
-      if ((tmp = (strlen (msgid) + 10)) > bufLen)
-        bufLen = tmp ;
+    ASSERT(msgid != NULL);
+    ASSERT(article != NULL);
 
-      ihaveBuff = newBuffer (bufLen) ;
+    if ((tmp = (strlen(msgid) + 10)) > bufLen)
+        bufLen = tmp;
 
-      ASSERT (ihaveBuff != NULL) ;
+    ihaveBuff = newBuffer(bufLen);
 
-      p = bufferBase (ihaveBuff) ;
-      sprintf (p, "IHAVE %s\r\n", msgid) ;
-      bufferSetDataSize (ihaveBuff, strlen (p)) ;
+    ASSERT(ihaveBuff != NULL);
 
-      d_printf (5,"%s:%d Command IHAVE %s\n",
-               hostPeerName (cxn->myHost),cxn->ident,msgid) ;
+    p = bufferBase(ihaveBuff);
+    sprintf(p, "IHAVE %s\r\n", msgid);
+    bufferSetDataSize(ihaveBuff, strlen(p));
 
-      writeArr = makeBufferArray (ihaveBuff, NULL) ;
-      if ( !prepareWriteWithTimeout (cxn->myEp, writeArr, commandWriteDone,
-                                     cxn) )
-        {
-          die ("%s:%d fatal prepare write for IHAVE failed",
-               hostPeerName (cxn->myHost), cxn->ident) ;
-        }
+    d_printf(5, "%s:%d Command IHAVE %s\n", hostPeerName(cxn->myHost),
+             cxn->ident, msgid);
 
-      /* now move the article to the second queue */
-      cxn->checkRespHead = cxn->checkHead ;
-      cxn->checkHead = NULL ;
+    writeArr = makeBufferArray(ihaveBuff, NULL);
+    if (!prepareWriteWithTimeout(cxn->myEp, writeArr, commandWriteDone, cxn)) {
+        die("%s:%d fatal prepare write for IHAVE failed",
+            hostPeerName(cxn->myHost), cxn->ident);
+    }
 
-      cxn->checksIssued++ ;
-      hostArticleOffered (cxn->myHost, cxn) ;
+    /* now move the article to the second queue */
+    cxn->checkRespHead = cxn->checkHead;
+    cxn->checkHead = NULL;
 
-      rval = true ;
+    cxn->checksIssued++;
+    hostArticleOffered(cxn->myHost, cxn);
 
-  return rval ;
+    rval = true;
+
+    return rval;
 }
-
-
-
 
 
 /*
  * Do a prepare write with the article body as the body portion of the
  * IHAVE command
  */
-static void issueIHAVEBody (Connection cxn)
+static void
+issueIHAVEBody(Connection cxn)
 {
-  Buffer *writeArray ;
-  Article article ;
+    Buffer *writeArray;
+    Article article;
 
-  ASSERT (cxn != NULL) ;
-  ASSERT (!cxn->doesStreaming) ;
-  ASSERT (cxn->state == cxnFlushingS ||
-          cxn->state == cxnFeedingS ||
-          cxn->state == cxnClosingS) ;
-  ASSERT (cxn->articleQTotal == 1) ;
-  ASSERT (cxn->takeHead != NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(!cxn->doesStreaming);
+    ASSERT(cxn->state == cxnFlushingS || cxn->state == cxnFeedingS
+           || cxn->state == cxnClosingS);
+    ASSERT(cxn->articleQTotal == 1);
+    ASSERT(cxn->takeHead != NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  article = cxn->takeHead->article ;
-  ASSERT (article != NULL) ;
-  
-  if (cxn->state != cxnClosingS)
-    writeArray = artGetNntpBuffers (article) ;
-  else
-    writeArray = NULL ;
+    article = cxn->takeHead->article;
+    ASSERT(article != NULL);
 
-  if (writeArray == NULL)
-    {
-      /* missing article (expired for example) will get us here. */
-      if (dotBuffer == NULL)
-        {
-          dotBuffer = newBufferByCharP (".\r\n",3,3) ;
-          dotFirstBuffer = newBufferByCharP ("\r\n.",3,3) ;
-          crlfBuffer = newBufferByCharP ("\r\n",2,2) ;
+    if (cxn->state != cxnClosingS)
+        writeArray = artGetNntpBuffers(article);
+    else
+        writeArray = NULL;
+
+    if (writeArray == NULL) {
+        /* missing article (expired for example) will get us here. */
+        if (dotBuffer == NULL) {
+            dotBuffer = newBufferByCharP(".\r\n", 3, 3);
+            dotFirstBuffer = newBufferByCharP("\r\n.", 3, 3);
+            crlfBuffer = newBufferByCharP("\r\n", 2, 2);
         }
 
-      /* we'll just write the empty buffer and the remote will complain
-         with 437 */
-      writeArray = makeBufferArray  (bufferTakeRef (dotBuffer),NULL) ;
+        /* we'll just write the empty buffer and the remote will complain
+           with 437 */
+        writeArray = makeBufferArray(bufferTakeRef(dotBuffer), NULL);
     }
-  
 
-  if ( !prepareWriteWithTimeout (cxn->myEp, writeArray, ihaveBodyDone, cxn) )
-    {
-      die ("%s:%d fatal prepare write failed in issueIHAVEBody",
-           hostPeerName (cxn->myHost), cxn->ident) ;
-    }
-  else
-    {
-      d_printf (5,"%s:%d prepared write for IHAVE body.\n",
-               hostPeerName (cxn->myHost),cxn->ident) ;
-    }
-  
-  /* now move the article to the last queue */
-  cxn->takeRespHead = cxn->takeHead ;
-  cxn->takeHead = NULL ;
 
-  return ;
+    if (!prepareWriteWithTimeout(cxn->myEp, writeArray, ihaveBodyDone, cxn)) {
+        die("%s:%d fatal prepare write failed in issueIHAVEBody",
+            hostPeerName(cxn->myHost), cxn->ident);
+    } else {
+        d_printf(5, "%s:%d prepared write for IHAVE body.\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
+    }
+
+    /* now move the article to the last queue */
+    cxn->takeRespHead = cxn->takeHead;
+    cxn->takeHead = NULL;
+
+    return;
 }
-
-
-
 
 
 /* Process the two command queues. Slaps all the CHECKs together and
@@ -4083,146 +3685,135 @@ static void issueIHAVEBody (Connection cxn)
  * these are ignored for now. A work proc is registered so the
  * articles can be processed later.
  */
-static bool issueStreamingCommands (Connection cxn)
+static bool
+issueStreamingCommands(Connection cxn)
 {
-  Buffer checkBuffer = NULL ;   /* the buffer with the CHECK commands in it. */
-  Buffer *writeArray = NULL ;
-  ArtHolder p, q ;
-  bool rval = false ;
+    Buffer checkBuffer = NULL; /* the buffer with the CHECK commands in it. */
+    Buffer *writeArray = NULL;
+    ArtHolder p, q;
+    bool rval = false;
 
-  ASSERT (cxn != NULL) ;
-  ASSERT (cxn->myEp != NULL) ;
-  ASSERT (cxn->doesStreaming) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->myEp != NULL);
+    ASSERT(cxn->doesStreaming);
+    VALIDATE_CONNECTION(cxn);
 
-  checkBuffer = buildCheckBuffer (cxn) ; /* may be null if none to issue */
+    checkBuffer = buildCheckBuffer(cxn); /* may be null if none to issue */
 
-  if (checkBuffer != NULL)
-    {
-      /* Now shift the articles to their new queue. */
-      for (p = cxn->checkRespHead ; p != NULL && p->next != NULL ; p = p->next)
-        /* nada--finding end of queue*/ ;
+    if (checkBuffer != NULL) {
+        /* Now shift the articles to their new queue. */
+        for (p = cxn->checkRespHead; p != NULL && p->next != NULL; p = p->next)
+            /* nada--finding end of queue*/;
 
-      if (p == NULL)
-        cxn->checkRespHead = cxn->checkHead ;
-      else
-        p->next = cxn->checkHead ;
-      
-      cxn->checkHead = NULL ;
+        if (p == NULL)
+            cxn->checkRespHead = cxn->checkHead;
+        else
+            p->next = cxn->checkHead;
+
+        cxn->checkHead = NULL;
     }
-  
 
-  writeArray = buildTakethisBuffers (cxn,checkBuffer) ; /* may be null */
 
-  /* If not null, then writeArray will have checkBuffer (if it wasn't NULL)
-     in the first spot and the takethis buffers after that. */
-  if (writeArray)
-    {
-      if ( !prepareWriteWithTimeout (cxn->myEp, writeArray,
-                                     commandWriteDone, cxn) )
-        {
-          die ("%s:%d fatal prepare write for STREAMING commands failed",
-               hostPeerName (cxn->myHost), cxn->ident) ;
+    writeArray = buildTakethisBuffers(cxn, checkBuffer); /* may be null */
+
+    /* If not null, then writeArray will have checkBuffer (if it wasn't NULL)
+       in the first spot and the takethis buffers after that. */
+    if (writeArray) {
+        if (!prepareWriteWithTimeout(cxn->myEp, writeArray, commandWriteDone,
+                                     cxn)) {
+            die("%s:%d fatal prepare write for STREAMING commands failed",
+                hostPeerName(cxn->myHost), cxn->ident);
         }
 
-      rval = true ;
+        rval = true;
 
-      /* now shift articles over to their new queue. */
-      for (p = cxn->takeRespHead ; p != NULL && p->next != NULL ; p = p->next)
-        /* nada--finding end of queue */ ;
+        /* now shift articles over to their new queue. */
+        for (p = cxn->takeRespHead; p != NULL && p->next != NULL; p = p->next)
+            /* nada--finding end of queue */;
 
-      if (p == NULL)
-        cxn->takeRespHead = cxn->takeHead ;
-      else
-        p->next = cxn->takeHead ;
-      
-      cxn->takeHead = NULL ;
+        if (p == NULL)
+            cxn->takeRespHead = cxn->takeHead;
+        else
+            p->next = cxn->takeHead;
+
+        cxn->takeHead = NULL;
     }
 
-  /* we defer the missing article notification to here because if there
-     was a big backlog of missing articles *and* we're running in
-     no-CHECK mode, then the Host would be putting bad articles on the
-     queue we're taking them off of. */
-  if (cxn->missing && cxn->articleQTotal == 0 && !writeIsPending (cxn->myEp))
-    cxnIdle (cxn) ;
-  for (p = cxn->missing ; p != NULL ; p = q)
-    {
-      hostArticleIsMissing (cxn->myHost, cxn, p->article) ;
-      q = p->next ;
-      delArtHolder (p) ;
+    /* we defer the missing article notification to here because if there
+       was a big backlog of missing articles *and* we're running in
+       no-CHECK mode, then the Host would be putting bad articles on the
+       queue we're taking them off of. */
+    if (cxn->missing && cxn->articleQTotal == 0 && !writeIsPending(cxn->myEp))
+        cxnIdle(cxn);
+    for (p = cxn->missing; p != NULL; p = q) {
+        hostArticleIsMissing(cxn->myHost, cxn, p->article);
+        q = p->next;
+        delArtHolder(p);
     }
-  cxn->missing = NULL ;
+    cxn->missing = NULL;
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /*
  * build up the buffer of all the CHECK commands.
  */
-static Buffer buildCheckBuffer (Connection cxn)
+static Buffer
+buildCheckBuffer(Connection cxn)
 {
-  ArtHolder p ;
-  size_t lenBuff = 0 ;
-  Buffer checkBuffer = NULL ;
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    ArtHolder p;
+    size_t lenBuff = 0;
+    Buffer checkBuffer = NULL;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  p = cxn->checkHead ;
-  while (p != NULL)
-    {
-      Article article = p->article ;
-      const char *msgid ;
+    p = cxn->checkHead;
+    while (p != NULL) {
+        Article article = p->article;
+        const char *msgid;
 
-      msgid = artMsgId (article) ;
+        msgid = artMsgId(article);
 
-      lenBuff += (8 + strlen (msgid)) ; /* 8 == strlen("CHECK \r\n") */
-      p = p->next ;
+        lenBuff += (8 + strlen(msgid)); /* 8 == strlen("CHECK \r\n") */
+        p = p->next;
     }
 
-  if (lenBuff > 0)
-    lenBuff++ ;                 /* for the null byte */
+    if (lenBuff > 0)
+        lenBuff++; /* for the null byte */
 
-  /* now build up the single buffer that contains all the CHECK commands */
-  if (lenBuff > 0)
-    {
-      char *t ;
-      size_t tlen = 0 ;
+    /* now build up the single buffer that contains all the CHECK commands */
+    if (lenBuff > 0) {
+        char *t;
+        size_t tlen = 0;
 
-      checkBuffer = newBuffer (lenBuff) ;
-      t = bufferBase (checkBuffer) ;
+        checkBuffer = newBuffer(lenBuff);
+        t = bufferBase(checkBuffer);
 
-      p = cxn->checkHead ;
-      while (p != NULL)
-        {
-          const char *msgid = artMsgId (p->article) ;
+        p = cxn->checkHead;
+        while (p != NULL) {
+            const char *msgid = artMsgId(p->article);
 
-          sprintf (t,"CHECK %s\r\n", msgid) ;
-          d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
+            sprintf(t, "CHECK %s\r\n", msgid);
+            d_printf(5, "%s:%d Command %s\n", peerName, cxn->ident, t);
 
-          tlen += strlen (t) ;
+            tlen += strlen(t);
 
-          while ( *t ) t++ ;
+            while (*t)
+                t++;
 
-          cxn->checksIssued++ ;
-          hostArticleOffered (cxn->myHost,cxn) ;
+            cxn->checksIssued++;
+            hostArticleOffered(cxn->myHost, cxn);
 
-          p = p->next ;
+            p = p->next;
         }
 
-      ASSERT (tlen + 1 == lenBuff) ;
+        ASSERT(tlen + 1 == lenBuff);
 
-      bufferSetDataSize (checkBuffer, tlen) ;
+        bufferSetDataSize(checkBuffer, tlen);
     }
 
-  return checkBuffer ;
+    return checkBuffer;
 }
-
-
-
-
 
 
 /*
@@ -4230,534 +3821,496 @@ static Buffer buildCheckBuffer (Connection cxn)
  * articles on the queue that are missing will be removed and the Host will
  * be informed.
  */
-static Buffer *buildTakethisBuffers (Connection cxn, Buffer checkBuffer)
+static Buffer *
+buildTakethisBuffers(Connection cxn, Buffer checkBuffer)
 {
-  size_t lenArray = 0 ;
-  ArtHolder p, q ;
-  Buffer *rval = NULL ;
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    size_t lenArray = 0;
+    ArtHolder p, q;
+    Buffer *rval = NULL;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  if (checkBuffer != NULL)
-    lenArray++ ;
+    if (checkBuffer != NULL)
+        lenArray++;
 
-  if (cxn->takeHead != NULL)    /* some TAKETHIS commands to be done. */
+    if (cxn->takeHead != NULL) /* some TAKETHIS commands to be done. */
     {
-      Buffer takeBuffer ;
-      unsigned int takeBuffLen  ;
-      unsigned int writeIdx = 0 ;
+        Buffer takeBuffer;
+        unsigned int takeBuffLen;
+        unsigned int writeIdx = 0;
 
-      /* count up all the buffers we'll be writing. One extra each time for
-         the TAKETHIS command buffer*/
-      for (p = cxn->takeHead ; p != NULL ; p = p->next)
-        if (artContentsOk (p->article))
-            lenArray += (1 + artNntpBufferCount (p->article)) ;
+        /* count up all the buffers we'll be writing. One extra each time for
+           the TAKETHIS command buffer*/
+        for (p = cxn->takeHead; p != NULL; p = p->next)
+            if (artContentsOk(p->article))
+                lenArray += (1 + artNntpBufferCount(p->article));
 
-      /* now allocate the array for the buffers and put them all in it */
-      /* 1 for the terminator */
-      rval = xmalloc (sizeof(Buffer) * (lenArray + 1)) ;
+        /* now allocate the array for the buffers and put them all in it */
+        /* 1 for the terminator */
+        rval = xmalloc(sizeof(Buffer) * (lenArray + 1));
 
-      if (checkBuffer != NULL)
-        rval [writeIdx++] = checkBuffer ;
+        if (checkBuffer != NULL)
+            rval[writeIdx++] = checkBuffer;
 
-      q = NULL ;
-      p = cxn->takeHead ;
-      while (p != NULL)
-        {
-          char *t ;
-          const char *msgid ;
-          Article article ;
-          Buffer *articleBuffers ;
-          int i, nntpLen ;
+        q = NULL;
+        p = cxn->takeHead;
+        while (p != NULL) {
+            char *t;
+            const char *msgid;
+            Article article;
+            Buffer *articleBuffers;
+            int i, nntpLen;
 
-          article = p->article ;
-          nntpLen = artNntpBufferCount (article) ;
-          msgid = artMsgId (article) ;
+            article = p->article;
+            nntpLen = artNntpBufferCount(article);
+            msgid = artMsgId(article);
 
-          if (nntpLen == 0)
-            {                   /* file no longer valid so drop from queue */
-              ArtHolder ta = p ;
+            if (nntpLen == 0) { /* file no longer valid so drop from queue */
+                ArtHolder ta = p;
 
-              if (q == NULL)    /* it's the first in the queue */
-                cxn->takeHead = p->next ;
-              else
-                q->next = p->next ;
+                if (q == NULL) /* it's the first in the queue */
+                    cxn->takeHead = p->next;
+                else
+                    q->next = p->next;
 
-              p = p->next ;
-              ASSERT (cxn->articleQTotal > 0) ;
-              cxn->articleQTotal-- ;
+                p = p->next;
+                ASSERT(cxn->articleQTotal > 0);
+                cxn->articleQTotal--;
 
-              ta->next = cxn->missing ;
-              cxn->missing = ta ;
-            }
-          else
-            {
-              articleBuffers = artGetNntpBuffers (article) ;
+                ta->next = cxn->missing;
+                cxn->missing = ta;
+            } else {
+                articleBuffers = artGetNntpBuffers(article);
 
-              /* set up the buffer with the TAKETHIS command in it.
-                 12 == strlen ("TAKETHIS \n\r") */
-              takeBuffLen = 12 + strlen (msgid) ;
-              takeBuffer = newBuffer (takeBuffLen) ;
-              t = bufferBase (takeBuffer) ;
+                /* set up the buffer with the TAKETHIS command in it.
+                   12 == strlen ("TAKETHIS \n\r") */
+                takeBuffLen = 12 + strlen(msgid);
+                takeBuffer = newBuffer(takeBuffLen);
+                t = bufferBase(takeBuffer);
 
-              sprintf (t, "TAKETHIS %s\r\n", msgid) ;
-              bufferSetDataSize (takeBuffer, strlen (t)) ;
+                sprintf(t, "TAKETHIS %s\r\n", msgid);
+                bufferSetDataSize(takeBuffer, strlen(t));
 
-              d_printf (5,"%s:%d Command %s\n", peerName, cxn->ident, t) ;
+                d_printf(5, "%s:%d Command %s\n", peerName, cxn->ident, t);
 
-              ASSERT (writeIdx <= lenArray) ;
-              rval [writeIdx++] = takeBuffer ;
+                ASSERT(writeIdx <= lenArray);
+                rval[writeIdx++] = takeBuffer;
 
-              /* now add all the buffers that make up the body of the TAKETHIS
-                 command  */
-              for (i = 0 ; i < nntpLen ; i++)
-                {
-                  ASSERT (writeIdx <= lenArray) ;
-                  rval [writeIdx++] = bufferTakeRef (articleBuffers [i]) ;
+                /* now add all the buffers that make up the body of the
+                   TAKETHIS command */
+                for (i = 0; i < nntpLen; i++) {
+                    ASSERT(writeIdx <= lenArray);
+                    rval[writeIdx++] = bufferTakeRef(articleBuffers[i]);
                 }
 
-              freeBufferArray (articleBuffers) ;
+                freeBufferArray(articleBuffers);
 
-              if ( !cxn->needsChecks )
-                {
-                  /* this isn't quite right. An article may be counted
-                     twice if we switch to no-CHECK mode after its
-                     CHECK was issued, but before its TAKETHIS was done
-                     just now. I'm not going to worry unless someone
-                     complains. */
+                if (!cxn->needsChecks) {
+                    /* this isn't quite right. An article may be counted
+                       twice if we switch to no-CHECK mode after its
+                       CHECK was issued, but before its TAKETHIS was done
+                       just now. I'm not going to worry unless someone
+                       complains. */
 
-                  cxn->checksIssued++ ;
-                  hostArticleOffered (cxn->myHost,cxn) ;
+                    cxn->checksIssued++;
+                    hostArticleOffered(cxn->myHost, cxn);
                 }
 
-              q = p ;
-              p = p->next ;
+                q = p;
+                p = p->next;
             }
         }
 
-      if (writeIdx > 0)
-        rval [writeIdx] = NULL ;
-      else
-        {                       /* all articles were missing and no CHECKS */
-          free (rval) ;
-          rval = NULL ;
+        if (writeIdx > 0)
+            rval[writeIdx] = NULL;
+        else { /* all articles were missing and no CHECKS */
+            free(rval);
+            rval = NULL;
         }
-    }
-  else if (checkBuffer != NULL) /* no TAKETHIS to do, but some CHECKS */
-    rval = makeBufferArray (checkBuffer, NULL) ;
+    } else if (checkBuffer != NULL) /* no TAKETHIS to do, but some CHECKS */
+        rval = makeBufferArray(checkBuffer, NULL);
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /*
  * for one reason or another we need to disconnect gracefully. We send a
  * QUIT command.
  */
-static void issueQUIT (Connection cxn)
+static void
+issueQUIT(Connection cxn)
 {
-  Buffer quitBuffer, *writeArray ;
-  const char *peerName = hostPeerName (cxn->myHost) ;
+    Buffer quitBuffer, *writeArray;
+    const char *peerName = hostPeerName(cxn->myHost);
 
-  ASSERT (cxn->takeHead == NULL) ;
-  ASSERT (cxn->checkHead == NULL) ;
-  VALIDATE_CONNECTION (cxn) ;
+    ASSERT(cxn->takeHead == NULL);
+    ASSERT(cxn->checkHead == NULL);
+    VALIDATE_CONNECTION(cxn);
 
-  if (cxn->quitWasIssued)
-    return ;
-  
-  if (writeIsPending (cxn->myEp))
-    {
-      warn ("%s:%d internal QUIT while write pending", peerName,
-            cxn->ident) ;
+    if (cxn->quitWasIssued)
+        return;
 
-      if (cxn->state == cxnClosingS)
-        cxnDead (cxn) ;
-      else
-        cxnWait (cxn) ;
-    }
-  else
-    {
-      quitBuffer = newBuffer (7) ;
-      strlcpy (bufferBase (quitBuffer), "QUIT\r\n", 7) ;
-      bufferSetDataSize (quitBuffer, 6) ;
+    if (writeIsPending(cxn->myEp)) {
+        warn("%s:%d internal QUIT while write pending", peerName, cxn->ident);
 
-      writeArray = makeBufferArray (quitBuffer, NULL) ;
+        if (cxn->state == cxnClosingS)
+            cxnDead(cxn);
+        else
+            cxnWait(cxn);
+    } else {
+        quitBuffer = newBuffer(7);
+        strlcpy(bufferBase(quitBuffer), "QUIT\r\n", 7);
+        bufferSetDataSize(quitBuffer, 6);
 
-      d_printf (1,"%s:%d Sending a quit command\n",
-               hostPeerName (cxn->myHost),cxn->ident) ;
+        writeArray = makeBufferArray(quitBuffer, NULL);
 
-      cxn->quitWasIssued = true ; /* not exactly true, but good enough */
+        d_printf(1, "%s:%d Sending a quit command\n",
+                 hostPeerName(cxn->myHost), cxn->ident);
 
-      if ( !prepareWriteWithTimeout (cxn->myEp, writeArray, quitWritten,
-                                     cxn) ) 
-        {
-          die ("%s:%d fatal prepare write for QUIT command failed", peerName,
-               cxn->ident) ;
+        cxn->quitWasIssued = true; /* not exactly true, but good enough */
+
+        if (!prepareWriteWithTimeout(cxn->myEp, writeArray, quitWritten,
+                                     cxn)) {
+            die("%s:%d fatal prepare write for QUIT command failed", peerName,
+                cxn->ident);
         }
     }
 }
 
 
+/*
+ * Set up the timer for the blocked reads
+ */
+static void
+initReadBlockedTimeout(Connection cxn)
+{
+    ASSERT(cxn != NULL);
+    ASSERT(cxn->state != cxnIdleS);
 
+    /* set up the response timer. */
+    clearTimer(cxn->readBlockedTimerId);
+
+    if (cxn->readTimeout > 0)
+        cxn->readBlockedTimerId =
+            prepareSleep(responseTimeoutCbk, cxn->readTimeout, cxn);
+}
 
 
 /*
  * Set up the timer for the blocked reads
  */
-static void initReadBlockedTimeout (Connection cxn)
+static int
+prepareWriteWithTimeout(EndPoint endp, Buffer *buffers, EndpRWCB done,
+                        Connection cxn)
 {
-  ASSERT (cxn != NULL) ;
-ASSERT (cxn->state != cxnIdleS ) ;
+    /* Clear the read timer, since we can't expect a response until everything
+       is sent.
+       XXX - would be nice to have a timeout for responses if we're sending a
+       string of commands. */
+    clearTimer(cxn->readBlockedTimerId);
 
-  /* set up the response timer. */
-  clearTimer (cxn->readBlockedTimerId) ;
+    /* set up the write timer. */
+    clearTimer(cxn->writeBlockedTimerId);
 
-  if (cxn->readTimeout > 0)
-    cxn->readBlockedTimerId = prepareSleep (responseTimeoutCbk, cxn->readTimeout, cxn) ;
+    if (cxn->writeTimeout > 0)
+        cxn->writeBlockedTimerId =
+            prepareSleep(writeTimeoutCbk, cxn->writeTimeout, cxn);
+
+    /* set up the write. */
+    return prepareWrite(endp, buffers, writeProgress, done, cxn);
 }
-
-
-
-
-
-/*
- * Set up the timer for the blocked reads
- */
-static int prepareWriteWithTimeout (EndPoint endp,
-                                    Buffer *buffers,
-                                    EndpRWCB done,
-                                    Connection cxn) 
-{
-  /* Clear the read timer, since we can't expect a response until everything
-     is sent.
-     XXX - would be nice to have a timeout for responses if we're sending a
-     string of commands. */
-  clearTimer (cxn->readBlockedTimerId) ;
-
-  /* set up the write timer. */
-  clearTimer (cxn->writeBlockedTimerId) ;
-
-  if (cxn->writeTimeout > 0)
-    cxn->writeBlockedTimerId = prepareSleep (writeTimeoutCbk, cxn->writeTimeout,
-                                             cxn) ;
-
-  /* set up the write. */
-  return prepareWrite (endp, buffers, writeProgress, done, cxn) ;
-}
-
-
-
 
 
 /*
  * Does the actual deletion of a connection and all its private data.
  */
-static void delConnection (Connection cxn)
+static void
+delConnection(Connection cxn)
 {
-  bool shutDown;
-  Connection c, q;
+    bool shutDown;
+    Connection c, q;
 
-  if (cxn == NULL)
-    return ;
+    if (cxn == NULL)
+        return;
 
-  d_printf (1,"Deleting connection: %s:%d\n",
-           hostPeerName (cxn->myHost),cxn->ident) ;
+    d_printf(1, "Deleting connection: %s:%d\n", hostPeerName(cxn->myHost),
+             cxn->ident);
 
-  for (c = gCxnList, q = NULL ; c != NULL ; q = c, c = c->next)
-    if (c == cxn)
-      {
-        if (gCxnList == c)
-          gCxnList = gCxnList->next ;
-        else
-          q->next = c->next ;
-        break ;
-      }
-  
-  ASSERT (c != NULL) ;
- 
-  if (cxn->myEp != NULL)
-    delEndPoint (cxn->myEp) ;
+    for (c = gCxnList, q = NULL; c != NULL; q = c, c = c->next)
+        if (c == cxn) {
+            if (gCxnList == c)
+                gCxnList = gCxnList->next;
+            else
+                q->next = c->next;
+            break;
+        }
 
-  ASSERT (cxn->checkHead == NULL) ;
-  ASSERT (cxn->checkRespHead == NULL) ;
-  ASSERT (cxn->takeHead == NULL) ;
-  ASSERT (cxn->takeRespHead == NULL) ;
+    ASSERT(c != NULL);
 
-  delBuffer (cxn->respBuffer) ;
+    if (cxn->myEp != NULL)
+        delEndPoint(cxn->myEp);
 
-  /* tell the Host we're outta here. */
-  shutDown = hostCxnGone (cxn->myHost, cxn) ;
+    ASSERT(cxn->checkHead == NULL);
+    ASSERT(cxn->checkRespHead == NULL);
+    ASSERT(cxn->takeHead == NULL);
+    ASSERT(cxn->takeRespHead == NULL);
 
-  cxn->ident = 0 ;
-  cxn->timeCon = 0 ;
+    delBuffer(cxn->respBuffer);
 
-  free (cxn->ipName) ;
+    /* tell the Host we're outta here. */
+    shutDown = hostCxnGone(cxn->myHost, cxn);
 
-  clearTimer (cxn->artReceiptTimerId) ;
-  clearTimer (cxn->readBlockedTimerId) ;
-  clearTimer (cxn->writeBlockedTimerId) ;
-  clearTimer (cxn->flushTimerId) ;
+    cxn->ident = 0;
+    cxn->timeCon = 0;
 
-  free (cxn) ;
+    free(cxn->ipName);
 
-  if (shutDown)
-    {
-      /* exit program if that was the last connexion for the last host */
-      /* XXX what about if there are ever multiple listeners?
-	 XXX    this will be executed if all hosts on only one of the 
-	 XXX    listeners have gone */
-      time_t now = theTime () ;
-      char dateString [30] ;
-      char **p = PointersFreedOnExit ;
+    clearTimer(cxn->artReceiptTimerId);
+    clearTimer(cxn->readBlockedTimerId);
+    clearTimer(cxn->writeBlockedTimerId);
+    clearTimer(cxn->flushTimerId);
 
-      /* finish out all outstanding memory */
-      while (*p) 
-	free (*p++) ;
-      free (PointersFreedOnExit) ;
-      freeTimeoutQueue () ;
+    free(cxn);
 
-      timeToString (now, dateString, sizeof(dateString)) ;
-      notice ("ME finishing at %s", dateString) ;
+    if (shutDown) {
+        /* exit program if that was the last connexion for the last host */
+        /* XXX what about if there are ever multiple listeners?
+           XXX    this will be executed if all hosts on only one of the
+           XXX    listeners have gone */
+        time_t now = theTime();
+        char dateString[30];
+        char **p = PointersFreedOnExit;
 
-      exit (0) ;
+        /* finish out all outstanding memory */
+        while (*p)
+            free(*p++);
+        free(PointersFreedOnExit);
+        freeTimeoutQueue();
+
+        timeToString(now, dateString, sizeof(dateString));
+        notice("ME finishing at %s", dateString);
+
+        exit(0);
     }
 }
-
-
-
 
 
 /*
  * Bump up the value of the low pass filter on the connection.
  */
-static void incrFilter (Connection cxn)
+static void
+incrFilter(Connection cxn)
 {
-  cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter)) ;
-  cxn->filterValue += 1.0 ;
+    cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter));
+    cxn->filterValue += 1.0;
 }
-
-
-
 
 
 /*
  * decrement the value of the low pass filter on the connection.
  */
-static void decrFilter (Connection cxn)
+static void
+decrFilter(Connection cxn)
 {
-  cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter)) ;
+    cxn->filterValue *= (1.0 - (1.0 / cxn->lowPassFilter));
 }
-
-
-
 
 
 /*
  * return true if we have articles we need to issue commands for.
  */
-static bool writesNeeded (Connection cxn)
+static bool
+writesNeeded(Connection cxn)
 {
-  return (cxn->checkHead != NULL || cxn->takeHead != NULL ? true : false) ;
+    return (cxn->checkHead != NULL || cxn->takeHead != NULL ? true : false);
 }
-
-
-
 
 
 /*
  * do some simple tests to make sure it's OK.
  */
-static void validateConnection (Connection cxn)
+static void
+validateConnection(Connection cxn)
 {
-  unsigned int i ;
-  unsigned int old ;
-  ArtHolder p ;
+    unsigned int i;
+    unsigned int old;
+    ArtHolder p;
 
-  i = 0 ;
+    i = 0;
 
-  /* count up the articles the Connection has and make sure that matches. */
-  for (p = cxn->takeHead ; p != NULL ; p = p->next)
-    i++ ;
-  d_printf (4,"TAKE queue: %d\n",i) ;
-  old = i ;
+    /* count up the articles the Connection has and make sure that matches. */
+    for (p = cxn->takeHead; p != NULL; p = p->next)
+        i++;
+    d_printf(4, "TAKE queue: %d\n", i);
+    old = i;
 
-  for (p = cxn->takeRespHead ; p != NULL ; p = p->next)
-    i++ ;
-  d_printf (4,"TAKE response queue: %d\n",i - old) ;
-  old = i ;
+    for (p = cxn->takeRespHead; p != NULL; p = p->next)
+        i++;
+    d_printf(4, "TAKE response queue: %d\n", i - old);
+    old = i;
 
-  for (p = cxn->checkHead ; p != NULL ; p = p->next)
-    i++ ;
-  d_printf (4,"CHECK queue: %d\n",i - old) ;
-  old = i ;
+    for (p = cxn->checkHead; p != NULL; p = p->next)
+        i++;
+    d_printf(4, "CHECK queue: %d\n", i - old);
+    old = i;
 
-  for (p = cxn->checkRespHead ; p != NULL ; p = p->next)
-    i++ ;
-  d_printf (4,"CHECK response queue: %d\n",i - old) ;
+    for (p = cxn->checkRespHead; p != NULL; p = p->next)
+        i++;
+    d_printf(4, "CHECK response queue: %d\n", i - old);
 
-  ASSERT (i == cxn->articleQTotal) ;
+    ASSERT(i == cxn->articleQTotal);
 
-  switch (cxn->state)
-    {
-      case cxnConnectingS:
-        ASSERT (cxn->doesStreaming == false) ;
-        ASSERT (cxn->articleQTotal <= 1) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
+    switch (cxn->state) {
+    case cxnConnectingS:
+        ASSERT(cxn->doesStreaming == false);
+        ASSERT(cxn->articleQTotal <= 1);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
         /* ASSERT (cxn->timeCon == 0) ; */
-        break ;
-
-      case cxnWaitingS:
-        ASSERT (cxn->articleQTotal == 0) ;
-        ASSERT (cxn->myEp == NULL) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->readBlockedTimerId == 0) ;
-        ASSERT (cxn->writeBlockedTimerId == 0) ;
-        ASSERT (cxn->flushTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon == 0) ;
-        break ;
-
-      case cxnFlushingS:
-      case cxnClosingS:
-        if (!cxn->doesStreaming)
-          ASSERT (cxn->articleQTotal <= 1) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->flushTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon != 0) ;
-        ASSERT (cxn->doesStreaming || cxn->maxCheck == 1) ;
-        break ;
-
-      case cxnFeedingS:
-        if (cxn->doesStreaming)
-          /* Some(?) hosts return the 439 response even before we're done
-             sending, so don't go idle until here */
-          ASSERT (cxn->articleQTotal > 0 || writeIsPending (cxn->myEp)) ;
-        else
-          ASSERT (cxn->articleQTotal == 1) ;
-        if (cxn->readTimeout > 0 && !writeIsPending (cxn->myEp) &&
-	    cxn->checkRespHead != NULL && cxn->takeRespHead != NULL)
-          ASSERT (cxn->readBlockedTimerId != 0) ;
-        if (cxn->writeTimeout > 0 && writeIsPending (cxn->myEp))
-          ASSERT (cxn->writeBlockedTimerId != 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon != 0) ;
-        ASSERT (cxn->doesStreaming || cxn->maxCheck == 1) ;
         break;
 
-      case cxnIdleS:
-        ASSERT (cxn->articleQTotal == 0) ;
+    case cxnWaitingS:
+        ASSERT(cxn->articleQTotal == 0);
+        ASSERT(cxn->myEp == NULL);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->readBlockedTimerId == 0);
+        ASSERT(cxn->writeBlockedTimerId == 0);
+        ASSERT(cxn->flushTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon == 0);
+        break;
+
+    case cxnFlushingS:
+    case cxnClosingS:
+        if (!cxn->doesStreaming)
+            ASSERT(cxn->articleQTotal <= 1);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->flushTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon != 0);
+        ASSERT(cxn->doesStreaming || cxn->maxCheck == 1);
+        break;
+
+    case cxnFeedingS:
+        if (cxn->doesStreaming)
+            /* Some(?) hosts return the 439 response even before we're done
+               sending, so don't go idle until here */
+            ASSERT(cxn->articleQTotal > 0 || writeIsPending(cxn->myEp));
+        else
+            ASSERT(cxn->articleQTotal == 1);
+        if (cxn->readTimeout > 0 && !writeIsPending(cxn->myEp)
+            && cxn->checkRespHead != NULL && cxn->takeRespHead != NULL)
+            ASSERT(cxn->readBlockedTimerId != 0);
+        if (cxn->writeTimeout > 0 && writeIsPending(cxn->myEp))
+            ASSERT(cxn->writeBlockedTimerId != 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon != 0);
+        ASSERT(cxn->doesStreaming || cxn->maxCheck == 1);
+        break;
+
+    case cxnIdleS:
+        ASSERT(cxn->articleQTotal == 0);
         if (cxn->articleReceiptTimeout > 0)
-          ASSERT (cxn->artReceiptTimerId != 0) ;
-        ASSERT (cxn->readBlockedTimerId == 0) ;
-        ASSERT (cxn->writeBlockedTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon != 0) ;
-        ASSERT (!writeIsPending (cxn->myEp)) ;
-        break ;
+            ASSERT(cxn->artReceiptTimerId != 0);
+        ASSERT(cxn->readBlockedTimerId == 0);
+        ASSERT(cxn->writeBlockedTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon != 0);
+        ASSERT(!writeIsPending(cxn->myEp));
+        break;
 
-      case cxnIdleTimeoutS:
-        ASSERT (cxn->articleQTotal == 0) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->writeBlockedTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon != 0) ;
-        ASSERT (!writeIsPending (cxn->myEp)) ;
-        break ;
+    case cxnIdleTimeoutS:
+        ASSERT(cxn->articleQTotal == 0);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->writeBlockedTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon != 0);
+        ASSERT(!writeIsPending(cxn->myEp));
+        break;
 
-      case cxnSleepingS:
-        ASSERT (cxn->articleQTotal == 0) ;
-        ASSERT (cxn->myEp == NULL) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->readBlockedTimerId == 0) ;
-        ASSERT (cxn->writeBlockedTimerId == 0) ;
-        ASSERT (cxn->flushTimerId == 0) ;
-        ASSERT (cxn->timeCon == 0) ;
-        break ;
+    case cxnSleepingS:
+        ASSERT(cxn->articleQTotal == 0);
+        ASSERT(cxn->myEp == NULL);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->readBlockedTimerId == 0);
+        ASSERT(cxn->writeBlockedTimerId == 0);
+        ASSERT(cxn->flushTimerId == 0);
+        ASSERT(cxn->timeCon == 0);
+        break;
 
-      case cxnStartingS:
-        ASSERT (cxn->articleQTotal == 0) ;
-        ASSERT (cxn->myEp == NULL) ;
-        ASSERT (cxn->artReceiptTimerId == 0) ;
-        ASSERT (cxn->readBlockedTimerId == 0) ;
-        ASSERT (cxn->writeBlockedTimerId == 0) ;
-        ASSERT (cxn->flushTimerId == 0) ;
-        ASSERT (cxn->sleepTimerId == 0) ;
-        ASSERT (cxn->timeCon == 0) ;
-        break ;
+    case cxnStartingS:
+        ASSERT(cxn->articleQTotal == 0);
+        ASSERT(cxn->myEp == NULL);
+        ASSERT(cxn->artReceiptTimerId == 0);
+        ASSERT(cxn->readBlockedTimerId == 0);
+        ASSERT(cxn->writeBlockedTimerId == 0);
+        ASSERT(cxn->flushTimerId == 0);
+        ASSERT(cxn->sleepTimerId == 0);
+        ASSERT(cxn->timeCon == 0);
+        break;
 
-      case cxnDeadS:
-        break ;
+    case cxnDeadS:
+        break;
     }
 }
-
-
-
 
 
 /*
  * Generate a printable string of the parameter.
  */
-static const char *stateToString (CxnState state)
+static const char *
+stateToString(CxnState state)
 {
-  static char rval [64] ;
+    static char rval[64];
 
-  switch (state)
-    {
-      case cxnStartingS:
-        strlcpy (rval,"cxnStartingS", sizeof(rval)) ;
-        break ;
+    switch (state) {
+    case cxnStartingS:
+        strlcpy(rval, "cxnStartingS", sizeof(rval));
+        break;
 
-      case cxnWaitingS:
-        strlcpy (rval,"cxnWaitingS", sizeof(rval)) ;
-        break ;
+    case cxnWaitingS:
+        strlcpy(rval, "cxnWaitingS", sizeof(rval));
+        break;
 
-      case cxnConnectingS:
-        strlcpy (rval,"cxnConnectingS", sizeof(rval)) ;
-        break ;
+    case cxnConnectingS:
+        strlcpy(rval, "cxnConnectingS", sizeof(rval));
+        break;
 
-      case cxnIdleS:
-        strlcpy (rval,"cxnIdleS", sizeof(rval)) ;
-        break ;
+    case cxnIdleS:
+        strlcpy(rval, "cxnIdleS", sizeof(rval));
+        break;
 
-      case cxnIdleTimeoutS:
-        strlcpy (rval,"cxnIdleTimeoutS", sizeof(rval)) ;
-        break ;
+    case cxnIdleTimeoutS:
+        strlcpy(rval, "cxnIdleTimeoutS", sizeof(rval));
+        break;
 
-      case cxnFeedingS:
-        strlcpy (rval,"cxnFeedingS", sizeof(rval)) ;
-        break ;
+    case cxnFeedingS:
+        strlcpy(rval, "cxnFeedingS", sizeof(rval));
+        break;
 
-      case cxnSleepingS:
-        strlcpy (rval,"cxnSleepingS", sizeof(rval)) ;
-        break ;
+    case cxnSleepingS:
+        strlcpy(rval, "cxnSleepingS", sizeof(rval));
+        break;
 
-      case cxnFlushingS:
-        strlcpy (rval,"cxnFlushingS", sizeof(rval)) ;
-        break ;
+    case cxnFlushingS:
+        strlcpy(rval, "cxnFlushingS", sizeof(rval));
+        break;
 
-      case cxnClosingS:
-        strlcpy (rval,"cxnClosingS", sizeof(rval)) ;
-        break ;
+    case cxnClosingS:
+        strlcpy(rval, "cxnClosingS", sizeof(rval));
+        break;
 
-      case cxnDeadS:
-        strlcpy (rval,"cxnDeadS", sizeof(rval)) ;
-        break ;
+    case cxnDeadS:
+        strlcpy(rval, "cxnDeadS", sizeof(rval));
+        break;
 
-      default:
-        snprintf (rval,sizeof(rval),"UNKNOWN STATE: %d",state) ;
-        break ;
+    default:
+        snprintf(rval, sizeof(rval), "UNKNOWN STATE: %d", state);
+        break;
     }
 
-  return rval ;
+    return rval;
 }
-
-
-
 
 
 /****************************************************************************
@@ -4766,132 +4319,123 @@ static const char *stateToString (CxnState state)
  *
  ****************************************************************************/
 
-static ArtHolder newArtHolder (Article article)
+static ArtHolder
+newArtHolder(Article article)
 {
-  ArtHolder a = xmalloc (sizeof(struct art_holder_s)) ;
+    ArtHolder a = xmalloc(sizeof(struct art_holder_s));
 
-  a->article = article ;
-  a->next = NULL ;
+    a->article = article;
+    a->next = NULL;
 
-  return a ;
+    return a;
 }
-
-
-
 
 
 /*
  * Deletes the article holder
  */
-static void delArtHolder (ArtHolder artH)
+static void
+delArtHolder(ArtHolder artH)
 {
-  if (artH != NULL)
-    free (artH) ;
+    if (artH != NULL)
+        free(artH);
 }
-
-
-
 
 
 /*
  * remove the article holder from the queue. Adjust the count and if nxtPtr
  * points at the element then adjust that too.
  */
-static bool remArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count)
+static bool
+remArtHolder(ArtHolder artH, ArtHolder *head, unsigned int *count)
 {
-  ArtHolder h, i ;
+    ArtHolder h, i;
 
-  ASSERT (head != NULL) ;
-  ASSERT (count != NULL) ;
+    ASSERT(head != NULL);
+    ASSERT(count != NULL);
 
-  h = *head ;
-  i = NULL ;
-  while (h != NULL && h != artH)
-    {
-      i = h ;
-      h = h->next ;
+    h = *head;
+    i = NULL;
+    while (h != NULL && h != artH) {
+        i = h;
+        h = h->next;
     }
 
-  if (h == NULL)
-    return false ;
+    if (h == NULL)
+        return false;
 
-  if (i == NULL)
-    *head = (*head)->next ;
-  else
-    i->next = artH->next ;
+    if (i == NULL)
+        *head = (*head)->next;
+    else
+        i->next = artH->next;
 
-  (*count)-- ;
+    (*count)--;
 
-  return true ;
+    return true;
 }
-
-
-
 
 
 /*
  * append the ArticleHolder to the queue
  */
-static void appendArtHolder (ArtHolder artH, ArtHolder *head, unsigned int *count)
+static void
+appendArtHolder(ArtHolder artH, ArtHolder *head, unsigned int *count)
 {
-  ArtHolder p ;
+    ArtHolder p;
 
-  ASSERT (head != NULL) ;
-  ASSERT (count != NULL) ;
+    ASSERT(head != NULL);
+    ASSERT(count != NULL);
 
-  for (p = *head ; p != NULL && p->next != NULL ; p = p->next)
-    /* nada */ ;
+    for (p = *head; p != NULL && p->next != NULL; p = p->next)
+        /* nada */;
 
-  if (p == NULL)
-    *head = artH ;
-  else
-    p->next = artH ;
+    if (p == NULL)
+        *head = artH;
+    else
+        p->next = artH;
 
-  artH->next = NULL ;
-  (*count)++ ;
+    artH->next = NULL;
+    (*count)++;
 }
-
-
-
 
 
 /*
  * find the article holder on the queue by comparing the message-id.
  */
-static ArtHolder artHolderByMsgId (const char *msgid, ArtHolder head)
+static ArtHolder
+artHolderByMsgId(const char *msgid, ArtHolder head)
 {
-  while (head != NULL)
-    {
-      if (strcmp (msgid, artMsgId (head->article)) == 0)
-        return head ;
+    while (head != NULL) {
+        if (strcmp(msgid, artMsgId(head->article)) == 0)
+            return head;
 
-      head = head->next ;
+        head = head->next;
     }
 
-  return NULL ;
+    return NULL;
 }
-
 
 
 /*
  * Randomize a numeber by the given percentage
  */
 
-static int fudgeFactor (int initVal)
+static int
+fudgeFactor(int initVal)
 {
-  int newValue ;
-  static bool seeded ;
+    int newValue;
+    static bool seeded;
 
-  if ( !seeded )
-    {
-      time_t t = theTime () ;
+    if (!seeded) {
+        time_t t = theTime();
 
-      /* this may have been done already in endpoint.c. Is that a problem??? */
-      srand (t) ;               
-      seeded = true ;
+        /* this may have been done already in endpoint.c. Is that a problem???
+         */
+        srand(t);
+        seeded = true;
     }
-  
-  newValue = initVal + (initVal / 10 - (rand() % (initVal / 5)));
 
-  return newValue ;
+    newValue = initVal + (initVal / 10 - (rand() % (initVal / 5)));
+
+    return newValue;
 }
