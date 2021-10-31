@@ -16,31 +16,41 @@ BEGIN_DECLS
  * effects collision rate.  The table index is used as an implicit
  * part of the hash value stored also.
  */
-#ifdef	DO_TAGGED_HASH
-#define DBZMAXKEY	255
-#define DBZ_INTERNAL_HASH_SIZE   4
+#ifdef DO_TAGGED_HASH
+#    define DBZMAXKEY              255
+#    define DBZ_INTERNAL_HASH_SIZE 4
 #else
-#define DBZ_INTERNAL_HASH_SIZE   6
+#    define DBZ_INTERNAL_HASH_SIZE 6
 #endif
 
-typedef enum {DBZSTORE_OK, DBZSTORE_EXISTS, DBZSTORE_ERROR} DBZSTORE_RESULT;
-typedef enum {INCORE_NO, INCORE_MEM, INCORE_MMAP} dbz_incore_val;
+typedef enum
+{
+    DBZSTORE_OK,
+    DBZSTORE_EXISTS,
+    DBZSTORE_ERROR
+} DBZSTORE_RESULT;
+typedef enum
+{
+    INCORE_NO,
+    INCORE_MEM,
+    INCORE_MMAP
+} dbz_incore_val;
 
 typedef struct {
     /* Whether to write to the filesystem in addition to updating the incore
        copy.  This will replace a single large write to disk when dbzsync is
        called.  */
-    bool             writethrough;
+    bool writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
-    dbz_incore_val   pag_incore;
-    dbz_incore_val   exists_incore;
+    dbz_incore_val pag_incore;
+    dbz_incore_val exists_incore;
     /* Whether dbzstore should update the database async or sync.  This
        is only applicable if you're not mmaping the database */
-    bool             nonblock;
+    bool nonblock;
 } dbzoptions;
 
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
-#pragma pack(1)
+#    pragma pack(1)
 #endif /* nor lint, nor __SUNPRO_C, nor sgi, nor _nec_ews */
 /* Leave the __attribute__ ((__packed__)) on there because removing it
  * might change the layout of the data structure on disk on some platform,
@@ -48,10 +58,10 @@ typedef struct {
  * It is fairly unlikely that this is a problem, though.
  */
 typedef struct {
-    char		hash[DBZ_INTERNAL_HASH_SIZE];
-} __attribute__ ((__packed__)) erec;
+    char hash[DBZ_INTERNAL_HASH_SIZE];
+} __attribute__((__packed__)) erec;
 #if !defined(lint) && (defined(__SUNPRO_C) || defined(_nec_ews))
-#pragma pack()
+#    pragma pack()
 #endif /* nor lint, nor__SUNPRO_C, nor _nec_ews */
 
 /* standard dbm functions */

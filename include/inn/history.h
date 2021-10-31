@@ -42,24 +42,25 @@ struct histstats {
 #define HIS_RDONLY (0)
 
 /* open database read/write */
-#define HIS_RDWR (1<<0)
+#define HIS_RDWR (1 << 0)
 
 /* create on open */
-#define HIS_CREAT (1<<1)
+#define HIS_CREAT (1 << 1)
 
 /* hint that the data should be kept on disk */
-#define HIS_ONDISK (1<<2)
+#define HIS_ONDISK (1 << 2)
 
 /* hint that the data should be kept in core */
-#define HIS_INCORE (1<<3)
+#define HIS_INCORE (1 << 3)
 
 /* hint that the data should be kept mmap()ed */
-#define HIS_MMAP (1<<4)
+#define HIS_MMAP (1 << 4)
 
 /*
 **  values passed to HISctl
 */
-enum {
+enum
+{
     /* (char **) get history path */
     HISCTLG_PATH,
 
@@ -74,38 +75,35 @@ enum {
 
     /* (bool) Ignore old database during expire */
     HISCTLS_IGNOREOLD,
-    
+
     /* (time_t) interval, in s, between stats of the history database
      * for * detecting a replacement, or 0 to disable (no checks);
      * defaults {hisv6, taggedhash} */
     HISCTLS_STATINTERVAL
-
 };
 
-struct history *        HISopen(const char *, const char *, int);
-bool                    HISclose(struct history *);
-bool                    HISsync(struct history *);
-void                    HISsetcache(struct history *, size_t);
-bool                    HISlookup(struct history *, const char *, time_t *,
-				  time_t *, time_t *, struct token *);
-bool                    HIScheck(struct history *, const char *);
-bool                    HISwrite(struct history *, const char *, time_t,
-				 time_t, time_t, const struct token *);
-bool                    HISremember(struct history *, const char *, time_t, time_t);
-bool                    HISreplace(struct history *, const char *, time_t,
-				   time_t, time_t, const struct token *);
-bool                    HISexpire(struct history *, const char *, const char *,
-				  bool, void *, time_t,
-				  bool (*)(void *, time_t, time_t, time_t,
-					   struct token *));
-bool                    HISwalk(struct history *, const char *, void *,
-				bool (*)(void *, time_t, time_t, time_t,
-					 const struct token *));
-struct histstats        HISstats(struct history *);
-const char *            HISerror(struct history *);
-bool                    HISctl(struct history *, int, void *);
-void                    HISlogclose(void);
-void                    HISlogto(const char *s);
+struct history *HISopen(const char *, const char *, int);
+bool HISclose(struct history *);
+bool HISsync(struct history *);
+void HISsetcache(struct history *, size_t);
+bool HISlookup(struct history *, const char *, time_t *, time_t *, time_t *,
+               struct token *);
+bool HIScheck(struct history *, const char *);
+bool HISwrite(struct history *, const char *, time_t, time_t, time_t,
+              const struct token *);
+bool HISremember(struct history *, const char *, time_t, time_t);
+bool HISreplace(struct history *, const char *, time_t, time_t, time_t,
+                const struct token *);
+bool HISexpire(struct history *, const char *, const char *, bool, void *,
+               time_t,
+               bool (*)(void *, time_t, time_t, time_t, struct token *));
+bool HISwalk(struct history *, const char *, void *,
+             bool (*)(void *, time_t, time_t, time_t, const struct token *));
+struct histstats HISstats(struct history *);
+const char *HISerror(struct history *);
+bool HISctl(struct history *, int, void *);
+void HISlogclose(void);
+void HISlogto(const char *s);
 
 END_DECLS
 

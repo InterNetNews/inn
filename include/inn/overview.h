@@ -10,7 +10,7 @@
 #ifndef INN_OVERVIEW_H
 #define INN_OVERVIEW_H 1
 
-#include <stdio.h>              /* FILE */
+#include <stdio.h> /* FILE */
 
 #include "inn/portable-macros.h"
 #include "inn/portable-stdbool.h"
@@ -21,7 +21,8 @@ struct history;
 struct vector;
 
 /* Offsets into vectors for standard overview headers. */
-enum {
+enum
+{
     OVERVIEW_SUBJECT = 0,
     OVERVIEW_FROM,
     OVERVIEW_DATE,
@@ -55,50 +56,50 @@ struct overview_data {
 
 /* General configuration for and information about the overview method. */
 struct overview_config {
-    int mode;                   /* The mode passed to overview_open. */
-    bool sorted;                /* Set if the overview method will be faster
-                                   when given data sorted by newsgroup, used
-                                   by overview rebuilds. */
-    bool persistant;            /* Set if overview search results are usable
-                                   beyond the next call to overview_search, as
-                                   long as overview_search_close hasn't been
-                                   called. */
-    bool cutoff;                /* Ignore overview information for articles
-                                   below the current low water mark. */
+    int mode;        /* The mode passed to overview_open. */
+    bool sorted;     /* Set if the overview method will be faster
+                        when given data sorted by newsgroup, used
+                        by overview rebuilds. */
+    bool persistant; /* Set if overview search results are usable
+                        beyond the next call to overview_search, as
+                        long as overview_search_close hasn't been
+                        called. */
+    bool cutoff;     /* Ignore overview information for articles
+                        below the current low water mark. */
 };
 
 /* Configuration for overview-driven expiration.  The caller fleshes out this
    struct with appropriate options and then passes it into the expire
    calls, which fill in the statistics portion. */
 struct overview_expire {
-    FILE *rmfile;               /* If not NULL, append files or tokens to
-                                   remove to this file rather than deleting
-                                   them immediately. */
-    time_t now;                 /* Used as the current time for expiration. */
-    bool usepost;               /* Use posting date to determine expire. */
-    bool quiet;                 /* Suppress statistics output. */
-    bool keepcross;             /* Keep article so long as it hasn't expired
-                                   from any newsgroup to which it's
-                                   crossposted. */
-    bool purgecross;            /* Purge article as soon as it expires from
-                                   any crossposted newsgroup. */
-    bool ignoreselfexpire;      /* Purge article even if the storage method
-                                   is self-expiring. */
-    bool statall;               /* Stat all articles when expiring. */
-    struct history *history;    /* History interface, used to check to see if
-                                   the article is still present in the spoool
-                                   in the non-group-based-expiry case. */
+    FILE *rmfile;            /* If not NULL, append files or tokens to
+                                remove to this file rather than deleting
+                                them immediately. */
+    time_t now;              /* Used as the current time for expiration. */
+    bool usepost;            /* Use posting date to determine expire. */
+    bool quiet;              /* Suppress statistics output. */
+    bool keepcross;          /* Keep article so long as it hasn't expired
+                                from any newsgroup to which it's
+                                crossposted. */
+    bool purgecross;         /* Purge article as soon as it expires from
+                                any crossposted newsgroup. */
+    bool ignoreselfexpire;   /* Purge article even if the storage method
+                                is self-expiring. */
+    bool statall;            /* Stat all articles when expiring. */
+    struct history *history; /* History interface, used to check to see if
+                                the article is still present in the spoool
+                                in the non-group-based-expiry case. */
 
     /* Statistics.  The following should be initialized by the caller to zero
        and will be incremented when calling overview_expire. */
-    long processed;             /* Articles processed. */
-    long dropped;               /* Articles deleted. */
-    long indexdropped;          /* Overview entries deleted. */
+    long processed;    /* Articles processed. */
+    long dropped;      /* Articles deleted. */
+    long indexdropped; /* Overview entries deleted. */
 };
 
 /* Flags passed to overview_open. */
-#define OV_READ         1
-#define OV_WRITE        2
+#define OV_READ  1
+#define OV_WRITE 2
 
 BEGIN_DECLS
 
@@ -183,10 +184,12 @@ struct buffer *overview_build(ARTNUM number, const char *article,
                               struct buffer *);
 bool overview_check(const char *data, size_t length, ARTNUM article);
 int overview_index(const char *field, const struct vector *extra);
-struct cvector *overview_split(const char *line, size_t length,
-			       ARTNUM *number, struct cvector *vector);
-char *overview_get_standard_header(const struct cvector *vector, unsigned int element);
-char *overview_get_extra_header(const struct cvector *vector, const char *header);
+struct cvector *overview_split(const char *line, size_t length, ARTNUM *number,
+                               struct cvector *vector);
+char *overview_get_standard_header(const struct cvector *vector,
+                                   unsigned int element);
+char *overview_get_extra_header(const struct cvector *vector,
+                                const char *header);
 
 END_DECLS
 

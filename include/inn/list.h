@@ -40,7 +40,7 @@ struct node *list_remhead(struct list *list);
 struct node *list_remove(struct node *node);
 struct node *list_remtail(struct list *list);
 struct node *list_insert(struct list *list, struct node *node,
-			 struct node *pred);
+                         struct node *pred);
 
 bool list_isempty(struct list *list);
 

@@ -15,7 +15,7 @@
 /* Make sure that the symbolic constant for the error return from mmap is
    defined (some platforms don't define it). */
 #ifndef MAP_FAILED
-# define MAP_FAILED     ((void *) -1)
+#    define MAP_FAILED ((void *) -1)
 #endif
 
 /* Solaris 8 (at least) prototypes munmap, msync, and madvise as taking char *
@@ -24,21 +24,21 @@
    warnings on Solaris 8 without adversely affecting other platforms.  (ISO C
    allows macro definitions of this sort; this macro is not recursive.)
    Do not redefine mmap because at least AIX 7.1 redefines it to mmap64. */
-#define munmap(p, l)            munmap((void *)(p), (l))
+#define munmap(p, l) munmap((void *) (p), (l))
 
 /* On some platforms, msync only takes two arguments.  (ANSI C allows macro
    definitions of this sort; this macro is not recursive.) */
 #if HAVE_MSYNC_3_ARG
-# define msync(p, l, f)         msync((void *)(p), (l), (f))
+#    define msync(p, l, f) msync((void *) (p), (l), (f))
 #else
-# define msync(p, l, f)         msync((void *)(p), (l))
+#    define msync(p, l, f) msync((void *) (p), (l))
 #endif
 
 /* Turn calls to madvise into a no-op if that call isn't available. */
 #if HAVE_MADVISE
-# define madvise(p, l, o)       madvise((void *)(p), (l), (o))
+#    define madvise(p, l, o) madvise((void *) (p), (l), (o))
 #else
-# define madvise(p, l, o)       /* empty */
+#    define madvise(p, l, o) /* empty */
 #endif
 
 /* Some platforms don't flush data written to a memory mapped region until
@@ -52,15 +52,15 @@
    should still periodically call msync so that data is written out in case
    of a crash. */
 #if MMAP_NEEDS_MSYNC
-# define mmap_flush(p, l)       msync((p), (l), MS_ASYNC)
+#    define mmap_flush(p, l) msync((p), (l), MS_ASYNC)
 #else
-# define mmap_flush(p, l)       /* empty */
+#    define mmap_flush(p, l) /* empty */
 #endif
 
 #if MMAP_MISSES_WRITES
-# define mmap_invalidate(p, l)  msync((p), (l), MS_INVALIDATE)
+#    define mmap_invalidate(p, l) msync((p), (l), MS_INVALIDATE)
 #else
-# define mmap_invalidate(p, l)  /* empty */
+#    define mmap_invalidate(p, l) /* empty */
 #endif
 
 #endif /* PORTABLE_MMAP_H */

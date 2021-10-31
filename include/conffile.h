@@ -18,7 +18,7 @@ typedef struct {
 
 typedef struct {
     int type;
-#define CONFstring	-1
+#define CONFstring -1
     char *name;
 } CONFTOKEN;
 

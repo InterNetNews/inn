@@ -5,8 +5,8 @@
 **  (version 1.3), but has been assimilated into INN and modified to use INN
 **  formatting conventions.
 **
-**  Copyright (c) 2002, Peter A. Friend 
-**  All rights reserved. 
+**  Copyright (c) 2002, Peter A. Friend
+**  All rights reserved.
 **
 **  Redistribution and use in source and binary forms, with or without
 **  modification, are permitted provided that the following conditions are
@@ -46,7 +46,8 @@
 BEGIN_DECLS
 
 /* Constants used for return values and options. */
-enum tst_constants {
+enum tst_constants
+{
     TST_OK,
     TST_NULL_KEY,
     TST_NULL_DATA,

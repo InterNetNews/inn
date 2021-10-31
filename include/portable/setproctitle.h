@@ -18,7 +18,7 @@ void setproctitle(const char *format, ...)
 #endif
 
 #if HAVE_SETPROCTITLE || HAVE_PSTAT
-# define setproctitle_init(argc, argv)   /* empty */
+#    define setproctitle_init(argc, argv) /* empty */
 #else
 void setproctitle_init(int argc, char *argv[]);
 #endif

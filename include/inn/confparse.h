@@ -30,7 +30,7 @@ BEGIN_DECLS
    instead, the client should then call config_find_group for the group type
    of interest.  Returns NULL on failure to read the file or on a parse
    failure; errors are reported via warn. */
-struct config_group *config_parse_file(const char *filename, /* types */ ...);
+struct config_group *config_parse_file(const char *filename, /* types */...);
 
 /* config_find_group returns the first group of the given type found in the
    tree rooted at its argument.  config_next_group returns the next group in
@@ -52,7 +52,8 @@ const char *config_group_tag(struct config_group *);
    the expected type). */
 bool config_param_boolean(struct config_group *, const char *, bool *);
 bool config_param_signed_number(struct config_group *, const char *, long *);
-bool config_param_unsigned_number(struct config_group *, const char *, unsigned long *);
+bool config_param_unsigned_number(struct config_group *, const char *,
+                                  unsigned long *);
 bool config_param_real(struct config_group *, const char *, double *);
 bool config_param_string(struct config_group *, const char *, const char **);
 bool config_param_list(struct config_group *, const char *,

@@ -13,7 +13,7 @@
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
 #include "inn/system.h"
-#include <sys/types.h>          /* size_t */
+#include <sys/types.h> /* size_t */
 
 BEGIN_DECLS
 
@@ -33,17 +33,18 @@ char *wire_nextline(const char *, const char *end);
    whitespace if specified by the stripspaces argument).  Header fields whose
    only content is whitespace are ignored when whitespaces are stripped.  If
    the header field isn't found, returns NULL. */
-char *wire_findheader(const char *article, size_t, const char *header, bool stripspaces);
+char *wire_findheader(const char *article, size_t, const char *header,
+                      bool stripspaces);
 
 /* Given a pointer inside a header field body and a pointer to the end of the
-   article, returns a pointer to the end of the header field body (the \n at the
-   end of the terminating \r\n with folding taken into account), or NULL if no
-   such terminator was found before the end of the article. */
+   article, returns a pointer to the end of the header field body (the \n at
+   the end of the terminating \r\n with folding taken into account), or NULL if
+   no such terminator was found before the end of the article. */
 char *wire_endheader(const char *header, const char *end);
 
 /* Given an article and length in non-wire format, return a malloced region
    containing the article in wire format and set newlen to the length of the
-   new article. */ 
+   new article. */
 char *wire_from_native(const char *article, size_t len, size_t *newlen);
 
 /* Given an article and length in wire format, return a malloced region

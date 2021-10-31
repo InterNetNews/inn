@@ -40,17 +40,17 @@
 /* Make sure we have uint32_t. */
 #include <sys/types.h>
 #if INN_HAVE_INTTYPES_H
-# include <inttypes.h>
+#    include <inttypes.h>
 #endif
 
 /* SCO OpenServer gets int32_t from here. */
 #if INN_HAVE_SYS_BITYPES_H
-# include <sys/bitypes.h>
+#    include <sys/bitypes.h>
 #endif
 
-/* Bytes to process at once, defined by the algorithm. */ 
-#define MD5_CHUNKSIZE   (1 << 6)
-#define MD5_CHUNKWORDS  (MD5_CHUNKSIZE / sizeof(uint32_t))
+/* Bytes to process at once, defined by the algorithm. */
+#define MD5_CHUNKSIZE  (1 << 6)
+#define MD5_CHUNKWORDS (MD5_CHUNKSIZE / sizeof(uint32_t))
 
 /* Length of the digest, defined by the algorithm. */
 #define MD5_DIGESTSIZE  16
@@ -60,14 +60,14 @@ BEGIN_DECLS
 
 /* Data structure for MD5 message-digest computation. */
 struct md5_context {
-    uint32_t count[2];                          /* A 64-bit byte count. */
-    uint32_t buf[MD5_DIGESTWORDS];              /* Scratch buffer. */
+    uint32_t count[2];             /* A 64-bit byte count. */
+    uint32_t buf[MD5_DIGESTWORDS]; /* Scratch buffer. */
     union {
-        unsigned char byte[MD5_CHUNKSIZE];      /* Byte chunk buffer. */
-        uint32_t word[MD5_CHUNKWORDS];          /* Word chunk buffer. */
+        unsigned char byte[MD5_CHUNKSIZE]; /* Byte chunk buffer. */
+        uint32_t word[MD5_CHUNKWORDS];     /* Word chunk buffer. */
     } in;
-    unsigned int datalen;                       /* Length of data in in. */
-    unsigned char digest[MD5_DIGESTSIZE];       /* Final digest. */
+    unsigned int datalen;                 /* Length of data in in. */
+    unsigned char digest[MD5_DIGESTSIZE]; /* Final digest. */
 };
 
 extern void md5_hash(const unsigned char *, size_t, unsigned char *);

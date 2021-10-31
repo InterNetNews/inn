@@ -22,9 +22,9 @@ int inn__msync_page(void *, size_t, int flags);
    whatever the caller tried to pass.  This avoids undefined symbols for
    MS_ASYNC and friends on platforms with two-argument msync functions. */
 #ifdef INN_HAVE_MSYNC_3_ARG
-# define inn_msync_page inn__msync_page
+#    define inn_msync_page inn__msync_page
 #else
-# define inn_msync_page(p, l, f) inn__msync_page((p), (l), 0)
+#    define inn_msync_page(p, l, f) inn__msync_page((p), (l), 0)
 #endif
 
 END_DECLS

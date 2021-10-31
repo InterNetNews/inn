@@ -8,9 +8,9 @@
 #define INN_NETWORK_INNBIND_H 1
 
 #include "inn/macros.h"
+#include "inn/portable-socket.h"
 #include "inn/portable-stdbool.h"
 #include "inn/system.h"
-#include "inn/portable-socket.h"
 
 #include <sys/types.h>
 
@@ -22,9 +22,11 @@ BEGIN_DECLS
  * INVALID_SOCKET on error.  Errors are reported using warn/syswarn.  To bind
  * to all interfaces, use "any" or "all" for address.
  */
-socket_type network_innbind_ipv4(int type, const char *addr, unsigned short port)
+socket_type network_innbind_ipv4(int type, const char *addr,
+                                 unsigned short port)
     __attribute__((__nonnull__));
-socket_type network_innbind_ipv6(int type, const char *addr, unsigned short port)
+socket_type network_innbind_ipv6(int type, const char *addr,
+                                 unsigned short port)
     __attribute__((__nonnull__));
 
 /*

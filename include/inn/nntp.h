@@ -14,7 +14,7 @@
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
 #include "inn/system.h"
-#include <sys/types.h>          /* size_t, time_t */
+#include <sys/types.h> /* size_t, time_t */
 
 /*
 **  NNTP response codes as defined in RFC 3977 and elsewhere.
@@ -43,12 +43,13 @@
 **  available for holding NNTP codes specifically.
 */
 
-#define NNTP_CLASS_INFO                 '1'
-#define NNTP_CLASS_OK                   '2'
-#define NNTP_CLASS_CONT                 '3'
-#define NNTP_CLASS_FAIL                 '4'
-#define NNTP_CLASS_ERR                  '5'
+#define NNTP_CLASS_INFO '1'
+#define NNTP_CLASS_OK   '2'
+#define NNTP_CLASS_CONT '3'
+#define NNTP_CLASS_FAIL '4'
+#define NNTP_CLASS_ERR  '5'
 
+/* clang-format off */
 enum nntp_code {
     NNTP_INFO_HELP              = 100,
     NNTP_INFO_CAPABILITIES      = 101,
@@ -73,14 +74,14 @@ enum nntp_code {
     NNTP_CONT_POST              = 340,
     NNTP_FAIL_TERMINATING       = 400,
     NNTP_FAIL_WRONG_MODE        = 401, /* Wrong mode (e.g. not reader) */
-    NNTP_FAIL_ACTION            = 403, /* Internal fault or temporary problem */
+    NNTP_FAIL_ACTION            = 403, /* Internal fault, temporary problem */
     NNTP_FAIL_BAD_GROUP         = 411, /* Group unknown */
     NNTP_FAIL_NO_GROUP          = 412, /* Not in a newsgroup */
     NNTP_FAIL_ARTNUM_INVALID    = 420, /* Current article is invalid */
     NNTP_FAIL_NEXT              = 421,
     NNTP_FAIL_PREV              = 422,
-    NNTP_FAIL_ARTNUM_NOTFOUND   = 423, /* Article not found (by article number) */
-    NNTP_FAIL_MSGID_NOTFOUND    = 430, /* Article not found (by message-ID) */
+    NNTP_FAIL_ARTNUM_NOTFOUND   = 423, /* Article not found (by art number) */
+    NNTP_FAIL_MSGID_NOTFOUND    = 430, /* Article not found (by Message-ID) */
     NNTP_FAIL_IHAVE_REFUSE      = 435, /* IHAVE article not wanted */
     NNTP_FAIL_IHAVE_DEFER       = 436, /* IHAVE article deferred */
     NNTP_FAIL_IHAVE_REJECT      = 437, /* IHAVE article rejected */
@@ -137,6 +138,7 @@ enum nntp_code {
     NNTP_CONT_XBATCH            = 339,
     NNTP_FAIL_XBATCH            = 436  /* Duplicates NNTP_FAIL_IHAVE_DEFER */
 };
+/* clang-format on */
 
 
 /*
@@ -148,8 +150,8 @@ enum nntp_code {
 **  Also see below for an additional restriction on message-IDs.
 */
 
-#define NNTP_MAXLEN_COMMAND     512
-#define NNTP_MAXLEN_ARG         497
+#define NNTP_MAXLEN_COMMAND 512
+#define NNTP_MAXLEN_ARG     497
 
 /*
 **  The length of a message-ID is limited to 250 characters by RFC 3977
@@ -166,7 +168,7 @@ enum nntp_code {
 **  message-IDs of 494 octets.
 */
 
-#define NNTP_MAXLEN_MSGID       250
+#define NNTP_MAXLEN_MSGID 250
 
 /* Forward declaration. */
 struct cvector;
@@ -175,7 +177,8 @@ struct cvector;
 struct nntp;
 
 /* Return codes for NNTP reader functions. */
-enum nntp_status {
+enum nntp_status
+{
     NNTP_READ_OK,
     NNTP_READ_EOF,
     NNTP_READ_ERROR,

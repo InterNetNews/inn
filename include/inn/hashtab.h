@@ -31,30 +31,30 @@ struct hash;
 
 /* Data types for function pointers used by the hash table interface. */
 typedef unsigned long (*hash_func)(const void *);
-typedef const void * (*hash_key_func)(const void *);
+typedef const void *(*hash_key_func)(const void *);
 typedef bool (*hash_equal_func)(const void *, const void *);
 typedef void (*hash_delete_func)(void *);
 typedef void (*hash_traverse_func)(void *, void *);
 
 /* Generic hash table interface. */
-struct hash *   hash_create(size_t, hash_func, hash_key_func,
-                            hash_equal_func, hash_delete_func);
-void            hash_free(struct hash *);
-void *          hash_lookup(struct hash *, const void *key);
-bool            hash_insert(struct hash *, const void *key, void *datum);
-bool            hash_replace(struct hash *, const void *key, void *datum);
-bool            hash_delete(struct hash *, const void *key);
-void            hash_traverse(struct hash *, hash_traverse_func, void *);
-unsigned long   hash_count(struct hash *);
-unsigned long   hash_searches(struct hash *);
-unsigned long   hash_collisions(struct hash *);
-unsigned long   hash_expansions(struct hash *);
+struct hash *hash_create(size_t, hash_func, hash_key_func, hash_equal_func,
+                         hash_delete_func);
+void hash_free(struct hash *);
+void *hash_lookup(struct hash *, const void *key);
+bool hash_insert(struct hash *, const void *key, void *datum);
+bool hash_replace(struct hash *, const void *key, void *datum);
+bool hash_delete(struct hash *, const void *key);
+void hash_traverse(struct hash *, hash_traverse_func, void *);
+unsigned long hash_count(struct hash *);
+unsigned long hash_searches(struct hash *);
+unsigned long hash_collisions(struct hash *);
+unsigned long hash_expansions(struct hash *);
 
 /* Hash functions available for callers. */
-unsigned long   hash_string(const void *);
+unsigned long hash_string(const void *);
 
 /* Functions useful for constructing new hashes. */
-unsigned long   hash_lookup2(const char *, size_t, unsigned long partial);
+unsigned long hash_lookup2(const char *, size_t, unsigned long partial);
 
 END_DECLS
 

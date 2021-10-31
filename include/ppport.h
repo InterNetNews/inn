@@ -6,10 +6,10 @@
 
 /* Copyright (C) 1999, Kenneth Albanowski. This code may be used and
    distributed under the same license as any version of Perl. */
-   
+
 /* For the latest version of this code, please contact the author at
    <kjahds@kjahds.com>, or check with the Perl maintainers. */
-   
+
 /* If you needed to customize this file for your project, please mention
    your changes. */
 
@@ -33,31 +33,31 @@
    for a static include, or use the GLOBAL request in a single module to
    produce a global definition that can be referenced from the other
    modules.
-   
+
    Function:            Static define:           Extern define:
    newCONSTSUB()        NEED_newCONSTSUB         NEED_newCONSTSUB_GLOBAL
 
 */
- 
+
 
 /* To verify whether ppport.h is needed for your module, and whether any
    special defines should be used, ppport.h can be run through Perl to check
    your source code. Simply say:
-   
-   	perl -x ppport.h *.c *.h *.xs foo/perl.c [etc]
-   
+
+        perl -x ppport.h *.c *.h *.xs foo/perl.c [etc]
+
    The result will be a list of patches suggesting changes that should at
    least be acceptable, if not necessarily the most efficient solution, or a
    fix for all possible problems. It won't catch where dTHR is needed, and
    doesn't attempt to account for global macro or function definitions,
    nested includes, typemaps, etc.
-   
+
    In order to test for the need of dTHR, please try your module under a
    recent version of Perl that has threading compiled-in.
- 
-*/ 
 
+*/
 
+/* clang-format off */
 /*
 #!/usr/bin/perl
 @ARGV = ("*.xs") if !@ARGV;
@@ -142,50 +142,53 @@ foreach $filename (map(glob($_),@ARGV)) {
 }
 __DATA__
 */
+/* clang-format on */
 
 
 #if !defined(PERL_VERSION) && !defined(PERL_PATCHLEVEL)
-#	ifndef __PATCHLEVEL_H_INCLUDED__
-#		include <patchlevel.h>
-#	endif
+#    ifndef __PATCHLEVEL_H_INCLUDED__
+#        include <patchlevel.h>
+#    endif
 #endif
 #ifndef PERL_VERSION
-#       define PERL_REVISION (5)
-#       ifdef PERL_PATCHLEVEL
-#               define PERL_VERSION    PERL_PATCHLEVEL
-#       else
-#               define PERL_VERSION    PATCHLEVEL
-#               define PERL_SUBVERSION SUBVERSION
-#       endif
+#    define PERL_REVISION (5)
+#    ifdef PERL_PATCHLEVEL
+#        define PERL_VERSION PERL_PATCHLEVEL
+#    else
+#        define PERL_VERSION    PATCHLEVEL
+#        define PERL_SUBVERSION SUBVERSION
+#    endif
 #endif
 
 #ifndef ERRSV
-#	define ERRSV perl_get_sv("@",false)
+#    define ERRSV perl_get_sv("@", false)
 #endif
 
-#if (PERL_REVISION == 5) && ((PERL_VERSION < 4) || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4)))
-#	define PL_sv_undef	sv_undef
-#	define PL_sv_yes	sv_yes
-#	define PL_sv_no		sv_no
-#	define PL_na		na
-#	define PL_stdingv	stdingv
-#	define PL_hints		hints
-#	define PL_curcop	curcop
-#	define PL_curstash	curstash
-#	define PL_copline	copline
+#if (PERL_REVISION == 5)   \
+    && ((PERL_VERSION < 4) \
+        || ((PERL_VERSION == 4) && (PERL_SUBVERSION <= 4)))
+#    define PL_sv_undef sv_undef
+#    define PL_sv_yes   sv_yes
+#    define PL_sv_no    sv_no
+#    define PL_na       na
+#    define PL_stdingv  stdingv
+#    define PL_hints    hints
+#    define PL_curcop   curcop
+#    define PL_curstash curstash
+#    define PL_copline  copline
 #endif
 
 #if (PERL_REVISION == 5) && (PERL_VERSION < 5)
-#	undef dTHR
-#	ifdef WIN32
-#		define dTHR extern int Perl___notused
-#	else
-#		define dTHR extern int errno
-#	endif
+#    undef dTHR
+#    ifdef WIN32
+#        define dTHR extern int Perl___notused
+#    else
+#        define dTHR extern int errno
+#    endif
 #endif
 
 #ifndef boolSV
-#	define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
+#    define boolSV(b) ((b) ? &PL_sv_yes : &PL_sv_no)
 #endif
 
 /* Perl tries to export a bunch of its own functions.  Mutter. */
