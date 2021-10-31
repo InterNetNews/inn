@@ -457,8 +457,8 @@ gPrintTapeInfo(FILE *fp, unsigned int indentAmt)
 void
 tapeLogGlobalStatus(FILE *fp)
 {
-    fprintf(fp, "%sBacklog file global values:%s\n", genHtml ? "<B>" : "",
-            genHtml ? "</B>" : "");
+    fprintf(fp, "%sBacklog file global values:%s\n", genHtml ? "<strong>" : "",
+            genHtml ? "</strong>" : "");
     fprintf(fp, "        directory: %s\n", tapeDirectory);
     fprintf(fp, "    rotate period: %-3ld seconds\n", (long) rotatePeriod);
     fprintf(fp, "checkpoint period: %-3ld seconds\n", (long) tapeCkPtPeriod);
