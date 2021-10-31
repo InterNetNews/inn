@@ -797,8 +797,10 @@ Usage:\n\
         goto out;
     }
 
-    if (html)
-        puts("<html><head><title>ovdb_stat</title></head><body><p>");
+    if (html) {
+        puts("<!DOCTYPE html>\n<html lang=\"en\"><head>");
+        puts("<title>ovdb_stat</title></head><body><p>");
+    }
     if (disp_lock)
         display_lock();
     if (disp_log)
