@@ -33,6 +33,11 @@ about why it failed.
 
 =item *
 
+Fixed parallel builds using C<make -j>.  Thanks to Richard Kettlewell
+for the path.
+
+=item *
+
 Fixed a bug in the buffindexed overview that prevented it from working
 on several systems, amongst them FreeBSD.  Unsupported, and useless,
 permission bits were given to semaphores.
