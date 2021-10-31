@@ -7,8 +7,8 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 
 static const char usage[] = "\
 Usage: convdate -n [date ...]\n\
@@ -141,7 +141,8 @@ main(int argc, char *argv[])
         case 'c':
         case 'n':
         case 's':
-            if (mode != 0) die("only one of -c, -n, or -s is allowed");
+            if (mode != 0)
+                die("only one of -c, -n, or -s is allowed");
             mode = option;
             break;
         default:

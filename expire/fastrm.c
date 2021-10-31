@@ -21,9 +21,9 @@
 #include <syslog.h>
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "inn/libinn.h"
 #include "inn/storage.h"
 
 /* We reject any path names longer than this. */
@@ -74,7 +74,6 @@ static bool sm_initialized = false;
 
 /* True if unlink may be able to remove directories. */
 static bool unlink_dangerous = false;
-
 
 
 /*
@@ -130,8 +129,7 @@ filelist_lookup(filelist *list, const char *name)
 {
     char **p;
 
-    p = bsearch(&name, list->files, list->count, sizeof(char *),
-                file_compare);
+    p = bsearch(&name, list->files, list->count, sizeof(char *), file_compare);
     return (p == NULL ? NULL : *p);
 }
 
@@ -278,9 +276,9 @@ process_line(QIOSTATE *qp, int *queued, int *deleted)
                 list = filelist_new(dir);
             } else {
                 if ((dlen < 0 && strchr(line, '/'))
-                    || (dlen >= 0 && (line[dlen] != '/'
-                                      || strchr(line + dlen + 1, '/')
-                                      || strncmp(dir, line, dlen))))
+                    || (dlen >= 0
+                        && (line[dlen] != '/' || strchr(line + dlen + 1, '/')
+                            || strncmp(dir, line, dlen))))
                     return list;
             }
             filelist_insert(list, line + dlen + 1);
