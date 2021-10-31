@@ -447,8 +447,8 @@ tradspool_init(SMATTRIBUTE *attr)
     }
     /* Though a few parts of tradspool handle both values for storeonxref,
      * the implementation when storeonxref is false is not complete.
-     * For instance, CrackXref() is still called on the Newsgroups: header
-     * once, which obviously fails.
+     * For instance, CrackXref() is still called on the Newsgroups header
+     * field body once, which obviously fails.
      */
     if (!innconf->storeonxref) {
         warn("tradspool: storeonxref needs to be true");
@@ -562,8 +562,8 @@ TokenToPath(TOKEN token)
 }
 
 /*
-**  Crack an Xref: line apart into separate strings, each of the form
-*"ng:artnum".
+**  Crack an Xref header field body apart into separate strings, each of the
+**  form "ng:artnum".
 **  Return in "num" the number of newsgroups found.
 */
 static char **
@@ -628,7 +628,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
     xrefhdr = article.groups;
     if ((xrefs = CrackXref(xrefhdr, &numxrefs)) == NULL || numxrefs == 0) {
         token.type = TOKEN_EMPTY;
-        SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+        SMseterror(SMERR_UNDEFINED, "bogus Xref header field body");
         if (xrefs != NULL)
             free(xrefs);
         return token;
@@ -636,7 +636,7 @@ tradspool_store(const ARTHANDLE article, const STORAGECLASS class)
 
     if ((p = strchr(xrefs[0], ':')) == NULL) {
         token.type = TOKEN_EMPTY;
-        SMseterror(SMERR_UNDEFINED, "bogus Xref: header");
+        SMseterror(SMERR_UNDEFINED, "bogus Xref header field body");
         for (i = 0; i < numxrefs; ++i)
             free(xrefs[i]);
         free(xrefs);
@@ -1010,9 +1010,9 @@ tradspool_cancel(TOKEN token)
         return false;
     }
     /* Ooooh, this is gross.  To find the symlinks pointing to this article,
-     * we open the article and grab its Xref: line (since the token isn't long
-     * enough to store this info on its own).   This is *not* going to do
-     * good things for performance of fastrm...  -- rmtodd */
+     * we open the article and grab its Xref header field body (since the
+     * token isn't long enough to store this info on its own).   This is *not*
+     * going to do good things for performance of fastrm...  -- rmtodd */
     if ((article = OpenArticle(path, RETR_HEAD)) == NULL) {
         free(path);
         SMseterror(SMERR_UNDEFINED, NULL);
@@ -1192,7 +1192,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         /* Skip linked (not symlinked) crossposted articles.
 
            This algorithm is rather questionable; it only works if the first
-           group/number combination listed in the Xref header is the
+           group/number combination listed in the Xref header field is the
            canonical path.  This will always be true for spools created by
            this implementation, but for traditional INN 1.x servers,
            articles are expired indepedently from each group and may expire
@@ -1262,7 +1262,7 @@ tradspool_next(ARTHANDLE *article, const RETRTYPE amount)
         if (expires == NULL) {
             art->expires = 0;
         } else {
-            /* optionally parse expire header */
+            /* optionally parse Expires header field body */
             for (p = expires + 1; (*p != '\n') && (*(p - 1) != '\r'); p++)
                 ;
             x = xmalloc(p - expires);

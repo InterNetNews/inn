@@ -39,7 +39,7 @@
 /* innd will flush the history and active file after this many seconds. */
 #define DEFAULT_TIMEOUT         300
 
-/* Define if inews should put hostnames into the Path: header itself. */
+/* Define if inews should put hostnames into the Path header field itself. */
 #define DO_INEWS_PATH
 
 /* Define if inews should munge the GECOS entry of the passwd file when
@@ -68,7 +68,7 @@
 /* The standard NNTP port. */
 #define NNTP_PORT               119
 
-/* What to use for a Path: tail for local posts. */
+/* What to use for a Path header field body tail for local posts. */
 #define PATHMASTER              "not-for-mail"
 
 
@@ -179,9 +179,9 @@ typedef unsigned long           ARTNUM;
 #define NF_FLAG_NOLOCAL_STRING   "n"
 #define NF_FLAG_IGNORE_STRING    "x"
 
-/* Used for parsing the Newsgroups: header.  Should be rolled into a library
-   for parsing headers, combining all the code that's currently scattered
-   all over INN for doing that. */
+/* Used for parsing the Newsgroups header field body.  Should be rolled into
+   a library for parsing headers, combining all the code that's currently
+   scattered all over INN for doing that. */
 #define NG_SEPARATOR            ","
 #define NG_ISSEP(c)             ((c) == ',')
 

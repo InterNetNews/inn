@@ -77,7 +77,7 @@ HEADER Table[] = {
     {   "See-Also",             false,  HTobs,  0,    NULL,    NULL, 0 },
     {   "Cancel-Key",           true,   HTstd,  0,    NULL,    NULL, 0 },
     {   "Cancel-Lock",          true,   HTstd,  0,    NULL,    NULL, 0 },
-/* The Comments: and Original-Sender: header fields can appear more than once
+/* The Comments and Original-Sender header fields can appear more than once
  * in the headers of an article.  Consequently, we MUST NOT put them here. */
 };
 /* clang-format on */
@@ -87,7 +87,7 @@ HEADER *EndOfTable = ARRAY_END(Table);
 
 /*
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
-**  headers into a single line.
+**  header field bodies into a single line.
 **  Taken from innd.c.
 */
 static char *
@@ -167,7 +167,7 @@ TrimSpaces(char *p)
 
 
 /*
-**  Mark the end of the header starting at p, and return a pointer
+**  Mark the end of the header field starting at p, and return a pointer
 **  to the start of the next one or NULL.  Handles continuations.
 */
 static char *
@@ -182,7 +182,7 @@ NextHeader(char *p)
             strlcpy(Error, "Header line too long", sizeof(Error));
             return NULL;
         }
-        /* Check if there is a continuation line for the header. */
+        /* Check if there is a continuation line for the header field body. */
         if (ISWHITE(p[1])) {
             q = p + 1;
             continue;
@@ -196,7 +196,7 @@ NextHeader(char *p)
 
 
 /*
-**  Strip any headers off the article and dump them into the table.
+**  Strip any header fields off the article and dump them into the table.
 **  On error, return NULL and fill in Error.
 */
 static char *
@@ -207,21 +207,21 @@ StripOffHeaders(char *article)
     HEADER *hp;
     char c;
 
-    /* Scan through buffer, a header at a time. */
+    /* Scan through buffer, a header field at a time. */
     for (p = article;;) {
 
-        /* See if it's a known header. */
+        /* See if it's a known header field name. */
         c = islower((unsigned char) *p) ? toupper((unsigned char) *p) : *p;
         for (hp = Table; hp < ARRAY_END(Table); hp++) {
             if (c == hp->Name[0] && p[hp->Size] == ':'
                 && strncasecmp(p, hp->Name, hp->Size) == 0) {
                 if (hp->Type == HTobs) {
-                    snprintf(Error, sizeof(Error), "Obsolete %s: header",
+                    snprintf(Error, sizeof(Error), "Obsolete %s header field",
                              hp->Name);
                     return NULL;
                 }
                 if (hp->Value) {
-                    snprintf(Error, sizeof(Error), "Duplicate %s: header",
+                    snprintf(Error, sizeof(Error), "Duplicate %s header field",
                              hp->Name);
                     return NULL;
                 }
@@ -237,7 +237,7 @@ StripOffHeaders(char *article)
             }
         }
 
-        /* No; add it to the set of other headers. */
+        /* No; add it to the set of other header fields. */
         if (hp == ARRAY_END(Table)) {
             if (OtherCount + 1 >= OtherSize) {
                 OtherSize += HEADER_DELTA;
@@ -247,7 +247,8 @@ StripOffHeaders(char *article)
             OtherHeaders[OtherCount++] = p;
         }
 
-        /* Get start of next header; if it's a blank line, we hit the end. */
+        /* Get start of next header field; if it's a blank line, we hit
+         * the end. */
         if ((p = NextHeader(p)) == NULL) {
             /* Error set in NextHeader(). */
             return NULL;
@@ -303,7 +304,7 @@ CheckControl(char *ctrl)
 
 
 /*
-**  Check the Distribution: header, and exit on error.
+**  Check the Distribution header field, and exit on error.
 */
 static const char *
 CheckDistribution(char *p)
@@ -312,7 +313,7 @@ CheckDistribution(char *p)
     const char *const *dp;
 
     if ((p = strtok(p, SEPS)) == NULL)
-        return "Can't parse Distribution: header";
+        return "Can't parse Distribution header field";
     do {
         for (dp = BadDistribs; *dp; dp++)
             if (uwildmat(p, *dp)) {
@@ -355,31 +356,32 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Get the current time, used for creating and checking dates. */
     now = time(NULL);
 
-    /* datebuff is used for both Injection-Date: and Date: header fields
+    /* datebuff is used for both Injection-Date and Date header fields
      * so we have to set it now, and it has to be the UTC date (unless
-     * for the Date: header field if localtime is set to true
+     * for the Date header field if localtime is set to true
      * in readers.conf). */
     if (!makedate(-1, false, datebuff, sizeof(datebuff)))
-        return "Can't generate Date: header";
+        return "Can't generate Date header field body";
 
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
         if (!hp->CanSet && hp->Value) {
-            snprintf(Error, sizeof(Error), "Can't set system %s: header",
+            snprintf(Error, sizeof(Error), "Can't set system %s header field",
                      hp->Name);
             return Error;
         }
         if (hp->Value) {
             hp->Len = TrimSpaces(hp->Value);
-            /* If the header is empty, we just remove it.  We do not reject
-             * the article, contrary to what an injecting agent is supposed
-             * to do per Section 3.5 of RFC 5537.  (A revision to RFC 5537
-             * may someday allow again that existing and useful feature.) */
+            /* If the header field body is empty, we just remove it.  We do
+             * not reject the article, contrary to what an injecting agent
+             * is supposed to do per Section 3.5 of RFC 5537.  (A revision
+             * to RFC 5537 may someday allow again that existing and useful
+             * feature.) */
             if (hp->Len == 0) {
                 hp->Value = hp->Body = NULL;
             } else if (!IsValidHeaderBody(hp->Value)) {
                 snprintf(Error, sizeof(Error),
-                         "Invalid syntax encountered in %s: header field "
+                         "Invalid syntax encountered in %s header field "
                          "body (unexpected byte or empty content line)",
                          hp->Name);
                 return Error;
@@ -387,13 +389,13 @@ ProcessHeaders(char *idbuff, bool needmoderation)
         }
     }
 
-    /* Set the Injection-Date: header field. */
+    /* Set the Injection-Date header field. */
     /* Start with this header field because it MUST NOT be added in case
-     * the article already contains both Message-ID: and Date:
+     * the article already contains both Message-ID and Date
      * header fields (possibility of multiple injection, see Sections 3.4.2
      * and 3.5 of RFC 5537). */
     if (HDR(HDR__INJECTION_DATE) == NULL) {
-        /* If moderation is needed, do not add an Injection-Date: header field.
+        /* If moderation is needed, do not add an Injection-Date header field.
          */
         if (!needmoderation && PERMaccessconf->addinjectiondate) {
             if ((HDR(HDR__MESSAGEID) == NULL) || (HDR(HDR__DATE) == NULL)) {
@@ -403,13 +405,14 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     } else {
         t = parsedate_rfc5322_lax(HDR(HDR__INJECTION_DATE));
         if (t == (time_t) -1)
-            return "Can't parse Injection-Date: header";
+            return "Can't parse Injection-Date header field body";
         if (t > now + DATE_FUZZ)
             return "Article injected in the future";
     }
 
-    /* If authorized, add the header based on our info.  If not authorized,
-     * zap the Sender: header so we don't put out unauthenticated data. */
+    /* If authorized, add the header field based on our info.  If not
+     * authorized, zap the Sender header field so we don't put out
+     * unauthenticated data. */
     if (PERMaccessconf->nnrpdauthsender) {
         if (PERMauthorized && PERMuser[0] != '\0') {
             p = strchr(PERMuser, '@');
@@ -425,11 +428,11 @@ ProcessHeaders(char *idbuff, bool needmoderation)
         }
     }
 
-    /* Set the Date: header. */
+    /* Set the Date header field. */
     if (HDR(HDR__DATE) == NULL) {
         if (PERMaccessconf->localtime) {
             if (!makedate(-1, true, localdatebuff, sizeof(localdatebuff)))
-                return "Can't generate local date header";
+                return "Can't generate local Date header field body";
             HDR_SET(HDR__DATE, localdatebuff);
         } else {
             HDR_SET(HDR__DATE, datebuff);
@@ -437,39 +440,39 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     } else {
         t = parsedate_rfc5322_lax(HDR(HDR__DATE));
         if (t == (time_t) -1)
-            return "Can't parse Date: header";
+            return "Can't parse Date header field body";
         if (t > now + DATE_FUZZ)
             return "Article posted in the future";
-        /* This check is done for Date: by nnrpd.
-         * innd, as a relaying agent, does not check it when an Injection-Date:
-         * header is present. */
+        /* This check is done for the Date header field by nnrpd.
+         * innd, as a relaying agent, does not check it when an Injection-Date
+         * header field is present. */
         if (innconf->artcutoff != 0) {
             long cutoff = innconf->artcutoff * 24 * 60 * 60;
             if (t < now - cutoff)
                 return "Article posted too far in the past (check still "
-                       "done for legacy reasons on the Date: header)";
+                       "done for legacy reasons on the Date header field)";
         }
     }
 
-    /* Newsgroups: is checked later. */
+    /* The Newsgroups header field is checked later. */
 
     if (HDR(HDR__CONTROL) != NULL) {
         if ((error = CheckControl(HDR(HDR__CONTROL))) != NULL)
             return error;
     }
 
-    /* Set the Message-ID: header. */
+    /* Set the Message-ID header field. */
     if (HDR(HDR__MESSAGEID) == NULL) {
         HDR_SET(HDR__MESSAGEID, idbuff);
     }
     if (!IsValidMessageID(HDR(HDR__MESSAGEID), true, laxmid)) {
-        return "Can't parse Message-ID: header";
+        return "Can't parse Message-ID header field body";
     }
 
-    /* Set the Path: header. */
+    /* Set the Path header field. */
     if (HDR(HDR__PATH) == NULL || PERMaccessconf->strippath) {
         /* Note that innd will put host name here for us. */
-        /* If moderation is needed, do not update the Path: header field. */
+        /* If moderation is needed, do not update the Path header field. */
         if (!needmoderation)
             HDR_SET(HDR__PATH, (char *) PATHMASTER);
         else if (PERMaccessconf->strippath)
@@ -484,7 +487,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
                 && (p[7] == '.' || p[7] == '!' || p[7] == ' ' || p[7] == '\t'
                     || p[7] == '\r' || p[7] == '\n')
                 && (p == HDR(HDR__PATH) || p[-1] == '!')) {
-                return "Path: header shows a previous injection of the "
+                return "Path header field shows a previous injection of the "
                        "article";
             }
         }
@@ -518,21 +521,21 @@ ProcessHeaders(char *idbuff, bool needmoderation)
             newpath = concat(".POSTED!", HDR(HDR__PATH), (char *) 0);
         }
     }
-    /* If moderation is needed, do not update the Path: header field. */
+    /* If moderation is needed, do not update the Path header field. */
     if (!needmoderation)
         HDR_SET(HDR__PATH, newpath);
 
-    /* Reply-To: is left alone. */
-    /* Sender: is set above. */
+    /* The Reply-To header field is left alone. */
+    /* The Sender header field is set above. */
 
-    /* Check the Expires: header. */
+    /* Check the Expires header field. */
     if (HDR(HDR__EXPIRES) && parsedate_rfc5322_lax(HDR(HDR__EXPIRES)) == -1)
-        return "Can't parse Expires: header";
+        return "Can't parse Expires header field";
 
-    /* References: is left alone. */
-    /* Control: is checked above. */
+    /* The References header field is left alone. */
+    /* The Control header field is checked above. */
 
-    /* Check the Distribution: header. */
+    /* Check the Distribution header field. */
     if ((p = HDR(HDR__DISTRIBUTION)) != NULL) {
         p = xstrdup(p);
         error = CheckDistribution(p);
@@ -541,22 +544,22 @@ ProcessHeaders(char *idbuff, bool needmoderation)
             return error;
     }
 
-    /* Set the Organization: header. */
+    /* Set the Organization header field. */
     if (HDR(HDR__ORGANIZATION) == NULL
         && (p = PERMaccessconf->organization) != NULL) {
         strlcpy(orgbuff, p, sizeof(orgbuff));
         HDR_SET(HDR__ORGANIZATION, orgbuff);
     }
 
-    /* Keywords: is left alone. */
-    /* Summary: is left alone. */
-    /* Approved: is left alone. */
+    /* The Keywords header field is left alone. */
+    /* The Summary header field is left alone. */
+    /* The Approved header field is left alone. */
 
-    /* Lines: should not be generated. */
+    /* The Lines header field should not be generated. */
 
-    /* Supersedes: is left alone. */
+    /* The Supersedes header field is left alone. */
 
-    /* Set the Injection-Info: header. */
+    /* Set the Injection-Info header field. */
     /* Set the path identity. */
     if (VirtualPathlen > 0) {
         p = PERMaccessconf->domain;
@@ -623,11 +626,11 @@ ProcessHeaders(char *idbuff, bool needmoderation)
              PERMaccessconf->addinjectionpostinghost ? postinghostbuff : "",
              (long) pid, complaintsbuff);
 
-    /* If moderation is needed, do not add an Injection-Info: header field. */
+    /* If moderation is needed, do not add an Injection-Info header field. */
     if (!needmoderation)
         HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
 
-    /* Clear out some headers that should not be here. */
+    /* Clear out some header fields that should not be here. */
     if (PERMaccessconf->strippostcc) {
         HDR_CLEAR(HDR__CC);
         HDR_CLEAR(HDR__BCC);
@@ -637,7 +640,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Now make sure everything is there. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
         if (hp->Type == HTreq && hp->Value == NULL) {
-            snprintf(Error, sizeof(Error), "Missing required %s: header",
+            snprintf(Error, sizeof(Error), "Missing required %s header field",
                      hp->Name);
             return Error;
         }
@@ -651,7 +654,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
             else
                 bad_header = xstrndup(OtherHeaders[i], p - OtherHeaders[i]);
             snprintf(Error, sizeof(Error),
-                     "Invalid syntax encountered in header (unexpected "
+                     "Invalid syntax encountered in header field (unexpected "
                      "byte, no colon-space, or empty content line): %s",
                      bad_header);
             free(bad_header);
@@ -822,14 +825,14 @@ ValidNewsgroups(char *hdr, char **modgroup)
     groups = xstrdup(hdr);
     if ((p = strtok(groups, NGSEPS)) == NULL) {
         free(groups);
-        return "Can't parse Newsgroups: header";
+        return "Can't parse Newsgroups header field body";
     }
     Error[0] = '\0';
 
-    /* Reject all articles with Approved: headers unless the user is allowed to
-     * add them, even to unmoderated or local groups.  We want to reject them
-     * to unmoderated groups in case there's a disagreement of opinion
-     * between various sites as to the moderation status. */
+    /* Reject all articles with Approved header fields unless the user is
+     * allowed to add them, even to unmoderated or local groups.  We want to
+     * reject them to unmoderated groups in case there's a disagreement of
+     * opinion between various sites as to the moderation status. */
     approved = HDR(HDR__APPROVED) != NULL;
     if (approved && !PERMaccessconf->allowapproved) {
         snprintf(Error, sizeof(Error),
@@ -1118,7 +1121,7 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     /* Assume errors are permanent, until we discover otherwise. */
     *permanent = true;
 
-    /* Set up the other headers list. */
+    /* Set up the other header fields list. */
     if (OtherHeaders == NULL) {
         OtherSize = HEADER_DELTA;
         OtherHeaders = xmalloc(OtherSize * sizeof(char *));
@@ -1141,11 +1144,11 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
 
     /* modgroup is set when moderated newsgroups are found in the
-     * Newsgroups: header field, and the article does not contain
-     * an Approved: header field.
+     * Newsgroups header field, and the article does not contain
+     * an Approved header field.
      * Therefore, moderation will be needed.
      *
-     * Be sure to check that a Newsgroups: header field exists
+     * Be sure to check that a Newsgroups header field exists
      * because ProcessHeaders() still has not been called.  It would
      * have rejected the message. */
     if (HDR(HDR__NEWSGROUPS) != NULL) {
@@ -1166,15 +1169,15 @@ ARTpost(char *article, char *idbuff, bool *permanent)
     }
 
     strlcpy(frombuf, HDR(HDR__FROM), sizeof(frombuf));
-    /* Unfold the From: header field. */
+    /* Unfold the From header field. */
     for (p = frombuf; p < frombuf + sizeof(frombuf);)
         if ((p = strchr(p, '\n')) == NULL)
             break;
         else
             *p++ = ' ';
-    /* Try to rewrite the From: header field in a cleaner format. */
+    /* Try to rewrite the From header field in a cleaner format. */
     HeaderCleanFrom(frombuf);
-    /* Now perform basic checks of the From: header field.
+    /* Now perform basic checks of the From header field.
      * Pass leading '@' chars because they are not part of an address. */
     p = frombuf;
     while (*p == '@') {
@@ -1186,12 +1189,12 @@ ARTpost(char *article, char *idbuff, bool *permanent)
         if (p == NULL) {
             if (modgroup)
                 free(modgroup);
-            return "From: address not in Internet syntax";
+            return "Address in From header field not in Internet syntax";
         }
     } else {
         if (modgroup)
             free(modgroup);
-        return "From: address not in Internet syntax";
+        return "Address in From header field not in Internet syntax";
     }
     if ((p = HDR(HDR__FOLLOWUPTO)) != NULL && strcmp(p, "poster") != 0
         && (error = ValidNewsgroups(p, (char **) NULL)) != NULL) {

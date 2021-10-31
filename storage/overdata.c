@@ -50,8 +50,8 @@ overview_fields(void)
 **  Return a vector of the additional fields over the standard ones.
 **  The order of these fields is important.
 **
-**  Xref: is mandatory for INN and we make it the first extra field
-**  after the seven overview fields defined in RFC 3977.
+**  The Xref header field is mandatory for INN and we make it the first
+**  extra field after the seven overview fields defined in RFC 3977.
 **
 **  Caller is responsible for freeing the vector.
 */
@@ -95,10 +95,10 @@ overview_extra_fields(bool hidden)
 
 
 /*
-**  Given an article, its length, the name of a header, and a buffer to append
-**  the data to, append header data for that header to the overview data
-**  that's being constructed.  Doesn't append any data if the header isn't
-**  found.
+**  Given an article, its length, the name of a header field, and a buffer to
+**  append the data to, append header data for that header field to the
+**  overview data that's being constructed.  Doesn't append any data if the
+**  header field isn't found.
 */
 static void
 build_header(const char *article, size_t length, const char *header,
@@ -116,9 +116,9 @@ build_header(const char *article, size_t length, const char *header,
         return;
 
     /* Someone managed to break their server so that they were appending
-       multiple Xref headers, and INN had a bug where it wouldn't notice this
-       and reject the article.  Just in case, see if there are multiple Xref
-       headers and use the last one. */
+       multiple Xref header fields, and INN had a bug where it wouldn't notice
+       this and reject the article.  Just in case, see if there are multiple
+       Xref header fields and use the last one. */
     if (strcasecmp(header, "xref") == 0) {
         const char *next = end + 1;
 
@@ -153,9 +153,10 @@ build_header(const char *article, size_t length, const char *header,
 
 
 /*
-**  Given an article number, an article, and a vector of additional headers,
-**  generate overview data into the provided buffer.  If the buffer parameter
-**  is NULL, a new buffer is allocated.  The article should be in wire format.
+**  Given an article number, an article, and a vector of additional header
+**  fields, generate overview data into the provided buffer.  If the buffer
+**  parameter is NULL, a new buffer is allocated.  The article should be in
+**  wire format.
 **  Returns the buffer containing the overview data.
 */
 struct buffer *
@@ -209,8 +210,8 @@ valid_number(const char *string)
 /*
 **  Check whether a given string is a valid overview string (doesn't contain
 **  CR or LF, and if the second argument is true must be preceded by a header
-**  name, colon, and space).  Allow CRLF at the end of the data, but don't
-**  require it.
+**  field name, colon, and space).  Allow CRLF at the end of the data, but
+**  don't require it.
 */
 static bool
 valid_overview_string(const char *string, bool full)
@@ -245,10 +246,10 @@ valid_overview_string(const char *string, bool full)
 
 /*
 **  Check the given overview data and make sure it's well-formed.  Extension
-**  headers are not checked against LIST OVERVIEW.FMT (having a different set
-**  of extension headers doesn't make the data invalid), but the presence of
-**  the standard fields is checked.  Also checked is whether the article
-**  number in the data matches the passed article number.
+**  header fields are not checked against LIST OVERVIEW.FMT (having a different
+**  set of extension header fields doesn't make the data invalid), but the
+**  presence of the standard header fields is checked.  Also checked is whether
+**  the article number in the data matches the passed article number.
 **  Returns true if the data is okay, false otherwise.
 */
 bool
@@ -294,7 +295,7 @@ fail:
 
 
 /*
-**  Given an overview header, return the offset of the field within the
+**  Given an overview header field, return the offset of the field within the
 **  overview data, or -1 if the field is not present in the overview schema
 **  for this installation.
 */
@@ -394,7 +395,7 @@ overview_get_standard_header(const struct cvector *vector,
 **  Given an overview vector (from overview_split), return a copy of
 **  the member which the caller is interested in (and must free).
 **  The order of extra overview fields may vary so we walk all the
-**  extra headers to find the requested field.
+**  extra header fields to find the requested field.
 */
 char *
 overview_get_extra_header(const struct cvector *vector, const char *header)
@@ -409,7 +410,7 @@ overview_get_extra_header(const struct cvector *vector, const char *header)
     for (i = ARRAY_SIZE(fields); i < vector->count - 1; i++) {
         if (strncasecmp(header, vector->strings[i], headerlen) == 0) {
             p = vector->strings[i] + headerlen;
-            /* Check for ": " after the name of the header. */
+            /* Check for ": " after the header field name. */
             if ((*p++ == ':') && (*p++ == ' ')) {
                 len = vector->strings[i + 1] - p - 1;
 
@@ -419,6 +420,6 @@ overview_get_extra_header(const struct cvector *vector, const char *header)
         }
     }
 
-    /* The required header was not found in the extra overview fields. */
+    /* The required header field was not found in the extra overview fields. */
     return NULL;
 }

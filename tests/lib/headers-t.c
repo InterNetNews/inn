@@ -12,41 +12,42 @@ main(void)
 {
     plan(9+3+11+8+14+7);
 
-    ok(!IsValidHeaderName(NULL), "bad header name 1");
-    ok(!IsValidHeaderName(""), "bad header name 2");
-    ok(!IsValidHeaderName(":"), "bad header name 3");
-    ok(!IsValidHeaderName("Sub:ject"), "bad header name 4");
-    ok(!IsValidHeaderName("Subject:"), "bad header name 5");
+    ok(!IsValidHeaderName(NULL), "bad header field name 1");
+    ok(!IsValidHeaderName(""), "bad header field name 2");
+    ok(!IsValidHeaderName(":"), "bad header field name 3");
+    ok(!IsValidHeaderName("Sub:ject"), "bad header field name 4");
+    ok(!IsValidHeaderName("Subject:"), "bad header field name 5");
     /* \177 (octal notation) is DEL. */
-    ok(!IsValidHeaderName("\177Subject"), "bad header name 6");
-    ok(!IsValidHeaderName("Sub ject"), "bad header name 7");
-    ok(!IsValidHeaderName("Sub\tject"), "bad header name 8");
-    ok(!IsValidHeaderName("Sub\r\nject"), "bad header name 9");
-    
-    ok(IsValidHeaderName("Subject"), "good header name 1");
-    ok(IsValidHeaderName("subJECT"), "good header name 2");
-    ok(IsValidHeaderName("X-#%-T`?!"), "good header name 3");
+    ok(!IsValidHeaderName("\177Subject"), "bad header field name 6");
+    ok(!IsValidHeaderName("Sub ject"), "bad header field name 7");
+    ok(!IsValidHeaderName("Sub\tject"), "bad header field name 8");
+    ok(!IsValidHeaderName("Sub\r\nject"), "bad header field name 9");
 
-    ok(!IsValidHeaderBody(NULL), "bad header body 1");
-    ok(!IsValidHeaderBody(""), "bad header body 2");
-    ok(!IsValidHeaderBody("a\177b"), "bad header body 3");
-    ok(!IsValidHeaderBody("a\r\nb"), "bad header body 4");
-    ok(!IsValidHeaderBody("a\nb"), "bad header body 5");
-    ok(!IsValidHeaderBody("\n"), "bad header body 6");
-    ok(!IsValidHeaderBody("\r\n b"), "bad header body 7");
-    ok(!IsValidHeaderBody("a\r\n b\r\n"), "bad header body 8");
-    ok(!IsValidHeaderBody("a\n\tb\n \t\n c"), "bad header body 9");
-    ok(!IsValidHeaderBody("a\003b"), "bad header body 10");
-    ok(!IsValidHeaderBody("a\r b"), "bad header body 11");
+    ok(IsValidHeaderName("Subject"), "good header field name 1");
+    ok(IsValidHeaderName("subJECT"), "good header field name 2");
+    ok(IsValidHeaderName("X-#%-T`?!"), "good header field name 3");
 
-    ok(IsValidHeaderBody(":"), "good header body 1");
-    ok(IsValidHeaderBody("a b"), "good header body 2");
-    ok(IsValidHeaderBody("a\t\tb"), "good header body 3");
-    ok(IsValidHeaderBody("a\r\n b"), "good header body 4");
-    ok(IsValidHeaderBody("a\r\n\tb"), "good header body 5");
-    ok(IsValidHeaderBody("a\n   b"), "good header body 6");
-    ok(IsValidHeaderBody("a\n\tb\n \tc\n d"), "good header body 7");
-    ok(IsValidHeaderBody("\317\205\317\204\317\2068"), "good header body 8");
+    ok(!IsValidHeaderBody(NULL), "bad header field body 1");
+    ok(!IsValidHeaderBody(""), "bad header field body 2");
+    ok(!IsValidHeaderBody("a\177b"), "bad header field body 3");
+    ok(!IsValidHeaderBody("a\r\nb"), "bad header field body 4");
+    ok(!IsValidHeaderBody("a\nb"), "bad header field body 5");
+    ok(!IsValidHeaderBody("\n"), "bad header field body 6");
+    ok(!IsValidHeaderBody("\r\n b"), "bad header field body 7");
+    ok(!IsValidHeaderBody("a\r\n b\r\n"), "bad header field body 8");
+    ok(!IsValidHeaderBody("a\n\tb\n \t\n c"), "bad header field body 9");
+    ok(!IsValidHeaderBody("a\003b"), "bad header field body 10");
+    ok(!IsValidHeaderBody("a\r b"), "bad header field body 11");
+
+    ok(IsValidHeaderBody(":"), "good header field body 1");
+    ok(IsValidHeaderBody("a b"), "good header field body 2");
+    ok(IsValidHeaderBody("a\t\tb"), "good header field body 3");
+    ok(IsValidHeaderBody("a\r\n b"), "good header field body 4");
+    ok(IsValidHeaderBody("a\r\n\tb"), "good header field body 5");
+    ok(IsValidHeaderBody("a\n   b"), "good header field body 6");
+    ok(IsValidHeaderBody("a\n\tb\n \tc\n d"), "good header field body 7");
+    ok(IsValidHeaderBody("\317\205\317\204\317\2068"),
+       "good header field body 8");
 
     ok(!IsValidHeaderField(NULL), "bad header field 1");
     ok(!IsValidHeaderField(""), "bad header field 2");

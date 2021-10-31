@@ -1,4 +1,4 @@
-/* Test suite for storing overview data based on the Xref: header. */
+/* Test suite for storing overview data based on the Xref header field. */
 
 #include "portable/system.h"
 
@@ -61,7 +61,7 @@ overview_init(void)
    beginning of the line from one of our data files.  Returns a vector of
    group/number pairs from the first data element, stores in start a
    pointer to the beginning of the regular overview data, and stores in xref a
-   pointer to the beginning of the Xref: data (which must be the end of the
+   pointer to the beginning of the Xref data (which must be the end of the
    overview record). */
 static struct cvector *
 overview_data_parse(char *data, char **start, char **xref)
@@ -82,13 +82,13 @@ overview_data_parse(char *data, char **start, char **xref)
     groups = cvector_split(data, ',', NULL);
     *xref = strstr(*start, "Xref: ");
     if (*xref == NULL)
-        die("No Xref: found in input data");
+        die("No Xref header field found in input data");
     return groups;
 }
 
 /* Load overview data from a file.  The first field of each line is a
    comma-separated list of newsgroup name and number pairs, separated by a
-   colon, that should correspond to where the Xref: data will put this article.
+   colon, that should correspond to where the Xref data will put this article.
    After storing each line, try to retrieve it and make sure that it was
    stored in the right locations.  Returns the total count of records
    stored. */
@@ -219,9 +219,9 @@ main(void)
     n = count * 4 + 4 + 1;
     overview_verify_count(n++, overview, count);
 
-    /* In order to test cancelling based on Xref:, we have to store one of the
-       articles into a real storage method to get a token.  Cheat on where the
-       article is stored, since overview doesn't care. */
+    /* In order to test cancelling based on Xref header fields, we have to
+       store one of the articles into a real storage method to get a token.
+       Cheat on where the article is stored, since overview doesn't care. */
     value = true;
     if (!SMsetup(SM_RDWR, &value))
         die("Cannot set up storage manager");

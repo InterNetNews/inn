@@ -231,8 +231,8 @@ overview_cancel(struct overview *overview, const char *group, ARTNUM artnum)
 **  Cancel a message from all groups based on Xref information.  This is
 **  hideously ugly, since there's no easy way to go from a token to a
 **  newsgroup name and article number.  We retrieve the head of the article,
-**  find the Xref header, and then parse it.  Articles without an Xref header
-**  lose.
+**  find the Xref header field, and then parse it.  Articles without an Xref
+**  header field lose.
 */
 bool
 overview_cancel_xref(struct overview *overview, TOKEN token)

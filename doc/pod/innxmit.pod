@@ -67,7 +67,7 @@ on the remote host.
 =item B<-H>
 
 If the B<-H> flag is given, then only headers are sent to I<host> for all
-articles except control messages.  And the Bytes: header is also included
+articles except control messages.  And the Bytes header field is also included
 even if it does not exist in the original article.  The B<-H> flag is useful
 for Diablo reader.
 

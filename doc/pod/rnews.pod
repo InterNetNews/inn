@@ -87,7 +87,7 @@ C<rnews> and C<cunbatch> will be recognized as valid batch commands.
 
 By default, B<rnews> will log and discard any articles that are rejected
 by the server or cannot be parsed by B<rnews> for some reason (such
-as a missing header).  If B<-b> is given, rejected articles will also
+as a missing header field).  If B<-b> is given, rejected articles will also
 be backed up in the F<bad> sub-directory of I<pathincoming> (as set
 in F<inn.conf>).
 

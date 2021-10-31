@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # fixscript will replace this line with code to load INN::Config
 
-##  Submit Path: statistics based on ninpaths.
+##  Submit Path header field statistics based on ninpaths.
 ##
 ##  A rewrite of the sendinpaths shell script in Perl, based on Mohan Kokal's
 ##  initial work.  Improved by Julien Elie.

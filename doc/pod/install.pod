@@ -884,7 +884,7 @@ since B<controlchan> needs a site name, not an IP address.
 
 Set this to the name of your organization as you want it to appear in the
 Organization header field of all articles posted locally and not already
-containing that header.  This will be overridden by the value of the
+containing that header field.  This will be overridden by the value of the
 ORGANIZATION environment variable (if it exists).  If neither this
 parameter nor the environment variable is set, no Organization header field
 will be added to posts which lack one.

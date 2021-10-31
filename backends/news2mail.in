@@ -125,17 +125,17 @@ sub mailto {
         die "bad $smgr";
     }
 
-    # Header.
+    # Headers.
     while (<SMGR>) {
         chomp;
 
-        # Empty line signals the end of header.
+        # Empty line signals the end of header field.
         if (/^$/) {
             print SM "To: ".join(",", @a)."\n\n";
             last;
         }
 
-        # Skip unnecessary headers.
+        # Skip unnecessary header fields.
         next if /^X-/i;
         next if /^To:/i;
         next if /^NNTP-Posting-Date:/i;
@@ -144,7 +144,7 @@ sub mailto {
         next if /^Xref:/i;
         next if /^Path:/i;
 
-        # Convert Newsgroups: header into X-Newsgroups:.
+        # Convert Newsgroups header field into X-Newsgroups header field.
         s/^Newsgroups:/X-Newsgroups:/i;
 
         print SM "$_\n";

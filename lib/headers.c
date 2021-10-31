@@ -15,7 +15,7 @@
 **  We currently assume the maximal line length has already been checked.
 **  Only ensure the requirements for RFC 3977:
 **
-**    o  The name [of a header] consists of one or more printable
+**    o  The name [of a header field] consists of one or more printable
 **       US-ASCII characters other than colon.
 */
 bool

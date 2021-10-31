@@ -989,7 +989,7 @@ section inn_unwanted_unapp {
 };
 
 section inn_unwanted_path {
-        title   "Unwanted sites in Path:";
+        title   "Unwanted sites in Path header field:";
 	top     20;
 	data    "%inn_site_path";
 	sort    "$inn_site_path{$b} <=> $inn_site_path{$a}";

@@ -34,16 +34,16 @@ sub filter_post {
     my $rval = "" ;             # assume we'll accept.
 
 ### Uncomment this next block to reject articles that have 'make money'
-### in their subject, or which have a "Re: " subject, but no References:
-### header, or which have an invalid From.
+### in their subject, or which have a "Re: " subject, but no References
+### header field, or which have an invalid From header field.
 ##
 ##    if ($hdr{"Subject"} =~ /make.*money/i) {
 ##        $rval = "Spam is not acceptable here..." ;
 ##    } elsif ($hdr{'Subject'} =~ /^Re: /o and $hdr{'References'} eq "") {
-##        $rval = "Followup without References:";
+##        $rval = "Followup without References header field";
 ##    } elsif ($hdr{'From'} =~ /^\w*$/o or
 ##             $hdr{'From'} !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o) {
-##        $rval = "From: is invalid, must be user\@[host.]domain.tld";
+##        $rval = "From header field is invalid, must be user\@[host.]domain.tld";
 ##    }
 
 ### Uncomment this next block to reject articles that are sent from

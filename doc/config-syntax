@@ -229,7 +229,7 @@ the long term, INN should move towards assuming UTF-8 everywhere, as this
 is the direction that all of the news standards are heading, but in the
 interim various non-Unicode character sets are in widespread use and there
 must be some way of encoding those values in INN configuration files (so
-that things like the default Organization header value can be set
+that things like the default Organization header field body can be set
 appropriately).
 
 As a compromise, the configuration parser will pass unaltered any literal

@@ -29,12 +29,12 @@
 ##  account articles whose posting date is one day into the future).
 /remember/:11
 
-##  Keep for 1-15 days, allow Expires: headers to work.  This entry uses
+##  Keep for 1-15 days, allow Expires header fields to work.  This entry uses
 ##  the syntax appropriate when groupbaseexpiry is true in inn.conf.  Times
 ##  are based on the arrival time (unless -p is used).
 *:A:1:15:never
 
-##  Keep for 1-15 days, allow Expires: headers to work.  This is an entry
+##  Keep for 1-15 days, allow Expires header fields to work.  This is an entry
 ##  based on storage class, used when groupbaseexpiry is false.  Times
 ##  are based on the arrival time (unless -p is used).
 #0:1:15:never

@@ -121,7 +121,7 @@ struct index_entry {
     off_t offset;
     int length;
     time_t arrived;
-    time_t expires; /* Expiration time from Expires: header. */
+    time_t expires; /* Expiration time from Expires header field body. */
     TOKEN token;
 };
 

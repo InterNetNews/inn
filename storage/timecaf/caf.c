@@ -1596,7 +1596,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
             /* note we don't set LastCleaned, this doesn't count a a clean. */
             /* (XXX: do we need a LastCompacted as well? might be nice.) */
 
-            /*  write new header  on top of old */
+            /*  write new header on top of old */
             fseeko(infile, 0, SEEK_SET);
             if (fwrite(&head, sizeof(CAFHEADER), 1, infile) < 1) {
                 CAFError(CAF_ERR_IO);

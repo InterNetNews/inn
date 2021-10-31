@@ -73,7 +73,7 @@ int main (int argc, char *argv[])
 		{
 		printf ("Usage: pullart <cycbuff> <fileprefix> [<header> <string>]\n");
 		printf ("  Read cycbuffer <cycbuff> and print all articles whose\n");
-		printf ("   article header <header> contains <string>.\n");
+		printf ("   article header field body <header> contains <string>.\n");
 		printf ("  Articles are written to files name <fileprefix>.nnnnnn\n");
 		printf ("   where nnnnnn is numbered sequentially from 0.\n");
 		printf ("  If <header> and <string> not specified, all articles\n");
@@ -202,7 +202,7 @@ printf ("string <%s>\n", string != NULL ? string : NULL);
 
 /*
 Writes article stored in buff[] if it has a
-"Newsgroups:" header line which contains *newsgroup
+"Newsgroups:" header field which contains *newsgroup
 Write to a file named  fileprefix.fileno
 */
 int
@@ -227,7 +227,7 @@ WriteArticle
 		}
 
 	/*  
-	Is header here?  Search if header string requested, leave if not found  
+	Is header field here?  Search if header string requested, leave if not found  
 	*/
 	if (headerin!=NULL)
 		{
@@ -244,16 +244,16 @@ WriteArticle
 			}
 
 		/*  
-		Header found. What about string?
+		Header field found. What about string?
 		Search if string requested, leave if not found  
 		*/
 		if (string!=NULL)
 			{
-			/*  Find end of header line  */
+			/*  Find end of header field body  */
 			begptr++;
 			endptr = strchr (begptr, '\n');
 
-			/*  Something is wrong, end of header not found, do not write
+			/*  Something is wrong, end of header field body not found, do not write
 			 *  article  
 			*/
 			if (endptr==NULL)
@@ -274,7 +274,7 @@ WriteArticle
 			/*  No string specified  */
 
 		}
-	/*  No header specified  */
+	/*  No header field specified  */
 
 	/*  Open file, write buffer, close file  */
 	snprintf (filename, sizeof(filename), "%s.%06i", fileprefix, fileno);

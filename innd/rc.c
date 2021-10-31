@@ -1512,7 +1512,7 @@ RCwritelist(char *filename)
         return;
     }
 
-    /* Write a standard header.. */
+    /* Write a standard header. */
 
     /* Find the filename */
     p = concatpath(innconf->pathetc, INN_PATH_INNDHOSTS);

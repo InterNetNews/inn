@@ -435,7 +435,7 @@ ARTsendmmap(SENDTYPE what)
             ARTget++;
             return;
         }
-        /* r points to the first space in the Xref: header. */
+        /* r points to the first space in the Xref header field body. */
 
         for (s = path, lastchar = '\0'; s + VirtualPathlen + 1 < endofpath;
              lastchar = *s++) {
@@ -460,7 +460,7 @@ ARTsendmmap(SENDTYPE what)
                 SendIOv(s, p - s);
             }
         } else {
-            /* Double the '!' (thus, adding one '!') in Path: header. */
+            /* Double the '!' (thus, adding one '!') in Path header field. */
             if (xref > path) {
                 SendIOv(q, path - q);
                 SendIOv(VirtualPath, VirtualPathlen);
@@ -499,7 +499,7 @@ ARTsendmmap(SENDTYPE what)
 }
 
 /*
-**  Return the header from the specified file, or NULL if not found.
+**  Return the header field from the specified file, or NULL if not found.
 */
 char *
 GetHeader(const char *header, bool stripspaces)
@@ -903,7 +903,7 @@ CMDgetrange(int ac, char *av[], ARTRANGE *rp, bool *DidReply)
 
 
 /*
-**  Apply virtual hosting to an Xref: field.
+**  Apply virtual hosting to an Xref header field body.
 */
 static char *
 vhost_xref(char *p)
@@ -914,13 +914,13 @@ vhost_xref(char *p)
 
     space = strchr(p, ' ');
     if (space == NULL) {
-        warn("malformed Xref: `%s'", p);
+        warn("malformed Xref header field: `%s'", p);
         goto fail;
     }
     offset = space - p;
     space = strchr(p + offset, ' ');
     if (space == NULL) {
-        warn("malformed Xref: `%s'", p);
+        warn("malformed Xref header field: `%s'", p);
         goto fail;
     }
     field = concat(PERMaccessconf->domain, space, NULL);
@@ -1211,7 +1211,7 @@ CMDpat(int ac, char *av[])
             Reply("%d Unsupported metadata request\r\n", NNTP_ERR_UNAVAILABLE);
             return;
         } else if (!IsValidHeaderName(header)) {
-            Reply("%d Syntax error in header name\r\n", NNTP_ERR_SYNTAX);
+            Reply("%d Syntax error in header field name\r\n", NNTP_ERR_SYNTAX);
             return;
         }
     }

@@ -29,11 +29,11 @@ const struct {
     { "../data/articles/bad-empty",
       "437 Empty headers and body" },
     { "../data/articles/bad-hdr-nospc",
-      "437 No colon-space in \"Test:<-he: re\" header" },
+      "437 No colon-space in \"Test:<-he: re\" header field" },
     { "../data/articles/bad-hdr-space",
-      "437 Space before colon in \"Test\" header" },
+      "437 Space before colon in \"Test\" header field" },
     { "../data/articles/bad-hdr-trunc",
-      "437 No colon-space in \"Test:\" header" },
+      "437 No colon-space in \"Test:\" header field" },
     { "../data/articles/bad-long-cont", "" }, /* Not an error for a relaying agent. */
     { "../data/articles/bad-long-hdr", "" }, /* Not an error for a relaying agent. */
     { "../data/articles/bad-no-body",

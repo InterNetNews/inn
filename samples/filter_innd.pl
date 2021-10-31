@@ -17,7 +17,7 @@
 #
 #		This routine is called before every article is accepted for
 #		posting. Is is called with no arguments, but has access to
-#		all the non-empty standard headers of the article via the
+#		all the non-empty standard header fields of the article via the
 #		global associative array `%hdr.'  If it returns the empty
 #		string ("") then the article is accepted. If it returns any
 #		non-null string value, then the article is rejected and the
@@ -25,7 +25,7 @@
 #               that such a message is properly encoded in UTF-8 so as to comply
 #               with the NNTP protocol).
 #
-#		The standard headers are:
+#		The standard header fields are:
 #
 #			Approved, Control, Date, Distribution, Expires,
 #			From, Lines, Message-ID, Newsgroups, Path,
@@ -85,20 +85,20 @@ sub filter_art {
 ### can see what's going on.
 ###
 ###	foreach $key (sort keys %hdr) {
-###		print "Header:\t$key Value:\t $hdr{$key}\n" ;
+###		print "Header:\t$key Body:\t $hdr{$key}\n" ;
 ###	}
 ##
 ##	if ($hdr{"Subject"} =~ /\$*make.*money.*\$*/i ) {
 ##		$rval = "no money requests here"
 ##	} elsif ( ( @_ = split(",",$hdr{'Newsgroups'}) ) > $maxgroups ) {
 ##		$rval = "too many groups" ;
-###	Kill article with "Re: " but no References:
+###	Kill article with "Re: " but no References header field.
 ##	} elsif ($hdr{'Subject'} =~ /^Re: /o and $hdr{'References'} eq "") {
-##       $rval = "Followup without References:";
-###	Kill article with invalid From:
+##       $rval = "Followup without References header field";
+###	Kill article with invalid From header field.
 ##	} elsif ($hdr{'From'} =~ /^\w*$/o or
 ##          $hdr{'From'} !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o) {
-##       $rval = "From: is invalid, must be user\@[host.]domain.tld";
+##       $rval = "From header field is invalid, must be user\@[host.]domain.tld";
 ##   }
 ###
 ###	print "Accepting\n" if ! $rval ;

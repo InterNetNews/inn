@@ -49,7 +49,7 @@ FindHeader(ARTHANDLE *art, const char **pp, const char **qp, const char *hdr,
 }
 
 /*
-**  Get Xref: header.
+**  Get Xref header field.
 */
 static char *
 GetXref(ARTHANDLE *art)

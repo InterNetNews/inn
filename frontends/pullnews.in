@@ -13,8 +13,9 @@
 #
 #               January 2010: Geraint A. Edwards added header-only feeding (-B);
 #               added ability to hashfeed (-a) - uses MD5 - Diablo-compatible;
-#               enabled -m to remove headers matching (or not) a given regexp;
-#               minor bug fix to rnews when -O; improved rnews reporting.
+#               enabled -m to remove header fields matching (or not) a given
+#               regexp; minor bug fix to rnews when -O; improved rnews
+#               reporting.
 #
 #               December 2008: Matija Nalis added -O (optimized mode, checking
 #               whether the downstream server already has the article to
@@ -36,8 +37,8 @@
 #               which machines to pull articles from and which groups at each
 #               machine to pull over.  There is also support for more specific
 #               configurations like cross-posted newsgroups to kill, thanks to
-#               the -m flag which allows articles with headers matching regexp
-#               to be dropped.
+#               the -m flag which allows articles with header fields matching
+#               regexp to be dropped.
 #
 #               A configuration file looks like:
 #
@@ -138,7 +139,7 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                 the server.  The default is to do nothing.
 
   -B            feed is header-only (headers plus one blank line).
-                Add the Bytes: header field if needed.  Keep body if
+                Add the Bytes header field if needed.  Keep body if
                 control article.
 
   -c config     specify the configuration file instead of the default
@@ -146,13 +147,14 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                 user, or otherwise in ~/pullnews.marks (the running user's home
                 directory).
 
-  -C width      use width characters for progress (default is $defaultProgressWidth).
+  -C width      use width characters for progress
+                (default is $defaultProgressWidth).
 
   -d level      set debugging level to this integer (default is $defaultDebug).
 
   -f fraction   proportion of articles to get in each group (0.0 to 1.0).
 
-  -F fakehop    prepend fakehop as a host to the Path: header.
+  -F fakehop    prepend fakehop as a host to the Path header field body.
 
   -g groups     specify a collection of groups to get.  The value must be 
                 a single argument with commas between group names:
@@ -166,7 +168,7 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
 
   -h            print this message.
 
-  -H headers    remove these named headers (colon-separated list).
+  -H headers    remove these named header fields (colon-separated list).
 
   -k checkpt    checkpoint the config file every checkpt articles
                 (default is $defaultCheckPoint).  A value of 0 means
@@ -176,11 +178,13 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
 
   -m 'Hdr1:regexp1 !Hdr2:regexp2 #Hdr3:regexp3 !#Hdr4:regexp4 ...'
                 feed article only if:
-                  the Hdr1: header matches regexp1;
-                  and the Hdr2: header does not match regexp2;
+                  the Hdr1 header field body matches regexp1;
+                  and the Hdr2 header field body does not match regexp2;
                 also, process the message thus:
-                  if the Hdr3: header matches regexp3, remove that header;
-                  if the Hdr4: header does not match regexp4, remove it.
+                  if the Hdr3 header field body matches regexp3,
+                    remove that header field;
+                  if the Hdr4 header field body does not match regexp4,
+                    remove that header field.
 
   -M num        maximum number of articles (per group) to process before
                 bailing out.
@@ -196,9 +200,10 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
   -p port       specify the port to connect to in order to feed articles
                 (default is $defaultPort).
 
-  -P hop_limit  count hops ('!') in the Path: header, feed article only if: 
-                hop_limit is '+num' and hop_count is more than num;
-                or hop_limit is '-num' and hop_count is less than num.
+  -P hop_limit  count hops ('!') in the Path header field body, feed article
+                only if: 
+                  hop_limit is '+num' and hop_count is more than num;
+                  or hop_limit is '-num' and hop_count is less than num.
 
   -q            $0 will normally be verbose about what it is doing.  This 
                 option will make it quiet.
@@ -226,7 +231,7 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                 instead); a num of 0 will re-get all articles on the server;
                 but a num of -0 will get no old articles, set mark to Current.
 
-  -x            insert an Xref: header in any article that lacks one.
+  -x            insert an Xref header field in any article that lacks one.
 
   -z num        time (in seconds) to sleep between articles.
 
@@ -769,7 +774,7 @@ sub crossFeedGroup {
             my $headers = 1;
             my $line_len = 0;
             my $idx_blank_pre_body;      # Index of the blank line between headers/body.
-            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews, Bytes:).
+            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews, the Bytes header field).
             my @header_nums_to_go = ();
             my $match_all_hdrs = 1;      # Assume no headers to match.
             my $skip_due_to_hdrs = 0;    # Set to 1 if triggered by -P, 2 if by -m, 3 if by -a.
@@ -793,9 +798,9 @@ sub crossFeedGroup {
                 }
 
                 if ($match_all_hdrs and @hdr_to_match and $article->[$idx] =~ /^[^[:blank:]]/) {
-                    # Check header matches -m flag if new header.
+                    # Check header field matches -m flag if new header field.
 
-                    # Unfold this header (with following lines).
+                    # Unfold this header field body (with following lines).
                     my $unfolded_art_hdr = $article->[$idx];
                     for (my $idx_step = $idx+1;  $idx_step < @$article and $article->[$idx_step] =~ /^[[:space:]](.+)/;  $idx_step++) {
                         # While next line is continuation...
@@ -887,16 +892,17 @@ sub crossFeedGroup {
             }
 
             if (!$msgid) {
-                warn "No Message-ID: header found in article\n";
+                warn "No Message-ID header field found in article\n";
                 next;
             } else {
                 print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n" if $debug >= 2;
             }
 
-            # Some old servers lack Xref:, which bothers a downstream INN if
-            # it has xrefslave set, so add one just before the blank line.
+            # Some old servers lack Xref header fields, which bothers
+            # a downstream INN if it has xrefslave set to true, so add one
+            # just before the blank line.
             if ($opt_x && !$xref) {
-                warn "No Xref: header found in article, adding\n";
+                warn "No Xref header field found in article, adding\n";
                 my $xref_h = "Xref: $server $group: $i\n";
                 splice(@{$article}, $idx_blank_pre_body, 0, $xref_h);
                 $tx_len += length($xref_h);
@@ -905,8 +911,8 @@ sub crossFeedGroup {
 
             if ($add_bytes_header) {
                 # Compute the number of bytes the same way the :bytes
-                # metadata item would do.  The additional Bytes: header
-                # field is not counted, as well as headers removed by
+                # metadata item would do.  The additional Bytes header
+                # field is not counted, as well as header fields removed by
                 # pullnews.
                 my $bytes_real_count = $tx_len + scalar(@{$article});
                 my $bytes_h = "Bytes: $bytes_real_count\n";

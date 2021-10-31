@@ -1,15 +1,15 @@
 /*
 **  Optional keyword generation code.
 **
-**  Additional code for sake of manufacturing Keywords: headers out of air in
-**  order to provide better (scorable) OVER data, containing bits of article
-**  body content which have a reasonable expectation of utility.
+**  Additional code for sake of manufacturing Keywords header fields out of
+**  air in order to provide better (scorable) OVER data, containing bits of
+**  article body content which have a reasonable expectation of utility.
 **
 **  Basic idea: simple word-counting.  We find words in the article body,
 **  separated by whitespace.  Remove punctuation.  Sort words, count unique
-**  words, sort those counts.  Write the resulting Keywords: header containing
-**  the poster's original Keywords: (if any) followed by a magic cookie
-**  separator and then the sorted list of words.
+**  words, sort those counts.  Write the resulting Keywords header field
+**  containing the poster's original Keywords header field (if any) followed
+**  by a magic cookie separator and then the sorted list of words.
 */
 
 #include "portable/system.h"
@@ -87,7 +87,7 @@ ptr_strcmp(const void *p1, const void *p2)
 
 
 /*
-**  Build new Keywords: header.
+**  Build new Keywords header field body.
 */
 
 void
@@ -129,7 +129,7 @@ KEYgenerate(
 	}
     }
 
-    /* Initialize a fresh Keywords: value, limited to the size
+    /* Initialize a fresh Keywords header field body, limited to the size
      * specified by the keylimit parameter in inn.conf. */
     hc->Value = xmalloc(innconf->keylimit + 1);
     *hc->Value = '\0';
@@ -232,7 +232,7 @@ KEYgenerate(
 	qsort(&word_vec[last], word_index - last,
 	      sizeof(struct word_entry), wvec_length_cmp);
 
-    /* Write the Keywords: header. */
+    /* Write the Keywords header field body. */
     for (chase = hc->Value, word_index = 0;
 	 word_index < distinct_words;
 	 word_index++) {

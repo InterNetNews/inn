@@ -274,7 +274,7 @@ Note that LIST NEWSGROUPS should be used instead of XGTITLE.
 =item 2.
 
 The XHDR I<header> [I<message-ID>|I<range>] command is implemented.  It
-returns a C<221> reply code, followed by specific headers for the
+returns a C<221> reply code, followed by specific header fields for the
 specified range; the default is to return the data for the current article.
 See S<RFC 2980>.
 
@@ -292,8 +292,8 @@ Note that OVER should be used instead of XOVER.
 
 A new command, XPAT I<header> I<message-ID>|I<range> I<pattern>
 [I<pattern> ...], is provided.  The first argument is the case-insensitive
-name of the header to be searched.  The second argument is either an article
-range or a single message-ID, as specified in S<RFC 2980>.  The third
+name of the header field to be searched.  The second argument is either an
+article range or a single message-ID, as specified in S<RFC 2980>.  The third
 argument is a uwildmat(3)-style pattern; if there are additional arguments,
 they are joined together separated by a single space to form the complete
 pattern.  This command is similar to the XHDR command.  It returns a C<221>

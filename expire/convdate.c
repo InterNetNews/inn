@@ -20,11 +20,11 @@ since epoch.  convdate -s does the same, but converts to a date string.\n\
 convdate -c converts seconds since epoch to a date string.  The default\n\
 output is the output of ctime (normally the same format as returned by the\n\
 date command).  If -d is given, the output is formatted as a valid Usenet\n\
-article Date header.  If -l is given with -d, format the time in local\n\
+article Date header field.  If -l is given with -d, format the time in local\n\
 time rather than UTC.  If no options are given, the -s behavior is the\n\
 default; if no dates are given, the current time is used.\n";
 
-/* Whether to format the output as a Date header. */
+/* Whether to format the output as a Date header field. */
 static bool date_format = false;
 
 /* Whether to use local time instead of UTC. */

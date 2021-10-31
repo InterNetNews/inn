@@ -404,8 +404,8 @@ sub collect($$$$$$) {
       $inn_linecount{$server}++;
       return 1;
     }
-    # 437 No colon-space in "xxxx" header
-    if ($left =~ /(\S+) <[^>]+> (?:437|439) No colon-space in \"[^\"]+\" header/o) {
+    # 437 No colon-space in "xxxx" header field
+    if ($left =~ /(\S+) <[^>]+> (?:437|439) No colon-space in \"[^\"]+\" header field/o) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $inn_badart{$server}++;
@@ -1856,7 +1856,7 @@ sub collect($$$$$$) {
       return 1;
     }
     # rejected 437 No colon-space ...
-    if ($left =~ /rejected (?:437|439) No colon-space in \"(.*)\" header$/o) {
+    if ($left =~ /rejected (?:437|439) No colon-space in \"(.*)\" header field$/o) {
       $rnews_no_colon_space++;
       return 1;
     }
@@ -2341,7 +2341,7 @@ sub adjust($$) {
   }
   if (%innd_no_colon_space) {
     my $key;
-    my $msg = 'No colon-space in header';
+    my $msg = 'No colon-space in header field';
     foreach $key (keys %innd_no_colon_space) {
       $innd_misc_stat{$msg}{$key} = $innd_no_colon_space{$key};
     }

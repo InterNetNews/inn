@@ -125,16 +125,17 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     }
 
     /*
-     * Find last Xref: in the overview line.  Note we need to find the *last*
-     * Xref:, since there have been corrupted articles on Usenet with Xref:
-     * fragments stuck in other header lines.  The last Xref: is guaranteed
-     * to be from our server.
+     * Find last Xref header field in the overview line.  Note we need to find
+     * the *last* Xref header field, since there have been corrupted articles
+     * on Usenet with Xref header field fragments stuck in other header lines.
+     * The last Xref header field is guaranteed to be from our server.
      */
 
     for (next = data;
          ((len - (next - data)) > 6)
          && ((next = memchr(next, 'X', len - (next - data))) != NULL);) {
-        /* Check that Xref: is at the beginning of an overview field. */
+        /* Check that the Xref header field is at the beginning of an overview
+         * field. */
         if (memcmp(next, "Xref: ", 6) == 0 && next != data
             && next[-1] == '\t') {
             found = true;
@@ -155,8 +156,9 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     xreflen = len - (next - data);
 
     /*
-     * If there are other fields beyond Xref: in overview, then
-     * we must find Xref:'s end, or data following is misinterpreted.
+     * If there are other fields beyond the Xref header field in overview,
+     * then we must find the end of the Xref header field body, or data
+     * following is misinterpreted.
      */
     if ((xrefend = memchr(next, '\t', xreflen)) != NULL)
         xreflen = xrefend - next;
@@ -213,7 +215,8 @@ OVadd(TOKEN token, char *data, int len, time_t arrived, time_t expires)
     xrefdata[xreflen] = '\0';
     for (group = xrefdata; group && *group;
          group = memchr(next, ' ', xreflen - (next - xrefdata))) {
-        /* Parse the Xref: part into group name and article number. */
+        /* Parse the Xref header field body into group name and article
+         * number. */
         while (isspace((unsigned char) *group))
             group++;
         if ((next = memchr(group, ':', xreflen - (group - xrefdata))) == NULL)
@@ -261,8 +264,8 @@ OVcancel(TOKEN token)
 
     /* There's no easy way to go from a token to the group and article number
        pairs that we need to do this.  Retrieve the article and find the Xref
-       header and then parse it to figure out what to cancel.  Articles
-       without Xref headers lose. */
+       header field and then parse it to figure out what to cancel.  Articles
+       without Xref header fields lose. */
     art = SMretrieve(token, RETR_HEAD);
     if (art == NULL)
         return false;

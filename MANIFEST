@@ -511,7 +511,7 @@ lib/confparse.c                       Generic configuration file parser
 lib/daemonize.c                       Code necessary to become a daemon
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
-lib/defdist.c                         Determine default Distribution: header
+lib/defdist.c                         Determine default distributions list
 lib/dispatch.c                        Dispatch a command to a function
 lib/fdflag.c                          Set or clear file descriptor flags
 lib/fdlimit.c                         File descriptor limits
@@ -658,8 +658,8 @@ samples/buffindexed.conf.in           Buffindexed overview config file
 samples/control.ctl                   Access control for control messages
 samples/control.ctl.local             Local access control for control messages
 samples/cycbuff.conf                  Sample cycbuff.conf file
-samples/distrib.pats                  Default values for Distribution: header
-samples/distributions                 Recommended values for Distribution: header
+samples/distrib.pats                  Default values for distributions
+samples/distributions                 Recommended values for distributions
 samples/expire.ctl                    Expiration config file
 samples/filter_innd.pl                Sample Perl filter for innd
 samples/filter_innd.py                Sample Python filter for innd
@@ -857,7 +857,7 @@ tests/data/articles/wire-7            Wire format version of article 7
 tests/data/articles/wire-no-body      Wire article without a body
 tests/data/articles/wire-strange      Wire article with CR and LF in headers
 tests/data/articles/wire-truncated    Wire article truncated in the headers
-tests/data/articles/xref              News article for Xref: testing
+tests/data/articles/xref              News article for Xref header field testing
 tests/data/config                     Testing config files (Directory)
 tests/data/config/errors              Various config files with errors
 tests/data/config/groups              A config file with groups
@@ -892,13 +892,13 @@ tests/data/etc/passwd                 Password data for ckpasswd tests
 tests/data/etc/storage.conf           Storage configuration for testing
 tests/data/overview                   Test overview data (Directory)
 tests/data/overview/1-4               Overview info for test articles 1-4
-tests/data/overview/1-4stripped       Overview info for 1-4 without Xref:
+tests/data/overview/1-4stripped       Overview info for 1-4 without Xref
 tests/data/overview/basic             Basic set of overview test data
 tests/data/overview/bogus             Bad newsgroup name test data
 tests/data/overview/high-numbered     High-numbered article test data
 tests/data/overview/munge-data        Support script to generate test data
 tests/data/overview/reversed          Same as basic, but in reverse order
-tests/data/overview/xref              Storing on Xref: test data
+tests/data/overview/xref              Storing on Xref header field test data
 tests/data/upgrade                    innupgrade test files (Directory)
 tests/data/upgrade/inn.conf           inn.conf file that needs fixing
 tests/data/upgrade/inn.conf.ok        Fixed inn.conf file
@@ -966,7 +966,7 @@ tests/overview                        Test suite for overview (Directory)
 tests/overview/api-t.c                Basic tests for overview API
 tests/overview/overchan.t             Tests for backends/overchan
 tests/overview/overview-t.c           Basic tests for overview methods
-tests/overview/xref-t.c               Test storing overview data by Xref:
+tests/overview/xref-t.c               Test storing overview data by Xref
 tests/runtests.c                      The test suite driver program
 tests/storage                         Test suite for storage (Directory)
 tests/storage/archive.t               Tests for backends/archive

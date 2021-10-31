@@ -190,7 +190,7 @@ TrimSpaces(char *p)
 
 
 /*
-**  Mark the end of the header starting at p, and return a pointer
+**  Mark the end of the header field starting at p, and return a pointer
 **  to the start of the next one.  Handles continuations.
 */
 static char *
@@ -205,7 +205,7 @@ NextHeader(char *p)
         if (p - q + 1 > MAXARTLINELENGTH) {
             die("header line too long");
         }
-        /* Check if there is a continuation line for the header. */
+        /* Check if there is a continuation line for the header field. */
         if (ISWHITE(p[1])) {
             q = p + 1;
             continue;
@@ -217,7 +217,7 @@ NextHeader(char *p)
 
 
 /*
-**  Strip any headers off the article and dump them into the table.
+**  Strip any header fields off the article and dump them into the table.
 */
 static char *
 StripOffHeaders(char *article)
@@ -227,18 +227,18 @@ StripOffHeaders(char *article)
     HEADER	*hp;
     char	c;
 
-    /* Set up the other headers list. */
+    /* Set up the other header fields list. */
     OtherSize = HEADER_DELTA;
     OtherHeaders = xmalloc(OtherSize * sizeof(char *));
     OtherCount = 0;
 
-    /* Scan through buffer, a header at a time. */
+    /* Scan through buffer, a header field at a time. */
     for (p = article; ; ) {
 
 	if ((q = strchr(p, ':')) == NULL)
-            die("no colon in header line \"%.30s...\"", p);
+            die("no colon in header field \"%.30s...\"", p);
 	if (q[1] == '\n' && !ISWHITE(q[2])) {
-	    /* Empty header; ignore this one, get next line. */
+	    /* Empty header field body; ignore this one, get next line. */
 	    p = NextHeader(p);
 	    if (*p == '\n')
 		break;
@@ -250,7 +250,7 @@ StripOffHeaders(char *article)
             die("no space after colon in \"%.30s...\"", p);
 	}
 
-	/* See if it's a known header. */
+	/* See if it's a known header field name. */
 	c = islower((unsigned char) *p) ? toupper((unsigned char) *p) : *p;
 	for (hp = Table; hp < ARRAY_END(Table); hp++)
 	    if (c == hp->Name[0]
@@ -258,16 +258,16 @@ StripOffHeaders(char *article)
 	     && ISWHITE(p[hp->Size + 1])
 	     && strncasecmp(p, hp->Name, hp->Size) == 0) {
 		if (hp->Type == HTobs)
-                    die("obsolete header: %s", hp->Name);
+                    die("obsolete header field: %s", hp->Name);
 		if (hp->Value)
-                    die("duplicate header: %s", hp->Name);
+                    die("duplicate header field: %s", hp->Name);
 		for (q = &p[hp->Size + 1]; ISWHITE(*q); q++)
 		    continue;
 		hp->Value = q;
 		break;
 	    }
 
-	/* No; add it to the set of other headers. */
+	/* No; add it to the set of other header fields. */
 	if (hp == ARRAY_END(Table)) {
 	    if (OtherCount >= OtherSize - 1) {
 		OtherSize += HEADER_DELTA;
@@ -276,7 +276,8 @@ StripOffHeaders(char *article)
 	    OtherHeaders[OtherCount++] = p;
 	}
 
-	/* Get start of next header; if it's a blank line, we hit the end. */
+	/* Get start of next header field; if it's a blank line, we hit
+         * the end. */
 	p = NextHeader(p);
 	if (*p == '\n')
 	    break;
@@ -309,7 +310,7 @@ CheckCancel(char *msgid, bool JustReturn)
         die("server has no such article");
     }
 
-    /* Read the headers, looking for the From or Sender. */
+    /* Read the header fields, looking for the From or Sender. */
     remotefrom[0] = '\0';
     while (fgets(buff, sizeof buff, FromServer) != NULL) {
 	if ((p = strchr(buff, '\r')) != NULL)
@@ -508,7 +509,7 @@ FormatUserName(struct passwd *pwp, char *node)
 
 
 /*
-**  Check the Distribution header, and exit on error.
+**  Check the Distribution header field, and exit on error.
 */
 static void CheckDistribution(char *p)
 {
@@ -516,7 +517,7 @@ static void CheckDistribution(char *p)
     const char  * const *dp;
 
     if ((p = strtok(p, SEPS)) == NULL)
-        die("cannot parse Distribution header");
+        die("cannot parse Distribution header field");
     do {
 	for (dp = BadDistribs; *dp; dp++)
 	    if (uwildmat(p, *dp))
@@ -540,7 +541,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     /* Do some preliminary fix-ups. */
     for (hp = Table; hp < ARRAY_END(Table); hp++) {
 	if (!hp->CanSet && hp->Value)
-            die("cannot set system header %s", hp->Name);
+            die("cannot set system header field %s", hp->Name);
 	if (hp->Value) {
 	    hp->Value = TrimSpaces(hp->Value);
 	    if (*hp->Value == '\0')
@@ -566,7 +567,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     if (HDR(_date) == NULL) {
 	/* Set Date. */
 	if (!makedate(-1, true, buff, sizeof(buff)))
-	    die("cannot generate Date header");
+	    die("cannot generate Date header field body");
 	HDR(_date) = xstrdup(buff);
     }
 
@@ -579,7 +580,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     else {
 	p = HDR(_subject);
 	if (p == NULL)
-            die("required Subject header is missing or empty");
+            die("required Subject header field is missing or empty");
 	else if (HDR(_alsocontrol))
 	    CheckControl(HDR(_alsocontrol));
 #if	0
@@ -591,7 +592,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     /* Set Message-ID */
     if (HDR(_messageid) == NULL) {
 	if ((p = GenerateMessageID(innconf->domain)) == NULL)
-            die("cannot generate Message-ID header");
+            die("cannot generate Message-ID header field body");
 	HDR(_messageid) = xstrdup(p);
     }
     else if ((p = strchr(HDR(_messageid), '@')) == NULL
@@ -663,7 +664,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
     /* Now make sure everything is there. */
     for (hp = Table; hp < ARRAY_END(Table); hp++)
 	if (hp->Type == HTreq && hp->Value == NULL)
-            die("required header %s is missing or empty", hp->Name);
+            die("required header field %s is missing or empty", hp->Name);
 }
 
 
@@ -941,7 +942,7 @@ main(int ac, char *av[])
 	case 'p':
 	    port = atoi(optarg);
 	    break;
-	/* Header lines that can be specified on the command line. */
+	/* Header fields that can be specified on the command line. */
 	case 'a':	HDR(_approved) = optarg;		break;
 	case 'c':	HDR(_control) = optarg;			break;
 	case 'd':	HDR(_distribution) = optarg;		break;

@@ -89,7 +89,7 @@ a renumbered server.  The default is to do nothing.
 =item B<-B>
 
 Feed is header-only, that is to say B<pullnews> only feeds the headers
-of the articles, plus one blank line.  It adds the Bytes: header field
+of the articles, plus one blank line.  It adds the Bytes header field
 if the article does not already have one, and keeps the body only if
 the article is a control article.
 
@@ -143,7 +143,7 @@ Print a usage message and exit.
 
 =item B<-H> I<headers>
 
-Remove these named headers (colon-separated list) from fed articles.
+Remove these named header fields (colon-separated list) from fed articles.
 
 =item B<-k> I<checkpt>
 
@@ -156,17 +156,17 @@ Log progress/stats to I<logfile> (default is C<stdout>).
 
 =item B<-m> I<header_pats>
 
-Feed an article based on header matching.  The argument is a number of
-whitespace-separated tuples (each tuple being a colon-separated header and
-regular expression).  For instance:
+Feed an article based on header field body matching.  The argument is a
+number of whitespace-separated tuples (each tuple being a colon-separated
+header field name and regular expression).  For instance:
 
     -m "Hdr1:regexp1 !Hdr2:regexp2 #Hdr3:regexp3 !#Hdr4:regexp4"
 
-specifies that the article will be passed only if the C<Hdr1:> header
-matches C<regexp1> and the C<Hdr2:> header does not match C<regexp2>.
-Besides, if the C<Hdr3:> header matches C<regexp3>, that header is
-removed; and if the C<Hdr4:> header does not match C<regexp4>, that
-header is removed.
+specifies that the article will be passed only if the C<Hdr1> header
+field body matches C<regexp1> and the C<Hdr2> header field body does not
+match C<regexp2>.  Besides, if the C<Hdr3> header field body matches
+C<regexp3>, that header is removed; and if the C<Hdr4> header field
+body does not match C<regexp4>, that header is removed.
 
 =item B<-M> I<num>
 

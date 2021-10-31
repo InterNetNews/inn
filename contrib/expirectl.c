@@ -325,7 +325,7 @@ main(int ac, char **av)
 
 /remember/:[1.2/20]
 
-##  Keep for 1-10 days, allow Expires headers to work.
+##  Keep for 1-10 days, allow Expires header fields to work.
 #
 *:A:1:[1.0]:[6.0]
 *.advocacy:A:1:[0.5]:[2.0]

@@ -1,27 +1,27 @@
 #!/usr/local/bin/perl
 #
-# count_overview.pl: Count the groups in a bunch of xref records.
+# count_overview.pl: Count the groups in a bunch of Xref records.
 
 while (<>) {
 
 chop;
-@xreflist = split(/\t/); # split apart record
+@xreflist = split(/\t/); # Split apart record.
 
-$_ = $xreflist[$#xreflist];  # xref is last.
+$_ = $xreflist[$#xreflist];  # Xref is last.
 
-@xreflist = reverse(split(/ /));  #break part xref line.
+@xreflist = reverse(split(/ /));  # Break part Xref header field body.
 
-pop @xreflist;  # get rid xref header
+pop @xreflist;  # Get rid of Xref header field.
 pop @xreflist;
 
 while ($current = pop @xreflist) {
-	($current) = split(/:/,$current);  #get newsgroup name
-	$groups{$current}++;  #tally
+	($current) = split(/:/,$current);  # Get newsgroup name.
+	$groups{$current}++;  # Tally.
 }
 
 }
 
-# display accumulated groups and counts.
+# Display accumulated groups and counts.
 foreach $current (sort keys %groups) {
 	printf "%-50s\t%5d\n", $current, $groups{$current};
 }

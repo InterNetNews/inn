@@ -272,7 +272,7 @@ NGfind(const char *Name)
 
 
 /*
-**  Split a newsgroups header line into the groups we get.  Return the
+**  Split a newsgroups header field body into the groups we get.  Return the
 **  number of newsgroups.  ' ' and '\t' are dropped when copying.
 */
 int

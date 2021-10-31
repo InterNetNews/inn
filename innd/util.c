@@ -29,7 +29,7 @@ FormatLong(char *p, unsigned long value, int width)
 
 /*
 **  Turn any \r or \n in text into spaces.  Used to splice back multi-line
-**  headers into a single line.
+**  header field bodies into a single line.
 */
 static char *
 Join(char *text)

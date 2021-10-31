@@ -89,7 +89,7 @@ Karl Kleinpaste:
 
 Dave Hayes:
         Along with some bugfixes, Dave wrote the posting-backoff code for 
-        nnrpd and the patches to the perl hooks to make the headers
+        nnrpd and the patches to the perl hooks to make the header fields
         modifiable.
 
 Joe Greco:
@@ -128,8 +128,8 @@ Aidan Cully:
         wrote the initial user authenticators and resolvers for the
         readers.conf.  Provided the patches to support the new
         storage.conf format.  Added the option to store articles based on
-        the Expires header.  Also added the '@' article exclusion code to
-        incoming.conf.
+        the Expires header field.  Also added the '@' article exclusion code
+        to incoming.conf.
 
 Andrew Gierth:
         Contributed improvements to the nnrpd Perl filtering support to

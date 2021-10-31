@@ -176,7 +176,7 @@ HandleHeaders(char *article)
             if (hp != EndOfTable)
                 continue;
 
-            /* Add to other headers if not empty. */
+            /* Add to other header fields if not empty. */
             if (TrimSpaces(s) > 0) {
                 if (i >= OtherSize - 1) {
                     OtherSize += 20;

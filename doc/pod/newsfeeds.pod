@@ -393,11 +393,11 @@ If this flag is specified, an article will only be sent to this site
 if it has I<count> or fewer sites in its Path header field body.
 This flag should only be used as a rough guide because of the loose
 interpretation of the Path header field; some sites put the poster's
-name in the header, and some sites that might logically be considered
-to be one hop become two because they put the posting workstation's name
-in the header.  The default value for I<count> if not specified is one.
-(Also see the B<O> flag, which is sometimes more appropriate for some
-uses of this flag.)
+name in the header field body, and some sites that might logically
+be considered to be one hop become two because they put the posting
+workstation's name in the header field body.  The default value for
+I<count> if not specified is one.  (Also see the B<O> flag, which is
+sometimes more appropriate for some uses of this flag.)
 
 =item B<I> I<size>
 
@@ -577,7 +577,7 @@ article (see below for more details).
 =item D
 
 The body of the Distribution header field of the article, or C<?>
-if there is no such header in the article.
+if there is no such header field in the article.
 
 =item G
 
@@ -588,8 +588,8 @@ receives; however, control messages are filed in control or control.*
 
 =item H
 
-All of the headers, followed by a blank line.  The Xref header will
-already be present, and a Bytes header containing the article's size in
+All of the headers, followed by a blank line.  The Xref header field will
+already be present, and a Bytes header field containing the article's size in
 bytes as in the C<b> item will be added to the headers.  If used, this
 should be the only item in the list.
 
@@ -607,7 +607,7 @@ Overview data for the article.
 
 =item R
 
-Information needed for replication (the Xref header without the site
+Information needed for replication (the Xref header field without the site
 name).
 
 =back

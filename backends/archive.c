@@ -165,7 +165,7 @@ link_article(const char *oldpath, const char *newpath, ARTHANDLE *art)
 
 
 /*
-**  Write out a single header to stdout, applying the standard overview
+**  Write out a single header field to stdout, applying the standard overview
 **  transformation to it.  This code is partly stolen from overdata.c; it
 **  would be nice to find a way to only write this in one place.
 */
@@ -276,12 +276,12 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
     struct cvector *groups;
     struct buffer *path = NULL;
 
-    /* Determine the groups from the Xref: header.  In groups will be the split
-       Xref: header; from the second string on should be a group, a colon, and
-       an article number. */
+    /* Determine the groups from the Xref header field.  In groups will be the
+     * split Xref header field body; from the second string on should be a
+     * group, a colon, and an article number. */
     start = wire_findheader(art->data, art->len, "Xref", true);
     if (start == NULL) {
-        warn("cannot find Xref: header in %s", token);
+        warn("cannot find Xref header field in %s", token);
         return;
     }
     end = wire_endheader(start, art->data + art->len - 1);
@@ -291,7 +291,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
             *p = ' ';
     groups = cvector_split_space(xref, NULL);
     if (groups->count < 2) {
-        warn("bogus Xref: header in %s", token);
+        warn("bogus Xref header field in %s", token);
         free(xref);
         return;
     }
@@ -303,7 +303,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
         group = groups->strings[i];
         delim = strchr(group, ':');
         if (delim == NULL) {
-            warn("bogus Xref: entry %s in %s", group, token);
+            warn("bogus Xref entry %s in %s", group, token);
             continue;
         }
         *delim = '\0';

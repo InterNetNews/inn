@@ -48,7 +48,7 @@ struct options {
 
 /*
 **  This basically duplicates what INN does, except that INN has to
-**  do more complex things to add the Path header.
+**  do more complex things to add the Path header field.
 **
 **  Note that we make no attempt to add history or overview information, at
 **  least right now.
@@ -78,7 +78,7 @@ store_article_common(char *text, size_t size)
 
         end = wire_endheader(start, text + size - 1);
         if (end == NULL)
-            die("cannot find end of Expires header");
+            die("cannot find end of Expires header field");
         expires = xstrndup(start, end - start);
         handle.expires = parsedate_rfc5322_lax(expires);
         free(expires);
@@ -86,26 +86,26 @@ store_article_common(char *text, size_t size)
             handle.expires = 0;
     }
 
-    /* Find the appropriate newsgroups header. */
+    /* Find the appropriate newsgroups header field. */
     if (innconf->storeonxref) {
         start = wire_findheader(text, size, "Xref", true);
         if (start == NULL)
-            die("no Xref header found in message");
+            die("no Xref header field found in message");
         end = wire_endheader(start, text + size - 1);
         if (end == NULL)
-            die("cannot find end of Xref header");
+            die("cannot find end of Xref header field");
         for (; *start != ' ' && start < end; start++)
             ;
         if (start >= end)
-            die("malformed Xref header");
+            die("malformed Xref header field");
         start++;
     } else {
         start = wire_findheader(text, size, "Newsgroups", true);
         if (start == NULL)
-            die("no Newsgroups header found in message");
+            die("no Newsgroups header field found in message");
         end = wire_endheader(start, text + size - 1);
         if (end == NULL)
-            die("cannot find end of Newsgroups header");
+            die("cannot find end of Newsgroups header field");
     }
     handle.groups = start;
     handle.groupslen = end - start;

@@ -12,9 +12,9 @@
 ##
 ##  "/exclude" entries for this feed entry will cause INN to reject all
 ##  articles that have passed through those listed sites (by matching
-##  Path: entries).  There are some "pseudo-sites" in general use that can
-##  be listed as exclusions to reject specific types of 3rd-party cancel
-##  messages (see the "Cancel FAQ" in news.admin.net-abuse.usenet):
+##  Path header field entries).  There are some "pseudo-sites" in general
+##  use that can be listed as exclusions to reject specific types of 3rd-party
+##  cancel messages (see the "Cancel FAQ" in news.admin.net-abuse.usenet):
 ##
 ##	cyberspam	Cancels for spam, munged articles, binaries
 ##	spewcancel	Cancels for munged articles and runaway gateways
@@ -30,9 +30,9 @@
 ##  "/distrib" for this feed entry specifies what distributions the server
 ##  will accept.  If any distributions are listed there, the server will
 ##  accept only articles with those distributions and articles that do not
-##  have a Distribution: header field.  If all the distributions listed are
+##  have a Distribution header field.  If all the distributions listed are
 ##  negated (starting with "!"), then the server will only accept articles
-##  without those distributions and articles that do not have a Distribution:
+##  without those distributions and articles that do not have a Distribution
 ##  header field.
 ##
 ##  For the ME line (and the ME line *only*), patterns affect *outgoing*
@@ -41,7 +41,7 @@
 # Empty default subscription list, reject all incoming articles (including
 # locally posted articles) with a distribution of "local" or
 # "collabra-internal", accept all others (including articles that do not
-# have a Distribution: header field).
+# have a Distribution header field).
 ME:!*/!local,!collabra-internal::
 
 # The same as the above, but would reject all posts that have
@@ -112,8 +112,8 @@ controlchan!\
 
 ##  OUTGOING SPECIAL FEED EXAMPLES
 
-# Accumulate Path: header statistics.  See ninpaths(8) for more details on
-# how to set this up.
+# Accumulate Path header field statistics.  See ninpaths(8) for more details
+# on how to set this up.
 #inpaths!:*:Tc,WP:@bindir@/ninpaths -p -d @LOGDIR@/path/inpaths.%d
 
 # Feed all moderated source postings to an archiver.
@@ -136,8 +136,8 @@ controlchan!\
 #list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
 
 # Capture all local postings (with a distribution of "foo" and no more
-# than two sites in the Path: header) using a local program (that doesn't
-# come with INN).
+# than two sites in the Path header field body) using a local program (that
+# doesn't come with INN).
 #capture!\
 #	:*/foo\
 #	:Tp,H2:/usr/local/bin/capture %s

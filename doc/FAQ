@@ -85,7 +85,7 @@ Subject: Contents
     6.8.  Generate MRTG graphs for INN
     6.9.  Hide the junk and control groups from users
     6.10. Modify the body of posts made through my server
-    6.11. Hide the Injection-Info header
+    6.11. Hide the Injection-Info header field
     6.12. Run innd and nnrpd on separate ports
     6.13. Back up and restore an INN installation
 
@@ -442,16 +442,16 @@ summary information about articles before taking the time (and bandwidth)
 to download the entire article.
 
 The canonical items of information included in an overview record are the
-Subject, From, Date, References, and Message-ID headers of the article,
-the byte count of the article, and the line count of the article.  Nearly
-every server now also returns the Xref header (a list of the newsgroups
-carried by the server to which the article was posted and the article
-number in each of those newsgroups) as an additional field.
+Subject, From, Date, References, and Message-ID header field bodies of the
+article, the byte count of the article, and the line count of the article.
+Nearly every server now also returns the Xref header field (a list of the
+newsgroups carried by the server to which the article was posted and the
+article number in each of those newsgroups) as an additional field.
 
-Note that with the References and Message-ID headers, the overview record
-contains enough information to do article threading.  It also contains all
-of the fields normally keyed on for client-side filtering (killfiles and
-the like).
+Note that with the References and Message-ID header fields, the overview
+record contains enough information to do article threading.  It also
+contains all of the fields normally keyed on for client-side filtering
+(killfiles and the like).
 
 Generating overview information for a newsgroup on the fly would be
 prohibitively expensive, particularly for large groups, since the server
@@ -778,7 +778,7 @@ key in storage.conf entries.  Read the man page for storage.conf very
 carefully if you're using the expires key, since it may not do what you
 think it does.  In particular, if you have a storage class that specifies
 expires with a min-time greater than 0, it won't match any article without
-an Expires header (the vast majority of Usenet articles).
+an Expires header field (the vast majority of Usenet articles).
 
 ------------------------------
 
@@ -806,7 +806,7 @@ and then start INN again.  The control* groups are for control messages
 messages will go into the top-level catch-all group).  The n flag is so
 that users won't post messages directly to the control* groups; control
 messages should be posted to the groups that they affect instead and INN
-will refile them automatically based on the Control header.
+will refile them automatically based on the Control header field.
 
 If you have mergetogroups: set in inn.conf, you will also need to create
 a newsgroup named "to".  Otherwise, you will get the following error:
@@ -1197,11 +1197,11 @@ back to what's specified in inn.conf and use ctlinnd perl and ctlinnd
 python to reactivate your filters.
 
 Please note that when using xrefslave, this method requires that all of
-the articles in your spool have Xref headers.  Current versions of INN
-will always add an Xref header, but very old versions (earlier 1.x
-versions) will only add an Xref header to crossposted articles.  If you're
-trying to import such a spool, you'll need to modify all of those articles
-to add an Xref header.
+the articles in your spool have Xref header fields.  Current versions of INN
+will always add an Xref header field, but very old versions (earlier 1.x
+versions) will only add an Xref header field to crossposted articles.  If
+you're trying to import such a spool, you'll need to modify all of those
+articles to add an Xref header field.
 
 ------------------------------
 
@@ -1215,8 +1215,8 @@ and then remove the old newsgroup, I recommend that.  It's much easier.
 Although it is not a renaming, it is also possible to create an alias.
 Articles cannot be posted to that newsgroup, but they can be received
 from other sites and treated as if they were actually posted to the
-group named after the equal sign.  However, their Newsgroups: header
-is not modified.
+group named after the equal sign.  However, their Newsgroups header field
+body is not modified.
 
     ctlinnd newgroup group.to.file.under y
     ctlinnd changegroup old.group =group.to.file.under
@@ -1224,17 +1224,17 @@ is not modified.
 Creating an alias newsgroup is useful in case you want residual articles
 received under the old newsgroup name to be filed into the new group.
 
-As for a renaming, if it really must be done, it's best if you're using the
-tradspool storage method.  The newsgroup of an article is stored in the
-Newsgroups header and Xref header of the article as stored on disk (and
-possibly in Followup-To), as well as determining where the overview
-information is stored, and in the case of tradspool is also encoded in the
-article's storage token.  To rename a newsgroup in tradspool, stop the
-server, move the directory containing all of the articles to its
-appropriate new location in the news spool, edit every article to change
-the old name to the new name in Newsgroups, Followup-To, and Xref, create
-the new newsgroup with ctlinnd newgroup, and then rebuild history and
-overview with makehistory.
+As for a renaming, if it really must be done, it's best if you're using
+the tradspool storage method.  The newsgroup of an article is stored in
+the Newsgroups header field and in the Xref header field of the article
+as stored on disk (and possibly in Followup-To), as well as determining
+where the overview information is stored, and in the case of tradspool
+is also encoded in the article's storage token.  To rename a newsgroup
+in tradspool, stop the server, move the directory containing all of
+the articles to its appropriate new location in the news spool, edit
+every article to change the old name to the new name in Newsgroups,
+Followup-To, and Xref, create the new newsgroup with ctlinnd newgroup,
+and then rebuild history and overview with makehistory.
 
 The following bit of Perl may help with the renaming (from Jeffrey
 Vinocur):
@@ -1258,13 +1258,13 @@ sophisticated script.
 If any articles were crossposted to other newsgroups, you'll also have to
 find and recreate the links in those newsgroups to the new location of the
 articles (if the links were hard links and the process of changing the
-Xref, Followup-To, Newsgroups headers didn't break those links, you may be
-lucky and be able to skip this).
+Xref, Followup-To, Newsgroups header fields didn't break those links, you
+may be lucky and be able to skip this).
 
 If you're using another storage method, this is harder, although with
 timehash you may be able to just change the Newsgroups, Xref, Followup-To
-headers of the articles in that newsgroup and then rebuild history and
-overview as above.
+header fields of the articles in that newsgroup and then rebuild history
+and overview as above.
 
 One other approach that can be used regardless of storage method is to
 refeed the articles to the server into a new newsgroup.  This approach
@@ -1275,9 +1275,9 @@ them from the history database (such as by moving the articles away,
 changing /remember/ to 0 so that old history entries won't be retained,
 and then running expire to purge them out of history).  To do this, get
 all of the messages into a directory (by pulling them down via NNTP or
-some other method), change the Newsgroups, Xref, and Followup-To headers
-to rename the newsgroup, and then create a file containing paths to all of
-the articles, one per line.  You can then use that file as input to
+some other method), change the Newsgroups, Xref, and Followup-To header
+fields to rename the newsgroup, and then create a file containing paths to
+all of the articles, one per line.  You can then use that file as input to
 innxmit, pointing it at the server to which to feed the articles, and if
 the articles aren't listed in history on that server and it carries the
 new group, they will be accepted into the new newsgroup.
@@ -1424,15 +1424,15 @@ users saying things that they didn't, runs the risk of corrupting messages
 by appending text without regard to what's in the message, and can
 possibly modify messages that arrive via a suck/rpost connection.  It also
 adds advertising in an obnoxious location, rather than in the Organization
-header which is more widely used for that purpose.  Accordingly, INN does
-not support this, or any other modification of the body of a message from
-inside the news server.
+header field which is more widely used for that purpose.  Accordingly, INN
+does not support this, or any other modification of the body of a message
+from inside the news server.
 
 If you only want to do this for a private hierarchy, the easiest way to do
 this (as well as any other modifications and internal filtering that you
 want to perform) is to mark all of the groups as moderated and route all
 submissions through a script that makes whatever modifications you want
-and then posts the messages with an Approved header.
+and then posts the messages with an Approved header field.
 
 If you want to do this in order to advertise your service, please
 reconsider.  You can add your advertisements to the headers, like many
@@ -1440,11 +1440,11 @@ other news service providers.
 
 ------------------------------
 
-Subject: 6.11. Hide the Injection-Info header
+Subject: 6.11. Hide the Injection-Info header field
 
 There is no built-in support for suppressing generation of the
-Injection-Info header.  You can, however, remove it from inside a Perl
-posting filter.  Try using a posting filter like this:
+Injection-Info header field.  You can, however, remove it from inside
+a Perl posting filter.  Try using a posting filter like this:
 
     sub filter_post {
         $modify_headers = 1;
@@ -1453,10 +1453,11 @@ posting filter.  Try using a posting filter like this:
     }
 
 Note that you have to set $modify_headers to make changes to the article
-header effective in the actual posted article.  Instead of removing the
-header, you can also alter it if you modify $hdr{'Injection-Info'}.  If you
-only want to alter the host name used in Injection-Info, see the
-virtualhost: and domain: parameters in readers.conf.
+header field effective in the actual posted article.  Instead of removing
+the header field, you can also alter it if you modify
+$hdr{'Injection-Info'}.  If you only want to alter the host name used in
+Injection-Info, see the virtualhost: and domain: parameters in
+readers.conf.
 
 ------------------------------
 

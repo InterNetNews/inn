@@ -176,7 +176,7 @@ be parsed for some reason.
 =item *
 
 Added new B<-d> flag to B<rnews> to log via syslog the Message-ID and the
-Path header value of each article rejected as a duplicate.
+Path header body of each article rejected as a duplicate.
 
 =item *
 
@@ -760,7 +760,7 @@ taint mode was unproperly declared.
 Several improvements have been contributed to B<pullnews> by Geraint
 Edwards: the new B<-a> flag adds the Diablo-compatible hashfeed
 ability, the new B<-B> flag triggers header-only feeding, the B<-m>
-flag now permits removing headers matching (or not) a given regexp,
+flag now permits removing header fields matching (or not) a given regexp,
 and B<rnews> reporting is improved.
 
 =item *
@@ -954,7 +954,7 @@ about Usenet hierarchies.
 =item *
 
 When HDR/XHDR/XPAT were used on a new article coming into a newsgroup,
-requesting a header not present in the overview database, the first
+requesting a header field not present in the overview database, the first
 subsequent OVER/XOVER command did not show that article.  A remap of the
 overview data file was missing in B<nnrpd>.  Thanks to Sam Varshavchik
 for the bug report.
@@ -967,7 +967,7 @@ overview, were therefore returning an empty field.  The content of the
 first occurrence is now returned, in accordance with S<RFC 3977>.
 
 Perl and Python filters for B<innd> now also properly initialize their
-header variables with the first occurrence of header fields.  (It is
+header field variables with the first occurrence of header fields.  (It is
 still the last occurrence for the Perl filter for B<nnrpd>.)
 
 =item *
@@ -1103,7 +1103,7 @@ time when the article was approved by the moderator.
 
 The X-Trace header field was not properly generated when an article
 was locally posted.  The field mentioning the IP address was skipped,
-resulting in a wrong syntax for this header.  The local "127.0.0.1" IP
+resulting in a wrong syntax for this header field.  The local C<127.0.0.1> IP
 address is now used.  Besides, C<localhost> is now mentioned instead of
 an obscure C<stdin> in injection header fields.
 
@@ -1306,7 +1306,7 @@ previously used them.
 =item *
 
 Case-insensitive matches are now used for distributions, path identities,
-IMAP commands, header names, and control commands.  (Newsgroups are still
+IMAP commands, header field names, and control commands.  (Newsgroups are still
 matched case-sensitively.)  Message-IDs are case-sensitively matched,
 except for history hashes.
 
@@ -1485,17 +1485,17 @@ the name of a standardized header field was not properly handled.
 
 Fixed a bug in how B<innd> was parsing Message-ID and Supersedes header
 field bodies which contained trailing whitespace.  The article was
-corrupted by an unexpected "\r" in the middle of the header.  B<nnrpd>
-now checks the syntax of the Message-ID header field, if present.
+corrupted by an unexpected C<\r> in the middle of the header field body.
+B<nnrpd> now checks the syntax of the Message-ID header field, if present.
 
 =item *
 
-Fixed various bugs in how leading whitespace was treated in headers.  The
+Fixed various bugs in how leading whitespace was treated in header fields.  The
 HDR, XHDR and XPAT commands were not properly showing leading whitespace
-in header values.  Lone "\n" and "\r" characters are now changed into
-spaces and "\r\n" is just removed.  B<archive>, B<makehistory>, and
-B<tdx-util> now keep leading whitespace in headers when generating
-overview data, and B<archive> now changes "\n" (when not preceded by "\r")
+in header field bodies.  Lone C<\n> and C<\r> characters are now changed into
+spaces and C<\r\n> is just removed.  B<archive>, B<makehistory>, and
+B<tdx-util> now keep leading whitespace in header field bodies when generating
+overview data, and B<archive> now changes C<\n> (when not preceded by C<\r>)
 into a space when generating overview data.
 
 =item *
@@ -1618,8 +1618,8 @@ affected on very rare cases.  Thanks to Tim Woodall for the bug report.
 HDR/XHDR/XPAT answers are now robust when the overview database is
 inconsistent.  When the overview schema was modified without the overview
 database being rebuilt, wrong results could be returned for extra fields
-(especially a random portion of some other header).  The desired header
-name is now explicitly searched for in the overview information.
+(especially a random portion of some other header field).  The desired header
+field name is now explicitly searched for in the overview information.
 
 =item *
 
@@ -2267,10 +2267,10 @@ Edwards.
 
 =item *
 
-New headers are accessible through Perl and Python B<innd> filtering
+New header fields are accessible through Perl and Python B<innd> filtering
 hooks.  You will find the exact list in the INN Python Filtering and
 Authentication Hooks documentation (F<doc/hook-python>) and in Python
-samples.  Thanks to Matija Nalis for this addition of new useful headers.
+samples.  Thanks to Matija Nalis for this addition of new useful header fields.
 
 =item *
 
@@ -2549,7 +2549,7 @@ active peers were having with B<innstat> output.
 Overview generation has been fixed in both B<makehistory> and B<innd> to follow
 the rules in the latest NNTP draft rather than just replacing special
 characters with spaces.  This means that the unfolding of folded header
-lines will not introduce additional, incorrect whitespace in the overview
+fields will not introduce additional, incorrect whitespace in the overview
 data.
 
 =item *
@@ -2576,7 +2576,7 @@ double quotes.
 =item *
 
 Messages mailed to moderators had two spaces after the colons in the
-headers, rather than one.  This bug has been fixed.
+header fields, rather than one.  This bug has been fixed.
 
 =item *
 
@@ -2752,8 +2752,8 @@ sections in F<doc/hook-perl> and F<doc/hook-python> for more details.
 
 B<nnrpd> now optionally supports article injection via IHAVE, see
 readers.conf(5).  Any articles injected this way must have Date,
-From, Message-ID, Newsgroups, Path, and Subject headers.  X-Trace and
-X-Complaints-To headers will be added if the appropriate options are set
+From, Message-ID, Newsgroups, Path, and Subject header fields.  X-Trace and
+X-Complaints-To header fields will be added if the appropriate options are set
 in F<readers.conf>, but other header fields will not be modified/inserted
 (e.g. NNTP-Posting-Host, NNTP-Posting-Date, Organization, Lines, Cc,
 Bcc, and To header fields).
@@ -2944,8 +2944,9 @@ the client is not authorized to read that group.
 
 =item *
 
-XHDR and XPAT weren't correctly parsing article headers, resulting in
-searches for the header "newsgroup" matching the header "newsgroups".
+XHDR and XPAT weren't correctly parsing article header fields, resulting in
+searches for the header field name "newsgroup" matching the header field
+name "newsgroups".
 
 =item *
 

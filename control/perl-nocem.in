@@ -608,7 +608,7 @@ thanks to its Message-ID.
 
 When you have verified that everything works, you can eventually turn
 off regular spam cancels, if you want, not processing any longer
-cancels containing C<cyberspam> in the Path: header (see the
+cancels containing C<cyberspam> in the Path header field body (see the
 I<refusecybercancels> parameter in F<inn.conf>).
 
 =head1 FILES
@@ -631,13 +631,13 @@ The keyring which contains the public keys of trusted NoCeM issuers.
 
 =head1 BUGS
 
-The Subject: header is not checked for the @@NCM string and there is no
-check for the presence of the References: header.
+The Subject header field body is not checked for the @@NCM string and
+there is no check for the presence of the References header field.
 
-The Newsgroups: pseudo header is not checked, but this can be done in
-local_want_cancel_id().
+The Newsgroups pseudo header field body is not checked, but this can
+be done in local_want_cancel_id().
 
-The Hierarchies: header is ignored.
+The Hierarchies header field is ignored.
 
 =head1 HISTORY
 

@@ -27,16 +27,16 @@ char *wire_findbody(const char *, size_t);
    remaining in the article. */
 char *wire_nextline(const char *, const char *end);
 
-/* Given a pointer to the start of an article and the name of a header, find
-   the beginning of the value of the given header (the returned pointer will
-   be after the name of the header, and also any initial whitespace if specified
-   by the stripspaces argument).  Headers whose only content is whitespace are
-   ignored when whitespaces are stripped.  If the header isn't found, returns
-   NULL. */
+/* Given a pointer to the start of an article and the name of a header field,
+   find the beginning of the body of the given header field name (the returned
+   pointer will be after the name of the header field, and also any initial
+   whitespace if specified by the stripspaces argument).  Header fields whose
+   only content is whitespace are ignored when whitespaces are stripped.  If
+   the header field isn't found, returns NULL. */
 char *wire_findheader(const char *article, size_t, const char *header, bool stripspaces);
 
-/* Given a pointer inside a header's value and a pointer to the end of the
-   article, returns a pointer to the end of the header value (the \n at the
+/* Given a pointer inside a header field body and a pointer to the end of the
+   article, returns a pointer to the end of the header field body (the \n at the
    end of the terminating \r\n with folding taken into account), or NULL if no
    such terminator was found before the end of the article. */
 char *wire_endheader(const char *header, const char *end);

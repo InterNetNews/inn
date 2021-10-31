@@ -14,7 +14,7 @@ typedef struct _HEADER {
     bool CanSet;
     HEADERTYPE Type;
     int Size;
-    char *Value; /* Just after ':' in header. */
+    char *Value; /* Just after ':' in header field. */
     char *Body;  /* Where actual body begins. */
     int Len;     /* Body length excluding trailing white spaces. */
 } HEADER;

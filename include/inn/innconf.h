@@ -26,7 +26,7 @@ struct innconf {
     char *innflags;             /* Flags to pass to innd on startup */
     char *mailcmd;              /* Command to send report/control type mail */
     char *mta;                  /* MTA for mailing to moderators, innmail */
-    char *pathhost;             /* Entry for the Path: line */
+    char *pathhost;             /* Entry for the Path header field body */
     char *runasuser;            /* User to run under */
     char *runasgroup;           /* Group to run under */
     char *server;               /* Default server to connect to */
@@ -43,8 +43,8 @@ struct innconf {
     unsigned long linecountfuzz;/* Check linecount and reject if off by more */
     unsigned long maxartsize;   /* Reject articles bigger than this */
     unsigned long maxconnections; /* Max number of incoming NNTP connections */
-    char *pathalias;            /* Prepended Host for the Path: line */
-    char *pathcluster;          /* Appended Host for the Path: line */
+    char *pathalias;            /* Prepended Host for the Path header field */
+    char *pathcluster;          /* Appended Host for the Path header field */
     bool pgpverify;             /* Verify control messages with pgpverify? */
     unsigned long port;         /* Which port innd should listen on */
     bool refusecybercancels;    /* Reject message IDs with "<cancel."? */
@@ -101,20 +101,20 @@ struct innconf {
     unsigned long keymaxwords;  /* Max count of interesting words */
 
     /* Posting */
-    bool addinjectiondate;      /* Add Injection-Date: to posts */
-    bool addinjectionpostingaccount; /* Add posting-account attribute to Injection-Info: to posts */
-    bool addinjectionpostinghost; /* Add posting-host attribute to Injection-Info: to posts */
+    bool addinjectiondate;      /* Add Injection-Date header fields to posts */
+    bool addinjectionpostingaccount; /* Add posting-account attribute to Injection-Info header fields in posts */
+    bool addinjectionpostinghost; /* Add posting-host attribute to Injection-Info header fields in posts */
     bool checkincludedtext;     /* Reject if too much included text */
-    char *complaints;           /* Address for mail-complaints-to attribute to Injection-Info: */
-    char *fromhost;             /* Host for the From: line */
+    char *complaints;           /* Address for mail-complaints-to attribute to Injection-Info header fields */
+    char *fromhost;             /* Host for the From header field body */
     unsigned long localmaxartsize; /* Max article size of local postings */
     char *moderatormailer;      /* Default host to mail moderated articles */
-    bool nnrpdauthsender;       /* Add authenticated Sender: header? */
+    bool nnrpdauthsender;       /* Add authenticated Sender header field? */
     char *nnrpdposthost;        /* Host postings should be forwarded to */
     unsigned long nnrpdpostport; /* Port postings should be forwarded to */
-    char *organization;         /* Data for the Organization: header */
+    char *organization;         /* Data for the Organization header field */
     bool spoolfirst;            /* Spool all posted articles? */
-    bool strippostcc;           /* Strip To:, Cc: and Bcc: from posts */
+    bool strippostcc;           /* Strip To, Cc and Bcc header fields from posts */
 
     /* Posting -- Exponential Backoff */
     bool backoffauth;           /* Backoff by user, not IP address */

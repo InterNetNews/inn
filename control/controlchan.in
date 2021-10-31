@@ -131,7 +131,7 @@ while (<STDIN>) {
         if ($hdr{'date'}) {
             $postingdate = int(convdate('-n', "$hdr{'date'}"));
         } else {
-            logmsg('Missing Date: header field');
+            logmsg('Missing Date header field');
             $parser->filer->purge;
             next;
         }

@@ -81,7 +81,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     filter = perl_get_cv("filter_art", 0);
     if (!filter) return NULL;
 
-    /* Create %hdr and stash a copy of every known header. */
+    /* Create %hdr and stash a copy of every known header field. */
     hdr = perl_get_hv("hdr", 1);
     for (i = 0 ; i < MAX_ARTHEADER ; i++) {
 	if (HDR_FOUND(i)) {
@@ -477,9 +477,9 @@ XS(XS_INN_havehist)
 
 
 /*
-**  Takes the message ID of an article and returns the article headers as
+**  Takes the Message-ID of an article and returns the article headers as
 **  a string or undef if the article wasn't found.  Each line of the header
-**  will end with \n.
+**  field body will end with \n.
 */
 XS(XS_INN_head)
 {
@@ -496,18 +496,18 @@ XS(XS_INN_head)
     if (items != 1)
         croak("Usage: INN::head(msgid)");
 
-    /* Get the article token from the message ID and the history file. */
+    /* Get the article token from the Message-ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
     if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
 
-    /* Retrieve the article header and convert it from wire format. */
+    /* Retrieve the article headers and convert them from wire format. */
     art = SMretrieve(token, RETR_HEAD);
     if (art == NULL) XSRETURN_UNDEF;
     p = wire_to_native(art->data, art->len, &len);
     SMfreearticle(art);
 
-    /* Push a copy of the article header onto the Perl stack, free our
-       temporary memory allocation, and return the header to Perl. */
+    /* Push a copy of the article headers onto the Perl stack, free our
+       temporary memory allocation, and return the headers to Perl. */
     ST(0) = sv_2mortal(newSVpv(p, len));
     free(p);
     XSRETURN(1);

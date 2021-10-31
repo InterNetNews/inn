@@ -648,7 +648,8 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art)
 
         vec[0].iov_base = (char *) art->data;
         vec[0].iov_len = len;
-        /* Add 14 bytes, which maybe will be the length of the Bytes header */
+        /* Add 14 bytes, which maybe will be the length of the Bytes header
+         * field */
         snprintf(buf, sizeof(buf), "Bytes: %lu\r\n",
                  (unsigned long) art->len + 14);
         vec[1].iov_base = buf;
@@ -723,7 +724,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art)
 
 
 /*
-**  Get the Message-ID header from an open article.
+**  Get the Message-ID header field from an open article.
 */
 static char *
 GetMessageID(ARTHANDLE *art)

@@ -42,7 +42,7 @@ typedef struct _HEADERP {
 
 /*
 **  For speed we build a binary tree of the headers, sorted by their
-**  name.  We also store the header's Name fields in the tree to avoid
+**  name.  We also store the header field names in the tree to avoid
 **  doing an extra indirection.
 */
 typedef struct _TREE {
@@ -55,7 +55,7 @@ typedef struct _TREE {
 static TREE	*ARTheadertree;
 
 /*
-**  For doing the overview database, we keep a list of the headers and
+**  For doing the overview database, we keep a list of the header fields and
 **  a flag saying if they're written in brief or full format.
 */
 typedef struct _ARTOVERFIELD {
@@ -155,7 +155,7 @@ ARTreadschema(void)
       }
     }
     if (hp == ARRAY_END(ARTheaders)) {
-      syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
+      syslog(L_ERROR, "%s bad_schema unknown header field \"%s\"",
              LogName, standardoverview->strings[i]);
       ok = false;
       continue;
@@ -171,7 +171,7 @@ ARTreadschema(void)
       }
     }
     if (hp == ARRAY_END(ARTheaders)) {
-      syslog(L_ERROR, "%s bad_schema unknown header \"%s\"",
+      syslog(L_ERROR, "%s bad_schema unknown header field \"%s\"",
              LogName, extraoverview->strings[i]);
       ok = false;
       continue;
@@ -387,8 +387,8 @@ ARTlogreject(CHANNEL *cp, const char *text)
         HDR_PARSE_START(HDR__MESSAGE_ID);
     }
 
-    /* Set up the headers that we want to use.  We only need to parse the path
-       on rejections if logipaddr is false or we can't find a good host. */
+    /* Set up the header fields that we want to use.  We only need to parse the
+       path on rejections if logipaddr is false or we can't find a good host. */
     if (innconf->logipaddr) {
         if (cp->Address.ss_family != 0) {
             data->Feedsite = RChostname(cp);
@@ -426,7 +426,7 @@ ARTlogreject(CHANNEL *cp, const char *text)
 }
 
 /*
-**  Sorting pointer where header starts
+**  Sorting pointer where header field starts
 */
 static int
 ARTheaderpcmp(const void *p1, const void *p2)
@@ -453,7 +453,7 @@ ARTstore(CHANNEL *cp)
 
   /* find Path, Bytes and Xref to be prepended/dropped/replaced */
   arth.len = i = 0;
-  /* assumes Path header is required header */
+  /* assumes Path header field is required header field */
   hp[i].p = HDR(HDR__PATH);
   hp[i++].index = HDR__PATH;
   if (HDR_FOUND(HDR__XREF)) {
@@ -464,7 +464,7 @@ ARTstore(CHANNEL *cp)
     hp[i].p = HDR(HDR__BYTES);
     hp[i++].index = HDR__BYTES;
   }
-  /* get the order of header appearance */
+  /* get the order of header fields appearance */
   qsort(hp, i, sizeof(HEADERP), ARTheaderpcmp);
   /* p always points where the next data should be written from */
   for (p = Article->data + cp->Start, j = 0 ; j < i ; j++) {
@@ -507,18 +507,19 @@ ARTstore(CHANNEL *cp)
 	  iov[iovcnt++].iov_len = data->XrefLength - 2;
 	  arth.len += data->XrefLength - 2;
 	  /* next to write */
-	  /* this points where trailing "\r\n" of original Xref: header exists */
+	  /* this points where trailing "\r\n" of original Xref header field
+           * exists */
 	  p = HDR(HDR__XREF) + HDR_LEN(HDR__XREF);
 	}
 	break;
       case HDR__BYTES:
-	/* ditch whole Byte header */
+	/* ditch whole Bytes header field */
 	/* write heading data */
 	iov[iovcnt].iov_base = (char *) p;
 	iov[iovcnt++].iov_len = data->BytesHeader - p;
 	arth.len += data->BytesHeader - p;
 	/* next to write */
-	/* need to skip trailing "\r\n" of Bytes header */
+	/* need to skip trailing "\r\n" of Bytes header field */
 	p = HDR(HDR__BYTES) + HDR_LEN(HDR__BYTES) + 2;
 	break;
       default:
@@ -527,13 +528,13 @@ ARTstore(CHANNEL *cp)
 	return result;
     }
   }
-  /* In case Xref: is not included in original article. */
+  /* In case no Xref header field is included in original article. */
   if (!HDR_FOUND(HDR__XREF)) {
     /* Write heading data. */
     iov[iovcnt].iov_base = (char *) p;
     iov[iovcnt++].iov_len = Article->data + (data->Body - 2) - p;
     arth.len += Article->data + (data->Body - 2) - p;
-    /* Xref: needs to be inserted. */
+    /* An Xref header field needs to be inserted. */
     iov[iovcnt].iov_base = (char *) "Xref: ";
     iov[iovcnt++].iov_len = sizeof("Xref: ") - 1;
     arth.len += sizeof("Xref: ") - 1;
@@ -547,7 +548,7 @@ ARTstore(CHANNEL *cp)
   iov[iovcnt++].iov_len = Article->data + cp->Next - p;
   arth.len += Article->data + cp->Next - p;
 
-  /* revert trailing '\0\n' to '\r\n' of all system header */
+  /* revert trailing '\0\n' to '\r\n' of all system header fields */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
     if (HDR_FOUND(i))
       HDR_PARSE_END(i);
@@ -588,7 +589,7 @@ ARTstore(CHANNEL *cp)
   /* Subtract the trailing 3 octets ".\r\n" and the "." characters
    * used for dot-stuffing.  Note that we count a CRLF pair as
    * two octets.  We also count the empty line between headers and body.
-   * It is how the count of Bytes: should be done according to
+   * It is how the count of bytes should be done according to
    * RFC 3977. */
   data->BytesValue -= 3 + data->DotStuffedLines;
   /* Figure out how much space we'll need and get it. */
@@ -616,10 +617,10 @@ ARTstore(CHANNEL *cp)
 }
 
 /*
-**  Parse, check, and possibly store in the system header table a header that
-**  starts at cp->CurHeader.  size includes the trailing "\r\n".
+**  Parse, check, and possibly store in the system header field table a header
+**  field body that starts at cp->CurHeader.  size includes the trailing "\r\n".
 **  Even though an error has already occurred (cp->Error is set), we go on
-**  parsing headers (so that we can find the message-ID, the path, etc.).
+**  parsing headers (so that we can find the Message-ID, the path, etc.).
 */
 static void
 ARTcheckheader(CHANNEL *cp, int size)
@@ -641,7 +642,7 @@ ARTcheckheader(CHANNEL *cp, int size)
     if ((p = memchr(header, '\r', size)) != NULL)
       *p = '\0';
     snprintf(cp->Error, sizeof(cp->Error),
-             "%d No colon-space in \"%s\" header",
+             "%d No colon-space in \"%s\" header field",
              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
              MaxLength(header, header));
     if (p != NULL)
@@ -649,7 +650,8 @@ ARTcheckheader(CHANNEL *cp, int size)
     return;
   }
 
-  /* See if this is a system header.  A fairly tightly-coded binary search. */
+  /* See if this is a system header field.
+     A fairly tightly-coded binary search. */
   c = islower((unsigned char) *header) ? toupper((unsigned char) *header) : *header;
   for (*colon = '\0', tp = ARTheadertree; tp; ) {
     if ((i = c - tp->Name[0]) == 0 && (i = strcasecmp(header, tp->Name)) == 0)
@@ -662,13 +664,13 @@ ARTcheckheader(CHANNEL *cp, int size)
   *colon = ':';
 
   if (tp == NULL) {
-    /* Not a system header, make sure we have <word><colon><space>. */
+    /* Not a system header field, make sure we have <word><colon><space>. */
     for (p = colon; --p > header; ) {
       if (ISWHITE(*p)) {
 	c = *p;
 	*p = '\0';
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Space before colon in \"%s\" header",
+                 "%d Space before colon in \"%s\" header field",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                  MaxLength(header, header));
 	*p = c;
@@ -679,13 +681,13 @@ ARTcheckheader(CHANNEL *cp, int size)
   }
   hp = tp->Header;
   i = hp - ARTheaders;
-  /* remember to ditch if it's Bytes: */
+  /* remember to ditch if it's the Bytes header field */
   if (i == HDR__BYTES)
     cp->Data.BytesHeader = header;
   hc = &hc[i];
   if (hc->Length != 0) {
-    /* Duplicated required header.
-     * We do not check every header because they would otherwise disappear
+    /* Duplicated required header field.
+     * We do not check every header field because they would otherwise disappear
      * from the overview.
      * The content of the first occurrence must be returned by HDR and OVER
      * according to RFC 3977. */
@@ -696,9 +698,9 @@ ARTcheckheader(CHANNEL *cp, int size)
     /* We need to remove leading and trailing spaces for
      * message-IDs; otherwise, history hashes may not be
      * correctly computed.
-     * We also do it for Xref: header fields because
+     * We also do it for Xref header fields because
      * a few parts of the code currently assume that no
-     * leading whitespace exists for this header (when
+     * leading whitespace exists for this header field body (when
      * parsing it to find the newsgroups in which the article
      * is stored).  Only when INN does not generate it (that is
      * to say in xrefslave mode). */
@@ -965,7 +967,7 @@ ARTparse(CHANNEL *cp)
 
 /*
 **  Clean up an article.  This is mainly copying in-place, stripping bad
-**  headers.  Also fill in the article data block with what we can find.
+**  header fields.  Also fill in the article data block with what we can find.
 **  Return true if the article has no error, or false which means the error.
 */
 static bool
@@ -982,8 +984,8 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   data->Expires = 0;
   data->Posted = 0;
 
-  /* replace trailing '\r\n' with '\0\n' of all system header to be handled
-     easily by str*() functions */
+  /* replace trailing '\r\n' with '\0\n' of all system header fields to be
+     handled easily by str*() functions */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
     if (HDR_FOUND(i)) {
       HDR_LASTCHAR_SAVE(i);
@@ -991,17 +993,17 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     }
   }
 
-  /* Make sure all the headers we need are there */
+  /* Make sure all the header fields we need are there */
   for (i = 0; i < MAX_ARTHEADER ; i++) {
     if (hp[i].Type == HTreq) {
       if (HDR_FOUND(i))
         continue;
       if (HDR_LEN(i) < 0) {
-        sprintf(buff, "%d Duplicate \"%s\" header",
+        sprintf(buff, "%d Duplicate \"%s\" header field",
                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                 hp[i].Name);
       } else {
-	sprintf(buff, "%d Missing \"%s\" header",
+	sprintf(buff, "%d Missing \"%s\" header field",
                 ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                 hp[i].Name);
       }
@@ -1010,10 +1012,10 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     }
   }
 
-  /* Assumes the Message-ID: header is a required header. */
+  /* Assumes the Message-ID header field is a required header field. */
   if (!IsValidMessageID(HDR(HDR__MESSAGE_ID), true, laxmid)) {
     HDR_LEN(HDR__MESSAGE_ID) = 0;
-    sprintf(buff, "%d Bad \"Message-ID\" header",
+    sprintf(buff, "%d Bad \"Message-ID\" header field",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
     TMRstop(TMR_ARTCLEAN);
     return false;
@@ -1033,14 +1035,14 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
   }
 
   /* Is the article too old? */
-  /* Assumes the Date: header is a required header.
-   * Check the presence of the Injection-Date: header field, which will
+  /* Assumes the Date header field is a required header field.
+   * Check the presence of the Injection-Date header field, which will
    * override the value of the time the article was posted. */
   p = HDR(HDR__DATE);
   data->Posted = parsedate_rfc5322_lax(p);
 
   if (data->Posted == (time_t) -1) {
-    sprintf(buff, "%d Bad \"Date\" header -- \"%s\"",
+    sprintf(buff, "%d Bad \"Date\" header field -- \"%s\"",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
             MaxLength(p, p));
     TMRstop(TMR_ARTCLEAN);
@@ -1052,7 +1054,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
     data->Posted = parsedate_rfc5322_lax(p);
 
     if (data->Posted == (time_t) -1) {
-      sprintf(buff, "%d Bad \"Injection-Date\" header -- \"%s\"",
+      sprintf(buff, "%d Bad \"Injection-Date\" header field -- \"%s\"",
               ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
               MaxLength(p, p));
       TMRstop(TMR_ARTCLEAN);
@@ -1085,13 +1087,13 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
       data->Expires = 0;
   }
 
-  /* Colon or whitespace in the Newsgroups: header? */
-  /* Assumes Newsgroups: header is required header. */
+  /* Colon or whitespace in the Newsgroups header field? */
+  /* Assumes Newsgroups header field is required header field. */
   if ((data->Groupcount =
     NGsplit(HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS),
     &data->Newsgroups)) == 0) {
     TMRstop(TMR_ARTCLEAN);
-    sprintf(buff, "%d Unwanted character in \"Newsgroups\" header",
+    sprintf(buff, "%d Unwanted character in \"Newsgroups\" header field",
             ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
     return false;
   }
@@ -1151,9 +1153,9 @@ ARTreject(Reject_type code, CHANNEL *cp)
 
 /*
 **  Verify if a cancel message is valid.  Unless at least one group in the 
-**  cancel message's Newsgroups: line can be found in the Newsgroups: line 
-**  of the article to be cancelled, the cancel is considered bogus and 
-**  false is returned.
+**  cancel message's Newsgroups header field body can be found in the
+**  Newsgroups header field body of the article to be cancelled, the cancel
+**  is considered bogus and false is returned.
 */
 static bool
 ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
@@ -1171,7 +1173,7 @@ ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
   if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
     return false;
 
-  /* Copy Newsgroups: from article be to cancelled to q.
+  /* Copy the Newsgroups header field from article be to cancelled to q.
    * Double-terminate q (sentinel). */
   local = wire_findheader(art->data, art->len, "Newsgroups", true);
   if (local == NULL) {
@@ -1421,7 +1423,7 @@ ARTpoisongroup(char *name)
 }
 
 /*
-** Assign article numbers to the article and create the Xref: header field.
+** Assign article numbers to the article and create the Xref header field.
 ** If we end up not being able to write the article, we'll get "holes"
 ** in the directory and active file.
 */
@@ -1486,7 +1488,7 @@ ARTassignnumbers(ARTDATA *data)
 }
 
 /*
-**  Parse the data from the Xref: header and assign the numbers.
+**  Parse the data from the Xref header field and assign the numbers.
 **  This involves replacing the GroupPointers entries.
 */
 static bool
@@ -1562,7 +1564,8 @@ ARTxrefslave(ARTDATA *data)
 
 /*
 **  Return true if a list of strings has a specific one.  This is a
-**  generic routine, but is used for seeing if a host is in the Path: line.
+**  generic routine, but is used for seeing if a host is in the Path header
+**  field body.
 */
 static bool
 ListHas(const char **list, const char *p)
@@ -1765,7 +1768,7 @@ ARTpropagate(ARTDATA *data, const char **hops, int hopcount, char **list,
       /* Not in the site's desired list of distributions. */
       continue;
     if (sp->DistRequired && (list == NULL || *list == NULL))
-      /* Site requires Distribution header and there isn't one. */
+      /* Site requires Distribution header field and there isn't one. */
       continue;
 
     if (sp->Exclusions) {
@@ -1851,15 +1854,15 @@ ARTmakeoverview(CHANNEL *cp)
     j = hp - ARTheaders;
 
     /* If requested, generate keywords from the body of the article and patch
-       them into the apparent value of the Keywords: header so that they make
-       it into overview. */
+       them into the apparent value of the Keywords header field so that they
+       make it into overview. */
     if (DO_KEYWORDS && innconf->keywords) {
-      /* Ensure that there are Keywords: to shovel. */
+      /* Ensure that there are keywords to shovel. */
       if (hp == &ARTheaders[HDR__KEYWORDS] && HDR(HDR__KEYWORDS) == NULL) {
         keywords_generated = true;
         KEYgenerate(&hc[HDR__KEYWORDS], cp->In.data + data->Body,
                     cp->Next - data->Body);
-        /* Do not memorize an empty Keywords: header. */
+        /* Do not memorize an empty Keywords header field body. */
         if (HDR_LEN(HDR__KEYWORDS) == 0) {
           if (HDR(HDR__KEYWORDS) != NULL)
               free(HDR(HDR__KEYWORDS)); /* malloc'd within. */
@@ -1972,8 +1975,8 @@ ARTpost(CHANNEL *cp)
   /* Preliminary clean-ups. */
   artclean = ARTclean(data, cp->Error, ihave);
 
-  /* We have not parsed the Path: header yet.  We do not check for logipaddr
-   * right now (it will be done afterwards and change data->Feedsite
+  /* We have not parsed the Path header field body yet.  We do not check for
+   * logipaddr right now (it will be done afterwards and change data->Feedsite
    * in consequence).  We assign a feed site for the next call to ARTlog(). */
   if (cp->Address.ss_family != 0) {
     data->Feedsite = RChostname(cp);
@@ -1984,12 +1987,12 @@ ARTpost(CHANNEL *cp)
     data->Feedsite = CHANname(cp);
   data->FeedsiteLength = strlen(data->Feedsite);
 
-  /* If we don't have Path: or Message-ID:, we can't continue. */
+  /* If we don't have a Path or a Message-ID header field, we can't continue. */
   if (!artclean && (!HDR_FOUND(HDR__PATH) || !HDR_FOUND(HDR__MESSAGE_ID))) {
-    /* cp->Error is set since Path: and Message-ID: are required headers and one
-     * of them is not found during ARTclean().
-     * We do not remember the message-ID of this article because another
-     * peer may send it with a good Path: header. */
+    /* cp->Error is set since Path and Message-ID are required header fields
+     * and one of them is not found during ARTclean().
+     * We do not remember the Message-ID of this article because another
+     * peer may send it with a good Path header field. */
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
@@ -1998,8 +2001,8 @@ ARTpost(CHANNEL *cp)
   if (hopcount == 0) {
     snprintf(cp->Error, sizeof(cp->Error), "%d Illegal path element",
              ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
-    /* We do not remember the message-ID of this article because another
-     * peer may send it with a good Path: header. */
+    /* We do not remember the Message-ID of this article because another
+     * peer may send it with a good Path header field. */
     ARTlog(data, ART_REJECT, cp->Error);
     ARTreject(REJECT_OTHER, cp);
     return false;
@@ -2175,7 +2178,8 @@ ARTpost(CHANNEL *cp)
   }
 
   if (HDR_FOUND(HDR__FOLLOWUPTO)) {
-    /* Count the number of commas without syntactically parsing the header. */
+    /* Count the number of commas without syntactically parsing the header
+     * field body. */
     for (i = 1, p = HDR(HDR__FOLLOWUPTO) ; (p = strchr(p, ',')) != NULL ;
          i++, p++) ;
 
@@ -2186,7 +2190,7 @@ ARTpost(CHANNEL *cp)
       /* Skip leading whitespaces. */
       p = (char *) skip_fws(HDR(HDR__FOLLOWUPTO));
 
-      /* Check for an empty header field or "poster". */
+      /* Check for an empty header field body or "poster". */
       if (*p == '\0' || (strncasecmp(p, "poster", 6) == 0
           && (p[6] == ' ' || p[6] == '\t' || p[6] == '\0'
               || p[6] == '\r' || p[6] == '\n'))) {
@@ -2198,7 +2202,7 @@ ARTpost(CHANNEL *cp)
   }
 
   groups = data->Newsgroups.List;
-  /* Parse the Control: header. */
+  /* Parse the Control header field body. */
   LikeNewgroup = false;
   if (HDR_FOUND(HDR__CONTROL)) {
     IsControl = true;
@@ -2276,7 +2280,7 @@ ARTpost(CHANNEL *cp)
         NonExist = true;
       } else {
         NonExist = true;
-        /* Check if all the newsgroups listed in the Newsgroups: header of
+        /* Check if all the newsgroups listed in the Newsgroups header field of
          * the article exist on the news server. */
         if (innconf->verifygroups) {
           snprintf(cp->Error, sizeof(cp->Error),
@@ -2477,12 +2481,12 @@ ARTpost(CHANNEL *cp)
     if (ARTxrefslave(data) == false) {
       if (HDR_FOUND(HDR__XREF)) {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Xref: header \"%s\" invalid in xrefslave mode",
+                 "%d Xref header field \"%s\" invalid in xrefslave mode",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT,
                  MaxLength(HDR(HDR__XREF), HDR(HDR__XREF)));
       } else {
 	snprintf(cp->Error, sizeof(cp->Error),
-                 "%d Xref: header required in xrefslave mode",
+                 "%d Xref header field required in xrefslave mode",
                  ihave ? NNTP_FAIL_IHAVE_REJECT : NNTP_FAIL_TAKETHIS_REJECT);
       }
       ARTlog(data, ART_REJECT, cp->Error);
@@ -2507,7 +2511,7 @@ ARTpost(CHANNEL *cp)
     ngp->PostCount = 0;
 
   token = ARTstore(cp);
-  /* Change trailing '\r\n' to '\0\n' of all system header. */
+  /* Change trailing '\r\n' to '\0\n' of all system header fields. */
   for (i = 0 ; i < MAX_ARTHEADER ; i++) {
     if (HDR_FOUND(i)) {
       HDR_LASTCHAR_SAVE(i);

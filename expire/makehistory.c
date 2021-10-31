@@ -110,13 +110,13 @@ static ARTOVERFIELD     *Linesp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Msgidp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD     *Xrefp = (ARTOVERFIELD *)NULL;
 static ARTOVERFIELD	*Missfields; /* Header fields not used in overview
-                                      * but that we need (e.g. Expires:). */
+                                      * but that we need (e.g. Expires). */
 static size_t		Missfieldsize = 0;
 
 static void OverAddAllNewsgroups(void);
 
 /*
-**  Check and parse a Message-ID header line.  Return private space.
+**  Check and parse a Message-ID header field body.  Return private space.
 */
 static const char *
 GetMessageID(char *p)
@@ -609,9 +609,9 @@ DoArt(ARTHANDLE *art)
         fp->Header = wire_findheader(art->data, art->len, fp->Headername, false);
 
         /* Someone managed to break their server so that they were appending
-           multiple Xref headers, and INN had a bug where it wouldn't notice
-           this and reject the article.  Just in case, see if there are
-           multiple Xref headers and use the last one. */
+           multiple Xref header fields, and INN had a bug where it wouldn't
+           notice this and reject the article.  Just in case, see if there are
+           multiple Xref header fields and use the last one. */
         if (fp == Xrefp) {
             const char *next = fp->Header;
             size_t left;
@@ -664,17 +664,17 @@ DoArt(ARTHANDLE *art)
             continue;
         }
 
-        /* Now, if we have a header, find and record its length. */
+        /* Now, if we have a header field, find and record its length. */
         if (fp->Header != NULL) {
 	    fp->HasHeader = true;
             p = wire_endheader(fp->Header, art->data + art->len - 1);
             if (p == NULL)
 		continue;
 
-            /* The true length of the header is p - fp->Header + 1, but p
-               points to the \n at the end of the header, so subtract 2 to
-               peel off the \r\n (we're guaranteed we're dealing with
-               wire-format articles. */
+            /* The true length of the header field is p - fp->Header + 1, but p
+               points to the \n at the end of the header field body, so
+               subtract 2 to peel off the \r\n (we're guaranteed we're dealing
+               with wire-format articles. */
             fp->HeaderLength = p - fp->Header - 1;
 	}
 
@@ -718,7 +718,7 @@ DoArt(ARTHANDLE *art)
     Expires = 0;
 
     if (!Msgidp->HasHeader) {
-        warn("no Message-ID header in %s", TokenToText(*art->token));
+        warn("no Message-ID header field in %s", TokenToText(*art->token));
 	if (NukeBadArts)
 	    SMcancel(*art->token);
 	return;
@@ -731,7 +731,7 @@ DoArt(ARTHANDLE *art)
 	    *q = ' ';
     MessageID = GetMessageID(buffer.data);
     if (*MessageID == '\0') {
-        warn("no Message-ID header in %s", TokenToText(*art->token));
+        warn("no Message-ID header field in %s", TokenToText(*art->token));
 	if (NukeBadArts)
 	    SMcancel(*art->token);
 	return;
@@ -749,8 +749,9 @@ DoArt(ARTHANDLE *art)
             buffer_set(&buffer, InjectionDatep->Header, InjectionDatep->HeaderLength);
             buffer_append(&buffer, NUL, 1);
             Posted = parsedate_rfc5322_lax(buffer.data);
-            /* If parsing failed for Injection-Date:, take the arrival time.
-             * Do not look at the Date: header (though we could). */
+            /* If parsing failed for the Injection-Date header field, take
+             * the arrival time.
+             * Do not look at the Date header field (though we could). */
             if (Posted == (time_t) -1)
                 Posted = Arrived;
         } else {

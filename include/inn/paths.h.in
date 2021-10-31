@@ -98,10 +98,10 @@
 /* The host name of the NNTP server, for client posting. */
 #define INN_ENV_NNTPSERVER              "NNTPSERVER"
 
-/* The Organization header line, for client posting. */
+/* The Organization header field body, for client posting. */
 #define INN_ENV_ORGANIZATION            "ORGANIZATION"
 
-/* What to put in the From line, for client posting. */
+/* What to put in the From header field body, for client posting. */
 #define INN_ENV_FROMHOST                "FROMHOST"
 
 /* UUCP host, for rnews. */

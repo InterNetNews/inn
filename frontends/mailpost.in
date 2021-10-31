@@ -87,10 +87,10 @@ if ($debugging || $opt_n) {
 # Our command-line argument(s) are the list of newsgroups to post to.
 #
 # There may be a "-r sender" or "-f sender" which becomes the $path
-# (which is in turn overridden below by various optional headers).
+# (which is in turn overridden below by various optional header fields).
 #
 # -d (distribution) and -a (approved) are also supported to supply
-# or override the mail headers by those names.
+# or override the mail header fields by those names.
 #
 
 my $path = 'nobody';
@@ -126,7 +126,7 @@ if ($opt_x) {
     $exclude .= '|' . join('|', split(/:/, $opt_x));
 }
 
-# Strip out news X-Complaints-To: and X-Trace: header fields since otherwise
+# Strip out news X-Complaints-To and X-Trace header fields since otherwise
 # posting may fail.  Other trace header fields will be renamed later on
 # to add 'X-' so we don't have to worry about them.
 my $skip = 'X-Complaints-To|X-Trace';
@@ -139,7 +139,7 @@ $newsgroups = join ",", @ARGV ;
 die "usage: $0 newsgroup [newsgroup ...]\n" unless $newsgroups;
 
 #
-# Do the header.  Our input is a mail message, with or without the From.
+# Do the headers.  Our input is a mail message, with or without the From.
 #
 
 #$message_id = sprintf("<mailpost.%d.%d@%s>", time, $$, $Hostname);
@@ -191,7 +191,8 @@ for (;;) {
     # Remove (CR)LF at the end of each line.
     s/\r?\n$//;
 
-    # Gather up a single header with possible continuation lines into $line.
+    # Gather up a single header field with possible continuation lines
+    # into $line.
     if (/^\s+/) {
 	if (! $line) {
 	    $msg = "First line with leading whitespace!" ;
@@ -205,14 +206,14 @@ for (;;) {
 	next ;
     }
 
-    # Add a space after the colon following a header name, if not present.
+    # Add a space after the colon following a header field name, if not present.
     s/:/: / if ($_ !~ /^[^:]+: /);
 
-    # On the first header, $line will be undefined.
+    # On the first header field, $line will be undefined.
     ($_, $line) = ($line, $_) ; # Swap $line and $_.
 
     last if defined($_) && /^$/;
-    next unless defined($_);     # Only on first header will this happen.
+    next unless defined($_);     # Only on first header field will this happen.
 
     push @errorText, "($_)\n";
 
@@ -220,7 +221,7 @@ for (;;) {
     next if /^Approved:\s/sio && defined($approved);
     next if /^Distribution:\s/sio && defined($distribution);
 
-    # Remove empty header lines within header body.
+    # Remove empty header continuation lines within header field body.
     s/\n[ \t]+\n/\n/g;          # middle lines in header field
     s/\n[ \t]+$//;              # last line in header field
     s/^([^:]+:[ \t]+)\n/$1/;    # first line in header field
@@ -280,11 +281,11 @@ for (;;) {
         # 986 = 998 (maximum per RFC 5536) - length("References: ")
         if (length($references) > 985) {
             my @refarray = ( $references =~ /(<.*?>)/g );
-            # Keep only the first and the last two message-IDs, per RFC 5537.
+            # Keep only the first and the last two Message-IDs, per RFC 5537.
             #
-            # Remove the header in case we do not have at least 3 message-IDs
-            # because it then probably means that the header is broken, or
-            # contains CFWS that we do not deal with.
+            # Remove the header field in case we do not have at least
+            # 3 Message-IDs because it then probably means that the header
+            # field body is broken, or contains CFWS that we do not deal with.
             if (scalar(@refarray) > 2) {
                 my $last_mid = pop(@refarray);
                 $references = shift(@refarray) . ' ' . pop(@refarray) . ' ' . $last_mid;
@@ -305,7 +306,7 @@ for (;;) {
 	next ;
     }
 
-    # Strip out any Received: header fields for clause to prevent spamming
+    # Strip out any Received header fields for clause to prevent spamming
     # the gateway.
     if (/^Received:\s*/sio) {
         s/\s+for\s.+\@($Gateway)>?\s*//sio;
@@ -318,7 +319,7 @@ for (;;) {
         next if /[@%=]($Gateway)/sio;
     }
 
-    # Random unknown header.  Prepend 'X-' if it is not already there.
+    # Random unknown header field.  Prepend 'X-' if it is not already there.
     $_ = "X-$_" unless /^X-/sio ;
     $weird_mail_hdrs .= "$_\n";
 }
@@ -344,7 +345,7 @@ $emptyHdrsString = join("\n\t", @emptyHdrs);
 $real_news_hdrs .= "X-Mailpost-Empty-Hdrs: $emptyHdrsString\n"
     if (length($emptyHdrsString) > 0);
 
-# Remove duplicate headers.
+# Remove duplicate header fields.
 my %headers = ();
 $real_news_hdrs =~ s/((.*?:) .*?($|\n)([ \t]+.*?($|\n))*)/$headers{lc$2}++?"":"$1"/ges;
 
@@ -397,9 +398,9 @@ if ( ! $tmpfile ) {
 ## data we found and update our message-ID database.
 ##
 
-mailArtAndDie ("no From: found") unless $from;
-mailArtAndDie ("no Message-ID: found") unless $message_id;
-mailArtAndDie ("Malformed message-ID ($message_id)")
+mailArtAndDie ("no From header field found") unless $from;
+mailArtAndDie ("no Message-ID header field found") unless $message_id;
+mailArtAndDie ("Malformed Message-ID ($message_id)")
     if ($message_id !~ /\<(\S+)\@(\S+)\>/);
 
 
@@ -489,7 +490,7 @@ if ($opt_c) {
     exit(1);
   }
 
-  # Replace Newsgroups:.
+  # Replace the Newsgroups header field.
   open(TMPFILE, "$tmpfile") || mailArtAndDie ("can't open temp file ($tmpfile): $!") ;
   $tmpfile2 = sprintf "%s/mailpost-crosspost.%d.%d", $Tmpdir, time, $$ ;
     if ( !open TMPFILE2, ">$tmpfile2") {
@@ -630,7 +631,7 @@ sub append_newsgroups ($$) {
     if ( !grep($_ eq $newsgroup,@orig)) {
       push @orig, $newsgroup ;
     } else {
-#      mailArtAndDie ("Duplicate Newsgroups: $newsgroup") ;
+#      mailArtAndDie ("Duplicate newsgroups: $newsgroup") ;
     }
   }
   return join ",", @orig ;
@@ -658,9 +659,9 @@ whitespace-separated list of group names to which to post the article
 
 Before feeding the article to B<inews>, it checks that the article has
 not been seen before, and it changes some header fields (cleans up some
-address headers, removes a few ones like X-Complaints-To: and X-Trace:,
-and puts C<X-> in front of unknown header fields).  The Received: and
-*-To: header fields are also altered to prevent spamming the gateway (the
+address header fields, removes a few ones like X-Complaints-To and X-Trace,
+and puts C<X-> in front of unknown header fields).  The Received and
+*-To header fields are also altered to prevent spamming the gateway (the
 name of the news server or the domain name from F<inn.conf> are removed).
 
 If the article has been seen before (B<mailpost> records the message-ID of
@@ -690,7 +691,7 @@ or any other directory where the B<mailpost> process has write access.
 =item B<-a> I<addr>
 
 If the B<-a> flag is used, the value given is added to the article as
-an Approved: header.
+an Approved header field body.
 
 =item B<-b> I<database>
 
@@ -703,18 +704,19 @@ The default value is I<pathdb> as set in F<inn.conf>.
 
 =item B<-c> I<wait-time>
 
-The B<-c> flag indicates a length of time to sleep before posting.  If
-duplicate messages are received in this interval (by any instance of
-B<mailpost> using the same database), the article is only posted once, but
-with Newsgroups: header modified to crosspost the article to all indicated
-groups.  The units for I<wait-time> are seconds; a reasonable value may be
-anywhere from tens to hundreds of seconds, or even higher, depending on how
-long mail can be delayed on its way to your system.
+The B<-c> flag indicates a length of time to sleep before posting.
+If duplicate messages are received in this interval (by any instance of
+B<mailpost> using the same database), the article is only posted once,
+but with Newsgroups header field body modified to crosspost the article
+to all indicated groups.  The units for I<wait-time> are seconds;
+a reasonable value may be anywhere from tens to hundreds of seconds,
+or even higher, depending on how long mail can be delayed on its way
+to your system.
 
 =item B<-d> I<distribution>
 
 If the B<-d> flag is used, the value given is added to the article as a
-Distribution: header.
+Distribution header field body.
 
 =item B<-f> I<addr>
 
@@ -727,7 +729,7 @@ Print usage information and exit.
 =item B<-m> I<mailing-list>
 
 If the B<-m> flag is used, the value given is added to the article in
-a Mailing-List: header, if such a header doesn't already exist.
+a Mailing-List header field, if such a header field doesn't already exist.
 
 =item B<-n>
 
@@ -747,8 +749,9 @@ If given, B<-p> is passed along to B<inews>.
 
 =item B<-r> I<addr>
 
-A heuristic is used to determine a reasonable value for the Path: header.
-The B<-r> flag indicates what to use if no other value can be determined.
+A heuristic is used to determine a reasonable value for the Path header
+field body.  The B<-r> flag indicates what to use if no other value
+can be determined.
 
 =item B<-t> I<tempdir>
 

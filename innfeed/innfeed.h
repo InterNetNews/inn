@@ -102,7 +102,7 @@
 #define LOCK_TAIL ".lock"
 
 /* rough estimate of average article line length (including
-   headers). Smaller number means more efficient article preparation (for
+   headers).  Smaller number means more efficient article preparation (for
    transfer), but, if much smaller than reality, then more memory
    wastage. */
 #define CHARS_PER_LINE 60

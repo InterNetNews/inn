@@ -42,8 +42,8 @@ typedef struct {
   void           *private;   /* A pointer to method specific data */
   time_t         arrived;    /* The time when the article arrived */
   time_t         expires;    /* The time when the article will be expired */
-  char           *groups;    /* Where Newsgroups header starts */
-  int            groupslen;  /* Length of Newsgroups header */
+  char           *groups;    /* Where Newsgroups header field body starts */
+  int            groupslen;  /* Length of Newsgroups header field body */
   TOKEN          *token;     /* A pointer to the article's TOKEN */
 } ARTHANDLE;
 

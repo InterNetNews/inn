@@ -52,7 +52,7 @@
 #
 # - We try (if $USE_ALL_GROUPS is set, below) to count crossposted
 #   towards each listed group (even ones not carried on the server!),
-#   but since some articles have funky Newsgroups headers, that can
+#   but since some articles have funky Newsgroups header fields, that can
 #   backfire.  So parsing can fail, which usually results in the
 #   relevant line being skipped, but occasionally can cause Perl to
 #   issue warnings (and perhaps produce funny things in the output).

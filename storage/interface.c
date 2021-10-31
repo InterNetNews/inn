@@ -139,7 +139,7 @@ TextToToken(const char *text)
 }
 
 /*
-**  get Xref header without pathhost
+**  get Xref header field body without pathhost
 */
 static char *
 GetXref(ARTHANDLE *art)

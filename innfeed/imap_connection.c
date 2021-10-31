@@ -777,7 +777,7 @@ static char *GotoNextLine(char *str)
 }
 
 /*
- * Finds the given header in the message
+ * Finds the given header field in the message
  *  Returns NULL if not found
  */
 static conn_ret FindHeader(Buffer *bufs, const char *header, char **start,
@@ -1067,7 +1067,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 	memcpy(tmp,control_header, clen);
 	tmp[clen]='\0';
 
-	d_printf(0,"%s:%d Don't understand control header [%s]\n",
+	d_printf(0,"%s:%d Don't understand Control header field [%s]\n",
 		 hostPeerName (cxn->myHost), cxn->ident,tmp);
 	return RET_FAIL;
     }
@@ -1091,7 +1091,8 @@ static conn_ret AddControlMsg(connection_t *cxn,
 
 	if (control_header >= control_header_end) {
 	    d_printf(0,"%s:%d addControlMsg(): "
-		     "newgroup/rmgroup header has no group specified\n",
+		     "newgroup/rmgroup Control header field has no group "
+                     "specified\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
 	    return RET_FAIL;
 	}
@@ -1131,7 +1132,7 @@ static conn_ret AddControlMsg(connection_t *cxn,
 
 	if (control_header == control_header_end)
 	{
-	    d_printf(0, "%s:%d Control header contains cancel "
+	    d_printf(0, "%s:%d Control header field contains cancel "
 		        "with no msgid specified\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
 	    return RET_FAIL;
@@ -1139,7 +1140,8 @@ static conn_ret AddControlMsg(connection_t *cxn,
 
 	if (FindHeader(bufs, "Newsgroups", &rcpt_list, &rcpt_list_end) != RET_OK)
 	{
-	    d_printf(0,"%s:%d Cancel msg contains no newsgroups header\n",
+	    d_printf(0,"%s:%d Cancel message contains no Newsgroups header "
+                     "field\n",
 		     hostPeerName (cxn->myHost), cxn->ident);
 	    return RET_FAIL;
 	}
@@ -3677,7 +3679,8 @@ static void addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 }
 
 /*
- * Takes the newsgroups header value and makes it into a list of RCPT TO:'s we can send over the wire
+ * Takes the Newsgroups header field body and makes it into a list of
+ * RCPT TO:'s we can send over the wire
  *
  *  in     - newsgroups header start
  *  in_end - end of newsgroups header
@@ -3770,7 +3773,8 @@ static void addto(char *newrcpt, int newrcptlen, const char *sep,
 }
 
 /*
- * Takes the newsgroups header value and makes it into a To: header
+ * Takes the Newsgroups header field body and makes it into a To header field
+ * body.
  *
  *  in     - newsgroups header start
  *  in_end - end of newsgroups header
@@ -3784,7 +3788,7 @@ static char *BuildToHeader(char *in, char *in_end)
     char *laststart = in;
     const char *sep = "";
 
-    /* start it off with the header name */
+    /* start it off with the header field name */
     strlcpy(ret,"To: ", retalloc);
 
     while ( str !=  in_end)
@@ -3812,7 +3816,7 @@ static char *BuildToHeader(char *in, char *in_end)
 	addto(laststart, str - laststart, sep, &ret, &retalloc);
     }
 
-    /* terminate the header */
+    /* terminate the header field body */
     strlcat(ret, "\n\r", retalloc);
     return ret;
 }
@@ -4020,7 +4024,7 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 			&rcpt_list, &rcpt_list_end);
 
     if ((result != RET_OK) || (rcpt_list == NULL)) {
-	d_printf(1,"%s:%d Didn't find Newsgroups header\n",
+	d_printf(1,"%s:%d Didn't find Newsgroups header field\n",
 		 hostPeerName (cxn->myHost),cxn->ident) ;
 	QueueForgetAbout(cxn, cxn->current_article, MSG_FAIL_DELIVER);
 	goto retry;
@@ -4047,7 +4051,7 @@ static void lmtp_sendmessage(connection_t *cxn, Article justadded)
 	return;
     }
 
-    /* prepend To: header to article */
+    /* prepend To header field to article */
     if (deliver_to_header) {
 	char *to_list, *to_list_end;
 	int i, len;

@@ -57,7 +57,7 @@ PERMmatch(char **Pats, char **list)
 
 /*
 **  Check to see if user is allowed to see this article by matching
-**  Xref: (or Newsgroups:) line.
+**  Xref (or Newsgroups) header field body.
 */
 bool
 PERMartok(void)
@@ -69,7 +69,7 @@ PERMartok(void)
         return false;
 
     if ((p = GetHeader("Xref", true)) == NULL) {
-        /* In case article does not include Xref:. */
+        /* In case article does not include an Xref header field. */
         if ((p = GetHeader("Newsgroups", true)) != NULL) {
             if (!NGgetlist(&grplist, p))
                 /* No newgroups or null entry. */
