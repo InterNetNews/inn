@@ -28,7 +28,8 @@ main(int argc, char *argv[])
 #else
         if ((fd = open(argv[i], O_RDWR, 0664)) < 0) {
 #endif
-            fprintf(stderr, "Could not open file %s: %s\n", argv[i], strerror(errno));
+            fprintf(stderr, "Could not open file %s: %s\n", argv[i],
+                    strerror(errno));
             status = false;
         } else {
 #ifdef DO_LARGEFILES
@@ -36,14 +37,15 @@ main(int argc, char *argv[])
 #else
             if (fstat(fd, &st) < 0) {
 #endif
-                fprintf(stderr, "Could not stat file %s: %s\n", argv[i], strerror(errno));
+                fprintf(stderr, "Could not stat file %s: %s\n", argv[i],
+                        strerror(errno));
                 status = false;
             } else {
                 /* Each bit in the bitfield is 512 bytes of data.  Each byte
                  * has 8 bits, so calculate as 512 * 8 bytes of data, plus
                  * fuzz.  buf has 512 bytes in it, therefore containing data
                  * for (512 * 8) * 512 bytes of data. */
-                numwr = (st.st_size / (512*8) / sizeof(buf)) + 50;
+                numwr = (st.st_size / (512 * 8) / sizeof(buf)) + 50;
                 printf("File %s: %lu %lu\n", argv[i],
                        (unsigned long) st.st_size, (unsigned long) numwr);
                 status = true;

@@ -1,12 +1,12 @@
 /*
  *      auth_pass.c
  *
- * Abstract: 
+ * Abstract:
  *
- *	This module is the complete source for a sample "authinfo generic" 
+ *	This module is the complete source for a sample "authinfo generic"
  *	program.  This program takes a user's login name and password
  *	(supplied either as arguments or as responses to prompts) and
- *	validates them against the contents of the password database.  
+ *	validates them against the contents of the password database.
  *
  *	If the user properly authenticates themselves, an nnrp.auth style
  *	record indicating the user's authenticated login and permitting
@@ -17,7 +17,7 @@
  *
  * Exit statuses:
  *	0       Successfully authenticated.
- *	1	getpeername() failed, returned a bad address family, or 
+ *	1	getpeername() failed, returned a bad address family, or
  *		gethostbyaddr() failed.
  *	2	Entry not found in password file.
  *	3	No permission to read passwords, or password field is '*'.
@@ -28,10 +28,10 @@
  *	Run by nnrpd with stdin/stdout connected to the reader and stderr
  *	connected back to nnrpd.  This program will need to be run as suid
  *	root on systems where passwords are stored in a file readable only by
- *	root. 
+ *	root.
  *
  * Written 1996 July 6 by Douglas Wade Needham (dneedham@oucsace.cs.ohiou.edu).
- *	
+ *
  */
 
 #include "portable/system.h"
@@ -42,15 +42,15 @@
 #include <pwd.h>
 
 #if HAVE_CRYPT_H
-# include <crypt.h>
+#    include <crypt.h>
 #endif
 
 
 int
-main(int argc, char** argv)
+main(int argc, char **argv)
 /*+
  * Abstract:
- *	Main routine of the program, implementing all prompting, validation, 
+ *	Main routine of the program, implementing all prompting, validation,
  *	and status returns.
  *
  * Arguments:
@@ -70,19 +70,20 @@ main(int argc, char** argv)
  *	username	User's login name.
  */
 {
-    struct hostent *	hp;
-    socklen_t			length;
-    char		password[256];
-    char		peername[1024];
-    struct passwd *	pwd;
-    struct sockaddr_in	sin;
-    char		username[32];
+    struct hostent *hp;
+    socklen_t length;
+    char password[256];
+    char peername[1024];
+    struct passwd *pwd;
+    struct sockaddr_in sin;
+    char username[32];
 
     /*
-     * Get the user name and password if needed.  
+     * Get the user name and password if needed.
      */
-    if (argc<2) {
-        fprintf(stdout, "Username: "); fflush(stdout);
+    if (argc < 2) {
+        fprintf(stdout, "Username: ");
+        fflush(stdout);
         if (fgets(username, sizeof(username), stdin) == NULL) {
             fprintf(stderr, "cannot read username: %s", strerror(errno));
             exit(5);
@@ -90,8 +91,9 @@ main(int argc, char** argv)
     } else {
         strlcpy(username, argv[1], sizeof(username));
     }
-    if (argc<3) {
-        fprintf(stdout, "Password: "); fflush(stdout);
+    if (argc < 3) {
+        fprintf(stdout, "Password: ");
+        fflush(stdout);
         if (fgets(password, sizeof(password), stdin) == NULL) {
             fprintf(stderr, "cannot read username: %s", strerror(errno));
             exit(5);
@@ -99,15 +101,15 @@ main(int argc, char** argv)
     } else {
         strlcpy(password, argv[2], sizeof(password));
     }
-    
+
     /*
      *  Strip CR's and NL's from the end.
      */
-    length = strlen(username)-1;
+    length = strlen(username) - 1;
     while (username[length] == '\r' || username[length] == '\n') {
         username[length--] = '\0';
     }
-    length = strlen(password)-1;
+    length = strlen(password) - 1;
     while (password[length] == '\r' || password[length] == '\n') {
         password[length--] = '\0';
     }
@@ -116,7 +118,7 @@ main(int argc, char** argv)
      *  Get the hostname of the peer.
      */
     length = sizeof(sin);
-    if (getpeername(0, (struct sockaddr *)&sin, &length) < 0) {
+    if (getpeername(0, (struct sockaddr *) &sin, &length) < 0) {
         if (!isatty(0)) {
             fprintf(stderr, "cant getpeername()::%s:+:!*\n", username);
             exit(1);
@@ -124,14 +126,16 @@ main(int argc, char** argv)
         strlcpy(peername, "localhost", sizeof(peername));
     } else if (sin.sin_family != AF_INET) {
         fprintf(stderr, "Bad address family %ld::%s:+:!*\n",
-                (long)sin.sin_family, username);
+                (long) sin.sin_family, username);
         exit(1);
-    } else if ((hp = gethostbyaddr((char *)&sin.sin_addr, sizeof(sin.sin_addr), AF_INET)) == NULL) {
+    } else if ((hp = gethostbyaddr((char *) &sin.sin_addr,
+                                   sizeof(sin.sin_addr), AF_INET))
+               == NULL) {
         strlcpy(peername, inet_ntoa(sin.sin_addr), sizeof(peername));
     } else {
         strlcpy(peername, hp->h_name, sizeof(peername));
     }
-   
+
     /*
      *  Get the user name in the passwd file.
      */
@@ -147,7 +151,7 @@ main(int argc, char** argv)
     /*
      *  Make sure we managed to read in the password.
      */
-    if (strcmp(pwd->pw_passwd, "*")==0) {
+    if (strcmp(pwd->pw_passwd, "*") == 0) {
 
         /*
          *  No permission to read passwords.
@@ -159,7 +163,7 @@ main(int argc, char** argv)
     /*
      *  Verify the password.
      */
-    if (strcmp(pwd->pw_passwd, crypt(password, pwd->pw_passwd))!=0) {
+    if (strcmp(pwd->pw_passwd, crypt(password, pwd->pw_passwd)) != 0) {
 
         /*
          * Password was invalid.
