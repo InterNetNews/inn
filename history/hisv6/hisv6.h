@@ -15,25 +15,25 @@ bool hisv6_close(void *);
 
 bool hisv6_sync(void *);
 
-bool hisv6_lookup(void *, const char *key, time_t *arrived,
-		  time_t *posted, time_t *expires, struct token *token);
+bool hisv6_lookup(void *, const char *key, time_t *arrived, time_t *posted,
+                  time_t *expires, struct token *token);
 
 bool hisv6_check(void *, const char *key);
 
-bool hisv6_write(void *, const char *key, time_t arrived,
-		 time_t posted, time_t expires, const struct token *token);
+bool hisv6_write(void *, const char *key, time_t arrived, time_t posted,
+                 time_t expires, const struct token *token);
 
-bool hisv6_replace(void *, const char *key, time_t arrived,
-		 time_t posted, time_t expires, const struct token *token);
+bool hisv6_replace(void *, const char *key, time_t arrived, time_t posted,
+                   time_t expires, const struct token *token);
 
-bool hisv6_expire(void *, const char *, const char *, bool,
-		  void *, time_t threshold,
-		  bool (*exists)(void *, time_t, time_t, time_t,
-				 struct token *));
+bool hisv6_expire(void *, const char *, const char *, bool, void *,
+                  time_t threshold,
+                  bool (*exists)(void *, time_t, time_t, time_t,
+                                 struct token *));
 
 bool hisv6_walk(void *, const char *, void *,
-		bool (*)(void *, time_t, time_t, time_t,
-			 const struct token *));
+                bool (*)(void *, time_t, time_t, time_t,
+                         const struct token *));
 
 const char *hisv6_error(void *);
 
