@@ -345,8 +345,8 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
                 where[count] = '\0';
                 return RTeof;
             }
-            /* Search for `\n' in what we just read.  If we find it we'll
-             * drop out and return the line for processing */
+            /* Search for `\n' in what we just read.  If we find it, we'll
+             * drop out and return the line for processing. */
             lf = memchr(where, '\n', count);
             where += count;
         } while (lf == NULL);

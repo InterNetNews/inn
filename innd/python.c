@@ -633,7 +633,7 @@ PYclose(void)
 
 
 /*
-**  Check that a method exists and is callable.	 Set a pointer to
+**  Check that a method exists and is callable.  Set a pointer to
 **  the corresponding PyObject, or NULL if not found.
 */
 static void
