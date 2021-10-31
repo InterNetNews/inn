@@ -10,17 +10,17 @@
 
 #include "portable/socket.h"
 
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "libauth.h"
-#include "inn/libinn.h"
 
 #define NAMESTR "ClientAuthname: "
 #define PASSSTR "ClientPassword: "
 
 #define CLIHOST "ClientHost: "
-#define CLIIP "ClientIP: "
+#define CLIIP   "ClientIP: "
 #define CLIPORT "ClientPort: "
-#define LOCIP "LocalIP: "
+#define LOCIP   "LocalIP: "
 #define LOCPORT "LocalPort: "
 
 /*
@@ -83,9 +83,10 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         warn("libauth: requested authenticator data not sent by nnrpd");
         return false;
     }
-    if (res != NULL && (res->clienthostname == NULL || res->clientip == NULL
-                        || res->clientport == NULL || res->localip == NULL
-                        || res->localport == NULL)) {
+    if (res != NULL
+        && (res->clienthostname == NULL || res->clientip == NULL
+            || res->clientport == NULL || res->localip == NULL
+            || res->localport == NULL)) {
         warn("libauth: requested resolver data not sent by nnrpd");
         return false;
     }

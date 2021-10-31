@@ -9,20 +9,20 @@
 
 #include "portable/system.h"
 
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
 
 #include "libauth.h"
 
 #if HAVE_CRYPT_H
-# include <crypt.h>
+#    include <crypt.h>
 #endif
 
 #include <fcntl.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
 
 
 /*
@@ -30,36 +30,36 @@
 **  in preference to other libraries.
 */
 #if defined(HAVE_DBM) || defined(HAVE_BDB_NDBM)
-# if HAVE_BDB_NDBM
-#  define DB_DBM_HSEARCH 1
-#  include <db.h>
-# elif HAVE_NDBM_H
-#  include <ndbm.h>
-# elif HAVE_DB1_NDBM_H
-#  include <db1/ndbm.h>
-# elif HAVE_GDBM_SLASH_NDBM_H
-#  include <gdbm/ndbm.h>
-# elif HAVE_GDBM_HYPHEN_NDBM_H
-#  include <gdbm-ndbm.h>
-# endif
-# define OPT_DBM "d:"
+#    if HAVE_BDB_NDBM
+#        define DB_DBM_HSEARCH 1
+#        include <db.h>
+#    elif HAVE_NDBM_H
+#        include <ndbm.h>
+#    elif HAVE_DB1_NDBM_H
+#        include <db1/ndbm.h>
+#    elif HAVE_GDBM_SLASH_NDBM_H
+#        include <gdbm/ndbm.h>
+#    elif HAVE_GDBM_HYPHEN_NDBM_H
+#        include <gdbm-ndbm.h>
+#    endif
+#    define OPT_DBM "d:"
 #else
-# define OPT_DBM ""
+#    define OPT_DBM ""
 #endif
 
 #if HAVE_GETSPNAM
-# include <shadow.h>
-# define OPT_SHADOW "s"
+#    include <shadow.h>
+#    define OPT_SHADOW "s"
 #else
-# define OPT_SHADOW ""
+#    define OPT_SHADOW ""
 #endif
 
 #if HAVE_PAM
-# if HAVE_SECURITY_PAM_APPL_H
-#  include <security/pam_appl.h>
-# else
-#  include <pam/pam_appl.h>
-# endif
+#    if HAVE_SECURITY_PAM_APPL_H
+#        include <security/pam_appl.h>
+#    else
+#        include <pam/pam_appl.h>
+#    endif
 #endif
 
 
@@ -92,7 +92,7 @@ pass_conv(int num_msg, PAM_CONST struct pam_message **msgm UNUSED,
     if (*response == NULL)
         return PAM_CONV_ERR;
     for (i = 0; i < num_msg; i++) {
-        (*response)[i].resp = strdup((char *)appdata_ptr);
+        (*response)[i].resp = strdup((char *) appdata_ptr);
         (*response)[i].resp_retcode = 0;
     }
     return PAM_SUCCESS;
@@ -263,7 +263,7 @@ password_system(const char *username)
 
 
 /*
-**  Try to get the name of a user's primary group out of the system group 
+**  Try to get the name of a user's primary group out of the system group
 **  file.  The group, if found, is returned as a newly allocated string;
 **  otherwise, NULL is returned.  If the username is not found, NULL is
 **  returned.
@@ -295,8 +295,7 @@ output_user(const char *username, bool wantgroup)
         if (group == NULL)
             die("group info for user %s not available", username);
         printf("User:%s@%s\r\n", username, group);
-    }
-    else
+    } else
         print_user(username);
 }
 
@@ -310,7 +309,13 @@ output_user(const char *username, bool wantgroup)
 int
 main(int argc, char *argv[])
 {
-    enum authtype { AUTH_NONE, AUTH_SHADOW, AUTH_FILE, AUTH_DBM };
+    enum authtype
+    {
+        AUTH_NONE,
+        AUTH_SHADOW,
+        AUTH_FILE,
+        AUTH_DBM
+    };
 
     int opt;
     const char *hash;
@@ -369,7 +374,7 @@ main(int argc, char *argv[])
         }
     }
     if (argc != optind)
-	die("extra arguments given");
+        die("extra arguments given");
     if (authinfo != NULL && authinfo->username == NULL)
         die("-u option is required if -p option is given");
     if (authinfo != NULL && authinfo->password == NULL)

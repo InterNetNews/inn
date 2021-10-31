@@ -36,11 +36,11 @@ BEGIN_DECLS
    struct and its fields; this can be done by calling the appropriate
    destruction function below. */
 extern struct auth_info *get_auth_info(FILE *);
-extern struct res_info  *get_res_info (FILE *);
+extern struct res_info *get_res_info(FILE *);
 
 /* Free a res_info or auth_info struct. */
 extern void free_auth_info(struct auth_info *);
-extern void free_res_info (struct res_info  *);
+extern void free_res_info(struct res_info *);
 
 /* Return the user string to nnrpd. */
 extern void print_user(const char *);

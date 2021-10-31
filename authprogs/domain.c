@@ -8,8 +8,8 @@
 
 #include "portable/system.h"
 
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "libauth.h"
 
 int
