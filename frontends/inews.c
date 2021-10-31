@@ -896,7 +896,8 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:")) != EOF)
+    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:"))
+           != EOF) {
         switch (i) {
         default:
             Usage();
@@ -941,8 +942,9 @@ main(int ac, char *av[])
         case 'F':   HDR(_references) = optarg;     break;
         case 'o':   HDR(_organization) = optarg;   break;
         case 'w':   HDR(_followupto) = optarg;     break;
-        /* clang-format on */
         }
+        /* clang-format on */
+    }
     ac -= optind;
     av += optind;
 
