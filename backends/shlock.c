@@ -17,16 +17,16 @@
 
 static bool BinaryLock;
 static bool JustChecking;
-static void Usage(void) __attribute__ ((__noreturn__));
+static void Usage(void) __attribute__((__noreturn__));
 
-#define CANTUNLINK "shlock: Can't unlink \"%s\", %s"
-#define CANTOPEN "shlock: Can't open \"%s\", %s"
-#define CANTCHDIR "shlock: Can't chdir to \"%s\", %s"
+#define CANTUNLINK   "shlock: Can't unlink \"%s\", %s"
+#define CANTOPEN     "shlock: Can't open \"%s\", %s"
+#define CANTCHDIR    "shlock: Can't chdir to \"%s\", %s"
 #define CANTWRITEPID "shlock: Can't write PID to \"%s\", %s"
-#define CANTCLOSE "shlock: Can't close \"%s\", %s"
-#define CANTLINK "shlock: Can't link \"%s\" to \"%s\", %s"
-#define STALELOCK "shlock: Stale lockfile detected \"%s\", please remove"
-#define CANTSTAT "shlock: Can't stat \"%s\", %s"
+#define CANTCLOSE    "shlock: Can't close \"%s\", %s"
+#define CANTLINK     "shlock: Can't link \"%s\" to \"%s\", %s"
+#define STALELOCK    "shlock: Stale lockfile detected \"%s\", please remove"
+#define CANTSTAT     "shlock: Can't stat \"%s\", %s"
 
 /* After this time, we start to complain about an invalid locked lockfile. */
 #define LINK_TIMEOUT 30
@@ -38,13 +38,13 @@ static void Usage(void) __attribute__ ((__noreturn__));
 static int
 OpenLock(char *name)
 {
-  int fd;
-  
-  if ((fd = open(name, O_RDONLY)) < 0 && errno != ENOENT && !JustChecking) {
-    syswarn(CANTOPEN, name, strerror(errno));
-  }
+    int fd;
 
-  return fd;
+    if ((fd = open(name, O_RDONLY)) < 0 && errno != ENOENT && !JustChecking) {
+        syswarn(CANTOPEN, name, strerror(errno));
+    }
+
+    return fd;
 }
 
 
@@ -56,25 +56,25 @@ OpenLock(char *name)
 static int
 ReadLock(int fd)
 {
-  int i;
-  pid_t pid;
-  char buff[BUFSIZ];
+    int i;
+    pid_t pid;
+    char buff[BUFSIZ];
 
-  lseek(fd, 0, SEEK_SET);
+    lseek(fd, 0, SEEK_SET);
 
-  /* Read the pid that is written there. */
-  if (BinaryLock) {
-    if (read(fd, (char *)&pid, sizeof(pid)) != sizeof(pid)) {
-      return 0;
+    /* Read the pid that is written there. */
+    if (BinaryLock) {
+        if (read(fd, (char *) &pid, sizeof(pid)) != sizeof(pid)) {
+            return 0;
+        }
+    } else {
+        if ((i = read(fd, buff, sizeof(buff) - 1)) <= 0) {
+            return 0;
+        }
+        buff[i] = '\0';
+        pid = (pid_t) atol(buff);
     }
-  } else {
-    if ((i = read(fd, buff, sizeof(buff) - 1)) <= 0) {
-      return 0;
-    }
-    buff[i] = '\0';
-    pid = (pid_t) atol(buff);
-  }
-  return pid;
+    return pid;
 }
 
 
@@ -84,7 +84,7 @@ ReadLock(int fd)
 static bool
 ValidPid(int pid)
 {
-  return (pid > 0) && ((kill(pid, 0) >= 0) || (errno != ESRCH));
+    return (pid > 0) && ((kill(pid, 0) >= 0) || (errno != ESRCH));
 }
 
 
@@ -94,7 +94,7 @@ ValidPid(int pid)
 static bool
 ValidLock(int fd)
 {
-  return ValidPid(ReadLock(fd));
+    return ValidPid(ReadLock(fd));
 }
 
 
@@ -104,11 +104,11 @@ ValidLock(int fd)
 static bool
 Unlink(char *name)
 {
-  if (unlink(name) < 0 && errno != ENOENT) {
-    syswarn(CANTUNLINK, name, strerror(errno));
-    return false;
-  }
-  return true;
+    if (unlink(name) < 0 && errno != ENOENT) {
+        syswarn(CANTUNLINK, name, strerror(errno));
+        return false;
+    }
+    return true;
 }
 
 
@@ -118,194 +118,197 @@ Unlink(char *name)
 static void
 Usage(void)
 {
-  fprintf(stderr, "Usage: shlock [-b|-c|-u] -f file -p pid\n");
-  exit(1);
+    fprintf(stderr, "Usage: shlock [-b|-c|-u] -f file -p pid\n");
+    exit(1);
 }
 
 
 int
 main(int ac, char *av[])
 {
-  int i;
-  char *p;
-  int fd;
-  char tmp[BUFSIZ];
-  char tmp2[BUFSIZ+1];
-  char buff[BUFSIZ];
-  char *name;
-  pid_t pid;
-  bool ok;
-  bool do_sleep;
+    int i;
+    char *p;
+    int fd;
+    char tmp[BUFSIZ];
+    char tmp2[BUFSIZ + 1];
+    char buff[BUFSIZ];
+    char *name;
+    pid_t pid;
+    bool ok;
+    bool do_sleep;
 
-  /* Establish our identity. */
-  message_program_name = "shlock";
+    /* Establish our identity. */
+    message_program_name = "shlock";
 
-  /* Set defaults. */
-  pid = 0;
-  name = NULL;
-  do_sleep = false;
-  JustChecking = false;
-  BinaryLock = false;
+    /* Set defaults. */
+    pid = 0;
+    name = NULL;
+    do_sleep = false;
+    JustChecking = false;
+    BinaryLock = false;
 
-  umask(NEWSUMASK);
+    umask(NEWSUMASK);
 
-  /* Parse JCL. */
-  while ((i = getopt(ac, av, "bcf:p:u")) != EOF) {
-    switch (i) {
-      default:
+    /* Parse JCL. */
+    while ((i = getopt(ac, av, "bcf:p:u")) != EOF) {
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+        case 'b':
+        case 'u':
+            BinaryLock = true;
+            break;
+        case 'c':
+            JustChecking = true;
+            break;
+        case 'f':
+            name = optarg;
+            break;
+        case 'p':
+            pid = (pid_t) atol(optarg);
+            break;
+        }
+    }
+
+    ac -= optind;
+    if (ac || pid == 0 || name == NULL) {
         Usage();
-        /* NOTREACHED */
-      case 'b':
-      case 'u':
-        BinaryLock = true;
-        break;
-      case 'c':
-        JustChecking = true;
-        break;
-      case 'f':
-        name = optarg;
-        break;
-      case 'p':
-        pid = (pid_t) atol(optarg);
-        break;
     }
-  }
 
-  ac -= optind;
-  if (ac || pid == 0 || name == NULL) {
-    Usage();
-  }
-
-  /* Handle the "-c" flag. */
-  if (JustChecking) {
-    if ((fd = OpenLock(name)) < 0)
-      return 1;
-    ok = ValidLock(fd);
-    close(fd);
-    return ok;
-  }
-
-  /* Create the temp file in the same directory as the destination.
-   * To prevent (some?) buffer overflows, chdir to the directory first. */
-  if ((p = strrchr(name, '/')) != NULL) {
-    *p = '\0';
-    if (chdir(name) < 0) {
-      sysdie(CANTCHDIR, name, strerror(errno));
-    }
-    name = p + 1;
-  }
-  snprintf(tmp, sizeof(tmp), "shlock%ld", (long)getpid());
-
-  /* Loop until we can open the file. */
-  while ((fd = open(tmp, O_RDWR | O_CREAT | O_EXCL, 0644)) < 0) {
-    switch (errno) {
-      default:
-        /* Unknown error -- give up. */
-        sysdie(CANTOPEN, tmp, strerror(errno));
-      case EEXIST:
-        /* If we can remove the old temporary, retry the open. */
-        if (!Unlink(tmp))
-          return 1;
-        break;
-    }
-  }
-
-  /* Write the process ID. */
-  if (BinaryLock) {
-    ok = write(fd, &pid, sizeof(pid)) == sizeof(pid);
-  } else {
-    /* Don't write exactly sizeof(pid) bytes, someone (like minicom)
-     * might treat it as a binary lock.  Add spaces before the PID. */
-    snprintf(buff, sizeof(buff), "%10ld\n", (long) pid);
-    i = strlen(buff);
-    ok = write(fd, buff, i) == i;
-  }
-  if (!ok) {
-    syswarn(CANTWRITEPID, tmp, strerror(errno));
-    goto ExitClose;
-  }
-  if (close(fd) < 0) {
-    syswarn(CANTCLOSE, tmp, strerror(errno));
-    goto ExitUnlink;
-  }
-
-  /* Try to link the temporary to the lockfile. */
-  while (link(tmp, name) < 0) {
-    switch (errno) {
-      default:
-        /* Unknown error -- give up. */
-        syswarn(CANTLINK, tmp, name, strerror(errno));
-        goto ExitUnlink;
-      case EEXIST:
-      {
-        /* File exists (read: existed) at link time; if lock is valid, give up. */
-        struct stat stt, st1, st2;
-        
+    /* Handle the "-c" flag. */
+    if (JustChecking) {
         if ((fd = OpenLock(name)) < 0)
-          goto ExitUnlink;
-        if (ValidLock(fd))
-          goto ExitClose;
-
-        /* Use this file to lock the lockfile. */
-        snprintf(tmp2, sizeof(tmp2), "%sx", tmp);
-        if (!Unlink(tmp2))
-          goto ExitUnlink;
-        if (stat(tmp, &stt) < 0 || fstat(fd, &st1) < 0) {
-          if (errno != ENOENT)
-            syswarn(CANTSTAT, tmp, strerror(errno));
-          goto ExitClose;
-        }
-
-        /* Check if inode possibly changed during our lifetime. */
-        if (st1.st_ctime >= stt.st_ctime)
-          goto ExitClose;
-
-        /* Check if someone else has already linked to this file. */
-        if (st1.st_nlink != 1) {
-          /* This only happens when a crash leaves a link or someone is messing around. */
-          if (st1.st_ctime + LINK_TIMEOUT < stt.st_ctime)
-            syswarn(STALELOCK, name);
-          do_sleep = true;
-          goto ExitClose;
-        }
-        if (link(name, tmp2) < 0) {
-          if (errno != ENOENT)
-            syswarn(CANTLINK, name, tmp2, strerror(errno));
-          goto ExitClose;
-        }
-
-        /* Check if fd is still pointing to the right file. */
-        if (stat(name, &st2) < 0) {
-          if (errno != ENOENT)
-            syswarn(CANTSTAT, name, strerror(errno));
-          goto ExitUnlink2;
-        }
-
-        /* Check if someone put another lockfile in place (old race condition). */
-        if (st1.st_ino != st2.st_ino)
-          goto ExitUnlink2;
-        if (st2.st_nlink != 2)
-          goto ExitUnlink2;
-
-        /* Still the same file and we locked access, unlink it, and retry. */
-        if (!Unlink(name))
-          goto ExitUnlink2;
-        Unlink(tmp2);
+            return 1;
+        ok = ValidLock(fd);
         close(fd);
-      }
+        return ok;
     }
-  }
 
-  Unlink(tmp);
-  return 0;
+    /* Create the temp file in the same directory as the destination.
+     * To prevent (some?) buffer overflows, chdir to the directory first. */
+    if ((p = strrchr(name, '/')) != NULL) {
+        *p = '\0';
+        if (chdir(name) < 0) {
+            sysdie(CANTCHDIR, name, strerror(errno));
+        }
+        name = p + 1;
+    }
+    snprintf(tmp, sizeof(tmp), "shlock%ld", (long) getpid());
+
+    /* Loop until we can open the file. */
+    while ((fd = open(tmp, O_RDWR | O_CREAT | O_EXCL, 0644)) < 0) {
+        switch (errno) {
+        default:
+            /* Unknown error -- give up. */
+            sysdie(CANTOPEN, tmp, strerror(errno));
+        case EEXIST:
+            /* If we can remove the old temporary, retry the open. */
+            if (!Unlink(tmp))
+                return 1;
+            break;
+        }
+    }
+
+    /* Write the process ID. */
+    if (BinaryLock) {
+        ok = write(fd, &pid, sizeof(pid)) == sizeof(pid);
+    } else {
+        /* Don't write exactly sizeof(pid) bytes, someone (like minicom)
+         * might treat it as a binary lock.  Add spaces before the PID. */
+        snprintf(buff, sizeof(buff), "%10ld\n", (long) pid);
+        i = strlen(buff);
+        ok = write(fd, buff, i) == i;
+    }
+    if (!ok) {
+        syswarn(CANTWRITEPID, tmp, strerror(errno));
+        goto ExitClose;
+    }
+    if (close(fd) < 0) {
+        syswarn(CANTCLOSE, tmp, strerror(errno));
+        goto ExitUnlink;
+    }
+
+    /* Try to link the temporary to the lockfile. */
+    while (link(tmp, name) < 0) {
+        switch (errno) {
+        default:
+            /* Unknown error -- give up. */
+            syswarn(CANTLINK, tmp, name, strerror(errno));
+            goto ExitUnlink;
+        case EEXIST: {
+            /* File exists (read: existed) at link time; if lock is valid, give
+             * up. */
+            struct stat stt, st1, st2;
+
+            if ((fd = OpenLock(name)) < 0)
+                goto ExitUnlink;
+            if (ValidLock(fd))
+                goto ExitClose;
+
+            /* Use this file to lock the lockfile. */
+            snprintf(tmp2, sizeof(tmp2), "%sx", tmp);
+            if (!Unlink(tmp2))
+                goto ExitUnlink;
+            if (stat(tmp, &stt) < 0 || fstat(fd, &st1) < 0) {
+                if (errno != ENOENT)
+                    syswarn(CANTSTAT, tmp, strerror(errno));
+                goto ExitClose;
+            }
+
+            /* Check if inode possibly changed during our lifetime. */
+            if (st1.st_ctime >= stt.st_ctime)
+                goto ExitClose;
+
+            /* Check if someone else has already linked to this file. */
+            if (st1.st_nlink != 1) {
+                /* This only happens when a crash leaves a link or someone is
+                 * messing around. */
+                if (st1.st_ctime + LINK_TIMEOUT < stt.st_ctime)
+                    syswarn(STALELOCK, name);
+                do_sleep = true;
+                goto ExitClose;
+            }
+            if (link(name, tmp2) < 0) {
+                if (errno != ENOENT)
+                    syswarn(CANTLINK, name, tmp2, strerror(errno));
+                goto ExitClose;
+            }
+
+            /* Check if fd is still pointing to the right file. */
+            if (stat(name, &st2) < 0) {
+                if (errno != ENOENT)
+                    syswarn(CANTSTAT, name, strerror(errno));
+                goto ExitUnlink2;
+            }
+
+            /* Check if someone put another lockfile in place (old race
+             * condition). */
+            if (st1.st_ino != st2.st_ino)
+                goto ExitUnlink2;
+            if (st2.st_nlink != 2)
+                goto ExitUnlink2;
+
+            /* Still the same file and we locked access, unlink it, and retry.
+             */
+            if (!Unlink(name))
+                goto ExitUnlink2;
+            Unlink(tmp2);
+            close(fd);
+        }
+        }
+    }
+
+    Unlink(tmp);
+    return 0;
 
 ExitUnlink2:
-  Unlink(tmp2);
+    Unlink(tmp2);
 ExitClose:
-  close(fd);
+    close(fd);
 ExitUnlink:
-  Unlink(tmp);
-  if (do_sleep)
-    sleep(1);
-  return 1;
+    Unlink(tmp);
+    if (do_sleep)
+        sleep(1);
+    return 1;
 }

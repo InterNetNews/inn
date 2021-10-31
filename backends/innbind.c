@@ -9,7 +9,7 @@
 #include "portable/socket.h"
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD
-# include <stropts.h>
+#    include <stropts.h>
 #endif
 #include <syslog.h>
 
@@ -20,18 +20,18 @@
 
 /* Macros to set the len attribute of sockaddrs. */
 #if HAVE_STRUCT_SOCKADDR_SA_LEN
-# define sin_set_length(s)      ((s)->sin_len  = sizeof(struct sockaddr_in))
-# define sin6_set_length(s)     ((s)->sin6_len = sizeof(struct sockaddr_in6))
+#    define sin_set_length(s)  ((s)->sin_len = sizeof(struct sockaddr_in))
+#    define sin6_set_length(s) ((s)->sin6_len = sizeof(struct sockaddr_in6))
 #else
-# define sin_set_length(s)      /* empty */
-# define sin6_set_length(s)     /* empty */
+#    define sin_set_length(s)  /* empty */
+#    define sin6_set_length(s) /* empty */
 #endif
 
 /* INND_PORT is the additional port specified at configure time to which the
    news user should be allowed to bind.  If it's not set, set it to 119 (which
    will cause it to have no effect).  I hate #ifdef in code, can you tell? */
 #ifndef INND_PORT
-# define INND_PORT 119
+#    define INND_PORT 119
 #endif
 
 /* Holds the information about a network socket to bind. */
@@ -102,7 +102,7 @@ parse_argument(const char *string, struct binding *binding)
 
     /* Done.  Clean up. */
     vector_free(spec);
-}    
+}
 
 
 /*
@@ -180,7 +180,7 @@ bind_address(struct binding *binding, const char *spec)
 
     /* Make sure that we're allowed to bind to that port. */
     if (port < 1024 && port != 119 && port != 433 && port != 563
-            && port != INND_PORT)
+        && port != INND_PORT)
         die("cannot bind to restricted port %hu in %s", port, spec);
 
     /* Sanity check on the socket. */
@@ -227,18 +227,18 @@ create_socket(struct binding *binding, const char *spec)
     if (fd < -1)
         sysdie("cannot create socket for %s", spec);
 
-    /* Mark it reusable if possible. */
+        /* Mark it reusable if possible. */
 #ifdef SO_REUSEADDR
     flag = 1;
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0)
         sysdie("cannot mark socket reusable for %s", spec);
 #endif
 
-    /* Mark it IPv6 only if possible. */
+        /* Mark it IPv6 only if possible. */
 #ifdef IPV6_V6ONLY
     flag = 1;
-    if (binding->family == AF_INET6 &&
-        setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) < 0)
+    if (binding->family == AF_INET6
+        && setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &flag, sizeof(flag)) < 0)
         sysdie("cannot mark socket IPv6 only for %s", spec);
 #endif
 
@@ -261,7 +261,7 @@ send_fd(int fd)
     if (ioctl(STDOUT_FILENO, I_SENDFD, fd) < 0)
         sysdie("cannot pass file descriptor");
 }
-#else /* !HAVE_STREAMS_SENDFD */
+#else  /* !HAVE_STREAMS_SENDFD */
 static void
 send_fd(int fd UNUSED)
 {
@@ -276,7 +276,7 @@ main(int argc, char *argv[])
     uid_t real_uid, uid;
     int i;
     bool done;
-    struct binding binding = { 0, 0, NULL, 0 };
+    struct binding binding = {0, 0, NULL, 0};
     bool force_sendfd = false;
 
     /* Set up the error handlers.  Errors go to stderr and to syslog with a
@@ -294,8 +294,8 @@ main(int argc, char *argv[])
     if (real_uid != geteuid()) {
         get_news_uid_gid(&uid, false, true);
         if (real_uid != uid) {
-            die("must be run by runasuser (%lu), not %lu",
-                (unsigned long) uid, (unsigned long) real_uid);
+            die("must be run by runasuser (%lu), not %lu", (unsigned long) uid,
+                (unsigned long) real_uid);
         }
     }
 

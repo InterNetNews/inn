@@ -10,22 +10,22 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
+#include "inn/paths.h"
 #include "inn/qio.h"
+#include "inn/storage.h"
 #include "inn/vector.h"
 #include "inn/wire.h"
-#include "inn/libinn.h"
-#include "inn/paths.h"
-#include "inn/storage.h"
 
 
 /* Holds various configuration options and command-line parameters. */
 struct config {
-    const char *root;           /* Root of the archive. */
-    const char *pattern;        /* Wildmat pattern of groups to process. */
-    FILE *index;                /* Where to put the index entries. */
-    bool concat;                /* Concatenate articles together. */
-    bool flat;                  /* Use a flat directory structure. */
+    const char *root;    /* Root of the archive. */
+    const char *pattern; /* Wildmat pattern of groups to process. */
+    FILE *index;         /* Where to put the index entries. */
+    bool concat;         /* Concatenate articles together. */
+    bool flat;           /* Use a flat directory structure. */
 };
 
 
@@ -35,7 +35,7 @@ struct config {
 static bool
 MakeDir(char *Name)
 {
-    struct stat         Sb;
+    struct stat Sb;
 
     if (mkdir(Name, GROUPDIR_MODE) >= 0)
         return true;
@@ -238,7 +238,7 @@ build_path(const char *group, const char *number, struct config *config,
     p = path->data + path->left;
     buffer_append(path, group, strlen(group));
     if (!config->flat)
-        for (; (size_t) (p - path->data) < path->left; p++)
+        for (; (size_t)(p - path->data) < path->left; p++)
             if (*p == '.')
                 *p = '/';
 
@@ -347,7 +347,7 @@ process_article(ARTHANDLE *art, const char *token, struct config *config)
 int
 main(int argc, char *argv[])
 {
-    struct config config = { NULL, NULL, NULL, 0, 0 };
+    struct config config = {NULL, NULL, NULL, 0, 0};
     int option, status;
     bool redirect = true;
     QIOSTATE *qp;
@@ -466,7 +466,7 @@ main(int argc, char *argv[])
         syswarn("cannot start spool");
         status = 1;
     }
-    while (fgets(buffer, sizeof(buffer), stdin) != NULL) 
+    while (fgets(buffer, sizeof(buffer), stdin) != NULL)
         if (fputs(buffer, spool) == EOF) {
             syswarn("cannot write to spool");
             status = 1;

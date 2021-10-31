@@ -22,7 +22,7 @@
 **          Solaris 2.x
 **          HP-UX 10.x
 **          OSF1
-**  
+**
 **  Compile with -DHAVE_STATFS for these systems:
 **          SunOS 4.x/Solaris 1.x
 **          HP-UX 9.x
@@ -30,7 +30,7 @@
 **          NeXTstep 3.x
 **
 **  (Or even better, let autoconf take care of it.)
-**  
+**
 **  Thanks to these folks for bug fixes and porting information:
 **          Mahesh Ramachandran <rr@eel.ufl.edu>
 **          Chuck Swiger <chuck@its.com>
@@ -45,11 +45,11 @@
 #include "portable/system.h"
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
-#include "inn/qio.h"
-#include "inn/libinn.h"
 #include "inn/paths.h"
+#include "inn/qio.h"
 
 /* The portability mess.  Hide everything in macros so that the actual code
    is relatively clean.  SysV uses statvfs, BSD uses statfs, and ULTRIX is
@@ -61,43 +61,43 @@
    in df_scale (which handles SysV's weird fragment vs. preferred block size
    thing).  df_favail returns the free inodes. */
 #if HAVE_STATVFS
-# include <sys/statvfs.h>
-# define df_stat(p, s)  (statvfs((p), (s)) == 0)
-# define df_declare(s)  struct statvfs s
-# define df_total(s)    ((s).f_blocks)
-# define df_avail(s)    ((s).f_bavail)
-# define df_scale(s)    ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
-# define df_files(s)    ((s).f_files)
-# define df_favail(s)   ((s).f_favail)
+#    include <sys/statvfs.h>
+#    define df_stat(p, s) (statvfs((p), (s)) == 0)
+#    define df_declare(s) struct statvfs s
+#    define df_total(s)   ((s).f_blocks)
+#    define df_avail(s)   ((s).f_bavail)
+#    define df_scale(s)   ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
+#    define df_files(s)   ((s).f_files)
+#    define df_favail(s)  ((s).f_favail)
 #elif HAVE_STATFS
-# if HAVE_SYS_VFS_H
-#  include <sys/vfs.h>
-# endif
-# if HAVE_SYS_PARAM_H
-#  include <sys/param.h>
-# endif
-# if HAVE_SYS_MOUNT_H
-#  include <sys/mount.h>
-# endif
-# ifdef __ultrix__
-#  define df_stat(p, s) (statfs((p), (s)) >= 1)
-#  define df_declare(s) struct fs_data s
-#  define df_total(s)   ((s).fd_btot)
-#  define df_avail(s)   ((s).fd_bfreen)
-#  define df_scale(s)   1024
-#  define df_files(s)   ((s).fd_gtot)
-#  define df_favail(s)  ((s).fd_gfree)
-# else
-#  define df_stat(p, s) (statfs((p), (s)) == 0)
-#  define df_declare(s) struct statfs s
-#  define df_total(s)   ((s).f_blocks)
-#  define df_avail(s)   ((s).f_bavail)
-#  define df_scale(s)   ((s).f_bsize)
-#  define df_files(s)   ((s).f_files)
-#  define df_favail(s)  ((s).f_ffree)
-# endif
+#    if HAVE_SYS_VFS_H
+#        include <sys/vfs.h>
+#    endif
+#    if HAVE_SYS_PARAM_H
+#        include <sys/param.h>
+#    endif
+#    if HAVE_SYS_MOUNT_H
+#        include <sys/mount.h>
+#    endif
+#    ifdef __ultrix__
+#        define df_stat(p, s) (statfs((p), (s)) >= 1)
+#        define df_declare(s) struct fs_data s
+#        define df_total(s)   ((s).fd_btot)
+#        define df_avail(s)   ((s).fd_bfreen)
+#        define df_scale(s)   1024
+#        define df_files(s)   ((s).fd_gtot)
+#        define df_favail(s)  ((s).fd_gfree)
+#    else
+#        define df_stat(p, s) (statfs((p), (s)) == 0)
+#        define df_declare(s) struct statfs s
+#        define df_total(s)   ((s).f_blocks)
+#        define df_avail(s)   ((s).f_bavail)
+#        define df_scale(s)   ((s).f_bsize)
+#        define df_files(s)   ((s).f_files)
+#        define df_favail(s)  ((s).f_ffree)
+#    endif
 #else
-# error "Platform not supported.  Neither statvfs nor statfs available."
+#    error "Platform not supported.  Neither statvfs nor statfs available."
 #endif
 
 static const char usage[] = "\
@@ -140,9 +140,9 @@ printspace(const char *path, bool inode, bool fancy)
             if (amount > (1UL << 31) - 1)
                 amount = (1UL << 31) - 1;
 
-	    /* 2.6 kernels show 0 available and used inodes, instead. */
-	    if (amount == 0 && df_files(info) == 0)
-		amount = (1UL << 31) - 1;
+            /* 2.6 kernels show 0 available and used inodes, instead. */
+            if (amount == 0 && df_files(info) == 0)
+                amount = (1UL << 31) - 1;
         } else {
             /* Do the multiplication in floating point to try to retain
                accuracy if the free space in bytes would overflow an
@@ -153,8 +153,9 @@ printspace(const char *path, bool inode, bool fancy)
                Be very careful about the order of casts here; it's too
                easy to cast back into an unsigned long a value that
                overflows, and one then gets silently wrong results. */
-            amount = (unsigned long)
-                (((double) df_avail(info) * df_scale(info)) / 1024.0);
+            amount =
+                (unsigned long) (((double) df_avail(info) * df_scale(info))
+                                 / 1024.0);
         }
     } else {
         /* On error, free space is zero. */

@@ -14,8 +14,8 @@
 **	-v		Print status line.
 **
 **  Files will be shrunk an end of line boundary.  In no case will the
-**  file be longer than size bytes if it was longer than maxsize bytes.  
-**  If the first line is longer than the absolute value of size, the file 
+**  file be longer than size bytes if it was longer than maxsize bytes.
+**  If the first line is longer than the absolute value of size, the file
 **  will be truncated to zero length.
 **
 **  The -n flag may be used to determine of any file is too large.  No
@@ -30,12 +30,12 @@
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 
-#define MAX_SIZE	0x7fffffffUL
+#define MAX_SIZE 0x7fffffffUL
 
-static void Usage(void) __attribute__ ((__noreturn__));
+static void Usage(void) __attribute__((__noreturn__));
 
 
 /*
@@ -44,9 +44,9 @@ static void Usage(void) __attribute__ ((__noreturn__));
 static FILE *
 OpenTemp(void)
 {
-    FILE	*F;
-    char        *filename;
-    int		fd;
+    FILE *F;
+    char *filename;
+    int fd;
 
     filename = concatpath(innconf->pathtmp, "shrinkXXXXXX");
     fd = mkstemp(filename);
@@ -67,18 +67,18 @@ OpenTemp(void)
 static int
 EndsWithNewline(FILE *F)
 {
-    int		c;
+    int c;
 
     if (fseeko(F, 1, SEEK_END) < 0) {
         syswarn("cannot seek to end of file");
-	return true;
+        return true;
     }
 
     /* return the actual character or EOF */
     if ((c = fgetc(F)) == EOF) {
-	if (ferror(F))
+        if (ferror(F))
             syswarn("cannot read last byte");
-	return true;
+        return true;
     }
     return c == '\n';
 }
@@ -90,19 +90,17 @@ EndsWithNewline(FILE *F)
 static bool
 AppendNewline(char *name)
 {
-    FILE	*F;
+    FILE *F;
 
     if ((F = xfopena(name)) == NULL) {
         syswarn("cannot add newline");
-	return false;
+        return false;
     }
 
-    if (fputc('\n', F) == EOF
-     || fflush(F) == EOF
-     || ferror(F)
-     || fclose(F) == EOF) {
+    if (fputc('\n', F) == EOF || fflush(F) == EOF || ferror(F)
+        || fclose(F) == EOF) {
         syswarn("cannot add newline");
-	return false;
+        return false;
     }
 
     return true;
@@ -114,12 +112,12 @@ AppendNewline(char *name)
 static bool
 TooBig(FILE *F, off_t maxsize)
 {
-    struct stat	Sb;
+    struct stat Sb;
 
     /* Get the file's size. */
-    if (fstat((int)fileno(F), &Sb) < 0) {
+    if (fstat((int) fileno(F), &Sb) < 0) {
         syswarn("cannot fstat");
-	return false;
+        return false;
     }
 
     /* return true if too large */
@@ -132,55 +130,54 @@ TooBig(FILE *F, off_t maxsize)
 static bool
 Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 {
-    off_t	len;
-    FILE	*tmp;
-    struct stat	Sb;
-    char	buff[BUFSIZ + 1];
-    int		c;
-    size_t	i;
-    bool	err;
+    off_t len;
+    FILE *tmp;
+    struct stat Sb;
+    char buff[BUFSIZ + 1];
+    int c;
+    size_t i;
+    bool err;
 
     /* Get the file's size. */
-    if (fstat((int)fileno(F), &Sb) < 0) {
+    if (fstat((int) fileno(F), &Sb) < 0) {
         syswarn("cannot fstat");
-	return false;
+        return false;
     }
     len = Sb.st_size;
 
     /* Process a zero size request. */
     if (size == 0 && len > maxsize) {
-	if (len > 0) {
-	    fclose(F);
-	    if ((F = fopen(name, "w")) == NULL) {
+        if (len > 0) {
+            fclose(F);
+            if ((F = fopen(name, "w")) == NULL) {
                 syswarn("cannot overwrite");
-		return false;
-	    }
-	    fclose(F);
-	    *Changedp = true;
-	}
-	return true;
+                return false;
+            }
+            fclose(F);
+            *Changedp = true;
+        }
+        return true;
     }
 
     /* See if already small enough. */
     if (len <= maxsize) {
-	/* Newline already present? */
-	if (EndsWithNewline(F)) {
-	    fclose(F);
-	    return true;
-	}
+        /* Newline already present? */
+        if (EndsWithNewline(F)) {
+            fclose(F);
+            return true;
+        }
 
-	/* No newline, add it if it fits. */
-	if (len < size - 1) {
-	    fclose(F);
-	    *Changedp = true;
-	    return AppendNewline(name);
-	}
-    }
-    else if (!EndsWithNewline(F)) {
-	if (!AppendNewline(name)) {
-	    fclose(F);
-	    return false;
-	}
+        /* No newline, add it if it fits. */
+        if (len < size - 1) {
+            fclose(F);
+            *Changedp = true;
+            return AppendNewline(name);
+        }
+    } else if (!EndsWithNewline(F)) {
+        if (!AppendNewline(name)) {
+            fclose(F);
+            return false;
+        }
     }
 
     /* We now have a file that ends with a newline that is bigger than
@@ -188,51 +185,51 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
      * until we get a newline. */
     if (fseeko(F, -size, SEEK_END) < 0) {
         syswarn("cannot fseeko");
-	fclose(F);
-	return false;
+        fclose(F);
+        return false;
     }
 
     while ((c = getc(F)) != '\n')
-	if (c == EOF) {
+        if (c == EOF) {
             syswarn("cannot read");
-	    fclose(F);
-	    return false;
-	}
+            fclose(F);
+            return false;
+        }
 
     /* Copy rest of file to temp. */
     tmp = OpenTemp();
     err = false;
     while ((i = fread(buff, 1, sizeof buff, F)) > 0)
-	if (fwrite(buff, 1, i, tmp) != i) {
-	    err = true;
-	    break;
-	}
+        if (fwrite(buff, 1, i, tmp) != i) {
+            err = true;
+            break;
+        }
     if (err) {
         syswarn("cannot copy to temporary file");
-	fclose(F);
-	fclose(tmp);
-	return false;
+        fclose(F);
+        fclose(tmp);
+        return false;
     }
 
     /* Now copy temp back to original file. */
     fclose(F);
     if ((F = fopen(name, "w")) == NULL) {
         syswarn("cannot overwrite file");
-	fclose(tmp);
-	return false;
+        fclose(tmp);
+        return false;
     }
     fseeko(tmp, 0, SEEK_SET);
 
     while ((i = fread(buff, 1, sizeof buff, tmp)) > 0)
-	if (fwrite(buff, 1, i, F) != i) {
-	    err = true;
-	    break;
-	}
+        if (fwrite(buff, 1, i, F) != i) {
+            err = true;
+            break;
+        }
     if (err) {
         syswarn("cannot overwrite file");
-	fclose(F);
-	fclose(tmp);
-	return false;
+        fclose(F);
+        fclose(tmp);
+        return false;
     }
 
     fclose(F);
@@ -248,42 +245,53 @@ Process(FILE *F, char *name, off_t size, off_t maxsize, bool *Changedp)
 static off_t
 ParseSize(char *p)
 {
-    off_t	scale;
-    unsigned long	str_num;
-    char	*q;
+    off_t scale;
+    unsigned long str_num;
+    char *q;
 
     /* Skip leading spaces */
     while (ISWHITE(*p))
-	p++;
+        p++;
     if (*p == '\0')
-	return -1;
+        return -1;
 
     /* determine the scaling factor */
     q = &p[strlen(p) - 1];
     switch (*q) {
     default:
-	return -1;
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-	scale = 1;
-	break;
-    case 'k': case 'K':
-	scale = 1024;
-	*q = '\0';
-	break;
-    case 'm': case 'M':
-	scale = 1024 * 1024;
-	*q = '\0';
-	break;
-    case 'g': case 'G':
-	scale = 1024 * 1024 * 1024;
-	*q = '\0';
-	break;
+        return -1;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        scale = 1;
+        break;
+    case 'k':
+    case 'K':
+        scale = 1024;
+        *q = '\0';
+        break;
+    case 'm':
+    case 'M':
+        scale = 1024 * 1024;
+        *q = '\0';
+        break;
+    case 'g':
+    case 'G':
+        scale = 1024 * 1024 * 1024;
+        *q = '\0';
+        break;
     }
 
     /* Convert string to number. */
     if (sscanf(p, "%lud", &str_num) != 1)
-	return -1;
+        return -1;
     if (str_num > MAX_SIZE / scale)
         die("size is too big");
 
@@ -306,14 +314,14 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
-    bool	Changed;
-    bool	Verbose;
-    bool	no_op;
-    FILE	*F;
-    char	*p;
-    int		i;
-    off_t	size = 0;
-    off_t	maxsize = 0;
+    bool Changed;
+    bool Verbose;
+    bool no_op;
+    FILE *F;
+    char *p;
+    int i;
+    off_t size = 0;
+    off_t maxsize = 0;
 
     /* First thing, set up our identity. */
     message_program_name = "shrinkfile";
@@ -328,58 +336,58 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "m:s:vn")) != EOF)
-	switch (i) {
-	default:
-	    Usage();
-	    /* NOTREACHED */
-	case 'n':
-	    no_op = true;
-	    break;
-	case 'm':
-	    if ((maxsize = ParseSize(optarg)) < 0)
-		Usage();
-	    break;
-	case 's':
-	    if ((size = ParseSize(optarg)) < 0)
-		Usage();
-	    break;
-	case 'v':
-	    Verbose = true;
-	    break;
-	}
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+        case 'n':
+            no_op = true;
+            break;
+        case 'm':
+            if ((maxsize = ParseSize(optarg)) < 0)
+                Usage();
+            break;
+        case 's':
+            if ((size = ParseSize(optarg)) < 0)
+                Usage();
+            break;
+        case 'v':
+            Verbose = true;
+            break;
+        }
     if (maxsize < size) {
-	maxsize = size;
+        maxsize = size;
     }
     ac -= optind;
     av += optind;
     if (ac == 0)
-	Usage();
+        Usage();
 
     while ((p = *av++) != NULL) {
-	if ((F = fopen(p, "r")) == NULL) {
+        if ((F = fopen(p, "r")) == NULL) {
             syswarn("cannot open %s", p);
-	    continue;
-	}
+            continue;
+        }
 
-	/* -n (no_op) or normal processing */
-	if (no_op) {
+        /* -n (no_op) or normal processing */
+        if (no_op) {
 
-	    /* check if too big and exit zero if it is */
-	    if (TooBig(F, maxsize)) {
-		if (Verbose)
+            /* check if too big and exit zero if it is */
+            if (TooBig(F, maxsize)) {
+                if (Verbose)
                     notice("%s is too large", p);
-		exit(0);
-		/* NOTREACHED */
-	    }
+                exit(0);
+                /* NOTREACHED */
+            }
 
-	/* no -n, do some real work */
-	} else {
-	    Changed = false;
-	    if (!Process(F, p, size, maxsize, &Changed))
+            /* no -n, do some real work */
+        } else {
+            Changed = false;
+            if (!Process(F, p, size, maxsize, &Changed))
                 syswarn("cannot shrink %s", p);
-	    else if (Verbose && Changed)
+            else if (Verbose && Changed)
                 notice("shrunk %s", p);
-	}
+        }
     }
     if (no_op && Verbose) {
         notice("did not find a file that was too large");

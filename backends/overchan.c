@@ -12,20 +12,20 @@
 #include "portable/system.h"
 
 #include <errno.h>
-#include <syslog.h>
 #include <sys/stat.h>
+#include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
-#include "inn/qio.h"
-#include "inn/libinn.h"
 #include "inn/paths.h"
+#include "inn/qio.h"
 
 /* Statistics kept while overchan is running. */
 struct statistics {
@@ -112,7 +112,7 @@ write_overview(struct overview *overview, struct overview_data *data,
     if (!overview_add_xref(overview, xref, data))
         warn("cannot write overview data for %s", TokenToText(data->token));
     gettimeofday(&end, NULL);
-    statistics->busy += (end.tv_sec  - start.tv_sec)  * 1000;
+    statistics->busy += (end.tv_sec - start.tv_sec) * 1000;
     statistics->busy += (end.tv_usec - start.tv_usec) / 1000;
 }
 

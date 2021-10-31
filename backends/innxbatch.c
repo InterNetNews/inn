@@ -35,52 +35,52 @@
 #include <fcntl.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <syslog.h>
 #include <sys/stat.h>
+#include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#    include <sys/select.h>
 #endif
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
-#include "inn/timer.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/nntp.h"
+#include "inn/timer.h"
 
 /*
 **  Global variables.
 */
-static bool		Debug = false;
-static bool		STATprint;
+static bool Debug = false;
+static bool STATprint;
 #ifdef FROMSTDIN
-static bool             FromStdin = false;
+static bool FromStdin = false;
 #endif
-static char		*REMhost;
-static double		STATbegin;
-static double		STATend;
-static char		*XBATCHname;
-static int		FromServer;
-static int		ToServer;
-static sig_atomic_t	GotAlarm;
-static sig_atomic_t	GotInterrupt;
-static sig_atomic_t	JMPyes;
-static jmp_buf		JMPwhere;
-static unsigned long	STATaccepted;
-static unsigned long	STAToffered;
-static unsigned long	STATrefused;
-static unsigned long	STATrejected;
+static char *REMhost;
+static double STATbegin;
+static double STATend;
+static char *XBATCHname;
+static int FromServer;
+static int ToServer;
+static sig_atomic_t GotAlarm;
+static sig_atomic_t GotInterrupt;
+static sig_atomic_t JMPyes;
+static jmp_buf JMPwhere;
+static unsigned long STATaccepted;
+static unsigned long STAToffered;
+static unsigned long STATrefused;
+static unsigned long STATrejected;
 
 /*
 **  Prototypes.
 */
-static void             ExitWithStats(int) __attribute__ ((__noreturn__));
+static void ExitWithStats(int) __attribute__((__noreturn__));
 
 /*
 **  Send a line to the server. \r\n will be appended
@@ -88,27 +88,28 @@ static void             ExitWithStats(int) __attribute__ ((__noreturn__));
 static bool
 REMwrite(int fd, char *p)
 {
-  int		i;
-  int		err;
-  char		*dest;
-  static char		buff[NNTP_MAXLEN_COMMAND];
+    int i;
+    int err;
+    char *dest;
+    static char buff[NNTP_MAXLEN_COMMAND];
 
-  for (dest = buff, i = 0; p[i]; ) *dest++ = p[i++];
-  *dest++ = '\r';
-  *dest++ = '\n';
-  *dest++ = '\0';
+    for (dest = buff, i = 0; p[i];)
+        *dest++ = p[i++];
+    *dest++ = '\r';
+    *dest++ = '\n';
+    *dest++ = '\0';
 
-  for (dest = buff, i+=2; i; dest += err, i -= err) {
-    err = write(fd, dest, i);
-    if (err < 0) {
-      syswarn("cannot write %s to %s", dest, REMhost);
-      return false;
+    for (dest = buff, i += 2; i; dest += err, i -= err) {
+        err = write(fd, dest, i);
+        if (err < 0) {
+            syswarn("cannot write %s to %s", dest, REMhost);
+            return false;
+        }
     }
-  }
-  if (Debug)
-    fprintf(stderr, "> %s\n", p);
+    if (Debug)
+        fprintf(stderr, "> %s\n", p);
 
-  return true;
+    return true;
 }
 
 /*
@@ -117,32 +118,32 @@ REMwrite(int fd, char *p)
 static void
 ExitWithStats(int x)
 {
-  static char		QUIT[] = "quit";
-  double		usertime;
-  double		systime;
+    static char QUIT[] = "quit";
+    double usertime;
+    double systime;
 
-  REMwrite(ToServer, QUIT);
+    REMwrite(ToServer, QUIT);
 
-  STATend = TMRnow_double();
-  if (GetResourceUsage(&usertime, &systime) < 0) {
-    usertime = 0;
-    systime = 0;
-  }
+    STATend = TMRnow_double();
+    if (GetResourceUsage(&usertime, &systime) < 0) {
+        usertime = 0;
+        systime = 0;
+    }
 
-  if (STATprint) {
-      printf("%s stats offered %lu accepted %lu refused %lu rejected %lu\n",
-             REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
-      printf("%s times user %.3f system %.3f elapsed %.3f\n", REMhost,
-             usertime, systime, STATend - STATbegin);
-  }
+    if (STATprint) {
+        printf("%s stats offered %lu accepted %lu refused %lu rejected %lu\n",
+               REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+        printf("%s times user %.3f system %.3f elapsed %.3f\n", REMhost,
+               usertime, systime, STATend - STATbegin);
+    }
 
-  notice("%s stats offered %lu accepted %lu refused %lu rejected %lu",
-	 REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
-  notice("%s times user %.3f system %.3f elapsed %.3f", REMhost, usertime,
-         systime, STATend - STATbegin);
+    notice("%s stats offered %lu accepted %lu refused %lu rejected %lu",
+           REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+    notice("%s times user %.3f system %.3f elapsed %.3f", REMhost, usertime,
+           systime, STATend - STATbegin);
 
-  exit(x);
-  /* NOTREACHED */
+    exit(x);
+    /* NOTREACHED */
 }
 
 
@@ -152,12 +153,12 @@ ExitWithStats(int x)
 static char *
 REMclean(char *buff)
 {
-    char	*p;
+    char *p;
 
     if ((p = strchr(buff, '\r')) != NULL)
-	*p = '\0';
+        *p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
-	*p = '\0';
+        *p = '\0';
 
     /* The dot-escape is only in text, not command responses. */
     return buff;
@@ -172,41 +173,47 @@ REMclean(char *buff)
 static bool
 REMread(char *start, int size)
 {
-  char *p, *h;
-  struct timeval t;
-  fd_set rmask;
-  int i;
+    char *p, *h;
+    struct timeval t;
+    fd_set rmask;
+    int i;
 
-  for (p = start; size; ) {
-    FD_ZERO(&rmask);
-    FD_SET(FromServer, &rmask);
-    t.tv_sec = 10 * 60;
-    t.tv_usec = 0;
-    i = select(FromServer + 1, &rmask, NULL, NULL, &t);
-    if (GotInterrupt) return true;
-    if (i < 0) {
-      if (errno == EINTR) continue;
-      else return false;
+    for (p = start; size;) {
+        FD_ZERO(&rmask);
+        FD_SET(FromServer, &rmask);
+        t.tv_sec = 10 * 60;
+        t.tv_usec = 0;
+        i = select(FromServer + 1, &rmask, NULL, NULL, &t);
+        if (GotInterrupt)
+            return true;
+        if (i < 0) {
+            if (errno == EINTR)
+                continue;
+            else
+                return false;
+        }
+        if (i == 0 || !FD_ISSET(FromServer, &rmask))
+            return false;
+        i = read(FromServer, p, size - 1);
+        if (GotInterrupt)
+            return true;
+        if (i <= 0)
+            return false;
+        h = p;
+        p += i;
+        size -= i;
+        for (; h < p; h++) {
+            if (h > start && '\n' == *h && '\r' == h[-1]) {
+                *h = h[-1] = '\0';
+                size = 0;
+            }
+        }
     }
-    if (i == 0 || !FD_ISSET(FromServer, &rmask)) return false;
-    i = read(FromServer, p, size-1);
-    if (GotInterrupt) return true;
-    if (i <= 0) return false;
-    h = p;
-    p += i;
-    size -= i;
-    for ( ; h < p; h++) {
-      if (h > start && '\n' == *h && '\r' == h[-1]) {
-	*h = h[-1] = '\0';
-	size = 0;
-      }
-    }
-  }
 
-  if (Debug)
-    fprintf(stderr, "< %s\n", start);
+    if (Debug)
+        fprintf(stderr, "< %s\n", start);
 
-  return true;
+    return true;
 }
 
 
@@ -216,8 +223,8 @@ REMread(char *start, int size)
 static void
 Interrupted(void)
 {
-  warn("interrupted");
-  ExitWithStats(1);
+    warn("interrupted");
+    ExitWithStats(1);
 }
 
 
@@ -228,58 +235,61 @@ Interrupted(void)
 static bool
 REMsendxbatch(int fd, char *buf, int size)
 {
-  char	*p;
-  int		i;
-  int		err;
+    char *p;
+    int i;
+    int err;
 
-  for (i = size, p = buf; i; p += err, i -= err) {
-    err = write(fd, p, i);
-    if (err < 0) {
-      syswarn("cannot write xbatch to %s", REMhost);
-      return false;
+    for (i = size, p = buf; i; p += err, i -= err) {
+        err = write(fd, p, i);
+        if (err < 0) {
+            syswarn("cannot write xbatch to %s", REMhost);
+            return false;
+        }
     }
-  }
-  if (GotInterrupt) Interrupted();
-  if (Debug)
-    fprintf(stderr, "> [%d bytes of xbatch]\n", size);
+    if (GotInterrupt)
+        Interrupted();
+    if (Debug)
+        fprintf(stderr, "> [%d bytes of xbatch]\n", size);
 
-  /* What did the remote site say? */
-  if (!REMread(buf, size)) {
-    syswarn("no reply after sending xbatch");
-    return false;
-  }
-  if (GotInterrupt) Interrupted();
-  
-  /* Parse the reply. */
-  switch (atoi(buf)) {
-  default:
-    warn("unknown reply after sending batch -- %s", buf);
-    return false;
-    /* NOTREACHED */
-    break;
-  case NNTP_FAIL_XBATCH:
-  case NNTP_FAIL_TERMINATING:
-  case NNTP_FAIL_ACTION:
-    notice("%s xbatch failed %s", REMhost, buf);
-    STATrejected++;
-    return false;
-    /* NOTREACHED */
-    break;
-  case NNTP_OK_XBATCH:
-    STATaccepted++;
-    if (Debug) fprintf(stderr, "will unlink(%s)\n", XBATCHname);
-    if (unlink(XBATCHname)) {
-      /* probably another incarantion was faster, so avoid further duplicate
-       * work
-       */
-      syswarn("cannot unlink %s", XBATCHname);
-      return false;
+    /* What did the remote site say? */
+    if (!REMread(buf, size)) {
+        syswarn("no reply after sending xbatch");
+        return false;
     }
-    break;
-  }
-  
-  /* Article sent */
-  return true;
+    if (GotInterrupt)
+        Interrupted();
+
+    /* Parse the reply. */
+    switch (atoi(buf)) {
+    default:
+        warn("unknown reply after sending batch -- %s", buf);
+        return false;
+        /* NOTREACHED */
+        break;
+    case NNTP_FAIL_XBATCH:
+    case NNTP_FAIL_TERMINATING:
+    case NNTP_FAIL_ACTION:
+        notice("%s xbatch failed %s", REMhost, buf);
+        STATrejected++;
+        return false;
+        /* NOTREACHED */
+        break;
+    case NNTP_OK_XBATCH:
+        STATaccepted++;
+        if (Debug)
+            fprintf(stderr, "will unlink(%s)\n", XBATCHname);
+        if (unlink(XBATCHname)) {
+            /* probably another incarantion was faster, so avoid further
+             * duplicate work
+             */
+            syswarn("cannot unlink %s", XBATCHname);
+            return false;
+        }
+        break;
+    }
+
+    /* Article sent */
+    return true;
 }
 
 /*
@@ -303,7 +313,7 @@ CATCHalarm(int s UNUSED)
 {
     GotAlarm = true;
     if (JMPyes)
-	longjmp(JMPwhere, 1);
+        longjmp(JMPwhere, 1);
 }
 
 
@@ -324,229 +334,236 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
-  int			i;
-  char                  *p;
-  FILE			*From;
-  FILE			*To;
-  char			buff[NNTP_MAXLEN_COMMAND];
-  void	        	(*volatile old)(int) = NULL;
-  struct stat		statbuf;
-  int			fd;
-  int			err;
-  char *volatile        XBATCHbuffer = NULL;
-  char **volatile       argv;
-  volatile int		XBATCHbuffersize = 0;
-  volatile int		XBATCHsize, argc;
-  volatile unsigned int	ConnectTimeout;
-  volatile unsigned int	TotalTimeout;
+    int i;
+    char *p;
+    FILE *From;
+    FILE *To;
+    char buff[NNTP_MAXLEN_COMMAND];
+    void (*volatile old)(int) = NULL;
+    struct stat statbuf;
+    int fd;
+    int err;
+    char *volatile XBATCHbuffer = NULL;
+    char **volatile argv;
+    volatile int XBATCHbuffersize = 0;
+    volatile int XBATCHsize, argc;
+    volatile unsigned int ConnectTimeout;
+    volatile unsigned int TotalTimeout;
 
-  openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
-  message_program_name = "innxbatch";
-  message_handlers_warn(1, message_log_syslog_err, message_log_stderr);
-  message_handlers_die(1, message_log_syslog_err, message_log_stderr);
-  message_handlers_notice(1, message_log_syslog_notice);
+    openlog("innxbatch", L_OPENLOG_FLAGS | LOG_PID, LOG_INN_PROG);
+    message_program_name = "innxbatch";
+    message_handlers_warn(1, message_log_syslog_err, message_log_stderr);
+    message_handlers_die(1, message_log_syslog_err, message_log_stderr);
+    message_handlers_notice(1, message_log_syslog_notice);
 
-  /* Set defaults. */
-  if (!innconf_read(NULL))
-      exit(1);
-  ConnectTimeout = 0;
-  TotalTimeout = 0;
-  umask(NEWSUMASK);
+    /* Set defaults. */
+    if (!innconf_read(NULL))
+        exit(1);
+    ConnectTimeout = 0;
+    TotalTimeout = 0;
+    umask(NEWSUMASK);
 
-  /* Parse JCL. */
-  while ((i = getopt(ac, av, "Dit:T:v")) != EOF)
-    switch (i) {
-    default:
-      Usage();
-      /* NOTREACHED */
-      break;
-    case 'D':
-      Debug = true;
-      break;
+    /* Parse JCL. */
+    while ((i = getopt(ac, av, "Dit:T:v")) != EOF)
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+            break;
+        case 'D':
+            Debug = true;
+            break;
 #ifdef FROMSTDIN
-    case 'i':
-      FromStdin = true;
-      break;
+        case 'i':
+            FromStdin = true;
+            break;
 #endif
-    case 't':
-      ConnectTimeout = atoi(optarg);
-      break;
-    case 'T':
-      TotalTimeout = atoi(optarg);
-      break;
-    case 'v':
-      STATprint = true;
-      break;
+        case 't':
+            ConnectTimeout = atoi(optarg);
+            break;
+        case 'T':
+            TotalTimeout = atoi(optarg);
+            break;
+        case 'v':
+            STATprint = true;
+            break;
+        }
+    ac -= optind;
+    av += optind;
+
+    /* Parse arguments; host and filename. */
+    if (ac < 2)
+        Usage();
+    REMhost = av[0];
+    ac--;
+    av++;
+    argc = ac;
+    argv = av;
+
+    /* Open a connection to the remote server. */
+    if (ConnectTimeout) {
+        GotAlarm = false;
+        old = xsignal(SIGALRM, CATCHalarm);
+        JMPyes = true;
+        if (setjmp(JMPwhere))
+            die("cannot connect to %s: timed out", REMhost);
+        alarm(ConnectTimeout);
     }
-  ac -= optind;
-  av += optind;
+    if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff, sizeof(buff)) < 0
+        || GotAlarm) {
+        i = errno;
+        if (GotAlarm)
+            warn("%s connect failed: timeout", REMhost);
+        else
+            syswarn("%s connect failed: %s", REMhost,
+                    buff[0] ? REMclean(buff) : strerror(i));
+        exit(1);
+    }
 
-  /* Parse arguments; host and filename. */
-  if (ac < 2)
-    Usage();
-  REMhost = av[0];
-  ac--;
-  av++;
-  argc = ac;
-  argv = av;
+    if (Debug)
+        fprintf(stderr, "< %s\n", REMclean(buff));
+    if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
+        i = errno;
+        syswarn("%s authentication failed: %s", REMhost,
+                GotAlarm ? "timeout" : strerror(i));
+        /* Don't send quit; we want the remote to print a message. */
+        exit(1);
+    }
+    if (ConnectTimeout) {
+        alarm(0);
+        xsignal(SIGALRM, old);
+        JMPyes = false;
+    }
 
-  /* Open a connection to the remote server. */
-  if (ConnectTimeout) {
+    /* We no longer need standard I/O. */
+    FromServer = fileno(From);
+    ToServer = fileno(To);
+
+#if defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF)
+    i = 24 * 1024;
+    if (setsockopt(ToServer, SOL_SOCKET, SO_SNDBUF, (char *) &i, sizeof i) < 0)
+        syswarn("cant setsockopt(SNDBUF)");
+    if (setsockopt(FromServer, SOL_SOCKET, SO_RCVBUF, (char *) &i, sizeof i)
+        < 0)
+        syswarn("cant setsockopt(RCVBUF)");
+#endif /* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
+
+    GotInterrupt = false;
     GotAlarm = false;
-    old = xsignal(SIGALRM, CATCHalarm);
-    JMPyes = true;
-    if (setjmp(JMPwhere))
-      die("cannot connect to %s: timed out", REMhost);
-    alarm(ConnectTimeout);
-  }
-  if (NNTPconnect(REMhost, NNTP_PORT, &From, &To, buff, sizeof(buff)) < 0
-      || GotAlarm) {
-    i = errno;
-    if (GotAlarm)
-        warn("%s connect failed: timeout", REMhost);
-    else
-        syswarn("%s connect failed: %s", REMhost,
-                buff[0] ? REMclean(buff) : strerror(i));
-    exit(1);
-  }
 
-  if (Debug)
-    fprintf(stderr, "< %s\n", REMclean(buff));
-  if (NNTPsendpassword(REMhost, From, To) < 0 || GotAlarm) {
-    i = errno;
-    syswarn("%s authentication failed: %s", REMhost,
-            GotAlarm ? "timeout" : strerror(i));
-    /* Don't send quit; we want the remote to print a message. */
-    exit(1);
-  }
-  if (ConnectTimeout) {
-    alarm(0);
-    xsignal(SIGALRM, old);
-    JMPyes = false;
-  }
-  
-  /* We no longer need standard I/O. */
-  FromServer = fileno(From);
-  ToServer = fileno(To);
-
-#if	defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF)
-  i = 24 * 1024;
-  if (setsockopt(ToServer, SOL_SOCKET, SO_SNDBUF, (char *)&i, sizeof i) < 0)
-    syswarn("cant setsockopt(SNDBUF)");
-  if (setsockopt(FromServer, SOL_SOCKET, SO_RCVBUF, (char *)&i, sizeof i) < 0)
-    syswarn("cant setsockopt(RCVBUF)");
-#endif	/* defined(SOL_SOCKET) && defined(SO_SNDBUF) && defined(SO_RCVBUF) */
-
-  GotInterrupt = false;
-  GotAlarm = false;
-
-  /* Set up signal handlers. */
-  xsignal(SIGHUP, CATCHinterrupt);
-  xsignal(SIGINT, CATCHinterrupt);
-  xsignal(SIGTERM, CATCHinterrupt);
-  xsignal(SIGPIPE, SIG_IGN);
-  if (TotalTimeout) {
-    xsignal(SIGALRM, CATCHalarm);
-    alarm(TotalTimeout);
-  }
-
-  /* Start timing. */
-  STATbegin = TMRnow_double();
-
-  /* main loop over all specified files */
-  for (XBATCHname = *argv; argc && (XBATCHname = *argv); argv++, argc--) {
-
-    if (Debug) fprintf(stderr, "will work on %s\n", XBATCHname);
-
-    if (GotAlarm) {
-      warn("timed out");
-      ExitWithStats(1);
-    }
-    if (GotInterrupt) Interrupted();
-
-    if ((fd = open(XBATCHname, O_RDONLY, 0)) < 0) {
-      syswarn("cannot open %s, skipping", XBATCHname);
-      continue;
+    /* Set up signal handlers. */
+    xsignal(SIGHUP, CATCHinterrupt);
+    xsignal(SIGINT, CATCHinterrupt);
+    xsignal(SIGTERM, CATCHinterrupt);
+    xsignal(SIGPIPE, SIG_IGN);
+    if (TotalTimeout) {
+        xsignal(SIGALRM, CATCHalarm);
+        alarm(TotalTimeout);
     }
 
-    if (fstat(fd, &statbuf)) {
-      syswarn("cannot stat %s, skipping", XBATCHname);
-      close(i);
-      continue;
-    }
+    /* Start timing. */
+    STATbegin = TMRnow_double();
 
-    XBATCHsize = statbuf.st_size;
-    if (XBATCHsize == 0) {
-      warn("batch file %s is zero length, skipping", XBATCHname);
-      close(i);
-      unlink(XBATCHname);
-      continue;
-    } else if (XBATCHsize > XBATCHbuffersize) {
-      XBATCHbuffersize = XBATCHsize;
-      if (XBATCHbuffer) free(XBATCHbuffer);
-      XBATCHbuffer = xmalloc(XBATCHsize);
-    }
+    /* main loop over all specified files */
+    for (XBATCHname = *argv; argc && (XBATCHname = *argv); argv++, argc--) {
 
-    err = 0; /* stupid compiler */
-    for (i = XBATCHsize, p = XBATCHbuffer; i; i -= err, p+= err) {
-      err = read(fd, p, i);
-      if (err < 0) {
-        syswarn("error reading %s, skipping", XBATCHname);
-	break;
-      } else if (0 == err) {
-        syswarn("unexpected EOF reading %s, truncated", XBATCHname);
-	XBATCHsize = p - XBATCHbuffer;
-	break;
-      }
-    }
-    close(fd);
-    if (err < 0)
-      continue;
+        if (Debug)
+            fprintf(stderr, "will work on %s\n", XBATCHname);
 
-    if (GotInterrupt) Interrupted();
+        if (GotAlarm) {
+            warn("timed out");
+            ExitWithStats(1);
+        }
+        if (GotInterrupt)
+            Interrupted();
 
-    /* Offer the xbatch. */
-    snprintf(buff, sizeof(buff), "XBATCH %d", XBATCHsize);
-    if (!REMwrite(ToServer, buff)) {
-      syswarn("cannot offer xbatch to %s", REMhost);
-      ExitWithStats(1);
-    }
-    STAToffered++;
-    if (GotInterrupt) Interrupted();
+        if ((fd = open(XBATCHname, O_RDONLY, 0)) < 0) {
+            syswarn("cannot open %s, skipping", XBATCHname);
+            continue;
+        }
 
-    /* Does he want it? */
-    if (!REMread(buff, (int)sizeof buff)) {
-      syswarn("no reply to XBATCH %d from %s", XBATCHsize, REMhost);
-      ExitWithStats(1);
-    }
-    if (GotInterrupt) Interrupted();
+        if (fstat(fd, &statbuf)) {
+            syswarn("cannot stat %s, skipping", XBATCHname);
+            close(i);
+            continue;
+        }
 
-    /* Parse the reply. */
-    switch (atoi(buff)) {
-    default:
-      warn("unknown reply to %s -- %s", XBATCHname, buff);
-      ExitWithStats(1);
-      /* NOTREACHED */
-      break;
-    case NNTP_FAIL_XBATCH:
-    case NNTP_FAIL_TERMINATING:
-    case NNTP_FAIL_ACTION:
-      /* Most likely out of space -- no point in continuing. */
-      notice("%s xbatch failed %s", REMhost, buff);
-      ExitWithStats(1);
-      /* NOTREACHED */
-    case NNTP_CONT_XBATCH:
-      if (!REMsendxbatch(ToServer, XBATCHbuffer, XBATCHsize))
-	ExitWithStats(1);
-      /* NOTREACHED */
-      break;
-    case NNTP_ERR_SYNTAX:
-    case NNTP_ERR_COMMAND:
-      warn("%s xbatch failed %s", REMhost, buff);
-      break;
+        XBATCHsize = statbuf.st_size;
+        if (XBATCHsize == 0) {
+            warn("batch file %s is zero length, skipping", XBATCHname);
+            close(i);
+            unlink(XBATCHname);
+            continue;
+        } else if (XBATCHsize > XBATCHbuffersize) {
+            XBATCHbuffersize = XBATCHsize;
+            if (XBATCHbuffer)
+                free(XBATCHbuffer);
+            XBATCHbuffer = xmalloc(XBATCHsize);
+        }
+
+        err = 0; /* stupid compiler */
+        for (i = XBATCHsize, p = XBATCHbuffer; i; i -= err, p += err) {
+            err = read(fd, p, i);
+            if (err < 0) {
+                syswarn("error reading %s, skipping", XBATCHname);
+                break;
+            } else if (0 == err) {
+                syswarn("unexpected EOF reading %s, truncated", XBATCHname);
+                XBATCHsize = p - XBATCHbuffer;
+                break;
+            }
+        }
+        close(fd);
+        if (err < 0)
+            continue;
+
+        if (GotInterrupt)
+            Interrupted();
+
+        /* Offer the xbatch. */
+        snprintf(buff, sizeof(buff), "XBATCH %d", XBATCHsize);
+        if (!REMwrite(ToServer, buff)) {
+            syswarn("cannot offer xbatch to %s", REMhost);
+            ExitWithStats(1);
+        }
+        STAToffered++;
+        if (GotInterrupt)
+            Interrupted();
+
+        /* Does he want it? */
+        if (!REMread(buff, (int) sizeof buff)) {
+            syswarn("no reply to XBATCH %d from %s", XBATCHsize, REMhost);
+            ExitWithStats(1);
+        }
+        if (GotInterrupt)
+            Interrupted();
+
+        /* Parse the reply. */
+        switch (atoi(buff)) {
+        default:
+            warn("unknown reply to %s -- %s", XBATCHname, buff);
+            ExitWithStats(1);
+            /* NOTREACHED */
+            break;
+        case NNTP_FAIL_XBATCH:
+        case NNTP_FAIL_TERMINATING:
+        case NNTP_FAIL_ACTION:
+            /* Most likely out of space -- no point in continuing. */
+            notice("%s xbatch failed %s", REMhost, buff);
+            ExitWithStats(1);
+            /* NOTREACHED */
+        case NNTP_CONT_XBATCH:
+            if (!REMsendxbatch(ToServer, XBATCHbuffer, XBATCHsize))
+                ExitWithStats(1);
+            /* NOTREACHED */
+            break;
+        case NNTP_ERR_SYNTAX:
+        case NNTP_ERR_COMMAND:
+            warn("%s xbatch failed %s", REMhost, buff);
+            break;
+        }
     }
-  }
-  ExitWithStats(0);
-  /* NOTREACHED */
-  return 0;
+    ExitWithStats(0);
+    /* NOTREACHED */
+    return 0;
 }
