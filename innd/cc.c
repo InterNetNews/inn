@@ -1475,8 +1475,8 @@ CCreload(char *av[])
     } else if (strcmp(p, "incoming.conf") == 0) {
         RCreadlist();
     }
-#if 0 /* we should check almost all innconf parameter, but the code \
-         is still incomplete for innd, so just commented out */
+#if 0 /* We should check almost all innconf parameter, but the code \
+         is still incomplete for innd, so just commented out. */
     else if (strcmp(p, "inn.conf") == 0) {
         struct innconf *saved;
 
@@ -1488,33 +1488,33 @@ CCreload(char *av[])
             innconf = saved;
             return "1 Reload of inn.conf failed";
         }
-	if (innconf->pathhost == NULL) {
-	    syslog(L_FATAL, "%s No pathhost set", LogName);
-	    exit(1);
-	}   
-	free(Path.Data);
-	Path.Used = strlen(innconf->pathhost) + 1;
-	Path.Data = xmalloc(Path.Used + 1);
-	sprintf(Path.Data, "%s!", innconf->pathhost);
-	if (Pathalias.Used > 0)
-	    free(Pathalias.Data);
-	if (innconf->pathalias == NULL) {
-	    Pathalias.Used = 0;
-	    Pathalias.Data = NULL;
-	} else {
-	    Pathalias.Used = strlen(innconf->pathalias) + 1;
-	    Pathalias.Data = xmalloc(Pathalias.Used + 1);
-	    sprintf(Pathalias.Data, "%s!", innconf->pathalias);
-	}
-        if (Pathcluster.Used > 0)
-            free(Pathcluster.Data);
-        if (innconf->pathcluster == NULL) {
-            Pathcluster.Used = 0;
-            Pathcluster.Data = NULL;
+        if (innconf->pathhost == NULL) {
+            syslog(L_FATAL, "%s No pathhost set", LogName);
+            exit(1);
+        }
+        free(Path.data);
+        Path.used = strlen(innconf->pathhost) + 1;
+        Path.data = xmalloc(Path.used + 1);
+        sprintf(Path.data, "%s!", innconf->pathhost);
+        if (Pathalias.used > 0)
+            free(Pathalias.data);
+        if (innconf->pathalias == NULL) {
+            Pathalias.used = 0;
+            Pathalias.data = NULL;
         } else {
-            Pathcluster.Used = strlen(innconf->pathcluster) + 1;
-            Pathcluster.Data = xmalloc(Pathcluster.Used + 1);
-            sprintf(Pathcluster.Data, "%s!", innconf->pathcluster);
+            Pathalias.used = strlen(innconf->pathalias) + 1;
+            Pathalias.data = xmalloc(Pathalias.used + 1);
+            sprintf(Pathalias.data, "%s!", innconf->pathalias);
+        }
+        if (Pathcluster.used > 0)
+            free(Pathcluster.data);
+        if (innconf->pathcluster == NULL) {
+            Pathcluster.used = 0;
+            Pathcluster.data = NULL;
+        } else {
+            Pathcluster.used = strlen(innconf->pathcluster) + 1;
+            Pathcluster.data = xmalloc(Pathcluster.used + 1);
+            sprintf(Pathcluster.data, "%s!", innconf->pathcluster);
         }
     }
 #endif

@@ -812,7 +812,7 @@ extern void PLxsinit(void);
 
 extern int PROCwatch(pid_t pid, int site);
 extern void PROCunwatch(int process);
-/* extern void		PROCclose(bool Quickly); */
+/* extern void PROCclose(bool Quickly); */
 extern void PROCscan(void);
 extern void PROCsetup(int i);
 

@@ -90,30 +90,29 @@ PROCscan(void)
 **  Close down all processes.
 */
 void
-PROCclose(Quickly)
-    bool		Quickly;
+PROCclose(bool Quickly)
 {
-    int	sig;
-    PROCESS	*pp;
-    int	i;
+    int sig;
+    PROCESS *pp;
+    int i;
 
     /* What signal are we sending? */
     sig = Quickly ? SIGKILL : SIGTERM;
 
     /* Send the signal to all living processes. */
     for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++) {
-	if (pp->State != PSrunning)
-	    continue;
-	if (kill(pp->Pid, sig) < 0 && errno != ESRCH)
-	    syslog(L_ERROR, "%s cant kill %s %ld %m",
-		LogName, Quickly ? "KILL" : "TERM", (long) pp->Pid);
+        if (pp->State != PSrunning)
+            continue;
+        if (kill(pp->Pid, sig) < 0 && errno != ESRCH)
+            syslog(L_ERROR, "%s cant kill %s %ld %m", LogName,
+                   Quickly ? "KILL" : "TERM", (long) pp->Pid);
     }
 
     /* Collect any who might have died. */
     PROCreap();
     for (pp = PROCtable, i = PROCtablesize; --i >= 0; pp++)
-	if (pp->State == PSdead)
-	    *pp = PROCnull;
+        if (pp->State == PSdead)
+            *pp = PROCnull;
 }
 #endif /* 0 */
 

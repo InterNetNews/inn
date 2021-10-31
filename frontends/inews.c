@@ -576,10 +576,6 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
             die("required Subject header field is missing or empty");
         else if (HDR(_alsocontrol))
             CheckControl(HDR(_alsocontrol));
-#if 0
-	if (strncmp(p, "Re: ", 4) == 0 && HDR(_references) == NULL)
-            die("article subject begins with \"Re: \" but has no references");
-#endif /* 0 */
     }
 
     /* Set Message-ID */
