@@ -248,3 +248,10 @@ snapshot:
 	find $(SNAPDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(SNAPDIR).tar $(SNAPDIR)
 	$(GZIP) -9 $(SNAPDIR).tar
+
+##  Reformat all source code using clang-format.  This should only be run
+##  by a maintainer since it depends on the presence of clang-format.
+##  Note we also have C source code in innfeed/configfile.y, but it should
+##  be manually handled as it contains mixed yacc code.
+reformat:
+	find . -name '*.[ch]' -print | xargs clang-format -style=file -i
