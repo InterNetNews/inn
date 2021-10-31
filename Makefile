@@ -38,39 +38,34 @@ SNAPDIRS    = -e 1,2d -e '/(Directory)/!d' -e 's/ .*//' -e 's;^;$(SNAPDIR)/;'
 DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 
 
-##  Major target -- build everything.  Rather than just looping through
-##  all the directories, use a set of parallel rules so that make -j can
-##  work on more than one directory at a time.
+##  Major target -- build everything.
+##
+##  We have to loop through all the directories, because otherwise the build
+##  fails if make -j works on more than one directory at a time.
+##  libstorage depends on libinnhist, but some of the storage/...
+##  programs depend on libinnhist, hence the two calls into storage.
+##
 ##  Be careful of a non-GNU make: after a completed command, it does not
 ##  necessarily return the script back to the starting directory.
-all: all-include all-libraries all-programs
-	cd doc     && $(MAKE) all || exit 1 ; cd ..
-	cd samples && $(MAKE) all || exit 1 ; cd ..
-	cd site    && $(MAKE) all || exit 1 ; cd ..
-
-all-include:			; cd include   && $(MAKE) all
-
-all-libraries:	all-lib all-storage all-history
-
-all-lib:	all-include	; cd lib       && $(MAKE) all
-all-storage:	all-lib		; cd storage   && $(MAKE) library
-all-history:	all-storage	; cd history   && $(MAKE) all
-
-all-programs:	all-innd all-nnrpd all-innfeed all-control all-expire \
-		all-frontends all-backends all-authprogs all-scripts \
-		all-perl all-store-util
-
-all-authprogs:	all-lib		; cd authprogs && $(MAKE) all
-all-backends:	all-libraries	; cd backends  && $(MAKE) all
-all-control:			; cd control   && $(MAKE) all
-all-expire:	all-libraries	; cd expire    && $(MAKE) all
-all-frontends:	all-libraries	; cd frontends && $(MAKE) all
-all-innd:	all-libraries	; cd innd      && $(MAKE) all
-all-innfeed:	all-libraries	; cd innfeed   && $(MAKE) all
-all-nnrpd:	all-libraries	; cd nnrpd     && $(MAKE) all
-all-perl:			; cd perl      && $(MAKE) all
-all-scripts:			; cd scripts   && $(MAKE) all
-all-store-util:	all-libraries	; cd storage   && $(MAKE) programs
+all:
+	cd include     && $(MAKE) all      || exit 1 ; cd ..
+	cd lib         && $(MAKE) all      || exit 1 ; cd ..
+	cd storage     && $(MAKE) library  || exit 1 ; cd ..
+	cd history     && $(MAKE) all      || exit 1 ; cd ..
+	cd innd        && $(MAKE) all      || exit 1 ; cd ..
+	cd nnrpd       && $(MAKE) all      || exit 1 ; cd ..
+	cd innfeed     && $(MAKE) all      || exit 1 ; cd ..
+	cd control     && $(MAKE) all      || exit 1 ; cd ..
+	cd expire      && $(MAKE) all      || exit 1 ; cd ..
+	cd frontends   && $(MAKE) all      || exit 1 ; cd ..
+	cd backends    && $(MAKE) all      || exit 1 ; cd ..
+	cd authprogs   && $(MAKE) all      || exit 1 ; cd ..
+	cd scripts     && $(MAKE) all      || exit 1 ; cd ..
+	cd perl        && $(MAKE) all      || exit 1 ; cd ..
+	cd storage     && $(MAKE) programs || exit 1 ; cd ..
+	cd doc         && $(MAKE) all      || exit 1 ; cd ..
+	cd samples     && $(MAKE) all      || exit 1 ; cd ..
+	cd site        && $(MAKE) all      || exit 1 ; cd ..
 
 
 ##  If someone tries to run make before running configure, tell them to run
