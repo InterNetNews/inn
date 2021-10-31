@@ -84,8 +84,8 @@ newBuffer(size_t size)
         gBufferList->prev = nb;
     gBufferList = nb;
 
-#if 0
-  d_printf (1,"Creating a DELETABLE buffer %p\n",nb) ;
+#if defined(INNFEED_DEBUG)
+    d_printf(1, "Creating a DELETABLE buffer %p\n", nb);
 #endif
 
     return nb;
@@ -119,8 +119,8 @@ newBufferByCharP(const char *ptr, size_t size, size_t dataSize)
     gBufferList = nb;
 
     bufferCount++;
-#if 0
-  d_printf (1,"Creating a NON-DELETABLE buffer %p\n",nb) ;
+#if defined(INNFEED_DEBUG)
+    d_printf(1, "Creating a NON-DELETABLE buffer %p\n", nb);
 #endif
 
     return nb;
@@ -131,9 +131,9 @@ void
 delBuffer(Buffer buff)
 {
     if (buff != NULL && --(buff->refCount) == 0) {
-#if 0
-      d_printf (1,"Freeing a %s buffer (%p)\n",
-               (buff->deletable ? "DELETABLE" : "NON-DELETABLE"), buff) ;
+#if defined(INNFEED_DEBUG)
+        d_printf(1, "Freeing a %s buffer (%p)\n",
+                 (buff->deletable ? "DELETABLE" : "NON-DELETABLE"), buff);
 #endif
 
         bufferCount--;

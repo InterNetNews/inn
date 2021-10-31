@@ -161,11 +161,6 @@ const char *hostPassword(Host host);
 void hostLogConnectionStats(bool val);
 bool hostLogConnectionStatsP(void);
 
-#if 0
-/* Set the frequency (in seconds) with which we log statistics */
-void hostSetStatsPeriod (unsigned int period) ;
-#endif
-
 /* return whether or not the Connections should attempt to stream. */
 bool hostWantsStreaming(Host host);
 

@@ -44,7 +44,8 @@ typedef void (*EndpWorkCbk)(EndPoint ep, void *data);
 
 
 /* debugging information */
-extern unsigned int loggingLevel; /* if 0 then d_printf is a no-op */
+extern unsigned int loggingLevel; /* if loggingLevel is 0,
+                                     d_printf is a no-op */
 
 /* used by timeToString with strftime(3) */
 extern char *timeToStringFormat;

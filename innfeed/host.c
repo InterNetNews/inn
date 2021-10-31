@@ -65,6 +65,7 @@
 #define TRYBLOCKEDHOSTPERIOD 120
 
 extern char *configFile;
+extern void (*gPrintInfo)(void);
 
 extern unsigned int init_reconnect_period;
 extern unsigned int max_reconnect_period;
@@ -1385,18 +1386,18 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     timeToString(host->lastSpoolTime, dateString, sizeof(dateString));
     fprintf(fp, "%s    last-spool-time : %s\n", indent, dateString);
 
-#if 0
-  fprintf (fp,"%s    tape {\n",indent) ;
-  printTapeInfo (host->myTape,fp,indentAmt + INDENT_INCR) ;
-  fprintf (fp,"%s    }\n",indent) ;
+#if defined(INNFEED_DEBUG)
+    fprintf(fp, "%s    tape {\n", indent);
+    printTapeInfo(host->myTape, fp, indentAmt + INDENT_INCR);
+    fprintf(fp, "%s    }\n", indent);
 #else
     fprintf(fp, "%s    tape : %p\n", indent, (void *) host->myTape);
 #endif
 
     fprintf(fp, "%s    QUEUED articles {\n", indent);
     for (qe = host->queued; qe != NULL; qe = qe->next) {
-#if 0
-      printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
@@ -1406,8 +1407,8 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
 
     fprintf(fp, "%s    IN PROCESS articles {\n", indent);
     for (qe = host->processed; qe != NULL; qe = qe->next) {
-#if 0
-      printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
@@ -1416,8 +1417,8 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    }\n", indent);
     fprintf(fp, "%s    DEFERRED articles {\n", indent);
     for (qe = host->deferred; qe != NULL; qe = qe->next) {
-#if 0
-	printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
@@ -1426,8 +1427,8 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    }\n", indent);
     fprintf(fp, "%s    DEFERRED articles {\n", indent);
     for (qe = host->deferred; qe != NULL; qe = qe->next) {
-#if 0
-      printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s    %p\n", indent, (void *) qe->article);
 #endif
@@ -1438,9 +1439,9 @@ printHostInfo(Host host, FILE *fp, unsigned int indentAmt)
 
     fprintf(fp, "%s    Connections {\n", indent);
     for (i = 0; i < host->maxConnections; i++) {
-#if 0
-      if (host->connections[i] != NULL)
-        printCxnInfo (*cxn,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        if (host->connections[i] != NULL)
+            printCxnInfo(host->connections[i], fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s        %p\n", indent, (void *) host->connections[i]);
 #endif
@@ -3029,10 +3030,10 @@ hostLogStats(Host host, bool final)
     host->blAccum = 0;
     host->blCount = 0;
 
-#if 0
-  /* XXX turn this section on to get a snapshot at each log period. */
-  if (gPrintInfo != NULL)
-    gPrintInfo () ;
+#if defined(INNFEED_DEBUG)
+    /* Get a snapshot at each log period. */
+    if (gPrintInfo != NULL)
+        gPrintInfo();
 #endif
 }
 

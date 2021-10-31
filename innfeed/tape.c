@@ -47,13 +47,12 @@ extern char *dflTapeDir;
 extern bool genHtml;
 extern unsigned int hostHighwater;
 
-#if 0
-/* a structure for temporary storage of articles. */
-typedef struct q_e_s
-{
-    Article article ;
-    struct q_e_s *next ;
-} *QueueElem ;
+#if defined(INNFEED_DEBUG)
+/* A structure for temporary storage of articles. */
+typedef struct q_e_s {
+    Article article;
+    struct q_e_s *next;
+} * QueueElem;
 #endif
 
 /* The Tape class type. */
@@ -80,11 +79,11 @@ struct tape_s {
     bool checkNew;      /* set bool when we need to check for
                            hand-crafted file. */
 
-#if 0
-    /* the tape holds a small output queue in memory to avoid thrashing. */
-    QueueElem head ;            
-    QueueElem tail ;
-    unsigned int qLength ;             /* amount on the queue */
+#if defined(INNFEED_DEBUG)
+    /* The tape holds a small output queue in memory to avoid thrashing. */
+    QueueElem head;
+    QueueElem tail;
+    unsigned int qLength; /* amount on the queue */
 #endif
 
     long outputSize; /* the current size of the output file. */
@@ -117,8 +116,8 @@ static void addTapeGlobally(Tape tape);
 static void prepareFiles(Tape tape);
 static void tapeCkNewFileCbk(TimeoutId id, void *d);
 static void tapeCheckpointCallback(TimeoutId id, void *d);
-#if 0
-static void flushTape (Tape tape) ;
+#if defined(INNFEED_DEBUG)
+static void flushTape(Tape tape);
 #endif
 static void tapesSetCheckNew(void);
 static void initTape(Tape nt);
@@ -147,9 +146,9 @@ static size_t activeTapeSize;
 /* index of last element in activeTapes that's being used. */
 static size_t activeTapeIdx;
 
-#if 0
+#if defined(INNFEED_DEBUG)
 /* default limit of the size of output tapes. */
-static long defaultSizeLimit ;
+static long defaultSizeLimit;
 #endif
 
 unsigned int tapeHighwater;
@@ -353,10 +352,10 @@ initTape(Tape nt)
     nt->lastRotated = 0;
     nt->checkNew = false;
 
-#if 0
-  nt->head = NULL ;
-  nt->tail = NULL ;
-  nt->qLength = 0 ;
+#if defined(INNFEED_DEBUG)
+    nt->head = NULL;
+    nt->tail = NULL;
+    nt->qLength = 0;
 #endif
 
     nt->scribbled = false;
@@ -497,8 +496,8 @@ printTapeInfo(Tape tape, FILE *fp, unsigned int indentAmt)
 {
     char indent[INDENT_BUFFER_SIZE];
     unsigned int i;
-#if 0
-  QueueElem qe ;
+#if defined(INNFEED_DEBUG)
+    QueueElem qe;
 #endif
 
     for (i = 0; i < MIN(INDENT_BUFFER_SIZE - 1, indentAmt); i++)
@@ -521,20 +520,16 @@ printTapeInfo(Tape tape, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    output-FILE : %p\n", indent, (void *) tape->outFp);
     fprintf(fp, "%s    output-limit : %ld\n", indent, tape->outputLowLimit);
 
-#if 0
-  fprintf (fp,"%s    in-memory article queue (length  %d) {\n",indent,
-           tape->qLength) ;
+#if defined(INNFEED_DEBUG)
+    fprintf(fp, "%s    in-memory article queue (length  %d) {\n", indent,
+            tape->qLength);
 
-  for (qe = tape->head ; qe != NULL ; qe = qe->next)
-    {
-#    if 0
-      printArticleInfo (qe->article,fp,indentAmt + INDENT_INCR) ;
-#    else
-      fprintf (fp,"%s    %p\n",indent,qe->article) ;
-#    endif
+    for (qe = tape->head; qe != NULL; qe = qe->next) {
+        /* printArticleInfo(qe->article, fp, indentAmt + INDENT_INCR); */
+        fprintf(fp, "%s    %p\n", indent, qe->article);
     }
 
-  fprintf (fp,"%s    }\n",indent) ;
+    fprintf(fp, "%s    }\n", indent);
 #endif
 
     fprintf(fp, "%s    tell-position : %ld\n", indent, (long) tape->tellpos);
@@ -557,8 +552,6 @@ delTape(Tape tape)
     if (tape == NULL)
         return;
 
-#if 1
-
     if (tape->outFp != NULL && fclose(tape->outFp) != 0)
         syswarn("ME ioerr fclose %s", tape->outputFilename);
 
@@ -569,12 +562,6 @@ delTape(Tape tape)
 
     tape->outFp = NULL;
     tape->outputSize = 0;
-
-#else
-
-    tapeClose(tape);
-
-#endif
 
     if (tape->inFp != NULL) {
         checkpointTape(tape);
@@ -598,9 +585,6 @@ delTape(Tape tape)
 void
 tapeTakeArticle(Tape tape, Article article)
 {
-#if 0
-  QueueElem elem ;
-#endif
     const char *fname, *msgid;
 
     ASSERT(tape != NULL);
@@ -738,26 +722,25 @@ getArticle(Tape tape)
         }
     }
 
-#if 0
-  /* now we either have an article or there is no more on disk */
-  if (art == NULL)
-    {
-      if (tape->inFp != NULL && ((c = fgetc (tape->inFp)) != EOF))
-        ungetc (c,tape->inFp) ; /* shouldn't happen */
-      else if (tape->inFp != NULL)
-        {
-          /* last article read was the end of the tape. */
-          if (fclose (tape->inFp) != 0)
-            syswarn ("ME ioerr fclose %s", tape->inputFilename) ;
-          
-          tape->inFp = NULL ;
-          tape->scribbled = false ;
-          
-          /* toss out the old input file and prepare the new one */
-          unlink (tape->inputFilename) ;
-          
-          if (now - tape->lastRotated > rotatePeriod)
-            prepareFiles (tape) ;
+#if defined(INNFEED_DEBUG)
+    /* now we either have an article or there is no more on disk */
+    if (art == NULL) {
+        int c;
+        if (tape->inFp != NULL && ((c = fgetc(tape->inFp)) != EOF))
+            ungetc(c, tape->inFp); /* shouldn't happen */
+        else if (tape->inFp != NULL) {
+            /* last article read was the end of the tape. */
+            if (fclose(tape->inFp) != 0)
+                syswarn("ME ioerr fclose %s", tape->inputFilename);
+
+            tape->inFp = NULL;
+            tape->scribbled = false;
+
+            /* toss out the old input file and prepare the new one */
+            unlink(tape->inputFilename);
+
+            if (now - tape->lastRotated > rotatePeriod)
+                prepareFiles(tape);
         }
     }
 #endif
@@ -798,38 +781,16 @@ tapesSetCheckNew(void)
 }
 
 
-#if 0
-/* Set the pathname of the directory for storing tapes in. */
-void setTapeDirectory (const char *newDir)
-{
-  /* the activeTape variable gets set when the first Tape object
-     is created */
-  if (activeTapes != NULL)
-    {
-      syslog (LOG_CRIT,"Resetting backlog directory") ;
-      abort() ;
-    }
-  
-  if (tapeDirectory != NULL)
-    freeCharP (tapeDirectory) ;
-  
-  tapeDirectory = xstrdup (newDir) ;
-
-  addPointerFreedOnExit (tapeDirectory) ;
-}
-#endif
-
 /* Get the pathname of the directory tapes are stored in. */
 const char *
 getTapeDirectory(void)
 {
     ASSERT(tapeDirectory != NULL);
 
-#if 0
-  if (tapeDirectory == NULL)
-    {
-      tapeDirectory = xstrdup (dflTapeDir) ;
-      addPointerFreedOnExit (tapeDirectory) ;
+#if defined(INNFEED_DEBUG)
+    if (tapeDirectory == NULL) {
+        tapeDirectory = xstrdup(dflTapeDir);
+        addPointerFreedOnExit(tapeDirectory);
     }
 #endif
 
@@ -837,10 +798,11 @@ getTapeDirectory(void)
 }
 
 
-#if 0
-void setOutputSizeLimit (long val)
+#if defined(INNFEED_DEBUG)
+void
+setOutputSizeLimit(long val)
 {
-  defaultSizeLimit = val ;
+    defaultSizeLimit = val;
 }
 #endif
 
@@ -975,8 +937,8 @@ checkpointTape(Tape tape)
  * commands:
  *
  * if [ ! -f PEER.input ]; then
- * 	if [ -f PEER ]; then mv PEER PEER.input
- * 	elif [ -f PEER.output ]; then mv PEER.output PEER; fi
+ *     if [ -f PEER ]; then mv PEER PEER.input
+ *     elif [ -f PEER.output ]; then mv PEER.output PEER; fi
  * fi
  *
  * At this point PEER.input is opened for reading if it exists.
@@ -991,10 +953,10 @@ prepareFiles(Tape tape)
     bool outExists;
     bool newExists;
 
-#if 0
-  /* flush any in memory articles to disk */
-  if (tape->head != NULL && tape->outFp != NULL)
-    flushTape(tape) ;
+#if defined(INNFEED_DEBUG)
+    /* flush any in memory articles to disk */
+    if (tape->head != NULL && tape->outFp != NULL)
+        flushTape(tape);
 #endif
 
     tape->tellpos = 0;
@@ -1157,54 +1119,51 @@ tapeCheckpointCallback(TimeoutId id, void *d UNUSED)
 }
 
 
-#if 0
-static void flushTape (Tape tape)
+#if defined(INNFEED_DEBUG)
+static void
+flushTape(Tape tape)
 {
-  QueueElem elem ;
+    QueueElem elem;
 
-  /* flush out queue to disk. */
-  elem = tape->head ;
-  while (elem != NULL)
-    {
-      tape->head = tape->head->next ;
-      fprintf (tape->outFp,"%s %s\n", artFileName (elem->article),
-               artMsgId (elem->article)) ;
-      
-      delArticle (elem->article) ;
-      
-      free (elem) ;
-      elem = tape->head ;
+    /* flush out queue to disk. */
+    elem = tape->head;
+    while (elem != NULL) {
+        tape->head = tape->head->next;
+        fprintf(tape->outFp, "%s %s\n", artFileName(elem->article),
+                artMsgId(elem->article));
+
+        delArticle(elem->article);
+
+        free(elem);
+        elem = tape->head;
     }
-  tape->tail = NULL ;
-  tape->qLength = 0;
-      
+    tape->tail = NULL;
+    tape->qLength = 0;
 
-  /* I'd rather know where I am each time, and I don't trust all
-     fprintf's to give me character counts. */
-  tape->outputSize = ftello (tape->outFp) ;
-  if (debugShrinking)
-    {
-      struct stat buf ;
-      static bool logged = false ;
-      
-      fflush (tape->outFp) ;
-      if (fstat (fileno (tape->outFp),&buf) != 0 && !logged)
-        {
-          syslog (LOG_ERR,FSTAT_FAILURE,tape->outputFilename) ;
-          logged = true ;
-        }
-      else if (buf.st_size != tape->outputSize)
-        {
-          warn ("ME fstat and ftello do not agree for %s",
-                tape->outputFilename) ;
-          logged = true ;
+
+    /* I'd rather know where I am each time, and I don't trust all
+       fprintf's to give me character counts. */
+    tape->outputSize = ftello(tape->outFp);
+    if (debugShrinking) {
+        struct stat buf;
+        static bool logged = false;
+
+        fflush(tape->outFp);
+        if (fstat(fileno(tape->outFp), &buf) != 0 && !logged) {
+            syslog(LOG_ERR, "fstat failed on %s", tape->outputFilename);
+            logged = true;
+        } else if (buf.st_size != tape->outputSize) {
+            warn("ME fstat and ftello do not agree for %s",
+                 tape->outputFilename);
+            logged = true;
         }
     }
-  
-  if (tape->outputHighLimit > 0 && tape->outputSize > tape->outputHighLimit)
-    {
-      shrinkfile (tape->outFp,tape->outputLowLimit,tape->outputFilename,"a+");
-      tape->outputSize = ftello (tape->outFp) ;
+
+    if (tape->outputHighLimit > 0
+        && tape->outputSize > tape->outputHighLimit) {
+        shrinkfile(tape->outFp, tape->outputLowLimit, tape->outputFilename,
+                   "a+");
+        tape->outputSize = ftello(tape->outFp);
     }
 }
 #endif

@@ -103,12 +103,6 @@ int prepareRead(EndPoint endp, Buffer *buffers, EndpRWCB func,
 int prepareWrite(EndPoint endp, Buffer *buffers, EndpRWCB progress,
                  EndpRWCB done, void *clientData);
 
-/* cancel any outstanding reads. */
-void cancelRead(EndPoint endp);
-
-/* cancel any outstanding writes. */
-void cancelWrite(EndPoint endp, char *buffer, size_t *len);
-
 /* return true if prepareRead has been called, but not serviced yet */
 bool readIsPending(EndPoint endp);
 

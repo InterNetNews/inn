@@ -222,9 +222,6 @@ static Connection gCxnList = NULL;
 static unsigned int gCxnCount = 0;
 unsigned int max_reconnect_period = MAX_RECON_PER;
 unsigned int init_reconnect_period = INIT_RECON_PER;
-#if 0
-static bool inited = false ;
-#endif
 static Buffer dotFirstBuffer;
 static Buffer dotBuffer;
 static Buffer crlfBuffer;
@@ -462,12 +459,12 @@ newConnection(Host host, unsigned int id, const char *ipname,
  * (hostname lookup etc.) then it returns false (and the Connection is left
  * in the sleeping state)..
  *
- * Pre-state		Reason cxnConnect called
- * ---------		------------------------
- * cxnStartingS		Connection owner issued call.
- * cxnWaitingS		side effect of cxnTakeArticle() call
- * cxnConnecting	side effect of cxnFlush() call
- * cxnSleepingS		side effect of reopenTimeoutCbk() call.
+ * Pre-state                Reason cxnConnect called
+ * ---------                ------------------------
+ * cxnStartingS             Connection owner issued call.
+ * cxnWaitingS              Side effect of cxnTakeArticle() call.
+ * cxnConnecting            Side effect of cxnFlush() call.
+ * cxnSleepingS             Side effect of reopenTimeoutCbk() call.
  */
 bool
 cxnConnect(Connection cxn)
@@ -570,16 +567,16 @@ cxnConnect(Connection cxn)
 
 /* Put the Connection into the wait state.
  *
- * Pre-state		Reason cxnWait called
- * ---------		------------------------
- * cxnStartingS		- Connection owner called cxnWait()
- * cxnSleepingS		- side effect of cxnFlush() call.
- * cxnConnectingS	- side effect of cxnFlush() call.
- * cxnFlushingS		- side effect of receiving response 205
- * 			  and Connection had no articles when
- * 			  cxnFlush() was issued.
- * 			- prepareRead failed.
- * 			- I/O failed.
+ * Pre-state                Reason cxnWait called
+ * ---------                ------------------------
+ * cxnStartingS             - Connection owner called cxnWait().
+ * cxnSleepingS             - Side effect of cxnFlush() call.
+ * cxnConnectingS           - Side effect of cxnFlush() call.
+ * cxnFlushingS             - Side effect of receiving response 205
+ *                            and Connection had no articles when
+ *                            cxnFlush() was issued.
+ *                          - prepareRead failed.
+ *                          - I/O failed.
  *
  */
 void
@@ -599,15 +596,15 @@ cxnWait(Connection cxn)
 
 
 /* Tells the Connection to flush itself (i.e. push out all articles,
- * issue a QUIT and drop the network connection. If necessary a
- * reconnect will be done immediately after. Called by the Host, or
+ * issue a QUIT and drop the network connection.  If necessary a
+ * reconnect will be done immediately after.  Called by the Host, or
  * by the timer callback.
  *
- * Pre-state		Reason cxnFlush called
- * ---------		------------------------
- * ALL (except cxnDeadS	- Connection owner called cxnFlush()
- *  and cxnStartingS)
- * cxnFeedingS		- side effect of flushCxnCbk() call.
+ * Pre-state                Reason cxnFlush called
+ * ---------                ------------------------
+ * ALL (except cxnDeadS     - Connection owner called cxnFlush().
+ *    and cxnStartingS)
+ * cxnFeedingS              - Side effect of flushCxnCbk() call.
  */
 void
 cxnFlush(Connection cxn)
@@ -741,10 +738,10 @@ cxnTerminate(Connection cxn)
 /* Tells the Connection to do a disconnect and then when it is
  * disconnected to delete itself.
  *
- * Pre-state		Reason cxnClose called
- * ---------		------------------------
- * ALL (except cxnDeadS	- Connecton owner called directly.
- * and cxnStartingS).
+ * Pre-state                Reason cxnClose called
+ * ---------                ------------------------
+ * ALL (except cxnDeadS     - Connecton owner called directly.
+ *   and cxnStartingS).
  */
 void
 cxnClose(Connection cxn)
@@ -3055,14 +3052,12 @@ processResponse435(Connection cxn, char *response UNUSED)
     hostArticleNotWanted(cxn->myHost, cxn, artHolder->article);
     delArtHolder(artHolder);
 
-#if 0
-  d_printf (1,"%s:%d On exiting 435 article queue total is %d (%d %d %d %d)\n",
-           hostPeerName (cxn->myHost), cxn->ident,
-           cxn->articleQTotal,
-           (int) (cxn->checkHead != NULL),
-           (int) (cxn->checkRespHead != NULL),
-           (int) (cxn->takeHead != NULL),
-           (int) (cxn->takeRespHead != NULL));
+#if defined(INNFEED_DEBUG)
+    d_printf(
+        1, "%s:%d On exiting 435 article queue total is %d (%d %d %d %d)\n",
+        hostPeerName(cxn->myHost), cxn->ident, cxn->articleQTotal,
+        (int) (cxn->checkHead != NULL), (int) (cxn->checkRespHead != NULL),
+        (int) (cxn->takeHead != NULL), (int) (cxn->takeRespHead != NULL));
 #endif
 }
 

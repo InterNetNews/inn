@@ -336,8 +336,8 @@ printArticleInfo(Article art, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    msgid : %s\n", indent, art->msgid);
 
     fprintf(fp, "%s    contents buffer : {\n", indent);
-#if 0
-  printBufferInfo (art->contents,fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+    printBufferInfo(art->contents, fp, indentAmt + INDENT_INCR);
 #else
     fprintf(fp, "%s    %p\n", indent, (void *) art->contents);
 #endif
@@ -345,14 +345,14 @@ printArticleInfo(Article art, FILE *fp, unsigned int indentAmt)
     fprintf(fp, "%s    }\n", indent);
 
     fprintf(fp, "%s    nntp buffers : {\n", indent);
-    for (b = art->nntpBuffers; b != NULL && *b != NULL; b++)
-#if 0
-    printBufferInfo (*b,fp,indentAmt + INDENT_INCR) ;
+    for (b = art->nntpBuffers; b != NULL && *b != NULL; b++) {
+#if defined(INNFEED_DEBUG)
+        printBufferInfo(*b, fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s    %p\n", indent, (void *) *b);
 #endif
-
-        fprintf(fp, "%s    }\n", indent);
+    }
+    fprintf(fp, "%s    }\n", indent);
 
     fprintf(fp, "%s    logged missing : %s\n", indent,
             boolToString(art->loggedMissing));

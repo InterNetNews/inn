@@ -3985,7 +3985,7 @@ retry:
     }
 
     if (cxn->current_bufs != NULL) {
-        /*	freeBufferArray(cxn->current_bufs); */
+        /* freeBufferArray(cxn->current_bufs); */
         cxn->current_bufs = NULL;
     }
     cxn->current_bufs = bufs;

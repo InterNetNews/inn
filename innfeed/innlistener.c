@@ -159,9 +159,9 @@ printListenerInfo(InnListener listener, FILE *fp, unsigned int indentAmt)
 
     fprintf(fp, "%s    hosts {\n", indent);
     for (i = 0; i < listener->hostLen; i++) {
-#if 0
-      if (listener->myHosts [i] != NULL)
-        printHostInfo (listener->myHosts [i],fp,indentAmt + INDENT_INCR) ;
+#if defined(INNFEED_DEBUG)
+        if (listener->myHosts[i] != NULL)
+            printHostInfo(listener->myHosts[i], fp, indentAmt + INDENT_INCR);
 #else
         fprintf(fp, "%s        %p\n", indent, (void *) listener->myHosts[i]);
 #endif

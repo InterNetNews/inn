@@ -42,25 +42,12 @@ static char *addScope(scope *s, const char *name, scope *val);
 static void printScope(FILE *fp, scope *s, int indent);
 static void printValue(FILE *fp, value *v, int indent);
 static scope *newScope(const char *type);
-#if 0
-static int strNCaseCmp (const char *a, const char *b, size_t len) ;
-#endif
 
 /* Interface between lexer and parser. */
 int yylex(void);
 
 int yyerror(const char *s);
 int yywrap(void);
-
-
-#if 0
-int isString (scope *s, const char *name, int inherit)
-{
-  value *v = findValue (s,name,inherit) ;
-
-  return (v != NULL && v->type == stringval) ;
-}
-#endif
 
 int
 getBool(scope *s, const char *name, int *rval, int inherit)
@@ -984,7 +971,7 @@ main(int argc, char **argv)
         printScope(stdout, topScope, -5);
 
         if (argc == 3) {
-#    if 0
+#    if defined(INNFEED_DEBUG)
           printf ("Looking for %s of type %s: ",argv[2],argv[1]) ;
           if (strncmp (argv[1],"int",3) == 0)
             {
@@ -1019,7 +1006,6 @@ main(int argc, char **argv)
             }
 #    endif
         } else if (argc == 2) {
-#    if 1
             value *v = findValue(topScope, argv[1], 1);
 
             if (v == NULL)
@@ -1028,10 +1014,6 @@ main(int argc, char **argv)
                 printf("Getting %s : ", argv[1]);
                 printValue(stdout, v, 0);
             }
-#    else
-            if (findScope(topScope, argv[1], 1) == NULL)
-                printf("Can't find the scope of %s\n", argv[1]);
-#    endif
         }
     }
 

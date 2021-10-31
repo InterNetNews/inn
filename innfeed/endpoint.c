@@ -125,10 +125,6 @@ static struct timeval *getTimeout(struct timeval *tout);
 static void doTimeout(void);
 static void handleSignals(void);
 
-#if 0
-static int ff_set (fd_set *set, unsigned int start) ;
-static int ff_free (fd_set *set, unsigned int start) ;
-#endif
 static void endpointCleanup(void);
 
 
@@ -419,53 +415,6 @@ prepareWrite(EndPoint endp, Buffer *buffers, EndpRWCB progress, EndpRWCB done,
 }
 
 
-/* Cancel the pending read. */
-void
-cancelRead(EndPoint endp)
-{
-    FD_CLR(endp->myFd, &rdSet);
-    if (!FD_ISSET(endp->myFd, &wrSet))
-        FD_CLR(endp->myFd, &exSet);
-
-    freeBufferArray(endp->inBuffer);
-
-    endp->inBuffer = NULL;
-    endp->inBufferIdx = 0;
-    endp->inIndex = 0;
-    endp->inMinLen = 0;
-    endp->inAmtRead = 0;
-    endp->inCbk = NULL;
-    endp->inClientData = NULL;
-}
-
-
-/* cancel all pending writes. The first len bytes of the queued write are
-  copied to buffer. The number of bytes copied (if it is less than *len) is
-  copied to len. If no write was outstanding then len will have 0 stored in
-  it. */
-void
-cancelWrite(EndPoint endp, char *buffer UNUSED, size_t *len UNUSED)
-{
-    FD_CLR(endp->myFd, &wrSet);
-    if (!FD_ISSET(endp->myFd, &rdSet))
-        FD_CLR(endp->myFd, &exSet);
-
-#if 0
-#    error XXX need to copy data to buffer and *len
-#endif
-
-    freeBufferArray(endp->outBuffer);
-
-    endp->outBuffer = NULL;
-    endp->outBufferIdx = 0;
-    endp->outIndex = 0;
-    endp->outProgressCbk = NULL;
-    endp->outDoneCbk = NULL;
-    endp->outClientData = NULL;
-    endp->outSize = 0;
-    endp->outAmtWritten = 0;
-}
-
 /* queue up a new timeout request. to go off at a specific time. */
 TimeoutId
 prepareWake(EndpTCB func, time_t timeToWake, void *clientData)
@@ -478,9 +427,9 @@ prepareWake(EndpTCB func, time_t timeToWake, void *clientData)
 
     id = timerElemAdd(timeToWake, func, clientData);
 
-#if 0
-  d_printf (1, "Preparing wake %d at date %ld for %ld seconds\n",
-           (int) id, (long) now, (long) (timeToWake - now)) ;
+#if defined(INNFEED_DEBUG)
+    d_printf(1, "Preparing wake %d at date %ld for %ld seconds\n", (int) id,
+             (long) now, (long) (timeToWake - now));
 #endif
 
     return id;
@@ -496,9 +445,9 @@ prepareSleep(EndpTCB func, int timeToSleep, void *clientData)
 
     id = timerElemAdd(now + timeToSleep, func, clientData);
 
-#if 0
-  d_printf (1, "Preparing sleep %d at date %ld for %ld seconds\n",
-           (int) id, (long) now, (long) timeToSleep) ;
+#if defined(INNFEED_DEBUG)
+    d_printf(1, "Preparing sleep %d at date %ld for %ld seconds\n", (int) id,
+             (long) now, (long) timeToSleep);
 #endif
 
     return id;
@@ -1078,21 +1027,15 @@ doExcept(EndPoint endp)
     } else
         syswarn("ME exception: fd %d: Unknown error", fd);
 
-#if 0
-  sleep (5) ;
-  abort () ;
+#if defined(INNFEED_DEBUG)
+    sleep(5);
+    abort();
 #endif
 
     /* Not reached */
     return IoFailed;
 }
 
-#if 0
-static void endPointPrint (EndPoint ep, FILE *fp)
-{
-  fprintf (fp,"EndPoint [%p]: fd [%d]\n",(void *) ep, ep->myFd) ;
-}
-#endif
 
 static void
 signalHandler(int s)
@@ -1606,35 +1549,6 @@ endpointConfigLoadCbk(void *data)
 
     return rval;
 }
-
-
-#if 0
-/* definitely not the fastest, but the most portable way to find the first
-  set bit in a mask */
-static int ff_set (fd_set *set,unsigned int start)
-{
-  unsigned int i ;
-
-  for (i = start ; i < FD_SETSIZE ; i++)
-    if (FD_ISSET (i,set))
-      return (int) i ;
-
-  return -1 ;
-}
-
-
-static int ff_free (fd_set *set, unsigned int start)
-{
-  unsigned int i ;
-
-  for (i = start ; i < FD_SETSIZE ; i++)
-    if (!FD_ISSET (i,set))
-      return i ;
-
-
-  return -1 ;
-}
-#endif
 
 
 static void

@@ -17,6 +17,7 @@
 #include <netdb.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <syslog.h>
 
 #ifdef HAVE_SYS_TIME_H
@@ -615,8 +616,9 @@ sigalrm(int sig UNUSED)
 static void
 sigchld(int sig UNUSED)
 {
-#if 0
-  wait (&status) ;              /* we don't care */
+#if defined(INNFEED_DEBUG)
+    int status;
+    wait(&status); /* we don't care */
 #endif
 
     xsignal(sig, sigchld);

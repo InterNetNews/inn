@@ -41,7 +41,6 @@ char **PointersFreedOnExit;
 
 char *timeToStringFormat = 0;
 bool debuggingDump = true;
-extern void (*gPrintInfo)(void);
 void (*gCleanUp)(void) = 0;
 
 
@@ -306,52 +305,6 @@ trim_ws(char *string)
     *++p = '\0';
 }
 
-
-#if 0
-/* Scribble on top of memory we're about to free. */
-void deadBeef (void *base, size_t byteCount)
-{
-  unsigned char *b = (unsigned char *) base ;
-  int i ;
-
-#    if 0
-
-  memset (base, 0, byteCount) ;
-
-#    else
-
-  assert (b != NULL) ;
-
-  for (i = 0 ; i < ((int) byteCount) - 4 ; i += 4)
-    {
-#        if 0
-      *((int *) (b + i)) = 0xdeadbeef ;
-#        else
-      b [i + 0] = (unsigned char) 0xde ;
-      b [i + 1] = (unsigned char) 0xad ;
-      b [i + 2] = (unsigned char) 0xbe ;
-      b [i + 3] = (unsigned char) 0xef ;
-#        endif
-    }
-  
-  switch (byteCount % 4)
-    {
-      case 0:
-        *(b + i + 3) = (unsigned char) 0xef ;
-        
-      case 3:
-        *(b + i + 2) = (unsigned char) 0xbe ;
-
-      case 2:
-        *(b + i + 1) = (unsigned char) 0xad ;
-
-      case 1:
-        *b = (unsigned char) 0xde ;
-    }
-
-#    endif
-}
-#endif
 
 /* Not using plain flock or lockf 'cause I don't want to waste file
    descriptors. This routine is based on the file shlock.c from INN. */
