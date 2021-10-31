@@ -142,17 +142,17 @@ Usage: actsync [-A][-b hostid][-d hostid][-i ignore_file][-I hostid][-k]\n\
  * For example, to ignore "foo.bar.*", if it is junked or equated to
  * a group of the form "alt.*.foo.bar.*":
  *
- *	x.pat = "foo.bar.*";
- *	x.type = "j=";
- *	x.epat = "alt.*.foo.bar.*";
- *	x.ignore = 1;
+ *    x.pat = "foo.bar.*";
+ *    x.type = "j=";
+ *    x.epat = "alt.*.foo.bar.*";
+ *    x.ignore = 1;
  *
  * To further check "foo.bar.mod" if it is moderated:
  *
- *	x.pat = "foo.bar.mod";
- *	x.type = "m";
- *	x.epat = NULL;
- *	x.ignore = 0;
+ *    x.pat = "foo.bar.mod";
+ *    x.type = "m";
+ *    x.epat = NULL;
+ *    x.ignore = 0;
  *
  * The 'i' value means ignore, 'c' value means 'compare'.   The last pattern
  * that matches a group determines the fate of the group.  By default all
@@ -390,10 +390,10 @@ main(int argc, char *argv[])
  * process_args - process the command line arguments
  *
  * given:
- *	argc	arg count
- *	argv	the args
- *	host1	name of first host (may be 2nd if -R)
- *	host2	name of second host2 *may be 1st if -R)
+ *    argc     arg count
+ *    argv     the args
+ *    host1    name of first host (may be 2nd if -R)
+ *    host2    name of second host2 *may be 1st if -R)
  */
 static void
 process_args(int argc, char *argv[], char **host1, char **host2)
@@ -708,15 +708,15 @@ process_args(int argc, char *argv[], char **host1, char **host2)
  * get_active - get an active file from a host
  *
  * given:
- *	host	host to contact or file to read
- *	hostid	HOST_ID of host
- *	len	pointer to length of grp return array
- *	grp	existing host array to add, or NULL
- *	errs	count of lines that were found to have some error
+ *    host     host to contact or file to read
+ *    hostid   HOST_ID of host
+ *    len      pointer to length of grp return array
+ *    grp      existing host array to add, or NULL
+ *    errs     count of lines that were found to have some error
  *
  * returns;
- *	Pointer to an array of grp structures describing each active entry.
- *	Does not return on fatal error.
+ *    Pointer to an array of grp structures describing each active entry.
+ *    Does not return on fatal error.
  *
  * If host starts with a '/' or '.', then it is assumed to be a local file.
  * In that case, the local file is opened and read.
@@ -1023,8 +1023,8 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
         /* check for a bad group type */
         switch (cur->type[0]) {
         case NF_FLAG_OK:
-            /* of COURSE: collabra has incompatible flags. but it	*/
-            /* looks like they can be fixed easily enough.		*/
+            /* of COURSE: collabra has incompatible flags. but it
+             * looks like they can be fixed easily enough. */
             if (cur->type[1] == 'g') {
                 cur->type[1] = '\0';
             }
@@ -1122,7 +1122,7 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
  * Newsgroup names must consist of only alphanumeric chars and
  * characters from the following regular expression:
  *
- *	[.+-_]
+ *    [.+-_]
  *
  * One cannot have two '.'s in a row or end in a '.' character.
  *
@@ -1134,13 +1134,13 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
  * the last '.' and the end.
  *
  * given:
- *	name	newsgroup name to check
- *	num_chk	true => all numeric newsgroups components are invalid
- *		false => do not check for numeric newsgroups
+ *    name      newsgroup name to check
+ *    num_chk   true => all numeric newsgroups components are invalid
+ *              false => do not check for numeric newsgroups
  *
  * returns:
- *	0	group is ok
- *	1	group is bad
+ *    0    group is ok
+ *    1    group is bad
  */
 static int
 bad_grpname(char *name, int num_chk)
@@ -1235,26 +1235,26 @@ bad_grpname(char *name, int num_chk)
  * get_ignore - get the ignore list from an ignore file
  *
  * given:
- *	filename	name of the ignore file to read
- *	*len		pointer to length of ignore return array
+ *    filename    name of the ignore file to read
+ *    *len        pointer to length of ignore return array
  *
  * returns:
- *	returns a malloced ignore pattern array, changes len
+ *    returns a malloced ignore pattern array, changes len
  *
  * An ignore file is of the form:
  *
- *	# this is a comment which is ignored
- *	# comments begin at the first # character
- *	# comments may follow text on the same line
+ *    # this is a comment which is ignored
+ *    # comments begin at the first # character
+ *    # comments may follow text on the same line
  *
- *	# blank lines are ignored too
+ *    # blank lines are ignored too
  *
- *	# lines are [ic] <spaces-tabs> pattern [<spaces-tabs> type] ...
- *	i    foo.*		# ignore foo.* groups,
- *	c    foo.bar m		# but check foo.bar if moderated
- *	c    foo.keep.*		# and check foo.keep.*
- *	i    foo.keep.* j =alt.*      # except when foo.keep.* is junked
- *	                              #     or equivalenced to an alt.* group
+ *    # lines are [ic] <spaces-tabs> pattern [<spaces-tabs> type] ...
+ *    i    foo.*                    # ignore foo.* groups,
+ *    c    foo.bar m                # but check foo.bar if moderated
+ *    c    foo.keep.*               # and check foo.keep.*
+ *    i    foo.keep.* j =alt.*      # except when foo.keep.* is junked
+ *                                  #   or equivalenced to an alt.* group
  *
  * The 'i' value means ignore, 'c' value means 'compare'.   The last pattern
  * that matches a group determines the fate of the group.  By default all
@@ -1426,10 +1426,10 @@ get_ignore(char *filename, int *len)
  * ignore_grps - ignore newsgroups given an ignore list
  *
  * given:
- *	grp	array of groups
- *	grplen	length of grp array in elements
- *	igcl	array of ignore
- *	iglen	length of igcl array in elements
+ *    grp       array of groups
+ *    grplen    length of grp array in elements
+ *    igcl      array of ignore
+ *    iglen     length of igcl array in elements
  */
 static void
 ignore_grps(struct grp *grp, int grplen, struct pat *igcl, int iglen)
@@ -1546,20 +1546,20 @@ ignore_grps(struct grp *grp, int grplen, struct pat *igcl, int iglen)
  * merge_cmp - qsort compare function for later group merge
  *
  * given:
- *	a	group a to compare
- *	b	group b to compare
+ *    a    group a to compare
+ *    b    group b to compare
  *
  * returns:
- *	>0	a > b
- *	0	a == b elements match (fatal error if a and b are different)
- *	<0	a < b
+ *    >0    a > b
+ *    0     a == b elements match (fatal error if a and b are different)
+ *    <0    a < b
  *
  * To speed up group comparison, we compare by the following items listed
  * in order of sorting:
  *
- *	group name
- *	hostid			(host1 ahead of host2)
- *	linenum			(active file line number)
+ *    group name
+ *    hostid            (host1 ahead of host2)
+ *    linenum           (active file line number)
  */
 static int
 merge_cmp(const void *arg_a, const void *arg_b)
@@ -1607,10 +1607,10 @@ merge_cmp(const void *arg_a, const void *arg_b)
  * merge_grps - compare groups from both hosts
  *
  * given:
- *	grp	array of groups
- *	grplen	length of grp array in elements
- *	host1	name of host with HOSTID1
- *	host2	name of host with HOSTID2
+ *    grp       array of groups
+ *    grplen    length of grp array in elements
+ *    host1     name of host with HOSTID1
+ *    host2     name of host with HOSTID2
  *
  * This routine will select which groups to output from a merged active file.
  */
@@ -1761,20 +1761,20 @@ merge_grps(struct grp *grp, int grplen, char *host1, char *host2)
  * active_cmp - qsort compare function for active file style output
  *
  * given:
- *	a	group a to compare
- *	b	group b to compare
+ *    a    group a to compare
+ *    b    group b to compare
  *
  * returns:
- *	>0	a > b
- *	0	a == b elements match (fatal error if a and b are different)
- *	<0	a < b
+ *    >0    a > b
+ *    0     a == b elements match (fatal error if a and b are different)
+ *    <0    a < b
  *
  * This sort will sort groups so that the lines that will be output
  * are host1 lines followed by host2 lines.  Thus, we will sort by
  * the following keys:
  *
- *	hostid			(host1 ahead of host2)
- *	linenum			(active file line number)
+ *    hostid            (host1 ahead of host2)
+ *    linenum           (active file line number)
  */
 static int
 active_cmp(const void *arg_a, const void *arg_b)
@@ -1815,8 +1815,8 @@ active_cmp(const void *arg_a, const void *arg_b)
  * output_grps - output the result of the merge
  *
  * given:
- *	grp	array of groups
- *	grplen	length of grp array in elements
+ *    grp       array of groups
+ *    grplen    length of grp array in elements
  */
 static void
 output_grps(struct grp *grp, int grplen)
@@ -1970,10 +1970,10 @@ output_grps(struct grp *grp, int grplen)
      *
      * We define change as:
      *
-     *	line errors from host1 active file
-     *	newsgroups to be added to host1
-     *	newsgroups to be removed from host1
-     *	newsgroups to be change in host1
+     *    line errors from host1 active file
+     *    newsgroups to be added to host1
+     *    newsgroups to be removed from host1
+     *    newsgroups to be change in host1
      */
     if (host1_same < p_flag) {
         warn("HALT: lines unchanged: %.2f%% < min change limit: %.2f%%",
@@ -2199,9 +2199,9 @@ output_grps(struct grp *grp, int grplen)
  * error_mark - mark for removal, error groups from a given host
  *
  * given:
- *	grp	array of groups
- *	grplen	length of grp array in elements
- *	hostid	host to mark error groups for removal
+ *    grp       array of groups
+ *    grplen    length of grp array in elements
+ *    hostid    host to mark error groups for removal
  */
 static void
 error_mark(struct grp *grp, int grplen, int hostid)
@@ -2244,22 +2244,22 @@ error_mark(struct grp *grp, int grplen, int hostid)
  * eq_merge_cmp - qsort compare function for =type group processing
  *
  * given:
- *	a	=group a to compare
- *	b	=group b to compare
+ *    a    =group a to compare
+ *    b    =group b to compare
  *
  * returns:
- *	>0	a > b
- *	0	a == b elements match (fatal error if a and b are different)
- *	<0	a < b
+ *    >0    a > b
+ *    0     a == b elements match (fatal error if a and b are different)
+ *    <0    a < b
  *
  * To speed up group comparison, we compare by the following items listed
  * in order of sorting:
  *
- *	skip			(non-skipped groups after skipped ones)
- *	group equiv name
- *	group name
- *	hostid			(host1 ahead of host2)
- *	linenum			(active file line number)
+ *    skip            (non-skipped groups after skipped ones)
+ *    group equiv name
+ *    group name
+ *    hostid          (host1 ahead of host2)
+ *    linenum         (active file line number)
  */
 static int
 eq_merge_cmp(const void *arg_a, const void *arg_b)
@@ -2323,11 +2323,11 @@ eq_merge_cmp(const void *arg_a, const void *arg_b)
  * mark_eq_probs - mark =type groups from a given host that have problems
  *
  * given:
- *	grp	 sorted array of groups
- *	grplen	 length of grp array in elements
- *	hostid	 host to mark error groups for removal, or NOHOST
- *	host1	name of host with HOSTID1
- *	host2	name of host with HOSTID2
+ *    grp      sorted array of groups
+ *    grplen   length of grp array in elements
+ *    hostid   host to mark error groups for removal, or NOHOST
+ *    host1    name of host with HOSTID1
+ *    host2    name of host with HOSTID2
  *
  * This function assumes that the grp array has been sorted by name.
  */
@@ -2521,15 +2521,15 @@ mark_eq_probs(struct grp *grp, int grplen, int hostid, char *host1,
  * exec_cmd - exec a ctlinnd command in forked process
  *
  * given:
- *	mode	OUTPUT_EXEC or OUTPUT_IEXEC (interactive mode)
- *	cmd	"changegroup", "newgroup", "rmgroup"
- *	grp	name of group
- *	type	type of group or NULL
- *	who	newgroup creator or NULL
+ *    mode   OUTPUT_EXEC or OUTPUT_IEXEC (interactive mode)
+ *    cmd    "changegroup", "newgroup", "rmgroup"
+ *    grp    name of group
+ *    type   type of group or NULL
+ *    who    newgroup creator or NULL
  *
  * returns:
- *	1	exec was performed
- *	0	exec was not performed
+ *    1    exec was performed
+ *    0    exec was not performed
  */
 static int
 exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
@@ -2718,12 +2718,12 @@ exec_cmd(int mode, const char *cmd, char *grp, char *type, const char *who)
  * Determine of the newsgroup name is a new hierarchy.
  *
  * given:
- *	name	name of newsgroup to check
- *	existing_hier	hash table of existing hierarchies
+ *    name            name of newsgroup to check
+ *    existing_hier   hash table of existing hierarchies
  *
  * returns:
- *	false	hierarchy already exists
- *	true	hierarchy does not exist, name represents a new hierarchy
+ *    false   hierarchy already exists
+ *    true    hierarchy does not exist, name represents a new hierarchy
  */
 static int
 new_top_hier(char *name, struct hash *existing_hier)
@@ -2761,10 +2761,10 @@ new_top_hier(char *name, struct hash *existing_hier)
  * Returns its only argument.
  *
  * given:
- *	entry	void* pointer representing a string
+ *    entry    void* pointer representing a string
  *
  * returns:
- *	the same void* pointer
+ *    the same void* pointer
  */
 static const void *
 string_key(const void *entry)
@@ -2778,12 +2778,12 @@ string_key(const void *entry)
  * Compares two strings.
  *
  * given:
- *	key	void* pointer representing a hash table key
- *	entry	void* pointer representing a hash table entry
+ *    key    void* pointer representing a hash table key
+ *    entry  void* pointer representing a hash table entry
  *
  * returns:
- *	0	arguments are not equal
- *	1	arguments are equal
+ *    0    arguments are not equal
+ *    1    arguments are equal
  */
 static bool
 string_equal(const void *key, const void *entry)

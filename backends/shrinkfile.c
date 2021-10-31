@@ -5,13 +5,13 @@
 **  public domain.  Rewritten for INN by Rich Salz.
 **
 **  Usage:
-**	shrinkfile [-n] [-s size [-m maxsize]] [-v] file...
-**	-n		No writes, exit 0 if any file is too large, 1 otherwise
-**	-s size		Truncation size (0 default); suffix may be k, m,
-**			or g to scale.  Must not be larger than 2^31 - 1.
-**	-m maxsize	Maximum size allowed before truncation.  If maxsize
-**			<= size, then it is reset to size.  Default == size.
-**	-v		Print status line.
+**      shrinkfile [-n] [-s size [-m maxsize]] [-v] file...
+**      -n              No writes, exit 0 if any file is too large, 1 otherwise
+**      -s size         Truncation size (0 default); suffix may be k, m,
+**                      or g to scale.  Must not be larger than 2^31 - 1.
+**      -m maxsize      Maximum size allowed before truncation.  If maxsize
+**                      <= size, then it is reset to size.  Default == size.
+**      -v              Print status line.
 **
 **  Files will be shrunk an end of line boundary.  In no case will the
 **  file be longer than size bytes if it was longer than maxsize bytes.

@@ -3,24 +3,24 @@
 **  Modelled after innxmit.c and nntpbatch.c
 **
 **  Invocation:
-**	innxbatch [options] <serverhost> <file> ...
+**      innxbatch [options] <serverhost> <file> ...
 #ifdef FROMSTDIN
-**	innxbatch -i <serverhost>
+**      innxbatch -i <serverhost>
 #endif FROMSTDIN
 **  will connect to serverhost's nntp port, and transfer the named files,
 **  with an xbatch command for every file. Files that have been sent
 **  successfully are unlink()ed. In case of any error, innxbatch terminates
 **  and leaves any remaining files untouched, for later transmission.
 **  Options:
-**	-D	increase debug level
-**	-v	report statistics to stdout
+**      -D      increase debug level
+**      -v      report statistics to stdout
 #ifdef FROMSTDIN
-**	-i	read batch file names from stdin instead from command line.
-**		For each successfully transmitted batch, an OK is printed on
-**		stdout, to indicate that another file name is expected.
+**      -i      read batch file names from stdin instead from command line.
+**              For each successfully transmitted batch, an OK is printed on
+**              stdout, to indicate that another file name is expected.
 #endif
-**	-t	Timeout for connection attempt
-**	-T	Timeout for batch transfers.
+**      -t      Timeout for connection attempt
+**      -T      Timeout for batch transfers.
 **  We do not use any file locking. At worst, a batch could be transmitted
 **  twice in parallel by two independant invocations of innxbatch.
 **  To prevent this, innxbatch should be invoked by a shell script that uses

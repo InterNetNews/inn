@@ -1,34 +1,34 @@
 /*
- *      auth_pass.c
+ *    auth_pass.c
  *
  * Abstract:
  *
- *	This module is the complete source for a sample "authinfo generic"
- *	program.  This program takes a user's login name and password
- *	(supplied either as arguments or as responses to prompts) and
- *	validates them against the contents of the password database.
+ *    This module is the complete source for a sample "authinfo generic"
+ *    program.  This program takes a user's login name and password
+ *    (supplied either as arguments or as responses to prompts) and
+ *    validates them against the contents of the password database.
  *
- *	If the user properly authenticates themselves, an nnrp.auth style
- *	record indicating the user's authenticated login and permitting
- *	reading and posting to all groups is output on stderr (for reading by
- *	nnrpd) and the program exits with a 0 status.  If the user fails to
- *	authenticate, then a record with the attempted login name and no
- *	access is output on stderr and a non-zero exit status is returned.
+ *    If the user properly authenticates themselves, an nnrp.auth style
+ *    record indicating the user's authenticated login and permitting
+ *    reading and posting to all groups is output on stderr (for reading by
+ *    nnrpd) and the program exits with a 0 status.  If the user fails to
+ *    authenticate, then a record with the attempted login name and no
+ *    access is output on stderr and a non-zero exit status is returned.
  *
  * Exit statuses:
- *	0       Successfully authenticated.
- *	1	getpeername() failed, returned a bad address family, or
- *		gethostbyaddr() failed.
- *	2	Entry not found in password file.
- *	3	No permission to read passwords, or password field is '*'.
- *	4	Bad password match.
- *	5	Cannot read username or password.
+ *    0    Successfully authenticated.
+ *    1    getpeername() failed, returned a bad address family, or
+ *         gethostbyaddr() failed.
+ *    2    Entry not found in password file.
+ *    3    No permission to read passwords, or password field is '*'.
+ *    4    Bad password match.
+ *    5    Cannot read username or password.
  *
  * Environment:
- *	Run by nnrpd with stdin/stdout connected to the reader and stderr
- *	connected back to nnrpd.  This program will need to be run as suid
- *	root on systems where passwords are stored in a file readable only by
- *	root.
+ *    Run by nnrpd with stdin/stdout connected to the reader and stderr
+ *    connected back to nnrpd.  This program will need to be run as suid
+ *    root on systems where passwords are stored in a file readable only by
+ *    root.
  *
  * Written 1996 July 6 by Douglas Wade Needham (dneedham@oucsace.cs.ohiou.edu).
  *
@@ -50,24 +50,24 @@ int
 main(int argc, char **argv)
 /*+
  * Abstract:
- *	Main routine of the program, implementing all prompting, validation,
- *	and status returns.
+ *    Main routine of the program, implementing all prompting, validation,
+ *    and status returns.
  *
  * Arguments:
- *	argc		Argument count.
- *	argv		Null terminated argument vector.
+ *    argc        Argument count.
+ *    argv        Null terminated argument vector.
  *
  * Returns:
  *      Exits according to program status values.
  *
  * Variables:
- *	hp		Pointer to host entry.
- *	length		General integer variable
- *	password	Password given by user.
- *	peername	Hostname of the peer.
- *	pwd		Pointer to entry from passwd file.
- *	sin		Socket address structure.
- *	username	User's login name.
+ *    hp        Pointer to host entry.
+ *    length    General integer variable.
+ *    password  Password given by user.
+ *    peername  Hostname of the peer.
+ *    pwd       Pointer to entry from passwd file.
+ *    sin       Socket address structure.
+ *    username  User's login name.
  */
 {
     struct hostent *hp;
