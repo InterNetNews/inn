@@ -12,10 +12,10 @@
 
 
 #ifdef HAVE_UNIX_DOMAIN_SOCKETS
-# include "portable/socket-unix.h"
+#    include "portable/socket-unix.h"
 
-static char	*LCpath = NULL;
-static CHANNEL	*LCchan;
+static char *LCpath = NULL;
+static CHANNEL *LCchan;
 
 
 /*
@@ -24,23 +24,23 @@ static CHANNEL	*LCchan;
 static void
 LCreader(CHANNEL *cp)
 {
-    int		fd;
-    CHANNEL	*new;
+    int fd;
+    CHANNEL *new;
 
     if (cp != LCchan) {
-	syslog(L_ERROR, "%s internal LCreader wrong channel 0x%p not 0x%p",
-	    LogName, (void *)cp, (void *)LCchan);
-	return;
+        syslog(L_ERROR, "%s internal LCreader wrong channel 0x%p not 0x%p",
+               LogName, (void *) cp, (void *) LCchan);
+        return;
     }
 
     if ((fd = accept(cp->fd, NULL, NULL)) < 0) {
-	syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
-	return;
+        syslog(L_ERROR, "%s cant accept CCreader %m", LogName);
+        return;
     }
     if ((new = NCcreate(fd, false, true)) != NULL) {
-	memset( &new->Address, 0, sizeof( new->Address ) );
-	syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
-	NCwritereply(new, (char *)NCgreeting);
+        memset(&new->Address, 0, sizeof(new->Address));
+        syslog(L_NOTICE, "%s connected %d", "localhost", new->fd);
+        NCwritereply(new, (char *) NCgreeting);
     }
 }
 
@@ -63,40 +63,40 @@ LCwritedone(CHANNEL *unused UNUSED)
 void
 LCsetup(void)
 {
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
-    int			i;
-    struct sockaddr_un	server;
+#if defined(HAVE_UNIX_DOMAIN_SOCKETS)
+    int i;
+    struct sockaddr_un server;
 
     if (LCpath == NULL)
-	LCpath = concatpath(innconf->pathrun, INN_PATH_NNTPCONNECT);
+        LCpath = concatpath(innconf->pathrun, INN_PATH_NNTPCONNECT);
     /* Remove old detritus. */
     if (unlink(LCpath) < 0 && errno != ENOENT) {
-	syslog(L_FATAL, "%s cant unlink %s %m", LogName, LCpath);
-	exit(1);
+        syslog(L_FATAL, "%s cant unlink %s %m", LogName, LCpath);
+        exit(1);
     }
 
     /* Create a socket and name it. */
     if ((i = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-	syslog(L_FATAL, "%s cant socket %s %m", LogName, LCpath);
-	exit(1);
+        syslog(L_FATAL, "%s cant socket %s %m", LogName, LCpath);
+        exit(1);
     }
     memset(&server, 0, sizeof server);
     server.sun_family = AF_UNIX;
     strlcpy(server.sun_path, LCpath, sizeof(server.sun_path));
     if (bind(i, (struct sockaddr *) &server, SUN_LEN(&server)) < 0) {
-	syslog(L_FATAL, "%s cant bind %s %m", LogName, LCpath);
-	exit(1);
+        syslog(L_FATAL, "%s cant bind %s %m", LogName, LCpath);
+        exit(1);
     }
 
     /* Set it up to wait for connections. */
     if (listen(i, innconf->maxlisten) < 0) {
-	syslog(L_FATAL, "%s cant listen %s %m", LogName, LCpath);
-	exit(1);
+        syslog(L_FATAL, "%s cant listen %s %m", LogName, LCpath);
+        exit(1);
     }
     LCchan = CHANcreate(i, CTlocalconn, CSwaiting, LCreader, LCwritedone);
     syslog(L_NOTICE, "%s lcsetup %s", LogName, CHANname(LCchan));
     RCHANadd(LCchan);
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif /* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }
 
 
@@ -106,11 +106,11 @@ LCsetup(void)
 void
 LCclose(void)
 {
-#if	defined(HAVE_UNIX_DOMAIN_SOCKETS)
+#if defined(HAVE_UNIX_DOMAIN_SOCKETS)
     CHANclose(LCchan, CHANname(LCchan));
     LCchan = NULL;
     if (unlink(LCpath) < 0)
-	syslog(L_ERROR, "%s cant unlink %s %m", LogName, LCpath);
+        syslog(L_ERROR, "%s cant unlink %s %m", LogName, LCpath);
     free(LCpath);
-#endif	/* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
+#endif /* defined(HAVE_UNIX_DOMAIN_SOCKETS) */
 }

@@ -30,13 +30,13 @@
 #include <sys/wait.h>
 
 #include "inn/dispatch.h"
-#include "inn/messages.h"
+#include "inn/libinn.h"
 #include "inn/md5.h"
+#include "inn/messages.h"
 #include "inn/nntp.h"
 #include "inn/utility.h"
 #include "inn/vector.h"
 #include "inn/version.h"
-#include "inn/libinn.h"
 
 /* Prototypes for command callbacks. */
 static void command_help(struct cvector *, void *);
@@ -45,11 +45,11 @@ static void command_quit(struct cvector *, void *);
 
 /* The actual command dispatch table for TinyNNTP.  This table MUST be
    sorted. */
-const struct dispatch commands[] = {
-    { "help",  command_help,  0, 0, NULL },
-    { "ihave", command_ihave, 1, 1, NULL },
-    { "quit",  command_quit,  0, 0, NULL }
-};
+/* clang-format off */
+const struct dispatch commands[] = {{"help",  command_help,  0, 0, NULL},
+                                    {"ihave", command_ihave, 1, 1, NULL},
+                                    {"quit",  command_quit,  0, 0, NULL}};
+/* clang-format on */
 
 /* Global state for the daemon. */
 struct state {
@@ -142,10 +142,9 @@ command_ihave(struct cvector *command, void *cookie)
         oerrno = errno;
         if (unlink(filename) < 0)
             syswarn("cannot clean up failed write to %s, remove by hand",
-                filename);
+                    filename);
         errno = oerrno;
-        sysdie("unable to write article %s to file %s", msgid,
-               filename);
+        sysdie("unable to write article %s to file %s", msgid, filename);
     }
     close(fd);
     if (state->processor != NULL) {
@@ -224,7 +223,7 @@ command_unknown(struct cvector *command UNUSED, void *cookie)
 int
 main(int argc, char *argv[])
 {
-    struct state state = { NULL, 0, 0, NULL };
+    struct state state = {NULL, 0, 0, NULL};
     struct cvector *command;
     enum nntp_status status;
 

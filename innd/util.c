@@ -19,8 +19,8 @@
 bool
 FormatLong(char *p, unsigned long value, int width)
 {
-    for (p += width - 1; width-- > 0; ) {
-        *p-- = (int)(value % 10) + '0';
+    for (p += width - 1; width-- > 0;) {
+        *p-- = (int) (value % 10) + '0';
         value /= 10;
     }
     return value == 0;
@@ -34,7 +34,7 @@ FormatLong(char *p, unsigned long value, int width)
 static char *
 Join(char *text)
 {
-    char       *p;
+    char *p;
 
     for (p = text; *p; p++)
         if (*p == '\n' || *p == '\r')
@@ -68,7 +68,7 @@ MaxLength(const char *p, const char *q)
     }
 
     /* Simple case of just want the beginning? */
-    if (q == NULL || (unsigned)(q - p) < sizeof buff - 4) {
+    if (q == NULL || (unsigned) (q - p) < sizeof buff - 4) {
         strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
     }
@@ -77,8 +77,7 @@ MaxLength(const char *p, const char *q)
         strlcpy(buff, p, sizeof(buff) - 13);
         strlcat(buff, "...", sizeof(buff) - 10);
         strlcat(buff, &p[i - 10], sizeof(buff));
-    }
-    else {
+    } else {
         /* Not in last 10 bytes, so use double ellipses. */
         strlcpy(buff, p, sizeof(buff) - 16);
         strlcat(buff, "...", sizeof(buff) - 13);
@@ -108,12 +107,11 @@ CommaSplit(char *text)
         if (*p == ',')
             i++;
 
-    for (av = save = xmalloc(i * sizeof(char *)), *av++ = p = text; *p; )
+    for (av = save = xmalloc(i * sizeof(char *)), *av++ = p = text; *p;)
         if (*p == ',') {
             *p++ = '\0';
             *av++ = p;
-        }
-        else
+        } else
             p++;
     *av = NULL;
     return save;
@@ -128,19 +126,19 @@ CommaSplit(char *text)
 void
 SetupListBuffer(int size, LISTBUFFER *list)
 {
-  /* get space for data to be splitted */
-  if (list->Data == NULL) {
-    list->DataLength = size;
-    list->Data = xmalloc(list->DataLength + 1);
-  } else if (list->DataLength < size) {
-    list->DataLength = size;
-    list->Data = xrealloc(list->Data, list->DataLength + 1);
-  }
-  /* get an array of character pointers. */
-  if (list->List == NULL) {
-    list->ListLength = DEFAULTNGBOXSIZE;
-    list->List = xmalloc(list->ListLength * sizeof(char *));
-  }
+    /* get space for data to be splitted */
+    if (list->Data == NULL) {
+        list->DataLength = size;
+        list->Data = xmalloc(list->DataLength + 1);
+    } else if (list->DataLength < size) {
+        list->DataLength = size;
+        list->Data = xrealloc(list->Data, list->DataLength + 1);
+    }
+    /* get an array of character pointers. */
+    if (list->List == NULL) {
+        list->ListLength = DEFAULTNGBOXSIZE;
+        list->List = xmalloc(list->ListLength * sizeof(char *));
+    }
 }
 
 
@@ -162,7 +160,7 @@ NeedShell(char *p, const char **av, const char **end)
         if (strchr(Metachars, *q) != NULL)
             return true;
 
-    for (end--; av < end; ) {
+    for (end--; av < end;) {
         /* Mark this word, check for shell meta-characters. */
         for (*av++ = p; *p && !ISWHITE(*p); p++)
             continue;
@@ -188,16 +186,16 @@ NeedShell(char *p, const char **av, const char **end)
 
 
 #define NOCLOSE "%s cant close %d in %s %m"
-#define NODUP2 "%s cant dup2 %d to %d in %s %m"
+#define NODUP2  "%s cant dup2 %d to %d in %s %m"
 
 /*
 **  Spawn a process, with I/O redirected as needed.  Return the PID or -1
 **  (and a syslog'd message) on error.
 */
 pid_t
-Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
+Spawn(int niceval, int fd0, int fd1, int fd2, char *const av[])
 {
-    pid_t       i;
+    pid_t i;
 
     /* Fork; on error, give up.  If not using the patched dbz, make
      * this call fork! */
@@ -263,9 +261,9 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char * const av[])
 void
 ThrottleIOError(const char *when)
 {
-    char         buff[SMBUF];
-    const char * p;
-    int          oerrno;
+    char buff[SMBUF];
+    const char *p;
+    int oerrno;
 
     if (Mode == OMrunning) {
         oerrno = errno;
@@ -315,15 +313,15 @@ InndHisOpen(void)
 
     histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
     if (innconf->hismethod == NULL) {
-	sysdie("hismethod is not defined");
-	/*NOTREACHED*/
+        sysdie("hismethod is not defined");
+        /*NOTREACHED*/
     }
 
     flags = HIS_RDWR | (INND_DBZINCORE ? HIS_MMAP : HIS_ONDISK);
     History = HISopen(histpath, innconf->hismethod, flags);
     if (!History) {
-	sysdie("SERVER can't open history %s", histpath);
-	/*NOTREACHED*/
+        sysdie("SERVER can't open history %s", histpath);
+        /*NOTREACHED*/
     }
     free(histpath);
     HISsetcache(History, 1024 * innconf->hiscachesize);
@@ -339,21 +337,21 @@ InndHisClose(void)
     if (!HISclose(History)) {
         char *histpath;
 
-	histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
-	sysdie("SERVER can't close history %s", histpath);
-	free(histpath);
-    }	
+        histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
+        sysdie("SERVER can't close history %s", histpath);
+        free(histpath);
+    }
     History = NULL;
 }
 
 bool
 InndHisWrite(const char *key, time_t arrived, time_t posted, time_t expires,
-	     TOKEN *token)
+             TOKEN *token)
 {
     bool r = HISwrite(History, key, arrived, posted, expires, token);
 
     if (r != true)
-	IOError("history write", errno);
+        IOError("history write", errno);
     return r;
 }
 
@@ -367,7 +365,7 @@ InndHisRemember(const char *key, time_t posted)
     bool r = HISremember(History, key, Now.tv_sec, posted);
 
     if (r != true)
-	IOError("history remember", errno);
+        IOError("history remember", errno);
     return r;
 }
 
@@ -376,8 +374,6 @@ InndHisLogStats(void)
 {
     struct histstats stats = HISstats(History);
 
-    notice("ME HISstats %d hitpos %d hitneg %d missed %d dne",
-           stats.hitpos, stats.hitneg, stats.misses, stats.dne);
+    notice("ME HISstats %d hitpos %d hitneg %d missed %d dne", stats.hitpos,
+           stats.hitneg, stats.misses, stats.dne);
 }
-
-

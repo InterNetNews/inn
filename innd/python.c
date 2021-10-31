@@ -22,57 +22,55 @@
 #ifdef DO_PYTHON
 
 /*  Python redefines _POSIX_C_SOURCE, so undef it to suppress warnings. */
-#undef _POSIX_C_SOURCE
+#    undef _POSIX_C_SOURCE
 
 /*  Make "s#" use Py_ssize_t rather than int. */
-#define PY_SSIZE_T_CLEAN
+#    define PY_SSIZE_T_CLEAN
 
 /*  Python.h must be included after having defined PY_SSIZE_T_CLEAN,
  *  and before any standard headers are included (because Python may
  *  define some pre-processor definitions which affect the standard
  *  headers on some systems). */
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-#include "Python.h"
-#pragma GCC diagnostic warning "-Wredundant-decls"
+#    pragma GCC diagnostic ignored "-Wredundant-decls"
+#    include "Python.h"
+#    pragma GCC diagnostic warning "-Wredundant-decls"
 
 /*  Define Py_ssize_t when it does not exist (Python < 2.5.0). */
-#if PY_VERSION_HEX < 0x02050000
-  typedef int Py_ssize_t;
-#endif
+#    if PY_VERSION_HEX < 0x02050000
+typedef int Py_ssize_t;
+#    endif
 
-#if PY_MAJOR_VERSION >= 3
-# define PyInt_FromLong PyLong_FromLong
-# define PyString_AS_STRING PyUnicode_AsUTF8
-# define PyString_FromStringAndSize PyBytes_FromStringAndSize
-# define PyString_InternFromString PyUnicode_InternFromString
-# define PYBUFF_FROMMEMORY(str, len) \
-      PyMemoryView_FromMemory((str), (len), PyBUF_WRITE)
-#else
-# define PYBUFF_FROMMEMORY(str, len) \
-      PyBuffer_FromMemory((str), (len))
-#endif
+#    if PY_MAJOR_VERSION >= 3
+#        define PyInt_FromLong             PyLong_FromLong
+#        define PyString_AS_STRING         PyUnicode_AsUTF8
+#        define PyString_FromStringAndSize PyBytes_FromStringAndSize
+#        define PyString_InternFromString  PyUnicode_InternFromString
+#        define PYBUFF_FROMMEMORY(str, len) \
+            PyMemoryView_FromMemory((str), (len), PyBUF_WRITE)
+#    else
+#        define PYBUFF_FROMMEMORY(str, len) PyBuffer_FromMemory((str), (len))
+#    endif
 
-#include "inn/innconf.h"
-#include "inn/wire.h"
-#include "innd.h"
+#    include "inn/innconf.h"
+#    include "inn/wire.h"
+#    include "innd.h"
 
-bool		PythonFilterActive;
-PyObject	*PYFilterObject = NULL;
-PyObject	*PYFilterModule = NULL;
+bool PythonFilterActive;
+PyObject *PYFilterObject = NULL;
+PyObject *PYFilterModule = NULL;
 
 /*  Article filter bits and pieces. */
-PyObject	*PYheaders = NULL;
-PyObject	**PYheaditem;
-PyObject	**PYheadkey;
-PyObject	*PYlineskey, *PYbodykey;
+PyObject *PYheaders = NULL;
+PyObject **PYheaditem;
+PyObject **PYheadkey;
+PyObject *PYlineskey, *PYbodykey;
 
 /*  External functions. */
-PyObject	*msgid_method = NULL;
-PyObject	*art_method = NULL;
-PyObject	*mode_method = NULL;
-PyObject	*pre_reload_method = NULL;
-PyObject	*close_method = NULL;
-
+PyObject *msgid_method = NULL;
+PyObject *art_method = NULL;
+PyObject *mode_method = NULL;
+PyObject *pre_reload_method = NULL;
+PyObject *close_method = NULL;
 
 
 /*
@@ -83,9 +81,8 @@ PYfilter(bool value)
 {
     PythonFilterActive = value;
     syslog(L_NOTICE, "%s Python filtering %s", LogName,
-	   PythonFilterActive ? "enabled" : "disabled");
+           PythonFilterActive ? "enabled" : "disabled");
 }
-
 
 
 /*
@@ -101,7 +98,7 @@ PYcontrol(char **av)
         if (PythonFilterActive)
             return "1 Python filter already enabled";
         else if (PYFilterObject == NULL)
-            return "1 Python filter not defined" ;
+            return "1 Python filter not defined";
         PYfilter(true);
         break;
     case 'n':
@@ -114,7 +111,6 @@ PYcontrol(char **av)
 }
 
 
-
 /*
 **  Reject articles we don't like.
 */
@@ -122,23 +118,23 @@ char *
 PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
     const HDRCONTENT *hc = data->HdrContent;
-    int		hdrnum;
-    int		i;
+    int hdrnum;
+    int i;
     static char buf[256];
-    PyObject	*result;
+    PyObject *result;
 
     if (!PythonFilterActive || PYFilterObject == NULL || art_method == NULL)
-	return NULL;
+        return NULL;
 
     /* Add headers to the dictionary... */
     hdrnum = 0;
-    for (i = 0 ; i < MAX_ARTHEADER ; i++) {
-	if (HDR_FOUND(i)) {
+    for (i = 0; i < MAX_ARTHEADER; i++) {
+        if (HDR_FOUND(i)) {
             PYheaditem[hdrnum] = PYBUFF_FROMMEMORY(HDR(i), HDR_LEN(i));
-	} else
-	    PYheaditem[hdrnum] = Py_None;
-	PyDict_SetItem(PYheaders, PYheadkey[hdrnum], PYheaditem[hdrnum]);
-	hdrnum++;
+        } else
+            PYheaditem[hdrnum] = Py_None;
+        PyDict_SetItem(PYheaders, PYheadkey[hdrnum], PYheaditem[hdrnum]);
+        hdrnum++;
     }
 
     /* ...then the body... */
@@ -155,23 +151,22 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     /* Now see if the filter likes it. */
     result = PyObject_CallFunction(art_method, (char *) "O", PYheaders);
     if ((result != NULL) && PyObject_IsTrue(result))
-	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
+        strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
-	*buf = '\0';
+        *buf = '\0';
     Py_XDECREF(result);
 
     /* Clean up after ourselves. */
     PyDict_Clear(PYheaders);
     for (i = 0; i < hdrnum; i++)
-	if (PYheaditem[i] != Py_None) {
-	    Py_DECREF(PYheaditem[i]);
+        if (PYheaditem[i] != Py_None) {
+            Py_DECREF(PYheaditem[i]);
         }
 
     if (*buf != '\0')
-	return buf;
+        return buf;
     return NULL;
 }
-
 
 
 /*
@@ -181,25 +176,24 @@ PYartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 char *
 PYmidfilter(char *messageID, int msglen)
 {
-    static char		buf[256];
-    PyObject		*result;
+    static char buf[256];
+    PyObject *result;
 
     if (!PythonFilterActive || PYFilterObject == NULL || msgid_method == NULL)
-	return NULL;
+        return NULL;
 
-    result = PyObject_CallFunction(msgid_method, (char *) "s#", messageID,
-                                   msglen);
+    result =
+        PyObject_CallFunction(msgid_method, (char *) "s#", messageID, msglen);
     if ((result != NULL) && PyObject_IsTrue(result))
-	strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
+        strlcpy(buf, PyString_AS_STRING(result), sizeof(buf));
     else
-	*buf = '\0';
+        *buf = '\0';
     Py_XDECREF(result);
 
     if (*buf != '\0')
-	return buf;
+        return buf;
     return NULL;
 }
-
 
 
 /*
@@ -208,33 +202,52 @@ PYmidfilter(char *messageID, int msglen)
 void
 PYmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
 {
-    PyObject	*result;
-    char	oldmode[10], newmode[10];
+    PyObject *result;
+    char oldmode[10], newmode[10];
 
     if (!PythonFilterActive || PYFilterObject == NULL || mode_method == NULL)
-	return;
+        return;
 
     switch (CurrentMode) {
-    default:		strlcpy(oldmode, "unknown", 10);	break;
-    case OMrunning:	strlcpy(oldmode, "running", 10);	break;
-    case OMpaused:	strlcpy(oldmode, "paused", 10);		break;
-    case OMthrottled:	strlcpy(oldmode, "throttled", 10);	break;
-    case OMshutdown:    strlcpy(oldmode, "shutdown", 10);       break;
+    default:
+        strlcpy(oldmode, "unknown", 10);
+        break;
+    case OMrunning:
+        strlcpy(oldmode, "running", 10);
+        break;
+    case OMpaused:
+        strlcpy(oldmode, "paused", 10);
+        break;
+    case OMthrottled:
+        strlcpy(oldmode, "throttled", 10);
+        break;
+    case OMshutdown:
+        strlcpy(oldmode, "shutdown", 10);
+        break;
     }
 
     switch (NewMode) {
-    default:		strlcpy(newmode, "unknown", 10);	break;
-    case OMrunning:	strlcpy(newmode, "running", 10);	break;
-    case OMpaused:	strlcpy(newmode, "paused", 10);		break;
-    case OMthrottled:	strlcpy(newmode, "throttled", 10);	break;
-    case OMshutdown:    strlcpy(newmode, "shutdown", 10);       break;
+    default:
+        strlcpy(newmode, "unknown", 10);
+        break;
+    case OMrunning:
+        strlcpy(newmode, "running", 10);
+        break;
+    case OMpaused:
+        strlcpy(newmode, "paused", 10);
+        break;
+    case OMthrottled:
+        strlcpy(newmode, "throttled", 10);
+        break;
+    case OMshutdown:
+        strlcpy(newmode, "shutdown", 10);
+        break;
     }
 
-    result = PyObject_CallFunction(mode_method, (char *) "sss",
-				   oldmode, newmode, reason);
+    result = PyObject_CallFunction(mode_method, (char *) "sss", oldmode,
+                                   newmode, reason);
     Py_XDECREF(result);
 }
-
 
 
 /*
@@ -243,22 +256,21 @@ PYmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
 static PyObject *
 PY_set_filter_hook(PyObject *dummy UNUSED, PyObject *args)
 {
-    PyObject	*result = NULL;
-    PyObject	*temp;
+    PyObject *result = NULL;
+    PyObject *temp;
 
     /* set_filter_hook method should return a pointer to innd auth object. */
     if (PyArg_ParseTuple(args, (char *) "O:set_filter_hook", &temp)) {
-	Py_XINCREF(temp);
-	Py_XDECREF(PYFilterObject);
-	PYFilterObject = temp;
-	Py_INCREF(Py_None);
-	result = Py_None;
+        Py_XINCREF(temp);
+        Py_XDECREF(PYFilterObject);
+        PYFilterObject = temp;
+        Py_INCREF(Py_None);
+        result = Py_None;
     }
 
     /* Return a pointer to innd auth method. */
     return result;
 }
-
 
 
 /*
@@ -267,17 +279,16 @@ PY_set_filter_hook(PyObject *dummy UNUSED, PyObject *args)
 static PyObject *
 PY_havehist(PyObject *self UNUSED, PyObject *args)
 {
-    char	*msgid;
-    Py_ssize_t  msgidlen;
+    char *msgid;
+    Py_ssize_t msgidlen;
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
-	return NULL;
+        return NULL;
 
     if (HIScheck(History, msgid))
-	return PyInt_FromLong(1);
+        return PyInt_FromLong(1);
     return PyInt_FromLong(0);
 }
-
 
 
 /*
@@ -286,21 +297,20 @@ PY_havehist(PyObject *self UNUSED, PyObject *args)
 static PyObject *
 PY_cancel(PyObject *self UNUSED, PyObject *args)
 {
-    char	*msgid;
-    Py_ssize_t  msgidlen;
-    char	*parambuf[2];
+    char *msgid;
+    Py_ssize_t msgidlen;
+    char *parambuf[2];
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
-	return NULL;
+        return NULL;
 
-    parambuf[0]= msgid;
-    parambuf[1]= 0;
+    parambuf[0] = msgid;
+    parambuf[1] = 0;
 
     if (!CCcancel(parambuf))
-	return PyInt_FromLong(1);
+        return PyInt_FromLong(1);
     return PyInt_FromLong(0);
 }
-
 
 
 /*
@@ -309,14 +319,14 @@ PY_cancel(PyObject *self UNUSED, PyObject *args)
 static PyObject *
 PY_addhist(PyObject *self UNUSED, PyObject *args)
 {
-    char	*msgid;
-    Py_ssize_t  msgidlen;
-    char	*articlepaths = (char *) "";
-    char	tbuff[32];
-    char	*parambuf[6];
+    char *msgid;
+    Py_ssize_t msgidlen;
+    char *articlepaths = (char *) "";
+    char tbuff[32];
+    char *parambuf[6];
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
-	return NULL;
+        return NULL;
 
     snprintf(tbuff, sizeof(tbuff), "%lu", (unsigned long) time(NULL));
 
@@ -326,10 +336,9 @@ PY_addhist(PyObject *self UNUSED, PyObject *args)
     parambuf[5] = 0;
 
     if (!CCaddhist(parambuf))
-	return PyInt_FromLong(1);
+        return PyInt_FromLong(1);
     return PyInt_FromLong(0);
 }
-
 
 
 /*
@@ -338,35 +347,34 @@ PY_addhist(PyObject *self UNUSED, PyObject *args)
 static PyObject *
 PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 {
-    char	*newsgroup;
-    Py_ssize_t  nglen;
-    NEWSGROUP	*ngp;
-    char	*end;
-    int		size;
+    char *newsgroup;
+    Py_ssize_t nglen;
+    NEWSGROUP *ngp;
+    char *end;
+    int size;
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &newsgroup, &nglen))
-	return NULL;
+        return NULL;
 
     ngp = NGfind(newsgroup);
     if (ngp == NULL)
-	return PyString_FromStringAndSize(NULL, 0);
+        return PyString_FromStringAndSize(NULL, 0);
 
     /* ngp->Rest is newline-terminated; find the end. */
     end = strchr(ngp->Rest, '\n');
     if (end == NULL)
-	size = strlen(ngp->Rest);
+        size = strlen(ngp->Rest);
     else
-	size = end - ngp->Rest;
+        size = end - ngp->Rest;
 
     /* If an alias is longer than this, active is probably broken. */
     if (size > MED_BUFFER) {
-	syslog(L_ERROR, "too-long flag field in active for %s", newsgroup);
-	size = MED_BUFFER;
+        syslog(L_ERROR, "too-long flag field in active for %s", newsgroup);
+        size = MED_BUFFER;
     }
 
     return PyString_FromStringAndSize(ngp->Rest, size);
 }
-
 
 
 /*
@@ -377,21 +385,21 @@ PY_newsgroup(PyObject *self UNUSED, PyObject *args)
 static PyObject *
 PY_head(PyObject *self UNUSED, PyObject *args)
 {
-    char	*msgid;
-    Py_ssize_t  msgidlen;
-    char	*p;
-    TOKEN	token;
-    ARTHANDLE	*art;
-    PyObject	*header;
-    size_t	headerlen;
+    char *msgid;
+    Py_ssize_t msgidlen;
+    char *p;
+    TOKEN token;
+    ARTHANDLE *art;
+    PyObject *header;
+    size_t headerlen;
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
-	return NULL;
+        return NULL;
 
-    if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
-	return Py_BuildValue((char *) "s", "");	
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
+        return Py_BuildValue((char *) "s", "");
     if ((art = SMretrieve(token, RETR_HEAD)) == NULL)
-	return Py_BuildValue((char *) "s", "");	
+        return Py_BuildValue((char *) "s", "");
     p = wire_to_native(art->data, art->len, &headerlen);
     SMfreearticle(art);
     header = PyString_FromStringAndSize(p, headerlen);
@@ -401,28 +409,27 @@ PY_head(PyObject *self UNUSED, PyObject *args)
 }
 
 
-
 /*
 **  Return a whole article to the external module as a string.
 */
 static PyObject *
 PY_article(PyObject *self UNUSED, PyObject *args)
 {
-    char	*msgid;
-    Py_ssize_t  msgidlen;
-    char	*p;
-    TOKEN	token;
-    ARTHANDLE	*arth;
-    PyObject	*art;
-    size_t	artlen;
+    char *msgid;
+    Py_ssize_t msgidlen;
+    char *p;
+    TOKEN token;
+    ARTHANDLE *arth;
+    PyObject *art;
+    size_t artlen;
 
     if (!PyArg_ParseTuple(args, (char *) "s#", &msgid, &msgidlen))
-	return NULL;
+        return NULL;
 
-    if (! HISlookup(History, msgid, NULL, NULL, NULL, &token))
-	return Py_BuildValue((char *) "s", "");
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
+        return Py_BuildValue((char *) "s", "");
     if ((arth = SMretrieve(token, RETR_ALL)) == NULL)
-	return Py_BuildValue((char *) "s", "");	
+        return Py_BuildValue((char *) "s", "");
     p = wire_to_native(arth->data, arth->len, &artlen);
     SMfreearticle(arth);
     art = PyString_FromStringAndSize(p, artlen);
@@ -430,7 +437,6 @@ PY_article(PyObject *self UNUSED, PyObject *args)
 
     return art;
 }
-
 
 
 /*
@@ -441,28 +447,30 @@ PY_article(PyObject *self UNUSED, PyObject *args)
 static PyObject *
 PY_syslog(PyObject *self UNUSED, PyObject *args)
 {
-    char	*loglevel;
-    Py_ssize_t  levellen;
-    char	*logmsg;
-    Py_ssize_t  msglen;
-    int		priority;
+    char *loglevel;
+    Py_ssize_t levellen;
+    char *logmsg;
+    Py_ssize_t msglen;
+    int priority;
 
     /* Get loglevel and message. */
-    if (!PyArg_ParseTuple(args, (char *) "s#s#",
-			  &loglevel, &levellen, &logmsg, &msglen))
-	return NULL;
+    if (!PyArg_ParseTuple(args, (char *) "s#s#", &loglevel, &levellen, &logmsg,
+                          &msglen))
+        return NULL;
 
     /* Assign syslog priority by abbreviated names. */
+    /* clang-format off */
     switch (*loglevel) {
-    case 'd': case 'D': priority = LOG_DEBUG ;		break;
-    case 'i': case 'I': priority = LOG_INFO ;		break;
-    case 'n': case 'N': priority = LOG_NOTICE ;		break;
-    case 'w': case 'W': priority = LOG_WARNING ;	break;
-    case 'e': case 'E': priority = LOG_ERR ;		break;
-    case 'c': case 'C': priority = LOG_CRIT ;		break;
-    case 'a': case 'A': priority = LOG_ALERT ;		break;
-    default:            priority = LOG_NOTICE ;
+    case 'd': case 'D': priority = LOG_DEBUG;     break;
+    case 'i': case 'I': priority = LOG_INFO;      break;
+    case 'n': case 'N': priority = LOG_NOTICE;    break;
+    case 'w': case 'W': priority = LOG_WARNING;   break;
+    case 'e': case 'E': priority = LOG_ERR;       break;
+    case 'c': case 'C': priority = LOG_CRIT;      break;
+    case 'a': case 'A': priority = LOG_ALERT;     break;
+    default:            priority = LOG_NOTICE;
     }
+    /* clang-format on */
 
     /* Log the message. */
     syslog(priority, "python: %s", logmsg);
@@ -473,82 +481,80 @@ PY_syslog(PyObject *self UNUSED, PyObject *args)
 }
 
 
-
 /*
 **  Compute a hash digest for a string.
 */
 static PyObject *
 PY_hashstring(PyObject *self UNUSED, PyObject *args)
 {
-    char	*instring, *wpos, *p, *q;
-    char	*workstring = NULL;
-    Py_ssize_t  insize;
-    int         worksize, i;
-    bool        wasspace;
-    int		lines = 0;
-    HASH	myhash;
+    char *instring, *wpos, *p, *q;
+    char *workstring = NULL;
+    Py_ssize_t insize;
+    int worksize, i;
+    bool wasspace;
+    int lines = 0;
+    HASH myhash;
 
     if (!PyArg_ParseTuple(args, (char *) "s#|i", &instring, &insize, &lines))
-	return NULL;
+        return NULL;
 
     /* If a linecount is provided, munge before hashing. */
     if (lines > 0) {
-	worksize = (int) insize;
+        worksize = (int) insize;
 
-	/* Chop leading whitespace. */
-	for (p=instring ; worksize>0 && isspace((unsigned char) *p) ; p++) {
-	    if (*p == '\n')
-		lines--;
-	    worksize--;
-	}
-	wpos = p;
+        /* Chop leading whitespace. */
+        for (p = instring; worksize > 0 && isspace((unsigned char) *p); p++) {
+            if (*p == '\n')
+                lines--;
+            worksize--;
+        }
+        wpos = p;
 
-	/* And trailing. */
-	for (p=&wpos[worksize] ; worksize>0 && isspace((unsigned char) *p) ; p--) {
-	    if (*p == '\n')
-		lines--;
-	    worksize--;
-	}
+        /* And trailing. */
+        for (p = &wpos[worksize]; worksize > 0 && isspace((unsigned char) *p);
+             p--) {
+            if (*p == '\n')
+                lines--;
+            worksize--;
+        }
 
-	/* Chop last 3 lines if we have >= 5.  From above chop the
-	 * last line which has no CR so we use 1 less here. */
-	if (lines >= 4) {
-	    for (i=0, p=wpos+worksize ; i<2 ; p--)
-		if (*p == '\n')
-		    i++;
-	    worksize = p - wpos;
-	}
+        /* Chop last 3 lines if we have >= 5.  From above chop the
+         * last line which has no CR so we use 1 less here. */
+        if (lines >= 4) {
+            for (i = 0, p = wpos + worksize; i < 2; p--)
+                if (*p == '\n')
+                    i++;
+            worksize = p - wpos;
+        }
 
-	/* Compress out multiple whitespace in the trimmed string.  We
-	 * do a copy because this is probably an original art
-	 * buffer. */
+        /* Compress out multiple whitespace in the trimmed string.  We
+         * do a copy because this is probably an original art
+         * buffer. */
         workstring = xmalloc(worksize + 1);
         memcpy(workstring, wpos, worksize);
         wasspace = false;
-	p = wpos;
-	q = workstring;
-	for (i=0 ; i<worksize ; i++) {
-	    if (isspace((unsigned char) *p)) {
+        p = wpos;
+        q = workstring;
+        for (i = 0; i < worksize; i++) {
+            if (isspace((unsigned char) *p)) {
                 if (!wasspace) {
                     *q++ = ' ';
                 }
                 wasspace = true;
-	    } else {
+            } else {
                 *q++ = tolower((unsigned char) *p);
                 wasspace = false;
             }
             p++;
         }
-	worksize = q - workstring;
-	myhash = Hash(workstring, worksize);
-	free(workstring);
-    }
-    else
-	myhash = Hash(instring, (int) insize);
+        worksize = q - workstring;
+        myhash = Hash(workstring, worksize);
+        free(workstring);
+    } else
+        myhash = Hash(instring, (int) insize);
 
-    return PyString_FromStringAndSize((const char *)&myhash, sizeof(myhash));
+    return PyString_FromStringAndSize((const char *) &myhash, sizeof(myhash));
 }
-
 
 
 /*
@@ -557,9 +563,12 @@ PY_hashstring(PyObject *self UNUSED, PyObject *args)
 **  definitions, so we have to add casts for all of the string parameters that
 **  we're initializing with constant strings.
 */
-#define METHOD(name, func, flags, help) \
-    { (char *)(name), (func), (flags), (char *)(help) }
+#    define METHOD(name, func, flags, help)                   \
+        {                                                     \
+            (char *) (name), (func), (flags), (char *) (help) \
+        }
 
+/* clang-format off */
 static PyMethodDef INNPyMethods[] = {
     METHOD("set_filter_hook", PY_set_filter_hook, METH_VARARGS, ""),
     METHOD("havehist",        PY_havehist,        METH_VARARGS, ""),
@@ -570,24 +579,25 @@ static PyMethodDef INNPyMethods[] = {
     METHOD("article",         PY_article,         METH_VARARGS, ""),
     METHOD("syslog",          PY_syslog,          METH_VARARGS, ""),
     METHOD("hashstring",      PY_hashstring,      METH_VARARGS, ""),
-    METHOD(NULL,              NULL,               0,            "")
-};
+    METHOD(NULL,              NULL,               0,            "")};
+/* clang-format on */
 
-#if PY_MAJOR_VERSION >= 3
+#    if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef INNPyModule = {
-    PyModuleDef_HEAD_INIT,                /* m_base */
-    (char *) "INN",                       /* m_name */
-    (char *) "innd Python filter hook",   /* m_doc */
-    -1,                                   /* m_size */
-    INNPyMethods,                         /* m_methods */
-    NULL,                                 /* m_slots */
-    NULL,                                 /* m_traverse */
-    NULL,                                 /* m_clear */
-    NULL,                                 /* m_free */
+    PyModuleDef_HEAD_INIT,              /* m_base */
+    (char *) "INN",                     /* m_name */
+    (char *) "innd Python filter hook", /* m_doc */
+    -1,                                 /* m_size */
+    INNPyMethods,                       /* m_methods */
+    NULL,                               /* m_slots */
+    NULL,                               /* m_traverse */
+    NULL,                               /* m_clear */
+    NULL,                               /* m_free */
 };
 
 PyMODINIT_FUNC
-PyInit_INN(void) {
+PyInit_INN(void)
+{
     PyObject *module = PyModule_Create(&INNPyModule);
 
     if (module == NULL)
@@ -595,14 +605,16 @@ PyInit_INN(void) {
 
     return module;
 }
-#else
+#    else
 void
-PyInit_INN(void) {
+PyInit_INN(void)
+{
     if (Py_InitModule3((char *) "INN", INNPyMethods,
-                       (char *) "innd Python filter hook") == NULL)
+                       (char *) "innd Python filter hook")
+        == NULL)
         syslog(L_ERROR, "failed to initialize innd python module");
 }
-#endif
+#    endif
 
 
 /*
@@ -611,14 +623,13 @@ PyInit_INN(void) {
 void
 PYclose(void)
 {
-    PyObject	*result;
+    PyObject *result;
 
     if (close_method != NULL) {
-	result = PyObject_CallFunction(close_method, NULL);
-	Py_XDECREF(result);
+        result = PyObject_CallFunction(close_method, NULL);
+        Py_XDECREF(result);
     }
 }
-
 
 
 /*
@@ -642,17 +653,17 @@ PYdefonemethod(PyObject **methptr, const char *methname)
 
     /* See if such method is defined. */
     if (*methptr == NULL)
-	syslog(L_NOTICE, "python method %s not found", methname);
+        syslog(L_NOTICE, "python method %s not found", methname);
     else {
         /* See if it is callable. */
         if (PyCallable_Check(*methptr) == 0) {
-            syslog(L_ERROR, "python object %s found but not a function", methname);
+            syslog(L_ERROR, "python object %s found but not a function",
+                   methname);
             Py_DECREF(*methptr);
             *methptr = NULL;
         }
     }
 }
-
 
 
 /*
@@ -670,15 +681,14 @@ PYdefmethods(void)
 }
 
 
-
 /*
 **  Used by "ctlinnd reload filter.python 'reason'".
 */
 int
 PYreadfilter(void)
 {
-    PyObject	*newmodule = NULL;
-    PyObject	*result;
+    PyObject *newmodule = NULL;
+    PyObject *result;
 
     if (!Py_IsInitialized()) {
         syslog(L_NOTICE, "python is not initialized");
@@ -687,8 +697,8 @@ PYreadfilter(void)
 
     /* If there is a filter running, let it clean up first. */
     if (pre_reload_method != NULL) {
-	result = PyObject_CallFunction(pre_reload_method, NULL);
-	Py_XDECREF(result);
+        result = PyObject_CallFunction(pre_reload_method, NULL);
+        Py_XDECREF(result);
     }
 
     /* We need to reimport the module before reloading it because otherwise,
@@ -707,18 +717,18 @@ PYreadfilter(void)
     }
 
     if ((newmodule = PyImport_ReloadModule(PYFilterModule)) == NULL) {
-	syslog(L_ERROR, "cant reload python filter module");
-	PYfilter(false);
-	return 0;
+        syslog(L_ERROR, "cant reload python filter module");
+        PYfilter(false);
+        return 0;
     }
 
     Py_XDECREF(PYFilterModule);
     PYFilterModule = newmodule;
 
     if (PYFilterObject == NULL) {
-	syslog(L_ERROR, "python reload error, filter object not defined");
-	PYfilter(false);
-	return 0;
+        syslog(L_ERROR, "python reload error, filter object not defined");
+        PYfilter(false);
+        return 0;
     }
 
     PYfilter(true);
@@ -726,7 +736,6 @@ PYreadfilter(void)
 
     return 1;
 }
-
 
 
 /*
@@ -761,27 +770,27 @@ PYsetup(void)
 
     /* It makes Python sad when its stdout or stderr are closed. */
     if ((fileno(stdout) == -1) || (fileno(stderr) == -1))
-	PyRun_SimpleString
-	    ("import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
+        PyRun_SimpleString(
+            "import sys; sys.stdout=sys.stderr=open('/dev/null', 'a')");
 
     /* See if Python initialized OK. */
-    if (!Py_IsInitialized ()) {
-	syslog(L_ERROR, "python interpreter NOT initialized");
-	return;
+    if (!Py_IsInitialized()) {
+        syslog(L_ERROR, "python interpreter NOT initialized");
+        return;
     }
 
     PYFilterModule = PyImport_ImportModule((char *) INN_PATH_PYTHON_STARTUP_M);
     if (PYFilterModule == NULL)
-	syslog(L_ERROR, "failed to import external %s python module",
-           INN_PATH_PYTHON_STARTUP_M);
+        syslog(L_ERROR, "failed to import external %s python module",
+               INN_PATH_PYTHON_STARTUP_M);
 
     if (PYFilterObject == NULL) {
-	syslog(L_ERROR, "python filter object is not defined");
-	PYfilter(false);
+        syslog(L_ERROR, "python filter object is not defined");
+        PYfilter(false);
     } else {
-	PYfilter(true);
-	PYdefmethods();
-	syslog(L_NOTICE, "defined python methods");
+        PYfilter(true);
+        PYdefmethods();
+        syslog(L_NOTICE, "defined python methods");
     }
 
     /* Grab space for these so we aren't forever recreating them.  We also
@@ -794,7 +803,7 @@ PYsetup(void)
 
     /* Preallocate keys for the article dictionary. */
     for (hp = ARTheaders; hp < ARRAY_END(ARTheaders); hp++)
-	PYheadkey[hp - ARTheaders] = PyString_InternFromString(hp->Name);
+        PYheadkey[hp - ARTheaders] = PyString_InternFromString(hp->Name);
     PYlineskey = PyString_InternFromString("__LINES__");
     PYbodykey = PyString_InternFromString("__BODY__");
 

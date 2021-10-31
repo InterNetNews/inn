@@ -33,21 +33,21 @@
 /* Skip this entire file if DO_PERL (./configure --with-perl) isn't set. */
 #if DO_PERL
 
-#include "inn/wire.h"
-#include "innd.h"
+#    include "inn/wire.h"
+#    include "innd.h"
 
-#include <EXTERN.h>
-#pragma GCC diagnostic ignored "-Wcast-align"
-#pragma GCC diagnostic ignored "-Wredundant-decls"
-#pragma GCC diagnostic ignored "-Wshadow"
-#include <perl.h>
-#pragma GCC diagnostic warning "-Wcast-align"
-#pragma GCC diagnostic warning "-Wredundant-decls"
-#pragma GCC diagnostic warning "-Wshadow"
-#include <XSUB.h>
-#include "ppport.h"
+#    include <EXTERN.h>
+#    pragma GCC diagnostic ignored "-Wcast-align"
+#    pragma GCC diagnostic ignored "-Wredundant-decls"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    include <perl.h>
+#    pragma GCC diagnostic warning "-Wcast-align"
+#    pragma GCC diagnostic warning "-Wredundant-decls"
+#    pragma GCC diagnostic warning "-Wshadow"
+#    include "ppport.h"
+#    include <XSUB.h>
 
-#include "innperl.h"
+#    include "innperl.h"
 
 /* Prototypes for XS functions. */
 XS(XS_INN_addhist);
@@ -67,27 +67,30 @@ char *
 PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
 {
     dSP;
-    const ARTHEADER * hp;
+    const ARTHEADER *hp;
     const HDRCONTENT *hc = data->HdrContent;
-    HV *        hdr;
-    CV *        filter;
-    int         i, rc;
-    char *      p;
+    HV *hdr;
+    CV *filter;
+    int i, rc;
+    char *p;
     static char buf[256];
-    bool        failure;
-    SV *        errsv;
+    bool failure;
+    SV *errsv;
 
-    if (!PerlFilterActive) return NULL;
+    if (!PerlFilterActive)
+        return NULL;
     filter = perl_get_cv("filter_art", 0);
-    if (!filter) return NULL;
+    if (!filter)
+        return NULL;
 
     /* Create %hdr and stash a copy of every known header field. */
     hdr = perl_get_hv("hdr", 1);
-    for (i = 0 ; i < MAX_ARTHEADER ; i++) {
-	if (HDR_FOUND(i)) {
-	    hp = &ARTheaders[i];
-            (void) hv_store(hdr, (char *) hp->Name, hp->Size, newSVpv(HDR(i), 0), 0);
-	}
+    for (i = 0; i < MAX_ARTHEADER; i++) {
+        if (HDR_FOUND(i)) {
+            hp = &ARTheaders[i];
+            (void) hv_store(hdr, (char *) hp->Name, hp->Size,
+                            newSVpv(HDR(i), 0), 0);
+        }
     }
 
     /* Store the article body.  We don't want to make another copy of it,
@@ -99,11 +102,14 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
        to unreliable SV * bodies as for regexps).  And for Perl not to
        compute a hash for artBody, we give it "42". */
     if (artBody) {
-#if (PERL_REVISION == 5) && ((PERL_VERSION < 7) || ((PERL_VERSION == 7) && (PERL_SUBVERSION < 1)))
+#    if (PERL_REVISION == 5)   \
+        && ((PERL_VERSION < 7) \
+            || ((PERL_VERSION == 7) && (PERL_SUBVERSION < 1)))
         (void) hv_store(hdr, "__BODY__", 8, newSVpv(artBody, artLen), 0);
-#else
-        (void) hv_store(hdr, "__BODY__", 8, newSVpvn_share(artBody, artLen, 42), 0);
-#endif /* Perl < 5.7.1 */
+#    else
+        (void) hv_store(hdr, "__BODY__", 8,
+                        newSVpvn_share(artBody, artLen, 42), 0);
+#    endif /* Perl < 5.7.1 */
     }
 
     (void) hv_store(hdr, "__LINES__", 9, newSViv(lines), 0);
@@ -112,7 +118,7 @@ PLartfilter(const ARTDATA *data, char *artBody, long artLen, int lines)
     SAVETMPS;
     PUSHMARK(SP);
     PUTBACK;
-    rc = perl_call_sv((SV *) filter, G_EVAL|G_SCALAR|G_NOARGS);
+    rc = perl_call_sv((SV *) filter, G_EVAL | G_SCALAR | G_NOARGS);
     SPAGAIN;
 
     hv_undef(hdr);
@@ -155,16 +161,18 @@ char *
 PLmidfilter(char *messageID)
 {
     dSP;
-    CV          *filter;
-    int         rc;
-    char        *p;
+    CV *filter;
+    int rc;
+    char *p;
     static char buf[256];
-    bool        failure;
-    SV *        errsv;
+    bool failure;
+    SV *errsv;
 
-    if (!PerlFilterActive) return NULL;
+    if (!PerlFilterActive)
+        return NULL;
     filter = perl_get_cv("filter_messageid", 0);
-    if (!filter) return NULL;
+    if (!filter)
+        return NULL;
 
     /* Pass filter_messageid() the message ID on the Perl stack. */
     ENTER;
@@ -172,7 +180,7 @@ PLmidfilter(char *messageID)
     PUSHMARK(SP);
     XPUSHs(sv_2mortal(newSVpv(messageID, 0)));
     PUTBACK;
-    rc = perl_call_sv((SV *) filter, G_EVAL|G_SCALAR);
+    rc = perl_call_sv((SV *) filter, G_EVAL | G_SCALAR);
     SPAGAIN;
 
     /* Check $@, which will be set if the sub died. */
@@ -211,13 +219,14 @@ void
 PLmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
 {
     dSP;
-    HV          *mode;
-    CV          *filter;
-    bool        failure;
-    SV *        errsv;
+    HV *mode;
+    CV *filter;
+    bool failure;
+    SV *errsv;
 
     filter = perl_get_cv("filter_mode", 0);
-    if (!filter) return;
+    if (!filter)
+        return;
 
     /* Current mode goes into $mode{Mode}, new mode in $mode{NewMode}, and
        the reason in $mode{reason}. */
@@ -248,7 +257,7 @@ PLmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
     PUSHMARK(SP);
     PUTBACK;
 
-    perl_call_sv((SV *) filter, G_EVAL|G_DISCARD|G_NOARGS);
+    perl_call_sv((SV *) filter, G_EVAL | G_DISCARD | G_NOARGS);
 
     SPAGAIN;
 
@@ -257,7 +266,7 @@ PLmode(OPERATINGMODE CurrentMode, OPERATINGMODE NewMode, char *reason)
     if (SvTRUE(errsv)) {
         failure = true;
         syslog(L_ERROR, "Perl function filter_mode died: %s",
-                SvPV(errsv, PL_na));
+               SvPV(errsv, PL_na));
         (void) POPs;
     } else {
         failure = false;
@@ -284,7 +293,7 @@ char *
 PLstats(void)
 {
     dSP;
-    char *argv[] = { NULL };
+    char *argv[] = {NULL};
 
     if (perl_get_cv("filter_stats", false) == NULL)
         return NULL;
@@ -292,17 +301,17 @@ PLstats(void)
         char *stats = NULL;
         char *result;
 
-	ENTER;
-	SAVETMPS;
+        ENTER;
+        SAVETMPS;
         /* No need for PUSHMARK(SP) with call_argv(). */
-	perl_call_argv("filter_stats", G_EVAL | G_NOARGS, argv);
-	SPAGAIN;
+        perl_call_argv("filter_stats", G_EVAL | G_NOARGS, argv);
+        SPAGAIN;
         result = POPp;
         if (result != NULL && *result)
             stats = xstrdup(result);
-	PUTBACK;
-	FREETMPS;
-	LEAVE;
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
 
         return stats;
     }
@@ -327,9 +336,9 @@ PLstats(void)
 XS(XS_INN_addhist)
 {
     dXSARGS;
-    int         i;
-    char        tbuff[32];
-    char*       parambuf[6];
+    int i;
+    char tbuff[32];
+    char *parambuf[6];
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
@@ -370,25 +379,27 @@ XS(XS_INN_addhist)
 XS(XS_INN_article)
 {
     dXSARGS;
-    char *      msgid;
-    TOKEN       token;
-    ARTHANDLE * art;
-    char *      p;
-    size_t      len;
+    char *msgid;
+    TOKEN token;
+    ARTHANDLE *art;
+    char *p;
+    size_t len;
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
 
     if (items != 1)
-	croak("Usage: INN::article(msgid)");
+        croak("Usage: INN::article(msgid)");
 
     /* Get the article token from the message ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
+        XSRETURN_UNDEF;
 
     /* Retrieve the article and convert it from wire format. */
     art = SMretrieve(token, RETR_ALL);
-    if (art == NULL) XSRETURN_UNDEF;
+    if (art == NULL)
+        XSRETURN_UNDEF;
     p = wire_to_native(art->data, art->len, &len);
     SMfreearticle(art);
 
@@ -407,8 +418,8 @@ XS(XS_INN_article)
 XS(XS_INN_cancel)
 {
     dXSARGS;
-    char        *msgid;
-    char        *parambuf[2];
+    char *msgid;
+    char *parambuf[2];
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
@@ -436,8 +447,8 @@ XS(XS_INN_cancel)
 XS(XS_INN_filesfor)
 {
     dXSARGS;
-    char        *msgid;
-    TOKEN       token;
+    char *msgid;
+    TOKEN token;
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
@@ -460,7 +471,7 @@ XS(XS_INN_filesfor)
 XS(XS_INN_havehist)
 {
     dXSARGS;
-    char        *msgid;
+    char *msgid;
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
@@ -484,11 +495,11 @@ XS(XS_INN_havehist)
 XS(XS_INN_head)
 {
     dXSARGS;
-    char *      msgid;
-    TOKEN       token;
-    ARTHANDLE * art;
-    char *      p;
-    size_t      len;
+    char *msgid;
+    TOKEN token;
+    ARTHANDLE *art;
+    char *p;
+    size_t len;
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;
@@ -498,11 +509,13 @@ XS(XS_INN_head)
 
     /* Get the article token from the Message-ID and the history file. */
     msgid = (char *) SvPV(ST(0), PL_na);
-    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token)) XSRETURN_UNDEF;
+    if (!HISlookup(History, msgid, NULL, NULL, NULL, &token))
+        XSRETURN_UNDEF;
 
     /* Retrieve the article headers and convert them from wire format. */
     art = SMretrieve(token, RETR_HEAD);
-    if (art == NULL) XSRETURN_UNDEF;
+    if (art == NULL)
+        XSRETURN_UNDEF;
     p = wire_to_native(art->data, art->len, &len);
     SMfreearticle(art);
 
@@ -521,10 +534,10 @@ XS(XS_INN_head)
 XS(XS_INN_newsgroup)
 {
     dXSARGS;
-    char *      newsgroup;
-    NEWSGROUP * ngp;
-    char *      end;
-    int         size;
+    char *newsgroup;
+    NEWSGROUP *ngp;
+    char *end;
+    int size;
 
     /* Suppress warnings for the mandatory XS argument. */
     cv = cv;

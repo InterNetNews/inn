@@ -17,7 +17,7 @@
 
 /* Needed on AIX 4.1 to get fd_set and friends. */
 #ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#    include <sys/select.h>
 #endif
 
 #include "inn/fdflag.h"
@@ -30,16 +30,15 @@
    to 0 if they don't exist so that we can unconditionally compare errno to
    them in the code. */
 #ifndef ENOTSOCK
-# define ENOTSOCK 0
+#    define ENOTSOCK 0
 #endif
 #ifndef ENOTTY
-# define ENOTTY 0
+#    define ENOTTY 0
 #endif
 
-static const char * const timer_name[] = {
-    "idle", "artclean", "artwrite", "artcncl", "sitesend", "overv",
-    "perl", "python", "nntpread", "artparse", "artlog", "datamove"
-};
+static const char *const timer_name[] = {
+    "idle", "artclean", "artwrite", "artcncl",  "sitesend", "overv",
+    "perl", "python",   "nntpread", "artparse", "artlog",   "datamove"};
 
 /* Compaction threshold as a divisor of the buffer size.  If the amount free
    at the beginning of the buffer is bigger than the quotient, it is compacted
@@ -51,11 +50,11 @@ struct channels {
     fd_set read_set;
     fd_set sleep_set;
     fd_set write_set;
-    int sleep_count;            /* Number of sleeping channels. */
-    int max_fd;                 /* Max fd in read_set or write_set. */
-    int max_sleep_fd;           /* Max fd in sleep_set. */
-    int table_size;             /* Total number of channels. */
-    CHANNEL *table;             /* Table of channel structs. */
+    int sleep_count;  /* Number of sleeping channels. */
+    int max_fd;       /* Max fd in read_set or write_set. */
+    int max_sleep_fd; /* Max fd in sleep_set. */
+    int table_size;   /* Total number of channels. */
+    CHANNEL *table;   /* Table of channel structs. */
 
     /* Special prioritized channels, for the control and remconn channels.  We
        check these first each time. */
@@ -188,8 +187,8 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
 {
     CHANNEL *cp;
     int i, j, size;
-    struct buffer in  = { 0, 0, 0, NULL };
-    struct buffer out = { 0, 0, 0, NULL };
+    struct buffer in = {0, 0, 0, NULL};
+    struct buffer out = {0, 0, 0, NULL};
 
     /* Currently, we do no dynamic allocation, but instead assume that the
        channel table is sized large enough to hold all possible file
@@ -233,7 +232,7 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
     /* Stupid HPUX 11.00 has a broken listen/accept where setting the listen
        socket to nonblocking prevents you from successfully setting the
        socket returned by accept(2) back to blocking mode, no matter what,
-       resulting in all kinds of funny behaviour, data loss, etc. etc.  */
+       resulting in all kinds of funny behaviour, data loss, etc. etc. */
     if (!fdflag_nonblocking(fd, true) && errno != ENOTSOCK && errno != ENOTTY)
         syswarn("%s cant nonblock %d", LogName, fd);
 #endif
@@ -245,8 +244,8 @@ CHANcreate(int fd, enum channel_type type, enum channel_state state,
                 break;
         if (i >= channels.prioritized_size) {
             size = channels.prioritized_size + 1;
-            channels.prioritized
-                = xrealloc(channels.prioritized, size * sizeof(CHANNEL *));
+            channels.prioritized =
+                xrealloc(channels.prioritized, size * sizeof(CHANNEL *));
             for (j = channels.prioritized_size; j < size; j++)
                 channels.prioritized[j] = NULL;
             channels.prioritized_size = size;
@@ -277,8 +276,8 @@ CHANtracing(CHANNEL *cp, bool flag)
                cp->BadWrites, cp->BlockedWrites, cp->BadReads);
         network_sockaddr_sprint(addr, sizeof(addr),
                                 (struct sockaddr *) &cp->Address);
-        notice("%s trace address %s lastactive %ld nextlog %ld", name,
-               addr, (long) cp->LastActive, (long) cp->NextLog);
+        notice("%s trace address %s lastactive %ld nextlog %ld", name, addr,
+               (long) cp->LastActive, (long) cp->NextLog);
         if (FD_ISSET(cp->fd, &channels.sleep_set))
             notice("%s trace sleeping %ld 0x%p", name, (long) cp->Waketime,
                    (void *) cp->Waker);
@@ -309,25 +308,26 @@ CHANclose_nntp(CHANNEL *cp, const char *name)
     NCclearwip(cp);
     if (cp->State == CScancel)
         notice("%s closed seconds %ld cancels %ld", name,
-               (long)(Now.tv_sec - cp->Started), cp->Received);
+               (long) (Now.tv_sec - cp->Started), cp->Received);
     else {
-        notice("%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld"
-               " duplicate %ld accepted size %.0f duplicate size %.0f"
-               " rejected size %.0f", name,
-               (long)(Now.tv_sec - cp->Started_checkpoint),
-               cp->Received - cp->Received_checkpoint,
-               cp->Refused - cp->Refused_checkpoint,
-               cp->Rejected - cp->Rejected_checkpoint,
-               cp->Duplicate - cp->Duplicate_checkpoint,
-               (double) (cp->Size - cp->Size_checkpoint),
-               (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
-               (double) (cp->RejectSize - cp->RejectSize_checkpoint));
+        notice(
+            "%s checkpoint seconds %ld accepted %ld refused %ld rejected %ld"
+            " duplicate %ld accepted size %.0f duplicate size %.0f"
+            " rejected size %.0f",
+            name, (long) (Now.tv_sec - cp->Started_checkpoint),
+            cp->Received - cp->Received_checkpoint,
+            cp->Refused - cp->Refused_checkpoint,
+            cp->Rejected - cp->Rejected_checkpoint,
+            cp->Duplicate - cp->Duplicate_checkpoint,
+            (double) (cp->Size - cp->Size_checkpoint),
+            (double) (cp->DuplicateSize - cp->DuplicateSize_checkpoint),
+            (double) (cp->RejectSize - cp->RejectSize_checkpoint));
         notice("%s closed seconds %ld accepted %ld refused %ld rejected %ld"
                " duplicate %ld accepted size %.0f duplicate size %.0f"
-               " rejected size %.0f", name, (long)(Now.tv_sec - cp->Started),
-               cp->Received, cp->Refused, cp->Rejected, cp->Duplicate,
-               (double) cp->Size, (double) cp->DuplicateSize,
-               (double) cp->RejectSize);
+               " rejected size %.0f",
+               name, (long) (Now.tv_sec - cp->Started), cp->Received,
+               cp->Refused, cp->Rejected, cp->Duplicate, (double) cp->Size,
+               (double) cp->DuplicateSize, (double) cp->RejectSize);
     }
     if (cp->Data.Newsgroups.Data != NULL) {
         free(cp->Data.Newsgroups.Data);
@@ -413,7 +413,8 @@ CHANclose(CHANNEL *cp, const char *name)
         if (cp->Type == CTnntp)
             CHANclose_nntp(cp, name);
         else if (cp->Type == CTreject)
-            notice("%s %ld", name, cp->Rejected); /* Use cp->Rejected for the response code. */
+            notice("%s %ld", name,
+                   cp->Rejected); /* Use cp->Rejected for the response code. */
         else if (cp->Out.left)
             warn("%s closed lost %lu", name, (unsigned long) cp->Out.left);
         else
@@ -488,8 +489,8 @@ CHANname(CHANNEL *cp)
 
     switch (cp->Type) {
     default:
-        snprintf(cp->Name, sizeof(cp->Name), "?%d(#%d@%ld)?", cp->Type,
-                 cp->fd, (long) (cp - channels.table));
+        snprintf(cp->Name, sizeof(cp->Name), "?%d(#%d@%ld)?", cp->Type, cp->fd,
+                 (long) (cp - channels.table));
         break;
     case CTany:
         snprintf(cp->Name, sizeof(cp->Name), "any:%d", cp->fd);
@@ -588,7 +589,7 @@ static void
 CHANresetlast(int fd)
 {
     if (fd == channels.max_fd)
-        while (   !FD_ISSET(channels.max_fd, &channels.read_set)
+        while (!FD_ISSET(channels.max_fd, &channels.read_set)
                && !FD_ISSET(channels.max_fd, &channels.write_set)
                && channels.max_fd > 1)
             channels.max_fd--;
@@ -603,7 +604,7 @@ static void
 CHANresetlastsleeping(int fd)
 {
     if (fd == channels.max_sleep_fd) {
-        while (   !FD_ISSET(channels.max_sleep_fd, &channels.sleep_set)
+        while (!FD_ISSET(channels.max_sleep_fd, &channels.sleep_set)
                && channels.max_sleep_fd > 1)
             channels.max_sleep_fd--;
     }
@@ -786,8 +787,8 @@ CHANresize(CHANNEL *cp, size_t size)
     bp->data = xrealloc(bp->data, bp->size);
     offset = p - bp->data;
     if (offset != 0) {
-        if (cp->State == CSgetheader || cp->State == CSgetbody ||
-            cp->State == CSeatarticle) {
+        if (cp->State == CSgetheader || cp->State == CSgetbody
+            || cp->State == CSeatarticle) {
             if (cp->Data.BytesHeader != NULL)
                 cp->Data.BytesHeader -= offset;
             for (i = 0; i < MAX_ARTHEADER; i++, hc++) {
@@ -814,7 +815,7 @@ CHANreadtext(CHANNEL *cp)
     /* Grow buffer if we're getting close to current limit.
 
        FIXME: The In buffer doesn't use the normal meanings of .used and
-       .left.  */
+       .left. */
     bp = &cp->In;
     bp->left = bp->size - bp->used;
     if (bp->left <= LOW_WATER)
@@ -1032,7 +1033,7 @@ CHANdiagnose(void)
 void
 CHANcount_active(CHANNEL *cp)
 {
-    int found;  
+    int found;
     CHANNEL *tempchan;
     char *label, *tmplabel;
     int fd;
@@ -1211,7 +1212,7 @@ CHANreadloop(void)
                 syswarn("%s cant select", LogName);
 #ifdef INND_FIND_BAD_FDS
                 CHANdiagnose();
-#endif      
+#endif
             }
             continue;
         }
@@ -1296,7 +1297,7 @@ CHANreadloop(void)
                     continue;
                 }
             }
-            
+
             /* Anything to read? */
             if (FD_ISSET(fd, &channels.read_set) && FD_ISSET(fd, &rdfds)) {
                 count--;

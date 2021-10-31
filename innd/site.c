@@ -10,10 +10,10 @@
 #include "innd.h"
 
 
-static int	SITEcount;
-static int	SITEhead = NOSITE;
-static int	SITEtail = NOSITE;
-static char	SITEshell[] = "/bin/sh";
+static int SITEcount;
+static int SITEhead = NOSITE;
+static int SITEtail = NOSITE;
+static char SITEshell[] = "/bin/sh";
 
 
 /*
@@ -50,16 +50,16 @@ SITEspool(SITE *sp, CHANNEL *cp)
     if (i < 0 && errno == EISDIR) {
         togo = concatpath(sp->SpoolName, "togo");
         name = togo;
-	i = open(name, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
+        i = open(name, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     }
     if (i < 0) {
-	i = errno;
-	syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
-	IOError("site batch file", i);
-	sp->Channel = NULL;
+        i = errno;
+        syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
+        IOError("site batch file", i);
+        sp->Channel = NULL;
         if (togo != NULL)
             free(togo);
-	return false;
+        return false;
     }
     if (togo != NULL)
         free(togo);
@@ -71,14 +71,14 @@ SITEspool(SITE *sp, CHANNEL *cp)
             SCHANremove(cp);
             close(cp->fd);
         }
-	cp->fd = i;
-	return true;
+        cp->fd = i;
+        return true;
     }
     sp->Channel = CHANcreate(i, CTfile, CSwriting, SITEreader, SITEwritedone);
     if (sp->Channel == NULL) {
-	syslog(L_ERROR, "%s cant channel %m", sp->Name);
-	close(i);
-	return false;
+        syslog(L_ERROR, "%s cant channel %m", sp->Name);
+        close(i);
+        return false;
     }
     WCHANset(sp->Channel, "", 0);
     sp->Spooling = true;
@@ -94,18 +94,18 @@ static void
 SITEunlink(SITE *sp)
 {
     if (sp->Next != NOSITE || sp->Prev != NOSITE
-     || (SITEhead != NOSITE && sp == &Sites[SITEhead]))
-	SITEcount--;
+        || (SITEhead != NOSITE && sp == &Sites[SITEhead]))
+        SITEcount--;
 
     if (sp->Next != NOSITE)
-	Sites[sp->Next].Prev = sp->Prev;
+        Sites[sp->Next].Prev = sp->Prev;
     else if (SITEtail != NOSITE && sp == &Sites[SITEtail])
-	SITEtail = sp->Prev;
+        SITEtail = sp->Prev;
 
     if (sp->Prev != NOSITE)
-	Sites[sp->Prev].Next = sp->Next;
+        Sites[sp->Prev].Next = sp->Next;
     else if (SITEhead != NOSITE && sp == &Sites[SITEhead])
-	SITEhead = sp->Next;
+        SITEhead = sp->Next;
 
     sp->Next = sp->Prev = NOSITE;
 }
@@ -117,30 +117,30 @@ SITEunlink(SITE *sp)
 static void
 SITEbufferoldest(void)
 {
-    SITE	        *sp;
-    struct buffer       *bp;
-    struct buffer       *out;
+    SITE *sp;
+    struct buffer *bp;
+    struct buffer *out;
 
     /* Get the oldest user of a file. */
     if (SITEtail == NOSITE) {
-	syslog(L_ERROR, "%s internal no oldest site found", LogName);
-	SITEcount = 0;
-	return;
+        syslog(L_ERROR, "%s internal no oldest site found", LogName);
+        SITEcount = 0;
+        return;
     }
 
     sp = &Sites[SITEtail];
     SITEunlink(sp);
 
     if (sp->Buffered) {
-	syslog(L_ERROR, "%s internal oldest (%s) was buffered", LogName,
-	    sp->Name);
-	return;
+        syslog(L_ERROR, "%s internal oldest (%s) was buffered", LogName,
+               sp->Name);
+        return;
     }
 
     if (sp->Type != FTfile) {
-	syslog(L_ERROR, "%s internal oldest (%s) not FTfile", LogName,
-	    sp->Name);
-	return;
+        syslog(L_ERROR, "%s internal oldest (%s) not FTfile", LogName,
+               sp->Name);
+        return;
     }
 
     /* Write out what we can. */
@@ -152,11 +152,10 @@ SITEbufferoldest(void)
     bp->used = 0;
     bp->left = 0;
     if (bp->size == 0) {
-	bp->size = sp->Flushpoint;
-	bp->data = xmalloc(bp->size);
-    }
-    else {
-	bp->size = sp->Flushpoint;
+        bp->size = sp->Flushpoint;
+        bp->data = xmalloc(bp->size);
+    } else {
+        bp->size = sp->Flushpoint;
         bp->data = xrealloc(bp->data, bp->size);
     }
 
@@ -164,7 +163,7 @@ SITEbufferoldest(void)
     out = &sp->Channel->Out;
     if (out->left) {
         buffer_set(bp, &out->data[out->used], out->left);
-	out->left = 0;
+        out->left = 0;
     }
 
     /* Now close the original channel. */
@@ -191,9 +190,9 @@ SITECHANbilge(SITE *sp)
         fd = open(togo, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
     }
     if (fd < 0) {
-	int oerrno = errno ;
+        int oerrno = errno;
         syslog(L_ERROR, "%s cant open %s %m", sp->Name, name);
-        IOError("site batch file",oerrno);
+        IOError("site batch file", oerrno);
         sp->Channel = NULL;
         if (togo != NULL)
             free(togo);
@@ -204,9 +203,9 @@ SITECHANbilge(SITE *sp)
     while (sp->Channel->Out.left > 0) {
         i = write(fd, &sp->Channel->Out.data[sp->Channel->Out.used],
                   sp->Channel->Out.left);
-        if(i <= 0) {
-            syslog(L_ERROR,"%s cant spool count %lu", CHANname(sp->Channel),
-                (unsigned long) sp->Channel->Out.left);
+        if (i <= 0) {
+            syslog(L_ERROR, "%s cant spool count %lu", CHANname(sp->Channel),
+                   (unsigned long) sp->Channel->Out.left);
             close(fd);
             return false;
         }
@@ -229,71 +228,69 @@ SITECHANbilge(SITE *sp)
 static void
 SITEflushcheck(SITE *sp, struct buffer *bp)
 {
-    int	                i;
-    CHANNEL	        *cp;
+    int i;
+    CHANNEL *cp;
 
     /* If we're buffered, and we hit the flushpoint, do an LRU. */
     if (sp->Buffered) {
-	if (bp->left < sp->Flushpoint)
-	    return;
-	while (SITEcount >= MaxOutgoing)
-	    SITEbufferoldest();
-	if (!SITEsetup(sp) || sp->Buffered) {
-	    syslog(L_ERROR, "%s cant unbuffer %m", sp->Name);
-	    return;
-	}
-	WCHANsetfrombuffer(sp->Channel, bp);
-	WCHANadd(sp->Channel);
-	/* Reset buffer; data has been moved. */
-	buffer_set(bp, "", 0);
+        if (bp->left < sp->Flushpoint)
+            return;
+        while (SITEcount >= MaxOutgoing)
+            SITEbufferoldest();
+        if (!SITEsetup(sp) || sp->Buffered) {
+            syslog(L_ERROR, "%s cant unbuffer %m", sp->Name);
+            return;
+        }
+        WCHANsetfrombuffer(sp->Channel, bp);
+        WCHANadd(sp->Channel);
+        /* Reset buffer; data has been moved. */
+        buffer_set(bp, "", 0);
     }
 
     if (PROCneedscan)
-	PROCscan();
+        PROCscan();
 
     /* Handle buffering. */
     cp = sp->Channel;
     i = cp->Out.left;
     if (i < sp->StopWriting)
-	WCHANremove(cp);
-    if ((sp->StartWriting == 0 || i > sp->StartWriting)
-     && !CHANsleeping(cp)) {
-	if (sp->Type == FTchannel) {	/* channel feed, try the write */
-	    int j;
-	    if (bp->left == 0)
-		return;
-	    j = write(cp->fd, &bp->data[bp->used], bp->left);
-	    if (j > 0) {
-		bp->left -= j;
-		bp->used += j;
-		i = cp->Out.left;
-		/* Since we just had a successful write, we need to clear the 
-		 * channel's error counts. - dave@jetcafe.org */
-		cp->BadWrites = 0;
-		cp->BlockedWrites = 0;
-	    }
-	    if (bp->left <= 0) {
+        WCHANremove(cp);
+    if ((sp->StartWriting == 0 || i > sp->StartWriting) && !CHANsleeping(cp)) {
+        if (sp->Type == FTchannel) { /* channel feed, try the write */
+            int j;
+            if (bp->left == 0)
+                return;
+            j = write(cp->fd, &bp->data[bp->used], bp->left);
+            if (j > 0) {
+                bp->left -= j;
+                bp->used += j;
+                i = cp->Out.left;
+                /* Since we just had a successful write, we need to clear the
+                 * channel's error counts. - dave@jetcafe.org */
+                cp->BadWrites = 0;
+                cp->BlockedWrites = 0;
+            }
+            if (bp->left <= 0) {
                 /* reset Used, Left on bp, keep channel buffer size from
                    exploding. */
                 bp->used = bp->left = 0;
-		WCHANremove(cp);
+                WCHANremove(cp);
             } else
-		WCHANadd(cp);
-	}
-	else
-	    WCHANadd(cp);
+                WCHANadd(cp);
+        } else
+            WCHANadd(cp);
     }
 
     cp->LastActive = Now.tv_sec;
 
     /* If we're a channel that's getting big, see if we need to spool. */
     if (sp->Type == FTfile || sp->StartSpooling == 0 || i < sp->StartSpooling)
-	return;
+        return;
 
     syslog(L_ERROR, "%s spooling %d bytes", sp->Name, i);
-    if(!SITECHANbilge(sp)) {
-	syslog(L_ERROR, "%s overflow %d bytes", sp->Name, i);
-	return;
+    if (!SITECHANbilge(sp)) {
+        syslog(L_ERROR, "%s overflow %d bytes", sp->Name, i);
+        return;
     }
 }
 
@@ -304,22 +301,22 @@ SITEflushcheck(SITE *sp, struct buffer *bp)
 void
 SITEwrite(SITE *sp, const char *text)
 {
-    static char		PREFIX[] = { EXP_CONTROL, '\0' };
-    struct buffer       *bp;
+    static char PREFIX[] = {EXP_CONTROL, '\0'};
+    struct buffer *bp;
 
     if (sp->Buffered)
-	bp = &sp->Buffer;
+        bp = &sp->Buffer;
     else {
-	if (sp->Channel == NULL)
-	    return;
-	sp->Channel->LastActive = Now.tv_sec;
-	bp = &sp->Channel->Out;
+        if (sp->Channel == NULL)
+            return;
+        sp->Channel->LastActive = Now.tv_sec;
+        bp = &sp->Channel->Out;
     }
     buffer_append(bp, PREFIX, strlen(PREFIX));
     buffer_append(bp, text, strlen(text));
     buffer_append(bp, "\n", 1);
     if (sp->Channel != NULL)
-	WCHANadd(sp->Channel);
+        WCHANadd(sp->Channel);
 }
 
 
@@ -329,75 +326,75 @@ SITEwrite(SITE *sp, const char *text)
 static void
 SITEwritefromflags(SITE *sp, ARTDATA *Data)
 {
-    HDRCONTENT		*hc = Data->HdrContent;
-    static char		ITEMSEP[] = " ";
-    static char		NL[] = "\n";
-    char		pbuff[32];
-    char	        *p;
-    bool	        Dirty;
-    struct buffer       *bp;
-    SITE	        *spx;
-    int	                i;
+    HDRCONTENT *hc = Data->HdrContent;
+    static char ITEMSEP[] = " ";
+    static char NL[] = "\n";
+    char pbuff[32];
+    char *p;
+    bool Dirty;
+    struct buffer *bp;
+    SITE *spx;
+    int i;
 
     if (sp->Buffered)
-	bp = &sp->Buffer;
+        bp = &sp->Buffer;
     else {
-	/* This should not happen, but if we tried to spool and failed,
-	 * e.g., because of a bad F param for this site, we can get
-	 * into this state.  We already logged a message so give up. */
-	if (sp->Channel == NULL)
-	    return;
-	bp = &sp->Channel->Out;
+        /* This should not happen, but if we tried to spool and failed,
+         * e.g., because of a bad F param for this site, we can get
+         * into this state.  We already logged a message so give up. */
+        if (sp->Channel == NULL)
+            return;
+        bp = &sp->Channel->Out;
     }
     for (Dirty = false, p = sp->FileFlags; *p; p++) {
-	switch (*p) {
-	default:
-	    syslog(L_ERROR, "%s internal SITEwritefromflags %c", sp->Name, *p);
-	    continue;
-	case FEED_BYTESIZE:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->Bytes + sizeof("Bytes: ") - 1,
+        switch (*p) {
+        default:
+            syslog(L_ERROR, "%s internal SITEwritefromflags %c", sp->Name, *p);
+            continue;
+        case FEED_BYTESIZE:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->Bytes + sizeof("Bytes: ") - 1,
                           Data->BytesLength);
-	    break;
-	case FEED_FULLNAME:
-	case FEED_NAME:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
-	    break;
-	case FEED_HASH:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, "[", 1);
-	    buffer_append(bp, HashToText(*(Data->Hash)), sizeof(HASH)*2);
-	    buffer_append(bp, "]", 1);
-	    break;
-	case FEED_HDR_DISTRIB:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, HDR(HDR__DISTRIBUTION),
+            break;
+        case FEED_FULLNAME:
+        case FEED_NAME:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->TokenText, sizeof(TOKEN) * 2 + 2);
+            break;
+        case FEED_HASH:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, "[", 1);
+            buffer_append(bp, HashToText(*(Data->Hash)), sizeof(HASH) * 2);
+            buffer_append(bp, "]", 1);
+            break;
+        case FEED_HDR_DISTRIB:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, HDR(HDR__DISTRIBUTION),
                           HDR_LEN(HDR__DISTRIBUTION));
-	    break;
-	case FEED_HDR_NEWSGROUP:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
-	    break;
-	case FEED_HEADERS:
-	    if (Dirty)
-		buffer_append(bp, NL, strlen(NL));
-	    buffer_append(bp, Data->Headers.data, Data->Headers.left);
-	    break;
-	case FEED_OVERVIEW:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->Overview.data, Data->Overview.left);
-	    break;
-	case FEED_PATH:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    if (!Data->Hassamepath || Data->AddAlias || Pathcluster.used) {
+            break;
+        case FEED_HDR_NEWSGROUP:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, HDR(HDR__NEWSGROUPS), HDR_LEN(HDR__NEWSGROUPS));
+            break;
+        case FEED_HEADERS:
+            if (Dirty)
+                buffer_append(bp, NL, strlen(NL));
+            buffer_append(bp, Data->Headers.data, Data->Headers.left);
+            break;
+        case FEED_OVERVIEW:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->Overview.data, Data->Overview.left);
+            break;
+        case FEED_PATH:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            if (!Data->Hassamepath || Data->AddAlias || Pathcluster.used) {
                 if (Pathcluster.used)
                     buffer_append(bp, Pathcluster.data, Pathcluster.used);
                 buffer_append(bp, Path.data, Path.used);
@@ -406,81 +403,80 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
             }
             if (Data->Hassamecluster)
                 buffer_append(bp, HDR(HDR__PATH) + Pathcluster.used,
-                    HDR_LEN(HDR__PATH) - Pathcluster.used);
+                              HDR_LEN(HDR__PATH) - Pathcluster.used);
             else
                 buffer_append(bp, HDR(HDR__PATH), HDR_LEN(HDR__PATH));
-	    break;
-	case FEED_REPLIC:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->Replic, Data->ReplicLength);
-	    break;
-	case FEED_STOREDGROUP:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->Newsgroups.List[0],
+            break;
+        case FEED_REPLIC:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->Replic, Data->ReplicLength);
+            break;
+        case FEED_STOREDGROUP:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->Newsgroups.List[0],
                           Data->StoredGroupLength);
-	    break;
-	case FEED_TIMERECEIVED:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Arrived);
-	    buffer_append(bp, pbuff, strlen(pbuff));
-	    break;
-	case FEED_TIMEPOSTED:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Posted);
-	    buffer_append(bp, pbuff, strlen(pbuff));
-	    break;
-	case FEED_TIMEEXPIRED:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Expires);
-	    buffer_append(bp, pbuff, strlen(pbuff));
-	    break;
-	case FEED_MESSAGEID:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
-	    break;
-	case FEED_FNLNAMES:
-	    if (sp->FNLnames.left != 0) {
-		/* Funnel; write names of our sites that got it. */
-		if (Dirty)
-		    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-		buffer_append(bp, sp->FNLnames.data, sp->FNLnames.left);
-	    }
-	    else {
-		/* Not funnel; write names of all sites that got it. */
-		for (spx = Sites, i = nSites; --i >= 0; spx++)
-		    if (spx->Sendit) {
-			if (Dirty)
-			    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-			buffer_append(bp, spx->Name, spx->NameLength);
-			Dirty = true;
-		    }
-	    }
-	    break;
-	case FEED_NEWSGROUP:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    if (sp->ng)
-		buffer_append(bp, sp->ng->Name, sp->ng->NameLength);
-	    else
-		buffer_append(bp, "?", 1);
-	    break;
-	case FEED_SITE:
-	    if (Dirty)
-		buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
-	    buffer_append(bp, Data->Feedsite, Data->FeedsiteLength);
-	    break;
-	}
-	Dirty = true;
+            break;
+        case FEED_TIMERECEIVED:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Arrived);
+            buffer_append(bp, pbuff, strlen(pbuff));
+            break;
+        case FEED_TIMEPOSTED:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Posted);
+            buffer_append(bp, pbuff, strlen(pbuff));
+            break;
+        case FEED_TIMEEXPIRED:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            snprintf(pbuff, sizeof(pbuff), "%ld", (long) Data->Expires);
+            buffer_append(bp, pbuff, strlen(pbuff));
+            break;
+        case FEED_MESSAGEID:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, HDR(HDR__MESSAGE_ID), HDR_LEN(HDR__MESSAGE_ID));
+            break;
+        case FEED_FNLNAMES:
+            if (sp->FNLnames.left != 0) {
+                /* Funnel; write names of our sites that got it. */
+                if (Dirty)
+                    buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+                buffer_append(bp, sp->FNLnames.data, sp->FNLnames.left);
+            } else {
+                /* Not funnel; write names of all sites that got it. */
+                for (spx = Sites, i = nSites; --i >= 0; spx++)
+                    if (spx->Sendit) {
+                        if (Dirty)
+                            buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+                        buffer_append(bp, spx->Name, spx->NameLength);
+                        Dirty = true;
+                    }
+            }
+            break;
+        case FEED_NEWSGROUP:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            if (sp->ng)
+                buffer_append(bp, sp->ng->Name, sp->ng->NameLength);
+            else
+                buffer_append(bp, "?", 1);
+            break;
+        case FEED_SITE:
+            if (Dirty)
+                buffer_append(bp, ITEMSEP, strlen(ITEMSEP));
+            buffer_append(bp, Data->Feedsite, Data->FeedsiteLength);
+            break;
+        }
+        Dirty = true;
     }
     if (Dirty) {
-	buffer_append(bp, "\n", 1);
-	SITEflushcheck(sp, bp);
+        buffer_append(bp, "\n", 1);
+        SITEflushcheck(sp, bp);
     }
 }
 
@@ -491,71 +487,72 @@ SITEwritefromflags(SITE *sp, ARTDATA *Data)
 void
 SITEsend(SITE *sp, ARTDATA *Data)
 {
-    int	                i;
-    char	        *p;
-    char		*temp;
-    char		buff[BUFSIZ];
-    char *		argv[MAX_BUILTIN_ARGV];
+    int i;
+    char *p;
+    char *temp;
+    char buff[BUFSIZ];
+    char *argv[MAX_BUILTIN_ARGV];
 
     switch (sp->Type) {
     default:
-	syslog(L_ERROR, "%s internal SITEsend type %d", sp->Name, sp->Type);
-	break;
+        syslog(L_ERROR, "%s internal SITEsend type %d", sp->Name, sp->Type);
+        break;
     case FTlogonly:
-	break;
+        break;
     case FTfunnel:
-	syslog(L_ERROR, "%s funnel_send", sp->Name);
-	break;
+        syslog(L_ERROR, "%s funnel_send", sp->Name);
+        break;
     case FTfile:
     case FTchannel:
     case FTexploder:
-	SITEwritefromflags(sp, Data);
-	break;
+        SITEwritefromflags(sp, Data);
+        break;
     case FTprogram:
-	/* Set up the argument vector. */
-	if (sp->FNLwantsnames) {
-	    i = strlen(sp->Param) + sp->FNLnames.left;
-	    if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
-		syslog(L_ERROR, "%s toolong need %lu for %s",
-		    sp->Name, (unsigned long) (i + (sizeof(TOKEN) * 2) + 3),
-		    sp->Name);
-		break;
-	    }
-	    p = strchr(sp->Param, '*');
-	    *p = '\0';
-	    xasprintf(&temp, "%s%.*s%s", sp->Param, (int) sp->FNLnames.left,
-		      sp->FNLnames.data, &p[1]);
-	    *p = '*';
+        /* Set up the argument vector. */
+        if (sp->FNLwantsnames) {
+            i = strlen(sp->Param) + sp->FNLnames.left;
+            if (i + (sizeof(TOKEN) * 2) + 3 >= sizeof buff) {
+                syslog(L_ERROR, "%s toolong need %lu for %s", sp->Name,
+                       (unsigned long) (i + (sizeof(TOKEN) * 2) + 3),
+                       sp->Name);
+                break;
+            }
+            p = strchr(sp->Param, '*');
+            *p = '\0';
+            xasprintf(&temp, "%s%.*s%s", sp->Param, (int) sp->FNLnames.left,
+                      sp->FNLnames.data, &p[1]);
+            *p = '*';
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-	    snprintf(buff, sizeof(buff), temp, Data->TokenText);
+            snprintf(buff, sizeof(buff), temp, Data->TokenText);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
-	    free(temp);
-	} else {
+            free(temp);
+        } else {
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-	    snprintf(buff, sizeof(buff), sp->Param, Data->TokenText);
+            snprintf(buff, sizeof(buff), sp->Param, Data->TokenText);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
-    }
+        }
 
-	if (NeedShell(buff, (const char **)argv, (const char **)ARRAY_END(argv))) {
-	    argv[0] = SITEshell;
-	    argv[1] = (char *) "-c";
-	    argv[2] = buff;
-	    argv[3] = NULL;
-	}
+        if (NeedShell(buff, (const char **) argv,
+                      (const char **) ARRAY_END(argv))) {
+            argv[0] = SITEshell;
+            argv[1] = (char *) "-c";
+            argv[2] = buff;
+            argv[3] = NULL;
+        }
 
-	/* Start the process. */
-	i = Spawn(sp->Nice, 0, fileno(Errlog), fileno(Errlog), argv);
-	if (i >= 0)
-	    PROCwatch(i, -1);
-	break;
+        /* Start the process. */
+        i = Spawn(sp->Nice, 0, fileno(Errlog), fileno(Errlog), argv);
+        if (i >= 0)
+            PROCwatch(i, -1);
+        break;
     }
 }
 
@@ -567,16 +564,16 @@ SITEsend(SITE *sp, ARTDATA *Data)
 static void
 SITEspoolwake(CHANNEL *cp)
 {
-    SITE	*sp;
-    int		*ip;
+    SITE *sp;
+    int *ip;
 
     ip = (int *) cp->Argument;
     sp = &Sites[*ip];
     free(cp->Argument);
     cp->Argument = NULL;
     if (sp->Channel != cp) {
-	syslog(L_ERROR, "%s internal SITEspoolwake %s got %d, not %d",
-	    LogName, sp->Name, cp->fd, sp->Channel->fd);
+        syslog(L_ERROR, "%s internal SITEspoolwake %s got %d, not %d", LogName,
+               sp->Name, cp->fd, sp->Channel->fd);
         return;
     }
     syslog(L_NOTICE, "%s spoolwake", sp->Name);
@@ -591,49 +588,50 @@ SITEspoolwake(CHANNEL *cp)
 static bool
 SITEstartprocess(SITE *sp)
 {
-    pid_t	        i;
-    char		*argv[MAX_BUILTIN_ARGV];
-    char		*process;
-    int			*ip;
-    int			pan[2];
+    pid_t i;
+    char *argv[MAX_BUILTIN_ARGV];
+    char *process;
+    int *ip;
+    int pan[2];
 
 #if HAVE_SOCKETPAIR
     /* Create a socketpair. */
     if (socketpair(PF_UNIX, SOCK_STREAM, 0, pan) < 0) {
-	syslog(L_ERROR, "%s cant socketpair %m", sp->Name);
-	return false;
+        syslog(L_ERROR, "%s cant socketpair %m", sp->Name);
+        return false;
     }
 #else
     /* Create a pipe. */
     if (pipe(pan) < 0) {
-	syslog(L_ERROR, "%s cant pipe %m", sp->Name);
-	return false;
+        syslog(L_ERROR, "%s cant pipe %m", sp->Name);
+        return false;
     }
 #endif
     fdflag_close_exec(pan[PIPE_WRITE], true);
 
     /* Set up the argument vector. */
     process = xstrdup(sp->Param);
-    if (NeedShell(process, (const char **)argv, (const char **)ARRAY_END(argv))) {
-	argv[0] = SITEshell;
-	argv[1] = (char *) "-c";
-	argv[2] = process;
-	argv[3] = NULL;
+    if (NeedShell(process, (const char **) argv,
+                  (const char **) ARRAY_END(argv))) {
+        argv[0] = SITEshell;
+        argv[1] = (char *) "-c";
+        argv[2] = process;
+        argv[3] = NULL;
     }
 
     /* Fork a child. */
-    i = Spawn(sp->Nice, pan[PIPE_READ], (int)fileno(Errlog),
-	      (int)fileno(Errlog), argv);
+    i = Spawn(sp->Nice, pan[PIPE_READ], (int) fileno(Errlog),
+              (int) fileno(Errlog), argv);
     if (i > 0) {
-	sp->pid = i;
-	sp->Spooling = false;
-	sp->Process = PROCwatch(i, sp - Sites);
-	close(pan[PIPE_READ]);
-	sp->Channel = CHANcreate(pan[PIPE_WRITE],
-			sp->Type == FTchannel ? CTprocess : CTexploder,
-			CSwriting, SITEreader, SITEwritedone);
-	free(process);
-	return true;
+        sp->pid = i;
+        sp->Spooling = false;
+        sp->Process = PROCwatch(i, sp - Sites);
+        close(pan[PIPE_READ]);
+        sp->Channel = CHANcreate(
+            pan[PIPE_WRITE], sp->Type == FTchannel ? CTprocess : CTexploder,
+            CSwriting, SITEreader, SITEwritedone);
+        free(process);
+        return true;
     }
 
     /* Error.  Switch to spooling. */
@@ -641,8 +639,8 @@ SITEstartprocess(SITE *sp)
     close(pan[PIPE_WRITE]);
     close(pan[PIPE_READ]);
     free(process);
-    if (!SITEspool(sp, (CHANNEL *)NULL))
-	return false;
+    if (!SITEspool(sp, (CHANNEL *) NULL))
+        return false;
 
     /* We'll try to restart the channel later. */
     syslog(L_ERROR, "%s cant spawn spooling %m", sp->Name);
@@ -679,15 +677,15 @@ static void
 SITEmovetohead(SITE *sp)
 {
     if ((SITEhead == NOSITE) && ((sp->Next != NOSITE) || (sp->Prev != NOSITE)))
-	SITEunlink(sp);
+        SITEunlink(sp);
 
     if ((sp->Next = SITEhead) != NOSITE)
-	Sites[SITEhead].Prev = sp - Sites;
+        Sites[SITEhead].Prev = sp - Sites;
     sp->Prev = NOSITE;
 
     SITEhead = sp - Sites;
     if (SITEtail == NOSITE)
-	SITEtail = sp - Sites;
+        SITEtail = sp - Sites;
 
     SITEcount++;
 }
@@ -699,51 +697,51 @@ SITEmovetohead(SITE *sp)
 bool
 SITEsetup(SITE *sp)
 {
-    int			fd;
-    int			oerrno;
+    int fd;
+    int oerrno;
 
     switch (sp->Type) {
     default:
-	syslog(L_ERROR, "%s internal SITEsetup %d",
-	    sp->Name, sp->Type);
-	return false;
+        syslog(L_ERROR, "%s internal SITEsetup %d", sp->Name, sp->Type);
+        return false;
     case FTfunnel:
     case FTlogonly:
     case FTprogram:
-	/* Nothing to do here. */
-	break;
+        /* Nothing to do here. */
+        break;
     case FTfile:
-	if (SITEcount >= MaxOutgoing)
-	    SITEbuffer(sp);
-	else {
-	    sp->Buffered = false;
-	    fd = open(sp->Param, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
-	    if (fd < 0) {
-		if (errno == EMFILE) {
-		    syslog(L_ERROR, "%s cant open %s %m", sp->Name, sp->Param);
-		    SITEbuffer(sp);
-		    break;
-		}
-		oerrno = errno;
-		syslog(L_NOTICE, "%s cant open %s %m", sp->Name, sp->Param);
-		IOError("site file", oerrno);
-		return false;
-	    }
-	    SITEmovetohead(sp);
-	    sp->Channel = CHANcreate(fd, CTfile, CSwriting,
-			    SITEreader, SITEwritedone);
-	    syslog(L_NOTICE, "%s opened %s", sp->Name, CHANname(sp->Channel));
-	    WCHANset(sp->Channel, "", 0);
-	}
-	break;
+        if (SITEcount >= MaxOutgoing)
+            SITEbuffer(sp);
+        else {
+            sp->Buffered = false;
+            fd =
+                open(sp->Param, O_APPEND | O_CREAT | O_WRONLY, BATCHFILE_MODE);
+            if (fd < 0) {
+                if (errno == EMFILE) {
+                    syslog(L_ERROR, "%s cant open %s %m", sp->Name, sp->Param);
+                    SITEbuffer(sp);
+                    break;
+                }
+                oerrno = errno;
+                syslog(L_NOTICE, "%s cant open %s %m", sp->Name, sp->Param);
+                IOError("site file", oerrno);
+                return false;
+            }
+            SITEmovetohead(sp);
+            sp->Channel =
+                CHANcreate(fd, CTfile, CSwriting, SITEreader, SITEwritedone);
+            syslog(L_NOTICE, "%s opened %s", sp->Name, CHANname(sp->Channel));
+            WCHANset(sp->Channel, "", 0);
+        }
+        break;
     case FTchannel:
     case FTexploder:
-	if (!SITEstartprocess(sp))
-	    return false;
-	syslog(L_NOTICE, "%s spawned %s", sp->Name, CHANname(sp->Channel));
-	WCHANset(sp->Channel, "", 0);
-	WCHANadd(sp->Channel);
-	break;
+        if (!SITEstartprocess(sp))
+            return false;
+        syslog(L_NOTICE, "%s spawned %s", sp->Name, CHANname(sp->Channel));
+        WCHANset(sp->Channel, "", 0);
+        WCHANadd(sp->Channel);
+        break;
     }
     return true;
 }
@@ -756,18 +754,18 @@ void
 SITEprocdied(SITE *sp, int process, PROCESS *pp)
 {
     syslog(pp->Status ? L_ERROR : L_NOTICE, "%s exit %d elapsed %ld pid %ld",
-	sp->Name ? sp->Name : "?", pp->Status,
-	(long) (pp->Collected - pp->Started), (long) pp->Pid);
+           sp->Name ? sp->Name : "?", pp->Status,
+           (long) (pp->Collected - pp->Started), (long) pp->Pid);
     if (sp->Process != process || sp->Name == NULL)
-	/* We already started a new process for this channel
-	 * or this site has been dropped. */
-	return;
+        /* We already started a new process for this channel
+         * or this site has been dropped. */
+        return;
     if (sp->Channel != NULL)
-	CHANclose(sp->Channel, CHANname(sp->Channel));
+        CHANclose(sp->Channel, CHANname(sp->Channel));
     sp->Working = SITEsetup(sp);
     if (!sp->Working) {
-	syslog(L_ERROR, "%s cant restart %m", sp->Name);
-	return;
+        syslog(L_ERROR, "%s cant restart %m", sp->Name);
+        return;
     }
     syslog(L_NOTICE, "%s restarted", sp->Name);
 }
@@ -778,28 +776,28 @@ SITEprocdied(SITE *sp, int process, PROCESS *pp)
 void
 SITEchanclose(CHANNEL *cp)
 {
-    int	                i;
-    SITE	        *sp;
-    int			*ip;
+    int i;
+    SITE *sp;
+    int *ip;
 
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Channel == cp) {
-	    /* Found the site that has this channel.  Start that
-	     * site spooling, copy any data that might be pending,
-	     * and arrange to retry later. */
-	    if (!SITEspool(sp, (CHANNEL *)NULL)) {
-		syslog(L_ERROR, "%s loss %lu bytes", sp->Name,
+        if (sp->Channel == cp) {
+            /* Found the site that has this channel.  Start that
+             * site spooling, copy any data that might be pending,
+             * and arrange to retry later. */
+            if (!SITEspool(sp, (CHANNEL *) NULL)) {
+                syslog(L_ERROR, "%s loss %lu bytes", sp->Name,
                        (unsigned long) cp->Out.left);
-		return;
-	    }
-	    WCHANsetfrombuffer(sp->Channel, &cp->Out);
-	    WCHANadd(sp->Channel);
-	    ip = xmalloc(sizeof(int));
-	    *ip = sp - Sites;
-	    SCHANadd(sp->Channel, Now.tv_sec + innconf->chanretrytime, NULL,
+                return;
+            }
+            WCHANsetfrombuffer(sp->Channel, &cp->Out);
+            WCHANadd(sp->Channel);
+            ip = xmalloc(sizeof(int));
+            *ip = sp - Sites;
+            SCHANadd(sp->Channel, Now.tv_sec + innconf->chanretrytime, NULL,
                      SITEspoolwake, ip);
-	    break;
-	}
+            break;
+        }
 }
 
 
@@ -809,95 +807,93 @@ SITEchanclose(CHANNEL *cp)
 void
 SITEflush(SITE *sp, const bool Restart)
 {
-    CHANNEL	        *cp;
-    struct buffer       *out;
-    int			count;
+    CHANNEL *cp;
+    struct buffer *out;
+    int count;
 
     if (sp->Name == NULL)
-	return;
+        return;
 
     if (Restart)
-	SITEforward(sp, "flush");
+        SITEforward(sp, "flush");
 
     switch (sp->Type) {
     default:
-	syslog(L_ERROR, "%s internal SITEflush %d", sp->Name, sp->Type);
-	return;
+        syslog(L_ERROR, "%s internal SITEflush %d", sp->Name, sp->Type);
+        return;
 
     case FTlogonly:
     case FTprogram:
     case FTfunnel:
-	/* Nothing to do here. */
-	return;
+        /* Nothing to do here. */
+        return;
 
     case FTchannel:
     case FTexploder:
-	/* If spooling, close the file right now -- documented behavior. */
-	if (sp->Spooling && (cp = sp->Channel) != NULL) {
-	    WCHANflush(cp);
-	    CHANclose(cp, CHANname(cp));
-	    sp->Channel = NULL;
-	}
-	break;
+        /* If spooling, close the file right now -- documented behavior. */
+        if (sp->Spooling && (cp = sp->Channel) != NULL) {
+            WCHANflush(cp);
+            CHANclose(cp, CHANname(cp));
+            sp->Channel = NULL;
+        }
+        break;
 
     case FTfile:
-	/* We must ensure we have a file open for this site, so if
-	 * we're buffered we HACK and pretend we have no sites
-	 * for a moment. */
-	if (sp->Buffered) {
-	    count = SITEcount;
-	    SITEcount = 0;
-	    if (!SITEsetup(sp) || sp->Buffered)
-		syslog(L_ERROR, "%s cant unbuffer to flush", sp->Name);
-	    else
-		buffer_swap(&sp->Buffer, &sp->Channel->Out);
-	    SITEcount += count;
-	}
-	break;
+        /* We must ensure we have a file open for this site, so if
+         * we're buffered we HACK and pretend we have no sites
+         * for a moment. */
+        if (sp->Buffered) {
+            count = SITEcount;
+            SITEcount = 0;
+            if (!SITEsetup(sp) || sp->Buffered)
+                syslog(L_ERROR, "%s cant unbuffer to flush", sp->Name);
+            else
+                buffer_swap(&sp->Buffer, &sp->Channel->Out);
+            SITEcount += count;
+        }
+        break;
     }
 
     /* We're only dealing with files and channels now. */
     if ((cp = sp->Channel) != NULL)
-	WCHANflush(cp);
+        WCHANflush(cp);
 
     /* Restart the site, copy any pending data. */
     if (Restart) {
-	if (!SITEsetup(sp))
-	    syslog(L_ERROR, "%s cant restart %m", sp->Name);
-	else if (cp != NULL) {
-	    if (sp->Buffered) {
-		/* SITEsetup had to buffer us; save any residue. */
-		out = &cp->Out;
-	        if (out->left)
-		    buffer_set(&sp->Buffer, &out->data[out->used], out->left);
-	    }
-	    else
-		WCHANsetfrombuffer(sp->Channel, &cp->Out);
-	}
-    }
-    else if (cp != NULL && cp->Out.left) {
-	if (sp->Type == FTfile || sp->Spooling) {
-	    /* Can't flush a file?  Hopeless. */
-	    syslog(L_ERROR, "%s dataloss %lu", sp->Name,
+        if (!SITEsetup(sp))
+            syslog(L_ERROR, "%s cant restart %m", sp->Name);
+        else if (cp != NULL) {
+            if (sp->Buffered) {
+                /* SITEsetup had to buffer us; save any residue. */
+                out = &cp->Out;
+                if (out->left)
+                    buffer_set(&sp->Buffer, &out->data[out->used], out->left);
+            } else
+                WCHANsetfrombuffer(sp->Channel, &cp->Out);
+        }
+    } else if (cp != NULL && cp->Out.left) {
+        if (sp->Type == FTfile || sp->Spooling) {
+            /* Can't flush a file?  Hopeless. */
+            syslog(L_ERROR, "%s dataloss %lu", sp->Name,
                    (unsigned long) cp->Out.left);
-	    return;
-	}
-	/* Must be a working channel; spool and retry. */
-	syslog(L_ERROR, "%s spooling %lu bytes", sp->Name,
+            return;
+        }
+        /* Must be a working channel; spool and retry. */
+        syslog(L_ERROR, "%s spooling %lu bytes", sp->Name,
                (unsigned long) cp->Out.left);
-	if (SITEspool(sp, cp))
-	    SITEflush(sp, false);
-	return;
+        if (SITEspool(sp, cp))
+            SITEflush(sp, false);
+        return;
     }
 
     /* Close the old channel if it was open. */
     if (cp != NULL) {
         /* Make sure we have no dangling pointers to it. */
-	if (!Restart)
-	    sp->Channel = NULL;
-	CHANclose(cp, sp->Name);
-	if (sp->Type == FTfile)
-	    SITEunlink(sp);
+        if (!Restart)
+            sp->Channel = NULL;
+        CHANclose(cp, sp->Name);
+        if (sp->Type == FTfile)
+            SITEunlink(sp);
     }
 }
 
@@ -908,12 +904,12 @@ SITEflush(SITE *sp, const bool Restart)
 void
 SITEflushall(const bool Restart)
 {
-    int	                i;
-    SITE	        *sp;
+    int i;
+    SITE *sp;
 
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Name)
-	    SITEflush(sp, Restart);
+        if (sp->Name)
+            SITEflush(sp, Restart);
 }
 
 
@@ -924,27 +920,27 @@ SITEflushall(const bool Restart)
 bool
 SITEwantsgroup(SITE *sp, char *name)
 {
-    bool	        match;
-    bool	        subvalue;
-    char	        *pat;
-    char	        **argv;
+    bool match;
+    bool subvalue;
+    char *pat;
+    char **argv;
 
     match = SUB_DEFAULT;
     if (ME.Patterns) {
-	for (argv = ME.Patterns; (pat = *argv++) != NULL; ) {
-	    subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
-	    if (!subvalue)
-		pat++;
-	    if ((match != subvalue) && uwildmat(name, pat))
-		match = subvalue;
-	}
+        for (argv = ME.Patterns; (pat = *argv++) != NULL;) {
+            subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
+            if (!subvalue)
+                pat++;
+            if ((match != subvalue) && uwildmat(name, pat))
+                match = subvalue;
+        }
     }
-    for (argv = sp->Patterns; (pat = *argv++) != NULL; ) {
-	subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
-	if (!subvalue)
-	    pat++;
-	if ((match != subvalue) && uwildmat(name, pat))
-	    match = subvalue;
+    for (argv = sp->Patterns; (pat = *argv++) != NULL;) {
+        subvalue = *pat != SUB_NEGATE && *pat != SUB_POISON;
+        if (!subvalue)
+            pat++;
+        if ((match != subvalue) && uwildmat(name, pat))
+            match = subvalue;
     }
     return match;
 }
@@ -957,27 +953,27 @@ SITEwantsgroup(SITE *sp, char *name)
 bool
 SITEpoisongroup(SITE *sp, char *name)
 {
-    bool	        match;
-    bool	        poisonvalue;
-    char	        *pat;
-    char	        **argv;
+    bool match;
+    bool poisonvalue;
+    char *pat;
+    char **argv;
 
     match = SUB_DEFAULT;
     if (ME.Patterns) {
-	for (argv = ME.Patterns; (pat = *argv++) != NULL; ) {
-	    poisonvalue = *pat == SUB_POISON;
-	    if (*pat == SUB_NEGATE || *pat == SUB_POISON)
-		pat++;
-	    if (uwildmat(name, pat))
-		match = poisonvalue;
-	}
+        for (argv = ME.Patterns; (pat = *argv++) != NULL;) {
+            poisonvalue = *pat == SUB_POISON;
+            if (*pat == SUB_NEGATE || *pat == SUB_POISON)
+                pat++;
+            if (uwildmat(name, pat))
+                match = poisonvalue;
+        }
     }
-    for (argv = sp->Patterns; (pat = *argv++) != NULL; ) {
-	poisonvalue = *pat == SUB_POISON;
-	if (*pat == SUB_NEGATE || *pat == SUB_POISON)
-	    pat++;
-	if (uwildmat(name, pat))
-	    match = poisonvalue;
+    for (argv = sp->Patterns; (pat = *argv++) != NULL;) {
+        poisonvalue = *pat == SUB_POISON;
+        if (*pat == SUB_NEGATE || *pat == SUB_POISON)
+            pat++;
+        if (uwildmat(name, pat))
+            match = poisonvalue;
     }
     return match;
 }
@@ -989,12 +985,12 @@ SITEpoisongroup(SITE *sp, char *name)
 SITE *
 SITEfind(const char *p)
 {
-    int	                i;
-    SITE	        *sp;
+    int i;
+    SITE *sp;
 
     for (i = nSites, sp = Sites; --i >= 0; sp++)
-	if (sp->Name && strcasecmp(p, sp->Name) == 0)
-	    return sp;
+        if (sp->Name && strcasecmp(p, sp->Name) == 0)
+            return sp;
     return NULL;
 }
 
@@ -1005,11 +1001,11 @@ SITEfind(const char *p)
 SITE *
 SITEfindnext(const char *p, SITE *sp)
 {
-    SITE	        *end;
+    SITE *end;
 
     for (sp++, end = &Sites[nSites]; sp < end; sp++)
-	if (sp->Name && strcasecmp(p, sp->Name) == 0)
-	    return sp;
+        if (sp->Name && strcasecmp(p, sp->Name) == 0)
+            return sp;
     return NULL;
 }
 
@@ -1020,63 +1016,63 @@ SITEfindnext(const char *p, SITE *sp)
 void
 SITEfree(SITE *sp)
 {
-    SITE                *s;
-    HASHFEEDLIST        *hf, *hn;
-    int                 new;
-    int                 i;
-    
+    SITE *s;
+    HASHFEEDLIST *hf, *hn;
+    int new;
+    int i;
+
     if (sp->Channel) {
-	CHANclose(sp->Channel, CHANname(sp->Channel));
-	sp->Channel = NULL;
+        CHANclose(sp->Channel, CHANname(sp->Channel));
+        sp->Channel = NULL;
     }
 
     SITEunlink(sp);
 
     sp->Name = NULL;
     if (sp->Process > 0) {
-	/* Kill the backpointer so PROCdied won't call us. */
-	PROCunwatch(sp->Process);
-	sp->Process = -1;
+        /* Kill the backpointer so PROCdied won't call us. */
+        PROCunwatch(sp->Process);
+        sp->Process = -1;
     }
     if (sp->Entry) {
-	free(sp->Entry);
-	sp->Entry = NULL;
+        free(sp->Entry);
+        sp->Entry = NULL;
     }
     if (sp->Originator) {
-    	free(sp->Originator);
-    	sp->Originator = NULL;
+        free(sp->Originator);
+        sp->Originator = NULL;
     }
     if (sp->Param) {
-	free(sp->Param);
-	sp->Param = NULL;
+        free(sp->Param);
+        sp->Param = NULL;
     }
     if (sp->SpoolName) {
-	free(sp->SpoolName);
-	sp->SpoolName = NULL;
+        free(sp->SpoolName);
+        sp->SpoolName = NULL;
     }
     if (sp->Patterns) {
-	free(sp->Patterns);
-	sp->Patterns = NULL;
+        free(sp->Patterns);
+        sp->Patterns = NULL;
     }
     if (sp->Exclusions) {
-	free(sp->Exclusions);
-	sp->Exclusions = NULL;
+        free(sp->Exclusions);
+        sp->Exclusions = NULL;
     }
     if (sp->Distributions) {
-	free(sp->Distributions);
-	sp->Distributions = NULL;
+        free(sp->Distributions);
+        sp->Distributions = NULL;
     }
     if (sp->Buffer.data) {
-	free(sp->Buffer.data);
-	sp->Buffer.data = NULL;
-	sp->Buffer.size = 0;
+        free(sp->Buffer.data);
+        sp->Buffer.data = NULL;
+        sp->Buffer.size = 0;
     }
     if (sp->FNLnames.data) {
-	free(sp->FNLnames.data);
-	sp->FNLnames.data = NULL;
-	sp->FNLnames.size = 0;
-	sp->FNLnames.left = 0;
-	sp->FNLnames.used = 0;
+        free(sp->FNLnames.data);
+        sp->FNLnames.data = NULL;
+        sp->FNLnames.size = 0;
+        sp->FNLnames.left = 0;
+        sp->FNLnames.used = 0;
     }
     if (sp->HashFeedList) {
         for (hf = sp->HashFeedList; hf; hf = hn) {
@@ -1088,17 +1084,16 @@ SITEfree(SITE *sp)
 
     /* If this site was a master, find a new one. */
     if (sp->IsMaster) {
-	for (new = NOSITE, s = Sites, i = nSites; --i >= 0; s++)
-	    if (&Sites[s->Master] == sp) {
-		if (new == NOSITE) {
-		    s->Master = NOSITE;
-		    s->IsMaster = true;
-		    new = s - Sites;
-		}
-		else
-		    s->Master = new;
+        for (new = NOSITE, s = Sites, i = nSites; --i >= 0; s++)
+            if (&Sites[s->Master] == sp) {
+                if (new == NOSITE) {
+                    s->Master = NOSITE;
+                    s->IsMaster = true;
+                    new = s - Sites;
+                } else
+                    s->Master = new;
             }
-	sp->IsMaster = false;
+        sp->IsMaster = false;
     }
 }
 
@@ -1110,21 +1105,21 @@ SITEfree(SITE *sp)
 void
 SITEforward(SITE *sp, const char *text)
 {
-    SITE	        *fsp;
-    char		buff[SMBUF];
+    SITE *fsp;
+    char buff[SMBUF];
 
     fsp = sp;
     if (fsp->Funnel != NOSITE)
-	fsp = &Sites[fsp->Funnel];
+        fsp = &Sites[fsp->Funnel];
     if (sp->Name == NULL || fsp->Name == NULL)
-	return;
+        return;
     if (fsp->Type == FTexploder) {
-	strlcpy(buff, text, sizeof(buff));
-	if (fsp != sp && fsp->FNLwantsnames) {
+        strlcpy(buff, text, sizeof(buff));
+        if (fsp != sp && fsp->FNLwantsnames) {
             strlcat(buff, " ", sizeof(buff));
             strlcat(buff, sp->Name, sizeof(buff));
-	}
-	SITEwrite(fsp, buff);
+        }
+        SITEwrite(fsp, buff);
     }
 }
 
@@ -1147,99 +1142,98 @@ SITEdrop(SITE *sp)
 void
 SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
 {
-    static char		FREESITE[] = "<<No name>>\n\n";
-    CHANNEL	        *cp;
-    const char		*sep;
+    static char FREESITE[] = "<<No name>>\n\n";
+    CHANNEL *cp;
+    const char *sep;
 
     if (sp->Name == NULL) {
-	buffer_append(bp, FREESITE, strlen(FREESITE));
-	return;
+        buffer_append(bp, FREESITE, strlen(FREESITE));
+        return;
     }
 
     buffer_append_sprintf(bp, "%s%s:\t", sp->Name, sp->IsMaster ? "(*)" : "");
 
     if (sp->Type == FTfunnel) {
-	sp = &Sites[sp->Funnel];
+        sp = &Sites[sp->Funnel];
         buffer_append_sprintf(bp, "funnel -> %s: ", sp->Name);
     }
 
     switch (sp->Type) {
     default:
         buffer_append_sprintf(bp, "unknown feed type %d", sp->Type);
-	break;
+        break;
     case FTerror:
     case FTfile:
         buffer_append_sprintf(bp, "file");
-	if (sp->Buffered)
+        if (sp->Buffered)
             buffer_append_sprintf(bp, " buffered(%lu)",
-                           (unsigned long) sp->Buffer.left);
-	else if ((cp = sp->Channel) == NULL)
+                                  (unsigned long) sp->Buffer.left);
+        else if ((cp = sp->Channel) == NULL)
             buffer_append_sprintf(bp, " no channel?");
-	else
+        else
             buffer_append_sprintf(bp, " open fd=%d, in mem %lu", cp->fd,
-                           (unsigned long) cp->Out.left);
-	break;
+                                  (unsigned long) cp->Out.left);
+        break;
     case FTchannel:
         buffer_append_sprintf(bp, "channel");
-	goto common;
+        goto common;
     case FTexploder:
         buffer_append_sprintf(bp, "exploder");
-common:
-	if (sp->Process >= 0)
+    common:
+        if (sp->Process >= 0)
             buffer_append_sprintf(bp, " pid=%ld", (long) sp->pid);
-	if (sp->Spooling)
+        if (sp->Spooling)
             buffer_append_sprintf(bp, " spooling");
         cp = sp->Channel;
-	if (cp == NULL)
+        if (cp == NULL)
             buffer_append_sprintf(bp, " no channel?");
-	else
+        else
             buffer_append_sprintf(bp, " fd=%d, in mem %lu", cp->fd,
-                           (unsigned long) cp->Out.left);
-	break;
+                                  (unsigned long) cp->Out.left);
+        break;
     case FTfunnel:
         buffer_append_sprintf(bp, "recursive funnel");
-	break;
+        break;
     case FTlogonly:
         buffer_append_sprintf(bp, "log only");
-	break;
+        break;
     case FTprogram:
         buffer_append_sprintf(bp, "program");
-	if (sp->FNLwantsnames)
+        if (sp->FNLwantsnames)
             buffer_append_sprintf(bp, " with names");
-	break;
+        break;
     }
     buffer_append(bp, "\n", 1);
     if (Verbose) {
-	sep = "\t";
-	if (sp->Buffered && sp->Flushpoint) {
+        sep = "\t";
+        if (sp->Buffered && sp->Flushpoint) {
             buffer_append_sprintf(bp, "%sFlush @ %lu", sep,
-                           (unsigned long) sp->Flushpoint);
-	    sep = "; ";
-	}
-	if (sp->StartWriting || sp->StopWriting) {
+                                  (unsigned long) sp->Flushpoint);
+            sep = "; ";
+        }
+        if (sp->StartWriting || sp->StopWriting) {
             buffer_append_sprintf(bp, "%sWrite [%ld..%ld]", sep,
-                           sp->StopWriting, sp->StartWriting);
-	    sep = "; ";
-	}
-	if (sp->StartSpooling) {
+                                  sp->StopWriting, sp->StartWriting);
+            sep = "; ";
+        }
+        if (sp->StartSpooling) {
             buffer_append_sprintf(bp, "%sSpool @ %ld", sep, sp->StartSpooling);
-	    sep = "; ";
-	}
-	if (sep[0] != '\t')
+            sep = "; ";
+        }
+        if (sep[0] != '\t')
             buffer_append(bp, "\n", 1);
-	if (sp->Spooling && sp->SpoolName)
+        if (sp->Spooling && sp->SpoolName)
             buffer_append_sprintf(bp, "\tSpooling to \"%s\"\n", sp->SpoolName);
         cp = sp->Channel;
-	if (cp != NULL) {
+        if (cp != NULL) {
             buffer_append_sprintf(bp, "\tChannel created %.12s",
-                           ctime(&cp->Started) + 4);
+                                  ctime(&cp->Started) + 4);
             buffer_append_sprintf(bp, ", last active %.12s\n",
-                           ctime(&cp->LastActive) + 4);
-	    if (cp->Waketime > Now.tv_sec)
+                                  ctime(&cp->LastActive) + 4);
+            if (cp->Waketime > Now.tv_sec)
                 buffer_append_sprintf(bp, "\tSleeping until %.12s\n",
-                               ctime(&cp->Waketime) + 4);
-	}
-
+                                      ctime(&cp->Waketime) + 4);
+        }
     }
     buffer_append(bp, "", 1);
 }

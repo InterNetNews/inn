@@ -10,24 +10,24 @@
 #include "innperl.h"
 
 #define DEFINE_DATA
-#include "innd.h"
 #include "inn/ov.h"
+#include "innd.h"
 
 
-bool		Debug = false;
-bool		NNRPTracing = false;
-bool		StreamingOff = false ; /* default is we can stream */
-bool		Tracing = false;
-bool		DoCancels = true;
-char		LogName[] = "SERVER";
-int		ErrorCount = IO_ERROR_COUNT;
-OPERATINGMODE	Mode = OMrunning;
-int		RemoteLimit = REMOTELIMIT;
-time_t		RemoteTimer = REMOTETIMER;
-int		RemoteTotal = REMOTETOTAL;
-bool		ThrottledbyIOError = false;
+bool Debug = false;
+bool NNRPTracing = false;
+bool StreamingOff = false; /* default is we can stream */
+bool Tracing = false;
+bool DoCancels = true;
+char LogName[] = "SERVER";
+int ErrorCount = IO_ERROR_COUNT;
+OPERATINGMODE Mode = OMrunning;
+int RemoteLimit = REMOTELIMIT;
+time_t RemoteTimer = REMOTETIMER;
+int RemoteTotal = REMOTETOTAL;
+bool ThrottledbyIOError = false;
 
-static char	*PID = NULL;
+static char *PID = NULL;
 
 /* Default values for the syntaxchecks parameter in inn.conf. */
 bool laxmid = false;
@@ -50,175 +50,181 @@ FILE *Errlog = NULL;
 /* Some very old systems have a completely inadequate BUFSIZ buffer size, at
    least for our logging purposes. */
 #if BUFSIZ < 4096
-# define LOG_BUFSIZ 4096
+#    define LOG_BUFSIZ 4096
 #else
-# define LOG_BUFSIZ BUFSIZ
+#    define LOG_BUFSIZ BUFSIZ
 #endif
 
 /* Internal prototypes. */
-static void             catch_terminate(int sig);
-static void             xmalloc_abort(const char *what, size_t size,
-                                      const char *file, int line);
-static void             Usage(void) __attribute__ ((__noreturn__));
+static void catch_terminate(int sig);
+static void xmalloc_abort(const char *what, size_t size, const char *file,
+                          int line);
+static void Usage(void) __attribute__((__noreturn__));
 
 /* header table initialization */
-#define ARTHEADERINIT(name, type) {name, type, sizeof(name) - 1}
+#define ARTHEADERINIT(name, type)    \
+    {                                \
+        name, type, sizeof(name) - 1 \
+    }
+
+/* clang-format off */
 const ARTHEADER ARTheaders[] = {
-  /*		 Name			Type */
-  ARTHEADERINIT("Approved",		HTstd),
-/* #define HDR__APPROVED			0 */
-  ARTHEADERINIT("Control",		HTstd),
-/* #define HDR__CONTROL				1 */
-  ARTHEADERINIT("Date",			HTreq),
-/* #define HDR__DATE				2 */
-  ARTHEADERINIT("Distribution",		HTstd),
-/* #define HDR__DISTRIBUTION			3 */
-  ARTHEADERINIT("Expires",		HTstd),
-/* #define HDR__EXPIRES				4 */
-  ARTHEADERINIT("From",			HTreq),
-/* #define HDR__FROM				5 */
-  ARTHEADERINIT("Lines",		HTobs),
-/* #define HDR__LINES				6 */
-  ARTHEADERINIT("Message-ID",		HTreq),
-/* #define HDR__MESSAGE_ID			7 */
-  ARTHEADERINIT("Newsgroups",		HTreq),
-/* #define HDR__NEWSGROUPS			8 */
-  ARTHEADERINIT("Path",			HTreq),
-/* #define HDR__PATH				9 */
-  ARTHEADERINIT("Reply-To",		HTstd),
-/* #define HDR__REPLY_TO			10 */
-  ARTHEADERINIT("Sender",		HTstd),
-/* #define HDR__SENDER				11 */
-  ARTHEADERINIT("Subject",		HTreq),
-/* #define HDR__SUBJECT				12 */
-  ARTHEADERINIT("Supersedes",		HTstd),
-/* #define HDR__SUPERSEDES			13 */
-  ARTHEADERINIT("Bytes",		HTobs),
-/* #define HDR__BYTES				14 */
-  ARTHEADERINIT("Also-Control",		HTobs),
-/* #define HDR__ALSOCONTROL			15 */
-  ARTHEADERINIT("References",		HTstd),
-/* #define HDR__REFERENCES			16 */
-  ARTHEADERINIT("Xref",			HTsav),
-/* #define HDR__XREF				17 */
-  ARTHEADERINIT("Keywords",		HTstd),
-/* #define HDR__KEYWORDS			18 */
-  ARTHEADERINIT("X-Trace",		HTobs),
-/* #define HDR__XTRACE				19 */
-  ARTHEADERINIT("Date-Received",	HTobs),
-/* #define HDR__DATERECEIVED			20 */
-  ARTHEADERINIT("Posted",		HTobs),
-/* #define HDR__POSTED				21 */
-  ARTHEADERINIT("Posting-Version",	HTobs),
-/* #define HDR__POSTINGVERSION			22 */
-  ARTHEADERINIT("Received",		HTobs),
-/* #define HDR__RECEIVED			23 */
-  ARTHEADERINIT("Relay-Version",	HTobs),
-/* #define HDR__RELAYVERSION			24 */
-  ARTHEADERINIT("NNTP-Posting-Host",	HTobs),
-/* #define HDR__NNTPPOSTINGHOST			25 */
-  ARTHEADERINIT("Followup-To",		HTstd),
-/* #define HDR__FOLLOWUPTO			26 */
-  ARTHEADERINIT("Organization",		HTstd),
-/* #define HDR__ORGANIZATION			27 */
-  ARTHEADERINIT("Content-Type",		HTstd),
-/* #define HDR__CONTENTTYPE			28 */
-  ARTHEADERINIT("Content-Base",		HTstd),
-/* #define HDR__CONTENTBASE			29 */
-  ARTHEADERINIT("Content-Disposition",	HTstd),
-/* #define HDR__CONTENTDISPOSITION		30 */
-  ARTHEADERINIT("X-Newsreader",		HTstd),
-/* #define HDR__XNEWSREADER			31 */
-  ARTHEADERINIT("X-Mailer",		HTstd),
-/* #define HDR__XMAILER				32 */
-  ARTHEADERINIT("X-Newsposter",		HTstd),
-/* #define HDR__XNEWSPOSTER			33 */
-  ARTHEADERINIT("X-Cancelled-By",	HTstd),
-/* #define HDR__XCANCELLEDBY			34 */
-  ARTHEADERINIT("X-Canceled-By",	HTstd),
-/* #define HDR__XCANCELEDBY			35 */
-  ARTHEADERINIT("Cancel-Key",		HTstd),
-/* #define HDR__CANCELKEY			36 */
-  ARTHEADERINIT("User-Agent",		HTstd),
-/* #define HDR__USER_AGENT			37 */
-  ARTHEADERINIT("X-Original-Message-ID",	HTstd),
-/* #define HDR__X_ORIGINAL_MESSAGE_ID		38 */
-  ARTHEADERINIT("Cancel-Lock",		HTstd),
-/* #define HDR__CANCEL_LOCK			39 */
-  ARTHEADERINIT("Content-Transfer-Encoding",	HTstd),
-/* #define HDR__CONTENT_TRANSFER_ENCODING	40 */
-  ARTHEADERINIT("Face",			HTstd),
-/* #define HDR__FACE				41 */
-  ARTHEADERINIT("Injection-Info",	HTstd),
-/* #define HDR__INJECTION_INFO			42 */
-  ARTHEADERINIT("List-ID",		HTstd),
-/* #define HDR__LIST_ID				43 */
-  ARTHEADERINIT("MIME-Version",		HTstd),
-/* #define HDR__MIME_VERSION			44 */
-  ARTHEADERINIT("Originator",		HTstd),
-/* #define HDR__ORIGINATOR			45 */
-  ARTHEADERINIT("X-Auth",		HTstd),
-/* #define HDR__X_AUTH				46 */
-  ARTHEADERINIT("X-Complaints-To",	HTobs),
-/* #define HDR__X_COMPLAINTS_TO			47 */
-  ARTHEADERINIT("X-Face",		HTstd),
-/* #define HDR__X_FACE				48 */
-  ARTHEADERINIT("X-HTTP-UserAgent",	HTstd),
-/* #define HDR__X_HTTP_USERAGENT		49 */
-  ARTHEADERINIT("X-HTTP-Via",		HTstd),
-/* #define HDR__X_HTTP_VIA			50 */
-  ARTHEADERINIT("X-Modbot",		HTstd),
-/* #define HDR__X_MODBOT			51 */
-  ARTHEADERINIT("X-Modtrace",		HTstd),
-/* #define HDR__X_MODTRACE			52 */
-  ARTHEADERINIT("X-No-Archive",		HTobs),
-/* #define HDR__X_NO_ARCHIVE			53 */
-  ARTHEADERINIT("X-Original-Trace",	HTstd),
-/* #define HDR__X_ORIGINAL_TRACE		54 */
-  ARTHEADERINIT("X-Originating-IP",	HTstd),
-/* #define HDR__X_ORIGINATING_IP		55 */
-  ARTHEADERINIT("X-PGP-Key",		HTstd),
-/* #define HDR__X_PGP_KEY			56 */
-  ARTHEADERINIT("X-PGP-Sig",		HTstd),
-/* #define HDR__X_PGP_SIG			57 */
-  ARTHEADERINIT("X-Poster-Trace",	HTstd),
-/* #define HDR__X_POSTER_TRACE			58 */
-  ARTHEADERINIT("X-Postfilter",		HTstd),
-/* #define HDR__X_POSTFILTER			59 */
-  ARTHEADERINIT("X-Proxy-User",		HTstd),
-/* #define HDR__X_PROXY_USER			60 */
-  ARTHEADERINIT("X-Submissions-To",	HTstd),
-/* #define HDR__X_SUBMISSIONS_TO		61 */
-  ARTHEADERINIT("X-Usenet-Provider",	HTstd),
-/* #define HDR__X_USENET_PROVIDER		62 */
-  ARTHEADERINIT("In-Reply-To",		HTstd),
-/* #define HDR__IN_REPLY_TO			63 */
-  ARTHEADERINIT("Injection-Date",	HTstd),
-/* #define HDR__INJECTION_DATE			64 */
-  ARTHEADERINIT("NNTP-Posting-Date",    HTobs),
-/* #define HDR__NNTP_POSTING_DATE               65 */
-  ARTHEADERINIT("X-User-ID",            HTstd),
-/* #define HDR__X_USER_ID                       66 */
-  ARTHEADERINIT("X-Auth-Sender",        HTstd),
-/* #define HDR__X_AUTH_SENDER                   67 */
-  ARTHEADERINIT("X-Original-NNTP-Posting-Host", HTstd),
-/* #define HDR__X_ORIGINAL_NNTP_POSTING_HOST    68 */
-  ARTHEADERINIT("Original-Sender",      HTstd),
-/* #define HDR__ORIGINAL_SENDER                 69 */
-  ARTHEADERINIT("NNTP-Posting-Path",    HTobs),
-/* #define HDR__NNTP_POSTING_PATH               70 */
-  ARTHEADERINIT("Archive",              HTstd),
-/* #define HDR__ARCHIVE                         71 */
-  ARTHEADERINIT("Archived-At",          HTstd),
-/* #define HDR__ARCHIVED_AT                     72 */
-  ARTHEADERINIT("Summary",              HTstd),
-/* #define HDR__SUMMARY                         73 */
-  ARTHEADERINIT("Comments",             HTstd),
-/* #define HDR__COMMENTS                        74 */
-  ARTHEADERINIT("Jabber-ID",            HTstd),
-/* #define HDR__JABBER_ID                       75 */
+    /*            Name                            Type */
+    ARTHEADERINIT("Approved",                     HTstd),
+    /* #define HDR__APPROVED                                 0 */
+    ARTHEADERINIT("Control",                      HTstd),
+    /* #define HDR__CONTROL                                  1 */
+    ARTHEADERINIT("Date",                         HTreq),
+    /* #define HDR__DATE                                     2 */
+    ARTHEADERINIT("Distribution",                 HTstd),
+    /* #define HDR__DISTRIBUTION                             3 */
+    ARTHEADERINIT("Expires",                      HTstd),
+    /* #define HDR__EXPIRES                                  4 */
+    ARTHEADERINIT("From",                         HTreq),
+    /* #define HDR__FROM                                     5 */
+    ARTHEADERINIT("Lines",                        HTobs),
+    /* #define HDR__LINES                                    6 */
+    ARTHEADERINIT("Message-ID",                   HTreq),
+    /* #define HDR__MESSAGE_ID                               7 */
+    ARTHEADERINIT("Newsgroups",                   HTreq),
+    /* #define HDR__NEWSGROUPS                               8 */
+    ARTHEADERINIT("Path",                         HTreq),
+    /* #define HDR__PATH                                     9 */
+    ARTHEADERINIT("Reply-To",                     HTstd),
+    /* #define HDR__REPLY_TO                                10 */
+    ARTHEADERINIT("Sender",                       HTstd),
+    /* #define HDR__SENDER                                  11 */
+    ARTHEADERINIT("Subject",                      HTreq),
+    /* #define HDR__SUBJECT                                 12 */
+    ARTHEADERINIT("Supersedes",                   HTstd),
+    /* #define HDR__SUPERSEDES                              13 */
+    ARTHEADERINIT("Bytes",                        HTobs),
+    /* #define HDR__BYTES                                   14 */
+    ARTHEADERINIT("Also-Control",                 HTobs),
+    /* #define HDR__ALSOCONTROL                             15 */
+    ARTHEADERINIT("References",                   HTstd),
+    /* #define HDR__REFERENCES                              16 */
+    ARTHEADERINIT("Xref",                         HTsav),
+    /* #define HDR__XREF                                    17 */
+    ARTHEADERINIT("Keywords",                     HTstd),
+    /* #define HDR__KEYWORDS                                18 */
+    ARTHEADERINIT("X-Trace",                      HTobs),
+    /* #define HDR__XTRACE                                  19 */
+    ARTHEADERINIT("Date-Received",                HTobs),
+    /* #define HDR__DATERECEIVED                            20 */
+    ARTHEADERINIT("Posted",                       HTobs),
+    /* #define HDR__POSTED                                  21 */
+    ARTHEADERINIT("Posting-Version",              HTobs),
+    /* #define HDR__POSTINGVERSION                          22 */
+    ARTHEADERINIT("Received",                     HTobs),
+    /* #define HDR__RECEIVED                                23 */
+    ARTHEADERINIT("Relay-Version",                HTobs),
+    /* #define HDR__RELAYVERSION                            24 */
+    ARTHEADERINIT("NNTP-Posting-Host",            HTobs),
+    /* #define HDR__NNTPPOSTINGHOST                         25 */
+    ARTHEADERINIT("Followup-To",                  HTstd),
+    /* #define HDR__FOLLOWUPTO                              26 */
+    ARTHEADERINIT("Organization",                 HTstd),
+    /* #define HDR__ORGANIZATION                            27 */
+    ARTHEADERINIT("Content-Type",                 HTstd),
+    /* #define HDR__CONTENTTYPE                             28 */
+    ARTHEADERINIT("Content-Base",                 HTstd),
+    /* #define HDR__CONTENTBASE                             29 */
+    ARTHEADERINIT("Content-Disposition",          HTstd),
+    /* #define HDR__CONTENTDISPOSITION                      30 */
+    ARTHEADERINIT("X-Newsreader",                 HTstd),
+    /* #define HDR__XNEWSREADER                             31 */
+    ARTHEADERINIT("X-Mailer",                     HTstd),
+    /* #define HDR__XMAILER                                 32 */
+    ARTHEADERINIT("X-Newsposter",                 HTstd),
+    /* #define HDR__XNEWSPOSTER                             33 */
+    ARTHEADERINIT("X-Cancelled-By",               HTstd),
+    /* #define HDR__XCANCELLEDBY                            34 */
+    ARTHEADERINIT("X-Canceled-By",                HTstd),
+    /* #define HDR__XCANCELEDBY                             35 */
+    ARTHEADERINIT("Cancel-Key",                   HTstd),
+    /* #define HDR__CANCELKEY                               36 */
+    ARTHEADERINIT("User-Agent",                   HTstd),
+    /* #define HDR__USER_AGENT                              37 */
+    ARTHEADERINIT("X-Original-Message-ID",        HTstd),
+    /* #define HDR__X_ORIGINAL_MESSAGE_ID                   38 */
+    ARTHEADERINIT("Cancel-Lock",                  HTstd),
+    /* #define HDR__CANCEL_LOCK                             39 */
+    ARTHEADERINIT("Content-Transfer-Encoding",    HTstd),
+    /* #define HDR__CONTENT_TRANSFER_ENCODING               40 */
+    ARTHEADERINIT("Face",                         HTstd),
+    /* #define HDR__FACE                                    41 */
+    ARTHEADERINIT("Injection-Info",               HTstd),
+    /* #define HDR__INJECTION_INFO                          42 */
+    ARTHEADERINIT("List-ID",                      HTstd),
+    /* #define HDR__LIST_ID                                 43 */
+    ARTHEADERINIT("MIME-Version",                 HTstd),
+    /* #define HDR__MIME_VERSION                            44 */
+    ARTHEADERINIT("Originator",                   HTstd),
+    /* #define HDR__ORIGINATOR                              45 */
+    ARTHEADERINIT("X-Auth",                       HTstd),
+    /* #define HDR__X_AUTH                                  46 */
+    ARTHEADERINIT("X-Complaints-To",              HTobs),
+    /* #define HDR__X_COMPLAINTS_TO                         47 */
+    ARTHEADERINIT("X-Face",                       HTstd),
+    /* #define HDR__X_FACE                                  48 */
+    ARTHEADERINIT("X-HTTP-UserAgent",             HTstd),
+    /* #define HDR__X_HTTP_USERAGENT                        49 */
+    ARTHEADERINIT("X-HTTP-Via",                   HTstd),
+    /* #define HDR__X_HTTP_VIA                              50 */
+    ARTHEADERINIT("X-Modbot",                     HTstd),
+    /* #define HDR__X_MODBOT                                51 */
+    ARTHEADERINIT("X-Modtrace",                   HTstd),
+    /* #define HDR__X_MODTRACE                              52 */
+    ARTHEADERINIT("X-No-Archive",                 HTobs),
+    /* #define HDR__X_NO_ARCHIVE                            53 */
+    ARTHEADERINIT("X-Original-Trace",             HTstd),
+    /* #define HDR__X_ORIGINAL_TRACE                        54 */
+    ARTHEADERINIT("X-Originating-IP",             HTstd),
+    /* #define HDR__X_ORIGINATING_IP                        55 */
+    ARTHEADERINIT("X-PGP-Key",                    HTstd),
+    /* #define HDR__X_PGP_KEY                               56 */
+    ARTHEADERINIT("X-PGP-Sig",                    HTstd),
+    /* #define HDR__X_PGP_SIG                               57 */
+    ARTHEADERINIT("X-Poster-Trace",               HTstd),
+    /* #define HDR__X_POSTER_TRACE                          58 */
+    ARTHEADERINIT("X-Postfilter",                 HTstd),
+    /* #define HDR__X_POSTFILTER                            59 */
+    ARTHEADERINIT("X-Proxy-User",                 HTstd),
+    /* #define HDR__X_PROXY_USER                            60 */
+    ARTHEADERINIT("X-Submissions-To",             HTstd),
+    /* #define HDR__X_SUBMISSIONS_TO                        61 */
+    ARTHEADERINIT("X-Usenet-Provider",            HTstd),
+    /* #define HDR__X_USENET_PROVIDER                       62 */
+    ARTHEADERINIT("In-Reply-To",                  HTstd),
+    /* #define HDR__IN_REPLY_TO                             63 */
+    ARTHEADERINIT("Injection-Date",               HTstd),
+    /* #define HDR__INJECTION_DATE                          64 */
+    ARTHEADERINIT("NNTP-Posting-Date",            HTobs),
+    /* #define HDR__NNTP_POSTING_DATE                       65 */
+    ARTHEADERINIT("X-User-ID",                    HTstd),
+    /* #define HDR__X_USER_ID                               66 */
+    ARTHEADERINIT("X-Auth-Sender",                HTstd),
+    /* #define HDR__X_AUTH_SENDER                           67 */
+    ARTHEADERINIT("X-Original-NNTP-Posting-Host", HTstd),
+    /* #define HDR__X_ORIGINAL_NNTP_POSTING_HOST            68 */
+    ARTHEADERINIT("Original-Sender",              HTstd),
+    /* #define HDR__ORIGINAL_SENDER                         69 */
+    ARTHEADERINIT("NNTP-Posting-Path",            HTobs),
+    /* #define HDR__NNTP_POSTING_PATH                       70 */
+    ARTHEADERINIT("Archive",                      HTstd),
+    /* #define HDR__ARCHIVE                                 71 */
+    ARTHEADERINIT("Archived-At",                  HTstd),
+    /* #define HDR__ARCHIVED_AT                             72 */
+    ARTHEADERINIT("Summary",                      HTstd),
+    /* #define HDR__SUMMARY                                 73 */
+    ARTHEADERINIT("Comments",                     HTstd),
+    /* #define HDR__COMMENTS                                74 */
+    ARTHEADERINIT("Jabber-ID",                    HTstd),
+    /* #define HDR__JABBER_ID                               75 */
 };
-/* #define MAX_ARTHEADER                        76 */
+/* #define MAX_ARTHEADER                                    76 */
+/* clang-format on */
 
 
 /*
@@ -289,7 +295,7 @@ JustCleanup(void)
     ICDclose();
     InndHisClose();
     ARTclose();
-    if (innconf->enableoverview) 
+    if (innconf->enableoverview)
         OVclose();
     NGclose();
     SMshutdown();
@@ -325,7 +331,7 @@ ReopenLog(FILE *F)
     int mask;
 
     if (Debug)
-	return;
+        return;
 
     path = concatpath(innconf->pathlog,
                       (F == stdout) ? INN_PATH_LOGFILE : INN_PATH_ERRLOG);
@@ -360,31 +366,31 @@ main(int ac, char *av[])
     const char *name, *p;
     char *path;
     bool flag;
-    static char		WHEN[] = "PID file";
-    int			i;
-    size_t              j;
-    char		buff[SMBUF];
-    FILE		*F;
-    bool		ShouldFork;
-    bool		ShouldRenumber;
-    bool		ShouldSyntaxCheck;
-    pid_t		pid;
-    int                 status;
+    static char WHEN[] = "PID file";
+    int i;
+    size_t j;
+    char buff[SMBUF];
+    FILE *F;
+    bool ShouldFork;
+    bool ShouldRenumber;
+    bool ShouldSyntaxCheck;
+    pid_t pid;
+    int status;
 #if defined(_DEBUG_MALLOC_INC)
-    union malloptarg	m;
-#endif	/* defined(_DEBUG_MALLOC_INC) */
+    union malloptarg m;
+#endif /* defined(_DEBUG_MALLOC_INC) */
 #if DO_PERL
-    char                *path1, *path2;
+    char *path1, *path2;
 #endif
 #if defined(DO_PERL) || defined(DO_PYTHON)
-    bool                filter = true;
+    bool filter = true;
 #endif
 
     /* Set up the pathname, first thing, and teach our error handlers about
        the name of the program. */
     name = av[0];
     if (name == NULL || *name == '\0')
-	name = "innd";
+        name = "innd";
     else {
         p = strrchr(name, '/');
         if (p != NULL)
@@ -403,7 +409,7 @@ main(int ac, char *av[])
     xsignal_enable_masking();
 
     /* Handle malloc debugging. */
-#if	defined(_DEBUG_MALLOC_INC)
+#if defined(_DEBUG_MALLOC_INC)
     m.i = M_HANDLE_ABORT;
     dbmallopt(MALLOC_WARN, &m);
     dbmallopt(MALLOC_FATAL, &m);
@@ -412,7 +418,7 @@ main(int ac, char *av[])
     m.i = 0;
     dbmallopt(MALLOC_CKCHAIN, &m);
     dbmallopt(MALLOC_CKDATA, &m);
-#endif	/* defined(_DEBUG_MALLOC_INC) */
+#endif /* defined(_DEBUG_MALLOC_INC) */
 
     /* Set defaults. */
     TimeOut.tv_sec = DEFAULT_TIMEOUT;
@@ -429,10 +435,10 @@ main(int ac, char *av[])
     /* Parse JCL. */
     CCcopyargv(av);
     while ((i = getopt(ac, av, "4:6:ac:CdfH:i:l:m:n:No:P:rsSt:T:uX:")) != EOF)
-	switch (i) {
-	default:
-	    Usage();
-	    /* NOTREACHED */
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
         case '4':
             if (innconf->bindaddress)
                 free(innconf->bindaddress);
@@ -443,115 +449,128 @@ main(int ac, char *av[])
                 free(innconf->bindaddress6);
             innconf->bindaddress6 = xstrdup(optarg);
             break;
-	case 'a':
-	    AnyIncoming = true;
-	    break;
-	case 'c':
-	    innconf->artcutoff = strtoul(optarg, NULL, 10);
-	    break;
- 	case 'C':
- 	    DoCancels = false;
-  	    break;
-	case 'd':
-	    Debug = true;
-	    break;
-	case 'f':
-	    ShouldFork = false;
-	    break;
-	case 'H':
-	    RemoteLimit = atoi(optarg);
-	    break;
-	case 'i':
-	    innconf->maxconnections = strtoul(optarg, NULL, 10);
-	    break;
-	case 'l':
-	    innconf->maxartsize = strtoul(optarg, NULL, 10);
-	    break;
-	case 'm':
-	    if (ModeReason)
-		free(ModeReason);
-	    switch (*optarg) {
-	    default:
-		Usage();
-		/* NOTREACHED */
-	    case 'g':	Mode = OMrunning;	break;
-	    case 'p':	Mode = OMpaused;	break;
-	    case 't':	Mode = OMthrottled;	break;
-	    }
-	    if (Mode != OMrunning)
+        case 'a':
+            AnyIncoming = true;
+            break;
+        case 'c':
+            innconf->artcutoff = strtoul(optarg, NULL, 10);
+            break;
+        case 'C':
+            DoCancels = false;
+            break;
+        case 'd':
+            Debug = true;
+            break;
+        case 'f':
+            ShouldFork = false;
+            break;
+        case 'H':
+            RemoteLimit = atoi(optarg);
+            break;
+        case 'i':
+            innconf->maxconnections = strtoul(optarg, NULL, 10);
+            break;
+        case 'l':
+            innconf->maxartsize = strtoul(optarg, NULL, 10);
+            break;
+        case 'm':
+            if (ModeReason)
+                free(ModeReason);
+            switch (*optarg) {
+            default:
+                Usage();
+                /* NOTREACHED */
+            case 'g':
+                Mode = OMrunning;
+                break;
+            case 'p':
+                Mode = OMpaused;
+                break;
+            case 't':
+                Mode = OMthrottled;
+                break;
+            }
+            if (Mode != OMrunning)
                 ModeReason = concat(OMpaused ? "Paus" : "Throttl",
                                     "ed from the command line", (char *) 0);
-	    break;
-	case 'N':
+            break;
+        case 'N':
 #if defined(DO_PERL) || defined(DO_PYTHON)
-	    filter = false;
+            filter = false;
 #endif
-	    break;
-	case 'n':
-	    switch (*optarg) {
-	    default:
-		Usage();
-		/* NOTREACHED */
-	    case 'n':	innconf->readerswhenstopped = false;	break;
-	    case 'y':	innconf->readerswhenstopped = true;	break;
-	    }
-	    break;
-	case 'o':
-	    MaxOutgoing = atoi(optarg);
-	    break;
-	case 'P':
-	    innconf->port = strtoul(optarg, NULL, 10);
-	    break;
-	case 'r':
-	    ShouldRenumber = true;
-	    break;
-	case 's':
-	    ShouldSyntaxCheck = true;
-	    break;
+            break;
+        case 'n':
+            switch (*optarg) {
+            default:
+                Usage();
+                /* NOTREACHED */
+            case 'n':
+                innconf->readerswhenstopped = false;
+                break;
+            case 'y':
+                innconf->readerswhenstopped = true;
+                break;
+            }
+            break;
+        case 'o':
+            MaxOutgoing = atoi(optarg);
+            break;
+        case 'P':
+            innconf->port = strtoul(optarg, NULL, 10);
+            break;
+        case 'r':
+            ShouldRenumber = true;
+            break;
+        case 's':
+            ShouldSyntaxCheck = true;
+            break;
         case 'S':
             RCreadlist();
             exit(0);
             break;
-	case 't':
-	    TimeOut.tv_sec = atol(optarg);
-	    break;
-	case 'T':
-	    RemoteTotal = atoi(optarg);
-	    break;
-	case 'u':
-	    BufferedLogs = false;
-	    break;
-	case 'X':
-	    RemoteTimer = atoi(optarg);
-	    break;
+        case 't':
+            TimeOut.tv_sec = atol(optarg);
+            break;
+        case 'T':
+            RemoteTotal = atoi(optarg);
+            break;
+        case 'u':
+            BufferedLogs = false;
+            break;
+        case 'X':
+            RemoteTimer = atoi(optarg);
+            break;
         case 'Z':
             StreamingOff = true;
             break;
-	}
+        }
     ac -= optind;
     if (ac != 0)
-	Usage();
+        Usage();
     if (ModeReason != NULL && !innconf->readerswhenstopped)
-	NNRPReason = xstrdup(ModeReason);
+        NNRPReason = xstrdup(ModeReason);
 
     if (ShouldSyntaxCheck) {
-	if ((p = CCcheckfile((char **)NULL)) == NULL)
-	    exit(0);
-	fprintf(stderr, "%s\n", p + 2);
-	exit(1);
+        if ((p = CCcheckfile((char **) NULL)) == NULL)
+            exit(0);
+        fprintf(stderr, "%s\n", p + 2);
+        exit(1);
     }
 
     /* Initialize the checks to perform or not on article syntax. */
-    if ((innconf->syntaxchecks != NULL) && (innconf->syntaxchecks->count > 0)) {
+    if ((innconf->syntaxchecks != NULL)
+        && (innconf->syntaxchecks->count > 0)) {
         for (j = 0; j < innconf->syntaxchecks->count; j++) {
             if (innconf->syntaxchecks->strings[j] != NULL) {
                 if (strcmp(innconf->syntaxchecks->strings[j], "laxmid") == 0) {
                     laxmid = true;
                 } else if (strcmp(innconf->syntaxchecks->strings[j],
-                                  "no-laxmid") == 0) {
+                                  "no-laxmid")
+                           == 0) {
                     laxmid = false;
                 } else {
-                    syslog(L_NOTICE, "Unknown \"%s\" value in syntaxchecks "
+                    syslog(L_NOTICE,
+                           "Unknown \"%s\" value in syntaxchecks "
                            "parameter in inn.conf",
                            innconf->syntaxchecks->strings[j]);
                 }
@@ -561,21 +580,21 @@ main(int ac, char *av[])
 
     /* Get the Path entry. */
     if (innconf->pathhost == NULL) {
-	syslog(L_FATAL, "%s No pathhost set", LogName);
-	exit(1);
+        syslog(L_FATAL, "%s No pathhost set", LogName);
+        exit(1);
     }
     Path.used = strlen(innconf->pathhost) + 1;
     Path.size = Path.used + 1;
     Path.data = xmalloc(Path.size);
     snprintf(Path.data, Path.size, "%s!", innconf->pathhost);
     if (innconf->pathalias == NULL) {
-	Pathalias.used = 0;
-	Pathalias.data = NULL;
+        Pathalias.used = 0;
+        Pathalias.data = NULL;
     } else {
-	Pathalias.used = strlen(innconf->pathalias) + 1;
-	Pathalias.size = Pathalias.used + 1;
-	Pathalias.data = xmalloc(Pathalias.size);
-	snprintf(Pathalias.data, Pathalias.size, "%s!", innconf->pathalias);
+        Pathalias.used = strlen(innconf->pathalias) + 1;
+        Pathalias.size = Pathalias.used + 1;
+        Pathalias.data = xmalloc(Pathalias.size);
+        snprintf(Pathalias.data, Pathalias.size, "%s!", innconf->pathalias);
     }
     if (innconf->pathcluster == NULL) {
         Pathcluster.used = 0;
@@ -584,7 +603,8 @@ main(int ac, char *av[])
         Pathcluster.used = strlen(innconf->pathcluster) + 1;
         Pathcluster.size = Pathcluster.used + 1;
         Pathcluster.data = xmalloc(Pathcluster.size);
-        snprintf(Pathcluster.data, Pathcluster.size, "%s!", innconf->pathcluster);
+        snprintf(Pathcluster.data, Pathcluster.size, "%s!",
+                 innconf->pathcluster);
     }
     /* Trace history ? */
     if (innconf->stathist != NULL) {
@@ -593,9 +613,10 @@ main(int ac, char *av[])
     }
 
     i = dbzneedfilecount();
-    if (!fdreserve(3 + i)) { /* TEMPORARYOPEN, history stats, INND_HISTORY and i */
-	syslog(L_FATAL, "%s cant reserve file descriptors %m", LogName);
-	exit(1);
+    if (!fdreserve(
+            3 + i)) { /* TEMPORARYOPEN, history stats, INND_HISTORY and i */
+        syslog(L_FATAL, "%s cant reserve file descriptors %m", LogName);
+        exit(1);
     }
 
     /* Set up our permissions. */
@@ -603,14 +624,14 @@ main(int ac, char *av[])
 
     /* Become a daemon and initialize our log files. */
     if (Debug) {
-	xsignal(SIGINT, catch_terminate);
+        xsignal(SIGINT, catch_terminate);
         if (chdir(innconf->patharticles) < 0)
             sysdie("SERVER cant chdir to %s", innconf->patharticles);
     } else {
-	if (ShouldFork)
+        if (ShouldFork)
             daemonize(innconf->patharticles);
 
-	/* Open the logs.  stdout is used to log information about incoming
+        /* Open the logs.  stdout is used to log information about incoming
            articles and stderr is used to log serious error conditions (as
            well as to capture stderr from embedded filters).  Both are
            normally fully buffered. */
@@ -649,15 +670,17 @@ main(int ac, char *av[])
          * to a value different than the default setting of letting
          * the system set the number of file descriptors. */
         if (innconf->rlimitnofile > 0) {
-            syslog(LOG_WARNING, "%s number of descriptors (%d) exceeding or equaling FD_SETSIZE (%d)",
+            syslog(LOG_WARNING,
+                   "%s number of descriptors (%d) exceeding or equaling "
+                   "FD_SETSIZE (%d)",
                    LogName, i, FD_SETSIZE);
         }
-        i = FD_SETSIZE-1;
+        i = FD_SETSIZE - 1;
     }
 #endif
 
     /* There is no file descriptor limit on some hosts; for those, cap at
-       MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger. 
+       MaxOutgoing plus maxconnections plus 20, or 5000, whichever is larger.
        Otherwise, we use insane amounts of memory for the channel table.
        FIXME: Get rid of this hard-coded constant.
        (TODO: Consider implementing libevent.) */
@@ -671,27 +694,26 @@ main(int ac, char *av[])
     }
     syslog(L_NOTICE, "%s descriptors %d", LogName, i);
     if (MaxOutgoing == 0) {
-	/* getfdlimit() - (stdio + dbz + cc + lc + rc + art + fudge) */
-	MaxOutgoing = i - (  3   +  3  +  2 +  1 +  1 +  1  +  2  );
-	syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
+        /* getfdlimit() - (stdio + dbz + cc + lc + rc + art + fudge) */
+        MaxOutgoing = i - (3 + 3 + 2 + 1 + 1 + 1 + 2);
+        syslog(L_NOTICE, "%s outgoing %d", LogName, MaxOutgoing);
     }
 
     /* See if another instance is alive. */
     if (PID == NULL)
-	PID = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
+        PID = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
     if ((F = fopen(PID, "r")) != NULL) {
-	if (fgets(buff, sizeof buff, F) != NULL
-	 && ((pid = (pid_t) atol(buff)) > 0)
-	 && (kill(pid, 0) > 0 || errno != ESRCH)) {
-	    syslog(L_FATAL, "%s already_running pid %ld", LogName,
-	    (long) pid);
-	    exit(1);
-	}
-	fclose(F);
+        if (fgets(buff, sizeof buff, F) != NULL
+            && ((pid = (pid_t) atol(buff)) > 0)
+            && (kill(pid, 0) > 0 || errno != ESRCH)) {
+            syslog(L_FATAL, "%s already_running pid %ld", LogName, (long) pid);
+            exit(1);
+        }
+        fclose(F);
     }
 
     if (gettimeofday(&Now, NULL) < 0)
-	syslog(L_ERROR, "%s cant gettimeofday %m", LogName);
+        syslog(L_ERROR, "%s cant gettimeofday %m", LogName);
 
     /* Set up signal and error handlers. */
     xmalloc_error_handler = xmalloc_abort;
@@ -724,35 +746,34 @@ main(int ac, char *av[])
     if (!SMinit())
         die("SERVER cant initialize storage manager: %s", SMerrorstr);
 
-#if	defined(_DEBUG_MALLOC_INC)
+#if defined(_DEBUG_MALLOC_INC)
     m.i = 1;
     dbmallopt(MALLOC_CKCHAIN, &m);
     dbmallopt(MALLOC_CKDATA, &m);
-#endif	/* defined(_DEBUG_MALLOC_INC) */
+#endif /* defined(_DEBUG_MALLOC_INC) */
 
     /* Record our PID. */
     pid = getpid();
     if ((F = fopen(PID, "w")) == NULL) {
-	i = errno;
-	syslog(L_ERROR, "%s cant fopen %s %m", LogName, PID);
-	IOError(WHEN, i);
-    }
-    else {
-	if (fprintf(F, "%ld\n", (long)pid) == EOF || ferror(F)) {
-	    i = errno;
-	    syslog(L_ERROR, "%s cant fprintf %s %m", LogName, PID);
-	    IOError(WHEN, i);
-	}
-	if (fclose(F) == EOF) {
-	    i = errno;
-	    syslog(L_ERROR, "%s cant fclose %s %m", LogName, PID);
-	    IOError(WHEN, i);
-	}
-	if (chmod(PID, 0664) < 0) {
-	    i = errno;
-	    syslog(L_ERROR, "%s cant chmod %s %m", LogName, PID);
-	    IOError(WHEN, i);
-	}
+        i = errno;
+        syslog(L_ERROR, "%s cant fopen %s %m", LogName, PID);
+        IOError(WHEN, i);
+    } else {
+        if (fprintf(F, "%ld\n", (long) pid) == EOF || ferror(F)) {
+            i = errno;
+            syslog(L_ERROR, "%s cant fprintf %s %m", LogName, PID);
+            IOError(WHEN, i);
+        }
+        if (fclose(F) == EOF) {
+            i = errno;
+            syslog(L_ERROR, "%s cant fclose %s %m", LogName, PID);
+            IOError(WHEN, i);
+        }
+        if (chmod(PID, 0664) < 0) {
+            i = errno;
+            syslog(L_ERROR, "%s cant chmod %s %m", LogName, PID);
+            IOError(WHEN, i);
+        }
     }
 
 #if DO_PERL
@@ -764,15 +785,15 @@ main(int ac, char *av[])
     free(path2);
     PLxsinit();
     if (filter)
-	PerlFilter(true);
+        PerlFilter(true);
 #endif /* DO_PERL */
 
 #if DO_PYTHON
     PYsetup();
     if (!filter)
-	PYfilter(false);
+        PYfilter(false);
 #endif /* DO_PYTHON */
- 
+
     /* And away we go... */
     if (ShouldRenumber) {
         syslog(LOG_NOTICE, "SERVER renumbering");
