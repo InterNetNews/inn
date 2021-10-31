@@ -3,9 +3,9 @@
 #include "portable/system.h"
 
 #include "inn/confparse.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
 #include "tap/float.h"
 #include "tap/messages.h"

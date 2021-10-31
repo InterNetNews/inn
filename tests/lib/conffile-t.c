@@ -11,9 +11,8 @@
 
 /* Test valid configuration file. */
 static const char valid[] = "test \"test #te\nst\\\"\" {\n  #foo\n test\n\n}";
-static const char *const valid_tokens[] = {
-    "test", "test #te\nst\\\"", "{", "test", "}"
-};
+static const char *const valid_tokens[] = {"test", "test #te\nst\\\"", "{",
+                                           "test", "}"};
 
 /* Test error file. */
 static const char error[] = "test \"test\ntest\ntest";

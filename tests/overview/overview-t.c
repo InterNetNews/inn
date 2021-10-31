@@ -10,14 +10,14 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "inn/innconf.h"
 #include "inn/hashtab.h"
-#include "inn/messages.h"
-#include "inn/vector.h"
+#include "inn/innconf.h"
 #include "inn/libinn.h"
-#include "tap/basic.h"
+#include "inn/messages.h"
 #include "inn/ov.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
+#include "tap/basic.h"
 
 #include "../storage/buffindexed/buffindexed.h"
 #include "../storage/tradindexed/tradindexed.h"
@@ -32,10 +32,10 @@
    call depending on the overview method we're using.  We need to go through
    two macro redirections since we want to expand the OVTYPE argument. */
 #define OV_ADD(type, g, n, t, d, l, a, e) XV_ADD(type, g, n, t, d, l, a, e)
-#define XV_ADD(type, g, n, t, d, l, a, e) type ## _add(g, n, t, d, l, a, e)
+#define XV_ADD(type, g, n, t, d, l, a, e) type##_add(g, n, t, d, l, a, e)
 
 /* Used as the artificial token for all articles inserted into overview. */
-static const TOKEN faketoken = { 1, 1, "" };
+static const TOKEN faketoken = {1, 1, ""};
 
 struct group {
     char *group;
@@ -339,8 +339,7 @@ overview_verify_data(const char *data)
                  (unsigned long) arrived, artnum * 10);
             status = false;
         }
-        if (OVsearch(search, &overnum, &overview, &length, &token,
-                     &arrived)) {
+        if (OVsearch(search, &overnum, &overview, &length, &token, &arrived)) {
             warn("Unexpected article found for %s:%lu", buffer, artnum);
             status = false;
         }
@@ -568,7 +567,7 @@ main(void)
     ok(20, overview_verify_data("overview/bogus"));
     hash_free(groups);
     OVclose();
-    if (system("/bin/rm -rf ov-tmp") <0)
+    if (system("/bin/rm -rf ov-tmp") < 0)
         sysdie("Cannot rm ov-tmp");
     ok(21, true);
 

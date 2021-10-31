@@ -35,7 +35,7 @@ main(void)
     ok(3, test_pwrite(fd, buf + 64, 65, 64) == 65);
     status = read(fd, result, 64);
     ok(4, (status == 64) && !memcmp(result, buf + 64, 64));
-        
+
     if (lseek(fd, 0, SEEK_SET) == (off_t) -1)
         sysdie("Can't rewind .testout");
     status = read(fd, result, 256);

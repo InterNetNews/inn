@@ -2,9 +2,9 @@
 
 #include "portable/system.h"
 
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/tst.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
 
 /* Used for strings of unsigned characters (called SUC instead of U
@@ -35,38 +35,38 @@ main(void)
 
     tst = tst_init(2);
     ok(1, tst != NULL);
-    ok(2, tst_insert(tst, SUC"test", test, 0, NULL) == TST_OK);
-    ok_string(3, "test", tst_search(tst, SUC"test"));
-    ok(4, tst_insert(tst, SUC"test", foo, 0, &existing) == TST_DUPLICATE_KEY);
+    ok(2, tst_insert(tst, SUC "test", test, 0, NULL) == TST_OK);
+    ok_string(3, "test", tst_search(tst, SUC "test"));
+    ok(4, tst_insert(tst, SUC "test", foo, 0, &existing) == TST_DUPLICATE_KEY);
     ok_string(5, "test", existing);
-    ok(6, tst_insert(tst, SUC"test", foo, TST_REPLACE, &existing) == TST_OK);
+    ok(6, tst_insert(tst, SUC "test", foo, TST_REPLACE, &existing) == TST_OK);
     ok_string(7, "test", existing);
-    ok_string(8, "foo", tst_search(tst, SUC"test"));
-    ok(9, tst_insert(tst, SUC"testing", testing, 0, NULL) == TST_OK);
-    ok(10, tst_insert(tst, SUC"t", t, 0, NULL) == TST_OK);
-    ok(11, tst_insert(tst, SUC"Strange", Strange, 0, NULL) == TST_OK);
-    ok(12, tst_insert(tst, SUC"\231hange", change, 0, NULL) == TST_OK);
-    ok(13, tst_insert(tst, SUC"", foo, 0, NULL) == TST_NULL_KEY);
+    ok_string(8, "foo", tst_search(tst, SUC "test"));
+    ok(9, tst_insert(tst, SUC "testing", testing, 0, NULL) == TST_OK);
+    ok(10, tst_insert(tst, SUC "t", t, 0, NULL) == TST_OK);
+    ok(11, tst_insert(tst, SUC "Strange", Strange, 0, NULL) == TST_OK);
+    ok(12, tst_insert(tst, SUC "\231hange", change, 0, NULL) == TST_OK);
+    ok(13, tst_insert(tst, SUC "", foo, 0, NULL) == TST_NULL_KEY);
     ok(14, tst_insert(tst, NULL, foo, 0, NULL) == TST_NULL_KEY);
-    ok_string(15, "testing", tst_search(tst, SUC"testing"));
-    ok_string(16, "t", tst_search(tst, SUC"t"));
-    ok_string(17, "Strange", tst_search(tst, SUC"Strange"));
-    ok_string(18, "\231hange", tst_search(tst, SUC"\231hange"));
-    ok_string(19, "foo", tst_search(tst, SUC"test"));
-    ok(20, tst_search(tst, SUC"") == NULL);
-    ok(21, tst_search(tst, SUC"Peter") == NULL);
-    ok(22, tst_search(tst, SUC"foo") == NULL);
-    ok(23, tst_search(tst, SUC"te") == NULL);
-    ok_string(24, "Strange", tst_delete(tst, SUC"Strange"));
-    ok(25, tst_search(tst, SUC"Strange") == NULL);
-    ok_string(26, "t", tst_delete(tst, SUC"t"));
-    ok(27, tst_search(tst, SUC"t") == NULL);
-    ok_string(28, "testing", tst_search(tst, SUC"testing"));
-    ok_string(29, "foo", tst_search(tst, SUC"test"));
-    ok_string(30, "testing", tst_delete(tst, SUC"testing"));
-    ok_string(31, "foo", tst_search(tst, SUC"test"));
-    ok_string(32, "\231hange", tst_delete(tst, SUC"\231hange"));
-    ok_string(33, "foo", tst_delete(tst, SUC"test"));
+    ok_string(15, "testing", tst_search(tst, SUC "testing"));
+    ok_string(16, "t", tst_search(tst, SUC "t"));
+    ok_string(17, "Strange", tst_search(tst, SUC "Strange"));
+    ok_string(18, "\231hange", tst_search(tst, SUC "\231hange"));
+    ok_string(19, "foo", tst_search(tst, SUC "test"));
+    ok(20, tst_search(tst, SUC "") == NULL);
+    ok(21, tst_search(tst, SUC "Peter") == NULL);
+    ok(22, tst_search(tst, SUC "foo") == NULL);
+    ok(23, tst_search(tst, SUC "te") == NULL);
+    ok_string(24, "Strange", tst_delete(tst, SUC "Strange"));
+    ok(25, tst_search(tst, SUC "Strange") == NULL);
+    ok_string(26, "t", tst_delete(tst, SUC "t"));
+    ok(27, tst_search(tst, SUC "t") == NULL);
+    ok_string(28, "testing", tst_search(tst, SUC "testing"));
+    ok_string(29, "foo", tst_search(tst, SUC "test"));
+    ok_string(30, "testing", tst_delete(tst, SUC "testing"));
+    ok_string(31, "foo", tst_search(tst, SUC "test"));
+    ok_string(32, "\231hange", tst_delete(tst, SUC "\231hange"));
+    ok_string(33, "foo", tst_delete(tst, SUC "test"));
     ok(34, tst_search(tst, NULL) == NULL);
     ok(35, tst_delete(tst, NULL) == NULL);
     tst_cleanup(tst);

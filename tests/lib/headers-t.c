@@ -10,7 +10,7 @@
 int
 main(void)
 {
-    plan(9+3+11+8+14+7);
+    plan(9 + 3 + 11 + 8 + 14 + 7);
 
     ok(!IsValidHeaderName(NULL), "bad header field name 1");
     ok(!IsValidHeaderName(""), "bad header field name 2");

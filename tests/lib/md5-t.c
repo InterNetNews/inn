@@ -2,47 +2,48 @@
 
 #include "portable/system.h"
 
-#include "inn/md5.h"
 #include "inn/libinn.h"
+#include "inn/md5.h"
 #include "tap/basic.h"
 
 /* Used for strings of unsigned characters (called SUC instead of U
    because it otherwise conflicts with Unicode strings). */
-#define SUC       (const unsigned char *)
+#define SUC (const unsigned char *)
 
 /* An unsigned char version of strlen. */
-#define ustrlen(s)      strlen((const char *) s)
+#define ustrlen(s) strlen((const char *) s)
 
 /* Used for converting digests to hex to make them easier to deal with. */
 static const char hex[] = "0123456789abcdef";
 
+/* clang-format off */
 /* A set of data strings and resulting digests to check.  It's not easy to
    get nulls into this data structure, so data containing nulls should be
    checked separately. */
-static const unsigned char * const testdata[] = {
+static const unsigned char *const testdata[] = {
     /* First five tests of the MD5 test suite from RFC 1321. */
-    SUC"",
-    SUC"a",
-    SUC"abc",
-    SUC"message digest",
-    SUC"abcdefghijklmnopqrstuvwxyz",
+    SUC "",
+    SUC "a",
+    SUC "abc",
+    SUC "message digest",
+    SUC "abcdefghijklmnopqrstuvwxyz",
 
     /* Three real message IDs to ensure compatibility with old INN versions;
        the corresponding MD5 hashes were taken directly out of the history
        file of a server running INN 2.3. */
-    SUC"<J3Ds5.931$Vg6.7556@news01.chello.no>",
-    SUC"<sr5v7ooea6e17@corp.supernews.com>",
-    SUC"<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
+    SUC "<J3Ds5.931$Vg6.7556@news01.chello.no>",
+    SUC "<sr5v7ooea6e17@corp.supernews.com>",
+    SUC "<cancel.Y2Ds5.26391$oH5.540535@news-east.usenetserver.com>",
 
     /* Other random stuff, including high-bit characters. */
-    SUC"example.test",
-    SUC"||",
-    SUC"|||",
-    SUC"\375\277\277\277\277\276",
-    SUC"\377\277\277\277\277\277"
+    SUC "example.test",
+    SUC "||",
+    SUC "|||",
+    SUC "\375\277\277\277\277\276",
+    SUC "\377\277\277\277\277\277"
 };
 
-/* The hashes corresonding to the above data. */
+/* The hashes corresponding to the above data. */
 static const char * const testhash[] = {
     "d41d8cd98f00b204e9800998ecf8427e",
     "0cc175b9c0f1b6a831c399e269772661",
@@ -58,6 +59,7 @@ static const char * const testhash[] = {
     "c18293a6fe0a09720e841c8ebc697b97",
     "ce23eb027c63215b999b9f86d6a4f9cb"
 };
+/* clang-format on */
 
 static void
 digest2hex(const unsigned char *digest, char *result)
@@ -73,8 +75,7 @@ digest2hex(const unsigned char *digest, char *result)
 }
 
 static void
-test_md5(int n, const char *expected, const unsigned char *data,
-         size_t length)
+test_md5(int n, const char *expected, const unsigned char *data, size_t length)
 {
     unsigned char digest[16];
     char hexdigest[33];
@@ -95,8 +96,8 @@ main(void)
 
     test_init(12 + ARRAY_SIZE(testdata));
 
-    test_md5(1, "93b885adfe0da089cdf634904fd59f71", SUC"\0", 1);
-    test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", SUC"\0ab\n", 4);
+    test_md5(1, "93b885adfe0da089cdf634904fd59f71", SUC "\0", 1);
+    test_md5(2, "e94a053c3fbfcfb22b4debaa11af7718", SUC "\0ab\n", 4);
 
     data = xmalloc(64 * 1024);
     memset(data, 0, 64 * 1024);

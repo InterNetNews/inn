@@ -9,12 +9,12 @@
 
 /* We will have strings, integers, bools and lists. */
 static const char grep[] =
-"(egrep '^(mta|organization|ovmethod|hismethod|path|port|extraoverview|pgpverify)'\
+    "(egrep '^(mta|organization|ovmethod|hismethod|path|port|extraoverview|pgpverify)'\
  ../../samples/inn.conf; echo 'domain: \"news.example.org\"';\
  echo 'fromhost: \"news.example.org\"';) > config/tmp";
 
 static const char cat[] =
-"(cat ../../samples/inn.conf | egrep -v '^#(domain|fromhost)';\
+    "(cat ../../samples/inn.conf | egrep -v '^#(domain|fromhost)';\
  echo 'domain: \"news.example.org\"'; echo 'fromhost: \"news.example.org\"';)\
  > config/tmp2";
 

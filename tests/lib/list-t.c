@@ -2,9 +2,9 @@
 
 #include "portable/system.h"
 
-#include "inn/messages.h"
-#include "inn/list.h"
 #include "inn/libinn.h"
+#include "inn/list.h"
+#include "inn/messages.h"
 #include "tap/basic.h"
 
 int

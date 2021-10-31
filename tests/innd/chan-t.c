@@ -4,7 +4,7 @@
 
 #include <fcntl.h>
 #ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
+#    include <sys/time.h>
 #endif
 #include <time.h>
 
@@ -16,9 +16,9 @@
 #include "../../innd/innd.h"
 
 /* Prototypes. */
-static void reader    (CHANNEL *cp UNUSED);
-static void writedone (CHANNEL *cp UNUSED);
-static void wakeup    (CHANNEL *cp UNUSED);
+static void reader(CHANNEL *cp UNUSED);
+static void writedone(CHANNEL *cp UNUSED);
+static void wakeup(CHANNEL *cp UNUSED);
 
 /* Initialize things enough to be able to call channel functions.  This only
    has to be called once. */

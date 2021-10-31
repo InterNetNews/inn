@@ -31,7 +31,9 @@ testIsValidArticleNumber(void)
 }
 
 /* IsValidRange mutates its argument, so we must wrap it. */
-static int wrap_IsValidRange(const char *str) {
+static int
+wrap_IsValidRange(const char *str)
+{
     char buffer[256];
     assert(strlen(str) < sizeof buffer);
     strlcpy(buffer, str, sizeof buffer);
@@ -53,14 +55,15 @@ testIsValidRange(void)
     is_bool(true, wrap_IsValidRange("1-"), "unbounded above");
     is_bool(true, wrap_IsValidRange("-2147483647"), "unbounded below");
     is_bool(true, wrap_IsValidRange("2-99"), "fully bounded");
-    is_bool(true, wrap_IsValidRange("99-2"), "reverse bounds"); /* explicitly countenanced by RFC3977. */
+    is_bool(true, wrap_IsValidRange("99-2"),
+            "reverse bounds"); /* explicitly countenanced by RFC3977. */
 }
 
 
 int
 main(void)
 {
-    plan(14+12);
+    plan(14 + 12);
 
     testIsValidArticleNumber();
     testIsValidRange();

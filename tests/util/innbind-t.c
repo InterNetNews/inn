@@ -5,7 +5,7 @@
 #include "portable/socket.h"
 #include <errno.h>
 #ifdef HAVE_STREAMS_SENDFD
-# include <stropts.h>
+#    include <stropts.h>
 #endif
 #include <sys/wait.h>
 
@@ -14,7 +14,7 @@
 
 /* If SO_REUSEADDR isn't available, make calls to set_reuseaddr go away. */
 #ifndef SO_REUSEADDR
-# define set_reuseaddr(fd)      /* empty */
+#    define set_reuseaddr(fd) /* empty */
 #endif
 
 /* The path to the uninstalled innbind helper program. */
@@ -230,7 +230,7 @@ test_ipv6(int n)
     }
     return n;
 }
-#else /* !HAVE_INET6 */
+#else  /* !HAVE_INET6 */
 static int
 test_ipv6(int n)
 {
@@ -300,7 +300,7 @@ test_sendfd(int n)
     }
     return n;
 }
-#else /* !HAVE_STREAMS_SENDFD */
+#else  /* !HAVE_STREAMS_SENDFD */
 static int
 test_sendfd(int n)
 {
@@ -321,9 +321,9 @@ main(void)
 
     test_init(15);
 
-    n = test_ipv4(1);           /* Tests  1-5.  */
-    n = test_ipv6(n);           /* Tests  6-10. */
-    test_sendfd(n);         /* Tests 11-15. */
+    n = test_ipv4(1); /* Tests  1-5.  */
+    n = test_ipv6(n); /* Tests  6-10. */
+    test_sendfd(n);   /* Tests 11-15. */
 
     return 0;
 }

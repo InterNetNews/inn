@@ -31,6 +31,7 @@ bool laxmid = false;
    message ID and Path, but they have to be in the same order as in innd.c and
    the whole array has to be the same size.  Eventually, this will get moved
    into a separate file. */
+/* clang-format off */
 #define ARTHEADERINIT(name, type) { name, type, sizeof(name) - 1 }
 const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("Approved",              HTstd),
@@ -110,8 +111,21 @@ const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("Comments",              HTstd),
     ARTHEADERINIT("Jabber-ID",             HTstd),
 };
+/* clang-format on */
 
 /* Dummy functions that innd.c provides. */
-void CleanupAndExit(int status, const char *why UNUSED) { exit(status); }
-void JustCleanup(void) { }
-void ReopenLog(FILE *F UNUSED) { }
+void
+CleanupAndExit(int status, const char *why UNUSED)
+{
+    exit(status);
+}
+
+void
+JustCleanup(void)
+{
+}
+
+void
+ReopenLog(FILE *F UNUSED)
+{
+}

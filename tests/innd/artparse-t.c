@@ -4,10 +4,10 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/vector.h"
 #include "inn/wire.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
 
 #include "../../innd/innd.h"
@@ -17,34 +17,30 @@ const struct {
     const char *path;
     const char *error;
 } articles[] = {
-    { "../data/articles/1",         "" },
-    { "../data/articles/2",         "" },
-    { "../data/articles/3",         "" },
-    { "../data/articles/4",         "" },
-    { "../data/articles/5",         "" },
-    { "../data/articles/bad-msgid", "" },
-    { "../data/articles/bad-subj",  "" },
-    { "../data/articles/6",
-      "437 Article of 8193 bytes exceeds local limit of 8192 bytes" },
-    { "../data/articles/bad-empty",
-      "437 Empty headers and body" },
-    { "../data/articles/bad-hdr-nospc",
-      "437 No colon-space in \"Test:<-he: re\" header field" },
-    { "../data/articles/bad-hdr-space",
-      "437 Space before colon in \"Test\" header field" },
-    { "../data/articles/bad-hdr-trunc",
-      "437 No colon-space in \"Test:\" header field" },
-    { "../data/articles/bad-long-cont", "" }, /* Not an error for a relaying agent. */
-    { "../data/articles/bad-long-hdr", "" }, /* Not an error for a relaying agent. */
-    { "../data/articles/bad-no-body",
-      "437 No body" },
-    { "../data/articles/bad-no-header",
-      "437 No headers" },
-    { "../data/articles/bad-nul-body",
-      "437 Nul character in body" },
-    { "../data/articles/bad-nul-header",
-      "437 Nul character in header" }
-};
+    {"../data/articles/1", ""},
+    {"../data/articles/2", ""},
+    {"../data/articles/3", ""},
+    {"../data/articles/4", ""},
+    {"../data/articles/5", ""},
+    {"../data/articles/bad-msgid", ""},
+    {"../data/articles/bad-subj", ""},
+    {"../data/articles/6",
+     "437 Article of 8193 bytes exceeds local limit of 8192 bytes"},
+    {"../data/articles/bad-empty", "437 Empty headers and body"},
+    {"../data/articles/bad-hdr-nospc",
+     "437 No colon-space in \"Test:<-he: re\" header field"},
+    {"../data/articles/bad-hdr-space",
+     "437 Space before colon in \"Test\" header field"},
+    {"../data/articles/bad-hdr-trunc",
+     "437 No colon-space in \"Test:\" header field"},
+    {"../data/articles/bad-long-cont",
+     ""}, /* Not an error for a relaying agent. */
+    {"../data/articles/bad-long-hdr",
+     ""}, /* Not an error for a relaying agent. */
+    {"../data/articles/bad-no-body", "437 No body"},
+    {"../data/articles/bad-no-header", "437 No headers"},
+    {"../data/articles/bad-nul-body", "437 Nul character in body"},
+    {"../data/articles/bad-nul-header", "437 Nul character in header"}};
 
 /* Create enough of an innconf struct to be able to run ARTparse.  Set
    logipaddr to false so that we don't have to initialize enough in the

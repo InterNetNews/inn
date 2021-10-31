@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 
 #include "inn/hashtab.h"
-#include "inn/messages.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "tap/basic.h"
 
 struct wordref {
@@ -62,8 +62,7 @@ main(void)
     char *test, *testing, *strange, *change, *foo, *bar;
 
     struct wordref wordrefs[4] = {
-        { "test", 0 }, { "testing", 0 }, { "change", 0 }, { NULL, 0 }
-    };
+        {"test", 0}, {"testing", 0}, {"change", 0}, {NULL, 0}};
 
     test = xstrdup("test");
     testing = xstrdup("testing");
@@ -71,8 +70,8 @@ main(void)
     change = xstrdup("change");
 
     test_init(38);
-    hash = hash_create(4, hash_string, string_key, string_equal,
-                       string_delete);
+    hash =
+        hash_create(4, hash_string, string_key, string_equal, string_delete);
     ok(1, hash != NULL);
     if (hash == NULL)
         die("Unable to create hash, cannot continue");
@@ -126,8 +125,8 @@ main(void)
     change = xstrdup("change");
     foo = xstrdup("foo");
     bar = xstrdup("bar");
-    hash = hash_create(5, hash_string, string_key, string_equal,
-                       string_delete);
+    hash =
+        hash_create(5, hash_string, string_key, string_equal, string_delete);
     ok(29, hash != NULL);
     if (hash == NULL)
         die("Unable to create hash, cannot continue");
@@ -148,8 +147,8 @@ main(void)
         exit(0);
     }
 
-    hash = hash_create(4, hash_string, string_key, string_equal,
-                       string_delete);
+    hash =
+        hash_create(4, hash_string, string_key, string_equal, string_delete);
     reported = false;
     if (hash == NULL)
         reported = true;

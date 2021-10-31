@@ -12,11 +12,9 @@ static void command_1(struct cvector *, void *);
 static void command_4(struct cvector *, void *);
 
 /* Test command dispatch table. */
-const struct dispatch commands[] = {
-    { "0", command_0, 0, 0, NULL },
-    { "1", command_1, 1, 1, NULL },
-    { "4", command_4, 2, 4, NULL }
-};
+const struct dispatch commands[] = {{"0", command_0, 0, 0, NULL},
+                                    {"1", command_1, 1, 1, NULL},
+                                    {"4", command_4, 2, 4, NULL}};
 
 /* Global string indicating the last command handler that was called. */
 static const char *last_handler = NULL;

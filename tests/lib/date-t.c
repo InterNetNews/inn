@@ -9,21 +9,21 @@
 #include "tap/string.h"
 
 static const time_t test_times[] = {
-    28800UL,                    /* Thu,  1 Jan 1970 00:00:00 -0800 (PST) */
-    362762400UL,                /* Tue, 30 Jun 1981 15:20:00 +0000 (UTC) */
-    396977449UL,                /* Sat, 31 Jul 1982 15:30:49 +0000 (UTC) */
-    825597049UL,                /* Thu, 29 Feb 1996 12:30:49 +0000 (UTC) */
-    850435199UL,                /* Thu, 12 Dec 1996 23:59:59 +0000 (UTC) */
-    852101999UL,                /* Wed,  1 Jan 1997 06:59:59 +0000 (UTC) */
-    934288249UL,                /* Tue, 10 Aug 1999 12:30:49 +0000 (UTC) */
-    946684800UL,                /* Sat,  1 Jan 2000 00:00:00 +0000 (UTC) */
-    946713599UL,                /* Fri, 31 Dec 1999 23:59:59 -0800 (PST) */
-    946713600UL,                /* Sat,  1 Jan 2000 00:00:00 -0800 (PST) */
-    951827449UL,                /* Tue, 29 Feb 2000 12:30:49 +0000 (UTC) */
-    954669599UL,                /* Sun,  2 Apr 2000 01:59:59 -0800 (PST) */
-    954669600UL,                /* Sun,  2 Apr 2000 03:00:00 -0700 (PDT) */
-    967707668UL,                /* Thu, 31 Aug 2000 07:41:08 +0000 (UTC) */
-    972813600UL                 /* Sun, 29 Oct 2000 02:00:00 -0800 (PST) */
+    28800UL,     /* Thu,  1 Jan 1970 00:00:00 -0800 (PST) */
+    362762400UL, /* Tue, 30 Jun 1981 15:20:00 +0000 (UTC) */
+    396977449UL, /* Sat, 31 Jul 1982 15:30:49 +0000 (UTC) */
+    825597049UL, /* Thu, 29 Feb 1996 12:30:49 +0000 (UTC) */
+    850435199UL, /* Thu, 12 Dec 1996 23:59:59 +0000 (UTC) */
+    852101999UL, /* Wed,  1 Jan 1997 06:59:59 +0000 (UTC) */
+    934288249UL, /* Tue, 10 Aug 1999 12:30:49 +0000 (UTC) */
+    946684800UL, /* Sat,  1 Jan 2000 00:00:00 +0000 (UTC) */
+    946713599UL, /* Fri, 31 Dec 1999 23:59:59 -0800 (PST) */
+    946713600UL, /* Sat,  1 Jan 2000 00:00:00 -0800 (PST) */
+    951827449UL, /* Tue, 29 Feb 2000 12:30:49 +0000 (UTC) */
+    954669599UL, /* Sun,  2 Apr 2000 01:59:59 -0800 (PST) */
+    954669600UL, /* Sun,  2 Apr 2000 03:00:00 -0700 (PDT) */
+    967707668UL, /* Thu, 31 Aug 2000 07:41:08 +0000 (UTC) */
+    972813600UL  /* Sun, 29 Oct 2000 02:00:00 -0800 (PST) */
 };
 
 /* Used to hold dates for testing parsedate_rfc5322. */
@@ -32,6 +32,7 @@ struct test_date {
     time_t result;
 };
 
+/* clang-format off */
 static const struct test_date test_dates[] = {
     { "Thu, 20 May 2004 23:43:29 +0000 (UTC)",   1085096609UL },
     { "FRI, 21 MAY 2004 11:19:57 GMT",           1085138397UL },
@@ -75,6 +76,7 @@ static const struct test_date test_dates_lax[] = {
     { "Sat, 22 May 2004 23:41:27 -0700 EST",     1085287287UL },
     { "21 Apr 1998 15:42:04 and other bits",      893173324UL }
 };
+/* clang-format on */
 
 static void
 ok_time(int n, time_t wanted, time_t seen)
@@ -83,8 +85,8 @@ ok_time(int n, time_t wanted, time_t seen)
         ok(n, true);
     else {
         ok(n, false);
-        diag("wanted %lu seen %lu\n",
-             (unsigned long) wanted, (unsigned long) seen);
+        diag("wanted %lu seen %lu\n", (unsigned long) wanted,
+             (unsigned long) seen);
     }
 }
 
@@ -105,20 +107,20 @@ check_nntp(int *n, time_t timestamp)
 
     tmp_tm = localtime(&timestamp);
     tm = *tmp_tm;
-    basprintf(&date, "%02d%02d%02d",
-              tm.tm_year % 100, tm.tm_mon + 1, tm.tm_mday);
+    basprintf(&date, "%02d%02d%02d", tm.tm_year % 100, tm.tm_mon + 1,
+              tm.tm_mday);
     basprintf(&hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, true);
     free(date);
-    basprintf(&date, "%04d%02d%02d",
-              tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    basprintf(&date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
+              tm.tm_mday);
     ok_nntp((*n)++, timestamp, date, hour, true);
     free(date);
     free(hour);
     tmp_tm = gmtime(&timestamp);
     tm = *tmp_tm;
-    basprintf(&date, "%04d%02d%02d",
-              tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+    basprintf(&date, "%04d%02d%02d", tm.tm_year + 1900, tm.tm_mon + 1,
+              tm.tm_mday);
     basprintf(&hour, "%02d%02d%02d", tm.tm_hour, tm.tm_min, tm.tm_sec);
     ok_nntp((*n)++, timestamp, date, hour, false);
     free(date);
@@ -165,9 +167,7 @@ main(void)
     char PST8PDT[] = "TZ=PST8PDT";
     char Newfoundland[] = "TZ=Canada/Newfoundland";
 
-    test_init(44
-              + ARRAY_SIZE(test_times) * 3 + 3
-              + ARRAY_SIZE(test_dates) * 2
+    test_init(44 + ARRAY_SIZE(test_times) * 3 + 3 + ARRAY_SIZE(test_dates) * 2
               + ARRAY_SIZE(test_dates_lax) * 2);
 
     now = time(NULL);
@@ -223,6 +223,7 @@ main(void)
     putenv(PST8PDT);
     tzset();
 
+    /* clang-format off */
     ok_nntp(18, (time_t) -1, "20000132", "000000", false);
     ok_nntp(19, (time_t) -1, "20000132", "000000", true);
     ok_nntp(20, (time_t) -1, "20000230", "000000", false);
@@ -244,6 +245,7 @@ main(void)
     ok_nntp(36, (time_t) -1, "20000101", "1111111", false);
     ok_nntp(37, (time_t) -1, "200001a1", "000000", false);
     ok_nntp(38, (time_t) -1, "20000101", "00a000", false);
+    /* clang-format on */
 
     /* Times around the fall daylight savings change are ambiguous; accept
        either of the possible interpretations, but make sure we get one or

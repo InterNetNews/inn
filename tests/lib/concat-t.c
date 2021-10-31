@@ -34,6 +34,7 @@ main(void)
 {
     plan(13);
 
+    /* clang-format off */
     is_string("a",     concat("a",                   END), "concat 1");
     is_string("ab",    concat("a", "b",              END), "concat 2");
     is_string("ab",    concat("ab", "",              END), "concat 3");
@@ -48,6 +49,7 @@ main(void)
     is_string("/bar/baz/foo/bar", concatpath("/bar/baz", "foo/bar"), "path 4");
     is_string("./foo",            concatpath(NULL, "foo"),           "path 5");
     is_string("/foo/bar",         concatpath(NULL, "/foo/bar"),      "path 6");
+    /* clang-format on */
 
     return 0;
 }

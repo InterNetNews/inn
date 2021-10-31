@@ -8,9 +8,9 @@
 int
 main(void)
 {
-    static const unsigned char d1[] = { '\0', '\377', '\377', '\0' };
-    static const unsigned char d2[] = { '\1', '\2', '\276', '\277' };
-    static const unsigned char d3[] = { '\17', '\160', '\0', '\0' };
+    static const unsigned char d1[] = {'\0', '\377', '\377', '\0'};
+    static const unsigned char d2[] = {'\1', '\2', '\276', '\277'};
+    static const unsigned char d3[] = {'\17', '\160', '\0', '\0'};
     static const char t1[] = "00FFFF00";
     static const char t2[] = "0102BEBF";
     static const char t3[] = "0F7!!!";

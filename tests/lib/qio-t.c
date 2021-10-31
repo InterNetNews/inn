@@ -8,8 +8,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "inn/qio.h"
 #include "inn/libinn.h"
+#include "inn/qio.h"
 #include "tap/basic.h"
 
 
@@ -93,7 +93,7 @@ main(void)
         success = success && !memcmp(result + i * 256, data, 255);
         ok(success, "Read largest possible line");
     }
-    is_int(QIOtell(qio), (off_t) (2 * QIO_BUFFERSIZE), "QIOtell is correct");
+    is_int(QIOtell(qio), (off_t)(2 * QIO_BUFFERSIZE), "QIOtell is correct");
     result = QIOread(qio);
     ok(!QIOerror(qio), "No error on reading an empty line");
     is_int(QIOlength(qio), 0, "Length of the line is 0");
@@ -107,7 +107,7 @@ main(void)
         success = success && !memcmp(result + i * 256, data, 255);
         ok(success, "Read largest line again");
     }
-    is_int(QIOtell(qio), (off_t) (3 * QIO_BUFFERSIZE + 1),
+    is_int(QIOtell(qio), (off_t)(3 * QIO_BUFFERSIZE + 1),
            "QIOtell is correct");
     result = QIOread(qio);
     ok(!QIOerror(qio), "No error on a shorter read");
@@ -120,7 +120,7 @@ main(void)
                    && !strcmp(result, (char *) out));
     }
     ok(success, "Able to read another batch of lines");
-    is_int(QIOtell(qio), (off_t) (4 * QIO_BUFFERSIZE + 129),
+    is_int(QIOtell(qio), (off_t)(4 * QIO_BUFFERSIZE + 129),
            "QIOtell is correct");
     result = QIOread(qio);
     ok(!result, "Failed to read too long of line");

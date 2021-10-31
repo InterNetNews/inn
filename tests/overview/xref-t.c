@@ -7,16 +7,16 @@
 #include <sys/uio.h>
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
-#include "inn/wire.h"
-#include "inn/vector.h"
-#include "inn/libinn.h"
-#include "tap/basic.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
+#include "inn/wire.h"
+#include "tap/basic.h"
 
 /* Used as the artificial token for all articles inserted into overview. */
-static const TOKEN faketoken = { 1, 1, "" };
+static const TOKEN faketoken = {1, 1, ""};
 
 /* Build a stripped-down innconf struct that contains only those settings that
    the overview backend cares about. */
@@ -133,7 +133,8 @@ overview_load(int n, const char *data, struct overview *overview)
             *p = '\0';
             artnum = strtoul(p + 1, NULL, 10);
             search = overview_search_open(overview, group, artnum, artnum);
-            if (search == NULL || !overview_search(overview, search, &article)) {
+            if (search == NULL
+                || !overview_search(overview, search, &article)) {
                 ok_block(n, 4, false);
                 n += 4;
             } else {
@@ -181,7 +182,7 @@ main(void)
 {
     int n, count;
     struct overview *overview;
-    struct overview_group group = { 0, 0, 0, NF_FLAG_OK };
+    struct overview_group group = {0, 0, 0, NF_FLAG_OK};
     bool value;
     char *article, *wire;
     size_t size;

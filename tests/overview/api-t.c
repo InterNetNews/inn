@@ -6,17 +6,17 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "inn/innconf.h"
 #include "inn/hashtab.h"
+#include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/overview.h"
-#include "inn/vector.h"
-#include "inn/libinn.h"
-#include "tap/basic.h"
 #include "inn/storage.h"
+#include "inn/vector.h"
+#include "tap/basic.h"
 
 /* Used as the artificial token for all articles inserted into overview. */
-static const TOKEN faketoken = { 1, 1, "" };
+static const TOKEN faketoken = {1, 1, ""};
 
 struct group {
     char *group;
@@ -159,7 +159,7 @@ overview_load(const char *data, struct overview *overview)
     char buffer[4096];
     char *start;
     unsigned long artnum;
-    struct overview_group stats = { 0, 0, 0, NF_FLAG_OK };
+    struct overview_group stats = {0, 0, 0, NF_FLAG_OK};
     struct overview_data article;
 
     /* Run through the overview data.  Each time we see a group, we update our
@@ -238,13 +238,13 @@ overview_verify_groups(void *data, void *cookie)
         return;
     }
     if (stats.low != group->low) {
-        warn("Low article wrong for %s: %lu != %lu", group->group,
-             stats.low, group->low);
+        warn("Low article wrong for %s: %lu != %lu", group->group, stats.low,
+             group->low);
         verify->status = false;
     }
     if (stats.high != group->high) {
-        warn("High article wrong for %s: %lu != %lu", group->group,
-             stats.high, group->high);
+        warn("High article wrong for %s: %lu != %lu", group->group, stats.high,
+             group->high);
         verify->status = false;
     }
     if (stats.count != group->count) {

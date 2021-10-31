@@ -5,9 +5,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/wire.h"
-#include "inn/libinn.h"
 #include "tap/basic.h"
 
 /* Read in a file and return the contents in newly allocated memory.  Fills in
@@ -113,7 +113,8 @@ main(void)
     ok(27, wire_findbody(article, st.st_size) == NULL);
     p = wire_findheader(article, st.st_size, "message-id", true);
     ok(28, strncmp(p, "<bad-body@example.com>\r\n",
-                   strlen("<bad-body@example.com>\r\n")) == 0);
+                   strlen("<bad-body@example.com>\r\n"))
+               == 0);
     end = wire_endheader(p, article + st.st_size - 1);
     ok(29, end == article + st.st_size - 1);
     ok(30, wire_nextline(p, article + st.st_size - 1) == NULL);
