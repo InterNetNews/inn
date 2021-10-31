@@ -2030,7 +2030,7 @@ ovdb_add(const char *group, ARTNUM artnum, TOKEN token, char *data, int len,
 
             /* The following line is mostly paranoia. Just want to make sure
                that the first byte is 0 (it should be 0 anyway), so ovdb_search
-               recognizes this as compressed data.  */
+               recognizes this as compressed data. */
             *(databuf + sizeof(struct ovdata)) = 0;
 
             len = c_sz + sizeof(struct ovdata) + sizeof(uint32_t);

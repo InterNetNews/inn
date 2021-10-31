@@ -2,7 +2,7 @@
    This code has only been tested on Solaris and may not work on other
    platforms.
 
-   Contributed by Alex Kiernan <alexk@demon.net>.  */
+   Contributed by Alex Kiernan <alexk@demon.net>. */
 
 #include <errno.h>
 #include <fcntl.h>

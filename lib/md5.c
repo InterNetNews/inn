@@ -74,7 +74,7 @@
      least one bit and at most 512 bits are appended.
 
    Let the compiler zero the remainder of the array for us, guaranteed by
-   ISO C99 6.7.8 paragraph 21.  */
+   ISO C99 6.7.8 paragraph 21. */
 static const unsigned char padding[MD5_CHUNKSIZE] = {0x80, 0 /* 0, ... */};
 
 /* Internal prototypes. */

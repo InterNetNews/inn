@@ -39,7 +39,7 @@ typedef enum
 typedef struct {
     /* Whether to write to the filesystem in addition to updating the incore
        copy.  This will replace a single large write to disk when dbzsync is
-       called.  */
+       called. */
     bool writethrough;
     /* Whether to do hash lookups from disk, memory or a mmap'ed file */
     dbz_incore_val pag_incore;

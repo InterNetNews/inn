@@ -65,8 +65,7 @@ server_init(char *host, int port)
 }
 
 
-#define CANTPOST \
-    "NOTE: This machine does not have permission to post articles"
+#define CANTPOST "NOTE: This machine does not have permission to post articles"
 #define CANTUSE \
     "This machine does not have permission to use the %s news server.\n"
 /*

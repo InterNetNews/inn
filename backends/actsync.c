@@ -1922,7 +1922,7 @@ output_grps(struct grp *grp, int grplen)
     same = 0;
     ignore = 0;
     for (i = 0; i < grplen; ++i) {
-        /* skip non-output ...  */
+        /* skip non-output... */
         if (grp[i].output == 0) {
             if (grp[i].hostid == HOSTID1) {
                 ++ignore;

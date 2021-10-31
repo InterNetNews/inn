@@ -416,7 +416,7 @@ RateLimit(long *sleeptime, char *path)
         return 0;
     }
     /* Just because yer paranoid doesn't mean they ain't out ta get ya.
-     * This is called paranoid clipping.  */
+     * This is called paranoid clipping. */
     if (prevn < 0L)
         prevn = 0L;
     if (prevsleep < 0L)
@@ -627,7 +627,7 @@ CMDstarttls(int ac UNUSED, char *av[] UNUSED)
 
     /* Must flush our buffers before starting TLS. */
 
-    result = tls_start_servertls(0,  /* Read.  */
+    result = tls_start_servertls(0,  /* Read. */
                                  1); /* Write. */
     if (result == -1) {
         /* No reply because we have already sent NNTP_CONT_STARTTLS.

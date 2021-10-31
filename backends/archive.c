@@ -227,7 +227,7 @@ build_path(const char *group, const char *number, struct config *config,
 {
     char *p;
 
-    /* Initialize the path buffer to config-root followed by /.  */
+    /* Initialize the path buffer to config-root followed by /. */
     if (path == NULL)
         path = buffer_new();
     buffer_set(path, config->root, strlen(config->root));

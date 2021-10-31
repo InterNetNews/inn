@@ -301,7 +301,7 @@ check_data(const char *group, ARTNUM artnum, const char *expected,
 
     /* expires is always 0 for right now because the underlying API doesn't
        return it; this will change when the new API has been pushed all the
-       way down to the overview implementations.  */
+       way down to the overview implementations. */
     expires = (artnum % 5 == 0) ? artnum * 100 : artnum;
     if (data->expires != 0) {
         warn("Expires time wrong for %s:%lu: %lu != %lu", group, artnum,
