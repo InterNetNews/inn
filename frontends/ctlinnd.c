@@ -9,9 +9,9 @@
 #include <sys/stat.h>
 
 #include "inn/innconf.h"
-#include "inn/messages.h"
 #include "inn/inndcomm.h"
 #include "inn/libinn.h"
+#include "inn/messages.h"
 #include "inn/paths.h"
 
 
@@ -21,12 +21,13 @@
 typedef struct _COMMAND {
     const char *Command;
     const char *Text;
-    int		argc;
-    char	Letter;
-    bool	Glue;
+    int argc;
+    char Letter;
+    bool Glue;
 } COMMAND;
 
 
+/* clang-format off */
 static COMMAND	Commands[] = {
     {	"addhist",	"id arr exp post token...\tAdd history line",
 	5,	SC_ADDHIST,	true	},
@@ -109,10 +110,10 @@ static COMMAND	Commands[] = {
     {	"xexec",	"path\t\t\tExec new server",
 	1,	SC_XEXEC,	false	}
 };
+/* clang-format on */
 
-
-static void Usage(const char *) __attribute__ ((__noreturn__));
-static void WrongArgs(COMMAND *) __attribute__ ((__noreturn__));
+static void Usage(const char *) __attribute__((__noreturn__));
+static void WrongArgs(COMMAND *) __attribute__((__noreturn__));
 
 
 /*
@@ -121,22 +122,22 @@ static void WrongArgs(COMMAND *) __attribute__ ((__noreturn__));
 static void
 Help(char *p)
 {
-    COMMAND	*cp;
+    COMMAND *cp;
 
     if (p == NULL) {
-	printf("Command summary:\n");
-	for (cp = Commands; cp < ARRAY_END(Commands); cp++)
-	    printf("  %s %s\n", cp->Command, cp->Text);
-	printf("*   Empty string means all sites/groups/etc.\n");
-	printf("... All trailing words are glued together.\n");
-	exit(0);
+        printf("Command summary:\n");
+        for (cp = Commands; cp < ARRAY_END(Commands); cp++)
+            printf("  %s %s\n", cp->Command, cp->Text);
+        printf("*   Empty string means all sites/groups/etc.\n");
+        printf("... All trailing words are glued together.\n");
+        exit(0);
     }
     for (cp = Commands; cp < ARRAY_END(Commands); cp++)
-	if (strcmp(p, cp->Command) == 0) {
-	    printf("Command usage:\n");
-	    printf("  %s %s\n", cp->Command, cp->Text);
-	    exit(0);
-	}
+        if (strcmp(p, cp->Command) == 0) {
+            printf("Command usage:\n");
+            printf("  %s %s\n", cp->Command, cp->Text);
+            exit(0);
+        }
     printf("No such command.\n");
     exit(0);
 }
@@ -180,21 +181,22 @@ Usage(const char *what)
 }
 
 
-int main(int ac, char *av[])
+int
+main(int ac, char *av[])
 {
-    static char		Y[] = NF_FLAG_OK_STRING;
-    static char		EMPTY[] = "";
-    COMMAND	        *cp;
-    char	        *p;
-    int	                i;
-    bool		Silent;
-    bool		NeedHelp;
-    char		*reply;
-    char		*new;
-    int			length;
-    char		*nv[4];
-    struct stat		Sb;
-    char		buff[SMBUF];
+    static char Y[] = NF_FLAG_OK_STRING;
+    static char EMPTY[] = "";
+    COMMAND *cp;
+    char *p;
+    int i;
+    bool Silent;
+    bool NeedHelp;
+    char *reply;
+    char *new;
+    int length;
+    char *nv[4];
+    struct stat Sb;
+    char buff[SMBUF];
 
     /* First thing, set up our identity. */
     message_program_name = "ctlinnd";
@@ -208,131 +210,129 @@ int main(int ac, char *av[])
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "hst:")) != EOF)
-	switch (i) {
-	default:
-	    Usage("bad flags");
-	    /* NOTREACHED */
-	case 'h':		/* Get help			*/
-	    NeedHelp = true;
-	    break;
-	case 's':		/* Silent -- no output		*/
-	    Silent = true;
-	    break;
-	case 't':		/* Time to wait for reply	*/
-	    ICCsettimeout(atoi(optarg));
-	    break;
-	}
+        switch (i) {
+        default:
+            Usage("bad flags");
+            /* NOTREACHED */
+        case 'h': /* Get help */
+            NeedHelp = true;
+            break;
+        case 's': /* Silent -- no output */
+            Silent = true;
+            break;
+        case 't': /* Time to wait for reply */
+            ICCsettimeout(atoi(optarg));
+            break;
+        }
     ac -= optind;
     av += optind;
     if (NeedHelp)
-	Help(av[0]);
+        Help(av[0]);
     if (ac == 0)
-	Usage("missing command");
+        Usage("missing command");
 
     /* Look up the command word and move to the arguments. */
     if (strcmp(av[0], "help") == 0)
-	Help(av[1]);
+        Help(av[1]);
     for (cp = Commands; cp < ARRAY_END(Commands); cp++)
-	if (strcmp(av[0], cp->Command) == 0)
-	    break;
+        if (strcmp(av[0], cp->Command) == 0)
+            break;
     if (cp == ARRAY_END(Commands))
-	Usage("unknown command");
+        Usage("unknown command");
     ac--;
     av++;
 
     /* Check argument count. */
     if (cp->Letter == SC_NEWGROUP) {
-	/* Newgroup command has defaults. */
-	switch (ac) {
-	default:
-	    WrongArgs(cp);
-	    /* NOTREACHED */
-	case 1:
-	    nv[0] = av[0];
-	    nv[1] = Y;
-	    nv[2] = EMPTY;
-	    nv[3] = NULL;
-	    av = nv;
-	    break;
-	case 2:
-	    nv[0] = av[0];
-	    nv[1] = av[1];
-	    nv[2] = EMPTY;
-	    nv[3] = NULL;
-	    av = nv;
-	    break;
-	case 3:
-	    break;
-	}
-    }
-    else if (ac > cp->argc && cp->Glue) {
-	/* Glue any extra words together. */
-	for (length = 0, i = cp->argc - 1; (p = av[i++]) != NULL; )
-	    length += strlen(p) + 1;
+        /* Newgroup command has defaults. */
+        switch (ac) {
+        default:
+            WrongArgs(cp);
+            /* NOTREACHED */
+        case 1:
+            nv[0] = av[0];
+            nv[1] = Y;
+            nv[2] = EMPTY;
+            nv[3] = NULL;
+            av = nv;
+            break;
+        case 2:
+            nv[0] = av[0];
+            nv[1] = av[1];
+            nv[2] = EMPTY;
+            nv[3] = NULL;
+            av = nv;
+            break;
+        case 3:
+            break;
+        }
+    } else if (ac > cp->argc && cp->Glue) {
+        /* Glue any extra words together. */
+        for (length = 0, i = cp->argc - 1; (p = av[i++]) != NULL;)
+            length += strlen(p) + 1;
         new = xmalloc(length);
         *new = '\0';
-	for (i = cp->argc - 1; av[i]; i++) {
-	    if (i >= cp->argc)
+        for (i = cp->argc - 1; av[i]; i++) {
+            if (i >= cp->argc)
                 strlcat(new, " ", length);
             strlcat(new, av[i], length);
-	}
-	av[cp->argc - 1] = new;
-	av[cp->argc] = NULL;
-    }
-    else if (ac != cp->argc)
-	/* All other commands must have the right number of arguments. */
-	WrongArgs(cp);
+        }
+        av[cp->argc - 1] = new;
+        av[cp->argc] = NULL;
+    } else if (ac != cp->argc)
+        /* All other commands must have the right number of arguments. */
+        WrongArgs(cp);
 
     /* For newgroup and changegroup, make sure the mode is valid. */
     if (cp->Letter == SC_NEWGROUP || cp->Letter == SC_CHANGEGROUP) {
-	switch (av[1][0]) {
-	default:
-	    Usage("Bad group mode");
-	    /* NOTREACHED */
-	case NF_FLAG_ALIAS:
-	case NF_FLAG_JUNK:
-	case NF_FLAG_MODERATED:
-	case NF_FLAG_OK:
-	case NF_FLAG_NOLOCAL:
-	case NF_FLAG_IGNORE:
-	    break;
-	}
+        switch (av[1][0]) {
+        default:
+            Usage("Bad group mode");
+            /* NOTREACHED */
+        case NF_FLAG_ALIAS:
+        case NF_FLAG_JUNK:
+        case NF_FLAG_MODERATED:
+        case NF_FLAG_OK:
+        case NF_FLAG_NOLOCAL:
+        case NF_FLAG_IGNORE:
+            break;
+        }
     }
 
     /* Make sure there are no separators in the parameters. */
-    for (i = 0; (p = av[i++]) != NULL; )
-	if (strchr(p, SC_SEP) != NULL)
+    for (i = 0; (p = av[i++]) != NULL;)
+        if (strchr(p, SC_SEP) != NULL)
             die("illegal character \\%03o in %s", SC_SEP, p);
 
     /* Do the real work. */
     if (ICCopen() < 0)
-	Failed("setup communication");
+        Failed("setup communication");
     i = ICCcommand(cp->Letter, (const char **) av, &reply);
     if (i < 0) {
-	i = errno;
-	p = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
-	if (stat(p, &Sb) < 0)
+        i = errno;
+        p = concatpath(innconf->pathrun, INN_PATH_SERVERPID);
+        if (stat(p, &Sb) < 0)
             warn("no innd.pid file; did server die?");
         free(p);
-	snprintf(buff, sizeof(buff), "send \"%s\" command", cp->Command);
-	errno = i;
-	Failed(buff);
+        snprintf(buff, sizeof(buff), "send \"%s\" command", cp->Command);
+        errno = i;
+        Failed(buff);
     }
 
     if (reply) {
-	/* Skip "<exitcode><space>" part of reply. */
-	for (p = reply; *p && isdigit((unsigned char) *p); p++)
-	    continue;
-	while (*p && ISWHITE(*p))
-	    p++;
-	if (i != 0)
+        /* Skip "<exitcode><space>" part of reply. */
+        for (p = reply; *p && isdigit((unsigned char) *p); p++)
+            continue;
+        while (*p && ISWHITE(*p))
+            p++;
+        if (i != 0)
             warn("%s", p);
-	else if (!Silent)
-	    printf("%s\n", p);
+        else if (!Silent)
+            printf("%s\n", p);
     }
 
     if (ICCclose() < 0)
-	Failed("end communication");
+        Failed("end communication");
 
     exit(i);
     /* NOTREACHED */

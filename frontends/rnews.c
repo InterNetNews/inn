@@ -12,9 +12,9 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <syslog.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <syslog.h>
 
 #include "inn/fdflag.h"
 #include "inn/innconf.h"
@@ -33,34 +33,36 @@ typedef struct _HEADER {
 } HEADER;
 
 
-static bool     additionalUnpackers = true;
-static bool     backupBad = false;
-static bool     logDuplicates = false;
-static bool     Verbose = false;
-static const char	*InputFile = "stdin";
-static char	*UUCPHost;
-static char	*PathBadNews = NULL;
-static char	*remoteServer;
-static FILE	*FromServer;
-static FILE	*ToServer;
-static char	UNPACK[] = "gzip";
-static HEADER	RequiredHeaders[] = {
-    { "Message-ID",	10 },
-#define _messageid	0
-    { "Newsgroups",	10 },
-#define _newsgroups	1
-    { "From",		 4 },
-#define _from		2
-    { "Date",		 4 },
-#define _date		3
-    { "Subject",	 7 },
-#define _subject	4
-    { "Path",		 4 },
-#define _path		5
+static bool additionalUnpackers = true;
+static bool backupBad = false;
+static bool logDuplicates = false;
+static bool Verbose = false;
+static const char *InputFile = "stdin";
+static char *UUCPHost;
+static char *PathBadNews = NULL;
+static char *remoteServer;
+static FILE *FromServer;
+static FILE *ToServer;
+static char UNPACK[] = "gzip";
+/* clang-format off */
+static HEADER RequiredHeaders[] = {
+    {"Message-ID", 10},
+#define _messageid      0
+    {"Newsgroups", 10},
+#define _newsgroups     1
+    {"From",        4},
+#define _from           2
+    {"Date",        4},
+#define _date           3
+    {"Subject",     7},
+#define _subject        4
+    {"Path",        4},
+#define _path           5
 };
-#define IS_MESGID(hp)	((hp) == &RequiredHeaders[_messageid])
-#define IS_PATH(hp)	((hp) == &RequiredHeaders[_path])
+/* clang-format on */
 
+#define IS_MESGID(hp) ((hp) == &RequiredHeaders[_messageid])
+#define IS_PATH(hp)   ((hp) == &RequiredHeaders[_path])
 
 
 /*
@@ -70,9 +72,9 @@ static HEADER	RequiredHeaders[] = {
 static int
 StartChild(int fd, const char *path, const char *argv[])
 {
-    int		pan[2];
-    int		i;
-    pid_t	pid;
+    int pan[2];
+    int i;
+    pid_t pid;
 
     /* Create a pipe. */
     if (pipe(pan) < 0)
@@ -80,39 +82,39 @@ StartChild(int fd, const char *path, const char *argv[])
 
     /* Get a child. */
     for (i = 0; (pid = fork()) < 0; i++) {
-	if (i == (long) innconf->maxforks) {
+        if (i == (long) innconf->maxforks) {
             syswarn("cannot fork %s, spooling", path);
-	    return -1;
-	}
+            return -1;
+        }
         notice("cannot fork %s, waiting", path);
-	sleep(60);
+        sleep(60);
     }
 
     /* Run the child, with redirection. */
     if (pid == 0) {
-	close(pan[PIPE_READ]);
+        close(pan[PIPE_READ]);
 
-	/* Stdin comes from our old input. */
-	if (fd != STDIN_FILENO) {
-	    if ((i = dup2(fd, STDIN_FILENO)) != STDIN_FILENO) {
+        /* Stdin comes from our old input. */
+        if (fd != STDIN_FILENO) {
+            if ((i = dup2(fd, STDIN_FILENO)) != STDIN_FILENO) {
                 syswarn("cannot dup2 %d to 0, got %d", fd, i);
-		_exit(1);
-	    }
-	    close(fd);
-	}
+                _exit(1);
+            }
+            close(fd);
+        }
 
-	/* Stdout goes down the pipe. */
-	if (pan[PIPE_WRITE] != STDOUT_FILENO) {
-	    if ((i = dup2(pan[PIPE_WRITE], STDOUT_FILENO)) != STDOUT_FILENO) {
+        /* Stdout goes down the pipe. */
+        if (pan[PIPE_WRITE] != STDOUT_FILENO) {
+            if ((i = dup2(pan[PIPE_WRITE], STDOUT_FILENO)) != STDOUT_FILENO) {
                 syswarn("cannot dup2 %d to 1, got %d", pan[PIPE_WRITE], i);
-		_exit(1);
-	    }
-	    close(pan[PIPE_WRITE]);
-	}
+                _exit(1);
+            }
+            close(pan[PIPE_WRITE]);
+        }
 
-	execv(path, (char * const *)argv);
+        execv(path, (char *const *) argv);
         syswarn("cannot execv %s", path);
-	_exit(1);
+        _exit(1);
     }
 
     close(pan[PIPE_WRITE]);
@@ -140,19 +142,18 @@ WaitForChildren(int n)
 }
 
 
-
-
 /*
 **  Clean up the NNTP escapes from a line.
 */
-static char *REMclean(char *buff)
+static char *
+REMclean(char *buff)
 {
-    char	*p;
+    char *p;
 
     if ((p = strchr(buff, '\r')) != NULL)
-	*p = '\0';
+        *p = '\0';
     if ((p = strchr(buff, '\n')) != NULL)
-	*p = '\0';
+        *p = '\0';
 
     /* The dot-escape is only in text, not command responses. */
     return buff;
@@ -171,22 +172,22 @@ Reject(const char *article, size_t length UNUSED, const char *reason,
     int fd;
 
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     notice(reason, arg);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     if (Verbose) {
-	fprintf(stderr, "%s: ", InputFile);
+        fprintf(stderr, "%s: ", InputFile);
 #if __GNUC__ > 4
-# pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-	fprintf(stderr, reason, arg);
+        fprintf(stderr, reason, arg);
 #if __GNUC__ > 4
-# pragma GCC diagnostic warning "-Wformat-nonliteral"
+#    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
-	fprintf(stderr, " [%.40s...]\n", article);
+        fprintf(stderr, " [%.40s...]\n", article);
     }
 
     if (backupBad) {
@@ -220,18 +221,18 @@ Reject(const char *article, size_t length UNUSED, const char *reason,
 static bool
 Process(char *article, size_t artlen)
 {
-    HEADER	        *hp;
-    const char	        *p;
-    size_t              length;
-    char                *wirefmt, *q;
-    const char		*id = NULL;
-    char                *msgid;
-    char		buff[SMBUF];
-    char		path[40];
+    HEADER *hp;
+    const char *p;
+    size_t length;
+    char *wirefmt, *q;
+    const char *id = NULL;
+    char *msgid;
+    char buff[SMBUF];
+    char path[40];
 
     /* Empty article? */
     if (*article == '\0')
-	return true;
+        return true;
 
     /* Convert the article to wire format. */
     wirefmt = wire_from_native(article, artlen, &length);
@@ -241,13 +242,13 @@ Process(char *article, size_t artlen)
         p = wire_findheader(wirefmt, length, hp->Name, true);
         if (p == NULL) {
             free(wirefmt);
-	    Reject(article, artlen, "bad_article missing %s", hp->Name);
-	    return true;
-	}
-	if (IS_MESGID(hp)) {
-	    id = p;
-	    continue;
-	}
+            Reject(article, artlen, "bad_article missing %s", hp->Name);
+            return true;
+        }
+        if (IS_MESGID(hp)) {
+            id = p;
+            continue;
+        }
         if (logDuplicates) {
             if (IS_PATH(hp)) {
                 strlcpy(path, p, sizeof(path));
@@ -260,9 +261,9 @@ Process(char *article, size_t artlen)
     /* Send the NNTP "ihave" message. */
     if ((p = strchr(id, '\r')) == NULL) {
         free(wirefmt);
-	Reject(article, artlen, "bad_article unterminated %s header",
+        Reject(article, artlen, "bad_article unterminated %s header",
                "Message-ID");
-	return true;
+        return true;
     }
     msgid = xstrndup(id, p - id);
     fprintf(ToServer, "ihave %s\r\n", msgid);
@@ -278,37 +279,37 @@ Process(char *article, size_t artlen)
             syswarn("cannot fgets after ihave");
         else
             warn("unexpected EOF from server after ihave");
-	return false;
+        return false;
     }
     REMclean(buff);
     if (!isdigit((unsigned char) buff[0])) {
         free(wirefmt);
         notice("bad_reply after ihave %s", buff);
-	return false;
+        return false;
     }
     switch (atoi(buff)) {
     default:
         free(wirefmt);
         notice("unknown_reply after ihave %s", buff);
-	return false;
+        return false;
     case NNTP_FAIL_IHAVE_DEFER:
         free(wirefmt);
-	return false;
+        return false;
     case NNTP_CONT_IHAVE:
-	break;
+        break;
     case NNTP_FAIL_IHAVE_REFUSE:
         if (logDuplicates) {
             notice("duplicate %s %s", msgid, path);
         }
         free(wirefmt);
-	return true;
+        return true;
     }
 
     /* Send the article to the server. */
     if (fwrite(wirefmt, length, 1, ToServer) != 1) {
         free(wirefmt);
         sysnotice("cant sendarticle");
-	return false;
+        return false;
     }
     free(wirefmt);
 
@@ -324,24 +325,24 @@ Process(char *article, size_t artlen)
             syswarn("cannot fgets after article");
         else
             warn("unexpected EOF from server after article");
-	return false;
+        return false;
     }
     REMclean(buff);
     if (!isdigit((unsigned char) buff[0])) {
         notice("bad_reply after article %s", buff);
-	return false;
+        return false;
     }
     switch (atoi(buff)) {
     default:
         notice("unknown_reply after article %s", buff);
-	/* FALLTHROUGH */
+        /* FALLTHROUGH */
     case NNTP_FAIL_IHAVE_DEFER:
-	return false;
+        return false;
     case NNTP_OK_IHAVE:
-	break;
+        break;
     case NNTP_FAIL_IHAVE_REJECT:
-	Reject(article, artlen, "rejected %s", buff);
-	break;
+        Reject(article, artlen, "rejected %s", buff);
+        break;
     }
     return true;
 }
@@ -353,15 +354,15 @@ Process(char *article, size_t artlen)
 static bool
 ReadRemainder(int fd, char first, char second)
 {
-    char	*article;
-    char	*p;
-    char	buf[BUFSIZ];
-    int		size;
-    int		used;
-    int		left;
-    int		skipnl;
-    int		i, n;
-    bool	ok;
+    char *article;
+    char *p;
+    char buf[BUFSIZ];
+    int size;
+    int used;
+    int left;
+    int skipnl;
+    int i, n;
+    bool ok;
 
     /* Get an initial allocation, leaving space for the \0. */
     size = BUFSIZ + 1;
@@ -374,32 +375,33 @@ ReadRemainder(int fd, char first, char second)
 
     /* Read the input, coverting line ends as we go if necessary. */
     while ((n = read(fd, buf, sizeof(buf))) > 0) {
-	p = article + used;
-	for (i = 0; i < n; i++) {
-	    if (skipnl) {
-		skipnl = 0;
-		if (buf[i] == '\n') continue;
-	    }
-	    if (buf[i] == '\r') {
-		buf[i] = '\n';
-		skipnl = 1;
-	    }
-	    *p++ = buf[i];
-	    used++;
-	    left--;
-	    if (left < SMBUF) {
-		size += BUFSIZ;
-		left += BUFSIZ;
-		article = xrealloc(article, size);
-		p = article + used;
-	    }
-	}
+        p = article + used;
+        for (i = 0; i < n; i++) {
+            if (skipnl) {
+                skipnl = 0;
+                if (buf[i] == '\n')
+                    continue;
+            }
+            if (buf[i] == '\r') {
+                buf[i] = '\n';
+                skipnl = 1;
+            }
+            *p++ = buf[i];
+            used++;
+            left--;
+            if (left < SMBUF) {
+                size += BUFSIZ;
+                left += BUFSIZ;
+                article = xrealloc(article, size);
+                p = article + used;
+            }
+        }
     }
     if (n < 0)
         sysdie("cannot read after %d bytes", used);
 
     if (article[used - 1] != '\n')
-	article[used++] = '\n';
+        article[used++] = '\n';
     article[used] = '\0';
 
     ok = Process(article, used);
@@ -414,20 +416,19 @@ ReadRemainder(int fd, char first, char second)
 static bool
 ReadBytecount(int fd, int artsize)
 {
-    static char		*article;
-    static int		oldsize;
-    char	*p;
-    int	left;
-    int	i;
+    static char *article;
+    static int oldsize;
+    char *p;
+    int left;
+    int i;
 
     /* If we haven't gotten any memory before, or we didn't get enough,
      * then get some. */
     if (article == NULL) {
-	oldsize = artsize;
-	article = xmalloc(oldsize + 1 + 1);
-    }
-    else if (artsize > oldsize) {
-	oldsize = artsize;
+        oldsize = artsize;
+        article = xmalloc(oldsize + 1 + 1);
+    } else if (artsize > oldsize) {
+        oldsize = artsize;
         article = xrealloc(article, oldsize + 1 + 1);
     }
 
@@ -444,7 +445,7 @@ ReadBytecount(int fd, int artsize)
         }
     }
     if (p[-1] != '\n') {
-	*p++ = '\n';
+        *p++ = '\n';
         artsize++;
     }
     *p = '\0';
@@ -453,25 +454,24 @@ ReadBytecount(int fd, int artsize)
 }
 
 
-
 /*
 **  Read a single text line; not unlike fgets().  Just more inefficient.
 */
 static bool
 ReadLine(char *p, int size, int fd)
 {
-    char	*save;
+    char *save;
 
     /* Fill the buffer, a byte at a time. */
     for (save = p; size > 0; p++, size--) {
-	if (read(fd, p, 1) != 1) {
-	    *p = '\0';
+        if (read(fd, p, 1) != 1) {
+            *p = '\0';
             sysdie("cannot read first line, got %s", save);
-	}
-	if (*p == '\n') {
-	    *p = '\0';
-	    return true;
-	}
+        }
+        if (*p == '\n') {
+            *p = '\0';
+            return true;
+        }
     }
     *p = '\0';
     warn("bad_line too long %s", save);
@@ -485,95 +485,95 @@ ReadLine(char *p, int size, int fd)
 static bool
 UnpackOne(int *fdp, size_t *countp)
 {
-    char	path[(SMBUF * 2) + 1];
-    char	*p;
-    int         len;
-    char	buff[SMBUF];
+    char path[(SMBUF * 2) + 1];
+    char *p;
+    int len;
+    char buff[SMBUF];
     const char *cargv[4];
-    int		artsize;
-    int		i;
-    int		gzip = 0;
-    bool	HadCount;
-    bool	SawCunbatch;
+    int artsize;
+    int i;
+    int gzip = 0;
+    bool HadCount;
+    bool SawCunbatch;
 
     *countp = 0;
-    for (SawCunbatch = false, HadCount = false; ; ) {
-	/* Get the first character. */
-	if ((i = read(*fdp, &buff[0], 1)) < 0) {
+    for (SawCunbatch = false, HadCount = false;;) {
+        /* Get the first character. */
+        if ((i = read(*fdp, &buff[0], 1)) < 0) {
             syswarn("cannot read first character");
-	    return false;
-	}
-	if (i == 0)
-	    break;
+            return false;
+        }
+        if (i == 0)
+            break;
 
-	if (buff[0] == 0x1f)
-	    gzip = 1;
-	else if (buff[0] != '#')
-	    /* Not a batch file.  If we already got one count, the batch
-	     * is corrupted, else read rest of input as an article. */
-	    return HadCount ? false : ReadRemainder(*fdp, buff[0], '\0');
+        if (buff[0] == 0x1f)
+            gzip = 1;
+        else if (buff[0] != '#')
+            /* Not a batch file.  If we already got one count, the batch
+             * is corrupted, else read rest of input as an article. */
+            return HadCount ? false : ReadRemainder(*fdp, buff[0], '\0');
 
-	/* Get the second character. */
-	if ((i = read(*fdp, &buff[1], 1)) < 0) {
+        /* Get the second character. */
+        if ((i = read(*fdp, &buff[1], 1)) < 0) {
             syswarn("cannot read second character");
-	    return false;
-	}
-	if (i == 0)
-	    /* A one-byte batch? */
-	    return false;
+            return false;
+        }
+        if (i == 0)
+            /* A one-byte batch? */
+            return false;
 
-	/* Check second magic character. */
-	/* gzipped ($1f$8b) or compressed ($1f$9d) */
-	if (gzip && ((buff[1] == (char)0x8b) || (buff[1] == (char)0x9d))) {
-	    cargv[0] = "gzip";
-	    cargv[1] = "-d";
-	    cargv[2] = NULL;
-	    lseek(*fdp, 0, 0); /* Back to the beginning */
-	    *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
-	    if (*fdp < 0)
-	        return false;
-	    (*countp)++;
-	    SawCunbatch = true;
-	    continue;
-	}
-	if (buff[1] != '!')
-	    return HadCount ? false : ReadRemainder(*fdp, buff[0], buff[1]);
+        /* Check second magic character. */
+        /* gzipped ($1f$8b) or compressed ($1f$9d) */
+        if (gzip && ((buff[1] == (char) 0x8b) || (buff[1] == (char) 0x9d))) {
+            cargv[0] = "gzip";
+            cargv[1] = "-d";
+            cargv[2] = NULL;
+            lseek(*fdp, 0, 0); /* Back to the beginning */
+            *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
+            if (*fdp < 0)
+                return false;
+            (*countp)++;
+            SawCunbatch = true;
+            continue;
+        }
+        if (buff[1] != '!')
+            return HadCount ? false : ReadRemainder(*fdp, buff[0], buff[1]);
 
-	/* Some kind of batch -- get the command. */
-	if (!ReadLine(&buff[2], (int)(sizeof buff - 3), *fdp))
-	    return false;
+        /* Some kind of batch -- get the command. */
+        if (!ReadLine(&buff[2], (int) (sizeof buff - 3), *fdp))
+            return false;
 
-	if (strncmp(buff, "#! rnews ", 9) == 0) {
-	    artsize = atoi(&buff[9]);
-	    if (artsize <= 0) {
+        if (strncmp(buff, "#! rnews ", 9) == 0) {
+            artsize = atoi(&buff[9]);
+            if (artsize <= 0) {
                 syswarn("bad_line bad count %s", buff);
-		return false;
-	    }
-	    HadCount = true;
-	    if (ReadBytecount(*fdp, artsize))
-		continue;
-	    return false;
-	}
+                return false;
+            }
+            HadCount = true;
+            if (ReadBytecount(*fdp, artsize))
+                continue;
+            return false;
+        }
 
-	if (HadCount)
-	    /* Already saw a bytecount -- probably corrupted. */
-	    return false;
+        if (HadCount)
+            /* Already saw a bytecount -- probably corrupted. */
+            return false;
 
-	if (strcmp(buff, "#! cunbatch") == 0) {
-	    if (SawCunbatch) {
+        if (strcmp(buff, "#! cunbatch") == 0) {
+            if (SawCunbatch) {
                 syswarn("nested_cunbatch");
-		return false;
-	    }
-	    cargv[0] = UNPACK;
-	    cargv[1] = "-d";
-	    cargv[2] = NULL;
-	    *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
-	    if (*fdp < 0)
-		return false;
-	    (*countp)++;
-	    SawCunbatch = true;
-	    continue;
-	}
+                return false;
+            }
+            cargv[0] = UNPACK;
+            cargv[1] = "-d";
+            cargv[2] = NULL;
+            *fdp = StartChild(*fdp, INN_PATH_GZIP, cargv);
+            if (*fdp < 0)
+                return false;
+            (*countp)++;
+            SawCunbatch = true;
+            continue;
+        }
 
         if (additionalUnpackers) {
             cargv[0] = UNPACK;
@@ -587,8 +587,8 @@ UnpackOne(int *fdp, size_t *countp)
             if (strchr(INN_PATH_RNEWSPROGS, '/') == NULL) {
                 snprintf(path, sizeof(path), "%s/%s/%s", innconf->pathbin,
                          INN_PATH_RNEWSPROGS, p);
-                len = strlen(innconf->pathbin) + 1
-                    + sizeof(INN_PATH_RNEWSPROGS);
+                len =
+                    strlen(innconf->pathbin) + 1 + sizeof(INN_PATH_RNEWSPROGS);
             } else {
                 snprintf(path, sizeof(path), "%s/%s", INN_PATH_RNEWSPROGS, p);
                 len = sizeof(INN_PATH_RNEWSPROGS);
@@ -621,14 +621,14 @@ UnpackOne(int *fdp, size_t *countp)
 static void
 Unspool(void)
 {
-    DIR	*dp;
-    struct dirent       *ep;
-    bool	ok;
-    struct stat		Sb;
-    char		hostname[SMBUF];
-    int			fd;
-    size_t		i;
-    char                *uuhost;
+    DIR *dp;
+    struct dirent *ep;
+    bool ok;
+    struct stat Sb;
+    char hostname[SMBUF];
+    int fd;
+    size_t i;
+    char *uuhost;
 
     message_handlers_die(2, message_log_stderr, message_log_syslog_err);
     message_handlers_warn(2, message_log_stderr, message_log_syslog_err);
@@ -641,61 +641,60 @@ Unspool(void)
 
     /* Loop over all files, and parse them. */
     while ((ep = readdir(dp)) != NULL) {
-	InputFile = ep->d_name;
-	if (InputFile[0] == '.')
-	    continue;
-	if (stat(InputFile, &Sb) < 0 && errno != ENOENT) {
+        InputFile = ep->d_name;
+        if (InputFile[0] == '.')
+            continue;
+        if (stat(InputFile, &Sb) < 0 && errno != ENOENT) {
             syswarn("cannot stat %s", InputFile);
-	    continue;
-	}
+            continue;
+        }
 
-	if (!S_ISREG(Sb.st_mode))
-	    continue;
+        if (!S_ISREG(Sb.st_mode))
+            continue;
 
-	if ((fd = open(InputFile, O_RDWR)) < 0) {
-	    if (errno != ENOENT)
+        if ((fd = open(InputFile, O_RDWR)) < 0) {
+            if (errno != ENOENT)
                 syswarn("cannot open %s", InputFile);
-	    continue;
-	}
+            continue;
+        }
 
-	/* Make sure multiple Unspools don't stomp on eachother. */
-	if (!inn_lock_file(fd, INN_LOCK_WRITE, 0)) {
-	    close(fd);
-	    continue;
-	}
+        /* Make sure multiple Unspools don't stomp on eachother. */
+        if (!inn_lock_file(fd, INN_LOCK_WRITE, 0)) {
+            close(fd);
+            continue;
+        }
 
-	/* Get UUCP host from spool file, deleting the mktemp XXXXXX suffix. */
-	uuhost = UUCPHost;
-	hostname[0] = 0;
-	if ((i = strlen(InputFile)) > 6) {
-	    i -= 6;
-	    if (i > sizeof hostname - 1)
-		/* Just in case someone wrote their own spooled file. */
-		i = sizeof hostname - 1;
-	    strlcpy(hostname, InputFile, i + 1);
-	    UUCPHost = hostname;
-	}
-	ok = UnpackOne(&fd, &i);
-	WaitForChildren(i);
-	UUCPHost = uuhost;
+        /* Get UUCP host from spool file, deleting the mktemp XXXXXX suffix. */
+        uuhost = UUCPHost;
+        hostname[0] = 0;
+        if ((i = strlen(InputFile)) > 6) {
+            i -= 6;
+            if (i > sizeof hostname - 1)
+                /* Just in case someone wrote their own spooled file. */
+                i = sizeof hostname - 1;
+            strlcpy(hostname, InputFile, i + 1);
+            UUCPHost = hostname;
+        }
+        ok = UnpackOne(&fd, &i);
+        WaitForChildren(i);
+        UUCPHost = uuhost;
 
         /* If UnpackOne returned true, the article has been dealt with one way
            or the other, so remove it.  Otherwise, leave it in place; either
            we got an unknown error from the server or we got a deferral, and
            for both we want to try later. */
-	if (ok) {
+        if (ok) {
             if (unlink(InputFile) < 0)
                 syswarn("cannot remove %s", InputFile);
         }
 
-	close(fd);
+        close(fd);
     }
     closedir(dp);
 
     message_handlers_die(1, message_log_syslog_err);
     message_handlers_warn(1, message_log_syslog_err);
 }
-
 
 
 /*
@@ -715,9 +714,9 @@ Spool(int fd, int mode)
     int status;
 
     if (mode == 'N')
-	exit(9);
-    tmpspool = concat(innconf->pathincoming, "/.",
-		UUCPHost ? UUCPHost : "", "XXXXXX", (char *)0);
+        exit(9);
+    tmpspool = concat(innconf->pathincoming, "/.", UUCPHost ? UUCPHost : "",
+                      "XXXXXX", (char *) 0);
     spfd = mkstemp(tmpspool);
     if (spfd < 0)
         sysdie("cannot create temporary batch file %s", tmpspool);
@@ -725,31 +724,31 @@ Spool(int fd, int mode)
         sysdie("cannot chmod temporary batch file %s", tmpspool);
 
     /* Read until we there is nothing left. */
-    for (status = 0, count = 0; (i = read(fd, buff, sizeof buff)) != 0; ) {
-	/* Break out on error. */
-	if (i < 0) {
+    for (status = 0, count = 0; (i = read(fd, buff, sizeof buff)) != 0;) {
+        /* Break out on error. */
+        if (i < 0) {
             syswarn("cannot read after %d", count);
-	    status++;
-	    break;
-	}
-	/* Write out what we read. */
-	for (count += i, p = buff; i; p += j, i -= j)
-	    if ((j = write(spfd, p, i)) <= 0) {
+            status++;
+            break;
+        }
+        /* Write out what we read. */
+        for (count += i, p = buff; i; p += j, i -= j)
+            if ((j = write(spfd, p, i)) <= 0) {
                 syswarn("cannot write around %d", count);
-		status++;
-		break;
-	    }
+                status++;
+                break;
+            }
     }
 
     /* Close the file. */
     if (close(spfd) < 0) {
         syswarn("cannot close spooled article %s", tmpspool);
-	status++;
+        status++;
     }
 
     /* Move temp file into the spool area, and exit appropriately. */
-    spoolfile = concat(innconf->pathincoming, "/",
-		UUCPHost ? UUCPHost : "", "XXXXXX", (char *)0);
+    spoolfile = concat(innconf->pathincoming, "/", UUCPHost ? UUCPHost : "",
+                       "XXXXXX", (char *) 0);
     spfd = mkstemp(spoolfile);
     if (spfd < 0) {
         syswarn("cannot create spool file %s", spoolfile);
@@ -772,25 +771,26 @@ Spool(int fd, int mode)
 **  Try to read the password file and open a connection to a remote
 **  NNTP server.
 */
-static bool OpenRemote(char *server, int port, char *buff, size_t len)
+static bool
+OpenRemote(char *server, int port, char *buff, size_t len)
 {
-    int		i;
+    int i;
 
     /* Open the remote connection. */
     if (server)
-	i = NNTPconnect(server, port, &FromServer, &ToServer, buff, len);
+        i = NNTPconnect(server, port, &FromServer, &ToServer, buff, len);
     else
-	i = NNTPremoteopen(port, &FromServer, &ToServer, buff, len);
+        i = NNTPremoteopen(port, &FromServer, &ToServer, buff, len);
     if (i < 0)
-	return false;
+        return false;
 
     *buff = '\0';
     if (NNTPsendpassword(server, FromServer, ToServer) < 0) {
-	int oerrno = errno;
-	fclose(FromServer);
-	fclose(ToServer);
-	errno = oerrno;
-	return false;
+        int oerrno = errno;
+        fclose(FromServer);
+        fclose(ToServer);
+        errno = oerrno;
+        return false;
     }
     return true;
 }
@@ -807,19 +807,20 @@ CantConnect(char *buff, int mode, int fd)
     else
         syswarn("cant open_remote");
     if (mode != 'U')
-	Spool(fd, mode);
+        Spool(fd, mode);
     exit(1);
 }
 
 
-int main(int ac, char *av[])
+int
+main(int ac, char *av[])
 {
-    int		fd;
-    int		i;
-    size_t	count;
-    int		mode;
-    char	buff[SMBUF];
-    int         port = NNTP_PORT;
+    int fd;
+    int i;
+    size_t count;
+    int mode;
+    char buff[SMBUF];
+    int port = NNTP_PORT;
 
     /* First thing, set up logging and our identity. */
     openlog("rnews", L_OPENLOG_FLAGS, LOG_INN_PROG);
@@ -881,10 +882,10 @@ int main(int ac, char *av[])
     fd = STDIN_FILENO;
     mode = '\0';
     while ((i = getopt(ac, av, "abdh:NP:r:S:Uv")) != EOF)
-	switch (i) {
-	default:
-	    die("usage error");
-	    /* NOTRTEACHED */
+        switch (i) {
+        default:
+            die("usage error");
+            /* NOTRTEACHED */
         case 'a':
             additionalUnpackers = false;
             break;
@@ -894,24 +895,24 @@ int main(int ac, char *av[])
         case 'd':
             logDuplicates = true;
             break;
-	case 'h':
-	    UUCPHost = *optarg ? optarg : NULL;
-	    break;
-	case 'N':
-	case 'U':
-	    mode = i;
-	    break;
-	case 'P':
-	    port = atoi(optarg);
-	    break;
-	case 'v':
-	    Verbose = true;
-	    break;
-	case 'r':
-	case 'S':
-	    remoteServer = optarg;
-	    break;
-	}
+        case 'h':
+            UUCPHost = *optarg ? optarg : NULL;
+            break;
+        case 'N':
+        case 'U':
+            mode = i;
+            break;
+        case 'P':
+            port = atoi(optarg);
+            break;
+        case 'v':
+            Verbose = true;
+            break;
+        case 'r':
+        case 'S':
+            remoteServer = optarg;
+            break;
+        }
     ac -= optind;
     av += optind;
 
@@ -919,52 +920,54 @@ int main(int ac, char *av[])
     switch (ac) {
     default:
         die("usage error");
-	/* NOTREACHED */
+        /* NOTREACHED */
     case 0:
-	break;
+        break;
     case 1:
-	if (mode == 'U')
+        if (mode == 'U')
             die("usage error");
-	if (freopen(av[0], "r", stdin) == NULL)
+        if (freopen(av[0], "r", stdin) == NULL)
             sysdie("cannot freopen %s", av[0]);
-	fd = fileno(stdin);
-	InputFile = av[0];
-	break;
+        fd = fileno(stdin);
+        InputFile = av[0];
+        break;
     }
 
     /* Open the link to the server. */
     if (remoteServer != NULL) {
-	if (!OpenRemote(remoteServer, port, buff, sizeof(buff)))
-		CantConnect(buff,mode,fd);
+        if (!OpenRemote(remoteServer, port, buff, sizeof(buff)))
+            CantConnect(buff, mode, fd);
     } else if (innconf->nnrpdposthost != NULL) {
-	if (!OpenRemote(innconf->nnrpdposthost,
-                        (port != NNTP_PORT) ? (unsigned) port : innconf->nnrpdpostport,
+        if (!OpenRemote(innconf->nnrpdposthost,
+                        (port != NNTP_PORT) ? (unsigned) port
+                                            : innconf->nnrpdpostport,
                         buff, sizeof(buff)))
-		CantConnect(buff, mode, fd);
-    }
-    else {
-	if (NNTPlocalopen(&FromServer, &ToServer, buff, sizeof(buff)) < 0) {
-	    /* If server rejected us, no point in continuing. */
-	    if (buff[0])
-		CantConnect(buff, mode, fd);
-	    if (!OpenRemote(NULL, (port != NNTP_PORT) ? (unsigned) port : innconf->port,
+            CantConnect(buff, mode, fd);
+    } else {
+        if (NNTPlocalopen(&FromServer, &ToServer, buff, sizeof(buff)) < 0) {
+            /* If server rejected us, no point in continuing. */
+            if (buff[0])
+                CantConnect(buff, mode, fd);
+            if (!OpenRemote(NULL,
+                            (port != NNTP_PORT) ? (unsigned) port
+                                                : innconf->port,
                             buff, sizeof(buff)))
-			CantConnect(buff, mode, fd);
-	}
+                CantConnect(buff, mode, fd);
+        }
     }
     fdflag_close_exec(fileno(FromServer), true);
     fdflag_close_exec(fileno(ToServer), true);
 
     /* Execute the command. */
     if (mode == 'U')
-	Unspool();
+        Unspool();
     else {
-	if (!UnpackOne(&fd, &count)) {
-	    lseek(fd, 0, 0);
-	    Spool(fd, mode);
-	}
-	close(fd);
-	WaitForChildren(count);
+        if (!UnpackOne(&fd, &count)) {
+            lseek(fd, 0, 0);
+            Spool(fd, mode);
+        }
+        close(fd);
+        WaitForChildren(count);
     }
 
     /* Tell the server we're quitting, get his okay message. */

@@ -17,10 +17,10 @@
 #include "inn/nntp.h"
 #include "inn/paths.h"
 
-#define TEMPFILE	":tmp"
-static char		**Groups;
+#define TEMPFILE ":tmp"
+static char **Groups;
 
-char ** ReadSys(const char *);
+char **ReadSys(const char *);
 
 /*
 **  Fill in the Groups array with the names of all active newsgroups.
@@ -28,26 +28,26 @@ char ** ReadSys(const char *);
 static void
 ReadActive(char *act)
 {
-    FILE	*F;
-    int		i;
-    char	buff[BUFSIZ];
-    char	*p;
+    FILE *F;
+    int i;
+    char buff[BUFSIZ];
+    char *p;
 
     /* Open file, count lines. */
     if ((F = fopen(act, "r")) == NULL) {
-	perror(act);
-	exit(1);
+        perror(act);
+        exit(1);
     }
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++)
-	continue;
+        continue;
     Groups = xmalloc((i + 2) * sizeof(char *));
 
     /* Fill in each word. */
     rewind(F);
     for (i = 0; fgets(buff, sizeof buff, F) != NULL; i++) {
-	if ((p = strchr(buff, ' ')) != NULL)
-	    *p = '\0';
-	Groups[i] = xstrdup(buff);
+        if ((p = strchr(buff, ' ')) != NULL)
+            *p = '\0';
+        Groups[i] = xstrdup(buff);
     }
     Groups[i] = NULL;
     fclose(F);
@@ -61,39 +61,40 @@ ReadActive(char *act)
 char **
 ReadSys(const char *sys)
 {
-    char	*p;
-    char	*to;
-    char	*site;
-    int	i;
-    char		*data;
-    char		**strings;
+    char *p;
+    char *to;
+    char *site;
+    int i;
+    char *data;
+    char **strings;
 
     /* Read in the file, get rough count. */
-    if ((data = ReadInFile(sys, (struct stat *)NULL)) == NULL) {
-	perror(sys);
-	exit(1);
+    if ((data = ReadInFile(sys, (struct stat *) NULL)) == NULL) {
+        perror(sys);
+        exit(1);
     }
     for (p = data, i = 0; (p = strchr(p, '\n')) != NULL; p++, i++)
-	continue;
+        continue;
 
     /* Scan the file, glue all multi-line entries. */
-    for (strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data; *p; ) {
-	for (site = to; *p; ) {
-	    if (*p == '\n') {
-		p++;
-		*to = '\0';
-		break;
-	    }
-	    if (*p == '\\' && p[1] == '\n')
-		while (*++p && isspace((unsigned char) *p))
-		    continue;
-	    else
-		*to++ = *p++;
-	}
-	*to++ = '\0';
-	if (*site == '\0')
-	    continue;
-	strings[i++] = xstrdup(site);
+    for (strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data;
+         *p;) {
+        for (site = to; *p;) {
+            if (*p == '\n') {
+                p++;
+                *to = '\0';
+                break;
+            }
+            if (*p == '\\' && p[1] == '\n')
+                while (*++p && isspace((unsigned char) *p))
+                    continue;
+            else
+                *to++ = *p++;
+        }
+        *to++ = '\0';
+        if (*site == '\0')
+            continue;
+        strings[i++] = xstrdup(site);
     }
     strings[i] = NULL;
     free(data);
@@ -108,16 +109,16 @@ ReadSys(const char *sys)
 static bool
 GroupPrefix(const char *p)
 {
-    char	**gp;
-    char	*g;
-    int		count;
-    int		i;
+    char **gp;
+    char *g;
+    int count;
+    int i;
 
     if (strchr(p, '.') == NULL)
-	return false;
-    for (i = strlen(p), count = 0, gp = Groups; (g = *gp++) != NULL; )
-	if (strcmp(p, g) == 0 || (strncmp(p, g, i) == 0 && g[i] == '.'))
-	    count++;
+        return false;
+    for (i = strlen(p), count = 0, gp = Groups; (g = *gp++) != NULL;)
+        if (strcmp(p, g) == 0 || (strncmp(p, g, i) == 0 && g[i] == '.'))
+            count++;
     return count > 1;
 }
 
@@ -129,30 +130,28 @@ GroupPrefix(const char *p)
 static void
 DoSub(FILE *F, char *p)
 {
-    const char	*s;
-    size_t	len, i;
+    const char *s;
+    size_t len, i;
     bool matched;
-    bool	SawBang;
-    bool	SawAll;
+    bool SawBang;
+    bool SawAll;
 
     /* Distributions, not newsgroups. */
-    static const char * const distributions[] = {
-        "world", "na", "usa", "inet", "mod", "net", "local"
-    };
+    static const char *const distributions[] = {"world", "na",  "usa",  "inet",
+                                                "mod",   "net", "local"};
 
     /* Newsgroup hierarchies. */
-    static const char * const hierarchies[] = {
-        "comp", "misc", "news", "rec", "sci", "soc", "talk", "alt", "bionet",
-        "bit", "biz", "clari", "ddn", "gnu", "ieee", "k12", "pubnet", "trial",
-        "u3b", "vmsnet",
+    static const char *const hierarchies[] = {
+        "comp", "misc",   "news",     "rec",   "sci",   "soc",    "talk",
+        "alt",  "bionet", "bit",      "biz",   "clari", "ddn",    "gnu",
+        "ieee", "k12",    "pubnet",   "trial", "u3b",   "vmsnet",
 
-        "ba", "ca", "dc", "ne", "ny", "tx",
+        "ba",   "ca",     "dc",       "ne",    "ny",    "tx",
 
-        "info", "mail", "opinions", "uunet"
-    };
+        "info", "mail",   "opinions", "uunet"};
 
     if ((s = strtok(p, ",")) == NULL)
-	return;
+        return;
 
     fprintf(F, "!*");
     len = 8 + 1 + 2;
@@ -165,34 +164,34 @@ DoSub(FILE *F, char *p)
         if (matched)
             continue;
 
-	if (innconf->mergetogroups)
-	    if (strcmp(s, "!to") == 0 || strncmp(s, "to.", 3) == 0)
-		continue;
+        if (innconf->mergetogroups)
+            if (strcmp(s, "!to") == 0 || strncmp(s, "to.", 3) == 0)
+                continue;
 
-	putc(',', F);
-	len++;
+        putc(',', F);
+        len++;
 
-	if (len + strlen(s) + 3 > 72) {
-	    fprintf(F,"\\\n\t    ");
-	    len = 12;
-	}
+        if (len + strlen(s) + 3 > 72) {
+            fprintf(F, "\\\n\t    ");
+            len = 12;
+        }
 
-	SawBang = *s == '!';
-	if (SawBang) {
-	    putc('!', F);
-	    len++;
-	    s++;
-	}
+        SawBang = *s == '!';
+        if (SawBang) {
+            putc('!', F);
+            len++;
+            s++;
+        }
 
-	SawAll = (strcasecmp(s, "all") == 0);
-	if (SawAll)
-	    s = SawBang ? "*" : "*,!control,!control.*";
-	len += strlen(s);
-	fprintf(F, "%s", s);
+        SawAll = (strcasecmp(s, "all") == 0);
+        if (SawAll)
+            s = SawBang ? "*" : "*,!control,!control.*";
+        len += strlen(s);
+        fprintf(F, "%s", s);
 
-	if (SawAll)
-	    ;
-	else {
+        if (SawAll)
+            ;
+        else {
             for (matched = false, i = 0; i < ARRAY_SIZE(distributions); i++)
                 if (strcmp(s, hierarchies[i]) == 0) {
                     matched = true;
@@ -207,27 +206,27 @@ DoSub(FILE *F, char *p)
                 len++;
             }
         }
-    } while ((s = strtok((char *)NULL, ",")) != NULL);
+    } while ((s = strtok((char *) NULL, ",")) != NULL);
 }
 
 
 int
 main(int ac, char *av[])
 {
-    FILE	*F;
-    FILE	*out;
-    char	**sites;
-    char	*f2;
-    char	*f3;
-    char	*f4;
-    char	*p;
-    char	*q;
-    char	*site;
-    char	buff[256];
-    char	*act;
-    const char	*dir;
-    const char	*sys;
-    int		i;
+    FILE *F;
+    FILE *out;
+    char **sites;
+    char *f2;
+    char *f3;
+    char *f4;
+    char *p;
+    char *q;
+    char *site;
+    char buff[256];
+    char *act;
+    const char *dir;
+    const char *sys;
+    int i;
     size_t j;
 
     if (!innconf_read(NULL))
@@ -237,86 +236,92 @@ main(int ac, char *av[])
     sys = "sys";
     dir = "feeds";
     while ((i = getopt(ac, av, "a:s:d:")) != EOF)
-    switch (i) {
-    default:
-	exit(1);
-	/* NOTREACHED */
-    case 'a':	act = optarg;	break;
-    case 'd':	dir = optarg;	break;
-    case 's':	sys = optarg;	break;
-    }
+        switch (i) {
+        default:
+            exit(1);
+            /* NOTREACHED */
+        case 'a':
+            act = optarg;
+            break;
+        case 'd':
+            dir = optarg;
+            break;
+        case 's':
+            sys = optarg;
+            break;
+        }
 
     sites = ReadSys(sys);
     ReadActive(act);
     if (mkdir(dir, 0777) < 0 && errno != EEXIST)
-	perror(dir), exit(1);
+        perror(dir), exit(1);
     if (chdir(dir) < 0)
-	perror("chdir"), exit(1);
-    for ( ; ; ) {
-	/* Get next non-comment ilne. */
-	if ((p = *sites++) == NULL)
-	    break;
-	for (F = fopen(TEMPFILE, "w"); p && *p == '#'; p = *sites++)
-	    fprintf(F, "%s\n", p);
-	if (p == NULL) {
-	    fclose(F);
-	    break;
-	}
-	site = xstrdup(p);
-	if ((f2 = strchr(site, ':')) == NULL)
-	    f2 = (char *) "HELP";
-	else
-	    *f2++ = '\0';
-	if ((f3 = strchr(f2, ':')) == NULL)
-	    f3 = (char *) "HELP";
-	else
-	    *f3++ = '\0';
-	if ((f4 = strchr(f3, ':')) == NULL)
-	    f4 = (char *) "HELP";
-	else
-	    *f4++ = '\0';
+        perror("chdir"), exit(1);
+    for (;;) {
+        /* Get next non-comment ilne. */
+        if ((p = *sites++) == NULL)
+            break;
+        for (F = fopen(TEMPFILE, "w"); p && *p == '#'; p = *sites++)
+            fprintf(F, "%s\n", p);
+        if (p == NULL) {
+            fclose(F);
+            break;
+        }
+        site = xstrdup(p);
+        if ((f2 = strchr(site, ':')) == NULL)
+            f2 = (char *) "HELP";
+        else
+            *f2++ = '\0';
+        if ((f3 = strchr(f2, ':')) == NULL)
+            f3 = (char *) "HELP";
+        else
+            *f3++ = '\0';
+        if ((f4 = strchr(f3, ':')) == NULL)
+            f4 = (char *) "HELP";
+        else
+            *f4++ = '\0';
 
-	/* Write the fields. */
-	fprintf(F, "%s\\\n", site);
-	fprintf(F, "\t:");
-	DoSub(F, f2);
-	fprintf(F, "\\\n");
-	if (strcmp(f3, "n") == 0)
-	    fprintf(F, "\t:Tf,Wnm\\\n");
-	else
-	    fprintf(F, "\t:HELP%s\\\n", f3);
-	fprintf(F, "\t:%s\n", f4);
+        /* Write the fields. */
+        fprintf(F, "%s\\\n", site);
+        fprintf(F, "\t:");
+        DoSub(F, f2);
+        fprintf(F, "\\\n");
+        if (strcmp(f3, "n") == 0)
+            fprintf(F, "\t:Tf,Wnm\\\n");
+        else
+            fprintf(F, "\t:HELP%s\\\n", f3);
+        fprintf(F, "\t:%s\n", f4);
         if (ferror(F) != 0) {
             perror(TEMPFILE);
             fclose(F);
             exit(1);
         }
-       if (fclose(F) == EOF) {
+        if (fclose(F) == EOF) {
             perror(TEMPFILE);
             exit(1);
         }
 
-	free(site);
+        free(site);
 
-	/* Find the sitename. */
-	for (q = p; *q && *q != '/' && *q != ':'; q++)
-	    continue;
-	*q = '\0';
+        /* Find the sitename. */
+        for (q = p; *q && *q != '/' && *q != ':'; q++)
+            continue;
+        *q = '\0';
 
-	/* Append temp file to site file. */
-	if ((F = fopen(TEMPFILE, "r")) == NULL)
-	    perror(TEMPFILE), exit(1);
-	if ((out = xfopena(p)) == NULL)
-	    perror(p), exit(1);
-	while ((j = fread(buff, 1, sizeof buff, F)) > 0)
-	    if (fwrite(buff, 1, j, out) != j)
-		perror(p), exit(1);
-	fclose(F);
-	if (fclose(out) == EOF)
-	    perror(p), exit(1);
+        /* Append temp file to site file. */
+        if ((F = fopen(TEMPFILE, "r")) == NULL)
+            perror(TEMPFILE), exit(1);
+        if ((out = xfopena(p)) == NULL)
+            perror(p), exit(1);
+        while ((j = fread(buff, 1, sizeof buff, F)) > 0)
+            if (fwrite(buff, 1, j, out) != j)
+                perror(p), exit(1);
+        fclose(F);
+        if (fclose(out) == EOF)
+            perror(p), exit(1);
 
-	if (unlink(TEMPFILE) < 0)
-	    perror("can't unlink temp file");
+        if (unlink(TEMPFILE) < 0)
+            perror("can't unlink temp file");
     }
 
     exit(0);

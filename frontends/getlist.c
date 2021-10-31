@@ -7,12 +7,12 @@
 #include <errno.h>
 
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/nntp.h"
+#include "inn/paths.h"
 #include "inn/qio.h"
 #include "inn/vector.h"
-#include "inn/libinn.h"
-#include "inn/paths.h"
 
 static const char usage[] = "\
 Usage: getlist [-AR] [-h host] [-p port] [list [pattern [types]]]\n\

@@ -8,11 +8,11 @@
 
 #include "inn/buffer.h"
 #include "inn/innconf.h"
+#include "inn/libinn.h"
 #include "inn/messages.h"
 #include "inn/qio.h"
-#include "inn/wire.h"
-#include "inn/libinn.h"
 #include "inn/storage.h"
+#include "inn/wire.h"
 
 #define WIRE_CHUNK_SIZE 0x10000
 
@@ -37,12 +37,12 @@ line.\n\
 /* The options that can be set on the command line, used to determine what to
    do with each token. */
 struct options {
-    bool artinfo;               /* Show newsgroup and article number. */
-    bool clearinfo;             /* Show clear information about a token. */
-    bool delete;                /* Delete articles instead of showing them. */
-    bool header;                /* Display article headers only. */
-    bool raw;                   /* Display or consume wire-format articles. */
-    bool rnews;                 /* Output articles as rnews batch files. */
+    bool artinfo;   /* Show newsgroup and article number. */
+    bool clearinfo; /* Show clear information about a token. */
+    bool delete;    /* Delete articles instead of showing them. */
+    bool header;    /* Display article headers only. */
+    bool raw;       /* Display or consume wire-format articles. */
+    bool rnews;     /* Output articles as rnews batch files. */
 };
 
 
@@ -182,7 +182,7 @@ store_wire_articles(int fd)
                 skipping = false;
             } else {
                 char *text;
- 
+
                 text = input->data + input->used;
                 if (!store_article_common(text, size))
                     result = false;
@@ -287,7 +287,7 @@ main(int argc, char *argv[])
 {
     int option;
     bool okay, status;
-    struct options options = { false, false, false, false, false, false };
+    struct options options = {false, false, false, false, false, false};
     bool store = false;
 
     /* Suppress notice messages like tradspool rebuilding its map. */
@@ -337,18 +337,19 @@ main(int argc, char *argv[])
         die("-i cannot be used with -r or -d");
     if (options.artinfo && (options.header || options.raw || options.rnews))
         die("-i cannot be used with -H, -R, or -S");
-    if (options.delete && (options.header || options.rnews))
+    if (options.delete &&(options.header || options.rnews))
         die("-r or -d cannot be used with -H or -S");
     if (options.raw && options.rnews)
         die("-R cannot be used with -S");
     if (options.header && options.rnews)
         die("-H cannot be used with -S");
-    if (store && (options.artinfo || options.delete
-                  || options.header || options.rnews))
+    if (store
+        && (options.artinfo || options.delete || options.header
+            || options.rnews))
         die("-s cannot be used with -i, -r, -d, -H, or -S");
-    if (options.clearinfo && (options.artinfo || options.delete
-                              || options.header || options.raw
-                              || options.rnews || store))
+    if (options.clearinfo
+        && (options.artinfo || options.delete || options.header || options.raw
+            || options.rnews || store))
         die("-c cannot be used with -i, -r, -d, -H, -R, -S, or -s");
 
     /* Initialize the storage manager.  If we're doing article deletions, we

@@ -12,9 +12,9 @@
 #include "inn/nntp.h"
 
 
-static FILE	*FromServer;
-static FILE	*ToServer;
-static int	Tracing;
+static FILE *FromServer;
+static FILE *ToServer;
+static int Tracing;
 
 
 /*
@@ -26,7 +26,7 @@ GetFromServer(char *buff, int size, const char *text)
     if (fgets(buff, size, FromServer) == NULL)
         sysdie("%s", text);
     if (Tracing)
-	printf("S: %s", buff);
+        printf("S: %s", buff);
 }
 
 
@@ -44,7 +44,7 @@ SafeFlush(FILE *F)
 static void
 SendQuit(int x)
 {
-    char	buff[BUFSIZ];
+    char buff[BUFSIZ];
 
     /* Close up. */
     fprintf(ToServer, "quit\r\n");
@@ -66,14 +66,14 @@ Usage(void)
 int
 main(int ac, char *av[])
 {
-    static char	MESGIDHDR[] = "Message-ID:";
-    int		i;
-    FILE	*F;
-    char	buff[BUFSIZ];
-    char	*mesgid = NULL;
-    char	*p;
-    char	*q;
-    bool	PostMode;
+    static char MESGIDHDR[] = "Message-ID:";
+    int i;
+    FILE *F;
+    char buff[BUFSIZ];
+    char *mesgid = NULL;
+    char *p;
+    char *q;
+    bool PostMode;
 
     /* Set defaults. */
     PostMode = false;
@@ -81,89 +81,86 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     while ((i = getopt(ac, av, "m:prt")) != EOF)
-	switch (i) {
-	default:
-	    Usage();
-	    /* NOTREACHED */
-	case 'm':			/* Specified Message-ID */
-	    if (*optarg == '<')
-		mesgid = optarg;
-	    else
+        switch (i) {
+        default:
+            Usage();
+            /* NOTREACHED */
+        case 'm': /* Specified Message-ID */
+            if (*optarg == '<')
+                mesgid = optarg;
+            else
                 mesgid = concat("<", optarg, ">", (char *) 0);
-	    break;
-	case 'p':			/* Use Post, not ihave	*/
-	    PostMode = true;
-	    break;
-	case 'r':			/* Random Message-ID	*/
+            break;
+        case 'p': /* Use POST, not IHAVE */
+            PostMode = true;
+            break;
+        case 'r': /* Random Message-ID */
             xasprintf(&mesgid, "<%ld@%ld>", (long) getpid(),
-                     (long) time(NULL));
-	    break;
-	case 't':
-	    Tracing = true;
-	    break;
-	}
+                      (long) time(NULL));
+            break;
+        case 't':
+            Tracing = true;
+            break;
+        }
     ac -= optind;
     av += optind;
 
     /* One argument; the input filename. */
     if (ac != 1)
-	Usage();
+        Usage();
     if ((F = fopen(av[0], "r")) == NULL)
         sysdie("cannot open input");
 
     /* Scan for the message-id. */
     if (mesgid == NULL) {
-	while (fgets(buff, sizeof buff, F) != NULL)
-	    if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
-		if ((p = strchr(buff, '<')) == NULL
-                 || (q = strchr(p, '>')) == NULL)
+        while (fgets(buff, sizeof buff, F) != NULL)
+            if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
+                if ((p = strchr(buff, '<')) == NULL
+                    || (q = strchr(p, '>')) == NULL)
                     die("bad message ID line");
-		q[1] = '\0';
+                q[1] = '\0';
                 mesgid = xstrdup(p);
-		break;
-	    }
-	if (mesgid == NULL)
+                break;
+            }
+        if (mesgid == NULL)
             die("no message ID");
     }
 
     /* Connect to the server. */
-    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff,
-                       sizeof(buff)) < 0
-     || FromServer == NULL
-     || ToServer == NULL) {
-	if (buff[0])
+    if (NNTPremoteopen(NNTP_PORT, &FromServer, &ToServer, buff, sizeof(buff))
+            < 0
+        || FromServer == NULL || ToServer == NULL) {
+        if (buff[0])
             warn("server says: %s", buff);
         sysdie("cannot connect to server");
     }
 
     /* Does the server want this article? */
     if (PostMode) {
-	fprintf(ToServer, "post\r\n");
-	i = NNTP_CONT_POST;
-    }
-    else {
-	fprintf(ToServer, "ihave %s\r\n", mesgid);
-	i = NNTP_CONT_IHAVE;
+        fprintf(ToServer, "post\r\n");
+        i = NNTP_CONT_POST;
+    } else {
+        fprintf(ToServer, "ihave %s\r\n", mesgid);
+        i = NNTP_CONT_IHAVE;
     }
     SafeFlush(ToServer);
     GetFromServer(buff, sizeof buff, "cannot offer article to server");
     if (atoi(buff) != i) {
         warn("server doesn't want the article: %s", buff);
-	SendQuit(1);
+        SendQuit(1);
     }
 
     /* Send the file over. */
     fseeko(F, 0, SEEK_SET);
     while (fgets(buff, sizeof buff, F) != NULL) {
-	if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
-	    fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);
-	    continue;
-	}
-	if ((p = strchr(buff, '\n')) != NULL)
-	    *p = '\0';
-	fprintf(ToServer, buff[0] == '.' ? ".%s\r\n" : "%s\r\n",
-		buff);
-	SafeFlush(ToServer);
+        if (strncmp(buff, MESGIDHDR, strlen(MESGIDHDR)) == 0) {
+            fprintf(ToServer, "%s %s\r\n", MESGIDHDR, mesgid);
+            continue;
+        }
+        if ((p = strchr(buff, '\n')) != NULL)
+            *p = '\0';
+        fprintf(ToServer, buff[0] == '.' ? ".%s\r\n" : "%s\r\n", buff);
+        SafeFlush(ToServer);
     }
     fprintf(ToServer, ".\r\n");
     SafeFlush(ToServer);
@@ -171,7 +168,7 @@ main(int ac, char *av[])
 
     /* How did the server respond? */
     GetFromServer(buff, sizeof buff,
-	"no reply from server after sending the article");
+                  "no reply from server after sending the article");
     i = PostMode ? NNTP_OK_POST : NNTP_OK_IHAVE;
     if (atoi(buff) != i)
         sysdie("cannot send article to the server: %s", buff);
