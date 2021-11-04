@@ -146,9 +146,7 @@
 /samples/innreport.conf
 /samples/newsfeeds
 /samples/nnrpd_access.pl
-/samples/nnrpd_access_wrapper.pl
 /samples/nnrpd_auth.pl
-/samples/nnrpd_auth_wrapper.pl
 /scripts/inncheck
 /scripts/innmail
 /scripts/innreport

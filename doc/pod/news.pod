@@ -1,3 +1,24 @@
+=head1 Upgrading from 2.6 to 2.7
+
+The following changes require your full attention because a manual
+intervention may be needed:
+
+=over 2
+
+=item *
+
+Wrappers around old Perl and Python authentication and access hooks,
+pre-dating S<INN 2.4.0> and identifiable by the I<nnrpperlauth> and
+I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as
+samples in INN releases.  If not already done, you should either replace
+old hooks with new modern hooks or use the possibilities F<readers.conf>
+and regular authenticator and resolver programs offer.
+
+=back
+
+If you are upgrading from a version prior to S<INN 2.5>, see also
+L<Upgrading from 2.4 to 2.5>.
+
 =head1 Changes in 2.7.0
 
 =over 2

@@ -706,11 +706,6 @@ These parameters affect the behavior of INN for readers.  Most of them are
 used by nnrpd(8).  There are some special sets of settings that are broken
 out separately after the initial alphabetized list.
 
-Note that the two parameters I<nnrpperlauth> and I<nnrppythonauth> are now
-obsolete; see "Changes to Perl Authentication Support for nnrpd" in
-F<doc/hook-perl> and "Changes to Python Authentication and Access Control
-Support for nnrpd" in F<doc/hook-python> for more information.
-
 =over 4
 
 =item I<allownewnews>

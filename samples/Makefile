@@ -10,8 +10,7 @@ include ../Makefile.global
 top	      = ..
 
 ALL           = buffindexed.conf inn.conf innreport.conf newsfeeds \
-		nnrpd_auth.pl nnrpd_access.pl nnrpd_auth_wrapper.pl \
-		nnrpd_access_wrapper.pl
+		nnrpd_auth.pl nnrpd_access.pl
 
 all: $(ALL)
 
@@ -41,5 +40,3 @@ innreport.conf:          innreport.conf.in          $(FIXC) ; $(FIXC) $@.in
 newsfeeds:               newsfeeds.in               $(FIXC) ; $(FIXC) $@.in
 nnrpd_auth.pl:           nnrpd_auth.pl.in           $(FIXS) ; $(FIXS) $@.in
 nnrpd_access.pl:         nnrpd_access.pl.in         $(FIXS) ; $(FIXS) $@.in
-nnrpd_auth_wrapper.pl:   nnrpd_auth_wrapper.pl.in   $(FIXS) ; $(FIXS) $@.in
-nnrpd_access_wrapper.pl: nnrpd_access_wrapper.pl.in $(FIXS) ; $(FIXS) $@.in
