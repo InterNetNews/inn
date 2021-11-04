@@ -82,6 +82,8 @@ PushIOvHelper(struct iovec *vec, int *countp)
         }
 
         *countp = 0;
+
+        TMRstop(TMR_NNTPWRITE);
         return;
     }
 #endif /* HAVE_ZLIB */

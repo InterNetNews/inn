@@ -16,8 +16,8 @@ and regular authenticator and resolver programs offer.
 
 =back
 
-If you are upgrading from a version prior to S<INN 2.5>, see also
-L<Upgrading from 2.4 to 2.5>.
+If you are upgrading from a version prior to S<INN 2.6>, see also
+L<Upgrading from 2.5 to 2.6>.
 
 =head1 Changes in 2.7.0
 
@@ -103,6 +103,11 @@ about why it failed.
 
 Fixed parallel builds using C<make -j>.  Thanks to Richard Kettlewell
 for the path.
+
+=item *
+
+B<nnrpd> now properly gathers timer statistics when a compression layer
+is active.
 
 =item *
 
