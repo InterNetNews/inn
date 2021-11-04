@@ -932,7 +932,7 @@ readers_conf
                 'default'       => 'string',
                 'default-domain'=> 'string',
                 'key'           => 'string',
-                'require_ssl'   => 'boolean',
+                'require_encryption' => 'boolean',
                 'perl_access'   => 'path',
                 'python_access' => 'path',
                 'python_dynamic'=> 'path',

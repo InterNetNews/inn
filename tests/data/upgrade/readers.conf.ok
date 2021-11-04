@@ -1,0 +1,10 @@
+auth "users" {
+    hosts: "*"
+    default: "<all>"
+    require_encryption: true
+}
+
+access "users" {
+    users: "<all>"
+    read: "local.test"
+}

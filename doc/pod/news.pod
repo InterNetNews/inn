@@ -7,6 +7,15 @@ intervention may be needed:
 
 =item *
 
+The I<require_ssl> parameter in F<readers.conf> has been renamed to
+I<require_encryption> as it applies to any kind of encryption layers,
+including TLS and SASL security layers.  As B<innupgrade> only takes
+care of the change in the file named F<readers.conf>, you will have
+to manually rename that parameter in configuration files for B<nnrpd>
+with an alternate name.
+
+=item *
+
 Wrappers around old Perl and Python authentication and access hooks,
 pre-dating S<INN 2.4.0> and identifiable by the I<nnrpperlauth> and
 I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as

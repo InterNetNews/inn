@@ -89,7 +89,7 @@ address in a netblock; for example, "10.10.10.0/24" will match any IP
 address between 10.10.10.0 and 10.10.10.255 inclusive.
 
 If compiled against the TLS/SSL or SASL libraries, an auth group with
-the I<require_ssl> parameter set to true only applies if the incoming
+the I<require_encryption> parameter set to true only applies if the incoming
 connection is using an encryption layer, either from the beginning if
 the B<-S> flag was passed to B<nnrpd>, or after a successful use of
 STARTTLS, or after a successful authentication using a SASL mechanism
@@ -344,7 +344,7 @@ If this parameter is present, any connection matching this auth group will
 have its privileges determined only by the subset of access groups
 containing a matching key parameter.
 
-=item B<require_ssl:>
+=item B<require_encryption:>
 
 If set to true, an incoming connection only matches this auth group if it
 is encrypted, either from the beginning if the B<-S> flag was passed to
@@ -585,7 +585,8 @@ Here's a basic summary of what happens when a client connects:
 =item *
 
 All auth groups are scanned and the ones that don't match the client
-(due to I<hosts>, I<localaddress>, I<require_ssl>, etc.) are eliminated.
+(due to I<hosts>, I<localaddress>, I<require_encryption>, etc.) are
+eliminated.
 
 =item *
 
@@ -880,7 +881,7 @@ also authenticate using a strong SASL mechanism.  Here are some ideas:
 
 To restrict connections on the standard NNTP port (119) to use an
 encryption layer for some (or all) of the auth groups to match, use
-the I<require_ssl> parameter.  Note that a client can use STARTTLS
+the I<require_encryption> parameter.  Note that a client can use STARTTLS
 to negotiate an encrypted TLS connection.  A secure layer can also be
 negotiated during authentication via AUTHINFO SASL.
 
@@ -895,7 +896,7 @@ above, with ones having global applicability below.
 Consider running B<nnrpd> with the B<-S> flag (either also with B<-D>,
 or out of "super-server" like B<inetd>) on the NNTPS port (563) for
 clients that support TLS/SSL.  See nnrpd(8) for more details about how
-to configure that.  You can use the I<require_ssl> parameter or the
+to configure that.  You can use the I<require_encryption> parameter or the
 B<-c> flag to specify an alternate F<readers.conf> file if you want
 a substantially different configuration for this case.
 

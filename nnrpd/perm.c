@@ -43,7 +43,7 @@ typedef struct _AUTHGROUP {
     char *name;
     char *key;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    int require_ssl;
+    int require_encryption;
 #endif
     char *hosts;
     METHOD **res_methods;
@@ -164,8 +164,8 @@ extern bool PerlLoaded;
 #define PERMpython_access              60
 #define PERMpython_dynamic             61
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-#    define PERMrequire_ssl 62
-#    define PERMMAX         63
+#    define PERMrequire_encryption 62
+#    define PERMMAX                63
 #else
 #    define PERMMAX 62
 #endif
@@ -255,7 +255,7 @@ static CONFTOKEN PERMtoks[] = {
     { PERMpython_access,        (char *) "python_access:"       },
     { PERMpython_dynamic,       (char *) "python_dynamic:"      },
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    { PERMrequire_ssl,          (char *) "require_ssl:"         },
+    { PERMrequire_encryption,   (char *) "require_encryption:"  },
 #endif
     { 0,                        (char *) NULL                   }
 };
@@ -356,7 +356,7 @@ copy_authgroup(AUTHGROUP *orig)
         ret->hosts = 0;
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    ret->require_ssl = orig->require_ssl;
+    ret->require_encryption = orig->require_encryption;
 #endif
 
     ret->res_methods = 0;
@@ -459,7 +459,7 @@ static void
 SetDefaultAuth(AUTHGROUP *curauth UNUSED)
 {
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    curauth->require_ssl = false;
+    curauth->require_encryption = false;
 #endif
 }
 
@@ -682,10 +682,10 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
         SET_CONFIG(PERMkey);
         break;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    case PERMrequire_ssl:
+    case PERMrequire_encryption:
         if (boolval != -1)
-            curauth->require_ssl = boolval;
-        SET_CONFIG(PERMrequire_ssl);
+            curauth->require_encryption = boolval;
+        SET_CONFIG(PERMrequire_encryption);
         break;
 #endif
     case PERMhost:
@@ -1291,7 +1291,7 @@ PERMreadfile(char *filename)
                 /* Stuff that belongs to an auth group. */
             case PERMhost:
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-            case PERMrequire_ssl:
+            case PERMrequire_encryption:
 #endif
             case PERMauthprog:
             case PERMresprog:
@@ -1484,7 +1484,7 @@ PERMgetinitialaccess(char *readersconf)
         if (auth_realms[i]->auth_methods != NULL) {
             PERMcanauthenticate = true;
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-            if (!auth_realms[i]->require_ssl)
+            if (!auth_realms[i]->require_encryption)
                 PERMcanauthenticatewithoutSSL = true;
 #endif
         }
@@ -1525,7 +1525,7 @@ PERMgetaccess(bool initialconnection)
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
         /* If an encryption layer is required, check that the connection
          * really uses one. */
-        if (auth_realms[i]->require_ssl && !encryption_layer_on) {
+        if (auth_realms[i]->require_encryption && !encryption_layer_on) {
             continue;
         }
 #endif
@@ -2044,7 +2044,7 @@ ResolveUser(AUTHGROUP *auth)
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     /* If an encryption layer is required, check that the connection
      * really uses one. */
-    if (auth->require_ssl && !encryption_layer_on)
+    if (auth->require_encryption && !encryption_layer_on)
         return NULL;
 #endif
 
@@ -2095,7 +2095,7 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     /* If an encryption layer is required, check that the connection
      * really uses one. */
-    if (auth->require_ssl && !encryption_layer_on)
+    if (auth->require_encryption && !encryption_layer_on)
         return NULL;
 #endif
 

@@ -70,6 +70,16 @@ of B<innfeed> or B<imapfeed>.
 
 =back
 
+=item F<readers.conf>
+
+=over 2
+
+=item *
+
+Replace the I<require_ssl> parameter with I<require_encryption>.
+
+=back
+
 =back
 
 A few obsolete programs or configuration files are renamed with a C<.OLD>
