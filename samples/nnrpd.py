@@ -6,8 +6,10 @@
 
 from types import *
 
+
 def set_auth_hook(anObject):
     print("** set_auth_hook for " + repr(anObject))
+
 
 def syslog(level, message):
     print("-- syslog level: %s message: %s" % (level, message))

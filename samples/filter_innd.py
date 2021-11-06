@@ -22,6 +22,7 @@ import sys
 ##  The built-in intern() method has been in the sys module
 ##  since Python 3.0.
 if sys.version_info[0] >= 3:
+
     def intern(headerName):
         return sys.intern(headerName)
 
@@ -61,7 +62,7 @@ MIME_Version = intern("MIME-Version")
 Newsgroups = intern("Newsgroups")
 NNTP_Posting_Date = intern("NNTP-Posting-Date")
 NNTP_Posting_Host = intern("NNTP-Posting-Host")
-NNTP_Posting_Path  = intern("NNTP-Posting-Path")
+NNTP_Posting_Path = intern("NNTP-Posting-Path")
 Organization = intern("Organization")
 Original_Sender = intern("Original-Sender")
 Originator = intern("Originator")
@@ -117,10 +118,10 @@ class InndFilter:
         This is a good place to initialize variables and precompile
         regular expressions, or maybe reload stats from disk.
         """
-        self.re_newrmgroup = re.compile('(?:new|rm)group\s')
-        self.re_obsctl = re.compile('(?:sendsys|version|uuname)')
+        self.re_newrmgroup = re.compile("(?:new|rm)group\s")
+        self.re_obsctl = re.compile("(?:sendsys|version|uuname)")
         # Message-ID pattern from a once-common spambot.
-        self.re_none44 = re.compile('none\d+\.yet>')
+        self.re_none44 = re.compile("none\d+\.yet>")
         # There is a mad newgrouper who likes to meow.
         self.re_meow = re.compile("^Meow\!", re.M)
         # One of my silly addresses.
@@ -132,7 +133,7 @@ class InndFilter:
         You can use this method to save state information to be
         restored by the __init__() method or down in the main module.
         """
-        syslog('notice', "filter_before_reload executing...")
+        syslog("notice", "filter_before_reload executing...")
 
     def filter_close(self):
         """Runs when innd exits.
@@ -140,7 +141,7 @@ class InndFilter:
         You can use this method to save state information to be
         restored by the __init__() method or down in the main module.
         """
-        syslog('notice', "filter_close running, bye!")
+        syslog("notice", "filter_close running, bye!")
 
     def filter_messageid(self, msgid):
         """Filter articles just by their Message-IDs.
@@ -153,13 +154,13 @@ class InndFilter:
         Make sure that such a message is properly encoded in UTF-8
         so as to comply with the NNTP protocol.
         """
-        return ""               # Deactivate the samples.
+        return ""  # Deactivate the samples.
 
-        syslog('notice', "just seen %s" % msgid)
+        syslog("notice", "just seen %s" % msgid)
 
         if self.re_none44.search(msgid):
             return "But I don't like spam!"
-        if msgid[0:8] == '<cancel.':
+        if msgid[0:8] == "<cancel.":
             return "I don't do cybercancels."
 
     def filter_art(self, art):
@@ -172,21 +173,25 @@ class InndFilter:
         The available header fields are the ones listed near the top of
         innd/art.c.  At this writing, they are:
 
-            Also-Control, Approved, Archive, Archived-At, Bytes, Cancel-Key, Cancel-Lock,
-            Comments, Content-Base, Content-Disposition, Content-Transfer-Encoding,
-            Content-Type, Control, Date, Date-Received, Distribution, Expires,
-            Face, Followup-To, From, In-Reply-To, Injection-Date, Injection-Info,
-            Jabber-ID, Keywords, Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
+            Also-Control, Approved, Archive, Archived-At, Bytes,
+            Cancel-Key, Cancel-Lock, Comments, Content-Base,
+            Content-Disposition, Content-Transfer-Encoding,
+            Content-Type, Control, Date, Date-Received, Distribution,
+            Expires, Face, Followup-To, From, In-Reply-To,
+            Injection-Date, Injection-Info, Jabber-ID, Keywords,
+            Lines, List-ID, Message-ID, MIME-Version, Newsgroups,
             NNTP-Posting-Date, NNTP-Posting-Host, NNTP-Posting-Path,
-            Organization, Original-Sender, Originator,
-            Path, Posted, Posting-Version, Received, References, Relay-Version,
-            Reply-To, Sender, Subject, Summary, Supersedes, User-Agent,
-            X-Auth, X-Auth-Sender, X-Canceled-By, X-Cancelled-By, X-Complaints-To,
-            X-Face, X-HTTP-UserAgent, X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace,
-            X-Newsposter, X-Newsreader, X-No-Archive, X-Original-Message-ID,
-            X-Original-NNTP-Posting-Host, X-Original-Trace, X-Originating-IP,
-            X-PGP-Key, X-PGP-Sig, X-Poster-Trace, X-Postfilter, X-Proxy-User,
-            X-Submissions-To, X-Trace, X-Usenet-Provider, X-User-ID, Xref.
+            Organization, Original-Sender, Originator, Path, Posted,
+            Posting-Version, Received, References, Relay-Version,
+            Reply-To, Sender, Subject, Summary, Supersedes,
+            User-Agent, X-Auth, X-Auth-Sender, X-Canceled-By,
+            X-Cancelled-By, X-Complaints-To, X-Face, X-HTTP-UserAgent,
+            X-HTTP-Via, X-Mailer, X-Modbot, X-Modtrace, X-Newsposter,
+            X-Newsreader, X-No-Archive, X-Original-Message-ID,
+            X-Original-NNTP-Posting-Host, X-Original-Trace,
+            X-Originating-IP, X-PGP-Key, X-PGP-Sig, X-Poster-Trace,
+            X-Postfilter, X-Proxy-User, X-Submissions-To, X-Trace,
+            X-Usenet-Provider, X-User-ID, Xref.
 
         The body is the buffer in art[__BODY__] and the INN-reckoned
         line count is held as an integer in art[__LINES__].  (The
@@ -200,22 +205,22 @@ class InndFilter:
         rejected (make sure that such a response is properly encoded
         in UTF-8 so as to comply with the NNTP protocol).
         """
-        return ""               # Deactivate the samples.
+        return ""  # Deactivate the samples.
 
         # Example of decoding the Newsgroups header field with Python 3.x
         # using bytes object.
         #  header = art[Newsgroups].tobytes().decode("utf-8")
-        #  syslog('notice', "Newsgroups header field: %s" % header)
+        #  syslog("notice", "Newsgroups header field: %s" % header)
         #
         # Another example with the Distribution header field, that may not
         # be present in the headers, and also not in UTF-8.
         #  if art[Distribution]:
         #      header = art[Distribution].tobytes()
-        #      syslog('notice', "Distribution header field: %s" % header)
+        #      syslog("notice", "Distribution header field: %s" % header)
         #
         # Other examples:
-        #  syslog('notice', "Article body: %s" % art[__BODY__].tobytes())
-        #  syslog('notice', "Number of lines: %lu" % art[__LINES__])
+        #  syslog("notice", "Article body: %s" % art[__BODY__].tobytes())
+        #  syslog("notice", "Number of lines: %lu" % art[__LINES__])
 
         # Catch bad Message-IDs from articles (in case Message-IDs provided
         # as arguments to the IHAVE or TAKETHIS commands are not the real
@@ -231,13 +236,13 @@ class InndFilter:
                 if self.re_newrmgroup.match(art[Control]):
                     if self.re_meow.search(art[__BODY__]):
                         return "The fake tale meows again."
-                    # Python 3.x uses memoryview(b'mxyzptlk') because buffers
+                    # Python 3.x uses memoryview(b"mxyzptlk") because buffers
                     # do not exist any longer.  Note that the argument is
                     # a bytes object.
-                    #  if art[Distribution] == memoryview(b'mxyzptlk'):
+                    #  if art[Distribution] == memoryview(b"mxyzptlk"):
                     #      return "Evil control message from the 10th dimension"
                     # whereas in Python 2.x:
-                    #  if art[Distribution] == buffer('mxyzptlk'):
+                    #  if art[Distribution] == buffer("mxyzptlk"):
                     #      return "Evil control message from the 10th dimension"
                 if self.re_obsctl.match(art[Control]):
                     return "Obsolete control message"
@@ -246,7 +251,7 @@ class InndFilter:
             if self.re_fluffymorph.search(art[From]):
                 return "No, you may NOT meow."
         except:
-            syslog('n', str(sys.exc_info[1]))
+            syslog("n", str(sys.exc_info[1]))
 
     def filter_mode(self, oldmode, newmode, reason):
         """Capture server events and do something useful.
@@ -257,12 +262,14 @@ class InndFilter:
         usually just a comment string.
 
         The possible values of newmode and oldmode are the five
-        strings 'running', 'paused', 'throttled', 'shutdown' and
-        'unknown'.  Actually 'unknown' shouldn't happen; it's there
+        strings "running", "paused", "throttled", "shutdown" and
+        "unknown".  Actually "unknown" shouldn't happen; it's there
         in case feeping creatures invade innd.
         """
-        syslog('notice', 'state change from %s to %s - %s'
-               % (oldmode, newmode, reason))
+        syslog(
+            "notice",
+            "state change from %s to %s - %s" % (oldmode, newmode, reason),
+        )
 
 
 """
@@ -291,12 +298,12 @@ from INN import *
 ##  If you want to do something special when the server first starts
 ##  up, this is how to find out when it's time.
 
-if 'spamfilter' not in dir():
-    syslog('n', "First load, so I can do initialization stuff.")
+if "spamfilter" not in dir():
+    syslog("n", "First load, so I can do initialization stuff.")
     # You could unpickle a saved hash here, so that your hard-earned
     # spam scores aren't lost whenever you shut down innd.
 else:
-    syslog('NoTicE', "I'm just reloading, so skip the formalities.")
+    syslog("NoTicE", "I'm just reloading, so skip the formalities.")
 
 
 ##  Finally, here is how we get our class on speaking terms with innd.
@@ -306,7 +313,7 @@ else:
 spamfilter = InndFilter()
 try:
     set_filter_hook(spamfilter)
-    syslog('n', "spamfilter successfully hooked into INN")
-except Exception: # Syntax valid in both Python 2.x and 3.x.
+    syslog("n", "spamfilter successfully hooked into INN")
+except Exception:  # Syntax valid in both Python 2.x and 3.x.
     e = sys.exc_info()[1]
-    syslog('e', "Cannot obtain INN hook for spamfilter: %s" % e.args[0])
+    syslog("e", "Cannot obtain INN hook for spamfilter: %s" % e.args[0])

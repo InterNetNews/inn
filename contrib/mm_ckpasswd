@@ -45,38 +45,38 @@ except IndexError:
     sys.stderr.write("Usage: " + sys.argv[0] + " /path/to/config.db\n")
     sys.exit(2)
 
-fp = open(filename, 'rb')
+fp = open(filename, "rb")
 d = marshal.load(fp)
-passwords=d['passwords']
+passwords = d["passwords"]
 fp.close()
 
-username=""
-password=""
+username = ""
+password = ""
 
 while 1:
-    line=sys.stdin.readline()
-    if line == '':
+    line = sys.stdin.readline()
+    if line == "":
         break
     try:
-        name, value = map(string.strip,line.split(':'))
+        name, value = map(string.strip, line.split(":"))
         if name == "ClientAuthname":
-            username=value
+            username = value
         if name == "ClientPassword":
-            password=value
+            password = value
     except:
         pass
 
 if not username or not password:
     sys.exit(2)
 
-auth=0
+auth = 0
 try:
     if passwords[username] == password:
-        auth=1
+        auth = 1
 except:
     pass
 
-if auth==1:
+if auth == 1:
     print("User:%s" % username)
     sys.exit(0)
 else:

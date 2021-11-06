@@ -41,8 +41,8 @@ class ACCESS:
 
     def __init__(self):
         """This is a good place to initialize variables or open a
-           database connection."""
-        syslog('notice', 'nnrpd access class instance created')
+        database connection."""
+        syslog("notice", "nnrpd access class instance created")
 
     def access_init(self):
         """Called when this script is initialized."""
@@ -52,25 +52,38 @@ class ACCESS:
         """Called when python_access: is encountered in readers.conf."""
 
         # Just for debugging purposes (in Python 3.x syntax).
-        # syslog('notice', 'n_a access() invoked: hostname %s, ipaddress %s, port %lu, interface %s, intipaddr %s, intport %lu, user %s' % ( \
-        #        attributes['hostname'].tobytes(), \
-        #        attributes['ipaddress'].tobytes(), \
-        #        attributes['port'], \
-        #        attributes['interface'].tobytes(), \
-        #        attributes['intipaddr'].tobytes(), \
-        #        attributes['intport'], \
-        #        (attributes['user'].tobytes() if attributes['user'] else "-")))
+        #  syslog(
+        #      "notice",
+        #      "n_a access() invoked: hostname %s, ipaddress %s, port %lu,"
+        #      " interface %s, intipaddr %s, intport %lu, user %s"
+        #      % (
+        #          attributes["hostname"].tobytes(),
+        #          attributes["ipaddress"].tobytes(),
+        #          attributes["port"],
+        #          attributes["interface"].tobytes(),
+        #          attributes["intipaddr"].tobytes(),
+        #          attributes["intport"],
+        #          (
+        #              attributes["user"].tobytes()
+        #              if attributes["user"]
+        #              else "-"
+        #          ),
+        #      ),
+        #  )
 
         # Allow newsreading from specific host only.
         # Python 2.x syntax:
-        #  if '127.0.0.1' == str(attributes['ipaddress']):
+        #  if "127.0.0.1" == str(attributes["ipaddress"]):
         # Python 3.x syntax:
-        #  if b'127.0.0.1' == attributes['ipaddress'].tobytes():
-        #    syslog('notice', 'authentication access by IP address succeeded')
-        #    return {'read':'*', 'post':'*'}
+        #  if b"127.0.0.1" == attributes["ipaddress"].tobytes():
+        #      syslog(
+        #          "notice",
+        #          "authentication access by IP address succeeded"
+        #      )
+        #      return {"read": "*", "post": "*"}
 
-        syslog('notice', 'authentication access by IP address failed')
-        return {'read':'!*', 'post':'!*'}
+        syslog("notice", "authentication access by IP address failed")
+        return {"read": "!*", "post": "!*"}
 
     def access_close(self):
         """Called on nnrpd termination."""
@@ -87,12 +100,15 @@ from nnrpd import *
 ##  Create a class instance.
 myaccess = ACCESS()
 
-##  ...and try to hook up on nnrpd.  This would make auth object methods visible
-##  to nnrpd.
+##  ...and try to hook up on nnrpd.  This would make auth object methods
+##  visible to nnrpd.
 import sys
+
 try:
     set_auth_hook(myaccess)
-    syslog('notice', "access module successfully hooked into nnrpd")
-except Exception: # Syntax valid in both Python 2.x and 3.x.
+    syslog("notice", "access module successfully hooked into nnrpd")
+except Exception:  # Syntax valid in both Python 2.x and 3.x.
     e = sys.exc_info()[1]
-    syslog('error', "Cannot obtain nnrpd hook for access method: %s" % e.args[0])
+    syslog(
+        "error", "Cannot obtain nnrpd hook for access method: %s" % e.args[0]
+    )

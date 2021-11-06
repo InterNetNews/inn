@@ -6,29 +6,38 @@
 
 from types import *
 
+
 def set_filter_hook(anObject):
     print("** set_filter_hook for " + repr(anObject))
+
 
 def addhist(messageid):
     print("** addhist Message-ID: " + messageid)
 
+
 def havehist(messageid):
     print("** havehist Message-ID: " + messageid)
+
 
 def cancel(messageid):
     print("** cancel Message-ID: " + messageid)
 
+
 def newsgroup(groupname):
     print("** newsgroup: " + groupname)
+
 
 def head(messageid):
     print("** head Message-ID: " + messageid)
 
+
 def article(messageid):
     print("** article Message-ID: " + messageid)
 
+
 def hashstring(mystring):
     print("** hash: " + mystring)
+
 
 def syslog(level, message):
     print("-- syslog level: %s message: %s" % (level, message))

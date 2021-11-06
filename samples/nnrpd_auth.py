@@ -44,15 +44,16 @@ class AUTH:
 
     def __init__(self):
         """This is a good place to initialize variables or open a
-           database connection."""
+        database connection."""
 
         # Create a list of NNTP codes to respond on authentication.
-        self.authcodes = {  'ALLOWED': 281,
-                            'DENIED': 481,
-                            'ERROR': 403
+        self.authcodes = {
+            "ALLOWED": 281,
+            "DENIED": 481,
+            "ERROR": 403,
         }
 
-        syslog('notice', 'nnrpd authentication class instance created')
+        syslog("notice", "nnrpd authentication class instance created")
 
     def authen_init(self):
         """Called when this script is initialized."""
@@ -62,30 +63,46 @@ class AUTH:
         """Called when python_auth: is encountered in readers.conf."""
 
         # Just for debugging purposes (in Python 3.x syntax).
-        # By default, do not log passwords (available in attributes['pass']).
-        # syslog('notice', 'n_a authenticate() invoked: hostname %s, ipaddress %s, port %lu, interface %s, intipaddr %s, intport %lu, user %s' % ( \
-        #        attributes['hostname'].tobytes(), \
-        #        attributes['ipaddress'].tobytes(), \
-        #        attributes['port'], \
-        #        attributes['interface'].tobytes(), \
-        #        attributes['intipaddr'].tobytes(), \
-        #        attributes['intport'], \
-        #        (attributes['user'].tobytes() if attributes['user'] else "-")))
+        # By default, do not log passwords (available in attributes["pass"]).
+        #  syslog(
+        #      "notice",
+        #      "n_a authenticate() invoked: hostname %s, ipaddress %s,"
+        #      " port %lu, interface %s, intipaddr %s, intport %lu, user %s"
+        #      % (
+        #          attributes["hostname"].tobytes(),
+        #          attributes["ipaddress"].tobytes(),
+        #          attributes["port"],
+        #          attributes["interface"].tobytes(),
+        #          attributes["intipaddr"].tobytes(),
+        #          attributes["intport"],
+        #          (
+        #              attributes["user"].tobytes()
+        #              if attributes["user"]
+        #              else "-"
+        #          ),
+        #      ),
+        #  )
 
         # Do username password authentication.
         # Python 2.x syntax:
-        #  if attributes['user'] and attributes['pass'] \
-        #    and 'foo' == str(attributes['user']) \
-        #    and 'foo' == str(attributes['pass']):
+        #  if (
+        #      attributes["user"]
+        #      and attributes["pass"]
+        #      and "foo" == str(attributes["user"])
+        #      and "foo" == str(attributes["pass"])
+        #  ):
         # Python 3.x syntax:
-        #  if attributes['user'] and attributes['pass'] \
-        #    and b'foo' == attributes['user'].tobytes() \
-        #    and b'foo' == attributes['pass'].tobytes():
-        #      syslog('notice', 'authentication by username succeeded')
-        #      return (self.authcodes['ALLOWED'], 'No error', 'default_user')
+        #  if (
+        #      attributes["user"]
+        #      and attributes["pass"]
+        #      and b"foo" == attributes["user"].tobytes()
+        #      and b"foo" == attributes["pass"].tobytes()
+        #  ):
+        #      syslog("notice", "authentication by username succeeded")
+        #      return (self.authcodes["ALLOWED"], "No error", "default_user")
 
-        syslog('notice', 'authentication by username failed')
-        return (self.authcodes['DENIED'], 'Access Denied!')
+        syslog("notice", "authentication by username failed")
+        return (self.authcodes["DENIED"], "Access Denied!")
 
     def authen_close(self):
         """Called on nnrpd termination."""
@@ -102,12 +119,16 @@ from nnrpd import *
 ##  Create a class instance.
 myauth = AUTH()
 
-##  ...and try to hook up on nnrpd.  This would make auth object methods visible
-##  to nnrpd.
+##  ...and try to hook up on nnrpd.  This would make auth object methods
+##  visible to nnrpd.
 import sys
+
 try:
     set_auth_hook(myauth)
-    syslog('notice', "authentication module successfully hooked into nnrpd")
-except Exception: # Syntax valid in both Python 2.x and 3.x.
+    syslog("notice", "authentication module successfully hooked into nnrpd")
+except Exception:  # Syntax valid in both Python 2.x and 3.x.
     e = sys.exc_info()[1]
-    syslog('error', "Cannot obtain nnrpd hook for authentication method: %s" % e.args[0])
+    syslog(
+        "error",
+        "Cannot obtain nnrpd hook for authentication method: %s" % e.args[0],
+    )

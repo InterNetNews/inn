@@ -42,8 +42,8 @@ class DYNACCESS:
 
     def __init__(self):
         """This is a good place to initialize variables or open a
-           database connection."""
-        syslog('notice', 'nnrpd dynamic access class instance created')
+        database connection."""
+        syslog("notice", "nnrpd dynamic access class instance created")
 
     def dynamic_init(self):
         """Called when this script is initialized."""
@@ -51,34 +51,55 @@ class DYNACCESS:
 
     def dynamic(self, attributes):
         """Called when python_dynamic: is reached in the processing of
-           readers.conf and a reader requests either read or post
-           permission for particular newsgroup."""
+        readers.conf and a reader requests either read or post
+        permission for particular newsgroup."""
 
         # Just for debugging purposes (in Python 3.x syntax).
-        # syslog('notice', 'n_a dynamic() invoked: type %s, newsgroup %s, hostname %s, ipaddress %s, port %lu, interface %s, intipaddr %s, intport %lu, user %s' % ( \
-        #        attributes['type'].tobytes(), \
-        #        attributes['newsgroup'].tobytes(), \
-        #        attributes['hostname'].tobytes(), \
-        #        attributes['ipaddress'].tobytes(), \
-        #        attributes['port'], \
-        #        attributes['interface'].tobytes(), \
-        #        attributes['intipaddr'].tobytes(), \
-        #        attributes['intport'], \
-        #        (attributes['user'].tobytes() if attributes['user'] else "-")))
+        #  syslog(
+        #      "notice",
+        #      "n_a dynamic() invoked: type %s, newsgroup %s, hostname %s,"
+        #      " ipaddress %s, port %lu, interface %s, intipaddr %s,"
+        #      " intport %lu, user %s"
+        #      % (
+        #          attributes["type"].tobytes(),
+        #          attributes["newsgroup"].tobytes(),
+        #          attributes["hostname"].tobytes(),
+        #          attributes["ipaddress"].tobytes(),
+        #          attributes["port"],
+        #          attributes["interface"].tobytes(),
+        #          attributes["intipaddr"].tobytes(),
+        #          attributes["intport"],
+        #          (
+        #              attributes["user"].tobytes()
+        #              if attributes["user"]
+        #              else "-"
+        #          ),
+        #      ),
+        #  )
 
         # Allow reading of any newsgroup but not posting.
         # Python 2.x syntax:
-        #  if 'post' == str(attributes['type']):
+        #  if "post" == str(attributes["type"]):
         # Python 3.x syntax:
-        #  if b'post' == attributes['type'].tobytes():
-        #      syslog('notice', 'dynamic authorization access for post access denied')
+        #  if b"post" == attributes["type"].tobytes():
+        #      syslog(
+        #          "notice",
+        #          "dynamic authorization access for post access denied"
+        #      )
         #      return "no posting for you"
-        #  elif 'read' == str(attributes['type']):
-        #      syslog('notice', 'dynamic authorization access for read access granted')
+        #  elif "read" == str(attributes["type"]):
+        #      syslog(
+        #          "notice",
+        #          "dynamic authorization access for read access granted"
+        #      )
         #      return None
         #  else:
-        #      syslog('notice', 'dynamic authorization access type is not known: %s' % attributes['type'])
-        #      return "Internal error";
+        #      syslog(
+        #          "notice",
+        #          "dynamic authorization access type is not known: %s"
+        #          % attributes["type"]
+        #      )
+        #      return "Internal error"
         return None
 
     def dynamic_close(self):
@@ -96,12 +117,16 @@ from nnrpd import *
 ##  Create a class instance.
 mydynaccess = DYNACCESS()
 
-##  ...and try to hook up on nnrpd.  This would make auth object methods visible
-##  to nnrpd.
+##  ...and try to hook up on nnrpd.  This would make auth object methods
+##  visible to nnrpd.
 import sys
+
 try:
     set_auth_hook(mydynaccess)
-    syslog('notice', "dynamic access module successfully hooked into nnrpd")
-except Exception: # Syntax valid in both Python 2.x and 3.x.
+    syslog("notice", "dynamic access module successfully hooked into nnrpd")
+except Exception:  # Syntax valid in both Python 2.x and 3.x.
     e = sys.exc_info()[1]
-    syslog('error', "Cannot obtain nnrpd hook for dynamic access method: %s" % e.args[0])
+    syslog(
+        "error",
+        "Cannot obtain nnrpd hook for dynamic access method: %s" % e.args[0],
+    )
