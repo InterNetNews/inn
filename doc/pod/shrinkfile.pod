@@ -1,0 +1,98 @@
+=head1 NAME
+
+shrinkfile - Shrink files on line boundaries
+
+=head1 SYNOPSIS
+
+B<shrinkfile> [B<-nv>] [B<-m> I<maxsize>] [B<-s> I<size>] I<file> [I<file>
+...]
+
+=head1 DESCRIPTION
+
+The B<shrinkfile> program shrinks files to at most a given I<size> when their
+size is larger than I<maxsize>, preserving the data at the end of the file.
+Truncation is performed on line boundaries, where a line is a series of
+bytes ending with a newline (C<\n>).  There is no line length restriction
+and files may contain any binary data.
+
+If the first line is longer than the absolute value of I<size>, the file
+will be truncated to zero length.
+
+The maximum file size B<shrinkfile> can handle is 2,147,483,647 bytes.
+
+Temporary files are created in the I<pathtmp> directory as set in F<inn.conf>.
+The C<TMPDIR> environment variable may be used to specify a different
+directory.
+
+A newline will be added to any non-empty file that does not end with a
+newline, if naturally the resulting file size does not exceed I<size>
+by this addition.
+
+This program is currently used by only nntpsend(8).
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-m> I<maxsize>
+
+This option sets the maximum size allowed before truncation occurs.
+
+By default, I<maxsize> is the same as I<size> (as set with the B<-s> flag).
+If I<maxsize> is less than I<size>, I<maxsize> is reset to I<size>.
+
+This parameter may end with a C<k>, C<m> or C<g>, indicating kilobyte (1,024
+bytes), megabyte (1,048,576 bytes) or gigabyte (1,073,741,824 bytes) lengths.
+Uppercase letters are also allowed.
+
+=item B<-n>
+
+This flag is used to determine if any file is too large.  No files will be
+altered in this mode.
+
+Exits with status code C<0> if any file is larger than I<maxsize> (as set
+with the B<-m> flag), and exits with status code C<1> otherwise.
+
+=item B<-s> I<size>
+
+By default, I<size> is assumed to be zero and files are truncated to zero
+bytes.  This flag may be used to change the truncation size.  Because the
+program truncates only on line boundaries, the final size may be smaller
+than the specified truncation size.
+
+This parameter may end with a C<k>, C<m> or C<g>, indicating kilobyte (1,024
+bytes), megabyte (1,048,576 bytes) or gigabyte (1,073,741,824 bytes) lengths.
+Uppercase letters are also allowed.
+
+=item B<-v>
+
+Prints to standard output a status line if a file was shrunk.
+
+=back
+
+=head1 EXAMPLES
+
+Example usage:
+
+    shrinkfile -s 4m curds
+    shrinkfile -s 1g -v whey
+    shrinkfile -s 500k -m 4m -v curds whey
+    if shrinkfile -n -s 100m whey; then echo "whey is way too big"; fi
+
+The first command shrinks F<curds> to S<4 MB> if bigger than this size.
+The second command shrinks F<whey> to S<1 GB> and outputs a log line if the
+file is bigger than this size.  The third command shrinks both F<curds> and
+F<whey> to S<500 kB> if bigger than S<4 MB>, and outputs a log line for the
+files it has shrunk.  The fourth command just prints a sentence if C<whey>
+is bigger than S<100 MB>, without shrinking it.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+nntpsend(8).
+
+=cut
