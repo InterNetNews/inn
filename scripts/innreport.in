@@ -229,7 +229,7 @@ $index = $ref{'index'} if defined $ref{'index'};
 
 $ARCHIVE = &GetValue ($output{'default'}{'archive'})
   if defined $output{'default'}{'archive'};
-$ARCHIVE = $ARCHIVE eq 'true';
+$ARCHIVE = 1 if $ARCHIVE eq 'true';
 $ARCHIVE = 0 if defined $ref{'a'} || defined $ref{'archive'};
 $ARCHIVE = 1 if ($ref{'a'} || $ref{'archive'}) && $HTML;
 $ARCHIVE = 0 unless $HTML;
