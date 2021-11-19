@@ -14,13 +14,13 @@
 #
 ##########################################################################
 #
-# Usage:  innreport -f config_file [-[no]options] logfile [logfile2 [...]]
+# Usage: innreport -f config_file [-[no]options] logfile [logfile2 ...]
 #   where options are:
 #     -h (or -help)      : this help page
-#     -html              : HTML output
 #     -v                 : display the version number of innreport
 #     -f config_file     : name of the configuration file
 #     -config            : print innreport configuration information
+#     -html              : HTML output
 #     -g                 : want graphs [default]
 #     -graph             : an alias for option -g
 #     -d directory       : directory for Web pages
@@ -29,32 +29,33 @@
 #     -path directory    : an alias for option -p
 #     -w directory       : pictures path (web space)
 #     -webpath directory : an alias for option -w
-#     -i                 : name of index page
-#     -index             : an alias for option -i
-#     -a                 : want to archive HTML results
+#     -i filename        : name of index page
+#     -index filename    : an alias for option -i
+#     -a                 : want to archive HTML results [default]
 #     -archive           : an alias for option -a
 #     -c number          : how many report files to keep (0 = all)
 #     -cycle number      : an alias for option -c
 #     -s char            : separator for filename
 #     -separator char    : an alias for option -s
-#     -unknown           : Unknown entries from news log file
-#     -maxunrec          : Max number of unrecognized line to display
+#     -unknown           : Unknown entries from logs in text output [default]
+#     -html-unknown      : Unknown entries from logs in HTML output [default]
+#     -maxunrec number   : Max number of unrecognized lines to display
 #     -casesensitive     : Case sensitive
 #     -notdaily          : Never perform daily actions
 #
 # Use "no" in front of boolean options to unset them.
-# For example, "-html" is set by default.  Use "-nohtml" to remove this
+# For example, "-graph" is set by default.  Use "-nograph" to remove this
 # feature.
 #
 ##########################################################################
 #
 # ABSOLUTELY NO WARRANTY WITH THIS PACKAGE.  USE IT AT YOUR OWN RISKS.
 #
-# Note:  You need the Perl graphic library GD.pm if you want the graphs.
-#        GD is available on all good CPAN ftp sites.  For instance:
-#            <http://search.cpan.org/dist/GD/GD.pm>.
-#        Note:  innreport will create PNG or GIF files depending upon
-#               the GD version.
+# Note: You need the Perl graphic library GD.pm if you want the graphs.
+#       GD is available on all good CPAN ftp sites.  For instance:
+#           <https://metacpan.org/pod/GD>.
+#       Note: innreport will create PNG or GIF files depending upon
+#             the GD version.
 #
 # Documentation:  for a short explanation of the different options, you
 #        can read the usage (obtained with the -h or -help switch).
@@ -71,13 +72,13 @@
 # ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
 #
 #
-# Report:  Please report bugs (preferably) to the INN mailing list
-#          (see README) or directly to the author (do not forget to
-#          include the result of the "-config" switch, the parameters
-#          passed on the command line and the INN version).
-#          Please also report unknown entries.
-#          Be sure your are using the latest version of this script before
-#          any report.
+# Report: Please report bugs (preferably) to the INN mailing list
+#         (see README).  Do not forget to include the result of the
+#         "-config" switch, the parameters passed on the command line
+#         and the INN version).
+#         Please also report unknown entries.
+#         Be sure your are using the latest version of this script before
+#         any report.
 #
 ##########################################################################
 
@@ -352,7 +353,7 @@ my $current_year;
 my $HTML_header = '';
 my $HTML_footer = '';
 
-my $xmax = &GetValue ($output{'default'}{'graph_width'})   # Graph size..
+my $xmax = &GetValue ($output{'default'}{'graph_width'})   # Graph size.
   if defined $output{'default'}{'graph_width'};
 $xmax = 550 unless $xmax;
 
@@ -708,7 +709,7 @@ sub ms2time($) {
   return sprintf '%02d:%02d:%02d.%03d', $hour, $min, $sec, $ms;
 }
 
-# Rotate the archive files..
+# Rotate the archive files.
 sub Rotate {
   # Usage: &Rotate ($max_files, "$directory", "prefix", "suffix");
   my ($max, $rep, $prefix, $suffix) = @_;
@@ -791,10 +792,10 @@ sub ConvDate($$) {
 sub filenamecmp {
   my ($la, $lb) = ($a, $b);
   my ($ya) = $la =~ m/news-notice\.(\d+)\./o;
-  $ya += 100  if $ya < 90; # Try to pacify the year 2000 !
+  $ya += 100  if $ya < 90; # Try to pacify the year 2000!
   $ya += 1900 if $ya < 1900; # xx -> xxxx
   my ($yb) = $lb =~ m/news-notice\.(\d+)\./o;
-  $yb += 100  if $yb < 90; # Try to pacify the year 2000 !
+  $yb += 100  if $yb < 90; # Try to pacify the year 2000!
   $yb += 1900 if $yb < 1900; # xx -> xxxx
 
   $la =~ s/news-notice\.(\d+)\./$ya\./;
@@ -923,9 +924,10 @@ sub GetHTMLFooter() {
 
   return <<EOF;
 <div class="ir-pageFooter">
-  <div class="ir-versionNotice">innreport from $INN::Config::version
-  based on work (c) 1996-1999 by Fabien Tassin
-  &lt;<a href="mailto:fta\@sofaraway.org">fta\@sofaraway.org</a>&gt;$footer
+  <div class="ir-versionNotice"><em>innreport</em> from $INN::Config::version
+  based on initial work (&copy;) 1996-2001 by Fabien Tassin
+  &lt;<a href="mailto:fta\@sofaraway.org">fta\@sofaraway.org</a>&gt;
+  and enhanced by several contributors since then$footer
   </div>
 </div>
 $HTML_footer
@@ -1104,7 +1106,7 @@ sub Make_Index($$$$) {
       foreach $k (keys (%data)) {
 	my @res = split /\|/, $data{$k};
 	my ($year) = $k =~ m/^news-notice\.(\d+)\.\d+\.\d+-\d+.\d+.\d+$HTML_EXTENSION/;
-	next unless $year; # bad filename.. strange.
+	next unless $year; # bad filename... strange.
 	my ($start, $end) =
 	  $res[$date_idx - 1] =~ m/^(\w+\s+\d+ \S+) -- (\w+\s+\d+ \S+)$/o;
         if (!defined($start))
@@ -1124,7 +1126,7 @@ sub Make_Index($$$$) {
           warn "Time range 0 in DB file ignored: $k" if ($DEBUG);
           next;
         }
-	# 31/12 - 1/1 ?
+	# 31/12 - 1/1?
         if ($end_sec < $start_sec) {
           $end_sec = &ConvDate ($year+1 . ' ' . $end, 0);
         }
@@ -1349,7 +1351,7 @@ sub Graph3d {
   $image->line ($ml, $size * $d + $mt,
 		$xmax - $mr - $rx, $size * $d + $mt, $black);
 
-  # Graduations..
+  # Graduations.
   my $nn = 10;
   for $k (1 .. ($nn - 1)) {
     $image->dashedLine ($ml + $rx + $k * ($xmax - $ml - $mr - $rx) / $nn,
@@ -1455,14 +1457,14 @@ sub Histo($$$$$$$$) {
   my $max = 0;
   my $ymax = 300;
   my $nb = 0;
-  # A hugly hack to convert hashes to lists..
+  # A hugly hack to convert hashes to lists
   # and to adjust the first and the last value...
-  # this function should be rewritten..
+  # This function should be rewritten.
   my (@a, @b, $kk);
   foreach $kk (sort keys (%$val1))   {
     if (defined $$val1{$kk}) {
       $nb++;
-      # Arg... the following MUST be removed !!!!!!!!!
+      # Arg... the following MUST be removed!!!!!!!!!
       $$val1{$kk} = $$val1{$kk} / $innreport_inn::inn_flow_time{$kk} * 3600
 	if ($innreport_inn::inn_flow_time{$kk} != 3600) &&
 	   ($innreport_inn::inn_flow_time{$kk} != 0);
@@ -1954,12 +1956,12 @@ sub Chrono {
       $t += $mm;
       $t += $d if $i == 0 || $i == 2 || $i == 4 ||
 		  $i == 6 || $i == 7 || $i == 9 || $i == 11; # 31 days months
-      if ($i == 1) {  # february ?
+      if ($i == 1) {  # February?
 	$t -= 2 * $d;
 	$t += $d unless (1970 + int ($t / $y)) % 4;
       }
       $i++;
-      $i = 0 if $i == 12; # Happy New Year !!
+      $i = 0 if $i == 12; # Happy New Year!!
     }
   }
   else {
@@ -1987,12 +1989,12 @@ sub Chrono {
       $t += $mm;
       $t += $d if ($i == 0 || $i == 2 || $i == 4 ||
 		   $i == 6 || $i == 7 || $i == 9 || $i == 11); # 31 days months
-      if ($i == 1) {  # february ?
+      if ($i == 1) {  # February?
 	$t -= 2 * $d;
 	$t += $d unless (1970 + int ($t / $y)) % 4;
       }
       $i++;
-      $i = 0 if $i == 12; # Happy New Year !!
+      $i = 0 if $i == 12; # Happy New Year!!
     }
   }
 
@@ -2143,25 +2145,25 @@ sub Write_Results {
 	       $output{$report}{'skip'} =~ m/^true$/io;
   my ($TEXT, $HTML, $DOUBLE);
 
-  # Need a text report ?
+  # Need a text report?
   $TEXT = defined $output{$report}{'text'} ? $output{$report}{'text'} :
     (defined $output{'default'}{'text'} ? $output{'default'}{'text'} : '');
   die "Error in config file. Field 'text' is mandatory.\n" unless $TEXT;
   $TEXT = ($TEXT =~ m/^true$/io) ? 1 : 0;
 
-  # Need an html report ?
+  # Need an HTML report?
   if ($HTML_output) {
     $HTML = defined $output{$report}{'html'} ? $output{$report}{'html'} :
       (defined $output{'default'}{'html'} ? $output{'default'}{'html'} : '');
     die "Error in config file. Field 'html' is mandatory.\n" unless $HTML;
     $HTML = ($HTML =~ m/^true$/io) ? 1 : 0;
   }
-  # Double table ?
+  # Double table?
   $DOUBLE = defined $output{$report}{'double'} ?
     $output{$report}{'double'} : 0;
   $DOUBLE = ($DOUBLE =~ m/^true$/io) ? 1 : 0;
 
-  # Want to truncate the report ?
+  # Want to truncate the report?
   my $TOP = defined $output{$report}{'top'} ? $output{$report}{'top'} : -1;
   my $TOP_HTML = defined $output{$report}{'top_html'} ?
                    $output{$report}{'top_html'} : $TOP;
@@ -2262,7 +2264,7 @@ sub Write_Results {
 	  my $whtml = defined $$i{'html'} ? $$i{'html'} : 1;
 	  $whtml = $whtml =~ m/^(1|true)$/io ? 1 : 0;
 
-	  # is it the primary key ?
+	  # Is it the primary key?
 	  $p = 0;
 	  $p = 1 if defined $$i{'primary'} && $$i{'primary'} =~ m/true/;
 
@@ -2573,7 +2575,7 @@ sub Write_Results {
 	  }
 	}
         elsif ($type eq 'piechart') {
-	  print "Sorry, graph type 'piechart' not supported yet..\n";
+	  print "Sorry, graph type 'piechart' not supported yet.\n";
 	}
         else {
 	  die "Error in section $report section 'graph'. " .
@@ -2933,8 +2935,8 @@ sub Usage {
 
 sub Version {
   print "\nThis is innreport from $INN::Config::version\n\n";
-  print "Copyright 1996-1999, Fabien Tassin <fta\@sofaraway.org>\n";
-  print "Enhanced by several contributors since then\n";
+  print "Copyright 1996-2001, Fabien Tassin <fta\@sofaraway.org>.\n";
+  print "Enhanced by several contributors since then.\n";
   exit 0;
 }
 
@@ -2961,7 +2963,7 @@ sub Summary {
   print "    case_sensitive=" .
                       ($CASE_SENSITIVE?"yes":"no") . ", want_unknown=" .
 		      ($WANT_UNKNOWN?"yes":"no") .
-                      ", max_unrecog=$MAX_UNRECOGNIZED\n";
+                      ", max_unrecognized=$MAX_UNRECOGNIZED\n";
   print "  Paths:\n";
   print "    html_dir=$HTML_dir\n";
   print "    img_dir=$IMG_dir\n";
@@ -2971,8 +2973,7 @@ sub Summary {
   print "    perl version $::Config{baserev} "
             . "patchlevel $::Config{patchlevel} "
             . "subversion $::Config{subversion}\n";
-  print "    libperl=$::Config{libperl}, useshrplib=$::Config{useshrplib}, "
-       . "bincompat3=$::Config{bincompat3}\n";
+  print "    libperl=$::Config{libperl}, useshrplib=$::Config{useshrplib}\n";
   print "    osname=$::Config{osname}, osvers=$::Config{osvers}, "
         . "archname=$::Config{archname}\n";
   print "    uname=$::Config{myuname}\n\n";

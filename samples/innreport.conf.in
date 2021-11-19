@@ -3,7 +3,8 @@
 #
 # Sample file for INN.
 #
-# (c) 1997, 1998, 1999 by Fabien Tassin <fta@sofaraway.org>
+# (c) 1997-1999 by Fabien Tassin <fta@sofaraway.org>.
+# Enhanced by several contributors since then.
 ######################################################################
 
 # Default parameters
@@ -13,23 +14,23 @@ section default {
 	unknown		true;        # want unknown entries.
         html-unknown    true;        # want unknown entries in HTML reports. 
 	max_unknown     50;          # max unknown entries to display.
-	casesensitive   true;
+	casesensitive   true;        # use case sensitive search patterns.
 	module		"innreport_inn";  # ${libpath}/${module}.pm
 	unwanted_log	"unwanted.log";   # ${logpath}/${unwanted_log}
-	text            true;
-	html            false;
-	graph           true;  # need 'html'
+	text            true;  # generate text reports.
+	html            false; # generate HTML reports.
+	graph           true;  # need 'html'.
 	archive		true;  # use false to keep only the latest HTML report.
 
-      # Change to .xhtml to let Apache serve correct MIME type.
+      # Change to .xhtml to let the web server serve correct MIME type.
 	index			"index.html"; # name of the HTML index file.
-      # html_file_extension	".html";
+	html_file_extension	".html";      # extension to HTML file names.
 
-      # html_dir        "@HTTPDIR@"; # default to pathhttp in inn.conf.
-	img_dir         "pics";      # images will go to ${html_dir}/${img_dir}
+	html_dir	"@HTTPDIR@"; # default to pathhttp in inn.conf.
+	img_dir		"pics";      # ${html_dir}/${img_dir}
 	cycle		none;        # use a number or 'none'.
         separator       ".";         # use a valid filename character.
-	title		"Daily Usenet report";
+	title		"Daily Usenet report";  # title for reports.
       # title	        "Daily Usenet report for <a href=\"news/stats/\">news.y.z</a>";
       # footer		"Local contact: <a href=\"mailto:x@y.z\">x@y.z</a>";
 
@@ -43,14 +44,16 @@ section default {
       # Character set used in XML and Content-Type declaration.
       # html_encoding	"ISO-8859-1";
 
-      # URL to CSS file.  If undefined, a default style sheet is generated.
+      # Name or URL to CSS file.
+      # If undefined, a default style sheet is generated.
       # html_css_url    "innreport.css";
 
-      # URL to XSL file.  See <http://www.w3.org/MarkUp/2004/xhtml-faq#ie>.
+      # Name or URL to XSL file.
+      # See <https://www.w3.org/MarkUp/2004/xhtml-faq#ie>.
       # html_xsl_url    "";
 
-        graph_width	550;         # graph width (in pixels)
-        transparent	true;        # graph background transparent ?
+        graph_width	550;         # graph width (in pixels).
+        transparent	false;       # graph background transparent?
         graph_fg        "#000000";   # graph foreground color.
         graph_bg        "#FFFFFF";   # graph background color.
 };
