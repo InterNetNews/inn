@@ -5,7 +5,7 @@
 **  public domain.  Rewritten for INN by Rich Salz.
 **
 **  Usage:
-**      shrinkfile [-n] [-s size [-m maxsize]] [-v] file...
+**      shrinkfile [-nv] [-m maxsize] [-s size] file [file ...]
 **      -n              No writes, exit 0 if any file is too large, 1 otherwise
 **      -s size         Truncation size (0 default); suffix may be k, m,
 **                      or g to scale.  Must not be larger than 2^31 - 1.
@@ -13,12 +13,12 @@
 **                      <= size, then it is reset to size.  Default == size.
 **      -v              Print status line.
 **
-**  Files will be shrunk an end of line boundary.  In no case will the
+**  Files will be shrunk at end of line boundary.  In no case will the
 **  file be longer than size bytes if it was longer than maxsize bytes.
 **  If the first line is longer than the absolute value of size, the file
 **  will be truncated to zero length.
 **
-**  The -n flag may be used to determine of any file is too large.  No
+**  The -n flag may be used to determine if any file is too large.  No
 **  files will be altered in this mode.
 */
 
@@ -107,7 +107,7 @@ AppendNewline(char *name)
 }
 
 /*
-**  Just check if it is too big
+**  Just check if it is too big.
 */
 static bool
 TooBig(FILE *F, off_t maxsize)
@@ -305,8 +305,9 @@ ParseSize(char *p)
 static void
 Usage(void)
 {
-    fprintf(stderr,
-            "Usage: shrinkfile [-n] [ -m maxsize ] [-s size] [-v] file...");
+    fprintf(
+        stderr,
+        "Usage: shrinkfile [-nv] [-m maxsize] [-s size] file [file ...]\n");
     exit(1);
 }
 
@@ -369,19 +370,18 @@ main(int ac, char *av[])
             continue;
         }
 
-        /* -n (no_op) or normal processing */
+        /* If -n (no_op). */
         if (no_op) {
 
-            /* check if too big and exit zero if it is */
+            /* Check if too big and exit zero if it is. */
             if (TooBig(F, maxsize)) {
                 if (Verbose)
                     notice("%s is too large", p);
                 exit(0);
                 /* NOTREACHED */
             }
-
-            /* no -n, do some real work */
         } else {
+            /* No -n, do some real work. */
             Changed = false;
             if (!Process(F, p, size, maxsize, &Changed))
                 syswarn("cannot shrink %s", p);
@@ -393,7 +393,7 @@ main(int ac, char *av[])
         notice("did not find a file that was too large");
     }
 
-    /* if -n, then exit non-zero to indicate no file too big */
+    /* If -n, then exit non-zero to indicate no file too big. */
     exit(no_op ? 1 : 0);
     /* NOTREACHED */
 }

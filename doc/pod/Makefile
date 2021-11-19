@@ -11,7 +11,7 @@ TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
 	../man/grephistory.1 ../man/inews.1 ../man/innconfval.1 \
 	../man/innmail.1 ../man/pullnews.1 ../man/rnews.1 \
-	../man/shlock.1 ../man/simpleftp.1 ../man/sm.1
+	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
 
 MAN3	= ../man/libauth.3 ../man/libinnhist.3 ../man/libstorage.3 \
 	../man/list.3 ../man/qio.3 \
@@ -77,6 +77,7 @@ maintclean: distclean
 ../man/pullnews.1:	pullnews.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/rnews.1:		rnews.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/shlock.1:	shlock.pod		; $(POD2MAN) -s 1 $? > $@
+../man/shrinkfile.1:	shrinkfile.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
