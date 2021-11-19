@@ -1,0 +1,170 @@
+=head1 NAME
+
+innreport - Summarize INN log files
+
+=head1 SYNOPSIS
+
+B<innreport> B<-f> I<config-file> [B<-config>] [B<-help>] [B<-v>]
+[B<->[B<no>]B<archive>] [B<->[B<no>]B<casesensitive>] [B<->[B<no>]B<graph>]
+[B<->[B<no>]B<html>] [B<->[B<no>]B<html-unknown>] [B<->[B<no>]B<notdaily>]
+[B<->[B<no>]B<unknown>] [B<-cycle> I<num-cycle>] [B<-dir> I<http-dir>]
+[B<-index> I<index-file>] [B<-maxunrec> I<num-lines>]
+[B<-path> I<pictures-dir>] [B<-separator> I<char>]
+[B<-webpath> I<pictures-path>] I<log-file> [I<log-file> ...]
+
+=head1 DESCRIPTION
+
+B<innreport> is a Perl script that summarizes INN log files, with optional
+HTML output and graphs.  It is normally invoked by scanlogs(8) which includes
+the output of B<innreport> in daily Usenet reports.
+
+Supported programs are B<batcher>, B<cnfsstat>, B<controlchan>, B<innd>,
+B<innfeed>, B<innxmit>, B<nnrpd>, B<nntplink> (an external program),
+B<overchan>, B<perl-nocem> and B<rnews>.
+
+B<innreport> also updates the count of newsgroups not locally carried
+by the news server, and for which articles have been received, in the
+F<unwanted.log> log file.  If that update should not be done, as it should
+occur only once a day while parsing daily logs, the B<-notdaily> flag should
+be given to B<innreport>.
+
+If you want B<innreport> to generate graphs in its HTML reports, you need
+the Perl graphic library F<GD.pm>.
+
+At least one non-empty log file to parse should be given at the end of the
+command line invoking B<innreport>.
+
+=head1 OPTIONS
+
+Only one option is mandatory:
+
+=over 4
+
+=item B<-f> I<config-file>
+
+Full path to the configuration file.  It is usually F<innreport.conf> in
+I<pathetc>, but there is no default value.  This file lists the options
+to use for the report.  The options given in command line when calling
+B<innreport> take precedence over the ones in the configuration file.
+
+=back
+
+The other options are optional.  Prepending C<no> in front of boolean
+options permits unsetting them.  For example, use B<-nograph> to remove
+the feature B<-graph> enables.
+
+=over 4
+
+=item B<-archive> or B<-a>
+
+Sets whether HTML pages and graphs should be archived if HTML reports
+are enabled.  When this option is set, which is the default, a date will
+be added in the file name of each report and each graph.  Otherwise, only
+the latest HTML report is kept.
+
+=item B<-casesensitive>
+
+Whether to do case sensitive searches in news log files for predetermined
+patterns.  This option is enabled by default.
+
+=item B<-config>
+
+Prints to standard output configuration information for B<innreport>,
+and exits.
+
+=item B<-cycle> or B<-c> I<num-cycle>
+
+Sets how many report files should be kept if HTML reports are enabled
+and archived.  The default is C<0>, meaning all archives are kept.
+
+=item B<-dir> or B<-d> I<http-dir>
+
+Sets the directory for web pages if HTML reports are enabled.  The default
+is the value of I<pathhttp> as set in F<inn.conf>.
+
+=item B<-graph> or B<-g>
+
+If the Perl graphic library F<GD.pm> is installed and HTML reports are
+enabled, graphs are also generated in PNG if supported by C<GD>, which is
+the case in modern versions (GIF will otherwise be generated).  The default
+is to enable graph generation.
+
+=item B<-help> or B<-h>
+
+Prints to standard output a help message with all the options recognized
+by B<innreport>, and exits.
+
+=item B<-html>
+
+Besides the plain text report printed to standard output, B<innreport>
+generates HTML reports if this option is enabled.  This option is disabled
+by default (that is to say B<-nohtml> is the default).
+
+=item B<-html-unknown>
+
+Whether to report unknown entries from news log files in HTML reports,
+when enabled.  This option takes by default the same value as the one for
+text plain reports (as set with the I<unknown> option).
+
+=item B<-index> or B<-i>
+
+Sets the name of the index web page if HTML reports are enabled.  The default
+is C<index.html>.
+
+=item B<-maxunrec> I<num-lines>
+
+How many unrecognized entries from news log files to report, when the
+B<-unknown> or B<-html-unknown> options are set.  The default is C<50>.
+Using C<-1> means there is no limit.
+
+=item B<-notdaily>
+
+Whether to defer daily actions for this run of B<innreport>.  Some actions
+should be performed only once a day for a log file (notably F<unwanted.log>).
+This option is disabled by default, meaning that all actions are always done,
+as we assume a default setup of running B<scanlogs> daily.
+
+=item B<-path> or B<-p> I<pictures-dir>
+
+Sets the directory for pictures if HTML reports are enabled, and graphs
+are wanted.  The default is I<pathhttp>/F<pics>.
+
+If both B<-dir> and B<-webpath> are used, and B<-path> isn't, the directory
+used for pictures defaults to I<< http-dir as set with B<-dir> >>/I<<
+pictures-path as set with B<-webpath> >>.
+
+=item B<-separator> or B<-s> I<char>
+
+Sets the separator between hours, minutes and seconds in file names if
+HTML reports are enabled and archived.  The default is C<.> as C<:> may
+not be properly read by all web browsers.  Be careful I<not> to use C</>
+as a separator, and to use only a valid file name character.
+
+=item B<-unknown>
+
+Whether to report unknown entries from news log files in plain text reports.
+This option is enabled by default.
+
+=item B<-v>
+
+Prints to standard output the version number of B<innreport>, and exits.
+
+=item B<-webpath> or B<-w> I<pictures-path>
+
+Sets the web path for pictures in HTML pages if HTML reports are enabled,
+and graphs are wanted.  The default is C<pics>.  It can be a relative path
+or an absolute path.  If an absolute path is used, you have to set B<-path>
+appropriately; otherwise it will not be computed right.
+
+=back
+
+=head1 HISTORY
+
+Written by Fabien Tassin <fta@sofaraway.org> for InterNetNews.  Rewritten into
+POD by Julien Elie.
+
+=head1 SEE ALSO
+
+innreport.conf(5), news.daily(8), newslog(5), scanlogs(8).
+
+=cut

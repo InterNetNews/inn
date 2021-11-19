@@ -1,0 +1,312 @@
+=head1 NAME
+
+innreport.conf - Configuration file for innreport
+
+=head1 DESCRIPTION
+
+The file I<pathetc>/innreport.conf permits configuring the behaviour of
+B<innreport>.  It consists of a series of lines; blank lines and what follows
+a number sign (C<#>) in a line are ignored.  The structure of this file is:
+
+    section default {
+        libpath        "/path/to/libraries";
+        logpath        "/path/to/logs";
+        module         "innreport_inn";
+        unwanted_log   "unwanted.log";
+        text           true;
+        html           true;  # Enable HTML reports.
+        # Other options to set.
+    };
+
+Only this very section needs being configured.  It begins with C<section
+default {> and ends with C<};>.  Each line in the section consists of an
+option name followed with one or more spaces or tabulations, its value and
+a semi-colon C<;>.
+
+Other sections are present in the configuration file to parameter the
+display, how and what to report, but should not be changed (unless you
+precisely know what you are doing).
+
+=head1 OPTIONS
+
+The following options can be set in the C<default> section of the
+configuration file:
+
+=over 4
+
+=item I<archive>
+
+Sets whether HTML pages and graphs should be archived if HTML reports are
+enabled.  When this option is set to C<true>, which is the default, a date
+will be added in the file name of each report and each graph.  Otherwise,
+only the latest HTML report is kept.
+
+Use of the B<->[B<no>]B<archive> flag with innreport(8) takes precedence
+over the configuration file.
+
+=item I<casesensitive>
+
+When this option is set to C<true>, which is the default, case sensitive
+searches are done in news log files for predetermined patterns.
+
+Use of the B<->[B<no>]B<casesensitive> flag with innreport(8) takes precedence
+over the configuration file.
+
+=item I<cycle>
+
+Sets how many report files should be kept if HTML reports are enabled and
+archived.  The default is C<0>, meaning all archives are kept.  The value
+C<none> also means C<0>.
+
+Use of the B<-cycle> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<encoding>
+
+Specifies the character set to use in XML and Content-Type declarations of
+HTML reports.  The default is C<ISO-8859-1>.
+
+=item I<footer>
+
+Specifies a text to append to the end of the latest C<< <div> >> tag of each
+HTML report, where the version of B<innreport> is displayed.  This option
+is unset by default.
+
+=item I<graph>
+
+If the Perl graphic library F<GD.pm> is installed and HTML reports are
+enabled, graphs are also generated in PNG if supported by C<GD>, which is
+the case in modern versions (GIF will otherwise be generated).  This option
+is set to C<true> by default, meaning to enable graph generation.
+
+Use of the B<->[B<no>]B<graph> flag with innreport(8) takes precedence over
+the configuration file.
+
+=item I<graph_bg>
+
+Specifies the background colour of graphs in HTML reports as an HTML
+hexadecimal colour value.  The default is C<#FFFFFF> (white).
+
+=item I<graph_fg>
+
+Specifies the foreground colour of graphs in HTML reports as an HTML
+hexadecimal colour value.  The default is C<#000000> (black).
+
+=item I<graph_width>
+
+Sets the width in pixels of graphs in HTML reports.  The default is C<550>.
+
+=item I<html>
+
+This is a mandatory option with no default value.  It serves two purposes:
+generating HTML reports besides the plain text report printed to standard
+output, and configuring in the sections other than C<default> in the
+configuration file whether a section of the report should be present in the
+HTML output.
+
+If set to C<true>, and the B<-nohtml> flag not given when calling
+B<innreport>, HTML reports will be generated.  These reports will not contain
+sections individually having I<html> set to C<false> in the configuration
+file (by default, everything is present in the HTML reports).  Otherwise,
+if the B<-nohtml> flag is given, no HTML reports will be generated.
+
+If set to C<false>, and the B<-html> flag not given when calling B<innreport>,
+no HTML reports will be generated.  Otherwise, if the B<-html> flag is
+given, HTML reports will be generated but only the sections individually
+having I<html> set to C<true> in the configuration file will be present in
+the reports.
+
+=item I<html_body>
+
+Specifies additional elements to append to the C<< <body> >> tag of HTML
+reports.  This option is unset by default.
+
+Note that using this option leads to invalid XHTML.  You should provide a
+custom CSS file with the I<html_css_url> option instead.
+
+=item I<html_css_url>
+
+Specifies the name of a CSS file to use to apply a custom style to HTML
+reports.  The file is located in the directory set with the I<html_dir>
+option.  It may also be a URL, in which case the file may be in another
+location.
+
+If unset, which is the default, B<innreport> creates a default
+F<innreport.css> custom style sheet in I<html_dir> and uses it for HTML
+reports.
+
+In case you wish to supply your own style, take a look at what is defined
+in the default CSS and the HTML reports, and adapt it for your needs.
+Across several B<innreport> releases that may change classes, make sure
+to keep old class definitions for backward compatibility with previously
+generated HTML reports still referring to that custom file.
+
+=item I<html_dir>
+
+Sets the directory for web pages if HTML reports are enabled.  The default
+is the value of I<pathhttp> as set in F<inn.conf>.
+
+Use of the B<-dir> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<html_file_extension>
+
+Defines the file extension of generated HTML reports, if enabled.  A dot
+(C<.>) should begin the extension.  The default is C<.html>.
+
+You may want to use C<.xhtml> instead to let the web server serve correct
+MIME type, as B<innreport> generates S<XHTML 1.1> pages.
+
+=item I<html_footer_file>
+
+Specifies the name of a file in I<html_dir> whose contents will be appended
+just before the C<< </body> >> tag of each HTML report.  This option is
+unset by default.
+
+=item I<html_header_file>
+
+Specifies the name of a file in I<html_dir> whose contents will be appended
+just after the C<< <body> >> tag of each HTML report.  This option is unset
+by default.
+
+=item I<html-unknown>
+
+Whether to report unknown entries from news log files in HTML reports,
+when set to C<true>.  This option takes by default the same value as the
+one for text plain reports (as set with the I<unknown> option).
+
+Use of the B<->[B<no>]B<html-unknown> flag with innreport(8) takes precedence
+over the configuration file.
+
+=item I<html_xsl_url>
+
+Specifies the name of an XSL file to use to apply styling operations to
+HTML reports.  The file is located in the directory set with the I<html_dir>
+option.  It may also be a URL, in which case the file may be in another
+location.
+
+This option is unset by default.  When set, a corresponding XML style sheet
+declaration is added to HTML reports.  It may be useful for XHTML compliance
+with older browsers (see L<https://www.w3.org/MarkUp/2004/xhtml-faq#ie>).
+
+More generally, if you are interested in XSL transformation, you may want to
+have a look at F<innreport-filter.xslt> provided in the F<contrib> directory.
+
+=item I<img_dir>
+
+Sets the web path for pictures in HTML pages if HTML reports are enabled,
+and graphs are wanted.  The path is relative to the directory set with the
+I<html_dir> option.  The default is C<pics>.
+
+Use of the B<-webpath> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<index>
+
+Sets the name of the index web page if HTML reports are enabled.  The default
+is C<index.html>.
+
+You may want to use C<index.xhtml> instead to let the web server serve
+correct MIME type, as B<innreport> generates S<XHTML 1.1> pages.
+
+Use of the B<-index> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<libpath>
+
+Defines the directory in which the Perl module set with the I<module>
+option is located.  This option is mandatory, and usually set to the same
+value as I<pathlib> in F<inn.conf>.
+
+=item I<logpath>
+
+Defines the directory in which the log file for newsgroups not locally carried
+by the news server, as set with the I<unwanted_log> option, is located.
+This option is mandatory, and usually set to the same value as I<pathlog>
+in F<inn.conf>.
+
+=item I<max_unknown>
+
+How many unrecognized entries from news log files to report, when the
+I<unknown> or I<html-unknown> options are set.  The default is C<50>.
+Using C<-1> means there is no limit.
+
+Use of the B<-maxunrec> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<module>
+
+Defines the Perl module used by B<innreport> to parse and summarize log files.
+This option is mandatory, and usually set to C<innreport_inn>.  This value
+should not normally be changed unless you know exactly what you are doing.
+The Perl module that will be loaded is F<< I<module>.pm >> located in the
+directory set with the I<libpath> option.
+
+=item I<separator>
+
+Sets the separator between hours, minutes and seconds in file names if
+HTML reports are enabled and archived.  The default is C<.> as C<:> may
+not be properly read by all web browsers.  Be careful I<not> to use C</>
+as a separator, and to use only a valid file name character.
+
+Use of the B<-separator> flag with innreport(8) takes precedence over the
+configuration file.
+
+=item I<text>
+
+This is a mandatory option with no default value.
+
+If set to C<true>, B<innreport> will print its text report to standard output.
+This report will not contain sections individually having I<text> set to
+C<false> in the configuration file (by default, everything is present in
+the text report).
+
+If set to C<false>, B<innreport> will only print to standard output the
+sections individually having I<text> set to C<true> in the configuration file
+(by default, the text report will be empty).
+
+=item I<title>
+
+Specifies the text to use as first words of text and HTML reports as well
+as in the title of HTML reports.  By default, C<Daily Usenet report> is used.
+
+=item I<transparent>
+
+If set to C<true>, the background of generated graphs in HTML reports will
+be transparent.  The default is C<false>.
+
+=item I<unknown>
+
+Whether to report unknown entries from news log files in plain text reports,
+when set to C<true>.  This option is enabled by default.
+
+Use of the B<->[B<no>]B<unknown> flag with innreport(8) takes precedence
+over the configuration file.
+
+=item I<unwanted_log>
+
+Defines the name of the file used by B<innreport> to maintain a count of
+the number of articles that were rejected because they were posted to
+newsgroups that do not exist in the F<active> file of the news server.
+This file is updated by B<innreport> while processing the F<news.notice>
+log file and it is maintained in reverse numeric order (the most popular
+rejected group first).
+
+This option is mandatory, and usually set to C<unwanted.log>.  This value
+should not normally be changed unless you know exactly what you are doing.
+The file is located in the directory set with the I<logpath> option.
+
+Note that I<logtrash> has to be set to true in F<inn.conf> for this file
+to be generated.
+
+=back
+
+=head1 HISTORY
+
+Written by Julien Elie for InterNetNews.
+
+=head1 SEE ALSO
+
+innreport(8).
+
+=cut

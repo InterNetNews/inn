@@ -21,7 +21,7 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
 	../man/distributions.5 ../man/expire.ctl.5 ../man/history.5 \
 	../man/incoming.conf.5 ../man/inn.conf.5 ../man/innfeed.conf.5 \
-	../man/innwatch.ctl.5 ../man/moderators.5 \
+	../man/innreport.conf.5 ../man/innwatch.ctl.5 ../man/moderators.5 \
 	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
 	../man/newslog.5 ../man/nnrpd.track.5 ../man/nntpsend.ctl.5 \
 	../man/ovdb.5 \
@@ -35,7 +35,7 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
 	../man/expirerm.8 ../man/ident.8 \
 	../man/innbind.8 ../man/inncheck.8 ../man/innd.8 ../man/inndf.8 \
-	../man/innfeed.8 ../man/innupgrade.8 ../man/innwatch.8 \
+	../man/innfeed.8 ../man/innreport.8 ../man/innupgrade.8 ../man/innwatch.8 \
 	../man/innxmit.8 \
 	../man/makedbz.8 ../man/makehistory.8 ../man/mod-active.8 \
 	../man/news.daily.8 ../man/news2mail.8 ../man/ninpaths.8 \
@@ -100,6 +100,7 @@ maintclean: distclean
 ../man/incoming.conf.5:	incoming.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/innfeed.conf.5:	innfeed.conf.pod	; $(POD2MAN) -s 5 $? > $@
+../man/innreport.conf.5: innreport.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/innwatch.ctl.5:	innwatch.ctl.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/moderators.5:	moderators.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/motd.news.5:	motd.news.pod		; $(POD2MAN) -s 5 $? > $@
@@ -137,6 +138,7 @@ maintclean: distclean
 ../man/innd.8:		innd.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inndf.8:		inndf.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innfeed.8:	innfeed.pod		; $(POD2MAN) -s 8 $? > $@
+../man/innreport.8:	innreport.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innupgrade.8:	innupgrade.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innwatch.8:	innwatch.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innxmit.8:	innxmit.pod		; $(POD2MAN) -s 8 $? > $@
