@@ -176,6 +176,7 @@ doc/man/innfeed.8                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
 doc/man/innmail.1                     Manpage for innmail utility
 doc/man/innreport.8                   Manpage for innreport
+doc/man/innreport.conf.5              Manpage for innreport.conf
 doc/man/innstat.8                     Manpage for innstat utility
 doc/man/innupgrade.8                  Manpage for innupgrade utility
 doc/man/innwatch.8                    Manpage for innwatch
@@ -289,6 +290,8 @@ doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/innfeed.conf.pod              Master file for innfeed.conf.5
 doc/pod/innfeed.pod                   Master file for innfeed.8
 doc/pod/innmail.pod                   Master file for innmail.1
+doc/pod/innreport.conf.pod            Master file for innreport.conf.5
+doc/pod/innreport.pod                 Master file for innreport.8
 doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/innwatch.ctl.pod              Master file for innwatch.ctl.5
 doc/pod/innwatch.pod                  Master file for innwatch.8
