@@ -120,6 +120,13 @@ is active.
 
 =item *
 
+B<nnrpd> now properly discards data received from a news client after
+a timeout when a TLS layer is active.  It previously tried to read
+incoming data before closing the socket, leading to decoding errors
+from an underlying compression or SASL layer.
+
+=item *
+
 B<innfeed> and B<ovdb_stat> now generate status reports in valid HTML syntax.
 
 =item *

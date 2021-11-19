@@ -764,17 +764,18 @@ write_buffer(const char *buff, ssize_t len)
             r = SSL_write(tls_conn, out, outlen);
             switch (SSL_get_error(tls_conn, r)) {
             case SSL_ERROR_NONE:
-            case SSL_ERROR_SYSCALL:
                 break;
             case SSL_ERROR_WANT_WRITE:
                 goto Again;
                 break;
-            case SSL_ERROR_SSL:
+            case SSL_ERROR_ZERO_RETURN:
                 SSL_shutdown(tls_conn);
+                /* fallthrough */
+            case SSL_ERROR_SSL:
+            case SSL_ERROR_SYSCALL:
+                /* SSL_shutdown() must not be called. */
                 tls_conn = NULL;
                 errno = ECONNRESET;
-                break;
-            case SSL_ERROR_ZERO_RETURN:
                 break;
             }
         } else

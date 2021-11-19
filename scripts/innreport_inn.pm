@@ -1662,6 +1662,15 @@ sub collect($$$$$$) {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
+    # can't read
+    if ($left =~ /(\S+) can\'t read$/o) {
+      my $cust = $1;
+      $cust = lc $cust unless $CASE_SENSITIVE;
+      my $dom = &host2dom($cust);
+      $nnrpd_dom_timeout{$dom}++;
+      $nnrpd_timeout{$cust}++;
+      return 1;
+    }
     # can't read: Connection timed out
     if ($left =~ /(\S+) can\'t read: Connection timed out$/o) {
       my $cust = $1;
