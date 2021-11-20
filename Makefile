@@ -260,7 +260,17 @@ snapshot:
 ##  extension), but it should be manually handled as it contains mixed yacc
 ##  code.
 reformat:
-	black --line-length 79 --quiet --experimental-string-processing \
-	    --include "contrib/mm_ckpasswd|\.py$$" .
-	find . -name '*.[ch]' \! -name config_l.c \! -name config_y.\* -print \
-	    | xargs clang-format --style=file -i
+	@if command -v "black" &> /dev/null ; then \
+	    echo "Reformatting Python code..." ; \
+	    black --line-length 79 --quiet --experimental-string-processing \
+	        --include "contrib/mm_ckpasswd|\.py$$" . ; \
+	else \
+	    echo "Skipping Python code reformatting (black not found)" ; \
+	fi
+	@if command -v "clang-format" &> /dev/null ; then \
+	    echo "Reformatting C code..." ; \
+	    find . -name '*.[ch]' \! -name config_l.c \! -name config_y.\* \
+	        -print | xargs clang-format --style=file -i ; \
+	else \
+	    echo "Skipping C code reformatting (clang-format not found)" ; \
+	fi
