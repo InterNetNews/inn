@@ -138,7 +138,7 @@ controlchan!\
 # Example of an exploder feed.  See buffchan(8) for more details.
 #foo:news.*:Ap,Tm:buffchan!
 #uunet:*:Ap,Tm:buffchan!
-#buffchan!:*:Tx,WGm*:@bindir@/buffchan -u -f 2
+#buffchan!:*:Tx,WGm*:@bindir@/buffchan -f 2
 
 # Capture all local postings (with a distribution of "foo" and no more
 # than two sites in the Path: header) using a local program (that doesn't
