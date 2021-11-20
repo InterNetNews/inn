@@ -187,10 +187,10 @@ static void display_data(void *p, struct datatab *tab)
     int i;
 
     if (html)
-	puts("<table border=0 cellpadding=1>");
+	puts("<table>");
     for (i = 0; tab[i].type != END; i++) {
         if (html) {
-            printf("<tr><td align=right>");
+            printf("<tr><td style=\"text-align:right\">");
             print_value(i, p, tab, "<td>");
             printf("<td>%s\n", tab[i].desc);
         } else {
@@ -207,7 +207,7 @@ static void start_table(const char *label, struct datatab *tab)
     int i;
     if(html) {
 	printf("<h2>%s</h2>\n", label);
-	puts("<table border=0 cellpadding=1>\n<tr bgcolor=#3399aa>");
+	puts("<table>\n<tr style=\"background-color: #3399aa\">");
 	for(i = 0; tab[i].type != END; i++)
 	    printf("<th colspan=2>%s\n", tab[i].desc);
     }
@@ -220,7 +220,7 @@ static void display_row(void *p, struct datatab *tab)
     if (html) {
 	puts("<tr>");
 	for (i = 0; tab[i].type != END; i++) {
-            printf("<td align=right>");
+            printf("<td style=\"text-align:right\">");
             print_value(i, p, tab, "<td>");
             printf("\n");
 	}
@@ -748,8 +748,12 @@ Usage:\n\
 	goto out;
     }
 
-    if(html)
-	puts("<html><head><title>ovdb_stat</title></head><body><p>");
+    if(html) {
+        puts("<!DOCTYPE html>\n<html lang=\"en\"><head>");
+        puts("<title>ovdb_stat</title>\n");
+        puts("<style>table tr td { padding:1px; border:0; }</style>\n");
+        puts("</head><body><p>");
+    }
     if(disp_lock)
 	display_lock();
     if(disp_log)
@@ -765,15 +769,16 @@ Usage:\n\
 
     if(getgs || getcount || getinfo) {
 	if(html) {
-	    puts("<table border=0 cellpadding=1 width=90%>\n<tr bgcolor=#3399aa>");
+	    puts("<table style=\"width:90%\">\n<tr style=\"background-color: #3399aa\">");
 	    puts("<th rowspan=2>Group");
 	    if(getgs)
 		puts("<th colspan=4>Groupstats");
 	    if(getcount)
 		puts("<th colspan=3>Counted");
-	    if(getinfo)
+	    if(getinfo) {
 		puts("<th>Status<th colspan=2>Current<th colspan=2>Pending");
-	    puts("<th rowspan=2>Expired<th rowspan=2>Expire PID<tr bgcolor=#3399aa>");
+		puts("<th rowspan=2>Expired<th rowspan=2>Expire PID<tr style=\"background-color: #3399aa\">");
+            }
 	    if(getgs)
 		puts("<th>Low<th>High<th>Count<th>Flag");
 	    if(getcount)

@@ -38,7 +38,7 @@ for the path.
 
 =item *
 
-B<innfeed> now generates status reports in valid HTML syntax.
+B<innfeed> and B<ovdb_stat> now generate status reports in valid HTML syntax.
 
 =item *
 
