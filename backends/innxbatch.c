@@ -22,7 +22,7 @@
 **      -t      Timeout for connection attempt
 **      -T      Timeout for batch transfers.
 **  We do not use any file locking. At worst, a batch could be transmitted
-**  twice in parallel by two independant invocations of innxbatch.
+**  twice in parallel by two independent invocations of innxbatch.
 **  To prevent this, innxbatch should be invoked by a shell script that uses
 **  shlock(1) to achieve mutual exclusion.
 */
@@ -279,7 +279,7 @@ REMsendxbatch(int fd, char *buf, int size)
         if (Debug)
             fprintf(stderr, "will unlink(%s)\n", XBATCHname);
         if (unlink(XBATCHname)) {
-            /* probably another incarantion was faster, so avoid further
+            /* probably another instance ran faster, so avoid further
              * duplicate work
              */
             syswarn("cannot unlink %s", XBATCHname);

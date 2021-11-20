@@ -3,15 +3,16 @@
 
 # By petri@ibr.cs.tu-bs.de with mods by libove@jerry.alf.dec.com
 #
-#  Script to send xbatches for a site, wrapped around innxbatch
-#  Invocation: sendxbatches <sitename> <hostname> <xbatch file name> ...
+#  Script to send xbatches for a site, wrapped around innxbatch.
+#  Invocation:
+#      sendxbatches <sitename> <hostname> <xbatch file name> ...
 #
 ##  TODO: - we should check the amount of queued batches for the site,
 ##          to prevent disk overflow due to unreachable sites.
 
 if [ $# -lt 3 ]
 then
-	echo "usage: $0 <sitename> <hostname> <xbatch file name>"
+	echo "usage: $0 <sitename> <hostname> <xbatch file name> ..."
 	exit 1
 fi
 

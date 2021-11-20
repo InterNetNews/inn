@@ -1,0 +1,117 @@
+=head1 NAME
+
+innxbatch, sendxbatches - Send xbatched Usenet articles to a remote NNTP
+server
+
+=head1 SYNOPSIS
+
+B<innxbatch> [B<-Dv>] [B<-t> I<timeout>] [B<-T> I<timeout>] I<host> I<file>
+[I<file> ...]
+
+B<innxbatch> B<-i> [B<-Dv>] [B<-t> I<timeout>] [B<-T> I<timeout>] I<host>
+
+B<sendxbatches> I<sitename> I<host> I<file> [I<file> ...]
+
+=head1 DESCRIPTION
+
+B<innxbatch> connects to port 119 of the NNTP server at the specified I<host>,
+and sends it the specified xbatch files, using the XBATCH extension to the
+NNTP protocol.  These files are specified either from the command line or
+from standard input if B<i> is used.
+
+Each file is removed after it has been successfully transferred.
+
+If a communication error such as a write(2) failure, or an unexpected reply
+from the remote server occurs, B<innxbatch> will stop sending and leave
+all remaining files untouched for later retry.
+
+B<innxbatch> does not use itself any file locking.  At worst, a batch could be
+transmitted twice in parallel by two independent invocations of B<innxbatch>.
+To prevent this, it should be invoked by a script run out of cron(8) that uses
+shlock(1) to lock the host name, followed by a C<ctlinnd flush> command to
+flush the batch file.  B<sendxbatches> is such a wrapper around B<innxbatch>.
+It will ensure only one instance is run, flush I<sitename> (as used in the
+F<newsfeeds> entry) and send to I<host> the files given as arguments.
+
+As the XBATCH extension is not a standardized NNTP command, some news
+servers do not recognize it.  Instead of using B<innxbatch>, you may consider
+B<innfeed>, or if that is not possible, B<nntpsend>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-D>
+
+Prints debugging information on standard error.  This will show the protocol
+transactions between B<innxbatch> and the NNTP server on the remote host.
+
+=item B<-i>
+
+Reads batch file names from standard input.  For each successfully transmitted
+batch, an C<OK> is printed on stdout to indicate that another file name
+is expected.
+
+=item B<-t> I<timeout>
+
+Specifies a timeout in seconds on how long to try to make the connection.
+Otherwise, B<innxbatch> normally blocks until the connection is made.
+
+=item B<-T> I<timeout>
+
+Specifies the total amount of time in seconds that should be allowed for
+article transfers.
+
+The default is to wait until an I/O error occurs, or all the articles have
+been transferred.  If this flag is used, the time is checked just before
+each article is started; it will not abort a transfer that is in progress.
+
+=item B<-v>
+
+Upon exit, B<innxbatch> reports transfer and CPU usage statistics via
+syslog(3).  If this flag is used, they will also be printed on the standard
+output.
+
+=back
+
+=head1 EXAMPLES
+
+A sample F<newsfeeds> entry to produce appropriate xbatch files is:
+
+    nase\
+        :*\
+        :Tc,Wnb\
+        :<pathbin>/batcher -p "(<$COMPRESS in <pathlib>/innshellvars>\
+            > <pathoutgoing>/nase.\$\$)" nase.do.main
+
+A sample script to invoke innxbatch(8) is:
+
+    #! /bin/sh
+    #  Send xbatches for a site, wrapped around innxbatch.
+    if [ $# -lt 3 ]
+    then
+        echo "usage: $0 <sitename> <hostname> <xbatch file name> ..."
+        exit 1
+    fi
+    . <pathlib>/innshellvars
+    site="$1"; host="$2"; shift; shift
+    ctlinnd flush "$site" \
+    && sleep 5 \
+    && exec ${NEWSBIN}/innxbatch -v -D "$host" $*
+
+You can use B<sendxbatches>, already shipped with INN, doing locking.
+An example of call is:
+
+    sendxbatches nase remote.news.server.name <pathoutgoing>/nase*
+
+=head1 HISTORY
+
+Written by Stefan Petri <petri@ibr.cs.tu-bs.de>, modelled after B<innxmit>
+and the XBATCH patch for the NNTP reference implementation.  Examples from
+Karsten Leipold <poldi@dfn.de>.  Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+ctlinnd(8), innxmit(8), newsfeeds(5), nntpsend(8), shlock(1).
+
+=cut

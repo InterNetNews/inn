@@ -295,6 +295,7 @@ doc/pod/innreport.pod                 Master file for innreport.8
 doc/pod/innupgrade.pod                Master file for innupgrade.8
 doc/pod/innwatch.ctl.pod              Master file for innwatch.ctl.5
 doc/pod/innwatch.pod                  Master file for innwatch.8
+doc/pod/innxbatch.pod                 Master file for innxbatch.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
