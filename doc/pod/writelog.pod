@@ -1,0 +1,36 @@
+=head1 NAME
+
+writelog - Write or mail a log entry
+
+=head1 SYNOPSIS
+
+B<writelog> I<name> I<text>
+
+=head1 DESCRIPTION
+
+The B<writelog> script is used to write a log entry or send it as mail.
+
+The I<name> parameter specifies the name of the log file where the
+entry should be written.  If it is the word C<mail>, then the entry is
+sent as the subject of a mail to the newsmaster address specified with
+B<--with-news-master> at configure time (the default address is C<usenet>).
+
+If I<name> is C</dev/null>, the script does nothing and exits.
+
+The data that is written to a log file consists of the I<text> given on the
+command line, followed by standard input indented by four spaces.  When sent
+by mail, the subject is I<text> and the body is standard input without
+indentation.
+
+shlock(1) is used to avoid simultaneous updates to a single log file.
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+innd(8), innstat(8), news.daily(8), newslog(5), nnrpd(8), scanlogs(8).
+
+=cut

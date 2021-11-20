@@ -1,0 +1,61 @@
+=head1 NAME
+
+innstat - Print snapshot of INN system
+
+=head1 SYNOPSIS
+
+B<innstat>
+
+=head1 DESCRIPTION
+
+The B<innstat> script prints a snapshot of the INN system.  It is notably
+run by B<news.daily>, which integrates its output in daily Usenet reports.
+
+B<innstat> displays the following information:
+
+=over 4
+
+=item *
+
+the operating mode of the server, as returned by C<ctlinnd mode>;
+
+=item *
+
+the disk usage of several directories: I<patharticles>, I<pathdb>, I<pathetc>,
+I<pathincoming>, I<pathlog>, I<pathoutgoing>, I<pathoverview>, and I<pathtmp>.
+If used, the disk usage of the I<patharchive> and I<pathhttp> directories
+are also reported;
+
+=item *
+
+the overview buffer usage, if using the buffindexed overview;
+
+=item *
+
+the size of all batch files in I<pathoutgoing>;
+
+=item *
+
+the size of the F<errlog>, F<news>, F<news.crit>, F<news.err>, and
+F<news.notice> log files in I<pathlog>;
+
+=item *
+
+the size of all lock files in I<pathrun>;
+
+=item *
+
+the current open connections from remote servers to B<innd>.
+
+=back
+
+=head1 HISTORY
+
+Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
+<rsalz@uunet.uu.net> for InterNetNews.  Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+inndf(8), news.daily(8), newslog(5).
+
+=cut
