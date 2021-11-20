@@ -21,6 +21,7 @@ use File::Find qw(find);
            qr%(\A|/)\.svn(/|\Z)%,
            qr%(\A|/)\.vscode(/|\Z)%,
            qr%(\A|/)\.gitignore\Z%, qr%(\A|/)\.git(/|\Z)%,
+           qr%(\A|/)\.git-blame-ignore-revs(/|\Z)%,
            qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
            qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
            qr%(\A|/)\.libs(/|\Z)%);
