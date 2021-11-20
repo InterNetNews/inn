@@ -26,6 +26,7 @@
 ##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Rename or remove obsolete files.
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
+##   * Change filechan to buffchan -u in newsfeeds.
 ##   * Change require_ssl to require_encryption in readers.conf.
 
 require 5.003;
@@ -72,6 +73,8 @@ use Getopt::Long qw(GetOptions);
            'radius.conf'      => 'inn-radius.conf',  # Renamed in INN 2.5.4.
            'radius.conf.5'    => '',
            'defines.h'        => 'defines.h.OLD',    # Removed in INN 2.7.0.
+           'filechan'         => 'filechan.OLD',
+           'filechan.8'       => '',
           );
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
@@ -220,6 +223,7 @@ sub fix_newsfeeds {
         chomp;
         s{(/\S+)/startinnfeed\b(\s+imapfeed)?\b}
             {$2 ? "$1/imapfeed" : "$1/innfeed"}e;
+        s%(/\S+)/filechan%$1/buffchan -u%;
         push (@$output, "$_\n");
     }
 }

@@ -68,6 +68,10 @@ S<INN 2.5>.  The file is then renamed to F<sasl.conf.OLD>.
 Replace the use of B<startinnfeed> with the appropriate direct invocation
 of B<innfeed> or B<imapfeed>.
 
+=item *
+
+Replace the use of B<filechan> with B<buffchan> in unbuffered mode.
+
 =back
 
 =item F<readers.conf>

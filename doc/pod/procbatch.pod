@@ -137,6 +137,6 @@ memo by Russ Allbery.
 
 =head1 SEE ALSO
 
-filechan(8), innfeed(8), innxmit(8), news.daily(8).
+innfeed(8), innxmit(8), news.daily(8).
 
 =cut

@@ -34,13 +34,10 @@ backends/archive.c                    Simple article archiver
 backends/batcher.c                    Make news batches
 backends/buffchan.c                   Buffered funnel to file splitter
 backends/cvtbatch.c                   Add fields to simple batchfile
-backends/filechan.c                   Split a funnel into separate files
 backends/innbind.c                    Bind to low-numbered network ports
 backends/inndf.c                      df used for innwatch
 backends/innxbatch.c                  Send batches using XBATCH to remote
 backends/innxmit.c                    Send articles to remote site
-backends/map.c                        Site name to filename mapping routines
-backends/map.h                        Headers for backends/map.c
 backends/mod-active.in                Batch do active file modifications
 backends/news2mail.in                 News to mail gateway
 backends/ninpaths.c                   Path statistics accumulation program
@@ -157,7 +154,6 @@ doc/man/expire.ctl.5                  Manpage for expire.ctl config file
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
 doc/man/fastrm.1                      Manpage for fastrm utility
-doc/man/filechan.8                    Manpage for filechan backend
 doc/man/getlist.1                     Manpage for getlist frontend
 doc/man/grephistory.1                 Manpage for grephistory
 doc/man/history.5                     Manpage for history database

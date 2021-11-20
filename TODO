@@ -559,11 +559,6 @@ General Projects
 
 * frontends/pullnews and frontends/nntpget should be merged in one script.
 
-* backends/filechan is just a simple version of backends/buffchan.  It
-  looks like filechan could just be deleted and innupgrade taught to change
-  filechan feeds to buffchan -u feeds.  map.c, which is only used by those
-  two programs, could just be included in the same source file.
-
 * actsyncd could stand a rewrite and cleaner handling of both
   configuration and syncing against multiple sources which are canonical
   for different sets of groups.  In the process, FTP handling should

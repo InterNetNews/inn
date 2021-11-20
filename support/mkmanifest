@@ -94,7 +94,6 @@ backends/archive
 backends/batcher
 backends/buffchan
 backends/cvtbatch
-backends/filechan
 backends/innbind
 backends/inndf
 backends/innxbatch

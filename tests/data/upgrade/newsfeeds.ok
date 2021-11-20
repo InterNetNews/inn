@@ -4,3 +4,5 @@ innfeed!\
 	:Tc,Wnm*:/usr/local/news/bin/innfeed
 
 imapfeed!:!*:Tc,Wnm*:/usr/local/news/bin/imapfeed
+
+filechan!:*:Tc,WGm*:/usr/local/news/bin/buffchan -u -f 2

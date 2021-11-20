@@ -16,6 +16,14 @@ with an alternate name.
 
 =item *
 
+B<filechan> is no longer shipped with INN; it was just a simple version of
+B<buffchan>.  All calls to C<filechan> will be changed to C<buffchan -u>
+(for its unbuffered mode) in F<newsfeeds> by B<innupgrade>.  If you have
+local scripts running B<filechan>, you will have to manually take care of
+the change.
+
+=item *
+
 Wrappers around old Perl and Python authentication and access hooks,
 pre-dating S<INN 2.4.0> and identifiable by the I<nnrpperlauth> and
 I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as
@@ -67,6 +75,11 @@ command or (wrongly) think there is a syntax error.  Richard Kettlewell
 added a proper handling of these responses, making B<innxmit> dropping
 the refused article instead of keeping sending it over and over (and
 thus receiving each time the same error in response codes).
+
+=item *
+
+B<filechan> has been removed; it was just a simple version of B<buffchan>,
+which should now be used.
 
 =item *
 

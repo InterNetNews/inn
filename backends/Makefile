@@ -4,7 +4,7 @@ top	      = ..
 CFLAGS        = $(GCFLAGS)
 
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
-		cvtbatch filechan innbind inndf innxmit innxbatch mod-active \
+		cvtbatch innbind inndf innxmit innxbatch mod-active \
 		news2mail ninpaths nntpget nntpsend overchan send-ihave \
 		send-nntp send-uucp sendinpaths sendxbatches shlock \
 		shrinkfile
@@ -12,7 +12,7 @@ ALL           = actmerge actsync actsyncd archive batcher buffchan \
 MAN	      = ../doc/man/send-uucp.8
 
 SOURCES       = actsync.c archive.c batcher.c buffchan.c cvtbatch.c \
-		filechan.c innbind.c inndf.c innxbatch.c innxmit.c map.c \
+		innbind.c inndf.c innxbatch.c innxmit.c \
 		ninpaths.c nntpget.c overchan.c shlock.c shrinkfile.c
 
 all: $(ALL) $(MAN)
@@ -27,7 +27,7 @@ install: all
 	done
 	$(CP_XPRI) mod-active $D$(PATHBIN)/mod-active
 	$(LI_XPRI) overchan $D$(PATHBIN)/overchan
-	for F in actsync archive batcher buffchan cvtbatch filechan inndf \
+	for F in actsync archive batcher buffchan cvtbatch inndf \
 	         innxbatch innxmit ninpaths nntpget shlock shrinkfile ; do \
 	    $(LI_XPUB) $$F $D$(PATHBIN)/$$F ; \
 	done
@@ -92,11 +92,8 @@ overchan:	overchan.o   $(BOTH)	; $(LINKDEPS) overchan.o $(STORELIBS)
 shlock:		shlock.o     $(LIBINN)	; $(LINK) shlock.o     $(INNLIBS)
 shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)
 
-buffchan:	buffchan.o map.o $(LIBINN)
-	$(LINK) buffchan.o map.o $(LIBINN) $(LIBS)
-
-filechan:	filechan.o map.o $(LIBINN)
-	$(LINK) filechan.o map.o $(LIBINN) $(LIBS)
+buffchan:	buffchan.o $(LIBINN)
+	$(LINK) buffchan.o $(LIBINN) $(LIBS)
 
 actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
 actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
@@ -162,7 +159,7 @@ buffchan.o: buffchan.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/system.h ../include/inn/messages.h ../include/inn/qio.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/paths.h map.h
+  ../include/inn/xwrite.h ../include/inn/paths.h
 cvtbatch.o: cvtbatch.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -173,15 +170,6 @@ cvtbatch.o: cvtbatch.c ../include/portable/system.h ../include/config.h \
   ../include/inn/wire.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h
-filechan.o: filechan.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/options.h ../include/inn/system.h \
-  ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/innconf.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/paths.h map.h
 innbind.o: innbind.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -228,14 +216,6 @@ innxmit.o: innxmit.c ../include/portable/system.h ../include/config.h \
   ../include/inn/messages.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/qio.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/timer.h ../include/inn/wire.h
-map.o: map.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/options.h ../include/inn/system.h \
-  ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/paths.h map.h
 ninpaths.o: ninpaths.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
