@@ -284,6 +284,10 @@ STATUSsummary(void)
   fprintf (F, "               Perl filtering: %s\n", 
 	   PerlFilterActive ? "enabled" : "disabled");
 #endif
+#ifdef DO_PYTHON
+  fprintf (F, "             Python filtering: %s\n",
+           PythonFilterActive ? "enabled" : "disabled");
+#endif
 
   fputc ('\n', F) ;
 
