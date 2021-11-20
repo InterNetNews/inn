@@ -83,6 +83,12 @@ which should now be used.
 
 =item *
 
+The I<require_ssl> parameter in F<readers.conf> has been renamed to
+I<require_encryption>, which is a better name as it applies to any kind of
+encryption layers, including TLS and SASL security layers.
+
+=item *
+
 All of the applicable bug fixes from the S<INN 2.6> STABLE series are
 also included in S<INN 2.7>.
 
