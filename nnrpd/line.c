@@ -48,6 +48,11 @@ line_free(struct line *line)
 static void
 alarmHandler(int s UNUSED)
 {
+    /* Send the close_notify shutdown alert to the news reader.
+     * No need to call again SSL_shutdown() to complete the bidirectional
+     * shutdown handshake as we do not expect more data to process.  Just
+     * close the underlying connection without waiting for the response.
+     * Such a unidirectional shutdown is allowed per OpenSSL documentation. */
     SSL_shutdown(tls_conn);
     tls_conn = NULL;
     errno = ECONNRESET;
@@ -79,6 +84,8 @@ line_reset(struct line *line)
 
 /*
 **  Timeout is used only if HAVE_OPENSSL is defined.
+**  Returns -2 on timeout, -1 on read error, and otherwise the number of
+**  bytes read.
 */
 static ssize_t
 line_doread(void *p, size_t len, int timeout UNUSED)
@@ -128,17 +135,20 @@ line_doread(void *p, size_t len, int timeout UNUSED)
                 n = SSL_read(tls_conn, p, len);
                 alarm(0);
                 if (tls_conn == NULL) {
+                    n = -2; /* timeout */
                     break;
                 }
 		err = SSL_get_error(tls_conn, n);
 		switch (err) {
+                case SSL_ERROR_ZERO_RETURN:
+                    SSL_shutdown(tls_conn);
+                    /* fallthrough */
 		case SSL_ERROR_SYSCALL:
-		    break;
-		    
 		case SSL_ERROR_SSL:
-		    SSL_shutdown(tls_conn);
+		    /* SSL_shutdown() must not be called. */
 		    tls_conn = NULL;
 		    errno = ECONNRESET;
+                    n = -1;
 		    break;
 		}
 	    } while (err == SSL_ERROR_WANT_READ);
@@ -335,9 +345,12 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
                                 line->allocated - (where - line->start), 
                                 timeout);
 
-	    /* Give timeout for read errors. */
+	    /* Give timeout to both real timeouts (count == -2) and
+             * read errors (count == -1). */
 	    if (count < 0) {
-		sysnotice("%s can't read", Client.host);
+                if (count == -1) {
+                    sysnotice("%s can't read", Client.host);
+                }
 		return RTtimeout;
 	    }
 	    /* If we hit EOF, terminate the string and send it back. */
