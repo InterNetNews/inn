@@ -33,7 +33,7 @@ MAN8	= ../man/actsync.8 ../man/archive.8 ../man/auth_krb5.8 \
 	../man/ckpasswd.8 ../man/cnfsheadconf.8 ../man/cnfsstat.8 \
 	../man/controlchan.8 ../man/ctlinnd.8 ../man/cvtbatch.8 ../man/docheckgroups.8 \
 	../man/domain.8 ../man/expire.8 ../man/expireover.8 \
-	../man/expirerm.8 ../man/ident.8 \
+	../man/expirerm.8 ../man/filechan.8 ../man/ident.8 \
 	../man/innbind.8 ../man/inncheck.8 ../man/innd.8 ../man/inndf.8 \
 	../man/innfeed.8 ../man/innreport.8 ../man/innstat.8 \
 	../man/innupgrade.8 \
@@ -133,6 +133,7 @@ maintclean: distclean
 ../man/expire.8:	expire.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expireover.8:	expireover.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/expirerm.8:	expirerm.pod		; $(POD2MAN) -s 8 $? > $@
+../man/filechan.8:	filechan.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/ident.8:		ident.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/innbind.8:	innbind.pod		; $(POD2MAN) -s 8 $? > $@
 ../man/inncheck.8:	inncheck.pod		; $(POD2MAN) -s 8 $? > $@

@@ -259,6 +259,7 @@ doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/expirerm.pod                  Master file for expirerm.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
+doc/pod/filechan.pod                  Master file for filechan.8
 doc/pod/getlist.pod                   Master file for getlist.1
 doc/pod/grephistory.pod               Master file for grephistory.1
 doc/pod/hacking.pod                   Master file for HACKING

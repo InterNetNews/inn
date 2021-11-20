@@ -1,0 +1,114 @@
+=head1 NAME
+
+filechan - File-writing backend for INN
+
+=head1 SYNOPSIS
+
+B<filechan> [B<-d> I<directory>] [B<-f> I<num-fields>] [B<-m> I<map-file>]
+[B<-p> I<pid-file>]
+
+=head1 DESCRIPTION
+
+B<filechan> reads lines from standard input and copies the initial fields in
+each line to the files named by the remaining fields on the line.  B<filechan>
+is intended to be called by B<innd> as a channel feed.  (It is not a full
+exploder and does not accept commands; see newsfeeds(5) for a description
+of the difference, and buffchan(8) for an exploder program.)
+
+The input is interpreted as a sequence of lines.  Each line contains a fixed
+number of initial fields, followed by a variable number of filename fields.
+All fields in a line are separated by whitespace and do not contain any
+whitespace.  The default number of initial fields is one.
+
+For each line of input, B<filechan> writes the initial fields, separated
+by a space and followed by a newline, to each of the files named in the
+filename fields.  When writing to a file, B<filechan> opens it in append
+mode and tries to lock it and change the ownership to the user and group
+owning the directory where the file is being written.
+
+Because the time window in which a file is open is very small, complicated
+flushing and locking protocols have not been implemented and are not
+necessarily needed for the way B<filechan> is called and works; mv(1)
+followed by sleep(1) for a couple of seconds is sufficient.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d> I<directory>
+
+By default, B<filechan> writes its output into the I<pathoutgoing> directory.
+This flag may be used to specify a directory the program should change to
+before starting.
+
+=item B<-f> I<num-fields>
+
+This flag specifies a different number of initial fields.
+
+=item B<-m> I<map-file>
+
+A map file may be specified by using this flag.  Blank lines and lines
+starting with a number sign (C<#>) are ignored.  All other lines should have
+two host names separated by a colon.  The first field is the name that may
+appear in the input stream; the second field names the file to be used when
+the name in the first field appears.
+
+For example, the following map file may be used to map the short names used
+in the example below to the full domain names:
+
+    # This is a comment.
+    uunet:news.uu.net
+    foo:foo.com
+    munnari:munnari.oz.au
+
+=item B<-p> I<pid-file>
+
+If this flag is used, B<filechan> will write a line containing its process ID
+(in text) to the specified file.
+
+=back
+
+=head1 EXAMPLES
+
+If B<filechan> is invoked with C<-f 2> and given the following input:
+
+    news.software.nntp <1643@munnari.oz.au> foo uunet
+    news.software.nntp <102060@litchi.foo.com> uunet munnari
+    comp.sources.unix <999@news.foo.com> foo uunet munnari
+
+then the file F<foo> in I<pathoutgoing> will have these lines:
+
+    news.software.nntp <1643@munnari.oz.au>
+    comp.sources.unix <999@news.foo.com>
+
+the file F<munnari> in I<pathoutgoing> will have these lines:
+
+    news.software.nntp <102060@litchi.foo.com>
+    comp.sources.unix <999@news.foo.com>
+
+and the file F<uunet> in I<pathoutgoing> will have these lines:
+
+    news.software.nntp <1643@munnari.oz.au>
+    news.software.nntp <102060@litchi.foo.com>
+    comp.sources.unix <999@news.foo.com>
+
+Using B<filechan> this way can be done in F<newsfeeds> with for instance:
+
+    foo:*,@misc.*:Ap,Tm:filechan!
+    munnari:*,@rec.*:Ap,Tm:filechan!
+    uunet:*:Ap,Tm:filechan!
+    filechan!:*:Tc,WGm*:<pathbin>/filechan -f 2
+
+It will generate the examples above.  See the C<W> flag in newsfeeds(5)
+for how to parameter the output.
+
+=head1 HISTORY
+
+Written by Robert Elz <kre@munnari.oz.au>, flags added by Rich $alz
+<rsalz@uunet.uu.net>.  Rewritten into POD by Julien Elie.
+
+=head1 SEE ALSO
+
+buffchan(8), newsfeeds(5).
+
+=cut
