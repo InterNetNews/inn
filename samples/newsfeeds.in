@@ -135,6 +135,11 @@ controlchan!\
 #news2mail!:!*:Ac,Tc,Wn*:@bindir@/news2mail
 #list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
 
+# Example of an exploder feed.  See buffchan(8) for more details.
+#foo:news.*:Ap,Tm:buffchan!
+#uunet:*:Ap,Tm:buffchan!
+#buffchan!:*:Tx,WGm*:@bindir@/buffchan -u -f 2
+
 # Capture all local postings (with a distribution of "foo" and no more
 # than two sites in the Path: header) using a local program (that doesn't
 # come with INN).

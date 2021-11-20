@@ -90,8 +90,9 @@ has been open for more than I<seconds> seconds.
 
 =item B<-d> I<directory>
 
-This flag may be used to specify a directory the program should change to
-before starting.  If this flag is used, the default for the B<-s> flag
+By default, B<buffchan> writes its output into the I<pathoutgoing> directory.
+This flag may be used to specify a directory the program should change
+to before starting.  If this flag is used, the default for the B<-s> flag
 (see below) is changed to be a simple C<%s> (in other words, output files
 are considered to be relative to I<directory>).
 
@@ -122,7 +123,10 @@ In the map file, blank lines and lines starting with a number sign (C<#>)
 are ignored.  All other lines should have two host names separated by a
 colon.  The first field is the name that may appear in the input stream;
 the second field names the file to be used when the name in the first
-field appears.  For example:
+field appears.
+
+For example, the following map file may be used to map the short names used
+in the example below to the full domain names:
 
     # This is a comment
     uunet:news.uu.net
@@ -159,25 +163,35 @@ If the B<-u> flag is used, the output will be unbuffered.
 
 If B<buffchan> is invoked with C<-f 2> and given the following input:
 
-    news/software/b/132 <1643@munnari.oz.au> foo uunet
-    news/software/b/133 <102060@litchi.foo.com> uunet munnari
-    comp/sources/unix/2002 <999@news.foo.com> foo uunet munnari
+    news.software.nntp <1643@munnari.oz.au> foo uunet
+    news.software.nntp <102060@litchi.foo.com> uunet munnari
+    comp.sources.unix <999@news.foo.com> foo uunet munnari
 
-Then the file F<foo> will have these lines:
+then the file F<foo> in I<pathoutgoing> will have these lines:
 
-    news/software/b/132 <1643@munnari.oz.au>
-    comp/sources/unix/2002 <999@news.foo.com>
+    news.software.nntp <1643@munnari.oz.au>
+    comp.sources.unix <999@news.foo.com>
 
-the file F<munnari> will have these lines:
+the file F<munnari> in I<pathoutgoing> will have these lines:
 
-    news/software/b/133 <102060@litchi.foo.com>
-    comp/sources/unix/2002 <999@news.foo.com>
+    news.software.nntp <102060@litchi.foo.com>
+    comp.sources.unix <999@news.foo.com>
 
-and the file F<uunet> will have these lines:
+and the file F<uunet> in I<pathoutgoing> will have these lines:
 
-    news/software/b/132 <1643@munnari.oz.au>
-    news/software/b/133 <102060@litchi.foo.com>
-    comp/sources/unix/2002 <999@news.foo.com>
+    news.software.nntp <1643@munnari.oz.au>
+    news.software.nntp <102060@litchi.foo.com>
+    comp.sources.unix <999@news.foo.com>
+
+Using B<buffchan> this way can be done in F<newsfeeds> with for instance:
+
+    foo:*,@misc.*:Ap,Tm:buffchan!
+    munnari:*,@rec.*:Ap,Tm:buffchan!
+    uunet:*:Ap,Tm:buffchan!
+    buffchan!:*:Tx,WGm*:<pathbin>/buffchan -u -f 2
+
+It will generate the examples above.  See the C<W> flag in newsfeeds(5)
+for how to parameter the output.
 
 =head1 HISTORY
 
