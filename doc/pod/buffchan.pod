@@ -188,7 +188,7 @@ Using B<buffchan> this way can be done in F<newsfeeds> with for instance:
     foo:*,@misc.*:Ap,Tm:buffchan!
     munnari:*,@rec.*:Ap,Tm:buffchan!
     uunet:*:Ap,Tm:buffchan!
-    buffchan!:*:Tx,WGm*:<pathbin>/buffchan -u -f 2
+    buffchan!:*:Tx,WGm*:<pathbin>/buffchan -f 2
 
 It will generate the examples above.  See the C<W> flag in newsfeeds(5)
 for how to parameter the output.
