@@ -706,6 +706,7 @@ write_buffer(const char *buff, ssize_t len)
                 sysnotice("deflate() failed: %d; %s", r,
                           zstream_out->msg != NULL ? zstream_out->msg :
                           "no detail");
+                TMRstop(TMR_NNTPWRITE);
                 return;
             }
         } while (r == Z_OK && zstream_out->avail_out == 0);
@@ -732,6 +733,7 @@ write_buffer(const char *buff, ssize_t len)
                 sysnotice("sasl_encode() failed: %s; %s",
                           sasl_errstring(r, NULL, NULL),
                           ed != NULL ? ed : "no detail");
+                TMRstop(TMR_NNTPWRITE);
                 return;
             }
         } else
