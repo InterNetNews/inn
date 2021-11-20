@@ -38,6 +38,10 @@ for the path.
 
 =item *
 
+B<innfeed> now generates status reports in valid HTML syntax.
+
+=item *
+
 Fixed a bug in the buffindexed overview that prevented it from working
 on several systems, amongst them FreeBSD.  Unsupported, and useless,
 permission bits were given to semaphores.

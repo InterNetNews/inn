@@ -3283,13 +3283,16 @@ static void hostLogStatus (void)
 
       if (genHtml)
         {
-          fprintf (fp, "<HTML>\n"
-		       "<HEAD>\n"
-		       "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"300;\">\n"
-		       "</HEAD>\n"
-		       "<BODY>\n") ;
-	  fprintf (fp, "\n");
-	  fprintf (fp, "<PRE>\n");
+          fprintf(fp, "<!DOCTYPE html>\n"
+                      "<html lang=\"en\">\n"
+                      "<head>\n");
+          fprintf(fp, "<meta http-equiv=\"refresh\" content=\"%lu\">\n",
+                      (unsigned long) statsPeriod);
+          fprintf(fp, "<title>%s: outgoing feeds</title>\n",
+                      innconf->pathhost);
+          fprintf(fp, "</head>\n"
+                      "<body>\n"
+                      "<pre>\n");
 	}
 
       fprintf (fp,"innfeed from %s\npid %d started %s\n\nUpdated: %s\n",
@@ -3303,13 +3306,13 @@ static void hostLogStatus (void)
       
       if (genHtml)
       {
-        fprintf (fp, "</PRE>\n");
-        fprintf (fp,"<UL>\n");
+        fprintf (fp,"</pre>\n\n");
+        fprintf (fp,"<ul>\n");
         for (h = gHostList ; h != NULL ; h = h->next)
-          fprintf (fp,"<LI><A href=\"#%s\">%s</A></LI>\n",
+          fprintf (fp,"<li><a href=\"#%s\">%s</a></li>\n",
                    h->params->peerName, h->params->peerName);
-        fprintf (fp,"</UL>\n\n");
-        fprintf (fp,"<PRE>\n");
+        fprintf (fp,"</ul>\n\n");
+        fprintf (fp,"<pre>\n");
       }
 
       mainLogStatus (fp) ;
@@ -3329,7 +3332,7 @@ Default peer configuration parameters:
      backlog factor: 1.1
 */
       fprintf(fp,"%sDefault peer configuration parameters:%s\n",
-              genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
+              genHtml ? "<strong>" : "", genHtml ? "</strong>" : "") ;
       fprintf(fp,"    article timeout: %-5u     initial connections: %u\n",
 	    defaultParams->articleTimeout,
 	    defaultParams->initialConnections) ;
@@ -3373,7 +3376,7 @@ Default peer configuration parameters:
 
       fprintf (fp,"\n") ;
       fprintf(fp,"%sglobal (process)%s\n",
-              genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
+              genHtml ? "<strong>" : "", genHtml ? "</strong>" : "") ;
       
       fprintf (fp, "   seconds: %ld\n", sec) ;
       if (sec == 0) sec = 1 ;
@@ -3426,9 +3429,9 @@ Default peer configuration parameters:
 
       if (genHtml) 
 	{
-          fprintf (fp,"</PRE>\n") ;
-          fprintf (fp,"</BODY>\n") ;
-          fprintf (fp,"</HTML>\n") ;
+          fprintf (fp,"</pre>\n") ;
+          fprintf (fp,"</body>\n") ;
+          fprintf (fp,"</html>\n") ;
 	}
       
       fclose (fp) ;
@@ -3478,7 +3481,7 @@ static void hostPrintStatus (Host host, FILE *fp)
   ASSERT (fp != NULL) ;
 
   if (genHtml)
-    fprintf (fp,"<A name=\"%s\"><B>%s</B></A>",host->params->peerName,
+    fprintf (fp,"<strong id=\"%s\">%s</strong>",host->params->peerName,
              host->params->peerName);
   else
     fprintf (fp,"%s",host->params->peerName);
@@ -3554,9 +3557,9 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->params->dynamicMethod,
 	   100.0 * host->blNone / cnt) ;
 
-  fprintf (fp, "[overflow]: %-7ld  dyn b'log low: %-3.1f%%        >0%%-25%%: %-3.1f%%\n",
+  fprintf (fp, "[overflow]: %-7ld  dyn b'log low: %-3.1f%%        %s0%%-25%%: %-3.1f%%\n",
 	   (long) host->gArtsQueueOverflow, 
-	   host->params->dynBacklogLowWaterMark,
+	   host->params->dynBacklogLowWaterMark, genHtml ? "&gt;" : ">",
 	   100.0 * host->blQuartile[0] / cnt) ;
 
   fprintf (fp, "[on_close]: %-7ld dyn b'log high: %-3.1f%%        25%%-50%%: %-3.1f%%\n",
@@ -3569,10 +3572,10 @@ static void hostPrintStatus (Host host, FILE *fp)
 	   host->backlogFilter*100.0*(1.0-host->params->dynBacklogFilter),
 	   100.0 * host->blQuartile[2] / cnt) ;
 
-  fprintf (fp, " unspooled: %-7ld dyn b'log fltr: %-3.1f       75%%-<100%%: %-3.1f%%\n",
+  fprintf (fp, " unspooled: %-7ld dyn b'log fltr: %-3.1f       75%%-%s100%%: %-3.1f%%\n",
 	   (long) host->gArtsFromTape,
 	   host->params->dynBacklogLowWaterMark,
-	   100.0 * host->blQuartile[3] / cnt) ;
+	   genHtml ? "&lt;" : "<", 100.0 * host->blQuartile[3] / cnt) ;
 
   fprintf (fp, "  no queue: %-7ld avr.cxns queue: %-3.1f             full: %-3.1f%%\n",
 	   (long) host->gNoQueue,

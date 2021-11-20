@@ -963,7 +963,7 @@ static void mainCleanup (void)
 void mainLogStatus (FILE *fp)
 {
   fprintf (fp,"%sGlobal configuration parameters:%s\n",
-           genHtml ? "<B>" : "", genHtml ? "</B>" : "") ;
+           genHtml ? "<strong>" : "", genHtml ? "</strong>" : "") ;
   fprintf (fp,"          Mode: ") ;
   if (InputFile != NULL)
     fprintf (fp,"Funnel file") ;
