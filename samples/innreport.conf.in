@@ -79,7 +79,6 @@ section index {
 			 total(%nntplink_accepted) + total(%innxmit_accepted) |
 			 bytes(total(%innfeed_accepted_size) +
 			 total(%innfeed_rejected_size) +
-			 total(%innxmit_bytes) +
 			 total(%innxmit_accepted_size) +
 			 total(%innxmit_rejected_size))";
 	};
@@ -1724,36 +1723,30 @@ section innxmit_volume {
 		name		"TotalVol";
 		format		"%9s";
 		value		"bytes($innxmit_accepted_size{$key} +
-	                               $innxmit_rejected_size{$key} +
-                                       $innxmit_bytes{$key})";
+	                               $innxmit_rejected_size{$key})";
 		total		"bytes(total(%innxmit_accepted_size) +
-                                       total(%innxmit_rejected_size) +
-                                       total(%innxmit_bytes))";
+                                       total(%innxmit_rejected_size))";
 	};
 	column {
 		name		"KB/s";
 		format_name	"%5s";
 		format		"%5.1f";
 		value		"($innxmit_accepted_size{$key} +
-                                  $innxmit_rejected_size{$key} +
-                                  $innxmit_bytes{$key}) /
+                                  $innxmit_rejected_size{$key}) /
                                     $innxmit_times{$key} / 1024";
 		total		"(total(%innxmit_accepted_size) +
-                                  total(%innxmit_rejected_size) +
-                                  total(%innxmit_bytes)) /
+                                  total(%innxmit_rejected_size)) /
                                     total(%innxmit_times) / 1024";
 	};
 	column {
 		name		"Vol/Art";
 		format		"%9s";
 		value		"bytes(($innxmit_accepted_size{$key} +
-                                        $innxmit_rejected_size{$key} +
-                                        $innxmit_bytes{$key}) /
+                                        $innxmit_rejected_size{$key}) /
                                          ($innxmit_accepted{$key} +
                                           $innxmit_rejected{$key}))";
 		total		"bytes((total(%innxmit_accepted_size) +
-                                        total(%innxmit_rejected_size) +
-        	                        total(%innxmit_bytes)) /
+                                        total(%innxmit_rejected_size)) /
                                          (total(%innxmit_accepted) +
 	                                  total(%innxmit_rejected)))";
 	};
