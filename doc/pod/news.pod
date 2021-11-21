@@ -78,6 +78,12 @@ thus receiving each time the same error in response codes).
 
 =item *
 
+B<rc.news>, used to start and stop INN daemons, now checks whether it is
+run as the news user.  It will exit if not the case, to ensure not to
+tamper with the ownership of files INN manipulates.
+
+=item *
+
 B<filechan> has been removed; it was just a simple version of B<buffchan>,
 which should now be used.
 

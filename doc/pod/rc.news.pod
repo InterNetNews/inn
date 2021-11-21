@@ -91,15 +91,7 @@ To stop INN:
 
        su news -s /bin/sh -c '<pathbin>/rc.news stop'
 
-=head1 BUGS
-
-Running C<rc.news start> as root is never the right thing to do, so we
-should at minimum check for this and error, or perhaps change effective
-user ID.
-
 =head1 HISTORY
-
-// FIXME: any attribution for F<rc.news> itself?
 
 This manual page written by Jeffrey S<M. Vinocur> <jeff@litech.org> for
 InterNetNews.

@@ -7,6 +7,13 @@
 ##  Or to stop INN:
 ##     su news -s /bin/sh -c '/path/to/rc.news stop'
 
+# Ensure the script is really run as the news user.  Bail out otherwise.
+CURRENT_UID=`whoami 2>/dev/null || ${PERL} -e 'print scalar getpwuid($>)'`
+if [ "x${CURRENT_UID}" != "x${NEWSUSER}" ]; then
+    echo "$0 must be run as user ${NEWSUSER}, not ${CURRENT_UID}."
+    exit 1
+fi
+
 waitforpid()
 {
     i=12
