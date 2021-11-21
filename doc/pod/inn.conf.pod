@@ -1123,16 +1123,22 @@ like a separate authority root certificate.
 More concretly, when using S<Let's Encrypt> certificates, Certbot's
 files can be installed as follows:
 
-    tlscapath:      <pathetc>
-    tlscertfile:    <pathetc>/fullchain.pem
-    tlskeyfile:     <pathetc>/privkey.pem
+    tlscapath:      /etc/letsencrypt/live/news.server.com
+    tlscertfile:    /etc/letsencrypt/live/news.server.com/fullchain.pem
+    tlskeyfile:     /etc/letsencrypt/live/news.server.com/privkey.pem
 
 or:
 
-    tlscapath:      <pathetc>
-    tlscafile:      <pathetc>/chain.pem
-    tlscertfile:    <pathetc>/cert.pem
-    tlskeyfile:     <pathetc>/privkey.pem
+    tlscapath:      /etc/letsencrypt/live/news.server.com
+    tlscafile:      /etc/letsencrypt/live/news.server.com/chain.pem
+    tlscertfile:    /etc/letsencrypt/live/news.server.com/cert.pem
+    tlskeyfile:     /etc/letsencrypt/live/news.server.com/privkey.pem
+
+Make sure that the permission rights are properly set so that the
+news user or the news group can read these directories and files
+(typically, he should access F</etc/letsencrypt/live/news.server.com> and
+F</etc/letsencrypt/archive/news.server.com> where the real keys are located,
+and the private key should not be world-readable).
 
 =item I<tlskeyfile>
 
