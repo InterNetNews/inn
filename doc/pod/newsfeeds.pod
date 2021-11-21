@@ -780,16 +780,15 @@ list of sites that should receive that article.
 Here's a more esoteric example of a channel feed:
 
     watcher!:*:Tc,Wbnm\
-        :exec awk '$1 > 1000000 { print "BIG", $2, $3 }' > /dev/console
+        :exec awk '$1 > 1000000 { print "BIG", $2, $3 }' >> <pathlog>/bigart
 
-This receives the byte size of each article along with the storage API
-token and message ID, and prints to the console a line for every article
-that's over a million bytes.  This is actually rather a strange way to
-write this since INN can do the size check itself; the following is
-equivalent:
+This receives the byte size of each article along with the storage API token
+and Message-ID, and appends to a F<bigart> log file a line for every article
+that's over a million bytes.  This is actually rather a strange way to write
+this since INN can do the size check itself; the following is equivalent:
 
     watcher!:*:Tc,>1000000,Wbnm\
-        :exec awk '{ print "BIG", $2, $3}' > /dev/console
+        :exec awk '{ print "BIG", $2, $3}' >> <pathlog>/bigart
 
 Here's a cute, really simple news to mail gateway that also serves as an
 example of a fairly fancy program feed:
