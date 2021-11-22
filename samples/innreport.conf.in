@@ -12,7 +12,7 @@ section default {
 	libpath         "@libdir@";
 	logpath		"@LOGDIR@";
 	unknown		true;        # want unknown entries.
-        html-unknown    true;        # want unknown entries in HTML reports. 
+        html-unknown    true;        # want unknown entries in HTML reports.
 	max_unknown     50;          # max unknown entries to display.
 	casesensitive   true;        # use case sensitive search patterns.
 	module		"innreport_inn";  # ${libpath}/${module}.pm
@@ -2376,8 +2376,8 @@ section nnrpd_resource {
 	sort    "$nnrpd_resource_elapsed{$b} <=> $nnrpd_resource_elapsed{$a}";
         column {
                 name          "System";
-                format        "%-40.40s";
-		format_total  "TOTAL: %-33.33s";
+                format        "%-39.39s";
+		format_total  "TOTAL: %-32.32s";
 		value         "$key";
                 total         "$num";
         };
