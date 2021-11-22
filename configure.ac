@@ -630,12 +630,13 @@ dnl   -Wtraditional-conversion
 dnl                         Warns about problems when upgrading from K&R to
 dnl                         ANSI C, so these aren't interesting.
 dnl   -Wundef               We need portability code.
-dnl   -Wformat-truncation=2 Gives false positives with GCC 7.2.0
+dnl   -Wformat-truncation=2 Gives (many) false positives with GCC 10.2.1
 dnl                         https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83011
+dnl   -Wswitch-enum         Useless noise.
 dnl   -Wunsafe-loop-optimizations
 dnl                         Too much noise.
 dnl   -Wcast-qual           Used for a while, but some casts are unavoidable.
-dnl   -Wconversion          Too much unsigned to signed noise.
+dnl   -Wconversion          Too much noise, even with -Wno-sign-conversion.
 dnl   -Waggregate-return    Syntax allowed in C.
 dnl   -Wmissing-noreturn    Not necessary (unless for optimization).
 dnl   -Wpacked              Used by INN.
@@ -648,32 +649,33 @@ dnl Some may be worth looking at again once a released version of gcc doesn't
 dnl warn on system headers.  The warnings below are in the same order as
 dnl they're listed in the gcc manual.
 dnl
-dnl Last checked against gcc 8.1.0 (2018-06-05).
+dnl Last checked against gcc 10.2.1 (2021-11-21).
 dnl
 dnl Add -g because when building with warnings, one generally also wants the
 dnl debugging information, and add -O3 because gcc won't find some warnings
 dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
 dnl compile all debugging code and check it as well.
+dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
+dnl on glibc functions on Linux, as well as more object size checking,
+dnl which catches a few more issues.
 dnl
 dnl -Wno-unknown-warning-option is used to prevent Clang from complaining
 dnl with unknown parameters.
 dnl
 dnl It would be worthwhile trying to enforce the following checks:
-dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
-dnl on glibc functions on Linux, as well as more object size checking,
-dnl which catches a few more issues.
-dnl -Wswitch-enum, -Wfloat-equal,
-dnl "-Wconversion -Wno-sign-conversion", -Wunreachable-code, -Wstack-protector
+dnl -Wfloat-equal, -Wunreachable-code (for Clang)
 m4_foreach_w(
     [flag],
-    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
+    [-g -O3 -DDEBUG=1 -D_FORTIFY_SOURCE=2 -Werror -Wall -Wextra
+     -Wdouble-promotion -Wformat=2
      -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
      -Wmissing-include-dirs -Wshift-overflow=2
      -Wsync-nand -Wstringop-overflow=4 -Wstringop-truncation
      -Wmissing-format-attribute
-     -Walloc-zero -Walloca -Wduplicated-branches -Wduplicated-cond
-     -Wtrampolines -Wdeclaration-after-statement -Wshadow -Wpointer-arith
-     -Wc99-c11-compat
+     -Walloc-zero -Walloca -Warith-conversion -Warray-bounds=2
+     -Wattribute-alias=2 -Wduplicated-branches -Wduplicated-cond
+     -Wtrampolines -Wdeclaration-after-statement -Wshadow
+     -Wpointer-arith -Wc99-c11-compat
      -Wbad-function-cast -Wcast-align=strict -Wwrite-strings
      -Wdangling-else -Wdate-time
      -Wjump-misses-init -Wlogical-op -Wstrict-prototypes
