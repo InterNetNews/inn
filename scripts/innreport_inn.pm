@@ -880,6 +880,8 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^filter: Reloading bad files/o;
     return 1 if $left =~ /^filter: Saved EMP database/o;
     return 1 if $left =~ /^filter: Restored EMP database/o;
+    # PyClean status reports
+    return 1 if $left =~ /^python: pyclean successfully hooked into INN/o;
   }
   ########
   ## innfeed
