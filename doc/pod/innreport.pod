@@ -19,8 +19,8 @@ HTML output and graphs.  It is normally invoked by scanlogs(8) which includes
 the output of B<innreport> in daily Usenet reports.
 
 Supported programs are B<batcher>, B<cnfsstat>, B<controlchan>, B<innd>,
-B<innfeed>, B<innxmit>, B<nnrpd>, B<nntplink> (an external program),
-B<overchan>, B<perl-nocem> and B<rnews>.
+B<innfeed>, B<innxbatch>, B<innxmit>, B<nnrpd>, B<nntplink> (an external
+program), B<overchan>, B<perl-nocem> and B<rnews>.
 
 B<innreport> also updates the count of newsgroups not locally carried
 by the news server, and for which articles have been received, in the

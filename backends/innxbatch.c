@@ -76,6 +76,9 @@ static unsigned long STATaccepted;
 static unsigned long STAToffered;
 static unsigned long STATrefused;
 static unsigned long STATrejected;
+static double STATacceptedsize;
+static double STATrejectedsize;
+
 
 /*
 **  Prototypes.
@@ -131,14 +134,18 @@ ExitWithStats(int x)
     }
 
     if (STATprint) {
-        printf("%s stats offered %lu accepted %lu refused %lu rejected %lu\n",
-               REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+        printf("%s stats offered %lu accepted %lu refused %lu rejected %lu "
+               "accsize %.0f rejsize %.0f\n",
+               REMhost, STAToffered, STATaccepted, STATrefused, STATrejected,
+               STATacceptedsize, STATrejectedsize);
         printf("%s times user %.3f system %.3f elapsed %.3f\n", REMhost,
                usertime, systime, STATend - STATbegin);
     }
 
-    notice("%s stats offered %lu accepted %lu refused %lu rejected %lu",
-           REMhost, STAToffered, STATaccepted, STATrefused, STATrejected);
+    notice("%s stats offered %lu accepted %lu refused %lu rejected %lu "
+           "accsize %.0f rejsize %.0f",
+           REMhost, STAToffered, STATaccepted, STATrefused, STATrejected,
+           STATacceptedsize, STATrejectedsize);
     notice("%s times user %.3f system %.3f elapsed %.3f", REMhost, usertime,
            systime, STATend - STATbegin);
 
@@ -271,11 +278,13 @@ REMsendxbatch(int fd, char *buf, int size)
     case NNTP_FAIL_ACTION:
         notice("%s xbatch failed %s", REMhost, buf);
         STATrejected++;
+        STATrejectedsize += (double) size;
         return false;
         /* NOTREACHED */
         break;
     case NNTP_OK_XBATCH:
         STATaccepted++;
+        STATacceptedsize += (double) size;
         if (Debug)
             fprintf(stderr, "will unlink(%s)\n", XBATCHname);
         if (unlink(XBATCHname)) {

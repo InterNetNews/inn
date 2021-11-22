@@ -75,10 +75,13 @@ section index {
 		title	"Outgoing feeds";
 		name	"Offered|Accepted|Volume";
 		value	"total(%innfeed_offered) + total(%nntplink_offered) +
-			 total(%innxmit_offered) | total(%innfeed_accepted) +
-			 total(%nntplink_accepted) + total(%innxmit_accepted) |
+			 total(%innxbatch_offered) + total(%innxmit_offered) |
+                         total(%innfeed_accepted) + total(%nntplink_accepted) +
+                         total(%innxbatch_accepted) + total(%innxmit_accepted) |
 			 bytes(total(%innfeed_accepted_size) +
 			 total(%innfeed_rejected_size) +
+                         total(%innxbatch_accepted_size) +
+                         total(%innxbatch_rejected_size) +
 			 total(%innxmit_accepted_size) +
 			 total(%innxmit_rejected_size))";
 	};
@@ -1604,6 +1607,163 @@ section nntplink_connect2 {
 			       total(%nntplink_expire) +
 			  total(%nntplink_fail))) / total(%nntplink_site) : 0";
         };
+};
+
+section innxbatch_connect {
+	title	"Outgoing Feeds (innxbatch) by Articles:";
+	data    "%innxbatch_offered";
+	sort    "$innxbatch_accepted{$b} <=> $innxbatch_accepted{$a}";
+	numbering true;
+        column {
+                name          "Server";
+		format        "%-33.33s";
+		value         "$key";
+		format_total  "TOTAL: %-26.26s";
+		total         "$num";
+        };
+        column {
+                name          "Offered";
+		format_name   "%7s";
+		format        "%7d";
+		value         "$innxbatch_offered{$key}";
+		total         "total(%innxbatch_offered)";
+        };
+        column {
+                name          "Taken";
+		format_name   "%7s";
+		format        "%7d";
+		value         "$innxbatch_accepted{$key}";
+		total         "total(%innxbatch_accepted)";
+        };
+        column {
+                name          "Refused";
+		format_name   "%7s";
+		format        "%7d";
+		value         "$innxbatch_refused{$key}";
+		total         "total(%innxbatch_refused)";
+        };
+        column {
+                name          "Reject";
+		format_name   "%7s";
+		format        "%7d";
+		value         "$innxbatch_rejected{$key}";
+		total         "total(%innxbatch_rejected)";
+        };
+        column {
+                name          "%Acc";
+		format_name   "%4s";
+		format        "%3d%%";
+		value         "$innxbatch_offered{$key} == 0 ? 0 :
+		               $innxbatch_accepted{$key} /
+                               $innxbatch_offered{$key} * 100";
+		total         "total(%innxbatch_offered) == 0 ? 0 :
+		               total(%innxbatch_accepted) /
+                               total(%innxbatch_offered) * 100";
+        };
+        column {
+                name          "Elapsed";
+		format        "%8s";
+		value         "time($innxbatch_times{$key})";
+		total         "time(total(%innxbatch_times))";
+        };
+	graph {
+	        title         "Outgoing Feeds (innxbatch)";
+		type          histo3d;
+		sort	      "%innxbatch_accepted";
+		data {
+		          name    "Art. accepted";
+			  color   "#0000FF";
+			  value   "%innxbatch_accepted";
+                };
+		data {
+		          name    "Art. refused";
+			  color   "#FFAF00";
+			  value   "%innxbatch_refused";
+                };
+		data {
+		          name    "Art. rejected";
+			  color   "#FF0000";
+			  value   "%innxbatch_rejected";
+                };
+	};
+};
+
+section innxbatch_volume {
+	title	"Outgoing Feeds (innxbatch) by Volume:";
+        data    "%innxbatch_offered";
+	sort	"$innxbatch_accepted_size{$b} <=> $innxbatch_accepted_size{$a}";
+	numbering true;
+	column {
+		name		"Server";
+		format		"%-17.17s";
+		value		"$key";
+		format_total	"TOTAL: %-10.10s";
+		total		"$num";
+	};
+	column {
+		name		"AcceptVol";
+		format		"%9s";
+		value		"bytes($innxbatch_accepted_size{$key})";
+		total		"bytes(total(%innxbatch_accepted_size))";
+	};
+	column {
+		name		"RejectVol";
+		format		"%9s";
+		value		"bytes($innxbatch_rejected_size{$key})";
+		total		"bytes(total(%innxbatch_rejected_size))";
+	};
+	column {
+		name		"TotalVol";
+		format		"%9s";
+		value		"bytes($innxbatch_accepted_size{$key} +
+	                               $innxbatch_rejected_size{$key})";
+		total		"bytes(total(%innxbatch_accepted_size) +
+                                       total(%innxbatch_rejected_size))";
+	};
+	column {
+		name		"Volume/sec";
+		format_name	"%11s";
+		format		"%9s/s";
+		value		"bytes(($innxbatch_accepted_size{$key} +
+                                        $innxbatch_rejected_size{$key}) /
+                                       $innxbatch_times{$key} / 1024)";
+		total		"bytes((total(%innxbatch_accepted_size) +
+                                        total(%innxbatch_rejected_size)) /
+                                       total(%innxbatch_times) / 1024)";
+	};
+	column {
+		name		"Vol/Art";
+		format		"%9s";
+		value		"bytes(($innxbatch_accepted_size{$key} +
+                                        $innxbatch_rejected_size{$key}) /
+                                         ($innxbatch_accepted{$key} +
+                                          $innxbatch_rejected{$key}))";
+		total		"bytes((total(%innxbatch_accepted_size) +
+                                        total(%innxbatch_rejected_size)) /
+                                         (total(%innxbatch_accepted) +
+	                                  total(%innxbatch_rejected)))";
+	};
+	column {
+		name		"Elapsed";
+		format		"%9s";
+		value		"time($innxbatch_times{$key})";
+		total		"time(total(%innxbatch_times))";
+	};
+	graph {
+		title		"Outgoing Feeds (innxbatch)";
+		type		histo3d;
+		sort		"%innxbatch_accepted_size";
+		data {
+			name	"Articles accepted";
+			color	"#0000FF";
+			value	"%innxbatch_accepted_size";
+		};
+		data {
+			name	"Articles rejected";
+			color	"#FFAF00";
+			value	"%innxbatch_rejected_size";
+		};
+	};
 };
 
 section innxmit_connect {

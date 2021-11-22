@@ -78,6 +78,11 @@ thus receiving each time the same error in response codes).
 
 =item *
 
+B<innreport> now collects statistics from B<innxbatch> and generates a
+section for them in its reports.
+
+=item *
+
 B<rc.news>, used to start and stop INN daemons, now checks whether it is
 run as the news user.  It will exit if not the case, to ensure not to
 tamper with the ownership of files INN manipulates.

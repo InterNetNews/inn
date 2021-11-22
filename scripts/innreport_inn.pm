@@ -173,6 +173,14 @@ our %inn_uw_dist_s;
 our %inn_uw_ng;
 our %inn_uw_ng_s;
 our %inn_uw_site;
+our %innxbatch_accepted;
+our %innxbatch_accepted_size;
+our %innxbatch_offered;
+our %innxbatch_refused;
+our %innxbatch_rejected;
+our %innxbatch_rejected_size;
+our %innxbatch_site;
+our %innxbatch_times;
 our %innxmit_accepted;
 our %innxmit_accepted_size;
 our %innxmit_afail_host;
@@ -865,6 +873,8 @@ sub collect($$$$$$) {
     return 1 if $left =~ /CNFS(?:-sm)?: CNFSflushallheads: flushing /o;
     # CNFS: metacycbuff rollover with SEQUENTIAL
     return 1 if $left =~ /CNFS(?:-sm)?: metacycbuff \S+ cycbuff is moved to /o;
+    # From XBATCH
+    return 1 if $left =~ /\S+:\d+ accepted batch size \d+/o;
     # Cleanfeed status reports
     return 1 if $left =~ /^filter: status/o;
     return 1 if $left =~ /^filter: Reloading bad files/o;
@@ -1070,6 +1080,34 @@ sub collect($$$$$$) {
     # Finally, to avoid problems with strange error lines, ignore them.
     #return 1 if ($left =~ /ME /);
   }
+
+  #########
+  ## innxbatch
+  if ($prog eq "innxbatch") {
+    # stats
+    if ($left =~
+      /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) accsize (\d+) rejsize (\d+)$/o) {
+      my ($server, $offered, $accepted, $refused, $rejected, $accbytes, $rejbytes) =
+        ($1, $2, $3, $4, $5, $6, $7);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innxbatch_offered{$server} += $offered;
+      $innxbatch_accepted{$server} += $accepted;
+      $innxbatch_refused{$server} += $refused;
+      $innxbatch_rejected{$server} += $rejected;
+      $innxbatch_accepted_size{$server} += $accbytes;
+      $innxbatch_rejected_size{$server} += $rejbytes;
+      $innxbatch_site{$server}++;
+      return 1;
+    }
+    # times
+    if ($left =~ /(\S+) times user (.+) system (\S+) elapsed (\S+)$/o) {
+      my ($server, $user, $system, $elapsed) = ($1, $2, $3, $4);
+      $server = lc $server unless $CASE_SENSITIVE;
+      $innxbatch_times{$server} += $elapsed;
+      return 1;
+    }
+  }
+
   ########
   ## innxmit
   if ($prog eq "innxmit") {
