@@ -359,7 +359,6 @@ my %control_actions = (
     'log',		1,
     'mail',		1,
     'doit',		1,
-    'doifarg',		1,
     'verify',           1
 );
 

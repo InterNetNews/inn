@@ -125,21 +125,6 @@ instead of being performed.
 If you always want notification of actions taken, use C<doit=mail> instead
 (see below).
 
-=item B<doifarg>
-
-If the control message has an argument, this is equivalent to B<doit>.  If
-it does not have an argument, this is equivalent to B<mail>.  This is only
-useful for entries for sendsys control messages, allowing a site to
-request its own F<newsfeeds> entry by posting a C<sendsys mysite> control
-message, but not allowing the entire F<newsfeeds> file to be sent.  This
-was intended to partially counter so-called "sendsys bombs", where forged
-sendsys control messages were used to mailbomb people.
-
-Processing sendsys control messages is not recommended even with this
-work-around unless they are authenticated in some fashion.  The risk of
-having news servers turned into anonymous mail bombing services is too
-high.
-
 =item B<doit>=I<file>
 
 The action is performed as in B<doit>, and additionally a log entry is

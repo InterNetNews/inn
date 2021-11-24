@@ -101,6 +101,14 @@ you'll have to download it from L<https://ftp.isc.org/pub/pgpcontrol/>.
 
 =item *
 
+Support in B<controlchan> for obsolete I<sendsys>, I<senduuname> and
+I<version> control messages has been removed.  These control messages,
+long been deprecated, should no longer be sent nor honoured nowadays.
+Besides, the C<doifarg> keyword in F<control.ctl> is no longer recognized
+(it was only used for these three kinds of control messages).
+
+=item *
+
 The I<require_ssl> parameter in F<readers.conf> has been renamed to
 I<require_encryption>, which is a better name as it applies to any kind of
 encryption layers, including TLS and SASL security layers.

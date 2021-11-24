@@ -119,7 +119,7 @@ class InndFilter:
         regular expressions, or maybe reload stats from disk.
         """
         self.re_newrmgroup = re.compile("(?:new|rm)group\s")
-        self.re_obsctl = re.compile("(?:sendsys|version|uuname)")
+        self.re_obsctl = re.compile("(?:sendsys|version|senduuname)")
         # Message-ID pattern from a once-common spambot.
         self.re_none44 = re.compile("none\d+\.yet>")
         # There is a mad newgrouper who likes to meow.

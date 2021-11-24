@@ -107,6 +107,7 @@ update:
 	done
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHAUTHPASSWD)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHBIN)
+	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHCONTROL)/modules
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHDOC)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHETC)
 	$(PERL) -Tw $(PATHBIN)/innupgrade $(DESTDIR)$(PATHFILTER)

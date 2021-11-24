@@ -333,7 +333,7 @@ sub readctlfile {
 
             if (not /^\/(?:local)?encoding\/:/ and
                 not /^\/maxdocheckgroups\/:/ and
-                not /:(?:doit|doifarg|drop|log|mail|verify-.*)(?:=.*)?$/) {
+                not /:(?:doit|drop|log|mail|verify-.*)(?:=.*)?$/) {
                 s/.*://;
                 logmsg("$_ is not a valid action for control.ctl", 'err');
                 next;

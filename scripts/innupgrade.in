@@ -76,6 +76,9 @@ use Getopt::Long qw(GetOptions);
            'filechan'         => 'filechan.OLD',
            'filechan.8'       => '',
            'signcontrol'      => 'signcontrol.OLD',
+           'sendsys.pl'       => 'sendsys.pl.OLD',
+           'senduuname.pl'    => 'senduuname.pl.OLD',
+           'version.pl'       => 'version.pl.OLD',
           );
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
