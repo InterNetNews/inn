@@ -107,7 +107,6 @@ control/modules/senduuname.pl         senduuname controlchan handler
 control/modules/version.pl            version controlchan handler
 control/perl-nocem.in                 NoCeM on spool implementation
 control/pgpverify.in                  Verify control messages with PGP
-control/signcontrol.in                PGP control message signing program
 doc                                   Documentation (Directory)
 doc/FAQ                               INN Frequently Asked Questions
 doc/GPL                               The GNU General Public License 2.0

@@ -94,6 +94,13 @@ which should now be used.
 
 =item *
 
+B<signcontrol> has been removed as it embeds per-site configuration which is
+overwritten each time INN is updated to a newer version, and it is unlikely
+you ever need it.  Yet, if you need to issue PGP-signed control messages,
+you'll have to download it from L<https://ftp.isc.org/pub/pgpcontrol/>.
+
+=item *
+
 The I<require_ssl> parameter in F<readers.conf> has been renamed to
 I<require_encryption>, which is a better name as it applies to any kind of
 encryption layers, including TLS and SASL security layers.

@@ -3,7 +3,7 @@ include ../Makefile.global
 top	      = ..
 
 ALL	      = controlbatch controlchan docheckgroups perl-nocem \
-		pgpverify signcontrol
+		pgpverify
 
 MAN	      = ../doc/man/perl-nocem.8 ../doc/man/pgpverify.1
 
@@ -43,7 +43,6 @@ controlchan:	controlchan.in   $(FIX) ; $(FIX) controlchan.in
 docheckgroups:	docheckgroups.in $(FIX) ; $(FIX) docheckgroups.in
 perl-nocem:	perl-nocem.in    $(FIX) ; $(FIX) perl-nocem.in
 pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
-signcontrol:	signcontrol.in   $(FIX) ; $(FIX) -i signcontrol.in
 
 ../doc/man/perl-nocem.8: perl-nocem.in
 	$(POD2MAN) -s 8 -n "PERL-NOCEM" $? > $@

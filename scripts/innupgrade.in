@@ -75,6 +75,7 @@ use Getopt::Long qw(GetOptions);
            'defines.h'        => 'defines.h.OLD',    # Removed in INN 2.7.0.
            'filechan'         => 'filechan.OLD',
            'filechan.8'       => '',
+           'signcontrol'      => 'signcontrol.OLD',
           );
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without

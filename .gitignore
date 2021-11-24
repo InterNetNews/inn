@@ -71,7 +71,6 @@
 /control/docheckgroups
 /control/perl-nocem
 /control/pgpverify
-/control/signcontrol
 /doc/checklist
 /doc/external-auth
 /doc/hook-perl

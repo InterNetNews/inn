@@ -135,7 +135,6 @@ control/controlchan
 control/docheckgroups
 control/perl-nocem
 control/pgpverify
-control/signcontrol
 doc/man/index.db
 expire/convdate
 expire/expire
