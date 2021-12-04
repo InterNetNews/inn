@@ -142,6 +142,11 @@ keys are present on your system.
 
 =item *
 
+Up-to-date F<control.ctl> and F<moderators> files are provided with this
+release.  You should manually update them (notably for the fido7.* hierarchy).
+
+=item *
+
 Added a stricter validation of article numbers given in NNTP commands
 so that numbers superior to 2^31 are correctly considered invalid.
 Thanks to Richard Kettlewell for the patch.
