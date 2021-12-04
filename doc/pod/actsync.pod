@@ -163,7 +163,8 @@ second I<host> argument, or the only one if only one is given).
 
 =item B<-A>
 
-B<actsync> tries to authenticate before issuing the LIST command.
+B<actsync> tries to authenticate using the username and password information
+in passwd.nntp(5) before issuing the LIST command.
 
 =item B<-b> I<hostid>
 
@@ -783,6 +784,7 @@ remains.  Use at your own risk.  No warranty is implied.
 
 =head1 SEE ALSO
 
-active(5), ctlinnd(8), getlist(8), inn.conf(5), mod-active(8), simpleftp(1).
+active(5), ctlinnd(8), getlist(8), inn.conf(5), mod-active(8), passwd.nntp(5),
+simpleftp(1).
 
 =cut

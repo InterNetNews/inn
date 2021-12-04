@@ -41,6 +41,12 @@ connections if the load average is greater than that value (typically
 C<16>).  B<nnrpd> can also prevent high-volume posters from abusing
 your resources.  See the discussion of exponential backoff in inn.conf(5).
 
+B<nnrpd> injects articles into the local server running B<innd> through a
+UNIX domain socket, or an INET domain socket if not supported.  If another
+server should be used for injection, you can set it with the I<nnrpdposthost>
+parameter in F<inn.conf>.  In case authentication credentials are requested
+during the injection, B<nnrpd> will use the F<passwd.nntp> file in I<pathetc>.
+
 =head1 OPTIONS
 
 =over 4
@@ -332,7 +338,7 @@ Febuary 1998.
 
 =head1 SEE ALSO
 
-ctlinnd(8), innd(8), inn.conf(5), nnrpd.track(5), readers.conf(5),
-signal(2), uwildmat(3).
+ctlinnd(8), innd(8), inn.conf(5), nnrpd.track(5), passwd.nntp(5),
+readers.conf(5), signal(2), uwildmat(3).
 
 =cut

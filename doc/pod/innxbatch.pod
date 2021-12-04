@@ -25,6 +25,10 @@ If a communication error such as a write(2) failure, or an unexpected reply
 from the remote server occurs, B<innxbatch> will stop sending and leave
 all remaining files untouched for later retry.
 
+If authentication credentials are present for the remote server in the
+F<passwd.nntp> file in I<pathetc>, then B<innxbatch> will use them to
+authenticate.
+
 B<innxbatch> does not use itself any file locking.  At worst, a batch could be
 transmitted twice in parallel by two independent invocations of B<innxbatch>.
 To prevent this, it should be invoked by a script run out of cron(8) that uses
@@ -112,6 +116,6 @@ Karsten Leipold <poldi@dfn.de>.  Rewritten into POD by Julien Elie.
 
 =head1 SEE ALSO
 
-ctlinnd(8), innxmit(8), newsfeeds(5), nntpsend(8), shlock(1).
+ctlinnd(8), innxmit(8), newsfeeds(5), nntpsend(8), passwd.nntp(5), shlock(1).
 
 =cut
