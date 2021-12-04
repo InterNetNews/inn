@@ -185,8 +185,9 @@ static void
 Usage(const char *p)
 {
     warn("%s", p);
-    fprintf(stderr, "Usage: nntpget"
-                    " [ -d dist -n grps [-f file | -t time -u file]] host\n");
+    fprintf(stderr,
+            "Usage: nntpget"
+            " [-ov] [-d dist] [-f file] [-n grps] [-t time] [-u file] host\n");
     exit(1);
 }
 
@@ -230,7 +231,7 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "d:f:n:t:ovu:")) != EOF)
+    while ((i = getopt(ac, av, "d:f:n:t:ou:v")) != EOF)
         switch (i) {
         default:
             Usage("bad flag");
@@ -266,7 +267,7 @@ main(int ac, char *av[])
             break;
         case 't':
             if (Since)
-                Usage("only one of -t or -f may be given");
+                Usage("only one of -f, -t, or -u may be given");
             Since = optarg;
             break;
         case 'v':
@@ -395,7 +396,7 @@ main(int ac, char *av[])
         }
 
         if (Verbose)
-            notice("%s...", mesgid);
+            notice("%s", mesgid);
 
         /* Read each line in the article and write it. */
         for (Error = false;;) {

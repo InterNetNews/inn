@@ -1,0 +1,95 @@
+=head1 NAME
+
+nntpget - Get Usenet articles from a remote NNTP server
+
+=head1 SYNOPSIS
+
+B<nntpget> [B<-ov>] [B<-d> I<dist>] [B<-f> I<file>] [B<-n> I<newsgroups>]
+[B<-t> I<timestring>] [B<-u> I<file>] I<host>
+
+=head1 DESCRIPTION
+
+B<nntpget> connects to the NNTP server at the specified I<host> and retrieves
+articles from it.  The Message-IDs of the desired articles are read from
+standard input.  The articles are sent to standard output.
+
+Instead of reading Message-IDs from standard output, the B<-d>, B<-f>,
+B<-n>, B<-t> and B<-u> options make use of the C<NEWNEWS> command, which
+may not be available on the remote server.  Only one of the B<-f>, B<-t>
+or B<-u> option may be given at the same time; B<-d> and B<-n> can be
+specified only if one of the other three options is in use.
+
+If authentication credentials are present for the remote server in the
+F<passwd.nntp> file in I<pathetc>, then B<nntpget> will use them to
+authenticate.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-d> I<dist>
+
+This option may be used to specify a distribution list when using the B<-f>,
+B<-t> or B<-u> options.  The default is no distribution list.
+
+=item B<-f> I<file>
+
+The list of article Message-IDs is normally read from standard input.
+If this option is used, then a C<NEWNEWS> command is used to retrieve all
+articles newer than the modification date of the specified I<file>.
+
+=item B<-n> I<newsgroups>
+
+If either the B<-f>, B<-t> or B<-u> options are used, then this option may be
+used to limit the responses to only the newsgroups (if any) whose names match
+the list.  The default is C<*>, that is to say all newsgroups are wanted.
+
+The I<newsgroups> list can contain several patterns and wildmat characters.
+For instance C<misc.*,!*.test> is a valid list that will be given to the
+C<NEWNEWS> command.
+
+=item B<-o>
+
+This option may be used only if the command is executed on the host where the
+B<innd> server is running.  If this option is used, B<nntpget> connects to
+the specified remote I<host> to retrieve articles.  Any article not present
+in the local F<history> database is then fetched from the remote site and
+offered to the local server.
+
+Articles are not written to standard output.  Only processed Message-IDs are,
+if the B<-v> option is also used.
+
+=item B<-t> I<timestring>
+
+If this option is used, then the specified I<timestring> is used as the time
+and date parameter to the C<NEWNEWS> command.  Only the articles arrived
+in the remote server since that timestamp are retrieved.
+
+The I<timestring> is specified as C<yyyymmdd hhmmss GMT> where C<yyyy> is the
+year, C<mm> the month, C<dd> the day of the month, C<hh> the hours in the
+24-hour clock, C<mm> the minutes, and C<ss> the seconds.  The token C<GMT>
+specifies that the date and time are given in Coordinated Universal Time.
+
+=item B<-u> I<file>
+
+This option is like B<-f> except that if the transfer succeeds, the file
+will be updated with a statistics line, modifying its timestamp so that it
+can be used in later invocations.
+
+=item B<-v>
+
+If this option is used with B<-o>, then the Message-ID of each article will
+be sent to standard output as it is processed.
+
+=back
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten into
+POD by Julien Elie.
+
+=head1 SEE ALSO
+
+innd(8), passwd.nntp(5).
+
+=cut
