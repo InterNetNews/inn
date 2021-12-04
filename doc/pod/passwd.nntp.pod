@@ -6,7 +6,7 @@ passwd.nntp - Passwords for connecting to remote NNTP servers
 
 The file I<pathetc>/passwd.nntp contains host / name / password
 triplets for use when authenticating client programs to NNTP servers.
-This file is normally interpreted by NNTPsendpassword() in libinn(3).
+This file is normally interpreted by C<NNTPsendpassword()> in libinn(3).
 Blank lines and lines beginning with a number sign (C<#>) are ignored.
 All other lines should consist of three or four fields separated by
 colons:
@@ -32,11 +32,14 @@ are described in S<RFC 4643>.)
 
 For example:
 
-    ##  UUNET needs a password, MIT doesn't.
-    mit.edu:bbn::authinfo
+    mit.edu:bbn:mypasswd
     uunet.uu.net:bbn:yoyoma:authinfo
 
 This file should not be world-readable.
+
+B<actsync>, B<getlist>, B<inews>, B<innxbatch>, B<innxmit>, B<nnrpd>,
+B<nntpget> and B<rnews> make use of F<passd.nntp> when needing to connect
+to a remote server.
 
 =head1 HISTORY
 

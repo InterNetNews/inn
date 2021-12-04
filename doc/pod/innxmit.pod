@@ -10,7 +10,8 @@ B<innxmit> [B<-acdHlprsv>] [B<-P> I<portnum>] [B<-T> I<seconds>]
 =head1 DESCRIPTION
 
 B<innxmit> connects to the NNTP server at the specified I<host>
-(validating itself via F<passwd.nntp> if possible) and sends it the
+(validating itself via F<passwd.nntp> if authentication credentials
+are present for the remote server in that file) and sends it the
 articles specified in the batch file named I<file>.  It is normally
 invoked by a script run out of cron(8) that uses B<shlock> to lock the
 host name, followed by a B<ctlinnd> command to flush the batch file.
