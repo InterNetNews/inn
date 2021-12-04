@@ -4,7 +4,7 @@ nntpget - Get Usenet articles from a remote NNTP server
 
 =head1 SYNOPSIS
 
-B<nntpget> [B<-ov>] [B<-d> I<dist>] [B<-f> I<file>] [B<-n> I<newsgroups>]
+B<nntpget> [B<-ov>] [B<-f> I<file>] [B<-n> I<newsgroups>]
 [B<-t> I<timestring>] [B<-u> I<file>] I<host>
 
 =head1 DESCRIPTION
@@ -13,11 +13,11 @@ B<nntpget> connects to the NNTP server at the specified I<host> and retrieves
 articles from it.  The Message-IDs of the desired articles are read from
 standard input.  The articles are sent to standard output.
 
-Instead of reading Message-IDs from standard output, the B<-d>, B<-f>,
-B<-n>, B<-t> and B<-u> options make use of the C<NEWNEWS> command, which
-may not be available on the remote server.  Only one of the B<-f>, B<-t>
-or B<-u> option may be given at the same time; B<-d> and B<-n> can be
-specified only if one of the other three options is in use.
+Instead of reading Message-IDs from standard output, the B<-f>, B<-n>,
+B<-t> and B<-u> options make use of the C<NEWNEWS> command, which may not
+be available on the remote server.  Only one of the B<-f>, B<-t> or B<-u>
+option may be given at the same time; B<-n> can be specified only if one
+of the other three options is in use.
 
 If authentication credentials are present for the remote server in the
 F<passwd.nntp> file in I<pathetc>, then B<nntpget> will use them to
@@ -26,11 +26,6 @@ authenticate.
 =head1 OPTIONS
 
 =over 4
-
-=item B<-d> I<dist>
-
-This option may be used to specify a distribution list when using the B<-f>,
-B<-t> or B<-u> options.  The default is no distribution list.
 
 =item B<-f> I<file>
 

@@ -185,9 +185,8 @@ static void
 Usage(const char *p)
 {
     warn("%s", p);
-    fprintf(stderr,
-            "Usage: nntpget"
-            " [-ov] [-d dist] [-f file] [-n grps] [-t time] [-u file] host\n");
+    fprintf(stderr, "Usage: nntpget"
+                    " [-ov] [-f file] [-n grps] [-t time] [-u file] host\n");
     exit(1);
 }
 
@@ -201,7 +200,6 @@ main(int ac, char *av[])
     char *msgidfile = NULL;
     int msgidfd;
     const char *Groups;
-    char *distributions;
     char *Since;
     char *path;
     int i;
@@ -220,7 +218,6 @@ main(int ac, char *av[])
     message_program_name = "nntpget";
 
     /* Set defaults. */
-    distributions = NULL;
     Groups = NULL;
     Since = NULL;
     Offer = false;
@@ -231,14 +228,11 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* Parse JCL. */
-    while ((i = getopt(ac, av, "d:f:n:t:ou:v")) != EOF)
+    while ((i = getopt(ac, av, "f:n:t:ou:v")) != EOF)
         switch (i) {
         default:
             Usage("bad flag");
             /* NOTREACHED */
-        case 'd':
-            distributions = optarg;
-            break;
         case 'u':
             Update = optarg;
             /* FALLTHROUGH */
@@ -292,17 +286,13 @@ main(int ac, char *av[])
 
     if (Since == NULL) {
         F = stdin;
-        if (distributions || Groups)
-            Usage("no -d or -n flags allowed when reading stdin");
+        if (Groups)
+            Usage("-n flag not allowed when reading stdin");
     } else {
         /* Ask the server for a list of what's new. */
         if (Groups == NULL)
             Groups = "*";
-        if (distributions)
-            snprintf(buff, sizeof(buff), "NEWNEWS %s %s <%s>", Groups, Since,
-                     distributions);
-        else
-            snprintf(buff, sizeof(buff), "NEWNEWS %s %s", Groups, Since);
+        snprintf(buff, sizeof(buff), "NEWNEWS %s %s", Groups, Since);
         if (!SITEwrite(Remote, buff, (int) strlen(buff))
             || !SITEread(Remote, buff))
             sysdie("cannot start list");
