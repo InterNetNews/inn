@@ -307,6 +307,7 @@ doc/pod/newslog.pod                   Master file for newslog.5
 doc/pod/ninpaths.pod                  Master file for ninpaths.8
 doc/pod/nnrpd.pod                     Master file for nnrpd.8
 doc/pod/nnrpd.track.pod               Master file for nnrpd.track.5
+doc/pod/nntpget.pod                   Master file for nntpget.1
 doc/pod/nntpsend.ctl.pod              Master file for nntpsend.ctl.5
 doc/pod/nntpsend.pod                  Master file for nntpsend.8
 doc/pod/ovdb.pod                      Master file for ovdb.5
