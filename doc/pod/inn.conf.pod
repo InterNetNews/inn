@@ -1210,8 +1210,8 @@ To see the list of curves supported by OpenSSL, use C<openssl ecparam
 -list_curves>.
 
 The default is unset, which means an appropriate curve is auto-selected
-(if your OpenSSL version is at least 1.0.2) or the NIST P-256 curve
-is used.
+(if your OpenSSL version is at least 1.0.2 or you are using LibreSSL)
+or the NIST P-256 curve is used.
 
 This option is only effective if your OpenSSL version has ECDH support.
 

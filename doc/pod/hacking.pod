@@ -715,6 +715,11 @@ in F<inn.conf>.
 
 =item *
 
+Check whether recent LibreSSL releases backported new functions from
+OpenSSL, that can then be enabled in B<nnrpd> for LibreSSL.
+
+=item *
+
 Check whether a new version of the ternary search trie implementation
 (available at L<http://www.octavian.org/cs/software.html>) could be
 merged into F<lib/tst.c>.

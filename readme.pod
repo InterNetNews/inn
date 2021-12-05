@@ -149,7 +149,7 @@ overview storage method, you'll need S<SQLite 3.8.2> or later (3.20.0
 or later recommended).  If you have zlib available, you can also compress
 overview before it's stored into C<ovdb> or C<ovsqlite>, and enable the
 COMPRESS capability, an NNTP extension.  For support for news reading
-over TLS, you'll need OpenSSL.  To support SASL authentication
+over TLS, you'll need OpenSSL or LibreSSL.  To support SASL authentication
 to B<nnrpd> or to feed newsgroups to an IMAP server with SASL
 authentication, you'll need the Cyrus SASL libraries.  INN can also
 check passwords against a Kerberos KDC; for this, you will need Kerberos

@@ -160,7 +160,7 @@ versions you'll need:
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
     --with-sqlite3      SQLite 3.8.2 or higher, 3.20.0+ recommended
     --with-zlib         zlib 1.x or higher
-    --with-openssl      OpenSSL 0.9.6 or higher
+    --with-openssl      OpenSSL 0.9.6 or higher, LibreSSL 2.1.0 or higher
     --with-sasl         Cyrus SASL 2.x or higher
     --with-krb5         MIT Kerberos v5 1.6.1 or higher
 
@@ -477,20 +477,21 @@ passed to configure.
 
 =item B<--with-openssl>=PATH
 
-Enables support for TLS/SSL for news reading, which means it will be possible
-to have TLS encrypted NNTP connections between your server and newsreaders.
-This option requires OpenSSL be installed on your system (including the header
-files, not just the runtime libraries).  If a path is given, it sets the
-installed directory of OpenSSL.  After compiling and installing INN with
-this option, you'll still need to make a certificate and private key to use TLS.
-See below for details on how to do that.
+Enables support for TLS/SSL for news reading, which means it will be
+possible to have TLS encrypted NNTP connections between your server and
+newsreaders.  This option requires OpenSSL or LibreSSL be installed on
+your system (including the header files, not just the runtime libraries).
+If a path is given, it sets the installed directory of OpenSSL or LibreSSL.
+After compiling and installing INN with this option, you'll still need to
+make a certificate and private key to use TLS.  See below for details on
+how to do that.
 
-In case non-standard paths to the OpenSSL libraries are used, one or
-both of the options B<--with-openssl-include> and B<--with-openssl-lib>
+In case non-standard paths to the OpenSSL or LibreSSL libraries are used,
+one or both of the options B<--with-openssl-include> and B<--with-openssl-lib>
 can be given to configure with a path.
 
-If the OpenSSL SSL and crypto libraries are found at configure time,
-INN will be built with TLS/SSL support unless the B<--without-openssl>
+If the OpenSSL or LibreSSL SSL and crypto libraries are found at configure
+time, INN will be built with TLS/SSL support unless the B<--without-openssl>
 flag is explicitly passed to configure.
 
 =back

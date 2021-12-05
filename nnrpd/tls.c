@@ -93,11 +93,14 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 
 
 /*
-**  Now that safe prime groups have been supported since OpenSSL 1.1.0,
-**  these groups and the following functions to deal with them are only kept
-**  for older OpenSSL versions.
+**  Now that safe prime groups have been supported since OpenSSL 1.1.0 and
+**  LibreSSL 2.1.2 (but as LIBRESSL_VERSION_NUMBER was not bumped at that time,
+**  use the 2.3.2 release which introduced the new numbering format), these
+**  groups and the following functions to deal with them are only kept for
+**  older versions.
 */
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L
+#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
+        || LIBRESSL_VERSION_NUMBER < 0x020302000L
 /*
 **  Hardcoded DH parameter files.
 **  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
@@ -209,8 +212,9 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
     static DH *ffdhe8192 = NULL;
     int level = 2; /* Default security level. */
 
-    /* Security levels have been introduced in OpenSSL 1.1.0.
-     * Well, as this part of code is no longer active for that version,
+    /* Security levels have been introduced in OpenSSL 1.1.0, and still
+     * not present in LibreSSL 3.4.2.
+     * Well, as this part of code is no longer active for these versions,
      * only keep it for possible future re-use. */
 #        if OPENSSL_VERSION_NUMBER >= 0x010100000L \
             && !defined(LIBRESSL_VERSION_NUMBER)
@@ -443,13 +447,15 @@ set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file)
 }
 
 
-#    if defined(HAVE_OPENSSL_ECC) && OPENSSL_VERSION_NUMBER < 0x01010100fL
+#    if defined(HAVE_OPENSSL_ECC)                 \
+        && (OPENSSL_VERSION_NUMBER < 0x01010100fL \
+            || LIBRESSL_VERSION_NUMBER < 0x02050100fL)
 /*
 **  Provide an ECKEY from a curve name.
 **  Accepts a NULL pointer as the name.
 **  The EC_KEY_new_by_curve_name() function has been deprecated in
 **  OpenSSL 3.0.0; another mechanism to select groups has been available
-**  since OpenSSL 1.1.1.
+**  since OpenSSL 1.1.1 and LibreSSL 2.5.1.
 **
 **  Returns the key, or NULL on error.
 */
@@ -527,8 +533,9 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (tls_loglevel >= 2)
         syslog(L_NOTICE, "starting TLS engine");
 
-/* New functions have been introduced in OpenSSL 1.1.0. */
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L
+/* New functions have been introduced in OpenSSL 1.1.0 and LibreSSL 2.7.0. */
+#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
+        || LIBRESSL_VERSION_NUMBER < 0x020700000L
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
     CTX = SSL_CTX_new(SSLv23_server_method());
@@ -584,8 +591,12 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (stat("/dev/urandom", &buf) == 0)
         RAND_load_file("/dev/urandom", 16 * 1024);
 
-/* Safe prime groups were introduced in OpenSSL 1.1.0. */
-#    if OPENSSL_VERSION_NUMBER < 0x010100000L
+/* Safe prime groups were introduced in OpenSSL 1.1.0, and have also been
+ * present since LibreSSL 2.1.2 (but as LIBRESSL_VERSION_NUMBER was not bumped
+ * at that time, use the 2.3.2 release which introduced the new numbering
+ * format). */
+#    if OPENSSL_VERSION_NUMBER < 0x010100000L \
+        || LIBRESSL_VERSION_NUMBER < 0x020302000L
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
 #    else
     SSL_CTX_set_dh_auto(CTX, 1);
@@ -600,9 +611,10 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
      * or we use OpenSSL (>= 1.0.2) auto-selection
      * or we default to NIST P-256. */
     if (tls_ec_curve != NULL) {
-#        if OPENSSL_VERSION_NUMBER < 0x01010100fL
+#        if OPENSSL_VERSION_NUMBER < 0x01010100fL \
+            || LIBRESSL_VERSION_NUMBER < 0x02050100fL
         /* A new mechanism to select groups has been introduced
-         * in OpenSSL 1.1.1. */
+         * in OpenSSL 1.1.1 and LibreSSL 2.5.1. */
         EC_KEY *eckey;
         eckey = eckey_from_name(tls_ec_curve);
         if (eckey != NULL) {
@@ -617,7 +629,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 #            if OPENSSL_VERSION_NUMBER >= 0x01000200fL
         /* Function supported since OpenSSL 1.0.2.
          * Removed since OpenSSL 1.1.0, supporting ECDH by default with
-         * the most appropriate parameters. */
+         * the most appropriate parameters. (So does LibreSSL.) */
         SSL_CTX_set_ecdh_auto(CTX, 1);
 #            else
         SSL_CTX_set_tmp_ecdh(CTX,
@@ -631,10 +643,11 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     if (prefer_server_ciphers) {
         SSL_CTX_set_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
     } else {
-#        if OPENSSL_VERSION_NUMBER >= 0x0009080dfL \
-            && OPENSSL_VERSION_NUMBER != 0x000909000L
+#        if (OPENSSL_VERSION_NUMBER >= 0x0009080dfL     \
+             && OPENSSL_VERSION_NUMBER != 0x000909000L) \
+            || defined(LIBRESSL_VERSION_NUMBER)
         /* Function first added in OpenSSL 0.9.8m and not present
-         * in OpenSSL 0.9.9-dev. */
+         * in OpenSSL 0.9.9-dev.  Always present in LibreSSL. */
         SSL_CTX_clear_options(CTX, SSL_OP_CIPHER_SERVER_PREFERENCE);
 #        endif
     }
@@ -713,11 +726,13 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
         }
     }
 
-#    if OPENSSL_VERSION_NUMBER >= 0x01010100fL && defined(SSL_OP_NO_TLSv1_3)
+#    if (OPENSSL_VERSION_NUMBER >= 0x01010100fL \
+         && defined(SSL_OP_NO_TLSv1_3))         \
+        || LIBRESSL_VERSION_NUMBER >= 0x03040100fL
     /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites.
-     * Also check that SSL_OP_NO_TLSv1_3 is defined (to fix a build
-     * issue with LibreSSL considered as version 2, but without the
-     * same API as OpenSSL). */
+     * Also check that SSL_OP_NO_TLSv1_3 is defined (so as not to match
+     * with LibreSSL versions prior to 3.4.1, which introduced the function).
+     */
     if (tls_ciphers13 != NULL) {
         if (SSL_CTX_set_ciphersuites(CTX, tls_ciphers13) == 0) {
             syslog(L_ERROR, "TLS engine: cannot set ciphersuites");
@@ -727,16 +742,17 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 #    endif
 
     if (tls_compression) {
-#    if defined(SSL_OP_NO_COMPRESSION)            \
-        && OPENSSL_VERSION_NUMBER >= 0x0009080dfL \
-        && OPENSSL_VERSION_NUMBER != 0x000909000L
+#    if defined(SSL_OP_NO_COMPRESSION)                  \
+        && ((OPENSSL_VERSION_NUMBER >= 0x0009080dfL     \
+             && OPENSSL_VERSION_NUMBER != 0x000909000L) \
+            || defined(LIBRESSL_VERSION_NUMBER))
         /* Function first added in OpenSSL 0.9.8m, and not present
-         * in OpenSSL 0.9.9-dev. */
+         * in OpenSSL 0.9.9-dev.  Always present in LibreSSL. */
         SSL_CTX_clear_options(CTX, SSL_OP_NO_COMPRESSION);
 #    endif
     } else {
 #    ifdef SSL_OP_NO_COMPRESSION
-        /* Option implemented in OpenSSL 1.0.0. */
+        /* Option implemented in OpenSSL 1.0.0 and LibreSSL. */
         SSL_CTX_set_options(CTX, SSL_OP_NO_COMPRESSION);
 #    elif OPENSSL_VERSION_NUMBER >= 0x00090800fL
         /* Workaround for OpenSSL 0.9.8. */
@@ -805,7 +821,8 @@ tls_init(void)
 **  Taken from OpenSSL apps/lib/s_cb.c.
 **
 **  The prototype of the callback function changed with BIO_set_callback_ex()
-**  introduced in OpenSSL 1.1.1
+**  introduced in OpenSSL 1.1.1, but still not present in LibreSSL (last
+**  checked version is LibreSSL 3.4.2).
 */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
         || defined(LIBRESSL_VERSION_NUMBER)
@@ -933,7 +950,9 @@ tls_start_servertls(int readfd, int writefd)
      * created for us, so we can use it for debugging purposes. */
     if (tls_loglevel >= 3) {
         /* BIO_set_callback() was deprecated in OpenSSL 3.0.0.
-         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1. */
+         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1 but still
+         * not available in LibreSSL (last checked version is LibreSSL 3.4.2).
+         */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
         || defined(LIBRESSL_VERSION_NUMBER)
         BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);

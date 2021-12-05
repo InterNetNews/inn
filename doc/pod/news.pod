@@ -69,6 +69,11 @@ and makehistory(8) man pages.
 
 =item *
 
+Building INN with TLS support using LibreSSL is now supported (only
+OpenSSL was previously officially supported and tested).
+
+=item *
+
 Improved the robustness of B<innxmit> when receiving C<500> or C<501>
 response codes from peers, indicating they do not understand the NNTP
 command or (wrongly) think there is a syntax error.  Richard Kettlewell
