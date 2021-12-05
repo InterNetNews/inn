@@ -115,6 +115,11 @@ encryption layers, including TLS and SASL security layers.
 
 =item *
 
+Fixed the use of a deprecated API in S<Kerberos V5>.  INN now requires
+version 1.6.1 or higher of S<MIT Kerberos v5> to build.
+
+=item *
+
 All of the applicable bug fixes from the S<INN 2.6> STABLE series are
 also included in S<INN 2.7>.
 
