@@ -169,7 +169,7 @@ krb5_check_password(const char *principal, const char *password)
         krb5_verify_init_creds_opt vopts;
 
         creds_valid = true;
-        memset(&opts, 0, sizeof(vopts));
+        memset(&vopts, 0, sizeof(vopts));
         krb5_verify_init_creds_opt_init(&vopts);
         code = krb5_verify_init_creds(ctx, &creds, princ, NULL, NULL, &vopts);
     }
