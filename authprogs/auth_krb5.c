@@ -145,7 +145,7 @@ krb5_check_password(const char *principal, const char *password)
     krb5_context ctx;
     krb5_creds creds;
     krb5_principal princ = NULL;
-    krb5_get_init_creds_opt opts;
+    krb5_get_init_creds_opt *opts = NULL;
     bool creds_valid = false;
     int result = 0;
 
@@ -154,17 +154,24 @@ krb5_check_password(const char *principal, const char *password)
         warn_krb5(NULL, code, "cannot initialize Kerberos");
         return 0;
     }
+
     code = krb5_parse_name(ctx, principal, &princ);
     if (code != 0) {
         warn_krb5(ctx, code, "cannot parse principal %.100s", principal);
         goto cleanup;
     }
-    memset(&opts, 0, sizeof(opts));
-    krb5_get_init_creds_opt_init(&opts);
-    krb5_get_init_creds_opt_set_forwardable(&opts, 0);
-    krb5_get_init_creds_opt_set_proxiable(&opts, 0);
+
+    code = krb5_get_init_creds_opt_alloc(ctx, &opts);
+    if (code != 0) {
+        warn_krb5(ctx, code, "cannot initialize credential options structure");
+        goto cleanup;
+    }
+
+    krb5_get_init_creds_opt_set_forwardable(opts, 0);
+    krb5_get_init_creds_opt_set_proxiable(opts, 0);
+    memset(&creds, 0, sizeof(creds));
     code = krb5_get_init_creds_password(ctx, &creds, princ, (char *) password,
-                                        NULL, NULL, 0, NULL, &opts);
+                                        NULL, NULL, 0, NULL, opts);
     if (code == 0) {
         krb5_verify_init_creds_opt vopts;
 
@@ -173,6 +180,7 @@ krb5_check_password(const char *principal, const char *password)
         krb5_verify_init_creds_opt_init(&vopts);
         code = krb5_verify_init_creds(ctx, &creds, princ, NULL, NULL, &vopts);
     }
+
     if (code == 0)
         result = 1;
     else {
@@ -193,6 +201,8 @@ krb5_check_password(const char *principal, const char *password)
 cleanup:
     if (creds_valid)
         krb5_free_cred_contents(ctx, &creds);
+    if (opts != NULL)
+        krb5_get_init_creds_opt_free(ctx, opts);
     if (princ != NULL)
         krb5_free_principal(ctx, princ);
     krb5_free_context(ctx);
