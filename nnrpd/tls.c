@@ -447,7 +447,7 @@ set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file)
 /*
 **  Provide an ECKEY from a curve name.
 **  Accepts a NULL pointer as the name.
-**  The EC_KEY_new_ey_curve_name() function has been deprecated in
+**  The EC_KEY_new_by_curve_name() function has been deprecated in
 **  OpenSSL 3.0.0; another mechanism to select groups has been available
 **  since OpenSSL 1.1.1.
 **
@@ -807,7 +807,8 @@ tls_init(void)
 **  The prototype of the callback function changed with BIO_set_callback_ex()
 **  introduced in OpenSSL 1.1.1
 */
-#    if OPENSSL_VERSION_NUMBER < 0x01010100fL
+#    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
+        || defined(LIBRESSL_VERSION_NUMBER)
 static long
 bio_dump_cb(BIO *bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -933,7 +934,8 @@ tls_start_servertls(int readfd, int writefd)
     if (tls_loglevel >= 3) {
         /* BIO_set_callback() was deprecated in OpenSSL 3.0.0.
          * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1. */
-#    if OPENSSL_VERSION_NUMBER < 0x01010100fL
+#    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
+        || defined(LIBRESSL_VERSION_NUMBER)
         BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
 #    else
         BIO_set_callback_ex(SSL_get_rbio(tls_conn), bio_dump_cb);
