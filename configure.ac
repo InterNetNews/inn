@@ -618,7 +618,7 @@ INN_LOG_FACILITY
 dnl Probes for flags recognized by the compiler when building with warnings.
 dnl Default to including all of the generally useful warnings unless there's
 dnl something that makes them unsuitable.  In particular, the following
-dnl warnings are *not* included:
+dnl warnings are *not* included for gcc:
 dnl
 dnl   -ansi                 Requires messing with feature test macros.
 dnl   -Wpedantic            Too much noise from embedded Perl.
@@ -655,15 +655,22 @@ dnl Add -g because when building with warnings, one generally also wants the
 dnl debugging information, and add -O3 because gcc won't find some warnings
 dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
 dnl compile all debugging code and check it as well.
+dnl
 dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 dnl on glibc functions on Linux, as well as more object size checking,
 dnl which catches a few more issues.
 dnl
-dnl -Wno-unknown-warning-option is used to prevent Clang from complaining
-dnl with unknown parameters.
+dnl For Clang, disable some of the warnings:
+dnl
+dnl   -Wtautological-pointer-compare  False positives with for loops.
 dnl
 dnl It would be worthwhile trying to enforce the following checks:
-dnl -Wunreachable-code (for Clang)
+dnl "-Wconversion -Wno-sign-conversion", -Wunreachable-code (for Clang)
+dnl
+dnl First, we add -Wunknown-warning-option to CFLAGS so that Clang properly
+dnl reports probes for unknown flags as errors.
+INN_PROG_CC_FLAG([-Werror=unknown-warning-option],
+                 [CFLAGS="$CFLAGS -Werror=unknown-warning-option"], [])
 m4_foreach_w(
     [flag],
     [-g -O3 -DDEBUG=1 -D_FORTIFY_SOURCE=2 -Werror -Wall -Wextra
@@ -682,8 +689,8 @@ m4_foreach_w(
      -Wold-style-definition
      -Wmissing-prototypes -Wmissing-declarations
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
-     -Winvalid-pch -Wvla -Wno-unknown-warning-option
-     -Wno-unused-function],
+     -Winvalid-pch -Wvla -Wno-unused-function
+     -Wno-tautological-pointer-compare],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
 
@@ -714,6 +721,9 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,relro"], [])
      INN_PROG_LD_FLAG([-Wl,-z,now],
                       [LDFLAGS="${LDFLAGS} -Wl,-z,now"], [])])
+
+dnl Now that compiler flags have been checked, remove -Werror from CFLAGS.
+CFLAGS=`AS_ECHO(["${CFLAGS}"]) | sed 's/ -Werror=unknown-warning-option//'`
 
 dnl Clean up our LIBS, just for grins.
 LIBS=`AS_ECHO(["$LIBS"]) | sed 's/^  *//' | sed 's/   */ /g' | sed 's/  *$//'`
