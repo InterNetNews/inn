@@ -2418,7 +2418,7 @@ buffindexed_ctl(OVCTLTYPE type, void *val)
             ovlock(ovbuff, INN_LOCK_UNLOCK);
         }
         f = (float *) val;
-        *f = (float) (used / total) * 100;
+        *f = ((float) used / (float) total) * 100;
         return true;
     case OVSORT:
         sorttype = (OVSORTTYPE *) val;

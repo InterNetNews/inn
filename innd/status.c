@@ -306,13 +306,13 @@ STATUSsummary(void)
     if (!(size > 0))
         size = 1.; /* avoid divide by zero here too */
     fprintf(F, "        accepted: %-9lu       %%accepted: %.1f%%\n", accepted,
-            (double) (accepted / offered * 100));
+            (double) accepted / (double) offered * 100);
     fprintf(F, "         refused: %-9lu        %%refused: %.1f%%\n", refused,
-            (double) (refused / offered * 100));
+            (double) refused / (double) offered * 100);
     fprintf(F, "        rejected: %-9lu       %%rejected: %.1f%%\n", rejected,
-            (double) (rejected / offered * 100));
+            (double) rejected / (double) offered * 100);
     fprintf(F, "      duplicated: %-9lu     %%duplicated: %.1f%%\n", duplicate,
-            (double) (duplicate / offered * 100));
+            (double) duplicate / (double) offered * 100);
     fprintf(F, "           bytes: %-7s\n",
             PrettySize(size + DuplicateSize + RejectSize, str));
     fprintf(F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",
