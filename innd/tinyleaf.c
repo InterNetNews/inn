@@ -46,9 +46,11 @@ static void command_quit(struct cvector *, void *);
 /* The actual command dispatch table for TinyNNTP.  This table MUST be
    sorted. */
 /* clang-format off */
-const struct dispatch commands[] = {{"help",  command_help,  0, 0, NULL},
-                                    {"ihave", command_ihave, 1, 1, NULL},
-                                    {"quit",  command_quit,  0, 0, NULL}};
+static const struct dispatch commands[] = {
+    {"help",  command_help,  0, 0, NULL},
+    {"ihave", command_ihave, 1, 1, NULL},
+    {"quit",  command_quit,  0, 0, NULL},
+};
 /* clang-format on */
 
 /* Global state for the daemon. */
@@ -64,7 +66,7 @@ struct state {
 **  Do a clean shutdown, which mostly just involves closing the open processor
 **  pipe, if present, and reporting on any abnormal exit status.
 */
-static void
+__attribute__((__noreturn__)) static void
 shutdown(struct state *state)
 {
     int status;
@@ -109,20 +111,16 @@ command_ihave(struct cvector *command, void *cookie)
     case NNTP_READ_EOF:
         die("connection closed while receiving article");
         shutdown(state);
-        break;
     case NNTP_READ_ERROR:
         sysdie("network error while receiving article");
-        break;
     case NNTP_READ_TIMEOUT:
         die("network timeout while receiving article");
-        break;
     case NNTP_READ_LONG:
         warn("article %s exceeds maximum size", msgid);
         free(msgid);
         return;
     default:
         sysdie("internal: unknown NNTP library status");
-        break;
     }
     md5_hash((unsigned char *) msgid, strlen(msgid), hash);
     inn_encode_hex(hash, sizeof(hash), filename, sizeof(filename));
@@ -183,7 +181,7 @@ command_help(struct cvector *command UNUSED, void *cookie)
 /*
 **  Process a QUIT command, closing down the server.
 */
-static void
+__attribute__((__noreturn__)) static void
 command_quit(struct cvector *command UNUSED, void *cookie)
 {
     struct state *state = cookie;
@@ -262,20 +260,16 @@ main(int argc, char *argv[])
         case NNTP_READ_EOF:
             notice("connection closed");
             shutdown(&state);
-            break;
         case NNTP_READ_ERROR:
             sysdie("network error");
-            break;
         case NNTP_READ_TIMEOUT:
             notice("network timeout");
             shutdown(&state);
-            break;
         case NNTP_READ_LONG:
             warn("long line received");
             break;
         default:
             sysdie("internal: unknown NNTP library status");
-            break;
         }
     }
 }

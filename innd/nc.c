@@ -12,9 +12,6 @@
 
 #define BAD_COMMAND_COUNT 10
 
-
-extern bool laxmid;
-
 /*
 **  An entry in the dispatch table.  The name, and implementing function,
 **  of every command we support.
@@ -1414,7 +1411,7 @@ NCproc(CHANNEL *cp)
                 || cp->State == CSeatarticle) {
                 if (cp->Next - cp->Start > innconf->datamovethreshold
                     || (innconf->maxartsize != 0
-                        && cp->Size > innconf->maxartsize)) {
+                        && cp->Size > (float) innconf->maxartsize)) {
                     /* avoid buffer extention for ever */
                     movedata = true;
                 } else {
@@ -1466,8 +1463,9 @@ NCproc(CHANNEL *cp)
                 movedata = false;
                 break;
             }
-            /* fall thru */
+            goto fallthroughCSgotarticle;
         case CSgotarticle: /* in case caming back from pause */
+        fallthroughCSgotarticle:
             /* never move data so long as "\r\n.\r\n" is found, since
                subsequent data may also include command line */
             readmore = false;

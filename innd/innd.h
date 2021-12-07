@@ -643,6 +643,8 @@ extern const ARTHEADER ARTheaders[MAX_ARTHEADER];
 extern bool BufferedLogs;
 EXTERN bool AnyIncoming;
 extern bool Debug;
+extern bool DoCancels;
+extern bool laxmid;
 EXTERN bool ICDneedsetup;
 EXTERN bool NeedHeaders;
 EXTERN bool NeedOverview;

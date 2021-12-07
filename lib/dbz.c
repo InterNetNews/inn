@@ -862,7 +862,6 @@ dbzsync(void)
 
     if (!dirty)
         return true;
-    ;
 
 #ifdef DO_TAGGED_HASH
     if (!putcore(&pagtab)) {
@@ -871,7 +870,6 @@ dbzsync(void)
 #endif
         warn("dbzsync: putcore failed");
         ret = false;
-        ;
     }
 
     if (putconf(dirf, &conf) < 0)

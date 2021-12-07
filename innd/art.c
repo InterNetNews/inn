@@ -20,9 +20,6 @@ typedef struct iovec IOVEC;
 
 #define ARTIOVCNT 16
 
-extern bool DoCancels;
-extern bool laxmid;
-
 /* Characters used in log messages indicating the disposition of messages. */
 #define ART_ACCEPT '+'
 #define ART_CANC   'c'
@@ -1125,7 +1122,7 @@ ARTreject(Reject_type code, CHANNEL *cp)
     /* Remember why the article was rejected (for the status file) */
 
     cp->Rejected++;
-    cp->RejectSize += cp->Next - cp->Start;
+    cp->RejectSize += (float) (cp->Next - cp->Start);
 
     /* Streaming is used.  Increase the reject counter for TAKETHIS. */
     if (cp->Sendid.size > 3) {
@@ -1135,7 +1132,7 @@ ARTreject(Reject_type code, CHANNEL *cp)
     switch (code) {
     case REJECT_DUPLICATE:
         cp->Duplicate++;
-        cp->DuplicateSize += cp->Next - cp->Start;
+        cp->DuplicateSize += (float) (cp->Next - cp->Start);
         break;
     case REJECT_SITE:
         cp->Unwanted_s++;
@@ -2656,7 +2653,7 @@ ARTpost(CHANNEL *cp)
         cp->ArtMax = i;
     cp->ArtBeg = 0;
 
-    cp->Size += data->BytesValue;
+    cp->Size += (float) data->BytesValue;
     if (innconf->logartsize) {
         if (fprintf(Log, " %ld", data->BytesValue) == EOF || ferror(Log)) {
             oerrno = errno;

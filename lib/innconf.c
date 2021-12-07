@@ -115,7 +115,7 @@ struct config {
    a setting to have.
 */
 
-const struct config config_table[] = {
+static const struct config config_table[] = {
     { K(domain),                  STRING  (NULL) },
     { K(enableoverview),          BOOL    (true) },
     { K(extraoverviewadvertised), LIST    (NULL) },
@@ -469,7 +469,6 @@ innconf_parse(struct config_group *group)
             break;
         default:
             die("internal error: invalid type in row %u of config table", i);
-            break;
         }
     return config;
 }
@@ -699,7 +698,7 @@ print_boolean(FILE *file, const char *key, bool value,
     case INNCONF_QUOTE_SHELL:
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
         fprintf(file, "%s=%s; export %s;\n", upper, value ? "true" : "false",
                 upper);
         free(upper);
@@ -730,7 +729,7 @@ print_signed_number(FILE *file, const char *key, long value,
     case INNCONF_QUOTE_SHELL:
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
         fprintf(file, "%s=%ld; export %s;\n", upper, value, upper);
         free(upper);
         break;
@@ -760,7 +759,7 @@ print_unsigned_number(FILE *file, const char *key, unsigned long value,
     case INNCONF_QUOTE_SHELL:
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
         fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
         free(upper);
         break;
@@ -800,7 +799,7 @@ print_string(FILE *file, const char *key, const char *value,
         }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
         fprintf(file, "%s='", upper);
         for (letter = value; letter != NULL && *letter != '\0'; letter++) {
             if (*letter == '\'')
@@ -878,7 +877,7 @@ print_list(FILE *file, const char *key, const struct vector *value,
         }
         upper = xstrdup(key);
         for (p = upper; *p != '\0'; p++)
-            *p = toupper((unsigned char) *p);
+            *p = (char) toupper((unsigned char) *p);
         /* For interoperability reasons, we return a space-separated string
          * representing an array (pure Bourne shell does not have the notion
          * of an array for instance). */
@@ -995,7 +994,6 @@ print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
     default:
         die("internal error: invalid type in row %lu of config table",
             (unsigned long) i);
-        break;
     }
 }
 
@@ -1153,7 +1151,6 @@ innconf_compare(struct innconf *conf1, struct innconf *conf2)
             break;
         default:
             die("internal error: invalid type in row %d of config table", i);
-            break;
         }
     return okay;
 }

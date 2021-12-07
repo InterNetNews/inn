@@ -432,36 +432,46 @@ hash_lookup2(const char *key, size_t length, unsigned long partial)
     switch (len) {
     case 11:
         c += S3(key[10]);
-        /* fallthrough */
+        goto fallthrough10;
     case 10:
+    fallthrough10:
         c += S2(key[9]);
-        /* fallthrough */
+        goto fallthrough9;
     case 9:
+    fallthrough9:
         c += S1(key[8]);
         /* The first byte of c is reserved for the length. */
-        /* fallthrough */
+        goto fallthrough8;
     case 8:
+    fallthrough8:
         b += S3(key[7]);
-        /* fallthrough */
+        goto fallthrough7;
     case 7:
+    fallthrough7:
         b += S2(key[6]);
-        /* fallthrough */
+        goto fallthrough6;
     case 6:
+    fallthrough6:
         b += S1(key[5]);
-        /* fallthrough */
+        goto fallthrough5;
     case 5:
+    fallthrough5:
         b += S0(key[4]);
-        /* fallthrough */
+        goto fallthrough4;
     case 4:
+    fallthrough4:
         a += S3(key[3]);
-        /* fallthrough */
+        goto fallthrough3;
     case 3:
+    fallthrough3:
         a += S2(key[2]);
-        /* fallthrough */
+        goto fallthrough2;
     case 2:
+    fallthrough2:
         a += S1(key[1]);
-        /* fallthrough */
+        goto fallthrough1;
     case 1:
+    fallthrough1:
         a += S0(key[0]);
         /* case 0: nothing left to add. */
     }

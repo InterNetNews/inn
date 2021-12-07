@@ -126,7 +126,6 @@ typedef enum
 #define INCOMPLETE_GROUP "%s incomplete group (%s) in %s line %d"
 #define MUST_BE_BOOL     "%s Must be 'true' or 'false' in %s line %d"
 #define MUST_BE_INT      "%s Must be an integer value in %s line %d"
-#define HOST_NEEDED      "%s 'hostname' needed in %s line %d"
 #define DUPLICATE_KEY    "%s duplicate key in %s line %d"
 
 /*
@@ -413,8 +412,9 @@ RChandoff(int fd, HANDOFF h)
     switch (h) {
     default:
         syslog(L_ERROR, "%s internal RChandoff %d type %d", LogName, fd, h);
-        /* FALLTHROUGH */
+        goto fallthroughHOnnrpd;
     case HOnnrpd:
+    fallthroughHOnnrpd:
         argv[0] = RCnnrpd;
         break;
     case HOnntpd:
@@ -455,7 +455,7 @@ RCreader(CHANNEL *cp)
     int fd;
     struct sockaddr_storage remote;
     socklen_t size;
-    int i;
+    int i = 0;
     unsigned int j;
     REMOTEHOST *rp;
     CHANNEL *new;

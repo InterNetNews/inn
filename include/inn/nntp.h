@@ -51,6 +51,7 @@
 
 /* clang-format off */
 enum nntp_code {
+    NNTP_INVALID_CODE           =   0, /* Used by some functions */
     NNTP_INFO_HELP              = 100,
     NNTP_INFO_CAPABILITIES      = 101,
     NNTP_INFO_DATE              = 111,

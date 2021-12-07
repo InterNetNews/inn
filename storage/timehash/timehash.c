@@ -168,13 +168,13 @@ timehash_init(SMATTRIBUTE *attr)
 TOKEN
 timehash_store(const ARTHANDLE article, const STORAGECLASS class)
 {
-    char *path;
+    char *path = NULL;
     char *p;
     time_t now;
     TOKEN token;
-    int fd;
+    int fd = 0;
     ssize_t result;
-    int seq;
+    int seq = 0;
     int i;
 
     if (article.arrived == (time_t) 0)

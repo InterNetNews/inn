@@ -414,7 +414,7 @@ HISctl(struct history *h, int selector, void *val)
 **  needs migrating to use the new nested timers
 */
 
-FILE *HISfdlog = NULL; /* filehandle for history logging purpose */
+static FILE *HISfdlog = NULL; /* filehandle for history logging purpose */
 
 static struct timeval HISstat_start[S_HIS_MAX];
 static struct timeval HISstat_total[S_HIS_MAX];

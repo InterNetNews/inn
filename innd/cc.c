@@ -1718,8 +1718,9 @@ CCthrottle(char *av[])
     case OMpaused:
         if (*p && strcmp(p, ModeReason) != 0)
             return "1 Already paused";
-        /* FALLTHROUGH */
+        goto fallthroughOMrunning;
     case OMrunning:
+    fallthroughOMrunning:
         return CCblock(OMthrottled, p);
     case OMthrottled:
         return "1 Already throttled";

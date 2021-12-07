@@ -257,9 +257,10 @@ match_pattern(const unsigned char *text, const unsigned char *start,
         case '\\':
             if (!*++p)
                 return ABORT;
-            /* Fall through. */
+            goto fallthrough;
 
         default:
+        fallthrough:
             if (*text++ != *p)
                 return false;
             break;

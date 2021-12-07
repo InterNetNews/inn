@@ -58,7 +58,6 @@
 
 /* ovbuff header */
 #define OVBUFFMASIZ 8
-#define OVBUFFNASIZ 16
 #define OVBUFFLASIZ 16
 #define OVBUFFPASIZ 64
 
@@ -2419,7 +2418,7 @@ buffindexed_ctl(OVCTLTYPE type, void *val)
             ovlock(ovbuff, INN_LOCK_UNLOCK);
         }
         f = (float *) val;
-        *f = ((float) used / total) * 100;
+        *f = (float) (used / total) * 100;
         return true;
     case OVSORT:
         sorttype = (OVSORTTYPE *) val;

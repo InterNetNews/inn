@@ -106,7 +106,7 @@ reArgify(char *p, char **argv, int n, bool stripspaces)
 
     *argv = NULL;
 
-    return argv - save;
+    return (int) (argv - save);
 }
 
 

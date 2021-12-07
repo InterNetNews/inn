@@ -30,7 +30,7 @@ typedef struct {
     bool expensivestat;
 } METHOD_DATA;
 
-METHOD_DATA method_data[NUM_STORAGE_METHODS];
+static METHOD_DATA method_data[NUM_STORAGE_METHODS];
 
 static STORAGE_SUB *subscriptions = NULL;
 static unsigned int typetoindex[256];
@@ -414,7 +414,6 @@ SMreadconfig(void)
                          f->lineno, tok->name);
                     free(method);
                     return false;
-                    break;
                 }
             }
         }

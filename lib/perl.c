@@ -24,10 +24,22 @@
 #    pragma GCC diagnostic ignored "-Wcast-align"
 #    pragma GCC diagnostic ignored "-Wredundant-decls"
 #    pragma GCC diagnostic ignored "-Wshadow"
+#    if defined(__llvm__) || defined(__clang__)
+#        pragma GCC diagnostic ignored "-Wcomma"
+#        pragma GCC diagnostic ignored "-Wextra-semi-stmt"
+#        pragma GCC diagnostic ignored "-Wgnu-statement-expression"
+#        pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#    endif
 #    include <perl.h>
 #    pragma GCC diagnostic warning "-Wcast-align"
 #    pragma GCC diagnostic warning "-Wredundant-decls"
 #    pragma GCC diagnostic warning "-Wshadow"
+#    if defined(__llvm__) || defined(__clang__)
+#        pragma GCC diagnostic warning "-Wcomma"
+#        pragma GCC diagnostic warning "-Wextra-semi-stmt"
+/* Do not reactivate -Wgnu-statement-expression for the rest of the file. */
+#        pragma GCC diagnostic warning "-Wimplicit-fallthrough"
+#    endif
 #    include "ppport.h"
 #    include <XSUB.h>
 
@@ -48,7 +60,7 @@ XS(XS_INN_syslog);
 bool PerlFilterActive = false;
 
 /* The filter sub called (filter_art or filter_post). */
-CV *perl_filter_cv;
+static CV *perl_filter_cv;
 
 /* The embedded Perl interpreter. */
 static PerlInterpreter *PerlCode = NULL;

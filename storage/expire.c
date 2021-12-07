@@ -41,7 +41,6 @@ long EXPoverindexdrop;
 
 #define OVFMT_UNINIT -2
 #define OVFMT_NODATE -1
-#define OVFMT_NOXREF -1
 
 static int Dateindex = OVFMT_UNINIT;
 static int Xrefindex = OVFMT_UNINIT;

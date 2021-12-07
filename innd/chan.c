@@ -40,11 +40,6 @@ static const char *const timer_name[] = {
     "idle", "artclean", "artwrite", "artcncl",  "sitesend", "overv",
     "perl", "python",   "nntpread", "artparse", "artlog",   "datamove"};
 
-/* Compaction threshold as a divisor of the buffer size.  If the amount free
-   at the beginning of the buffer is bigger than the quotient, it is compacted
-   in the read loop. */
-#define COMP_THRESHOLD 10
-
 /* Global data about the channels. */
 struct channels {
     fd_set read_set;

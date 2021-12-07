@@ -8,9 +8,9 @@
 #include "inn/nntp.h"
 
 
-FILE *ser_rd_fp = NULL;
-FILE *ser_wr_fp = NULL;
-char ser_line[NNTP_MAXLEN_COMMAND + 2];
+static FILE *ser_rd_fp = NULL;
+static FILE *ser_wr_fp = NULL;
+static char ser_line[NNTP_MAXLEN_COMMAND + 2];
 
 
 /*
@@ -102,8 +102,9 @@ handle_server_response(int response, char *host)
         return -1;
     case NNTP_OK_BANNER_NOPOST:
         printf("%s.\n", CANTPOST);
-        /* FALLTHROUGH */
+        goto fallthrough;
     case NNTP_OK_BANNER_POST:
+    fallthrough:
         break;
     }
     return 0;

@@ -143,7 +143,7 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
             if (laxsyntax && *p == '@') {
                 /* The domain part begins at the second '@', if it exists. */
                 if (atfound || (p[1] == '[')
-                    || (strchr((char *) p + 1, '@') == NULL)) {
+                    || (strchr((const char *) p + 1, '@') == NULL)) {
                     break;
                 }
                 atfound = true;

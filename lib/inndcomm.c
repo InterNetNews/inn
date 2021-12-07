@@ -299,10 +299,11 @@ ICCcommand(char cmd, const char *argv[], char **replyp)
     default:
         if (ICCtimeout >= 0)
             break;
-        /* FALLTHROUGH */
+        goto fallthrough;
     case SC_SHUTDOWN:
     case SC_XABORT:
     case SC_XEXEC:
+    fallthrough:
         free(buff);
         return 0;
     }

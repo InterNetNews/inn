@@ -18,7 +18,7 @@ HeaderCleanFrom(char *from)
 {
     char *p;
     char *end;
-    int len;
+    size_t len;
 
     if ((len = strlen(from)) == 0)
         return;

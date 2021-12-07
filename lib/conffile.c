@@ -8,10 +8,10 @@
 #include "inn/libinn.h"
 
 static int
-getconfline(CONFFILE *F, char *buffer, int length)
+getconfline(CONFFILE *F, char *buffer, size_t length)
 {
     if (F->f) {
-        if (fgets(buffer, length, F->f) == NULL) {
+        if (fgets(buffer, (int) length, F->f) == NULL) {
             return 1;
         }
         if (ferror(F->f)) {

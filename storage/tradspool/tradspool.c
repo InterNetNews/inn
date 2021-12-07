@@ -71,12 +71,12 @@ typedef struct _ngtreenode {
     NGTENT *ngtp;
 } NGTREENODE;
 
-NGTENT *NGTable[NGT_SIZE];
-unsigned long MaxNgNumber = 0;
-NGTREENODE *NGTree;
+static NGTENT *NGTable[NGT_SIZE];
+static unsigned long MaxNgNumber = 0;
+static NGTREENODE *NGTree;
 
-bool NGTableUpdated; /* set to true if we've added any entries since reading
-                        in the database file */
+static bool NGTableUpdated; /* set to true if we've added any entries since
+                               reading in the database file */
 
 static char *TokenToPath(TOKEN token);
 

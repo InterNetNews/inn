@@ -53,7 +53,7 @@ typedef struct _STATUS {
 } STATUS;
 
 static unsigned STATUSlast_time;
-char start_time[50];
+static char start_time[50];
 
 static unsigned
 STATUSgettime(void)
@@ -164,7 +164,8 @@ STATUSsummary(void)
             }
             status->can_stream = cp->Streaming;
             status->maxCxn = cp->MaxCnx;
-            status->seconds = status->Size = status->DuplicateSize = 0;
+            status->seconds = 0;
+            status->Size = status->DuplicateSize = 0;
             status->RejectSize = 0;
             status->Ihave = status->Ihave_Duplicate = status->Ihave_Deferred =
                 status->Ihave_SendIt = status->Ihave_Cybercan = 0;
@@ -300,18 +301,18 @@ STATUSsummary(void)
     fprintf(F, "         seconds: %ld\n", (long) seconds);
     offered = accepted + refused + rejected;
     fprintf(F, "         offered: %-9lu\n", offered);
-    if (!offered)
+    if (offered == 0)
         offered = 1; /* to avoid division by zero */
-    if (!size)
+    if (size == 0)
         size = 1; /* avoid divide by zero here too */
     fprintf(F, "        accepted: %-9lu       %%accepted: %.1f%%\n", accepted,
-            (double) accepted / offered * 100);
+            (double) (accepted / offered * 100));
     fprintf(F, "         refused: %-9lu        %%refused: %.1f%%\n", refused,
-            (double) refused / offered * 100);
+            (double) (refused / offered * 100));
     fprintf(F, "        rejected: %-9lu       %%rejected: %.1f%%\n", rejected,
-            (double) rejected / offered * 100);
+            (double) (rejected / offered * 100));
     fprintf(F, "      duplicated: %-9lu     %%duplicated: %.1f%%\n", duplicate,
-            (double) duplicate / offered * 100);
+            (double) (duplicate / offered * 100));
     fprintf(F, "           bytes: %-7s\n",
             PrettySize(size + DuplicateSize + RejectSize, str));
     fprintf(F, " duplicated size: %-7s  %%duplicated size: %.1f%%\n",

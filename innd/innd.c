@@ -9,10 +9,14 @@
 #include "inn/newsuser.h"
 #include "innperl.h"
 
+/* Silent this warning because of the way we deal with EXTERN. */
+#if defined(__llvm__) || defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
+#endif
+
 #define DEFINE_DATA
 #include "inn/ov.h"
 #include "innd.h"
-
 
 bool Debug = false;
 bool NNRPTracing = false;
@@ -58,7 +62,7 @@ FILE *Errlog = NULL;
 /* Internal prototypes. */
 static void catch_terminate(int sig);
 static void xmalloc_abort(const char *what, size_t size, const char *file,
-                          int line);
+                          int line) __attribute__((__noreturn__));
 static void Usage(void) __attribute__((__noreturn__));
 
 /* header table initialization */
@@ -527,7 +531,6 @@ main(int ac, char *av[])
         case 'S':
             RCreadlist();
             exit(0);
-            break;
         case 't':
             TimeOut.tv_sec = atol(optarg);
             break;
@@ -809,6 +812,5 @@ main(int ac, char *av[])
     CHANreadloop();
 
     /* CHANreadloop should never return. */
-    CleanupAndExit(1, "CHANreadloop returned");
     return 1;
 }

@@ -23,15 +23,11 @@
 #ifdef HAVE_STATVFS
 #    include <sys/statvfs.h> /* specific includes */
 /* XXX is there a 'fstatvfs'? I don't have such a system to check--rmtodd*/
-#    define STATFUNCT    fstatvfs /* function call */
-#    define STATSTRUC    statvfs  /* structure name */
-#    define STATAVAIL    f_bavail /* blocks available */
-#    define STATMULTI    f_frsize /* fragment size/block size */
-#    define STATINODE    f_favail /* inodes available */
-#    define STATTYPES    u_long   /* type of f_bavail etc */
-#    define STATFORMT    "%lu"    /* format string to match */
-#    define STATFORMTPAD "%*lu"   /* format string to match */
-#endif                            /* HAVE_STATVFS */
+#    define STATFUNCT fstatvfs /* function call */
+#    define STATSTRUC statvfs  /* structure name */
+#    define STATAVAIL f_bavail /* blocks available */
+#    define STATMULTI f_frsize /* fragment size/block size */
+#endif                         /* HAVE_STATVFS */
 
 #ifdef HAVE_STATFS
 #    ifdef HAVE_SYS_VFS_H
@@ -43,14 +39,10 @@
 #    ifdef HAVE_SYS_MOUNT_H
 #        include <sys/mount.h>
 #    endif /* HAVE_SYS_MOUNT_H */
-#    define STATFUNCT    fstatfs
-#    define STATSTRUC    statfs
-#    define STATAVAIL    f_bavail
-#    define STATMULTI    f_bsize
-#    define STATINODE    f_ffree;
-#    define STATTYPES    long
-#    define STATFORMT    "%ld"
-#    define STATFORMTPAD "%*ld"
+#    define STATFUNCT fstatfs
+#    define STATSTRUC statfs
+#    define STATAVAIL f_bavail
+#    define STATMULTI f_bsize
 #endif /* HAVE_STATFS */
 
 int CAFClean(char *path, int verbose, double PercentFreeThreshold);
@@ -65,7 +57,7 @@ int caf_errno = 0;
             botch(__FILE__, __LINE__, #p); \
     } while (0)
 
-static void
+__attribute__((__noreturn__)) static void
 botch(const char *f, int l, const char *s)
 {
 
@@ -1489,7 +1481,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
         /* nothing in the file, set percentfree==0 so won't bother cleaning */
         percentfree = 0;
     } else {
-        percentfree = (100.0 * head.Free) / datasize;
+        percentfree = (100.0 * (double) head.Free) / (double) datasize;
     }
 
     /*

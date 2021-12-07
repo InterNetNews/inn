@@ -79,7 +79,7 @@ struct timer {
 };
 static struct timer **timers = NULL;
 static struct timer *timer_current = NULL;
-unsigned int timer_count = 0;
+static unsigned int timer_count = 0;
 
 /* Names for all of the timers.  These must be given in the same order
    as the definition of the enum in timer.h. */
@@ -102,7 +102,7 @@ TMRnow_double(void)
     struct timeval tv;
 
     gettimeofday(&tv, NULL);
-    return (tv.tv_sec + tv.tv_usec * 1.0e-6);
+    return ((double) tv.tv_sec + (double) tv.tv_usec * 1.0e-6);
 }
 
 

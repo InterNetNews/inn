@@ -56,21 +56,21 @@ typedef int Py_ssize_t;
 #    include "innd.h"
 
 bool PythonFilterActive;
-PyObject *PYFilterObject = NULL;
-PyObject *PYFilterModule = NULL;
+static PyObject *PYFilterObject = NULL;
+static PyObject *PYFilterModule = NULL;
 
 /*  Article filter bits and pieces. */
-PyObject *PYheaders = NULL;
-PyObject **PYheaditem;
-PyObject **PYheadkey;
-PyObject *PYlineskey, *PYbodykey;
+static PyObject *PYheaders = NULL;
+static PyObject **PYheaditem;
+static PyObject **PYheadkey;
+static PyObject *PYlineskey, *PYbodykey;
 
 /*  External functions. */
-PyObject *msgid_method = NULL;
-PyObject *art_method = NULL;
-PyObject *mode_method = NULL;
-PyObject *pre_reload_method = NULL;
-PyObject *close_method = NULL;
+static PyObject *msgid_method = NULL;
+static PyObject *art_method = NULL;
+static PyObject *mode_method = NULL;
+static PyObject *pre_reload_method = NULL;
+static PyObject *close_method = NULL;
 
 
 /*

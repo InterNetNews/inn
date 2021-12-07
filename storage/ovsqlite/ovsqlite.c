@@ -803,8 +803,8 @@ expire_one(char const *group, int *low, struct history *h)
 
         for (ix = 0; ix < count; ix++) {
             uint64_t artnum;
-            uint64_t arrived;
-            uint64_t expires;
+            uint64_t arrived = 0;
+            uint64_t expires = 0;
             TOKEN token;
             char *overview;
             uint32_t overview_len;
