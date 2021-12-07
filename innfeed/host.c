@@ -64,6 +64,11 @@
 /* time between retrying blocked hosts in seconds */
 #define TRYBLOCKEDHOSTPERIOD 120
 
+/* Disable float-equal GCC warning as it reports correct code
+ * to be changed in this file.
+ * <https://github.com/InterNetNews/inn/issues/212> */
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 extern char *configFile;
 extern void (*gPrintInfo)(void);
 

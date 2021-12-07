@@ -663,7 +663,7 @@ dnl -Wno-unknown-warning-option is used to prevent Clang from complaining
 dnl with unknown parameters.
 dnl
 dnl It would be worthwhile trying to enforce the following checks:
-dnl -Wfloat-equal, -Wunreachable-code (for Clang)
+dnl -Wunreachable-code (for Clang)
 m4_foreach_w(
     [flag],
     [-g -O3 -DDEBUG=1 -D_FORTIFY_SOURCE=2 -Werror -Wall -Wextra
@@ -674,7 +674,7 @@ m4_foreach_w(
      -Wmissing-format-attribute
      -Walloc-zero -Walloca -Warith-conversion -Warray-bounds=2
      -Wattribute-alias=2 -Wduplicated-branches -Wduplicated-cond
-     -Wtrampolines -Wdeclaration-after-statement -Wshadow
+     -Wtrampolines -Wfloat-equal -Wdeclaration-after-statement -Wshadow
      -Wpointer-arith -Wc99-c11-compat
      -Wbad-function-cast -Wcast-align=strict -Wwrite-strings
      -Wdangling-else -Wdate-time
