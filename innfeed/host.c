@@ -3232,11 +3232,11 @@ hostLogStatus(void)
 
         fprintf(fp, "   seconds: %ld\n", sec);
         if (sec == 0)
-            sec = 1;
+            sec = 1; /* to avoid division by zero */
         offered = procArtsOffered ? procArtsOffered : 1;
         totalsize = procArtsSizeAccepted + procArtsSizeRejected;
-        if (totalsize == 0)
-            totalsize = 1.;
+        if (!(totalsize > 0))
+            totalsize = 1.; /* avoid divide by zero here too */
 
         fprintf(fp, "   offered: %-5ld\t%6.2f art/s\n", procArtsOffered,
                 (double) procArtsOffered / sec);

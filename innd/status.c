@@ -303,8 +303,8 @@ STATUSsummary(void)
     fprintf(F, "         offered: %-9lu\n", offered);
     if (offered == 0)
         offered = 1; /* to avoid division by zero */
-    if (size == 0)
-        size = 1; /* avoid divide by zero here too */
+    if (!(size > 0))
+        size = 1.; /* avoid divide by zero here too */
     fprintf(F, "        accepted: %-9lu       %%accepted: %.1f%%\n", accepted,
             (double) (accepted / offered * 100));
     fprintf(F, "         refused: %-9lu        %%refused: %.1f%%\n", refused,
