@@ -3645,11 +3645,11 @@ addrcpt(char *newrcpt, int newrcptlen, char **out, int *outalloc)
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     rc = snprintf((*out) + size, newsize - size, deliver_rcpt_to, newrcpt);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     if (rc < 0) {
@@ -3741,11 +3741,11 @@ addto(char *newrcpt, int newrcptlen, const char *sep, char **out,
 
     c = newrcpt[newrcptlen];
     newrcpt[newrcptlen] = '\0';
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     rc = snprintf((*out) + size, newsize - size, deliver_to_header, newrcpt);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     if (rc < 0) {

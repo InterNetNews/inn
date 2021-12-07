@@ -746,11 +746,11 @@ MailArticle(char *group, char *article)
      * in case %s isn't in inconf->mta) and send the headers. */
     if (innconf->mta == NULL)
         return "Can't start mailer -- mta not set";
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     snprintf(buff, sizeof(buff), innconf->mta, address);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     if ((F = popen(buff, "w")) == NULL)

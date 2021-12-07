@@ -28,7 +28,7 @@
 #    pragma GCC diagnostic ignored "-Wredundant-decls"
 #    pragma GCC diagnostic ignored "-Wshadow"
 #    include <perl.h>
-#    pragma GCC diagnostic warning "-Wcast-align"
+/* Do not reactivate -Wcast-align because HePV() calls below trigger it. */
 #    pragma GCC diagnostic warning "-Wredundant-decls"
 #    pragma GCC diagnostic warning "-Wshadow"
 #    include "ppport.h"

@@ -263,11 +263,11 @@ SITEfind(char *Name, bool CanCreate)
 
     /* Fill in the structure for the new site. */
     sp->Name = xstrdup(Name);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     snprintf(buff, sizeof(buff), Format, Map ? MAPname(Name) : sp->Name);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     sp->Filename = xstrdup(buff);

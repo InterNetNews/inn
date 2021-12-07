@@ -197,11 +197,11 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
                     if (*p == '.')
                         *p = '-';
                 if (IsValidSubmissionTemplate(save)) {
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
                     snprintf(address, sizeof(address), save, name);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
                     break;
@@ -223,11 +223,11 @@ GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
             *p = '-';
 
     if (IsValidSubmissionTemplate(save)) {
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
         snprintf(address, sizeof(address), save, name);
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     } else {

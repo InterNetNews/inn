@@ -433,9 +433,6 @@ XS(XS_INN_syslog)
     const char *logmsg;
     int priority;
 
-    /* Suppress warnings for the mandatory XS argument. */
-    cv = cv;
-
     if (items != 2)
         croak("Usage: INN::syslog(level, message)");
 

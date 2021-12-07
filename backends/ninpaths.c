@@ -199,11 +199,11 @@ writedumpfile(const char *n)
         writedump(stdout);
         return;
     }
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
     snprintf(buf, sizeof(buf), n, time(0));
-#if __GNUC__ > 4
+#if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)
 #    pragma GCC diagnostic warning "-Wformat-nonliteral"
 #endif
     d = fopen(buf, "w");
