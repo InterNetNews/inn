@@ -7,10 +7,10 @@
 #include "inn/libinn.h"
 #include "inn/nntp.h"
 
-
-static FILE *ser_rd_fp = NULL;
-static FILE *ser_wr_fp = NULL;
-static char ser_line[NNTP_MAXLEN_COMMAND + 2];
+/* Initialize variables exported through libinn(3). */
+FILE *ser_rd_fp = NULL;
+FILE *ser_wr_fp = NULL;
+char ser_line[NNTP_MAXLEN_COMMAND + 2];
 
 
 /*

@@ -122,6 +122,10 @@ extern int NNTPsendarticle(char *, FILE *F, bool Terminate);
 extern int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer);
 
 /* clientlib compatibility functions. */
+extern FILE *ser_rd_fp;
+extern FILE *ser_wr_fp;
+extern char ser_line[];
+
 extern char *getserverbyfile(char *file);
 extern int server_init(char *host, int port);
 extern int handle_server_response(int response, char *host);
