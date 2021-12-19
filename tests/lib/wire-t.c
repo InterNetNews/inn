@@ -34,7 +34,7 @@ read_file(const char *name, struct stat *st)
 
 
 /* Test article for wire_findbody. */
-const char ta[] = "Path: \r\nFrom: \r\n\r\n";
+static const char ta[] = "Path: \r\nFrom: \r\n\r\n";
 
 int
 main(void)

@@ -89,11 +89,11 @@ typedef int Py_ssize_t;
 
 
 /*  Pointers to external Python objects. */
-PyObject *PYAuthObject = NULL;
+static PyObject *PYAuthObject = NULL;
 
 /*  Dictionary of params to pass to authentication methods. */
-PyObject *PYauthinfo = NULL;
-PyObject **PYauthitem = NULL;
+static PyObject *PYauthinfo = NULL;
+static PyObject **PYauthitem = NULL;
 
 /*  Forward declaration. */
 static PyObject *PY_set_auth_hook(PyObject *dummy, PyObject *args);
@@ -104,7 +104,7 @@ static bool file_equal(const void *k, const void *p);
 static void file_free(void *p);
 static void file_trav(void *data, void *null);
 
-bool PythonLoaded = false;
+static bool PythonLoaded = false;
 
 /*  Structure for storage of attributes for a module file. */
 typedef struct PyFile {
@@ -114,10 +114,10 @@ typedef struct PyFile {
 } PyFile;
 
 /*  Hash for storing files. */
-struct hash *files;
+static struct hash *files;
 
 /*  For passing the dynamic module filename from perm.c. */
-char *dynamic_file;
+static char *dynamic_file;
 
 
 /*

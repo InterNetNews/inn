@@ -37,16 +37,21 @@
 /* flex always declares yyunput, but we don't use it. */
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+/* flex uses an unannotated fall-through between switch labels. */
+#if defined(__llvm__) || defined(__clang__)
+# pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
 #if defined (FLEX_DEBUG)
 #define YY_USER_INIT yy_flex_debug = (getenv ("YYDEBUG") == NULL ? 0 : 1)
 #endif
 
-char *strPtr = 0 ;
-int strPtrLen = 0 ;
-int strIdx = 0 ;
-int sawBsl ;
+static char *strPtr = 0 ;
+static int strPtrLen = 0 ;
+static int strIdx = 0 ;
+static int sawBsl ;
 int lineCount = 0 ;
-int current ;
+static int current ;
 
 static void strAppend (int ch)
 {
@@ -61,11 +66,12 @@ static void strAppend (int ch)
 }
 
 #define MAX_INCLUDE_DEPTH 11
-struct includeFile {
+static struct includeFile {
     YY_BUFFER_STATE state;
     char *name ;
 } include_stack[MAX_INCLUDE_DEPTH];
-int include_stack_ptr = 0;
+
+static int include_stack_ptr = 0;
 
 %}
 

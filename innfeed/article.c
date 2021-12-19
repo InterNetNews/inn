@@ -41,8 +41,6 @@
 #    define VALIDATE_HASH_TABLE() hashValidateTable()
 #endif
 
-extern bool useMMap;
-
 struct map_info_s {
     ARTHANDLE *arthandle;
     const void *mMapping;
@@ -689,7 +687,7 @@ fillContents(Article article)
 
     if (article->contents == NULL && article->articleOk) {
         /* an estimate to give some room for nntpPrepareBuffer to use. */
-        newBufferSize *= (1.0 + (1.0 / avgCharsPerLine));
+        newBufferSize *= (size_t)(1.0 + (1.0 / avgCharsPerLine));
         newBufferSize++;
 
         /* if we're going over the limit try to free up some older article's
@@ -770,8 +768,7 @@ fillContents(Article article)
                     byteTotal += diff;
 
                     if (preparedBytes > (1024 * 1024)) {
-                        avgCharsPerLine =
-                            ((double) preparedBytes) / preparedNewlines;
+                        avgCharsPerLine = preparedBytes / preparedNewlines;
                         avgCharsPerLine++;
                     }
                     article->inWireFormat = true;

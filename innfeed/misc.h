@@ -53,6 +53,8 @@ extern char *timeToStringFormat;
 /* the current count of file desccriptors */
 extern unsigned int openfds;
 
+extern char **PointersFreedOnExit;
+
 /* if level <= loggingLevel then print */
 void d_printf(unsigned int level, const char *fmt, ...)
     __attribute__((__format__(printf, 2, 3)));

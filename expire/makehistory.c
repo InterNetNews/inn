@@ -73,23 +73,23 @@ typedef struct _ARTOVERFIELD {
     bool HasHeader;
 } ARTOVERFIELD;
 
-#define DEFAULT_SEGSIZE 10000;
+#define DEFAULT_SEGSIZE 10000
 
-bool NukeBadArts;
-char *ActivePath = NULL;
-char *HistoryPath = NULL;
-struct history *History;
-FILE *Overchan;
-bool DoOverview;
-bool Fork;
-bool Cutofflow = false;
-char *TmpDir;
-int OverTmpSegSize, OverTmpSegCount;
-FILE *OverTmpFile;
-char *OverTmpPath = NULL;
-bool NoHistory;
-OVSORTTYPE sorttype;
-bool WriteStdout = false;
+static bool NukeBadArts;
+static char *ActivePath = NULL;
+static char *HistoryPath = NULL;
+static struct history *History;
+static FILE *Overchan;
+static bool DoOverview;
+static bool Fork;
+static bool Cutofflow = false;
+static char *TmpDir;
+static int OverTmpSegSize, OverTmpSegCount;
+static FILE *OverTmpFile;
+static char *OverTmpPath = NULL;
+static bool NoHistory;
+static OVSORTTYPE sorttype;
+static bool WriteStdout = false;
 
 /* Misc variables needed for the overview creation code. */
 static char BYTES[] = "Bytes";
@@ -948,7 +948,6 @@ main(int argc, char **argv)
         default:
             fprintf(stderr, "%s", usage);
             exit(1);
-            break;
         }
     }
     argc -= optind;

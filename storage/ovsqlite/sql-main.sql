@@ -9,15 +9,15 @@ select randomblob(?1);
 
 -- .getmisc
 select value from misc
-        where key=?1;
+    where key=?1;
 
 -- .setmisc
 insert or replace into misc (key, value)
-        values (?1, ?2);
+    values (?1, ?2);
 
 -- .unsetmisc
 delete from misc
-        where key=?1;
+    where key=?1;
 
 -- .begin
 begin immediate transaction;

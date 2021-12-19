@@ -251,7 +251,7 @@ Spawn(int niceval, int fd0, int fd1, int fd2, char *const av[])
     syslog(L_FATAL, "%s cant exec in %s %m", LogName, av[0]);
     _exit(1);
 
-    /* Not reached. */
+    /* NOTREACHED */
     return -1;
 }
 
@@ -339,6 +339,7 @@ InndHisClose(void)
 
         histpath = concatpath(innconf->pathdb, INN_PATH_HISTORY);
         sysdie("SERVER can't close history %s", histpath);
+        /* NOTREACHED */
         free(histpath);
     }
     History = NULL;

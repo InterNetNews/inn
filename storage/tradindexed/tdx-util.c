@@ -505,7 +505,7 @@ main(int argc, char *argv[])
             break;
         default:
             die("invalid option %c", optopt);
-            break;
+            /* NOTREACHED */
         }
     }
 
@@ -547,7 +547,7 @@ main(int argc, char *argv[])
         break;
     default:
         die("a mode option must be specified");
-        break;
+        /* NOTREACHED */
     }
     exit(0);
 }

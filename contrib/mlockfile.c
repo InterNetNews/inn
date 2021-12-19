@@ -26,10 +26,9 @@ struct mlock {
 
 void inn_lock_files(struct mlock *);
 
-char *progname;
-
-int flush = 0;
-int interval = 60000;
+static char *progname;
+static int flush = 0;
+static int interval = 60000;
 
 void
 inn_lock_files(struct mlock *ml)
@@ -182,6 +181,8 @@ main(int argc, char *argv[])
         inn_lock_files(ml);
         poll(NULL, 0, interval);
     }
+
+    /* NOTREACHED */
     free(ml);
     return EX_OSERR;
 }

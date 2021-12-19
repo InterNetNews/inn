@@ -153,9 +153,9 @@ printspace(const char *path, bool inode, bool fancy)
                Be very careful about the order of casts here; it's too
                easy to cast back into an unsigned long a value that
                overflows, and one then gets silently wrong results. */
-            amount =
-                (unsigned long) (((double) df_avail(info) * df_scale(info))
-                                 / 1024.0);
+            amount = (unsigned long) (((double) df_avail(info)
+                                       * (double) df_scale(info))
+                                      / 1024.0);
         }
     } else {
         /* On error, free space is zero. */
@@ -165,9 +165,11 @@ printspace(const char *path, bool inode, bool fancy)
     if (fancy) {
         printf(inode ? " inodes available " : " Kbytes available ");
         if (inode)
-            percent = 100 * ((double) df_favail(info) / df_files(info));
+            percent =
+                100 * ((double) df_favail(info) / (double) df_files(info));
         else
-            percent = 100 * ((double) df_avail(info) / df_total(info));
+            percent =
+                100 * ((double) df_avail(info) / (double) df_total(info));
         if (percent < 9.95)
             printf("  (%3.1f%%)", percent);
         else if (percent < 99.95)

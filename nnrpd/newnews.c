@@ -150,7 +150,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
     char *data;
     int len;
     char *grplist[2];
-    time_t now;
+    time_t now = 0;
 
     grplist[0] = group;
     grplist[1] = NULL;

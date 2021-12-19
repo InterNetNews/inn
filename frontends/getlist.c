@@ -29,7 +29,7 @@ that type (y and m being the most common) are returned.\n";
 **  Print out an appropriate error message for a bad NNTP response code and
 **  exit.
 */
-static void
+__attribute__((__noreturn__)) static void
 die_nntp_code(enum nntp_code code, const char *line)
 {
     if (code == 0)
@@ -42,7 +42,7 @@ die_nntp_code(enum nntp_code code, const char *line)
 /*
 **  Print out an appropriate error message for a bad NNTP status and exit.
 */
-static void
+__attribute__((__noreturn__)) static void
 die_nntp_status(enum nntp_status status)
 {
     switch (status) {

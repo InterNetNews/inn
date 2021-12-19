@@ -531,6 +531,7 @@ main(int ac, char *av[])
         case 'S':
             RCreadlist();
             exit(0);
+            /* NOTREACHED */
         case 't':
             TimeOut.tv_sec = atol(optarg);
             break;
@@ -811,6 +812,7 @@ main(int ac, char *av[])
 
     CHANreadloop();
 
+    /* NOTREACHED */
     /* CHANreadloop should never return. */
     return 1;
 }

@@ -19,7 +19,9 @@
 #include <stdio.h>
 
 
+/* Variables to export. */
 extern InnListener mainListener;
+extern bool fastExit;
 
 /* Initialization of the InnListener object. If it fails then returns
   NULL. ENDPOINT is the endpoint where the article info will come

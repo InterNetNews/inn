@@ -26,6 +26,10 @@
 #include <time.h>
 
 
+/* Variables to export. */
+extern unsigned int init_reconnect_period;
+extern unsigned int max_reconnect_period;
+
 /*
  * Create a new Connection.
  *

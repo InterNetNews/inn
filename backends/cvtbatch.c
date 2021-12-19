@@ -40,7 +40,7 @@ main(int ac, char *av[])
         switch (i) {
         default:
             die("usage error");
-            break;
+            /* NOTREACHED */
         case 'w':
             free(format);
             for (p = format = optarg; *p; p++) {

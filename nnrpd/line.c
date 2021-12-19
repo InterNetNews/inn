@@ -22,10 +22,6 @@
 #include "tls.h"
 #include <signal.h>
 
-#ifdef HAVE_OPENSSL
-extern SSL *tls_conn;
-#endif
-
 
 /*
 **  Free a previously allocated line structure.
@@ -142,9 +138,10 @@ line_doread(void *p, size_t len, int timeout UNUSED)
                 switch (err) {
                 case SSL_ERROR_ZERO_RETURN:
                     SSL_shutdown(tls_conn);
-                    /* fallthrough */
+                    goto fallthrough;
                 case SSL_ERROR_SYSCALL:
                 case SSL_ERROR_SSL:
+                fallthrough:
                     /* SSL_shutdown() must not be called. */
                     tls_conn = NULL;
                     errno = ECONNRESET;

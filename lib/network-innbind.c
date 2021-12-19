@@ -40,6 +40,7 @@ static int
 network_child_fatal(void)
 {
     _exit(1);
+    /* NOTREACHED */
     return 1;
 }
 

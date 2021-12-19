@@ -17,10 +17,8 @@ static char Error[SMBUF];
 static char NGSEPS[] = NG_SEPARATOR;
 char **OtherHeaders;
 size_t OtherCount;
-bool HeadersModified;
 static size_t OtherSize;
 static const char *const BadDistribs[] = {BAD_DISTRIBS};
-extern bool laxmid;
 
 /*
 **  Do not modify the table without also looking at post.h for potential

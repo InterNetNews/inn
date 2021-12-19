@@ -453,7 +453,7 @@ main(int ac, char *av[])
         switch (i) {
         default:
             die("usage error");
-            break;
+            /* NOTREACHED */
         case 'b':
         case 'u':
             BufferMode = i;

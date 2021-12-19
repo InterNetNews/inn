@@ -119,7 +119,7 @@ static void WrongArgs(COMMAND *) __attribute__((__noreturn__));
 /*
 **  Print a help summary.
 */
-static void
+__attribute__((__noreturn__)) static void
 Help(char *p)
 {
     COMMAND *cp;
@@ -158,7 +158,7 @@ WrongArgs(COMMAND *cp)
 /*
 **  Print an error message and exit.
 */
-static void
+__attribute__((__noreturn__)) static void
 Failed(const char *p)
 {
     if (ICCfailure)

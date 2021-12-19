@@ -37,12 +37,12 @@ struct nrec {
     long sentto;        /* tally of articles sent from here */
 };
 
-struct nrec *hosthash[HASH_TBL];
+static struct nrec *hosthash[HASH_TBL];
 
-time_t starttime;    /* Start time */
-double atimes = 0.0; /* Sum of articles times wrt. starttime */
-long total = 0,      /* Total articles processed */
-    sites = 0;       /* Total sites known */
+static time_t starttime;    /* Start time */
+static double atimes = 0.0; /* Sum of articles times wrt. starttime */
+static long total = 0;      /* Total articles processed */
+static long sites = 0;      /* Total sites known */
 
 /* malloc and warn if out of mem */
 static void *
@@ -147,7 +147,7 @@ writedump(FILE *f)
     }
     fprintf(f, "!!NINP " VERSION " %lu %lu %ld %ld %ld\n",
             (unsigned long) starttime, (unsigned long) time(NULL), sites,
-            total, (long) ((atimes / total) + starttime));
+            total, (long) ((atimes / (double) total) + (double) starttime));
     n = j = 0;
     /* write the S-records (hosts), numbering them in the process */
     for (i = 0; i < HASH_TBL; ++i)
@@ -295,14 +295,14 @@ readdump(FILE *f)
 #endif
     /* Adjust the time average and total count */
     if ((unsigned long) starttime > st) {
-        atimes += (double) total * (starttime - st);
+        atimes += (double) total * (double) (starttime - st);
         starttime = st;
     }
-    atimes += (double) tot * (at - starttime);
+    atimes += (double) tot * (double) (at - starttime);
     total += tot;
 #ifdef DEBUG
     fprintf(stderr, " current start %s   total=%ld atimes=%.0f (%.0f)\n\n",
-            ctime(&starttime), total, atimes, atimes / total);
+            ctime(&starttime), total, atimes, atimes / (double) total);
 #endif
     free(n);
     return 0;
@@ -400,7 +400,7 @@ procpaths(FILE *f)
                    INN will restart a fresh ninpaths. */
                 return;
             /* update average age and grand total */
-            atimes += (time(0) - starttime);
+            atimes += (double) (time(0) - starttime);
             ++total;
         } else {
             /* next line is valid */
@@ -434,7 +434,8 @@ report(const char *hostname, int verbose)
     if (list)
         list->id[0] = '\0';
 
-    avgAge = ((double) t0 - (atimes / total + (double) starttime)) / 86400.0;
+    avgAge = ((double) t0 - (atimes / (double) total + (double) starttime))
+             / 86400.0;
     printf("ZCZC begin inhosts %s %s %d %ld %3.1f\n", VERSION, hostname,
            verbose, total, avgAge);
     for (i = 0; i < HASH_TBL - 1; i++) {

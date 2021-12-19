@@ -312,7 +312,7 @@ EXPkeepit(const TOKEN *token, time_t when, time_t Expires)
     if (EXPverbose > 2) {
         if (EXPverbose > 3)
             printf("%s age = %0.2f\n", TokenToText(*token),
-                   (Now - when) / 86400.);
+                   (double) (Now - when) / 86400.);
         if (Expires == 0) {
             if (when <= class.Default)
                 printf("%s too old (no exp)\n", TokenToText(*token));

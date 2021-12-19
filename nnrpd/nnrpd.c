@@ -29,14 +29,16 @@
 #include "inn/ov.h"
 #include "inn/overview.h"
 #include "inn/version.h"
+
+/* Silent this warning because of the way we deal with EXTERN. */
+#if defined(__llvm__) || defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
+#endif
+
 #define MAINLINE
 #include "nnrpd.h"
 
 #include "tls.h"
-
-#if defined(HAVE_OPENSSL)
-extern SSL *tls_conn;
-#endif
 
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
 bool encryption_layer_on = false;
@@ -65,8 +67,6 @@ getloadavg(double loadavg[], int nelem)
 #endif
 
 
-#define MAXPATTERNDEFINE 10
-
 #define CMDany -1
 
 
@@ -94,14 +94,17 @@ static double STATstart;
 static double STATfinish;
 static char *PushedBack;
 static sig_atomic_t ChangeTrace;
-bool DaemonMode = false;
-bool ForeGroundMode = false;
+static bool DaemonMode = false;
+static bool ForeGroundMode = false;
 static const char *HostErrorStr;
-bool GetHostByAddr = true; /* Formerly DO_NNRP_GETHOSTBYADDR. */
+static bool GetHostByAddr = true; /* Formerly DO_NNRP_GETHOSTBYADDR. */
 const char *NNRPinstance = "";
 
 /* Default values for the syntaxchecks parameter in inn.conf. */
 bool laxmid = false;
+
+/* Other default values. */
+bool Tracing = false;
 
 #ifdef DO_PERL
 bool PerlLoaded = false;
@@ -767,12 +770,13 @@ write_buffer(const char *buff, ssize_t len)
                 break;
             case SSL_ERROR_WANT_WRITE:
                 goto Again;
-                break;
+                /* NOTREACHED */
             case SSL_ERROR_ZERO_RETURN:
                 SSL_shutdown(tls_conn);
-                /* fallthrough */
+                goto fallthrough;
             case SSL_ERROR_SSL:
             case SSL_ERROR_SYSCALL:
+            fallthrough:
                 /* SSL_shutdown() must not be called. */
                 tls_conn = NULL;
                 errno = ECONNRESET;
@@ -883,7 +887,7 @@ ToggleTrace(int s NO_SIGACTION_UNUSED)
 /*
 **  Got a SIGPIPE; exit cleanly.
 */
-static void
+__attribute__((__noreturn__)) static void
 CatchPipe(int s UNUSED)
 {
     ExitWithStats(0, false);
@@ -1502,14 +1506,15 @@ main(int argc, char *argv[])
             switch (r) {
             default:
                 syslog(L_ERROR, "%s internal %d in main", Client.host, r);
-                /* FALLTHROUGH */
+                goto fallthroughRTtimeout;
             case RTtimeout:
+            fallthroughRTtimeout:
                 if (timeout < clienttimeout)
                     syslog(L_NOTICE, "%s timeout short", Client.host);
                 else
                     syslog(L_NOTICE, "%s timeout", Client.host);
                 ExitWithStats(1, false);
-                break;
+                /* NOTREACHED */
             case RTok:
                 /* len does not count CRLF. */
                 if (len + lenstripped <= sizeof(buff)) {
@@ -1550,8 +1555,9 @@ main(int argc, char *argv[])
                         continue;
                     break;
                 }
-                /* FALLTHROUGH */
+                goto fallthroughRTlong;
             case RTlong:
+            fallthroughRTlong:
                 /* The line is too long but we have to make sure that
                  * no recognized command has been sent. */
                 q = (char *) p;

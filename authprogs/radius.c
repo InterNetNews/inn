@@ -212,7 +212,6 @@ read_config(char *authfile, rad_config_t *radconf)
 
 #define PW_AUTHENTICATION_REQUEST 1
 #define PW_AUTHENTICATION_ACK     2
-#define PW_AUTHENTICATION_REJECT  3
 
 #define PW_USER_NAME 1
 #define PW_PASSWORD  2
@@ -514,12 +513,6 @@ rad_auth(rad_config_t *radconfig, char *uname, char *pass)
     return (-2);
 }
 
-#define RAD_HAVE_HOST    1
-#define RAD_HAVE_PORT    2
-#define RAD_HAVE_PREFIX  4
-#define RAD_HAVE_SUFFIX  8
-#define RAD_HAVE_LOCHOST 16
-#define RAD_HAVE_LOCPORT 32
 
 int
 main(int argc, char *argv[])

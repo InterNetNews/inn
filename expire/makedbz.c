@@ -21,9 +21,9 @@
  * go */
 #define HIS_FIELDSEP '\t'
 
-char *TextFile = NULL;
-char *HistoryDir = NULL;
-char *HISTORY = NULL;
+static char *TextFile = NULL;
+static char *HistoryDir = NULL;
+static char *HISTORY = NULL;
 
 static void Usage(void) __attribute__((__noreturn__));
 

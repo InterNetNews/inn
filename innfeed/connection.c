@@ -86,9 +86,6 @@
 #    define VALIDATE_CONNECTION(x) validateConnection(x)
 #endif
 
-extern char **PointersFreedOnExit;
-extern const char *pidFile;
-
 /*
  * Private types.
  */
@@ -418,7 +415,8 @@ newConnection(Host host, unsigned int id, const char *ipname,
     cxn->port = portNum;
 
     /* Time out the higher numbered connections faster */
-    cxn->articleReceiptTimeout = articleReceiptTimeout * 10.0 / (10.0 + id);
+    cxn->articleReceiptTimeout =
+        (unsigned int) (articleReceiptTimeout * 10.0 / (10.0 + id));
     cxn->artReceiptTimerId = 0;
 
     cxn->readTimeout = respTimeout;

@@ -29,25 +29,17 @@ static int do_dump = 0;
 static SSL_CTX *CTX = NULL;
 SSL *tls_conn = NULL;
 
-#    define CCERT_BUFSIZ 256
-
-int tls_serverengine = 0;
-int tls_serveractive = 0; /* Available or not. */
-char *tls_peer_subject = NULL;
-char *tls_peer_issuer = NULL;
-char *tls_peer_fingerprint = NULL;
-
-int tls_clientactive = 0; /* Available or not. */
+static int tls_serverengine = 0;
+static int tls_serveractive = 0; /* Available or not. */
 char *tls_peer_CN = NULL;
-char *tls_issuer_CN = NULL;
 
-const char *tls_protocol = NULL;
-const char *tls_cipher_name = NULL;
+static const char *tls_protocol = NULL;
+static const char *tls_cipher_name = NULL;
+static int tls_cipher_algbits = 0;
 int tls_cipher_usebits = 0;
-int tls_cipher_algbits = 0;
 
 /* Set this value higher (from 1 to 4) to obtain more logs. */
-int tls_loglevel = 0;
+static int tls_loglevel = 0;
 
 
 /*
@@ -548,7 +540,7 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
     if (CTX == NULL) {
         return (-1);
-    };
+    }
 
     off |= SSL_OP_ALL; /* Work around all known bugs. */
     SSL_CTX_set_options(CTX, off);

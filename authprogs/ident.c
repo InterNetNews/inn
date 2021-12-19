@@ -20,7 +20,7 @@
 /*
 **  The signal handler for a timeout.  Just exit with a non-zero status.
 */
-static void
+__attribute__((__noreturn__)) static void
 timeout(int sig UNUSED)
 {
     exit(1);

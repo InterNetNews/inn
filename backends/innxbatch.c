@@ -227,7 +227,7 @@ REMread(char *start, int size)
 /*
 **  Handle the interrupt.
 */
-static void
+__attribute__((__noreturn__)) static void
 Interrupted(void)
 {
     warn("interrupted");
@@ -272,7 +272,6 @@ REMsendxbatch(int fd, char *buf, int size)
         warn("unknown reply after sending batch -- %s", buf);
         return false;
         /* NOTREACHED */
-        break;
     case NNTP_FAIL_XBATCH:
     case NNTP_FAIL_TERMINATING:
     case NNTP_FAIL_ACTION:
@@ -281,7 +280,6 @@ REMsendxbatch(int fd, char *buf, int size)
         STATrejectedsize += (double) size;
         return false;
         /* NOTREACHED */
-        break;
     case NNTP_OK_XBATCH:
         STATaccepted++;
         STATacceptedsize += (double) size;
@@ -329,7 +327,7 @@ CATCHalarm(int s UNUSED)
 /*
 **  Print a usage message and exit.
 */
-static void
+__attribute__((__noreturn__)) static void
 Usage(void)
 {
     warn("Usage: innxbatch [-Dv] [-t#] [-T#] host file ...");
@@ -378,7 +376,6 @@ main(int ac, char *av[])
         default:
             Usage();
             /* NOTREACHED */
-            break;
         case 'D':
             Debug = true;
             break;
@@ -553,7 +550,6 @@ main(int ac, char *av[])
             warn("unknown reply to %s -- %s", XBATCHname, buff);
             ExitWithStats(1);
             /* NOTREACHED */
-            break;
         case NNTP_FAIL_XBATCH:
         case NNTP_FAIL_TERMINATING:
         case NNTP_FAIL_ACTION:
@@ -562,9 +558,10 @@ main(int ac, char *av[])
             ExitWithStats(1);
             /* NOTREACHED */
         case NNTP_CONT_XBATCH:
-            if (!REMsendxbatch(ToServer, XBATCHbuffer, XBATCHsize))
+            if (!REMsendxbatch(ToServer, XBATCHbuffer, XBATCHsize)) {
                 ExitWithStats(1);
-            /* NOTREACHED */
+                /* NOTREACHED */
+            }
             break;
         case NNTP_ERR_SYNTAX:
         case NNTP_ERR_COMMAND:

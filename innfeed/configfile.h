@@ -43,8 +43,10 @@ typedef struct _value {
     } v;
 } value;
 
+/* Variables to export. */
 extern scope *topScope;
 extern char *errbuff;
+extern int lineCount;
 
 int isWord(scope *s, const char *name, int inherit);
 int isName(scope *s, const char *name, int inherit);

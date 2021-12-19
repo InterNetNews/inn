@@ -13,7 +13,7 @@
 #include "../../innd/innd.h"
 
 /* A table of paths to articles and corresponding error messages. */
-const struct {
+static const struct {
     const char *path;
     const char *error;
 } articles[] = {

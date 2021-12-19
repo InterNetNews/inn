@@ -101,7 +101,7 @@ main(int argc, char *argv[])
             always_stat = true;
             break;
         case 'w':
-            ovge.timewarp = (time_t)(atof(optarg) * 86400.);
+            ovge.timewarp = (float) (atof(optarg) * 86400.);
             break;
         case 'z':
             ovge.filename = optarg;

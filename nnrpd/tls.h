@@ -41,6 +41,11 @@
 #    define INN_TLS_TLSv1_2 16
 #    define INN_TLS_TLSv1_3 32
 
+
+extern SSL *tls_conn;
+extern int tls_cipher_usebits;
+extern char *tls_peer_CN;
+
 /* Init TLS engine. */
 int tls_init_serverengine(int verifydepth, /* Depth to verify. */
                           int askcert,     /* 1 = Verify client. */

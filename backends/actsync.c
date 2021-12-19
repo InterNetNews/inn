@@ -211,8 +211,6 @@ struct eqgrp {
 #define ERROR_BADNAME  0x0400 /* newsgroup name is invalid */
 #define ERROR_FORMAT   0x0800 /* entry line is malformed */
 
-#define IS_IGNORE(ign) \
-    ((ign) & (CHECK_IGNORE | CHECK_TYPE | CHECK_BORK | CHECK_HIER))
 #define IS_ERROR(ign) \
     ((ign) & ~(CHECK_IGNORE | CHECK_TYPE | CHECK_BORK | CHECK_HIER))
 
@@ -238,12 +236,7 @@ struct eqgrp {
 #define READ_SIDE  0 /* read side of a pipe */
 #define WRITE_SIDE 1 /* write side of a pipe */
 
-#define EQ_LOOP     16  /* give up if =eq loop/chain is this long */
-#define NOT_REACHED 127 /* exit value if unable to get active files */
-
-#define NEWGRP_EMPTY 0 /* no new group dir was found */
-#define NEWGRP_NOCHG 1 /* new group dir found but no hi/low change */
-#define NEWGRP_CHG   2 /* new group dir found but no hi/low change */
+#define EQ_LOOP 16 /* give up if =eq loop/chain is this long */
 
 /* -b macros */
 #define BORK_CHECK(hostid)                  \
@@ -272,7 +265,6 @@ struct eqgrp {
 
 /* -v verbosity level */
 #define VER_MIN          0 /* minimum -v level */
-#define VER_NONE         0 /* no -v output */
 #define VER_SUMM_IF_WORK 1 /* output summary if actions were performed */
 #define VER_REPT_IF_WORK 2 /* output summary & actions only if performed */
 #define VER_REPORT       3 /* output summary & actions performed */
@@ -285,36 +277,39 @@ struct eqgrp {
 #define D_SUMMARY (v_flag >= VER_REPORT) /* true => give summary always */
 
 /* flag and arg related defaults */
-int bork_host1_flag = 0;    /* 1 => -b 1 or -b 12 or -b 21 given */
-int bork_host2_flag = 0;    /* 1 => -b 2 or -b 12 or -b 21 given */
-int num_host1_flag = 0;     /* 1 => -d 1 or -d 12 or -d 21 given */
-int num_host2_flag = 0;     /* 1 => -d 2 or -d 12 or -d 21 given */
-char *ign_file = NULL;      /* default ignore file */
-int ign_host1_flag = 1;     /* 1 => -i ign_file applies to host1 */
-int ign_host2_flag = 1;     /* 1 => -i ign_file applies to host2 */
-int g_flag = 0;             /* ignore grps deeper than > g_flag, 0=>dont */
-int k_flag = 0;             /* 1 => -k given */
-int l_host1_flag = HOSTID1; /* HOSTID1 => host1 =group error detection */
-int l_host2_flag = HOSTID2; /* HOSTID2 => host2 =group error detection */
-int m_flag = 0;             /* 1 => merge active files, don't sync */
-const char *new_name = DEF_NAME; /* ctlinnd newgroup name */
-int o_flag = OUTPUT_CTLINND;     /* default output type */
-double p_flag = MIN_UNCHG;  /* min % host1 lines allowed to be unchanged */
-int host1_errs = 0;         /* errors found in host1 active file */
-int host2_errs = 0;         /* errors found in host2 active file */
-int quiet_host1 = 0;        /* 1 => -q 1 or -q 12 or -q 21 given */
-int quiet_host2 = 0;        /* 1 => -q 2 or -q 12 or -q 21 given */
-int s_flag = 0;             /* max group size (length), 0 => do not check */
-int t_host1_flag = 0;       /* 1 => -t 1 or -t 12 or -t 21 given */
-int t_host2_flag = 1;       /* 1 => -t 2 or -t 12 or -t 21 given */
-int no_new_hier = 0;        /* 1 => -T; no new hierarchies */
-int host2_hilow_newgrp = 0; /* 1 => use host2 hi/low on new groups */
-int host2_hilow_all = 0;    /* 1 => use host2 hi/low on all groups */
-int host1_ign_print = 0;    /* 1 => print host1 ignored groups too */
-int v_flag = 0;             /* default verbosity level */
-int w_flag = 30;            /* sleep w_flag sec before ctlinnd timing out */
-int z_flag = 4;             /* sleep z_flag sec per exec if -o x */
-int A_flag = 0;             /* 1 => authentication before LIST command */
+static int bork_host1_flag = 0; /* 1 => -b 1 or -b 12 or -b 21 given */
+static int bork_host2_flag = 0; /* 1 => -b 2 or -b 12 or -b 21 given */
+static int num_host1_flag = 0;  /* 1 => -d 1 or -d 12 or -d 21 given */
+static int num_host2_flag = 0;  /* 1 => -d 2 or -d 12 or -d 21 given */
+static char *ign_file = NULL;   /* default ignore file */
+static int ign_host1_flag = 1;  /* 1 => -i ign_file applies to host1 */
+static int ign_host2_flag = 1;  /* 1 => -i ign_file applies to host2 */
+static int g_flag = 0;          /* ignore grps deeper than > g_flag, 0=>dont */
+static int k_flag = 0;          /* 1 => -k given */
+static int l_host1_flag =
+    HOSTID1; /* HOSTID1 => host1 =group error detection */
+static int l_host2_flag =
+    HOSTID2;           /* HOSTID2 => host2 =group error detection */
+static int m_flag = 0; /* 1 => merge active files, don't sync */
+static const char *new_name = DEF_NAME; /* ctlinnd newgroup name */
+static int o_flag = OUTPUT_CTLINND;     /* default output type */
+static double p_flag =
+    MIN_UNCHG;               /* min % host1 lines allowed to be unchanged */
+static int host1_errs = 0;   /* errors found in host1 active file */
+static int host2_errs = 0;   /* errors found in host2 active file */
+static int quiet_host1 = 0;  /* 1 => -q 1 or -q 12 or -q 21 given */
+static int quiet_host2 = 0;  /* 1 => -q 2 or -q 12 or -q 21 given */
+static int s_flag = 0;       /* max group size (length), 0 => do not check */
+static int t_host1_flag = 0; /* 1 => -t 1 or -t 12 or -t 21 given */
+static int t_host2_flag = 1; /* 1 => -t 2 or -t 12 or -t 21 given */
+static int no_new_hier = 0;  /* 1 => -T; no new hierarchies */
+static int host2_hilow_newgrp = 0; /* 1 => use host2 hi/low on new groups */
+static int host2_hilow_all = 0;    /* 1 => use host2 hi/low on all groups */
+static int host1_ign_print = 0;    /* 1 => print host1 ignored groups too */
+static int v_flag = 0;             /* default verbosity level */
+static int w_flag = 30; /* sleep w_flag sec before ctlinnd timing out */
+static int z_flag = 4;  /* sleep z_flag sec per exec if -o x */
+static int A_flag = 0;  /* 1 => authentication before LIST command */
 
 /* forward declarations */
 static void process_args(int argc, char *argv[], char **host1, char **host2);
@@ -547,7 +542,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
                         host2_hilow_all = 1;
                         host2_hilow_newgrp = 1;
                         break;
-                    };
+                    }
                     break;
                 case 'k':
                     switch (optarg[2]) {
@@ -558,7 +553,7 @@ process_args(int argc, char *argv[], char **host1, char **host2)
                     default: /* -o ak */
                         host2_hilow_newgrp = 1;
                         break;
-                    };
+                    }
                     break;
                 case '\0': /* -o a */
                     break;
@@ -724,20 +719,20 @@ process_args(int argc, char *argv[], char **host1, char **host2)
 static struct grp *
 get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
 {
-    FILE *active;        /* stream for fetched active data */
-    FILE *FromServer;    /* stream from server */
-    FILE *ToServer;      /* stream to server */
-    QIOSTATE *qp;        /* QIO active state */
-    char buff[8192 + 1]; /* QIO buffer */
-    char *line;          /* the line just read */
-    struct grp *ret;     /* array of groups to return */
-    struct grp *cur;     /* current grp entry being formed */
-    int max;             /* max length of ret */
-    int cnt;             /* number of entries read */
-    int ucnt;            /* number of entries to be used */
-    int namelen;         /* length of newsgroup name */
-    int is_file;         /* 1 => host is actually a filename */
-    int num_check;       /* true => check for all numeric components */
+    FILE *active;            /* stream for fetched active data */
+    FILE *FromServer = NULL; /* stream from server */
+    FILE *ToServer = NULL;   /* stream to server */
+    QIOSTATE *qp;            /* QIO active state */
+    char buff[8192 + 1];     /* QIO buffer */
+    char *line;              /* the line just read */
+    struct grp *ret;         /* array of groups to return */
+    struct grp *cur;         /* current grp entry being formed */
+    int max;                 /* max length of ret */
+    int cnt;                 /* number of entries read */
+    int ucnt;                /* number of entries to be used */
+    int namelen;             /* length of newsgroup name */
+    int is_file;             /* 1 => host is actually a filename */
+    int num_check;           /* true => check for all numeric components */
     char *rhost;
     int rport;
     char *p;
@@ -1028,11 +1023,12 @@ get_active(char *host, int hostid, int *len, struct grp *grp, int *errs)
             if (cur->type[1] == 'g') {
                 cur->type[1] = '\0';
             }
-            /* fallthrough */
+            goto fallthrough;
         case NF_FLAG_MODERATED:
         case NF_FLAG_JUNK:
         case NF_FLAG_NOLOCAL:
         case NF_FLAG_IGNORE:
+        fallthrough:
             if (cur->type[1] != '\0') {
                 if (!QUIET(hostid))
                     warn("line %d <%s> from %s has a bad newsgroup type",

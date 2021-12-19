@@ -68,8 +68,10 @@ main(void)
     WCHANset(cp, "some output", strlen("some output"));
     WCHANadd(cp);
     CHANreadloop();
-    die("fell through main");
+
     /* NOTREACHED */
+    /* CHANreadloop should never return. */
+    die("fell through main");
     return 1;
 }
 
@@ -111,7 +113,7 @@ reader(CHANNEL *cp)
     SCHANwakeup(&Now);
 }
 
-static void
+__attribute__((__noreturn__)) static void
 wakeup(CHANNEL *cp)
 {
     ok(13, true);

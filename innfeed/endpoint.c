@@ -95,15 +95,10 @@ typedef struct timerqelem_s {
     struct timerqelem_s *next; /* next in the queue */
 } * TimerElem, TimerElemStruct;
 
-
-extern const char *InputFile;
-
 static EndPoint mainEndPoint;
 static bool mainEpIsReg = false;
 unsigned int stdioFdMax = MAX_STDIO_FD;
-
 time_t PrivateTime;
-
 
 typedef void (*sigfn)(int);
 static sigfn *sigHandlers;
@@ -1030,9 +1025,9 @@ doExcept(EndPoint endp)
 #if defined(INNFEED_DEBUG)
     sleep(5);
     abort();
+    /* NOTREACHED */
 #endif
 
-    /* Not reached */
     return IoFailed;
 }
 

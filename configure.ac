@@ -660,12 +660,27 @@ dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
 dnl on glibc functions on Linux, as well as more object size checking,
 dnl which catches a few more issues.
 dnl
-dnl For Clang, disable some of the warnings:
+dnl For Clang, try -Weverything but disable some of the warnings:
 dnl
+dnl   -Wcast-qual                     Some casts are unavoidable.
+dnl   -Wcovered-switch-default        Does not do harm to have default cases.
+dnl   -Wdisabled-macro-expansion      Not an actual problem.
+dnl   -Wextra-semi-stmt               Useful for readability.
+dnl   -Wpacked                        Not an actual problem.
+dnl   -Wpadded                        Not an actual problem.
+dnl   -Wreserved-id-macros            Autoconf sets several of these normally.
+dnl   -Wsign-conversion               Too many fiddly changes for the benefit.
+dnl   -Wswitch-enum                   Useless noise.
 dnl   -Wtautological-pointer-compare  False positives with for loops.
+dnl   -Wundef                         Conflicts with Autoconf probe results.
+dnl   -Wunreachable-code              Happens with optional compilation.
+dnl   -Wunreachable-code-return       Other compilers get confused.
+dnl   -Wunused-macros                 Conflicts with flex macros.
+dnl   -Wused-but-marked-unused        Happens a lot with conditional code.
 dnl
 dnl It would be worthwhile trying to enforce the following checks:
-dnl "-Wconversion -Wno-sign-conversion", -Wunreachable-code (for Clang)
+dnl "-Wconversion -Wno-sign-conversion" (for gcc)
+dnl -Wimplicit-int-conversion, -Wshorten-64-to-32 (for Clang)
 dnl
 dnl First, we add -Wunknown-warning-option to CFLAGS so that Clang properly
 dnl reports probes for unknown flags as errors.
@@ -690,7 +705,13 @@ m4_foreach_w(
      -Wmissing-prototypes -Wmissing-declarations
      -Wnormalized=nfc -Wredundant-decls -Wrestrict -Wnested-externs -Winline
      -Winvalid-pch -Wvla -Wno-unused-function
-     -Wno-tautological-pointer-compare],
+     -Weverything -Wno-cast-qual -Wno-covered-switch-default
+     -Wno-disabled-macro-expansion -Wno-extra-semi-stmt
+     -Wno-implicit-int-conversion -Wno-packed -Wno-padded
+     -Wno-reserved-id-macro -Wno-shorten-64-to-32 -Wno-sign-conversion
+     -Wno-switch-enum -Wno-tautological-pointer-compare -Wno-undef
+     -Wno-unreachable-code -Wno-unreachable-code-return
+     -Wno-unused-macros -Wno-used-but-marked-unused],
     [INN_PROG_CC_FLAG(flag, [CC_WARNINGS="${CC_WARNINGS} flag"], [])])
 AC_SUBST([CC_WARNINGS])
 

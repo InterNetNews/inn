@@ -16,13 +16,6 @@
 /* Outside the ifdef so that make depend works even ifndef HAVE_OPENSSL. */
 #include "inn/ov.h"
 
-#if defined(HAVE_OPENSSL)
-extern SSL *tls_conn;
-extern int tls_cipher_usebits;
-extern char *tls_peer_CN;
-extern bool encryption_layer_on;
-#endif /* HAVE_OPENSSL */
-
 
 /*
 **  Match a list of newsgroup specifiers against a list of newsgroups.

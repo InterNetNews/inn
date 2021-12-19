@@ -20,11 +20,6 @@
 #include "nnrpd.h"
 #include "tls.h"
 
-extern bool laxmid;
-#ifdef HAVE_OPENSSL
-extern SSL *tls_conn;
-#endif
-
 /*
 **  Data structures for use in ARTICLE/HEAD/BODY/STAT common code.
 */
@@ -107,12 +102,13 @@ PushIOvHelper(struct iovec *vec, int *countp)
                 break;
             case SSL_ERROR_WANT_WRITE:
                 goto Again;
-                break;
+                /* NOTREACHED */
             case SSL_ERROR_ZERO_RETURN:
                 SSL_shutdown(tls_conn);
-                /* fallthrough */
+                goto fallthrough;
             case SSL_ERROR_SSL:
             case SSL_ERROR_SYSCALL:
+            fallthrough:
                 /* SSL_shutdown() must not be called. */
                 tls_conn = NULL;
                 errno = ECONNRESET;
@@ -170,11 +166,11 @@ PushIOvRateLimited(void)
         start = TMRnow_double();
         PushIOvHelper(newiov, &newiov_len);
         end = TMRnow_double();
-        target = (double) bytesfound / MaxBytesPerSecond;
+        target = (double) bytesfound / (double) MaxBytesPerSecond;
         elapsed = end - start;
         if (elapsed < 1 && elapsed < target) {
             waittime.tv_sec = 0;
-            waittime.tv_usec = (target - elapsed) * 1e6;
+            waittime.tv_usec = (long) ((target - elapsed) * 1e6);
             start = TMRnow_double();
             if (select(0, NULL, NULL, NULL, &waittime) != 0)
                 syswarn("%s: select in PushIOvRateLimit failed", Client.host);

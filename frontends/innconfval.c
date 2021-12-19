@@ -52,7 +52,7 @@ main(int argc, char *argv[])
         switch (option) {
         default:
             die("usage error");
-            break;
+            /* NOTREACHED */
         case 'C':
             checking = true;
             break;

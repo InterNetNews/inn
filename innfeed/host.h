@@ -16,12 +16,9 @@
 #include "misc.h"
 #include <stdio.h>
 
-/*
- * Functions from elsewhere used by host.c
- */
-
-extern void mainLogStatus(FILE *fp);
-
+/* Variables to export. */
+extern bool genHtml;
+extern unsigned int hostHighwater;
 
 /*
  * Functions used by the InnListener

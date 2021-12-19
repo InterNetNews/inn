@@ -25,10 +25,15 @@
 #include "configfile.h"
 #include "misc.h"
 
+/* flex does not declare yydebug as static, and uses superfluous breaks. */
+#if defined(__llvm__) || defined(__clang__)
+# pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
+# pragma GCC diagnostic ignored "-Wunreachable-code-break"
+#endif
+
 #define UNKNOWN_SCOPE_TYPE "line %d: unknown scope type: %s"
 #define SYNTAX_ERROR       "line %d: syntax error"
 
-extern int lineCount;
 scope *topScope = NULL;
 static scope *currScope = NULL;
 char *errbuff = NULL;

@@ -131,7 +131,7 @@ main(int argc, char *argv[])
         case 'h':
             printf("%s\n", usage);
             exit(0);
-            break;
+            /* NOTREACHED */
         case 'd':
             date_format = true;
             break;
@@ -148,7 +148,7 @@ main(int argc, char *argv[])
         default:
             fprintf(stderr, "%s", usage);
             exit(1);
-            break;
+            /* NOTREACHED */
         }
     }
     if (mode == '\0')

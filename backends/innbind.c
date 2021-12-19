@@ -262,7 +262,7 @@ send_fd(int fd)
         sysdie("cannot pass file descriptor");
 }
 #else  /* !HAVE_STREAMS_SENDFD */
-static void
+__attribute__((__noreturn__)) static void
 send_fd(int fd UNUSED)
 {
     die("cannot pass file descriptor: STREAMS not supported");

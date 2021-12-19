@@ -19,6 +19,11 @@ typedef struct _HEADER {
     int Len;     /* Body length excluding trailing white spaces. */
 } HEADER;
 
+extern HEADER Table[];
+extern HEADER *EndOfTable;
+extern char **OtherHeaders;
+extern size_t OtherCount;
+
 #define HDR(_x) (Table[(_x)].Body)
 #define HDR_SET(_x, _y)                   \
     do {                                  \

@@ -41,11 +41,8 @@ typedef struct dirent DIRENTRY;
 #include "article.h"
 #include "configfile.h"
 #include "endpoint.h"
+#include "host.h"
 #include "tape.h"
-
-extern char *dflTapeDir;
-extern bool genHtml;
-extern unsigned int hostHighwater;
 
 #if defined(INNFEED_DEBUG)
 /* A structure for temporary storage of articles. */
@@ -151,11 +148,9 @@ static size_t activeTapeIdx;
 static long defaultSizeLimit;
 #endif
 
-unsigned int tapeHighwater;
+static unsigned int tapeHighwater;
 
 bool debugShrinking = false;
-
-extern bool talkToSelf; /* main.c */
 
 
 /* callback when config file is loaded */
@@ -189,7 +184,8 @@ tapeConfigLoadCbk(void *data)
             logAndExit(1, "ME config: no usable value for backlog-directory");
     } else if (!isDirectory(dflTapeDir)) {
         logAndExit(1, "ME config: no usable value for backlog-directory");
-        return -1; /* not reached */
+        /* NOTREACHED */
+        return -1;
     } else
         dir = xstrdup(dflTapeDir);
 
@@ -391,7 +387,7 @@ initTape(Tape nt)
                 }
             } else
                 nt->outputHighLimit =
-                    (long) (nt->outputLowLimit * nt->backlogFactor);
+                    (long) ((double) nt->outputLowLimit * nt->backlogFactor);
         } else
             warn("ME config: no definition for required key backlog-limit");
     }

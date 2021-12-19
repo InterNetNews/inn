@@ -197,4 +197,24 @@ typedef enum
     TMR_MAX
 } TMRTYPE;
 
+/* Variables to export. */
+extern char *configFile;
+extern char *dflTapeDir;
+extern char *deliver_authname;
+extern char *deliver_password;
+extern char *deliver_realm;
+extern const char *deliver_rcpt_to;
+extern char *deliver_to_header;
+extern char *deliver_username;
+extern const char *InputFile;
+extern const char *pidFile;
+extern bool RollInputFile;
+extern bool sigFlag;
+extern bool talkToSelf;
+extern bool useMMap;
+
+/* Functions to export. */
+extern void (*gPrintInfo)(void);
+extern void mainLogStatus(FILE *fp);
+
 #endif /* INNFEED_H */

@@ -49,13 +49,9 @@ static HEADER RequiredHeaders[] = {
     {"Message-ID", 10},
 #define _messageid      0
     {"Newsgroups", 10},
-#define _newsgroups     1
     {"From",        4},
-#define _from           2
     {"Date",        4},
-#define _date           3
     {"Subject",     7},
-#define _subject        4
     {"Path",        4},
 #define _path           5
 };
@@ -335,8 +331,9 @@ Process(char *article, size_t artlen)
     switch (atoi(buff)) {
     default:
         notice("unknown_reply after article %s", buff);
-        /* FALLTHROUGH */
+        goto fallthrough;
     case NNTP_FAIL_IHAVE_DEFER:
+    fallthrough:
         return false;
     case NNTP_OK_IHAVE:
         break;
@@ -702,7 +699,7 @@ Unspool(void)
 **  we can do if this routine fails, unfortunately.  Perhaps try to use
 **  an alternate filesystem?
 */
-static void
+__attribute__((__noreturn__)) static void
 Spool(int fd, int mode)
 {
     int spfd;
@@ -799,7 +796,7 @@ OpenRemote(char *server, int port, char *buff, size_t len)
 /*
 **  Can't connect to server; print message and spool if necessary.
 */
-static void
+__attribute__((__noreturn__)) static void
 CantConnect(char *buff, int mode, int fd)
 {
     if (buff[0])

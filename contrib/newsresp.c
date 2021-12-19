@@ -85,9 +85,9 @@ void ptime(void);
 void massagebuff(int, char *);
 bool punt(int);
 
-struct sockaddr_in sock_in;
-int sock;
-char buf[1024];
+static struct sockaddr_in sock_in;
+static int sock;
+static char buf[1024];
 
 int
 main(int argc, char *argv[])
@@ -155,7 +155,7 @@ error(const char *what)
     perror(what);
 }
 
-void
+__attribute__((__noreturn__)) void
 fatal(const char *what)
 {
     error(what);
@@ -168,7 +168,7 @@ ierror(const char *how, const char *what)
     printf("Expected %s, received %s; bailing out.\n", how, what);
 }
 
-void
+__attribute__((__noreturn__)) void
 ifatal(const char *how, const char *what)
 {
     ierror(how, what);
@@ -184,7 +184,7 @@ do_time(unsigned int start)
     return (now.tv_sec * 1000 + now.tv_usec / 1000 - start);
 }
 
-unsigned int start, elapsed, diff;
+static unsigned int start, elapsed, diff;
 
 void
 ptime(void)

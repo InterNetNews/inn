@@ -371,7 +371,7 @@ main(int argc, char *argv[])
         switch (option) {
         default:
             die("usage error");
-            break;
+            /* NOTREACHED */
         case 'a':
             config.root = optarg;
             break;

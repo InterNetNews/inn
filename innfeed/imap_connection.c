@@ -72,17 +72,8 @@ typedef int (*sasl_callback_ft)(void);
 #define DOSOMETHING_TIMEOUT 60
 
 
-/* external */
-extern char *deliver_username;
-extern char *deliver_authname;
-extern char *deliver_password;
-extern char *deliver_realm;
-extern char *deliver_rcpt_to;
-extern char *deliver_to_header;
-
-
-char hostname[MAXHOSTNAMELEN];
-char *mailfrom_name = NULL; /* default to no return path */
+static char hostname[MAXHOSTNAMELEN];
+static char *mailfrom_name = NULL; /* default to no return path */
 
 #ifdef HAVE_SASL
 static int initialized_sasl =
@@ -2974,8 +2965,8 @@ reset:
                 imap_Disconnect(cxn);
             }
             return;
+            /* NOTREACHED */
 
-            break;
         case IMAP_READING_STEPAUTH:
 
             if (okno == 1) {
@@ -3001,8 +2992,7 @@ reset:
             }
 
             return;
-
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_CREATE:
 
@@ -3025,6 +3015,7 @@ reset:
             imap_ProcessQueue(cxn);
 
             break;
+            /* NOTREACHED */
 
         case IMAP_READING_DELETE:
 
@@ -3046,8 +3037,7 @@ reset:
 
             imap_ProcessQueue(cxn);
             return;
-
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_SELECT:
 
@@ -3069,8 +3059,7 @@ reset:
                 imap_ProcessQueue(cxn);
                 return;
             }
-
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_SEARCH:
             /* if no message let's forget about it */
@@ -3099,7 +3088,7 @@ reset:
                     imap_Disconnect(cxn);
                 return;
             }
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_STORE:
 
@@ -3127,13 +3116,12 @@ reset:
                     imap_Disconnect(cxn);
                 return;
             }
-
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_NOOP:
             cxn->imap_state = IMAP_IDLE_AUTHED;
             return;
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_CLOSE:
             if (!okno) {
@@ -3146,7 +3134,7 @@ reset:
 
             imap_ProcessQueue(cxn);
             return;
-            break;
+            /* NOTREACHED */
 
         case IMAP_READING_QUIT:
 
@@ -3166,7 +3154,6 @@ reset:
                      hostPeerName(cxn->myHost), cxn->ident, cxn->imap_state,
                      str);
             imap_Disconnect(cxn);
-            break;
         }
 
     } else {
@@ -3370,7 +3357,11 @@ reset:
                 return;
             }
         }
+#ifdef HAVE_SASL
         break;
+#else
+        /* NOTREACHED */
+#endif
 
 #ifdef HAVE_SASL
     case LMTP_READING_STEPAUTH:
@@ -3454,8 +3445,6 @@ reset:
             lmtp_sendmessage(cxn, NULL);
             return;
 
-            break;
-
         default:
             d_printf(0, "%s:%d:LMTP failed authentication\n",
                      hostPeerName(cxn->myHost), cxn->ident);
@@ -3494,7 +3483,7 @@ reset:
         /* we pipelined so next we receive the rcpt's */
         cxn->lmtp_state = LMTP_READING_RCPTTO;
         goto reset;
-        break;
+        /* NOTREACHED */
 
     case LMTP_READING_RCPTTO:
         if (ask_keepgoing(str)) {
@@ -3520,7 +3509,7 @@ reset:
             /* stay in same state */
         }
         goto reset;
-        break;
+        /* NOTREACHED */
 
     case LMTP_READING_DATA:
         if (ask_keepgoing(str)) {

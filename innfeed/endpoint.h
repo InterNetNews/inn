@@ -27,6 +27,16 @@
     } while (0)
 
 
+/* Variables and macros to export. */
+
+/* kre's cool idea for reducing the number of times time() is called. */
+extern time_t PrivateTime;
+#define theTime()    (PrivateTime ? PrivateTime : time(&PrivateTime))
+#define timePasses() (PrivateTime = 0)
+
+extern unsigned int stdioFdMax;
+
+
 /* These typedefs really live in misc.h.
  *
  *****************************************
@@ -151,14 +161,5 @@ int getMainEndPointFd(void);
 void freeTimeoutQueue(void);
 
 int endpointConfigLoadCbk(void *data);
-
-
-/*
- * kre's cool idea for reducing the number of times time() is called.
- */
-extern time_t PrivateTime;
-
-#define theTime()    (PrivateTime ? PrivateTime : time(&PrivateTime))
-#define timePasses() (PrivateTime = 0)
 
 #endif /* ENDPOINT_H */

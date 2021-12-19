@@ -41,10 +41,8 @@
 #    include <sys/statvfs.h>
 #    define df_stat(p, s) (statvfs((p), (s)) == 0)
 #    define df_declare(s) struct statvfs s
-#    define df_total(s)   ((s).f_blocks)
 #    define df_avail(s)   ((s).f_bavail)
 #    define df_scale(s)   ((s).f_frsize == 0 ? (s).f_bsize : (s).f_frsize)
-#    define df_files(s)   ((s).f_files)
 #    define df_favail(s)  ((s).f_favail)
 #elif HAVE_STATFS
 #    if HAVE_SYS_VFS_H
@@ -59,18 +57,14 @@
 #    ifdef __ultrix__
 #        define df_stat(p, s) (statfs((p), (s)) >= 1)
 #        define df_declare(s) struct fs_data s
-#        define df_total(s)   ((s).fd_btot)
 #        define df_avail(s)   ((s).fd_bfreen)
 #        define df_scale(s)   1024
-#        define df_files(s)   ((s).fd_gtot)
 #        define df_favail(s)  ((s).fd_gfree)
 #    else
 #        define df_stat(p, s) (statfs((p), (s)) == 0)
 #        define df_declare(s) struct statfs s
-#        define df_total(s)   ((s).f_blocks)
 #        define df_avail(s)   ((s).f_bavail)
 #        define df_scale(s)   ((s).f_bsize)
-#        define df_files(s)   ((s).f_files)
 #        define df_favail(s)  ((s).f_ffree)
 #    endif
 #else
@@ -78,7 +72,6 @@
 #endif
 
 #define EXPIRE_CTL_DIR "/home/news"
-#define NEWS_SPOOL     "/home/news/spool/news/."
 
 #define EXPIRE_DAYS    EXPIRE_CTL_DIR "/expire.days"
 #define EXPIRE_CTL     EXPIRE_CTL_DIR "/expire.ctl"

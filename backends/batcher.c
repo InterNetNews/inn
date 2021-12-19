@@ -87,7 +87,7 @@ BATCHclose(FILE *F)
 /*
 **  Update the batch file and exit.
 */
-static void
+__attribute__((__noreturn__)) static void
 RequeueAndExit(off_t Cookie, char *line, long BytesInArt)
 {
     char *spool;
@@ -216,7 +216,7 @@ main(int ac, char *av[])
         switch (i) {
         default:
             die("usage error");
-            break;
+            /* NOTREACHED */
         case 'a':
             ArtsInBatch = atoi(optarg);
             break;
@@ -414,5 +414,6 @@ main(int ac, char *av[])
         BATCHstatus = BATCHclose(F);
     RequeueAndExit(Cookie, NULL, 0);
 
+    /* NOTREACHED */
     return 0;
 }

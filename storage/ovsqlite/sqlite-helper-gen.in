@@ -166,6 +166,10 @@ sub generate_body
     foreach my $line (@lines) {
         $line =~ s/([$escapevals]|[^ -~])/
             $escape{$1} || sprintf("\\%.3o", ord($1))/ge;
+        # Divide indentation spaces by 2 because otherwise the resulting
+        # string exceeds the maximum length of 4085 bytes that ISO C99
+        # compilers are required to support.
+        $line =~ s/    /  /g;
         $line="\"$line\"";
     }
     $text = join("\n    ",@lines);

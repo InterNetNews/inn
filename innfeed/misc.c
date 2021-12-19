@@ -35,13 +35,9 @@
 #include "tape.h"
 
 unsigned int openfds;
-int debuggingOutput;
 unsigned int loggingLevel;
 char **PointersFreedOnExit;
-
 char *timeToStringFormat = 0;
-bool debuggingDump = true;
-void (*gCleanUp)(void) = 0;
 
 
 /* Log a message to stderr, called from warn or die.  Mostly the same as the

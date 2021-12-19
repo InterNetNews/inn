@@ -45,8 +45,6 @@
 #include "misc.h"
 #include "tape.h"
 
-#define INHERIT    1
-#define NO_INHERIT 0
 
 /* exports */
 bool talkToSelf;
@@ -54,7 +52,7 @@ bool sigFlag = false;
 const char *InputFile;
 char *configFile = NULL;
 bool RollInputFile = false;
-char *pidFile = NULL;
+const char *pidFile = NULL;
 bool useMMap = true; /* Even if !HAVE_MMAP.  Only used when innfeed is given
                       * file names to send instead of storage API tokens,
                       * which is a fairly rare use case. */
@@ -67,12 +65,6 @@ char *deliver_password = NULL;
 char *deliver_realm = NULL;
 const char *deliver_rcpt_to = "+%s";
 char *deliver_to_header = NULL;
-
-/* imports */
-extern bool genHtml;
-extern bool debugShrinking;
-extern bool fastExit;
-extern unsigned int stdioFdMax;
 
 /* privates */
 static char *logFile;
@@ -268,7 +260,7 @@ main(int argc, char **argv)
         case -1:
             logAndExit(1, "open(\"/dev/null\", O_WRONLY): %s",
                        strerror(errno));
-            break;
+            /* NOTREACHED */
         case 0:
         case 1:
         case 2:

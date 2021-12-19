@@ -110,7 +110,6 @@ command_ihave(struct cvector *command, void *cookie)
         break;
     case NNTP_READ_EOF:
         die("connection closed while receiving article");
-        shutdown(state);
     case NNTP_READ_ERROR:
         sysdie("network error while receiving article");
     case NNTP_READ_TIMEOUT:

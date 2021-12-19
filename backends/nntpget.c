@@ -235,8 +235,9 @@ main(int ac, char *av[])
             /* NOTREACHED */
         case 'u':
             Update = optarg;
-            /* FALLTHROUGH */
+            goto fallthrough;
         case 'f':
+        fallthrough:
             if (Since)
                 Usage("only one of -f, -t, or -u may be given");
             if (stat(optarg, &Sb) < 0)

@@ -64,8 +64,7 @@ main(int ac, char *av[])
     ac -= optind;
     if (ac) {
         Usage();
-        rc = 1;
-        goto fail;
+        /* NOTREACHED */
     }
 
     history = HISopen(History, innconf->hismethod, HIS_RDWR);

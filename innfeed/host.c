@@ -69,12 +69,6 @@
  * <https://github.com/InterNetNews/inn/issues/212> */
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
-extern char *configFile;
-extern void (*gPrintInfo)(void);
-
-extern unsigned int init_reconnect_period;
-extern unsigned int max_reconnect_period;
-
 /* the host keeps a couple lists of these */
 typedef struct proc_q_elem {
     Article article;
@@ -262,16 +256,16 @@ typedef struct host_holder_s {
 
 /* These numbers are as above, but for all hosts over
    the life of the process. */
-long procArtsOffered;
-long procArtsAccepted;
-long procArtsNotWanted;
-long procArtsRejected;
-long procArtsDeferred;
-long procArtsMissing;
-double procArtsSizeAccepted;
-double procArtsSizeRejected;
-long procArtsToTape;
-long procArtsFromTape;
+static long procArtsOffered;
+static long procArtsAccepted;
+static long procArtsNotWanted;
+static long procArtsRejected;
+static long procArtsDeferred;
+static long procArtsMissing;
+static double procArtsSizeAccepted;
+static double procArtsSizeRejected;
+static long procArtsToTape;
+static long procArtsFromTape;
 
 static HostParams defaultParams = NULL;
 
@@ -344,16 +338,15 @@ static unsigned int gHostCount = 0;
 static unsigned int maxIpNameLen = 0;
 static unsigned int maxPeerNameLen = 0;
 
-unsigned int hostHighwater = HOST_HIGHWATER;
 static time_t start;
 static char startTime[30]; /* for timeToString */
 static pid_t myPid;
-
 static char *statusFile = NULL;
 static unsigned int dnsRetPeriod;
 static unsigned int dnsExpPeriod;
 
 bool genHtml = false;
+unsigned int hostHighwater = HOST_HIGHWATER;
 
 /*******************************************************************/
 /*                  PUBLIC FUNCTIONS                               */
@@ -1574,8 +1567,9 @@ hostChkCxns(TimeoutId tid UNUSED, void *data)
          * and concentrate on queue sizes
          */
         ratio = percentTaken * percentTaken;
-        /* fallthrough */
+        goto fallthrough;
     case METHOD_QUEUE:
+    fallthrough:
         /* backlogFilter is an IIR filtered version of the backlogRatio.
          */
         host->backlogFilter *= host->params->dynBacklogFilter;
@@ -2509,10 +2503,6 @@ gHostStats(void)
 /**********************************************************************/
 
 
-#define INHERIT    1
-#define NO_INHERIT 0
-
-
 static HostParams
 hostDetails(scope *s, char *name, bool isDefault, FILE *fp)
 {
@@ -3239,32 +3229,32 @@ hostLogStatus(void)
             totalsize = 1.; /* avoid divide by zero here too */
 
         fprintf(fp, "   offered: %-5ld\t%6.2f art/s\n", procArtsOffered,
-                (double) procArtsOffered / sec);
+                (double) procArtsOffered / (double) sec);
         fprintf(fp, "  accepted: %-5ld\t%6.2f art/s\t%5.1f%%\n",
-                procArtsAccepted, (double) procArtsAccepted / sec,
-                (double) procArtsAccepted * 100. / offered);
+                procArtsAccepted, (double) procArtsAccepted / (double) sec,
+                (double) procArtsAccepted * 100. / (double) offered);
         fprintf(fp, "   refused: %-5ld\t%6.2f art/s\t%5.1f%%\n",
-                procArtsNotWanted, (double) procArtsNotWanted / sec,
-                (double) procArtsNotWanted * 100. / offered);
+                procArtsNotWanted, (double) procArtsNotWanted / (double) sec,
+                (double) procArtsNotWanted * 100. / (double) offered);
         fprintf(fp, "  rejected: %-5ld\t%6.2f art/s\t%5.1f%%\n",
-                procArtsRejected, (double) procArtsRejected / sec,
-                (double) procArtsRejected * 100. / offered);
+                procArtsRejected, (double) procArtsRejected / (double) sec,
+                (double) procArtsRejected * 100. / (double) offered);
         fprintf(fp, "   missing: %-5ld\t%6.2f art/s\t%5.1f%%\n",
-                procArtsMissing, (double) procArtsMissing / sec,
-                (double) procArtsMissing * 100. / offered);
+                procArtsMissing, (double) procArtsMissing / (double) sec,
+                (double) procArtsMissing * 100. / (double) offered);
         fprintf(fp, "  deferred: %-5ld\t%6.2f art/s\t%5.1f%%\n",
-                procArtsDeferred, (double) procArtsDeferred / sec,
-                (double) procArtsDeferred * 100. / offered);
+                procArtsDeferred, (double) procArtsDeferred / (double) sec,
+                (double) procArtsDeferred * 100. / (double) offered);
 
         size = convsize(procArtsSizeAccepted, &tsize);
         fprintf(fp, "accpt size: %.3g %s", size, tsize);
-        size = convsize(procArtsSizeAccepted / sec, &tsize);
+        size = convsize(procArtsSizeAccepted / (double) sec, &tsize);
         fprintf(fp, " \t%6.3g %s/s\t%5.1f%%\n", size, tsize,
                 procArtsSizeAccepted * 100. / totalsize);
 
         size = convsize(procArtsSizeRejected, &tsize);
         fprintf(fp, "rejct size: %.3g %s", size, tsize);
-        size = convsize(procArtsSizeRejected / sec, &tsize);
+        size = convsize(procArtsSizeRejected / (double) sec, &tsize);
         fprintf(fp, " \t%6.3g %s/s\t%5.1f%%\n", size, tsize,
                 procArtsSizeRejected * 100. / totalsize);
 
@@ -3465,8 +3455,8 @@ hostPrintStatus(Host host, FILE *fp)
             ar = (double) host->artsAccepted / (double) sec;
             rr = (double) host->artsNotWanted / (double) sec;
             jr = (double) host->artsRejected / (double) sec;
-            ars = convsize(host->artsSizeAccepted / sec, &tars);
-            jrs = convsize(host->artsSizeRejected / sec, &tjrs);
+            ars = convsize(host->artsSizeAccepted / (double) sec, &tars);
+            jrs = convsize(host->artsSizeRejected / (double) sec, &tjrs);
             fprintf(
                 fp,
                 "   offered: %5.2f art/s   accepted: %5.2f art/s, %.3g %s/s\n",

@@ -19,6 +19,8 @@
 #include "misc.h"
 #include <stdio.h>
 
+/* Variable to export. */
+extern bool debugShrinking;
 
 /* If dontRotate is true, then any articles that get written to the tape
    will never be read back in again. This is for the batch-mode-only case

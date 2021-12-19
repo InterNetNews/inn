@@ -591,7 +591,7 @@ REMread(char *start, int size)
 /*
 **  Handle the interrupt.
 */
-static void
+__attribute__((__noreturn__)) static void
 Interrupted(char *Article, char *MessageID)
 {
     warn("interrupted");

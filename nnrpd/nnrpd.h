@@ -154,6 +154,11 @@ enum timer
     TMR_MAX
 };
 
+/*
+**  Do not change "extern" to "EXTERN" below.  The ones marked with "extern"
+**  are initialized in nnrpd.c.  The ones marked with "EXTERN" are not
+**  explicitly initialized in nnrpd.c.
+*/
 #if defined(MAINLINE)
 #    define EXTERN /* NULL */
 #else
@@ -219,6 +224,16 @@ EXTERN struct line NNTPline;
 EXTERN struct vector *OVextra;
 EXTERN int overhdr_xref;
 EXTERN bool LLOGenable;
+
+extern const char *NNRPinstance;
+extern bool laxmid;
+#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
+extern bool encryption_layer_on;
+#endif
+
+#if defined(DO_PERL)
+extern bool PerlLoaded;
+#endif
 
 extern const char *ARTpost(char *article, char *idbuff, bool *permanent);
 extern void ARTclose(void);

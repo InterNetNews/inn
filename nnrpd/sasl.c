@@ -11,13 +11,6 @@
 #include "inn/ov.h"
 #include "tls.h"
 
-#if defined(HAVE_OPENSSL)
-extern int tls_cipher_usebits;
-extern char *tls_peer_CN;
-#endif /* HAVE_OPENSSL */
-#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-extern bool encryption_layer_on;
-#endif /* HAVE_OPENSSL || HAVE_SASL */
 
 #ifdef HAVE_SASL
 sasl_conn_t *sasl_conn = NULL;
@@ -88,11 +81,11 @@ SASLauth(int ac, char *av[])
     unsigned int clientinlen = 0;
     size_t tclientinlen = 0;
     const char *serverout = NULL;
-    unsigned int serveroutlen;
+    unsigned int serveroutlen = 0;
     char base64[BASE64_BUF_SIZE + 1];
     const char *canon_user = NULL;
     const int *ssfp = NULL;
-    const int *maxoutp;
+    const int *maxoutp = NULL;
     const void *property;
     int r = SASL_OK;
     int r1;
@@ -187,27 +180,27 @@ SASLauth(int ac, char *av[])
         case RTok:
             if (clientinlen <= BASE64_BUF_SIZE)
                 break;
-            /* FALLTHROUGH */
+            goto fallthroughRTlong;
         case RTlong:
+        fallthroughRTlong:
             warn("%s response too long in AUTHINFO SASL", Client.host);
             Reply("%d Too long response\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
-            break;
+            /* NOTREACHED */
         case RTtimeout:
             warn("%s timeout in AUTHINFO SASL", Client.host);
             /* No answer. */
             ExitWithStats(1, false);
-            break;
+            /* NOTREACHED */
         case RTeof:
             warn("%s EOF in AUTHINFO SASL", Client.host);
             Reply("%d EOF\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
-            break;
+            /* NOTREACHED */
         default:
             warn("%s internal %d in AUTHINFO SASL", Client.host, r);
             Reply("%d Internal error\r\n", NNTP_FAIL_TERMINATING);
             ExitWithStats(1, false);
-            break;
         }
 
         /* Check if client cancelled. */

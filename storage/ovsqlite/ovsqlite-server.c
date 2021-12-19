@@ -385,9 +385,11 @@ load_config(void)
         config_param_unsigned_number(top, "pagesize", &pagesize);
         config_param_unsigned_number(top, "cachesize", &cachesize);
         if (config_param_real(top, "transtimelimit", &timelimit)) {
-            transaction_time_limit.tv_sec = timelimit;
+            transaction_time_limit.tv_sec = (long) timelimit;
             transaction_time_limit.tv_usec =
-                (timelimit - transaction_time_limit.tv_sec) * 1E6 + 0.5;
+                (long) ((timelimit - (double) transaction_time_limit.tv_sec)
+                            * 1E6
+                        + 0.5);
             timeval_normalise(&transaction_time_limit);
         }
         config_param_unsigned_number(top, "transrowlimit",
@@ -1468,7 +1470,7 @@ do_search_group(client_t *client)
     void *groupname;
     uint16_t groupname_len;
     uint64_t low;
-    uint64_t high;
+    uint64_t high = 0;
     size_t off_count, off_code;
     uint32_t count;
     failvar_stmt;
@@ -2098,7 +2100,7 @@ mainloop(void)
     commit_transaction();
 }
 
-static void
+__attribute__((__noreturn__)) static void
 usage(void)
 {
     fputs("Usage: ovsqlite-server [ -d ]\n", stderr);

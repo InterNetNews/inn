@@ -118,7 +118,7 @@ static HEADER Table[] = {
 /*
 **  Send the server a quit message, wait for a reply.
 */
-static void
+__attribute__((__noreturn__)) static void
 QuitServer(int x)
 {
     char buff[MED_BUFFER];
@@ -157,6 +157,7 @@ fatal_cleanup(void)
 
     /* QuitServer does all the work. */
     QuitServer(1);
+    /* NOTREACHED */
     return 1;
 }
 

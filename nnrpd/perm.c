@@ -21,10 +21,6 @@
 #    include <sys/select.h>
 #endif
 
-#if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-extern bool encryption_layer_on;
-#endif /* HAVE_OPENSSL || HAVE_SASL */
-
 /* Data types. */
 typedef struct _CONFCHAIN {
     CONFFILE *f;
@@ -99,8 +95,6 @@ static ACCESSGROUP **access_realms;
 
 static char *ConfigBit;
 static int ConfigBitsize;
-
-extern bool PerlLoaded;
 
 #define PERMlbrace     1
 #define PERMrbrace     2
@@ -363,7 +357,6 @@ copy_authgroup(AUTHGROUP *orig)
     if (orig->res_methods) {
         for (i = 0; orig->res_methods[i]; i++)
             GrowArray(&ret->res_methods, copy_method(orig->res_methods[i]));
-        ;
     }
 
     ret->auth_methods = 0;
@@ -467,7 +460,6 @@ void
 SetDefaultAccess(ACCESSGROUP *curaccess)
 {
     curaccess->allownewnews = innconf->allownewnews;
-    ;
     curaccess->allowihave = false;
     curaccess->locpost = false;
     curaccess->allowapproved = false;
@@ -591,7 +583,7 @@ free_accessgroup(ACCESSGROUP *del)
     free(del);
 }
 
-static void
+__attribute__((__noreturn__)) static void
 ReportError(CONFFILE *f, const char *err)
 {
     syslog(L_ERROR, "%s syntax error in %s(%d), %s", Client.host, f->filename,
@@ -790,29 +782,32 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
 #ifdef DO_PERL
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMperl_access;
+        break;
 #else
         ReportError(f, "perl_access can not be used in readers.conf: INN not "
                        "compiled with Perl support enabled.");
+        /* NOTREACHED */
 #endif
-        break;
     case PERMpython_access:
 #ifdef DO_PYTHON
         curauth->access_script = xstrdup(tok->name);
         curauth->access_type = PERMpython_access;
+        break;
 #else
         ReportError(f, "python_access can not be used in readers.conf: INN "
                        "not compiled with Python support enabled.");
+        /* NOTREACHED */
 #endif
-        break;
     case PERMpython_dynamic:
 #ifdef DO_PYTHON
         curauth->dynamic_script = xstrdup(tok->name);
         curauth->dynamic_type = PERMpython_dynamic;
+        break;
 #else
         ReportError(f, "python_dynamic can not be used in readers.conf: INN "
                        "not compiled with Python support enabled.");
+        /* NOTREACHED */
 #endif
-        break;
     case PERMlocaladdress:
         curauth->localaddress = xstrdup(tok->name);
         CompressList(curauth->localaddress);
@@ -821,7 +816,6 @@ authdecl_parse(AUTHGROUP *curauth, CONFFILE *f, CONFTOKEN *tok)
     default:
         snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
         ReportError(f, buff);
-        break;
     }
 }
 
@@ -1090,7 +1084,6 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
     default:
         snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
         ReportError(f, buff);
-        break;
     }
 }
 
@@ -1192,7 +1185,7 @@ PERMreadfile(char *filename)
 
                 cf = hold;
                 goto again;
-                break;
+                /* NOTREACHED */
 
                 /* Nested group declaration. */
             case PERMgroup:
@@ -1363,7 +1356,6 @@ PERMreadfile(char *filename)
                 snprintf(buff, sizeof(buff), "Unexpected token: %s",
                          tok->name);
                 ReportError(cf->f, buff);
-                break;
             }
         } else if (inwhat == 1) {
             /* Auth group parser. */
@@ -1516,9 +1508,8 @@ PERMgetaccess(bool initialconnection)
         return;
     }
 
-    for (i = 0; auth_realms[i] != NULL; i++) {
+    for (i = 0; auth_realms[i] != NULL; i++)
         ;
-    }
 
     uname = NULL;
     while (uname == NULL && i-- > 0) {
@@ -1600,9 +1591,8 @@ PERMlogin(char *uname, char *pass, int *code, char *errorstr)
     PERMneedauth = true;
 
     if (auth_realms != NULL) {
-        for (i = 0; auth_realms[i]; i++) {
+        for (i = 0; auth_realms[i]; i++)
             ;
-        }
     }
 
     runame = NULL;

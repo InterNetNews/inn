@@ -64,7 +64,7 @@ listener(int fd, int n)
 
 /* Send a constant string to a socket, used to finish the client side of the
    testing. */
-static void
+__attribute__((__noreturn__)) static void
 client_send(int fd)
 {
     FILE *out;
@@ -79,7 +79,7 @@ client_send(int fd)
 
 /* Create a client IPv4 connection to the local server and then send a static
    string to that connection. */
-static void
+__attribute__((__noreturn__)) static void
 client_ipv4(void)
 {
     struct sockaddr_in server;
@@ -101,7 +101,7 @@ client_ipv4(void)
 /* Create a client IPv6 connection to the local server and then send a static
    string to that connection. */
 #ifdef HAVE_INET6
-static void
+__attribute__((__noreturn__)) static void
 client_ipv6(void)
 {
     struct sockaddr_in6 server;

@@ -28,30 +28,11 @@ rifkin@uconn.edu
 
 #define MAX_ART_SIZE 2200000
 
-
-#define WRITEMSG                                     \
-    printf("File %s line %i\n", __FILE__, __LINE__); \
-    fflush(stdout);
-
-#define WRITEVAR(VAR_NAME, VAR_TYPE)                     \
-    {                                                    \
-        printf("FILE %s LINE %i :", __FILE__, __LINE__); \
-        printf("%s = ", #VAR_NAME);                      \
-        printf(#VAR_TYPE, (VAR_NAME));                   \
-        printf("\n");                                    \
-    }
-
-#define WRITETXT(TEXT)                                            \
-    printf("FILE %s LINE %i \"%s\"\n", __FILE__, __LINE__, TEXT); \
-    fflush(stdout);
-
-
 int WriteArticle(char *, int, char *, char *, char *, int);
 
-
-char ArtHead[7] = {0, 0, 0, 'P', 'a', 't', 'h'};
-char ArtTail[5] = {'\r', '\n', '.', '\r', '\n'};
-int LenTail = 5;
+static char ArtHead[7] = {0, 0, 0, 'P', 'a', 't', 'h'};
+static char ArtTail[5] = {'\r', '\n', '.', '\r', '\n'};
+static int LenTail = 5;
 
 int
 main(int argc, char *argv[])

@@ -63,7 +63,7 @@ putpid(const char *path)
     return 0;
 }
 
-static void
+__attribute__((__noreturn__)) static void
 deadlock(void)
 {
     int ret, status = 0;
@@ -88,7 +88,7 @@ deadlock(void)
     _exit(status);
 }
 
-static void
+__attribute__((__noreturn__)) static void
 checkpoint(void)
 {
     int ret, status = 0;
@@ -125,7 +125,7 @@ checkpoint(void)
     _exit(status);
 }
 
-static void
+__attribute__((__noreturn__)) static void
 logremover(void)
 {
     int ret, status = 0;
@@ -174,7 +174,7 @@ start_process(pid_t *pid, void (*func)(void))
     /*NOTREACHED*/
 }
 
-static void
+__attribute__((__noreturn__)) static void
 cleanup(int status)
 {
     int cs;
@@ -201,7 +201,7 @@ cleanup(int status)
     exit(status);
 }
 
-static void
+__attribute__((__noreturn__)) static void
 monitorloop(void)
 {
     int cs, restartit;
@@ -281,7 +281,7 @@ main(int argc, char **argv)
 
     monitorloop();
 
-    /* Never reached. */
+    /* NOTREACHED */
     return 1;
 }
 

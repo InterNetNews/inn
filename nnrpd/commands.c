@@ -14,10 +14,6 @@
 #include "nnrpd.h"
 #include "tls.h"
 
-extern bool laxmid;
-#if defined(HAVE_OPENSSL)
-extern bool encryption_layer_on;
-#endif /* HAVE_OPENSSL */
 
 typedef struct {
     char *name;
@@ -25,9 +21,6 @@ typedef struct {
     ARTNUM low;
     unsigned long count;
 } GROUPDATA;
-
-
-extern const char *NNRPinstance;
 
 
 /*
@@ -759,8 +752,9 @@ CMDpost(int ac, char *av[])
         switch (r) {
         default:
             warn("%s internal %d in post", Client.host, r);
-            /* FALLTHROUGH */
+            goto fallthrough;
         case RTtimeout:
+        fallthrough:
             warn("%s timeout in post", Client.host);
             ExitWithStats(1, false);
             /* NOTREACHED */

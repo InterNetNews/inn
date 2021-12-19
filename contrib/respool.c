@@ -18,7 +18,7 @@
 #include "inn/qio.h"
 #include "inn/storage.h"
 
-char *ME;
+static char *ME;
 
 static void
 ProcessLine(char *line)
