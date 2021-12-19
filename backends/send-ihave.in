@@ -1,15 +1,15 @@
 #! /bin/sh
 # fixscript will replace this line with code to load innshellvars
 
-##  SH script to send IHAVE batches out.
+##  SH script to send ihave control messages in batches out.
 
 PROGNAME=`basename $0`
 LOG=${MOST_LOGS}/${PROGNAME}.log
 
-## How many Message-ID's per message.
+##  How many Message-ID's per message.
 PERMESSAGE=1000
 
-##  Go to where the action is, start logging
+##  Go to where the action is, start logging.
 cd $BATCH
 umask 002
 DEBUG=""
@@ -24,7 +24,7 @@ fi
 
 echo "${PROGNAME}: [$$] begin `date`"
 
-##  List of sitename:hostname pairs to send to
+##  List of sitename[:hostname] pairs to send to.
 if [ -n "$1" ] ; then
     LIST="$*"
 else
@@ -78,7 +78,7 @@ for SITE in ${LIST}; do
     export SITE PERMESSAGE BATCHFILE
     while test -s ${BATCHFILE} ; do
 	(
-	    echo Newsgroups: to.${SITE}
+	    echo Newsgroups: to.${HOST}
 	    echo Control: ihave `innconfval pathhost`
 	    echo Subject: cmsg ihave `innconfval pathhost`
 	    echo ''
