@@ -75,9 +75,11 @@ use Getopt::Long qw(GetOptions);
            'defines.h'        => 'defines.h.OLD',    # Removed in INN 2.7.0.
            'filechan'         => 'filechan.OLD',
            'filechan.8'       => '',
-           'signcontrol'      => 'signcontrol.OLD',
+           'send-nntp'        => 'send-nntp.OLD',
+           'send-nntp.8'      => '',
            'sendsys.pl'       => 'sendsys.pl.OLD',
            'senduuname.pl'    => 'senduuname.pl.OLD',
+           'signcontrol'      => 'signcontrol.OLD',
            'version.pl'       => 'version.pl.OLD',
           );
 

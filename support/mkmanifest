@@ -106,7 +106,6 @@ backends/nntpget
 backends/nntpsend
 backends/overchan
 backends/send-ihave
-backends/send-nntp
 backends/send-uucp
 backends/sendinpaths
 backends/sendxbatches

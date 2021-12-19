@@ -31,7 +31,7 @@ SEC8	= actsync.8 archive.8 batcher.8 buffchan.8 ckpasswd.8 \
 	nnrpd.8 nntpsend.8 ovdb_init.8 ovdb_monitor.8 ovdb_server.8 \
 	ovdb_stat.8 overchan.8 ovsqlite-server.8 perl-nocem.8 procbatch.8 \
 	prunehistory.8 radius.8 \
-	rc.news.8 scanlogs.8 scanspool.8 send-nntp.8 send-uucp.8 sendinpaths.8 \
+	rc.news.8 scanlogs.8 scanspool.8 send-ihave.8 send-uucp.8 sendinpaths.8 \
 	tally.control.8 tdx-util.8 tinyleaf.8 writelog.8
 
 all:

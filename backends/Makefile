@@ -6,7 +6,7 @@ CFLAGS        = $(GCFLAGS)
 ALL           = actmerge actsync actsyncd archive batcher buffchan \
 		cvtbatch innbind inndf innxmit innxbatch mod-active \
 		news2mail ninpaths nntpget nntpsend overchan send-ihave \
-		send-nntp send-uucp sendinpaths sendxbatches shlock \
+		send-uucp sendinpaths sendxbatches shlock \
 		shrinkfile
 
 MAN	      = ../doc/man/send-uucp.8
@@ -21,7 +21,7 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	for F in actmerge actsyncd news2mail nntpsend send-ihave send-nntp \
+	for F in actmerge actsyncd news2mail nntpsend send-ihave \
 	         send-uucp sendinpaths sendxbatches ; do \
 	    $(CP_XPUB) $$F $D$(PATHBIN)/$$F ; \
 	done
@@ -101,7 +101,6 @@ mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
 news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
 nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
 send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
-send-nntp:	send-nntp.in     $(FIX)	; $(FIX) send-nntp.in
 send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
 sendinpaths:	sendinpaths.in   $(FIX) ; $(FIX) sendinpaths.in
 sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in

@@ -24,6 +24,13 @@ the change.
 
 =item *
 
+B<send-nntp> is no longer shipped with INN.  If you have local scripts
+running it, you will have to manually adjust them to use B<nntpsend> which
+basically does the same thing, better.  Or, even greater, use B<innfeed>
+if that is possible.
+
+=item *
+
 Wrappers around old Perl and Python authentication and access hooks,
 pre-dating S<INN 2.4.0> and identifiable by the I<nnrpperlauth> and
 I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as
@@ -96,6 +103,11 @@ tamper with the ownership of files INN manipulates.
 
 B<filechan> has been removed; it was just a simple version of B<buffchan>,
 which should now be used.
+
+=item *
+
+B<send-nntp> has been removed; it was just a simple version of B<nntpsend>,
+which should now be used (or, even better, B<innfeed>).
 
 =item *
 

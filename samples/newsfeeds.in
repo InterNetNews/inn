@@ -97,8 +97,8 @@ controlchan!\
 
 # Create a batch file in @SPOOLDIR@/outgoing for all articles
 # that haven't already passed through nic.near.net.  The batch file will
-# be named nic.near.net, the default file name, and either nntpsend or
-# send-nntp can send articles from that spool file.
+# be named nic.near.net, the default file name.  Then nntpsend can send
+# articles from that spool file.
 #nic.near.net\
 #	:*,!junk,!control,!control.*/!foo\
 #	:Tf,Wnm:

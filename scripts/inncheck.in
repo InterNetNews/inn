@@ -1120,7 +1120,7 @@ my @rnews_programs = (
 my @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'getlist', 'grephistory', 'innconfval', 'innxmit',
-    'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-nntp', 'send-uucp',
+    'nntpget', 'nntpsend', 'sendxbatches', 'send-ihave', 'send-uucp',
     'shlock', 'shrinkfile'
 );
 my @newsbin_private = (
