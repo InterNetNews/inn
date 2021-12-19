@@ -313,13 +313,14 @@ compatibility reasons and should be considered obsolete; support for the
 C<.ctl> suffix may be removed in a future version of INN.
 
 Finally, articles posted to newsgroups beginning with C<to.> are treated
-specially.  Provided that either that newsgroup exists in the F<active> file
-or I<mergetogroups> is set in F<inn.conf>, the remainder of the newsgroup
-is taken to be a site name, as configured in F<newsfeeds>, and the article
-is sent to that site.  If I<mergetogroups> is set, the article will be
-filed in the group named C<to> (which must exist in the F<active> file).  For
-example, with I<mergetogroups> set, an article posted to C<to.uunet> will
-be filed in C<to> and sent to the site C<uunet>.
+specially.  Provided that either that newsgroup exists in the F<active>
+file or I<mergetogroups> is set in F<inn.conf>, the remainder of the
+newsgroup is taken to be a site name, as configured in F<newsfeeds>, and
+the article is sent to sites propagating C<to.uunet>.  If I<mergetogroups>
+is set, the article will be filed in the group named C<to> (which must
+exist in the F<active> file).  For example, with I<mergetogroups> set,
+an article posted to C<to.uunet> will be filed in C<to> and sent to the
+sites propagating C<to.uunet>.
 
 =head1 PROTOCOL DIFFERENCES
 
