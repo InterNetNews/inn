@@ -3357,11 +3357,7 @@ reset:
                 return;
             }
         }
-#ifdef HAVE_SASL
         break;
-#else
-        /* NOTREACHED */
-#endif
 
 #ifdef HAVE_SASL
     case LMTP_READING_STEPAUTH:
