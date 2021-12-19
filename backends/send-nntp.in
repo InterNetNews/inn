@@ -6,7 +6,7 @@
 PROGNAME=`basename $0`
 LOG=${MOST_LOGS}/${PROGNAME}.log
 
-##  Go to where the action is, start logging
+##  Go to where the action is, start logging.
 cd $BATCH
 umask 002
 DEBUG=""
@@ -21,7 +21,7 @@ fi
 
 echo "${PROGNAME}: [$$] begin `date`"
 
-##  List of sitename:hostname pairs to send to
+##  List of sitename:hostname pairs to send to.
 if [ -n "$1" ] ; then
     LIST="$*"
 else
@@ -84,4 +84,4 @@ for SITE in ${LIST}; do
     rm -f ${LOCK}
 done
 
-echo "${PROGNAME}: [$$] end   `date`"
+echo "${PROGNAME}: [$$] end `date`"

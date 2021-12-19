@@ -249,9 +249,9 @@ to POD by Julien Elie.
 
 =head1 SEE ALSO
 
-control.ctl(5), ctlinnd(8), expire(8), expireover(8), expirerm(8), inn.conf(5),
-innd(8), innfeed.conf(5), innreport(8), innreport.conf(5), news.daily(8),
-nnrpd(8), nntpsend(8), scanlogs(8), send-nntp(8), send-uucp(8), syslog.conf(5),
-tally.control(8).
+control.ctl(5), ctlinnd(8), expire(8), expireover(8), expirerm(8),
+inn.conf(5), innd(8), innfeed.conf(5), innreport(8), innreport.conf(5),
+news.daily(8), nnrpd(8), nntpsend(8), scanlogs(8), send-ihave(8),
+send-nntp(8), send-uucp(8), syslog.conf(5), tally.control(8).
 
 =cut
