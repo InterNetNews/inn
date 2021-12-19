@@ -1,0 +1,64 @@
+=head1 NAME
+
+clientlib - NNTP clientlib part of InterNetNews library
+
+=head1 SYNOPSIS
+
+    #include <inn/libinn.h>
+
+    extern FILE *ser_rd_fp;
+    extern FILE *ser_wr_fp;
+    extern char ser_line[];
+
+    extern char *getserverbyfile(char *file UNUSED);
+    extern int server_init(char *host, int port);
+    extern int handle_server_response(int response, char *host);
+    extern void put_server(const char *text);
+    extern int get_server(char *buff, int buffsize);
+    extern void close_server(void);
+
+=head1 DESCRIPTION
+
+The routines described in this manual page are part of the InterNetNews
+library, libinn(3).  They are replacements for the I<clientlib> part of
+the NNTP distribution, and are intended to be used in building news clients.
+
+The B<getserverbyfile> function retrieves the value of the I<server> parameter
+in F<inn.conf> (or the value of the C<NNTPSERVER> environment variable if set)
+as the name of the local NNTP server.  It returns a pointer to static space.
+The I<file> parameter is ignored (F<inn.conf> is forced).
+
+The B<server_init> function opens a connection to the NNTP server at
+the specified I<host>, in reader mode.  It returns the server's response
+code or C<-1> on error.  If a connection was made, then I<ser_rd_fp> and
+I<ser_wr_fp> can be used to read from and write to the server, respectively,
+and I<ser_line> will contain the server's response (though you should use
+the more convenient B<put_server> and B<get_server> functions instead).
+
+The B<handle_server_response> function decodes the I<response> code,
+which comes from the server on I<host>.  If the client is authorized,
+it returns C<0>.  A client that is only allowed to read is authorized,
+but B<handle_server_response> will print a message on the standard output.
+If the client is not authorized to talk to the server, then a message is
+printed and the routine returns C<-1>.
+
+The B<put_server> function sends I<text> to the server, adding the necessary
+NNTP line terminators, and flushing the I/O buffer.
+
+The B<get_server> function reads a line of text from the server into I<buff>,
+reading at most I<buffsize> characters.  Any trailing C<\r\n> terminators
+are stripped off.  B<get_server> returns C<-1> on error, C<0> on success.
+
+The B<close_server> function sends a C<QUIT> command to the server and
+closes the connection.
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten into
+POD by Julien Elie.
+
+=head1 SEE ALSO
+
+libinn(3).
+
+=cut

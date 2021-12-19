@@ -244,6 +244,7 @@ doc/pod/buffchan.pod                  Master file for buffchan.8
 doc/pod/buffindexed.conf.pod          Master file for buffindexed.conf.5
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
+doc/pod/clientlib.pod                 Master file for clientlib.3
 doc/pod/cnfsheadconf.pod              Master file for cnfsheadconf.8
 doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
@@ -277,6 +278,7 @@ doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/inncheck.pod                  Master file for inncheck.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
+doc/pod/inndcomm.pod                  Master file for inndcomm.3
 doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/innfeed.conf.pod              Master file for innfeed.conf.5
 doc/pod/innfeed.pod                   Master file for innfeed.8
