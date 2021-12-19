@@ -27,8 +27,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#define LIBTEST_NEW_FORMAT 1
-
 #include "config.h"
 #include "portable/system.h"
 #include "portable/uio.h"
