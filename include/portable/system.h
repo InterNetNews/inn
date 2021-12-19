@@ -10,9 +10,9 @@
  *     #include <stdarg.h>
  *     #include <stdbool.h>
  *     #include <stddef.h>
+ *     #include <stdint.h>
  *     #include <stdio.h>
  *     #include <stdlib.h>
- *     #include <stdint.h>
  *     #include <string.h>
  *     #include <strings.h>
  *     #include <sys/types.h>
@@ -25,7 +25,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014, 2016, 2018, 2020 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014, 2016, 2018, 2020-2021 Russ Allbery <eagle@eyrie.org>
  * Copyright 2006-2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
