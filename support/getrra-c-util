@@ -203,7 +203,12 @@ extern char * strtok(char *, const char *);\\
         if [ "$2" = "tests/lib" ] || [ "$2" = "tests/lib/network" ] \
           || [ "$3" = "process.c" ]
         then
-          case "$3" in *.c)
+          case "$3" in
+          fakewrite.c)
+              ;;
+          xmalloc.c)
+              ;;
+          *.c)
               sed -i -e "0,/^$/{s/^$/\n#define LIBTEST_NEW_FORMAT 1\n/}" \
                      ${TEMP}
           esac

@@ -29,8 +29,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#define LIBTEST_NEW_FORMAT 1
-
 #line 1 "xmalloc.c"
 
 #include "config.h"
