@@ -103,8 +103,8 @@ ReadSys(const char *sys)
 
 
 /*
-**  Do we have a name that's a prefix for more then one newsgroup?
-**  For "foo.bar", we must find more then one "foo.bar" or "foo.bar."
+**  Do we have a name that's a prefix for more than one newsgroup?
+**  For "foo.bar", we must find more than one "foo.bar" or "foo.bar."
 */
 static bool
 GroupPrefix(const char *p)

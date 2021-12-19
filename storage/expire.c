@@ -401,7 +401,7 @@ EXPreadfile(FILE *F)
         }
         /* These were turned into offsets, so the test is the opposite
          * of what you think it should be.  If Purge isn't forever,
-         * make sure it's greater then the other two fields. */
+         * make sure it's greater than the other two fields. */
         if (v.Purge) {
             /* Some value not forever; make sure other values are in range. */
             if (v.Keep && v.Keep < v.Purge) {

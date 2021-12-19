@@ -555,7 +555,7 @@ sub secondsBetweenFirstAndLast()
   my $result = $last_date_cvt - $first_date_cvt;
   return $result if ($result > 0);
   return $default if ($result == 0);
-  die '$last_date_cvt is less then $first_date_cvt';
+  die '$last_date_cvt is less than $first_date_cvt';
 }
 
 my $sec_glob = secondsBetweenFirstAndLast();

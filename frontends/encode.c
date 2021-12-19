@@ -8,7 +8,7 @@
 **  until we have 13, and spread the last one over the first 12, so that
 **  we have 12 6.5-bit characters.  Since there are very few half-bit
 **  machines, collect them into pairs, making six 13-bit characters.  We
-**  can do this as A * 91 + B where A and B are less then 91 after we add
+**  can do this as A * 91 + B where A and B are less than 91 after we add
 **  0x20 to make it printable.
 **
 **  And if you thought that was unclear, then we won't even get into the

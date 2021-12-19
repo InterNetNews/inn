@@ -125,7 +125,7 @@ multiple lines of output for every history line processed.
 =item B<-w> I<number>
 
 Use the B<-w> flag to "warp" time so that B<expire> thinks it is running
-at some time other then the current time.  The value should be a signed
+at some time other than the current time.  The value should be a signed
 floating point number indicating the number of days to use as the offset.
 
 =item B<-x>

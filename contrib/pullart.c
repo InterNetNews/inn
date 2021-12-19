@@ -189,7 +189,7 @@ WriteArticle(char *buff, int n, char *fileprefix, char *headerin, char *string,
 
     /*  Prevent buffer overflow due to fileprefix too long  */
     if (strlen(fileprefix) > 384) {
-        printf("program error: cannot have file prefix greater then 384 "
+        printf("program error: cannot have file prefix greater than 384 "
                "characters\n");
         exit(1);
     }
