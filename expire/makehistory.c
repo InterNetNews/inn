@@ -215,7 +215,10 @@ FlushOverTmpFile(void)
     if (fd < 0) {
         syswarn("cannot create temporary file");
         OVclose();
-        Fork ? _exit(1) : exit(1);
+        if (Fork)
+            _exit(1);
+        else
+            exit(1);
     }
     close(fd);
     snprintf(temp, sizeof(temp), "exec %s -T %s -t'%c' -o %s %s",
@@ -226,7 +229,10 @@ FlushOverTmpFile(void)
         syswarn("cannot sort temporary overview file (%s exited %d)",
                 INN_PATH_SORT, i);
         OVclose();
-        Fork ? _exit(1) : exit(1);
+        if (Fork)
+            _exit(1);
+        else
+            exit(1);
     }
 
     /* don't need old path anymore. */
@@ -238,7 +244,10 @@ FlushOverTmpFile(void)
     if ((qp = QIOopen(SortedTmpPath)) == NULL) {
         syswarn("cannot open sorted overview file %s", SortedTmpPath);
         OVclose();
-        Fork ? _exit(1) : exit(1);
+        if (Fork)
+            _exit(1);
+        else
+            exit(1);
     }
 
     for (count = 1;; ++count) {
@@ -285,7 +294,10 @@ FlushOverTmpFile(void)
                 && (int) (f + 0.01f) == OV_NOSPACE) {
                 warn("no space left for overview");
                 OVclose();
-                Fork ? _exit(1) : exit(1);
+                if (Fork)
+                    _exit(1);
+                else
+                    exit(1);
             }
             warn("cannot write overview data \"%.40s\"", q);
         }
@@ -294,7 +306,10 @@ FlushOverTmpFile(void)
     if (QIOerror(qp)) {
         syswarn("cannot read sorted overview file %s", SortedTmpPath);
         OVclose();
-        Fork ? _exit(1) : exit(1);
+        if (Fork)
+            _exit(1);
+        else
+            exit(1);
     }
     QIOclose(qp);
     /* unlink sorted tmp file */
