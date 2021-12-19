@@ -495,7 +495,7 @@ main(int ac, char *av[])
                 break;
             }
             if (Mode != OMrunning)
-                ModeReason = concat(OMpaused ? "Paus" : "Throttl",
+                ModeReason = concat(Mode == OMpaused ? "Paus" : "Throttl",
                                     "ed from the command line", (char *) 0);
             break;
         case 'N':
