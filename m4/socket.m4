@@ -11,7 +11,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2017, 2020 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2017, 2020-2021 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2008-2009, 2011
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl Copyright 2004-2009 Internet Systems Consortium, Inc. ("ISC")
@@ -70,6 +70,7 @@ AC_DEFUN([INN_FUNC_GETADDRINFO_ADDRCONFIG],
 dnl Source used by INN_MACRO_IN6_ARE_ADDR_EQUAL.  Test borrowed from a bug
 dnl report by tmoestl@gmx.net for glibc.
 AC_DEFUN([_INN_MACRO_IN6_ARE_ADDR_EQUAL_SOURCE], [[
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
