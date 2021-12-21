@@ -23,7 +23,7 @@ other lines specify parameters, and should be of the following form:
     <name>: <value>
 
 (Any amount of whitespace can be put after the colon and is optional.)  If
-the value contains embedded whitespace or any of the characters C<[]<>"\:>,
+the value contains embedded whitespace or any of the characters C<< []<>"\: >>,
 it must be enclosed in double quotes ("").  A backslash (C<\>) can be used
 to escape quotes and backslashes inside double quotes.  <name> is
 case-sensitive; C<server> is not the same as C<Server> or C<SERVER>.
