@@ -180,7 +180,7 @@ If you build your own libraries, make sure to generate them as either
 shared libraries or static libraries built with B<-fPIC> amongst
 the options given to the compiler (to obtain position-independent
 code).  Otherwise, building INN will fail, unless you pass
-B<--disable-hardening-flags> to B<configure>.
+B<--disable-hardening-flags> to C<configure>.
 
 =back
 
@@ -221,7 +221,7 @@ where the source resides.
 Before beginning installation, you should make sure that there is a user
 on your system named C<news>, and that this user's primary group is set to
 a group called C<news>.  You can change these with the B<--with-news-user>
-and B<--with-news-group> options to B<configure> (see below).  The home
+and B<--with-news-group> options to C<configure> (see below).  The home
 directory of this user should be set to the directory under which you wish
 to install INN (F</usr/local/news> is the default and is a good choice).
 This location will be set as I<pathnews> in F<inn.conf>.
@@ -232,7 +232,7 @@ a new installation.
 By default, INN sends reports to the user C<usenet>.  This account is
 used for instance by B<controlchan> (notifying any changes as for newsgroups)
 or B<news.daily> (sending Usenet daily reports).  You can change it with the
-B<--with-news-master> option to configure (see below).  There is also
+B<--with-news-master> option to C<configure> (see below).  There is also
 the I<mailto> keyword which can be given to B<news.daily> in order to
 modify the mail address to which these reports are sent.
 
@@ -262,10 +262,10 @@ root, indiscriminate use of C<chown news> is not the solution.  (If you
 don't like to log in to system accounts, careful use of C<chmod g+s> on
 directories and a umask of C<002> or C<007> may suffice.)
 
-INN uses GNU B<autoconf> and a generated configure script to make
+INN uses GNU B<autoconf> and a generated C<configure> script to make
 configuration rather painless.  Unless you have a rather abnormal setup,
-B<configure> should be able to completely configure INN for your system.  If
-you want to change the defaults, you can invoke the configure script with
+C<configure> should be able to completely configure INN for your system.  If
+you want to change the defaults, you can invoke the C<configure> script with
 one or more command line options.  Type:
 
     ./configure --help
@@ -387,14 +387,14 @@ to Python.
 By default, innbind(8) refuses to bind to any port under 1024 other than
 119, 433 and 563 for security reasons (to prevent attacks on rsh(1)-based
 commands and replacing standard system daemons).  If you want to run B<innd>
-on a different port under 1024, you'll need to tell configure what port
+on a different port under 1024, you'll need to tell C<configure> what port
 you intend to use.  (You'll also still need to set the port number in
 F<inn.conf> or give it to B<innd> on the command line.)
 
 =item B<--with-syslog-facility>=FACILITY
 
 Specifies the syslog facility that INN programs should log to.  The
-default is LOG_NEWS unless configure detects that your system doesn't
+default is LOG_NEWS unless C<configure> detects that your system doesn't
 understand that facility, in which case it uses LOG_LOCAL1.  This flag
 overrides the automatic detection.  Be sure to specify a facility not used
 by anything else on your system (one of LOG_LOCAL0 through LOG_LOCAL7, for
@@ -402,25 +402,25 @@ example).
 
 =item B<--enable-uucp-rnews>
 
-If this option is given to configure, B<rnews> will be installed setuid C<news>,
-owned by group C<uucp>, and mode C<4550>.  This will allow the UUCP subsystem
-to run B<rnews> to process UUCP batches of news articles.  Prior to S<INN 2.3>,
-installing B<rnews> setuid C<news> was standard; since most sites no longer use
-UUCP, it is no longer the default as of S<INN 2.3> and must be requested at
-configure time.  You probably don't want to use this option unless your
-server accepts UUCP news batches.
+If this option is given to C<configure>, B<rnews> will be installed setuid
+C<news>, owned by group C<uucp>, and mode C<4550>.  This will allow the
+UUCP subsystem to run B<rnews> to process UUCP batches of news articles.
+Prior to S<INN 2.3>, installing B<rnews> setuid C<news> was standard; since
+most sites no longer use UUCP, it is no longer the default as of S<INN 2.3>
+and must be requested at configure time.  You probably don't want to use
+this option unless your server accepts UUCP news batches.
 
 =item B<--enable-setgid-inews>
 
-If this option is given to configure, B<inews> will be installed setgid C<news>
-and world-executable so that non-privileged users on the news server
-machine can use B<inews> to post articles locally (somewhat faster than
-opening a new network connection).  For standalone news servers, by far
-the most common configuration now, there's no need to use this option;
+If this option is given to C<configure>, B<inews> will be installed setgid
+C<news> and world-executable so that non-privileged users on the news
+server machine can use B<inews> to post articles locally (somewhat faster
+than opening a new network connection).  For standalone news servers, by
+far the most common configuration now, there's no need to use this option;
 even if you have regular login accounts on your news server, INN's B<inews>
 can post fine via a network connection to your running news server and
-doesn't need to use the local socket (which is what setgid enables it to
-do).  Installing B<inews> setgid was the default prior to S<INN 2.3>.
+doesn't need to use the local socket (which is what setgid enables it to do).
+Installing B<inews> setgid was the default prior to S<INN 2.3>.
 
 =item B<--with-bdb>=PATH
 
@@ -430,17 +430,17 @@ Enabling this configure option doesn't mean you'll be required to use
 ovdb, but it does require that S<Berkeley DB> be installed on your
 system (including the header files, not just the runtime libraries).
 If a path is given, it sets the installed directory of S<Berkeley DB>
-(configure will search for it in standard locations, but if you have
+(C<configure> will search for it in standard locations, but if you have
 it installed elsewhere, you may need this option).  This directory
 is expected to have subdirectories F<include> and F<lib> (F<lib32>
 and F<lib64> are also checked), containing respectively F<db.h>, and
 the library itself.  In case non-standard paths to the S<Berkeley DB>
 libraries are used, one or both of the options B<--with-bdb-include>
-and B<--with-bdb-lib> can be given to configure with a path.
+and B<--with-bdb-lib> can be given to C<configure> with a path.
 
 If the S<Berkeley DB> library is found at configure time, INN will be
 built with S<Berkeley DB> support unless the B<--without-bdb> flag is
-explicitly passed to configure.
+explicitly passed to C<configure>.
 
 =item B<--with-sqlite3>=PATH
 
@@ -450,13 +450,13 @@ Enabling this configure option doesn't mean you'll be required to use
 ovsqlite, but it does require that SQLite be installed on your system
 (including the header files, not just the runtime libraries).  If a
 path is given, it sets the installed directory of SQLite.  In case
-non-standard paths to the SQLite library is used, one or both of the
+non-standard paths to the SQLite library are used, one or both of the
 options B<--with-sqlite3-include> and B<--with-sqlite3-lib> can be given
-to configure with a path.
+to C<configure> with a path.
 
 If the SQLite library is found at configure time, INN will be built
 with SQLite support unless the B<--without-sqlite3> flag is explicitly
-passed to configure.
+passed to C<configure>.
 
 =item B<--with-zlib>=PATH
 
@@ -471,11 +471,11 @@ This option requires that zlib be installed on your system (including the
 header files, not just the runtime libraries).  If a path is given, it
 sets the installed directory of zlib.  In case non-standard paths to the
 zlib library are used, one or both of the options B<--with-zlib-include>
-and B<--with-zlib-lib> can be given to configure with a path.
+and B<--with-zlib-lib> can be given to C<configure> with a path.
 
 If the zlib library is found at configure time, INN will be built with
 compression support unless the B<--without-zlib> flag is explicitly
-passed to configure.
+passed to C<configure>.
 
 =item B<--with-openssl>=PATH
 
@@ -490,11 +490,11 @@ how to do that.
 
 In case non-standard paths to the OpenSSL or LibreSSL libraries are used,
 one or both of the options B<--with-openssl-include> and B<--with-openssl-lib>
-can be given to configure with a path.
+can be given to C<configure> with a path.
 
 If the OpenSSL or LibreSSL SSL and crypto libraries are found at configure
 time, INN will be built with TLS/SSL support unless the B<--without-openssl>
-flag is explicitly passed to configure.
+flag is explicitly passed to C<configure>.
 
 =back
 
