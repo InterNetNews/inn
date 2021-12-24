@@ -113,7 +113,7 @@ diff:
 
 ##  Show changes between files here and installed versions.
 diff-installed:
-	@$(MAKE) COPY_RPRI=-${DIFF} COPY_RPUB=-${DIFF} COPY_XPRI=-${DIFF} COPY_XPUB=-${DIFF} $(ALL_INSTALLED)
+	@$(MAKE) COPY_RPRI=-${DIFF} COPY_RPUB=-${DIFF} COPY_XPRI=-${DIFF} COPY_XPUB=-${DIFF} COPY_WXPUB=-${DIFF} $(ALL_INSTALLED)
 
 ##  Show what would be copied from samples directory.
 what:
@@ -183,6 +183,7 @@ COPY_RPRI	= $(CP_RPRI)
 COPY_RPUB	= $(CP_RPUB)
 COPY_XPRI	= $(CP_XPRI)
 COPY_XPUB	= $(CP_XPUB)
+COPY_WXPUB	= $(CP_WXPUB)
 
 ##  Files to copy.
 $D$(PATH_INNDHOSTS):	incoming.conf	; $(COPY_RPRI) $? $@
@@ -203,9 +204,9 @@ $D$(PATHETC)/nntpsend.ctl: nntpsend.ctl	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/news2mail.cf: news2mail.cf	; $(COPY_RPUB) $? $@
 $D$(PATHETC)/innreport.conf: innreport.conf	; $(COPY_RPUB) $? $@
 $D$(PATHHTTP)/innreport.css: innreport.css	; $(COPY_RPUB) $? $@
-$D$(PATHETC)/innshellvars.local: innshellvars.local	; $(COPY_XPUB) $? $@
-$D$(PATHETC)/innshellvars.pl.local: innshellvars.pl.local	; $(COPY_XPUB) $? $@
-$D$(PATHETC)/innshellvars.tcl.local: innshellvars.tcl.local	; $(COPY_XPUB) $? $@
+$D$(PATHETC)/innshellvars.local: innshellvars.local	; $(COPY_WXPUB) $? $@
+$D$(PATHETC)/innshellvars.pl.local: innshellvars.pl.local	; $(COPY_WXPUB) $? $@
+$D$(PATHETC)/innshellvars.tcl.local: innshellvars.tcl.local	; $(COPY_WXPUB) $? $@
 $D$(PATHETC)/localgroups: localgroups	; $(COPY_RPUB) $? $@
 $D$(PATH_STORAGECONF): storage.conf	; $(COPY_RPUB) $? $@
 $D$(PATH_CYCBUFFCONFIG): cycbuff.conf	; $(COPY_RPUB) $? $@
