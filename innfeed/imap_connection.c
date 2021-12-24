@@ -47,10 +47,18 @@
 #    include <sasl/sasl.h>
 #    include <sasl/saslplug.h>
 #    include <sasl/saslutil.h>
+
 /* For Cyrus SASL versions < 2.1.25 (in hexadecimal notation below). */
 #    if !defined(SASL_VERSION_FULL) || SASL_VERSION_FULL < 0x020119
 typedef int (*sasl_callback_ft)(void);
 #    endif
+#endif
+
+/* There's a useless "break" when SASL support is not enabled, reported
+ * by Clang but GCC warns if it does not see it, so let's just keep it
+ * for the time being and silent this warning. */
+#if !defined(HAVE_SASL) && (defined(__llvm__) || defined(__clang__))
+#    pragma GCC diagnostic ignored "-Wunreachable-code-break"
 #endif
 
 #ifndef MAXHOSTNAMELEN
