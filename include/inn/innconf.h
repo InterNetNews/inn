@@ -16,7 +16,7 @@
 /*
 **  This structure is organized in the same order as the variables contained
 **  in it are mentioned in the inn.conf documentation, and broken down into
-**  the same sections.  Note that due to the implementation, only three types
+**  the same sections.  Note that due to the implementation, only five types
 **  of variables are permissible here: char *, bool, struct vector *, long
 **  and unsigned long.
 */

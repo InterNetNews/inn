@@ -90,9 +90,6 @@ depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
 	$(MAKEDEPEND) '$(CFLAGS) $(PERL_CPPFLAGS)' $(SOURCES) \
 	    $(EXTRA_SOURCES) perl.c
 
-# Special dependency to teach make to build the include directory properly.
-../include/inn/defines.h: ../include/inn/system.h
-
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 argparse.o: argparse.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
