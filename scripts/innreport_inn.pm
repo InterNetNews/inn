@@ -1699,7 +1699,7 @@ sub collect($$$$$$) {
       $nnrpd_timeout{$cust}++;
       return 1;
     }
-    # can't read
+    # can't read (without any other argument, it's a timeout)
     if ($left =~ /(\S+) can\'t read$/o) {
       my $cust = $1;
       $cust = lc $cust unless $CASE_SENSITIVE;
@@ -1793,10 +1793,9 @@ sub collect($$$$$$) {
     return 1 if $left =~ /^\S+ newnews /o;
     # cant fopen (ignored too)
     return 1 if $left =~ /^\S+ cant fopen /o;
-    # can't read: No route to host
-    return 1 if $left =~ /can\'t read: No route to host/o;
-    # can't read: Broken pipe
-    return 1 if $left =~ /can\'t read: Broken pipe/o;
+    # can't read: ... (skip any English or localized strings not already
+    # dealt with above)
+    return 1 if $left =~ /can\'t read: /o;
     # eof in post
     return 1 if $left =~ /^\S+ EOF in post$/o;
     # ioctl: ...
