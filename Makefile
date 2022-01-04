@@ -272,6 +272,7 @@ reformat:
 	    echo "Reformatting C code..." ; \
 	    find . -name '*.[ch]' \! -name config_l.c \! -name config_y.\* \
 	        -print | xargs clang-format --style=file -i ; \
+	    clang-format --style=file -i include/inn/paths.h.in ; \
 	else \
 	    echo "Skipping C code reformatting (clang-format not found)" ; \
 	fi

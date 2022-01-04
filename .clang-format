@@ -1,11 +1,12 @@
 # Configuration for clang-format automated reformatting.  -*- yaml -*-
+#
+# This configuration requires Clang 13.0 or later.
 
 ---
 Language: Cpp
 BasedOnStyle: LLVM
-# When available (in clang-format 13), use AcrossEmptyLinesAndComments
-# as the value of AlignConsecutiveMacros. 
-AlignConsecutiveMacros: true
+AlignArrayOfStructures: Left
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 AlignEscapedNewlines: Left
 AllowShortEnumsOnASingleLine: false
 AlwaysBreakAfterReturnType: AllDefinitions
