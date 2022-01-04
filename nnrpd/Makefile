@@ -31,7 +31,9 @@ clean clobber distclean maintclean:
 ##  Compilation rules.
 
 NNRPDLIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
-		  $(PERL_LIBS) $(PYTHON_LIBS) $(SSL_LDFLAGS) $(SSL_LIBS) \
+		  $(PERL_LIBS) $(PYTHON_LIBS) \
+		  $(CANLOCK_LDFLAGS) $(CANLOCK_LIBS) \
+		  $(SSL_LDFLAGS) $(SSL_LIBS) \
 		  $(CRYPTO_LIBS) $(SASL_LDFLAGS) $(SASL_LIBS) \
 		  $(ZLIB_LDFLAGS) $(ZLIB_LIBS) $(LIBS)
 
@@ -205,7 +207,8 @@ nnrpd.o: nnrpd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/overview.h ../include/inn/version.h nnrpd.h \
   ../include/inn/nntp.h ../include/inn/paths.h ../include/inn/qio.h \
-  ../include/inn/timer.h ../include/inn/vector.h tls.h
+  ../include/inn/timer.h ../include/inn/vector.h tls.h \
+  ../include/inn/secrets.h
 perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

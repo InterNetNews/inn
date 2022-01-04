@@ -28,6 +28,7 @@
 #include "inn/newsuser.h"
 #include "inn/ov.h"
 #include "inn/overview.h"
+#include "inn/secrets.h"
 #include "inn/version.h"
 
 /* Silent this warning because of the way we deal with EXTERN. */
@@ -1388,6 +1389,12 @@ main(int argc, char *argv[])
 
     /* Catch SIGPIPE so that we can exit out of long write loops. */
     xsignal(SIGPIPE, CatchPipe);
+
+    /* Read our secrets, if available.
+     * Even if we fail reading them, we can just go on.  Don't bail out, the
+     * related features will just not be activated.
+     * The file is read by each nnrpd newly spawned. */
+    secrets_read(NULL);
 
     /* Get permissions and see if we can talk to this client. */
     GetClientInfo(ListenPort);

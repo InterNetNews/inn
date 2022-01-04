@@ -59,6 +59,17 @@ S<INN 2.5>.  The file is then renamed to F<sasl.conf.OLD>.
 
 =back
 
+=item F<inn-secrets.conf>
+
+=over 2
+
+=item *
+
+Create a non-world-readable F<inn-secrets.conf> file in I<pathetc>, if not
+already existing,
+
+=back
+
 =item F<newsfeeds>
 
 =over 2
@@ -133,5 +144,9 @@ alternate file.
 =head1 HISTORY
 
 Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
+
+=head1 SEE ALSO
+
+inn.conf(5), inn-secrets.conf(5), newsfeeds(5), readers.conf(5).
 
 =cut

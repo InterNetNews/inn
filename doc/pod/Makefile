@@ -22,7 +22,8 @@ MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
 	../man/distributions.5 ../man/expire.ctl.5 ../man/history.5 \
 	../man/incoming.conf.5 ../man/inn.conf.5 ../man/innfeed.conf.5 \
-	../man/innreport.conf.5 ../man/innwatch.ctl.5 ../man/moderators.5 \
+	../man/innreport.conf.5 ../man/inn-secrets.conf.5 \
+	../man/innwatch.ctl.5 ../man/moderators.5 \
 	../man/motd.news.5 ../man/newsfeeds.5 ../man/newsgroups.5 \
 	../man/newslog.5 ../man/nnrpd.track.5 ../man/nntpsend.ctl.5 \
 	../man/ovdb.5 ../man/ovsqlite.5 \
@@ -107,6 +108,7 @@ maintclean: distclean
 ../man/inn.conf.5:	inn.conf.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/innfeed.conf.5:	innfeed.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/innreport.conf.5: innreport.conf.pod	; $(POD2MAN) -s 5 $? > $@
+../man/inn-secrets.conf.5: inn-secrets.conf.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/innwatch.ctl.5:	innwatch.ctl.pod	; $(POD2MAN) -s 5 $? > $@
 ../man/moderators.5:	moderators.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/motd.news.5:	motd.news.pod		; $(POD2MAN) -s 5 $? > $@

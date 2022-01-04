@@ -2,7 +2,10 @@ include ../Makefile.global
 
 top		= ..
 RUNTESTS_CFLAGS	= -DC_TAP_SOURCE='"$(abs_builddir)/tests"' -DC_TAP_BUILD='"$(abs_builddir)/tests"'
-CFLAGS		= $(GCFLAGS) $(BDB_CPPFLAGS) $(DBM_CPPFLAGS) $(SQLITE3_CPPFLAGS) $(PERL_CPPFLAGS) $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
+CFLAGS		= $(GCFLAGS) $(BDB_CPPFLAGS) $(CANLOCK_CPPFLAGS) \
+		  $(DBM_CPPFLAGS) $(SQLITE3_CPPFLAGS) $(PERL_CPPFLAGS) \
+		  $(PYTHON_CPPFLAGS) $(SSL_CPPFLAGS) $(SASL_CPPFLAGS) \
+		  $(KRB5_CPPFLAGS) $(RUNTESTS_CFLAGS) -I.
 
 ##  On some platforms, linking with libm is needed as the test suite uses
 ##  math functions (currently only lib/confparse-t.c).
@@ -13,8 +16,9 @@ LIBM_LDFLAGS    = '-lm'
 ##  list.  If they need other things compiled, those other things should be
 ##  added to EXTRA.
 
-TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t lib/asprintf.t \
-	lib/buffer.t lib/concat.t lib/conffile.t lib/confparse.t lib/date.t \
+TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
+	lib/asprintf.t lib/buffer.t lib/canlock.t lib/concat.t lib/conffile.t \
+	lib/confparse.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/headers.t lib/hex.t lib/inet_aton.t \
@@ -52,8 +56,10 @@ $(FIXSCRIPT):
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
-LINK		= $(LIBLD) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
-LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) $(BDB_LDFLAGS) $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
+LINK		= $(LIBLD) $(LDFLAGS) $(BDB_LDFLAGS) $(CANLOCK_LDFLAGS) \
+		  $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
+LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) $(BDB_LDFLAGS) $(CANLOCK_LDFLAGS) \
+		  $(SSL_LDFLAGS) $(SASL_LDFLAGS) $(KRB5_LDFLAGS) -o $@
 STORAGEDEPS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN)
 STORAGELIBS	= $(STORAGEDEPS) $(STORAGE_LIBS)
 
@@ -99,6 +105,9 @@ lib/asprintf.t: lib/asprintf.o lib/asprintf-t.o tap/basic.o $(LIBINN)
 
 lib/buffer.t: lib/buffer-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/buffer-t.o tap/basic.o $(LIBINN)
+
+lib/canlock.t: lib/canlock-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/canlock-t.o tap/basic.o $(LIBINN) $(CANLOCK_LIBS)
 
 lib/concat.t: lib/concat-t.o tap/basic.o $(LIBINN)
 	$(LINK) lib/concat-t.o tap/basic.o $(LIBINN)

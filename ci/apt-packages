@@ -4,6 +4,7 @@
 ##  line, to install for testing.
 
 default-mta
+libcanlock-dev
 libdb5.3-dev
 libgd-perl
 libkrb5-dev

@@ -61,6 +61,7 @@
 #define INN_PATH_NNRPSUBS               "subscriptions"
 #define INN_PATH_CLIENTACTIVE           "active"
 #define INN_PATH_MODERATORS             "moderators"
+#define INN_PATH_SECRETS                "inn-secrets.conf"
 #define INN_PATH_SERVER                 "server"
 #define INN_PATH_NNTPPASS               "passwd.nntp"
 #define INN_PATH_NNRPACCESS             "readers.conf"

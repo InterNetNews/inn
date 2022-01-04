@@ -36,54 +36,7 @@
 /* Instantiation of the global innconf variable. */
 struct innconf *innconf = NULL;
 
-/* Data types used to express the mappings from the configuration parse into
-   the innconf struct. */
-
-enum type
-{
-    TYPE_BOOLEAN,
-    TYPE_NUMBER,
-    TYPE_UNUMBER,
-    TYPE_STRING,
-    TYPE_LIST
-};
-
-struct config {
-    const char *name;
-    size_t location;
-    enum type type;
-    struct {
-        bool boolean;
-        long signed_number;
-        unsigned long unsigned_number;
-        const char *string;
-        const struct vector *list;
-    } defaults;
-};
-
-/* The following macros are helpers to make it easier to define the table that
-   specifies how to convert the configuration file into a struct. */
-
 #define K(name) (#name), offsetof(struct innconf, name)
-
-/* clang-format off */
-#define BOOL(def)       TYPE_BOOLEAN,   { (def),     0,     0,  NULL,  NULL }
-#define NUMBER(def)     TYPE_NUMBER,    {     0, (def),     0,  NULL,  NULL }
-#define UNUMBER(def)    TYPE_UNUMBER,   {     0,     0, (def),  NULL,  NULL }
-#define STRING(def)     TYPE_STRING,    {     0,     0,     0, (def),  NULL }
-#define LIST(def)       TYPE_LIST,      {     0,     0,     0,  NULL, (def) }
-
-/* Accessor macros to get a pointer to a value inside a struct. */
-#define CONF_BOOL(conf, offset) \
-    (bool *)          (void *)((char *) (conf) + (offset))
-#define CONF_NUMBER(conf, offset) \
-    (long *)          (void *)((char *) (conf) + (offset))
-#define CONF_UNUMBER(conf, offset) \
-    (unsigned long *) (void *)((char *) (conf) + (offset))
-#define CONF_STRING(conf, offset) \
-    (char **)         (void *)((char *) (conf) + (offset))
-#define CONF_LIST(conf, offset) \
-    (struct vector **)(void *)((char *) (conf) + (offset))
 
 /* Special notes:
 
@@ -115,6 +68,7 @@ struct config {
    a setting to have.
 */
 
+/* clang-format off */
 static const struct config config_table[] = {
     { K(domain),                  STRING  (NULL) },
     { K(enableoverview),          BOOL    (true) },

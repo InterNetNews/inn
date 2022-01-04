@@ -15,6 +15,52 @@ struct vector;
 /* The opaque data type representing a configuration tree. */
 struct config_group;
 
+/* Data types used to express the mappings from the configuration parse into
+   the resulted configuration structs. */
+enum type
+{
+    TYPE_BOOLEAN,
+    TYPE_NUMBER,
+    TYPE_UNUMBER,
+    TYPE_STRING,
+    TYPE_LIST
+};
+
+struct config {
+    const char *name;
+    size_t location;
+    enum type type;
+    struct {
+        bool boolean;
+        long signed_number;
+        unsigned long unsigned_number;
+        const char *string;
+        const struct vector *list;
+    } defaults;
+};
+
+/* The following macros are helpers to make it easier to define the tables
+   that specify how to convert the configuration file into a struct. */
+/* clang-format off */
+#define BOOL(def)       TYPE_BOOLEAN,   { (def),     0,     0,  NULL,  NULL }
+#define NUMBER(def)     TYPE_NUMBER,    {     0, (def),     0,  NULL,  NULL }
+#define UNUMBER(def)    TYPE_UNUMBER,   {     0,     0, (def),  NULL,  NULL }
+#define STRING(def)     TYPE_STRING,    {     0,     0,     0, (def),  NULL }
+#define LIST(def)       TYPE_LIST,      {     0,     0,     0,  NULL, (def) }
+
+/* Accessor macros to get a pointer to a value inside a struct. */
+#define CONF_BOOL(conf, offset) \
+    (bool *)          (void *)((char *) (conf) + (offset))
+#define CONF_NUMBER(conf, offset) \
+    (long *)          (void *)((char *) (conf) + (offset))
+#define CONF_UNUMBER(conf, offset) \
+    (unsigned long *) (void *)((char *) (conf) + (offset))
+#define CONF_STRING(conf, offset) \
+    (char **)         (void *)((char *) (conf) + (offset))
+#define CONF_LIST(conf, offset) \
+    (struct vector **)(void *)((char *) (conf) + (offset))
+/* clang-format on */
+
 BEGIN_DECLS
 
 /* Parse the given file and build a configuration tree.  This does purely

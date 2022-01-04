@@ -17,11 +17,12 @@ SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
 	      	commands.c concat.c conffile.c confparse.c daemonize.c	   \
 	      	date.c dbz.c defdist.c dispatch.c fdflag.c fdlimit.c	   \
 	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \
-	      	innconf.c inndcomm.c list.c localopen.c lockfile.c	   \
+		innconf.c inndcomm.c list.c localopen.c lockfile.c         \
 	      	makedir.c md5.c messageid.c messages.c mmap.c network.c	   \
 	        network-innbind.c newsuser.c nntp.c qio.c                  \
 		radix32.c readin.c					   \
-	      	remopen.c reservedfd.c resource.c sendarticle.c sendpass.c \
+		remopen.c reservedfd.c resource.c secrets.c sendarticle.c  \
+	        sendpass.c						   \
 	      	sequence.c timer.c tst.c uwildmat.c vector.c wire.c	   \
 	      	xfopena.c xmalloc.c xsignal.c xwrite.c
 
@@ -38,7 +39,7 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 
 .SUFFIXES: .lo
 
-all: libinn.$(EXTLIB) perl.o
+all: libinn.$(EXTLIB) canlock.o perl.o
 
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
@@ -65,6 +66,9 @@ libinn.a: $(OBJECTS)
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) -c $*.c
 
+canlock.o: canlock.c
+	$(CC) $(CFLAGS) $(CANLOCK_CPPFLAGS) -c canlock.c
+
 perl.o: perl.c
 	$(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c
 
@@ -86,9 +90,10 @@ libinn$(PROFSUFFIX).a perl$(PROFSUFFIX).o: $(OBJECTS) perl.o
 
 ##  Dependencies.  Default list, below, is probably good enough.
 
-depend: Makefile $(SOURCES) $(EXTRA_SOURCES) perl.c ../include/inn/system.h
-	$(MAKEDEPEND) '$(CFLAGS) $(PERL_CPPFLAGS)' $(SOURCES) \
-	    $(EXTRA_SOURCES) perl.c
+depend: Makefile $(SOURCES) $(EXTRA_SOURCES) canlock.c perl.c \
+	    ../include/inn/system.h
+	$(MAKEDEPEND) '$(CFLAGS) $(CANLOCK_CPPFLAGS) $(PERL_CPPFLAGS)' \
+	    $(SOURCES) $(EXTRA_SOURCES) canlock.c perl.c
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 argparse.o: argparse.c ../include/portable/system.h ../include/config.h \
@@ -455,6 +460,17 @@ resource.o: resource.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h
+secrets.o: secrets.c ../include/portable/system.h \
+  ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/macros.h ../include/portable/stdbool.h \
+  ../include/inn/confparse.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/paths.h \
+  ../include/inn/secrets.h ../include/inn/vector.h
 sendarticle.o: sendarticle.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -665,6 +681,15 @@ symlink.o: symlink.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h
+canlock.o: canlock.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/secrets.h ../include/inn/vector.h
 perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \

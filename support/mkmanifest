@@ -222,6 +222,7 @@ site/filter_innd.py
 site/filter_nnrpd.pl
 site/incoming.conf
 site/inn-radius.conf
+site/inn-secrets.conf
 site/inn.conf
 site/innfeed.conf
 site/innreport.conf
@@ -271,6 +272,7 @@ tests/innd/chan.t
 tests/lib/artnumber.t
 tests/lib/asprintf.t
 tests/lib/buffer.t
+tests/lib/canlock.t
 tests/lib/concat.t
 tests/lib/conffile.t
 tests/lib/confparse.t

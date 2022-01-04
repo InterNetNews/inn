@@ -411,10 +411,6 @@ Requested New Features
   of stuff that Russ has copies of, for example.  [Patches included in
   tickets #133 and #134.]
 
-* There are various available patches for Cancel-Lock and an Internet
-  draft; support should be added to INN for both generation and
-  verification (definitely optional and not on by default at this point).
-
 * It would be nice to be able to reload inn.conf (although difficult, due
   to the amount of data that's generated from it and stashed in various
   places).

@@ -16,6 +16,15 @@ with an alternate name.
 
 =item *
 
+A new F<inn-secrets.conf> configuration file has been added in I<pathetc>.
+The intent is that, from now on, new secrets used by INN are added to that
+file, and that all secrets currently stored in several other configuration
+files eventually move to that file.  Make sure it is properly created during
+the upgrade, and not world-readable.  It currently only stores the secrets
+used for the new Cancel-Lock functionality.
+
+=item *
+
 B<filechan> is no longer shipped with INN; it was just a simple version of
 B<buffchan>.  All calls to C<filechan> will be changed to C<buffchan -u>
 (for its unbuffered mode) in F<newsfeeds> by B<innupgrade>.  If you have
@@ -73,6 +82,13 @@ To select it as your overview method, set the I<ovmethod> parameter in
 F<inn.conf> to C<ovsqlite>.  Details about ovsqlite and how to switch to
 that new modern overview storage method can be found in the ovsqlite(5)
 and makehistory(8) man pages.
+
+=item *
+
+Julien Elie has implemented Cancel-Lock support in B<nnrpd>, based on S<RFC
+8315> and libcanlock.  A new F<inn-secrets.conf> configuration file has been
+added in I<pathetc> wherein you can set the secrets to use for Cancel-Lock.
+See the inn-secrets.conf(5) man page for more details.
 
 =item *
 

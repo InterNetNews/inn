@@ -188,6 +188,7 @@
 /tests/lib/artnumber.t
 /tests/lib/asprintf.t
 /tests/lib/buffer.t
+/tests/lib/canlock.t
 /tests/lib/concat.t
 /tests/lib/conffile.t
 /tests/lib/confparse.t

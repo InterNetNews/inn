@@ -50,6 +50,7 @@ PATH_OVDB_CONF		= ${PATHETC}/ovdb.conf
 PATH_OVSQLITE_CONF	= ${PATHETC}/ovsqlite.conf
 PATH_SENDUUCP_CF	= ${PATHETC}/send-uucp.cf
 PATH_SUBSCRIPTIONS	= ${PATHETC}/subscriptions
+PATH_INNSECRETSCONF	= ${PATHETC}/inn-secrets.conf
 
 PATH_ACTIVE		= ${PATHDB}/active
 PATH_ACTIVE_TIMES	= ${PATHDB}/active.times
@@ -71,7 +72,7 @@ REST		= \
         news2mail.cf readers.conf \
 	inn-radius.conf nnrpd_auth.py nnrpd_access.py nnrpd_dynamic.py \
 	ovdb.conf ovsqlite.conf active.minimal \
-	newsgroups.minimal send-uucp.cf subscriptions
+	newsgroups.minimal send-uucp.cf subscriptions inn-secrets.conf
 
 ALL		= $(REST)
 
@@ -98,7 +99,8 @@ REST_INSTALLED	= \
 	$D$(PATH_NNRPAUTH) $D$(PATHETC)/news2mail.cf $D$(PATH_READERSCONF) \
 	$D$(PATH_RADIUS_CONF) $D$(PATH_NNRPYAUTH) $D$(PATH_NNRPYACCESS) \
 	$D$(PATH_NNRPYDYNAMIC) $D$(PATH_OVDB_CONF) $D$(PATH_OVSQLITE_CONF) \
-	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS)
+	$D$(PATH_SENDUUCP_CF) $D$(PATH_SUBSCRIPTIONS) $D$(PATH_NNRPACCESS) \
+	$D$(PATH_INNSECRETSCONF)
 
 ALL_INSTALLED	= $(REST_INSTALLED)
 
@@ -233,6 +235,7 @@ $D$(PATH_MOTD_NNRPD): motd.nnrpd	; $(COPY_RPUB) $? $@
 $D$(PATH_INNFEEDCTL): innfeed.conf	; $(COPY_RPRI) $? $@
 $D$(PATH_SENDUUCP_CF): send-uucp.cf	; $(COPY_RPUB) $? $@
 $D$(PATH_SUBSCRIPTIONS): subscriptions	; $(COPY_RPUB) $? $@
+$D$(PATH_INNSECRETSCONF): inn-secrets.conf   ; $(COPY_RPRI) $? $@
 
 REASON	= 'Installing site config files from site/Makefile'
 go pause:
@@ -294,5 +297,6 @@ inn-radius.conf: ../samples/inn-radius.conf	; $(COPY) $? $@
 startup_innd.pl: ../samples/startup_innd.pl	; $(COPY) $? $@
 send-uucp.cf:	../samples/send-uucp.cf		; $(COPY) $? $@
 subscriptions:	../samples/subscriptions	; $(COPY) $? $@
+inn-secrets.conf: ../samples/inn-secrets.conf	; $(COPY) $? $@
 active.minimal:	../samples/active.minimal	; $(COPY) $? $@
 newsgroups.minimal: ../samples/newsgroups.minimal ; $(COPY) $? $@

@@ -28,6 +28,7 @@
 ##   * Change startinnfeed to innfeed or imapfeed in newsfeeds.
 ##   * Change filechan to buffchan -u in newsfeeds.
 ##   * Change require_ssl to require_encryption in readers.conf.
+##   * Create inn-secrets.conf if not already existing.
 
 require 5.003;
 
@@ -208,6 +209,28 @@ sub fix_inn_conf {
             push (@$output, "\n# Moved from sasl.conf by innupgrade.\n");
             push (@$output, @sasl);
         }
+    }
+
+    # Create inn-secrets.conf if not existing.
+    if (!-f 'inn-secrets.conf') {
+        open (SECRETS, '>inn-secrets.conf')
+          or die "Cannot create inn-secrets.conf: $!\n";
+        print SECRETS "##  inn-secrets.conf -- INN configuration for secrets\n";
+        print SECRETS "##\n";
+        print SECRETS "##  See the inn-secrets.conf(5) man page for details "
+                      .  "about this file.";
+        close (SECRETS);
+
+        # Give it the same ownership as inn.conf.
+        my ($mode, $user, $group) = (stat($file))[2,4,5];
+        if (defined ($user) && defined ($group)) {
+            chown ($user, $group, "inn-secrets.conf")
+                or warn "Cannot chown inn-secrets.conf: $!\n";
+        } else {
+            warn "Cannot find owner and group of $file\n";
+        }
+        # But not world-readable.
+        chmod ($mode & 0770, 'inn-secrets.conf');
     }
 }
 

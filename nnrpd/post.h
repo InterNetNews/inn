@@ -47,6 +47,7 @@ extern size_t OtherCount;
 #define HDR__NEWSGROUPS     2
 #define HDR__SUBJECT        3
 #define HDR__CONTROL        4
+#define HDR__SUPERSEDES     5
 #define HDR__FOLLOWUPTO     6
 #define HDR__DATE           7
 #define HDR__ORGANIZATION   8
@@ -61,3 +62,5 @@ extern size_t OtherCount;
 #define HDR__CC             34
 #define HDR__BCC            35
 #define HDR__TO             36
+#define HDR__CANCEL_KEY     42
+#define HDR__CANCEL_LOCK    43

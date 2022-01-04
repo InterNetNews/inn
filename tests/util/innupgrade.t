@@ -54,7 +54,7 @@ if [ ! -x "$innupgrade" ] ; then
 fi
 
 # Print out the number of tests
-echo 15
+echo 16
 
 # Save backup copies.
 cp "upgrade/inn.conf" "upgrade/inn.conf.bad"
@@ -69,6 +69,12 @@ compare "upgrade/readers.conf.OLD" "upgrade/readers.conf.bad"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 compare "upgrade/newsfeeds" "upgrade/newsfeeds.ok"
 compare "upgrade/readers.conf" "upgrade/readers.conf.ok"
+
+if [ -f "upgrade/inn-secrets.conf" ] ; then
+    printcount "ok"
+else
+    printcount "not ok"
+fi
 
 if [ ! -e "upgrade/overview.fmt" ] && [ -e "upgrade/overview.fmt.OLD" ] ; then
     printcount "ok"
@@ -103,3 +109,4 @@ mv -f "upgrade/newsfeeds.bad" "upgrade/newsfeeds"
 mv -f "upgrade/readers.conf.bad" "upgrade/readers.conf"
 rm -f "upgrade/inn.conf.OLD" "upgrade/newsfeeds.OLD"
 rm -f "upgrade/readers.conf.OLD"
+rm -f "upgrade/inn-secrets.conf"

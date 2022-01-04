@@ -156,6 +156,7 @@ doc/man/ident.8                       Manpage for ident resolver
 doc/man/incoming.conf.5               Manpage for incoming.conf config file
 doc/man/inews.1                       Manpage for inews frontend
 doc/man/inn-radius.conf.5             Manpage for inn-radius.conf config file
+doc/man/inn-secrets.conf.5            Manpage for inn-secrets.conf
 doc/man/inn.conf.5                    Manpage for inn.conf config file
 doc/man/innbind.8                     Manpage for innbind
 doc/man/inncheck.8                    Manpage for inncheck utility
@@ -273,6 +274,7 @@ doc/pod/ident.pod                     Master file for ident.8
 doc/pod/incoming.conf.pod             Master file for incoming.conf.5
 doc/pod/inews.pod                     Master file for inews.1
 doc/pod/inn-radius.conf.pod           Master file for inn-radius.conf.5
+doc/pod/inn-secrets.conf.pod          Master file for inn-secrets.conf.5
 doc/pod/inn.conf.pod                  Master file for inn.conf.5
 doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/inncheck.pod                  Master file for inncheck.8
@@ -422,6 +424,7 @@ include/inn/ov.h                      Header file for old overview API
 include/inn/overview.h                Header file for the overview API
 include/inn/paths.h.in                Header file for paths
 include/inn/qio.h                     Header file for quick I/O package
+include/inn/secrets.h                 Header file for the secrets struct
 include/inn/sequence.h                Header file for sequence space arithmetic
 include/inn/storage.h                 Header file for storage API
 include/inn/timer.h                   Header file for generic timers
@@ -503,6 +506,7 @@ lib/argparse.c                        Functions for parsing arguments
 lib/artnumber.c                       Manipulation of article numbers
 lib/asprintf.c                        asprintf replacement
 lib/buffer.c                          Reusable counted buffer
+lib/canlock.c                         Routines for Cancel-Lock
 lib/cleanfrom.c                       Clean out a From line
 lib/clientactive.c                    Client access to the active file
 lib/clientlib.c                       Replacement for C News library routine
@@ -557,6 +561,7 @@ lib/remopen.c                         Open a remote NNTP connection
 lib/reservedfd.c                      File descriptor reservation
 lib/resource.c                        Get process CPU usage
 lib/sd-daemon.c                       Stubs for systemd library functions
+lib/secrets.c                         Parsing and manipulating inn-secrets.conf
 lib/sendarticle.c                     Send an article, NNTP style
 lib/sendpass.c                        Send NNTP authentication
 lib/sequence.c                        Sequence space arithmetic routines
@@ -582,6 +587,7 @@ lib/xwrite.c                          write that handles partial transfers
 m4                                    Autoconf support macros (Directory)
 m4/aux-libs.m4                        Autoconf macro for extra libraries
 m4/bdb.m4                             Autoconf macros for Berkeley DB
+m4/canlock.m4                         Autoconf macros for Cancel-Lock support
 m4/cc-c-o.m4                          Autoconf macro for -c -o compiler support
 m4/cc-flags.m4                        Autoconf macro for compiler flags
 m4/compress.m4                        Autoconf macro for compress detection
@@ -668,6 +674,7 @@ samples/filter_innd.py                Sample Python filter for innd
 samples/filter_nnrpd.pl               Sample Perl filter for nnrpd
 samples/incoming.conf                 Permissions for incoming feeds
 samples/inn-radius.conf               Sample config for RADIUS authentication
+samples/inn-secrets.conf              Sample secrets file
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
 samples/innreport.conf.in             Log summary configuration
@@ -914,6 +921,7 @@ tests/lib                             Test suite for libinn (Directory)
 tests/lib/artnumber-t.c               Tests for lib/artnumber.c
 tests/lib/asprintf-t.c                Tests for lib/asprintf.c
 tests/lib/buffer-t.c                  Tests for lib/buffer.c
+tests/lib/canlock-t.c                 Tests for lib/canlock.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/conffile-t.c                Tests for lib/conffile.c
 tests/lib/confparse-t.c               Tests for lib/confparse.c

@@ -8,6 +8,7 @@ innd/chan
 lib/artnumber
 lib/asprintf
 lib/buffer
+lib/canlock
 lib/concat
 lib/conffile
 lib/confparse

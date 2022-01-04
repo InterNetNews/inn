@@ -156,6 +156,7 @@ of configure options enabling optional features and the software and
 versions you'll need:
 
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
+    --with-canlock      libcanlock 3.3.0 or higher
     --with-krb5         MIT Kerberos v5 1.6.1 or higher
     --with-openssl      OpenSSL 0.9.6 or higher, 3.0.0+ recommended
                         LibreSSL 2.1.0 or higher, 3.2.0+ recommended
@@ -495,6 +496,24 @@ can be given to C<configure> with a path.
 If the OpenSSL or LibreSSL SSL and crypto libraries are found at configure
 time, INN will be built with TLS/SSL support unless the B<--without-openssl>
 flag is explicitly passed to C<configure>.
+
+=item B<--with-canlock>=PATH
+
+Enables support for Cancel-Lock, using libcanlock (3.3.0 or higher), which
+provides a mechanism to authenticate article withdrawals.  This option
+requires that libcanlock be installed on your system (including the
+header files, not just the runtime libraries).  If a path is given,
+it sets the installed directory of libcanlock.  In case non-standard
+paths to the libcanlock library are used, one or both of the options
+B<--with-canlock-include> and B<--with-canlock-lib> can be given to
+C<configure> with a path.
+
+After compiling and installing INN with this option, you'll need setting the
+Cancel-Lock secrets in the F<inn-secrets.conf> configuration file.
+
+If the libcanlock library is found at configure time, INN will be built with
+Cancel-Lock support unless the B<--without-canlock> flag is explicitly passed
+to C<configure>.
 
 =back
 

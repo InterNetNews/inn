@@ -31,7 +31,8 @@ make test
 
 # Test --enable-keywords and disabling optional dependencies.
 make distclean
-./configure CC="$COMPILER" --enable-keywords --without-bdb --without-krb5 \
-    --without-openssl --without-sasl --without-sqlite3 --without-zlib
+./configure CC="$COMPILER" --enable-keywords --without-bdb --without-canlock \
+    --without-krb5 --without-openssl --without-sasl --without-sqlite3 \
+    --without-zlib
 make warnings
 make test

@@ -90,6 +90,10 @@ extern void xsignal_forked(void);
 
 
 /* Headers. */
+extern bool gen_cancel_lock(const char *msgid, const char *username,
+                            char **canbuff);
+extern bool gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
+                           const char *username, char **canbuff);
 extern char *GenerateMessageID(char *domain);
 extern void InitializeMessageIDcclass(void);
 extern bool IsValidMessageID(const char *string, bool stripspaces,

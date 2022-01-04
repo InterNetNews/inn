@@ -154,8 +154,16 @@ KRB5_LIBS	= @KRB5_LIBS@
 
 ##  Systemd support.  Additional flags and libraries used when compiling or
 ##  linking code that contains systemd support.
+
 SYSTEMD_CFLAGS	= @SYSTEMD_CFLAGS@
 SYSTEMD_LIBS	= @SYSTEMD_LIBS@
+
+##  libcanlock support.  Additional flags and libraries used when compiling or
+##  linking code that contains Cancel-Lock support.
+
+CANLOCK_CPPFLAGS= @CANLOCK_CPPFLAGS@
+CANLOCK_LDFLAGS	= @CANLOCK_LDFLAGS@
+CANLOCK_LIBS	= $(abs_builddir)/lib/canlock$(LIBSUFFIX).o @CANLOCK_LIBS@
 
 ##  Missing functions.	If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own

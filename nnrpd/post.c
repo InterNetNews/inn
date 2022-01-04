@@ -340,6 +340,11 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char postinghostbuff[SMBUF * 2];
     static char sendbuff[SMBUF * 2];
     static char injectioninfobuff[SMBUF * 7];
+#if defined(HAVE_CANLOCK)
+    static char *canbuff = NULL;
+    static char *canlockbuff = NULL;
+    static char *cankeybuff = NULL;
+#endif
     static char *newpath = NULL;
     HEADER *hp;
     char *p;
@@ -627,6 +632,55 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* If moderation is needed, do not add an Injection-Info header field. */
     if (!needmoderation)
         HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
+
+#if defined(HAVE_CANLOCK)
+    /* Add or update the Cancel-Lock header field.
+     * Needless in control articles. */
+    if (HDR(HDR__CONTROL) == NULL) {
+        free(canlockbuff);
+
+        if (gen_cancel_lock(HDR(HDR__MESSAGEID), PERMuser, &canbuff)) {
+            if (*canbuff != '\0') {
+                /* Extend an existing Cancel-Lock header field. */
+                if (HDR(HDR__CANCEL_LOCK) != NULL) {
+                    xasprintf(&canlockbuff, "%s\n\t%s", HDR(HDR__CANCEL_LOCK),
+                              canbuff);
+                } else {
+                    xasprintf(&canlockbuff, "%s", canbuff);
+                }
+                HDR_SET(HDR__CANCEL_LOCK, canlockbuff);
+            }
+            free(canbuff);
+        } else {
+            syslog(L_NOTICE, "%s Cancel-Lock generation failed", Client.host);
+        }
+    }
+
+    /* Add or update the Cancel-Key header field with specific user c-key
+     * elements.  Do it only if the user is authenticated and wants to cancel
+     * or supersede an article. */
+    if (PERMuser[0] != '\0'
+        && (HDR(HDR__CONTROL) != NULL || HDR(HDR__SUPERSEDES) != NULL)) {
+        free(cankeybuff);
+
+        if (gen_cancel_key(HDR(HDR__CONTROL), HDR(HDR__SUPERSEDES), PERMuser,
+                           &canbuff)) {
+            if (*canbuff != '\0') {
+                /* Extend an existing Cancel-Key header field. */
+                if (HDR(HDR__CANCEL_KEY) != NULL) {
+                    xasprintf(&cankeybuff, "%s\n\t%s", HDR(HDR__CANCEL_KEY),
+                              canbuff);
+                } else {
+                    xasprintf(&cankeybuff, "%s", canbuff);
+                }
+                HDR_SET(HDR__CANCEL_KEY, cankeybuff);
+            }
+            free(canbuff);
+        } else {
+            syslog(L_NOTICE, "%s Cancel-Key generation failed", Client.host);
+        }
+    }
+#endif /* HAVE_CANLOCK */
 
     /* Clear out some header fields that should not be here. */
     if (PERMaccessconf->strippostcc) {
