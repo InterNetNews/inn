@@ -42,58 +42,53 @@ int test_vsnprintf(char *str, size_t count, const char *fmt, va_list args);
 
 static const char string[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-/* clang-format off */
-
 static const char *const fp_formats[] = {
-    "%-1.5f",   "%1.5f",    "%31.6f",   "%10.5f",   "% 10.5f",  "%+22.6f",
-    "%+4.6f",   "%01.3f",   "%3.1f",    "%3.2f",    "%.0f",     "%.1f",
-    "%f",
-    NULL
-};
+    "%-1.5f", "%1.5f", "%31.6f", "%10.5f", "% 10.5f", "%+22.6f", "%+4.6f",
+    "%01.3f", "%3.1f", "%3.2f",  "%.0f",   "%.1f",    "%f",      NULL};
+
 static const char *const int_formats[] = {
-    "%-1.5d",   "%1.5d",    "%31.9d",   "%5.5d",    "%10.5d",   "% 10.5d",
-    "%+22.30d", "%01.3d",   "%4d",      "%d",       "%ld",      NULL
-};
+    "%-1.5d",   "%1.5d",  "%31.9d", "%5.5d", "%10.5d", "% 10.5d",
+    "%+22.30d", "%01.3d", "%4d",    "%d",    "%ld",    NULL};
+
 static const char *const uint_formats[] = {
-    "%-1.5lu",  "%1.5lu",   "%31.9lu",  "%5.5lu",   "%10.5lu",  "% 10.5lu",
-    "%+6.30lu", "%01.3lu",  "%4lu",     "%lu",      "%4lx",     "%4lX",
-    "%01.3lx",  "%1lo",     NULL
-};
+    "%-1.5lu",  "%1.5lu",   "%31.9lu", "%5.5lu", "%10.5lu",
+    "% 10.5lu", "%+6.30lu", "%01.3lu", "%4lu",   "%lu",
+    "%4lx",     "%4lX",     "%01.3lx", "%1lo",   NULL};
+
 static const char *const llong_formats[] = {
-    "%lld",     "%-1.5lld",  "%1.5lld",    "%123.9lld",  "%5.5lld",
-    "%10.5lld", "% 10.5lld", "%+22.33lld", "%01.3lld",   "%4lld",
-    NULL
-};
+    "%lld",      "%-1.5lld",   "%1.5lld",  "%123.9lld", "%5.5lld", "%10.5lld",
+    "% 10.5lld", "%+22.33lld", "%01.3lld", "%4lld",     NULL};
+
 static const char *const ullong_formats[] = {
-    "%llu",     "%-1.5llu",  "%1.5llu",    "%123.9llu",  "%5.5llu",
-    "%10.5llu", "% 10.5llu", "%+22.33llu", "%01.3llu",   "%4llu",
-    "%llx",     "%llo",      NULL
-};
+    "%llu",     "%-1.5llu",  "%1.5llu",    "%123.9llu", "%5.5llu",
+    "%10.5llu", "% 10.5llu", "%+22.33llu", "%01.3llu",  "%4llu",
+    "%llx",     "%llo",      NULL};
 
-static const double fp_nums[] = {
-    -1.5, 134.21, 91340.2, 341.1234, 0203.9, 0.96, 0.996, 0.9996, 1.996,
-    4.136, 0.1, 0.01, 0.001, 10.1, 0
-};
-static long int_nums[] = {
-    -1, 134, 91340, 341, 0203, 0
-};
+static const double fp_nums[] = {-1.5, 134.21, 91340.2, 341.1234, 0203.9,
+                                 0.96, 0.996,  0.9996,  1.996,    4.136,
+                                 0.1,  0.01,   0.001,   10.1,     0};
+
+static long int_nums[] = {-1, 134, 91340, 341, 0203, 0};
+
 static unsigned long uint_nums[] = {
-    (unsigned long) -1, 134, 91340, 341, 0203, 0
-};
-static long long llong_nums[] = {
-    ~(long long) 0,                     /* All-1 bit pattern. */
-    (~(unsigned long long) 0) >> 1,     /* Largest signed long long. */
-    -150, 134, 91340, 341,
-    0
-};
-static unsigned long long ullong_nums[] = {
-    ~(unsigned long long) 0,            /* All-1 bit pattern. */
-    (~(unsigned long long) 0) >> 1,     /* Largest signed long long. */
-    134, 91340, 341,
-    0
-};
+    (unsigned long) -1, 134, 91340, 341, 0203, 0};
 
-/* clang-format on */
+static long long llong_nums[] = {~(long long) 0, /* All-1 bit pattern. */
+                                 (~(unsigned long long) 0)
+                                     >> 1, /* Largest signed long long. */
+                                 -150,
+                                 134,
+                                 91340,
+                                 341,
+                                 0};
+
+static unsigned long long ullong_nums[] = {
+    ~(unsigned long long) 0,        /* All-1 bit pattern. */
+    (~(unsigned long long) 0) >> 1, /* Largest signed long long. */
+    134,
+    91340,
+    341,
+    0};
 
 
 static void

@@ -18,7 +18,7 @@
 
 typedef struct iovec IOVEC;
 
-#define ARTIOVCNT 16
+#define ARTIOVCNT  16
 
 /* Characters used in log messages indicating the disposition of messages. */
 #define ART_ACCEPT '+'
@@ -1113,8 +1113,7 @@ ARTclean(ARTDATA *data, char *buff, bool ihave)
 }
 
 /*
-**  We are going to reject an article, record the reason and
-**  and the article.
+**  We are going to reject an article, record the reason and the article.
 */
 void
 ARTreject(Reject_type code, CHANNEL *cp)

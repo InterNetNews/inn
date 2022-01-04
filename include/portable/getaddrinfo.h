@@ -62,16 +62,16 @@ struct addrinfo {
 #    define AI_ADDRCONFIG  0x0040
 
 /* Error return codes from RFC 3493. */
-#    define EAI_AGAIN    1  /* Temporary name resolution failure */
-#    define EAI_BADFLAGS 2  /* Invalid value in ai_flags parameter */
-#    define EAI_FAIL     3  /* Permanent name resolution failure */
-#    define EAI_FAMILY   4  /* Address family not recognized */
-#    define EAI_MEMORY   5  /* Memory allocation failure */
-#    define EAI_NONAME   6  /* nodename or servname unknown */
-#    define EAI_SERVICE  7  /* Service not recognized for socket type */
-#    define EAI_SOCKTYPE 8  /* Socket type not recognized */
-#    define EAI_SYSTEM   9  /* System error occurred, see errno */
-#    define EAI_OVERFLOW 10 /* An argument buffer overflowed */
+#    define EAI_AGAIN      1  /* Temporary name resolution failure */
+#    define EAI_BADFLAGS   2  /* Invalid value in ai_flags parameter */
+#    define EAI_FAIL       3  /* Permanent name resolution failure */
+#    define EAI_FAMILY     4  /* Address family not recognized */
+#    define EAI_MEMORY     5  /* Memory allocation failure */
+#    define EAI_NONAME     6  /* nodename or servname unknown */
+#    define EAI_SERVICE    7  /* Service not recognized for socket type */
+#    define EAI_SOCKTYPE   8  /* Socket type not recognized */
+#    define EAI_SYSTEM     9  /* System error occurred, see errno */
+#    define EAI_OVERFLOW   10 /* An argument buffer overflowed */
 
 BEGIN_DECLS
 

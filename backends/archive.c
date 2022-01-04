@@ -238,7 +238,7 @@ build_path(const char *group, const char *number, struct config *config,
     p = path->data + path->left;
     buffer_append(path, group, strlen(group));
     if (!config->flat)
-        for (; (size_t)(p - path->data) < path->left; p++)
+        for (; (size_t) (p - path->data) < path->left; p++)
             if (*p == '.')
                 *p = '/';
 

@@ -11,7 +11,9 @@
 #include "inn/md5.h"
 #include "inn/utility.h"
 
-static HASH empty = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+static HASH empty = {
+    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
 
 /* cipoint - where in this message-ID does it become case-insensitive?
  *

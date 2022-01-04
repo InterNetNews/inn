@@ -687,7 +687,7 @@ fillContents(Article article)
 
     if (article->contents == NULL && article->articleOk) {
         /* an estimate to give some room for nntpPrepareBuffer to use. */
-        newBufferSize *= (size_t)(1.0 + (1.0 / avgCharsPerLine));
+        newBufferSize *= (size_t) (1.0 + (1.0 / avgCharsPerLine));
         newBufferSize++;
 
         /* if we're going over the limit try to free up some older article's
@@ -850,8 +850,8 @@ prepareArticleForNNTP(Article article)
             while (*end && *end != '\n')
                 end++;
 
-            appendBuffer(newBufferByCharP(start, (size_t)(end - start),
-                                          (size_t)(end - start)),
+            appendBuffer(newBufferByCharP(start, (size_t) (end - start),
+                                          (size_t) (end - start)),
                          &nntpBuffs, &buffIdx, &buffLen);
 
             if (*end != '\0')

@@ -55,16 +55,16 @@
 BEGIN_DECLS
 
 typedef short SITEIDX;
-#define NOSITE ((SITEIDX) -1)
+#define NOSITE          ((SITEIDX) -1)
 
 /*
 **  Various constants.
 */
 
 /* Used for storing group subscriptions for feeds. */
-#define SUB_DEFAULT false
-#define SUB_NEGATE  '!'
-#define SUB_POISON  '@'
+#define SUB_DEFAULT     false
+#define SUB_NEGATE      '!'
+#define SUB_POISON      '@'
 
 /* Special characters for newsfeeds entries. */
 #define NF_FIELD_SEP    ':'
@@ -139,13 +139,13 @@ typedef struct _HDRCONTENT {
 /*
 **  A way to index into the header table.
 */
-#define HDR_FOUND(_x)         (hc[(_x)].Length > 0)
-#define HDR_LASTCHAR_SAVE(_x) hc[(_x)].LastChar = hc[(_x)].Value[hc[_x].Length]
-#define HDR_PARSE_START(_x)   hc[(_x)].Value[hc[_x].Length] = '\0'
-#define HDR(_x)               (hc[(_x)].Value)
+#define HDR_FOUND(_x)                     (hc[(_x)].Length > 0)
+#define HDR_LASTCHAR_SAVE(_x)             hc[(_x)].LastChar = hc[(_x)].Value[hc[_x].Length]
+#define HDR_PARSE_START(_x)               hc[(_x)].Value[hc[_x].Length] = '\0'
+#define HDR(_x)                           (hc[(_x)].Value)
 /* HDR_LEN does not includes trailing "\r\n" */
-#define HDR_LEN(_x)       (hc[(_x)].Length)
-#define HDR_PARSE_END(_x) hc[(_x)].Value[hc[_x].Length] = hc[(_x)].LastChar
+#define HDR_LEN(_x)                       (hc[(_x)].Length)
+#define HDR_PARSE_END(_x)                 hc[(_x)].Value[hc[_x].Length] = hc[(_x)].LastChar
 
 
 #define HDR__APPROVED                     0
@@ -692,10 +692,10 @@ EXTERN struct history *History;
 ** Setup the default values.  The REMOTETIMER being zero turns off the
 ** code to limit incoming connects.
 */
-#define REMOTELIMIT    2
-#define REMOTETIMER    0
-#define REMOTETOTAL    60
-#define REJECT_TIMEOUT 10
+#define REMOTELIMIT     2
+#define REMOTETIMER     0
+#define REMOTETOTAL     60
+#define REJECT_TIMEOUT  10
 extern int RemoteLimit;    /* Per host limit. */
 extern time_t RemoteTimer; /* How long to remember connects. */
 extern int RemoteTotal;    /* Total limit. */

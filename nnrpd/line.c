@@ -204,7 +204,7 @@ line_doread(void *p, size_t len, int timeout UNUSED)
 
             /* Transfer the data we have just read to zstream_in,
              * and loop to actually process it. */
-            if ((ssize_t)(zbuf_in_size - zbuf_in_allocated) < n) {
+            if ((ssize_t) (zbuf_in_size - zbuf_in_allocated) < n) {
                 size_t newsize = zbuf_in_size * 2 + n;
 
                 /* Don't grow the buffer bigger than the maximum

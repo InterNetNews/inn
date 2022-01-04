@@ -21,26 +21,20 @@
 **  interference.
 */
 
-/* clang-format off */
-static const char WEEKDAY[7][4] = {
-    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-};
+static const char WEEKDAY[7][4] = {"Sun", "Mon", "Tue", "Wed",
+                                   "Thu", "Fri", "Sat"};
 
-static const char MONTH[12][4] = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct",
-    "Nov", "Dec"
-};
+static const char MONTH[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 /* Complete month names, used only for lax date parsing. */
 static const char OBS_MONTH[12][10] = {
-    "January",  "February",  "March",     "April",     "May",       "June",
-    "July",     "August",    "September", "October",   "November",  "December"
-};
+    "January", "February", "March",     "April",   "May",      "June",
+    "July",    "August",   "September", "October", "November", "December"};
 
 /* Number of days in a month. */
-static const int MONTHDAYS[] = {
-    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-};
+static const int MONTHDAYS[] = {31, 28, 31, 30, 31, 30,
+                                31, 31, 30, 31, 30, 31};
 
 /* Non-numeric time zones.  Supporting these is required to support the
    obsolete date format of RFC 5322.  The military time zones are handled
@@ -49,11 +43,16 @@ static const struct {
     const char name[4];
     long offset;
 } ZONE_OFFSET[] = {
-    { "UT", 0 },                { "GMT", 0 },
-    { "EDT", -4 * 60 * 60 },    { "EST", -5 * 60 * 60 },
-    { "CDT", -5 * 60 * 60 },    { "CST", -6 * 60 * 60 },
-    { "MDT", -6 * 60 * 60 },    { "MST", -7 * 60 * 60 },
-    { "PDT", -7 * 60 * 60 },    { "PST", -8 * 60 * 60 },
+    {"UT",  0           },
+    {"GMT", 0           },
+    {"EDT", -4 * 60 * 60},
+    {"EST", -5 * 60 * 60},
+    {"CDT", -5 * 60 * 60},
+    {"CST", -6 * 60 * 60},
+    {"MDT", -6 * 60 * 60},
+    {"MST", -7 * 60 * 60},
+    {"PDT", -7 * 60 * 60},
+    {"PST", -8 * 60 * 60},
 };
 
 /* Additional non-numeric time zones supported because the old parsedate
@@ -63,45 +62,44 @@ static const struct {
     const char name[5];
     long offset;
 } OBS_ZONE_OFFSET[] = {
-    { "UTC",    0 },                 /* Universal Coordinated */
-    { "CUT",    0 },                 /* Coordinated Universal */
-    { "WET",    0 },                 /* Western European */
-    { "BST",    1 * 60 * 60 },       /* British Summer */
-    { "NDT",  (-2 * 60 + 30) * 60 }, /* Newfoundland Daylight */
-    { "NST",  (-3 * 60 + 30) * 60 }, /* Newfoundland Standard */
-    { "ADT",   -3 * 60 * 60 },       /* Atlantic Daylight */
-    { "AST",   -4 * 60 * 60 },       /* Atlantic Standard */
-    { "YDT",   -8 * 60 * 60 },       /* Yukon Daylight */
-    { "YST",   -9 * 60 * 60 },       /* Yukon Standard */
-    { "AKDT",  -8 * 60 * 60 },       /* Alaska Daylight */
-    { "AKST",  -9 * 60 * 60 },       /* Alaska Standard */
-    { "HADT",  -9 * 60 * 60 },       /* Hawaii-Aleutian Daylight */
-    { "HAST", -10 * 60 * 60 },       /* Hawaii-Aleutian Standard */
-    { "HST",  -10 * 60 * 60 },       /* Hawaii Standard */
-    { "CES",    2 * 60 * 60 },       /* Central European Summer */
-    { "CEST",   2 * 60 * 60 },       /* Central European Summer */
-    { "MEZ",    1 * 60 * 60 },       /* Middle European */
-    { "MEZT",   2 * 60 * 60 },       /* Middle European Summer */
-    { "CET",    1 * 60 * 60 },       /* Central European */
-    { "MET",    1 * 60 * 60 },       /* Middle European */
-    { "EET",    2 * 60 * 60 },       /* Eastern European */
-    { "MSK",    3 * 60 * 60 },       /* Moscow Winter */
-    { "MSD",    4 * 60 * 60 },       /* Moscow Summer */
-    { "WAST",   8 * 60 * 60 },       /* Western Australian Standard */
-    { "WADT",   9 * 60 * 60 },       /* Western Australian Daylight */
-    { "HKT",    8 * 60 * 60 },       /* Hong Kong */
-    { "CCT",    8 * 60 * 60 },       /* China Coast */
-    { "JST",    9 * 60 * 60 },       /* Japan Standard */
-    { "KST",    9 * 60 * 60 },       /* Korean Standard */
-    { "KDT",    9 * 60 * 60 },       /* Korean Daylight (no change?) */
-    { "CAST",  (9 * 60 + 30) * 60 }, /* Central Australian Standard */
-    { "CADT", (10 * 60 + 30) * 60 }, /* Central Australian Daylight */
-    { "EAST",  10 * 60 * 60 },       /* Eastern Australian Standard */
-    { "EADT",  11 * 60 * 60 },       /* Eastern Australian Daylight */
-    { "NZST",  12 * 60 * 60 },       /* New Zealand Standard */
-    { "NZST",  13 * 60 * 60 },       /* New Zealand Daylight */
+    {"UTC",  0                  }, /* Universal Coordinated */
+    {"CUT",  0                  }, /* Coordinated Universal */
+    {"WET",  0                  }, /* Western European */
+    {"BST",  1 * 60 * 60        }, /* British Summer */
+    {"NDT",  (-2 * 60 + 30) * 60}, /* Newfoundland Daylight */
+    {"NST",  (-3 * 60 + 30) * 60}, /* Newfoundland Standard */
+    {"ADT",  -3 * 60 * 60       }, /* Atlantic Daylight */
+    {"AST",  -4 * 60 * 60       }, /* Atlantic Standard */
+    {"YDT",  -8 * 60 * 60       }, /* Yukon Daylight */
+    {"YST",  -9 * 60 * 60       }, /* Yukon Standard */
+    {"AKDT", -8 * 60 * 60       }, /* Alaska Daylight */
+    {"AKST", -9 * 60 * 60       }, /* Alaska Standard */
+    {"HADT", -9 * 60 * 60       }, /* Hawaii-Aleutian Daylight */
+    {"HAST", -10 * 60 * 60      }, /* Hawaii-Aleutian Standard */
+    {"HST",  -10 * 60 * 60      }, /* Hawaii Standard */
+    {"CES",  2 * 60 * 60        }, /* Central European Summer */
+    {"CEST", 2 * 60 * 60        }, /* Central European Summer */
+    {"MEZ",  1 * 60 * 60        }, /* Middle European */
+    {"MEZT", 2 * 60 * 60        }, /* Middle European Summer */
+    {"CET",  1 * 60 * 60        }, /* Central European */
+    {"MET",  1 * 60 * 60        }, /* Middle European */
+    {"EET",  2 * 60 * 60        }, /* Eastern European */
+    {"MSK",  3 * 60 * 60        }, /* Moscow Winter */
+    {"MSD",  4 * 60 * 60        }, /* Moscow Summer */
+    {"WAST", 8 * 60 * 60        }, /* Western Australian Standard */
+    {"WADT", 9 * 60 * 60        }, /* Western Australian Daylight */
+    {"HKT",  8 * 60 * 60        }, /* Hong Kong */
+    {"CCT",  8 * 60 * 60        }, /* China Coast */
+    {"JST",  9 * 60 * 60        }, /* Japan Standard */
+    {"KST",  9 * 60 * 60        }, /* Korean Standard */
+    {"KDT",  9 * 60 * 60        }, /* Korean Daylight (no change?) */
+    {"CAST", (9 * 60 + 30) * 60 }, /* Central Australian Standard */
+    {"CADT", (10 * 60 + 30) * 60}, /* Central Australian Daylight */
+    {"EAST", 10 * 60 * 60       }, /* Eastern Australian Standard */
+    {"EADT", 11 * 60 * 60       }, /* Eastern Australian Daylight */
+    {"NZST", 12 * 60 * 60       }, /* New Zealand Standard */
+    {"NZST", 13 * 60 * 60       }, /* New Zealand Daylight */
 };
-/* clang-format on */
 
 
 /*

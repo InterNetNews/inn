@@ -66,7 +66,7 @@
 
 #include "inn/libinn.h"
 
-#define ABORT -1
+#define ABORT     -1
 
 /* Whether or not an octet looks like the start of a UTF-8 character. */
 #define ISUTF8(c) (((c) &0xc0) == 0xc0)
@@ -316,7 +316,7 @@ match_pattern(const unsigned char *text, const unsigned char *start,
             q = p + (*p == '^') + 1;
             if (q > end)
                 return ABORT;
-            endclass = memchr(q, ']', (size_t)(end - q + 1));
+            endclass = memchr(q, ']', (size_t) (end - q + 1));
             if (!endclass)
                 return ABORT;
 

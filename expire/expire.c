@@ -160,7 +160,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
     if (d > MAGIC_TIME)
         *v = (time_t) 0;
     else
-        *v = Now - (time_t)(d * 86400.);
+        *v = Now - (time_t) (d * 86400.);
     return true;
 }
 
@@ -577,7 +577,7 @@ main(int ac, char *av[])
             EXPverbose = atoi(optarg);
             break;
         case 'w':
-            TimeWarp = (time_t)(atof(optarg) * 86400.);
+            TimeWarp = (time_t) (atof(optarg) * 86400.);
             break;
         case 'x':
             Writing = false;

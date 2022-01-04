@@ -36,8 +36,11 @@ bool laxmid = false;
    message ID and Path, but they have to be in the same order as in innd.c and
    the whole array has to be the same size.  Eventually, this will get moved
    into a separate file. */
+#define ARTHEADERINIT(name, type)    \
+    {                                \
+        name, type, sizeof(name) - 1 \
+    }
 /* clang-format off */
-#define ARTHEADERINIT(name, type) { name, type, sizeof(name) - 1 }
 const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("Approved",              HTstd),
     ARTHEADERINIT("Control",               HTstd),

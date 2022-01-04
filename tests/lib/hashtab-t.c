@@ -62,7 +62,11 @@ main(void)
     char *test, *testing, *strange, *change, *foo, *bar;
 
     struct wordref wordrefs[4] = {
-        {"test", 0}, {"testing", 0}, {"change", 0}, {NULL, 0}};
+        {"test",    0},
+        {"testing", 0},
+        {"change",  0},
+        {NULL,      0}
+    };
 
     test = xstrdup("test");
     testing = xstrdup("testing");

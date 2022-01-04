@@ -49,24 +49,24 @@
 /*
 **  Max number of articles that can be streamed ahead.
 */
-#define STNBUF 32
+#define STNBUF             32
 
 /*
 ** Send TAKETHIS without CHECK if this many articles were
 **  accepted in a row.
 */
-#define STNC 16
+#define STNC               16
 
 /*
 **  Typical number of articles to stream.
 **  Must be able to fopen this many articles.
 */
-#define STNBUFL (STNBUF / 2)
+#define STNBUFL            (STNBUF / 2)
 
 /*
 **  Number of retries before requeueing to disk.
 */
-#define STNRETRY 5
+#define STNRETRY           5
 
 /*
 **  Tracking information for an article in flight.
@@ -120,9 +120,9 @@ static int logRejects = false; /* syslog the 437 responses. */
 #define CANT_AUTHENTICATE "%s authenticate failed %s"
 #define IHAVE_FAIL        "%s ihave failed %s"
 
-#define CANT_FINDIT  "%s can't find %s"
-#define CANT_PARSEIT "%s can't parse ID %s"
-#define UNEXPECTED   "%s unexpected response code %s"
+#define CANT_FINDIT       "%s can't find %s"
+#define CANT_PARSEIT      "%s can't parse ID %s"
+#define UNEXPECTED        "%s unexpected response code %s"
 
 /*
 **  Global variables.

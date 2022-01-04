@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <time.h>
 
-#define VERSION "3.1.1"
+#define VERSION  "3.1.1"
 
 #define MAXFNAME 1024    /* max length of file name */
 #define MAXLINE  1024    /* max length of Path line */

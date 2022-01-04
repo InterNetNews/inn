@@ -37,29 +37,29 @@
 #include "innlistener.h"
 #include "tape.h"
 
-#define REQ         1
-#define NOTREQ      0
-#define NOTREQNOADD 2
+#define REQ                  1
+#define NOTREQ               0
+#define NOTREQNOADD          2
 
-#define VALUE_OK         0
-#define VALUE_TOO_HIGH   1
-#define VALUE_TOO_LOW    2
-#define VALUE_MISSING    3
-#define VALUE_WRONG_TYPE 4
+#define VALUE_OK             0
+#define VALUE_TOO_HIGH       1
+#define VALUE_TOO_LOW        2
+#define VALUE_MISSING        3
+#define VALUE_WRONG_TYPE     4
 
-#define METHOD_STATIC   0
-#define METHOD_APS      1
-#define METHOD_QUEUE    2
-#define METHOD_COMBINED 3
+#define METHOD_STATIC        0
+#define METHOD_APS           1
+#define METHOD_QUEUE         2
+#define METHOD_COMBINED      3
 
 /* the limit of number of connections open when a host is
    set to 0 to mean "infinite" */
-#define MAXCON          500
-#define MAXCONLIMIT(xx) ((xx == 0) ? MAXCON : xx)
+#define MAXCON               500
+#define MAXCONLIMIT(xx)      ((xx == 0) ? MAXCON : xx)
 
-#define BACKLOGFILTER 0.7
-#define BACKLOGLWM    20.0
-#define BACKLOGHWM    50.0
+#define BACKLOGFILTER        0.7
+#define BACKLOGLWM           20.0
+#define BACKLOGHWM           50.0
 
 /* time between retrying blocked hosts in seconds */
 #define TRYBLOCKEDHOSTPERIOD 120
@@ -3446,7 +3446,7 @@ hostPrintStatus(Host host, FILE *fp)
     tapeLogStatus(host->myTape, fp);
 
     {
-        time_t sec = (time_t)(now - host->connectTime);
+        time_t sec = (time_t) (now - host->connectTime);
         double or, ar, rr, jr;
         double ars, jrs;
         char *tars, *tjrs;

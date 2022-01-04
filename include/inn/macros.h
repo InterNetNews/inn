@@ -32,10 +32,10 @@
 #define ARRAY_END(array)  (&(array)[ARRAY_SIZE(array)])
 
 /* Used to name the elements of the array passed to pipe. */
-#define PIPE_READ  0
-#define PIPE_WRITE 1
+#define PIPE_READ         0
+#define PIPE_WRITE        1
 
 /* Used for unused parameters to silence gcc warnings. */
-#define UNUSED __attribute__((__unused__))
+#define UNUSED            __attribute__((__unused__))
 
 #endif /* INN_MACROS_H */

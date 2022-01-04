@@ -96,22 +96,22 @@ static ACCESSGROUP **access_realms;
 static char *ConfigBit;
 static int ConfigBitsize;
 
-#define PERMlbrace     1
-#define PERMrbrace     2
-#define PERMgroup      3
-#define PERMauth       4
-#define PERMaccess     5
-#define PERMhost       6
-#define PERMauthprog   7
-#define PERMresolv     8
-#define PERMresprog    9
-#define PERMdefuser    10
-#define PERMdefdomain  11
-#define PERMusers      12
-#define PERMnewsgroups 13
-#define PERMread       14
-#define PERMpost       15
-#define PERMaccessrp   16
+#define PERMlbrace                     1
+#define PERMrbrace                     2
+#define PERMgroup                      3
+#define PERMauth                       4
+#define PERMaccess                     5
+#define PERMhost                       6
+#define PERMauthprog                   7
+#define PERMresolv                     8
+#define PERMresprog                    9
+#define PERMdefuser                    10
+#define PERMdefdomain                  11
+#define PERMusers                      12
+#define PERMnewsgroups                 13
+#define PERMread                       14
+#define PERMpost                       15
+#define PERMaccessrp                   16
 
 #define PERMalsolog                    18
 #define PERMprogram                    19
@@ -186,74 +186,72 @@ static int ConfigBitsize;
         ConfigBit[byte] &= ~(1 << offset); \
     }
 
-/* clang-format off */
 static CONFTOKEN PERMtoks[] = {
-    { PERMlbrace,               (char *) "{"                    },
-    { PERMrbrace,               (char *) "}"                    },
-    { PERMgroup,                (char *) "group"                },
-    { PERMauth,                 (char *) "auth"                 },
-    { PERMaccess,               (char *) "access"               },
-    { PERMhost,                 (char *) "hosts:"               },
-    { PERMauthprog,             (char *) "auth:"                },
-    { PERMresolv,               (char *) "res"                  },
-    { PERMresprog,              (char *) "res:"                 },
-    { PERMdefuser,              (char *) "default:"             },
-    { PERMdefdomain,            (char *) "default-domain:"      },
-    { PERMusers,                (char *) "users:"               },
-    { PERMnewsgroups,           (char *) "newsgroups:"          },
-    { PERMread,                 (char *) "read:"                },
-    { PERMpost,                 (char *) "post:"                },
-    { PERMaccessrp,             (char *) "access:"              },
-    { PERMalsolog,              (char *) "log:"                 },
-    { PERMprogram,              (char *) "program:"             },
-    { PERMinclude,              (char *) "include"              },
-    { PERMkey,                  (char *) "key:"                 },
-    { PERMlocaltime,            (char *) "localtime:"           },
-    { PERMstrippath,            (char *) "strippath:"           },
-    { PERMnnrpdperlfilter,      (char *) "perlfilter:"          },
-    { PERMnnrpdpythonfilter,    (char *) "pythonfilter:"        },
-    { PERMfromhost,             (char *) "fromhost:"            },
-    { PERMpathhost,             (char *) "pathhost:"            },
-    { PERMorganization,         (char *) "organization:"        },
-    { PERMmoderatormailer,      (char *) "moderatormailer:"     },
-    { PERMdomain,               (char *) "domain:"              },
-    { PERMcomplaints,           (char *) "complaints:"          },
-    { PERMspoolfirst,           (char *) "spoolfirst:"          },
-    { PERMcheckincludedtext,    (char *) "checkincludedtext:"   },
-    { PERMclienttimeout,        (char *) "clienttimeout:"       },
-    { PERMlocalmaxartsize,      (char *) "localmaxartsize:"     },
-    { PERMreadertrack,          (char *) "readertrack:"         },
-    { PERMstrippostcc,          (char *) "strippostcc:"         },
-    { PERMaddinjectiondate,     (char *) "addinjectiondate:"    },
-    { PERMaddinjectionpostingaccount, (char *) "addinjectionpostingaccount:" },
-    { PERMaddinjectionpostinghost, (char *) "addinjectionpostinghost:" },
-    { PERMnnrpdposthost,        (char *) "nnrpdposthost:"       },
-    { PERMnnrpdpostport,        (char *) "nnrpdpostport:"       },
-    { PERMnnrpdoverstats,       (char *) "nnrpdoverstats:"      },
-    { PERMbackoff_auth,         (char *) "backoff_auth:"        },
-    { PERMbackoff_db,           (char *) "backoff_db:"          },
-    { PERMbackoff_k,            (char *) "backoff_k:"           },
-    { PERMbackoff_postfast,     (char *) "backoff_postfast:"    },
-    { PERMbackoff_postslow,     (char *) "backoff_postslow:"    },
-    { PERMbackoff_trigger,      (char *) "backoff_trigger:"     },
-    { PERMnnrpdcheckart,        (char *) "nnrpdcheckart:"       },
-    { PERMnnrpdauthsender,      (char *) "nnrpdauthsender:"     },
-    { PERMvirtualhost,          (char *) "virtualhost:"         },
-    { PERMnewsmaster,           (char *) "newsmaster:"          },
-    { PERMlocaladdress,         (char *) "localaddress:"        },
-    { PERMrejectwith,           (char *) "reject_with:"         },
-    { PERMmaxbytespersecond,    (char *) "max_rate:"            },
-    { PERMperl_auth,            (char *) "perl_auth:"           },
-    { PERMpython_auth,          (char *) "python_auth:"         },
-    { PERMperl_access,          (char *) "perl_access:"         },
-    { PERMpython_access,        (char *) "python_access:"       },
-    { PERMpython_dynamic,       (char *) "python_dynamic:"      },
+    {PERMlbrace,                     (char *) "{"                          },
+    {PERMrbrace,                     (char *) "}"                          },
+    {PERMgroup,                      (char *) "group"                      },
+    {PERMauth,                       (char *) "auth"                       },
+    {PERMaccess,                     (char *) "access"                     },
+    {PERMhost,                       (char *) "hosts:"                     },
+    {PERMauthprog,                   (char *) "auth:"                      },
+    {PERMresolv,                     (char *) "res"                        },
+    {PERMresprog,                    (char *) "res:"                       },
+    {PERMdefuser,                    (char *) "default:"                   },
+    {PERMdefdomain,                  (char *) "default-domain:"            },
+    {PERMusers,                      (char *) "users:"                     },
+    {PERMnewsgroups,                 (char *) "newsgroups:"                },
+    {PERMread,                       (char *) "read:"                      },
+    {PERMpost,                       (char *) "post:"                      },
+    {PERMaccessrp,                   (char *) "access:"                    },
+    {PERMalsolog,                    (char *) "log:"                       },
+    {PERMprogram,                    (char *) "program:"                   },
+    {PERMinclude,                    (char *) "include"                    },
+    {PERMkey,                        (char *) "key:"                       },
+    {PERMlocaltime,                  (char *) "localtime:"                 },
+    {PERMstrippath,                  (char *) "strippath:"                 },
+    {PERMnnrpdperlfilter,            (char *) "perlfilter:"                },
+    {PERMnnrpdpythonfilter,          (char *) "pythonfilter:"              },
+    {PERMfromhost,                   (char *) "fromhost:"                  },
+    {PERMpathhost,                   (char *) "pathhost:"                  },
+    {PERMorganization,               (char *) "organization:"              },
+    {PERMmoderatormailer,            (char *) "moderatormailer:"           },
+    {PERMdomain,                     (char *) "domain:"                    },
+    {PERMcomplaints,                 (char *) "complaints:"                },
+    {PERMspoolfirst,                 (char *) "spoolfirst:"                },
+    {PERMcheckincludedtext,          (char *) "checkincludedtext:"         },
+    {PERMclienttimeout,              (char *) "clienttimeout:"             },
+    {PERMlocalmaxartsize,            (char *) "localmaxartsize:"           },
+    {PERMreadertrack,                (char *) "readertrack:"               },
+    {PERMstrippostcc,                (char *) "strippostcc:"               },
+    {PERMaddinjectiondate,           (char *) "addinjectiondate:"          },
+    {PERMaddinjectionpostingaccount, (char *) "addinjectionpostingaccount:"},
+    {PERMaddinjectionpostinghost,    (char *) "addinjectionpostinghost:"   },
+    {PERMnnrpdposthost,              (char *) "nnrpdposthost:"             },
+    {PERMnnrpdpostport,              (char *) "nnrpdpostport:"             },
+    {PERMnnrpdoverstats,             (char *) "nnrpdoverstats:"            },
+    {PERMbackoff_auth,               (char *) "backoff_auth:"              },
+    {PERMbackoff_db,                 (char *) "backoff_db:"                },
+    {PERMbackoff_k,                  (char *) "backoff_k:"                 },
+    {PERMbackoff_postfast,           (char *) "backoff_postfast:"          },
+    {PERMbackoff_postslow,           (char *) "backoff_postslow:"          },
+    {PERMbackoff_trigger,            (char *) "backoff_trigger:"           },
+    {PERMnnrpdcheckart,              (char *) "nnrpdcheckart:"             },
+    {PERMnnrpdauthsender,            (char *) "nnrpdauthsender:"           },
+    {PERMvirtualhost,                (char *) "virtualhost:"               },
+    {PERMnewsmaster,                 (char *) "newsmaster:"                },
+    {PERMlocaladdress,               (char *) "localaddress:"              },
+    {PERMrejectwith,                 (char *) "reject_with:"               },
+    {PERMmaxbytespersecond,          (char *) "max_rate:"                  },
+    {PERMperl_auth,                  (char *) "perl_auth:"                 },
+    {PERMpython_auth,                (char *) "python_auth:"               },
+    {PERMperl_access,                (char *) "perl_access:"               },
+    {PERMpython_access,              (char *) "python_access:"             },
+    {PERMpython_dynamic,             (char *) "python_dynamic:"            },
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-    { PERMrequire_encryption,   (char *) "require_encryption:"  },
+    {PERMrequire_encryption,         (char *) "require_encryption:"        },
 #endif
-    { 0,                        (char *) NULL                   }
+    {0,                              (char *) NULL                         }
 };
-/* clang-format on */
 
 /* Function definitions. */
 static void

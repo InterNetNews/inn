@@ -48,12 +48,12 @@ main(int argc UNUSED, char **argv UNUSED)
 #else /* HAVE_BDB */
 
 
-#    define SELECT_TIMEOUT 15
+#    define SELECT_TIMEOUT  15
 
 
 /* This will work unless user sets a larger clienttimeout
    in readers.conf */
-#    define CLIENT_TIMEOUT (innconf->clienttimeout + 60)
+#    define CLIENT_TIMEOUT  (innconf->clienttimeout + 60)
 /*#define CLIENT_TIMEOUT 3600*/
 
 
@@ -547,7 +547,7 @@ serverproc(int me)
 
         for (i = 0; i < numreaders; i++) {
             if (readertab[i].mode == MODE_CLOSED
-                || (time_t)(readertab[i].lastactive + CLIENT_TIMEOUT) < now) {
+                || (time_t) (readertab[i].lastactive + CLIENT_TIMEOUT) < now) {
                 delclient(i);
                 numreaders--;
                 i--;

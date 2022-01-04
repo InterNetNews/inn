@@ -42,10 +42,10 @@ struct histstats {
 #define HIS_RDONLY (0)
 
 /* open database read/write */
-#define HIS_RDWR (1 << 0)
+#define HIS_RDWR   (1 << 0)
 
 /* create on open */
-#define HIS_CREAT (1 << 1)
+#define HIS_CREAT  (1 << 1)
 
 /* hint that the data should be kept on disk */
 #define HIS_ONDISK (1 << 2)
@@ -54,7 +54,7 @@ struct histstats {
 #define HIS_INCORE (1 << 3)
 
 /* hint that the data should be kept mmap()ed */
-#define HIS_MMAP (1 << 4)
+#define HIS_MMAP   (1 << 4)
 
 /*
 **  values passed to HISctl

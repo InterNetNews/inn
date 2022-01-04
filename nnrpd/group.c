@@ -149,7 +149,7 @@ CMDgroup(int ac, char *av[])
                 }
                 prev = nfslow;
                 while (OVsearch(handle, &i, NULL, NULL, NULL, &arrived)) {
-                    if ((time_t)(arrived + innconf->nfsreaderdelay) > now) {
+                    if ((time_t) (arrived + innconf->nfsreaderdelay) > now) {
                         ARThigh = prev;
                         /* No need to update the count since it is only
                          * an estimate but make sure it is not too high. */

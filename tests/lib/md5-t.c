@@ -8,7 +8,7 @@
 
 /* Used for strings of unsigned characters (called SUC instead of U
    because it otherwise conflicts with Unicode strings). */
-#define SUC (const unsigned char *)
+#define SUC        (const unsigned char *)
 
 /* An unsigned char version of strlen. */
 #define ustrlen(s) strlen((const char *) s)

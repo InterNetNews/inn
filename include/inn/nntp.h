@@ -43,11 +43,11 @@
 **  available for holding NNTP codes specifically.
 */
 
-#define NNTP_CLASS_INFO '1'
-#define NNTP_CLASS_OK   '2'
-#define NNTP_CLASS_CONT '3'
-#define NNTP_CLASS_FAIL '4'
-#define NNTP_CLASS_ERR  '5'
+#define NNTP_CLASS_INFO     '1'
+#define NNTP_CLASS_OK       '2'
+#define NNTP_CLASS_CONT     '3'
+#define NNTP_CLASS_FAIL     '4'
+#define NNTP_CLASS_ERR      '5'
 
 /* clang-format off */
 enum nntp_code {
@@ -169,7 +169,7 @@ enum nntp_code {
 **  message-IDs of 494 octets.
 */
 
-#define NNTP_MAXLEN_MSGID 250
+#define NNTP_MAXLEN_MSGID   250
 
 /* Forward declaration. */
 struct cvector;

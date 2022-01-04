@@ -18,13 +18,13 @@ rifkin@uconn.edu
 
 #include "portable/system.h"
 
-#define INFILE     1
-#define FILEPREFIX 2
-#define HEADER     3
-#define STRING     4
+#define INFILE       1
+#define FILEPREFIX   2
+#define HEADER       3
+#define STRING       4
 
 /*  String buffer size  */
-#define NBUFF 512
+#define NBUFF        512
 
 #define MAX_ART_SIZE 2200000
 

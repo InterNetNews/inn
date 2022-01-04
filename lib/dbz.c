@@ -121,7 +121,7 @@ static int dbzversion = 6; /* for validating .dir file format */
    The least significant bits are dropped.  The space is used to
    store hash additional bits, thereby increasing the possibility of the
    hash detection */
-#    define MAXDROPBITS 4 /* max # of bits to drop from the offset */
+#    define MAXDROPBITS    4 /* max # of bits to drop from the offset */
 
 /* MAXFUZZYLENGTH is the maximum in the offset value due to the MAXDROPBITS */
 #    define MAXFUZZYLENGTH ((1 << MAXDROPBITS) - 1)
@@ -132,15 +132,15 @@ static int dbzversion = 6; /* for validating .dir file format */
  * painful file initialization.  Note that okayvalue(), if DO_TAGGED_HASH is
  * defined, knows what value of an offset would cause overflow.
  */
-#    define VACANT    ((of_t) 0)
-#    define BIAS(o)   ((o) + 1) /* make any valid of_t non-VACANT */
-#    define UNBIAS(o) ((o) -1)  /* reverse BIAS() effect */
+#    define VACANT         ((of_t) 0)
+#    define BIAS(o)        ((o) + 1) /* make any valid of_t non-VACANT */
+#    define UNBIAS(o)      ((o) -1)  /* reverse BIAS() effect */
 
-#    define HASTAG(o) ((o) &taghere)
-#    define TAG(o)    ((o) &tagbits)
-#    define NOTAG(o)  ((o) & ~tagboth)
-#    define CANTAG(o) (((o) &tagboth) == 0)
-#    define MKTAG(v)  (((v) << conf.tagshift) & tagbits)
+#    define HASTAG(o)      ((o) &taghere)
+#    define TAG(o)         ((o) &tagbits)
+#    define NOTAG(o)       ((o) & ~tagboth)
+#    define CANTAG(o)      (((o) &tagboth) == 0)
+#    define MKTAG(v)       (((v) << conf.tagshift) & tagbits)
 
 #    ifndef NOTAGS
 #        define TAGENB   0x80 /* tag enable is top bit, tag is next 7 */

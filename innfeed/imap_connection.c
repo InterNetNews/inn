@@ -73,9 +73,9 @@ typedef int (*sasl_callback_ft)(void);
 #    define LMTP_PORT 2003
 #endif
 
-#define IMAP_TAGLENGTH 6
+#define IMAP_TAGLENGTH      6
 
-#define QUEUE_MAX_SIZE 250
+#define QUEUE_MAX_SIZE      250
 
 #define DOSOMETHING_TIMEOUT 60
 
@@ -1342,10 +1342,11 @@ getsecret(sasl_conn_t *conn, void *context UNUSED, int id,
 /* callbacks we support */
 static sasl_callback_t saslcallbacks[] = {
     {SASL_CB_GETREALM, (sasl_callback_ft) &getsimple, NULL},
-    {SASL_CB_USER, (sasl_callback_ft) &getsimple, NULL},
+    {SASL_CB_USER,     (sasl_callback_ft) &getsimple, NULL},
     {SASL_CB_AUTHNAME, (sasl_callback_ft) &getsimple, NULL},
-    {SASL_CB_PASS, (sasl_callback_ft) &getsecret, NULL},
-    {SASL_CB_LIST_END, NULL, NULL}};
+    {SASL_CB_PASS,     (sasl_callback_ft) &getsecret, NULL},
+    {SASL_CB_LIST_END, NULL,                          NULL}
+};
 
 #    if __GNUC__ > 7
 #        pragma GCC diagnostic warning "-Wcast-function-type"

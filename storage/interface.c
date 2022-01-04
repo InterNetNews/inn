@@ -263,20 +263,18 @@ ParseTime(char *tmbuf)
 #define SMoptions    15
 #define SMexactmatch 16
 
-/* clang-format off */
 static CONFTOKEN smtoks[] = {
-    { SMlbrace,         (char *) "{"            },
-    { SMrbrace,         (char *) "}"            },
-    { SMmethod,         (char *) "method"       },
-    { SMgroups,         (char *) "newsgroups:"  },
-    { SMsize,           (char *) "size:"        },
-    { SMclass,          (char *) "class:"       },
-    { SMexpire,         (char *) "expires:"     },
-    { SMoptions,        (char *) "options:"     },
-    { SMexactmatch,     (char *) "exactmatch:"  },
-    { 0,                NULL                    }
+    {SMlbrace,     (char *) "{"          },
+    {SMrbrace,     (char *) "}"          },
+    {SMmethod,     (char *) "method"     },
+    {SMgroups,     (char *) "newsgroups:"},
+    {SMsize,       (char *) "size:"      },
+    {SMclass,      (char *) "class:"     },
+    {SMexpire,     (char *) "expires:"   },
+    {SMoptions,    (char *) "options:"   },
+    {SMexactmatch, (char *) "exactmatch:"},
+    {0,            NULL                  }
 };
-/* clang-format on */
 
 /* Open the config file and parse it, generating the policy data */
 static bool

@@ -446,9 +446,9 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     char *copy;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t)(p - s) < size && *p != '\0'; p++)
+    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
         ;
-    len = (size_t)(p - s);
+    len = (size_t) (p - s);
     copy = (char *) malloc(len + 1);
     if (copy == NULL)
         sysdie("failed to strndup %lu bytes at %s line %d",

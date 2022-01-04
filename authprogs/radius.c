@@ -32,7 +32,7 @@
 
 #define RADIUS_LOCAL_PORT NNTP_PORT
 
-#define AUTH_VECTOR_LEN 16
+#define AUTH_VECTOR_LEN   16
 
 typedef struct _auth_req {
     unsigned char code;
@@ -76,22 +76,20 @@ typedef struct _sending_t {
 #define RADsuffix  17
 #define RADsource  18
 
-/* clang-format off */
 static CONFTOKEN radtoks[] = {
-    { RADlbrace,        (char *) "{"                    },
-    { RADrbrace,        (char *) "}"                    },
-    { RADserver,        (char *) "server"               },
-    { RADhost,          (char *) "radhost:"             },
-    { RADsecret,        (char *) "secret:"              },
-    { RADport,          (char *) "radport:"             },
-    { RADlochost,       (char *) "lochost:"             },
-    { RADlocport,       (char *) "locport:"             },
-    { RADprefix,        (char *) "prefix:"              },
-    { RADsuffix,        (char *) "suffix:"              },
-    { RADsource,        (char *) "ignore-source:"       },
-    { 0,                NULL                            }
+    {RADlbrace,  (char *) "{"             },
+    {RADrbrace,  (char *) "}"             },
+    {RADserver,  (char *) "server"        },
+    {RADhost,    (char *) "radhost:"      },
+    {RADsecret,  (char *) "secret:"       },
+    {RADport,    (char *) "radport:"      },
+    {RADlochost, (char *) "lochost:"      },
+    {RADlocport, (char *) "locport:"      },
+    {RADprefix,  (char *) "prefix:"       },
+    {RADsuffix,  (char *) "suffix:"       },
+    {RADsource,  (char *) "ignore-source:"},
+    {0,          NULL                     }
 };
-/* clang-format on */
 
 static rad_config_t *
 get_radconf(void)
@@ -208,19 +206,19 @@ read_config(char *authfile, rad_config_t *radconf)
     return (0);
 }
 
-#define PW_AUTH_UDP_PORT 1645
+#define PW_AUTH_UDP_PORT          1645
 
 #define PW_AUTHENTICATION_REQUEST 1
 #define PW_AUTHENTICATION_ACK     2
 
-#define PW_USER_NAME 1
-#define PW_PASSWORD  2
+#define PW_USER_NAME              1
+#define PW_PASSWORD               2
 
-#define PW_SERVICE_TYPE      6
-#define PW_SERVICE_AUTH_ONLY 8
+#define PW_SERVICE_TYPE           6
+#define PW_SERVICE_AUTH_ONLY      8
 
-#define RAD_NAS_IP_ADDRESS 4 /* IP address */
-#define RAD_NAS_PORT       5 /* Integer */
+#define RAD_NAS_IP_ADDRESS        4 /* IP address */
+#define RAD_NAS_PORT              5 /* Integer */
 
 static void
 req_copyto(auth_req *to, sending_t *from)

@@ -18,9 +18,10 @@ int sasl_ssf = 0;
 int sasl_maxout = NNTP_MAXLEN_COMMAND;
 
 sasl_callback_t sasl_callbacks[] = {
-    /* XXX Do we want a proxy callback? */
-    /* XXX Add a getopt callback? */
-    {SASL_CB_LIST_END, NULL, NULL}};
+  /* XXX Do we want a proxy callback? */
+  /* XXX Add a getopt callback? */
+    {SASL_CB_LIST_END, NULL, NULL}
+};
 
 #    define BASE64_BUF_SIZE                         \
         21848 /* Per RFC 4422: (floor(n/3) + 1) * 4 \

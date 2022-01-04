@@ -487,7 +487,8 @@ XS(XS_INN_syslog)
     XSRETURN_UNDEF;
 }
 
-void xs_init(pTHX)
+void
+xs_init(pTHX)
 {
     dXSUB_SYS;
     inn_newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, "perl.c");

@@ -122,82 +122,55 @@ static char CMDfetchhelp[] = "[message-ID|number]";
 **  { command base name, function to call, need authentication,
 **    min args, max args, strip spaces, help string }
 */
-/* clang-format off */
 static CMDENT CMDtable[] = {
-    {   "ARTICLE",      CMDfetch,        true,   1,  2,      true,
-        CMDfetchhelp },
-    /* Parse AUTHINFO in a special way so as to keep white spaces
-     * in usernames and passwords. */
-    {   "AUTHINFO",     CMDauthinfo,     false,  3,  CMDany, false,
-        "USER name|PASS password"
+    {"ARTICLE",      CMDfetch,        true,  1, 2,      true,  CMDfetchhelp               },
+ /* Parse AUTHINFO in a special way so as to keep white spaces
+  * in usernames and passwords. */
+    {"AUTHINFO",     CMDauthinfo,     false, 3, CMDany, false,
+     "USER name|PASS password"
 #ifdef HAVE_SASL
-        "|SASL mechanism [initial-response]"
+     "|SASL mechanism [initial-response]"
 #endif
-        "|GENERIC program [argument ...]" },
-    {   "BODY",         CMDfetch,        true,   1,  2,      true,
-        CMDfetchhelp },
-    {   "CAPABILITIES", CMDcapabilities, false,  1,  2,      true,
-        "[keyword]" },
+     "|GENERIC program [argument ...]"                                                    },
+    {"BODY",         CMDfetch,        true,  1, 2,      true,  CMDfetchhelp               },
+    {"CAPABILITIES", CMDcapabilities, false, 1, 2,      true,  "[keyword]"                },
 #if defined(HAVE_ZLIB)
-    {   "COMPRESS",     CMDcompress,     false,  2,  2,      true,
-        "DEFLATE" },
+    {"COMPRESS",     CMDcompress,     false, 2, 2,      true,  "DEFLATE"                  },
 #endif
-    {   "DATE",         CMDdate,         false,  1,  1,      true,
-        NULL },
-    {   "GROUP",        CMDgroup,        true,   2,  2,      true,
-        "newsgroup" },
-    {   "HDR",          CMDpat  ,        true,   2,  3,      true,
-        "header [message-ID|range]" },
-    {   "HEAD",         CMDfetch,        true,   1,  2,      true,
-        CMDfetchhelp },
-    {   "HELP",         CMDhelp,         false,  1,  1,      true,
-        NULL },
-    {   "IHAVE",        CMDpost,         true,   2,  2,      true,
-        "message-ID" },
-    {   "LAST",         CMDnextlast,     true,   1,  1,      true,
-        NULL },
-    {   "LIST",         CMDlist,         true,   1,  3,      true,
-        "[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|COUNTS [wildmat]|DISTRIB.PATS"
-        "|DISTRIBUTIONS|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS [wildmat]"
-        "|OVERVIEW.FMT|SUBSCRIPTIONS [wildmat]]" },
-    {   "LISTGROUP",    CMDgroup,        true,   1,  3,      true,
-        "[newsgroup [range]]" },
-    {   "MODE",         CMDmode,         false,  2,  2,      true,
-        "READER" },
-    {   "NEWGROUPS",    CMDnewgroups,    true,   3,  4,      true,
-        "[yy]yymmdd hhmmss [GMT]" },
-    {   "NEWNEWS",      CMDnewnews,      true,   4,  5,      true,
-        "wildmat [yy]yymmdd hhmmss [GMT]" },
-    {   "NEXT",         CMDnextlast,     true,   1,  1,      true,
-        NULL },
-    {   "OVER",         CMDover,         true,   1,  2,      true,
-        "[range]" },
-    {   "POST",         CMDpost,         true,   1,  1,      true,
-        NULL },
-    {   "QUIT",         CMDquit,         false,  1,  1,      true,
-        NULL },
-    /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
-     * protocol in RFC 3977. */
-    {   "SLAVE",        CMD_unimp,       false,  1,  1,      true,
-        NULL },
+    {"DATE",         CMDdate,         false, 1, 1,      true,  NULL                       },
+    {"GROUP",        CMDgroup,        true,  2, 2,      true,  "newsgroup"                },
+    {"HDR",          CMDpat,          true,  2, 3,      true,  "header [message-ID|range]"},
+    {"HEAD",         CMDfetch,        true,  1, 2,      true,  CMDfetchhelp               },
+    {"HELP",         CMDhelp,         false, 1, 1,      true,  NULL                       },
+    {"IHAVE",        CMDpost,         true,  2, 2,      true,  "message-ID"               },
+    {"LAST",         CMDnextlast,     true,  1, 1,      true,  NULL                       },
+    {"LIST",         CMDlist,         true,  1, 3,      true,
+     "[ACTIVE [wildmat]|ACTIVE.TIMES [wildmat]|COUNTS [wildmat]|DISTRIB.PATS"
+     "|DISTRIBUTIONS|HEADERS [MSGID|RANGE]|MODERATORS|MOTD|NEWSGROUPS "
+     "[wildmat]|OVERVIEW.FMT|SUBSCRIPTIONS [wildmat]]"                                    },
+    {"LISTGROUP",    CMDgroup,        true,  1, 3,      true,  "[newsgroup [range]]"      },
+    {"MODE",         CMDmode,         false, 2, 2,      true,  "READER"                   },
+    {"NEWGROUPS",    CMDnewgroups,    true,  3, 4,      true,  "[yy]yymmdd hhmmss [GMT]"  },
+    {"NEWNEWS",      CMDnewnews,      true,  4, 5,      true,
+     "wildmat [yy]yymmdd hhmmss [GMT]"                                                    },
+    {"NEXT",         CMDnextlast,     true,  1, 1,      true,  NULL                       },
+    {"OVER",         CMDover,         true,  1, 2,      true,  "[range]"                  },
+    {"POST",         CMDpost,         true,  1, 1,      true,  NULL                       },
+    {"QUIT",         CMDquit,         false, 1, 1,      true,  NULL                       },
+ /* SLAVE (which was ill-defined in RFC 977) was removed from the NNTP
+  * protocol in RFC 3977. */
+    {"SLAVE",        CMD_unimp,       false, 1, 1,      true,  NULL                       },
 #ifdef HAVE_OPENSSL
-    {   "STARTTLS",     CMDstarttls,     false,  1,  1,      true,
-        NULL },
+    {"STARTTLS",     CMDstarttls,     false, 1, 1,      true,  NULL                       },
 #endif
-    {   "STAT",         CMDfetch,        true,   1,  2,      true,
-        CMDfetchhelp },
-    {   "XGTITLE",      CMDxgtitle,      true,   1,  2,      true,
-        "[wildmat]" },
-    {   "XHDR",         CMDpat,          true,   2,  3,      true,
-        "header [message-ID|range]" },
-    {   "XOVER",        CMDover,         true,   1,  2,      true,
-        "[range]" },
-    {   "XPAT",         CMDpat,          true,   4,  CMDany, true,
-        "header message-ID|range pattern [pattern ...]" },
-    {   NULL,           CMD_unimp,       false,  0,  0,      true,
-        NULL }
+    {"STAT",         CMDfetch,        true,  1, 2,      true,  CMDfetchhelp               },
+    {"XGTITLE",      CMDxgtitle,      true,  1, 2,      true,  "[wildmat]"                },
+    {"XHDR",         CMDpat,          true,  2, 3,      true,  "header [message-ID|range]"},
+    {"XOVER",        CMDover,         true,  1, 2,      true,  "[range]"                  },
+    {"XPAT",         CMDpat,          true,  4, CMDany, true,
+     "header message-ID|range pattern [pattern ...]"                                      },
+    {NULL,           CMD_unimp,       false, 0, 0,      true,  NULL                       }
 };
-/* clang-format on */
 
 static const char *const timer_name[] = {
     "idle", "newnews", "readart", "checkart", "nntpread", "nntpwrite",

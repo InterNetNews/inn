@@ -784,7 +784,7 @@ CMDpost(int ac, char *av[])
         /* +2 because of the \n\0 we append; note we don't add the 2
          * when increasing the size of the buffer as ART_LINE_MALLOC
          * will always be larger than 2 bytes. */
-        if ((len + 2) > (size_t)(end - p)) {
+        if ((len + 2) > (size_t) (end - p)) {
             i = p - article;
             size += len + 4096;
             article = xrealloc(article, size);

@@ -28,14 +28,14 @@
     1 - tab
    38 - token
     1 - \n */
-#define HISV6_MAXLINE 137
+#define HISV6_MAXLINE     137
 
 /* minimum length of a history line:
    34 - hash
     1 - \t
     1 - arrived
     1 - \n */
-#define HISV6_MINLINE 37
+#define HISV6_MINLINE     37
 
 struct hisv6 {
     char *histpath;

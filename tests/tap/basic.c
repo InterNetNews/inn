@@ -960,9 +960,9 @@ bstrndup(const char *s, size_t n)
     size_t length;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t)(p - s) < n && *p != '\0'; p++)
+    for (p = s; (size_t) (p - s) < n && *p != '\0'; p++)
         ;
-    length = (size_t)(p - s);
+    length = (size_t) (p - s);
     copy = (char *) malloc(length + 1);
     if (copy == NULL)
         sysbail("failed to strndup %lu bytes", (unsigned long) length);

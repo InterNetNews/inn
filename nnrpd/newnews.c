@@ -176,7 +176,7 @@ process_newnews(char *group, bool AllGroups, time_t date)
         }
         while (OVsearch(handle, &artnum, &data, &len, &token, &arrived)) {
             if (innconf->nfsreader != 0
-                && (time_t)(arrived + innconf->nfsreaderdelay) > now)
+                && (time_t) (arrived + innconf->nfsreaderdelay) > now)
                 continue;
             if (len == 0 || date > arrived)
                 continue;

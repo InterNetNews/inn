@@ -50,15 +50,15 @@ struct config {
 
 /* Accessor macros to get a pointer to a value inside a struct. */
 #define CONF_BOOL(conf, offset) \
-    (bool *)          (void *)((char *) (conf) + (offset))
+    (bool *)           (void *) ((char *) (conf) + (offset))
 #define CONF_NUMBER(conf, offset) \
-    (long *)          (void *)((char *) (conf) + (offset))
+    (long *)           (void *) ((char *) (conf) + (offset))
 #define CONF_UNUMBER(conf, offset) \
-    (unsigned long *) (void *)((char *) (conf) + (offset))
+    (unsigned long *)  (void *) ((char *) (conf) + (offset))
 #define CONF_STRING(conf, offset) \
-    (char **)         (void *)((char *) (conf) + (offset))
+    (char **)          (void *) ((char *) (conf) + (offset))
 #define CONF_LIST(conf, offset) \
-    (struct vector **)(void *)((char *) (conf) + (offset))
+    (struct vector **) (void *) ((char *) (conf) + (offset))
 /* clang-format on */
 
 BEGIN_DECLS

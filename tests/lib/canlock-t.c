@@ -11,27 +11,27 @@
 #include "inn/vector.h"
 #include "tap/basic.h"
 
-#define MID         "<12345@mid.example>"
-#define USER        "JaneDoe"
-#define FOLD        "\n\t"
-#define ADMINSECRET "ExampleSecret"
-#define USERSECRET  "AnotherSecret"
+#define MID             "<12345@mid.example>"
+#define USER            "JaneDoe"
+#define FOLD            "\n\t"
+#define ADMINSECRET     "ExampleSecret"
+#define USERSECRET      "AnotherSecret"
 
 #define SHA1ADMINLOCK   "sha1:JD+QmQh5LH6lLLToKLcDl+Aemg0="
 #define SHA256ADMINLOCK "sha256:s/pmK/3grrz++29ce2/mQydzJuc7iqHn1nqcJiQTPMc="
 #define SHA1USERLOCK    "sha1:zdoRY4lJw5jLLtJTfpEqu1epqzc="
 #define SHA256USERLOCK  "sha256:NSBTz7BfcQFTCen+U4lQ0VS8VIlZao2b8mxD/xJaaeE="
 
-#define ADMINLOCKLINE SHA1ADMINLOCK " " SHA256ADMINLOCK
-#define USERLOCKLINE  SHA1USERLOCK " " SHA256USERLOCK
+#define ADMINLOCKLINE   SHA1ADMINLOCK " " SHA256ADMINLOCK
+#define USERLOCKLINE    SHA1USERLOCK " " SHA256USERLOCK
 
-#define SHA1ADMINKEY   "sha1:8HzrY7F4N+5SXkGQah1mcyW+01g="
-#define SHA256ADMINKEY "sha256:qv1VXHYiCGjkX/N1nhfYKcAeUn8bCVhrWhoKuBSnpMA="
-#define SHA1USERKEY    "sha1:mHkFFHF4DM97Oi+8vEsCXQb4aM0="
-#define SHA256USERKEY  "sha256:yM0ep490Fzt83CLYYAytm3S2HasHhYG4LAeAlmuSEys="
+#define SHA1ADMINKEY    "sha1:8HzrY7F4N+5SXkGQah1mcyW+01g="
+#define SHA256ADMINKEY  "sha256:qv1VXHYiCGjkX/N1nhfYKcAeUn8bCVhrWhoKuBSnpMA="
+#define SHA1USERKEY     "sha1:mHkFFHF4DM97Oi+8vEsCXQb4aM0="
+#define SHA256USERKEY   "sha256:yM0ep490Fzt83CLYYAytm3S2HasHhYG4LAeAlmuSEys="
 
-#define ADMINKEYLINE SHA1ADMINKEY " " SHA256ADMINKEY
-#define USERKEYLINE  SHA1USERKEY " " SHA256USERKEY
+#define ADMINKEYLINE    SHA1ADMINKEY " " SHA256ADMINKEY
+#define USERKEYLINE     SHA1USERKEY " " SHA256USERKEY
 
 
 #if defined(HAVE_CANLOCK)

@@ -58,8 +58,8 @@ typedef struct _CAFHEADER {
 ** extend the CAF file instead.
 */
 
-#define CAF_DEFAULT_FZSIZE (CAF_DEFAULT_BLOCKSIZE - sizeof(CAFHEADER))
-#define CAF_MIN_FZSIZE     128
+#define CAF_DEFAULT_FZSIZE    (CAF_DEFAULT_BLOCKSIZE - sizeof(CAFHEADER))
+#define CAF_MIN_FZSIZE        128
 
 /*
 ** (Note: the CAFBITMAP structure isn't what's actually stored on disk
@@ -117,7 +117,7 @@ typedef struct _CAFTOCENT {
 /*
 ** Default extension name for CAF file in the news spool dir.
 */
-#define CAF_NAME "CF"
+#define CAF_NAME             "CF"
 
 extern int CAFOpenArtRead(const char *cfpath, ARTNUM art, size_t *len);
 extern int CAFOpenArtWrite(char *cfpath, ARTNUM *art, int WaitLock,

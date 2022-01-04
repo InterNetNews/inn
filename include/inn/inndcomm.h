@@ -21,8 +21,8 @@ typedef char ICC_PROTOCOLTYPE;
 /* Values for the protocol version field of the message. 8 bits wide. */
 #define ICC_PROTOCOL_1 'a'
 
-#define SC_SEP       '\001'
-#define SC_MAXFIELDS 6
+#define SC_SEP         '\001'
+#define SC_MAXFIELDS   6
 
 /* When modifying this list, the innreport_inn.pm file should be updated
  * at the same time. */
@@ -65,7 +65,7 @@ typedef char ICC_PROTOCOLTYPE;
 #define SC_XEXEC       'y'
 
 /* Yes, we don't want anyone to use this. */
-#define SC_FIRSTFREE G
+#define SC_FIRSTFREE   G
 
 #define MAX_REASON_LEN 80
 

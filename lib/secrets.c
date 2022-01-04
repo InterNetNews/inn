@@ -30,12 +30,10 @@ struct secrets *secrets = NULL;
 
 #define K(name) (#name), offsetof(struct secrets, name)
 
-/* clang-format off */
 static const struct config config_table[] = {
-    { K(canlockadmin),         LIST   (NULL) },
-    { K(canlockuser),          LIST   (NULL) },
+    {K(canlockadmin), LIST(NULL)},
+    {K(canlockuser),  LIST(NULL)},
 };
-/* clang-format on */
 
 
 /*

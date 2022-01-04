@@ -247,7 +247,7 @@ end_table(void)
 
 #    define OFFSETOF(type, f) ((char *) &(((type *) 0)->f) - (char *) 0)
 
-#    define F(f) OFFSETOF(DB_LOCK_STAT, f)
+#    define F(f)              OFFSETOF(DB_LOCK_STAT, f)
 
 /* clang-format off */
 static struct datatab LOCK_tab[] = {
@@ -451,13 +451,12 @@ static struct datatab TXN_tab[] = {
 #    undef F
 #    define F(f) OFFSETOF(DB_TXN_ACTIVE, f)
 
-/* clang-format off */
 static struct datatab TXNA_tab[] = {
- {INT32, F(txnid),    -1, -1, "Transaction ID"},
- {INT32, F(parentid), -1, -1, "Parent Transaction ID"},
- {LSN,   F(lsn),      -1, -1, "Initial LSN file/offset"},
- {END,   -1,          -1, -1, NULL}};
-/* clang-format on */
+    {INT32, F(txnid),    -1, -1, "Transaction ID"         },
+    {INT32, F(parentid), -1, -1, "Parent Transaction ID"  },
+    {LSN,   F(lsn),      -1, -1, "Initial LSN file/offset"},
+    {END,   -1,          -1, -1, NULL                     }
+};
 
 static int
 display_txn(void)
@@ -644,7 +643,7 @@ parse_artrange(char *str, ARTNUM *start, ARTNUM *stop)
         *stop = atoi(str + 1);
         return (*stop == 0);
     }
-    if (strlen(str) == (size_t)(c - str + 1)) {
+    if (strlen(str) == (size_t) (c - str + 1)) {
         *start = atoi(str);
         *stop = 0xffffffff;
         return (*start == 0);

@@ -46,22 +46,22 @@
 
 #include "buffindexed.h"
 
-#define OVBUFF_MAGIC   "ovbuff"
-#define OVBUFF_VERSION 2
+#define OVBUFF_MAGIC        "ovbuff"
+#define OVBUFF_VERSION      2
 
 /*
 ** Because ovbuff bitfields are residing in memory, we don't have to
 ** do file write for each update.  Instead we'll do it at every
 ** OVBUFF_SYNC_COUNT updates.
 */
-#define OVBUFF_SYNC_COUNT (innconf->icdsynccount * 10 + 1)
+#define OVBUFF_SYNC_COUNT   (innconf->icdsynccount * 10 + 1)
 
 /* ovbuff header */
-#define OVBUFFMASIZ 8
-#define OVBUFFLASIZ 16
-#define OVBUFFPASIZ 64
+#define OVBUFFMASIZ         8
+#define OVBUFFLASIZ         16
+#define OVBUFFPASIZ         64
 
-#define OVMAXCYCBUFFNAME 8
+#define OVMAXCYCBUFFNAME    8
 
 /*
 ** Default and minimum size of the header.  If the system default page size is
@@ -70,10 +70,10 @@
 */
 #define OV_HDR_MIN_PAGESIZE 16384
 
-#define OV_BEFOREBITF    (1 * OV_BLOCKSIZE)
-#define OV_BLOCKSIZE     8192
-#define OV_FUDGE         1024
-#define OV_OFFSET(block) (block * (off_t) OV_BLOCKSIZE)
+#define OV_BEFOREBITF       (1 * OV_BLOCKSIZE)
+#define OV_BLOCKSIZE        8192
+#define OV_FUDGE            1024
+#define OV_OFFSET(block)    (block * (off_t) OV_BLOCKSIZE)
 
 /* ovblock pointer */
 typedef struct _OV {

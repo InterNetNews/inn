@@ -39,8 +39,8 @@ long EXPoverindexdrop;
 #define NGH_SIZE      2048
 #define NGH_BUCKET(j) &NGHtable[j & (NGH_SIZE - 1)]
 
-#define OVFMT_UNINIT -2
-#define OVFMT_NODATE -1
+#define OVFMT_UNINIT  -2
+#define OVFMT_NODATE  -1
 
 static int Dateindex = OVFMT_UNINIT;
 static int Xrefindex = OVFMT_UNINIT;
@@ -293,7 +293,7 @@ EXPgetnum(int line, char *word, time_t *v, const char *name)
     if (d > MAGIC_TIME)
         *v = (time_t) 0;
     else
-        *v = OVnow - (time_t)(d * 86400.);
+        *v = OVnow - (time_t) (d * 86400.);
     return true;
 }
 

@@ -214,29 +214,29 @@ struct eqgrp {
 #define IS_ERROR(ign) \
     ((ign) & ~(CHECK_IGNORE | CHECK_TYPE | CHECK_BORK | CHECK_HIER))
 
-#define NOHOST  0 /* neither host1 nor host2 */
-#define HOSTID1 1 /* entry from the first host */
-#define HOSTID2 2 /* entry from the second host */
+#define NOHOST       0 /* neither host1 nor host2 */
+#define HOSTID1      1 /* entry from the first host */
+#define HOSTID2      2 /* entry from the second host */
 
-#define CHUNK 5000 /* number of elements to alloc at a time */
+#define CHUNK        5000 /* number of elements to alloc at a time */
 
-#define TYPES   "ymjnx=" /* group types (1st char of 4th active fld) */
-#define TYPECNT (sizeof(TYPES) - 1)
+#define TYPES        "ymjnx=" /* group types (1st char of 4th active fld) */
+#define TYPECNT      (sizeof(TYPES) - 1)
 
-#define DEF_HI  "0000000000" /* default hi string value for new groups */
-#define DEF_LOW "0000000001" /* default low string value for new groups */
+#define DEF_HI       "0000000000" /* default hi string value for new groups */
+#define DEF_LOW      "0000000001" /* default low string value for new groups */
 
-#define DEF_NAME "actsync" /* default name to use for ctlinnd newgroup */
+#define DEF_NAME     "actsync" /* default name to use for ctlinnd newgroup */
 
-#define MIN_UNCHG (double) 96.0 /* min % of host1 lines unchanged allowed */
+#define MIN_UNCHG    (double) 96.0 /* min % of host1 lines unchanged allowed */
 
 #define DEV_NULL     "/dev/null" /* path to the bit bucket */
 #define CTLINND_NAME "ctlinnd"   /* basename of ctlinnd command */
 
-#define READ_SIDE  0 /* read side of a pipe */
-#define WRITE_SIDE 1 /* write side of a pipe */
+#define READ_SIDE    0 /* read side of a pipe */
+#define WRITE_SIDE   1 /* write side of a pipe */
 
-#define EQ_LOOP 16 /* give up if =eq loop/chain is this long */
+#define EQ_LOOP      16 /* give up if =eq loop/chain is this long */
 
 /* -b macros */
 #define BORK_CHECK(hostid)                  \

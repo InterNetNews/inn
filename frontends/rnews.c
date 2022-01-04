@@ -49,10 +49,10 @@ static HEADER RequiredHeaders[] = {
     {"Message-ID", 10},
 #define _messageid      0
     {"Newsgroups", 10},
-    {"From",        4},
-    {"Date",        4},
-    {"Subject",     7},
-    {"Path",        4},
+    {"From",       4 },
+    {"Date",       4 },
+    {"Subject",    7 },
+    {"Path",       4 },
 #define _path           5
 };
 /* clang-format on */

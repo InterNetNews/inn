@@ -49,8 +49,8 @@
 #endif
 
 /* Bytes to process at once, defined by the algorithm. */
-#define MD5_CHUNKSIZE  (1 << 6)
-#define MD5_CHUNKWORDS (MD5_CHUNKSIZE / sizeof(uint32_t))
+#define MD5_CHUNKSIZE   (1 << 6)
+#define MD5_CHUNKWORDS  (MD5_CHUNKSIZE / sizeof(uint32_t))
 
 /* Length of the digest, defined by the algorithm. */
 #define MD5_DIGESTSIZE  16

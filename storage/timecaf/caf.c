@@ -1391,7 +1391,7 @@ CAFStatArticle(char *path, ARTNUM art, struct stat *stbuf)
 ** amount of TOC data in use so as not to have to reclean or compact the TOC
 ** so often.
 */
-#define TOC_CLEAN_RATIO 10
+#define TOC_CLEAN_RATIO   10
 /*
 ** ditto, but for compacting, we want to force a compacting if the High art#
 ** wanders into the top nth of the TOC slots.
@@ -1501,7 +1501,7 @@ CAFClean(char *path, int verbose, double PercentFreeThreshold)
     /* Allocate memory for TOC. */
     tocarray = xmalloc((head.High - head.Low + 1) * sizeof(CAFTOCENT));
 
-    fseeko(infile, (off_t)(sizeof(CAFHEADER) + head.FreeZoneTabSize),
+    fseeko(infile, (off_t) (sizeof(CAFHEADER) + head.FreeZoneTabSize),
            SEEK_SET);
 
     n = fread(tocarray, sizeof(CAFTOCENT), (head.High - head.Low + 1), infile);

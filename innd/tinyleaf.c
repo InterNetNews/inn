@@ -45,13 +45,11 @@ static void command_quit(struct cvector *, void *);
 
 /* The actual command dispatch table for TinyNNTP.  This table MUST be
    sorted. */
-/* clang-format off */
 static const struct dispatch commands[] = {
     {"help",  command_help,  0, 0, NULL},
     {"ihave", command_ihave, 1, 1, NULL},
     {"quit",  command_quit,  0, 0, NULL},
 };
-/* clang-format on */
 
 /* Global state for the daemon. */
 struct state {

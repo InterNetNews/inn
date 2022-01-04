@@ -23,8 +23,8 @@
 #include "../storage/tradindexed/tradindexed.h"
 
 /* Used to set ovmethod to the value of OVTYPE. */
-#define STRING(x)  XSTRING(x)
-#define XSTRING(x) (#x)
+#define STRING(x)                         XSTRING(x)
+#define XSTRING(x)                        (#x)
 
 /* We don't want to use OVadd, since it's too smart for what we're testing.
    It tries to figure out what newsgroup and article number to store the

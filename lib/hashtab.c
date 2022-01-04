@@ -412,10 +412,10 @@ hash_lookup2(const char *key, size_t length, unsigned long partial)
     a = b = 0x9e3779b9;
     c = partial;
 
-#define S0(c) ((uint32_t)(c))
-#define S1(c) ((uint32_t)(c) << 8)
-#define S2(c) ((uint32_t)(c) << 16)
-#define S3(c) ((uint32_t)(c) << 24)
+#define S0(c) ((uint32_t) (c))
+#define S1(c) ((uint32_t) (c) << 8)
+#define S2(c) ((uint32_t) (c) << 16)
+#define S3(c) ((uint32_t) (c) << 24)
 
     /* Handle most of the key. */
     while (len >= 12) {

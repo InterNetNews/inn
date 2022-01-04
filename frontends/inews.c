@@ -25,8 +25,8 @@
 
 /* Signature handling.  The separator will be appended before the signature,
    and at most SIG_MAXLINES will be appended. */
-#define SIG_MAXLINES  4
-#define SIG_SEPARATOR "-- \n"
+#define SIG_MAXLINES   4
+#define SIG_SEPARATOR  "-- \n"
 
 #define FLUSH_ERROR(F) (fflush((F)) == EOF || ferror((F)))
 #define LPAREN         '(' /* For vi :-) */

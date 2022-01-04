@@ -298,7 +298,7 @@ LockPostRec(char *path)
          * PERMaccessconf->backoff_postslow, remove it. */
         statfailed = 0;
         time(&now);
-        if (now < (time_t)(st.st_ctime + PERMaccessconf->backoff_postslow))
+        if (now < (time_t) (st.st_ctime + PERMaccessconf->backoff_postslow))
             continue;
         syslog(L_ERROR, "%s removing stale lock file %s", Client.host,
                lockname);

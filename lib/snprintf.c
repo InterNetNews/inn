@@ -168,31 +168,31 @@ static int dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
  */
 
 /* format read states */
-#define DP_S_DEFAULT 0
-#define DP_S_FLAGS   1
-#define DP_S_MIN     2
-#define DP_S_DOT     3
-#define DP_S_MAX     4
-#define DP_S_MOD     5
-#define DP_S_MOD_L   6
-#define DP_S_CONV    7
-#define DP_S_DONE    8
+#define DP_S_DEFAULT   0
+#define DP_S_FLAGS     1
+#define DP_S_MIN       2
+#define DP_S_DOT       3
+#define DP_S_MAX       4
+#define DP_S_MOD       5
+#define DP_S_MOD_L     6
+#define DP_S_CONV      7
+#define DP_S_DONE      8
 
 /* format flags - Bits */
-#define DP_F_MINUS    (1 << 0)
-#define DP_F_PLUS     (1 << 1)
-#define DP_F_SPACE    (1 << 2)
-#define DP_F_NUM      (1 << 3)
-#define DP_F_ZERO     (1 << 4)
-#define DP_F_UP       (1 << 5)
-#define DP_F_UNSIGNED (1 << 6)
-#define DP_F_FP_G     (1 << 7)
+#define DP_F_MINUS     (1 << 0)
+#define DP_F_PLUS      (1 << 1)
+#define DP_F_SPACE     (1 << 2)
+#define DP_F_NUM       (1 << 3)
+#define DP_F_ZERO      (1 << 4)
+#define DP_F_UP        (1 << 5)
+#define DP_F_UNSIGNED  (1 << 6)
+#define DP_F_FP_G      (1 << 7)
 
 /* Conversion Flags */
-#define DP_C_SHORT   1
-#define DP_C_LONG    2
-#define DP_C_LLONG   3
-#define DP_C_LDOUBLE 4
+#define DP_C_SHORT     1
+#define DP_C_LONG      2
+#define DP_C_LLONG     3
+#define DP_C_LDOUBLE   4
 
 #define char_to_int(p) (p - '0')
 #define MAX(p, q)      ((p >= q) ? p : q)

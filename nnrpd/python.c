@@ -59,30 +59,30 @@ typedef int Py_ssize_t;
 #    include "nnrpd.h"
 
 /*  Values relate name of hook to array index. */
-#    define PYTHONauthen  1
-#    define PYTHONaccess  2
-#    define PYTHONdynamic 3
+#    define PYTHONauthen      1
+#    define PYTHONaccess      2
+#    define PYTHONdynamic     3
 
-#    define PYTHONtypes_max 4
+#    define PYTHONtypes_max   4
 
 /*  Values relate type of method to array index. */
-#    define PYTHONmain  1
-#    define PYTHONinit  2
-#    define PYTHONclose 3
+#    define PYTHONmain        1
+#    define PYTHONinit        2
+#    define PYTHONclose       3
 
 #    define PYTHONmethods_max 4
 
 /*  Key names for attributes dictionary. */
-#    define PYTHONhostname  "hostname"
-#    define PYTHONipaddress "ipaddress"
-#    define PYTHONport      "port"
-#    define PYTHONinterface "interface"
-#    define PYTHONintipaddr "intipaddr"
-#    define PYTHONintport   "intport"
-#    define PYTHONuser      "user"
-#    define PYTHONpass      "pass"
-#    define PYTHONtype      "type"
-#    define PYTHONnewsgroup "newsgroup"
+#    define PYTHONhostname    "hostname"
+#    define PYTHONipaddress   "ipaddress"
+#    define PYTHONport        "port"
+#    define PYTHONinterface   "interface"
+#    define PYTHONintipaddr   "intipaddr"
+#    define PYTHONintport     "intport"
+#    define PYTHONuser        "user"
+#    define PYTHONpass        "pass"
+#    define PYTHONtype        "type"
+#    define PYTHONnewsgroup   "newsgroup"
 
 /*  Max number of items in dictionary to pass to auth methods. */
 #    define _PY_MAX_AUTH_ITEM 10

@@ -16,7 +16,7 @@
 
 /* This is the type of an empty token.  Tokens with this type will be
    returned when errors occur */
-#define TOKEN_EMPTY 255
+#define TOKEN_EMPTY          255
 
 typedef enum
 {

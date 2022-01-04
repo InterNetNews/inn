@@ -28,57 +28,56 @@ static const char *const BadDistribs[] = {BAD_DISTRIBS};
 **  Message Header Field Names" registry:
 **    http://www.iana.org/assignments/message-headers/
 */
-/* clang-format off */
 HEADER Table[] = {
-    /*  Name                    CanSet  Type    Size  Value    Body  Len */
-    {   "Path",                 true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "From",                 true,   HTreq,  0,    NULL,    NULL, 0 },
-    {   "Newsgroups",           true,   HTreq,  0,    NULL,    NULL, 0 },
-    {   "Subject",              true,   HTreq,  0,    NULL,    NULL, 0 },
-    {   "Control",              true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Supersedes",           true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Followup-To",          true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Date",                 true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Organization",         true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Lines",                true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Sender",               true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Approved",             true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Archive",              true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Distribution",         true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Expires",              true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Message-ID",           true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "References",           true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Reply-To",             true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "NNTP-Posting-Host",    false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Mime-Version",         true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Content-Type",         true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Content-Transfer-Encoding", true, HTstd, 0,  NULL,    NULL, 0 },
-    {   "X-Trace",              false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "X-Complaints-To",      false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "NNTP-Posting-Date",    false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Xref",                 false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "Injection-Date",       true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Injection-Info",       false,  HTstd,  0,    NULL,    NULL, 0 },
-    {   "Summary",              true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Keywords",             true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "User-Agent",           true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Date-Received",        false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Posting-Version",      false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Relay-Version",        false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Cc",                   true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Bcc",                  true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "To",                   true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Archived-At",          true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Also-Control",         false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Article-Names",        false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Article-Updates",      false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "See-Also",             false,  HTobs,  0,    NULL,    NULL, 0 },
-    {   "Cancel-Key",           true,   HTstd,  0,    NULL,    NULL, 0 },
-    {   "Cancel-Lock",          true,   HTstd,  0,    NULL,    NULL, 0 },
-/* The Comments and Original-Sender header fields can appear more than once
- * in the headers of an article.  Consequently, we MUST NOT put them here. */
+  /*  Name                       CanSet  Type Size Value Body Len */
+    {"Path",                      true,  HTstd, 0, NULL, NULL, 0},
+    {"From",                      true,  HTreq, 0, NULL, NULL, 0},
+    {"Newsgroups",                true,  HTreq, 0, NULL, NULL, 0},
+    {"Subject",                   true,  HTreq, 0, NULL, NULL, 0},
+    {"Control",                   true,  HTstd, 0, NULL, NULL, 0},
+    {"Supersedes",                true,  HTstd, 0, NULL, NULL, 0},
+    {"Followup-To",               true,  HTstd, 0, NULL, NULL, 0},
+    {"Date",                      true,  HTstd, 0, NULL, NULL, 0},
+    {"Organization",              true,  HTstd, 0, NULL, NULL, 0},
+    {"Lines",                     true,  HTstd, 0, NULL, NULL, 0},
+    {"Sender",                    true,  HTstd, 0, NULL, NULL, 0},
+    {"Approved",                  true,  HTstd, 0, NULL, NULL, 0},
+    {"Archive",                   true,  HTstd, 0, NULL, NULL, 0},
+    {"Distribution",              true,  HTstd, 0, NULL, NULL, 0},
+    {"Expires",                   true,  HTstd, 0, NULL, NULL, 0},
+    {"Message-ID",                true,  HTstd, 0, NULL, NULL, 0},
+    {"References",                true,  HTstd, 0, NULL, NULL, 0},
+    {"Reply-To",                  true,  HTstd, 0, NULL, NULL, 0},
+    {"NNTP-Posting-Host",         false, HTobs, 0, NULL, NULL, 0},
+    {"Mime-Version",              true,  HTstd, 0, NULL, NULL, 0},
+    {"Content-Type",              true,  HTstd, 0, NULL, NULL, 0},
+    {"Content-Transfer-Encoding", true,  HTstd, 0, NULL, NULL, 0},
+    {"X-Trace",                   false, HTobs, 0, NULL, NULL, 0},
+    {"X-Complaints-To",           false, HTobs, 0, NULL, NULL, 0},
+    {"NNTP-Posting-Date",         false, HTobs, 0, NULL, NULL, 0},
+    {"Xref",                      false, HTstd, 0, NULL, NULL, 0},
+    {"Injection-Date",            true,  HTstd, 0, NULL, NULL, 0},
+    {"Injection-Info",            false, HTstd, 0, NULL, NULL, 0},
+    {"Summary",                   true,  HTstd, 0, NULL, NULL, 0},
+    {"Keywords",                  true,  HTstd, 0, NULL, NULL, 0},
+    {"User-Agent",                true,  HTstd, 0, NULL, NULL, 0},
+    {"Date-Received",             false, HTobs, 0, NULL, NULL, 0},
+    {"Posting-Version",           false, HTobs, 0, NULL, NULL, 0},
+    {"Relay-Version",             false, HTobs, 0, NULL, NULL, 0},
+    {"Cc",                        true,  HTstd, 0, NULL, NULL, 0},
+    {"Bcc",                       true,  HTstd, 0, NULL, NULL, 0},
+    {"To",                        true,  HTstd, 0, NULL, NULL, 0},
+    {"Archived-At",               true,  HTstd, 0, NULL, NULL, 0},
+    {"Also-Control",              false, HTobs, 0, NULL, NULL, 0},
+    {"Article-Names",             false, HTobs, 0, NULL, NULL, 0},
+    {"Article-Updates",           false, HTobs, 0, NULL, NULL, 0},
+    {"See-Also",                  false, HTobs, 0, NULL, NULL, 0},
+    {"Cancel-Key",                true,  HTstd, 0, NULL, NULL, 0},
+    {"Cancel-Lock",               true,  HTstd, 0, NULL, NULL, 0},
+ /* The Comments and Original-Sender header fields can appear more than once
+  * in the headers of an article.  Consequently, we MUST NOT put them here.
+  */
 };
-/* clang-format on */
 
 HEADER *EndOfTable = ARRAY_END(Table);
 
@@ -128,7 +127,7 @@ MaxLength(char *p, char *q)
         q = p;
 
     /* Simple case of just want the beginning? */
-    if (q == NULL || (size_t)(q - p) < sizeof(buff) - 4) {
+    if (q == NULL || (size_t) (q - p) < sizeof(buff) - 4) {
         strlcpy(buff, p, sizeof(buff) - 3);
         strlcat(buff, "...", sizeof(buff));
     } else if ((p + i) - q < 10) {

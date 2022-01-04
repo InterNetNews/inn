@@ -98,8 +98,8 @@ void ovdb_close_berkeleydb(void);
 int ovdb_getgroupinfo(const char *group, struct groupinfo *gi,
                       int ignoredeleted, DB_TXN *tid, int getflags);
 
-#    define OVDB_RECOVER 1
-#    define OVDB_UPGRADE 2
+#    define OVDB_RECOVER        1
+#    define OVDB_UPGRADE        2
 
 #    define OVDB_LOCK_NORMAL    0
 #    define OVDB_LOCK_ADMIN     1
@@ -116,17 +116,17 @@ bool ovdb_check_user(void);
 #    define SPACES               "                "
 
 /* read server stuff */
-#    define CMD_QUIT           0x01
-#    define CMD_GROUPSTATS     0x02
-#    define CMD_OPENSRCH       0x03
-#    define CMD_SRCH           0x04
-#    define CMD_CLOSESRCH      0x05
-#    define CMD_ARTINFO        0x06
-#    define CMD_MASK           0x0F
-#    define RPLY_OK            0x00
-#    define RPLY_ERROR         0x10
-#    define OVDB_SERVER        (1 << 4)
-#    define OVDB_SERVER_BANNER "ovdb read protocol 1"
+#    define CMD_QUIT             0x01
+#    define CMD_GROUPSTATS       0x02
+#    define CMD_OPENSRCH         0x03
+#    define CMD_SRCH             0x04
+#    define CMD_CLOSESRCH        0x05
+#    define CMD_ARTINFO          0x06
+#    define CMD_MASK             0x0F
+#    define RPLY_OK              0x00
+#    define RPLY_ERROR           0x10
+#    define OVDB_SERVER          (1 << 4)
+#    define OVDB_SERVER_BANNER   "ovdb read protocol 1"
 #    define OVDB_SERVER_PORT \
         32323 /* only used if don't have unix domain sockets */
 #    define OVDB_SERVER_SOCKET "ovdb.server"
@@ -194,6 +194,6 @@ struct rs_artinfo {
 #    define TXN_ABORT(label, tid)  (tid)->abort(tid)
 #    define TXN_COMMIT(label, tid) (tid)->commit(tid, 0)
 
-#    define TRYAGAIN DB_LOCK_DEADLOCK
+#    define TRYAGAIN               DB_LOCK_DEADLOCK
 
 #endif /* HAVE_BDB */

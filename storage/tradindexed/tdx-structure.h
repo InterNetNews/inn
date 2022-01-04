@@ -70,7 +70,7 @@ struct loc {
 /* A magic number for the group.index file so that we can later change the
    format in a backward-compatible fashion.
    This magic number stands for "fifo feed". */
-#define TDX_MAGIC (~(0xf1f0f33d))
+#define TDX_MAGIC     (~(0xf1f0f33d))
 
 /* The header at the top of group.index.  magic contains GROUPHEADERMAGIC
    always; hash contains pointers to the heads of the entry chains, and

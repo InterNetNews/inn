@@ -218,42 +218,40 @@ static int clientmode = 0;
 static DB *groupinfo = NULL;
 static DB *groupaliases = NULL;
 
-#    define OVDBtxn_nosync 1
-#    define OVDBnumdbfiles 2
-#    define OVDBpagesize   3
-#    define OVDBcachesize  4
-#    define OVDBminkey     5
-#    define OVDBmaxlocks   6
-#    define OVDBnocompact  7
-#    define OVDBreadserver 8
-#    define OVDBnumrsprocs 9
-#    define OVDBmaxrsconn  10
-#    define OVDBuseshm     11
-#    define OVDBshmkey     12
-#    define OVDBcompress   13
-#    define OVDBncache     14
+#    define OVDBtxn_nosync       1
+#    define OVDBnumdbfiles       2
+#    define OVDBpagesize         3
+#    define OVDBcachesize        4
+#    define OVDBminkey           5
+#    define OVDBmaxlocks         6
+#    define OVDBnocompact        7
+#    define OVDBreadserver       8
+#    define OVDBnumrsprocs       9
+#    define OVDBmaxrsconn        10
+#    define OVDBuseshm           11
+#    define OVDBshmkey           12
+#    define OVDBcompress         13
+#    define OVDBncache           14
 
-/* clang-format off */
 static CONFTOKEN toks[] = {
-    { OVDBtxn_nosync,   (char *) "txn_nosync"   },
-    { OVDBnumdbfiles,   (char *) "numdbfiles"   },
-    { OVDBpagesize,     (char *) "pagesize"     },
-    { OVDBcachesize,    (char *) "cachesize"    },
-    { OVDBminkey,       (char *) "minkey"       },
-    { OVDBmaxlocks,     (char *) "maxlocks"     },
-    { OVDBnocompact,    (char *) "nocompact"    },
-    { OVDBreadserver,   (char *) "readserver"   },
-    { OVDBnumrsprocs,   (char *) "numrsprocs"   },
-    { OVDBmaxrsconn,    (char *) "maxrsconn"    },
-    { OVDBuseshm,       (char *) "useshm"       },
-    { OVDBshmkey,       (char *) "shmkey"       },
-    { OVDBcompress,     (char *) "compress"     },
-    { OVDBncache,       (char *) "ncache"       },
-    { 0,                NULL                    }
+    {OVDBtxn_nosync, (char *) "txn_nosync"},
+    {OVDBnumdbfiles, (char *) "numdbfiles"},
+    {OVDBpagesize,   (char *) "pagesize"  },
+    {OVDBcachesize,  (char *) "cachesize" },
+    {OVDBminkey,     (char *) "minkey"    },
+    {OVDBmaxlocks,   (char *) "maxlocks"  },
+    {OVDBnocompact,  (char *) "nocompact" },
+    {OVDBreadserver, (char *) "readserver"},
+    {OVDBnumrsprocs, (char *) "numrsprocs"},
+    {OVDBmaxrsconn,  (char *) "maxrsconn" },
+    {OVDBuseshm,     (char *) "useshm"    },
+    {OVDBshmkey,     (char *) "shmkey"    },
+    {OVDBcompress,   (char *) "compress"  },
+    {OVDBncache,     (char *) "ncache"    },
+    {0,              NULL                 }
 };
-/* clang-format on */
 
-#    define _PATH_OVDBCONF "ovdb.conf"
+#    define _PATH_OVDBCONF       "ovdb.conf"
 
 /*********** readserver functions ***********/
 

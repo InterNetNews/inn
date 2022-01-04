@@ -173,7 +173,7 @@ BreakToken(TOKEN token, time_t *now, ARTNUM *seqnum)
     memcpy(&s1, &token.token[sizeof(i)], sizeof(s1));
     memcpy(&s2, &token.token[sizeof(i) + sizeof(s1)], sizeof(s2));
     *now = ntohl(i);
-    *seqnum = (ARTNUM)((ntohs(s2) << 16) + ntohs(s1));
+    *seqnum = (ARTNUM) ((ntohs(s2) << 16) + ntohs(s1));
 }
 
 /*

@@ -10,12 +10,12 @@
 #    define OVSQLITE_SCHEMA_VERSION   1
 #    define OVSQLITE_PROTOCOL_VERSION 1
 
-#    define OVSQLITE_SERVER_SOCKET  "ovsqlite.sock"
-#    define OVSQLITE_SERVER_PIDFILE "ovsqlite.pid"
+#    define OVSQLITE_SERVER_SOCKET    "ovsqlite.sock"
+#    define OVSQLITE_SERVER_PIDFILE   "ovsqlite.pid"
 
 #    ifndef HAVE_UNIX_DOMAIN_SOCKETS
 
-#        define OVSQLITE_SERVER_PORT "ovsqlite.port"
+#        define OVSQLITE_SERVER_PORT   "ovsqlite.port"
 
 #        define OVSQLITE_COOKIE_LENGTH 16
 

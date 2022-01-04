@@ -1004,9 +1004,9 @@ cnfs_mapcntl(void *p, size_t length, int flags)
 {
     char *start, *end;
 
-    start = (char *) ((size_t) p & ~(size_t)(pagesize - 1));
-    end = (char *) ((size_t)((char *) p + length + pagesize)
-                    & ~(size_t)(pagesize - 1));
+    start = (char *) ((size_t) p & ~(size_t) (pagesize - 1));
+    end = (char *) ((size_t) ((char *) p + length + pagesize)
+                    & ~(size_t) (pagesize - 1));
     if (flags == MS_INVALIDATE) {
         msync(start, end - start, flags);
     } else {

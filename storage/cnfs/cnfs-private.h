@@ -16,17 +16,17 @@
    a multiple of the pagesize for all the architectures you expect might need
    access to your CNFS buffer.  If you don't expect to share your buffer
    across several platforms, you can use 'pagesize' here. */
-#define CNFS_HDR_PAGESIZE 16384
+#define CNFS_HDR_PAGESIZE   16384
 
-#define CNFS_MAGICV1       "Cycbuff" /* CNFSMASIZ bytes */
-#define CNFS_MAGICV2       "CBuf1"   /* CNFSMASIZ bytes */
-#define CNFS_MAGICV3       "CBuf3"   /* CNFSMASIZ bytes */
-#define CNFS_MAGICV4       "CBuf4"   /* CNFSMASIZ bytes */
-#define CNFS_DFL_BLOCKSIZE 4096      /* Unit block size we'll work with */
-#define CNFS_MAX_BLOCKSIZE 16384     /* Max unit block size */
+#define CNFS_MAGICV1        "Cycbuff" /* CNFSMASIZ bytes */
+#define CNFS_MAGICV2        "CBuf1"   /* CNFSMASIZ bytes */
+#define CNFS_MAGICV3        "CBuf3"   /* CNFSMASIZ bytes */
+#define CNFS_MAGICV4        "CBuf4"   /* CNFSMASIZ bytes */
+#define CNFS_DFL_BLOCKSIZE  4096      /* Unit block size we'll work with */
+#define CNFS_MAX_BLOCKSIZE  16384     /* Max unit block size */
 
 /* Amount of data stored at beginning of CYCBUFF before the bitfield */
-#define CNFS_BEFOREBITF 512 /* Rounded up to CNFS_HDR_PAGESIZE */
+#define CNFS_BEFOREBITF     512 /* Rounded up to CNFS_HDR_PAGESIZE */
 
 struct metacycbuff; /* Definition comes below */
 
