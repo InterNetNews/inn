@@ -27,8 +27,10 @@
 **  plus "\n\t" (2 bytes) for the folding (without '\n') if another c-lock pair
 **  is written, and 1 byte for the final '\0'.
 **
-**  The canbuff string will be allocated by this function.
-**  The caller is reponsible for freeing.
+**  The canbuff string will be allocated by this function, unless it returns
+**  false.  This string is suitable to be used as the body of a Cancel-Lock
+**  header field.
+**  The caller is reponsible for freeing it.
 **
 **  Returns true if all c-lock elements were written, false on failure.
 */
@@ -181,8 +183,10 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
 **  formatted, or both NULL, no Message-ID is found, which will result in
 **  a failure.
 **
-**  The canbuff string will be allocated by this function.
-**  The caller is reponsible for freeing.
+**  The canbuff string will be allocated by this function, unless it returns
+**  false.  This string is suitable to be used as the body of a Cancel-Key
+**  header field.
+**  The caller is reponsible for freeing it.
 **
 **  Returns true if all c-key elements were written, false on failure.
 */

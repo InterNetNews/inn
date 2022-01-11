@@ -637,6 +637,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
      * Needless in control articles. */
     if (HDR(HDR__CONTROL) == NULL) {
         free(canlockbuff);
+        canlockbuff = NULL;
 
         if (gen_cancel_lock(HDR(HDR__MESSAGEID), PERMuser, &canbuff)) {
             if (*canbuff != '\0') {
@@ -661,6 +662,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     if (PERMuser[0] != '\0'
         && (HDR(HDR__CONTROL) != NULL || HDR(HDR__SUPERSEDES) != NULL)) {
         free(cankeybuff);
+        cankeybuff = NULL;
 
         if (gen_cancel_key(HDR(HDR__CONTROL), HDR(HDR__SUPERSEDES), PERMuser,
                            &canbuff)) {
