@@ -31,6 +31,7 @@ where <days> is a decimal number that specifies the minimum number of days
 a history record for a given message-ID is retained (from its original
 posting time), regardless of whether the article is present in the spool.
 (History entries for articles still present in the spool are always retained.)
+Setting it to C<0> means history records will be retained forever.
 
 The primary reason to retain a record of old articles is in case a peer
 offers old articles that were previously accepted but have already
