@@ -2,6 +2,32 @@
 
 newsfeeds - Determine where Usenet articles are sent
 
+=head1 IN A NUTSHELL
+
+The I<newsfeeds> file configures what B<innd> does with incoming accepted
+articles.
+
+A minimalist F<newsfeeds> file which parameters an outgoing feed to
+C<news.server.com>, using feed path entry C<server>, of all the articles you
+receive is:
+
+    # Mandatory line, with no exclusion patterns defined.
+    ME:::
+
+    # A real-time feed through innfeed.
+    news.server.com/server\
+        :*\
+        :Tm:innfeed!
+
+    # The channel feed entry for innfeed.
+    # Change "/usr/lib/news/bin" to the directory path
+    # of the innfeed program.
+    innfeed!:!*:Tc,Wnm*:/usr/lib/news/bin/innfeed
+
+Other entries may be added in F<newsfeeds> depending on your needs.  See the
+examples below and also in the archive(8), controlchan(8), news2mail(8),
+ninpaths(8) and perl-nocem(8) man pages for the most widely used.
+
 =head1 DESCRIPTION
 
 The file I<pathetc>/newsfeeds specifies how incoming articles should be

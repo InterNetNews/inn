@@ -83,23 +83,20 @@ vaguely.  That means each line should look something like:
 
     username:pdIh9NCNslkq6
 
-(and each line may have an additional colon after the encrypted password
-and additional data; that data will be ignored by B<ckpasswd>).
-Lines starting with a number sign (C<#>) are ignored.  INN does not
-come with a utility to create the encrypted passwords, but B<htpasswd>
-(which comes with Apache) can do so and it's a quick job with Perl
-(see the example script under B<-d>, or also below).  If using Apache's
-B<htpasswd> program, be sure to give it the B<-d> option so that it
-will use crypt(3).
+(and each line may have an additional colon after the encrypted password and
+additional data; that data will be ignored by B<ckpasswd>).  Lines starting
+with a number sign (C<#>) are ignored.  INN does not come with a utility to
+create the encrypted passwords, but B<htpasswd> (which comes with Apache) can
+do so and it's a quick job with Perl (see the one-line example script below).
 
-A line in I<filename> for the user C<user> with the password C<pass>
-would be C<user:LIfOpbjNaEQYE> as obtained by the following command:
+A line in I<filename> for the user C<user> with the password C<pass> would be
+C<user:LIfOpbjNaEQYE> as obtained with the following command:
 
     % htpasswd -nbd user pass
     user:LIfOpbjNaEQYE
 
-In case B<htpasswd> is not installed or if you do not want to depend
-on it, another command involving Perl does a similar job:
+In case B<htpasswd> is not installed on your server, just use the following
+Perl command which does the same job:
 
     % perl -e 'print "user:".crypt("pass", "LI")."\n";'
     user:LIfOpbjNaEQYE
