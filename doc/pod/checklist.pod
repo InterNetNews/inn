@@ -85,17 +85,16 @@ it is always better to be accustomed to doing that as the news user.)
 
 =item *
 
-Find F<INSTALL> and open a separate window for it.  A printout is
-probably a good idea S<-- it's> long but very helpful.  Any time the
-instructions below ask you to make a decision, you can probably find
-help in F<INSTALL>.
+Find F<INSTALL> and open a separate window for it.  A printout is probably a
+good idea S<-- it's> long but very helpful.  You'll find in F<INSTALL> more
+information and background about each step in this document.
 
 =item *
 
 Now it's time to work on the configuration files in your I<pathetc> directory.
 Start with F<inn.conf>; you must fill in or check I<organization> (which can
-be commented if you do not want to add a default Organization header field
-to every post from your server), your path in I<pathhost> (usually your
+be commented if you do not want to add a default Organization header field to
+every post from your server), your path identity in I<pathhost> (usually your
 fully qualified domain name), the NNTP server to use for posts (I<server>
 is commonly set to C<localhost>), the maximum size of articles you accept
 (I<maxartsize>, set to S<1 MB> by default), and the abuse e-mail address
@@ -277,6 +276,12 @@ to see how to do that.
 All of this can be done while INN is running.
 
 =over 4
+
+=item *
+
+The first step is to get a news feed.  You can ask for an external feed in
+the news.admin.peering newsgroup.  Several news administrators will certainly
+respond and gracefully provide you with a news feed.
 
 =item *
 

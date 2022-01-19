@@ -21,6 +21,12 @@ follows:
         port-number: 433
     }
 
+You can reload this configuration file with the following command which makes
+B<innd> respawn a new instance of B<innfeed> (assuming C<innfeed!> is the name
+of the corresponding channel feed in F<newsfeeds>):
+
+    ctlinnd flush innfeed!
+
 =head1 DESCRIPTION
 
 The configuration file F<innfeed.conf> in I<pathetc> is used to control

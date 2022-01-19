@@ -7,14 +7,14 @@ newsfeeds - Determine where Usenet articles are sent
 The I<newsfeeds> file configures what B<innd> does with incoming accepted
 articles.
 
-A minimalist F<newsfeeds> file which parameters an outgoing feed to
-C<news.server.com>, using feed path entry C<server>, of all the articles you
-receive is:
+A minimalist F<newsfeeds> file which parameters an outgoing NNTP feed to
+C<news.server.com>, using path identity C<server> (as it appears in Path
+header fields), of all the articles you receive is:
 
     # Mandatory line, with no exclusion patterns defined.
     ME:::
 
-    # A real-time feed through innfeed.
+    # A real-time feed through innfeed of all your articles.
     news.server.com/server\
         :*\
         :Tm:innfeed!
@@ -24,9 +24,17 @@ receive is:
     # of the innfeed program.
     innfeed!:!*:Tc,Wnm*:/usr/lib/news/bin/innfeed
 
+In order to find an external feed, you can ask in the news.admin.peering
+newsgroup.  Several news administrators will certainly respond and gracefully
+provide you with a news feed.
+
 Other entries may be added in F<newsfeeds> depending on your needs.  See the
 examples below and also in the archive(8), controlchan(8), news2mail(8),
 ninpaths(8) and perl-nocem(8) man pages for the most widely used.
+
+You can reload this configuration file with the following command:
+
+    ctlinnd reload newsfeeds 'new peer'
 
 =head1 DESCRIPTION
 
