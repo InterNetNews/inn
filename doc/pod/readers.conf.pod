@@ -2,6 +2,69 @@
 
 readers.conf - Access control and configuration for nnrpd
 
+=head1 IN A NUTSHELL
+
+The F<readers.conf> file parameters who is allowed to connect as a news
+reader and what they're allowed to do after they connect.  Bear in mind
+that in F<readers.conf>, authentication and authorization are configured in
+different blocks.  First, a user is authenticated, and assigned an identity
+(in an C<auth> block).  Then this identity is authorized to access certain
+newsgroups with certain rights (in an C<access> block).
+
+As for authentication, your C<auth> block for password users could look like
+this:
+
+    auth "foreignokay" {
+        auth: "ckpasswd -f <pathdb in inn.conf>/newsusers"
+        default: "<unauthenticated>"
+    }
+
+See the documentation of the B<-f> flag in the ckpasswd(8) man page for how to
+generate passwords and make use of this F<newsusers> file.
+
+This way, with the C<foreignokay> authentication block, a user successfully
+authenticated as user C<myusername> will be assigned the identity
+C<myusername>.  If authentication fails, it will be assigned the default
+identity C<< <unauthenticated> >> that will later be checked in C<access>
+blocks.
+
+As for authorization, let's do something for people successfully authenticated
+with passwords:
+
+    access "authenticatedpeople" {
+        users: "*"
+        newsgroups: "*,!junk,!control,!control.*"
+    }
+
+And then something like one of the following two, depending on whether
+unauthenticated users get any access:
+
+    access "restrictive" {
+        users: "<unauthenticated>"
+        newsgroups: "!*"
+    }
+
+    access "readonly" {
+        users: "<unauthenticated>"
+        read: "local.*"
+        post: "!*"
+    }
+
+Please note that the C<authenticatedpeople> block must appear in
+F<readers.conf> before C<restrictive> or C<readonly> blocks because
+authorization blocks are checked from the last one in the F<readers.conf>
+file to the first one.  As soon as one matches, it is chosen for the identity
+defined in an authentication block.  The C<authenticatedpeople> access block
+matches every user that has not been assigned C<< <unauthenticated> >> as
+identity.
+
+More examples and features are detailed below in this man page (notably
+without any password file, with PAM, with Perl or Python hooks).
+
+You don't need to reload anything after modifying F<readers.conf>; every time
+a news client connects to the server, a new B<nnrpd> process is spawned and
+reads its configuration from disk.
+
 =head1 DESCRIPTION
 
 F<readers.conf> in I<pathetc> specifies access control for nnrpd(8).  It
@@ -681,11 +744,11 @@ access, not posting access.
 Here's a similar example for a news server that accepts connections from
 anywhere but requires the user to specify a username and password.  The
 username and password are first checked against an external database of
-usernames and passwords, and then against the system shadow password file:
+usernames and passwords, and then make use of PAM:
 
     auth all {
-        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
-        auth: "ckpasswd -s"
+        auth: "ckpasswd -f <pathdb in inn.conf>/newsusers"
+        auth: ckpasswd
     }
 
     access full {
@@ -698,16 +761,15 @@ they don't receive any valid identity and the connection won't match any
 access groups (even ones with C<users: *>).  Such users receive nothing
 but authentication-required responses from nnrpd until they authenticate.
 
-If they then later authenticate, the username and password are checked
-first by running B<ckpasswd> with the B<-d> option for an external dbm
-file of encrypted passwords, and then with the B<-s> option to check the
-shadow password database (note that this option may require ckpasswd to
-be setgid to a shadow group, and there are security considerations; see
-ckpasswd(8) for details).  If both of those fail, the user will continue
-to have no identity; otherwise, an identity will be assigned (usually
-the supplied username, perhaps with a domain appended, although an
-authenticator technically can provide a completely different username
-for the identity), and the access group will match, giving full access.
+If they then later authenticate, the username and password are checked first
+by running B<ckpasswd> with the B<-f> option for an external file of encrypted
+passwords, and then uses PAM (if INN was built with PAM support) to check
+the password (and if that fails, it tries to check the password against the
+password field returned by getpwnam(3)).  If both of those fail, the user
+will continue to have no identity; otherwise, an identity will be assigned
+(usually the supplied username, perhaps with a domain appended, although an
+authenticator technically can provide a completely different username for the
+identity), and the access group will match, giving full access.
 
 It may be educational to consider how to combine the above examples;
 general groups always go first.  The order of the auth groups actually
@@ -724,7 +786,7 @@ password-restricted.
 
     auth "example.com" {
         hosts: "*.example.com"
-        auth: "ckpasswd -d <pathdb in inn.conf>/newsusers"
+        auth: "ckpasswd -f <pathdb in inn.conf>/newsusers"
         default: "anonymous"
     }
 
@@ -769,7 +831,7 @@ cannot.
     auth shell {
         hosts: *.shell.example.com
         res: ident
-        auth: "ckpasswd -s"
+        auth: ckpasswd
         default: <FAIL>
         default-domain: shell.example.com
     }

@@ -2,6 +2,19 @@
 
 incoming.conf - Configuration of incoming news feeds
 
+=head1 IN A NUTSHELL
+
+The I<incoming.conf> file configures from which remote peers B<innd> accepts
+NNTP feeds.
+
+A common entry to allow C<news.server.com> as an incoming peer is:
+
+    peer news.server.com {
+        hostname: "news.server.com"
+    }
+
+The port used for incoming feeds is the one B<innd> is listening on.
+
 =head1 DESCRIPTION
 
 The file I<pathetc>/incoming.conf consists of three types of entries:

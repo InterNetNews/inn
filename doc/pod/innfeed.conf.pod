@@ -2,6 +2,25 @@
 
 innfeed.conf - Configuration file for innfeed
 
+=head1 IN A NUTSHELL
+
+The I<innfeed.conf> file configures to which remote peers B<innfeed> sends
+NNTP feeds.
+
+A common entry to parameter C<news.server.com> as an outgoing feed is:
+
+    peer news.server.com {
+        ip-name: "news.server.com"
+    }
+
+If standard NNTP port 119 is not used, you may specify an alternate port as
+follows:
+
+    peer news.server.com {
+        ip-name: "news.server.com"
+        port-number: 433
+    }
+
 =head1 DESCRIPTION
 
 The configuration file F<innfeed.conf> in I<pathetc> is used to control

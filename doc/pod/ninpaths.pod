@@ -38,7 +38,7 @@ by B<sendinpaths>.
 
 =item 2.
 
-Set up a channel feed using an entry like:
+Set up a channel feed using a F<newsfeeds> entry like:
 
     inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
 
