@@ -15,6 +15,10 @@ A common entry to allow C<news.server.com> as an incoming peer is:
 
 The port used for incoming feeds is the one B<innd> is listening on.
 
+You can reload this configuration file with the following command:
+
+    ctlinnd reload incoming.conf 'new peer'
+
 =head1 DESCRIPTION
 
 The file I<pathetc>/incoming.conf consists of three types of entries:
