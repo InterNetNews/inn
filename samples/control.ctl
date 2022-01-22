@@ -916,15 +916,15 @@ newgroup:fido.ger@news.fu-berlin.de:fido.ger.*:verify-fido.ger@news.fu-berlin.de
 rmgroup:fido.ger@news.fu-berlin.de:fido.ger.*:verify-fido.ger@news.fu-berlin.de
 
 ## FIDO7 (Russian FidoNet)
-# URL: http://www.fido7.ru/
+# URL: http://www.fido7.org/
 # Admin group: fido7.postmasters
-# Key URL: http://www.fido7.ru/pgpcontrol.html
+# Key URL: http://www.fido7.org/pgpcontrol.html
 # *PGP*   See comment at top of file.
 newgroup:*:fido7.*:drop
 rmgroup:*:fido7.*:drop
-checkgroups:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
-newgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
-rmgroup:newgroups-request@fido7.ru:fido7.*:verify-fido7.announce.newgroups
+checkgroups:newgroups-request@fido7.org:fido7.*:verify-fido7.announce.newgroups
+newgroup:newgroups-request@fido7.org:fido7.*:verify-fido7.announce.newgroups
+rmgroup:newgroups-request@fido7.org:fido7.*:verify-fido7.announce.newgroups
 
 ## FINET (Finland and Finnish language alternative newsgroups)
 checkgroups:*@*.fi:finet.*:doit
