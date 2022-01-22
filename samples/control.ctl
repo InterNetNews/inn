@@ -1,5 +1,5 @@
 ##  control.ctl - Access control for control messages.
-##  Last modified: 2021-06-27
+##  Last modified: 2021-11-28
 ##
 ##  Based on rone's unified control.ctl file.
 ##
@@ -9,8 +9,8 @@
 ##      <http://usenet.trigofacile.com/hierarchies/>
 ##
 ##  Please copy usenet-config@isc.org on any updates to this file so that
-##  it can be updated in the INN Git repository and on ftp.isc.org.
-##  For changes to a public hierarchy, please also post the changes to
+##  it can be updated in the INN Git repository and on ftp.isc.org.  For
+##  changes to a public hierarchy, please also post the changes to
 ##  news.admin.hierarchies.
 ##
 ##  The canonical version of this file can be found in the latest INN
@@ -66,7 +66,7 @@
 ##     field to "mail" or "doit=mail" or "doit=<log file>" or whatever you
 ##     prefer (replacing <log file> with the name of an appropriate log
 ##     file).
-## 
+##
 ##   * A number of hierarchies are for local use only but have leaked out
 ##     into the general stream.  In this config file, they are set so that
 ##     the groups will be easy to remove, and are marked with a comment of
@@ -79,7 +79,7 @@
 ##
 ##     If you have permission to carry any of the hierarchies so listed in
 ##     this file, you should change the entries for those hierarchies
-##     below. 
+##     below.
 ##
 ##   * Some hierarchies are marked as *HISTORIC*.  These hierarchies
 ##     aren't entirely defunct, but they are very low-traffic, not widely
@@ -318,17 +318,16 @@ newgroup:system@asuvax.eas.asu.edu:az.*:doit
 rmgroup:system@asuvax.eas.asu.edu:az.*:doit
 
 ## BA (San Francisco Bay Area, USA)
-# Contact: ba-mod@panix.com
-# URL: http://www.panix.com/~babm/ba/
+#
+# This hierarchy is still in use but has no active maintainers as of
+# October of 2021.  No control messages are currently being issued for
+# it.
+#
+# This hierarchy is still in use, but it has no active maintainer.
+# Control messages for this hierarchy should not be honored without
+# confirming that the sender is the new hierarchy maintainer.
+#
 # Admin group: ba.config
-# Key URL: http://www.panix.com/~babm/ba/ba-mod.asc
-# Key fingerprint: 3C B6 7A 3B 34 53 C0 58  D2 FB 65 E8 E9 6F CD 46
-# *PGP*   See comment at top of file.
-newgroup:*:ba.*:drop
-rmgroup:*:ba.*:drop
-checkgroups:ba-mod@panix.com:ba.*:verify-ba.config
-newgroup:ba-mod@panix.com:ba.*:verify-ba.config
-rmgroup:ba-mod@panix.com:ba.*:verify-ba.config
 
 ## BACKBONE (*LOCAL* -- ruhr.de/ruhrgebiet.individual.net in Germany)
 # Contact: admin@ruhr.de
@@ -874,7 +873,7 @@ rmgroup:*:example.*:drop
 # lists into fa.* newsgroups, but that site does not appear to be issuing
 # any control messages for those groups.
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 
@@ -892,7 +891,7 @@ rmgroup:ffm.admin@arcor.de:ffm.*:verify-ffm.admin
 
 ## FIDO (FidoNet)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 
@@ -1348,7 +1347,7 @@ rmgroup:news@linux.or.jp:jlug.*:verify-news@linux.or.jp
 ## JUNK (*RESERVED* -- Used for unwanted newsgroups)
 #
 # The junk newsgroup is reserved by RFC 5536 and MUST NOT be used.  It is
-# used by some implementations to store messages to unwanted newsgroups. 
+# used by some implementations to store messages to unwanted newsgroups.
 # The junk.* hierarchy is not reserved by RFC 5536, but it's marked
 # reserved here because, given the special meaning of the junk group,
 # using it for any other purpose would be confusing and might trigger
@@ -1411,7 +1410,7 @@ rmgroup:usenet@film.rlss.okayama-u.ac.jp:kgk.*:doit
 
 ## KIEL (Kiel, Germany)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 #
@@ -1629,7 +1628,7 @@ rmgroup:*:nasa.*:doit
 
 ## NC (North Carolina, USA)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 
@@ -1653,7 +1652,7 @@ rmgroup:*:ncu.*:doit
 
 ## NERSC (National Energy Research Scientific Computing Center)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 #
@@ -1809,7 +1808,7 @@ rmgroup:control@usenet.no:no.alt.*:verify-no-hir-control
 
 ## NORD (Northern Germany)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 
@@ -1954,7 +1953,7 @@ rmgroup:news@nortel.ca:ott.*:doit
 
 ## OWL (Ostwestfalen-Lippe, Germany)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 #
@@ -2483,7 +2482,7 @@ rmgroup:usenet@rocky.ucdavis.edu:ucd.*:doit
 
 ## UFRA (Unterfranken, Deutschland)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 #
@@ -2693,7 +2692,7 @@ rmgroup:*:worldonline.*:doit
 
 ## WPG (Winnipeg, Manitoba, Canada)
 #
-# This hierarchy is still in use, but it has no active maintainer. 
+# This hierarchy is still in use, but it has no active maintainer.
 # Control messages for this hierarchy should not be honored without
 # confirming that the sender is the new hierarchy maintainer.
 
