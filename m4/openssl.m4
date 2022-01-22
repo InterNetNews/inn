@@ -13,13 +13,14 @@ dnl SSL or crypto libraries, saving the current values first, and
 dnl INN_LIB_OPENSSL_RESTORE and INN_LIB_CRYPTO_RESTORE to restore those
 dnl settings to before the last INN_LIB_OPENSSL_SWITCH or
 dnl INN_LIB_CRYPTO_SWITCH.  Defines HAVE_OPENSSL and sets inn_use_OPENSSL to
-dnl true if the library is found.
+dnl true.
 dnl
 dnl Provides the INN_LIB_OPENSSL_OPTIONAL macro, which should be used if
 dnl OpenSSL support is optional.  This macro will still set the substitution
-dnl variables and shell variables described above, but they'll be empty unless
-dnl OpenSSL libraries are detected.  HAVE_OPENSSL will be defined only if the
-dnl library is found.
+dnl variables and shell variables described above, but they'll be empty if
+dnl OpenSSL libraries are not found or if --without-openssl is given.
+dnl HAVE_OPENSSL will be defined if the library is found and --without-openssl
+dnl is not given.
 dnl
 dnl Depends on INN_ENABLE_REDUCED_DEPENDS and the lib-helper.m4 framework.
 dnl
@@ -27,7 +28,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2016, 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016, 2018, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2010, 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl

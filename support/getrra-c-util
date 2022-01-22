@@ -54,6 +54,7 @@ download ()
       then
         sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
                -e '/dnl Determine the full set/,$d' \
+               -e '/test x"$CLANG" = xyes/,+1d' \
              ${TEMP}
       fi
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \

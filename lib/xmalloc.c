@@ -202,7 +202,7 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     char *copy;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t)(p - s) < size && *p != '\0'; p++)
+    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
         ;
     length = p - s;
     copy = malloc(length + 1);

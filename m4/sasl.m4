@@ -1,6 +1,6 @@
 dnl Find the compiler and linker flags for Cyrus SASL.
 dnl
-dnl Finds the compiler and linker flags for linking with the Cyrus SASL
+dnl Finds the compiler and linker flags for linking with v2 of the Cyrus SASL
 dnl library.  Provides the --with-sasl, --with-sasl-lib, and
 dnl --with-sasl-include configure options to specify non-standard paths to the
 dnl Cyrus SASL library.
@@ -10,14 +10,14 @@ dnl SASL_CPPFLAGS, SASL_LDFLAGS, and SASL_LIBS.  Also provides
 dnl INN_LIB_SASL_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
 dnl Cyrus SASL v2 library, saving the current values first, and
 dnl INN_LIB_SASL_RESTORE to restore those settings to before the last
-dnl INN_LIB_SASL_SWITCH.  Defines HAVE_SASL and sets inn_use_SASL to true if
-dnl the library is found and is version two.
+dnl INN_LIB_SASL_SWITCH.  Defines HAVE_SASL and sets inn_use_SASL to true.
 dnl
 dnl Provides the INN_LIB_SASL_OPTIONAL macro, which should be used if Cyrus
 dnl SASL support is optional.  This macro will still always set the
-dnl substitution variables, but they'll be empty unless --with-sasl is given.
-dnl Defines HAVE_SASL and sets inn_use_SASL to true if the Cyrus SASL library
-dnl is found and is version two.
+dnl substitution variables, but they'll be empty if the Cyrus SASL library was
+dnl not found or if --without-sasl was given.  Defines HAVE_SASL and sets
+dnl inn_use_SASL to true if the Cyrus SASL library is found and --without-sasl
+dnl is not given.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
@@ -25,7 +25,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl

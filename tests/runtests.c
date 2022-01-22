@@ -156,13 +156,24 @@
 #endif
 
 /* Test status codes. */
-enum test_status { TEST_FAIL, TEST_PASS, TEST_SKIP, TEST_INVALID };
+enum test_status
+{
+    TEST_FAIL,
+    TEST_PASS,
+    TEST_SKIP,
+    TEST_INVALID
+};
 
 /* Really, just a boolean, but this is more self-documenting. */
-enum test_verbose { CONCISE = 0, VERBOSE = 1 };
+enum test_verbose
+{
+    CONCISE = 0,
+    VERBOSE = 1
+};
 
 /* Indicates the state of our plan. */
-enum plan_status {
+enum plan_status
+{
     PLAN_INIT,    /* Nothing seen yet. */
     PLAN_FIRST,   /* Plan seen before any tests. */
     PLAN_PENDING, /* Test seen and no plan yet. */
@@ -390,7 +401,7 @@ x_reallocarray(void *p, size_t n, size_t size, const char *file, int line)
     n = (n > 0) ? n : 1;
     size = (size > 0) ? size : 1;
 
-    if (UINT_MAX / n <= size)
+    if (n > 0 && UINT_MAX / n <= size)
         sysdie("realloc too large at %s line %d", file, line);
     p = realloc(p, n * size);
     if (p == NULL)
@@ -435,9 +446,9 @@ x_strndup(const char *s, size_t size, const char *file, int line)
     char *copy;
 
     /* Don't assume that the source string is nul-terminated. */
-    for (p = s; (size_t)(p - s) < size && *p != '\0'; p++)
+    for (p = s; (size_t) (p - s) < size && *p != '\0'; p++)
         ;
-    len = (size_t)(p - s);
+    len = (size_t) (p - s);
     copy = (char *) malloc(len + 1);
     if (copy == NULL)
         sysdie("failed to strndup %lu bytes at %s line %d",

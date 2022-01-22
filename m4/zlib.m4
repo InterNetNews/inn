@@ -9,13 +9,13 @@ dnl ZLIB_CPPFLAGS, ZLIB_LDFLAGS, and ZLIB_LIBS.  Also provides
 dnl INN_LIB_ZLIB_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
 dnl zlib library, saving the current values first, and INN_LIB_ZLIB_RESTORE
 dnl to restore those settings to before the last INN_LIB_ZLIB_SWITCH.
-dnl Defines HAVE_ZLIB and sets inn_use_ZLIB to true if the library is found.
+dnl Defines HAVE_ZLIB and sets inn_use_ZLIB to true.
 dnl
 dnl Provides the INN_LIB_ZLIB_OPTIONAL macro, which should be used if zlib
 dnl support is optional.  This macro will still always set the substitution
-dnl variables, but they'll be empty unless --with-zlib is given.
-dnl Defines HAVE_ZLIB and sets inn_use_ZLIB to true if the zlib library
-dnl is found.
+dnl variables, but they'll be empty if zlib is not found or if --without-zlib
+dnl is given.  Defines HAVE_ZLIB and sets inn_use_ZLIB to true if the zlib
+dnl library is found and --without-zlib is not given.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
@@ -23,7 +23,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl

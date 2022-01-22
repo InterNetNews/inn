@@ -10,12 +10,13 @@ dnl BDB_CPPFLAGS, BDB_LDFLAGS, and BDB_LIBS.  Also provides INN_LIB_BDB_SWITCH
 dnl to set CPPFLAGS, LDFLAGS, and LIBS to include the Berkeley DB library,
 dnl saving the current values first, and INN_LIB_BDB_RESTORE to restore those
 dnl settings to before the last INN_LIB_BDB_SWITCH.  Defines HAVE_BDB and sets
-dnl inn_use_BDB to true if the library is found.
+dnl inn_use_BDB to true.
 dnl
 dnl Provides the INN_LIB_BDB_OPTIONAL macro, which should be used if Berkeley
 dnl DB support is optional.  This macro will still always set the substitution
-dnl variables, but they'll be empty unless --with-bdb is given.  Defines
-dnl HAVE_BDB and sets inn_use_BDB to true if the Berkeley DB library is found.
+dnl variables, but they'll be empty if the Berkeley DB library is not found or
+dnl if --without-bdb is given.  Defines HAVE_BDB and sets inn_use_BDB to true
+dnl if the Berkeley DB library is found and --without-bdb is not given.
 dnl
 dnl This file also provides INN_LIB_BDB_NDBM, which checks whether the
 dnl Berkeley DB library has ndbm support.  It then defines HAVE_BDB_NDBM and
@@ -29,7 +30,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2013
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
