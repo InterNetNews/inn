@@ -5,14 +5,20 @@ dnl Provides the --with-sqlite3, --with-sqlite3-lib, and
 dnl --with-sqlite3-include configure options to specify non-standard paths to
 dnl the SQLite v3 libraries or header files.
 dnl
-dnl Provides the macros INN_LIB_SQLITE3 and INN_LIB_SQLITE3_OPTIONAL and sets
-dnl the substitution variables SQLITE3_CPPFLAGS, SQLITE3_LDFLAGS, and
-dnl SQLITE3_LIBS.  Also provides INN_LIB_SQLITE3_SWITCH to set CPPFLAGS,
-dnl LDFLAGS, and LIBS to include the SQLite libraries, saving the current
-dnl values first, and INN_LIB_SQLITE3_RESTORE to restore those settings to
-dnl before the last INN_LIB_SQLITE3_SWITCH.  Defines HAVE_SQLITE3 and sets
-dnl inn_use_SQLITE3 to true if libsqlite3 is found.  If it isn't found, the
-dnl substitution variables will be empty.
+dnl Provides the macro INN_LIB_SQLITE3 and sets the substitution variables
+dnl SQLITE3_CPPFLAGS, SQLITE3_LDFLAGS, and SQLITE3_LIBS.  Also provides
+dnl INN_LIB_SQLITE3_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
+dnl SQLite library, saving the current values first, and
+dnl INN_LIB_SQLITE3_RESTORE to restore those settings to before the last
+dnl INN_LIB_SQLITE3_SWITCH.  Defines HAVE_SQLITE3 and sets inn_use_SQLITE3 to
+dnl true.
+dnl
+dnl Provides the INN_LIB_SQLITE3_OPTIONAL macro, which should be used if
+dnl SQLite support is optional.  This macro will still always set the
+dnl substitution variables, but they'll be empty if the SQLite library is not
+dnl found or if --without-sqlite3 is given.  Defines HAVE_SQLITE3 and sets
+dnl inn_use_SQLITE3 to true if the SQLite library is found and
+dnl --without-sqlite3 is not given.
 dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
@@ -20,7 +26,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2020 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2020, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl

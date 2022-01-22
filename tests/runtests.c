@@ -401,7 +401,7 @@ x_reallocarray(void *p, size_t n, size_t size, const char *file, int line)
     n = (n > 0) ? n : 1;
     size = (size > 0) ? size : 1;
 
-    if (UINT_MAX / n <= size)
+    if (n > 0 && UINT_MAX / n <= size)
         sysdie("realloc too large at %s line %d", file, line);
     p = realloc(p, n * size);
     if (p == NULL)

@@ -13,7 +13,7 @@
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2009-2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2019, 2021 Russ Allbery <eagle@eyrie.org>
  * Copyright 2001-2002, 2004-2008, 2011-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -410,7 +410,7 @@ finish(void)
 
     /* Print out the lazy plan if needed. */
     fflush(stderr);
-    if (_lazy && _planned > 0)
+    if (_lazy)
         printf("1..%lu\n", _planned);
 
     /* Print out a summary of the results. */

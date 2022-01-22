@@ -54,10 +54,11 @@ download ()
       then
         sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
                -e '/dnl Determine the full set/,$d' \
+               -e '/test x"$CLANG" = xyes/,+1d' \
              ${TEMP}
       elif [ "$3" = "sqlite3.m4" ]
       then
-        sed -i -e "42 i \\
+        sed -i -e "48 i \\
 dnl Ensures SQLite v3 meets our minimum version requirement.\\
 AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\\
 #include <sqlite3.h>\\
@@ -84,7 +85,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
     [AS_IF([test x\"\$1\" = xtrue],\\
         [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\\
 " \
-               -e '42,62d' \
+               -e '48,68d' \
              ${TEMP}
       fi
     elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \

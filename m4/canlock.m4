@@ -11,13 +11,14 @@ dnl INN_LIB_CANLOCK_SWITCH to set CPPFLAGS, LDFLAGS, and LIBS to include the
 dnl canlock library, saving the current values first, and
 dnl INN_LIB_CANLOCK_RESTORE to restore those settings to before the last
 dnl INN_LIB_CANLOCK_SWITCH.  Defines HAVE_CANLOCK and sets inn_use_CANLOCK
-dnl to true if the library is found.
+dnl to true.
 dnl
 dnl Provides the INN_LIB_CANLOCK_OPTIONAL macro, which should be used if
 dnl Cancel-Lock support is optional.  This macro will still always set the
-dnl substitution variables, but they'll be empty unless libcanlock is found or
-dnl --without-canlock is not given.  Defines HAVE_CANLOCK and sets
-dnl inn_use_CANLOCK to true if the canlock library is found.
+dnl substitution variables, but they'll be empty if libcanlock is not found or
+dnl if --without-canlock is given.  Defines HAVE_CANLOCK and sets
+dnl inn_use_CANLOCK to true if the canlock library is found and
+dnl --without-canlock is not given.
 dnl
 dnl This macro checks for a parsing feature (cl_verify_multi) introduced with
 dnl version 3.3.0 of libcanlock.
@@ -25,7 +26,7 @@ dnl
 dnl Depends on the lib-helper.m4 framework.
 dnl
 dnl Written by Julien ÉLIE for the InterNetNews (INN) news server
-dnl Copyright 2021 Julien ÉLIE
+dnl Copyright 2021-2022 Julien ÉLIE
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
 dnl and/or distribute it, with or without modifications, as long as this
