@@ -658,9 +658,9 @@ dnl debugging information, and add -O3 because gcc won't find some warnings
 dnl without optimization turned on.  Add -DDEBUG=1 so that we'll also
 dnl compile all debugging code and check it as well.
 dnl
-dnl -D_FORTIFY_SOURCE=2 enables warn_unused_result attribute markings
-dnl on glibc functions on Linux, as well as more object size checking,
-dnl which catches a few more issues.
+dnl -D_FORTIFY_SOURCE=2 (set as an hardening flag) enables warn_unused_result
+dnl attribute markings on glibc functions on Linux, as well as more object size
+dnl checking, which catches a few more issues.
 dnl
 dnl For Clang, try -Weverything but disable some of the warnings:
 dnl
@@ -690,8 +690,7 @@ INN_PROG_CC_FLAG([-Werror=unknown-warning-option],
                  [CFLAGS="$CFLAGS -Werror=unknown-warning-option"], [])
 m4_foreach_w(
     [flag],
-    [-g -O3 -DDEBUG=1 -D_FORTIFY_SOURCE=2 -Werror -Wall -Wextra
-     -Wdouble-promotion -Wformat=2
+    [-g -O3 -DDEBUG=1 -Werror -Wall -Wextra -Wdouble-promotion -Wformat=2
      -Wformat-overflow=2 -Wformat-truncation=1 -Wnull-dereference -Winit-self
      -Wmissing-include-dirs -Wshift-overflow=2
      -Wsync-nand -Wstringop-overflow=4 -Wstringop-truncation
@@ -732,6 +731,10 @@ AS_IF([test x"$inn_enable_hardening_flags" = xyes],
                                 CC_WARNINGS="${CC_WARNINGS} -fPIE"
                                 INN_PROG_LD_FLAG([-pie],
                                     [LDFLAGS="${LDFLAGS} -pie"], [])])
+     INN_PROG_CC_FLAG([-D_FORTIFY_SOURCE=2],
+                      [CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
+                       CC_WARNINGS="${CC_WARNINGS} -D_FORTIFY_SOURCE=2"],
+                      [])
      INN_PROG_CC_FLAG([-fstack-protector-strong],
                       [CFLAGS="${CFLAGS} -fstack-protector-strong"
                        CC_WARNINGS="${CC_WARNINGS} -fstack-protector-strong"],
