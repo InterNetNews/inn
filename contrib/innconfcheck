@@ -93,9 +93,9 @@ EDITPOD=0
 # should then be matched up with the man page "items" in the inn.conf file.
 # In the INN 2.3 man page, these items appear in the following format:
 #   .Ip "\fIvariable name\fR" 4
-# Hence, if there exists an entry in the inn.conf of "verifycancels: false"
+# Hence, if there exists an entry in the inn.conf of "pgpverify: true"
 # then the awk script will produce:
-#   s#^.Ip "\fIvarifycancels\f$" 4#.Ip "\verifycancels: false\f$" 4#
+#   s#^.Ip "\fIpgpverify\f$" 4#.Ip "\pgpverify: true\f$" 4#
 # once piped to sed, this expression will replace the man page item to
 # include the setting from the inn.conf file.  The nroff and pager
 # applications then polish the script off to provide a documented formatted

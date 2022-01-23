@@ -1161,77 +1161,6 @@ ARTreject(Reject_type code, CHANNEL *cp)
 }
 
 /*
-**  Verify if a cancel message is valid.  Unless at least one group in the
-**  cancel message's Newsgroups header field body can be found in the
-**  Newsgroups header field body of the article to be cancelled, the cancel
-**  is considered bogus and false is returned.
-*/
-static bool
-ARTcancelverify(const ARTDATA *data, const char *MessageID, TOKEN *token)
-{
-    const char *p;
-    char *q, *q1;
-    char **gp;
-    const char *local;
-    char buff[SMBUF];
-    ARTHANDLE *art;
-    bool r;
-
-    if (!HISlookup(History, MessageID, NULL, NULL, NULL, token))
-        return false;
-    if ((art = SMretrieve(*token, RETR_HEAD)) == NULL)
-        return false;
-
-    /* Copy the Newsgroups header field from article be to cancelled to q.
-     * Double-terminate q (sentinel). */
-    local = wire_findheader(art->data, art->len, "Newsgroups", true);
-    if (local == NULL) {
-        SMfreearticle(art);
-        return false;
-    }
-    for (p = local; p < art->data + art->len; p++) {
-        if (*p == '\r' || *p == '\n')
-            break;
-    }
-    if (p == art->data + art->len) {
-        SMfreearticle(art);
-        return false;
-    }
-    q = xmalloc(p - local + 2);
-    memcpy(q, local, p - local);
-    SMfreearticle(art);
-    q[p - local] = '\0';
-    q[p - local + 1] = '\0';
-
-    /* Replace separator ',' by '\0'. */
-    for (q1 = q; *q1; q1++) {
-        if (NG_ISSEP(*q1)) {
-            *q1 = '\0';
-        }
-    }
-
-    r = false;
-    for (gp = data->Newsgroups.List; *gp && !r; gp++) {
-        for (q1 = q; *q1; q1 += strlen(q1) + 1) {
-            if (strcmp(q1, *gp) == 0) {
-                r = true;
-                break;
-            }
-        }
-    }
-
-    free(q);
-
-    if (!r) {
-        sprintf(buff, "No matching newsgroups in cancel %s",
-                MaxLength(MessageID, MessageID));
-        ARTlog(data, ART_REJECT, buff);
-    }
-
-    return r;
-}
-
-/*
 **  Process a cancel message.
 */
 void
@@ -1326,9 +1255,8 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
     if (!HIScheck(History, MessageID)) {
         /* Article hasn't arrived here, so write a fake entry using
          * most of the information from the cancel message. */
-        if (innconf->verifycancels
-            && (strcasecmp(innconf->docancels, "require-auth") == 0
-                || strcasecmp(innconf->docancels, "auth") == 0)
+        if ((strcasecmp(innconf->docancels, "require-auth") == 0
+             || strcasecmp(innconf->docancels, "auth") == 0)
             && !Trusted) {
             TMRstop(TMR_ARTCNCL);
             return;
@@ -1340,10 +1268,7 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
         TMRstop(TMR_ARTCNCL);
         return;
     }
-    if (Trusted || !innconf->verifycancels)
-        r = HISlookup(History, MessageID, NULL, NULL, NULL, &token);
-    else
-        r = ARTcancelverify(data, MessageID, &token);
+    r = HISlookup(History, MessageID, NULL, NULL, NULL, &token);
     if (r == false) {
         TMRstop(TMR_ARTCNCL);
         return;

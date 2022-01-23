@@ -39,6 +39,19 @@ I<docancels> parameter, and make sure to parameter it according to your needs.
 
 =item *
 
+The I<refusecybercancels> and I<verifycancels> parameters have been removed
+from F<inn.conf>.  The first was performing an inefficient and inexact check
+(that should be done, if wanted, in the special C<ME> entry in F<newsfeeds>,
+or even better, ask your peers not to feed you articles with C<cyberspam>
+in the Path header field body); the second check performed on the newsgroups
+present in cancel articles was not useful in B<innd>, and relevant to posting
+agents.
+
+The related lines in F<inn.conf> will be commented by B<innupgrade> during the
+upgrade.
+
+=item *
+
 B<filechan> is no longer shipped with INN; it was just a simple version of
 B<buffchan>.  All calls to C<filechan> will be changed to C<buffchan -u>
 (for its unbuffered mode) in F<newsfeeds> by B<innupgrade>.  If you have
@@ -146,6 +159,11 @@ which should now be used.
 
 B<send-nntp> has been removed; it was just a simple version of B<nntpsend>,
 which should now be used (or, even better, B<innfeed>).
+
+=item *
+
+The I<refusecybercancels> and I<verifycancels> parameters have been removed
+from F<inn.conf>.
 
 =item *
 

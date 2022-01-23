@@ -606,11 +606,6 @@ thanks to its Message-ID.
 
 =back
 
-When you have verified that everything works, you can eventually turn
-off regular spam cancels, if you want, not processing any longer
-cancels containing C<cyberspam> in the Path header field body (see the
-I<refusecybercancels> parameter in F<inn.conf>).
-
 =head1 FILES
 
 =over 4

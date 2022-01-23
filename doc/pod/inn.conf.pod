@@ -350,23 +350,6 @@ parameter is not present in the configuration file, it defaults to false.
 What TCP port innd(8) should listen on.  The default value is C<119>, the
 standard NNTP port.
 
-=item I<refusecybercancels>
-
-Whether to refuse all articles whose message IDs start with
-C<E<lt>cancel.>.  This message ID convention is widely followed by spam
-cancellers, so the vast majority of such articles will be cancels of spam.
-This check, if enabled, is done before the history check and the message
-ID is not written to the history file.  This is a boolean value and the
-default is false.
-
-This is a somewhat messy, inefficient, and inexact way of refusing
-spam cancels.  A much better way is to ask all of your upstream peers
-to not send to you any articles with C<cyberspam> in the Path header
-field body (usually accomplished by having them mark C<cyberspam> as
-an alias for your machine in their feed configuration).  The filtering
-enabled by this parameter is hard-coded; general filtering of message
-IDs can be done via the embedded filtering support.
-
 =item I<remembertrash>
 
 By default, innd(8) records rejected articles in history so that, if
@@ -394,23 +377,6 @@ default value is unset.
 Like I<sourceaddress> but for IPv6 sockets.  Note that you will generally
 need to put double quotes ("") around this value if you set it, since IPv6
 addresses contain colons.
-
-=item I<verifycancels>
-
-Set this to true to enable a simplistic check on all cancel messages,
-attempting to verify (by simple header field body comparison) that at
-least one newsgroup in the cancel message can be found in the article
-to be cancelled.  This check can't be done if the cancel arrives before
-the article does.  This is a boolean value, and the default is false.
-
-Note that RFC 5537 (USEPRO) mentions that "cancel control messages are
-not required to contain From and Sender header fields matching the
-target message.  This requirement only encouraged cancel issuers to
-conceal their identity and provided no security".  This check is
-therefore not done as it is extremely easy to spoof.
-
-In order not to actually process any cancel or supersedes messages,
-you can set I<docancels> to C<none>.
 
 =item I<verifygroups>
 

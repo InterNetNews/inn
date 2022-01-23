@@ -49,11 +49,9 @@ struct innconf {
     char *pathcluster;       /* Appended Host for the Path header field */
     bool pgpverify;          /* Verify control messages with pgpverify? */
     unsigned long port;      /* Which port innd should listen on */
-    bool refusecybercancels; /* Reject message IDs with "<cancel."? */
     bool remembertrash;      /* Put unwanted article IDs into history */
     char *sourceaddress;     /* Source IP for outgoing NNTP connections */
     char *sourceaddress6;    /* Source IPv6 for outgoing NNTP connections */
-    bool verifycancels;      /* Verify cancels against article author */
     bool verifygroups;       /* Check if all newsgroups exist */
     bool wanttrash;          /* Put unwanted articles in junk */
     unsigned long wipcheck;  /* How long to defer other copies of article */

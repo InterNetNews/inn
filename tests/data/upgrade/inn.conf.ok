@@ -5,6 +5,7 @@ incominglogfrequency:	200
 addinjectiondate:   true
 addinjectionpostinghost:   false
 listvalue:      [ one two three ]
+#verifycancels: true
 
 # testing comment
 

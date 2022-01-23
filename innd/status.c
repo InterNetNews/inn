@@ -40,7 +40,6 @@ typedef struct _STATUS {
     unsigned long Check_send;
     unsigned long Check_deferred;
     unsigned long Check_got;
-    unsigned long Check_cybercan;
     unsigned long Takethis;
     unsigned long Takethis_Ok;
     unsigned long Takethis_Err;
@@ -48,7 +47,6 @@ typedef struct _STATUS {
     unsigned long Ihave_Duplicate;
     unsigned long Ihave_Deferred;
     unsigned long Ihave_SendIt;
-    unsigned long Ihave_Cybercan;
     struct _STATUS *next;
 } STATUS;
 
@@ -168,9 +166,9 @@ STATUSsummary(void)
             status->Size = status->DuplicateSize = 0;
             status->RejectSize = 0;
             status->Ihave = status->Ihave_Duplicate = status->Ihave_Deferred =
-                status->Ihave_SendIt = status->Ihave_Cybercan = 0;
+                status->Ihave_SendIt = 0;
             status->Check = status->Check_send = status->Check_deferred =
-                status->Check_got = status->Check_cybercan = 0;
+                status->Check_got = 0;
             status->Takethis = status->Takethis_Ok = status->Takethis_Err = 0;
             status->activeCxn = status->sleepingCxns = 0;
             status->accepted = 0;
@@ -222,12 +220,10 @@ STATUSsummary(void)
         status->Ihave_Duplicate += cp->Ihave_Duplicate;
         status->Ihave_Deferred += cp->Ihave_Deferred;
         status->Ihave_SendIt += cp->Ihave_SendIt;
-        status->Ihave_Cybercan += cp->Ihave_Cybercan;
         status->Check += cp->Check;
         status->Check_send += cp->Check_send;
         status->Check_deferred += cp->Check_deferred;
         status->Check_got += cp->Check_got;
-        status->Check_cybercan += cp->Check_cybercan;
         status->Takethis += cp->Takethis;
         status->Takethis_Ok += cp->Takethis_Ok;
         status->Takethis_Err += cp->Takethis_Err;
@@ -372,12 +368,6 @@ STATUSsummary(void)
         fprintf(F, "   Takethis: %-6lu     Ok[%d]: %-6lu  Error[%d]: %-6lu\n",
                 status->Takethis, NNTP_OK_TAKETHIS, status->Takethis_Ok,
                 NNTP_FAIL_TAKETHIS_REJECT, status->Takethis_Err);
-        if (innconf->refusecybercancels) {
-            fprintf(
-                F, "   Cancelrejects:    Ihave[%d]: %-6lu  Check[%d]: %-6lu\n",
-                NNTP_FAIL_IHAVE_REFUSE, status->Ihave_Cybercan,
-                NNTP_FAIL_CHECK_REFUSE, status->Check_cybercan);
-        }
         fputc('\n', F);
 
         if (innconf->logstatus) {

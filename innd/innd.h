@@ -367,7 +367,6 @@ typedef struct _CHANNEL {
     unsigned long Check_send;
     unsigned long Check_deferred;
     unsigned long Check_got;
-    unsigned long Check_cybercan;
     unsigned long Takethis;
     unsigned long Takethis_Ok;
     unsigned long Takethis_Err;
@@ -375,7 +374,6 @@ typedef struct _CHANNEL {
     unsigned long Ihave_Duplicate;
     unsigned long Ihave_Deferred;
     unsigned long Ihave_SendIt;
-    unsigned long Ihave_Cybercan;
     unsigned long Reported;
     unsigned long Received;
     unsigned long Received_checkpoint;

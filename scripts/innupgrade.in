@@ -22,6 +22,7 @@
 ##   * Rename nntpactsync to incominglogfrequency in inn.conf.
 ##   * Rename addnntppostingdate and addnntppostinghost to respectively
 ##     addinjectiondate and addinjectionpostinghost in inn.conf.
+##   * Remove refusecybercancels and verifycancels from inn.conf.
 ##   * Move parameters from overview.fmt to inn.conf if needed.
 ##   * Move parameters from sasl.conf to inn.conf if needed.
 ##   * Rename or remove obsolete files.
@@ -115,6 +116,12 @@ sub fix_inn_conf {
 
         # Empty value.
         if ($value eq '') {
+            push (@$output, "#$_\n");
+            next;
+        }
+
+        # Remove a few parameters.
+        if ($key eq 'refusecybercancels' or $key eq 'verifycancels') {
             push (@$output, "#$_\n");
             next;
         }

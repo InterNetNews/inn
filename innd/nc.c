@@ -669,16 +669,6 @@ NCihave(CHANNEL *cp)
         return;
     }
 
-    if ((innconf->refusecybercancels)
-        && (strncmp(cp->av[1], "<cancel.", 8) == 0)) {
-        cp->Refused++;
-        cp->Ihave_Cybercan++;
-        xasprintf(&buff, "%d Cyberspam cancel", NNTP_FAIL_IHAVE_REFUSE);
-        NCwritereply(cp, buff);
-        free(buff);
-        return;
-    }
-
 #if defined(DO_PERL)
     /* Invoke a Perl message filter on the message-ID. */
     filterrc = PLmidfilter(cp->av[1]);
@@ -1856,16 +1846,6 @@ NCcheck(CHANNEL *cp)
         NCwritereply(cp, cp->Sendid.data);
         syslog(L_NOTICE, "%s bad_messageid %s", CHANname(cp),
                MaxLength(cp->av[1], cp->av[1]));
-        return;
-    }
-
-    if ((innconf->refusecybercancels)
-        && (strncmp(cp->av[1], "<cancel.", 8) == 0)) {
-        cp->Refused++;
-        cp->Check_cybercan++;
-        snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Cyberspam cancel",
-                 NNTP_FAIL_CHECK_REFUSE, cp->av[1]);
-        NCwritereply(cp, cp->Sendid.data);
         return;
     }
 

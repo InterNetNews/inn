@@ -50,6 +50,11 @@ I<addinjectiondate> and I<addinjectionpostinghost> (since S<INN 2.6>).
 
 =item *
 
+Remove the I<refusecybercancels> and I<verifycancels> parameters (since S<INN
+2.7>).
+
+=item *
+
 If the F<overview.fmt> file exists, its content is merged in
 the I<extraoverviewadvertised> and I<extraoverviewhidden> parameters
 introduced in S<INN 2.5>.  The file is then renamed to F<overview.fmt.OLD>.
