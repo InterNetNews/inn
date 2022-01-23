@@ -256,6 +256,10 @@ were C<128> for B<nnrpd> and C<25> for the others, which was not high
 enough for some uses.  The default value is now C<128> for all of them,
 and configurable in F<inn.conf>.  Thanks to Kevin Bowling for the patch.
 
+=item *
+
+Other minor bug fixes and documentation improvements.
+
 =back
 
 =head1 Changes in 2.6.4
