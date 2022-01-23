@@ -89,11 +89,19 @@ extern void xsignal_enable_masking(void);
 extern void xsignal_forked(void);
 
 
-/* Headers. */
+/*
+**  HEADERS
+**
+**  Do not test HAVE_CANLOCK.  This relieves customers of /usr/include/inn from
+**  the need to guess whether INN was built with Cancel-Lock support in order
+**  to get a header that matches the installed libraries.
+*/
 extern bool gen_cancel_lock(const char *msgid, const char *username,
                             char **canbuff);
 extern bool gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
                            const char *username, char **canbuff);
+extern bool verify_cancel_key(const char *c_key_header,
+                              const char *c_lock_header);
 extern char *GenerateMessageID(char *domain);
 extern void InitializeMessageIDcclass(void);
 extern bool IsValidMessageID(const char *string, bool stripspaces,
@@ -103,6 +111,7 @@ extern bool IsValidHeaderBody(const char *string);
 extern bool IsValidHeaderField(const char *string);
 extern const char *skip_cfws(const char *p);
 extern const char *skip_fws(const char *p);
+extern char *spaced_words_without_cfws(const char *p);
 extern void HeaderCleanFrom(char *from);
 extern struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer);
 extern void DDcheck(struct _DDHANDLE *h, char *group);

@@ -72,7 +72,7 @@ INNOBJS		= ../innd/art.o ../innd/cc.o ../innd/chan.o ../innd/icd.o \
 
 # The libraries innd needs to link.
 INNDLIBS        = $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
-		  $(SYSTEMD_LIBS) \
+		  $(SYSTEMD_LIBS) $(CANLOCK_LIBS) \
 		  $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS) $(PERL_LIBS)
 
 runtests: runtests.o

@@ -197,3 +197,49 @@ skip_fws(const char *p)
     }
     return p;
 }
+
+
+/*
+**  Return a newly allocated string with all CFWS removed from the
+**  NULL-terminated argument, but preserving a unique space between words.
+**  The caller is reponsible for freeing it.
+*/
+char *
+spaced_words_without_cfws(const char *p)
+{
+    char *buff;
+    char *buffbegin;
+    bool trailingspace = false;
+
+    if (p == NULL)
+        return NULL;
+
+    buff = xmalloc(strlen(p) + 1);
+    buffbegin = buff;
+
+    while (*p != '\0') {
+        p = skip_cfws(p);
+        if (*p != '\0') {
+            /* Not CFWS. */
+            *buff++ = *p;
+            trailingspace = false;
+            p++;
+            /* Another word may begin, keep one space.  The following ones will
+             * be skipped by the next call to skip_cfws(). */
+            if (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n'
+                || *p == '(') {
+                *buff++ = ' ';
+                trailingspace = true;
+            }
+        }
+    }
+
+    /* Remove possible trailing space. */
+    if (trailingspace)
+        buff--;
+
+    /* NULL-terminate the returned string. */
+    *buff = '\0';
+
+    return buffbegin;
+}

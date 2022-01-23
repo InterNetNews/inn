@@ -1238,11 +1238,17 @@ void
 ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
 {
     char buff[SMBUF + 16];
+    const char *start, *end;
+    ARTHANDLE *art;
     TOKEN token;
+#if defined(HAVE_CANLOCK)
+    char *canlockhdr;
+    const HDRCONTENT *hc = data->HdrContent;
+#endif
     bool r;
 
     TMRstart(TMR_ARTCNCL);
-    if (!DoCancels && !Trusted) {
+    if (strcasecmp(innconf->docancels, "none") == 0 && !Trusted) {
         TMRstop(TMR_ARTCNCL);
         return;
     }
@@ -1254,10 +1260,76 @@ ARTcancel(const ARTDATA *data, const char *MessageID, const bool Trusted)
         return;
     }
 
+    /* No additional checks if cancels should all be executed. */
+    if (strcasecmp(innconf->docancels, "all") != 0 && !Trusted) {
+        /* Retrieve the Cancel-Lock header field of the article to be
+         * cancelled.  If the original article is not found or has no
+         * Cancel-Lock header field, we cannot authenticate the cancel.
+         *
+         * It also means that we do not honour cancel requests for articles not
+         * yet received, even if they do not have a Cancel-Lock header field
+         * (but we don't know yet). */
+        if (!HISlookup(History, MessageID, NULL, NULL, NULL, &token)) {
+            TMRstop(TMR_ARTCNCL);
+            return;
+        }
+        if ((art = SMretrieve(token, RETR_HEAD)) == NULL) {
+            TMRstop(TMR_ARTCNCL);
+            return;
+        }
+        start = wire_findheader(art->data, art->len, "Cancel-Lock", true);
+
+        if (start == NULL
+            && strcasecmp(innconf->docancels, "require-auth") == 0) {
+            SMfreearticle(art);
+            TMRstop(TMR_ARTCNCL);
+            return;
+        } else if (start != NULL) {
+            /* canlockhdr will store a copy of the Cancel-Lock header field
+             * body of the original article to be cancelled.
+             * end points to the final "\n" of the header field body. */
+            end = wire_endheader(start, art->data + art->len - 1);
+
+            if (end == NULL
+                && strcasecmp(innconf->docancels, "require-auth") == 0) {
+                SMfreearticle(art);
+                TMRstop(TMR_ARTCNCL);
+                return;
+            } else if (end != NULL) {
+                r = false;
+#if defined(HAVE_CANLOCK)
+                if (HDR(HDR__CANCEL_KEY) != NULL) {
+                    canlockhdr = xstrndup(start, end - start);
+
+                    /* Is the Cancel-Key header field legitimate? */
+                    r = verify_cancel_key(HDR(HDR__CANCEL_KEY), canlockhdr);
+
+                    free(canlockhdr);
+                }
+#endif
+                SMfreearticle(art);
+
+                if (r == false) {
+                    TMRstop(TMR_ARTCNCL);
+                    return;
+                }
+            } else {
+                /* docancels is "auth", and there is no Cancel-Lock. */
+                SMfreearticle(art);
+            }
+        } else {
+            /* docancels is "auth", and there is no Cancel-Lock. */
+            SMfreearticle(art);
+        }
+    }
+
     if (!HIScheck(History, MessageID)) {
         /* Article hasn't arrived here, so write a fake entry using
          * most of the information from the cancel message. */
-        if (innconf->verifycancels && !Trusted) {
+        if (innconf->verifycancels
+            && (strcasecmp(innconf->docancels, "require-auth") == 0
+                || strcasecmp(innconf->docancels, "auth") == 0)
+            && !Trusted) {
             TMRstop(TMR_ARTCNCL);
             return;
         }
@@ -2673,7 +2745,7 @@ ARTpost(CHANNEL *cp)
         if (IsControl) {
             ARTcontrol(data, HDR(HDR__CONTROL), cp);
         }
-        if (DoCancels && HDR_FOUND(HDR__SUPERSEDES)) {
+        if (HDR_FOUND(HDR__SUPERSEDES)) {
             if (IsValidMessageID(HDR(HDR__SUPERSEDES), true, laxmid))
                 ARTcancel(data, HDR(HDR__SUPERSEDES), false);
         }

@@ -22,7 +22,6 @@ bool Debug = false;
 bool NNRPTracing = false;
 bool StreamingOff = false; /* default is we can stream */
 bool Tracing = false;
-bool DoCancels = true;
 char LogName[] = "SERVER";
 int ErrorCount = IO_ERROR_COUNT;
 OPERATINGMODE Mode = OMrunning;
@@ -147,7 +146,7 @@ const ARTHEADER ARTheaders[] = {
     ARTHEADERINIT("X-Canceled-By",                HTstd),
     /* #define HDR__XCANCELEDBY                             35 */
     ARTHEADERINIT("Cancel-Key",                   HTstd),
-    /* #define HDR__CANCELKEY                               36 */
+    /* #define HDR__CANCEL_KEY                              36 */
     ARTHEADERINIT("User-Agent",                   HTstd),
     /* #define HDR__USER_AGENT                              37 */
     ARTHEADERINIT("X-Original-Message-ID",        HTstd),
@@ -460,7 +459,8 @@ main(int ac, char *av[])
             innconf->artcutoff = strtoul(optarg, NULL, 10);
             break;
         case 'C':
-            DoCancels = false;
+            syslog(LOG_ERR, "innd -C flag has been deprecated and has no "
+                            "effect; use docancels in inn.conf");
             break;
         case 'd':
             Debug = true;

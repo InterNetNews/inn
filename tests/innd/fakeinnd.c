@@ -19,7 +19,6 @@ bool Debug = false;
 bool NNRPTracing = false;
 bool StreamingOff = false;
 bool Tracing = false;
-bool DoCancels = true;
 char LogName[] = "SERVER";
 int ErrorCount = IO_ERROR_COUNT;
 OPERATINGMODE Mode = OMrunning;

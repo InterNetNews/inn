@@ -184,7 +184,7 @@ typedef struct _HDRCONTENT {
 #define HDR__XNEWSPOSTER                  33
 #define HDR__XCANCELLEDBY                 34
 #define HDR__XCANCELEDBY                  35
-#define HDR__CANCELKEY                    36
+#define HDR__CANCEL_KEY                   36
 #define HDR__USER_AGENT                   37
 #define HDR__X_ORIGINAL_MESSAGE_ID        38
 #define HDR__CANCEL_LOCK                  39
@@ -643,7 +643,6 @@ extern const ARTHEADER ARTheaders[MAX_ARTHEADER];
 extern bool BufferedLogs;
 EXTERN bool AnyIncoming;
 extern bool Debug;
-extern bool DoCancels;
 extern bool laxmid;
 EXTERN bool ICDneedsetup;
 EXTERN bool NeedHeaders;

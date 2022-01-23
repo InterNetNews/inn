@@ -4,7 +4,7 @@ innd - InterNetNews daemon
 
 =head1 SYNOPSIS
 
-B<innd> [B<-aCdfNrsSu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
+B<innd> [B<-adfNrsSu>] [B<-4> I<address>] [B<-6> I<address>] [B<-c> I<days>]
 [B<-H> I<count>] [B<-i> I<count>] [B<-l> I<size>] [B<-m> I<mode>]
 [B<-n> I<flag>] [B<-o> I<count>] [B<-P> I<port>] [B<-t> I<timeout>]
 [B<-T> I<count>] [B<-X> I<seconds>]
@@ -113,13 +113,6 @@ Note that rejected articles are remembered during the number of days
 specified by the C</remember/> line in expire.ctl(5).  You'll have to
 wait that number of days before being able to inject again an article
 with the same previously rejected Message-ID.
-
-=item B<-C>
-
-This flag tells B<innd> to accept and propagate but not actually process
-cancel or supersedes messages.  This is intended for sites concerned about
-abuse of cancels, or that wish to use another cancel mechanism with
-stronger authentication.
 
 =item B<-d>, B<-f>
 

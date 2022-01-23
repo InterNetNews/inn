@@ -32,7 +32,7 @@ clean clobber distclean maintclean:
 ##  Compilation rules.
 
 INNDLIBS 	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) \
-		  $(SYSTEMD_LIBS) \
+		  $(SYSTEMD_LIBS) $(CANLOCK_LDFLAGS) $(CANLOCK_LIBS) \
 		  $(PERL_LIBS) $(PYTHON_LIBS) $(REGEX_LIBS) $(LIBS)
 
 perl.o:		perl.c   ; $(CC) $(CFLAGS) $(PERL_CPPFLAGS) -c perl.c

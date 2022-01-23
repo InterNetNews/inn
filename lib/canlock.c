@@ -329,4 +329,39 @@ gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
 
     return gencankey;
 }
+
+
+/*  Verify that a Cancel-Key header field body contains an element matching one
+**  of those present in a Cancel-Lock header field body.
+**  This function expects pointers to Cancel-Key and Cancel-Lock header field
+**  bodies as arguments.
+**
+**  Returns true if at least one c-key element matches.
+**  Otherwise, false is returned, that is to say the cancel or supersede
+**  request cannot be authenticated.
+*/
+bool
+verify_cancel_key(const char *c_key_header, const char *c_lock_header)
+{
+    char *c_key_list, *c_lock_list;
+    int status = -1;
+
+    if (c_key_header == NULL || c_lock_header == NULL)
+        return false;
+
+    /* Rewrite header field bodies as space-separated lists of elements. */
+    c_key_list = spaced_words_without_cfws(c_key_header);
+    c_lock_list = spaced_words_without_cfws(c_lock_header);
+
+    if (c_key_list != NULL && c_lock_list != NULL) {
+        /* Now call the function that actually does the check.
+         * The status will be 0 if a match is found. */
+        status = cl_verify_multi(NULL, c_key_list, c_lock_list);
+    }
+
+    free(c_key_list);
+    free(c_lock_list);
+
+    return (status == 0);
+}
 #endif /* HAVE_CANLOCK */

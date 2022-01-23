@@ -36,6 +36,7 @@ struct innconf {
     unsigned long artcutoff;    /* Max accepted article age */
     char *bindaddress;          /* Which interface IP to bind to */
     char *bindaddress6;         /* Which interface IPv6 to bind to */
+    char *docancels;            /* Which cancels to process */
     bool dontrejectfiltered;    /* Don't reject filtered article? */
     unsigned long hiscachesize; /* Size of the history cache in kB */
     bool ignorenewsgroups;      /* Propagate cmsgs by affected group? */

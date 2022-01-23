@@ -9,7 +9,8 @@
 
 /* We will have strings, integers, bools and lists. */
 static const char grep[] =
-    "(egrep '^(mta|organization|ovmethod|hismethod|path|port|extraoverview|pgpverify)'\
+    "(egrep '^(mta|organization|ovmethod|hismethod|path|port|extraoverview"
+    "|pgpverify|docancels)'\
  ../../samples/inn.conf; echo 'domain: \"news.example.org\"';\
  echo 'fromhost: \"news.example.org\"';) > config/tmp";
 
@@ -71,7 +72,7 @@ main(void)
     fclose(config);
     ok(7, !innconf_check("config/tmp"));
     unlink("config/tmp");
-    ok_string(8, "config/tmp:28: unknown parameter foo\n", errors);
+    ok_string(8, "config/tmp:29: unknown parameter foo\n", errors);
     errors_uncapture();
     free(errors);
     errors = NULL;

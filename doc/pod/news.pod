@@ -25,6 +25,20 @@ used for the new Cancel-Lock functionality.
 
 =item *
 
+The B<-C> flag given to B<innd> to disable the execution of cancels has been
+deprecated and is no longer taken into account (an error message will be
+present in your logs if B<innd> is started with it).  Instead, a new parameter
+has been added in F<inn.conf> to tune the types of cancels B<innd> should
+process.  If I<docancels> is set to C<require-auth>, which is the default
+if INN has Cancel-Lock support, only articles originally protected by the
+Cancel-Lock authentication mechanism can be withdrawn by a valid authenticated
+cancel article or a valid authenticated supersede request.  Withdrawals of
+articles not originally protected by Cancel-Lock will not be executed.
+See inn.conf(5) for more details about the different values of the new
+I<docancels> parameter, and make sure to parameter it according to your needs.
+
+=item *
+
 B<filechan> is no longer shipped with INN; it was just a simple version of
 B<buffchan>.  All calls to C<filechan> will be changed to C<buffchan -u>
 (for its unbuffered mode) in F<newsfeeds> by B<innupgrade>.  If you have
@@ -85,10 +99,18 @@ and makehistory(8) man pages.
 
 =item *
 
-Julien Elie has implemented Cancel-Lock support in B<nnrpd>, based on S<RFC
-8315> and libcanlock.  A new F<inn-secrets.conf> configuration file has been
-added in I<pathetc> wherein you can set the secrets to use for Cancel-Lock.
-See the inn-secrets.conf(5) man page for more details.
+Julien Elie has implemented Cancel-Lock support in B<innd> and B<nnrpd>,
+based on S<RFC 8315> and libcanlock.  A new F<inn-secrets.conf> configuration
+file has been added in I<pathetc> wherein you can set the secrets to use for
+Cancel-Lock.  See the inn-secrets.conf(5) man page for more details.
+
+=item *
+
+A new I<docancels> parameter has been added in F<inn.conf> to define which
+types of cancels B<innd> should process.  The B<-C> flag given to B<innd>
+is deprecated in favour of that new parameter (you'll see in your logs the
+message C<innd -C flag has been deprecated and has no effect; use docancels in
+inn.conf> in case you're passing that flag to B<innd>).
 
 =item *
 

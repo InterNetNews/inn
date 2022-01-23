@@ -38,6 +38,7 @@ mailcmd:                     @bindir@/innmail
 artcutoff:                   10
 #bindaddress:
 #bindaddress6:
+docancels:                   "require-auth"
 dontrejectfiltered:          false
 hiscachesize:                256
 ignorenewsgroups:            false

@@ -263,10 +263,33 @@ testgen_cancel_key_multi(void)
     free(canbuff);
 }
 
+/* Tests matches of key and lock elements. */
+static void
+testverify_cancel_key(void)
+{
+    is_bool(true, verify_cancel_key(SHA256ADMINKEY, SHA256ADMINLOCK),
+            "matching sha256 elements");
+    is_bool(false, verify_cancel_key(SHA256ADMINKEY, SHA256USERLOCK),
+            "not matching sha256 elements");
+    is_bool(true, verify_cancel_key(ADMINKEYLINE, ADMINLOCKLINE),
+            "matching all elements");
+    is_bool(true, verify_cancel_key(ADMINKEYLINE, SHA256ADMINLOCK),
+            "matching only sha256 elements");
+    is_bool(true,
+            verify_cancel_key(" invalid " SHA256ADMINKEY
+                              "\r\n\t  (comment)" SHA1ADMINKEY,
+                              SHA1ADMINLOCK),
+            "matching only sha1 elements");
+    is_bool(
+        true,
+        verify_cancel_key(SHA256ADMINKEY, USERLOCKLINE "\r\n\t" ADMINLOCKLINE),
+        "matching only one of sha256 elements");
+}
+
 int
 main(void)
 {
-    plan(4 * 9 + 15);
+    plan(4 * 9 + 15 + 1 + 6);
 
     fake_secrets();
 
@@ -296,6 +319,12 @@ main(void)
     vector_add(secrets->canlockuser, USERSECRET);
     testgen_cancel_lock_multi();
     testgen_cancel_key_multi();
+
+    secrets_free(secrets);
+    ok(true, "secrets freed");
+
+    /* And now test the verification part. */
+    testverify_cancel_key();
 
     return 0;
 }

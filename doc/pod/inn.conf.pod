@@ -202,6 +202,54 @@ value if you set it, since IPv6 addresses contain colons.
 
 This parameter has no effect when systemd socket activation is used.
 
+=item I<docancels>
+
+This parameter is intended for sites concerned about abuse of cancels, or that
+wish to enforce a mechanism to authenticate cancels.  Unless rejected by the
+use of a filter hook, B<innd> always accepts and propagates cancel articles
+and supersede requests.  However, actually processing such articles on the
+local news server depends on this parameter which can take the following
+values:
+
+=over 4
+
+=item C<require-auth>
+
+Only articles originally protected by the Cancel-Lock authentication
+mechanism can be withdrawn by a valid authenticated cancel article or a valid
+authenticated supersede request.  Withdrawals of articles not originally
+protected by Cancel-Lock will not be executed.
+
+This is the default value if B<innd> knows how to authenticate cancels
+(that is to say if INN was built with Cancel-Lock support).  Otherwise, the
+behaviour will be the same as C<none>.
+
+=item C<auth>
+
+Withdrawals of articles not originally protected by the Cancel-Lock
+authentication mechanism will always be executed.  However, if the original
+article is protected, only a valid authenticated cancel article or a valid
+authenticated supersede request will permit withdrawing it.  (If INN was not
+built with Cancel-Lock support, such protected articles won't be withdrawn.)
+
+=item C<none>
+
+Neither cancel articles nor supersede requests will be processed; no articles
+will be withdrawn.
+
+This is the default value if B<innd> does not know how to authenticate cancels
+(that is to say if INN was not built with Cancel-Lock support) as it has no
+means to ensure that these withdrawal requests are legitimate.
+
+=item C<all>
+
+B<innd> will process all cancel articles and supersede requests, even if
+unauthenticated, forged or with bad authentication.  You should be sure of
+what you are doing if you choose that value as any article can be withdrawn
+(even by someone who is not the author of the article).
+
+=back
+
 =item I<dontrejectfiltered>
 
 Normally innd(8) rejects incoming articles when directed to do so by
@@ -362,8 +410,7 @@ conceal their identity and provided no security".  This check is
 therefore not done as it is extremely easy to spoof.
 
 In order not to actually process any cancel or supersedes messages,
-you can start B<innd> with the B<-C> flag, or add this flag to the
-I<innflags> parameter.
+you can set I<docancels> to C<none>.
 
 =item I<verifygroups>
 

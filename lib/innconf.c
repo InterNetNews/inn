@@ -118,6 +118,7 @@ static const struct config config_table[] = {
     {K(chaninacttime),              UNUMBER(600)      },
     {K(chanretrytime),              UNUMBER(300)      },
     {K(datamovethreshold),          UNUMBER(16384)    },
+    {K(docancels),                  STRING(NULL)      },
     {K(dontrejectfiltered),         BOOL(false)       },
     {K(hiscachesize),               UNUMBER(256)      },
     {K(htmlstatus),                 BOOL(true)        },
@@ -349,6 +350,14 @@ innconf_set_defaults(void)
     if (innconf->tlskeyfile == NULL)
         innconf->tlskeyfile = concatpath(innconf->pathetc, "key.pem");
 #endif
+
+    /* Default value depending on Cancel-Lock support. */
+    if (innconf->docancels == NULL)
+#if defined(HAVE_CANLOCK)
+        innconf->docancels = xstrdup("require-auth");
+#else
+        innconf->docancels = xstrdup("none");
+#endif
 }
 
 
@@ -464,6 +473,15 @@ innconf_validate(struct config_group *group)
         config_error_param(group, "datamovethreshold",
                            "maximum value for datamovethreshold is 1MB");
         innconf->datamovethreshold = 1024 * 1024;
+    }
+
+    if (innconf->docancels != NULL
+        && strcasecmp(innconf->docancels, "require-auth") != 0
+        && strcasecmp(innconf->docancels, "auth") != 0
+        && strcasecmp(innconf->docancels, "none") != 0
+        && strcasecmp(innconf->docancels, "all") != 0) {
+        warn("docancels must be require-auth, auth, none or all");
+        okay = false;
     }
 
     if (innconf->keywords) {

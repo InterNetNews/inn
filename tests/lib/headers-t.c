@@ -1,16 +1,33 @@
 /*
-** headers test suite.
+**  Test suite for manipulation and checks on headers.
 */
 
 #define LIBTEST_NEW_FORMAT 1
 
+#include "portable/system.h"
+
 #include "inn/libinn.h"
 #include "tap/basic.h"
+
+
+static void
+test_spaced_words_without_cfws(size_t count, const char *input,
+                               const char *expected)
+{
+    char *string;
+
+    string = spaced_words_without_cfws(input);
+    is_string(string, expected, "good spaced words without CFWS %lu", count);
+    free(string);
+}
+
 
 int
 main(void)
 {
-    plan(9 + 3 + 11 + 8 + 14 + 7);
+    size_t count = 1;
+
+    plan(9 + 3 + 11 + 8 + 14 + 7 + 9);
 
     ok(!IsValidHeaderName(NULL), "bad header field name 1");
     ok(!IsValidHeaderName(""), "bad header field name 2");
@@ -73,6 +90,17 @@ main(void)
        "good header field 6");
     ok(IsValidHeaderField("Subject: \317\205\317\204\317\2068\r\n testing"),
        "good header field 7");
+
+    test_spaced_words_without_cfws(count++, NULL, NULL);
+    test_spaced_words_without_cfws(count++, "  \t(comment)", "");
+    test_spaced_words_without_cfws(count++, "One", "One");
+    test_spaced_words_without_cfws(count++, "One Two", "One Two");
+    test_spaced_words_without_cfws(count++, "  One  \r\n\tTwo ", "One Two");
+    test_spaced_words_without_cfws(count++, "(comment)One", "One");
+    test_spaced_words_without_cfws(count++, "(c) A(\\\\)B \tC(c)", "A B C");
+    test_spaced_words_without_cfws(count++, "(c) A(\\)B \tC)D", "A D");
+    test_spaced_words_without_cfws(
+        count++, "A(comment\r\n and(nest\r\n\ted) one)\t\tB", "A B");
 
     return 0;
 }
