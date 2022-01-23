@@ -40,10 +40,13 @@ previous parser will include the double-quotes in the value of the parameter.
 =item *
 
 Add the I<hismethod> parameter if not found (introduced in S<INN 2.4>,
-with the default value C<hisv6>).  Rename I<nntpactsync> to
-I<incominglogfrequency> (since S<INN 2.5>).  Rename I<addnntppostingdate>
-and I<addnntppostinghost> to respectively I<addinjectiondate> and
-I<addinjectionpostinghost> (since S<INN 2.6>).
+with the default value C<hisv6>).
+
+=item *
+
+Rename I<nntpactsync> to I<incominglogfrequency> (since S<INN 2.5>).
+Rename I<addnntppostingdate> and I<addnntppostinghost> to respectively
+I<addinjectiondate> and I<addinjectionpostinghost> (since S<INN 2.6>).
 
 =item *
 
@@ -66,7 +69,7 @@ S<INN 2.5>.  The file is then renamed to F<sasl.conf.OLD>.
 =item *
 
 Create a non-world-readable F<inn-secrets.conf> file in I<pathetc>, if not
-already existing,
+already existing (new in S<INN 2.7>).
 
 =back
 
@@ -77,11 +80,12 @@ already existing,
 =item *
 
 Replace the use of B<startinnfeed> with the appropriate direct invocation
-of B<innfeed> or B<imapfeed>.
+of B<innfeed> or B<imapfeed> (B<startinnfeed> was removed in S<INN 2.5>).
 
 =item *
 
-Replace the use of B<filechan> with B<buffchan> in unbuffered mode.
+Replace the use of B<filechan> with B<buffchan> in unbuffered mode
+(B<filechan> was removed in S<INN 2.7>).
 
 =back
 
@@ -91,7 +95,7 @@ Replace the use of B<filechan> with B<buffchan> in unbuffered mode.
 
 =item *
 
-Replace the I<require_ssl> parameter with I<require_encryption>.
+Rename I<require_ssl> to I<require_encryption> (since S<INN 2.7>).
 
 =back
 
