@@ -67,8 +67,6 @@ __DATA__
 # The following additional files should be ignored.  The file names are
 # relative to the root of the tree.  Shell wildcards are supported.
 BOOTSTRAP
-CHANGES
-ChangeLog
 LIST.*
 Makefile.global
 README.*
