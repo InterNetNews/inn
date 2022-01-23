@@ -805,13 +805,6 @@ Run C<make release> for a final release, C<support/mksnapshot BETA b1> for
 the first beta version of a new release, or C<support/mksnapshot RC rc1>
 for the first release candidate version of a new release.
 
-Start the F<ChangeLog> at the time of the previous release.  (Eventually,
-the script will be smart enough to do this for you.)
-
-Check that the F<ChangeLog> file is correct; otherwise, regenerate it or
-manually edit it.  Then run again C<make release> or any other command
-you used.
-
 =item 10.
 
 Generate an MD5 checksum of the release tarball.

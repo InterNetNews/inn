@@ -1,7 +1,5 @@
 # Ignore list for Git.  -*- conf -*-
 
-/ChangeLog
-/CHANGES
 /config.cache
 /config.log
 /config.status

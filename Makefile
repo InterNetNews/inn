@@ -173,7 +173,7 @@ maintclean:
 	rm -f LIST.* Makefile.global config.cache config.log
 	rm -f config.status libtool support/fixconfig support/fixscript
 	rm -f config.status.lineno configure.lineno
-	rm -f CHANGES ChangeLog inn*.tar.gz configure include/config.h.in
+	rm -f inn*.tar.gz configure include/config.h.in
 	rm -rf $(TARDIR)
 
 ##  Other generic targets.
@@ -200,7 +200,7 @@ warnings:
 ##  the version information in Makefile.global.in to remove the prerelease
 ##  designation and update all timestamps to the date the release is made.
 ##  If RELEASENUMBER is set, it is a beta release or a release candidate.
-release: ChangeLog
+release:
 	rm -rf $(TARDIR)
 	rm -f inn*.tar.gz
 	mkdir $(TARDIR)
@@ -216,15 +216,9 @@ release: ChangeLog
 	    $(SED) 's/= prerelease/=/' Makefile.global.in \
 	        > $(TARDIR)/Makefile.global.in ; \
 	fi
-	cp ChangeLog $(TARDIR)/
 	find $(TARDIR) -type f -print | xargs touch -t `date +%m%d%H%M.%S`
 	tar cf $(TARFILE) $(TARDIR)
 	$(GZIP) -9 $(TARFILE)
-
-##  Generate the ChangeLog using support/mkchangelog.  This should only be
-##  run by a maintainer since it depends on git log working.
-ChangeLog:
-	$(PERL) support/mkchangelog
 
 
 ##  Check the MANIFEST against the files present in the current tree,
@@ -235,9 +229,9 @@ check-manifest:
 	diff -u LIST.manifest LIST.real
 
 
-##  Make a snapshot.  This is like making a release, except that we don't do
-##  the ChangeLog thing and we don't change the version number.  We also
-##  assume that SNAPSHOT has been set to the appropriate current branch.
+##  Make a snapshot.  This is like making a release, except that we don't
+##  change the version number.  We also assume that SNAPSHOT has been set to
+##  the appropriate current branch.
 snapshot:
 	rm -rf $(SNAPDIR)
 	rm -f inn*.tar.gz
