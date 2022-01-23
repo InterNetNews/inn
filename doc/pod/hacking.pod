@@ -862,16 +862,22 @@ C<webmaster>).
 
 =item 14.
 
-After the ISC web site has been updated with links towards the new
-release, send an announce on inn-announce and in news.software.nntp
-(with a possible crosspost to news.admin.announce).
+Publish a release in GitHub, based on the commit used to generate the release
+tarball.  Include the description from F<NEWS>, and attach the tarball as well
+as its signature.
+
+GitHub will create the appropriate annotated tag when publishing the release.
 
 =item 15.
 
-Tag the commit that was used for generating the release with an annotated
-tag in Git:
+After ftp.isc.org has correctly mirrored the release, send an announce
+on inn-announce and in news.software.nntp (with a possible crosspost to
+news.admin.announce).
 
-    git tag -a Y.Y.Y -m "Tag Y.Y.Y release."
+The ISC web site does not need being updated as it does not directly link to
+the release, nor mention the version of the last release.  (Just check the
+information at L<https://www.isc.org/othersoftware/#INN> is still available
+and accurate, though.)
 
 =item 16.
 
