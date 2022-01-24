@@ -17,7 +17,8 @@ test_spaced_words_without_cfws(size_t count, const char *input,
     char *string;
 
     string = spaced_words_without_cfws(input);
-    is_string(string, expected, "good spaced words without CFWS %lu", count);
+    is_string(string, expected, "good spaced words without CFWS %lu",
+              (unsigned long) count);
     free(string);
 }
 
