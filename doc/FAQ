@@ -245,7 +245,7 @@ Subject: 1.6. What mailing lists are there for INN?
 There are several INN-related mailing lists:
 
 inn-announce@lists.isc.org
-    Where announcements about INN are set (only maintainers may post).
+    Where announcements about INN are sent (only maintainers may post).
 
 inn-workers@lists.isc.org
     Discussion of INN development.  If you prefer not to use GitHub to
@@ -261,9 +261,10 @@ inn-committers@lists.isc.org
     automated messages are sent here, no regular posting).
 
 inn-bugs@lists.isc.org
-    GitHub issues for INN are sent to this list (only the automated
-    messages are sent here, no regular posting).  Bug reports should be
-    sent to the inn-workers mailing list, or a GitHub issue created.
+    This list used to receive Trac issues for INN, before the migration to
+    GitHub (only the automated messages were sent here, no regular
+    posting).  Bug reports should be sent to the inn-workers mailing list,
+    or a GitHub issue created.
 
 To join these lists, send a subscription request to the `-request'
 address.  The addresses for the above lists are:
@@ -282,10 +283,10 @@ web pages:
     <https://lists.isc.org/mailman/listinfo/inn-bugs>
 
 inn-workers tends to be moderate volume (3-5 messages a day, but varying a
-lot depending on what's being discussed).  inn-bugs and inn-committers are
-occasionally higher volume but entirely automatically generated GitHub bug
-tracker and push notifications.  inn-announce is a low-volume moderated list
-containing only major announcements.
+lot depending on what's being discussed).  inn-committers is occasionally
+higher volume but entirely automatically generated GitHub push
+notifications.  inn-announce is a low-volume moderated list containing
+only major announcements.  inn-bugs no longer has any activity.
 
 ------------------------------
 

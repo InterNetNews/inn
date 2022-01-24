@@ -260,7 +260,7 @@ read-only (no postings allowed).
 
 =item inn-announce@lists.isc.org
 
-Where announcements about INN are set (only maintainers may post).
+Where announcements about INN are sent (only maintainers may post).
 
 URL:  L<https://lists.isc.org/mailman/listinfo/inn-announce>
 
@@ -285,9 +285,9 @@ URL:  L<https://lists.isc.org/mailman/listinfo/inn-committers>
 
 =item inn-bugs@lists.isc.org
 
-GitHub issues for INN are sent to this list (only the automated messages
-are sent here, no regular posting).  Bug reports should be sent to
-the inn-workers mailing list, or a GitHub issue created.
+This list used to receive Trac issues for INN, before the migration to GitHub
+(only the automated messages were sent here, no regular posting).  Bug reports
+should be sent to the inn-workers mailing list, or a GitHub issue created.
 
 URL:  L<https://lists.isc.org/mailman/listinfo/inn-bugs>
 
