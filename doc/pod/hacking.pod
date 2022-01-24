@@ -730,6 +730,8 @@ so as to be sure they work fine (especially B<--enable-shared=no>,
 B<--enable-tagged-hash>, B<--enable-keywords>, B<--enable-largefiles>
 and B<--enable-reduced-depends>).
 
+Update F<INSTALL> with the list of supported systems.
+
 =item 3.
 
 Update copyright years in F<LICENSE>.
