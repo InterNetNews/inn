@@ -55,7 +55,7 @@ SendQuit(int x)
 }
 
 
-static void
+__attribute__((__noreturn__)) static void
 Usage(void)
 {
     fprintf(stderr, "Usage: feedone [-r|-m msgid] [-p] [-t] articlefile\n");

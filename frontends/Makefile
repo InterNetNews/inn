@@ -22,6 +22,9 @@ PATHRNEWS     = $(PATHBIN)/rnews.libexec
 
 all: $(ALL) $(MAN)
 
+optional:
+	$(MAKE) COPT='$(WARNINGS)' $(OPTIONAL)
+
 warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
