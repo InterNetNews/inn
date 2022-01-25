@@ -1200,19 +1200,19 @@ sub collect($$$$$$) {
       my $server = $1;
       $server = lc $server unless $CASE_SENSITIVE;
       $innxmit_ihfail{$server} = 1;
-      if ($left = /436 \S+ NNTP \S+ out of space/o) {
+      if ($left =~ /436 \S+ NNTP \S+ out of space/o) {
 	$innxmit_nospace{$server}++;
 	return 1;
       }
-      if ($left = /400 \S+ space/o) {
+      if ($left =~ /400 \S+ space/o) {
 	$innxmit_nospace{$server}++;
 	return 1;
       }
-      if ($left = /400 Bad file/o) {
+      if ($left =~ /400 Bad file/o) {
 	$innxmit_crefused{$server}++;
 	return 1;
       }
-      if ($left = /480 Transfer permission denied/o) {
+      if ($left =~ /480 Transfer permission denied/o) {
 	$innxmit_crefused{$server}++;
 	return 1;
       }
