@@ -1296,7 +1296,7 @@ needed when you edit F<expire.ctl> a bit later.
 
 F<expire.ctl> sets the expiration policy for articles stored on the
 server.  Be careful, since the default configuration will expire most
-articles after 15 days; in most circumstances this deletion is
+articles after 90 days; in most circumstances this deletion is
 I<permanent>, so read this whole section carefully if you want to keep
 local hierarchies forever.  (See archive(8) for a way to automate backups
 of important articles.)
