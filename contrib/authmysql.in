@@ -6,7 +6,7 @@
 
 # You really shouldn't need to edit this file.
 # To test via tcsh:
-#     ( echo 'ClientAuthname: test' ; echo 'ClientPassword: monkey' ) | ./authmysql.pl
+#     ( echo 'ClientAuthname: test' ; echo 'ClientPassword: monkey' ) | ./authmysql
 
 use DBI;
 use strict;

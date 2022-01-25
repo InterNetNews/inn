@@ -23,7 +23,7 @@ to work with INN.
 
                         -------------------------
 
-analyze-traffic.pl
+analyze-traffic
 
     Analyzes which newsgroups are receiving the most traffic and which
     peer is most responsible for each high-traffic group.
@@ -54,7 +54,7 @@ cleannewsgroups
 
     Performs various cleanups on the newsgroups file.
 
-count_overview.pl
+count_overview
 
     Counts the groups in a bunch of Xref records.
 

@@ -60,24 +60,24 @@ configure.ac                          Source file for configure
 contrib                               External contributions (Directory)
 contrib/Makefile                      Makefile for contrib programs
 contrib/README                        Contents of the contrib directory
-contrib/analyze-traffic.pl            Track which groups are getting traffic
+contrib/analyze-traffic.in            Track which groups are getting traffic
 contrib/archivegz.in                  Compressing version of archive
 contrib/auth_pass.README              README corresponding to auth_pass.c
 contrib/auth_pass.c                   Sample for use with AUTHINFO GENERIC
-contrib/authmysql                     Authenticator using MySQL table
 contrib/authmysql.config              Configuration for authmysql
+contrib/authmysql.in                  Authenticator using MySQL table
 contrib/backlogstat.in                Analyze innfeed's backlog status
 contrib/cleannewsgroups.in            Script to clean newsgroups file
-contrib/count_overview.pl             Count overview entries
+contrib/count_overview.in             Count overview entries
 contrib/delayer.in                    Delay data in a pipe, for innfeed
 contrib/expirectl.c                   Generate expire.ctl from template
 contrib/findreadgroups.in             Track which groups are being read
-contrib/fixhist                       Script to clean history
+contrib/fixhist.in                    Script to clean history
 contrib/innconfcheck                  Merge inn.conf with its man page
 contrib/innreport-filter.xslt         Filter for innreport's HTML files
 contrib/makeexpctl.in                 Create expire.ctl from read groups
 contrib/makestorconf.in               Create storage.conf from read groups
-contrib/mkbuf                         Create cycbuff for HP-UX
+contrib/mkbuf.in                      Create cycbuff for HP-UX
 contrib/mlockfile.c                   Lock files into memory using mlock
 contrib/mm_ckpasswd                   Check passwords against Mailman db
 contrib/newsresp.c                    Measure responsiveness of remote server

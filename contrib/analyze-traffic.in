@@ -2,7 +2,7 @@
 
 ########################################################################
 #
-# analyze-traffic.pl
+# analyze-traffic
 #
 # Written by Jeffrey M. Vinocur <jeff@litech.org>
 # This work is hereby placed in the public domain by its author.
@@ -33,7 +33,7 @@
 #
 # 2.  Wait for some data.
 #
-# 3.  Run analyze-traffic.pl on the logged data (you can pass the
+# 3.  Run analyze-traffic on the logged data (you can pass the
 #     filename as an argument or feed the data on standard input).
 #     You probably want to pipe it into a file, `less`, or `tail` as the
 #     output is a line for every group that has received an article
