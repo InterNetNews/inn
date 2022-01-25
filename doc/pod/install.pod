@@ -897,7 +897,7 @@ default choice.
 If set to true (the default), INN will log the IP address (or hostname,
 if the host is listed in F<incoming.conf> with a hostname) of the
 remote host from which it received an article.  If set to false,
-the trailing Path header field body entry is logged instead.  If you
+the trailing path identity in Path header fields is logged instead.  If you
 are using B<controlchan> (see below) and need to process ihave/sendme
 control messages (this is very, very unlikely, so if you don't know
 what this means, don't worry about it), make sure you set this to false,

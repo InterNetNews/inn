@@ -85,31 +85,30 @@ sent to the site.  The name is usually whatever the remote site uses
 to identify itself in the Path header field body, but can be almost
 any word.
 
-Be careful, though, to avoid having the I<sitename> accidentally match a
-Path header field body entry unintentionally.  For this reason, special
-local entries (such as archivers or gateways) should probably end with
-an exclamation point to make sure that they do not have the same name
-as any real site.  For example, C<gateway> is an obvious name for the
-local entry that forwards articles out to a mailing list.  If a site with
-the name C<gateway> posts an article, when the local site receives the
-article it will see the name in the Path and not send the article to its
-own C<gateway> entry.  Since C<gateway!> can't appear as an individual
-Path header field body entry since C<!> is a delimiter in the Path
-header field body, that would be a better thing to use for I<sitename>.
+Be careful, though, to avoid having the I<sitename> accidentally match a path
+identity in the Path header field unintentionally.  For this reason, special
+local entries (such as archivers or gateways) should probably end with an
+exclamation point to make sure that they do not have the same name as any real
+site.  For example, C<gateway> is an obvious name for the local entry that
+forwards articles out to a mailing list.  If a site with the name C<gateway>
+posts an article, when the local site receives the article it will see the
+name in the Path header field and not send the article to its own C<gateway>
+entry.  Since C<gateway!> can't appear as an individual path identity in the
+Path header field (as C<!> is the delimiter), that would be a better thing to
+use for I<sitename>.
 
 (Another way to avoid this problem is with the C<Ap> flag; see the
 description below.)
 
 If an entry has an exclusion sub-field, the article will not be sent
 to that site if any of I<exclude> appear in the Path header field body.
-(It's sometimes convenient to have the I<sitename> be an abbreviated form
-of the name of the remote site, since all the I<sitename>s to which an
-article is sent are written to the log and using shorter I<sitename>s
-can therefore improve performance for large servers.  In this case,
-the Path header field body entries of those sites should be given as
-I<exclude> entries and the C<Ap> flag used so that the abbreviated
-I<sitename> doesn't accidentally match some other Path header field
-body entry.)
+(It's sometimes convenient to have the I<sitename> be an abbreviated form of
+the name of the remote site, since all the I<sitename>s to which an article
+is sent are written to the log and using shorter I<sitename>s can therefore
+improve performance for large servers.  In this case, the path identities of
+those sites should be given as I<exclude> entries and the C<Ap> flag used so
+that the abbreviated I<sitename> doesn't accidentally match some other path
+identities in Path header fields.)
 
 The same I<sitename> can be used more than once and the appropriate action
 will be taken for each entry that should receive the article, but this is
@@ -352,11 +351,11 @@ header field, even if the C<O> flag is also given.
 
 =item p
 
-Only check the exclusions against the Path header field of articles;
-don't check the site name.  This is useful if your site names aren't the
-same as the Path header field body entries added by those remote sites,
-or for program feeds where the site name is arbitrary and unrelated to
-the Path header field body.
+Only check the exclusions against the Path header field of articles; don't
+check the site name.  This is useful if your site names aren't the same as
+the path identities in Path header fields added by those remote sites, or
+for program feeds where the site name is arbitrary and unrelated to the Path
+header field body.
 
 =back
 
