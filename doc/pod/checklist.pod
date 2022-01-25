@@ -119,9 +119,9 @@ method.
 =item *
 
 Configure in F<expire.ctl> how long articles should be kept in your news
-spool.  The default of 15 days is probably too short.  You can use different
-values for specific newsgroups or hierarchies depending on your interest in
-them.
+spool.  The default of 90 days maybe does not fit your needs.  You can use
+different values for specific newsgroups or hierarchies depending on your
+interest in them.
 
 =item *
 
