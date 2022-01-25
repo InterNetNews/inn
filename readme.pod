@@ -26,8 +26,17 @@ Please see:
 
 =item *
 
+L<CHECKLIST|https://www.eyrie.org/~eagle/software/inn/docs/checklist.html> for
+a quick overview of all the installation steps and pointers to documentation,
+
+=item *
+
 L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
-for installation instructions,
+for full installation instructions,
+
+=item *
+
+L<FAQ|https://www.eyrie.org/~eagle/faqs/inn.html> for INN FAQ,
 
 =item *
 
@@ -42,8 +51,8 @@ for the copyright, license, and distribution terms.
 
 =back
 
-These files can also be found in the F<doc/pod> directory if not present
-at top-level.
+These files can also be found in the F<doc> or F<doc/pod> directories if not
+present at top-level.
 
 =head1 What is INN?
 
