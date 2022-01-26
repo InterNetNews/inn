@@ -1,16 +1,16 @@
-# 
+#
 # This package is only kept for compatibility reasons with old softwares.
 # Please use the real INN::Config Perl module instead.
 #
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 24 Aug 1996 22:08:19 +0200
-# Project:      INN 
+# Project:      INN
 # File:         innshellvars.pl
 # Description:  Set up any and all variables that an INN perl script
 #               might need.  Also sets umask.
 #
 
-package inn ;
+package inn;
 
 $ENV{'LC_CTYPE'} = "C";
 
@@ -47,77 +47,79 @@ $overviewdir = $pathoverview;
 $spoolnews = $pathincoming;
 $badnews = "$pathincoming/bad";
 
-$active = "${pathdb}/active" ;
-$activetimes = "${pathdb}/active.times" ;
-$ctlfile = "${newsetc}/control.ctl" ;
-$ctlwatch = "${newsetc}/innwatch.ctl" ;
-$history = "${pathdb}/history" ;
-$newactive = "${pathdb}/active.tmp" ;
-$newsfeeds = "${newsetc}/newsfeeds" ;
-$newsgroups = "${pathdb}/newsgroups" ;
-$oldactive = "${pathdb}/active.old" ;
-$path_motd_innd = "${newsetc}/motd.innd" ;
-$path_motd_nnrpd = "${newsetc}/motd.nnrpd" ;
-$path_motd = "${path_motd_nnrpd}" ;
-$expirectl = "${newsetc}/expire.ctl" ;
-$localgroups = "$newsetc/localgroups" ;
+$active = "${pathdb}/active";
+$activetimes = "${pathdb}/active.times";
+$ctlfile = "${newsetc}/control.ctl";
+$ctlwatch = "${newsetc}/innwatch.ctl";
+$history = "${pathdb}/history";
+$newactive = "${pathdb}/active.tmp";
+$newsfeeds = "${newsetc}/newsfeeds";
+$newsgroups = "${pathdb}/newsgroups";
+$oldactive = "${pathdb}/active.old";
+$path_motd_innd = "${newsetc}/motd.innd";
+$path_motd_nnrpd = "${newsetc}/motd.nnrpd";
+$path_motd = "${path_motd_nnrpd}";
+$expirectl = "${newsetc}/expire.ctl";
+$localgroups = "$newsetc/localgroups";
 
 $controlprogs = $pathcontrol;
-$innconfval = "${newsbin}/innconfval" ;
-$innd = "${newsbin}/innd" ;
-$innwatch = "${newsbin}/innwatch" ;
-$inews = "${newsbin}/inews" ;
-$rnews = "${newsbin}/rnews" ;
-$perl_startup_innd = "$pathfilter/startup_innd.pl" ;
-$perl_filter_innd = "$pathfilter/filter_innd.pl" ;
-$perl_filter_nnrpd = "$pathfilter/filter_nnrpd.pl" ;
-$python_filter_innd = "$pathfilter/filter_innd.py" ;
-$path_python_inn_module = "$pathfilter/INN.py" ;
-$path_tcl_startup = "$pathfilter/startup.tcl" ;
-$path_tcl_filter = "$pathfilter/filter.tcl" ;
+$innconfval = "${newsbin}/innconfval";
+$innd = "${newsbin}/innd";
+$innwatch = "${newsbin}/innwatch";
+$inews = "${newsbin}/inews";
+$rnews = "${newsbin}/rnews";
+$perl_startup_innd = "$pathfilter/startup_innd.pl";
+$perl_filter_innd = "$pathfilter/filter_innd.pl";
+$perl_filter_nnrpd = "$pathfilter/filter_nnrpd.pl";
+$python_filter_innd = "$pathfilter/filter_innd.py";
+$path_python_inn_module = "$pathfilter/INN.py";
+$path_tcl_startup = "$pathfilter/startup.tcl";
+$path_tcl_filter = "$pathfilter/filter.tcl";
 
-$daily = "${locks}/LOCK.news.daily" ;
+$daily = "${locks}/LOCK.news.daily";
 
-$newscontrol = "${innddir}/control" ;
-$nntpconnect = "${innddir}/nntpin" ;
-$serverpid = "${innddir}/innd.pid" ;
-$innwstatus = "${innddir}/innwatch.status" ;
-$watchpid = "${innddir}/innwatch.pid" ;
+$newscontrol = "${innddir}/control";
+$nntpconnect = "${innddir}/nntpin";
+$serverpid = "${innddir}/innd.pid";
+$innwstatus = "${innddir}/innwatch.status";
+$watchpid = "${innddir}/innwatch.pid";
 
-$awk = '@AWK@' ;
-$sed = '@SED@' ;
-$inndf = "${newsbin}/inndf" ;
-$egrep = '@EGREP@' ;
-$perl = '@PERL@' ;
-$gpgv = '@GPGV@' ;
-$gpg = '@GPG@' ;
-$pgp = '@PGP@' ;
-$sort = '@SORT@' ;
-$getftp = "@PATH_GETFTP@" ;
-$uustat = '@UUSTAT@' ;
-$uux = '@UUX@' ;
+$awk = '@AWK@';
+$sed = '@SED@';
+$inndf = "${newsbin}/inndf";
+$egrep = '@EGREP@';
+$perl = '@PERL@';
+$gpgv = '@GPGV@';
+$gpg = '@GPG@';
+$pgp = '@PGP@';
+$sort = '@SORT@';
+$getftp = "@PATH_GETFTP@";
+$uustat = '@UUSTAT@';
+$uux = '@UUX@';
 
-$bzip2 = '@BZIP2@' ;
-$compress = '@COMPRESS@' ;
-$gzip = '@GZIP@' ;
-$uncompress = '@UNCOMPRESS@' ;
-$log_compress = '@LOG_COMPRESS@' ;
-$z = '@LOG_COMPRESSEXT@' ;
+$bzip2 = '@BZIP2@';
+$compress = '@COMPRESS@';
+$gzip = '@GZIP@';
+$uncompress = '@UNCOMPRESS@';
+$log_compress = '@LOG_COMPRESS@';
+$z = '@LOG_COMPRESSEXT@';
 
 if ($ovmethod && $ovmethod eq "ovdb") {
     $ENV{'DB_HOME'} = $pathoverview;
 }
 
-($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*! ;
-($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!! ;
+($tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*!;
+($tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!!;
 
-$newsmaster = '@NEWSMASTER@' ;
-$newsuser = ${runasuser} ;
-$newsgroup = ${runasgroup} ;
+$newsmaster = '@NEWSMASTER@';
+$newsuser = ${runasuser};
+$newsgroup = ${runasgroup};
 
+#<<V  code skipping because perltidy expects numbers.
 $filemode = @FILEMODE@;
 $inewsmode = @INEWSMODE@;
 $rnewsmode = @RNEWSMODE@;
+#>>V
 
 $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
 
@@ -129,8 +131,10 @@ $spooltemp = ${pathtmp};
 $newslbin = "${newshome}/local";
 $ENV{'NEWSLBIN'} = ${newslbin};
 
+#<<V  code skipping because perltidy expects numbers.
 umask @NEWSUMASK@;
 $umask = @NEWSUMASK@;
+#>>V
 
 $syslog_facility = lc("@SYSLOG_FACILITY@");
 $syslog_facility =~ s/log_//;
@@ -139,7 +143,6 @@ $path = $ENV{'PATH'} || '';
 $path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 $ENV{'PATH'} = $path;
 
-
 $home = ${pathnews};
 
 ##  Load another script that can override or add variables.
@@ -147,4 +150,4 @@ if (-x "${pathetc}/innshellvars.pl.local") {
     do "${pathetc}/innshellvars.pl.local";
 }
 
-1 ;
+1;

@@ -31,9 +31,9 @@ my $MAXSIZE = 500000;
 my $MAXJOBS = 200;
 
 my %UNBATCHER = (
-    compress    => 'cunbatch',
-    bzip2       => 'bunbatch',
-    gzip        => 'gunbatch',
+    compress => 'cunbatch',
+    bzip2    => 'bunbatch',
+    gzip     => 'gunbatch',
 );
 
 my $UUX_FLAGS = '- -z -r -gd';
@@ -55,7 +55,8 @@ eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 if ($use_syslog) {
     if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+        Sys::Syslog::setlogsock('unix')
+          if $^O =~ /linux|dec_osf|freebsd|darwin/;
     }
     openlog('send-uucp', 'pid', $INN::Config::syslog_facility);
 }
@@ -79,10 +80,12 @@ if (not @sitelist) {
     exit 0;
 }
 
-chdir $INN::Config::batch or logdie("Can't access $INN::Config::batch: $!", 'crit');
+chdir $INN::Config::batch
+  or logdie("Can't access $INN::Config::batch: $!", 'crit');
 
 # Acquire a lock.
-INN::Utils::Shlock::lock($lockfile, 60) or logdie("cannot create lockfile $lockfile");
+INN::Utils::Shlock::lock($lockfile, 60)
+  or logdie("cannot create lockfile $lockfile");
 
 run_site($_) foreach @sitelist;
 
@@ -140,9 +143,10 @@ sub count_jobs {
     my ($site) = @_;
 
     return 0 if not $INN::Config::uustat;
-    open(JOBS, "$INN::Config::uustat -s $site 2> /dev/null |") or logdie("cannot fork: $!");
+    open(JOBS, "$INN::Config::uustat -s $site 2> /dev/null |")
+      or logdie("cannot fork: $!");
     my $count = grep(/ Executing rnews /, <JOBS>);
-    close JOBS;                    # ignore errors, uustat may fail
+    close JOBS;    # ignore errors, uustat may fail
     return $count;
 }
 
@@ -150,8 +154,8 @@ sub count_jobs {
 sub unbatcher {
     my ($compressor) = @_;
 
-    $compressor =~ s%.*/%%;   # Do not keep the complete path.
-    $compressor =~ s% .*%%;   # Do not keep the optional parameters.
+    $compressor =~ s%.*/%%;    # Do not keep the complete path.
+    $compressor =~ s% .*%%;    # Do not keep the optional parameters.
     return $UNBATCHER{$compressor} || $UNBATCHER{'gzip'};
 }
 
@@ -180,7 +184,7 @@ sub run_site {
     # has been renamed and flushed.
     if (-f "$site.work") {
         rename("$site.work", "$site.work.tmp")
-            or logdie("cannot rename $site.work: $!", 'crit');
+          or logdie("cannot rename $site.work: $!", 'crit');
     }
 
     if (not -f $site and not -f "$site.work.tmp") {
@@ -196,14 +200,14 @@ sub run_site {
     if (-f "$site.work.tmp") {
         my $err = '';
         open(OUT, ">>$site.work")
-            or logdie("cannot open $site.work: $!", 'crit');
+          or logdie("cannot open $site.work: $!", 'crit');
         open(IN, "$site.work.tmp")
-            or logdie("cannot open $site.work.tmp: $!", 'crit');
+          or logdie("cannot open $site.work.tmp: $!", 'crit');
         print OUT while <IN>;
         close IN;
-        close OUT or logdie("cannot close $site.work: $!");;
+        close OUT or logdie("cannot close $site.work: $!");
         unlink "$site.work.tmp"
-            or logmsg("cannot delete $site.work.tmp: $!", 'err');
+          or logmsg("cannot delete $site.work.tmp: $!", 'err');
     }
 
     if (not -s "$site.work") {
@@ -211,13 +215,16 @@ sub run_site {
         unlink "$site.work" or logmsg("cannot delete $site.work: $!", 'err');
     } else {
         if ($compress eq 'none') {
-            system "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
-                . "-p\"$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
+            system
+              "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
+              . "-p\"$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         } else {
-            system "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
-                . "-p\"{ echo '#! " . unbatcher($compress)
-                . "' ; exec $compress; } | "
-                . "$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
+            system
+              "$INN::Config::newsbin/batcher -b $size $maxjobs $BATCHER_FLAGS "
+              . "-p\"{ echo '#! "
+              . unbatcher($compress)
+              . "' ; exec $compress; } | "
+              . "$INN::Config::uux $UUX_FLAGS %s!rnews\" $host $site.work";
         }
         logmsg("batched articles for $site", 'debug');
     }
@@ -343,17 +350,18 @@ Here is an example for the F<send-uucp.cf> configuration file:
     pern::MYFUNNEL!
 
 This defines eight UUCP sites.  The first three and the last two use C<gzip>
-compression, the fourth site (C<drinkel>) uses C<bzip2> and the remaining sites
-(C<manhole> and C<owl>) use C<compress>.  The first six use a batch size of
-S<1 MB>, and the two last sites (C<able> and C<pern>) use the default of
-500,000 bytes.  The C<zoetermeer>, C<hoofddorp>, C<pa3ebv>, and C<manhole> sites
-will only have batches generated for them during the hours of 05:00, 18:00,
-and 22:00, and the C<drinkel> site will only have batches generated during those
-hours and 06:00, 20:00, 00:00, and 02:00.  There are no restrictions on when
-batches will be generated for C<owl>, C<able> and C<pern>.
+compression, the fourth site (C<drinkel>) uses C<bzip2> and the remaining
+sites (C<manhole> and C<owl>) use C<compress>.  The first six use a batch
+size of S<1 MB>, and the two last sites (C<able> and C<pern>) use the
+default of 500,000 bytes.  The C<zoetermeer>, C<hoofddorp>, C<pa3ebv>, and
+C<manhole> sites will only have batches generated for them during the hours
+of 05:00, 18:00, and 22:00, and the C<drinkel> site will only have batches
+generated during those hours and 06:00, 20:00, 00:00, and 02:00.  There are
+no restrictions on when batches will be generated for C<owl>, C<able> and
+C<pern>.
 
-The C<pern> site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp> will
-issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
+The C<pern> site is configured as a funnel into C<MYFUNNEL!>.  B<send-uucp>
+will issue C<ctlinnd flush MYFUNNEL!> instead of C<ctlinnd flush pern>.
 
 As for the F<newsfeeds> file, the usual flags used for a UUCP feed are
 C<Tf,Wnb>.  Here is a typical entry for C<zoetermeer>, where the batching
@@ -472,9 +480,12 @@ user of the remote news servers.
 Supposing the home directory of the C<uucp> user is F</var/spool/uucp>,
 you need to configure the SSH keys in the F<.ssh> subdirectory.  First,
 add the public keys of all remote news servers in F<authorized_keys>.
-A typical entry is:
+A typical entry is the following one, which should be in 1 line (it is
+wrapped here for a proper display in man page):
 
-    no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command="/usr/sbin/uucico -l",from="news.server.to.feed" ssh-rsa xxxyyyzzz uucp@news.server.to.feed
+    no-port-forwarding,no-X11-forwarding,no-agent-forwarding,
+    command="/usr/sbin/uucico -l",from="news.server.to.feed"
+    ssh-rsa xxxyyyzzz uucp@news.server.to.feed
 
 This ensures the SSH connection will not be used for another goal than
 exchanging UUCP batches.

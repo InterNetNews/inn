@@ -3,19 +3,19 @@
 
 # Keep track of which groups are currently being read.  Takes logfile input
 # on stdin.
-$readfile="$INN::Config::newsetc/readgroups";
+$readfile = "$INN::Config::newsetc/readgroups";
 
 $curtime = time;
-$oldtime = $curtime - 30 * 86400; # 30 days in the past
+$oldtime = $curtime - 30 * 86400;    # 30 days in the past
 
 if (open(RDF, $readfile)) {
     while (<RDF>) {
-	chop;
-	@foo=split(/ /); # foo[0] should be group, foo[1] lastreadtime
-	if ($foo[1] < $oldtime) {
-	    next; # skip entries that are too old.
-	}
-	$groups{$foo[0]} = $foo[1];
+        chop;
+        @foo = split(/ /);    # foo[0] should be group, foo[1] lastreadtime
+        if ($foo[1] < $oldtime) {
+            next;             # skip entries that are too old.
+        }
+        $groups{ $foo[0] } = $foo[1];
     }
     close(RDF);
 }
@@ -27,7 +27,7 @@ while (<>) {
     chop;
     @foo = split(/ +/);
     # group name is in the 8th field.
-    $groups{$foo[7]} = $curtime;
+    $groups{ $foo[7] } = $curtime;
 }
 
 open(WRF, ">$readfile") || die "cannot open $readfile for write.\n";

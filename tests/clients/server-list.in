@@ -17,7 +17,7 @@ sub list {
     $wildmat = quotemeta $wildmat;
     $wildmat =~ s/\\\?/./;
     $wildmat =~ s/\\\*/.*/;
-    if (open (LIST, "../data/db/$list")) {
+    if (open(LIST, "../data/db/$list")) {
         print $fh "215 List follows\r\n";
         local $_;
         while (<LIST>) {
@@ -39,7 +39,7 @@ sub serve {
     my ($fh) = @_;
     local $_;
     while (<$fh>) {
-        my @command = split (' ', lc $_);
+        my @command = split(' ', lc $_);
         if ($command[0] eq 'quit') {
             print $fh "205 Done\r\n";
             close $fh;
@@ -51,10 +51,10 @@ sub serve {
         } elsif (@command > 1 && $command[1] !~ /^[a-z.]+$/) {
             print $fh "501 Unknown list type $command[1]\r\n";
         } elsif (@command == 1) {
-            list ($fh, 'active', '*');
+            list($fh, 'active', '*');
         } else {
-            push (@command, '*') unless @command > 2;
-            list ($fh, @command[1,2]);
+            push(@command, '*') unless @command > 2;
+            list($fh, @command[1, 2]);
         }
     }
     close $fh;
@@ -67,7 +67,7 @@ my $pid = fork;
 if ($pid < 0) {
     die "Cannot fork: $!\n";
 } elsif ($pid > 0) {
-    select (undef, undef, undef, 0.1) while (!-f './pid');
+    select(undef, undef, undef, 0.1) while (!-f './pid');
     exit;
 } else {
     close STDIN;
@@ -75,17 +75,18 @@ if ($pid < 0) {
 }
 
 # Listen for connections and handle them.
-my $server = IO::Socket::INET->new (LocalAddr => "127.0.0.1",
-                                    LocalPort => 11119,
-                                    Proto     => "tcp",
-                                    Listen    => 1,
-                                    ReuseAddr => 1)
-    or die "Cannot create socket: $!\n";
+my $server = IO::Socket::INET->new(
+    LocalAddr => "127.0.0.1",
+    LocalPort => 11119,
+    Proto     => "tcp",
+    Listen    => 1,
+    ReuseAddr => 1
+) or die "Cannot create socket: $!\n";
 $SIG{TERM} = sub { close $server; exit };
-open (PID, '> pid') or die "Cannot create pid: $!\n";
+open(PID, '> pid') or die "Cannot create pid: $!\n";
 print PID "$$\n";
 close PID;
 while ($fh = $server->accept) {
     print $fh "200 Welcome\r\n";
-    serve ($fh);
+    serve($fh);
 }

@@ -16,8 +16,10 @@
 use strict;
 
 sub control_rmgroup {
-    my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article) = @_;
+    my (
+        $par, $sender, $replyto, $site, $action, $log, $approved,
+        $article
+    ) = @_;
     my ($groupname) = @$par;
 
     my $head = $article->head;
@@ -25,7 +27,8 @@ sub control_rmgroup {
     my @body = split(/\r?\n/, $article->stringify_body);
 
     # Scan active to see what sort of change we are making.
-    open(ACTIVE, $INN::Config::active) or logdie("Cannot open $INN::Config::active: $!");
+    open(ACTIVE, $INN::Config::active)
+      or logdie("Cannot open $INN::Config::active: $!");
     my @oldgroup;
     while (<ACTIVE>) {
         next unless /^(\Q$groupname\E)\s\d+\s\d+\s(\w)/;
@@ -63,8 +66,10 @@ END
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "skipping rmgroup $groupname"
-                . " $sender (would $status)", $article);
+            logger(
+                $log, "skipping rmgroup $groupname"
+                  . " $sender (would $status)", $article
+            );
         } else {
             logmsg("skipping rmgroup $groupname $sender (would $status)");
         }
@@ -74,10 +79,11 @@ END
         my $lockfile = "$INN::Config::locks/LOCK.newsgroups";
 
         # Acquire a lock.
-        INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
+        INN::Utils::Shlock::lock($lockfile, 60)
+          or logdie("Cannot create lockfile $lockfile");
 
         open(NEWSGROUPS, $INN::Config::newsgroups)
-            or logdie("Cannot open $INN::Config::newsgroups: $!");
+          or logdie("Cannot open $INN::Config::newsgroups: $!");
         my $tempfile = "$INN::Config::newsgroups.$$";
         open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
         while (<NEWSGROUPS>) {
@@ -86,14 +92,14 @@ END
         close TEMPFILE;
         close NEWSGROUPS;
         rename($tempfile, $INN::Config::newsgroups)
-            or logdie("Cannot rename $tempfile: $!");
+          or logdie("Cannot rename $tempfile: $!");
         unlink $tempfile;
 
         # Unlock.
         INN::Utils::Shlock::unlock($lockfile);
 
         logger($log, "rmgroup $groupname $status $sender", $article)
-            if $log;
+          if $log;
     }
 }
 

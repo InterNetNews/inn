@@ -28,8 +28,8 @@ my $usage = "Usage: $0 ftp-URL ...\n";
   or die $usage;
 
 for (@ARGV) {
-  m(^ftp://)
-    or die $usage;
+    m(^ftp://)
+      or die $usage;
 }
 
 my ($lasthost, $ftp);
@@ -38,53 +38,53 @@ my ($lasthost, $ftp);
 my $exit = @ARGV;
 
 for (@ARGV) {
-  my ($host, $path) = m%^ftp://([^/]+)(/.+)%;
-  my $user = 'anonymous';
-  my $pass = (getpwuid($<))[0] . '@' . hostname;
-  my $port = 21;
+    my ($host, $path) = m%^ftp://([^/]+)(/.+)%;
+    my $user = 'anonymous';
+    my $pass = (getpwuid($<))[0] . '@' . hostname;
+    my $port = 21;
 
-  unless (defined $host && defined $path) {
-    warn "$0: bad URL: $_\n";
-    next;
-  }
+    unless (defined $host && defined $path) {
+        warn "$0: bad URL: $_\n";
+        next;
+    }
 
-  if ($host =~ /(.*):(.*)\@(.*)/) {
-    $user = $1;
-    $pass = $2;
-    $host = $3;
-  }
+    if ($host =~ /(.*):(.*)\@(.*)/) {
+        $user = $1;
+        $pass = $2;
+        $host = $3;
+    }
 
-  if ($host =~ /(.*):(.*)/) {
-    $port = $1;
-    $host = $2;
-  }
+    if ($host =~ /(.*):(.*)/) {
+        $port = $1;
+        $host = $2;
+    }
 
-  if (defined $lasthost && $host ne $lasthost) {
-    $ftp->quit;
-    $lasthost = undef;
-  }
+    if (defined $lasthost && $host ne $lasthost) {
+        $ftp->quit;
+        $lasthost = undef;
+    }
 
-  unless (defined $lasthost) {
-    $ftp = Net::FTP->new($host, Port => $port)
+    unless (defined $lasthost) {
+        $ftp = Net::FTP->new($host, Port => $port)
+          or next;
+        $ftp->login($user, $pass)
+          or next;
+    }
+
+    my $localfile = $path;
+    $path =~ s([^/]+$)();
+    $localfile =~ s(.*/)();
+
+    $ftp->binary
       or next;
-    $ftp->login($user, $pass)
+
+    $ftp->cwd($path)
       or next;
-  }
+    $ftp->get($localfile)
+      or next;
 
-  my $localfile = $path;
-  $path =~ s([^/]+$)();
-  $localfile =~ s(.*/)();
-
-  $ftp->binary
-    or next;
-
-  $ftp->cwd($path)
-    or next;
-  $ftp->get($localfile)
-    or next;
-
-  $exit--;
-  $lasthost = $host;
+    $exit--;
+    $lasthost = $host;
 }
 
 $ftp->quit

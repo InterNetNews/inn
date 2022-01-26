@@ -1,7 +1,7 @@
 #! /usr/bin/perl -w
 # use lib '@LIBPERLDIR@'; use INN::Config;
 # If running inside INN, uncomment the above and point to INN::Config.
-# 
+#
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Sat, 10 Oct 1998 21:40:11 +0200
 # Project:      INN
@@ -11,24 +11,27 @@
 #               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:
 #
-#               January 2010: Geraint A. Edwards added header-only feeding (-B);
+#               January 2010:
+#               Geraint A. Edwards added header-only feeding (-B);
 #               added ability to hashfeed (-a) - uses MD5 - Diablo-compatible;
 #               enabled -m to remove header fields matching (or not) a given
 #               regexp; minor bug fix to rnews when -O; improved rnews
 #               reporting.
 #
-#               December 2008: Matija Nalis added -O (optimized mode, checking
-#               whether the downstream server already has the article to
-#               download).  Bug fixes too.
+#               December 2008:
+#               Matija Nalis added -O (optimized mode, checking whether the
+#               downstream server already has the article to download).
+#               Bug fixes too.
 #
-#               May 2008: Geraint A. Edwards greatly improved pullnews, adding
+#               May 2008:
+#               Geraint A. Edwards greatly improved pullnews, adding
 #               -b, -C, -d, -G, -H, -k, -l, -m, -M, -n, -P, -Q, -R, -t, -T, -w
 #               and improving -s as well as fixing some bugs.
 #               He also integrated the backupfeed contrib script by Kai
 #               Henningsen, adding -f, -F, -N, -S, -z and -Z to pullnews.
 #
-# Description:  A simple pull feeder.  Connects to multiple upstream 
-#               machines (in the guise of a reader), and pulls over articles 
+# Description:  A simple pull feeder.  Connects to multiple upstream
+#               machines (in the guise of a reader), and pulls over articles
 #               and feeds them to a downstream server (in the guise of a
 #               feeder).
 #
@@ -42,7 +45,7 @@
 #
 #               A configuration file looks like:
 #
-#                       data.pa.vix.com 
+#                       data.pa.vix.com
 #                               news.software.nntp 0 0
 #                               comp.lang.c 0 0
 #                       news.uu.net username password
@@ -70,15 +73,18 @@ $0 =~ s!.*/!!;
 $SIG{INT} = \&outtaHere;
 $SIG{QUIT} = \&bail;
 
-use Net::NNTP 2.18; # With libnet 1.0606 (10-Dec-1998) because older versions
-                    # issued MODE READER with Net::NNTP::new().
+use Net::NNTP 2.18;   # With libnet 1.0606 (10-Dec-1998) because older versions
+                      # issued MODE READER with Net::NNTP::new().
 use Getopt::Std;
 use IO::Handle;
 use POSIX qw(ceil floor);
 use strict;
 
 my $usage = $0;
-$pathdb = $INN::Config::pathdb if $INN::Config::pathdb && $INN::Config::runasuser && $INN::Config::runasuser eq getpwuid($<);
+$pathdb = $INN::Config::pathdb
+  if $INN::Config::pathdb
+  && $INN::Config::runasuser
+  && $INN::Config::runasuser eq getpwuid($<);
 my $defaultConfig = "${pathdb}/pullnews.marks";
 my $defaultPort = 119;
 my $defaultHost = "localhost";
@@ -113,7 +119,7 @@ END {
     if ($use_inn_shlock) {
         INN::Utils::Shlock::releaselocks();
     } elsif (defined $lockfile) {
-        flock (LOCK, LOCK_UN);
+        flock(LOCK, LOCK_UN);
         unlink $lockfile;
     }
 }
@@ -238,83 +244,102 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
   -Z num        time (in seconds) to sleep between groups.
 ";
 
-
 use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
-            $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
-            $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
-            $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
-getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:") || die $usage;
+  $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
+  $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
+  $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
+getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:")
+  || die $usage;
 
 die $usage if $opt_h;
 
-my @groupsToGet         = ();        # Empty list means all groups in config file.
-my @groupsToAdd         = ();
-my $rnews               = $opt_r;
-my $groupFile           = $opt_c || $defaultConfig;
-my $localServer         = $opt_s || $defaultHost;
-my $localPort           = $opt_p || $defaultPort;
-my $quiet               = $opt_q;
-my $hashfeed            = $opt_a || '';
-my $header_only         = $opt_B;
-my $watermark           = $opt_w;
-my $retries             = $opt_t || $defaultRetries;
-my $retryTime           = $opt_T || $defaultRetryTime;
-my $checkPoint          = $opt_k || $defaultCheckPoint;
-my $debug               = $opt_d || $defaultDebug;
-my $progressWidth       = $opt_C || $defaultProgressWidth;
-my $maxArts             = $opt_M || $defaultMaxArts;
-my $no_op               = $opt_n || 0;
-my $reader              = $opt_R || 0;
-my $quietness           = $opt_Q || 0;
-my $skip_headers        = lc($opt_H || '');
-my $logFile             = '>&STDOUT';
-$logFile                = ">>$opt_l" if $opt_l;
-my @hdr_to_match        = split(/\s+/, $opt_m) if defined $opt_m;
-my $pathSteps           = $opt_P if defined $opt_P;
+my @groupsToGet = ();    # Empty list means all groups in config file.
+my @groupsToAdd = ();
+my $rnews = $opt_r;
+my $groupFile = $opt_c || $defaultConfig;
+my $localServer = $opt_s || $defaultHost;
+my $localPort = $opt_p || $defaultPort;
+my $quiet = $opt_q;
+my $hashfeed = $opt_a || '';
+my $header_only = $opt_B;
+my $watermark = $opt_w;
+my $retries = $opt_t || $defaultRetries;
+my $retryTime = $opt_T || $defaultRetryTime;
+my $checkPoint = $opt_k || $defaultCheckPoint;
+my $debug = $opt_d || $defaultDebug;
+my $progressWidth = $opt_C || $defaultProgressWidth;
+my $maxArts = $opt_M || $defaultMaxArts;
+my $no_op = $opt_n || 0;
+my $reader = $opt_R || 0;
+my $quietness = $opt_Q || 0;
+my $skip_headers = lc($opt_H || '');
+my $logFile = '>&STDOUT';
+$logFile = ">>$opt_l" if $opt_l;
+my @hdr_to_match = split(/\s+/, $opt_m) if defined $opt_m;
+my $pathSteps = $opt_P if defined $opt_P;
 my $path_limit;
 
 # Find a possible port at the end of the news server name.
 # Count the number of ":" to check that it is not an IPv6 address.
 if (not defined $opt_p) {
     my @colons = split(/:/, $localServer);
-    $localPort = $1 if ((scalar(@colons) == 2) and ($localServer =~ s/:(\d+)$//));
+    $localPort = $1
+      if ((scalar(@colons) == 2) and ($localServer =~ s/:(\d+)$//));
 }
 
-die "can\'t have both ``-s'' and ``-r''\n"  if $opt_s && $opt_r;
+die "can\'t have both ``-s'' and ``-r''\n" if $opt_s && $opt_r;
 
-die "``-b'' value not 0.0-1.0: $opt_b\n"    if defined $opt_b and $opt_b !~ /^([01](\.0*)?|0?\.\d+)$/;
+die "``-b'' value not 0.0-1.0: $opt_b\n"
+  if defined $opt_b and $opt_b !~ /^([01](\.0*)?|0?\.\d+)$/;
 die "``-C'' value not an integer: $opt_C\n" if $progressWidth !~ m!^\d+$!;
 die "``-d'' value not an integer: $opt_d\n" if $debug !~ m!^\d+$!;
-die "``-f'' value not 0.0-1.0: $opt_f\n"    if defined $opt_f and $opt_f !~ /^([01](\.0*)?|0?\.\d+)$/;
-die "``-F'' value not a hostname: $opt_F\n" if defined $opt_F and $opt_F !~ m!^[\w\-\.]+$!;
+die "``-f'' value not 0.0-1.0: $opt_f\n"
+  if defined $opt_f and $opt_f !~ /^([01](\.0*)?|0?\.\d+)$/;
+die "``-F'' value not a hostname: $opt_F\n"
+  if defined $opt_F and $opt_F !~ m!^[\w\-\.]+$!;
 die "``-k'' value not an integer: $opt_k\n" if $checkPoint !~ m!^\d+$!;
-die "``-M'' value not an integer: $opt_M\n" if defined $maxArts and $maxArts !~ m!^\d+$!;
-die "``-N'' value not an integer: $opt_N\n" if defined $opt_N and $opt_N !~ /^\d+$/;
+die "``-M'' value not an integer: $opt_M\n"
+  if defined $maxArts and $maxArts !~ m!^\d+$!;
+die "``-N'' value not an integer: $opt_N\n"
+  if defined $opt_N and $opt_N !~ /^\d+$/;
 die "``-p'' value not an integer: $opt_p\n" if $localPort !~ m!^\d+$!;
+
 if (defined $pathSteps) {
-        die "``-P'' value not a signed integer: $opt_P\n" if $pathSteps !~ /^[-+](\d+)$/;
-        $path_limit = $1;
+    die "``-P'' value not a signed integer: $opt_P\n"
+      if $pathSteps !~ /^[-+](\d+)$/;
+    $path_limit = $1;
 }
-die "option ``-r -'' needs ``-l'' option\n" if defined $opt_r and $opt_r eq '-' and not $opt_l;
-die "``-S'' value not an integer: $opt_S\n" if defined $opt_S and $opt_S !~ /^\d+$/;
+die "option ``-r -'' needs ``-l'' option\n"
+  if defined $opt_r
+  and $opt_r eq '-'
+  and not $opt_l;
+die "``-S'' value not an integer: $opt_S\n"
+  if defined $opt_S and $opt_S !~ /^\d+$/;
 die "``-t'' value not an integer: $opt_t\n" if $retries !~ m!^\d+$!;
-die "``-w'' value not an integer: $opt_w\n" if defined $watermark and $watermark !~ /^-?\d+$/;
-die "``-z'' value not an integer: $opt_z\n" if defined $opt_z and $opt_z !~ /^\d+$/;
-die "``-Z'' value not an integer: $opt_Z\n" if defined $opt_Z and $opt_Z !~ /^\d+$/;
+die "``-w'' value not an integer: $opt_w\n"
+  if defined $watermark and $watermark !~ /^-?\d+$/;
+die "``-z'' value not an integer: $opt_z\n"
+  if defined $opt_z and $opt_z !~ /^\d+$/;
+die "``-Z'' value not an integer: $opt_Z\n"
+  if defined $opt_Z and $opt_Z !~ /^\d+$/;
 
 if ($hashfeed ne '') {
-    my $a_err = "``-a'' value not in format ``start[-end]/mod[:offset]'': $opt_a\n";
+    my $a_err
+      = "``-a'' value not in format ``start[-end]/mod[:offset]'': $opt_a\n";
     die $a_err if $opt_a !~ m!^(\d+)(?:-(\d+))?/(\d+)(?:[:_](\d+))?$!;
     $hashfeed = {
-        'low'       => $1,
-        'high'      => $2 || $1,
-        'modulus'   => $3,
-        'offset'    => $4 || 0,
+        'low'     => $1,
+        'high'    => $2 || $1,
+        'modulus' => $3,
+        'offset'  => $4 || 0,
     };
-    die $a_err if $hashfeed->{'low'} > $hashfeed->{'high'}
-                  or $hashfeed->{'modulus'} == 0
-                  or $hashfeed->{'offset'} > 12;
-    if ($hashfeed->{'low'} == 1 and $hashfeed->{'high'} == $hashfeed->{'modulus'}) {
+    die $a_err
+      if $hashfeed->{'low'} > $hashfeed->{'high'}
+      or $hashfeed->{'modulus'} == 0
+      or $hashfeed->{'offset'} > 12;
+    if ($hashfeed->{'low'} == 1
+        and $hashfeed->{'high'} == $hashfeed->{'modulus'})
+    {
         $hashfeed = '';
     } else {
         require Digest::MD5;
@@ -326,8 +351,8 @@ $quiet = 1 if $quietness > 1;
 my %NNTP_Args = ();
 $NNTP_Args{'Timeout'} = $opt_N if defined $opt_N;
 
-@groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split (",", $opt_g) if $opt_g;
-@groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split (",", $opt_G) if $opt_G;
+@groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_g) if $opt_g;
+@groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_G) if $opt_G;
 
 $| = 1;
 
@@ -338,19 +363,19 @@ my %refused = ();
 my %rejected = ();
 my $pulled = {};
 my %passwd = ();
-my %info        = (
-        fed      => 0,
-        refused  => 0,
-        rejected => 0,
-        bytes    => 0,
+my %info = (
+    fed      => 0,
+    refused  => 0,
+    rejected => 0,
+    bytes    => 0,
 );
 
 if ($rnews) {
     if ($no_op) {
         print "Would write to rnews file $rnews\n";
     } else {
-        open(RNEWS, ">$rnews") ||
-            die "can't open rnews-format output: $rnews: $!\n";
+        open(RNEWS, ">$rnews")
+          || die "can't open rnews-format output: $rnews: $!\n";
     }
     $info{'rnews'}->{bytes} = 0;
     $info{'rnews'}->{fed} = 0;
@@ -359,19 +384,26 @@ open(LOG, $logFile) || die "can't open logfile ($logFile)!: $!\n";
 
 # Forces a flush after each write or print.
 my $oldfh = select;
-$| = 1; select LOG; $| = 1; select $oldfh;
+$| = 1;
+select LOG;
+$| = 1;
+select $oldfh;
 
 $lockfile = $groupFile . '.pid';
 
 # Acquire a lock.
 if ($use_inn_shlock) {
-    INN::Utils::Shlock::lock($lockfile) or die "cannot create lockfile $lockfile\n";
+    INN::Utils::Shlock::lock($lockfile)
+      or die "cannot create lockfile $lockfile\n";
 } else {
-    sysopen (LOCK, "$lockfile", O_RDWR | O_CREAT, 0700)
-        or die "cannot create lockfile $lockfile: $!\n";
-    $oldfh = select; select LOCK; $| = 1; select $oldfh;
+    sysopen(LOCK, "$lockfile", O_RDWR | O_CREAT, 0700)
+      or die "cannot create lockfile $lockfile: $!\n";
+    $oldfh = select;
+    select LOCK;
+    $| = 1;
+    select $oldfh;
 
-    if (!flock (LOCK, LOCK_EX | LOCK_NB)) {
+    if (!flock(LOCK, LOCK_EX | LOCK_NB)) {
         seek LOCK, 0, 0;
         my $otherpid = <LOCK>;
         chomp $otherpid;
@@ -383,7 +415,7 @@ if ($use_inn_shlock) {
 
 print LOG scalar(localtime(time)), " start\n\n" unless $quiet;
 
-if (@groupsToGet && ! $quiet) {
+if (@groupsToGet && !$quiet) {
     print LOG "Checking for specific groups:\n";
     map { printf LOG "\t%s\n", $_ } @groupsToGet;
     print LOG "\n";
@@ -399,51 +431,61 @@ while (<FILE>) {
         $sname = $1;
         $servers->{$sname} = {};
         $servers->{$sname}->{_order} = $array_order++;
-        $passwd{$sname} = [ $3, $4 ] if defined $3 and $3 ne "";
+        $passwd{$sname} = [$3, $4] if defined $3 and $3 ne "";
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
-        my ($group,$date,$high) = ($1,$2,$3);
-        $servers->{$sname}->{$group} = [ $date, $high ];
+        my ($group, $date, $high) = ($1, $2, $3);
+        $servers->{$sname}->{$group} = [$date, $high];
     } elsif (m!^\s+(\S+)\s*$!) {
         # Assume this is a new group.
-        my ($group,$date,$high) = ($1,0,0);
+        my ($group, $date, $high) = ($1, 0, 0);
         print LOG "Looking for new group $group on $sname\n" unless $quiet;
-        $servers->{$sname}->{$group} = [ $date, $high ]; 
-    } else { 
+        $servers->{$sname}->{$group} = [$date, $high];
+    } else {
         die "Fatal error in $groupFile: $.: $_\n";
     }
 }
 close FILE;
 
-my @servers = @ARGV ? @ARGV : sort {$servers->{$a}->{_order} <=> $servers->{$b}->{_order}} keys %$servers;
+my @servers
+  = @ARGV
+  ? @ARGV
+  : sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
+  keys %$servers;
 
-die "No servers!\n" if ! @servers;
+die "No servers!\n" if !@servers;
 
 my $localcxn;
-my $art_total_count = 0;    # The number of articles transferred during the session.
+my $art_total_count
+  = 0;    # The number of articles transferred during the session.
 
-if ( not $rnews ) {
-    print LOG "Connecting to downstream host: $localServer " .
-        "port: $localPort ..."
-        unless $quiet;
+if (not $rnews) {
+    print LOG "Connecting to downstream host: $localServer "
+      . "port: $localPort ..."
+      unless $quiet;
 
     my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
-    $localcxn = Net::NNTP->new($localServer, %localopts) ||
-        die "Can't connect to server $localServer\n";
+    $localcxn = Net::NNTP->new($localServer, %localopts)
+      || die "Can't connect to server $localServer\n";
 
-    if (exists $passwd{$localServer} && !$localcxn->authinfo(@{$passwd{$localServer}})) {
-        warn sprintf ("failed to authorize: %s %s\n",
-                      $localcxn->code(), $localcxn->message());
+    if (exists $passwd{$localServer}
+        && !$localcxn->authinfo(@{ $passwd{$localServer} }))
+    {
+        warn sprintf(
+            "failed to authorize: %s %s\n",
+            $localcxn->code(), $localcxn->message()
+        );
     }
 }
 
-if ( not $quiet and not $quietness ) {
+if (not $quiet and not $quietness) {
     print LOG "done.\n\n";
     print LOG "Legend: ``.'' is an article the downstream server refused\n";
     print LOG "        ``*'' is an article the downstream server rejected\n";
     print LOG "        ``+'' is an article the downstream server accepted\n";
     print LOG "        ``x'' is an article the upstream server couldn't ";
     print LOG "give out\n";
-    print LOG "        ``m'' is an article skipped due to headers (-a, -m or -P)\n";
+    print LOG
+      "        ``m'' is an article skipped due to headers (-a, -m or -P)\n";
     print LOG "\n";
     print LOG "Writing to rnews-format output: $rnews\n\n" if $rnews;
 }
@@ -453,16 +495,16 @@ foreach my $server (@servers) {
 
     foreach my $addGroup (@groupsToAdd) {
         next if defined $servers->{$server}->{$addGroup};
-        $servers->{$server}->{$addGroup} = [ 0, 0 ];
+        $servers->{$server}->{$addGroup} = [0, 0];
     }
 
     if (@groupsToGet > 0) {
         my $ok;
-        foreach my $sgroup (keys %{$servers->{$server}}) {
+        foreach my $sgroup (keys %{ $servers->{$server} }) {
             $ok = 1 if grep($_ eq $sgroup, @groupsToGet);
         }
 
-        if (! $ok) {
+        if (!$ok) {
             # User gave -g and the server doesn't have those groups.
             warn "Skipping server $server.  Doesn't have specified groups.\n";
             next;
@@ -470,7 +512,7 @@ foreach my $server (@servers) {
     }
 
     if (exists $passwd{$server}) {
-        ($username, $passwd) = @{$passwd{$server}};
+        ($username, $passwd) = @{ $passwd{$server} };
     }
 
     if (!exists($servers->{$server})) {
@@ -486,15 +528,17 @@ foreach my $server (@servers) {
 
     my $connectionAttempts = 0;
     my $upstream;
-    {{
-        print LOG "connecting to upstream server $server..." unless $quiet;
-        $upstream = Net::NNTP->new($server, %NNTP_Args);
-        $connectionAttempts++;
-        if (!$upstream && $connectionAttempts <= $retries) {
-            sleep $retryTime;
-            next;
+    {
+        {
+            print LOG "connecting to upstream server $server..." unless $quiet;
+            $upstream = Net::NNTP->new($server, %NNTP_Args);
+            $connectionAttempts++;
+            if (!$upstream && $connectionAttempts <= $retries) {
+                sleep $retryTime;
+                next;
+            }
         }
-    }}
+    }
 
     if (!$upstream) {
         print LOG " failed.\n" unless $quiet;
@@ -505,8 +549,10 @@ foreach my $server (@servers) {
     }
 
     if ($username && !$upstream->authinfo($username, $passwd)) {
-        warn sprintf ("failed to authorize: %s %s\n",
-                      $upstream->code(), $upstream->message());
+        warn sprintf(
+            "failed to authorize: %s %s\n",
+            $upstream->code(), $upstream->message()
+        );
         next;
     }
 
@@ -515,23 +561,23 @@ foreach my $server (@servers) {
     $info{server}->{$server}->{refused} = 0;
     $info{server}->{$server}->{rejected} = 0;
 
-    foreach my $group (sort keys %{$servers->{$server}}) {
+    foreach my $group (sort keys %{ $servers->{$server} }) {
         next if $group eq '_order';
         next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
 
         # crossFeedGroup returns 1 when the newsgroup is successfully
         # pulled.  No need to check the return value because we do not
         # want to abort on the first error.
-        crossFeedGroup ($upstream, $localcxn, $server, $group, $shash);
-        last if defined $opt_S and time >= $^T+$opt_S;
+        crossFeedGroup($upstream, $localcxn, $server, $group, $shash);
+        last if defined $opt_S and time >= $^T + $opt_S;
         sleep $opt_Z if defined $opt_Z;
     }
 
     $upstream->quit();
-    last if defined $opt_S and time >= $^T+$opt_S;
+    last if defined $opt_S and time >= $^T + $opt_S;
 }
 
-saveConfig ();
+saveConfig();
 stats() unless $quiet;
 
 if ($rnews) {
@@ -544,7 +590,7 @@ if ($rnews) {
 print LOG "\nDone ", scalar(localtime(time)), "\n" unless $quiet;
 
 cleanLock();
-exit (0);
+exit(0);
 
 ###############################################################################
 
@@ -562,47 +608,49 @@ sub stats {
 
     if ($quiet) {
         printf LOG localtime() . " [$$] %d article%s to $localServer\n",
-            $sum, ($sum != 1 ? "s" : "");
+          $sum, ($sum != 1 ? "s" : "");
     } elsif ($rnews) {
         printf LOG "\n%d article%s written to $rnews\n",
-            $sum, ($sum != 1 ? "s were" : " was");
+          $sum, ($sum != 1 ? "s were" : " was");
     } else {
         printf LOG "\n%d article%s offered to server on $localServer\n",
-            $sum, ($sum != 1 ? "s were" : " was");
+          $sum, ($sum != 1 ? "s were" : " was");
     }
 
     return if ($sum == 0);
 
     if ($quiet) {
-        print LOG localtime() . " [$$] $ltotal ok, $reftotal ref, $rejtotal rej\n";
+        print LOG localtime()
+          . " [$$] $ltotal ok, $reftotal ref, $rejtotal rej\n";
     } elsif (not $rnews) {
         printf LOG "%d article%s accepted\n",
-            $ltotal, ($ltotal != 1 ? "s were" : " was") 
-                if ($ltotal != 0);
+          $ltotal, ($ltotal != 1 ? "s were" : " was")
+          if ($ltotal != 0);
         printf LOG "%d article%s refused\n",
-            $reftotal, ($reftotal != 1 ? "s were" : " was") 
-                if ($reftotal != 0);
+          $reftotal, ($reftotal != 1 ? "s were" : " was")
+          if ($reftotal != 0);
         printf LOG "%d article%s rejected\n",
-            $rejtotal, ($rejtotal != 1 ? "s were" : " was") 
-                if ($rejtotal != 0);
+          $rejtotal, ($rejtotal != 1 ? "s were" : " was")
+          if ($rejtotal != 0);
     }
 
-    map { 
-        print LOG "\nUpstream server $_:\n" if not $quiet; 
+    map {
+        print LOG "\nUpstream server $_:\n" if not $quiet;
         my $server = $_;
         my $width = 0;
 
-        map {
-            $width = length if length > $width;
-        } sort keys %{$pulled->{$server}} if not $quiet;
+        map { $width = length if length > $width; }
+          sort keys %{ $pulled->{$server} }
+          if not $quiet;
 
-        map { 
+        map {
             if ($quiet) {
-                printf LOG "%s [$$] from $server $_ %s\n", localtime(), $pulled->{$server}->{$_};
+                printf LOG "%s [$$] from $server $_ %s\n", localtime(),
+                  $pulled->{$server}->{$_};
             } else {
                 printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}->{$_};
             }
-        } sort keys %{$pulled->{$server}};
+        } sort keys %{ $pulled->{$server} };
     } sort keys %{$pulled};
 }
 
@@ -611,7 +659,7 @@ sub saveConfig {
 
     $SIG{INT} = $SIG{QUIT} = 'IGNORE';
 
-    open(FILE,">$groupFile") || die "can't open $groupFile: $!\n";
+    open(FILE, ">$groupFile") || die "can't open $groupFile: $!\n";
     my $server;
     my $group;
 
@@ -619,26 +667,29 @@ sub saveConfig {
     print FILE "# Format: (date is epoch seconds)\n";
     print FILE "# hostname [username password]\n";
     print FILE "#         group date high\n";
-    foreach $server (sort {$servers->{$a}->{_order} <=> $servers->{$b}->{_order}} keys %$servers) {
+    foreach $server (
+        sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
+        keys %$servers
+      )
+    {
         print FILE "$server";
         if (defined $passwd{$server}) {
             printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
         }
         print FILE "\n";
-        foreach $group (sort keys %{$servers->{$server}}) {
+        foreach $group (sort keys %{ $servers->{$server} }) {
             next if $group eq '_order';
-            my ($date,$high) = @{$servers->{$server}->{$group}};
-            printf FILE "\t%s %d %d\n",$group,$date,$high;
+            my ($date, $high) = @{ $servers->{$server}->{$group} };
+            printf FILE "\t%s %d %d\n", $group, $date, $high;
         }
     }
     close FILE;
 }
 
-
 sub outtaHere {
     saveConfig();
     cleanLock();
-    exit (0);
+    exit(0);
 }
 
 sub cleanLock {
@@ -646,7 +697,7 @@ sub cleanLock {
     if ($use_inn_shlock) {
         INN::Utils::Shlock::unlock($lockfile) if defined $lockfile;
     } else {
-        flock (LOCK, LOCK_UN);
+        flock(LOCK, LOCK_UN);
         unlink $lockfile if defined $lockfile;
     }
 }
@@ -654,61 +705,62 @@ sub cleanLock {
 sub bail {
     warn "received QUIT signal.  Not saving config.\n";
     cleanLock();
-    exit (0);
+    exit(0);
 }
 
 sub crossFeedGroup {
-    my ($fromServer,$toServer,$server,$group,$shash) = @_;
-    my ($date,$high) = @{$shash->{$group}};
-    my ($prevDate,$prevHigh) = @{$shash->{$group}};
-    my ($narticles,$first,$last,$name) = $fromServer->group($group);
+    my ($fromServer, $toServer, $server, $group, $shash) = @_;
+    my ($date, $high) = @{ $shash->{$group} };
+    my ($prevDate, $prevHigh) = @{ $shash->{$group} };
+    my ($narticles, $first, $last, $name) = $fromServer->group($group);
     my $count = 0;
-    my $len = 0;                 # Received article length (bytes) (for stats).
+    my $len = 0;    # Received article length (bytes) (for stats).
     my $code;
     my $startTime = time;
     my ($prevRefused, $prevRejected) = ($info{refused}, $info{rejected});
 
-    if (!defined($narticles)) { # Group command failed.
-        warn sprintf ("Group command failed for $group: %s %s\n",
-                      $fromServer->code() || 'NO_CODE', $fromServer->message());
+    if (!defined($narticles)) {    # Group command failed.
+        warn sprintf(
+            "Group command failed for $group: %s %s\n",
+            $fromServer->code() || 'NO_CODE', $fromServer->message()
+        );
         return undef;
     }
 
     if (not $quiet) {
         printf LOG "\n%s:\n", $name;
         printf LOG "\tLast checked: %s\n",
-            $prevDate ? scalar(localtime($prevDate)) : "never";
+          $prevDate ? scalar(localtime($prevDate)) : "never";
         printf LOG "\t%d article%s available (first %d, last %d)\n",
-               $narticles, $narticles != 1 ? "s" : "", $first, $last;
+          $narticles, $narticles != 1 ? "s" : "", $first, $last;
     }
     if (defined $watermark) {
         printf LOG "\tOur previous highest: %d\n", $prevHigh if not $quiet;
         $high = $watermark;
-        $high = $last+$watermark if substr($watermark, 0, 1) eq '-';
+        $high = $last + $watermark if substr($watermark, 0, 1) eq '-';
         $high = 0 if $high < 0;
-        $shash->{$group} = [ time, $high ];
+        $shash->{$group} = [time, $high];
     }
     printf LOG "\tOur current highest: %d", $high if not $quiet;
 
-    return 0 if ! $name;
+    return 0 if !$name;
     if ($narticles == 0) {
         print LOG " (nothing to get)\n" unless $quiet;
         # Just update the time; keep the last known high watermark.
-        $shash->{$group} = [ time, $high ];
+        $shash->{$group} = [time, $high];
         return 1;
     }
 
-    my $toget = (($last - $high) < $narticles ?
-                     $last - $high : $narticles);
+    my $toget = (($last - $high) < $narticles ? $last - $high : $narticles);
     $toget = ceil($toget * $opt_f) if defined $opt_f;
     if ($last < $high and $opt_b) {
-        $high = $first+floor(($last-$first+1)*(1-$opt_b));
+        $high = $first + floor(($last - $first + 1) * (1 - $opt_b));
         $toget = $last - $high;
         print LOG " (reset highwater mark to $high)" unless $quiet;
     } elsif ($prevHigh == -1 || $last <= $prevHigh) {
         # We connected OK but there's nothing there, or we just want
         # to reset our highwater mark.
-        $shash->{$group} = [ time, $high ];
+        $shash->{$group} = [time, $high];
         print LOG " (nothing to get)\n" unless $quiet;
         return 1;
     }
@@ -717,16 +769,18 @@ sub crossFeedGroup {
     my $i;
     my @warns;
     my $skip_article;
-    for ($i = ($first > $high ? $first : $high + 1) ; $i <= $last ; $i++) {
+    for ($i = ($first > $high ? $first : $high + 1); $i <= $last; $i++) {
         $skip_article = 0;
         last if defined $maxArts and $count >= $maxArts;
         last if defined $opt_f and $count >= $toget;
         $count++;
         $art_total_count++;
         sleep $opt_z if defined $opt_z and $count > 1;
-        # "Optimized mode" -- check if the article is wanted *before* downloading it.
+        # "Optimized mode" -- check if the article is wanted
+        # *before* downloading it.
         if (defined $opt_O) {
-            #   223 n <a> article retrieved -- request text separately (after STAT)
+            #   223 n <a> article retrieved
+            #        -- request text separately (after STAT)
             #   423 no such article number in this group
             #   430 no such article found
             my $org_msgid = $fromServer->nntpstat($i);
@@ -736,10 +790,15 @@ sub crossFeedGroup {
             if ($org_code == 223 and not $rnews) {
                 my $new_msgid = $toServer->nntpstat($org_msgid);
                 my $new_code = $toServer->code();
-                print LOG "\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n" if $debug >= 3;
-                # Skip the article if it already exists on the downstream server.
+                print LOG
+                  "\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n"
+                  if $debug >= 3;
+                # Skip the article if it already exists
+                # on the downstream server.
                 if ($new_code == 223) {
-                    print LOG "\tDEBUGGING $i\t-- not downloading already existing message $org_msgid code=$new_code\n" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\t-- not downloading "
+                      . "already existing message $org_msgid code=$new_code\n"
+                      if $debug >= 2;
                     $skip_article = 1;
                 }
             }
@@ -764,7 +823,9 @@ sub crossFeedGroup {
                 push @{$article}, "\n" if not $is_control_art;
             }
         }
-        if (not $skip_article and (not $header_only or $is_control_art or $add_bytes_header)) {
+        if (not $skip_article
+            and (not $header_only or $is_control_art or $add_bytes_header))
+        {
             $article = $fromServer->article($i);
         }
 
@@ -773,15 +834,18 @@ sub crossFeedGroup {
             my $xref = 0;
             my $headers = 1;
             my $line_len = 0;
-            my $idx_blank_pre_body;      # Index of the blank line between headers/body.
-            my $tx_len = 0;              # Transmitted article length (bytes) (for rnews, the Bytes header field).
+            my $idx_blank_pre_body;    # Index of the blank line
+                                       # between headers/body.
+            my $tx_len = 0;            # Transmitted article length (bytes)
+                                       # (for rnews, the Bytes header field).
             my @header_nums_to_go = ();
             my $match_all_hdrs = 1;      # Assume no headers to match.
-            my $skip_due_to_hdrs = 0;    # Set to 1 if triggered by -P, 2 if by -m, 3 if by -a.
+            my $skip_due_to_hdrs = 0;    # Set to 1 if triggered by -P,
+                                         # 2 if by -m, 3 if by -a.
             my %m_found_hdrs = ();
             my $curr_hdr = '';
 
-            for (my $idx = 0 ; $idx < @{$article} ; $idx++) {
+            for (my $idx = 0; $idx < @{$article}; $idx++) {
                 $line_len = length($article->[$idx]);
                 $len += $line_len;
                 $tx_len += $line_len;
@@ -797,12 +861,20 @@ sub crossFeedGroup {
                     next;
                 }
 
-                if ($match_all_hdrs and @hdr_to_match and $article->[$idx] =~ /^[^[:blank:]]/) {
+                if ($match_all_hdrs
+                    and @hdr_to_match
+                    and $article->[$idx] =~ /^[^[:blank:]]/)
+                {
                     # Check header field matches -m flag if new header field.
-
                     # Unfold this header field body (with following lines).
                     my $unfolded_art_hdr = $article->[$idx];
-                    for (my $idx_step = $idx+1;  $idx_step < @$article and $article->[$idx_step] =~ /^[[:space:]](.+)/;  $idx_step++) {
+                    for (
+                        my $idx_step = $idx + 1;
+                        $idx_step < @$article
+                        and $article->[$idx_step] =~ /^[[:space:]](.+)/;
+                        $idx_step++
+                      )
+                    {
                         # While next line is continuation...
                         my $more_line = $1;
                         chomp $unfolded_art_hdr;
@@ -818,10 +890,12 @@ sub crossFeedGroup {
                         my $negate_h = ($hdr_m =~ s/^!//);
                         my $remove_h = ($hdr_m =~ s/^#//);
                         next if lc($hdr_un) ne lc($hdr_m);
-                        $m_found_hdrs{lc($hdr_m)} = 1 if not $remove_h;
+                        $m_found_hdrs{ lc($hdr_m) } = 1 if not $remove_h;
                         if ($negate_h) {
                             if ($val_un =~ /$val_m/i) {
-                                print LOG "\tDEBUGGING $i\t-- $hdr_un [$val_un]\n" if $debug >= 2;
+                                print LOG
+                                  "\tDEBUGGING $i\t-- $hdr_un [$val_un]\n"
+                                  if $debug >= 2;
                                 if (not $remove_h) {
                                     $match_all_hdrs = 0;
                                 }
@@ -829,7 +903,8 @@ sub crossFeedGroup {
                                 $remove_hdr = 1;
                             }
                         } elsif (not $val_un =~ /$val_m/i) {
-                            print LOG "\tDEBUGGING $i\t++ $hdr_un [$val_un]\n" if $debug >= 2;
+                            print LOG "\tDEBUGGING $i\t++ $hdr_un [$val_un]\n"
+                              if $debug >= 2;
                             if (not $remove_h) {
                                 $match_all_hdrs = 0;
                             }
@@ -842,7 +917,8 @@ sub crossFeedGroup {
                 }
 
                 if (grep { $curr_hdr eq $_ } split(':', $skip_headers)) {
-                    print LOG "\tDEBUGGING $i\tskip_hdr $idx\t$curr_hdr\n" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\tskip_hdr $idx\t$curr_hdr\n"
+                      if $debug >= 2;
                     push @header_nums_to_go, $idx;
                 }
                 if ($article->[$idx] =~ m!^message-id:\s*(\S+)!i) {
@@ -853,16 +929,19 @@ sub crossFeedGroup {
                         my $path_count = $article->[$idx];
                         $path_count = ($path_count =~ s@!@@g) || 0;
                         if (substr($pathSteps, 0, 1) eq '-') {
-                            $skip_due_to_hdrs = 1 if $path_count >= $path_limit;
+                            $skip_due_to_hdrs = 1
+                              if $path_count >= $path_limit;
                         } elsif (substr($pathSteps, 0, 1) eq '+') {
-                            $skip_due_to_hdrs = 1 if $path_count <= $path_limit;
+                            $skip_due_to_hdrs = 1
+                              if $path_count <= $path_limit;
                         }
                     }
                     if ($skip_due_to_hdrs) {
-                        print LOG "\tDEBUGGING $i\tNpath_skip_art $i\n" if $debug >= 2;
+                        print LOG "\tDEBUGGING $i\tNpath_skip_art $i\n"
+                          if $debug >= 2;
                     } else {
                         if (defined $opt_F) {
-                            $tx_len += length($opt_F)+1;
+                            $tx_len += length($opt_F) + 1;
                             $article->[$idx] =~ s/^Path:\s*/$&$opt_F!/i;
                         }
                     }
@@ -872,12 +951,18 @@ sub crossFeedGroup {
                     $xref = 1;
                 }
             }
-            if (@hdr_to_match and (not $match_all_hdrs
-                or scalar(grep { ! /^!?#/ } @hdr_to_match) != keys %m_found_hdrs)) {
+            if (
+                @hdr_to_match
+                and (not $match_all_hdrs
+                    or scalar(grep { !/^!?#/ } @hdr_to_match) !=
+                    keys %m_found_hdrs)
+              )
+            {
                 $skip_due_to_hdrs = 2;
             }
             while (@header_nums_to_go) {
-                my $idx = pop @header_nums_to_go;  # Start from last, so numbers are not affected.
+                my $idx = pop @header_nums_to_go
+                  ;    # Start from last, so numbers are not affected.
                 my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                 $tx_len -= length($cut);
                 $idx_blank_pre_body--;
@@ -895,7 +980,8 @@ sub crossFeedGroup {
                 warn "No Message-ID header field found in article\n";
                 next;
             } else {
-                print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n" if $debug >= 2;
+                print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n"
+                  if $debug >= 2;
             }
 
             # Some old servers lack Xref header fields, which bothers
@@ -921,8 +1007,11 @@ sub crossFeedGroup {
                 $idx_blank_pre_body++;
             }
 
-            if ($header_only and not $is_control_art and @{$article} > $idx_blank_pre_body+1) {
-                splice(@{$article}, $idx_blank_pre_body+1);
+            if ($header_only
+                and not $is_control_art
+                and @{$article} > $idx_blank_pre_body + 1)
+            {
+                splice(@{$article}, $idx_blank_pre_body + 1);
                 $tx_len = 0;
                 for my $line (@{$article}) {
                     $tx_len += length($line);
@@ -930,20 +1019,30 @@ sub crossFeedGroup {
             }
 
             if (not $skip_due_to_hdrs and ref $hashfeed) {
-                my $hash_val = unpack('N', substr(md5($msgid), 12-$hashfeed->{'offset'}, 4)) % $hashfeed->{'modulus'} + 1;
-                $skip_due_to_hdrs = 3 if $hash_val < $hashfeed->{'low'} or $hash_val > $hashfeed->{'high'};
+                my $hash_val = unpack(
+                    'N',
+                    substr(md5($msgid), 12 - $hashfeed->{'offset'}, 4)
+                ) % $hashfeed->{'modulus'} + 1;
+                $skip_due_to_hdrs = 3
+                  if $hash_val < $hashfeed->{'low'}
+                  or $hash_val > $hashfeed->{'high'};
             }
 
             $pulled->{$server}->{$group}++;
 
             if ($skip_due_to_hdrs) {
-                if ($debug >= 2) { 
-                    print LOG "\tDEBUGGING $i\tskip_art: " .
-                              ($skip_due_to_hdrs == 1 ? 'hopsPath'
-                                  : ($skip_due_to_hdrs == 2 ? 'hdr'
-                                      : ($skip_due_to_hdrs == 3 ? 'hashfeed'
-                                          : 'unknown'))) .
-                              "\n";
+                if ($debug >= 2) {
+                    print LOG "\tDEBUGGING $i\tskip_art: "
+                      . (
+                          $skip_due_to_hdrs == 1 ? 'hopsPath'
+                          : (
+                              $skip_due_to_hdrs == 2 ? 'hdr'
+                              : (
+                                  $skip_due_to_hdrs == 3 ? 'hashfeed'
+                                  : 'unknown'
+                              )
+                          )
+                      ) . "\n";
                 }
                 print LOG "m" unless $quiet;
             } elsif ($rnews) {
@@ -958,12 +1057,15 @@ sub crossFeedGroup {
                     print "Would offer $msgid\n";
                 } elsif ($reader and not $toServer->post($article)) {
                     #   240 article posted ok
-                    #   340 send article to be posted.  End with <CR-LF>.<CR-LF>
+                    #   340 send article to be posted.
+                    #       End with <CR-LF>.<CR-LF>
                     #   440 posting not allowed
                     #   441 posting failed
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
-                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
+                      . join('//', split(/\r?\n/, $msg)) . ">\n"
+                      if $debug >= 2;
                     $msg =~ s/^340 .*?\n(?=.)//o;
                     if ($msg =~ /^240 /) {
                         print LOG "+" unless $quiet;
@@ -971,11 +1073,14 @@ sub crossFeedGroup {
                         $fed{$group}++;
                         $info{server}->{$server}->{fed}++;
                         $info{fed}++;
-                    } elsif ($msg =~ /^435 / or $msg =~ /duplicate message-id/io) {
+                    } elsif ($msg =~ /^435 /
+                        or $msg =~ /duplicate message-id/io)
+                    {
                         print LOG "." unless $quiet;
-                        push @warns, "Post $i to server declined ($code): $msg"
-                                            if $msg !~ /^435 $msgid$/
-                                            and $msg !~ /duplicate message-id/io;
+                        push @warns,
+                          "Post $i to server declined ($code): $msg"
+                          if $msg !~ /^435 $msgid$/
+                          and $msg !~ /duplicate message-id/io;
                         $refused{$group}++;
                         $info{server}->{$server}->{refused}++;
                         $info{refused}++;
@@ -984,15 +1089,20 @@ sub crossFeedGroup {
                         $toServer->quit();
                     }
 
-                } elsif (not $reader and not $toServer->ihave($msgid,$article)) {
+                } elsif (not $reader
+                    and not $toServer->ihave($msgid, $article))
+                {
                     #   235 article transferred ok
-                    #   335 send article to be transferred.  End with <CR-LF>.<CR-LF>
+                    #   335 send article to be transferred.
+                    #       End with <CR-LF>.<CR-LF>
                     #   435 article not wanted -- do not send it
                     #   436 transfer failed -- try again later
                     #   437 article rejected -- do not try again
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
-                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
+                      . join('//', split(/\r?\n/, $msg)) . ">\n"
+                      if $debug >= 2;
                     if ($code == 435) {
                         print LOG "." unless $quiet;
                         $refused{$group}++;
@@ -1007,53 +1117,61 @@ sub crossFeedGroup {
                         warn "Transfer to server failed ($code): $msg\n";
                         $toServer->quit();
                         saveConfig();
-                        exit (1);
+                        exit(1);
                     }
 
                 } else {
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
-                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <" . join('//', split(/\r?\n/, $msg)) . ">\n" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
+                      . join('//', split(/\r?\n/, $msg)) . ">\n"
+                      if $debug >= 2;
                     print LOG "+" unless $quiet;
                     $fed{$group}++;
                     $info{server}->{$server}->{fed}++;
                     $info{fed}++;
                 }
             }
-            $shash->{$group} = [ time, $high = $i ];
-
-        # Optimized mode (-O) decided to skip this article...
+            $shash->{$group} = [time, $high = $i];
         } elsif ($skip_article) {
+            # Optimized mode (-O) decided to skip this article...
             print LOG "." unless $quiet;
             $refused{$group}++;
             $info{server}->{$server}->{refused}++;
             $info{refused}++;
-            $shash->{$group} = [ time, $high = $i ];
+            $shash->{$group} = [time, $high = $i];
         } else {
-            $shash->{$group} = [ time, $high = $i ] if $fromServer->code() == 430     # No such article, do not retry.
-                                                    or $fromServer->code() == 423;
+            $shash->{$group} = [time, $high = $i]
+              if $fromServer->code() == 430    # No such article, do not retry.
+              or $fromServer->code() == 423;
             print LOG "x" unless $quiet;
-            printf LOG ("\nDEBUGGING $i %s %s\n", $fromServer->code(),
-                        $fromServer->message()) if $debug >= 2;
+            printf LOG (
+                "\nDEBUGGING $i %s %s\n", $fromServer->code(),
+                $fromServer->message()
+            ) if $debug >= 2;
         }
         saveConfig() if $checkPoint and ($art_total_count % $checkPoint) == 0;
         print LOG "\n" if (!$quiet && (($count % $progressWidth) == 0));
-        last if defined $opt_S and time >= $^T+$opt_S;
+        last if defined $opt_S and time >= $^T + $opt_S;
     }
     print LOG "\n" unless $quiet;
     print LOG join("\n\t", '', @warns) . "\n\n" if @warns;
     my $elapsed_time = time - $startTime + 1;
     if ($quiet) {
-        my $rejectedDiff = $info{rejected}-$prevRejected;
-        my $refusedDiff = $info{refused}-$prevRefused;
-        my $destServer = ($localServer ne $defaultHost ? " to $localServer" : '');
-        print LOG localtime() . "[$$] $server$destServer $name $narticles $first-$last : $count $prevHigh-" .
-                                ($high == $last ? '' : $high) . " $refusedDiff $rejectedDiff\n"
-                        unless $prevHigh == $high and $count == 0;
+        my $rejectedDiff = $info{rejected} - $prevRejected;
+        my $refusedDiff = $info{refused} - $prevRefused;
+        my $destServer
+          = ($localServer ne $defaultHost ? " to $localServer" : '');
+        print LOG localtime()
+          . "[$$] $server$destServer $name $narticles"
+          . " $first-$last : $count $prevHigh-"
+          . ($high == $last ? '' : $high)
+          . " $refusedDiff $rejectedDiff\n"
+          unless $prevHigh == $high and $count == 0;
     } else {
         printf LOG "%s article%s retrieved in %d seconds (%d bytes, %d cps)\n",
-                $count, ($count == 1 ? "" : "s"), $elapsed_time,
-                $len, int($len*100/$elapsed_time)/100;
+          $count, ($count == 1 ? "" : "s"), $elapsed_time,
+          $len, int($len * 100 / $elapsed_time) / 100;
     }
     return 1;
 }

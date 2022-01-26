@@ -38,7 +38,7 @@ sub bhex {
     $hexValue =~ s/^0x//;
 
     my $integerValue = Math::BigInt->new('0');
-    for (my $i = 0; $i < length($hexValue); $i+=2) {
+    for (my $i = 0; $i < length($hexValue); $i += 2) {
         # Could be more efficient going at larger increments, but byte
         # by byte is safer for the case of 9 byte values, 11 bytes, etc.
 
@@ -64,13 +64,13 @@ sub bint2hex {
         my $h = $integerValue->copy()->bmod('16')->bstr();
         $integerValue->bdiv('16');
         $h =~ s/^\+//;
-        $h='a' if $h eq '10';
-        $h='b' if $h eq '11';
-        $h='c' if $h eq '12';
-        $h='d' if $h eq '13';
-        $h='e' if $h eq '14';
-        $h='f' if $h eq '15';
-        $o="$h$o";
+        $h = 'a' if $h eq '10';
+        $h = 'b' if $h eq '11';
+        $h = 'c' if $h eq '12';
+        $h = 'd' if $h eq '13';
+        $h = 'e' if $h eq '14';
+        $h = 'f' if $h eq '15';
+        $o = "$h$o";
     }
 
     # The result ends with a "0".
@@ -95,19 +95,19 @@ _end_
 my (%buff, $cycbuff, $opt_w);
 
 GetOptions(
-    'c=s'       => \$cycbuff,
-    'w'         => \$opt_w,
-    'h'         => sub { usage() },
+    'c=s' => \$cycbuff,
+    'w'   => \$opt_w,
+    'h'   => sub { usage() },
 );
 
 unless (read_cycbuffconf()) {
     print STDERR "Cannot open CycBuff Conffile $conffile ...\n";
-    exit (1);
+    exit(1);
 }
 
 unless (read_storageconf()) {
     print STDERR "No valid $storageconf.\n";
-    exit (1);
+    exit(1);
 }
 
 sub read_cycbuffconf {
@@ -118,44 +118,47 @@ sub read_cycbuffconf {
         $_ =~ s/^\s*(.*?)\s*$/$1/;
 
         # Read continuation lines.
-        while(/\\$/) {
+        while (/\\$/) {
             chop;
-            chop (my $next = <$CONFFILE>);
+            chop(my $next = <$CONFFILE>);
             $next =~ s/^\s*(.*?)\s*$/$1/;
             $_ .= $next;
         }
 
-	# \x23 below is #.  Emacs perl-mode gets confused by the "comment".
-	next if ($_ =~ /^\s*$/ || $_ =~ /^\x23/);
-	next if ($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
+        # \x23 below is #.  Emacs perl-mode gets confused by the "comment".
+        next if ($_ =~ /^\s*$/ || $_ =~ /^\x23/);
+        next if ($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
 
-	if($_ =~ /^metacycbuff:/) {
-	    @line = split(/:/, $_);
-	    if ($class{$line[1]}) {
-		print STDERR "Class $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 0;
-	    }
+        if ($_ =~ /^metacycbuff:/) {
+            @line = split(/:/, $_);
+            if ($class{ $line[1] }) {
+                print STDERR "Class $line[1] more than one time "
+                  . "in CycBuff Conffile $conffile ...\n";
+                return 0;
+            }
 
-	    $class{$line[1]} = $line[2];
-	    if (scalar @line > 3 && $line[3] ne "") {
-		$metamode{$line[1]} = $line[3];
-	    } else {
-		$metamode{$line[1]} = "INTERLEAVE";
-	    }
-	    next;
-	}
+            $class{ $line[1] } = $line[2];
+            if (scalar @line > 3 && $line[3] ne "") {
+                $metamode{ $line[1] } = $line[3];
+            } else {
+                $metamode{ $line[1] } = "INTERLEAVE";
+            }
+            next;
+        }
 
-	if ($_ =~ /^cycbuff/) {
-	    @line = split(/:/, $_);
-	    if ($buff{$line[1]}) {
-		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 1;
-	    }
-	    $buff{$line[1]} = $line[2];
-	    next;
-	}
+        if ($_ =~ /^cycbuff/) {
+            @line = split(/:/, $_);
+            if ($buff{ $line[1] }) {
+                print STDERR "Buff $line[1] more than one time "
+                  . "in CycBuff Conffile $conffile ...\n";
+                return 1;
+            }
+            $buff{ $line[1] } = $line[2];
+            next;
+        }
 
-	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
+        print STDERR
+          "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
     }
     close $CONFFILE;
     return 1;
@@ -167,39 +170,41 @@ sub read_storageconf {
     return 0 unless open my $STOR, '<', $storageconf;
 
     while (<$STOR>) {
-	++$line;
-	next if /^\s*#/;
+        ++$line;
+        next if /^\s*#/;
 
-	# defaults
-	my %key = ("NEWSGROUPS" => "*",
-		    "SIZE" => "0,0");
+        # defaults
+        my %key = (
+            "NEWSGROUPS" => "*",
+            "SIZE"       => "0,0"
+        );
 
-	if (/method\s+cnfs\s+\{/) {
-	    while (<$STOR>) {
-		++$line;
-		next if /^\s*#/;
-		last if /\}/;
-		if (/(\w+):\s+(\S+)/i) {
-		    $key{uc($1)} = $2;
-		}
-	    }
-	    unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
-		print STDERR "storage.conf:$line: ".
-			"Missing 'class' or 'options'\n";
-		return 0;
-	    }
+        if (/method\s+cnfs\s+\{/) {
+            while (<$STOR>) {
+                ++$line;
+                next if /^\s*#/;
+                last if /\}/;
+                if (/(\w+):\s+(\S+)/i) {
+                    $key{ uc($1) } = $2;
+                }
+            }
+            unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
+                print STDERR "storage.conf:$line: "
+                  . "Missing 'class' or 'options'\n";
+                return 0;
+            }
 
-	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
-	    $key{'SIZE'} =~ s/,/:/;
+            $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
+            $key{'SIZE'} =~ s/,/:/;
 
-	    if (defined $stor{$key{'OPTIONS'}}) {
-		print STDERR "storage.conf:$line: ".
-			"Class $key{'CLASS'} has several criteria\n";
-	    } else {
-		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
-			"$key{'SIZE'}:$key{'OPTIONS'}";
-	    }
-	}
+            if (defined $stor{ $key{'OPTIONS'} }) {
+                print STDERR "storage.conf:$line: "
+                  . "Class $key{'CLASS'} has several criteria\n";
+            } else {
+                $stor{ $key{'OPTIONS'} } = "$key{'NEWSGROUPS'}:$key{'CLASS'}:"
+                  . "$key{'SIZE'}:$key{'OPTIONS'}";
+            }
+        }
     }
     close $STOR;
     return 1;
@@ -210,7 +215,7 @@ START:
 # If no cycbuff is specified, we check all of them and exit.
 if (not defined $cycbuff) {
     foreach (sort keys %buff) {
-      print_cycbuff_head($buff{$_});
+        print_cycbuff_head($buff{$_});
     }
     exit(0);
 }
@@ -226,18 +231,31 @@ sub make_time {
     my ($t) = @_;
     my (@ret);
 
-    my ($sec,$min,$hour,$mday,$mon,$year) =
-	    (localtime($t))[0..5];
-    push (@ret, sprintf("%04d-%02d-%02d %2d:%02d:%02d",
-			$year + 1900, $mon + 1, $mday, $hour, $min, $sec));
+    my ($sec, $min, $hour, $mday, $mon, $year)
+      = (localtime($t))[0 .. 5];
+    push(
+        @ret,
+        sprintf(
+            "%04d-%02d-%02d %2d:%02d:%02d",
+            $year + 1900, $mon + 1, $mday, $hour, $min, $sec
+        )
+    );
     $t = time - $t;
 
-    $mday = int($t/86400); $t = $t % 86400;
-    $hour = int($t/3600);  $t = $t % 3600;
-    $min  = int($t/60);    $t = $t % 60;
+    $mday = int($t / 86400);
+    $t = $t % 86400;
+    $hour = int($t / 3600);
+    $t = $t % 3600;
+    $min = int($t / 60);
+    $t = $t % 60;
 
-    push (@ret, sprintf("%4d days, %2d:%02d:%02d",
-			$mday, $hour, $min, $t));
+    push(
+        @ret,
+        sprintf(
+            "%4d days, %2d:%02d:%02d",
+            $mday, $hour, $min, $t
+        )
+    );
     return @ret;
 }
 
@@ -247,32 +265,37 @@ sub print_cycbuff_head {
     my $CNFSNASIZ = 16;
     my $CNFSPASIZ = 64;
     my $CNFSLASIZ = 16;
-    my $headerlength = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
+    my $headerlength
+      = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
     my ($BUFF, $buff);
 
     if ($opt_w) {
-	if ( !open $BUFF, '+<', $buffpath ) {
-	    print STDERR "Cannot open Cycbuff $buffpath ...\n";
-	    exit(1);
-	}
+        if (!open $BUFF, '+<', $buffpath) {
+            print STDERR "Cannot open Cycbuff $buffpath ...\n";
+            exit(1);
+        }
     } else {
-	if ( !open $BUFF, '<', $buffpath ) {
-	    print STDERR "Cannot open Cycbuff $buffpath ...\n";
-	    exit(1);
-	}
+        if (!open $BUFF, '<', $buffpath) {
+            print STDERR "Cannot open Cycbuff $buffpath ...\n";
+            exit(1);
+        }
     }
 
     $buff = "";
-    if ( !read $BUFF, $buff, $headerlength ) {
-	print STDERR "Cannot read $headerlength bytes from file $buffpath...\n";
-	exit(1);
+    if (!read $BUFF, $buff, $headerlength) {
+        print STDERR
+          "Cannot read $headerlength bytes from file $buffpath...\n";
+        exit(1);
     }
 
-    my ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff, $blksza) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
+    my (
+        $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
+        $orderinmetaa, $currentbuff, $blksza
+    ) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if (!$magic) {
-	print STDERR "Error while unpacking header ...\n";
-	exit(1);
+        print STDERR "Error while unpacking header ...\n";
+        exit(1);
     }
 
     my $len = bhex($lena);
@@ -290,8 +313,8 @@ sub print_cycbuff_head {
     print " Mbytes, used: ";
     printf "%.2f Mbytes", Math::BigFloat->new($free) / (1024 * 1024);
     printf " (%4.1f%%) %3d cycles\n",
-           100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
-           $cyclenum;
+      100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
+      $cyclenum;
     print "  Meta $metaname, order: ";
     printf "%d", $orderinmeta;
     print ", current: $currentbuff";
@@ -300,18 +323,18 @@ sub print_cycbuff_head {
     print "\n  Newest: $nupdate_str, $nago_str ago\n";
 
     if ($opt_w) {
-	print "\nBuffer [$name] => ";
-	my $in = <>;
-	chop $in;
-	if ($in ne "") {
-	    $name = sprintf("%0.9s\0", $in);
-	}
-	print "Path [$path] => ";
-	$in = <>;
-	chop $in;
-	if ($in ne "") {
-	    $path = sprintf("%0.65s\0", $in);
-	}
+        print "\nBuffer [$name] => ";
+        my $in = <>;
+        chop $in;
+        if ($in ne "") {
+            $name = sprintf("%0.9s\0", $in);
+        }
+        print "Path [$path] => ";
+        $in = <>;
+        chop $in;
+        if ($in ne "") {
+            $path = sprintf("%0.65s\0", $in);
+        }
         print "Length [$len ($lena)] => ";
         $in = <>;
         chop $in;
@@ -319,19 +342,19 @@ sub print_cycbuff_head {
             $in = bint2hex($in);
             $lena = sprintf("%017.17s\0", $in);
         }
-	print "Free [$free ($freea)] => ";
-	$in = <>;
-	chop $in;
-	if ($in ne "") {
+        print "Free [$free ($freea)] => ";
+        $in = <>;
+        chop $in;
+        if ($in ne "") {
             $in = bint2hex($in);
-	    $freea = sprintf("%017.17s\0", $in);
-	}
-	print "Meta [$metaname] => ";
-	$in = <>;
-	chop $in;
-	if ($in ne "") {
-	    $metaname = sprintf("%0.17s\0", $in);
-	}
+            $freea = sprintf("%017.17s\0", $in);
+        }
+        print "Meta [$metaname] => ";
+        $in = <>;
+        chop $in;
+        if ($in ne "") {
+            $metaname = sprintf("%0.17s\0", $in);
+        }
         print "Order [$orderinmeta ($orderinmetaa)] => ";
         $in = <>;
         chop $in;
@@ -339,19 +362,24 @@ sub print_cycbuff_head {
             $in = bint2hex($in);
             $orderinmetaa = sprintf("%017.17s\0", $in);
         }
-	print "Currentbuff [$currentbuff] => ";
-	$in = <>;
-	chop $in;
-	if ($in eq "TRUE" || $in eq "FALSE") {
-	    $currentbuff = sprintf("%0.8s", $in);
-	}
-        $buff = pack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname, $orderinmetaa, $currentbuff);
+        print "Currentbuff [$currentbuff] => ";
+        $in = <>;
+        chop $in;
+        if ($in eq "TRUE" || $in eq "FALSE") {
+            $currentbuff = sprintf("%0.8s", $in);
+        }
+        $buff = pack(
+            "a8 a16 a64 a16 a16 a16 a16 a16 a16 a8", $magic, $name,
+            $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
+            $orderinmetaa, $currentbuff
+        );
         $buff .= pack("a16", $blksza) if ($magic =~ m/^CBuf4/);
-	seek $BUFF, 0, 0;
-	    if(! syswrite $BUFF, $buff, $headerlength ) {
-	    print STDERR "Cannot write $headerlength bytes to file $buffpath...\n";
-	    exit(1);
-	}
+        seek $BUFF, 0, 0;
+        if (!syswrite $BUFF, $buff, $headerlength) {
+            print STDERR
+              "Cannot write $headerlength bytes to file $buffpath...\n";
+            exit(1);
+        }
     }
     close $BUFF;
     return;

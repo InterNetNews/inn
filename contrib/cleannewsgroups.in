@@ -10,36 +10,40 @@
 #   * Groups with no description are removed.
 #   * Groups matching the $remove regexp are removed.
 
-$remove='';
+$remove = '';
 # $remove='^alt\.';
 
-open ACT, $INN::Config::active  or die "Can't open $INN::Config::active: $!\n";
-while(<ACT>) {
+open ACT, $INN::Config::active or die "Can't open $INN::Config::active: $!\n";
+while (<ACT>) {
     ($group) = split;
-    $act{$group} = 1 unless($remove ne "" && $group =~ /$remove/o);
+    $act{$group} = 1 unless ($remove ne "" && $group =~ /$remove/o);
 }
 close ACT;
 
-open NG, $INN::Config::newsgroups  or die "Can't open $INN::Config::newsgroups: $!\n";
-while(<NG>) {
+open NG, $INN::Config::newsgroups
+  or die "Can't open $INN::Config::newsgroups: $!\n";
+while (<NG>) {
     chomp;
-    ($group, $desc) = split /\s+/,$_,2;
-    next unless(defined $act{$group});
+    ($group, $desc) = split /\s+/, $_, 2;
+    next unless (defined $act{$group});
 
-    next if(!defined $desc);
-    next if($desc =~ /^[?\s]*$/);
-    next if($desc =~ /^no desc(ription)?(\.)?$/i);
+    next if (!defined $desc);
+    next if ($desc =~ /^[?\s]*$/);
+    next if ($desc =~ /^no desc(ription)?(\.)?$/i);
 
     $hist{$group} = $desc;
 }
 close NG;
 
-open NG, ">$INN::Config::newsgroups.new"  or die "Can't open $INN::Config::newsgroups.new for write: $!\n";
+open NG, ">$INN::Config::newsgroups.new"
+  or die "Can't open $INN::Config::newsgroups.new for write: $!\n";
 foreach $group (sort keys %act) {
-    if(defined $hist{$group}) {
-	print NG "$group\t$hist{$group}\n" or die "Can't write: $!\n";
+    if (defined $hist{$group}) {
+        print NG "$group\t$hist{$group}\n" or die "Can't write: $!\n";
     }
 }
 close NG or die "Can't close: $!\n";
 
-rename "$INN::Config::newsgroups.new", $INN::Config::newsgroups  or die "Can't rename $INN::Config::newsgroups.new to $INN::Config::newsgroups: $!\n";
+rename "$INN::Config::newsgroups.new", $INN::Config::newsgroups
+  or die "Can't rename $INN::Config::newsgroups.new "
+  . "to $INN::Config::newsgroups: $!\n";

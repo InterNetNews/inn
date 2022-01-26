@@ -16,9 +16,11 @@
 use strict;
 
 sub control_checkgroups {
-    my ($par, $sender, $replyto, $site, $action, $log, $approved,
+    my (
+        $par, $sender, $replyto, $site, $action, $log, $approved,
         $article, $charset_from, $charset_to, $exclusionpats,
-        $droppats, $maxchanges) = @_;
+        $droppats, $maxchanges
+    ) = @_;
     my ($newsgrouppats) = @$par;
     my $head = $article->head;
     my @headers = split(/\r?\n/, $head->stringify);
@@ -53,13 +55,14 @@ sub control_checkgroups {
         }
 
         if (not defined $charset_newsgroup
-            or not defined Encode::find_encoding($charset_newsgroup)) {
-            $charset_newsgroup = "cp1252";  # Default charset, when undefined.
+            or not defined Encode::find_encoding($charset_newsgroup))
+        {
+            $charset_newsgroup = "cp1252";   # Default charset, when undefined.
         }
 
         # Properly encode the newsgroup description.
         Encode::from_to($ngdesc, $charset_newsgroup, $charset_to);
-        push(@newbody, $ngname."\t".$ngdesc);
+        push(@newbody, $ngname . "\t" . $ngdesc);
     }
 
     # We do not go on if there is no changes to do.
@@ -89,21 +92,26 @@ END
         }
     } elsif ($action eq 'doit') {
         if (defined &local_docheckgroups) {
-            local_docheckgroups(\@newbody, $newsgrouppats, $exclusionpats,
-                                $maxchanges, $log, $sender);
+            local_docheckgroups(
+                \@newbody, $newsgrouppats, $exclusionpats,
+                $maxchanges, $log, $sender
+            );
         } else {
-            docheckgroups(\@newbody, $newsgrouppats, $exclusionpats,
-                          $maxchanges, $log, $sender);
+            docheckgroups(
+                \@newbody, $newsgrouppats, $exclusionpats,
+                $maxchanges, $log, $sender
+            );
         }
     }
 }
 
 sub docheckgroups {
-    my ($body, $newsgrouppats, $exclusionpats, $maxchanges, $log, $sender) = @_;
+    my ($body, $newsgrouppats, $exclusionpats, $maxchanges, $log, $sender)
+      = @_;
 
     my $tempfile = "$INN::Config::tmpdir/checkgroups.$$";
     open(TEMPART, ">$tempfile.art")
-        or logdie("Cannot open $tempfile.art: $!");
+      or logdie("Cannot open $tempfile.art: $!");
     print TEMPART map { s/^~/~~/; "$_\n" } @$body;
     close TEMPART;
 
@@ -111,8 +119,10 @@ sub docheckgroups {
     open(OLDOUT, '>&STDOUT') or die $!;
     open(STDIN, "$tempfile.art") or die $!;
     open(STDOUT, ">$tempfile") or die $!;
-    my $st = system("$INN::Config::pathbin/docheckgroups", "-u",
-                    $newsgrouppats, $exclusionpats);
+    my $st = system(
+        "$INN::Config::pathbin/docheckgroups", "-u",
+        $newsgrouppats, $exclusionpats
+    );
     logdie('Cannot run docheckgroups: ' . $!) if $st == -1;
     logdie('docheckgroups returned status ' . ($st & 255)) if $st > 0;
     close(STDIN);
@@ -131,8 +141,8 @@ sub docheckgroups {
             last if !$dochanges;
             if ($line =~ /^\s*\S*ctlinnd \S+ (\S+)/) {
                 my $ngname = $1;
-                foreach my $i (0..$#newmaxchanges) {
-                    my ($group, $value) = split (/:/, $newmaxchanges[$i]);
+                foreach my $i (0 .. $#newmaxchanges) {
+                    my ($group, $value) = split(/:/, $newmaxchanges[$i]);
                     if ($ngname =~ /$group/) {
                         $value--;
                         if ($value < 0) {
@@ -162,19 +172,46 @@ sub docheckgroups {
 
             if ($log) {
                 unshift(@output, '');
-                unshift(@output, '######################################################################');
-                unshift(@output, '# This script has already been successfully executed by controlchan. #');
-                unshift(@output, '######################################################################');
-                logger($log, "checkgroups by $sender processed (changes applied)",
-                       \@output);
+                unshift(
+                    @output,
+                    '##################################'
+                      . '####################################'
+                );
+                unshift(
+                    @output,
+                    '# This script has already been '
+                      . 'successfully executed by controlchan. #'
+                );
+                unshift(
+                    @output,
+                    '##################################'
+                      . '####################################'
+                );
+                logger(
+                    $log,
+                    "checkgroups by $sender processed (changes applied)",
+                    \@output
+                );
             }
         } else {
             unshift(@output, '');
-            unshift(@output, '################################################');
-            unshift(@output, '# This script was NOT executed by controlchan. #');
-            unshift(@output, '################################################');
-            logger($log || 'mail', "checkgroups by $sender *not* processed (too many changes)",
-                   \@output);
+            unshift(
+                @output,
+                '################################################'
+            );
+            unshift(
+                @output,
+                '# This script was NOT executed by controlchan. #'
+            );
+            unshift(
+                @output,
+                '################################################'
+            );
+            logger(
+                $log || 'mail',
+                "checkgroups by $sender *not* processed (too many changes)",
+                \@output
+            );
         }
     } else {
         logmsg("checkgroups by $sender processed (no change)");

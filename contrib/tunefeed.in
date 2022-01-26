@@ -17,12 +17,11 @@ $version = '1.0';
 # A list of hierarchies that are considered global and not language
 # hierarchies.
 %global = map { $_ => 1 } qw(bionet bit biz borland ddn gnu gov ieee info
-                             linux k12 microsoft netscape tnn vmsnet);
+  linux k12 microsoft netscape tnn vmsnet);
 
 # The pattern matching local-only hierarchies (that we should disregard when
 # doing feed matching).
 %ignore = map { $_ => 1 } qw(clari control junk);
-
 
 ############################################################################
 # Modules and declarations
@@ -35,7 +34,6 @@ use Getopt::Long qw(GetOptions);
 use strict;
 use vars qw(%big8 $days %global %ignore $threshold %traffic $version);
 
-
 ############################################################################
 # Active file hashing and analysis
 ############################################################################
@@ -47,12 +45,12 @@ use vars qw(%big8 $days %global %ignore $threshold %traffic $version);
 # simple-minded fashion).
 sub hash {
     my ($file, $hash, $local) = @_;
-    open (ACTIVE, $file) or die "$0: cannot open $file: $!\n";
+    open(ACTIVE, $file) or die "$0: cannot open $file: $!\n";
     local $_;
     while (<ACTIVE>) {
         my ($group, $high, $low, $flags) = split;
         next if ($flags =~ /^=|^x/);
-        my $hierarchy = (split (/\./, $group, 2))[0];
+        my $hierarchy = (split(/\./, $group, 2))[0];
         next if ($local && $ignore{$hierarchy});
         $$hash{$group} = 1;
         $traffic{$group} = ($high - $low) / $days if $local;
@@ -65,7 +63,7 @@ sub hash {
 # directly into the %traffic hash.
 sub traffic {
     my ($file) = @_;
-    open (TRAFFIC, $file) or die "$0: cannot open $file: $!\n";
+    open(TRAFFIC, $file) or die "$0: cannot open $file: $!\n";
     local $_;
     while (<TRAFFIC>) {
         my ($group, $traffic) = split;
@@ -77,23 +75,23 @@ sub traffic {
 # Pull off the first X nodes of a group name.
 sub prefix {
     my ($group, $count) = @_;
-    my @group = split (/\./, $group);
-    splice (@group, $count);
-    join ('.', @group);
+    my @group = split(/\./, $group);
+    splice(@group, $count);
+    join('.', @group);
 }
 
 # Find the common hierarchical prefix of a list.
 sub common {
     my (@list) = @_;
-    my @prefix = split (/\./, shift @list);
+    my @prefix = split(/\./, shift @list);
     local $_;
-    while (defined ($_ = shift @list)) {
+    while (defined($_ = shift @list)) {
         my @group = split /\./;
         my $i;
         $i++ while ($prefix[$i] && $prefix[$i] eq $group[$i]);
-        if ($i <= $#prefix) { splice (@prefix, $i) }
+        if ($i <= $#prefix) { splice(@prefix, $i) }
     }
-    join ('.', @prefix);
+    join('.', @prefix);
 }
 
 # Given two lists, a list of groups that the remote site does have and a
@@ -107,7 +105,7 @@ sub smash {
     my ($have, $exclude, $top, $positive) = @_;
     my (@positive, @negative);
     my $level = ($top =~ tr/././) + 1;
-    
+
     # Start with the positive assumption.  We make copies of our @have and
     # @exclude arrays since we're going to be needing the virgin ones again
     # later for the negative assumption.  If we're coming in with the
@@ -118,15 +116,15 @@ sub smash {
     my @exclude = @$exclude;
     if ($top eq $have[0]) {
         shift @have;
-        push (@positive, "$top*") unless $positive;
+        push(@positive, "$top*") unless $positive;
     } else {
         if ($top eq $exclude[0]) {
             if ($positive && $traffic{$top} > $threshold) {
-                push (@positive, "!$top");
+                push(@positive, "!$top");
             }
             shift @exclude;
         }
-        push (@positive, "$top.*") unless $positive;
+        push(@positive, "$top.*") unless $positive;
     }
 
     # Now that we've got things started, keep in mind that we're set up so
@@ -140,32 +138,32 @@ sub smash {
     # against the threshold).  If there are, and if the threshold still
     # makes it worthwhile to worry about this, we call this sub recursively
     # to compute the best pattern for that prefix.
-    while (defined ($_ = shift @exclude)) {
-        my ($prefix) = prefix ($_, $level + 1);
+    while (defined($_ = shift @exclude)) {
+        my ($prefix) = prefix($_, $level + 1);
         my @drop = ($_);
         my @keep;
         my $traffic = $traffic{$_};
         while ($exclude[0] =~ /^\Q$prefix./) {
-            $traffic += $traffic{$exclude[0]};
-            push (@drop, shift @exclude);
+            $traffic += $traffic{ $exclude[0] };
+            push(@drop, shift @exclude);
         }
-        $prefix = common (@drop);
+        $prefix = common(@drop);
         my $saved = $traffic;
         while (@have && $have[0] le $prefix) { shift @have }
         while ($have[0] =~ /^\Q$prefix./) {
-            $traffic += $traffic{$have[0]};
-            push (@keep, shift @have);
+            $traffic += $traffic{ $have[0] };
+            push(@keep, shift @have);
         }
         next unless $saved > $threshold;
         if (@keep) {
             $traffic{"$prefix*"} = $traffic;
-            push (@positive, smash (\@keep, \@drop, $prefix, 1));
+            push(@positive, smash(\@keep, \@drop, $prefix, 1));
         } elsif (@drop == 1) {
-            push (@positive, "!$_");
+            push(@positive, "!$_");
         } elsif ($prefix eq $_) {
-            push (@positive, "!$prefix*");
+            push(@positive, "!$prefix*");
         } else {
-            push (@positive, "!$prefix.*");
+            push(@positive, "!$prefix.*");
         }
     }
 
@@ -177,44 +175,44 @@ sub smash {
     @exclude = @$exclude;
     if ($top eq $exclude[0]) {
         shift @exclude;
-        push (@negative, "!$top*") if $positive;
+        push(@negative, "!$top*") if $positive;
     } else {
         if ($top eq $have[0]) {
-            push (@negative, $top) unless $positive;
+            push(@negative, $top) unless $positive;
             shift @have;
         }
-        push (@negative, "!$top.*") if $positive;
+        push(@negative, "!$top.*") if $positive;
     }
 
     # This again looks pretty much the same as what we do for the positive
     # case; the primary difference is that we have to make sure that we send
     # them every group that they want, so we still err on the side of
     # sending too much, rather than too little.
-    while (defined ($_ = shift @have)) {
-        my ($prefix) = prefix ($_, $level + 1);
+    while (defined($_ = shift @have)) {
+        my ($prefix) = prefix($_, $level + 1);
         my @keep = ($_);
         my @drop;
         my $traffic = $traffic{$_};
         while ($have[0] =~ /^\Q$prefix./) {
-            $traffic += $traffic{$have[0]};
-            push (@keep, shift @have);
+            $traffic += $traffic{ $have[0] };
+            push(@keep, shift @have);
         }
-        $prefix = common (@keep);
+        $prefix = common(@keep);
         while (@exclude && $exclude[0] le $prefix) { shift @exclude }
         my $saved = 0;
         while ($exclude[0] =~ /^\Q$prefix./) {
-            $saved += $traffic{$exclude[0]};
-            push (@drop, shift @exclude);
+            $saved += $traffic{ $exclude[0] };
+            push(@drop, shift @exclude);
         }
         if (@drop && $saved > $threshold) {
             $traffic{"$prefix*"} = $traffic + $saved;
-            push (@negative, smash (\@keep, \@drop, $prefix, 0));
+            push(@negative, smash(\@keep, \@drop, $prefix, 0));
         } elsif (@keep == 1) {
-            push (@negative, $_);
+            push(@negative, $_);
         } elsif ($prefix eq $_) {
-            push (@negative, "$prefix*");
+            push(@negative, "$prefix*");
         } else {
-            push (@negative, "$prefix.*");
+            push(@negative, "$prefix.*");
         }
     }
 
@@ -225,7 +223,6 @@ sub smash {
     (@positive < @negative) ? @positive : @negative;
 }
 
-
 ############################################################################
 # Output
 ############################################################################
@@ -234,10 +231,10 @@ sub smash {
 # hierarchies ahead of regionals and language hierarchies.
 sub score {
     my ($hierarchy) = @_;
-    if ($big8{$hierarchy})      { return 1 }
+    if ($big8{$hierarchy}) { return 1 }
     elsif ($hierarchy eq 'alt') { return 2 }
     elsif ($global{$hierarchy}) { return 3 }
-    else                        { return 4 }
+    else { return 4 }
 }
 
 # Our special sort routine for hierarchies.  It calls score to get a
@@ -272,7 +269,6 @@ sub output {
     print "\n";
 }
 
-
 ############################################################################
 # Main routine
 ############################################################################
@@ -284,11 +280,13 @@ $0 =~ s%.*/%%;
 # Parse the command line.  Our argument is the path to an active file (we
 # tell the difference by seeing if it contains a /).
 my ($help, $print_version);
-Getopt::Long::config ('bundling');
-GetOptions ('help|h'        => \$help,
-            'days|d=i'      => \$days,
-            'threshold|t=i' => \$threshold,
-            'version|v'     => \$print_version) or exit 1;
+Getopt::Long::config('bundling');
+GetOptions(
+    'help|h'        => \$help,
+    'days|d=i'      => \$days,
+    'threshold|t=i' => \$threshold,
+    'version|v'     => \$print_version
+) or exit 1;
 
 # Set a default for the minimum threshold traffic required to retain an
 # exclusion, and assume that active file differences represent one day of
@@ -298,7 +296,7 @@ $days ||= 1;
 
 # If they asked for our version number, abort and just print that.
 if ($print_version) {
-    my ($program, $ver) = (split (' ', $version))[1,2];
+    my ($program, $ver) = (split(' ', $version))[1, 2];
     $program =~ s/,v$//;
     die "$program $ver\n";
 }
@@ -306,7 +304,7 @@ if ($print_version) {
 # If they asked for help, give them the documentation.
 if ($help) {
     print "Feeding myself to perldoc, please wait....\n";
-    exec ('perldoc', '-t', $fullpath) or die "$0: can't fork: $!\n";
+    exec('perldoc', '-t', $fullpath) or die "$0: can't fork: $!\n";
 }
 
 # Hash the active files, skipping groups we ignore in the local one.  Make
@@ -315,9 +313,9 @@ unless (@ARGV == 2 || @ARGV == 3) {
     die "Usage: $0 [-hv] [-t <threshold>] <local> <remote> [<traffic>]\n";
 }
 my (%local, %remote);
-hash (shift, \%local, 1);
-hash (shift, \%remote);
-traffic (shift) if @ARGV;
+hash(shift, \%local, 1);
+hash(shift, \%remote);
+traffic(shift) if @ARGV;
 
 # Now, we analyze the differences between the two feeds.  We're trying to
 # build a pattern of what *we* should send *them*, so stuff that's in
@@ -329,24 +327,24 @@ for (sort keys %local) {
     my ($hierarchy) = (split /\./);
     $count{$hierarchy}++;
     $traffic{"$hierarchy*"} += $traffic{$_};
-    if ($remote{$_}) { push (@{$have{$hierarchy}}, $_); $have++       }
-    else             { push (@{$exclude{$hierarchy}}, $_); $exclude++ }
+    if ($remote{$_}) { push(@{ $have{$hierarchy} }, $_); $have++ }
+    else { push(@{ $exclude{$hierarchy} }, $_); $exclude++ }
 }
 my @patterns;
 if ($have > $exclude * 4) {
-    push (@patterns, "*");
+    push(@patterns, "*");
     $positive = 1;
 }
-for (sort by_hierarchy keys %count)  {
+for (sort by_hierarchy keys %count) {
     if ($have{$_} && !$exclude{$_}) {
-        push (@patterns, "$_.*") unless $positive;
+        push(@patterns, "$_.*") unless $positive;
     } elsif ($exclude{$_} && !$have{$_}) {
-        push (@patterns, "!$_.*") if $positive;
+        push(@patterns, "!$_.*") if $positive;
     } else {
-        push (@patterns, smash ($have{$_}, $exclude{$_}, $_, $positive));
+        push(@patterns, smash($have{$_}, $exclude{$_}, $_, $positive));
     }
 }
-output (\@patterns);
+output(\@patterns);
 __END__
 
 

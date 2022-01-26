@@ -19,19 +19,19 @@
 #
 # Do any initialization steps.
 #
-my %config = (checkincludedtext => 0,
-              includedcutoff => 40,
-              includedratio => 0.6,
-              quotere => '^[>:]',
-              antiquotere => '^[<]',  # so as not to reject dict(1) output
-             );
-
+my %config = (
+    checkincludedtext => 0,
+    includedcutoff    => 40,
+    includedratio     => 0.6,
+    quotere           => '^[>:]',
+    antiquotere       => '^[<]',    # so as not to reject dict(1) output
+);
 
 #
 # Sample filter
 #
 sub filter_post {
-    my $rval = "" ;             # assume we'll accept.
+    my $rval = "";    # assume we'll accept.
 
 ### Uncomment this next block to reject articles that have 'make money'
 ### in their subject, or which have a "Re: " subject, but no References
@@ -42,8 +42,9 @@ sub filter_post {
 ##    } elsif ($hdr{'Subject'} =~ /^Re: /o and $hdr{'References'} eq "") {
 ##        $rval = "Followup without References header field";
 ##    } elsif ($hdr{'From'} =~ /^\w*$/o or
-##             $hdr{'From'} !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o) {
-##        $rval = "From header field is invalid, must be user\@[host.]domain.tld";
+##        $hdr{'From'} !~ /^(.+?)\@([-\w\d]+\.)*([-\w\d]+)\.([-\w\d]{2,})$/o) {
+##        $rval = "From header field is invalid, "
+##          . "must be user\@[host.]domain.tld";
 ##    }
 
 ### Uncomment this next block to reject articles that are sent from
@@ -59,7 +60,8 @@ sub filter_post {
     if ($config{checkincludedtext}) {
         my ($lines, $quoted, $antiquoted) = analyze($body);
         if ($lines > $config{includedcutoff}
-                && $quoted - $antiquoted > $lines * $config{includedratio}) {
+            && $quoted - $antiquoted > $lines * $config{includedratio})
+        {
             $rval = "Article contains too much quoted text";
         }
     }
@@ -72,17 +74,17 @@ sub analyze {
     local $_ = shift;
 
     do {
-        if ( /\G$config{quotere}/mgc ) {
+        if (/\G$config{quotere}/mgc) {
             $quoted++;
-        } elsif ( /\G$config{antiquotere}/mgc ) {
+        } elsif (/\G$config{antiquotere}/mgc) {
             $antiquoted++;
         }
-    } while ( /\G(.*)\n/gc && ++$lines );
+    } while (/\G(.*)\n/gc && ++$lines);
 
     return ($lines, $quoted, $antiquoted);
 }
 
 sub filter_end {
-# Do whatever you want to clean up things when Perl filtering is disabled.
+    # Do whatever you want to clean up things when Perl filtering is disabled.
 }
 

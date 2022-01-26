@@ -27,19 +27,19 @@ sub usage {
 Summary tool for CNFS
 
 Usage:
-	$0 [-ahpPsv] [-c class] [-i seconds] [-l [seconds]] [-m buffer]
+        $0 [-ahpPsv] [-c class] [-i seconds] [-l [seconds]] [-m buffer]
 
-	If called without args, does a one-time status of all CNFS buffers
-	-a:           print the age of the oldest article in the cycbuff
-	-c class:     print out status of CNFS buffers in that class
-	-h:           this information
-	-i seconds:   initial sleep of that many seconds at startup
-	-l [seconds]: loop like vmstat, default seconds = 600
-	-m buffer:    print out information suitable for MRTG
-	-p:           print out an MRTG config file
-	-P:           write PID into $INN::Config::pathrun/cnfsstat.pid
-	-s:           log through syslog
-	-v:           do consistency checks and print the result
+        If called without args, does a one-time status of all CNFS buffers
+        -a:           print the age of the oldest article in the cycbuff
+        -c class:     print out status of CNFS buffers in that class
+        -h:           this information
+        -i seconds:   initial sleep of that many seconds at startup
+        -l [seconds]: loop like vmstat, default seconds = 600
+        -m buffer:    print out information suitable for MRTG
+        -p:           print out an MRTG config file
+        -P:           write PID into $INN::Config::pathrun/cnfsstat.pid
+        -s:           log through syslog
+        -v:           do consistency checks and print the result
 _end_
     exit(1);
 }
@@ -50,11 +50,13 @@ my (%prevclass, %prevbuff, %prevstor, @prevstorsort);
 my @buffers;
 
 my ($oclass, $obuffer);
-my %opt = (c=>\$oclass, m=>\$obuffer);
+my %opt = (c => \$oclass, m => \$obuffer);
 Getopt::Long::config('no_ignore_case');
-GetOptions(\%opt,
-           "-a", "-c=s", "-h", "-i=i", "-l:i", "-m=s",
-           "-p", "-P", "-s", "-v");
+GetOptions(
+    \%opt,
+    "-a", "-c=s", "-h", "-i=i", "-l:i", "-m=s",
+    "-p", "-P", "-s", "-v"
+);
 
 usage() if $opt{'h'};
 
@@ -63,46 +65,46 @@ if ($opt{'s'}) {
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1 };
     if ($use_syslog) {
         if ($Sys::Syslog::VERSION lt 0.15) {
-            eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-            Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+            eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }"
+              if $^O eq 'dec_osf';
+            Sys::Syslog::setlogsock('unix')
+              if $^O =~ /linux|dec_osf|freebsd|darwin/;
         }
-	openlog('cnfsstat', 'pid', $INN::Config::syslog_facility);
+        openlog('cnfsstat', 'pid', $INN::Config::syslog_facility);
     } else {
-	print STDERR "Syslog is not available.  -s option is ignored.\n";
+        print STDERR "Syslog is not available.  -s option is ignored.\n";
     }
 }
 
 if ($opt{'P'}) {
     if (open my $FILE, '>', "$INN::Config::pathrun/cnfsstat.pid") {
-	print $FILE "$$\n";
-	close $FILE;
-    };
+        print $FILE "$$\n";
+        close $FILE;
+    }
 }
 
 my $sleeptime = (defined($opt{'l'}) && $opt{'l'} > 0) ? $opt{'l'} : 600;
 
 unless (read_cycbuffconf()) {
     print STDERR "Invalid $conffile file.\n";
-    exit (1);
+    exit(1);
 }
 
 unless (read_storageconf()) {
     print STDERR "Invalid $storageconf file.\n";
-    exit (1);
+    exit(1);
 }
-
 
 mrtg($obuffer) if $obuffer;
 mrtg_config() if $opt{'p'};
 
 # Initial sleep, before starting the work.
-if(defined($opt{'i'}) && $opt{'i'} > 0) {
+if (defined($opt{'i'}) && $opt{'i'} > 0) {
     sleep($opt{'i'});
     if (!$use_syslog) {
         print STDOUT "$opt{'i'} seconds later:\n";
     }
 }
-
 
 START:
 
@@ -121,10 +123,14 @@ if ($lastconftime < $maxtime) {
 
     # Save the previous configuration, in case reloading it fails.
     # Direct copies of the arrays and hashes works fine here.
-    %prevclass = %class; undef %class;
-    %prevbuff = %buff; undef %buff;
-    %prevstor = %stor; undef %stor;
-    @prevstorsort = @storsort; undef @storsort;
+    %prevclass = %class;
+    undef %class;
+    %prevbuff = %buff;
+    undef %buff;
+    %prevstor = %stor;
+    undef %stor;
+    @prevstorsort = @storsort;
+    undef @storsort;
 
     unless (read_cycbuffconf()) {
         print STDERR "Invalid $conffile file.\n";
@@ -151,7 +157,7 @@ my $header_printed = 0;
 my ($gr, $cl, $min, $max);
 if ($oclass) {
     if ($class{$oclass}) {
-	if (!$header_printed) {
+        if (!$header_printed) {
             if ($stor{$oclass}) {
                 ($gr, $cl, $min, $max) = split(/:/, $stor{$oclass});
             } else {
@@ -159,76 +165,88 @@ if ($oclass) {
             }
             # Remove leading and trailing double quotes, if present.
             $gr =~ s/"?([^"]*)"?/$1/g;
-	    if ($use_syslog) {
-		if ($min || $max) {
-		    $logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $oclass, $gr, $min, $max);
-		} else {
-		    $logline = sprintf("Class %s for groups matching \"%s\"", $oclass, $gr);
-		}
-	    } else {
-		print STDOUT "Class $oclass";
-		print STDOUT " for groups matching \"$gr\"";
-		if ($min || $max) {
-		    print STDOUT ", article size min/max: $min/$max";
-		}
-		print STDOUT "\n";
-	    }
-	    $header_printed = 1;
-	}
-	
-	@buffers = split(/,/, $class{$oclass});
-	if (! @buffers) {
-	    print STDERR "No buffers in Class $oclass ...\n";
-	    next;
-	}
-	
-	foreach my $b (@buffers) {
-	    if (! $buff{$b} ) {
-		print STDERR "No buffer definition for buffer $b ...\n";
-		next;
-	    }
-	    print_cycbuff_head($buff{$b});
-	}
+            if ($use_syslog) {
+                if ($min || $max) {
+                    $logline = sprintf(
+                        "Class %s for groups matching \"%s\" "
+                          . "article size min/max: %d/%d",
+                        $oclass, $gr, $min, $max
+                    );
+                } else {
+                    $logline = sprintf(
+                        "Class %s for groups matching \"%s\"",
+                        $oclass, $gr
+                    );
+                }
+            } else {
+                print STDOUT "Class $oclass";
+                print STDOUT " for groups matching \"$gr\"";
+                if ($min || $max) {
+                    print STDOUT ", article size min/max: $min/$max";
+                }
+                print STDOUT "\n";
+            }
+            $header_printed = 1;
+        }
+
+        @buffers = split(/,/, $class{$oclass});
+        if (!@buffers) {
+            print STDERR "No buffers in Class $oclass ...\n";
+            next;
+        }
+
+        foreach my $b (@buffers) {
+            if (!$buff{$b}) {
+                print STDERR "No buffer definition for buffer $b ...\n";
+                next;
+            }
+            print_cycbuff_head($buff{$b});
+        }
     } else {
-	print STDERR "Class $oclass not found ...\n";
+        print STDERR "Class $oclass not found ...\n";
     }
-} else { # Print all Classes
+} else {    # Print all Classes
     my %buffDone;
     foreach my $c (@storsort) {
-	($gr, $cl, $min, $max) = split(/:/, $stor{$c});
+        ($gr, $cl, $min, $max) = split(/:/, $stor{$c});
         # Remove leading and trailing double quotes, if present.
         $gr =~ s/"?([^"]*)"?/$1/g;
-	if ($use_syslog) {
-	    if ($min || $max) {
-		$logline = sprintf("Class %s for groups matching \"%s\" article size min/max: %d/%d", $c, $gr, $min, $max);
-	    } else {
-		$logline = sprintf("Class %s for groups matching \"%s\"", $c, $gr);
-	    }
-	} else {
-	    print STDOUT "Class $c";
-	    print STDOUT " for groups matching \"$gr\"";
-	    if($min || $max) {
-		print STDOUT ", article size min/max: $min/$max";
-	    }
-	    print STDOUT "\n";
-	}
-	@buffers = split(/,/, $class{$c});
-	if(! @buffers) {
-	    print STDERR "No buffers in Class $c ...\n";
-	    next;
-	}
-	
-	foreach my $b (@buffers) {
-	    if(! $buff{$b} ) {
-		print STDERR "No buffer definition for buffer $b ...\n";
-		next;
-	    }
-	    print_cycbuff_head($buff{$b});
+        if ($use_syslog) {
+            if ($min || $max) {
+                $logline = sprintf(
+                    "Class %s for groups matching \"%s\" "
+                      . "article size min/max: %d/%d",
+                    $c, $gr, $min, $max
+                );
+            } else {
+                $logline
+                  = sprintf("Class %s for groups matching \"%s\"", $c, $gr);
+            }
+        } else {
+            print STDOUT "Class $c";
+            print STDOUT " for groups matching \"$gr\"";
+            if ($min || $max) {
+                print STDOUT ", article size min/max: $min/$max";
+            }
+            print STDOUT "\n";
+        }
+        @buffers = split(/,/, $class{$c});
+        if (!@buffers) {
+            print STDERR "No buffers in Class $c ...\n";
+            next;
+        }
+
+        foreach my $b (@buffers) {
+            if (!$buff{$b}) {
+                print STDERR "No buffer definition for buffer $b ...\n";
+                next;
+            }
+            print_cycbuff_head($buff{$b});
             $buffDone{$b}++;
-	}
-	if (!$use_syslog) {
-	    print STDOUT "\n";
-	}
+        }
+        if (!$use_syslog) {
+            print STDOUT "\n";
+        }
     }
 
     if (!$use_syslog) {
@@ -236,7 +254,7 @@ if ($oclass) {
         # mentioned in a class.
         my $buffRetired = 0;
         foreach my $b (sort keys(%buff)) {
-            if(! exists($buffDone{$b})) {
+            if (!exists($buffDone{$b})) {
                 if (!$buffRetired) {
                     print STDOUT "Retired cyclic buffers\n";
                 }
@@ -247,10 +265,10 @@ if ($oclass) {
     }
 }
 
-if(defined($opt{'l'})) {
+if (defined($opt{'l'})) {
     sleep($sleeptime);
     if (!$use_syslog) {
-	print STDOUT "$sleeptime seconds later:\n";
+        print STDOUT "$sleeptime seconds later:\n";
     }
     goto START;
 }
@@ -259,41 +277,44 @@ sub read_cycbuffconf {
     my @line;
     return 0 unless open my $CONFFILE, '<', $conffile;
 
-    while(<$CONFFILE>) {
-	$_ =~ s/^\s*(.*?)\s*$/$1/;
-	# Here we handle continuation lines
-	while (m/\\$/) {
-	    my $contline = <$CONFFILE>;
-	    $contline =~ s/^\s*(.*?)\s*$/$1/;
-	    chop;
-	    $_ .= $contline;
-	}
-	# \x23 below is #.  Emacs perl-mode gets confused by the "comment"
-	next if ($_ =~ /^\s*$/ || $_ =~ /^\x23/);
-	next if ($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
-	
-	if($_ =~ /^metacycbuff:/) {
-	    @line = split(/:/, $_);
-	    if ($class{$line[1]}) {
-		print STDERR "Class $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 0;
-	    }
+    while (<$CONFFILE>) {
+        $_ =~ s/^\s*(.*?)\s*$/$1/;
+        # Here we handle continuation lines
+        while (m/\\$/) {
+            my $contline = <$CONFFILE>;
+            $contline =~ s/^\s*(.*?)\s*$/$1/;
+            chop;
+            $_ .= $contline;
+        }
+        # \x23 below is #.  Emacs perl-mode gets confused by the "comment"
+        next if ($_ =~ /^\s*$/ || $_ =~ /^\x23/);
+        next if ($_ =~ /^cycbuffupdate:/ || $_ =~ /^refreshinterval:/);
 
-	    $class{$line[1]} = $line[2];
-	    next;
-	}
+        if ($_ =~ /^metacycbuff:/) {
+            @line = split(/:/, $_);
+            if ($class{ $line[1] }) {
+                print STDERR "Class $line[1] more than one time "
+                  . "in CycBuff Conffile $conffile ...\n";
+                return 0;
+            }
 
-	if ($_ =~ /^cycbuff/) {
-	    @line = split(/:/, $_);
-	    if ($buff{$line[1]}) {
-		print STDERR "Buff $line[1] more than one time in CycBuff Conffile $conffile ...\n";
-		return 0;
-	    }
-	    $buff{$line[1]} = $line[2];
-	    next;
-	}
+            $class{ $line[1] } = $line[2];
+            next;
+        }
 
-	print STDERR "Unknown config line \"$_\" in CycBuff Conffile $conffile ...\n";
+        if ($_ =~ /^cycbuff/) {
+            @line = split(/:/, $_);
+            if ($buff{ $line[1] }) {
+                print STDERR "Buff $line[1] more than one time "
+                  . "in CycBuff Conffile $conffile ...\n";
+                return 0;
+            }
+            $buff{ $line[1] } = $line[2];
+            next;
+        }
+
+        print STDERR "Unknown config line \"$_\" "
+          . "in CycBuff Conffile $conffile ...\n";
         return 0;
     }
     close $CONFFILE;
@@ -305,62 +326,69 @@ sub read_storageconf {
     return 0 unless open my $STOR, '<', $storageconf;
 
     while (<$STOR>) {
-	++$line;
-	next if /^\s*#/;
+        ++$line;
+        next if /^\s*#/;
 
-	# defaults
-	my %key = ("NEWSGROUPS" => "*",
-		    "SIZE" => "0,0");
-		
-	if (/method\s+cnfs\s+\{/) {
-	    while (<$STOR>) {
-		++$line;
-		next if /^\s*#/;
-		last if /\}/;
-		if (/(\w+):\s+(\S+)/i) {
-		    $key{uc($1)} = $2;
-		}
-	    }
-	    unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
-		print STDERR "storage.conf:$line: ".
-			"Missing 'class' or 'options'\n";
-		return 0;
-	    }
+        # defaults
+        my %key = (
+            "NEWSGROUPS" => "*",
+            "SIZE"       => "0,0"
+        );
 
-	    $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
-	    $key{'SIZE'} =~ s/,/:/;
+        if (/method\s+cnfs\s+\{/) {
+            while (<$STOR>) {
+                ++$line;
+                next if /^\s*#/;
+                last if /\}/;
+                if (/(\w+):\s+(\S+)/i) {
+                    $key{ uc($1) } = $2;
+                }
+            }
+            unless (defined $key{'CLASS'} && defined $key{'OPTIONS'}) {
+                print STDERR "storage.conf:$line: "
+                  . "Missing 'class' or 'options'\n";
+                return 0;
+            }
 
-	    if (!defined $stor{$key{'OPTIONS'}}) {
-		$stor{$key{'OPTIONS'}} = "$key{'NEWSGROUPS'}:$key{'CLASS'}:" .
-			"$key{'SIZE'}:$key{'OPTIONS'}";
-		push(@storsort, $key{'OPTIONS'});
-	    }
-	}
+            $key{'SIZE'} .= ",0" unless $key{'SIZE'} =~ /,/;
+            $key{'SIZE'} =~ s/,/:/;
+
+            if (!defined $stor{ $key{'OPTIONS'} }) {
+                $stor{ $key{'OPTIONS'} } = "$key{'NEWSGROUPS'}:$key{'CLASS'}:"
+                  . "$key{'SIZE'}:$key{'OPTIONS'}";
+                push(@storsort, $key{'OPTIONS'});
+            }
+        }
     }
     return 1;
 }
 
 sub print_cycbuff_head {
     my ($buffpath) = @_;
-    my ($name, $len, $free, $update, $cyclenum, $oldart) =
-	    get_cycbuff_info($buffpath);
+    my ($name, $len, $free, $update, $cyclenum, $oldart)
+      = get_cycbuff_info($buffpath);
 
     if ($use_syslog) {
-	($name) = split(/\s/, $name);
-	$name =~ s/\0//g;
-	# Log only if the buffer is initialized (cyclenum is not -1).
-	syslog ('notice', '%s Buffer %s, len: %.2f  Mbytes, used: %.2f Mbytes (%4.1f%%) %3d cycles',
-		$logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
-		Math::BigFloat->new($free) / (1024 * 1024),
-		100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
-		$cyclenum) if $cyclenum >= 0;
-	return 0;
+        ($name) = split(/\s/, $name);
+        $name =~ s/\0//g;
+        # Log only if the buffer is initialized (cyclenum is not -1).
+        syslog(
+            'notice',
+            '%s Buffer %s, len: %.2f  Mbytes, '
+              . 'used: %.2f Mbytes (%4.1f%%) %3d cycles',
+            $logline, $name, Math::BigFloat->new($len) / (1024 * 1024),
+            Math::BigFloat->new($free) / (1024 * 1024),
+            100 * Math::BigFloat->new($free) / Math::BigFloat->new($len),
+            $cyclenum
+        ) if $cyclenum >= 0;
+        return 0;
     }
 
     $name =~ s/\0//g;
     print " Buffer $name, size: ", human_readable($len, 4);
     print ", position: ", human_readable($free, 4);
-    printf "  %.2f cycles\n", $cyclenum + Math::BigFloat->new($free) / Math::BigFloat->new($len);
+    printf "  %.2f cycles\n",
+      $cyclenum + Math::BigFloat->new($free) / Math::BigFloat->new($len);
 
     # The CNFS buffer may not have been initialized yet or received an article.
     # Take it into account because $oldart may be undefined.
@@ -386,18 +414,31 @@ sub make_time {
     my ($t) = @_;
     my (@ret);
 
-    my ($sec,$min,$hour,$mday,$mon,$year) =
-	    (localtime($t))[0..5];
-    push (@ret, sprintf("%04d-%02d-%02d %2d:%02d:%02d",
-			$year + 1900, $mon + 1, $mday, $hour, $min, $sec));
+    my ($sec, $min, $hour, $mday, $mon, $year)
+      = (localtime($t))[0 .. 5];
+    push(
+        @ret,
+        sprintf(
+            "%04d-%02d-%02d %2d:%02d:%02d",
+            $year + 1900, $mon + 1, $mday, $hour, $min, $sec
+        )
+    );
     $t = time - $t;
 
-    $mday = int($t/86400); $t = $t % 86400;
-    $hour = int($t/3600);  $t = $t % 3600;
-    $min  = int($t/60);    $t = $t % 60;
+    $mday = int($t / 86400);
+    $t = $t % 86400;
+    $hour = int($t / 3600);
+    $t = $t % 3600;
+    $min = int($t / 60);
+    $t = $t % 60;
 
-    push (@ret, sprintf("%4d days, %2d:%02d:%02d",
-			$mday, $hour, $min, $t));
+    push(
+        @ret,
+        sprintf(
+            "%4d days, %2d:%02d:%02d",
+            $mday, $hour, $min, $t
+        )
+    );
     return @ret;
 }
 
@@ -412,88 +453,90 @@ sub human_readable {
     my $unit = -1;
     my $oldscaled = Math::BigFloat->new($val) / $base;
     my $scaled = $oldscaled;
-    while ( ( int($scaled) > 0 ) && ( $unit < $#name ) ) {
-	$oldscaled = $scaled;
-	$scaled /= $factor;
-	$unit++;
+    while ((int($scaled) > 0) && ($unit < $#name)) {
+        $oldscaled = $scaled;
+        $scaled /= $factor;
+        $unit++;
     }
     $scaled = $oldscaled;
-    my $predigits = length (int($scaled));
+    my $predigits = length(int($scaled));
     my $postdigits = $digits - $predigits - 1;
     $postdigits = 0 if $postdigits < 0;
     ++$digits;
 
-    return sprintf ("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);
+    return sprintf("%${digits}.${postdigits}f %s", $scaled, $name[$unit]);
 }
 
 sub mrtg {
-	my $buffer = shift;
-	# print "Buffer = $buff{$buffer}\n";
-	my @info = get_cycbuff_info($buff{$buffer});
-	print "$info[1]\n";
-	print "$info[2]\n";
-	print "$info[4]\n";
-	print "$info[0]\n";
-	exit(0);
+    my $buffer = shift;
+    # print "Buffer = $buff{$buffer}\n";
+    my @info = get_cycbuff_info($buff{$buffer});
+    print "$info[1]\n";
+    print "$info[2]\n";
+    print "$info[4]\n";
+    print "$info[0]\n";
+    exit(0);
 }
 
 sub mrtg_config {
-	print "Sub MRTG-CONFIG\n";
-	foreach my $class (sort(keys(%class))) {
-		print "##\n## Class  : $class\n## Wildmat: $stor{$class}\n##\n\n";
-		foreach my $buffer (split /\,/, $class{$class}) {
-			mrtg_buffer($class, $buffer);
-		}
-	}
-	exit(0);
+    print "Sub MRTG-CONFIG\n";
+    foreach my $class (sort(keys(%class))) {
+        print "##\n## Class  : $class\n## Wildmat: $stor{$class}\n##\n\n";
+        foreach my $buffer (split /\,/, $class{$class}) {
+            mrtg_buffer($class, $buffer);
+        }
+    }
+    exit(0);
 }
 
 sub mrtg_buffer {
-	my ($class,$buffer) = @_;
-	#my ($name, $num, $buff, $size) = @_;
-        my $tag = 'cnfs-' . $buffer;
+    my ($class, $buffer) = @_;
+    #my ($name, $num, $buff, $size) = @_;
+    my $tag = 'cnfs-' . $buffer;
 
-        print 'Target[', $tag, ']: `', "$INN::Config::pathbin/cnfsstat -m ", $buffer, '`', "\n";
-        print 'MaxBytes[', $tag, ']: ', (get_cycbuff_info($buff{$buffer}))[1], "\n";
-        print 'Title[', $tag, ']: ', "${buffer} Usage\n";
-        print 'Options[', $tag, ']: growright gauge', "\n";
-        print 'YLegend[', $tag, ']: ', "${buffer}\n";
-        print 'ShortLegend[', $tag, ']: MB', "\n";
-        print 'PageTop[', $tag, ']: ', "<H1>Usage of ${buffer}</H1>\n";
-	print "<BR><TT>$stor{$class}</TT>\n";
-        print "\n";
-        return 1;
+    print 'Target[', $tag, ']: `', "$INN::Config::pathbin/cnfsstat -m ",
+      $buffer, '`', "\n";
+    print 'MaxBytes[', $tag, ']: ', (get_cycbuff_info($buff{$buffer}))[1],
+      "\n";
+    print 'Title[', $tag, ']: ', "${buffer} Usage\n";
+    print 'Options[', $tag, ']: growright gauge', "\n";
+    print 'YLegend[', $tag, ']: ', "${buffer}\n";
+    print 'ShortLegend[', $tag, ']: MB', "\n";
+    print 'PageTop[', $tag, ']: ', "<H1>Usage of ${buffer}</H1>\n";
+    print "<BR><TT>$stor{$class}</TT>\n";
+    print "\n";
+    return 1;
 }
 
 sub bigsysseek {
     my ($handle, $offset) = @_;
 
-    # $offset may be a bigint; and have a value that doesn't fit in a signed long.
-    # Even with largefiles enabled, perl will still truncate the argument to lseek64
-    # to 32 bits.  So we seek multiple times, <2G at a time.
-
+    # $offset may be a bigint; and have a value that doesn't fit in a signed
+    # long.  Even with largefiles enabled, perl will still truncate the
+    # argument to lseek64 to 32 bits.
+    # So we seek multiple times, <2G at a time.
     if ($offset > 2147483647) {
-	# Since perl truncates the return value of lseek64 to 32 bits, it might
-	# see a successful return value as negative, and return FALSE (undef).
-	# So we must ignore the return value of sysseek and assume that it worked.
-
-	seek($handle, 0, 0);
-	while ($offset > 2000000000) {
-	    sysseek($handle, 2000000000, 1) || return 0;
-	    $offset -= 2000000000;
-	}
-	sysseek($handle, $offset, 1) || return 0;
-	return 1;
+        # Since perl truncates the return value of lseek64 to 32 bits,
+        # it might see a successful return value as negative, and return
+        # FALSE (undef).  So we must ignore the return value of sysseek
+        # and assume that it worked.
+        seek($handle, 0, 0);
+        while ($offset > 2000000000) {
+            sysseek($handle, 2000000000, 1) || return 0;
+            $offset -= 2000000000;
+        }
+        sysseek($handle, $offset, 1) || return 0;
+        return 1;
     } else {
-	return sysseek($handle, $offset, 0);
+        return sysseek($handle, $offset, 0);
     }
 }
 
 sub check_read_return {
-  my $result = shift;
-  die "read: $!\n" unless defined($result);
-  die "read reached eof\n" unless $result;
-  return $result;
+    my $result = shift;
+    die "read: $!\n" unless defined($result);
+    die "read reached eof\n" unless $result;
+    return $result;
 }
 
 sub get_cycbuff_info {
@@ -504,28 +547,31 @@ sub get_cycbuff_info {
     my $CNFSNASIZ = 16;
     my $CNFSPASIZ = 64;
     my $CNFSLASIZ = 16;
-    my $headerlength = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
+    my $headerlength
+      = 2 * $CNFSMASIZ + 2 * $CNFSNASIZ + $CNFSPASIZ + (6 * $CNFSLASIZ);
 
     my ($BUFF, $buff);
 
-    if ( !open $BUFF, '<', $buffpath ) {
-	print STDERR "Cannot open Cycbuff $buffpath ...\n";
-	exit(1);
+    if (!open $BUFF, '<', $buffpath) {
+        print STDERR "Cannot open Cycbuff $buffpath ...\n";
+        exit(1);
     }
 
     $buff = "";
-    if ( !read $BUFF, $buff, $headerlength ) {
-	print STDERR "Cannot read $headerlength bytes from file $buffpath...\n";
-	exit(1);
+    if (!read $BUFF, $buff, $headerlength) {
+        print STDERR
+          "Cannot read $headerlength bytes from file $buffpath...\n";
+        exit(1);
     }
 
-    my ($magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
-     $orderinmeta, $currentbuff, $blksza) =
-           unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
+    my (
+        $magic, $name, $path, $lena, $freea, $updatea, $cyclenuma, $metaname,
+        $orderinmeta, $currentbuff, $blksza
+    ) = unpack("a8 a16 a64 a16 a16 a16 a16 a16 a16 a8 a16", $buff);
 
     if (!$magic) {
-	print STDERR "Error while unpacking header ...\n";
-	exit(1);
+        print STDERR "Error while unpacking header ...\n";
+        exit(1);
     }
 
     my $len = bhex($lena);
@@ -536,49 +582,49 @@ sub get_cycbuff_info {
 
     if ($opt{'a'}) {
 
-	my $pagesize = 16384;
-	my $minartoffset = int($len / ($blksz * 8)) + 512;
-	# Align upwards:
-	$minartoffset = ($minartoffset + $pagesize) & ~($pagesize - 1);
-	
-	if ($cyclenum == 0 && $free == $minartoffset) {
-	    # The cycbuff has no articles yet.
-	    goto done;
-	}
+        my $pagesize = 16384;
+        my $minartoffset = int($len / ($blksz * 8)) + 512;
+        # Align upwards:
+        $minartoffset = ($minartoffset + $pagesize) & ~($pagesize - 1);
 
-	# Don't loop endlessly, set rough upper bound
-	my $sentinel = $cyclenum == 0 ? $free : $len;
-	my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
+        if ($cyclenum == 0 && $free == $minartoffset) {
+            # The cycbuff has no articles yet.
+            goto DONE;
+        }
 
-	bigsysseek($BUFF, $offset) || die "sysseek: $!\n";
-	check_read_return (sysread ($BUFF, $buff, $pagesize));
-	do {
+        # Don't loop endlessly, set rough upper bound
+        my $sentinel = $cyclenum == 0 ? $free : $len;
+        my $offset = $cyclenum == 0 ? $minartoffset : $free + $pagesize;
+
+        bigsysseek($BUFF, $offset) || die "sysseek: $!\n";
+        check_read_return(sysread($BUFF, $buff, $pagesize));
+        do {
             my $chunk;
-	    check_read_return (sysread ($BUFF, $chunk, $pagesize));
+            check_read_return(sysread($BUFF, $chunk, $pagesize));
 
-	    $buff .= $chunk;
-	    while ($buff =~ /^message-id:\s+(<.*?>)/mi) {
-		$buff = $POSTMATCH;
-		$oldart = lookup_age($1);
-		next unless $oldart;
-		
-		# Is the article newer than the last update of the cycbuff?
-		if ($oldart >= $update) {
-		    $update = $oldart;
-		} elsif ($oldart < $update - 60) {
-		    goto done;
-		}
-	    }
-	    # Just in case we chopped Message-ID in two, use the end
-	    # at the front in next iteration.
-	    $buff = substr ($buff, -$blksz);
+            $buff .= $chunk;
+            while ($buff =~ /^message-id:\s+(<.*?>)/mi) {
+                $buff = $POSTMATCH;
+                $oldart = lookup_age($1);
+                next unless $oldart;
 
-	} while ($sentinel -= $pagesize > 0);
+                # Is the article newer than the last update of the cycbuff?
+                if ($oldart >= $update) {
+                    $update = $oldart;
+                } elsif ($oldart < $update - 60) {
+                    goto DONE;
+                }
+            }
+            # Just in case we chopped Message-ID in two, use the end
+            # at the front in next iteration.
+            $buff = substr($buff, -$blksz);
+
+        } while ($sentinel -= $pagesize > 0);
     }
 
-done:
+  DONE:
     close $BUFF;
-    return($name,$len,$free,$update,$cyclenum,$oldart);
+    return ($name, $len, $free, $update, $cyclenum, $oldart);
 }
 
 sub lookup_age {
@@ -586,7 +632,7 @@ sub lookup_age {
 
     my $history = safe_run("$INN::Config::newsbin/grephistory", "-l", $msgid);
     if ($history =~ /\t(\d+)~/) {
-	return $1;
+        return $1;
     }
 
     if ($opt{'v'}) {
@@ -602,13 +648,13 @@ sub safe_run {
     my $pid = open my $KID_TO_READ, "-|";
     die "fork: $!\n" unless defined $pid;
     if ($pid) {
-	while (<$KID_TO_READ>) {
-	    $output .= $_;
-	}
-	close $KID_TO_READ;
+        while (<$KID_TO_READ>) {
+            $output .= $_;
+        }
+        close $KID_TO_READ;
     } else {
-	exec(@_) || die "can't exec $_[0]: $!";
-	# NOTREACHED
+        exec(@_) || die "can't exec $_[0]: $!";
+        # NOTREACHED
     }
     return $output;
 }

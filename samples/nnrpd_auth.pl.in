@@ -12,7 +12,7 @@
 ##  array with two elements:
 ##
 ##  1) NNTP response code.  Should be one of the codes from %authcodes
-##  below to not risk violating the protocol.  
+##  below to not risk violating the protocol.
 ##  2) An error string to be passed to the client (make sure that
 ##  such a message is properly encoded in UTF-8 so as to comply with the
 ##  NNTP protocol).
@@ -38,8 +38,8 @@ use vars qw(%attributes %authcodes %users);
 # authentication stuff needs.
 sub auth_init {
     require CDB_File;
-    tie (%users, 'CDB_File', $INN::Config::pathdb . '/users.cdb')
-        or warn "Could not open $INN::Config::pathdb/users.cdb for users: $!\n";
+    tie(%users, 'CDB_File', $INN::Config::pathdb . '/users.cdb')
+      or warn "Could not open $INN::Config::pathdb/users.cdb for users: $!\n";
 }
 
 # This function is called for authentication requests.  For details on
@@ -60,11 +60,11 @@ sub checkuser {
     my $pass = $attributes{'password'};
 
     return ($authcodes{denied}, "No username given.")
-        unless defined $users{$user};
+      unless defined $users{$user};
 
     my ($password, $post, $speed, $subscription) = split(/\t/, $users{$user});
     return ($authcodes{denied}, "Incorrect password.")
-        if (crypt($pass, $password) ne $password);
+      if (crypt($pass, $password) ne $password);
 
     return ($authcodes{allowed}, "");
 }

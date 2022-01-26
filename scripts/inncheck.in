@@ -8,65 +8,65 @@ use strict;
 use Getopt::Long;
 
 my $ST_MODE = 2;
-my $ST_UID  = 4;
-my $ST_GID  = 5;
+my $ST_UID = 4;
+my $ST_GID = 5;
 
 ##  We use simple names, mapping them to the real filenames only when
 ##  we actually need a filename.
 my %paths = (
-    'active',		"$INN::Config::active",
-    'archive',		"$INN::Config::patharchive",
-    'badnews',		"$INN::Config::badnews",
-    'batchdir',		"$INN::Config::pathoutgoing",
-    'control.ctl',	"$INN::Config::ctlfile",
-    'control.ctl.local',"$INN::Config::ctlfile.local",
-    'ctlprogs',		"$INN::Config::pathcontrol",
-    'expire.ctl',	"$INN::Config::expirectl",
-    'history',		"$INN::Config::history",
-    'incoming.conf',	"$INN::Config::pathetc/incoming.conf",
-    'inews',		"$INN::Config::inews",
-    'inn.conf',		"$INN::Config::pathetc/inn.conf",
-    'innbind',          "$INN::Config::pathbin/innbind",
-    'innd',		"$INN::Config::innd",
-    'innddir',		"$INN::Config::pathrun",
-    'innfeed.conf',     "$INN::Config::pathetc/innfeed.conf",
-    'inn-radius.conf',  "$INN::Config::pathetc/inn-radius.conf",
-    'inn-secrets.conf', "$INN::Config::pathetc/inn-secrets.conf",
-    'moderators',	"$INN::Config::pathetc/moderators",
-    'most_logs',	"$INN::Config::pathlog",
-    'newsbin',		"$INN::Config::pathbin",
-    'newsboot',		"$INN::Config::pathbin/rc.news",
-    'newsfeeds',	"$INN::Config::newsfeeds",
-    'newsetc',		"$INN::Config::pathetc",
-    'newslib',		"$INN::Config::newslib",
-    'nnrpd',		"$INN::Config::pathbin/nnrpd",
-    'nntpsend.ctl',	"$INN::Config::pathetc/nntpsend.ctl",
-    'oldlogs',		"$INN::Config::pathlog/OLD",
-    'passwd.nntp',	"$INN::Config::pathetc/passwd.nntp",
-    'readers.conf',	"$INN::Config::pathetc/readers.conf",
-    'rnews',		"$INN::Config::rnews",
-    'rnewsprogs',	"$INN::Config::pathbin/rnews.libexec",
-    'spooltemp',	"$INN::Config::pathtmp",
-    'spool',		"$INN::Config::patharticles",
-    'spoolnews',	"$INN::Config::pathincoming",
-    'storage.conf',     "$INN::Config::pathetc/storage.conf",
+    'active'            => "$INN::Config::active",
+    'archive'           => "$INN::Config::patharchive",
+    'badnews'           => "$INN::Config::badnews",
+    'batchdir'          => "$INN::Config::pathoutgoing",
+    'control.ctl'       => "$INN::Config::ctlfile",
+    'control.ctl.local' => "$INN::Config::ctlfile.local",
+    'ctlprogs'          => "$INN::Config::pathcontrol",
+    'expire.ctl'        => "$INN::Config::expirectl",
+    'history'           => "$INN::Config::history",
+    'incoming.conf'     => "$INN::Config::pathetc/incoming.conf",
+    'inews'             => "$INN::Config::inews",
+    'inn.conf'          => "$INN::Config::pathetc/inn.conf",
+    'innbind'           => "$INN::Config::pathbin/innbind",
+    'innd'              => "$INN::Config::innd",
+    'innddir'           => "$INN::Config::pathrun",
+    'innfeed.conf'      => "$INN::Config::pathetc/innfeed.conf",
+    'inn-radius.conf'   => "$INN::Config::pathetc/inn-radius.conf",
+    'inn-secrets.conf'  => "$INN::Config::pathetc/inn-secrets.conf",
+    'moderators'        => "$INN::Config::pathetc/moderators",
+    'most_logs'         => "$INN::Config::pathlog",
+    'newsbin'           => "$INN::Config::pathbin",
+    'newsboot'          => "$INN::Config::pathbin/rc.news",
+    'newsfeeds'         => "$INN::Config::newsfeeds",
+    'newsetc'           => "$INN::Config::pathetc",
+    'newslib'           => "$INN::Config::newslib",
+    'nnrpd'             => "$INN::Config::pathbin/nnrpd",
+    'nntpsend.ctl'      => "$INN::Config::pathetc/nntpsend.ctl",
+    'oldlogs'           => "$INN::Config::pathlog/OLD",
+    'passwd.nntp'       => "$INN::Config::pathetc/passwd.nntp",
+    'readers.conf'      => "$INN::Config::pathetc/readers.conf",
+    'rnews'             => "$INN::Config::rnews",
+    'rnewsprogs'        => "$INN::Config::pathbin/rnews.libexec",
+    'spooltemp'         => "$INN::Config::pathtmp",
+    'spool'             => "$INN::Config::patharticles",
+    'spoolnews'         => "$INN::Config::pathincoming",
+    'storage.conf'      => "$INN::Config::pathetc/storage.conf",
 );
 
 ##  The sub's that check the config files.
 my %checklist = (
-    'active',		\&active,
-    'control.ctl',	\&control_ctl,
-    'control.ctl.local',\&control_ctl,
-    'expire.ctl',	\&expire_ctl,
-    'incoming.conf',	\&incoming_conf,
-    'inn.conf',		\&inn_conf,
-    'innfeed.conf',	\&innfeed_conf,
-    'moderators',	\&moderators,
-    'newsfeeds',	\&newsfeeds,
-    'nntpsend.ctl',	\&nntpsend_ctl,
-    'passwd.nntp',	\&passwd_nntp,
-    'readers.conf',	\&readers_conf,
-    'storage.conf',	\&storage_conf,
+    'active'            => \&active,
+    'control.ctl'       => \&control_ctl,
+    'control.ctl.local' => \&control_ctl,
+    'expire.ctl'        => \&expire_ctl,
+    'incoming.conf'     => \&incoming_conf,
+    'inn.conf'          => \&inn_conf,
+    'innfeed.conf'      => \&innfeed_conf,
+    'moderators'        => \&moderators,
+    'newsfeeds'         => \&newsfeeds,
+    'nntpsend.ctl'      => \&nntpsend_ctl,
+    'passwd.nntp'       => \&passwd_nntp,
+    'readers.conf'      => \&readers_conf,
+    'storage.conf'      => \&storage_conf,
 );
 
 ##  The modes of the config files we can check.
@@ -74,15 +74,15 @@ my %checklist = (
 ##  0600 is allowed, but not 0500 for instance (not executable).
 ##  0660 is used when the file can contain passwords.
 my %modes = (
-    'active',		[0600, $INN::Config::filemode],
-    'incoming.conf',	[0400, 0660],
-    'inn.conf',		[0400, 0664],
-    'innfeed.conf',	[0400, 0660],
-    'inn-radius.conf',  [0400, 0660],
-    'inn-secrets.conf', [0400, 0660],
-    'moderators',	[0400, 0664],
-    'newsfeeds',	[0400, 0664],
-    'passwd.nntp',	[0400, 0660],
+    'active'           => [0600, $INN::Config::filemode],
+    'incoming.conf'    => [0400, 0660],
+    'inn.conf'         => [0400, 0664],
+    'innfeed.conf'     => [0400, 0660],
+    'inn-radius.conf'  => [0400, 0660],
+    'inn-secrets.conf' => [0400, 0660],
+    'moderators'       => [0400, 0664],
+    'newsfeeds'        => [0400, 0664],
+    'passwd.nntp'      => [0400, 0660],
 );
 
 ##  The file and line we're currently at.
@@ -94,37 +94,33 @@ my $exitval = 0;
 ##  Command line arguments.
 ##  Note that $perms can be 1 (if --perm), 0 (if --noperm)
 ##  and -1 (the default, when no flag is specified).
-my ($all, $verbose, $pedantic, $fix, $perms, $pfx, @todo) = (0, 0, 0, 0, -1, '', ());
+my ($all, $verbose, $pedantic, $fix, $perms, $pfx, @todo)
+  = (0, 0, 0, 0, -1, '', ());
 
 my $program = $0;
 $program =~ s@.*/@@;
 local $| = 1;
 
-
-sub
-eprint
-{
+sub eprint {
     my ($msg) = @_;
     print $msg if $verbose >= 0;
     $exitval++;
     return;
 }
 
-sub
-spacious
-{
+sub spacious {
     my ($i);
 
     chop;
     study;
-    if ( /^#/ || /^$/ ) {
-	$i = 1;
-    } elsif ( /^\s/ ) {
-	eprint "$file:$line: starts with whitespace\n";
-	$i = 1;
-    } elsif ( /\s$/ ) {
-	eprint "$file:$line: ends with whitespace\n";
-	$i = 1;
+    if (/^#/ || /^$/) {
+        $i = 1;
+    } elsif (/^\s/) {
+        eprint "$file:$line: starts with whitespace\n";
+        $i = 1;
+    } elsif (/\s$/) {
+        eprint "$file:$line: ends with whitespace\n";
+        $i = 1;
     }
     return $i;
 }
@@ -134,9 +130,8 @@ spacious
 ##  without the quotes.  Don't allow multi-line strings, to be safe
 ##  with all the different parsers.
 my @stack;
-sub
-get_config_word
-{
+
+sub get_config_word {
     if (!@stack) {
         while (<$IN>) {
             $line++;
@@ -144,14 +139,15 @@ get_config_word
 
             while (1) {
                 my @res;
-                last if /\G \s*  $/gcx; # skip empty lines
-                last if /\G \s* \#/gcx; # and comments
-                @res =  /\G \s*  ([^#"\s]+)  /gcx; # extract simple words
-                @res =  /\G \s* "(.*?[^\\])" /gcx  # or quoted strings
-                    if (!@res);
+                last if /\G \s*  $/gcx;              # skip empty lines
+                last if /\G \s* \#/gcx;              # and comments
+                @res = /\G \s*  ([^#"\s]+)  /gcx;    # extract simple words
+                @res = /\G \s* "(.*?[^\\])" /gcx     # or quoted strings
+                  if (!@res);
 
                 if (!@res) {
-                    eprint "$file:$line: possibly malformed line (runaway quote / empty pair of quotes?)\n";
+                    eprint "$file:$line: possibly malformed line "
+                      . "(runaway quote / empty pair of quotes?)\n";
                     last;
                 }
 
@@ -167,48 +163,66 @@ get_config_word
 
 ##  Build regular expressions used for checking configuration values.
 my $dot = '\.';
-my $wildmat = '\[\]\*\?-'; # anybody needing ^ ! @ ??
+my $wildmat = '\[\]\*\?-';                        # anybody needing ^ ! @ ??
 my $ip = '(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})';
 my $ipv4 = "$ip$dot$ip$dot$ip$dot$ip";
 my $ipv4_cidr = "$ip(?:$dot$ip){0,3}\\/[1-3]?\\d";
 my $ipv4_wildmat = "[\\d$wildmat]+(?:$dot\[\\d$wildmat\]+){0,3}";
 my $ip6 = '\da-fA-F:';
-my $ipv6 = "[$ip6]+(?:$ipv4)?"; # e.g. ::ffff:192.168.0.10
+my $ipv6 = "[$ip6]+(?:$ipv4)?";                   # e.g. ::ffff:192.168.0.10
 my $ipv6_cidr = "[$ip6]+\\/1?\\d?\\d";
 my $ipv6_wildmat = "[$ip6$wildmat]+";
-my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}'; # hostname, FQDN
-my $hostname_wildmat = '(?:[-\w\[\]\*\?]+\.)?'."(?:$hostname)"; # Assumption: wildmat chars only in leftmost subdomain part
+my $hostname = '[\w-]+|[\w.-]+\.[a-zA-Z]{2,}';    # hostname, FQDN
+my $hostname_wildmat
+  = '(?:[-\w\[\]\*\?]+\.)?' . "(?:$hostname)";    # Assumption: wildmat chars
+                                                  # only in leftmost
+                                                  # subdomain part
 my $hostnameRE = "(?:$hostname|$ipv4|$ipv6)";
-my $hostblockRE = "(?:$hostname_wildmat|$ipv4_cidr|$ipv4_wildmat|$ipv6|$ipv6_cidr|$ipv6_wildmat)";
+my $hostblockRE
+  = "(?:$hostname_wildmat|$ipv4_cidr|$ipv4_wildmat"
+  . "|$ipv6|$ipv6_cidr|$ipv6_wildmat)";
 my %type_regex = (
-    'boolean'                           => '^(?:true|false)$', # innfeed.conf doesn't allow other
-    'floating-point number'             => '^\d+\.\d+$',       # no exponents
-    'floating-point number (0.0-100.0)' => '^(?:100\.0+|\d{1,2}\.\d+)$', # no exponents
-    'hostname'                          => '^' . $hostnameRE . '$',
-    'IPv4 address / "any / "none"'      => '^(?:' . $ipv4 . '|any|none)$',
-    'IPv6 address / "any / "none"'      => '^(?:' . $ipv6 . '|any|none)$',
-    'list of hostnames'                 => '^'.$hostnameRE.'(?:\s*,\s*'.$hostnameRE.')*$',
-    'list of hostnames or netblocks'    => '^'.$hostblockRE.'(?:\s*,\s*'.$hostblockRE.')*$',
-    'minsize[,maxsize] definition'      => '^\d+(?:,\d*)?$',
-    'mintime[,maxtime] definition'      => '^(?:\d+[Mdhms])+(?:,(?:\d+[Mdhms])*)?$',
-    'number'                            => '^\d+$',
-    'number / "unlimited" / "none"'     => '^(?:\d+|unlimited|none)$',
-    'path'                              => '.*', # useful?
-    'set of access permission letters'  => '^[RPIANL]+$',
-    'string'                            => '.*', # not checked
+    'boolean' => '^(?:true|false)$',    # innfeed.conf doesn't allow other
+    'floating-point number'             => '^\d+\.\d+$',    # no exponents
+    'floating-point number (0.0-100.0)' =>
+      '^(?:100\.0+|\d{1,2}\.\d+)$',                         # no exponents
+    'hostname'                     => '^' . $hostnameRE . '$',
+    'IPv4 address / "any / "none"' => '^(?:' . $ipv4 . '|any|none)$',
+    'IPv6 address / "any / "none"' => '^(?:' . $ipv6 . '|any|none)$',
+    'list of hostnames'            => '^'
+      . $hostnameRE
+      . '(?:\s*,\s*'
+      . $hostnameRE . ')*$',
+    'list of hostnames or netblocks' => '^'
+      . $hostblockRE
+      . '(?:\s*,\s*'
+      . $hostblockRE . ')*$',
+    'minsize[,maxsize] definition' => '^\d+(?:,\d*)?$',
+    'mintime[,maxtime] definition' =>
+      '^(?:\d+[Mdhms])+(?:,(?:\d+[Mdhms])*)?$',
+    'number'                           => '^\d+$',
+    'number / "unlimited" / "none"'    => '^(?:\d+|unlimited|none)$',
+    'path'                             => '.*',                       # useful?
+    'set of access permission letters' => '^[RPIANL]+$',
+    'string'                           => '.*',    # not checked
 );
 
 ##  Parse a new-style config file.
-##  Must be given a reference to a hash containing valid groups and option names / types.
-sub
-parse_config
-{
+##  Must be given a reference to a hash containing valid groups and option
+##  names / types.
+sub parse_config {
     my ($options) = @_;
 
-    my @groups; # our stack of nested groups
-    my %return; # flat hash of groups returned to caller for further examination
-    my $group = { 'type' => '<global scope>', 'line' => 0, 'name' => '<global scope>' };
-    my $parse_error = 0; # stop printing errors when we've seen unknown text, until re-sync
+    my @groups;    # our stack of nested groups
+    my %return;    # flat hash of groups returned to caller
+                   # for further examination
+    my $group = {
+        'type' => '<global scope>',
+        'line' => 0,
+        'name' => '<global scope>'
+    };
+    my $parse_error = 0;    # stop printing errors when we've seen
+                            # unknown text, until re-sync
 
     while (my $word = get_config_word()) {
         if (defined $options->{$word}) {
@@ -217,9 +231,13 @@ parse_config
             $parse_error = 0;
 
             eprint "$file:$line: cannot nest $word in $group->{'type'}!\n"
-                unless (($group->{'type'} eq 'group'
-                      or $group->{'type'} eq '<global scope>')
-                     or ($word eq 'res' and $group->{'type'} eq 'auth'));
+              unless (
+                  (
+                      $group->{'type'} eq 'group'
+                      or $group->{'type'} eq '<global scope>'
+                  )
+                  or ($word eq 'res' and $group->{'type'} eq 'auth')
+              );
             push @groups, $group;
             $group = { 'type' => $word, 'line' => $line };
 
@@ -228,7 +246,7 @@ parse_config
                 eprint "$file:$line: $word must have a name\n";
                 $curly = $name;
                 $name = '<missing name>';
-            } elsif ($name =~ /[\\:;{}\[\]<>\s"]/) { # invalid token chars
+            } elsif ($name =~ /[\\:;{}\[\]<>\s"]/) {    # invalid token chars
                 eprint "$file:$line: not a valid $word name: $name\n";
             }
             $group->{'name'} = $name;
@@ -236,9 +254,11 @@ parse_config
             $curly = $curly || get_config_word();
             if ($curly =~ s/^\{//) {
                 next if length $curly == 0;
-                eprint "$file:$line: whitespace required between option and curly brackets\n";
+                eprint "$file:$line: whitespace required "
+                  . "between option and curly brackets\n";
             } else {
-                eprint "$file:$line: $word definition must start with a curly bracket\n";
+                eprint "$file:$line: $word definition must start "
+                  . "with a curly bracket\n";
             }
             $word = $curly;
         }
@@ -248,7 +268,7 @@ parse_config
             if (scalar @groups == 0) {
                 eprint "$file:$line: extra closing brace";
             } else {
-                $return{$group->{'name'}} = $group;
+                $return{ $group->{'name'} } = $group;
                 $group = pop @groups;
             }
             next;
@@ -262,37 +282,42 @@ parse_config
         }
 
         # $word must be an option key by now
-        eprint "$file:$line: option $word must be immediately followed by a colon\n"
-            unless $word =~ s/:$// or $parse_error;
-        eprint "$file:$line: duplicate option $word in $group->{'type'} $group->{'name'}\n"
-            if exists $group->{$word} and not defined $options->{'<multi>'}->{$word};
+        eprint
+          "$file:$line: option $word must be immediately followed by a colon\n"
+          unless $word =~ s/:$// or $parse_error;
+        eprint "$file:$line: duplicate option $word "
+          . "in $group->{'type'} $group->{'name'}\n"
+          if exists $group->{$word}
+          and not defined $options->{'<multi>'}->{$word};
 
-        my $type = defined $options->{$group->{'type'}}->{$word} ? $options->{$group->{'type'}}->{$word}
-                 : defined $options->{'<anywhere>'}->{$word}     ? $options->{'<anywhere>'}->{$word}
-                 : undef;
+        my $type
+          = defined $options->{ $group->{'type'} }->{$word}
+          ? $options->{ $group->{'type'} }->{$word}
+          : defined $options->{'<anywhere>'}->{$word}
+          ? $options->{'<anywhere>'}->{$word}
+          : undef;
         if ($type) {
             $parse_error = 0;
             my $value = get_config_word();
             $group->{$word} = $value;
             eprint "$file:$line: not a valid $type: '$value'\n"
-                unless $value =~ /$type_regex{$type}/;
+              unless $value =~ /$type_regex{$type}/;
         } else {
             eprint "$file:$line: not a valid option name: $word\n"
-                unless $parse_error;
+              unless $parse_error;
             $parse_error = 1;
         }
     }
     while (scalar @groups > 0) {
-        eprint "$file: missing closing bracket, opening bracket was on line " .
-            "$group->{'line'}, $group->{'type'} $group->{'name'}\n";
-        $return{$group->{'name'}} = $group;
+        eprint "$file: missing closing bracket, opening bracket was on line "
+          . "$group->{'line'}, $group->{'type'} $group->{'name'}\n";
+        $return{ $group->{'name'} } = $group;
         $group = pop @groups;
     }
 
-    $return{$group->{'name'}} = $group;
+    $return{ $group->{'name'} } = $group;
     return %return;
 }
-
 
 ##
 ##  These are the functions that verify each individual file, called
@@ -300,187 +325,186 @@ parse_config
 ##  as the linecount, and $file as the name of the file.
 ##
 
-
 ##
 ##  active
 ##
-sub
-active
-{
+sub active {
     my ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
-    input: while ( <$IN> ) {
-	$line++;
-	unless ( ($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
+  INPUT: while (<$IN>) {
+        $line++;
+        unless (($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/) {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
 
-	eprint "$file:$line: group `$group' already appeared\n"
-	    if $groups{$group}++;
-	eprint "$file:$line: `$hi' <  '$lo'.\n"
-	    if $hi < $lo && $lo != $hi + 1;
+        eprint "$file:$line: group `$group' already appeared\n"
+          if $groups{$group}++;
+        eprint "$file:$line: `$hi' <  '$lo'.\n"
+          if $hi < $lo && $lo != $hi + 1;
 
-	next input if $f =~ /^[jmynx]$/;
-	unless ( ($alias) = $f =~ /^=(.*)$/ ) {
-	    eprint "$file:$line: bad flag `$f'.\n";
-	    next input;
-	}
-	if ($alias eq "") {
-	    eprint "$file:$line: empty alias.\n";
-	    next input;
-	}
-	$aliases{$alias} = $line
-	    unless defined $groups{$alias};
+        next INPUT if $f =~ /^[jmynx]$/;
+        unless (($alias) = $f =~ /^=(.*)$/) {
+            eprint "$file:$line: bad flag `$f'.\n";
+            next INPUT;
+        }
+        if ($alias eq "") {
+            eprint "$file:$line: empty alias.\n";
+            next INPUT;
+        }
+        $aliases{$alias} = $line
+          unless defined $groups{$alias};
     }
-    foreach my $key ( keys %aliases ) {
-	eprint "$file:$aliases{$key} aliased to unknown group `$key'.\n"
-	    unless defined $groups{$key};
+    foreach my $key (keys %aliases) {
+        eprint "$file:$aliases{$key} aliased to unknown group `$key'.\n"
+          unless defined $groups{$key};
     }
     return;
 }
-
 
 ##
 ##  The control.ctl and control.ctl.local files.
 ##
 my %control_messages = (
-    '/encoding/',	1,
-    '/localencoding/',	1,
-    '/maxdocheckgroups/', 1,
-    'all',		1,
-    'checkgroups',	1,
-    'ihave',		1,
-    'newgroup',		1,
-    'rmgroup',		1,
-    'sendme',		1,
-    'sendsys',		1,
-    'senduuname',	1,
-    'version',		1,
+    '/encoding/'         => 1,
+    '/localencoding/'    => 1,
+    '/maxdocheckgroups/' => 1,
+    'all'                => 1,
+    'checkgroups'        => 1,
+    'ihave'              => 1,
+    'newgroup'           => 1,
+    'rmgroup'            => 1,
+    'sendme'             => 1,
+    'sendsys'            => 1,
+    'senduuname'         => 1,
+    'version'            => 1,
 );
 my %control_actions = (
-    'drop',		1,
-    'log',		1,
-    'mail',		1,
-    'doit',		1,
-    'verify',           1
+    'drop'   => 1,
+    'log'    => 1,
+    'mail'   => 1,
+    'doit'   => 1,
+    'verify' => 1,
 );
 
-sub
-control_ctl
-{
+sub control_ctl {
     my ($msg, $from, $ng, $act);
 
-    input: while ( <$IN> ) {
-	next input if spacious($file, ++$line);
+  INPUT: while (<$IN>) {
+        next INPUT if spacious($file, ++$line);
 
         if (/^\/localencoding\//) {
-            unless ( ($msg, $act) =
-                        /^(\/localencoding\/):([^:=]+)$/ ) {
+            unless (($msg, $act) = /^(\/localencoding\/):([^:=]+)$/) {
                 eprint "$file:$line: malformed line.\n";
             }
-            next input;
+            next INPUT;
         }
 
-	unless ( ($msg, $from, $ng, $act) =
-		    /^([^:]+):([^:]+):([^:]+):(.+)$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
-	if ( !defined $control_messages{$msg} ) {
-	    eprint "$file:$line: unknown control message `$msg'.\n";
-	    next input;
-	}
-	eprint "$file:$line: action for unknown control messages is `doit'.\n"
-	    if $msg eq "default" && $act eq "doit";
-	eprint "$file:$line: empty from field.\n"
-	    if $from eq "";
-	eprint "$file:$line: bad e-mail address.\n"
-	    if $from ne "*" && $from !~ /[@!]/;
+        unless (($msg, $from, $ng, $act) = /^([^:]+):([^:]+):([^:]+):(.+)$/) {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
+        if (!defined $control_messages{$msg}) {
+            eprint "$file:$line: unknown control message `$msg'.\n";
+            next INPUT;
+        }
+        eprint "$file:$line: action for unknown control messages is `doit'.\n"
+          if $msg eq "default" && $act eq "doit";
+        eprint "$file:$line: empty from field.\n"
+          if $from eq "";
+        eprint "$file:$line: bad e-mail address.\n"
+          if $from ne "*" && $from !~ /[@!]/;
 
-	##  Perhaps check for conflicting rules, or warn about the last-match
-	##  rule?  Maybe later...
+        ##  Perhaps check for conflicting rules, or warn about the last-match
+        ##  rule?  Maybe later...
 
         ##  Warn if newsgroup pattern is not "*", do not contain a dot
         ##  and is not the generic line for reserved groups in the
         ##  sample control.ctl file.
-	eprint "$file:$line: may not match groups properly.\n"
-	    if $ng ne "*" && $ng !~ /\./ && $ng !~ /^control\|/;
-	if ( $act !~ /([^=]+)(=.+)?/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
-	$act =~ s/=.*//;
-	$act = "verify" if ($act =~ /^verify-.+/) ;
-	eprint "$file:$line: unknown action `$act'\n"
-	    if !defined $control_actions{$act} and $msg !~ /^\//;
+        eprint "$file:$line: may not match groups properly.\n"
+          if $ng ne "*" && $ng !~ /\./ && $ng !~ /^control\|/;
+        if ($act !~ /([^=]+)(=.+)?/) {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
+        $act =~ s/=.*//;
+        $act = "verify" if ($act =~ /^verify-.+/);
+        eprint "$file:$line: unknown action `$act'\n"
+          if !defined $control_actions{$act} and $msg !~ /^\//;
     }
     return;
 }
-
 
 ##
 ##  expire.ctl
 ##
-sub
-expire_ctl
-{
-    my ($rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge, $groupbaseexpiry);
+sub expire_ctl {
+    my (
+        $rem, $v, $def, $class, $pat, $flag, $keep, $default, $purge,
+        $groupbaseexpiry
+    );
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
-    input: while ( <$IN> ) {
-	next input if spacious($file, ++$line);
+  INPUT: while (<$IN>) {
+        next INPUT if spacious($file, ++$line);
 
-	if ( ($v) = m@/remember/:(.+)@ ) {
-	    eprint "$file:$line: more than one /remember/ line.\n"
-		if $rem++;
-	    if ( $v !~ /[\d\.]+/ ) {
-		eprint "$file:$line: illegal value `$v' for remember.\n";
-		next input;
-	    }
-	    eprint "$file:$line: are you sure about your /remember/ value?\n"
-		##  These are arbitrary "sane" values.
-		if $v != 0 && ($v > 60.0 || $v < 5.0);
-	    next input;
-	}
+        if (($v) = m@/remember/:(.+)@) {
+            eprint "$file:$line: more than one /remember/ line.\n"
+              if $rem++;
+            if ($v !~ /[\d\.]+/) {
+                eprint "$file:$line: illegal value `$v' for remember.\n";
+                next INPUT;
+            }
+            eprint "$file:$line: are you sure about your /remember/ value?\n"
+              ##  These are arbitrary "sane" values.
+              if $v != 0 && ($v > 60.0 || $v < 5.0);
+            next INPUT;
+        }
 
-	##  Could check for conflicting lines, but that's hard.
-	if ($groupbaseexpiry =~ /^true$/ || $groupbaseexpiry =~ /^yes$/ ||
-	    $groupbaseexpiry =~ /^on$/) {
-	    unless ( ($pat, $flag, $keep, $default, $purge) =
-	     /^([^:])+:([^:]+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-		eprint "$file:$line: malformed line.\n";
-		next input;
-	    }
-	    eprint "$file:$line: duplicate default line\n"
-		if $pat eq "*" && $flag eq "a" && $def++;
-	    eprint "$file:$line: unknown modflag `$flag'\n"
-		if $flag !~ /[mMuUaAxX]/;
-	} else {
-	    unless ( ($class, $keep, $default, $purge) =
-	     /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/ ) {
-		eprint "$file:$line: malformed line.\n";
-		next input;
-	    }
-	    eprint "$file:$line: invalid class\n"
-		if $class < 0;
-	}
-	eprint "$file:$line: purge `$purge' younger than default `$default'.\n"
-	    if $purge ne "never" && $default > $purge;
-	eprint "$file:$line: default `$default' younger than keep `$keep'.\n"
-	    if $default ne "never" && $keep ne "never" && $keep > $default;
+        ##  Could check for conflicting lines, but that's hard.
+        if ($groupbaseexpiry =~ /^true$/
+            || $groupbaseexpiry =~ /^yes$/
+            || $groupbaseexpiry =~ /^on$/)
+        {
+            unless (
+                ($pat, $flag, $keep, $default, $purge)
+                = /^([^:])+:
+                   ([^:]+):
+                   ([\d\.]+|never):
+                   ([\d\.]+|never):
+                   ([\d\.]+|never)$/x
+              )
+            {
+                eprint "$file:$line: malformed line.\n";
+                next INPUT;
+            }
+            eprint "$file:$line: duplicate default line\n"
+              if $pat eq "*" && $flag eq "a" && $def++;
+            eprint "$file:$line: unknown modflag `$flag'\n"
+              if $flag !~ /[mMuUaAxX]/;
+        } else {
+            unless (($class, $keep, $default, $purge)
+                = /^(\d+):([\d\.]+|never):([\d\.]+|never):([\d\.]+|never)$/)
+            {
+                eprint "$file:$line: malformed line.\n";
+                next INPUT;
+            }
+            eprint "$file:$line: invalid class\n"
+              if $class < 0;
+        }
+        eprint "$file:$line: purge `$purge' younger than default `$default'.\n"
+          if $purge ne "never" && $default > $purge;
+        eprint "$file:$line: default `$default' younger than keep `$keep'.\n"
+          if $default ne "never" && $keep ne "never" && $keep > $default;
     }
     return;
 }
 
-
 ##
 ##  incoming.conf
 ##
-sub
-incoming_conf
-{
+sub incoming_conf {
     parse_config(
         {
             '<anywhere>' => {
@@ -499,232 +523,229 @@ incoming_conf
                 'streaming'       => 'boolean',
             },
             'group' => {},
-            'peer' => {},
+            'peer'  => {},
         }
     );
     return;
 }
-
 
 ##
 ##  inn.conf
 ##
-sub
-inn_conf
-{
-    system ("$INN::Config::innconfval", '-C');
+sub inn_conf {
+    system("$INN::Config::innconfval", '-C');
 
-#    if ( $k eq "domain" ) {
-#        print "$file:$line: domain (`$v') isn't local domain\n"
-#            if $fqdn =~ /[^\.]+\(\..*\)/ && $v ne $1;
-#        print "$file:$line: domain should not have a leading period\n"
-#            if $v =~ /^\./;
-#    } elsif ( $k eq "fromhost" ) {
-#        print "$file:$line: fromhost isn't a valid FQDN\n"
-#            if $v !~ /[\w\-]+\.[\w\-]+/;
-#    } elsif ( $k eq "moderatormailer" ) {
-#        # FIXME: shouldn't warn about blank lines if the
-#        # moderators file exists
-#        print "$file:$line: moderatormailer has bad address\n"
-#            if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
-#    } elsif ( $k eq "organization" ) {
-#        print "$file:$line: org is blank\n"
-#            if $v eq "";
-#    } elsif ( $k eq "pathhost" ) {
-#        print "$file:$line: pathhost has a ! in it\n"
-#            if $v =~ /!/;
-#    } elsif ( $k eq "pathalias" ) {
-#        print "$file:$line: pathalias has a ! in it\n"
-#            if $v =~ /!/;
-#    } elsif ( $k eq "pathcluster" ) {
-#        print "$file:$line: pathcluster has a ! in it\n"
-#            if $v =~ /!/;
-#    } elsif ( $k eq "server" ) {
-#        print "$file:$line: server (`$v') isn't local hostname\n"
-#            if $pedantic && $fqdn !~ /^$v/;
-#    }
-#
-#    if ( $key eq "moderatormailer" ) {
-#        printf "$file:$line: missing $key and no moderators file.\n"
-#            if ! -f $paths{"moderators"};
-#    }
+    #    if ( $k eq "domain" ) {
+    #        print "$file:$line: domain (`$v') isn't local domain\n"
+    #            if $fqdn =~ /[^\.]+\(\..*\)/ && $v ne $1;
+    #        print "$file:$line: domain should not have a leading period\n"
+    #            if $v =~ /^\./;
+    #    } elsif ( $k eq "fromhost" ) {
+    #        print "$file:$line: fromhost isn't a valid FQDN\n"
+    #            if $v !~ /[\w\-]+\.[\w\-]+/;
+    #    } elsif ( $k eq "moderatormailer" ) {
+    #        # FIXME: shouldn't warn about blank lines if the
+    #        # moderators file exists
+    #        print "$file:$line: moderatormailer has bad address\n"
+    #            if $v !~ /[\w\-]+\.[\w\-]+/ && $v ne "%s";
+    #    } elsif ( $k eq "organization" ) {
+    #        print "$file:$line: org is blank\n"
+    #            if $v eq "";
+    #    } elsif ( $k eq "pathhost" ) {
+    #        print "$file:$line: pathhost has a ! in it\n"
+    #            if $v =~ /!/;
+    #    } elsif ( $k eq "pathalias" ) {
+    #        print "$file:$line: pathalias has a ! in it\n"
+    #            if $v =~ /!/;
+    #    } elsif ( $k eq "pathcluster" ) {
+    #        print "$file:$line: pathcluster has a ! in it\n"
+    #            if $v =~ /!/;
+    #    } elsif ( $k eq "server" ) {
+    #        print "$file:$line: server (`$v') isn't local hostname\n"
+    #            if $pedantic && $fqdn !~ /^$v/;
+    #    }
+    #
+    #    if ( $key eq "moderatormailer" ) {
+    #        printf "$file:$line: missing $key and no moderators file.\n"
+    #            if ! -f $paths{"moderators"};
+    #    }
 
     return;
 }
-
 
 ##
 ## innfeed.conf
 ##
-sub
-innfeed_conf
-{
+sub innfeed_conf {
     my %groups = parse_config(
         {
-            '<anywhere>'        => {
-                'article-timeout'       => 'number',
-                'response-timeout'      => 'number',
-                'initial-connections'   => 'number',
-                'max-connections'       => 'number',
-                'close-period'          => 'number',
-                'dynamic-method'        => 'number',
-                'dynamic-backlog-low'   => 'floating-point number (0.0-100.0)',
-                'dynamic-backlog-high'  => 'floating-point number (0.0-100.0)',
-                'dynamic-backlog-filter'=> 'floating-point number',
-                'max-queue-size'        => 'number',
-                'streaming'             => 'boolean',
-                'no-check-high'         => 'floating-point number (0.0-100.0)',
-                'no-check-low'          => 'floating-point number (0.0-100.0)',
-                'no-check-filter'       => 'floating-point number',
-                'bindaddress'           => 'IPv4 address / "any / "none"',
-                'bindaddress6'          => 'IPv6 address / "any / "none"',
-                'port-number'           => 'number',
-                'force-ipv4'            => 'boolean',
-                'drop-deferred'         => 'boolean',
-                'min-queue-connection'  => 'boolean',
-                'no-backlog'            => 'boolean',
-                'backlog-limit'         => 'number',
-                'backlog-factor'        => 'floating-point number',
+            '<anywhere>' => {
+                'article-timeout'      => 'number',
+                'response-timeout'     => 'number',
+                'initial-connections'  => 'number',
+                'max-connections'      => 'number',
+                'close-period'         => 'number',
+                'dynamic-method'       => 'number',
+                'dynamic-backlog-low'  => 'floating-point number (0.0-100.0)',
+                'dynamic-backlog-high' =>
+                  'floating-point number (0.0-100.0)',
+                'dynamic-backlog-filter' => 'floating-point number',
+                'max-queue-size'         => 'number',
+                'streaming'              => 'boolean',
+                'no-check-high'        => 'floating-point number (0.0-100.0)',
+                'no-check-low'         => 'floating-point number (0.0-100.0)',
+                'no-check-filter'      => 'floating-point number',
+                'bindaddress'          => 'IPv4 address / "any / "none"',
+                'bindaddress6'         => 'IPv6 address / "any / "none"',
+                'port-number'          => 'number',
+                'force-ipv4'           => 'boolean',
+                'drop-deferred'        => 'boolean',
+                'min-queue-connection' => 'boolean',
+                'no-backlog'           => 'boolean',
+                'backlog-limit'        => 'number',
+                'backlog-factor'       => 'floating-point number',
                 'backlog-limit-highwater' => 'number',
-                'backlog-feed-first'    => 'boolean',
-                'username'              => 'string',
-                'password'              => 'string',
+                'backlog-feed-first'      => 'boolean',
+                'username'                => 'string',
+                'password'                => 'string',
             },
-            '<global scope>'    => {
-                'news-spool'            => 'path',
-                'input-file'            => 'path',
-                'pid-file'              => 'path',
-                'debug-level'           => 'number',
-                'debug-shrinking'       => 'boolean',
-                'initial-sleep'         => 'number',
-                'fast-exit'             => 'boolean',
-                'use-mmap'              => 'boolean',
-                'log-file'              => 'path',
-                'log-time-format'       => 'string',
-                'backlog-directory'     => 'path',
-                'backlog-highwater'     => 'number',
-                'backlog-ckpt-period'   => 'number',
-                'backlog-newfile-period'=> 'number',
-                'backlog-rotate-period' => 'number',
-                'dns-retry'             => 'number',
-                'dns-expire'            => 'number',
-                'gen-html'              => 'boolean',
-                'status-file'           => 'path',
-                'connection-stats'      => 'boolean',
-                'host-queue-highwater'  => 'number',
-                'stats-period'          => 'number',
-                'stats-reset'           => 'number',
-                'initial-reconnect-time'=> 'number',
-                'max-reconnect-time'    => 'number',
-                'stdio-fdmax'           => 'number',
-                'deliver-authname'      => 'string',
-                'deliver-password'      => 'string',
-                'deliver-username'      => 'string',
-                'deliver-realm'         => 'string',
-                'deliver-rcpt-to'       => 'string',
-                'deliver-to-header'     => 'string',
+            '<global scope>' => {
+                'news-spool'             => 'path',
+                'input-file'             => 'path',
+                'pid-file'               => 'path',
+                'debug-level'            => 'number',
+                'debug-shrinking'        => 'boolean',
+                'initial-sleep'          => 'number',
+                'fast-exit'              => 'boolean',
+                'use-mmap'               => 'boolean',
+                'log-file'               => 'path',
+                'log-time-format'        => 'string',
+                'backlog-directory'      => 'path',
+                'backlog-highwater'      => 'number',
+                'backlog-ckpt-period'    => 'number',
+                'backlog-newfile-period' => 'number',
+                'backlog-rotate-period'  => 'number',
+                'dns-retry'              => 'number',
+                'dns-expire'             => 'number',
+                'gen-html'               => 'boolean',
+                'status-file'            => 'path',
+                'connection-stats'       => 'boolean',
+                'host-queue-highwater'   => 'number',
+                'stats-period'           => 'number',
+                'stats-reset'            => 'number',
+                'initial-reconnect-time' => 'number',
+                'max-reconnect-time'     => 'number',
+                'stdio-fdmax'            => 'number',
+                'deliver-authname'       => 'string',
+                'deliver-password'       => 'string',
+                'deliver-username'       => 'string',
+                'deliver-realm'          => 'string',
+                'deliver-rcpt-to'        => 'string',
+                'deliver-to-header'      => 'string',
             },
-            'group'             => {},
-            'peer'              => {
-                'ip-name'               => 'hostname',
+            'group' => {},
+            'peer'  => {
+                'ip-name' => 'hostname',
             },
-            '<include>'         => { '$INCLUDE' => 'ignore' },
+            '<include>' => {
+                '$INCLUDE' => 'ignore',
+            },
         }
     );
     # check some numeric values
     foreach my $group (keys %groups) {
-        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-method must be between 0 and 3\n"
-            if (defined $groups{$group}->{'dynamic-method'} && $groups{$group}->{'dynamic-method'} > 3);
-        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: dynamic-backlog-filter must be between 0.0 and 1.0\n"
-            if (defined $groups{$group}->{'dynamic-backlog-filter'} && $groups{$group}->{'dynamic-backlog-filter'} > 1.0);
-        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}: backlog-factor must be larger than 1.0\n"
-            if (defined $groups{$group}->{'backlog-factor'} && $groups{$group}->{'backlog-factor'} <= 1.0);
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
+          . " dynamic-method must be between 0 and 3\n"
+          if (defined $groups{$group}->{'dynamic-method'}
+              && $groups{$group}->{'dynamic-method'} > 3);
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
+          . " dynamic-backlog-filter must be between 0.0 and 1.0\n"
+          if (defined $groups{$group}->{'dynamic-backlog-filter'}
+              && $groups{$group}->{'dynamic-backlog-filter'} > 1.0);
+        eprint "$file:$groups{$group}->{'type'} $groups{$group}->{'name'}:"
+          . " backlog-factor must be larger than 1.0\n"
+          if (defined $groups{$group}->{'backlog-factor'}
+              && $groups{$group}->{'backlog-factor'} <= 1.0);
     }
     return;
 }
-
 
 ##
 ##  moderators
 ##
-sub
-moderators
-{
+sub moderators {
     my ($k, $v);
 
-    input: while ( <$IN> ) {
-	next input if spacious($file, ++$line);
+  INPUT: while (<$IN>) {
+        next INPUT if spacious($file, ++$line);
 
-	unless ( ($k, $v) = /^([^:]+):(.+)$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
+        unless (($k, $v) = /^([^:]+):(.+)$/) {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
 
-	if ( $k eq "" || $v eq "" ) {
-	    eprint "$file:$line: missing field\n";
-	    next input;
-	}
-	eprint "$file:$line: not an e-mail address\n"
-	    if $pedantic && $v !~ /[@!]/;
-	eprint "$file:$line: `$v' goes to local address\n"
-	    if $pedantic && $v eq "%s";
-	eprint "$file:$line: more than one %s in address field\n"
-	    if $v =~ /%s.*%s/;
+        if ($k eq "" || $v eq "") {
+            eprint "$file:$line: missing field\n";
+            next INPUT;
+        }
+        eprint "$file:$line: not an e-mail address\n"
+          if $pedantic && $v !~ /[@!]/;
+        eprint "$file:$line: `$v' goes to local address\n"
+          if $pedantic && $v eq "%s";
+        eprint "$file:$line: more than one %s in address field\n"
+          if $v =~ /%s.*%s/;
     }
     return;
 }
-
 
 ##
 ##  newsfeeds
 ##
 my %newsfeeds_flags = (
-    '<',	'^\d+$',
-    '>',	'^\d+$',
-    'A',	'^[cCdefjoOp]+$',
-    'B',	'^\d+(/\d+)?$',
-    'C',	'^\d+$',
-    'F',	'^.+$',
-    'G',	'^\d+$',
-    'H',	'^\d+$',
-    'I',	'^\d+$',
-    'N',	'^[mu]$',
-    'O',	'^\S+$',
-    'P',	'^\d+$',
-    'Q',	'^@?\d+(-\d+)?/\d+(_\d+)?$',
-    'S',	'^\d+$',
-    'T',	'^[cflmpx]$',
-    'U',        '^\d+$',
-    'W',	'^[befghmnpst*DGHNPOR]*$',
+    '<' => '^\d+$',
+    '>' => '^\d+$',
+    'A' => '^[cCdefjoOp]+$',
+    'B' => '^\d+(/\d+)?$',
+    'C' => '^\d+$',
+    'F' => '^.+$',
+    'G' => '^\d+$',
+    'H' => '^\d+$',
+    'I' => '^\d+$',
+    'N' => '^[mu]$',
+    'O' => '^\S+$',
+    'P' => '^\d+$',
+    'Q' => '^@?\d+(-\d+)?/\d+(_\d+)?$',
+    'S' => '^\d+$',
+    'T' => '^[cflmpx]$',
+    'U' => '^\d+$',
+    'W' => '^[befghmnpst*DGHNPOR]*$',
 );
 
-sub
-newsfeeds
-{
+sub newsfeeds {
     my ($next, $start, @muxes, %sites);
     my ($site, $pats, $dists, $flags, $param, $type, $k, $v, $defsub);
     my ($bang, $nobang, $prog, $dir);
     my (%variables, $key);
 
-    input: while ( <$IN> ) {
-	$line++;
-	next input if /^$/;
-	chop;
-	eprint "$file:$line: starts with whitespace\n"
-	    if /^\s+/;
+  INPUT: while (<$IN>) {
+        $line++;
+        next INPUT if /^$/;
+        chop;
+        eprint "$file:$line: starts with whitespace\n"
+          if /^\s+/;
 
-	##  Read continuation lines.
-	$start = $line;
-	while ( /\\$/ ) {
-	    chop;
-	    chop($next = <$IN>);
-	    $line++;
-	    $next =~ s/^\s*//;
-	    $_ .= $next;
-	}
-	next input if /^#/;
-	eprint "$file:$line: ends with whitespace\n"
-	    if /\s+$/;
+        ##  Read continuation lines.
+        $start = $line;
+        while (/\\$/) {
+            chop;
+            chop($next = <$IN>);
+            $line++;
+            $next =~ s/^\s*//;
+            $_ .= $next;
+        }
+        next INPUT if /^#/;
+        eprint "$file:$line: ends with whitespace\n"
+          if /\s+$/;
 
         ##  Substitute variables.
         for my $key (keys %variables) {
@@ -732,350 +753,350 @@ newsfeeds
         }
 
         ##  Catch a variable setting.
-        if ( /^\$([A-Za-z0-9]+)=(.*)$/ ) {
+        if (/^\$([A-Za-z0-9]+)=(.*)$/) {
             eprint "$file:$line: variable name too long\n"
-                if length ($1) > 31;
+              if length($1) > 31;
             $variables{$1} = $2;
-            next input;
+            next INPUT;
         }
 
-	unless ( ($site, $pats, $flags, $param) =
-		    /^([^:]+):([^:]*):([^:]*):(.*)$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
+        unless (($site, $pats, $flags, $param)
+            = /^([^:]+):([^:]*):([^:]*):(.*)$/)
+        {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
 
-	eprint "$file:$line: Newsfeed `$site' has whitespace in its name\n"
-	    if $site =~ /\s/;
-	eprint "$file:$line: comma-space in site name\n"
-	    if $site =~ m@, @;
-	eprint "$file:$line: comma-space in subscription list\n"
-	    if $pats =~ m@, @;
-	eprint "$file:$line: comma-space in flags\n"
-	    if $flags =~ m@, @;
+        eprint "$file:$line: Newsfeed `$site' has whitespace in its name\n"
+          if $site =~ /\s/;
+        eprint "$file:$line: comma-space in site name\n"
+          if $site =~ m@, @;
+        eprint "$file:$line: comma-space in subscription list\n"
+          if $pats =~ m@, @;
+        eprint "$file:$line: comma-space in flags\n"
+          if $flags =~ m@, @;
 
-	eprint "$file:$start: ME has exclusions\n"
-	    if $site =~ m@^ME/@;
-	eprint "$file:$start: multiple slashes in exclusions for `$site'\n"
-	    if $site =~ m@/.*/@;
-	$site =~ s@([^/]*)/.*@$1@;
-	print "$site, "
-	    if $verbose > 0;
+        eprint "$file:$start: ME has exclusions\n"
+          if $site =~ m@^ME/@;
+        eprint "$file:$start: multiple slashes in exclusions for `$site'\n"
+          if $site =~ m@/.*/@;
+        $site =~ s@([^/]*)/.*@$1@;
+        print "$site, "
+          if $verbose > 0;
 
-	if ( $site eq "ME" ) {
-	    $defsub = $pats;
-	    $defsub =~ s@(.*)/.*@$1@;
-	} elsif  ( $defsub ne "" ) {
-	    $pats = "$defsub,$pats";
-	}
-	eprint "$file:$start: Multiple slashes in distribution for `$site'\n"
-	    if $pats =~ m@/.*/@;
+        if ($site eq "ME") {
+            $defsub = $pats;
+            $defsub =~ s@(.*)/.*@$1@;
+        } elsif ($defsub ne "") {
+            $pats = "$defsub,$pats";
+        }
+        eprint "$file:$start: Multiple slashes in distribution for `$site'\n"
+          if $pats =~ m@/.*/@;
 
-	if ( $site eq "ME" ) {
-	    eprint "$file:$start: ME flags should be empty\n"
-		if $flags ne "";
-	    eprint "$file:$start: ME param should be empty\n"
-		if $param ne "";
-	}
+        if ($site eq "ME") {
+            eprint "$file:$start: ME flags should be empty\n"
+              if $flags ne "";
+            eprint "$file:$start: ME param should be empty\n"
+              if $param ne "";
+        }
 
-	##  If we don't have !junk,!control, give a helpful warning.
-#	if ( $site ne "ME" && $pats =~ /!\*,/ ) {
-#	    print "$file:$start: consider adding !junk to $site\n"
-#		if $pats !~ /!junk/;
-#	    print "$file:$start: consider adding !control to $site\n"
-#		if $pats !~ /!control/;
-#	}
+        ##  If we don't have !junk,!control, give a helpful warning.
+        #        if ( $site ne "ME" && $pats =~ /!\*,/ ) {
+        #          print "$file:$start: consider adding !junk to $site\n"
+        #            if $pats !~ /!junk/;
+        #          print "$file:$start: consider adding !control to $site\n"
+        #            if $pats !~ /!control/;
+        #        }
 
-	##  Check distributions.
-	if ( ($dists) = $pats =~ m@.*/(.*)@ ) {
-	    $bang = $nobang = 0;
-	    dist: foreach my $d ( split(/,/, $dists) ) {
-		if ( $d =~ /^!/ ) {
-		    $bang++;
-		}
-		else {
-		    $nobang++;
-		}
-		eprint "$file:$start: questionable distribution `$d'\n"
-		    if $d !~ /^!?[a-z0-9-]+$/;
-	    }
-	    eprint "$file:$start: both ! and non-! distributions\n"
-		if $bang && $nobang;
-	}
-	$type = "f";
-	flag: foreach my $flag ( split(/,/, $flags) ) {
-	    ($k, $v) = $flag =~ /(.)(.*)/;
-	    if ( !defined $newsfeeds_flags{$k} ) {
-		eprint "$file:$start: unknown flag `$flag'\n";
-		next flag;
-	    }
-	    if ( $v !~ /$newsfeeds_flags{$k}/ ) {
-		eprint "$file:$start: bad value `$v' for flag `$k'\n";
-		next flag;
-	    }
-	    $type = $v
-		if $k eq "T";
-	}
+        ##  Check distributions.
+        if (($dists) = $pats =~ m@.*/(.*)@) {
+            $bang = $nobang = 0;
+          DIST: foreach my $d (split(/,/, $dists)) {
+                if ($d =~ /^!/) {
+                    $bang++;
+                } else {
+                    $nobang++;
+                }
+                eprint "$file:$start: questionable distribution `$d'\n"
+                  if $d !~ /^!?[a-z0-9-]+$/;
+            }
+            eprint "$file:$start: both ! and non-! distributions\n"
+              if $bang && $nobang;
+        }
+        $type = "f";
+      FLAG: foreach my $flag (split(/,/, $flags)) {
+            ($k, $v) = $flag =~ /(.)(.*)/;
+            if (!defined $newsfeeds_flags{$k}) {
+                eprint "$file:$start: unknown flag `$flag'\n";
+                next FLAG;
+            }
+            if ($v !~ /$newsfeeds_flags{$k}/) {
+                eprint "$file:$start: bad value `$v' for flag `$k'\n";
+                next FLAG;
+            }
+            $type = $v
+              if $k eq "T";
+        }
 
-	##  Warn about multiple feeds.
-	if ( !defined $sites{$site} ) {
-	    $sites{$site} = $type;
-	} elsif ( $sites{$site} ne $type ) {
-	    eprint "$file:$start: feed $site multiple conflicting feeds\n";
-	}
+        ##  Warn about multiple feeds.
+        if (!defined $sites{$site}) {
+            $sites{$site} = $type;
+        } elsif ($sites{$site} ne $type) {
+            eprint "$file:$start: feed $site multiple conflicting feeds\n";
+        }
 
-	if ( $type =~ /[cpx]/ ) {
-	    $prog = $param;
-	    $prog =~ s/\s.*//;
-	    eprint "$file:$start: relative path for $site\n"
-		if $prog !~ m@^/@;
-	    eprint "$file:$start: `$prog' is not executable for $site\n"
-		if ! -x $prog;
-	}
-	if ( $type eq "f" && $param =~ m@/@ ) {
-	    $dir = $param;
-	    $dir =~ s@(.*)/.*@$1@;
-	    $dir = $paths{'batchdir'} . "/" . $dir
-		unless $dir =~ m@^/@;
-	    eprint "$file:$start: directory `$dir' does not exist for $site\n"
-		if ! -d $dir;
-	}
+        if ($type =~ /[cpx]/) {
+            $prog = $param;
+            $prog =~ s/\s.*//;
+            eprint "$file:$start: relative path for $site\n"
+              if $prog !~ m@^/@;
+            eprint "$file:$start: `$prog' is not executable for $site\n"
+              if !-x $prog;
+        }
+        if ($type eq "f" && $param =~ m@/@) {
+            $dir = $param;
+            $dir =~ s@(.*)/.*@$1@;
+            $dir = $paths{'batchdir'} . "/" . $dir
+              unless $dir =~ m@^/@;
+            eprint "$file:$start: directory `$dir' does not exist for $site\n"
+              if !-d $dir;
+        }
 
-	##  If multiplex target not known, add to multiplex list.
-	push(@muxes, "$start: undefined multiplex `$param'")
-	    if $type eq "m" && !defined $sites{$param};
+        ##  If multiplex target not known, add to multiplex list.
+        push(@muxes, "$start: undefined multiplex `$param'")
+          if $type eq "m" && !defined $sites{$param};
     }
 
     ##  Go through and make sure all referenced multiplex exist.
     foreach (@muxes) {
-	eprint "$file:$_\n"
-	    if /`(.*)'/ && !defined $sites{$1};
+        eprint "$file:$_\n"
+          if /`(.*)'/ && !defined $sites{$1};
     }
     eprint "$file:0: documentation says there must be exactly one ME entry\n"
-	if !defined $sites{"ME"};
+      if !defined $sites{"ME"};
 
     print "done.\n"
-	if $verbose > 0;
+      if $verbose > 0;
     return;
 }
-
 
 ##
 ##  nntpsend.ctl
 ##
-sub
-nntpsend_ctl
-{
+sub nntpsend_ctl {
     my ($site, $fqdn, $flags, $f, $v);
 
-    input: while ( <$IN> ) {
-	next input if spacious($file, ++$line);
+  INPUT: while (<$IN>) {
+        next INPUT if spacious($file, ++$line);
 
-	##  Ignore the size info for now.
-	unless ( ($site, $fqdn, $flags) =
-		    /^([\w\-\.]+):([^:]*):[^:]*:([^:]*)$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
-	eprint "$file:$line: FQDN is empty for `$site'\n"
-	    if $fqdn eq "";
+        ##  Ignore the size info for now.
+        unless (($site, $fqdn, $flags) = /^([\w\-\.]+):([^:]*):[^:]*:([^:]*)$/)
+        {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
+        eprint "$file:$line: FQDN is empty for `$site'\n"
+          if $fqdn eq "";
 
-	next input if $flags eq "";
-	flag: foreach (split(/ /, $flags)) {
-	    unless ( ($f, $v) = /^-([adrvtTpSP])(.*)$/ ) {
-		eprint "$file:$line: unknown argument for `$site'\n";
-		next flag;
-	    }
-	    eprint "$file:$line: unknown argument to option `$f': $flags\n"
-		if ( $f eq "P" || $f eq "s" || $f eq "t" || $f eq "T" || $f eq "w")
-                     && $v !~ /\d+/;
-	}
+        next INPUT if $flags eq "";
+      FLAG: foreach (split(/ /, $flags)) {
+            unless (($f, $v) = /^-([adrvtTpSP])(.*)$/) {
+                eprint "$file:$line: unknown argument for `$site'\n";
+                next FLAG;
+            }
+            eprint "$file:$line: unknown argument to option `$f': $flags\n"
+              if ($f eq "P"
+                  || $f eq "s"
+                  || $f eq "t"
+                  || $f eq "T"
+                  || $f eq "w")
+              && $v !~ /\d+/;
+        }
     }
     return;
 }
-
 
 ##
 ##  passwd.nntp
 ##
-sub
-passwd_nntp
-{
+sub passwd_nntp {
     my ($name, $pass);
 
-    input: while ( <$IN> ) {
-	next input if spacious($file, ++$line);
+  INPUT: while (<$IN>) {
+        next INPUT if spacious($file, ++$line);
 
-        unless ( ($name, $pass) = /^[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/ ) {
-	    eprint "$file:$line: malformed line.\n";
-	    next input;
-	}
-	eprint "$file:$line: missing username\n"
-	    if ( $name eq "" );
+        unless (($name, $pass) = /^[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/) {
+            eprint "$file:$line: malformed line.\n";
+            next INPUT;
+        }
+        eprint "$file:$line: missing username\n"
+          if ($name eq "");
     }
     return;
 }
 
-
 ##
 ##  readers.conf
 ##
-sub
-readers_conf
-{
+sub readers_conf {
     parse_config(
         {
-            'auth'      => {
-                'hosts'         => 'list of hostnames or netblocks',
-                'localaddress'  => 'list of hostnames or netblocks',
-                'res'           => 'path', # pathbin/auth/resolv or absolute
-                'auth'          => 'path', # pathbin/auth/passwd or absolute
-                'perl_auth'     => 'path',
-                'python_auth'   => 'path',
-                'default'       => 'string',
-                'default-domain'=> 'string',
-                'key'           => 'string',
+            'auth' => {
+                'hosts'          => 'list of hostnames or netblocks',
+                'localaddress'   => 'list of hostnames or netblocks',
+                'res'            => 'path',   # pathbin/auth/resolv or absolute
+                'auth'           => 'path',   # pathbin/auth/passwd or absolute
+                'perl_auth'      => 'path',
+                'python_auth'    => 'path',
+                'default'        => 'string',
+                'default-domain' => 'string',
+                'key'            => 'string',
                 'require_encryption' => 'boolean',
-                'perl_access'   => 'path',
-                'python_access' => 'path',
-                'python_dynamic'=> 'path',
+                'perl_access'        => 'path',
+                'python_access'      => 'path',
+                'python_dynamic'     => 'path',
             },
-            'access'    => {
-                'users'         => 'string', # comma-separated list of wildmat patterns
-                'newsgroups'    => 'string', # comma-separated list of wildmat patterns
-                'read'          => 'string', # like newsgroups, cannot be used together!
-                'post'          => 'string', # like read
-                'access'        => 'set of access permission letters',
-                'key'           => 'string',
-                'reject_with'   => 'string',
-                'max_rate'      => 'number',
-                'localtime'     => 'boolean',
-                'newsmaster'    => 'string', # email address
-                'strippath'     => 'boolean',
-                'perlfilter'    => 'boolean',
-                'pythonfilter'  => 'boolean',
-                'virtualhost'   => 'boolean',
+            'access' => {
+                'users' =>
+                  'string',    # comma-separated list of wildmat patterns
+                'newsgroups' =>
+                  'string',    # comma-separated list of wildmat patterns
+                'read' =>
+                  'string',    # like newsgroups, cannot be used together!
+                'post'        => 'string',                          # like read
+                'access'      => 'set of access permission letters',
+                'key'         => 'string',
+                'reject_with' => 'string',
+                'max_rate'    => 'number',
+                'localtime'   => 'boolean',
+                'newsmaster'   => 'string',    # email address
+                'strippath'    => 'boolean',
+                'perlfilter'   => 'boolean',
+                'pythonfilter' => 'boolean',
+                'virtualhost'  => 'boolean',
                 # inn.conf parameters:
-                'addinjectiondate'      => 'boolean',
+                'addinjectiondate'           => 'boolean',
                 'addinjectionpostingaccount' => 'boolean',
-                'addinjectionpostinghost' => 'boolean',
-                'backoff_auth'          => 'boolean',   # careful:
-                'backoff_db'            => 'string',    # the inn.conf options
-                'backoff_k'             => 'number',    # are without "_"
-                'backoff_postfast'      => 'number',
-                'backoff_postslow'      => 'number',
-                'backoff_trigger'       => 'number',
-                'checkincludedtext'     => 'boolean',
-                'clienttimeout'         => 'number',
-                'complaints'            => 'string',
-                'domain'                => 'hostname',
-                'fromhost'              => 'hostname',
-                'localmaxartsize'       => 'number',
-                'moderatormailer'       => 'string', # email address: %s@moderators.isc.org
-                'nnrpdauthsender'       => 'boolean',
-                'nnrpdcheckart'         => 'boolean',
-                'nnrpdoverstats'        => 'boolean',
-                'nnrpdposthost'         => 'hostname',
-                'nnrpdpostport'         => 'number',
-                'organization'          => 'string',
-                'pathhost'              => 'string', # hostname?
-                'readertrack'           => 'boolean',
-                'spoolfirst'            => 'boolean',
-                'strippostcc'           => 'boolean',
+                'addinjectionpostinghost'    => 'boolean',
+                'backoff_auth'               => 'boolean',    # careful:
+                'backoff_db'        => 'string',     # the inn.conf options
+                'backoff_k'         => 'number',     # are without "_"
+                'backoff_postfast'  => 'number',
+                'backoff_postslow'  => 'number',
+                'backoff_trigger'   => 'number',
+                'checkincludedtext' => 'boolean',
+                'clienttimeout'     => 'number',
+                'complaints'        => 'string',
+                'domain'            => 'hostname',
+                'fromhost'          => 'hostname',
+                'localmaxartsize'   => 'number',
+                'moderatormailer'   =>
+                  'string',    # email address: %s@moderators.isc.org
+                'nnrpdauthsender' => 'boolean',
+                'nnrpdcheckart'   => 'boolean',
+                'nnrpdoverstats'  => 'boolean',
+                'nnrpdposthost'   => 'hostname',
+                'nnrpdpostport'   => 'number',
+                'organization'    => 'string',
+                'pathhost'        => 'string',     # hostname?
+                'readertrack'     => 'boolean',
+                'spoolfirst'      => 'boolean',
+                'strippostcc'     => 'boolean',
             },
-            'res'       => {
-                'log'      => 'string',
-                'program'  => 'string',
+            'res' => {
+                'log'     => 'string',
+                'program' => 'string',
             },
-            '<multi>'   => { # hack: "don't warn about duplicates for these keys"
-                'res'           => 1,
-                'auth'          => 1,
-                'perl_auth'     => 1,
-                'python_auth'   => 1,
-                'log'           => 1,
+            '<multi>' =>
+              {    # hack: "don't warn about duplicates for these keys"
+                  'res'         => 1,
+                  'auth'        => 1,
+                  'perl_auth'   => 1,
+                  'python_auth' => 1,
+                  'log'         => 1,
+              },
+            '<include>' => {
+                'include' => 'ignore',
             },
-            '<include>' => { 'include' => 'ignore' },
         }
     );
     return;
 }
 
-
 ##
 ##  storage.conf
 ##
-sub
-storage_conf
-{
+sub storage_conf {
     my %groups = parse_config(
         {
             'method' => {
-                'class'         => 'number',
-                'newsgroups'    => 'string', # uwildmat_poison
-                'size'          => 'minsize[,maxsize] definition',
-                'expires'       => 'mintime[,maxtime] definition',
-                'options'       => 'string',
-                'exactmatch'    => 'boolean',
+                'class'      => 'number',
+                'newsgroups' => 'string',    # uwildmat_poison
+                'size'       => 'minsize[,maxsize] definition',
+                'expires'    => 'mintime[,maxtime] definition',
+                'options'    => 'string',
+                'exactmatch' => 'boolean',
             },
         }
     );
     # allowed method names include: cnfs timecaf timehash tradspool trash
     foreach my $method (keys %groups) {
-        eprint "$file:$groups{$method}->{'line'}: not a valid storage method: $method.\n"
-            unless $method =~ /^(?:cnfs|timecaf|timehash|tradspool|trash|<global scope>)$/;
+        eprint "$file:$groups{$method}->{'line'}: "
+          . "not a valid storage method: $method.\n"
+          unless $method
+          =~ /^(?:cnfs|timecaf|timehash|tradspool|trash|<global scope>)$/;
     }
     return;
 }
-
 
 ##
 ##  Routines to check permissions.
 ##
 
 ##  Given a file F, check its mode to be M (array of min and max file modes),
-##  and its ownership to be by the user U in the group G.  U and G have defaults.
-sub
-checkperm
-{
-    my ($f, $m, $u, $g) = ( @_, $INN::Config::runasuser, $INN::Config::runasgroup);
+##  and its ownership to be by the user U in the group G.
+##  U and G have defaults.
+sub checkperm {
+    my ($f, $m, $u, $g)
+      = (@_, $INN::Config::runasuser, $INN::Config::runasgroup);
     my (@sb, $owner, $group, $mode);
 
     die "Internal error, undefined name in perm from ", (caller(0))[2], "\n"
-	if !defined $f;
+      if !defined $f;
     die "Internal error, undefined mode in perm from ", (caller(0))[2], "\n"
-	unless (@$m);
+      unless (@$m);
 
-    if ( ! -e $f ) {
-	eprint "$pfx$f:0: missing\n";
-    }
-    else {
-	@sb = stat _;
-	$owner = (getpwuid($sb[$ST_UID]))[0];
-	$group = (getgrgid($sb[$ST_GID]))[0];
-	$mode  = $sb[$ST_MODE] & ~0770000;
+    if (!-e $f) {
+        eprint "$pfx$f:0: missing\n";
+    } else {
+        @sb = stat _;
+        $owner = (getpwuid($sb[$ST_UID]))[0];
+        $group = (getgrgid($sb[$ST_GID]))[0];
+        $mode = $sb[$ST_MODE] & ~0770000;
 
-	##  Ignore setgid bit on directories.
-	$mode &= ~0777000
-	    if -d _;
+        ##  Ignore setgid bit on directories.
+        $mode &= ~0777000
+          if -d _;
 
-	if ( $owner ne $u ) {
-	    eprint "$pfx$f:0: owned by $owner, should be $u\n";
-	    print "chown $u $f\n"
-		if $fix;
-	}
-	if ( $group ne $g ) {
+        if ($owner ne $u) {
+            eprint "$pfx$f:0: owned by $owner, should be $u\n";
+            print "chown $u $f\n"
+              if $fix;
+        }
+        if ($group ne $g) {
             # rnews may be setuid news and owned by group uucp.
             if ($f !~ /\/rnews$/ or $group ne 'uucp') {
-	        eprint "$pfx$f:0: in group $group, should be $g\n";
-	        print "chgrp $g $f\n"
-		    if $fix;
+                eprint "$pfx$f:0: in group $group, should be $g\n";
+                print "chgrp $g $f\n"
+                  if $fix;
             }
-	}
-	if ( (($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1]) ) {
-	    eprint sprintf "$pfx$f:0: mode %o, should be between %o and %o\n", $mode, @$m[0], @$m[1];
-	    printf "chmod %o $f\n", @$m[1]
-		if $fix;
-	}
+        }
+        if ((($mode & @$m[0]) ne @$m[0]) or (($mode | @$m[1]) ne @$m[1])) {
+            eprint sprintf "$pfx$f:0: mode %o, should be between %o and %o\n",
+              $mode, @$m[0], @$m[1];
+            printf "chmod %o $f\n", @$m[1]
+              if $fix;
+        }
     }
     return;
 }
@@ -1083,28 +1104,25 @@ checkperm
 ##  Return 1 if the intersection of the files in the $dir directory
 ##  and @files is empty.
 ##  Otherwise, report an error for each illegal file, and return 0.
-sub
-intersect
-{
+sub intersect {
     my ($dir, @files) = @_;
     my (@in, %dummy, $i);
 
-    if ( !opendir(my $DH, $dir) ) {
-	eprint "$pfx$dir:0: can't open directory\n";
-    }
-    else {
-	@in = grep($_ ne "." && $_ ne "..", readdir($DH));
-	closedir($DH);
+    if (!opendir(my $DH, $dir)) {
+        eprint "$pfx$dir:0: can't open directory\n";
+    } else {
+        @in = grep($_ ne "." && $_ ne "..", readdir($DH));
+        closedir($DH);
     }
 
     $i = 1;
-    if ( scalar(@in) ) {
-	foreach ( @files ) {
-	    $dummy{$_}++;
+    if (scalar(@in)) {
+        foreach (@files) {
+            $dummy{$_}++;
             # Also consider backup files as valid.
             $dummy{"$_.OLD"}++;
-	}
-        foreach ( @in ) {
+        }
+        foreach (@in) {
             if (not exists $dummy{$_}) {
                 eprint "$pfx$dir:0: ERROR: illegal file `$_' in directory\n";
                 $i = 0;
@@ -1116,11 +1134,10 @@ intersect
 
 my @directories = (
     'archive', 'badnews', 'batchdir', 'ctlprogs', 'most_logs', 'newsbin',
-    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool', 'spoolnews'
+    'newsetc', 'newslib', 'oldlogs', 'rnewsprogs', 'spooltemp', 'spool',
+    'spoolnews'
 );
-my @rnews_programs = (
-    'bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch'
-);
+my @rnews_programs = ('bunbatch', 'c7unbatch', 'decode', 'encode', 'gunbatch');
 my @newsbin_public = (
     'archive', 'batcher', 'buffchan', 'convdate', 'cvtbatch',
     'getlist', 'grephistory', 'innconfval', 'innxmit',
@@ -1135,45 +1152,46 @@ my @newsbin_private = (
 
 ##  The modes (min and max) for the various programs.
 my %prog_modes = (
-    'inews',		 [0500, $INN::Config::inewsmode],
-    'innd',		 [0500, 0550],
-    'newsboot',		 [0500, 0550],
-    'nnrpd',		 [0500, 0555],
-    'rnews',		 [0500, $INN::Config::rnewsmode],
+    'inews'    => [0500, $INN::Config::inewsmode],
+    'innd'     => [0500, 0550],
+    'newsboot' => [0500, 0550],
+    'nnrpd'    => [0500, 0555],
+    'rnews'    => [0500, $INN::Config::rnewsmode],
 );
 
 ##  Check the permissions of nearly every file in an INN installation.
-sub
-check_all_perms
-{
+sub check_all_perms {
     my ($rnewsprogs) = $paths{'rnewsprogs'};
     my ($newsbin) = $paths{'newsbin'};
 
-    foreach ( @directories ) {
-	checkperm($paths{$_}, [0755, 0775]);
+    foreach (@directories) {
+        checkperm($paths{$_}, [0755, 0775]);
     }
     checkperm($paths{'innddir'}, [0750, 0775]);
-    checkperm($paths{'innbind'}, [04500, 04550], 'root', $INN::Config::runasgroup);
-    foreach ( keys %prog_modes ) {
-	checkperm($paths{$_}, $prog_modes{$_});
+    checkperm(
+        $paths{'innbind'}, [04500, 04550], 'root',
+        $INN::Config::runasgroup
+    );
+    foreach (keys %prog_modes) {
+        checkperm($paths{$_}, $prog_modes{$_});
     }
-    foreach ( keys %paths ) {
-	checkperm($paths{$_}, $modes{$_})
-	    if defined $modes{$_};
+    foreach (keys %paths) {
+        checkperm($paths{$_}, $modes{$_})
+          if defined $modes{$_};
     }
     checkperm($paths{'history'}, [0600, $INN::Config::filemode]);
     # Commented out for now since it depends on the history type.
     #checkperm($paths{'history'} . ".dir", [0600, $INN::Config::filemode]);
     #checkperm($paths{'history'} . ".index", [0600, $INN::Config::filemode]);
     #checkperm($paths{'history'} . ".hash", [0600, $INN::Config::filemode]);
-    foreach ( @newsbin_private ) {
-	checkperm("$newsbin/$_", [0500, 0550]);
+    foreach (@newsbin_private) {
+        checkperm("$newsbin/$_", [0500, 0550]);
     }
-    foreach ( @newsbin_public ) {
-	checkperm("$newsbin/$_", [0500, 0555]);
+    foreach (@newsbin_public) {
+        checkperm("$newsbin/$_", [0500, 0555]);
     }
-    foreach ( @rnews_programs ) {
-	checkperm("$rnewsprogs/$_", [0500, 0555]);
+    foreach (@rnews_programs) {
+        checkperm("$rnewsprogs/$_", [0500, 0555]);
     }
 
     ##  Also make sure that @rnews_programs are the *only* programs in there;
@@ -1183,35 +1201,30 @@ check_all_perms
     return;
 }
 
-
 ##
 ##  Parsing, main routine.
 ##
 
-sub
-Usage
-{
+sub Usage {
     my ($i) = 0;
 
     print "Usage error: @_.\n";
-    print
-"Usage:
-	$program [-afqv] [--noperm|perm] [--pedantic] [file | file=value...]
+    print "Usage:
+        $program [-afqv] [--noperm|perm] [--pedantic] [file | file=value...]
 File to check may be followed by \"=path\" to use the specified path.  All
 files are checked if -a is used or if --perm is not used.  Files that may
 be checked are:\n";
-    foreach ( sort(keys %checklist) ) {
-	printf "     %-20s", $_;
-	if ( ++$i == 3) {
-	    print "\n";
-	    $i = 0;
-	}
+    foreach (sort(keys %checklist)) {
+        printf "     %-20s", $_;
+        if (++$i == 3) {
+            print "\n";
+            $i = 0;
+        }
     }
     print "\n"
-	if $i;
+      if $i;
     exit 255;
 }
-
 
 Getopt::Long::Configure('bundling_override');
 GetOptions(
@@ -1223,47 +1236,47 @@ GetOptions(
     'perm!'     => \$perms,
 ) or Usage("Unknown option");
 
-arg: foreach ( @ARGV ) {
-    if ( my ($k, $v) = /(.*)=(.*)/ ) {
+ARG: foreach (@ARGV) {
+    if (my ($k, $v) = /(.*)=(.*)/) {
         Usage("Can't check `$k'")
-            if !defined $checklist{$k};
+          if !defined $checklist{$k};
         push(@todo, $k);
         $paths{$k} = $v;
-        next arg;
+        next ARG;
     }
 
     Usage("Can't check `$_'")
-        if !defined $checklist{$_};
+      if !defined $checklist{$_};
     push(@todo, $_);
 }
 
 Usage("Can't use `--fix' without `--perm'")
-    if $fix && $perms < 1;
+  if $fix && $perms < 1;
 $pfx = $fix ? '# ' : '';
 
 @todo = grep(defined $checklist{$_}, sort(keys %paths))
-    if $all || (scalar(@todo) == 0 && $perms < 1);
+  if $all || (scalar(@todo) == 0 && $perms < 1);
 
-action: foreach my $workfile ( @todo ) {
+ACTION: foreach my $workfile (@todo) {
     $file = $paths{$workfile};
-    next action unless $file; # skip if set to empty value by user
-    if ( ! -f $file ) {
-	eprint "$file:0: file missing\n";
-	next action;
+    next ACTION unless $file;    # skip if set to empty value by user
+    if (!-f $file) {
+        eprint "$file:0: file missing\n";
+        next ACTION;
     }
     print "Looking at $file...\n"
-	if $verbose > 0;
-    if ( !open($IN, '<', $file) ) {
-	eprint "$pfx$workfile:0: can't open $!\n";
-	next action;
+      if $verbose > 0;
+    if (!open($IN, '<', $file)) {
+        eprint "$pfx$workfile:0: can't open $!\n";
+        next ACTION;
     }
     checkperm($file, $modes{$workfile})
-	if $perms == -1 && defined $modes{$workfile};
+      if $perms == -1 && defined $modes{$workfile};
     $line = 0;
     $checklist{$workfile}();
     close($IN);
 }
 
 check_all_perms()
-    if $perms == 1;
+  if $perms == 1;
 exit($exitval);

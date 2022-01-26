@@ -27,8 +27,8 @@
 # For details on all the information passed to it, see
 # ~news/doc/hook-perl.
 sub access {
-   &loadnnrp($INN::Config::newsetc . '/nnrp.access');
-   return &checkhost($attributes{hostname}, $attributes{ipaddress});
+    &loadnnrp($INN::Config::newsetc . '/nnrp.access');
+    return &checkhost($attributes{hostname}, $attributes{ipaddress});
 }
 
 # Called at startup, this loads the nnrp.access file and converts it into a
@@ -37,7 +37,7 @@ sub loadnnrp {
     my $file = shift;
     my ($block, $perm, $user, $pass);
 
-    open (ACCESS, $file) or die "Could not open $file: $!\n";
+    open(ACCESS, $file) or die "Could not open $file: $!\n";
     local $_;
     while (<ACCESS>) {
         my %tmp;
@@ -63,7 +63,7 @@ sub loadnnrp {
         $tmp{canread} = ($perm =~ /r/i);
         $tmp{canpost} = ($perm =~ /p/i);
 
-        unshift(@hosts, { %tmp });
+        unshift(@hosts, {%tmp});
     }
     close ACCESS;
 }

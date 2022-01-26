@@ -16,8 +16,10 @@
 use strict;
 
 sub control_sendme {
-    my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article) = @_;
+    my (
+        $par, $sender, $replyto, $site, $action, $log, $approved,
+        $article
+    ) = @_;
 
     my @body = split(/\r?\n/, $article->stringify_body);
 
@@ -34,16 +36,16 @@ sub control_sendme {
     } elsif ($action eq 'doit') {
         my $tempfile = "$INN::Config::tmpdir/sendme.$$";
         open(GREPHIST, "| $INN::Config::newsbin/grephistory -s > $tempfile")
-            or logdie("Cannot run grephistory: $!");
-	foreach (@body) {
+          or logdie("Cannot run grephistory: $!");
+        foreach (@body) {
             print GREPHIST "$_\n";
-	}
+        }
         close GREPHIST or logdie("Cannot run grephistory: $!");
 
         if (-s $tempfile and $site =~ /^[a-zA-Z0-9.-_]+$/) {
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
             open(BATCH, ">>$INN::Config::batch/$site.work")
-                or logdie("Cannot open $INN::Config::batch/$site.work: $!");
+              or logdie("Cannot open $INN::Config::batch/$site.work: $!");
             print BATCH $_ while <TEMPFILE>;
             close BATCH;
             close TEMPFILE;

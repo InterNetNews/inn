@@ -16,8 +16,10 @@
 use strict;
 
 sub control_ihave {
-    my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article) = @_;
+    my (
+        $par, $sender, $replyto, $site, $action, $log, $approved,
+        $article
+    ) = @_;
     my @body = split(/\r?\n/, $article->stringify_body);
 
     if ($action eq 'mail') {
@@ -33,18 +35,18 @@ sub control_ihave {
     } elsif ($action eq 'doit') {
         my $tempfile = "$INN::Config::tmpdir/ihave.$$";
         open(GREPHIST, "| $INN::Config::newsbin/grephistory -i > $tempfile")
-            or logdie('Cannot run grephistory: ' . $!);
-	foreach (@body) {
+          or logdie('Cannot run grephistory: ' . $!);
+        foreach (@body) {
             print GREPHIST "$_\n";
         }
         close GREPHIST;
 
         if (-s $tempfile) {
             open(INEWS, "| $INN::Config::inews -h")
-                or logdie('Cannot run inews: ' . $!);
+              or logdie('Cannot run inews: ' . $!);
             print INEWS "Newsgroups: to.$site\n"
-               . "Subject: cmsg sendme $INN::Config::pathhost\n"
-               . "Control: sendme $INN::Config::pathhost\n\n";
+              . "Subject: cmsg sendme $INN::Config::pathhost\n"
+              . "Control: sendme $INN::Config::pathhost\n\n";
             open(TEMPFILE, $tempfile) or logdie("Cannot open $tempfile: $!");
             print INEWS $_ while <TEMPFILE>;
             close INEWS or die $!;

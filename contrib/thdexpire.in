@@ -252,25 +252,26 @@ END {
 }
 
 chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
-$opt_r=0;      # make a report
-$opt_t=30;     # check interval in minutes
-$opt_f=50000;  # required space in kilobytes
-$opt_i=5000;   # required space in inodes
-$opt_m=7;      # minimum normal (class 100) time in days
-$opt_x=86400;  # absolute minimum hold time in seconds
-$opt_N=0;      # dont actually delete articles
-$opt_v=0;      # verbosity level
-$opt_M=0;      # install man page
+$opt_r = 0;        # make a report
+$opt_t = 30;       # check interval in minutes
+$opt_f = 50000;    # required space in kilobytes
+$opt_i = 5000;     # required space in inodes
+$opt_m = 7;        # minimum normal (class 100) time in days
+$opt_x = 86400;    # absolute minimum hold time in seconds
+$opt_N = 0;        # dont actually delete articles
+$opt_v = 0;        # verbosity level
+$opt_M = 0;        # install man page
 getopts("rt:f:i:m:x:Nv:M");
 
-$sfile="$INN::Config::pathdb/thdexpstat";
+$sfile = "$INN::Config::pathdb/thdexpstat";
 
 if ($opt_M) {
     print "Installing thdexpire(8) man page\n";
-    $0=~m:^(.*)/([^/]+)$:;
+    $0 =~ m:^(.*)/([^/]+)$:;
     chdir $1 || die "chdir $1";
-    exec "pod2man --section=8 --center='Contributed News Software'" .
-      " --release='$INN::Config::version' $2 >$INN::Config::pathnews/man/man8/thdexpire.8";
+    exec "pod2man --section=8 --center='Contributed News Software'"
+      . " --release='$INN::Config::version' $2 "
+      . ">$INN::Config::pathnews/man/man8/thdexpire.8";
 }
 
 if ($opt_r) {
@@ -281,369 +282,378 @@ if ($opt_r) {
 }
 
 # Acquire a lock.
-INN::Utils::Shlock::lock($lockfile, 5) or die ("cannot create lockfile $lockfile");
+INN::Utils::Shlock::lock($lockfile, 5)
+  or die("cannot create lockfile $lockfile");
 
-tie(%S, SDBM_File, $sfile, O_RDWR|O_CREAT, 0664) || die "open $sfile: $!";
-$SIG{'TERM'}=$SIG{'INT'}='finish';
-$|=1;
-printf "starting at %s\n", &wtime(time) if ($opt_v>0);
+tie(%S, SDBM_File, $sfile, O_RDWR | O_CREAT, 0664) || die "open $sfile: $!";
+$SIG{'TERM'} = $SIG{'INT'} = 'finish';
+$| = 1;
+printf "starting at %s\n", &wtime(time) if ($opt_v > 0);
 
 undef @c;
-$NOW=time; $ac=$cc=0;
+$NOW = time;
+$ac = $cc = 0;
 opendir(CD, ".") || &err("opendir $INN::Config::spool: $!");
-while ($cd=readdir(CD), defined($cd)) {
-    $cd=~/^time(caf)?-([0-9a-f][0-9a-f])$/i || next;
-    $c{hex($2)}=1 unless hex($2)>200;
+while ($cd = readdir(CD), defined($cd)) {
+    $cd =~ /^time(caf)?-([0-9a-f][0-9a-f])$/i || next;
+    $c{ hex($2) } = 1 unless hex($2) > 200;
 }
 closedir CD;
-@classes=sort {$a<=>$b} keys %c;
+@classes = sort { $a <=> $b } keys %c;
 foreach $c (@classes) {
     &initclass($c);
-    $S{"work$;$c"}=$S{"oldest$;$c"}&0xFFFFFF00;
+    $S{"work$;$c"} = $S{"oldest$;$c"} & 0xFFFFFF00;
 }
 
-$S{"classes"}=join(",", @classes);
-$S{"inittime"}=time;
-printf "Checked %d articles, %d CAFs in %d seconds\n", $ac, $cc, time-$NOW
-  if ($ac+$cc>0 && $opt_v>0);
+$S{"classes"} = join(",", @classes);
+$S{"inittime"} = time;
+printf "Checked %d articles, %d CAFs in %d seconds\n", $ac, $cc, time - $NOW
+  if ($ac + $cc > 0 && $opt_v > 0);
 
 chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 while (1) {
-    $S{"lastrun"}=$NOW=time;
-    printf "%s\n", &wtime($NOW) if ($opt_v>0);
-    $nt=0;
+    $S{"lastrun"} = $NOW = time;
+    printf "%s\n", &wtime($NOW) if ($opt_v > 0);
+    $nt = 0;
     foreach $c (@classes) {
-	$t=($NOW-$S{"work$;$c"})*100/$c;
-	$nt=$t if ($nt<$t);
+        $t = ($NOW - $S{"work$;$c"}) * 100 / $c;
+        $nt = $t if ($nt < $t);
     }
-    printf "Normal time (class 100): %s\n", &xtime($NOW-$nt)
-        if ($opt_v>0);
-    if ($nt<$opt_m*24*60*60) {
-	printf " capped at minimum %d days\n", $opt_m
-	  if ($opt_v>0);
-	$nt=$opt_m*24*60*60;
+    printf "Normal time (class 100): %s\n", &xtime($NOW - $nt)
+      if ($opt_v > 0);
+    if ($nt < $opt_m * 24 * 60 * 60) {
+        printf " capped at minimum %d days\n", $opt_m
+          if ($opt_v > 0);
+        $nt = $opt_m * 24 * 60 * 60;
     }
-    if ($nt>180*24*60*60) {
-	print " capped at maximum 180 days\n"
-	  if ($opt_v>0);
-	$nt=180*24*60*60;
+    if ($nt > 180 * 24 * 60 * 60) {
+        print " capped at maximum 180 days\n"
+          if ($opt_v > 0);
+        $nt = 180 * 24 * 60 * 60;
     }
-    $S{"normaltime"}=$nt;
-    $decrement=$opt_t*60;
-    $pass=$need=0;
-    $x="/";
-    undef %needk; undef %needi;
+    $S{"normaltime"} = $nt;
+    $decrement = $opt_t * 60;
+    $pass = $need = 0;
+    $x = "/";
+    undef %needk;
+    undef %needi;
     foreach $c (@classes) {
-	$Dart{$c}=$Dcaf{$c}=$Dkb{$c}=$Dino{$c}=0;
-	$y=sprintf("time-%02x", $c);
-	if (-d $y) {
-	    @S=stat(_);
-	    if ($#S>=0) {
-		$dev{$y}=$S[0];
-		unless (defined($needk{$S[0]})) {
-		    $x.=" $y";
-		    $needk{$S[0]}=$needi{$S[0]}=-1;
-		}
-	    }
-	}
-	$y=sprintf("timecaf-%02x", $c);
-	if (-d $y) {
-	    @S=stat(_);
-	    if ($#S>=0) {
-		$dev{$y}=$S[0];
-		unless (defined($needk{$S[0]})) {
-		    $x.=" $y";
-		    $needk{$S[0]}=$needi{$S[0]}=-1;
-		}
-	    }
-	}
+        $Dart{$c} = $Dcaf{$c} = $Dkb{$c} = $Dino{$c} = 0;
+        $y = sprintf("time-%02x", $c);
+        if (-d $y) {
+            @S = stat(_);
+            if ($#S >= 0) {
+                $dev{$y} = $S[0];
+                unless (defined($needk{ $S[0] })) {
+                    $x .= " $y";
+                    $needk{ $S[0] } = $needi{ $S[0] } = -1;
+                }
+            }
+        }
+        $y = sprintf("timecaf-%02x", $c);
+        if (-d $y) {
+            @S = stat(_);
+            if ($#S >= 0) {
+                $dev{$y} = $S[0];
+                unless (defined($needk{ $S[0] })) {
+                    $x .= " $y";
+                    $needk{ $S[0] } = $needi{ $S[0] } = -1;
+                }
+            }
+        }
     }
     if (open(D, "$INN::Config::newsbin/inndf $x |")) {
-	while (<D>) {
-	    @S=split(/\s+/, $_);
-	    $needk{$dev{$S[0]}}=$opt_f-$S[1] unless ($S[0] eq "/");
-	}
-	close D;
+        while (<D>) {
+            @S = split(/\s+/, $_);
+            $needk{ $dev{ $S[0] } } = $opt_f - $S[1] unless ($S[0] eq "/");
+        }
+        close D;
     }
     if (open(D, "$INN::Config::newsbin/inndf -i $x |")) {
-	while (<D>) {
-	    @S=split(/\s+/, $_);
-	    $needi{$dev{$S[0]}}=$opt_i-$S[1] unless ($S[0] eq "/");
-	}
-	close D;
+        while (<D>) {
+            @S = split(/\s+/, $_);
+            $needi{ $dev{ $S[0] } } = $opt_i - $S[1] unless ($S[0] eq "/");
+        }
+        close D;
     }
     foreach $c (keys %needk) {
-	printf "Device %d needs to free %d kilobytes, %d inodes\n",
-	       $c, $needk{$c}<0?0:$needk{$c}, $needi{$c}<0?0:$needi{$c}
-	    if ($opt_v>0 && ($needk{$c}>0 || $needi{$c}>0));
-	if ($needk{$c}>0 || $needi{$c}>0) {
-	    ++$need;
-	}
+        printf "Device %d needs to free %d kilobytes, %d inodes\n",
+          $c, $needk{$c} < 0 ? 0 : $needk{$c}, $needi{$c} < 0 ? 0 : $needi{$c}
+          if ($opt_v > 0 && ($needk{$c} > 0 || $needi{$c} > 0));
+        if ($needk{$c} > 0 || $needi{$c} > 0) {
+            ++$need;
+        }
     }
-    if ($opt_v>0 && $need<=0) {
-	print "  (nothing to do)\n";
-	$tt=0;
+    if ($opt_v > 0 && $need <= 0) {
+        print "  (nothing to do)\n";
+        $tt = 0;
     } else {
-	$error=0;
-	while (!$error && $need>0) {
-	    if ($S{"normaltime"}-$decrement<$opt_m*24*60*60) {
-		print "  Normal time hit minimum\n" if ($opt_v>0);
-		last;
-	    }
-	    $S{"normaltime"}-=$decrement;
-	    printf "  normal time (100) becomes %ld\n", $S{"normaltime"}
-	    if ($opt_v>2);
-	    ++$pass;
-	    $Dart=$Dcaf=$Dkb=$Dino=$need=0;
-	    foreach $c (keys %needk) {
-		if ($needk{$c}>0 || $needi{$c}>0) {
-		    ++$need;
-		}
-	    }
-	    if ($need) {
-		foreach $c (@classes) {
-		    &worktime($c, $NOW-($S{"normaltime"}*$c/100));
-		    $Dart+=$dart; $Dcaf+=$dcaf; $Dkb+=$dbb>>10; $Dino+=$dino;
-		    $Dart{$c}+=$dart; $Dcaf{$c}+=$dcaf;
-		    $Dkb{$c}+=$dbb>>10; $Dino{$c}+=$dino;
-		    last if ($error);
-		}
-	    }
-	    if ($Dart+$Dcaf) {
-		printf "  pass %d deleted %d arts, %d CAFs, %d kb\n",
-		       $pass, $Dart, $Dcaf, $Dkb if ($opt_v>1);
-		$decrement-=$decrement>>2 if ($decrement>10*60);
-	    } else {
-		$decrement+=$decrement>>1 if ($decrement<4*60*60);
-	    }
-	}
-	$Dkb=$Dart=$Dcaf=$Dino=0;
-	foreach $c (@classes) {
-	    printf "  class %3d: deleted %6d arts %6d CAFs %10d kb\n",
-	           $c, $Dart{$c}, $Dcaf{$c}, $Dkb{$c} if ($opt_v>1);
-	    $Dkb+=$Dkb{$c}; $Dart+=$Dart{$c}; $Dcaf+=$Dcaf{$c};
-	}
-	$tt=time-$NOW;
-	printf " deleted %d articles, %d CAFs, %d kb in %d seconds\n",
-               $Dart, $Dcaf, $Dkb, time-$NOW if ($opt_v>0);
-	if ($tt>$opt_t*60) {
-	    printf STDERR "Round needed %d seconds, interval is %d\n",
-	    $tt, $opt_t*60;
-	    $tt=$opt_t*60;
-	}
+        $error = 0;
+        while (!$error && $need > 0) {
+            if ($S{"normaltime"} - $decrement < $opt_m * 24 * 60 * 60) {
+                print "  Normal time hit minimum\n" if ($opt_v > 0);
+                last;
+            }
+            $S{"normaltime"} -= $decrement;
+            printf "  normal time (100) becomes %ld\n", $S{"normaltime"}
+              if ($opt_v > 2);
+            ++$pass;
+            $Dart = $Dcaf = $Dkb = $Dino = $need = 0;
+            foreach $c (keys %needk) {
+                if ($needk{$c} > 0 || $needi{$c} > 0) {
+                    ++$need;
+                }
+            }
+            if ($need) {
+                foreach $c (@classes) {
+                    &worktime($c, $NOW - ($S{"normaltime"} * $c / 100));
+                    $Dart += $dart;
+                    $Dcaf += $dcaf;
+                    $Dkb += $dbb >> 10;
+                    $Dino += $dino;
+                    $Dart{$c} += $dart;
+                    $Dcaf{$c} += $dcaf;
+                    $Dkb{$c} += $dbb >> 10;
+                    $Dino{$c} += $dino;
+                    last if ($error);
+                }
+            }
+            if ($Dart + $Dcaf) {
+                printf "  pass %d deleted %d arts, %d CAFs, %d kb\n",
+                  $pass, $Dart, $Dcaf, $Dkb if ($opt_v > 1);
+                $decrement -= $decrement >> 2 if ($decrement > 10 * 60);
+            } else {
+                $decrement += $decrement >> 1 if ($decrement < 4 * 60 * 60);
+            }
+        }
+        $Dkb = $Dart = $Dcaf = $Dino = 0;
+        foreach $c (@classes) {
+            printf "  class %3d: deleted %6d arts %6d CAFs %10d kb\n",
+              $c, $Dart{$c}, $Dcaf{$c}, $Dkb{$c} if ($opt_v > 1);
+            $Dkb += $Dkb{$c};
+            $Dart += $Dart{$c};
+            $Dcaf += $Dcaf{$c};
+        }
+        $tt = time - $NOW;
+        printf " deleted %d articles, %d CAFs, %d kb in %d seconds\n",
+          $Dart, $Dcaf, $Dkb, time - $NOW if ($opt_v > 0);
+        if ($tt > $opt_t * 60) {
+            printf STDERR "Round needed %d seconds, interval is %d\n",
+              $tt, $opt_t * 60;
+            $tt = $opt_t * 60;
+        }
     }
-    sleep $opt_t*60-$tt;
+    sleep $opt_t * 60 - $tt;
 }
 &finish(0);
 
-
-sub initclass
-{
-    my $C=shift;
+sub initclass {
+    my $C = shift;
     if (!$S{"blocksize$;$C$;CAF"}) {
-	# Determine filesystem blocksize
-	# unfortunately no way in perl to statfs
-	my $x=sprintf("%s/timecaf-%02x/test%d", $INN::Config::spool, $C, $$);
-	if (open(A, ">$x")) {
-	    print A "X" x 4096;
-	    close A;
-	    @S=stat $x;
-	    $#S>=12 || die "stat: $!";
-	    if ($S[12]) {
-		$S{"blocksize$;$C$;CAF"}=$S[7]/$S[12];
-	    } else {
-		$S{"blocksize$;$C$;CAF"}=512;
-		warn "hack around broken stat blocksize";
-	    }
-	    unlink $x;
-	}
+        # Determine filesystem blocksize
+        # unfortunately no way in perl to statfs
+        my $x = sprintf("%s/timecaf-%02x/test%d", $INN::Config::spool, $C, $$);
+        if (open(A, ">$x")) {
+            print A "X" x 4096;
+            close A;
+            @S = stat $x;
+            $#S >= 12 || die "stat: $!";
+            if ($S[12]) {
+                $S{"blocksize$;$C$;CAF"} = $S[7] / $S[12];
+            } else {
+                $S{"blocksize$;$C$;CAF"} = 512;
+                warn "hack around broken stat blocksize";
+            }
+            unlink $x;
+        }
     }
     return if ($S{"oldest$;$C"});
-    my $oldest=time;
-    $S{"oldest$;$C"}=$oldest;
-    my $base=sprintf("%s/time-%02x", $INN::Config::spool, $C);
-    my $count=0;
+    my $oldest = time;
+    $S{"oldest$;$C"} = $oldest;
+    my $base = sprintf("%s/time-%02x", $INN::Config::spool, $C);
+    my $count = 0;
     if (chdir $base) {
-	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
-	opendir(D0, ".");
-	while ($d1=readdir(D0), defined($d1)) {
-	    $d1=~/^[0-9a-f][0-9a-f]$/ || next;
-	    chdir $d1;
-	    opendir(D1, ".") || next;
-	    while ($d2=readdir(D1), defined($d2)) {
-		$d2=~/^[0-9a-f][0-9a-f]$/ || next;
-		chdir $d2;
-		opendir(D2, ".") || next;
-		while ($a=readdir(D2), defined($a)) {
-		    $a=~/^\./ && next;
-		    @S=stat($a);
-		    $oldest=$S[9] if ($S[9]<$oldest);
-		    ++$count;
-		}
-		closedir D2;
-		chdir "..";
-	    }
-	    closedir D1;
-	    chdir "..";
-	}
-	closedir D0;
-	$ac+=$count;
+        printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v > 0);
+        opendir(D0, ".");
+        while ($d1 = readdir(D0), defined($d1)) {
+            $d1 =~ /^[0-9a-f][0-9a-f]$/ || next;
+            chdir $d1;
+            opendir(D1, ".") || next;
+            while ($d2 = readdir(D1), defined($d2)) {
+                $d2 =~ /^[0-9a-f][0-9a-f]$/ || next;
+                chdir $d2;
+                opendir(D2, ".") || next;
+                while ($a = readdir(D2), defined($a)) {
+                    $a =~ /^\./ && next;
+                    @S = stat($a);
+                    $oldest = $S[9] if ($S[9] < $oldest);
+                    ++$count;
+                }
+                closedir D2;
+                chdir "..";
+            }
+            closedir D1;
+            chdir "..";
+        }
+        closedir D0;
+        $ac += $count;
     }
-    $base=sprintf("%s/timecaf-%02x", $INN::Config::spool, $C);
+    $base = sprintf("%s/timecaf-%02x", $INN::Config::spool, $C);
     if (chdir $base) {
-	printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v>0);
-	opendir(D0, ".");
-	while ($d1=readdir(D0), defined($d1)) {
-	    $d1=~/^[0-9a-f][0-9a-f]$/ || next;
-	    chdir $d1;
-	    opendir(D1, ".") || next;
-	    while ($a=readdir(D1), defined($a)) {
-		$a=~/^\./ && next;
-		@S=stat($a);
-		$oldest=$S[9] if ($S[9]<$oldest);
-		++$count;
-	    }
-	    closedir D1;
-	    chdir "..";
-	}
-	closedir D0;
-	$cc+=$count;
+        printf "Finding oldest in class %d (%s)\n", $C, $base if ($opt_v > 0);
+        opendir(D0, ".");
+        while ($d1 = readdir(D0), defined($d1)) {
+            $d1 =~ /^[0-9a-f][0-9a-f]$/ || next;
+            chdir $d1;
+            opendir(D1, ".") || next;
+            while ($a = readdir(D1), defined($a)) {
+                $a =~ /^\./ && next;
+                @S = stat($a);
+                $oldest = $S[9] if ($S[9] < $oldest);
+                ++$count;
+            }
+            closedir D1;
+            chdir "..";
+        }
+        closedir D0;
+        $cc += $count;
     }
-    $S{"count$;$C"}=$count;
-    $S{"oldest$;$C"}=$oldest;
+    $S{"count$;$C"} = $count;
+    $S{"oldest$;$C"} = $oldest;
 }
 
-sub worktime
-{
-    my $C=shift;
-    my $goal=shift;
-    $goal&=0xFFFFFF00;
+sub worktime {
+    my $C = shift;
+    my $goal = shift;
+    $goal &= 0xFFFFFF00;
     printf "  goal for class %d becomes %s\n", $C, &xtime($goal)
-      if ($opt_v>2);
-    if ($goal>$NOW-$opt_x) {
-	printf "  goal for class %d cut off\n", $C
-	  if ($opt_v>1);
-	$error=1;
-	return;
+      if ($opt_v > 2);
+    if ($goal > $NOW - $opt_x) {
+        printf "  goal for class %d cut off\n", $C
+          if ($opt_v > 1);
+        $error = 1;
+        return;
     }
-    $dart=$dcaf=$dbb=$dino=0;
-    $hdir=sprintf("time-%02x", $C);
-    $cdir=sprintf("timecaf-%02x", $C);
-    while (($_=$S{"work$;$C"})<$goal) {
-	printf "  running: %08x\n", $_ if ($opt_v>2);
-	($aa,$bb,$cc) = (($_>>24)&0xFF, ($_>>16)&0xFF, ($_>>8)&0xFF);
-	$dir=sprintf("%s/%02x/%02x", $hdir, $bb, $cc);
-	$pat=sprintf("[0-9a-f]{4}-%02x[0-9a-f]{2}", $aa);
-	if (opendir(D, $dir)) {
-	    while ($_=readdir(D), defined($_)) {
-		/^$pat$/ || next;
-		$art="$dir/$_";
-		@S=stat($art);
-		if ($#S>=7) {
-		    if ($opt_N) {
-			print "   would delete $art" if ($opt_v>2);
-		    } else {
-			print "   deleting $art" if ($opt_v>2);
-			unlink $art;
-		    }
-		    ++$dart; ++$dino;
-		    printf " %d kb\n", $S[7]>>10 if ($opt_v>2);
-		    $dbb+=$S[7];
-		    $needk{$dev{$hdir}}-=$S[7]>>10;
-		    $needi{$dev{$hdir}}--;
-		}
-	    }
-	} else {
-	    printf "  (no dir %s)\n", $dir if ($opt_v>2);
-	}
-	$caf=sprintf("%s/%02x/%02x%02x.CF", $cdir, $bb, $aa, $cc);
-	@S=stat($caf);
-	if ($#S>=12) {
-	    if ($opt_N) {
-		print "   would delete $caf" if ($opt_v>2);
-	    } else {
-		print "   deleting $caf" if ($opt_v>2);
-		unlink $caf;
-	    }
-	    $y=0;
-	    if (open(C, $caf)) {
-		# try to find how much there is in the CAF
-		sysread(C, $_, 16);
-		@C=unpack("a4LLL", $_);
-		if ($C[0] eq "CRMT") {
-		    $y=$C[3]-$C[1];
-		    $dart+=$y;
-		}
-		close C;
-	    }
-	    ++$dcaf; ++$dino;
-	    if ($S[12]) {
-		$x=$S[12]*$S{"blocksize$;$C$;CAF"};
-	    } else {
-		$x=$S[7];
-		warn "hack around broken stat blocksize";
-	    }
-	    printf " %d arts %d kb\n", $y, $x>>10 if ($opt_v>2);
-	    $dbb+=$x;
-	    $needk{$dev{$cdir}}-=$x>>10;
-	    $needi{$dev{$cdir}}--;
-	}
-	$S{"work$;$C"}+=0x100;
-	$S{"oldest$;$C"}=$S{"work$;$C"} unless ($opt_N);
+    $dart = $dcaf = $dbb = $dino = 0;
+    $hdir = sprintf("time-%02x", $C);
+    $cdir = sprintf("timecaf-%02x", $C);
+    while (($_ = $S{"work$;$C"}) < $goal) {
+        printf "  running: %08x\n", $_ if ($opt_v > 2);
+        ($aa, $bb, $cc)
+          = (($_ >> 24) & 0xFF, ($_ >> 16) & 0xFF, ($_ >> 8) & 0xFF);
+        $dir = sprintf("%s/%02x/%02x", $hdir, $bb, $cc);
+        $pat = sprintf("[0-9a-f]{4}-%02x[0-9a-f]{2}", $aa);
+        if (opendir(D, $dir)) {
+            while ($_ = readdir(D), defined($_)) {
+                /^$pat$/ || next;
+                $art = "$dir/$_";
+                @S = stat($art);
+                if ($#S >= 7) {
+                    if ($opt_N) {
+                        print "   would delete $art" if ($opt_v > 2);
+                    } else {
+                        print "   deleting $art" if ($opt_v > 2);
+                        unlink $art;
+                    }
+                    ++$dart;
+                    ++$dino;
+                    printf " %d kb\n", $S[7] >> 10 if ($opt_v > 2);
+                    $dbb += $S[7];
+                    $needk{ $dev{$hdir} } -= $S[7] >> 10;
+                    $needi{ $dev{$hdir} }--;
+                }
+            }
+        } else {
+            printf "  (no dir %s)\n", $dir if ($opt_v > 2);
+        }
+        $caf = sprintf("%s/%02x/%02x%02x.CF", $cdir, $bb, $aa, $cc);
+        @S = stat($caf);
+        if ($#S >= 12) {
+            if ($opt_N) {
+                print "   would delete $caf" if ($opt_v > 2);
+            } else {
+                print "   deleting $caf" if ($opt_v > 2);
+                unlink $caf;
+            }
+            $y = 0;
+            if (open(C, $caf)) {
+                # try to find how much there is in the CAF
+                sysread(C, $_, 16);
+                @C = unpack("a4LLL", $_);
+                if ($C[0] eq "CRMT") {
+                    $y = $C[3] - $C[1];
+                    $dart += $y;
+                }
+                close C;
+            }
+            ++$dcaf;
+            ++$dino;
+            if ($S[12]) {
+                $x = $S[12] * $S{"blocksize$;$C$;CAF"};
+            } else {
+                $x = $S[7];
+                warn "hack around broken stat blocksize";
+            }
+            printf " %d arts %d kb\n", $y, $x >> 10 if ($opt_v > 2);
+            $dbb += $x;
+            $needk{ $dev{$cdir} } -= $x >> 10;
+            $needi{ $dev{$cdir} }--;
+        }
+        $S{"work$;$C"} += 0x100;
+        $S{"oldest$;$C"} = $S{"work$;$C"} unless ($opt_N);
     }
 }
 
-sub report
-{
-    $NOW=time;
-    my $cc=$S{"classes"};
-    my $nt=$S{"normaltime"};
+sub report {
+    $NOW = time;
+    my $cc = $S{"classes"};
+    my $nt = $S{"normaltime"};
     unless ($cc && $nt) {
-	print "Not initialized.\n";
-	return;
+        print "Not initialized.\n";
+        return;
     }
     printf "Started at: %s\n", &xtime($S{"inittime"}) if ($S{"inittime"});
     printf "Last run: %s\n", &xtime($S{"lastrun"}) if ($S{"lastrun"});
     printf "Classes: %s\n", $cc;
     foreach $c (split(/,/, $cc)) {
-	printf "Class %d:\n", $c;
-	#printf "  Initial count %d articles\n", $S{"count$;$c"};
-	printf "  Oldest article: %s\n", &xtime($S{"oldest$;$c"});
-	printf "  Expiring at:    %s\n", &xtime($S{"work$;$c"});
-	printf "  Normal time:    %s\n", &xtime($NOW-$nt*$c/100);
-	printf "  Filesystem block size (CAF): %d\n", $S{"blocksize$;$c$;CAF"};
+        printf "Class %d:\n", $c;
+        #printf "  Initial count %d articles\n", $S{"count$;$c"};
+        printf "  Oldest article: %s\n", &xtime($S{"oldest$;$c"});
+        printf "  Expiring at:    %s\n", &xtime($S{"work$;$c"});
+        printf "  Normal time:    %s\n", &xtime($NOW - $nt * $c / 100);
+        printf "  Filesystem block size (CAF): %d\n", $S{"blocksize$;$c$;CAF"};
     }
 }
 
-sub wtime
-{
-    my $t=shift;
-    my @T=localtime($t);
-    sprintf("%04d-%02d-%02d %02d:%02d",
-	    $T[5]+1900, $T[4]+1, $T[3], $T[2], $T[1]);
+sub wtime {
+    my $t = shift;
+    my @T = localtime($t);
+    sprintf(
+        "%04d-%02d-%02d %02d:%02d",
+        $T[5] + 1900, $T[4] + 1, $T[3], $T[2], $T[1]
+    );
 }
 
-sub xtime
-{
-    my $t=shift;
-    if ($NOW-$t<0 || $NOW-$t>350*24*60*60) {
-	return &wtime($t);
+sub xtime {
+    my $t = shift;
+    if ($NOW - $t < 0 || $NOW - $t > 350 * 24 * 60 * 60) {
+        return &wtime($t);
     }
-    my @T=localtime($t);
-    my @D=gmtime($NOW-$t);
-    sprintf("%04d-%02d-%02d %02d:%02d (%dd %dh %dm)",
-	    $T[5]+1900, $T[4]+1, $T[3], $T[2], $T[1],
-	    $D[7], $D[2], $D[1]);
+    my @T = localtime($t);
+    my @D = gmtime($NOW - $t);
+    sprintf(
+        "%04d-%02d-%02d %02d:%02d (%dd %dh %dm)",
+        $T[5] + 1900, $T[4] + 1, $T[3], $T[2], $T[1],
+        $D[7], $D[2], $D[1]
+    );
 }
 
-sub err
-{
+sub err {
     printf STDERR "%s\n", shift;
     &finish(0);
 }
 
-sub finish
-{
+sub finish {
     untie(%S);
 
     # Unlock.

@@ -7,12 +7,12 @@
 #     @token@ lists
 # for each article that needs to be mailed.  We invoke sm on the
 # localhost to get the actual article and stuff it down sendmail's throat.
-# 
+#
 # This program expects to find a file that maps listname to listaddrs:
 #     <pathetc>/news2mail.cf
 # which must contain address mapping lines such as:
 #
-#    list-big-red-ants	big-red-ants@lists.ucsd.edu	news+big-red-ants@local.news.server.org
+#    list-ants  ants@lists.ucsd.edu  news+ants@local.news.server.org
 #
 # where the first token is the name fed to us from the INN's newsfeeds file.
 # The second token is the actual address sendmail ships the article to.
@@ -35,9 +35,9 @@ require 5.006;
 use FileHandle;
 use strict;
 
-my $cfFile = $INN::Config::pathetc . "/news2mail.cf" ;
-my $sendmail = $INN::Config::mta ;
-my $sm = $INN::Config::pathbin . "/sm" ;
+my $cfFile = $INN::Config::pathetc . "/news2mail.cf";
+my $sendmail = $INN::Config::mta;
+my $sm = $INN::Config::pathbin . "/sm";
 my %maddr = ();
 my %saddr = ();
 my $use_syslog = 0;
@@ -47,13 +47,13 @@ eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 if ($use_syslog) {
     if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+        Sys::Syslog::setlogsock('unix')
+          if $^O =~ /linux|dec_osf|freebsd|darwin/;
     }
     openlog('news2mail', 'pid', $INN::Config::syslog_facility);
 }
 
 syslog('info', 'begin') if ($use_syslog);
-
 
 # Load the list names and their mail addresses from the configuration file.
 # Comments and blank lines are ignored.
@@ -72,7 +72,6 @@ while (<CF>) {
 }
 close(CF);
 
-
 # For each incoming line from the INN channel.
 while (<STDIN>) {
     chomp;
@@ -80,8 +79,8 @@ while (<STDIN>) {
 
     my ($token, $lnames) = split(/\s+/, $_, 2);
     my @addrs = split(/\s+/, $lnames);
-    my @good = grep {  defined($maddr{$_}) } @addrs;
-    my @bad  = grep { !defined($maddr{$_}) } @addrs;
+    my @good = grep { defined($maddr{$_}) } @addrs;
+    my @bad = grep { !defined($maddr{$_}) } @addrs;
 
     if (!@good) {
         syslog('notice', "unknown list(s): $lnames") if ($use_syslog);
@@ -102,14 +101,15 @@ syslog("info", "end") if ($use_syslog);
 
 exit 0;
 
-
 sub mailto {
-    my($t, $s, @a) = @_;
+    my ($t, $s, @a) = @_;
 
     my $sendmail = $INN::Config::mta;
     $sendmail =~ s!\s*%s!!;
-    my @command = (split(' ', $sendmail), '-ee', '-odq', "-f$s",
-                   "-pNNTP:$INN::Config::pathhost", @a);
+    my @command = (
+        split(' ', $sendmail), '-ee', '-odq', "-f$s",
+        "-pNNTP:$INN::Config::pathhost", @a
+    );
 
     syslog('debug', join(' ', @command)) if ($use_syslog);
 
@@ -131,7 +131,7 @@ sub mailto {
 
         # Empty line signals the end of header field.
         if (/^$/) {
-            print SM "To: ".join(",", @a)."\n\n";
+            print SM "To: " . join(",", @a) . "\n\n";
             last;
         }
 

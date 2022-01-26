@@ -10,34 +10,33 @@
 
 require 'newgetopt.pl';
 require 'newusage.pl';
-@opts =
-  (
-   "help|usage;;print this message",
-   "a=s;;directory to archive in instead of the default",
-   "f;;directory names will be flattened out",
-   "i=s;;append one line to the index file for each article (Destination name, Message ID, Subject)",
-   "m;; Files are copied by making a link.  Not applicable, ignored",
-   "r;;Suppress stderr redirection to /var/log/news/errlog",
-   "n=s;;the news spool (source) directory (default=/var/spool/news/)",
-   "t=i;;timeout that separates batches (default 10 seconds)",
-   ";;input",
-   # Examples. 
-   # 
-   # "OPT;;Option without an argument",
-   # "OPT!;;Negatable option without an argument",
-   # "VAR=T;;Option with mandatory argumet T = s(tring),i(nteger), or f(loat).
-   # "VAR:T;;Option with optional argument.
-   # "OPT|AAA|BBB";;AAA and BBB are aliases for OPT",
-   # "VAR=T@";;Push option argument onto array @opt_VAR"
-  );
+@opts = (
+    "help|usage;;print this message",
+    "a=s;;directory to archive in instead of the default",
+    "f;;directory names will be flattened out",
+    "i=s;;append one line to the index file for each article "
+      . "(Destination name, Message ID, Subject)",
+    "m;; Files are copied by making a link.  Not applicable, ignored",
+    "r;;Suppress stderr redirection to /var/log/news/errlog",
+    "n=s;;the news spool (source) directory (default=/var/spool/news/)",
+    "t=i;;timeout that separates batches (default 10 seconds)",
+    ";;input",
+    # Examples.
+    #
+    # "OPT;;Option without an argument",
+    # "OPT!;;Negatable option without an argument",
+    # "VAR=T;;Option with mandatory argumet T = s(tring),i(nteger), or f(loat).
+    # "VAR:T;;Option with optional argument.
+    # "OPT|AAA|BBB";;AAA and BBB are aliases for OPT",
+    # "VAR=T@";;Push option argument onto array @opt_VAR"
+);
 $ignorecase = 0;
 $badopt = !&NGetOpt(&NMkOpts(@opts));
 # $badarg = (@ARGV != 0);
-if ($badarg || $badopt || $opt_help)
-  {
-    &NUsage($0,0,'',@opts);
-    exit ($badopt||$badarg);
-  } 
+if ($badarg || $badopt || $opt_help) {
+    &NUsage($0, 0, '', @opts);
+    exit($badopt || $badarg);
+}
 
 # --------------------------------------------------------------------
 
@@ -46,263 +45,238 @@ $NEWS_ROOT = "/var/spool/news/";
 $NEWS_ERR = "/var/log/news/errlog";
 $NEWS_ARCHIVE = $NEWS_ROOT . "news.archive/";
 $timeout = 10;
-if ($opt_t)
-  { $timeout = $opt_t;}
-if ($timeout<1) {$timeout=1;}
+if ($opt_t) { $timeout = $opt_t; }
+if ($timeout < 1) { $timeout = 1; }
 
 # --------------------------------------------------------------------
 
-sub regexp_escape
-  {
-    local($data)=@_;
+sub regexp_escape {
+    local ($data) = @_;
 
-    $data =~ s+\\+\\\\+gi; # replace \ with \\
-    $data =~ s+\/+\\\/+gi; # replace / with \/
+    $data =~ s+\\+\\\\+gi;    # replace \ with \\
+    $data =~ s+\/+\\\/+gi;    # replace / with \/
 
-    $data =~ s/([\+\*\?\[\]\(\)\{\}\.\|])/\\$1/gi; # replace +*?[](){}.|
+    $data =~ s/([\+\*\?\[\]\(\)\{\}\.\|])/\\$1/gi;    # replace +*?[](){}.|
 
     return $data;
-  }
-
-sub fhbits {
-  local(@fhlist) = split(' ',$_[0]);
-  local($bits);
-  for (@fhlist) {
-    vec($bits,fileno($_),1) = 1;
-  }
-  $bits;
 }
 
-sub timed_getline
-  {
-    my ($fileh,$timeout)=@_;
-    my $filehandle = (ref($fileh)
-		      ? (ref($fileh) eq 'GLOB'
-			 || UNIVERSAL::isa($fileh, 'GLOB')
-			 || UNIVERSAL::isa($fileh, 'IO::Handle'))
-		      : (ref(\$fileh) eq 'GLOB'));
-    local(*FILEH) = *$fileh{FILEHANDLE};
+sub fhbits {
+    local (@fhlist) = split(' ', $_[0]);
+    local ($bits);
+    for (@fhlist) {
+        vec($bits, fileno($_), 1) = 1;
+    }
+    $bits;
+}
 
-    local($rin,$win,$ein);
-    local($rout,$wout,$eout);
+sub timed_getline {
+    my ($fileh, $timeout) = @_;
+    my $filehandle = (
+        ref($fileh)
+        ? (ref($fileh) eq 'GLOB'
+              || UNIVERSAL::isa($fileh, 'GLOB')
+              || UNIVERSAL::isa($fileh, 'IO::Handle'))
+        : (ref(\$fileh) eq 'GLOB')
+    );
+    local (*FILEH) = *$fileh{FILEHANDLE};
+
+    local ($rin, $win, $ein);
+    local ($rout, $wout, $eout);
     $rin = $win = $ein = '';
     $rin = fhbits('FILEH');
     $ein = $rin | $win;
-    local($nfound);
-    local($offset)=0;
-    local($accum)='';
-    local($done)=0;
-    local($result);
+    local ($nfound);
+    local ($offset) = 0;
+    local ($accum) = '';
+    local ($done) = 0;
+    local ($result);
 
-    $nfound = select($rout=$rin, $wout=$win, $eout=$ein, $timeout);
+    $nfound = select($rout = $rin, $wout = $win, $eout = $ein, $timeout);
 
-    if ($nfound>0)
-      {
-	
-	# use sysread() to get characters up to end-of-line (incl.)
-	while (!$done)
-	  {
-	    $result = sysread(FILEH, $accum, 1, $offset);
-	    if ($result<=0)
-	      {
-		$done=1;
-		return undef;
-	      }
+    if ($nfound > 0) {
 
-	    if (substr($accum,$offset,1) eq "\n")
-	      {
-		$done=1;
-	      }
-	    else
-	      {
-		$offset+=$result;
-	      }
-	  }
-      }
+        # use sysread() to get characters up to end-of-line (incl.)
+        while (!$done) {
+            $result = sysread(FILEH, $accum, 1, $offset);
+            if ($result <= 0) {
+                $done = 1;
+                return undef;
+            }
+
+            if (substr($accum, $offset, 1) eq "\n") {
+                $done = 1;
+            } else {
+                $offset += $result;
+            }
+        }
+    }
     return $accum;
-  }
+}
 
 # --------------------------------------------------------------------
 
 # --- source spool directory ---
-if ($opt_n)
-  {
-    if ($opt_n !~ /^\//) # absolute path?
-      { $opt_n = $NEWS_ROOT . $opt_n; }
-    if ($opt_n !~ /\/$/) # must end with /
-      { $opt_n .= '/'; }
+if ($opt_n) {
+    if ($opt_n !~ /^\//)    # absolute path?
+    { $opt_n = $NEWS_ROOT . $opt_n; }
+    if ($opt_n !~ /\/$/)    # must end with /
+    { $opt_n .= '/'; }
     $NEWS_ROOT = $opt_n;
-  }
+}
 
 # --- archive directory ---
-if ($opt_a)
-  {
-    if ($opt_a !~ /^\//) # absolute path?
-      { $opt_a = $NEWS_ROOT . $opt_a; }
-    if ($opt_a !~ /\/$/) # must end with /
-      { $opt_a .= '/'; }
+if ($opt_a) {
+    if ($opt_a !~ /^\//)    # absolute path?
+    { $opt_a = $NEWS_ROOT . $opt_a; }
+    if ($opt_a !~ /\/$/)    # must end with /
+    { $opt_a .= '/'; }
     $NEWS_ARCHIVE = $opt_a;
-  }
+}
 
 # --- redirect stderr ---
-if (!$opt_r)
-  {
+if (!$opt_r) {
     open(SAVEERR, ">&STDERR");
     open(STDERR, ">>$NEWS_ERR") || die "Can't redirect stderr";
-  }
+}
 
 # --- get input file opened ---
-if ($infilename=shift(@ARGV))
-  {
-    if ($infilename !~ /^\//) # absolute filename? 
-      {
-	$infilename = $NEWS_ROOT . $infilename;
-      }
+if ($infilename = shift(@ARGV)) {
+    if ($infilename !~ /^\//)    # absolute filename?
+    {
+        $infilename = $NEWS_ROOT . $infilename;
+    }
 
-  }
-else
-  {
-    $infilename="-";
-  }
-open(INFILE,"<$infilename");
+} else {
+    $infilename = "-";
+}
+open(INFILE, "<$infilename");
 
-$done=0;
-while (!$done)
-  {
-    %sourcefile=();
-    %destfile=();
-    %destname=();
+$done = 0;
+while (!$done) {
+    %sourcefile = ();
+    %destfile = ();
+    %destname = ();
 
-    
     # --- loop over each line in infile ---
     # comments start with '#', ignore blank lines, each line is a filename
-    while ($srcfile = &timed_getline(INFILE,$timeout))
-    {
-      if ($srcfile =~ /\#/) {$srcfile = $`;}
-      if ($srcfile =~ /^\s*/) {$srcfile = $';}
-      if ($srcfile =~ /\s*$/) {$srcfile = $`;}
-      if ($srcfile)  # if a filename survived all that...
-	{
-	  if ($srcfile !~ /^\//) # absolute filename?
-	    {
-	      $srcfile = $NEWS_ROOT . $srcfile;
-	    }
-	  # $srcfile is now a valid, absolute filename
-	  # split filename into news directory, newsgroup and article number
-	  $artnum=-1;
-	  $remaining=$srcfile;
-	  if ($remaining =~ /\/(\d*)$/) # remove / and article number
-	    { $artnum = $1; $remaining=$`;}
-	  $regex = &regexp_escape($NEWS_ROOT);
-	  if ($remaining =~ /^$regex/) # split off news dir
-	    { $newsdir = $&; $grpdir = $';}
-	  else
-	    { $newsdir = ''; $grpdir = $remaining; } # ... otherwise, grp = dir
-	  $newsgrp = $grpdir;
-	  $newsgrp =~ s/\//\./g; # replace slash (/) with dot (.)
-	  if ($opt_f)
-	    {
-	      $grpdir = "$newsgrp.gz";
-	    }
-	  else
-	    { $grpdir .= "/archive.gz"; }
-	  $destfile = $NEWS_ARCHIVE . $grpdir;
+    while ($srcfile = &timed_getline(INFILE, $timeout)) {
+        if ($srcfile =~ /\#/) { $srcfile = $`; }
+        if ($srcfile =~ /^\s*/) { $srcfile = $'; }
+        if ($srcfile =~ /\s*$/) { $srcfile = $`; }
+        if ($srcfile)    # if a filename survived all that...
+        {
+            if ($srcfile !~ /^\//)    # absolute filename?
+            {
+                $srcfile = $NEWS_ROOT . $srcfile;
+            }
+            # $srcfile is now a valid, absolute filename
+            # split filename into news directory, newsgroup and article number
+            $artnum = -1;
+            $remaining = $srcfile;
+            if ($remaining =~ /\/(\d*)$/)    # remove / and article number
+            { $artnum = $1; $remaining = $`; }
+            $regex = &regexp_escape($NEWS_ROOT);
+            if ($remaining =~ /^$regex/)     # split off news dir
+            { $newsdir = $&; $grpdir = $'; }
+            else {
+                $newsdir = '';
+                $grpdir = $remaining;
+            }                                # ... otherwise, grp = dir
+            $newsgrp = $grpdir;
+            $newsgrp =~ s/\//\./g;           # replace slash (/) with dot (.)
+            if ($opt_f) {
+                $grpdir = "$newsgrp.gz";
+            } else {
+                $grpdir .= "/archive.gz";
+            }
+            $destfile = $NEWS_ARCHIVE . $grpdir;
 
-	  # print STDERR "$srcfile --> $newsgrp --> $destfile\n";
-	  if ($sourcefile{$newsgrp}) {$sourcefile{$newsgrp} .= " ";}
-	  $sourcefile{$newsgrp} .= $srcfile;
-	  $destfile{$newsgrp} = $destfile;
-	  $destname{$newsgrp} = $grpdir;
-	}
+            # print STDERR "$srcfile --> $newsgrp --> $destfile\n";
+            if ($sourcefile{$newsgrp}) { $sourcefile{$newsgrp} .= " "; }
+            $sourcefile{$newsgrp} .= $srcfile;
+            $destfile{$newsgrp} = $destfile;
+            $destname{$newsgrp} = $grpdir;
+        }
     }
 
     # --- is there anything to do at this time? ---
-    if (%destfile)
-      {
+    if (%destfile) {
 
-	# --- open INDEX ---
-	if ($opt_i)
-	  {
-	    # make sure directory exists
-	    if ($opt_i =~ /\/[^\/]*$/)
-	      {
-		$dirbase=$`;
-		system("mkdir -p $dirbase");
-	      }
-	    open(INDEX,">>$opt_i");
-	  }
+        # --- open INDEX ---
+        if ($opt_i) {
+            # make sure directory exists
+            if ($opt_i =~ /\/[^\/]*$/) {
+                $dirbase = $`;
+                system("mkdir -p $dirbase");
+            }
+            open(INDEX, ">>$opt_i");
+        }
 
-	# --- make sure that archive file can be written (make parent dirs) ---
-	if ($destfile{$group} =~ /\/[^\/]*$/)
-	  {
-	    $dirbase=$`;
-	    system("mkdir -p $dirbase");
-	  }
+        # --- make sure that archive file can be written (make parent dirs) ---
+        if ($destfile{$group} =~ /\/[^\/]*$/) {
+            $dirbase = $`;
+            system("mkdir -p $dirbase");
+        }
 
-	# --- process each article ---
-	foreach $group (keys(%destfile))
-	  {
-	    # --- gzip the concatenated document, appending archive file ---
-	    open(GZIP, "|gzip -c >> $destfile{$group}") || die "Can't open gzip";
-	    
-	    # --- concatenate the articles, keeping header info if needed ---
-	    @accum_headers=();
-	    foreach $srcfile (split(/\s+/, $sourcefile{$group}))
-	      {
-		# print STDERR "reading $srcfile...\n";
-		$this_doc='';
-		open(DOC, "<$srcfile");
-		while ($line=<DOC>)
-		  {
-		    $this_doc .= $line;
-		  }
-		close(DOC);
-		print GZIP $this_doc;
-		if ($opt_i)
-		  {
-		    # --- get header information and store it in index
-		    $subject=''; $mesageid=''; $destname='';
-		    if ($this_doc =~ /Subject:\s*(.*)/)
-		      { $subject = $1; }
-		    if ($subject =~ /^\s*/) {$subject = $';}
-		    if ($subject =~ /\s*$/) {$subject = $`;}
-		    if ($this_doc =~ /Message-ID:\s*(.*)/)
-		      {$messageid = $1; }
-		    if ($messageid =~ /^\s*/) {$messageid = $';}
-		    if ($messageid =~ /\s*$/) {$messageid = $`;}
-		    
-		    print INDEX "$destname{$group} $messageid $subject\n";
-		  }
-	      }
-	    
-	    close(GZIP);
-	  }
+        # --- process each article ---
+        foreach $group (keys(%destfile)) {
+            # --- gzip the concatenated document, appending archive file ---
+            open(GZIP, "|gzip -c >> $destfile{$group}")
+              || die "Can't open gzip";
 
-	# --- close index file ---
-	if ($opt_i)
-	  {
-	    close(INDEX);
-	  }
-      }
+            # --- concatenate the articles, keeping header info if needed ---
+            @accum_headers = ();
+            foreach $srcfile (split(/\s+/, $sourcefile{$group})) {
+                # print STDERR "reading $srcfile...\n";
+                $this_doc = '';
+                open(DOC, "<$srcfile");
+                while ($line = <DOC>) {
+                    $this_doc .= $line;
+                }
+                close(DOC);
+                print GZIP $this_doc;
+                if ($opt_i) {
+                    # --- get header information and store it in index
+                    $subject = '';
+                    $mesageid = '';
+                    $destname = '';
+                    if ($this_doc =~ /Subject:\s*(.*)/) { $subject = $1; }
+                    if ($subject =~ /^\s*/) { $subject = $'; }
+                    if ($subject =~ /\s*$/) { $subject = $`; }
+                    if ($this_doc =~ /Message-ID:\s*(.*)/) { $messageid = $1; }
+                    if ($messageid =~ /^\s*/) { $messageid = $'; }
+                    if ($messageid =~ /\s*$/) { $messageid = $`; }
 
-    if (!defined($srcfile)) # file was closed
-      {
-	$done=1;
-	last;  # "break"
-      }
-    
-  }
+                    print INDEX "$destname{$group} $messageid $subject\n";
+                }
+            }
+
+            close(GZIP);
+        }
+
+        # --- close index file ---
+        if ($opt_i) {
+            close(INDEX);
+        }
+    }
+
+    if (!defined($srcfile))    # file was closed
+    {
+        $done = 1;
+        last;                  # "break"
+    }
+
+}
 
 # --- restore stderr ---
-if (!$opt_r)
-  {
+if (!$opt_r) {
     close(STDERR);
-    open(STDERR,">>&SAVEERR");
-  }
+    open(STDERR, ">>&SAVEERR");
+}
 
 # --- close input file ---
 close(INFILE);
-
 
 __END__
 # Local Variables:

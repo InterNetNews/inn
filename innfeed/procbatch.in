@@ -12,14 +12,14 @@
 #
 
 #
-#	Hmm, perhaps we should try to read "backlog-directory"
-#	from innfeed.conf. Oh well.
+#        Hmm, perhaps we should try to read "backlog-directory"
+#        from innfeed.conf.  Oh well.
 #
 use strict;
-my $tapeDir   = $INN::Config::pathspool . "/innfeed";
-my $destDir   = $INN::Config::pathtmp;
+my $tapeDir = $INN::Config::pathspool . "/innfeed";
+my $destDir = $INN::Config::pathtmp;
 my $spoolArts = $INN::Config::patharticles;
-my $outGoing  = $INN::Config::pathoutgoing;
+my $outGoing = $INN::Config::pathoutgoing;
 
 ##
 ## Everything below here should probably be left alone.
@@ -29,7 +29,8 @@ $0 =~ s!.*/!!;
 
 use Getopt::Std;
 
-my $usage = "$0 [-hquv] [-c [-s dir]] [-d dir] [-e host] [-m [-t dir]] inn-batchfile\n
+my $usage
+  = "$0 [-hquv] [-c [-s dir]] [-d dir] [-e host] [-m [-t dir]] inn-batchfile\n
   -c         to check pathnames of articles before storing them
   -d dir     to put the output file(s) in that directory ($destDir)
   -e host    to process on entries for only that host
@@ -46,12 +47,12 @@ $0 will take an INN funnel file (normally a file in
 $outGoing), or an innfeed \"dropped\" file,
 which is presumed to be of the format:
 
-	pathname message-id peer1 peer2 peer3 ...
+        pathname message-id peer1 peer2 peer3 ...
 
 and will break it up into files peer1.tmp, peer2.tmp, peer3.tmp...  Each of
 these files will be of the format:
 
-	pathname message-id
+        pathname message-id
 
 that is the same as innfeed's backlog file format.  Simply rename these files
 to peer1, peer2, peer3... in a running innfeed's backlog directory and they
@@ -61,87 +62,90 @@ and they'll be moved automatically.
 
 my (%opt, %hosts);
 my $missing = 0;
-getopts ("cd:e:hmqs:t:uv", \%opt) || die $usage;
+getopts("cd:e:hmqs:t:uv", \%opt) || die $usage;
 
 die $usage if $opt{'h'};
 die "Cannot specify both -q and -v\n\n" . $usage if ($opt{'q'} && $opt{'v'});
 
 $spoolArts = $opt{'s'} if $opt{'s'};
-$destDir   = $opt{'d'} if $opt{'d'};
-$tapeDir   = $opt{'t'} if $opt{'t'};
+$destDir = $opt{'d'} if $opt{'d'};
+$tapeDir = $opt{'t'} if $opt{'t'};
 my $inputFile = shift;
 
 die $usage if !$inputFile;
 unless (-f $inputFile) {
-       exit if $opt{'q'};
-       die "No such file: $inputFile\n\n" . $usage;
+    exit if $opt{'q'};
+    die "No such file: $inputFile\n\n" . $usage;
 }
-die "No such directory: $spoolArts\n\n" . $usage if ( ! -d $spoolArts && $opt{'c'} );
-die "No such directory: $destDir\n\n"   . $usage if ( ! -d $destDir );
-die "No such directory: $tapeDir\n\n"   . $usage if ( ! -d $tapeDir && $opt{'m'} );
+die "No such directory: $spoolArts\n\n" . $usage
+  if (!-d $spoolArts && $opt{'c'});
+die "No such directory: $destDir\n\n" . $usage if (!-d $destDir);
+die "No such directory: $tapeDir\n\n" . $usage if (!-d $tapeDir && $opt{'m'});
 warn "Specifying -s without -c has no effect!" if $opt{'s'} and not $opt{'c'};
 warn "Specifying -t without -m has no effect!" if $opt{'t'} and not $opt{'m'};
 
 print "Using $inputFile\n" if $opt{'v'};
-open (my $INPUT, '<', $inputFile) || die "$0: open ($inputFile): $!\n";
+open(my $INPUT, '<', $inputFile) || die "$0: open ($inputFile): $!\n";
 
 while (<$INPUT>) {
-	chop;
-	my @F = split;
+    chop;
+    my @F = split;
 
-        # Check the format of the line vigorously
-        next unless (m!^\S+/\d+ <.+@.+> \S+! || m!^@[0-9A-F]+@ <.+@.+> \S+!);
+    # Check the format of the line vigorously
+    next unless (m!^\S+/\d+ <.+@.+> \S+! || m!^@[0-9A-F]+@ <.+@.+> \S+!);
 
-	if ( $opt{'c'} ) {
-		if ( ! -f "$spoolArts/$F[0]" )  {
-			$missing++;
-			print "Dropping file: $spoolArts/$F[0]\n" if $opt{'v'};
-			next;
-		}
-	}
+    if ($opt{'c'}) {
+        if (!-f "$spoolArts/$F[0]") {
+            $missing++;
+            print "Dropping file: $spoolArts/$F[0]\n" if $opt{'v'};
+            next;
+        }
+    }
 
-	for (my $i = 2 ; $i <= $#F ; $i++) {
-		my $host = $F[$i];
-		next if ($opt{'e'} && $opt{'e'} ne $host);
+    for (my $i = 2; $i <= $#F; $i++) {
+        my $host = $F[$i];
+        next if ($opt{'e'} && $opt{'e'} ne $host);
 
-		# Keep out host names with any funny characters (from
-		# corrupted files)
-                if ($host !~ /^[-\._0-9A-Za-z]+$/) {
-                        warn "$0: bad site name ignored: \"$host\"\n";
-                        next;
-                }
+        # Keep out host names with any funny characters (from
+        # corrupted files)
+        if ($host !~ /^[-\._0-9A-Za-z]+$/) {
+            warn "$0: bad site name ignored: \"$host\"\n";
+            next;
+        }
 
-		if ($hosts{$host}) {
-			print {$hosts{$host}} "$F[0] $F[1]\n";
-		} else {
-			my $outputFile = "$destDir/$host.tmp";
-			print "Starting $host\n" if ($opt{'v'});
-			open $hosts{$host}, '>>', $outputFile
-				or die "open >>$outputFile: $!\n";
-			print {$hosts{$host}} "$F[0] $F[1]\n";
-		}
-	}
+        if ($hosts{$host}) {
+            print { $hosts{$host} } "$F[0] $F[1]\n";
+        } else {
+            my $outputFile = "$destDir/$host.tmp";
+            print "Starting $host\n" if ($opt{'v'});
+            open $hosts{$host}, '>>', $outputFile
+              or die "open >>$outputFile: $!\n";
+            print { $hosts{$host} } "$F[0] $F[1]\n";
+        }
+    }
 }
 close $INPUT;
 
 foreach my $host (keys %hosts) {
-	close $hosts{$host};
-	my $outputFile = "$destDir/$host.tmp";
-	my $tmpTape = "$tapeDir/$host.tmp";
-	my $tapeFile = "$tapeDir/$host";
-	if ( $opt{'m'} ) {
-		if ($outputFile ne $tmpTape) {
-			my $cmd = "mv $outputFile $tmpTape";
-			system $cmd;
-			die "$0: $cmd: failed\n" unless ($? == 0);
-		}
+    close $hosts{$host};
+    my $outputFile = "$destDir/$host.tmp";
+    my $tmpTape = "$tapeDir/$host.tmp";
+    my $tapeFile = "$tapeDir/$host";
+    if ($opt{'m'}) {
+        if ($outputFile ne $tmpTape) {
+            my $cmd = "mv $outputFile $tmpTape";
+            system $cmd;
+            die "$0: $cmd: failed\n" unless ($? == 0);
+        }
 
-		my $cmd = "cat $tmpTape | $INN::Config::sort -u >> $tapeFile && rm -f $tmpTape";
-		system $cmd;
-		die "$0: $cmd: failed\n" unless ($? == 0);
-	}
+        my $cmd
+          = "cat $tmpTape | $INN::Config::sort -u"
+          . " >> $tapeFile && rm -f $tmpTape";
+        system $cmd;
+        die "$0: $cmd: failed\n" unless ($? == 0);
+    }
 }
 
 unlink $inputFile if $opt{'u'};
 
-print "$missing articles dropped\n" if ( $opt{'v'} && $missing > 0 );
+print "$missing articles dropped\n" if ($opt{'v'} && $missing > 0);

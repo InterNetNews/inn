@@ -4,20 +4,20 @@
 # Create expire.ctl script based on recently read articles.  Argument gives
 # scale factor to use to adjust expires.
 
-$readfile="$INN::Config::pathdb/readgroups";
-$expirectl=$INN::Config::expirectl;
+$readfile = "$INN::Config::pathdb/readgroups";
+$expirectl = $INN::Config::expirectl;
 
 $curtime = time;
-$oldtime = $curtime - 30 * 86400; # 30 days in the past
+$oldtime = $curtime - 30 * 86400;    # 30 days in the past
 
 if (open(RDF, $readfile)) {
     while (<RDF>) {
-	chop;
-	@foo=split(/ /); # foo[0] should be group, foo[1] lastreadtime
-	if ($foo[1] < $oldtime) {
-	    next; # skip entries that are too old.
-	}
-	$groups{$foo[0]} = $foo[1];
+        chop;
+        @foo = split(/ /);    # foo[0] should be group, foo[1] lastreadtime
+        if ($foo[1] < $oldtime) {
+            next;             # skip entries that are too old.
+        }
+        $groups{ $foo[0] } = $foo[1];
     }
     close(RDF);
 }
@@ -33,20 +33,20 @@ open(OUTFILE, ">$expirectl") || die "open $expirectl for write failed!\n";
 print OUTFILE <<'EOF' ;
 ##  expire.ctl - expire control file
 ##  Format:
-##	/remember/:<keep>
-##	<patterns>:<modflag>:<keep>:<default>:<purge>
+##      /remember/:<keep>
+##      <patterns>:<modflag>:<keep>:<default>:<purge>
 ##  First line gives history retention; other lines specify expiration
 ##  for newsgroups.  Must have a "*:A:..." line which is the default.
-##	<patterns>	Wildmat-style patterns for the newsgroups
-##	<modflag>	Pick one of M U A -- modifies pattern to be only
-##			moderated, unmoderated, or all groups
-##	<keep>		Minimum number of days to keep article
-##	<default>	Default number of days to keep the article
-##	<purge>		Flush article after this many days
+##      <patterns>      Wildmat-style patterns for the newsgroups
+##      <modflag>       Pick one of M U A -- modifies pattern to be only
+##                      moderated, unmoderated, or all groups
+##      <keep>          Minimum number of days to keep article
+##      <default>       Default number of days to keep the article
+##      <purge>         Flush article after this many days
 ##  <keep>, <default>, and <purge> can be floating-point numbers or the
-##  word "never".  Times are based on the arrival time for expire and expireover
-##  (unless -p is used; see expire(8) and expireover(8)), and on the posting
-##  time for history retention.
+##  word "never".  Times are based on the arrival time for expire and
+##  expireover (unless -p is used; see expire(8) and expireover(8)),
+##  and on the posting time for history retention.
 ##
 ##  See the expire.ctl man page for more information.
 
@@ -57,26 +57,27 @@ EOF
 
 # defaults for most groups.
 printline("*", "A", 1);
-printline("alt*,misc*,news*,rec*,sci*,soc*,talk*,vmsnet*","U",3);
-printline("alt*,misc*,news*,rec*,sci*,soc*,talk*,vmsnet*","M",5);
+printline("alt*,misc*,news*,rec*,sci*,soc*,talk*,vmsnet*", "U", 3);
+printline("alt*,misc*,news*,rec*,sci*,soc*,talk*,vmsnet*", "M", 5);
 printline("comp*,gnu*,info*,ok*,ecn*,uok*", "U", 5);
 printline("comp*,gnu*,info*,ok*,ecn*,uok*", "M", 7);
-# and now handle each group that's regularly read, 
+# and now handle each group that's regularly read,
 # assinging them 3* normal max expire
 foreach $i (keys %groups) {
     printline($i, "A", 21);
 }
 # and now put some overrides for groups which are too likely to fill spool if
-# we let them go to autoexpire. 
+# we let them go to autoexpire.
 printline("*binaries*,*pictures*", "A", 0.5);
-printline("control*","A",1);
-printline("control.cancel","A",0.5);
-printline("news.lists.filters,alt.nocem.misc","A",1);
+printline("control*", "A", 1);
+printline("control.cancel", "A", 0.5);
+printline("news.lists.filters,alt.nocem.misc", "A", 1);
 
 close(OUTFILE);
 exit(1);
 
 sub printline {
-    local($grpstr, $mflag, $len) = @_;
-    print OUTFILE $grpstr,":",$mflag,":",$len*$scale,":",$len*$scale,":",$len*$scale,"\n";
+    local ($grpstr, $mflag, $len) = @_;
+    print OUTFILE $grpstr, ":", $mflag, ":", $len * $scale, ":",
+      $len * $scale, ":", $len * $scale, "\n";
 }

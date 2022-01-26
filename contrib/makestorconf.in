@@ -3,32 +3,32 @@
 
 # Create storage.conf script based on recently read articles.
 
-$readfile="$INN::Config::pathdb/readgroups";
+$readfile = "$INN::Config::pathdb/readgroups";
 
-$outfile="$INN::Config::pathdb/storage.conf";
-outloop: 
-for ($level=9 ; $level >= 2; --$level) {
-  # clear groups hash.
-  foreach $i (keys %groups) {
-    delete $groups{$i};
-  }
-  if (open(RDF, "$INN::Config::sort $readfile|")) {
-    while (<RDF>) {
-      chop;
-      next if (/^group/);	# bogus 
-      @foo=split(/ /);		# foo[0] should be group, foo[1] lastreadtime
-      @bar=split(/\./,$foo[0]);
-      if ( $level >= scalar @bar) {
-	$grf = join(".", @bar);
-      } else {
-	$grf=join(".", @bar[0..($level-1)])  . ".*";
-      }
-      $groups{$grf} = 1;
+$outfile = "$INN::Config::pathdb/storage.conf";
+outloop:
+for ($level = 9; $level >= 2; --$level) {
+    # clear groups hash.
+    foreach $i (keys %groups) {
+        delete $groups{$i};
     }
-    close(RDF);
-  }
-  $grlist = join(",",keys(%groups));
-  last outloop if (length($grlist) < 2048);
+    if (open(RDF, "$INN::Config::sort $readfile|")) {
+        while (<RDF>) {
+            chop;
+            next if (/^group/);   # bogus
+            @foo = split(/ /);    # foo[0] should be group, foo[1] lastreadtime
+            @bar = split(/\./, $foo[0]);
+            if ($level >= scalar @bar) {
+                $grf = join(".", @bar);
+            } else {
+                $grf = join(".", @bar[0 .. ($level - 1)]) . ".*";
+            }
+            $groups{$grf} = 1;
+        }
+        close(RDF);
+    }
+    $grlist = join(",", keys(%groups));
+    last outloop if (length($grlist) < 2048);
 }
 
 open(OUT, ">$outfile") || die "cant open $outfile";
@@ -36,19 +36,19 @@ open(OUT, ">$outfile") || die "cant open $outfile";
 
 print OUT <<"EOF" ;
 method cnfs {
-	newsgroups: control,control.*
-	class: 1
-	options: MINI
+        newsgroups: control,control.*
+        class: 1
+        options: MINI
 }
 
 method timecaf {
-	newsgroups: $grlist
-	class: 1
+        newsgroups: $grlist
+        class: 1
 }
 
 method cnfs {
-	newsgroups: *
-	options: MONGO
+        newsgroups: *
+        options: MONGO
         class: 0
 }
 EOF

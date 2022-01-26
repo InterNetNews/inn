@@ -65,30 +65,34 @@
 foreach (<DATA>) {
     $funcs{$1} = 1 if /Provide:\s+(\S+)/;
     $macros{$1} = 1 if /^#\s*define\s+([a-zA-Z0-9_]+)/;
-    $badmacros{$2}=$1 if /^#\s*define\s+(PL_\S+)\s+(\S+)/;
+    $badmacros{$2} = $1 if /^#\s*define\s+(PL_\S+)\s+(\S+)/;
 }
-foreach $filename (map(glob($_),@ARGV)) {
+foreach $filename (map(glob($_), @ARGV)) {
     unless (open(IN, "<$filename")) {
         warn "Unable to read from $file: $!\n";
         next;
     }
     print "Scanning $filename...\n";
-    $c = ""; while (<IN>) { $c .= $_; } close(IN);
-    $need_include = 0; %add_func = (); $changes = 0;
+    $c = "";
+    while (<IN>) { $c .= $_; }
+    close(IN);
+    $need_include = 0;
+    %add_func = ();
+    $changes = 0;
     $has_include = ($c =~ /#.*include.*ppport/m);
 
     foreach $func (keys %funcs) {
         if ($c =~ /#.*define.*\bNEED_$func(_GLOBAL)?\b/m) {
             if ($c !~ /\b$func\b/m) {
-                print "If $func isn't needed, you don't need to request it.\n" if
-                $changes += ($c =~ s/^.*#.*define.*\bNEED_$func\b.*\n//m);
+                print "If $func isn't needed, you don't need to request it.\n"
+                  if $changes += ($c =~ s/^.*#.*define.*\bNEED_$func\b.*\n//m);
             } else {
                 print "Uses $func\n";
                 $need_include = 1;
             }
         } else {
             if ($c =~ /\b$func\b/m) {
-                $add_func{$func} =1 ;
+                $add_func{$func} = 1;
                 print "Uses $func\n";
                 $need_include = 1;
             }
@@ -114,11 +118,11 @@ foreach $filename (map(glob($_),@ARGV)) {
 
     if (scalar(keys %add_func) or $need_include != $has_include) {
         if (!$has_include) {
-            $inc = join('',map("#define NEED_$_\n", sort keys %add_func)).
-                   "#include \"ppport.h\"\n";
+            $inc = join('', map("#define NEED_$_\n", sort keys %add_func))
+              . "#include \"ppport.h\"\n";
             $c = "$inc$c" unless $c =~ s/#.*include.*XSUB.*\n/$&$inc/m;
         } elsif (keys %add_func) {
-            $inc = join('',map("#define NEED_$_\n", sort keys %add_func));
+            $inc = join('', map("#define NEED_$_\n", sort keys %add_func));
             $c = "$inc$c" unless $c =~ s/^.*#.*include.*ppport.*$/$inc$&/m;
         }
         if (!$need_include) {
@@ -129,12 +133,13 @@ foreach $filename (map(glob($_),@ARGV)) {
     }
 
     if ($changes) {
-        open(OUT,">/tmp/ppport.h.$$");
+        open(OUT, ">/tmp/ppport.h.$$");
         print OUT $c;
         close(OUT);
         open(DIFF, "diff -u $filename /tmp/ppport.h.$$|");
         while (<DIFF>) {
-            s!/tmp/ppport\.h\.$$!$filename.patched!; print STDOUT;
+            s!/tmp/ppport\.h\.$$!$filename.patched!;
+            print STDOUT;
         }
         close(DIFF);
         unlink("/tmp/ppport.h.$$");

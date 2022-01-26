@@ -10,7 +10,7 @@
 # innfeed-delayed!\
 #        :!*\
 #        :Tc,Wnm*,S16384:/usr/local/news/bin/delayer 60 \
-#		/usr/local/news/bin/innfeed -c innfeed-delayed.conf
+#            /usr/local/news/bin/innfeed -c innfeed-delayed.conf
 #
 # done by christian mock <cm@tahina.priv.at> sometime in july 1998,
 # and put into the public domain.
@@ -27,43 +27,43 @@ open(OUT, "|" . join(" ", @ARGV)) || die "open |prog-n-args: $!\n";
 #select(STDOUT);
 
 $rin = '';
-vec($rin,fileno(STDIN),1) = 1;
+vec($rin, fileno(STDIN), 1) = 1;
 
-while(!$eof || $#queue >= 0) {
-    if(!$eof) {
-	($nfound,$timeleft) =
-	    select($rout=$rin, undef, undef, $timeout);
+while (!$eof || $#queue >= 0) {
+    if (!$eof) {
+        ($nfound, $timeleft) = select($rout = $rin, undef, undef, $timeout);
     } else {
-	sleep($timeout);
+        sleep($timeout);
     }
-    $now = time(); $exp = $now + $delay;
+    $now = time();
+    $exp = $now + $delay;
 
-    if(!$eof && vec($rout,fileno(STDIN),1)) {
-	$line = <STDIN>;
-	if(!defined $line) {	# exit NOW!
-	    foreach(@queue) {
-		s/^[^:]+://g;
-		print OUT;
-	    }
-	    close(OUT);
-	    sleep(1);
-	    exit;
-	}
-	push(@queue, "$exp:$line");
+    if (!$eof && vec($rout, fileno(STDIN), 1)) {
+        $line = <STDIN>;
+        if (!defined $line) {    # exit NOW!
+            foreach (@queue) {
+                s/^[^:]+://g;
+                print OUT;
+            }
+            close(OUT);
+            sleep(1);
+            exit;
+        }
+        push(@queue, "$exp:$line");
     }
 
-    if($#queue < 0) {
-	undef $timeout;
-	next;
+    if ($#queue < 0) {
+        undef $timeout;
+        next;
     }
 
     ($first, $line) = split(/:/, $queue[0], 2);
-    while($#queue >= 0 && $first <= $now) {
-	print OUT $line;
-	shift(@queue);
-	($first, $line) = split(/:/, $queue[0], 2);
+    while ($#queue >= 0 && $first <= $now) {
+        print OUT $line;
+        shift(@queue);
+        ($first, $line) = split(/:/, $queue[0], 2);
     }
     $timeout = $first - $now;
-	
+
 }
 

@@ -34,7 +34,7 @@ use MIME::Parser;
 use INN::Utils::Shlock;
 use strict;
 
-delete @ENV{'IFS', 'CDPATH', 'ENV', 'BASH_ENV'};
+delete @ENV{ 'IFS', 'CDPATH', 'ENV', 'BASH_ENV' };
 $0 =~ s!.*/!!;
 
 # globals
@@ -48,11 +48,11 @@ END {
     INN::Utils::Shlock::releaselocks();
 }
 
-
-my $usage = "usage: $0 [-ch]\n\n" .
-    "Reads stdin for file names or tokens.\n\n" .
-    "  -c   Disables cutoff on dates.\n" .
-    "  -h   Gives this usage information.\n";
+my $usage
+  = "usage: $0 [-ch]\n\n"
+  . "Reads stdin for file names or tokens.\n\n"
+  . "  -c   Disables cutoff on dates.\n"
+  . "  -h   Gives this usage information.\n";
 
 my %opt;
 getopts("ch", \%opt) || die $usage;
@@ -64,13 +64,14 @@ die $usage if defined $opt{'h'};
 if (not -t 2) {
     eval { require INN::Syslog; import INN::Syslog; $use_syslog = 1; };
     eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; }
-        unless $use_syslog;
+      unless $use_syslog;
 }
 
 if ($use_syslog) {
     if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+        Sys::Syslog::setlogsock('unix')
+          if $^O =~ /linux|dec_osf|freebsd|darwin/;
     }
     openlog('controlchan', 'pid', $INN::Config::syslog_facility);
 }
@@ -78,7 +79,7 @@ logmsg('starting');
 
 # load modules from the control directory #################################
 opendir(CTL, $INN::Config::controlprogs)
-    or logdie("Cannot open $INN::Config::controlprogs: $!", 'crit');
+  or logdie("Cannot open $INN::Config::controlprogs: $!", 'crit');
 foreach (readdir CTL) {
     next if not /^([a-z\.]+\.pl)$/ or not -f "$INN::Config::controlprogs/$_";
     eval { require "$INN::Config::controlprogs/$1" };
@@ -141,7 +142,8 @@ while (<STDIN>) {
             $injectiondate = $postingdate;
         }
 
-        my $articledate = ($postingdate < $injectiondate) ? $postingdate : $injectiondate;
+        my $articledate
+          = ($postingdate < $injectiondate) ? $postingdate : $injectiondate;
 
         # Compute the allowed interval of time:
         # artcutoff days in the past, one day in the future.
@@ -151,15 +153,18 @@ while (<STDIN>) {
 
         if ($articledate > $maxdate) {
             logmsg('Control article injected or posted in the future ('
-                   . convdate('-d', '-c', "$articledate") . ')');
+                  . convdate('-d', '-c', "$articledate")
+                  . ')');
             $parser->filer->purge;
             next;
         }
 
         if ($INN::Config::artcutoff > 0 && $articledate < $mindate) {
             logmsg('Control article too old ('
-                   . convdate('-d', '-c', "$articledate")
-                   . '), artcutoff set to ' . $INN::Config::artcutoff . ' days');
+                  . convdate('-d', '-c', "$articledate")
+                  . '), artcutoff set to '
+                  . $INN::Config::artcutoff
+                  . ' days');
             $parser->filer->purge;
             next;
         }
@@ -198,11 +203,13 @@ while (<STDIN>) {
     my (@charset_from, @maxchanges, @matches);
     my $exclusionpats = '';
     my $droppats = '';
-    my $charset_to = ctlperm($progname, $sender, $progparams[0],
-                             $token, $article, \@charset_from,
-                             \@maxchanges, \@matches);
+    my $charset_to = ctlperm(
+        $progname, $sender, $progparams[0],
+        $token, $article, \@charset_from,
+        \@maxchanges, \@matches
+    );
 
-    foreach my $i (0..$#matches) {
+    foreach my $i (0 .. $#matches) {
         my $action = $matches[$i][0] if $matches[$i][0];
         my $logname = $matches[$i][1] if $matches[$i][1];
         $progparams[0] = $matches[$i][2] if $matches[$i][2];
@@ -217,7 +224,7 @@ while (<STDIN>) {
                 }
             }
             logmsg("skipping $progname $type$sender"
-                . " (pgpverify failed) in $curmsgid");
+                  . " (pgpverify failed) in $curmsgid");
             next;
         }
 
@@ -226,8 +233,10 @@ while (<STDIN>) {
         my $subfind = \&$subname;
         if (not defined &$subfind) {
             if ($logname) {
-                logger($logname, "Unknown control message by $sender",
-                    $article);
+                logger(
+                    $logname, "Unknown control message by $sender",
+                    $article
+                );
             } else {
                 logmsg("Unknown \"$progname\" control by $sender");
             }
@@ -237,16 +246,20 @@ while (<STDIN>) {
         # Count a control article only once.
         my $approved = $hdr{'approved'} ? 1 : 0;
         $approved = -1 if $i > 0;
-        logmsg("$subname, " . join(' ', @progparams)
-            . " $sender $replyto $token, $exclusionpats, $droppats,"
-            . " $charset_to, $sitepath, $action"
-            . ($logname ? "=$logname" : '') .", $approved");
+        logmsg("$subname, "
+              . join(' ', @progparams)
+              . " $sender $replyto $token, $exclusionpats, $droppats,"
+              . " $charset_to, $sitepath, $action"
+              . ($logname ? "=$logname" : '')
+              . ", $approved");
 
         if ($action ne 'drop') {
-            &$subfind(\@progparams, $sender, $replyto,
+            &$subfind(
+                \@progparams, $sender, $replyto,
                 $sitepath, $action, $logname, $approved, $article,
                 \@charset_from, $charset_to, $exclusionpats, $droppats,
-                \@maxchanges);
+                \@maxchanges
+            );
 
             $exclusionpats .= '|' if $exclusionpats;
             $exclusionpats .= $progparams[0];
@@ -267,7 +280,7 @@ sub parse_article {
     my ($article, $hdr) = @_;
     my ($h, $buffer);
     my %uniquehdr = map { $_ => 1 } qw(approved control date followup-to
-        from injection-date message-id newsgroups path reply-to sender subject);
+      from injection-date message-id newsgroups path reply-to sender subject);
 
     my $head = $article->head;
 
@@ -303,7 +316,7 @@ sub cleanaddr {
 
 # Read and cache control.ctl and control.ctl.local.
 sub readctlfile {
-    if (! -e $INN::Config::ctlfile) {
+    if (!-e $INN::Config::ctlfile) {
         logdie("Cannot open $INN::Config::ctlfile: $!", 'crit');
     }
     my $localfile = (-e $INN::Config::ctlfile . '.local');
@@ -325,15 +338,16 @@ sub readctlfile {
     my @ctllist;
     foreach my $file (@files) {
         open(CTLFILE, $file)
-            or logdie("Cannot open $file: $!", 'crit');
+          or logdie("Cannot open $file: $!", 'crit');
         while (<CTLFILE>) {
             chop;
             # Not a comment or blank?  Convert wildmat to regex.
             next if not /^(\s+)?[^\#]/ or /^$/;
 
-            if (not /^\/(?:local)?encoding\/:/ and
-                not /^\/maxdocheckgroups\/:/ and
-                not /:(?:doit|drop|log|mail|verify-.*)(?:=.*)?$/) {
+            if (not /^\/(?:local)?encoding\/:/
+                and not /^\/maxdocheckgroups\/:/
+                and not /:(?:doit|drop|log|mail|verify-.*)(?:=.*)?$/)
+            {
                 s/.*://;
                 logmsg("$_ is not a valid action for control.ctl", 'err');
                 next;
@@ -355,13 +369,15 @@ sub readctlfile {
     }
 
     logmsg('warning: control.ctl is empty!', 'err') if not @ctllist;
-    return $cachedctl = [ reverse @ctllist ];
+    return $cachedctl = [reverse @ctllist];
 }
 
 # Parse a control message's permissions.
 sub ctlperm {
-    my ($type, $sender, $newsgroup, $token, $article, $charset_from,
-        $maxchanges, $matches) = @_;
+    my (
+        $type, $sender, $newsgroup, $token, $article, $charset_from,
+        $maxchanges, $matches
+    ) = @_;
 
     my %keyresults = ();
     my ($action, $maxdocheckgroups, $logname, $charset_to);
@@ -371,7 +387,7 @@ sub ctlperm {
     # warnings from undefined values later on in permission checking).
     if ($type eq 'newgroup' or $type eq 'rmgroup') {
         unless ($newsgroup) {
-            push (@$matches, [ 'drop', undef, undef ]);
+            push(@$matches, ['drop', undef, undef]);
             return ('UTF-8');
         }
     }
@@ -382,19 +398,21 @@ sub ctlperm {
     foreach (@$ctllist) {
         my @ctlline = split /:/;
         # 0: type  1: from@addr  2: group.*  3: action
-        if ($type =~ /$ctlline[0]/ and $sender =~ /$ctlline[1]/i and
-            ($type !~ /(?:new|rm)group/ or $newsgroup =~ /$ctlline[2]/)) {
+        if ($type =~ /$ctlline[0]/
+            and $sender =~ /$ctlline[1]/i
+            and ($type !~ /(?:new|rm)group/ or $newsgroup =~ /$ctlline[2]/))
+        {
             if (not $matchedaction) {
                 $action = $ctlline[3];
                 $action =~ s/\^(.+)\$/$1/;
                 $action =~ s/\\//g;
                 ($action, $logname) = split(/=/, $action);
                 if ($type eq 'checkgroups') {
-                    push (@$matches, [ $action, $logname, $ctlline[2] ]);
+                    push(@$matches, [$action, $logname, $ctlline[2]]);
                 } else {
-                    push (@$matches, [ $action, $logname, undef ]);
-                    # @ctllist is a reversed list so the first match is the last
-                    # one in control.ctl followed by control.ctl.local.
+                    push(@$matches, [$action, $logname, undef]);
+                    # @ctllist is a reversed list so the first match is the
+                    # last one in control.ctl followed by control.ctl.local.
                     $matchedaction = 1;
                 }
             }
@@ -411,7 +429,7 @@ sub ctlperm {
         # 0: /encoding/  1: from@addr  2: group.*  3: encoding[=force]
         if ($ctlline[0] eq '^\/encoding\/$') {
             if ($sender =~ /$ctlline[1]/i) {
-                push (@$charset_from, $ctlline[2].':'.$ctlline[3]);
+                push(@$charset_from, $ctlline[2] . ':' . $ctlline[3]);
             }
         }
         # 0: /maxdocheckgroups/  1: from@addr  2: group.*  3: number
@@ -419,32 +437,37 @@ sub ctlperm {
             if ($sender =~ /$ctlline[1]/i) {
                 $maxdocheckgroups = $ctlline[3];
                 $maxdocheckgroups =~ s/\^(.+)\$/$1/;
-                push (@$maxchanges, $ctlline[2].':'.$maxdocheckgroups);
+                push(@$maxchanges, $ctlline[2] . ':' . $maxdocheckgroups);
             }
         }
     }
 
     if (not defined $charset_to
-        or not defined Encode::find_encoding($charset_to)) {
-        $charset_to = 'UTF-8';  # Default local encoding.
+        or not defined Encode::find_encoding($charset_to))
+    {
+        $charset_to = 'UTF-8';    # Default local encoding.
     }
 
     # Default value when nothing matches the control article.
     if ($#$matches < 0) {
-        push (@$matches, [ 'drop', undef, undef ]);
+        push(@$matches, ['drop', undef, undef]);
     }
 
     # Default value appended to the end of @maxchanges.
-    push (@$maxchanges, '^.*$:10');
+    push(@$maxchanges, '^.*$:10');
 
-    foreach my $i (0..$#$matches) {
+    foreach my $i (0 .. $#$matches) {
         if ($$matches[$i][0] =~ /^verify-(.+)/) {
             my $keyowner = $1;
 
             if (!exists($keyresults{$keyowner})) {
-                if ($INN::Config::pgpverify and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i) {
-                    my $pgpresult = defined &local_pgpverify ?
-                        local_pgpverify($token, $article, $keyowner) : pgpverify($token, $keyowner);
+                if ($INN::Config::pgpverify
+                    and $INN::Config::pgpverify =~ /^(?:true|on|yes)$/i)
+                {
+                    my $pgpresult
+                      = defined &local_pgpverify
+                      ? local_pgpverify($token, $article, $keyowner)
+                      : pgpverify($token, $keyowner);
                     if ($keyowner eq $pgpresult) {
                         $keyresults{$keyowner} = 'doit';
                     } else {
@@ -453,8 +476,8 @@ sub ctlperm {
                 } else {
                     $keyresults{$keyowner} = 'mail';
                 }
-           }
-           $$matches[$i][0] = $keyresults{$keyowner};
+            }
+            $$matches[$i][0] = $keyresults{$keyowner};
         }
     }
 
@@ -477,8 +500,8 @@ sub logger {
     if ($logfile eq 'mail') {
         my $mail = sendmail($message);
         print $mail map { s/^~/~~/; "$_\n" } @headers;
-        print $mail "\n" . join ('', map { s/^~/~~/; "$_\n" } @body)
-            if @body;
+        print $mail "\n" . join('', map { s/^~/~~/; "$_\n" } @body)
+          if @body;
         close $mail or logdie("Cannot send mail: $!");
         return;
     }
@@ -495,7 +518,8 @@ sub logger {
     $lockfile =~ s#.*/##;
     $lockfile = "$INN::Config::locks/LOCK.$lockfile";
     # Acquire a lock.
-    INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
+    INN::Utils::Shlock::lock($lockfile, 60)
+      or logdie("Cannot create lockfile $lockfile");
 
     open(LOGFILE, ">>$logfile") or logdie("Cannot open $logfile: $!");
     print LOGFILE "$message\n";
@@ -503,7 +527,7 @@ sub logger {
         print LOGFILE "    $_\n";
     }
     close LOGFILE;
-    
+
     # Unlock.
     INN::Utils::Shlock::unlock($lockfile);
 }
@@ -539,8 +563,8 @@ sub open_article {
         my $pid = open(ART, '-|');
         logdie('Cannot fork: ' . $!) if $pid < 0;
         if ($pid == 0) {
-            exec("$INN::Config::newsbin/sm", '-q', $token) or
-                logdie("Cannot exec sm: $!");
+            exec("$INN::Config::newsbin/sm", '-q', $token)
+              or logdie("Cannot exec sm: $!");
         }
         return *ART;
     } else {
@@ -555,17 +579,21 @@ sub pgpverify {
     my $keyid = shift;
 
     if ($token =~ /^\@.+\@$/) {
-        open(PGPCHECK, "$INN::Config::newsbin/sm -q $token "
-            . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |") or goto ERROR;
+        open(PGPCHECK,
+            "$INN::Config::newsbin/sm -q $token "
+              . "| $INN::Config::newsbin/pgpverify --findid='$keyid' |"
+        ) or goto ERROR;
     } else {
-        open(PGPCHECK, "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |") or goto ERROR;
+        open(PGPCHECK,
+            "$INN::Config::newsbin/pgpverify --findid='$keyid' < $token |"
+        ) or goto ERROR;
     }
     my $pgpresult = <PGPCHECK>;
     close PGPCHECK or goto ERROR;
     $pgpresult ||= '';
     chop $pgpresult;
     return $pgpresult;
-ERROR:
+  ERROR:
     logmsg("pgpverify failed: $!", 'debug');
     return '';
 }
@@ -588,8 +616,8 @@ sub convdate {
     logdie("Cannot fork: $!") if $pid < 0;
     if ($pid == 0) {
         # exec() properly escapes its arguments to prevent shell injection.
-        exec("$INN::Config::pathbin/convdate", @args) or
-             logdie("Cannot exec convdate: $!");
+        exec("$INN::Config::pathbin/convdate", @args)
+          or logdie("Cannot exec convdate: $!");
     } else {
         $result = <$CONVDATE>;
         close($CONVDATE);
@@ -607,7 +635,8 @@ sub convdate {
 # parts of this code stolen from innmail.pl
 sub sendmail {
     my ($subject, $addresses, $body) = @_;
-    $addresses = [ $addresses || $INN::Config::newsmaster ] if not ref $addresses;
+    $addresses = [$addresses || $INN::Config::newsmaster]
+      if not ref $addresses;
     $subject ||= '(no subject)';
 
     # fix up all addresses

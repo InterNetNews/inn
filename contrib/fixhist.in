@@ -26,64 +26,63 @@
 #   ctlinnd go 'fixing history'
 # any malformed entries will be output to stderr.
 
-
-$MAXKEYLEN=254;
-$count=0;
+$MAXKEYLEN = 254;
+$count = 0;
 
 while (<>) {
-	chop;
-	($msgid,$dates,$arts,$xtra) = split('\t');
-	if ($xtra) {
-		&tossit();		# too many fields
-		next;
-	}
-	if (!($dates) && (($arts) || ($xtra))) {
-		&tossit();		# if not date field, then the rest
-		next;			# should be empty
-	}
-	if (length($msgid) >= $MAXKEYLEN) {
-		&tossit();		# message-id too long
-		next;
-	}
-	if ($msgid !~ /^<[^<> ]*>$/) {
-		if ($msgid =~ /^\[[0-9A-F]{32}\]$/) {
-			if ($arts ne "") { 
-				if ($arts =~ /^\@[0-9A-F]{56}\@$/) {
-					$arts =~ s/^\@([0-9A-F]{36})([0-9A-F]{20})\@$/\@${1}\@/;
-					print "$msgid\t$dates\t$arts\n";
-					next;
-				}
-				if ($arts !~ /^\@[0-9A-F]{36}\@$/) {
-					&tossit();
-					next;
-				}
-			}
-		} else {
-			&tossit();		# malformed msg-ids
-			next;
-		}
-	} else {
-		if ($arts ne "" && ($arts !~ /[^\/]*\/[0-9]*/)) {
-			&tossit();		# malformed articles list
-			next;
-		}
-	}
-	if (/[\000-\010\012-\037\177-\237]/) { # non-control chars except tab
-		&tossit();		# illegal chars
-		next;
-	}
-	if ($dates) {
-		if ($dates =~ /[^\d~\-]/) {	# rudimentary check
-			&tossit();		# full check would be too slow
-			next;
-		}
-	}
-	print "$_\n";
-	$count++;
-	$0 = "history line $./$count" if $. % 50000 == 0;
+    chop;
+    ($msgid, $dates, $arts, $xtra) = split('\t');
+    if ($xtra) {
+        &tossit();    # too many fields
+        next;
+    }
+    if (!($dates) && (($arts) || ($xtra))) {
+        &tossit();    # if not date field, then the rest
+        next;         # should be empty
+    }
+    if (length($msgid) >= $MAXKEYLEN) {
+        &tossit();    # message-id too long
+        next;
+    }
+    if ($msgid !~ /^<[^<> ]*>$/) {
+        if ($msgid =~ /^\[[0-9A-F]{32}\]$/) {
+            if ($arts ne "") {
+                if ($arts =~ /^\@[0-9A-F]{56}\@$/) {
+                    $arts =~ s/^\@([0-9A-F]{36})([0-9A-F]{20})\@$/\@${1}\@/;
+                    print "$msgid\t$dates\t$arts\n";
+                    next;
+                }
+                if ($arts !~ /^\@[0-9A-F]{36}\@$/) {
+                    &tossit();
+                    next;
+                }
+            }
+        } else {
+            &tossit();    # malformed msg-ids
+            next;
+        }
+    } else {
+        if ($arts ne "" && ($arts !~ /[^\/]*\/[0-9]*/)) {
+            &tossit();    # malformed articles list
+            next;
+        }
+    }
+    if (/[\000-\010\012-\037\177-\237]/) {    # non-control chars except tab
+        &tossit();                            # illegal chars
+        next;
+    }
+    if ($dates) {
+        if ($dates =~ /[^\d~\-]/) {           # rudimentary check
+            &tossit();                        # full check would be too slow
+            next;
+        }
+    }
+    print "$_\n";
+    $count++;
+    $0 = "history line $./$count" if $. % 50000 == 0;
 }
 print STDERR "Done.  Now run:\nmakedbz -s $count -f history.n\n";
 
 sub tossit {
-	print STDERR "$_\n";
+    print STDERR "$_\n";
 }

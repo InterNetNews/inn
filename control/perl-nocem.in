@@ -58,7 +58,8 @@ eval { require Sys::Syslog; import Sys::Syslog; $use_syslog = 1; };
 if ($use_syslog) {
     if ($Sys::Syslog::VERSION lt 0.15) {
         eval "sub Sys::Syslog::_PATH_LOG { '/dev/log' }" if $^O eq 'dec_osf';
-        Sys::Syslog::setlogsock('unix') if $^O =~ /linux|dec_osf|freebsd|darwin/;
+        Sys::Syslog::setlogsock('unix')
+          if $^O =~ /linux|dec_osf|freebsd|darwin/;
     }
     openlog('nocem', '', $INN::Config::syslog_facility);
 }
@@ -69,14 +70,15 @@ if (not $INN::Config::gpgv and not $INN::Config::gpg) {
     exit 1;
 }
 
-if ($INN::Config::version and not $INN::Config::version =~ /^INN 2\.[0123]\./) {
+if ($INN::Config::version and not $INN::Config::version =~ /^INN 2\.[0123]\./)
+{
     $cancel = \&cancel_nntp;
 } else {
     $cancel = \&cancel_ctlinnd;
 }
 
-$SIG{HUP}  = \&hup_handler;
-$SIG{INT}  = \&term_handler;
+$SIG{HUP} = \&hup_handler;
+$SIG{INT} = \&term_handler;
 $SIG{TERM} = \&term_handler;
 $SIG{PIPE} = \&term_handler;
 
@@ -117,8 +119,12 @@ sub do_nocem {
     logmsg("Articles cancelled: " . join(' ', @$nocems), 'debug');
     my $diff = (time - $start) || 0.01;
     my $nr = scalar @$nocems;
-    logmsg(sprintf("processed notice %s by %s (%d ids, %.5f s, %.1f/s)",
-        $nid, $issuer, $nr, $diff, $nr / $diff));
+    logmsg(
+        sprintf(
+            "processed notice %s by %s (%d ids, %.5f s, %.1f/s)",
+            $nid, $issuer, $nr, $diff, $nr / $diff
+        )
+    );
 }
 
 # - Check if it is a PGP signed NoCeM notice
@@ -135,6 +141,7 @@ sub read_nocem {
     my $body = '';
     my $from = '';
     my $msgid = '<>';
+
     while (<$artfh>) {
         last if $i++ > 200;
         s/\r\n$/\n/;
@@ -142,7 +149,7 @@ sub read_nocem {
             if (/^$/) {
                 $inhdr = 0;
             } elsif (/^From:\s+(.*)\s*$/i) {
-                $from =  $1;
+                $from = $1;
             } elsif (/^Message-ID:\s+(<.*>)/i) {
                 $msgid = $1;
             }
@@ -173,7 +180,7 @@ sub read_nocem {
         $body .= $_;
         last if /^\@\@BEGIN NCM BODY/;
         my ($key, $val) = /^([^:]+)\s*:\s*(.*)$/;
-        $hdrs{lc $key} = $val;
+        $hdrs{ lc $key } = $val;
     }
     foreach (qw(action issuer notice-id type version)) {
         next if $hdrs{$_};
@@ -184,15 +191,18 @@ sub read_nocem {
 
     # decide if we want it.
     if (not want_nocem(\%hdrs)) {
-        logmsg("Article $msgid: unwanted ($hdrs{issuer}/$hdrs{type})", 'debug');
+        logmsg(
+            "Article $msgid: unwanted ($hdrs{issuer}/$hdrs{type})",
+            'debug'
+        );
         return;
     }
-# XXX want_hier() not implemented
-#    if ($hdrs{hierarchies} and not want_hier($hdrs{hierarchies})) {
-#        logmsg("Article $msgid: unwanted hierarchy ($hdrs{hierarchies})",
-#            'debug');
-#        return;
-#    }
+    # XXX want_hier() not implemented
+    #    if ($hdrs{hierarchies} and not want_hier($hdrs{hierarchies})) {
+    #        logmsg("Article $msgid: unwanted hierarchy ($hdrs{hierarchies})",
+    #            'debug');
+    #        return;
+    #    }
 
     # We do want it, so read the entire article.  Also copy it to
     # a temp file so that we can check the PGP signature when done.
@@ -218,7 +228,7 @@ sub read_nocem {
         next if not $grp;
         if ($id) {
             push @nocems, $lastid
-                if $lastid and want_cancel_id($lastgrp, \%hdrs);
+              if $lastid and want_cancel_id($lastgrp, \%hdrs);
             $lastid = $id;
             $lastgrp = $grp;
         } else {
@@ -262,13 +272,17 @@ sub supported_nocem {
     my ($msgid, $hdrs) = @_;
 
     if ($hdrs->{version} !~ /^0\.9[0-9]?$/) {
-        logmsg("Article $msgid: version $hdrs->{version} not supported",
-            'debug');
+        logmsg(
+            "Article $msgid: version $hdrs->{version} not supported",
+            'debug'
+        );
         return 0;
     }
     if ($hdrs->{action} ne 'hide') {
-        logmsg("Article $msgid: action $hdrs->{action} not supported",
-            'debug');
+        logmsg(
+            "Article $msgid: action $hdrs->{action} not supported",
+            'debug'
+        );
         return 0;
     }
     return 1;
@@ -289,10 +303,12 @@ sub pgp_check {
         if ($INN::Config::gpg) {
             exec($INN::Config::gpg, '--status-fd=1',
                 '--verify', '--allow-weak-digest-algos',
-                $keyring ? '--keyring=' . $keyring : '', $art);
+                $keyring ? '--keyring=' . $keyring : '', $art
+            );
         } else {
             exec($INN::Config::gpgv, '--status-fd=1',
-                $keyring ? '--keyring=' . $keyring : '', $art);
+                $keyring ? '--keyring=' . $keyring : '', $art
+            );
         }
         exit 126;
     }
@@ -305,16 +321,18 @@ sub pgp_check {
             $status = $? >> 8;
         } else {
             if ($INN::Config::gpg) {
-                logmsg("Article $msgid: $INN::Config::gpg killed by signal " . ($? & 255));
+                logmsg("Article $msgid: $INN::Config::gpg killed by signal "
+                      . ($? & 255));
             } else {
-                logmsg("Article $msgid: $INN::Config::gpgv killed by signal " . ($? & 255));
+                logmsg("Article $msgid: $INN::Config::gpgv killed by signal "
+                      . ($? & 255));
             }
             return 0;
         }
     }
-#    logmsg("Command line was: $INN::Config::gpgv --status-fd=1"
-#         . ($keyring ? ' --keyring=' . $keyring : '') . " $art", 'debug');
-#    logmsg("Full PGP output: >>>$_<<<", 'debug');
+    #logmsg("Command line was: $INN::Config::gpgv --status-fd=1"
+    #     . ($keyring ? ' --keyring=' . $keyring : '') . " $art", 'debug');
+    #logmsg("Full PGP output: >>>$_<<<", 'debug');
 
     if (/^\[GNUPG:\]\s+GOODSIG\s+\S+\s+(.*)/m) {
         return 1 if $1 =~ /\Q$issuer\E/;
@@ -331,13 +349,20 @@ sub pgp_check {
     } else {
         # some other error we don't know about happened.
         # 126 is returned by the child if exec fails.
-        s/ at \S+ line \d+\.\n$//; s/\n/_/;
+        s/ at \S+ line \d+\.\n$//;
+        s/\n/_/;
         if ($INN::Config::gpg) {
-            logmsg("Article $msgid: $INN::Config::gpg exited "
-                . (($status == 126) ? "($_)" : "with status $status"), 'err');
+            logmsg(
+                "Article $msgid: $INN::Config::gpg exited "
+                  . (($status == 126) ? "($_)" : "with status $status"),
+                'err'
+            );
         } else {
-            logmsg("Article $msgid: $INN::Config::gpgv exited "
-                . (($status == 126) ? "($_)" : "with status $status"), 'err');
+            logmsg(
+                "Article $msgid: $INN::Config::gpgv exited "
+                  . (($status == 126) ? "($_)" : "with status $status"),
+                'err'
+            );
         }
     }
     return 0;
@@ -354,8 +379,8 @@ sub open_article {
             return undef;
         }
         if ($pid == 0) {
-            exec("$INN::Config::newsbin/sm", '-q', $token) or
-                logmsg("Cannot exec sm: $!", 'err');
+            exec("$INN::Config::newsbin/sm", '-q', $token)
+              or logmsg("Cannot exec sm: $!", 'err');
             return undef;
         }
         return *ART;
@@ -369,20 +394,20 @@ sub open_article {
 # Cancel a number of Message-IDs.  We use ctlinnd to do this,
 # and we run up to 15 of them at the same time (10 usually).
 sub cancel_ctlinnd {
-    my @ids = @{$_[0]};
+    my @ids = @{ $_[0] };
 
     while (@ids > 0) {
         my $max = @ids <= 15 ? @ids : 10;
         for (my $i = 1; $i <= $max; $i++) {
             my $msgid = shift @ids;
             my $pid;
-            sleep 5 until (defined ($pid = fork));
+            sleep 5 until (defined($pid = fork));
             if ($pid == 0) {
                 exec "$INN::Config::pathbin/ctlinnd", '-s', '-t', '180',
-                    'cancel', $msgid;
+                  'cancel', $msgid;
                 exit 126;
             }
-#            logmsg("cancelled: $msgid [$i/$max]", 'debug');
+            #            logmsg("cancelled: $msgid [$i/$max]", 'debug');
         }
         #    Now wait for all children.
         while ((my $pid = wait) > 0) {
@@ -402,7 +427,7 @@ sub cancel_nntp {
 
     if ($nntp_open and time - $socket_timeout > $last_cancel) {
         logmsg('Close socket for timeout');
-        close (NNTP);
+        close(NNTP);
         $nntp_open = 0;
     }
     if (not $nntp_open) {
@@ -411,7 +436,8 @@ sub cancel_nntp {
             logmsg("socket: $!", 'err');
             goto ERR;
         }
-        if (not connect(NNTP, sockaddr_un($INN::Config::pathrun . '/nntpin'))) {
+        if (not connect(NNTP, sockaddr_un($INN::Config::pathrun . '/nntpin')))
+        {
             logmsg("connect: $!", 'err');
             goto ERR;
         }
@@ -420,7 +446,9 @@ sub cancel_nntp {
             logmsg("bad reply from server: $r", 'err');
             goto ERR;
         }
-        select NNTP; $| = 1; select STDOUT;
+        select NNTP;
+        $| = 1;
+        select STDOUT;
         print NNTP "MODE CANCEL\r\n";
         if (($r = <NNTP>) !~ /^284 /) {
             $r =~ s/\r\n$//;
@@ -440,9 +468,9 @@ sub cancel_nntp {
     $last_cancel = time;
     return;
 
-ERR:
+  ERR:
     # discard unusable socket
-    close (NNTP);
+    close(NNTP);
     logmsg('Switching to ctlinnd...', 'err');
     cancel_ctlinnd($ids);
     $cancel = \&cancel_ctlinnd;
@@ -461,8 +489,12 @@ sub read_ctlfile {
         s/\s+$//;
         next if /^#/ or /^$/;
         my ($issuer, $type) = split(/:/, lc $_);
-        if (not (defined($issuer) and defined($type))) {
-            logmsg("Cannot parse nocem.ctl line <<$_>>; syntax is <<issuer:type>>.", 'err');
+        if (not(defined($issuer) and defined($type))) {
+            logmsg(
+                "Cannot parse nocem.ctl line <<$_>>; "
+                  . "syntax is <<issuer:type>>.",
+                'err'
+            );
             next;
         }
         $type =~ s/\s//g;
@@ -481,7 +513,9 @@ sub logmsg {
         if ($log_open == 0) {
             open(LOG, ">>$logfile") or die "Cannot open log: $!";
             $log_open = 1;
-            select LOG; $| = 1; select STDOUT;
+            select LOG;
+            $| = 1;
+            select STDOUT;
         }
         $lvl ||= 'notice';
         print LOG "$lvl: $msg\n";

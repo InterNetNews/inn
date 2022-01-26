@@ -15,7 +15,6 @@ our $VERSION = "$INN::Config::VERSION";
 
 my %lockfiles;
 
-
 ##
 ##  Returns true if the file is properly locked.
 ##
@@ -29,7 +28,12 @@ sub lock {
     $lockwait = 2 if not defined $lockwait;
 
     while ($locktry < $lockretrymax) {
-        if (system("$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile) == 0) {
+        if (
+            system(
+                "$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile
+            ) == 0
+          )
+        {
             $lockfiles{$lockfile} = 1;
             return 1;
         }
@@ -40,7 +44,6 @@ sub lock {
     # Failed to lock.
     return 0;
 }
-
 
 ##
 ##  Returns true if the file is properly unlocked.
@@ -54,7 +57,6 @@ sub unlock {
         return 0;
     }
 }
-
 
 ##
 ##  Attempts to unlock any leftover locks.
@@ -72,10 +74,8 @@ sub releaselocks {
     return $count;
 }
 
-
 ##  This array will contain what it is possible to export.
 our @EXPORT_OK = qw(lock unlock releaselocks);
-
 
 ##  That's all.
 1;

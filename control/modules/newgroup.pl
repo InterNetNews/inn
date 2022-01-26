@@ -16,8 +16,10 @@
 use strict;
 
 sub control_newgroup {
-    my ($par, $sender, $replyto, $site, $action, $log, $approved,
-        $article, $charset_from, $charset_to) = @_;
+    my (
+        $par, $sender, $replyto, $site, $action, $log, $approved,
+        $article, $charset_from, $charset_to
+    ) = @_;
     my ($groupname, $modflag) = @$par;
 
     my $head = $article->head;
@@ -40,7 +42,8 @@ sub control_newgroup {
             if ($part_head->mime_type eq 'application/news-groupinfo') {
                 @body = split(/\r?\n/, $part->stringify_body);
                 if (defined $part_head->mime_attr('Content-Type.charset')) {
-                    $charset_message = $part_head->mime_attr('Content-Type.charset');
+                    $charset_message
+                      = $part_head->mime_attr('Content-Type.charset');
                 }
                 $mimegroupinfo = 1;
             }
@@ -70,15 +73,17 @@ sub control_newgroup {
         }
     }
     if (not defined $charset_message
-        or not defined Encode::find_encoding($charset_message)) {
-        $charset_message = "cp1252";  # Default charset, when undefined.
+        or not defined Encode::find_encoding($charset_message))
+    {
+        $charset_message = "cp1252";    # Default charset, when undefined.
     }
 
     $modflag ||= '';
     my $modcmd = $modflag eq 'moderated' ? 'm' : 'y';
 
     # Scan active to see what sort of change we are making.
-    open(ACTIVE, $INN::Config::active) or logdie("Cannot open $INN::Config::active: $!");
+    open(ACTIVE, $INN::Config::active)
+      or logdie("Cannot open $INN::Config::active: $!");
     my @oldgroup;
     while (<ACTIVE>) {
         next unless /^(\Q$groupname\E)\s\d+\s\d+\s(\w)/;
@@ -96,8 +101,9 @@ sub control_newgroup {
     my $found = 0;
     my $ngline = '';
     foreach (@body) {
-        $found = 1 if (($mimegroupinfo)
-                       and ($_ !~ /^For your newsgroups file:\s*$/));
+        $found = 1
+          if (($mimegroupinfo)
+              and ($_ !~ /^For your newsgroups file:\s*$/));
         if ($found) {
             # It is the line which contains the description.
             $ngline = $_;
@@ -107,18 +113,18 @@ sub control_newgroup {
     }
 
     if ($found) {
-      ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
+        ($ngname, $ngdesc) = split(/\s+/, $ngline, 2);
 
-      # Scan newsgroups to see the previous description, if any.
-      open(NEWSGROUPS, $INN::Config::newsgroups)
+        # Scan newsgroups to see the previous description, if any.
+        open(NEWSGROUPS, $INN::Config::newsgroups)
           or logdie("Cannot open $INN::Config::newsgroups: $!");
-      while (<NEWSGROUPS>) {
-          if (/^\Q$groupname\E\s+(.*)/) {
-              $olddesc = $1;
-              last;
-          }
-      }
-      close NEWSGROUPS;
+        while (<NEWSGROUPS>) {
+            if (/^\Q$groupname\E\s+(.*)/) {
+                $olddesc = $1;
+                last;
+            }
+        }
+        close NEWSGROUPS;
     }
 
     # Properly encode the newsgroup description.
@@ -149,7 +155,7 @@ sub control_newgroup {
     } else {
         $errmsg = checkgroupname($groupname);
     }
-    if (! $errmsg) {
+    if (!$errmsg) {
         if (defined &local_checkdescription) {
             $errmsg = local_checkdescription($ngdesc, $modcmd);
         } else {
@@ -158,11 +164,13 @@ sub control_newgroup {
     }
     if ($errmsg) {
         if ($log) {
-            logger($log, "skipping newgroup $groupname $modcmd"
-                   . " $sender (would $status): $errmsg", $article);
+            logger(
+                $log, "skipping newgroup $groupname $modcmd"
+                  . " $sender (would $status): $errmsg", $article
+            );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
-                   . " (would $status): $errmsg");
+                  . " (would $status): $errmsg");
         }
         return;
     }
@@ -188,25 +196,29 @@ END
         close $mail or logdie("Cannot send mail: $!");
     } elsif ($action eq 'log') {
         if ($log) {
-            logger($log, "skipping newgroup $groupname $modcmd"
-                . " $sender (would $status)", $article);
+            logger(
+                $log, "skipping newgroup $groupname $modcmd"
+                  . " $sender (would $status)", $article
+            );
         } else {
             logmsg("skipping newgroup $groupname $modcmd $sender"
-                . " (would $status)");
+                  . " (would $status)");
         }
     } elsif ($action eq 'doit' and $status ne 'be unapproved') {
         if ($status ne 'not change') {
             # The status 'be made (un)moderated' prevails over
             # 'have a new description' so it is executed.
             ctlinnd('newgroup', $groupname, $modcmd, $sender)
-                if $status ne 'have a new description';
+              if $status ne 'have a new description';
             # We know the description has changed.
             update_desc($ngname, $ngdesc) if $ngdesc and $ngname eq $groupname;
         }
 
         if ($log) {
-            logger($log, "newgroup $groupname $modcmd $status $sender",
-                   $article) if ($log ne 'mail' or $status ne 'not change');
+            logger(
+                $log, "newgroup $groupname $modcmd $status $sender",
+                $article
+            ) if ($log ne 'mail' or $status ne 'not change');
         }
     }
     return;
@@ -217,11 +229,12 @@ sub update_desc {
     my $lockfile = "$INN::Config::locks/LOCK.newsgroups";
 
     # Acquire a lock.
-    INN::Utils::Shlock::lock($lockfile, 60) or logdie("Cannot create lockfile $lockfile");
+    INN::Utils::Shlock::lock($lockfile, 60)
+      or logdie("Cannot create lockfile $lockfile");
 
     my $tempfile = "$INN::Config::newsgroups.$$";
     open(NEWSGROUPS, $INN::Config::newsgroups)
-        or logdie("Cannot open $INN::Config::newsgroups: $!");
+      or logdie("Cannot open $INN::Config::newsgroups: $!");
     open(TEMPFILE, ">$tempfile") or logdie("Cannot open $tempfile: $!");
     while (<NEWSGROUPS>) {
         next if (/^\Q$name\E\s+(.*)/);
@@ -238,7 +251,7 @@ sub update_desc {
     close TEMPFILE;
     close NEWSGROUPS;
     rename($tempfile, $INN::Config::newsgroups)
-        or logdie("Cannot rename $tempfile: $!");
+      or logdie("Cannot rename $tempfile: $!");
     unlink($tempfile);
 
     # Unlock.
@@ -252,17 +265,17 @@ sub checkgroupname {
     local $_ = shift;
 
     # Whole-name checking.
-    return 'Empty group name' if (! $_);
+    return 'Empty group name' if (!$_);
     return 'Whitespace in group name' if /\s/;
-#    return 'Unsafe group name' if /[\`\/:;]/;
+    #return 'Unsafe group name' if /[\`\/:;]/;
     return 'Bad dots in group name' if /^\./ or /\.$/ or /\.\./;
-#    return 'Group name does not begin/end with alphanumeric'
-#        if (/^[a-zA-Z0-9].+[a-zA-Z0-9]$/;
+    #return 'Group name does not begin/end with alphanumeric'
+    #  if (/^[a-zA-Z0-9].+[a-zA-Z0-9]$/;
     return 'Group name begins in control., example. or to.'
-        if /^(?:control|example|to)\./;
+      if /^(?:control|example|to)\./;
     return 'Group name is control, example, junk, poster or to'
-        if /^(?:control|example|junk|poster|to)$/;
-#    return 'Group name too long' if length $_ > 128;
+      if /^(?:control|example|junk|poster|to)$/;
+    #return 'Group name too long' if length $_ > 128;
 
     my @components = split(/\./);
     # Prevent alt.a.b.c.d.e.f.g.w.x.y.z...
@@ -272,36 +285,38 @@ sub checkgroupname {
     for (my $i = 0; $i <= $#components; $i++) {
         local $_ = $components[$i];
         return 'All-numeric name component' if /^[0-9]+$/;
-#        return 'Name component starts with non-alphanumeric' if /^[a-zA-Z0-9]/;
-#        return 'Name component does not contain letter' if not /[a-zA-Z]/;
+        #return 'Name component starts with non-alphanumeric'
+        #  if /^[a-zA-Z0-9]/;
+        #return 'Name component does not contain letter' if not /[a-zA-Z]/;
         return "`all' or `ctl' used as name component" if /^(?:all|ctl)$/;
-#        return 'Name component longer than 30 characters' if length $_ > 30;
+        #return 'Name component longer than 30 characters' if length $_ > 30;
         return 'Uppercase letter(s) in name' if /[A-Z]/;
-#        return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
+        #return 'Illegal character(s) in name' if /[^a-z0-9+_\-]/;
         # Sigh, c++ etc. must be allowed.
-#        return 'Repeated punctuation in name' if /--|__|\+\+./;
-#        return 'Repeated component(s) in name' if ($i + 2 <= $#components
-#            and $_ eq $components[$i + 1] and $_ eq $components[$i + 2]);
+        #return 'Repeated punctuation in name' if /--|__|\+\+./;
+        #return 'Repeated component(s) in name' if ($i + 2 <= $#components
+        #  and $_ eq $components[$i + 1] and $_ eq $components[$i + 2]);
     }
     return '';
 }
-
 
 # Check the description.
 sub checkdescription {
     my ($desc, $flag) = @_;
 
     # Whole-name checking.
-    return 'Empty description' if (! $desc);
+    return 'Empty description' if (!$desc);
 
     return 'Moderation status mismatch'
-        if ($desc =~ / \(Moderated\)$/) and $flag eq 'y';
+      if ($desc =~ / \(Moderated\)$/)
+      and $flag eq 'y';
 
     return 'Moderation status mismatch'
-        if ($desc !~ / \(Moderated\)$/) and $flag eq 'm';
+      if ($desc !~ / \(Moderated\)$/)
+      and $flag eq 'm';
 
     return 'Reserved "(Moderated)" substring used'
-        if ($desc =~ /\(Moderated\).+$/);
+      if ($desc =~ /\(Moderated\).+$/);
 
     return '';
 }

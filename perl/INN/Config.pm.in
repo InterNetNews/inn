@@ -9,29 +9,26 @@ use Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = '@PACKAGE_VERSION@';
 
-
 ##  First, two necessary variables (listed below in @DIRVAR).
 our $prefix = '@prefix@';
 our $exec_prefix = "@exec_prefix@";
-
 
 ##  Then, process the variables provided by innconfval.
 my @INNCONFVAR = ();
 my @values = `${exec_prefix}/bin/innconfval -p`;
 foreach my $line (@values) {
-  eval 'our '.$line;
-  if ($line =~ /^(.*?) = /m) {
-    push(@INNCONFVAR, $1);
-  }
+    eval 'our ' . $line;
+    if ($line =~ /^(.*?) = /m) {
+        push(@INNCONFVAR, $1);
+    }
 }
-
 
 ##  Paths of useful directories.
 my @DIRVAR = qw($prefix $exec_prefix $newshome $home $newslib
-$newsbin $controlprogs $newslbin $newsetc $spooldir
-$archivedir $spool $incoming $spoolnews $badnews
-$batch $overviewdir $most_logs $locks $innddir $tmpdir
-$spooltemp $path);
+  $newsbin $controlprogs $newslbin $newsetc $spooldir
+  $archivedir $spool $incoming $spoolnews $badnews
+  $batch $overviewdir $most_logs $locks $innddir $tmpdir
+  $spooltemp $path);
 our $newshome = $pathnews;
 our $home = $pathnews;
 our $newslib = "@libdir@";
@@ -57,9 +54,9 @@ $path = "${newslbin}:${newsbin}:${path}:/bin:/usr/bin";
 
 ##  Paths of useful files.
 my @FILESVAR = qw($active $activetimes $newactive $oldactive
-$history $newsgroups $ctlfile $ctlwatch $localgroups
-$newsfeeds $path_motd_innd $path_motd_nnrpd $path_motd
-$expirectl $errlog $log);
+  $history $newsgroups $ctlfile $ctlwatch $localgroups
+  $newsfeeds $path_motd_innd $path_motd_nnrpd $path_motd
+  $expirectl $errlog $log);
 our $active = "${pathdb}/active";
 our $activetimes = "${pathdb}/active.times";
 our $newactive = "${pathdb}/active.tmp";
@@ -77,12 +74,11 @@ our $expirectl = "${newsetc}/expire.ctl";
 our $errlog = "${most_logs}/errlog";
 our $log = "${most_logs}/news";
 
-
 ##  Paths of useful programs.
 my @PROGVAR = qw($inews $innconfval $innd $inndf $innwatch
-$rnews $perl_startup_innd $perl_filter_innd $perl_filter_nnrpd
-$python_filter_innd $path_python_inn_module $path_tcl_startup
-$path_tcl_filter);
+  $rnews $perl_startup_innd $perl_filter_innd $perl_filter_nnrpd
+  $python_filter_innd $path_python_inn_module $path_tcl_startup
+  $path_tcl_filter);
 our $inews = "${newsbin}/inews";
 our $innconfval = "${newsbin}/innconfval";
 our $innd = "${newsbin}/innd";
@@ -97,10 +93,9 @@ our $path_python_inn_module = "$pathfilter/INN.py";
 our $path_tcl_startup = "$pathfilter/startup.tcl";
 our $path_tcl_filter = "$pathfilter/filter.tcl";
 
-
 ##  Paths of lock/PID/status files.
 my @LOCKVAR = qw($daily $newscontrol $nntpconnect $serverpid
-$innwstatus $watchpid $tempsock $tempsockdir);
+  $innwstatus $watchpid $tempsock $tempsockdir);
 our $daily = "${locks}/LOCK.news.daily";
 our $newscontrol = "${innddir}/control";
 our $nntpconnect = "${innddir}/nntpin";
@@ -110,10 +105,9 @@ our $watchpid = "${innddir}/innwatch.pid";
 (our $tempsock = "${innddir}/ctlinndXXXXXX") =~ s!.*/(.*)XXXXXX$!$1*!;
 (our $tempsockdir = "${innddir}/ctlinndXXXXXX") =~ s!/[^/]*$!!;
 
-
 ##  Paths of external used programs.
 my @EXTPROGVAR = qw($awk $egrep $gpgv $gpg $perl $pgp $sed
-$sort $getftp $uustat $uux);
+  $sort $getftp $uustat $uux);
 our $awk = '@AWK@';
 our $egrep = '@EGREP@';
 our $gpgv = '@GPGV@';
@@ -126,10 +120,9 @@ our $getftp = "@PATH_GETFTP@";
 our $uustat = '@UUSTAT@';
 our $uux = '@UUX@';
 
-
 ##  Paths of external used compressors.
 my @EXTCOMPVAR = qw($bzip2 $compress $gzip $uncompress
-$log_compress $z);
+  $log_compress $z);
 our $bzip2 = '@BZIP2@';
 our $compress = '@COMPRESS@';
 our $gzip = '@GZIP@';
@@ -137,25 +130,24 @@ our $uncompress = '@UNCOMPRESS@';
 our $log_compress = '@LOG_COMPRESS@';
 our $z = '@LOG_COMPRESSEXT@';
 
-
 ##  Set up some useful system file information.
 my @SYSVAR = qw($newsmaster $newsuser $newsgroup
-$filemode $inewsmode $rnewsmode $umask $syslog_facility);
+  $filemode $inewsmode $rnewsmode $umask $syslog_facility);
 our $newsmaster = '@NEWSMASTER@';
 our $newsuser = ${runasuser};
 our $newsgroup = ${runasgroup};
-our $filemode = @FILEMODE@;      # It is a number.
+#<<V  code skipping because perltidy expects numbers.
+our $filemode = @FILEMODE@;    # It is a number.
 our $inewsmode = @INEWSMODE@;
 our $rnewsmode = @RNEWSMODE@;
 our $umask = @NEWSUMASK@;
+#>>V
 our $syslog_facility = lc('@SYSLOG_FACILITY@');
 $syslog_facility =~ s/log_//;
-
 
 ##  Set up some useful parameters.
 my @PARAMVAR = qw($do_dbz_tagged_hash);
 our $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
-
 
 ##  Set up some environment values.
 if ($ovmethod && $ovmethod eq "ovdb") {
@@ -173,26 +165,25 @@ $ENV{'PATH'} = $path;
 $ENV{'SPOOLDIR'} = $spooldir;
 $ENV{'TMPDIR'} = $pathtmp;
 
-
 ##  Set up the locale.
 $ENV{'LC_CTYPE'} = "C";
 
-
 ##  Set up umask.
+#<<V  code skipping because perltidy expects a number.
 umask @NEWSUMASK@;
-
+#>>V
 
 ##  This array will contain what it is possible to export.
-our @EXPORT_OK = (@INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
-@LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR,
-qw($VERSION));
-
+our @EXPORT_OK = (
+    @INNCONFVAR, @DIRVAR, @FILESVAR, @PROGVAR,
+    @LOCKVAR, @EXTPROGVAR, @EXTCOMPVAR, @SYSVAR, @PARAMVAR,
+    qw($VERSION)
+);
 
 ##  Load another script that can override or add variables.
 if (-x "${pathetc}/innshellvars.pl.local") {
     do "${pathetc}/innshellvars.pl.local";
 }
-
 
 ##  That's all.
 1;

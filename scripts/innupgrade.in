@@ -40,50 +40,53 @@ use subs qw(fix_inn_conf);
 use Getopt::Long qw(GetOptions);
 
 # The mappings of file names to fixes.
-%FIXES = ('inn.conf'     => \&fix_inn_conf,
-          'newsfeeds'    => \&fix_newsfeeds,
-          'readers.conf' => \&fix_readers_conf);
+%FIXES = (
+    'inn.conf'     => \&fix_inn_conf,
+    'newsfeeds'    => \&fix_newsfeeds,
+    'readers.conf' => \&fix_readers_conf
+);
 
 # The mappings of obsolete file names to rename.
 # If the new name is empty, the file is removed.
-%RENAME = ('auth_smb'         => 'auth_smb.OLD',     # Obsolete programs in INN 2.5.0.
-           'auth_smb.8'       => '',
-           'gpgverify'        => 'gpgverify.OLD',
-           'inndstart'        => 'inndstart.OLD',
-           'inndstart.8'      => '',
-           'overview.fmt'     => 'overview.fmt.OLD',
-           'overview.fmt.5'   => '',
-           'sasl.conf'        => 'sasl.conf.OLD',
-           'sasl.conf.5'      => '',
-           'startinnfeed'     => 'startinnfeed.OLD',
-           'startinnfeed.1'   => '',
+%RENAME = (
+    'auth_smb'       => 'auth_smb.OLD',       # Obsolete programs in INN 2.5.0.
+    'auth_smb.8'     => '',
+    'gpgverify'      => 'gpgverify.OLD',
+    'inndstart'      => 'inndstart.OLD',
+    'inndstart.8'    => '',
+    'overview.fmt'   => 'overview.fmt.OLD',
+    'overview.fmt.5' => '',
+    'sasl.conf'      => 'sasl.conf.OLD',
+    'sasl.conf.5'    => '',
+    'startinnfeed'   => 'startinnfeed.OLD',
+    'startinnfeed.1' => '',
 
-           'compliance-nntp'  => '',                 # Obsolete documentation in INN 2.5.0.
-           'makeactive.8'     => '',                 # -- empty placeholder.
-           'parsedate.3'      => '',                 # -- replaced by convdate.
-           'pgpverify.8'      => '',                 # -- it is pgpverify(1).
-           'README.readers.conf' => '',              # -- it is external-auth.
-           'sm.8'             => '',                 # -- it is sm(1).
+    'compliance-nntp'     => '',    # Obsolete documentation in INN 2.5.0.
+    'makeactive.8'        => '',    # -- empty placeholder.
+    'parsedate.3'         => '',    # -- replaced by convdate.
+    'pgpverify.8'         => '',    # -- it is pgpverify(1).
+    'README.readers.conf' => '',    # -- it is external-auth.
+    'sm.8'                => '',    # -- it is sm(1).
 
-           'innfeed.1'        => '',                 # It is innfeed(8) in INN 2.5.3.
+    'innfeed.1' => '',              # It is innfeed(8) in INN 2.5.3.
 
-           'hook-tcl'         => 'hook-tcl.OLD',     # Obsolete Tcl hooks in INN 2.5.0.
-           'filter.tcl'       => 'filter.tcl.OLD',
-           'startup.tcl'      => 'startup.tcl.OLD',
+    'hook-tcl'    => 'hook-tcl.OLD',      # Obsolete Tcl hooks in INN 2.5.0.
+    'filter.tcl'  => 'filter.tcl.OLD',
+    'startup.tcl' => 'startup.tcl.OLD',
 
-           'motd.news'        => 'motd.nnrpd',       # Renamed in INN 2.5.3.
-           'radius.conf'      => 'inn-radius.conf',  # Renamed in INN 2.5.4.
-           'radius.conf.5'    => '',
-           'defines.h'        => 'defines.h.OLD',    # Removed in INN 2.7.0.
-           'filechan'         => 'filechan.OLD',
-           'filechan.8'       => '',
-           'send-nntp'        => 'send-nntp.OLD',
-           'send-nntp.8'      => '',
-           'sendsys.pl'       => 'sendsys.pl.OLD',
-           'senduuname.pl'    => 'senduuname.pl.OLD',
-           'signcontrol'      => 'signcontrol.OLD',
-           'version.pl'       => 'version.pl.OLD',
-          );
+    'motd.news'     => 'motd.nnrpd',          # Renamed in INN 2.5.3.
+    'radius.conf'   => 'inn-radius.conf',     # Renamed in INN 2.5.4.
+    'radius.conf.5' => '',
+    'defines.h'     => 'defines.h.OLD',       # Removed in INN 2.7.0.
+    'filechan'      => 'filechan.OLD',
+    'filechan.8'    => '',
+    'send-nntp'     => 'send-nntp.OLD',
+    'send-nntp.8'   => '',
+    'sendsys.pl'    => 'sendsys.pl.OLD',
+    'senduuname.pl' => 'senduuname.pl.OLD',
+    'signcontrol'   => 'signcontrol.OLD',
+    'version.pl'    => 'version.pl.OLD',
+);
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
 # values) need to be commented out since they're no longer allowed (don't just
@@ -102,13 +105,13 @@ sub fix_inn_conf {
         $line++;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
-            push (@$output, $_);
+            push(@$output, $_);
             next;
         }
         chomp;
         unless (/^(\s*)(\S+):(\s*)(.*)/) {
             warn "$file:$line: cannot parse line: $_\n";
-            push (@$output, $_);
+            push(@$output, $_);
             next;
         }
 
@@ -116,13 +119,13 @@ sub fix_inn_conf {
 
         # Empty value.
         if ($value eq '') {
-            push (@$output, "#$_\n");
+            push(@$output, "#$_\n");
             next;
         }
 
         # Remove a few parameters.
         if ($key eq 'refusecybercancels' or $key eq 'verifycancels') {
-            push (@$output, "#$_\n");
+            push(@$output, "#$_\n");
             next;
         }
 
@@ -143,7 +146,7 @@ sub fix_inn_conf {
         # A list value (on only one line).
         # This condition must occur after having checked for $overview.
         if ($value =~ /^\[/) {
-            push (@$output, "$_\n");
+            push(@$output, "$_\n");
             next;
         }
 
@@ -153,20 +156,23 @@ sub fix_inn_conf {
             $value = '"' . $value . '"';
         }
 
-        push (@$output, "$indent$key:$space$value\n");
+        push(@$output, "$indent$key:$space$value\n");
     }
 
     # Add a setting of hismethod if one wasn't present in the original file.
     unless ($hismethod) {
-        push (@$output, "\n# Added by innupgrade.\nhismethod: hisv6\n");
+        push(@$output, "\n# Added by innupgrade.\nhismethod: hisv6\n");
     }
 
-    # Import the settings from overview.fmt if present and not found in inn.conf.
+    # Import the settings from overview.fmt if present and not found
+    # in inn.conf.
     if (!$overview && -f 'overview.fmt') {
-        open (OVERVIEWFMT, 'overview.fmt') or die "Can't open overview.fmt: $!\n";
+        open(OVERVIEWFMT, 'overview.fmt')
+          or die "Can't open overview.fmt: $!\n";
         my (@extraoverview, $foundfull, $foundxref);
         while (<OVERVIEWFMT>) {
-            # Find out the first ":full" in the file.  It may not be "Xref:full".
+            # Find out the first ":full" in the file.  It may not be
+            # "Xref:full".
             # One "Xref" is already advertised as the eighth field in
             # the overview database so we have to drop the *first* "Xref:full".
             if (!$foundfull) {
@@ -189,19 +195,22 @@ sub fix_inn_conf {
             chomp;
             s/\s//g;
             s/:full.*$//i;
-            push (@extraoverview, $_);
+            push(@extraoverview, $_);
         }
-        close (OVERVIEWFMT);
+        close(OVERVIEWFMT);
         if ($#extraoverview >= 0) {
-            push (@$output, "\n# Moved from overview.fmt by innupgrade.\n");
-            push (@$output, "extraoverviewadvertised: [ " .
-                            join (" ", @extraoverview) . " ]\n");
+            push(@$output, "\n# Moved from overview.fmt by innupgrade.\n");
+            push(
+                @$output,
+                "extraoverviewadvertised: [ "
+                  . join(" ", @extraoverview) . " ]\n"
+            );
         }
     }
 
     # Import the settings from sasl.conf if present and not found in inn.conf.
     if (!$tls && -f 'sasl.conf') {
-        open (SASL, 'sasl.conf') or die "Can't open sasl.conf: $!\n";
+        open(SASL, 'sasl.conf') or die "Can't open sasl.conf: $!\n";
         my (@sasl, $found);
         while (<SASL>) {
             $found = 1 if (/\S/ && !/^\s*\#/);
@@ -209,35 +218,36 @@ sub fix_inn_conf {
             s/^(\s*)tls_ca_path:/tlscapath:/;
             s/^(\s*)tls_cert_file:/tlscertfile:/;
             s/^(\s*)tls_key_file:/tlskeyfile:/;
-            push (@sasl, $_);
+            push(@sasl, $_);
         }
-        close (SASL);
+        close(SASL);
         if ($found) {
-            push (@$output, "\n# Moved from sasl.conf by innupgrade.\n");
-            push (@$output, @sasl);
+            push(@$output, "\n# Moved from sasl.conf by innupgrade.\n");
+            push(@$output, @sasl);
         }
     }
 
     # Create inn-secrets.conf if not existing.
     if (!-f 'inn-secrets.conf') {
-        open (SECRETS, '>inn-secrets.conf')
+        open(SECRETS, '>inn-secrets.conf')
           or die "Cannot create inn-secrets.conf: $!\n";
-        print SECRETS "##  inn-secrets.conf -- INN configuration for secrets\n";
+        print SECRETS
+          "##  inn-secrets.conf -- INN configuration for secrets\n";
         print SECRETS "##\n";
         print SECRETS "##  See the inn-secrets.conf(5) man page for details "
-                      .  "about this file.";
-        close (SECRETS);
+          . "about this file.";
+        close(SECRETS);
 
         # Give it the same ownership as inn.conf.
-        my ($mode, $user, $group) = (stat($file))[2,4,5];
-        if (defined ($user) && defined ($group)) {
-            chown ($user, $group, "inn-secrets.conf")
-                or warn "Cannot chown inn-secrets.conf: $!\n";
+        my ($mode, $user, $group) = (stat($file))[2, 4, 5];
+        if (defined($user) && defined($group)) {
+            chown($user, $group, "inn-secrets.conf")
+              or warn "Cannot chown inn-secrets.conf: $!\n";
         } else {
             warn "Cannot find owner and group of $file\n";
         }
         # But not world-readable.
-        chmod ($mode & 0770, 'inn-secrets.conf');
+        chmod($mode & 0770, 'inn-secrets.conf');
     }
 }
 
@@ -253,14 +263,14 @@ sub fix_newsfeeds {
         $_ = $raw;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
-            push (@$output, $_);
+            push(@$output, $_);
             next;
         }
         chomp;
         s{(/\S+)/startinnfeed\b(\s+imapfeed)?\b}
             {$2 ? "$1/imapfeed" : "$1/innfeed"}e;
         s%(/\S+)/filechan%$1/buffchan -u%;
-        push (@$output, "$_\n");
+        push(@$output, "$_\n");
     }
 }
 
@@ -276,12 +286,12 @@ sub fix_readers_conf {
         $_ = $raw;
         # Commented or blank lines.
         if (/^\s*\#/ || /^\s*$/) {
-            push (@$output, $_);
+            push(@$output, $_);
             next;
         }
         chomp;
         s/^(\s*)require_ssl:/$1require_encryption:/;
-        push (@$output, "$_\n");
+        push(@$output, "$_\n");
     }
 }
 
@@ -290,12 +300,12 @@ sub fix_readers_conf {
 # than the current contents of the file, change the file.
 sub upgrade_file {
     my ($file, $function) = @_;
-    open (INPUT, $file) or die "$file: cannot open: $!\n";
+    open(INPUT, $file) or die "$file: cannot open: $!\n";
     my @input = <INPUT>;
     close INPUT;
     my @output;
-    &$function (\@input, \@output, $file);
-    if (join ('', @input) ne join ('', @output)) {
+    &$function(\@input, \@output, $file);
+    if (join('', @input) ne join('', @output)) {
         if (-e "$file.OLD") {
             if (-t STDIN) {
                 print "$file.OLD already exists, overwrite (y/N)? ";
@@ -308,25 +318,25 @@ sub upgrade_file {
             }
         }
         print "Updating $file, old version saved as $file.OLD\n";
-        my ($user, $group) = (stat $file)[4,5];
-        open (OUTPUT, "> $file.new.$$")
-            or die "$file: cannot create $file.new.$$: $!\n";
+        my ($user, $group) = (stat $file)[4, 5];
+        open(OUTPUT, "> $file.new.$$")
+          or die "$file: cannot create $file.new.$$: $!\n";
         print OUTPUT @output;
         close OUTPUT or die "$file: cannot flush new file: $!\n";
-        unless (link ($file, "$file.OLD")) {
-            rename ($file, "$file.OLD")
-                or die "$file: cannot rename to $file.OLD: $!\n";
+        unless (link($file, "$file.OLD")) {
+            rename($file, "$file.OLD")
+              or die "$file: cannot rename to $file.OLD: $!\n";
         }
         if ($> == 0) {
-            if (defined ($user) && defined ($group)) {
-                chown ($user, $group, "$file.new.$$")
-                    or warn "$file: cannot chown $file.new.$$: $!\n";
+            if (defined($user) && defined($group)) {
+                chown($user, $group, "$file.new.$$")
+                  or warn "$file: cannot chown $file.new.$$: $!\n";
             } else {
                 warn "$file: cannot find owner and group of $file\n";
             }
         }
-        rename ("$file.new.$$", $file)
-            or die "$file: cannot replace with $file.new.$$: $!\n";
+        rename("$file.new.$$", $file)
+          or die "$file: cannot replace with $file.new.$$: $!\n";
     }
 }
 
@@ -340,41 +350,42 @@ sub upgrade_directory {
         $directory = $1;
     }
     chdir $directory or die "Can't chdir to $directory: $!\n";
-    opendir (DIR, ".") or die "Can't opendir $directory: $!\n";
+    opendir(DIR, ".") or die "Can't opendir $directory: $!\n";
     for (readdir DIR) {
         if ($_ =~ /^([^\/]+)$/) {
-           $file = $1;
+            $file = $1;
         }
-        if (exists ($FIXES{$file})) {
-            upgrade_file ($file, $FIXES{$file});
+        if (exists($FIXES{$file})) {
+            upgrade_file($file, $FIXES{$file});
         }
     }
-    closedir (DIR);
-    opendir (DIR, ".") or die "Can't opendir $directory: $!\n";
+    closedir(DIR);
+    opendir(DIR, ".") or die "Can't opendir $directory: $!\n";
     for (readdir DIR) {
         if ($_ =~ /^([^\/]+)$/) {
-           $file = $1;
+            $file = $1;
         }
-        if (exists ($RENAME{$file})) {
+        if (exists($RENAME{$file})) {
             if ($RENAME{$file} eq '') {
-                unlink ($file)
-                    or die "$file: cannot remove: $!\n";
+                unlink($file)
+                  or die "$file: cannot remove: $!\n";
             } else {
-                rename ($file, $RENAME{$file})
-                    or die "$file: cannot rename to $file.OLD: $!\n";
+                rename($file, $RENAME{$file})
+                  or die "$file: cannot rename to $file.OLD: $!\n";
             }
         }
     }
-    closedir (DIR);
+    closedir(DIR);
 }
-
 
 # The main routine.  Parse command-line options to figure out what we're
 # doing.
 my ($file, $type);
-Getopt::Long::config ('bundling');
-GetOptions ('file|f=s' => \$file,
-            'type|t=s' => \$type) or exit 1;
+Getopt::Long::config('bundling');
+GetOptions(
+    'file|f=s' => \$file,
+    'type|t=s' => \$type
+) or exit 1;
 if ($file) {
     my ($dirname, $basename);
     if ($file =~ /^(.*)\/([^\/]+)$/) {
@@ -383,10 +394,12 @@ if ($file) {
     }
     chdir $dirname or die "Can't chdir to $dirname: $!\n";
     $type ||= $basename;
-    if (! exists($FIXES{$type})) { die "No upgrade rules defined for $basename\n" }
-    upgrade_file ($basename, $FIXES{$type});
+    if (!exists($FIXES{$type})) {
+        die "No upgrade rules defined for $basename\n";
+    }
+    upgrade_file($basename, $FIXES{$type});
 } else {
     if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }
     my $directory = shift;
-    upgrade_directory ($directory);
+    upgrade_directory($directory);
 }

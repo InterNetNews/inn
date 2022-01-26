@@ -16,7 +16,7 @@
 # Usage:
 #
 # 1.  Add an entry in $pathetc/newsfeeds like the one below, and issue
-#     `ctlinnd reload newsfeeds traffic` (you can change the path to 
+#     `ctlinnd reload newsfeeds traffic` (you can change the path to
 #     whatever you like).
 #
 #             analyze!\
@@ -84,7 +84,7 @@
 #   the total number of kilobytes of (accepted) traffic in that
 #   newsgroup, followed similarly by the peer responsible for the most
 #   traffic in that group.  It looks something like this:
-#   
+#
 #       news.lists.filters  1057 arts (63% syr)  7105.9 KB (36% cox)
 #
 #   The short names are made by taking the last component of the
@@ -104,13 +104,12 @@
 #
 # Constants:
 
-my $USE_ALL_GROUPS = 1;  # if 0, use only group article is stored under
-my $SORT_BY_SIZE = 1;    # if 0, sort output by number of articles
-my $FIELD1_WIDTH = 30;   # maximum length of newsgroup name, '' for none
+my $USE_ALL_GROUPS = 1;    # if 0, use only group article is stored under
+my $SORT_BY_SIZE = 1;      # if 0, sort output by number of articles
+my $FIELD1_WIDTH = 30;     # maximum length of newsgroup name, '' for none
 
 my $TLD_REGEX = '^(?:com|net|org|edu|gov|mil|ac|co|uk|au|ca|de)$';
-                         # feel free to add any others as needed
-
+# feel free to add any others as needed
 
 ########################################################################
 
@@ -118,17 +117,18 @@ use strict;
 
 my %stats;
 
-while( <> ) {
+while (<>) {
     my ($group, $peer, $bytes, $id, $token, @Newsgroups) = split;
-    next unless ($USE_ALL_GROUPS ? @Newsgroups : $token);  # bad input line
+    next unless ($USE_ALL_GROUPS ? @Newsgroups : $token);    # bad input line
 
     my @groups = map { split /\s*,\s*/ } @Newsgroups;
 
     foreach ($USE_ALL_GROUPS && @groups ? @groups : $group) {
-        my $s = $stats{$_} ||= { count => 0,
-                                 bytes => 0,
-                                 peers => {},
-                                 };
+        my $s = $stats{$_} ||= {
+            count => 0,
+            bytes => 0,
+            peers => {},
+        };
 
         $s->{count}++;
         $s->{bytes} += $bytes;
@@ -137,24 +137,23 @@ while( <> ) {
     }
 }
 
-
 my $f = $SORT_BY_SIZE ? 'bytes' : 'count';
 
 foreach (sort { $stats{$a}->{$f} <=> $stats{$b}->{$f} } (keys %stats)) {
-    my %s = %{$stats{$_}};
+    my %s = %{ $stats{$_} };
 
-    my ($topcount,$topcountwho) = &max('count', $s{peers});
-    my ($topbytes,$topbyteswho) = &max('bytes', $s{peers});
+    my ($topcount, $topcountwho) = &max('count', $s{peers});
+    my ($topbytes, $topbyteswho) = &max('bytes', $s{peers});
     $topcountwho = &trim($topcountwho);
     $topbyteswho = &trim($topbyteswho);
     my $countf = int(100 * $topcount / $s{count});
     my $bytesf = int(100 * $topbytes / $s{bytes});
     my $kb = 0.1 * int($s{bytes} * 10 / 1024);
 
-    my $ng = $FIELD1_WIDTH eq '' ? $_ : substr($_,0,$FIELD1_WIDTH);
+    my $ng = $FIELD1_WIDTH eq '' ? $_ : substr($_, 0, $FIELD1_WIDTH);
     print +(sprintf("%-${FIELD1_WIDTH}s\t", $ng)),
-          "$s{count} arts ($countf% $topcountwho)\t",
-          "${kb} KB ($bytesf% $topbyteswho)\n";
+      "$s{count} arts ($countf% $topcountwho)\t",
+      "${kb} KB ($bytesf% $topbyteswho)\n";
 }
 
 1;
@@ -162,7 +161,7 @@ foreach (sort { $stats{$a}->{$f} <=> $stats{$b}->{$f} } (keys %stats)) {
 sub trim {
     my @parts = split(/\./, $_[0]);
     my $part;
-    while( defined($part = pop(@parts)) ) {
+    while (defined($part = pop(@parts))) {
         last unless $part =~ /$TLD_REGEX/o;
     }
     return defined($part) ? $part : $_[0];
@@ -173,8 +172,8 @@ sub max {
     my $who;
     my ($field, $listref) = @_;
 
-    while( my ($peer, $stats) = each %{$listref} ) {
-        if( $stats->{$field} > $x ) {
+    while (my ($peer, $stats) = each %{$listref}) {
+        if ($stats->{$field} > $x) {
             $x = $stats->{$field};
             $who = $peer;
         }

@@ -57,7 +57,7 @@ while (<SRC>) {
     # bar.foo.net:RP:::%0
     ($address, $access, $user, $pass, $groups) = split /:/;
     unless (defined $groups) {
-        push (@badsyntax, $.);
+        push(@badsyntax, $.);
         next;
     }
 
@@ -73,7 +73,7 @@ while (<SRC>) {
     $access =~ s/[^RPNL]//g;
 
     unless ($user eq '') {
-        push (@duplicates, $.) if defined ($passwords{$user});
+        push(@duplicates, $.) if defined($passwords{$user});
         $passwords{$user} = $pass;
     }
 
@@ -95,7 +95,7 @@ while (<SRC>) {
 }
 close SRC;
 
-srand($$^time);
+srand($$ ^ time);
 
 if (!$debug) {
     close $OUT;
@@ -103,24 +103,23 @@ if (!$debug) {
     $OUT = \*PASSWD;
 }
 while (my ($user, $pass) = each %passwords) {
-    $pass = crypt($pass, seedchar().seedchar());
+    $pass = crypt($pass, seedchar() . seedchar());
     print $OUT "$user:$pass\n";
 }
 close PASSWD unless $debug;
 
 print STDERR "\nHad trouble with syntax on line",
-             @badsyntax > 1 ? 's ' : ' ',
-             join(", ", @badsyntax), ".\n"
-    if @badsyntax;
+  @badsyntax > 1 ? 's ' : ' ',
+  join(", ", @badsyntax), ".\n"
+  if @badsyntax;
 
 print STDERR "\nFound username duplication on line",
-             @duplicates > 1 ? 's ' : ' ',
-             join(", ", @duplicates), ".\n"
-    if @duplicates;
+  @duplicates > 1 ? 's ' : ' ',
+  join(", ", @duplicates), ".\n"
+  if @duplicates;
 
-
-sub seedchar {  # From Randal Schwarz.
-    ('a'..'z','A'..'Z','0'..'9','.','/')[rand(64)];
+sub seedchar {    # From Randal Schwarz.
+    ('a' .. 'z', 'A' .. 'Z', '0' .. '9', '.', '/')[rand(64)];
 }
 
 sub usage {
@@ -138,5 +137,5 @@ instead to stdout for examination purposes.
 
 __END__
 
-exit 1;
+    exit 1;
 }
