@@ -5,6 +5,7 @@ File Name                             Description
 .github/dependabot.yml                Configuration for GitHub dependabot
 .github/workflows                     GitHub Actions workflows (Directory)
 .github/workflows/build.yaml          Default GitHub Actions testing workflow
+.perltidyrc                           Configuration for perltidy
 CONTRIBUTORS                          List of contributors
 HACKING                               Docs for INN coders and maintainers
 INSTALL                               INN installation instructions

@@ -462,9 +462,10 @@ changing the region you worked on to fit the general coding style is also
 acceptable).
 
 When modifying or writing new code in C, it should conform to the
-I<Clang-format> style of the project.  Similarly, Python scripts should
-conform to the I<Black> code style of the project.  Just run C<make reformat>
-at the top level of the source tree to properly reformat all files.
+I<Clang-format> style of the project.  Similarly, Perl and Python scripts
+should conform to respectively the I<perltidy> and I<Black> code styles of
+the project.  Just run C<make reformat> at the top level of the source tree to
+properly reformat all files.
 
 If you're writing a substantial new piece of code, the prevailing
 "standard" INN coding style is the following:
@@ -705,6 +706,11 @@ OpenSSL, that can then be enabled in B<nnrpd> for LibreSSL.
 Check whether a new version of the ternary search trie implementation
 (available at L<http://www.octavian.org/cs/software.html>) could be
 merged into F<lib/tst.c>.
+
+=item *
+
+Ensure that the source code is properly formatted with the current versions of
+reformatting programs (run C<make reformat>).
 
 =back
 
