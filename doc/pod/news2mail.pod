@@ -29,9 +29,9 @@ actual e-mail address to send the article to.  The third field is optional:
 it sets the envelope-from address (for instance a list member's address;
 if not set, it defaults to the C<news> user).
 
-In e-mail messages, the To header field body will have the mailing-list address
-(i.e. the second field).  Besides, B<news2mail> strips most article headers
-from the article before mailing.
+In e-mail messages, the To header field body will have the mailing-list
+address (i.e. the second field).  Besides, B<news2mail> strips most article
+header fields from the article before mailing.
 
 In F<newsfeeds>, the channel feed should look like:
 
@@ -40,7 +40,9 @@ In F<newsfeeds>, the channel feed should look like:
 and for each mailing-list, you only have to add to F<newsfeeds> an entry list
 like:
 
-    list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
+    list-big-red-ants/lists.ucsd.edu\
+        :!*,rec.pets.red-ants\
+        :Ap,Tm:news2mail!
 
 Please note the use of C<Ap> and the exclusion of the list owner domain
 to protect the list from feeding back new arrivals from the list.
@@ -48,8 +50,8 @@ The site name used in the F<newfeeds> entry for a mailing-list (above
 C<list-big-red-ants>) must be the same as the first field in an entry in
 F<news2mail.cf>.  For instance:
 
-    # Newsfeeds-name      List-to-address                 [List-sender-address]
-    list-big-red-ants     big-red-ants@lists.ucsd.edu     news+big-red-ants@local.news.server.org
+    # newsfeeds-name   list-to-address      [list-sender-address]
+    list-big-red-ants  ants@lists.ucsd.edu  news+ants@news.server.org
 
 =head1 FILES
 
@@ -67,9 +69,9 @@ The configuration file which specifies the mapping to use for gatewaying.
 
 =head1 BUGS
 
-The B<news2mail> program is set up as a funneled channel in F<newsfeeds>,
+The B<news2mail> program is set up as a funnelled channel in F<newsfeeds>,
 implying multiple matches should be handled as one S<- and> multiple matching
-funneled feeds will result in a single call to the script.  Therefore,
+funnelled feeds will result in a single call to the script.  Therefore,
 since only one mail is sent, crossposts are not currently properly handled
 as for the envelope-from address (which then defaults to the C<news> user).
 

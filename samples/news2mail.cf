@@ -2,12 +2,12 @@
 ##
 ##  Format is:
 ##
-##      Newsfeeds-name      List-to-address      [List-sender-address]
+##      newsfeeds-name      list-to-address      [list-sender-address]
 ##
-##  Newsfeeds-name:       Name used in the newsfeeds file for the gateway feed
+##  newsfeeds-name:       Name used in the newsfeeds file for the gateway feed
 ##                        (required).
-##  List-to-address:      List address to send articles to (required).
-##  List-sender-address:  Envelope-from address to use (a list member's
+##  list-to-address:      List address to send articles to (required).
+##  list-sender-address:  Envelope-from address to use (a list member's
 ##                        address; optional).
 ##
 ##  In newsfeeds, put an entry like:
