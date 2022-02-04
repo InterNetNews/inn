@@ -244,7 +244,7 @@ parse_config
         if ($word eq '}') {
             $parse_error = 0;
             if (scalar @groups == 0) {
-                eprint "$file:$line: extra closing brace";
+                eprint "$file:$line: extra closing brace\n";
             } else {
                 $return{$group->{'name'}} = $group;
                 $group = pop @groups;
