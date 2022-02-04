@@ -32,7 +32,8 @@ Other entries may be added in F<newsfeeds> depending on your needs.  See the
 examples below and also in the archive(8), controlchan(8), news2mail(8),
 ninpaths(8) and perl-nocem(8) man pages for the most widely used.
 
-You can reload this configuration file with the following command:
+After any changes, run C<inncheck> to perform basic syntax checks, and reload
+this configuration file with the following command:
 
     ctlinnd reload newsfeeds 'new peer'
 

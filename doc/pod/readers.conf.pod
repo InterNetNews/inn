@@ -61,9 +61,11 @@ identity.
 More examples and features are detailed below in this man page (notably
 without any password file, with PAM, with Perl or Python hooks).
 
-You don't need to reload anything after modifying F<readers.conf>; every time
-a news client connects to the server, a new B<nnrpd> process is spawned and
-reads its configuration from disk.
+You don't need to reload anything after modifying F<readers.conf>; every
+time a news client connects to the server, a new B<nnrpd> process is spawned
+and reads its configuration from disk.  Nonetheless, after any changes,
+you can run C<inncheck> to perform basic syntax checks against the modified
+F<readers.conf> file.
 
 =head1 DESCRIPTION
 
