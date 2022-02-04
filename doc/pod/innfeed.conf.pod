@@ -21,9 +21,10 @@ follows:
         port-number: 433
     }
 
-You can reload this configuration file with the following command which makes
-B<innd> respawn a new instance of B<innfeed> (assuming C<innfeed!> is the name
-of the corresponding channel feed in F<newsfeeds>):
+After any changes, run C<inncheck> to perform basic syntax checks, and
+reload this configuration file with the following command which makes B<innd>
+respawn a new instance of B<innfeed> (assuming C<innfeed!> is the name of the
+corresponding channel feed in F<newsfeeds>):
 
     ctlinnd flush innfeed!
 
