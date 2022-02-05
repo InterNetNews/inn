@@ -17,14 +17,16 @@ use File::Find qw(find);
 # The following regex patterns match files to be ignored wherever they are in
 # the tree.  This is intended to handle files that CVS, Subversion or Git
 # ignores by default.
-@IGNORE = (qr%(\A|/)\.cvsignore\Z%, qr%(\A|/)CVS(/|\Z)%,
-           qr%(\A|/)\.svn(/|\Z)%,
-           qr%(\A|/)\.vscode(/|\Z)%,
-           qr%(\A|/)\.gitignore\Z%, qr%(\A|/)\.git(/|\Z)%,
-           qr%(\A|/)\.git-blame-ignore-revs(/|\Z)%,
-           qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
-           qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
-           qr%(\A|/)\.libs(/|\Z)%);
+@IGNORE = (
+    qr%(\A|/)\.cvsignore\Z%, qr%(\A|/)CVS(/|\Z)%,
+    qr%(\A|/)\.svn(/|\Z)%,
+    qr%(\A|/)\.vscode(/|\Z)%,
+    qr%(\A|/)\.gitignore\Z%, qr%(\A|/)\.git(/|\Z)%,
+    qr%(\A|/)\.git-blame-ignore-revs(/|\Z)%,
+    qr/\.l?[ao]\Z/, qr%(\A|/)\.?\#%, qr%(\A|/)core\Z%,
+    qr/\.(old|bak|orig|rej)$/, qr/~$/, qr%(\A|/)\.pure$%,
+    qr%(\A|/)\.libs(/|\Z)%
+);
 
 # Load file names and patterns from the DATA section.
 sub load_exclusions {
@@ -37,7 +39,7 @@ sub load_exclusions {
             my $pattern = $_;
             $pattern =~ s%\*%[^/]*%g;
             $pattern =~ s/\./\\./g;
-            push (@IGNORE, qr/^$pattern$/);
+            push(@IGNORE, qr/^$pattern$/);
         } else {
             $IGNORE{$_} = 1;
         }
@@ -57,12 +59,12 @@ sub find_files {
     for my $pattern (@IGNORE) {
         return if $name =~ /$pattern/;
     }
-    push (@FILES, $name);
+    push(@FILES, $name);
 }
 
 load_exclusions;
-find (\&find_files, '.');
-print join ("\n", (sort @FILES), '');
+find(\&find_files, '.');
+print join("\n", (sort @FILES), '');
 
 __DATA__
 
