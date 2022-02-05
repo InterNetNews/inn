@@ -13,10 +13,10 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
 	../man/innmail.1 ../man/nntpget.1 ../man/pullnews.1 ../man/rnews.1 \
 	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
 
-MAN3	= ../man/clientlib.3 ../man/inndcomm.3 ../man/libauth.3 \
-	../man/libinnhist.3 ../man/libstorage.3 \
-	../man/list.3 ../man/qio.3 \
-	../man/tst.3 ../man/uwildmat.3
+MAN3	= ../man/libinn_clientlib.3 ../man/libinn_inndcomm.3 \
+	../man/libauth.3 ../man/libinnhist.3 ../man/libstorage.3 \
+	../man/libinn_list.3 ../man/libinn_qio.3 \
+	../man/libinn_tst.3 ../man/libinn_uwildmat.3
 
 MAN5	= ../man/active.5 ../man/active.times.5 ../man/buffindexed.conf.5 \
 	../man/control.ctl.5 ../man/cycbuff.conf.5 ../man/distrib.pats.5 \
@@ -83,15 +83,15 @@ maintclean: distclean
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
-../man/clientlib.3:	clientlib.pod		; $(POD2MAN) -s 3 $? > $@
-../man/inndcomm.3:	inndcomm.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libauth.3:	libauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libstorage.3:	libstorage.pod		; $(POD2MAN) -s 3 $? > $@
-../man/list.3:		list.pod		; $(POD2MAN) -s 3 $? > $@
-../man/qio.3:		qio.pod			; $(POD2MAN) -s 3 $? > $@
-../man/tst.3:		tst.pod			; $(POD2MAN) -s 3 $? > $@
-../man/uwildmat.3:	uwildmat.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinn_clientlib.3: libinn_clientlib.pod	; $(POD2MAN) -s 3 $? > $@
+../man/libinn_inndcomm.3: libinn_inndcomm.pod	; $(POD2MAN) -s 3 $? > $@
+../man/libinn_list.3:	libinn_list.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinn_qio.3:	libinn_qio.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinn_tst.3:	libinn_tst.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinn_uwildmat.3: libinn_uwildmat.pod	; $(POD2MAN) -s 3 $? > $@
 
 ../man/active.5:	active.pod		; $(POD2MAN) -s 5 $? > $@
 ../man/active.times.5:	active.times.pod	; $(POD2MAN) -s 5 $? > $@

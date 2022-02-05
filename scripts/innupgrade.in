@@ -68,7 +68,14 @@ use Getopt::Long qw(GetOptions);
 
            'motd.news'        => 'motd.nnrpd',       # Rename in INN 2.5.3.
            'radius.conf'      => 'inn-radius.conf',  # Rename in INN 2.5.4.
-           'radius.conf.5'    => ''
+           'radius.conf.5'    => '',
+           'clientlib.3'      => '',                 # Removed in INN 2.6.5.
+           'dbz.3'            => '',
+           'inndcomm.3'       => '',
+           'list.3'           => '',
+           'qio.3'            => '',
+           'tst.3'            => '',
+           'uwildmat.3'       => '',
           );
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without

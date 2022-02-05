@@ -25,7 +25,7 @@ active.times(5), distrib.pats(5) and newsgroups(5).
 The listing files other than the F<active> file are common extensions to the
 NNTP protocol and may not be available on all servers.  For instance, C<counts>
 C<distributions>, C<headers>, C<moderators>, C<motd>, C<overview.fmt> and
-C<subscriptions>, amongst other, may be available.  Moreover, a uwildmat(3)
+C<subscriptions>, amongst other, may be available.  Moreover, a I<uwildmat>
 pattern I<pattern> may also be usable for some of these listing files.
 
 For more information on the formats of these files, see distributions(5),
@@ -40,7 +40,7 @@ is mentioned just before the flag of this newsgroup.
 
 The I<pattern> parameter may be used with a I<list> value of C<active>,
 C<active.times> or C<newsgroups> to limit the output.  If given, only
-entries corresponding to newsgroups that match the uwildmat(3) pattern
+entries corresponding to newsgroups that match the I<uwildmat> pattern
 I<pattern> will be printed.
 
 If the I<list> parameter is C<active>, a third parameter, I<types>, may
@@ -105,7 +105,7 @@ in POD by Russ Allbery <eagle@eyrie.org>.
 =head1 SEE ALSO
 
 active(5), active.times(5), distrib.pats(5), distributions(5), inn.conf(5),
-moderators(5), motd.news(5), newsgroups(5), nnrpd(8), passwd.nntp(5),
-subscriptions(5), uwildmat(3).
+libinn_uwildmat(3), moderators(5), motd.news(5), newsgroups(5), nnrpd(8),
+passwd.nntp(5), subscriptions(5).
 
 =cut

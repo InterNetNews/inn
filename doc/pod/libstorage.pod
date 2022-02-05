@@ -226,7 +226,7 @@ are ignored by B<SMstore>.)  If I<arrived> is specified, B<SMstore> uses
 its value as article's arrival time; otherwise B<SMstore> uses the current
 time for it.  B<SMstore> returns the token type or returns B<TOKEN_EMPTY>
 if the article is not stored because some error occurs or simply does not
-match any uwildmat(3) expression in F<storage.conf>.  B<SMstore> fails if
+match any I<uwildmat> expression in F<storage.conf>.  B<SMstore> fails if
 B<SM_RDWR> has not been set to true with B<SMsetup>.
 
 The B<SMretrieve> function retrieves an article specified with I<token>.
@@ -438,6 +438,6 @@ Converted to POD by Julien Elie.
 
 =head1 SEE ALSO
 
-expire(8), fastrm(8), inn.conf(5), storage.conf(5).
+expire(8), fastrm(8), inn.conf(5), libinn_uwildmat(3), storage.conf(5).
 
 =cut

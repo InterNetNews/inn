@@ -71,15 +71,17 @@ for instance numbered sequentially in F<storage.conf>.
 
 =item I<newsgroups>: <wildmat>
 
-What newsgroups are stored using this storage method.  <wildmat> is a uwildmat(3)
-pattern which is matched against the newsgroups an article is posted to.
-If I<storeonxref> in F<inn.conf> is true, this pattern will be matched against
-the newsgroup names in the Xref: header; otherwise, it will be matched against
-the newsgroup names in the Newsgroups: header (see inn.conf(5) for discussion
-of the differences between these possibilities).  Poison wildmat expressions
-(expressions starting with C<@>) are allowed and can be used to exclude certain
-group patterns:  articles crossposted to poisoned newsgroups will not be stored
-using this storage method.  The <wildmat> pattern is matched in order.
+What newsgroups are stored using this storage method.  <wildmat> is a
+I<uwildmat> pattern which is matched against the newsgroups an article
+is posted to.  If I<storeonxref> in F<inn.conf> is true, this pattern
+will be matched against the newsgroup names in the Xref header field
+body; otherwise, it will be matched against the newsgroup names in the
+Newsgroups header field body (see inn.conf(5) for discussion of the
+differences between these possibilities).  Poison wildmat expressions
+(expressions starting with C<@>) are allowed and can be used to exclude
+certain group patterns: articles crossposted to poisoned newsgroups
+will not be stored using this storage method.  The <wildmat> pattern
+is matched in order.
 
 There is no default newsgroups pattern; if an entry should match all
 newsgroups, use an explicit C<newsgroups: *>.
@@ -352,6 +354,6 @@ into POD by Julien Elie.
 =head1 SEE ALSO
 
 cycbuff.conf(5), expire.ctl(5), expireover(8), inn.conf(5), innd(8),
-uwildmat(3).
+libinn_uwildmat(3).
 
 =cut

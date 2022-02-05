@@ -793,7 +793,7 @@ will match that article whereas the pattern:
 will not match that article.  An article posted only to misc.bar will fail
 to match either pattern.
 
-See uwildmat(3) for full details on wildmat patterns.
+See libinn_uwildmat(3) for full details on wildmat patterns.
 
 In all INN configuration files, blank lines and lines beginning with a
 C<#> symbol are considered comments and are ignored.  Be careful, not all

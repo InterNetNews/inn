@@ -128,7 +128,6 @@ doc/man/batcher.8                     Manpage for batcher
 doc/man/buffchan.8                    Manpage for buffchan backend
 doc/man/buffindexed.conf.5            Manpage for buffindexed.conf config file
 doc/man/ckpasswd.8                    Manpage for ckpasswd authenticator
-doc/man/clientlib.3                   Manpage for C News library interface
 doc/man/cnfsheadconf.8                Manpage for cnfsheadconf
 doc/man/cnfsstat.8                    Manpage for cnfsstat
 doc/man/control.ctl.5                 Manpage for control.ctl config file
@@ -137,7 +136,6 @@ doc/man/convdate.1                    Manpage for convdate utility
 doc/man/ctlinnd.8                     Manpage for ctlinnd frontend
 doc/man/cvtbatch.8                    Manpage for cvtbatch utility
 doc/man/cycbuff.conf.5                Manpage for cycbuff.conf config file
-doc/man/dbz.3                         Manpage for DBZ database interface
 doc/man/distrib.pats.5                Manpage for distrib.pats config file
 doc/man/distributions.5               Manpage for distributions config file
 doc/man/docheckgroups.8               Manpage for docheckgroups
@@ -160,7 +158,6 @@ doc/man/innbind.8                     Manpage for innbind
 doc/man/inncheck.8                    Manpage for inncheck utility
 doc/man/innconfval.1                  Manpage for innconfval
 doc/man/innd.8                        Manpage for innd server
-doc/man/inndcomm.3                    Manpage for part of INN library
 doc/man/inndf.8                       Manpage for inndf utility
 doc/man/innfeed.8                     Manpage for innfeed backend
 doc/man/innfeed.conf.5                Manpage for innfeed.conf config file
@@ -175,9 +172,15 @@ doc/man/innxbatch.8                   Manpage for innxbatch
 doc/man/innxmit.8                     Manpage for innxmit
 doc/man/libauth.3                     Manpage for authprogs utilty routines
 doc/man/libinn.3                      Manpage for INN library routines
+doc/man/libinn_clientlib.3            Manpage for C News library interface
+doc/man/libinn_dbz.3                  Manpage for DBZ database interface
+doc/man/libinn_inndcomm.3             Manpage for part of INN library
+doc/man/libinn_list.3                 Manpage for list routines
+doc/man/libinn_qio.3                  Manpage for fast I/O file routines
+doc/man/libinn_tst.3                  Manpage for ternary search tree routines
+doc/man/libinn_uwildmat.3             Manpage for uwildmat library routine
 doc/man/libinnhist.3                  Manpage for history API library routines
 doc/man/libstorage.3                  Manpage for storage API library routines
-doc/man/list.3                        Manpage for list routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
 doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
@@ -207,7 +210,6 @@ doc/man/pgpverify.1                   Manpage for pgpverify
 doc/man/procbatch.8                   Manpage for procbatch
 doc/man/prunehistory.8                Manpage for prunehistory
 doc/man/pullnews.1                    Manpage for pullnews
-doc/man/qio.3                         Manpage for fast I/O file routines
 doc/man/radius.8                      Manpage for radius authenticator
 doc/man/rc.news.8                     Manpage for rc.news
 doc/man/readers.conf.5                Manpage for readers.conf config file
@@ -227,8 +229,6 @@ doc/man/subscriptions.5               Manpage for subscriptions list
 doc/man/tally.control.8               Manpage for tally.control
 doc/man/tdx-util.8                    Manpage for tdx-util
 doc/man/tinyleaf.8                    Manpage for tinyleaf
-doc/man/tst.3                         Manpage for ternary search tree routines
-doc/man/uwildmat.3                    Manpage for uwildmat library routine
 doc/man/writelog.8                    Manpage for writelog
 doc/pod                               POD documentation (Directory)
 doc/pod/Makefile                      Maintainer rules for derived files
@@ -242,7 +242,6 @@ doc/pod/buffchan.pod                  Master file for buffchan.8
 doc/pod/buffindexed.conf.pod          Master file for buffindexed.conf.5
 doc/pod/checklist.pod                 Master file for doc/checklist
 doc/pod/ckpasswd.pod                  Master file for ckpasswd.8
-doc/pod/clientlib.pod                 Master file for clientlib.3
 doc/pod/cnfsheadconf.pod              Master file for cnfsheadconf.8
 doc/pod/cnfsstat.pod                  Master file for cnfsstat.8
 doc/pod/control.ctl.pod               Master file for control.ctl.5
@@ -277,7 +276,6 @@ doc/pod/innbind.pod                   Master file for innbind.8
 doc/pod/inncheck.pod                  Master file for inncheck.8
 doc/pod/innconfval.pod                Master file for innconfval.1
 doc/pod/innd.pod                      Master file for innd.8
-doc/pod/inndcomm.pod                  Master file for inndcomm.3
 doc/pod/inndf.pod                     Master file for inndf.8
 doc/pod/innfeed.conf.pod              Master file for innfeed.conf.5
 doc/pod/innfeed.pod                   Master file for innfeed.8
@@ -292,9 +290,14 @@ doc/pod/innxbatch.pod                 Master file for innxbatch.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
+doc/pod/libinn_clientlib.pod          Master file for libinn_clientlib.3
+doc/pod/libinn_inndcomm.pod           Master file for libinn_inndcomm.3
+doc/pod/libinn_list.pod               Master file for libinn_list.3
+doc/pod/libinn_qio.pod                Master file for libinn_qio.3
+doc/pod/libinn_tst.pod                Master file for libinn_tst.3
+doc/pod/libinn_uwildmat.pod           Master file for libinn_uwildmat.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
 doc/pod/libstorage.pod                Master file for libstorage.3
-doc/pod/list.pod                      Master file for list.3
 doc/pod/makedbz.pod                   Master file for makedbz.8
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/mod-active.pod                Master file for mod-active.8
@@ -322,7 +325,6 @@ doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/procbatch.pod                 Master file for procbatch.8
 doc/pod/prunehistory.pod              Master file for prunehistory.8
 doc/pod/pullnews.pod                  Master file for pullnews.1
-doc/pod/qio.pod                       Master file for qio.3
 doc/pod/radius.pod                    Master file for radius.8
 doc/pod/rc.news.pod                   Master file for rc.news.8
 doc/pod/readers.conf.pod              Master file for readers.conf.5
@@ -341,8 +343,6 @@ doc/pod/subscriptions.pod             Master file for subscriptions.5
 doc/pod/tally.control.pod             Master file for tally.control.8
 doc/pod/tdx-util.pod                  Master file for tdx-util.8
 doc/pod/tinyleaf.pod                  Master file for tinyleaf.8
-doc/pod/tst.pod                       Master file for tst.3
-doc/pod/uwildmat.pod                  Master file for uwildmat.3
 doc/pod/writelog.pod                  Master file for writelog.8
 doc/sample-control                    Sample PGP-signed control message
 expire                                Expiration and recovery (Directory)

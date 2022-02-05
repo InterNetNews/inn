@@ -82,8 +82,8 @@ LF replaced by spaces).
 
 =item B<-p> I<pattern>
 
-Limits the targets taken from the Xref: header to the groups specified in
-I<pattern>.  I<pattern> is a uwildmat(3) pattern matching newsgroups that
+Limits the targets taken from the Xref header field to the groups specified in
+I<pattern>.  I<pattern> is a I<uwildmat> pattern matching newsgroups that
 you wish to have B<archive> handle.
 
 =item B<-r>
@@ -124,6 +124,6 @@ POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-inn.conf(5), newsfeeds(5).
+inn.conf(5), libinn_uwildmat(3), newsfeeds(5).
 
 =cut

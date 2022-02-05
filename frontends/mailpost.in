@@ -846,6 +846,7 @@ integration.  Documentation improved by Julien Elie.
 
 =head1 SEE ALSO
 
-inews(1), inn.conf(5), moderators(5), nnrpd(8), readers.conf(5), uwildmat(3).
+inews(1), inn.conf(5), libinn_uwildmat(3), moderators(5), nnrpd(8),
+readers.conf(5).
 
 =cut

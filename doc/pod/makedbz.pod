@@ -8,7 +8,7 @@ B<makedbz> [B<-io>] [B<-f> I<filename>] [B<-s> I<size>]
 
 =head1 DESCRIPTION
 
-B<makedbz> rebuilds dbz(3) database.  The default name of the text
+B<makedbz> rebuilds I<dbz> database.  The default name of the text
 file is I<pathdb>/history; to specify a different name, use the B<-f> flag.
 
 =head1 OPTIONS
@@ -44,7 +44,7 @@ should be the estimated eventual size of the file, typically the size
 of the old file.)
 
 For more information, see the discussion of B<dbzfresh> and B<dbzsize>
-in dbz(3).
+in libinn_dbz(3).
 
 =back
 
@@ -55,6 +55,6 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-dbz(3), history(5).
+history(5), libinn_dbz(3).
 
 =cut

@@ -127,7 +127,7 @@ significant in site names.
 The comma-separated I<pattern> specifies which groups to send to the site;
 it is interpreted to build a "subscription list" for the site.  The
 default subscription is to get all groups carried by the server.  It is a
-uwildmat(3) pattern supporting poison (C<@>) wildcards; see the uwildmat(3)
+I<uwildmat> pattern supporting poison (C<@>) wildcards; see the libinn_uwildmat
 man page for full details on the pattern matching language.  I<pattern>
 will be matched against every newsgroup carried by the server and all
 newsgroups that match will be added to the subscription list for the site.
@@ -455,15 +455,16 @@ unmoderated groups are sent.
 
 =item B<O> I<originator>
 
-If this flag is specified, an article will only be sent to this site if it
-contains an Injection-Info: header (or an X-Trace: header if no
-Injection-Info: header is found) and the first field of this header matches
-I<originator>.  I<originator> is a uwildmat(3) expression without commas
-or a list of such expressions, separated by C</>.  The article is never
-sent if the first character of the pattern begins with C<@> and the rest
-of the pattern matches.  One use of this flag is to restrict the feed to
-locally generated posts by using an I<originator> pattern that matches
-the Injection-Info: header added by the local server.
+If this flag is specified, an article will only be sent to this site
+if it contains an Injection-Info header field (or an X-Trace header
+field if no Injection-Info header field is found) and the first
+field of this header field matches I<originator>.  I<originator> is a
+I<uwildmat> expression without commas or a list of such expressions,
+separated by C</>.  The article is never sent if the first character
+of the pattern begins with C<@> and the rest of the pattern matches.
+One use of this flag is to restrict the feed to locally generated posts
+by using an I<originator> pattern that matches the Injection-Info
+header field added by the local server.
 
 =item B<P> I<priority>
 
@@ -883,6 +884,6 @@ and rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 =head1 SEE ALSO
 
 active(5), buffchan(8), controlchan(8), ctlinnd(8), inn.conf(5), innd(8),
-innfeed(8), innxmit(8), nntpsend(8), uwildmat(3).
+innfeed(8), innxmit(8), libinn_uwildmat(3), nntpsend(8).
 
 =cut
