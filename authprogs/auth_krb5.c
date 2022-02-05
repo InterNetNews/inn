@@ -19,7 +19,7 @@
 
 #include "portable/system.h"
 
-#include "libauth.h"
+#include "libinnauth.h"
 
 #if defined(HAVE_KRB5_H)
 #    include <krb5.h>

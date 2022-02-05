@@ -14,7 +14,7 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
 	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
 
 MAN3	= ../man/libinn_clientlib.3 ../man/libinn_inndcomm.3 \
-	../man/libauth.3 ../man/libinnhist.3 ../man/libstorage.3 \
+	../man/libinnauth.3 ../man/libinnhist.3 ../man/libinnstorage.3 \
 	../man/libinn_list.3 ../man/libinn_qio.3 \
 	../man/libinn_tst.3 ../man/libinn_uwildmat.3
 
@@ -85,9 +85,9 @@ maintclean: distclean
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
-../man/libauth.3:	libauth.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinnauth.3:	libinnauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
-../man/libstorage.3:	libstorage.pod		; $(POD2MAN) -s 3 $? > $@
+../man/libinnstorage.3:	libinnstorage.pod	; $(POD2MAN) -s 3 $? > $@
 ../man/libinn_clientlib.3: libinn_clientlib.pod	; $(POD2MAN) -s 3 $? > $@
 ../man/libinn_inndcomm.3: libinn_inndcomm.pod	; $(POD2MAN) -s 3 $? > $@
 ../man/libinn_list.3:	libinn_list.pod		; $(POD2MAN) -s 3 $? > $@

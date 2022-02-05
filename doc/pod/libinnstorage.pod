@@ -1,6 +1,6 @@
 =head1 NAME
 
-libstorage - routines for managing INN storage
+libinnstorage - Routines for managing INN storage
 
 =head1 SYNOPSIS
 
@@ -160,7 +160,7 @@ libstorage - routines for managing INN storage
 
 =head1 DESCRIPTION
 
-B<libstorage> is a library of common utility (the storage manager) routines
+B<libinnstorage> is a library of common utility (the storage manager) routines
 for accessing Usenet articles and related data independent of particular
 storage method; this is known as the storage API.
 

@@ -348,7 +348,7 @@ See the existing scripts for examples of how this is done.
 =head1 Include Files
 
 Include files relevant to all of INN, or relevant to the two libraries
-built as part of INN (the utility B<libinn> library and the B<libstorage>
+built as part of INN (the utility B<libinn> library and the B<libinnstorage>
 library that contains all storage and overview functions) are found in the
 F<include> directory; other include files relevant only to a portion of INN
 are found in the relevant directory.

@@ -2,8 +2,8 @@
 **  Some utility functions for writing authenticators and resolvers.
 */
 
-#ifndef LIBAUTH_H
-#define LIBAUTH_H 1
+#ifndef LIBINNAUTH_H
+#define LIBINNAUTH_H 1
 
 #include "config.h"
 
@@ -47,4 +47,4 @@ extern void print_user(const char *);
 
 END_DECLS
 
-#endif /* !LIBAUTH_H */
+#endif /* !LIBINNAUTH_H */

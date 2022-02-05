@@ -87,6 +87,8 @@ use Getopt::Long qw(GetOptions);
     'defines.h'     => 'defines.h.OLD',       # Removed in INN 2.7.0.
     'filechan'      => 'filechan.OLD',
     'filechan.8'    => '',
+    'libauth.3'     => '',
+    'libstorage.3'  => '',
     'send-nntp'     => 'send-nntp.OLD',
     'send-nntp.8'   => '',
     'sendsys.pl'    => 'sendsys.pl.OLD',

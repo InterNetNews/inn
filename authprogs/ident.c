@@ -13,7 +13,7 @@
 #include "inn/messages.h"
 #include "inn/network.h"
 
-#include "libauth.h"
+#include "libinnauth.h"
 
 #define IDENT_PORT 113
 

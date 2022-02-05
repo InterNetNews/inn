@@ -44,7 +44,7 @@ DISTFILES   = -e 1,2d -e '/(Directory)/d' -e 's/ .*//'
 ##
 ##  We have to loop through all the directories, because otherwise the build
 ##  fails if make -j works on more than one directory at a time.
-##  libstorage depends on libinnhist, but some of the storage/...
+##  libinnstorage depends on libinnhist, but some of the storage/...
 ##  programs depend on libinnhist, hence the two calls into storage.
 ##
 ##  Be careful of a non-GNU make: after a completed command, it does not

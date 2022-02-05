@@ -25,7 +25,7 @@ indicating the end of the input even if C<.\r\n> has not been received.)
 
 Code which reads information in the format discussed below and parses it
 into convenient structures is available authenticators and resolvers
-written in C; see libauth(3) for details.  Use of the libauth library
+written in C; see libinnauth(3) for details.  Use of the libinnauth library
 will make these programs substantially easier to write and more robust.
 
 =head2 For Authenticators

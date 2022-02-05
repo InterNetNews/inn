@@ -12,7 +12,7 @@
 
 #include "inn/libinn.h"
 #include "inn/messages.h"
-#include "libauth.h"
+#include "libinnauth.h"
 
 #define NAMESTR "ClientAuthname: "
 #define PASSSTR "ClientPassword: "
@@ -74,20 +74,20 @@ get_connection_info(FILE *stream, struct res_info *res, struct auth_info *auth)
         else if (res != NULL && strncmp(buff, LOCPORT, strlen(LOCPORT)) == 0)
             res->localport = xstrdup(buff + strlen(LOCPORT));
         else {
-            debug("libauth: unexpected data from nnrpd: \"%s\"", buff);
+            debug("libinnauth: unexpected data from nnrpd: \"%s\"", buff);
         }
     }
 
     /* If some field is missing, free the rest and error out. */
     if (auth != NULL && (auth->username == NULL || auth->password == NULL)) {
-        warn("libauth: requested authenticator data not sent by nnrpd");
+        warn("libinnauth: requested authenticator data not sent by nnrpd");
         return false;
     }
     if (res != NULL
         && (res->clienthostname == NULL || res->clientip == NULL
             || res->clientport == NULL || res->localip == NULL
             || res->localport == NULL)) {
-        warn("libauth: requested resolver data not sent by nnrpd");
+        warn("libinnauth: requested resolver data not sent by nnrpd");
         return false;
     }
     return true;

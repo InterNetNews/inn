@@ -14,7 +14,7 @@
 #include "inn/qio.h"
 #include "inn/vector.h"
 
-#include "libauth.h"
+#include "libinnauth.h"
 
 #if HAVE_CRYPT_H
 #    include <crypt.h>

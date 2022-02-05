@@ -5,9 +5,9 @@ CFLAGS        = $(GCFLAGS)
 
 ALL           = ckpasswd domain ident radius $(KRB5_AUTH)
 
-LIBAUTH       = libauth.o
+LIBINNAUTH    = libinnauth.o
 
-SOURCES       = auth_krb5.c ckpasswd.c domain.c ident.c libauth.c radius.c
+SOURCES       = auth_krb5.c ckpasswd.c domain.c ident.c libinnauth.c radius.c
 
 all: $(ALL)
 
@@ -38,22 +38,22 @@ profiled:
 ##  Compilation rules.
 
 LINK		= $(LIBLD) $(LDFLAGS) -o $@
-AUTH_LIBS       = $(LIBAUTH) $(LIBINN) $(LIBS)
+AUTH_LIBS       = $(LIBINNAUTH) $(LIBINN) $(LIBS)
 CK_LIBS		= $(CRYPT_LIBS) $(SHADOW_LIBS) $(PAM_LIBS) $(DBM_LIBS)
 
-auth_krb5: auth_krb5.o $(LIBAUTH) $(LIBINN)
+auth_krb5: auth_krb5.o $(LIBINNAUTH) $(LIBINN)
 	$(LINK) auth_krb5.o $(KRB5_LDFLAGS) $(KRB5_LIBS) $(AUTH_LIBS)
 
-ckpasswd: ckpasswd.o $(LIBAUTH) $(LIBINN)
+ckpasswd: ckpasswd.o $(LIBINNAUTH) $(LIBINN)
 	$(LINK) ckpasswd.o $(CK_LIBS) $(AUTH_LIBS)
 
-domain: domain.o $(LIBAUTH) $(LIBINN)
+domain: domain.o $(LIBINNAUTH) $(LIBINN)
 	$(LINK) domain.o $(AUTH_LIBS)
 
-ident: ident.o $(LIBAUTH) $(LIBINN)
+ident: ident.o $(LIBINNAUTH) $(LIBINN)
 	$(LINK) ident.o $(AUTH_LIBS)
 
-radius: radius.o $(LIBAUTH) $(LIBINN)
+radius: radius.o $(LIBINNAUTH) $(LIBINN)
 	$(LINK) radius.o $(AUTH_LIBS)
 
 auth_krb5.o: auth_krb5.c
@@ -63,7 +63,7 @@ ckpasswd.o: ckpasswd.c
 	$(CC) $(CFLAGS) $(DBM_CPPFLAGS) -c ckpasswd.c
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
-$(LIBAUTH): 	libauth.h libauth.c
+$(LIBINNAUTH): 	libinnauth.h libinnauth.c
 
 
 ##  Dependencies.  Default list, below, is probably good enough.
@@ -76,7 +76,7 @@ auth_krb5.o: auth_krb5.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h libauth.h ../include/portable/socket.h \
+  ../include/portable/stdbool.h libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/messages.h ../include/inn/system.h \
   ../include/inn/libinn.h ../include/inn/macros.h \
@@ -90,7 +90,7 @@ ckpasswd.o: ckpasswd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/system.h ../include/inn/qio.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/vector.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h libauth.h ../include/portable/socket.h \
+  ../include/inn/xwrite.h libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 domain.o: domain.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -99,7 +99,7 @@ domain.o: domain.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/inn/messages.h \
   ../include/inn/system.h ../include/inn/libinn.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h libauth.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h libinnauth.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h
 ident.o: ident.c ../include/portable/system.h ../include/config.h \
@@ -111,15 +111,15 @@ ident.o: ident.c ../include/portable/system.h ../include/config.h \
   ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/portable-stdbool.h \
   ../include/inn/libinn.h ../include/inn/macros.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h libauth.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h libinnauth.h \
   ../include/portable/socket.h
-libauth.o: libauth.c ../include/portable/system.h ../include/config.h \
+libinnauth.o: libinnauth.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/messages.h ../include/inn/system.h libauth.h \
+  ../include/inn/messages.h ../include/inn/system.h libinnauth.h \
   ../include/inn/libinn.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/xwrite.h
@@ -132,6 +132,6 @@ radius.o: radius.c ../include/portable/system.h ../include/config.h \
   ../include/inn/system.h ../include/inn/md5.h ../include/inn/messages.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
   ../include/inn/xwrite.h ../include/inn/nntp.h ../include/inn/paths.h \
-  ../include/conffile.h ../include/portable/macros.h libauth.h \
+  ../include/conffile.h ../include/portable/macros.h libinnauth.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h

@@ -28,21 +28,21 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	$(LI_LPUB) libstorage.$(EXTLIB) $D$(PATHLIB)/libstorage.$(EXTLIB)
+	$(LI_LPUB) libinnstorage.$(EXTLIB) $D$(PATHLIB)/libinnstorage.$(EXTLIB)
 	for F in $(PROGRAMS) ; do \
 	    $(LI_XPRI) $$F $D$(PATHBIN)/`basename $$F` ; \
 	done
 
 bootstrap: Make.methods
 
-library: libstorage.$(EXTLIB)
+library: libinnstorage.$(EXTLIB)
 
 programs: $(PROGRAMS)
 
 clean:
-	rm -f *.o *.lo */*.o */*.lo libstorage.la libstorage.a
-	rm -f $(PROGRAMS) libstorage_pure_*.a .pure
-	rm -f buildconfig libstorage$(PROFSUFFIX).a
+	rm -f *.o *.lo */*.o */*.lo libinnstorage.la libinnstorage.a
+	rm -f $(PROGRAMS) libinnstorage_pure_*.a .pure
+	rm -f buildconfig libinnstorage$(PROFSUFFIX).a
 	rm -rf .libs */.libs
 	rm -f $(RM_CLEAN)
 
@@ -57,14 +57,14 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
-libstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
+libinnstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
 	    -rpath $(PATHLIB) -version-info $(LTVERSION)
 
-libstorage.a: $(OBJECTS)
+libinnstorage.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
-	$(RANLIB) libstorage.a
+	$(RANLIB) libinnstorage.a
 
 # Make.methods is included in the distribution tarball since some non-GNU
 # makes can't deal with including a non-existent file, so don't depend on
@@ -81,9 +81,9 @@ buildconfig: buildconfig.in $(FIXSCRIPT)
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) $(CCOUTPUT)
 
-ovtest:	ov.c libstorage.$(EXTLIB) $(LIBINN)
+ovtest:	ov.c libinnstorage.$(EXTLIB) $(LIBINN)
 	$(CC) $(CFLAGS) -D_TEST_ -o ovtest ov.c \
-	    libstorage.$(EXTLIB) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
+	    libinnstorage.$(EXTLIB) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
 $(LIBINN):      ; (cd ../lib ; $(MAKE))
 $(LIBHIST):	; (cd ../history ; $(MAKE))
@@ -91,13 +91,13 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 
 ##  Profiling.  The rules are a bit brute-force, but good enough.
 
-profiled: libstorage$(PROFSUFFIX).a
+profiled: libinnstorage$(PROFSUFFIX).a
 
-libstorage$(PROFSUFFIX).a: $(SOURCES)
+libinnstorage$(PROFSUFFIX).a: $(SOURCES)
 	rm -f $(OBJECTS)
-	$(MAKEPROFILING) libstorage.a
-	mv libstorage.a libstorage$(PROFSUFFIX).a
-	$(RANLIB) libstorage$(PROFSUFFIX).a
+	$(MAKEPROFILING) libinnstorage.a
+	mv libinnstorage.a libinnstorage$(PROFSUFFIX).a
+	$(RANLIB) libinnstorage$(PROFSUFFIX).a
 	rm -f $(OBJECTS)
 
 

@@ -22,8 +22,8 @@ authprogs/auth_krb5.c                 Authenticator against Kerberos v5
 authprogs/ckpasswd.c                  Check password
 authprogs/domain.c                    Get username from remote user's hostname
 authprogs/ident.c                     Get username from ident
-authprogs/libauth.c                   Library for talking to nnrpd
-authprogs/libauth.h                   Interface for libauth
+authprogs/libinnauth.c                Library for talking to nnrpd
+authprogs/libinnauth.h                Interface for libinnauth
 authprogs/radius.c                    Authenticator against RADIUS servers
 autogen                               Generate Autoconf scripts
 backends                              Outgoing feed programs (Directory)
@@ -173,7 +173,6 @@ doc/man/innwatch.8                    Manpage for innwatch
 doc/man/innwatch.ctl.5                Manpage for innwatch.ctl config file
 doc/man/innxbatch.8                   Manpage for innxbatch
 doc/man/innxmit.8                     Manpage for innxmit
-doc/man/libauth.3                     Manpage for authprogs utilty routines
 doc/man/libinn.3                      Manpage for INN library routines
 doc/man/libinn_clientlib.3            Manpage for C News library interface
 doc/man/libinn_dbz.3                  Manpage for DBZ database interface
@@ -182,8 +181,9 @@ doc/man/libinn_list.3                 Manpage for list routines
 doc/man/libinn_qio.3                  Manpage for fast I/O file routines
 doc/man/libinn_tst.3                  Manpage for ternary search tree routines
 doc/man/libinn_uwildmat.3             Manpage for uwildmat library routine
+doc/man/libinnauth.3                  Manpage for authprogs utilty routines
 doc/man/libinnhist.3                  Manpage for history API library routines
-doc/man/libstorage.3                  Manpage for storage API library routines
+doc/man/libinnstorage.3               Manpage for storage API library routines
 doc/man/mailpost.8                    Manpage for mailpost frontend
 doc/man/makedbz.8                     Manpage for makedbz
 doc/man/makehistory.8                 Manpage for makehistory
@@ -293,15 +293,15 @@ doc/pod/innwatch.pod                  Master file for innwatch.8
 doc/pod/innxbatch.pod                 Master file for innxbatch.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
-doc/pod/libauth.pod                   Master file for libauth.3
 doc/pod/libinn_clientlib.pod          Master file for libinn_clientlib.3
 doc/pod/libinn_inndcomm.pod           Master file for libinn_inndcomm.3
 doc/pod/libinn_list.pod               Master file for libinn_list.3
 doc/pod/libinn_qio.pod                Master file for libinn_qio.3
 doc/pod/libinn_tst.pod                Master file for libinn_tst.3
 doc/pod/libinn_uwildmat.pod           Master file for libinn_uwildmat.3
+doc/pod/libinnauth.pod                Master file for libinnauth.3
 doc/pod/libinnhist.pod                Master file for libinnhist.3
-doc/pod/libstorage.pod                Master file for libstorage.3
+doc/pod/libinnstorage.pod             Master file for libinnstorage.3
 doc/pod/makedbz.pod                   Master file for makedbz.8
 doc/pod/makehistory.pod               Master file for makehistory.8
 doc/pod/mod-active.pod                Master file for mod-active.8

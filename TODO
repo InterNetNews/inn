@@ -118,14 +118,14 @@ Scheduled for INN 2.8
   stored locally should be possible.  [A patch for a header-only feed
   from innfeed is included in ticket #17.]
 
-* The libinn, libstorage, and other library interfaces should be treated
+* The libinn, libinnstorage, and other library interfaces should be treated
   as stable libraries and properly versioned using libtool's
   recommendation for library versioning when changes are made so that they
   can be installed as shared libraries and work properly through releases
   of INN.  This is currently waiting on a systematic review of the
   interface and removal of things that we don't want to support long-term.
 
-* The include files necessary to use libinn, libstorage, and other
+* The include files necessary to use libinn, libinnstorage, and other
   libraries should be installed in a suitable directory so that other
   programs can link against them.  All such include files should be under
   include/inn and included with <inn/header.h>.  All such include files

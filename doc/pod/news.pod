@@ -74,6 +74,12 @@ samples in INN releases.  If not already done, you should either replace
 old hooks with new modern hooks or use the possibilities F<readers.conf>
 and regular authenticator and resolver programs offer.
 
+=item *
+
+The B<libauth> and B<libstorage> libraries have been renamed to B<libinnauth>
+and B<libinnstorage> to homogenize their name with existing B<libinnhist>.
+External programs linking against them need a manual change.
+
 =back
 
 If you are upgrading from a version prior to S<INN 2.6>, see also
@@ -190,6 +196,11 @@ encryption layers, including TLS and SASL security layers.
 
 Fixed the use of a deprecated API in S<Kerberos V5>.  INN now requires
 version 1.6.1 or higher of S<MIT Kerberos v5> to build.
+
+=item *
+
+The B<libauth> and B<libstorage> libraries have been renamed to B<libinnauth>
+and B<libinnstorage> to homogenize their name with existing B<libinnhist>.
 
 =item *
 

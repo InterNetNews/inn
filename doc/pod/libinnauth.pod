@@ -1,10 +1,10 @@
 =head1 NAME
 
-libauth - routines for writing nnrpd resolvers and authenticators
+libinnauth - Routines for writing nnrpd resolvers and authenticators
 
 =head1 SYNOPSIS
 
-    #include "libauth.h"
+    #include "libinnauth.h"
 
     struct res_info {
         struct sockaddr *client;
@@ -56,7 +56,7 @@ is reading from stdin rather than a socket).  The implementation is
 capable of handling at least the first of these issues, but that
 functionality is not exposed in the interface.
 
-At present, F<libauth.h> and its implementation are located in
+At present, F<libinnauth.h> and its implementation are located in
 F<authprogs/>; perhaps they should be moved to F<include/> and F<lib/>,
 respectively?
 

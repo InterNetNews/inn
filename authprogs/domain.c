@@ -10,7 +10,7 @@
 
 #include "inn/libinn.h"
 #include "inn/messages.h"
-#include "libauth.h"
+#include "libinnauth.h"
 
 int
 main(int argc, char *argv[])

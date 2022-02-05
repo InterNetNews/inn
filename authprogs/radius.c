@@ -28,7 +28,7 @@
 #include "inn/nntp.h"
 #include "inn/paths.h"
 
-#include "libauth.h"
+#include "libinnauth.h"
 
 #define RADIUS_LOCAL_PORT NNTP_PORT
 
