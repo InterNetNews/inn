@@ -1883,8 +1883,8 @@ section innxmit_unwanted {
         title   "Sites fed by innxmit rejecting bad articles:";
 	data    "%innxmit_badart";
 	sort    "$innxmit_badart{$b} <=> $innxmit_badart{$a}";
+        numbering true;
         column {
-	numbering true;
                 name          "Server";
                 format        "%-23.23s";
 		value         "$key";
