@@ -32,6 +32,15 @@ Other entries may be added in F<newsfeeds> depending on your needs.  See the
 examples below and also in the archive(8), controlchan(8), news2mail(8),
 ninpaths(8) and perl-nocem(8) man pages for the most widely used.
 
+If you exclude local hierarchies or newsgroups from the feed, make sure to add
+C<!control,!control.*> so that cancel articles or any kind of control articles
+related to excluded hierarchies or newsgroups are not propagated to the remote
+peer.  Its F<newsfeeds> entry then looks like:
+
+    news.server.com/server\
+        :*,!local.*,@*bina*,!control,!control.*\
+        :Tm:innfeed!
+
 After any changes, run C<inncheck> to perform basic syntax checks, and reload
 this configuration file with the following command:
 
