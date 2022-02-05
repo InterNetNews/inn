@@ -76,9 +76,10 @@ and regular authenticator and resolver programs offer.
 
 =item *
 
-The B<libauth> and B<libstorage> libraries have been renamed to B<libinnauth>
-and B<libinnstorage> to homogenize their name with existing B<libinnhist>.
-External programs linking against them need a manual change.
+The F<libauth.h> header file and the B<libstorage> library have been renamed
+to F<libinnauth.h> and B<libinnstorage> to homogenize their name with existing
+B<libinnhist> library.  External programs building or linking against them
+need a manual change.
 
 =back
 
@@ -199,8 +200,9 @@ version 1.6.1 or higher of S<MIT Kerberos v5> to build.
 
 =item *
 
-The B<libauth> and B<libstorage> libraries have been renamed to B<libinnauth>
-and B<libinnstorage> to homogenize their name with existing B<libinnhist>.
+The F<libauth.h> header file and the B<libstorage> library have been renamed
+to F<libinnauth.h> and B<libinnstorage> to homogenize their name with existing
+B<libinnhist> library.
 
 =item *
 
