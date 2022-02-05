@@ -298,7 +298,16 @@ and configurable in F<inn.conf>.  Thanks to Kevin Bowling for the patch.
 
 =item *
 
-Other minor bug fixes and documentation improvements.
+The name of seven man pages for routines built in libinn(3) are now prefixed
+with F<libinn_> so as not to consume namespace and conflict with other
+packages (notably, the list(3) and uwildmat(3) man pages are now named
+libinn_list(3) and libinn_uwildmat(3)).
+
+=item *
+
+Other minor bug fixes and documentation improvements, notably a revised
+installation checklist and a section summarizing the most used configuration
+at the beginning of a few complex man pages.
 
 =back
 

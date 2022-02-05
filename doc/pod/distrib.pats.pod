@@ -17,7 +17,7 @@ should be an arbitrary integer greater than zero.  The order of lines in
 the file is only important if groups have equal weight (in which case, the
 first matching line will be used).
 
-The second field is either the name of a newsgroup or a uwildmat(3)-style
+The second field is either the name of a newsgroup or a I<uwildmat>-style
 pattern to specify a set of newsgroups.
 
 The third field is the body that should be used for the Distribution
@@ -45,6 +45,6 @@ POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-distributions(5), inn.conf(5), newsfeeds(5), nnrpd(8), uwildmat(3).
+distributions(5), inn.conf(5), libinn_uwildmat(3), newsfeeds(5), nnrpd(8).
 
 =cut

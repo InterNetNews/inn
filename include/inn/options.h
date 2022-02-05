@@ -22,9 +22,9 @@
 **  do the reverse to disable.
 */
 
-/* A null-terminated list of uwildmat(3) patterns matching illegal
-   distributions.  inews and nnrpd will reject posts with a distribution
-   matching one of these patterns. */
+/* A null-terminated list of uwildmat patterns matching illegal distributions.
+   inews and nnrpd will reject posts with a distribution matching one of these
+   patterns. */
 #define BAD_DISTRIBS    "*.*", NULL
 
 /* Default timeout period for ctlinnd, overridden by the -t flag.  If set to

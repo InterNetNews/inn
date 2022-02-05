@@ -22,7 +22,7 @@ below as C< \t >:
     [hash] \t date \t @token@
 
 The I<hash> field is the ASCII representation of the hash of the
-Message-ID.  This is directly used for the key of the dbz(3).
+Message-ID.  This is directly used for the key of the I<dbz>.
 
 The I<date> field consists of three sub-fields separated by a tilde.
 All sub-fields are the text representation of the number of seconds
@@ -46,7 +46,7 @@ and received at 26 Aug 1999 08:06:54 GMT, could have a history line
         935678987~-~935678821 \t
         @030154574F00000000000007CE3B000004BA@
 
-In addition to the text file, there is a dbz(3) database associated
+In addition to the text file, there is a I<dbz> database associated
 with the file that uses the Message-ID field as a key to determine the
 offset in the text file where the associated line begins.  For historical
 reasons, the key includes the trailing C<\0> byte (which is not stored
@@ -59,6 +59,6 @@ into POD by Julien Elie.
 
 =head1 SEE ALSO
 
-dbz(3), expire(8), inn.conf(5), innd(8), makehistory(8).
+expire(8), inn.conf(5), innd(8), libinn_dbz(3), makehistory(8).
 
 =cut

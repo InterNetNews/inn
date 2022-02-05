@@ -205,6 +205,6 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-inn.conf(5), innd(8), newsfeeds(5), uwildmat(3).
+inn.conf(5), innd(8), libinn_uwildmat(3), newsfeeds(5).
 
 =cut

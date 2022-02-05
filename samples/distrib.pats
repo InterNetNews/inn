@@ -8,7 +8,7 @@
 ##  All articles are matched against all patterns.  The value to be used is
 ##  the one with the highest weight.
 ##      <weight>        The weight assigned to this match, integer.
-##      <pattern>       Newsgroup name or single wildmat(3) pattern.
+##      <pattern>       Newsgroup name or single uwildmat pattern.
 ##      <value>         Body of Distribution header field, encoded in UTF-8.
 ##
 ##  See the distrib.pats man page for more information.

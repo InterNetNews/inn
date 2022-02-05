@@ -55,7 +55,7 @@ to the specified I<file>.
 =item B<-h> I<file>
 
 To specify an alternate input text history file, use the B<-h> flag.
-B<expire> uses the old dbz(3) database to determine the size of the
+B<expire> uses the old I<dbz> database to determine the size of the
 new one.  (If the B<-d> flag is not used, the output filename will be
 the same as the input filename with an extension of C<.n>.)
 
@@ -153,7 +153,7 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-ctlinnd(8), dbz(3), expire.ctl(5), history(5), inn.conf(5), innd(8),
-inndcomm(3), news.daily(8).
+ctlinnd(8), expire.ctl(5), history(5), inn.conf(5), innd(8), libinn_dbz(3),
+libinn_inndcomm(3), news.daily(8).
 
 =cut

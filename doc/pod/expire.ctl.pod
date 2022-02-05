@@ -59,7 +59,7 @@ I<groupbaseexpiry>, and therefore the two formats cannot co-exist in the
 same file.
 
 Normally, a rule matches a newsgroup through the combination of the
-<pattern> and <flag> fields.  <pattern> is a uwildmat(3)-style pattern,
+<pattern> and <flag> fields.  <pattern> is a I<uwildmat>-style pattern,
 specifying the newsgroups to which the line is applied.  Note that the
 last matching entry will be used, so general patterns (such as defaults
 for all groups where <pattern> is C<*>) should appear at the beginning of
@@ -172,7 +172,7 @@ POD by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-expire(8), expireover(8), inn.conf(5), innd(8), news.daily(8),
-storage.conf(5), uwildmat(3).
+expire(8), expireover(8), inn.conf(5), innd(8), libinn_uwildmat(3),
+news.daily(8), storage.conf(5).
 
 =cut
