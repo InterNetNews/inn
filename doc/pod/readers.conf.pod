@@ -28,8 +28,12 @@ C<myusername>.  If authentication fails, it will be assigned the default
 identity C<< <unauthenticated> >> that will later be checked in C<access>
 blocks.
 
-As for authorization, let's do something for people successfully authenticated
-with passwords:
+Authentication blocks are checked from the last one in the F<readers.conf>
+file to the first one (bottom up).  As soon as one matches, the corresponding
+identity is assigned to the user.
+
+As for authorization, let's do something in an C<access> block for people
+successfully authenticated with passwords:
 
     access "authenticatedpeople" {
         users: "*"
@@ -51,12 +55,12 @@ unauthenticated users get any access:
     }
 
 Please note that the C<authenticatedpeople> block must appear in
-F<readers.conf> before C<restrictive> or C<readonly> blocks because
-authorization blocks are checked from the last one in the F<readers.conf>
-file to the first one.  As soon as one matches, it is chosen for the identity
-defined in an authentication block.  The C<authenticatedpeople> access block
-matches every user that has not been assigned C<< <unauthenticated> >> as
-identity.
+F<readers.conf> before C<restrictive> or C<readonly> blocks because access
+blocks are checked from the last one in the F<readers.conf> file to the first
+one (bottom up).  As soon as one matches the identity previously assigned
+by an authentication block, it is chosen.  The C<authenticatedpeople> access
+block matches every user that has not been assigned C<< <unauthenticated> >>
+as identity.
 
 More examples and features are detailed below in this man page (notably
 without any password file, with PAM, with Perl or Python hooks).
