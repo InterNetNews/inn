@@ -277,7 +277,7 @@ reformat:
 	    echo "Running perltidy to reformat Perl code..." ; \
 	    (grep --include=\*.in -Rin perl * | grep ':1:' | cut -f1 -d':' ; \
 	        find * -name '*.pl' -o -name '*.pl.in' -o -name '*.pm' \
-	        -o -name '*.pm.in') \
+	        -o -name '*.pm.in' ; echo support/mkmanifest) \
 	        | grep -v pgpverify | grep -v '^site/' | sort -u \
 	        | xargs perltidy ; \
 	else \
