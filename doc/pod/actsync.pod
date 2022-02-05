@@ -12,6 +12,30 @@ B<actsync> [B<-AkmT>] [B<-b> I<hostid>] [B<-d> I<hostid>] [B<-g> I<max>]
 
 B<actsyncd> I<config> [I<debug-level> [I<debug-format>]]
 
+=head1 IN A NUTSHELL
+
+These programs permit keeping the list of newsgroups your news server carry
+synchronized with an external source.
+
+For instance, you can decide to carry the same newsgroups as another news
+server or as the ones listed in a file from an external FTP site, and
+therefore synchronizing with the chosen source on a daily basis by running
+B<actsyncd> in a cron job.
+
+If you only want a subset of newsgroups from that source, it can be
+parametered in the F<actsync.ign> configuration file in the I<pathetc>
+directory.
+
+INN comes with a default configuration for fetching the list of newsgroups
+from C<ftp.isc.org>.  You can read about the policies used for maintaining
+that F<active> file at L<https://ftp.isc.org/pub/usenet/CONFIG/README>.
+Just make sure F<actsync.cfg> (the configuration file) and F<actsync.ign> (the
+synchronization rules) suit your needs, and run:
+
+    actsyncd <pathetc>/actsync.cfg
+
+You'll find more detailed examples of use below in this man page.
+
 =head1 DESCRIPTION
 
 B<actsync> permits one to synchronize, compare, or merge two F<active>
@@ -107,10 +131,10 @@ contain the following options:
     ignore_file=<ignore-file>
     flags=<actsync-options>
 
-The host=, ignore_file=, and flags= lines are mandatory.  Each keyword must
-start at the beginning of the line, and there may be no whitespace before
-the C<=> character.  Blank lines are ignored, as are comment lines that
-start with C<#>.  Any other lines may produce undefined results.
+The C<host=>, C<ignore_file=>, and C<flags=> lines are mandatory.
+Each keyword must start at the beginning of the line, and there may be no
+whitespace before the C<=> character.  Blank lines are ignored, as are comment
+lines that start with C<#>.  Any other lines may produce undefined results.
 
 The <host> setting refers to the second (remote) I<host> parameter to
 B<actsync>.  If <path-to-active> is provided, <host> is accessed as an FTP
@@ -119,18 +143,20 @@ C<.Z>, it will be automatically uncompressed after retrieval.
 <ignore-file> names the ignore file used by B<actsync> (the B<-i> option).
 <actsync-options> contains any other flags that you wish to pass to B<actsync>.
 
-Note that one should not include B<-i> or B<-o> options in the flags=
-line; they are automatically taken care of by B<actsyncd>.
+Note that one should not include B<-i> or B<-o> options in the C<flags=> line;
+they are automatically taken care of by B<actsyncd>.
 
-One may produce a trial B<actsyncd> run without changing anything on the
-server by supplying the I<debug-level> argument:
+One may produce a trial B<actsyncd> run without changing anything on
+the server by supplying the I<debug-level> argument:
 
     actsyncd <pathetc>/actsync.cfg 2
 
 The I<debug-level> causes B<actsyncd> to run B<actsync> with a B<-v>
-I<debug-level> flag (overriding any B<-v> flag on the flags= line), not
-make any changes to the F<active> file, write a new F<active> file to
-standard output, and write debug messages to standard error.
+I<debug-level> flag (overriding any B<-v> flag on the C<flags=> line),
+not make any changes to the F<active> file, write a new F<active> file to
+standard output, and write debug messages to standard error.  Note that using
+I<debug-level> is only supported when synchronizing with another news server,
+not with FTP.
 
 If the I<debug-format> argument is also given to B<actsyncd>, the data
 written to standard output will be in B<-o I<debug-format>> instead of in
@@ -140,7 +166,7 @@ INN comes with default values of C<ftp.isc.org> for <host> and
 C</pub/usenet/CONFIG/active.gz> for <path-to-active>.  You can read about the
 policies used for maintaining that F<active> file at
 L<https://ftp.isc.org/pub/usenet/CONFIG/README>.  Consider synchronizing
-from this file on a daily basis by using B<cron>.
+from this file on a daily basis by using a cron job.
 
 =head1 OPTIONS
 
@@ -287,8 +313,8 @@ flag may be useful in conjunction with the B<-m> flag.  For example:
 
     actsync -i actsync.ign -I 2 -m host1 host2
 
-will keep all newsgroups currently on host1.  It will also only
-compare host1 groups with non-ignored newsgroups from host2.
+will keep all newsgroups currently on I<host1>.  It will also only
+compare I<host1> groups with non-ignored newsgroups from I<host2>.
 
 The default is C<-I 12>; newsgroups from both hosts are ignored per the
 file specified with B<-i>.
@@ -567,14 +593,14 @@ executed if C<-o x> is selected.
 
 =head1 EXAMPLES
 
-Determine the difference (but don't change anything) between your
-newsgroup set and uunet's set:
+Determine the difference (but don't change anything) between your newsgroup
+set and the one of another news server:
 
-    actsync news.uu.net
+    actsync news.server.com
 
 Same as above, with full debug and progress reports:
 
-    actsync -v 4 news.uu.net
+    actsync -v 4 news.server.com
 
 Force a site to have the same newsgroups as some other site:
 
@@ -583,11 +609,11 @@ Force a site to have the same newsgroups as some other site:
 This may be useful to sync a slave site to its master, or to sync internal
 site to a gateway.
 
-Compare your site with uunet, disregarding local groups and certain local
-differences with uunet.  Produce a report if any differences were
+Compare your site with news.server.com, disregarding local groups and
+certain local differences with it.  Produce a report if any differences were
 encountered:
 
-    actsync -v 2 -i actsync.ign news.uu.net
+    actsync -v 2 -i actsync.ign news.server.com
 
 where F<actsync.ign> contains:
 
@@ -602,7 +628,7 @@ where F<actsync.ign> contains:
     i       nsa.*
 
     # These groups are local favorites, so keep them
-    # even if uunet does not carry them.
+    # even if news.server.com does not carry them.
     #
     i       ca.dump.bob.dorman
     i       ca.keep.bob.dorman
@@ -610,9 +636,9 @@ where F<actsync.ign> contains:
     i       alt.tv.dinosaurs.barney.love.love.love
     i       alt.sounds.*    =alt.binaries.sounds.*
 
-To interactively sync against news.uu.net, using the same ignore file:
+To interactively sync against news.server.com, using the same ignore file:
 
-    actsync -o xi -v 2 -i actsync.ign news.uu.net
+    actsync -o xi -v 2 -i actsync.ign news.server.com
 
 Based on newsgroups that you decided to keep, one could make changes to
 the F<actsync.ign> file:
@@ -628,7 +654,7 @@ the F<actsync.ign> file:
     i       nsa.*
 
     # These groups are local favorites, so keep them
-    # even if uunet does not carry them.
+    # even if news.server.com does not carry them.
     #
     i       ca.dump.bob.dorman
     i       alt.tv.dinosaurs.barney.die.die.die
@@ -646,7 +672,7 @@ Automatic processing may be set up by using the following F<actsync.cfg>
 file:
 
     # Host to sync off of (host2).
-    host=news.uu.net
+    host=news.server.com
 
     # Location of the ignore file.
     ignore_file=<pathetc in inn.conf>/actsync.ign
@@ -658,7 +684,7 @@ file:
     #
     # Automatic execs, report if something was done,
     # otherwise don't say anything, don't report
-    # uunet active file problems, just ignore
+    # news.server.com active file problems, just ignore
     # the affected entries.
     flags=-o x -v 2 -q 2
 
@@ -670,11 +696,12 @@ The command
 
     actsyncd <pathetc>/actsync.cfg 4 >cmd.log 2>dbg.log
 
-will operate in debug mode, not change the F<active> file, write
-B<ctlinnd> style commands to F<cmd.log>, and write debug statements to
-F<dbg.log>.
+will operate in debug mode, not change the F<active> file, write B<ctlinnd>
+style commands to F<cmd.log>, and write debug statements to F<dbg.log>.
+(Note that using I<debug-level> is only supported when synchronizing with
+another news server, not with FTP.)
 
-To check only the major hierarchies against news.uu,net, use the following
+To check only the major hierarchies against news.server.com, use the following
 F<actsync.ign> file:
 
     # By default, ignore everything.
@@ -696,7 +723,7 @@ F<actsync.ign> file:
 
 and the command:
 
-    actsync -i actsync.ign news.uu.net
+    actsync -i actsync.ign news.server.com
 
 To determine the differences between your old F<active> and your current
 default server:
