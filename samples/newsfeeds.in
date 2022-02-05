@@ -39,14 +39,13 @@
 ##  feeds and distributions affect *incoming* feeds (including local posts).
 
 # Empty default subscription list, reject all incoming articles (including
-# locally posted articles) with a distribution of "local" or
-# "collabra-internal", accept all others (including articles that do not
-# have a Distribution header field).
-ME:!*/!local,!collabra-internal::
+# locally posted articles) with a distribution of "local", accept all others
+# (including articles that do not have a Distribution header field).
+ME:!*/!local::
 
 # The same as the above, but would reject all posts that have
 # news.example.com in the path (posts passing through that site).
-#ME/news.example.com:!*/!local,!collabra-internal::
+#ME/news.example.com:!*/!local::
 
 # An empty ME entry is possible, in which case no exclusion patterns
 # will be defined.
