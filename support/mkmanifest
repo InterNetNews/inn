@@ -122,6 +122,7 @@ contrib/delayer
 contrib/expirectl
 contrib/findreadgroups
 contrib/fixhist
+contrib/innconfcheck
 contrib/makeexpctl
 contrib/makestorconf
 contrib/mkbuf

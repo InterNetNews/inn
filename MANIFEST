@@ -74,7 +74,7 @@ contrib/delayer.in                    Delay data in a pipe, for innfeed
 contrib/expirectl.c                   Generate expire.ctl from template
 contrib/findreadgroups.in             Track which groups are being read
 contrib/fixhist.in                    Script to clean history
-contrib/innconfcheck                  Merge inn.conf with its man page
+contrib/innconfcheck.in               Merge inn.conf with its man page
 contrib/innreport-filter.xslt         Filter for innreport's HTML files
 contrib/makeexpctl.in                 Create expire.ctl from read groups
 contrib/makestorconf.in               Create storage.conf from read groups

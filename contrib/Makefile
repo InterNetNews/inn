@@ -9,8 +9,8 @@ CFLAGS        = $(GCFLAGS)
 
 ALL	      = analyze-traffic archivegz authmysql auth_pass backlogstat \
 		cleannewsgroups count_overview delayer expirectl \
-		findreadgroups fixhist makeexpctl makestorconf mkbuf \
-		mlockfile newsresp \
+		findreadgroups fixhist innconfcheck makeexpctl makestorconf \
+		mkbuf mlockfile newsresp \
 		nnrp.access2readers.conf pullart reset-cnfs respool \
 		stathist thdexpire \
 		tunefeed
@@ -53,6 +53,7 @@ count_overview:  count_overview.in  $(FIX) ; $(FIX) -i count_overview.in
 delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in
 findreadgroups:  findreadgroups.in  $(FIX) ; $(FIX) findreadgroups.in
 fixhist:         fixhist.in         $(FIX) ; $(FIX) -i fixhist.in
+innconfcheck:    innconfcheck.in    $(FIX) ; $(FIX) -i innconfcheck.in
 makeexpctl:      makeexpctl.in      $(FIX) ; $(FIX) makeexpctl.in
 makestorconf:    makestorconf.in    $(FIX) ; $(FIX) makestorconf.in
 mkbuf:           mkbuf.in           $(FIX) ; $(FIX) -i mkbuf.in
