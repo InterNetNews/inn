@@ -512,7 +512,7 @@ perl-nocem - A NoCeM-on-spool implementation for S<INN 2.x>
 
 =head1 SYNOPSIS
 
-perl-nocem
+B<perl-nocem>
 
 =head1 DESCRIPTION
 
@@ -537,31 +537,39 @@ Processing NoCeM notices is easy to set up:
 
 =item 1.
 
-Import the keys of the NoCeM issuers you trust in order to check
-the authenticity of their notices.  You can do:
+If not already done, install GnuPG, or an equivalent implementation of the
+OpenPGP standard, to be able to verify the signature of NoCeM notices.
+It will provide the B<gpg> and B<gpgv> programs.  If GnuPG was already
+installed when INN was configured, then the paths to these programs were taken
+into account.  Otherwise, you have to set the C<$gpg> and C<$gpgv> variables
+in I<pathlib>/perl/INN/Config.pm to the paths to these programs.
 
-    gpg --no-default-keyring --primary-keyring <pathetc>/pgp/ncmring.gpg \
-        --no-options --allow-non-selfsigned-uid --no-permission-warning \
-        --batch --import <key-file>
+All still active NoCeM issuers use rather modern PGP keys accepted by both
+GnuPG 1.x and 2.x versions.  It is no longer needed to explicitly use B<gpg1>
+to process NoCeM notices.
+
+=item 2.
+
+Import the keys of the NoCeM issuers you trust in order to check the
+authenticity of their notices.  You can run the following command:
+
+    gpg --no-default-keyring --allow-non-selfsigned-uid \
+        --primary-keyring <pathetc>/pgp/ncmring.gpg --no-options \
+        --no-permission-warning --batch --import <key-file>
     chmod 644 <pathetc>/pgp/ncmring.gpg
 
-where <pathetc> is the value of the I<pathetc> parameter set in
-F<inn.conf> and <key-file> the file containing the key(s) to import.
-The keyring must be located in <pathetc>/pgp/ncmring.gpg; you only
-have to create the directory <pathetc>/pgp before using B<gpg> (it will
-automatically generate the F<ncmring.gpg> file) and make sure the news
-user can read this file, once generated.
-
-All still active NoCeM issuers use rather modern PGP keys accepted by
-both GnuPG 1.x and 2.x versions.  It is no longer needed to use B<gpg1>
-to process NoCeM notices.  Various legacy options in command-line
-(like in the example above) should however still be used.
+where <pathetc> is the value of the I<pathetc> parameter set in F<inn.conf>
+and <key-file> the file containing the key(s) to import.  The keyring must
+be located in F<< <pathetc>/pgp/ncmring.gpg >>; you only have to create the
+directory F<< <pathetc>/pgp >> before using B<gpg> (it will automatically
+generate the F<ncmring.gpg> file) and make sure the news user can read this
+file, once generated.
 
 The keys of NoCeM issuers can be found in the web site of I<The NoCeM
 Registry>:  L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 You can even download there a unique file which contains all the keys.
 
-=item 2.
+=item 3.
 
 Create a F<nocem.ctl> config file in I<pathetc> indicating the NoCeM issuers
 and notices you want to follow.  This permission file contains lines like:
@@ -570,30 +578,35 @@ and notices you want to follow.  This permission file contains lines like:
     pgpmoose@killfile.org:pgpmoose-forged-moderation
 
 This will remove all articles for which the issuer (first part of the line,
-before the colon C<:>) has issued NoCeM notices corresponding to the
-criteria specified after the colon.
+before the colon C<:>) has issued NoCeM notices corresponding to the criteria
+specified after the colon.  Usually, you just keep the lines corresponding to
+the keys previously installed.
 
-You will also find information about that on the web site of
-I<The NoCeM Registry>.
+You will also find information about that on the web site of I<The NoCeM
+Registry>.  Note that INN is shipped with an up-to-date F<nocem.ctl> file
+already configured with the current NoCeM issuers.  (Only the keys installed
+at the previous step are not included, so as to leave you the choice of whom
+to trust, and download the most recent ones, in case they have changed.)
 
-=item 3.
+=item 4.
 
 Add to the F<newsfeeds> file an entry like this one in order to feed
 B<perl-nocem> the NoCeM notices posted to alt.nocem.misc and
-news.lists.filters:
+news.lists.filters, the usual groups where notices are sent:
 
     nocem!\
         :!*,alt.nocem.misc,news.lists.filters\
         :Tc,Wf,Ap:<pathbin>/perl-nocem
 
-with the correct path to B<perl-nocem>, located in <pathbin>.  Then, reload
-the F<newsfeeds> file (C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
+with the correct path to B<perl-nocem>, located in <pathbin>.  Then, run
+C<inncheck> to ensure the syntax of the modified F<newsfeeds> file is correct,
+and reload it (via C<ctlinnd reload newsfeeds 'NoCeM channel feed'>).
 
 Note that you should at least carry news.lists.filters on your news
 server (or other newsgroups where NoCeM notices are sent) if you wish
 to process them.
 
-=item 4.
+=item 5.
 
 Everything should now work.  However, do not hesitate to manually test
 B<perl-nocem> with a NoCeM notice, using:
@@ -631,11 +644,11 @@ The keyring which contains the public keys of trusted NoCeM issuers.
 
 =head1 BUGS
 
-The Subject: header is not checked for the @@NCM string and there is no
-check for the presence of the References: header.
+The Subject header field body is not checked for the C<@@NCM> string and
+there is no check for the presence of the References header field.
 
-The Newsgroups: pseudo header is not checked, but this can be done in
-local_want_cancel_id().
+The Newsgroups pseudo header field body is not checked, but this can
+be done in C<local_want_cancel_id()>.
 
 The Hierarchies: header is ignored.
 
