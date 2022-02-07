@@ -40,6 +40,9 @@ e8d1e6e7eeace92bf0760611dd9f09122a3bd1d9
 # Reformatting Python code with black.
 6ffada11eb4c9f998aa7965c3f10d98bf665d69e
 
+# Reformatting shell code with shfmt.
+47d7131146c65e0eb9628fa36526fe31b847922f
+
 # Various manual style homogenization.
 9d88a6ee9fc8b1e65e2d2caf519ce5be3950e65e
 9b53add83410ecf1ad2c64d84161cc7d184ceaf9
@@ -47,3 +50,4 @@ e8d1e6e7eeace92bf0760611dd9f09122a3bd1d9
 a09c97ec9c377f8c34a7b99944016d1e3857958f
 f0753e3902edd5ce80187e8a5a44a467a63ee812
 63459c8333b9dd31360b3642ea4a47d6e4a76370
+082f3bbc7bc3c8e60c36ce99fbbfde27c371cd00
