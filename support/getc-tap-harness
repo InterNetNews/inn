@@ -54,70 +54,70 @@ download() {
 
         # Specific additions to a few files.
         if [ "$3" = "basic.c" ]; then
-            sed -i -e "57 i \\
-/* Specific to the integration of C TAP Harness in INN. */\\
-#ifndef LIBTEST_NEW_FORMAT\\
-#    include \"inn/libinn.h\"\\
-\\
-void\\
-test_init(int count)\\
-{\\
-    plan(count);\\
-}\\
-\\
-void\\
-ok(int n UNUSED, int success)\\
-{\\
-    new_ok(success, NULL);\\
-}\\
-\\
-void\\
-skip(int n UNUSED, const char *reason)\\
-{\\
-#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\\
-#        pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
-#    endif\\
-    new_skip(reason, NULL);\\
-#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\\
-#        pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
-#    endif\\
-}\\
-\\
-void\\
-ok_block(int n UNUSED, int count, int success)\\
-{\\
-    new_ok_block(count, success, NULL);\\
-}\\
-\\
-void\\
-skip_block(int n UNUSED, int count, const char *reason)\\
-{\\
-#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\\
-#        pragma GCC diagnostic ignored \"-Wformat-nonliteral\"\\
-#    endif\\
-    new_skip_block(count, reason, NULL);\\
-#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\\
-#        pragma GCC diagnostic warning \"-Wformat-nonliteral\"\\
-#    endif\\
-}\\
-\\
-void\\
-ok_int(int n UNUSED, int wanted, int seen)\\
-{\\
-    is_int(wanted, seen, NULL);\\
-}\\
-\\
-void\\
-ok_string(int n UNUSED, const char *wanted, const char *seen)\\
-{\\
-    is_string(wanted, seen, NULL);\\
-}\\
-#endif\\
-" \
-                -e "153 i \\
-#ifndef INN_LIBINN_H" \
-                -e "187 i \\
-#endif" \
+            sed -i -e '57 i \
+/* Specific to the integration of C TAP Harness in INN. */\
+#ifndef LIBTEST_NEW_FORMAT\
+#    include "inn/libinn.h"\
+\
+void\
+test_init(int count)\
+{\
+    plan(count);\
+}\
+\
+void\
+ok(int n UNUSED, int success)\
+{\
+    new_ok(success, NULL);\
+}\
+\
+void\
+skip(int n UNUSED, const char *reason)\
+{\
+#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\
+#        pragma GCC diagnostic ignored "-Wformat-nonliteral"\
+#    endif\
+    new_skip(reason, NULL);\
+#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\
+#        pragma GCC diagnostic warning "-Wformat-nonliteral"\
+#    endif\
+}\
+\
+void\
+ok_block(int n UNUSED, int count, int success)\
+{\
+    new_ok_block(count, success, NULL);\
+}\
+\
+void\
+skip_block(int n UNUSED, int count, const char *reason)\
+{\
+#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\
+#        pragma GCC diagnostic ignored "-Wformat-nonliteral"\
+#    endif\
+    new_skip_block(count, reason, NULL);\
+#    if __GNUC__ > 4 || defined(__llvm__) || defined(__clang__)\
+#        pragma GCC diagnostic warning "-Wformat-nonliteral"\
+#    endif\
+}\
+\
+void\
+ok_int(int n UNUSED, int wanted, int seen)\
+{\
+    is_int(wanted, seen, NULL);\
+}\
+\
+void\
+ok_string(int n UNUSED, const char *wanted, const char *seen)\
+{\
+    is_string(wanted, seen, NULL);\
+}\
+#endif\
+' \
+                -e '153 i \
+#ifndef INN_LIBINN_H' \
+                -e '187 i \
+#endif' \
                 -e 's/^ok.int /new_ok(int /g' \
                 -e 's/^skip.const /new_skip(const /g' \
                 -e 's/^ok_block.unsigned /new_ok_block(unsigned /g' \
@@ -126,57 +126,57 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
         fi
 
         if [ "$3" = "basic.h" ]; then
-            sed -i -e "76 i \\
-#ifndef LIBTEST_NEW_FORMAT\\
-/* Specific to the integration of C TAP Harness in INN. */\\
-void ok(int n, int success);\\
-int new_ok(int success, const char *format, ...)\\
-    __attribute__((__format__(printf, 2, 3)));\\
-void ok_int(int n, int wanted, int seen);\\
-void ok_string(int n, const char *wanted, const char *seen);\\
-int okv(int success, const char *format, va_list args)\\
-    __attribute__((__format__(printf, 2, 0)));\\
-void skip(int n, const char *reason);\\
-void new_skip(const char *reason, ...)\\
-    __attribute__((__format__(printf, 1, 2)));\\
-void ok_block(int n, int count, int success);\\
-int new_ok_block(unsigned long count, int success, const char *format, ...)\\
-    __attribute__((__format__(printf, 3, 4)));\\
-void skip_block(int n, int count, const char *reason);\\
-void new_skip_block(unsigned long count, const char *reason, ...)\\
-    __attribute__((__format__(printf, 2, 3)));\\
-\\
-void test_init(int count);\\
-#else\\
-#    define ok         new_ok\\
-#    define skip       new_skip\\
-#    define ok_block   new_ok_block\\
-#    define skip_block new_skip_block" \
-                -e "91 i \\
-#endif" \
+            sed -i -e '76 i \
+#ifndef LIBTEST_NEW_FORMAT\
+/* Specific to the integration of C TAP Harness in INN. */\
+void ok(int n, int success);\
+int new_ok(int success, const char *format, ...)\
+    __attribute__((__format__(printf, 2, 3)));\
+void ok_int(int n, int wanted, int seen);\
+void ok_string(int n, const char *wanted, const char *seen);\
+int okv(int success, const char *format, va_list args)\
+    __attribute__((__format__(printf, 2, 0)));\
+void skip(int n, const char *reason);\
+void new_skip(const char *reason, ...)\
+    __attribute__((__format__(printf, 1, 2)));\
+void ok_block(int n, int count, int success);\
+int new_ok_block(unsigned long count, int success, const char *format, ...)\
+    __attribute__((__format__(printf, 3, 4)));\
+void skip_block(int n, int count, const char *reason);\
+void new_skip_block(unsigned long count, const char *reason, ...)\
+    __attribute__((__format__(printf, 2, 3)));\
+\
+void test_init(int count);\
+#else\
+#    define ok         new_ok\
+#    define skip       new_skip\
+#    define ok_block   new_ok_block\
+#    define skip_block new_skip_block' \
+                -e '91 i \
+#endif' \
                 ${TEMP}
         fi
 
         if [ "$3" = "float.c" ]; then
-            sed -i -e "50 i \\
-#ifndef LIBTEST_NEW_FORMAT\\
-/* Specific to the integration of C TAP Harness in INN. */\\
-void\\
-ok_double(int n UNUSED, double wanted, double seen)\\
-{\\
-    is_double(wanted, seen, 0.01, NULL);\\
-}\\
-#endif\\
-" \
+            sed -i -e '50 i \
+#ifndef LIBTEST_NEW_FORMAT\
+/* Specific to the integration of C TAP Harness in INN. */\
+void\
+ok_double(int n UNUSED, double wanted, double seen)\
+{\
+    is_double(wanted, seen, 0.01, NULL);\
+}\
+#endif\
+' \
                 ${TEMP}
         fi
 
         if [ "$3" = "float.h" ]; then
-            sed -i -e "38 i \\
-#ifndef LIBTEST_NEW_FORMAT\\
-/* Specific to the integration of C TAP Harness in INN. */\\
-void ok_double(int n, double wanted, double seen);\\
-#endif" \
+            sed -i -e '38 i \
+#ifndef LIBTEST_NEW_FORMAT\
+/* Specific to the integration of C TAP Harness in INN. */\
+void ok_double(int n, double wanted, double seen);\
+#endif' \
                 ${TEMP}
         fi
 
