@@ -118,7 +118,7 @@ fi
 # Lock out others
 #
 shlock -p $$ -f "${LOCK}" || {
-    echo "$0: Locked by `cat '${LOCK}'`" 1>&2
+    echo "$0: Locked by `cat \"${LOCK}\"`" 1>&2
     exit 9
 }
 
