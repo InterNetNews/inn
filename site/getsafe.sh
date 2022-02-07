@@ -1,10 +1,9 @@
-#! /bin/sh 
+#! /bin/sh
 ##
 ##  Safely get a file from the samples directory.  Usage:
-##	getsafe <sample> <localfile>
+##      getsafe <sample> <localfile>
 case $# in
-2)
-    ;;
+2) ;;
 *)
     echo "Can't get INN sample file: wrong number of arguments." 1>&2
     exit 1
@@ -15,25 +14,25 @@ SRC=$1
 DEST=$2
 
 ##  Try RCS.
-if [ -f RCS/${DEST},v ] ; then
+if [ -f RCS/${DEST},v ]; then
     echo "Note: ${SRC} has changed; please compare."
     test -f ${DEST} && exit 0
     exec co -q ${DEST}
 fi
 
 ##  Try SCCS.
-if [ -f SCCS/s.${DEST} ] ; then
+if [ -f SCCS/s.${DEST} ]; then
     echo "Note: ${SRC} has changed; please compare."
     test -f ${DEST} && exit 0
     exec sccs get -s ${DEST}
 fi
 
 ##  File exist locally?
-if [ -f ${DEST} ] ; then
+if [ -f ${DEST} ]; then
     cmp ${SRC} ${DEST}
-    if [ $? -eq 0 ] ; then
-	touch ${DEST}
-	exit 0
+    if [ $? -eq 0 ]; then
+        touch ${DEST}
+        exit 0
     fi
     echo "${SRC} has changed; please update ${DEST}"
     exit 1

@@ -5,22 +5,22 @@
 # The count starts at 1 and is updated each time ok is printed.  printcount
 # takes "ok" or "not ok".
 count=1
-printcount () {
+printcount() {
     echo "$1 $count $2"
-    count=`expr $count + 1`
+    count=$(expr $count + 1)
 }
 
 # Takes a file, a grep expression and then arguments for getlist, calls
 # getlist with those arguments, and compares the result from the results of
 # running grep on the file.
-getlist () {
+getlist() {
     file="$1"
     shift
     grep="$1"
     shift
-    grep "$grep" "$file" > wanted
-    $getlist -h localhost -p 11119 "$@" > seen
-    if [ $? = 0 ] && diff wanted seen ; then
+    grep "$grep" "$file" >wanted
+    $getlist -h localhost -p 11119 "$@" >seen
+    if [ $? = 0 ] && diff wanted seen; then
         printcount "ok"
     else
         printcount "not ok"
@@ -31,17 +31,17 @@ getlist () {
 # Find the right directory.
 getlist="../../frontends/getlist"
 dirs='. clients tests/clients'
-for dir in $dirs ; do
-    if [ -r "$dir/server-list" ] ; then
+for dir in $dirs; do
+    if [ -r "$dir/server-list" ]; then
         cd $dir
         break
     fi
 done
-if [ ! -x "$getlist" ] ; then
+if [ ! -x "$getlist" ]; then
     echo 'Could not find getlist' >&2
     exit 1
 fi
-if [ ! -x 'server-list' ] ; then
+if [ ! -x 'server-list' ]; then
     echo 'Could not find server-list' >&2
     exit 1
 fi
@@ -50,7 +50,8 @@ fi
 echo 15
 
 # Point getlist at the appropriate inn.conf file.
-INNCONF=../data/etc/inn.conf; export INNCONF
+INNCONF=../data/etc/inn.conf
+export INNCONF
 
 # Start the daemon.
 ./server-list
@@ -73,5 +74,5 @@ getlist ../data/db/active.times . active.times
 getlist ../data/db/distributions . distributions
 
 # Kill the server.
-kill `cat pid`
+kill $(cat pid)
 rm pid

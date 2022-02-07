@@ -9,22 +9,22 @@ MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
 #RMPROC="xargs rm"
 RMPROC="fastrm -e ${SPOOL}"
 
-if [ -z "$1" ] ; then
-    echo "Expire called with zero list of files on `hostname`" \
-  | eval ${MAIL}
+if [ -z "$1" ]; then
+    echo "Expire called with zero list of files on $(hostname)" \
+        | eval ${MAIL}
     exit 0
 fi
-if [ ! -f $1 ] ; then
-    echo "Expire called with no files to expire on `hostname`" \
-  | eval ${MAIL}
+if [ ! -f $1 ]; then
+    echo "Expire called with no files to expire on $(hostname)" \
+        | eval ${MAIL}
     exit 0
 fi
 
 eval "cd ${SPOOL} \
     && ${RMPROC} <$1 \
     && mv $1 ${MOST_LOGS}/expire.list"
-if [ -f $1 ] ; then
-    echo "Expire had problems removing articles on `hostname`" \
-  | eval ${MAIL}
+if [ -f $1 ]; then
+    echo "Expire had problems removing articles on $(hostname)" \
+        | eval ${MAIL}
     exit 1
 fi

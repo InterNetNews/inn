@@ -3,27 +3,28 @@
 
 ##  Send news via NNTP by running several innxmit processes in the background.
 ##  Usage:
-##	nntpsend [-acDdlNnpr] [-P portnum] [-s size] [-T limit] [-t timeout]
-##		 [-w delay] [host fqdn] ...
-##	-a		always have innxmit rewrite the batch file (if no size limit)
-##	-c		disable message-ID checking in streaming mode
-##	-D		debug mode, send output to stdout
-##	-d		same as -d, and run innxmit with debug as well
-##	-l		innxmit, log rejected articles
-##	-N		innxmit, disable streaming mode
-##	-n		do not lock for nntpsend
-##	-P portnum	port number to use
-##	-p		run innxmit with -p to prune batch files
-##	-r		innxmit, don't requeue on unexpected error code
-##	-s size		limit the file to size bytes
-##	-T limit	innxmit connection transmit time limit (def: forever)
-##	-t timeout	innxmit timeout to make connection (def: 180)
-##	-w delay	wait delay seconds just before innxmit
-##	host fqdn	send to host and qualified domain (def: nntpsend.ctl)
+##      nntpsend [-acDdlNnpr] [-P portnum] [-s size] [-T limit] [-t timeout]
+##               [-w delay] [host fqdn] ...
+##      -a              always have innxmit rewrite the batch file
+##                                                          (if no size limit)
+##      -c              disable message-ID checking in streaming mode
+##      -D              debug mode, send output to stdout
+##      -d              same as -d, and run innxmit with debug as well
+##      -l              innxmit, log rejected articles
+##      -N              innxmit, disable streaming mode
+##      -n              do not lock for nntpsend
+##      -P portnum      port number to use
+##      -p              run innxmit with -p to prune batch files
+##      -r              innxmit, don't requeue on unexpected error code
+##      -s size         limit the file to size bytes
+##      -T limit        innxmit connection transmit time limit (def: forever)
+##      -t timeout      innxmit timeout to make connection (def: 180)
+##      -w delay        wait delay seconds just before innxmit
+##      host fqdn       send to host and qualified domain (def: nntpsend.ctl)
 ##  If no "host fqdn" pairs appear on the command line, then ${CTLFILE}
 ##  file is read.
 
-PROGNAME=`basename $0`
+PROGNAME=$(basename $0)
 LOCK=${LOCKS}/LOCK.${PROGNAME}
 CTLFILE=${PATHETC}/${PROGNAME}.ctl
 LOG=${MOST_LOGS}/${PROGNAME}.log
@@ -46,99 +47,99 @@ W_SECONDS=
 
 ##  Parse JCL.
 MORETODO=true
-while ${MORETODO} ; do
+while ${MORETODO}; do
     case X"$1" in
     X-a)
-	A_FLAG="-a"
-	;;
+        A_FLAG="-a"
+        ;;
     X-d)
-	D_FLAG="-d"
-	NO_LOG_FLAG="true"
-	;;
+        D_FLAG="-d"
+        NO_LOG_FLAG="true"
+        ;;
     X-D)
-	NO_LOG_FLAG="true"
-	;;
+        NO_LOG_FLAG="true"
+        ;;
     X-l)
-	L_FLAG="-l"
-	;;
+        L_FLAG="-l"
+        ;;
     X-p)
-	P_FLAG="-p"
-	;;
+        P_FLAG="-p"
+        ;;
     X-r)
-	R_FLAG="-r"
-	;;
+        R_FLAG="-r"
+        ;;
     X-N)
-	S_FLAG="-s"
-	;;
+        S_FLAG="-s"
+        ;;
     X-c)
-	C_FLAG="-c"
-	;;
+        C_FLAG="-c"
+        ;;
     X-s)
-	if [ -z "$2" ] ; then
-	    echo "${PROGNAME}: option requires an argument -- s" 1>&2
-	    exit 1
-	fi
-	TRUNC_SIZE="$2"
-	shift
-	;;
+        if [ -z "$2" ]; then
+            echo "${PROGNAME}: option requires an argument -- s" 1>&2
+            exit 1
+        fi
+        TRUNC_SIZE="$2"
+        shift
+        ;;
     X-s*)
-	TRUNC_SIZE="`echo $1 | ${SED} -e 's/-s//'`"
-	;;
+        TRUNC_SIZE="$(echo $1 | ${SED} -e 's/-s//')"
+        ;;
     X-t)
-	if [ -z "$2" ] ; then
-	    echo "${PROGNAME}: option requires an argument -- t" 1>&2
-	    exit 1
-	fi
-	T_FLAG="-t$2"
-	shift
-	;;
+        if [ -z "$2" ]; then
+            echo "${PROGNAME}: option requires an argument -- t" 1>&2
+            exit 1
+        fi
+        T_FLAG="-t$2"
+        shift
+        ;;
     X-t*)
-	T_FLAG="$1"
-	;;
+        T_FLAG="$1"
+        ;;
     X-P)
-	if [ -z "$2" ] ; then
-	    echo "${PROGNAME}: option requires an argument -- P" 1>&2
-	    exit 1
-	fi
-	PP_FLAG="-P$2"
-	shift
-	;;
+        if [ -z "$2" ]; then
+            echo "${PROGNAME}: option requires an argument -- P" 1>&2
+            exit 1
+        fi
+        PP_FLAG="-P$2"
+        shift
+        ;;
     X-P*)
-	PP_FLAG="$1"
-	;;
+        PP_FLAG="$1"
+        ;;
     X-T)
-	if [ -z "$2" ] ; then
-	    echo "${PROGNAME}: option requires an argument -- T" 1>&2
-	    exit 1
-	fi
-	TIMELIMIT="-T$2"
-	shift
-	;;
+        if [ -z "$2" ]; then
+            echo "${PROGNAME}: option requires an argument -- T" 1>&2
+            exit 1
+        fi
+        TIMELIMIT="-T$2"
+        shift
+        ;;
     X-T*)
-	TIMELIMIT="$1"
-	;;
+        TIMELIMIT="$1"
+        ;;
     X-n)
-	NOLOCK=true
-	;;
+        NOLOCK=true
+        ;;
     X-w)
-	if [ -z "$2" ] ; then
-	    echo "${PROGNAME}: option requires an argument -- w" 1>&2
-	    exit 1
-	fi
-	W_SECONDS="$2"
-	shift
-	;;
+        if [ -z "$2" ]; then
+            echo "${PROGNAME}: option requires an argument -- w" 1>&2
+            exit 1
+        fi
+        W_SECONDS="$2"
+        shift
+        ;;
     X--)
-	shift
-	MORETODO=false
-	;;
+        shift
+        MORETODO=false
+        ;;
     X-*)
-	echo "${PROGNAME}: illegal option -- $1" 1>&2
-	exit 1
-	;;
+        echo "${PROGNAME}: illegal option -- $1" 1>&2
+        exit 1
+        ;;
     *)
-	MORETODO=false
-	;;
+        MORETODO=false
+        ;;
     esac
     ${MORETODO} && shift
 done
@@ -158,9 +159,9 @@ INPUT=${TMPDIR}/nntpsend$$
 cp /dev/null ${INPUT}
 while [ $# -gt 0 ]; do
     if [ $# -lt 2 ]; then
-	echo "${PROGNAME}: Bad host/fqdn pair" 1>&2
-	rm -f ${NNTPLOCK}
-	exit 1
+        echo "${PROGNAME}: Bad host/fqdn pair" 1>&2
+        rm -f ${NNTPLOCK}
+        exit 1
     fi
     echo "$1 $2" >>${INPUT}
     shift
@@ -168,14 +169,14 @@ while [ $# -gt 0 ]; do
 done
 
 ##  If nothing specified on the command line, read the control file.
-if [ ! -s ${INPUT} ] ; then
+if [ ! -s ${INPUT} ]; then
     if [ ! -r ${CTLFILE} ]; then
-	echo "${PROGNAME}: cannot read ${CTLFILE}"
-	rm -f ${NNTPLOCK}
-	exit 1
+        echo "${PROGNAME}: cannot read ${CTLFILE}"
+        rm -f ${NNTPLOCK}
+        exit 1
     fi
     ${SED} -e 's/#.*//' -e '/^$/d' -e 's/::\([^:]*\)$/:max:\1/' \
-	-e 's/:/ /g' <${CTLFILE} >${INPUT}
+        -e 's/:/ /g' <${CTLFILE} >${INPUT}
 fi
 
 ##  Go to where the action is.
@@ -202,16 +203,16 @@ export BATCH PROGNAME PARENTPID INNFLAGS
 ##  Loop over all sites.
 while read SITE HOST SIZE_ARG FLAGS; do
     ## Parse the input parameters.
-    if [ -z "${SITE}" -o -z "${HOST}" ] ; then
-	echo "Ignoring bad line: ${SITE} ${HOST} ${SIZE_ARG} ${FLAGS}" 1>&2
-	continue
+    if [ -z "${SITE}" -o -z "${HOST}" ]; then
+        echo "Ignoring bad line: ${SITE} ${HOST} ${SIZE_ARG} ${FLAGS}" 1>&2
+        continue
     fi
 
     ## give up early if we cannot even lock it
     ##
     ## NOTE: This lock is not nntpsend's lock but rather the
-    ##	     lock that the parent shell of innxmit will use.
-    ##	     Later on the child will take the lock from us.
+    ##       lock that the parent shell of innxmit will use.
+    ##       Later on the child will take the lock from us.
     ##
     LOCK="${LOCKS}/LOCK.${SITE}"
     shlock -p $$ -f "${LOCK}" || continue
@@ -219,14 +220,18 @@ while read SITE HOST SIZE_ARG FLAGS; do
     ## Compute the specific parameters for this site.
     test "${SIZE_ARG}" = "max" && SIZE_ARG=
     if [ -n "${TRUNC_SIZE}" ]; then
-	SIZE_ARG="${TRUNC_SIZE}"
+        SIZE_ARG="${TRUNC_SIZE}"
     fi
     ## Parse the SIZE_ARG for either MaxSize-TruncSize or TruncSize
     case "${SIZE_ARG}" in
-    *-*) MAXSIZE="`echo ${SIZE_ARG} | ${SED} -e 's/-.*//'`";
-	 SIZE="`echo ${SIZE_ARG} | ${SED} -e 's/^.*-//'`" ;;
-    *) MAXSIZE="${SIZE_ARG}";
-       SIZE="${SIZE_ARG}" ;;
+    *-*)
+        MAXSIZE="$(echo ${SIZE_ARG} | ${SED} -e 's/-.*//')"
+        SIZE="$(echo ${SIZE_ARG} | ${SED} -e 's/^.*-//')"
+        ;;
+    *)
+        MAXSIZE="${SIZE_ARG}"
+        SIZE="${SIZE_ARG}"
+        ;;
     esac
     D_PARAM=
     R_PARAM=
@@ -237,95 +242,94 @@ while read SITE HOST SIZE_ARG FLAGS; do
     TIMEOUT_PARAM=
     TIMELIMIT_PARAM=
     if [ -z "${FLAGS}" ]; then
-	MORETODO=false
+        MORETODO=false
     else
-	MORETODO=true
-	set -- ${FLAGS}
+        MORETODO=true
+        set -- ${FLAGS}
     fi
-    while ${MORETODO} ; do
-	case "X$1" in
-	X-a)
-	    ;;
-	X-d)
-	    D_PARAM="-d"
-	    ;;
-	X-c)
-	    C_PARAM="-c"
-	    ;;
-	X-p)
-	    P_PARAM="-p"
-	    ;;
-	X-r)
-	    R_PARAM="-r"
-	    ;;
-	X-s)
-	    S_PARAM="-s"
-	    ;;
-	X-l)
-	    L_PARAM="-l"
-	    ;;
-	X-t)
-	    if [ -z "$2" ] ; then
-		echo "${PROGNAME}: option requires an argument -- t" 1>&2
-		rm -f "${NNTPLOCK}" "${LOCK}"
-		exit 1
-	    fi
-	    TIMEOUT_PARAM="-t$2"
-	    shift
-	    ;;
-	X-t*)
-	    TIMEOUT_PARAM="$1"
-	    ;;
-	X-P)
-	    if [ -z "$2" ] ; then
-		echo "${PROGNAME}: option requires an argument -- P" 1>&2
-		rm -f "${NNTPLOCK}" "${LOCK}"
-		exit 1
-	    fi
-	    PP_PARAM="-P$2"
-	    shift
-	    ;;
-	X-P*)
-	    PP_PARAM="$1"
-	    ;;
-	X-T)
-	    if [ -z "$2" ] ; then
-		echo "${PROGNAME}: option requires an argument -- T" 1>&2
-		rm -f "${NNTPLOCK}" "${LOCK}"
-		exit 1
-	    fi
-	    TIMELIMIT_PARAM="-T$2"
-	    shift
-	    ;;
-	X-T*)
-	    TIMELIMIT_PARAM="$1"
-	    ;;
-	X-w)
-	    if [ -z "$2" ] ; then
-		echo "${PROGNAME}: option requires an argument -- w" 1>&2
+    while ${MORETODO}; do
+        case "X$1" in
+        X-a) ;;
+        X-d)
+            D_PARAM="-d"
+            ;;
+        X-c)
+            C_PARAM="-c"
+            ;;
+        X-p)
+            P_PARAM="-p"
+            ;;
+        X-r)
+            R_PARAM="-r"
+            ;;
+        X-s)
+            S_PARAM="-s"
+            ;;
+        X-l)
+            L_PARAM="-l"
+            ;;
+        X-t)
+            if [ -z "$2" ]; then
+                echo "${PROGNAME}: option requires an argument -- t" 1>&2
                 rm -f "${NNTPLOCK}" "${LOCK}"
                 exit 1
-	    fi
-	    W_SECONDS="$2"
-	    shift
+            fi
+            TIMEOUT_PARAM="-t$2"
+            shift
             ;;
-	*)
-	    MORETODO=false
-	    ;;
-	esac
-	${MORETODO} && shift
+        X-t*)
+            TIMEOUT_PARAM="$1"
+            ;;
+        X-P)
+            if [ -z "$2" ]; then
+                echo "${PROGNAME}: option requires an argument -- P" 1>&2
+                rm -f "${NNTPLOCK}" "${LOCK}"
+                exit 1
+            fi
+            PP_PARAM="-P$2"
+            shift
+            ;;
+        X-P*)
+            PP_PARAM="$1"
+            ;;
+        X-T)
+            if [ -z "$2" ]; then
+                echo "${PROGNAME}: option requires an argument -- T" 1>&2
+                rm -f "${NNTPLOCK}" "${LOCK}"
+                exit 1
+            fi
+            TIMELIMIT_PARAM="-T$2"
+            shift
+            ;;
+        X-T*)
+            TIMELIMIT_PARAM="$1"
+            ;;
+        X-w)
+            if [ -z "$2" ]; then
+                echo "${PROGNAME}: option requires an argument -- w" 1>&2
+                rm -f "${NNTPLOCK}" "${LOCK}"
+                exit 1
+            fi
+            W_SECONDS="$2"
+            shift
+            ;;
+        *)
+            MORETODO=false
+            ;;
+        esac
+        ${MORETODO} && shift
     done
     if [ -z "${SIZE}" -o -n "${A_FLAG}" ]; then
-	# rewrite batch file if we do not have a size limit
-	INNFLAGS="-a"
+        # rewrite batch file if we do not have a size limit
+        INNFLAGS="-a"
     else
-	# we have a size limit, let shrinkfile rewrite the file
-	INNFLAGS=
+        # we have a size limit, let shrinkfile rewrite the file
+        INNFLAGS=
     fi
     if [ -n "${D_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${D_FLAG}"
+        INNFLAGS="${INNFLAGS} ${D_FLAG}"
     else
-	test -n "${D_PARAM}" && INNFLAGS="${INNFLAGS} ${D_PARAM}"
+        test -n "${D_PARAM}" && INNFLAGS="${INNFLAGS} ${D_PARAM}"
     fi
     if [ -n "${C_FLAG}" ]; then
         INNFLAGS="${INNFLAGS} ${C_FLAG}"
@@ -333,40 +337,40 @@ while read SITE HOST SIZE_ARG FLAGS; do
         test -n "${C_PARAM}" && INNFLAGS="${INNFLAGS} ${C_PARAM}"
     fi
     if [ -n "${P_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${P_FLAG}"
+        INNFLAGS="${INNFLAGS} ${P_FLAG}"
     else
-	test -n "${P_PARAM}" && INNFLAGS="${INNFLAGS} ${P_PARAM}"
+        test -n "${P_PARAM}" && INNFLAGS="${INNFLAGS} ${P_PARAM}"
     fi
     if [ -n "${L_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${L_FLAG}"
+        INNFLAGS="${INNFLAGS} ${L_FLAG}"
     else
-	test -n "${L_PARAM}" && INNFLAGS="${INNFLAGS} ${L_PARAM}"
+        test -n "${L_PARAM}" && INNFLAGS="${INNFLAGS} ${L_PARAM}"
     fi
     if [ -n "${R_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${R_FLAG}"
+        INNFLAGS="${INNFLAGS} ${R_FLAG}"
     else
-	test -n "${R_PARAM}" && INNFLAGS="${INNFLAGS} ${R_PARAM}"
+        test -n "${R_PARAM}" && INNFLAGS="${INNFLAGS} ${R_PARAM}"
     fi
     if [ -n "${S_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${S_FLAG}"
+        INNFLAGS="${INNFLAGS} ${S_FLAG}"
     else
-	test -n "${S_PARAM}" && INNFLAGS="${INNFLAGS} ${S_PARAM}"
+        test -n "${S_PARAM}" && INNFLAGS="${INNFLAGS} ${S_PARAM}"
     fi
     if [ -n "${T_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${T_FLAG}"
+        INNFLAGS="${INNFLAGS} ${T_FLAG}"
     else
-	test -n "${TIMEOUT_PARAM}" && INNFLAGS="${INNFLAGS} ${TIMEOUT_PARAM}"
+        test -n "${TIMEOUT_PARAM}" && INNFLAGS="${INNFLAGS} ${TIMEOUT_PARAM}"
     fi
     if [ -n "${PP_FLAG}" ]; then
-	INNFLAGS="${INNFLAGS} ${PP_FLAG}"
+        INNFLAGS="${INNFLAGS} ${PP_FLAG}"
     else
-	test -n "${PP_PARAM}" && INNFLAGS="${INNFLAGS} ${PP_PARAM}"
+        test -n "${PP_PARAM}" && INNFLAGS="${INNFLAGS} ${PP_PARAM}"
     fi
     if [ -n "${TIMELIMIT}" ]; then
-	INNFLAGS="${INNFLAGS} ${TIMELIMIT}"
+        INNFLAGS="${INNFLAGS} ${TIMELIMIT}"
     else
-	test -n "${TIMELIMIT_PARAM}" \
-	    && INNFLAGS="${INNFLAGS} ${TIMELIMIT_PARAM}"
+        test -n "${TIMELIMIT_PARAM}" \
+            && INNFLAGS="${INNFLAGS} ${TIMELIMIT_PARAM}"
     fi
 
     ## Flush the buffers for the site now, rather than in the child.
@@ -376,75 +380,75 @@ while read SITE HOST SIZE_ARG FLAGS; do
     ##
     # carry old unfinished work over to this task
     BATCHFILE="${SITE}=n"
-    if [ -f "${SITE}.work" ] ; then
-	cat ${SITE}.work >>"${BATCHFILE}"
-	rm -f "${SITE}.work"
+    if [ -f "${SITE}.work" ]; then
+        cat ${SITE}.work >>"${BATCHFILE}"
+        rm -f "${SITE}.work"
     fi
     # form BATCHFILE to hold the work for this site
     if [ -f "${SITE}" ]; then
-	mv "${SITE}" "${SITE}.work"
-	if ctlinnd -s -t30 flush ${SITE} ; then
-	    cat ${SITE}.work >>"${BATCHFILE}"
-	    rm -f ${SITE}.work
-	else
-	    # flush failed, continue if we have any batch file to work on
-	    echo "${PROGNAME}: bad flush for ${HOST} via ${SITE}"
-	    if [ -f "${BATCHFILE}" ]; then
-		echo "${PROGNAME}: trying ${HOST} via ${SITE} anyway"
-	    else
-		echo "${PROGNAME}: skipping ${HOST} via ${SITE}"
-		rm -f ${LOCK}
-		continue
-	    fi
-	fi
+        mv "${SITE}" "${SITE}.work"
+        if ctlinnd -s -t30 flush ${SITE}; then
+            cat ${SITE}.work >>"${BATCHFILE}"
+            rm -f ${SITE}.work
+        else
+            # flush failed, continue if we have any batch file to work on
+            echo "${PROGNAME}: bad flush for ${HOST} via ${SITE}"
+            if [ -f "${BATCHFILE}" ]; then
+                echo "${PROGNAME}: trying ${HOST} via ${SITE} anyway"
+            else
+                echo "${PROGNAME}: skipping ${HOST} via ${SITE}"
+                rm -f ${LOCK}
+                continue
+            fi
+        fi
     else
-	# nothing to work on, so flush and move on
-	ctlinnd -s -t30 flush ${SITE}
-	echo "${PROGNAME}: file ${BATCH}/${SITE} for ${HOST} not found"
-	if [ -f "${BATCHFILE}" ]; then
-	    echo "${PROGNAME}: trying ${HOST} via ${SITE} anyway"
-	else
-	    echo "${PROGNAME}: skipping ${HOST} via ${SITE}"
-	    rm -f ${LOCK}
-	    continue
-	fi
+        # nothing to work on, so flush and move on
+        ctlinnd -s -t30 flush ${SITE}
+        echo "${PROGNAME}: file ${BATCH}/${SITE} for ${HOST} not found"
+        if [ -f "${BATCHFILE}" ]; then
+            echo "${PROGNAME}: trying ${HOST} via ${SITE} anyway"
+        else
+            echo "${PROGNAME}: skipping ${HOST} via ${SITE}"
+            rm -f ${LOCK}
+            continue
+        fi
     fi
 
     ##  Start sending this site in the background.
     export MAXSIZE SITE HOST PROGNAME PARENTPID SIZE TMPDIR LOCK BATCHFILE W_SECONDS
     sh -c '
-	# grab the lock from the parent
-	#
-	# This is safe because only the parent will have locked
-	# the site.  We break the lock and reclaim it.
-	rm -f ${LOCK}
-	trap "rm -f ${LOCK} ; exit 1" 1 2 3 15
-	shlock -p $$ -f ${LOCK} || {
-	    WHY="`cat ${LOCK}`"
-	    echo "${PROGNAME}: [${PARENTPID}:$$] ${SITE} locked ${WHY} `date`"
-	    exit
-	}
-	# process the site BATCHFILE
-	if [ -f "${BATCHFILE}" ]; then
-	    test -n "${SIZE}" && shrinkfile -m${MAXSIZE} -s${SIZE} -v ${BATCHFILE}
-	    if [ -s ${BATCHFILE} ] ; then
-		if [ -n "${W_SECONDS}" ] ; then
-		    echo "${PROGNAME}: [${PARENTPID}:$$] sleeping ${W_SECONDS} seconds before ${SITE}"
-		    sleep "${W_SECONDS}"
-		fi
-		echo "${PROGNAME}: [${PARENTPID}:$$] begin ${SITE} `date`"
-		echo "${PROGNAME}: [${PARENTPID}:$$] innxmit ${INNFLAGS} ${HOST} ..."
-		eval innxmit ${INNFLAGS} ${HOST} ${BATCH}/${BATCHFILE}
-		echo "${PROGNAME}: [${PARENTPID}:$$] end ${SITE} `date`"
-	    else
-		rm -f ${BATCHFILE}
-	    fi
-	else
-	    echo "${PROGNAME}: file ${BATCH}/${BATCHFILE} for ${HOST} not found"
-	fi
-	rm -f ${LOCK}
+        # grab the lock from the parent
+        #
+        # This is safe because only the parent will have locked
+        # the site.  We break the lock and reclaim it.
+        rm -f ${LOCK}
+        trap "rm -f ${LOCK} ; exit 1" 1 2 3 15
+        shlock -p $$ -f ${LOCK} || {
+            WHY="$(cat ${LOCK})"
+            echo "${PROGNAME}: [${PARENTPID}:$$] ${SITE} locked ${WHY} $(date)"
+            exit
+        }
+        # process the site BATCHFILE
+        if [ -f "${BATCHFILE}" ]; then
+            test -n "${SIZE}" && shrinkfile -m${MAXSIZE} -s${SIZE} -v ${BATCHFILE}
+            if [ -s ${BATCHFILE} ]; then
+                if [ -n "${W_SECONDS}" ]; then
+                    echo "${PROGNAME}: [${PARENTPID}:$$] sleeping ${W_SECONDS} seconds before ${SITE}"
+                    sleep "${W_SECONDS}"
+                fi
+                echo "${PROGNAME}: [${PARENTPID}:$$] begin ${SITE} $(date)"
+                echo "${PROGNAME}: [${PARENTPID}:$$] innxmit ${INNFLAGS} ${HOST} ..."
+                eval innxmit ${INNFLAGS} ${HOST} ${BATCH}/${BATCHFILE}
+                echo "${PROGNAME}: [${PARENTPID}:$$] end ${SITE} $(date)"
+            else
+                rm -f ${BATCHFILE}
+            fi
+        else
+            echo "${PROGNAME}: file ${BATCH}/${BATCHFILE} for ${HOST} not found"
+        fi
+        rm -f ${LOCK}
     ' &
-done < ${INPUT}
+done <${INPUT}
 
 ##  Release the nntpsend lock and clean up before we wait on child processes.
 if [ -z "${NOLOCK}" ]; then

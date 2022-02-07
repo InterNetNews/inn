@@ -10,7 +10,8 @@
 ##      expireoverflags=xxx  Pass xxx flags to expireover
 ##      flags=xxx            Pass xxx flags to expire
 ##      lowmark              Create and use a lowmark file
-##      mailto=xxx           E-mail address to which to send the report instead of newsmaster
+##      mailto=xxx           E-mail address to which to send the report
+##                                                        instead of newsmaster
 ##      noexpire             Do not expire
 ##      noexpireover         Do not expireover
 ##      noexplog             Do not log expire output
@@ -30,15 +31,15 @@
 EXPLOG=${MOST_LOGS}/expire.log
 INNSTAT=${PATHBIN}/innstat
 INNFEEDCONF=${PATHETC}/innfeed.conf
-HOSTNAME=`hostname`
-DATE=`date`
+HOSTNAME=$(hostname)
+DATE=$(date)
 TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
 
 ##  Try to find the path to innfeed's spool.  The default is
 ##  ${PATHSPOOL}/innfeed if not found.
 PROCBATCHDIR=
 if [ -f "${INNFEEDCONF}" ]; then
-    INNFEEDSPOOL=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${INNFEEDCONF}`
+    INNFEEDSPOOL=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "backlog-directory" && $2 == ":") print $3}' ${INNFEEDCONF})
 fi
 test -z "${INNFEEDSPOOL}" && test -d "${PATHSPOOL}/innfeed" && INNFEEDSPOOL="innfeed"
 test -n "${INNFEEDSPOOL}" && PROCBATCHDIR="${PATHSPOOL}/${INNFEEDSPOOL}"
@@ -71,13 +72,13 @@ EXPIREOVER=expireover
 LOWMARKFILE=
 RMFILE=
 
-HISTDIR="`dirname ${HISTORY}`"
-TOUT=600   # timeout value for ctlinnd commands
+HISTDIR="$(dirname ${HISTORY})"
+TOUT=600 # timeout value for ctlinnd commands
 if [ -z "${HISTDIR}" -o X"." = X"${HISTDIR}" -o ! -d "${HISTDIR}" ]; then
     if [ -d "${PATHETC}/hist" ]; then
-	HISTDIR="${PATHETC}/hist"
+        HISTDIR="${PATHETC}/hist"
     else
-	HISTDIR="${PATHETC}"
+        HISTDIR="${PATHETC}"
     fi
 fi
 if [ "${ENABLEOVERVIEW}" = "true" ]; then
@@ -96,108 +97,106 @@ if [ "${GROUPBASEEXPIRY}" = "true" ] && [ "${ENABLEOVERVIEW}" = "true" ]; then
 fi
 
 ##  Parse JCL.
-for I
-do
+for I; do
     case "X$I" in
     Xdelayrm)
-	RMFILE=${MOST_LOGS}/expire.rm
-	;;
+        RMFILE=${MOST_LOGS}/expire.rm
+        ;;
     Xexpctl=*)
-	EXPIRECTL=`expr "${I}" : 'expctl=\(.*\)'`
-	case ${EXPIRECTL} in
-	/*)
-	    ;;
-	*)
-	    EXPIRECTL=`/bin/pwd`/${EXPIRECTL}
-	    ;;
-	esac
-	;;
+        EXPIRECTL=$(expr "${I}" : 'expctl=\(.*\)')
+        case ${EXPIRECTL} in
+        /*) ;;
+        *)
+            EXPIRECTL=$(/bin/pwd)/${EXPIRECTL}
+            ;;
+        esac
+        ;;
     Xexpdir=*)
-	EXPDIR=`expr "${I}" : 'expdir=\(.*\)'`
-	;;
+        EXPDIR=$(expr "${I}" : 'expdir=\(.*\)')
+        ;;
     Xprocbatchdir=*)
-        PROCBATCHDIR="${PROCBATCHDIR} `expr "${I}" : 'procbatchdir=\(.*\)'`"
+        PROCBATCHDIR="${PROCBATCHDIR} $(expr "${I}" : 'procbatchdir=\(.*\)')"
         ;;
     Xtmpdir=*)
-	TMPDIR=`expr "${I}" : 'tmpdir=\(.*\)'`
-	;;
+        TMPDIR=$(expr "${I}" : 'tmpdir=\(.*\)')
+        ;;
     Xexpireover)
-	DOEXPIREOVER=true
-	;;
+        DOEXPIREOVER=true
+        ;;
     Xexpireoverflags=*)
-	EXPIREOVERFLAGS=`expr "${I}" : 'expireoverflags=\(.*\)'`
-	;;
+        EXPIREOVERFLAGS=$(expr "${I}" : 'expireoverflags=\(.*\)')
+        ;;
     Xflags=*)
-	EXPIREFLAGS=`expr "${I}" : 'flags=\(.*\)'`
-	;;
+        EXPIREFLAGS=$(expr "${I}" : 'flags=\(.*\)')
+        ;;
     Xlowmark)
-	LOWMARKFILE=${MOST_LOGS}/expire.lowmark
-	DORENUMBER=false
-	;;
+        LOWMARKFILE=${MOST_LOGS}/expire.lowmark
+        DORENUMBER=false
+        ;;
     Xmailto=*)
-        NEWSMASTER=`expr "${I}" : 'mailto=\(.*\)'`
+        NEWSMASTER=$(expr "${I}" : 'mailto=\(.*\)')
         ;;
     Xnotdaily)
         DAILY=false
-	DOLOGS=false
-	;;
+        DOLOGS=false
+        ;;
     Xnoexpire)
-	DOEXPIRE=false
-	;;
+        DOEXPIRE=false
+        ;;
     Xnoexpireover)
-	DOEXPIREOVER=false
-	RMFILE=
-	;;
+        DOEXPIREOVER=false
+        RMFILE=
+        ;;
     Xnoexplog)
-	DOEXPLOG=false
-	;;
+        DOEXPLOG=false
+        ;;
     Xnologs)
-	DOLOGS=false
-	;;
+        DOLOGS=false
+        ;;
     Xnomail)
         DOMAIL=false
         DOSTAT=false
-	;;
+        ;;
     Xnoprocbatch)
         DOPROCBATCH=false
         ;;
     Xnorenumber)
-	DORENUMBER=false
-	;;
+        DORENUMBER=false
+        ;;
     Xnorm)
-	DORM=false
-	;;
+        DORM=false
+        ;;
     Xnorotate)
-	SCANARG="${SCANARG} norotate"
-	;;
+        SCANARG="${SCANARG} norotate"
+        ;;
     Xnostat)
-	DOSTAT=false
-	;;
+        DOSTAT=false
+        ;;
     X/*)
-	PROGRAMS="${PROGRAMS} ${I}"
-	;;
+        PROGRAMS="${PROGRAMS} ${I}"
+        ;;
     Xpostexec=*)
-	POSTEXEC=`expr "${I}" : 'postexec=\(.*\)'`
-	POSTPROGRAMS="${POSTPROGRAMS} ${POSTEXEC}"
-	;;
+        POSTEXEC=$(expr "${I}" : 'postexec=\(.*\)')
+        POSTPROGRAMS="${POSTPROGRAMS} ${POSTEXEC}"
+        ;;
     *)
-	echo "Unknown flag ${I}" 1>&2
-	exit 1
-	;;
+        echo "Unknown flag ${I}" 1>&2
+        exit 1
+        ;;
     esac
 done
 
 ##  Setup mail subject and command.
-if ${DAILY} ; then
-   MAILSUBJ="${HOSTNAME} Daily Usenet report for ${DATE}"
+if ${DAILY}; then
+    MAILSUBJ="${HOSTNAME} Daily Usenet report for ${DATE}"
 else
-   MAILSUBJ="${HOSTNAME} intermediate Usenet report for ${DATE}"
+    MAILSUBJ="${HOSTNAME} intermediate Usenet report for ${DATE}"
 fi
-if ${DOMAIL} ; then
-   MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
+if ${DOMAIL}; then
+    MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
       ${MAILCMD} -s '${MAILSUBJ}' ${NEWSMASTER}"
 else
-   MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
+    MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
 fi
 
 ##  Sanity check.  Shouldn't we just bail out here with an error
@@ -208,64 +207,56 @@ ${DOEXPIRE} || {
 }
 
 test -n "${EXPDIR}" && {
-	test -z "${REASON}" && REASON="Expiring $$ on ${EXPDIR}"
-	EXPIREFLAGS="${EXPIREFLAGS} '-d${EXPDIR}' '-r${REASON}'"
+    test -z "${REASON}" && REASON="Expiring $$ on ${EXPDIR}"
+    EXPIREFLAGS="${EXPIREFLAGS} '-d${EXPDIR}' '-r${REASON}'"
 }
 
 test -n "${RMFILE}" && {
-	if ${DOGROUPBASEEXPIRY} ; then
-	    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z${RMFILE}"
-	else
-	    EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
-	fi
-    }
-
-test -n "${LOWMARKFILE}" && {
-        EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
-        if [ "${DOEXPIREOVER}" != "true" ] ; then
-            echo "warning: lowmark requires expireover"
-        fi
+    if ${DOGROUPBASEEXPIRY}; then
+        EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -z${RMFILE}"
+    else
+        EXPIREFLAGS="${EXPIREFLAGS} -z${RMFILE}"
+    fi
 }
 
+test -n "${LOWMARKFILE}" && {
+    EXPIREOVERFLAGS="${EXPIREOVERFLAGS} -Z${LOWMARKFILE}"
+    if [ "${DOEXPIREOVER}" != "true" ]; then
+        echo "warning: lowmark requires expireover"
+    fi
+}
 
-if ${DOMAIL} ; then
+if ${DOMAIL}; then
     ##  Try to get a temporary file.
     TEMP=${TMPDIR}/doex$$
     test -f ${TEMP} && {
-	echo "Temporary file ${TEMP} exists" | eval ${MAIL}
-	exit 1
+        echo "Temporary file ${TEMP} exists" | eval ${MAIL}
+        exit 1
     }
     touch ${TEMP}
     chmod 0660 ${TEMP}
     exec 3>&1 >${TEMP} 2>&1
 fi
 
-if [ "${DOPROCBATCH}" = "true" ]
-then
-    for DIRECTORY in ${PROCBATCHDIR}
-    do
-        if [ -d "${DIRECTORY}" ]
-        then
+if [ "${DOPROCBATCH}" = "true" ]; then
+    for DIRECTORY in ${PROCBATCHDIR}; do
+        if [ -d "${DIRECTORY}" ]; then
             cd "${DIRECTORY}"
 
             # Find the PIDs of innfeed.
-            INNFEEDLOCKS=`cat *.lock 2>/dev/null | ${SORT} -u`
+            INNFEEDLOCKS=$(cat *.lock 2>/dev/null | ${SORT} -u)
 
             # Process files like "innfeed-dropped.A001703" where
             # 1703 is not in $INNFEEDLOCKS.
-            for file in `find . -name "innfeed-dropped*" -print`
-            do
-                PID=`echo "$file" | ${SED} 's/^.*[A-Z]0*//'`
+            for file in $(find . -name "innfeed-dropped*" -print); do
+                PID=$(echo "$file" | ${SED} 's/^.*[A-Z]0*//')
                 FOUND=false
-                for INNFEEDLOCK in $INNFEEDLOCKS
-                do
-                    if [ "$PID" = "$INNFEEDLOCK" ]
-                    then
+                for INNFEEDLOCK in $INNFEEDLOCKS; do
+                    if [ "$PID" = "$INNFEEDLOCK" ]; then
                         FOUND=true
                     fi
                 done
-                if [ "$FOUND" = "false" ]
-                then
+                if [ "$FOUND" = "false" ]; then
                     ${PATHBIN}/procbatch -qmu -t ${DIRECTORY} $file
                 fi
             done
@@ -284,14 +275,17 @@ ${DOSTAT} && {
 ##  Lock out others.
 trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
 shlock -p $$ -f ${LOCK} || {
-    ( echo "$0: Locked by `cat ${LOCK}`"; ${INNSTAT} ) | eval ${MAIL}
+    (
+        echo "$0: Locked by $(cat ${LOCK})"
+        ${INNSTAT}
+    ) | eval ${MAIL}
     exit 1
 }
 
 ##  Run any user programs.
-if [ -n "${PROGRAMS}" ] ; then
-    for P in ${PROGRAMS} ; do
-        if ${DOMAIL} ; then
+if [ -n "${PROGRAMS}" ]; then
+    for P in ${PROGRAMS}; do
+        if ${DOMAIL}; then
             echo ''
             echo "${P}:"
         fi
@@ -300,168 +294,187 @@ if [ -n "${PROGRAMS}" ] ; then
 fi
 
 ${DOLOGS} && {
-    if ${DOMAIL} ; then
+    if ${DOMAIL}; then
         echo ''
     fi
     scanlogs ${SCANARG}
 }
 
 ##  Group-based expiry (delete expired overview first).
-if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ] ; then
+if [ ${DOGROUPBASEEXPIRY} = true -a ${DOEXPIREOVER} = true ]; then
     if ${DOEXPLOG}; then
-	echo "${EXPIREOVER} start `date`: (${EXPIREOVERFLAGS})" >>${EXPLOG}
+        echo "${EXPIREOVER} start $(date): (${EXPIREOVERFLAGS})" >>${EXPLOG}
     fi
-    ( cd ${HISTDIR} ; exec 2>&1 ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" ) \
+    (
+        cd ${HISTDIR}
+        exec 2>&1
+        eval ${EXPIREOVER} "${EXPIREOVERFLAGS}"
+    ) \
         | ${SED} -e '/No such file or directory/d' \
-                 -e 's/^/    /' >>${EXPLOG}
+            -e 's/^/    /' >>${EXPLOG}
     if ${DOEXPLOG}; then
-	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
+        echo "${EXPIREOVER} end $(date)" >>${EXPLOG}
     fi
     test -n "${LOWMARKFILE}" && {
-	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})"   >>${EXPLOG}
-	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	echo "lowmarkrenumber end `date`"                       >>${EXPLOG}
-	rm -f ${MOST_LOGS}/expire.lastlowmark
-	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
+        echo "lowmarkrenumber begin $(date): (${LOWMARKFILE})" >>${EXPLOG}
+        ctlinnd -s -t$(wc -l <${ACTIVE}) lowmark ${LOWMARKFILE} 2>&1
+        echo "lowmarkrenumber end $(date)" >>${EXPLOG}
+        rm -f ${MOST_LOGS}/expire.lastlowmark
+        mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
     }
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
-	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
+        mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
-	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
-	${SORT} -u -o ${RMFILE} ${RMFILE}
-	if ${DOEXPLOG}; then
-	    echo "expirerm start `date`" >>${EXPLOG}
-	fi
-	expirerm ${RMFILE}
-	if ${DOEXPLOG}; then
-	    echo "expirerm end `date`" >>${EXPLOG}
-	fi
+        test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
+        ${SORT} -u -o ${RMFILE} ${RMFILE}
+        if ${DOEXPLOG}; then
+            echo "expirerm start $(date)" >>${EXPLOG}
+        fi
+        expirerm ${RMFILE}
+        if ${DOEXPLOG}; then
+            echo "expirerm end $(date)" >>${EXPLOG}
+        fi
     }
     DOEXPIREOVER=false
 fi
 
 ##  The heart of the matter: prologs, expire, epilogs.
-if ${DOEXPIRE} ; then
+if ${DOEXPIRE}; then
 
     ##  Wait to be fairly certain innwatch is not in the middle of a pass.
     ##  Since we're locked, innwatch will pause now till we're done.
     sleep 30
 
     ##  See if we're throttled for lack of space.
-    SERVERMODE=`ctlinnd -t $TOUT mode 2>/dev/null | ${SED} 1q`
+    SERVERMODE=$(ctlinnd -t $TOUT mode 2>/dev/null | ${SED} 1q)
     case "${SERVERMODE}" in
     'Server paused'*'[innwatch:'*)
-	##  If paused, by innwatch, then turn pause into throttle
-	##  as we're going to stay that way for a while now.
-	ctlinnd -t $TOUT -s throttle \
-	    "`expr \"${SERVERMODE}\" : 'Server paused \(.*\)'`" || {
-	    ( echo "$0: Cannot throttle while innwatch paused";
-	      ${INNSTAT} ) | eval ${MAIL}
-	    exit 1
-	}
+        ##  If paused, by innwatch, then turn pause into throttle
+        ##  as we're going to stay that way for a while now.
+        ctlinnd -t $TOUT -s throttle \
+            "$(expr \"${SERVERMODE}\" : 'Server paused \(.*\)')" || {
+            (
+                echo "$0: Cannot throttle while innwatch paused"
+                ${INNSTAT}
+            ) | eval ${MAIL}
+            exit 1
+        }
+        ;;
     esac
     case "${SERVERMODE}" in
     "Server throttled"*)
-	echo "${SERVERMODE} -- trying to recover"
-	THROTTLED=true
-	EXPIREFLAGS="${EXPIREFLAGS} -n"
-	MESSAGE=
-	;;
+        echo "${SERVERMODE} -- trying to recover"
+        THROTTLED=true
+        EXPIREFLAGS="${EXPIREFLAGS} -n"
+        MESSAGE=
+        ;;
     *"[innwatch:"*)
-	echo "${SERVERMODE} -- pressing on"
-	THROTTLED=false
-	EXPIREFLAGS="${EXPIREFLAGS} -n"
-	MESSAGE=
-	DORENUMBER=false
-	;;
+        echo "${SERVERMODE} -- pressing on"
+        THROTTLED=false
+        EXPIREFLAGS="${EXPIREFLAGS} -n"
+        MESSAGE=
+        DORENUMBER=false
+        ;;
     *)
-	THROTTLED=false
-	;;
+        THROTTLED=false
+        ;;
     esac
 
     ##  Throttle server if we need to.
-    if [ -n "${MESSAGE}" ] ; then
-	ctlinnd -t $TOUT -s -t120 throttle "${MESSAGE}" 2>&1 || {
-	    ( echo "$0: Cannot throttle news"; ${INNSTAT} ) | eval ${MAIL}
-	    exit 1
-	}
+    if [ -n "${MESSAGE}" ]; then
+        ctlinnd -t $TOUT -s -t120 throttle "${MESSAGE}" 2>&1 || {
+            (
+                echo "$0: Cannot throttle news"
+                ${INNSTAT}
+            ) | eval ${MAIL}
+            exit 1
+        }
     fi
 
     ## Get rid of an old expire RMFILE since news.daily locks itself and
     ## we would not get here if another instance were still running.
-    if [ -n "${RMFILE}" ] ; then
+    if [ -n "${RMFILE}" ]; then
         rm -f ${RMFILE}
     fi
 
     ##  Actual expire the articles (finally!).
     test -n "${EXPIRECTL}" && EXPIREFLAGS="${EXPIREFLAGS} ${EXPIRECTL}"
     if ${DOEXPLOG}; then
-	echo "expire begin `date`: (${EXPIREFLAGS})"		>>${EXPLOG}
-	( cd ${HISTDIR}; exec 2>&1 ; eval expire "${EXPIREFLAGS}" ) \
-	    | ${SED} -e '/No such file or directory/d' \
-		     -e 's/^/    /' >>${EXPLOG}
-	echo "expire end `date`"				>>${EXPLOG}
+        echo "expire begin $(date): (${EXPIREFLAGS})" >>${EXPLOG}
+        (
+            cd ${HISTDIR}
+            exec 2>&1
+            eval expire "${EXPIREFLAGS}"
+        ) \
+            | ${SED} -e '/No such file or directory/d' \
+                -e 's/^/    /' >>${EXPLOG}
+        echo "expire end $(date)" >>${EXPLOG}
     else
-	eval expire "${EXPIREFLAGS}" 2>&1 | grep -v 'No such file or directory'
+        eval expire "${EXPIREFLAGS}" 2>&1 | grep -v 'No such file or directory'
     fi
 
     ##  If built on another filesystem, move history files.
-    if [ -n "${EXPDIR}" ] ; then
-	if [ ! -f ${EXPDIR}/history.n -o ! -f ${EXPDIR}/history.n.done ] ; then
-	    ( echo "$0: No new history files"; ${INNSTAT} ) | eval ${MAIL}
+    if [ -n "${EXPDIR}" ]; then
+        if [ ! -f ${EXPDIR}/history.n -o ! -f ${EXPDIR}/history.n.done ]; then
+            (
+                echo "$0: No new history files"
+                ${INNSTAT}
+            ) | eval ${MAIL}
             ##  Remove the possible reserve mode (in case expire was killed).
-            if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+            if (ctlinnd mode | grep "Reserved ${REASON}" >/dev/null); then
                 ctlinnd -s reserve "" 2>/dev/null
             fi
-	    exit 1
-	fi
-	cp /dev/null ${HISTORY}
-	mv -f ${EXPDIR}/history.n ${HISTORY}
-	mv -f ${EXPDIR}/history.n.dir ${HISTORY}.dir
-	if [ X${TAGGEDHASH} = XDO ] ; then
-	    mv -f ${EXPDIR}/history.n.pag ${HISTORY}.pag
-	else
-	    mv -f ${EXPDIR}/history.n.index ${HISTORY}.index
-	    mv -f ${EXPDIR}/history.n.hash ${HISTORY}.hash
-	fi
-	rm -f ${EXPDIR}/history.n.done
+            exit 1
+        fi
+        cp /dev/null ${HISTORY}
+        mv -f ${EXPDIR}/history.n ${HISTORY}
+        mv -f ${EXPDIR}/history.n.dir ${HISTORY}.dir
+        if [ X${TAGGEDHASH} = XDO ]; then
+            mv -f ${EXPDIR}/history.n.pag ${HISTORY}.pag
+        else
+            mv -f ${EXPDIR}/history.n.index ${HISTORY}.index
+            mv -f ${EXPDIR}/history.n.hash ${HISTORY}.hash
+        fi
+        rm -f ${EXPDIR}/history.n.done
 
-	case "${EXPIREFLAGS}" in
-	*-n*)
-	    ;;
-	*)
-	    MESSAGE="${REASON}"
-	    ;;
-	esac
+        case "${EXPIREFLAGS}" in
+        *-n*) ;;
+        *)
+            MESSAGE="${REASON}"
+            ;;
+        esac
     fi
 
     ##  Restart the server if we need to.
-    if ${THROTTLED} || test -n "${MESSAGE}" ; then
-	ctlinnd -t "$TOUT" -s go "${MESSAGE}" 2>&1 || {
-	    ( echo "$0: Cannot unthrottle news"; ${INNSTAT} ) | eval ${MAIL}
+    if ${THROTTLED} || test -n "${MESSAGE}"; then
+        ctlinnd -t "$TOUT" -s go "${MESSAGE}" 2>&1 || {
+            (
+                echo "$0: Cannot unthrottle news"
+                ${INNSTAT}
+            ) | eval ${MAIL}
             ##  Remove the possible reserve mode (in case expire was killed).
-            if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+            if (ctlinnd mode | grep "Reserved ${REASON}" >/dev/null); then
                 ctlinnd -s reserve "" 2>/dev/null
             fi
-	    exit 1
-	}
+            exit 1
+        }
     fi
     if ${DOEXPLOG}; then
-	echo "all done `date`" >>${EXPLOG}
+        echo "all done $(date)" >>${EXPLOG}
     fi
 fi
 
 ##  Remove old sockets.
-${DORM} &&
-    find ${TEMPSOCKDIR} -name "${TEMPSOCK}" -mtime +2 -exec rm -f '{}' ';'
+${DORM} \
+    && find ${TEMPSOCKDIR} -name "${TEMPSOCK}" -mtime +2 -exec rm -f '{}' ';'
 
 ##  Remove the possible reserve mode (in case expire was killed).
-if (ctlinnd mode | grep "Reserved ${REASON}" > /dev/null) ; then
+if (ctlinnd mode | grep "Reserved ${REASON}" >/dev/null); then
     ctlinnd -s reserve "" 2>/dev/null
 fi
 
 ##  Did we become throttled during the run?
-SERVERMODE=`ctlinnd mode 2>/dev/null | ${SED} 1q`
+SERVERMODE=$(ctlinnd mode 2>/dev/null | ${SED} 1q)
 case "${SERVERMODE}" in
 "Server throttled"*)
     ##  We did, try to unthrottle the server.
@@ -477,78 +490,82 @@ esac
 rm ${LOCK}
 
 ##  Remove the articles that are supposed to go.
-if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ] ; then
+if [ ${DOEXPIRE} = true -a ${DOGROUPBASEEXPIRY} != true ]; then
     test -n "${RMFILE}" -a -s "${RMFILE}" && {
-	mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
+        mv ${RMFILE} ${RMFILE}.$$ && RMFILE=${RMFILE}.$$
 
-	test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
-	${SORT} -u -o ${RMFILE} ${RMFILE}
-	if ${DOEXPLOG}; then
-	    echo "expirerm start `date`" >>${EXPLOG}
-	fi
-	expirerm ${RMFILE}
-	if ${DOEXPLOG}; then
-	    echo "expirerm end `date`" >>${EXPLOG}
-	fi
+        test -n "${TMPDIR}" && SORT="${SORT} -T ${TMPDIR}"
+        ${SORT} -u -o ${RMFILE} ${RMFILE}
+        if ${DOEXPLOG}; then
+            echo "expirerm start $(date)" >>${EXPLOG}
+        fi
+        expirerm ${RMFILE}
+        if ${DOEXPLOG}; then
+            echo "expirerm end $(date)" >>${EXPLOG}
+        fi
     }
 fi
 
 ##  Remove the articles that are supposed to go from the overview.
 if ${DOEXPIREOVER}; then
     if ${DOEXPLOG}; then
-	echo "${EXPIREOVER} start `date`" >>${EXPLOG}
+        echo "${EXPIREOVER} start $(date)" >>${EXPLOG}
     fi
-    ( cd ${HISTDIR} ; eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1 ) | \
-	grep -v 'No such file or directory'
+    (
+        cd ${HISTDIR}
+        eval ${EXPIREOVER} "${EXPIREOVERFLAGS}" 2>&1
+    ) \
+        | grep -v 'No such file or directory'
     if ${DOEXPLOG}; then
-	echo "${EXPIREOVER} end `date`" >>${EXPLOG}
+        echo "${EXPIREOVER} end $(date)" >>${EXPLOG}
     fi
     test -n "${LOWMARKFILE}" && {
-	echo "lowmarkrenumber begin `date`: (${LOWMARKFILE})" >>${EXPLOG}
-	ctlinnd -s -t`wc -l <${ACTIVE}` lowmark ${LOWMARKFILE} 2>&1
-	echo "lowmarkrenumber end `date`" >>${EXPLOG}
-	rm -f ${MOST_LOGS}/expire.lastlowmark
-	mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
+        echo "lowmarkrenumber begin $(date): (${LOWMARKFILE})" >>${EXPLOG}
+        ctlinnd -s -t$(wc -l <${ACTIVE}) lowmark ${LOWMARKFILE} 2>&1
+        echo "lowmarkrenumber end $(date)" >>${EXPLOG}
+        rm -f ${MOST_LOGS}/expire.lastlowmark
+        mv ${LOWMARKFILE} ${MOST_LOGS}/expire.lastlowmark
     }
 fi
 
 ##  Renumber the active file.
-if ${DORENUMBER} ; then
-    if ${DOMAIL} ; then
+if ${DORENUMBER}; then
+    if ${DOMAIL}; then
         echo ''
         echo 'Renumbering active file.'
     fi
-    if [ -z "${RENUMBER}" ] ;then
-	ctlinnd -s -t`wc -l <${ACTIVE}` renumber '' 2>&1
+    if [ -z "${RENUMBER}" ]; then
+        ctlinnd -s -t$(wc -l <${ACTIVE}) renumber '' 2>&1
     else
-	while read GROUP hi lo flag ; do
-	    ctlinnd -s renumber ${GROUP} 2>&1
-	    sleep ${RENUMBER}
-	done <${ACTIVE}
+        while read GROUP hi lo flag; do
+            ctlinnd -s renumber ${GROUP} 2>&1
+            sleep ${RENUMBER}
+        done <${ACTIVE}
     fi
 fi
 
 ##  Display expire log messages.
-if ${DOMAIL} ; then
-    if [ -s ${EXPLOG} ] ; then
-	    echo 'Expire messages:'
-	    cat ${EXPLOG}
-	    echo '---------'
-	    echo ''
+if ${DOMAIL}; then
+    if [ -s ${EXPLOG} ]; then
+        echo 'Expire messages:'
+        cat ${EXPLOG}
+        echo '---------'
+        echo ''
     fi
 fi
 
 ##  Show the status of the news system after expiration.
 ${DOSTAT} && {
-    echo 'Post expiration status:' ; echo ''
+    echo 'Post expiration status:'
+    echo ''
     ${INNSTAT}
     echo ''
 }
 
 ##  Run any user programs.
-if [ -n "${POSTPROGRAMS}" ] ; then
-    for P in ${POSTPROGRAMS} ; do
-        if ${DOMAIL} ; then
+if [ -n "${POSTPROGRAMS}" ]; then
+    for P in ${POSTPROGRAMS}; do
+        if ${DOMAIL}; then
             echo ''
             echo "${P}:"
         fi
@@ -557,7 +574,7 @@ if [ -n "${POSTPROGRAMS}" ] ; then
 fi
 
 ##  Mail the report.
-if ${DOMAIL} ; then
+if ${DOMAIL}; then
     ##  Stop using the temp file, and mail captured output.
     exec 1>&3 2>&1 3>&-
     MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
@@ -566,7 +583,7 @@ if ${DOMAIL} ; then
 fi
 
 ##  All done
-if ${DAILY} ; then
+if ${DAILY}; then
     date >${PATHDB}/.news.daily
 fi
 ${RNEWS} -U

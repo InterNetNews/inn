@@ -31,37 +31,37 @@ SED='@SED@'
 
 options=true
 addlib=true
-while $options ; do
+while $options; do
     case X"$1" in
-    X-i) addlib=false  ;;
-    *)   options=false ;;
+    X-i) addlib=false ;;
+    *) options=false ;;
     esac
     $options && shift
 done
 
 input="$1"
-if [ -z "$input" ] ; then
+if [ -z "$input" ]; then
     echo "No input file specified" >&2
     exit 1
 fi
 
 output="$2"
-if [ -z "$output" ] ; then
-    output=`echo "$input" | sed 's/\.in$//'`
+if [ -z "$output" ]; then
+    output=$(echo "$input" | sed 's/\.in$//')
 fi
-if [ x"$input" = x"$output" ] ; then
+if [ x"$input" = x"$output" ]; then
     echo "No output file specified and input file doesn't end in .in" >&2
     exit 1
 fi
 
-interpreter=`head -n 1 "$input"`
+interpreter=$(head -n 1 "$input")
 case "$interpreter" in
-*/sh|*SH*)
+*/sh | *SH*)
     path="@SHELL@"
     lib=". $libdir/innshellvars"
     ;;
-*/perl*|*PERL*)
-    path=`echo "$interpreter" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%"`
+*/perl* | *PERL*)
+    path=$(echo "$interpreter" | sed 's%^#! *[^ ][^ ]*%'"$PERLPATH%")
     lib="use lib '@LIBPERLDIR@'; use INN::Config;"
     ;;
 *)
@@ -70,11 +70,11 @@ case "$interpreter" in
     ;;
 esac
 
-echo "#! $path"          >  "$output"
-if $addlib ; then
-    echo "$lib"          >> "$output"
-    "$SED" 1,2d "$input" >> "$output"
+echo "#! $path" >"$output"
+if $addlib; then
+    echo "$lib" >>"$output"
+    "$SED" 1,2d "$input" >>"$output"
 else
-    "$SED" 1d "$input"   >> "$output"
+    "$SED" 1d "$input" >>"$output"
 fi
 chmod 755 "$output"

@@ -7,28 +7,25 @@
 ##  Or to stop INN:
 ##     su news -s /bin/sh -c '/path/to/rc.news stop'
 
-
 if [ "x${NEWSUSER}" = "x" ]; then
     echo "$0 does not manage to access inn.conf values."
     exit 1
 fi
 
 # Ensure the script is really run as the news user.  Bail out otherwise.
-CURRENT_UID=`whoami 2>/dev/null || ${PERL} -e 'print scalar getpwuid($>)'`
+CURRENT_UID=$(whoami 2>/dev/null || ${PERL} -e 'print scalar getpwuid($>)')
 if [ "x${CURRENT_UID}" != "x${NEWSUSER}" ]; then
     echo "$0 must be run as user ${NEWSUSER}, not ${CURRENT_UID}."
     exit 1
 fi
 
-waitforpid()
-{
+waitforpid() {
     i=12
-    while [ $i -gt 0 ];
-    do
+    while [ $i -gt 0 ]; do
         kill -0 $1 2>/dev/null || break
-	sleep 5
-	printf "."
-	i=`expr $i - 1`
+        sleep 5
+        printf "."
+        i=$(expr $i - 1)
     done
     printf "\n"
 }
@@ -37,58 +34,58 @@ case X"$1" in
 Xstop)
     # Stop cnfsstat (if running)
     if [ -f ${PATHRUN}/cnfsstat.pid ]; then
-	kill `cat ${PATHRUN}/cnfsstat.pid`
-	rm -f ${PATHRUN}/cnfsstat.pid
+        kill $(cat ${PATHRUN}/cnfsstat.pid)
+        rm -f ${PATHRUN}/cnfsstat.pid
     fi
 
     # Stop innwatch (if running)
     if [ -f $WATCHPID ]; then
-	kill `cat $WATCHPID`
-	rm -f $WATCHPID ${LOCKS}/LOCK.innwatch
+        kill $(cat $WATCHPID)
+        rm -f $WATCHPID ${LOCKS}/LOCK.innwatch
     fi
 
     printf "Stopping innd: "
     ${PATHBIN}/ctlinnd shutdown 'rc.news stop'
 
     # Wait for innd to exit (up to 60 sec)
-    pid=`cat ${SERVERPID} 2>/dev/null`
+    pid=$(cat ${SERVERPID} 2>/dev/null)
     if [ "$pid" != "" ]; then
-	waitforpid $pid
+        waitforpid $pid
     else
-	printf "\n"
+        printf "\n"
     fi
 
     case "$OVMETHOD" in
     ovdb)
-	# Turn off ovdb support procs, and close the DB environment
-	if [ -f ${PATHRUN}/ovdb_server.pid ]; then
-	    pid=`cat ${PATHRUN}/ovdb_server.pid 2>/dev/null`
-	    if [ "$pid" != "" ]; then
-		printf "Stopping ovdb_server: "
-		kill $pid
-		waitforpid $pid
-	    fi
-	fi
-	if [ -f ${PATHRUN}/ovdb_monitor.pid ]; then
-	    pid=`cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null`
-	    if [ "$pid" != "" ]; then
-		printf "Stopping ovdb_monitor: "
-		kill $pid
-		waitforpid $pid
-	    fi
-	fi
-	;;
+        # Turn off ovdb support procs, and close the DB environment
+        if [ -f ${PATHRUN}/ovdb_server.pid ]; then
+            pid=$(cat ${PATHRUN}/ovdb_server.pid 2>/dev/null)
+            if [ "$pid" != "" ]; then
+                printf "Stopping ovdb_server: "
+                kill $pid
+                waitforpid $pid
+            fi
+        fi
+        if [ -f ${PATHRUN}/ovdb_monitor.pid ]; then
+            pid=$(cat ${PATHRUN}/ovdb_monitor.pid 2>/dev/null)
+            if [ "$pid" != "" ]; then
+                printf "Stopping ovdb_monitor: "
+                kill $pid
+                waitforpid $pid
+            fi
+        fi
+        ;;
     ovsqlite)
         # Turn off ovsqlite support proc, and close the DB environment
-	if [ -f "${PATHRUN}"/ovsqlite.pid ]; then
-	    pid=`cat "${PATHRUN}"/ovsqlite.pid 2>/dev/null`
-	    if [ "$pid" != "" ]; then
-		printf "Stopping ovsqlite-server: "
-		kill $pid
-		waitforpid $pid
-	    fi
-	fi
-	;;
+        if [ -f "${PATHRUN}"/ovsqlite.pid ]; then
+            pid=$(cat "${PATHRUN}"/ovsqlite.pid 2>/dev/null)
+            if [ "$pid" != "" ]; then
+                printf "Stopping ovsqlite-server: "
+                kill $pid
+                waitforpid $pid
+            fi
+        fi
+        ;;
     esac
 
     if [ -f ${PATHBIN}/rc.news.local ]; then
@@ -102,82 +99,80 @@ Xstop)
     rm -f ${PATHRUN}/ovsqlite.pid
 
     exit 0
-;;
+    ;;
 esac
 
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INND}
 
-MAIL="${MAILCMD} -s 'Boot-time Usenet warning on `hostname`' ${NEWSMASTER}"
+MAIL="${MAILCMD} -s 'Boot-time Usenet warning on $(hostname)' ${NEWSMASTER}"
 
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""
 
 ##  Be sure ${PATHRUN} exists and is writable.
-if [ ! -w ${PATHRUN} ] ; then
+if [ ! -w ${PATHRUN} ]; then
     echo "No ${PATHRUN} directory writable by the news user found!"
     exit 1
 fi
 
 ##  Clean shutdown or already running?
-if [ -f ${SERVERPID} ] ; then
-    if kill -0 `cat ${SERVERPID}` 2>/dev/null; then
-	echo 'INND is running'
-	exit 0
+if [ -f ${SERVERPID} ]; then
+    if kill -0 $(cat ${SERVERPID}) 2>/dev/null; then
+        echo 'INND is running'
+        exit 0
     fi
     echo 'INND: PID file exists -- unclean shutdown!'
     RFLAG="-r"
 fi
 
-if [ ! -f ${PATHDB}/.news.daily ] ; then
-    case `find ${PATHBIN}/innd -mtime +1 -print 2>/dev/null` in
-    "")
-	;;
+if [ ! -f ${PATHDB}/.news.daily ]; then
+    case $(find ${PATHBIN}/innd -mtime +1 -print 2>/dev/null) in
+    "") ;;
     *)
-	echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
-	;;
+        echo 'No .news.daily file; need to run news.daily?' | eval ${MAIL}
+        ;;
     esac
 else
-    case `find ${PATHDB}/.news.daily -mtime +1 -print 2>/dev/null` in
-    "")
-	;;
+    case $(find ${PATHDB}/.news.daily -mtime +1 -print 2>/dev/null) in
+    "") ;;
     *)
-	echo 'Old .news.daily file; need to run news.daily?' | eval ${MAIL}
-	;;
+        echo 'Old .news.daily file; need to run news.daily?' | eval ${MAIL}
+        ;;
     esac
 fi
 
 ##  Active file recovery.
-if [ ! -s ${ACTIVE} ] ; then
-    if [ -s ${NEWACTIVE} ] ; then
-	mv ${NEWACTIVE} ${ACTIVE}
+if [ ! -s ${ACTIVE} ]; then
+    if [ -s ${NEWACTIVE} ]; then
+        mv ${NEWACTIVE} ${ACTIVE}
     else
-	if [ -s ${OLDACTIVE} ] ; then
-	    cp ${OLDACTIVE} ${ACTIVE}
-	else
-	    echo 'INND: No active file!'
-	    exit 1
-	fi
+        if [ -s ${OLDACTIVE} ]; then
+            cp ${OLDACTIVE} ${ACTIVE}
+        else
+            echo 'INND: No active file!'
+            exit 1
+        fi
     fi
     RFLAG="-r"
     # You might want to rebuild the DBZ database, too:
     #cd ${PATHDB} \
-    #		&& makehistory -r \
-    #		&& mv history.n.dir history.dir \
-    #		&& mv history.n.index history.index \
-    #		&& mv history.n.hash history.hash
+    #    && makehistory -r \
+    #    && mv history.n.dir history.dir \
+    #    && mv history.n.index history.index \
+    #    && mv history.n.hash history.hash
 fi
 
 ##  Overview data was rebuilt, and also active needs to be renumbered
-if [ -f ${PATHRUN}/.rebuildoverview ] ; then
+if [ -f ${PATHRUN}/.rebuildoverview ]; then
     echo 'INND: overview was rebuilt, and active needs to be renumbered!'
     RFLAG="-r"
 fi
 
 ##  Remove temporary batchfiles and lock files.
-( cd ${BATCH} && rm -f bch* )
-( cd ${LOCKS} && rm -f LOCK* )
-( cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK} )
+(cd ${BATCH} && rm -f bch*)
+(cd ${LOCKS} && rm -f LOCK*)
+(cd ${TEMPSOCKDIR} && rm -f ${TEMPSOCK})
 rm -f ${NEWSCONTROL} ${NNTPCONNECT} ${SERVERPID} ${PATHRUN}/.rebuildoverview
 
 case "$OVMETHOD" in
@@ -185,8 +180,8 @@ ovdb)
     # Initialize ovdb.  Must be done before starting innd.
     echo 'Starting ovdb.'
     ovdb_init || {
-	echo "Can't initialize ovdb (check news.err for OVDB messages)"
-	exit 1
+        echo "Can't initialize ovdb (check news.err for OVDB messages)"
+        exit 1
     }
     sleep 1
     ;;
@@ -209,29 +204,29 @@ fi
 # Gee, looks like lisp, doesn't it?
 ${DOINNWATCH} && {
     echo "Scheduled start of ${INNWATCH}."
-    ${INNWATCH} -i 60 > /dev/null &
+    ${INNWATCH} -i 60 >/dev/null &
 }
 
 ${DOCNFSSTAT} && {
     echo "Scheduled start of cnfsstat."
-    ${PATHBIN}/cnfsstat -i 60 -s -l -P > /dev/null &
+    ${PATHBIN}/cnfsstat -i 60 -s -l -P >/dev/null &
 }
 
 RMFILE=${MOST_LOGS}/expire.rm
 for F in ${RMFILE} ${RMFILE}.*; do
     if [ -f $F ] && [ -s $F ]; then
-	echo "Removing articles from pre-downtime expire run (${F})."
-	(
-	    echo 'System shut down during expire.' \
-		'Unlinking articles listed in'
-	    echo ${F}
-	) | eval ${MAIL}
-	${PATHBIN}/expirerm ${F}
+        echo "Removing articles from pre-downtime expire run (${F})."
+        (
+            echo 'System shut down during expire.' \
+                'Unlinking articles listed in'
+            echo ${F}
+        ) | eval ${MAIL}
+        ${PATHBIN}/expirerm ${F}
     fi
 done &
 
 # Run any additional local startup commands.
-if [ -f ${PATHBIN}/rc.news.local ] ; then
+if [ -f ${PATHBIN}/rc.news.local ]; then
     ${PATHBIN}/rc.news.local start
 fi
 

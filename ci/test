@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##  Run tests for continuous integration.
-## 
+##
 ##  This script is normally run in a test container, such as via GitHub
 ##  Actions.
 

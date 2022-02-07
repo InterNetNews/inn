@@ -27,40 +27,34 @@ URL_START="https://git.eyrie.org/?p=devel/c-tap-harness.git;a=blob_plain;hb=HEAD
 ##    $1 - full path of the file to download in the upstream package
 ##    $2 - directory where the file should be copied in INN source code
 ##    $3 - name of the file in INN source code
-download ()
-{
-  TEMP=$3.tmp
+download() {
+    TEMP=$3.tmp
 
-  rm -f ${TEMP}
-  wget -q "${URL_START}$1" -O ${TEMP}
+    rm -f ${TEMP}
+    wget -q "${URL_START}$1" -O ${TEMP}
 
-  if [ ! -s "${TEMP}" ]
-  then
-    echo "File $1 does not exist in upstream package"
-  else
-    if [ "$2" = "tests" ] || [ "$2" = "tests/docs" ] || [ "$2" = "tests/tap" ]
-    then
-      # Update the path of included C header files.
-      # Changes in shell, Perl and C files are not the same.
-      # Also, do not modify the README file.
-      if [ "$3" = "pod.t" ]
-      then
-        # Apply specific changes to POD checking, so as to best suit
-        # our needs.
-        sed -i -e '5,9d' \
-               ${TEMP}
-        chmod 755 ${TEMP}
-      elif [ "$3" != "README" ]
-      then
-        sed -i -e 's/^#include <tests\/tap\//#include <tap\//g' \
-               ${TEMP}
-      fi
-    fi
+    if [ ! -s "${TEMP}" ]; then
+        echo "File $1 does not exist in upstream package"
+    else
+        if [ "$2" = "tests" ] || [ "$2" = "tests/docs" ] || [ "$2" = "tests/tap" ]; then
+            # Update the path of included C header files.
+            # Changes in shell, Perl and C files are not the same.
+            # Also, do not modify the README file.
+            if [ "$3" = "pod.t" ]; then
+                # Apply specific changes to POD checking, so as to best suit
+                # our needs.
+                sed -i -e '5,9d' \
+                    ${TEMP}
+                chmod 755 ${TEMP}
+            elif [ "$3" != "README" ]; then
+                sed -i -e 's/^#include <tests\/tap\//#include <tap\//g' \
+                    ${TEMP}
+            fi
+        fi
 
-    # Specific additions to a few files.
-    if [ "$3" = "basic.c" ]
-    then
-      sed -i -e "57 i \\
+        # Specific additions to a few files.
+        if [ "$3" = "basic.c" ]; then
+            sed -i -e "57 i \\
 /* Specific to the integration of C TAP Harness in INN. */\\
 #ifndef LIBTEST_NEW_FORMAT\\
 #    include \"inn/libinn.h\"\\
@@ -120,20 +114,19 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\\
 }\\
 #endif\\
 " \
-             -e "153 i \\
+                -e "153 i \\
 #ifndef INN_LIBINN_H" \
-             -e "187 i \\
+                -e "187 i \\
 #endif" \
-             -e 's/^ok.int /new_ok(int /g' \
-             -e 's/^skip.const /new_skip(const /g' \
-             -e 's/^ok_block.unsigned /new_ok_block(unsigned /g' \
-             -e 's/^skip_block.unsigned /new_skip_block(unsigned /g' \
-             ${TEMP}
-    fi
+                -e 's/^ok.int /new_ok(int /g' \
+                -e 's/^skip.const /new_skip(const /g' \
+                -e 's/^ok_block.unsigned /new_ok_block(unsigned /g' \
+                -e 's/^skip_block.unsigned /new_skip_block(unsigned /g' \
+                ${TEMP}
+        fi
 
-    if [ "$3" = "basic.h" ]
-    then
-      sed -i -e "76 i \\
+        if [ "$3" = "basic.h" ]; then
+            sed -i -e "76 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok(int n, int success);\\
@@ -159,14 +152,13 @@ void test_init(int count);\\
 #    define skip       new_skip\\
 #    define ok_block   new_ok_block\\
 #    define skip_block new_skip_block" \
-             -e "91 i \\
+                -e "91 i \\
 #endif" \
-             ${TEMP}
-    fi
+                ${TEMP}
+        fi
 
-    if [ "$3" = "float.c" ]
-    then
-      sed -i -e "50 i \\
+        if [ "$3" = "float.c" ]; then
+            sed -i -e "50 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void\\
@@ -176,27 +168,31 @@ ok_double(int n UNUSED, double wanted, double seen)\\
 }\\
 #endif\\
 " \
-             ${TEMP}
-    fi
+                ${TEMP}
+        fi
 
-    if [ "$3" = "float.h" ]
-    then
-      sed -i -e "38 i \\
+        if [ "$3" = "float.h" ]; then
+            sed -i -e "38 i \\
 #ifndef LIBTEST_NEW_FORMAT\\
 /* Specific to the integration of C TAP Harness in INN. */\\
 void ok_double(int n, double wanted, double seen);\\
 #endif" \
-             ${TEMP}
+                ${TEMP}
+        fi
+
+        mv -f ${TEMP} ../$2/$3
+
+        case "$3" in
+        *.c | *.h)
+            clang-format --style=file -i ../$2/$3
+            ;;
+        *.sh)
+            shfmt -i 4 -w -bn -ln=posix ../$2/$3
+            ;;
+        esac
+
+        git status --short ../$2/$3
     fi
-
-    mv -f ${TEMP} ../$2/$3
-
-    case "$3" in *.c|*.h)
-        clang-format --style=file -i ../$2/$3
-    esac
-
-    git status --short ../$2/$3
-  fi
 }
 
 ##  Synchronize the test driver suite from upstream.

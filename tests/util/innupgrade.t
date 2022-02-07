@@ -5,15 +5,15 @@
 # The count starts at 1 and is updated each time ok is printed.  printcount
 # takes "ok" or "not ok".
 count=1
-printcount () {
+printcount() {
     echo "$1 $count $2"
-    count=`expr $count + 1`
+    count=$(expr $count + 1)
 }
 
 # Run innupgrade with the given arguments and expect it to succeed.
-run () {
+run() {
     perl -Tw ${innupgrade} "$@"
-    if [ $? = 0 ] ; then
+    if [ $? = 0 ]; then
         printcount "ok"
     else
         printcount "not ok"
@@ -21,8 +21,8 @@ run () {
 }
 
 # Make sure that a file does not exist.
-notexists () {
-    if [ -r "$1" ] ; then
+notexists() {
+    if [ -r "$1" ]; then
         printcount "not ok"
     else
         printcount "ok"
@@ -31,8 +31,8 @@ notexists () {
 
 # Given two files, make sure that the first file exists and that its contents
 # match the contents of the second file.
-compare () {
-    if [ -r "$1" ] && diff "$1" "$2" ; then
+compare() {
+    if [ -r "$1" ] && diff "$1" "$2"; then
         printcount "ok"
     else
         printcount "not ok"
@@ -42,13 +42,13 @@ compare () {
 # Find the right directory.
 innupgrade="../../scripts/innupgrade"
 dirs='../data data tests/data'
-for dir in $dirs ; do
-    if [ -r "$dir/upgrade/inn.conf" ] ; then
+for dir in $dirs; do
+    if [ -r "$dir/upgrade/inn.conf" ]; then
         cd $dir
         break
     fi
 done
-if [ ! -x "$innupgrade" ] ; then
+if [ ! -x "$innupgrade" ]; then
     echo "Could not find innupgrade" >&2
     exit 1
 fi
@@ -70,13 +70,13 @@ compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 compare "upgrade/newsfeeds" "upgrade/newsfeeds.ok"
 compare "upgrade/readers.conf" "upgrade/readers.conf.ok"
 
-if [ -f "upgrade/inn-secrets.conf" ] ; then
+if [ -f "upgrade/inn-secrets.conf" ]; then
     printcount "ok"
 else
     printcount "not ok"
 fi
 
-if [ ! -e "upgrade/overview.fmt" ] && [ -e "upgrade/overview.fmt.OLD" ] ; then
+if [ ! -e "upgrade/overview.fmt" ] && [ -e "upgrade/overview.fmt.OLD" ]; then
     printcount "ok"
 else
     printcount "not ok"
@@ -91,7 +91,7 @@ run "-f" "upgrade/inn.conf"
 compare "upgrade/inn.conf.OLD" "upgrade/inn.conf.bad"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 
-if [ -e "upgrade/overview.fmt" ] && [ ! -e "upgrade/overview.fmt.OLD" ] ; then
+if [ -e "upgrade/overview.fmt" ] && [ ! -e "upgrade/overview.fmt.OLD" ]; then
     printcount "ok"
 else
     printcount "not ok"

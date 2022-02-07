@@ -3,7 +3,7 @@
 
 ##  SH script to send ihave control messages in batches out.
 
-PROGNAME=`basename $0`
+PROGNAME=$(basename $0)
 LOG=${MOST_LOGS}/${PROGNAME}.log
 
 ##  How many Message-ID's per message.
@@ -13,7 +13,7 @@ PERMESSAGE=1000
 cd $BATCH
 umask 002
 DEBUG=""
-if [ "X$1" = X-d ] ; then
+if [ "X$1" = X-d ]; then
     DEBUG="-d"
     shift
 else
@@ -22,10 +22,10 @@ else
     exec >>${LOG} 2>&1
 fi
 
-echo "${PROGNAME}: [$$] begin `date`"
+echo "${PROGNAME}: [$$] begin $(date)"
 
 ##  List of sitename[:hostname] pairs to send to.
-if [ -n "$1" ] ; then
+if [ -n "$1" ]; then
     LIST="$*"
 else
     echo "${PROGNAME}: [$$] no sites specified" >&2
@@ -36,59 +36,59 @@ fi
 for SITE in ${LIST}; do
     case $SITE in
     *:*)
-	HOST=`expr $SITE : '.*:\(.*\)'`
-	SITE=`expr $SITE : '\(.*\):.*'`
-	;;
+        HOST=$(expr $SITE : '.*:\(.*\)')
+        SITE=$(expr $SITE : '\(.*\):.*')
+        ;;
     *)
-	HOST=$SITE
-	;;
+        HOST=$SITE
+        ;;
     esac
     BATCHFILE=${SITE}.ihave.batch
     LOCK=${LOCKS}/LOCK.${SITE}.ihave
     trap 'rm -f ${LOCK} ; exit 1' 1 2 3 15
     shlock -p $$ -f ${LOCK} || {
-	echo "${PROGNAME}: [$$] ${SITE}.ihave locked by `cat ${LOCK}`"
-	continue
+        echo "${PROGNAME}: [$$] ${SITE}.ihave locked by $(cat ${LOCK})"
+        continue
     }
 
     ##  See if any data is ready for host.
-    if [ -f ${SITE}.ihave.work ] ; then
-	cat ${SITE}.ihave.work >>${BATCHFILE}
-	rm -f ${SITE}.ihave.work
+    if [ -f ${SITE}.ihave.work ]; then
+        cat ${SITE}.ihave.work >>${BATCHFILE}
+        rm -f ${SITE}.ihave.work
     fi
-    if [ ! -f ${SITE}.ihave -o ! -s ${SITE}.ihave ] ; then
-	if [ ! -f ${BATCHFILE} -o ! -s ${BATCHFILE} ] ; then
-	    rm -f ${LOCK}
-	    continue
-	fi
+    if [ ! -f ${SITE}.ihave -o ! -s ${SITE}.ihave ]; then
+        if [ ! -f ${BATCHFILE} -o ! -s ${BATCHFILE} ]; then
+            rm -f ${LOCK}
+            continue
+        fi
     fi
     mv ${SITE}.ihave ${SITE}.ihave.work
     ctlinnd -s -t30 flush ${SITE}.ihave || continue
     cat ${SITE}.ihave.work >>${BATCHFILE}
     rm -f ${SITE}.ihave.work
-    if [ ! -s ${BATCHFILE} ] ; then
-	echo "${PROGNAME}: [$$] no articles for ${SITE}.ihave"
-	rm -f ${BATCHFILE}
-	continue
+    if [ ! -s ${BATCHFILE} ]; then
+        echo "${PROGNAME}: [$$] no articles for ${SITE}.ihave"
+        rm -f ${BATCHFILE}
+        continue
     fi
 
     echo "${PROGNAME}: [$$] begin ${SITE}.ihave"
 
     ##  Write out the batchfile as a control message, in clumps.
     export SITE PERMESSAGE BATCHFILE
-    while test -s ${BATCHFILE} ; do
-	(
-	    echo Newsgroups: to.${HOST}
-	    echo Control: ihave `innconfval pathhost`
-	    echo Subject: cmsg ihave `innconfval pathhost`
-	    echo ''
-	    ${SED} -e ${PERMESSAGE}q <${BATCHFILE}
-	) | ${INEWS} -h
-	${SED} -e "1,${PERMESSAGE}d" <${BATCHFILE} >${BATCHFILE}.tmp
-	mv ${BATCHFILE}.tmp ${BATCHFILE}
+    while test -s ${BATCHFILE}; do
+        (
+            echo Newsgroups: to.${HOST}
+            echo Control: ihave $(innconfval pathhost)
+            echo Subject: cmsg ihave $(innconfval pathhost)
+            echo ''
+            ${SED} -e ${PERMESSAGE}q <${BATCHFILE}
+        ) | ${INEWS} -h
+        ${SED} -e "1,${PERMESSAGE}d" <${BATCHFILE} >${BATCHFILE}.tmp
+        mv ${BATCHFILE}.tmp ${BATCHFILE}
     done
     echo "${PROGNAME}: [$$] end ${SITE}.ihave"
     rm -f ${LOCK}
 done
 
-echo "${PROGNAME}: [$$] end `date`"
+echo "${PROGNAME}: [$$] end $(date)"

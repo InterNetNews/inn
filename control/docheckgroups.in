@@ -16,16 +16,18 @@ cat /dev/null >${T}/$$out
 ##  Parse arguments.
 if [ $# -gt 0 ]; then
     case $1 in
-    -u) shift;
-        UPDATEDESC=true;;
+    -u)
+        shift
+        UPDATEDESC=true
+        ;;
     esac
 fi
 
 ##  Copy the message without excluded newsgroups and append local newsgroups.
 cat | ${PERL} -e 'while (<STDIN>) { my @fields = split();
           print $_ if ((scalar(@fields) > 0) && ($fields[0] !~ /'${2:-^#}'/)
-              && ($fields[0] !~ /^#/)); }' > ${T}/$$msg
-test -f ${LOCALGROUPS} && cat ${LOCALGROUPS} | ${EGREP} -v "^#" >> ${T}/$$msg
+              && ($fields[0] !~ /^#/)); }' >${T}/$$msg
+test -f ${LOCALGROUPS} && cat ${LOCALGROUPS} | ${EGREP} -v "^#" >>${T}/$$msg
 
 ##  Exit if there is no matching newsgroup (otherwise docheckgroups is eager
 ##  to delete everything).
@@ -36,26 +38,29 @@ test -s ${T}/$$msg || {
 
 ##  Make sure we do not have duplicates in the resulting concatenation of
 ##  the checkgroups and the localgroups file.
-${SORT} -u ${T}/$$msg > ${T}/$$msg2
+${SORT} -u ${T}/$$msg >${T}/$$msg2
 mv -f ${T}/$$msg2 ${T}/$$msg
 
 ##  Get the top-level newsgroup names from the message and turn it into
 ##  a regexp.
-PATS=`${SED} <${T}/$$msg \
-        -e 's/[ 	].*//' -e 's/\..*//' \
-        -e 's/^!//' -e '/^$/d' \
-        -e 's/^/^/' -e 's/$/[\.\w]/' \
+PATS=$(${SED} <${T}/$$msg \
+    -e 's/[ 	].*//' -e 's/\..*//' \
+    -e 's/^!//' -e '/^$/d' \
+    -e 's/^/^/' -e 's/$/[\.\w]/' \
     | ${SORT} -u \
-    | (tr '\012' '|' ; echo '' ) \
-    | ${SED} -e 's/|$//'`
+    | (
+        tr '\012' '|'
+        echo ''
+    ) \
+    | ${SED} -e 's/|$//')
 
 ##  Check for missing and obsolete newsgroups in active.
 cat ${ACTIVE} | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $fields[0]."\n" if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
-        && ($fields[0] =~ /'${PATS}'/)); }' | ${SORT} > ${T}/$$active
+        && ($fields[0] =~ /'${PATS}'/)); }' | ${SORT} >${T}/$$active
 cat ${T}/$$msg | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $fields[0]."\n" if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
-        && ($fields[0] =~ /'${PATS}'/)); }' | ${SORT} > ${T}/$$newsgrps
+        && ($fields[0] =~ /'${PATS}'/)); }' | ${SORT} >${T}/$$newsgrps
 
 comm -13 ${T}/$$active ${T}/$$newsgrps >${T}/$$missing
 comm -23 ${T}/$$active ${T}/$$newsgrps >${T}/$$remove
@@ -64,11 +69,11 @@ comm -23 ${T}/$$active ${T}/$$newsgrps >${T}/$$remove
 ##  when dealing with wire-formatted articles manually fed from the spool).
 cat ${ACTIVE} | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $fields[0]."\n" if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
-        && ($fields[0] =~ /'${PATS}'/) && ($_ =~ / m$/)); }' | ${SORT} > ${T}/$$amod.all
+        && ($fields[0] =~ /'${PATS}'/) && ($_ =~ / m$/)); }' | ${SORT} >${T}/$$amod.all
 cat ${T}/$$msg | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $fields[0]."\n" if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
         && ($fields[0] =~ /'${PATS}'/) && ($_ =~ / \(Moderated\)\r?$/)); }' \
-    | ${SORT} > ${T}/$$ng.mod
+    | ${SORT} >${T}/$$ng.mod
 
 comm -12 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.mod
 comm -23 ${T}/$$missing ${T}/$$ng.mod >${T}/$$add.unmod
@@ -85,25 +90,25 @@ comm -23 ${T}/$$nm.all ${T}/$$add >${T}/$$notmod
 cat ${NEWSGROUPS} | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $_ if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
         && ($fields[0] =~ /'${PATS}'/)); }' \
-    | ${SED} 's/	[	]*/	/' | ${SORT} > ${T}/$$localdesc
+    | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$localdesc
 cat ${T}/$$msg | ${PERL} -e 'while (<STDIN>) { my @fields = split();
     print $_ if ((scalar(@fields) > 0) && ($fields[0] =~ /'${1:-.}'/)
         && ($fields[0] =~ /'${PATS}'/)); }' \
     | ${SED} 's/\r\?$//' \
-    | ${SED} 's/	[	]*/	/' | ${SORT} > ${T}/$$newdesc
+    | ${SED} 's/	[	]*/	/' | ${SORT} >${T}/$$newdesc
 
 comm -13 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$missingdesc
 comm -23 ${T}/$$localdesc ${T}/$$newdesc >${T}/$$removedesc
 
 ##  If the -u flag is given, update the newsgroups descriptions.
-if [ "${UPDATEDESC}" = "true" ] ; then
+if [ "${UPDATEDESC}" = "true" ]; then
     cat ${NEWSGROUPS} | ${PERL} -e 'while (<STDIN>) { my @fields = split();
         print $_ if ((scalar(@fields) > 0) && ($fields[0] !~ /'${PATS}'/)); }' \
-        > ${T}/$$updatednewsgroups
+        >${T}/$$updatednewsgroups
     cat ${NEWSGROUPS} | ${PERL} -e 'while (<STDIN>) { my @fields = split();
         print $_ if ((scalar(@fields) > 0) && ($fields[0] !~ /'${1:-.}'/)
         && ($fields[0] =~ /'${PATS}'/)); }' \
-        >> ${T}/$$updatednewsgroups
+        >>${T}/$$updatednewsgroups
     cat ${T}/$$newdesc >>${T}/$$updatednewsgroups
     mv -f ${NEWSGROUPS} ${NEWSGROUPS}.old
     ${SORT} ${T}/$$updatednewsgroups | ${SED} 's/	[	]*/	/' \
@@ -114,12 +119,12 @@ if [ "${UPDATEDESC}" = "true" ] ; then
             if (scalar(@fields) == 2) { $desc = "$fields[1]"; } else { $desc = ""; }
             if ($length < 8) { print $fields[0]."\t\t\t".$desc; }
             elsif ($length < 16) { print $fields[0]."\t\t".$desc; }
-            else { print $fields[0]."\t".$desc; } }' > ${NEWSGROUPS}
+            else { print $fields[0]."\t".$desc; } }' >${NEWSGROUPS}
     chmod 0664 ${NEWSGROUPS} ${NEWSGROUPS}.old
 fi
 
 ##  Display information on newsgroups which need to be removed/added/changed.
-if [ -s ${T}/$$remove ] ; then
+if [ -s ${T}/$$remove ]; then
     (
         echo "# The following newsgroups are non-standard and should be removed:"
         echo "#"
@@ -127,14 +132,14 @@ if [ -s ${T}/$$remove ] ; then
         echo "#"
         echo "# You can remove them by executing the command(s):"
         echo ""
-        for i in `cat ${T}/$$remove` ; do
+        for i in $(cat ${T}/$$remove); do
             echo "	${PATHBIN}/ctlinnd rmgroup $i"
         done
         echo ""
     ) >>${T}/$$out
 fi
 
-if [ -s ${T}/$$add ] ; then
+if [ -s ${T}/$$add ]; then
     (
         echo "# The following newsgroups are missing and should be added:"
         echo "#"
@@ -142,17 +147,17 @@ if [ -s ${T}/$$add ] ; then
         echo "#"
         echo "# You can add them by executing the command(s):"
         echo ""
-        for i in `cat ${T}/$$add.unmod` ; do
+        for i in $(cat ${T}/$$add.unmod); do
             echo "	${PATHBIN}/ctlinnd newgroup $i y ${FROM}"
         done
-        for i in `cat ${T}/$$add.mod` ; do
+        for i in $(cat ${T}/$$add.mod); do
             echo "	${PATHBIN}/ctlinnd newgroup $i m ${FROM}"
         done
         echo ""
     ) >>${T}/$$out
 fi
 
-if [ -s ${T}/$$ismod ] ; then
+if [ -s ${T}/$$ismod ]; then
     (
         echo "# The following newsgroups are incorrectly marked as moderated"
         echo "# and should have their status changed:"
@@ -161,14 +166,14 @@ if [ -s ${T}/$$ismod ] ; then
         echo "#"
         echo "# You can correct this by executing the command(s):"
         echo ""
-        for i in `cat ${T}/$$ismod` ; do
+        for i in $(cat ${T}/$$ismod); do
             echo "	${PATHBIN}/ctlinnd changegroup $i y"
         done
         echo ""
     ) >>${T}/$$out
 fi
 
-if [ -s ${T}/$$notmod ] ; then
+if [ -s ${T}/$$notmod ]; then
     (
         echo "# The following newsgroups are incorrectly marked as unmoderated"
         echo "# and should have their status changed:"
@@ -177,7 +182,7 @@ if [ -s ${T}/$$notmod ] ; then
         echo "#"
         echo "# You can correct this by executing the command(s):"
         echo ""
-        for i in `cat ${T}/$$notmod` ; do
+        for i in $(cat ${T}/$$notmod); do
             echo "	${PATHBIN}/ctlinnd changegroup $i m"
         done
         echo ""
@@ -185,13 +190,13 @@ if [ -s ${T}/$$notmod ] ; then
 fi
 
 ##  Display information on descriptions which need to be removed/added.
-if [ -s ${T}/$$removedesc ] ; then
+if [ -s ${T}/$$removedesc ]; then
     (
         echo "# The following newsgroups descriptions are obsolete and should be removed:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$removedesc
         echo "#"
-        if [ "${UPDATEDESC}" = "true" ] ; then
+        if [ "${UPDATEDESC}" = "true" ]; then
             echo "# The file ${NEWSGROUPS} has just been updated accordingly."
         else
             echo "# You can remove them by editing ${NEWSGROUPS}"
@@ -201,13 +206,13 @@ if [ -s ${T}/$$removedesc ] ; then
     ) >>${T}/$$out
 fi
 
-if [ -s ${T}/$$missingdesc ] ; then
+if [ -s ${T}/$$missingdesc ]; then
     (
         echo "# The following newsgroups descriptions are missing and should be added:"
         echo "#"
         ${SED} "s/^/#	/" ${T}/$$missingdesc
         echo "#"
-        if [ "${UPDATEDESC}" = "true" ] ; then
+        if [ "${UPDATEDESC}" = "true" ]; then
             echo "# The file ${NEWSGROUPS} has just been updated accordingly."
         else
             echo "# You can add them by editing ${NEWSGROUPS}"

@@ -5,15 +5,15 @@
 # The count starts at 1 and is updated each time ok is printed.  printcount
 # takes "ok" or "not ok".
 count=1
-printcount () {
+printcount() {
     echo "$1 $count $2"
-    count=`expr $count + 1`
+    count=$(expr $count + 1)
 }
 
 # Store an article and make sure that sm succeeds.
-store () {
-    token=`$sm -s < $1`
-    if [ $? = 0 ] ; then
+store() {
+    token=$($sm -s <$1)
+    if [ $? = 0 ]; then
         printcount "ok"
     else
         printcount "not ok"
@@ -21,8 +21,8 @@ store () {
 }
 
 # Make sure that a file exists.
-exists () {
-    if [ -r "$1" ] ; then
+exists() {
+    if [ -r "$1" ]; then
         printcount "ok"
     else
         printcount "not ok"
@@ -31,9 +31,9 @@ exists () {
 
 # Check that an article retrieved via sm is the same as the article stored in
 # the article spool.  Takes the token and the path to the actual article.
-retrieve () {
-    "$sm" "$1" > spool/test
-    if [ $? = 0 ] && diff "$2" spool/test ; then
+retrieve() {
+    "$sm" "$1" >spool/test
+    if [ $? = 0 ] && diff "$2" spool/test; then
         printcount "ok"
     else
         printcount "not ok"
@@ -42,11 +42,11 @@ retrieve () {
 
 # Check the article information returned against the information in the actual
 # article.
-info () {
-    real=`grep ^Xref $2 | sed -e 's/.*\.example\.com //' -e 's/ .*//'`
-    real=`echo "$real" | sed -e 's/:/: /'`
-    info=`$sm -i $1`
-    if [ $? = 0 ] && [ "$info" = "$real" ] ; then
+info() {
+    real=$(grep ^Xref $2 | sed -e 's/.*\.example\.com //' -e 's/ .*//')
+    real=$(echo "$real" | sed -e 's/:/: /')
+    info=$($sm -i $1)
+    if [ $? = 0 ] && [ "$info" = "$real" ]; then
         printcount "ok"
     else
         echo "Want: $real"
@@ -56,9 +56,9 @@ info () {
 }
 
 # Given a token and a path in the spool, make sure that article removal works.
-remove () {
+remove() {
     "$sm" -r "$1"
-    if [ $? = 0 ] && [ ! -r "$2" ] ; then
+    if [ $? = 0 ] && [ ! -r "$2" ]; then
         printcount "ok"
     else
         printcount "not ok"
@@ -66,9 +66,9 @@ remove () {
 }
 
 # Check retrieval of a raw article, given a token and a path in the spool.
-raw () {
-    "$sm" -R "$1" > spool/test
-    if [ $? = 0 ] && diff "$2" spool/test ; then
+raw() {
+    "$sm" -R "$1" >spool/test
+    if [ $? = 0 ] && diff "$2" spool/test; then
         printcount "ok"
     else
         printcount "not ok"
@@ -77,10 +77,10 @@ raw () {
 
 # Check retrieval of only the headers, given a token and a path to the real
 # article.  (sed '/^$/Q' is unrecognized on some implementations.)
-headers () {
-    sed '/^$/q' "$2" | sed '/^$/d' > spool/real
-    "$sm" -H "$1" > spool/test
-    if [ $? = 0 ] && diff spool/real spool/test ; then
+headers() {
+    sed '/^$/q' "$2" | sed '/^$/d' >spool/real
+    "$sm" -H "$1" >spool/test
+    if [ $? = 0 ] && diff spool/real spool/test; then
         printcount "ok"
     else
         printcount "not ok"
@@ -90,11 +90,14 @@ headers () {
 # Check the rnews batch format.  Takes the token and the original article
 # path.  Use Perl to get the size of the article, since I can't find a really
 # good way to do this in shell.
-rnews () {
-    size=`perl -e "print -s \"$2\""`
-    ( echo "#! rnews $size" ; cat "$2" ) > spool/real
-    "$sm" -S "$1" > spool/test
-    if [ $? = 0 ] && diff spool/real spool/test ; then
+rnews() {
+    size=$(perl -e "print -s \"$2\"")
+    (
+        echo "#! rnews $size"
+        cat "$2"
+    ) >spool/real
+    "$sm" -S "$1" >spool/test
+    if [ $? = 0 ] && diff spool/real spool/test; then
         printcount "ok"
     else
         printcount "not ok"
@@ -104,16 +107,19 @@ rnews () {
 # Check retrieval of multiple articles at once.  We do this both via passing
 # multiple arguments to sm and passing multiple arguments on stdin.  Takes two
 # tokens and two article paths.
-multiple () {
-    cat "$3" "$4" > spool/real
-    "$sm" "$1" "$2" > spool/test
-    if [ $? = 0 ] && diff spool/real spool/test ; then
+multiple() {
+    cat "$3" "$4" >spool/real
+    "$sm" "$1" "$2" >spool/test
+    if [ $? = 0 ] && diff spool/real spool/test; then
         printcount "ok"
     else
         printcount "not ok"
     fi
-    ( echo "$1" ; echo "$2" ) | "$sm" > spool/test
-    if [ $? = 0 ] && diff spool/real spool/test ; then
+    (
+        echo "$1"
+        echo "$2"
+    ) | "$sm" >spool/test
+    if [ $? = 0 ] && diff spool/real spool/test; then
         printcount "ok"
     else
         printcount "not ok"
@@ -121,9 +127,9 @@ multiple () {
 }
 
 # Check the quieting of error messages.
-quiet () {
-    output=`$sm -q @BADTOKEN@ 2>&1`
-    if [ $? = 1 ] && [ -z "$output" ] ; then
+quiet() {
+    output=$($sm -q @BADTOKEN@ 2>&1)
+    if [ $? = 1 ] && [ -z "$output" ]; then
         printcount "ok"
     else
         printcount "not ok"
@@ -133,13 +139,13 @@ quiet () {
 # Find the right directory.
 sm="../../frontends/sm"
 dirs='../data data tests/data'
-for dir in $dirs ; do
-    if [ -r "$dir/articles/1" ] ; then
+for dir in $dirs; do
+    if [ -r "$dir/articles/1" ]; then
         cd $dir
         break
     fi
 done
-if [ ! -x "$sm" ] ; then
+if [ ! -x "$sm" ]; then
     echo "Could not find sm" >&2
     exit 1
 fi
@@ -149,7 +155,8 @@ echo 23
 
 # Point sm at the appropriate inn.conf file and create our required directory
 # structure.
-INNCONF=etc/inn.conf; export INNCONF
+INNCONF=etc/inn.conf
+export INNCONF
 mkdir -p spool
 
 # First, store the articles.

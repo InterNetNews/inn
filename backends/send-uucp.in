@@ -2,9 +2,9 @@
 # fixscript will replace this line with code to load INN::Config
 
 ##############################################################################
-# send-uucp.pl	create and send UUCP news batches from the outgoing files
+# send-uucp.pl  Create and send UUCP news batches from the outgoing files
 #
-# Author:	Edvard Tuinder <ed@elm.net>
+# Author:       Edvard Tuinder <ed@elm.net>
 #
 # Copyright (C) 1994 Edvard Tuinder - ELM Consultancy B.V.
 # Copyright (C) 1995-1997 Miquel van Smoorenburg - Cistron Internet Services

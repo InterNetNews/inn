@@ -3,14 +3,14 @@
 
 ##  Write a log file entry, by either mailing it or writing it safely.
 ##  Usage:
-##	writelog name text... <input
+##      writelog name text... <input
 ##  where
-##	name	is 'mail' to mail it, or filename to append to.
+##      name    is 'mail' to mail it, or filename to append to.
 
 MAXTRY=60
 
 ##  Parse arguments.
-if [ $# -lt 2 ] ; then
+if [ $# -lt 2 ]; then
     echo "usage: $0 'logfile|mail' message ..." 1>&2
     exit 1
 fi
@@ -30,7 +30,7 @@ Xmail)
 esac
 
 ##  We're sending to a file.
-LOCK=${LOCKS}/LOCK.`basename ${LOGFILE}`
+LOCK=${LOCKS}/LOCK.$(basename ${LOGFILE})
 
 ##  Remember our PID, in case while is a sub-shell.
 PID=$$
@@ -40,7 +40,7 @@ export LOCK MAXTRY PID LOGFILE ARTICLE MESSAGE TRY
 while [ ${TRY} -lt ${MAXTRY} ]; do
     shlock -p ${PID} -f ${LOCK} && break
     sleep 2
-    TRY=`expr ${TRY} + 1`
+    TRY=$(expr ${TRY} + 1)
 done
 
 ##  If we got the lock, update the file; otherwise, give up.
@@ -51,5 +51,5 @@ if [ ${TRY} -lt ${MAXTRY} ]; then
     rm -f ${LOCK}
 else
     ##  This goes to errlog, usually.
-    echo "$0: Cannot grab lock ${LOCK}, held by:" `cat ${LOCK}` 1>&2
+    echo "$0: Cannot grab lock ${LOCK}, held by:" $(cat ${LOCK}) 1>&2
 fi

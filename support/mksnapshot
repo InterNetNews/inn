@@ -29,32 +29,32 @@ set -e
 # Show detailed testing results.
 export C_TAP_VERBOSE=1
 
-date=`date -u +%Y%m%d`
+date=$(date -u +%Y%m%d)
 tree="$1"
 
-if [ -z "$tree" ] ; then
+if [ -z "$tree" ]; then
     echo "$0: no tree name specified" >&2
     exit 1
 fi
 
-if [ "$tree" = "BETA" ] ; then
+if [ "$tree" = "BETA" ]; then
     number="$2"
     extension=beta
     releasename="beta release"
-    if [ -z "$number" ] ; then
+    if [ -z "$number" ]; then
         echo "$0: no version specified for $tree" >&2
         exit 1
     fi
-elif [ "$tree" = "RC" ] ; then
+elif [ "$tree" = "RC" ]; then
     number="$2"
     extension=release-candidate
     releasename="release candidate"
-    if [ -z "$number" ] ; then
+    if [ -z "$number" ]; then
         echo "$0: no version specified for $tree" >&2
         exit 1
     fi
 else
-    exec > snapshot.log 2>&1
+    exec >snapshot.log 2>&1
 
     # Run a first build (Perl and Python are the only optional packages
     # that need being explicitly passed to configure so as to be used,
@@ -100,13 +100,13 @@ else
     make test
 fi
 
-if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
+if [ "$tree" = "BETA" -o "$tree" = "RC" ]; then
 
-    cat > README.$extension <<EOF
+    cat >README.$extension <<EOF
 This is a $releasename based on the current development version
 of INN.  It was made on:
 
-    `date -u +"%B %e, %Y @ %I:%M %p %Z"`
+    $(date -u +"%B %e, %Y @ %I:%M %p %Z")
 
 Although it should work fine, this code should still be considered
 experimental.  If you find any bugs, we'd like to know at
@@ -118,11 +118,11 @@ EOF
 
 else
 
-    cat > README.snapshot <<EOF
+    cat >README.snapshot <<EOF
 This is a snapshot of the current development version of INN, pulled
 automatically from the Git repository.  It was made on:
 
-    `date -u +"%B %e, %Y @ %I:%M %p %Z"`
+    $(date -u +"%B %e, %Y @ %I:%M %p %Z")
 
 This code should be considered experimental.  Only a default compile and
 automated testing is done before it is made available.  If it breaks, we'd
@@ -135,11 +135,11 @@ EOF
 
 fi
 
-if [ "$tree" = "BETA" -o "$tree" = "RC" ] ; then
+if [ "$tree" = "BETA" -o "$tree" = "RC" ]; then
     make release RELEASENUMBER="$number" RELEASEEXTENSION="$extension"
-elif [ "$tree" = "GIT" ] ; then
+elif [ "$tree" = "GIT" ]; then
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$BRANCH" = main ] ; then
+    if [ "$BRANCH" = main ]; then
         VERSION=$(grep -w '^VERSION' Makefile.global.in | awk '{ print $3 }')
         VERSION=$(echo "$VERSION" | sed 's/.[0-9]*$//')
         date=$(git log -1 --pretty=format:%cd --date=format:%Y%m%d)

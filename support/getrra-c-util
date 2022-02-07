@@ -28,37 +28,32 @@ URL_START="https://git.eyrie.org/?p=devel/rra-c-util.git;a=blob_plain;hb=HEAD;f=
 ##    $1 - full path of the file to download in the upstream package
 ##    $2 - directory where the file should be copied in INN source code
 ##    $3 - name of the file in INN source code
-download ()
-{
-  TEMP=$3.tmp
+download() {
+    TEMP=$3.tmp
 
-  rm -f ${TEMP}
-  wget -q "${URL_START}$1" -O ${TEMP}
+    rm -f ${TEMP}
+    wget -q "${URL_START}$1" -O ${TEMP}
 
-  if [ ! -s "${TEMP}" ]
-  then
-    echo "File $1 does not exist in upstream package"
-  else
-    # Update the path of included C header files.
-    # Change "RRA_" to "INN_", "rra_" to "inn_", and "UTIL_" to "INN_"
-    # so as to keep a homogeneous naming convention in INN source code.
-    # Changes in shell, m4 and C files are not the same.
-    if [ "$2" = "m4" ]
-    then
-      sed -i -e 's/RRA_/INN_/g' \
-             -e 's/rra_/inn_/g' \
-             ${TEMP}
+    if [ ! -s "${TEMP}" ]; then
+        echo "File $1 does not exist in upstream package"
+    else
+        # Update the path of included C header files.
+        # Change "RRA_" to "INN_", "rra_" to "inn_", and "UTIL_" to "INN_"
+        # so as to keep a homogeneous naming convention in INN source code.
+        # Changes in shell, m4 and C files are not the same.
+        if [ "$2" = "m4" ]; then
+            sed -i -e 's/RRA_/INN_/g' \
+                -e 's/rra_/inn_/g' \
+                ${TEMP}
 
-      # Remove useless function for INN.
-      if [ "$3" = "cc-flags.m4" ]
-      then
-        sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
-               -e '/dnl Determine the full set/,$d' \
-               -e '/test x"$CLANG" = xyes/,+1d' \
-             ${TEMP}
-      elif [ "$3" = "sqlite3.m4" ]
-      then
-        sed -i -e "48 i \\
+            # Remove useless function for INN.
+            if [ "$3" = "cc-flags.m4" ]; then
+                sed -i -e '/dnl Provides INN_PROG_CC_WARNINGS_FLAGS/,+6d' \
+                    -e '/dnl Determine the full set/,$d' \
+                    -e '/test x"$CLANG" = xyes/,+1d' \
+                    ${TEMP}
+            elif [ "$3" = "sqlite3.m4" ]; then
+                sed -i -e "48 i \\
 dnl Ensures SQLite v3 meets our minimum version requirement.\\
 AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\\
 #include <sqlite3.h>\\
@@ -85,49 +80,45 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
     [AS_IF([test x\"\$1\" = xtrue],\\
         [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\\
 " \
-               -e '48,68d' \
-             ${TEMP}
-      fi
-    elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
-      || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
-      || [ "$2" = "tests/lib/network" ] || [ "$2" = "tests/tap" ]
-    then
-      if [ "$3" = "xmalloc.t" ]
-      then
-        # Path should be updated in this shell script.
-        sed -i -e 's/\$C_TAP_BUILD\/util/\$C_TAP_BUILD\/lib/g' \
-               ${TEMP}
-        chmod 755 ${TEMP}
-      else
-        if [ "$3" = "network.c" ]
-        then
-          # Apply specific changes to take into account how sourceaddress
-          # and sourceaddress6 work.
-          sed -i -e "61 i \\
+                    -e '48,68d' \
+                    ${TEMP}
+            fi
+        elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \
+            || [ "$2" = "include" ] || [ "$2" = "lib" ] || [ "$2" = "tests/lib" ] \
+            || [ "$2" = "tests/lib/network" ] || [ "$2" = "tests/tap" ]; then
+            if [ "$3" = "xmalloc.t" ]; then
+                # Path should be updated in this shell script.
+                sed -i -e 's/\$C_TAP_BUILD\/util/\$C_TAP_BUILD\/lib/g' \
+                    ${TEMP}
+                chmod 755 ${TEMP}
+            else
+                if [ "$3" = "network.c" ]; then
+                    # Apply specific changes to take into account
+                    # how sourceaddress and sourceaddress6 work.
+                    sed -i -e "61 i \\
 #include \"inn/innconf.h\"" \
-                 -e '455 s/)$/ \&\& innconf == NULL)/' \
-                 -e '456,457d' \
-                 -e "462 i \\
+                        -e '455 s/)$/ \&\& innconf == NULL)/' \
+                        -e '456,457d' \
+                        -e "462 i \\
         if (source == NULL && innconf != NULL)\\
             source = innconf->sourceaddress;\\
         if (source == NULL || strcmp(source, \"all\") == 0\\
             || strcmp(source, \"any\") == 0)\\
             return true;\\
 " \
-                 -e "475 i \\
+                        -e "475 i \\
         if (source == NULL && innconf != NULL)\\
             source = innconf->sourceaddress6;\\
         if (source == NULL || strcmp(source, \"all\") == 0\\
             || strcmp(source, \"any\") == 0)\\
             return true;\\
 " \
-               ${TEMP}
-        fi
+                        ${TEMP}
+                fi
 
-        if [ "$3" = "system.h" ]
-        then
-          # Add INN-specific stuff.
-          sed -i -e "108 i \\
+                if [ "$3" = "system.h" ]; then
+                    # Add INN-specific stuff.
+                    sed -i -e "108 i \\
 /*\\
  * This almost certainly isn't necessary, but it's not hurting anything.\\
  * gcc assumes that if SEEK_SET isn't defined none of the rest are either,\\
@@ -139,7 +130,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\\
 #    define SEEK_END 2\\
 #endif\\
 " \
-                 -e "135 i \\
+                        -e "135 i \\
 /*\\
  * Handle defining fseeko and ftello.  If HAVE_FSEEKO is defined, the system\\
  * header files take care of this for us.  Otherwise, see if we're building\\
@@ -181,7 +172,7 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-               -e "147 i \\
+                        -e "147 i \\
 #if !HAVE_DECL_SNPRINTF\\
 extern int snprintf(char *, size_t, const char *, ...)\\
     __attribute__((__format__(printf, 3, 4)));\\
@@ -190,7 +181,7 @@ extern int snprintf(char *, size_t, const char *, ...)\\
 extern int vsnprintf(char *, size_t, const char *, va_list)\\
     __attribute__((__format__(printf, 3, 0)));\\
 #endif" \
-               -e "164 i \\
+                        -e "164 i \\
 #if !HAVE_DECL_STRLCAT\\
 extern size_t strlcat(char *, const char *, size_t);\\
 #endif\\
@@ -210,65 +201,67 @@ extern size_t strspn(const char *, const char *);\\
 #if !HAVE_STRTOK\\
 extern char *strtok(char *, const char *);\\
 #endif" \
-               -e '/#if !HAVE_DAEMON/,+2d' \
-               -e '/#if !HAVE_ISSETUGID/,+2d' \
-               -e '/#if !HAVE_STRNDUP/,+2d' \
-               ${TEMP}
+                        -e '/#if !HAVE_DAEMON/,+2d' \
+                        -e '/#if !HAVE_ISSETUGID/,+2d' \
+                        -e '/#if !HAVE_STRNDUP/,+2d' \
+                        ${TEMP}
+                fi
+
+                sed -i -e 's/UTIL_/INN_/g' \
+                    -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
+                    -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
+                    -e 's/<config\.h>$/"config.h"/g' \
+                    -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
+                    -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
+                    -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
+                    -e 's/<tests\/util\/\(.*\)>/"lib\/\1"/g' \
+                    ${TEMP}
+
+                # For compatibility with the integration of C TAP Harness
+                # in INN.
+                if [ "$2" = "tests/lib" ] || [ "$2" = "tests/lib/network" ] \
+                    || [ "$3" = "process.c" ]; then
+                    case "$3" in
+                    fakewrite.c) ;;
+
+                    xmalloc.c) ;;
+
+                    *.c)
+                        sed -i -e "0,/^$/{s/^$/\n#define LIBTEST_NEW_FORMAT 1\n/}" \
+                            ${TEMP}
+                        ;;
+                    esac
+                fi
+
+                # Rename a few symbols defined by autoconf since they're too
+                # likely to conflict with other packages.
+                # Please see support/mksystem for more information.
+                if [ "$2" = "include/inn" ]; then
+                    sed -i -e 's/\([^_]\)HAVE_C99_VAMACROS/\1INN_HAVE_C99_VAMACROS/g' \
+                        -e 's/\([^_]\)HAVE_GNU_VAMACROS/\1INN_HAVE_GNU_VAMACROS/g' \
+                        -e 's/\([^_]\)HAVE_INET6/\1INN_HAVE_INET6/g' \
+                        -e 's/\([^_]\)HAVE_INTTYPES_H/\1INN_HAVE_INTTYPES_H/g' \
+                        -e 's/\([^_]\)HAVE_MSYNC_3_ARG/\1INN_HAVE_MSYNC_3_ARG/g' \
+                        -e 's/\([^_]\)HAVE_STDBOOL_H/\1INN_HAVE_STDBOOL_H/g' \
+                        -e 's/\([^_]\)HAVE_SYS_BITYPES_H/\1INN_HAVE_SYS_BITYPES_H/g' \
+                        -e 's/\([^_]\)HAVE__BOOL/\1INN_HAVE__BOOL/g' \
+                        -e 's/"portable\/\(.*\)"/"inn\/portable-\1"/g' \
+                        -e 's/"config\.h"/"inn\/system.h"/g' \
+                        ${TEMP}
+                fi
+            fi
         fi
 
-        sed -i -e 's/UTIL_/INN_/g' \
-               -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
-               -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
-               -e 's/<config\.h>$/"config.h"/g' \
-               -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
-               -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
-               -e 's/<tests\/tap\/\(.*\)>/"tap\/\1"/g' \
-               -e 's/<tests\/util\/\(.*\)>/"lib\/\1"/g' \
-               ${TEMP}
+        mv -f ${TEMP} ../$2/$3
 
-        # For compatibility with the integration of C TAP Harness in INN.
-        if [ "$2" = "tests/lib" ] || [ "$2" = "tests/lib/network" ] \
-          || [ "$3" = "process.c" ]
-        then
-          case "$3" in
-          fakewrite.c)
-              ;;
-          xmalloc.c)
-              ;;
-          *.c)
-              sed -i -e "0,/^$/{s/^$/\n#define LIBTEST_NEW_FORMAT 1\n/}" \
-                     ${TEMP}
-          esac
-        fi
+        case "$3" in
+        *.c | *.h)
+            clang-format --style=file -i ../$2/$3
+            ;;
+        esac
 
-        # Rename a few symbols defined by autoconf since they're too likely
-        # to conflict with other packages.
-        # Please see support/mksystem for more information.
-        if [ "$2" = "include/inn" ]
-        then
-          sed -i -e 's/\([^_]\)HAVE_C99_VAMACROS/\1INN_HAVE_C99_VAMACROS/g' \
-                 -e 's/\([^_]\)HAVE_GNU_VAMACROS/\1INN_HAVE_GNU_VAMACROS/g' \
-                 -e 's/\([^_]\)HAVE_INET6/\1INN_HAVE_INET6/g' \
-                 -e 's/\([^_]\)HAVE_INTTYPES_H/\1INN_HAVE_INTTYPES_H/g' \
-                 -e 's/\([^_]\)HAVE_MSYNC_3_ARG/\1INN_HAVE_MSYNC_3_ARG/g' \
-                 -e 's/\([^_]\)HAVE_STDBOOL_H/\1INN_HAVE_STDBOOL_H/g' \
-                 -e 's/\([^_]\)HAVE_SYS_BITYPES_H/\1INN_HAVE_SYS_BITYPES_H/g' \
-                 -e 's/\([^_]\)HAVE__BOOL/\1INN_HAVE__BOOL/g' \
-                 -e 's/"portable\/\(.*\)"/"inn\/portable-\1"/g' \
-                 -e 's/"config\.h"/"inn\/system.h"/g' \
-                 ${TEMP}
-        fi
-      fi
+        git status --short ../$2/$3
     fi
-
-    mv -f ${TEMP} ../$2/$3
-
-    case "$3" in *.c|*.h)
-        clang-format --style=file -i ../$2/$3
-    esac
-
-    git status --short ../$2/$3
-  fi
 }
 
 ##  Synchronize Autoconf macros from upstream.

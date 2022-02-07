@@ -2,15 +2,16 @@
 ##  Set up any and all shell variables that an INN shell script
 ##  might need.  Also sets umask.
 
-##  NOTE: When adding stuff here, add the corresponding variables to 
+##  NOTE: When adding stuff here, add the corresponding variables to
 ##  innshellvars.tcl and the INN::Config Perl module (as well as the
 ##  old innshellvars.pl script).
 
-LC_CTYPE=C; export LC_CTYPE
+LC_CTYPE=C
+export LC_CTYPE
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-eval `@bindir@/innconfval -s`
+eval $(@bindir@/innconfval -s)
 
 NEWSHOME=${PATHNEWS}
 SPOOLDIR=${PATHSPOOL}
@@ -97,8 +98,8 @@ if [ "$OVMETHOD" = "ovdb" ]; then
     export DB_HOME
 fi
 
-TEMPSOCK=`basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/'`
-TEMPSOCKDIR=`echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@'`
+TEMPSOCK=$(basename ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's/XXXXXX$/*/')
+TEMPSOCKDIR=$(echo ${INNDDIR}/ctlinndXXXXXX | ${SED} -e 's@/[^/]*$@@')
 
 NEWSMASTER=@NEWSMASTER@
 NEWSUSER=${RUNASUSER}
@@ -110,7 +111,8 @@ RNEWSMODE=@RNEWSMODE@
 
 DO_DBZ_TAGGED_HASH=@DO_DBZ_TAGGED_HASH@
 
-TMPDIR=${PATHTMP}; export TMPDIR
+TMPDIR=${PATHTMP}
+export TMPDIR
 
 SPOOLTEMP=${PATHTMP}
 
@@ -120,15 +122,14 @@ export NEWSLBIN
 UMASK=@NEWSUMASK@
 umask @NEWSUMASK@
 
-SYSLOG_FACILITY=`echo "@SYSLOG_FACILITY@" | tr "[:upper:]" "[:lower:]" | ${SED} -e 's/log_//'`
+SYSLOG_FACILITY=$(echo "@SYSLOG_FACILITY@" | tr "[:upper:]" "[:lower:]" | ${SED} -e 's/log_//')
 
 PATH=${NEWSLBIN}:${NEWSBIN}:${PATH}:/bin:/usr/bin
 export PATH
 
 ##  Do not override HOME.
 
-
-##  Load another script that can override or add variables. 
+##  Load another script that can override or add variables.
 if [ -x ${PATHETC}/innshellvars.local ]; then
     . ${PATHETC}/innshellvars.local
 fi

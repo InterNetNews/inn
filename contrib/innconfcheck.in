@@ -36,7 +36,7 @@
 ### Warrenty/Disclaimer: There is no warrenty provided.  For details, please
 #   refer to the file "inn-2.3.0/LICENSE" from the INN 2.3 package
 
-                             ################
+###############################################################################
 
 ###  The User Modifiable Parameters/Settings:
 
@@ -71,20 +71,20 @@ PAGER=less
 # assumptions about the format that this script makes will probably break.
 # Presently, the base/orginal format of the inn.conf man page is in perl
 # POD documentation.  The formatting of this file is less likely to change
-# in the future and is a cleaner format for automated editing.  However, 
-# their is some disadvantages to using this file.  First disadvantage, 
-# the POD file is not installed by INN 2.3.0 by default (see INNCONFPOD 
-# enviromental variable for setting the script to find the file in the 
-# correct location).  Second disadvantage, pod2man does not appear to 
-# support using stdin so the edited POD must be temporarily stored as a 
-# file.  Finally, the last disadvantage, the script is slower due to the 
-# added processing time of pod2man.  Weighing the advantages and 
-# disadvantages to both approaches are left to the user.  If you wish to 
-# have innconfcheck edit the POD file then change the variable below to 
+# in the future and is a cleaner format for automated editing.  However,
+# their is some disadvantages to using this file.  First disadvantage,
+# the POD file is not installed by INN 2.3.0 by default (see INNCONFPOD
+# enviromental variable for setting the script to find the file in the
+# correct location).  Second disadvantage, pod2man does not appear to
+# support using stdin so the edited POD must be temporarily stored as a
+# file.  Finally, the last disadvantage, the script is slower due to the
+# added processing time of pod2man.  Weighing the advantages and
+# disadvantages to both approaches are left to the user.  If you wish to
+# have innconfcheck edit the POD file then change the variable below to
 # a setting of "1", otherwise leave it with the setting of "0"
 EDITPOD=0
 
-                             ################
+###############################################################################
 
 ### The Script: (non-developers should not need to go beyond this point)
 
@@ -101,23 +101,23 @@ EDITPOD=0
 # applications then polish the script off to provide a documented formatted
 # in a way that is easier to find incorrect setting withen.
 
-if [ $EDITPOD -eq 0 ] ; then
+if [ $EDITPOD -eq 0 ]; then
 
-  grep -v "#" $INNCONF | grep ":" | \
-    awk 'BEGIN { FS = ":" }  { print "s#^.Ip \042\\\\fI"$1"\\\\fR\042 4#.Ip \042\\\\fI"$0"\\\\fR\042 4#" }' | \
-    sed -f - $INNCONFMAN | $NROFF | $PAGER
+    grep -v "#" $INNCONF | grep ":" \
+        | awk 'BEGIN { FS = ":" }  { print "s#^.Ip \042\\\\fI"$1"\\\\fR\042 4#.Ip \042\\\\fI"$0"\\\\fR\042 4#" }' \
+        | sed -f - $INNCONFMAN | $NROFF | $PAGER
 
 else
 
-# The next part is similar to above but provides working from the POD source
-# instead of from the resulting nroff/man page.  This section is discussed
-# in more detail above with the "EDITPOD" setting.
+    # The next part is similar to above but provides working from the POD
+    # source instead of from the resulting nroff/man page.  This section is
+    # discussed in more detail above with the "EDITPOD" setting.
 
-  grep -v "#" $INNCONF | grep ":" | \
-    awk 'BEGIN { FS = ":" }  { print "s#=item I<"$1">#=item I<"$0">#" }' | \
-    sed -f - $INNCONFPOD > /tmp/innconfcheck-$$
-  pod2man /tmp/innconfcheck-$$ | $NROFF | $PAGER
-  rm -f /tmp/innconfcheck-$$
+    grep -v "#" $INNCONF | grep ":" \
+        | awk 'BEGIN { FS = ":" }  { print "s#=item I<"$1">#=item I<"$0">#" }' \
+        | sed -f - $INNCONFPOD >/tmp/innconfcheck-$$
+    pod2man /tmp/innconfcheck-$$ | $NROFF | $PAGER
+    rm -f /tmp/innconfcheck-$$
 
 fi
 

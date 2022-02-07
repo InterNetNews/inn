@@ -5,7 +5,7 @@
 ##  Used by news.daily.
 ##
 ##  Optional arguments:
-##	norotate	Do not rotate logfiles.
+##      norotate      Do not rotate logfiles.
 
 ##  Directory where old log files are kept.
 OLD=${MOST_LOGS}/OLD
@@ -25,11 +25,11 @@ MAXERRLINES=50
 CONTROLBATCH=${MOST_LOGS}/controlbatch.log
 INNFEEDCONF=${PATHETC}/innfeed.conf
 if [ -f "${INNFEEDCONF}" ]; then
-    INNFEEDLOG=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${INNFEEDCONF}`
-    INNFEEDPIDFILE=`${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "pid-file" && $2 == ":") print $3}' ${INNFEEDCONF}`
+    INNFEEDLOG=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "log-file" && $2 == ":") print $3}' ${INNFEEDCONF})
+    INNFEEDPIDFILE=$(${AWK} '{gsub(/:|#/, " & ")} {if ($1 == "pid-file" && $2 == ":") print $3}' ${INNFEEDCONF})
 fi
 INNFEED=
-for F in "${INNFEEDLOG}" ; do
+for F in "${INNFEEDLOG}"; do
     test -f "${MOST_LOGS}/${F}" && INNFEED="${INNFEED} ${MOST_LOGS}/${F}"
 done
 test -z "${INNFEED}" && test -f "${MOST_LOGS}/innfeed.log" && INNFEED="${MOST_LOGS}/innfeed.log"
@@ -55,19 +55,19 @@ CONTROL_LOG=${MOST_LOGS}/control.log
 CONTROL_DATA=
 test -f ${MOST_LOGS}/newgroup.log && CONTROL_DATA=${MOST_LOGS}/newgroup.log
 test -f ${MOST_LOGS}/rmgroup.log \
-	&& CONTROL_DATA="${CONTROL_DATA} ${MOST_LOGS}/rmgroup.log"
+    && CONTROL_DATA="${CONTROL_DATA} ${MOST_LOGS}/rmgroup.log"
 
 ##  Build up the list of log files to process.
 LOGS="${ERRLOG} ${LOG} ${ACTIVEFILE} ${EXPLOG} ${SYSLOGS} ${UNWANTED_LOG}"
 
-for F in ${LIVEFILES} ; do
+for F in ${LIVEFILES}; do
     test -n "${F}" -a -f "${F}" && LOGS="${LOGS} ${F}"
 done
 
 test -n "${CONTROL_DATA}" && LOGS="${LOGS} ${CONTROL_LOG}"
 
 for F in checkgroups default ihave newgroup rmgroup sendme sendsys \
-	senduuname version miscctl badcontrol failedpgp badpgp; do
+    senduuname version miscctl badcontrol failedpgp badpgp; do
     test -f ${MOST_LOGS}/${F}.log && LOGS="${LOGS} ${MOST_LOGS}/${F}.log"
 done
 
@@ -78,34 +78,33 @@ LOCK=${LOCKS}/LOCK.${PROGNAME}
 ROTATE=true
 
 ##  Parse JCL.
-for I
-do
+for I; do
     case "X${I}" in
     Xnorotate)
-	ROTATE=false
-	;;
+        ROTATE=false
+        ;;
     *)
-	echo "Unknown flag ${I}" 1>&2
-	exit 1
-	;;
+        echo "Unknown flag ${I}" 1>&2
+        exit 1
+        ;;
     esac
 done
 
 ##  Make sure every log exists.
-for F in ${LOGS} ; do
+for F in ${LOGS}; do
     test ! -f ${F} && touch ${F}
 done
 
 ##  Rotate the logs?
-if ${ROTATE} ; then
+if ${ROTATE}; then
     ##  Lock out others.
     shlock -p $$ -f ${LOCK} || {
-	echo "$0: Locked by `cat ${LOCK}`"
-	exit 1
+        echo "$0: Locked by $(cat ${LOCK})"
+        exit 1
     }
     trap "rm -f ${LOCK}; exit 0" 1 2 3 15
 
-    HERE=`pwd`
+    HERE=$(pwd)
     cd ${MOST_LOGS}
     test ! -d ${OLD} && mkdir ${OLD}
 
@@ -115,47 +114,47 @@ if ${ROTATE} ; then
 
     ##  First, flush log files to be sure everything has been recorded
     ##  before rotating them.
-    OUTPUT=`ctlinnd flushlogs 2>&1`
+    OUTPUT=$(ctlinnd flushlogs 2>&1)
     if [ "$OUTPUT" != "Ok" -a "$OUTPUT" != "In debug mode" ]; then
-	echo "$OUTPUT"
-	echo 'Cannot flush logs.'
-	rm -f ${LOCK}
-	exit 1
+        echo "$OUTPUT"
+        echo 'Cannot flush logs.'
+        rm -f ${LOCK}
+        exit 1
     fi
 
     ##  Make sure these .old files exist, in case innd is down.
-    for F in ${LOG} ${ERRLOG} ; do
-	if [ ! -f ${F}.old ]; then
-	    rm -f ${F}.old
-	    cp ${F} ${F}.old
-	    cat /dev/null >${F}
-	fi
+    for F in ${LOG} ${ERRLOG}; do
+        if [ ! -f ${F}.old ]; then
+            rm -f ${F}.old
+            cp ${F} ${F}.old
+            cat /dev/null >${F}
+        fi
     done
 
     ##  Copy syslog files, truncating old inode since syslog has it open.
     for F in ${SYSLOGS}; do
-	rm -f ${F}.old
-	cp ${F} ${F}.old
-	cat /dev/null >${F}
+        rm -f ${F}.old
+        cp ${F} ${F}.old
+        cat /dev/null >${F}
     done
     ctlinnd -s logmode
 
     ##  Make a copy of the active file.
-    if [ -n ${ACTIVEFILE} ] ; then
-	BASE=`basename ${ACTIVEFILE}`
-	rm -f ${OLD}/${BASE}.old
-	cp ${ACTIVEFILE} ${OLD}/${BASE}.old
+    if [ -n ${ACTIVEFILE} ]; then
+        BASE=$(basename ${ACTIVEFILE})
+        rm -f ${OLD}/${BASE}.old
+        cp ${ACTIVEFILE} ${OLD}/${BASE}.old
     fi
 
     ##  These are live files, so use link rather than copy.
-    for F in ${LIVEFILES} ; do
-	if [ -f ${F} ]; then
-	    rm -f ${F}.old ${F}.new
-	    ln ${F} ${F}.old
-	    touch ${F}.new
-	    chmod 0660 ${F}.new
-	    mv ${F}.new ${F}
-	fi
+    for F in ${LIVEFILES}; do
+        if [ -f ${F} ]; then
+            rm -f ${F}.old ${F}.new
+            ln ${F} ${F}.old
+            touch ${F}.new
+            chmod 0660 ${F}.new
+            mv ${F}.new ${F}
+        fi
     done
 
     ##  Tally control messages if we logged them.
@@ -164,75 +163,75 @@ if ${ROTATE} ; then
     ##  Find out the PID of innfeed now and not at the beginning of scanlogs
     ##  because it is restarted when running ctlinnd flushlogs.
     INNFEEDPID=
-    for F in "${INNFEEDPIDFILE}" ; do
-        test -f "${PATHRUN}/${F}" && INNFEEDPID=`cat "${PATHRUN}/${F}"`
+    for F in "${INNFEEDPIDFILE}"; do
+        test -f "${PATHRUN}/${F}" && INNFEEDPID=$(cat "${PATHRUN}/${F}")
     done
-    test -z "${INNFEEDPID}" && test -f "${PATHRUN}/innfeed.pid" && INNFEEDPID=`cat "${PATHRUN}/innfeed.pid"`
+    test -z "${INNFEEDPID}" && test -f "${PATHRUN}/innfeed.pid" && INNFEEDPID=$(cat "${PATHRUN}/innfeed.pid")
 
     ##  Send a HUP signal to innfeed so that it reopens its log files.
     if [ ! -z ${INNFEEDPID} ]; then
-        kill -HUP ${INNFEEDPID} > /dev/null 2>&1
+        kill -HUP ${INNFEEDPID} >/dev/null 2>&1
     fi
 
     ${PAUSED} && ctlinnd -s go "Flushing log and syslog files" 2>&1
 
     cd ${OLD}
     for F in ${LOGS}; do
-	##  Process the current (just-flushed) log.
-	BASE=`basename ${F}`
-	rm -f ${OLD}/${BASE}
-	case ${F} in
-	${SYSLOG_CRIT}|${SYSLOG_ERR}|${ERRLOG}|${LOG}|${SYSLOG_NOTICE})
-	    ##  Make a link that can be deleted (since if not rotating
-	    ##  we delete the copy that is made in ${TMPDIR}).
-	    mv ${F}.old ${OLD}/${BASE}
-	    rm -f ${OLD}/${BASE}.0
-	    ln ${OLD}/${BASE} ${OLD}/${BASE}.0
-	    ;;
-	${ACTIVEFILE})
-	    mv ${BASE}.old ${OLD}/${BASE}
-	    ;;
-	${UNWANTED_LOG})
-	    ##  Rotate and compress the file.
-	    BASE=`basename ${F}`
-	    if [ ! -f ${BASE} -a -f ../${BASE} ]; then
-		cp ../${BASE} ${BASE}
-		chmod 0440 ${BASE}
-	    fi
-	    if [ -f ${BASE} ]; then
-		${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
-		chmod 0440 ${BASE}.0${Z}
+        ##  Process the current (just-flushed) log.
+        BASE=$(basename ${F})
+        rm -f ${OLD}/${BASE}
+        case ${F} in
+        ${SYSLOG_CRIT} | ${SYSLOG_ERR} | ${ERRLOG} | ${LOG} | ${SYSLOG_NOTICE})
+            ##  Make a link that can be deleted (since if not rotating
+            ##  we delete the copy that is made in ${TMPDIR}).
+            mv ${F}.old ${OLD}/${BASE}
+            rm -f ${OLD}/${BASE}.0
+            ln ${OLD}/${BASE} ${OLD}/${BASE}.0
+            ;;
+        ${ACTIVEFILE})
+            mv ${BASE}.old ${OLD}/${BASE}
+            ;;
+        ${UNWANTED_LOG})
+            ##  Rotate and compress the file.
+            BASE=$(basename ${F})
+            if [ ! -f ${BASE} -a -f ../${BASE} ]; then
+                cp ../${BASE} ${BASE}
+                chmod 0440 ${BASE}
+            fi
+            if [ -f ${BASE} ]; then
+                ${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
+                chmod 0440 ${BASE}.0${Z}
 
-		##  Do rotation.
-		if [ X${LOGCYCLES} = X ]; then       
-		    LOGCYCLES=3
-		fi
-		EXT=${LOGCYCLES}
-		rm -f ${BASE}.${LOGCYCLES}${Z}
-		while [ ${EXT} -gt 0 ] ; do
-		    NEXT=${EXT}
-		    EXT=`expr ${EXT} - 1`
-		    test -f ${BASE}.${EXT}${Z} \
-			&& rm -f ${BASE}.${NEXT}${Z} \
-			&& mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
-		done
-	    fi
-	    ##  innreport assumes where unwanted.log exists, so leave it
-	    ##  and process later.
-	    ;;
-	*)
-	    if [ -f ${F}.old ]; then
-		mv ${F}.old ${OLD}/${BASE}
-	    else
-		rm -f ${OLD}/${BASE} ${F}.new
-		touch ${F}.new
-		chmod 0660 ${F}.new
-		ln ${F} ${F}.old
-		mv ${F}.new ${F}
-		mv ${F}.old ${OLD}/${BASE}
-	    fi
-	    ;;
-	esac
+                ##  Do rotation.
+                if [ X${LOGCYCLES} = X ]; then
+                    LOGCYCLES=3
+                fi
+                EXT=${LOGCYCLES}
+                rm -f ${BASE}.${LOGCYCLES}${Z}
+                while [ ${EXT} -gt 0 ]; do
+                    NEXT=${EXT}
+                    EXT=$(expr ${EXT} - 1)
+                    test -f ${BASE}.${EXT}${Z} \
+                        && rm -f ${BASE}.${NEXT}${Z} \
+                        && mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
+                done
+            fi
+            ##  innreport assumes where unwanted.log exists, so leave it
+            ##  and process later.
+            ;;
+        *)
+            if [ -f ${F}.old ]; then
+                mv ${F}.old ${OLD}/${BASE}
+            else
+                rm -f ${OLD}/${BASE} ${F}.new
+                touch ${F}.new
+                chmod 0660 ${F}.new
+                ln ${F} ${F}.old
+                mv ${F}.new ${F}
+                mv ${F}.old ${OLD}/${BASE}
+            fi
+            ;;
+        esac
     done
     cd ${HERE}
 
@@ -242,10 +241,10 @@ else
 
     ##  Make a snapshot of what we need for below.
     ctlinnd -s pause "Snapshot log and syslog files" 2>&1
-    for F in ${SYSLOG_CRIT} ${SYSLOG_ERR} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE} ; do
-	BASE=`basename ${F}`
-	rm -f ${OLD}/${BASE}.0
-	cp ${F} ${OLD}/${BASE}.0
+    for F in ${SYSLOG_CRIT} ${SYSLOG_ERR} ${ERRLOG} ${LOG} ${SYSLOG_NOTICE}; do
+        BASE=$(basename ${F})
+        rm -f ${OLD}/${BASE}.0
+        cp ${F} ${OLD}/${BASE}.0
     done
     ctlinnd -s go "Snapshot log and syslog files" 2>&1
 fi
@@ -255,9 +254,9 @@ fi
 ##
 
 ##  Display syslog critical messages.
-BASE=`basename ${SYSLOG_CRIT}`
+BASE=$(basename ${SYSLOG_CRIT})
 OLD_SYSLOG=${OLD}/${BASE}.0
-if [ -s ${OLD_SYSLOG} ] ; then
+if [ -s ${OLD_SYSLOG} ]; then
     echo Syslog critical messages:
     cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
     echo ---------
@@ -266,9 +265,9 @@ fi
 rm -f ${OLD_SYSLOG}
 
 ##  Display syslog error messages.
-BASE=`basename ${SYSLOG_ERR}`
+BASE=$(basename ${SYSLOG_ERR})
 OLD_SYSLOG=${OLD}/${BASE}.0
-if [ -s ${OLD_SYSLOG} ] ; then
+if [ -s ${OLD_SYSLOG} ]; then
     echo Syslog error messages:
     cat ${OLD_SYSLOG} | head -n ${MAXERRLINES}
     echo ---------
@@ -277,9 +276,9 @@ fi
 rm -f ${OLD_SYSLOG}
 
 ##  Display error log.
-BASE=`basename ${ERRLOG}`
+BASE=$(basename ${ERRLOG})
 OLD_ERRLOG=${OLD}/${BASE}.0
-if [ -s ${OLD_ERRLOG} ] ; then
+if [ -s ${OLD_ERRLOG} ]; then
     echo Error log:
     cat ${OLD_ERRLOG} | head -n ${MAXERRLINES}
     echo ---------
@@ -288,16 +287,16 @@ fi
 rm -f ${OLD_ERRLOG}
 
 ##  Scan for various problems in articles we were offered or sent...
-BASE=`basename ${LOG}`
+BASE=$(basename ${LOG})
 OLD_LOG=${OLD}/${BASE}.0
 
 ##  and summarize syslog information.
-BASE=`basename ${SYSLOG_NOTICE}`
+BASE=$(basename ${SYSLOG_NOTICE})
 OLD_SYSLOG=${OLD}/${BASE}.0
 INNREPORT=${TMPDIR}/innreport$$
-if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ] ; then
-    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG} > ${INNREPORT}
-    if [ -s ${INNREPORT} ] ; then
+if [ -s ${OLD_SYSLOG} -o -s ${OLD_LOG} ]; then
+    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG} >${INNREPORT}
+    if [ -s ${INNREPORT} ]; then
         cat ${INNREPORT}
         echo ---------
         echo ''
@@ -307,46 +306,46 @@ rm -f ${OLD_LOG} ${OLD_SYSLOG} ${INNREPORT}
 
 ##  Now that innreport has finished, we can move unwanted.log.  This
 ##  file is not reset because it keeps the count of unwanted newsgroups.
-if ${ROTATE} ; then
-    BASE=`basename ${UNWANTED_LOG}`
+if ${ROTATE}; then
+    BASE=$(basename ${UNWANTED_LOG})
     if [ -f ${UNWANTED_LOG}.old ]; then
-	mv ${UNWANTED_LOG}.old ${OLD}/${BASE}
+        mv ${UNWANTED_LOG}.old ${OLD}/${BASE}
     else
-	rm -f ${OLD}/${BASE}
-	cp ${UNWANTED_LOG} ${OLD}/${BASE}
-	chmod 0660 ${OLD}/${BASE}
+        rm -f ${OLD}/${BASE}
+        cp ${UNWANTED_LOG} ${OLD}/${BASE}
+        chmod 0660 ${OLD}/${BASE}
     fi
 fi
 
 ##  Compress and rotate the logs.
-if ${ROTATE} ; then
+if ${ROTATE}; then
     cd ${OLD}
-    if [ X${LOGCYCLES} = X ]; then       
+    if [ X${LOGCYCLES} = X ]; then
         LOGCYCLES=3
     fi
-    for F in ${LOGS} ; do
-	##  Skip if it's unwanted.log, since it's already rotated.
-	if [ ${F} = ${UNWANTED_LOG} ]; then
-	    continue
-	fi
-	##  Skip if file doesn't exist.
-	BASE=`basename ${F}`
-	test -f ${BASE} || continue
+    for F in ${LOGS}; do
+        ##  Skip if it's unwanted.log, since it's already rotated.
+        if [ ${F} = ${UNWANTED_LOG} ]; then
+            continue
+        fi
+        ##  Skip if file doesn't exist.
+        BASE=$(basename ${F})
+        test -f ${BASE} || continue
 
-	##  Compress the file.
-	${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
-	chmod 0440 ${BASE}.0${Z}
+        ##  Compress the file.
+        ${LOG_COMPRESS} <${BASE} >${BASE}.0${Z} && rm -f ${BASE}
+        chmod 0440 ${BASE}.0${Z}
 
-	##  Do rotation.
-	EXT=${LOGCYCLES}
-	rm -f ${BASE}.${LOGCYCLES}${Z}
-	while [ ${EXT} -gt 0 ] ; do
-	    NEXT=${EXT}
-	    EXT=`expr ${EXT} - 1`
-	    test -f ${BASE}.${EXT}${Z} \
-		&& rm -f ${BASE}.${NEXT}${Z} \
-		&& mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
-	done
+        ##  Do rotation.
+        EXT=${LOGCYCLES}
+        rm -f ${BASE}.${LOGCYCLES}${Z}
+        while [ ${EXT} -gt 0 ]; do
+            NEXT=${EXT}
+            EXT=$(expr ${EXT} - 1)
+            test -f ${BASE}.${EXT}${Z} \
+                && rm -f ${BASE}.${NEXT}${Z} \
+                && mv ${BASE}.${EXT}${Z} ${BASE}.${NEXT}${Z}
+        done
     done
 
     ##  Remove lock.

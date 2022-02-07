@@ -13,7 +13,7 @@ CONTROL=${MOST_LOGS}/control.log
 CONTROL_NEW=${CONTROL}.new
 CONTROL_OLD=${CONTROL}.old
 
-PROGNAME=`basename $0`
+PROGNAME=$(basename $0)
 LOCK=${LOCKS}/LOCK.${PROGNAME}
 
 ##  Lock.
@@ -38,18 +38,18 @@ ${SED} -n -e 's/[	 ][	 ]*/ /g' -e 's/^ \(Control:.*\)$/1 \1/p' \
     | cat - ${CONTROL} \
     | ${SED} -e 's/ /#/g' -e 's/\([0-9][0-9]*\)#\(.*\)/\1 \2/' \
     | ${AWK} 'BEGIN {
-	    ctl[0]=0;
-	}
-	{
-	    ctl[$2] += $1;
-	}
-	END {
-	    for (line in ctl) {
-		if (line != 0) {
-		    print ctl[line], line;
-		}
-	    }
-	}' \
+            ctl[0]=0;
+        }
+        {
+            ctl[$2] += $1;
+        }
+        END {
+            for (line in ctl) {
+                if (line != 0) {
+                    print ctl[line], line;
+                }
+            }
+        }' \
     | tr '#' ' ' \
     | sort -n -r >${CONTROL_NEW}
 mv -f ${CONTROL_NEW} ${CONTROL}

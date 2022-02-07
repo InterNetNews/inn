@@ -4,23 +4,23 @@
 # actmerge - merge two active files
 #
 # usage:
-#	actmerge [-s] ign1 ign2 host1 host2 
+#       actmerge [-s] ign1 ign2 host1 host2
 #
-#	-s	- write status on stderr even if no fatal error
-#	ign1	- ignore file for host1
-#	ign2	- ignore file for host2
-#	host1	- 1st active file or host
-#	host2	- 2nd active file or host
+#       -s      - write status on stderr even if no fatal error
+#       ign1    - ignore file for host1
+#       ign2    - ignore file for host2
+#       host1   - 1st active file or host
+#       host2   - 2nd active file or host
 #
 # The merge of two active files are sent to stdout.  The status is
 # written to stderr.
 
-# By: Landon Curt Noll  	chongo@toad.com		(chongo was here /\../\)
+# By: Landon Curt Noll  chongo@toad.com  (chongo was here /\../\)
 #
 # Copyright (c) Landon Curt Noll, 1996.
 # All rights reserved.
 #
-# Permission to use and modify is hereby granted so long as this 
+# Permission to use and modify is hereby granted so long as this
 # notice remains.  Use at your own risk.  No warranty is implied.
 
 # preset vars
@@ -43,8 +43,8 @@ QUIET=true
 #
 if [ $# -gt 1 ]; then
     if [ X"-s" = X"$1" ]; then
-	QUIET=
-	shift
+        QUIET=
+        shift
     fi
 fi
 if [ $# -ne 4 ]; then
@@ -64,12 +64,11 @@ fi
 host1="$3"
 host2="$4"
 
-
 # Lock out others
 #
 trap 'rm -f ${LOCK}; exit 1' 0 1 2 3 15
 shlock -p $$ -f ${LOCK} || {
-    echo "$0: Locked by `cat ${LOCK}`" 1>&2
+    echo "$0: Locked by $(cat ${LOCK})" 1>&2
     exit 4
 }
 
@@ -92,7 +91,7 @@ chmod 0600 "$act2"
 # try to fetch the first active file
 #
 echo "=-= fetching $host1" >>$tmp
-eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
+eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
 status=$?
 if [ "$status" -ne 0 ]; then
 
@@ -101,37 +100,37 @@ if [ "$status" -ne 0 ]; then
     #
     for loop in 1 2 3; do
 
-	# wait 5 minutes
-	sleep 300
+        # wait 5 minutes
+        sleep 300
 
-	# try #1
-	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #1
+        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
 
-	# try #2
-	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #2
+        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
 
-	# try #3
-	eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 > $act1 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #3
+        eval "$ACTSYNC -i $ign1 $FETCH /dev/null $host1 >$act1 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
     done
 
     # give up
     #
     if [ "$status" -ne 0 ]; then
-	echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
-	sed -e 's/^/    /' < "$tmp" 1>&2
-	exit "$status"
+        echo "=-= $(date) merge $host1 $host2 exit $status" 1>&2
+        sed -e 's/^/    /' <"$tmp" 1>&2
+        exit "$status"
     fi
 fi
 if [ ! -s "$act1" ]; then
@@ -142,7 +141,7 @@ fi
 # try to fetch the second active file
 #
 echo "=-= fetching $host2" >>$tmp
-eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
+eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
 status=$?
 if [ "$status" -ne 0 ]; then
 
@@ -151,37 +150,37 @@ if [ "$status" -ne 0 ]; then
     #
     for loop in 1 2 3; do
 
-	# wait 5 minutes
-	sleep 300
+        # wait 5 minutes
+        sleep 300
 
-	# try #1
-	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #1
+        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
 
-	# try #2
-	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #2
+        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
 
-	# try #3
-	eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 > $act2 2>>$tmp"
-	status=$?
-	if [ "$status" -eq "$NOSYNC" ]; then
-	    break;
-	fi
+        # try #3
+        eval "$ACTSYNC -i $ign2 $FETCH /dev/null $host2 >$act2 2>>$tmp"
+        status=$?
+        if [ "$status" -eq "$NOSYNC" ]; then
+            break
+        fi
     done
 
     # give up
     #
     if [ "$status" -ne 0 ]; then
-	echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
-	sed -e 's/^/    /' < "$tmp" 1>&2
-	exit "$status"
+        echo "=-= $(date) merge $host1 $host2 exit $status" 1>&2
+        sed -e 's/^/    /' <"$tmp" 1>&2
+        exit "$status"
     fi
 fi
 if [ ! -s "$act2" ]; then
@@ -195,16 +194,16 @@ echo "=-= merging $host1 and $host2" >>$tmp
 eval "$ACTSYNC $MERGE $act1 $act2" 2>>$tmp
 status=$?
 if [ "$status" -ne 0 ]; then
-    echo "=-= `date` merge $host1 $host2 exit $status" 1>&2
-    sed -e 's/^/    /' < "$tmp" 1>&2
+    echo "=-= $(date) merge $host1 $host2 exit $status" 1>&2
+    sed -e 's/^/    /' <"$tmp" 1>&2
     exit "$status"
 fi
 
 # if not -q, send status to stderr
 #
 if [ -z "$QUIET" ]; then
-    echo "=-= `date` merge $host1 $host2 successful" 1>&2
-    sed -e 's/^/    /' < "$tmp" 1>&2
+    echo "=-= $(date) merge $host1 $host2 successful" 1>&2
+    sed -e 's/^/    /' <"$tmp" 1>&2
 fi
 
 # all done

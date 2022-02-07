@@ -11,13 +11,13 @@ SYSLOGS="${SYSLOG_CRIT} ${SYSLOG_ERR} ${SYSLOG_NOTICE}"
 
 ##  Set up the list of log files.
 LOGS="${SYSLOGS}"
-if [ -f "${MOST_LOGS}/`basename ${ERRLOG}`" ]; then
-    LOGS="${LOGS} `basename ${ERRLOG}`"
+if [ -f "${MOST_LOGS}/$(basename ${ERRLOG})" ]; then
+    LOGS="${LOGS} $(basename ${ERRLOG})"
 else
     LOGS="${LOGS} ${ERRLOG}"
 fi
-if [ -f "${MOST_LOGS}/`basename ${LOG}`" ]; then
-    LOGS="${LOGS} `basename ${LOG}`"
+if [ -f "${MOST_LOGS}/$(basename ${LOG})" ]; then
+    LOGS="${LOGS} $(basename ${LOG})"
 else
     LOGS="${LOGS} ${LOG}"
 fi
@@ -49,29 +49,36 @@ ${INNDF} ${DISKUSAGE} | ${SORT} -u
 ##  Show size of batch files.
 echo ''
 echo 'Batch file sizes (in Kbytes):'
-( cd ${BATCH}; ls -Cs | sed 1d )
+(
+    cd ${BATCH}
+    ls -Cs | sed 1d
+)
 
 ##  Show size of log files.
 echo ''
 echo 'Log file sizes (in Kbytes):'
-( cd ${MOST_LOGS}; ls -Cs ${LOGS} *.log 2>&1 )
+(
+    cd ${MOST_LOGS}
+    ls -Cs ${LOGS} *.log 2>&1
+)
 
 ##  Show the lock files
 echo ''
-(	cd ${LOCKS}
-	set -$- LOCK.*
-	if [ -f "$1" ]; then
-		echo 'Lock files:'
-		ls -C LOCK.* 2>&1
-	else
-		echo 'innwatch is not running'
-	fi
+(
+    cd ${LOCKS}
+    set -$- LOCK.*
+    if [ -f "$1" ]; then
+        echo 'Lock files:'
+        ls -C LOCK.* 2>&1
+    else
+        echo 'innwatch is not running'
+    fi
 )
 
 echo ''
 echo 'Server connections:'
 ctlinnd -t60 name '' 2>&1 \
-  | ${PERL} -ne '
+    | ${PERL} -ne '
      next if m/(^((rem|local)conn|control)|:proc|:file):/;
      s/^(\S+):(\d+):.*:.*:.*$/${1}:${2}/;
      m/^(\S+):(\d+)$/;
@@ -89,4 +96,3 @@ ctlinnd -t60 name '' 2>&1 \
        }
        printf "\n%-35s %3d\n", "TOTAL: $n", $m;
      }'
-
