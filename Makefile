@@ -290,7 +290,7 @@ reformat:
 	        echo samples/innshellvars.local ; \
 	        shfmt -f autogen ci site support tests/tap) \
 	        | grep -v install-sh | grep -v ltmain.sh | grep -v xmalloc.t \
-	        | sort -u | xargs shfmt -i 4 -w -bn -ln=posix ; \
+	        | sort -u | xargs shfmt -w -s -ln=posix -i 4 -bn ; \
 	else \
 	    echo "Skipping shell code reformatting (shfmt not found)" ; \
 	fi
