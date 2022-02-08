@@ -36,7 +36,7 @@
 **  
 **  The basic format of the database is two hash tables, each in it's own
 **  file.  One contains the offsets into the history text file, and the other
-**  contains a hash of the message id.  A value is stored by indexing into the
+**  contains a hash of the Message-ID.  A value is stored by indexing into the
 **  tables using a hash value computed from the key; collisions are resolved
 **  by linear probing (just search forward for an empty slot, wrapping around
 **  to the beginning of the table if necessary).  Linear probing is a
@@ -172,7 +172,7 @@ static int canttag_warned;		/* flag to control can't tag warning */
 
 /* A new, from-scratch database, not built as a rebuild of an old one, needs
  * to know table size.  Normally the user supplies this info, but there have
- * to be defaults.  Making this too small can have devestating effects on
+ * to be defaults.  Making this too small can have devastating effects on
  * history speed for the current history implementation whereas making it too
  * big just wastes disk space, so err on the side of caution.  This may still
  * be a bit too small.  Assume people using tagged hash are running somewhat
@@ -890,7 +890,7 @@ okayvalue(of_t value)
 }
 #endif
 
-/* dbzexists - check if the given message-id is in the database */
+/* dbzexists - check if the given Message-ID is in the database */
 bool
 dbzexists(const HASH key)
 {
@@ -914,8 +914,9 @@ dbzexists(const HASH key)
 /*
  * dbzfetch - get offset of an entry from the database
  *
- * Returns the offset of the text file for input key,
- * or -1 if NOTFOUND or error occurs.
+ * Returns true if the entry is found, and sets in the value argument the
+ * offset of the text file for input key.
+ * Returns false otherwise or if an error occurred.
  */
 bool
 dbzfetch(const HASH key, off_t *value)
