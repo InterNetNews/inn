@@ -30,6 +30,53 @@ AC_INIT([INN], [2.6.5], [inn-workers@lists.isc.org],
 AC_PREREQ([2.64])
 AC_CONFIG_AUX_DIR([support])
 
+dnl Mention dependencies at the beginning of the configure output so that
+dnl people do not waste too much time finding the right packages to install.
+AC_MSG_NOTICE([Building INN requires the following dependencies to be met,
+besides a working compiler, a POSIX shell and GNU make, as well as Autoconf
+if you're bootstrapping the source code.
+---
+The names of the deb and rpm packages are given to help you find them quicker.
+---
+Mandatory (deb / rpm):
+- bison, flex / byacc, flex (for the innfeed build)
+- perl / perl (for various mandatory Perl scripts)
+- default-mta / postfix (or any specific MTA, for moderated newsgroups)
+---
+Optional (deb / rpm):
+- libdb-dev / libdb-devel (--with-bdb for ovdb overview)
+- libkrb5-dev / krb5-devel (--with-krb5 for a Kerberos v5 authenticator)
+- libssl-dev / openssl-devel (--with-openssl for TLS support for readers)
+- libperl-dev / perl-devel, perl-ExtUtils-Embed (--with-perl for Perl-based
+  spam filtering and authentication)
+- python3-dev, python3 / python3-devel, python3 (--with-python for Python-based
+  spam filtering and authentication)
+- libsasl2-dev / cyrus-sasl-devel (--with-sasl for SASL authentication support)
+- zlib1g-dev / zlib-devel (--with-zlib for compressed ovdb, and the COMPRESS
+  command for readers)
+- libpam0g-dev / pam-devel (for PAM authentication support)
+- libsystemd-dev, pkg-config / systemd-devel, pkg-config (for systemd
+  notifications and socket activation)
+---
+Though not mandatory for the build, the following packages should be installed
+if you plan on using the provided features (configure will properly sets their
+path in a few variables used by INN):
+- gnupg / gnupg2 (for the verification of the signatures of control articles
+  and NoCeM notices)
+- uucp / uucp (for the exchange of news articles with send-uucp)
+- various wide-spread programs like a modern awk implementation, grep, gzip
+  (and eventually bzip2 and compress if you want to use other compression
+  methods with send-uucp or rnews), sed and sort, probably already installed
+  on your system, and used by INN in several scripts
+---
+Though not mandatory for the build, the following packages will also be useful:
+- libgd-perl / perl-GD (for pictures in HTML daily Usenet reports)
+- libmime-tools-perl / perl-MIME-tools (for the decoding of control articles
+  by controlchan)
+- cron and syslog, probably already installed on your system
+---
+Happy building!])
+
 dnl Ignore Automake conditionals (called in a few m4 macros) as INN does not
 dnl uses Automake yet.
 m4_define_default([AM_CONDITIONAL], [:])
