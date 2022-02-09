@@ -1,0 +1,300 @@
+=head1 NAME
+
+libinn - InterNetNews library routines
+
+=head1 SYNOPSIS
+
+    #include "inn/libinn.h"
+
+    #define ISWHITE(c) ...
+
+    /* Headers-related routines. */
+    extern char *GenerateMessageID(char *domain);
+    extern void HeaderCleanFrom(char *from);
+    extern struct _DDHANDLE *DDstart(FILE *FromServer, FILE *ToServer);
+    extern void DDcheck(struct _DDHANDLE *h, char *group);
+    extern char *DDend(struct _DDHANDLE *h);
+
+    /* Opening the active file on a client. */
+    extern FILE *CAopen(FILE *FromServer, FILE *ToServer);
+    extern FILE *CAlistopen(FILE *FromServer, FILE *ToServer,
+                            const char *request);
+    extern void CAclose(void);
+
+    /* File locking. */
+    enum inn_locktype
+    {
+        INN_LOCK_READ,
+        INN_LOCK_WRITE,
+        INN_LOCK_UNLOCK
+    };
+
+    extern bool inn_lock_file(int fd, enum inn_locktype type,
+                              bool block);
+
+    /* NNTP functions. */
+    extern int NNTPlocalopen(FILE **FromServerp, FILE **ToServerp,
+                             char *errbuff, size_t len);
+    extern int NNTPremoteopen(int port, FILE **FromServerp,
+                              FILE **ToServerp, char *errbuff,
+                              size_t len);
+    extern int NNTPconnect(const char *host, int port,
+                           FILE **FromServerp, FILE **ToServerp,
+                           char *errbuff, size_t len);
+    extern int NNTPsendarticle(char *text, FILE *ToServer,
+                               bool terminate);
+    extern int NNTPsendpassword(char *server, FILE *FromServer,
+                                FILE *ToServer);
+
+    /* Hash functions. */
+    typedef struct {
+        char hash[16];
+    } HASH;
+
+    extern HASH HashMessageID(const char *MessageID);
+
+    /* Other useful functions. */
+    extern char *inn_getfqdn(const char *domain);
+    extern char *GetModeratorAddress(FILE *FromServer, FILE *ToServer,
+                                     char *group, char *moderatormailer);
+
+    /* Miscellaneous. */
+    extern int GetResourceUsage(double *usertime, double *systime);
+    extern void Radix32(unsigned long value, char *buff);
+    extern char *ReadInDescriptor(int fd, struct stat *Sbp);
+    extern char *ReadInFile(const char *name, struct stat *Sbp);
+
+    /* Setting or clearing file descriptor flags. */
+    #include "inn/fdflag.h"
+
+    bool fdflag_close_exec(int fd, bool flag);
+    bool fdflag_nonblocking(socket_type fd, bool flag);
+
+=head1 DESCRIPTION
+
+I<libinn> is a library of utility routines for manipulating Usenet articles
+and related data.  The whole documentation of I<libinn> routines is split
+into several specific man pages besides this one: libinn_clientlib(3),
+libinn_dbz(3), libinn_inndcomm(3), libinn_list(3), libinn_qio(3),
+libinn_tst(3) and libinn_uwildmat(3).
+
+=head2 MACROS
+
+C<ISWHITE> is a macro which tests whether its char argument is a space or a
+tabulation.
+
+=head2 HEADERS-RELATED ROUTINES
+
+B<GenerateMessageID> uses the current time, process-ID, and fully qualified
+domain name, which is passed as an argument and used if local host cannot
+be resolved or is different from I<domain> set in F<inn.conf>, to create a
+Message-ID header field that is highly likely to be unique.  The returned
+value points to static space that is reused on subsequent calls.
+
+B<HeaderCleanFrom> removes the extraneous information from the value of a From
+or Reply-To header field and leaves just the official mailing address.  In
+particular, the following transformations are made to the I<from> parameter:
+
+=over 4
+
+=item *
+
+address --> address
+
+=item *
+
+address (stuff) --> address
+
+=item *
+
+stuff <address> --> address
+
+=back
+
+The transformations are simple, based on S<RFC 5536> which limits the format
+of the header field.
+
+B<DDstart>, B<DDcheck>, and B<DDend> are used to set the Distribution header
+field; the C<DD> stands for I<Default Distribution>.  The F<distrib.pats>
+file is consulted to determine the proper value for the Distribution header
+field after all newsgroups have been checked.  B<DDstart> begins the parsing.
+It returns a pointer to an opaque handle that should be used on subsequent
+calls.  The I<FromServer> and I<ToServer> parameters should be C<FILE>'s
+connected to the NNTP server for input and output, respectively.  If either
+parameter is NULL, then an empty default will ultimately be returned if the
+file is not locally available.
+
+B<DDcheck> should be called with the handle, I<h>, returned by B<DDstart> and
+a newsgroup, I<group>, to check.  It can be called as often as necessary.
+
+B<DDend> releases any state maintained in the handle and returns an allocated
+copy of the text that should be used for the Distribution header field.
+
+=head2 CLIENT ACTIVE FILE
+
+B<CAopen> and B<CAclose> provide news clients with access to the F<active>
+file; the C<CA> stands for I<Client Active>.  B<CAopen> opens the F<active>
+file for reading.  It returns a pointer to an open C<FILE>, or NULL on
+error.  If a local or NFS-mounted copy exists, B<CAopen> will use that file.
+The I<FromServer> and I<ToServer> parameters should be C<FILE>'s connected
+to the NNTP server for input and output, respectively.  See B<NNTPremoteopen>
+or B<NNTPlocalopen>, below.  If either parameter is NULL, then B<CAopen> will
+just return NULL if the file is not locally available.  If they are not NULL,
+B<CAopen> will use them to query the NNTP server using the LIST command to
+make a local temporary copy.
+
+The B<CAlistopen> sends a LIST command to the server and returns a temporary
+file containing the results.  The I<request> parameter, if not NULL, will be
+sent as an argument to the command.  Unlike B<CAopen>, this routine will never
+use a locally-available copy of the F<active> file.
+
+B<CAclose> closes the F<active> file and removes any temporary file that might
+have been created by B<CAopen> or B<CAlistopen>.
+
+=head2 FILE LOCKING
+
+B<inn_lock_file> tries to lock the file descriptor I<fd>.  If I<block> is
+true, it will block until the lock can be made, otherwise it will return
+false if the file cannot be locked.  I<type> is one of C<INN_LOCK_READ>,
+C<INN_LOCK_WRITE> or C<INN_LOCK_UNLOCK>.  It returns false on failure or true
+on success.
+
+=head2 NNTP FUNCTIONS
+
+B<NNTPlocalopen> opens a connection to the private port of an InterNetNews
+server running on the local host, if C<HAVE_UNIX_DOMAIN_SOCKETS> in
+F<include/config.h> is defined.  It returns C<-1> on failure, or C<0> on
+success.  I<FromServerp> and I<ToServerp> will be filled in with C<FILE>'s
+which can be used to communicate with the server.  I<errbuff> can either be
+NULL or a pointer to a buffer at least 512 bytes long.  If not NULL, and the
+server refuses the connection, then it will be filled in with the text of
+the server's reply.  I<len> should be the length of the I<errbuff> buffer.
+This routine is not for general use.  If C<HAVE_UNIX_DOMAIN_SOCKETS> in
+F<include/config.h> is not defined, this is a stub routine, for compatibility
+with systems that have Unix-domain stream sockets, and it then always returns
+C<-1>.
+
+B<NNTPremoteopen> does the same, except that it uses the I<server> parameter
+set in F<inn.conf> as the local server, and opens a connection to the I<port>.
+Any client program can use this routine.  It returns C<-1> on failure, or C<0>
+on success.
+
+B<NNTPconnect> is the same as B<NNTPremoteopen> except that the desired host
+is given as the I<host> parameter.
+
+B<NNTPsendarticle> writes I<text> on I<ToServer> using NNTP conventions for
+line termination.  The text should consist of one or more lines ending with
+a newline.  If I<terminate> is true, then the routine will also write the NNTP
+data-termination marker on the stream.  It returns C<-1> on failure, or C<0>
+on success.
+
+B<NNTPsendpassword> sends authentication information to an NNTP server by
+finding the appropriate entry in the F<passwd.nntp> file.  I<server> contains
+the name of the host; the I<server> parameter in F<inn.conf> will be used if
+I<server> is NULL.  I<FromServer> and I<ToServer> should be C<FILE>'s that
+are connected to the server.  No action is taken if the specified host is not
+listed in the password file.
+
+=head2 HASHES
+
+B<HashMessageID> returns hashed Message-ID using MD5.
+
+=head2 OTHER USEFUL FUNCTIONS
+
+B<inn_getfqdn> returns the fully qualified domain name of the local host.
+I<domain> is used to qualify the local host name if local host cannot be
+resolved in DNS.  The returned value points to newly-allocated memory that the
+caller is responsible for freeing, or NULL on error.
+
+B<GetModeratorAddress> returns the mailing address of the moderator for
+specified I<group> or NULL on error.  I<moderatormailer> is used as its
+address, if there is no matched moderator.  See moderators(5) for details on
+how the address is determined.  B<GetModeratorAddress> does no checking to
+see if the specified group is actually moderated.  The returned value points
+to static space that is reused on subsequent calls.  The I<FromServer> and
+I<ToServer> parameters should be C<FILE>'s connected to the NNTP server for
+input and output, respectively.  If either of these parameters is NULL, then
+an attempt to get the list from a local copy is made.
+
+=head2 MISCELLANEOUS
+
+B<GetResourceUsage> fills in the I<usertime> and I<systime> parameters with
+the total user and system time used by the current process and any children
+it may have spawned.  If C<HAVE_GETRUSAGE> in F<include/config.h> is defined,
+it gets the values by doing a getrusage(2) system call; otherwise it calls
+times(2).  It returns C<-1> on failure, or C<0> on success.
+
+B<Radix32> converts the number in I<value> into a radix-32 string into the
+buffer pointed to by I<buff>.  The number is split into five-bit pieces and
+each piece is converted into a character using the alphabet C<0..9a..v> to
+represent the numbers C<0..32>.  Only the lowest 32 bits of I<value> are used,
+so I<buff> needs only pointing to a buffer of eight bytes (seven characters
+and the trailing C<\0>).
+
+B<ReadInFile> reads the file named I<name> into allocated memory, appending a
+terminating C<\0> byte.  It returns a pointer to the space, or NULL on error.
+If I<Sbp> is not NULL, it is taken as the address of a place to store the
+results of a stat(2) call.
+
+B<ReadInDescriptor> performs the same function as B<ReadInFile> except that
+I<fd> refers to an already-open file.
+
+=head2 FILE DESCRIPTOR FLAGS
+
+B<fdflag_close_exec> can make a descriptor I<close-on-exec> so that it is not
+shared with any child processes.  If the flag is true, the file is so marked;
+if false, the I<close-on-exec> mode is cleared.  It returns false on failure
+(or when the function is unsupported) or true on success.
+
+B<fdflag_nonblocking> enables (if I<flag> is true) or disables (if I<flag>
+is false) non-blocking I/O on the indicated C<socket_type> (which can be a
+non-socket file descriptor on UNIX systems, but a C<socket_type> is expected
+on Windows).  It returns false on failure or true on success.
+
+=head1 EXAMPLES
+
+    #include "inn/fdflag.h"
+    #include "inn/libinn.h"
+
+    char *p;
+    char frombuff[256], errbuff[256];
+    FILE *F;
+    FILE *ToServer;
+    FILE *FromServer;
+    int port = 119;
+
+    strlcpy(frombuff, HDR(HDR__FROM), sizeof(frombuff));
+    HeaderCleanFrom(frombuff);
+
+    if ((F = CAopen(FromServer, ToServer)) == NULL)
+        Fatal("Can't open active file");
+
+    /* Don't pass the file on to our children. */
+    fdflag_close_exec(fileno(F), true);
+
+    /* Make a local copy. */
+    p = ReadInDescriptor(fileno(F), (struct stat *) NULL);
+
+    /* Close the file. */
+    CAclose();
+
+    if (NNTPremoteopen(port, &FromServer, &ToServer, errbuff,
+                       sizeof(errbuff)) < 0)
+        Fatal("Can't connect to server");
+
+    if ((p = GetModeratorAddress(NULL, NULL, "comp.sources.unix",
+                                 "%s@example.com")) == NULL)
+        Fatal("Can't find moderator's address");
+
+=head1 HISTORY
+
+Written by Rich $alz <rsalz@uunet.uu.net> for InterNetNews.  Rewritten into
+POD by Julien Elie.
+
+=head1 SEE ALSO
+
+active(5), inn.conf(5), libinn_clientlib(3), libinn_dbz(3),
+libinn_inndcomm(3), libinn_list(3), libinn_qio(3), libinn_tst(3),
+libinn_uwildmat(3), moderators(5), passwd.nntp(5).
+
+=cut

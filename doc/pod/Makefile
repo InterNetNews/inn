@@ -13,7 +13,7 @@ MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
 	../man/innmail.1 ../man/nntpget.1 ../man/pullnews.1 ../man/rnews.1 \
 	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
 
-MAN3	= ../man/libinn_clientlib.3 ../man/libinn_dbz.3 \
+MAN3	= ../man/libinn.3 ../man/libinn_clientlib.3 ../man/libinn_dbz.3 \
 	../man/libinn_inndcomm.3 \
 	../man/libinnauth.3 ../man/libinnhist.3 ../man/libinnstorage.3 \
 	../man/libinn_list.3 ../man/libinn_qio.3 \
@@ -86,6 +86,7 @@ maintclean: distclean
 ../man/simpleftp.1:	simpleftp.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/sm.1:		sm.pod			; $(POD2MAN) -s 1 $? > $@
 
+../man/libinn.3:	libinn.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnauth.3:	libinnauth.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnhist.3:	libinnhist.pod		; $(POD2MAN) -s 3 $? > $@
 ../man/libinnstorage.3:	libinnstorage.pod	; $(POD2MAN) -s 3 $? > $@

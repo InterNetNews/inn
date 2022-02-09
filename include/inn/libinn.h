@@ -32,7 +32,7 @@ struct in_addr;
 BEGIN_DECLS
 
 /*
-**  TIME AND DATE PARSING, GENERATION, AND HANDLING
+**  Time and date parsing, generation and handling.
 */
 extern int Argify(char *line, char ***argvp);
 extern int nArgify(char *line, char ***argvp, int n);
@@ -45,7 +45,7 @@ extern time_t parsedate_rfc5322_lax(const char *);
 
 
 /*
-**  WILDMAT MATCHING
+**  Wildmat matching.
 */
 enum uwildmat
 {
@@ -61,7 +61,7 @@ extern enum uwildmat uwildmat_poison(const char *text, const char *pat);
 
 
 /*
-**  FILE LOCKING
+**  File locking.
 */
 enum inn_locktype
 {
@@ -76,7 +76,7 @@ extern bool inn_lock_range(int fd, enum inn_locktype type, bool block,
 
 
 /*
-**  MISCELLANEOUS UTILITY FUNCTIONS
+**  Miscellaneous utility functions.
 */
 extern void daemonize(const char *path);
 extern int getfdlimit(void);
@@ -90,7 +90,7 @@ extern void xsignal_forked(void);
 
 
 /*
-**  HEADERS
+**  Headers-related routines.
 **
 **  Do not test HAVE_CANLOCK.  This relieves customers of /usr/include/inn from
 **  the need to guess whether INN was built with Cancel-Lock support in order
@@ -131,8 +131,9 @@ extern int NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp,
                           char *errbuff, size_t len);
 extern int NNTPconnect(const char *host, int port, FILE **FromServerp,
                        FILE **ToServerp, char *errbuff, size_t len);
-extern int NNTPsendarticle(char *, FILE *F, bool Terminate);
+extern int NNTPsendarticle(char *text, FILE *ToServer, bool terminate);
 extern int NNTPsendpassword(char *server, FILE *FromServer, FILE *ToServer);
+
 
 /* clientlib compatibility functions. */
 extern FILE *ser_rd_fp;
@@ -146,6 +147,7 @@ extern void put_server(const char *text);
 extern int get_server(char *buff, int buffsize);
 extern void close_server(void);
 
+
 /* Opening the active file on a client. */
 extern FILE *CAopen(FILE *FromServer, FILE *ToServer);
 extern FILE *CAlistopen(FILE *FromServer, FILE *ToServer, const char *request);
@@ -153,14 +155,16 @@ extern FILE *CA_listopen(char *pathname, FILE *FromServer, FILE *ToServer,
                          const char *request);
 extern void CAclose(void);
 
+
+/* Other useful functions. */
 /* Return the fully-qualified domain name of the local system in
    newly-allocated memory, or NULL if it cannot be discovered.  The caller is
    responsible for freeing.  If the host's domain cannot be found in DNS, use
    the domain argument as a fallback. */
 extern char *inn_getfqdn(const char *domain);
-
 extern char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
                                  char *moderatormailer);
+
 
 #define TEMPORARYOPEN 0
 #define INND_HISTORY  1
@@ -168,12 +172,13 @@ extern char *GetModeratorAddress(FILE *FromServer, FILE *ToServer, char *group,
 #define DBZ_DIR       3
 #define DBZ_BASE      4
 
-/* Hash functions */
+/* Hash functions. */
 typedef struct {
     char hash[16];
 } HASH;
+
 extern HASH Hash(const void *value, const size_t len);
-/* Return the hash of a case mapped message-id */
+/* Return the hash of a case mapped Message-ID. */
 extern HASH HashMessageID(const char *MessageID);
 extern bool HashEmpty(const HASH hash);
 extern void HashClear(HASH *hash);
@@ -181,12 +186,13 @@ extern char *HashToText(const HASH hash);
 extern HASH TextToHash(const char *text);
 extern int HashCompare(const HASH *h1, const HASH *h2);
 
+
 /* Miscellaneous. */
 extern int dbzneedfilecount(void);
 extern bool MakeDirectory(char *Name, bool Recurse);
 extern int xread(int fd, char *p, off_t i);
 extern int GetResourceUsage(double *usertime, double *systime);
-extern void Radix32(unsigned long, char *buff);
+extern void Radix32(unsigned long value, char *buff);
 extern char *ReadInDescriptor(int fd, struct stat *Sbp);
 extern char *ReadInFile(const char *name, struct stat *Sbp);
 extern FILE *xfopena(const char *p);
