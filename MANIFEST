@@ -290,6 +290,7 @@ doc/pod/innxbatch.pod                 Master file for innxbatch.8
 doc/pod/innxmit.pod                   Master file for innxmit.8
 doc/pod/install.pod                   Master file for INSTALL
 doc/pod/libauth.pod                   Master file for libauth.3
+doc/pod/libinn.pod                    Master file for libinn.3
 doc/pod/libinn_clientlib.pod          Master file for libinn_clientlib.3
 doc/pod/libinn_dbz.pod                Master file for libinn_dbz.3
 doc/pod/libinn_inndcomm.pod           Master file for libinn_inndcomm.3
