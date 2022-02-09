@@ -122,7 +122,7 @@ if ($opt_d) {
 }
 
 if ($opt_m) {
-    $mailing_list = "<" . $opt_m . "> /dev/null";
+    $mailing_list = $opt_m;
     push @errorText, "((mailing_list: $mailing_list))\n";
 }
 
@@ -256,7 +256,7 @@ for (;;) {
         next;
     }
 
-    if (/^Mailing-List:\s*/sio) {
+    if (/^List-ID:\s*/sio) {
         $mailing_list = $';
         next;
     }
@@ -343,7 +343,7 @@ if ($path !~ /\!/) {
 
 $real_news_hdrs .= "Subject: ${subject}\n";
 $real_news_hdrs .= "Message-ID: ${msgIdHdr}\n" if defined($message_id);
-$real_news_hdrs .= "Mailing-List: ${mailing_list}\n" if defined($mailing_list);
+$real_news_hdrs .= "List-ID: ${mailing_list}\n" if defined($mailing_list);
 $real_news_hdrs .= "Distribution: ${distribution}\n" if defined($distribution);
 $real_news_hdrs .= "Approved: ${approved}\n" if defined($approved);
 $real_news_hdrs .= "References: ${references}\n" if defined($references);
@@ -773,7 +773,7 @@ Print usage information and exit.
 =item B<-m> I<mailing-list>
 
 If the B<-m> flag is used, the value given is added to the article in
-a Mailing-List header field, if such a header field doesn't already exist.
+a List-ID header field, if such a header field doesn't already exist.
 
 =item B<-n>
 
@@ -826,7 +826,7 @@ By default, known header fields are:
     From
     Injection-Date
     Keywords
-    Mailing-List
+    List-ID
     Message-ID
     MIME-*
     Organization
