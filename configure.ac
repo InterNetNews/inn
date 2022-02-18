@@ -39,7 +39,8 @@ if you're bootstrapping the source code.
 The names of the deb and rpm packages are given to help you find them quicker.
 ---
 Mandatory (deb / rpm):
-- bison, flex / byacc, flex (for the innfeed build)
+- bison, flex / byacc, flex (for the innfeed build, if bootstrapping the source
+  code)
 - perl / perl (for various mandatory Perl scripts)
 - default-mta / postfix (or any specific MTA, for moderated newsgroups)
 ---
