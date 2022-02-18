@@ -793,12 +793,12 @@ F<Makefile.global>.
 
 =item *
 
-Then, run C<make warnings> to generate all necessary files.
+Run C<make depend> to ensure dependencies are properly defined in all INN
+makefiles.
 
 =item *
 
-Run C<make depend> to ensure dependencies are properly defined in all
-INN makefiles.
+Then, run C<make warnings> to generate all necessary files.
 
 =item *
 
@@ -857,14 +857,14 @@ the F<OLD> directory.  Also remove testing versions from the F<testing>
 directory.
 
 (Currently, this is all done by Russ by updating the files in
-L<https://archives.eyrie.org/software/inn/> and then letting ISC mirror
-them via rsync.)
+L<https://archives.eyrie.org/software/inn/> and then letting ISC automatically
+mirror them via rsync within a day.)
 
 =item 14.
 
-Publish a release in GitHub, based on the commit used to generate the release
-tarball.  Include the description from F<NEWS>, and attach the tarball as well
-as its signature.
+Publish a release in GitHub, based on the branch or commit used to generate
+the release tarball.  Include the description from F<NEWS>, and attach the
+tarball as well as its signature.
 
 GitHub will create the appropriate annotated tag when publishing the release.
 
@@ -882,10 +882,12 @@ and accurate, though.)
 =item 16.
 
 Bump revision numbers to reflect the one of the following release,
-especially in F<doc/pod/install.pod> and F<readme.pod>
-for major releases, F<configure.ac> and F<Makefile.global.in> for both
-minor and major releases.  The release versions in the GitHub bug tracker
-should also be updated.
+especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
+F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
+(It is not necessary to bump the revision number if the release is supposed to
+be the last one in a branch.)
+
+Milestones in the GitHub bug tracker should also be updated.
 
 =item 17.
 
