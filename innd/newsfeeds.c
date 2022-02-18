@@ -620,7 +620,7 @@ SITEparseone(char *Entry, SITE *sp, char *subbed, char *poison)
         case 'Q':
             hf = xmalloc(sizeof(HASHFEEDLIST));
             p++;
-            /* Check whether it is a quickhash or a MD5 hashfeed. */
+            /* Check whether it is a quickhash or an MD5 hashfeed. */
             if (*p == '@') {
                 p++;
                 hf->type = HASHFEED_QH;
