@@ -15,6 +15,15 @@ libinn - InterNetNews library routines
     extern void DDcheck(struct _DDHANDLE *h, char *group);
     extern char *DDend(struct _DDHANDLE *h);
 
+    /* Cancel-Lock routines. */
+    extern bool gen_cancel_lock(const char *msgid, const char *username,
+                                char **canbuff);
+    extern bool gen_cancel_key(const char *hdrcontrol,
+                               const char *hdrsupersedes,
+                               const char *username, char **canbuff);
+    extern bool verify_cancel_key(const char *c_key_header,
+                                  const char *c_lock_header);
+
     /* Opening the active file on a client. */
     extern FILE *CAopen(FILE *FromServer, FILE *ToServer);
     extern FILE *CAlistopen(FILE *FromServer, FILE *ToServer,
@@ -129,6 +138,42 @@ a newsgroup, I<group>, to check.  It can be called as often as necessary.
 
 B<DDend> releases any state maintained in the handle and returns an allocated
 copy of the text that should be used for the Distribution header field.
+
+=head2 CANCEL-LOCK
+
+These routines are available in I<libinn> if INN was built with Cancel-Lock
+support.  The C<configure> script automatically enables that support if it
+finds libcanlock.
+
+B<gen_cancel_lock> expects a Message-ID, a username (possibly NULL) and the
+address of a pointer where it will write elements suitable for the body of a
+Cancel-Lock header field.
+
+B<gen_cancel_key> expects a Control header field body (possibly NULL), a
+Supersedes header field body (possibly NULL), a username (possibly NULL) and
+the address of a pointer where it will write elements suitable for the body
+of a Cancel-Key header field.  This function extracts the Message-ID from the
+Control header field body or, if NULL, from the Supersedes header field body.
+If the header field used for that extraction is not correctly formatted, or
+they are both NULL, or no Message-ID is found, it will result in a failure.
+
+These functions return true if all the elements were written, false on
+failure.  The I<canbuff> string will be allocated by these functions, unless
+they return false.  The caller is reponsible for freeing it.
+
+For each admin secret in the I<canlockadmin> vector set in F<inn.conf>,
+and for each user secret set in the I<canlockuser> vector set in F<inn.conf>
+if I<username> is not NULL, B<gen_cancel_lock> will generate in I<canbuff>
+both sha1 and sha256 Base64-encoded hashes.  Regarding B<gen_cancel_key>,
+it will be for each admin secret in the I<canlockadmin> vector if I<username>
+is NULL or for each user secret in the I<canlockuser> vector if I<username>
+is not NULL.
+
+B<verify_cancel_lock> expects pointers to Cancel-Key and Cancel-Lock header
+field bodies.  This function verifies that I<c_key_header> contains an element
+matching one of those present in I<c_lock_header>.  It returns true if at
+least one element matches.  Otherwise, false is returned, that is to say the
+cancel or supersede request cannot be authenticated.
 
 =head2 CLIENT ACTIVE FILE
 
