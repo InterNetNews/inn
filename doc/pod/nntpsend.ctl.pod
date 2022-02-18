@@ -35,6 +35,6 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-innxmit(1), newsfeeds(5), nntpsend(8), shrinkfile(1).
+innxmit(8), newsfeeds(5), nntpsend(8), shrinkfile(1).
 
 =cut

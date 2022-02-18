@@ -13,7 +13,7 @@ I<host> [I<input>]
 
 B<batcher> reads a list of files and prepares news batches for the
 specified host.  It is generally used to prepare UUCP feeds, but the
-resulting batches can be used by any application that uses rnews(8) to
+resulting batches can be used by any application that uses rnews(1) to
 inject the articles.  It is normally invoked by a script run out of cron
 that uses B<shlock> to lock the host, followed by B<ctlinnd> to flush the
 batch file.  See send-uucp(8) for a front-end for B<batcher>.
@@ -152,6 +152,6 @@ Russ Allbery <eagle@eyrie.org> in POD.
 
 =head1 SEE ALSO
 
-ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(8), send-uucp(8), shlock(1).
+ctlinnd(8), inn.conf(5), newsfeeds(5), rnews(1), send-uucp(8), shlock(1).
 
 =cut

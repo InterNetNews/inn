@@ -297,7 +297,7 @@ checking the existence of an article is expensive or not.
 
 =back
 
-The B<SMprintfiles> function shows file name or token usable by fastrm(8).
+The B<SMprintfiles> function shows file name or token usable by fastrm(1).
 
 The B<SMflushcacheddata> function flushes cached data on each storage
 method.  I<type> is one of following:
@@ -438,6 +438,6 @@ Converted to POD by Julien Elie.
 
 =head1 SEE ALSO
 
-expire(8), fastrm(8), inn.conf(5), libinn_uwildmat(3), storage.conf(5).
+expire(8), fastrm(1), inn.conf(5), libinn_uwildmat(3), storage.conf(5).
 
 =cut

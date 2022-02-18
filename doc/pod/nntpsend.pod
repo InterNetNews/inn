@@ -118,7 +118,7 @@ Written by Landon Curt Noll <chongo@toad.com> and Rich $alz
 
 =head1 SEE ALSO
 
-inn.conf(5), innxmit(1), newsfeeds(5), nntpsend.ctl(5), shlock(1),
+inn.conf(5), innxmit(8), newsfeeds(5), nntpsend.ctl(5), shlock(1),
 shrinkfile(1).
 
 =cut

@@ -250,7 +250,8 @@ Julien Elie.
 
 =head1 SEE ALSO
 
-active(5), ctlinnd(8), expire(8), expire.ctl(5), expireover(8), expirerm(8), fastrm(8),
-inn.conf(5), innstat(8), newslog(5), procbatch(8), scanlogs(8), shlock(1).
+active(5), ctlinnd(8), expire(8), expire.ctl(5), expireover(8), expirerm(8),
+fastrm(1), inn.conf(5), innstat(8), newslog(5), procbatch(8), scanlogs(8),
+shlock(1).
 
 =cut

@@ -161,7 +161,7 @@ then PGP verification of the control message will be done and the user ID
 of the key of the authenticated signer will be checked against the
 expected identity defined by the rest of the string
 (C<news.announce.newgroups> in the above example).  This verification is
-done via B<pgpverify>; see pgpverify(8) for more details.
+done via B<pgpverify>; see pgpverify(1) for more details.
 
 If no logging is specified (with =I<file> as mentioned below), logging will
 be done the same as with B<doit> as described above.
@@ -221,7 +221,7 @@ In order to use B<verify> actions, the PGP key ring of the news user must
 be populated with the PGP keys of the hierarchy maintainers whose control
 messages you want to honour.  For more details on PGP-authenticated control
 messages and the URL for downloading the PGP keys of major hierarchies,
-see pgpverify(8).
+see pgpverify(1).
 
 Control messages of type cancel are handled internally by B<innd> and
 cannot be affected by any of the mechanisms described here.
@@ -350,6 +350,6 @@ POD by Russ Allbery <eagle@eyrie.org>.
 =head1 SEE ALSO
 
 controlchan(8), inn.conf(5), innd(8), newsfeeds(5), newsgroups(5),
-pgpverify(8), sh(1).
+pgpverify(1), sh(1).
 
 =cut

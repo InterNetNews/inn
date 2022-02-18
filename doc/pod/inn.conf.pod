@@ -125,7 +125,7 @@ to be changed.
 The name of the default NNTP server.  If I<nnrpdposthost> is not set and
 UNIX domain sockets are not supported, nnrpd(8) tries to hand off
 locally-posted articles through an INET domain socket to this server.
-actsync(8), nntpget(8), and getlist(8) also use this value as the default
+actsync(8), nntpget(8), and getlist(1) also use this value as the default
 server to connect to.  In the latter cases, the value of the NNTPSERVER
 environment variable, if it exists, overrides this.  The default value is
 unset.
@@ -1524,7 +1524,7 @@ I<nicennrpd> (or I<nicekids> if nnrpd(8) is spawned from innd(8)).
 
 =item I<nicennrpd>
 
-If set to anything greater than C<0>, all nnrpd(8) processes will nice(1)
+If set to anything greater than C<0>, all nnrpd(8) processes will nice(2)
 themselves to this value.  This gives other news processes a higher
 priority and can help overchan(8) keep up with incoming news (if that's
 the object, be sure overchan(8) isn't also set to a lower priority via

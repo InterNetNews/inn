@@ -1040,7 +1040,7 @@ This entry will cause B<innd> to write out a file in I<pathspool>/outgoing
 named F<remote.example.com> and containing the Message-ID and storage
 token of each message to send to that site.  (The storage token is INN's
 internal pointer to where an article is stored; to retrieve an article
-given its storage token, use sm(8)).  B<innxmit> knows how to read files
+given its storage token, use sm(1)).  B<innxmit> knows how to read files
 of this format and send those articles to the remote site.  For
 information on setting it up to run periodically, see L<Setting Up the
 Cron Jobs> below.  You will also need to set up a config file for
@@ -1475,7 +1475,7 @@ together, but more importantly, the device files used by INN really should
 be owned by the news user and group, and you may not want to do that with
 the files in F</dev>.
 
-To create the device files for INN, use mknod(8) with a type of C<b>,
+To create the device files for INN, use mknod(1) with a type of C<b>,
 getting the major and minor device numbers from the existing devices in
 F</dev>.  There's a small shell script in cycbuff.conf(5) that may help
 with this.  Make sure to create the device files in the location INN

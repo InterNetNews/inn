@@ -573,7 +573,7 @@ Expires header field, C<0> otherwise.
 =item f
 
 The storage API token of the article (the same as C<n>).  The article can
-be retrieved given the storage API token by using sm(8).
+be retrieved given the storage API token by using sm(1).
 
 =item g
 
@@ -593,7 +593,7 @@ The message ID of the article.
 =item n
 
 The storage API token of the article.  The article can be retrieved given
-the storage API token by using sm(8).
+the storage API token by using sm(1).
 
 =item p
 
@@ -605,7 +605,7 @@ The site that fed the article to the server.  This is taken from
 either the Path header field body or the IP address of the sending site
 depending on the value of I<logipaddr> in F<inn.conf>.  If I<logipaddr>
 is true and the IP address is C<0.0.0.0> (meaning that the article was
-fed from localhost by a program like rnews(8)), the Path header field body
+fed from localhost by a program like rnews(1)), the Path header field body
 will be sent instead.
 
 =item t
@@ -718,7 +718,7 @@ A program feed (B<Tp>) spawns a given program for every article that the
 site receives.  The I<parameter> field must be the command line to execute,
 and should contain one instance of C<%s>, which will be replaced by the
 storage API token of the article (the actual article can be retrieved by
-the program using sm(8)).  The program will not receive anything on
+the program using sm(1)).  The program will not receive anything on
 standard input (unlike earlier versions of INN, where the article is sent
 to the program on stdin), and standard output and error from the program
 will be set to the error log (I<pathlog>/errlog).  B<innd> will try to

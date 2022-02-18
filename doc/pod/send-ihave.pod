@@ -53,7 +53,7 @@ in an ihave control message.  You may also want to add that pattern to
 the end of any entry processing control articles, like B<controlchan>,
 or being fed a C<*> pattern.)
 
-Then, periodically run out of cron(1) the following command:
+Then, periodically run out of cron(8) the following command:
 
     send-ihave news.server.com
 
