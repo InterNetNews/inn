@@ -182,8 +182,9 @@ checks.
 
 =item *
 
-B<inews> no longer adds a Sender header field nor overwrites an existing one
-in articles it processes if the new B<-s> flag is used.
+B<inews> no longer adds a Sender header field nor overwrites an existing
+one in articles it processes if the new B<-s> flag is used.  It will also no
+longer add the obsolescent Lines header field.
 
 =item *
 

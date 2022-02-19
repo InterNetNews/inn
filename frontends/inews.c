@@ -469,7 +469,7 @@ CheckDistribution(char *p)
 **  Process all the headers.  FYI, they're done in RFC-order.
 */
 static void
-ProcessHeaders(bool AddOrg, bool AddSender, int linecount, struct passwd *pwp)
+ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
 {
     static char PATHFLUFF[] = PATHMASTER;
     HEADER *hp;
@@ -582,11 +582,6 @@ ProcessHeaders(bool AddOrg, bool AddSender, int linecount, struct passwd *pwp)
     /* Keywords; left alone. */
     /* Summary; left alone. */
     /* Approved; left alone. */
-
-    /* Set Lines */
-    sprintf(buff, "%d", linecount);
-    HDR(_lines) = xstrdup(buff);
-
     /* Supersedes; left alone. */
 
     /* Now make sure everything is there. */
@@ -602,7 +597,7 @@ ProcessHeaders(bool AddOrg, bool AddSender, int linecount, struct passwd *pwp)
 **  -- here's the article again."
 */
 static char *
-AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
+AppendSignature(bool UseMalloc, char *article, char *homedir)
 {
     int i;
     int length;
@@ -612,7 +607,6 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     FILE *F;
 
     /* Open the file. */
-    *linesp = 0;
     if (strlen(homedir) > sizeof(buff) - 14)
         die("home directory path too long");
     snprintf(buff, sizeof(buff), "%s/.signature", homedir);
@@ -644,7 +638,6 @@ AppendSignature(bool UseMalloc, char *article, char *homedir, int *linesp)
     for (i = 0, p = buff; (p = strchr(p, '\n')) != NULL; p++)
         if (++i > SIG_MAXLINES)
             die("signature has too many lines");
-    *linesp = 1 + i;
 
     /* Grow the article to have the signature. */
     i = strlen(article);
@@ -801,7 +794,6 @@ main(int ac, char *av[])
     int j;
     int port;
     int Mode;
-    int SigLines;
     struct passwd *pwp;
     char *article;
     char *deadfile;
@@ -958,10 +950,8 @@ main(int ac, char *av[])
         CheckIncludedText(article, i);
     if (DoSignature)
         article =
-            AppendSignature(Mode == 'h', article, pwp->pw_dir, &SigLines);
-    else
-        SigLines = 0;
-    ProcessHeaders(AddOrg, AddSender, i + SigLines, pwp);
+            AppendSignature(Mode == 'h', article, pwp->pw_dir);
+    ProcessHeaders(AddOrg, AddSender, pwp);
     Length = strlen(article);
     if ((innconf->localmaxartsize != 0) && (Length > innconf->localmaxartsize))
         die("article is larger than local limit of %lu bytes",
