@@ -142,8 +142,9 @@ copy of the text that should be used for the Distribution header field.
 =head2 CANCEL-LOCK
 
 These routines are available in I<libinn> if INN was built with Cancel-Lock
-support.  The C<configure> script automatically enables that support if it
-finds libcanlock.
+support (otherwise they are stub functions which are always returning false).
+The C<configure> script automatically enables that support if it finds
+libcanlock.
 
 B<gen_cancel_lock> expects a Message-ID, a username (possibly NULL) and the
 address of a pointer where it will write elements suitable for the body of a

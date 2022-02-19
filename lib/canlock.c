@@ -364,4 +364,31 @@ verify_cancel_key(const char *c_key_header, const char *c_lock_header)
 
     return (status == 0);
 }
+
+#else
+
+/*  Define stub functions when Cancel-Lock is not available.
+**  They all return false.
+*/
+bool
+gen_cancel_lock(const char *msgid UNUSED, const char *username UNUSED,
+                char **canbuff UNUSED)
+{
+    return false;
+}
+
+bool
+gen_cancel_key(const char *hdrcontrol UNUSED, const char *hdrsupersedes UNUSED,
+               const char *username UNUSED, char **canbuff UNUSED)
+{
+    return false;
+}
+
+bool
+verify_cancel_key(const char *c_key_header UNUSED,
+                  const char *c_lock_header UNUSED)
+{
+    return false;
+}
+
 #endif /* HAVE_CANLOCK */
