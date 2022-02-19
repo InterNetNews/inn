@@ -123,10 +123,10 @@ something like this:
         __LINES__    => 5
     );
 
-Note that the value of C<$hdr{Lines}> is the body of the Lines header
-field of the article and may bear no resemblence to the actual length
-of the article.  C<$hdr{__LINES__}> is the line count calculated by INN,
-and is guaranteed to be accurate.
+Note that the value of C<$hdr{Lines}> is the body of the (obsolescent and
+optional) Lines header field of the article and may bear no resemblence to the
+actual length of the article.  C<$hdr{__LINES__}> is the line count calculated
+by INN, and is guaranteed to be accurate.
 
 The %hdr hash should not be modified inside filter_art().  Instead, if any
 of the contents need to be modified temporarily during filtering (smashing

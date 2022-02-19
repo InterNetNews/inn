@@ -91,7 +91,6 @@ sub createArticle {
       $hour, $min, $sec;
 
     print ARTICLE "Organization: None that I can think of$cr\n";
-    print ARTICLE "Lines: 5$cr\n";
     print ARTICLE "Distribution: world$cr\n";
     print ARTICLE "Message-ID: $msgid$cr\n";
     print ARTICLE "NNTP-Posting-Host: localhost$cr\n";
