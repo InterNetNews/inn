@@ -331,7 +331,8 @@ sub parse_config {
 sub active {
     my ($group, $hi, $lo, $f, $alias, %groups, %aliases);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         $line++;
         unless (($group, $hi, $lo, $f) = /^([^ ]+) (\d+) (\d+) (.+)\n$/) {
             eprint "$file:$line: malformed line.\n";
@@ -390,7 +391,8 @@ my %control_actions = (
 sub control_ctl {
     my ($msg, $from, $ng, $act);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         next INPUT if spacious($file, ++$line);
 
         if (/^\/localencoding\//) {
@@ -446,7 +448,8 @@ sub expire_ctl {
 
     $groupbaseexpiry = $INN::Config::groupbaseexpiry;
     $groupbaseexpiry =~ tr/A-Z/a-z/;
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         next INPUT if spacious($file, ++$line);
 
         if (($v) = m@/remember/:(.+)@) {
@@ -676,7 +679,8 @@ sub innfeed_conf {
 sub moderators {
     my ($k, $v);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         next INPUT if spacious($file, ++$line);
 
         unless (($k, $v) = /^([^:]+):(.+)$/) {
@@ -727,7 +731,8 @@ sub newsfeeds {
     my ($bang, $nobang, $prog, $dir);
     my (%variables, $key);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         $line++;
         next INPUT if /^$/;
         chop;
@@ -811,7 +816,8 @@ sub newsfeeds {
         ##  Check distributions.
         if (($dists) = $pats =~ m@.*/(.*)@) {
             $bang = $nobang = 0;
-          DIST: foreach my $d (split(/,/, $dists)) {
+          DIST:
+            foreach my $d (split(/,/, $dists)) {
                 if ($d =~ /^!/) {
                     $bang++;
                 } else {
@@ -824,7 +830,8 @@ sub newsfeeds {
               if $bang && $nobang;
         }
         $type = "f";
-      FLAG: foreach my $flag (split(/,/, $flags)) {
+      FLAG:
+        foreach my $flag (split(/,/, $flags)) {
             ($k, $v) = $flag =~ /(.)(.*)/;
             if (!defined $newsfeeds_flags{$k}) {
                 eprint "$file:$start: unknown flag `$flag'\n";
@@ -886,7 +893,8 @@ sub newsfeeds {
 sub nntpsend_ctl {
     my ($site, $fqdn, $flags, $f, $v);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         next INPUT if spacious($file, ++$line);
 
         ##  Ignore the size info for now.
@@ -899,7 +907,8 @@ sub nntpsend_ctl {
           if $fqdn eq "";
 
         next INPUT if $flags eq "";
-      FLAG: foreach (split(/ /, $flags)) {
+      FLAG:
+        foreach (split(/ /, $flags)) {
             unless (($f, $v) = /^-([adrvtTpSP])(.*)$/) {
                 eprint "$file:$line: unknown argument for `$site'\n";
                 next FLAG;
@@ -922,7 +931,8 @@ sub nntpsend_ctl {
 sub passwd_nntp {
     my ($name, $pass);
 
-  INPUT: while (<$IN>) {
+  INPUT:
+    while (<$IN>) {
         next INPUT if spacious($file, ++$line);
 
         unless (($name, $pass) = /^[\w\-\.]+:([^:]*):([^:]*)(:authinfo)?$/) {
@@ -1236,7 +1246,8 @@ GetOptions(
     'perm!'     => \$perms,
 ) or Usage("Unknown option");
 
-ARG: foreach (@ARGV) {
+ARG:
+foreach (@ARGV) {
     if (my ($k, $v) = /(.*)=(.*)/) {
         Usage("Can't check `$k'")
           if !defined $checklist{$k};
@@ -1257,7 +1268,8 @@ $pfx = $fix ? '# ' : '';
 @todo = grep(defined $checklist{$_}, sort(keys %paths))
   if $all || (scalar(@todo) == 0 && $perms < 1);
 
-ACTION: foreach my $workfile (@todo) {
+ACTION:
+foreach my $workfile (@todo) {
     $file = $paths{$workfile};
     next ACTION unless $file;    # skip if set to empty value by user
     if (!-f $file) {
