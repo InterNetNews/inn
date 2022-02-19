@@ -182,6 +182,11 @@ checks.
 
 =item *
 
+B<inews> no longer adds a Sender header field nor overwrites an existing one
+in articles it processes if the new B<-s> flag is used.
+
+=item *
+
 B<signcontrol> has been removed as it embeds per-site configuration which is
 overwritten each time INN is updated to a newer version, and it is unlikely
 you ever need it.  Yet, if you need to issue PGP-signed control messages,

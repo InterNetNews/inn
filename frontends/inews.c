@@ -469,7 +469,7 @@ CheckDistribution(char *p)
 **  Process all the headers.  FYI, they're done in RFC-order.
 */
 static void
-ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
+ProcessHeaders(bool AddOrg, bool AddSender, int linecount, struct passwd *pwp)
 {
     static char PATHFLUFF[] = PATHMASTER;
     HEADER *hp;
@@ -493,7 +493,7 @@ ProcessHeaders(bool AddOrg, int linecount, struct passwd *pwp)
         sysdie("cannot get hostname");
     if (HDR(_from) == NULL)
         HDR(_from) = FormatUserName(pwp, p);
-    else {
+    else if (AddSender) {
         if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff))
             die("username and host are too long");
         sprintf(buff, "%s@%s", pwp->pw_name, p);
@@ -808,7 +808,7 @@ main(int ac, char *av[])
     char buff[MED_BUFFER];
     char SpoolMessage[MED_BUFFER];
     bool DoSignature;
-    bool AddOrg;
+    bool AddOrg, AddSender;
     size_t Length;
     uid_t uid;
 
@@ -827,6 +827,7 @@ main(int ac, char *av[])
     Dump = false;
     DoSignature = true;
     AddOrg = true;
+    AddSender = true;
     port = 0;
 
     if (!innconf_read(NULL))
@@ -834,8 +835,8 @@ main(int ac, char *av[])
 
     umask(NEWSUMASK);
 
-    /* Parse JCL. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:t:F:o:w:"))
+    /* Parse command-line options. */
+    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:st:F:o:w:"))
            != EOF) {
         switch (i) {
         default:
@@ -855,6 +856,9 @@ main(int ac, char *av[])
             break;
         case 'R':
             Revoked = true;
+            break;
+        case 's':
+            AddSender = false;
             break;
         case 'S':
             DoSignature = false;
@@ -957,7 +961,7 @@ main(int ac, char *av[])
             AppendSignature(Mode == 'h', article, pwp->pw_dir, &SigLines);
     else
         SigLines = 0;
-    ProcessHeaders(AddOrg, i + SigLines, pwp);
+    ProcessHeaders(AddOrg, AddSender, i + SigLines, pwp);
     Length = strlen(article);
     if ((innconf->localmaxartsize != 0) && (Length > innconf->localmaxartsize))
         die("article is larger than local limit of %lu bytes",
