@@ -535,24 +535,7 @@ ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
 
     /* Set Path */
     if (HDR(_path) == NULL) {
-#if defined(DO_INEWS_PATH)
-        if ((p = innconf->pathhost) != NULL) {
-            if (*p)
-                HDR(_path) = concat(Exclusions, p, "!", PATHFLUFF, (char *) 0);
-            else
-                HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
-        } else if (innconf->server != NULL) {
-            p = inn_getfqdn(innconf->domain);
-            if (p == NULL)
-                sysdie("cannot get hostname");
-            HDR(_path) = concat(Exclusions, p, "!", PATHFLUFF, (char *) 0);
-            free(p);
-        } else {
-            HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
-        }
-#else
         HDR(_path) = concat(Exclusions, PATHFLUFF, (char *) 0);
-#endif /* defined(DO_INEWS_PATH) */
     }
 
     /* Reply-To; left alone. */

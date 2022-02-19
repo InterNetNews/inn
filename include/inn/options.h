@@ -39,9 +39,6 @@
 /* innd will flush the history and active file after this many seconds. */
 #define DEFAULT_TIMEOUT 300
 
-/* Define if inews should put hostnames into the Path header field itself. */
-#define DO_INEWS_PATH
-
 /* Define if inews should munge the GECOS entry of the passwd file when
    attempting to determine a poster's real name.  Use this if your GECOS
    entries have other stuff after trailing commas or before dashes, things

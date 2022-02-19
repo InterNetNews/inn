@@ -28,12 +28,10 @@ the message will be rejected.  The message will also be rejected if
 I<checkincludedtext> is true in F<inn.conf>, it contains more quoted text
 than original text, and it is over 40 lines long.
 
-If not provided, the Path header field of an article is constructed as follows:
-The basic Path header field body will be "not-for-mail".  If I<pathhost> is specified
-in F<inn.conf>, it will be added to the beginning Path.  Otherwise, if
-I<server> is specified, the full domain of the local host will be added to
-the beginning of the Path.  Then, if B<-x> was given, its value will be
-added to the beginning of the Path.
+If not provided, the Path header field body will be C<not-for-mail>.  If B<-x>
+is given, its value will be added to the beginning of the Path header field.
+You may for instance want to add a special path identity related to the host
+running B<inews>.
 
 If posting fails, a copy of the failed post will be saved in a file named
 F<dead.article> in the home directory of the user running B<inews>.
