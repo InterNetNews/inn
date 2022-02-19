@@ -49,7 +49,7 @@ HEADER Table[] = {
     {"References",                true,  HTstd, 0, NULL, NULL, 0},
     {"Reply-To",                  true,  HTstd, 0, NULL, NULL, 0},
     {"NNTP-Posting-Host",         false, HTobs, 0, NULL, NULL, 0},
-    {"Mime-Version",              true,  HTstd, 0, NULL, NULL, 0},
+    {"MIME-Version",              true,  HTstd, 0, NULL, NULL, 0},
     {"Content-Type",              true,  HTstd, 0, NULL, NULL, 0},
     {"Content-Transfer-Encoding", true,  HTstd, 0, NULL, NULL, 0},
     {"X-Trace",                   false, HTobs, 0, NULL, NULL, 0},
