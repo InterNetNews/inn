@@ -175,7 +175,10 @@ which should now be used (or, even better, B<innfeed>).
 =item *
 
 The I<refusecybercancels> and I<verifycancels> parameters have been removed
-from F<inn.conf>.
+from F<inn.conf>.  Besides, B<inews> no longer checks if the From or Sender
+header fields of a cancel or supersede request match the ones of the original
+article being withdrawn.  All of these were either inefficient or inexact
+checks.
 
 =item *
 
