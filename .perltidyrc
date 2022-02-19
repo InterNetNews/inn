@@ -15,8 +15,7 @@
 -sbt=2          # ...or square brackets
 -nsfs           # no space before semicolon in for
 -xci            # improve indentation of nested structures
--vxl='*'        # disable vertical alignment of = and similar symbols
--vil='=>'       # ...but enable vertical alignment for hashes definitions
+-vil='=>'       # enable vertical alignment for hashes definitions
 -nlop           # disable vertical alignment of logical and ternary expressions
 
 # Uncomment to generate .LOG files.
