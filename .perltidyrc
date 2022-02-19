@@ -1,11 +1,12 @@
 # Configuration for proper Perl code automated reformatting.  -*- conf -*-
 #
-# This configuration requires perltidy 2022xxxx or later.
+# This configuration requires perltidy 20220217 or later.
 
 -b              # modify the file in place
 -bext='/'       # ...without backuping the file (Git permits restoring it)
 -w              # report warning messages as errors
 -bbao           # put line breaks before any operator
+-bal=1          # put line breaks after a label
 -nbbc           # don't force blank lines before comments (bad for else blocks)
 -boc            # do not re-break lists, since perltidy is awful at this
 -ce             # cuddle braces around else
