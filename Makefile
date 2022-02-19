@@ -260,7 +260,7 @@ snapshot:
 reformat:
 	@if command -v "black" &> /dev/null ; then \
 	    echo "Running black to reformat Python code..." ; \
-	    black --line-length 79 --quiet --experimental-string-processing \
+	    black --line-length 79 --quiet \
 	        --include "contrib/mm_ckpasswd|\.py$$" . ; \
 	else \
 	    echo "Skipping Python code reformatting (black not found)" ; \
