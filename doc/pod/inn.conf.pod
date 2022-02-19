@@ -125,7 +125,7 @@ to be changed.
 The name of the default NNTP server.  If I<nnrpdposthost> is not set and
 UNIX domain sockets are not supported, nnrpd(8) tries to hand off
 locally-posted articles through an INET domain socket to this server.
-actsync(8), nntpget(8), and getlist(1) also use this value as the default
+actsync(8), nntpget(1), and getlist(1) also use this value as the default
 server to connect to.  In the latter cases, the value of the NNTPSERVER
 environment variable, if it exists, overrides this.  The default value is
 unset.
