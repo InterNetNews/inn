@@ -185,8 +185,17 @@ checks.
 B<inews> no longer adds a Sender header field nor overwrites an existing
 one in articles it processes if the new B<-P> flag is used.  The Path header
 field, if unset, no longer systematically contains the path identity of the
-local news server (you may want to add it manually with the B<-x> flag).
-Finally, B<inews> also no longer adds the obsolescent Lines header field.
+local news server (you may want to add it manually with the B<-x> flag, if
+needed).  Finally, B<inews> also no longer adds the obsolescent Lines header
+field.
+
+=item *
+
+A new B<-E> flag can now be given to B<inews> to silently discard empty
+articles, instead of bailing out with an error.  Another new B<-m> flag
+permits setting the Message-ID instead of letting B<inews> generate one.
+And a third new flag, B<-Y>, forces B<inews> to authenticate to the remote
+news server even if not asked to.
 
 =item *
 

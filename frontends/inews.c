@@ -235,7 +235,6 @@ StripOffHeaders(char *article)
 
     /* Scan through buffer, a header field at a time. */
     for (p = article;;) {
-
         if ((q = strchr(p, ':')) == NULL)
             die("no colon in header field \"%.30s...\"", p);
         if (q[1] == '\n' && !ISWHITE(q[2])) {
@@ -350,7 +349,7 @@ CheckControl(char *ctrl)
     for (ctrl = p; *p && !ISWHITE(*p); p++)
         continue;
     if (p == ctrl)
-        die("empty control message");
+        die("empty Control header field");
     save = *p;
     *p = '\0';
 
@@ -530,7 +529,7 @@ ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
         HDR(_messageid) = xstrdup(p);
     } else if ((p = strchr(HDR(_messageid), '@')) == NULL
                || strchr(++p, '@') != NULL) {
-        die("message ID must have exactly one @");
+        die("Message-ID must have exactly one @");
     }
 
     /* Set Path */
@@ -761,7 +760,10 @@ Spoolit(char *article, size_t Length, char *deadfile)
 static void
 Usage(void)
 {
-    fprintf(stderr, "Usage: inews [-D] [-h] [header_flags] [article]\n");
+    fprintf(stderr,
+            "Usage: inews [-D] [-h] [other_options] [header_flags] [article]\n"
+            "    Look at inews(1) man page for a complete list of recognized "
+            "flags\n");
     /* Don't call QuitServer here -- connection isn't open yet. */
     exit(1);
 }
@@ -784,6 +786,8 @@ main(int ac, char *av[])
     char SpoolMessage[MED_BUFFER];
     bool DoSignature;
     bool AddOrg, AddSender;
+    bool DiscardEmpty;
+    bool ForceAuth;
     size_t Length;
     uid_t uid;
 
@@ -803,6 +807,8 @@ main(int ac, char *av[])
     DoSignature = true;
     AddOrg = true;
     AddSender = true;
+    DiscardEmpty = false;
+    ForceAuth = false;
     port = 0;
 
     if (!innconf_read(NULL))
@@ -810,10 +816,16 @@ main(int ac, char *av[])
 
     umask(NEWSUMASK);
 
-    /* Parse command-line options. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:Pr:t:F:o:w:"))
+    /* Parse command-line options.
+     *
+     * The flags are compatible with the original inews (C News) and the
+     * improved inews-xt from Olaf Titz.
+     * Also keep compatibility with tinews (shipped with tin). */
+    while ((i = getopt(ac, av,
+                       "a:Ac:d:De:Ef:F:hHi:ILm:n:No:Op:Pr:Rs:St:vVw:Wx:XY"))
            != EOF) {
         switch (i) {
+        case 'H':
         default:
             Usage();
             /* NOTREACHED */
@@ -825,6 +837,17 @@ main(int ac, char *av[])
         case 'V':
         case 'W':
             /* Ignore C News options. */
+            break;
+        case 'i': /* 3 flags for PGP-signing messages. */
+        case 's':
+        case 'X':
+        case 'I': /* Don't add Injection-Date. */
+        case 'L': /* Don't add Cancel-Key. */
+        case 'v': /* Verbose mode. */
+            /* Ignore tinews options. */
+            break;
+        case 'E':
+            DiscardEmpty = true;
             break;
         case 'O':
             AddOrg = false;
@@ -844,6 +867,9 @@ main(int ac, char *av[])
         case 'x':
             Exclusions = concat(optarg, "!", (char *) 0);
             break;
+        case 'Y':
+            ForceAuth = true;
+            break;
         case 'p':
             port = atoi(optarg);
             break;
@@ -854,6 +880,7 @@ main(int ac, char *av[])
         case 'd':   HDR(_distribution) = optarg;   break;
         case 'e':   HDR(_expires) = optarg;        break;
         case 'f':   HDR(_from) = optarg;           break;
+        case 'm':   HDR(_messageid) = optarg;      break;
         case 'n':   HDR(_newsgroups) = optarg;     break;
         case 'r':   HDR(_replyto) = optarg;        break;
         case 't':   HDR(_subject) = optarg;        break;
@@ -913,7 +940,7 @@ main(int ac, char *av[])
         if ((j = atoi(buff)) != NNTP_ERR_COMMAND)
             i = j;
 
-        if (i != NNTP_OK_BANNER_POST) {
+        if (i != NNTP_OK_BANNER_POST || ForceAuth) {
             /* We try to authenticate in case it is all the same possible
              * to post. */
             if (NNTPsendpassword((char *) NULL, FromServer, ToServer) < 0)
@@ -932,8 +959,7 @@ main(int ac, char *av[])
     if (innconf->checkincludedtext)
         CheckIncludedText(article, i);
     if (DoSignature)
-        article =
-            AppendSignature(Mode == 'h', article, pwp->pw_dir);
+        article = AppendSignature(Mode == 'h', article, pwp->pw_dir);
     ProcessHeaders(AddOrg, AddSender, pwp);
     Length = strlen(article);
     if ((innconf->localmaxartsize != 0) && (Length > innconf->localmaxartsize))
@@ -941,8 +967,12 @@ main(int ac, char *av[])
             innconf->localmaxartsize);
 
     /* Do final checks. */
-    if (i == 0 && HDR(_control) == NULL)
-        die("article is empty");
+    if (i == 0 && HDR(_control) == NULL) {
+        if (DiscardEmpty)
+            exit(0);
+        else
+            die("article is empty");
+    }
 
     if (Dump) {
         /* Write the headers and a blank line. */
