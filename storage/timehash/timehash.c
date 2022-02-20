@@ -36,8 +36,7 @@ typedef struct {
         *terde; /* dirent entry for the last entry retrieved in ter */
 } PRIV_TIMEHASH;
 
-typedef enum
-{
+typedef enum {
     FIND_DIR,
     FIND_ART,
     FIND_TOPDIR
@@ -277,11 +276,9 @@ OpenArticle(const char *path, RETRTYPE amount)
         return NULL;
     }
 
-  private
-    = xmalloc(sizeof(PRIV_TIMEHASH));
+    private = xmalloc(sizeof(PRIV_TIMEHASH));
     art->private = (void *) private;
-  private
-    ->len = sb.st_size;
+    private->len = sb.st_size;
     if (innconf->articlemmap) {
         if ((private->base =
                  mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0))
@@ -297,8 +294,7 @@ OpenArticle(const char *path, RETRTYPE amount)
         else
             madvise(private->base, sb.st_size, MADV_SEQUENTIAL);
     } else {
-      private
-        ->base = xmalloc(private->len);
+        private->base = xmalloc(private->len);
         if (read(fd, private->base, private->len) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("timehash: could not read article");
@@ -310,20 +306,13 @@ OpenArticle(const char *path, RETRTYPE amount)
     }
     close(fd);
 
-  private
-    ->top = NULL;
-  private
-    ->sec = NULL;
-  private
-    ->ter = NULL;
-  private
-    ->artdir = NULL;
-  private
-    ->topde = NULL;
-  private
-    ->secde = NULL;
-  private
-    ->terde = NULL;
+    private->top = NULL;
+    private->sec = NULL;
+    private->ter = NULL;
+    private->artdir = NULL;
+    private->topde = NULL;
+    private->secde = NULL;
+    private->terde = NULL;
 
     if (amount == RETR_ALL) {
         art->data = private->base;
@@ -399,8 +388,7 @@ timehash_freearticle(ARTHANDLE *article)
         return;
 
     if (article->private) {
-      private
-        = (PRIV_TIMEHASH *) article->private;
+        private = (PRIV_TIMEHASH *) article->private;
         if (innconf->articlemmap)
             munmap(private->base, private->len);
         else

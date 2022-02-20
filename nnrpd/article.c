@@ -23,8 +23,7 @@
 /*
 **  Data structures for use in ARTICLE/HEAD/BODY/STAT common code.
 */
-typedef enum _SENDTYPE
-{
+typedef enum _SENDTYPE {
     STarticle,
     SThead,
     STbody,

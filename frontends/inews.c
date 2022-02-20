@@ -33,8 +33,7 @@
 #define HEADER_DELTA   20
 #define GECOSTERM(c)   ((c) == ',' || (c) == ';' || (c) == ':' || (c) == LPAREN)
 
-typedef enum _HEADERTYPE
-{
+typedef enum _HEADERTYPE {
     HTobs,
     HTreq,
     HTstd

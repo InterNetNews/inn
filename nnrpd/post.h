@@ -2,8 +2,7 @@
 **  NetNews Reading Protocol server.
 */
 
-typedef enum _HEADERTYPE
-{
+typedef enum _HEADERTYPE {
     HTobs,
     HTreq,
     HTstd

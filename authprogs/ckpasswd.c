@@ -309,8 +309,7 @@ output_user(const char *username, bool wantgroup)
 int
 main(int argc, char *argv[])
 {
-    enum authtype
-    {
+    enum authtype {
         AUTH_NONE,
         AUTH_SHADOW,
         AUTH_FILE,

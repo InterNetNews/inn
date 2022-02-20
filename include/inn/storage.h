@@ -18,16 +18,14 @@
    returned when errors occur */
 #define TOKEN_EMPTY          255
 
-typedef enum
-{
+typedef enum {
     RETR_ALL,
     RETR_HEAD,
     RETR_BODY,
     RETR_STAT
 } RETRTYPE;
 
-typedef enum
-{
+typedef enum {
     SM_RDWR,
     SM_PREOPEN
 } SMSETUP;
@@ -79,15 +77,13 @@ typedef struct {
 extern int SMerrno;
 extern char *SMerrorstr;
 
-typedef enum
-{
+typedef enum {
     SELFEXPIRE,
     SMARTNGNUM,
     EXPENSIVESTAT
 } PROBETYPE;
 
-typedef enum
-{
+typedef enum {
     SM_ALL,
     SM_HEAD,
     SM_CANCELLEDART

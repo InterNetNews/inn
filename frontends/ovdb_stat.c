@@ -40,8 +40,7 @@ sigfunc(int signum UNUSED)
 
 static int html = 0;
 
-typedef enum
-{
+typedef enum {
     END,
     INT32,  /* 'a' points to u_int32_t */
     HEX32,  /* 'a' printed in hex */

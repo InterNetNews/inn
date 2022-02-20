@@ -25,8 +25,7 @@ BEGIN_DECLS
 **  should treat this structure as opaque and instead use the functions and
 **  macros defined below.
 */
-enum QIOflag
-{
+enum QIOflag {
     QIO_ok,
     QIO_error,
     QIO_long

@@ -80,8 +80,7 @@ static unsigned int basedict_len;
 
 #    endif /* HAVE_ZLIB */
 
-enum
-{
+enum {
     client_flag_init = 0x01,
     client_flag_term = 0x02,
 };

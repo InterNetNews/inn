@@ -78,8 +78,7 @@ typedef struct {
 #define METACYCBUFF_UPDATE 25
 #define REFRESH_INTERVAL   30
 
-typedef enum
-{
+typedef enum {
     INTERLEAVE,
     SEQUENTIAL
 } METAMODE;

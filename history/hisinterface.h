@@ -36,8 +36,7 @@ typedef struct hismethod {
 /* subordinate history manager private methods */
 void his_seterror(struct history *, const char *);
 
-enum
-{
+enum {
     S_HIScacheadd,
     S_HIScachelookup,
     S_HISsetup,

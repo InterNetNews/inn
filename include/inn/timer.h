@@ -16,8 +16,7 @@
 
 BEGIN_DECLS
 
-enum
-{
+enum {
     TMR_HISHAVE,    /* Looking up ID in history (yes/no). */
     TMR_HISGREP,    /* Looking up ID in history (data). */
     TMR_HISWRITE,   /* Writing to history. */

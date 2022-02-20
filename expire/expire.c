@@ -59,8 +59,7 @@ static void Usage(void) __attribute__((__noreturn__));
 
 static int EXPsplit(char *p, char sep, char **argv, int count);
 
-enum KR
-{
+enum KR {
     Keep,
     Remove
 };

@@ -28,8 +28,7 @@ typedef struct innlistener_s *InnListener; /* see innlistener.h */
 typedef struct tape_s *Tape;               /* see tape.h */
 
 typedef int TimeoutId; /* see endpoint.h */
-typedef enum
-{ /* see endpoint.h */
+typedef enum {         /* see endpoint.h */
     IoDone,
     IoIncomplete,
     IoFailed,

@@ -69,8 +69,7 @@ struct history {
     struct histstats stats;
 };
 
-enum HISRESULT
-{
+enum HISRESULT {
     HIScachehit,
     HIScachemiss,
     HIScachedne

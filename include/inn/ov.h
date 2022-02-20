@@ -11,8 +11,7 @@ BEGIN_DECLS
 #define OV_READ  1
 #define OV_WRITE 2
 
-typedef enum
-{
+typedef enum {
     OVSPACE,
     OVSORT,
     OVCUTOFFLOW,
@@ -23,14 +22,12 @@ typedef enum
     OVCACHEFREE
 } OVCTLTYPE;
 #define OV_NOSPACE 100
-typedef enum
-{
+typedef enum {
     OVNEWSGROUP,
     OVARRIVED,
     OVNOSORT
 } OVSORTTYPE;
-typedef enum
-{
+typedef enum {
     OVADDCOMPLETED,
     OVADDFAILED,
     OVADDGROUPNOMATCH

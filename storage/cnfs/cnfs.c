@@ -1555,16 +1555,14 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
         free(art);
         return NULL;
     }
-  private
-    = xmalloc(sizeof(PRIV_CNFS));
+    private = xmalloc(sizeof(PRIV_CNFS));
     art->private = (void *) private;
     art->arrived = ntohl(cah.arrived);
     offset += sizeof(cah) + plusoffset;
     if (innconf->articlemmap) {
         pagefudge = offset % pagesize;
         mmapoffset = offset - pagefudge;
-      private
-        ->len = pagefudge + ntohl(cah.size);
+        private->len = pagefudge + ntohl(cah.size);
         if ((private->base = mmap(NULL, private->len, PROT_READ, MAP_SHARED,
                                   cycbuff->fd, mmapoffset))
             == MAP_FAILED) {
@@ -1584,8 +1582,7 @@ cnfs_retrieve(const TOKEN token, const RETRTYPE amount)
         else
             madvise(private->base, private->len, MADV_SEQUENTIAL);
     } else {
-      private
-        ->base = xmalloc(ntohl(cah.size));
+        private->base = xmalloc(ntohl(cah.size));
         pagefudge = 0;
         if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
             SMseterror(SMERR_UNDEFINED, "read failed");
@@ -1670,8 +1667,7 @@ cnfs_freearticle(ARTHANDLE *article)
         return;
 
     if (article->private) {
-      private
-        = (PRIV_CNFS *) article->private;
+        private = (PRIV_CNFS *) article->private;
         if (innconf->articlemmap)
             munmap(private->base, private->len);
         else
@@ -1854,19 +1850,15 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     }
 #endif /* OLD_CNFS */
     art = xmalloc(sizeof(ARTHANDLE));
-  private
-    = xmalloc(sizeof(PRIV_CNFS));
+    private = xmalloc(sizeof(PRIV_CNFS));
     art->private = (void *) private;
     art->type = TOKEN_CNFS;
     *private = priv;
-  private
-    ->cycbuff = cycbuff;
-  private
-    ->offset = middle;
+    private->cycbuff = cycbuff;
+    private->offset = middle;
     if (cycbuff->len - cycbuff->free
         < (off_t) ntohl(cah.size) + cycbuff->blksz + 1) {
-      private
-        ->offset += cycbuff->blksz;
+        private->offset += cycbuff->blksz;
         art->data = NULL;
         art->len = 0;
         art->token = NULL;
@@ -1887,8 +1879,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
                 break;
         }
         if ((middle > cycbuff->free) || (middle != limit)) {
-          private
-            ->offset = middle;
+            private->offset = middle;
             art->data = NULL;
             art->len = 0;
             art->token = NULL;
@@ -1905,8 +1896,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
                 break;
         }
         if ((middle >= cycbuff->len) || (middle != limit)) {
-          private
-            ->offset = middle;
+            private->offset = middle;
             art->data = NULL;
             art->len = 0;
             art->token = NULL;
@@ -1921,18 +1911,15 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
         art->data = NULL;
         art->len = 0;
         art->token = NULL;
-      private
-        ->base = 0;
+        private->base = 0;
         if (!SMpreopen)
             CNFSshutdowncycbuff(cycbuff);
         return art;
     }
 
-  private
-    ->offset += (off_t) ntohl(cah.size) + sizeof(cah) + plusoffset;
+    private->offset += (off_t) ntohl(cah.size) + sizeof(cah) + plusoffset;
     tonextblock = cycbuff->blksz - (private->offset & (cycbuff->blksz - 1));
-  private
-    ->offset += (off_t) tonextblock;
+    private->offset += (off_t) tonextblock;
     art->arrived = ntohl(cah.arrived);
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->blksz,
                           (offset > cycbuff->free) ? cycbuff->cyclenum - 1
@@ -1943,8 +1930,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     if (innconf->articlemmap) {
         pagefudge = offset % pagesize;
         mmapoffset = offset - pagefudge;
-      private
-        ->len = pagefudge + ntohl(cah.size);
+        private->len = pagefudge + ntohl(cah.size);
         if ((private->base = mmap(0, private->len, PROT_READ, MAP_SHARED,
                                   cycbuff->fd, mmapoffset))
             == MAP_FAILED) {
@@ -1958,8 +1944,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
         mmap_invalidate(private->base, private->len);
         madvise(private->base, private->len, MADV_SEQUENTIAL);
     } else {
-      private
-        ->base = xmalloc(ntohl(cah.size));
+        private->base = xmalloc(ntohl(cah.size));
         pagefudge = 0;
         if (pread(cycbuff->fd, private->base, ntohl(cah.size), offset) < 0) {
             art->data = NULL;
@@ -1968,8 +1953,7 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
             if (!SMpreopen)
                 CNFSshutdowncycbuff(cycbuff);
             free(private->base);
-          private
-            ->base = 0;
+            private->base = 0;
             return art;
         }
     }

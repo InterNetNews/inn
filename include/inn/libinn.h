@@ -47,8 +47,7 @@ extern time_t parsedate_rfc5322_lax(const char *);
 /*
 **  Wildmat matching.
 */
-enum uwildmat
-{
+enum uwildmat {
     UWILDMAT_FAIL = 0,
     UWILDMAT_MATCH = 1,
     UWILDMAT_POISON
@@ -63,8 +62,7 @@ extern enum uwildmat uwildmat_poison(const char *text, const char *pat);
 /*
 **  File locking.
 */
-enum inn_locktype
-{
+enum inn_locktype {
     INN_LOCK_READ,
     INN_LOCK_WRITE,
     INN_LOCK_UNLOCK

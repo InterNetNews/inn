@@ -95,8 +95,7 @@ typedef struct _ACCESSGROUP {
 /*
 **  What line_read returns.
 */
-typedef enum _READTYPE
-{
+typedef enum _READTYPE {
     RTeof,
     RTok,
     RTlong,
@@ -143,8 +142,7 @@ typedef struct _ARTOVERFIELD {
 **  Supported timers.  If you add new timers to this list, also add them to
 **  the list of tags in nnrpd.c.
 */
-enum timer
-{
+enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
     TMR_NEWNEWS,                /* Executing NEWNEWS command. */
     TMR_READART,                /* Reading an article (SMretrieve). */

@@ -76,8 +76,7 @@ typedef short SITEIDX;
 **  while shutting down in CCshutdown or CCxexec and does not need to be
 **  handled outside of the Perl and Python filtering code.
 */
-typedef enum _OPERATINGMODE
-{
+typedef enum _OPERATINGMODE {
     OMrunning,
     OMpaused,
     OMthrottled,
@@ -95,8 +94,7 @@ typedef struct _LISTBUFFER {
 /*
 **  What program to handoff a connection to.
 */
-typedef enum _HANDOFF
-{
+typedef enum _HANDOFF {
     HOnnrpd,
     HOnntpd
 } HANDOFF;
@@ -105,8 +103,7 @@ typedef enum _HANDOFF
 /*
 **  Header field types.
 */
-typedef enum _ARTHEADERTYPE
-{
+typedef enum _ARTHEADERTYPE {
     HTreq, /* Drop article if this is missing */
     HTobs, /* Obsolete header field but keep untouched */
     HTstd, /* Standard optional header field */
@@ -284,8 +281,7 @@ typedef struct _ARTDATA {
 
 
 /* Set of channel types. */
-enum channel_type
-{
+enum channel_type {
     CTany,
     CTfree,
     CTremconn,
@@ -300,8 +296,7 @@ enum channel_type
 
 /* The state a channel is in.  Interpretation of this depends on the channel's
    type.  Used mostly by CTnntp channels. */
-enum channel_state
-{
+enum channel_state {
     CSerror,
     CSwaiting,
     CSgetcmd,
@@ -425,8 +420,7 @@ typedef struct _CHANNEL {
 /*
 **  Different types of rejected articles.
 */
-typedef enum
-{
+typedef enum {
     REJECT_DUPLICATE,
     REJECT_SITE,
     REJECT_FILTER,
@@ -462,8 +456,7 @@ typedef struct _NEWSGROUP {
 /*
 **  How a site is fed.
 */
-typedef enum _FEEDTYPE
-{
+typedef enum _FEEDTYPE {
     FTerror,
     FTfile,
     FTchannel,
@@ -550,8 +543,7 @@ typedef struct _SITE {
 /*
 **  A process is something we start up to send articles.
 */
-typedef enum _PROCSTATE
-{
+typedef enum _PROCSTATE {
     PSfree,
     PSrunning,
     PSdead
@@ -589,8 +581,7 @@ typedef struct _WIP {
 **  Supported timers.  If you add new timers to this list, also add them to
 **  the list of tags in chan.c.
 */
-enum timer
-{
+enum timer {
     TMR_IDLE = TMR_APPLICATION, /* Server is completely idle. */
     TMR_ARTCLEAN,               /* Analyzing an incoming article. */
     TMR_ARTWRITE,               /* Writing an article. */

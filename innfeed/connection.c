@@ -97,8 +97,7 @@ typedef struct art_holder_s {
 } * ArtHolder;
 
 
-typedef enum
-{
+typedef enum {
     cxnStartingS,    /* the connection's start state. */
     cxnWaitingS,     /* not connected. Waiting for an article. */
     cxnConnectingS,  /* in the middle of connecting */

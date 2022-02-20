@@ -217,8 +217,7 @@ struct innconf {
 extern struct innconf *innconf;
 
 /* Used to request various types of quoting when printing out values. */
-enum innconf_quoting
-{
+enum innconf_quoting {
     INNCONF_QUOTE_NONE,
     INNCONF_QUOTE_SHELL,
     INNCONF_QUOTE_PERL,

@@ -89,8 +89,7 @@ static int initialized_sasl =
 #endif
 
 /* states the imap connection may be in */
-typedef enum
-{
+typedef enum {
 
     IMAP_DISCONNECTED = 1,
     IMAP_WAITING,
@@ -133,8 +132,7 @@ typedef enum
 
 } imap_state_t;
 
-typedef enum
-{
+typedef enum {
     LMTP_DISCONNECTED = 1,
     LMTP_WAITING,
 
@@ -186,8 +184,7 @@ typedef struct lmtp_capabilities_s {
 
 } lmtp_capabilities_t;
 
-typedef enum
-{
+typedef enum {
     STAT_CONT = 0,
     STAT_NO = 1,
     STAT_OK = 2,
@@ -195,8 +192,7 @@ typedef enum
 } imt_stat;
 
 /* Message types */
-typedef enum
-{
+typedef enum {
     DELIVER,
     CREATE_FOLDER,
     CANCEL_MSG,
@@ -375,8 +371,7 @@ static unsigned int gCxnCount = 0;
 unsigned int max_reconnect_period = MAX_RECON_PER;
 unsigned int init_reconnect_period = INIT_RECON_PER;
 
-typedef enum
-{
+typedef enum {
     RET_OK = 0,
     RET_FAIL = 1,
     RET_QUEUE_EMPTY,
@@ -416,8 +411,7 @@ static conn_ret FindHeader(Buffer *bufs, const char *header, char **start,
                            char **end);
 static conn_ret PopFromQueue(Q_t *q, article_queue_t **item);
 
-enum failure_type
-{
+enum failure_type {
     MSG_SUCCESS = 0,
     MSG_FAIL_DELIVER = 1,
     MSG_GIVE_BACK = 2,

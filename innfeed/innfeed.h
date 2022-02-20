@@ -183,8 +183,7 @@
 
 /* some timer constants */
 
-typedef enum
-{
+typedef enum {
     TMR_IDLE = TMR_APPLICATION,
     TMR_BACKLOGSTATS,
     TMR_STATUSFILE,

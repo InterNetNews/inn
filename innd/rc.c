@@ -88,8 +88,7 @@ static char RCbuff[BIG_BUFFER];
 #define HOLD_TIME  "hold-time:"
 #define NOLIST     "nolist:"
 
-typedef enum
-{
+typedef enum {
     K_END,
     K_BEGIN_PEER,
     K_BEGIN_GROUP,
@@ -110,8 +109,7 @@ typedef enum
     K_NOLIST
 } _Keywords;
 
-typedef enum
-{
+typedef enum {
     T_STRING,
     T_BOOLEAN,
     T_INTEGER

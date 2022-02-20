@@ -10,8 +10,7 @@
 /* pointer to function taking void-star param and returning int. */
 typedef int (*PFIVP)(void *);
 
-typedef enum
-{
+typedef enum {
     intval,
     charval,
     boolval,

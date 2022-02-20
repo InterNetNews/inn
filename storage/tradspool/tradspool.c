@@ -811,11 +811,9 @@ OpenArticle(const char *path, RETRTYPE amount)
 
     art->arrived = sb.st_mtime;
 
-  private
-    = xmalloc(sizeof(PRIV_TRADSPOOL));
+    private = xmalloc(sizeof(PRIV_TRADSPOOL));
     art->private = (void *) private;
-  private
-    ->artlen = sb.st_size;
+    private->artlen = sb.st_size;
     if (innconf->articlemmap) {
         if ((private->artbase =
                  mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0))
@@ -844,24 +842,18 @@ OpenArticle(const char *path, RETRTYPE amount)
             return NULL;
         }
         if (p[-1] == '\r') {
-          private
-            ->mmapped = true;
+            private->mmapped = true;
         } else {
             wfarticle =
                 wire_from_native(private->artbase, private->artlen, &wflen);
             munmap(private->artbase, private->artlen);
-          private
-            ->artbase = wfarticle;
-          private
-            ->artlen = wflen;
-          private
-            ->mmapped = false;
+            private->artbase = wfarticle;
+            private->artlen = wflen;
+            private->mmapped = false;
         }
     } else {
-      private
-        ->mmapped = false;
-      private
-        ->artbase = xmalloc(private->artlen);
+        private->mmapped = false;
+        private->artbase = xmalloc(private->artlen);
         if (read(fd, private->artbase, private->artlen) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("tradspool: could not read article %s", path);
@@ -885,22 +877,16 @@ OpenArticle(const char *path, RETRTYPE amount)
             wfarticle =
                 wire_from_native(private->artbase, private->artlen, &wflen);
             free(private->artbase);
-          private
-            ->artbase = wfarticle;
-          private
-            ->artlen = wflen;
+            private->artbase = wfarticle;
+            private->artlen = wflen;
         }
     }
     close(fd);
 
-  private
-    ->ngtp = NULL;
-  private
-    ->curdir = NULL;
-  private
-    ->curdirname = NULL;
-  private
-    ->nextindex = -1;
+    private->ngtp = NULL;
+    private->curdir = NULL;
+    private->curdirname = NULL;
+    private->nextindex = -1;
 
     if (amount == RETR_ALL) {
         art->data = private->artbase;
@@ -976,8 +962,7 @@ tradspool_freearticle(ARTHANDLE *article)
         return;
 
     if (article->private) {
-      private
-        = (PRIV_TRADSPOOL *) article->private;
+        private = (PRIV_TRADSPOOL *) article->private;
         if (private->mmapped)
             munmap(private->artbase, private->artlen);
         else

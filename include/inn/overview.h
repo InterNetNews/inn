@@ -21,8 +21,7 @@ struct history;
 struct vector;
 
 /* Offsets into vectors for standard overview headers. */
-enum
-{
+enum {
     OVERVIEW_SUBJECT = 0,
     OVERVIEW_FROM,
     OVERVIEW_DATE,

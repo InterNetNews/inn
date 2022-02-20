@@ -31,8 +31,7 @@ typedef struct ovsqlite_port {
  * in ovsqlite-server.c or things will explode.
  */
 
-enum
-{
+enum {
     request_hello,
     request_set_cutofflow,
     request_add_group,
@@ -50,8 +49,7 @@ enum
     count_request_codes
 };
 
-enum
-{
+enum {
     response_ok = 0x00,
     response_done,
     response_groupinfo,
@@ -78,15 +76,13 @@ enum
     response_failed_auth
 };
 
-enum
-{
+enum {
     search_flag_high = 0x01,
 
     search_flags_all = 0x01
 };
 
-enum
-{
+enum {
     search_col_arrived = 0x01,
     search_col_expires = 0x02,
     search_col_token = 0x04,

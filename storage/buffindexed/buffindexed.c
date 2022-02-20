@@ -244,13 +244,11 @@ typedef struct {
 
 static GROUPDATABLOCK *groupdatablock[GROUPDATAHASHSIZE];
 
-typedef enum
-{
+typedef enum {
     PREPEND_BLK,
     APPEND_BLK
 } ADDINDEX;
-typedef enum
-{
+typedef enum {
     SRCH_FRWD,
     SRCH_BKWD
 } SRCH;

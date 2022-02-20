@@ -59,8 +59,7 @@ struct histstats {
 /*
 **  values passed to HISctl
 */
-enum
-{
+enum {
     /* (char **) get history path */
     HISCTLG_PATH,
 

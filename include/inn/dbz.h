@@ -23,14 +23,12 @@ BEGIN_DECLS
 #    define DBZ_INTERNAL_HASH_SIZE 6
 #endif
 
-typedef enum
-{
+typedef enum {
     DBZSTORE_OK,
     DBZSTORE_EXISTS,
     DBZSTORE_ERROR
 } DBZSTORE_RESULT;
-typedef enum
-{
+typedef enum {
     INCORE_NO,
     INCORE_MEM,
     INCORE_MMAP

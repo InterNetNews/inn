@@ -46,8 +46,7 @@
 BEGIN_DECLS
 
 /* Constants used for return values and options. */
-enum tst_constants
-{
+enum tst_constants {
     TST_OK,
     TST_NULL_KEY,
     TST_NULL_DATA,

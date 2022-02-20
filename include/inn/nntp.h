@@ -178,8 +178,7 @@ struct cvector;
 struct nntp;
 
 /* Return codes for NNTP reader functions. */
-enum nntp_status
-{
+enum nntp_status {
     NNTP_READ_OK,
     NNTP_READ_EOF,
     NNTP_READ_ERROR,

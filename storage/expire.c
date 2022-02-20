@@ -21,8 +21,7 @@
 #include "inn/vector.h"
 #include "ovinterface.h"
 
-enum KRP
-{
+enum KRP {
     Keep,
     Remove,
     Poison

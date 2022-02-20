@@ -156,8 +156,7 @@
 #endif
 
 /* Test status codes. */
-enum test_status
-{
+enum test_status {
     TEST_FAIL,
     TEST_PASS,
     TEST_SKIP,
@@ -165,15 +164,13 @@ enum test_status
 };
 
 /* Really, just a boolean, but this is more self-documenting. */
-enum test_verbose
-{
+enum test_verbose {
     CONCISE = 0,
     VERBOSE = 1
 };
 
 /* Indicates the state of our plan. */
-enum plan_status
-{
+enum plan_status {
     PLAN_INIT,    /* Nothing seen yet. */
     PLAN_FIRST,   /* Plan seen before any tests. */
     PLAN_PENDING, /* Test seen and no plan yet. */

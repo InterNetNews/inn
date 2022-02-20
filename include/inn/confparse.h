@@ -17,8 +17,7 @@ struct config_group;
 
 /* Data types used to express the mappings from the configuration parse into
    the resulted configuration structs. */
-enum type
-{
+enum type {
     TYPE_BOOLEAN,
     TYPE_NUMBER,
     TYPE_UNUMBER,

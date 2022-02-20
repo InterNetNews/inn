@@ -67,8 +67,7 @@
 
 
 /* The types of tokens seen in configuration files. */
-enum token_type
-{
+enum token_type {
     TOKEN_CRLF,
     TOKEN_STRING,
     TOKEN_QSTRING,
@@ -111,8 +110,7 @@ struct config_file {
 
 /* The types of parameters, used to distinguish the values of the union in the
    config_parameter_s struct. */
-enum value_type
-{
+enum value_type {
     VALUE_UNKNOWN,
     VALUE_BOOL,
     VALUE_NUMBER,

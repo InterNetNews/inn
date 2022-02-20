@@ -54,8 +54,7 @@ static char *DeletePath;
 static ARTNUM *DeleteArtnums;
 static unsigned int NumDeleteArtnums, MaxDeleteArtnums;
 
-typedef enum
-{
+typedef enum {
     FIND_DIR,
     FIND_CAF,
     FIND_TOPDIR
@@ -523,11 +522,9 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
         return art;
     }
 
-  private
-    = xmalloc(sizeof(PRIV_TIMECAF));
+    private = xmalloc(sizeof(PRIV_TIMECAF));
     art->private = (void *) private;
-  private
-    ->artlen = len;
+    private->artlen = len;
     if (innconf->articlemmap) {
         off_t curoff, tmpoff;
         size_t delta;
@@ -535,8 +532,7 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
         curoff = lseek(fd, (off_t) 0, SEEK_CUR);
         delta = curoff % pagesize;
         tmpoff = curoff - delta;
-      private
-        ->mmaplen = len + delta;
+        private->mmaplen = len + delta;
         if ((private->mmapbase = mmap(NULL, private->mmaplen, PROT_READ,
                                       MAP_SHARED, fd, tmpoff))
             == MAP_FAILED) {
@@ -551,11 +547,9 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
             madvise(private->mmapbase, private->mmaplen, MADV_WILLNEED);
         else
             madvise(private->mmapbase, private->mmaplen, MADV_SEQUENTIAL);
-      private
-        ->artdata = private->mmapbase + delta;
+        private->artdata = private->mmapbase + delta;
     } else {
-      private
-        ->artdata = xmalloc(private->artlen);
+        private->artdata = xmalloc(private->artlen);
         if (read(fd, private->artdata, private->artlen) < 0) {
             SMseterror(SMERR_UNDEFINED, NULL);
             syswarn("timecaf: could not read article");
@@ -567,22 +561,14 @@ OpenArticle(const char *path, ARTNUM artnum, const RETRTYPE amount)
     }
     close(fd);
 
-  private
-    ->top = NULL;
-  private
-    ->sec = NULL;
-  private
-    ->ter = NULL;
-  private
-    ->curtoc = NULL;
-  private
-    ->curartnum = 0;
-  private
-    ->topde = NULL;
-  private
-    ->secde = NULL;
-  private
-    ->terde = NULL;
+    private->top = NULL;
+    private->sec = NULL;
+    private->ter = NULL;
+    private->curtoc = NULL;
+    private->curartnum = 0;
+    private->topde = NULL;
+    private->secde = NULL;
+    private->terde = NULL;
 
     if (amount == RETR_ALL) {
         art->data = private->artdata;
@@ -683,8 +669,7 @@ timecaf_freearticle(ARTHANDLE *article)
         return;
 
     if (article->private) {
-      private
-        = (PRIV_TIMECAF *) article->private;
+        private = (PRIV_TIMECAF *) article->private;
         if (innconf->articlemmap)
             munmap(private->mmapbase, private->mmaplen);
         else

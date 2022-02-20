@@ -17,8 +17,7 @@
 #include "interface.h"
 #include "methods.h"
 
-typedef enum
-{
+typedef enum {
     INIT_NO,
     INIT_DONE,
     INIT_FAIL

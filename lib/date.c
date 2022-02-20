@@ -121,8 +121,7 @@ static const struct {
    and find that string in the provided table (with size elements).  For
    DELIM, just make sure that we see the character stored in delimiter. */
 struct rule {
-    enum
-    {
+    enum {
         TYPE_NUMBER,
         TYPE_LOOKUP,
         TYPE_OBS_MONTH,
