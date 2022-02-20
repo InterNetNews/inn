@@ -183,7 +183,7 @@ checks.
 =item *
 
 B<inews> no longer adds a Sender header field nor overwrites an existing
-one in articles it processes if the new B<-s> flag is used.  The Path header
+one in articles it processes if the new B<-P> flag is used.  The Path header
 field, if unset, no longer systematically contains the path identity of the
 local news server (you may want to add it manually with the B<-x> flag).
 Finally, B<inews> also no longer adds the obsolescent Lines header field.

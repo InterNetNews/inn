@@ -811,7 +811,7 @@ main(int ac, char *av[])
     umask(NEWSUMASK);
 
     /* Parse command-line options. */
-    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:r:st:F:o:w:"))
+    while ((i = getopt(ac, av, "DNAVWORShx:a:c:d:e:f:n:p:Pr:t:F:o:w:"))
            != EOF) {
         switch (i) {
         default:
@@ -829,11 +829,11 @@ main(int ac, char *av[])
         case 'O':
             AddOrg = false;
             break;
+        case 'P':
+            AddSender = false;
+            break;
         case 'R':
             Revoked = true;
-            break;
-        case 's':
-            AddSender = false;
             break;
         case 'S':
             DoSignature = false;

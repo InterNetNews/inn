@@ -4,7 +4,7 @@ inews - Post a Usenet article to the local news server
 
 =head1 SYNOPSIS
 
-B<inews> [B<-ADhNORsSVW>] [B<-acdeFfnortwx> I<value>] [B<-p> I<port>] [I<file>]
+B<inews> [B<-ADhNOPRSVW>] [B<-acdeFfnortwx> I<value>] [B<-p> I<port>] [I<file>]
 
 =head1 DESCRIPTION
 
@@ -94,14 +94,11 @@ in F<inn.conf>), use this flag.
 Connect to the specified port on the server rather than to the default
 (port 119).
 
-=item B<-R>
-
-Reject all control messages.
-
-=item B<-s>
+=item B<-P>
 
 B<inews> computes a sender address with the username of the user running
-B<inews> and the hostname of the news server.
+B<inews> and the hostname of the news server.  It represents the actual poster
+of the article.
 
 By default, a Sender header field will be added with that value if none
 is present in the article or if the From header field is not already set to
@@ -109,6 +106,10 @@ that value.  Moreover, if a Sender header field is already present, it will be
 replaced with that value.
 
 To prevent adding or overwriting the Sender header field, use this flag.
+
+=item B<-R>
+
+Reject all control messages.
 
 =item B<-S>
 
