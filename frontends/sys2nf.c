@@ -1,6 +1,6 @@
 /*
-**  Read a C news "sys" file and split it up into a set of INN
-**  newsfeeds entries.  Also works with B news.
+**  Read a C News "sys" file and split it up into a set of INN
+**  newsfeeds entries.  Also works with B News.
 **
 **  Once done, edit all files that have HELP or all in them.
 **  Review all files, anyway.
