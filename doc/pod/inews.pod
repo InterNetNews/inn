@@ -65,7 +65,8 @@ that set header fields and the corresponding header field body:
 The B<-x> argument will be added to the beginning of the normal Path header
 field body; it will not replace it contrary to what other options do.  This
 behaviour is historical, and was first implemented in the B<inews> program
-shipped with C News.
+shipped with B News (the original meaning of B<-x> was to say not to forward
+the article to a specified site).
 
 =over 4
 
