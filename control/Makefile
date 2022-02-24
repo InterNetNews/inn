@@ -16,7 +16,9 @@ warnings:
 	$(MAKE) COPT='$(WARNINGS)' all
 
 install: all
-	for F in $(ALL) ; do \
+	$(LI_XPRI) gencancel $D$(PATHBIN)/gencancel
+	for F in controlbatch controlchan docheckgroups perl-nocem \
+	    pgpverify ; do \
 	    $(CP_XPUB) $$F $D$(PATHBIN)/$$F ; \
 	done
 	for M in modules/*.pl ; do \
