@@ -96,6 +96,7 @@ control/Makefile                      Makefile for control programs
 control/controlbatch.in               Batch program for controlchan
 control/controlchan.in                Channel program for control messages
 control/docheckgroups.in              Script to execute checkgroups
+control/gencancel.c                   Generate cancel control articles
 control/modules                       Modules for controlchan (Directory)
 control/modules/checkgroups.pl        checkgroups controlchan handler
 control/modules/ihave.pl              ihave controlchan handler
@@ -148,6 +149,7 @@ doc/man/expire.ctl.5                  Manpage for expire.ctl config file
 doc/man/expireover.8                  Manpage for expireover
 doc/man/expirerm.8                    Manpage for expirerm
 doc/man/fastrm.1                      Manpage for fastrm utility
+doc/man/gencancel.1                   Manpage for gencancel program
 doc/man/getlist.1                     Manpage for getlist frontend
 doc/man/grephistory.1                 Manpage for grephistory
 doc/man/history.5                     Manpage for history database
@@ -264,6 +266,7 @@ doc/pod/expireover.pod                Master file for expireover.8
 doc/pod/expirerm.pod                  Master file for expirerm.8
 doc/pod/external-auth.pod             Master file for doc/external-auth
 doc/pod/fastrm.pod                    Master file for fastrm.1
+doc/pod/gencancel.pod                 Master file for gencancel.1
 doc/pod/getlist.pod                   Master file for getlist.1
 doc/pod/grephistory.pod               Master file for grephistory.1
 doc/pod/hacking.pod                   Master file for HACKING

@@ -138,6 +138,7 @@ contrib/tunefeed
 control/controlbatch
 control/controlchan
 control/docheckgroups
+control/gencancel
 control/perl-nocem
 control/pgpverify
 doc/man/index.db

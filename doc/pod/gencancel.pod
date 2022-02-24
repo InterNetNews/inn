@@ -1,0 +1,165 @@
+=encoding utf8
+
+=head1 NAME
+
+gencancel - Generate cancel control messages
+
+=head1 SYNOPSIS
+
+B<gencancel> [B<-adkLm>] [B<-b> I<body>] [B<-c> I<charset>] [B<-f> I<from>]
+[B<-n> I<newsgroups>] [B<-s> I<subject>] I<message-id>
+
+=head1 DESCRIPTION
+
+B<gencancel> provides the news administrator with a helpful tool to generate
+cancel control messages, writing them to standard output.  The generated
+cancel article can then be injected by B<inews> (see examples below).
+
+B<gencancel> expects the Message-ID of the article to cancel; this
+I<message-id> argument should properly be quoted for the shell and surrounded
+by angle brackets.  B<gencancel> will then try to read the original article
+in the news spool to determine the original newsgroups it was posted to, and
+re-use that information for the cancel control message.  If you want to modify
+that, or if the information was not found, you'll have to set it with the
+B<-n> flag.
+
+If INN was build with Cancel-Lock support, B<gencancel> will generate the
+right Cancel-Key header field to use in order to authenticate cancels.  If,
+for whatever reason, you need cancelling an article posted from your news
+server with a Cancel-Lock header field, the corresponding admin Cancel-Key
+hashes are needed to authenticate the withdrawal request.  That information is
+computed with the I<canlockadmin> parameter set in F<inn-secrets.conf>.
+
+In case you only need the Cancel-Key hashes, you can use the B<-k> flag.
+Only the body of the Cancel-Key header field will then be written to standard
+output.  You can then re-use it for instance in a supersede request or from
+another script.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a>
+
+B<gencancel> outputs by default an Approved header field, using the same value
+as the From header field body.  If B<-a> is used, no Approved header field
+is output.
+
+This header field is useful for cancelling articles originally posted to
+moderated newsgroups.  If a cancel control article lists a moderated newsgroup
+in its Newsgroups header field, and no Approved header field is present,
+the cancel will be sent to the moderator first for approval.  Cancel control
+messages are not required to contain an Approved header field outside of
+moderated newsgroups, but can, so you shouldn't generally use B<-a> unless
+you really want your cancels to be approved by a moderator, or are sure the
+Newsgroups header field does not list any moderated newsgroups.
+
+=item B<-b> I<body>
+
+B<gencancel> writes by default C<Admin cancel.> in the body of cancel control
+messages.  Using this argument permits writing a different value, which may be
+empty or multi-line.
+
+=item B<-c> I<charset>
+
+By default, C<ISO-8859-1> is specified as the used charset in the Content-Type
+header field.  In case you change the default body with B<-b>, you may want to
+also change I<charset> accordingly.
+
+=item B<-d>
+
+B<gencancel> generates a Date header field in the local time of your news
+server.  Using B<-d> will make use of a UTC date.
+
+=item B<-f> I<from>
+
+B<gencancel> uses by default the value of I<complaints> in F<inn.conf> for the
+From header field.  Using this argument permits setting the value you want.
+The same value will be used for the Approved header field (if generated, when
+B<-a> is not given).
+
+=item B<-k>
+
+Instead of outputting a whole cancel control message, B<gencancel> will just
+output the body of the Cancel-Key header field.
+
+This flag is only available if INN was built with Cancel-Lock support.
+
+=item B<-L>
+
+B<gencancel> outputs by default a Cancel-Key header field to authenticate
+the cancel control message.  If B<-L> is used, no Cancel-Key header field is
+output.
+
+This flag is only available if INN was built with Cancel-Lock support.
+
+=item B<-m>
+
+B<gencancel> generates by default a random Message-ID and uses it as unique
+identifier of the cancel control message.  If B<-m> is used, no Message-ID
+header field is output.
+
+=item B<-n> I<newsgroups>
+
+B<gencancel> generates by default the same Newsgroups header field as the one
+present in the original article to cancel.  This is done to best ensure that
+the cancel control message will be relayed to the same news servers as the
+original message.
+
+In case your news server does not (or no longer) locally carry the
+original article, you will have to give an explicit newsgroup or list of
+comma-separated newsgroups with this flag, that will be used as the Newsgroups
+header field of the cancel.
+
+=item B<-s> I<subject>
+
+B<gencancel> uses by default C<< cmsg cancel <message-id> >> as the subject
+of cancel control messages.  Using this argument permits setting a different
+value for the Subject header field.  Make sure it is properly MIME-encoded.
+
+=back
+
+=head1 EXAMPLES
+
+To only retrieve the Cancel-Key hashes associated to the given Message-ID:
+
+    gencancel -k '<mid@news>'
+
+If you're using non-ASCII characters in headers, make sure you properly
+MIME-encode them.  For instance, use the C<Encode> Perl module:
+
+    FROM=$(perl -e 'use Encode;
+                    print encode("MIME-Q",
+                                 decode("UTF-8", "Julien ÉLIE"));')
+    gencancel -f "$FROM <admin@news.server.com>" '<mid@news>'
+
+You'll then see in the output a properly MIME-encoded header field:
+
+    From: =?UTF-8?Q?Julien_=C3=89LIE?= <admin@news.server.com>
+
+An example of call with a custom multi-line body:
+
+    gencancel -b "$(echo -e "Multi\nLine\nBody.")" '<mid@news>'
+
+(Use B<-c> to change the default Content-Type charset for the body.)
+
+You can then pipe the result into C<inews -h -P -D> (meaning B<inews> expects
+an article with headers, does not add a Sender header field, and writes the
+result to standard output instead of actually injecting it):
+
+    gencancel '<mid@news>' | inews -h -P -D
+
+If it all looks good, then inject it into the news system (without giving
+C<-D> to B<inews>):
+
+    gencancel '<mid@news>' | inews -h -P
+
+=head1 HISTORY
+
+Written by Julien Élie for InterNetNews.
+
+=head1 SEE ALSO
+
+inews(1), inn-secrets.conf(5).
+
+=cut

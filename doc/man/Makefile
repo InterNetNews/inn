@@ -2,8 +2,8 @@ include ../../Makefile.global
 
 top	= ../..
 
-SEC1	= convdate.1 fastrm.1 getlist.1 grephistory.1 inews.1 innconfval.1 \
-	innmail.1 nntpget.1 pgpverify.1 pullnews.1 rnews.1 \
+SEC1	= convdate.1 fastrm.1 gencancel.1 getlist.1 grephistory.1 inews.1 \
+	innconfval.1 innmail.1 nntpget.1 pgpverify.1 pullnews.1 rnews.1 \
 	shlock.1 shrinkfile.1 simpleftp.1 sm.1
 
 SEC3	= libinn.3 libinn_clientlib.3 libinn_dbz.3 libinn_inndcomm.3 \

@@ -126,6 +126,12 @@ Cancel-Lock.  See the inn-secrets.conf(5) man page for more details.
 
 =item *
 
+Added a new tool, B<gencancel>, to help the news administrator generate
+authenticated cancel control messages, with the expected admin Cancel-Key
+hashes.  See the gencancel(1) man page for more details.
+
+=item *
+
 A new I<docancels> parameter has been added in F<inn.conf> to define which
 types of cancels B<innd> should process.  The B<-C> flag given to B<innd>
 is deprecated in favour of that new parameter (you'll see in your logs the

@@ -8,7 +8,8 @@ include ../../Makefile.global
 TEXT	= ../../HACKING ../../INSTALL ../../NEWS ../../README ../hook-perl \
 	../hook-python ../external-auth ../checklist
 
-MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/getlist.1 \
+MAN1	= ../man/convdate.1 ../man/fastrm.1 ../man/gencancel.1 \
+	../man/getlist.1 \
 	../man/grephistory.1 ../man/inews.1 ../man/innconfval.1 \
 	../man/innmail.1 ../man/nntpget.1 ../man/pullnews.1 ../man/rnews.1 \
 	../man/shlock.1 ../man/shrinkfile.1 ../man/simpleftp.1 ../man/sm.1
@@ -73,6 +74,7 @@ maintclean: distclean
 
 ../man/convdate.1:	convdate.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/fastrm.1:	fastrm.pod		; $(POD2MAN) -s 1 $? > $@
+../man/gencancel.1:	gencancel.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/getlist.1:	getlist.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/grephistory.1:	grephistory.pod		; $(POD2MAN) -s 1 $? > $@
 ../man/inews.1:		inews.pod		; $(POD2MAN) -s 1 $? > $@
