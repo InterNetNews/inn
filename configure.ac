@@ -74,8 +74,8 @@ path in a few variables used by INN):
 ---
 Though not mandatory for the build, the following packages will also be useful:
 - libgd-perl / perl-GD (for pictures in HTML daily Usenet reports)
-- libmime-tools-perl / perl-MIME-tools (for the decoding of control articles
-  by controlchan)
+- libencode-perl, libmime-tools-perl / perl-Encode, perl-MIME-tools (for the
+  decoding of control articles by controlchan)
 - cron and syslog, probably already installed on your system
 ---
 Happy building!])
