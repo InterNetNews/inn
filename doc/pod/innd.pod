@@ -114,6 +114,13 @@ specified by the C</remember/> line in expire.ctl(5).  You'll have to
 wait that number of days before being able to inject again an article
 with the same previously rejected Message-ID.
 
+In case you need re-injecting articles before that amount of time, you'll have
+to set C</remember/> to C<0> in F<expire.ctl>, run the B<expire> process (for
+instance via B<news.daily> called with the same parameters as in crontab, plus
+C<notdaily>) and undo the change in F<expire.ctl>.  All previously rejected or
+removed articles will then not be considered as duplicate if their Message-ID
+is proposed.
+
 =item B<-d>, B<-f>
 
 B<innd> normally puts itself into the background, points its standard

@@ -1135,8 +1135,8 @@ articles older than artcutoff in inn.conf) and disable your filtering:
 Note that rejected articles are remembered during the number of days
 specified by the /remember/ line in expire.ctl; so, in case you forgot
 to change the above parameters, you'll have to wait that number of
-days before being able to inject them again.  You can of course set
-/remember/ to 0, run the expire process (for instance via news.daily
+days before being able to inject them again.  Another possibility is to
+set /remember/ to 0, run the expire process (for instance via news.daily
 called with the same parameters as in crontab, plus "notdaily"),
 undo the change in expire.ctl and then start the feed again.
 

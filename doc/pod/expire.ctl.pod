@@ -33,7 +33,13 @@ posting time), regardless of whether the article is present in the spool.
 (History entries for articles still present in the spool are always retained.)
 Setting it to C<never> means history records will be retained forever, C<0>
 means history records for articles not present in the spool will be purged
-when expiry programs run.
+when expiry programs run.  (This is notably useful in the case you need
+re-injecting articles no longer present in your news spool but considered as
+duplicate, because still present in history: you'll have to set C</remember/>
+to C<0>, run the B<expire> process for instance via B<news.daily> called with
+the same parameters as in crontab plus C<notdaily>, and undo the change in
+F<expire.ctl>.  All previously rejected or removed articles will then not be
+considered as duplicate if their Message-ID is proposed.)
 
 The primary reason to retain a record of old articles is in case a peer
 offers old articles that were previously accepted but have already
