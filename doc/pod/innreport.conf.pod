@@ -23,9 +23,20 @@ default {> and ends with C<};>.  Each line in the section consists of an
 option name followed with one or more spaces or tabulations, its value and
 a semi-colon C<;>.
 
-Other sections are present in the configuration file to parameter the
-display, how and what to report, but should not be changed (unless you
-precisely know what you are doing).
+Other sections are present in the configuration file to parameter the display,
+how and what to report, but should not be changed (unless you precisely know
+what you are doing).  These sections are written in a domain-specific language
+not intended to be changed (you may break the reports, especially if changing
+I<data>, I<double>, I<format>, I<primary>, I<sort>, I<total> or I<value>
+parameters).  The easiest parameters to change, if needed, would be I<title>
+(the titles of sections in B<innreport>), I<name> (the names of the columns),
+I<color> (the color of curves in the graphs), I<numbering> (a boolean value to
+configure whether each row of HTML reports is prefixed with a rank number),
+I<text> (a boolean to configure whether a given section should be present in
+text reports), I<html> (same thing for HTML reports), I<skip> (same thing for
+both reports), and I<top> (the maximum number of values to display, and you
+can specify different values for text and HTML reports with I<top_text> and
+I<top_html>).
 
 =head1 OPTIONS
 
