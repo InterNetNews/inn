@@ -28,10 +28,12 @@ only one line in this format, which looks like:
     /remember/:<days>
 
 where <days> is a decimal number that specifies the minimum number of days
-a history record for a given message-ID is retained (from its original
+a history record for a given Message-ID is retained (from its original
 posting time), regardless of whether the article is present in the spool.
 (History entries for articles still present in the spool are always retained.)
-Setting it to C<0> means history records will be retained forever.
+Setting it to C<never> means history records will be retained forever, C<0>
+means history records for articles not present in the spool will be purged
+when expiry programs run.
 
 The primary reason to retain a record of old articles is in case a peer
 offers old articles that were previously accepted but have already
