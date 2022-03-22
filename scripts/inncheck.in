@@ -522,6 +522,7 @@ sub incoming_conf {
                 'ignore'          => 'boolean',
                 'nolist'          => 'boolean',
                 'noresendid'      => 'boolean',
+                'noxbatch'        => 'boolean',
                 'skip'            => 'boolean',
                 'streaming'       => 'boolean',
             },

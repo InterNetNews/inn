@@ -41,7 +41,8 @@ typedef struct _REMOTEHOST {
     bool Skip;                       /* Skip this peer ? */
     bool Ignore;                     /* Ignore articles sent by this peer? */
     bool NoResendId;                 /* Don't send RESEND responses ? */
-    bool Nolist;                     /* no list command allowed */
+    bool Nolist;                     /* No LIST command allowed */
+    bool Noxbatch;                   /* No XBATCH command allowed */
     int MaxCnx;                      /* Max connections (per peer) */
     char **Patterns;                 /* List of groups allowed */
     char *Pattern;                   /* List of groups allowed (string) */
@@ -87,6 +88,7 @@ static char RCbuff[BIG_BUFFER];
 #define NORESENDID "noresendid:"
 #define HOLD_TIME  "hold-time:"
 #define NOLIST     "nolist:"
+#define NOXBATCH   "noxbatch:"
 
 typedef enum {
     K_END,
@@ -106,7 +108,8 @@ typedef enum {
     K_IGNORE,
     K_NORESENDID,
     K_HOLD_TIME,
-    K_NOLIST
+    K_NOLIST,
+    K_NOXBATCH
 } _Keywords;
 
 typedef enum {
@@ -606,6 +609,7 @@ RCreader(CHANNEL *cp)
             new->Ignore = rp->Ignore;
             new->NoResendId = rp->NoResendId;
             new->Nolist = rp->Nolist;
+            new->Noxbatch = rp->Noxbatch;
             new->CanAuthenticate = true; /* Can use AUTHINFO. */
             new->MaxCnx = rp->MaxCnx;
             new->HoldTime = rp->HoldTime;
@@ -869,6 +873,7 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Ignore = false;
     rp->NoResendId = false;
     rp->Nolist = false;
+    rp->Noxbatch = true;
     rp->HoldTime = 0;
     rp++;
     (*count)++;
@@ -884,6 +889,7 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     default_params.Ignore = false;
     default_params.NoResendId = false;
     default_params.Nolist = false;
+    default_params.Noxbatch = true;
     default_params.MaxCnx = 0;
     default_params.HoldTime = 0;
     default_params.Password = xstrdup(NOPASS);
@@ -934,6 +940,9 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             group_params->Nolist = groupcount > 1
                                        ? groups[groupcount - 2].Nolist
                                        : default_params.Nolist;
+            group_params->Noxbatch = groupcount > 1
+                                         ? groups[groupcount - 2].Noxbatch
+                                         : default_params.Noxbatch;
             group_params->Email = groupcount > 1 ? groups[groupcount - 2].Email
                                                  : default_params.Email;
             group_params->Comment = groupcount > 1
@@ -997,6 +1006,8 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                                          : default_params.NoResendId;
             peer_params.Nolist =
                 groupcount > 0 ? group_params->Nolist : default_params.Nolist;
+            peer_params.Noxbatch = groupcount > 0 ? group_params->Noxbatch
+                                                  : default_params.Noxbatch;
             peer_params.Email =
                 groupcount > 0 ? group_params->Email : default_params.Email;
             peer_params.Comment = groupcount > 0 ? group_params->Comment
@@ -1086,6 +1097,7 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                         rp->Ignore = peer_params.Ignore;
                         rp->NoResendId = peer_params.NoResendId;
                         rp->Nolist = peer_params.Nolist;
+                        rp->Noxbatch = peer_params.Noxbatch;
                         rp->Password = xstrdup(peer_params.Password);
                         rp->Identd = xstrdup(peer_params.Identd);
                         rp->Patterns =
@@ -1265,6 +1277,36 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             else
                 default_params.Nolist = flag;
             SET_CONFIG(K_NOLIST);
+            continue;
+        }
+
+        /* noxbatch */
+        if (!strncmp(word, NOXBATCH, sizeof(NOXBATCH))) {
+            free(word);
+            TEST_CONFIG(K_NOXBATCH, bit);
+            if (bit) {
+                syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
+                break;
+            }
+            if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
+                break;
+            }
+            if (!strcmp(word, "true"))
+                flag = true;
+            else if (!strcmp(word, "false"))
+                flag = false;
+            else {
+                syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
+                break;
+            }
+            RCadddata(data, &infocount, K_NOXBATCH, T_STRING, word);
+            if (peer_params.Label != NULL)
+                peer_params.Noxbatch = flag;
+            else if (groupcount > 0 && group_params->Label != NULL)
+                group_params->Noxbatch = flag;
+            else
+                default_params.Noxbatch = flag;
+            SET_CONFIG(K_NOXBATCH);
             continue;
         }
 
@@ -1596,6 +1638,12 @@ RCwritelist(char *filename)
         case K_NOLIST:
             RCwritelistindent(F, inc);
             fprintf(F, "%s\t", NOLIST);
+            RCwritelistvalue(F, RCpeerlistfile[i].value);
+            fputc('\n', F);
+            break;
+        case K_NOXBATCH:
+            RCwritelistindent(F, inc);
+            fprintf(F, "%s\t", NOXBATCH);
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;

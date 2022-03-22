@@ -622,7 +622,7 @@ NCcapabilities(CHANNEL *cp)
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
-    if (cp->IsAuthenticated) {
+    if (cp->IsAuthenticated && !cp->Noxbatch) {
         WCHANappend(cp, "XBATCH", 6);
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
@@ -763,16 +763,14 @@ NCxbatch(CHANNEL *cp)
 
     cp->Start = cp->Next;
 
+    /* First, ensure any previous XBATCH command has been successfully treated.
+     */
     if (cp->XBatchSize) {
         syslog(L_FATAL, "NCxbatch(): oops, cp->XBatchSize already set to %d",
                cp->XBatchSize);
     }
 
     cp->XBatchSize = atoi(cp->av[1]);
-    if (Tracing || cp->Tracing)
-        syslog(L_TRACE, "%s will read batch of size %d", CHANname(cp),
-               cp->XBatchSize);
-
     if (cp->XBatchSize <= 0
         || ((innconf->maxartsize != 0)
             && (innconf->maxartsize < (unsigned long) cp->XBatchSize))) {
@@ -783,6 +781,17 @@ NCxbatch(CHANNEL *cp)
         free(buff);
         return;
     }
+
+    if (cp->Noxbatch) {
+        xasprintf(&buff, "%d Permission denied", NNTP_ERR_ACCESS);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
+    }
+
+    if (Tracing || cp->Tracing)
+        syslog(L_TRACE, "%s will read batch of size %d", CHANname(cp),
+               cp->XBatchSize);
 
     /* We prefer not to touch the buffer; NCreader() does enough magic
      * with it. */

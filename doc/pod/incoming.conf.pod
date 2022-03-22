@@ -158,9 +158,8 @@ as synonyms).  The default is C<0>.
 
 =item I<nolist>
 
-This key requires a boolean value.  It defines whether a peer is
-allowed to issue list command.  The default is false, that is to say
-it can.
+This key requires a boolean value.  It defines whether a peer is allowed to
+issue LIST commands.  The default is false, that is to say it can.
 
 =item I<noresendid>
 
@@ -173,6 +172,11 @@ useful for peers that resend messages right away, as B<innfeed> does.
 The default is false: the deferral feature is used so that the peer
 receives C<431> and C<436> codes, and therefore resends the article
 later.
+
+=item I<noxbatch>
+
+This key requires a boolean value.  It defines whether a peer is allowed to
+issue XBATCH commands.  The default is true, that is to say it cannot.
 
 =item I<password>
 

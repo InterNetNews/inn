@@ -341,6 +341,7 @@ typedef struct _CHANNEL {
     bool NoResendId;
     bool privileged;
     bool Nolist;
+    bool Noxbatch;
     bool CanAuthenticate; /* Can use AUTHINFO? */
     bool IsAuthenticated; /* No need to use AUTHINFO? */
     bool HasSentUsername; /* Has used AUTHINFO USER? */

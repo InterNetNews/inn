@@ -52,6 +52,12 @@ upgrade.
 
 =item *
 
+The XBATCH command is no longer enabled by default in B<innd>.  You'll have to
+explicitly enable that capability by setting the new I<noxbatch> parameter to
+false in F<incoming.conf> for the peers sending you such batches.
+
+=item *
+
 B<filechan> is no longer shipped with INN; it was just a simple version of
 B<buffchan>.  All calls to C<filechan> will be changed to C<buffchan -u>
 (for its unbuffered mode) in F<newsfeeds> by B<innupgrade>.  If you have
@@ -185,6 +191,12 @@ from F<inn.conf>.  Besides, B<inews> no longer checks if the From or Sender
 header fields of a cancel or supersede request match the ones of the original
 article being withdrawn.  All of these were either inefficient or inexact
 checks.
+
+=item *
+
+The I<noxbatch> parameter has been added in F<incoming.conf> to enable the
+XBATCH command in B<innd> for specific remote peers.  The default is to
+disable the capability.
 
 =item *
 

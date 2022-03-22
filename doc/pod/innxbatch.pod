@@ -37,8 +37,10 @@ flush the batch file.  B<sendxbatches> is such a wrapper around B<innxbatch>.
 It will ensure only one instance is run, flush I<sitename> (as used in the
 F<newsfeeds> entry) and send to I<host> the files given as arguments.
 
-As the XBATCH extension is not a standardized NNTP command, some news
-servers do not recognize it.  Instead of using B<innxbatch>, you may consider
+As the XBATCH extension is not a standardized NNTP command, some news servers
+do not recognize it.  Moreover, to accept batches from remote peers via
+XBATCH, you have to explicitly enable the capability with the I<noxbatch>
+setting in F<incoming.conf>.  Instead of using B<innxbatch>, you may consider
 B<innfeed>, or if that is not possible, B<nntpsend>.
 
 =head1 OPTIONS
@@ -116,6 +118,7 @@ Karsten Leipold <poldi@dfn.de>.  Rewritten into POD by Julien Elie.
 
 =head1 SEE ALSO
 
-ctlinnd(8), innxmit(8), newsfeeds(5), nntpsend(8), passwd.nntp(5), shlock(1).
+ctlinnd(8), incoming.conf(5), innxmit(8), newsfeeds(5), nntpsend(8),
+passwd.nntp(5), shlock(1).
 
 =cut
