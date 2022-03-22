@@ -151,6 +151,12 @@ OpenSSL was previously officially supported and tested).
 
 =item *
 
+Fixed the parsing of I<hosts> and I<localaddress> parameters in
+F<readers.conf>; exclusion patterns (beginning with C<!>) have not been
+working since S<INN 2.5.0>.
+
+=item *
+
 Improved the robustness of B<innxmit> when receiving C<500> or C<501>
 response codes from peers, indicating they do not understand the NNTP
 command or (wrongly) think there is a syntax error.  Richard Kettlewell

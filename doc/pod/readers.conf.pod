@@ -705,13 +705,13 @@ User permissions are granted based on the established access group.
 
 =head1 EXAMPLES
 
-Probably the simplest useful example of a complete F<readers.conf>,
-this gives permissions to read and post to all groups to any connections
-from the "example.com" domain, and no privileges for anyone connecting
-elsewhere:
+Probably the simplest useful example of a complete F<readers.conf>, this
+gives permissions to read and post to all groups to any connections from the
+"example.com" domain, except for Bob's machine, and no privileges for anyone
+connecting elsewhere:
 
     auth example.com {
-        hosts: "*.example.com, example.com"
+        hosts: "*.example.com, example.com, !bob.example.com"
         default: "<EXAMPLE>"
     }
 

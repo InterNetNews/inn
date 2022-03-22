@@ -1893,6 +1893,9 @@ MatchHost(char *hostlist, char *host, char *ip)
         ;
     while (!match && i-- > 0) {
         pat = list[i];
+        /* Handle the exclusion pattern later. */
+        if (*pat == '!')
+            pat++;
         match = uwildmat(host, pat);
         if (!match && ip != NULL && *ip != '\0') {
             match = uwildmat(ip, pat);
@@ -1906,6 +1909,11 @@ MatchHost(char *hostlist, char *host, char *ip)
             match = network_addr_match(ip, pat, mask);
         }
     }
+
+    /* Was the last match for an exclusion pattern? */
+    if (match && list[i][0] == '!')
+        match = false;
+
     free(list[0]);
     free(list);
     free(cp);

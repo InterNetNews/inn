@@ -195,7 +195,7 @@ my %type_regex = (
       . $hostnameRE . ')*$',
     'list of hostnames or netblocks' => '^'
       . $hostblockRE
-      . '(?:\s*,\s*'
+      . '(?:\s*,\s*!?'
       . $hostblockRE . ')*$',
     'minsize[,maxsize] definition' => '^\d+(?:,\d*)?$',
     'mintime[,maxtime] definition' =>
