@@ -165,6 +165,13 @@ CANLOCK_CPPFLAGS= @CANLOCK_CPPFLAGS@
 CANLOCK_LDFLAGS	= @CANLOCK_LDFLAGS@
 CANLOCK_LIBS	= $(abs_builddir)/lib/canlock$(LIBSUFFIX).o @CANLOCK_LIBS@
 
+## blacklistd support. Flags and libraries needed to add support for
+## FreeBSD's blacklistd daemon.
+
+BLACKLIST_CPPFLAGS	= @BLACKLIST_CPPFLAGS@
+BLACKLIST_LDFLAGS	= @BLACKLIST_LDFLAGS@
+BLACKLIST_LIBS		= @BLACKLIST_LIBS@
+
 ##  Missing functions.	If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.

@@ -9,6 +9,11 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+#if defined(HAVE_BLACKLIST)
+#include <errno.h>
+#include <blacklist.h>
+#endif
+
 #include "conffile.h"
 #include "inn/innconf.h"
 #include "inn/network.h"
@@ -87,6 +92,10 @@ static char *AuthenticateUser(AUTHGROUP *, char *, char *, int *, char *);
 static void GrowArray(void *, void *);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
                                struct vector *acccess_vec) UNUSED;
+
+#if defined(HAVE_BLACKLIST)
+static void BlacklistReport(const char *user);
+#endif
 
 /* Global variables. */
 static AUTHGROUP **auth_realms;
@@ -1606,6 +1615,11 @@ PERMlogin(char *uname, char *pass, int *code, char *errorstr)
 
     while (runame == NULL && i--)
         runame = AuthenticateUser(auth_realms[i], uname, pass, code, errorstr);
+
+#if defined(HAVE_BLACKLIST)
+    BlacklistReport(runame);
+#endif
+
     if (runame) {
         strlcpy(PERMuser, runame, sizeof(PERMuser));
         free(runame);
@@ -2209,3 +2223,42 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     free(resdir);
     return user;
 }
+
+
+#if defined(HAVE_BLACKLIST)
+void
+BlacklistReport(const char *user)
+{
+    int ret;
+    struct blacklist *cookie;
+
+    /* Only try reporting if nnrpd is started with -B. */
+    if (!BlacklistEnabled)
+        return;
+
+    /*
+     * One nnrpd process only handles one login attempt. Connect to
+     * blacklistd, report and disconnect to avoid keeping the
+     * blacklistd connection open and unused.
+     */
+    cookie = blacklist_open();
+    if (!cookie) {
+        syslog(L_ERROR, "could not connect to blacklistd: %s",
+               strerror(errno));
+        return;
+    }
+
+    /* nnrpd always uses STDIN for client input */
+    if (user)
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_OK, STDIN_FILENO,
+                          "login successful");
+    else
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_FAIL, STDIN_FILENO,
+                          "login failed");
+    if (ret == -1)
+        syslog(L_ERROR, "blacklistd communication failed: %s",
+               strerror(errno));
+
+    blacklist_close(cookie);
+}
+#endif

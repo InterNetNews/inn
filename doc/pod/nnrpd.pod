@@ -4,7 +4,7 @@ nnrpd - NNTP server for reader clients
 
 =head1 SYNOPSIS
 
-B<nnrpd> [B<-DfnoSt>] [B<-4> I<address>] [B<-6> I<address>] [B<-b> I<address>]
+B<nnrpd> [B<-DfnoStB>] [B<-4> I<address>] [B<-6> I<address>] [B<-b> I<address>]
 [B<-c> I<configfile>] [B<-i> I<initial>] [B<-I> I<instance>]
 [B<-p> I<port>] [B<-P> I<prefork>] [B<-r> I<reason>] [B<-s> I<padding>]
 
@@ -174,6 +174,13 @@ responses will be traced by reporting them in syslog.  This flag is set
 by innd(8) under the control of the ctlinnd(8) C<trace> command, and
 is toggled upon receipt of a SIGHUP; see signal(2).
 
+=item B<-B>
+
+If specified, B<nnrpd> will report login attempts to blacklistd for
+automatic blocking after a number of failed attempts. To use this
+flag, the blacklist library must have been found at configure time, or
+B<--with-blacklist> specified at configure time.
+
 =back
 
 =head1 TLS SUPPORT
@@ -265,6 +272,23 @@ I<tlsprotocols> parameters in F<inn.conf> to fine-tune the behaviour
 of the TLS/SSL negotiation whenever a new attack on the TLS protocol
 or some supported cipher suite is discovered.
 
+=head1 BLACKLISTD SUPPORT
+
+blacklistd is a FreeBSD daemon for preventing brute force attacks by
+blocking attackers after a number of failed login attempts. When
+nnrpd is built with blacklist support, it will report login attempts
+to the blacklistd daemon for potential blocking.
+
+Adding the configuration below to /etc/blacklistd.conf under the
+[local] section, assuming nnrpd is listening on port 563, would lead
+to attackers being blocked for 10 minutes after 5 failed login
+attempts.
+
+	# adr/mask:port type    proto owner name nfail disable
+	563             stream  *     *     *    5     10m
+
+See the blacklistd documentation for more information.
+
 =head1 PROTOCOL DIFFERENCES
 
 B<nnrpd> implements the NNTP commands defined in S<RFC 3977> (NNTP),
@@ -338,7 +362,7 @@ Febuary 1998.
 
 =head1 SEE ALSO
 
-ctlinnd(8), innd(8), inn.conf(5), libinn_uwildmat(3), nnrpd.track(5),
-passwd.nntp(5), readers.conf(5), signal(2).
+ctlinnd(8), blacklistd(8), innd(8), inn.conf(5), libinn_uwildmat(3),
+nnrpd.track(5), passwd.nntp(5), readers.conf(5), signal(2).
 
 =cut

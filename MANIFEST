@@ -593,6 +593,7 @@ lib/xwrite.c                          write that handles partial transfers
 m4                                    Autoconf support macros (Directory)
 m4/aux-libs.m4                        Autoconf macro for extra libraries
 m4/bdb.m4                             Autoconf macros for Berkeley DB
+m4/blacklist.m4                       Autoconf macros for FreeBSD blacklistd support
 m4/canlock.m4                         Autoconf macros for Cancel-Lock support
 m4/cc-c-o.m4                          Autoconf macro for -c -o compiler support
 m4/cc-flags.m4                        Autoconf macro for compiler flags

@@ -157,6 +157,7 @@ of configure options enabling optional features and the software and
 versions you'll need:
 
     --with-bdb          Berkeley DB 4.4 or higher, 4.7+ recommended
+    --with-blacklist    FreeBSD 11 or higher base system
     --with-canlock      libcanlock 3.3.0 or higher
     --with-krb5         MIT Kerberos v5 1.6.1 or higher
     --with-openssl      OpenSSL 0.9.6 or higher, 3.0.0+ recommended
@@ -515,6 +516,17 @@ Cancel-Lock secrets in the F<inn-secrets.conf> configuration file.
 If the libcanlock library is found at configure time, INN will be built with
 Cancel-Lock support unless the B<--without-canlock> flag is explicitly passed
 to C<configure>.
+
+=item B<--with-blacklist>=PATH
+
+Enables nnrpd integration with FreeBSD's blacklistd for blocking of
+brute force attacks. blacklistd and its client library libblacklist is
+available in the FreeBSD base system since FreeBSD 11 and should be
+automatically detected if PATH is not given.
+
+For this feature to have any effect, blacklistd needs to be configured
+and running. See the nnrpd documentation for a short configuration
+snippet and/or read the blacklistd documentation.
 
 =back
 

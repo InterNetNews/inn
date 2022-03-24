@@ -45,6 +45,19 @@
 bool encryption_layer_on = false;
 #endif
 
+/* Optional arguments for getopt. */
+#if defined(HAVE_OPENSSL)
+#   define OPENSSL_OPT "S"
+#else
+#   define OPENSSL_OPT ""
+#endif
+
+#if defined(HAVE_BLACKLIST)
+#   define BLACKLIST_OPT "B"
+#else
+#   define BLACKLIST_OPT ""
+#endif
+
 static void Usage(void) __attribute__((__noreturn__));
 
 /*
@@ -1013,11 +1026,8 @@ main(int argc, char *argv[])
     }
 #endif /* HAVE_SASL */
 
-#ifdef HAVE_OPENSSL
-    while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:St")) != EOF)
-#else
-    while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s:t")) != EOF)
-#endif /* HAVE_OPENSSL */
+    while ((i = getopt(argc, argv, "4:6:b:c:Dfi:I:nop:P:r:s"
+                       OPENSSL_OPT "t" BLACKLIST_OPT)) != EOF)
         switch (i) {
         default:
             Usage();
@@ -1071,6 +1081,11 @@ main(int argc, char *argv[])
             initialSSL = true;
             break;
 #endif /* HAVE_OPENSSL */
+#if defined(HAVE_BLACKLIST)
+        case 'B': /* Enable blacklistd functionality. */
+            BlacklistEnabled = true;
+            break;
+#endif /* HAVE_BLACKLIST */
         }
     argc -= optind;
     if (argc)
