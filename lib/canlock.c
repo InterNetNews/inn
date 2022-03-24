@@ -20,7 +20,7 @@
 **  address of a pointer where it will write c-lock elements:
 **    sha1:<28-byte Base64-encoded hash> sha256:<44-byte Base64-encoded hash>
 **  for each admin secret in the canlockadmin vector, and for each user secret
-**  in the canlockuser vector if the user is authenticated (that is to say if
+**  in the canlockuser vector if the user has an identity (that is to say if
 **  username is not NULL).
 **
 **  The length of each pair of c-lock elements is: 4+1+28+1+6+1+44=85 bytes
@@ -112,7 +112,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
         }
     }
 
-    /* If the user is authenticated, generate specific user c-lock elements. */
+    /* If the user has an identity, generate specific user c-lock elements. */
     if (username != NULL && username[0] != '\0') {
         size_t usernamelen = strlen(username);
 
@@ -170,9 +170,9 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
 **  a Supersedes header field body (possibly NULL), a username (possibly NULL)
 **  and the address of a pointer where it will write c-key elements:
 **    sha1:<28-byte Base64-encoded hash> sha256:<44-byte Base64-encoded hash>
-**  for each admin secret in the canlockadmin vector if the user is not
-**  authenticated (that is to say if username is NULL) or for each user secret
-**  in the canlockuser vector if the user is authenticated.
+**  for each admin secret in the canlockadmin vector if the user does not have
+**  an identity (that is to say if username is NULL) or for each user secret
+**  in the canlockuser vector if the user has an identity.
 **
 **  The length of each pair of c-key elements is: 4+1+28+1+6+1+44=85 bytes plus
 **  "\n\t" (2 bytes) for the folding (without '\n') if another c-key pair is

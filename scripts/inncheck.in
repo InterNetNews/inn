@@ -980,11 +980,12 @@ sub readers_conf {
                 'reject_with' => 'string',
                 'max_rate'    => 'number',
                 'localtime'   => 'boolean',
-                'newsmaster'   => 'string',    # email address
-                'strippath'    => 'boolean',
-                'perlfilter'   => 'boolean',
-                'pythonfilter' => 'boolean',
-                'virtualhost'  => 'boolean',
+                'newsmaster'     => 'string',    # email address
+                'strippath'      => 'boolean',
+                'perlfilter'     => 'boolean',
+                'pythonfilter'   => 'boolean',
+                'virtualhost'    => 'boolean',
+                'addcanlockuser' => 'boolean',
                 # inn.conf parameters:
                 'addinjectiondate'           => 'boolean',
                 'addinjectionpostingaccount' => 'boolean',

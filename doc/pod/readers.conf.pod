@@ -238,6 +238,7 @@ This is done with the key: parameter.  For example:
         key: special
         users: <SPECIAL>
         newsgroups: *
+        addcanlockuser: false
     }
 
 In this case, the two key: parameters bind this auth group with this
@@ -254,7 +255,8 @@ means that no domain is appended to the default username and the identity
 for such connections is just "<SPECIAL>".  Note that some additional
 add-ons to INN may prefer that authenticated identities always return a
 full e-mail address (including a domain), so you may want to set up your
-system that way.
+system that way.  As several different persons can be assigned the same
+"<SPECIAL>" identity, no user-specific Cancel-Lock hashes should be generated.
 
 Configuration files can be included in other configuration files via
 the syntax:
@@ -563,6 +565,20 @@ If this parameter is present, this access group is only considered when
 finding privileges for users matching auth groups with this same key:
 parameter.
 
+=item B<addcanlockuser:>
+
+If set to false, posts made by these users will not have a user-specific
+hash in the Cancel-Lock header field (only the admin hash will be generated).
+No Cancel-Key header field will be present in cancel or supersede requests.
+This is a boolean value and the default is true.
+
+See inn-secrets.conf(5) for more information about Cancel-Lock.  The main
+reason for this parameter is to deactivate this authentication mechanism when
+the same identity can be assigned by an access group to different people.
+Otherwise, any of these people would be able to send an authenticated
+withdrawal of an article originally sent by another person with the same
+identity.
+
 =item B<reject_with:>
 
 If this parameter is present, a client matching this block will be
@@ -718,6 +734,7 @@ connecting elsewhere:
     access full {
         users: "<EXAMPLE>"
         newsgroups: *
+        addcanlockuser: false
     }
 
 Note that the above access realm could also be written without the
@@ -800,6 +817,7 @@ password-restricted.
 
     access regular {
         newsgroups: "*,!example.restricted.*"
+        addcanlockuser: false
     }
 
     access full {
@@ -809,7 +827,8 @@ password-restricted.
 
 In this example, unauthenticated users get the identity C<anonymous>,
 which matches only the first access group and hence doesn't get access
-to the example.restricted.* hierarchy.  Anyone who authenticates using
+to the example.restricted.* hierarchy.  No user-specific Cancel-Lock elements
+should be generated for anonymous users.  Anyone who authenticates using
 a password in the F<newsusers> file gets full access to all groups.
 However, note that the only authentication block is limited to hostnames
 in the example.com domain; connections outside of that domain will never
@@ -914,6 +933,7 @@ server for a particular hierarchy.
     access default {
         users: <PUBLIC>
         newsgroups: example.*
+        addcanlockuser: false
     }
 
 Notice that clients aren't allowed to read any other groups; this keeps
@@ -983,7 +1003,7 @@ expanded by Russ Allbery <eagle@eyrie.org>.
 
 =head1 SEE ALSO
 
-auth_krb5(8), ckpasswd(8), inn.conf(5), innd(8), libinn_uwildmat(3),
-newsfeeds(5), nnrpd(8).
+auth_krb5(8), ckpasswd(8), inn.conf(5), innd(8), inn-secrets.conf(5),
+libinn_uwildmat(3), newsfeeds(5), nnrpd(8).
 
 =cut

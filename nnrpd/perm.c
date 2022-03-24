@@ -133,35 +133,36 @@ static int ConfigBitsize;
 #define PERMlocalmaxartsize            35
 #define PERMreadertrack                36
 #define PERMstrippostcc                37
-#define PERMaddinjectiondate           38
-#define PERMaddinjectionpostingaccount 39
-#define PERMaddinjectionpostinghost    40
-#define PERMnnrpdposthost              41
-#define PERMnnrpdpostport              42
-#define PERMnnrpdoverstats             43
-#define PERMbackoff_auth               44
-#define PERMbackoff_db                 45
-#define PERMbackoff_k                  46
-#define PERMbackoff_postfast           47
-#define PERMbackoff_postslow           48
-#define PERMbackoff_trigger            49
-#define PERMnnrpdcheckart              50
-#define PERMnnrpdauthsender            51
-#define PERMvirtualhost                52
-#define PERMnewsmaster                 53
-#define PERMlocaladdress               54
-#define PERMrejectwith                 55
-#define PERMmaxbytespersecond          56
-#define PERMperl_auth                  57
-#define PERMpython_auth                58
-#define PERMperl_access                59
-#define PERMpython_access              60
-#define PERMpython_dynamic             61
+#define PERMaddcanlockuser             38
+#define PERMaddinjectiondate           39
+#define PERMaddinjectionpostingaccount 40
+#define PERMaddinjectionpostinghost    41
+#define PERMnnrpdposthost              42
+#define PERMnnrpdpostport              43
+#define PERMnnrpdoverstats             44
+#define PERMbackoff_auth               45
+#define PERMbackoff_db                 46
+#define PERMbackoff_k                  47
+#define PERMbackoff_postfast           48
+#define PERMbackoff_postslow           49
+#define PERMbackoff_trigger            50
+#define PERMnnrpdcheckart              51
+#define PERMnnrpdauthsender            52
+#define PERMvirtualhost                53
+#define PERMnewsmaster                 54
+#define PERMlocaladdress               55
+#define PERMrejectwith                 56
+#define PERMmaxbytespersecond          57
+#define PERMperl_auth                  58
+#define PERMpython_auth                59
+#define PERMperl_access                60
+#define PERMpython_access              61
+#define PERMpython_dynamic             62
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-#    define PERMrequire_encryption 62
-#    define PERMMAX                63
+#    define PERMrequire_encryption 63
+#    define PERMMAX                64
 #else
-#    define PERMMAX 62
+#    define PERMMAX 63
 #endif
 
 #define TEST_CONFIG(a, b)                                            \
@@ -223,6 +224,7 @@ static CONFTOKEN PERMtoks[] = {
     {PERMlocalmaxartsize,            (char *) "localmaxartsize:"           },
     {PERMreadertrack,                (char *) "readertrack:"               },
     {PERMstrippostcc,                (char *) "strippostcc:"               },
+    {PERMaddcanlockuser,             (char *) "addcanlockuser:"            },
     {PERMaddinjectiondate,           (char *) "addinjectiondate:"          },
     {PERMaddinjectionpostingaccount, (char *) "addinjectionpostingaccount:"},
     {PERMaddinjectionpostinghost,    (char *) "addinjectionpostinghost:"   },
@@ -489,6 +491,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->localmaxartsize = innconf->localmaxartsize;
     curaccess->readertrack = innconf->readertrack;
     curaccess->strippostcc = innconf->strippostcc;
+    curaccess->addcanlockuser = true;
     curaccess->addinjectiondate = innconf->addinjectiondate;
     curaccess->addinjectionpostingaccount =
         innconf->addinjectionpostingaccount;
@@ -997,6 +1000,11 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
             curaccess->strippostcc = boolval;
         SET_CONFIG(oldtype);
         break;
+    case PERMaddcanlockuser:
+        if (boolval != -1)
+            curaccess->addcanlockuser = boolval;
+        SET_CONFIG(oldtype);
+        break;
     case PERMaddinjectiondate:
         if (boolval != -1)
             curaccess->addinjectiondate = boolval;
@@ -1323,6 +1331,7 @@ PERMreadfile(char *filename)
             case PERMlocalmaxartsize:
             case PERMreadertrack:
             case PERMstrippostcc:
+            case PERMaddcanlockuser:
             case PERMaddinjectiondate:
             case PERMaddinjectionpostingaccount:
             case PERMaddinjectionpostinghost:

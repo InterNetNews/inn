@@ -639,7 +639,9 @@ ProcessHeaders(char *idbuff, bool needmoderation)
         free(canlockbuff);
         canlockbuff = NULL;
 
-        if (gen_cancel_lock(HDR(HDR__MESSAGEID), PERMuser, &canbuff)) {
+        if (gen_cancel_lock(HDR(HDR__MESSAGEID),
+                            PERMaccessconf->addcanlockuser ? PERMuser : NULL,
+                            &canbuff)) {
             if (*canbuff != '\0') {
                 /* Extend an existing Cancel-Lock header field. */
                 if (HDR(HDR__CANCEL_LOCK) != NULL) {
@@ -657,9 +659,8 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     }
 
     /* Add or update the Cancel-Key header field with specific user c-key
-     * elements.  Do it only if the user is authenticated and wants to cancel
-     * or supersede an article. */
-    if (PERMuser[0] != '\0'
+     * elements.  Do it only for cancel or supersede requests. */
+    if (PERMuser[0] != '\0' && PERMaccessconf->addcanlockuser
         && (HDR(HDR__CONTROL) != NULL || HDR(HDR__SUPERSEDES) != NULL)) {
         free(cankeybuff);
         cankeybuff = NULL;

@@ -22,7 +22,7 @@
 struct secrets {
     /* Cancel-Lock Settings */
     struct vector *canlockadmin; /* For the news administrator */
-    struct vector *canlockuser;  /* For authenticated users */
+    struct vector *canlockuser;  /* For the users */
 };
 
 /* The global secrets variable used in programs. */
