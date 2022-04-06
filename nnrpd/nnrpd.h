@@ -179,6 +179,7 @@ EXTERN ACCESSGROUP *PERMaccessconf;
 EXTERN bool Tracing;
 EXTERN bool Offlinepost;
 EXTERN bool initialSSL;
+EXTERN bool BlacklistEnabled;
 EXTERN char **PERMreadlist;
 EXTERN char **PERMpostlist;
 EXTERN struct client Client;

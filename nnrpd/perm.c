@@ -9,6 +9,11 @@
 #include <signal.h>
 #include <sys/wait.h>
 
+#if defined(HAVE_BLACKLIST)
+#    include <blacklist.h>
+#    include <errno.h>
+#endif
+
 #include "conffile.h"
 #include "inn/innconf.h"
 #include "inn/network.h"
@@ -87,6 +92,10 @@ static char *AuthenticateUser(AUTHGROUP *, char *, char *, int *, char *);
 static void GrowArray(void *, void *);
 static void PERMvectortoaccess(ACCESSGROUP *acc, const char *name,
                                struct vector *acccess_vec) UNUSED;
+
+#if defined(HAVE_BLACKLIST)
+static void BlacklistReport(const char *user);
+#endif
 
 /* Global variables. */
 static AUTHGROUP **auth_realms;
@@ -1604,13 +1613,18 @@ PERMlogin(char *uname, char *pass, int *code, char *errorstr)
 
     runame = NULL;
 
-    while (runame == NULL && i--)
+    while (runame == NULL && i-- > 0)
         runame = AuthenticateUser(auth_realms[i], uname, pass, code, errorstr);
-    if (runame) {
+
+#if defined(HAVE_BLACKLIST)
+    BlacklistReport(runame);
+#endif
+
+    if (runame != NULL) {
         strlcpy(PERMuser, runame, sizeof(PERMuser));
         free(runame);
         uname = strchr(PERMuser, '@');
-        if (!uname && auth_realms[i]->default_domain) {
+        if (uname == NULL && auth_realms[i]->default_domain != NULL) {
             /* Append the default domain to the username. */
             strlcat(PERMuser, "@", sizeof(PERMuser));
             strlcat(PERMuser, auth_realms[i]->default_domain,
@@ -2209,3 +2223,40 @@ AuthenticateUser(AUTHGROUP *auth, char *username, char *password,
     free(resdir);
     return user;
 }
+
+
+#if defined(HAVE_BLACKLIST)
+void
+BlacklistReport(const char *user)
+{
+    int ret;
+    struct blacklist *cookie;
+
+    /* Only try reporting if nnrpd is started with -B. */
+    if (!BlacklistEnabled)
+        return;
+
+    /* One nnrpd process only handles one login attempt.  Connect to
+     * blacklistd, report and disconnect to avoid keeping the blacklistd
+     * connection open and unused. */
+    cookie = blacklist_open();
+    if (cookie == NULL) {
+        syslog(L_ERROR, "could not connect to blacklistd: %s",
+               strerror(errno));
+        return;
+    }
+
+    /* nnrpd always uses STDIN for client input. */
+    if (user != NULL)
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_OK, STDIN_FILENO,
+                          "login successful");
+    else
+        ret = blacklist_r(cookie, BLACKLIST_AUTH_FAIL, STDIN_FILENO,
+                          "login failed");
+    if (ret == -1)
+        syslog(L_ERROR, "blacklistd communication failed: %s",
+               strerror(errno));
+
+    blacklist_close(cookie);
+}
+#endif
