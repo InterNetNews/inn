@@ -36,6 +36,9 @@ AC_MSG_NOTICE([Building INN requires the following dependencies to be met,
 besides a working compiler, a POSIX shell and GNU make, as well as Autoconf
 if you're bootstrapping the source code.
 ---
+*******************************************
+** Debian and RedHat-based distributions **
+*******************************************
 The names of the deb and rpm packages are given to help you find them quicker.
 ---
 Mandatory (deb / rpm):
@@ -77,6 +80,42 @@ Though not mandatory for the build, the following packages will also be useful:
 - libencode-perl, libmime-tools-perl / perl-Encode, perl-MIME-tools (for the
   decoding of control articles by controlchan)
 - cron and syslog, probably already installed on your system
+---
+*****************************************************************
+** FreeBSD packages (and probably also other BSD-like systems) **
+*****************************************************************
+FreeBSD packages come with development headers by default and dependencies not
+listed are satisfied by the base FreeBSD system.
+---
+Mandatory FreeBSD packages:
+- gmake (INN needs to be built using gmake instead of make)
+- autoconf (generate a configuration script)
+- libtool (for library creation)
+- perl5
+---
+Optional FreeBSD packages:
+- db18 (--with-bdb --with-bdb-lib=/usr/local/lib/db18
+        --with-bdb-include=/usr/local/include/db18, the "18" indicates version
+        and can be replaced with another version, for ovdb overview)
+- krb5 (--with-krb5)
+- python3 (--with-python)
+- cyrus-sasl (--with-sasl)
+- sqlite3 (--with-sqlite3=/usr/local)
+---
+Optional packages provided by FreeBSD base and the ports tree:
+- openssl (--with-openssl --with-openssl-lib=/usr/local
+           --with-openssl-include=/usr/local if the version from ports
+           is preferable to the one provided by the base system.)
+---
+Runtime optionals (see Linux equivalents above for descriptions):
+- gnupg
+- freebsd-uucp
+- p5-GD
+- p5-Encode, p5-MIME-Tools
+---
+Unavailable packages (but may now be?):
+- libcanlock (libcanlock is not yet available in the ports tree and needs
+              manual compilation)
 ---
 Happy building!])
 
