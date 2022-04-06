@@ -17,6 +17,8 @@
 ##
 ##  Currently handles the following conversions:
 ##
+##   * Rename nolist and noresendid to list and resendid in incoming.conf.
+##   * Remove comment and email in incoming.conf.
 ##   * Clean up inn.conf for the new parser in INN 2.4.
 ##   * Add the hismethod parameter to inn.conf if not found.
 ##   * Rename nntpactsync to incominglogfrequency in inn.conf.
@@ -41,9 +43,10 @@ use Getopt::Long qw(GetOptions);
 
 # The mappings of file names to fixes.
 %FIXES = (
-    'inn.conf'     => \&fix_inn_conf,
-    'newsfeeds'    => \&fix_newsfeeds,
-    'readers.conf' => \&fix_readers_conf
+    'incoming.conf' => \&fix_incoming_conf,
+    'inn.conf'      => \&fix_inn_conf,
+    'newsfeeds'     => \&fix_newsfeeds,
+    'readers.conf'  => \&fix_readers_conf
 );
 
 # The mappings of obsolete file names to rename.
@@ -96,6 +99,37 @@ use Getopt::Long qw(GetOptions);
     'signcontrol'   => 'signcontrol.OLD',
     'version.pl'    => 'version.pl.OLD',
 );
+
+# Update incoming.conf.
+# Takes a reference to an array containing the contents of the
+# file, a reference to an array into which the output should be put, and the
+# file name for error reporting.
+sub fix_incoming_conf {
+    my ($input, $output, $file) = @_;
+    my $raw;
+    local $_;
+    for $raw (@$input) {
+        $_ = $raw;
+        # Commented or blank lines.
+        if (/^\s*\#/ || /^\s*$/) {
+            push(@$output, $_);
+            next;
+        }
+        chomp;
+
+        # Remove a few parameters.
+        s/^(\s*)(comment:)/$1#$2/;
+        s/^(\s*)(email:)/$1#$2/;
+
+        # Rename a few other parameters.
+        s/^(\s*)nolist:(\s*"?)false("?)/$1list:$2true$3/;
+        s/^(\s*)nolist:(\s*"?)true("?)/$1list:$2false$3/;
+        s/^(\s*)noresendid:(\s*"?)false("?)/$1resendid:$2true$3/;
+        s/^(\s*)noresendid:(\s*"?)true("?)/$1resendid:$2false$3/;
+
+        push(@$output, "$_\n");
+    }
+}
 
 # Clean up inn.conf for the new parser in INN 2.4.  Null keys (keys without
 # values) need to be commented out since they're no longer allowed (don't just

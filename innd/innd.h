@@ -338,10 +338,10 @@ typedef struct _CHANNEL {
     bool Skip;
     bool Ignore;
     bool Streaming;
-    bool NoResendId;
+    bool ResendId;
     bool privileged;
-    bool Nolist;
-    bool Noxbatch;
+    bool List;
+    bool Xbatch;
     bool CanAuthenticate; /* Can use AUTHINFO? */
     bool IsAuthenticated; /* No need to use AUTHINFO? */
     bool HasSentUsername; /* Has used AUTHINFO USER? */

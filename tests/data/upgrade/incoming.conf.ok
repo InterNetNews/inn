@@ -1,0 +1,8 @@
+# Global values.
+ resendid:   false
+
+peer joe {
+  #comment: Fast!
+  #email:   "joe@example.com"
+  list:  "false"
+}

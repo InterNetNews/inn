@@ -606,7 +606,7 @@ NCcapabilities(CHANNEL *cp)
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
-    if (cp->IsAuthenticated && !cp->Nolist) {
+    if (cp->IsAuthenticated && cp->List) {
         WCHANappend(cp, "LIST ACTIVE ACTIVE.TIMES MOTD NEWSGROUPS", 40);
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
@@ -622,7 +622,7 @@ NCcapabilities(CHANNEL *cp)
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
 
-    if (cp->IsAuthenticated && !cp->Noxbatch) {
+    if (cp->IsAuthenticated && cp->Xbatch) {
         WCHANappend(cp, "XBATCH", 6);
         WCHANappend(cp, NCterm, strlen(NCterm));
     }
@@ -728,7 +728,7 @@ NCihave(CHANNEL *cp)
         free(buff);
     } else if (WIPinprogress(cp->av[1], cp, false)) {
         cp->Ihave_Deferred++;
-        if (cp->NoResendId) {
+        if (!cp->ResendId) {
             cp->Refused++;
             xasprintf(&buff, "%d Do not resend", NNTP_FAIL_IHAVE_REFUSE);
             NCwritereply(cp, buff);
@@ -782,7 +782,7 @@ NCxbatch(CHANNEL *cp)
         return;
     }
 
-    if (cp->Noxbatch) {
+    if (!cp->Xbatch) {
         xasprintf(&buff, "%d Permission denied", NNTP_ERR_ACCESS);
         NCwritereply(cp, buff);
         free(buff);
@@ -815,8 +815,8 @@ NClist(CHANNEL *cp)
 
     cp->Start = cp->Next;
 
-    if (cp->Nolist) {
-        /* Even authenticated, a peer that has nolist: set will not
+    if (!cp->List) {
+        /* Even authenticated, a peer that has list set to false will not
          * be able to use the LIST command. */
         if (!cp->CanAuthenticate || innconf->noreader
             || (NNRPReason != NULL && !innconf->readerswhenstopped))
@@ -1902,7 +1902,7 @@ NCcheck(CHANNEL *cp)
         NCwritereply(cp, cp->Sendid.data);
     } else if (WIPinprogress(cp->av[1], cp, true)) {
         cp->Check_deferred++;
-        if (cp->NoResendId) {
+        if (!cp->ResendId) {
             cp->Refused++;
             snprintf(cp->Sendid.data, cp->Sendid.size, "%d %s Do not resend",
                      NNTP_FAIL_CHECK_REFUSE, cp->av[1]);

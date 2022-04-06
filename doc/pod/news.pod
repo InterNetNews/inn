@@ -52,9 +52,18 @@ upgrade.
 
 =item *
 
-The XBATCH command is no longer enabled by default in B<innd>.  You'll have to
-explicitly enable that capability by setting the new I<noxbatch> parameter to
-false in F<incoming.conf> for the peers sending you such batches.
+The XBATCH command is no longer enabled by default in B<innd>.  You'll have
+to explicitly enable that capability by setting the new I<xbatch> parameter to
+true in F<incoming.conf> for the peers sending you such compressed batches.
+
+=item *
+
+The I<nolist> and I<noresendid> parameters in F<incoming.conf> have been
+respectively renamed to I<list> and I<resendid> (and the meaning of their
+related boolean values is now the opposite).  Besides, the unused I<comment>
+and I<email> parameters in F<incoming.conf> have been removed.  B<innupgrade>
+will take care of the changes (inverting the boolean values, and commenting
+the lines with removed parameters).
 
 =item *
 
@@ -213,9 +222,16 @@ checks.
 
 =item *
 
-The I<noxbatch> parameter has been added in F<incoming.conf> to enable the
+The I<xbatch> parameter has been added in F<incoming.conf> to enable the
 XBATCH command in B<innd> for specific remote peers.  The default is to
 disable the capability.
+
+=item *
+
+The I<nolist> and I<noresendid> parameters in F<incoming.conf> have been
+respectively renamed to I<list> and I<resendid> (and the meaning of their
+related boolean values is now the opposite).  Besides, the unused I<comment>
+and I<email> parameters in F<incoming.conf> have been removed.
 
 =item *
 

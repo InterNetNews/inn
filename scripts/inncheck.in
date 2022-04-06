@@ -511,8 +511,6 @@ sub incoming_conf {
     parse_config(
         {
             '<anywhere>' => {
-                'comment'         => 'string',
-                'email'           => 'string',
                 'identd'          => 'string',
                 'password'        => 'string',
                 'patterns'        => 'string',
@@ -520,11 +518,11 @@ sub incoming_conf {
                 'hold-time'       => 'number',
                 'max-connections' => 'number / "unlimited" / "none"',
                 'ignore'          => 'boolean',
-                'nolist'          => 'boolean',
-                'noresendid'      => 'boolean',
-                'noxbatch'        => 'boolean',
+                'list'            => 'boolean',
+                'resendid'        => 'boolean',
                 'skip'            => 'boolean',
                 'streaming'       => 'boolean',
+                'xbatch'          => 'boolean',
             },
             'group' => {},
             'peer'  => {},

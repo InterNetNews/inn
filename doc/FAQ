@@ -520,12 +520,12 @@ that peer sends you the article with TAKETHIS, you receive a CHECK
 <message-id> from the second peer for the same message.  What response
 does INN send to the second peer?
 
-If deferrals are enabled (noresendid == false in incoming.conf for that
-peer, the default), INN will send a 431 deferral telling that peer that
-you may or may not want the article; try again later.  Chances are that
-when it retries, you will have received the article from the first peer
-and you'll just refuse it.  But if the first peer dies before it ever
-sends you the article, this way you can still get it from the second peer.
+If deferrals are enabled (resendid == true in incoming.conf for that peer,
+the default), INN will send a 431 deferral telling that peer that you may
+or may not want the article; try again later.  Chances are that when it
+retries, you will have received the article from the first peer and you'll
+just refuse it.  But if the first peer dies before it ever sends you the
+article, this way you can still get it from the second peer.
 
 If deferrals are disabled, INN will refuse the article from the second
 peer, which means there's a possibility you'll lose news if the first peer

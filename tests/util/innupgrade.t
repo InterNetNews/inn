@@ -54,18 +54,21 @@ if [ ! -x "$innupgrade" ]; then
 fi
 
 # Print out the number of tests
-echo 16
+echo 18
 
 # Save backup copies.
+cp "upgrade/incoming.conf" "upgrade/incoming.conf.bad"
 cp "upgrade/inn.conf" "upgrade/inn.conf.bad"
 cp "upgrade/newsfeeds" "upgrade/newsfeeds.bad"
 cp "upgrade/readers.conf" "upgrade/readers.conf.bad"
 
 # Upgrade everything in the directory.
 run "upgrade"
+compare "upgrade/incoming.conf.OLD" "upgrade/incoming.conf.bad"
 compare "upgrade/inn.conf.OLD" "upgrade/inn.conf.bad"
 compare "upgrade/newsfeeds.OLD" "upgrade/newsfeeds.bad"
 compare "upgrade/readers.conf.OLD" "upgrade/readers.conf.bad"
+compare "upgrade/incoming.conf" "upgrade/incoming.conf.ok"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 compare "upgrade/newsfeeds" "upgrade/newsfeeds.ok"
 compare "upgrade/readers.conf" "upgrade/readers.conf.ok"
@@ -104,9 +107,10 @@ compare "upgrade/inn.conf.OLD" "upgrade/inn.conf.bad"
 compare "upgrade/inn.conf" "upgrade/inn.conf.ok"
 
 # Clean up.
+mv -f "upgrade/incoming.conf.bad" "upgrade/incoming.conf"
 mv -f "upgrade/inn.conf.bad" "upgrade/inn.conf"
 mv -f "upgrade/newsfeeds.bad" "upgrade/newsfeeds"
 mv -f "upgrade/readers.conf.bad" "upgrade/readers.conf"
-rm -f "upgrade/inn.conf.OLD" "upgrade/newsfeeds.OLD"
-rm -f "upgrade/readers.conf.OLD"
+rm -f "upgrade/incoming.conf.OLD" "upgrade/inn.conf.OLD"
+rm -f "upgrade/newsfeeds.OLD" "upgrade/readers.conf.OLD"
 rm -f "upgrade/inn-secrets.conf"

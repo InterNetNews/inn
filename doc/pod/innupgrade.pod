@@ -26,6 +26,21 @@ Currently, B<innupgrade> knows how to apply the following updates:
 
 =over 2
 
+=item F<incoming.conf>
+
+=over 2
+
+=item *
+
+Rename I<nolist> and I<noresendid> to respectively I<list> and I<resendid>.
+Invert the related boolean values (since S<INN 2.7>).
+
+=item *
+
+Comment removed I<comment> and I<email> parameters (since S<INN 2.7>).
+
+=back
+
 =item F<inn.conf>
 
 =over 2
@@ -156,6 +171,7 @@ Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 =head1 SEE ALSO
 
-inn.conf(5), inn-secrets.conf(5), newsfeeds(5), readers.conf(5).
+incoming.conf(5), inn.conf(5), inn-secrets.conf(5), newsfeeds(5),
+readers.conf(5).
 
 =cut

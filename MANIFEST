@@ -909,6 +909,8 @@ tests/data/overview/munge-data        Support script to generate test data
 tests/data/overview/reversed          Same as basic, but in reverse order
 tests/data/overview/xref              Storing on Xref header field test data
 tests/data/upgrade                    innupgrade test files (Directory)
+tests/data/upgrade/incoming.conf      incoming.conf file that needs fixing
+tests/data/upgrade/incoming.conf.ok   Fixed incoming.conf file
 tests/data/upgrade/inn.conf           inn.conf file that needs fixing
 tests/data/upgrade/inn.conf.ok        Fixed inn.conf file
 tests/data/upgrade/newsfeeds          newsfeeds file that needs fixing

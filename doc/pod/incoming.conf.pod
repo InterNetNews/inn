@@ -53,18 +53,18 @@ Group entries look like:
         # body
     }
 
-The word C<group> is required.  <name> is any string valid as a key.  The body
-of a group entry contains any number of the three types of entries.  So key/value
-pairs can be defined inside a group, and peers can be nested inside a group,
-and other groups can be nested inside a group.  Key/value entries that are
-defined outside of all peer and group entries are said to be at global
-scope.  Global key/value entries act as defaults for peers.  When B<innd> looks
-for a specific value in a peer entry (for example, the maximum number of
-connections to allow), if the value is not defined in the peer entry, then
-the enclosing groups are examined for the entry (starting at the closest
-enclosing group).  If there are no enclosing groups, or the enclosing groups
-don't define the key/value, then the value at global scope is used.  A small
-example could be:
+The word C<group> is required.  <name> is any string valid as a key.
+The body of a group entry contains any number of the three types of entries.
+So key/value pairs can be defined inside a group, and peers can be nested
+inside a group, and other groups can be nested inside a group.  Key/value
+entries that are defined outside of all peer and group entries are said to
+be at global scope.  Global key/value entries act as defaults for peers.
+When B<innd> looks for a specific value in a peer entry (for example, the
+maximum number of connections to allow), if the value is not defined in the
+peer entry, then the enclosing groups are examined for the entry (starting
+at the closest enclosing group).  If there are no enclosing groups, or the
+enclosing groups don't define the key/value, then the value at global scope
+is used.  A small example could be:
 
     # Global value applied to all peers that have no value of their own.
     max-connections: 5
@@ -83,7 +83,7 @@ example could be:
     group fast-sites {
         max-connections: 15
 
-        # Another peer.  The max-connections: value from the
+        # Another peer.  The max-connections value from the
         # fast-sites group scope is used.
         peer data.ramona.vix.com {
             hostname: data.ramona.vix.com
@@ -109,16 +109,6 @@ The following keys are allowed:
 
 =over 4
 
-=item I<comment>
-
-This key requires a string value.  Reserved for future use.  The default
-is an empty string.
-
-=item I<email>
-
-This key requires a string value.  Reserved for future use.  The default
-is an empty string.
-
 =item I<hold-time>
 
 This key requires a positive integer value.  It defines the hold time
@@ -137,11 +127,11 @@ the hostname defaults to the label of the peer.
 =item I<identd>
 
 This key requires a string value.  It is used if you wish to require
-a peer's user name retrieved through B<identd> match the specified string.
+a peer's user name retrieved through identd(8) match the specified string.
 Note that currently B<innd> does not implement any timeout in B<identd>
 callbacks, so enabling this option may cause B<innd> to hang if the remote
-peer does not respond to B<ident> callbacks in a reasonable timeframe.
-The default is an empty string, that is to say no B<identd>.
+peer does not respond to ident callbacks in a reasonable timeframe.
+The default is an empty string, that is to say no ident daemon.
 
 =item I<ignore>
 
@@ -149,34 +139,17 @@ This key requires a boolean value.  Setting this entry causes B<innd> to
 refuse every article sent via CHECK or IHAVE by this peer.  The default
 is false.
 
+=item I<list>
+
+This key requires a boolean value.  It defines whether a peer is allowed to
+issue LIST commands.  The default is true, that is to say it can.
+
 =item I<max-connections>
 
 This key requires a positive integer value.  It defines the maximum
 number of connections allowed.  A value of zero specifies an unlimited
 number of maximum connections (C<unlimited> or C<none> can be used
 as synonyms).  The default is C<0>.
-
-=item I<nolist>
-
-This key requires a boolean value.  It defines whether a peer is allowed to
-issue LIST commands.  The default is false, that is to say it can.
-
-=item I<noresendid>
-
-This key requires a boolean value.  It defines whether B<innd> should
-send C<438> (response to CHECK, in streaming mode) or C<435> (response
-to IHAVE in non-streaming mode) responses instead of C<431> (response
-to CHECK) or C<436> (response to IHAVE) if a message is offered that
-is already received from another peer.  The deferral feature can be
-useful for peers that resend messages right away, as B<innfeed> does.
-The default is false: the deferral feature is used so that the peer
-receives C<431> and C<436> codes, and therefore resends the article
-later.
-
-=item I<noxbatch>
-
-This key requires a boolean value.  It defines whether a peer is allowed to
-issue XBATCH commands.  The default is true, that is to say it cannot.
 
 =item I<password>
 
@@ -190,6 +163,20 @@ This key requires a string value.  It is a list of newsfeeds(5)-style
 list of newsgroups which are to be accepted from this host.  The default
 is the string C<*>, that is to say all groups are accepted.
 
+=item I<resendid>
+
+This key requires a boolean value.  When set to true, B<innd> asks the remote
+peer to retry later to send the proposed article (which happens when another
+peer has already offered to send it, but has not yet), using C<431> (response
+to CHECK, in streaming mode) or C<436> (response to IHAVE in non-streaming
+mode) codes.  When set to false, B<innd> does not ask any new attempt (which
+will lead to the loss of an article in case the other peer does not send
+it), using C<438> (response to CHECK) or C<435> (response to IHAVE) codes.
+The deferral feature can be useful for peers that resend messages right away,
+as B<innfeed> does.  The default is true: the deferral feature is used so that
+the peer receives C<431> and C<436> codes, and therefore resends the article
+later.
+
 =item I<skip>
 
 This key requires a boolean value.  Setting this entry causes this
@@ -199,6 +186,11 @@ peer to be skipped.  The default is false.
 
 This key requires a boolean value.  It defines whether streaming commands
 (CHECK and TAKETHIS) are allowed from this peer.  The default is true.
+
+=item I<xbatch>
+
+This key requires a boolean value.  It defines whether a peer is allowed to
+issue XBATCH commands.  The default is false, that is to say it cannot.
 
 =back
 

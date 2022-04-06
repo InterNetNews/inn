@@ -40,14 +40,12 @@ typedef struct _REMOTEHOST {
     bool Streaming;                  /* Streaming allowed ? */
     bool Skip;                       /* Skip this peer ? */
     bool Ignore;                     /* Ignore articles sent by this peer? */
-    bool NoResendId;                 /* Don't send RESEND responses ? */
-    bool Nolist;                     /* No LIST command allowed */
-    bool Noxbatch;                   /* No XBATCH command allowed */
+    bool ResendId;                   /* Send deferral responses? */
+    bool List;                       /* LIST command allowed? */
+    bool Xbatch;                     /* XBATCH command allowed? */
     int MaxCnx;                      /* Max connections (per peer) */
     char **Patterns;                 /* List of groups allowed */
     char *Pattern;                   /* List of groups allowed (string) */
-    char *Email;                     /* Email(s) of contact */
-    char *Comment;                   /* Commentary [max size = MAXBUFF] */
     int HoldTime;  /* Hold time before disconnect over MaxCnx */
     int Keysetbit; /* Bit to check duplicated key */
 } REMOTEHOST;
@@ -73,22 +71,20 @@ static REMOTEHOST *RCpeerlist;
 static int RCnpeerlist;
 static char RCbuff[BIG_BUFFER];
 
-#define PEER       "peer"
-#define GROUP      "group"
-#define HOSTNAME   "hostname:"
-#define STREAMING  "streaming:"
-#define MAX_CONN   "max-connections:"
-#define PASSWORD   "password:"
-#define IDENTD     "identd:"
-#define PATTERNS   "patterns:"
-#define EMAIL      "email:"
-#define COMMENT    "comment:"
-#define SKIP       "skip:"
-#define IGNORE     "ignore:"
-#define NORESENDID "noresendid:"
-#define HOLD_TIME  "hold-time:"
-#define NOLIST     "nolist:"
-#define NOXBATCH   "noxbatch:"
+#define PEER      "peer"
+#define GROUP     "group"
+#define HOSTNAME  "hostname:"
+#define STREAMING "streaming:"
+#define MAX_CONN  "max-connections:"
+#define PASSWORD  "password:"
+#define IDENTD    "identd:"
+#define PATTERNS  "patterns:"
+#define SKIP      "skip:"
+#define IGNORE    "ignore:"
+#define RESENDID  "resendid:"
+#define HOLD_TIME "hold-time:"
+#define LIST      "list:"
+#define XBATCH    "xbatch:"
 
 typedef enum {
     K_END,
@@ -101,15 +97,13 @@ typedef enum {
     K_MAX_CONN,
     K_PASSWORD,
     K_IDENTD,
-    K_EMAIL,
     K_PATTERNS,
-    K_COMMENT,
     K_SKIP,
     K_IGNORE,
-    K_NORESENDID,
+    K_RESENDID,
     K_HOLD_TIME,
-    K_NOLIST,
-    K_NOXBATCH
+    K_LIST,
+    K_XBATCH
 } _Keywords;
 
 typedef enum {
@@ -607,9 +601,9 @@ RCreader(CHANNEL *cp)
             new->Streaming = rp->Streaming;
             new->Skip = rp->Skip;
             new->Ignore = rp->Ignore;
-            new->NoResendId = rp->NoResendId;
-            new->Nolist = rp->Nolist;
-            new->Noxbatch = rp->Noxbatch;
+            new->ResendId = rp->ResendId;
+            new->List = rp->List;
+            new->Xbatch = rp->Xbatch;
             new->CanAuthenticate = true; /* Can use AUTHINFO. */
             new->MaxCnx = rp->MaxCnx;
             new->HoldTime = rp->HoldTime;
@@ -789,8 +783,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
 {
     static char NOPASS[] = "";
     static char NOIDENTD[] = "";
-    static char NOEMAIL[] = "";
-    static char NOCOMMENT[] = "";
     FILE *F;
     char *p;
     char **q;
@@ -819,8 +811,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
         for (rp = *list, i = *count; --i >= 0; rp++) {
             free(rp->Name);
             free(rp->Label);
-            free(rp->Email);
-            free(rp->Comment);
             free(rp->Password);
             free(rp->Identd);
             if (rp->Patterns) {
@@ -862,8 +852,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     freeaddrinfo(ai);
     rp->Name = xstrdup("localhost");
     rp->Label = xstrdup("localhost");
-    rp->Email = xstrdup(NOEMAIL);
-    rp->Comment = xstrdup(NOCOMMENT);
     rp->Password = xstrdup(NOPASS);
     rp->Identd = xstrdup(NOIDENTD);
     rp->Patterns = NULL;
@@ -871,9 +859,9 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     rp->Streaming = true;
     rp->Skip = false;
     rp->Ignore = false;
-    rp->NoResendId = false;
-    rp->Nolist = false;
-    rp->Noxbatch = true;
+    rp->ResendId = true;
+    rp->List = true;
+    rp->Xbatch = false;
     rp->HoldTime = 0;
     rp++;
     (*count)++;
@@ -887,15 +875,13 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
     default_params.Streaming = true;
     default_params.Skip = false;
     default_params.Ignore = false;
-    default_params.NoResendId = false;
-    default_params.Nolist = false;
-    default_params.Noxbatch = true;
+    default_params.ResendId = true;
+    default_params.List = true;
+    default_params.Xbatch = false;
     default_params.MaxCnx = 0;
     default_params.HoldTime = 0;
     default_params.Password = xstrdup(NOPASS);
     default_params.Identd = xstrdup(NOIDENTD);
-    default_params.Email = xstrdup(NOEMAIL);
-    default_params.Comment = xstrdup(NOCOMMENT);
     default_params.Pattern = NULL;
     peer_params.Keysetbit = 0;
 
@@ -934,20 +920,14 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             group_params->Streaming = groupcount > 1
                                           ? groups[groupcount - 2].Streaming
                                           : default_params.Streaming;
-            group_params->NoResendId = groupcount > 1
-                                           ? groups[groupcount - 2].NoResendId
-                                           : default_params.NoResendId;
-            group_params->Nolist = groupcount > 1
-                                       ? groups[groupcount - 2].Nolist
-                                       : default_params.Nolist;
-            group_params->Noxbatch = groupcount > 1
-                                         ? groups[groupcount - 2].Noxbatch
-                                         : default_params.Noxbatch;
-            group_params->Email = groupcount > 1 ? groups[groupcount - 2].Email
-                                                 : default_params.Email;
-            group_params->Comment = groupcount > 1
-                                        ? groups[groupcount - 2].Comment
-                                        : default_params.Comment;
+            group_params->ResendId = groupcount > 1
+                                         ? groups[groupcount - 2].ResendId
+                                         : default_params.ResendId;
+            group_params->List = groupcount > 1 ? groups[groupcount - 2].List
+                                                : default_params.List;
+            group_params->Xbatch = groupcount > 1
+                                       ? groups[groupcount - 2].Xbatch
+                                       : default_params.Xbatch;
             group_params->Pattern = groupcount > 1
                                         ? groups[groupcount - 2].Pattern
                                         : default_params.Pattern;
@@ -1001,17 +981,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                 groupcount > 0 ? group_params->Ignore : default_params.Ignore;
             peer_params.Streaming = groupcount > 0 ? group_params->Streaming
                                                    : default_params.Streaming;
-            peer_params.NoResendId = groupcount > 0
-                                         ? group_params->NoResendId
-                                         : default_params.NoResendId;
-            peer_params.Nolist =
-                groupcount > 0 ? group_params->Nolist : default_params.Nolist;
-            peer_params.Noxbatch = groupcount > 0 ? group_params->Noxbatch
-                                                  : default_params.Noxbatch;
-            peer_params.Email =
-                groupcount > 0 ? group_params->Email : default_params.Email;
-            peer_params.Comment = groupcount > 0 ? group_params->Comment
-                                                 : default_params.Comment;
+            peer_params.ResendId = groupcount > 0 ? group_params->ResendId
+                                                  : default_params.ResendId;
+            peer_params.List =
+                groupcount > 0 ? group_params->List : default_params.List;
+            peer_params.Xbatch =
+                groupcount > 0 ? group_params->Xbatch : default_params.Xbatch;
             peer_params.Pattern = groupcount > 0 ? group_params->Pattern
                                                  : default_params.Pattern;
             peer_params.Password = groupcount > 0 ? group_params->Password
@@ -1090,14 +1065,12 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                                       res->ai_addrlen);
                         rp->Name = xstrdup(*q);
                         rp->Label = xstrdup(peer_params.Label);
-                        rp->Email = xstrdup(peer_params.Email);
-                        rp->Comment = xstrdup(peer_params.Comment);
                         rp->Streaming = peer_params.Streaming;
                         rp->Skip = peer_params.Skip;
                         rp->Ignore = peer_params.Ignore;
-                        rp->NoResendId = peer_params.NoResendId;
-                        rp->Nolist = peer_params.Nolist;
-                        rp->Noxbatch = peer_params.Noxbatch;
+                        rp->ResendId = peer_params.ResendId;
+                        rp->List = peer_params.List;
+                        rp->Xbatch = peer_params.Xbatch;
                         rp->Password = xstrdup(peer_params.Password);
                         rp->Identd = xstrdup(peer_params.Identd);
                         rp->Patterns =
@@ -1220,10 +1193,10 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             continue;
         }
 
-        /* noresendid */
-        if (!strncmp(word, NORESENDID, sizeof NORESENDID)) {
+        /* resendid */
+        if (!strncmp(word, RESENDID, sizeof RESENDID)) {
             free(word);
-            TEST_CONFIG(K_NORESENDID, bit);
+            TEST_CONFIG(K_RESENDID, bit);
             if (bit) {
                 syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
                 break;
@@ -1239,21 +1212,21 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
                 break;
             }
-            RCadddata(data, &infocount, K_NORESENDID, T_STRING, word);
+            RCadddata(data, &infocount, K_RESENDID, T_STRING, word);
             if (peer_params.Label != NULL)
-                peer_params.NoResendId = flag;
+                peer_params.ResendId = flag;
             else if (groupcount > 0 && group_params->Label != NULL)
-                group_params->NoResendId = flag;
+                group_params->ResendId = flag;
             else
-                default_params.NoResendId = flag;
-            SET_CONFIG(K_NORESENDID);
+                default_params.ResendId = flag;
+            SET_CONFIG(K_RESENDID);
             continue;
         }
 
-        /* nolist */
-        if (!strncmp(word, NOLIST, sizeof NOLIST)) {
+        /* list */
+        if (!strncmp(word, LIST, sizeof LIST)) {
             free(word);
-            TEST_CONFIG(K_NOLIST, bit);
+            TEST_CONFIG(K_LIST, bit);
             if (bit) {
                 syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
                 break;
@@ -1269,21 +1242,21 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
                 break;
             }
-            RCadddata(data, &infocount, K_NOLIST, T_STRING, word);
+            RCadddata(data, &infocount, K_LIST, T_STRING, word);
             if (peer_params.Label != NULL)
-                peer_params.Nolist = flag;
+                peer_params.List = flag;
             else if (groupcount > 0 && group_params->Label != NULL)
-                group_params->Nolist = flag;
+                group_params->List = flag;
             else
-                default_params.Nolist = flag;
-            SET_CONFIG(K_NOLIST);
+                default_params.List = flag;
+            SET_CONFIG(K_LIST);
             continue;
         }
 
-        /* noxbatch */
-        if (!strncmp(word, NOXBATCH, sizeof(NOXBATCH))) {
+        /* xbatch */
+        if (!strncmp(word, XBATCH, sizeof(XBATCH))) {
             free(word);
-            TEST_CONFIG(K_NOXBATCH, bit);
+            TEST_CONFIG(K_XBATCH, bit);
             if (bit) {
                 syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
                 break;
@@ -1299,14 +1272,14 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
                 syslog(L_ERROR, MUST_BE_BOOL, LogName, filename, linecount);
                 break;
             }
-            RCadddata(data, &infocount, K_NOXBATCH, T_STRING, word);
+            RCadddata(data, &infocount, K_XBATCH, T_STRING, word);
             if (peer_params.Label != NULL)
-                peer_params.Noxbatch = flag;
+                peer_params.Xbatch = flag;
             else if (groupcount > 0 && group_params->Label != NULL)
-                group_params->Noxbatch = flag;
+                group_params->Xbatch = flag;
             else
-                default_params.Noxbatch = flag;
-            SET_CONFIG(K_NOXBATCH);
+                default_params.Xbatch = flag;
+            SET_CONFIG(K_XBATCH);
             continue;
         }
 
@@ -1455,50 +1428,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
             continue;
         }
 
-        /* email */
-        if (!strncmp(word, EMAIL, sizeof EMAIL)) {
-            free(word);
-            TEST_CONFIG(K_EMAIL, bit);
-            if (bit) {
-                syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
-                break;
-            }
-            if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
-                break;
-            }
-            RCadddata(data, &infocount, K_EMAIL, T_STRING, word);
-            if (peer_params.Label != NULL)
-                peer_params.Email = word;
-            else if (groupcount > 0 && group_params->Label != NULL)
-                group_params->Email = word;
-            else
-                default_params.Email = word;
-            SET_CONFIG(K_EMAIL);
-            continue;
-        }
-
-        /* comment */
-        if (!strncmp(word, COMMENT, sizeof COMMENT)) {
-            free(word);
-            TEST_CONFIG(K_COMMENT, bit);
-            if (bit) {
-                syslog(L_ERROR, DUPLICATE_KEY, LogName, filename, linecount);
-                break;
-            }
-            if ((word = RCreaddata(&linecount, F, &toolong)) == NULL) {
-                break;
-            }
-            RCadddata(data, &infocount, K_COMMENT, T_STRING, word);
-            if (peer_params.Label != NULL)
-                peer_params.Comment = word;
-            else if (groupcount > 0 && group_params->Label != NULL)
-                group_params->Comment = word;
-            else
-                default_params.Comment = word;
-            SET_CONFIG(K_COMMENT);
-            continue;
-        }
-
         if (toolong)
             syslog(L_ERROR, "%s line too long at %d: %s", LogName, --linecount,
                    filename);
@@ -1508,8 +1437,6 @@ RCreadfile(REMOTEHOST_DATA **data, REMOTEHOST **list, int *count,
         free(word);
         break;
     }
-    free(default_params.Email);
-    free(default_params.Comment);
     RCadddata(data, &infocount, K_END, T_STRING, NULL);
 
     if (feof(F)) {
@@ -1629,21 +1556,21 @@ RCwritelist(char *filename)
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
-        case K_NORESENDID:
+        case K_RESENDID:
             RCwritelistindent(F, inc);
-            fprintf(F, "%s\t", NORESENDID);
+            fprintf(F, "%s\t", RESENDID);
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
-        case K_NOLIST:
+        case K_LIST:
             RCwritelistindent(F, inc);
-            fprintf(F, "%s\t", NOLIST);
+            fprintf(F, "%s\t", LIST);
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
-        case K_NOXBATCH:
+        case K_XBATCH:
             RCwritelistindent(F, inc);
-            fprintf(F, "%s\t", NOXBATCH);
+            fprintf(F, "%s\t", XBATCH);
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
@@ -1677,21 +1604,9 @@ RCwritelist(char *filename)
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
-        case K_EMAIL:
-            RCwritelistindent(F, inc);
-            fprintf(F, "%s\t", EMAIL);
-            RCwritelistvalue(F, RCpeerlistfile[i].value);
-            fputc('\n', F);
-            break;
         case K_PATTERNS:
             RCwritelistindent(F, inc);
             fprintf(F, "%s\t", PATTERNS);
-            RCwritelistvalue(F, RCpeerlistfile[i].value);
-            fputc('\n', F);
-            break;
-        case K_COMMENT:
-            RCwritelistindent(F, inc);
-            fprintf(F, "%s\t", COMMENT);
             RCwritelistvalue(F, RCpeerlistfile[i].value);
             fputc('\n', F);
             break;
@@ -1966,10 +1881,8 @@ RCclose(void)
         for (rp = RCpeerlist, i = RCnpeerlist; --i >= 0; rp++) {
             free(rp->Name);
             free(rp->Label);
-            free(rp->Email);
             free(rp->Password);
             free(rp->Identd);
-            free(rp->Comment);
             if (rp->Patterns) {
                 free(rp->Patterns[0]);
                 free(rp->Patterns);
