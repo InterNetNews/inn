@@ -139,6 +139,10 @@ based on S<RFC 8315> and libcanlock.  A new F<inn-secrets.conf> configuration
 file has been added in I<pathetc> wherein you can set the secrets to use for
 Cancel-Lock.  See the inn-secrets.conf(5) man page for more details.
 
+A new B<-F> flag is recognized by B<innconfval> to get the values of that new
+configuration file (run C<innconfval -F inn-secrets.conf>).  Another new flag,
+B<-f>, permits specifying a file different than the default one.
+
 The I<addcanlockuser> parameter has been added in F<readers.conf> to
 deactivate the generation of user-specific hashes when several different
 posters have the same identity in an access group.

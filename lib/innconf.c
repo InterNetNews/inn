@@ -24,8 +24,6 @@
 
 #include "portable/system.h"
 
-#include <ctype.h>
-
 #include "inn/confparse.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
@@ -651,284 +649,11 @@ innconf_free(struct innconf *config)
 
 
 /*
-**  Print a single boolean value with appropriate quoting.
-*/
-static void
-print_boolean(FILE *file, const char *key, bool value,
-              enum innconf_quoting quoting)
-{
-    char *upper, *p;
-
-    switch (quoting) {
-    case INNCONF_QUOTE_NONE:
-        fprintf(file, "%s\n", value ? "true" : "false");
-        break;
-    case INNCONF_QUOTE_SHELL:
-        upper = xstrdup(key);
-        for (p = upper; *p != '\0'; p++)
-            *p = (char) toupper((unsigned char) *p);
-        fprintf(file, "%s=%s; export %s;\n", upper, value ? "true" : "false",
-                upper);
-        free(upper);
-        break;
-    case INNCONF_QUOTE_PERL:
-        fprintf(file, "$%s = '%s';\n", key, value ? "true" : "false");
-        break;
-    case INNCONF_QUOTE_TCL:
-        fprintf(file, "set inn_%s \"%s\"\n", key, value ? "true" : "false");
-        break;
-    }
-}
-
-
-/*
-**  Print a single signed integer value with appropriate quoting.
-*/
-static void
-print_signed_number(FILE *file, const char *key, long value,
-                    enum innconf_quoting quoting)
-{
-    char *upper, *p;
-
-    switch (quoting) {
-    case INNCONF_QUOTE_NONE:
-        fprintf(file, "%ld\n", value);
-        break;
-    case INNCONF_QUOTE_SHELL:
-        upper = xstrdup(key);
-        for (p = upper; *p != '\0'; p++)
-            *p = (char) toupper((unsigned char) *p);
-        fprintf(file, "%s=%ld; export %s;\n", upper, value, upper);
-        free(upper);
-        break;
-    case INNCONF_QUOTE_PERL:
-        fprintf(file, "$%s = %ld;\n", key, value);
-        break;
-    case INNCONF_QUOTE_TCL:
-        fprintf(file, "set inn_%s %ld\n", key, value);
-        break;
-    }
-}
-
-
-/*
-**  Print a single unsigned integer value with appropriate quoting.
-*/
-static void
-print_unsigned_number(FILE *file, const char *key, unsigned long value,
-                      enum innconf_quoting quoting)
-{
-    char *upper, *p;
-
-    switch (quoting) {
-    case INNCONF_QUOTE_NONE:
-        fprintf(file, "%lu\n", value);
-        break;
-    case INNCONF_QUOTE_SHELL:
-        upper = xstrdup(key);
-        for (p = upper; *p != '\0'; p++)
-            *p = (char) toupper((unsigned char) *p);
-        fprintf(file, "%s=%lu; export %s;\n", upper, value, upper);
-        free(upper);
-        break;
-    case INNCONF_QUOTE_PERL:
-        fprintf(file, "$%s = %lu;\n", key, value);
-        break;
-    case INNCONF_QUOTE_TCL:
-        fprintf(file, "set inn_%s %lu\n", key, value);
-        break;
-    }
-}
-
-
-/*
-**  Print a single string value with appropriate quoting.
-*/
-static void
-print_string(FILE *file, const char *key, const char *value,
-             enum innconf_quoting quoting)
-{
-    char *upper, *p;
-    const char *letter;
-    static const char tcl_unsafe[] = "$[]{}\"\\";
-
-    switch (quoting) {
-    case INNCONF_QUOTE_NONE:
-        /* Do not output NULL values.  They are not empty strings. */
-        if (value == NULL) {
-            return;
-        }
-        fprintf(file, "%s\n", value);
-        break;
-    case INNCONF_QUOTE_SHELL:
-        /* Do not output NULL values.  They are not empty strings. */
-        if (value == NULL) {
-            return;
-        }
-        upper = xstrdup(key);
-        for (p = upper; *p != '\0'; p++)
-            *p = (char) toupper((unsigned char) *p);
-        fprintf(file, "%s='", upper);
-        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
-            if (*letter == '\'')
-                fputs("'\\''", file);
-            else if (*letter == '\\')
-                fputs("\\\\", file);
-            else
-                fputc(*letter, file);
-        }
-        fprintf(file, "'; export %s;\n", upper);
-        free(upper);
-        break;
-    case INNCONF_QUOTE_PERL:
-        if (value == NULL) {
-            fprintf(file, "$%s = undef;\n", key);
-            return;
-        }
-        fprintf(file, "$%s = '", key);
-        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
-            if (*letter == '\'' || *letter == '\\')
-                fputc('\\', file);
-            fputc(*letter, file);
-        }
-        fputs("';\n", file);
-        break;
-    case INNCONF_QUOTE_TCL:
-        /* Do not output NULL values.  They are not empty strings. */
-        if (value == NULL) {
-            return;
-        }
-        fprintf(file, "set inn_%s \"", key);
-        for (letter = value; letter != NULL && *letter != '\0'; letter++) {
-            if (strchr(tcl_unsafe, *letter) != NULL)
-                fputc('\\', file);
-            fputc(*letter, file);
-        }
-        fputs("\"\n", file);
-        break;
-    }
-}
-
-
-/*
-**  Print a single list value with appropriate quoting.
-*/
-static void
-print_list(FILE *file, const char *key, const struct vector *value,
-           enum innconf_quoting quoting)
-{
-    char *upper, *p;
-    const char *letter;
-    unsigned int i;
-    static const char tcl_unsafe[] = "$[]{}\"\\";
-
-    switch (quoting) {
-    case INNCONF_QUOTE_NONE:
-        /* Do not output NULL values.  They are not empty lists. */
-        if (value == NULL || value->strings == NULL) {
-            return;
-        }
-        fprintf(file, "[ ");
-        if (value != NULL && value->strings != NULL) {
-            for (i = 0; i < value->count; i++) {
-                /* No separation between strings. */
-                fprintf(file, "%s ",
-                        value->strings[i] != NULL ? value->strings[i] : "");
-            }
-        }
-        fprintf(file, "]\n");
-        break;
-    case INNCONF_QUOTE_SHELL:
-        /* Do not output NULL values.  They are not empty lists. */
-        if (value == NULL || value->strings == NULL) {
-            return;
-        }
-        upper = xstrdup(key);
-        for (p = upper; *p != '\0'; p++)
-            *p = (char) toupper((unsigned char) *p);
-        /* For interoperability reasons, we return a space-separated string
-         * representing an array (pure Bourne shell does not have the notion
-         * of an array for instance). */
-        fprintf(file, "%s='", upper);
-        if (value != NULL && value->strings != NULL) {
-            for (i = 0; i < value->count; i++) {
-                fprintf(file, "\"");
-                for (letter = value->strings[i];
-                     letter != NULL && *letter != '\0'; letter++) {
-                    if (*letter == '\'')
-                        fputs("'\\''", file);
-                    else if (*letter == '"')
-                        fputs("\\\"", file);
-                    else if (*letter == '\\')
-                        fputs("\\\\", file);
-                    else
-                        fputc(*letter, file);
-                }
-                if (i == value->count - 1) {
-                    fprintf(file, "\"");
-                } else {
-                    fprintf(file, "\" ");
-                }
-            }
-        }
-        fprintf(file, "'; export %s;\n", upper);
-        free(upper);
-        break;
-    case INNCONF_QUOTE_PERL:
-        /* Consider that an empty list is undefined. */
-        if (value == NULL || value->strings == NULL) {
-            fprintf(file, "@%s = undef;\n", key);
-            return;
-        }
-        fprintf(file, "@%s = ( ", key);
-        if (value != NULL && value->strings != NULL) {
-            for (i = 0; i < value->count; i++) {
-                fprintf(file, "'");
-                for (letter = value->strings[i];
-                     letter != NULL && *letter != '\0'; letter++) {
-                    if (*letter == '\'' || *letter == '\\')
-                        fputc('\\', file);
-                    fputc(*letter, file);
-                }
-                if (i == value->count - 1) {
-                    fprintf(file, "' ");
-                } else {
-                    fprintf(file, "', ");
-                }
-            }
-        }
-        fprintf(file, ");\n");
-        break;
-    case INNCONF_QUOTE_TCL:
-        /* Do not output NULL values.  They are not empty lists. */
-        if (value == NULL || value->strings == NULL) {
-            return;
-        }
-        fprintf(file, "set inn_%s { ", key);
-        if (value != NULL && value->strings != NULL) {
-            for (i = 0; i < value->count; i++) {
-                fprintf(file, "\"");
-                for (letter = value->strings[i];
-                     letter != NULL && *letter != '\0'; letter++) {
-                    if (strchr(tcl_unsafe, *letter) != NULL)
-                        fputc('\\', file);
-                    fputc(*letter, file);
-                }
-                fprintf(file, "\" ");
-            }
-        }
-        fprintf(file, "}\n");
-        break;
-    }
-}
-
-
-/*
 **  Print a single parameter to the given file.  Take an index into the table
 **  specifying the attribute to print and the quoting.
 */
 static void
-print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
+print_parameter(FILE *file, size_t i, enum confparse_quoting quoting)
 {
     bool bool_val;
     long signed_number_val;
@@ -970,7 +695,8 @@ print_parameter(FILE *file, size_t i, enum innconf_quoting quoting)
 **  Given a single parameter, find it in the table and print out its value.
 */
 bool
-innconf_print_value(FILE *file, const char *key, enum innconf_quoting quoting)
+innconf_print_value(FILE *file, const char *key,
+                    enum confparse_quoting quoting)
 {
     size_t i;
 
@@ -987,7 +713,7 @@ innconf_print_value(FILE *file, const char *key, enum innconf_quoting quoting)
 **  Dump the entire inn.conf configuration with appropriate quoting.
 */
 void
-innconf_dump(FILE *file, enum innconf_quoting quoting)
+innconf_dump(FILE *file, enum confparse_quoting quoting)
 {
     size_t i;
 

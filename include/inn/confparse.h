@@ -25,6 +25,14 @@ enum type {
     TYPE_LIST
 };
 
+/* Used to request various types of quoting when printing out values. */
+enum confparse_quoting {
+    CONFPARSE_QUOTE_NONE,
+    CONFPARSE_QUOTE_SHELL,
+    CONFPARSE_QUOTE_PERL,
+    CONFPARSE_QUOTE_TCL
+};
+
 struct config {
     const char *name;
     size_t location;
@@ -123,6 +131,18 @@ void config_error_param(struct config_group *, const char *key,
    all strings returned by config_param_string and config_param_list for any
    configuration groups in this tree. */
 void config_free(struct config_group *);
+
+/* Used to print configuration values to a file or stdout. */
+void print_boolean(FILE *file, const char *key, bool value,
+                   enum confparse_quoting quoting);
+void print_signed_number(FILE *file, const char *key, long value,
+                         enum confparse_quoting quoting);
+void print_unsigned_number(FILE *file, const char *key, unsigned long value,
+                           enum confparse_quoting quoting);
+void print_string(FILE *file, const char *key, const char *value,
+                  enum confparse_quoting quoting);
+void print_list(FILE *file, const char *key, const struct vector *value,
+                enum confparse_quoting quoting);
 
 END_DECLS
 

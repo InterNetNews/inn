@@ -15,8 +15,6 @@
 
 #include "portable/system.h"
 
-#include <ctype.h>
-
 #include "inn/confparse.h"
 #include "inn/innconf.h"
 #include "inn/libinn.h"
@@ -171,4 +169,61 @@ secrets_free(struct secrets *config)
         }
     }
     free(config);
+}
+
+
+/*
+**  Print a single parameter to the given file.  Take an index into the table
+**  specifying the attribute to print and the quoting.
+*/
+static void
+print_parameter(FILE *file, size_t i, enum confparse_quoting quoting)
+{
+    const char *string_val;
+    const struct vector *list_val;
+
+    switch (config_table[i].type) {
+    case TYPE_STRING:
+        string_val = *CONF_STRING(secrets, config_table[i].location);
+        print_string(file, config_table[i].name, string_val, quoting);
+        break;
+    case TYPE_LIST:
+        list_val = *CONF_LIST(secrets, config_table[i].location);
+        print_list(file, config_table[i].name, list_val, quoting);
+        break;
+    default:
+        die("internal error: invalid type in row %lu of config table",
+            (unsigned long) i);
+    }
+}
+
+
+/*
+**  Given a single parameter, find it in the table and print out its value.
+*/
+bool
+secrets_print_value(FILE *file, const char *key,
+                    enum confparse_quoting quoting)
+{
+    size_t i;
+
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
+        if (strcmp(key, config_table[i].name) == 0) {
+            print_parameter(file, i, quoting);
+            return true;
+        }
+    return false;
+}
+
+
+/*
+**  Dump the entire inn-secrets.conf configuration with appropriate quoting.
+*/
+void
+secrets_dump(FILE *file, enum confparse_quoting quoting)
+{
+    size_t i;
+
+    for (i = 0; i < ARRAY_SIZE(config_table); i++)
+        print_parameter(file, i, quoting);
 }

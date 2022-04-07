@@ -13,6 +13,9 @@
 #include "inn/system.h"
 #include <stdio.h>
 
+/* Avoid including <inn/confparse.h> unless the client needs it. */
+enum confparse_quoting;
+
 /*
 **  This structure is organized in the same order as the variables contained
 **  in it are mentioned in the inn.conf documentation, and broken down into
@@ -216,14 +219,6 @@ struct innconf {
 /* The global innconf variable used in programs. */
 extern struct innconf *innconf;
 
-/* Used to request various types of quoting when printing out values. */
-enum innconf_quoting {
-    INNCONF_QUOTE_NONE,
-    INNCONF_QUOTE_SHELL,
-    INNCONF_QUOTE_PERL,
-    INNCONF_QUOTE_TCL
-};
-
 BEGIN_DECLS
 
 /* Parse the given file into innconf, using the default path if NULL. */
@@ -233,10 +228,10 @@ bool innconf_read(const char *path);
 void innconf_free(struct innconf *);
 
 /* Print a single value with appropriate quoting, return whether found. */
-bool innconf_print_value(FILE *, const char *key, enum innconf_quoting);
+bool innconf_print_value(FILE *, const char *key, enum confparse_quoting);
 
 /* Dump the entire configuration with appropriate quoting. */
-void innconf_dump(FILE *, enum innconf_quoting);
+void innconf_dump(FILE *, enum confparse_quoting);
 
 /* Compare two instances of an innconf struct, for testing. */
 bool innconf_compare(struct innconf *, struct innconf *);

@@ -13,6 +13,9 @@
 #include "inn/system.h"
 #include <stdio.h>
 
+/* Avoid including <inn/confparse.h> unless the client needs it. */
+enum confparse_quoting;
+
 /*
 **  This structure is organized in the same order as the variables contained
 **  in it are mentioned in the inn-secrets.conf documentation, and broken down
@@ -35,6 +38,12 @@ bool secrets_read(const char *path);
 
 /* Free a secrets struct and all allocated memory for it. */
 void secrets_free(struct secrets *);
+
+/* Print a single value with appropriate quoting, return whether found. */
+bool secrets_print_value(FILE *, const char *key, enum confparse_quoting);
+
+/* Dump the entire configuration with appropriate quoting. */
+void secrets_dump(FILE *, enum confparse_quoting);
 
 END_DECLS
 
