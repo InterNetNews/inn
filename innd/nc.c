@@ -905,6 +905,19 @@ NClist(CHANNEL *cp)
             NCwritereply(cp, buff);
             free(buff);
         }
+    } else if (cp->CanAuthenticate && !innconf->noreader
+               && (NNRPReason == NULL || innconf->readerswhenstopped)
+               && (strcasecmp(cp->av[1], "COUNTS") == 0
+                   || strcasecmp(cp->av[1], "DISTRIB.PATS") == 0
+                   || strcasecmp(cp->av[1], "DISTRIBUTIONS") == 0
+                   || strcasecmp(cp->av[1], "HEADERS") == 0
+                   || strcasecmp(cp->av[1], "MODERATORS") == 0
+                   || strcasecmp(cp->av[1], "OVERVIEW.FMT") == 0
+                   || strcasecmp(cp->av[1], "SUBSCRIPTIONS") == 0)) {
+        xasprintf(&buff, "%d MODE-READER", NNTP_FAIL_WRONG_MODE);
+        NCwritereply(cp, buff);
+        free(buff);
+        return;
     } else {
         xasprintf(&buff, "%d Unknown LIST keyword", NNTP_ERR_SYNTAX);
         NCwritereply(cp, buff);
