@@ -60,16 +60,18 @@
 # Documentation: for a short explanation of the different options, you
 #        can read the usage (obtained with the -h or -help switch).
 #
-# Install: - check the Perl location (first line). Require Perl 5.002
+# Install: - check the Perl location (first line).  Require Perl 5.002
 #            or greater
 #          - look at the parameters in the configuration file (section
 #            'default')
 #          - copy the configuration file into ${PATHETC}/innreport.conf
+#          - copy the display configuration file into
+#            ${PATHLIB}/innreport-display.conf
 #          - copy the INN module into ${PATHLIB}/innreport_inn.pm
 #          - copy this script into ${PATHBIN}/innreport
 #          - be sure that the news user can run it (chmod 755 or 750)
 #          - in "scanlogs", adjust the line containing:
-# ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
+#    ${PATHBIN}/innreport -f ${PATHETC}/innreport.conf ${OLD_SYSLOG} ${OLD_LOG}
 #
 #
 # Report: Please report bugs (preferably) to the INN mailing list
@@ -93,6 +95,9 @@
 use strict;
 use Carp qw( cluck confess );
 use Time::Local;
+
+## Default display configuration file (parameter added in INN 2.7.0).
+my $DISPLAY_FILE = 'innreport-display.conf';
 
 ## Do you want to create a Web page. Pick DO or DONT.
 my $HTML = "DONT";
@@ -194,8 +199,25 @@ GetOptions(
 
 &Version if $ref{'v'};
 
+# Parse the general configuration file.
 &Decode_Config_File($ref{'f'}) if defined $ref{'f'};
 &Usage if $ref{'h'} || $ref{'help'} || !defined $ref{'f'};
+
+# Remove sections from the general configuration file that are now in a
+# separate display configuration file.
+my $output_section;
+foreach $output_section (@{ $output{'_order_'} }) {
+    next if $output_section eq 'default';
+    delete $output{$output_section};
+}
+delete $output{'_order_'};
+
+my $LIBPATH = &GetValue($output{'default'}{'libpath'});
+$DISPLAY_FILE = &GetValue($output{'default'}{'display_conf_file'})
+  if defined $output{'default'}{'display_conf_file'};
+
+# Parse the display configuration file.
+&Decode_Config_File("$LIBPATH/$DISPLAY_FILE");
 
 $HTML = 0 if defined $output{'default'}{'html'};
 $HTML = 1 if $output{'default'}{'html'} eq 'true';
@@ -280,7 +302,6 @@ $CASE_SENSITIVE = 0 if defined $ref{'casesensitive'};
 $CASE_SENSITIVE = 1 if $ref{'casesensitive'};
 
 my $CLASS = &GetValue($output{'default'}{'module'});
-my $LIBPATH = &GetValue($output{'default'}{'libpath'});
 
 my $HTML_EXTENSION = $output{'default'}{'html_file_extension'};
 $HTML_EXTENSION
@@ -3027,7 +3048,7 @@ sub Decode_Config_File {
     my $linenum = 0;
     my $info;
     my @list;
-    open(FILE, "$file") || die "Can\'t open config file \"$file\". Abort.\n";
+    open(FILE, "$file") || die "Can\'t open config file \"$file\".  Abort.\n";
     while (defined($line = <FILE>)) {
         $linenum++;
         last if eof(FILE);

@@ -16,6 +16,24 @@ with an alternate name.
 
 =item *
 
+The F<innreport.conf> file in F<pathetc> has been split into a general
+configuration file (F<innreport.conf> itself) and a display configuration
+file (F<innreport-display.conf> in I<pathlib>).  If you made local changes
+in sections other than the I<default> section in F<innreport.conf>, and
+wish to keep them, then you need renaming the new F<innreport-display.conf>
+file to a another name in I<pathlib>, setting this local file name in the new
+I<display_conf_file> option in F<innreport.conf>, and re-applying your local
+changes to that local display configuration file.
+
+As a matter of fact, the default display configuration file would otherwise
+be overwritten each time INN is updated.  Bug fixes or enhancements are made
+from time to time to the display configuration of B<innreport>, and couldn't
+be automatically be merged in F<innreport.conf> on update.  This new separate
+configuration file to parameter the display will now permit an automatic
+update (if of course you use the default display configuration file).
+
+=item *
+
 A new F<inn-secrets.conf> configuration file has been added in I<pathetc>.
 The intent is that, from now on, new secrets used by INN are added to that
 file, and that all secrets currently stored in several other configuration
@@ -194,6 +212,15 @@ thus receiving each time the same error in response codes).
 
 B<innreport> now collects statistics from B<innxbatch> and generates a
 section for them in its reports.
+
+=item *
+
+The F<innreport.conf> file in F<pathetc>, previously containing almost 2500
+lines, has been split into a general configuration file (F<innreport.conf>
+itself, still in F<pathetc>, with about 60 lines) and a display configuration
+file (F<innreport-display.conf>, a new separate file in I<pathlib>).
+The name of this display configuration file can be parametered in the new
+I<display_conf_file> option in F<innreport.conf>.
 
 =item *
 

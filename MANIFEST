@@ -684,7 +684,7 @@ samples/inn-radius.conf               Sample config for RADIUS authentication
 samples/inn-secrets.conf              Sample secrets file
 samples/inn.conf.in                   General INN configuration
 samples/innfeed.conf                  Outgoing feed configuration
-samples/innreport.conf.in             Log summary configuration
+samples/innreport.conf.in             General configuration for innreport
 samples/innreport.css                 Style for innreport web pages
 samples/innshellvars.local            Additional shell script for innshellvars
 samples/innshellvars.pl.local         Additional Perl script for INN::Config
@@ -718,6 +718,7 @@ scripts                               Various utilities (Directory)
 scripts/Makefile                      Makefile for script files
 scripts/inncheck.in                   Syntax-check INN config files
 scripts/innmail.in                    Perl front-end to sendmail
+scripts/innreport-display.conf        Display configuration for innreport
 scripts/innreport.in                  Script to analyze INN logs
 scripts/innreport_inn.pm              Config file for innreport
 scripts/innshellvars.in               Config parameters for shell scripts

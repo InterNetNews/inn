@@ -9,39 +9,71 @@ B<innreport>.  It consists of a series of lines; blank lines and what follows
 a number sign (C<#>) in a line are ignored.  The structure of this file is:
 
     section default {
-        libpath        "/path/to/libraries";
-        logpath        "/path/to/logs";
-        module         "innreport_inn";
-        unwanted_log   "unwanted.log";
-        text           true;
-        html           true;  # Enable HTML reports.
+        libpath             "/path/to/libraries";
+        logpath             "/path/to/logs";
+        module              "innreport_inn";
+        display_conf_file   "innreport-display.conf";
+        unwanted_log        "unwanted.log";
+        text                true;
+        html                true;  # Enable HTML reports.
         # Other options to set.
     };
 
-Only this very section needs being configured.  It begins with C<section
+Only this I<default> section needs being configured.  It begins with C<section
 default {> and ends with C<};>.  Each line in the section consists of an
 option name followed with one or more spaces or tabulations, its value and
 a semi-colon C<;>.
 
-Other sections are present in the configuration file to parameter the display,
-how and what to report, but should not be changed (unless you precisely know
-what you are doing).  These sections are written in a domain-specific language
-not intended to be changed (you may break the reports, especially if changing
-I<data>, I<double>, I<format>, I<primary>, I<sort>, I<total> or I<value>
-parameters).  The easiest parameters to change, if needed, would be I<title>
-(the titles of sections in B<innreport>), I<name> (the names of the columns),
-I<color> (the color of curves in the graphs), I<numbering> (a boolean value to
-configure whether each row of HTML reports is prefixed with a rank number),
-I<text> (a boolean to configure whether a given section should be present in
-text reports), I<html> (same thing for HTML reports), I<skip> (same thing for
-both reports), and I<top> (the maximum number of values to display, and you
-can specify different values for text and HTML reports with I<top_text> and
-I<top_html>).
+The I<display_conf_file> option defines the name of the display configuration
+file to use.  This file, located in I<libpath>, has the same syntax as
+F<innreport.conf>.  If you want to use a custom display configuration, just
+rename the default F<innreport-display.conf> file to another name, and set
+it in I<display_conf_file> (otherwise, F<innreport-display.conf> will be
+overwritten each time you update INN).
+
+Sections defined in the display configuration file are used to parameter
+the display, how and what to report, but should not normally be changed
+(unless you precisely know what you are doing).  These sections are written
+in a domain-specific language not intended to be modified (you may break the
+reports, especially if changing I<data>, I<double>, I<format>, I<primary>,
+I<sort>, I<total> or I<value> parameters).  The easiest parameters to change,
+if needed, would be:
+
+=over 4
+
+=item *
+
+I<title> (the titles of sections in B<innreport>),
+
+=item *
+
+I<name> (the names of the columns),
+
+=item *
+
+I<color> (the color of curves in the graphs),
+
+=item *
+
+I<numbering> (a boolean value to configure whether each row of HTML reports is
+prefixed with a rank number),
+
+=item *
+
+I<text>, I<html>, and I<skip> (boolean values to configure whether a given
+section should be present in respectively text, HTML or both reports),
+
+=item *
+
+I<top> (the maximum number of values to display); you can specify
+different values for text and HTML reports with I<top_text> and I<top_html>.
+
+=back
 
 =head1 OPTIONS
 
-The following options can be set in the C<default> section of the
-configuration file:
+The following options can be set in the I<default> section of the general
+configuration file F<innreport.conf>:
 
 =over 4
 
@@ -71,6 +103,11 @@ C<none> also means C<0>.
 
 Use of the B<-cycle> flag with innreport(8) takes precedence over the
 configuration file.
+
+=item I<display_conf_file>
+
+Defines the display configuration file to use, located in the directory set
+with the I<libpath> option.  The default is C<innreport-display.conf>.
 
 =item I<encoding>
 
@@ -111,20 +148,20 @@ Sets the width in pixels of graphs in HTML reports.  The default is C<550>.
 
 This is a mandatory option with no default value.  It serves two purposes:
 generating HTML reports besides the plain text report printed to standard
-output, and configuring in the sections other than C<default> in the
-configuration file whether a section of the report should be present in the
+output, and configuring in the sections other than I<default> (in the display
+configuration file) whether a section of the report should be present in the
 HTML output.
 
 If set to C<true>, and the B<-nohtml> flag not given when calling
-B<innreport>, HTML reports will be generated.  These reports will not contain
-sections individually having I<html> set to C<false> in the configuration
-file (by default, everything is present in the HTML reports).  Otherwise,
-if the B<-nohtml> flag is given, no HTML reports will be generated.
+B<innreport>, HTML reports will be generated.  These reports will not
+contain sections individually having I<html> set to C<false> in the display
+configuration file (by default, everything is present in the HTML reports).
+Otherwise, if the B<-nohtml> flag is given, no HTML reports will be generated.
 
 If set to C<false>, and the B<-html> flag not given when calling B<innreport>,
-no HTML reports will be generated.  Otherwise, if the B<-html> flag is
-given, HTML reports will be generated but only the sections individually
-having I<html> set to C<true> in the configuration file will be present in
+no HTML reports will be generated.  Otherwise, if the B<-html> flag is given,
+HTML reports will be generated but only the sections individually having
+I<html> set to C<true> in the display configuration file will be present in
 the reports.
 
 =item I<html_body>
@@ -269,12 +306,12 @@ This is a mandatory option with no default value.
 
 If set to C<true>, B<innreport> will print its text report to standard output.
 This report will not contain sections individually having I<text> set to
-C<false> in the configuration file (by default, everything is present in
-the text report).
+C<false> in the display configuration file (by default, everything is present
+in the text report).
 
-If set to C<false>, B<innreport> will only print to standard output the
-sections individually having I<text> set to C<true> in the configuration file
-(by default, the text report will be empty).
+If set to C<false>, B<innreport> will only print to standard output
+the sections individually having I<text> set to C<true> in the display
+configuration file (by default, the text report will be empty).
 
 =item I<title>
 

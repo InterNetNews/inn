@@ -23,8 +23,8 @@ install: all
 	         scanlogs tally.control writelog ; do \
 	    $(CP_XPRI) $$F $D$(PATHBIN)/$$F ; \
 	done
-	for F in innreport_inn.pm innshellvars innshellvars.pl \
-	         innshellvars.tcl ; do \
+	for F in innreport-display.conf innreport_inn.pm \
+	         innshellvars innshellvars.pl innshellvars.tcl ; do \
 	    $(CP_RPUB) $$F $D$(PATHLIB)/$$F ; \
 	done
 
