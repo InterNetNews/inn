@@ -1,10 +1,10 @@
 ##  newsfeeds - determine where Usenet articles get sent
 ##
 ##  Format:
-##	site[/exclude,exclude...]\
-##		:pattern,pattern...[/distrib,distrib...]\
-##		:flag,flag...\
-##		:param
+##      site[/exclude,exclude...]\
+##          :pattern,pattern...[/distrib,distrib...]\
+##          :flag,flag...\
+##          :param
 ##
 ##  This file is complicated -- see newsfeeds(5) for full details.
 
@@ -16,9 +16,9 @@
 ##  use that can be listed as exclusions to reject specific types of 3rd-party
 ##  cancel messages (see the "Cancel FAQ" in news.admin.net-abuse.usenet):
 ##
-##	cyberspam	Cancels for spam, munged articles, binaries
-##	spewcancel	Cancels for munged articles and runaway gateways
-##	bincancel	Cancels for binary postings to non-binary groups
+##      cyberspam       Cancels for spam, munged articles, binaries
+##      spewcancel      Cancels for munged articles and runaway gateways
+##      bincancel       Cancels for binary postings to non-binary groups
 ##      udpcancel       Cancels to force sites to enforce antispam policies
 ##
 ##  The "pattern" field for this feed entry gives the initial subscription
@@ -55,8 +55,8 @@ ME:!*/!local::
 # disable this if you want to ignore all newsgroup control messages; INN
 # no longer handles any control messages except cancel internally.
 controlchan!\
-	:!*,control,control.*,!control.cancel\
-	:AC,Tc,Wnsm:@bindir@/controlchan
+    :!*,control,control.*,!control.cancel\
+    :AC,Tc,Wnsm:@bindir@/controlchan
 
 ##  Uncomment if you're using innfeed.  This feed tells INN how to run
 ##  innfeed, and then every site you're feeding with innfeed has a
@@ -70,8 +70,8 @@ controlchan!\
 
 # innfeed funnel master.
 #innfeed!\
-#	:!*\
-#	:Tc,Wnm*:@bindir@/innfeed
+#    :!*\
+#    :Tc,Wnm*:@bindir@/innfeed
 
 ##  Only uncomment this feed if both enableoverview and useoverchan are
 ##  set to true in inn.conf.  By default, innd will write out overview
@@ -91,22 +91,22 @@ controlchan!\
 # is specified.  It is useful not to forget that pattern since control
 # messages for local.* would still be sent with "*,@local.*" only.
 #news.uu.net/uunet\
-#	:*,!junk,!control,!control.*/!foo\
-#	:Tm:innfeed!
+#    :*,!junk,!control,!control.*/!foo\
+#    :Tm:innfeed!
 
 # Create a batch file in @SPOOLDIR@/outgoing for all articles
 # that haven't already passed through nic.near.net.  The batch file will
 # be named nic.near.net, the default file name.  Then nntpsend can send
 # articles from that spool file.
 #nic.near.net\
-#	:*,!junk,!control,!control.*/!foo\
-#	:Tf,Wnm:
+#    :*,!junk,!control,!control.*/!foo\
+#    :Tf,Wnm:
 
 # A UUCP feed, where we try to keep the "batching" between 4 KB and 1 KB.
 # You can use send-uucp(8) to process these batch files.
 #ihnp4\
-#	:*,!junk,!control,!control.*/!foo\
-#	:Tf,Wnb,B4096/1024:
+#    :*,!junk,!control,!control.*/!foo\
+#    :Tf,Wnb,B4096/1024:
 
 
 ##  OUTGOING SPECIAL FEED EXAMPLES
@@ -117,13 +117,13 @@ controlchan!\
 
 # Feed all moderated source postings to an archiver.
 #source-archive!:!*,*sources*,!*wanted*,!*.d\
-#	:Tc,Wn:@bindir@/archive -f -i @SPOOLDIR@/archive/INDEX
+#    :Tc,Wn:@bindir@/archive -f -i @SPOOLDIR@/archive/INDEX
 
 # Feed NoCeM notices to perl-nocem in order to process third-party,
 # PGP-signed article cancellation notices.  See perl-nocem(8) for more
 # details on how to set this up.
 #nocem!:!*,alt.nocem.misc,news.lists.filters\
-#	:Tc,Wf,Ap:@bindir@/perl-nocem
+#    :Tc,Wf,Ap:@bindir@/perl-nocem
 
 # News to mail gateway.  Similar to innfeed, this uses a master feed and
 # then individual feeds for every separate address that news is being
@@ -143,5 +143,5 @@ controlchan!\
 # than two sites in the Path header field body) using a local program (that
 # doesn't come with INN).
 #capture!\
-#	:*/foo\
-#	:Tp,H2:/usr/local/bin/capture %s
+#    :*/foo\
+#    :Tp,H2:/usr/local/bin/capture %s
