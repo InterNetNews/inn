@@ -862,11 +862,15 @@ mirror them via rsync within a day.)
 
 =item 14.
 
-Publish a release in GitHub, based on the branch or commit used to generate
-the release tarball.  Include the description from F<NEWS>, and attach the
-tarball as well as its signature.
+Create an annotated signed tag corresponding to the release tarball, using a
+PGP key declared in the commiter's GitHub profile:
 
-GitHub will create the appropriate annotated tag when publishing the release.
+    git tag Y.Y.Y <commit-hash> -s -m "INN Y.Y.Y release tag"
+    git push origin Y.Y.Y
+
+Check that it appears as C<Verified> in the GitHub interface, and then publish
+a release in GitHub, based on that tag.  Include the description from F<NEWS>,
+and attach the tarball as well as its signature.
 
 =item 15.
 
