@@ -146,9 +146,9 @@ slower at writing, this new SQLite-based method is a perfect choice to
 store overview data.
 
 To select it as your overview method, set the I<ovmethod> parameter in
-F<inn.conf> to C<ovsqlite>.  Details about ovsqlite and how to switch to
-that new modern overview storage method can be found in the ovsqlite(5)
-and makehistory(8) man pages.
+F<inn.conf> to C<ovsqlite>.  Details about ovsqlite, the F<ovsqlite.conf>
+configuration file and how to switch to that new modern overview storage
+method can be found in the ovsqlite(5) and makehistory(8) man pages.
 
 =item *
 
