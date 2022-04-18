@@ -283,11 +283,13 @@ sub fix_inn_conf {
 
         # Give it the same ownership as inn.conf.
         my ($mode, $user, $group) = (stat($file))[2, 4, 5];
-        if (defined($user) && defined($group)) {
-            chown($user, $group, "inn-secrets.conf")
-              or warn "Cannot chown inn-secrets.conf: $!\n";
-        } else {
-            warn "Cannot find owner and group of $file\n";
+        if ($> == 0) {
+            if (defined($user) && defined($group)) {
+                chown($user, $group, "inn-secrets.conf")
+                  or warn "Cannot chown inn-secrets.conf: $!\n";
+            } else {
+                warn "Cannot find owner and group of $file\n";
+            }
         }
         # But not world-readable.
         chmod($mode & 0770, 'inn-secrets.conf');
