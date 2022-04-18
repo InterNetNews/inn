@@ -8,10 +8,9 @@
 **
 **  This implementation is based on the implementation by Peter A. Friend
 **  (version 1.3), but has been assimilated into INN and modified to use INN
-**  formatting conventions.  If new versions are released, examine the
-**  differences between that version and version 1.3 (which was checked into
-**  INN as individual files in case it's no longer available) and then apply
-**  the changes to this file.
+**  formatting conventions.  Another version (1.4) was released afterwards but
+**  was not integrated into INN (it was just a code restructuration, without
+**  any bug fix).  The upstream web site disappeared in 2021.
 **
 **  Copyright (c) 2002, Peter A. Friend
 **  All rights reserved.

@@ -703,12 +703,6 @@ OpenSSL, that can then be enabled in B<nnrpd> for LibreSSL.
 
 =item *
 
-Check whether a new version of the ternary search trie implementation
-(available at L<http://www.octavian.org/cs/software.html>) could be
-merged into F<lib/tst.c>.
-
-=item *
-
 Ensure that the source code is properly formatted with the current versions of
 reformatting programs (run C<make reformat>).
 
