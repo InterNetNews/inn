@@ -120,7 +120,6 @@ our %innd_bad_msgid;
 our %innd_bad_newsgroup;
 our %innd_bad_sendme;
 our %innd_blocked;
-our %innd_cache;
 our %innd_changegroup;
 our %innd_connect;
 our %innd_connect_sum;
@@ -754,14 +753,6 @@ sub collect($$$$$$) {
             $innd_his{'Negative hits'} += $2;
             $innd_his{'Cache misses'} += $3;
             $innd_his{'Do not exist'} += $4;
-            return 1;
-        }
-        # SERVER history cache final: 388656 lookups, 1360 hits
-        if ($left
-            =~ m/^SERVER history cache final: (\d+) lookups, (\d+) hits$/)
-        {
-            $innd_cache{'Lookups'} += $1;
-            $innd_cache{'Hits'} += $2;
             return 1;
         }
         # bad_hosts (appears after a "cant gesthostbyname" from a feed)
@@ -1623,11 +1614,7 @@ sub collect($$$$$$) {
     ########
     ## nnrpd
     if ($prog =~ /^nnrpd(?:-ssl)?$/) {
-        # Fix a small bug of nnrpd (inn 1.4*)
-        $left =~ s/^ /\? /o;
-        # Another bug (in INN 1.5b1)
-        return 1 if $left =~ /^\020\002m$/o;    # ^P^Bm
-                                                # bad_history at num for <ref>
+        # bad_history at num for <ref>
         return 1 if $left =~ /bad_history at \d+ for /o;
         # timeout short
         return 1 if $left =~ /\S+ timeout short$/o;
