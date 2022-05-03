@@ -210,6 +210,7 @@ extern char *strtok(char *, const char *);\
                 sed -i -e 's/UTIL_/INN_/g' \
                     -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
                     -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
+                    -e '/^#.*pragma GCC visibility /d' \
                     -e 's/<config\.h>$/"config.h"/g' \
                     -e 's/<util\/\(.*\)>/"inn\/\1"/g' \
                     -e 's/<portable\/\(.*\)>/"portable\/\1"/g' \
