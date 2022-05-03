@@ -109,9 +109,9 @@ artnumber.o: artnumber.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 buffer.o: buffer.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
@@ -124,9 +124,9 @@ cleanfrom.o: cleanfrom.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 clientactive.o: clientactive.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -149,9 +149,9 @@ commands.o: commands.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 concat.o: concat.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -166,9 +166,9 @@ conffile.o: conffile.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/conffile.h \
   ../include/portable/macros.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 confparse.o: confparse.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -183,25 +183,26 @@ daemonize.o: daemonize.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h
 date.o: date.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 dbz.o: dbz.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/portable/mmap.h \
-  ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/dbz.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/fdflag.h ../include/inn/portable-socket.h \
   ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h ../include/inn/innconf.h \
@@ -233,18 +234,18 @@ fdlimit.o: fdlimit.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 getfqdn.o: getfqdn.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 getmodaddr.o: getmodaddr.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -259,9 +260,10 @@ hash.o: hash.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/md5.h ../include/inn/utility.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/md5.h \
+  ../include/inn/utility.h
 hashtab.o: hashtab.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -275,9 +277,9 @@ headers.o: headers.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 hex.o: hex.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -326,17 +328,17 @@ lockfile.o: lockfile.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 makedir.o: makedir.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 md5.o: md5.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -414,25 +416,25 @@ qio.o: qio.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/qio.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/qio.h
 radix32.o: radix32.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 readin.o: readin.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 remopen.o: remopen.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -449,26 +451,25 @@ reservedfd.o: reservedfd.c ../include/portable/system.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 resource.o: resource.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
-secrets.o: secrets.c ../include/portable/system.h \
-  ../include/config.h ../include/inn/macros.h \
-  ../include/inn/portable-macros.h ../include/inn/options.h \
-  ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/confparse.h ../include/inn/macros.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+secrets.o: secrets.c ../include/portable/system.h ../include/config.h \
+  ../include/inn/macros.h ../include/inn/portable-macros.h \
+  ../include/inn/options.h ../include/inn/system.h \
+  ../include/portable/stdbool.h ../include/portable/macros.h \
+  ../include/portable/stdbool.h ../include/inn/confparse.h \
+  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
+  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h \
   ../include/inn/secrets.h ../include/inn/vector.h
 sendarticle.o: sendarticle.c ../include/portable/system.h \
@@ -476,10 +477,9 @@ sendarticle.o: sendarticle.c ../include/portable/system.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
-  ../include/inn/nntp.h
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/nntp.h
 sendpass.o: sendpass.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -501,25 +501,26 @@ timer.o: timer.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/timer.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/timer.h
 tst.o: tst.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/tst.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/tst.h
 uwildmat.o: uwildmat.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 vector.o: vector.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
@@ -531,17 +532,17 @@ wire.o: wire.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/wire.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/wire.h
 xfopena.o: xfopena.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 xmalloc.o: xmalloc.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
@@ -551,9 +552,9 @@ xmalloc.o: xmalloc.c ../include/config.h ../include/inn/macros.h \
 xsignal.o: xsignal.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h
 xwrite.o: xwrite.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
@@ -695,9 +696,9 @@ perl.o: perl.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/ppport.h \
   ../include/innperl.h \
   ../include/config.h

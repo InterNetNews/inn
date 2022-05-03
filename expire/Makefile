@@ -84,10 +84,11 @@ convdate.o: convdate.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/messages.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h
+  ../include/portable/stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h
 expire.o: expire.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -95,10 +96,10 @@ expire.o: expire.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/system.h ../include/inn/innconf.h \
-  ../include/inn/messages.h ../include/inn/inndcomm.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/newsuser.h ../include/inn/paths.h \
-  ../include/inn/storage.h ../include/inn/options.h
+  ../include/inn/inndcomm.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/newsuser.h \
+  ../include/inn/paths.h ../include/inn/storage.h ../include/inn/options.h
 expireover.o: expireover.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -117,9 +118,9 @@ fastrm.o: fastrm.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/messages.h ../include/inn/qio.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/storage.h \
+  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/qio.h ../include/inn/storage.h \
   ../include/inn/options.h
 grephistory.o: grephistory.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
@@ -128,18 +129,18 @@ grephistory.o: grephistory.c ../include/portable/system.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/history.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/paths.h ../include/inn/storage.h \
-  ../include/inn/options.h
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/paths.h \
+  ../include/inn/storage.h ../include/inn/options.h
 makedbz.o: makedbz.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/dbz.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/innconf.h ../include/inn/messages.h \
   ../include/inn/newsuser.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/storage.h ../include/inn/options.h
@@ -163,6 +164,6 @@ prunehistory.o: prunehistory.c ../include/portable/system.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/history.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/messages.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/paths.h
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h ../include/inn/paths.h

@@ -139,10 +139,10 @@ methods.o: methods.c interface.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/inn/storage.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/options.h methods.h cnfs/cnfs.h \
-  timecaf/timecaf.h interface.h timehash/timehash.h tradspool/tradspool.h \
-  trash/trash.h
+  ../include/inn/macros.h ../include/inn/options.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h methods.h \
+  cnfs/cnfs.h timecaf/timecaf.h interface.h timehash/timehash.h \
+  tradspool/tradspool.h trash/trash.h
 ov.o: ov.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -184,8 +184,8 @@ ovmethods.o: ovmethods.c ovinterface.h ../include/config.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
   ../include/inn/system.h ../include/inn/ov.h ../include/inn/storage.h \
-  ../include/inn/options.h buffindexed/buffindexed.h ovdb/ovdb.h \
-  ovsqlite/ovsqlite.h tradindexed/tradindexed.h
+  ../include/inn/options.h ovmethods.h buffindexed/buffindexed.h \
+  ovdb/ovdb.h ovsqlite/ovsqlite.h tradindexed/tradindexed.h
 buffindexed/buffindexed.o: buffindexed/buffindexed.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -205,9 +205,9 @@ buffindexed/shmem.o: buffindexed/shmem.c ../include/portable/system.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
-  ../include/inn/libinn.h ../include/inn/macros.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
   ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
   ../include/inn/messages.h buffindexed/shmem.h
 cnfs/cnfs.o: cnfs/cnfs.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -269,9 +269,10 @@ timecaf/caf.o: timecaf/caf.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h ../include/inn/messages.h timecaf/caf.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/messages.h timecaf/caf.h
 timecaf/timecaf.o: timecaf/timecaf.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
@@ -367,10 +368,11 @@ trash/trash.o: trash/trash.c ../include/portable/system.h ../include/config.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/concat.h ../include/inn/xmalloc.h \
-  ../include/inn/xwrite.h methods.h interface.h ../include/inn/storage.h \
-  ../include/inn/options.h trash/trash.h interface.h
+  ../include/inn/concat.h ../include/inn/macros.h \
+  ../include/inn/portable-stdbool.h ../include/inn/system.h \
+  ../include/inn/xmalloc.h ../include/inn/xwrite.h methods.h interface.h \
+  ../include/inn/storage.h ../include/inn/options.h trash/trash.h \
+  interface.h
 ovsqlite/ovsqlite-server.o: ovsqlite/ovsqlite-server.c ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
