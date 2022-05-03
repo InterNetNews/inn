@@ -16,12 +16,12 @@ with an alternate name.
 
 =item *
 
-The F<innreport.conf> file in F<pathetc> has been split into a general
+The F<innreport.conf> file in I<pathetc> has been split into a general
 configuration file (F<innreport.conf> itself) and a display configuration
 file (F<innreport-display.conf> in I<pathlib>).  If you made local changes
 in sections other than the I<default> section in F<innreport.conf>, and
 wish to keep them, then you need renaming the new F<innreport-display.conf>
-file to a another name in I<pathlib>, setting this local file name in the new
+file to another name in I<pathlib>, setting this local file name in the new
 I<display_conf_file> option in F<innreport.conf>, and re-applying your local
 changes to that local display configuration file.
 
@@ -62,8 +62,8 @@ from F<inn.conf>.  The first was performing an inefficient and inexact check
 (that should be done, if wanted, in the special C<ME> entry in F<newsfeeds>,
 or even better, ask your peers not to feed you articles with C<cyberspam>
 in the Path header field body); the second check performed on the newsgroups
-present in cancel articles was not useful in B<innd>, and relevant to posting
-agents.
+present in cancel articles was not useful in B<innd> (it is relevant to
+posting agents).
 
 The related lines in F<inn.conf> will be commented by B<innupgrade> during the
 upgrade.
@@ -125,13 +125,13 @@ L<Upgrading from 2.5 to 2.6>.
 
 =item *
 
-Upgrading to a major release is a good time to ensure that your
-configuration files, that are usually kept untouched during normal
-updates, are up-to-date: notably F<control.ctl> (with your local changes
-in a separate F<control.ctl.local> file), new better default values in
-F<inn.conf> and F<innfeed.conf>, improvements in F<innreport.conf> along
-with F<innreport.css>, fixes in F<innwatch.ctl>, updated F<moderators>
-and F<nocem.ctl> files.
+Upgrading to a major release is a good time to ensure that your configuration
+files, that are usually kept untouched during normal updates, are
+up-to-date: notably F<control.ctl> (with your local changes in a separate
+F<control.ctl.local> file), new better default values in F<inn.conf>
+and F<innfeed.conf>, improvements in F<innreport.conf> (along with
+F<innreport-display.conf>) and F<innreport.css>, fixes in F<innwatch.ctl>,
+updated F<moderators> and F<nocem.ctl> files.
 
 You may also want to check that the PGP keys used to verify the signature
 of control articles and NoCeM notices are still up-to-date and working.
@@ -215,9 +215,9 @@ section for them in its reports.
 
 =item *
 
-The F<innreport.conf> file in F<pathetc>, previously containing almost 2500
+The F<innreport.conf> file in I<pathetc>, previously containing almost 2500
 lines, has been split into a general configuration file (F<innreport.conf>
-itself, still in F<pathetc>, with about 60 lines) and a display configuration
+itself, still in I<pathetc>, with about 60 lines) and a display configuration
 file (F<innreport-display.conf>, a new separate file in I<pathlib>).
 The name of this display configuration file can be parametered in the new
 I<display_conf_file> option in F<innreport.conf>.
@@ -283,10 +283,11 @@ news server even if not asked to.
 
 =item *
 
-B<signcontrol> has been removed as it embeds per-site configuration which is
-overwritten each time INN is updated to a newer version, and it is unlikely
-you ever need it.  Yet, if you need to issue PGP-signed control messages,
-you'll have to download it from L<https://ftp.isc.org/pub/pgpcontrol/>.
+B<signcontrol> has been removed as it embeds per-site configuration
+which is overwritten each time INN is updated to a newer version,
+and it is unlikely you ever need it.  Nonetheless, if you need to
+issue PGP-signed control messages, you can still download it from
+L<https://ftp.isc.org/pub/pgpcontrol/>.
 
 =item *
 
