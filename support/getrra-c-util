@@ -53,7 +53,7 @@ download() {
                     -e '/test x"$CLANG" = xyes/,+1d' \
                     ${TEMP}
             elif [ "$3" = "sqlite3.m4" ]; then
-                sed -i -e '48 i \
+                sed -i -e '49 i \
 dnl Ensures SQLite v3 meets our minimum version requirement.\
 AC_DEFUN([_INN_LIB_SQLITE3_SOURCE], [[\
 #include <sqlite3.h>\
@@ -80,7 +80,7 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
     [AS_IF([test x"$1" = xtrue],\
         [AC_MSG_ERROR([cannot find usable SQLite v3 library])])])])\
 ' \
-                    -e '48,68d' \
+                    -e '49,69d' \
                     ${TEMP}
             fi
         elif [ "$2" = "include/inn" ] || [ "$2" = "include/portable" ] \

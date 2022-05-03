@@ -20,7 +20,8 @@ dnl found or if --without-sqlite3 is given.  Defines HAVE_SQLITE3 and sets
 dnl inn_use_SQLITE3 to true if the SQLite library is found and
 dnl --without-sqlite3 is not given.
 dnl
-dnl Depends on the lib-helper.m4 framework.
+dnl Depends on the lib-helper.m4 framework and the Autoconf macros that come
+dnl with pkg-config.
 dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
