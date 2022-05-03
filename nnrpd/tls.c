@@ -205,7 +205,7 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
     int level = 2; /* Default security level. */
 
     /* Security levels have been introduced in OpenSSL 1.1.0, and still
-     * not present in LibreSSL 3.4.2.
+     * not present in LibreSSL 3.5.2.
      * Well, as this part of code is no longer active for these versions,
      * only keep it for possible future re-use. */
 #        if OPENSSL_VERSION_NUMBER >= 0x010100000L \
@@ -813,11 +813,10 @@ tls_init(void)
 **  Taken from OpenSSL apps/lib/s_cb.c.
 **
 **  The prototype of the callback function changed with BIO_set_callback_ex()
-**  introduced in OpenSSL 1.1.1, but still not present in LibreSSL (last
-**  checked version is LibreSSL 3.4.2).
+**  introduced in OpenSSL 1.1.1 and LibreSSL 3.5.0.
 */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || defined(LIBRESSL_VERSION_NUMBER)
+        || LIBRESSL_VERSION_NUMBER < 0x030500000L
 static long
 bio_dump_cb(BIO *bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -942,11 +941,10 @@ tls_start_servertls(int readfd, int writefd)
      * created for us, so we can use it for debugging purposes. */
     if (tls_loglevel >= 3) {
         /* BIO_set_callback() was deprecated in OpenSSL 3.0.0.
-         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1 but still
-         * not available in LibreSSL (last checked version is LibreSSL 3.4.2).
-         */
+         * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1 and LibreSSL
+         * 3.5.0. */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || defined(LIBRESSL_VERSION_NUMBER)
+        || LIBRESSL_VERSION_NUMBER < 0x030500000L
         BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
 #    else
         BIO_set_callback_ex(SSL_get_rbio(tls_conn), bio_dump_cb);
