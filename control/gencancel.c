@@ -168,17 +168,19 @@ main(int ac, char *av[])
         case 'k':
 #if defined(HAVE_CANLOCK)
             cancelkeyonly = true;
+            break;
 #else
             die("INN was not built with Cancel-Lock support\n");
+            /* NOTREACHED */
 #endif
-            break;
         case 'L':
 #if defined(HAVE_CANLOCK)
             gencankey = false;
+            break;
 #else
             die("INN was not built with Cancel-Lock support\n");
+            /* NOTREACHED */
 #endif
-            break;
         case 'm':
             genmid = false;
             break;
