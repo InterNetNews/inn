@@ -13,8 +13,15 @@
 #include "inn/system.h"
 #include <stdio.h>
 
-/* Avoid including <inn/confparse.h> unless the client needs it. */
-enum confparse_quoting;
+#ifndef INN_CONFPARSE_QUOTING
+#define INN_CONFPARSE_QUOTING 1
+enum confparse_quoting {
+    CONFPARSE_QUOTE_NONE,
+    CONFPARSE_QUOTE_SHELL,
+    CONFPARSE_QUOTE_PERL,
+    CONFPARSE_QUOTE_TCL
+};
+#endif
 
 /*
 **  This structure is organized in the same order as the variables contained

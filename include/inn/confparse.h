@@ -25,13 +25,16 @@ enum type {
     TYPE_LIST
 };
 
-/* Used to request various types of quoting when printing out values. */
+/* Used to request various types of quoting when printing out values.
+   Changes to that enum should be reflected into innconf.h and secrets.h (to
+   avoid a forward declaration of an enum type in these files). */
 enum confparse_quoting {
     CONFPARSE_QUOTE_NONE,
     CONFPARSE_QUOTE_SHELL,
     CONFPARSE_QUOTE_PERL,
     CONFPARSE_QUOTE_TCL
 };
+#define INN_CONFPARSE_QUOTING 1
 
 struct config {
     const char *name;
