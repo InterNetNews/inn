@@ -16,7 +16,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2014-2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2014-2015, 2022 Russ Allbery <eagle@eyrie.org>
  * Copyright 2011-2012
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -59,12 +59,12 @@ struct buffer {
 
 BEGIN_DECLS
 
-/* Allocate a new buffer and initialize its contents. */
-struct buffer *buffer_new(void)
-    __attribute__((__warn_unused_result__, __malloc__));
-
 /* Free an allocated buffer. */
 void buffer_free(struct buffer *);
+
+/* Allocate a new buffer and initialize its contents. */
+struct buffer *buffer_new(void)
+    __attribute__((__warn_unused_result__, __malloc__(buffer_free)));
 
 /*
  * Resize a buffer to be at least as large as the provided size.  Invalidates

@@ -5,7 +5,7 @@
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2009-2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2009-2019, 2022 Russ Allbery <eagle@eyrie.org>
  * Copyright 2001-2002, 2004-2008, 2011-2012, 2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -35,6 +35,7 @@
 
 #include <stdarg.h> /* va_list */
 #include <stddef.h> /* size_t */
+#include <stdlib.h> /* free */
 #include <tap/macros.h>
 
 /*
@@ -155,17 +156,20 @@ void diag_file_remove(const char *file) __attribute__((__nonnull__));
 
 /* Allocate memory, reporting a fatal error with bail on failure. */
 void *bcalloc(size_t, size_t)
-    __attribute__((__alloc_size__(1, 2), __malloc__, __warn_unused_result__));
-void *bmalloc(size_t)
-    __attribute__((__alloc_size__(1), __malloc__, __warn_unused_result__));
+    __attribute__((__alloc_size__(1, 2), __malloc__(free),
+                   __warn_unused_result__));
+void *bmalloc(size_t) __attribute__((__alloc_size__(1), __malloc__(free),
+                                     __warn_unused_result__));
 void *breallocarray(void *, size_t, size_t)
-    __attribute__((__alloc_size__(2, 3), __malloc__, __warn_unused_result__));
+    __attribute__((__alloc_size__(2, 3), __malloc__(free),
+                   __warn_unused_result__));
 void *brealloc(void *, size_t)
-    __attribute__((__alloc_size__(2), __malloc__, __warn_unused_result__));
+    __attribute__((__alloc_size__(2), __malloc__(free),
+                   __warn_unused_result__));
 char *bstrdup(const char *)
-    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
+    __attribute__((__malloc__(free), __nonnull__, __warn_unused_result__));
 char *bstrndup(const char *, size_t)
-    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
+    __attribute__((__malloc__(free), __nonnull__, __warn_unused_result__));
 
 /*
  * Macros that cast the return value from b* memory functions, making them
@@ -179,16 +183,18 @@ char *bstrndup(const char *, size_t)
  * Find a test file under C_TAP_BUILD or C_TAP_SOURCE, returning the full
  * path.  The returned path should be freed with test_file_path_free().
  */
-char *test_file_path(const char *file)
-    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
 void test_file_path_free(char *path);
+char *test_file_path(const char *file)
+    __attribute__((__malloc__(test_file_path_free), __nonnull__,
+                   __warn_unused_result__));
 
 /*
  * Create a temporary directory relative to C_TAP_BUILD and return the path.
  * The returned path should be freed with test_tmpdir_free().
  */
-char *test_tmpdir(void) __attribute__((__malloc__, __warn_unused_result__));
 void test_tmpdir_free(char *path);
+char *test_tmpdir(void)
+    __attribute__((__malloc__(test_tmpdir_free), __warn_unused_result__));
 
 /*
  * Register a cleanup function that is called when testing ends.  All such

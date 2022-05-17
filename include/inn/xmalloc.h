@@ -5,6 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
+ * Copyright 2022 Russ Allbery <eagle@eyrie.org>
  * Copyright 2010, 2012-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  * Copyright 2004-2006 Internet Systems Consortium, Inc. ("ISC")
@@ -36,6 +37,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 /*
  * The functions are actually macros so that we can pick up the file and line
@@ -76,17 +78,17 @@ BEGIN_DECLS
  * implementations that should not be called directly.
  */
 void *x_calloc(size_t, size_t, const char *, int)
-    __attribute__((__alloc_size__(1, 2), __malloc__, __nonnull__));
+    __attribute__((__alloc_size__(1, 2), __malloc__(free), __nonnull__));
 void *x_malloc(size_t, const char *, int)
-    __attribute__((__alloc_size__(1), __malloc__, __nonnull__));
+    __attribute__((__alloc_size__(1), __malloc__(free), __nonnull__));
 void *x_realloc(void *, size_t, const char *, int)
-    __attribute__((__alloc_size__(2), __malloc__, __nonnull__(3)));
+    __attribute__((__alloc_size__(2), __malloc__(free), __nonnull__(3)));
 void *x_reallocarray(void *, size_t, size_t, const char *, int)
-    __attribute__((__alloc_size__(2, 3), __malloc__, __nonnull__(4)));
+    __attribute__((__alloc_size__(2, 3), __malloc__(free), __nonnull__(4)));
 char *x_strdup(const char *, const char *, int)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__(free), __nonnull__));
 char *x_strndup(const char *, size_t, const char *, int)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__(free), __nonnull__));
 void x_vasprintf(char **, const char *, va_list, const char *, int)
     __attribute__((__nonnull__, __format__(printf, 2, 0)));
 

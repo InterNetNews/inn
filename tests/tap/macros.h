@@ -8,7 +8,7 @@
  * This file is part of C TAP Harness.  The current version plus supporting
  * documentation is at <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2008, 2012-2013, 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2008, 2012-2013, 2015, 2022 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -66,6 +66,16 @@
 #if !defined(__attribute__) && !defined(__warn_unused_result__)
 #    if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 4)
 #        define __warn_unused_result__ /* empty */
+#    endif
+#endif
+
+/*
+ * Suppress the argument to __malloc__ in Clang (not supported in at least
+ * version 13) and GCC versions prior to 11.
+ */
+#if !defined(__attribute__) && !defined(__malloc__)
+#    if defined(__clang__) || __GNUC__ < 11
+#        define __malloc__(dalloc) __malloc__
 #    endif
 #endif
 

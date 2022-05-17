@@ -12,7 +12,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2001-2006 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2001-2006, 2022 Russ Allbery <eagle@eyrie.org>
  * Copyright 2005-2006, 2008-2011, 2013-2014
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -31,6 +31,7 @@
 #include "inn/system.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 
 struct vector {
     size_t count;
@@ -46,11 +47,18 @@ struct cvector {
 
 BEGIN_DECLS
 
+/*
+ * Free the vector and all resources allocated for it.  NULL may be passed in
+ * safely and will be ignored.
+ */
+void vector_free(struct vector *);
+void cvector_free(struct cvector *);
+
 /* Create a new, empty vector. */
 struct vector *vector_new(void)
-    __attribute__((__warn_unused_result__, __malloc__));
+    __attribute__((__warn_unused_result__, __malloc__(vector_free)));
 struct cvector *cvector_new(void)
-    __attribute__((__warn_unused_result__, __malloc__));
+    __attribute__((__warn_unused_result__, __malloc__(cvector_free)));
 
 /* Add a string to a vector.  Resizes the vector if necessary. */
 void vector_add(struct vector *, const char *string)
@@ -77,13 +85,6 @@ void cvector_resize(struct cvector *, size_t size)
  */
 void vector_clear(struct vector *) __attribute__((__nonnull__));
 void cvector_clear(struct cvector *) __attribute__((__nonnull__));
-
-/*
- * Free the vector and all resources allocated for it.  NULL may be passed in
- * safely and will be ignored.
- */
-void vector_free(struct vector *);
-void cvector_free(struct cvector *);
 
 /*
  * Split functions build a vector from a string.  vector_split splits on a
@@ -122,9 +123,9 @@ struct cvector *cvector_split_space(char *string, struct cvector *)
  * responsible for freeing.
  */
 char *vector_join(const struct vector *, const char *separator)
-    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
+    __attribute__((__malloc__(free), __nonnull__, __warn_unused_result__));
 char *cvector_join(const struct cvector *, const char *separator)
-    __attribute__((__malloc__, __nonnull__, __warn_unused_result__));
+    __attribute__((__malloc__(free), __nonnull__, __warn_unused_result__));
 
 /*
  * Exec the given program with the vector as its arguments.  Return behavior

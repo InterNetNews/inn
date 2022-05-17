@@ -126,7 +126,7 @@ ok_string(int n UNUSED, const char *wanted, const char *seen)\
         fi
 
         if [ "$3" = "basic.h" ]; then
-            sed -i -e '76 i \
+            sed -i -e '77 i \
 #ifndef LIBTEST_NEW_FORMAT\
 /* Specific to the integration of C TAP Harness in INN. */\
 void ok(int n, int success);\
@@ -152,7 +152,7 @@ void test_init(int count);\
 #    define skip       new_skip\
 #    define ok_block   new_ok_block\
 #    define skip_block new_skip_block' \
-                -e '91 i \
+                -e '92 i \
 #endif' \
                 ${TEMP}
         fi

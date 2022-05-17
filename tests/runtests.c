@@ -8,7 +8,7 @@
  * should be sent to the e-mail address below.  This program is part of C TAP
  * Harness <https://www.eyrie.org/~eagle/software/c-tap-harness/>.
  *
- * Copyright 2000-2001, 2004, 2006-2019 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2001, 2004, 2006-2019, 2022 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -281,6 +281,16 @@ Failed Set                 Fail/Total (%) Skip Stat  Failing Tests\n\
 #endif
 
 /*
+ * Suppress the argument to __malloc__ in Clang (not supported in at least
+ * version 13) and GCC versions prior to 11.
+ */
+#if !defined(__attribute__) && !defined(__malloc__)
+#    if defined(__clang__) || __GNUC__ < 11
+#        define __malloc__(dalloc) __malloc__
+#    endif
+#endif
+
+/*
  * LLVM and Clang pretend to be GCC but don't support all of the __attribute__
  * settings that GCC does.  For them, suppress warnings about unknown
  * attributes on declarations.  This unfortunately will affect the entire
@@ -296,15 +306,15 @@ static void die(const char *, ...)
 static void sysdie(const char *, ...)
     __attribute__((__nonnull__, __noreturn__, __format__(printf, 1, 2)));
 static void *x_calloc(size_t, size_t, const char *, int)
-    __attribute__((__alloc_size__(1, 2), __malloc__, __nonnull__));
+    __attribute__((__alloc_size__(1, 2), __malloc__(free), __nonnull__));
 static void *x_malloc(size_t, const char *, int)
-    __attribute__((__alloc_size__(1), __malloc__, __nonnull__));
+    __attribute__((__alloc_size__(1), __malloc__(free), __nonnull__));
 static void *x_reallocarray(void *, size_t, size_t, const char *, int)
-    __attribute__((__alloc_size__(2, 3), __malloc__, __nonnull__(4)));
+    __attribute__((__alloc_size__(2, 3), __malloc__(free), __nonnull__(4)));
 static char *x_strdup(const char *, const char *, int)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__(free), __nonnull__));
 static char *x_strndup(const char *, size_t, const char *, int)
-    __attribute__((__malloc__, __nonnull__));
+    __attribute__((__malloc__(free), __nonnull__));
 
 
 /*

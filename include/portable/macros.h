@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2015 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2015, 2022 Russ Allbery <eagle@eyrie.org>
  * Copyright 2008, 2011-2012
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -42,6 +42,16 @@
 #    if (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3)) \
         && !defined(__clang__)
 #        define __alloc_size__(spec, args...) /* empty */
+#    endif
+#endif
+
+/*
+ * Suppress the argument to __malloc__ in Clang (not supported in at least
+ * version 13) and GCC versions prior to 11.
+ */
+#if !defined(__attribute__) && !defined(__malloc__)
+#    if defined(__clang__) || __GNUC__ < 11
+#        define __malloc__(dalloc) __malloc__
 #    endif
 #endif
 
