@@ -150,7 +150,8 @@ When I<laxmid> is set, Message-IDs containing C<..> in the left part
 are accepted, as well as Message-IDs with two C<@>.  Some non-compliant
 news posters generate such syntactically invalid Message-IDs, especially
 in binary newsgroups.  The default is I<no-laxmid>, that is to say INN
-strictly follows the standard regarding syntax checks.
+strictly follows the standard regarding syntax checks (it will neither
+accept these articles nor propagate them to remote peers).
 
 =back
 
