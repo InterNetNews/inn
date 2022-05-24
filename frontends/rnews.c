@@ -266,30 +266,33 @@ Process(char *article, size_t artlen)
     fflush(ToServer);
     if (UUCPHost)
         notice("offered %s %s", msgid, UUCPHost);
-    free(msgid);
 
     /* Get a reply, see if they want the article. */
     if (fgets(buff, sizeof buff, FromServer) == NULL) {
-        free(wirefmt);
         if (ferror(FromServer))
             syswarn("cannot fgets after ihave");
         else
             warn("unexpected EOF from server after ihave");
+        free(wirefmt);
+        free(msgid);
         return false;
     }
     REMclean(buff);
     if (!isdigit((unsigned char) buff[0])) {
-        free(wirefmt);
         notice("bad_reply after ihave %s", buff);
+        free(wirefmt);
+        free(msgid);
         return false;
     }
     switch (atoi(buff)) {
     default:
-        free(wirefmt);
         notice("unknown_reply after ihave %s", buff);
+        free(wirefmt);
+        free(msgid);
         return false;
     case NNTP_FAIL_IHAVE_DEFER:
         free(wirefmt);
+        free(msgid);
         return false;
     case NNTP_CONT_IHAVE:
         break;
@@ -298,8 +301,11 @@ Process(char *article, size_t artlen)
             notice("duplicate %s %s", msgid, path);
         }
         free(wirefmt);
+        free(msgid);
         return true;
     }
+
+    free(msgid);
 
     /* Send the article to the server. */
     if (fwrite(wirefmt, length, 1, ToServer) != 1) {
