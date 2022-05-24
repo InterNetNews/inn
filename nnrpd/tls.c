@@ -92,7 +92,8 @@ apps_ssl_info_callback(const SSL *s, int where, int ret)
 **  older versions.
 */
 #    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || LIBRESSL_VERSION_NUMBER < 0x020302000L
+        || (defined(LIBRESSL_VERSION_NUMBER)  \
+            && LIBRESSL_VERSION_NUMBER < 0x020302000L)
 /*
 **  Hardcoded DH parameter files.
 **  These are pre-defined DH groups recommended by RFC 7919 (Appendix A),
@@ -441,7 +442,8 @@ set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file)
 
 #    if defined(HAVE_OPENSSL_ECC)                 \
         && (OPENSSL_VERSION_NUMBER < 0x01010100fL \
-            || LIBRESSL_VERSION_NUMBER < 0x02050100fL)
+            || (defined(LIBRESSL_VERSION_NUMBER)  \
+                && LIBRESSL_VERSION_NUMBER < 0x02050100fL))
 /*
 **  Provide an ECKEY from a curve name.
 **  Accepts a NULL pointer as the name.
@@ -527,7 +529,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
 /* New functions have been introduced in OpenSSL 1.1.0 and LibreSSL 2.7.0. */
 #    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || LIBRESSL_VERSION_NUMBER < 0x020700000L
+        || (defined(LIBRESSL_VERSION_NUMBER)  \
+            && LIBRESSL_VERSION_NUMBER < 0x020700000L)
     SSL_load_error_strings();
     SSLeay_add_ssl_algorithms();
     CTX = SSL_CTX_new(SSLv23_server_method());
@@ -588,7 +591,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
  * at that time, use the 2.3.2 release which introduced the new numbering
  * format). */
 #    if OPENSSL_VERSION_NUMBER < 0x010100000L \
-        || LIBRESSL_VERSION_NUMBER < 0x020302000L
+        || (defined(LIBRESSL_VERSION_NUMBER)  \
+            && LIBRESSL_VERSION_NUMBER < 0x020302000L)
     SSL_CTX_set_tmp_dh_callback(CTX, tmp_dh_cb);
 #    else
     SSL_CTX_set_dh_auto(CTX, 1);
@@ -604,7 +608,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
      * or we default to NIST P-256. */
     if (tls_ec_curve != NULL) {
 #        if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-            || LIBRESSL_VERSION_NUMBER < 0x02050100fL
+            || (defined(LIBRESSL_VERSION_NUMBER)  \
+                && LIBRESSL_VERSION_NUMBER < 0x02050100fL)
         /* A new mechanism to select groups has been introduced
          * in OpenSSL 1.1.1 and LibreSSL 2.5.1. */
         EC_KEY *eckey;
@@ -720,7 +725,8 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
 
 #    if (OPENSSL_VERSION_NUMBER >= 0x01010100fL \
          && defined(SSL_OP_NO_TLSv1_3))         \
-        || LIBRESSL_VERSION_NUMBER >= 0x03040100fL
+        || (defined(LIBRESSL_VERSION_NUMBER)    \
+            && LIBRESSL_VERSION_NUMBER >= 0x03040100fL)
     /* New API added in OpenSSL 1.1.1 for TLSv1.3 cipher suites.
      * Also check that SSL_OP_NO_TLSv1_3 is defined (so as not to match
      * with LibreSSL versions prior to 3.4.1, which introduced the function).
@@ -816,7 +822,8 @@ tls_init(void)
 **  introduced in OpenSSL 1.1.1 and LibreSSL 3.5.0.
 */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || LIBRESSL_VERSION_NUMBER < 0x030500000L
+        || (defined(LIBRESSL_VERSION_NUMBER)  \
+            && LIBRESSL_VERSION_NUMBER < 0x030500000L)
 static long
 bio_dump_cb(BIO *bio, int cmd, const char *argp, int argi, long argl UNUSED,
             long ret)
@@ -944,7 +951,8 @@ tls_start_servertls(int readfd, int writefd)
          * BIO_set_callback_ex() was introduced in OpenSSL 1.1.1 and LibreSSL
          * 3.5.0. */
 #    if OPENSSL_VERSION_NUMBER < 0x01010100fL \
-        || LIBRESSL_VERSION_NUMBER < 0x030500000L
+        || (defined(LIBRESSL_VERSION_NUMBER)  \
+            && LIBRESSL_VERSION_NUMBER < 0x030500000L)
         BIO_set_callback(SSL_get_rbio(tls_conn), bio_dump_cb);
 #    else
         BIO_set_callback_ex(SSL_get_rbio(tls_conn), bio_dump_cb);
