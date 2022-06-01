@@ -135,6 +135,13 @@ for any purpose (in the US and elsewhere), and (as of version 1.0.4 at
 least) supports the RSA signatures used by most current control message
 senders.
 
+In order to verify some of the control messages curently used on Usenet,
+you will need to use a version of GnuPG prior to 2.1.0, which dropped
+support for the old keys used by some Usenet control message senders.  On
+current systems, this may require the 1.x series of GnuPG.  Sometimes this
+is the C<gnupg> package (and GnuPG v2 is C<gnupg2>), and sometimes it is
+the C<gnupg1> package.
+
 =item *
 
 If you want to use either the Python embedded hooks, you'll need to have a
@@ -1795,8 +1802,9 @@ To add a key to that key ring, use:
 
 where <file> is a file containing the hierarchy key.  Change the homedir
 setting to point to I<pathetc>/pgp if you have INN installed in a non-default
-location.  If you're using the old-style PGP program, an equivalent
-command is:
+location.  You may need to add the flag C<--allow-weak-digest-algos>.
+
+If you're using the old-style PGP program, an equivalent command is:
 
     env PGPPATH=<pathetc in inn.conf>/pgp pgp <file>
 
