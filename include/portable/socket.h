@@ -186,21 +186,18 @@ BEGIN_DECLS
 /*
  * Provide prototypes for inet_aton and inet_ntoa if not prototyped in the
  * system header files since they're occasionally available without proper
- * prototypes.  If we're providing a replacement, be sure to set visibility
- * accordingly.
+ * prototypes.
  */
 #if !HAVE_DECL_INET_ATON
 #    if !HAVE_INET_ATON
-extern int inet_aton(const char *, struct in_addr *)
-    __attribute__((__visibility__("hidden")));
+extern int inet_aton(const char *, struct in_addr *);
 #    else
 extern int inet_aton(const char *, struct in_addr *);
 #    endif
 #endif
 #if !HAVE_DECL_INET_NTOA
 #    if !HAVE_INET_NTOA
-extern char *inet_ntoa(struct in_addr)
-    __attribute__((__visibility__("hidden")));
+extern char *inet_ntoa(struct in_addr);
 #    else
 extern char *inet_ntoa(struct in_addr);
 #    endif

@@ -116,6 +116,13 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
                         ${TEMP}
                 fi
 
+                if [ "$3" = "socket.h" ]; then
+                    sed -i -e 's/  If we.*visibility//g' \
+                        -e '190d' \
+                        -e 's/__attribute__((__visibility__("hidden")))//g' \
+                        ${TEMP}
+                fi
+
                 if [ "$3" = "system.h" ]; then
                     # Add INN-specific stuff.
                     sed -i -e "108 i \\
