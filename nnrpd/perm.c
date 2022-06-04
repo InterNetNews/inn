@@ -12,6 +12,13 @@
 #if defined(HAVE_BLACKLIST)
 #    include <blacklist.h>
 #    include <errno.h>
+/* Some systems (like NetBSD 9.2) do not define these pretty names. */
+#    ifndef BLACKLIST_API_ENUM
+enum {
+    BLACKLIST_AUTH_OK = 0,
+    BLACKLIST_AUTH_FAIL
+};
+#    endif
 #endif
 
 #include "conffile.h"
