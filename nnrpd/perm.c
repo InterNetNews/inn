@@ -1,6 +1,6 @@
 /*
 **  How to figure out where a user comes from, and what that user can do once
-**  we know who sie is.
+**  we know who he is.
 */
 
 #include "portable/system.h"

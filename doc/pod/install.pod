@@ -135,7 +135,7 @@ for any purpose (in the US and elsewhere), and (as of version 1.0.4 at
 least) supports the RSA signatures used by most current control message
 senders.
 
-In order to verify some of the control messages curently used on Usenet,
+In order to verify some of the control messages currently used on Usenet,
 you will need to use a version of GnuPG prior to 2.1.0, which dropped
 support for the old keys used by some Usenet control message senders.  On
 current systems, this may require the 1.x series of GnuPG.  Sometimes this
