@@ -661,7 +661,9 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     /* Add or update the Cancel-Key header field with specific user c-key
      * elements.  Do it only for cancel or supersede requests. */
     if (PERMuser[0] != '\0' && PERMaccessconf->addcanlockuser
-        && (HDR(HDR__CONTROL) != NULL || HDR(HDR__SUPERSEDES) != NULL)) {
+        && ((HDR(HDR__CONTROL) != NULL
+             && strncasecmp(HDR(HDR__CONTROL), "cancel", 6) == 0)
+            || HDR(HDR__SUPERSEDES) != NULL)) {
         free(cankeybuff);
         cankeybuff = NULL;
 
