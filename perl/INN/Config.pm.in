@@ -146,8 +146,12 @@ our $syslog_facility = lc('@SYSLOG_FACILITY@');
 $syslog_facility =~ s/log_//;
 
 ##  Set up some useful parameters.
-my @PARAMVAR = qw($do_dbz_tagged_hash);
+my @PARAMVAR = qw($do_dbz_tagged_hash $gpg_has_allow_weak_digest_algos_flag);
 our $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
+#<<V  code skipping because perltidy expects numbers.
+our $gpg_has_allow_weak_digest_algos_flag
+  = @GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG@;
+#>>V
 
 ##  Set up some environment values.
 if ($ovmethod && $ovmethod eq "ovdb") {

@@ -122,6 +122,10 @@ $rnewsmode = @RNEWSMODE@;
 #>>V
 
 $do_dbz_tagged_hash = '@DO_DBZ_TAGGED_HASH@';
+#<<V  code skipping because perltidy expects numbers.
+$gpg_has_allow_weak_digest_algos_flag
+  = @GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG@;
+#>>V
 
 $tmpdir = ${pathtmp};
 $ENV{'TMPDIR'} = ${pathtmp};

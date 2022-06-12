@@ -4,7 +4,7 @@
 #
 # Written April 1996, <tale@isc.org> (David C Lawrence)
 # Currently maintained by Russ Allbery <eagle@eyrie.org>
-# Version 1.30, 2018-01-21
+# Version 1.31, 2022-06-12
 #
 # NOTICE TO INN MAINTAINERS:  The version that is shipped with INN is the
 # same as the version that I make available to the rest of the world
@@ -15,6 +15,17 @@
 # and your Perl is too old, please contact me (eagle@eyrie.org) and tell
 # me about it; I want to know what old versions of Perl are still used in
 # practice.
+#
+# Changes from 1.30 -> 1.31
+# -- Add a $gpg_has_allow_weak_digest_algos_flag variable to specify whether
+#    gpg supports the --allow-weak-digest-algos flag.  This variable will
+#    be overriden by INN::Config, if used.  GnuPG 1.4.20 and 2.0.23 introduced
+#    this flag, necessary to verify the signatures of old PGP keys still in
+#    use for some hierarchies.
+# -- Using at least GnuPG 1.4.20 or 2.1.0 is no longer required; this version
+#    of pgpverify will still work with previous versions of GnuPG.  However,
+#    only GnuPG 1.x and 2.0.x will be able to validate signatures made with
+#    old PGP keys.
 #
 # Changes from 1.29 -> 1.30
 # -- Support for GnuPG's gpg binary (in addition to gpgv).  gpg (from
@@ -143,8 +154,15 @@
 # and the script is able to successfully include your INN::Config module,
 # the value of $INN::Config::gpg will override this.  On a recent Debian
 # variant, use /usr/bin/gpg1 (from the gnupg1 package) if you want to
-# support old signatures with MD5 digest algorithms.
+# support old signatures with MD5 digest algorithms.  Or you may want to use
+# a more recent version of GnuPG (2.0.23+), in which case a special flag must
+# be added when running gpg; you then have to set the value of
+# $gpg_has_allow_weak_digest_algos_flag to 1 if --allow-weak-digest-algos is
+# supported, and 0 otherwise.  If your INN::Config module has been included,
+# the value of $INN::Config::gpg_has_allow_weak_digest_algos_flag will override
+# this.
 # $gpg = '/usr/local/bin/gpg';
+# $gpg_has_allow_weak_digest_algos_flag = 0;
 
 # Path to the GnuPG gpgv binary, if you have GnuPG.  If you do, this will
 # be used in preference to PGP.  For most current control messages, you
@@ -220,8 +238,9 @@ $log_date = -t STDOUT; # Do it if STDOUT is to a terminal.
 require 5;
 
 use strict;
-use vars qw($gpg $gpgv $pgp $keyring $tmp $tmpdir $lockdir $syslog_method
-            $syslog_facility $syslog_level $log_date $findid $test $messageid);
+use vars qw($gpg $gpg_has_allow_weak_digest_algos_flag $gpgv $pgp $keyring $tmp
+            $tmpdir $lockdir $syslog_method $syslog_facility $syslog_level
+            $log_date $findid $test $messageid);
 
 use Fcntl qw(O_WRONLY O_CREAT O_EXCL);
 use FileHandle;
@@ -243,6 +262,9 @@ $pgp = $INN::Config::pgp
     if $INN::Config::pgp && $INN::Config::pgp ne "no-pgp-found-during-configure";
 $gpgv = $INN::Config::gpgv if $INN::Config::gpgv;
 $gpg = $INN::Config::gpg if $INN::Config::gpg;
+$gpg_has_allow_weak_digest_algos_flag
+  = $INN::Config::gpg_has_allow_weak_digest_algos_flag
+  if $INN::Config::gpg_has_allow_weak_digest_algos_flag;
 $tmp = ($INN::Config::pathtmp ? $INN::Config::pathtmp : $tmpdir) . "/pgp$$";
 $lockdir = $INN::Config::locks if $INN::Config::locks;
 $syslog_facility = $INN::Config::syslog_facility if $INN::Config::syslog_facility;
@@ -462,7 +484,10 @@ sub pgp_verify {
   my @command;
   if ($pgpstyle eq 'GPG') {
     if ($gpg) {
-      @command = ($gpg, qw/--verify --allow-weak-digest-algos/);
+      @command = ($gpg, qw/--verify/);
+      if ($gpg_has_allow_weak_digest_algos_flag) {
+        push (@command, qw/--allow-weak-digest-algos/);
+      }
       push (@command, qw/--quiet --status-fd=1 --logger-fd=1/);
     } else {
       @command = ($gpgv, qw/--quiet --status-fd=1 --logger-fd=1/);
@@ -768,6 +793,11 @@ the trust model for checking keys, but is compatible with the way that
 B<pgpverify> used to behave.  Of course, if a keyring is found in
 I<pathetc>/pgp or configured at the top of the script, that overrides all of
 this behavior.
+
+Note that a few Usenet hierarchies still send control articles signed with old
+PGP keys using a weak hash algorithm (MD5).  Modern versions of GnuPG (2.1.0+)
+no longer validate such signatures, so you should use S<GnuPG 1.x> or 2.0.x if
+you need verifying such control articles.
 
 =head1 OPTIONS
 

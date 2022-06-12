@@ -116,6 +116,7 @@ scan "@INEWSMODE@" "%o" inn_inewsmode
 scan "@RNEWSMODE@" "%o" inn_rnewsmode
 
 set do_dbz_tagged_hash "@DO_DBZ_TAGGED_HASH@"
+set inn_gpg_has_allow_weak_digest_algos_flag @GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG@
 
 set inn_tmpdir "$inn_pathtmp"
 set env(TMPDIR) "$inn_pathtmp"

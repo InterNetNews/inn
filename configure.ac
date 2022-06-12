@@ -68,7 +68,9 @@ Though not mandatory for the build, the following packages should be installed
 if you plan on using the provided features (configure will properly sets their
 path in a few variables used by INN):
 - gnupg / gnupg2 (for the verification of the signatures of control articles
-  and NoCeM notices)
+  and NoCeM notices - GnuPG 1.x or 2.0.x preferred, as GnuPG 2.1.0 and above
+  cannot verify signatures made with old PGP keys still used for some
+  hierarchies)
 - uucp / uucp (for the exchange of news articles with send-uucp)
 - various wide-spread programs like a modern awk implementation, grep, gzip
   (and eventually bzip2 and compress if you want to use other compression
@@ -441,7 +443,9 @@ INN_PATH_SENDMAIL
 
 dnl Look for PGP 5.0's pgpv, then pgp, then pgpgpg (not sure why anyone would
 dnl have pgpgpg and not gpgv, but it doesn't hurt).  Separately look for
-dnl GnuPG (which we prefer).
+dnl GnuPG (which we prefer) and whether it supports a flag introduced in
+dnl GnuPG 2.0.23 to allow weak hash algorithms like MD5 in old PGP keys still
+dnl used to sign control articles.
 DO_PGPVERIFY=true
 AC_ARG_VAR([GPGV], [Location of GnuPG gpgv program])
 AC_ARG_VAR([GPG], [Location of GnuPG gpg program])
@@ -453,6 +457,16 @@ if test -z "$PGP" && test -z "$GPGV" && test -z "$GPG" ; then
     DO_PGPVERIFY=false
 fi
 AC_SUBST([DO_PGPVERIFY])
+
+GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG=0
+AS_IF([test x"$GPG" != x],
+    [AC_MSG_CHECKING([if GnuPG recognizes the --allow-weak-digest-algos flag])
+     AS_IF(["$GPG" --allow-weak-digest-algos --version >/dev/null 2>&1],
+         [GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG=1
+          AC_MSG_RESULT([yes])],
+         [AC_MSG_RESULT([no])])])
+AC_SUBST([GPG_HAS_ALLOW_WEAK_DIGEST_ALGOS_FLAG])
+
 
 dnl Look for a program that takes an ftp URL as a command line argument and
 dnl retrieves the file to the current directory.  Shame we can't also use
