@@ -206,11 +206,15 @@ This parameter has no effect when systemd socket activation is used.
 =item I<docancels>
 
 This parameter is intended for sites concerned about abuse of cancels, or that
-wish to enforce a mechanism to authenticate cancels.  Unless rejected by the
-use of a filter hook, B<innd> always accepts and propagates cancel articles
-and supersede requests.  However, actually processing such articles on the
-local news server depends on this parameter which can take the following
-values:
+wish to enforce a mechanism to authenticate cancels.  This parameter does not
+change how NoCeM notices are processed by perl-nocem(8), and only applies to
+cancel articles (with a Control header field) and supersede requests (with a
+Supersedes header field).
+
+Unless rejected by the use of a filter hook, B<innd> always accepts and
+propagates cancel articles and supersede requests.  However, actually
+processing such articles on the local news server depends on this parameter
+which can take the following values:
 
 =over 4
 
