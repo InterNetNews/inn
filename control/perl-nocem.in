@@ -116,7 +116,7 @@ sub do_nocem {
     return unless $nocems;
 
     &$cancel($nocems);
-    logmsg("Articles cancelled: " . join(' ', @$nocems), 'debug');
+    logmsg("Articles cancelled: " . join(' ', @$nocems));
     my $diff = (time - $start) || 0.01;
     my $nr = scalar @$nocems;
     logmsg(
@@ -564,6 +564,12 @@ which are sent by people whom you trust (that is to say if you trust
 the PGP key they use to sign their NoCeM notices).  Indeed, it is up
 to you to decide whether you wish to honour their notices, depending
 on the criteria they use.
+
+The B<perl-nocem> program appends all status messages to F<perl-nocem.log>
+in I<pathlog> if C<Sys::Syslog> is not available; otherwise, and it should
+normally be the case, the syslog facility is used.  Status messages are then
+appended to a file usually named F<news.notice> in I<pathlog>.  (Some logs
+will be written only if debug level is set up to be logged via syslog.)
 
 Processing NoCeM notices is easy to set up:
 
