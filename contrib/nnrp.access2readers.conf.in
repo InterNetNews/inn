@@ -89,7 +89,7 @@ while (<SRC>) {
     print $OUT "    newsgroups: \"$groups\"\n";
     print $OUT "    access: \"$access\"\n";
     print $OUT "    users: \"$user\"\n" unless $user eq '';
-    print $OUT "    addcanlockuser: false" if $user eq '' and not $shadow;
+    print $OUT "    addcanlockuser: \"none\"\n" if $user eq '' and not $shadow;
     print $OUT "    reject_with: \"Access disabled.\"\n" if $noauth;
     print $OUT "}\n\n";
 

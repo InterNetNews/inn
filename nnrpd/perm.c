@@ -507,7 +507,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->localmaxartsize = innconf->localmaxartsize;
     curaccess->readertrack = innconf->readertrack;
     curaccess->strippostcc = innconf->strippostcc;
-    curaccess->addcanlockuser = true;
+    curaccess->addcanlockuser = xstrdup("username");
     curaccess->addinjectiondate = innconf->addinjectiondate;
     curaccess->addinjectionpostingaccount =
         innconf->addinjectionpostingaccount;
@@ -1017,8 +1017,9 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
         SET_CONFIG(oldtype);
         break;
     case PERMaddcanlockuser:
-        if (boolval != -1)
-            curaccess->addcanlockuser = boolval;
+        if (curaccess->addcanlockuser != NULL)
+            free(curaccess->addcanlockuser);
+        curaccess->addcanlockuser = xstrdup(tok->name);
         SET_CONFIG(oldtype);
         break;
     case PERMaddinjectiondate:

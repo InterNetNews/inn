@@ -163,7 +163,9 @@ B<-f>, permits specifying a file different than the default one.
 
 The I<addcanlockuser> parameter has been added in F<readers.conf> to
 deactivate the generation of user-specific hashes when several different
-posters have the same identity in an access group.
+posters have the same identity in an access group.  This parameter also
+permits determining whether the hash, when generated, is based on the username
+or the (static) IP of the connection.
 
 =item *
 

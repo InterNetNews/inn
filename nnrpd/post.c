@@ -343,6 +343,7 @@ ProcessHeaders(char *idbuff, bool needmoderation)
     static char *canbuff = NULL;
     static char *canlockbuff = NULL;
     static char *cankeybuff = NULL;
+    char *identity = NULL;
 #endif
     static char *newpath = NULL;
     HEADER *hp;
@@ -633,15 +634,23 @@ ProcessHeaders(char *idbuff, bool needmoderation)
         HDR_SET(HDR__INJECTION_INFO, injectioninfobuff);
 
 #if defined(HAVE_CANLOCK)
+    /* Generate user elements based on their username or (static) IP?
+     * If addcanlockuser is different of these two values, no user elements
+     * will be generated. */
+    if (strcasecmp(PERMaccessconf->addcanlockuser, "username") == 0
+        && PERMuser[0] != '\0')
+        identity = PERMuser;
+    else if (strcasecmp(PERMaccessconf->addcanlockuser, "ip") == 0
+             && strlen(Client.ip) > 0)
+        identity = Client.ip;
+
     /* Add or update the Cancel-Lock header field.
      * Needless in control articles. */
     if (HDR(HDR__CONTROL) == NULL) {
         free(canlockbuff);
         canlockbuff = NULL;
 
-        if (gen_cancel_lock(HDR(HDR__MESSAGEID),
-                            PERMaccessconf->addcanlockuser ? PERMuser : NULL,
-                            &canbuff)) {
+        if (gen_cancel_lock(HDR(HDR__MESSAGEID), identity, &canbuff)) {
             if (*canbuff != '\0') {
                 /* Extend an existing Cancel-Lock header field. */
                 if (HDR(HDR__CANCEL_LOCK) != NULL) {
@@ -660,14 +669,14 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 
     /* Add or update the Cancel-Key header field with specific user c-key
      * elements.  Do it only for cancel or supersede requests. */
-    if (PERMuser[0] != '\0' && PERMaccessconf->addcanlockuser
+    if (identity != NULL
         && ((HDR(HDR__CONTROL) != NULL
              && strncasecmp(HDR(HDR__CONTROL), "cancel", 6) == 0)
             || HDR(HDR__SUPERSEDES) != NULL)) {
         free(cankeybuff);
         cankeybuff = NULL;
 
-        if (gen_cancel_key(HDR(HDR__CONTROL), HDR(HDR__SUPERSEDES), PERMuser,
+        if (gen_cancel_key(HDR(HDR__CONTROL), HDR(HDR__SUPERSEDES), identity,
                            &canbuff)) {
             if (*canbuff != '\0') {
                 /* Extend an existing Cancel-Key header field. */

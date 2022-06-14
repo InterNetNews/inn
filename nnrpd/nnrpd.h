@@ -73,7 +73,7 @@ typedef struct _ACCESSGROUP {
     unsigned long localmaxartsize;
     int readertrack;
     int strippostcc;
-    bool addcanlockuser;
+    char *addcanlockuser;
     int addinjectiondate;
     int addinjectionpostingaccount;
     int addinjectionpostinghost;

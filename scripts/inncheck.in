@@ -983,7 +983,7 @@ sub readers_conf {
                 'perlfilter'     => 'boolean',
                 'pythonfilter'   => 'boolean',
                 'virtualhost'    => 'boolean',
-                'addcanlockuser' => 'boolean',
+                'addcanlockuser' => 'string',
                 # inn.conf parameters:
                 'addinjectiondate'           => 'boolean',
                 'addinjectionpostingaccount' => 'boolean',

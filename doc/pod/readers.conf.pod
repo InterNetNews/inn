@@ -238,7 +238,7 @@ This is done with the key: parameter.  For example:
         key: special
         users: <SPECIAL>
         newsgroups: *
-        addcanlockuser: false
+        addcanlockuser: none
     }
 
 In this case, the two key: parameters bind this auth group with this
@@ -567,17 +567,22 @@ parameter.
 
 =item B<addcanlockuser:>
 
-If set to false, posts made by these users will not have a user-specific
+If set to C<none>, posts made by these users will not have a user-specific
 hash in the Cancel-Lock header field (only the admin hash will be generated).
 No Cancel-Key header field will be present in cancel or supersede requests.
-This is a boolean value and the default is true.
+This is a string value and the default is C<username>, that is to say a
+user-specific hash based on the identity assigned to the connection is used.
+
+Another possible value to this parameter is C<ip>, in which case a
+user-specific hash based on the IP of the connection is used (which should be
+a static IP so as to actually identify users).
 
 See inn-secrets.conf(5) for more information about Cancel-Lock.  The main
-reason for this parameter is to deactivate this authentication mechanism when
-the same identity can be assigned by an access group to different people.
-Otherwise, any of these people would be able to send an authenticated
+reason for this parameter is to deactivate this authentication mechanism
+when the same identity or IP can be assigned by an access group to different
+people.  Otherwise, any of these people would be able to send an authenticated
 withdrawal of an article originally sent by another person with the same
-identity.
+identity or IP.
 
 =item B<reject_with:>
 
@@ -734,7 +739,7 @@ connecting elsewhere:
     access full {
         users: "<EXAMPLE>"
         newsgroups: *
-        addcanlockuser: false
+        addcanlockuser: none
     }
 
 Note that the above access realm could also be written without the
@@ -817,7 +822,7 @@ password-restricted.
 
     access regular {
         newsgroups: "*,!example.restricted.*"
-        addcanlockuser: false
+        addcanlockuser: none
     }
 
     access full {
@@ -933,7 +938,7 @@ server for a particular hierarchy.
     access default {
         users: <PUBLIC>
         newsgroups: example.*
-        addcanlockuser: false
+        addcanlockuser: none
     }
 
 Notice that clients aren't allowed to read any other groups; this keeps
