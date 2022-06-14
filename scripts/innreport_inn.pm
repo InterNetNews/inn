@@ -2124,6 +2124,14 @@ sub collect($$$$$$) {
             $nocem_totalids{$nocem_lastid} += $2;
             return 1;
         }
+        if ($left =~ /Article <[^>]*>: signed by .* instead of (.*)/o) {
+            $nocem_badsigs{$1}++;
+            $nocem_goodsigs{$1} = 0 unless ($nocem_goodsigs{$1});
+            $nocem_totalids{$1} = 0 unless ($nocem_totalids{$1});
+            $nocem_totalbad++;
+            $nocem_lastid = $1;
+            return 1;
+        }
         if ($left
             =~ /Article <[^>]*>: (.*) \(ID [[:xdigit:]]*\) not in keyring/o)
         {
