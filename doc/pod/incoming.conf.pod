@@ -135,9 +135,15 @@ The default is an empty string, that is to say no ident daemon.
 
 =item I<ignore>
 
-This key requires a boolean value.  Setting this entry causes B<innd> to
-refuse every article sent via CHECK or IHAVE by this peer.  The default
-is false.
+This key requires a boolean value.  Setting this entry to true causes B<innd>
+to answer negatively to proposals from the remote peer to send you articles.
+The default is false.
+
+More technically, if I<ignore> is true, B<innd> will refuse every Message-ID
+proposed to be sent via CHECK or IHAVE by this peer, thus behaving as though
+it already has the article.  A complete article sent by this peer via TAKETHIS
+(because it does not first query with CHECK, or it does not take into account
+the refusal response code from a previous CHECK) will still be accepted.
 
 =item I<list>
 
