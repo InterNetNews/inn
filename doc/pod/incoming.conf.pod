@@ -4,7 +4,7 @@ incoming.conf - Configuration of incoming news feeds
 
 =head1 IN A NUTSHELL
 
-The I<incoming.conf> file configures from which remote peers B<innd> accepts
+The F<incoming.conf> file configures from which remote peers B<innd> accepts
 NNTP feeds.
 
 A common entry to allow C<news.server.com> as an incoming peer is:
@@ -13,7 +13,8 @@ A common entry to allow C<news.server.com> as an incoming peer is:
         hostname: "news.server.com"
     }
 
-The port used for incoming feeds is the one B<innd> is listening on.
+The port used for incoming feeds is the one B<innd> is listening on (usually
+port 119 or 433).
 
 After any changes, run C<inncheck> to perform basic syntax checks, and reload
 this configuration file with the following command:

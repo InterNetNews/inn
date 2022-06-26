@@ -4,7 +4,7 @@ newsfeeds - Determine where Usenet articles are sent
 
 =head1 IN A NUTSHELL
 
-The I<newsfeeds> file configures what B<innd> does with incoming accepted
+The F<newsfeeds> file configures what B<innd> does with incoming accepted
 articles.
 
 A minimalist F<newsfeeds> file which parameters an outgoing NNTP feed to
