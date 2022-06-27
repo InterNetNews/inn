@@ -130,7 +130,6 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
             puts("Article not found");
         else
             warn("cannot open search in %s: %lu - %lu", group, low, high);
-        tdx_search_close(search);
         tdx_index_close(index);
         return;
     }
