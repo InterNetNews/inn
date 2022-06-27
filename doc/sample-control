@@ -1,26 +1,50 @@
 Path: bounce-back
-From: group-admin@isc.org (David C Lawrence)
-Newsgroups: news.announce.newusers
-Subject: cmsg newgroup news.announce.newusers moderated
-Control: newgroup news.announce.newusers moderated
-Approved: newgroups-request@isc.org
-Message-ID: <868485430.2655@isc.org>
-Date: Wed, 09 Jul 1997 21:57:10 GMT
-Lines: 8
-X-Info: ftp://ftp.isc.org/pub/pgpcontrol/README.html
-	ftp://ftp.isc.org/pub/pgpcontrol/README
-X-PGP-Sig: 2.6.2 Subject,Control,Message-ID,Date,From,Sender
-	iQCVAwUBM8QJNsJdOtO4janBAQGkUAP6AlzO065jDQFrG20/b3/SaOm4WGQBly5D
-	pXlVJdYBqPAG3HvxVqAdKM7y6ixM7Mml4OdfK0JeVCH03nqeGuBc51sTDIZ6kyAx
-	+YHlNSnp/JJnpDuJCfXZjwNl4kWImucGgwI5BxrQco8re949Cg5m5TFXiwYMiR/+
-	AjKZCTtmV1Y=
-	=uSbd
+From: group-admin@isc.org
+Newsgroups: comp.infosystems.gemini
+Subject: cmsg newgroup comp.infosystems.gemini
+Control: newgroup comp.infosystems.gemini
+Approved: group-admin@isc.org
+Date: Thu, 25 Nov 2021 13:00:02 -0800
+Message-ID: <cmsg-20211125210002$88e3@isc.org>
+X-Info: https://www.big-8.org/
+	https://www.eyrie.org/~eagle/big-8/
+X-PGP-Sig: GnuPG Subject,Control,Message-ID,Date,From,Sender
+	iQIzBAEBCgAdFiEEjhgb7wvmOJYsGlyY+v57VQwYyLcFAmGf+VIACgkQ+v57VQwY
+	yLf71A/7B+9Rjn2hP+lySCbVeh2M8O6eJfwe3VHa0HNIY3Ft2sf1oVksvrsEiZZ6
+	ojSLO54VCxk6TexlTIHn8ohO0o62Z494vYpZvInxRjYdLjrZ6mrmTVkjXyw7TEBk
+	LbKiBJz3g7ZUBTQsup1Y/jsbC/+nH3TYR2t25SxCeBKSTwZz2olmuYV7gwq/+cEk
+	sWgR1ETvf0RL7ZKu7CM/LW71bBUHHiT19526T640aoja/QrKxKqatxc1hNLsAHL8
+	564INkx2C8hSA1nyIGedFVPTcPvQtOuovx2V2ECc+VFyZrnnfycAKAo9pZe9wXPv
+	iMgZUAWbklJt3sHYUAhH02BeKN8kaXpG5m/xeZCUUraLmXZi6HiIzoNmwS2Qf+2t
+	lI2fbJ9TPL8dQOTecMqhC8SzE5jGIB+R1scehL+v1IXZdFPhCEJCJQGSAiNYbdM9
+	4H0blIzwE0VaN+kvGnGTSBgsaT2brsmqV4UdQcJUhuOrYsJJDwsebE7nzrCjhgSI
+	oMXAG2xUxdHDhQF2JJ2byod7keHyBw7aWcp9rl90qP7DEOBa17H2OP2FUKX+8Pbn
+	BxlbsQROj+2T8Rx/iCBPiLWwxWYyV5GIyRha75JlC9XkD66S5n0WHaCUo0fXFnfx
+	C30vFNSNLSxjMcOvuLwzM6JrUNvuXUin1P7wIQBYROp6yRhxSuU=
+	=XaWi
+Lines: 24
 
-news.announce.newusers is a moderated newsgroup which has existed
-since the mid-1980s.
-
-Group submission address:  netannounce@deshaw.com
-Moderator contact address: netannounce@deshaw.com (Mark Moraes)
+The Last Call for Comments (LCC) on 2021-08-10 initiated a five-day
+period for final comments. Following this comment period, the Big-8
+Management Board has decided by 3/3 consensus to create unmoderated
+newsgroup comp.infosystems.gemini.
 
 For your newsgroups file:
-news.announce.newusers	Explanatory postings for new users. (Moderated)
+comp.infosystems.gemini	Internet Hypertext System, Privacy, Accessibility.
+
+CHARTER:
+
+This newsgroup covers the Gemini information space served via the Gemini
+internet protocol, related concepts and tools created by its community.
+
+Gemini is an internet protocol to primarily serve human readable content.
+Served content is not limited to text. Transfer is encrypted for privacy.
+
+Most content served by Gemini is written in Gemtext, a primitive markup
+language that contains a limited set of line types to semantically
+structure text and link to other resources. Although the protocol is
+content type agnostic, Gemtext is prevalent in the known information
+space. As Gemtext can be read without the need of complex clients (such as
+XHTML browsers) the published information space offers good accessibility.
+The Gemini protocol and Gemtext content type are not to be extended per
+definition and community consent.
