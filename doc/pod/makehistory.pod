@@ -49,19 +49,19 @@ Rebuilding overview data is as straight-forward as:
 
 =item 1.
 
-Setting the new overview storage method in the I<ovmethod> parameter
-in F<inn.conf>.
+Checking that the configuration file of the new overview storage method is
+present in I<pathetc> and fits your needs (F<buffindexed.conf>, F<ovdb.conf>
+or F<ovsqlite.conf>).  Note that the tradindexed overview storage method does
+not have a dedicated configuration file.
 
 =item 2.
 
-Checking that its configuration file is correctly installed in
-I<pathetc> and fits your needs (F<buffindexed.conf>, F<ovdb.conf> or
-F<ovsqlite.conf>).  Note that the tradindexed overview storage method
-does not have a configuration file.
+Making sure that INN is stopped.
 
 =item 3.
 
-Making sure that INN is stopped.
+Setting the new overview storage method in the I<ovmethod> parameter
+in F<inn.conf>.
 
 =item 4.
 
