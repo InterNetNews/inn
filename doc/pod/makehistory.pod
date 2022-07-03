@@ -56,7 +56,8 @@ not have a dedicated configuration file.
 
 =item 2.
 
-Making sure that INN is stopped.
+Making sure that INN is stopped (C<rc.news stop> as the news user, or
+whichever command you're using).
 
 =item 3.
 
@@ -72,14 +73,21 @@ the news user.
 
 =item 5.
 
-Starting B<ovdb_init> or B<ovsqlite-server> as the news user if the
-new overview storage method is respectively ovdb or ovsqlite.
+Starting B<ovdb_init> or B<ovsqlite-server> as the news user if the new
+overview storage method is respectively ovdb or ovsqlite.
 
 =item 6.
 
 Running C<makehistory -O -x -F> and waiting for the command to finish.
 
 =item 7.
+
+Stopping ovdb or ovsqlite helper programs if you started them during the
+previous steps (running C<rc.news stop> as the news user will stop them;
+do not mind the messages related to the fact that the news server was not
+running).
+
+=item 8.
 
 Starting INN and checking the logs to make sure everything is fine.
 You will normally notice that the F<active> file is renumbered

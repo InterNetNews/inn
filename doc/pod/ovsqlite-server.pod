@@ -13,10 +13,10 @@ SQLite database.  It accepts connections from the other parts of INN that
 want to operate on overview data (B<innd>, B<nnrpd>, B<expireover>,
 B<makehistory>).
 
-This daemon must therefore be started before any other process can
-access the overview database.  B<ovsqlite-server> is normally invoked
-automatically by B<rc.news> when starting the news system.
-
+This daemon must therefore be started before any other process can access the
+overview database.  B<ovsqlite-server> is normally invoked automatically by
+B<rc.news> when starting the news system.  It is also stopped automatically by
+B<rc.news> when stopping the news system.
 
 =head1 OPTIONS
 
