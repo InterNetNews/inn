@@ -12,7 +12,7 @@ suffer from various issues).
 The ovdb overview method makes use of the full
 transaction/logging/locking functionality of the
 S<Berkeley DB> environment.  S<Berkeley DB> may be downloaded from
-L<http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/overview/index.html>
+L<https://www.oracle.com/database/technologies/related/berkeleydb.html>
 and is needed to build the ovdb backend.
 
 =head1 UPGRADING
@@ -377,6 +377,6 @@ ovdb_monitor(8), ovdb_stat(8).
 
 S<Berkeley DB> documentation: in the F<docs> directory of the S<Berkeley
 DB> source distribution, or on the Oracle S<Berkeley DB> web page
-(L<http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/overview/index.html>).
+(L<https://www.oracle.com/database/technologies/related/berkeleydb.html>).
 
 =cut
