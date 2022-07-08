@@ -95,10 +95,10 @@ worth temporarily raising these values, though.
 
 =head1 RUNNING
 
-All overview database access goes through the B<sqlite-server> daemon.  For
-ordinary operation, B<rc.news> will start and stop it automatically.  If
-you want to touch the overview database while B<innd> isn't running, you'll
-have to start B<sqlite-server> manually first.  See sqlite-server(8).
+All overview database access goes through the B<ovsqlite-server> daemon.
+For ordinary operation, B<rc.news> will start and stop it automatically.
+If you want to touch the overview database while B<innd> isn't running, you'll
+have to start B<ovsqlite-server> manually first.  See ovsqlite-server(8).
 
 =head1 HISTORY
 
@@ -107,6 +107,6 @@ Initial implementation of ovsqlite written by Bo Lindbergh
 
 =head1 SEE ALSO
 
-inn.conf(5), makehistory(8), rc.news(8), sqlite-server(8).
+inn.conf(5), makehistory(8), ovsqlite-server(8), rc.news(8).
 
 =cut
