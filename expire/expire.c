@@ -372,6 +372,7 @@ EXPremove(const TOKEN *token)
 
 /*
 **  Do the work of expiring one line.
+**  Returns true when the article should be kept for the time being.
 */
 static bool
 EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
@@ -389,12 +390,16 @@ EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
             HasSelfexpire = true;
             Selfexpired = true;
         } else {
-            /* the article is still alive */
+            /* The article is still alive, free it. */
             SMfreearticle(article);
+            /* Per-group expiry is done by expireover, remember!
+             * That's why if groupbaseexpiry is set, expire won't verify
+             * the expiration rules set in expire.ctl. */
             if (innconf->groupbaseexpiry || !Ignoreselfexpire)
                 HasSelfexpire = true;
         }
     }
+
     if (EXPusepost && posted != 0)
         when = posted;
     else
@@ -403,19 +408,28 @@ EXPdoline(void *cookie UNUSED, time_t arrived, time_t posted, time_t expires,
 
     if (HasSelfexpire) {
         if (Selfexpired || token->type == TOKEN_EMPTY) {
+            if (EXPverbose > 3)
+                printf("%s (to remember or forget, not existing)\n",
+                       TokenToText(*token));
             EXPallgone++;
             r = false;
         } else {
+            if (EXPverbose > 3)
+                printf("%s (to keep, may self-expire)\n", TokenToText(*token));
             EXPstillhere++;
             r = true;
         }
     } else {
         kr = EXPkeepit(token, when, expires);
         if (kr == Remove) {
+            if (EXPverbose > 3)
+                printf("%s (to remember or forget)\n", TokenToText(*token));
             EXPremove(token);
             EXPallgone++;
             r = false;
         } else {
+            if (EXPverbose > 3)
+                printf("%s (to keep)\n", TokenToText(*token));
             EXPstillhere++;
             r = true;
         }
