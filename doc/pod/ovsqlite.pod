@@ -91,7 +91,9 @@ your daily Usenet reports).  Inserting or deleting a database row within
 a transaction is very fast whereas committing a transaction is slow,
 especially on rotating storage.  Setting transaction limits too low
 leads to poor performance.  When rebuilding overview data, it may be
-worth temporarily raising these values, though.
+worth temporarily raising these values on systems with slow CPU or rotating
+storage (for instance, multiply by 10 the default values).  Performance won't
+change much on fast systems.
 
 =head1 RUNNING
 
