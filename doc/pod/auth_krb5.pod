@@ -1,6 +1,6 @@
 =head1 NAME
 
-auth_krb5 - nnrpd S<Kerberos v5> authenticator
+auth_krb5 - nnrpd Kerberos v5 authenticator
 
 =head1 SYNOPSIS
 

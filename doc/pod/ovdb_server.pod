@@ -1,6 +1,6 @@
 =head1 NAME
 
-ovdb_server - Overview helper server for B<nnrpd>
+ovdb_server - Overview helper server for nnrpd
 
 =head1 SYNOPSIS
 
