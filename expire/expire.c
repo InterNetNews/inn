@@ -713,7 +713,6 @@ main(int ac, char *av[])
     if (!Bad && NHistory != NULL) {
         snprintf(buff, sizeof(buff), "%s.n.done", NHistory);
         fclose(EXPfopen(false, buff, "w", true, Server, false));
-        CleanupAndExit(Server, false, Bad ? 1 : 0);
     }
 
     CleanupAndExit(Server, !Bad, Bad ? 1 : 0);
