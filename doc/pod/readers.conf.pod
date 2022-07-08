@@ -640,18 +640,27 @@ default is true.
 =item B<virtualhost:>
 
 Set this parameter to true in order to make B<nnrpd> behave as if it is
-running on a server with a different name than it actually is.  If you
-set this parameter to true, you must also set either I<pathhost> or I<domain>
-in the relevant access group in F<readers.conf> to something different
-than is set in F<inn.conf>.  All articles displayed to clients will then have
-their Path and Xref header field bodies altered to appear to be from the server
-named in I<pathhost> or I<domain> (whichever is set), and posted articles will
-use that server name in the Path, Message-ID, and Injection-Info header
-field bodies.
+running on a server with a different name than it actually is.  The I<domain>
+parameter must then be set, either in F<inn.conf> or in the same access
+group.  All articles and overview data displayed to clients will have their
+Xref header field bodies altered to appear to be from the server named in
+I<domain>, and posted articles will use that server name in the Message-ID and
+Injection-Info header field bodies.  (Moreover, if the B<-I> flag was given
+to B<nnrpd>, posting agents will be proposed to use Message-IDs containing the
+string specified with B<-I>.)
 
-Note that setting this parameter requires the server modify all posts
-before presenting them to the client and therefore may decrease
-performance slightly.
+Similarly, the Path header field bodies displayed to clients or generated in
+posted articles will use the value of I<domain> (if I<pathhost> is not set
+in the access group, or has the same value as in F<inn.conf>) or I<pathhost>
+(if I<pathhost> is set in the access group to something different than is set
+in F<inn.conf>).
+
+At least one of the I<domain> or I<pathhost> parameters must be set in the
+access group to something different than in F<inn.conf>, otherwise B<nnrpd>
+will fail to start.
+
+Note that setting this parameter requires the server modify all posts before
+presenting them to the client and therefore may decrease performance slightly.
 
 =back
 
