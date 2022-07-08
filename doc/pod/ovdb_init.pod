@@ -80,7 +80,7 @@ upgraded:
 =item *
 
 You upgrade the S<Berkeley DB> library to a newer version, for example
-from 2.7.7 to 3.1.17.  In this case, the S<Berkeley DB> C<db->upgrade()>
+from 2.7.7 to 3.1.17.  In this case, the S<Berkeley DB> C<< db->upgrade() >>
 method is used.
 
 =item *
