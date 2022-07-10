@@ -4,13 +4,9 @@
 
 =head2 INN 2.7
 
-Our C<main> branch is for the current development of the next S<INN 2.7>
-major release.  Head to the C<2.6> branch for the maintenance of the
-most recently released stable version.
-
-This code is under active development and may or may not be
-stable at any given time.  Contributions and bug reports are welcome
-and encouraged.
+Our C<2.7> branch is for the maintenance of the most recently released stable
+version.  Head to the C<main> branch for the current development of the next
+major release of INN.
 
 This work is sponsored by Internet Systems Consortium.
 
@@ -26,12 +22,13 @@ Please see:
 
 =item *
 
-L<CHECKLIST|https://www.eyrie.org/~eagle/software/inn/docs/checklist.html> for
-a quick overview of all the installation steps and pointers to documentation,
+L<CHECKLIST|https://www.eyrie.org/~eagle/software/inn/docs-2.7/checklist.html>
+for a quick overview of all the installation steps and pointers to
+documentation,
 
 =item *
 
-L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.7/install.html>
 for full installation instructions,
 
 =item *
@@ -40,13 +37,13 @@ L<FAQ|https://www.eyrie.org/~eagle/faqs/inn.html> for INN FAQ,
 
 =item *
 
-L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs/news.html> for
+L<NEWS|https://www.eyrie.org/~eagle/software/inn/docs-2.7/news.html> for
 what's changed from the previous release,
 
 =item *
 
 and
-L<LICENSE|https://www.eyrie.org/~eagle/software/inn/docs/license.html>
+L<LICENSE|https://www.eyrie.org/~eagle/software/inn/docs-2.7/license.html>
 for the copyright, license, and distribution terms.
 
 =back
@@ -132,7 +129,7 @@ INN uses GNU B<autoconf> to probe the capabilities of your
 system, and therefore should compile on nearly any Unix
 system.  It does, however, make extensive use of mmap(),
 which can cause problems on some older operating systems.  See
-L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.7/install.html>
 for a list of systems it is known to work on.  If you encounter problems
 compiling or running INN, or if you successfully run INN on a platform
 that isn't listed in F<INSTALL>, please let us know (see L<"Reporting
@@ -190,7 +187,7 @@ so that to pick up possible bug fixes.
 =head2 Build and Install
 
 See
-L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs/install.html>
+L<INSTALL|https://www.eyrie.org/~eagle/software/inn/docs-2.7/install.html>
 for step-by-step instructions for setting up and configuring a news
 server.
 
@@ -202,7 +199,7 @@ find one that doesn't have a man page, that's a bug.  Please do report
 it.)  When trying to figure out some specific problem, reading the man
 pages for all of the configuration files involved is a very good start.
 
-URL: L<https://www.eyrie.org/~eagle/software/inn/docs/> (online
+URL: L<https://www.eyrie.org/~eagle/software/inn/docs-2.7/> (online
 documentation)
 
 =head1 Reporting Bugs
@@ -258,7 +255,7 @@ stable release.  The development version of INN is often much different
 than the last stable release.
 
 Also please take a look at
-L<HACKING|https://www.eyrie.org/~eagle/software/inn/docs/hacking.html>
+L<HACKING|https://www.eyrie.org/~eagle/software/inn/docs-2.7/hacking.html>
 for information about development and coding style.
 
 Have fun!
@@ -321,7 +318,7 @@ public web pages.
 =head1 Who's Responsible / Who to Thank
 
 See
-L<CONTRIBUTORS|https://www.eyrie.org/~eagle/software/inn/docs/contributors.html>
+L<CONTRIBUTORS|https://www.eyrie.org/~eagle/software/inn/docs-2.7/contributors.html>
 for a long list of past contributors as well as people from the
 inn-workers mailing list who have dedicated a lot of time and effort to
 getting this new version together.  They deserve a big round of applause.
