@@ -23,10 +23,10 @@ suite, which is currently very minimal.  Any work done on the test suite
 to allow more portions of INN to be automatically tested will make all
 changes easier and will be *greatly* appreciated.
 
-Last modified on 2021-08-05.
+Last modified on 2022-07-10.
 
 
-Scheduled for INN 2.7
+Would be nice to have in the current major version of INN:
 
 * Rework and clean up the overview API.  The major change is that the
   initialization function should return a pointer to an opaque struct
@@ -46,14 +46,14 @@ Scheduled for INN 2.7
   of inn.conf into their own groups.
 
 * The current WIP cache and history cache should be integrated into the
-  history API, things like message ID hashing should become a selectable
+  history API, things like Message-ID hashing should become a selectable
   property of the history file, and the history API should support
   multiple backend storage formats and automatically select the right one
   for an existing history file based on stored metainformation.
 
 * The interface to embedded filters needs to be reworked.  The information
   about which filters are enabled should be isolated in the filtering API,
-  and there should be standard API calls for filtering message IDs, remote
+  and there should be standard API calls for filtering Message-IDs, remote
   posts, and local posts.  As part of this revision, all of the Perl
   callbacks should be defined before any of the user code is loaded, and
   the Perl loading code needs considerable cleanup.  At the same time as
@@ -61,12 +61,6 @@ Scheduled for INN 2.7
   interesting things with embedded filters and it would be nice to have a
   general document describing how we do it.  [Russ is planning on working
   on this at some point, but won't get upset if someone starts first.]
-
-* All of INN's documentation should be written in POD, with text and man
-  pages generated from the POD source.  Anyone is encouraged to work on
-  this by just taking any existing documentation in man format and convert
-  it to POD while checking that it's still accurate and adding any
-  additional useful information that was missed.
 
 * Include the necessary glue so that Perl modules can be added to INN's
   build tree and installed with INN, allowing their capabilities to be
@@ -90,7 +84,7 @@ Scheduled for INN 2.7
   into libinn.
 
 
-Scheduled for INN 2.8
+Would be nice to have in the next major version of INN:
 
 * Add a generic, modular anti-spam and anti-abuse filter, off by default,
   but coming with INN and prominently mentioned in the INSTALL
@@ -116,14 +110,7 @@ Scheduled for INN 2.8
   remote server and a caching feed where some articles are pre-fed, some
   articles are pulled down at first read, and some articles are never
   stored locally should be possible.  [A patch for a header-only feed
-  from innfeed is included in ticket #17.]
-
-* The libinn, libinnstorage, and other library interfaces should be treated
-  as stable libraries and properly versioned using libtool's
-  recommendation for library versioning when changes are made so that they
-  can be installed as shared libraries and work properly through releases
-  of INN.  This is currently waiting on a systematic review of the
-  interface and removal of things that we don't want to support long-term.
+  from innfeed is included in ticket #31.]
 
 * The include files necessary to use libinn, libinnstorage, and other
   libraries should be installed in a suitable directory so that other
@@ -149,8 +136,7 @@ High Priority Projects
 
 * Add authenticated Path support, based on USEPRO (RFC 5537).
   [Andrew Gierth wrote a patch for part of this a while back, which
-  is included in ticket #19.  Marco d'Itri expressed some interest in
-  working on this.]
+  is included in ticket #33.]
 
 * Various parts of INN are using write or writev; they should all use
   xwrite or xwritev instead.  Even for writes that are unlikely to ever be
@@ -269,10 +255,10 @@ Needed Bug Fixes
   lines, discarding with them or otherwise dealing with them.
 
 * Some servers reject some IHAVE, TAKETHIS, or CHECK commands with 500
-  syntax errors (particularly for long message IDs), and innfeed doesn't
+  syntax errors (particularly for long Message-IDs), and innfeed doesn't
   handle this particularly well at the moment.  It really should have an
   error handler for this case.  [Sven Paulus has a preliminary patch that
-  needs testing, included in ticket #26.]
+  needs testing, included in ticket #40.]
 
 * Editing the active file by hand can currently munge it fairly badly even
   if the server is throttled unless you reload active before restarting
@@ -300,8 +286,6 @@ Needed Bug Fixes
   respawning it, perhaps only if it's already died multiple times in a
   short interval.
 
-* ctlinnd begin <site-name> was causing innd to core dump.
-
 * Handling of innfeed's dropped batches needs looking at.  There are three
   places where articles can fall between the cracks: an innfeed.togo file
   written by innd when the feed can't be spawned, a batch file named after
@@ -317,11 +301,11 @@ Needed Bug Fixes
 
 * nntpget doesn't handle long lines in messages.
 
-* WP feeds break if there are spaces in the Path header, and the inn.conf
-  parser doesn't check for this case and will allow people to configure
-  their server that way.  (It's not clear that the latter is actually a
-  bug, given the new USEFOR attempt to allow folding of Path headers, but
-  the space needs to be removed for WP feeds.)
+* WP feeds break if there are spaces in the Path header field, and the
+  inn.conf parser doesn't check for this case and will allow people to
+  configure their server that way.  (It's not clear that the latter is
+  actually a bug, given RFC 5536 allows folding of Path header fields,
+  but the space needs to be removed for WP feeds.)
 
 * innd returns 437 for articles that were accepted but filed in the junk
   group.  It should probably return the appropriate 2xx status code in
@@ -355,7 +339,7 @@ Needed Bug Fixes
   that one can cleanly indicate whether a given rejection should be
   remembered or not, and the code that does the remembering needs to be
   refactored and shared.  Once this is done, we need to not remember
-  rejections for duplicated Xref headers.
+  rejections for duplicated Xref header fields.
 
 * rnews's error handling for non-zero exits by child batch decompressers
   could use some improvement (namely, there should be some).  Otherwise,
@@ -378,7 +362,7 @@ Requested New Features
   for.
 
 * Sven Paulus's patch for nnrpd volume reports should be integrated.
-  [Patch included in ticket #135.]
+  [Patch included in ticket #148.]
 
 * Lots of people encrypt Injection-Info in various ways.  Should that be
   offered as a standard option?  The first data element should probably
@@ -409,7 +393,7 @@ Requested New Features
 * Several people have Perl interfaces to pieces of INN that should ideally
   be part of the INN source tree in some fashion.  Greg Andruk has a bunch
   of stuff that Russ has copies of, for example.  [Patches included in
-  tickets #133 and #134.]
+  tickets #146 and #147 for respectively INN::Wildmat and INN::Storage.]
 
 * It would be nice to be able to reload inn.conf (although difficult, due
   to the amount of data that's generated from it and stashed in various
@@ -441,10 +425,10 @@ Requested New Features
   each article and putting that in the overview if you care a lot about
   making sure that articles aren't corrupted.
 
-* Allow some way of accepting articles regardless of the Date header, even
-  if it's far into the future.  Some people are running into articles that
-  are dated years into the future for some reason that they still want to
-  store on the server.
+* Allow some way of accepting articles regardless of the Date header field,
+  even if it's far into the future.  Some people are running into articles
+  that are dated years into the future for some reason that they still want
+  to store on the server.
 
 * There was a request to make --program-suffix and the other name
   transformation options to autoconf work.  The standard GNU package does
@@ -477,8 +461,8 @@ Requested New Features
   not needed).  This would need to be added to the storage API.
 
 * Somebody should look at keeping the "newsgroups" file more accurate
-  (e.g. newgroups for existing groups should change description, better
-  checkgroups handling, checking for duplicates).
+  (e.g. newgroups for existing groups should change description, checking
+  for duplicates).
 
 * The by-domain statistics innreport generates for nnrpd count all local
   connections (those with no "." in the hostname) in with the errors as
@@ -487,12 +471,12 @@ Requested New Features
 
 * news.daily could detect if expire segfaults and unpause the server.
 
-* When using SSL, track the amount of data that's been transferred to the
+* When using TLS, track the amount of data that's been transferred to the
   client and periodically renegotiate the session key.
 
-* When using SSL, use SSL_get_peer to get a verified client certificate,
+* When using TLS, use SSL_get_peer to get a verified client certificate,
   if available, and use it to create an additional header line when
-  posting articles (X-Auth-Poster?).  This header could use:
+  posting articles (X-Auth-Poster?).  This header field could use:
 
       X509_NAME_oneline(X509_get_subject_name(peer),...)
 
@@ -503,8 +487,8 @@ Requested New Features
    
   for the client's "common name" alone.
 
-* When using SSL, use the server's key to generate an HMAC of the body of
-  the message (and most headers?), then include that digest in the
+* When using TLS, use the server's key to generate an HMAC of the body of
+  the message (and most header fields?), then include that digest in the
   headers.  This allows a news administrator to determine if a complaint
   about the content of a message is fraudulent since the message was
   changed after transmission.
@@ -547,7 +531,7 @@ General Projects
   lost the name of the group to which a group is aliased; that needs to be
   fixed.
 
-* More details as to why a message ID is bad would be useful to return to
+* More details as to why a Message-ID is bad would be useful to return to
   the user, particularly for rnews, inews, etc.
 
 * Support putting the history file in different directory from the other
@@ -645,10 +629,7 @@ Long-Term Projects
   that control messages should be honored for.  This should be reasonably
   simple although correct handling of checkgroups could get a mite tricky.
 
-* Possible NNTP extension: Compression of the protocol, using gzip,
-  bzip2, or some other technique.  Particularly useful for long lists like
-  the active file information or the overview information, but possibly
-  useful in general for other things.
+* Implement the NNTP COMPRESS extension in innd and innfeed.
 
 * Install wizards.  Configuring INN is currently very complex even for an
   experienced news admin, and there are several fairly standard
@@ -704,9 +685,9 @@ Long-Term Projects
   should be very easy to add.
 
 * Add a localport: parameter (similar to localaddress:) to readers.conf
-  auth groups.  With those two parameters (and ssl_required:) we
-  essentially eliminate the need to run multiple instances of nnrpd just to
-  use different configurations.
+  auth groups.  With those two parameters (along with require_encryption:),
+  we essentially eliminate the need to run multiple instances of nnrpd
+  just to use different configurations.
 
 * Various things may break when trying to use data written while compiled
   with large file support using a server that wasn't so compiled (and vice
@@ -739,6 +720,3 @@ Code Reorganization
 
 * The doc directory really should be broken down further by type of
   documentation or section or something; it's getting a bit unwieldy.
-
-* Untabify and reformat all of the code according to a consistent coding
-  style which would then be enforced for all future check-ins.
