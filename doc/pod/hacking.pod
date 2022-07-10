@@ -692,7 +692,7 @@ L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 =item *
 
 Check whether patches from OpenSSL (F<apps/s_cb.c>, F<apps/s_server.c>
-and F<crypto/bio/b_dump.c>) could be merged into F<nnrpd/tls.c>, as
+and F<crypto/bio/bio_dump.c>) could be merged into F<nnrpd/tls.c>, as
 well as support for new TLS versions in the F<tlsprotocols> parameter
 in F<inn.conf>.
 
@@ -751,8 +751,7 @@ included in a final release.  It should not be changed for a beta or
 a release candidate.
 
 If making a major release, the revision numbers of the STABLE series
-should also be bumped in F<doc/FAQ> at the end of subject 1.2, as well
-as the revision numbers of scheduled versions in F<TODO>.
+should also be bumped in F<doc/FAQ> at the end of subject 1.2.
 
 =item 6.
 
@@ -770,9 +769,12 @@ that major release and can be done a little while before the C<.0>
 release of that major release.
 
     git checkout -b Y.Y
+    git push --set-upstream origin Y.Y
 
-Then, in that newly created branch, remove the first paragraph in
-F<readme.pod> which deals with development versions.
+Then, in that newly created branch, adapt the first paragraph of
+F<readme.pod>, remove its second paragraph which deals with development
+versions, and update the URLs to point to the documentation of the new stable
+version.
 
 =item 8.
 
