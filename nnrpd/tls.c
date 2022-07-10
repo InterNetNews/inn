@@ -306,10 +306,9 @@ verify_callback(int ok, X509_STORE_CTX *ctx)
 
 
 /*
-**  Taken from OpenSSL crypto/bio/b_dump.c, modified to save a lot of strcpy
+**  Taken from OpenSSL crypto/bio/bio_dump.c, modified to save a lot of strcpy
 **  and strcat by Matti Aarnio.
 */
-#    define TRUNCATE
 #    define DUMP_WIDTH 16
 
 static int
@@ -321,16 +320,7 @@ tls_dump(const char *s, int len)
     int i;
     int j;
     int rows;
-    int trunc;
     unsigned char ch;
-
-    trunc = 0;
-
-
-#    ifdef TRUNCATE
-    for (; (len > 0) && ((s[len - 1] == ' ') || (s[len - 1] == '\0')); len--)
-        trunc++;
-#    endif
 
     rows = (len / DUMP_WIDTH);
     if ((rows * DUMP_WIDTH) < len)
@@ -372,14 +362,6 @@ tls_dump(const char *s, int len)
             syslog(L_NOTICE, "%s", buf);
         ret += strlen(buf);
     }
-#    ifdef TRUNCATE
-    if (trunc > 0) {
-        snprintf(buf, sizeof(buf), "%04x - <SPACES/NULS>\n", len + trunc);
-        if (tls_loglevel > 0)
-            syslog(L_NOTICE, "%s", buf);
-        ret += strlen(buf);
-    }
-#    endif
     return (ret);
 }
 
