@@ -84,13 +84,14 @@ applies, and should be chosen from the following set:
 One of C<M>, C<U>, or C<A> must be specified.  C<X> should be used in
 combination with one of the other letters, not by itself.
 
-An expiration policy is applied to every article in a newsgroup it
-matches.  There is no way to set an expiration policy for articles
-crossposted to groups you don't carry that's different than other articles
-in the same group.  Normally, articles are not completely deleted until
-they expire out of every group to which they were posted, but if an
-article is expired following a rule where <flag> contains C<X>, it is deleted
-out of all newsgroups to which it was posted immediately.
+An expiration policy is applied to every article in a newsgroup it matches.
+There is no way to set an expiration policy for articles crossposted to
+groups you don't carry that's different than other articles in the same group.
+Normally, articles are not completely deleted until they expire out of every
+group to which they were posted, but if an article is expired following a rule
+where <flag> contains C<X>, it is deleted out of all newsgroups to which it
+was posted immediately.  (If that behaviour is wanted for all rules, you may
+want to give the B<-e> flag to B<expireoverview>.)
 
 If I<groupbaseexpiry> is instead set to false, there is no <pattern> and
 <flag> field and the above does not apply.  Instead, there is a single
