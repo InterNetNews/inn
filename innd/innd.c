@@ -437,7 +437,7 @@ main(int ac, char *av[])
 
     /* Parse JCL. */
     CCcopyargv(av);
-    while ((i = getopt(ac, av, "4:6:ac:CdfH:i:l:m:n:No:P:rsSt:T:uX:")) != EOF)
+    while ((i = getopt(ac, av, "4:6:ac:dfH:i:l:m:n:No:P:rsSt:T:uX:")) != EOF)
         switch (i) {
         default:
             Usage();
@@ -457,10 +457,6 @@ main(int ac, char *av[])
             break;
         case 'c':
             innconf->artcutoff = strtoul(optarg, NULL, 10);
-            break;
-        case 'C':
-            syslog(LOG_ERR, "innd -C flag has been deprecated and has no "
-                            "effect; use docancels in inn.conf");
             break;
         case 'd':
             Debug = true;
