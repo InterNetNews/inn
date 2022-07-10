@@ -138,7 +138,7 @@ beginner's introduction, see the news.newusers.questions home page at
 
 Subject: 1.2. What is the current version?
 
-The most recently released version of INN is 2.6.5.
+The most recently released version of INN is 2.7.0.
 
 INN development proceeds in two branches, as with many other free software
 projects.  The STABLE branch is maintenance of the most recently released
@@ -149,10 +149,10 @@ As mentioned in the next section, when installing a new INN server, you
 may wish to download the latest snapshot of the STABLE branch rather than
 the current full release.
 
-Note that the previous STABLE series for INN 2.5 terminated in the release
-of INN 2.5.5 and current STABLE snapshots are based on INN 2.6.  You
+Note that the previous STABLE series for INN 2.6 terminated in the release
+of INN 2.6.5 and current STABLE snapshots are based on INN 2.7.  You
 should therefore read the upgrade instructions in NEWS when upgrading from
-a STABLE snapshot before September 12th, 2015 to one dated after that.
+a STABLE snapshot before July 11th, 2022 to one dated after that.
 
 ------------------------------
 
