@@ -9,10 +9,10 @@ intervention may be needed:
 
 The I<require_ssl> parameter in F<readers.conf> has been renamed to
 I<require_encryption> as it applies to any kind of encryption layers,
-including TLS and SASL security layers.  As B<innupgrade> only takes
-care of the change in the file named F<readers.conf>, you will have
-to manually rename that parameter in configuration files for B<nnrpd>
-with an alternate name.
+including TLS and SASL security layers.  Since B<innupgrade> only takes care
+of the change in the file named F<readers.conf>, you will have to manually
+rename that parameter in configuration files for B<nnrpd> with an alternate
+name.
 
 =item *
 
@@ -26,11 +26,12 @@ I<display_conf_file> option in F<innreport.conf>, and re-applying your local
 changes to that local display configuration file.
 
 As a matter of fact, the default display configuration file would otherwise
-be overwritten each time INN is updated.  Bug fixes or enhancements are made
-from time to time to the display configuration of B<innreport>, and couldn't
-be automatically be merged in F<innreport.conf> on update.  This new separate
-configuration file to parameter the display will now permit an automatic
-update (if of course you use the default display configuration file).
+be overwritten each time INN is updated.  Bug fixes or enhancements are
+made from time to time to the display configuration of B<innreport>, and
+previously couldn't be automatically be merged in F<innreport.conf> on update.
+This new separate configuration file to parameter the display will now permit
+an automatic update (if of course you use the default display configuration
+file).
 
 =item *
 
@@ -62,8 +63,8 @@ from F<inn.conf>.  The first was performing an inefficient and inexact check
 (that should be done, if wanted, in the special C<ME> entry in F<newsfeeds>,
 or even better, ask your peers not to feed you articles with C<cyberspam>
 in the Path header field body); the second check performed on the newsgroups
-present in cancel articles was not useful in B<innd> (it is relevant to
-posting agents).
+present in cancel articles was not useful in B<innd> (this check is relevant
+to posting agents).
 
 The related lines in F<inn.conf> will be commented by B<innupgrade> during the
 upgrade.
@@ -102,10 +103,10 @@ if that is possible.
 
 Wrappers around old Perl and Python authentication and access hooks,
 pre-dating S<INN 2.4.0> and identifiable by the I<nnrpperlauth> and
-I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as
-samples in INN releases.  If not already done, you should either replace
-old hooks with new modern hooks or use the possibilities F<readers.conf>
-and regular authenticator and resolver programs offer.
+I<nnrppythonauth> parameters in F<inn.conf>, are no longer shipped as samples
+in INN releases.  If not already done, you should either replace old hooks
+with new modern hooks or use the possibilities that F<readers.conf> and
+regular authenticator and resolver programs offer.
 
 =item *
 
@@ -157,15 +158,16 @@ based on S<RFC 8315> and libcanlock.  A new F<inn-secrets.conf> configuration
 file has been added in I<pathetc> wherein you can set the secrets to use for
 Cancel-Lock.  See the inn-secrets.conf(5) man page for more details.
 
-A new B<-F> flag is recognized by B<innconfval> to get the values of that new
-configuration file (run C<innconfval -F inn-secrets.conf>).  Another new flag,
-B<-f>, permits specifying a file different than the default one.
+A new B<-F> flag is recognized by B<innconfval> to indicate the type of file
+to parse (by default, C<inn.conf>); just run C<innconfval -F inn-secrets.conf>
+to get the values of that new configuration file.  Another new flag, B<-f>,
+permits specifying another file name to parse than the standard one.
 
 The I<addcanlockuser> parameter has been added in F<readers.conf> to
 deactivate the generation of user-specific hashes when several different
 posters have the same identity in an access group.  This parameter also
-permits determining whether the hash, when generated, is based on the username
-or the (static) IP of the connection.
+permits setting whether the hash, when generated, is based on the username or
+the (static) IP of the connection.
 
 =item *
 
