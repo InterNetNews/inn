@@ -10,20 +10,44 @@ B<expire> [B<-iNnptx>] [B<-d> I<dir>] [B<-f> I<file>] [B<-g> I<file>]
 
 =head1 DESCRIPTION
 
-B<expire> scans the history(5)-format text file I<pathdb>/history
-and uses the information recorded in it to purge itself of old news articles.
-Articles stored using a storage method that has self-expire functionality
-are by default not affected by B<expire>'s primary behavior (but see the
-B<-N> flag to disable this).  In this case, F<expire.ctl> is ignored
-except the C</remember/> line for that article; B<expire> does still
-probe to see if the article still exists and purges the relevant history
-and overview entries if appropriate.  However, if I<groupbaseexpiry> in
-F<inn.conf> is true, B<expire> acts on all articles as specified by
-F<expire.ctl> regardless of whether their storage methods have
-self-expire functionality.
+B<expire> scans the history(5)-format text file I<pathdb>/history and
+uses the information recorded in it to purge itself of old news articles.
+Its behaviour depends on the setting of I<groupbaseexpiry> in F<inn.conf>.
+
+When I<groupbaseexpiry> is false, article expiration is primarily done by
+B<expire> based on the expiration rules in F<expire.ctl> that match the
+storage class of each article.  The articles and the history entries are
+removed by B<expire>, and then B<expireover> does the additional cleanup of
+removing the overview database entries.  History entries of expired articles
+are removed only if they are older than the number of days specified in the
+C</remember/> line in F<expire.ctl>.  Articles stored using a storage method
+that has self-expire functionality like CNFS are by default not affected by
+B<expire>'s primary behaviour (but see the B<-N> flag to disable this).
+
+When I<groupbaseexpiry> is true, article expiration is primarily done by
+B<expireover> based on the expiration rules in F<expire.ctl> that match
+each newsgroup.  Articles are removed from the news spool by B<expireover>,
+and then B<expire> does some additional cleanup to remove old history database
+entries.
+
+For articles in self-expiring storage methods when I<groupbaseexpiry> is
+set to false in F<inn.conf> and the B<-N> flag is not given, or for I<all>
+articles when I<groupbaseexpiry> is set to true, F<expire.ctl> is ignored
+except the C</remember/> line; B<expire> then only probes to see if the
+article still exists, and purges the relevant history entries if appropriate.
+
+Regardless the setting of I<groupbaseexpiry>, B<expireover> should be run
+along with B<expire>, usually via B<news.daily> out of cron.
 
 Note that B<expire> never purges articles which do not match any entry
 in F<expire.ctl>.
+
+Also note that if I<groupbaseexpiry> is true, the server needs an overview
+database in order to expire articles in storage backends that are not
+self-expiring.  If you do not plan to have an overview database, it would then
+be better to only use self-expiring backends like CNFS, as the history entries
+will still get cleaned up by B<expire> when it detects that an article no
+longer exists in that backend.
 
 =head1 OPTIONS
 
@@ -70,6 +94,9 @@ To ignore the old database, use the B<-i> flag.
 The control file is normally ignored for articles in storage methods
 which have self-expire functionality.  If the B<-N> flag is used,
 B<expire> still uses the control file for these articles.
+
+This parameter is only useful when I<groupbaseexpiry> is set to false in
+F<inn.conf>.
 
 =item B<-n>
 
@@ -153,7 +180,7 @@ POD by Julien Elie.
 
 =head1 SEE ALSO
 
-ctlinnd(8), expire.ctl(5), history(5), inn.conf(5), innd(8), libinn_dbz(3),
-libinn_inndcomm(3), news.daily(8).
+ctlinnd(8), expire.ctl(5), expireover(8), history(5), inn.conf(5), innd(8),
+libinn_dbz(3), libinn_inndcomm(3), news.daily(8).
 
 =cut
