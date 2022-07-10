@@ -2,10 +2,10 @@
 
 =head1 Welcome to the InterNetNews project!
 
-=head2 INN 2.7
+=head2 INN 2.8
 
-Our C<main> branch is for the current development of the next S<INN 2.7>
-major release.  Head to the C<2.6> branch for the maintenance of the
+Our C<main> branch is for the current development of the next S<INN 2.8>
+major release.  Head to the C<2.7> branch for the maintenance of the
 most recently released stable version.
 
 This code is under active development and may or may not be
