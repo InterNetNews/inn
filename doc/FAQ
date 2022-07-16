@@ -1538,12 +1538,17 @@ You should now be able to start the server and read and post news to it.
 
 Subject: 6.14. Find external feeds and set up peering
 
-You can ask for an external feed in the news.admin.peering newsgroup.
-Several news administrators will certainly respond and gracefully provide
-you with a news feed.  And why not keep subscribed to this newsgroup to
-help others find a news feed once you get yours?
+One way to find peers is to ask for an external feed in the
+news.admin.peering newsgroup.  Some news administrators read that group
+and may be willing to peer.  It's common for news administrators to have
+different criteria for peering (specific hierarchies, geographic or
+network proximity, spam filtering, no binaries, binaries, specific network
+protocols; the variation is endless), so finding someone with matching
+goals may require some patience and possibly some configuration changes.
+And why not keep subscribed to this newsgroup to help others find a news
+feed once you get yours?
 
-You then have to parameter the NNTP feed in incoming.conf, newsfeeds and
-innfeed.conf (assuming you'll use innfeed, the most common way to feed
+You will then have to configure your new feed in incoming.conf, newsfeeds
+and innfeed.conf (assuming you'll use innfeed, the most common way to feed
 articles).  Follow the examples in the man pages of these configuration
 files.
