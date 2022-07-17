@@ -23,7 +23,7 @@ re-use that information for the cancel control message.  If you want to modify
 that, or if the information was not found, you'll have to set it with the
 B<-n> flag.
 
-If INN was build with Cancel-Lock support, B<gencancel> will generate the
+If INN was built with Cancel-Lock support, B<gencancel> will generate the
 right Cancel-Key header field to use in order to authenticate cancels.  If,
 for whatever reason, you need cancelling an article posted from your news
 server with a Cancel-Lock header field, the corresponding admin Cancel-Key
