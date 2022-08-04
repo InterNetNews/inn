@@ -476,12 +476,17 @@ overview database.  This parameter expects a list of such header field
 names.  Overview data for these additional header fields will be generated
 for each new article at the time of arrival.  For instance, if you specify:
 
-    extraoverviewadvertised: [ Path Injection-Info ]
+    extraoverviewadvertised: [ Path Newsgroups ]
 
-it implies that B<nnrpd> will advertise C<Path:full> and
-C<Injection-Info:full> as the ninth and tenth fields in response to LIST
-OVERVIEW.FMT and that these two header field bodies will be stored in
-the overview database for each new article.
+it implies that B<nnrpd> will advertise C<Path:full> and C<Newsgroups:full>
+as the ninth and tenth fields in response to LIST OVERVIEW.FMT and that these
+two header field bodies will be stored in the overview database for each
+new article.  It may be a useful configuration to have as some news readers
+do article scoring with rules based on these two header fields.  Having them
+in the overview database permits being faster at scoring for these readers,
+without having to separately request them, but on the other hand these
+additional fields are also present in overview requests of all the other
+readers, which slightly slows their reading.
 
 The default value is an empty list (no additional fields are stored).
 Owing to optimizations when B<innd> parses the articles it receives, it
@@ -501,13 +506,13 @@ a transition period by first using I<extraoverviewhidden> as described below.
 Use of a transition period can accommodate most overview reconfigurations,
 but certain drastic changes may still require a complete overview rebuild.
 
-If for instance you want to store the content of the To header field
-body in addition to the fields already stored above, you should use:
+If for instance you want to store the content of the Injection-Info header
+field body in addition to the fields already stored above, you should use:
 
-    extraoverviewadvertised: [ Path Injection-Info ]
-    extraoverviewhidden:     [ To ]
+    extraoverviewadvertised: [ Path Newsgroups ]
+    extraoverviewhidden:     [ Injection-Info ]
 
-This way, C<To:full> will not be advertised by B<nnrpd> but will be stored
+This way, C<Injection-Info:full> will not be advertised by B<nnrpd> but will be stored
 for each new article.  Once you know that all articles in your overview
 database record the content or absence of that new field (if expire.ctl(5) is
 parametered so that all your articles expire within S<30 days>, you can assume
@@ -515,27 +520,27 @@ the database is in such a state after S<30 days> S<-- however>, note that time
 to expiration can be unpredictable with CNFS and you then have to use
 C<cnfsstat -a> for checking on when buffers have rolled over), you should put:
 
-    extraoverviewadvertised: [ Path Injection-Info To ]
+    extraoverviewadvertised: [ Path Newsgroups Injection-Info ]
     extraoverviewhidden:     [ ]
 
-The C<To> value must be added at the end of the list because
+The C<Injection-Info> value must be added at the end of the list because
 order matters and fields mentioned in I<extraoverviewhidden>
 are generated after those mentioned in I<extraoverviewadvertised>.
-B<nnrpd> will now advertise C<To:full> in response to the LIST
+B<nnrpd> will now advertise C<Injection-Info:full> in response to the LIST
 OVERVIEW.FMT command (C<full> indicates that the header field name appears
 followed by its value).
 
-Now suppose you want to remove the content of the Injection-Info header
-field from the overview.  As order matters, the overview database will
-no longer be consistent for the To header field.  Therefore, you need
-to specify:
+Now suppose you want to remove the content of the Newsgroups header field
+from the overview.  As order matters, the overview database will no longer
+be consistent for the Injection-Info header field.  Therefore, you need to
+specify:
 
     extraoverviewadvertised: [ Path ]
-    extraoverviewhidden:     [ To ]
+    extraoverviewhidden:     [ Injection-Info ]
 
 And once overview data is accurate for all articles, you should use:
 
-    extraoverviewadvertised: [ Path To ]
+    extraoverviewadvertised: [ Path Injection-Info ]
     extraoverviewhidden:     [ ]
 
 Note that you have to restart B<nnrpd> if it runs as a daemon
@@ -544,17 +549,17 @@ C<ctlinnd xexec innd> is not enough.
 
 =item I<extraoverviewhidden>
 
-This parameter should be used in conjunction with
-I<extraoverviewadvertised> (see above for more details).  It expects
-a list of header field names.  Overview data for these header fields will be
-generated for each new article at the time of arrival but, contrary
-to the fields mentioned in I<extraoverviewadvertised>, B<nnrpd> will
-not advertise them in response to the LIST OVERVIEW.FMT command.  It
-also implies that B<nnrpd> will not look in the overview database
-for fields mentioned in I<extraoverviewhidden> when it handles HDR,
-XHDR and XPAT requests; B<nnrpd> will have to parse the headers
-of the requested articles in the news spool, which is slower than
-directly querying the overview database.
+This parameter should be used in conjunction with I<extraoverviewadvertised>
+(see above for more details).  It expects a list of header field names.
+Overview data for these header fields will be generated for each new
+article at the time of arrival but, contrary to the fields mentioned in
+I<extraoverviewadvertised>, B<nnrpd> will not advertise them in response to
+the LIST OVERVIEW.FMT command.  It also implies that B<nnrpd> will not look in
+the overview database for fields mentioned in I<extraoverviewhidden> when it
+handles HDR, XHDR and XPAT requests as the overview database is not considered
+consistent yet for these fields; B<nnrpd> will have to parse the headers
+of the requested articles in the news spool, which is slower than directly
+querying the overview database.
 
 The default value is an empty list (no additional fields are stored).
 Owing to optimizations when B<innd> parses the articles it receives, it
