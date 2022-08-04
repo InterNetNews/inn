@@ -1,3 +1,14 @@
+=head1 Changes in 2.8.0
+
+=over 2
+
+=item *
+
+The LIST OVERVIEW.FMT command now returns the preferred format for C<:bytes>
+and C<:lines> metadata.
+
+=back
+
 =head1 Upgrading from 2.6 to 2.7
 
 The following changes require your full attention because a manual

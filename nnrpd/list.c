@@ -109,7 +109,14 @@ cmd_list_schema(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
     Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
     standard = overview_fields();
     for (i = 0; i < standard->count; ++i) {
-        Printf("%s:\r\n", standard->strings[i]);
+        /* Use the preferred format for metadata, per RFC 3977. */
+        if (strcmp(standard->strings[i], "Bytes") == 0) {
+            Printf(":bytes\r\n");
+        } else if (strcmp(standard->strings[i], "Lines") == 0) {
+            Printf(":lines\r\n");
+        } else {
+            Printf("%s:\r\n", standard->strings[i]);
+        }
     }
     for (i = 0; i < OVextra->count; ++i) {
         Printf("%s:full\r\n", OVextra->strings[i]);
