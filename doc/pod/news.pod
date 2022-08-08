@@ -5,7 +5,8 @@
 =item *
 
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
-information only for the first site.
+information only for the first site, and the output of the C<ctlinnd name
+channel> command that was returning partial information for the channel.
 
 =back
 

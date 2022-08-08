@@ -126,6 +126,7 @@ static CCDISPATCH CCcommands[] = {
 };
 
 static void CCresetup(int s);
+static void CCnameWriteInfo(struct buffer *buffer, CHANNEL *cp);
 
 
 void
@@ -975,9 +976,9 @@ CCname(char *av[])
 {
     CHANNEL *cp;
     int i, count;
-    const char *mode;
     char *p;
 
+    /* Write information for 1 given channel. */
     if (av[0][0] != '\0') {
         for (p = av[0]; *p != '\0'; p++) {
             if (!isdigit((unsigned char) *p)) {
@@ -988,51 +989,67 @@ CCname(char *av[])
         if (cp == NULL || cp->Type == CTfree) {
             return xstrdup(CCnochannel);
         }
-        buffer_sprintf(&CCreply, "0 %s", CHANname(cp));
+        buffer_set(&CCreply, "0 ", 2);
+        CCnameWriteInfo(&CCreply, cp);
+        buffer_append(&CCreply, "", 1);
         return CCreply.data;
     }
+
+    /* Write information for all channels. */
     buffer_set(&CCreply, "0 ", 2);
     for (count = 0, i = 0; (cp = CHANiter(&i, CTany)) != NULL;) {
         if (cp->Type == CTfree)
             continue;
         if (++count > 1)
             buffer_append(&CCreply, "\n", 1);
-        buffer_append_sprintf(&CCreply, "%s", CHANname(cp));
-        switch (cp->Type) {
-        case CTremconn:
-            buffer_append_sprintf(&CCreply, ":remconn::");
-            break;
-        case CTreject:
-            buffer_append_sprintf(&CCreply, ":reject::");
-            break;
-        case CTnntp:
-            mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
-            buffer_append_sprintf(&CCreply, ":%s:%ld:%s",
-                                  cp->State == CScancel ? "cancel" : "nntp",
-                                  (long) (Now.tv_sec - cp->LastActive), mode);
-            break;
-        case CTlocalconn:
-            buffer_append_sprintf(&CCreply, ":localconn::");
-            break;
-        case CTcontrol:
-            buffer_append_sprintf(&CCreply, ":control::");
-            break;
-        case CTfile:
-            buffer_append_sprintf(&CCreply, "::");
-            break;
-        case CTexploder:
-            buffer_append_sprintf(&CCreply, ":exploder::");
-            break;
-        case CTprocess:
-            buffer_append_sprintf(&CCreply, ":");
-            break;
-        default:
-            buffer_append_sprintf(&CCreply, ":unknown::");
-            break;
-        }
+        CCnameWriteInfo(&CCreply, cp);
     }
     buffer_append(&CCreply, "", 1);
     return CCreply.data;
+}
+
+
+/*
+**  Write the expected channel information for cp in the buffer.
+*/
+static void
+CCnameWriteInfo(struct buffer *buffer, CHANNEL *cp)
+{
+    const char *mode;
+
+    buffer_append_sprintf(buffer, "%s", CHANname(cp));
+    switch (cp->Type) {
+    case CTremconn:
+        buffer_append_sprintf(buffer, ":remconn::");
+        break;
+    case CTreject:
+        buffer_append_sprintf(buffer, ":reject::");
+        break;
+    case CTnntp:
+        mode = (cp->MaxCnx > 0 && cp->ActiveCnx == 0) ? "paused" : "";
+        buffer_append_sprintf(buffer, ":%s:%ld:%s",
+                              cp->State == CScancel ? "cancel" : "nntp",
+                              (long) (Now.tv_sec - cp->LastActive), mode);
+        break;
+    case CTlocalconn:
+        buffer_append_sprintf(buffer, ":localconn::");
+        break;
+    case CTcontrol:
+        buffer_append_sprintf(buffer, ":control::");
+        break;
+    case CTfile:
+        buffer_append_sprintf(buffer, "::");
+        break;
+    case CTexploder:
+        buffer_append_sprintf(buffer, ":exploder::");
+        break;
+    case CTprocess:
+        buffer_append_sprintf(buffer, ":");
+        break;
+    default:
+        buffer_append_sprintf(buffer, ":unknown::");
+        break;
+    }
 }
 
 
