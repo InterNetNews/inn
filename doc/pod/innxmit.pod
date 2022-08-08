@@ -27,7 +27,7 @@ formats:
 The first field is either the storage API token of an article or the
 name of a file holding an article.  If it is not an absolute pathname
 or a storage API token, it is taken to be a file name relative to
-I<patharticles> in F<inn.conf>. If the second field is not specified,
+I<patharticles> in F<inn.conf>.  If the second field is not specified,
 the message-ID will be obtained by scanning the article.  The two fields,
 if present, are separated by a space.  If a communication error such
 as a write(2) failure occurs, B<innxmit> will stop sending and rewrite

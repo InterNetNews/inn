@@ -69,11 +69,11 @@ outdated information.
 The history structure is an opaque handle returned from HISopen.
 
 The B<HISopen> function opens the history file designated by I<path>
-using the mode I<flags> using the specified I<method>. I<flags> may be
+using the mode I<flags> using the specified I<method>.  I<flags> may be
 B<HIS_RDONLY> to indicate that read-only access to the history
 database is desired, or B<HIS_RDWR> for read/write access.  History
 methods are defined at build time; the history method currently
-available is "hisv6". On success a newly initialised history handle is
+available is "hisv6".  On success a newly initialised history handle is
 returned, or B<NULL> on failure.
 
 B<HIS_ONDISK>, B<HIS_INCORE> and B<HIS_MMAP> may be logically ORed
@@ -102,15 +102,15 @@ The B<HISsync> function synchronises any outstanding transactions
 associated with I<history> to disk.
 
 B<HISsetcache> associates a cache used for speeding up HIScheck with
-I<history>. The cache will occupy approximately I<size> bytes.
+I<history>.  The cache will occupy approximately I<size> bytes.
 
 B<HISlookup> retrieves a token from I<history> based on the passed
-I<key> (normally the Message-ID). If no entry with an associated token
-can be found, B<HISlookup> will return B<false>. If a token is found
+I<key> (normally the Message-ID).  If no entry with an associated token
+can be found, B<HISlookup> will return B<false>.  If a token is found
 I<arrived>, I<expires>, and I<posted> are filled in with the message
 arrival, expiry, and posting times respectively (or zero, if the time
 component is not available), in addition to I<token> being set to the
-retrieved token and a function return value of B<true>. Any of
+retrieved token and a function return value of B<true>.  Any of
 arrived, expires, posted, or token may be B<NULL> in which case that
 component is not returned to the caller, without affecting the return
 value.
@@ -120,11 +120,11 @@ Message-ID); if I<key> has previously been set via B<HISwrite>,
 B<HIScheck> returns B<true>, else B<false>.
 
 B<HISwrite> writes a new entry to the database I<history> associated
-with I<key>. I<arrived>, I<posted>, and I<expired> specify the arrival,
+with I<key>.  I<arrived>, I<posted>, and I<expired> specify the arrival,
 posting, and expiry time respectively; I<posted> and I<expired> may be
 specified as <= 0 in which case that component shall be treated as
 absent in the database.  I<token> is associated with the specified
-I<key>. B<HISwrite> returns B<true> on success, or B<false> on
+I<key>.  B<HISwrite> returns B<true> on success, or B<false> on
 failure.  The behaviour when I<key> is not unique with respect to the
 existing entries in I<history> is unspecified.
 
@@ -137,7 +137,7 @@ or B<false> on failure.  The behaviour when I<key> is not unique with
 respect to the existing entries in I<history> is unspecified.
 
 B<HISreplace> replaces an existing entry in the database I<history>,
-associated with I<key>. I<arrived>, I<posted>, I<expired> specify the
+associated with I<key>.  I<arrived>, I<posted>, I<expired> specify the
 arrival, posting and expiry time respectively; I<posted> and
 I<expired> may be specified as <= 0 in which case that component shall
 be treated as absent in the database.  I<token> is associated with the
@@ -176,7 +176,7 @@ The I<exists> function is passed the arrival, posting and expiry
 times, in addition to the token associated with the entry.  Note that
 posting and/or expiry may be zero, but that the token will never be
 B<NULL> (such entries are handled solely via the threshold
-mechanism). The storage token passed to the discrimination function
+mechanism).  The storage token passed to the discrimination function
 may be updated if required (for example, as might be needed by a
 hierarchical storage management implementation).
 
@@ -237,7 +237,7 @@ on retrieval from the underlying history manager was found not to exist.
 
 Note that the history cache is only checked by B<HIScheck> and only
 affected by B<HIScheck>, B<HISwrite>, B<HISremember> and
-B<HISreplace>. Following a call to B<HISstats> the history statistics
+B<HISreplace>.  Following a call to B<HISstats> the history statistics
 associated with I<history> are cleared.
 
 B<HISerror> returns a string describing the most recent error
@@ -262,7 +262,7 @@ result must not later be passed to free(3).
 
 Set the base file path which this history handle should use; typically
 this is used after an anonymous handle has been created using
-B<HISopen(NULL, ...)>. I<val> should be a value of type B<const char
+B<HISopen(NULL, ...)>.  I<val> should be a value of type B<const char
 *> and will be copied before being stored internally.
 
 =item C<HISCTLS_SYNCCOUNT> (size_t *)

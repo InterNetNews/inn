@@ -424,7 +424,7 @@ nothing.
 
 Provided the file loads without errors, auth_init() (if present) runs
 without fatal errors, and a Perl function authenticate() is defined,
-authenticate() will then be called. authenticate() takes no arguments,
+authenticate() will then be called.  authenticate() takes no arguments,
 but it has access to a global hash %attributes which contains
 information about the connection as follows: C<$attributes{hostname}>
 will contain the hostname (or the IP address if it doesn't resolve) of
@@ -476,7 +476,7 @@ same auth group.
 When a perl_access: parameter is encountered, Perl is loaded (if it
 has yet to be) and the file given as argument is loaded as
 well.  Provided the file loads without errors, and a Perl function
-access() is defined, access() will then be called. access() takes no
+access() is defined, access() will then be called.  access() takes no
 arguments, but it has access to a global hash %attributes which
 contains information about the connection as follows:
 C<$attributes{hostname}> will contain the hostname (or the IP address
@@ -522,7 +522,7 @@ extra quotes inside the string.
 
 While you may include the users: parameter in a dynamically generated
 access group, some care should be taken (unless your pattern is just
-* which is equivalent to leaving the parameter out). The group created
+* which is equivalent to leaving the parameter out).  The group created
 with the values returned from the Perl script is the only one
 considered when nnrpd attempts to find an access group matching the
 connection.  If a users: parameter is included and it doesn't match the
