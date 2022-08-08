@@ -73,7 +73,7 @@ the caller.  If the list is empty B<NULL> is returned.
 B<list_remove> removes I<node> from the list it is on and returns it
 to the caller.
 
-B<list_insert> inserts I<node> onto I<list> after the node I<pred>. If
+B<list_insert> inserts I<node> onto I<list> after the node I<pred>.  If
 I<pred> is B<NULL> then I<node> is added to the head of I<list>.
 
 =head1 HISTORY

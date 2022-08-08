@@ -31,7 +31,7 @@ followed by a colon, at least one blank and a value.  For example:
 
     max-connections: 10
 
-A legal key does not contains blanks, colons, nor C<#>. There are three
+A legal key does not contains blanks, colons, nor C<#>.  There are three
 different types of values: integers, booleans, and strings.  Integers are
 as to be expected.  A boolean value is either C<true> or C<false>
 (case is significant).  A string value is any other sequence of characters.
