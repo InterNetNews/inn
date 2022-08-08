@@ -1235,5 +1235,4 @@ SITEinfo(struct buffer *bp, SITE *sp, const bool Verbose)
                                       ctime(&cp->Waketime) + 4);
         }
     }
-    buffer_append(bp, "", 1);
 }

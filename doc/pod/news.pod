@@ -1,3 +1,14 @@
+=head1 Changes in 2.7.1
+
+=over 2
+
+=item *
+
+Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
+information only for the first site.
+
+=back
+
 =head1 Upgrading from 2.6 to 2.7
 
 The following changes require your full attention because a manual
