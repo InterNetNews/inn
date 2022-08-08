@@ -30,8 +30,8 @@
 
 ##  Uncomment these to keep overchan backlog in check.  Assumes your overchan
 ##  feed is named 'overview!'.
-#::overblog:ctlinnd feedinfo overview!|awk 'NR==1{print $7}':lt:100000:go:overviewbacklog
-#:overblog:+:ctlinnd feedinfo overview!|awk 'NR==1{print $7}':gt:400000:throttle:overviewbacklog
+#::overblog: ctlinnd feedinfo overview! | awk 'NR==1{print $7}' : lt : 100000 : go : overviewbacklog
+#:overblog:+: ctlinnd feedinfo overview! | awk 'NR==1{print $7}' : gt : 400000 : throttle : overviewbacklog
 
 ##  If load is OK, check space (and inodes) on various filesystems
 !!! ${INNDF} . ! lt ! ${INNWATCHSPOOLSPACE} ! throttle ! No space (spool)
