@@ -63,7 +63,7 @@ argument (specified in the shell as two adjacent quotes, like C<''>).
 =item addhist I<message-id> I<arrival> I<expires> I<posted> I<token>
 
 Add an entry to the history database for I<message-id>.  The angle
-brackets around the message-ID are optional.  It should normally be
+brackets around I<message-id> are optional.  It should normally be
 protected from the shell with single quotes.
 
 I<arrival>, I<expires>, and I<posted> should be the number of seconds
@@ -91,16 +91,16 @@ forwarded; see L<NOTES> below.
 
 =item cancel I<message-id>
 
-Remove the article with the specified message-ID from the local system.
+Remove the article with the specified I<message-ID> from the local system.
 This does not generate a cancel control message; it only affects the local
-system.  The angle brackets around the message-ID are optional.  It should
+system.  The angle brackets around I<message-ID> are optional.  It should
 normally be protected from the shell with single quotes (and not double
 quotes).  For instance:
 
     ctlinnd cancel 'test@foo.bar'
 
-Note that the history database is updated with the specified message-ID
-so if an article with the same message-ID is afterwards received, it will
+Note that the history database is updated with the specified Message-ID
+so if an article with the same Message-ID is afterwards received, it will
 be rejected; it is useful for rejecting spam before it arrives.
 
 If the server is throttled manually, this command causes it to briefly
@@ -181,8 +181,9 @@ I<reason> as the text.
 =item hangup I<channel>
 
 Close the socket for the specified incoming channel.  This may be useful
-when an incoming connection appears to be hung (although B<innd> will
-close idle connections automatically after a timeout).
+when an incoming connection appears to be hung (although B<innd> will close
+idle connections automatically after a timeout, as set with I<peertimeout>
+in F<inn.conf>).
 
 =item help [I<command>]
 
@@ -224,7 +225,7 @@ of those parameters that can be overridden by command-line flags.
 =item name I<channel>
 
 Print the name and relevant information for the given incoming or outgoing
-channel, or for all channels if I<channel> is an empty string.  The
+channel number, or for all channels if I<channel> is an empty string.  The
 response is formatted as:
 
     <name>:<number>:<type>:<idle>:<status>
@@ -234,7 +235,7 @@ the same as the file descriptor assigned to it), <idle> is the idle time
 for an NNTP channel or the process ID for a process channel, and <status>
 is the status for NNTP channels.
 
-The type is one of the following values:
+The <type> field is one of the following values:
 
     control     Control channel for ctlinnd
     file        An outgoing file feed
@@ -316,6 +317,9 @@ of the B<-r> flag to B<nnrpd>.  If I<flag> starts with the letter C<y> and
 I<text> is either an empty string or the same string, encoded in UTF-8, that
 was used when reading was disabled, reading will be re-enabled.
 
+The advantage of this parameter over I<noreader> in F<inn.conf> is that it
+permits specifying a custom message.
+
 This command has no effect if B<nnrpd> is being run separately rather than
 spawned by B<innd>.
 
@@ -343,22 +347,21 @@ C<newsfeeds>, both the F<active> and F<newsfeeds> files are reloaded,
 which will also cause all outgoing feeds to be flushed and restarted.
 
 If I<what> is the word C<filter.perl>, the F<filter_innd.pl> file is
-reloaded.  If the Perl filter defined a function C<filter_before_reload>,
-it will be called prior to re-reading F<filter_innd.pl>.  If the Perl
-function C<filter_after_reload> is defined, it will be called after
-F<filter_innd.pl> has been reloaded.  Reloading the Perl filter does not
-enable filtering if it has been disabled; use C<perl y> to do this
-instead.  F<startup_innd.pl> cannot be reloaded.  This file is not
-available for reloading unless INN was compiled with Perl filtering
-support.
+reloaded.  (This file is however not available for reloading unless INN
+was compiled with Perl filtering support.)  If the Perl filter defined a
+function C<filter_before_reload>, it will be called prior to re-reading
+F<filter_innd.pl>.  If the Perl function C<filter_after_reload> is defined,
+it will be called after F<filter_innd.pl> has been reloaded.  Reloading the
+Perl filter does not enable filtering if it has been disabled; use C<perl y>
+to do this instead.  F<startup_innd.pl> cannot be reloaded.
 
 If I<what> is the word C<filter.python>, the F<filter_innd.py> file is
-reloaded.  If a Python method named C<filter_before_reload> exists, it will
-be called prior to re-reading F<filter_innd.py>.  If a Python method named
-C<__init__> exists, it will be called after F<filter_innd.py> has been
-reloaded.  Reloading the Python filter does not enable filtering if it has
-been disabled; use C<python y> to do this.  This file is not available for
-reloading unless INN was compiled with Python filtering support.
+reloaded.  (This file is however not available for reloading unless INN
+was compiled with Python filtering support.)  If a Python method named
+C<filter_before_reload> exists, it will be called prior to re-reading
+F<filter_innd.py>.  If a Python method named C<__init__> exists, it will be
+called after F<filter_innd.py> has been reloaded.  Reloading the Python filter
+does not enable filtering if it has been disabled; use C<python y> to do this.
 
 =item renumber I<group>
 
@@ -410,9 +413,10 @@ for example).  Consult the embedded filter documentation for details.
 =item stathist (off | I<filename>)
 
 Enable or disable generation of history performance statistics.  If the
-parameter is C<off>, no statistics are gathered.  Otherwise, statistics
-are written to the specified file.  A parser for this file is provided in
-the contrib tree of the INN distribution.
+parameter is C<off>, no statistics are gathered.  Otherwise, statistics are
+written to the specified file.  A parser for this file is provided in the
+contrib tree of the INN distribution.  See I<stathist> in inn.conf(5) for
+information on how to set the default.
 
 =item status (off | I<interval>)
 
@@ -423,7 +427,7 @@ See I<status> in inn.conf(5) for information on how to set the default.
 
 =item throttle I<reason>
 
-Close all existing incoming connections and outgoing feeds and reject new
+Close all existing incoming connections and outgoing feeds, and reject new
 connections.  Close the history database.  This should be used for
 long-term locks or for running a large number of C<newgroup> and
 C<rmgroup> commands without restarting all outgoing feeds between each
