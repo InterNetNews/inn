@@ -28,6 +28,7 @@ sub parse {
         $begin = 0;
         chomp $line;
         my @c = split /[\[\]\(\) ]+/, $line;
+        next if $#c < 4;    # The last log line may not be totally written.
         ($c[4] eq 'begin') && do {
             push @stack, $c[3];
             my $d = $data;
@@ -45,9 +46,12 @@ sub parse {
                   $d = $$d{$l};
               }
               $$d{'count'}++;
-              $$d{'total'} += $c[5];
-              $$d{'min'} = $c[5] if $$d{'min'} > $c[5];
-              $$d{'max'} = $c[5] if $$d{'max'} < $c[5];
+              # Ensure a decimal number is present.
+              if ($#c > 4 and $c[5] =~ /\d+\.\d+/) {
+                  $$d{'total'} += $c[5];
+                  $$d{'min'} = $c[5] if $$d{'min'} > $c[5];
+                  $$d{'max'} = $c[5] if $$d{'max'} < $c[5];
+              }
               pop @stack;
           };
     }
