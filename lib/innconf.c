@@ -440,6 +440,7 @@ static bool
 innconf_validate(struct config_group *group)
 {
     bool okay = true;
+    unsigned int i;
     char *fqdn;
 
     fqdn = inn_getfqdn(innconf->domain);
@@ -480,9 +481,10 @@ innconf_validate(struct config_group *group)
         okay = false;
     }
 
+    /* Warn (but do not bail out) if the generation of keywords is active
+     * without being advertised in overview data. */
     if (innconf->keywords) {
         bool found = false;
-        unsigned int i;
         if (innconf->extraoverviewadvertised->strings != NULL) {
             for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
                 if (innconf->extraoverviewadvertised->strings[i] != NULL
@@ -512,6 +514,43 @@ innconf_validate(struct config_group *group)
                                "keyword generation is useless if the Keywords"
                                " header field is not stored in the overview");
             innconf->keywords = false;
+        }
+    }
+
+    /* Do not accept deprecated Bytes and Lines header fields in overview data
+     * as they are internally treated as metadata items. */
+    if (innconf->extraoverviewadvertised->strings != NULL) {
+        for (i = 0; i < innconf->extraoverviewadvertised->count; i++) {
+            if (innconf->extraoverviewadvertised->strings[i] != NULL
+                && (strcasecmp(innconf->extraoverviewadvertised->strings[i],
+                               "Bytes")
+                        == 0
+                    || strcasecmp(innconf->extraoverviewadvertised->strings[i],
+                                  "Lines")
+                           == 0)) {
+                config_error_param(
+                    group, "extraoverviewadvertised",
+                    "Bytes and Lines not allowed in overview data");
+                okay = false;
+                break;
+            }
+        }
+    }
+    if (innconf->extraoverviewhidden->strings != NULL) {
+        for (i = 0; i < innconf->extraoverviewhidden->count; i++) {
+            if (innconf->extraoverviewhidden->strings[i] != NULL
+                && (strcasecmp(innconf->extraoverviewhidden->strings[i],
+                               "Bytes")
+                        == 0
+                    || strcasecmp(innconf->extraoverviewhidden->strings[i],
+                                  "Lines")
+                           == 0)) {
+                config_error_param(
+                    group, "extraoverviewhidden",
+                    "Bytes and Lines not allowed in overview data");
+                okay = false;
+                break;
+            }
         }
     }
 

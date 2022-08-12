@@ -493,9 +493,8 @@ Owing to optimizations when B<innd> parses the articles it receives, it
 is possible that all the values in the list are not recognized by B<innd>
 as standard header field names.  In such cases, B<innd> will log an error
 in F<news.err> at startup and the unrecognized fields will be discarded.
-Moreover, if C<Bytes> or C<Lines> are listed, they will be treated as metadata
-items (already present in the standard overview fields) and not as the
-deprecated header fields of the same names.
+Moreover, the deprecated C<Bytes> and C<Lines> header fields, already present
+in the standard overview fields as metadata items, cannot be added.
 
 You should advertise only fields for which the overview database
 is consistent, that is to say it records the content or absence
@@ -569,9 +568,8 @@ Owing to optimizations when B<innd> parses the articles it receives, it
 is possible that all the values in the list are not recognized by B<innd>
 as standard header field names.  In such cases, B<innd> will log an error
 in F<news.err> at startup and the unrecognized fields will be discarded.
-Moreover, if C<Bytes> or C<Lines> are listed, they will be treated as metadata
-items (already present in the standard overview fields) and not as the
-deprecated header fields of the same names.
+Moreover, the deprecated C<Bytes> and C<Lines> header fields, already present
+in the standard overview fields as metadata items, cannot be added.
 
 =item I<groupbaseexpiry>
 
