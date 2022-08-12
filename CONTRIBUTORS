@@ -18,7 +18,7 @@ Doug Needham:
         connections to innd (SIGUSR1).  Got inews to ask the nntp peer for
         moderator info instead of digging it out of a local file.
 
-David Lawrence: 
+David Lawrence:
         Did the hooks for PGP verificiation of control messages, added
         actived support for syncing against an active file obtained via
         ftp.
@@ -26,7 +26,7 @@ David Lawrence:
 John Stapleton:
         Wrote the poison newsgroup code ('@') for newsfeeds(5).  Wrote the
         too-many-connects support ('-X -H -T' flags to innd).
-        
+
 Landon Curt Noll:
         Wrote or co-wrote actsync, nntpsend, shrinkfile, innstat,
         news.daily, tally.control and various man pages.  He also was the
@@ -88,7 +88,7 @@ Karl Kleinpaste:
         for the use of readers.
 
 Dave Hayes:
-        Along with some bugfixes, Dave wrote the posting-backoff code for 
+        Along with some bugfixes, Dave wrote the posting-backoff code for
         nnrpd and the patches to the perl hooks to make the header fields
         modifiable.
 
@@ -214,8 +214,8 @@ Ken Murchison:
 Also:
 
 Dave Barr:
-        Kept INN alive after Rich Salz didn't have the time any more but 
-        before ISC took over.  He released 4 unofficial versions that 
+        Kept INN alive after Rich Salz didn't have the time any more but
+        before ISC took over.  He released 4 unofficial versions that
         provided a good boost to what ISC started with.  Minor work
         on 2.0, mostly with example files and minor code tweaks.
 

@@ -8,7 +8,7 @@
 ##  The order of lines in this file is not important.
 
 ##  Format:
-##    index(0-65535) : path to buffer file : 
+##    index(0-65535) : path to buffer file :
 ##      length of buffer in kilobytes in decimal (1KB = 1024 bytes)
 
 0:@SPOOLDIR@/overview/OV1:1536000

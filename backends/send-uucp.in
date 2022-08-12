@@ -295,8 +295,8 @@ site is specified with a line of the form:
 
 =item I<site>
 
-The news site name being configured.  This must match a site name 
-from newsfeeds(5).
+The news site name being configured.  This must match a site name from
+newsfeeds(5).
 
 =item I<host>
 

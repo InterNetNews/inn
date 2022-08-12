@@ -764,7 +764,7 @@ man page for more details.
 =item ovsqlite
 
 It stores overview information into an SQLite database, known for its
-long-term stability and compatibility.  Robust and faster than C<ovdb> 
+long-term stability and compatibility.  Robust and faster than C<ovdb>
 at reading ranges of overview data (since overview data is transferred in
 128-kilobyte chunks between B<ovsqlite-server> and B<nnrpd>) but somewhat
 slower at writing, this method may require more disk space, unless
@@ -772,8 +772,8 @@ compression is enabled.  See the ovsqlite(5) man page for more details.
 
 =item tradindexed
 
-It uses two files per newsgroup, one containing the overview data 
-and one containing the index.  Fast for readers, but slow to write to 
+It uses two files per newsgroup, one containing the overview data
+and one containing the index.  Fast for readers, but slow to write to
 because it has to update two files for each incoming article.  Its main
 advantage is to be the best tested, the most reliable and the method
 with the best recovery tools.
@@ -1743,7 +1743,7 @@ connection is allowed to read and post news (you can also use the
 previously created F<readers.conf> file to handle TLS/SSL connections).
 Note that a news client which supports the STARTTLS command can also
 use the conventional NNTP port 119 to dynamically upgrade from unencrypted
-to TLS-protected traffic during an NNTP session.  However, this practice 
+to TLS-protected traffic during an NNTP session.  However, this practice
 is discouraged in favour of using the separate port 563.  See nnrpd(8)
 for more information about TLS support.
 

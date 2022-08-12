@@ -13,12 +13,12 @@
 ##  In newsfeeds, put an entry like:
 ##
 ##      news2mail!:!*:Ac,Tc,Wn*:<pathbin>/news2mail
-## 
+##
 ##  and for each mailing-list, have an entry list like:
 ##
 ##      list-big-red-ants/lists.ucsd.edu:!*,rec.pets.red-ants:Ap,Tm:news2mail!
 ##
-##  The site name used in the newfeeds entry for a mailing-list (above 
+##  The site name used in the newfeeds entry for a mailing-list (above
 ##  "list-big-red-ants") must be the same as the first field in an entry in
 ##  this file.
 ##

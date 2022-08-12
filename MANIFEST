@@ -403,7 +403,7 @@ history/hisv6/hisv6.h                 Header for hisv6 history
 include                               Header files (Directory)
 include/Makefile                      Makefile for header files
 include/conffile.h                    Header file for reading *.conf files
-include/config.h.in                   Template configuration data 
+include/config.h.in                   Template configuration data
 include/inn                           Installed header files (Directory)
 include/inn/buffer.h                  Header file for reusable counted buffers
 include/inn/concat.h                  Header file for string concatenation

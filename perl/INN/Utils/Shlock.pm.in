@@ -129,7 +129,7 @@ it in an END code block:
     END {
         # In case we bail out, while holding a lock.
         INN::Utils::Shlock::releaselocks();
-    }   
+    }
 
 =head1 INTERFACE
 

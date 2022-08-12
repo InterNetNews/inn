@@ -981,7 +981,7 @@ main(int argc, char **argv)
           if (strncmp (argv[1],"int",3) == 0)
             {
               int i = 0 ;
-          
+
               if (!getInteger (topScope,argv[2],&i))
                 printf ("wasn't found.\n") ;
               else
