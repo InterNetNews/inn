@@ -8,7 +8,7 @@ and is now part of INN. The features of it are:
 	   feed.
 	3. Will handle multiple remote hosts.
 	4. Will tear down idle connections.
-	5. Runs as a channel/funnel feed from INN, or by reading a funnel 
+	5. Runs as a channel/funnel feed from INN, or by reading a funnel
 	   file.
 	6. Will stop issuing CHECK commands and go straight to TAKETHIS if
 	   the remote responds affermatively to enough CHECKs.
@@ -25,7 +25,7 @@ Changes for 0.10.1
 	   numbers and file names are not properly reported yet on errors
 	   when includes are used, though.
 
-	2. Signal handling is tidied up a bit. If your compiler doesn't 
+	2. Signal handling is tidied up a bit. If your compiler doesn't
 	   support the ``volatile'' keyword, then see the comment in
 	   sysconfig.h.
 
@@ -48,7 +48,7 @@ Changes for 0.10
 	   verify things before locking them into a newsfeeds file entry. A
 	   program has been added ``innfeed-convcfg'' that will read your
 	   old config off the command line (or stdin), and will write a new
-	   version to stdout. 
+	   version to stdout.
 
 	   The new config file structure permits non-peer-specific items to
 	   be declared (like the location of the status file, or whether to
@@ -72,7 +72,7 @@ Changes for 0.10
 
 	   See the innfeed.conf(5) man page for more details on config file
 	   structure.
-	   
+
 	2. The backlog file handling is changed slightly:
 
 		- The .output file is always kept open (until rotation time).
@@ -81,14 +81,14 @@ Changes for 0.10
 		  backlog-rotate-period in the config file). This prevents
 		  thrashing of backlog files.
 		- The hand-prepared file is checked for only every 600
-		  seconds maximum (or the value defined by the key 
+		  seconds maximum (or the value defined by the key
 		  backlog-new), not every time the files are rotated.
 		- The stating of the three backlog files is reduced
 		  dramatically.
 
 	3. Signal handling is changed so that they are more synchronous
 	   with other activity. This should stop the frequent core-dumps
-	   that occured when running in funnel file mode and sending 
+	   that occured when running in funnel file mode and sending
 	   SIGTERM or SIGALRM.
 
 	4. A bug related to zero-length articles was fixed. They will now be
@@ -110,7 +110,7 @@ Changes for 0.9.3
 	   Lawrence). There is an important issue with this:
 
 		if you try to have innfeed handle too many articles (by
-		running many connections and/or high max-check values in 
+		running many connections and/or high max-check values in
 		innfeed.conf) at once, then your system (not your process)
 		may run out of free vnodes (global file descriptors), as a
 		vnode is used as long as the file is mmaped. So be careful.
@@ -142,7 +142,7 @@ Changes for 0.9.3
 	   will be removed to do this. This means lost articles for the
 	   entries removed.
 
-	3. A SIGHUP will make the config be reloaded. 
+	3. A SIGHUP will make the config be reloaded.
 
 	4. The .checkpoint files have been dropped in favour of scribbling
 	   the offset into the input file itself.
@@ -152,7 +152,7 @@ Changes for 0.9.3
 	   looks like:
 
 		Jan 12 15:51:53 data innfeed.tester[24189]: ME global
-			seconds 2472 offered 43820 accepted 10506 
+			seconds 2472 offered 43820 accepted 10506
 			refused 31168 rejected 1773 missing 39
 
 	6. SIGALARM now rolls the input file, rather than the log
@@ -161,13 +161,13 @@ Changes for 0.9.3
 
 	7. The location of the pid file, config file and status file, can
 	   now be relative, in which case they're relative to the backlog
-	   directory. 
+	   directory.
 
 	8. stdin stdout and stderr are initialized properly when innfeed is
 	   started by a process that has closed them.
 
 	9. Various values in config.h have changed (paths to look more like
-	   values used in inn 1.5 and others to support point #7 above 
+	   values used in inn 1.5 and others to support point #7 above
 	   more easily.)
 
 	10. procbatch.pl can now 'require' innshellvars.pl that comes with
@@ -212,7 +212,7 @@ Changes for 0.9
 
 	1. Format of innfeed.conf file changed slightly (for per-peer
 	   streaming specs).
-	2. Including Greg Patten's innlog.pl (taken from 
+	2. Including Greg Patten's innlog.pl (taken from
 		ftp://loose.apana.org.au/pub/local/innlog/innlog.pl)
 	3. Added Christophe Wolfhugel's patch to permit a per-peer
 	   restriction on using streaming.
@@ -231,7 +231,7 @@ Changes for 0.8.5
 	   and flush timeout) are all adjusted by up to +/-10% so that
 	   things aren't quite so synchronised.
 	5. The innfeed.status file has been expanded and reformatted to
-	   include more information. 
+	   include more information.
 
 Changes for 0.8.4
 	
@@ -349,7 +349,7 @@ Bugs/Problems/Notes etc:
 	   make sure your config file entry states the correct number of
 	   initial connections, as they're all the Connections that will be
 	   created.
-	  
+
 	6. If '-x' is used and the config file has an entry for a peer that
 	   has no batch file to process, then innfeed will not exit after
 	   all batch files have been finished--it will just site there idle.
@@ -385,7 +385,7 @@ Any compliments, complaints, requests, porting issues etc. should go to
 Many thanks to the following people for extra help (above and beyond the
 call of duty) with pateches, beta testing and/or suggestions:
 
-    Christophe Wolfhugel <wolf@pasteur.fr> 
+    Christophe Wolfhugel <wolf@pasteur.fr>
     Robert Elz <kre@munnari.oz.au>
     Russell Vincent <vincent@ucthpx.uct.ac.za>
     Paul Vixie <paul@vix.com>
@@ -399,7 +399,7 @@ call of duty) with pateches, beta testing and/or suggestions:
     Steven Bauer <sbauer@msmailgw.sdsmt.edu>
     Richard Perini <rpp@ci.com.au>
     Per Hedeland <per@erix.ericsson.se>
-    Clayton O'Neill <coneill@premier.net> 
+    Clayton O'Neill <coneill@premier.net>
     Dave Pascoe <dave@mathworks.com>
     Michael Handler <handler@netaxs.com>
     Petr Lampa <lampa@fee.vutbr.cz>

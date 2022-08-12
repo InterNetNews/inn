@@ -64,7 +64,7 @@ $(LIBHIST):	; (cd ../history ; $(MAKE))
 ##  Profiling.  These rules have not been checked for a while and may need
 ##  some work.
 
-profiled:	expirep 
+profiled:	expirep
 	date >$@
 
 expirep:	expire.c

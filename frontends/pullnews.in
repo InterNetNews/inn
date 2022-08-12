@@ -162,12 +162,12 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
 
   -F fakehop    prepend fakehop as a host to the Path header field body.
 
-  -g groups     specify a collection of groups to get.  The value must be 
+  -g groups     specify a collection of groups to get.  The value must be
                 a single argument with commas between group names:
 
                         -g comp.lang.c,comp.lang.lisp,comp.lang.python
 
-                The groups must be defined in the config file somewhere. 
+                The groups must be defined in the config file somewhere.
                 Only the hosts that carry those groups will be contacted.
 
   -G newsgroups add these groups to the configuration (see -g and -w).
@@ -207,11 +207,11 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                 (default is $defaultPort).
 
   -P hop_limit  count hops ('!') in the Path header field body, feed article
-                only if: 
+                only if:
                   hop_limit is '+num' and hop_count is more than num;
                   or hop_limit is '-num' and hop_count is less than num.
 
-  -q            $0 will normally be verbose about what it is doing.  This 
+  -q            $0 will normally be verbose about what it is doing.  This
                 option will make it quiet.
 
   -Q level      set the quietness level (-Q 2 is equivalent to -q).

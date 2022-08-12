@@ -34,7 +34,7 @@ clean:
 	rm -f innfeedp
 	rm -rf .libs
 
-clobber distclean: clean 
+clobber distclean: clean
 	rm -f y.tab.c y.tab.h lex.yy.c
 
 maintclean: distclean

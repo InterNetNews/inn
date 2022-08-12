@@ -101,7 +101,7 @@ directories:
 	done
 	support/install-sh $(OWNER) -m 0750 -d $(DESTDIR)$(PATHRUN)
 
-update: 
+update:
 	@chmod +x support/install-sh
 	@for D in $(UPDATEDIRS) ; do \
 	    echo '' ; \

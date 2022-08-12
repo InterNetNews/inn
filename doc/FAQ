@@ -665,7 +665,7 @@ feeding an article to a peer broke down.
 1. First you look in the $pathlog/news file.  There should be one line per
    article (search for the Message-ID, or they're in order by time of
    arrival if you know that).
-  
+
    If you don't see a line for the article in question, your innd has
    never seen it.  For articles being fed remotely, this means your peer
    didn't feed it to you.  For articles being posted to your server, this
@@ -695,7 +695,7 @@ feeding an article to a peer broke down.
 
 5. If a peer is listed at the end of the line, the article should have
    been fed to that peer.
-  
+
    If a peer doesn't have that article, it's possible that the article is
    spooled on your system somewhere.  Check $pathoutgoing, or the
    innfeed spool if the peer is configured to use innfeed.  (It's probably
@@ -767,9 +767,9 @@ storage.conf(5) has this to say:
     outside the size and expires ranges of all entries whose newsgroups
     pattern it does match, the article is not stored and is rejected by
     innd(8).  When this happens, the error message
-    
+
          cant store article: no matching entry in storage.conf
-    
+
     is logged to syslog.  If you want to silently drop articles matching
     certain newsgroup patterns or size or expires ranges, assign them to the
     "trash" storage method rather than having them not match any storage
@@ -1052,21 +1052,21 @@ Richard Tobin provided the following advice in news.software.nntp on
 
     Mac OS X, at least through the GUI, won't let you create a group with
     the same name as a user.  So you can't use "news" for both.
-    
+
     The Perl module GD isn't installed by default.  GPG is not installed
     by default.
-    
+
     You probably want to turn off Spotlight for the news spool directory.
-    
+
     Configure didn't get the Perl compile flags right.  PERL_CPPFLAGS had
     "-arch x86_64 -arch i386 -arch ppc", but on this x86_64 machine the
     files for the other architectures don't seem to be installed.  I
     edited Makefile.global by hand to remove them.
-    
+
     I needed to tell the application firewall to allow innd to accept
     incoming connections.  (A window pops up to ask you, but this doesn't
     help when you're connected by ssh!)
-    
+
     When I ran rc.news form a terminal window, it stopped working when I
     logged out.  This is because of MacOS's convoluted and undocumented
     way of doing DNS lookups.  Using "nohup" fixed it -- not because of
@@ -1176,7 +1176,7 @@ the following commands will feed articles arrived between two given
 timestamps (that can be computed with the convdate utility shipped
 with INN).
 
-    convdate -n '15 Apr 2014 20:42 +0200' '16 Apr 2014 12:37 +0200'   
+    convdate -n '15 Apr 2014 20:42 +0200' '16 Apr 2014 12:37 +0200'
 
 returns the two corresponding timestamps 1397586540 and 1397644620 that
 can then be used to retrieve a subset of articles to feed:
