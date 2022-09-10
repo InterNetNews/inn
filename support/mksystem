@@ -31,14 +31,27 @@ EOF
 
 $1 '
 
-/^#define HAVE_C99_VAMACROS/    { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_GNU_VAMACROS/    { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_INET6/           { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_INTTYPES_H/      { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_MSYNC_3_ARG/     { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_STDBOOL_H/       { print $1 " INN_" $2 " " $3 }
-/^#define HAVE_SYS_BITYPES_H/   { print $1 " INN_" $2 " " $3 }
-/^#define HAVE__BOOL/           { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_BROKEN_IN6_ARE_ADDR_EQUAL/  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_C99_VAMACROS/               { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_DECL_INET_ATON/             { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_DECL_INET_NTOA/             { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_GETADDRINFO/                { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_GETNAMEINFO/                { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_GNU_VAMACROS/               { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INET6/                      { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INET_ATON/                  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INET_NTOA/                  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INET_NTOP/                  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_INTTYPES_H/                 { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_LONG_LONG_INT/              { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_MSYNC_3_ARG/                { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_SOCKLEN_T/                  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_STDBOOL_H/                  { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_STRUCT_SOCKADDR_SA_LEN/     { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_STRUCT_SOCKADDR_STORAGE/    { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_SYS_BITYPES_H/              { print $1 " INN_" $2 " " $3 }
+/^#define HAVE_UNIX_DOMAIN_SOCKETS/        { print $1 " INN_" $2 " " $3 }
+/^#define HAVE__BOOL/                      { print $1 " INN_" $2 " " $3 }
 
 ' $2
 

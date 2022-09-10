@@ -7,6 +7,7 @@
 #define INN_INNDCOMM_H 1
 
 #include "inn/portable-macros.h"
+#include "inn/system.h"
 
 BEGIN_DECLS
 
@@ -82,7 +83,7 @@ extern int ICCreserve(const char *why);
 extern const char *ICCfailure;
 
 /* Use a read or recv call to read a descriptor. */
-#ifdef HAVE_UNIX_DOMAIN_SOCKETS
+#ifdef INN_HAVE_UNIX_DOMAIN_SOCKETS
 #    define RECVorREAD(fd, p, s) recv((fd), (p), (s), 0)
 #else
 #    define RECVorREAD(fd, p, s) read((fd), (p), (s))
