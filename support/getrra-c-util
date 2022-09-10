@@ -220,6 +220,12 @@ extern char *strtok(char *, const char *);\
                         ${TEMP}
                 fi
 
+                # Keep inn/system.h as it uses INN_ macros.
+                if [ "$3" = "xmalloc.h" ]; then
+                    sed -i -e 's/<config\.h>$/"inn\/system.h"/g' \
+                        ${TEMP}
+                fi
+
                 sed -i -e 's/UTIL_/INN_/g' \
                     -e '/^\/\* Default to a hidden visibility for all .* functions\. \*\/$/,+2d' \
                     -e '/^\/\* Undo default visibility change\. \*\/$/,+2d' \
@@ -260,7 +266,7 @@ extern char *strtok(char *, const char *);\
                         -e 's/\([^_]\)HAVE_SYS_BITYPES_H/\1INN_HAVE_SYS_BITYPES_H/g' \
                         -e 's/\([^_]\)HAVE__BOOL/\1INN_HAVE__BOOL/g' \
                         -e 's/"portable\/\(.*\)"/"inn\/portable-\1"/g' \
-                        -e 's/"config\.h"/"inn\/system.h"/g' \
+                        -e '/"config\.h"$/d' \
                         ${TEMP}
                 fi
             fi

@@ -20,8 +20,6 @@
 #define INN_CONCAT_H 1
 
 #include "inn/macros.h"
-#include "inn/portable-stdbool.h"
-#include "inn/system.h"
 
 BEGIN_DECLS
 

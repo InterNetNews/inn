@@ -8,7 +8,6 @@
 #include "inn/concat.h"
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 #include "inn/xmalloc.h"
 #include "inn/xwrite.h"
 

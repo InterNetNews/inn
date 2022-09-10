@@ -7,7 +7,6 @@
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 #include <sys/types.h>
 
 BEGIN_DECLS

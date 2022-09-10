@@ -7,7 +7,6 @@
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 
 /* Avoid including <inn/vector.h> unless the client needs it. */
 struct vector;
