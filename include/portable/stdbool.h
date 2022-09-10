@@ -23,13 +23,7 @@
 #ifndef PORTABLE_STDBOOL_H
 #define PORTABLE_STDBOOL_H 1
 
-/*
- * Allow inclusion of config.h to be skipped, since sometimes we have to use a
- * stripped-down version of config.h with a different name.
- */
-#ifndef CONFIG_H_INCLUDED
-#    include "config.h"
-#endif
+#include "config.h"
 
 #if HAVE_STDBOOL_H
 #    include <stdbool.h>

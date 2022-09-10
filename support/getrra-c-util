@@ -123,6 +123,12 @@ AC_DEFUN([_INN_LIB_SQLITE3_INTERNAL],\
                         ${TEMP}
                 fi
 
+                # Remove the part about CONFIG_H_INCLUDED.
+                if [ "$3" = "stdbool.h" ]; then
+                    sed -i -e '26,30d;32d' \
+                        ${TEMP}
+                fi
+
                 if [ "$3" = "system.h" ]; then
                     # Add INN-specific stuff.
                     sed -i -e "108 i \\
