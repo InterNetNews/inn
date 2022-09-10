@@ -125,9 +125,9 @@ groups and access groups in the config file; it is often more sensible (in
 the absence of the I<key> parameter) to put all of the auth groups first,
 and all of the access groups below.
 
-A user identity, as established by an auth group, looks like an e-mail
-address; in other words, it's in the form "<username>@<domain>" (or
-sometimes just "<username>" if no domain is specified.
+A user identity, as established by an auth group, looks like an e-mail address
+if a domain is specified (like "<username>@<domain>") or otherwise just
+"<username>".
 
 If I<nnrpdauthsender> is set in F<inn.conf>, the user identity is also put
 into the Sender header field of posts made by that user.  See the documentation
@@ -252,11 +252,12 @@ achieve the same result.
 
 Also note in the example that there's no default-domain: parameter, which
 means that no domain is appended to the default username and the identity
-for such connections is just "<SPECIAL>".  Note that some additional
-add-ons to INN may prefer that authenticated identities always return a
-full e-mail address (including a domain), so you may want to set up your
-system that way.  As several different persons can be assigned the same
-"<SPECIAL>" identity, no user-specific Cancel-Lock hashes should be generated.
+for such connections is just "<SPECIAL>".  Note that some additional add-ons
+to INN may prefer that authenticated identities always return a full e-mail
+address (including a domain), so you may want to set up your system that
+way if you are using add-ons.  As several different persons can be assigned
+the same "<SPECIAL>" identity, no user-specific Cancel-Lock hashes should be
+generated.
 
 Configuration files can be included in other configuration files via
 the syntax:
