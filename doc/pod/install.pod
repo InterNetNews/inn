@@ -1453,11 +1453,10 @@ to all groups:
     auth "example.com" {
         hosts: "example.com, *.example.com"
         default: "<user>"
-        default-domain: "example.com"
     }
 
     access "all" {
-        users: "*@example.com"
+        users: "*"
         newsgroups: "*"
     }
 
