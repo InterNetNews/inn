@@ -81,8 +81,8 @@ gencancel.o: gencancel.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/history.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h \
   ../include/inn/secrets.h ../include/inn/storage.h \
   ../include/inn/options.h ../include/inn/wire.h

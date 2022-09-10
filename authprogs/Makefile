@@ -79,8 +79,8 @@ auth_krb5.o: auth_krb5.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h
 ckpasswd.o: ckpasswd.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -88,8 +88,8 @@ ckpasswd.o: ckpasswd.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/qio.h ../include/inn/vector.h \
   libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
@@ -99,8 +99,8 @@ domain.o: domain.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
 ident.o: ident.c ../include/portable/system.h ../include/config.h \
@@ -109,8 +109,8 @@ ident.o: ident.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/network.h \
   ../include/inn/portable-socket.h ../include/inn/portable-getaddrinfo.h \
   ../include/inn/portable-getnameinfo.h libinnauth.h \
@@ -123,8 +123,8 @@ libinnauth.o: libinnauth.c ../include/portable/system.h \
   ../include/portable/socket.h ../include/portable/getaddrinfo.h \
   ../include/portable/getnameinfo.h ../include/inn/libinn.h \
   ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h libinnauth.h
 radius.o: radius.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -133,8 +133,8 @@ radius.o: radius.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/conffile.h \
   ../include/portable/macros.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h ../include/inn/md5.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h ../include/inn/md5.h \
   ../include/inn/messages.h ../include/inn/nntp.h ../include/inn/paths.h \
   libinnauth.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h
