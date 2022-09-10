@@ -58,6 +58,7 @@ inn/portable-stdbool.h: portable/stdbool.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/stdbool.h \
 	  | $(SED) -e 's/HAVE__BOOL/INN_HAVE__BOOL/g' \
 	           -e 's/HAVE_STDBOOL_H/INN_HAVE_STDBOOL_H/g' \
+	           -e 's/config\.h/inn\/system.h/g' \
 	  > inn/portable-stdbool.h
 
 inn/system.h: config.h $(top)/support/mksystem
