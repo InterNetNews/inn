@@ -38,11 +38,13 @@ $(EXTRA) $(FIXSCRIPT):
 inn/portable-getaddrinfo.h: portable/getaddrinfo.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/getaddrinfo.h \
 	  | $(SED) -e '/"config\.h"/d' \
+	           -e 's/portable\/socket\.h/inn\/portable-socket.h/g' \
 	  > inn/portable-getaddrinfo.h
 
 inn/portable-getnameinfo.h: portable/getnameinfo.h
 	$(SED) 's/"portable\//"inn\/portable-/g' portable/getnameinfo.h \
 	  | $(SED) -e '/"config\.h"/d' \
+	           -e 's/portable\/socket\.h/inn\/portable-socket.h/g' \
 	  > inn/portable-getnameinfo.h
 
 inn/portable-macros.h: portable/macros.h
