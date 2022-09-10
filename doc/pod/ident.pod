@@ -30,7 +30,7 @@ or port 113 otherwise.
 If this option is given, the identity returned will never have a domain
 part.  That is, if the remote server returns a result containing an C<@>
 character, B<ident> truncates the response at the C<@>.  This is useful
-to allow the I<default-domain> parameter in F<reaers.conf> to override
+to allow the I<default-domain> parameter in F<readers.conf> to override
 the domain supplied by the remote host (particularly if the supplied
 domain part is an unqualified local machine name rather than a full
 domain name).
@@ -39,7 +39,7 @@ domain name).
 
 =head1 EXAMPLE
 
-The following readers.conf(5) fragment tells nnrpd to trust ident
+The following readers.conf(5) fragment tells B<nnrpd> to trust ident
 information for hosts on a local network, but to replace the domain
 returned from the ident query:
 
