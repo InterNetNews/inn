@@ -12,6 +12,7 @@
 #define INNFEED_H 1
 
 #include "inn/timer.h"
+#include "portable/stdbool.h"
 
 /**********************************************************************/
 /*                     Application specific defines                   */

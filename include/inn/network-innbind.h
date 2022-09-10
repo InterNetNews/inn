@@ -7,10 +7,9 @@
 #ifndef INN_NETWORK_INNBIND_H
 #define INN_NETWORK_INNBIND_H 1
 
-#include "inn/macros.h"
+#include "inn/portable-macros.h"
 #include "inn/portable-socket.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 
 #include <sys/types.h>
 

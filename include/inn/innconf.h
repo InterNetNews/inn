@@ -10,7 +10,6 @@
 
 #include "inn/macros.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 #include <stdio.h>
 
 #ifndef INN_CONFPARSE_QUOTING

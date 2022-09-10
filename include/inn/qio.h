@@ -10,8 +10,6 @@
 #define INN_QIO_H 1
 
 #include "inn/macros.h"
-#include "inn/portable-stdbool.h"
-#include "inn/system.h"
 
 /* This is the maximum line length that can be read by a QIO operation.  Since
    QIO is used by some overview manipulation tools, it must therefore be

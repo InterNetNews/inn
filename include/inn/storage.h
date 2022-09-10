@@ -8,7 +8,6 @@
 #include "inn/macros.h"
 #include "inn/options.h"
 #include "inn/portable-stdbool.h"
-#include "inn/system.h"
 #include <stdio.h>
 #include <sys/types.h>
 
