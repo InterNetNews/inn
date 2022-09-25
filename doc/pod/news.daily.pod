@@ -29,8 +29,8 @@ specified);
 
 =item *
 
-purging the overview database with B<expireover> if the corresponding eponym
-keyword is specified;
+purging the overview database with B<expireover> (if the corresponding eponym
+keyword is specified or if I<enableoverview> is true in F<inn.conf>);
 
 =item *
 
@@ -39,6 +39,10 @@ processing log files and rotating the archived log files with B<scanlogs>;
 =item *
 
 processing B<innfeed> dropped files with B<procbatch>;
+
+=item *
+
+processing spooled messages with B<rnews> invoked with the B<-U> flag;
 
 =item *
 
@@ -116,7 +120,8 @@ which will then be moved to the right location when finished.
 The B<expireover> program is called after expiration to purge the overview
 database.  If no overview data is created, the B<expireover> keyword is not
 needed.  This is the case when the server runs only for feeders (no reader).
-By default, B<expireover> is not called by B<news.daily>.
+By default, B<expireover> is not called by B<news.daily> unless
+I<enableoverview> is set to true in F<inn.conf>.
 
 =item B<expireoverflags>=I<args>
 
