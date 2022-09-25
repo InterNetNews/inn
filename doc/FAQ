@@ -1168,11 +1168,27 @@ Kondou to inn-workers) on the old server:
 where <pathdb> is the path to the directory containing the history file
 (usually ~news/db), <pathoutgoing> is the path to the outgoing spool
 directory (usually ~news/spool/outgoing), and server is the name of the
-new news server to which you're feeding the articles.
+new news server to which you're feeding the articles.  The result file
+contains tokens ordered by arrival time on the old server (which is
+usually roughly the same as the posting time).  In case the history
+file was not populated chronologically, it is better to sort it by
+posting time so that articles are fed in the right order.  This can be
+achieved with the following command:
 
-In case you wish to only feed articles arrived on the old server
-between two dates, you can adapt the previous commands.  For instance,
-the following commands will feed articles arrived between two given
+    sort -t '~' -k3n < history > history.sorted
+
+And then, consider history.sorted instead of history for the next steps.
+
+If the new server has just been installed or is known not to already have
+the articles you will feed it, you may want to add the "-c" flag to
+innxmit so as to skip the check for the presence of every article before
+transferring them.
+
+In case you wish to only feed articles arrived on the old server between
+two dates, you can adapt the previous commands with a condition on the
+$arrived variable (or the $posted variable if you prefer to use the Date
+header field instead of the actual arrival time).  For instance, the
+following commands will feed articles arrived between two given
 timestamps (that can be computed with the convdate utility shipped
 with INN).
 
@@ -1189,8 +1205,18 @@ can then be used to retrieve a subset of articles to feed:
         | tr . / > <pathoutgoing in inn.conf>/list
     innxmit server list
 
+Other conditions may be added in the print line to select a subset of
+articles to feed.  For instance if you want only articles for the fr.*
+hierarchy, you may add the following condition which will retrieve and
+parse the contents of the Xref field of every article to find the
+information (note that it will take some time to run, depending on the
+number of articles to parse):
+
+    and qx/sm -q -H "$_" | grep Xref/ =~ / fr\.\S+:\d+/
+
 If innxmit stops transferring articles (with for instance an error like
-"rewriting batch file and exiting"), just re-execute it.
+"rewriting batch file and exiting"), just re-execute it.  The "-d" flag
+is useful to add if you want to see the feeding progress.
 
 When done, set xrefslave to false in inn.conf again if you changed it and
 then either restart INN on the new server (necessary if you changed
