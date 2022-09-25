@@ -43,21 +43,25 @@ innfeed(8) man page.
 
 =item B<-a>
 
-If all articles were sent successfully, B<innxmit> will remove the
-batch file; otherwise it will rewrite it to contain the list of unsent articles.
-If no articles were sent or rejected, the file is left untouched.  This can
-cause the batch file to grow excessively large if many articles have been
-expired and there are communication problems.  To always rewrite the batch file,
-use the B<-a> flag.
+If all articles were sent successfully, B<innxmit> will remove the batch file;
+otherwise it will rewrite it to contain the list of unsent articles.  If no
+articles were sent or rejected, the file is left untouched.  This can cause
+the batch file to grow excessively large if many articles have been expired
+and there are communication problems.  To always rewrite the batch file, use
+the B<-a> flag.
 
 =item B<-c>
 
-In streaming mode, a check of each message-ID is still made to avoid sending
-articles already on the server.  The B<-c> flag will, if streaming mode
-is supported, result in sending articles without checking.  This results
-in slightly greater throughput and may be appropriate when it is known
-that the site could not already have the articles such as in the case of
-a "leaf" site.
+In streaming mode, a check of each message-ID is made to avoid sending
+articles already on the remote server.  After a certain number of articles
+accepted in a row, B<innxmit> will no longer send these queries, but will
+switch back to sending them upon receiving a reject (which may be for another
+reason than a duplicate, like for instance an unwanted newsgroup).
+
+The B<-c> flag will, if streaming mode is supported, result in always sending
+articles without checking.  This results in slightly greater throughput and
+may be appropriate when it is known that the site could not already have the
+articles such as in the case of a "leaf" site.
 
 =item B<-d>
 
@@ -96,19 +100,19 @@ should not be requeued.
 =item B<-s>
 
 B<innxmit> will attempt to negotiate a streaming mode extension of the NNTP
-protocol with the server at connect time.  If successful, it will use a slightly
-different protocol that enhances throughput.  If the server does not recognize
-the streaming mode negotiation, B<innxmit> will revert to normal NNTP transfer
-mode.  Use the B<-s> flag to disable the attempt to negotiate the streaming mode
-extension.
+protocol with the server at connect time.  If successful, it will use a
+slightly different protocol that enhances throughput.  If the server does not
+recognize the streaming mode negotiation, B<innxmit> will revert to normal
+NNTP transfer mode.  Use the B<-s> flag to disable the attempt to negotiate
+the streaming mode extension.
 
 =item B<-T> I<seconds>
 
-To specify the total amount of time that should be allowed for article transfers,
-use the B<-T> flag.  The default is to wait until an I/O error occurs, or all
-the articles have been transferred.  If the B<-T> flag is used, the time is
-checked just before each article is started; it will not abort a transfer
-that is in progress.
+To specify the total amount of time that should be allowed for article
+transfers, use the B<-T> flag.  The default is to wait until an I/O error
+occurs, or all the articles have been transferred.  If the B<-T> flag is used,
+the time is checked just before each article is started; it will not abort a
+transfer that is in progress.
 
 =item B<-t> I<seconds>
 
