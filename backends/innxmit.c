@@ -49,7 +49,7 @@
 /*
 **  Max number of articles that can be streamed ahead.
 */
-#define STNBUF             32
+#define STNBUF             64
 
 /*
 **  Send TAKETHIS without CHECK if this many articles were accepted in a row.
