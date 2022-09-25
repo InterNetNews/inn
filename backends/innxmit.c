@@ -52,8 +52,7 @@
 #define STNBUF             32
 
 /*
-** Send TAKETHIS without CHECK if this many articles were
-**  accepted in a row.
+**  Send TAKETHIS without CHECK if this many articles were accepted in a row.
 */
 #define STNC               16
 
@@ -100,8 +99,8 @@ static int stoldest;  /* Oldest allocated entry to stbuf (if stnq!=0) */
 static int TryStream = true;  /* Should attempt stream negotation? */
 static int CanStream = false; /* Result of stream negotation */
 static int DoCheck = true;    /* Should check before takethis? */
-static char modestream[] = "mode stream";
-static char modeheadfeed[] = "mode headfeed";
+static char modestream[] = "MODE STREAM";
+static char modeheadfeed[] = "MODE HEADFEED";
 static long retries = 0;
 static int logRejects = false; /* syslog the 437 responses. */
 
@@ -677,7 +676,7 @@ REMsendarticle(char *Article, char *MessageID, ARTHANDLE *art)
 
     /* What did the remote site say? (IHAVE only) */
     if (!REMread(buff, (int) sizeof buff)) {
-        syswarn("no reply after sending %s", Article);
+        syswarn("no reply after sending %s (socket timeout?)", Article);
         return false;
     }
     if (GotInterrupt)
@@ -870,7 +869,7 @@ strlisten(void)
 
     while (true) {
         if (!REMread(buff, (int) sizeof buff)) {
-            syswarn("no reply to CHECK");
+            syswarn("no reply to CHECK or TAKETHIS (socket timeout?)");
             return true;
         }
         if (GotInterrupt)
@@ -1506,7 +1505,7 @@ main(int ac, char *av[])
 
         /* Does he want it? */
         if (!REMread(buff, (int) sizeof buff)) {
-            syswarn("no reply to IHAVE");
+            syswarn("no reply to IHAVE (socket timeout?)");
             article_free(art);
             RequeueRestAndExit(Article, MessageID);
         }
