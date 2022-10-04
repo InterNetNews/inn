@@ -301,6 +301,9 @@ that nnrpd process and any further posts made during that session won't go
 through the filter.  Besides, if F<filter_nnrpd.pl> defines a C<filter_end()>
 function, it will be called prior to the deactivation of the filter.
 
+Perl filtering can also be disabled for specific users matching access groups
+with the use of the I<perlfilter> parameter in F<readers.conf>.
+
 While Perl filtering is on, every article received by nnrpd via the POST
 command is passed to the filter_post() Perl function before it is passed
 to INN (or mailed to the moderator of a moderated newsgroup).  If

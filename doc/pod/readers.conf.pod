@@ -638,6 +638,10 @@ If set to false, posts made by these users do not pass through the Python
 filter even if it is otherwise enabled.  This is a boolean value and the
 default is true.
 
+This parameter currently has no effect as Python filtering is not implemented
+yet in B<nnrpd>.  If you want to do Python filtering, you have to use the one
+implemented in B<innd>.
+
 =item B<virtualhost:>
 
 Set this parameter to true in order to make B<nnrpd> behave as if it is
