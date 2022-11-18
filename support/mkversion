@@ -12,6 +12,14 @@ extra="$2"
 string="INN $version"
 if [ x"$extra" = x"prerelease" ]; then
     date=$(date +%Y%m%d)
+    # Ensure a reproducible build when the source code has not changed,
+    # and is built from a Git repository.
+    if [ -n "$(command -v git 2>/dev/null)" ]; then
+        LAST_COMMIT=$(git log -1 --pretty=%cd --date=format:%Y%m%d 2>/dev/null)
+        if [ -n "$LAST_COMMIT" ]; then
+            date="$LAST_COMMIT"
+        fi
+    fi
     extra="$date $extra"
 fi
 if [ -n "$extra" ]; then
