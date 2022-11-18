@@ -750,6 +750,9 @@ Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
 included in a final release.  It should not be changed for a beta or
 a release candidate.
 
+Empty the C<VERSION_EXTRA> variable in F<Makefile.global.in> so that the
+C<prerelease> value does not appear in the upcoming Git tag.
+
 If making a major release, the revision numbers of the STABLE series
 should also be bumped in F<doc/FAQ> at the end of subject 1.2.
 
@@ -886,6 +889,9 @@ especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
 F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
 (It is not necessary to bump the revision number if the release is supposed to
 be the last one in a branch.)
+
+Re-add the C<prerelease> value to the C<VERSION_EXTRA> variable in
+F<Makefile.global.in>.
 
 Milestones in the GitHub bug tracker should also be updated.
 
