@@ -125,17 +125,17 @@ actsync.o: actsync.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/hashtab.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/innconf.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/qio.h
 archive.o: archive.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/buffer.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/macros.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/innconf.h \
+  ../include/inn/macros.h ../include/inn/libinn.h ../include/inn/concat.h \
+  ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/vector.h ../include/inn/wire.h
@@ -145,8 +145,8 @@ batcher.o: batcher.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/timer.h \
   ../include/inn/wire.h
@@ -156,8 +156,8 @@ buffchan.o: buffchan.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/qio.h
 cvtbatch.o: cvtbatch.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -165,8 +165,8 @@ cvtbatch.o: cvtbatch.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/paths.h ../include/inn/qio.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/wire.h
 innbind.o: innbind.c ../include/portable/system.h ../include/config.h \
@@ -176,8 +176,8 @@ innbind.o: innbind.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/newsuser.h \
   ../include/inn/vector.h
 inndf.o: inndf.c ../include/portable/system.h ../include/config.h \
@@ -186,8 +186,8 @@ inndf.o: inndf.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/overview.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
   ../include/inn/qio.h
@@ -198,8 +198,8 @@ innxbatch.o: innxbatch.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/innconf.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/portable-stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/system.h \
   ../include/inn/xwrite.h ../include/inn/messages.h ../include/inn/nntp.h \
   ../include/inn/timer.h
 innxmit.o: innxmit.c ../include/portable/system.h ../include/config.h \
@@ -209,9 +209,9 @@ innxmit.o: innxmit.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/history.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/innconf.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/nntp.h ../include/inn/paths.h \
   ../include/inn/qio.h ../include/inn/storage.h ../include/inn/options.h \
   ../include/inn/timer.h ../include/inn/wire.h
@@ -227,9 +227,9 @@ nntpget.o: nntpget.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/socket.h \
   ../include/portable/getaddrinfo.h ../include/portable/getnameinfo.h \
   ../include/inn/history.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/innconf.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/portable-stdbool.h ../include/inn/innconf.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/nntp.h ../include/inn/paths.h
 overchan.o: overchan.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
@@ -237,8 +237,8 @@ overchan.o: overchan.c ../include/portable/system.h ../include/config.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
   ../include/portable/stdbool.h ../include/inn/innconf.h \
   ../include/inn/macros.h ../include/inn/portable-stdbool.h \
-  ../include/inn/system.h ../include/inn/libinn.h ../include/inn/concat.h \
-  ../include/inn/xmalloc.h ../include/inn/xwrite.h \
+  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/overview.h \
   ../include/inn/storage.h ../include/inn/options.h ../include/inn/paths.h \
   ../include/inn/qio.h
@@ -246,14 +246,13 @@ shlock.o: shlock.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
   ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/messages.h \
-  ../include/inn/system.h
+  ../include/portable/stdbool.h ../include/inn/messages.h
 shrinkfile.o: shrinkfile.c ../include/portable/system.h \
   ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/stdbool.h \
   ../include/inn/innconf.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/system.h \
-  ../include/inn/libinn.h ../include/inn/concat.h ../include/inn/xmalloc.h \
+  ../include/inn/portable-stdbool.h ../include/inn/libinn.h \
+  ../include/inn/concat.h ../include/inn/xmalloc.h ../include/inn/system.h \
   ../include/inn/xwrite.h ../include/inn/messages.h
