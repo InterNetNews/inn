@@ -4,8 +4,8 @@
 
 =item *
 
-The LIST OVERVIEW.FMT command now returns the preferred format for C<:bytes>
-and C<:lines> metadata.
+The LIST OVERVIEW.FMT command now uses the preferred format to advertise
+C<:bytes> and C<:lines> metadata.
 
 =back
 
@@ -18,6 +18,13 @@ and C<:lines> metadata.
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
 information only for the first site, and the output of the C<ctlinnd name
 channel> command that was returning partial information for the channel.
+
+=item *
+
+The build of external programs which include F<inn/storage.h> was failing
+because of the unexpected inclusion of F<config.h> in one of the included
+headers.  Also, a few Autoconf results were not correctly made available to
+external programs.  This is now fixed.
 
 =back
 
