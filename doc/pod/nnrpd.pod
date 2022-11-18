@@ -352,6 +352,13 @@ only advertises the IHAVE capability when it is really available.
 B<nnrpd> allows a wider syntax for wildmats and ranges (especially C<->
 and C<-I<article-number>>).
 
+=item 8.
+
+When keyword generation is used, an experimental feature enabled with the
+I<keywords> parameter in F<inn.conf>, C<Keywords:full> is advertised in
+LIST OVERVIEW.FMT even though overview information is computed and does not
+necessarily come from Keywords header fields.
+
 =back
 
 =head1 HISTORY
