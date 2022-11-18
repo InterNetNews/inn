@@ -860,14 +860,17 @@ boolean value and the default is true.
 =back
 
 INN has optional support for generating keyword information automatically
-from article body text and putting that information in overview for the
-use of clients that know to look for it (HDR, OVER and XPAT commands).
-The following parameters control that feature.
+from article body text and putting that information in overview for the use of
+clients that know to look for it (HDR, OVER and XPAT commands).  The following
+parameters control that feature, which should be considered I<experimental>.
+Its very simple text tokenization works only on plain-text ASCII articles,
+and totally lacks of understanding of anything other than English.  Articles
+encoded in Base64 or Quoted-Printable, having a MIME structure, or farther
+afield from English will have garbage in the generated Keywords header field.
 
-This may be too slow if you're taking a substantial feed, and probably
-will not be useful for the average news reader; enabling this is not
-recommended unless you have some specific intention to take advantage of
-it.
+This feature may be too slow if you're taking a substantial feed, and
+probably will not be useful for the average news reader; enabling this is not
+recommended unless you have some specific intention to take advantage of it.
 
 =over 4
 
@@ -900,10 +903,10 @@ rest are discarded.  The default value is C<512>.
 =item I<keymaxwords>
 
 Maximum number of keywords that will be generated for an article.  (The
-keyword generation code will attempt to discard "noise" words, so the
-number of keywords actually written into the overview will usually be
-smaller than this even if the maximum number of keywords is found.)  The
-default value is C<250>.
+keyword generation code will attempt to discard "noise" words in English,
+so the number of keywords actually written into the overview will usually
+be smaller than this even if the maximum number of keywords is found.)
+The default value is C<250>.
 
 =back
 
