@@ -100,6 +100,12 @@ else
     make test
 fi
 
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_HASH=$(git log -1 --pretty=%H)
+GIT_COMMIT_DATE=$(git log -1 --pretty=%cd --date=format:%Y-%m-%d)
+
+# Make sure that mkversion still finds $GIT_COMMIT_DATE if you change
+# the following messages or the names of the generated files.
 if [ "$tree" = "BETA" -o "$tree" = "RC" ]; then
 
     cat >README.$extension <<EOF
@@ -107,6 +113,9 @@ This is a $releasename based on the current development version
 of INN.  It was made on:
 
     $(date -u +"%B %e, %Y @ %I:%M %p %Z")
+
+based on Git commit hash $GIT_HASH
+made on $GIT_COMMIT_DATE in the $GIT_BRANCH branch.
 
 Although it should work fine, this code should still be considered
 experimental.  If you find any bugs, we'd like to know at
@@ -124,6 +133,9 @@ automatically from the Git repository.  It was made on:
 
     $(date -u +"%B %e, %Y @ %I:%M %p %Z")
 
+based on Git commit hash $GIT_HASH
+made on $GIT_COMMIT_DATE in the $GIT_BRANCH branch.
+
 This code should be considered experimental.  Only a default compile and
 automated testing is done before it is made available.  If it breaks, we'd
 like to know at <inn-workers@lists.isc.org>, but if it causes your system to
@@ -138,11 +150,10 @@ fi
 if [ "$tree" = "BETA" -o "$tree" = "RC" ]; then
     make release RELEASENUMBER="$number" RELEASEEXTENSION="$extension"
 elif [ "$tree" = "GIT" ]; then
-    BRANCH=$(git rev-parse --abbrev-ref HEAD)
-    if [ "$BRANCH" = main ]; then
+    if [ "$GIT_BRANCH" = main ]; then
         VERSION=$(grep -w '^VERSION' Makefile.global.in | awk '{ print $3 }')
         VERSION=$(echo "$VERSION" | sed 's/.[0-9]*$//')
-        date=$(git log -1 --pretty=format:%cd --date=format:%Y%m%d)
+        date=$(git log -1 --pretty=%cd --date=format:%Y%m%d)
         SNAPDIR=inn-"$VERSION"-"$date"
     else
         SNAPDIR=inn-"$(git describe --tags)"
