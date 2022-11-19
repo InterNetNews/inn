@@ -8,7 +8,7 @@
 ##  used by INN for banner and local version identification.  The version
 ##  identification string will be "$VERSION ($VERSION_EXTRA)", with the
 ##  parentheses omitted if $VERSION_EXTRA is empty (as it is for major
-##  releases).	If you make extensive local modifications to INN, you can
+##  releases).  If you make extensive local modifications to INN, you can
 ##  put your own version information in $VERSION_EXTRA.  If it's set to
 ##  "prerelease", the build time will be automatically included.
 ##      If you modify these two strings, you must encode them in UTF-8
@@ -43,8 +43,8 @@ MAKEPROFILING	= $(MAKE) COPT="$(COPT) $(PROF)" \
 			  LDFLAGS="$(LDFLAGS) $(PROF)" \
 			  LIBSUFFIX=$(PROFSUFFIX)
 
-##  Used to support non-recursive make.	 This variable is set to the necessary
-##  options to the compiler to create an object file in a subdirectory.	 It
+##  Used to support non-recursive make.  This variable is set to the necessary
+##  options to the compiler to create an object file in a subdirectory.  It
 ##  should be used instead of -c -o $@ $< and may be replaced with code that
 ##  calls mv, if the compiler doesn't support -c with -o.
 
@@ -114,7 +114,7 @@ PAM_LIBS	= @PAM_LIBS@
 REGEX_LIBS	= @REGEX_LIBS@
 SHADOW_LIBS	= @SHADOW_LIBS@
 
-##  Embedding support.	Additional flags and libraries used when compiling
+##  Embedding support.  Additional flags and libraries used when compiling
 ##  or linking portions of INN that support embedded interpreters, set by
 ##  configure based on what interpreter embeddings are selected.
 
@@ -172,7 +172,7 @@ BLACKLIST_CPPFLAGS	= @BLACKLIST_CPPFLAGS@
 BLACKLIST_LDFLAGS	= @BLACKLIST_LDFLAGS@
 BLACKLIST_LIBS		= @BLACKLIST_LIBS@
 
-##  Missing functions.	If non-empty, configure detected that your system
+##  Missing functions.  If non-empty, configure detected that your system
 ##  was missing some standard functions, and INN will be providing its own
 ##  replacements from the lib directory.
 
@@ -213,8 +213,8 @@ POD2TEXT	= pod2text -s -l
 
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source
-##  tree by configure.	Instead, re-run configure with the correct
-##  command-line flags to set the directories.	Run configure --help for a
+##  tree by configure.  Instead, re-run configure with the correct
+##  command-line flags to set the directories.  Run configure --help for a
 ##  list of supported flags.
 
 prefix		= @prefix@
