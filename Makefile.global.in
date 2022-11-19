@@ -7,10 +7,13 @@
 ##  This version information is used to generate include/inn/version.h and is
 ##  used by INN for banner and local version identification.  The version
 ##  identification string will be "$VERSION ($VERSION_EXTRA)", with the
-##  parentheses omitted if $VERSION_EXTRA is empty (as it is for major
-##  releases).  If you make extensive local modifications to INN, you can
-##  put your own version information in $VERSION_EXTRA.  If it's set to
-##  "prerelease", the build time will be automatically included.
+##  parentheses omitted if $VERSION_EXTRA is empty (as it is for final
+##  releases).
+##  If you make extensive local modifications to INN, you can put your own
+##  version information in $VERSION_EXTRA.  If it's set to "prerelease", the
+##  build time will be automatically included, unless you're building from a
+##  Git repository, in which case the time of the last modification of the
+##  source code will be included.
 ##      If you modify these two strings, you must encode them in UTF-8
 ##      (using only US-ASCII characters is consequently also fine) and
 ##      keep their length reasonable; otherwise, your news server will not
