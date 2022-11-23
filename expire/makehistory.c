@@ -134,19 +134,18 @@ GetMessageID(char *p)
 }
 
 /*
- * The overview temp file is used to accumulate overview lines as articles are
- * scanned.  The format is
- * (1st) newsgroup name\tToken\toverview data.
- * When about 10000 lines of this overview data are accumulated, the data
- * file is sorted and then read back in and the data added to overview.
- * The sorting/batching helps improve efficiency.
- */
+**  The overview temp file is used to accumulate overview lines as articles are
+**  scanned.  The format is
+**  (1st) newsgroup name\tToken\toverview data.
+**  When about 10000 lines of this overview data are accumulated, the data
+**  file is sorted and then read back in and the data added to overview.
+**  The sorting/batching helps improve efficiency.
+*/
 
 /*
- * Flush the unwritten OverTempFile data to disk, sort the file, read it
- * back in, and add it to overview.
- */
-
+**  Flush the unwritten OverTempFile data to disk, sort the file, read it
+**  back in, and add it to overview.
+*/
 static void
 FlushOverTmpFile(void)
 {
@@ -235,12 +234,12 @@ FlushOverTmpFile(void)
             exit(1);
     }
 
-    /* don't need old path anymore. */
+    /* Don't need old path anymore. */
     unlink(OverTmpPath);
     free(OverTmpPath);
     OverTmpPath = NULL;
 
-    /* read sorted lines. */
+    /* Read sorted lines. */
     if ((qp = QIOopen(SortedTmpPath)) == NULL) {
         syswarn("cannot open sorted overview file %s", SortedTmpPath);
         OVclose();
@@ -373,7 +372,7 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, char *overdata,
     /* Otherwise, we need the temporary file.  Create it if it doesn't already
        exist. */
     if (OverTmpPath == NULL) {
-        /* need new temp file, so create it. */
+        /* Need new temp file, so create it. */
         OverTmpPath = concatpath(TmpDir, "histXXXXXX");
         fd = mkstemp(OverTmpPath);
         if (fd < 0)
@@ -384,10 +383,10 @@ WriteOverLine(TOKEN *token, const char *xrefs, int xrefslen, char *overdata,
         OverTmpSegCount = 0;
     }
 
-    /* Print out the data to the teporary file with the appropriate keys for
+    /* Print out the data to the temporary file with the appropriate keys for
        sorting. */
     if (sorttype == OVNEWSGROUP) {
-        /* find first ng name in xref. */
+        /* Find first ng name in xref. */
         for (p = xrefs, q = NULL; p < xrefs + xrefslen; ++p) {
             if (*p == ' ') {
                 q = p + 1; /* found space */
@@ -587,8 +586,8 @@ ARTreadschema(bool Overview)
 }
 
 /*
- * Handle a single article.  This routine's fairly complicated.
- */
+**  Handle a single article.  This routine's fairly complicated.
+*/
 static void
 DoArt(ARTHANDLE *art)
 {
@@ -700,7 +699,7 @@ DoArt(ARTHANDLE *art)
             /* The true length of the header field is p - fp->Header + 1, but p
                points to the \n at the end of the header field body, so
                subtract 2 to peel off the \r\n (we're guaranteed we're dealing
-               with wire-format articles. */
+               with wire-format articles). */
             fp->HeaderLength = p - fp->Header - 1;
         }
     }
@@ -764,7 +763,7 @@ DoArt(ARTHANDLE *art)
     }
 
     /*
-     * check if msgid is in history if in update mode, or if article is
+     * Check if msgid is in history if in update mode, or if article is
      * newer than start time of makehistory.
      */
 
@@ -840,7 +839,7 @@ DoArt(ARTHANDLE *art)
 
 
 /*
-** Add all groups to overview group.index. --rmt
+**  Add all groups to overview group.index. --rmt
 */
 static void
 OverAddAllNewsgroups(void)
@@ -973,7 +972,7 @@ main(int argc, char **argv)
 
     if (!NoHistory) {
         if ((p = strrchr(HistoryPath, '/')) == NULL) {
-            /* find the default history file directory */
+            /* Find the default history file directory. */
             HistoryDir = innconf->pathdb;
         } else {
             *p = '\0';
@@ -994,7 +993,7 @@ main(int argc, char **argv)
     ARTreadschema(DoOverview);
 
     if (DoOverview && !WriteStdout) {
-        /* init the overview setup. */
+        /* Init the overview setup. */
         if (!OVopen(OV_WRITE))
             sysdie("cannot open overview");
         if (!OVctl(OVSORT, (void *) &sorttype))
@@ -1015,7 +1014,7 @@ main(int argc, char **argv)
         }
     }
 
-    /* Init the Storage Manager */
+    /* Init the Storage Manager. */
     val = true;
     if (!SMsetup(SM_RDWR, (void *) &val)
         || !SMsetup(SM_PREOPEN, (void *) &val))
@@ -1023,7 +1022,7 @@ main(int argc, char **argv)
     if (!SMinit())
         sysdie("cannot initialize storage manager: %s", SMerrorstr);
 
-    /* Initialise the history manager */
+    /* Initialize the history manager. */
     if (!NoHistory) {
         int flags = HIS_RDWR | HIS_INCORE;
 
@@ -1059,7 +1058,7 @@ main(int argc, char **argv)
     }
 
     if (!NoHistory) {
-        /* close history file. */
+        /* Close history file. */
         if (!HISclose(History))
             sysdie("cannot close history file");
     }
