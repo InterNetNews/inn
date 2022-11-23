@@ -110,7 +110,7 @@ if [ "$tree" = "BETA" -o "$tree" = "RC" ]; then
 This is a $releasename based on the current development version
 of INN.  It was made on:
 
-    $(date -u +"%B %e, %Y @ %I:%M %p %Z")
+    $(LC_TIME=C date -u +"%B %e, %Y @ %I:%M %p %Z")
 
 based on Git commit hash $GIT_HASH
 made on $GIT_COMMIT_DATE in the $GIT_BRANCH branch.
@@ -129,7 +129,7 @@ else
 This is a snapshot of the current development version of INN, pulled
 automatically from the Git repository.  It was made on:
 
-    $(date -u +"%B %e, %Y @ %I:%M %p %Z")
+    $(LC_TIME=C date -u +"%B %e, %Y @ %I:%M %p %Z")
 
 based on Git commit hash $GIT_HASH
 made on $GIT_COMMIT_DATE in the $GIT_BRANCH branch.
