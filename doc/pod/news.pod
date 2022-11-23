@@ -15,6 +15,32 @@ C<:bytes> and C<:lines> metadata.
 
 =item *
 
+Fixed the generation and the handling of storage tokens on wrapped CNFS
+buffers, thanks to bug reports from Kamil Jonca:
+
+=over 2
+
+=item *
+
+Duplicate entries were returned by B<makehistory> on fully wrapped cyclic
+buffers (the first article of the cyclic buffer appeared twice in the output).
+
+=item *
+
+The first article of a fully wrapped cyclic buffer was removed too soon from
+F<history> (B<expire> wrongly thought its storage token was no longer existing
+after a wrap).
+
+=item *
+
+The first article of the previous cycle number of a cyclic buffer containing
+articles from two different cycle numbers was wrongly considered by
+B<makehistory> to belong to the current cycle number.
+
+=back
+
+=item *
+
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
 information only for the first site, and the output of the C<ctlinnd name
 channel> command that was returning partial information for the channel.

@@ -1132,13 +1132,11 @@ CNFSArtMayBeHere(CYCBUFF *cycbuff, off_t offset, uint32_t cycnum)
             CNFSReadFreeAndCycle(cycbuff);
         }
     }
-    /*
-    ** The current cycle number may have advanced since the last time we
-    ** checked it, so use a ">=" check instead of "==".  Our intent is
-    ** avoid a false negative response, *not* a false positive response.
-    */
+    /* Basic range checks.
+     * Our intent is to avoid a false negative response, *not* a false positive
+     * response. */
     if (!(cycnum == cycbuff->cyclenum
-          || (cycnum == cycbuff->cyclenum - 1 && offset > cycbuff->free)
+          || (cycnum == cycbuff->cyclenum - 1 && offset >= cycbuff->free)
           || (cycnum + 1 == 0 && cycbuff->cyclenum == 2
               && offset > cycbuff->free))) {
         /* We've been overwritten */
@@ -1779,46 +1777,77 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
             SMseterror(SMERR_INTERNAL, "cycbuff initialization fail");
             continue;
         }
+        /* If a roll over is expected but offset is too far, go to the
+         * beginning of the next cycbuff. */
         if (priv.rollover && priv.offset >= cycbuff->free) {
             priv.offset = 0;
             if (!SMpreopen)
                 CNFSshutdowncycbuff(cycbuff);
             continue;
         }
+
+        /* Set offset to the first article in the cycbuff after a roll over. */
         if (priv.offset == 0) {
             if (cycbuff->cyclenum == 1) {
+                /* It is really the first cycle number as cnfs_store() sets the
+                 * cycle to 2 when rolling over after the maximum number of
+                 * cycles a cycbuff can go through.  Ask for a roll over in
+                 * order to treat the articles up to cycbuff->free only. */
                 priv.offset = cycbuff->minartoffset;
                 priv.rollover = true;
             } else {
+                /* Treat the oldest articles first (the ones of the previous
+                 * cycle, that will soon be overwritten after cycbuff->free).
+                 */
                 priv.offset = cycbuff->free;
                 priv.rollover = false;
             }
         }
         if (!priv.rollover) {
+            /* Treat the articles until the end of the cycbuff is reached. */
             for (middle = priv.offset;
                  middle < cycbuff->len - cycbuff->blksz - 1;
                  middle += cycbuff->blksz) {
                 if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
                     break;
             }
+            /* The end of the cycbuff has been reached.  Ask for a roll over,
+             * and go back to the beginning of this cycbuff to treat the
+             * articles of the current cycle number. */
             if (middle >= cycbuff->len - cycbuff->blksz - 1) {
                 priv.rollover = true;
                 middle = cycbuff->minartoffset;
+                /* If the beginning of cycbuff is the next place where to write
+                 * an article, then it means that the cycbuff has fully
+                 * wrapped, so the first article has already been walked
+                 * through.  Only articles sharing the same cycle number are
+                 * present in the cycbuff. */
+                if (middle == cycbuff->free) {
+                    if (!SMpreopen)
+                        CNFSshutdowncycbuff(cycbuff);
+                    continue;
+                }
             }
+            /* Treat the article (of the current cycle number). */
             break;
         } else {
+            /* Treat the articles of the current cycle number, up to where
+             * articles of the previous cycle number still are. */
             for (middle = priv.offset; middle < cycbuff->free;
                  middle += cycbuff->blksz) {
                 if (CNFSUsedBlock(cycbuff, middle, false, false) != 0)
                     break;
             }
+            /* Time to go to the next cycbuff? */
             if (middle >= cycbuff->free) {
-                middle = 0;
+                /* priv.offset will be set to 0 in the loop clause. */
                 if (!SMpreopen)
                     CNFSshutdowncycbuff(cycbuff);
                 continue;
-            } else
+            } else {
+                /* Treat the article. */
                 break;
+            }
         }
     }
     if (cycbuff == (CYCBUFF *) NULL)
@@ -1921,9 +1950,11 @@ cnfs_next(ARTHANDLE *article, const RETRTYPE amount)
     tonextblock = cycbuff->blksz - (private->offset & (cycbuff->blksz - 1));
     private->offset += (off_t) tonextblock;
     art->arrived = ntohl(cah.arrived);
+    /* Generate a token relative to the previous cycle number when offset is
+     * where to begin overwritting files, or beyond. */
     token = CNFSMakeToken(cycbuff->name, offset, cycbuff->blksz,
-                          (offset > cycbuff->free) ? cycbuff->cyclenum - 1
-                                                   : cycbuff->cyclenum,
+                          (offset >= cycbuff->free) ? cycbuff->cyclenum - 1
+                                                    : cycbuff->cyclenum,
                           cah.class);
     art->token = &token;
     offset += sizeof(cah) + plusoffset;
