@@ -871,7 +871,7 @@ sub crossFeedGroup {
                     for (
                         my $idx_step = $idx + 1;
                         $idx_step < @$article
-                        and $article->[$idx_step] =~ /^[[:space:]](.+)/;
+                          and $article->[$idx_step] =~ /^[[:space:]](.+)/;
                         $idx_step++
                       )
                     {
