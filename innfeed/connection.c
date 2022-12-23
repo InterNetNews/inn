@@ -94,7 +94,7 @@
 typedef struct art_holder_s {
     Article article;
     struct art_holder_s *next;
-} * ArtHolder;
+} *ArtHolder;
 
 
 typedef enum {

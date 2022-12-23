@@ -75,7 +75,7 @@ typedef struct proc_q_elem {
     struct proc_q_elem *next;
     struct proc_q_elem *prev;
     time_t whenToRequeue;
-} * ProcQElem;
+} *ProcQElem;
 
 typedef struct host_param_s {
     char *peerName;
@@ -106,7 +106,7 @@ typedef struct host_param_s {
     bool backlogFeedFirst;
     char *username;
     char *password;
-} * HostParams;
+} *HostParams;
 
 struct host_s {
     InnListener listener;      /* who created me. */
@@ -251,7 +251,7 @@ struct host_s {
 typedef struct host_holder_s {
     HostParams params;
     struct host_holder_s *next;
-} * HostHolder;
+} *HostHolder;
 
 
 /* These numbers are as above, but for all hosts over
