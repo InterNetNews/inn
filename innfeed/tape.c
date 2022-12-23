@@ -49,7 +49,7 @@ typedef struct dirent DIRENTRY;
 typedef struct q_e_s {
     Article article;
     struct q_e_s *next;
-} * QueueElem;
+} *QueueElem;
 #endif
 
 /* The Tape class type. */

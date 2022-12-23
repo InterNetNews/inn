@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #ifndef INN_CONFPARSE_QUOTING
-#define INN_CONFPARSE_QUOTING 1
+#    define INN_CONFPARSE_QUOTING 1
 enum confparse_quoting {
     CONFPARSE_QUOTE_NONE,
     CONFPARSE_QUOTE_SHELL,

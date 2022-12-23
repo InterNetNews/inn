@@ -93,7 +93,7 @@ typedef struct timerqelem_s {
     EndpTCB func;              /* the function to call */
     void *data;                /* the client callback data */
     struct timerqelem_s *next; /* next in the queue */
-} * TimerElem, TimerElemStruct;
+} *TimerElem, TimerElemStruct;
 
 static EndPoint mainEndPoint;
 static bool mainEpIsReg = false;
