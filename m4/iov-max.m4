@@ -1,4 +1,4 @@
-dnl iov-max.m4 -- Probe for the maximum number of iovecs accepted by writev.
+dnl Probe for the maximum number of iovecs accepted by writev.
 dnl
 dnl Check for the maximum number of elements in an iovec (IOV_MAX).  SVr4
 dnl systems appear to use that name for this limit (checked Solaris 2.6, IRIX
@@ -13,8 +13,7 @@ dnl value by checking writev calls up to 1024 members of an iovec and set it
 dnl to an appropriate value.
 
 dnl Source used by INN_MACRO_IOV_MAX.
-define([_INN_MACRO_IOV_MAX_SOURCE],
-[AC_LANG_SOURCE([[
+AC_DEFUN([_INN_MACRO_IOV_MAX_SOURCE], [[
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -57,25 +56,24 @@ main()
 #endif /* UIO_MAXIOV */
     return 0;
 }
-]])])
+]])
 
 dnl Headers to use for checking for an IOV_MAX definition.
-define([_INN_MACRO_IOV_MAX_HEADERS],
-[AC_INCLUDES_DEFAULT
+AC_DEFUN([_INN_MACRO_IOV_MAX_HEADERS], [AC_INCLUDES_DEFAULT] [[
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
-])
+]])
 
 dnl Do the actual check.
 AC_DEFUN([INN_MACRO_IOV_MAX],
 [AC_CHECK_DECL([IOV_MAX], [],
     [AC_CACHE_CHECK([value of IOV_MAX],
         [inn_cv_macro_iov_max],
-        [AC_RUN_IFELSE([_INN_MACRO_IOV_MAX_SOURCE],
-            inn_cv_macro_iov_max=`cat conftestval`,
-            inn_cv_macro_iov_max=error,
-            16)
+        [AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_MACRO_IOV_MAX_SOURCE])],
+            [inn_cv_macro_iov_max=`cat conftestval`],
+            [inn_cv_macro_iov_max=error],
+            [16])
          AS_IF([test x"$inn_cv_macro_iov_max" = xerror],
             [AC_MSG_WARN([probe failure, assuming 16])
              inn_cv_macro_iov_max=16])])

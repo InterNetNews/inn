@@ -1,4 +1,4 @@
-dnl modes.m4 -- Setting file and installation modes.
+dnl Setting file and installation modes.
 dnl
 dnl INN defaults to a umask of 002 for historical reasons, but offers an
 dnl option to change them.  It also has some programs that are occasionally
@@ -14,18 +14,16 @@ AC_DEFUN([INN_ARG_MODES],
  DIRMODE=0775
  RUNDIRMODE=0770
  AC_ARG_WITH([news-umask],
-    [AS_HELP_STRING([--with-news-umask=UMASK], [umask for news files [002]])],
-    with_news_umask=`AS_ECHO(["$with_news_umask"]) | sed 's/^0*//'`
-    if test "x$with_news_umask" = x22 ; then
-        NEWSUMASK=022
-        FILEMODE=0644
-        DIRMODE=0755
-        RUNDIRMODE=0750
-    else
-        if test "x$with_news_umask" != x2 ; then
-            AC_MSG_ERROR([Valid umasks are 002 or 022])
-        fi
-    fi)
+    [AS_HELP_STRING([--with-news-umask=UMASK],
+        [umask for news files @<:@002@:>@])],
+    [with_news_umask=`AS_ECHO(["$with_news_umask"]) | sed 's/^0*//'`
+     AS_IF([test "x$with_news_umask" = x22],
+        [NEWSUMASK=022
+         FILEMODE=0644
+         DIRMODE=0755
+         RUNDIRMODE=0750],
+        [AS_IF([test "x$with_news_umask" != x2],
+            [AC_MSG_ERROR([Valid umasks are 002 or 022])])])])
  AC_SUBST([NEWSUMASK])
  AC_SUBST([FILEMODE])
  AC_SUBST([DIRMODE])
@@ -44,9 +42,8 @@ AC_DEFUN([INN_ARG_MODES],
  INEWSMODE=0550
  AC_ARG_ENABLE([setgid-inews],
     [AS_HELP_STRING([--enable-setgid-inews], [Install inews setgid])],
-    if test "x$enableval" = xyes ; then
-        INEWSMODE=02555
-    fi)
+    [AS_IF([test "x$enableval" = xyes],
+        [INEWSMODE=02555])])
  AC_SUBST([INEWSMODE])
 
  dnl rnews used to be installed setuid root so that it could be run by the uucp
@@ -58,9 +55,8 @@ AC_DEFUN([INN_ARG_MODES],
  AC_ARG_ENABLE([uucp-rnews],
     [AS_HELP_STRING([--enable-uucp-rnews],
         [Install rnews setuid, group uucp])],
-    if test "x$enableval" = xyes ; then
-        RNEWSGRP=uucp
-        RNEWSMODE=04550
-    fi)
+    [AS_IF([test "x$enableval" = xyes],
+        [RNEWSGRP=uucp
+         RNEWSMODE=04550])])
  AC_SUBST([RNEWSGRP])
  AC_SUBST([RNEWSMODE])])

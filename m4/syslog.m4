@@ -1,4 +1,4 @@
-dnl syslog.m4 -- Options and probes for syslog behavior.
+dnl Options and probes for syslog behavior.
 dnl
 dnl Normally, INN just logs everything to the news facility, but some systems
 dnl don't have that so we have to probe and see if we should use local1
