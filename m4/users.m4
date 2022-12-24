@@ -8,18 +8,18 @@ dnl macro.  Takes the name of what we're looking for, the default, the
 dnl variable to set, the help string, and the comment for config.h.
 AC_DEFUN([_INN_ARG_USER],
 [AC_ARG_WITH([news-$1], [$4], [$3=$with_news_$1], [$3=$2])
-AC_SUBST($3)
-AC_DEFINE_UNQUOTED($3, "$[$3]", [$5])])
+ AC_SUBST($3)
+ AC_DEFINE_UNQUOTED($3, "$[$3]", [$5])])
 
 dnl And here they are.
 AC_DEFUN([INN_ARG_USERS],
 [_INN_ARG_USER([user], [news], [RUNASUSER],
     [AS_HELP_STRING([--with-news-user=USER], [News user name [news]])],
     [The user that INN should run as.])
-_INN_ARG_USER([group], [news], [RUNASGROUP],
+ _INN_ARG_USER([group], [news], [RUNASGROUP],
     [AS_HELP_STRING([--with-news-group=GROUP], [News group name [news]])],
     [The group that INN should run as.])
-_INN_ARG_USER([master], [usenet], [NEWSMASTER],
+ _INN_ARG_USER([master], [usenet], [NEWSMASTER],
     [AS_HELP_STRING([--with-news-master=USER],
         [News master (address for reports) [usenet]])],
     [The user who gets all INN-related e-mail.])])

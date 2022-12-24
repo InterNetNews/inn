@@ -6,9 +6,9 @@ dnl fourth argument, if any.  This is for libraries we don't want to pollute
 dnl LIBS with.  Takes the same arguments as AC_SEARCH_LIBS otherwise.
 AC_DEFUN([INN_SEARCH_AUX_LIBS],
 [inn_save_LIBS=$LIBS
-LIBS=${$3}
-AC_SEARCH_LIBS($1, $2,
-               [$3=$LIBS
-                $4], $5, $6)
-LIBS=$inn_save_LIBS
-AC_SUBST($3)])
+ LIBS=${$3}
+ AC_SEARCH_LIBS($1, $2,
+                [$3=$LIBS
+                 $4], $5, $6)
+ LIBS=$inn_save_LIBS
+ AC_SUBST($3)])

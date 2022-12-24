@@ -26,8 +26,8 @@ compress) LOG_COMPRESSEXT=".Z"   ;;
 gzip)     LOG_COMPRESSEXT=".gz"  ;;
 *)        AC_MSG_ERROR([unknown log compression type $LOG_COMPRESS]) ;;
 esac
-AC_SUBST([LOG_COMPRESS])
-AC_SUBST([LOG_COMPRESSEXT])])
+ AC_SUBST([LOG_COMPRESS])
+ AC_SUBST([LOG_COMPRESSEXT])])
 
 dnl Track down the appropriate compression programs.  We always look for gzip
 dnl and compress (although we may not use the result of looking for compress
@@ -39,13 +39,13 @@ dnl Only the program for log compression has to be found; for other purposes,
 dnl use the bare program name if it can't be found in the path.
 AC_DEFUN([INN_PATH_COMPRESS],
 [AC_ARG_VAR([BZIP2], [Location of bzip2 program])
-AC_ARG_VAR([CAT], [Location of cat program])
-AC_ARG_VAR([COMPRESS], [Location of compress program])
-AC_ARG_VAR([GZIP], [Location of gzip program])
-AC_PATH_PROG([BZIP2], [bzip2], [bzip2])
-AC_PATH_PROG([CAT], [cat], [cat])
-AC_PATH_PROG([COMPRESS], [compress], [compress])
-AC_PATH_PROG([GZIP], [gzip], [gzip])
+ AC_ARG_VAR([CAT], [Location of cat program])
+ AC_ARG_VAR([COMPRESS], [Location of compress program])
+ AC_ARG_VAR([GZIP], [Location of gzip program])
+ AC_PATH_PROG([BZIP2], [bzip2], [bzip2])
+ AC_PATH_PROG([CAT], [cat], [cat])
+ AC_PATH_PROG([COMPRESS], [compress], [compress])
+ AC_PATH_PROG([GZIP], [gzip], [gzip])
 case "$LOG_COMPRESS" in
 bzip2)
     if test x"$BZIP2" = xbzip2 ; then
@@ -80,4 +80,4 @@ if test x"$GZIP" != xgzip || test x"$COMPRESS" = xcompress ; then
 else
     UNCOMPRESS="$COMPRESS -d"
 fi
-AC_SUBST([UNCOMPRESS])])
+ AC_SUBST([UNCOMPRESS])])
