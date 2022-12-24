@@ -35,38 +35,38 @@ define([_INN_FUNC_MMAP_SOURCE],
 int
 main()
 {
-  int *data, *data2;
-  int i, fd;
+    int *data, *data2;
+    int i, fd;
 
-  /* First, make a file with some known garbage in it.  Use something
-     larger than one page but still an odd page size. */
-  data = malloc (20000);
-  if (!data)
-    return 1;
-  for (i = 0; i < 20000 / sizeof (int); i++)
-    data[i] = rand();
-  umask (0);
-  fd = creat ("conftestmmaps", 0600);
-  if (fd < 0)
-    return 1;
-  if (write (fd, data, 20000) != 20000)
-    return 1;
-  close (fd);
+    /* First, make a file with some known garbage in it.  Use something
+       larger than one page but still an odd page size. */
+    data = malloc(20000);
+    if (!data)
+        return 1;
+    for (i = 0; i < 20000 / sizeof(int); i++)
+        data[i] = rand();
+    umask(0);
+    fd = creat("conftestmmaps", 0600);
+    if (fd < 0)
+        return 1;
+    if (write(fd, data, 20000) != 20000)
+        return 1;
+    close(fd);
 
-  /* Next, try to mmap the file and make sure we see the same garbage. */
-  fd = open ("conftestmmaps", O_RDWR);
-  if (fd < 0)
-    return 1;
-  data2 = mmap (0, 20000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  if (data2 == (int *) -1)
-    return 1;
-  for (i = 0; i < 20000 / sizeof (int); i++)
-    if (data[i] != data2[i])
-      return 1;
+    /* Next, try to mmap the file and make sure we see the same garbage. */
+    fd = open("conftestmmaps", O_RDWR);
+    if (fd < 0)
+        return 1;
+    data2 = mmap(0, 20000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (data2 == (int *) -1)
+        return 1;
+    for (i = 0; i < 20000 / sizeof(int); i++)
+        if (data[i] != data2[i])
+            return 1;
 
-  close (fd);
-  unlink ("conftestmmaps");
-  return 0;
+    close(fd);
+    unlink("conftestmmaps");
+    return 0;
 }
 ]])])
 
@@ -102,45 +102,45 @@ define([_INN_FUNC_MMAP_NEEDS_MSYNC_SOURCE],
 int
 main()
 {
-  int *data, *data2;
-  int i, fd;
+    int *data, *data2;
+    int i, fd;
 
-  /* First, make a file with some known garbage in it.  Use something
-     larger than one page but still an odd page size. */
-  data = malloc (20000);
-  if (!data)
-    return 1;
-  for (i = 0; i < 20000 / sizeof (int); i++)
-    data[i] = rand();
-  umask (0);
-  fd = creat ("conftestmmaps", 0600);
-  if (fd < 0)
-    return 1;
-  if (write (fd, data, 20000) != 20000)
-    return 1;
-  close (fd);
+    /* First, make a file with some known garbage in it.  Use something
+       larger than one page but still an odd page size. */
+    data = malloc(20000);
+    if (!data)
+        return 1;
+    for (i = 0; i < 20000 / sizeof(int); i++)
+        data[i] = rand();
+    umask(0);
+    fd = creat("conftestmmaps", 0600);
+    if (fd < 0)
+        return 1;
+    if (write(fd, data, 20000) != 20000)
+        return 1;
+    close(fd);
 
-  /* Next, try to mmap the file and make sure we see the same garbage. */
-  fd = open ("conftestmmaps", O_RDWR);
-  if (fd < 0)
-    return 1;
-  data2 = mmap (0, 20000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  if (data2 == (int *) -1)
-    return 1;
+    /* Next, try to mmap the file and make sure we see the same garbage. */
+    fd = open("conftestmmaps", O_RDWR);
+    if (fd < 0)
+        return 1;
+    data2 = mmap(0, 20000, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (data2 == (int *) -1)
+        return 1;
 
-  /* Finally, see if changes made to the mmaped region propagate back to
-     the file as seen by read (meaning that msync isn't needed). */
-  for (i = 0; i < 20000 / sizeof (int); i++)
-    data2[i]++;
-  if (read (fd, data, 20000) != 20000)
-    return 1;
-  for (i = 0; i < 20000 / sizeof (int); i++)
-    if (data[i] != data2[i])
-      return 1;
+    /* Finally, see if changes made to the mmaped region propagate back to
+       the file as seen by read (meaning that msync isn't needed). */
+    for (i = 0; i < 20000 / sizeof(int); i++)
+        data2[i]++;
+    if (read(fd, data, 20000) != 20000)
+        return 1;
+    for (i = 0; i < 20000 / sizeof(int); i++)
+        if (data[i] != data2[i])
+            return 1;
 
-  close (fd);
-  unlink ("conftestmmapm");
-  return 0;
+    close(fd);
+    unlink("conftestmmapm");
+    return 0;
 }
 ]])])
 
@@ -161,42 +161,41 @@ AC_DEFUN([INN_FUNC_MMAP_NEEDS_MSYNC],
 dnl Source used by INN_FUNC_MMAP_SEES_WRITES.
 define([_INN_FUNC_MMAP_SEES_WRITES_SOURCE],
 [AC_LANG_SOURCE([[
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#include <sys/mman.h>
 
 /* Fractional page is probably worst case. */
 static char zbuff[1024];
 static char fname[] = "conftestw";
 
 int
-main ()
+main()
 {
-  char *map;
-  int i, fd;
+    char *map;
+    int i, fd;
 
-  fd = open (fname, O_RDWR | O_CREAT, 0660);
-  if (fd < 0)
-    return 1;
-  unlink (fname);
-  write (fd, zbuff, sizeof (zbuff));
-  lseek (fd, 0, SEEK_SET);
-  map = mmap (0, sizeof (zbuff), PROT_READ, MAP_SHARED, fd, 0);
-  if (map == (char *) -1)
-    return 2;
-  for (i = 0; fname[i]; i++)
-    {
-      if (write (fd, &fname[i], 1) != 1)
-        return 3;
-      if (map[i] != fname[i])
-        return 4;
+    fd = open(fname, O_RDWR | O_CREAT, 0660);
+    if (fd < 0)
+        return 1;
+    unlink(fname);
+    write(fd, zbuff, sizeof(zbuff));
+    lseek(fd, 0, SEEK_SET);
+    map = mmap(0, sizeof(zbuff), PROT_READ, MAP_SHARED, fd, 0);
+    if (map == (char *) -1)
+        return 2;
+    for (i = 0; fname[i]; i++) {
+        if (write(fd, &fname[i], 1) != 1)
+            return 3;
+        if (map[i] != fname[i])
+            return 4;
     }
-  return 0;
+    return 0;
 }
 ]])])
 

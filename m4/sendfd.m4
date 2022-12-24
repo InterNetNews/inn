@@ -11,52 +11,46 @@ define([_INN_SYS_STREAMS_SENDFD],
 #include <stdio.h>
 #include <string.h>
 #include <stropts.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
 int
-main ()
+main()
 {
-  int fd[2], parent;
+    int fd[2], parent;
 
-  pipe(fd);
-  if (!isastream (fd[0]))
-    {
-      fprintf (stderr, "%d is not a stream\n", fd[0]);
-      return 1;
-    }
-  if (fork () == 0)
-    {
-      int child;
-
-      close (fd[0]);
-      child = socket (AF_INET, SOCK_STREAM, 0);
-      if (child < 0)
+    pipe(fd);
+    if (!isastream(fd[0])) {
+        fprintf(stderr, "%d is not a stream\n", fd[0]);
         return 1;
-      if (ioctl (fd[1], I_SENDFD, child) < 0)
-        return 1;
-      return 0;
     }
-  else
-    {
-      struct strrecvfd fdrec;
+    if (fork() == 0) {
+        int child;
 
-      memset (&fdrec, 0, sizeof(fdrec));
-      close (fd[1]);
-      if (ioctl (fd[0], I_RECVFD, &fdrec) < 0)
-        {
-          perror("ioctl");
-          return 1;
+        close(fd[0]);
+        child = socket(AF_INET, SOCK_STREAM, 0);
+        if (child < 0)
+            return 1;
+        if (ioctl(fd[1], I_SENDFD, child) < 0)
+            return 1;
+        return 0;
+    } else {
+        struct strrecvfd fdrec;
+
+        memset(&fdrec, 0, sizeof(fdrec));
+        close(fd[1]);
+        if (ioctl(fd[0], I_RECVFD, &fdrec) < 0) {
+            perror("ioctl");
+            return 1;
         }
-      if (fdrec.fd < 0)
-        {
-          fprintf(stderr, "Bad file descriptor %d\n", fd);
-          return 1;
+        if (fdrec.fd < 0) {
+            fprintf(stderr, "Bad file descriptor %d\n", fd);
+            return 1;
         }
-      return 0;
+        return 0;
     }
 }
 ]])])

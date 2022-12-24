@@ -15,11 +15,11 @@ dnl to an appropriate value.
 dnl Source used by INN_MACRO_IOV_MAX.
 define([_INN_MACRO_IOV_MAX_SOURCE],
 [AC_LANG_SOURCE([[
-#include <sys/types.h>
-#include <stdio.h>
-#include <sys/uio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/uio.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -28,36 +28,34 @@ define([_INN_MACRO_IOV_MAX_SOURCE],
 #endif
 
 int
-main ()
+main()
 {
-  int fd, size;
-  struct iovec array[1024];
-  char data;
+    int fd, size;
+    struct iovec array[1024];
+    char data;
 
-  FILE *f = fopen ("conftestval", "w");
-  if (f == NULL)
-    return 1;
+    FILE *f = fopen("conftestval", "w");
+    if (f == NULL)
+        return 1;
 #ifdef UIO_MAXIOV
-  fprintf (f, "%d\n", UIO_MAXIOV);
+    fprintf(f, "%d\n", UIO_MAXIOV);
 #else
-  fd = open ("/dev/null", O_WRONLY, 0666);
-  if (fd < 0)
-    return 1;
-  for (size = 1; size <= 1024; size++)
-    {
-      array[size - 1].iov_base = &data;
-      array[size - 1].iov_len = sizeof data;
-      if (writev (fd, array, size) < 0)
-        {
-          if (errno != EINVAL)
-            return 1;
-          fprintf (f, "%d\n", size - 1);
-          exit (0);
+    fd = open("/dev/null", O_WRONLY, 0666);
+    if (fd < 0)
+        return 1;
+    for (size = 1; size <= 1024; size++) {
+        array[size - 1].iov_base = &data;
+        array[size - 1].iov_len = sizeof data;
+        if (writev(fd, array, size) < 0) {
+            if (errno != EINVAL)
+                return 1;
+            fprintf(f, "%d\n", size - 1);
+            exit(0);
         }
     }
-  fprintf (f, "1024\n");
+    fprintf(f, "1024\n");
 #endif /* UIO_MAXIOV */
-  return 0;
+    return 0;
 }
 ]])])
 
