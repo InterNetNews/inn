@@ -25,8 +25,8 @@ dnl SPDX-License-Identifier: FSFULLR
 
 dnl Source used by INN_FUNC_SNPRINTF.
 AC_DEFUN([_INN_FUNC_SNPRINTF_SOURCE], [[
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 char buf[2];
 
@@ -46,7 +46,9 @@ int
 main()
 {
     return ((test("%s", "abcd") == 4 && buf[0] == 'a' && buf[1] == '\0'
-             && snprintf(NULL, 0, "%s", "abcd") == 4) ? 0 : 1);
+             && snprintf(NULL, 0, "%s", "abcd") == 4)
+                ? 0
+                : 1);
 }
 ]])
 

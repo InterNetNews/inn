@@ -14,10 +14,10 @@ define([_INN_TYPE_FPOS_T_LARGE_SOURCE],
 int
 main ()
 {
-  fpos_t fpos = 9223372036854775807ULL;
-  off_t off;
-  off = fpos;
-  exit(off == (off_t) 9223372036854775807ULL ? 0 : 1);
+    fpos_t fpos = 9223372036854775807ULL;
+    off_t off;
+    off = fpos;
+    exit(off == (off_t) 9223372036854775807ULL ? 0 : 1);
 }
 ]])])
 
