@@ -1,4 +1,4 @@
-dnl sendfd.m4 -- Check whether I_SENDFD/I_RECVFD is supported.
+dnl Check whether I_SENDFD/I_RECVFD is supported.
 dnl
 dnl Check whether the system supports STREAMS and can send and receive file
 dnl descriptors via the I_SENDFD and I_RECVFD ioctls.  Provides
@@ -6,8 +6,7 @@ dnl INN_SYS_STREAMS_SENDFD and defines HAVE_STREAMS_SENDFD if this facility is
 dnl available.
 
 dnl Source used by INN_SYS_STREAMS_SENDFD.
-define([_INN_SYS_STREAMS_SENDFD],
-[AC_LANG_SOURCE([[
+AC_DEFUN([_INN_SYS_STREAMS_SENDFD], [[
 #include <stdio.h>
 #include <string.h>
 #include <stropts.h>
@@ -53,17 +52,16 @@ main()
         return 0;
     }
 }
-]])])
+]])
 
 dnl The public macro.
 AC_DEFUN([INN_SYS_STREAMS_SENDFD],
 [AC_CACHE_CHECK([whether STREAMS fd passing is supported],
     [inn_cv_sys_streams_sendfd],
-    [AC_RUN_IFELSE([_INN_SYS_STREAMS_SENDFD],
+    [AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_SYS_STREAMS_SENDFD])],
         [inn_cv_sys_streams_sendfd=yes],
         [inn_cv_sys_streams_sendfd=no],
         [inn_cv_sys_streams_sendfd=no])])
- if test "$inn_cv_sys_streams_sendfd" = yes ; then
-    AC_DEFINE([HAVE_STREAMS_SENDFD], 1,
-        [Define if your system supports STREAMS file descriptor passing.])
- fi])
+ AS_IF([test "$inn_cv_sys_streams_sendfd" = yes],
+    [AC_DEFINE([HAVE_STREAMS_SENDFD], 1,
+        [Define if your system supports STREAMS file descriptor passing.])])])

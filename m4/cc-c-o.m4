@@ -1,4 +1,4 @@
-dnl cc-c-o.m4 -- Checks whether -o can be used with -c.
+dnl Checks whether -o can be used with -c.
 dnl
 dnl Used to check whether -o can be provided with -c with the chosen compiler.
 dnl We need this if we're not using libtool so that object files can be built
@@ -16,7 +16,7 @@ AC_DEFUN([INN_PROG_CC_C_O],
     [rm -f -r conftest 2>/dev/null
      mkdir conftest
      cd conftest
-     echo "int some_variable = 0;" > conftest.$ac_ext
+     AS_ECHO(["int some_variable = 0;"]) > conftest.$ac_ext
      mkdir out
      # According to Tom Tromey, Ian Lance Taylor reported there are C compilers
      # that will create temporary files in the current directory regardless of
@@ -27,20 +27,16 @@ AC_DEFUN([INN_PROG_CC_C_O],
      save_CFLAGS="$CFLAGS"
      CFLAGS="$CFLAGS -o out/conftest2.$ac_objext"
      compiler_c_o=no
-     if { (eval $ac_compile) 2> out/conftest.err; } \
-        && test -s out/conftest2.$ac_objext; then
-         # The compiler can only warn and ignore the option if not recognized
-         # So say no if there are warnings
-         if test -s out/conftest.err; then
-             inn_cv_compiler_c_o=no
-         else
-             inn_cv_compiler_c_o=yes
-         fi
-     else
-         # Append any errors to the config.log.
+     AS_IF([{ (eval $ac_compile) 2> out/conftest.err; } \
+            && test -s out/conftest2.$ac_objext],
+        [# The compiler can only warn and ignore the option if not recognized.
+         # So say no if there are warnings.
+         AS_IF([test -s out/conftest.err],
+            [inn_cv_compiler_c_o=no],
+            [inn_cv_compiler_c_o=yes])],
+        [# Append any errors to the config.log.
          cat out/conftest.err 1>&AS_MESSAGE_LOG_FD
-         inn_cv_compiler_c_o=no
-     fi
+         inn_cv_compiler_c_o=no])
      CFLAGS="$save_CFLAGS"
      chmod u+w .
      rm -f conftest* out/*
