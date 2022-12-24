@@ -35,6 +35,7 @@ b0f69fabeb77df72d31028150c50058d869ba9d9
 fb952ecab130f7ba1db9acbde664dab5da93a3da
 80951541b7d3b24a985b8b64d905af2c9b0999f8
 51dcb3d07ab47db78e120d40b191bf7094d1ebd2
+0e6ac03d351318cf580b4e4eca3cf9f036c61e28
 
 # Reformatting Perl code with perltidy.
 e8d1e6e7eeace92bf0760611dd9f09122a3bd1d9
@@ -48,6 +49,9 @@ a665571ed803b03bb8a532de6cec9ea56d364a71
 # Reformatting shell code with shfmt.
 47d7131146c65e0eb9628fa36526fe31b847922f
 c9583e39c4730e474777b5d3ab683674124a7c11
+
+# Reformatting M4 code manually.
+7914233a81d436cfaea9466ff02279f27f76101c
 
 # Various manual style homogenization.
 de6ffe836f95581b2b65dbc6c537bb6bd8da2e48
