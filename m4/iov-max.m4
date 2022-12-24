@@ -80,5 +80,5 @@ AC_DEFUN([INN_MACRO_IOV_MAX],
             [AC_MSG_WARN([probe failure, assuming 16])
              inn_cv_macro_iov_max=16])])
      AC_DEFINE_UNQUOTED([IOV_MAX], [$inn_cv_macro_iov_max],
-         [Define to the max vectors in an iovec.])],
+        [Define to the max vectors in an iovec.])],
     [_INN_MACRO_IOV_MAX_HEADERS])])

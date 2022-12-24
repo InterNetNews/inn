@@ -10,10 +10,10 @@ dnl permissions at the same time.  Also let the user request inews or rnews
 dnl be installed with special permissions.
 AC_DEFUN([INN_ARG_MODES],
 [NEWSUMASK=02
-FILEMODE=0664
-DIRMODE=0775
-RUNDIRMODE=0770
-AC_ARG_WITH([news-umask],
+ FILEMODE=0664
+ DIRMODE=0775
+ RUNDIRMODE=0770
+ AC_ARG_WITH([news-umask],
     [AS_HELP_STRING([--with-news-umask=UMASK], [umask for news files [002]])],
     with_news_umask=`AS_ECHO(["$with_news_umask"]) | sed 's/^0*//'`
     if test "x$with_news_umask" = x22 ; then
@@ -26,41 +26,41 @@ AC_ARG_WITH([news-umask],
             AC_MSG_ERROR([Valid umasks are 002 or 022])
         fi
     fi)
-AC_SUBST([NEWSUMASK])
-AC_SUBST([FILEMODE])
-AC_SUBST([DIRMODE])
-AC_SUBST([RUNDIRMODE])
-AC_DEFINE_UNQUOTED([ARTFILE_MODE], [$FILEMODE],
+ AC_SUBST([NEWSUMASK])
+ AC_SUBST([FILEMODE])
+ AC_SUBST([DIRMODE])
+ AC_SUBST([RUNDIRMODE])
+ AC_DEFINE_UNQUOTED([ARTFILE_MODE], [$FILEMODE],
     [Mode that incoming articles are created with.])
-AC_DEFINE_UNQUOTED([BATCHFILE_MODE], [$FILEMODE],
+ AC_DEFINE_UNQUOTED([BATCHFILE_MODE], [$FILEMODE],
     [Mode that batch files are created with.])
-AC_DEFINE_UNQUOTED([GROUPDIR_MODE], [$DIRMODE],
+ AC_DEFINE_UNQUOTED([GROUPDIR_MODE], [$DIRMODE],
     [Mode that directories are created with.])
-AC_DEFINE_UNQUOTED([NEWSUMASK], [$NEWSUMASK],
+ AC_DEFINE_UNQUOTED([NEWSUMASK], [$NEWSUMASK],
     [The umask used by all INN programs.])
 
-dnl inews used to be installed setgid, but may not be secure.  Only do this if
-dnl it's explicitly requested at configure time.
-INEWSMODE=0550
-AC_ARG_ENABLE([setgid-inews],
+ dnl inews used to be installed setgid, but may not be secure.  Only do this if
+ dnl it's explicitly requested at configure time.
+ INEWSMODE=0550
+ AC_ARG_ENABLE([setgid-inews],
     [AS_HELP_STRING([--enable-setgid-inews], [Install inews setgid])],
     if test "x$enableval" = xyes ; then
         INEWSMODE=02555
     fi)
-AC_SUBST([INEWSMODE])
+ AC_SUBST([INEWSMODE])
 
-dnl rnews used to be installed setuid root so that it could be run by the uucp
-dnl user for incoming batches, but this isn't necessary unless you're using
-dnl UUCP (which most people aren't) and setuid news is all that's needed.
-dnl Only do even that if it's explicitly requested at configure time.
-RNEWSGRP=$RUNASGROUP
-RNEWSMODE=0500
-AC_ARG_ENABLE([uucp-rnews],
+ dnl rnews used to be installed setuid root so that it could be run by the uucp
+ dnl user for incoming batches, but this isn't necessary unless you're using
+ dnl UUCP (which most people aren't) and setuid news is all that's needed.
+ dnl Only do even that if it's explicitly requested at configure time.
+ RNEWSGRP=$RUNASGROUP
+ RNEWSMODE=0500
+ AC_ARG_ENABLE([uucp-rnews],
     [AS_HELP_STRING([--enable-uucp-rnews],
         [Install rnews setuid, group uucp])],
     if test "x$enableval" = xyes ; then
         RNEWSGRP=uucp
         RNEWSMODE=04550
     fi)
-AC_SUBST([RNEWSGRP])
-AC_SUBST([RNEWSMODE])])
+ AC_SUBST([RNEWSGRP])
+ AC_SUBST([RNEWSMODE])])

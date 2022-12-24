@@ -7,7 +7,7 @@ dnl path to sendmail picked up by the script.
 dnl Allow the user to specify the path to sendmail.
 AC_DEFUN([INN_ARG_SENDMAIL],
 [AC_ARG_VAR([SENDMAIL], [Location of sendmail binary to use])
-AC_ARG_WITH([sendmail],
+ AC_ARG_WITH([sendmail],
     [AS_HELP_STRING([--with-sendmail=PATH], [Path to sendmail])],
     SENDMAIL=$with_sendmail)])
 
