@@ -59,7 +59,7 @@ AC_DEFUN([INN_PROG_PERL],
                 [ac_cv_path_PERL="$ac_path_PERL"
                  ac_path_PERL_found=:])])])
      AS_IF([test x"$ac_cv_path_PERL" = x],
-         [AC_MSG_ERROR([Perl $1 or greater is required])])
+        [AC_MSG_ERROR([Perl $1 or greater is required])])
      PERL="$ac_cv_path_PERL"
      AC_SUBST([PERL])])])
 

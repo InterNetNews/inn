@@ -24,7 +24,7 @@ dnl SPDX-License-Identifier: FSFULLR
 
 AC_DEFUN([INN_ENABLE_REDUCED_DEPENDS],
 [inn_reduced_depends=false
-AC_ARG_ENABLE([reduced-depends],
+ AC_ARG_ENABLE([reduced-depends],
     [AS_HELP_STRING([--enable-reduced-depends],
         [Try to minimize shared library dependencies])],
     [AS_IF([test x"$enableval" = xyes], [inn_reduced_depends=true])])])
