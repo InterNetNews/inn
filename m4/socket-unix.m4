@@ -52,17 +52,17 @@ dnl Check for SUN_LEN, which returns the size of a struct sockaddr_un.  Sets
 dnl HAVE_SUN_LEN if the macro is available.
 AC_DEFUN([INN_MACRO_SUN_LEN],
 [AC_CACHE_CHECK([for SUN_LEN macro], [inn_cv_sun_len_macro],
-   [AC_LINK_IFELSE([AC_LANG_SOURCE([_INN_MACRO_SUN_LEN_SOURCE])],
-       [inn_cv_sun_len_macro=yes],
-       [inn_cv_sun_len_macro=no])])
-AS_IF([test x"$inn_cv_sun_len_macro" = xyes],
-   [AC_DEFINE([HAVE_SUN_LEN], 1,
-       [Define if <sys/un.h> defines the SUN_LEN macro.])])])
+    [AC_LINK_IFELSE([AC_LANG_SOURCE([_INN_MACRO_SUN_LEN_SOURCE])],
+        [inn_cv_sun_len_macro=yes],
+        [inn_cv_sun_len_macro=no])])
+ AS_IF([test x"$inn_cv_sun_len_macro" = xyes],
+    [AC_DEFINE([HAVE_SUN_LEN], 1,
+        [Define if <sys/un.h> defines the SUN_LEN macro.])])])
 
 dnl Source used by INN_SYS_UNIX_SOCKETS.
 AC_DEFUN([_INN_SYS_UNIX_SOCKETS], [[
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #ifndef AF_UNIX
 error: No UNIX domain sockets!
 #endif
@@ -74,9 +74,9 @@ dnl Linux, where AF_UNIX is available but doesn't work, but we don't care
 dnl about Linux 1.0 any more.
 AC_DEFUN([INN_SYS_UNIX_SOCKETS],
 [AC_CACHE_CHECK([for UNIX domain sockets], [inn_cv_sys_unix_sockets],
-   [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_INN_SYS_UNIX_SOCKETS])],
-       [inn_cv_sys_unix_sockets=yes],
-       [inn_cv_sys_unix_sockets=no])])
-AS_IF([test x"$inn_cv_sys_unix_sockets" = xyes],
-   [AC_DEFINE([HAVE_UNIX_DOMAIN_SOCKETS], 1,
-       [Define if you have UNIX domain sockets.])])])
+    [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_INN_SYS_UNIX_SOCKETS])],
+        [inn_cv_sys_unix_sockets=yes],
+        [inn_cv_sys_unix_sockets=no])])
+ AS_IF([test x"$inn_cv_sys_unix_sockets" = xyes],
+    [AC_DEFINE([HAVE_UNIX_DOMAIN_SOCKETS], 1,
+        [Define if you have UNIX domain sockets.])])])

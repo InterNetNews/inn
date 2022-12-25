@@ -36,9 +36,9 @@ AC_DEFUN([_INN_LIB_ARCH_NAME],
 [inn_lib_arch_name=lib
  AC_CHECK_SIZEOF([long])
  AS_IF([test "$ac_cv_sizeof_long" -eq 4],
-     [inn_lib_arch_name=lib32],
-     [AS_IF([test "$ac_cv_sizeof_long" -eq 8],
-         [inn_lib_arch_name=lib64])])])
+    [inn_lib_arch_name=lib32],
+    [AS_IF([test "$ac_cv_sizeof_long" -eq 8],
+        [inn_lib_arch_name=lib64])])])
 
 dnl Set VARIABLE to -LPREFIX/lib{,32,64} or -LPREFIX/lib{,32,64}/SUFFIX as
 dnl appropriate.

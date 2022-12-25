@@ -86,9 +86,9 @@ AC_DEFUN([INN_KRB5_CONFIG],
      inn_krb5_config_$3="$PATH_KRB5_CONFIG"])
  AS_IF([test x"$inn_krb5_config_$3" != x && test -x "$inn_krb5_config_$3"],
     [AC_CACHE_CHECK([for $2 support in krb5-config], [inn_cv_lib_$3[]_config],
-         [AS_IF(["$inn_krb5_config_$3" 2>&1 | grep $2 >/dev/null 2>&1],
-             [inn_cv_lib_$3[]_config=yes],
-             [inn_cv_lib_$3[]_config=no])])
+        [AS_IF(["$inn_krb5_config_$3" 2>&1 | grep $2 >/dev/null 2>&1],
+            [inn_cv_lib_$3[]_config=yes],
+            [inn_cv_lib_$3[]_config=no])])
      AS_IF([test "$inn_cv_lib_$3[]_config" = yes],
         [$3[]_CPPFLAGS=`"$inn_krb5_config_$3" --cflags $2 2>/dev/null`
          _INN_KRB5_CONFIG_LIBS([$inn_krb5_config_$3], [$2], [$3])
