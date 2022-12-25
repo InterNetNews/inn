@@ -14,7 +14,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Markus Moeller
-dnl Copyright 2007, 2015 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2007, 2015, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2007-2008 Markus Moeller
 dnl
 dnl This file is free software; the authors give unlimited permission to copy
@@ -24,13 +24,13 @@ dnl
 dnl SPDX-License-Identifier: FSFULLR
 
 dnl Source used by INN_HEADER_PAM_CONST.
-AC_DEFUN([_INN_HEADER_PAM_CONST_SOURCE],
-[#ifdef HAVE_SECURITY_PAM_APPL_H
+AC_DEFUN([_INN_HEADER_PAM_CONST_SOURCE], [[
+#ifdef HAVE_SECURITY_PAM_APPL_H
 # include <security/pam_appl.h>
 #else
 # include <pam/pam_appl.h>
 #endif
-])
+]])
 
 AC_DEFUN([INN_HEADER_PAM_CONST],
 [AC_CACHE_CHECK([whether PAM prefers const], [inn_cv_header_pam_const],

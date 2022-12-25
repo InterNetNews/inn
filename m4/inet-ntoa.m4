@@ -9,7 +9,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 1999-2001, 2003 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 1999-2001, 2003, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2008-2009
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -38,7 +38,7 @@ main(void)
 
 dnl The public macro.
 AC_DEFUN([INN_FUNC_INET_NTOA],
-[AC_CACHE_CHECK(for working inet_ntoa, inn_cv_func_inet_ntoa_works,
+[AC_CACHE_CHECK([for working inet_ntoa], [inn_cv_func_inet_ntoa_works],
     [AC_RUN_IFELSE([AC_LANG_SOURCE([_INN_FUNC_INET_NTOA_SOURCE])],
         [inn_cv_func_inet_ntoa_works=yes],
         [inn_cv_func_inet_ntoa_works=no],
