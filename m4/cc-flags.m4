@@ -8,7 +8,7 @@ dnl
 dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
-dnl Copyright 2016-2021 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2016-2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2006, 2009, 2016
 dnl     by Internet Systems Consortium, Inc. ("ISC")
 dnl
@@ -41,7 +41,7 @@ AC_DEFUN([INN_PROG_CC_FLAG],
     [save_CFLAGS=$CFLAGS
      AS_CASE([$1],
         [-Wno-*], [CFLAGS="$CFLAGS `AS_ECHO(["$1"]) | sed 's/-Wno-/-W/'`"],
-        [*],      [CFLAGS="$CFLAGS $1"])
+        [CFLAGS="$CFLAGS $1"])
      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [int foo = 0;])],
         [_INN_PROG_CC_FLAG_CACHE([$1])=yes],
         [_INN_PROG_CC_FLAG_CACHE([$1])=no])
@@ -63,4 +63,3 @@ AC_DEFUN([INN_PROG_LD_FLAG],
      LDFLAGS=$save_LDFLAGS])
  AC_MSG_RESULT([$_INN_PROG_LD_FLAG_CACHE([$1])])
  AS_IF([test x"$_INN_PROG_LD_FLAG_CACHE([$1])" = xyes], [$2], [$3])])
-

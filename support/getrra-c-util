@@ -52,6 +52,7 @@ download() {
                     -e '/dnl Determine the full set/,$d' \
                     -e '/test x"$CLANG" = xyes/,+1d' \
                     ${TEMP}
+                sed -i -e '$d' ${TEMP}
             elif [ "$3" = "sqlite3.m4" ]; then
                 sed -i -e '49 i \
 dnl Ensures SQLite v3 meets our minimum version requirement.\
