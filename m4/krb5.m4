@@ -50,7 +50,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2018, 2020-2021 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2018, 2020-2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2005-2011, 2013-2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -127,7 +127,6 @@ AC_DEFUN([_INN_LIB_KRB5_CHECK_HEADER_COM_ERR],
 dnl Check for the main Kerberos header.  Internal helper macro since we need
 dnl to do the same checks in multiple places.  The first argument is run if
 dnl some header was found, and the second if no header was found.
-dnl header could not be found.
 AC_DEFUN([_INN_LIB_KRB5_CHECK_HEADER_KRB5],
 [inn_krb5_found_header=
  AS_IF([test x"$inn_krb5_incroot" = x],

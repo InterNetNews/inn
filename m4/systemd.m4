@@ -17,7 +17,7 @@ dnl The canonical version of this file is maintained in the rra-c-util
 dnl package, available at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
 dnl
 dnl Written by Russ Allbery <eagle@eyrie.org>
-dnl Copyright 2015, 2021 Russ Allbery <eagle@eyrie.org>
+dnl Copyright 2015, 2021, 2022 Russ Allbery <eagle@eyrie.org>
 dnl Copyright 2013-2014
 dnl     The Board of Trustees of the Leland Stanford Junior University
 dnl
@@ -41,7 +41,8 @@ AC_DEFUN([INN_WITH_SYSTEMD_UNITDIR],
  AS_IF([test x"$with_systemdsystemunitdir" != xno],
     [AC_SUBST([systemdsystemunitdir], [$with_systemdsystemunitdir])])
  AM_CONDITIONAL([HAVE_SYSTEMD],
-    [test -n "$with_systemdsystemunitdir" -a x"$with_systemdsystemunitdir" != xno])])
+    [test -n "$with_systemdsystemunitdir" \
+        && test x"$with_systemdsystemunitdir" != xno])])
 
 dnl Check for libsystemd or libsystemd-daemon and define SYSTEMD_{CFLAGS,LIBS}
 dnl if it is available.  This is called INN_LIB_SYSTEMD_DAEMON_OPTIONAL since
