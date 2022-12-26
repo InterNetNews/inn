@@ -585,6 +585,32 @@ people.  Otherwise, any of these people would be able to send an authenticated
 withdrawal of an article originally sent by another person with the same
 identity or IP.
 
+=item B<groupexactcount:>
+
+This parameter controls the threshold below with B<nnrpd> should give the
+exact number of still existing articles present in newsgroups instead of
+an estimate.  The exact number is usually updated once a day during the
+expiry process by B<expirover> (run by B<news.daily>), and is updated when new
+articles arrive but not necessarily when articles are cancelled or overwritten
+in self-expiry storage methods like CNFS.
+
+When the estimated count of articles is strictly smaller than
+I<groupexactcount>, B<nnrpd> will recount the number of still existing
+articles, and report the exact value.  If I<groupexactcount> is set to C<0>,
+B<nnrpd> will always recount.  If set to C<1>, it will never recount.
+
+Though exact article counts are not required, they may be useful to
+distinguish empty newsgroups by reporting an exact count of C<0> instead of an
+estimate of C<1> (when it happens, the news client may show that 1 article is
+present in the newsgroup, then it tries to retrieve the article, and finally
+does not show anything to the user).
+
+It is not recommended to set a high value to this parameter because it will
+slow the responses to news clients (recounting existing articles takes time,
+especially on newsgroups with a lot of articles).
+
+This is an integer value, and the default is C<5>.
+
 =item B<reject_with:>
 
 If this parameter is present, a client matching this block will be

@@ -15,6 +15,15 @@ C<:bytes> and C<:lines> metadata.
 
 =item *
 
+Added a new I<groupexactcount> parameter in F<readers.conf> to force
+B<nnrpd> to recount and report the exact number of still existing articles
+in newsgroups considered to have an estimate number of articles below
+I<groupexactcount> (set to C<5> by default).  The primary goal of this recount
+is to advertise newsgroups as empty when they are (articles that have been
+cancelled or self-expired may otherwise still be in counted in the estimate).
+
+=item *
+
 Fixed the generation and the handling of storage tokens on wrapped CNFS
 buffers, thanks to bug reports from Kamil Jonca:
 

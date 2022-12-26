@@ -121,6 +121,12 @@ CMDgroup(int ac, char *av[])
 
     /* Doing a GROUP command? */
     if (strcasecmp(av[0], "GROUP") == 0) {
+        /* Compute the exact count when needing to be more precise. */
+        if (count > 0
+            && (PERMaccessconf->groupexactcount == 0
+                || count < (int) PERMaccessconf->groupexactcount))
+            count = (int) GRPexactcount(group, ARTlow, ARThigh);
+
         if (count == 0) {
             Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh + 1, ARThigh,
                   group);
@@ -199,6 +205,12 @@ CMDgroup(int ac, char *av[])
             range.High = ARThigh;
         }
 
+        /* Compute the exact count when needing to be more precise. */
+        if (count > 0
+            && (PERMaccessconf->groupexactcount == 0
+                || count < (int) PERMaccessconf->groupexactcount))
+            count = (int) GRPexactcount(group, ARTlow, ARThigh);
+
         if (count == 0) {
             Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh + 1, ARThigh,
                   group);
@@ -212,9 +224,15 @@ CMDgroup(int ac, char *av[])
             if ((handle = OVopensearch(group, range.Low, range.High))
                 != NULL) {
                 while (OVsearch(handle, &i, NULL, NULL, &token, NULL)) {
-                    if (PERMaccessconf->nnrpdcheckart
-                        && !ARTinstorebytoken(token))
+                    if ((PERMaccessconf->nnrpdcheckart
+                         || (count > 0
+                             && (PERMaccessconf->groupexactcount == 0
+                                 || count < (int) PERMaccessconf
+                                                ->groupexactcount)))
+                        && !ARTinstorebytoken(token)) {
+                        /* Report only existing articles. */
                         continue;
+                    }
                     Printf("%lu\r\n", i);
                 }
 
@@ -251,6 +269,38 @@ GRPreport(void)
         syslog(L_NOTICE, "%s group %s %lu", Client.host, buff, GRParticles);
         GRParticles = 0;
     }
+}
+
+
+/*
+**  Return the exact number of valid articles in the low-high range of the
+**  newsgroup given as argument.
+**  The caller should check the validity of arguments (otherwise it won't for
+**  instance be able to make the difference between a 0 article count for a
+**  real empty newsgroup, and a 0 article count for an inexisting newsgroup).
+*/
+ARTNUM
+GRPexactcount(char *group, ARTNUM low, ARTNUM high)
+{
+    ARTNUM count = 0;
+    void *handle;
+    TOKEN token;
+
+    handle = OVopensearch(group, low, high);
+    if (!handle) {
+        /* The newsgroup does not exist, or there isn't any article within the
+         * range. */
+        return 0;
+    }
+
+    while (OVsearch(handle, NULL, NULL, NULL, &token, NULL)) {
+        if (ARTinstorebytoken(token))
+            count++;
+    }
+
+    OVclosesearch(handle);
+
+    return count;
 }
 
 

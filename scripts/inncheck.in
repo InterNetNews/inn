@@ -977,13 +977,14 @@ sub readers_conf {
                 'key'         => 'string',
                 'reject_with' => 'string',
                 'max_rate'    => 'number',
-                'localtime'   => 'boolean',
-                'newsmaster'     => 'string',    # email address
-                'strippath'      => 'boolean',
-                'perlfilter'     => 'boolean',
-                'pythonfilter'   => 'boolean',
-                'virtualhost'    => 'boolean',
-                'addcanlockuser' => 'string',
+                'groupexactcount' => 'number',
+                'localtime'       => 'boolean',
+                'newsmaster'      => 'string',    # email address
+                'strippath'       => 'boolean',
+                'perlfilter'      => 'boolean',
+                'pythonfilter'    => 'boolean',
+                'virtualhost'     => 'boolean',
+                'addcanlockuser'  => 'string',
                 # inn.conf parameters:
                 'addinjectiondate'           => 'boolean',
                 'addinjectionpostingaccount' => 'boolean',
