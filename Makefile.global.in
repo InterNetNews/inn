@@ -211,8 +211,8 @@ WHOAMI		= (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 
 MAKEDEPEND	= $(top)/support/makedepend
 
-POD2MAN		= pod2man @POD2MAN_OPTION@ -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
-POD2TEXT	= pod2text -s -l
+POD2MAN		= pod2man @POD2TEXT_OPTION@ -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
+POD2TEXT	= pod2text @POD2TEXT_OPTION@ -s -l
 
 ##  Installation directories.  If any of the below are incorrect, don't just
 ##  edit this file; these directories are substituted in all over the source

@@ -356,14 +356,15 @@ dnl Set some configuration file defaults from the machine hostname.
 HOSTNAME=`hostname 2> /dev/null || uname -n`
 AC_SUBST(HOSTNAME)
 
-dnl Checks whether pod2man supports the --guesswork option (available in
-dnl podlators 5.00 and above).  If that's the case, use it to disable
+dnl Checks whether pod2text supports the --guesswork option (available in
+dnl podlators 5.01 and above).  If that's the case, pod2man also supports it
+dnl (available since podlators 5.00).  This options permits disabling
 dnl heuristics only intended for Perl documentation, because they prevent
 dnl some patterns like C<@@NCM> (in perl-nocem man page) from being converted
 dnl as expected.
-AS_IF([pod2man --help --guesswork=none > /dev/null],
-    [POD2MAN_OPTION="--guesswork=none"])
-AC_SUBST(POD2MAN_OPTION)
+AS_IF([`AS_ECHO(["=head1 test"]) | pod2text --guesswork=none > /dev/null`],
+    [POD2TEXT_OPTION="--guesswork=none"])
+AC_SUBST(POD2TEXT_OPTION)
 
 dnl Checks for programs.
 AC_PROG_GCC_TRADITIONAL
