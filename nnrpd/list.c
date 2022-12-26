@@ -170,6 +170,13 @@ CMD_list_single(char *group)
             && (flag == NF_FLAG_IGNORE || flag == NF_FLAG_JUNK
                 || flag == NF_FLAG_NOLOCAL))
             flag = NF_FLAG_OK;
+
+        /* Compute the exact count when needing to be more precise. */
+        if (count > 0
+            && (PERMaccessconf->groupexactcount == 0
+                || count < (int) PERMaccessconf->groupexactcount))
+            count = (int) GRPexactcount(group, lo, hi);
+
         /* When a newsgroup is empty, the high water mark should be one less
          * than the low water mark according to RFC 3977. */
         if (count == 0)
@@ -351,6 +358,12 @@ CMDlist(int ac, char *av[])
 
         if (lp == &INFOcounts) {
             if (OVgroupstats(p, &lo, &hi, &count, &flag)) {
+                /* Compute the exact count when needing to be more precise. */
+                if (count > 0
+                    && (PERMaccessconf->groupexactcount == 0
+                        || count < (int) PERMaccessconf->groupexactcount))
+                    count = (int) GRPexactcount(p, lo, hi);
+
                 /* When a newsgroup is empty, the high water mark should be
                  * one less than the low water mark according to RFC 3977. */
                 if (count == 0)

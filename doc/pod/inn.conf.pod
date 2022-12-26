@@ -798,14 +798,18 @@ is C<60>, that is to say one minute.
 
 =item I<nnrpdcheckart>
 
-Whether B<nnrpd> should check the existence of an article before listing
-it as present in response to an NNTP command.  The primary use of this
-setting is to prevent nnrpd from returning information about articles
-which are no longer present on the server but which still have overview
-data available.  Checking the existence of articles before returning
-overview information slows down the overview commands, but reduces the
-number of "article is missing" errors seen by the client.  This is a
+Whether B<nnrpd> should check the existence of an article before listing it
+as present in response to an NNTP command (HDR, LISTGROUP, NEWNEWS, OVER,
+XPAT).  The primary use of this setting is to prevent B<nnrpd> from returning
+information about articles which are no longer present on the server but which
+still have overview data available.  Checking the existence of articles before
+returning overview information slows down the overview commands, but reduces
+the number of "article is missing" errors seen by the client.  This is a
 boolean value and the default is true.
+
+You may also want to see the I<groupexactcount> parameter in readers.conf(5)
+which controls the computing of the estimate article count returned in NNTP
+commands (GROUP, LIST COUNTS, LISTGROUP).
 
 =item I<nnrpdflags>
 

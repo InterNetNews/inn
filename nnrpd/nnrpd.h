@@ -91,6 +91,7 @@ typedef struct _ACCESSGROUP {
     int virtualhost;
     char *newsmaster;
     long maxbytespersecond;
+    ARTNUM groupexactcount;
 } ACCESSGROUP;
 
 /*
@@ -246,6 +247,7 @@ extern int RateLimit(long *sleeptime, char *path);
 extern void ExitWithStats(int x, bool readconf) __attribute__((__noreturn__));
 extern char *GetHeader(const char *header, bool stripspaces);
 extern void GRPreport(void);
+extern ARTNUM GRPexactcount(char *group, ARTNUM low, ARTNUM high);
 extern bool NGgetlist(char ***argvp, char *list);
 extern bool PERMartok(void);
 extern void PERMgetinitialaccess(char *readersconf);

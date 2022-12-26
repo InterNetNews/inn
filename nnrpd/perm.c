@@ -174,11 +174,12 @@ static int ConfigBitsize;
 #define PERMperl_access                60
 #define PERMpython_access              61
 #define PERMpython_dynamic             62
+#define PERMgroupexactcount            63
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
-#    define PERMrequire_encryption 63
-#    define PERMMAX                64
+#    define PERMrequire_encryption 64
+#    define PERMMAX                65
 #else
-#    define PERMMAX 63
+#    define PERMMAX 64
 #endif
 
 #define TEST_CONFIG(a, b)                                            \
@@ -265,6 +266,7 @@ static CONFTOKEN PERMtoks[] = {
     {PERMperl_access,                (char *) "perl_access:"               },
     {PERMpython_access,              (char *) "python_access:"             },
     {PERMpython_dynamic,             (char *) "python_dynamic:"            },
+    {PERMgroupexactcount,            (char *) "groupexactcount:"           },
 #if defined(HAVE_OPENSSL) || defined(HAVE_SASL)
     {PERMrequire_encryption,         (char *) "require_encryption:"        },
 #endif
@@ -528,6 +530,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->virtualhost = false;
     curaccess->newsmaster = NULL;
     curaccess->maxbytespersecond = 0;
+    curaccess->groupexactcount = 5;
 }
 
 static void
@@ -1104,6 +1107,10 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
         curaccess->maxbytespersecond = atol(tok->name);
         SET_CONFIG(oldtype);
         break;
+    case PERMgroupexactcount:
+        curaccess->groupexactcount = strtoul(tok->name, NULL, 10);
+        SET_CONFIG(oldtype);
+        break;
     default:
         snprintf(buff, sizeof(buff), "Unexpected token '%s'.", tok->name);
         ReportError(f, buff);
@@ -1364,6 +1371,7 @@ PERMreadfile(char *filename)
             case PERMnnrpdcheckart:
             case PERMnnrpdauthsender:
             case PERMvirtualhost:
+            case PERMgroupexactcount:
             case PERMnewsmaster:
                 if (!curgroup) {
                     curgroup = xcalloc(1, sizeof(GROUP));
