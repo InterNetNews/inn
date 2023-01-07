@@ -197,11 +197,12 @@ MKDIR_P		= @MKDIR_P@
 PERL		= @PERL@
 RANLIB		= @RANLIB@
 SED		= @SED@
+SHELL		= @SHELL@
 UNCOMPRESS	= @UNCOMPRESS@
 YACC		= @YACC@
 
-FIXCONFIG	= $(top)/support/fixconfig
-FIXSCRIPT	= $(top)/support/fixscript
+FIXCONFIG	= $(SHELL) $(top)/support/fixconfig
+FIXSCRIPT	= $(SHELL) $(top)/support/fixscript
 
 PERLWHOAMI	= $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI		= (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
@@ -209,7 +210,7 @@ WHOAMI		= (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
 ##  Paths and command lines for programs used only by the maintainers to
 ##  regenerate dependencies, documentation, and the like.
 
-MAKEDEPEND	= $(top)/support/makedepend
+MAKEDEPEND	= $(SHELL) $(top)/support/makedepend
 
 POD2MAN		= pod2man @POD2TEXT_OPTION@ -c 'InterNetNews Documentation' -r 'INN $(VERSION)'
 POD2TEXT	= pod2text @POD2TEXT_OPTION@ -s -l
@@ -331,8 +332,6 @@ CP_MAN		= $(INSTALL) $(OWNER) -m 0444
 
 ##  Some additional definitions needed by some versions of make, to ensure a
 ##  consistent set of variables are available.
-
-SHELL		= @SHELL@
 
 @SET_MAKE@
 

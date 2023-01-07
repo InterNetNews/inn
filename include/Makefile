@@ -77,10 +77,10 @@ inn/portable-stdbool.h: portable/stdbool.h
 	  > inn/portable-stdbool.h
 
 inn/system.h: config.h $(top)/support/mksystem
-	$(top)/support/mksystem $(AWK) config.h > $@
+	$(SHELL) $(top)/support/mksystem $(AWK) config.h > $@
 
 inn/version.h: $(top)/support/mkversion $(top)/Makefile.global
-	$(top)/support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
+	$(SHELL) $(top)/support/mkversion '$(VERSION)' '$(VERSION_EXTRA)' > $@
 
 
 ##  Installation rules.

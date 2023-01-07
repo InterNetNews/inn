@@ -61,6 +61,12 @@ because of the unexpected inclusion of F<config.h> in one of the included
 headers.  Also, a few Autoconf results were not correctly made available to
 external programs.  This is now fixed.
 
+=item *
+
+Fixed the build on systems whose default shell does not completely meet the
+Posix standard.  A few build scripts were run with the default shell instead
+of the one found by Autoconf and afterwards used for INN.
+
 =back
 
 =head1 Upgrading from 2.6 to 2.7
