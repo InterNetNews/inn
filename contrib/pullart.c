@@ -47,7 +47,6 @@ main(int argc, char *argv[])
     int osize = MAX_ART_SIZE;
     int opos = 0;
     int i;
-    int nchar;
     int fileno = 0;
     int artno = 0;
 
@@ -108,11 +107,8 @@ main(int argc, char *argv[])
     /*  Read following 16 byte buffers  */
     ReadingArticle = false;
     NumTailCharFound = 0;
-    nchar = 0;
     artno = 0;
     while (0 != fread(buffer, 16, 1, Infile)) {
-
-        nchar += 16;
 
         /*  Found start of article, start writing to obuffer  */
         if (0 == memcmp(buffer + 9, ArtHead, 7)) {
@@ -122,7 +118,7 @@ main(int argc, char *argv[])
             continue;
         }
 
-        /*  Currnetly reading article  */
+        /*  Currently reading article  */
         if (ReadingArticle) {
             for (i = 0; i < 16; i++) {
 

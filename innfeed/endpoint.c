@@ -830,7 +830,6 @@ doRead(EndPoint endp)
     struct iovec *vp = NULL;
     Buffer *buffers = endp->inBuffer;
     unsigned int currIdx = endp->inBufferIdx;
-    size_t amt = 0;
     IoStatus rval = IoIncomplete;
 
     TMRstart(TMR_READ);
@@ -855,8 +854,6 @@ doRead(EndPoint endp)
         vp[0].iov_base = bbase + bds + endp->inIndex;
         vp[0].iov_len = bs - bds - endp->inIndex;
 
-        amt = vp[0].iov_len;
-
         for (idx = currIdx + 1; idx < bCount; idx++) {
             bbase = bufferBase(buffers[idx]);
             bds = bufferDataSize(buffers[idx]);
@@ -864,7 +861,6 @@ doRead(EndPoint endp)
 
             vp[idx].iov_base = bbase;
             vp[idx].iov_len = bs - bds;
-            amt += (bs - bds);
         }
 
         i = readv(endp->myFd, vp, (int) bCount);
@@ -932,7 +928,6 @@ doWrite(EndPoint endp)
 {
     unsigned int idx;
     int i = 0;
-    size_t amt = 0;
     unsigned int bCount = 0;
     struct iovec *vp = NULL;
     Buffer *buffers = endp->outBuffer;
@@ -952,12 +947,9 @@ doWrite(EndPoint endp)
         vp[0].iov_base = (char *) vp[0].iov_base + endp->outIndex;
         vp[0].iov_len = bufferDataSize(buffers[currIdx]) - endp->outIndex;
 
-        amt = vp[0].iov_len;
-
         for (idx = 1; idx < bCount; idx++) {
             vp[idx].iov_base = bufferBase(buffers[idx + currIdx]);
             vp[idx].iov_len = bufferDataSize(buffers[idx + currIdx]);
-            amt += vp[idx].iov_len;
         }
 
         ASSERT(endp->myFd >= 0);
