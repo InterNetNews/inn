@@ -769,6 +769,8 @@ CMDnextlast(int ac UNUSED, char *av[])
 {
     char *msgid;
     int save, delta, errcode;
+    void *handle;
+    ARTNUM missing, i;
     bool next;
     const char *message;
 
@@ -804,18 +806,47 @@ CMDnextlast(int ac UNUSED, char *av[])
     }
 
     save = ARTnumber;
+    missing = 0;
     msgid = NULL;
     do {
         ARTnumber += delta;
+
+        /* If 50 articles in a row are no longer present, there may be a huge
+         * gap.  Instead of trying to retrieve articles one by one, by their
+         * article numbers, let's use overview information.
+         * This fixed threshold is certainly not the best one to use, but is
+         * better than no threshold at all and probably also unconditionally
+         * doing overview searches, especially to find the previous article. */
+        if (missing > 50) {
+            i = 0;
+            if ((handle = OVopensearch(GRPcur, delta > 0 ? ARTnumber : ARTlow,
+                                       delta > 0 ? ARThigh : ARTnumber))
+                != NULL) {
+                while (OVsearch(handle, &i, NULL, NULL, NULL, NULL)) {
+                    /* Break for the next article; let the search reach its end
+                     * for the previous article. */
+                    if (delta > 0)
+                        break;
+                }
+                OVclosesearch(handle);
+            }
+            /* If set to 0, there's no article to retrieve. */
+            ARTnumber = i;
+        }
+
         if (ARTnumber < ARTlow || ARTnumber > ARThigh) {
             Reply("%d No %s article to retrieve\r\n", errcode, message);
             ARTnumber = save;
             return;
         }
-        if (!ARTopen(ARTnumber))
+
+        if (!ARTopen(ARTnumber)) {
+            missing++;
             continue;
+        }
         msgid = GetHeader("Message-ID", true);
         ARTclose();
+        missing = 0;
     } while (msgid == NULL);
 
     Reply("%d %lu %s Article retrieved; request text separately\r\n",
@@ -1288,27 +1319,31 @@ CMDpat(int ac, char *av[])
 
         /* Not in overview, we have to fish headers out from the articles. */
         if (Overview < 0 || IsBytes || IsLines) {
-            for (i = range.Low; i <= range.High && range.High > 0; i++) {
-                if (!ARTopen(i))
-                    continue;
-                if (HasNotReplied) {
-                    Reply("%d Header information for %s follows (from "
-                          "articles)\r\n",
-                          hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
-                    HasNotReplied = false;
+            if ((handle = OVopensearch(GRPcur, range.Low, range.High))
+                != NULL) {
+                while (OVsearch(handle, &i, NULL, NULL, NULL, NULL)) {
+                    if (!ARTopen(i))
+                        continue;
+                    if (HasNotReplied) {
+                        Reply("%d Header information for %s follows (from "
+                              "articles)\r\n",
+                              hdr ? NNTP_OK_HDR : NNTP_OK_HEAD, av[1]);
+                        HasNotReplied = false;
+                    }
+                    p = GetHeader(header, false);
+                    if (p && (!pattern || uwildmat_simple(p, pattern))) {
+                        snprintf(buff, sizeof(buff), "%lu ", i);
+                        SendIOb(buff, strlen(buff));
+                        SendIOb(p, strlen(p));
+                        SendIOb("\r\n", 2);
+                    } else if (hdr) {
+                        /* We always have to answer something with HDR. */
+                        snprintf(buff, sizeof(buff), "%lu \r\n", i);
+                        SendIOb(buff, strlen(buff));
+                    }
+                    ARTclose();
                 }
-                p = GetHeader(header, false);
-                if (p && (!pattern || uwildmat_simple(p, pattern))) {
-                    snprintf(buff, sizeof(buff), "%lu ", i);
-                    SendIOb(buff, strlen(buff));
-                    SendIOb(p, strlen(p));
-                    SendIOb("\r\n", 2);
-                } else if (hdr) {
-                    /* We always have to answer something with HDR. */
-                    snprintf(buff, sizeof(buff), "%lu \r\n", i);
-                    SendIOb(buff, strlen(buff));
-                }
-                ARTclose();
+                OVclosesearch(handle);
             }
             if (HasNotReplied) {
                 if (hdr) {
