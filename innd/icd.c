@@ -335,16 +335,12 @@ ICDchangegroup(NEWSGROUP *ngp, char *Rest)
 bool
 ICDnewgroup(char *Name, char *Rest)
 {
-    char buff[SMBUF];
+    char *buff = NULL;
     struct iovec iov[2];
     bool ret;
 
     /* Set up the scatter/gather vectors. */
-    if (strlen(Name) + strlen(Rest) > SMBUF - 24) {
-        syslog(L_ERROR, "%s too_long %s", LogName, MaxLength(Name, Name));
-        return false;
-    }
-    snprintf(buff, sizeof(buff), "%s 0000000000 0000000001 %s\n", Name, Rest);
+    xasprintf(&buff, "%s 0000000000 0000000001 %s\n", Name, Rest);
     ICDiovset(&iov[0], ICDactpointer, ICDactsize);
     ICDiovset(&iov[1], buff, strlen(buff));
 
@@ -352,9 +348,12 @@ ICDnewgroup(char *Name, char *Rest)
     ICDiovrelease(&iov[0]);
     ICDiovrelease(&iov[1]);
     if (ret) {
-        if (innconf->enableoverview && !OVgroupadd(Name, 1, 0, Rest))
+        if (innconf->enableoverview && !OVgroupadd(Name, 1, 0, Rest)) {
+            free(buff);
             return false;
+        }
     }
+    free(buff);
     return ret;
 }
 
