@@ -1096,7 +1096,10 @@ CCnewgroup(char *av[])
     if (!is_valid_utf8(who))
         return "1 Invalid UTF-8 creator's name";
 
-    if (strlen(Name) + strlen(Rest) > SMBUF - 24)
+    /* Do not allow newsgroup names of arbitrary size.  There's no standardized
+     * limit except for the length of NNTP arguments, so let's take it even
+     * though it's a huge value for a newsgroup name. */
+    if (strlen(Name) > NNTP_MAXLEN_ARG || strlen(Rest) > NNTP_MAXLEN_ARG + 1)
         return "1 Name too long";
 
     if ((ngp = NGfind(Name)) != NULL)
