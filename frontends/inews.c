@@ -470,6 +470,7 @@ static void
 ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
 {
     static char PATHFLUFF[] = PATHMASTER;
+    static char *sendbuff = NULL;
     HEADER *hp;
     char *p;
     char buff[SMBUF];
@@ -492,13 +493,13 @@ ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
     if (HDR(_from) == NULL)
         HDR(_from) = FormatUserName(pwp, p);
     else if (AddSender) {
-        if (strlen(pwp->pw_name) + strlen(p) + 2 > sizeof(buff))
-            die("username and host are too long");
-        sprintf(buff, "%s@%s", pwp->pw_name, p);
+        if (sendbuff != NULL)
+            free(sendbuff);
+        sendbuff = concat(pwp->pw_name, "%", p, (char *) 0);
         strlcpy(from, HDR(_from), SMBUF);
         HeaderCleanFrom(from);
-        if (strcmp(from, buff) != 0)
-            HDR(_sender) = xstrdup(buff);
+        if (strcmp(from, sendbuff) != 0)
+            HDR(_sender) = xstrdup(sendbuff);
     }
 
     if (HDR(_date) == NULL) {
@@ -585,19 +586,20 @@ AppendSignature(bool UseMalloc, char *article, char *homedir)
     size_t artsize;
     char *p;
     char buff[BUFSIZ];
+    char *sigpath = NULL;
     FILE *F;
 
     /* Open the file. */
-    if (strlen(homedir) > sizeof(buff) - 14)
-        die("home directory path too long");
-    snprintf(buff, sizeof(buff), "%s/.signature", homedir);
-    if ((F = fopen(buff, "r")) == NULL) {
+    sigpath = concatpath(homedir, ".signature");
+    if ((F = fopen(sigpath, "r")) == NULL) {
+        free(sigpath);
         if (errno == ENOENT)
             return article;
         fprintf(stderr, "Can't add your .signature (%s), article not posted",
                 strerror(errno));
         QuitServer(1);
     }
+    free(sigpath);
 
     /* Read it in. */
     length = fread(buff, 1, sizeof buff - 2, F);
