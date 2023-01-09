@@ -171,7 +171,7 @@ write_request(void)
     while (left > 0) {
         ssize_t got;
 
-        got = write(sock, request->data, request->left);
+        got = write(sock, data, left);
         if (got == -1) {
             if (errno == EINTR)
                 continue;
