@@ -734,8 +734,6 @@ expire_one(char const *group, int *low, struct history *h)
     uint8_t flags = 0;
     uint8_t cols;
     uint64_t r_low = 1;
-    ARTNUM new_low = 0;
-    ARTNUM new_high = 0;
     bool done = false;
 
     start_request(request_start_expire_group);
@@ -844,11 +842,7 @@ expire_one(char const *group, int *low, struct history *h)
             if (delete) {
                 pack_now(request, &artnum, sizeof artnum);
                 delcount++;
-            } else {
-                if (!new_low)
-                    new_low = artnum;
             }
-            new_high = artnum;
             r_low = artnum + 1;
         }
         if (!finish_response())
@@ -869,10 +863,8 @@ expire_one(char const *group, int *low, struct history *h)
                 return false;
         }
     } while (!done);
-    if (!new_low)
-        new_low = new_high + 1;
-    if (low)
-        *low = new_low;
+    if (low != NULL)
+        ovsqlite_groupstats(group, low, NULL, NULL, NULL);
     return true;
 }
 
