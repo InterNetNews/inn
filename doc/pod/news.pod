@@ -55,6 +55,14 @@ article numbers up to 2^31-1.)
 
 =item *
 
+Fixed the renumbering of reported low water marks for empty newsgroups in
+F<active> after overview expiration, when using the ovsqlite method.  They
+were set to 1 for empty newsgroups whereas they were not supposed to decrease.
+(These reported low water marks regained their expected values during the next
+overview expiration, provided that the newsgroup was no longer empty.)
+
+=item *
+
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
 information only for the first site, and the output of the C<ctlinnd name
 channel> command that was returning partial information for the channel.
