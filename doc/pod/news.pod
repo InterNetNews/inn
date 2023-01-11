@@ -57,6 +57,15 @@ commands could take several seconds to run.
 
 =item *
 
+Incoming articles in newsgroups that have exceeded the maximum number of
+articles they can contain (2^31-1) are now correctly rejected.  INN was
+otherwise happily accepting them but either numbers returned in NNTP responses
+were not right, or some news clients choked when receiving unexpected large
+article numbers.  (The current version of the NNTP protocol only allows
+article numbers up to 2^31-1.)
+
+=item *
+
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
 information only for the first site, and the output of the C<ctlinnd name
 channel> command that was returning partial information for the channel.

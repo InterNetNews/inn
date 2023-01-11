@@ -1431,11 +1431,13 @@ ARTpoisongroup(char *name)
 }
 
 /*
-** Assign article numbers to the article and create the Xref header field.
-** If we end up not being able to write the article, we'll get "holes"
-** in the directory and active file.
+**  Assign article numbers to the article and create the Xref header field.
+**  If we end up not being able to write the article, we'll get "holes"
+**  in the directory and active file.
+**  Return false if a new article number could not be assigned (i.e. when
+**  it exceeds the maximum article number allowed in NNTP), and true otherwise.
 */
-static void
+static bool
 ARTassignnumbers(ARTDATA *data)
 {
     char *p, *q;
@@ -1456,6 +1458,11 @@ ARTassignnumbers(ARTDATA *data)
             continue;
 
         /* Bump the number. */
+        if (ngp->Last >= NNTP_MAXARTNUM) {
+            syslog(L_NOTICE, "%s full newsgroup %s (%lu articles)", LogName,
+                   ngp->Name, NNTP_MAXARTNUM);
+            return false;
+        }
         ngp->PostCount++;
         ngp->Last++;
         if (!FormatLong(ngp->LastString, (long) ngp->Last, ngp->Lastwidth)) {
@@ -1495,6 +1502,8 @@ ARTassignnumbers(ARTDATA *data)
     data->XrefLength = len + 2;
     data->Replic = q + 1;
     data->ReplicLength = len - (q + 1 - data->Xref);
+
+    return true;
 }
 
 /*
@@ -1554,6 +1563,12 @@ ARTxrefslave(ARTDATA *data)
         }
         *p = ':';
         ngp->Filenum = atol(p + 1);
+        if (ngp->Filenum > NNTP_MAXARTNUM) {
+            syslog(L_NOTICE, "%s full newsgroup %s (%lu articles)", LogName,
+                   ngp->Name, NNTP_MAXARTNUM);
+            return false;
+        }
+
         if (q != NULL)
             *q = c;
 
@@ -2540,7 +2555,16 @@ ARTpost(CHANNEL *cp)
             return false;
         }
     } else {
-        ARTassignnumbers(data);
+        if (!ARTassignnumbers(data)) {
+            snprintf(cp->Error, sizeof(cp->Error),
+                     "%d Newsgroup full (already %lu articles)",
+                     ihave ? NNTP_FAIL_IHAVE_REJECT
+                           : NNTP_FAIL_TAKETHIS_REJECT,
+                     NNTP_MAXARTNUM);
+            ARTlog(data, ART_REJECT, cp->Error);
+            ARTreject(REJECT_OTHER, cp);
+            return false;
+        }
     }
 
     /* Now we can file it. */
