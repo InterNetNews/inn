@@ -350,6 +350,8 @@ if ($hashfeed ne '') {
 $quiet = 1 if $quietness > 1;
 my %NNTP_Args = ();
 $NNTP_Args{'Timeout'} = $opt_N if defined $opt_N;
+# Protocol debugging.
+$NNTP_Args{'Debug'} = 1 if $debug >= 4;
 
 @groupsToGet = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_g) if $opt_g;
 @groupsToAdd = map { s!^\s*(\S+)\s*!$1!; $_ } split(",", $opt_G) if $opt_G;
