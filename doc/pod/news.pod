@@ -1,4 +1,4 @@
-=head1 Changes in 2.7.1
+=head1 Changes in 2.7.1 (not yet released)
 
 =over 2
 
@@ -204,7 +204,7 @@ need a manual change.
 If you are upgrading from a version prior to S<INN 2.6>, see also
 L<Upgrading from 2.5 to 2.6>.
 
-=head1 Changes in 2.7.0
+=head1 Changes in 2.7.0 (2022-07-10)
 
 =over 2
 
@@ -409,7 +409,7 @@ also included in S<INN 2.7>.
 
 =back
 
-=head1 Changes in 2.6.5
+=head1 Changes in 2.6.5 (2022-02-18)
 
 =over 2
 
@@ -522,7 +522,7 @@ at the beginning of a few complex man pages.
 
 =back
 
-=head1 Changes in 2.6.4
+=head1 Changes in 2.6.4 (2021-01-21)
 
 =over 2
 
@@ -591,7 +591,7 @@ build flags will eventually be added in future releases.
 
 =back
 
-=head1 Changes in 2.6.3
+=head1 Changes in 2.6.3 (2019-02-07)
 
 =over 2
 
@@ -652,7 +652,7 @@ high load average.
 
 =back
 
-=head1 Changes in 2.6.2
+=head1 Changes in 2.6.2 (2018-03-18)
 
 =over 2
 
@@ -734,7 +734,7 @@ Other minor bug fixes and documentation improvements.
 
 =back
 
-=head1 Changes in 2.6.1
+=head1 Changes in 2.6.1 (2016-11-27)
 
 =over 2
 
@@ -942,7 +942,7 @@ I<use-mmap> now defaults to true for F<innfeed.conf>.
 If you are upgrading from a version prior to S<INN 2.5>, see also
 L<Upgrading from 2.4 to 2.5>.
 
-=head1 Changes in 2.6.0
+=head1 Changes in 2.6.0 (2015-09-12)
 
 =over 2
 
@@ -1093,7 +1093,7 @@ included in S<INN 2.6>.
 
 =back
 
-=head1 Changes in 2.5.5
+=head1 Changes in 2.5.5 (2015-05-23)
 
 =over 2
 
@@ -1195,7 +1195,7 @@ F<readers.conf>.
 
 =back
 
-=head1 Changes in 2.5.4
+=head1 Changes in 2.5.4 (2014-05-17)
 
 =over 2
 
@@ -1329,7 +1329,7 @@ res blocks, and the I<include> directive).
 
 =back
 
-=head1 Changes in 2.5.3
+=head1 Changes in 2.5.3 (2012-06-15)
 
 Please note that the C<HTML_STATUS> compile-time option has been replaced
 with the I<htmlstatus> parameter in F<inn.conf>.  If you used C<HTML_STATUS>,
@@ -1624,7 +1624,7 @@ is turned off, is also documented for the B<innd> and B<nnrpd> Perl filters.
 
 =back
 
-=head1 Changes in 2.5.2
+=head1 Changes in 2.5.2 (2010-03-24)
 
 The way checkpoints are handled by B<innreport> for B<innd> and B<innfeed>
 has totally changed to provide more accurate daily statistics.  The first
@@ -1986,7 +1986,7 @@ Other minor bug fixes and documentation improvements.
 
 =back
 
-=head1 Changes in 2.5.1
+=head1 Changes in 2.5.1 (2009-10-10)
 
 =over 2
 
@@ -2256,7 +2256,7 @@ do this.
 If you are upgrading from a version prior to S<INN 2.4>, see also
 L<Upgrading from 2.3 to 2.4>.
 
-=head1 Changes in 2.5.0
+=head1 Changes in 2.5.0 (2009-05-21)
 
 =over 2
 
@@ -2477,7 +2477,7 @@ included in S<INN 2.5>.
 
 =back
 
-=head1 Changes in 2.4.6
+=head1 Changes in 2.4.6 (2009-02-27)
 
 =over 2
 
@@ -2593,7 +2593,7 @@ Other minor bugs have also been fixed.
 
 =back
 
-=head1 Changes in 2.4.5
+=head1 Changes in 2.4.5 (2008-06-29)
 
 =over 2
 
@@ -2687,7 +2687,7 @@ Julien Elie.
 
 =back
 
-=head1 Changes in 2.4.4
+=head1 Changes in 2.4.4 (2008-05-05)
 
 =over 2
 
@@ -2867,7 +2867,7 @@ Other minor bug fixes and documentation improvements.
 
 =back
 
-=head1 Changes in 2.4.3
+=head1 Changes in 2.4.3 (2006-03-20)
 
 =over 2
 
@@ -2915,7 +2915,7 @@ documentation fixes.
 
 =back
 
-=head1 Changes in 2.4.2
+=head1 Changes in 2.4.2 (2004-12-22)
 
 =over 2
 
@@ -3013,7 +3013,7 @@ Many other, more minor bugs have also been fixed.
 
 =back
 
-=head1 Changes in 2.4.1
+=head1 Changes in 2.4.1 (2004-01-07)
 
 =over 2
 
@@ -3125,7 +3125,7 @@ packages that link against INN's libraries.
 If you are upgrading from a version prior to S<INN 2.3>, see L<Upgrading
 from 2.2 to 2.3>.
 
-=head1 Changes in 2.4.0
+=head1 Changes in 2.4.0 (2003-05-06)
 
 =over 2
 
@@ -3311,7 +3311,7 @@ also included in S<INN 2.4>.
 
 =back
 
-=head1 Changes in 2.3.5
+=head1 Changes in 2.3.5 (2003-03-09)
 
 =over 2
 
@@ -3336,7 +3336,7 @@ vs. C<%ld>) thanks to the work of Winfried Szukalski.
 
 =back
 
-=head1 Changes in 2.3.4
+=head1 Changes in 2.3.4 (2002-12-22)
 
 =over 2
 
@@ -3388,7 +3388,7 @@ Other minor bug fixes and documentation improvements.
 
 =back
 
-=head1 Changes in 2.3.3
+=head1 Changes in 2.3.3 (2002-04-25)
 
 =over 2
 
@@ -3448,7 +3448,7 @@ documentation improvements.
 
 =back
 
-=head1 Changes in 2.3.2
+=head1 Changes in 2.3.2 (2001-04-27)
 
 =over 2
 
@@ -3489,7 +3489,7 @@ Various other bug fixes and documentation updates.
 
 =back
 
-=head1 Changes in 2.3.1
+=head1 Changes in 2.3.1 (2001-01-11)
 
 =over 2
 
@@ -3633,7 +3633,7 @@ you will need to change this line to:
 to work with S<INN 2.3> or later.  This is due to an internal optimization of
 the interface to embedded filters that's new in S<INN 2.3>.
 
-=head1 Changes in 2.3.0
+=head1 Changes in 2.3.0 (2000-08-21)
 
 =over 2
 
@@ -3711,7 +3711,7 @@ also included in S<INN 2.3>.
 
 =back
 
-=head1 Changes in 2.2.3
+=head1 Changes in 2.2.3 (2000-07-21)
 
 =over 2
 
@@ -3746,7 +3746,7 @@ Lots of bug fixes.
 
 =back
 
-=head1 Changes in 2.2.2
+=head1 Changes in 2.2.2 (1999-12-13)
 
 =over 2
 
@@ -3758,7 +3758,7 @@ issues a NEWNEWS command for a date prior to the year 2000.
 
 =back
 
-=head1 Changes in 2.2.1
+=head1 Changes in 2.2.1 (1999-08-25)
 
 =over 2
 
@@ -3769,7 +3769,7 @@ security vulnerabilities.
 
 =back
 
-=head1 Changes in 2.2.0
+=head1 Changes in 2.2.0 (1999-01-21)
 
 =over 2
 
