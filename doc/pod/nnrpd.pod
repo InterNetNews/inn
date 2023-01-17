@@ -226,7 +226,7 @@ Alternately, you can put a single certificate in I<tlscertfile> and use
 I<tlscafile> for additional certificates needed to complete the chain,
 like a separate authority root certificate.
 
-More concretly, when using S<Let's Encrypt> certificates, Certbot's
+More concretely, when using S<Let's Encrypt> certificates, Certbot's
 files can be installed as follows:
 
     tlscapath:      /etc/letsencrypt/live/news.server.com

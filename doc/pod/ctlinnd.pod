@@ -305,7 +305,7 @@ a function C<filter_end>, it will be called prior to the deactivation of
 the filter.
 
 Note that enabling or disabling Perl filtering on every post received
-by B<nnrpd> is parametered with the I<perlfilter> access parameter in
+by B<nnrpd> is parameterized with the I<perlfilter> access parameter in
 F<readers.conf>.
 
 =item python I<flag>

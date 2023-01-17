@@ -434,7 +434,7 @@ an auth group matches successfully and contains a perl_access parameter,
 then the argument perl script will be used to create an access group.
 This group will then determine the access rights of the client,
 overriding any access groups in F<readers.conf>.  If and only if a
-sucessful auth group contains the perl_access parameter, F<readers.conf>
+successful auth group contains the perl_access parameter, F<readers.conf>
 access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if INN is compiled with Perl
 support (B<--with-perl> passed to configure).  More information may be

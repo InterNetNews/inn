@@ -191,7 +191,7 @@ Using B<buffchan> this way can be done in F<newsfeeds> with for instance:
     buffchan!:*:Tx,WGm*:<pathbin>/buffchan -f 2
 
 It will generate the examples above.  See the C<W> flag in newsfeeds(5)
-for how to parameter the output.
+for how to parameterize the output.
 
 =head1 HISTORY
 

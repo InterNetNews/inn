@@ -124,7 +124,7 @@ something like this:
     );
 
 Note that the value of C<$hdr{Lines}> is the body of the (obsolescent and
-optional) Lines header field of the article and may bear no resemblence to the
+optional) Lines header field of the article and may bear no resemblance to the
 actual length of the article.  C<$hdr{__LINES__}> is the line count calculated
 by INN, and is guaranteed to be accurate.
 
@@ -626,7 +626,7 @@ TOR and is able to deeply modify the headers.  It's designed for large sites.
 URL: L<http://www.panix.com/shogun/> (by Aidan Cully)
 
 A posting filter for helping a site enforce Usenet-II soundness,
-and for quotaing the number of messages any user can post to
+and for quota'ing the number of messages any user can post to
 Usenet daily.  It uses F<filter_nnrpd.pl>.
 
 =back

@@ -31,7 +31,7 @@ rename the default F<innreport-display.conf> file to another name, and set
 it in I<display_conf_file> (otherwise, F<innreport-display.conf> will be
 overwritten each time you update INN).
 
-Sections defined in the display configuration file are used to parameter
+Sections defined in the display configuration file are used to parameterize
 the display, how and what to report, but should not normally be changed
 (unless you precisely know what you are doing).  These sections are written
 in a domain-specific language not intended to be modified (you may break the

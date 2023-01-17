@@ -124,9 +124,9 @@ As a matter of fact, the default display configuration file would otherwise
 be overwritten each time INN is updated.  Bug fixes or enhancements are
 made from time to time to the display configuration of B<innreport>, and
 previously couldn't be automatically be merged in F<innreport.conf> on update.
-This new separate configuration file to parameter the display will now permit
-an automatic update (if of course you use the default display configuration
-file).
+This new separate configuration file to parameterize the display will now
+permit an automatic update (if of course you use the default display
+configuration file).
 
 =item *
 
@@ -149,7 +149,8 @@ Cancel-Lock authentication mechanism can be withdrawn by a valid authenticated
 cancel article or a valid authenticated supersede request.  Withdrawals of
 articles not originally protected by Cancel-Lock will not be executed.
 See inn.conf(5) for more details about the different values of the new
-I<docancels> parameter, and make sure to parameter it according to your needs.
+I<docancels> parameter, and make sure to parameterize it according to your
+needs.
 
 =item *
 
@@ -318,7 +319,7 @@ The F<innreport.conf> file in I<pathetc>, previously containing almost 2500
 lines, has been split into a general configuration file (F<innreport.conf>
 itself, still in I<pathetc>, with about 60 lines) and a display configuration
 file (F<innreport-display.conf>, a new separate file in I<pathlib>).
-The name of this display configuration file can be parametered in the new
+The name of this display configuration file can be parameterized in the new
 I<display_conf_file> option in F<innreport.conf>.
 
 =item *
@@ -1167,7 +1168,7 @@ Fixed flushing of CNFS buffers when using NFS storage.
 
 Fixed how B<innupgrade> is executed during an update of an INN
 installation; on a few systems like AIX, it fails to run because its
-taint mode was unproperly declared.
+taint mode was improperly declared.
 
 =item *
 
@@ -1330,7 +1331,7 @@ may break the build on systems using F<lib32> and F<lib64> directories.
 On a fresh INN install, F<motd.innd> and F<motd.nnrpd> are no longer
 installed by default.  Instead, samples for these files are provided
 in I<pathetc>, named differently so that their default contents are
-not displayed to news clients before they get customised.
+not displayed to news clients before they get customized.
 
 =item *
 
@@ -2692,7 +2693,7 @@ New samples for Python B<nnrpd> hooks are shipped with INN: F<nnrpd_access.py>
 for access control and F<nnrpd_dynamic.py> for dynamic access control.  The
 F<nnrpd_auth.py> script is now only used for authorization control.  See the
 F<readers.conf> man page for more information (especially the I<python_auth>,
-I<python_access> and I<python_dynamic> parameters).  The documention about
+I<python_access> and I<python_dynamic> parameters).  The documentation about
 INN Python Filtering and Authentication Hooks has also been improved by
 Julien Elie.
 
@@ -2910,7 +2911,7 @@ platforms with very low default Unix domain socket buffer sizes.
 
 =item *
 
-B<rnews>'s handling of articles with nul characters, NNTP errors, header
+B<rnews>'s handling of articles with null characters, NNTP errors, header
 problems, and deferrals has been significantly improved.
 
 =item *
@@ -3037,9 +3038,9 @@ overflow.  Thanks to Dan Riley for his excellent bug report.
 =item *
 
 Fixed article handling in B<innd> so that articles without a Path header field
-(arising from peers sending malformatted articles or injecting
-malformatted articles through B<rnews>) would not cause B<innd> to crash.  (This
-was not exploitable.)
+(arising from peers sending incorrectly formatted articles or injecting
+incorrectly formatted articles through B<rnews>) would not cause B<innd>
+to crash.  (This was not exploitable.)
 
 =item *
 

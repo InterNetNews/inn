@@ -30,7 +30,7 @@
 **  The canbuff string will be allocated by this function, unless it returns
 **  false.  This string is suitable to be used as the body of a Cancel-Lock
 **  header field.
-**  The caller is reponsible for freeing it.
+**  The caller is responsible for freeing it.
 **
 **  Returns true if all c-lock elements were written, false on failure.
 */
@@ -186,7 +186,7 @@ gen_cancel_lock(const char *msgid, const char *username, char **canbuff)
 **  The canbuff string will be allocated by this function, unless it returns
 **  false.  This string is suitable to be used as the body of a Cancel-Key
 **  header field.
-**  The caller is reponsible for freeing it.
+**  The caller is responsible for freeing it.
 **
 **  Returns true if all c-key elements were written, false on failure.
 */

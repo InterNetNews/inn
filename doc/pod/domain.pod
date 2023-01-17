@@ -4,18 +4,18 @@ domain - nnrpd domain resolver
 
 =head1 SYNOPSIS
 
-B<domain> I<domainname>
+B<domain> I<domain-name>
 
 =head1 DESCRIPTION
 
 This program can be used in F<readers.conf> to grant access based on the
 subdomain part of the remote hostname.  In particular, it only returns
-success if the remote hostname ends in I<domainname>.  (A leading dot on
-I<domainname> is optional; even without it, the argument must match on
+success if the remote hostname ends in I<domain-name>.  (A leading dot on
+I<domain-name> is optional; even without it, the argument must match on
 dot-separated boundaries).  The C<username> returned is whatever initial
-part of the remote hostname remains after I<domainname> is removed.  It
+part of the remote hostname remains after I<domain-name> is removed.  It
 is an error if there is no initial part (that is, if the remote hostname
-is I<exactly> the specified I<domainname>).
+is I<exactly> the specified I<domain-name>).
 
 =head1 EXAMPLE
 

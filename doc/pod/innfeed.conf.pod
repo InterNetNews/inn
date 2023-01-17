@@ -7,7 +7,7 @@ innfeed.conf - Configuration file for innfeed
 The I<innfeed.conf> file configures to which remote peers B<innfeed> sends
 NNTP feeds.
 
-A common entry to parameter C<news.server.com> as an outgoing feed is:
+A common entry to parameterize C<news.server.com> as an outgoing feed is:
 
     peer news.server.com {
         ip-name: "news.server.com"

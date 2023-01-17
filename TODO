@@ -182,13 +182,13 @@ Documentation Projects
 * Document the internal formats of the various overview methods, CNFS,
   timehash, and timecaf.  A lot of this documentation already exists in
   various forms, but it needs to be cleaned up and collected in one place
-  for each format, preferrably as a man page.
+  for each format, preferably as a man page.
 
 * Add documentation for slave servers.  [Russ has articles from
   inn-workers that can be used as a beginning.]
 
 * Write complete documentation for all of our extensions to RFC 3977 or RFC
-  5536 and 5537, preferrably in a format that could be suitable for future
+  5536 and 5537, preferably in a format that could be suitable for future
   inclusion into new revisions of the RFCs.
 
 * More comprehensive documentation in texinfo would be interesting; it
@@ -449,8 +449,8 @@ Requested New Features
 * inncheck should check the syntax of all the various files that are
   returned by LIST commands, since having those files present with the
   wrong syntax could result in non-compliant responses from the server.
-  Possibly the server should also refuse to send malformatted lines to
-  the client.
+  Possibly the server should also refuse to send incorrectly formatted lines
+  to the client.
 
 * ctlinnd reload incoming.conf could return a count of the hosts that
   failed, or even better a list of them.  This would make pruning old

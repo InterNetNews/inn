@@ -92,7 +92,7 @@ S<INN 2.3.0> up to S<INN 2.3.5>) to ovdb-2.0 (since S<INN 2.4.0>).
 
 In both of these cases, the database is upgraded in-place; and the
 upgrade cannot be undone.  Do not interrupt the upgrade process once
-it has started, because there is a risk of irrepairable corruption.
+it has started, because there is a risk of irreparable corruption.
 The upgrade may take several minutes to complete.
 If an upgrade does get interrupted, try running the upgrade again.
 

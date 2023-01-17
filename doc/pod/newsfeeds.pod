@@ -264,7 +264,7 @@ which is then completely equivalent to:
     news.example.com:local.*,example.*:Tf,Wnm:
 
 Variables aren't solely simple substitution.  If either C<!> or C<@>
-immediately preceds the variable and the value of the variable contains
+immediately precedes the variable and the value of the variable contains
 commas, that character will be duplicated before each comma.  This
 somewhat odd-sounding behavior is designed to make it easier to use
 variables to construct feed patterns.  The utility becomes more obvious
@@ -324,7 +324,7 @@ Only send control messages, not regular articles.
 Only send articles with a Distribution header field.  Combined with a
 particular distribution value in the I<distribution> part of the site
 entry, this can be used to limit articles sent to a site to just those
-with a particuliar distribution.
+with a particular distribution.
 
 =item e
 

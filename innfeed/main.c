@@ -734,7 +734,7 @@ mainConfigLoadCbk(void *data)
         if (!isDirectory(p) && isDirectory(innconf->patharticles)) {
             logOrPrint(LOG_WARNING, fp,
                        "ME config: definition of news-spool (%s) is a"
-                       " non-existant directory. Using %s",
+                       " non-existent directory. Using %s",
                        p, innconf->patharticles);
             p = xstrdup(innconf->patharticles);
         } else if (!isDirectory(p))

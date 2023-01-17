@@ -202,7 +202,7 @@ skip_fws(const char *p)
 /*
 **  Return a newly allocated string with all CFWS removed from the
 **  NULL-terminated argument, but preserving a unique space between words.
-**  The caller is reponsible for freeing it.
+**  The caller is responsible for freeing it.
 */
 char *
 spaced_words_without_cfws(const char *p)
