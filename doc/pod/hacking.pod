@@ -738,11 +738,11 @@ Update copyright years in F<LICENSE>.
 
 =item 4.
 
-Update F<doc/pod/news.pod> and regenerate F<NEWS>.  Be more detailed for
-a minor release than for a major release.  For a major release, also add
-information on how to upgrade from the last major release, including
-anything special to be aware of.  (Minor releases shouldn't require any
-special care when upgrading.)
+Update F<doc/pod/news.pod>, add the release date, and regenerate F<NEWS>.
+Be more detailed for a minor release than for a major release.  For a major
+release, also add information on how to upgrade from the last major release,
+including anything special to be aware of.  (Minor releases shouldn't require
+any special care when upgrading.)
 
 =item 5.
 
