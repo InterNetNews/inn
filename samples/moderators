@@ -2,7 +2,7 @@
 ##
 ##  Whenever possible, the master moderator database at moderators.isc.org
 ##  should be used rather than adding specific entries to this file.  The
-##  master database will list any publically propagated moderated group;
+##  master database will list any publicly propagated moderated group;
 ##  changes should be sent to <moderators-request@isc.org>.
 ##
 ##  Exceptions listed in this file are mostly hierarchies for which the

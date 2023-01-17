@@ -10,7 +10,7 @@ reasonable defaults.
 
 The first part of this documentation can be skipped if INN is already
 installed on your system.  Some distributions provide a package, which should
-be used in preference of building from stratch.
+be used in preference of building from scratch.
 
 =head1 Compile (when installing from scratch)
 
@@ -113,7 +113,7 @@ To store articles, start with traditional spool (named tradspool), but know
 that there are various other options with their own pros and cons, as detailed
 in F<INSTALL>.
 
-The default F<storage.conf> file is already parametered to use that storage
+The default F<storage.conf> file is already parameterized to use that storage
 method.
 
 =item *
@@ -221,7 +221,7 @@ your server boots:
 
 Samples of init.d and systemd init scripts are present in the F<contrib>
 directory (and certainly already set up on your system if you installed INN
-with a package for your distrubtion).
+with a package for your distribution).
 
 =item *
 

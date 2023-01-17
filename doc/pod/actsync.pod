@@ -23,7 +23,7 @@ therefore synchronizing with the chosen source on a daily basis by running
 B<actsyncd> in a cron job.
 
 If you only want a subset of newsgroups from that source, it can be
-parametered in the F<actsync.ign> configuration file in the I<pathetc>
+parameterized in the F<actsync.ign> configuration file in the I<pathetc>
 directory.
 
 INN comes with a default configuration for fetching the list of newsgroups
@@ -350,7 +350,7 @@ In an alias chain longer than 16 groups.
 
 =item *
 
-Aliased to a non-existant newsgroup.
+Aliased to a non-existent newsgroup.
 
 =item *
 

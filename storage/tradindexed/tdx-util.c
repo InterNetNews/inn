@@ -163,7 +163,7 @@ dump_overview(const char *group, ARTNUM low, ARTNUM high, bool overchan)
 
 
 /*
-**  Check a string to see if its a valid number.
+**  Check a string to see if it's a valid number.
 */
 static bool
 check_number(const char *string)

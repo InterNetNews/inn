@@ -505,7 +505,7 @@ setting is fine.
 
 =item 14.
 
-Parameter the feed to send to the remote servers.  A typical entry in
+Parameterize the feed to send to the remote servers.  A typical entry in
 F<newsfeeds> to generate batches in I<pathoutgoing> is:
 
     news.server.to.feed/pathname:*:Tf,Wnb,B4096/1024:

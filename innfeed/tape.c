@@ -176,7 +176,7 @@ tapeConfigLoadCbk(void *data)
         if (!isDirectory(dir) && isDirectory(dflTapeDir)) {
             logOrPrint(LOG_ERR, fp,
                        "ME config: definition of backlog-directory (%s) is a"
-                       " non-existant directory. Using %s",
+                       " non-existent directory. Using %s",
                        dir, dflTapeDir);
             free(dir);
             dir = xstrdup(dflTapeDir);

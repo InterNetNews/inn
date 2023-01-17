@@ -1,6 +1,6 @@
 ##  innreport.conf -- General configuration file for innreport
 ##
-##  Used to parameter how INN log files are summarized daily.
+##  Used to parameterize how INN log files are summarized daily.
 ##
 ##  See the innreport.conf man page for more information.
 

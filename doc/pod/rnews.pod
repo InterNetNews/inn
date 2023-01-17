@@ -149,7 +149,7 @@ articles are rejected by the server.
 
 =head1 BUGS
 
-B<rnews> cannot process articles that have embedded nul characters in
+B<rnews> cannot process articles that have embedded null characters in
 them.  (Neither can the rest of INN at present.)
 
 =head1 HISTORY

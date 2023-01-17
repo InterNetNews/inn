@@ -99,7 +99,7 @@ INN is tested primarily with newer versions of Perl, so it's generally
 recommended that you install the latest stable distribution of Perl before
 compiling INN.  For instructions on obtaining and installing Perl, see
 L<https://www.perl.org/get.html>.  Note that you may need to use the same
-compiler and options (particularly large file supporti and shared libraries)
+compiler and options (particularly large file support and shared libraries)
 for Perl and INN.
 
 If you're using a version of Perl prior to 5.6.0, you may need to make
@@ -1816,7 +1816,7 @@ The URLs from which you can get hierarchy keys are noted in comments in
 F<control.ctl>.  L<https://ftp.isc.org/pub/pgpcontrol/PGPKEYS> tries to
 collect the major hierarchy keys and you can just import the whole file.
 
-If you want to make sure that the keys have been correcly imported, use:
+If you want to make sure that the keys have been correctly imported, use:
 
     gpg --list-keys
 

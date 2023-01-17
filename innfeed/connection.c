@@ -3298,7 +3298,7 @@ cxnIdle(Connection cxn)
 
 
 /*
- * Called when a response from the remote refers to a non-existant
+ * Called when a response from the remote refers to a non-existent
  * message-id. The network connection is aborted and the Connection
  * object goes into sleep mode.
  */

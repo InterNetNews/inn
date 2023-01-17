@@ -160,7 +160,7 @@ they are both NULL, or no Message-ID is found, it will result in a failure.
 
 These functions return true if all the elements were written, false on
 failure.  The I<canbuff> string will be allocated by these functions, unless
-they return false.  The caller is reponsible for freeing it.
+they return false.  The caller is responsible for freeing it.
 
 For each admin secret in the I<canlockadmin> vector set in F<inn.conf>,
 and for each user secret set in the I<canlockuser> vector set in F<inn.conf>

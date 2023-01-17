@@ -128,7 +128,7 @@ send the article to two peers (C<a.peer> and C<other.server.org>, as specified
 in F<newsfeeds>) and C<inpaths!> (see B<ninpaths> for more details
 about it).  The second line mentions that this previous article is a
 cancel message (C<c>) for C<< <m070725@foo.com> >> and that it has been
-processed (inndeed, B<controlchan> processes all control articles except for
+processed (indeed, B<controlchan> processes all control articles except for
 cancels which are handled by B<innd>).  The third line indicates that
 the article whose Message-ID is C<< <23k82@bar.net> >> has been rejected (C<->)
 because it is posted to a poison newsgroup (a Perl or a Python filter
