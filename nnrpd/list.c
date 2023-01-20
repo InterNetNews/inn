@@ -179,8 +179,11 @@ CMD_list_single(char *group)
 
         /* When a newsgroup is empty, the high water mark should be one less
          * than the low water mark according to RFC 3977. */
-        if (count == 0)
-            lo = hi + 1;
+        if (count == 0) {
+            if (lo == 0)
+                lo = 1;
+            hi = lo - 1;
+        }
         Reply("%d %s\r\n", NNTP_OK_LIST, INFOactive.Format);
         Printf("%s %0*u %0*u %c\r\n", group, ARTNUMPRINTSIZE, hi,
                ARTNUMPRINTSIZE, lo, flag);
@@ -366,8 +369,11 @@ CMDlist(int ac, char *av[])
 
                 /* When a newsgroup is empty, the high water mark should be
                  * one less than the low water mark according to RFC 3977. */
-                if (count == 0)
-                    lo = hi + 1;
+                if (count == 0) {
+                    if (lo == 0)
+                        lo = 1;
+                    hi = lo - 1;
+                }
 
                 if (flag != NF_FLAG_ALIAS) {
                     Printf("%s %u %u %u %c\r\n", p, hi, lo, count,

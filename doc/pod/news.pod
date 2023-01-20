@@ -63,6 +63,13 @@ overview expiration, provided that the newsgroup was no longer empty.)
 
 =item *
 
+The reported high water mark of empty newsgroups is now correctly set to
+one less than the reported low water mark in overview data.  (Previously,
+the reported low water mark was set to one more than the reported high water
+mark.)
+
+=item *
+
 Fixed the output of the C<ctlinnd feedinfo ''> command that was returning
 information only for the first site, and the output of the C<ctlinnd name
 channel> command that was returning partial information for the channel.

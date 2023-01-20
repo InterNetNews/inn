@@ -128,8 +128,12 @@ CMDgroup(int ac, char *av[])
             count = (int) GRPexactcount(group, ARTlow, ARThigh);
 
         if (count == 0) {
-            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh + 1, ARThigh,
-                  group);
+            if (ARTlow == 0) {
+                Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
+            } else {
+                Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow - 1,
+                      group);
+            }
         } else {
             /* If we are an NFS reader, check the last nfsreaderdelay
              * articles in the group to see if they arrived in the
@@ -212,8 +216,12 @@ CMDgroup(int ac, char *av[])
             count = (int) GRPexactcount(group, ARTlow, ARThigh);
 
         if (count == 0) {
-            Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARThigh + 1, ARThigh,
-                  group);
+            if (ARTlow == 0) {
+                Reply("%d 0 1 0 %s\r\n", NNTP_OK_GROUP, group);
+            } else {
+                Reply("%d 0 %lu %lu %s\r\n", NNTP_OK_GROUP, ARTlow, ARTlow - 1,
+                      group);
+            }
             Printf(".\r\n");
         } else {
             Reply("%d %d %lu %lu %s\r\n", NNTP_OK_GROUP, count, ARTlow,
