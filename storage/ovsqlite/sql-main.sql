@@ -96,12 +96,17 @@ delete from artinfo
     where groupid=?1
         and artnum=?2;
 
+-- .update_groupinfo_delete_all
+update groupinfo
+    set low = max(high, 1),
+        high = max(high-1, 0),
+        "count" = ?2*0
+    where groupid=?1;
+
 -- .update_groupinfo_delete_low
 update groupinfo
-    set low = coalesce(
-            (select min(artnum) from artinfo
-                where artinfo.groupid=groupinfo.groupid),
-            high+1),
+    set low = (select min(artnum) from artinfo
+                  where artinfo.groupid=groupinfo.groupid),
         "count" = "count"-?2
     where groupid=?1;
 

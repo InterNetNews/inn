@@ -1280,10 +1280,14 @@ count_records(struct groupinfo *gi)
         ret = cursor->c_get(cursor, &key, &val, DB_NEXT);
     }
     cursor->c_close(cursor);
-    if (gi->count == 0)
-        gi->low = gi->high + 1;
-    else
+    if (gi->count == 0) {
+        gi->low = gi->low > gi->high ? gi->low : gi->high;
+        if (gi->low == 0)
+            gi->low = 1;
+        gi->high = gi->low - 1;
+    } else {
         gi->low = newlow;
+    }
 
     if (ret == DB_NOTFOUND)
         return 0;
@@ -2958,8 +2962,12 @@ ovdb_expiregroup(const char *group, int *lo, struct history *h)
 
             gi.status &= ~GROUPINFO_EXPIRING;
             gi.expired = time(NULL);
-            if (gi.count == 0 && lowest == 0)
-                gi.low = gi.high + 1;
+            if (gi.count == 0 && lowest == 0) {
+                gi.low = gi.low > gi.high ? gi.low : gi.high;
+                if (gi.low == 0)
+                    gi.low = 1;
+                gi.high = gi.low - 1;
+            }
         }
 
         ret = groupinfo->put(groupinfo, tid, &gkey, &gval, 0);

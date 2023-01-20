@@ -669,7 +669,7 @@ tdx_index_add(struct group_index *index, const char *group, ARTNUM low,
     entry = &index->entries[loc];
     hash = Hash(group, strlen(group));
     entry->hash = hash;
-    entry->low = (low == 0 && high != 0) ? high + 1 : low;
+    entry->low = (low == 0) ? 1 : low;
     entry->high = high;
     entry->deleted = 0;
     entry->base = 0;
@@ -926,7 +926,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     struct group_entry new_entry;
     struct group_data *data = NULL;
     ptrdiff_t offset;
-    ARTNUM old_base;
+    ARTNUM old_base, old_high;
     ino_t old_inode;
 
     index = tdx_index_open(true);
@@ -946,6 +946,7 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     new_entry.low = 0;
     new_entry.count = 0;
     new_entry.base = 0;
+    old_high = entry->high;
     data = tdx_data_open(index, group, entry);
     if (data == NULL)
         goto fail;
@@ -965,10 +966,12 @@ tdx_expire(const char *group, ARTNUM *low, struct history *history)
     }
 
     /* Almost done.  Update the group index.  If there are no articles in the
-       group, the low water mark should be one more than the high water
+       group, the high water mark should be one less than the low water
        mark. */
-    if (new_entry.low == 0)
-        new_entry.low = new_entry.high + 1;
+    if (new_entry.low == 0) {
+        new_entry.low = old_high > 0 ? old_high : 1;
+        new_entry.high = new_entry.low - 1;
+    }
     tdx_index_rebuild_finish(index, entry, &new_entry);
     if (low != NULL)
         *low = entry->low;

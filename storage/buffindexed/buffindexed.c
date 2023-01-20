@@ -2311,7 +2311,10 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
     GROUPlock(gloc, INN_LOCK_WRITE);
     ge = &GROUPentries[gloc.recno];
     if (ge->count == 0) {
-        ge->low = ge->high + 1;
+        ge->low = ge->low > ge->high ? ge->low : ge->high;
+        if (ge->low == 0)
+            ge->low = 1;
+        ge->high = ge->low - 1;
         if (lo != NULL)
             *lo = ge->low;
         ge->expired = time(NULL);
@@ -2381,9 +2384,12 @@ buffindexed_expiregroup(const char *group, int *lo, struct history *h)
         newge.low = newge.high;
     }
     if (newge.count == 0) {
-        /* The low water mark should be one more than the high water mark
-         * when there is no article in the group. */
-        newge.low = newge.high + 1;
+        /* The high water mark should be one less than the low water mark when
+         * there is no article in the group. */
+        newge.low = newge.low > newge.high ? newge.low : newge.high;
+        if (newge.low == 0)
+            newge.low = 1;
+        newge.high = newge.low - 1;
     }
     *ge = newge;
     if (lo != NULL) {

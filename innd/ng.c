@@ -366,9 +366,12 @@ NGrenumber(NEWSGROUP *ngp)
         lomark = low;
         himark = high;
     } else {
-        /* Empty group. */
-        himark = high;
-        lomark = himark + 1;
+        /* Empty group.
+         * The high water mark is one less than the low water mark. */
+        lomark = low > high ? low : high;
+        if (lomark == 0)
+            lomark = 1;
+        himark = lomark - 1;
     }
     l = atol(f2);
     if (himark > l) {
@@ -381,7 +384,11 @@ NGrenumber(NEWSGROUP *ngp)
         }
         ngp->Last = himark;
         ICDactivedirty++;
-    } else if (himark < l) {
+    } else if (himark < l && count > 0) {
+        /* Do not decrease the high water mark as innd uses it to assign
+         * the next available article number.
+         * Do not log the normal case of the high water mark being lower
+         * than the low water mark for empty newsgroups in overview. */
         syslog(L_NOTICE, "%s renumber %s hi not decreasing %ld to %ld",
                LogName, ngp->Name, l, himark);
     }

@@ -1392,7 +1392,7 @@ do_delete_article(client_t *client)
     uint16_t groupname_len;
     uint64_t artnum;
     int64_t groupid;
-    uint64_t low;
+    uint64_t low, oldcount;
     failvar_stmt_savepoint;
 
     reqbuf = client->request;
@@ -1421,6 +1421,7 @@ do_delete_article(client_t *client)
     }
     groupid = sqlite3_column_int64(stmt, 0);
     low = sqlite3_column_int64(stmt, 1);
+    oldcount = sqlite3_column_int64(stmt, 3);
     resetclear(stmt);
     stmt = NULL;
 
@@ -1438,7 +1439,11 @@ do_delete_article(client_t *client)
     resetclear(stmt);
     stmt = NULL;
 
-    if (artnum == low) {
+    if (oldcount < 1)
+        fail(response_corrupted);
+    if (oldcount == 1) {
+        stmt = sql_main.update_groupinfo_delete_all;
+    } else if (artnum == low) {
         stmt = sql_main.update_groupinfo_delete_low;
     } else {
         stmt = sql_main.update_groupinfo_delete_middle;
@@ -1704,7 +1709,7 @@ do_expire_group(client_t *client)
     uint16_t groupname_len;
     uint32_t count, artix;
     int64_t groupid;
-    uint64_t low;
+    uint64_t low, oldcount;
     int changes;
     failvar_stmt_savepoint;
 
@@ -1739,6 +1744,7 @@ do_expire_group(client_t *client)
     }
     groupid = sqlite3_column_int64(stmt, 0);
     low = sqlite3_column_int64(stmt, 1);
+    oldcount = sqlite3_column_int64(stmt, 3);
     resetclear(stmt);
     stmt = NULL;
 
@@ -1775,7 +1781,11 @@ do_expire_group(client_t *client)
     sqlite3_reset(sql_main.clear_expireart);
 
     if (changes > 0) {
-        if (hit_low) {
+        if ((uint64_t) changes > oldcount)
+            fail(response_corrupted);
+        if ((uint64_t) changes == oldcount) {
+            stmt = sql_main.update_groupinfo_delete_all;
+        } else if (hit_low) {
             stmt = sql_main.update_groupinfo_delete_low;
         } else {
             stmt = sql_main.update_groupinfo_delete_middle;
