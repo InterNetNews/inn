@@ -25,7 +25,7 @@ main(int argc UNUSED, char **argv UNUSED)
     die("Berkeley DB support not compiled");
 }
 
-#else  /* HAVE_BDB */
+#else /* HAVE_BDB */
 
 static int
 open_db(DB **db, const char *name, int type)
@@ -425,7 +425,22 @@ main(int argc, char **argv)
         case -1:
             sysdie("cannot fork");
         case 0:
-            setsid();
+            /* setsid() should take care of disassociating from the controlling
+             * terminal, and FreeBSD at least doesn't like TIOCNOTTY if you
+             * don't already have a controlling terminal.  So only use the
+             * older TIOCNOTTY method if setsid() isn't available. */
+#    if HAVE_SETSID
+            if (setsid() < 0)
+                syswarn("cant become session leader");
+#    elif defined(TIOCNOTTY)
+            fd = open("/dev/tty", O_RDWR);
+            if (fd >= 0) {
+                if (ioctl(fd, TIOCNOTTY, NULL) < 0)
+                    syswarn("cant disassociate from the terminal");
+                close(fd);
+            }
+#    endif /* defined(TIOCNOTTY) */
+
             execl(concatpath(innconf->pathbin, "ovdb_monitor"), "ovdb_monitor",
                   SPACES, NULL);
             syswarn("cannot exec ovdb_monitor");
@@ -449,4 +464,4 @@ main(int argc, char **argv)
 
     exit(0);
 }
-#endif /* HAVE_BDB */
+#endif     /* HAVE_BDB */
