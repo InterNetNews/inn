@@ -453,7 +453,13 @@ main(int argc, char **argv)
     if (ovdb_conf.readserver) {
         if (ovdb_check_pidfile(OVDB_SERVER_PIDFILE) == false) {
             notice("starting ovdb server");
-            daemonize(innconf->pathtmp);
+            if (daemon(1, 0) < 0) {
+                sysdie("cannot fork: %s", strerror(errno));
+            }
+            if (chdir(innconf->pathtmp) < 0) {
+                syswarn("cannot chdir to %s", innconf->pathtmp);
+            }
+
             execl(concatpath(innconf->pathbin, "ovdb_server"), "ovdb_server",
                   SPACES, NULL);
             syswarn("cannot exec ovdb_server");

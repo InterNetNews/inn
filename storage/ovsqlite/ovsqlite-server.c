@@ -2148,8 +2148,14 @@ main(int argc, char **argv)
     if (!innconf_read(NULL))
         exit(1);
     load_config();
-    if (!debug)
-        daemonize(innconf->pathtmp);
+    if (!debug) {
+        if (daemon(1, 0) < 0) {
+            sysdie("cannot fork: %s", strerror(errno));
+        }
+        if (chdir(innconf->pathtmp) < 0) {
+            syswarn("cannot chdir to %s", innconf->pathtmp);
+        }
+    }
     catch_signals();
     make_pidfile();
     open_db();

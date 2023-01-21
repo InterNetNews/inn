@@ -13,6 +13,7 @@ lib/concat
 lib/conffile
 lib/confparse
 lib/date
+lib/daemon
 lib/dispatch
 lib/fdflag
 lib/getaddrinfo

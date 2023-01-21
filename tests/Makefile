@@ -18,7 +18,7 @@ LIBM_LDFLAGS    = '-lm'
 
 TESTS	= authprogs/ident.t innd/artparse.t innd/chan.t lib/artnumber.t \
 	lib/asprintf.t lib/buffer.t lib/canlock.t lib/concat.t lib/conffile.t \
-	lib/confparse.t lib/date.t \
+	lib/confparse.t lib/daemon.t lib/date.t \
 	lib/dispatch.t lib/fdflag.t \
 	lib/getaddrinfo.t lib/getnameinfo.t lib/hash.t \
 	lib/hashtab.t lib/headers.t lib/hex.t lib/inet_aton.t \
@@ -118,6 +118,12 @@ lib/conffile.t: lib/conffile-t.o tap/basic.o $(LIBINN)
 lib/confparse.t: lib/confparse-t.o tap/basic.o tap/float.o tap/messages.o tap/string.o $(LIBINN)
 	$(LINK) $(LIBM_LDFLAGS) lib/confparse-t.o tap/basic.o tap/float.o \
 	    tap/messages.o tap/string.o $(LIBINN)
+
+lib/daemon.o: ../lib/daemon.c
+	$(CC) $(CFLAGS) -DTESTING -c -o $@ ../lib/daemon.c
+
+lib/daemon.t: lib/daemon.o lib/daemon-t.o tap/basic.o $(LIBINN)
+	$(LINK) lib/daemon.o lib/daemon-t.o tap/basic.o $(LIBINN) $(LIBS)
 
 lib/date.t: lib/date-t.o tap/basic.o tap/string.o $(LIBINN)
 	$(LINK) lib/date-t.o tap/basic.o tap/string.o $(LIBINN)

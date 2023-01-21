@@ -628,9 +628,14 @@ main(int ac, char *av[])
         if (chdir(innconf->patharticles) < 0)
             sysdie("SERVER cant chdir to %s", innconf->patharticles);
     } else {
-        if (ShouldFork)
-            daemonize(innconf->patharticles);
-
+        if (ShouldFork) {
+            if (daemon(1, 0) < 0) {
+                sysdie("cannot fork: %s", strerror(errno));
+            }
+            if (chdir(innconf->patharticles) < 0) {
+                syswarn("cannot chdir to %s", innconf->patharticles);
+            }
+        }
         /* Open the logs.  stdout is used to log information about incoming
            articles and stderr is used to log serious error conditions (as
            well as to capture stderr from embedded filters).  Both are

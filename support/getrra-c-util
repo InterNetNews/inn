@@ -186,7 +186,7 @@ extern ssize_t pwrite(int, const void *, size_t, off_t);\\
 extern int symlink(const char *, const char *);\\
 #endif\\
 " \
-                        -e '147 i \
+                        -e '150 i \
 #if !HAVE_DECL_SNPRINTF\
 extern int snprintf(char *, size_t, const char *, ...)\
     __attribute__((__format__(printf, 3, 4)));\
@@ -195,7 +195,7 @@ extern int snprintf(char *, size_t, const char *, ...)\
 extern int vsnprintf(char *, size_t, const char *, va_list)\
     __attribute__((__format__(printf, 3, 0)));\
 #endif' \
-                        -e '164 i \
+                        -e '167 i \
 #if !HAVE_DECL_STRLCAT\
 extern size_t strlcat(char *, const char *, size_t);\
 #endif\
@@ -215,7 +215,6 @@ extern size_t strspn(const char *, const char *);\
 #if !HAVE_STRTOK\
 extern char *strtok(char *, const char *);\
 #endif' \
-                        -e '/#if !HAVE_DAEMON/,+2d' \
                         -e '/#if !HAVE_ISSETUGID/,+2d' \
                         -e '/#if !HAVE_STRNDUP/,+2d' \
                         ${TEMP}
@@ -308,6 +307,7 @@ download m4/zlib.m4 m4 zlib.m4
 
 ##  Synchronize portability functions from upstream.
 download portable/asprintf.c lib asprintf.c
+download portable/daemon.c lib daemon.c
 download portable/getaddrinfo.c lib getaddrinfo.c
 download portable/getaddrinfo.h include/portable getaddrinfo.h
 download portable/getnameinfo.c lib getnameinfo.c
@@ -347,6 +347,7 @@ download util/xwrite.h include/inn xwrite.h
 
 ##  Synchronize test suite files for portability functions from upstream.
 download tests/portable/asprintf-t.c tests/lib asprintf-t.c
+download tests/portable/daemon-t.c tests/lib daemon-t.c
 download tests/portable/getaddrinfo-t.c tests/lib getaddrinfo-t.c
 download tests/portable/getnameinfo-t.c tests/lib getnameinfo-t.c
 download tests/portable/inet_aton-t.c tests/lib inet_aton-t.c

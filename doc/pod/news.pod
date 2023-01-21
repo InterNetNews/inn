@@ -98,6 +98,12 @@ Fixed the build on systems whose default shell does not completely meet the
 Posix standard.  A few build scripts were run with the default shell instead
 of the one found by Autoconf and afterwards used for INN.
 
+=item *
+
+Use standard daemon(3) C function, when available, to daemonize B<innd>,
+B<nnrpd>, B<ovdb_server> and B<ovsqlite-server> instead of an INN-specific
+one.
+
 =back
 
 =head1 Upgrading from 2.6 to 2.7

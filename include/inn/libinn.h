@@ -75,7 +75,6 @@ extern bool inn_lock_range(int fd, enum inn_locktype type, bool block,
 /*
 **  Miscellaneous utility functions.
 */
-extern void daemonize(const char *path);
 extern int getfdlimit(void);
 extern int setfdlimit(unsigned int limit);
 extern void (*xsignal(int signum, void (*sigfunc)(int)))(int);
