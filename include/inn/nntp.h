@@ -170,6 +170,14 @@ enum nntp_code {
 
 #define NNTP_MAXLEN_MSGID   250
 
+/*
+**  Version 2 of NNTP requires that article numbers lie between 1 and 2^31-1,
+**  inclusive.  Anyway, INN cannot currently cope with article numbers greater
+**  than that.
+*/
+
+#define NNTP_MAXARTNUM      2147483647L
+
 /* Forward declaration. */
 struct cvector;
 
