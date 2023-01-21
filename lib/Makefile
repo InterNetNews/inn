@@ -177,15 +177,6 @@ confparse.o: confparse.c ../include/portable/system.h ../include/config.h \
   ../include/inn/hashtab.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/vector.h
-daemonize.o: daemonize.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/options.h ../include/inn/system.h \
-  ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h \
-  ../include/inn/messages.h
 date.o: date.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -561,6 +552,11 @@ asprintf.o: asprintf.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/system.h \
+  ../include/portable/stdbool.h
+daemon.o: daemon.c ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/system.h ../include/portable/macros.h \
   ../include/portable/stdbool.h
 fseeko.o: fseeko.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
