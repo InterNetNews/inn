@@ -84,9 +84,11 @@ need to be changed.
 
 =item I<mta>
 
-The command to use when mailing postings to moderators and for the use of
-innmail(1).  The message, with headers and an added To header field, will be
-piped into this program.  The string C<%s>, if present, will be replaced
+The command to use when sending a mail (e.g. mailing postings to moderators,
+gatewaying news to mail, sending statistics to the TOP1000 project, mailing
+errors to the news administrator) as well as for the use of innmail(1).  The
+message, with headers and additional To and Auto-Submitted header fields, will
+be piped into this program.  The string C<%s>, if present, will be replaced
 by the e-mail address of the moderator.  It's strongly recommended for
 this command to include C<%s> on the command line rather than use the
 addresses in the To and Cc header fields of the message, since the latter

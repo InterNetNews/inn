@@ -34,6 +34,7 @@ INNFEEDCONF=${PATHETC}/innfeed.conf
 HOSTNAME=$(hostname)
 DATE=$(date)
 TAGGEDHASH=${DO_DBZ_TAGGED_HASH}
+ADDHEADER="Auto-Submitted: auto-generated"
 
 ##  Try to find the path to innfeed's spool.  The default is
 ##  ${PATHSPOOL}/innfeed if not found.
@@ -194,7 +195,7 @@ else
 fi
 if ${DOMAIL}; then
     MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/' | \
-      ${MAILCMD} -s '${MAILSUBJ}' ${NEWSMASTER}"
+      ${MAILCMD} -a '${ADDHEADER}' -s '${MAILSUBJ}' ${NEWSMASTER}"
 else
     MAIL="cut -c 1-1022 | ${SED} -e 's/^~/~~/'"
 fi
@@ -577,7 +578,7 @@ fi
 if ${DOMAIL}; then
     ##  Stop using the temp file, and mail captured output.
     exec 1>&3 2>&1 3>&-
-    MAIL="${MAILCMD} -s \"${MAILSUBJ}\" ${NEWSMASTER}"
+    MAIL="${MAILCMD} -a '${ADDHEADER}' -s '${MAILSUBJ}' ${NEWSMASTER}"
     test -s ${TEMP} && cat ${TEMP} | ${SED} -e 's/^~/~~/' | eval ${MAIL}
     rm -f ${TEMP}
 fi

@@ -172,8 +172,10 @@ sub main {
             exec(split(/\s+/, $sm)) || die "cannot exec $sm: $!";
         } else {
 
-            print $MTA 'To: ' . join(",\n\t", @emailto);
-            print $MTA "\nSubject: inpaths $pathhost\n\n";
+            print $MTA "To: " . join(",\n\t", @emailto) . "\n";
+            print $MTA "Subject: inpaths $pathhost\n";
+            print $MTA "Auto-Submitted: auto-generated\n";
+            print $MTA "\n";
             print $MTA $sendout;
             print $MTA "\n";
             close($MTA) || die "execution of $sm failed: $!\n";

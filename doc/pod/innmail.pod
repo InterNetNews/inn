@@ -4,7 +4,8 @@ innmail - Simple mail-sending program
 
 =head1 SYNOPSIS
 
-B<innmail> [B<-h>] [B<-s> I<subject>] I<address> [I<address> ...]
+B<innmail> [B<-h>] [B<-a> I<header>] [B<-s> I<subject>] I<address>
+[I<address> ...]
 
 =head1 DESCRIPTION
 
@@ -25,6 +26,20 @@ F<inn.conf>.
 =head1 OPTIONS
 
 =over 4
+
+=item B<-a> I<header>
+
+Specifies an additional header field to add in the headers of the message.
+It should be a well-formed header field surrounded by quotes, consisting
+of a name and a body separated with a colon and a space.  For instance,
+C<Auto-Submitted: auto-generated> is used by some programs invoking
+B<innmail>.
+
+You may provide more than one header field if I<header> is a multi-line
+string, which can for instance be done with these commands:
+
+    HEADERS=$(echo -e "Hdr1: Body1\nHdr2: Body2")
+    echo "test" | innmail -a "$HEADERS" -s Test joe
 
 =item B<-h>
 

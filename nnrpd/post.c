@@ -821,6 +821,9 @@ MailArticle(char *group, char *article)
     if ((F = popen(buff, "w")) == NULL)
         return "Can't start mailer";
     fprintf(F, "To: %s\n", address);
+    /* As the mail is sent in direct response to a message, it is auto-replied,
+     * and not auto-generated (RFC 3834). */
+    fprintf(F, "Auto-Submitted: auto-replied\n");
     if (FLUSH_ERROR(F)) {
         pclose(F);
         return CANTSEND;

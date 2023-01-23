@@ -18,6 +18,7 @@ LOCK=${LOCKS}/LOCK.${PROGNAME}
 DAILY=${LOCKS}/LOCK.news.daily
 INNWATCHINITIALSLEEPTIME=1
 CHILDPID=
+ADDHEADER="Auto-Submitted: auto-generated"
 
 ##  Where to put the timestamp file (directory and filename).
 TIMESTAMP=${LOCKS}/${PROGNAME}.time
@@ -165,12 +166,14 @@ do
     if ctlinnd -s -t 120 mode 2>/dev/null; then
         ${HASEXITED} && {
             HASEXITED=false
-            ${MAILCMD} -s "INND is now running" ${NEWSMASTER} </dev/null
+            ${MAILCMD} -a "${ADDHEADER}" -s "INND is now running" \
+                ${NEWSMASTER} </dev/null
         }
     else
         ${HASEXITED} || {
             HASEXITED=true
-            ${MAILCMD} -s "INND is NOT running" ${NEWSMASTER} </dev/null
+            ${MAILCMD} -a "${ADDHEADER}" -s "INND is NOT running" \
+                ${NEWSMASTER} </dev/null
         }
         continue
     fi
@@ -356,8 +359,8 @@ do
                 cat ${LOGFILE}
             ) 2>&1 \
                 | sed -e 's/^~/~~/' \
-                | ${MAILCMD} -s "${PROGNAME} warning: messages in ${LOGFILE}" \
-                    ${NEWSMASTER}
+                | ${MAILCMD} -a "${ADDHEADER}" -s \
+                    "${PROGNAME} warning: messages in ${LOGFILE}" ${NEWSMASTER}
         fi
     fi
 

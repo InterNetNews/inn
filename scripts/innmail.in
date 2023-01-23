@@ -14,18 +14,29 @@ use Getopt::Std;
 
 $0 =~ s!.*/!!;
 
-die "$0: No \$INN::Config::mta variable defined.\n"
+die "$0: No mta parameter defined in inn.conf.\n"
   if !defined($INN::Config::mta);
 
 my $sm = $INN::Config::mta;
 
-die "$0: MTA path is not absolute\n" unless ($sm =~ m!^/!);
+die "$0: MTA path is not absolute in inn.conf\n" unless ($sm =~ m!^/!);
 
-my $usage
-  = "usage: $0 -s subject addresses\n\n" . "Reads stdin for message body\n";
+my $usage = "Usage:
+    $0 [-h] [-a header] [-s subject] addresses
+
+Options:
+    -a header    Adds the specified header field
+                 (for instance 'Auto-Submitted: auto-generated')
+    -h           Prints this help message
+    -s subject   Sets the Subject header field body of the mail
+
+Reads stdin for message body.
+addresses is a space-separated list of mail addresses.
+MTA used: $sm
+";
 
 my (%opt, @addrs);
-getopts("s:h", \%opt) || die $usage;
+getopts("a:hs:", \%opt) || die $usage;
 
 die $usage if $opt{'h'};
 
@@ -70,6 +81,7 @@ if ($pid == 0) {
 
 print $MTA "To: ", join(",\n\t", @addrs), "\n";
 print $MTA "Subject: $opt{'s'}\n";
+print $MTA "$opt{'a'}\n" if defined($opt{'a'});
 print $MTA "\n";
 while (<STDIN>) {
     print $MTA $_;

@@ -371,9 +371,12 @@ if (!open TMPFILE, ">$tmpfile") {
     }
     open(TMPFILE, "|" . $Sendmail)
       || die "die(no tmpfile): sendmail: $!\n";
+    # As the mail is sent in direct response to a message, it is auto-replied,
+    # and not auto-generated (RFC 3834).
     print TMPFILE <<"EOF";
 To: $Maintainer
 Subject: mailpost failure ($newsgroups): $msg
+Auto-Submitted: auto-replied
 
 -------- Article Contents
 
@@ -567,9 +570,12 @@ sub mailArtAndDie {
 
     open(SENDMAIL, "|" . $Sendmail)
       || die "die($msg): sendmail: $!\n";
+    # As the mail is sent in direct response to a message, it is auto-replied,
+    # and not auto-generated (RFC 3834).
     print SENDMAIL <<"EOF" ;
 To: $Maintainer
 Subject: mailpost failure ($newsgroups)
+Auto-Submitted: auto-replied
 
 $msg
 
