@@ -78,8 +78,8 @@ or B<nntpsend>.
 
 =item I<mailcmd>
 
-The path to the program to be used for mailing reports and control
-messages.  The default is I<pathbin>/innmail.  This should not normally
+The path to the program to be used for mailing reports and errors to the news
+administrator.  The default is I<pathbin>/innmail.  This should not normally
 need to be changed.
 
 =item I<mta>

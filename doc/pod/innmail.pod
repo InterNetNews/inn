@@ -43,8 +43,8 @@ This sends a one-line message to the local user C<joe>:
 
     echo "A one-line message." | innmail -s "Simple message" joe
 
-B<innmail> by default is used by INN for sending nightly reports and
-control message reports.
+B<innmail> by default is used by INN for sending nightly reports to the news
+administrator, as well as errors during the execution of a few programs.
 
 =head1 BUGS
 

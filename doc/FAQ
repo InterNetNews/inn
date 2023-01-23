@@ -731,10 +731,12 @@ feeding an article to a peer broke down.
 Subject: 3.8. sendmail isn't installed
 
 Yes, INN really does require sendmail.  It uses sendmail to send out the
-daily reports and to mail messages to moderators, and it assumes that you
-have a program installed as /usr/sbin/sendmail or /usr/lib/sendmail that
-it can use to do this.  It does not speak SMTP, nor is it likely to ever
-speak SMTP; it's hard enough maintaining a package to speak NNTP.
+daily reports, mail messages to moderators, gateway news to mail, send
+statistics to the TOP1000 project, mail errors to the news administrator,
+etc. and it assumes that you have a program installed as /usr/sbin/sendmail
+or /usr/lib/sendmail that it can use to do this.  It does not speak SMTP,
+nor is it likely to ever speak SMTP; it's hard enough maintaining a package
+to speak NNTP.
 
 If you need a very simple local sendmail implementation that just sends
 mail to a smarthost, there are several available (nullmailer, for

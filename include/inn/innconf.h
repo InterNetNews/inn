@@ -33,8 +33,8 @@ struct innconf {
     /* General Settings */
     char *domain;                /* Default domain of local host */
     char *innflags;              /* Flags to pass to innd on startup */
-    char *mailcmd;               /* Command to send report/control type mail */
-    char *mta;                   /* MTA for mailing to moderators, innmail */
+    char *mailcmd;               /* Command to send reports, innmail */
+    char *mta;                   /* MTA for mails sent by INN programs */
     char *pathhost;              /* Entry for the Path header field body */
     char *runasuser;             /* User to run under */
     char *runasgroup;            /* Group to run under */
