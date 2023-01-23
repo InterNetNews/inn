@@ -492,6 +492,9 @@ if (not $quiet and not $quietness) {
     print LOG "Writing to rnews-format output: $rnews\n\n" if $rnews;
 }
 
+my $connectionAttempts = 0;
+
+UPSTREAM:
 foreach my $server (@servers) {
     my ($username, $passwd);
 
@@ -528,14 +531,16 @@ foreach my $server (@servers) {
     # to fetch.  (The value 1 is for the "_order" key in the hash.)
     next if keys(%{$shash}) == 1;
 
-    my $connectionAttempts = 0;
     my $upstream;
+
+    # Double braces to make a loop that next can control.
     {
         {
             print LOG "Connecting to upstream server $server..." unless $quiet;
             $upstream = Net::NNTP->new($server, %NNTP_Args);
-            $connectionAttempts++;
-            if (!$upstream && $connectionAttempts <= $retries) {
+            if (!$upstream && $connectionAttempts < $retries) {
+                print LOG " failed.  Let's attempt again.\n" unless $quiet;
+                $connectionAttempts++;
                 sleep $retryTime;
                 next;
             }
@@ -567,16 +572,33 @@ foreach my $server (@servers) {
         next if $group eq '_order';
         next if (@groupsToGet && !grep ($_ eq $group, @groupsToGet));
 
-        # crossFeedGroup returns 1 when the newsgroup is successfully
-        # pulled.  No need to check the return value because we do not
-        # want to abort on the first error.
-        crossFeedGroup($upstream, $localcxn, $server, $group, $shash);
+        my $ret;
+
+        # crossFeedGroup returns 1 when the newsgroup is successfully pulled.
+        # If the GROUP command returns an unexpected result, 0 is returned (but
+        # we do not want to abort on the first error).
+        # If the connection is no longer active with the upstream server,
+        # 2 is returned.
+        $ret = crossFeedGroup($upstream, $localcxn, $server, $group, $shash);
+
         last if defined $opt_S and time >= $^T + $opt_S;
         sleep $opt_Z if defined $opt_Z;
+
+        if ($ret == 2) {
+            if ($connectionAttempts < $retries) {
+                print LOG "Let's attempt again.\n" unless $quiet;
+                $connectionAttempts++;
+                sleep $retryTime;
+                redo UPSTREAM;
+            }
+        }
     }
 
     $upstream->quit();
     last if defined $opt_S and time >= $^T + $opt_S;
+} continue {
+    # Reinitialize the counter for the next server.
+    $connectionAttempts = 0;
 }
 
 saveConfig();
@@ -726,7 +748,7 @@ sub crossFeedGroup {
             "Group command failed for $group: %s %s\n",
             $fromServer->code() || 'NO_CODE', $fromServer->message()
         );
-        return undef;
+        return 0;
     }
 
     if (not $quiet) {
@@ -746,6 +768,7 @@ sub crossFeedGroup {
     printf LOG "\tOur current highest: %d", $high if not $quiet;
 
     return 0 if !$name;
+
     if ($narticles == 0) {
         print LOG " (nothing to get)\n" unless $quiet;
         # Just update the time; keep the last known high watermark.
@@ -1143,9 +1166,27 @@ sub crossFeedGroup {
             $info{refused}++;
             $shash->{$group} = [time, $high = $i];
         } else {
-            $shash->{$group} = [time, $high = $i]
-              if $fromServer->code() == 430    # No such article, do not retry.
-              or $fromServer->code() == 423;
+            if ($fromServer->code() == 430
+                or $fromServer->code() == 423)
+            {
+                # No such article, do not retry.
+                $shash->{$group} = [time, $high = $i];
+            } else {
+                if ($fromServer->code() == 421) {
+                    # 421 pseudo response code given by Net::Cmd (of which
+                    # Net::NNTP is a subclass) when the connection is no longer
+                    # active.
+                    warn "\nArticle retrieval failed ("
+                      . $fromServer->message() . ")\n\n";
+                    return 2;
+                } else {
+                    warn "\nUnexpected response from server ("
+                      . $fromServer->code() . " "
+                      . $fromServer->message() . ")\n";
+                    saveConfig();
+                    exit(1);
+                }
+            }
             print LOG "x" unless $quiet;
             printf LOG (
                 "\nDEBUGGING $i %s %s\n", $fromServer->code(),
