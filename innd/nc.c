@@ -1303,6 +1303,10 @@ NCproc(CHANNEL *cp)
                      * Adventure computer game. */
                     snprintf(buff, sizeof(buff), "%d Nothing happens",
                              NNTP_ERR_COMMAND);
+                } else if (strcasecmp(cp->av[0], "MAXARTNUM") == 0) {
+                    snprintf(buff, sizeof(buff),
+                             "%d Wish I could be taught to count beyond %lu",
+                             NNTP_ERR_COMMAND, NNTP_MAXARTNUM);
                 } else {
                     snprintf(buff, sizeof(buff), "%d What?", NNTP_ERR_COMMAND);
                 }
