@@ -462,7 +462,7 @@ my $art_total_count
 
 if (not $rnews) {
     print LOG "Connecting to downstream host: $localServer "
-      . "port: $localPort ..."
+      . "port: $localPort..."
       unless $quiet;
 
     my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
@@ -473,14 +473,14 @@ if (not $rnews) {
         && !$localcxn->authinfo(@{ $passwd{$localServer} }))
     {
         warn sprintf(
-            "failed to authorize: %s %s\n",
+            " failed to authorize: %s %s\n",
             $localcxn->code(), $localcxn->message()
         );
     }
 }
 
 if (not $quiet and not $quietness) {
-    print LOG "done.\n\n";
+    print LOG " done.\n\n";
     print LOG "Legend: ``.'' is an article the downstream server refused\n";
     print LOG "        ``*'' is an article the downstream server rejected\n";
     print LOG "        ``+'' is an article the downstream server accepted\n";
@@ -532,7 +532,7 @@ foreach my $server (@servers) {
     my $upstream;
     {
         {
-            print LOG "connecting to upstream server $server..." unless $quiet;
+            print LOG "Connecting to upstream server $server..." unless $quiet;
             $upstream = Net::NNTP->new($server, %NNTP_Args);
             $connectionAttempts++;
             if (!$upstream && $connectionAttempts <= $retries) {
@@ -766,7 +766,7 @@ sub crossFeedGroup {
         print LOG " (nothing to get)\n" unless $quiet;
         return 1;
     }
-    print LOG " ($toget to get)\n" unless $quiet;
+    print LOG " (at most $toget articles to get)\n" unless $quiet;
 
     my $i;
     my @warns;
@@ -1087,7 +1087,7 @@ sub crossFeedGroup {
                         $info{server}->{$server}->{refused}++;
                         $info{refused}++;
                     } else {
-                        warn "Post $i to server failed ($code): $msg\n";
+                        warn "\nPost $i to server failed ($code): $msg\n";
                         $toServer->quit();
                     }
 
@@ -1116,7 +1116,7 @@ sub crossFeedGroup {
                         $info{server}->{$server}->{rejected}++;
                         $info{rejected}++;
                     } else {
-                        warn "Transfer to server failed ($code): $msg\n";
+                        warn "\nTransfer to server failed ($code): $msg\n";
                         $toServer->quit();
                         saveConfig();
                         exit(1);
