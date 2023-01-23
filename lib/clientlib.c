@@ -69,7 +69,7 @@ server_init(char *host, int port)
 #define CANTUSE \
     "This machine does not have permission to use the %s news server.\n"
 /*
-**  Print a message based on the the server's initial response.
+**  Print a message based on the server's initial response.
 **  Return -1 if server wants us to go away.
 */
 int

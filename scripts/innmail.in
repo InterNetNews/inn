@@ -4,7 +4,7 @@
 # Author:       James Brister <brister@vix.com> -- berkeley-unix --
 # Start Date:   Fri, 25 Apr 1997 14:11:23 +0200
 # Project:      INN
-# File:         innmail.pl
+# File:         innmail
 # Description:  A simple replacement for UCB Mail to avoid nasty security
 #               problems.
 #
@@ -57,7 +57,7 @@ my @smarr = split(/\s+/, $sm);
 die "$0: MTA variable definition is changed after substitution\n"
   if ($t ne $smarr[0]);
 
-die "$0: MTA excutable doesn't appear to exist: $smarr[0]\n"
+die "$0: MTA executable doesn't appear to exist: $smarr[0]\n"
   if !-x $smarr[0];
 
 # Startup MTA without using the shell.

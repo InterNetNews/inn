@@ -7,7 +7,7 @@
 **  or extended with the streaming protocol).  Each Connection is owned by a
 **  single Host object.
 **
-**  It manages the network connection (via an EndPoint) the the pumping of
+**  It manages the network connection (via an EndPoint) and the pumping of
 **  articles to the remote host.  It gets these articles from its Host object.
 **  If the remote doesn't handle the streaming extension, then the Connection
 **  will only manage one article at a time.  If the remote handles the
