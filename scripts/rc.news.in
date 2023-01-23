@@ -105,7 +105,9 @@ esac
 ##  Pick ${INND} or ${INNDSTART}
 WHAT=${INND}
 
-MAIL="${MAILCMD} -s 'Boot-time Usenet warning on $(hostname)' ${NEWSMASTER}"
+ADDHEADER="Auto-Submitted: auto-generated"
+SUBJECT="Boot-time Usenet warning on $(hostname)"
+MAIL="${MAILCMD} -a '${ADDHEADER}' -s '${SUBJECT}' ${NEWSMASTER}"
 
 ##  RFLAG is set below; set INNFLAGS in inn.conf(5)
 RFLAG=""

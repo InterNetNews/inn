@@ -656,7 +656,12 @@ sub sendmail {
         exec(split(/\s+/, $sm)) or logdie("Cannot exec $sm: $!");
     }
 
-    print MTA 'To: ' . join(",\n\t", @addrs) . "\nSubject: $subject\n\n";
+    # As the mail is sent in direct response to a message, it is auto-replied,
+    # and not auto-generated (RFC 3834).
+    print MTA "To: " . join(",\n\t", @addrs) . "\n";
+    print MTA "Subject: $subject\n";
+    print MTA "Auto-Submitted: auto-replied\n";
+    print MTA "\n";
     return *MTA if not defined $body;
     $body = join("\n", @$body) if ref $body eq 'ARRAY';
     print MTA $body . "\n";

@@ -4,7 +4,9 @@
 ##  Remove articles listed by expire -z.
 ##  Remove all files specified in the input file.
 
-MAIL="${MAILCMD} -s 'Problem removing expired files' ${NEWSMASTER}"
+ADDHEADER="Auto-Submitted: auto-generated"
+SUBJECT="Problem removing expired files"
+MAIL="${MAILCMD} -a '${ADDHEADER}' -s '${SUBJECT}' ${NEWSMASTER}"
 
 #RMPROC="xargs rm"
 RMPROC="fastrm -e ${SPOOL}"

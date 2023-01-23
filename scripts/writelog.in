@@ -24,7 +24,9 @@ X/dev/null)
     exit 0
     ;;
 Xmail)
-    sed -e 's/^~/~~/' | ${MAILCMD} -s "${MESSAGE}" ${NEWSMASTER}
+    ADDHEADER="Auto-Submitted: auto-generated"
+    sed -e 's/^~/~~/' | ${MAILCMD} -a "${ADDHEADER}" -s "${MESSAGE}" \
+        ${NEWSMASTER}
     exit 0
     ;;
 esac
