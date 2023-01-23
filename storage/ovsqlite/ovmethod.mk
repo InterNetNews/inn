@@ -3,7 +3,7 @@ OVSQLITEOBJECTS = ovsqlite/ovsqlite-server.o ovsqlite/sql-main.o \
 	ovsqlite/ovsqlite-private.o
 OVSQLITELOBJECTS = $(OVSQLITEOBJECTS:.o=.lo)
 
-ovsqlite/ovsqlite-server: $(OVSQLITEOBJECTS) $(LIBSTORAGE)
+ovsqlite/ovsqlite-server: $(OVSQLITEOBJECTS) libinnstorage.$(EXTLIB)
 	$(LIBLD) $(LDFLAGS) $(SQLITE3_LDFLAGS) -o $@ $(OVSQLITELOBJECTS) \
 	$(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(SQLITE3_LIBS) \
 	$(LIBS)
