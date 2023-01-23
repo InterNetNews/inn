@@ -14,9 +14,10 @@ entries pointing to it (see below); B<news2mail> expects the token of an
 article followed by a sequence of list names.
 
 B<news2mail> uses the configuration file I<pathetc>/news2mail.cf to map
-mailing-list names to e-mail addresses.  B<news2mail> causes B<sendmail>
-to queue the messages for later delivery (to avoid DOS attacks by mass
-postings).  You must run C<sendmail -q> periodically to get the queue
+mailing-list names to e-mail addresses.  B<news2mail> causes the mail
+transport agent (usually B<sendmail>, as set in the I<mta> parameter in
+F<inn.conf>) to queue the messages for later delivery (to avoid DOS attacks
+by mass postings).  You must run C<sendmail -q> periodically to get the queue
 processed.
 
 =head1 CONFIGURATION FILE
