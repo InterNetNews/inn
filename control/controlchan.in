@@ -632,7 +632,7 @@ sub convdate {
 # Don't forget checking the return value of close().
 # $addresses may be a scalar or a reference to a list of addresses.
 # If not defined, $INN::Config::newsmaster is the default.
-# parts of this code stolen from innmail.pl
+# Parts of this code stolen from innmail.
 sub sendmail {
     my ($subject, $addresses, $body) = @_;
     $addresses = [$addresses || $INN::Config::newsmaster]

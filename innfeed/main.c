@@ -469,8 +469,8 @@ usage(int val)
                     "article spool\n");
 
     fprintf(stderr,
-            "\t-b dir      Use the given directory as the the storage\n");
-    fprintf(stderr, "\t            place for backlog files and lock files\n");
+            "\t-b dir      Use the given directory as the storage place\n");
+    fprintf(stderr, "\t            for backlog files and lock files\n");
 
     fprintf(stderr, "\t-c file     Use the given file as the config file "
                     "instead of the\n");
@@ -502,7 +502,7 @@ usage(int val)
 
     fprintf(stderr, "\t-M          Turn *off* use of mmap\n");
 #if !defined(HAVE_MMAP)
-    fprintf(stderr, "\t            (a no-op as this excutable has been built "
+    fprintf(stderr, "\t            (a no-op as this executable has been built "
                     "without mmap support)\n");
 #endif
     fprintf(stderr, "\t-o bytes    Set a limit for the maximum number of "

@@ -34,7 +34,7 @@ Some comments as of the completion of the original patch:
 
     Marco's patch made use of several preprocessor defines for
     configuration but the defines were hand-coded, so I added the
-    corresponding tests the the configuration script.  I make no
+    corresponding tests to the configuration script.  I make no
     guarantees that the configure script will catch all possible
     non-portable behavior; the IPv6 API standardization process has left
     quite a wake of incompatible API implementations over the years.

@@ -52,10 +52,10 @@ just added.
 B<list_addtail> adds I<node> to the tail of I<list>, returning the node
 just added.
 
-B<list_head> returns a pointer to the the node at the head of I<list>
+B<list_head> returns a pointer to the node at the head of I<list>
 or B<NULL> if the list is empty.
 
-B<list_tail> returns a pointer to the the node at the tail of I<list>
+B<list_tail> returns a pointer to the node at the tail of I<list>
 or B<NULL> if the list is empty.
 
 B<list_succ> returns the next (successor) node on the list after

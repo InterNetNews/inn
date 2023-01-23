@@ -1425,10 +1425,9 @@ false.
 
 =item I<stathist>
 
-Where to write history statistics for analysis with
-F<contrib/stathist.pl>; this can be modified with ctlinnd(8) while innd is
-running.  Logging does not occur unless a path is given, and there is no
-default value.
+Where to write history statistics for analysis with F<contrib/stathist>; this
+can be modified with ctlinnd(8) while B<innd> is running.  Logging does not
+occur unless a path is given, and there is no default value.
 
 =item I<status>
 

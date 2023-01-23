@@ -2,7 +2,7 @@
 # fixscript will replace this line with code to load INN::Config
 
 ##############################################################################
-# send-uucp.pl  Create and send UUCP news batches from the outgoing files
+# send-uucp     Create and send UUCP news batches from the outgoing files
 #
 # Author:       Edvard Tuinder <ed@elm.net>
 #
