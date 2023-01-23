@@ -1595,6 +1595,9 @@ main(int argc, char *argv[])
                 /* Acknowledge the magic word from the Colossal Cave Adventure
                  * computer game. */
                 Reply("%d Nothing happens\r\n", NNTP_ERR_COMMAND);
+            } else if (strcasecmp(av[0], "MAXARTNUM") == 0) {
+                Reply("%d Wish I could be taught to count beyond %lu\r\n",
+                      NNTP_ERR_COMMAND, NNTP_MAXARTNUM);
             } else {
                 Reply("%d What?\r\n", NNTP_ERR_COMMAND);
                 if ((int) strlen(buff) > 40)
