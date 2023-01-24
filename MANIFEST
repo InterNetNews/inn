@@ -520,7 +520,7 @@ lib/commands.c                        Functions for NNTP commands
 lib/concat.c                          Concatenate strings with dynamic memory
 lib/conffile.c                        Routines for reading *.conf files
 lib/confparse.c                       Generic configuration file parser
-lib/daemonize.c                       Code necessary to become a daemon
+lib/daemon.c                          daemon replacement
 lib/date.c                            Date parsing and conversion routines
 lib/dbz.c                             DBZ database library
 lib/defdist.c                         Determine default distributions list
@@ -934,6 +934,7 @@ tests/lib/canlock-t.c                 Tests for lib/canlock.c
 tests/lib/concat-t.c                  Tests for lib/concat.c
 tests/lib/conffile-t.c                Tests for lib/conffile.c
 tests/lib/confparse-t.c               Tests for lib/confparse.c
+tests/lib/daemon-t.c                  Tests for lib/daemon.c
 tests/lib/date-t.c                    Tests for lib/date.c
 tests/lib/dispatch-t.c                Tests for lib/dispatch.c
 tests/lib/fakewrite.c                 Helper functions for xwrite tests

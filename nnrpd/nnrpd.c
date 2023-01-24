@@ -1174,7 +1174,9 @@ main(int argc, char *argv[])
 
         /* Detach. */
         if (!ForeGroundMode) {
-            daemonize("/");
+            if (daemon(0, 0) < 0) {
+                sysdie("cannot fork: %s", strerror(errno));
+            }
         }
 
         if (ListenPort == NNTP_PORT)

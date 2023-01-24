@@ -283,6 +283,7 @@ tests/lib/canlock.t
 tests/lib/concat.t
 tests/lib/conffile.t
 tests/lib/confparse.t
+tests/lib/daemon.t
 tests/lib/date.t
 tests/lib/dispatch.t
 tests/lib/fdflag.t

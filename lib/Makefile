@@ -14,7 +14,7 @@ CFLAGS  = $(GCFLAGS)
 # The base library files that are always compiled and included.
 SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
 	        clientlib.c                                                \
-	      	commands.c concat.c conffile.c confparse.c daemonize.c	   \
+	        commands.c concat.c conffile.c confparse.c                 \
 	      	date.c dbz.c defdist.c dispatch.c fdflag.c fdlimit.c	   \
 	      	getfqdn.c getmodaddr.c hash.c hashtab.c headers.c hex.c	   \
 		innconf.c inndcomm.c list.c localopen.c lockfile.c         \
@@ -27,7 +27,7 @@ SOURCES       = argparse.c artnumber.c buffer.c cleanfrom.c clientactive.c \
 	      	xfopena.c xmalloc.c xsignal.c xwrite.c
 
 # Sources for additional functions only built to replace missing system ones.
-EXTRA_SOURCES = asprintf.c fseeko.c ftello.c getaddrinfo.c		   \
+EXTRA_SOURCES = asprintf.c daemon.c fseeko.c ftello.c getaddrinfo.c        \
 		getnameinfo.c getpagesize.c inet_aton.c inet_ntoa.c	   \
 		inet_ntop.c mkstemp.c pread.c pwrite.c                     \
 	        reallocarray.c sd-daemon.c setenv.c                        \
@@ -177,15 +177,6 @@ confparse.o: confparse.c ../include/portable/system.h ../include/config.h \
   ../include/inn/hashtab.h ../include/inn/libinn.h ../include/inn/concat.h \
   ../include/inn/xmalloc.h ../include/inn/system.h ../include/inn/xwrite.h \
   ../include/inn/messages.h ../include/inn/vector.h
-daemonize.o: daemonize.c ../include/portable/system.h ../include/config.h \
-  ../include/inn/macros.h ../include/inn/portable-macros.h \
-  ../include/inn/options.h ../include/inn/system.h \
-  ../include/portable/stdbool.h ../include/portable/macros.h \
-  ../include/portable/stdbool.h ../include/inn/libinn.h \
-  ../include/inn/concat.h ../include/inn/macros.h \
-  ../include/inn/portable-stdbool.h ../include/inn/xmalloc.h \
-  ../include/inn/system.h ../include/inn/xwrite.h \
-  ../include/inn/messages.h
 date.o: date.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
   ../include/inn/options.h ../include/inn/system.h \
@@ -561,6 +552,11 @@ asprintf.o: asprintf.c ../include/config.h ../include/inn/macros.h \
   ../include/inn/portable-macros.h ../include/inn/options.h \
   ../include/inn/system.h ../include/portable/stdbool.h \
   ../include/portable/macros.h ../include/portable/system.h \
+  ../include/portable/stdbool.h
+daemon.o: daemon.c ../include/config.h ../include/inn/macros.h \
+  ../include/inn/portable-macros.h ../include/inn/options.h \
+  ../include/inn/system.h ../include/portable/stdbool.h \
+  ../include/portable/system.h ../include/portable/macros.h \
   ../include/portable/stdbool.h
 fseeko.o: fseeko.c ../include/portable/system.h ../include/config.h \
   ../include/inn/macros.h ../include/inn/portable-macros.h \
