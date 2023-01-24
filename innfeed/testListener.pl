@@ -20,16 +20,19 @@ $0 =~ s!.*/!!;
 use Getopt::Std;
 
 $usage
-  = "$0 [ -a -b name -d directory -c count -t sleep-amt -r -u ] peers\n"
+  = "$0 [ -a -b name -c count -d directory -h -l number -r -t sleep-amt -u ]\n"
+  . "peers\n"
   . "  -a is for duplicate article id's periodically\n"
-  . "  -u is for random unlinking of article\n"
   . "  -b add bogus peername periodically\n"
-  . "  -d is the directory where articles show be written.\n"
-  . "  -c is how many articles to create (0 the default meamns no limit)\n"
-  . "  -t is the number of seconds to sleep between each article.\n"
-  . "  -r is to have articles be created in NNTP ready format\n";
+  . "  -c is how many articles to create (0 the default means no limit)\n"
+  . "  -d is the directory where articles show be written\n"
+  . "  -h prints this usage message\n"
+  . "  -l is the number of extra lines to generate in articles (default is 50)\n"
+  . "  -r is to have articles be created in NNTP ready format\n"
+  . "  -t is the number of seconds to sleep between each article\n"
+  . "  -u is for random unlinking of article\n";
 
-getopts("a:b:c:d:t:rl:h:") || die $usage;
+getopts("ab:c:d:hl:rt:u") || die $usage;
 
 die $usage if $opt_h;
 $total = $opt_c;
