@@ -236,8 +236,9 @@ Specify the maximum time I<max-run> in seconds for B<pullnews> to run.
 
 =item B<-t> I<retries>
 
-The maximum number (I<retries>) of attempts to connect to a server
-(see also B<-T>).  The default is C<0>.
+The maximum number (I<retries>) of attempts to connect to a server or
+reconnect to a server if the socket is unexpectedly closed (see also B<-T>).
+The default is C<0>.
 
 =item B<-T> I<connect-pause>
 
