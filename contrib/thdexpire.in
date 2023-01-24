@@ -238,6 +238,18 @@ END {
     INN::Utils::Shlock::releaselocks();
 }
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
+$0 =~ s!^.*/!!;
+
+sub usage {
+    Getopt::Std::help_mess("f:i:m:MNrt:v:x:");
+    exit(1);
+}
+
 chdir $INN::Config::spool || die "chdir $INN::Config::spool: $!";
 $opt_r = 0;        # make a report
 $opt_t = 30;       # check interval in minutes
@@ -248,7 +260,7 @@ $opt_x = 86400;    # absolute minimum hold time in seconds
 $opt_N = 0;        # dont actually delete articles
 $opt_v = 0;        # verbosity level
 $opt_M = 0;        # install man page
-getopts("rt:f:i:m:x:Nv:M");
+getopts("f:i:m:MNrt:v:x:") || usage();
 
 $sfile = "$INN::Config::pathdb/thdexpstat";
 

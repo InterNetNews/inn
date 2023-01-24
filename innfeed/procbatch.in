@@ -29,8 +29,15 @@ $0 =~ s!.*/!!;
 
 use Getopt::Std;
 
-my $usage
-  = "$0 [-hquv] [-c [-s dir]] [-d dir] [-e host] [-m [-t dir]] inn-batchfile\n
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
+my $usage = "Usage:
+  $0 [-hquv] [-c [-s dir]] [-d dir] [-e host] [-m [-t dir]] inn-batchfile
+
+Options:
   -c         to check pathnames of articles before storing them
   -d dir     to put the output file(s) in that directory ($destDir)
   -e host    to process on entries for only that host
@@ -43,28 +50,33 @@ my $usage
   -u         to unlink the input files when finished
   -v         for verbosity
 
-$0 will take an INN funnel file (normally a file in
-$outGoing), or an innfeed \"dropped\" file,
-which is presumed to be of the format:
+  $0 will take an INN funnel file (normally a file in
+  $outGoing), or an innfeed \"dropped\" file,
+  which is presumed to be of the format:
 
-        pathname message-id peer1 peer2 peer3 ...
+      pathname message-id peer1 peer2 peer3 ...
 
-and will break it up into files peer1.tmp, peer2.tmp, peer3.tmp...  Each of
-these files will be of the format:
+  and will break it up into files peer1.tmp, peer2.tmp, peer3.tmp...
+  Each of these files will be of the format:
 
-        pathname message-id
+      pathname message-id
 
-that is the same as innfeed's backlog file format.  Simply rename these files
-to peer1, peer2, peer3... in a running innfeed's backlog directory and they
-will be picked up automatically and processed by innfeed.  Use the '-m' flag
-and they'll be moved automatically.
+  that is the same as innfeed's backlog file format.  Simply rename these
+  files to peer1, peer2, peer3... in a running innfeed's backlog directory
+  and they will be picked up automatically and processed by innfeed.
+  Use the '-m' flag and they'll be moved automatically.
 ";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
 
 my (%opt, %hosts);
 my $missing = 0;
 getopts("cd:e:hmqs:t:uv", \%opt) || die $usage;
 
-die $usage if $opt{'h'};
+HELP_MESSAGE() if $opt{'h'};
 die "Cannot specify both -q and -v\n\n" . $usage if ($opt{'q'} && $opt{'v'});
 
 $spoolArts = $opt{'s'} if $opt{'s'};

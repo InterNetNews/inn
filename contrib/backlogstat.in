@@ -6,18 +6,44 @@
 
 # breaks if backlog-directory in innfeed.conf is not "innfeed"
 my $dir = "$INN::Config::pathspool/innfeed";
-my $Revision = '1.8';
 
 use strict;
 use warnings;
 
 use Getopt::Std;
-use vars qw($opt_H $opt_h $opt_n $opt_t $opt_k $opt_S $opt_d);
+use vars qw($opt_H $opt_h $opt_n $opt_k $opt_S $opt_d);
 $| = 1;
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
+$0 =~ s!.*/!!;
+
+my $usage = "Usage:
+  $0 [-hHkn] [-d dir] [-S name]
+
+  Print innfeed backlog info
+
+Options:
+  -d dir  Use \"dir\" instead of \$pathspool/innfeed
+  -h      Help - this is all, you got it!
+  -H      Output a header at the top of the output
+  -k      Scale all numbers in k (1024) units
+  -n      Count number of arts, not bytes of backlog filesize
+          Note: this may be SLOW for large files!
+  -S xx   Display only site names starting with xx
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
 # option processing
-&getopts('HhntkS:d:') || &Usage;
-&Usage if $opt_h;
+getopts('d:hHknS:') || die $usage;
+HELP_MESSAGE() if defined($opt_h);
 
 # open the directory
 $dir = $opt_d if $opt_d;
@@ -83,21 +109,3 @@ if (my $numnodes = keys %nodes) {
 }
 
 exit 0;
-
-sub Usage {
-    print "\n"
-      . "bklog - print innfeed backlog info - v$Revision\n" . "\n"
-      . "Format:\n"
-      . "  bklog [ options ]\n" . "\n"
-      . "Options:\n"
-      . "  -H     output a header at the top of the output\n"
-      . "  -k     scale all numbers in k (1024) units\n"
-      . "  -n     count number of arts, not bytes of backlog filesize\n"
-      . "         Note: this may be SLOW for large files!\n"
-      . "  -Sxx   Display only site names starting with xx\n"
-      . "  -d dir Use \"dir\" instead of \$pathspool/innfeed\n" . "\n"
-      . "  -h     HELP - this is all, you got it!\n" . "\n";
-
-    exit 1;
-}
-

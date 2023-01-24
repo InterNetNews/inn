@@ -26,9 +26,8 @@ END {
     INN::Utils::Shlock::releaselocks();
 }
 
-my $usage = $0;
-$usage =~ s!.*/!!;
-my $prog = $usage;
+$0 =~ s!.*/!!;
+my $prog = $0;
 
 my $use_syslog = 0;
 
@@ -43,17 +42,23 @@ if ($use_syslog) {
     openlog($prog, 'pid', $INN::Config::syslog_facility);
 }
 
-$usage
-  .= "[ -h ][ -n ][ -r addr ][ -f addr ][ -a approved ][ -d distribution ]"
-  . "[ -m mailing-list ][ -b database ][ -o output-path ][ -c wait-time ]"
-  . "[ -x header[:header...] ][ -z header[:header...] ][ -p port ]"
-  . "[ -t tempdir ] newsgroups";
+my $usage = "Usage:
+  $0 [-hn] [-a approved-addr] [-b database] [-c wait-time]
+  [-d distribution] [-f addr] [-m mailing-list] [-o output-command]
+  [-p port] [-r addr] [-t tempdir] [-x header[:header...]]
+  [-z header[:header...]] newsgroups
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
 
 use vars
   qw($opt_r $opt_f $opt_a $opt_d $opt_m $opt_b $opt_n $opt_o $opt_h $opt_c
   $opt_x $opt_z $opt_p $opt_t);
-getopts("hr:f:a:d:m:b:no:c:x:z:p:t:") || die "usage: $usage\n";
-die "usage: $usage\n" if $opt_h;
+getopts("a:b:c:d:f:hm:no:p:r:t:x:z:") || die $usage;
+HELP_MESSAGE() if defined($opt_h);
 
 #
 # $Submit is a program which takes no arguments and whose stdin is supposed
@@ -143,7 +148,7 @@ if ($opt_z) {
 
 $newsgroups = join ",", @ARGV;
 
-die "usage: $0 newsgroup [newsgroup ...]\n" unless $newsgroups;
+die "Missing newsgroup(s)\n\n$usage" unless $newsgroups;
 
 #
 # Do the headers.  Our input is a mail message, with or without the From.

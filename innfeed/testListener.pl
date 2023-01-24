@@ -19,22 +19,35 @@ $0 =~ s!.*/!!;
 
 use Getopt::Std;
 
-$usage
-  = "$0 [ -a -b name -c count -d directory -h -l number -r -t sleep-amt -u ]\n"
-  . "peers\n"
-  . "  -a is for duplicate article id's periodically\n"
-  . "  -b add bogus peername periodically\n"
-  . "  -c is how many articles to create (0 the default means no limit)\n"
-  . "  -d is the directory where articles show be written\n"
-  . "  -h prints this usage message\n"
-  . "  -l is the number of extra lines to generate in articles (default is 50)\n"
-  . "  -r is to have articles be created in NNTP ready format\n"
-  . "  -t is the number of seconds to sleep between each article\n"
-  . "  -u is for random unlinking of article\n";
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
 
-getopts("ab:c:d:hl:rt:u") || die $usage;
+my $usage = "Usage:
+  $0 [-ahru] [-b name] [-c count] [-d directory] [-l number]
+  [-t sleep-amt] peers
 
-die $usage if $opt_h;
+Options:
+  -a is for duplicate article id's periodically
+  -b add bogus peername periodically
+  -c is how many articles to create (0 the default means no limit)
+  -d is the directory where articles show be written
+  -h prints this usage message
+  -l is the number of extra lines to generate in articles (default is 50)
+  -r is to have articles be created in NNTP ready format
+  -t is the number of seconds to sleep between each article
+  -u is for random unlinking of article
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
+getopts("ab:c:d:hl:t:ru") || die $usage;
+
+HELP_MESSAGE() if defined($opt_h);
 $total = $opt_c;
 
 $sleepAmt = 1;
@@ -140,7 +153,7 @@ foreach $peer (@ARGV) {
     $PEERS{$peer} = 1;
 }
 
-die "Must give peernames on command line:\n$usage" if (!@ARGV);
+die "Must give peernames on command line:\n\n$usage" if (!@ARGV);
 
 for ($i = 0; $total == 0 || $i < $total; $i++) {
     ($msgid, $filename) = &createArticle($i);

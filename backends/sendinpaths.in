@@ -20,6 +20,11 @@ my $ninpathsdir = "$INN::Config::pathlog/path";
 my $alsoto = "$INN::Config::newsmaster";
 my $sm = "$INN::Config::mta";
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
 ##  Default to report up to 32 days (ideal for monthly statistics).  It works
 ##  fine for daily stats too because already processed dump files are deleted
 ##  by default (0 day of kept articles).
@@ -34,15 +39,14 @@ my %opt;
 
 $0 =~ s!.*/!!;
 
-sub usage {
-    print <<_end_;
-Usage:
+my $usage = "Usage:
   $0 [-cdhn] [-k keep-days] [-r report-days] [address [address ...]]
 
   If called without any arguments, reports are generated and auto
   submitted to the inpaths accumulation site.
 
-  -c               sends a copy of the submitted mail to "$alsoto"
+Options:
+  -c               sends a copy of the submitted mail to \"$alsoto\"
                                                       (newsmaster's address)
   -d               enables debug messages
   -h               prints this help message
@@ -53,8 +57,11 @@ Usage:
   Current default submit address: [$emaildef].
   The optional arguments [address [address ...]] may be used to override
   this default.
-_end_
-    exit(1);
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
 }
 
 sub main {
@@ -62,8 +69,8 @@ sub main {
     my $pid;
     my $sendout = '';
 
-    getopts('cdhk:nr:', \%opt) || usage();
-    usage() if defined $opt{'h'};
+    getopts('cdhk:nr:', \%opt) || die $usage;
+    HELP_MESSAGE() if defined $opt{'h'};
 
     # If we took an e-mail argument, override the default submission addresses.
     @emailto = @ARGV if ($#ARGV >= 0);
@@ -71,10 +78,10 @@ sub main {
 
     # Override default parameters.
     $keepdays = $opt{'k'} if defined $opt{'k'};
-    usage() if $keepdays !~ /\d+/;
+    die $usage if $keepdays !~ /\d+/;
 
     $reportdays = $opt{'r'} if defined $opt{'r'};
-    usage() if $reportdays !~ /\d+/;
+    die $usage if $reportdays !~ /\d+/;
 
     # Set debug.
     $debug = 1 if defined $opt{'d'};

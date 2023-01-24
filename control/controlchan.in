@@ -43,21 +43,35 @@ my $lastctl = 0;
 my $use_syslog = 0;
 my $debug = 0;
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
 END {
     # In case we bail out, while holding a lock.
     INN::Utils::Shlock::releaselocks();
 }
 
-my $usage
-  = "usage: $0 [-ch]\n\n"
-  . "Reads stdin for file names or tokens.\n\n"
-  . "  -c   Disables cutoff on dates.\n"
-  . "  -h   Gives this usage information.\n";
+my $usage = "Usage:
+  $0 [-ch]
+
+Options:
+  -c   Disables cutoff on dates.
+  -h   Gives this usage information.
+
+  Reads stdin for file names or tokens.
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
 
 my %opt;
 getopts("ch", \%opt) || die $usage;
 
-die $usage if defined $opt{'h'};
+HELP_MESSAGE() if defined($opt{'h'});
 
 # setup logging ###########################################################
 # do not log to syslog if stderr is connected to a console
