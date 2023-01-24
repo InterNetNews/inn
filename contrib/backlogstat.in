@@ -19,9 +19,9 @@ $| = 1;
 &getopts('HhntkS:d:') || &Usage;
 &Usage if $opt_h;
 
-# open the directory;
+# open the directory
 $dir = $opt_d if $opt_d;
-print "$opt_d\n";
+print "$dir\n";
 chdir($dir) or die "Can't cd to $dir";
 opendir(DIR, ".") or die "Can't open dir";
 
@@ -33,7 +33,7 @@ while (my $name = readdir(DIR)) {
     next unless ($size = -s $name);
     next unless $name =~ m/.*\.(in|out)put/;
     my $io = $1;
-    (my $nodename = $name) =~ s/\..*//;
+    (my $nodename = $name) =~ s/\.(in|out)put$//;
 
     # check for only some sites wanted
     next if ($opt_S && $nodename !~ /^${opt_S}.*/);
@@ -41,21 +41,12 @@ while (my $name = readdir(DIR)) {
     if ($opt_n) {
         # open the file and count lines
         if (open(IN, "<$name")) {
-            if ($name =~ m/.*\.input/) {
-                my $offset = <IN> + 0;
-                seek(IN, $offset, 0);
-            }
-            $size = 0;
-            for ($size = 0; <IN>; ++$size) { }
+            while (<IN>) { $size = $.; }
             close IN;
         }
     } else {
-        # get the offset on .input files
-        if ($name =~ m/.*\.input/ && open(IN, "<$name")) {
-            my $offset = <IN> + 0;
-            $size -= $offset;
-            close IN;
-        }
+        # get the size of the file
+        $size = -s $name;
     }
     $nodes{$nodename} = () unless defined $nodes{$nodename};
     $nodes{$nodename}->{$io} = ($opt_k ? $size / 1024 : $size);
