@@ -11,27 +11,23 @@ use INN::Utils::Shlock;
 
 =head1 NAME
 
-thdexpire - dynamic expire daemon for timehash and timecaf storage
+thdexpire - Dynamic expire daemon for timehash and timecaf storage
 
 =head1 SYNOPSIS
 
-B<thdexpire>
-[ B<-t> I<minutes> ]
-[ B<-f> I<kilobytes> ]
-[ B<-i> I<inodes> ]
-[ B<-m> I<mindays> ]
-[ B<-x> I<minseconds> ]
-[ B<-N> ]
-[ B<-v> I<level> ]
+B<thdexpire> [B<-N>] [B<-f> I<kilobytes>] [B<-i> I<inodes>] [B<-m> I<mindays>]
+[B<-t> I<minutes>] [B<-x> I<minseconds>] [B<-v> I<level>]
 
-B<thdexpire -r>
+B<thdexpire> B<-M>
+
+B<thdexpire> B<-r>
 
 =head1 DESCRIPTION
 
 This is a daemon, to be started along with B<innd>, which periodically
 looks if news spool space is getting tight, and frees space by removing
-articles until enough is free. It is an adjunct (not a replacement) to
-INNs B<expire> program.
+articles until enough is free.  It is an adjunct (not a replacement) to
+INN's B<expire> program.
 
 =head2 Setting Up
 
@@ -39,19 +35,19 @@ INNs B<expire> program.
 
 =item 1.
 
-Configure your storage classes carefully. Let the default go in class
+Configure your storage classes carefully.  Let the default go in class
 100 and choose the storage classes as relative (percent) retention
-times. E.g. if you want to give C<alt.binaries.*> a fifth of the
-default time, put them in class 20. Storage classes above 200 are
-ignored by this program. 0 expires immediately. An example is given
+times.  For instance, if you want to give C<alt.binaries.*> a fifth of the
+default time, put them in class 20.  Storage classes above 200 are
+ignored by this program.  0 expires immediately.  An example is given
 in L<"EXAMPLES">.
 
 =item 2.
 
 Set up your F<expire.ctl> in a way that it puts only a maximum cap on
-retention times. Run B<expire> from B<news.daily> as usual. However,
+retention times.  Run B<expire> from B<news.daily> as usual.  However,
 it should only expire articles which have an Expires line or are in
-classes above 200. See L<"EXAMPLES">.
+classes above 200.  See L<"EXAMPLES">.
 
 =item 3.
 
@@ -59,66 +55,69 @@ Ensure to start this daemon along with B<innd>.
 
 =item 4.
 
-To get information and statistics, run B<thdexpire -r> (in parallel to
-a running daemon). This will show you the current actual retention
-times.
+To get information and statistics, run C<thdexpire -r> (in parallel to a
+running daemon).  This will show you the current actual retention times.
 
 =back
 
 =head2 How It Works
 
-B<thdexpire> works directly on the spool. It assumes the layout
-described in the timehash and timecaf sections of L<storage.conf(5)> as of
-INN-2.x-CURRENT (Dec. 5, 1998). For every storage class associated
-with timehash/timecaf, B<thdexpire> keeps a I<work time> which is the
-modification time of the oldest article/CAF file in this class. This
-time is chosen so that the difference of the work time of class N to
-now (i.e. the I<retention time> for class N) will be N/100 of the
-retention time of class 100. The work time of all classes is
-continuously adjusted as time goes by. Articles and CAF files which
-are older than the work time are deleted.
+B<thdexpire> works directly on the spool.  It assumes the layout described
+in the timehash and timecaf sections of F<storage.conf>.  For every storage
+class associated with timehash or timecaf, B<thdexpire> keeps a I<work time>
+which is the modification time of the oldest article/CAF file in this class.
+This time is chosen so that the difference of the work time of class N to
+now (i.e. the I<retention time> for class N) will be N/100 of the retention
+time of class 100.  The work time of all classes is continuously adjusted as
+time goes by.  Articles and CAF files which are older than the work time are
+deleted.
 
 =head1 OPTIONS
 
-=over 8
-
-=item B<-t> I<minutes>
-
-Check for free space every I<minutes> minutes (default 30).
+=over 2
 
 =item B<-f> I<kilobytes>
 
 Leave I<kilobytes> kilobytes of free disk space on each spool
-filesystem (default 50000).
+filesystem (default is C<50000>).
 
 =item B<-i> I<inodes>
 
-Leave I<inodes> inodes free on each spool filesystem (default 5000).
+Leave I<inodes> inodes free on each spool filesystem (default is C<5000>).
 
 =item B<-m> I<mindays>
 
 Set the minimum normal holding time for class 100 to I<mindays> days
-(default 7).
+(default is C<7>).
 
-=item B<-x> I<minseconds>
+=item B<-M>
 
-Set the absolute minimum holding time for any article to I<minseconds>
-seconds (default 86400, i.e. 1 day).
+Install thdexpire(8) man page into a F<man> subdirectory in I<pathnews>.
+You'll need B<pod2man> to generate the man page.
 
 =item B<-N>
 
 Do not delete any articles, just print what would be done.
 
-=item B<-v> I<level>
-
-Set the verbosity level. Values from 1 to 3 are meaningful, where
-higher levels are mostly for debugging.
-
 =item B<-r>
 
 Do not run as a daemon, instead print a report from the database (see
-L<FILES>) on the available storage classes, current expire times and
+L<"FILES">) on the available storage classes, current expire times and
 other stuff.
+
+=item B<-t> I<minutes>
+
+Check for free space every I<minutes> minutes (default is C<30>).
+
+=item B<-v> I<level>
+
+Set the verbosity level.  Values from 1 to 3 are meaningful, where
+higher levels are mostly for debugging.
+
+=item B<-x> I<minseconds>
+
+Set the absolute minimum holding time for any article to I<minseconds>
+seconds (default is C<86400>, i.e. 1 day).
 
 =back
 
@@ -126,57 +125,57 @@ other stuff.
 
 Here is an example F<storage.conf> file:
 
- # Large postings in binary groups are expired fast:
- # 20% retention time
- method timehash {
-   newsgroups: *.binaries.*,*.binaer.*,*.dateien.*,alt.mag.*
-   size: 30000
-   class: 20
- }
+    # Large postings in binary groups are expired fast:
+    # 20% retention time
+    method timehash {
+        newsgroups: *.binaries.*,*.binaer.*,*.dateien.*,alt.mag.*
+        size: 30000
+        class: 20
+    }
 
- # Local groups and *.answers groups don't expire at all with
- # thdexpire. These are handled by Expires lines and a cutoff
- # in expire.ctl.
- method timehash {
-   newsgroups: *.answers,news.announce.*,local.*
-   class: 201
- }
+    # Local groups and *.answers groups don't expire at all with
+    # thdexpire.  These are handled by Expires lines and a cutoff
+    # in expire.ctl.
+    method timehash {
+        newsgroups: *.answers,news.announce.*,local.*
+        class: 201
+    }
 
- # Expires lines are honored if they dont exceed 90 days.
- # Exempt those postings from thdexpire handling.
- method timehash {
-   newsgroups: *
-   expires: 1d,90d
-   class: 202
- }
+    # Expires lines are honored if they dont exceed 90 days.
+    # Exempt those postings from thdexpire handling.
+    method timehash {
+        newsgroups: *
+        expires: 1d,90d
+        class: 202
+    }
 
- # Default: should be class 100 because thdexpire bases its
- # calculations thereupon.
- method timecaf {
-   newsgroups: *
-   class: 100
- }
+    # Default: should be class 100 because thdexpire bases its
+    # calculations thereupon.
+    method timecaf {
+        newsgroups: *
+        class: 100
+    }
 
 And here is an F<expire.ctl> which fits:
 
- # Our local groups are held 6 months
- local.*:A:7:180:180
- # Everything else is handled by thdexpire, or Expires lines
- *:A:7:never:never
+    # Our local groups are held 6 months.
+    local.*:A:7:180:180
+    # Everything else is handled by thdexpire, or Expires lines.
+    *:A:7:never:never
 
 Note that B<thdexpire> does not actually use these files, they just
 configure other parts of the news system in an appropriate way.
 
 =head1 FILES
 
-=over 4
+=over 2
 
 =item I<pathdb>/thdexpstat.{dir,pag}
 
 Holds state information like classes, expire times, oldest articles.
 When this file is missing, it will be rebuilt the next time the daemon
 is started, which basically means scanning the spool directories to
-find the oldest articles. With the B<-r> option, the contents of this
+find the oldest articles.  With the B<-r> option, the contents of this
 file are printed.
 
 =item I<pathrun>/thdexpire.pid
@@ -190,27 +189,14 @@ Contains the PID of the running daemon.
 I<SIGINT> or I<SIGTERM> can be sent to the daemon at any time, causing
 it to gracefully exit immediately.
 
-=head1 SEE ALSO
-
-L<expire(8)>, L<news.daily(8)>, L<storage.conf(5)>
-
-=head1 NOTES
-
-This version needs the B<inndf> program supplied with newer releases of INN.
-
-The filenames for timecaf were wrong in older versions of the INN
-documentation. This program uses the true filenames, as found by
-reading the INN source.
-
 =head1 DIAGNOSTICS
 
-Any error messages are printed on standard error. Normal progress
-messages, as specified by the B<-v> option, are printed on standard
-output.
+Any error messages are printed on standard error.  Normal progress messages,
+as specified by the B<-v> option, are printed on standard output.
 
 =head1 BUGS
 
-Storage classes which are in I<storage.conf> but not on disk (i.e.
+Storage classes which are in F<storage.conf> but not on disk (i.e.
 which have never been filed into) when the daemon starts are ignored.
 
 The code is ugly and uses too many global variables.
@@ -221,17 +207,14 @@ Should probably rewrite it in C.
 Directories which are left empty are not removed.
 
 The overview database is not affected by B<thdexpire>, it has to be
-cleaned up by the daily regular B<news.daily> run. This may need a
+cleaned up by the daily regular B<news.daily> run.  This may need a
 patch to B<expire>.
-
-=head1 AUTHOR
-
-Olaf Titz <olaf@bigred.inka.de>. Use and distribution of this work is
-permitted under the same terms as the B<INN> package.
 
 =head1 HISTORY
 
-Inspired by the old B<dexpire> program for the traditional spool.
+Written by Olaf Titz <olaf@bigred.inka.de>.  Use and distribution of this work
+is permitted under the same terms as the INN package.  Inspired by the old
+B<dexpire> program for the traditional spool.
 
 June 1998: wrote the first version for timehash.
 
@@ -239,6 +222,10 @@ November 1998: added code for timecaf, works on multiple spool
 filesystems, PODed documentation.
 
 July 1999: bugfixes.
+
+=head1 SEE ALSO
+
+expire(8), news.daily(8), storage.conf(5).
 
 =cut
 
