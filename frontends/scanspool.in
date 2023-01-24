@@ -8,19 +8,6 @@ use strict;
 #
 # This code is placed in the public domain.
 #
-# scanspool - Perform a big scan over all articles in <patharticles>
-#
-# usage:
-#    scanspool [-cnv] [-a active-file] [-s spool-dir]
-#
-#    -a active-file     active file to use (default <pathdb>/active)
-#    -s spool-dir       spool tree (default <patharticles>)
-#    -v                 verbose mode
-#                       verbose messages begin with a tab
-#                       show articles found in non-active directories
-#    -c                 check article filenames, don't scan the articles
-#    -n                 don't throttle innd
-#
 # NOTE: This take a while, -v is a good thing if you want to know
 #       how far this program has progressed.
 #
@@ -102,6 +89,33 @@ my %highart;
 #
 use Getopt::Std;
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
+$0 =~ s!.*/!!;
+
+my $usage = "Usage:
+  $0 [-cnv] [-a active-file] [-s spool-dir]
+
+  Perform a sanity scan over all articles in <patharticles>
+
+Options:
+  -a active-file     active file to use (default <pathdb>/active)
+  -c                 check article filenames, don't scan the articles
+  -n                 don't throttle innd
+  -s spool-dir       spool tree (default <patharticles>)
+  -v                 verbose mode
+                     verbose messages begin with a tab
+                     show articles found in non-active directories
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
 # global constants
 #
 my $prog = $0;                       # our name
@@ -113,7 +127,7 @@ my $reason = "running scanspool";    # throttle reason
 # parse args
 #
 my %opt;
-getopts("a:s:vcn", \%opt);
+getopts("a:s:vcn", \%opt) || die $usage;
 $active = $opt{'a'} if defined $opt{'a'};
 $spool = $opt{'s'} if defined $opt{'s'};
 

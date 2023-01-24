@@ -80,7 +80,7 @@ use IO::Handle;
 use POSIX qw(ceil floor);
 use strict;
 
-my $usage = $0;
+$0 =~ s!.*/!!;
 $pathdb = $INN::Config::pathdb
   if $INN::Config::pathdb
   && $INN::Config::runasuser
@@ -124,14 +124,15 @@ END {
     }
 }
 
-$usage =~ s!.*/!!;
-$usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
-        -f fraction -F fakehop -g groups -G newsgroups -H headers
-        -k checkpt -l logfile -m header_pats -M num -N num
-        -p port -P hop_limit -Q level -r file -s host[:port] -S num
-        -t retries -T seconds -w num -z num -Z num ]
-        [ upstream_host ... ]
+my $usage = "Usage:
+  $0 [-BhnOqRx] [-a hashfeed] [-b fraction] [-c config] [-C width]
+  [-d level] [-f fraction] [-F fakehop] [-g groups] [-G newsgroups]
+  [-H headers] [-k checkpt] [-l logfile] [-m header_pats] [-M num] [-N num]
+  [-p port] [-P hop_limit] [-Q level] [-r file] [-s host[:port]] [-S num]
+  [-t retries] [-T seconds] [-w num] [-z num] [-Z num]
+  [upstream_host ...]
 
+Options:
   -a hashfeed   only feed article if the MD5 hash of the Message-ID
                 matches hashfeed (where hashfeed is of the form value/mod,
                 value/mod:offset, start-end/mod, or start-end/mod:offset).
@@ -148,10 +149,10 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                 Add the Bytes header field if needed.  Keep body if
                 control article.
 
-  -c config     specify the configuration file instead of the default
-                file located in ${pathdb}/pullnews.marks when run as the news
-                user, or otherwise in ~/pullnews.marks (the running user's home
-                directory).
+  -c config     specify the configuration file instead of the default file
+                located in ${pathdb}/pullnews.marks when run as
+                the news user, or otherwise in ~/pullnews.marks (the running
+                user's home directory).
 
   -C width      use width characters for progress
                 (default is $defaultProgressWidth).
@@ -211,8 +212,8 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
                   hop_limit is '+num' and hop_count is more than num;
                   or hop_limit is '-num' and hop_count is less than num.
 
-  -q            $0 will normally be verbose about what it is doing.  This
-                option will make it quiet.
+  -q            $0 will normally be verbose about what it is doing.
+                This option will make it quiet.
 
   -Q level      set the quietness level (-Q 2 is equivalent to -q).
 
@@ -244,6 +245,11 @@ $usage .= " [ -BhnOqRx -a hashfeed -b fraction -c config -C width -d level
   -Z num        time (in seconds) to sleep between groups.
 ";
 
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
 use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
   $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
   $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
@@ -251,7 +257,7 @@ use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
 getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:")
   || die $usage;
 
-die $usage if $opt_h;
+HELP_MESSAGE() if defined $opt_h;
 
 my @groupsToGet = ();    # Empty list means all groups in config file.
 my @groupsToAdd = ();

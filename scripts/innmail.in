@@ -12,6 +12,11 @@
 use strict;
 use Getopt::Std;
 
+# Define variables Getopt::Std uses for --help and --version.
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our $VERSION = $INN::Config::version;
+$VERSION =~ s/INN //;
+
 $0 =~ s!.*/!!;
 
 die "$0: No mta parameter defined in inn.conf.\n"
@@ -22,23 +27,29 @@ my $sm = $INN::Config::mta;
 die "$0: MTA path is not absolute in inn.conf\n" unless ($sm =~ m!^/!);
 
 my $usage = "Usage:
-    $0 [-h] [-a header] [-s subject] addresses
+  $0 [-h] [-a header] [-s subject] addresses
 
 Options:
-    -a header    Adds the specified header field
-                 (for instance 'Auto-Submitted: auto-generated')
-    -h           Prints this help message
-    -s subject   Sets the Subject header field body of the mail
+  -a header    Adds the specified header field
+               (for instance 'Auto-Submitted: auto-generated')
+  -h           Prints this help message
+  -s subject   Sets the Subject header field body of the mail
 
-Reads stdin for message body.
-addresses is a space-separated list of mail addresses.
-MTA used: $sm
+  addresses is a space-separated list of mail addresses.
+
+  Reads stdin for message body.
+  MTA used: $sm
 ";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
 
 my (%opt, @addrs);
 getopts("a:hs:", \%opt) || die $usage;
 
-die $usage if $opt{'h'};
+HELP_MESSAGE() if defined($opt{'h'});
 
 if (!defined($opt{'s'})) {
     warn "No subject given.  Hope that's OK.\n";
