@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-$version = '1.0';
+$version = '1.1';
 #
 # tunefeed -- Compare active files with a remote site to tune a feed.
 #             Copyright 1998 by Russ Allbery <eagle@eyrie.org>
@@ -362,22 +362,24 @@ tunefeed - Build a newsgroups pattern for a remote feed
 
 =head1 SYNOPSIS
 
-B<tunefeed> [B<-hv>] [B<-t> I<threshold>] [B<-d> I<days>] I<local>
+B<tunefeed> [B<-hv>] [B<-d> I<days>] [B<-t> I<threshold>] I<local>
 I<remote> [I<traffic>]
 
 =head1 DESCRIPTION
 
-Given two active files, B<tunefeed> generates an INN newsfeeds pattern for
-a feed from the first site to the second, that sends the second site
-everything in its active file carried by the first site but tries to
+Given two F<active> files, B<tunefeed> generates an INN F<newsfeeds> pattern
+for a feed from the first site to the second, that sends the second site
+everything in its F<active> file carried by the first site but tries to
 minimize the number of rejected articles.  It does this by noting
-differences between the two active files and then trying to generate
+differences between the two F<active> files and then trying to generate
 wildcard patterns that cover the similarities without including much (or
 any) unwanted traffic.
 
-I<local> and I<remote> should be standard active files.  You can probably
-get the active file of a site that you feed (provided they're running INN)
-by connecting to their NNTP port and typing C<LIST ACTIVE>.
+I<local> and I<remote> should be standard I<active> files.  You can probably
+get the F<active> file of a site that you feed (provided they're running INN)
+by using the B<getlist> program (C<getlist -h news.server.com> will retrieve
+its F<active> file) or by connecting to their NNTP port and typing C<LIST
+ACTIVE>.
 
 B<tunefeed> makes an effort to avoid complex patterns when they're of
 minimal gain.  I<threshold> is the number of messages per day at which to
@@ -395,18 +397,18 @@ attempt to guess traffic by taking the difference between the high and low
 numbers in the active file as the amount of traffic in that group per day.
 This will almost always not be accurate, but it should at least be a
 ballpark figure.  If you know approximately how many days of traffic the
-active file numbers represent, you can tell B<tunefeed> this information
+F<active> file numbers represent, you can tell B<tunefeed> this information
 using the B<-d> flag.
 
 B<tunefeed>'s output will look something like:
 
-        comp.*,humanities.classics,misc.*,news.*,rec.*,sci.*,soc.*,talk.*,\
-        alt.*,!alt.atheism,!alt.binaries.*,!alt.nocem.misc,!alt.punk*,\
-        !alt.sex*,!alt.video.dvd,\
-        bionet.*,biz.*,gnu.*,vmsnet.*,\
-        ba.*,!ba.jobs.agency,ca.*,sbay.*
+    comp.*,humanities.classics,misc.*,news.*,rec.*,sci.*,soc.*,talk.*,\
+    alt.*,!alt.atheism,!alt.binaries.*,!alt.nocem.misc,!alt.punk*,\
+    !alt.sex*,!alt.video.dvd,\
+    bionet.*,biz.*,gnu.*,vmsnet.*,\
+    ba.*,!ba.jobs.agency,ca.*,sbay.*
 
-(with each line prefixed by a tab, and with standard INN newsfeeds
+(with each line prefixed by a tab, and with standard INN F<newsfeeds>
 continuation syntax).  Due to the preferences of the author, it will also
 be sorted as Big Eight, then alt.*, then global non-language hierarchies,
 then regional and language hierarchies.
@@ -415,26 +417,26 @@ then regional and language hierarchies.
 
 =over 4
 
+=item B<-d> I<days>, B<--days>=I<days>
+
+Assume that the difference between the high and low numbers in the F<active>
+file represent I<days> days of traffic.
+
 =item B<-h>, B<--help>
 
 Print out this documentation (which is done simply by feeding the script
 to C<perldoc -t>.
-
-=item B<-v>, B<--version>
-
-Print out the version of B<tunefeed> and exit.
-
-=item B<-d> I<days>, B<--days>=I<days>
-
-Assume that the difference between the high and low numbers in the active
-file represent I<days> days of traffic.
 
 =item B<-t> I<threshold>, B<--threshold>=I<threshold>
 
 Allow any group with less than I<threshold> articles per day in traffic to
 be either sent or not sent depending on which choice makes the wildcard
 patterns simpler.  If a threshold isn't specified, the default value is
-250.
+C<250>.
+
+=item B<-v>, B<--version>
+
+Print out the version of B<tunefeed> and exit.
 
 =back
 
@@ -444,7 +446,7 @@ This program takes a long time to run, not to mention being a nasty memory
 hog.  The algorithm is thorough, but definitely not very optimized, and
 isn't all that friendly.
 
-Guessing traffic from active file numbers is going to produce very skewed
+Guessing traffic from F<active> file numbers is going to produce very skewed
 results on sites with expiration policies that vary widely by group.
 
 There is no way to optimize for size in avoiding rejections, only quantity
@@ -454,7 +456,7 @@ There should be a way to turn off the author's idiosyncratic ordering of
 hierarchies, or to specify a different ordering, without editing this
 script.
 
-This script should attempt to retrieve the active file from the remote
+This script should attempt to retrieve the F<active> file from the remote
 site automatically if so desired.
 
 This script should be able to be given some existing wildcard patterns and
@@ -462,7 +464,7 @@ take them into account when generating new ones.
 
 =head1 CAVEATS
 
-Please be aware that your neighbor's active file may not accurately
+Please be aware that your neighbor's F<active> file may not accurately
 represent the groups they wish to receive from you.  As with everything,
 choices made by automated programs like this one should be reviewed by a
 human and the remote site should be notified, and if they have sent
@@ -471,6 +473,6 @@ recommend running this program on any sort of automated basis.
 
 =head1 AUTHOR
 
-Russ Allbery E<lt>eagle@eyrie.orgE<gt>
+Russ Allbery <eagle@eyrie.org>.
 
 =cut
