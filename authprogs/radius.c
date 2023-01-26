@@ -544,7 +544,7 @@ main(int argc, char *argv[])
             read_config(optarg, &radconfig);
             break;
         case 'h':
-            printf("Usage: radius [-f config]\n");
+            printf("Usage: radius [-h] [-f config]\n");
             exit(0);
         }
     }

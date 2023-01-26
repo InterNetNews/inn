@@ -52,7 +52,7 @@ case $# in
     DEBUG_FMT="$3"
     ;;
 *)
-    echo "usage: $0 config_file [debug_level [debug_outfmt]]" 1>&2
+    echo "Usage: $0 config_file [debug_level [debug_outfmt]]" 1>&2
     exit 1
     ;;
 esac

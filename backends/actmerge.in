@@ -48,7 +48,7 @@ if [ $# -gt 1 ]; then
     fi
 fi
 if [ $# -ne 4 ]; then
-    echo "usage: $0 ign1 ign2 host1 host2" 1>&2
+    echo "Usage: $0 [-s] ign1 ign2 host1 host2" 1>&2
     exit 1
 fi
 ign1="$1"
