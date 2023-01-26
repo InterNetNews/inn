@@ -195,13 +195,14 @@ GetOptions(
       -notdaily!
       -v
     )
-);
+) || Usage(1);
 
 &Version if $ref{'v'};
 
 # Parse the general configuration file.
 &Decode_Config_File($ref{'f'}) if defined $ref{'f'};
-&Usage if $ref{'h'} || $ref{'help'} || !defined $ref{'f'};
+Usage(1) if defined $ref{'config'} && !defined $ref{'f'};
+Usage(0) if $ref{'h'} || $ref{'help'} || !defined $ref{'f'};
 
 # Remove sections from the general configuration file that are now in a
 # separate display configuration file.
@@ -3207,80 +3208,79 @@ sub GetValue {
 }
 
 sub Usage {
+    my $exitcode = shift;
     my ($base) = $0 =~ /([^\/]+)$/;
-    print "Usage: $base -f innreport.conf [-[no]options]\n";
-    print "  where options are:\n";
-    print "    -h (or -help)       this help page\n";
-    print "    -v                  display the version number of innreport\n";
-    print
-      "    -config             print innreport configuration information\n";
-    print "    -f config_file      name of the configuration file\n";
-    print "    -html               HTML output";
+    print "Usage:\n";
+    print "  $base -f innreport.conf [-[no]options]\n\n";
+    print "Options:\n";
+    print "  -h (or -help)       this help page\n";
+    print "  -v                  display the version number of innreport\n";
+    print "  -config             print innreport configuration information\n";
+    print "  -f config_file      name of the configuration file\n";
+    print "  -html               HTML output";
     print " [default]" if ($HTML);
     print "\n";
-    print "    -g                  want graphs";
+    print "  -g                  want graphs";
     print " [default]" if ($GRAPH);
     print "\n";
-    print "    -graph              an alias for option -g\n";
-    print "    -d directory        directory for Web pages";
-    print "\n                        [default=$HTML_dir]"
+    print "  -graph              an alias for option -g\n";
+    print "  -d directory        directory for Web pages";
+    print "\n                      [default=$HTML_dir]"
       if (defined($HTML_dir));
     print "\n";
-    print "    -dir directory      an alias for option -d\n";
-    print "    -p directory        pictures path (file space)";
-    print "\n                        [default=$IMG_dir]"
+    print "  -dir directory      an alias for option -d\n";
+    print "  -p directory        pictures path (file space)";
+    print "\n                      [default=$IMG_dir]"
       if (defined($IMG_dir));
     print "\n";
-    print "    -path directory     an alias for option -p\n";
-    print "    -w directory        pictures path (web space)";
+    print "  -path directory     an alias for option -p\n";
+    print "  -w directory        pictures path (web space)";
     print " [default=$IMG_pth]" if (defined($IMG_pth));
     print "\n";
-    print "    -webpath directory  an alias for option -w\n";
-    print "\n";
-    print "    -i file             Name of index file";
+    print "  -webpath directory  an alias for option -w\n";
+    print "  -i file             Name of index file";
     print " [default=$index]" if (defined($index));
     print "\n";
-    print "    -index file         an alias for option -i\n";
-    print "    -a                  want to archive HTML results";
+    print "  -index file         an alias for option -i\n";
+    print "  -a                  want to archive HTML results";
     print " [default]" if ($ARCHIVE);
     print "\n";
-    print "    -archive            an alias for option -a\n";
-    print "    -c number           how many report files to keep (0 = all)\n";
-    print "                        [default=$CYCLE]"
+    print "  -archive            an alias for option -a\n";
+    print "  -c number           how many report files to keep (0 = all)\n";
+    print "                      [default=$CYCLE]"
       if (defined($CYCLE));
     print "\n";
-    print "    -cycle number       an alias for option -c\n";
-    print "    -s char             separator for filename";
+    print "  -cycle number       an alias for option -c\n";
+    print "  -s char             separator for filename";
     print " [default=\"$SEPARATOR\"]\n";
-    print "    -separator char     an alias for option -s\n";
-    print "    -unknown            \"Unknown entries from news log file\"\n";
-    print "                        report";
+    print "  -separator char     an alias for option -s\n";
+    print "  -unknown            \"Unknown entries from news log file\"\n";
+    print "                      report";
+    print " [default]" if ($WANT_UNKNOWN);
+    print "\n";
+    print "  -html-unknown       Same as above, but in generated HTML output.";
     print " [default]" if ($WANT_UNKNOWN);
     print "\n";
     print
-      "    -html-unknown       Same as above, but in generated HTML output.";
-    print " [default]" if ($WANT_UNKNOWN);
-    print "\n";
-    print
-      "    -maxunrec number    Max number of unrecognized lines to display\n";
-    print "                        [default=$MAX_UNRECOGNIZED]"
+      "  -maxunrec number    Max number of unrecognized lines to display\n";
+    print "                      [default=$MAX_UNRECOGNIZED]"
       if (defined($MAX_UNRECOGNIZED));
     print "\n";
-    print "    -notdaily           Never perform daily actions";
-    print " [default]" if $NOT_DAILY;
-    print "\n";
-    print "    -casesensitive      Case sensitive";
+    print "  -casesensitive      Case sensitive";
     print " [default]" if ($CASE_SENSITIVE);
+    print "\n";
+    print "  -notdaily           Never perform daily actions";
+    print " [default]" if $NOT_DAILY;
     print "\n\n";
-    print "Use \"no\" in front of boolean options to unset them.\n";
-    print "For example, \"-graph\" is set by default.  "
+    print "  Use \"no\" in front of boolean options to unset them.\n";
+    print "  For example, \"-graph\" is set by default.  "
       . "Use \"-nograph\" to remove this\n";
-    print "feature.\n";
-    exit 0;
+    print "  feature.\n";
+    exit($exitcode);
 }
 
 sub Version {
-    print "\nThis is innreport from $INN::Config::version\n\n";
+    print "This is innreport from $INN::Config::version\n\n";
     print "Copyright 1996-2001, Fabien Tassin <fta\@sofaraway.org>.\n";
     print "Enhanced by several contributors since then.\n";
     exit 0;
@@ -3297,7 +3297,7 @@ sub Summary {
     }
 
     # Display the summary
-    print "\nSummary of my innreport configuration:\n";
+    print "Summary of my innreport configuration:\n";
     print "  Version shipped with $INN::Config::version\n";
     print "  General options:\n";
     print "    command line='@old_argv' (please, check this value)\n";
@@ -3328,7 +3328,7 @@ sub Summary {
     print "    libperl=$::Config{libperl}, useshrplib=$::Config{useshrplib}\n";
     print "    osname=$::Config{osname}, osvers=$::Config{osvers}, "
       . "archname=$::Config{archname}\n";
-    print "    uname=$::Config{myuname}\n\n";
+    print "    uname=$::Config{myuname}\n";
 
     exit 0;
 }

@@ -277,6 +277,10 @@ sub output {
 my $fullpath = $0;
 $0 =~ s%.*/%%;
 
+my $usage = "Usage:
+  $0 [-hv] [-d days] [-t <threshold>] <local> <remote> [<traffic>]
+";
+
 # Parse the command line.  Our argument is the path to an active file (we
 # tell the difference by seeing if it contains a /).
 my ($help, $print_version);
@@ -286,7 +290,7 @@ GetOptions(
     'days|d=i'      => \$days,
     'threshold|t=i' => \$threshold,
     'version|v'     => \$print_version
-) or exit 1;
+) or die $usage;
 
 # Set a default for the minimum threshold traffic required to retain an
 # exclusion, and assume that active file differences represent one day of
@@ -294,23 +298,23 @@ GetOptions(
 $threshold = (defined $threshold) ? $threshold : 250;
 $days ||= 1;
 
-# If they asked for our version number, abort and just print that.
+# If they asked for our version number, just print that.
 if ($print_version) {
-    my ($program, $ver) = (split(' ', $version))[1, 2];
-    $program =~ s/,v$//;
-    die "$program $ver\n";
+    print "$0 $version\n";
+    exit(0);
 }
 
 # If they asked for help, give them the documentation.
 if ($help) {
-    print "Feeding myself to perldoc, please wait....\n";
+    print $usage;
+    print "Feeding myself to perldoc, please wait...\n";
     exec('perldoc', '-t', $fullpath) or die "$0: can't fork: $!\n";
 }
 
 # Hash the active files, skipping groups we ignore in the local one.  Make
 # sure we have our two files listed first.
 unless (@ARGV == 2 || @ARGV == 3) {
-    die "Usage: $0 [-hv] [-t <threshold>] <local> <remote> [<traffic>]\n";
+    die $usage;
 }
 my (%local, %remote);
 hash(shift, \%local, 1);

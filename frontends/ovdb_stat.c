@@ -954,7 +954,7 @@ out:
     if ((html == 1) && (err == 0))
         puts("<p></body></html>");
     ovdb_close();
-    return 0;
+    return err == 0 ? 0 : 1;
 }
 
 #endif /* HAVE_BDB */
