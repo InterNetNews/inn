@@ -8,35 +8,39 @@
 
 # Specify command line options, and decode the command line.
 
-require 'newgetopt.pl';
-require 'newusage.pl';
-@opts = (
-    "help|usage;;print this message",
-    "a=s;;directory to archive in instead of the default",
-    "f;;directory names will be flattened out",
-    "i=s;;append one line to the index file for each article "
-      . "(Destination name, Message ID, Subject)",
-    "m;; Files are copied by making a link.  Not applicable, ignored",
-    "r;;Suppress stderr redirection to /var/log/news/errlog",
-    "n=s;;the news spool (source) directory (default=/var/spool/news/)",
-    "t=i;;timeout that separates batches (default 10 seconds)",
-    ";;input",
-    # Examples.
-    #
-    # "OPT;;Option without an argument",
-    # "OPT!;;Negatable option without an argument",
-    # "VAR=T;;Option with mandatory argumet T = s(tring),i(nteger), or f(loat).
-    # "VAR:T;;Option with optional argument.
-    # "OPT|AAA|BBB";;AAA and BBB are aliases for OPT",
-    # "VAR=T@";;Push option argument onto array @opt_VAR"
-);
-$ignorecase = 0;
-$badopt = !&NGetOpt(&NMkOpts(@opts));
-# $badarg = (@ARGV != 0);
-if ($badarg || $badopt || $opt_help) {
-    &NUsage($0, 0, '', @opts);
-    exit($badopt || $badarg);
+use Getopt::Long;
+
+$0 =~ s!.*/!!;
+
+my $usage = "Usage:
+  $0 [-fhmr] [-a dir] [-i file] [-n dir] [-t seconds] input
+
+Options:
+  -a dir      Directory to archive in instead of the default
+  -f          Directory names will be flattened out
+  -h          Print this help message
+  -i file     Append one line to the index file for each article
+              (Destination name, Message-ID, Subject)
+  -m          Files are copied by making a link.  Not applicable, ignored
+  -n dir      The news spool (source) directory (default=/var/spool/news/)
+  -r          Suppress stderr redirection to /var/log/news/errlog
+  -t seconds  Timeout that separates batches (default 10 seconds)
+";
+
+sub help {
+    print $usage;
+    exit(0);
 }
+
+my ($opt_a, $opt_f, $opt_h, $opt_i, $opt_m, $opt_n, $opt_r, $opt_t);
+GetOptions(
+    "-a=s" => \$opt_a, "-f" => \$opt_f, "-h"   => \$opt_h,
+    "-i=s" => \$opt_i, "-m" => \$opt_m, "-n=s" => \$opt_n, "-r" => \$opt_r,
+    "-t=i" => \$opt_t
+) || die $usage;
+
+$ignorecase = 0;
+help() if defined($opt_h);
 
 # --------------------------------------------------------------------
 
