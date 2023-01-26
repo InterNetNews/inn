@@ -52,18 +52,19 @@ main(int argc, char *argv[])
 
     /*  Check number of args  */
     if (argc < 3) {
-        printf("Usage: pullart <cycbuff> <fileprefix> [<header> <string>]\n");
+        printf("Usage:\n");
+        printf("  pullart <cycbuff> <fileprefix> [<header> <string>]\n\n");
         printf("  Read cycbuffer <cycbuff> and print all articles whose\n");
-        printf("   article header field body <header> contains <string>.\n");
+        printf("  article header field body <header> contains <string>.\n\n");
         printf("  Articles are written to files name <fileprefix>.nnnnnn\n");
-        printf("   where nnnnnn is numbered sequentially from 0.\n");
+        printf("  where nnnnnn is numbered sequentially from 0.\n\n");
         printf("  If <header> and <string> not specified, all articles\n");
-        printf("   are written.\n");
-        printf(" Examples:\n");
+        printf("  are written.\n\n");
+        printf("Examples:\n");
         printf("  pullart /news3/cycbuff.3 alt.rec  Newsgroup: alt.rec\n");
         printf("  pullart /news3/cycbuff.3  all\n");
         printf("  pullart firstbuff  article Subject bluejay\n");
-        return 0;
+        exit(1);
     }
 
     /*  Allocate output buffer  */

@@ -50,7 +50,7 @@ fi
 if [ me${1}ow != meow ]; then
     if [ me${2}ow = meow ]; then
         echo "Usage: ${0} [feedsite batchfile]" >&2
-        exit 0
+        exit 1
     else
         feedsite=${1}
         batchfile=${2}

@@ -77,19 +77,24 @@ sub bint2hex {
     return "$o";
 }
 
-sub usage {
-    print <<"_end_";
-Summary tool for cycbuff header manipulation
+$0 =~ s!.*/!!;
 
-Usage:
-        $0 [-c CYCBUFF] [-h] [-w]
+my $usage = "Usage:
+  $0 [-hw] [-c CYCBUFF]
 
-        If called without args, does a one-time status of all CNFS buffers.
-        -c <cycbuff>:  print out status of cycbuff
-        -h:            this information
-        -w:            change header
-_end_
-    exit(1);
+  Summary tool for cycbuff header manipulation
+
+Options:
+  -c <cycbuff>  print out status of cycbuff
+  -h            this information
+  -w            change header
+
+  If called without args, does a one-time status of all CNFS buffers.
+";
+
+sub help {
+    print $usage;
+    exit(0);
 }
 
 my (%buff, $cycbuff, $opt_w);
@@ -97,8 +102,8 @@ my (%buff, $cycbuff, $opt_w);
 GetOptions(
     'c=s' => \$cycbuff,
     'w'   => \$opt_w,
-    'h'   => sub { usage() },
-);
+    'h'   => sub { help() },
+) || die $usage;
 
 unless (read_cycbuffconf()) {
     print STDERR "Cannot open CycBuff Conffile $conffile ...\n";
