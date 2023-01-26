@@ -124,18 +124,17 @@ sub seedchar {    # From Randal Schwarz.
 }
 
 sub usage {
+    $0 =~ s!.*/!!;
     print STDERR << "__END__";
 Usage:
+  $0 <nnrp.access file> [<passwd file> <readers.conf file>]
 
-$0 <nnrp.access file> [<passwd file> <readers.conf file>]
+  Use $0 to convert an old-style nnrp.access file to readers.conf format.
+  All unique user/password pairs from the nnrp.access file are placed in
+  the passwd file (in format suitable for ckpasswd).
 
-Use $0 to convert an old-style nnrp.access file to readers.conf format.
-All unique user/password pairs from the nnrp.access file are placed in
-the passwd file (in format suitable for ckpasswd).
-
-If the second and third arguments are missing, everything is printed
-instead to stdout for examination purposes.
-
+  If the second and third arguments are missing, everything is printed
+  instead to stdout for examination purposes.
 __END__
 
     exit 1;

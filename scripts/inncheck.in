@@ -97,8 +97,8 @@ my $exitval = 0;
 my ($all, $verbose, $pedantic, $fix, $perms, $pfx, @todo)
   = (0, 0, 0, 0, -1, '', ());
 
+$0 =~ s@.*/@@;
 my $program = $0;
-$program =~ s@.*/@@;
 local $| = 1;
 
 sub eprint {
@@ -1221,10 +1221,11 @@ sub Usage {
 
     print "Usage error: @_.\n";
     print "Usage:
-        $program [-afqv] [--noperm|perm] [--pedantic] [file | file=value...]
-File to check may be followed by \"=path\" to use the specified path.  All
-files are checked if -a is used or if --perm is not used.  Files that may
-be checked are:\n";
+  $program [-afqv] [--noperm|perm] [--pedantic] [file | file=value...]
+
+  File to check may be followed by \"=path\" to use the specified path.
+  All files are checked if -a is used or if --perm is not used.
+  Files that may be checked are:\n";
     foreach (sort(keys %checklist)) {
         printf "     %-20s", $_;
         if (++$i == 3) {
@@ -1234,7 +1235,7 @@ be checked are:\n";
     }
     print "\n"
       if $i;
-    exit 255;
+    exit(1);
 }
 
 Getopt::Long::Configure('bundling_override');

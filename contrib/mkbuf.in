@@ -1,17 +1,19 @@
 #!/usr/bin/perl
 
+$0 =~ s!.*/!!;
+
 sub usage {
     print STDERR "Usage: $0 <size in KB> <filename>\n";
     exit 1;
 }
 
-usage if (@ARGV != 2);
+usage() if (@ARGV != 2);
 
 $buf1k = "\0" x 1024;
 $buf1m = "$buf1k" x 1024;
 
 $kb = $ARGV[0] * 1;
-&usage if ($kb == 0);
+usage() if ($kb == 0);
 
 if ($ARGV[1] eq '-') {
     open(FILE, "|cat") or die;

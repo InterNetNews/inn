@@ -41,6 +41,8 @@ use subs qw(fix_inn_conf);
 
 use Getopt::Long qw(GetOptions);
 
+$0 =~ s@.*/@@;
+
 # The mappings of file names to fixes.
 %FIXES = (
     'incoming.conf' => \&fix_incoming_conf,
@@ -427,11 +429,13 @@ sub upgrade_directory {
 # The main routine.  Parse command-line options to figure out what we're
 # doing.
 my ($file, $type);
+my $usage = "Usage:\n  $0 <directory>\n";
+
 Getopt::Long::config('bundling');
 GetOptions(
     'file|f=s' => \$file,
     'type|t=s' => \$type
-) or exit 1;
+) or die $usage;
 if ($file) {
     my ($dirname, $basename);
     if ($file =~ /^(.*)\/([^\/]+)$/) {
@@ -445,7 +449,7 @@ if ($file) {
     }
     upgrade_file($basename, $FIXES{$type});
 } else {
-    if (@ARGV != 1) { die "Usage: innupgrade <directory>\n" }
+    if (@ARGV != 1) { die $usage; }
     my $directory = shift;
     upgrade_directory($directory);
 }
