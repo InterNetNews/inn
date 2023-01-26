@@ -3214,6 +3214,7 @@ sub Usage {
     print "    -v                  display the version number of innreport\n";
     print
       "    -config             print innreport configuration information\n";
+    print "    -f config_file      name of the configuration file\n";
     print "    -html               HTML output";
     print " [default]" if ($HTML);
     print "\n";
@@ -3261,7 +3262,7 @@ sub Usage {
     print " [default]" if ($WANT_UNKNOWN);
     print "\n";
     print
-      "    -maxunrec           Max number of unrecognized lines to display\n";
+      "    -maxunrec number    Max number of unrecognized lines to display\n";
     print "                        [default=$MAX_UNRECOGNIZED]"
       if (defined($MAX_UNRECOGNIZED));
     print "\n";
