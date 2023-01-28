@@ -653,7 +653,7 @@ sub collect($$$$$$) {
                 $innd_rejected{$server} += $rejected;
                 $innd_stored_size{$server} += $accptsize;
                 $innd_duplicated_size{$server} += $dupsize;
-                $innd_rejected_size{$server} += ($rjctsize || 0);
+                $innd_rejected_size{$server} += ($rjctsize - $dupsize || 0);
             }
             return 1;
         }
