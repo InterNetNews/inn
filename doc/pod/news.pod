@@ -60,6 +60,12 @@ B<makehistory> to belong to the current cycle number.
 
 =item *
 
+The size of duplicated articles were counted twice in totals, average article
+sizes and graphs by B<innreport>, when parsing B<innd> checkpoints.  Thanks to
+Hauke Lampe for the patch to count it only once.
+
+=item *
+
 Improved the speed of article searches with HDR, LAST, NEXT, and XPAT commands
 when there is a (huge) gap in article numbers.  On newsgroups with several
 millions of consecutive missing articles (which is a rare situation), these
