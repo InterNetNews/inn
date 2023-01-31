@@ -821,9 +821,12 @@ MailArticle(char *group, char *article)
     if ((F = popen(buff, "w")) == NULL)
         return "Can't start mailer";
     fprintf(F, "To: %s\n", address);
-    /* As the mail is sent in direct response to a message, it is auto-replied,
-     * and not auto-generated (RFC 3834). */
-    fprintf(F, "Auto-Submitted: auto-replied\n");
+    /* Do not add an Auto-Submitted header field when forwarding a message to
+     * a moderator.  It was manually posted by the poster of the message, and
+     * we're just passing it along to its ultimate recipient.
+     * This header field might also be surprising to moderators.  Their mail
+     * client may rightfully downgrade or refile the message, considering it
+     * of low importance. */
     if (FLUSH_ERROR(F)) {
         pclose(F);
         return CANTSEND;

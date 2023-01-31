@@ -129,9 +129,9 @@ sub mailto {
         chomp;
 
         # Empty line signals the end of header field.
+        # Do not add an Auto-Submitted header field when gatewaying.
         if (/^$/) {
             print SM "To: " . join(",\n\t", @a) . "\n";
-            print SM "Auto-Submitted: auto-replied\n";
             print SM "\n";
             last;
         }

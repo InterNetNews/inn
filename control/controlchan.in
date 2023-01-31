@@ -670,11 +670,12 @@ sub sendmail {
         exec(split(/\s+/, $sm)) or logdie("Cannot exec $sm: $!");
     }
 
-    # As the mail is sent in direct response to a message, it is auto-replied,
-    # and not auto-generated (RFC 3834).
+    # Though the mail is sent upon receiving a netnews article, it is not
+    # an auto-reply but an auto-generated status report about changes made
+    # (or proposed) on the news server by a third party.
     print MTA "To: " . join(",\n\t", @addrs) . "\n";
     print MTA "Subject: $subject\n";
-    print MTA "Auto-Submitted: auto-replied\n";
+    print MTA "Auto-Submitted: auto-generated\n";
     print MTA "\n";
     return *MTA if not defined $body;
     $body = join("\n", @$body) if ref $body eq 'ARRAY';
