@@ -837,8 +837,7 @@ Here's a cute, really simple news to mail gateway that also serves as an
 example of a fairly fancy program feed:
 
     mailer!:!*:W*,Tp\
-        :sm %s | innmail -a "Auto-Submitted: auto-replied" \
-                         -s "News article" *
+        :sm %s | innmail -s "News article" *
 
 Remember that C<%s> is replaced by the storage API token, so this
 retrieves the article and pipes it into B<innmail> (which is safer than
@@ -856,8 +855,8 @@ article should be sent to the site C<peter@example.com> and the site
 C<bob@example.com>, both of which funnel into C<mailer!>, so it will look
 at the C<mailer!> site and end up executing the command line:
 
-    sm @...@ | innmail -a "Auto-Submitted: auto-replied" \
-        -s "News article"  peter@example.com sue@example.com
+    sm @...@ | innmail -s "News article" \
+        peter@example.com sue@example.com
 
 which will mail the article to both Peter and Sue.
 
