@@ -653,7 +653,10 @@ sub collect($$$$$$) {
                 $innd_rejected{$server} += $rejected;
                 $innd_stored_size{$server} += $accptsize;
                 $innd_duplicated_size{$server} += $dupsize;
-                $innd_rejected_size{$server} += ($rjctsize || 0);
+                # The size of duplicated articles is included in the rejected
+                # volume.  Substract it in order to generate right totals,
+                # average article sizes and graphs.
+                $innd_rejected_size{$server} += ($rjctsize || 0) - $dupsize;
             }
             return 1;
         }
