@@ -829,7 +829,7 @@ sub crossFeedGroup {
                 if ($new_code == 223) {
                     print LOG "\tDEBUGGING $i\t-- not downloading "
                       . "already existing message $org_msgid code=$new_code\n"
-                      if $debug >= 2;
+                      if $debug >= 1;
                     $skip_article = 1;
                 }
             }
@@ -1012,7 +1012,7 @@ sub crossFeedGroup {
                 next;
             } else {
                 print LOG "\tDEBUGGING $i\tMessage-ID: $msgid\n"
-                  if $debug >= 2;
+                  if $debug >= 1;
             }
 
             # Some old servers lack Xref header fields, which bothers
@@ -1096,7 +1096,7 @@ sub crossFeedGroup {
                     my $msg = $toServer->message();
                     print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
                       . join('//', split(/\r?\n/, $msg)) . ">\n"
-                      if $debug >= 2;
+                      if $debug >= 1;
                     $msg =~ s/^340 .*?\n(?=.)//o;
                     if ($msg =~ /^240 /) {
                         print LOG "+" unless $quiet;
@@ -1133,7 +1133,7 @@ sub crossFeedGroup {
                     my $msg = $toServer->message();
                     print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
                       . join('//', split(/\r?\n/, $msg)) . ">\n"
-                      if $debug >= 2;
+                      if $debug >= 1;
                     if ($code == 435) {
                         print LOG "." unless $quiet;
                         $refused{$group}++;
@@ -1156,7 +1156,7 @@ sub crossFeedGroup {
                     my $msg = $toServer->message();
                     print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
                       . join('//', split(/\r?\n/, $msg)) . ">\n"
-                      if $debug >= 2;
+                      if $debug >= 1;
                     print LOG "+" unless $quiet;
                     $fed{$group}++;
                     $info{server}->{$server}->{fed}++;
@@ -1197,7 +1197,7 @@ sub crossFeedGroup {
             printf LOG (
                 "\nDEBUGGING $i %s %s\n", $fromServer->code(),
                 $fromServer->message()
-            ) if $debug >= 2;
+            ) if $debug >= 1;
         }
         saveConfig() if $checkPoint and ($art_total_count % $checkPoint) == 0;
         print LOG "\n" if (!$quiet && (($count % $progressWidth) == 0));

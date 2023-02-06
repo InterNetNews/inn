@@ -111,8 +111,8 @@ is C<50>.
 
 =item B<-d> I<level>
 
-Set the debugging level to the integer I<level>; more debugging output
-will be logged as this increases.  The default value is C<0>.
+Set the debugging level to the integer I<level> (up to C<4>); more debugging
+output will be logged as this increases.  The default value is C<0>.
 
 =item B<-f> I<fraction>
 
