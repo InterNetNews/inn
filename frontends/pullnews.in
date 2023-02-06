@@ -287,10 +287,10 @@ my $path_limit;
 
 # Find a possible port at the end of the news server name.
 # Count the number of ":" to check that it is not an IPv6 address.
-if (not defined $opt_p) {
-    my @colons = split(/:/, $localServer);
-    $localPort = $1
-      if ((scalar(@colons) == 2) and ($localServer =~ s/:(\d+)$//));
+my @colons = split(/:/, $localServer);
+if ((scalar(@colons) == 2) and ($localServer =~ s/:(\d+)$//)) {
+    $localPort = $1;
+    die "can\'t have both ``-p'' and a port in ``-s''\n" if $opt_p;
 }
 
 die "can\'t have both ``-s'' and ``-r''\n" if $opt_s && $opt_r;
