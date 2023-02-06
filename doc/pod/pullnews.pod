@@ -248,9 +248,9 @@ The default is C<1>.
 =item B<-w> I<num>
 
 Set each group's high water mark (last received article number) to I<num>.
-If I<num> is negative, calculate S<I<Current>+I<num>> instead (i.e. get the last
-I<num> articles).  Therefore, a I<num> of C<0> will re-get all articles on the
-server; whereas a I<num> of C<-0> will get no old articles, setting the
+If I<num> is negative, calculate S<I<Current>+I<num>> instead (i.e. get the
+last I<num> articles).  Therefore, a I<num> of C<0> will re-get all articles
+on the server; whereas a I<num> of C<-0> will get no old articles, setting the
 water mark to I<Current> (the most recent article on the server).
 
 =item B<-x>
@@ -291,21 +291,21 @@ duplicate work the next time it runs.
 The full syntax is:
 
     <host> [<username> <password>]
-            <group> [<time> <high>]
-            <group> [<time> <high>]
+        <group> [<time> <high>]
+        <group> [<time> <high>]
 
 where the <host> line must not have leading whitespace and the <group>
 lines must.
 
 A typical configuration file would be:
 
-    # Format group date high
+    # Format: group date high
     data.pa.vix.com
-            rec.bicycles.racing 908086612 783
-            rec.humor.funny 908086613 18
-            comp.programming.threads
+        rec.bicycles.racing 908086612 783
+        rec.humor.funny 908086613 18
+        comp.programming.threads
     nnrp.vix.com pull sekret
-            comp.std.lisp
+        comp.std.lisp
 
 Note that an earlier run of B<pullnews> has filled in details about the
 last article downloads from the two rec.* groups.  The two comp.* groups
@@ -336,8 +336,8 @@ user's home directory.
 B<pullnews> was written by James Brister for INN.  The documentation was
 rewritten in POD by Russ Allbery <eagle@eyrie.org>.
 
-Geraint S<A. Edwards> greatly improved B<pullnews>, adding no more than S<16 new>
-recognized flags, fixing some bugs and integrating the B<backupfeed>
+Geraint S<A. Edwards> greatly improved B<pullnews>, adding no more than
+S<16 new> recognized flags, fixing some bugs and integrating the B<backupfeed>
 contrib script by Kai Henningsen, adding again S<6 other> flags.
 
 =head1 SEE ALSO
