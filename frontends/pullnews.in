@@ -1020,7 +1020,7 @@ sub crossFeedGroup {
             # just before the blank line.
             if ($opt_x && !$xref) {
                 warn "No Xref header field found in article, adding\n";
-                my $xref_h = "Xref: $server $group: $i\n";
+                my $xref_h = "Xref: $server $group:$i\n";
                 splice(@{$article}, $idx_blank_pre_body, 0, $xref_h);
                 $tx_len += length($xref_h);
                 $idx_blank_pre_body++;
