@@ -31,9 +31,8 @@ system.
 
 When using any method other than PAM, B<ckpasswd> expects all passwords to
 be stored encrypted by the system crypt(3) function and calls crypt(3) on
-the supplied password before comparing it to the expected password.  If
-you're using a different password hash scheme (like MD5), you must use
-PAM.
+the supplied password before comparing it to the expected password.  Any
+password hashing algorithm supported by your libc or libcrypt can be used.
 
 =head1 OPTIONS
 
@@ -77,29 +76,69 @@ libraries.
 
 =item B<-f> I<filename>
 
-Read passwords from the given file rather than using getpwnam(3).  The
-file is expected to be formatted like a system password file, at least
-vaguely.  That means each line should look something like:
+Read passwords from the given file rather than using getpwnam(3).  Each line
+of the file should look something like:
 
-    username:pdIh9NCNslkq6
+    username:$5$Hlb2yXPd$2nOO/QR9P1mnRFr/i6L9ybxbgSDXd4UlatKqbcY4eoB
+    joe:FCjOJnpOo50IE:Old weak hash algorithm used for Joe
 
-(and each line may have an additional colon after the encrypted password and
-additional data; that data will be ignored by B<ckpasswd>).  Lines starting
-with a number sign (C<#>) are ignored.  INN does not come with a utility to
-create the encrypted passwords, but B<htpasswd> (which comes with Apache) can
-do so and it's a quick job with Perl (see the one-line example script below).
+Each line has at least two fields separated by a colon.  The first field
+contains the username; the second field contains a password hashed with the
+crypt(3) function.  Additional colons and data may appear after the encrypted
+password; that data will be ignored by B<ckpasswd>.  Lines starting with a
+number sign (C<#>) are ignored.
+
+INN does not come with a utility to create the encrypted passwords, but
+OpenSSL can do so and it's also a quick job with Perl (see the one-line
+example script below).
 
 A line in I<filename> for the user C<user> with the password C<pass> would be
-C<user:LIfOpbjNaEQYE> as obtained with the following command:
+C<user:> followed with the output of the following command using SHA-256 as
+hashing scheme:
 
-    % htpasswd -nbd user pass
-    user:LIfOpbjNaEQYE
+    % openssl passwd -5 pass
+    $5$UIhtJSBOaC0Ap3Vk$nbKgmykshoQ2HmvA3s/nI.X4uhhNHBKTYhBS3pYLjJ6
 
-In case B<htpasswd> is not installed on your server, just use the following
-Perl command which does the same job:
+See the openssl-passwd(1) man page for the list of hashing schemes it can
+generate.  You must take one that your system crypt(3) function handles (type
+C<man 3 crypt> or C<man 5 crypt> to find the supported hashing schemes).
 
-    % perl -e 'print "user:".crypt("pass", "LI")."\n";'
-    user:LIfOpbjNaEQYE
+In case OpenSSL is not installed on your server, you can also use the
+following Perl command which does the same job with SHA-256 (see details below
+to set C<YourSalt> to an appropriate value; C<5> is the prefix for SHA-256,
+which does not expect any parameters):
+
+    % perl -le 'print crypt("pass", q{$5$YourSalt$})'
+    $5$YourSalt$V5hqwFg1nhKb5as6md9KTe5b2NyavsMS6dBYVKfp5W7
+
+As Perl makes use of crypt(3), you have access to all available hashing
+schemes on your systems.  For instance, if yescript is supported, you can
+generate an encrypted password with an argument like C<$y$j9T$YourSalt$>
+to Perl crypt function, where C<y> is the prefix for yescript, C<j9T> the
+parameters passed to crypt_gensalt(3) to generate the hashed password (these
+parameters control the yescript configuration, and correspond in this example
+to the C<YESCRYPT_DEFAULTS> flag, the recommended flavor which has C<j> value
+in 2023, with cost factor of 4096 as block count and 32 as block size) and
+C<YourSalt> a string which should be chosen at random and different for each
+user.  The syntax and optimal length of the salt depend on the hashing scheme
+(e.g. a length multiple of 4 for yescript) and cryptographic recommendations
+(e.g. at least 32 random bits in length, following NIST S<SP 800-63B>
+recommendations in 2023).
+
+To put it in a nutshell, in the following command, you only have to change
+the password C<pass> and the C<YourSalt> random string, different for B<each>
+user, and leave the rest of the command as-is:
+
+    % perl -le 'print crypt("pass", q{$y$j9T$YourSalt$})'
+    $y$j9T$YourSalt$X4tB48vKNDT6mK0vNOc7ppKPWvEsyMg5LwoQfO50r2A
+
+A random salt of 12 characters can be obtained with the following command (the
+result corresponds to 72 random bits as each character is selected in a 6-bit
+range of 64 possible characters):
+
+    % perl -le 'print join("",
+          (".", "/", 0..9, A..Z, a..z)[map {rand 64} (1..12)])'
+    k2W/17eJu58r
 
 =item B<-g>
 
