@@ -45,12 +45,12 @@
 #
 #               A configuration file looks like:
 #
-#                       data.pa.vix.com
-#                               news.software.nntp 0 0
-#                               comp.lang.c 0 0
-#                       news.uu.net username password
-#                               uunet.announce 0 0
-#                               uunet.help 0 0
+#                   data.pa.vix.com
+#                       news.software.nntp 0 0
+#                       comp.lang.c 0 0
+#                   news.uu.net username password
+#                       uunet.announce 0 0
+#                       uunet.help 0 0
 #
 #               Hostname lines have no leading space and may have an optional
 #               username and password after the hostname; all the
@@ -473,7 +473,7 @@ if (not $rnews) {
 
     my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
     $localcxn = Net::NNTP->new($localServer, %localopts)
-      || die "Can't connect to server $localServer\n";
+      || die " Can't connect to server $localServer\n";
 
     if (exists $passwd{$localServer}
         && !$localcxn->authinfo(@{ $passwd{$localServer} }))
@@ -696,7 +696,7 @@ sub saveConfig {
     print LOG "\nSaving config\n" unless $quiet;
     print FILE "# Format: (date is epoch seconds)\n";
     print FILE "# hostname [username password]\n";
-    print FILE "#         group date high\n";
+    print FILE "#     group date high\n";
     foreach $server (
         sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
         keys %$servers
@@ -710,7 +710,7 @@ sub saveConfig {
         foreach $group (sort keys %{ $servers->{$server} }) {
             next if $group eq '_order';
             my ($date, $high) = @{ $servers->{$server}->{$group} };
-            printf FILE "\t%s %d %d\n", $group, $date, $high;
+            printf FILE "    %s %d %d\n", $group, $date, $high;
         }
     }
     close FILE;
@@ -1214,7 +1214,7 @@ sub crossFeedGroup {
         my $destServer
           = ($localServer ne $defaultHost ? " to $localServer" : '');
         print LOG localtime()
-          . "[$$] $server$destServer $name $narticles"
+          . " [$$] $server$destServer $name $narticles"
           . " $first-$last : $count $prevHigh-"
           . ($high == $last ? '' : $high)
           . " $refusedDiff $rejectedDiff\n"
