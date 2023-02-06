@@ -35,6 +35,7 @@
 ##                              One consideration for using it is to
 ##                              uniform nnrpd logging.
 
+
 ##  Sample access class.  It defines all access methods known to nnrpd.
 class ACCESS:
     """Provide access callbacks to nnrpd."""

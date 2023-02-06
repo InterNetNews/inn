@@ -38,6 +38,7 @@
 ##                              One consideration for using it is to
 ##                              uniform nnrpd logging.
 
+
 ##  Sample authentication class.  It defines all auth methods known to nnrpd.
 class AUTH:
     """Provide authentication callbacks to nnrpd."""
