@@ -30,7 +30,7 @@ crash or improper shutdown.
 =item 3.
 
 If the B<-u> option is specified, it performs any necessary upgrades
-to the database.  See the L<UPGRADING> section below.
+to the database.  See the L<"UPGRADING"> section below.
 
 =item 4.
 

@@ -39,7 +39,7 @@ with S<INN 2.5.0>.
 If you have a database created with a previous version of ovdb,
 your database will need to be upgraded using B<ovdb_init>.  See the
 ovdb_init(8) man page for upgrade instructions, as well as the
-L<COMPRESSION> section below.
+L<"COMPRESSION"> section below.
 
 Note that when the S<Berkeley DB> library is updated to a newer version,
 the ovdb database also needs being upgraded.
@@ -66,10 +66,10 @@ article in your spool (not counting crossposts).  So, if you have 5
 million articles, you'll need at least S<5.5 GB> of disk space for ovdb.
 With compression enabled, this estimate changes to S<0.9 KB> per article,
 so you'll need at least S<4.5 GB> of disk space for 5 million articles.
-See the L<COMPRESSION> section below.  Plus, you'll need additional space
+See the L<"COMPRESSION"> section below.  Plus, you'll need additional space
 for transaction logs: at least S<100 MB>.  By default, the transaction
 logs go in the same directory as the database.  To improve performance,
-they can be placed on a different disk S<-- see> the L<DB_CONFIG>
+they can be placed on a different disk S<-- see> the L<"DB_CONFIG">
 section.
 
 =head1 CONFIGURATION
@@ -78,7 +78,7 @@ To enable the ovdb overview method, set the I<ovmethod> parameter in
 F<inn.conf> to C<ovdb>.  The ovdb database is stored in the directory
 specified by the I<pathoverview> parameter in F<inn.conf>.  This is
 the C<DB_HOME> directory.  To start out, this directory should be empty
-(other than an optional F<DB_CONFIG> file; see L<DB_CONFIG> for details),
+(other than an optional F<DB_CONFIG> file; see L<"DB_CONFIG"> for details),
 and B<innd> (or B<makehistory>) will create the files as necessary in
 that directory.  Also, make sure the directory is owned by the news user.
 
@@ -91,7 +91,7 @@ configuration file.  The following parameters can be set in that file:
 
 If INN was compiled with zlib, and this I<compress> parameter is true,
 ovdb will compress overview records that are longer than 600 bytes.
-See the L<COMPRESSION> section below.
+See the L<"COMPRESSION"> section below.
 
 =item I<cachesize>
 
@@ -337,7 +337,7 @@ The I<ovmethod> and I<pathoverview> parameters are relevant to ovdb.
 
 =item I<pathetc>/ovdb.conf
 
-Optional configuration file for tuning.  See L<CONFIGURATION> above.
+Optional configuration file for tuning.  See L<"CONFIGURATION"> above.
 
 =item I<pathoverview>
 
