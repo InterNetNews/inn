@@ -60,6 +60,11 @@ B<makehistory> to belong to the current cycle number.
 
 =item *
 
+B<innd> no longer dies when a F<newsfeeds> entry has an unexpected trailing
+whitespace.
+
+=item *
+
 The size of duplicated articles were counted twice in totals, average article
 sizes and graphs by B<innreport>, when parsing B<innd> checkpoints.  Thanks to
 Hauke Lampe for the patch to count it only once.

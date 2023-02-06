@@ -275,7 +275,7 @@ SITEreadfile(const bool ReadOnly)
     static time_t old_mtime;
     static ino_t old_ino;
     static off_t old_size;
-    char *p;
+    char *p, *q;
     char *to;
     char *site;
     int i;
@@ -312,19 +312,31 @@ SITEreadfile(const bool ReadOnly)
     /* Scan the file, parse all multi-line entries. */
     for (old_strings = xmalloc((i + 1) * sizeof(char *)), i = 0, to = p = data;
          *p;) {
+        /* Reassemble lines ending with "\". */
         for (site = to; *p;) {
             if (*p == '\n') {
                 p++;
                 *to = '\0';
                 break;
             }
-            if (*p == '\\' && p[1] == '\n')
+            if (*p == '\\' && p[1] == '\n') {
+                /* Skip leading spaces in a continuation line. */
                 while (*++p && isspace((unsigned char) *p))
                     continue;
-            else
+            } else {
                 *to++ = *p++;
+            }
         }
         *to++ = '\0';
+
+        /* Chop off trailing spaces. */
+        q = to;
+        q--;
+        if (q > site)
+            q--;
+        while (q > site && (*q == ' ' || *q == '\t'))
+            *q-- = '\0';
+
         if (*site == '#' || *site == '\0')
             continue;
         if (*site == VARIABLE_CHAR && SITEaddvariable(site))
