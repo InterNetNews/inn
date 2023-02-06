@@ -11,6 +11,10 @@
 #               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:
 #
+#               February 2023:
+#               Julien Élie added TLS support for both downstream and upstream
+#               servers.  Also made pullnews robust on socket timeout.
+#
 #               January 2010:
 #               Geraint A. Edwards added header-only feeding (-B);
 #               added ability to hashfeed (-a) - uses MD5 - Diablo-compatible;
@@ -51,6 +55,8 @@
 #                   news.uu.net username password
 #                       uunet.announce 0 0
 #                       uunet.help 0 0
+#                   news.server.com:433_TLS username password
+#                       news.admin.hierarchies 0 0
 #
 #               Hostname lines have no leading space and may have an optional
 #               username and password after the hostname; all the
@@ -128,8 +134,8 @@ my $usage = "Usage:
   $0 [-BhnOqRx] [-a hashfeed] [-b fraction] [-c config] [-C width]
   [-d level] [-f fraction] [-F fakehop] [-g groups] [-G newsgroups]
   [-H headers] [-k checkpt] [-l logfile] [-m header_pats] [-M num] [-N num]
-  [-p port] [-P hop_limit] [-Q level] [-r file] [-s host[:port]] [-S num]
-  [-t retries] [-T seconds] [-w num] [-z num] [-Z num]
+  [-p port] [-P hop_limit] [-Q level] [-r file] [-s host[:port][_tlsmode]]
+  [-S num] [-t retries] [-T seconds] [-w num] [-z num] [-Z num]
   [upstream_host ...]
 
 Options:
@@ -222,9 +228,12 @@ Options:
 
   -R            be a reader (use MODE READER and POST)
 
-  -s host[:port]
-                specify the downstream hostname (and optional port)
-                (default is $defaultHost).
+  -s host[:port][_tlsmode]
+                specify the downstream hostname, optional port and optional
+                use of TLS (default is $defaultHost,
+                port $defaultPort unless overridden by -p, without TLS).
+                tlsmode is either TLS (for implicit TLS) or STARTTLS (for
+                explicit TLS).
 
   -S num        specify the maximum time (in seconds) to run.
 
@@ -284,6 +293,13 @@ $logFile = ">>$opt_l" if $opt_l;
 my @hdr_to_match = split(/\s+/, $opt_m) if defined $opt_m;
 my $pathSteps = $opt_P if defined $opt_P;
 my $path_limit;
+
+# Check whether we should use TLS for the downstream server.
+my $localTLS = 0;
+$localTLS = 1 if ($localServer =~ s/_STARTTLS$//);
+$localTLS = 2 if ($localServer =~ s/_TLS$//);
+die "Missing IO::Socket::SSL Perl module for TLS with downstream server\n"
+  if $localTLS > 0 && !Net::NNTP::can_ssl();
 
 # Find a possible port at the end of the news server name.
 # Count the number of ":" to check that it is not an IPv6 address.
@@ -371,6 +387,7 @@ my %refused = ();
 my %rejected = ();
 my $pulled = {};
 my %passwd = ();
+my $upstreamParams = {};
 my %info = (
     fed      => 0,
     refused  => 0,
@@ -440,6 +457,28 @@ while (<FILE>) {
         $servers->{$sname} = {};
         $servers->{$sname}->{_order} = $array_order++;
         $passwd{$sname} = [$3, $4] if defined $3 and $3 ne "";
+
+        $upstreamParams->{$sname} = {};
+
+        # Check whether we should use TLS.
+        my $upstreamName = $sname;
+        $upstreamParams->{$sname}->{tls} = 0;
+        $upstreamParams->{$sname}->{tls} = 1
+          if ($upstreamName =~ s/_STARTTLS$//);
+        $upstreamParams->{$sname}->{tls} = 2 if ($upstreamName =~ s/_TLS$//);
+        die "Missing IO::Socket::SSL Perl module for TLS with $upstreamName\n"
+          if $upstreamParams->{$sname}->{tls} > 0 && !Net::NNTP::can_ssl();
+
+        # Find a possible port at the end of the news server name.
+        # Count the number of ":" to check that it is not an IPv6 address.
+        my @colons = split(/:/, $upstreamName);
+        if ((scalar(@colons) == 2) and ($upstreamName =~ s/:(\d+)$//)) {
+            $upstreamParams->{$sname}->{port} = $1;
+        } else {
+            $upstreamParams->{$sname}->{port} = $defaultPort;
+        }
+
+        $upstreamParams->{$sname}->{name} = $upstreamName;
     } elsif (m!^\s+(\S+)\s+(\d+)\s+(\d+)!) {
         my ($group, $date, $high) = ($1, $2, $3);
         $servers->{$sname}->{$group} = [$date, $high];
@@ -467,13 +506,26 @@ my $art_total_count
   = 0;    # The number of articles transferred during the session.
 
 if (not $rnews) {
+    my $additionalString = "without TLS";
+    $additionalString = "with explicit TLS" if $localTLS == 1;
+    $additionalString = "with implicit TLS" if $localTLS == 2;
+
     print LOG "Connecting to downstream host: $localServer "
-      . "port: $localPort..."
+      . "port: $localPort $additionalString..."
       unless $quiet;
 
     my %localopts = ("Port" => "$localPort", "Reader" => $reader, %NNTP_Args);
+    $localopts{'SSL'} = 1 if $localTLS == 2;
+
     $localcxn = Net::NNTP->new($localServer, %localopts)
       || die " Can't connect to server $localServer\n";
+
+    # Negotiate explicit TLS after MODE READER but before AUTHINFO.
+    if ($localTLS == 1 && !$localcxn->starttls()) {
+        die " Can't use STARTTLS on $localServer: "
+          . $localcxn->code() . " "
+          . $localcxn->message() . "\n";
+    }
 
     if (exists $passwd{$localServer}
         && !$localcxn->authinfo(@{ $passwd{$localServer} }))
@@ -503,6 +555,9 @@ my $connectionAttempts = 0;
 UPSTREAM:
 foreach my $server (@servers) {
     my ($username, $passwd);
+    my $upstreamName = $upstreamParams->{$server}->{name};
+    my $upstreamPort = $upstreamParams->{$server}->{port};
+    my $upstreamTLS = $upstreamParams->{$server}->{tls};
 
     foreach my $addGroup (@groupsToAdd) {
         next if defined $servers->{$server}->{$addGroup};
@@ -517,7 +572,8 @@ foreach my $server (@servers) {
 
         if (!$ok) {
             # User gave -g and the server doesn't have those groups.
-            warn "Skipping server $server.  Doesn't have specified groups.\n";
+            warn "Skipping server $upstreamName: "
+              . "doesn't have specified groups.\n";
             next;
         }
     }
@@ -527,7 +583,7 @@ foreach my $server (@servers) {
     }
 
     if (!exists($servers->{$server})) {
-        warn "No such upstream host $server configured.\n";
+        warn "No such upstream host $upstreamName configured.\n";
         next;
     }
 
@@ -538,12 +594,19 @@ foreach my $server (@servers) {
     next if keys(%{$shash}) == 1;
 
     my $upstream;
+    my $additionalString = "without TLS";
+    $additionalString = "with explicit TLS" if $upstreamTLS == 1;
+    $additionalString = "with implicit TLS" if $upstreamTLS == 2;
+    my %upstreamopts = ("Port" => "$upstreamPort", %NNTP_Args);
+    $upstreamopts{'SSL'} = 1 if $upstreamTLS == 2;
 
     # Double braces to make a loop that next can control.
     {
         {
-            print LOG "Connecting to upstream server $server..." unless $quiet;
-            $upstream = Net::NNTP->new($server, %NNTP_Args);
+            print LOG "Connecting to upstream server: $upstreamName "
+              . "port: $upstreamPort $additionalString..."
+              unless $quiet;
+            $upstream = Net::NNTP->new($upstreamName, %upstreamopts);
             if (!$upstream && $connectionAttempts < $retries) {
                 print LOG " failed.  Let's attempt again.\n" unless $quiet;
                 $connectionAttempts++;
@@ -555,10 +618,20 @@ foreach my $server (@servers) {
 
     if (!$upstream) {
         print LOG " failed.\n" unless $quiet;
-        warn "can't connect to upstream server $server: $!\n";
+        warn "can't connect to upstream server $upstreamName: $!\n";
         next;
     } else {
         print LOG " done.\n" unless $quiet;
+    }
+
+    # Negotiate explicit TLS after MODE READER (sent by default by Net::NNTP
+    # just after the connection) but before AUTHINFO.
+    if ($upstreamTLS == 1 && !$upstream->starttls()) {
+        warn sprintf(
+            "can't use STARTTLS: %s %s\n",
+            $upstream->code(), $upstream->message()
+        );
+        next;
     }
 
     if ($username && !$upstream->authinfo($username, $passwd)) {
@@ -665,9 +738,11 @@ sub stats {
     }
 
     map {
-        print LOG "\nUpstream server $_:\n" if not $quiet;
         my $server = $_;
         my $width = 0;
+        print LOG "\nUpstream server "
+          . $upstreamParams->{$server}->{name} . ":\n"
+          if not $quiet;
 
         map { $width = length if length > $width; }
           sort keys %{ $pulled->{$server} }
@@ -675,7 +750,8 @@ sub stats {
 
         map {
             if ($quiet) {
-                printf LOG "%s [$$] from $server $_ %s\n", localtime(),
+                printf LOG "%s [$$] from %s $_ %s\n", localtime(),
+                  $upstreamParams->{$server}->{name},
                   $pulled->{$server}->{$_};
             } else {
                 printf LOG "\t%${width}s %d\n", $_, $pulled->{$server}->{$_};
@@ -695,7 +771,7 @@ sub saveConfig {
 
     print LOG "\nSaving config\n" unless $quiet;
     print FILE "# Format: (date is epoch seconds)\n";
-    print FILE "# hostname [username password]\n";
+    print FILE "# hostname[:port][_tlsmode] [username password]\n";
     print FILE "#     group date high\n";
     foreach $server (
         sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
@@ -1020,7 +1096,10 @@ sub crossFeedGroup {
             # just before the blank line.
             if ($opt_x && !$xref) {
                 warn "No Xref header field found in article, adding\n";
-                my $xref_h = "Xref: $server $group:$i\n";
+                my $xref_h
+                  = "Xref: "
+                  . $upstreamParams->{$server}->{name}
+                  . " $group:$i\n";
                 splice(@{$article}, $idx_blank_pre_body, 0, $xref_h);
                 $tx_len += length($xref_h);
                 $idx_blank_pre_body++;
@@ -1214,7 +1293,9 @@ sub crossFeedGroup {
         my $destServer
           = ($localServer ne $defaultHost ? " to $localServer" : '');
         print LOG localtime()
-          . " [$$] $server$destServer $name $narticles"
+          . " [$$] "
+          . $upstreamParams->{$server}->{name}
+          . "$destServer $name $narticles"
           . " $first-$last : $count $prevHigh-"
           . ($high == $last ? '' : $high)
           . " $refusedDiff $rejectedDiff\n"

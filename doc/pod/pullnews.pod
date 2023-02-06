@@ -9,7 +9,8 @@ B<pullnews> [B<-BhnOqRx>] [B<-a> I<hashfeed>] [B<-b> I<fraction>]
 [B<-d> I<level>] [B<-f> I<fraction>] [B<-F> I<fakehop>] [B<-g> I<groups>]
 [B<-G> I<newsgroups>] [B<-H> I<headers>] [B<-k> I<checkpt>] [B<-l> I<logfile>]
 [B<-m> I<header_pats>] [B<-M> I<num>] [B<-N> I<timeout>] [B<-p> I<port>]
-[B<-P> I<hop_limit>] [B<-Q> I<level>] [B<-r> I<file>] [B<-s> I<to-server>[:I<port>]]
+[B<-P> I<hop_limit>] [B<-Q> I<level>] [B<-r> I<file>]
+[B<-s> I<to-server>[:I<port>][_I<tlsmode>]]
 [B<-S> I<max-run>] [B<-t> I<retries>] [B<-T> I<connect-pause>] [B<-w> I<num>]
 [B<-z> I<article-pause>] [B<-Z> I<group-pause>] [I<from-server> ...]
 
@@ -221,14 +222,24 @@ rnews(1) for more information about the batch file format.
 =item B<-R>
 
 Be a reader (use MODE READER and POST commands) to the downstream
-server.  The default is to use the IHAVE command.
+server.  The default is to behave like a feeder and use the IHAVE command.
 
-=item B<-s> I<to-server>[:I<port>]
+=item B<-s> I<to-server>[:I<port>][_I<tlsmode>]
 
 Normally, B<pullnews> will feed the articles it retrieves to the news
 server running on localhost.  To connect to a different host, specify a
 server with the B<-s> flag.  You can also specify the port with this same
-flag or use B<-p>.
+flag or use B<-p>.  Default port is C<119>.
+
+The connection is by default unencrypted.  To negotiate a TLS encryption
+layer, you can set I<tlsmode> to C<TLS> for implicit TLS (negotiated
+immediately upon connection on a dedicated port) or C<STARTTLS> for explicit
+TLS (the appropriate command will be sent before authenticating or feeding
+messages).  Examples of use are:
+
+    pullnews -s news.server.com
+    pullnews -R -s news.server.com_STARTTLS
+    pullnews -s news.server.com:563_TLS
 
 =item B<-S> I<max-run>
 
@@ -274,10 +285,12 @@ Sleep I<group-pause> seconds between groups.  The default is C<0>.
 The config file for B<pullnews> is divided into blocks, one block for
 each remote server to connect to.  A block begins with the host line
 (which must have no leading whitespace) and contains just the hostname of
-the remote server, optionally followed by authentication details (username
+the remote server with optional port and TLS mode (with the same semantics
+as the B<-s> flag), optionally followed by authentication details (username
 and password for that server).  Note that authentication details can also
-be provided for the downstream server (a host line could be added for it
-in the configuration file, with no newsgroup to fetch).
+be provided for the downstream server (a host line for C<localhost> or the
+hostname specified with the B<-s> flag could be added for it in the
+configuration file, with no newsgroup to fetch).
 
 Following the host line should be one or more newsgroup lines which start
 with whitespace followed by the name of a newsgroup to retrieve.  Only one
@@ -290,7 +303,7 @@ duplicate work the next time it runs.
 
 The full syntax is:
 
-    <host> [<username> <password>]
+    <host>[:<port>][_<tlsmode>] [<username> <password>]
         <group> [<time> <high>]
         <group> [<time> <high>]
 
@@ -306,13 +319,18 @@ A typical configuration file would be:
         comp.programming.threads
     nnrp.vix.com pull sekret
         comp.std.lisp
+    news.server.com:433_TLS joe password
+        news.software.nntp
 
 Note that an earlier run of B<pullnews> has filled in details about the
-last article downloads from the two rec.* groups.  The two comp.* groups
-were just added by the user and have not yet been checked.
+last article downloads from the two rec.* groups.  The two comp.* groups and
+the news.* group were just added by the user and have not yet been checked.
 
 The nnrp.vix.com server requires authentication, and B<pullnews> will use
 the username C<pull> and the password C<sekret>.
+
+The connection to news.server.com will be encrypted with implicit TLS on port
+433.  Joe's password won't be sent in plaintext.
 
 =head1 FILES
 

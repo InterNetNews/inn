@@ -27,6 +27,13 @@ unnecessary vacation replies.
 
 =item *
 
+Added TLS support in B<pullnews> for connections to upstream servers
+configured in F<pullnews.marks> as well as the downstream server in the B<-s>
+flag.  A port can now also be specified for connections to upstream servers
+(it was already possible for the downstream server).
+
+=item *
+
 B<pullnews> now detects a socket timeout while downloading articles from
 a remote peer.  Downloading gracefully stops, and another attempt can be
 automatically made according to the setting given with the B<-t> flag.  Thanks
