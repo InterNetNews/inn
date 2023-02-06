@@ -1118,6 +1118,8 @@ sub crossFeedGroup {
                     } else {
                         warn "\nPost $i to server failed ($code): $msg\n";
                         $toServer->quit();
+                        saveConfig();
+                        exit(1);
                     }
 
                 } elsif (not $reader
