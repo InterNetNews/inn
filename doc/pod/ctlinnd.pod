@@ -87,7 +87,7 @@ must be the same text given to the C<reject> command, or the empty string
 Begin feeding I<site>.  The server will rescan the F<newsfeeds> file to
 find the specified site and set up a newsfeed for it.  If the site already
 existed, a C<drop> for that site is done first.  This command is
-forwarded; see L<NOTES> below.
+forwarded; see L<"NOTES"> below.
 
 =item cancel I<message-id>
 
@@ -125,7 +125,7 @@ errors are found.  The details of the errors are reported to syslog.
 =item drop I<site>
 
 Flush and drop I<site> from the server's list of active feeds.  This
-command is forwarded; see L<NOTES> below.
+command is forwarded; see L<"NOTES"> below.
 
 =item feedinfo I<site>
 
@@ -140,7 +140,7 @@ This is useful when the site is being fed by a file and batching is about
 to start, or to cleanly shut down and respawn a channel feed.  If I<site>
 is an empty string, all sites are flushed and the F<active> file and
 history database are also flushed to disk.  This command is forwarded; see
-L<NOTES> below.
+L<"NOTES"> below.
 
 Flushing the B<innfeed> channel feed is the recommended method of
 restarting B<innfeed> to pick up new configuration.  B<innd> will spawn a
@@ -268,7 +268,7 @@ without checking the syntactic validity of the header field first).
 This command can only be done while the server is running or throttled
 manually.  It will update its internal state when a C<go> command is
 sent.  This command updates the F<active.times> file as well.  This
-command is forwarded; see L<NOTES> below.
+command is forwarded; see L<"NOTES"> below.
 
 =item param I<letter> I<value>
 
@@ -400,7 +400,7 @@ unavailable to readers.  Unlike the C<newgroup> command, this command does
 not update the F<active.times> file.
 
 This command can only be done while the server is running or throttled
-manually.  This command is forwarded; see L<NOTES> below.
+manually.  This command is forwarded; see L<"NOTES"> below.
 
 =item send I<feed> I<text>
 

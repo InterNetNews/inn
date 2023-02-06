@@ -25,7 +25,7 @@ is running as root).
 When using PAM, B<ckpasswd> identifies itself as C<nnrpd>, not as
 C<ckpasswd>, and the PAM configuration must be set up accordingly.  The
 details of PAM configuration are different on different operating systems
-(and even different Linux distributions); see L<EXAMPLES> below for help
+(and even different Linux distributions); see L<"EXAMPLES"> below for help
 getting started, and look for a pam(7) or pam.conf(4) manual page on your
 system.
 
