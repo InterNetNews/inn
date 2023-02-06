@@ -35,6 +35,7 @@
 ##                              One consideration for using it is to
 ##                              uniform nnrpd logging.
 
+
 ##  Sample dynamic access class.  It defines all dynamic access methods known
 ##  to nnrpd.
 class DYNACCESS:
