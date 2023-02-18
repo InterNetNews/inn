@@ -248,9 +248,6 @@ ARTsetup(void)
     hostcclass['-'] = 1;
     hostcclass['_'] = 1;
 
-    /* Also initialize the character class tables for message-IDs. */
-    InitializeMessageIDcclass();
-
     /* Build the header tree. */
     table = xmalloc(ARRAY_SIZE(ARTheaders) * sizeof(ARTHEADER *));
     for (i = 0; i < ARRAY_SIZE(ARTheaders); i++)

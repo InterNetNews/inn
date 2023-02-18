@@ -202,7 +202,6 @@ main(int ac, char *av[])
         die("No Message-ID provided\n\n%s", usage);
     } else if (ac == 1) {
         originalmid = av[0];
-        InitializeMessageIDcclass();
         if (!IsValidMessageID(originalmid, true, true))
             die("Invalid syntax for Message-ID %s\n\n%s", originalmid, usage);
     } else {
