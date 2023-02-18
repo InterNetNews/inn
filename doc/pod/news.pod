@@ -78,6 +78,14 @@ Hauke Lampe for the patch to count it only once.
 
 =item *
 
+If the I<domain> parameter is set in F<inn.conf> or in a F<readers.conf>
+access block, and has invalid characters, or if the fully qualified domain
+name (FQDN) of the news server has invalid characters when I<domain> is unset,
+a fatal error is now reported at startup.  It is a basic configuration error
+which otherwise leads to the generation of invalid article Message-IDs.
+
+=item *
+
 Improved the speed of article searches with HDR, LAST, NEXT, and XPAT commands
 when there is a (huge) gap in article numbers.  On newsgroups with several
 millions of consecutive missing articles (which is a rare situation), these

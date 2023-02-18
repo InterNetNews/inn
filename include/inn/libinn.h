@@ -101,6 +101,7 @@ extern bool verify_cancel_key(const char *c_key_header,
 extern char *GenerateMessageID(char *domain);
 extern bool IsValidMessageID(const char *string, bool stripspaces,
                              bool laxsyntax);
+extern bool IsValidDomain(const char *string);
 extern bool IsValidHeaderName(const char *string);
 extern bool IsValidHeaderBody(const char *string);
 extern bool IsValidHeaderField(const char *string);
