@@ -17,6 +17,7 @@
 /*
 **  Flag array, indexed by character.  Character classes for message-IDs.
 */
+static bool initialized = false;
 static char midcclass[256];
 #define CC_MSGID_ATOM  01
 #define CC_MSGID_NORM  02
@@ -58,7 +59,7 @@ GenerateMessageID(char *domain)
 **  See Section 3.2.3 of RFC 5322 (atext) and Section 3.1.3 of RFC 5536
 **  (mdtext).
 */
-void
+static void
 InitializeMessageIDcclass(void)
 {
     const unsigned char *p;
@@ -118,7 +119,12 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
     bool atfound = false;
     const unsigned char *p;
 
-    /* Check the length of the message-ID. */
+    if (!initialized) {
+        InitializeMessageIDcclass();
+        initialized = true;
+    }
+
+    /* Check the length of the message identifier. */
     if (MessageID == NULL || strlen(MessageID) > NNTP_MAXLEN_MSGID)
         return false;
 

@@ -99,7 +99,6 @@ extern bool gen_cancel_key(const char *hdrcontrol, const char *hdrsupersedes,
 extern bool verify_cancel_key(const char *c_key_header,
                               const char *c_lock_header);
 extern char *GenerateMessageID(char *domain);
-extern void InitializeMessageIDcclass(void);
 extern bool IsValidMessageID(const char *string, bool stripspaces,
                              bool laxsyntax);
 extern bool IsValidHeaderName(const char *string);

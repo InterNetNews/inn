@@ -85,8 +85,6 @@ main(void)
 {
     plan(4 * (25 + 7) + 2 + 5);
 
-    InitializeMessageIDcclass();
-
     /* Test several message-IDs with and without stripping spaces and lax
      * syntax. */
     testMessageIDs(true, true);
