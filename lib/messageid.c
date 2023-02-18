@@ -1,5 +1,5 @@
 /*
-**  Routines for message-IDs: generation and checks.
+**  Routines for message identifiers: generation and checks.
 */
 
 #include "portable/system.h"
@@ -24,6 +24,9 @@ static char midcclass[256];
 #define midnormchar(c) ((midcclass[(unsigned char) (c)] & CC_MSGID_NORM) != 0)
 #define midatomchar(c) ((midcclass[(unsigned char) (c)] & CC_MSGID_ATOM) != 0)
 
+static bool IsValidRightPartMessageID(const char *domain, bool stripspaces,
+                                      bool bracket);
+
 char *
 GenerateMessageID(char *domain)
 {
@@ -44,7 +47,7 @@ GenerateMessageID(char *domain)
         p = domain;
     } else {
         fqdn = inn_getfqdn(domain);
-        if (fqdn == NULL)
+        if (!IsValidDomain(fqdn))
             return NULL;
         p = fqdn;
     }
@@ -115,7 +118,6 @@ InitializeMessageIDcclass(void)
 bool
 IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
 {
-    int c;
     bool atfound = false;
     const unsigned char *p;
 
@@ -143,6 +145,8 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
             while (midatomchar(*++p))
                 continue;
         } else {
+            /* Invalid character.
+             * Also ensure we have at least one character. */
             return false;
         }
         if (*p != '.') {
@@ -166,16 +170,45 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
         }
     }
 
-    /* Scan domain part: "@ dot-atom-text|no-fold-literal > \0" */
+    /* Scan domain: "@ dot-atom-text|no-fold-literal > \0" */
     if (*p++ != '@')
         return false;
+
+    return IsValidRightPartMessageID((const char *) p, stripspaces, true);
+}
+
+
+/*
+**  Check the syntax of the right-hand side of a message identifier.
+**
+**  If stripspaces is true, whitespace at the end of domain are discarded.
+**  If bracket is true, '>' is expected at the end of domain.
+*/
+static bool
+IsValidRightPartMessageID(const char *domain, bool stripspaces, bool bracket)
+{
+    int c;
+    bool firstchar = true;
+    const unsigned char *p;
+
+    if (!initialized) {
+        InitializeMessageIDcclass();
+        initialized = true;
+    }
+
+    if (domain == NULL)
+        return false;
+
+    p = (const unsigned char *) domain;
+
     for (;; p++) {
         if (midatomchar(*p)) {
+            firstchar = false;
             while (midatomchar(*++p))
                 continue;
         } else {
             /* no-fold-literal only */
-            if (p[-1] != '@' || *p++ != '[')
+            if (!firstchar || *p++ != '[')
                 return false;
             for (;;) {
                 switch (c = *p++) {
@@ -192,11 +225,13 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
             }
             break;
         }
+        /* Beginning of another component? */
         if (*p != '.')
             break;
     }
 
-    if (*p++ != '>')
+    /* Final bracket in a Message-ID? */
+    if (bracket && *p++ != '>')
         return false;
 
     if (stripspaces) {
@@ -205,4 +240,14 @@ IsValidMessageID(const char *MessageID, bool stripspaces, bool laxsyntax)
     }
 
     return (*p == '\0');
+}
+
+
+/*
+**  Wrapper around the function which actually does the check.
+*/
+bool
+IsValidDomain(const char *domain)
+{
+    return IsValidRightPartMessageID(domain, false, false);
 }

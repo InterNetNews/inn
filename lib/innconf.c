@@ -448,7 +448,17 @@ innconf_validate(struct config_group *group)
         warn("hostname does not resolve or domain not set in inn.conf");
         okay = false;
     }
+    if (innconf->domain != NULL && !IsValidDomain(innconf->domain)) {
+        warn("domain in inn.conf contains invalid characters");
+        okay = false;
+    }
+    if (innconf->domain == NULL && !IsValidDomain(fqdn)) {
+        warn("FQDN contains invalid characters (you may want to set domain in "
+             "inn.conf or fix FQDN)");
+        okay = false;
+    }
     free(fqdn);
+
     if (innconf->mta == NULL) {
         warn("must set mta in inn.conf");
         okay = false;

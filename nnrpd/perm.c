@@ -984,6 +984,12 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
             free(curaccess->domain);
         curaccess->domain = xstrdup(tok->name);
         SET_CONFIG(oldtype);
+        if (!IsValidDomain(curaccess->domain)) {
+            snprintf(buff, sizeof(buff),
+                     "Invalid characters in domain '%s' used in Message-IDs.",
+                     tok->name);
+            ReportError(f, buff);
+        }
         break;
     case PERMcomplaints:
         if (curaccess->complaints)
