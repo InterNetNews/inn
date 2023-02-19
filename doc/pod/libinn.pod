@@ -94,11 +94,14 @@ tabulation.
 
 =head2 HEADERS-RELATED ROUTINES
 
-B<GenerateMessageID> uses the current time, process-ID, and fully qualified
-domain name, which is passed as an argument and used if local host cannot
-be resolved or is different from I<domain> set in F<inn.conf>, to create a
-Message-ID header field that is highly likely to be unique.  The returned
-value points to static space that is reused on subsequent calls.
+B<GenerateMessageID> uses the current time, B<nnrpd>'s process ID, a global
+static counter incrementing at each post in the same NNTP session, and a fully
+qualified domain name, which is passed as an argument, to create a Message-ID
+header field that is highly likely to be unique.  The returned value points
+to static space that is reused on subsequent calls.  If the argument is NULL,
+B<inn_getfqdn> is called to find a suitable FQDN (using I<domain> as set in
+F<inn.conf> to qualify the local host name if local host cannot be resolved
+in DNS).
 
 B<HeaderCleanFrom> removes the extraneous information from the value of a From
 or Reply-To header field and leaves just the official mailing address.  In

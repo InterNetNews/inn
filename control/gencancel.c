@@ -257,7 +257,7 @@ main(int ac, char *av[])
     }
 
     if (genmid) {
-        mid = GenerateMessageID(innconf->domain);
+        mid = GenerateMessageID(NULL);
         if (mid == NULL)
             die("Cannot generate Message-ID\n");
         printf("Message-ID: %s\n", mid);
