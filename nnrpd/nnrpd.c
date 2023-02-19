@@ -318,11 +318,11 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
         else
             Printf("  %s %s\r\n", cp->Name, cp->Help);
     }
-    if (PERMaccessconf && (VirtualPathlen > 0)) {
-        if (PERMaccessconf->newsmaster) {
+    if (PERMaccessconf != NULL) {
+        if (PERMaccessconf->newsmaster != NULL) {
             if (strchr(PERMaccessconf->newsmaster, '@') == NULL) {
                 Printf("Report problems to <%s@%s>.\r\n",
-                       PERMaccessconf->newsmaster, PERMaccessconf->domain);
+                       PERMaccessconf->newsmaster, PERMaccessconf->fromhost);
             } else {
                 Printf("Report problems to <%s>.\r\n",
                        PERMaccessconf->newsmaster);
@@ -331,18 +331,18 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
             /* Sigh, pickup from newsmaster anyway. */
             if ((p = strchr(newsmaster, '@')) == NULL)
                 Printf("Report problems to <%s@%s>.\r\n", newsmaster,
-                       PERMaccessconf->domain);
+                       PERMaccessconf->fromhost);
             else {
                 q = xstrndup(newsmaster, p - newsmaster);
                 Printf("Report problems to <%s@%s>.\r\n", q,
-                       PERMaccessconf->domain);
+                       PERMaccessconf->fromhost);
                 free(q);
             }
         }
     } else {
         if (strchr(newsmaster, '@') == NULL)
             Printf("Report problems to <%s@%s>.\r\n", newsmaster,
-                   PERMaccessconf->fromhost);
+                   innconf->fromhost);
         else
             Printf("Report problems to <%s>.\r\n", newsmaster);
     }

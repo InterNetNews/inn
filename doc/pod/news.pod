@@ -4,6 +4,20 @@
 
 =item *
 
+The use of the I<domain> parameter is now disambiguated:
+
+=over 2
+
+=item *
+
+The newsmaster's e-mail address mentioned in the help message returned
+by B<nnrpd> now uses I<fromhost> (set in F<inn.conf> or overridden in
+F<readers.conf>) as the default domain name instead of I<domain>.
+
+=back
+
+=item *
+
 The LIST OVERVIEW.FMT command now uses the preferred format to advertise
 C<:bytes> and C<:lines> metadata.
 

@@ -597,8 +597,10 @@ F<readers.conf>, the specific behaviour described above won't be triggered
 unless I<virtualhost> is set to true.
 
 You may also want to set the I<fromhost> parameter (inherited from
-F<inn.conf>) for the domain part of the newsmaster e-mail address if its
-default value should be changed.
+F<inn.conf>) for the domain part of the newsmaster's e-mail address and the
+complaints address in the Injection-Info header field, if its default value
+should be changed, and the I<newsmaster> and I<complaints> parameters do not
+already contain a C<@>.
 
 =item B<groupexactcount:>
 
@@ -658,8 +660,13 @@ server to be in the same time zone as the client.
 
 =item B<newsmaster:>
 
-Used as the contact address in the help message returned by nnrpd(8), if
-the virtualhost: parameter is set to true.
+Used as the contact address in the help message returned by B<nnrpd>.  If
+unset, the address will consist of the newsmaster name selected at configure
+time (C<usenet> by default), a C<@>, and the value of I<fromhost> as set in
+F<inn.conf> or overridden in F<readers.conf>.
+
+If this parameter is set and does not contain C<@>, the contact address will
+consist of the given value followed by a C<@> and the value of I<fromhost>.
 
 =item B<strippath:>
 
@@ -701,14 +708,12 @@ in the access group, or has the same value as in F<inn.conf>) or I<pathhost>
 (if I<pathhost> is set in the access group to something different than is set
 in F<inn.conf>).
 
-Also, the domain part (the right-hand side after C<@>) of the newsmaster
-e-mail mentioned in the help message returned by B<nnrpd> will use the value
-of I<domain> if the I<newsmaster> parameter does not already have a domain
-part.
-
 At least one of the I<domain> or I<pathhost> parameters must be set in the
 access group to something different than in F<inn.conf>, otherwise B<nnrpd>
 will fail to start.
+
+You may also want to set the I<complaints>, I<domain>, I<fromhost>, and
+I<newsmaster> parameters to specific values if you use this parameter.
 
 Note that setting this parameter requires the server modify all posts before
 presenting them to the client and therefore may decrease performance slightly.
