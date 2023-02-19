@@ -342,7 +342,7 @@ CMDhelp(int ac UNUSED, char *av[] UNUSED)
     } else {
         if (strchr(newsmaster, '@') == NULL)
             Printf("Report problems to <%s@%s>.\r\n", newsmaster,
-                   innconf->fromhost);
+                   PERMaccessconf->fromhost);
         else
             Printf("Report problems to <%s>.\r\n", newsmaster);
     }
