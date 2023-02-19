@@ -443,18 +443,20 @@ innconf_validate(struct config_group *group)
     unsigned int i;
     char *fqdn;
 
+    /* Checks to ensure valid Message-IDs will be generated. */
     fqdn = inn_getfqdn(innconf->domain);
     if (fqdn == NULL) {
         warn("hostname does not resolve or domain not set in inn.conf");
         okay = false;
     }
     if (innconf->domain != NULL && !IsValidDomain(innconf->domain)) {
-        warn("domain in inn.conf contains invalid characters");
+        warn("domain in inn.conf contains invalid characters not suitable for "
+             "Message-IDs");
         okay = false;
     }
     if (innconf->domain == NULL && !IsValidDomain(fqdn)) {
-        warn("FQDN contains invalid characters (you may want to set domain in "
-             "inn.conf or fix FQDN)");
+        warn("the FQDN of the server contains invalid characters not suitable "
+             "for Message-IDs");
         okay = false;
     }
     free(fqdn);

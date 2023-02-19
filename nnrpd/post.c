@@ -564,7 +564,9 @@ ProcessHeaders(char *idbuff, bool needmoderation)
 
     /* Set the Injection-Info header field. */
     /* Set the path identity. */
-    if (VirtualPathlen > 0) {
+    if (VirtualPathlen > 0 || PERMaccessconf->domainoverriden) {
+        /* domain has already been checked to be valid.
+         * It is also set (not NULL) when virtualhost is used. */
         p = PERMaccessconf->domain;
     } else {
         fqdn = inn_getfqdn(PERMaccessconf->domain);

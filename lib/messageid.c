@@ -27,6 +27,21 @@ static char midcclass[256];
 static bool IsValidRightPartMessageID(const char *domain, bool stripspaces,
                                       bool bracket);
 
+/*
+**  Generate a Message-ID.
+**  The left-hand side is currently based on the current time, nnrpd's PID and
+**  a global static counter incrementing at each post in the same NNTP session.
+**  These data are encoded with a 32-character alphabet.
+**  Chances of collision should be rare (unless multiple hosts are using the
+**  same right-hand side).
+**
+**  The right-hand side is the given argument (if not NULL) or otherwise the
+**  FQDN of the server.  The caller is responsible to ensure the given
+**  argument, if any, is a valid domain name (it will otherwise be use as-is).
+**
+**  This function returns the generated Message-ID or NULL if no valid domain
+**  could be picked for the right-hand side.
+*/
 char *
 GenerateMessageID(char *domain)
 {
@@ -41,16 +56,16 @@ GenerateMessageID(char *domain)
     now = time(NULL);
     Radix32(now - OFFSET, sec32);
     Radix32(getpid(), pid32);
-    if ((domain != NULL && innconf->domain == NULL)
-        || (domain != NULL && innconf->domain != NULL
-            && strcmp(domain, innconf->domain) != 0)) {
+
+    if (domain != NULL)
         p = domain;
-    } else {
-        fqdn = inn_getfqdn(domain);
+    else {
+        fqdn = inn_getfqdn(innconf->domain);
         if (!IsValidDomain(fqdn))
             return NULL;
         p = fqdn;
     }
+
     snprintf(buff, sizeof(buff), "<%s$%s$%d@%s>", sec32, pid32, ++count, p);
     free(fqdn);
     return buff;

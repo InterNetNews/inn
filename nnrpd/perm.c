@@ -500,6 +500,7 @@ SetDefaultAccess(ACCESSGROUP *curaccess)
     curaccess->domain = NULL;
     if (innconf->domain)
         curaccess->domain = xstrdup(innconf->domain);
+    curaccess->domainoverriden = false;
     curaccess->complaints = NULL;
     if (innconf->complaints)
         curaccess->complaints = xstrdup(innconf->complaints);
@@ -980,8 +981,14 @@ accessdecl_parse(ACCESSGROUP *curaccess, CONFFILE *f, CONFTOKEN *tok)
         SET_CONFIG(oldtype);
         break;
     case PERMdomain:
-        if (curaccess->domain)
+        if (curaccess->domain) {
+            /* Should we use domain from readers.conf to generate Message-IDs?
+             * This weird check will be changed in a future version, when a new
+             * servername parameter is introduced, instead of using domain for
+             * something it was not designed for. */
+            curaccess->domainoverriden = true;
             free(curaccess->domain);
+        }
         curaccess->domain = xstrdup(tok->name);
         SET_CONFIG(oldtype);
         if (!IsValidDomain(curaccess->domain)) {
@@ -1866,7 +1873,8 @@ PERMgetpermissions(void)
                            == 0) {
                     syslog(L_ERROR,
                            "%s domain parameter (%s) in readers.conf must be "
-                           "different from the one in inn.conf.",
+                           "different from the one in inn.conf (or use a "
+                           "different pathhost in readers.conf and inn.conf).",
                            Client.host, PERMaccessconf->name);
                     Reply("%d NNTP server unavailable.  Try later!\r\n",
                           NNTP_FAIL_TERMINATING);

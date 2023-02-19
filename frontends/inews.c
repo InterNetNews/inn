@@ -524,7 +524,7 @@ ProcessHeaders(bool AddOrg, bool AddSender, struct passwd *pwp)
 
     /* Set Message-ID */
     if (HDR(_messageid) == NULL) {
-        if ((p = GenerateMessageID(innconf->domain)) == NULL)
+        if ((p = GenerateMessageID(NULL)) == NULL)
             die("cannot generate Message-ID header field body");
         HDR(_messageid) = xstrdup(p);
     } else if ((p = strchr(HDR(_messageid), '@')) == NULL

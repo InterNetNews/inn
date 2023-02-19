@@ -66,6 +66,7 @@ typedef struct _ACCESSGROUP {
     char *organization;
     char *moderatormailer;
     char *domain;
+    bool domainoverriden;
     char *complaints;
     int spoolfirst;
     int checkincludedtext;

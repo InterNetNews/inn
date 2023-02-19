@@ -723,7 +723,12 @@ CMDpost(int ac, char *av[])
             Reply("%d Send it; end with <CR-LF>.<CR-LF>\r\n", NNTP_CONT_IHAVE);
         }
     } else {
-        if ((p = GenerateMessageID(PERMaccessconf->domain)) != NULL) {
+        if (PERMaccessconf->domainoverriden)
+            p = GenerateMessageID(PERMaccessconf->domain);
+        else
+            p = GenerateMessageID(NULL);
+
+        if (p != NULL) {
             if (VirtualPathlen > 0) {
                 q = p;
                 if ((p = strchr(p, '@')) != NULL) {
