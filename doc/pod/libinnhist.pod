@@ -32,7 +32,8 @@ his - routines for managing INN history
         HISCTLS_STATINTERVAL
     };
 
-    struct history *HISopen(const char *path, const char *method, int flags);
+    struct history *HISopen(const char *path, const char *method,
+                            int flags);
 
     bool HISclose(struct history *history);
 
@@ -40,19 +41,35 @@ his - routines for managing INN history
 
     void HISsetcache(struct history *history, size_t size);
 
-    bool HISlookup(struct history *history, const char *key, time_t *arrived, time_t *posted, time_t *expires, TOKEN *token);
+    bool HISlookup(struct history *history, const char *key,
+                   time_t *arrived, time_t *posted, time_t *expires,
+                   TOKEN *token);
 
     bool HIScheck(struct history *history, const char *key);
 
-    bool HISwrite(struct history *history, const char *key, time_t arrived, time_t posted, time_t expires, const TOKEN *token);
+    bool HISwrite(struct history *history, const char *key,
+                  time_t arrived, time_t posted, time_t expires,
+                  const TOKEN *token);
 
-    bool HISremember(struct history *history, const char *key, time_t arrived, time_t posted);
+    bool HISremember(struct history *history, const char *key,
+                     time_t arrived, time_t posted);
 
-    bool HISreplace(struct history *history, const char *key, time_t arrived, time_t posted, time_t expires, const TOKEN *token);
+    bool HISreplace(struct history *history, const char *key,
+                    time_t arrived, time_t posted, time_t expires,
+                    const TOKEN *token);
 
-    bool HISexpire(struct history *history, const char *path, const char *reason, bool writing, void *cookie, time_t threshold, bool (*exists)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));
+    bool HISexpire(struct history *history, const char *path,
+                   const char *reason, bool writing, void *cookie,
+                   time_t threshold,
+                   bool (*exists)(void *cookie, time_t arrived,
+                                  time_t posted, time_t expires,
+                                  const TOKEN *token));
 
-    bool HISwalk(struct history *history, const char *reason, void *cookie, bool (*callback)(void *cookie, time_t arrived, time_t posted, time_t expires, const TOKEN *token));
+    bool HISwalk(struct history *history, const char *reason,
+                 void *cookie,
+                 bool (*callback)(void *cookie, time_t arrived,
+                                  time_t posted, time_t expires,
+                                  const TOKEN *token));
 
     struct histstats HISstats(struct history *history);
 

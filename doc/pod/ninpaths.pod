@@ -40,7 +40,9 @@ by B<sendinpaths>.
 
 Set up a channel feed using a F<newsfeeds> entry like:
 
-    inpaths!:*:Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
+    inpaths!\
+        :*\
+        :Tc,WP:<pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
 
 if your version of INN supports C<WP> (2.0 and later all do).  Replace
 <pathbin> with the full path to your INN binaries directory, and
@@ -117,7 +119,8 @@ C<1>, and C<2>, with C<2> being the default.
 
 The format of the generated dump files is:
 
-   !!NINP <version> <start-time> <end-time> <nb-sites> <nb-articles> <average-time>
+   !!NINP <version> <start-time> <end-time> <nb-sites> <nb-articles>
+       <average-time>
    <site_0> <count_0> <site_1> <count_1> <site_2> <count_2> ...
    !!NLREC
    :<site_a>!<site_b>,<count_ab>:<site_c>!<site_d>,<count_cd> ...
@@ -143,7 +146,8 @@ be specified in the relation (C<< :I<site_a>!I<site_b>!I<site_c>,I<count_abc>
 For instance:
 
     !!NINP 3.1.1 1302944821 1302944838 5 2 1302944826
-    newsgate.cistron.nl 1 news.trigofacile.com 2 news.ecp.fr 2 usenet.stanford.edu 1
+    newsgate.cistron.nl 1 news.trigofacile.com 2 news.ecp.fr 2
+        usenet.stanford.edu 1
     bleachbot 1
     !!NLREC
     :3!2:2!1,2:4!0:0!2
@@ -151,8 +155,10 @@ For instance:
 
 where the two processed Path header fields are:
 
-    Path: news.trigofacile.com!news.ecp.fr!usenet.stanford.edu!not-for-mail
-    Path: news.trigofacile.com!news.ecp.fr!newsgate.cistron.nl!bleachbot!not-for-mail
+    Path: news.trigofacile.com!news.ecp.fr!usenet.stanford.edu
+        !not-for-mail
+    Path: news.trigofacile.com!news.ecp.fr!newsgate.cistron.nl
+        !bleachbot!not-for-mail
 
 =head1 NOTES
 
@@ -164,7 +170,8 @@ If your INN doesn't have the C<WP> feed flag (1.5 does not, 1.6 and 1.7 do,
 where B<ginpaths> is the following script:
 
     #!/bin/sh
-    exec egrep '^Path: ' | <pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
+    exec egrep '^Path: ' \
+        | <pathbin>/ninpaths -p -d <pathlog>/path/inpaths.%d
 
 replacing <pathbin> and <pathlog> as above.
 

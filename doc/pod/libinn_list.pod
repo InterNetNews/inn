@@ -37,7 +37,8 @@ list - list routines
 
     struct node *list_remove(struct node *node);
 
-    struct node *list_insert(struct list *list, struct node *node, struct node *pred);
+    struct node *list_insert(struct list *list, struct node *node,
+                             struct node *pred);
 
     bool list_isempty(struct list *list);
 

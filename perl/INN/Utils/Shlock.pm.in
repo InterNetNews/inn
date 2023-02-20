@@ -113,12 +113,13 @@ Using INN::Utils::Shlock is straight-forward:
 These two functions return C<1> on success, C<0> on failure.  For example,
 the success of (un)locking can be checked as:
 
-    INN::Utils::Shlock::lock($lockfile) or die "cannot create lock file";
+    INN::Utils::Shlock::lock($lockfile)
+        or die "cannot create lock file";
 
 or:
 
     if (! INN::Utils::Shlock::lock($lockfile, 4)) {
-        die "giving up after 4 unsuccessful attempts to create lock file";
+        die "giving up after 4 attempts to create lock file";
     }
 
 Instead of calling C<< unlock(I<lockfile>) >>, the C<releaselocks()>
