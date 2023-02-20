@@ -166,10 +166,10 @@ that have been active during the given time frame.  For example (broken
 here to fit the page, with C<vixie> being the peer):
 
     May 23 12:49:08 news innfeed[16015]: vixie checkpoint
-        seconds 1381 offered 2744 accepted 1286 refused 1021 rejected 437
-        missing 0 accsize 8506220 rejsize 142129 spooled 990
-        on_close 0 unspooled 240 deferred 10/15.3 requeued 25
-        queue 42.1/100:14,35,13,4,24,10
+        seconds 1381 offered 2744 accepted 1286 refused 1021
+        rejected 437 missing 0 accsize 8506220 rejsize 142129
+        spooled 990 on_close 0 unspooled 240 deferred 10/15.3
+        requeued 25 queue 42.1/100:14,35,13,4,24,10
 
 The meanings of these fields are:
 

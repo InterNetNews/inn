@@ -70,7 +70,8 @@ relevant F<control.ctl> entries should be correctly set.  For instance:
     all             log=miscctl         Log all messages by default.
     newgroup        doit=newgroup       Create group and log message.
     newgroup        log=newgroup        Log message.
-    rmgroup         verify-*=rmgroup    PGP verify, remove group and log message.
+    rmgroup         verify-*=rmgroup    PGP verify, remove group
+                                        and log message.
     checkgroups     doit=checkgroups    Process and log message.
 
 =item F<controlbatch.log>
@@ -118,8 +119,10 @@ processed by B<scanlogs>.
 
 This file logs articles received by B<innd>.  Typical lines are:
 
-    Aug 25 13:37:41.839 + news.server.fr <cancel.4066@foo.com> 1658 a.peer other.server.org inpaths!
-    Aug 25 13:37:41.839 c news.server.fr <cancel.4066@foo.com> Cancelling <m070725@foo.com>
+    Aug 25 13:37:41.839 + news.server.fr <cancel.4066@foo.com>
+        1658 a.peer other.server.org inpaths!
+    Aug 25 13:37:41.839 c news.server.fr <cancel.4066@foo.com>
+        Cancelling <m070725@foo.com>
     Aug 25 13:37:54.638 - a.peer <23k82@bar.net> 437 Poison newsgroup
 
 The first one indicates that an article from C<news.server.fr> has been

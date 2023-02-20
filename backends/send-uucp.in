@@ -462,11 +462,11 @@ A typical entry to set an SSH connection using a private key is:
 
     port ssh.news.server.to.feed
     type pipe
-    command /usr/bin/ssh -a -x -q -i <key_file> -l uucp news.server.to.feed
+    command /bin/ssh -a -x -q -i <key> -l uucp news.server.to.feed
     reliable true
     protocol etyig
 
-where I<key_file> is the private key to use for the SSH connection,
+where I<key> is the path to the private key to use for the SSH connection,
 like for instance F</var/spool/uucp/.ssh/id_private_key>.
 
 =item 10.
@@ -501,7 +501,7 @@ Manually run as the C<uucp> user the command set in F</etc/uucp/port>
 so as to create the F<known_hosts> file so as to make sure the SSH
 setting is fine.
 
-   /usr/bin/ssh -a -x -q -i <key_file> -l uucp news.server.to.feed
+   /bin/ssh -a -x -q -i <key> -l uucp news.server.to.feed
 
 =item 14.
 

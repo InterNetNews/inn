@@ -823,7 +823,8 @@ list of sites that should receive that article.
 Here's a more esoteric example of a channel feed:
 
     watcher!:*:Tc,Wbnm\
-        :exec awk '$1 > 1000000 { print "BIG", $2, $3 }' >> <pathlog>/bigart
+        :exec awk '$1 > 1000000 { print "BIG", $2, $3 }' \
+         >> <pathlog>/bigart
 
 This receives the byte size of each article along with the storage API token
 and Message-ID, and appends to a F<bigart> log file a line for every article
