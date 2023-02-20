@@ -559,8 +559,8 @@ unless I<virtualhost> is set to true.
 You may also want to set the I<fromhost> parameter (inherited from
 F<inn.conf>) for the domain part of the newsmaster's e-mail address and the
 complaints address in the Injection-Info header field, if its default value
-should be changed, and the I<newsmaster> and I<complaints> parameters do not
-already contain an C<@>.
+should be changed, and the I<complaints> parameter is not already set or
+I<newsmaster> does not already contain an C<@>.
 
 =item I<groupexactcount>
 
