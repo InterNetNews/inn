@@ -405,7 +405,7 @@ will be used verbatim.
 
 The default domain string for this auth group.  If a user resolver or
 authenticator doesn't provide a domain, or if the default username is used
-and it doesn't contain a C<@>, this domain is used to form the user
+and it doesn't contain an C<@>, this domain is used to form the user
 identity.  (Note that for a lot of setups, it's not really necessary for
 user identities to be qualified with a domain name, in which case there's
 no need to use this parameter.)
@@ -597,8 +597,9 @@ F<readers.conf>, the specific behaviour described above won't be triggered
 unless I<virtualhost> is set to true.
 
 You may also want to set the I<fromhost> parameter (inherited from
-F<inn.conf>) for the domain part of the newsmaster e-mail address if its
-default value should be changed.
+F<inn.conf>) for the complaints address in the Injection-Info header field,
+if its default value should be changed, and the I<complaints> parameter is not
+already set or I<newsmaster> does not already contain an C<@>.
 
 =item B<groupexactcount:>
 

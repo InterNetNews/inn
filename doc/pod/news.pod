@@ -866,7 +866,7 @@ S<OpenSSL 1.1.0> support has been added to INN.
 =item *
 
 When an encryption layer is negotiated during a successful use of the
-STARTTLS command, or after a successful authentication using a SASL
+STARTTLS command, or after a successful authentication using an SASL
 mechanism that negotiates an encryption layer, B<nnrpd> now updates
 the permissions of the news client according to the new secure state
 of his connection (that is to say auth blocks in F<readers.conf> using

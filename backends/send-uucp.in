@@ -498,7 +498,7 @@ F</etc/uucp/port>, and only readable by the C<uucp> user.
 =item 13.
 
 Manually run as the C<uucp> user the command set in F</etc/uucp/port>
-so as to create the F<known_hosts> file so as to make sure the SSH
+so as to create the F<known_hosts> file to make sure the SSH
 setting is fine.
 
    /bin/ssh -a -x -q -i <key> -l uucp news.server.to.feed
