@@ -74,11 +74,11 @@ F<readers.conf> file.
 =head1 DESCRIPTION
 
 F<readers.conf> in I<pathetc> specifies access control for nnrpd(8).  It
-controls who is allowed to connect as a news reader and what they're
-allowed to do after they connect.  nnrpd reads this file when it starts
-up.  This generally means that any changes take effect immediately on all
-subsequent connections, but B<nnrpd> may have to be restarted if you use
-the B<-D> option.  (The location I<pathetc>/readers.conf is only the
+controls who is allowed to connect as a news reader and what they're allowed
+to do after they connect.  B<nnrpd> reads this file every time a news client
+connects to the server, even when running in daemon mode with B<-D>, which
+means that any changes on this file take effect immediately on all subsequent
+connections.  (The location of F<readers.conf> in I<pathetc> is only the
 default; the same format applies to any file specified with C<nnrpd -c>.)
 
 There are two types of entries in F<readers.conf>: parameter/value pairs
