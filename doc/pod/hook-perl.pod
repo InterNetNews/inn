@@ -2,10 +2,10 @@
 
 This file documents INN's built-in support for Perl filtering and reader
 authentication.  The code is based very heavily on work by Christophe
-Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the
-existing TCL support.  Please send any bug reports to <inn-workers@lists.isc.org>,
-not to Christophe, as the code has been modified heavily since he
-originally wrote it.
+Wolfhugel <wolf@pasteur.fr>, and his work was in turn inspired by the existing
+TCL support.  Please send any bug reports to <inn-workers@lists.isc.org>,
+not to Christophe, as the code has been modified heavily since he originally
+wrote it.
 
 The Perl filtering support is described in more detail below.  Basically,
 it allows you to supply a Perl function that is invoked on every article
@@ -207,7 +207,8 @@ Those are:
 
 =over 4
 
-=item INN::addhist(I<messageid>, I<arrival>, I<articledate>, I<expire>, I<paths>)
+=item INN::addhist(I<messageid>, I<arrival>, I<articledate>, I<expire>,
+I<paths>)
 
 Adds I<messageid> to the history database.  All of the arguments except
 the first one are optional; the times default to the current time and the

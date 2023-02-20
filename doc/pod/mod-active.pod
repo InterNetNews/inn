@@ -16,20 +16,22 @@ F<active> file but also locks against other instances of B<mod-active>.
 
 The script must be run as the news user.
 
-The input to B<mod-active> can come either from one or more I<ctlinnd-command-file>
-files named on the command line, or from the standard input.  Typically its input
-is the output from the B<docheckgroups> or B<actsync> commands.  Every line which
-contains the string C<ctlinnd newgroup>, C<ctlinnd rmgroup>, or C<ctlinnd changegroup>,
-optionally preceded by whitespace and/or the path to B<ctlinnd>, is noted for
-the update.  Redundant commands, such as a newgroup directive for a group
-that already exists, are silently ignored.  All other lines in the input are
-also silently ignored.  After the new F<active> file has been generated,
-the existing one is renamed to F<active.old> and the new one is moved into place.
-The script then displays the differences between the two files.  Any groups
-that were added to the F<active> file are also added to the F<active.times>
-file with the string C<checkgroups-update>.
+The input to B<mod-active> can come either from one or more
+I<ctlinnd-command-file> files named on the command line, or from the
+standard input.  Typically its input is the output from the B<docheckgroups>
+or B<actsync> commands.  Every line which contains the string C<ctlinnd
+newgroup>, C<ctlinnd rmgroup>, or C<ctlinnd changegroup>, optionally preceded
+by whitespace and/or the path to B<ctlinnd>, is noted for the update.
+Redundant commands, such as a newgroup directive for a group that already
+exists, are silently ignored.  All other lines in the input are also silently
+ignored.  After the new F<active> file has been generated, the existing one is
+renamed to F<active.old> and the new one is moved into place.  The script then
+displays the differences between the two files.  Any groups that were added to
+the F<active> file are also added to the F<active.times> file with the string
+C<checkgroups-update>.
 
-Please note that no syntax checking is performed on group names by B<mod-active>.
+Please note that no syntax checking is performed on group names by
+B<mod-active>.
 
 =head1 BUGS
 

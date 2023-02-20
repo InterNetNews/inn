@@ -57,9 +57,9 @@ C<filter_before_reload> or C<filter_close> left off.
 
 =item filter_before_reload(I<self>)
 
-This will execute any time a C<ctlinnd reload all 'reason'> or C<ctlinnd reload
-filter.python 'reason'> command is issued.  You can use it to save statistics or
-reports for use after reloading.
+This will execute any time a C<ctlinnd reload all 'reason'> or C<ctlinnd
+reload filter.python 'reason'> command is issued.  You can use it to save
+statistics or reports for use after reloading.
 
 =item filter_close(I<self>)
 
@@ -138,14 +138,14 @@ busy place in B<innd>'s main loop.
 
 =item filter_mode(I<self>, I<oldmode>, I<newmode>, I<reason>)
 
-When the operator issues a B<ctlinnd> C<pause>, C<throttle>, C<go>, C<shutdown>
-or C<xexec> command, this function can be used to do something sensible in accordance
-with the state change.  Stamp a log file, save your state on throttle,
-etc.  I<oldmode> and I<newmode> will be strings containing one of the values in
-(C<running>, C<throttled>, C<paused>, C<shutdown>, C<unknown>).  I<oldmode> is
-the state B<innd> was in before B<ctlinnd> was run, I<newmode> is the state B<innd>
-will be in after the command finishes.  I<reason> is the comment string
-provided on the B<ctlinnd> command line.
+When the operator issues a B<ctlinnd> C<pause>, C<throttle>, C<go>,
+C<shutdown> or C<xexec> command, this function can be used to do something
+sensible in accordance with the state change.  Stamp a log file, save your
+state on throttle, etc.  I<oldmode> and I<newmode> will be strings containing
+one of the values in (C<running>, C<throttled>, C<paused>, C<shutdown>,
+C<unknown>).  I<oldmode> is the state B<innd> was in before B<ctlinnd> was
+run, I<newmode> is the state B<innd> will be in after the command finishes.
+I<reason> is the comment string provided on the B<ctlinnd> command line.
 
 =back
 
@@ -170,8 +170,8 @@ C<INN.set_filter_hook>.  For example:
     myfilter = Filter()
     INN.set_filter_hook(myfilter)
 
-When writing and testing your Python filter, don't be afraid to make use
-of C<try:>/C<except:> and the provided C<INN.syslog> function.  stdout and stderr
+When writing and testing your Python filter, don't be afraid to make use of
+C<try:>/C<except:> and the provided C<INN.syslog> function.  stdout and stderr
 will be disabled, so your filter will die silently otherwise.
 
 Also, remember to try importing your module interactively before loading
@@ -613,9 +613,9 @@ C<nnrpd.set_auth_hook>.  For example:
     myauth = AUTH()
     nnrpd.set_auth_hook(myauth)
 
-When writing and testing your Python filter, don't be afraid to make use
-of C<try:>/C<except:> and the provided C<nnrpd.syslog> function.  stdout and stderr
-will be disabled, so your filter will die silently otherwise.
+When writing and testing your Python filter, don't be afraid to make use of
+C<try:>/C<except:> and the provided C<nnrpd.syslog> function.  stdout and
+stderr will be disabled, so your filter will die silently otherwise.
 
 Also, remember to try importing your module interactively before loading
 it, to ensure there are no obvious errors.  One typo can ruin your whole

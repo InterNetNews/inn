@@ -442,12 +442,12 @@ found in the file F<doc/hook-perl>.
 
 =item B<python_access:>
 
-A Python script for dynamically generating an access group.  If
-an auth group matches successfully and contains a I<python_access> parameter,
-then the argument script (without its C<.py> extension) will be used to
-create an access group.  This group will then determine the access rights
-of the client, overriding any access groups in F<readers.conf>.  If and only
-if a successful auth group contains the I<python_access> parameter, F<readers.conf>
+A Python script for dynamically generating an access group.  If an auth
+group matches successfully and contains a I<python_access> parameter, then
+the argument script (without its C<.py> extension) will be used to create
+an access group.  This group will then determine the access rights of the
+client, overriding any access groups in F<readers.conf>.  If and only if a
+successful auth group contains the I<python_access> parameter, F<readers.conf>
 access groups are ignored and the client's rights are instead determined
 dynamically.  This parameter is only valid if INN is compiled with Python
 support (B<--with-python> passed to B<configure>).  More information may be

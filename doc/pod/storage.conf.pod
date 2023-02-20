@@ -60,13 +60,13 @@ The meanings of the keys in each storage method entry are as follows:
 
 =item I<class>: <storage_class>
 
-An identifier for this storage method entry.  <storage_class> should be
-a number between 0 and 255.  It should be unique across all of the entries in
-this file.  It is mainly used for specifying expiration times by storage class
-as described in expire.ctl(5); C<timehash> and C<timecaf> will also set the
-top-level directory in which articles accepted by this storage class are stored.
-The assignment of a particular number to a storage class is arbitrary but
-permanent (since it is used in storage tokens).  Storage classes can be
+An identifier for this storage method entry.  <storage_class> should be a
+number between 0 and 255.  It should be unique across all of the entries
+in this file.  It is mainly used for specifying expiration times by storage
+class as described in expire.ctl(5); C<timehash> and C<timecaf> will also set
+the top-level directory in which articles accepted by this storage class are
+stored.  The assignment of a particular number to a storage class is arbitrary
+but permanent (since it is used in storage tokens).  Storage classes can be
 for instance numbered sequentially in F<storage.conf>.
 
 =item I<newsgroups>: <wildmat>
@@ -110,13 +110,13 @@ expiration (that is to say, the amount of time into the future that
 the Expires header field of the article requests that it remain around)
 falls in the interval specified by <mintime> and <maxtime>.
 
-The format of these parameters is C<0d0h0m0s> (days, hours, minutes, and seconds
-into the future).  If <maxtime> is C<0s> or is not specified, there is no upper
-bound on expire times falling into this entry (note that this key has no effect
-on when the article will actually be expired, but only on whether or not the
-article will be stored using this storage method).  This field is also optional
-and may be omitted entirely if you do not want to store articles according
-to their Expires header field, if any.
+The format of these parameters is C<0d0h0m0s> (days, hours, minutes, and
+seconds into the future).  If <maxtime> is C<0s> or is not specified, there is
+no upper bound on expire times falling into this entry (note that this key has
+no effect on when the article will actually be expired, but only on whether
+or not the article will be stored using this storage method).  This field is
+also optional and may be omitted entirely if you do not want to store articles
+according to their Expires header field, if any.
 
 A <mintime> value greater than C<0s> implies that this storage method won't
 match any article without an Expires header field.
