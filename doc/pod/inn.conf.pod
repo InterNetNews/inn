@@ -978,7 +978,7 @@ The value of the mail-complaints-to attribute of the Injection-Info
 header field added to all local posts.  The default is the newsmaster's
 e-mail address.  (If the newsmaster, selected at configure time and
 defaulting to C<usenet>, doesn't contain C<@>, the address will consist
-of the newsmaster, a C<@>, and the value of I<fromhost>.)
+of the newsmaster, an C<@>, and the value of I<fromhost>.)
 
 =item I<fromhost>
 

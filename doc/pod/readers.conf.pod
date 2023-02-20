@@ -405,7 +405,7 @@ will be used verbatim.
 
 The default domain string for this auth group.  If a user resolver or
 authenticator doesn't provide a domain, or if the default username is used
-and it doesn't contain a C<@>, this domain is used to form the user
+and it doesn't contain an C<@>, this domain is used to form the user
 identity.  (Note that for a lot of setups, it's not really necessary for
 user identities to be qualified with a domain name, in which case there's
 no need to use this parameter.)
@@ -600,7 +600,7 @@ You may also want to set the I<fromhost> parameter (inherited from
 F<inn.conf>) for the domain part of the newsmaster's e-mail address and the
 complaints address in the Injection-Info header field, if its default value
 should be changed, and the I<newsmaster> and I<complaints> parameters do not
-already contain a C<@>.
+already contain an C<@>.
 
 =item B<groupexactcount:>
 
@@ -662,11 +662,11 @@ server to be in the same time zone as the client.
 
 Used as the contact address in the help message returned by B<nnrpd>.  If
 unset, the address will consist of the newsmaster name selected at configure
-time (C<usenet> by default), a C<@>, and the value of I<fromhost> as set in
+time (C<usenet> by default), an C<@>, and the value of I<fromhost> as set in
 F<inn.conf> or overridden in F<readers.conf>.
 
 If this parameter is set and does not contain C<@>, the contact address will
-consist of the given value followed by a C<@> and the value of I<fromhost>.
+consist of the given value followed by an C<@> and the value of I<fromhost>.
 
 =item B<strippath:>
 
