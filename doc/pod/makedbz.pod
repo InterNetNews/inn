@@ -17,10 +17,11 @@ file is I<pathdb>/history; to specify a different name, use the B<-f> flag.
 
 =item B<-f> I<filename>
 
-If the B<-f> flag is used, then the database files are named C<I<filename>.dir>,
-C<I<filename>.index>, and C<I<filename>.hash>.  If the B<-f> flag is not used,
-then a temporary link to the name C<history.n> is made and the database files
-are written as C<history.n.index> , C<history.n.hash> and C<history.n.dir>.
+If the B<-f> flag is used, then the database files are named
+C<I<filename>.dir>, C<I<filename>.index>, and C<I<filename>.hash>.  If the
+B<-f> flag is not used, then a temporary link to the name C<history.n> is made
+and the database files are written as C<history.n.index> , C<history.n.hash>
+and C<history.n.dir>.
 
 =item B<-i>
 

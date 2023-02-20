@@ -44,11 +44,11 @@ ihave/sendme control messages, be sure that I<logipaddr> is set to false
 in F<inn.conf>, because in this case B<controlchan> needs a site name,
 not an IP address.
 
-B<controlchan> tries to report all log messages through syslog(3),
-unless connected to an interactive terminal.  To enable syslog(3)'ing for
-versions of Perl prior to 5.6.0, you will need to have run B<h2ph> on your system
-include files at some point (this is required to make C<Sys::Syslog> work).
-If you have not done so, do this:
+B<controlchan> tries to report all log messages through syslog(3), unless
+connected to an interactive terminal.  To enable syslog(3)'ing for versions of
+Perl prior to 5.6.0, you will need to have run B<h2ph> on your system include
+files at some point (this is required to make C<Sys::Syslog> work).  If you
+have not done so, do this:
 
     cd /usr/include
     h2ph * sys/*

@@ -5,12 +5,12 @@ newslog - Description of INN log files
 =head1 DESCRIPTION
 
 Most log files created by Usenet programs reside in the I<pathlog> directory
-set in F<inn.conf> and have a C<.log> extension.  Several versions are usually
-kept with an additional extension such as C<.1>, C<.2>, etc. S<-- the> higher
-the number, the older the log.  These old versions are stored in I<pathlog>/OLD;
-they may be compressed and thus may have a C<.1.gz>, C<.2.gz>, etc. extension,
-up to C<.nn.gz> where C<nn> is the number of old logs kept by B<scanlogs>
-which is set by I<logcycles> in F<inn.conf>.
+set in F<inn.conf> and have a C<.log> extension.  Several versions are
+usually kept with an additional extension such as C<.1>, C<.2>, etc. S<--
+the> higher the number, the older the log.  These old versions are stored in
+I<pathlog>/OLD; they may be compressed and thus may have a C<.1.gz>, C<.2.gz>,
+etc. extension, up to C<.nn.gz> where C<nn> is the number of old logs kept by
+B<scanlogs> which is set by I<logcycles> in F<inn.conf>.
 
 The B<scanlogs> script and related utilities are responsible for rotating
 and compressing these files.  Some log files always have data (like

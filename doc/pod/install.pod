@@ -298,12 +298,12 @@ B<--with-tmp-dir> below).
 =item B<--with-db-dir>=PATH
 
 Sets the prefix for INN database files.  The default is F<PREFIX/db>,
-where PREFIX is F</usr/local/news> unless overridden with the option
-above.  The F<history> and F<active> files will be stored in this directory, and
-writes to those files are an appreciable percentage of INN's disk
-activity.  The F<history> file can also be quite large (requiring up to S<2 GB>
-or more during nightly B<expire>), so this is a common portion of INN to move
-to a different file system.
+where PREFIX is F</usr/local/news> unless overridden with the option above.
+The F<history> and F<active> files will be stored in this directory, and
+writes to those files are an appreciable percentage of INN's disk activity.
+The F<history> file can also be quite large (requiring up to S<2 GB> or more
+during nightly B<expire>), so this is a common portion of INN to move to a
+different file system.
 
 =item B<--with-spool-dir>=PATH
 
@@ -810,16 +810,15 @@ in this directory.  When you first install INN, a sample of each file
 (containing lots of comments) is installed in I<pathetc>; refer to
 these for concrete examples of everything discussed in this section.
 
-All of INN's configuration files, all of the programs that come with it,
-and some of its library routines have documentation in the form of man
-pages.  These man pages were installed in I<pathnews>/share/man as part of the INN
+All of INN's configuration files, all of the programs that come with it, and
+some of its library routines have documentation in the form of man pages.
+These man pages were installed in I<pathnews>/share/man as part of the INN
 installation process and are the most complete reference to how INN works.
 You're strongly encouraged to refer to the man pages frequently while
-configuring INN, and for quick reference afterwards.  Any detailed
-questions about individual configuration files or the behavior of specific
-programs should be answered in them.  You may want to add I<pathnews>/share/man to
-your MANPATH environment variable; otherwise, you may have to use a
-command like:
+configuring INN, and for quick reference afterwards.  Any detailed questions
+about individual configuration files or the behavior of specific programs
+should be answered in them.  You may want to add I<pathnews>/share/man to your
+MANPATH environment variable; otherwise, you may have to use a command like:
 
     man -M <pathnews in inn.conf>/share/man inn.conf
 
@@ -997,15 +996,15 @@ list is not described here; see newsfeeds(5) for information (it's not
 used that frequently in practice).  The newsgroup pattern is a
 wildmat-style pattern list as described above (supporting C<@>).
 
-The third field is a comma-separated list of flags that determine both the
-type of feed entry and sets certain parameters for the entry.  See
+The third field is a comma-separated list of flags that determine both
+the type of feed entry and sets certain parameters for the entry.  See
 newsfeeds(5) for information on the flag settings; you can do a surprising
 amount with them.  The three most common patterns, and the ones mainly
 used for outgoing news feeds to other sites, are C<Tf,Wnm> (to write out a
-batch file of articles to be sent, suitable for processing by B<nntpsend> and
-B<innxmit>), C<Tm> (to send the article to a funnel feed, used with B<innfeed>),
-and C<Tc,Wnm*> (to collect a funnel feed and send it via a channel feed to
-an external program, used to send articles to B<innfeed>).
+batch file of articles to be sent, suitable for processing by B<nntpsend>
+and B<innxmit>), C<Tm> (to send the article to a funnel feed, used with
+B<innfeed>), and C<Tc,Wnm*> (to collect a funnel feed and send it via a
+channel feed to an external program, used to send articles to B<innfeed>).
 
 The fourth field is a multi-purpose parameter whose meaning depends on the
 settings of the flags in the third field.  To get a feel for it using the
@@ -1591,14 +1590,14 @@ following:
     news.err            <pathlog in inn.conf>/news.err
     news.notice         <pathlog in inn.conf>/news.notice
 
-(Change the path names as necessary in order to match I<pathlog>, which defaults
-to F</usr/local/news/log>.)  These lines I<must> be tab-delimited,
-so don't copy and paste from these instructions.  Type it in by hand and
-make sure you use a tab, or you'll get mysterious failures.  You'll also
-want to make sure that news log messages don't fill your other log files
-(INN generates a lot of log traffic); so for every entry in
-F</etc/syslog.conf> that starts with C<*>, add C<;news.none> to the end of
-the first column.  For example, if you have a line like:
+(Change the path names as necessary in order to match I<pathlog>, which
+defaults to F</usr/local/news/log>.)  These lines I<must> be tab-delimited,
+so don't copy and paste from these instructions.  Type it in by hand and make
+sure you use a tab, or you'll get mysterious failures.  You'll also want
+to make sure that news log messages don't fill your other log files (INN
+generates a lot of log traffic); so for every entry in F</etc/syslog.conf>
+that starts with C<*>, add C<;news.none> to the end of the first column.
+For example, if you have a line like:
 
     *.err               /dev/console
 
@@ -1782,14 +1781,14 @@ carry.  The last version of that file is available from
 L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl>.
 
 You can tell INN to just authenticate control messages based on the From
-header field of the message, but this is obviously perilous and control messages
-are widely forged.  Many hierarchies sign all of their control messages
-with PGP, allowing news servers to verify their authenticity, and checking
-those signatures for hierarchies that use them is highly recommended.
+header field of the message, but this is obviously perilous and control
+messages are widely forged.  Many hierarchies sign all of their control
+messages with PGP, allowing news servers to verify their authenticity, and
+checking those signatures for hierarchies that use them is highly recommended.
 B<controlchan> knows how to do this (using B<pgpverify>) without additional
-configuration, but you do have to provide it with a public key ring
-containing the public keys of all of the hierarchy administrators whose
-control messages you want to check.
+configuration, but you do have to provide it with a public key ring containing
+the public keys of all of the hierarchy administrators whose control messages
+you want to check.
 
 INN expects the public key ring to either be in the default location for a
 PGP public key ring for the news user (generally I<pathnews>/.gnupg for GnuPG

@@ -10,13 +10,13 @@ B<sendinpaths> [B<-cdhn>] [B<-k> I<keep-days>] [B<-r> I<report-days>]
 =head1 DESCRIPTION
 
 B<sendinpaths> checks I<pathlog>/path for B<ninpaths> dump files, finds
-dump files generated in the past I<report-days> days, makes sure they are valid
-by running B<ninpaths> on each one and making sure the exit status is
-zero, and passes them to B<ninpaths> to generate a cumulative report.
+dump files generated in the past I<report-days> days, makes sure they are
+valid by running B<ninpaths> on each one and making sure the exit status
+is zero, and passes them to B<ninpaths> to generate a cumulative report.
 By default, that report is mailed to the e-mail addresses configured at
 the beginning of this script (by default, only one address is configured:
-<top1000@anthologeek.net>) in order to supply the TOP1000 project with
-useful statistics.  See L<http://top1000.anthologeek.net/> for more information.
+<top1000@anthologeek.net>) in order to supply the TOP1000 project with useful
+statistics.  See L<http://top1000.anthologeek.net/> for more information.
 
 When finished, B<sendinpaths> deletes all dump files in I<pathlog>/path
 that are older than I<keep-days> days.

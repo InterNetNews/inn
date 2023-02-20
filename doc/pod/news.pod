@@ -2712,14 +2712,14 @@ in the stack is retrieved via SSL.  Thanks to Chris Caputo for this patch.
 
 =item *
 
-Fixed a few segfaults and bugs which affected both Python B<innd> and B<nnrpd>
-hooks.  They no longer check the existence of methods not used by the hooked
-script.  An issue with Python exception handling was also fixed, as well as
-a segfault fixed by Russ Allbery which happened whenever one closes and then
-reopens Python in the same process.  Julien Elie also fixed a bug when reloading
-Python filters (they were not always correctly reloaded) and a segfault when
-generating access groups with embedded Python filters for B<nnrpd>.
-Many thanks to David Hlacik for its bug reports.
+Fixed a few segfaults and bugs which affected both Python B<innd> and
+B<nnrpd> hooks.  They no longer check the existence of methods not used by
+the hooked script.  An issue with Python exception handling was also fixed,
+as well as a segfault fixed by Russ Allbery which happened whenever one
+closes and then reopens Python in the same process.  Julien Elie also fixed
+a bug when reloading Python filters (they were not always correctly reloaded)
+and a segfault when generating access groups with embedded Python filters for
+B<nnrpd>.  Many thanks to David Hlacik for its bug reports.
 
 =item *
 
@@ -3148,9 +3148,9 @@ synchronization problems.
 
 =item *
 
-Do not close and reopen the F<history> file on B<ctlinnd> reload when the server
-is paused or throttled.  This was breaking B<ctlinnd> reload all during a
-server pause.
+Do not close and reopen the F<history> file on B<ctlinnd> reload when the
+server is paused or throttled.  This was breaking B<ctlinnd> reload all during
+a server pause.
 
 =item *
 
@@ -3672,8 +3672,8 @@ files and move them into place:
     mv history.n.hash history.hash
     mv history.n.index history.index
 
-(Rather than F<.hash> and F<.index> files, you may have a F<.pag> file if you're
-using tagged hash.)
+(Rather than F<.hash> and F<.index> files, you may have a F<.pag> file if
+you're using tagged hash.)
 
 For reader machines, F<nnrp.access> has been replaced by F<readers.conf>.
 There currently isn't a program to convert between the old format and the
