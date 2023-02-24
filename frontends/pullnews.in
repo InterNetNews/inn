@@ -74,8 +74,6 @@ my $pathdb = $ENV{HOME};
 
 require 5.004;
 
-$0 =~ s!.*/!!;
-
 $SIG{INT} = \&outtaHere;
 $SIG{QUIT} = \&bail;
 
