@@ -1668,6 +1668,8 @@ sub collect($$$$$$) {
         return 1
           if $left
           =~ /^python: dynamic authorization access type is not known: /o;
+        # during daily expiration
+        return 1 if $left =~ /^\S+ rejected Expiring process \d+$/o;
         # during scanlogs
         return 1 if $left =~ /^\S+ rejected Flushing log and syslog files$/o;
         return 1 if $left =~ /^\S+ rejected Snapshot log and syslog files$/o;
