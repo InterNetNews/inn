@@ -44,13 +44,13 @@ $(FIXSCRIPT):
 ##  Build rules.
 LINK	= $(LIBLD) $(LDFLAGS) -o $@
 
-FIX	= $(FIXSCRIPT)
+FIX	= $(SHELL) $(FIXSCRIPT)
 
-controlbatch:	controlbatch.in  $(FIX) ; $(FIX) controlbatch.in
-controlchan:	controlchan.in   $(FIX) ; $(FIX) controlchan.in
-docheckgroups:	docheckgroups.in $(FIX) ; $(FIX) docheckgroups.in
-perl-nocem:	perl-nocem.in    $(FIX) ; $(FIX) perl-nocem.in
-pgpverify:	pgpverify.in     $(FIX) ; $(FIX) pgpverify.in
+controlbatch:	controlbatch.in  $(FIXSCRIPT) ; $(FIX) controlbatch.in
+controlchan:	controlchan.in   $(FIXSCRIPT) ; $(FIX) controlchan.in
+docheckgroups:	docheckgroups.in $(FIXSCRIPT) ; $(FIX) docheckgroups.in
+perl-nocem:	perl-nocem.in    $(FIXSCRIPT) ; $(FIX) perl-nocem.in
+pgpverify:	pgpverify.in     $(FIXSCRIPT) ; $(FIX) pgpverify.in
 
 ../doc/man/perl-nocem.8: perl-nocem.in
 	$(POD2MAN) -s 8 -n "PERL-NOCEM" $? > $@

@@ -47,17 +47,17 @@ $(EXTRA) $(FIXSCRIPT):
 
 ##  Build rules.
 
-FIX             = $(FIXSCRIPT)
+FIX             = $(SHELL) $(FIXSCRIPT)
 
-inncheck:	inncheck.in      $(FIX) ; $(FIX) inncheck.in
-innmail:	innmail.in       $(FIX)	; $(FIX) innmail.in
-innreport:	innreport.in     $(FIX)	; $(FIX) innreport.in
-innstat:	innstat.in       $(FIX)	; $(FIX) innstat.in
-innupgrade:	innupgrade.in    $(FIX) ; $(FIX) -i innupgrade.in
-innwatch:	innwatch.in      $(FIX)	; $(FIX) innwatch.in
-news.daily:	news.daily.in    $(FIX) ; $(FIX) news.daily.in
-rc.news:	rc.news.in       $(FIX)	; $(FIX) rc.news.in
-scanlogs:	scanlogs.in      $(FIX)	; $(FIX) scanlogs.in
-simpleftp:	simpleftp.in     $(FIX)	; $(FIX) -i simpleftp.in
-tally.control:	tally.control.in $(FIX)	; $(FIX) tally.control.in
-writelog:	writelog.in      $(FIX)	; $(FIX) writelog.in
+inncheck:	inncheck.in      $(FIXSCRIPT)	; $(FIX) inncheck.in
+innmail:	innmail.in       $(FIXSCRIPT)	; $(FIX) innmail.in
+innreport:	innreport.in     $(FIXSCRIPT)	; $(FIX) innreport.in
+innstat:	innstat.in       $(FIXSCRIPT)	; $(FIX) innstat.in
+innupgrade:	innupgrade.in    $(FIXSCRIPT)	; $(FIX) -i innupgrade.in
+innwatch:	innwatch.in      $(FIXSCRIPT)	; $(FIX) innwatch.in
+news.daily:	news.daily.in    $(FIXSCRIPT)	; $(FIX) news.daily.in
+rc.news:	rc.news.in       $(FIXSCRIPT)	; $(FIX) rc.news.in
+scanlogs:	scanlogs.in      $(FIXSCRIPT)	; $(FIX) scanlogs.in
+simpleftp:	simpleftp.in     $(FIXSCRIPT)	; $(FIX) -i simpleftp.in
+tally.control:	tally.control.in $(FIXSCRIPT)	; $(FIX) tally.control.in
+writelog:	writelog.in      $(FIXSCRIPT)	; $(FIX) writelog.in

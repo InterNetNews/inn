@@ -39,7 +39,7 @@ LINK            = $(LIBLD) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
-FIX             = $(FIXSCRIPT)
+FIX             = $(SHELL) $(FIXSCRIPT)
 
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
@@ -54,7 +54,7 @@ makedbz:	makedbz.o      $(LIBINN) ; $(LINK) makedbz.o      $(INNLIBS)
 makehistory:	makehistory.o  $(BOTH)   ; $(LINK) makehistory.o  $(STORELIBS)
 prunehistory:	prunehistory.o $(BOTH)   ; $(LINK) prunehistory.o $(STORELIBS)
 
-expirerm:	expirerm.in    $(FIX)    ; $(FIX) expirerm.in
+expirerm:	expirerm.in    $(FIXSCRIPT) ; $(FIX) expirerm.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)

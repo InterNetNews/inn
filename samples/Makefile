@@ -31,12 +31,12 @@ $(FIXCONFIG) $(FIXSCRIPT):
 
 ##  Build rules.
 
-FIXC		= $(FIXCONFIG)
-FIXS            = $(FIXSCRIPT)
+FIXC		= $(SHELL) $(FIXCONFIG)
+FIXS		= $(SHELL) $(FIXSCRIPT)
 
-buffindexed.conf:        buffindexed.conf.in        $(FIXC) ; $(FIXC) $@.in
-inn.conf:                inn.conf.in                $(FIXC) ; $(FIXC) $@.in
-innreport.conf:          innreport.conf.in          $(FIXC) ; $(FIXC) $@.in
-newsfeeds:               newsfeeds.in               $(FIXC) ; $(FIXC) $@.in
-nnrpd_auth.pl:           nnrpd_auth.pl.in           $(FIXS) ; $(FIXS) $@.in
-nnrpd_access.pl:         nnrpd_access.pl.in         $(FIXS) ; $(FIXS) $@.in
+buffindexed.conf:        buffindexed.conf.in     $(FIXCONFIG) ; $(FIXC) $@.in
+inn.conf:                inn.conf.in             $(FIXCONFIG) ; $(FIXC) $@.in
+innreport.conf:          innreport.conf.in       $(FIXCONFIG) ; $(FIXC) $@.in
+newsfeeds:               newsfeeds.in            $(FIXCONFIG) ; $(FIXC) $@.in
+nnrpd_auth.pl:           nnrpd_auth.pl.in        $(FIXSCRIPT) ; $(FIXS) $@.in
+nnrpd_access.pl:         nnrpd_access.pl.in      $(FIXSCRIPT) ; $(FIXS) $@.in

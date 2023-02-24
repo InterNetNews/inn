@@ -20,8 +20,15 @@ LOBJECTS      = $(OBJECTS:.o=.lo)
 
 all: library programs
 
-# Included here after the all target, since additional rules are defined in
-# Make.methods to be sure that we recurse properly to build the methods.
+$(FIXSCRIPT):
+	@echo Run configure before running make.  See INSTALL for details.
+	@exit 1
+
+FIX	= $(SHELL) $(FIXSCRIPT)
+
+# Included here after the FIX definition and all target, since additional rules
+# are defined in Make.methods.  Be sure that we recurse properly to build the
+# methods.
 include Make.methods
 
 warnings:
@@ -53,10 +60,6 @@ maintclean: distclean
 	rm -f Make.methods methods.c methods.h ovmethods.c ovmethods.h
 	rm -f $(RM_MAINTCLEAN)
 
-$(FIXSCRIPT):
-	@echo Run configure before running make.  See INSTALL for details.
-	@exit 1
-
 libinnstorage.la: $(OBJECTS) $(LOBJECTS) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
@@ -76,7 +79,7 @@ Make.methods methods.h ovmethods.c ovmethods.h methods.c: buildconfig
 	./buildconfig
 
 buildconfig: buildconfig.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i buildconfig.in
+	$(FIX) -i buildconfig.in
 
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) $(CCOUTPUT)

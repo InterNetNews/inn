@@ -48,6 +48,8 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
+FIX	= $(SHELL) $(FIXSCRIPT)
+
 libinnhist.la: $(OBJECTS) $(LOBJECTS) $(LIBSTORAGE) $(LIBINN)
 	$(LIBLD) $(LDFLAGS) -o $@ $(LOBJECTS) \
 	    $(LIBSTORAGE) $(LIBINN) $(STORAGE_LIBS) $(LIBS) \
@@ -68,7 +70,7 @@ Make.methods hismethods.h hismethods.c: buildconfig
 	./buildconfig
 
 buildconfig: buildconfig.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i buildconfig.in
+	$(FIX) -i buildconfig.in
 
 .c.o .c.lo:
 	$(LIBCC) $(CFLAGS) $(CCOUTPUT)

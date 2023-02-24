@@ -28,7 +28,7 @@ depend:
 
 profiled: all
 
-$(EXTRA) $(FIXSCRIPT):
+$(EXTRA):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 

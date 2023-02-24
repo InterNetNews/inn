@@ -9,7 +9,7 @@ ovsqlite/ovsqlite-server: $(OVSQLITEOBJECTS) libinnstorage.$(EXTLIB)
 	$(LIBS)
 
 ovsqlite/sqlite-helper-gen: ovsqlite/sqlite-helper-gen.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i ovsqlite/sqlite-helper-gen.in
+	$(FIX) -i ovsqlite/sqlite-helper-gen.in
 
 ovsqlite/sql-main.c: ovsqlite/sql-main.sql ovsqlite/sqlite-helper-gen
 	ovsqlite/sqlite-helper-gen ovsqlite/sql-main.sql

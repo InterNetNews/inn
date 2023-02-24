@@ -53,6 +53,7 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
+FIX	= $(SHELL) $(FIXSCRIPT)
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $*.c
 
@@ -79,10 +80,10 @@ runtests: runtests.o
 	$(LINK) runtests.o
 
 clients/server-list: clients/server-list.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i clients/server-list.in
+	$(FIX) -i clients/server-list.in
 
 docs/pod.t: docs/pod.t.in $(FIXSCRIPT)
-	$(FIXSCRIPT) -i docs/pod.t.in
+	$(FIX) -i docs/pod.t.in
 
 authprogs/ident.t: authprogs/ident-t.o tap/basic.o $(LIBINN)
 	$(LINK) authprogs/ident-t.o tap/basic.o $(LIBINN) $(LIBS)

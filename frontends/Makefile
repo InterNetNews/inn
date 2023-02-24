@@ -75,7 +75,7 @@ LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
-FIX		= $(FIXSCRIPT)
+FIX		= $(SHELL) $(FIXSCRIPT)
 
 ctlinnd:	ctlinnd.o      $(LIBINN) ; $(LINK) ctlinnd.o      $(INNLIBS)
 decode:		decode.o       $(LIBINN) ; $(LINK) decode.o       $(INNLIBS)
@@ -107,11 +107,11 @@ ovdb_server.o: ovdb_server.c
 ovdb_stat.o: ovdb_stat.c
 	$(CC) $(CFLAGS) $(BDB_CPPFLAGS) -c $<
 
-cnfsheadconf:	cnfsheadconf.in  $(FIX)	; $(FIX) cnfsheadconf.in
-cnfsstat:	cnfsstat.in      $(FIX)	; $(FIX) cnfsstat.in
-mailpost:	mailpost.in      $(FIX)	; $(FIX) mailpost.in
-pullnews:	pullnews.in      $(FIX)	; $(FIX) pullnews.in
-scanspool:	scanspool.in     $(FIX)	; $(FIX) scanspool.in
+cnfsheadconf:	cnfsheadconf.in  $(FIXSCRIPT)	; $(FIX) cnfsheadconf.in
+cnfsstat:	cnfsstat.in      $(FIXSCRIPT)	; $(FIX) cnfsstat.in
+mailpost:	mailpost.in      $(FIXSCRIPT)	; $(FIX) mailpost.in
+pullnews:	pullnews.in      $(FIXSCRIPT)	; $(FIX) pullnews.in
+scanspool:	scanspool.in     $(FIXSCRIPT)	; $(FIX) scanspool.in
 
 bunbatch: Makefile ../Makefile.global
 	( echo '#! $(SHELL)' ; echo 'exec $(BZIP2) -d -c' ) > $@

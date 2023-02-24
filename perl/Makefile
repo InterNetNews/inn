@@ -42,9 +42,10 @@ $(EXTRA) $(FIXSCRIPT):
 
 ##  Compilation rules.
 
-FIX		= $(FIXSCRIPT)
+FIX		= $(SHELL) $(FIXSCRIPT)
 
-INN/Utils/Shlock.pm: INN/Utils/Shlock.pm.in	$(FIX) ; $(FIX) INN/Utils/Shlock.pm.in
+INN/Utils/Shlock.pm: INN/Utils/Shlock.pm.in $(FIXSCRIPT)
+	$(FIX) INN/Utils/Shlock.pm.in
 
 ../doc/man/INN__Config.3pm: INN/Config.pm.in
 	$(POD2MAN) -s '$(MAN3PM_EXT)' -n "INN::Config" $? > $@

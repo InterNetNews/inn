@@ -201,8 +201,8 @@ SHELL		= @SHELL@
 UNCOMPRESS	= @UNCOMPRESS@
 YACC		= @YACC@
 
-FIXCONFIG	= $(SHELL) $(top)/support/fixconfig
-FIXSCRIPT	= $(SHELL) $(top)/support/fixscript
+FIXCONFIG	= $(top)/support/fixconfig
+FIXSCRIPT	= $(top)/support/fixscript
 
 PERLWHOAMI	= $(PERL) -e 'print scalar getpwuid($$>), "\n"'
 WHOAMI		= (whoami || /usr/ucb/whoami || $(PERLWHOAMI)) 2> /dev/null
