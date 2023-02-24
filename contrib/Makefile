@@ -32,7 +32,7 @@ $(FIXSCRIPT):
 ##  Compilation rules.
 
 LINK 		= $(LIBLD) $(LDFLAGS) -o $@
-FIX		= $(FIXSCRIPT)
+FIX		= $(SHELL) $(FIXSCRIPT)
 
 STORELIBS	= $(LIBSTORAGE) $(LIBHIST) $(LIBINN) $(STORAGE_LIBS) $(LIBS)
 
@@ -44,20 +44,21 @@ pullart:	pullart.o	; $(LINK) pullart.o $(LIBINN)
 reset-cnfs:	reset-cnfs.o	; $(LINK) reset-cnfs.o
 respool:	respool.o	; $(LINK) respool.o $(STORELIBS)
 
-analyze-traffic: analyze-traffic.in $(FIX) ; $(FIX) -i analyze-traffic.in
-archivegz:       archivegz.in       $(FIX) ; $(FIX) -i archivegz.in
-authmysql:       authmysql.in       $(FIX) ; $(FIX) -i authmysql.in
-backlogstat:     backlogstat.in     $(FIX) ; $(FIX) backlogstat.in
-cleannewsgroups: cleannewsgroups.in $(FIX) ; $(FIX) cleannewsgroups.in
-count_overview:  count_overview.in  $(FIX) ; $(FIX) -i count_overview.in
-delayer:         delayer.in         $(FIX) ; $(FIX) -i delayer.in
-findreadgroups:  findreadgroups.in  $(FIX) ; $(FIX) findreadgroups.in
-fixhist:         fixhist.in         $(FIX) ; $(FIX) -i fixhist.in
-innconfcheck:    innconfcheck.in    $(FIX) ; $(FIX) -i innconfcheck.in
-makeexpctl:      makeexpctl.in      $(FIX) ; $(FIX) makeexpctl.in
-makestorconf:    makestorconf.in    $(FIX) ; $(FIX) makestorconf.in
-mkbuf:           mkbuf.in           $(FIX) ; $(FIX) -i mkbuf.in
-nnrp.access2readers.conf: nnrp.access2readers.conf.in $(FIX) ; $(FIX) -i nnrp.access2readers.conf.in
-stathist:        stathist.in        $(FIX) ; $(FIX) -i stathist.in
-thdexpire:       thdexpire.in       $(FIX) ; $(FIX) thdexpire.in
-tunefeed:        tunefeed.in        $(FIX) ; $(FIX) -i tunefeed.in
+analyze-traffic: analyze-traffic.in $(FIXSCRIPT) ; $(FIX) -i analyze-traffic.in
+archivegz:       archivegz.in       $(FIXSCRIPT) ; $(FIX) -i archivegz.in
+authmysql:       authmysql.in       $(FIXSCRIPT) ; $(FIX) -i authmysql.in
+backlogstat:     backlogstat.in     $(FIXSCRIPT) ; $(FIX) backlogstat.in
+cleannewsgroups: cleannewsgroups.in $(FIXSCRIPT) ; $(FIX) cleannewsgroups.in
+count_overview:  count_overview.in  $(FIXSCRIPT) ; $(FIX) -i count_overview.in
+delayer:         delayer.in         $(FIXSCRIPT) ; $(FIX) -i delayer.in
+findreadgroups:  findreadgroups.in  $(FIXSCRIPT) ; $(FIX) findreadgroups.in
+fixhist:         fixhist.in         $(FIXSCRIPT) ; $(FIX) -i fixhist.in
+innconfcheck:    innconfcheck.in    $(FIXSCRIPT) ; $(FIX) -i innconfcheck.in
+makeexpctl:      makeexpctl.in      $(FIXSCRIPT) ; $(FIX) makeexpctl.in
+makestorconf:    makestorconf.in    $(FIXSCRIPT) ; $(FIX) makestorconf.in
+mkbuf:           mkbuf.in           $(FIXSCRIPT) ; $(FIX) -i mkbuf.in
+nnrp.access2readers.conf: nnrp.access2readers.conf.in $(FIXSCRIPT)
+	$(FIX) -i nnrp.access2readers.conf.in
+stathist:        stathist.in        $(FIXSCRIPT) ; $(FIX) -i stathist.in
+thdexpire:       thdexpire.in       $(FIXSCRIPT) ; $(FIX) thdexpire.in
+tunefeed:        tunefeed.in        $(FIXSCRIPT) ; $(FIX) -i tunefeed.in

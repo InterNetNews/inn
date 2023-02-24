@@ -72,7 +72,7 @@ LINKDEPS	= $(LIBLDDEPS) $(LDFLAGS) -o $@
 INNLIBS		= $(LIBINN) $(LIBS)
 STORELIBS	= $(BOTH) $(STORAGE_LIBS) $(LIBS)
 
-FIX		= $(FIXSCRIPT)
+FIX		= $(SHELL) $(FIXSCRIPT)
 
 $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
@@ -95,15 +95,15 @@ shrinkfile:	shrinkfile.o $(LIBINN)	; $(LINK) shrinkfile.o $(INNLIBS)
 buffchan:	buffchan.o $(LIBINN)
 	$(LINK) buffchan.o $(LIBINN) $(LIBS)
 
-actmerge:	actmerge.in      $(FIX)	; $(FIX) actmerge.in
-actsyncd:	actsyncd.in      $(FIX)	; $(FIX) actsyncd.in
-mod-active:	mod-active.in    $(FIX)	; $(FIX) mod-active.in
-news2mail:	news2mail.in     $(FIX)	; $(FIX) news2mail.in
-nntpsend:	nntpsend.in      $(FIX)	; $(FIX) nntpsend.in
-send-ihave:	send-ihave.in    $(FIX)	; $(FIX) send-ihave.in
-send-uucp:	send-uucp.in     $(FIX)	; $(FIX) send-uucp.in
-sendinpaths:	sendinpaths.in   $(FIX) ; $(FIX) sendinpaths.in
-sendxbatches:	sendxbatches.in  $(FIX)	; $(FIX) sendxbatches.in
+actmerge:	actmerge.in      $(FIXSCRIPT)	; $(FIX) actmerge.in
+actsyncd:	actsyncd.in      $(FIXSCRIPT)	; $(FIX) actsyncd.in
+mod-active:	mod-active.in    $(FIXSCRIPT)	; $(FIX) mod-active.in
+news2mail:	news2mail.in     $(FIXSCRIPT)	; $(FIX) news2mail.in
+nntpsend:	nntpsend.in      $(FIXSCRIPT)	; $(FIX) nntpsend.in
+send-ihave:	send-ihave.in    $(FIXSCRIPT)	; $(FIX) send-ihave.in
+send-uucp:	send-uucp.in     $(FIXSCRIPT)	; $(FIX) send-uucp.in
+sendinpaths:	sendinpaths.in   $(FIXSCRIPT)	; $(FIX) sendinpaths.in
+sendxbatches:	sendxbatches.in  $(FIXSCRIPT)	; $(FIX) sendxbatches.in
 
 $(LIBINN):	; (cd ../lib ; $(MAKE))
 $(LIBSTORAGE):	; (cd ../storage ; $(MAKE) library)

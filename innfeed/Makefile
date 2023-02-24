@@ -44,6 +44,7 @@ $(FIXSCRIPT):
 	@echo Run configure before running make.  See INSTALL for details.
 	@exit 1
 
+FIX	= $(SHELL) $(FIXSCRIPT)
 
 ##  Compilation rules.
 
@@ -72,7 +73,7 @@ imapfeed: $(OBJECTS) imap_connection.o $(LIBSTORAGE) $(LIBINN)
 	    $(SASL_LDFLAGS) $(SASL_LIBS) $(INNFEEDLIBS)
 
 procbatch: procbatch.in $(FIXSCRIPT)
-	$(FIXSCRIPT) procbatch.in
+	$(FIX) procbatch.in
 
 tst: config_y.c config_l.c
 	gcc -DWANT_MAIN -o tst -g -Wall config_y.c config_l.c -ly -ll
