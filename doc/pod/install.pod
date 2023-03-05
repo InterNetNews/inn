@@ -78,22 +78,22 @@ functional (or in some cases, to work at all):
 In order to build INN, you will need a C compiler that understands S<ANSI C>.
 If you are trying to install INN on an operating system that doesn't have
 an S<ANSI C> compiler (such as SunOS), installing B<gcc> is recommended.  You
-can get it from L<ftp://ftp.gnu.org/gnu/gcc/> or its mirrors.  INN is
+can get it from L<https://ftp.gnu.org/gnu/gcc/> or its mirrors.  INN is
 tested with B<gcc> more thoroughly than with any other compiler, so even if
 you have another compiler available, you may wish to use B<gcc> instead.
 
 =item *
 
 Currently, in order to build INN, you will need an implementation of B<yacc>.
-GNU B<bison> (from L<ftp://ftp.gnu.org/gnu/bison/> or its mirrors) will work
+GNU B<bison> (from L<https://ftp.gnu.org/gnu/bison/> or its mirrors) will work
 fine.  We hope to remove this requirement in the future.
 
 =item *
 
 INN requires at least S<B<Perl 5.8.0>> to build and to run several
 subsystems.  In order to process control messages, B<controlchan>
-needs the C<MIME::Parser> module available from CPAN (C<MIME-tools> in
-F<modules/by-module/MIME/>, for instance on L<ftp://ftp.perl.org/>).  This
+needs the C<MIME::Parser> module available from the C<MIME-tools>
+distribution in CPAN (L<https://metacpan.org/dist/MIME-tools>).  This
 Perl module has probably already been packaged for your distribution.
 INN is tested primarily with newer versions of Perl, so it's generally
 recommended that you install the latest stable distribution of Perl before
@@ -120,7 +120,7 @@ other improvements over earlier versions of Perl).
 The INN Makefiles use the syntax C<include FILE>, rather than the syntax
 expected by some BSDish systems of C<.include E<lt>FILEE<gt>>.  If your
 system expects the latter syntax, the recommended solution is to install
-GNU B<make> from L<ftp://ftp.gnu.org/gnu/make/>.  You may have GNU B<make>
+GNU B<make> from L<https://ftp.gnu.org/gnu/make/>.  You may have GNU B<make>
 already installed as B<gmake>, in which case using B<gmake> rather than
 B<make> to build INN should be sufficient.
 
