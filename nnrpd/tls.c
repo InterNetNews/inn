@@ -24,7 +24,6 @@
 static bool tls_initialized = false;
 
 static int verify_depth;
-static int verify_error = X509_V_OK;
 static int do_dump = 0;
 static SSL_CTX *CTX = NULL;
 SSL *tls_conn = NULL;
@@ -43,7 +42,7 @@ static int tls_loglevel = 0;
 
 
 /*
-**  Taken from OpenSSL apps/s_cb.c.
+**  Taken from OpenSSL apps/lib/s_cb.c.
 **  Tim -- this seems to just be giving logging messages.
 */
 static void
@@ -245,7 +244,7 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
 
 
 /*
-**  Taken from OpenSSL apps/s_cb.c.
+**  Taken from OpenSSL apps/lib/s_cb.c.
 */
 static int
 verify_callback(int ok, X509_STORE_CTX *ctx)
@@ -275,19 +274,25 @@ verify_callback(int ok, X509_STORE_CTX *ctx)
         syslog(L_NOTICE, "verify error:num=%d:%s", err,
                X509_verify_cert_error_string(err));
 
-        if (verify_depth >= depth) {
+        if (verify_depth < 0 || verify_depth >= depth) {
+            /* Accept the certificate in error if its depth lies within the
+             * first verify_depth intermediate CA certificates, or if no
+             * verification was asked. */
             ok = 1;
-            verify_error = X509_V_OK;
         } else {
             ok = 0;
-            verify_error = X509_V_ERR_CERT_CHAIN_TOO_LONG;
         }
     }
 
     switch (err) {
     case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
-        X509_NAME_oneline(X509_get_issuer_name(err_cert), buf, sizeof(buf));
-        syslog(L_NOTICE, "issuer= %s", buf);
+        if (err_cert != NULL) {
+            X509_NAME_oneline(X509_get_issuer_name(err_cert), buf,
+                              sizeof(buf));
+            syslog(L_NOTICE, "issuer= %s", buf);
+        } else {
+            syslog(L_NOTICE, "cert has no issuer");
+        }
         break;
     case X509_V_ERR_CERT_NOT_YET_VALID:
     case X509_V_ERR_ERROR_IN_CERT_NOT_BEFORE_FIELD:
@@ -371,7 +376,7 @@ tls_dump(const char *s, int len)
 **  private key (in key_file) and the cert (in cert_file).
 **  Both files may be identical.
 **
-**  This function is taken from OpenSSL apps/s_cb.c.
+**  This function is taken from OpenSSL apps/lib/s_cb.c.
 */
 static int
 set_cert_stuff(SSL_CTX *ctx, char *cert_file, char *key_file)
@@ -741,8 +746,10 @@ tls_init_serverengine(int verifydepth, int askcert, int requirecert,
     }
 
     verify_depth = verifydepth;
+    /* Options for OPT_VERIFY in OpenSSL apps/s_server.c. */
     if (askcert != 0)
         verify_flags |= SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
+    /* Options for OPT_UPPER_V_VERIFY in OpenSSL apps/s_server.c. */
     if (requirecert)
         verify_flags |= SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT
                         | SSL_VERIFY_CLIENT_ONCE;
