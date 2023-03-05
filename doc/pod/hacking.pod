@@ -692,8 +692,10 @@ F<tlsprotocols> parameter in F<inn.conf>.
 
 =item *
 
-Check whether recent LibreSSL releases backported new functions from
-OpenSSL, that can then be enabled in B<nnrpd> for LibreSSL.
+Check whether recent LibreSSL releases backported new functions from OpenSSL,
+that can then be enabled in B<nnrpd> for LibreSSL.  Verify that INN builds
+fine with latest versions of OpenSSL (L<https://www.openssl.org>) and LibreSSL
+(L<https://www.libressl.org>).
 
 =item *
 

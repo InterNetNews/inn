@@ -204,12 +204,13 @@ tmp_dh_cb(SSL *s UNUSED, int export UNUSED, int keylength UNUSED)
     static DH *ffdhe8192 = NULL;
     int level = 2; /* Default security level. */
 
-    /* Security levels have been introduced in OpenSSL 1.1.0, and still
-     * not present in LibreSSL 3.5.2.
+    /* Security levels have been introduced in OpenSSL 1.1.0 and
+     * LibreSSL 3.6.0.
      * Well, as this part of code is no longer active for these versions,
      * only keep it for possible future re-use. */
 #        if OPENSSL_VERSION_NUMBER >= 0x010100000L \
-            && !defined(LIBRESSL_VERSION_NUMBER)
+            || (defined(LIBRESSL_VERSION_NUMBER)   \
+                && LIBRESSL_VERSION_NUMBER > 0x030600000L)
     level = SSL_get_security_level(s);
 #        endif
 
