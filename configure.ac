@@ -81,6 +81,7 @@ Though not mandatory for the build, the following packages will also be useful:
 - libgd-perl / perl-GD (for pictures in HTML daily Usenet reports)
 - libencode-perl, libmime-tools-perl / perl-Encode, perl-MIME-tools (for the
   decoding of control articles by controlchan)
+- libdbd-sqlite3-perl / perl-DBD-SQLite (for ovsqlite-util)
 - cron and syslog, probably already installed on your system
 ---
 *****************************************************************
@@ -114,6 +115,7 @@ Runtime optionals (see Linux equivalents above for descriptions):
 - freebsd-uucp
 - p5-GD
 - p5-Encode, p5-MIME-Tools
+- p5-DBD-SQLite
 ---
 Unavailable packages (but may now be?):
 - libcanlock (libcanlock is not yet available in the ports tree and needs
@@ -362,8 +364,11 @@ dnl (available since podlators 5.00).  This options permits disabling
 dnl heuristics only intended for Perl documentation, because they prevent
 dnl some patterns like C<@@NCM> (in perl-nocem man page) from being converted
 dnl as expected.
-AS_IF([`AS_ECHO(["=head1 test"]) | pod2text --guesswork=none > /dev/null`],
-    [POD2TEXT_OPTION="--guesswork=none"])
+AC_MSG_CHECKING([if pod2text supports --guesswork])
+AS_IF([`AS_ECHO(["=head1 test"]) | pod2text --guesswork=none > /dev/null 2>&1`],
+    [POD2TEXT_OPTION="--guesswork=none"
+     AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])])
 AC_SUBST(POD2TEXT_OPTION)
 
 dnl Checks for programs.
@@ -571,6 +576,12 @@ AS_IF([test x"$inn_cv_lib_bdb_ndbm" != xyes],
      DBM_LIBS="$BDB_LDFLAGS $BDB_LIBS"
      AC_SUBST([DBM_LIBS])])
 AC_SUBST([DBM_CPPFLAGS])
+
+dnl If SQLite is found, check the presence of its Perl DBI driver.
+AS_IF([test x"$inn_use_SQLITE3" = xtrue],
+    [INN_PERL_CHECK_MODULE([DBD::SQLite], [],
+        [inn_perl_mod_warn="$inn_perl_mod_warn DBD::SQLite"
+         inn_perl_mod_warn="$inn_perl_mod_warn (for ovsqlite-util)"])])
 
 dnl If configuring with large file support, determine the right flags to
 dnl use based on the platform.
