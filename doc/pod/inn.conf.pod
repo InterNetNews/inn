@@ -815,7 +815,7 @@ the number of "article is missing" errors seen by the client.  This is a
 boolean value and the default is true.
 
 You may also want to see the I<groupexactcount> parameter in readers.conf(5)
-which controls the computing of the estimate article count returned in NNTP
+which controls the computing of the estimated article count returned in NNTP
 commands (GROUP, LIST COUNTS, LISTGROUP).
 
 =item I<nnrpdflags>

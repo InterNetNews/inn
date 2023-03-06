@@ -569,7 +569,7 @@ exact number of still existing articles present in newsgroups instead of
 an estimate.  The exact number is usually updated once a day during the
 expiry process by B<expirover> (run by B<news.daily>), and is updated when new
 articles arrive but not necessarily when articles are cancelled or overwritten
-in self-expiry storage methods like CNFS.
+in self-expiring storage methods like CNFS.
 
 When the estimated count of articles is strictly smaller than
 I<groupexactcount>, B<nnrpd> will recount the number of still existing
