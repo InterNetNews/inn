@@ -673,7 +673,7 @@ seems all right, commit these changes.
 
 =item *
 
-Make sure that F<control/pgpverify> is in sync with the master version at
+Make sure that F<control/pgpverify.in> is in sync with the master version at
 L<https://ftp.isc.org/pub/pgpcontrol/>.
 
 =item *
@@ -683,28 +683,50 @@ with the master version at
 L<https://ftp.isc.org/pub/usenet/CONFIG/control.ctl> and
 L<http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>.
 
+=back
+
+=item 2.
+
+Monitor changes carried on a few other projects.
+
+=over 2
+
 =item *
 
 Check whether patches from OpenSSL (F<apps/lib/s_cb.c>, F<apps/s_server.c>
-and F<crypto/bio/bio_dump.c> from L<https://github.com/openssl/openssl>) could
-be merged into F<nnrpd/tls.c>, as well as support for new TLS versions in the
+and F<crypto/bio/bio_dump.c> at L<https://github.com/openssl/openssl>) could
+be merged into F<nnrpd/tls.c>, and new TLS versions could be supported in the
 F<tlsprotocols> parameter in F<inn.conf>.
 
 =item *
 
-Check whether recent LibreSSL releases backported new functions from OpenSSL,
-that can then be enabled in B<nnrpd> for LibreSSL.  Verify that INN builds
-fine with latest versions of OpenSSL (L<https://www.openssl.org>) and LibreSSL
-(L<https://www.libressl.org>).
-
-=item *
-
-Ensure that the source code is properly formatted with the current versions of
-reformatting programs (run C<make reformat>).
+Check whether recent LibreSSL releases have backported new functions from
+OpenSSL, that could then be enabled in B<nnrpd> for LibreSSL, if that's not
+already the case.
 
 =back
 
-=item 2.
+=item 3.
+
+Ensure that the source code is properly formatted with the latest versions of
+reformatting programs (run C<make reformat>).
+
+=item 4.
+
+Build INN (including the F<contrib> and F<tests> directories) with
+warnings on (C<make warnings>) and run the test suite (C<make tests>).
+Fix any errors.
+
+Several builds with different configure-time options should be tested,
+so as to be sure they work fine (especially B<--enable-shared=no>,
+B<--enable-tagged-hash>, B<--enable-keywords>, B<--enable-largefiles>
+and B<--enable-reduced-depends>).
+
+Ideally, ensure INN builds fine with the latest versions of external libraries
+it has support for (S<Berkeley DB>, blacklistd, Cyrus SASL, libcanlock,
+LibreSSL, MIT S<Kerberos v5>, OpenSSL, Perl, Python, SQLite, zlib).
+
+=item 5.
 
 If possible, on a news server running the forthcoming release, run the
 following commands to make sure they do not produce any errors:
@@ -717,48 +739,47 @@ following commands to make sure they do not produce any errors:
     scanspool -n -v
     tdx-util -A
 
-Also build INN (including the F<contrib> and F<tests> directories) with
-warnings on (C<make warnings>) and run the test suite (C<make tests>).
-Fix any errors.
+=item 6.
 
-Several builds with different configure-time options should be tested,
-so as to be sure they work fine (especially B<--enable-shared=no>,
-B<--enable-tagged-hash>, B<--enable-keywords>, B<--enable-largefiles>
-and B<--enable-reduced-depends>).
+Maintain up-to-date information in various files.
+
+=over 2
+
+=item *
 
 Update F<INSTALL> with the list of supported systems.
 
-=item 3.
+=item *
 
 Update copyright years in F<LICENSE>.
 
-=item 4.
+=item *
 
-Update F<doc/pod/news.pod>, add the release date, and regenerate F<NEWS>.
+Proof-read and update F<doc/pod/news.pod>.  Add the release date when
+generating the final release.
+
 Be more detailed for a minor release than for a major release.  For a major
 release, also add information on how to upgrade from the last major release,
 including anything special to be aware of.  (Minor releases shouldn't require
 any special care when upgrading.)
 
-=item 5.
+=item *
 
 Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
 included in a final release.  It should not be changed for a beta or
 a release candidate.
 
-Empty the C<VERSION_EXTRA> variable in F<Makefile.global.in> so that the
-C<prerelease> value does not appear in the upcoming Git tag.
-
 If making a major release, the revision numbers of the STABLE series
 should also be bumped in F<doc/FAQ> at the end of subject 1.2.
 
-=item 6.
+=item *
 
-Double-check that the version information in F<lib/Makefile>,
-F<storage/Makefile>, and F<history/Makefile> has been updated if there has
-been any change in the library sources since the previous release.  Follow
-the rules given at
+Double-check that the library version information in
+F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile> has
+been updated since the previous release.  Follow the rules given at
 L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
+
+=back
 
 =item 7.
 
@@ -789,7 +810,7 @@ F<Makefile.global>.
 =item *
 
 Run C<make depend> to ensure dependencies are properly defined in all INN
-makefiles.
+makefiles.  Commit the changes, if appropriate.
 
 =item *
 
@@ -826,34 +847,21 @@ release for the comparison.
 
 =item 12.
 
-Make the resulting tar file, along with its MD5 checksum and the possible
-diff from the previous release, available for testing in the F<testing>
-directory on ftp.isc.org and announce its availability on inn-workers.
-Install it on at least one system and make sure that system runs fine for
-at least a few days.  This is also a good time to send out a draft of the
-release announcement to inn-workers for proof-reading.
+For a testing release, make the resulting tar file, along with its MD5
+checksum and the possible diff from the previous release, available
+for testing into the F<testing> directory on ftp.isc.org and announce its
+availability on inn-workers.  Install it on at least one system and make sure
+that system runs fine for at least a few days.  This is also a good time to
+send out a draft of the release announcement to inn-workers for proof-reading.
+
+That's all for a testing release.  The following steps only concern final
+releases.
 
 =item 13.
 
-Move the release into the public area of the ftp site and update the
-F<inn.tar.gz> link.  Also put the diff and the MD5 checksum on the ftp
-site and update the F<inn.tar.gz.md5> link.  Sign the release, creating a
-F<*.asc> file, using:
-
-    gpg --detach-sign --armor inn-Y.Y.Y.tar.gz
-
-Also create SHA-1, SHA-256, and SHA-512 files, with C<sha1sum>,
-C<sha256sum>, and C<sha512sum>, respectively, and then sign them to create
-corresponding F<*.asc> files.  You don't need to retain the unsigned
-checksum files.
-
-Update the F<inn.tar.gz*> links and possibly move older releases off into
-the F<OLD> directory.  Also remove testing versions from the F<testing>
-directory.
-
-(Currently, this is all done by Russ by updating the files in
-L<https://archives.eyrie.org/software/inn/> and then letting ISC automatically
-mirror them via rsync within a day.)
+When making the final release, empty the C<VERSION_EXTRA> variable in
+F<Makefile.global.in> so that the C<prerelease> value does not appear in the
+upcoming Git tag.
 
 =item 14.
 
@@ -865,9 +873,52 @@ PGP key declared in the committer's GitHub profile:
 
 Check that it appears as C<Verified> in the GitHub interface, and then publish
 a release in GitHub, based on that tag.  Include the description from F<NEWS>,
-and attach the tarball as well as its signature.
+and attach the tarball.
 
 =item 15.
+
+Re-add the C<prerelease> value to the C<VERSION_EXTRA> variable in
+F<Makefile.global.in>.
+
+=item 16.
+
+Bump revision numbers to reflect the one of the following release,
+especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
+F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
+(It is not necessary to bump the revision number if the release is supposed to
+be the last one in a branch.)
+
+=item 17.
+
+Update milestones in the GitHub bug tracker to reflect the new release.
+
+=item 18.
+
+Make the previously generated release tar file, along with its MD5 checksum
+and the possible diff from the previous release, available into the public
+area of ftp.isc.org.  Sign the release, creating a F<.asc> file, using:
+
+    gpg --detach-sign --armor inn-Y.Y.Y.tar.gz
+
+Also create SHA-1, SHA-256, and SHA-512 files, with C<sha1sum>,
+C<sha256sum>, and C<sha512sum>, respectively, and then sign them to create
+corresponding F<.asc> files.  You don't need to retain the unsigned
+checksum files.
+
+Update the F<inn.tar.gz*> links and possibly move older releases off into
+the F<OLD> directory.  Also remove testing versions from the F<testing>
+directory.
+
+(Currently, this is all done by Russ by updating the files in
+L<https://archives.eyrie.org/software/inn/> and then letting ISC automatically
+mirror them via rsync within a day.)
+
+=item 19.
+
+Now that the signature of the release has been generated, attach it to the
+GitHub release.
+
+=item 20.
 
 After ftp.isc.org has correctly mirrored the release, send an announce
 on inn-announce and in news.software.nntp (with a possible crosspost to
@@ -878,30 +929,20 @@ the release, nor mention the version of the last release.  (Just check the
 information at L<https://www.isc.org/othersoftware/#INN> is still available
 and accurate, though.)
 
-=item 16.
-
-Bump revision numbers to reflect the one of the following release,
-especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
-F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
-(It is not necessary to bump the revision number if the release is supposed to
-be the last one in a branch.)
-
-Re-add the C<prerelease> value to the C<VERSION_EXTRA> variable in
-F<Makefile.global.in>.
-
-Milestones in the GitHub bug tracker should also be updated.
-
-=item 17.
+=item 21.
 
 For major releases, ping Russ to update the branch used for the
 generation of STABLE snapshots.
 
-=item 18.
+=item 22.
 
 Ping Russ to update L<https://www.eyrie.org/~eagle/software/inn/> with the
-latest version information and, for a major release, clone the
-documentation tree for CURRENT as a new stable documentation tree for the
-stable release series.
+latest version information and, for a major release, clone the documentation
+tree for CURRENT as a new stable documentation tree for the stable release
+series.
+
+Also ensure the URL redirection of the F<docs-Y.Y> subdirectory corresponding
+to the next major release points to F<docs>.
 
 =back
 
