@@ -272,7 +272,7 @@ Using B<runtests> ensures that necessary environment variables are set up.
 
 =head1 Makefiles
 
-All INN makefiles include F<Makefile.global> at the top level, and only
+All INN Makefiles include F<Makefile.global> at the top level, and only
 that makefile is a F<configure> substitution target.  This has the
 disadvantage that F<configure>'s normal support for building in a tree
 outside of the source tree doesn't work, but it has the significant
@@ -280,12 +280,12 @@ advantage of making F<configure> run much faster and allowing one to run
 C<make> in any subdirectory and pick up all the definitions and settings
 from the top level configuration.
 
-All INN makefiles should also set C<$(top)> to be the path to the top of
+All INN Makefiles should also set C<$(top)> to be the path to the top of
 the build directory (usually relative).  This path is used to find various
 programs like B<fixscript> and Libtool so that the same macros (set in
 F<Makefile.global>) can be used all over INN.
 
-The format of INN's makefiles is mostly standardized; the best examples of
+The format of INN's Makefiles is mostly standardized; the best examples of
 the format are probably F<frontends/Makefile> and F<backends/Makefile>, at
 least for directories with lots of separate programs.  The C<ALL> variable
 holds all the files that should be generated, C<EXTRA> those additional
@@ -646,7 +646,8 @@ F<support/install-sh>, F<support/ltmain.sh>, Libtool m4 files
 (F<libtool.m4>, F<ltoptions.m4>, F<ltsugar.m4>, F<ltversion.m4> and
 F<lt~obsolete.m4>) and F<m4/pkg.m4> are the latest versions.  See the
 instructions in L<"Configuring and Portability"> for details on how to
-update these files.
+update these files.  When updating executable files, verify that the
+committed version is still executable.
 
 =item *
 
@@ -708,11 +709,6 @@ already the case.
 
 =item 3.
 
-Ensure that the source code is properly formatted with the latest versions of
-reformatting programs (run C<make reformat>).
-
-=item 4.
-
 Build INN (including the F<contrib> and F<tests> directories) with
 warnings on (C<make warnings>) and run the test suite (C<make tests>).
 Fix any errors.
@@ -726,7 +722,18 @@ Ideally, ensure INN builds fine with the latest versions of external libraries
 it has support for (S<Berkeley DB>, blacklistd, Cyrus SASL, libcanlock,
 LibreSSL, MIT S<Kerberos v5>, OpenSSL, Perl, Python, SQLite, zlib).
 
+=item 4.
+
+Configure INN with all the external libraries it supports, and run
+C<make depend> to ensure dependencies are properly defined in all INN
+Makefiles.  Commit the changes, if appropriate.
+
 =item 5.
+
+Ensure that the source code is properly formatted with the latest versions of
+reformatting programs (run C<make reformat>).
+
+=item 6.
 
 If possible, on a news server running the forthcoming release, run the
 following commands to make sure they do not produce any errors:
@@ -739,7 +746,7 @@ following commands to make sure they do not produce any errors:
     scanspool -n -v
     tdx-util -A
 
-=item 6.
+=item 7.
 
 Maintain up-to-date information in various files.
 
@@ -766,8 +773,9 @@ any special care when upgrading.)
 =item *
 
 Bump the revision number in F<doc/FAQ> (subject 1.2) so that it could be
-included in a final release.  It should not be changed for a beta or
-a release candidate.
+included in a final release.  It should not be changed for a beta or a release
+candidate (the FAQ is indeed periodically posted to news.software.nntp from
+the GitHub directory, and should not contain unreleased versions).
 
 If making a major release, the revision numbers of the STABLE series
 should also be bumped in F<doc/FAQ> at the end of subject 1.2.
@@ -778,10 +786,12 @@ Double-check that the library version information in
 F<history/Makefile>, F<lib/Makefile>, and F<storage/Makefile> has
 been updated since the previous release.  Follow the rules given at
 L<https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html>.
+The commit message usually contains a brief description of API changes, if
+any, just for the record.
 
 =back
 
-=item 7.
+=item 8.
 
 If making a major release, create a new branch in Git named after the
 major release.  This branch will be used for minor releases based on
@@ -796,7 +806,7 @@ F<readme.pod>, remove its second paragraph which deals with development
 versions, and update the URLs to point to the documentation of the new stable
 version.
 
-=item 8.
+=item 9.
 
 Check out a copy of the release branch, and perform the following actions.
 
@@ -809,11 +819,6 @@ F<Makefile.global>.
 
 =item *
 
-Run C<make depend> to ensure dependencies are properly defined in all INN
-makefiles.  Commit the changes, if appropriate.
-
-=item *
-
 Then, run C<make warnings> to generate all necessary files.
 
 =item *
@@ -823,19 +828,19 @@ differences; otherwise, fix the F<MANIFEST> file.
 
 =back
 
-=item 9.
+=item 10.
 
 Run C<make release> for a final release, C<support/mksnapshot BETA b1> for
 the first beta version of a new release, or C<support/mksnapshot RC rc1>
 for the first release candidate version of a new release.
 
-=item 10.
+=item 11.
 
 Generate an MD5 checksum of the release tarball.
 
     md5sum inn-Y.Y.Y.tar.gz > inn-Y.Y.Y.tar.gz.md5
 
-=item 11.
+=item 12.
 
 Generate a diff between this release and the previous release if feasible
 (always for minor releases, possibly not a good idea due to the length of
@@ -845,7 +850,7 @@ release for the comparison.
     diff -Nurp inn-X.X.X inn-Y.Y.Y > inn-X.X.X-Y.Y.Y.diff
     gzip inn-X.X.X-Y.Y.Y.diff
 
-=item 12.
+=item 13.
 
 For a testing release, make the resulting tar file, along with its MD5
 checksum and the possible diff from the previous release, available
@@ -857,13 +862,13 @@ send out a draft of the release announcement to inn-workers for proof-reading.
 That's all for a testing release.  The following steps only concern final
 releases.
 
-=item 13.
+=item 14.
 
 When making the final release, empty the C<VERSION_EXTRA> variable in
 F<Makefile.global.in> so that the C<prerelease> value does not appear in the
 upcoming Git tag.
 
-=item 14.
+=item 15.
 
 Create an annotated signed tag corresponding to the release tarball, using a
 PGP key declared in the committer's GitHub profile:
@@ -875,12 +880,12 @@ Check that it appears as C<Verified> in the GitHub interface, and then publish
 a release in GitHub, based on that tag.  Include the description from F<NEWS>,
 and attach the tarball.
 
-=item 15.
+=item 16.
 
 Re-add the C<prerelease> value to the C<VERSION_EXTRA> variable in
 F<Makefile.global.in>.
 
-=item 16.
+=item 17.
 
 Bump revision numbers to reflect the one of the following release,
 especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
@@ -888,11 +893,11 @@ F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
 (It is not necessary to bump the revision number if the release is supposed to
 be the last one in a branch.)
 
-=item 17.
+=item 18.
 
 Update milestones in the GitHub bug tracker to reflect the new release.
 
-=item 18.
+=item 19.
 
 Make the previously generated release tar file, along with its MD5 checksum
 and the possible diff from the previous release, available into the public
@@ -913,12 +918,12 @@ directory.
 L<https://archives.eyrie.org/software/inn/> and then letting ISC automatically
 mirror them via rsync within a day.)
 
-=item 19.
+=item 20.
 
 Now that the signature of the release has been generated, attach it to the
 GitHub release.
 
-=item 20.
+=item 21.
 
 After ftp.isc.org has correctly mirrored the release, send an announce
 on inn-announce and in news.software.nntp (with a possible crosspost to
@@ -929,12 +934,12 @@ the release, nor mention the version of the last release.  (Just check the
 information at L<https://www.isc.org/othersoftware/#INN> is still available
 and accurate, though.)
 
-=item 21.
+=item 22.
 
 For major releases, ping Russ to update the branch used for the
 generation of STABLE snapshots.
 
-=item 22.
+=item 23.
 
 Ping Russ to update L<https://www.eyrie.org/~eagle/software/inn/> with the
 latest version information and, for a major release, clone the documentation
