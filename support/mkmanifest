@@ -266,6 +266,7 @@ site/update
 storage/buffindexed/buffindexed_d
 storage/buildconfig
 storage/ovsqlite/ovsqlite-server
+storage/ovsqlite/ovsqlite-util
 storage/ovsqlite/sqlite-helper-gen
 storage/tradindexed/tdx-util
 support/fixconfig

@@ -30,6 +30,12 @@ the addition of the Auto-Submitted header field in outgoing mails.
 
 =item *
 
+Added new B<ovsqlite-util> program to perform some basic consistency checks
+and dump operations on an overview database using the ovsqlite method.
+More checks and features will be added in future releases.
+
+=item *
+
 Added TLS support in B<pullnews> for connections to upstream servers
 configured in F<pullnews.marks>, and to the downstream server in the existing
 B<-s> flag.  A port can now also be specified for connections to upstream

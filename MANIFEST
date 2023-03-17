@@ -210,6 +210,7 @@ doc/man/ovdb_server.8                 Manpage for ovdb_server
 doc/man/ovdb_stat.8                   Manpage for ovdb_stat
 doc/man/overchan.8                    Manpage for overchan backend
 doc/man/ovsqlite-server.8             Manpage for ovsqlite-server
+doc/man/ovsqlite-util.8               Manpage for ovsqlite-util
 doc/man/ovsqlite.5                    Manpage for the ovsqlite overview module
 doc/man/passwd.nntp.5                 Manpage for passwd.nntp config file
 doc/man/perl-nocem.8                  Manpage for perl-nocem
@@ -331,6 +332,7 @@ doc/pod/ovdb_server.pod               Master file for ovdb_server.8
 doc/pod/ovdb_stat.pod                 Master file for ovdb_stat.8
 doc/pod/overchan.pod                  Master file for overchan.8
 doc/pod/ovsqlite-server.pod           Master file for ovsqlite-server.8
+doc/pod/ovsqlite-util.pod             Master file for ovsqlite-util.8
 doc/pod/ovsqlite.pod                  Master file for ovsqlite.5
 doc/pod/passwd.nntp.pod               Master file for passwd.nntp.5
 doc/pod/procbatch.pod                 Master file for procbatch.8
@@ -774,6 +776,7 @@ storage/ovsqlite/ovmethod.mk          Make rules for ovsqlite
 storage/ovsqlite/ovsqlite-private.c   Private code for ovsqlite
 storage/ovsqlite/ovsqlite-private.h   Private header for ovsqlite
 storage/ovsqlite/ovsqlite-server.c    SQLite database exclusive owner
+storage/ovsqlite/ovsqlite-util.in     Utility program for ovsqlite
 storage/ovsqlite/ovsqlite.c           ovsqlite implementation
 storage/ovsqlite/ovsqlite.h           ovsqlite interface
 storage/ovsqlite/sql-init.c           Generated database setup implementation

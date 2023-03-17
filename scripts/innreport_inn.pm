@@ -1670,6 +1670,8 @@ sub collect($$$$$$) {
           =~ /^python: dynamic authorization access type is not known: /o;
         # during daily expiration
         return 1 if $left =~ /^\S+ rejected Expiring process \d+$/o;
+        # during ovsqlite-util
+        return 1 if $left =~ /^\S+ rejected ovsqlite-util fixes$/o;
         # during scanlogs
         return 1 if $left =~ /^\S+ rejected Flushing log and syslog files$/o;
         return 1 if $left =~ /^\S+ rejected Snapshot log and syslog files$/o;

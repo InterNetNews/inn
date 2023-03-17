@@ -176,6 +176,7 @@
 /storage/ovmethods.h
 /storage/buffindexed/buffindexed_d
 /storage/ovsqlite/ovsqlite-server
+/storage/ovsqlite/ovsqlite-util
 /storage/ovsqlite/sql-init.c
 /storage/ovsqlite/sql-init.h
 /storage/ovsqlite/sql-main.c
