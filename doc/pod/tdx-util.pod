@@ -1,10 +1,10 @@
 =head1 NAME
 
-tdx-util - Tradindexed overview manipulation utility
+tdx-util - Overview manipulation utility for tradindexed
 
 =head1 SYNOPSIS
 
-B<tdx-util> [B<-AFcgiOo>] [B<-a> I<article>] [B<-f> I<status>]
+B<tdx-util> [B<-AFcgioO>] [B<-a> I<article>] [B<-f> I<status>]
 [B<-n> I<newsgroup>] [B<-p> I<path>] [B<-R> I<path>]
 
 =head1 DESCRIPTION
@@ -57,16 +57,6 @@ option.
 
 =over 4
 
-=item B<-A>
-
-Audit the entire overview database for problems.  This runs the internal
-consistency checks built into the tradindexed overview implementation,
-checking such things as the validity and reachability of all group index
-entries, the format of the individual overview entries, the correspondence
-of index entries to overview data, and similar such things.  No changes
-will be made to the database, but problems will be reported to standard
-error.
-
 =item B<-a> I<article>
 
 The article number or numbers to act on.  I<article> is a valid NNTP
@@ -76,9 +66,19 @@ the range may be omitted, in which case they will be set to the first or
 last article number in the group.  Passing C<-> for I<article> is
 therefore equivalent to not using the B<-a> option at all.
 
-Only useful in combination with the B<-o> option to dump overview
+Only useful in combination with the B<-o> and B<-O> options to dump overview
 information or with B<-c> to specify the low and high article numbers when
 creating a group.
+
+=item B<-A>
+
+Audit the entire overview database for problems.  This runs the internal
+consistency checks built into the tradindexed overview implementation,
+checking such things as the validity and reachability of all group index
+entries, the format of the individual overview entries, the correspondence
+of index entries to overview data, and similar such things.  No changes
+will be made to the database, but problems will be reported to standard
+error.
 
 =item B<-c>
 
@@ -138,21 +138,8 @@ is not given, the entire master index will be dumped.
 
 =item B<-n> I<newsgroup>
 
-Specify the newsgroup on which to act, required for the B<-i>, B<-o>, and
-B<-R> options.
-
-=item B<-O>
-
-Dump the overview information for a newsgroup in the format used by
-B<overchan> as input.  Each line will start with the storage API token,
-the arrival timestamp in seconds since epoch, the expires timestamp in the
-same format (or 0 if there is no Expires header field), and then the overview
-data.
-
-If this option is given, the B<-n> option must also be given to specify
-the newsgroup on which to act.  By default, all of the overview
-information for that newsgroup is dumped, but the B<-a> option may be
-given to restrict the dump to the information for a single article.
+Specify the newsgroup on which to act, required for the B<-c>, B<-g>, B<-o>,
+B<-O>, and B<-R> options, and optional for the B<-i> option.
 
 =item B<-o>
 
@@ -166,10 +153,23 @@ format labelled with C<Arrived:>, and the expiration date for that article
 (from the Expires header field) in S<RFC 5322> date format if there is any,
 labelled with C<Expires:>.
 
-If this option is given, the B<-n> option must also be given to specify
-the newsgroup on which to act.  By default, all of the overview
-information for that newsgroup is dumped, but the B<-a> option may be
-given to restrict the dump to the information for a single article.
+If this option is given, the B<-n> option must also be given to specify the
+newsgroup on which to act.  By default, all of the overview information for
+that newsgroup is dumped, but the B<-a> option may be given to restrict the
+dump to the information for a single article or a range of article numbers.
+
+=item B<-O>
+
+Dump the overview information for a newsgroup in the format used by
+B<overchan> as input.  Each line will start with the storage API token,
+the arrival timestamp in seconds since epoch, the expires timestamp in the
+same format (or 0 if there is no Expires header field), and then the overview
+data.
+
+If this option is given, the B<-n> option must also be given to specify the
+newsgroup on which to act.  By default, all of the overview information for
+that newsgroup is dumped, but the B<-a> option may be given to restrict the
+dump to the information for a single article or a range of article numbers.
 
 =item B<-p> I<path>
 
