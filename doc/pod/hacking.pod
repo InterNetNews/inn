@@ -742,6 +742,7 @@ following commands to make sure they do not produce any errors:
     ctlinnd checkfile
     inncheck -a --perm --pedantic
     ovdb_stat -klmMtv
+    ovsqlite-util -A
     scanlogs norotate
     scanspool -n -v
     tdx-util -A

@@ -1,0 +1,411 @@
+#! /usr/bin/perl -w
+# fixscript will replace this line with code to load INN::Config
+
+##  Overview manipulation utility for ovsqlite.
+##
+##  Initial version written in March 2023 by Julien ÉLIE.
+
+use Getopt::Std;
+use POSIX qw(strftime locale_h);
+use strict;
+
+$0 =~ s!.*/!!;
+
+# Bail out if the needed DBI Perl module is not installed.
+eval {
+    require DBI;
+    require DBD::SQLite;
+    my $err = $DBI::errstr;    # Just to silence "used only once" warning.
+    1;
+}
+  or die "DBI Perl module with SQLite driver needed"
+  . " (usually packaged as libdbd-sqlite3-perl, perl-DBD-SQLite,"
+  . " or p5-DBD-SQLite)";
+
+# Name of the database file (not configurable for ovsqlite).
+my $dbfile = "ovsqlite.db";
+
+my $usage = "Usage:
+  $0 [-AFghioO] [-a article] [-n newsgroup] [-p path]
+
+Options:
+  -a article     Specify an article number or a range of article numbers on
+                 which to act.
+  -A             Audit the overview database for problems, and report them to
+                 standard error, without trying to fix them.
+  -F             Audit the overview database for problems, fixing them where
+                 possible.  To see what would be changed, run $0
+                 with -A first.
+  -g             Dump overall overview information for the newsgroup specified
+                 with -n.
+  -h             Print this help message.
+  -i             Dump newsgroup-related overview information for all newsgroups
+                 or the newsgroup specified with -n. 
+  -n newsgroup   Specify the newsgroup on which to act.
+  -o             Dump overview information for articles in the newsgroup
+                 specified with -n, in the format returned to clients.
+  -O             Dump overview information for articles in the newsgroup
+                 specified with -n, in the format used by overchan.
+  -p path        Read $dbfile database file in path directory instead of
+                 default $INN::Config::pathoverview directory.
+";
+
+sub HELP_MESSAGE {
+    print $usage;
+    exit(0);
+}
+
+my %opt;
+getopts("a:AFghioOn:p:", \%opt) || die $usage;
+
+HELP_MESSAGE() if defined($opt{'h'});
+
+my $modes = 0;
+$modes++ if defined($opt{'A'});
+$modes++ if defined($opt{'F'});
+$modes++ if defined($opt{'g'});
+$modes++ if defined($opt{'i'});
+$modes++ if defined($opt{'o'});
+$modes++ if defined($opt{'O'});
+
+die "Can't use both -A and -F\n\n$usage"
+  if defined($opt{'A'})
+  and defined($opt{'F'});
+die "No action specified\n\n$usage"
+  if $modes == 0;
+die "Only one action allowed at the same time\n\n$usage"
+  if $modes > 1;
+die "A newsgroup must be specified with -n\n\n$usage"
+  if !defined($opt{'n'})
+  and (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'}));
+
+my $statement;
+my $result;
+my $low;
+my $high;
+my $sql_extraclause_artinfo = "";
+my $sql_extraclause_groupinfo = "";
+my $dbdir = $opt{'p'} || $INN::Config::pathoverview;
+my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
+my $pausemsg = "ovsqlite-util fixes";    # Message when pausing INN.
+                                         # Known line in innreport.
+my $ispaused = 0;
+
+# A few reusable SQL statements.
+my $sql_foreign_keys_off = q{
+pragma foreign_keys = 0;
+};
+
+my $sql_foreign_keys_on = q{
+pragma foreign_keys = 1;
+};
+
+# Open the connection.  The username and password fields are left empty.
+# Enabling RaiseError permits not checking every return error codes.
+my $dbh = DBI->connect(
+    $datasource, '', '',
+    { PrintError => 0, RaiseError => 1, AutoCommit => 0 }
+) or die "Can't connect to database: $DBI::errstr";
+
+# To process multiple SQL statements in a do() handle.
+$dbh->{sqlite_allow_multiple_statements} = 1;
+
+# Check the specified newsgroup exists, and create appropriate SQL requests.
+if (defined($opt{'n'})) {
+    my $groupid = get_groupid($opt{'n'});
+    if ($groupid == 0) {
+        printf STDERR "Cannot find newsgroup $opt{'n'} in overview\n";
+        exit(1);
+    } else {
+        $sql_extraclause_artinfo = "where groupid = $groupid";
+        $sql_extraclause_groupinfo
+          = "where cast(groupname as text) = '$opt{'n'}'";
+    }
+}
+
+# Parse the specified range of articles.
+if (defined($opt{'a'})) {
+    if ($opt{'a'} =~ /^(\d*)-(\d*)$/) {
+        $low = $1;
+        $high = $2;
+    } elsif ($opt{'a'} =~ /^\d+$/) {
+        $low = $opt{'a'};
+        $high = $low;
+    } else {
+        printf STDERR "Cannot parse $opt{'a'} as article numbers\n";
+        exit(1);
+    }
+    if (defined($low) and length($low) > 0) {
+        $sql_extraclause_artinfo .= " and artnum >= $low";
+    }
+    if (defined($high) and length($high) > 0) {
+        $sql_extraclause_artinfo .= " and artnum <= $high";
+    }
+}
+
+# Pause the server if changes need being done, so that the overview is not
+# updated by another process at the same time.
+if (defined($opt{'F'})) {
+    if (system "$INN::Config::newsbin/ctlinnd -s pause '$pausemsg'") {
+        die "$0: failed to pause INN, aborting\n";
+    }
+    $ispaused = 1;
+}
+
+if (defined($opt{'A'}) or defined($opt{'F'})) {
+    # Run the checks, and fix them if -F given.
+    check_groupinfo_consistency();
+} elsif (defined($opt{'g'})) {
+    dump_overview();
+} elsif (defined($opt{'i'})) {
+    dump_groupinfo();
+} elsif (defined($opt{'o'})) {
+    if (is_compressed() > 0) {
+        printf STDERR "-o not supported with compressed overview data\n";
+        exit(1);
+    }
+    dump_artinfo_clients();
+} elsif (defined($opt{'O'})) {
+    if (is_compressed() > 0) {
+        printf STDERR "-O not supported with compressed overview data\n";
+        exit(1);
+    }
+    dump_artinfo_overchan();
+}
+
+# Close the connection properly.
+$dbh->disconnect;
+
+exit(0);
+
+END {
+    # In case we bail out while being paused, make sure that the show goes on!
+    if ($ispaused) {
+        if (system "$INN::Config::newsbin/ctlinnd -s go '$pausemsg'") {
+            die "$0: failed to resume INN with "
+              . "\"ctlinnd -s go '$pausemsg'\" command "
+              . "=> please check why and *manually* resume it\n";
+        }
+    }
+}
+
+# Return the ID of the newsgroup given as argument, or 0 if not found.
+sub get_groupid {
+    my $groupname = shift;
+
+    $statement = $dbh->prepare(
+        q{
+select groupid from groupinfo
+    where cast(groupname as text) = ?
+        and deleted = 0;
+}
+    );
+    $statement->execute($groupname);
+    $result = $statement->fetchrow_array();
+    $statement->finish();
+    return defined($result) ? $result : 0;
+}
+
+# Return 1 if overview data is compressed, 0 otherwise.
+sub is_compressed {
+    $statement = $dbh->prepare(
+        q{
+select value from misc where key = 'compress';
+}
+    );
+    $statement->execute();
+    $result = $statement->fetchrow_array();
+    $statement->finish();
+    return $result;
+}
+
+# Perform consistency checks on low water marks, high water marks, and
+# article counts in groupinfo.  SQL commands were provided by Bo Lindbergh.
+sub check_groupinfo_consistency {
+    $dbh->do($sql_foreign_keys_off);
+    $dbh->do(
+        q{
+create table temp.repairs (
+    groupid integer
+        primary key,
+    new_low integer
+        not null,
+    low_was_bad integer
+        not null,
+    new_high integer
+        not null,
+    high_was_bad integer
+        not null,
+    new_count integer
+        not null,
+    count_was_bad integer
+        not null,
+    expired integer
+        not null,
+    groupname blob
+        not null,
+    flag_alias blob
+        not null
+);
+
+with new_stats (groupid, new_low, new_high, new_count) as
+    (select groupid,
+            coalesce(min(artnum), low),
+            coalesce(max(artnum), high),
+            count(artnum)
+        from groupinfo
+            natural left join artinfo
+        where not deleted
+        group by groupid)
+insert into repairs
+        (groupid,
+         new_low, low_was_bad,
+         new_high, high_was_bad,
+         new_count, count_was_bad,
+         expired, groupname, flag_alias)
+    select groupid,
+            new_low, new_low != low as low_was_bad,
+            new_high, new_high != high as high_was_bad,
+            new_count, new_count != "count" as count_was_bad,
+            expired, groupname, flag_alias
+        from new_stats
+            natural join groupinfo
+        where low_was_bad
+            or high_was_bad
+            or count_was_bad;
+}
+    );
+    $dbh->do($sql_foreign_keys_on);
+
+    $statement = $dbh->prepare(
+        q{
+select count(*) from repairs;
+}
+    );
+    $statement->execute();
+    $result = $statement->fetchrow_array();
+    $statement->finish();
+
+    if ($result > 0) {
+        printf STDERR (
+            "%d groupinfo record%s incoherent\n", $result,
+            ($result > 1) ? "s" : ""
+        );
+
+        # Show incoherent records (L, H and C are for Low, High, Count).
+        $statement = $dbh->prepare(
+            q{
+select case when low_was_bad then 'L' else '_' end
+        || case when high_was_bad then 'H' else '_' end
+        || case when count_was_bad then 'C' else '_' end as bad, groupname
+    from repairs;
+}
+        );
+        $statement->execute();
+
+        while (my @row = $statement->fetchrow_array()) {
+            print STDERR "  $row[0] for $row[1]\n";
+        }
+
+        if (defined($opt{'F'})) {
+            # Fix groupinfo table.
+            $result = $dbh->do(
+                q{
+insert or replace into groupinfo
+        (groupid, low, high, "count", expired, groupname, flag_alias)
+    select groupid, new_low, new_high, new_count,
+            expired, groupname, flag_alias
+        from repairs;
+}
+            );
+            $dbh->commit();
+
+            printf STDERR (
+                "%d groupinfo record%s fixed\n", $result,
+                ($result > 1) ? "s" : ""
+            );
+        }
+
+    }
+}
+
+# Dump overview information (-g option).
+sub dump_overview {
+    $statement = $dbh->prepare(
+        qq{
+select artnum, length(overview), arrived, expires, quote(token)
+    from artinfo $sql_extraclause_artinfo;
+}
+    );
+    $statement->execute();
+
+    while (my @row = $statement->fetchrow_array()) {
+        # quote(token) returns a string in the form "X'token'" without
+        # surrounding '@' characters.
+        print "$row[0] $row[1] $row[2] $row[3]";
+        print " @" . substr($row[4], 2, -1) . "@\n";
+    }
+}
+
+# Dump newsgroup-related overview information (-i option).
+sub dump_groupinfo {
+    $statement = $dbh->prepare(
+        qq{
+select groupname, high, low, count, flag_alias, expired, deleted
+    from groupinfo $sql_extraclause_groupinfo;
+}
+    );
+    $statement->execute();
+
+    while (my @row = $statement->fetchrow_array()) {
+        print join(" ", @row) . "\n";
+    }
+}
+
+# Dump overview information in the format returned to clients (-o option).
+sub dump_artinfo_clients {
+    $statement = $dbh->prepare(
+        qq{
+select overview, artnum, quote(token), arrived, expires
+    from artinfo $sql_extraclause_artinfo;
+}
+    );
+    $statement->execute();
+
+    # To generate valid Date header fields.
+    setlocale(LC_TIME, 'C');
+
+    while (my @row = $statement->fetchrow_array()) {
+        # Remove trailing CRLF from overview data.
+        $row[0] =~ s/\r\n//g;
+        print "$row[0]";
+        print "\tArticle: $row[1]";
+        print "\tToken: @" . substr($row[2], 2, -1) . "@";
+        print "\tArrived: "
+          . strftime('%a, %d %b %Y %H:%M:%S %z (%Z)', localtime($row[3]));
+        print "\tExpires: "
+          . strftime('%a, %d %b %Y %H:%M:%S %z (%Z)', localtime($row[4]))
+          if $row[4] > 0;
+        print "\n";
+    }
+}
+
+# Dump overview information in the format used by overchan (-O option).
+sub dump_artinfo_overchan {
+    $statement = $dbh->prepare(
+        qq{
+select quote(token), arrived, expires, overview
+    from artinfo $sql_extraclause_artinfo;
+}
+    );
+    $statement->execute();
+
+    while (my @row = $statement->fetchrow_array()) {
+        print "@" . substr($row[0], 2, -1) . "@";
+        # Remove the first field (article number, not expected by overchan)
+        # and trailing CRLF from overview data.
+        $row[3] =~ s/^\d+\t//;
+        $row[3] =~ s/\r\n//;
+        print " $row[1] $row[2] $row[3]\n";
+    }
+}

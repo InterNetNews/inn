@@ -1,0 +1,181 @@
+=encoding utf8
+
+=head1 NAME
+
+ovsqlite-util - Overview manipulation utility for ovsqlite
+
+=head1 SYNOPSIS
+
+B<ovsqlite-util> [B<-AFghioO>] [B<-a> I<article>] [B<-n> I<newsgroup>]
+[B<-p> I<path>]
+
+=head1 DESCRIPTION
+
+B<ovsqlite-util> is an administrative interface to the ovsqlite overview
+method for INN.  It only works on ovsqlite overview databases, not on any
+other type of INN overview.  (See dedicated ovdb_stat(8) and tdx-util(8)
+programs for ovdb and tradindexed overview methods.)  It allows the
+administrator to dump various information about the internal state of the
+overview, audit it for errors, and fix these errors.
+
+To audit the entire overview database for problems, use B<-A>.  The checks
+can take an extended period of time, depending on the number of newsgroups
+and articles present in the overview database.  Any problems found will be
+reported to standard error.  Use B<-F> to correct the errors found.
+
+It is safe to run this utility while the server is running.  In case fixes
+should be made to the database (when using the B<-F> flag), B<ovsqlite-util>
+will properly pause the server before performing its operations, and then
+resume it.
+
+=head1 REQUIREMENTS
+
+The C<DBI> Perl module with the C<DBD::SQLite> driver must be installed for
+this program to work.  They are present in most distributions as a package
+named like C<libdbd-sqlite3-perl>, C<perl-DBD-SQLite> or C<p5-DBD-SQLite>.
+They can also be directly installed from CPAN (C<DBI> and C<DBD-SQLite>
+distributions available at L<https://metacpan.org/dist/DBI> and
+L<https://metacpan.org/dist/DBD-SQLite>).
+
+Naturally, an ovsqlite overview database also needs being in use, as detailed
+in the ovsqlite(5) manual page.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a> I<article>
+
+The article number or numbers to act on.  I<article> is a valid NNTP range,
+meaning that it can be either a single article number or a range of article
+numbers (like C<1-5>).  Either the start or the end (or both) of the range may
+be omitted, in which case they will be set to the first or last article number
+in the group.  Passing C<-> for I<article> is therefore equivalent to not
+using the B<-a> option at all.
+
+Only useful in combination with the B<-g>, B<-o> and B<-O> options to dump
+overview information.
+
+=item B<-A>
+
+Audit the entire overview database for problems.  Currently, only one
+consistency check is performed: the verification that the low water mark, the
+high water mark and the article count of each newsgroup match the reality of
+articles present in overview.  No changes will be made to the database, but
+problems will be reported to standard error.
+
+=item B<-F>
+
+Audit the entire overview database for problems, fixing them as they're
+detected where possible.  This runs the same checks as the B<-A> flag,
+and fixes the problems found.  Using this option takes care of pausing and
+resuming INN so that the overview data are not changed by another process
+during the operations.
+
+To see what would be changed by B<-F>, run B<ovsqlite-util> with B<-A> first.
+
+=item B<-g>
+
+Dump overall overview information for a particular group.  The fields are,
+in order, the article number, the length of the overview data, the time
+(in seconds since epoch) when the article arrived on the server, the time
+(in seconds since epoch) when the article should expire based on its Expires
+header field (or 0 if there is no Expires header field), and the storage API
+token of the article.
+
+If this option is given, the B<-n> option must also be given to specify
+the newsgroup on which to act.
+
+=item B<-i>
+
+Dump newsgroup-related overview information from the database.  This contains
+similar information to the server F<active> file, such as high and low water
+marks and moderation status, and is the information that B<nnrpd> hands out
+to clients.
+
+The fields are, in order, the newsgroup name, the high water mark, the
+low water mark, the count of articles in the group, the group status, the
+time (in seconds since epoch) when that newsgroup was last expired (or 0 if
+B<expireover> hasn't run on it yet), and the deletion status of that newsgroup
+(0 if not marked for removal during the next expiration, and a positive value
+otherwise).
+
+A particular newsgroup can be specified with the B<-n> option.  If B<-n> is
+not given, the entire master index will be dumped.
+
+=item B<-n> I<newsgroup>
+
+Specify the newsgroup on which to act, required for the B<-g>, B<-o>, and
+B<-O> options, and optional for the B<-i> option.
+
+=item B<-o>
+
+Dump the overview information for a newsgroup, in the same format as it would
+be returned to clients but with one modification.  Appended to the end of each
+entry will be four additional pieces of data: the article number according
+to overview information labelled with C<Article:>, the storage API token
+for that article labelled with C<Token:>, the arrival date for that article
+on the server in S<RFC 5322> date format labelled with C<Arrived:>, and the
+expiration date for that article (from the Expires header field) in S<RFC 5322>
+date format if there is any, labelled with C<Expires:>.
+
+If this option is given, the B<-n> option must also be given to specify the
+newsgroup on which to act.  By default, all of the overview information for
+that newsgroup is dumped, but the B<-a> option may be given to restrict the
+dump to the information for a single article or a range of article numbers.
+
+When overview data is compressed with zlib, this option does not currently
+implement its decompression.
+
+=item B<-O>
+
+Dump the overview information for a newsgroup in the format used by
+B<overchan> as input.  Each line will start with the storage API token, the
+arrival timestamp in seconds since epoch, the expires timestamp in the same
+format (or 0 if there is no Expires header field), and then the overview data.
+
+If this option is given, the B<-n> option must also be given to specify the
+newsgroup on which to act.  By default, all of the overview information for
+that newsgroup is dumped, but the B<-a> option may be given to restrict the
+dump to the information for a single article or a range of article numbers.
+
+When overview data is compressed with zlib, this option does not currently
+implement its decompression.
+
+=item B<-p> I<path>
+
+Act on the overview database rooted in I<path>, overriding the overview
+path specified in the I<pathoverview> parameter in F<inn.conf>.
+
+=back
+
+Dump newsgroup-related overview information for the overview database in
+F</news/overview>, regardless of the overview path specified in F<inn.conf>:
+
+    ovsqlite-util -i -p /news/overview
+
+Dump overall overview information for example.test:
+
+    ovsqlite-util -g -n example.test
+
+Dump the complete overview information for example.test:
+
+    ovsqlite-util -o -n example.test
+
+Dump the overview information for articles 45 and higher in example.test:
+
+    ovsqlite-util -o -n example.test -a 45-
+
+Audit the entire overview database for any problems:
+
+    ovsqlite-util -A
+
+=head1 HISTORY
+
+Written by Julien ÉLIE for InterNetNews.
+
+=head1 SEE ALSO
+
+expireover(8), makehistory(8), nnrpd(8).
+
+=cut

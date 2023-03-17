@@ -10,10 +10,11 @@ B<tdx-util> [B<-AFcgioO>] [B<-a> I<article>] [B<-f> I<status>]
 =head1 DESCRIPTION
 
 B<tdx-util> is an administrative interface to the tradindexed overview
-method for INN.  It only works on tradindexed overview databases, not on
-any other type of INN overview.  It allows the administrator to dump
-various information about the internal state of the overview, audit it for
-errors, and rebuild portions of the overview database.
+method for INN.  It only works on tradindexed overview databases, not on any
+other type of INN overview.  (See dedicated ovdb_stat(8) and ovsqlite-util(8)
+programs for ovdb and ovqslite overview methods.)  It allows the administrator
+to dump various information about the internal state of the overview, audit it
+for errors, and rebuild portions of the overview database.
 
 The tradindexed overview method should lock properly and therefore it
 should be safe to run this utility and perform any operation it performs,
