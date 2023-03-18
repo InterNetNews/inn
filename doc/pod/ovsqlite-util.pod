@@ -127,9 +127,6 @@ newsgroup on which to act.  By default, all of the overview information for
 that newsgroup is dumped, but the B<-a> option may be given to restrict the
 dump to the information for a single article or a range of article numbers.
 
-When overview data is compressed with zlib, this option does not currently
-implement its decompression.
-
 =item B<-O>
 
 Dump the overview information for a newsgroup in the format used by
@@ -141,9 +138,6 @@ If this option is given, the B<-n> option must also be given to specify the
 newsgroup on which to act.  By default, all of the overview information for
 that newsgroup is dumped, but the B<-a> option may be given to restrict the
 dump to the information for a single article or a range of article numbers.
-
-When overview data is compressed with zlib, this option does not currently
-implement its decompression.
 
 =item B<-p> I<path>
 
