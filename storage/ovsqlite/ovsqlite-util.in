@@ -91,15 +91,6 @@ my $pausemsg = "ovsqlite-util fixes";    # Message when pausing INN.
                                          # Known line in innreport.
 my $ispaused = 0;
 
-# A few reusable SQL statements.
-my $sql_foreign_keys_off = q{
-pragma foreign_keys = 0;
-};
-
-my $sql_foreign_keys_on = q{
-pragma foreign_keys = 1;
-};
-
 # Open the connection.  The username and password fields are left empty.
 # Enabling RaiseError permits not checking every return error codes.
 my $dbh = DBI->connect(
@@ -219,10 +210,19 @@ select value from misc where key = 'compress';
     return $result;
 }
 
+# Turn enforcement of foreign key constraints on or off, depending on the
+# argument given to the function (either 1 for on, or 0 for off).
+# The AutoCommit attribute needs being true so as not to start a transaction.
+sub pragma_foreign_keys {
+    my $onoff = shift;
+    $dbh->{AutoCommit} = 1;
+    $dbh->do("pragma foreign_keys = $onoff;");
+}
+
 # Perform consistency checks on low water marks, high water marks, and
 # article counts in groupinfo.  SQL commands were provided by Bo Lindbergh.
 sub check_groupinfo_consistency {
-    $dbh->do($sql_foreign_keys_off);
+    pragma_foreign_keys(0);
     $dbh->do(
         q{
 create table temp.repairs (
@@ -275,7 +275,7 @@ insert into repairs
             or count_was_bad;
 }
     );
-    $dbh->do($sql_foreign_keys_on);
+    pragma_foreign_keys(1);
 
     $statement = $dbh->prepare(
         q{
