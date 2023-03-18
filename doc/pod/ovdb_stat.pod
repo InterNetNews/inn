@@ -14,6 +14,9 @@ B<ovdb_stat> displays information from the ovdb database: S<Berkeley DB>
 statistics, newsgroup data, and overview records.  The output can
 optionally be in HTML format.
 
+The number of overview records stored in the database can be obtained with the
+C<inndf -n> command.
+
 =head1 OPTIONS
 
 =over 4
@@ -94,6 +97,6 @@ Written by Heath Kehoe <hakehoe@avalon.net> for InterNetNews.
 
 =head1 SEE ALSO
 
-ovdb(5).
+inndf(8), ovdb(5).
 
 =cut

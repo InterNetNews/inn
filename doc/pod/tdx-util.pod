@@ -54,6 +54,9 @@ For all operations performed by B<tdx-util>, a different overview database
 than the one specified in F<inn.conf> may be specified using the B<-p>
 option.
 
+The number of overview records stored in the database can be obtained with the
+C<inndf -n> command.
+
 =head1 OPTIONS
 
 =over 4
@@ -232,6 +235,6 @@ Written by Russ Allbery <eagle@eyrie.org> for InterNetNews.
 
 =head1 SEE ALSO
 
-makehistory(8), nnrpd(8).
+inndf(8), makehistory(8), nnrpd(8).
 
 =cut

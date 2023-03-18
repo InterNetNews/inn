@@ -28,6 +28,9 @@ should be made to the database (when using the B<-F> flag), B<ovsqlite-util>
 will properly pause the server before performing its operations, and then
 resume it.
 
+The number of overview records stored in the database can be obtained with the
+C<inndf -n> command.
+
 =head1 REQUIREMENTS
 
 The C<DBI> Perl module with the C<DBD::SQLite> driver must be installed for
@@ -176,6 +179,6 @@ Written by Julien ÉLIE for InterNetNews.
 
 =head1 SEE ALSO
 
-expireover(8), makehistory(8), nnrpd(8).
+expireover(8), inndf(8), makehistory(8), nnrpd(8).
 
 =cut
