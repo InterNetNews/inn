@@ -19,7 +19,7 @@ F<readers.conf>) as the default domain name instead of I<domain>.
 =item *
 
 The LIST OVERVIEW.FMT command now uses the preferred format to advertise
-C<:bytes> and C<:lines> metadata.
+C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
 =back
 

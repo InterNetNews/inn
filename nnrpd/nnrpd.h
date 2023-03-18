@@ -182,6 +182,7 @@ EXTERN bool Tracing;
 EXTERN bool Offlinepost;
 EXTERN bool initialSSL;
 EXTERN bool BlacklistEnabled;
+EXTERN bool hasSentCapabilities;
 EXTERN char **PERMreadlist;
 EXTERN char **PERMpostlist;
 EXTERN struct client Client;

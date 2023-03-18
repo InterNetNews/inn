@@ -119,6 +119,7 @@ bool laxmid = false;
 
 /* Other default values. */
 bool Tracing = false;
+bool hasSentCapabilities = false;
 
 #ifdef DO_PERL
 bool PerlLoaded = false;
@@ -367,6 +368,9 @@ CMDcapabilities(int ac, char *av[])
         Reply("%d Syntax error in keyword\r\n", NNTP_ERR_SYNTAX);
         return;
     }
+
+    /* Keep in mind the client has used this command. */
+    hasSentCapabilities = true;
 
     Reply("%d Capability list:\r\n", NNTP_INFO_CAPABILITIES);
 

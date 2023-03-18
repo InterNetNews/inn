@@ -109,10 +109,17 @@ cmd_list_schema(LISTINFO *lp, int ac UNUSED, char *av[] UNUSED)
     Reply("%d %s\r\n", NNTP_OK_LIST, lp->Format);
     standard = overview_fields();
     for (i = 0; i < standard->count; ++i) {
-        /* Use the preferred format for metadata, per RFC 3977. */
-        if (strcmp(standard->strings[i], "Bytes") == 0) {
+        /* Use the preferred format for metadata (per RFC 3977) if the client
+         * has previously sent a CAPABILITIES command.  Otherwise, we suppose
+         * it pre-dates RFC 3977 and we do not want to choke it with unexpected
+         * values (slrn 1.0.3 has notably been reported in 2023 disabling XOVER
+         * support as OVERVIEW.FMT is not RFC 2980 compliant with that syntax).
+         */
+        if (hasSentCapabilities
+            && strcmp(standard->strings[i], "Bytes") == 0) {
             Printf(":bytes\r\n");
-        } else if (strcmp(standard->strings[i], "Lines") == 0) {
+        } else if (hasSentCapabilities
+                   && strcmp(standard->strings[i], "Lines") == 0) {
             Printf(":lines\r\n");
         } else {
             Printf("%s:\r\n", standard->strings[i]);
