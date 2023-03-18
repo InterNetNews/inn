@@ -5,6 +5,7 @@
 ##
 ##  Initial version written in March 2023 by Julien ÉLIE.
 
+use Compress::Zlib;
 use Getopt::Std;
 use POSIX qw(strftime locale_h);
 use strict;
@@ -83,6 +84,8 @@ my $statement;
 my $result;
 my $low;
 my $high;
+my $compress;
+my $basedict;
 my $sql_extraclause_artinfo = "";
 my $sql_extraclause_groupinfo = "";
 my $dbdir = $opt{'p'} || $INN::Config::pathoverview;
@@ -90,6 +93,15 @@ my $datasource = "dbi:SQLite:dbname=$dbdir/$dbfile";
 my $pausemsg = "ovsqlite-util fixes";    # Message when pausing INN.
                                          # Known line in innreport.
 my $ispaused = 0;
+
+# To determine the length of compressed overview data.
+my @pack_length_bias = (
+    0,
+    0x80,
+    0x4080,
+    0x204080,
+    0x10204080,
+);
 
 # Open the connection.  The username and password fields are left empty.
 # Enabling RaiseError permits not checking every return error codes.
@@ -134,6 +146,9 @@ if (defined($opt{'a'})) {
     }
 }
 
+# Grab information from the misc table.
+load_settings();
+
 # Pause the server if changes need being done, so that the overview is not
 # updated by another process at the same time.
 if (defined($opt{'F'})) {
@@ -151,16 +166,8 @@ if (defined($opt{'A'}) or defined($opt{'F'})) {
 } elsif (defined($opt{'i'})) {
     dump_groupinfo();
 } elsif (defined($opt{'o'})) {
-    if (is_compressed() > 0) {
-        printf STDERR "-o not supported with compressed overview data\n";
-        exit(1);
-    }
     dump_artinfo_clients();
 } elsif (defined($opt{'O'})) {
-    if (is_compressed() > 0) {
-        printf STDERR "-O not supported with compressed overview data\n";
-        exit(1);
-    }
     dump_artinfo_overchan();
 }
 
@@ -177,6 +184,19 @@ END {
               . "\"ctlinnd -s go '$pausemsg'\" command "
               . "=> please check why and *manually* resume it\n";
         }
+    }
+}
+
+# Grab compression settings from the database.
+sub load_settings {
+    my $getsetting;
+
+    $getsetting = $dbh->prepare("select value from misc where key = ?1");
+    ($compress) = $dbh->selectrow_array($getsetting, undef, "compress");
+    if ($compress > 0) {
+        ($basedict) = $dbh->selectrow_array($getsetting, undef, "basedict");
+        defined($basedict)
+          or die "No basedict value found to decompress overview data\n";
     }
 }
 
@@ -197,19 +217,6 @@ select groupid from groupinfo
     return defined($result) ? $result : 0;
 }
 
-# Return 1 if overview data is compressed, 0 otherwise.
-sub is_compressed {
-    $statement = $dbh->prepare(
-        q{
-select value from misc where key = 'compress';
-}
-    );
-    $statement->execute();
-    $result = $statement->fetchrow_array();
-    $statement->finish();
-    return $result;
-}
-
 # Turn enforcement of foreign key constraints on or off, depending on the
 # argument given to the function (either 1 for on, or 0 for off).
 # The AutoCommit attribute needs being true so as not to start a transaction.
@@ -217,6 +224,61 @@ sub pragma_foreign_keys {
     my $onoff = shift;
     $dbh->{AutoCommit} = 1;
     $dbh->do("pragma foreign_keys = $onoff;");
+}
+
+# Return decompressed overview data, or undef if a failure occurs.
+# This function can be called even on uncompressed data.
+# The expected arguments are the newsgroup name, the article number, and the
+# associated overview data.
+sub decompress_overview {
+    my ($groupname, $artnum, $data) = @_;
+    my $result;
+
+    if ($compress > 0) {
+        my ($first, $lenlen, $len);
+
+        $first = vec($data, 0, 8);
+        $len = $first;
+        $lenlen = 1;
+        while (($first & 0x80) > 0) {
+            $len = $len << 8 | vec($data, $lenlen, 8);
+            $lenlen++;
+            $first <<= 1;
+        }
+        if ($lenlen > 5) {
+            warn "$groupname:$artnum: Corrupt overview data\n";
+            return undef;
+        }
+        $len &= (1 << $lenlen * 7) - 1;
+        $len += $pack_length_bias[$lenlen - 1];
+        if ($len == 0) {
+            # No compression.
+            $result = substr($data, $lenlen);
+        } else {
+            my ($inflation, $status);
+
+            ($inflation, $status)
+              = inflateInit(-Dictionary => "$basedict$groupname:$artnum\r\n");
+            if ($status != Z_OK) {
+                warn
+                  "$groupname:$artnum: inflateInit failed with code $status\n";
+                return undef;
+            }
+            ($result, $status) = $inflation->inflate(substr($data, $lenlen));
+            if ($status != Z_STREAM_END) {
+                warn "$groupname:$artnum: inflate failed with code $status\n";
+                return undef;
+            }
+            if (length($result) != $len) {
+                warn "$groupname:$artnum: Corrupt overview data\n";
+                return undef;
+            }
+        }
+    } else {
+        # Uncompressed overview data.
+        $result = $data;
+    }
+    return $result;
 }
 
 # Perform consistency checks on low water marks, high water marks, and
@@ -376,9 +438,10 @@ select overview, artnum, quote(token), arrived, expires
     setlocale(LC_TIME, 'C');
 
     while (my @row = $statement->fetchrow_array()) {
+        my $overdata = decompress_overview($opt{'n'}, $row[1], $row[0]);
         # Remove trailing CRLF from overview data.
-        $row[0] =~ s/\r\n//g;
-        print "$row[0]";
+        $overdata =~ s/\r\n//g;
+        print "$overdata";
         print "\tArticle: $row[1]";
         print "\tToken: @" . substr($row[2], 2, -1) . "@";
         print "\tArrived: "
@@ -394,7 +457,7 @@ select overview, artnum, quote(token), arrived, expires
 sub dump_artinfo_overchan {
     $statement = $dbh->prepare(
         qq{
-select quote(token), arrived, expires, overview
+select quote(token), arrived, expires, overview, artnum
     from artinfo $sql_extraclause_artinfo;
 }
     );
@@ -402,10 +465,11 @@ select quote(token), arrived, expires, overview
 
     while (my @row = $statement->fetchrow_array()) {
         print "@" . substr($row[0], 2, -1) . "@";
+        my $overdata = decompress_overview($opt{'n'}, $row[4], $row[3]);
         # Remove the first field (article number, not expected by overchan)
         # and trailing CRLF from overview data.
-        $row[3] =~ s/^\d+\t//;
-        $row[3] =~ s/\r\n//;
-        print " $row[1] $row[2] $row[3]\n";
+        $overdata =~ s/^\d+\t//;
+        $overdata =~ s/\r\n//;
+        print " $row[1] $row[2] $overdata\n";
     }
 }
