@@ -107,6 +107,26 @@ create table artinfo (
 -- There are no redundant encodings; width 1 is used for values 0 through 127,
 -- width 2 for values 128 through 16511, and so on.
 --
+-- Let's illustrate it.  Values in the range 0-127 are encoded in one byte
+-- with 0 in the most significant bit:
+--     encoding: 0aaaaaaa
+--     value:    aaaaaaa
+--
+-- Values in the range 128-16511 encoded in two bytes with 10 in the two most
+-- significant bits of the first byte:
+--     encoding: 10aaaaaa bbbbbbbb
+--     value:    aaaaaabbbbbbbb + 128
+--
+-- And so on for three, four, and five bytes:
+--     encoding: 110aaaaa bbbbbbbb cccccccc
+--     value:    aaaaabbbbbbbbcccccccc + 16512
+--
+--     encoding: 1110aaaa bbbbbbbb cccccccc dddddddd
+--     value:    aaaabbbbbbbbccccccccdddddddd + 2113664
+--
+--     encoding: 11110aaa bbbbbbbb cccccccc dddddddd eeeeeeee
+--     value:    aaabbbbbbbbccccccccddddddddeeeeeeee + 270549120
+--
 -- Compression uses a dictionary formed by concatenating the common
 -- prefix (stored in the misc table) with "$groupname:$artnum\r\n".
 
