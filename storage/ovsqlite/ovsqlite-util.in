@@ -80,12 +80,7 @@ die "A newsgroup must be specified with -n\n\n$usage"
   if !defined($opt{'n'})
   and (defined($opt{'g'}) || defined($opt{'o'}) || defined($opt{'O'}));
 
-my $statement;
-my $result;
-my $low;
-my $high;
-my $compress;
-my $basedict;
+my ($low, $high, $compress, $basedict);
 my $sql_extraclause_artinfo = "";
 my $sql_extraclause_groupinfo = "";
 my $dbdir = $opt{'p'} || $INN::Config::pathoverview;
@@ -203,18 +198,18 @@ sub load_settings {
 # Return the ID of the newsgroup given as argument, or 0 if not found.
 sub get_groupid {
     my $groupname = shift;
+    my ($getgroupid, $groupid);
 
-    $statement = $dbh->prepare(
+    $getgroupid = $dbh->prepare(
         q{
 select groupid from groupinfo
-    where cast(groupname as text) = ?
+    where cast(groupname as text) = ?1
         and deleted = 0;
 }
     );
-    $statement->execute($groupname);
-    $result = $statement->fetchrow_array();
-    $statement->finish();
-    return defined($result) ? $result : 0;
+    ($groupid) = $dbh->selectrow_array($getgroupid, undef, $groupname);
+
+    return defined($groupid) ? $groupid : 0;
 }
 
 # Turn enforcement of foreign key constraints on or off, depending on the
@@ -284,6 +279,8 @@ sub decompress_overview {
 # Perform consistency checks on low water marks, high water marks, and
 # article counts in groupinfo.  SQL commands were provided by Bo Lindbergh.
 sub check_groupinfo_consistency {
+    my ($statement, $result);
+
     pragma_foreign_keys(0);
     $dbh->do(
         q{
@@ -339,14 +336,8 @@ insert into repairs
     );
     pragma_foreign_keys(1);
 
-    $statement = $dbh->prepare(
-        q{
-select count(*) from repairs;
-}
-    );
-    $statement->execute();
-    $result = $statement->fetchrow_array();
-    $statement->finish();
+    $statement = $dbh->prepare("select count(*) from repairs;");
+    ($result) = $dbh->selectrow_array($statement);
 
     if ($result > 0) {
         printf STDERR (
@@ -393,6 +384,8 @@ insert or replace into groupinfo
 
 # Dump overview information (-g option).
 sub dump_overview {
+    my $statement;
+
     $statement = $dbh->prepare(
         qq{
 select artnum, length(overview), arrived, expires, quote(token)
@@ -411,6 +404,8 @@ select artnum, length(overview), arrived, expires, quote(token)
 
 # Dump newsgroup-related overview information (-i option).
 sub dump_groupinfo {
+    my $statement;
+
     $statement = $dbh->prepare(
         qq{
 select groupname, high, low, count, flag_alias, expired, deleted
@@ -426,6 +421,8 @@ select groupname, high, low, count, flag_alias, expired, deleted
 
 # Dump overview information in the format returned to clients (-o option).
 sub dump_artinfo_clients {
+    my $statement;
+
     $statement = $dbh->prepare(
         qq{
 select overview, artnum, quote(token), arrived, expires
@@ -455,6 +452,8 @@ select overview, artnum, quote(token), arrived, expires
 
 # Dump overview information in the format used by overchan (-O option).
 sub dump_artinfo_overchan {
+    my $statement;
+
     $statement = $dbh->prepare(
         qq{
 select quote(token), arrived, expires, overview, artnum
