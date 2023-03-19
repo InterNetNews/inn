@@ -68,6 +68,12 @@ servers (it was already possible for the downstream server only).
 
 =item *
 
+Added a new B<-L> option to B<pullnews> to specify the largest wanted article
+size in bytes.  Articles whose size exceeds that value will no longer be
+downloaded by B<pullnews>.
+
+=item *
+
 B<pullnews> now detects a socket timeout while downloading articles from
 a remote peer.  The download gracefully stops, and another attempt can be
 automatically made according to the setting given with the B<-t> flag.  Thanks

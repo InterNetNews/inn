@@ -11,9 +11,10 @@
 #               Full changelog can be found in the Git commit history of the
 #               INN project.  Major changes are:
 #
-#               February 2023:
+#               February-March 2023:
 #               Julien Élie added TLS support for both downstream and upstream
-#               servers.  Also made pullnews robust on socket timeout.
+#               servers.  Also made pullnews robust on socket timeout, and
+#               added -L (largest article size wanted).
 #
 #               January 2010:
 #               Geraint A. Edwards added header-only feeding (-B);
@@ -131,9 +132,10 @@ END {
 my $usage = "Usage:
   $0 [-BhnOqRx] [-a hashfeed] [-b fraction] [-c config] [-C width]
   [-d level] [-f fraction] [-F fakehop] [-g groups] [-G newsgroups]
-  [-H headers] [-k checkpt] [-l logfile] [-m header_pats] [-M num] [-N num]
-  [-p port] [-P hop_limit] [-Q level] [-r file] [-s host[:port][_tlsmode]]
-  [-S num] [-t retries] [-T seconds] [-w num] [-z num] [-Z num]
+  [-H headers] [-k checkpt] [-l logfile] [-L size] [-m header_pats]
+  [-M num] [-N num] [-p port] [-P hop_limit] [-Q level] [-r file]
+  [-s host[:port][_tlsmode]] [-S num] [-t retries] [-T seconds]
+  [-w num] [-z num] [-Z num]
   [upstream_host ...]
 
 Options:
@@ -186,6 +188,8 @@ Options:
                 normally (at end).
 
   -l logfile    log progress/stats to logfile (default is stdout).
+
+  -L size       largest wanted article size in bytes for articles to download.
 
   -m 'Hdr1:regexp1 !Hdr2:regexp2 #Hdr3:regexp3 !#Hdr4:regexp4 ...'
                 feed article only if:
@@ -258,10 +262,10 @@ sub HELP_MESSAGE {
 }
 
 use vars qw($opt_a $opt_b $opt_B $opt_c $opt_C $opt_d $opt_f $opt_F
-  $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_m $opt_M $opt_n
+  $opt_g $opt_G $opt_h $opt_H $opt_k $opt_l $opt_L $opt_m $opt_M $opt_n
   $opt_N $opt_O $opt_p $opt_P $opt_q $opt_Q $opt_r $opt_R $opt_s
   $opt_S $opt_t $opt_T $opt_w $opt_x $opt_z $opt_Z);
-getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:")
+getopts("a:b:Bc:C:d:f:F:g:G:hH:k:l:L:m:M:nN:Op:P:qQ:r:Rs:S:t:T:w:xz:Z:")
   || die $usage;
 
 HELP_MESSAGE() if defined $opt_h;
@@ -875,19 +879,42 @@ sub crossFeedGroup {
     }
     print LOG " (at most $toget articles to get)\n" unless $quiet;
 
+    my $begin = ($first > $high ? $first : $high + 1);
+    my $overview;
+    # Retrieve overview data to later ensure we do not download articles which
+    # exceed the largest article size wanted.
+    if (defined($opt_L)) {
+        my @range = ($begin, $last);
+        $overview = $fromServer->xover(\@range);
+    }
+
     my $i;
     my @warns;
     my $skip_article;
-    for ($i = ($first > $high ? $first : $high + 1); $i <= $last; $i++) {
+    for ($i = $begin; $i <= $last; $i++) {
         $skip_article = 0;
         last if defined $maxArts and $count >= $maxArts;
         last if defined $opt_f and $count >= $toget;
         $count++;
         $art_total_count++;
         sleep $opt_z if defined $opt_z and $count > 1;
+
+        # Do not download articles whose size exceeds the largest wanted size.
+        # Field 3 contains the Message-ID, field 5 the article size.
+        if (defined($opt_L)) {
+            if (defined($$overview{$i}[5]) and $$overview{$i}[5] > $opt_L) {
+                print LOG "." unless $quiet;
+                print LOG "\tDEBUGGING $i\t-- not downloading "
+                  . "article $$overview{$i}[3] "
+                  . "which has $$overview{$i}[5] bytes\n"
+                  if $debug >= 1;
+                $skip_article = 1;
+            }
+        }
+
         # "Optimized mode" -- check if the article is wanted
         # *before* downloading it.
-        if (defined $opt_O) {
+        if (not $skip_article and defined($opt_O)) {
             #   223 n <a> article retrieved
             #        -- request text separately (after STAT)
             #   423 no such article number in this group
@@ -933,6 +960,7 @@ sub crossFeedGroup {
                 push @{$article}, "\n" if not $is_control_art;
             }
         }
+
         if (not $skip_article
             and (not $header_only or $is_control_art or $add_bytes_header))
         {
@@ -1250,7 +1278,8 @@ sub crossFeedGroup {
             }
             $shash->{$group} = [time, $high = $i];
         } elsif ($skip_article) {
-            # Optimized mode (-O) decided to skip this article...
+            # Optimized mode (-O) or article size check (-L) decided to skip
+            # this article...
             # The "." resulting treatment has already been output.
             $refused{$group}++;
             $info{server}->{$server}->{refused}++;
