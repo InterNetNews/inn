@@ -221,16 +221,17 @@ sub pragma_foreign_keys {
     $dbh->do("pragma foreign_keys = $onoff;");
 }
 
-# Return decompressed overview data, or undef if a failure occurs.
+# Return an array containing the length of the encoded length of decompressed
+# overview data, and the length of actual decompressed overview data, or undef
+# if corrupted.
 # This function can be called even on uncompressed data.
-# The expected arguments are the newsgroup name, the article number, and the
-# associated overview data.
-sub decompress_overview {
-    my ($groupname, $artnum, $data) = @_;
-    my $result;
+# The expected argument is the overview data.
+sub overview_length {
+    my $data = shift;
+    my ($lenlen, $len);
 
     if ($compress > 0) {
-        my ($first, $lenlen, $len);
+        my $first;
 
         $first = vec($data, 0, 8);
         $len = $first;
@@ -241,11 +242,32 @@ sub decompress_overview {
             $first <<= 1;
         }
         if ($lenlen > 5) {
-            warn "$groupname:$artnum: Corrupt overview data\n";
-            return undef;
+            return (undef, undef);
         }
         $len &= (1 << $lenlen * 7) - 1;
         $len += $pack_length_bias[$lenlen - 1];
+    } else {
+        # Uncompressed overview data.
+        $lenlen = 0;
+        $len = length($data);
+    }
+    return ($lenlen, $len);
+}
+
+# Return decompressed overview data, or undef if a failure occurs.
+# This function can be called even on uncompressed data.
+# The expected arguments are the newsgroup name, the article number, and the
+# associated overview data.
+sub decompress_overview {
+    my ($groupname, $artnum, $data) = @_;
+    my $result;
+
+    if ($compress > 0) {
+        my ($lenlen, $len) = overview_length($data);
+        if (!defined($lenlen)) {
+            warn "$groupname:$artnum: Corrupt overview data\n";
+            return undef;
+        }
         if ($len == 0) {
             # No compression.
             $result = substr($data, $lenlen);
@@ -388,7 +410,7 @@ sub dump_overview {
 
     $statement = $dbh->prepare(
         qq{
-select artnum, length(overview), arrived, expires, quote(token)
+select artnum, overview, arrived, expires, quote(token)
     from artinfo $sql_extraclause_artinfo;
 }
     );
@@ -397,7 +419,12 @@ select artnum, length(overview), arrived, expires, quote(token)
     while (my @row = $statement->fetchrow_array()) {
         # quote(token) returns a string in the form "X'token'" without
         # surrounding '@' characters.
-        print "$row[0] $row[1] $row[2] $row[3]";
+        my $len = (overview_length($row[1]))[1];
+        if (!defined($len)) {
+            warn "$opt{'n'}:$row[0]: Corrupt overview data\n";
+            $len = 0;
+        }
+        print "$row[0] $len $row[2] $row[3]";
         print " @" . substr($row[4], 2, -1) . "@\n";
     }
 }
