@@ -32,7 +32,9 @@ the addition of the Auto-Submitted header field in outgoing mails.
 
 Added new B<ovsqlite-util> program to perform some basic consistency checks
 and dump operations on an overview database using the ovsqlite method.
-More checks and features will be added in future releases.
+More checks and features will be added in future releases.  You'll need the
+C<DBI> Perl module with the C<DBD::SQLite> driver installed on your system to
+use this program.
 
 =item *
 
