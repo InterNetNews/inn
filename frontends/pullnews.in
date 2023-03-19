@@ -522,7 +522,7 @@ if (not $rnews) {
     if ($localTLS == 1 && !$localcxn->starttls()) {
         die " Can't use STARTTLS on $localServer: "
           . $localcxn->code() . " "
-          . $localcxn->message() . "\n";
+          . join('//', split(/\r?\n/, $localcxn->message())) . "\n";
     }
 
     if (exists $passwd{$localServer}
@@ -530,7 +530,8 @@ if (not $rnews) {
     {
         warn sprintf(
             " failed to authorize: %s %s\n",
-            $localcxn->code(), $localcxn->message()
+            $localcxn->code(),
+            join('//', split(/\r?\n/, $localcxn->message()))
         );
     }
 }
@@ -627,7 +628,8 @@ foreach my $server (@servers) {
     if ($upstreamTLS == 1 && !$upstream->starttls()) {
         warn sprintf(
             "can't use STARTTLS: %s %s\n",
-            $upstream->code(), $upstream->message()
+            $upstream->code(),
+            join('//', split(/\r?\n/, $upstream->message()))
         );
         next;
     }
@@ -635,7 +637,8 @@ foreach my $server (@servers) {
     if ($username && !$upstream->authinfo($username, $passwd)) {
         warn sprintf(
             "failed to authorize: %s %s\n",
-            $upstream->code(), $upstream->message()
+            $upstream->code(),
+            join('//', split(/\r?\n/, $upstream->message()))
         );
         next;
     }
@@ -826,7 +829,8 @@ sub crossFeedGroup {
     if (!defined($narticles)) {    # Group command failed.
         warn sprintf(
             "Group command failed for $group: %s %s\n",
-            $fromServer->code() || 'NO_CODE', $fromServer->message()
+            $fromServer->code() || 'NO_CODE',
+            join('//', split(/\r?\n/, $fromServer->message()))
         );
         return 0;
     }
@@ -896,11 +900,12 @@ sub crossFeedGroup {
                 my $new_msgid = $toServer->nntpstat($org_msgid);
                 my $new_code = $toServer->code();
                 print LOG
-                  "\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n"
+                  "\n\tDEBUGGING $i\t$org_msgid ($org_code) => $new_code\n"
                   if $debug >= 3;
                 # Skip the article if it already exists
                 # on the downstream server.
                 if ($new_code == 223) {
+                    print LOG "." unless $quiet;
                     print LOG "\tDEBUGGING $i\t-- not downloading "
                       . "already existing message $org_msgid code=$new_code\n"
                       if $debug >= 1;
@@ -1071,13 +1076,13 @@ sub crossFeedGroup {
                 my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                 $tx_len -= length($cut);
                 $idx_blank_pre_body--;
-                print LOG "\tDEBUGGING $i\tcut1 $cut" if $debug >= 2;
+                print LOG "\tDEBUGGING $i\tcut1 $cut\n" if $debug >= 2;
                 while ($article->[$idx] =~ /^[[:space:]](.+)/) {
                     # Folded lines.
                     my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                     $tx_len -= length($cut);
                     $idx_blank_pre_body--;
-                    print LOG "\tDEBUGGING $i\tcut_ $cut" if $debug >= 2;
+                    print LOG "\tDEBUGGING $i\tcut_ $cut\n" if $debug >= 2;
                 }
             }
 
@@ -1139,6 +1144,7 @@ sub crossFeedGroup {
             $pulled->{$server}->{$group}++;
 
             if ($skip_due_to_hdrs) {
+                print LOG "m" unless $quiet;
                 if ($debug >= 2) {
                     print LOG "\tDEBUGGING $i\tskip_art: "
                       . (
@@ -1152,7 +1158,6 @@ sub crossFeedGroup {
                           )
                       ) . "\n";
                 }
-                print LOG "m" unless $quiet;
             } elsif ($rnews) {
                 printf RNEWS "#! rnews %d\n", $tx_len;
                 map { print RNEWS $_ } @{$article};
@@ -1171,9 +1176,6 @@ sub crossFeedGroup {
                     #   441 posting failed
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
-                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
-                      . join('//', split(/\r?\n/, $msg)) . ">\n"
-                      if $debug >= 1;
                     $msg =~ s/^340 .*?\n(?=.)//o;
                     if ($msg =~ /^240 /) {
                         print LOG "+" unless $quiet;
@@ -1198,6 +1200,10 @@ sub crossFeedGroup {
                         saveConfig();
                         exit(1);
                     }
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
+                      . join('//', split(/\r?\n/, $toServer->message()))
+                      . ">\n"
+                      if $debug >= 1;
 
                 } elsif (not $reader
                     and not $toServer->ihave($msgid, $article))
@@ -1210,9 +1216,6 @@ sub crossFeedGroup {
                     #   437 article rejected -- do not try again
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
-                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
-                      . join('//', split(/\r?\n/, $msg)) . ">\n"
-                      if $debug >= 1;
                     if ($code == 435) {
                         print LOG "." unless $quiet;
                         $refused{$group}++;
@@ -1229,14 +1232,17 @@ sub crossFeedGroup {
                         saveConfig();
                         exit(1);
                     }
+                    print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
+                      . join('//', split(/\r?\n/, $msg)) . ">\n"
+                      if $debug >= 1;
 
                 } else {
                     my $code = $toServer->code();
                     my $msg = $toServer->message();
+                    print LOG "+" unless $quiet;
                     print LOG "\tDEBUGGING $i\tPost $code: Msg: <"
                       . join('//', split(/\r?\n/, $msg)) . ">\n"
                       if $debug >= 1;
-                    print LOG "+" unless $quiet;
                     $fed{$group}++;
                     $info{server}->{$server}->{fed}++;
                     $info{fed}++;
@@ -1245,7 +1251,7 @@ sub crossFeedGroup {
             $shash->{$group} = [time, $high = $i];
         } elsif ($skip_article) {
             # Optimized mode (-O) decided to skip this article...
-            print LOG "." unless $quiet;
+            # The "." resulting treatment has already been output.
             $refused{$group}++;
             $info{server}->{$server}->{refused}++;
             $info{refused}++;
@@ -1262,20 +1268,23 @@ sub crossFeedGroup {
                     # Net::NNTP is a subclass) when the connection is no longer
                     # active.
                     warn "\nArticle retrieval failed ("
-                      . $fromServer->message() . ")\n\n";
+                      . join('//', split(/\r?\n/, $fromServer->message()))
+                      . ")\n\n";
                     return 2;
                 } else {
                     warn "\nUnexpected response from server ("
                       . $fromServer->code() . " "
-                      . $fromServer->message() . ")\n";
+                      . join('//', split(/\r?\n/, $fromServer->message()))
+                      . ")\n";
                     saveConfig();
                     exit(1);
                 }
             }
             print LOG "x" unless $quiet;
             printf LOG (
-                "\nDEBUGGING $i %s %s\n", $fromServer->code(),
-                $fromServer->message()
+                "\tDEBUGGING $i\t-- article unavailable %s %s\n",
+                $fromServer->code(),
+                join('//', split(/\r?\n/, $fromServer->message()))
             ) if $debug >= 1;
         }
         saveConfig() if $checkPoint and ($art_total_count % $checkPoint) == 0;
