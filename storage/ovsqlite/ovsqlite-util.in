@@ -217,7 +217,7 @@ select groupid from groupinfo
 # The AutoCommit attribute needs being true so as not to start a transaction.
 sub pragma_foreign_keys {
     my $onoff = shift;
-    $dbh->{AutoCommit} = 1;
+    local $dbh->{AutoCommit} = 1;
     $dbh->do("pragma foreign_keys = $onoff;");
 }
 
