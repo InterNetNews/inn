@@ -879,18 +879,11 @@ sub crossFeedGroup {
     }
     print LOG " (at most $toget articles to get)\n" unless $quiet;
 
-    my $begin = ($first > $high ? $first : $high + 1);
-    my $overview;
-    # Retrieve overview data to later ensure we do not download articles which
-    # exceed the largest article size wanted.
-    if (defined($opt_L)) {
-        my @range = ($begin, $last);
-        $overview = $fromServer->xover(\@range);
-    }
-
     my $i;
     my @warns;
     my $skip_article;
+    my $overview;
+    my $begin = ($first > $high ? $first : $high + 1);
     for ($i = $begin; $i <= $last; $i++) {
         $skip_article = 0;
         last if defined $maxArts and $count >= $maxArts;
@@ -902,6 +895,20 @@ sub crossFeedGroup {
         # Do not download articles whose size exceeds the largest wanted size.
         # Field 3 contains the Message-ID, field 5 the article size.
         if (defined($opt_L)) {
+            # Retrieve overview data by chunks, so that articles keep being
+            # downloaded instead of a possible long wait at the start of the
+            # process of each newsgroup.
+            if (($count % $progressWidth) == 1) {
+                # Do not directly use $i + $progressWidth, as the result may
+                # exceed the maximum article number supported by the server.
+                my @range
+                  = ($i,
+                      $i + $progressWidth - 1 > $last
+                      ? $last
+                      : $i + $progressWidth - 1);
+                $overview = $fromServer->xover(\@range);
+            }
+
             if (defined($$overview{$i}[5]) and $$overview{$i}[5] > $opt_L) {
                 print LOG "." unless $quiet;
                 print LOG "\tDEBUGGING $i\t-- not downloading "
