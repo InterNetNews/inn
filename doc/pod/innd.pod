@@ -367,12 +367,13 @@ better in this area.
 Empty header field bodies and header field bodies that consist of
 nothing but whitespace are dropped.
 
-The local site's name (as set with the I<pathhost> parameter in
-F<inn.conf>) and an exclamation point are prepended to the Path header
-field body, provided the first site name in the Path header field
-body is different from the local one.  In addition, I<pathalias> and
-I<pathcluster> may be similarly respectively prepended and appended to
-the Path header field body; see inn.conf(5) for the details.
+The local site's name (as set with the I<pathhost> parameter in F<inn.conf>)
+and an exclamation point are prepended to the Path header field body,
+provided the first site name in the Path header field body is different
+from the local one.  In addition, I<pathalias> and I<pathcluster> may be
+similarly respectively prepended and appended as path identities immediately
+to the right or the left of I<pathhost> in the Path header field body; see
+inn.conf(5) for the details.
 
 The Xref header field is removed and a new one created.
 
