@@ -106,13 +106,22 @@ correct path to B<sendmail>, and between double quotes) is a good choice.
 
 =item I<pathhost>
 
-What to put into the Path header field to represent the local site.
-This is added to the Path header field body of all articles that pass
-through the system, including locally posted articles, and is also
-used when processing some control messages and when naming the server
-in status reports.  There is no default value; this parameter must be
-set in F<inn.conf> or INN will not start.  A good value to use is the
-fully qualified hostname of the system.
+What to put into the Path header field to represent the local site.  This path
+identity is added to the Path header field body of all articles that pass
+through the system, including locally posted articles, and is also used when
+processing some control messages and when naming the server in status reports.
+There is no default value; this parameter must be set in F<inn.conf> or INN
+will not start.  A good value to use is the fully qualified hostname of the
+system.
+
+The main purpose of the path identity is to avoid being proposed by your peers
+articles that already contain your path identity in their Path header fields.
+
+In case you are running several internal news servers, you may want to also
+set I<pathcluster> so as to define the primary path identity to advertise
+to your peers for their use in correctly identifying your news servers and
+adding the right path diagnostic (see S<Section 3.2.1> of S<RFC 5537> for more
+details about path diagnostics).
 
 =item I<runasgroup>
 
@@ -332,21 +341,33 @@ default value is C<50>.
 
 =item I<pathalias>
 
-If set, this value is prepended to the Path header field body of accepted posts
-(before I<pathhost>) if it doesn't already appear in the Path header field.
-The main purpose of this parameter is to configure all news servers within
-a particular organization to add a common identity string to the
-Path header field body.  The default value is unset.
+If set, this value is prepended as a path identity immediately to the right of
+I<pathhost> in the Path header field body of accepted articles if it doesn't
+already appear in the Path header field.  The default value is unset.
+
+The main purpose of this parameter is when there is some other path identity
+that you want to add to the Path header field of every article passing through
+your news serverZ<>(s) for some reason, maybe because you used to have some
+other path identity and you have peers that are configured to not send you
+articles that have already passed through that entity, and you can't get them
+to update to your current path identity for some reason.
 
 =item I<pathcluster>
 
-If set, this value is appended to the Path header field body of accepted posts
-(after I<pathhost>) if it isn't already present as the last element
-of the Path header field body.  The main purpose of this parameter is to make
-several news servers appear as one server.  The default value is unset.
+If set, this value is appended as a path identity immediately to the left
+of I<pathhost> in the Path header field body of accepted articles if it
+isn't already present as the leftmost element of the Path header field body.
+The default value is unset.
 
-Note that the Path header field body reads right to left, so appended
-means inserted at the leftmost side of the Path header field body.
+The main purpose of this parameter is to set the name that you are using
+to identify yourself to peers (i.e. the path identity they should expect to
+see from you) in the cases where that doesn't match the main path identity
+I<pathhost> for this news server.  (The most common case where that happens
+is when you have multiple news servers that you want to present as a "united
+front" to the outside world and identify as the same virtual server, but you
+still want distinct path identities so those servers can internally feed each
+other.  Also, even without internal feeds, I<pathcluster> could be set to an
+organization name if the organization has multiple news servers.)
 
 =item I<pgpverify>
 
