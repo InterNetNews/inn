@@ -13,8 +13,8 @@
 #
 #               February-March 2023:
 #               Julien Élie added TLS support for both downstream and upstream
-#               servers.  Also made pullnews robust on socket timeout, and
-#               added -L (largest article size wanted).
+#               servers.  Also made pullnews robust on socket timeout and lock
+#               file handling, and added -L (largest article size wanted).
 #
 #               January 2010:
 #               Geraint A. Edwards added header-only feeding (-B);
@@ -100,6 +100,7 @@ my $defaultRetryTime = 1;
 my $defaultProgressWidth = 50;
 my $defaultMaxArts;
 my $lockfile;
+my $runEndBlock = 0;
 
 # Check whether pullnews is run inside INN.
 my $use_inn_shlock = 0;
@@ -120,6 +121,8 @@ if (not $use_inn_shlock) {
 }
 
 END {
+    return unless $runEndBlock;
+
     # In case we bail out, while holding a lock.
     if ($use_inn_shlock) {
         INN::Utils::Shlock::releaselocks();
@@ -423,7 +426,7 @@ if ($use_inn_shlock) {
     INN::Utils::Shlock::lock($lockfile)
       or die "cannot create lockfile $lockfile\n";
 } else {
-    sysopen(LOCK, "$lockfile", O_RDWR | O_CREAT, 0700)
+    sysopen(LOCK, "$lockfile", O_RDWR | O_CREAT, 0644)
       or die "cannot create lockfile $lockfile: $!\n";
     $oldfh = select;
     select LOCK;
@@ -439,6 +442,9 @@ if ($use_inn_shlock) {
 
     print LOCK "$$\n";
 }
+# Now that a lock file has been created, ensure we release it when this process
+# ends or is stopped.
+$runEndBlock = 1;
 
 print LOG scalar(localtime(time)), " start\n\n" unless $quiet;
 
