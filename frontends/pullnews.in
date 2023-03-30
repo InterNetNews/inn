@@ -774,7 +774,8 @@ sub stats {
 sub saveConfig {
     return if $no_op;
 
-    $SIG{INT} = $SIG{QUIT} = 'IGNORE';
+    local $SIG{INT} = 'IGNORE';
+    local $SIG{QUIT} = 'IGNORE';
 
     open(FILE, ">$groupFile") || die "can't open $groupFile: $!\n";
     my $server;
