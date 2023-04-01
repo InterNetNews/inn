@@ -32,8 +32,7 @@ sub lock {
             system(
                 "$INN::Config::newsbin/shlock", '-p', $$, '-f', $lockfile
             ) == 0
-          )
-        {
+        ) {
             $lockfiles{$lockfile} = 1;
             return 1;
         }

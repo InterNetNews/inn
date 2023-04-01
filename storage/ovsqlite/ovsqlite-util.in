@@ -18,8 +18,7 @@ eval {
     require DBD::SQLite;
     my $err = $DBI::errstr;    # Just to silence "used only once" warning.
     1;
-}
-  or die "DBI Perl module with SQLite driver needed"
+} or die "DBI Perl module with SQLite driver needed"
   . " (usually packaged as libdbd-sqlite3-perl, perl-DBD-SQLite,"
   . " or p5-DBD-SQLite)";
 

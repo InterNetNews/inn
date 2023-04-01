@@ -788,8 +788,7 @@ sub saveConfig {
     foreach $server (
         sort { $servers->{$a}->{_order} <=> $servers->{$b}->{_order} }
         keys %$servers
-      )
-    {
+    ) {
         print FILE "$server";
         if (defined $passwd{$server}) {
             printf FILE " %s %s", $passwd{$server}->[0], $passwd{$server}->[1];
@@ -908,11 +907,12 @@ sub crossFeedGroup {
             if (($count % $progressWidth) == 1) {
                 # Do not directly use $i + $progressWidth, as the result may
                 # exceed the maximum article number supported by the server.
-                my @range
-                  = ($i,
-                      $i + $progressWidth - 1 > $last
-                      ? $last
-                      : $i + $progressWidth - 1);
+                my @range = (
+                    $i,
+                    $i + $progressWidth - 1 > $last
+                    ? $last
+                    : $i + $progressWidth - 1
+                );
                 $overview = $fromServer->xover(\@range);
             }
 
@@ -1025,8 +1025,7 @@ sub crossFeedGroup {
                         $idx_step < @$article
                           and $article->[$idx_step] =~ /^[[:space:]](.+)/;
                         $idx_step++
-                      )
-                    {
+                    ) {
                         # While next line is continuation...
                         my $more_line = $1;
                         chomp $unfolded_art_hdr;
@@ -1108,8 +1107,7 @@ sub crossFeedGroup {
                 and (not $match_all_hdrs
                     or scalar(grep { !/^!?#/ } @hdr_to_match) !=
                     keys %m_found_hdrs)
-              )
-            {
+            ) {
                 $skip_due_to_hdrs = 2;
             }
             while (@header_nums_to_go) {

@@ -477,8 +477,7 @@ sub expire_ctl {
                    ([\d\.]+|never):
                    ([\d\.]+|never):
                    ([\d\.]+|never)$/x
-              )
-            {
+            ) {
                 eprint "$file:$line: malformed line.\n";
                 next INPUT;
             }
