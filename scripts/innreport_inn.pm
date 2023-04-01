@@ -438,8 +438,7 @@ sub collect($$$$$$) {
         # 437 No colon-space in "xxxx" header field
         if ($left
             =~ /(\S+) <[^>]+> (?:437|439) No colon-space in \"[^\"]+\" header field/o
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $inn_badart{$server}++;
@@ -450,8 +449,7 @@ sub collect($$$$$$) {
         # 437 Article injected or posted in the future -- "xxxxx"
         if ($left
             =~ /(\S+) <[^>]+> (?:437|439) Article injected or posted in the future -- \"[^\"]+\"/o
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $innd_posted_future{$server}++;
@@ -638,8 +636,7 @@ sub collect($$$$$$) {
         # useless to take into account a line corresponding to a closed status.
         if ($left
             =~ /(\S+:\d+) (checkpoint|closed) seconds (\d+) accepted (\d+) refused (\d+) rejected (\d+) duplicate (\d+) accepted size (\d+) duplicate size (\d+)(?: rejected size (\d+))?$/o
-          )
-        {
+        ) {
             my (
                 $server, $status, $seconds, $accepted, $refused, $rejected,
                 $duplicate, $accptsize, $dupsize, $rjctsize
@@ -712,8 +709,7 @@ sub collect($$$$$$) {
                        time\s(\d+)\s+                  # time
                        ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                        $/ox
-          )
-        {
+        ) {
             $innd_time_times += $1;
             my $timers = $2;
 
@@ -750,8 +746,7 @@ sub collect($$$$$$) {
                    \ (\d+)\s+missed               # missed
                    \ (\d+)\s+dne                  # dne
                    $/ox
-          )
-        {
+        ) {
             $innd_his{'Positive hits'} += $1;
             $innd_his{'Negative hits'} += $2;
             $innd_his{'Cache misses'} += $3;
@@ -965,8 +960,7 @@ sub collect($$$$$$) {
         # checkpoint (real) (new format)
         if ($left
             =~ /(\S+) checkpoint seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+) spooled (\d+)/o
-          )
-        {
+        ) {
             my (
                 $server, $seconds, $offered, $accepted, $refused, $rejected,
                 $missing, $accepted_size, $rejected_size, $spooled
@@ -984,8 +978,7 @@ sub collect($$$$$$) {
             return 1;
         } elsif ($left
             =~ /(\S+) checkpoint seconds (\d+) offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) spooled (\d+)/o
-          )
-        {
+        ) {
             my (
                 $server, $seconds, $offered, $accepted, $refused, $rejected,
                 $missing, $spooled
@@ -1030,8 +1023,7 @@ sub collect($$$$$$) {
                        time\s(\d+)\s+                  # time
                        ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                        $/ox
-          )
-        {
+        ) {
             $innfeed_time_times += $1;
             my $timers = $2;
 
@@ -1162,8 +1154,7 @@ sub collect($$$$$$) {
         # stats
         if ($left
             =~ /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) accsize (\d+) rejsize (\d+)$/o
-          )
-        {
+        ) {
             my (
                 $server, $offered, $accepted, $refused, $rejected, $accbytes,
                 $rejbytes
@@ -1193,8 +1184,7 @@ sub collect($$$$$$) {
         # 437 Duplicate article
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Duplicate article$/o
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1204,8 +1194,7 @@ sub collect($$$$$$) {
         # 437 Unapproved for
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*\) (?:437|439) Unapproved for \"(.*?)\"$/o
-          )
-        {
+        ) {
             my ($server, $group) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1216,8 +1205,7 @@ sub collect($$$$$$) {
         # 437 Too old -- ...
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*\) (?:437|439) Too old -- \".*?\"$/o
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1227,8 +1215,7 @@ sub collect($$$$$$) {
         # 437 Unwanted site ... in path
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted site (\S+) in path$/o
-          )
-        {
+        ) {
             my ($server, $site) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1239,8 +1226,7 @@ sub collect($$$$$$) {
         # 437 Unwanted newsgroup "..."
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted newsgroup \"(\S+)\"$/o
-          )
-        {
+        ) {
             my ($server, $group) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1251,8 +1237,7 @@ sub collect($$$$$$) {
         # 437 Unwanted distribution "..."
         if ($left
             =~ /(\S+) rejected [^\s]+ \(.*?\) (?:437|439) Unwanted distribution \"(\S+)\"$/o
-          )
-        {
+        ) {
             my ($server, $dist) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1264,8 +1249,7 @@ sub collect($$$$$$) {
         # 437 Unwanted distribution "..."
         if ($left
             =~ /^(\S+) rejected .* (?:437|439) Unwanted distribution \"(\S+)\"$/o
-          )
-        {
+        ) {
             my ($server, $dist) = ($1, $2);
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_badart{$server}++;
@@ -1284,8 +1268,7 @@ sub collect($$$$$$) {
         # 437 Newsgroup name illegal -- "xxx"
         if ($left
             =~ /(\S+) rejected .* (?:437|439) Newsgroup name illegal -- "[^\"]*"$/
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $innxmit_others{$server}++;
@@ -1319,8 +1302,7 @@ sub collect($$$$$$) {
         # stats (new format)
         if ($left
             =~ /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+) missing (\d+) accsize (\d+) rejsize (\d+)$/o
-          )
-        {
+        ) {
             my (
                 $server, $offered, $accepted, $refused, $rejected, $missing,
                 $accbytes, $rejbytes
@@ -1342,8 +1324,7 @@ sub collect($$$$$$) {
         # stats
         if ($left
             =~ /(\S+) stats offered (\d+) accepted (\d+) refused (\d+) rejected (\d+)$/o
-          )
-        {
+        ) {
             my ($server, $offered, $accepted, $refused, $rejected)
               = ($1, $2, $3, $4, $5);
             $server = lc $server unless $CASE_SENSITIVE;
@@ -1544,8 +1525,7 @@ sub collect($$$$$$) {
         # article .. 400 No space left on device writing article file
         if ($left
             =~ /(\S+) .* 400 No space left on device writing article file -- throttling$/o
-          )
-        {
+        ) {
             my $server = $1;
             $server = lc $server unless $CASE_SENSITIVE;
             $nntplink_nospace{$server}++;
@@ -1554,8 +1534,7 @@ sub collect($$$$$$) {
         # stats
         if ($left
             =~ /(\S+) stats (\d+) offered (\d+) accepted (\d+) rejected (\d+) failed (\d+) connects$/o
-          )
-        {
+        ) {
             my ($server, $offered, $accepted, $rejected, $failed, $connects)
               = ($1, $2, $3, $4, $5, $6);
             $server = lc $server unless $CASE_SENSITIVE;
@@ -1764,8 +1743,7 @@ sub collect($$$$$$) {
             ($left =~ /\S+ user (.+)$/o)
             && ($left
                 !~ /\S+ times user .+ system \S+ idle \S+ elapsed \S+$/o)
-          )
-        {
+        ) {
             my $user = $1;
             $nnrpd_auth{$user}++;
             return 1;
@@ -1785,8 +1763,7 @@ sub collect($$$$$$) {
         # exit (also called when using STARTTLS)
         if ($left
             =~ /(\S+) (?:exit|exit for STARTTLS|exit for AUTHINFO SASL) articles (\d+) groups (\d+)$/o
-          )
-        {
+        ) {
             my ($cust, $articles, $groups) = ($1, $2, $3);
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
@@ -1801,8 +1778,7 @@ sub collect($$$$$$) {
         # times
         if ($left
             =~ /(\S+) times user (.+) system (\S+) idle (\S+) elapsed (\S+)$/o
-          )
-        {
+        ) {
             my ($cust, $user, $system, $idle, $elapsed) = ($1, $2, $3, $4, $5);
             $cust = lc $cust unless $CASE_SENSITIVE;
             my $dom = &host2dom($cust);
@@ -1913,8 +1889,7 @@ sub collect($$$$$$) {
                        time\s(\d+)\s+                  # time
                        ((?:\S+\s\d+\(\d+\)\s*)+)       # timer values
                        $/ox
-          )
-        {
+        ) {
             $nnrpd_time_times += $1;
             my $timers = $2;
 
@@ -2030,8 +2005,7 @@ sub collect($$$$$$) {
         # rejected 437 Article injected or posted in the future
         if ($left
             =~ /rejected (?:437|439) Article injected or posted in the future -- \"(.*)\"$/o
-          )
-        {
+        ) {
             $rnews_bogus_date{"(future) $1"}++;
             return 1;
         }
@@ -2058,8 +2032,7 @@ sub collect($$$$$$) {
         # rejected 437 No colon-space ...
         if ($left
             =~ /rejected (?:437|439) No colon-space in \"(.*)\" header field$/o
-          )
-        {
+        ) {
             $rnews_no_colon_space++;
             return 1;
         }
@@ -2213,8 +2186,7 @@ sub collect($$$$$$) {
                   \s*(.*)               # 1 if message approved
                                         # and first logged in the file
                   /x
-          )
-        {
+        ) {
             if ($1 eq 'newgroup') {
                 $controlchan_new{$3}++;
             } elsif ($1 eq 'rmgroup') {
@@ -2247,8 +2219,7 @@ sub collect($$$$$$) {
                     \ used:\ ([\d.]+)\ Mbytes\ \(\s*[\d.]+%\)
                     \s+(\d+)\ cycles\s*
                  $|ox
-          )
-        {
+        ) {
             my ($class, $buffer, $size, $used, $cycles) = ($1, $3, $4, $5, $6);
             my ($h, $m, $s) = $hour =~ m/^(\d+):(\d+):(\d+)$/;
             my $time = $h * 3600 + $m * 60 + $s;

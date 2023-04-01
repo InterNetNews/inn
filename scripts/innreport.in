@@ -167,8 +167,7 @@ my @old_argv = @ARGV;
     foreach $i (
         \$HTML, \$GRAPH, \$ARCHIVE, \$WANT_UNKNOWN,
         \$CASE_SENSITIVE, \$NOT_DAILY
-      )
-    {
+    ) {
         $$i = $$i eq 'DO' ? 1 : 0;
     }
 }
@@ -1477,8 +1476,7 @@ sub Graph3d {
     foreach $k (
         sort { ${ $val[0] }{$b} <=> ${ $val[0] }{$a} }
         keys(%{ $val[0] })
-      )
-    {
+    ) {
         $image->string(
             gdSmallFont(), $ml - length($k) * gdSmallFont()->width - 3,
             $e + $h / 2 - gdSmallFont()->height / 2, "$k", $black
@@ -2523,8 +2521,7 @@ sub Write_Results {
             foreach $key2 (
                 sort { $r_data->{$key1}{$b} <=> $r_data->{$key1}{$a} }
                 keys(%{ $r_data->{$key1} })
-              )
-            {
+            ) {
                 my $first = 0;
                 $num++;
                 foreach $i (@{ $output{$report}{'column'} }) {
