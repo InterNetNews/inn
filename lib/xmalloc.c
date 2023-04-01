@@ -137,7 +137,7 @@ x_calloc(size_t n, size_t size, const char *file, int line)
     size = (size > 0) ? size : 1;
     p = calloc(n, size);
     while (p == NULL) {
-        (*xmalloc_error_handler)("calloc", n * size, file, line);
+        (*xmalloc_error_handler)("calloc", n *size, file, line);
         p = calloc(n, size);
     }
     return p;
@@ -165,7 +165,7 @@ x_reallocarray(void *p, size_t n, size_t size, const char *file, int line)
 
     newp = reallocarray(p, n, size);
     while (newp == NULL && size > 0 && n > 0) {
-        (*xmalloc_error_handler)("reallocarray", n * size, file, line);
+        (*xmalloc_error_handler)("reallocarray", n *size, file, line);
         newp = reallocarray(p, n, size);
     }
     return newp;
