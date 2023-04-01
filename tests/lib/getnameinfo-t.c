@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005-2006, 2014, 2018, 2022 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005-2006, 2014, 2018, 2022-2023 Russ Allbery <eagle@eyrie.org>
  * Copyright 2007-2011
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -150,7 +150,8 @@ main(void)
     inet_aton("0.0.0.0", &sin.sin_addr);
     status = test_getnameinfo(sa, sizeof(sin), node, sizeof(node), NULL, 0, 0);
     is_int(0, status, "lookup of 0.0.0.0");
-    hp = gethostbyaddr(sa, sizeof(sin), AF_INET);
+    hp = gethostbyaddr((const void *) &sin.sin_addr, sizeof(sin.sin_addr),
+                       AF_INET);
     if (hp != NULL)
         skip_block(2, "0.0.0.0 resolves to a hostname");
     else {

@@ -40,10 +40,12 @@ download() {
         # Update the path of included C header files.
         # Change "RRA_" to "INN_", "rra_" to "inn_", and "UTIL_" to "INN_"
         # so as to keep a homogeneous naming convention in INN source code.
+        # Also remove the first 2 lines containing an internal serial number.
         # Changes in shell, m4 and C files are not the same.
         if [ "$2" = "m4" ]; then
             sed -i -e 's/RRA_/INN_/g' \
                 -e 's/rra_/inn_/g' \
+                -e '1,2d' \
                 ${TEMP}
 
             # Remove useless function for INN.

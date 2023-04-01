@@ -4,7 +4,7 @@
  * The canonical version of this file is maintained in the rra-c-util package,
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
- * Copyright 2000-2002, 2004, 2017 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2000-2002, 2004, 2017, 2023 Russ Allbery <eagle@eyrie.org>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -64,7 +64,7 @@ bool write_fail = false;
 ssize_t
 fake_write(int fd UNUSED, const void *data, size_t n)
 {
-    size_t total;
+    size_t total, left;
 
     if (write_fail)
         return 0;
@@ -72,9 +72,14 @@ fake_write(int fd UNUSED, const void *data, size_t n)
         errno = EINTR;
         return -1;
     }
-    total = (n < 32) ? n : 32;
-    if (256 - write_offset < total)
-        total = 256 - write_offset;
+    if (write_offset >= sizeof(write_buffer)) {
+        errno = ENOSPC;
+        return 0;
+    }
+    left = sizeof(write_buffer) - write_offset;
+    if (left > 32)
+        left = 32;
+    total = (n < left) ? n : left;
     memcpy(write_buffer + write_offset, data, total);
     write_offset += total;
     return total;
@@ -89,7 +94,7 @@ fake_write(int fd UNUSED, const void *data, size_t n)
 ssize_t
 fake_pwrite(int fd UNUSED, const void *data, size_t n, off_t offset)
 {
-    size_t total;
+    size_t total, left;
 
     if (write_fail)
         return 0;
@@ -97,13 +102,14 @@ fake_pwrite(int fd UNUSED, const void *data, size_t n, off_t offset)
         errno = EINTR;
         return -1;
     }
-    total = (n < 32) ? n : 32;
-    if (offset > 256) {
+    if (offset >= (ssize_t) sizeof(write_buffer)) {
         errno = ENOSPC;
         return -1;
     }
-    if ((size_t) (256 - offset) < total)
-        total = 256 - offset;
+    left = sizeof(write_buffer) - offset;
+    if (left > 32)
+        left = 32;
+    total = (n < left) ? n : left;
     memcpy(write_buffer + offset, data, total);
     return total;
 }
@@ -125,7 +131,7 @@ fake_writev(int fd UNUSED, const struct iovec *iov, int iovcnt)
         errno = EINTR;
         return -1;
     }
-    left = 256 - write_offset;
+    left = sizeof(write_buffer) - write_offset;
     if (left > 32)
         left = 32;
     total = 0;

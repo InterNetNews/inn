@@ -5,7 +5,7 @@
  * which can be found at <https://www.eyrie.org/~eagle/software/rra-c-util/>.
  *
  * Written by Russ Allbery <eagle@eyrie.org>
- * Copyright 2005, 2013, 2016-2018, 2020 Russ Allbery <eagle@eyrie.org>
+ * Copyright 2005, 2013, 2016-2018, 2020, 2023 Russ Allbery <eagle@eyrie.org>
  * Copyright 2009-2013
  *     The Board of Trustees of the Leland Stanford Junior University
  *
@@ -282,10 +282,6 @@ test_server_accept(socket_type fd)
  * come from other addresses.  Hosts that only have IPv6 interfaces will see a
  * client connection on ::1 instead.  Avoid checking if the client IP is
  * 127.0.0.1 for that reason.  Hopefully this won't hide bugs.
- *
- * saddr is allocated from the heap instead of using a local struct
- * sockaddr_storage to work around a misdiagnosis of strict aliasing
- * violations from gcc 4.4 (fixed in later versions).
  */
 static void
 test_server_accept_any(socket_type fds[], unsigned int count)
@@ -298,7 +294,13 @@ test_server_accept_any(socket_type fds[], unsigned int count)
     /* If there are firewalls that block connections, we could hang here. */
     alarm(5);
 
-    /* Accept the connection and writes from the client. */
+    /*
+     * Accept the connection and writes from the client.
+     *
+     * saddr is allocated from the heap instead of using a local struct
+     * sockaddr_storage to work around a misdiagnosis of strict aliasing
+     * violations from gcc 4.4 (fixed in later versions).
+     */
     slen = sizeof(struct sockaddr_storage);
     saddr = bcalloc(1, slen);
     client = network_accept_any(fds, count, saddr, &slen);
@@ -407,7 +409,9 @@ get_sockaddr(socket_type fd)
     size = sizeof(struct sockaddr_storage);
     if (getsockname(fd, saddr, &size) < 0)
         sysbail("cannot getsockname");
-    if (size > sizeof(struct sockaddr)) {
+
+    /* This seems highly unlikely, but handle it anyway. */
+    if (size > sizeof(struct sockaddr_storage)) {
         free(saddr);
         saddr = bmalloc(size);
         if (getsockname(fd, saddr, &size) < 0)
