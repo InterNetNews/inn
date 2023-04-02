@@ -146,6 +146,8 @@ path specified in the I<pathoverview> parameter in F<inn.conf>.
 
 =back
 
+=head1 EXAMPLES
+
 Dump newsgroup-related overview information for the overview database in
 F</news/overview>, regardless of the overview path specified in F<inn.conf>:
 
