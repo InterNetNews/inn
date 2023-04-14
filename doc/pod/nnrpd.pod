@@ -21,14 +21,17 @@ who is authorized to access the Usenet database.
 
 On exit, B<nnrpd> will report usage statistics through syslog(3).
 
-B<nnrpd> only reads config files (both F<readers.conf> and F<inn.conf>)
-when it is spawned.  You can therefore never change the behavior of a
-client that's already connected.  If B<nnrpd> is run from B<innd> (the
-default) or from inetd(8), xinetd(8), or some equivalent, a new B<nnrpd>
-process is spawned for every connection and therefore any changes to
-configuration files will be immediately effective for all new
-connections.  If you are instead running B<nnrpd> with the B<-D> option,
-any configuration changes won't take effect until B<nnrpd> is restarted.
+B<nnrpd> is run from B<innd> (the default) or from inetd(8), xinetd(8), or
+some equivalent.  As often as not, it is also run as a daemon, with the B<-D>
+option, to provide TLS support on a dedicated port.
+
+B<nnrpd> only reads config files (F<readers.conf>, F<inn.conf> and
+F<inn-secrets.conf>) when it is spawned.  You can therefore never change the
+behaviour of a client that's already connected.  As a new B<nnrpd> process is
+spawned for every connection, any changes to these configuration files will be
+immediately effective for all new connections.  There's only one exception:
+when B<nnrpd> is run as a daemon with the B<-D> option, any configuration
+changes in F<inn.conf> won't take effect until B<nnrpd> is restarted.
 
 The F<inn.conf> setting I<nnrpdflags> can be used to pass any of the
 options below to instances of B<nnrpd> that are spawned directly from
@@ -85,12 +88,12 @@ L<BLACKLISTD SUPPORT> below.
 
 =item B<-c> I<configfile>
 
-By default, B<nnrpd> reads the F<readers.conf> to determine how to
-authenticate connections.  The B<-c> flag specifies an alternate file
-for this purpose.  If the file name isn't fully qualified, it is taken
-to be relative to I<pathetc> in F<inn.conf>.  (This is useful to have
-several instances of B<nnrpd> running on different ports or IP
-addresses with different settings.)
+By default, B<nnrpd> reads the F<readers.conf> configuration file to determine
+how to authenticate connections.  The B<-c> flag specifies an alternate file
+for this purpose.  If the file name isn't fully qualified, it is taken to
+be relative to I<pathetc> in F<inn.conf>.  (This is useful to have several
+instances of B<nnrpd> running on different ports or IP addresses with
+different settings.)
 
 =item B<-D>
 
@@ -142,7 +145,7 @@ speed.
 The B<-o> flag causes all articles to be spooled instead of sending
 them to innd(8).  B<rnews> with the B<-U> flag should be invoked from
 cron on a regular basis to take care of these articles.  This flag is
-useful if innd(8) is accepting articles and B<nnrpd> is started
+useful if B<innd> is accepting articles and B<nnrpd> is started
 standalone or using inetd(8).
 
 =item B<-p> I<port>
@@ -377,7 +380,8 @@ Febuary 1998.
 
 =head1 SEE ALSO
 
-blacklistd(8), ctlinnd(8), innd(8), inn.conf(5), libinn_uwildmat(3),
-nnrpd.track(5), passwd.nntp(5), readers.conf(5), signal(2).
+blacklistd(8), ctlinnd(8), innd(8), inn.conf(5), inn-secrets.conf(5),
+libinn_uwildmat(3), nnrpd.track(5), passwd.nntp(5), readers.conf(5),
+signal(2).
 
 =cut
