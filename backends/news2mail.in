@@ -104,9 +104,15 @@ sub mailto {
     my ($t, $s, @a) = @_;
 
     my $sendmail = $INN::Config::mta;
+    # Remove %s and -f from the mta command line (we'll explicitly set
+    # recipients and an envelope sender below).
+    # Remove -oem as we'll set -oee so that sendmail exits with a
+    # non-zero status only if the mail cannot be sent.
     $sendmail =~ s!\s*%s!!;
+    $sendmail =~ s!(^|\s+)-f\s*\S*!!;
+    $sendmail =~ s!(^|\s+)-oem!!;
     my @command = (
-        split(' ', $sendmail), '-ee', '-odq', "-f$s",
+        split(' ', $sendmail), '-oee', '-odq', "-f$s",
         "-pNNTP:$INN::Config::pathhost", @a
     );
 
