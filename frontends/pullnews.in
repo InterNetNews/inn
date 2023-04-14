@@ -864,6 +864,7 @@ sub crossFeedGroup {
         $high = $last + $watermark if substr($watermark, 0, 1) eq '-';
         $high = 0 if $high < 0;
         $shash->{$group} = [time, $high];
+        $prevHigh = $high;
         $groupsStarted{$group} = 1;
     }
     printf LOG "\tOur current highest: %d", $high if not $quiet;
