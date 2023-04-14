@@ -109,6 +109,8 @@ listens on port 119 (default), or F<nnrpd-%d.pid>, where C<%d> is replaced
 with the port that B<nnrpd> is configured to listen on (B<-p> option is
 given and its argument is not C<119>).
 
+You may also want to use B<-s> when running B<nnrpd> as a daemon.
+
 =item B<-f>
 
 If specified, B<nnrpd> does not detach itself and runs in the
@@ -162,11 +164,14 @@ when it is paused or throttled.  I<reason> should be encoded in UTF-8.
 
 =item B<-s> I<padding>
 
-As each command is received, B<nnrpd> tries to change its C<argv>
-array so that ps(1) will print out the command being executed.  To get
-a full display, the B<-s> flag may be used with a long string as its
-argument, which will be overwritten when the program changes its
-title.
+As each command is received from a client, B<nnrpd> tries to change its
+C<argv> array containing the process title so that commands like ps(1) will
+print out the hostname of the connected client and the command being executed.
+To get a full display, the B<-s> flag may be used with a long string as its
+argument, which will be overwritten when B<nnrpd> changes its title.
+
+When B<innd> spawns B<nnrpd>, this flag is used with an argument made of 48
+spaces.
 
 =item B<-S>
 
@@ -265,8 +270,10 @@ but the easiest way is probably to add a line like:
 
 to F</etc/inetd.conf> or the equivalent on your system and let B<inetd>
 run B<nnrpd>.  (Change the path to B<nnrpd> to match your installation.)
-You may need to replace C<nntps> with C<563> if C<nntps> isn't
-defined in F</etc/services> on your system.
+You may need to replace C<nntps> with C<563> if C<nntps> isn't defined in
+F</etc/services> on your system.  You may also want to use the lowercase B<-s>
+flag with a long string as its argument to see more information about incoming
+connections in ps(1) output.
 
 Optionally, you may set the I<tlsciphers>, I<tlsciphers13>,
 I<tlscompression>, I<tlseccurve>, I<tlspreferserverciphers>, and

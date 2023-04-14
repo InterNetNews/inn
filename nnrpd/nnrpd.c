@@ -1075,7 +1075,8 @@ main(int argc, char *argv[])
         case 'r': /* Reject connection message. */
             Reject = xstrdup(optarg);
             break;
-        case 's': /* Unused title string. */
+        case 's': /* Unused title string - just to allocate space in command
+                     line to be filled by setproctitle. */
             break;
         case 't': /* Tracing. */
             Tracing = true;
