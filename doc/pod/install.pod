@@ -1743,7 +1743,9 @@ Note that a news client which supports the STARTTLS command can also
 use the conventional NNTP port 119 to dynamically upgrade from unencrypted
 to TLS-protected traffic during an NNTP session.  However, this practice
 is discouraged in favour of using the separate port 563.  See nnrpd(8)
-for more information about TLS support.
+for more information about TLS support.  You may also want to use the
+lowercase B<-s> flag with a long string as its argument to see more
+information about incoming connections in ps(1) output.
 
 In the shutdown section of the init script, you can put:
 
