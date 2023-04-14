@@ -61,7 +61,6 @@ typedef struct _REMOTETABLE {
     time_t Expires;
 } REMOTETABLE;
 
-static char *RCslaveflag;
 static char *RCnnrpd = NULL;
 static char *RCnntpd = NULL;
 static CHANNEL **RCchan;
@@ -424,8 +423,6 @@ RChandoff(int fd, HANDOFF h)
     }
     if (NNRPTracing)
         argv[i++] = "-t";
-    if (RCslaveflag)
-        argv[i++] = RCslaveflag;
 
     for (j = 0; j < flags->count; j++) {
         argv[i++] = flags->strings[j];
