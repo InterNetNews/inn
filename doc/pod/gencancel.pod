@@ -24,13 +24,13 @@ that, or if the information was not found, you'll have to set it with the
 B<-n> flag.
 
 If INN was built with Cancel-Lock support, B<gencancel> will generate the
-right Cancel-Key header field to use in order to authenticate cancels.  If,
-for whatever reason, you need cancelling an article posted from your news
+right admin Cancel-Key header field to use in order to authenticate cancels.
+If, for whatever reason, you need cancelling an article posted from your news
 server with a Cancel-Lock header field, the corresponding admin Cancel-Key
 hashes are needed to authenticate the withdrawal request.  That information is
 computed with the I<canlockadmin> parameter set in F<inn-secrets.conf>.
 
-In case you only need the Cancel-Key hashes, you can use the B<-k> flag.
+In case you only need the admin Cancel-Key hashes, you can use the B<-k> flag.
 Only the body of the Cancel-Key header field will then be written to standard
 output.  You can then re-use it for instance in a supersede request or from
 another script.
@@ -81,7 +81,7 @@ B<-a> is not given).
 =item B<-k>
 
 Instead of outputting a whole cancel control message, B<gencancel> will just
-output the body of the Cancel-Key header field.
+output the body of the Cancel-Key header field with admin hashes.
 
 This flag is only available if INN was built with Cancel-Lock support.
 
@@ -121,7 +121,8 @@ value for the Subject header field.  Make sure it is properly MIME-encoded.
 
 =head1 EXAMPLES
 
-To only retrieve the Cancel-Key hashes associated to the given Message-ID:
+To only retrieve the admin Cancel-Key hashes associated to the given
+Message-ID:
 
     gencancel -k '<mid@news>'
 
@@ -153,6 +154,9 @@ If it all looks good, then inject it into the news system (without giving
 C<-D> to B<inews>):
 
     gencancel '<mid@news>' | inews -h -P
+
+Note that B<inews> sends the message to the server specified in the I<server>
+parameter in F<inn.conf>.
 
 =head1 HISTORY
 
