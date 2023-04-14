@@ -560,6 +560,7 @@ if (not $quiet and not $quietness) {
 }
 
 my $connectionAttempts = 0;
+my %groupsStarted = ();
 
 UPSTREAM:
 foreach my $server (@servers) {
@@ -689,6 +690,7 @@ foreach my $server (@servers) {
 } continue {
     # Reinitialize the counter for the next server.
     $connectionAttempts = 0;
+    %groupsStarted = ();
 }
 
 saveConfig();
@@ -852,12 +854,17 @@ sub crossFeedGroup {
         printf LOG "\t%d article%s available (first %d, last %d)\n",
           $narticles, $narticles != 1 ? "s" : "", $first, $last;
     }
-    if (defined $watermark) {
+
+    # Do not set several times the water mark to another value.  Just go on
+    # downloading articles from the last retrieved one when the connection
+    # timed out.
+    if (defined($watermark) and !exists($groupsStarted{$group})) {
         printf LOG "\tOur previous highest: %d\n", $prevHigh if not $quiet;
         $high = $watermark;
         $high = $last + $watermark if substr($watermark, 0, 1) eq '-';
         $high = 0 if $high < 0;
         $shash->{$group} = [time, $high];
+        $groupsStarted{$group} = 1;
     }
     printf LOG "\tOur current highest: %d", $high if not $quiet;
 
