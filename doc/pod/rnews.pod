@@ -23,7 +23,8 @@ The message is read from I<file> if given, spooled files (with the B<-U>
 flag) or standard input if no file is given.  Articles are sent to
 the server given in the B<-r> or B<-S> command line options if given,
 otherwise to the server set via I<nnrpdposthost> in F<inn.conf>,
-otherwise to the local server.
+otherwise to the local server at C<127.0.0.1>, and finally to the server
+set via I<server> in F<inn.conf>.
 
 When sent over UUCP, Usenet articles are typically collected in a single
 batch to reduce the UUCP overhead.  Batches can also be compressed to
