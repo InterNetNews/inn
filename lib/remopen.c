@@ -75,7 +75,8 @@ NNTPremoteopen(int port, FILE **FromServerp, FILE **ToServerp, char *errbuff,
 
     if ((p = innconf->server) == NULL) {
         if (errbuff)
-            strlcpy(errbuff, "What server?", len);
+            strlcpy(errbuff,
+                    "What server? (server parameter unset in inn.conf", len);
         return -1;
     }
     return NNTPconnect(p, port, FromServerp, ToServerp, errbuff, len);
