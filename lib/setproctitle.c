@@ -77,7 +77,8 @@ setproctitle(const char *format, ...)
     title = title_start;
     *title++ = '-';
     *title++ = ' ';
-    length = title_end - title_start - 2;
+    /* Remaining length after initial "- ". */
+    length = (title_end - title_start + 1) - 2;
 
     /* Now, put in the actual content.  Get the program name from
        message_program_name if it's set. */
