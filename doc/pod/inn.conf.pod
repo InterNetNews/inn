@@ -90,19 +90,34 @@ need to be changed.
 
 The command to use when sending a mail (e.g. mailing postings to moderators,
 gatewaying news to mail, sending statistics to the TOP1000 project, mailing
-errors to the news administrator) as well as for the use of innmail(1).  The
-message, with headers and additional To and Auto-Submitted header fields when
-appropriate, will be piped into this program.  The string C<%s>, if present,
-will be replaced by the e-mail address of the moderator.  It's strongly
-recommended for this command to include C<%s> on the command line rather than
-use the addresses in the To and Cc header fields of the message, since the
-latter approach allows the news server to be abused as a mechanism to send
-mail to arbitrary addresses and will result in unexpected behavior.  There is
-no default value for this parameter; it must be set in F<inn.conf> or a fatal
-error message will be logged via syslog.
+errors and reports to the news administrator).  Some programs use innmail(1)
+which in turn runs the command in the I<mta> parameter.  The message, with its
+headers, will be piped into this I<mta> program.  Depending on the calling
+program, additional header fields may be added when appropriate, like To,
+Subject or Auto-Submitted header fields.
 
-For most systems, C</usr/lib/sendmail -oi -oem %s> (adjusted for the
-correct path to B<sendmail>, and between double quotes) is a good choice.
+The string C<%s>, if present, will be replaced by the expected recipientZ<>(s)
+like the e-mail address of the moderator or of a remote list.  It's strongly
+recommended for this command to end with C<%s> on the command line rather
+than, when not present, use the addresses in the To and Cc header fields of
+the message, since the latter approach allows the news server to be abused as
+a mechanism to send mail to arbitrary addresses and will result in unexpected
+behaviour.  There is no default value for this parameter; it must be set in
+F<inn.conf> or a fatal error message will be logged via syslog.
+
+For most systems, C</usr/lib/sendmail -oi -oem %s> (adjusted for the correct
+path to B<sendmail>, and between double quotes) is a good choice.
+
+To improve deliverability of sent mails, especially moderated group
+submissions, you are encouraged to install a modern and full-featured MTA
+like Postfix instead of a frugal MTA like Nullmailer.  You'll then be able
+to configure bounces and benefit from DSN (Delivery Status Notifications).
+Useful flags to add, if your I<mta> program supports them, are C<-N failure>
+(to only return a DSN on failure, not delay), C<-F 'Newsmaster'> (to set
+the full name of the notification), C<-fnewsmaster@server.com> (to set the
+envelope sender address), and C<-opnobodyreturn> (a privacy option to only
+return headers in the DSN).  Feel free to add any other options you think
+appropriate.
 
 =item I<pathhost>
 
