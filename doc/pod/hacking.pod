@@ -837,56 +837,51 @@ for the first release candidate version of a new release.
 
 =item 11.
 
-Generate an MD5 checksum of the release tarball.
+On the branch where C<make release> was run, modify the C<VERSION_EXTRA>
+variable in F<Makefile.global.in> so that the C<prerelease> value does not
+appear in the upcoming Git tag.
 
-    md5sum inn-Y.Y.Y.tar.gz > inn-Y.Y.Y.tar.gz.md5
+When making the final release, this variable should be empty.  For a testing
+release, it should reflect the version name used in the C<make release>
+command (like C<rc1 version>).
 
 =item 12.
 
-Generate a diff between this release and the previous release if feasible
-(always for minor releases, possibly not a good idea due to the length of
-the diff for major releases).  You will need the tar file of the previous
-release for the comparison.
-
-    diff -Nurp inn-X.X.X inn-Y.Y.Y > inn-X.X.X-Y.Y.Y.diff
-    gzip inn-X.X.X-Y.Y.Y.diff
-
-=item 13.
-
-For a testing release, make the resulting tar file, along with its MD5
-checksum and the possible diff from the previous release, available
-for testing into the F<testing> directory on ftp.isc.org and announce its
-availability on inn-workers.  Install it on at least one system and make sure
-that system runs fine for at least a few days.  This is also a good time to
-send out a draft of the release announcement to inn-workers for proof-reading.
-
-That's all for a testing release.  The following steps only concern final
-releases.
-
-=item 14.
-
-When making the final release, empty the C<VERSION_EXTRA> variable in
-F<Makefile.global.in> so that the C<prerelease> value does not appear in the
-upcoming Git tag.
-
-=item 15.
-
-Create an annotated signed tag corresponding to the release tarball, using a
-PGP key declared in the committer's GitHub profile:
+Create an annotated signed tag corresponding to the tarball, using a PGP key
+declared in the committer's GitHub profile:
 
     git tag Y.Y.Y <commit-hash> -s -m "INN Y.Y.Y release tag"
     git push origin Y.Y.Y
 
-Check that it appears as C<Verified> in the GitHub interface, and then publish
-a release in GitHub, based on that tag.  Include the description from F<NEWS>,
-and attach the tarball.
+Check that it appears as C<Verified> in the GitHub interface.
 
-=item 16.
+=item 13.
 
 Re-add the C<prerelease> value to the C<VERSION_EXTRA> variable in
 F<Makefile.global.in>.
 
-=item 17.
+=item 14.
+
+Publish a release in GitHub, based on that tag.  For a testing release, tick
+the box corresponding to a pre-release.
+
+Include the description from F<NEWS>, and attach the tarball.  The description
+should be modelled on what was done for previous releases.
+
+When publishing the final release, empty the now redundant description of the
+pre-release, and just refer to the final release.
+
+=item 15.
+
+For a testing release, announce its availability in inn-workers, along with
+a draft of the release announcement for proof-reading.  Install the testing
+release on at least one system and make sure that system runs fine for at
+least a few days.
+
+That's all for a testing release. The following steps only concern final
+releases.
+
+=item 16.
 
 Bump revision numbers to reflect the one of the following release,
 especially in F<doc/pod/install.pod> and F<readme.pod> for major releases,
@@ -894,53 +889,46 @@ F<configure.ac> and F<Makefile.global.in> for both minor and major releases.
 (It is not necessary to bump the revision number if the release is supposed to
 be the last one in a branch.)
 
-=item 18.
+=item 17.
 
 Update milestones in the GitHub bug tracker to reflect the new release.
 
-=item 19.
+=item 18.
 
-Make the previously generated release tar file, along with its MD5 checksum
-and the possible diff from the previous release, available into the public
-area of ftp.isc.org.  Sign the release, creating a F<.asc> file, using:
+Make the previously generated release tar file available into the public area
+of ftp.isc.org.  Sign the release, creating a F<.asc> file, using:
 
     gpg --detach-sign --armor inn-Y.Y.Y.tar.gz
 
-Also create SHA-1, SHA-256, and SHA-512 files, with C<sha1sum>,
-C<sha256sum>, and C<sha512sum>, respectively, and then sign them to create
-corresponding F<.asc> files.  You don't need to retain the unsigned
-checksum files.
-
-Update the F<inn.tar.gz*> links and possibly move older releases off into
-the F<OLD> directory.  Also remove testing versions from the F<testing>
-directory.
+Update the F<inn.tar.gz*> links and possibly move older releases off into the
+F<OLD> directory.
 
 (Currently, this is all done by Russ by updating the files in
-L<https://archives.eyrie.org/software/inn/> and then letting ISC automatically
-mirror them via rsync within a day.)
+L<https://archives.eyrie.org/software/inn/> and then letting ISC
+automatically mirror them via rsync within a day.  The ISC web site does
+not need being updated as it does not directly link to the release, nor
+mention the version of the last release.  Just check the information at
+L<https://www.isc.org/othersoftware/#INN> is still available and accurate,
+though.)
 
-=item 20.
+=item 19.
 
 Now that the signature of the release has been generated, attach it to the
 GitHub release.
 
-=item 21.
+=item 20.
 
 After ftp.isc.org has correctly mirrored the release, send an announce
 on inn-announce and in news.software.nntp (with a possible crosspost to
 news.admin.announce).
 
-The ISC web site does not need being updated as it does not directly link to
-the release, nor mention the version of the last release.  (Just check the
-information at L<https://www.isc.org/othersoftware/#INN> is still available
-and accurate, though.)
+=item 21.
+
+Ping Russ to clean up the snapshots generated for the previous version and,
+for major releases, update the branch used for the generation of STABLE
+snapshots.
 
 =item 22.
-
-For major releases, ping Russ to update the branch used for the
-generation of STABLE snapshots.
-
-=item 23.
 
 Ping Russ to update L<https://www.eyrie.org/~eagle/software/inn/> with the
 latest version information and, for a major release, clone the documentation
