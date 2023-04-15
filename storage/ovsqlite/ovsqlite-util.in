@@ -345,7 +345,7 @@ insert into repairs
          expired, groupname, flag_alias)
     select groupid,
             new_low, new_low != low as low_was_bad,
-            new_high, new_high != high as high_was_bad,
+            new_high, new_high > high as high_was_bad,
             new_count, new_count != "count" as count_was_bad,
             expired, groupname, flag_alias
         from new_stats
