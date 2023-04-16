@@ -229,8 +229,16 @@ rnews(1) for more information about the batch file format.
 
 =item B<-R>
 
-Be a reader (use MODE READER and POST commands) to the downstream
-server.  The default is to behave like a feeder and use the IHAVE command.
+Be a reader (use MODE READER and POST commands) to the downstream server.
+Some posts will then be rejected because of unexpected injection header
+fields, obsolete or incorrectly formatted header fields, or with a date
+too far in the past.  You may then want to set I<artcutoff> to C<0>
+in F<inn.conf>, and use the B<-H> flag to strip unwanted header fields.
+Even with that, a few articles may still be rejected.
+
+The default is to behave like a feeder and use the IHAVE command.  (You'll
+have to allow in F<incoming.conf> the connections from B<pullnews> so that it
+is recognized as a feeder.)
 
 =item B<-s> I<to-server>[:I<port>][_I<tlsmode>]
 
@@ -246,8 +254,10 @@ TLS (the appropriate command will be sent before authenticating or feeding
 messages).  Examples of use are:
 
     pullnews -s news.server.com
-    pullnews -R -s news.server.com_STARTTLS
-    pullnews -s news.server.com:563_TLS
+    pullnews -s news.server.com_STARTTLS
+    pullnews -s news.server.com:433_TLS
+
+Note that not all NNTP servers implement TLS for feeding articles.
 
 =item B<-S> I<max-run>
 
@@ -327,18 +337,18 @@ A typical configuration file would be:
         comp.programming.threads
     nnrp.vix.com pull sekret
         comp.std.lisp
-    news.server.com:433_TLS joe password
+    news.server.com:563_TLS joe password
         news.software.nntp
 
 Note that an earlier run of B<pullnews> has filled in details about the
 last article downloads from the two rec.* groups.  The two comp.* groups and
 the news.* group were just added by the user and have not yet been checked.
 
-The nnrp.vix.com server requires authentication, and B<pullnews> will use
-the username C<pull> and the password C<sekret>.
+The nnrp.vix.com server requires authentication, and B<pullnews> will use the
+username C<pull> and the password C<sekret> (without any encryption layer).
 
 The connection to news.server.com will be encrypted with implicit TLS on port
-433.  Joe's password won't be sent in plaintext.
+563.  Joe's password won't be sent in plaintext.
 
 =head1 FILES
 
