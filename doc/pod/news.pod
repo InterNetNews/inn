@@ -23,7 +23,7 @@ C<:bytes> and C<:lines> metadata to news clients using CAPABILITIES.
 
 =back
 
-=head1 Changes in 2.7.1 (not yet released)
+=head1 Changes in 2.7.1 (2023-04-16)
 
 =over 2
 
