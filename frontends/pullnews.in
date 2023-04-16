@@ -56,7 +56,7 @@
 #                   news.uu.net username password
 #                       uunet.announce 0 0
 #                       uunet.help 0 0
-#                   news.server.com:433_TLS username password
+#                   news.server.com:563_TLS username password
 #                       news.admin.hierarchies 0 0
 #
 #               Hostname lines have no leading space and may have an optional
