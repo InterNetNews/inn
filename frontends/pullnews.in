@@ -979,7 +979,7 @@ sub crossFeedGroup {
                     }
                 }
                 $add_bytes_header = 1 if not $has_bytes_header;
-                push @{$article}, "\n" if not $is_control_art;
+                push @{$article}, "\r\n" if not $is_control_art;
             }
         }
 
@@ -1016,7 +1016,7 @@ sub crossFeedGroup {
                 $idx_blank_pre_body = $idx;
 
                 $curr_hdr = lc($1) if $article->[$idx] =~ /^([^:[:blank:]]+):/;
-                if ($article->[$idx] eq "\n") {
+                if ($article->[$idx] eq "\r\n") {
                     $headers = 0;
                     next;
                 }
@@ -1119,8 +1119,8 @@ sub crossFeedGroup {
                 $skip_due_to_hdrs = 2;
             }
             while (@header_nums_to_go) {
-                my $idx = pop @header_nums_to_go
-                  ;    # Start from last, so numbers are not affected.
+                # Start from last, so numbers are not affected.
+                my $idx = pop @header_nums_to_go;
                 my $cut = join("\n\t", splice(@{$article}, $idx, 1));
                 $tx_len -= length($cut);
                 $idx_blank_pre_body--;
