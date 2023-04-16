@@ -745,12 +745,14 @@ There are four overview mechanisms to choose from:
 =item buffindexed
 
 It stores overview data and index information into preconfigured large files
-like CNFS.  Fast at writing, the C<buffindexed> overview storage method
-can keep up with a large feed more easily and never consumes additional
-disk space beyond that allocated to these buffers.  The downside is that
-these buffers are hard to recover in case of corruption and somewhat
-slower for readers and the expiry process.  See the buffindexed.conf(5)
-man page for more details, and notably how to create the buffers.
+like CNFS.  Fast at writing, the C<buffindexed> overview storage method can
+keep up with a large feed more easily and never consumes additional disk space
+beyond that allocated to these buffers.  The downside is that these buffers
+are hard to recover in case of corruption and somewhat slower for readers and
+the expiry process.  Also, overview data is limited to S<8 KB> per article,
+which may lead to the lack of integration of a few articles with headers of
+unusual length into the overview database.  See the buffindexed.conf(5) man
+page for more details, and notably how to create the buffers.
 
 =item ovdb
 

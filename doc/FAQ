@@ -471,7 +471,9 @@ method configured.  There are four different methods to choose from:
     more easily and never consumes additional disk space beyond that
     allocated to these buffers.  The downside is that these buffers
     are hard to recover in case of corruption and somewhat slower for
-    readers and the expiry process;
+    readers and the expiry process.  Also, overview data is limited to
+    8 KB per article, which may lead to the lack of integration of a few
+    articles with headers of unusual length into the overview database;
 
   - ovdb, which stores overview information into a Berkeley DB database,
     whose development pace has stalled these last years.  This method
