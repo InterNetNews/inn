@@ -10,9 +10,11 @@ buffindexed (as configured by the I<ovmethod> parameter in F<inn.conf>).
 
 Buffindexed uses pre-built buffer files to store overview data and indexes
 to that data.  The buffers are divided into S<8 KB> internally, and a given
-block is used either for overview data or for index data.  A block is
-always allocated to a single newsgroup and is never shared among
-newsgroups.
+block is used either for overview data or for index data.  A block is always
+allocated to a single newsgroup and is never shared among newsgroups.  It also
+means that overview data is limited to S<8 KB> per article, which may lead to
+the lack of integration of a few articles with headers of unusual length into
+the overview database.
 
 In addition to the buffers, buffindexed also stores information in a file
 named F<group.index> in I<pathdb>.  (This file should not be mistaken for
