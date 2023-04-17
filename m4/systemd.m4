@@ -5,11 +5,10 @@ dnl --with-systemdsystemunitdir configure flag, sets the systemdsystemunitdir
 dnl substitution variable, and provides the HAVE_SYSTEMD Automake conditional
 dnl to use to control whether to install unit files.
 dnl
-dnl Provides the INN_LIB_SYSTEMD_DAEMON_OPTIONAL macro, which sets
-dnl SYSTEMD_CFLAGS and SYSTEMD_LIBS substitution variables if libsystemd is
-dnl available and defines HAVE_SD_NOTIFY.  Adds sd-daemon.c to LIBOBJS if
-dnl libsystemd is not available.  pkg-config support for libsystemd-daemon is
-dnl required for it to be detected.
+dnl Provides the INN_LIB_SYSTEMD_OPTIONAL macro, which sets SYSTEMD_CFLAGS and
+dnl SYSTEMD_LIBS substitution variables if libsystemd is available and defines
+dnl HAVE_SD_NOTIFY.  Adds sd-daemon.c to LIBOBJS if libsystemd is not available.
+dnl pkg-config support for libsystemd-daemon is required for it to be detected.
 dnl
 dnl Depends on the Autoconf macros that come with pkg-config.
 dnl
@@ -44,12 +43,9 @@ AC_DEFUN([INN_WITH_SYSTEMD_UNITDIR],
     [test -n "$with_systemdsystemunitdir" \
         && test x"$with_systemdsystemunitdir" != xno])])
 
-dnl Check for libsystemd or libsystemd-daemon and define SYSTEMD_{CFLAGS,LIBS}
-dnl if it is available.  This is called INN_LIB_SYSTEMD_DAEMON_OPTIONAL since
-dnl it was originally written when libsystemd-daemon was separate, and only
-dnl checks for that library.  It may eventually make sense to retire this in
-dnl favor of a simple INN_LIB_SYSTEMD_OPTIONAL that isn't backward-compatible.
-AC_DEFUN([INN_LIB_SYSTEMD_DAEMON_OPTIONAL],
+dnl Check for libsystemd, libsystemd-daemon or libelogind and define
+dnl SYSTEMD_{CFLAGS,LIBS} if it is available.
+AC_DEFUN([INN_LIB_SYSTEMD_OPTIONAL],
 [PKG_CHECK_EXISTS([libsystemd],
     [PKG_CHECK_MODULES([SYSTEMD], [libsystemd])
      AC_DEFINE([HAVE_SD_NOTIFY], 1, [Define if sd_notify is available.])],
