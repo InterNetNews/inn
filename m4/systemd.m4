@@ -57,4 +57,8 @@ AC_DEFUN([INN_LIB_SYSTEMD_DAEMON_OPTIONAL],
         [PKG_CHECK_MODULES([SYSTEMD], [libsystemd-daemon])
          AC_DEFINE([HAVE_SD_NOTIFY], 1,
             [Define if sd_notify is available.])],
-        [AC_LIBOBJ([sd-daemon])])])])
+        [PKG_CHECK_EXISTS([libelogind],
+            [PKG_CHECK_MODULES([SYSTEMD], [libelogind])
+             AC_DEFINE([HAVE_SD_NOTIFY], 1,
+                [Define if sd_notify is available.])],
+            [AC_LIBOBJ([sd-daemon])])])])])
