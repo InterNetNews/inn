@@ -128,7 +128,7 @@ changes to the documentation depending on who generated it last.  You can
 find the latest version of the C<podlators> distribution on CPAN
 (L<https://metacpan.org/dist/podlators>).  For versions of Perl before 5.6.1
 (as Perl 5.6.1 and later come with a recent enough version), you'll also need
-C<Pod::Parser> (see L<https://metacpan.org/pod/Pod-Parser>).
+C<Pod::Parser> (see L<https://metacpan.org/pod/Pod::Parser>).
 
 There are makefile rules in F<doc/pod/Makefile> to build all of the
 documentation whose master form is POD; if you add additional
