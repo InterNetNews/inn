@@ -178,6 +178,11 @@ AC_PREFIX_DEFAULT([/usr/local/news])
 dnl Make sure $prefix is set so that we can use it internally.
 test x"$prefix" = xNONE && prefix="$ac_default_prefix"
 
+dnl When CFLAGS isn't set at this stage and gcc is detected by the macro below,
+dnl autoconf will automatically use CFLAGS="-O2 -g". Prevent that by using an
+dnl empty default.
+: ${CFLAGS=""}
+
 dnl A few tests need to happen before any of the libtool tests.  We
 dnl therefore lift them up to the top of the file.  (This is probably no
 dnl longer needed now that we're running LT_INIT unconditionally, but
