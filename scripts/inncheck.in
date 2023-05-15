@@ -815,7 +815,7 @@ sub newsfeeds {
         if (($dists) = $pats =~ m@.*/(.*)@) {
             $bang = $nobang = 0;
           DIST:
-            foreach my $d (split(/,/, $dists)) {
+            foreach my $d (split(/,/, $dists, -1)) {
                 if ($d =~ /^!/) {
                     $bang++;
                 } else {
@@ -829,8 +829,14 @@ sub newsfeeds {
         }
         $type = "f";
       FLAG:
-        foreach my $flag (split(/,/, $flags)) {
+        # Use -1 as a limit in split() so that trailing empty fields are not
+        # skipped.
+        foreach my $flag (split(/,/, $flags, -1)) {
             ($k, $v) = $flag =~ /(.)(.*)/;
+            if (!defined($k)) {
+                eprint "$file:$start: empty flag in `$flags'\n";
+                next FLAG;
+            }
             if (!defined $newsfeeds_flags{$k}) {
                 eprint "$file:$start: unknown flag `$flag'\n";
                 next FLAG;
