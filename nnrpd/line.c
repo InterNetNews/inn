@@ -79,12 +79,11 @@ line_reset(struct line *line)
 }
 
 /*
-**  Timeout is used only if HAVE_OPENSSL is defined.
 **  Returns -2 on timeout, -1 on read error, and otherwise the number of
 **  bytes read.
 */
 static ssize_t
-line_doread(void *p, size_t len, int timeout UNUSED)
+line_doread(void *p, size_t len, int timeout)
 {
     ssize_t n;
 
@@ -152,9 +151,39 @@ line_doread(void *p, size_t len, int timeout UNUSED)
             xsignal(SIGALRM, SIG_DFL);
         } else
 #endif /* HAVE_OPENSSL */
+        {
+            fd_set rmask;
+            int i;
+
+            /* Wait for activity on stdin, updating timer stats as we
+             * go. */
+            do {
+                struct timeval t;
+
+                FD_ZERO(&rmask);
+                FD_SET(STDIN_FILENO, &rmask);
+                t.tv_sec = timeout;
+                t.tv_usec = 0;
+                TMRstart(TMR_IDLE);
+                i = select(STDIN_FILENO + 1, &rmask, NULL, NULL, &t);
+                TMRstop(TMR_IDLE);
+                if (i == -1 && errno != EINTR) {
+                    syswarn("%s can't select", Client.host);
+                    break;
+                }
+            } while (i == -1);
+
+	    /* If stdin didn't select, we must have timed out. select() failure
+	     * from above is treated the same way. */
+            if (i <= 0 || !FD_ISSET(STDIN_FILENO, &rmask)) {
+                n = -2; /* timeout */
+                break;
+	    }
+
             do {
                 n = read(STDIN_FILENO, p, len);
             } while (n == -1 && errno == EINTR);
+        }
 
         if (n <= 0)
             break; /* EOF or error. */
@@ -261,8 +290,6 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
      * to ask for any more. */
     if (lf == NULL) {
         do {
-            fd_set rmask;
-            int i;
             ssize_t count;
 
             /* If we've filled the line buffer, double the size,
@@ -295,49 +322,6 @@ line_read(struct line *line, int timeout, const char **p, size_t *len,
                 }
             }
 
-#ifdef HAVE_OPENSSL
-            /* It seems that the SSL_read cannot be mixed with select()
-             * as in the current code.  SSL communicates in its own data
-             * blocks and hand shaking.  The do_readline using SSL_read
-             * could return, but still with a partial line in the SSL_read
-             * buffer.  Then the server SSL routine would sit there waiting
-             * for completion of that data block while nnrpd sat at the
-             * select() routine waiting for more data from the server.
-             *
-             * Here, we decide to just bypass the select() wait.  Unlike
-             * innd with multiple threads, the select on nnrpd is just
-             * waiting on a single file descriptor, so it is not really
-             * essential with blocked read like SSL_read.  Using an alarm
-             * signal around SSL_read for non active timeout, SSL works
-             * without dead locks.  However, without the select() wait,
-             * the IDLE timer stat won't be collected...
-             */
-            if (tls_conn == NULL) {
-#endif
-                /* Wait for activity on stdin, updating timer stats as we
-                 * go. */
-                do {
-                    struct timeval t;
-
-                    FD_ZERO(&rmask);
-                    FD_SET(STDIN_FILENO, &rmask);
-                    t.tv_sec = timeout;
-                    t.tv_usec = 0;
-                    TMRstart(TMR_IDLE);
-                    i = select(STDIN_FILENO + 1, &rmask, NULL, NULL, &t);
-                    TMRstop(TMR_IDLE);
-                    if (i == -1 && errno != EINTR) {
-                        syswarn("%s can't select", Client.host);
-                        return RTtimeout;
-                    }
-                } while (i == -1);
-
-                /* If stdin didn't select, we must have timed out. */
-                if (i == 0 || !FD_ISSET(STDIN_FILENO, &rmask))
-                    return RTtimeout;
-#ifdef HAVE_OPENSSL
-            }
-#endif
             count = line_doread(where, line->allocated - (where - line->start),
                                 timeout);
 
