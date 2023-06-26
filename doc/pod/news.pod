@@ -1,3 +1,14 @@
+=head1 Changes in 2.7.2 (not yet released)
+
+=over 2
+
+=item *
+
+Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
+is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
+
+=back
+
 =head1 Changes in 2.7.1 (2023-04-16)
 
 =over 2
