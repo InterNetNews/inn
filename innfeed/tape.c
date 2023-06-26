@@ -261,14 +261,13 @@ tapeConfigLoadCbk(void *data)
 }
 
 
-/* Create a new Tape object. There are three potential files involved in
-   I/O. 'peerName' is what  the admin may have dropped in by
-   hand. 'peerName.input' is the file that was being used as input the last
-   time things were run. 'peerName.output' is the file that was being used
-   as output. The file 'peerName' is appended to 'peerName.input' (or
-   renamed if 'peerName.input' doesn't exist). Then 'peerName.output' is
-   appeneded (or renamed) to 'peerName.input' */
-
+/* Create a new Tape object.  There are three potential files involved in I/O.
+ * 'peerName' is what the admin may have dropped in by hand.
+ * 'peerName.input' is the file that was being used as input the last
+ * time things were run.
+ * 'peerName.output' is the file that was being used as output.
+ * See prepareFiles() for how they are used.
+ */
 static bool inited = false;
 Tape
 newTape(const char *peerName, bool dontRotate)
@@ -921,20 +920,20 @@ checkpointTape(Tape tape)
 
 /* Prepare the tape file(s) for input and output */
 
-/* For a given Tape there are
- * three possible files: PEER.input PEER and
- * PEER.output. PEER.input and PEER.output are private to
- * innfeed. PEER is where a sysadmin can drop a file that (s)he
- * wants to inject into the process. If the first line of the input file
- * contains only an integer (possibly surrounded by spaces), then this is
- * taken to be the position to seek to before reading.
+/* For a given Tape, there are three possible files:
+ * PEER.input, PEER, and PEER.output.
+ * PEER.input and PEER.output are private to innfeed.
+ * PEER is where a sysadmin can drop a file that (s)he wants to inject into
+ * the process.  If the first line of the input file contains only an integer
+ * (possibly surrounded by spaces), then this is taken to be the position to
+ * seek to before reading.
  *
- * prepareFiles will process them in a manner much like the following shell
+ * prepareFiles() will process them in a manner much like the following shell
  * commands:
  *
  * if [ ! -f PEER.input ]; then
  *     if [ -f PEER ]; then mv PEER PEER.input
- *     elif [ -f PEER.output ]; then mv PEER.output PEER; fi
+ *     elif [ -f PEER.output ]; then mv PEER.output PEER.input; fi
  * fi
  *
  * At this point PEER.input is opened for reading if it exists.
