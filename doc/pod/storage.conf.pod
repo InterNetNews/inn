@@ -215,6 +215,13 @@ have self-expire functionality (meaning B<expire> has to run periodically
 to delete old articles, as well as cancelled articles if I<immediatecancel>
 is not set to true in F<inn.conf>).  EXPENSIVESTAT is false for this method.
 
+A given CAF file contains all the articles received during a time frame of
+4 minutes or so (256 seconds), and is limited to 262,144 articles and about
+3,5 GB.  It is enough for normal operations.  The only caveat is when you're
+feeding at high speed bunches of articles between two servers; you'll then
+want to limit it to that amount of articles during the time frame when a CAF
+file stores newly arrived articles.
+
 Advantages: It is roughly four times faster than C<timehash> for article
 writes, since much of the file system overhead is bypassed, while still
 retaining the same fine control over article retention time.
