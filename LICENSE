@@ -83,3 +83,6 @@ executable.
 Please note that the files in the contrib directory are not properly part
 of INN and may be under widely varying licenses.  Please see each file
 and/or its documentation for license information.
+
+For any copyright range specified by files in this package as YYYY-ZZZZ, the
+range specifies every single year in that closed interval.
