@@ -692,6 +692,13 @@ Similar to timehash, articles are stored by arrival time, but instead of
 writing a separate file for each article, multiple articles are put in the
 same file.
 
+A given CAF file contains all the articles received during a time frame of
+4 minutes or so (256 seconds), and is limited to 262,144 articles and about
+3,5 GB.  It is enough for normal operations.  The only caveat is when you're
+feeding at high speed bunches of articles between two servers; you'll then
+want to limit it to that amount of articles during the time frame when a CAF
+file stores newly arrived articles.
+
 Advantages: Roughly four times faster than timehash for article writes,
 since much of the file system overhead is bypassed, while still retaining
 the same fine control over article retention time.
