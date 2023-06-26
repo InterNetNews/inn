@@ -631,11 +631,11 @@ to trust, and download the most recent ones, in case they have changed.)
 =item 4.
 
 Add to the F<newsfeeds> file an entry like this one in order to feed
-B<perl-nocem> the NoCeM notices posted to alt.nocem.misc and
-news.lists.filters, the usual groups where notices are sent:
+B<perl-nocem> with the NoCeM notices (cross)posted to news.lists.filters, the
+global newsgroup where notices are sent:
 
     nocem!\
-        :!*,alt.nocem.misc,news.lists.filters\
+        :!*,news.lists.filters\
         :Tc,Wf,Ap:<pathbin>/perl-nocem
 
 with the correct path to B<perl-nocem>, located in <pathbin>.  Then, run
