@@ -71,7 +71,7 @@ foreach $i (keys %groups) {
 printline("*binaries*,*pictures*", "A", 0.5);
 printline("control*", "A", 1);
 printline("control.cancel", "A", 0.5);
-printline("news.lists.filters,alt.nocem.misc", "A", 1);
+printline("news.lists.filters", "A", 1);
 
 close(OUTFILE);
 exit(1);

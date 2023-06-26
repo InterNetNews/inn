@@ -403,7 +403,7 @@ using the B<-d> flag.
 B<tunefeed>'s output will look something like:
 
     comp.*,humanities.classics,misc.*,news.*,rec.*,sci.*,soc.*,talk.*,\
-    alt.*,!alt.atheism,!alt.binaries.*,!alt.nocem.misc,!alt.punk*,\
+    alt.*,!alt.atheism,!alt.binaries.*,!alt.punk*,\
     !alt.sex*,!alt.video.dvd,\
     bionet.*,biz.*,gnu.*,vmsnet.*,\
     ba.*,!ba.jobs.agency,ca.*,sbay.*
