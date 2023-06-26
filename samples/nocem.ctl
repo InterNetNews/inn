@@ -6,17 +6,18 @@
 ##      <http://rosalind.home.xs4all.nl/nocemreg/nocemreg.html>
 ##
 ##  Format:
-##          issuer:notice1,notice2
+##          issuer:notice1[,notice2...]
 ##
 ##  You also have to properly configure your newsfeeds file and
 ##  your keyring situated in <pathetc>/pgp/ncmring.gpg.
 ##  You may wish to review and change the policy below.
 ##
-##  See the perl-nocem man page for more information.
+##  See the perl-nocem manual page for more information.
 
 bleachbot@httrack.com:spam,site
 news@uni-berlin.de:Admincancel
 nocem@aioe.org:aioe-spam
 nocem@arcor.de:spam
 nocem@novabbs.com:spam
+nocem-fr@alphanet.ch:spam
 pgpmoose@killfile.org:pgpmoose-forged-moderation

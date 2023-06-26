@@ -4,6 +4,12 @@
 
 =item *
 
+An up-to-date F<nocem.ctl> file is provided with this release.  You should
+manually update your F<nocem.ctl> file with the new information recorded about
+NoCeM issuers, and make sure the right PGP keys are present on your system.
+
+=item *
+
 Fixed a hang when posting articles if COMPRESS DEFLATE is active but TLS
 is not.  Thanks to Enrik Berkhan for the patch for B<nnrpd>.
 
